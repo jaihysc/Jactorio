@@ -1,0 +1,8 @@
+# IDE files
+.vs/
+.idea/
+Folder.DotSettings.user
+
+# Build and libraries
+out/
+lib/
