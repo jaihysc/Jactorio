@@ -1,12 +1,20 @@
 ﻿// jactorio.cpp : Defines the entry point for the application.
 //
 
-#include <jactorio.h>
+#include <iostream>
+#include "renderer/render_main.h"
+
+#include "jactorio.h"
 
 int main(int ac, char* av[])
 {
-	// Currently a sample openGL program
-	opengl_init();
+	// Initial startup message
+	std::cout << GET_BUILD_TYPE << " build, version: " << JACTORIO_VERSION << "\n\n\n";
 
+	
+	// Currently a sample openGL program
+	renderer_main();
+
+	std::cout << "goodbye!\n";
 	return 0;
 }

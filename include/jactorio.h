@@ -1,12 +1,14 @@
-﻿// jactorio.h : Include file for standard system include files,
-// or project specific include files.
-
 #ifndef JACTORIO_H
 #define JACTORIO_H
 
-#include <iostream>
-#include <renderer/initialize.h>
 
-// TODO: Reference additional headers your program requires here.
+#define JACTORIO_VERSION "0.1.0"
+
+
+#ifdef JACTORIO_DEBUG_BUILD
+#define GET_BUILD_TYPE "Debug"
+#else
+#define GET_BUILD_TYPE "Release"
+#endif
 
 #endif // JACTORIO_H

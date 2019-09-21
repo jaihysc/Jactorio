@@ -1,0 +1,31 @@
+#include <GL/glew.h>
+
+#include "renderer/opengl/index_buffer.h"
+#include "renderer/opengl/error.h"
+
+Index_buffer::Index_buffer(const unsigned* data, unsigned count)
+	: count_(count)
+{
+	// Create buffer
+	DEBUG_OPENGL_CALL(glGenBuffers(1, &id_));
+
+	// Load data into buffer
+	bind();
+	DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), data, GL_STATIC_DRAW));
+}
+
+Index_buffer::~Index_buffer() {
+	DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
+}
+
+void Index_buffer::bind() const {
+	DEBUG_OPENGL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_));
+}
+
+void Index_buffer::unbind() {
+	DEBUG_OPENGL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+}
+
+unsigned Index_buffer::count() const {
+	return count_;
+}

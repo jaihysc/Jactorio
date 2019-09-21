@@ -26,7 +26,7 @@ endif()
 
 # Prevent overriding the parent project's compiler/linker
 # settings on Windows
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set (gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Add googletest directly to our build. This defines
 # the gtest and gtest_main targets.
@@ -46,17 +46,48 @@ endif()
 # Add source to this project's executable.
 
 # From jactorio
-file(GLOB_RECURSE JACTORIO_SRC_FILES 
-	${PROJECT_SOURCE_DIR}/src/game/*.cpp
-	${PROJECT_SOURCE_DIR}/src/renderer/*.cpp
+set (JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src/)
+
+set (
+	IMGUI_FILES 
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
 )
 
-# jactorioTests .cpp files
 add_executable (
 	jactorioTest
+
+	${IMGUI_FILES}
+
+	${JACTORIO_DIR}core/logger.cpp
+	${JACTORIO_DIR}core/file_system/read.cpp
+	
+	${JACTORIO_DIR}renderer/camera.cpp
+	${JACTORIO_DIR}renderer/render_main.cpp
+	${JACTORIO_DIR}renderer/texture.cpp
+
+	${JACTORIO_DIR}renderer/gui/imgui_manager.cpp
+	${JACTORIO_DIR}renderer/gui/imgui_glfw.cpp
+	${JACTORIO_DIR}renderer/gui/imgui_opengl3.cpp
+
+	${JACTORIO_DIR}renderer/opengl/renderer.cpp
+	${JACTORIO_DIR}renderer/opengl/error.cpp
+	${JACTORIO_DIR}renderer/opengl/shader.cpp
+	${JACTORIO_DIR}renderer/opengl/shader_manager.cpp
+	${JACTORIO_DIR}renderer/opengl/index_buffer.cpp
+	${JACTORIO_DIR}renderer/opengl/vertex_buffer.cpp
+	${JACTORIO_DIR}renderer/opengl/vertex_array.cpp
+	${JACTORIO_DIR}renderer/opengl/window_manager.cpp
+	
 	"jactorioTests.cpp"
 
-	${JACTORIO_SRC_FILES}
+	"core/file_systemTests.cpp"
+	"core/loggerTests.cpp"
+	
+	"renderer/openglTests.cpp"
+	"renderer/shader_managerTests.cpp"
 )
 
 # Headers include folder
@@ -65,9 +96,20 @@ target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/include)
 # GLFW for OpenGL
 target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/glfw3/include)
 
-target_link_libraries (jactorioTest ${PROJECT_SOURCE_DIR}/lib/glfw3/lib/glfw3.lib ${PROJECT_SOURCE_DIR}/lib/glfw3/lib/glfw3dll.lib)
+target_link_libraries (jactorioTest ${PROJECT_SOURCE_DIR}/lib/glfw3/lib/glfw3.lib)
 target_link_libraries (jactorioTest opengl32.lib user32.lib gdi32.lib shell32.lib)  # Additional GLFW dependencies
 
+# GLEW
+add_compile_definitions (GLEW_STATIC)  # Indicates static linking
+
+target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/glew-2.1.0/include)
+target_link_libraries (jactorioTest ${PROJECT_SOURCE_DIR}/lib/glew-2.1.0/lib/Release/x64/glew32s.lib)
+# stb
+target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/stb/)
+# glm
+target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/glm/)
+# imgui
+target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/imgui/)
 
 # GTest
 target_link_libraries(jactorioTest gtest_main)
