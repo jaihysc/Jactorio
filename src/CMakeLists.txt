@@ -4,11 +4,35 @@
 cmake_minimum_required (VERSION 3.8)
 
 
+################## CONFIG    ###############
+
+add_compile_definitions(JACTORIO_VERSION="0.1.0")
+add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
+
+################## ENDCONFIG ###############
+
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
+	message("Type: Debug")
+    add_compile_definitions(JACTORIO_DEBUG_BUILD)  # Break on openGL error
+
+ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
+	message("Type: <<<<< Release build >>>>>")
+
+ELSE()
+  message(FATAL_ERROR "Unknown build type, specify with -D CMAKE_BUILD_TYPE=")
+ENDIF()
+
+message("Target: ${CMAKE_SYSTEM_NAME}")
+
+
 # Copy data executable directory
+message(" => Copying files to output directory")
 file (COPY ${PROJECT_SOURCE_DIR}/data DESTINATION / )
 # Shaders
 configure_file(${PROJECT_SOURCE_DIR}/data/core/shaders/fs.frag data/core/shaders/fs.frag COPYONLY)
 configure_file(${PROJECT_SOURCE_DIR}/data/core/shaders/vs.vert data/core/shaders/vs.vert COPYONLY)
+
+message(" => DONE Copying files to output directory")
 
 
 set (
@@ -50,34 +74,25 @@ add_executable (
 # Headers include folder
 target_include_directories (jactorio PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-# Additional libraries to be placed in lib/
-
-# GLFW for OpenGL
-target_include_directories (jactorio PRIVATE ${PROJECT_SOURCE_DIR}/lib/glfw3/include)
-
-target_link_libraries (jactorio ${PROJECT_SOURCE_DIR}/lib/glfw3/lib/glfw3.lib)
-target_link_libraries (jactorio opengl32.lib user32.lib gdi32.lib shell32.lib)  # Additional GLFW dependencies
+# OpenGL dependencies
+# GLFW
+target_include_directories (jactorio PRIVATE ${PROJECT_SOURCE_DIR}/lib/glfw/include)
+target_link_libraries (jactorio glfw)
 
 # GLEW
 add_compile_definitions (GLEW_STATIC)  # Indicates static linking
+target_include_directories (jactorio PRIVATE ${PROJECT_SOURCE_DIR}/lib/glew-cmake/include)
 
-target_include_directories (jactorio PRIVATE ${PROJECT_SOURCE_DIR}/lib/glew-2.1.0/include)
-target_link_libraries (jactorio ${PROJECT_SOURCE_DIR}/lib/glew-2.1.0/lib/Release/x64/glew32s.lib)
+if (WIN32)  # Platform dependent openGL libraries
+	target_link_libraries (jactorio libglew_static glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib)
+endif (WIN32)
+if (UNIX)
+    target_link_libraries (jactorio libglew_static libGLU.so libGL.so)    
+endif (UNIX)
+
 # stb
 target_include_directories (jactorio PRIVATE ${PROJECT_SOURCE_DIR}/lib/stb/)
 # glm
 target_include_directories (jactorio PRIVATE ${PROJECT_SOURCE_DIR}/lib/glm/)
 # imgui
 target_include_directories (jactorio PRIVATE ${PROJECT_SOURCE_DIR}/lib/imgui/)
-
-
-IF(CMAKE_BUILD_TYPE MATCHES Debug)
-	message("---------- Debug build ----------")
-    add_compile_definitions(JACTORIO_DEBUG_BUILD)  # Break on openGL error
-
-ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
-	message("<<<<<<<<<< Release build >>>>>>>>>>")
-
-ELSE()
-  message(FATAL_ERROR "Unknown build type")
-ENDIF()

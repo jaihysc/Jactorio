@@ -4,9 +4,9 @@ My attempt at recreating [Factorio](https://factorio.com), inspired by [Hopson98
 
 Uses C++ and GLFW 3.3
 
-## Requirements
+## Dependencies
 
-Place these in the **lib** folder (you have to create one)
+These are automatically installed with cmake
 
 - [GLEW](http://glew.sourceforge.net/)
 - [GLFW](https://www.glfw.org/)

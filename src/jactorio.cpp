@@ -9,7 +9,7 @@
 int main(int ac, char* av[])
 {
 	// Initial startup message
-	std::cout << GET_BUILD_TYPE << " build, version: " << JACTORIO_VERSION << "\n\n\n";
+	std::cout << JACTORIO_BUILD_TARGET_PLATFORM << "  |  " << GET_BUILD_TYPE << " build, version: " << JACTORIO_VERSION << "\n\n\n";
 
 	
 	// Currently a sample openGL program

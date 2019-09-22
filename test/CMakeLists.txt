@@ -93,17 +93,22 @@ add_executable (
 # Headers include folder
 target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-# GLFW for OpenGL
-target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/glfw3/include)
-
-target_link_libraries (jactorioTest ${PROJECT_SOURCE_DIR}/lib/glfw3/lib/glfw3.lib)
-target_link_libraries (jactorioTest opengl32.lib user32.lib gdi32.lib shell32.lib)  # Additional GLFW dependencies
+# OpenGL
+# GLFW
+target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/glfw/include)
+target_link_libraries (jactorioTest glfw)
 
 # GLEW
 add_compile_definitions (GLEW_STATIC)  # Indicates static linking
+target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/glew-cmake/include)
+if (WIN32)  # Platform dependent openGL libraries
+	target_link_libraries (jactorioTest libglew_static glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib)
+endif (WIN32)
+if (UNIX)
+    target_link_libraries (jactorioTest libglew_static libGLU.so libGL.so)    
+endif (UNIX)
 
-target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/glew-2.1.0/include)
-target_link_libraries (jactorioTest ${PROJECT_SOURCE_DIR}/lib/glew-2.1.0/lib/Release/x64/glew32s.lib)
+
 # stb
 target_include_directories (jactorioTest PRIVATE ${PROJECT_SOURCE_DIR}/lib/stb/)
 # glm
