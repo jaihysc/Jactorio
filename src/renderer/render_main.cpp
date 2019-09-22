@@ -92,7 +92,7 @@ void renderer_main() {
 	// #################################################################
 
 	// Loading textures
-	const Texture texture("background-image.png");
+	const Texture texture("data/core/graphics/background-image-logo.png");
 	texture.bind();
 
 	// Texture is bound to slot 0 above, tell this to shader
