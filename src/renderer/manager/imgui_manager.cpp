@@ -5,8 +5,8 @@
 
 #include "core/logger.h"
 
-#include "renderer/camera.h"
-#include "renderer/gui/imgui_manager.h"
+#include "renderer/manager/mvp_manager.h"
+#include "renderer/manager/imgui_manager.h"
 #include "renderer/gui/imgui_glfw.h"
 #include "renderer/gui/imgui_opengl3.h"
 
@@ -49,12 +49,12 @@ namespace jactorio_imgui
 		ImGui::Checkbox("Imgui doc", &show_demo_window);      // Edit bools storing our window open/close state
 
 
-		glm::vec3* view_translation = jactorio::get_camera_transform();
+		glm::vec3* view_translation = jactorio_renderer_mvp::get_camera_transform();
 		
 		// View translation
 		ImGui::SliderFloat3("Camera translation", &view_translation->x, -100.0f, 100.0f);
 
-		jactorio::update_camera_transform();
+		jactorio_renderer_mvp::update_camera_transform();
 
 		// Buttons return true when clicked (most widgets return true when edited/activated)
 		ImGui::NewLine();

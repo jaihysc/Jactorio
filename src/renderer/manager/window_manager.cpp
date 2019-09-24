@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "renderer/opengl/window_manager.h"
+#include "renderer/manager/window_manager.h"
 
 #include <sstream>
 

@@ -13,7 +13,10 @@ unsigned int Shader::compile_shader(const std::string& filepath, const GLenum sh
 	const std::string source = read_file_as_str(filepath);
 	
 	if (source.empty()) {
-		logger::log_message(logger::error, "OpenGL", "Shader compilation received empty shader string, ignoring");
+		std::ostringstream oss;
+		oss << "Shader compilation received empty string, type " << shader_type << " " <<
+			filepath;
+		logger::log_message(logger::error, "OpenGL Shader", oss.str());
 		return 0;
 	}
 
@@ -38,9 +41,10 @@ unsigned int Shader::compile_shader(const std::string& filepath, const GLenum sh
 		DEBUG_OPENGL_CALL(glDeleteShader(shader_id));
 
 		std::ostringstream oss;
-		oss << "Shader compilation failed: " << shader_type << "\n";
+		oss << "Shader compilation failed, type " << shader_type << " " <<
+			filepath << "\n";
 		oss << message;
-		logger::log_message(logger::error, "OpenGL", oss.str());
+		logger::log_message(logger::error, "OpenGL Shader", oss.str());
 		
 		delete[] message;
 
@@ -48,8 +52,9 @@ unsigned int Shader::compile_shader(const std::string& filepath, const GLenum sh
 	}
 
 	std::ostringstream oss;
-	oss << "Shader compilation successful: " << shader_type;
-	logger::log_message(logger::debug, "OpenGL", oss.str());
+	oss << "Shader compilation successful, type " << shader_type << " " <<
+		filepath;
+	logger::log_message(logger::debug, "OpenGL Shader", oss.str());
 	return shader_id;
 }
 

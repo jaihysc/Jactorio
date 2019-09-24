@@ -2,9 +2,8 @@
 #define SHADER_MANAGER_H
 
 #include "glm/glm.hpp"
-#include "renderer/camera.h"
 
-namespace jactorio
+namespace jactorio_renderer_mvp
 {
 	void set_mvp_uniform_location(int location);
 	

@@ -1,5 +1,5 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef RENDERERS_H
+#define RENDERERS_H
 
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/vertex_array.h"
@@ -19,4 +19,4 @@ public:
 	void clear() const;
 };
 
-#endif // RENDERER_H
+#endif // RENDERERS_H

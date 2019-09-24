@@ -47,22 +47,24 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/file_system/read.cpp
 
-	${JACTORIO_DIR}/renderer/camera.cpp
 	${JACTORIO_DIR}/renderer/render_main.cpp
-	${JACTORIO_DIR}/renderer/texture.cpp
+	${JACTORIO_DIR}/renderer/sprite_renderer.cpp
 
-	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
 
-	${JACTORIO_DIR}/renderer/opengl/renderer.cpp
+	${JACTORIO_DIR}/renderer/manager/imgui_manager.cpp
+	${JACTORIO_DIR}/renderer/manager/mvp_manager.cpp
+	${JACTORIO_DIR}/renderer/manager/window_manager.cpp
+	${JACTORIO_DIR}/renderer/manager/shader_manager.cpp
+
+
 	${JACTORIO_DIR}/renderer/opengl/error.cpp
 	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
 	${JACTORIO_DIR}/renderer/opengl/shader.cpp
-	${JACTORIO_DIR}/renderer/opengl/shader_manager.cpp
+	${JACTORIO_DIR}/renderer/opengl/texture.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
-	${JACTORIO_DIR}/renderer/opengl/window_manager.cpp
 )
 ##### Include folders
 set(JACTORIO_INCLUDE_FILES

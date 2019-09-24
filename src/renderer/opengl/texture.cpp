@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stb/stb_image.h>
 
-#include "renderer/texture.h"
+#include "renderer/opengl/texture.h"
 #include "renderer/opengl/error.h"
 
 Texture::Texture(const std::string& texture_filepath)

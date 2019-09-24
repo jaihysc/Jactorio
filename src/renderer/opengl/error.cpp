@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "renderer/opengl/error.h"
-#include "renderer/opengl/window_manager.h"
+#include "renderer/manager/window_manager.h"
 
 // Do not directly call this
 // Wrap a function with DEBUG_BREAK_IF_FALSE to automatically call this when an error occurs and pause code execution

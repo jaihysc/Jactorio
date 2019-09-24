@@ -6,16 +6,18 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "renderer/gui/imgui_manager.h"
+#include "renderer/renderers.h"
 
-#include "renderer/opengl/renderer.h"
-#include "renderer/opengl/window_manager.h"
+#include "renderer/manager/imgui_manager.h"
+#include "renderer/manager/mvp_manager.h"
+#include "renderer/manager/window_manager.h"
+#include "renderer/manager/shader_manager.h"
+
 #include "renderer/opengl/vertex_array.h"
 #include "renderer/opengl/vertex_buffer.h"
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/shader.h"
-#include "renderer/opengl/shader_manager.h"
-#include "renderer/texture.h"
+#include "renderer/opengl/texture.h"
 
 // Main draw loop is here
 void renderer_main() {
@@ -36,16 +38,25 @@ void renderer_main() {
 	const Vertex_array va{};
 
 	// Use index buffers to avoid repeating oneself
-	const float x_offset = 0.f;
-	const float y_offset = 0.f;
+
 	float triangle_coords[] = {
-		 0.f  + x_offset, 0.f + y_offset, 0.f,
-		 32.f + x_offset, 0.f + y_offset, 0.f,
-		 32.f + x_offset, 6.f + y_offset, 0.f,
-		 0.f  + x_offset, 6.f + y_offset, 0.f,
+		0.f, 0.f, 0.f,
+		1.f, 0.f, 0.f,
+		1.f, 1.f, 0.f,
+		0.f, 1.f, 0.f,
+
+		2.f, 2.f, 0.f,
+		4.f, 2.f, 0.f,
+		4.f, 4.f, 0.f,
+		2.f, 4.f, 0.f,
+
+		8.f, 8.f, 0.f,
+		12.f, 8.f, 0.f,
+		12.f, 12.f, 0.f,
+		8.f, 12.f, 0.f
 	};
 
-	const Vertex_buffer vb(triangle_coords, 4 * 3 * sizeof(float));
+	const Vertex_buffer vb(triangle_coords, 12 * 3 * sizeof(float));
 	va.add_buffer(vb, 3, 0);
 
 	float tex_coords[] = {
@@ -53,8 +64,18 @@ void renderer_main() {
 		1.f, 1.f,  // bottom right
 		1.f, 0.f,  // upper right
 		0.f, 0.f,  // upper left
+
+		0.f, 1.f,  // bottom left
+		1.f, 1.f,  // bottom right
+		1.f, 0.f,  // upper right
+		0.f, 0.f,  // upper left
+
+		0.f, 1.f,  // bottom left
+		1.f, 1.f,  // bottom right
+		1.f, 0.f,  // upper right
+		0.f, 0.f,  // upper left
 	};
-	const Vertex_buffer vb2(tex_coords, 4 * 2 * sizeof(float));
+	const Vertex_buffer vb2(tex_coords, 12 * 2 * sizeof(float));
 	va.add_buffer(vb2, 2, 1);
 	
 	// #################################################################
@@ -62,9 +83,15 @@ void renderer_main() {
 	// Index buffer for optimization, avoids redundant vertices
 	unsigned int triangle_cord_indices[] = {
 		0, 1, 2,
-		2, 3, 0
+		2, 3, 0,
+		
+		4, 5, 6,
+		6, 7, 4,
+
+		8, 9, 10,
+		10, 11, 8
 	};
-	const Index_buffer ib(triangle_cord_indices, 6);
+	const Index_buffer ib(triangle_cord_indices, 18);
 
 	// #################################################################
 
@@ -75,19 +102,11 @@ void renderer_main() {
 		}
 	);
 	shader.bind();
-	jactorio::set_mvp_uniform_location(shader.get_uniform_location("u_model_view_projection_matrix"));
+	jactorio_renderer_mvp::set_mvp_uniform_location(shader.get_uniform_location("u_model_view_projection_matrix"));
 
-	// Upper left is 0, 0, bottom right is n,ns
-	GLint m_viewport[4];
-	glGetIntegerv(GL_VIEWPORT, m_viewport);
-	//std::cout << m_viewport[0] << " " << m_viewport[1] << " " << m_viewport[2] << " " << m_viewport[3] << "\n";
-
-	const unsigned int tile_width = 30;
-	const glm::mat4 proj_mat = glm::ortho(
-		0.f, static_cast<float>(m_viewport[2] / tile_width),
-		static_cast<float>(m_viewport[3] / tile_width), 0.f,
-		-1.f, 1.f);
-	jactorio::setg_projection_matrix(proj_mat);
+	jactorio_renderer_mvp::set_proj_calculation_tile_width(32);
+	jactorio_renderer_mvp::calculate_tile_properties();
+	jactorio_renderer_mvp::setg_projection_matrix(jactorio_renderer_mvp::get_proj_matrix());
 	
 	// #################################################################
 
@@ -113,13 +132,12 @@ void renderer_main() {
 		}
 
 		// Draw
-		// TODO convert to batch draw call
 		renderer.draw(va, ib, glm::vec3(0, 0, 0));
-		renderer.draw(va, ib, glm::vec3(10, 10, 0));
+		// renderer.draw(va, ib, glm::vec3(10, 10, 0));
 
 		jactorio_imgui::draw();
 		
-		jactorio::update_shader_mvp();
+		jactorio_renderer_mvp::update_shader_mvp();
 		glfwSwapBuffers(window);  // Done rendering
 		glfwPollEvents();
 	}
