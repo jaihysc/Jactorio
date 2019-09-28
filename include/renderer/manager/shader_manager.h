@@ -3,7 +3,7 @@
 
 #include "glm/glm.hpp"
 
-namespace jactorio_renderer_mvp
+namespace jactorio_renderer
 {
 	void set_mvp_uniform_location(int location);
 	

@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 
-namespace jactorio_renderer_mvp
+namespace jactorio_renderer
 {
 	// VIEW
 	

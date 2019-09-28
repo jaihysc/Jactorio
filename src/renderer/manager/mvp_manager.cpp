@@ -11,11 +11,11 @@
 
 glm::vec3 camera_transform = glm::vec3(0, 0, 0);
 
-glm::vec3* jactorio_renderer_mvp::get_camera_transform() {
+glm::vec3* jactorio_renderer::get_camera_transform() {
 	return &camera_transform;
 }
 
-void jactorio_renderer_mvp::update_camera_transform() {
+void jactorio_renderer::update_camera_transform() {
 	const glm::mat4 view_mat = glm::translate(glm::mat4(1.f), camera_transform);
 	setg_view_matrix(view_mat);
 }
@@ -31,19 +31,19 @@ unsigned int tile_count_y;
 
 unsigned int tile_width;
 
-unsigned int jactorio_renderer_mvp::get_max_tile_count_x() {
+unsigned int jactorio_renderer::get_max_tile_count_x() {
 	return tile_count_x;
 }
 
-unsigned int jactorio_renderer_mvp::get_max_tile_count_y() {
+unsigned int jactorio_renderer::get_max_tile_count_y() {
 	return tile_count_y;
 }
 
-void jactorio_renderer_mvp::set_proj_calculation_tile_width(const unsigned int width) {
+void jactorio_renderer::set_proj_calculation_tile_width(const unsigned int width) {
 	tile_width = width;
 }
 
-void jactorio_renderer_mvp::calculate_tile_properties() {
+void jactorio_renderer::calculate_tile_properties() {
 	// Get window size
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
@@ -53,7 +53,7 @@ void jactorio_renderer_mvp::calculate_tile_properties() {
 	tile_count_y = m_viewport[3] / tile_width + 1;
 }
 
-glm::mat4 jactorio_renderer_mvp::get_proj_matrix() {
+glm::mat4 jactorio_renderer::get_proj_matrix() {
 	return glm::ortho(
 		0.f, static_cast<float>(tile_count_x),
 		static_cast<float>(tile_count_y), 0.f,

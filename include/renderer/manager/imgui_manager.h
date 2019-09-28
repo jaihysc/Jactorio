@@ -6,7 +6,7 @@
 
 #include "renderer/opengl/shader.h"
 
-namespace jactorio_imgui
+namespace jactorio_renderer
 {
 	void setup(GLFWwindow* window);
 	void draw();

@@ -1,33 +1,12 @@
-[submodule "glew"]
-	path = glew
-	url = https://github.com/nigels-com/glew.git
-[submodule "lib/glew"]
-	path = lib/glew
-	url = https://github.com/nigels-com/glew.git
 [submodule "lib/glew-cmake"]
 	path = lib/glew-cmake
 	url = https://github.com/Perlmint/glew-cmake.git
-[submodule "lib/imgui"]
-	path = lib/imgui
-	url = https://github.com/ocornut/imgui.git
 [submodule "lib/imgui/imgui"]
 	path = lib/imgui/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "lib/glm/glm"]
-	path = lib/glm/glm
-	url = https://github.com/g-truc/glm.git
-[submodule "lib/-f"]
-	path = lib/-f
-	url = https://github.com/g-truc/glm.git
 [submodule "lib/glm"]
 	path = lib/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "glfw/glfw"]
-	path = glfw/glfw
-	url = https://github.com/glfw/glfw.git
-[submodule "glfw"]
-	path = glfw
-	url = https://github.com/glfw/glfw.git
 [submodule "lib/glfw"]
 	path = lib/glfw
 	url = https://github.com/glfw/glfw.git

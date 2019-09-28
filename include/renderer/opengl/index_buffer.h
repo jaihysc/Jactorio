@@ -1,21 +1,24 @@
 #ifndef INDEX_BUFFER_H
 #define INDEX_BUFFER_H
 
-class Index_buffer
+namespace jactorio_renderer_gl
 {
-private:
-	unsigned int id_ {};
-	unsigned int count_;
-	
-public:
-	// Count is numerical count
-	Index_buffer(const unsigned int* data, unsigned int count);
-	~Index_buffer();
+	class Index_buffer
+	{
+	private:
+		unsigned int id_{};
+		unsigned int count_;
 
-	void bind() const;
-	static void unbind();
+	public:
+		// Count is numerical count
+		Index_buffer(const unsigned int* data, unsigned int count);
+		~Index_buffer();
 
-	unsigned int count() const;
-};
+		void bind() const;
+		static void unbind();
+
+		unsigned int count() const;
+	};
+}
 
 #endif // INDEX_BUFFER_H

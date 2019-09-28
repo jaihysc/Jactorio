@@ -5,6 +5,7 @@
 #ifndef IMGUI_GLFW_H
 #define IMGUI_GLFW_H
 
+
 struct GLFWwindow;
 
 IMGUI_IMPL_API bool     ImGui_ImplGlfw_InitForOpenGL(GLFWwindow* window, bool install_callbacks);

@@ -3,24 +3,27 @@
 
 #include <string>
 
-class Texture
+namespace jactorio_renderer_gl
 {
-private:
-	unsigned int renderer_id_;
-	int width_, height_, bytes_per_pixel_;
-	
-	std::string texture_filepath_;
-	unsigned char* texture_buffer_;
+	class Texture
+	{
+	private:
+		unsigned int renderer_id_;
+		int width_, height_, bytes_per_pixel_;
 
-public:
-	Texture(const std::string& texture_filepath);
-	~Texture();
+		std::string texture_filepath_;
+		unsigned char* texture_buffer_;
 
-	void bind(unsigned int slot = 0) const;
-	void unbind() const;
+	public:
+		Texture(const std::string& texture_filepath);
+		~Texture();
 
-	int get_width() const { return width_; }
-	int get_height() const { return height_; }
-};
+		void bind(unsigned int slot = 0) const;
+		void unbind() const;
+
+		int get_width() const { return width_; }
+		int get_height() const { return height_; }
+	};
+}
 
 #endif // TEXTURE_H

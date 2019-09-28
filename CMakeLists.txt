@@ -48,7 +48,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/file_system/read.cpp
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
-	${JACTORIO_DIR}/renderer/sprite_renderer.cpp
+	${JACTORIO_DIR}/renderer/tile_renderer.cpp
 
 	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp

@@ -9,7 +9,7 @@
 #include "renderer/opengl/error.h"
 #include "core/logger.h"
 
-unsigned int Shader::compile_shader(const std::string& filepath, const GLenum shader_type) {
+unsigned int jactorio_renderer_gl::Shader::compile_shader(const std::string& filepath, const GLenum shader_type) {
 	const std::string source = read_file_as_str(filepath);
 	
 	if (source.empty()) {
@@ -59,7 +59,7 @@ unsigned int Shader::compile_shader(const std::string& filepath, const GLenum sh
 }
 
 
-Shader::Shader(const std::vector<Shader_creation_input>& inputs)
+jactorio_renderer_gl::Shader::Shader(const std::vector<Shader_creation_input>& inputs)
 	: id_(0)
 {
 	DEBUG_OPENGL_CALL(id_ = glCreateProgram());
@@ -80,21 +80,21 @@ Shader::Shader(const std::vector<Shader_creation_input>& inputs)
 	}
 }
 
-Shader::~Shader() {
+jactorio_renderer_gl::Shader::~Shader() {
 	DEBUG_OPENGL_CALL(glDeleteProgram(id_));
 }
 
 
-void Shader::bind() const {
+void jactorio_renderer_gl::Shader::bind() const {
 	DEBUG_OPENGL_CALL(glUseProgram(id_));
 }
 
-void Shader::unbind() {
+void jactorio_renderer_gl::Shader::unbind() {
 	DEBUG_OPENGL_CALL(glUseProgram(0));
 }
 
 
-int Shader::get_uniform_location(const std::string& name) const {
+int jactorio_renderer_gl::Shader::get_uniform_location(const std::string& name) const {
 	DEBUG_OPENGL_CALL(const int location = glGetUniformLocation(id_, name.c_str()));
 
 	if (location == -1) {
@@ -108,16 +108,16 @@ int Shader::get_uniform_location(const std::string& name) const {
 }
 
 
-void Shader::set_uniform_1i(const int& location, int v) {
+void jactorio_renderer_gl::Shader::set_uniform_1i(const int& location, int v) {
 	DEBUG_OPENGL_CALL(glUniform1i(location, v));
 }
 
-void Shader::set_uniform_4f(
+void jactorio_renderer_gl::Shader::set_uniform_4f(
 	const int& location, const float& v0, const float& v1, const float& v2, const float& v3) {
 	
 	DEBUG_OPENGL_CALL(glUniform4f(location, v0, v1, v2, v3));
 }
 
-void Shader::set_uniform_mat_4f(const int& location, glm::mat4& mat) {
+void jactorio_renderer_gl::Shader::set_uniform_mat_4f(const int& location, glm::mat4& mat) {
 	DEBUG_OPENGL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, &mat[0][0]));
 }
