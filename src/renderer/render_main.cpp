@@ -14,6 +14,7 @@
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/texture.h"
+#include "renderer/rendering/renderer.h"
 
 // Main draw loop is here
 void renderer_main() {
@@ -30,7 +31,24 @@ void renderer_main() {
 	// Enables transparency in textures
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
+	const jactorio_renderer_gl::Shader shader(
+		std::vector<jactorio_renderer_gl::Shader_creation_input> {
+			{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
+			{"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
+		}
+	);
+	shader.bind();
+	jactorio_renderer::set_mvp_uniform_location(shader.get_uniform_location("u_model_view_projection_matrix"));
+
+	jactorio_renderer::set_proj_calculation_tile_width(32);
+	jactorio_renderer::calculate_tile_properties();
+	jactorio_renderer::setg_projection_matrix(jactorio_renderer::get_proj_matrix());
+
+	// #################################################################
+
+	jactorio_renderer_rendering::Renderer render{};
+
 	const jactorio_renderer_gl::Vertex_array va{};
 
 	// Use index buffers to avoid repeating oneself
@@ -53,7 +71,7 @@ void renderer_main() {
 	};
 
 	const jactorio_renderer_gl::Vertex_buffer vb(triangle_coords, 12 * 3 * sizeof(float));
-	va.add_buffer(vb, 3, 0);
+	va.add_buffer(&vb, 3, 0);
 
 	float tex_coords[] = {
 		0.f, 1.f,  // bottom left
@@ -72,15 +90,15 @@ void renderer_main() {
 		0.f, 0.f,  // upper left
 	};
 	const jactorio_renderer_gl::Vertex_buffer vb2(tex_coords, 12 * 2 * sizeof(float));
-	va.add_buffer(vb2, 2, 1);
-	
+	va.add_buffer(&vb2, 2, 1);
+
 	// #################################################################
 
 	// Index buffer for optimization, avoids redundant vertices
 	unsigned int triangle_cord_indices[] = {
 		0, 1, 2,
 		2, 3, 0,
-		
+
 		4, 5, 6,
 		6, 7, 4,
 
@@ -89,21 +107,6 @@ void renderer_main() {
 	};
 	const jactorio_renderer_gl::Index_buffer ib(triangle_cord_indices, 18);
 
-	// #################################################################
-
-	const jactorio_renderer_gl::Shader shader(
-		std::vector<jactorio_renderer_gl::Shader_creation_input> {
-			{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
-			{"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
-		}
-	);
-	shader.bind();
-	jactorio_renderer::set_mvp_uniform_location(shader.get_uniform_location("u_model_view_projection_matrix"));
-
-	jactorio_renderer::set_proj_calculation_tile_width(32);
-	jactorio_renderer::calculate_tile_properties();
-	jactorio_renderer::setg_projection_matrix(jactorio_renderer::get_proj_matrix());
-	
 	// #################################################################
 
 	// Loading textures

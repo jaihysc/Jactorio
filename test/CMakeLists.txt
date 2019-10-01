@@ -47,14 +47,7 @@ endif()
 add_executable (
 	jactorioTest
 	${JACTORIO_SRC_FILES}
-
-	"jactorioTests.cpp"
-
-	"core/file_systemTests.cpp"
-	"core/loggerTests.cpp"
-	
-	"renderer/openglTests.cpp"
-	"renderer/shader_managerTests.cpp"
+	${JACTORIO_TEST_FILES}
 )
 
 target_include_directories(jactorioTest PRIVATE ${JACTORIO_INCLUDE_FILES})

@@ -14,7 +14,7 @@ namespace jactorio_renderer_gl
 		Vertex_array();
 		~Vertex_array();
 
-		void add_buffer(const Vertex_buffer& vb, const unsigned span, unsigned location) const;
+		void add_buffer(const Vertex_buffer* vb, unsigned span, unsigned location) const;
 
 		void bind() const;
 		static void unbind();

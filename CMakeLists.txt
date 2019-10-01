@@ -39,8 +39,8 @@ set(
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
 )
 
+############# Source files
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
-##### Source files
 set(JACTORIO_SRC_FILES 
 	${IMGUI_FILES}
 
@@ -48,7 +48,6 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/file_system/read.cpp
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
-	${JACTORIO_DIR}/renderer/tile_renderer.cpp
 
 	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
@@ -58,13 +57,16 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/manager/window_manager.cpp
 	${JACTORIO_DIR}/renderer/manager/shader_manager.cpp
 
-
 	${JACTORIO_DIR}/renderer/opengl/error.cpp
 	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
 	${JACTORIO_DIR}/renderer/opengl/shader.cpp
 	${JACTORIO_DIR}/renderer/opengl/texture.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
+
+	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
+	${JACTORIO_DIR}/renderer/rendering/renderer_grid.cpp
+
 )
 ##### Include folders
 set(JACTORIO_INCLUDE_FILES
@@ -75,6 +77,22 @@ set(JACTORIO_INCLUDE_FILES
 	${PROJECT_SOURCE_DIR}/lib/glm/
 	${PROJECT_SOURCE_DIR}/lib/imgui/
 )
+############# Test files
+set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
+set(JACTORIO_TEST_FILES 
+	${JACTORIO_TEST_DIR}/jactorioTests.cpp
+
+	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
+	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
+
+	${JACTORIO_TEST_DIR}/game/world_managerTests.cpp
+
+	${JACTORIO_TEST_DIR}/renderer/rendering/rendererTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
+
+	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
+)
+
 
 ################## CONFIG    ###############
 
