@@ -10,8 +10,6 @@
 #include "renderer/manager/shader_manager.h"
 
 #include "renderer/opengl/vertex_array.h"
-#include "renderer/opengl/vertex_buffer.h"
-#include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/renderer.h"
@@ -47,65 +45,7 @@ void renderer_main() {
 
 	// #################################################################
 
-	jactorio_renderer_rendering::Renderer render{};
-
-	const jactorio_renderer_gl::Vertex_array va{};
-
-	// Use index buffers to avoid repeating oneself
-
-	float triangle_coords[] = {
-		0.f, 0.f, 0.f,
-		1.f, 0.f, 0.f,
-		1.f, 1.f, 0.f,
-		0.f, 1.f, 0.f,
-
-		2.f, 2.f, 0.f,
-		4.f, 2.f, 0.f,
-		4.f, 4.f, 0.f,
-		2.f, 4.f, 0.f,
-
-		8.f, 8.f, 0.f,
-		12.f, 8.f, 0.f,
-		12.f, 12.f, 0.f,
-		8.f, 12.f, 0.f
-	};
-
-	const jactorio_renderer_gl::Vertex_buffer vb(triangle_coords, 12 * 3 * sizeof(float));
-	va.add_buffer(&vb, 3, 0);
-
-	float tex_coords[] = {
-		0.f, 1.f,  // bottom left
-		1.f, 1.f,  // bottom right
-		1.f, 0.f,  // upper right
-		0.f, 0.f,  // upper left
-
-		0.f, 1.f,  // bottom left
-		1.f, 1.f,  // bottom right
-		1.f, 0.f,  // upper right
-		0.f, 0.f,  // upper left
-
-		0.f, 1.f,  // bottom left
-		1.f, 1.f,  // bottom right
-		1.f, 0.f,  // upper right
-		0.f, 0.f,  // upper left
-	};
-	const jactorio_renderer_gl::Vertex_buffer vb2(tex_coords, 12 * 2 * sizeof(float));
-	va.add_buffer(&vb2, 2, 1);
-
-	// #################################################################
-
-	// Index buffer for optimization, avoids redundant vertices
-	unsigned int triangle_cord_indices[] = {
-		0, 1, 2,
-		2, 3, 0,
-
-		4, 5, 6,
-		6, 7, 4,
-
-		8, 9, 10,
-		10, 11, 8
-	};
-	const jactorio_renderer_gl::Index_buffer ib(triangle_cord_indices, 18);
+	jactorio_renderer_rendering::Renderer renderer{};
 
 	// #################################################################
 
@@ -118,12 +58,10 @@ void renderer_main() {
 
 	// #################################################################
 	
-	// const Renderer renderer;
-	
 	double last_time = 0.f;
 	while (!glfwWindowShouldClose(window)) {
 		// Update interval = 60 times / second
-		// renderer.clear();
+		renderer.clear();
 		
 		// Update logic every logic_update_interval
 		if (glfwGetTime() - last_time > logic_update_interval) {
@@ -131,7 +69,7 @@ void renderer_main() {
 		}
 
 		// Draw
-		// renderer.draw(va, ib, glm::vec3(0, 0, 0));
+		renderer.draw(glm::vec3(0, 0, 0));
 		// renderer.draw(va, ib, glm::vec3(10, 10, 0));
 
 		jactorio_renderer::draw();

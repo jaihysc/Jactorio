@@ -8,71 +8,68 @@
 #include "renderer/manager/shader_manager.h"
 
 #include "renderer/opengl/error.h"
+#include "glm/detail/_noise.hpp"
 
-// Temporary
-float* jactorio_renderer_rendering::Renderer::gen_texture_grid() {
-	const auto tex_coords = new float[grid_elements_count_ * 4 * 2];
-
-	unsigned short index = 0;
-	for (unsigned int i = 0; i < grid_elements_count_; ++i) {
-		tex_coords[index++] = 0.f; tex_coords[index++] = 1.f,  // bottom left
-		tex_coords[index++] = 1.f; tex_coords[index++] = 1.f;  // bottom right
-		tex_coords[index++] = 1.f; tex_coords[index++] = 0.f;  // upper right
-		tex_coords[index++] = 0.f; tex_coords[index++] = 0.f;  // upper left
-	}
-
-	return tex_coords;
-}
-
-
-jactorio_renderer_rendering::Renderer::Renderer()
-{
+jactorio_renderer_rendering::Renderer::Renderer() {
 	// calculate_tile_properties must have been called first
+
+	const unsigned int tile_count_x = jactorio_renderer::get_max_tile_count_x();
+	const unsigned int tile_count_y = jactorio_renderer::get_max_tile_count_y();
+
 	
-	grid_vertices_count_ = (jactorio_renderer::get_max_tile_count_x() + 1) * (jactorio_renderer::get_max_tile_count_y() + 1);
-	grid_elements_count_ = jactorio_renderer::get_max_tile_count_x() * jactorio_renderer::get_max_tile_count_y();
+	grid_vertices_count_ = (tile_count_x + 1) * (tile_count_y + 1);
+	grid_elements_count_ = tile_count_x * tile_count_y;
 
 
 	// #############################################
 	// Initialization of vertex array and its buffers
 	vertex_array_ = new jactorio_renderer_gl::Vertex_array();
 
-
 	// Render grid
 	render_grid_ = new jactorio_renderer_gl::Vertex_buffer(
-		Renderer_grid::gen_render_grid(
-			jactorio_renderer::get_max_tile_count_x() + 1,
-			jactorio_renderer::get_max_tile_count_y() + 1
+		Renderer_grid::gen_render_tile_grid(
+			tile_count_x,
+			tile_count_y
 		),
-		grid_vertices_count_ * 2 * sizeof(float)
+		grid_elements_count_ * 4 * 2 * sizeof(float)
 	);
-	vertex_array_->add_buffer(render_grid_, 2, 0);
-
+	vertex_array_->add_buffer(*render_grid_, 2, 0);
+	
 	
 	// Spritemap positions
 	texture_grid_ = new jactorio_renderer_gl::Vertex_buffer(
-		gen_texture_grid(),
+		Renderer_grid::gen_texture_grid(grid_elements_count_),
 		grid_elements_count_ * 4 * 2 * sizeof(float)
 	);
-	vertex_array_->add_buffer(texture_grid_, 2, 1);
-
+	vertex_array_->add_buffer(*texture_grid_, 2, 1);
+	
 	
 	// Index buffer
+	index_buffer_ = new jactorio_renderer_gl::Index_buffer(
+		Renderer_grid::gen_render_grid_indices(
+			tile_count_x,
+			tile_count_y
+		),
+		grid_elements_count_ * 6
+	);
 }
 
 jactorio_renderer_rendering::Renderer::~Renderer() {
-	delete render_grid_, texture_grid_;
+	delete vertex_array_;
+	delete render_grid_;
+	delete texture_grid_;
+	delete index_buffer_;
 }
 
-void jactorio_renderer_rendering::Renderer::draw(const jactorio_renderer_gl::Vertex_array& va, const jactorio_renderer_gl::Index_buffer& ib, const glm::vec3 transform) {
-	va.bind();
-	ib.bind();
+void jactorio_renderer_rendering::Renderer::draw(const glm::vec3 transform) const {
+	vertex_array_->bind();
+	index_buffer_->bind();
 
 	const glm::mat4 model_matrix = glm::translate(glm::mat4(1.f), transform);
 	jactorio_renderer::setg_model_matrix(model_matrix);
 	jactorio_renderer::update_shader_mvp();
 
-	DEBUG_OPENGL_CALL(glDrawElements(GL_TRIANGLES, ib.count(), GL_UNSIGNED_INT, nullptr));  // Pointer not needed as buffer is already bound
+	DEBUG_OPENGL_CALL(glDrawElements(GL_TRIANGLES, index_buffer_->count(), GL_UNSIGNED_INT, nullptr));  // Pointer not needed as buffer is already bound
 }
 
 void jactorio_renderer_rendering::Renderer::clear() {
