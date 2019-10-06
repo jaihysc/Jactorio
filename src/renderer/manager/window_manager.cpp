@@ -17,8 +17,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 GLFWwindow* window;
 bool gl_context_active = false;
 
-int jactorio_renderer::opengl_init() {
-	jactorio_renderer_gl::init_glfw_error_handling();
+int jactorio::renderer::opengl_init() {
+	init_glfw_error_handling();
 	
 	if (!glfwInit())
 		return 1;
@@ -62,7 +62,7 @@ int jactorio_renderer::opengl_init() {
 	return 0;
 }
 
-int jactorio_renderer::opengl_terminate() {
+int jactorio::renderer::opengl_terminate() {
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
@@ -72,9 +72,9 @@ int jactorio_renderer::opengl_terminate() {
 	return 0;
 }
 
-GLFWwindow* jactorio_renderer::opengl_get_window() {
+GLFWwindow* jactorio::renderer::opengl_get_window() {
 	return window;
 }
-bool jactorio_renderer::opengl_get_context_active() {
+bool jactorio::renderer::opengl_get_context_active() {
 	return gl_context_active;
 }

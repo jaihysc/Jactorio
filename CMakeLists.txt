@@ -87,6 +87,8 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/game/world_managerTests.cpp
 
+	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp
+
 	${JACTORIO_TEST_DIR}/renderer/rendering/rendererTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
 

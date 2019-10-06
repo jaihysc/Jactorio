@@ -7,7 +7,7 @@
 #include "renderer/opengl/texture.h"
 #include "renderer/opengl/error.h"
 
-jactorio_renderer_gl::Texture::Texture(const std::string& texture_filepath)
+jactorio::renderer::Texture::Texture(const std::string& texture_filepath)
 	: renderer_id_(0), width_(0), height_(0), bytes_per_pixel_(0),
 	texture_filepath_(texture_filepath), texture_buffer_(nullptr)
 {
@@ -45,16 +45,16 @@ jactorio_renderer_gl::Texture::Texture(const std::string& texture_filepath)
 		stbi_image_free(texture_buffer_);
 }
 
-jactorio_renderer_gl::Texture::~Texture() {
+jactorio::renderer::Texture::~Texture() {
 	DEBUG_OPENGL_CALL(glDeleteTextures(1, &renderer_id_));
 }
 
-void jactorio_renderer_gl::Texture::bind(const unsigned int slot) const {
+void jactorio::renderer::Texture::bind(const unsigned int slot) const {
 	// This can be dangerous, number of available slots unknown, TODO query openGL
 	DEBUG_OPENGL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, renderer_id_));
 }
 
-void jactorio_renderer_gl::Texture::unbind() const {
+void jactorio::renderer::Texture::unbind() const {
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }

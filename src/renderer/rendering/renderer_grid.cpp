@@ -1,6 +1,6 @@
 #include "renderer/rendering/renderer_grid.h"
 
-float* jactorio_renderer_rendering::Renderer_grid::gen_render_grid(const unsigned short vertices_x,
+float* jactorio::renderer::Renderer_grid::gen_render_grid(const unsigned short vertices_x,
                                                                    const unsigned short vertices_y) {
 	
 	const auto grid = new float[
@@ -18,7 +18,7 @@ float* jactorio_renderer_rendering::Renderer_grid::gen_render_grid(const unsigne
 	return grid;
 }
 
-float* jactorio_renderer_rendering::Renderer_grid::gen_render_tile_grid(const unsigned short tiles_x,
+float* jactorio::renderer::Renderer_grid::gen_render_tile_grid(const unsigned short tiles_x,
                                                                         const unsigned short tiles_y) {
 	const auto grid = new float[
 		static_cast<unsigned long long>(tiles_x) * static_cast<unsigned long long>(tiles_y) * 8];
@@ -48,7 +48,7 @@ float* jactorio_renderer_rendering::Renderer_grid::gen_render_tile_grid(const un
 	return grid;
 }
 
-float* jactorio_renderer_rendering::Renderer_grid::gen_texture_grid(const unsigned int elements_count) {
+float* jactorio::renderer::Renderer_grid::gen_texture_grid(const unsigned int elements_count) {
 	const auto tex_coords = new float[static_cast<unsigned long long>(elements_count) * 4 * 2];
 
 	unsigned short index = 0;
@@ -62,7 +62,7 @@ float* jactorio_renderer_rendering::Renderer_grid::gen_texture_grid(const unsign
 	return tex_coords;
 }
 
-unsigned* jactorio_renderer_rendering::Renderer_grid::gen_render_grid_indices(const unsigned short tiles_x,
+unsigned* jactorio::renderer::Renderer_grid::gen_render_grid_indices(const unsigned short tiles_x,
                                                                               const unsigned short tiles_y) {
 
 	// Indices generation pattern:

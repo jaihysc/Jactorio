@@ -3,16 +3,16 @@
 #include "renderer/opengl/vertex_array.h"
 #include "renderer/opengl/error.h"
 
-jactorio_renderer_gl::Vertex_array::Vertex_array() {
+jactorio::renderer::Vertex_array::Vertex_array() {
 	DEBUG_OPENGL_CALL(glGenVertexArrays(1, &id_));
 	DEBUG_OPENGL_CALL(glBindVertexArray(id_));
 }
 
-jactorio_renderer_gl::Vertex_array::~Vertex_array() {
+jactorio::renderer::Vertex_array::~Vertex_array() {
 	DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 
-void jactorio_renderer_gl::Vertex_array::add_buffer(const jactorio_renderer_gl::Vertex_buffer& vb, const unsigned span, const unsigned int location) const{
+void jactorio::renderer::Vertex_array::add_buffer(const Vertex_buffer& vb, const unsigned span, const unsigned int location) const{
 	vb.bind();
 
 	// location here is referenced by the shader
@@ -20,10 +20,10 @@ void jactorio_renderer_gl::Vertex_array::add_buffer(const jactorio_renderer_gl::
 	DEBUG_OPENGL_CALL(glVertexAttribPointer(location, span, GL_FLOAT, GL_FALSE, sizeof(float) * span, static_cast<const void*>(nullptr)));
 }
 
-void jactorio_renderer_gl::Vertex_array::bind() const {
+void jactorio::renderer::Vertex_array::bind() const {
 	DEBUG_OPENGL_CALL(glBindVertexArray(id_));
 }
 
-void jactorio_renderer_gl::Vertex_array::unbind() {
+void jactorio::renderer::Vertex_array::unbind() {
 	DEBUG_OPENGL_CALL(glBindVertexArray(0));
 }

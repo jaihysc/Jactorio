@@ -10,11 +10,20 @@
 #include "renderer/opengl/error.h"
 #include "glm/detail/_noise.hpp"
 
-jactorio_renderer_rendering::Renderer::Renderer() {
-	// calculate_tile_properties must have been called first
+jactorio::renderer::Renderer::Renderer() {
+	// jactorio::renderer::setg_projection_matrix(...) Must be called
 
-	const unsigned int tile_count_x = jactorio_renderer::get_max_tile_count_x();
-	const unsigned int tile_count_y = jactorio_renderer::get_max_tile_count_y();
+	// Get window size
+	GLint m_viewport[4];
+	glGetIntegerv(GL_VIEWPORT, m_viewport);
+
+	auto tile_prop = 
+		Mvp_manager::projection_calculate_tile_properties(32, m_viewport[2], m_viewport[3]);
+
+	setg_projection_matrix(Mvp_manager::to_proj_matrix(tile_prop));
+	
+	const unsigned int tile_count_x = tile_prop.tiles_x;
+	const unsigned int tile_count_y = tile_prop.tiles_y;
 
 	
 	grid_vertices_count_ = (tile_count_x + 1) * (tile_count_y + 1);
@@ -23,10 +32,10 @@ jactorio_renderer_rendering::Renderer::Renderer() {
 
 	// #############################################
 	// Initialization of vertex array and its buffers
-	vertex_array_ = new jactorio_renderer_gl::Vertex_array();
+	vertex_array_ = new Vertex_array();
 
 	// Render grid
-	render_grid_ = new jactorio_renderer_gl::Vertex_buffer(
+	render_grid_ = new Vertex_buffer(
 		Renderer_grid::gen_render_tile_grid(
 			tile_count_x,
 			tile_count_y
@@ -37,7 +46,7 @@ jactorio_renderer_rendering::Renderer::Renderer() {
 	
 	
 	// Spritemap positions
-	texture_grid_ = new jactorio_renderer_gl::Vertex_buffer(
+	texture_grid_ = new Vertex_buffer(
 		Renderer_grid::gen_texture_grid(grid_elements_count_),
 		grid_elements_count_ * 4 * 2 * sizeof(float)
 	);
@@ -45,7 +54,7 @@ jactorio_renderer_rendering::Renderer::Renderer() {
 	
 	
 	// Index buffer
-	index_buffer_ = new jactorio_renderer_gl::Index_buffer(
+	index_buffer_ = new Index_buffer(
 		Renderer_grid::gen_render_grid_indices(
 			tile_count_x,
 			tile_count_y
@@ -54,24 +63,26 @@ jactorio_renderer_rendering::Renderer::Renderer() {
 	);
 }
 
-jactorio_renderer_rendering::Renderer::~Renderer() {
+jactorio::renderer::Renderer::~Renderer() {
 	delete vertex_array_;
 	delete render_grid_;
 	delete texture_grid_;
 	delete index_buffer_;
 }
 
-void jactorio_renderer_rendering::Renderer::draw(const glm::vec3 transform) const {
+void jactorio::renderer::Renderer::draw(const glm::vec3 transform) const {
 	vertex_array_->bind();
 	index_buffer_->bind();
 
 	const glm::mat4 model_matrix = glm::translate(glm::mat4(1.f), transform);
-	jactorio_renderer::setg_model_matrix(model_matrix);
-	jactorio_renderer::update_shader_mvp();
+	setg_model_matrix(model_matrix);
+	update_shader_mvp();
 
-	DEBUG_OPENGL_CALL(glDrawElements(GL_TRIANGLES, index_buffer_->count(), GL_UNSIGNED_INT, nullptr));  // Pointer not needed as buffer is already bound
+	DEBUG_OPENGL_CALL(
+		glDrawElements(GL_TRIANGLES, index_buffer_->count(), GL_UNSIGNED_INT, nullptr)
+	);  // Pointer not needed as buffer is already bound
 }
 
-void jactorio_renderer_rendering::Renderer::clear() {
+void jactorio::renderer::Renderer::clear() {
 	glClear(GL_COLOR_BUFFER_BIT);
 }

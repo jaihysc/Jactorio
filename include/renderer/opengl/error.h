@@ -16,20 +16,23 @@
 // Wrap a function with DEBUG_OPENGL_CALL to automatically call this when an error occurs and pause code execution
 #ifdef JACTORIO_DEBUG_BUILD
 #define DEBUG_OPENGL_CALL(func)\
-			jactorio_renderer_gl::opengl_clear_errors();\
+			jactorio::renderer::opengl_clear_errors();\
 			func;\
-			if ((jactorio_renderer_gl::opengl_print_errors(#func, __FILE__, __LINE__))) DEBUG_BREAK
+			if ((jactorio::renderer::opengl_print_errors(#func, __FILE__, __LINE__))) DEBUG_BREAK
 #else
 #define DEBUG_OPENGL_CALL(func)\
 			func;
 #endif
 
-namespace jactorio_renderer_gl
+namespace jactorio
 {
-	bool opengl_print_errors(const char* function_name, const char* file, int line);
-	void opengl_clear_errors();
+	namespace renderer
+	{
+		bool opengl_print_errors(const char* function_name, const char* file, int line);
+		void opengl_clear_errors();
 
-	void init_glfw_error_handling();
+		void init_glfw_error_handling();
+	}
 }
 
 #endif // OPENGL_ERROR_H

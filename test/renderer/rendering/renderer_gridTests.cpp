@@ -6,7 +6,7 @@
 
 
 TEST(Renderer_grid, genRenderGrid) {
-	const auto grid = jactorio_renderer_rendering::Renderer_grid::gen_render_grid(10, 10);
+	const auto grid = jactorio::renderer::Renderer_grid::gen_render_grid(10, 10);
 
 	// 0, 0
 	EXPECT_EQ(grid[0], 0.f);
@@ -24,7 +24,7 @@ TEST(Renderer_grid, genRenderGrid) {
 }
 
 TEST(Renderer_grid, genRenderTileGrid) {
-	const auto grid = jactorio_renderer_rendering::Renderer_grid::gen_render_tile_grid(10, 10);
+	const auto grid = jactorio::renderer::Renderer_grid::gen_render_tile_grid(10, 10);
 
 	// 0, 0
 	EXPECT_EQ(grid[0], 0.f);
@@ -57,7 +57,7 @@ TEST(Renderer_grid, genRenderTileGrid) {
 
 TEST(Renderer_grid, genTextureGrid) {
 	// This test will fail if genRenderGridIndices fails
-	const auto grid = jactorio_renderer_rendering::Renderer_grid::gen_texture_grid(12);
+	const auto grid = jactorio::renderer::Renderer_grid::gen_texture_grid(12);
 
 	// 0.f, 1.f,  // bottom left
 	// 1.f, 1.f,  // bottom right
@@ -81,7 +81,7 @@ TEST(Renderer_grid, genTextureGrid) {
 }
 
 TEST(Renderer_grid, genRenderGridIndices) {
-	const auto grid = jactorio_renderer_rendering::Renderer_grid::gen_render_grid_indices(11, 11);
+	const auto grid = jactorio::renderer::Renderer_grid::gen_render_grid_indices(11, 11);
 	// Indices generation pattern:
 	// top left
 	// top right

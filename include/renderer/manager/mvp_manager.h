@@ -3,37 +3,52 @@
 
 #include <glm/glm.hpp>
 
-namespace jactorio_renderer
+namespace jactorio
 {
-	// VIEW
-	
-	/*!
-	 * Modifying the returned pointer will change the location of the camera
-	 * @return pointer to camera transform vector
-	 */
-	glm::vec3* get_camera_transform();
+	namespace renderer
+	{
+		// Functions for the Model, View and Projection matrices
+		
+		class Mvp_manager
+		{
 
-	/*!
-	 * Sends the current camera transform to the GPU
-	 * Uniform location for must be initialized first
-	 */
-	void update_camera_transform();
+			static glm::vec3 camera_transform_;
+			
+		public:
+			// VIEW
+		
+			/*!
+			 * Modifying the returned pointer will change the location of the camera
+			 * @return pointer to camera transform vector
+			 */
+			static glm::vec3* get_view_transform();
 
-	// PROJECTION
+			/*!
+			 * Sends the current view transform to the GPU
+			 * Uniform location for shader_manager must be initialized first
+			 */
+			static void update_view_transform();
 
-	unsigned int get_max_tile_count_x();
-	unsigned int get_max_tile_count_y();
+			
+			// PROJECTION
 
-	void set_proj_calculation_tile_width(unsigned int width);
+			struct Projection_tile_data
+			{
+				unsigned short tiles_x;
+				unsigned short tiles_y;
+			};
 
-	glm::mat4 get_proj_matrix();
+			/*! 
+			 * Recalculates number of tiles X and Y \n
+			 * based on width set by set_tile_width() \n
+			 * Upper left is 0, 0
+			 */
+			static Projection_tile_data projection_calculate_tile_properties(unsigned short tile_width, unsigned short window_width, unsigned short window_height);
+						
+			static glm::mat4 to_proj_matrix(Projection_tile_data tile_data);
+		};
 
-	/*!_count
-	 * Recalculates number of tiles X and Y
-	 * based on width set by set_tile_width()
-	 * Upper left is 0, 0
-	 */
-	void calculate_tile_properties();
+	};
 }
 
 #endif // MVP_MANAGER_CPP
