@@ -20,9 +20,6 @@ void renderer_main() {
 	GLFWwindow* window = jactorio::renderer::opengl_get_window();
 	jactorio::renderer::setup(window);
 
-	// Update game logic 60 times per second
-	constexpr float logic_update_interval = 1.f / 60;
-
 	// #################################################################
 	// Enables transparency in textures
 	glEnable(GL_BLEND);
@@ -51,28 +48,30 @@ void renderer_main() {
 	jactorio::renderer::Shader::set_uniform_1i(shader.get_uniform_location("u_texture"), 0);
 
 	// #################################################################
-	
+
+	// Update game 60 times per second
+	constexpr float update_interval = 1.f / 60;
 	double last_time = 0.f;
 	while (!glfwWindowShouldClose(window)) {
 		// Update interval = 60 times / second
-		renderer.clear();
-		
-		// Update logic every logic_update_interval
-		if (glfwGetTime() - last_time > logic_update_interval) {
+		if (glfwGetTime() - last_time > update_interval) {
 			last_time = glfwGetTime();
-		}
 
-		// Draw
-		renderer.draw(glm::vec3(0, 0, 0));
-		// renderer.draw(va, ib, glm::vec3(10, 10, 0));
-
-		jactorio::renderer::draw();
+			renderer.clear();
 		
-		jactorio::renderer::update_shader_mvp();
-		glfwSwapBuffers(window);  // Done rendering
-		glfwPollEvents();
+			// Draw
+			renderer.draw(glm::vec3(0, 0, 0));
+			// renderer.draw(va, ib, glm::vec3(10, 10, 0));
+
+			jactorio::renderer::imgui_draw();
+			
+			jactorio::renderer::update_shader_mvp();
+			glfwSwapBuffers(window);  // Done rendering
+
+			glfwPollEvents();
+		}
 	}
 
-	jactorio::renderer::terminate();
+	jactorio::renderer::imgui_terminate();
 	jactorio::renderer::opengl_terminate();
 }

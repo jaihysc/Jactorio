@@ -8,8 +8,8 @@ namespace jactorio
 	namespace renderer
 	{
 		void setup(GLFWwindow* window);
-		void draw();
-		void terminate();
+		void imgui_draw();
+		void imgui_terminate();
 	}
 }
 

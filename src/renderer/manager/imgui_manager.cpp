@@ -9,6 +9,7 @@
 #include "renderer/manager/imgui_manager.h"
 #include "renderer/gui/imgui_glfw.h"
 #include "renderer/gui/imgui_opengl3.h"
+#include "renderer/rendering/renderer.h"
 
 // States
 bool show_demo_window = false;
@@ -31,7 +32,7 @@ void jactorio::renderer::setup(GLFWwindow* window) {
 	logger::log_message(logger::info, "Imgui", "imgui Initialized");
 }
 
-void jactorio::renderer::draw() {
+void jactorio::renderer::imgui_draw() {
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -49,10 +50,12 @@ void jactorio::renderer::draw() {
 
 	glm::vec3* view_translation = Mvp_manager::get_view_transform();
 	
-	// View translation
+	// Settings
 	ImGui::SliderFloat3("Camera translation", &view_translation->x, -100.0f, 100.0f);
+	ImGui::SliderFloat("Zoom", &Renderer::tile_projection_matrix_offset, 0.f, 100.0f);
 
 	Mvp_manager::update_view_transform();
+	Renderer::update_tile_projection_matrix();
 
 	// Buttons return true when clicked (most widgets return true when edited/activated)
 	ImGui::NewLine();
@@ -66,7 +69,7 @@ void jactorio::renderer::draw() {
 
 }
 
-void jactorio::renderer::terminate() {
+void jactorio::renderer::imgui_terminate() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();

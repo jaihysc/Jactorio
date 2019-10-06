@@ -8,27 +8,30 @@
 #include "renderer/manager/shader_manager.h"
 
 #include "renderer/opengl/error.h"
-#include "glm/detail/_noise.hpp"
+
+
+jactorio::renderer::Mvp_manager::Projection_tile_data
+	jactorio::renderer::Renderer::tile_projection_matrix_ = Mvp_manager::Projection_tile_data{};
+float jactorio::renderer::Renderer::tile_projection_matrix_offset = 0;
+
+void jactorio::renderer::Renderer::update_tile_projection_matrix() {
+	setg_projection_matrix(Mvp_manager::to_proj_matrix(tile_projection_matrix_, tile_projection_matrix_offset));
+}
 
 jactorio::renderer::Renderer::Renderer() {
-	// jactorio::renderer::setg_projection_matrix(...) Must be called
-
 	// Get window size
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
 
-	auto tile_prop = 
-		Mvp_manager::projection_calculate_tile_properties(32, m_viewport[2], m_viewport[3]);
+	tile_projection_matrix_ = // 16 appears to be minimum tile width
+		Mvp_manager::projection_calculate_tile_properties(16, m_viewport[2], m_viewport[3]);
 
-	setg_projection_matrix(Mvp_manager::to_proj_matrix(tile_prop));
-	
-	const unsigned int tile_count_x = tile_prop.tiles_x;
-	const unsigned int tile_count_y = tile_prop.tiles_y;
+	// jactorio::renderer::setg_projection_matrix(...) Must be called
+	update_tile_projection_matrix();
 
 	
-	grid_vertices_count_ = (tile_count_x + 1) * (tile_count_y + 1);
-	grid_elements_count_ = tile_count_x * tile_count_y;
-
+	grid_vertices_count_ = (tile_projection_matrix_.tiles_x + 1) * (tile_projection_matrix_.tiles_y + 1);
+	grid_elements_count_ = tile_projection_matrix_.tiles_x * tile_projection_matrix_.tiles_y;
 
 	// #############################################
 	// Initialization of vertex array and its buffers
@@ -37,8 +40,8 @@ jactorio::renderer::Renderer::Renderer() {
 	// Render grid
 	render_grid_ = new Vertex_buffer(
 		Renderer_grid::gen_render_tile_grid(
-			tile_count_x,
-			tile_count_y
+			tile_projection_matrix_.tiles_x,
+			tile_projection_matrix_.tiles_y
 		),
 		grid_elements_count_ * 4 * 2 * sizeof(float)
 	);
@@ -56,8 +59,8 @@ jactorio::renderer::Renderer::Renderer() {
 	// Index buffer
 	index_buffer_ = new Index_buffer(
 		Renderer_grid::gen_render_grid_indices(
-			tile_count_x,
-			tile_count_y
+			tile_projection_matrix_.tiles_x,
+			tile_projection_matrix_.tiles_y
 		),
 		grid_elements_count_ * 6
 	);

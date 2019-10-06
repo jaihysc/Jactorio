@@ -44,8 +44,13 @@ namespace jactorio
 			 * Upper left is 0, 0
 			 */
 			static Projection_tile_data projection_calculate_tile_properties(unsigned short tile_width, unsigned short window_width, unsigned short window_height);
-						
-			static glm::mat4 to_proj_matrix(Projection_tile_data tile_data);
+
+			/*!
+			 * @param tile_data obtained from projection_calculate_tile_properties
+			 * @param offset number of tiles horizontally to from the edge to hide (giving a zoom effect) \n
+			 * Vertical tiles is calculated based on ration of tiles in tile_data
+			 */
+			static glm::mat4 to_proj_matrix(Projection_tile_data tile_data, float offset);
 		};
 
 	};

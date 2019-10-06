@@ -21,14 +21,13 @@ void jactorio::renderer::Mvp_manager::update_view_transform() {
 // PROJECTION
 
 // Calculates number of tiles to draw X and Y
-// Changed by camera_manager to modify zoom
 
 
 jactorio::renderer::Mvp_manager::Projection_tile_data
 	jactorio::renderer::Mvp_manager::projection_calculate_tile_properties(const unsigned short tile_width,
 	                                                                      const unsigned short window_width,
 																	      const unsigned short window_height) {
-	Projection_tile_data tile_data;
+	Projection_tile_data tile_data{};
 	
 	tile_data.tiles_x = window_width / tile_width;
 	tile_data.tiles_y = window_height / tile_width;
@@ -36,9 +35,13 @@ jactorio::renderer::Mvp_manager::Projection_tile_data
 	return tile_data;
 }
 
-glm::mat4 jactorio::renderer::Mvp_manager::to_proj_matrix(const Projection_tile_data tile_data) {
+glm::mat4 jactorio::renderer::Mvp_manager::to_proj_matrix(const Projection_tile_data tile_data, const float offset) {
+	// Calculate aspect ratio based zoom
+	const float zoom_ratio = static_cast<float>(tile_data.tiles_y) / static_cast<float>(tile_data.tiles_x);
+	const float y_offset = offset * zoom_ratio;
+	
 	return glm::ortho(
-		0.f, static_cast<float>(tile_data.tiles_x),
-		static_cast<float>(tile_data.tiles_y), 0.f,
+		offset, static_cast<float>(tile_data.tiles_x) - offset,
+		static_cast<float>(tile_data.tiles_y) - y_offset, y_offset,
 		-1.f, 1.f);
 }
