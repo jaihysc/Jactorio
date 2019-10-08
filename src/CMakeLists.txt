@@ -35,17 +35,16 @@ add_executable(
 	jactorio 
 
 	${JACTORIO_DIR}/jactorio.cpp
+	${ADDITIONAL_BUILD_FILES}
 	${JACTORIO_SRC_FILES}
 )
 # Headers
 target_include_directories(jactorio PRIVATE ${JACTORIO_INCLUDE_FILES})
 
-
-target_link_libraries (jactorio glfw)
-# Platform dependent libraries
+# Dependencies
 if (WIN32)
-	target_link_libraries(jactorio libglew_static glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib)
+	target_link_libraries(jactorio ${LIBS_WIN})
 endif (WIN32)
 if (UNIX)
-    target_link_libraries(jactorio libglew_static libGLU.so libGL.so)    
+    target_link_libraries(jactorio ${LIBS_UNIX})
 endif (UNIX)

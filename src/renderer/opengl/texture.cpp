@@ -1,6 +1,5 @@
 #include <GL/glew.h>
 
-#define STB_IMAGE_IMPLEMENTATION
 #include <iostream>
 #include <stb/stb_image.h>
 
@@ -25,7 +24,7 @@ jactorio::renderer::Texture::Texture(const std::string& texture_filepath)
 		std::cout << "Failed to read texture at filepath: " << texture_filepath << "\n";
 		return;
 	}
-	
+
 	DEBUG_OPENGL_CALL(glGenTextures(1, &renderer_id_));
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, renderer_id_));
 

@@ -28,6 +28,7 @@ These are automatically installed with cmake
 - [stb](https://github.com/nothings/stb)
 - [glm](https://github.com/g-truc/glm)
 - [imgui](https://github.com/ocornut/imgui)
+- [SFML](https://github.com/SFML/SFML)
 
 ## Work in progress
 

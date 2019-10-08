@@ -5,45 +5,23 @@ cmake_minimum_required(VERSION 3.8)
 
 project("jactorio")
 
-function(validate_dependency DEPENDENCY_PATH)
-	file(GLOB RESULT ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}/*)
-	list(LENGTH RESULT RES_LEN)
+add_compile_definitions(JACTORIO_VERSION="0.1.0")
 
-    if((NOT EXISTS ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}) OR (RES_LEN EQUAL 0))
-		message("Installing missing dependency ${DEPENDENCY_PATH}")
+add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
 
-		execute_process(COMMAND git submodule update --init -- ${DEPENDENCY_PATH}
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-    else()
-		message("Found dependency ${DEPENDENCY_PATH}")
-    endif()
-endfunction()
-
-message("========== Resolving dependencies...")
-validate_dependency(lib/glew-cmake)
-validate_dependency(lib/glfw)
-validate_dependency(lib/stb/stb)	# HEADER
-validate_dependency(lib/glm)		# HEADER
-validate_dependency(lib/imgui/imgui)	# NC
-
-# Ones which need to be built
-add_subdirectory("lib/glew-cmake")
-add_subdirectory("lib/glfw")
-
-message("========== Building jactorio...")
-set(
-	IMGUI_FILES 
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
+############# Include folders .h
+set(JACTORIO_INCLUDE_FILES
+	${PROJECT_SOURCE_DIR}/include
+	${PROJECT_SOURCE_DIR}/lib/glfw/include
+	${PROJECT_SOURCE_DIR}/lib/glew-cmake/include
+	${PROJECT_SOURCE_DIR}/lib/stb/
+	${PROJECT_SOURCE_DIR}/lib/glm/
+	${PROJECT_SOURCE_DIR}/lib/imgui/
+	${PROJECT_SOURCE_DIR}/lib/SFML/include
 )
-
-############# Source files
+#------------ Source files .cpp
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
 set(JACTORIO_SRC_FILES 
-	${IMGUI_FILES}
-
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/file_system/read.cpp
 
@@ -66,18 +44,11 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_grid.cpp
+	${JACTORIO_DIR}/renderer/rendering/renderer_sprites.cpp
 
 )
-##### Include folders
-set(JACTORIO_INCLUDE_FILES
-	${PROJECT_SOURCE_DIR}/include
-	${PROJECT_SOURCE_DIR}/lib/glfw/include
-	${PROJECT_SOURCE_DIR}/lib/glew-cmake/include
-	${PROJECT_SOURCE_DIR}/lib/stb/
-	${PROJECT_SOURCE_DIR}/lib/glm/
-	${PROJECT_SOURCE_DIR}/lib/imgui/
-)
-############# Test files
+
+# >>>>>>>>>>> Test files .cpp
 set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 set(JACTORIO_TEST_FILES 
 	${JACTORIO_TEST_DIR}/jactorioTests.cpp
@@ -90,19 +61,79 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/rendering/rendererTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_spritesTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
 )
 
 
-################## CONFIG    ###############
+############# Dependencies #############
 
-add_compile_definitions(JACTORIO_VERSION="0.1.0")
-add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
-add_compile_definitions(GLEW_STATIC)  # Indicates static linking
+function(validate_dependency DEPENDENCY_PATH)
+	file(GLOB RESULT ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}/*)
+	list(LENGTH RESULT RES_LEN)
 
-################## ENDCONFIG ###############
+    if((NOT EXISTS ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}) OR (RES_LEN EQUAL 0))
+		message("Installing missing dependency ${DEPENDENCY_PATH}")
+
+		execute_process(COMMAND git submodule update --init -- ${DEPENDENCY_PATH}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    else()
+		message("Found dependency ${DEPENDENCY_PATH}")
+    endif()
+endfunction()
+
+message("========== Resolving dependencies...")
+validate_dependency(lib/glew-cmake)
+validate_dependency(lib/glfw)
+validate_dependency(lib/stb/stb)	# HEADER
+validate_dependency(lib/glm)		# HEADER
+validate_dependency(lib/imgui/imgui)	# NC
+validate_dependency(lib/SFML)
+
+
+# Dependencies build arguments
+add_compile_definitions(GLEW_STATIC)
+set(SFML_STATIC_LIBRARIES TRUE)
+
+# Ones which need to be built
+add_subdirectory("lib/glew-cmake")
+add_subdirectory("lib/glfw")
+add_subdirectory("lib/SFML")
+
+
+find_package(SFML 2.5 COMPONENTS graphics)
+
+
+set(
+	IMGUI_FILES 
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
+)
+set(
+	ADDITIONAL_BUILD_FILES
+	${IMGUI_FILES}
+)
+
+# Platform dependencies
+set(
+	LIBS_WIN 
+	glfw libglew_static
+	sfml-graphics
+	glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib
+)
+set(
+	LIBS_UNIX
+	glfw libglew_static
+	sfml-graphics
+	libGLU.so libGL.so
+)
+
+
+message("========== Building jactorio...")
 
 add_subdirectory("src")
 add_subdirectory("test")

@@ -41,6 +41,7 @@ void renderer_main() {
 	// #################################################################
 
 	// Loading textures
+	// const jactorio::renderer::Texture texture("data/core/graphics/background-image.png");
 	const jactorio::renderer::Texture texture("data/core/graphics/background-image.png");
 	texture.bind();
 

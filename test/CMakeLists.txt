@@ -47,23 +47,21 @@ endif()
 add_executable (
 	jactorioTest
 	${JACTORIO_SRC_FILES}
+	${ADDITIONAL_BUILD_FILES}
+
 	${JACTORIO_TEST_FILES}
 )
-
-target_include_directories(jactorioTest PRIVATE ${JACTORIO_INCLUDE_FILES})
-
-
-target_link_libraries (jactorioTest glfw)
-# Platform dependent libraries
-if (WIN32)
-	target_link_libraries(jactorioTest libglew_static glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib)
-endif (WIN32)
-if (UNIX)
-    target_link_libraries(jactorioTest libglew_static libGLU.so libGL.so)    
-endif (UNIX)
-
 
 # GTest
 target_link_libraries(jactorioTest gtest_main)
 
-# add_test(NAME example_test COMMAND example)
+
+target_include_directories(jactorioTest PRIVATE ${JACTORIO_INCLUDE_FILES})
+
+# Dependencies libraries
+if (WIN32)
+	target_link_libraries(jactorioTest ${LIBS_WIN})
+endif (WIN32)
+if (UNIX)
+    target_link_libraries(jactorioTest ${LIBS_UNIX})
+endif (UNIX)
