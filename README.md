@@ -11,13 +11,14 @@ My attempt at recreating [Factorio](https://factorio.com), inspired by [Hopson98
 ```
 git clone https://github.com/jaihysc/Jactorio.git
 cd Jactorio
-mkdir out
-cd out
-cmake .. -D CMAKE_BUILD_TYPE=**See build types above**
-make
+./build.sh **See build types above**
 ```
 
 Executable will be placed in `out/src/`
+
+## Work in progress
+
+This is nowhere near ready for usage, this will be updated as conditions change
 
 ## Dependencies
 
@@ -30,6 +31,3 @@ These are automatically installed with cmake
 - [imgui](https://github.com/ocornut/imgui)
 - [SFML](https://github.com/SFML/SFML)
 
-## Work in progress
-
-This is nowhere near ready for usage, this will be updated as conditions change
