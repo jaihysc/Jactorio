@@ -10,12 +10,14 @@
 #include "core/logger.h"
 
 unsigned int jactorio::renderer::Shader::compile_shader(const std::string& filepath, const GLenum shader_type) {
-	const std::string source = read_file_as_str(filepath);
+	auto path = core::File_system::resolve_path(filepath);
+
+	const std::string source = core::File_system::read_file_as_str(path);
 	
 	if (source.empty()) {
 		std::ostringstream oss;
 		oss << "Shader compilation received empty string, type " << shader_type << " " <<
-			filepath;
+			path;
 		logger::log_message(logger::error, "OpenGL Shader", oss.str());
 		return 0;
 	}
@@ -42,7 +44,7 @@ unsigned int jactorio::renderer::Shader::compile_shader(const std::string& filep
 
 		std::ostringstream oss;
 		oss << "Shader compilation failed, type " << shader_type << " " <<
-			filepath << "\n";
+			path << "\n";
 		oss << message;
 		logger::log_message(logger::error, "OpenGL Shader", oss.str());
 		
@@ -53,7 +55,7 @@ unsigned int jactorio::renderer::Shader::compile_shader(const std::string& filep
 
 	std::ostringstream oss;
 	oss << "Shader compilation successful, type " << shader_type << " " <<
-		filepath;
+		path;
 	logger::log_message(logger::debug, "OpenGL Shader", oss.str());
 	return shader_id;
 }

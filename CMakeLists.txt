@@ -23,7 +23,7 @@ set(JACTORIO_INCLUDE_FILES
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
 set(JACTORIO_SRC_FILES 
 	${JACTORIO_DIR}/core/logger.cpp
-	${JACTORIO_DIR}/core/file_system/read.cpp
+	${JACTORIO_DIR}/core/file_system.cpp
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
 

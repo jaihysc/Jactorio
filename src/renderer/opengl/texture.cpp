@@ -5,15 +5,19 @@
 
 #include "renderer/opengl/texture.h"
 #include "renderer/opengl/error.h"
+#include "core/file_system.h"
 
 jactorio::renderer::Texture::Texture(const std::string& texture_filepath)
 	: renderer_id_(0), width_(0), height_(0), bytes_per_pixel_(0),
-	texture_filepath_(texture_filepath), texture_buffer_(nullptr)
+	texture_buffer_(nullptr)
 {
+	const auto path = core::File_system::resolve_path(texture_filepath);
+	texture_filepath_ = path;
+	
 	// openGL reads images backwards, bottom left is (0,0)
 	stbi_set_flip_vertically_on_load(true);
 	texture_buffer_ = stbi_load(
-		texture_filepath.c_str(),
+		texture_filepath_.c_str(),
 		&width_,
 		&height_,
 		&bytes_per_pixel_,
@@ -21,7 +25,7 @@ jactorio::renderer::Texture::Texture(const std::string& texture_filepath)
 	);  
 
 	if (!texture_buffer_) {
-		std::cout << "Failed to read texture at filepath: " << texture_filepath << "\n";
+		std::cout << "Failed to read texture at filepath: " << texture_filepath_ << "\n";
 		return;
 	}
 

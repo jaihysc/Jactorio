@@ -27,8 +27,8 @@ void renderer_main() {
 
 	const jactorio::renderer::Shader shader(
 		std::vector<jactorio::renderer::Shader_creation_input> {
-			{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
-			{"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
+			{"~/data/core/shaders/vs.vert", GL_VERTEX_SHADER},
+			{"~/data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
 		}
 	);
 	shader.bind();
@@ -42,7 +42,7 @@ void renderer_main() {
 
 	// Loading textures
 	// const jactorio::renderer::Texture texture("data/core/graphics/background-image.png");
-	const jactorio::renderer::Texture texture("data/core/graphics/background-image.png");
+	const jactorio::renderer::Texture texture("~/data/core/graphics/background-image.png");
 	texture.bind();
 
 	// Texture is bound to slot 0 above, tell this to shader

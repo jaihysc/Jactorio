@@ -14,9 +14,17 @@ namespace jactorio
 		class Renderer_sprites
 		{
 		public:
+			struct Pixel_data
+			{
+				unsigned short r;
+				unsigned short g;
+				unsigned short b;
+			};
+			
 			struct Sprite
 			{
-				char* data;
+				// Transcribe image data array to this with transcribe_image()
+				Pixel_data* data;
 				unsigned short pixels_x;
 				unsigned short pixels_y;
 			};
@@ -38,7 +46,8 @@ namespace jactorio
 			};
 			
 			/*!
-			 * Generated spritemap will be purely horizontal, all sprites concatenated side by side
+			 * Generated spritemap will be purely horizontal, all sprites concatenated side by side \n
+			 * Sprites will be aligned to the bottom
 			 */
 			static Spritemap_data gen_spritemap(Sprite* sprites, unsigned short count);
 		};
