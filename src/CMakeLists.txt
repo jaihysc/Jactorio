@@ -3,13 +3,14 @@
 #
 cmake_minimum_required(VERSION 3.8)
 
+message("~~~~~ [ jactorio ] ~~~~~")
 
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
 	message("Type: Debug")
     add_compile_definitions(JACTORIO_DEBUG_BUILD)  # Break on openGL error
 
 ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
-	message("Type: <<<<< Release build >>>>>")
+	message("Type: <<<<< Release >>>>>")
 
 ELSE()
   message(FATAL_ERROR "Unknown build type, specify with -D CMAKE_BUILD_TYPE=")
@@ -19,7 +20,7 @@ message("Target: ${CMAKE_SYSTEM_NAME}")
 
 
 # Copy data folder to executable directory
-message(" => Copying files to output directory")
+message(">> Copying files to output directory")
 file(GLOB_RECURSE DATA_FILES 
 	RELATIVE ${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/data/*)
@@ -27,7 +28,7 @@ foreach(DATA_FILE ${DATA_FILES})
 	# message(${DATA_FILE})
 	configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${DATA_FILE} COPYONLY)
 endforeach(DATA_FILE)
-message(" => DONE Copying files to output directory")
+message(">> DONE Copying files to output directory: " ${CMAKE_CURRENT_BINARY_DIR})
 
 
 

@@ -42,7 +42,7 @@ void renderer_main() {
 
 	// Loading textures
 	// const jactorio::renderer::Texture texture("data/core/graphics/background-image.png");
-	const jactorio::renderer::Texture texture("~/data/core/graphics/background-image.png");
+	const jactorio::renderer::Texture texture("~/data/base/graphics/terrain/test_tile.png");
 	texture.bind();
 
 	// Texture is bound to slot 0 above, tell this to shader

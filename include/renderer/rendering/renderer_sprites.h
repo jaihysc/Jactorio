@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <string>
 
+#include <SFML/Graphics/Image.hpp>
+
 // Generates spritemaps on initialization with tile sprites
 // - Concatenate sprite into spritemap
 // - Location of a sprite within spritemap retrieved with a getter
@@ -13,45 +15,45 @@ namespace jactorio
 	{
 		class Renderer_sprites
 		{
+
 		public:
-			struct Pixel_data
+
+			struct Position_pair
 			{
-				unsigned short r;
-				unsigned short g;
-				unsigned short b;
+				float x;
+				float y;
 			};
 			
-			struct Sprite
+			struct Image_position
 			{
-				// Transcribe image data array to this with transcribe_image()
-				Pixel_data* data;
-				unsigned short pixels_x;
-				unsigned short pixels_y;
-			};
-
-			struct Sprite_position
-			{
-				float top_left;
-				float top_right;
-				float bottom_left;
-				float bottom_right;
+				Position_pair top_left;
+				Position_pair top_right;
+				Position_pair bottom_left;
+				Position_pair bottom_right;
 			};
 		
 			struct Spritemap_data
 			{
-				Sprite spritemap;
+				sf::Image spritemap;
+
+				// Image positions retrieved via the path originally given to create the spritemap
 				// 0 - 1 positions of the sprite within the spritemap
 				// Upper left is 0, 0 - bottom right is 1, 1
-				std::unordered_map<std::string, Sprite_position> sprite_positions;
+				std::unordered_map<std::string, Image_position> sprite_positions;
 			};
 			
 			/*!
-			 * Generated spritemap will be purely horizontal, all sprites concatenated side by side \n
-			 * Sprites will be aligned to the bottom
+			 * Generated spritemap will be purely horizontal, all images concatenated side by side \n
+			 * !!! Given image paths must be unique \n
 			 */
-			static Spritemap_data gen_spritemap(Sprite* sprites, unsigned short count);
-		};
+			static Spritemap_data gen_spritemap(std::string* image_paths, unsigned short count);
 
+			
+		private:
+			static void set_image_positions(Image_position& image_position, 
+							sf::Vector2u image_dimensions, unsigned int& offset_x);
+
+		};
 	}
 }
 

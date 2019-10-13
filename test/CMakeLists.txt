@@ -3,6 +3,20 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
+message("")
+message("~~~~~ [ jactorio tests ] ~~~~~")
+
+# Copy data folder for certain tests
+message(">> Copying files to output directory")
+file(GLOB_RECURSE DATA_FILES 
+	RELATIVE ${PROJECT_SOURCE_DIR}
+	${PROJECT_SOURCE_DIR}/data/*)
+foreach(DATA_FILE ${DATA_FILES})
+	# message(${DATA_FILE})
+	configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${DATA_FILE} COPYONLY)
+endforeach(DATA_FILE)
+message(">> DONE Copying files to output directory: " ${CMAKE_CURRENT_BINARY_DIR})
+
 ####################
 # Google Test
 # Download and unpack googletest at configure time
