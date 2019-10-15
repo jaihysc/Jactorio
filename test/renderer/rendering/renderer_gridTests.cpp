@@ -6,7 +6,8 @@
 
 
 TEST(Renderer_grid, genRenderGrid) {
-	const auto grid = jactorio::renderer::Renderer_grid::gen_render_grid(10, 10);
+	const auto grid = jactorio::renderer::renderer_grid::
+		gen_render_grid(10, 10);
 
 	// 0, 0
 	EXPECT_EQ(grid[0], 0.f);
@@ -19,12 +20,13 @@ TEST(Renderer_grid, genRenderGrid) {
 	// 9, 9
 	EXPECT_EQ(grid[198], 9.f);
 	EXPECT_EQ(grid[199], 9.f);
-	
+
 	delete[] grid;
 }
 
 TEST(Renderer_grid, genRenderTileGrid) {
-	const auto grid = jactorio::renderer::Renderer_grid::gen_render_tile_grid(10, 10);
+	const auto grid = jactorio::renderer::renderer_grid::
+		gen_render_tile_grid(10, 10);
 
 	// 0, 0
 	EXPECT_EQ(grid[0], 0.f);
@@ -51,13 +53,13 @@ TEST(Renderer_grid, genRenderTileGrid) {
 
 	EXPECT_EQ(grid[798], 9.f);
 	EXPECT_EQ(grid[799], 10.f);
-	
+
 	delete[] grid;
 }
 
 TEST(Renderer_grid, genTextureGrid) {
 	// This test will fail if genRenderGridIndices fails
-	const auto grid = jactorio::renderer::Renderer_grid::gen_texture_grid(12);
+	const auto grid = jactorio::renderer::renderer_grid::gen_texture_grid(12);
 
 	// 0.f, 1.f,  // bottom left
 	// 1.f, 1.f,  // bottom right
@@ -67,21 +69,22 @@ TEST(Renderer_grid, genTextureGrid) {
 	// Tile 0, 0 rendering positions
 	EXPECT_EQ(grid[0], 0.f);
 	EXPECT_EQ(grid[1], 1.f);
-	
+
 	EXPECT_EQ(grid[2], 1.f);
 	EXPECT_EQ(grid[3], 1.f);
-	
+
 	EXPECT_EQ(grid[4], 1.f);
 	EXPECT_EQ(grid[5], 0.f);
 
 	EXPECT_EQ(grid[6], 0.f);
 	EXPECT_EQ(grid[7], 0.f);
-	
+
 	delete[] grid;
 }
 
 TEST(Renderer_grid, genRenderGridIndices) {
-	const auto grid = jactorio::renderer::Renderer_grid::gen_render_grid_indices(11, 11);
+	const auto grid = jactorio::renderer::renderer_grid::
+		gen_render_grid_indices(11, 11);
 	// Indices generation pattern:
 	// top left
 	// top right
@@ -105,8 +108,8 @@ TEST(Renderer_grid, genRenderGridIndices) {
 	EXPECT_EQ(grid[723], 482);
 	EXPECT_EQ(grid[724], 483);
 	EXPECT_EQ(grid[725], 480);
-	
-	
+
+
 	// // tile at position 0, 0
 	// EXPECT_EQ(grid[0], 0);
 	// EXPECT_EQ(grid[1], 1);

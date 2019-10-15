@@ -1,7 +1,9 @@
 #include "core/logger.h"
 
-#include "renderer/manager/shader_manager.h"
+#include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/shader.h"
+
+namespace logger = jactorio::core::logger;
 
 int mvp_uniform_location = -1;
 
@@ -16,7 +18,7 @@ glm::mat4 projection;
 void jactorio::renderer::set_mvp_uniform_location(const int location) {
 	mvp_uniform_location = location;
 
-	logger::log_message(logger::debug, "Shaders", "mvp uniform location set");
+	log_message(logger::debug, "Shaders", "mvp uniform location set");
 }
 
 /*!
@@ -25,7 +27,7 @@ void jactorio::renderer::set_mvp_uniform_location(const int location) {
 void jactorio::renderer::update_shader_mvp() {
 	// Multiply backwards: projection, view, model
 	glm::mat4 mvp = projection * view * model;
-	jactorio::renderer::Shader::set_uniform_mat_4f(mvp_uniform_location, mvp);
+	Shader::set_uniform_mat_4f(mvp_uniform_location, mvp);
 }
 
 void jactorio::renderer::setg_model_matrix(const glm::mat4& matrix) {

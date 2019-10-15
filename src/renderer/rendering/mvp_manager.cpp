@@ -1,19 +1,19 @@
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "renderer/manager/mvp_manager.h"
+#include "renderer/rendering/mvp_manager.h"
 
-#include "renderer/manager/shader_manager.h"
+#include "renderer/opengl/shader_manager.h"
 
 // VIEW
 
-glm::vec3 jactorio::renderer::Mvp_manager::camera_transform_ = glm::vec3(0, 0, 0);
+glm::vec3 camera_transform = glm::vec3(0, 0, 0);
 
-glm::vec3* jactorio::renderer::Mvp_manager::get_view_transform() {
-	return &camera_transform_;
+glm::vec3* jactorio::renderer::mvp_manager::get_view_transform() {
+	return &camera_transform;
 }
 
-void jactorio::renderer::Mvp_manager::update_view_transform() {
-	const glm::mat4 view_mat = glm::translate(glm::mat4(1.f), camera_transform_);
+void jactorio::renderer::mvp_manager::update_view_transform() {
+	const glm::mat4 view_mat = glm::translate(glm::mat4(1.f), camera_transform);
 	setg_view_matrix(view_mat);
 }
 
@@ -22,9 +22,8 @@ void jactorio::renderer::Mvp_manager::update_view_transform() {
 
 // Calculates number of tiles to draw X and Y
 
-
-jactorio::renderer::Mvp_manager::Projection_tile_data
-	jactorio::renderer::Mvp_manager::projection_calculate_tile_properties(const unsigned short tile_width,
+jactorio::renderer::mvp_manager::Projection_tile_data
+	jactorio::renderer::mvp_manager::projection_calculate_tile_properties(const unsigned short tile_width,
 	                                                                      const unsigned short window_width,
 																	      const unsigned short window_height) {
 	Projection_tile_data tile_data{};
@@ -35,7 +34,7 @@ jactorio::renderer::Mvp_manager::Projection_tile_data
 	return tile_data;
 }
 
-glm::mat4 jactorio::renderer::Mvp_manager::to_proj_matrix(const Projection_tile_data tile_data, const float offset) {
+glm::mat4 jactorio::renderer::mvp_manager::to_proj_matrix(const Projection_tile_data tile_data, const float offset) {
 	// Calculate aspect ratio based zoom
 	const float zoom_ratio = static_cast<float>(tile_data.tiles_y) / static_cast<float>(tile_data.tiles_x);
 	const float y_offset = offset * zoom_ratio;

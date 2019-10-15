@@ -6,3 +6,6 @@ Folder.DotSettings.user
 # Build and libraries
 out/
 #lib/
+
+# Program generated files
+imgui.ini

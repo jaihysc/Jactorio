@@ -22,7 +22,9 @@ TEST(renderer_sprites, gen_spritemap) {
 		"data/base/graphics/terrain/test/test_tile3.png",
 	};
 
-	const auto spritemap = jactorio::renderer::Renderer_sprites::gen_spritemap(img_paths, 4);
+	const auto r_sprites = jactorio::renderer::Renderer_sprites{};
+	
+	const auto spritemap = r_sprites.gen_spritemap(img_paths, 4);
 
 	EXPECT_EQ(spritemap.spritemap.getSize().x, 128);
 	EXPECT_EQ(spritemap.spritemap.getSize().y, 32);

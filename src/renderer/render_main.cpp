@@ -4,75 +4,80 @@
 
 #include <vector>
 
-#include "renderer/manager/imgui_manager.h"
-#include "renderer/manager/window_manager.h"
-#include "renderer/manager/shader_manager.h"
+#include "renderer/gui/imgui_manager.h"
+#include "renderer/window/window_manager.h"
 
+#include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/renderer.h"
+#include "renderer/render_loop.h"
 
-// Main draw loop is here
-void renderer_main() {
-	if (jactorio::renderer::opengl_init() != 0)
+bool refresh_renderer = false;
+unsigned short window_x = 0;
+unsigned short window_y = 0;
+
+void jactorio::renderer::set_recalculate_renderer(const unsigned short window_size_x,
+                                                  const unsigned short window_size_y) {
+	window_x = window_size_x;
+	window_y = window_size_y;
+
+	refresh_renderer = true;
+}
+
+
+void jactorio::renderer::renderer_main() {
+	if (window_manager::init(640, 490) != 0)
 		return;
 
-	GLFWwindow* window = jactorio::renderer::opengl_get_window();
-	jactorio::renderer::setup(window);
+	GLFWwindow* window = window_manager::get_window();
+	setup(window);
 
 	// #################################################################
 	// Enables transparency in textures
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	const jactorio::renderer::Shader shader(
-		std::vector<jactorio::renderer::Shader_creation_input> {
+	const Shader shader(
+		std::vector<Shader_creation_input>{
 			{"~/data/core/shaders/vs.vert", GL_VERTEX_SHADER},
 			{"~/data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
 		}
 	);
 	shader.bind();
-	jactorio::renderer::set_mvp_uniform_location(shader.get_uniform_location("u_model_view_projection_matrix"));
+	set_mvp_uniform_location(
+		shader.get_uniform_location("u_model_view_projection_matrix"));
 
-	// #################################################################
-
-	jactorio::renderer::Renderer renderer{};
-
-	// #################################################################
 
 	// Loading textures
-	// const jactorio::renderer::Texture texture("data/core/graphics/background-image.png");
-	const jactorio::renderer::Texture texture("~/data/base/graphics/terrain/test_tile.png");
+	const Texture texture("test_tile");
 	texture.bind();
 
 	// Texture is bound to slot 0 above, tell this to shader
-	jactorio::renderer::Shader::set_uniform_1i(shader.get_uniform_location("u_texture"), 0);
+	Shader::set_uniform_1i(shader.get_uniform_location("u_texture"), 0);
 
-	// #################################################################
 
-	// Update game 60 times per second
-	constexpr float update_interval = 1.f / 60;
-	double last_time = 0.f;
+	// Update window 60 times per second
+	constexpr float render_update_interval = 1.f / 60;
+
+	double render_last_time = 0.f;
+
+	const auto renderer = new Renderer{};
 	while (!glfwWindowShouldClose(window)) {
-		// Update interval = 60 times / second
-		if (glfwGetTime() - last_time > update_interval) {
-			last_time = glfwGetTime();
+		if (glfwGetTime() - render_last_time > render_update_interval) {
+			render_last_time = glfwGetTime();
 
-			renderer.clear();
-		
-			// Draw
-			renderer.draw(glm::vec3(0, 0, 0));
-			// renderer.draw(va, ib, glm::vec3(10, 10, 0));
+			// Don't multi-thread opengl
+			render_loop(renderer);
 
-			jactorio::renderer::imgui_draw();
-			
-			jactorio::renderer::update_shader_mvp();
-			glfwSwapBuffers(window);  // Done rendering
-
-			glfwPollEvents();
+			// Swap renderers if a new one is placed in swap
+			if (refresh_renderer) {
+				renderer->recalculate_buffers(window_x, window_y);
+				refresh_renderer = false;
+			}
 		}
 	}
 
-	jactorio::renderer::imgui_terminate();
-	jactorio::renderer::opengl_terminate();
+	imgui_terminate();
+	window_manager::terminate();
 }

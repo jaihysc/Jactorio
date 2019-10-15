@@ -3,9 +3,10 @@
 
 
 #ifdef JACTORIO_DEBUG_BUILD
-#define GET_BUILD_TYPE "Debug"
+#define BUILD_TYPE "Debug"
 #else
-#define GET_BUILD_TYPE "Release"
+#define BUILD_TYPE "Release"
 #endif
+
 
 #endif // JACTORIO_H

@@ -1,6 +1,0 @@
-#ifndef GAME_WORLD_MANAGER_H
-#define GAME_WORLD_MANAGER_H
-
-
-
-#endif // GAME_WORLD_MANAGER_H

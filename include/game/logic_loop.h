@@ -1,0 +1,6 @@
+#ifndef GAME_LOGIC_LOOP_H
+#define GAME_LOGIC_LOOP_H
+
+
+
+#endif // GAME_LOGIC_LOOP_H

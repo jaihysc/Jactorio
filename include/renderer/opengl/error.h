@@ -1,16 +1,17 @@
-#ifndef OPENGL_ERROR_H
-#define OPENGL_ERROR_H
+#ifndef RENDERER_OPENGL_ERROR_H
+#define RENDERER_OPENGL_ERROR_H
 
 // Different break statements depending on the compiler
 #ifdef _MSC_VER
 #define DEBUG_BREAK __debugbreak();
-
+#undef __GNUC__
 #endif
+
 #ifdef __GNUC__
 #include <signal.h>
 #define DEBUG_BREAK raise(SIGTRAP);
+#undef _MSC_VER
 #endif
-
 
 
 // Wrap a function with DEBUG_OPENGL_CALL to automatically call this when an error occurs and pause code execution
@@ -24,15 +25,13 @@
 			func;
 #endif
 
-namespace jactorio
+namespace jactorio::renderer
 {
-	namespace renderer
-	{
-		bool opengl_print_errors(const char* function_name, const char* file, int line);
-		void opengl_clear_errors();
+	bool opengl_print_errors(const char* function_name, const char* file,
+	                         int line);
+	void opengl_clear_errors();
 
-		void init_glfw_error_handling();
-	}
+	void init_glfw_error_handling();
 }
 
-#endif // OPENGL_ERROR_H
+#endif // RENDERER_OPENGL_ERROR_H

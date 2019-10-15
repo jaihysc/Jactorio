@@ -3,6 +3,9 @@
 #
 cmake_minimum_required(VERSION 3.8)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 project("jactorio")
 
 add_compile_definitions(JACTORIO_VERSION="0.1.0")
@@ -23,29 +26,35 @@ set(JACTORIO_INCLUDE_FILES
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
 set(JACTORIO_SRC_FILES 
 	${JACTORIO_DIR}/core/logger.cpp
-	${JACTORIO_DIR}/core/file_system.cpp
+	${JACTORIO_DIR}/core/filesystem.cpp
+
+	${JACTORIO_DIR}/data/startup/data_cfg_parser.cpp
+	${JACTORIO_DIR}/data/data_manager.cpp
+
+	${JACTORIO_DIR}/game/logic_loop.cpp
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
+	${JACTORIO_DIR}/renderer/render_loop.cpp
 
+	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
 
-	${JACTORIO_DIR}/renderer/manager/imgui_manager.cpp
-	${JACTORIO_DIR}/renderer/manager/mvp_manager.cpp
-	${JACTORIO_DIR}/renderer/manager/window_manager.cpp
-	${JACTORIO_DIR}/renderer/manager/shader_manager.cpp
-
 	${JACTORIO_DIR}/renderer/opengl/error.cpp
 	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
+	${JACTORIO_DIR}/renderer/opengl/shader_manager.cpp
 	${JACTORIO_DIR}/renderer/opengl/shader.cpp
 	${JACTORIO_DIR}/renderer/opengl/texture.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
 
+	${JACTORIO_DIR}/renderer/rendering/renderer_manager.cpp
+	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_grid.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_sprites.cpp
 
+	${JACTORIO_DIR}/renderer/window/window_manager.cpp
 )
 
 # >>>>>>>>>>> Test files .cpp
@@ -56,9 +65,13 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
 
+	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/startup/data_cfg_parserTests.cpp
+
 	${JACTORIO_TEST_DIR}/game/world_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/manager/renderer_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/rendering/rendererTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_spritesTests.cpp
