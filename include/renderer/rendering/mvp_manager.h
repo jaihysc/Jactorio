@@ -2,6 +2,7 @@
 #define RENDERER_RENDERING_MVP_MANAGER_CPP
 
 #include <glm/glm.hpp>
+#include "glm/gtx/associated_min_max.hpp"
 
 namespace jactorio::renderer::mvp_manager
 {
@@ -30,7 +31,7 @@ namespace jactorio::renderer::mvp_manager
 	};
 
 	/**
-	 * Recalculates number of tiles X and Y based on width set by set_tile_width() <br>
+	 * Recalculates number of tiles X and Y <br>
 	 * Upper left is (0, 0)
 	 */
 	Projection_tile_data projection_calculate_tile_properties(
@@ -39,12 +40,13 @@ namespace jactorio::renderer::mvp_manager
 
 	/**
 	 * Converts Projection_tile_data from projection_calculate_tile_properties into a matrix
-	 * @param tile_data obtained from projection_calculate_tile_properties
+	 * @param window_width width of display area in pixels
+	 * @param window_height Height of display area in pixels
 	 * @param offset number of tiles horizontally to from the edge to hide (giving a zoom effect) <br>
 	 * Vertical tiles is calculated based on ration of tiles in tile_data
 	 */
-	glm::mat4 to_proj_matrix(Projection_tile_data tile_data,
-	                         float offset);
+	glm::mat4 to_proj_matrix(unsigned short window_width,
+	                         unsigned short window_height, float offset);
 };
 
 #endif // RENDERER_RENDERING_MVP_MANAGER_CPP

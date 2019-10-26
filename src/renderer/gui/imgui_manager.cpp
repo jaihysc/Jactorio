@@ -42,16 +42,9 @@ void jactorio::renderer::imgui_draw() {
 	ImGui::NewFrame();
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	if (show_demo_window)
-		ImGui::ShowDemoWindow(&show_demo_window);
-
 	ImGui::Begin("Debug menu");
 
-	ImGui::Text("1 translation unit is 1 tile");
-	// you can use a format strings too
-	ImGui::Checkbox("Imgui doc", &show_demo_window);
-	// Edit bools storing our window open/close state
-
+	ImGui::Text("Units are pixels");
 
 	glm::vec3* view_translation = mvp_manager::get_view_transform();
 
@@ -59,11 +52,11 @@ void jactorio::renderer::imgui_draw() {
 	ImGui::SliderFloat3("Camera translation", &view_translation->x, -100.0f,
 	                    100.0f);
 	ImGui::SliderFloat("Zoom", &Renderer::tile_projection_matrix_offset, 0.f,
-	                   100.0f);
+	                   2000.0f);
 
 	mvp_manager::update_view_transform();
 	Renderer::update_tile_projection_matrix();
-
+	
 	// Buttons return true when clicked (most widgets return true when edited/activated)
 	ImGui::NewLine();
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",

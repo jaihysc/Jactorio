@@ -1,5 +1,2 @@
-// Manages the game world, the tiles and the entities over top
-// Handles saving and loading the world
-
-#include "game/world_manager.h"
+#include "game/world/world_manager.h"
 

@@ -17,12 +17,25 @@ bool refresh_renderer = false;
 unsigned short window_x = 0;
 unsigned short window_y = 0;
 
+unsigned short render_refresh_rate = 60;
+float render_update_interval = 1.f / render_refresh_rate;
+
 void jactorio::renderer::set_recalculate_renderer(const unsigned short window_size_x,
                                                   const unsigned short window_size_y) {
 	window_x = window_size_x;
 	window_y = window_size_y;
 
 	refresh_renderer = true;
+}
+
+
+void jactorio::renderer::set_render_refresh_rate(const unsigned short refresh_rate) {
+	render_refresh_rate = refresh_rate;
+	render_update_interval = 1.f / render_refresh_rate;
+}
+
+unsigned short jactorio::renderer::get_render_refresh_rate() {
+	return render_refresh_rate;
 }
 
 
@@ -56,9 +69,6 @@ void jactorio::renderer::renderer_main() {
 	// Texture is bound to slot 0 above, tell this to shader
 	Shader::set_uniform_1i(shader.get_uniform_location("u_texture"), 0);
 
-
-	// Update window 60 times per second
-	constexpr float render_update_interval = 1.f / 60;
 
 	double render_last_time = 0.f;
 

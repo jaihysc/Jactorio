@@ -28,7 +28,8 @@ TEST(mvp_manager, projection_tile_calculation_and_matrix) {
 	EXPECT_EQ(tile_prop.tiles_y, 108);
 
 	// Matrix
-	const auto proj_matrix = to_proj_matrix(tile_prop, 0);
+	const auto proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+		tile_prop.tiles_x, tile_prop.tiles_y, 0);
 
 	EXPECT_EQ(proj_matrix, glm::ortho(
 		          0.f, 192.f,
@@ -43,7 +44,8 @@ TEST(mvp_manager, projection_zoom) {
 	tile_prop.tiles_x = 20;
 	tile_prop.tiles_y = 30;
 
-	const auto proj_matrix = to_proj_matrix(tile_prop, 10);
+	const auto proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+		tile_prop.tiles_x, tile_prop.tiles_y, 10);
 
 
 	EXPECT_EQ(proj_matrix, glm::ortho(

@@ -20,31 +20,35 @@ float* jactorio::renderer::renderer_grid::gen_render_grid(
 }
 
 float* jactorio::renderer::renderer_grid::gen_render_tile_grid(
-	const unsigned short tiles_x,
-	const unsigned short tiles_y) {
+	const unsigned short tiles_x, const unsigned short tiles_y, const unsigned short tile_width) {
+
 	const auto grid = new float[
-		static_cast<unsigned long long>(tiles_x) * static_cast<unsigned long
-			long>(tiles_y) * 8];
+		static_cast<unsigned long long>(tiles_x) * static_cast<unsigned long long>(tiles_y) * 8];
 
 	unsigned int index = 0;
 	for (unsigned short y = 0; y < tiles_y; ++y) {
+		// Multiply to create specified tile width
+		const auto local_y = y * tile_width;
+		
 		for (unsigned short x = 0; x < tiles_x; ++x) {
+			const auto local_x = x * tile_width;
+			
 			// Top left
-			grid[index++] = static_cast<float>(x);
-			grid[index++] = static_cast<float>(y);
+			grid[index++] = static_cast<float>(local_x);
+			grid[index++] = static_cast<float>(local_y);
 
 			// Top right
-			grid[index++] = static_cast<float>(x + 1); // 1 tile right
-			grid[index++] = static_cast<float>(y);
+			grid[index++] = static_cast<float>(local_x + tile_width); // 1 tile right
+			grid[index++] = static_cast<float>(local_y);
 
 
 			// Bottom right
-			grid[index++] = static_cast<float>(x + 1); // 1 tile right
-			grid[index++] = static_cast<float>(y + 1); // 1 tile down
+			grid[index++] = static_cast<float>(local_x + tile_width); // 1 tile right
+			grid[index++] = static_cast<float>(local_y + tile_width); // 1 tile down
 
 			// Bottom left
-			grid[index++] = static_cast<float>(x);
-			grid[index++] = static_cast<float>(y + 1); // 1 tile down
+			grid[index++] = static_cast<float>(local_x);
+			grid[index++] = static_cast<float>(local_y + tile_width); // 1 tile down
 		}
 	}
 

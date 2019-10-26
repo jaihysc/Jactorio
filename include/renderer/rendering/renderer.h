@@ -19,7 +19,11 @@ namespace jactorio::renderer
 		unsigned int grid_vertices_count_{};
 		unsigned int grid_elements_count_{};
 
-		static mvp_manager::Projection_tile_data tile_projection_matrix_;
+
+		static unsigned short window_width_;
+		static unsigned short window_height_;
+
+		static mvp_manager::Projection_tile_data tile_projection_data_;
 
 	public:
 		Renderer();
@@ -32,7 +36,6 @@ namespace jactorio::renderer
 		Renderer& operator=(Renderer&& other) = delete;
 
 		static float tile_projection_matrix_offset;
-		static void update_tile_projection_matrix();
 
 		/**
 		 * Draws current data to the screen
@@ -45,6 +48,12 @@ namespace jactorio::renderer
 		 * Deletes and regenerates the opengl buffers / arrays used for rendering
 		 */
 		void recalculate_buffers(unsigned short window_x, unsigned short window_y);
+
+
+		/**
+		 * Updates projection matrix and zoom level
+		 */
+		static void update_tile_projection_matrix();
 	};
 };
 

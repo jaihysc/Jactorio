@@ -25,7 +25,6 @@ bool gl_context_active = false;
 
 
 /// Fullscreen
-// TODO configurable refresh rate
 bool jactorio::renderer::window_manager::is_fullscreen() {
 	return glfwGetWindowMonitor(glfw_window) != nullptr;
 }
@@ -44,7 +43,7 @@ void jactorio::renderer::window_manager::set_fullscreen(const bool fullscreen) {
 
 		// switch to full screen
 		glfwSetWindowMonitor(glfw_window, monitor, 0, 0, mode->width, mode->height,
-		                     144);
+		                     get_render_refresh_rate());
 	}
 	else {
 		// restore last window size and position

@@ -21,11 +21,15 @@ namespace jactorio::renderer::renderer_grid
 	 * Generates a set of grid positions for each tile <br>
 	 * Each tile will index its own 4 positions <br>
 	 *
-	 * Starts with 0 being top left, ascends going right, then down <br>
+	 * Starts with 0 being top left, ascends going right, then down
+	 * @param tiles_x count of tiles on X axis
+	 * @param tiles_y count of tiles on Y axis
+	 * @param tile_width Width of a tile in pixels
 	 * @return array, span of 2
 	 */
 	float* gen_render_tile_grid(unsigned short tiles_x,
-	                            unsigned short tiles_y);
+	                            unsigned short tiles_y,
+	                            unsigned short tile_width);
 
 
 	/**

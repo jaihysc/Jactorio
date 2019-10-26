@@ -34,13 +34,15 @@ jactorio::renderer::mvp_manager::Projection_tile_data
 	return tile_data;
 }
 
-glm::mat4 jactorio::renderer::mvp_manager::to_proj_matrix(const Projection_tile_data tile_data, const float offset) {
+glm::mat4 jactorio::renderer::mvp_manager::to_proj_matrix(const unsigned short window_width,
+                                                          const unsigned short window_height,
+                                                          const float offset) {
 	// Calculate aspect ratio based zoom
-	const float zoom_ratio = static_cast<float>(tile_data.tiles_y) / static_cast<float>(tile_data.tiles_x);
+	const float zoom_ratio = static_cast<float>(window_height) / static_cast<float>(window_width);
 	const float y_offset = offset * zoom_ratio;
 	
 	return glm::ortho(
-		offset, static_cast<float>(tile_data.tiles_x) - offset,
-		static_cast<float>(tile_data.tiles_y) - y_offset, y_offset,
+		offset, static_cast<float>(window_width) - offset,
+		static_cast<float>(window_height) - y_offset, y_offset,
 		-1.f, 1.f);
 }

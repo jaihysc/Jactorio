@@ -68,8 +68,9 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/startup/data_cfg_parserTests.cpp
 
-	${JACTORIO_TEST_DIR}/game/world_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
 
+	${JACTORIO_TEST_DIR}/renderer/render_mainTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/manager/renderer_managerTests.cpp
 

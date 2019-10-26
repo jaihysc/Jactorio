@@ -24,35 +24,35 @@ TEST(Renderer_grid, genRenderGrid) {
 	delete[] grid;
 }
 
-TEST(Renderer_grid, genRenderTileGrid) {
+TEST(Renderer_grid, gen_render_tile_grid) {
 	const auto grid = jactorio::renderer::renderer_grid::
-		gen_render_tile_grid(10, 10);
+		gen_render_tile_grid(10, 10, 16);
 
 	// 0, 0
 	EXPECT_EQ(grid[0], 0.f);
 	EXPECT_EQ(grid[1], 0.f);
 
-	EXPECT_EQ(grid[2], 1.f);
+	EXPECT_EQ(grid[2], 16.f);
 	EXPECT_EQ(grid[3], 0.f);
 
-	EXPECT_EQ(grid[4], 1.f);
-	EXPECT_EQ(grid[5], 1.f);
+	EXPECT_EQ(grid[4], 16.f);
+	EXPECT_EQ(grid[5], 16.f);
 
 	EXPECT_EQ(grid[6], 0.f);
-	EXPECT_EQ(grid[7], 1.f);
+	EXPECT_EQ(grid[7], 16.f);
 
 	// 9, 9
-	EXPECT_EQ(grid[792], 9.f);
-	EXPECT_EQ(grid[793], 9.f);
+	EXPECT_EQ(grid[792], 144.f);
+	EXPECT_EQ(grid[793], 144.f);
 
-	EXPECT_EQ(grid[794], 10.f);
-	EXPECT_EQ(grid[795], 9.f);
+	EXPECT_EQ(grid[794], 160.f);
+	EXPECT_EQ(grid[795], 144.f);
 
-	EXPECT_EQ(grid[796], 10.f);
-	EXPECT_EQ(grid[797], 10.f);
+	EXPECT_EQ(grid[796], 160.f);
+	EXPECT_EQ(grid[797], 160.f);
 
-	EXPECT_EQ(grid[798], 9.f);
-	EXPECT_EQ(grid[799], 10.f);
+	EXPECT_EQ(grid[798], 144.f);
+	EXPECT_EQ(grid[799], 160.f);
 
 	delete[] grid;
 }
