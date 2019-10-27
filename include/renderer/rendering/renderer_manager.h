@@ -2,38 +2,43 @@
 #define RENDERER_RENDERING_RENDERER_MANAGER_H
 
 #include <string>
+#include <vector>
 
 namespace jactorio::renderer
 {
 	struct Render_data
 	{
-		// Renderer will buffer and draw the same items until the timestamp changes
-		float timestamp;
+		// Top left
+		unsigned short tl_x;
+		// Top left
+		unsigned short tl_y;
 
-		// Number of images on each axis
-		unsigned int sprites_x;
-		unsigned int sprites_y;
 
-		// Follows dimensions specified by sprites_x and sprites_y
-		// Each entry is a sprite id
-		std::string* sprite_grid;
+		// Bottom right
+		unsigned short br_x;
+		// Bottom right
+		unsigned short br_y;
+
+		std::string* internal_name;
 	};
 
-	class Renderer_manager
+	namespace renderer_manager
 	{
-		static Render_data render_data_;
-
-	public:
 		/**
-		 * Prepares data for the renderer to draw on next render_loop call
+		 * Adds an item which will be drawn by the renderer <br>
+		 * Positions in pixels <br>
+		 * 0, 0 is top left, bottom right is size of the display window
+		 * @param tl_x Sprite position top left
+		 * @param tl_y Sprite position top left
+		 * @param br_x Sprite position bottom right
+		 * @param br_y Sprite position bottom right
+		 * @param sprite_internal_name Internal name of sprite
 		 */
-		static void gen_render_data(
-			unsigned int sprites_x, unsigned int sprites_y,
-			const std::string* sprite_grid);
+		void add_draw_item(unsigned int tl_x, unsigned int tl_y,
+		                   unsigned int br_x, unsigned int br_y,
+		                   const std::string& sprite_internal_name);
 
-		static Render_data get_render_data() {
-			return render_data_;
-		}
+		std::vector<Render_data>* get_render_data();
 	};
 }
 

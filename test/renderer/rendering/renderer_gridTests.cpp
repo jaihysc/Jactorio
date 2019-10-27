@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <iterator>
-
 #include "renderer/rendering/renderer_grid.h"
 
 

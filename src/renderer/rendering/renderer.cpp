@@ -2,6 +2,7 @@
 
 #include "renderer/rendering/renderer.h"
 
+#include <memory>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "renderer/rendering/renderer_grid.h"
@@ -60,38 +61,42 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	grid_vertices_count_ = (tile_projection_data_.tiles_x + 1) * (tile_projection_data_.tiles_y + 1);
 	grid_elements_count_ = tile_projection_data_.tiles_x * tile_projection_data_.tiles_y;
 
-	// #############################################
+	
 	// Initialization of vertex array and its buffers
 	vertex_array_ = new Vertex_array();
 
 	// Render grid
-	render_grid_ = new Vertex_buffer(
-		renderer_grid::gen_render_tile_grid(
+	{
+		const auto data = renderer_grid::gen_render_tile_grid(
 			tile_projection_data_.tiles_x,
 			tile_projection_data_.tiles_y,
-			tile_width
-		),
-		grid_elements_count_ * 4 * 2 * sizeof(float)
-	);
-	vertex_array_->add_buffer(*render_grid_, 2, 0);
+			tile_width);
 
+		render_grid_ = new Vertex_buffer(data, grid_elements_count_ * 4 * 2 * sizeof(float));
+		vertex_array_->add_buffer(*render_grid_, 2, 0);
+		delete[] data;
+	}
 
 	// Spritemap positions
-	texture_grid_ = new Vertex_buffer(
-		renderer_grid::gen_texture_grid(grid_elements_count_),
-		grid_elements_count_ * 4 * 2 * sizeof(float)
-	);
-	vertex_array_->add_buffer(*texture_grid_, 2, 1);
+	{
+		const auto data = renderer_grid::gen_texture_grid(grid_elements_count_);
+		
+		texture_grid_ = new Vertex_buffer(data, grid_elements_count_ * 4 * 2 * sizeof(float));
+		vertex_array_->add_buffer(*texture_grid_, 2, 1);
+		delete[] data;
+	}
 
-
+	
 	// Index buffer
-	index_buffer_ = new Index_buffer(
-		renderer_grid::gen_render_grid_indices(
+	{
+		const auto data = renderer_grid::gen_render_grid_indices(
 			tile_projection_data_.tiles_x,
 			tile_projection_data_.tiles_y
-		),
-		grid_elements_count_ * 6
-	);
+		);
+		
+		index_buffer_ = new Index_buffer(data,grid_elements_count_ * 6);
+		delete[] data;
+	}
 }
 
 
@@ -103,16 +108,16 @@ jactorio::renderer::Renderer::~Renderer() {
 }
 
 void jactorio::renderer::Renderer::draw(const glm::vec3 transform) const {
-	vertex_array_->bind();
-	index_buffer_->bind();
-
-	const glm::mat4 model_matrix = translate(glm::mat4(1.f), transform);
-	setg_model_matrix(model_matrix);
-	update_shader_mvp();
-
-	DEBUG_OPENGL_CALL(
-		glDrawElements(GL_TRIANGLES, index_buffer_->count(), GL_UNSIGNED_INT, nullptr)
-	); // Pointer not needed as buffer is already bound
+	// vertex_array_->bind();
+	// index_buffer_->bind();
+	//
+	// const glm::mat4 model_matrix = translate(glm::mat4(1.f), transform);
+	// setg_model_matrix(model_matrix);
+	// update_shader_mvp();
+	//
+	// DEBUG_OPENGL_CALL(
+	// 	glDrawElements(GL_TRIANGLES, index_buffer_->count(), GL_UNSIGNED_INT, nullptr)
+	// ); // Pointer not needed as buffer is already bound
 }
 
 void jactorio::renderer::Renderer::clear() {

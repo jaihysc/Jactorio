@@ -7,7 +7,7 @@ TEST(renderer_manager, Render_data_generation) {
 		"tpotato"
 	};
 	
-	jactorio::renderer::Renderer_manager::gen_render_data(1, 1, img_ids);
+	jactorio::renderer::renderer_manager::add_draw_item(10, 10, 300, 300, "p");
 
-	auto data = jactorio::renderer::Renderer_manager::get_render_data();
+	auto data = jactorio::renderer::renderer_manager::get_render_data();
 }

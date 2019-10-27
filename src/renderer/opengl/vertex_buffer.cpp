@@ -13,6 +13,7 @@ jactorio::renderer::Vertex_buffer::Vertex_buffer(const void* data, const unsigne
 }
 
 jactorio::renderer::Vertex_buffer::~Vertex_buffer() {
+	unbind();
 	DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 };
 

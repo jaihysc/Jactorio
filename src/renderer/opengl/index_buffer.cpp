@@ -15,6 +15,7 @@ jactorio::renderer::Index_buffer::Index_buffer(const unsigned* data, unsigned co
 }
 
 jactorio::renderer::Index_buffer::~Index_buffer() {
+	unbind();
 	DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 

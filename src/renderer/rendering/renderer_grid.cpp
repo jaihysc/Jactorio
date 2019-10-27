@@ -29,7 +29,7 @@ float* jactorio::renderer::renderer_grid::gen_render_tile_grid(
 	for (unsigned short y = 0; y < tiles_y; ++y) {
 		// Multiply to create specified tile width
 		const auto local_y = y * tile_width;
-		
+
 		for (unsigned short x = 0; x < tiles_x; ++x) {
 			const auto local_x = x * tile_width;
 			
@@ -64,7 +64,7 @@ float* jactorio::renderer::renderer_grid::gen_texture_grid(
 	for (unsigned int i = 0; i < elements_count; ++i) {
 		tex_coords[index++] = 0.f;
 		tex_coords[index++] = 1.f, // bottom left
-			tex_coords[index++] = 1.f;
+		tex_coords[index++] = 1.f;
 		tex_coords[index++] = 1.f; // bottom right
 		tex_coords[index++] = 1.f;
 		tex_coords[index++] = 0.f; // upper right

@@ -7,6 +7,10 @@
 //		TODO Texture spritemap positions (Is currently constant)
 //		Indices for tile and texture grid
 
+/**
+ * Maintains the grid layout used by the renderer
+ * Pointers returned by the functions MUST BE manually freed
+ */
 namespace jactorio::renderer::renderer_grid
 {
 	/**
