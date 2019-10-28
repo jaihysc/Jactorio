@@ -1,6 +1,9 @@
 #include "renderer/rendering/renderer_sprites.h"
 
+#include "core/logger.h"
 #include "core/filesystem.h"
+
+namespace logger = jactorio::core::logger;
 
 void jactorio::renderer::Renderer_sprites::set_image_positions(
 	Image_position& image_position,
@@ -27,9 +30,9 @@ void jactorio::renderer::Renderer_sprites::set_image_positions(
 
 
 jactorio::renderer::Renderer_sprites::Spritemap_data jactorio::renderer::
-Renderer_sprites::gen_spritemap(
-	std::string* image_paths, const unsigned short count) const {
-
+Renderer_sprites::gen_spritemap(std::string* image_paths, const unsigned short count) const {
+	log_message(logger::info, "Renderer sprites", "Generating spritemap");
+	
 	unsigned int image_index = 0;
 
 	// Keep track of the positions of each image
@@ -119,7 +122,7 @@ Renderer_sprites::gen_spritemap(
 	}
 
 
-	Spritemap_data spritemap_data{};
+	Spritemap_data spritemap_data;
 	spritemap_data.spritemap = *concat_image_old;
 	spritemap_data.sprite_positions = image_positions;
 

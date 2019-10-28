@@ -11,7 +11,7 @@ My attempt at recreating [Factorio](https://factorio.com), inspired by [Hopson98
 ```
 git clone https://github.com/jaihysc/Jactorio.git
 cd Jactorio
-./build.sh **See build types above**
+sh ./build.sh **See build types above**
 ```
 
 Executable will be placed in `out/src/`

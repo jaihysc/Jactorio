@@ -1,20 +1,17 @@
 #ifndef RENDERER_OPENGL_TEXTURE_H
 #define RENDERER_OPENGL_TEXTURE_H
 
-#include <string>
+#include <SFML/Graphics/Image.hpp>
 
 namespace jactorio::renderer
 {
 	class Texture
 	{
 		unsigned int renderer_id_;
-		int width_, height_, bytes_per_pixel_;
-
-		std::string texture_filepath_;
-		unsigned char* texture_buffer_;
+		int width_, height_;
 
 	public:
-		explicit Texture(const std::string& internal_name);
+		explicit Texture(const sf::Image& image);
 		~Texture();
 
 		Texture(const Texture& other) = delete;

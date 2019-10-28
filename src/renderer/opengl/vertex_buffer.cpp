@@ -17,11 +17,15 @@ jactorio::renderer::Vertex_buffer::~Vertex_buffer() {
 	DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 };
 
+void jactorio::renderer::Vertex_buffer::set_buffer_data(const void* data, const unsigned offset, const unsigned size) const {
+	DEBUG_OPENGL_CALL(glBufferSubData(GL_ARRAY_BUFFER, offset, size, data));
+}
+
 void jactorio::renderer::Vertex_buffer::bind() const {
 	DEBUG_OPENGL_CALL(glBindBuffer(GL_ARRAY_BUFFER, id_));
 
 }
 
-void jactorio::renderer::Vertex_buffer::unbind() {
+void jactorio::renderer::Vertex_buffer::unbind() const {
 	DEBUG_OPENGL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }

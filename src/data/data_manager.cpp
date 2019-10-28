@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <sstream>
+#include <vector>
 
 #include "core/filesystem.h"
 #include "core/logger.h"
@@ -77,4 +78,17 @@ std::string jactorio::data::data_manager::get_data(
 		return "!";
 
 	return loaded_data[type][id];
+}
+
+std::vector<std::string> jactorio::data::data_manager::get_all_data(const data_type type) {
+	auto m = loaded_data[type];
+	
+	std::vector<std::string> paths;
+	paths.reserve(m.size());
+	
+	for (auto& it : m) {
+		paths.push_back(it.second);
+	}
+	
+	return paths;
 }

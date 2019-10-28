@@ -4,14 +4,17 @@
 
 #include <vector>
 
+#include "data/data_manager.h"
+
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/window/window_manager.h"
-
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/renderer.h"
+#include "renderer/rendering/renderer_sprites.h"
 #include "renderer/render_loop.h"
+#include "core/logger.h"
 
 bool refresh_renderer = false;
 unsigned short window_x = 0;
@@ -61,18 +64,27 @@ void jactorio::renderer::renderer_main() {
 	set_mvp_uniform_location(
 		shader.get_uniform_location("u_model_view_projection_matrix"));
 
+	// Texture will be bound to slot 0 above, tell this to shader
+	Shader::set_uniform_1i(shader.get_uniform_location("u_texture"), 0);
+
 
 	// Loading textures
-	const Texture texture("test_tile");
-	texture.bind();
+	std::vector<std::string> texture_paths = data::data_manager::get_all_data(
+		data::data_type::graphics);
 
-	// Texture is bound to slot 0 above, tell this to shader
-	Shader::set_uniform_1i(shader.get_uniform_location("u_texture"), 0);
+	const auto r_sprites = Renderer_sprites{};
+	const Renderer_sprites::Spritemap_data spritemap_data = r_sprites.gen_spritemap(
+		texture_paths.data(), texture_paths.size());
+
+	const Texture texture(spritemap_data.spritemap);
+	texture.bind(0);
 
 
 	double render_last_time = 0.f;
 
 	const auto renderer = new Renderer{};
+
+	log_message(core::logger::info, "Jactorio", "2 - Render phase");
 	while (!glfwWindowShouldClose(window)) {
 		if (glfwGetTime() - render_last_time > render_update_interval) {
 			render_last_time = glfwGetTime();

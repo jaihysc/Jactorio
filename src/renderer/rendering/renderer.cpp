@@ -2,17 +2,15 @@
 
 #include "renderer/rendering/renderer.h"
 
-#include <memory>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "renderer/rendering/renderer_grid.h"
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/error.h"
+#include "data/data_manager.h"
 
 
-jactorio::renderer::mvp_manager::Projection_tile_data
-	jactorio::renderer::Renderer::tile_projection_data_ = mvp_manager::Projection_tile_data{};
 float jactorio::renderer::Renderer::tile_projection_matrix_offset = 0;
 
 
@@ -54,12 +52,16 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	window_height_ = window_y;
 	update_tile_projection_matrix();
 
-	
-	tile_projection_data_ =
+
+	const mvp_manager::Projection_tile_data tile_projection_data =
 		mvp_manager::projection_calculate_tile_properties(tile_width, window_x, window_y);
 
-	grid_vertices_count_ = (tile_projection_data_.tiles_x + 1) * (tile_projection_data_.tiles_y + 1);
-	grid_elements_count_ = tile_projection_data_.tiles_x * tile_projection_data_.tiles_y;
+	// Initialize fields
+	tile_count_x_ = tile_projection_data.tiles_x;
+	tile_count_y_ = tile_projection_data.tiles_y;
+	
+	grid_vertices_count_ = (tile_count_x_ + 1) * (tile_count_y_ + 1);
+	grid_elements_count_ = tile_count_x_ * tile_count_y_;
 
 	
 	// Initialization of vertex array and its buffers
@@ -68,10 +70,11 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	// Render grid
 	{
 		const auto data = renderer_grid::gen_render_tile_grid(
-			tile_projection_data_.tiles_x,
-			tile_projection_data_.tiles_y,
+			tile_count_x_,
+			tile_count_y_,
 			tile_width);
 
+		// Size of 1 element: 8 * sizeof(float)
 		render_grid_ = new Vertex_buffer(data, grid_elements_count_ * 4 * 2 * sizeof(float));
 		vertex_array_->add_buffer(*render_grid_, 2, 0);
 		delete[] data;
@@ -90,13 +93,39 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	// Index buffer
 	{
 		const auto data = renderer_grid::gen_render_grid_indices(
-			tile_projection_data_.tiles_x,
-			tile_projection_data_.tiles_y
+			tile_count_x_,
+			tile_count_y_
 		);
 		
 		index_buffer_ = new Index_buffer(data,grid_elements_count_ * 6);
 		delete[] data;
 	}
+}
+
+// Get all textures
+// Concat into spritemap
+// Spritemap is parameter of constructor
+void jactorio::renderer::Renderer::set_sprite(unsigned short index_x, unsigned short index_y, std::string sprite_iname) {
+	const auto data = new float[8];
+
+	data[0] = 0.f;
+	data[1] = 1.f, // bottom left
+	
+	data[2] = 1.f;
+	data[3] = 1.f; // bottom right
+	
+	data[4] = 1.f;
+	data[5] = 0.f; // upper right
+	
+	data[6] = 0.f;
+	data[7] = 0.f; // upper left
+	// data::data_manager::get_data(data::data_type::graphics, sprite_iname);
+
+	const unsigned int offset = (index_y * tile_count_x_ + index_x) * 8 * sizeof(float);
+	
+	texture_grid_->set_buffer_data(data, offset, sizeof(float) * 8);
+
+	delete[] data;
 }
 
 
@@ -108,18 +137,18 @@ jactorio::renderer::Renderer::~Renderer() {
 }
 
 void jactorio::renderer::Renderer::draw(const glm::vec3 transform) const {
-	// vertex_array_->bind();
-	// index_buffer_->bind();
-	//
-	// const glm::mat4 model_matrix = translate(glm::mat4(1.f), transform);
-	// setg_model_matrix(model_matrix);
-	// update_shader_mvp();
-	//
-	// DEBUG_OPENGL_CALL(
-	// 	glDrawElements(GL_TRIANGLES, index_buffer_->count(), GL_UNSIGNED_INT, nullptr)
-	// ); // Pointer not needed as buffer is already bound
+	vertex_array_->bind();
+	index_buffer_->bind();
+	
+	const glm::mat4 model_matrix = translate(glm::mat4(1.f), transform);
+	setg_model_matrix(model_matrix);
+	update_shader_mvp();
+	
+	DEBUG_OPENGL_CALL(
+		glDrawElements(GL_TRIANGLES, index_buffer_->count(), GL_UNSIGNED_INT, nullptr)
+	); // Pointer not needed as buffer is already bound
 }
 
 void jactorio::renderer::Renderer::clear() {
-	glClear(GL_COLOR_BUFFER_BIT);
+	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 }

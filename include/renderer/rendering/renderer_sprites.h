@@ -43,8 +43,7 @@ namespace jactorio::renderer
 		 * Generated spritemap will be purely horizontal, all images concatenated side by side <br>
 		 * !!! Given image paths must be unique <br>
 		 */
-		Spritemap_data gen_spritemap(std::string* image_paths,
-		                                    unsigned short count) const;
+		Spritemap_data gen_spritemap(std::string* image_paths, unsigned short count) const;
 
 
 	private:

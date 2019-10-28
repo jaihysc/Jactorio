@@ -32,10 +32,9 @@ namespace jactorio::data
 		std::string get_data(data_type type, const std::string& id);
 
 		/**
-		 * Same as get_data
-		 * Does not do bounds checking, prone to errors if not careful!
+		 * Gets all data of specified data_type
 		 */
-		//            static std::string get_data_f(data_type type, std::string id);
+		std::vector<std::string> get_all_data(data_type type);
 	};
 }
 

@@ -1,44 +1,25 @@
 #include <GL/glew.h>
 
-#include <stb/stb_image.h>
-
-#include "core/filesystem.h"
 #include "core/logger.h"
 
 #include "renderer/opengl/texture.h"
 #include "renderer/opengl/error.h"
 
-#include "data/data_manager.h"
-
 namespace logger = jactorio::core::logger;
 
-jactorio::renderer::Texture::Texture(const std::string& internal_name)
-	: renderer_id_(0), width_(0), height_(0), bytes_per_pixel_(0),
-	  texture_buffer_(nullptr) {
-	const std::string path = data::data_manager::get_data(
-		data::data_type::graphics, internal_name);
-
-	if (path == "!") {
+jactorio::renderer::Texture::Texture(const sf::Image& image)
+	: renderer_id_(0) {
+	auto local_image = image;
+	local_image.flipVertically();
+	
+	const unsigned char* texture_buffer = local_image.getPixelsPtr();
+	const auto img_dimensions = local_image.getSize();
+	width_ = img_dimensions.x;
+	height_ = img_dimensions.y;
+	
+	if (!texture_buffer) {
 		log_message(logger::error, "OpenGL Texture",
-		            "Invalid internal name " + internal_name);
-		return;
-	}
-
-	texture_filepath_ = core::filesystem::resolve_path(path);
-
-	// openGL reads images backwards, bottom left is (0,0)
-	stbi_set_flip_vertically_on_load(true);
-	texture_buffer_ = stbi_load(
-		texture_filepath_.c_str(),
-		&width_,
-		&height_,
-		&bytes_per_pixel_,
-		4 // 4 desired channels for RGBA
-	);
-
-	if (!texture_buffer_) {
-		log_message(logger::error, "OpenGL Texture",
-		            "Failed to read texture at filepath " + texture_filepath_);
+		            "Received empty texture");
 		return;
 	}
 
@@ -56,13 +37,9 @@ jactorio::renderer::Texture::Texture(const std::string& internal_name)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
 	DEBUG_OPENGL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-		width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_buffer_));
+		width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_buffer));
 
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
-
-	// Free buffer
-	if (texture_buffer_)
-		stbi_image_free(texture_buffer_);
 }
 
 jactorio::renderer::Texture::~Texture() {

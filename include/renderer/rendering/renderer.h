@@ -2,11 +2,11 @@
 #define RENDERER_RENDERING_RENDERER_H
 
 #include <glm/glm.hpp>
+#include <string>
 
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/vertex_buffer.h"
 #include "renderer/opengl/vertex_array.h"
-#include "renderer/rendering/mvp_manager.h"
 
 namespace jactorio::renderer
 {
@@ -20,10 +20,11 @@ namespace jactorio::renderer
 		unsigned int grid_elements_count_{};
 
 
+		unsigned short tile_count_x_;
+		unsigned short tile_count_y_;
+
 		static unsigned short window_width_;
 		static unsigned short window_height_;
-
-		static mvp_manager::Projection_tile_data tile_projection_data_;
 
 	public:
 		Renderer();
@@ -49,6 +50,24 @@ namespace jactorio::renderer
 		 */
 		void recalculate_buffers(unsigned short window_x, unsigned short window_y);
 
+		/**
+		 * Sets sprite at specified grid index <br>
+		 * 0, 0 is top left
+		 * @param index_x
+		 * @param index_y
+		 * @param sprite_iname Internal name of the sprite
+		 */
+		void set_sprite(unsigned short index_x, unsigned short index_y, std::string sprite_iname);
+
+		
+		[[nodiscard]] unsigned short get_grid_size_x() const {
+			return tile_count_x_;
+		}
+
+		[[nodiscard]] unsigned short get_grid_size_y() const {
+			return tile_count_y_;
+		}
+		
 
 		/**
 		 * Updates projection matrix and zoom level
