@@ -27,9 +27,15 @@ namespace jactorio::data
 		// Data access methods
 		/**
 		 * Retrieves non resolved path to file based on type and id <br>
-		 * Returns string "!" if specified value does not exist
+		 * @return string "!" if specified value does not exist
 		 */
-		std::string get_data(data_type type, const std::string& id);
+		std::string get_path(data_type type, const std::string& iname);
+		/**
+		 * Retrieves internal name based on non resolved path <br>
+		 * The opposite of get_path <br>
+		 * @return string "!" if specified value does not exist
+		 */
+		std::string get_iname(data_type type, const std::string& path);
 
 		/**
 		 * Gets all data of specified data_type

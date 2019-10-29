@@ -45,6 +45,8 @@ Renderer_sprites::gen_spritemap(std::string* image_paths, const unsigned short c
 	concat_image_old->loadFromFile(
 		core::filesystem::resolve_path(image_paths[image_index++])
 	);
+	concat_image_old->flipVertically();
+	
 	set_image_positions(image_positions[image_paths[image_index - 1]],
 	                    concat_image_old->getSize(), image_position_offset_x);
 
@@ -58,7 +60,7 @@ Renderer_sprites::gen_spritemap(std::string* image_paths, const unsigned short c
 		concat_image_new.loadFromFile(
 			core::filesystem::resolve_path(image_paths[image_index++])
 		);
-
+		concat_image_new.flipVertically();
 		const sf::Vector2u image_old_prop = concat_image_old->getSize();
 		const sf::Vector2u image_new_prop = concat_image_new.getSize();
 

@@ -69,15 +69,26 @@ void jactorio::data::data_manager::load_data(
 	}
 }
 
-std::string jactorio::data::data_manager::get_data(
-	const data_type type, const std::string& id) {
+std::string jactorio::data::data_manager::get_path(
+	const data_type type, const std::string& iname) {
 	// Ensure type and id exists
 	if (!loaded_data.count(type))
 		return "!";
-	if (!loaded_data[type].count(id))
+	if (!loaded_data[type].count(iname))
 		return "!";
 
-	return loaded_data[type][id];
+	return loaded_data[type][iname];
+}
+
+std::string jactorio::data::data_manager::get_iname(const data_type type, const std::string& path) {
+	auto inner_pairs_map = loaded_data[type];
+
+	for (auto& it : inner_pairs_map) {
+		if (it.second == path)
+			return it.first;
+	}
+	
+	return "!";
 }
 
 std::vector<std::string> jactorio::data::data_manager::get_all_data(const data_type type) {

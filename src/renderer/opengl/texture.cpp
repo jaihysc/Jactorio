@@ -9,11 +9,8 @@ namespace logger = jactorio::core::logger;
 
 jactorio::renderer::Texture::Texture(const sf::Image& image)
 	: renderer_id_(0) {
-	auto local_image = image;
-	local_image.flipVertically();
-	
-	const unsigned char* texture_buffer = local_image.getPixelsPtr();
-	const auto img_dimensions = local_image.getSize();
+	const unsigned char* texture_buffer = image.getPixelsPtr();
+	const auto img_dimensions = image.getSize();
 	width_ = img_dimensions.x;
 	height_ = img_dimensions.y;
 	

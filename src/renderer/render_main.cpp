@@ -79,10 +79,11 @@ void jactorio::renderer::renderer_main() {
 	const Texture texture(spritemap_data.spritemap);
 	texture.bind(0);
 
-
+	
+	auto renderer = new Renderer(spritemap_data.sprite_positions);
+	renderer->set_sprite(10, 10, "menu-logo");
+	
 	double render_last_time = 0.f;
-
-	const auto renderer = new Renderer{};
 
 	log_message(core::logger::info, "Jactorio", "2 - Render phase");
 	while (!glfwWindowShouldClose(window)) {

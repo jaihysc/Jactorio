@@ -7,6 +7,7 @@
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/vertex_buffer.h"
 #include "renderer/opengl/vertex_array.h"
+#include "renderer/rendering/renderer_sprites.h"
 
 namespace jactorio::renderer
 {
@@ -23,11 +24,16 @@ namespace jactorio::renderer
 		unsigned short tile_count_x_;
 		unsigned short tile_count_y_;
 
+
+		// Internal names to spritemap positions
+		std::unordered_map<std::string, Renderer_sprites::Image_position> spritemap_coords_;
+		
 		static unsigned short window_width_;
 		static unsigned short window_height_;
 
 	public:
-		Renderer();
+		explicit Renderer(
+			const std::unordered_map<std::string, Renderer_sprites::Image_position>& spritemap_coords);
 		~Renderer();
 
 		Renderer(const Renderer& other) = delete;
@@ -52,12 +58,13 @@ namespace jactorio::renderer
 
 		/**
 		 * Sets sprite at specified grid index <br>
-		 * 0, 0 is top left
+		 * 0, 0 is top left - grid starts from 0
 		 * @param index_x
 		 * @param index_y
 		 * @param sprite_iname Internal name of the sprite
 		 */
-		void set_sprite(unsigned short index_x, unsigned short index_y, std::string sprite_iname);
+		void set_sprite(unsigned short index_x, unsigned short index_y, const std::string&
+		                sprite_iname);
 
 		
 		[[nodiscard]] unsigned short get_grid_size_x() const {

@@ -33,7 +33,18 @@ void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 }
 
 
-jactorio::renderer::Renderer::Renderer() {
+jactorio::renderer::Renderer::Renderer(
+	const std::unordered_map<std::string, Renderer_sprites::Image_position>& spritemap_coords) {
+
+	spritemap_coords_ = std::unordered_map<std::string, Renderer_sprites::Image_position>{};
+	
+	// Convert the keys for spritemap_coords from unresolved paths into internal names instead
+	for (auto& i : spritemap_coords) {
+		std::string iname = data::data_manager::get_iname(data::data_type::graphics, i.first);
+		spritemap_coords_[iname] = spritemap_coords.at(i.first);
+	}
+
+	
 	// Get window size
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
@@ -105,22 +116,25 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 // Get all textures
 // Concat into spritemap
 // Spritemap is parameter of constructor
-void jactorio::renderer::Renderer::set_sprite(unsigned short index_x, unsigned short index_y, std::string sprite_iname) {
+void jactorio::renderer::Renderer::set_sprite(const unsigned short index_x,
+                                              const unsigned short index_y,
+                                              const std::string& sprite_iname) {
 	const auto data = new float[8];
 
-	data[0] = 0.f;
-	data[1] = 1.f, // bottom left
+	// TODO validate sprite iname exists?
+	const auto sprite_coords = spritemap_coords_[sprite_iname];
+	data[0] = sprite_coords.bottom_left.x;
+	data[1] = sprite_coords.bottom_left.y, // bottom left
 	
-	data[2] = 1.f;
-	data[3] = 1.f; // bottom right
+	data[2] = sprite_coords.bottom_right.x;
+	data[3] = sprite_coords.bottom_right.y; // bottom right
 	
-	data[4] = 1.f;
-	data[5] = 0.f; // upper right
+	data[4] = sprite_coords.top_right.x;
+	data[5] = sprite_coords.top_right.y; // upper right
 	
-	data[6] = 0.f;
-	data[7] = 0.f; // upper left
-	// data::data_manager::get_data(data::data_type::graphics, sprite_iname);
-
+	data[6] = sprite_coords.top_left.x;
+	data[7] = sprite_coords.top_left.y; // upper left
+	
 	const unsigned int offset = (index_y * tile_count_x_ + index_x) * 8 * sizeof(float);
 	
 	texture_grid_->set_buffer_data(data, offset, sizeof(float) * 8);
