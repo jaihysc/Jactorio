@@ -1,9 +1,18 @@
-#include <game/world/tile.h>
+#include <game/world/chunk.h>
 
-// A World_chunk is a 32 x 32 grid of tiles
+jactorio::game::Chunk::Chunk(const int x, const int y, const Tile* tiles) {
+	position_.first = x;
+	position_.second = y;
 
-class World_chunk
-{
-public:
-	World_tile* tiles[32][32];
-};
+	for (int i = 0; i < 32 * 32; ++i) {
+		tiles_[i] = tiles[i];
+	}
+}
+
+std::pair<int, int> jactorio::game::Chunk::get_position() const {
+	return position_;
+}
+
+const jactorio::game::Tile* jactorio::game::Chunk::tiles_ptr() const {
+	return tiles_;
+}

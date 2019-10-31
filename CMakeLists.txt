@@ -32,6 +32,9 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/data/data_manager.cpp
 
 	${JACTORIO_DIR}/game/logic_loop.cpp
+	${JACTORIO_DIR}/game/world/chunk.cpp
+	${JACTORIO_DIR}/game/world/tile.cpp
+	${JACTORIO_DIR}/game/world/world_manager.cpp
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
 	${JACTORIO_DIR}/renderer/render_loop.cpp
@@ -68,6 +71,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/startup/data_cfg_parserTests.cpp
 
+	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/render_mainTests.cpp

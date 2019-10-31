@@ -58,13 +58,16 @@ void jactorio::renderer::window_manager::set_fullscreen(const bool fullscreen) {
 /// Callbacks
 
 void callback_resize(GLFWwindow* window, int cx, int cy) {
-	// glViewport is critical, changes the size of the rendering area
-	glViewport(0, 0, cx, cy);
-	jactorio::renderer::set_recalculate_renderer(cx, cy);
+	// Ignore window minimize (resolution 0 x 0)
+	if (cx > 0 && cy > 0) {
+		// glViewport is critical, changes the size of the rendering area
+		glViewport(0, 0, cx, cy);
+		jactorio::renderer::set_recalculate_renderer(cx, cy);
 
-	std::stringstream ss;
-	ss << "Resolution changed to: " << cx << " by " << cy;
-	log_message(logger::debug, "Window_manager", ss.str());
+		std::stringstream ss;
+		ss << "Resolution changed to: " << cx << " by " << cy;
+		log_message(logger::debug, "Window_manager", ss.str());
+	}
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {

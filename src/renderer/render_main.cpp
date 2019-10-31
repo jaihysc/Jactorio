@@ -81,13 +81,12 @@ void jactorio::renderer::renderer_main() {
 
 	
 	auto renderer = new Renderer(spritemap_data.sprite_positions);
-	renderer->set_sprite(10, 10, "menu-logo");
-	
 	double render_last_time = 0.f;
 
 	log_message(core::logger::info, "Jactorio", "2 - Render phase");
 	while (!glfwWindowShouldClose(window)) {
 		if (glfwGetTime() - render_last_time > render_update_interval) {
+			// renderer->set_sprite(10, 10, "menu-logo");
 			render_last_time = glfwGetTime();
 
 			// Don't multi-thread opengl
