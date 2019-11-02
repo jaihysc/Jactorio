@@ -1,12 +1,14 @@
 #ifndef GAME_WORLD_TILE_H
 #define GAME_WORLD_TILE_H
 
+#include <string>
+
 namespace jactorio::game
 {
 	class Tile
 	{
 	public:
-		unsigned int id;
+		std::string texture_iname;
 	};
 }
 

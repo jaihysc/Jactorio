@@ -2,6 +2,7 @@
 #define DATA_DATA_MANAGER_H
 
 #include <unordered_map>
+#include <vector>
 
 namespace jactorio::data
 {

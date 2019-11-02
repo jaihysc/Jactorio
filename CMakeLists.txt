@@ -21,6 +21,7 @@ set(JACTORIO_INCLUDE_FILES
 	${PROJECT_SOURCE_DIR}/lib/glm/
 	${PROJECT_SOURCE_DIR}/lib/imgui/
 	${PROJECT_SOURCE_DIR}/lib/SFML/include
+	${PROJECT_SOURCE_DIR}/lib/pybind11/include
 )
 #------------ Source files .cpp
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
@@ -28,6 +29,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/filesystem.cpp
 
+	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/startup/data_cfg_parser.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
 
@@ -109,6 +111,7 @@ validate_dependency(lib/stb/stb)	# HEADER
 validate_dependency(lib/glm)		# HEADER
 validate_dependency(lib/imgui/imgui)	# NC
 validate_dependency(lib/SFML)
+validate_dependency(lib/pybind11)
 
 
 # Dependencies build arguments
@@ -119,6 +122,7 @@ set(SFML_STATIC_LIBRARIES TRUE)
 add_subdirectory("lib/glew-cmake")
 add_subdirectory("lib/glfw")
 add_subdirectory("lib/SFML")
+add_subdirectory("lib/pybind11")
 
 
 find_package(SFML 2.5 COMPONENTS graphics)
@@ -138,16 +142,20 @@ set(
 
 # Platform dependencies
 set(
-	LIBS_WIN 
+	LIBS_WIN
+
 	glfw libglew_static
 	sfml-graphics
 	glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib
+	pybind11::embed
 )
 set(
 	LIBS_UNIX
+
 	glfw libglew_static
 	sfml-graphics
 	libGLU.so libGL.so
+	pybind11::embed
 )
 
 
