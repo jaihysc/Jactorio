@@ -69,8 +69,8 @@ void jactorio::renderer::renderer_main() {
 
 
 	// Loading textures
-	std::vector<std::string> texture_paths = data::data_manager::get_all_data(
-		data::data_type::graphics);
+	std::vector<data::Prototype_base> texture_paths = data::data_manager::get_all_data(
+		data::data_category::tile);
 
 	const auto r_sprites = Renderer_sprites{};
 	const Renderer_sprites::Spritemap_data spritemap_data = r_sprites.gen_spritemap(
@@ -86,7 +86,7 @@ void jactorio::renderer::renderer_main() {
 	log_message(core::logger::info, "Jactorio", "2 - Runtime stage");
 	while (!glfwWindowShouldClose(window)) {
 		if (glfwGetTime() - render_last_time > render_update_interval) {
-			// renderer->set_sprite(10, 10, "menu-logo");
+			renderer->set_sprite(10, 10, "menu-logo");
 			render_last_time = glfwGetTime();
 
 			// Don't multi-thread opengl

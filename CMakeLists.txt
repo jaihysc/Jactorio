@@ -30,7 +30,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/filesystem.cpp
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
-	${JACTORIO_DIR}/data/startup/data_cfg_parser.cpp
+	${JACTORIO_DIR}/data/pybind/bindings/data.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
 
 	${JACTORIO_DIR}/game/logic_loop.cpp
@@ -71,7 +71,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
-	${JACTORIO_TEST_DIR}/data/startup/data_cfg_parserTests.cpp
+	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp

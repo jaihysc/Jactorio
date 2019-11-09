@@ -16,21 +16,20 @@ int main(int ac, char* av[]) {
 
 	jactorio::core::filesystem::set_executing_directory(av[0]);
 
-	
-	// Rendering + logic initialization
-	log_message(jactorio::core::logger::info, "Jactorio", "1 - Data stage");
+	{
+		// Rendering + logic initialization
+		log_message(jactorio::core::logger::info, "Jactorio", "1 - Data stage");
 
-	jactorio::data::pybind_manager::py_interpreter_init();
-	jactorio::data::pybind_manager::eval("test.py");
+		jactorio::data::pybind_manager::py_interpreter_init();
 
-	jactorio::data::data_manager::load_data(
-		jactorio::core::filesystem::resolve_path("~/data")
-	);
+		jactorio::data::data_manager::load_data(
+			jactorio::core::filesystem::resolve_path("~/data")
+		);
 
-	std::thread renderer_thread = std::thread(jactorio::renderer::renderer_main);
+		std::thread renderer_thread = std::thread(jactorio::renderer::renderer_main);
+		renderer_thread.join();
+	}
 
-
-	renderer_thread.join();
 
 	jactorio::data::pybind_manager::py_interpreter_terminate();
 

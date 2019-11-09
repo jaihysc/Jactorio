@@ -3,11 +3,10 @@
 
 #include <pybind11/embed.h>
 
-PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
-	// `m` is a `py::module` which is used to bind functions and classes
-	m.def("add", [](int i, int j) {
-		return i + j;
-	});
-}
+/**
+ * Adds a prototype tracked by
+ */
+void modify_proto(const std::string& type, const std::string& iname, const std::string& path);
+
 
 #endif // DATA_PYBIND_BINDINGS_DATA_H

@@ -3,21 +3,26 @@
 
 #include <unordered_map>
 #include <vector>
+#include "data/prototype/prototype_base.h"
 
 namespace jactorio::data
 {
-	enum class data_type
+	enum class data_category
 	{
-		// Used to indicate failure in data resolution
-		none,
-		// PNG
-		graphics,
-		// OGG
+		tile,
 		audio
 	};
 
+	/** Accessed via Hdata access methods
+	* std::string type -> Everything of specified type (E.g image, audio)
+	* >> std::string id - > std::string path to item
+	*/
 	namespace data_manager
 	{
+		// Data_raw functions
+		Prototype_base* data_raw_get(data_category data_category, const std::string& iname);
+		void data_raw_add(data_category data_type, const std::string& iname, const Prototype_base& prototype);
+		
 		/**
 		 * Loads data and their properties from data/ folder,
 		 * data access methods can be used only after calling this
@@ -30,18 +35,12 @@ namespace jactorio::data
 		 * Retrieves non resolved path to file based on type and id <br>
 		 * @return string "!" if specified value does not exist
 		 */
-		std::string get_path(data_type type, const std::string& iname);
-		/**
-		 * Retrieves internal name based on non resolved path <br>
-		 * The opposite of get_path <br>
-		 * @return string "!" if specified value does not exist
-		 */
-		std::string get_iname(data_type type, const std::string& path);
+		std::string get_path(data_category type, const std::string& iname);
 
 		/**
 		 * Gets all data of specified data_type
 		 */
-		std::vector<std::string> get_all_data(data_type type);
+		std::vector<Prototype_base> get_all_data(data_category type);
 	};
 }
 

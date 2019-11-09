@@ -14,16 +14,22 @@ TEST(renderer_sprites, gen_spritemap) {
 	// Image positions are retrieved from the spritemap via the path originally given to create the spritemap
 	
 	// Images are 32 x 32 px
-	const auto img_paths = new std::string[4] {
-		"data/test/graphics/test/test_tile.png",
-		"data/test/graphics/test/test_tile1.png",
-		"data/test/graphics/test/test_tile2.png",
-		"data/test/graphics/test/test_tile3.png",
-	};
+	const auto prototypes = new jactorio::data::Prototype_base[4];
+	prototypes[0].name = "1";
+	prototypes[0].load_sprite("test/graphics/test/test_tile.png");
+
+	prototypes[1].name = "2";
+	prototypes[1].load_sprite("test/graphics/test/test_tile1.png");
+
+	prototypes[2].name = "3";
+	prototypes[2].load_sprite("test/graphics/test/test_tile2.png");
+
+	prototypes[3].name = "4";
+	prototypes[3].load_sprite("test/graphics/test/test_tile3.png");
 
 	const auto r_sprites = jactorio::renderer::Renderer_sprites{};
 	
-	const auto spritemap = r_sprites.gen_spritemap(img_paths, 4);
+	const auto spritemap = r_sprites.gen_spritemap(prototypes, 4);
 
 	EXPECT_EQ(spritemap.spritemap.getSize().x, 160);
 	EXPECT_EQ(spritemap.spritemap.getSize().y, 64);
@@ -58,7 +64,7 @@ TEST(renderer_sprites, gen_spritemap) {
 	// 1.f; 1.f;  // bottom right
 
 	// Validate that the image positions are calculated correctly
-	const auto img1 = spritemap.sprite_positions.at("data/test/graphics/test/test_tile.png");
+	const auto img1 = spritemap.sprite_positions.at("1");
 	EXPECT_EQ(img1.top_left.x, 0.f);
 	EXPECT_EQ(img1.top_left.y, 0.f);
 
@@ -71,7 +77,7 @@ TEST(renderer_sprites, gen_spritemap) {
 	EXPECT_EQ(img1.bottom_right.x, 0.2f);
 	EXPECT_EQ(img1.bottom_right.y, 0.5f);
 
-	const auto img2 = spritemap.sprite_positions.at("data/test/graphics/test/test_tile1.png");
+	const auto img2 = spritemap.sprite_positions.at("2");
 	EXPECT_EQ(img2.top_left.x, 0.2f);
 	EXPECT_EQ(img2.top_left.y, 0.f);
 
@@ -84,7 +90,7 @@ TEST(renderer_sprites, gen_spritemap) {
 	EXPECT_EQ(img2.bottom_right.x, 0.4f);
 	EXPECT_EQ(img2.bottom_right.y, 0.5f);
 
-	const auto img3 = spritemap.sprite_positions.at("data/test/graphics/test/test_tile2.png");
+	const auto img3 = spritemap.sprite_positions.at("3");
 	EXPECT_EQ(img3.top_left.x, 0.4f);
 	EXPECT_EQ(img3.top_left.y, 0.f);
 
@@ -97,7 +103,7 @@ TEST(renderer_sprites, gen_spritemap) {
 	EXPECT_EQ(img3.bottom_right.x, 0.6f);
 	EXPECT_EQ(img3.bottom_right.y, 0.5f);
 
-	const auto img4 = spritemap.sprite_positions.at("data/test/graphics/test/test_tile3.png");
+	const auto img4 = spritemap.sprite_positions.at("4");
 	EXPECT_EQ(img4.top_left.x, 0.6f);
 	EXPECT_EQ(img4.top_left.y, 0.f);
 

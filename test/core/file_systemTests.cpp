@@ -3,6 +3,9 @@
 #include "core/filesystem.h"
 
 TEST(file_system, working_directory_get_set) {
+	// Certain tests require a path to files, store the original executing directory
+	const auto original_path = jactorio::core::filesystem::get_executing_directory() + "/";
+	
 #ifdef WIN32
 	jactorio::core::filesystem::set_executing_directory("C:\\x\\y\\z\\b.exe");
 	EXPECT_EQ(jactorio::core::filesystem::get_executing_directory(), "C:/x/y/z");
@@ -16,9 +19,16 @@ TEST(file_system, working_directory_get_set) {
 
 	jactorio::core::filesystem::set_executing_directory("x/123456.exe");
 	EXPECT_EQ(jactorio::core::filesystem::get_executing_directory(), "x");
+
+	// Re- set the original executing directory
+	jactorio::core::filesystem::set_executing_directory(original_path);
 }
 
 TEST(file_system, resolve_path) {
+	// Certain tests require a path to files, store the original executing directory
+	const auto original_path = jactorio::core::filesystem::get_executing_directory() + "/";
+
+
 	jactorio::core::filesystem::set_executing_directory("antarctica/coolApplication.exe");
 	
 	EXPECT_EQ(
@@ -30,6 +40,9 @@ TEST(file_system, resolve_path) {
 		jactorio::core::filesystem::resolve_path("banana/banana1.png"),
 		"banana/banana1.png"
 	);
+
+	// Re- set the original executing directory
+	jactorio::core::filesystem::set_executing_directory(original_path);
 }
 
 TEST(file_system, read_file_strInvalidPath) {

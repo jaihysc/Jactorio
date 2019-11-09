@@ -35,15 +35,7 @@ void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 
 jactorio::renderer::Renderer::Renderer(
 	const std::unordered_map<std::string, Renderer_sprites::Image_position>& spritemap_coords) {
-
-	spritemap_coords_ = std::unordered_map<std::string, Renderer_sprites::Image_position>{};
-	
-	// Convert the keys for spritemap_coords from unresolved paths into internal names instead
-	for (auto& i : spritemap_coords) {
-		std::string iname = data::data_manager::get_iname(data::data_type::graphics, i.first);
-		spritemap_coords_[iname] = spritemap_coords.at(i.first);
-	}
-
+	spritemap_coords_ = spritemap_coords;
 	
 	// Get window size
 	GLint m_viewport[4];

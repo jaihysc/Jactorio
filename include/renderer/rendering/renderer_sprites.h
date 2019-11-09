@@ -3,12 +3,13 @@
 
 #include <unordered_map>
 #include <string>
-
 #include <SFML/Graphics/Image.hpp>
+
+#include "data/prototype/prototype_base.h"
 
 // Generates spritemaps on initialization with tile sprites
 // - Concatenate sprite into spritemap
-// - Location of a sprite within spritemap retrieved with a getter
+// - Location of a sprite within spritemap
 namespace jactorio::renderer
 {
 	class Renderer_sprites
@@ -36,14 +37,14 @@ namespace jactorio::renderer
 			// Image positions retrieved via the path originally given to create the spritemap
 			// 0 - 1 positions of the sprite within the spritemap
 			// Upper left is 0, 0 - bottom right is 1, 1
+			// std::string is internal name of prototype
 			std::unordered_map<std::string, Image_position> sprite_positions;
 		};
 
 		/*!
-		 * Generated spritemap will be purely horizontal, all images concatenated side by side <br>
-		 * !!! Given image paths must be unique <br>
+		 * Generated spritemap will be purely horizontal, all images concatenated side by side
 		 */
-		Spritemap_data gen_spritemap(std::string* image_paths, unsigned short count) const;
+		Spritemap_data gen_spritemap(data::Prototype_base* images, unsigned short count) const;
 
 
 	private:
