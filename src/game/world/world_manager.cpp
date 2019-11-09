@@ -37,3 +37,55 @@ void jactorio::game::world_manager::clear_chunk_data() {
 
 	world_chunks.clear();
 }
+
+
+// Rendering
+
+void jactorio::game::world_manager::draw_chunks(const renderer::Renderer& renderer,
+                                                const unsigned int window_start_x,
+                                                const unsigned int window_start_y,
+                                                const int chunk_start_x,
+                                                const int chunk_start_y,
+                                                const unsigned int chunk_amount_x,
+                                                const unsigned int chunk_amount_y) {
+	unsigned int window_offset_x = 0;
+	unsigned int window_offset_y = 0;
+
+	unsigned int chunk_offset_x = 0;
+	unsigned int chunk_offset_y = 0;
+
+	for (unsigned int chunk_y = 0; chunk_y < chunk_amount_y; ++chunk_y) {
+		for (unsigned int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
+
+			Tile* const* chunk = get_chunk(chunk_start_x + chunk_offset_x,
+			                               chunk_start_y + chunk_offset_y)->tiles_ptr();
+
+			// Iterate through and draw tiles of a chunk
+			for (int tile_y = 0; tile_y < 32; ++tile_y) {
+				for (int tile_x = 0; tile_x < 32; ++tile_x) {
+					renderer.set_sprite(
+						window_start_x + window_offset_x,
+						window_start_y + window_offset_y,
+						chunk[tile_x + tile_y]->tile_prototype->name);
+
+					window_offset_x++;
+				}
+				
+				window_offset_x = 0;
+				window_offset_y++;
+			}
+
+			// Back to drawing tiles at the top
+			window_offset_x += 32;
+			window_offset_y -= 32;
+			
+			chunk_offset_x++;
+		}
+		// Moving a level down a chunk
+		window_offset_y += 32;
+		
+		chunk_offset_y++;
+	}
+}
+
+

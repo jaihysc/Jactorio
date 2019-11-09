@@ -3,12 +3,15 @@
 
 #include <string>
 
+#include "data/prototype/tile.h"
+
 namespace jactorio::game
 {
+	// World tile
 	class Tile
 	{
 	public:
-		std::string texture_iname;
+		data::Tile* tile_prototype = nullptr;
 	};
 }
 

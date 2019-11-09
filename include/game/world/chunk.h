@@ -20,7 +20,8 @@ namespace jactorio::game
 		 * @param tiles Array of size 32 * 32 (1024) tiles <br>
 		 *			provide nullptr to use not initialize tiles
 		 */
-		Chunk(int x, int y, const Tile* tiles);
+		Chunk(int x, int y, Tile* tiles);
+		~Chunk();
 
 		[[nodiscard]] std::pair<int, int> get_position() const;
 		[[nodiscard]] Tile* const* tiles_ptr() const;

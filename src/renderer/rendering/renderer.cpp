@@ -110,11 +110,14 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 // Spritemap is parameter of constructor
 void jactorio::renderer::Renderer::set_sprite(const unsigned short index_x,
                                               const unsigned short index_y,
-                                              const std::string& sprite_iname) {
+                                              const std::string& sprite_iname) const {
+	// Prevent attempting to access non-existent indices
+	if (index_y >= tile_count_y_ || index_x >= tile_count_x_)
+		return;
+	
 	const auto data = new float[8];
 
-	// TODO validate sprite iname exists?
-	const auto sprite_coords = spritemap_coords_[sprite_iname];
+	const auto sprite_coords = spritemap_coords_.at(sprite_iname);
 	data[0] = sprite_coords.bottom_left.x;
 	data[1] = sprite_coords.bottom_left.y, // bottom left
 	

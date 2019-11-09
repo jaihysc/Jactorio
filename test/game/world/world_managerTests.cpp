@@ -18,7 +18,7 @@ TEST(world_manager, world_add_chunk) {
 	const auto chunk_tiles_ptr = added_chunk->tiles_ptr();
 	for (int i = 0; i < 32 * 32; ++i) {
 		// Blank Tile id when the tiles are uninitialized
-		EXPECT_EQ(chunk_tiles_ptr[i]->texture_iname, "!");
+		EXPECT_EQ(chunk_tiles_ptr[i]->tile_prototype, nullptr);
 	}
 
 	jactorio::game::world_manager::clear_chunk_data();

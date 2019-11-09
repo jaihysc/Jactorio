@@ -64,7 +64,7 @@ namespace jactorio::renderer
 		 * @param sprite_iname Internal name of the sprite
 		 */
 		void set_sprite(unsigned short index_x, unsigned short index_y, const std::string&
-		                sprite_iname);
+		                sprite_iname) const;
 
 		
 		[[nodiscard]] unsigned short get_grid_size_x() const {
