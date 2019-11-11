@@ -62,11 +62,20 @@ float* jactorio::renderer::renderer_grid::gen_texture_grid(
 
 	unsigned short index = 0;
 	for (unsigned int i = 0; i < elements_count; ++i) {
+		// tex_coords[index++] = 0.f;
+		// tex_coords[index++] = 1.f, // bottom left
+		// tex_coords[index++] = 1.f;
+		// tex_coords[index++] = 1.f; // bottom right
+		// tex_coords[index++] = 1.f;
+		// tex_coords[index++] = 0.f; // upper right
+		// tex_coords[index++] = 0.f;
+		// tex_coords[index++] = 0.f; // upper left
+		
 		tex_coords[index++] = 0.f;
-		tex_coords[index++] = 1.f, // bottom left
-		tex_coords[index++] = 1.f;
-		tex_coords[index++] = 1.f; // bottom right
-		tex_coords[index++] = 1.f;
+		tex_coords[index++] = 0.f, // bottom left
+		tex_coords[index++] = 0.f;
+		tex_coords[index++] = 0.f; // bottom right
+		tex_coords[index++] = 0.f;
 		tex_coords[index++] = 0.f; // upper right
 		tex_coords[index++] = 0.f;
 		tex_coords[index++] = 0.f; // upper left

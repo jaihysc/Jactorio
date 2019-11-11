@@ -65,13 +65,26 @@ TEST(Renderer_grid, genTextureGrid) {
 	// 0.f, 0.f,  // upper left
 
 	// Tile 0, 0 rendering positions
+	// EXPECT_EQ(grid[0], 0.f);
+	// EXPECT_EQ(grid[1], 1.f);
+	//
+	// EXPECT_EQ(grid[2], 1.f);
+	// EXPECT_EQ(grid[3], 1.f);
+	//
+	// EXPECT_EQ(grid[4], 1.f);
+	// EXPECT_EQ(grid[5], 0.f);
+	//
+	// EXPECT_EQ(grid[6], 0.f);
+	// EXPECT_EQ(grid[7], 0.f);
+
+	// Do not draw the entire spritemap, instead draw nothing
 	EXPECT_EQ(grid[0], 0.f);
-	EXPECT_EQ(grid[1], 1.f);
+	EXPECT_EQ(grid[1], 0.f);
 
-	EXPECT_EQ(grid[2], 1.f);
-	EXPECT_EQ(grid[3], 1.f);
+	EXPECT_EQ(grid[2], 0.f);
+	EXPECT_EQ(grid[3], 0.f);
 
-	EXPECT_EQ(grid[4], 1.f);
+	EXPECT_EQ(grid[4], 0.f);
 	EXPECT_EQ(grid[5], 0.f);
 
 	EXPECT_EQ(grid[6], 0.f);

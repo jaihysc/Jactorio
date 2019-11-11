@@ -87,7 +87,7 @@ void jactorio::renderer::renderer_main() {
 	// World generator test
 	auto* tiles = new game::Tile[1024];
 	for (int i = 0; i < 32 * 32; ++i) {
-		const auto proto_tile = data::data_manager::data_raw_get(data::data_category::tile, "grass-1");
+		const auto proto_tile = data::data_manager::data_raw_get(data::data_category::tile, "test_tile");
 
 		tiles[i].tile_prototype = static_cast<data::Tile*>(proto_tile);
 	}
@@ -101,7 +101,7 @@ void jactorio::renderer::renderer_main() {
 			render_last_time = glfwGetTime();
 
 			game::world_manager::draw_chunks(*renderer, 
-			                                 10, 0, 
+			                                 10, 20, 
 			                                 0, 0, 
 			                                 1, 1);
 			
