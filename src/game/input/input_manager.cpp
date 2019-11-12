@@ -1,5 +1,6 @@
 #include "game/input/input_manager.h"
 
+#include <GLFW/glfw3.h>
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
@@ -52,6 +53,11 @@ void jactorio::game::input_manager::dispatch_input_callbacks() {
 	// Call callbacks registered to the input
 	for (unsigned int id : vector) {
 		input_callbacks[id]();
+	}
+
+	// Event handlers for release will only trigger once
+	if (std::get<1>(active_input) == GLFW_RELEASE) {
+		std::get<1>(active_input) = -1;
 	}
 }
 

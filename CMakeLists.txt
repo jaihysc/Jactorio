@@ -28,6 +28,7 @@ set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
 set(JACTORIO_SRC_FILES 
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/filesystem.cpp
+	${JACTORIO_DIR}/core/loop_manager.cpp
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/pybind/bindings/data.cpp
@@ -70,6 +71,7 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
+	${JACTORIO_TEST_DIR}/core/loop_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
@@ -78,7 +80,6 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
 
-	${JACTORIO_TEST_DIR}/renderer/render_mainTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/manager/renderer_managerTests.cpp
 

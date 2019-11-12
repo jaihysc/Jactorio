@@ -55,11 +55,11 @@ TEST(input_manager, dispatch_input_callbacks) {
 	input::dispatch_input_callbacks();
 	EXPECT_EQ(counter, 1);
 
-	// Callback3 called twice
+	// The GLFW_RELEASE action is only ever calls callbacks once
 	input::set_input(GLFW_KEY_X, GLFW_RELEASE, GLFW_MOD_CAPS_LOCK);
 	input::dispatch_input_callbacks();
 	input::dispatch_input_callbacks();
-	EXPECT_EQ(counter, 3);
+	EXPECT_EQ(counter, 2);
 }
 
 

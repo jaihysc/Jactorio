@@ -4,7 +4,10 @@
 
 #include <vector>
 
+#include "core/logger.h"
+#include "core/loop_manager.h"
 #include "data/data_manager.h"
+#include "game/world/world_manager.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/window/window_manager.h"
 #include "renderer/opengl/shader_manager.h"
@@ -13,15 +16,22 @@
 #include "renderer/rendering/renderer.h"
 #include "renderer/rendering/renderer_sprites.h"
 #include "renderer/render_loop.h"
-#include "core/logger.h"
-#include "game/world/world_manager.h"
+#include "game/input/input_manager.h"
 
-bool refresh_renderer = false;
-unsigned short window_x = 0;
-unsigned short window_y = 0;
+namespace jactorio::renderer
+{
+	bool refresh_renderer = false;
+	unsigned short window_x = 0;
+	unsigned short window_y = 0;
 
-unsigned short render_refresh_rate = 60;
-float render_update_interval = 1.f / render_refresh_rate;
+	bool render_draw = false;
+	// Called every renderer cycle, cannot put code in callback due to single thread of opengl
+	void renderer_draw() {
+		render_draw = true;
+	}
+
+	bool toggle_fullscreen = false;
+}
 
 void jactorio::renderer::set_recalculate_renderer(const unsigned short window_size_x,
                                                   const unsigned short window_size_y) {
@@ -32,17 +42,7 @@ void jactorio::renderer::set_recalculate_renderer(const unsigned short window_si
 }
 
 
-void jactorio::renderer::set_render_refresh_rate(const unsigned short refresh_rate) {
-	render_refresh_rate = refresh_rate;
-	render_update_interval = 1.f / render_refresh_rate;
-}
-
-unsigned short jactorio::renderer::get_render_refresh_rate() {
-	return render_refresh_rate;
-}
-
-
-void jactorio::renderer::renderer_main() {
+void jactorio::renderer::render_init() {
 	if (window_manager::init(640, 490) != 0)
 		return;
 
@@ -79,9 +79,8 @@ void jactorio::renderer::renderer_main() {
 	const Texture texture(spritemap_data.spritemap);
 	texture.bind(0);
 
-	
-	auto renderer = new Renderer(spritemap_data.sprite_positions);
-	double render_last_time = 0.f;
+
+	auto* renderer = new Renderer(spritemap_data.sprite_positions);
 
 
 	// World generator test
@@ -93,18 +92,37 @@ void jactorio::renderer::renderer_main() {
 	}
 	
 	game::world_manager::add_chunk(new game::Chunk{0, 0, tiles});
+
+
+	game::input_manager::register_input_callback([]() {
+		glfwSetWindowShouldClose(window_manager::get_window(), GL_TRUE);
+		
+	}, GLFW_KEY_ESCAPE, GLFW_RELEASE);
+
+	game::input_manager::register_input_callback([]() {
+		toggle_fullscreen = true;
+	}, GLFW_KEY_SPACE, GLFW_RELEASE);
+
 	
-
+	// #################################################################
 	log_message(core::logger::info, "Jactorio", "2 - Runtime stage");
-	while (!glfwWindowShouldClose(window)) {
-		if (glfwGetTime() - render_last_time > render_update_interval) {
-			render_last_time = glfwGetTime();
 
-			game::world_manager::draw_chunks(*renderer, 
-			                                 10, 20, 
-			                                 0, 0, 
-			                                 1, 1);
+	core::loop_manager::render_loop_ready(renderer_draw);
+	while (!glfwWindowShouldClose(window)) {
+		if (render_draw) {
+
+			// Think of a better way to toggle fullscreen?
+			if (toggle_fullscreen) {
+				toggle_fullscreen = false;
+				window_manager::set_fullscreen(!window_manager::is_fullscreen());
+			}
 			
+			render_draw = false;
+			game::world_manager::draw_chunks(*renderer,
+			                                 10, 20,
+			                                 0, 0,
+			                                 1, 1);
+
 			// Don't multi-thread opengl
 			render_loop(renderer);
 
@@ -113,8 +131,12 @@ void jactorio::renderer::renderer_main() {
 				renderer->recalculate_buffers(window_x, window_y);
 				refresh_renderer = false;
 			}
+
+			core::loop_manager::render_loop_complete();
 		}
 	}
+
+	core::loop_manager::terminate_loop_manager();
 
 	imgui_terminate();
 	window_manager::terminate();

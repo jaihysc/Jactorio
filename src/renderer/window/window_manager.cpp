@@ -8,6 +8,8 @@
 #include <sstream>
 
 #include "core/logger.h"
+#include "core/loop_manager.h"
+#include "game/input/input_manager.h"
 #include "renderer/render_main.h"
 #include "renderer/opengl/error.h"
 
@@ -43,7 +45,7 @@ void jactorio::renderer::window_manager::set_fullscreen(const bool fullscreen) {
 
 		// switch to full screen
 		glfwSetWindowMonitor(glfw_window, monitor, 0, 0, mode->width, mode->height,
-		                     get_render_refresh_rate());
+		                     core::loop_manager::get_render_refresh_rate());
 	}
 	else {
 		// restore last window size and position
@@ -71,12 +73,7 @@ void callback_resize(GLFWwindow* window, int cx, int cy) {
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (action == GLFW_RELEASE)
-		if (key == GLFW_KEY_ESCAPE)
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		else if (key == GLFW_KEY_SPACE)
-			jactorio::renderer::window_manager::set_fullscreen(
-				!jactorio::renderer::window_manager::is_fullscreen());
+	jactorio::game::input_manager::set_input(key, action, mods);
 }
 
 

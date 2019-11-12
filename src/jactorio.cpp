@@ -3,11 +3,14 @@
 
 #include "jactorio.h"
 
-#include "renderer/render_main.h"
 #include "core/filesystem.h"
-#include "data/data_manager.h"
 #include "core/logger.h"
+#include "core/loop_manager.h"
+#include "data/data_manager.h"
 #include "data/pybind/pybind_manager.h"
+#include "game/logic_loop.h"
+#include "renderer/render_main.h"
+
 
 int main(int ac, char* av[]) {
 	// Initial startup message
@@ -17,6 +20,9 @@ int main(int ac, char* av[]) {
 	jactorio::core::filesystem::set_executing_directory(av[0]);
 
 	{
+		jactorio::core::loop_manager::initialize_loop_manager();
+
+		
 		// Rendering + logic initialization
 		log_message(jactorio::core::logger::info, "Jactorio", "1 - Data stage");
 
@@ -26,7 +32,10 @@ int main(int ac, char* av[]) {
 			jactorio::core::filesystem::resolve_path("~/data")
 		);
 
-		std::thread renderer_thread = std::thread(jactorio::renderer::renderer_main);
+		// Loop manager terminated in renderer_thread as it requires glfw for time
+		jactorio::game::logic_loop();
+		std::thread renderer_thread = std::thread(jactorio::renderer::render_init);
+
 		renderer_thread.join();
 	}
 
