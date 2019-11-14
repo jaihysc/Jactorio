@@ -1,6 +1,8 @@
 #ifndef GAME_INPUT_INPUT_MANAGER_H
 #define GAME_INPUT_INPUT_MANAGER_H
 
+#include <GLFW/glfw3.h>
+
 using input_callback = void(*)();
 
 namespace jactorio::game::input_manager

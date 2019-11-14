@@ -33,9 +33,10 @@ int main(int ac, char* av[]) {
 		);
 
 		// Loop manager terminated in renderer_thread as it requires glfw for time
-		jactorio::game::logic_loop();
+		std::thread logic_thread = std::thread(jactorio::game::logic_loop);
 		std::thread renderer_thread = std::thread(jactorio::renderer::render_init);
 
+		logic_thread.join();
 		renderer_thread.join();
 	}
 

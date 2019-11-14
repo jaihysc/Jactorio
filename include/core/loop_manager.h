@@ -14,19 +14,39 @@ namespace jactorio::core::loop_manager
 
 	void initialize_loop_manager();
 	void terminate_loop_manager();
+
+	/**
+	 * @return Whether or not the loop manager is running
+	 */
+	bool loop_manager_terminated();
 	
 	// Render loop
 	void set_render_refresh_rate(unsigned short refresh_rate);
 	unsigned short get_render_refresh_rate();
-	
+
+	/**
+	 * Call this after render loop is initiated
+	 * @param callback Will be called when the loop should run
+	 */
 	void render_loop_ready(loop_run_callback callback);
+	/**
+	 * Call this after completing one cycle of the render loop
+	 */
 	void render_loop_complete();
+
 	
 	// Logic loop
 	void set_logic_refresh_rate(unsigned short refresh_rate);
 	unsigned short get_logic_refresh_rate();
-	
+
+	/**
+	 * Call this after logic loop is initiated
+	 * @param callback Will be called when the loop should run
+	 */
 	void logic_loop_ready(loop_run_callback callback);
+	/**
+	 * Call this after completing one cycle of the logic loop
+	 */
 	void logic_loop_complete();
 }
 

@@ -1,6 +1,5 @@
 #include "game/input/input_manager.h"
 
-#include <GLFW/glfw3.h>
 #include <unordered_map>
 #include <vector>
 #include <algorithm>

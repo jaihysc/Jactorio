@@ -84,14 +84,20 @@ void jactorio::renderer::render_init() {
 
 
 	// World generator test
+	// TODO chunk data needs to be deleted
 	auto* tiles = new game::Tile[1024];
 	for (int i = 0; i < 32 * 32; ++i) {
 		const auto proto_tile = data::data_manager::data_raw_get(data::data_category::tile, "test_tile");
 
 		tiles[i].tile_prototype = static_cast<data::Tile*>(proto_tile);
 	}
-	
-	game::world_manager::add_chunk(new game::Chunk{0, 0, tiles});
+
+	for (int y = 0; y < 10; ++y) {
+		for (int x = 0; x < 10; ++x) {
+			game::world_manager::add_chunk(new game::Chunk{ x, y, tiles});
+
+		}
+	}
 
 
 	game::input_manager::register_input_callback([]() {
@@ -119,9 +125,9 @@ void jactorio::renderer::render_init() {
 			
 			render_draw = false;
 			game::world_manager::draw_chunks(*renderer,
-			                                 10, 20,
+			                                 1, 2,
 			                                 0, 0,
-			                                 1, 1);
+			                                 2, 1);
 
 			// Don't multi-thread opengl
 			render_loop(renderer);
