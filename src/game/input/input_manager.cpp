@@ -18,8 +18,8 @@ std::unordered_map<std::tuple<int, int, int>, std::vector<unsigned int>,
 std::unordered_map<unsigned int, input_callback> input_callbacks;
 
 
-// Currently set input
-std::tuple<int, int, int> active_input;
+// Currently set input(s)
+std::unordered_map<int, std::tuple<int, int, int>> active_inputs;
 
 unsigned jactorio::game::input_manager::register_input_callback(const input_callback callback,
                                                                 const int key, const int action,
@@ -40,23 +40,28 @@ unsigned jactorio::game::input_manager::register_input_callback(const input_call
 }
 
 void jactorio::game::input_manager::set_input(const int key, const int action, const int mods) {
-	active_input = std::tuple<int, int, int>{ key, action, mods};
+	const auto input = std::tuple<int, int, int>{ key, action, mods};
+	active_inputs[key] = input;
 }
 
 void jactorio::game::input_manager::dispatch_input_callbacks() {
-	// If no callbacks are registered
-	if (callback_ids.find(active_input) == callback_ids.end())
-		return;
+	for (auto& active_input : active_inputs) {
+		std::tuple<int, int, int>& input = active_input.second;
+		
+		// No callbacks registered for input
+		if (callback_ids.find(input) == callback_ids.end())
+			continue;
 
-	const auto& vector = callback_ids[active_input];
-	// Call callbacks registered to the input
-	for (unsigned int id : vector) {
-		input_callbacks[id]();
-	}
+		// Call callbacks registered to the input
+		const auto& vector = callback_ids[input];
+		for (unsigned int id : vector) {
+			input_callbacks[id]();
+		}
 
-	// Event handlers for release will only trigger once
-	if (std::get<1>(active_input) == GLFW_RELEASE) {
-		std::get<1>(active_input) = -1;
+		// Event handlers for release will only trigger once
+		if (std::get<1>(input) == GLFW_RELEASE) {
+			std::get<1>(input) = -1;
+		}
 	}
 }
 

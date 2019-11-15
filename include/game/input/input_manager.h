@@ -18,8 +18,8 @@ namespace jactorio::game::input_manager
 
 	
 	/**
-	 * Sets the inputs combinations when dispatching the input callback<br>
-	 * Callbacks are called when dispatch_input_callbacks() is called
+	 * Sets the static of an input<br>
+	 * Callbacks for the respective inputs are called when dispatch_input_callbacks() is called
 	 */
 	void set_input(int key, int action, int mods = 0);
 
