@@ -29,7 +29,3 @@ jactorio::game::Chunk::~Chunk() {
 std::pair<int, int> jactorio::game::Chunk::get_position() const {
 	return position_;
 }
-
-jactorio::game::Tile* const* jactorio::game::Chunk::tiles_ptr() const {
-	return tiles_;
-}
