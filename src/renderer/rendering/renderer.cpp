@@ -13,19 +13,15 @@
 
 float jactorio::renderer::Renderer::tile_projection_matrix_offset = 0;
 
-
-const unsigned short tile_width = 16;
-
-
-unsigned short jactorio::renderer::Renderer::window_width_ = 10;
-unsigned short jactorio::renderer::Renderer::window_height_ = 10;
+unsigned short jactorio::renderer::Renderer::window_width_ = 0;
+unsigned short jactorio::renderer::Renderer::window_height_ = 0;
 
 
 void jactorio::renderer::Renderer::update_tile_projection_matrix() {
-	// TODO There will be a black bar on the right and bottom from the tile not being wide enough to fit.
-	// Possible fixes:
-	// 1. Zooming in so one cannot see the black bar
-	// 2. Extending the projection matrix area to render past the edge of the screen
+	// Disallow zooming out too far to see the edges of the render bounds
+	// Since the view transform moves to a maximum of tile_width, shrink the max zoom by tile_width
+	if (tile_projection_matrix_offset < tile_width)
+		tile_projection_matrix_offset = tile_width;
 
 	setg_projection_matrix(
 		mvp_manager::to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset)
@@ -60,8 +56,9 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 		mvp_manager::projection_calculate_tile_properties(tile_width, window_x, window_y);
 
 	// Initialize fields
-	tile_count_x_ = tile_projection_data.tiles_x;
-	tile_count_y_ = tile_projection_data.tiles_y;
+	// Raise the bottom and right by tile_width so the last tile has enough space to render out
+	tile_count_x_ = tile_projection_data.tiles_x + 1;
+	tile_count_y_ = tile_projection_data.tiles_y + 1;
 	
 	grid_vertices_count_ = (tile_count_x_ + 1) * (tile_count_y_ + 1);
 	grid_elements_count_ = tile_count_x_ * tile_count_y_;

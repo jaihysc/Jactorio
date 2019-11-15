@@ -28,6 +28,7 @@ TEST(mvp_manager, projection_tile_calculation_and_matrix) {
 	EXPECT_EQ(tile_prop.tiles_y, 108);
 
 	// Matrix
+	// A tile is 16 px, it will lock it to that minimum
 	const auto proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
 		tile_prop.tiles_x, tile_prop.tiles_y, 0);
 

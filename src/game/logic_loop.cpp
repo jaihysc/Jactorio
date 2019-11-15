@@ -3,44 +3,45 @@
 #include "core/loop_manager.h"
 #include "game/input/input_manager.h"
 #include "core/logger.h"
-#include "renderer/rendering/mvp_manager.h"
+#include "renderer/rendering/world_renderer.h"
 
 namespace jactorio::game
 {
 	bool run_logic_loop = false;
 }
 
+const long long move_speed = 1;
 void jactorio::game::logic_loop() {
 	// Logic initialization here...
 
-	// Temporary camera controls
+	// Movement controls
 	input_manager::register_input_callback([]() {
-		renderer::mvp_manager::get_view_transform()->y += 10;
+		renderer::world_renderer::player_position_y -= move_speed;
 	}, GLFW_KEY_W, GLFW_PRESS);
 	input_manager::register_input_callback([]() {
-		renderer::mvp_manager::get_view_transform()->y += 10;
+		renderer::world_renderer::player_position_y -= move_speed;
 	}, GLFW_KEY_W, GLFW_REPEAT);
 
 	
 	input_manager::register_input_callback([]() {
-		renderer::mvp_manager::get_view_transform()->y -= 10;
+		renderer::world_renderer::player_position_y += move_speed;
 	}, GLFW_KEY_S, GLFW_PRESS);
 	input_manager::register_input_callback([]() {
-		renderer::mvp_manager::get_view_transform()->y -= 10;
+		renderer::world_renderer::player_position_y += move_speed;
 	}, GLFW_KEY_S, GLFW_REPEAT);
 	
 	input_manager::register_input_callback([]() {
-		renderer::mvp_manager::get_view_transform()->x += 10;
+		renderer::world_renderer::player_position_x -= move_speed;
 	}, GLFW_KEY_A, GLFW_PRESS);
 	input_manager::register_input_callback([]() {
-		renderer::mvp_manager::get_view_transform()->x += 10;
+		renderer::world_renderer::player_position_x -= move_speed;
 	}, GLFW_KEY_A, GLFW_REPEAT);
 	
 	input_manager::register_input_callback([]() {
-		renderer::mvp_manager::get_view_transform()->x -= 10;
+		renderer::world_renderer::player_position_x += move_speed;
 	}, GLFW_KEY_D, GLFW_PRESS);
 	input_manager::register_input_callback([]() {
-		renderer::mvp_manager::get_view_transform()->x -= 10;
+		renderer::world_renderer::player_position_x += move_speed;
 	}, GLFW_KEY_D, GLFW_REPEAT);
 
 	
