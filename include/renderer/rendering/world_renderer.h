@@ -1,0 +1,9 @@
+#ifndef RENDERER_RENDERING_WORLD_RENDERER_H
+#define RENDERER_RENDERING_WORLD_RENDERER_H
+
+namespace jactorio::renderer
+{
+	
+}
+
+#endif // RENDERER_RENDERING_WORLD_RENDERER_H

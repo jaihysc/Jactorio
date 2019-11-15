@@ -1,4 +1,4 @@
-#include "renderer/rendering/renderer_sprites.h"
+#include "renderer/rendering/spritemap_generator.h"
 
 #include "core/logger.h"
 

@@ -42,8 +42,8 @@ void jactorio::game::world_manager::clear_chunk_data() {
 // Rendering
 
 void jactorio::game::world_manager::draw_chunks(const renderer::Renderer& renderer,
-                                                const unsigned int window_start_x,
-                                                const unsigned int window_start_y,
+                                                const int window_start_x,
+                                                const int window_start_y,
                                                 const int chunk_start_x,
                                                 const int chunk_start_y,
                                                 const unsigned int chunk_amount_x,

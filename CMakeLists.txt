@@ -56,10 +56,11 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
 
 	${JACTORIO_DIR}/renderer/rendering/renderer_manager.cpp
+	${JACTORIO_DIR}/renderer/rendering/world_renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_grid.cpp
-	${JACTORIO_DIR}/renderer/rendering/renderer_sprites.cpp
+	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
 
 	${JACTORIO_DIR}/renderer/window/window_manager.cpp
 )
@@ -84,7 +85,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/renderer/manager/renderer_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/rendering/rendererTests.cpp
-	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_spritesTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp

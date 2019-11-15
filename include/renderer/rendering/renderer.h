@@ -7,7 +7,7 @@
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/vertex_buffer.h"
 #include "renderer/opengl/vertex_array.h"
-#include "renderer/rendering/renderer_sprites.h"
+#include "renderer/rendering/spritemap_generator.h"
 
 namespace jactorio::renderer
 {

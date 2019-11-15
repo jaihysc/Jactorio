@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "renderer/rendering/renderer_sprites.h"
+#include "renderer/rendering/spritemap_generator.h"
 
 void debug_print_color(const sf::Color color) {
 	printf("%d %d %d %d\n", color.r, color.g, color.b, color.a);

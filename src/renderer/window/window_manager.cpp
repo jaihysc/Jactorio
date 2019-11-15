@@ -12,6 +12,7 @@
 #include "game/input/input_manager.h"
 #include "renderer/render_main.h"
 #include "renderer/opengl/error.h"
+#include "renderer/rendering/renderer.h"
 
 namespace logger = jactorio::core::logger;
 
@@ -57,26 +58,6 @@ void jactorio::renderer::window_manager::set_fullscreen(const bool fullscreen) {
 	update_viewport = true;
 }
 
-/// Callbacks
-
-void callback_resize(GLFWwindow* window, int cx, int cy) {
-	// Ignore window minimize (resolution 0 x 0)
-	if (cx > 0 && cy > 0) {
-		// glViewport is critical, changes the size of the rendering area
-		glViewport(0, 0, cx, cy);
-		jactorio::renderer::set_recalculate_renderer(cx, cy);
-
-		std::stringstream ss;
-		ss << "Resolution changed to: " << cx << " by " << cy;
-		log_message(logger::debug, "Window_manager", ss.str());
-	}
-}
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	jactorio::game::input_manager::set_input(key, action, mods);
-}
-
-
 ///
 
 int jactorio::renderer::window_manager::init(const int width, const int height) {
@@ -110,9 +91,33 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 	update_viewport = true;
 
-	// Set callbacks
-	glfwSetWindowSizeCallback(glfw_window, callback_resize);
-	glfwSetKeyCallback(glfw_window, key_callback);
+	glfwSetWindowSizeCallback(glfw_window, [](GLFWwindow* window, int cx, int cy) {
+		// Ignore window minimize (resolution 0 x 0)
+		if (cx > 0 && cy > 0) {
+			// glViewport is critical, changes the size of the rendering area
+			glViewport(0, 0, cx, cy);
+			jactorio::renderer::set_recalculate_renderer(cx, cy);
+
+			std::stringstream ss;
+			ss << "Resolution changed to: " << cx << " by " << cy;
+			log_message(logger::debug, "Window_manager", ss.str());
+		}
+	});
+
+	// Mouse and keyboard callbacks
+	glfwSetKeyCallback(
+		glfw_window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+			game::input_manager::set_input(key, action, mods);
+		});
+	
+	glfwSetMouseButtonCallback(glfw_window, [](GLFWwindow* window, int key, int action, int mods) {
+		game::input_manager::set_input(key, action, mods);
+	});
+	glfwSetScrollCallback(glfw_window, [](GLFWwindow* window, double xoffset, double yoffset) {
+		Renderer::tile_projection_matrix_offset += yoffset * 10;
+	});
+
+	
 	gl_context_active = true;
 
 	log_message(logger::info, "Window manager", "OpenGL Initialization successful");

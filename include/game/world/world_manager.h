@@ -45,8 +45,8 @@ namespace jactorio::game::world_manager
 	 * @param chunk_amount_x How many chunks to draw on x axis to the right ->
 	 * @param chunk_amount_y How many chunks to draw on y axis downwards \/
 	 */
-	void draw_chunks(const renderer::Renderer& renderer, unsigned window_start_x,
-	                 unsigned window_start_y,
+	void draw_chunks(const renderer::Renderer& renderer, const int window_start_x,
+	                 const int window_start_y,
 	                 int chunk_start_x, int chunk_start_y, unsigned chunk_amount_x, unsigned
 	                 chunk_amount_y);
 }

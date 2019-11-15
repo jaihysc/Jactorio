@@ -14,7 +14,7 @@
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/renderer.h"
-#include "renderer/rendering/renderer_sprites.h"
+#include "renderer/rendering/spritemap_generator.h"
 #include "renderer/render_loop.h"
 #include "game/input/input_manager.h"
 
@@ -125,9 +125,9 @@ void jactorio::renderer::render_init() {
 			
 			render_draw = false;
 			game::world_manager::draw_chunks(*renderer,
-			                                 1, 2,
+			                                 -11, -12,
 			                                 0, 0,
-			                                 2, 1);
+			                                 1, 1);
 
 			// Don't multi-thread opengl
 			render_loop(renderer);
