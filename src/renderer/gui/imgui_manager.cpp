@@ -10,6 +10,7 @@
 #include "renderer/gui/imgui_opengl3.h"
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/rendering/renderer.h"
+#include "renderer/rendering/world_renderer.h"
 
 namespace logger = jactorio::core::logger;
 
@@ -58,6 +59,10 @@ void jactorio::renderer::imgui_draw() {
 	Renderer::update_tile_projection_matrix();
 	
 	// Buttons return true when clicked (most widgets return true when edited/activated)
+	ImGui::Text("Player position %lld %lld", 
+	            world_renderer::player_position_x, 
+	            world_renderer::player_position_y);
+	
 	ImGui::NewLine();
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

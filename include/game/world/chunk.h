@@ -24,7 +24,10 @@ namespace jactorio::game
 		~Chunk();
 
 		[[nodiscard]] std::pair<int, int> get_position() const;
-		[[nodiscard]] Tile* const* tiles_ptr() const;
+
+		[[nodiscard]] Tile** tiles_ptr() {
+			return tiles_;
+		};
 	};
 }
 

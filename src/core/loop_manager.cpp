@@ -95,7 +95,11 @@ void jactorio::core::loop_manager::initialize_loop_manager() {
 	loop_manager_thread = std::thread(loop_manager_loop);
 
 	// Wait until loop_ready is set to know the loop is ready
-	while (!loop_ready);
+	log_message(logger::debug, "Loop Manager", "Waiting for loop manager to initialize...");
+	while (true) {
+		if (loop_ready)
+			break;
+	}
 
 	log_message(logger::debug, "Loop Manager", "Loop manager initialized");
 }

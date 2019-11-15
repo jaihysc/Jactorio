@@ -32,6 +32,8 @@ namespace jactorio::renderer
 		static unsigned short window_height_;
 
 	public:
+		static const unsigned short tile_width = 16;
+
 		explicit Renderer(
 			const std::unordered_map<std::string, Renderer_sprites::Image_position>& spritemap_coords);
 		~Renderer();
