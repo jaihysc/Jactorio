@@ -117,7 +117,7 @@ validate_dependency(lib/glm)		# HEADER
 validate_dependency(lib/imgui/imgui)	# NC
 validate_dependency(lib/SFML)
 validate_dependency(lib/pybind11)
-
+validate_dependency(lib/libnoise)
 
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)

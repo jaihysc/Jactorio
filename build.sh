@@ -19,7 +19,7 @@ fi
 cd ./out
 # Build tests if --no-build-tests is not defined
 if [ "$2" == "--no-build-tests" ]; then
-    cmake .. -DCMAKE_BUILD_TYPE=$1
+    cmake .. -DCMAKE_BUILD_TYPE=$1 -DJACTORIO_BUILD_TESTS:BOOL="False"
 else
     cmake .. -DCMAKE_BUILD_TYPE=$1 -DJACTORIO_BUILD_TESTS:BOOL="True"
 fi
