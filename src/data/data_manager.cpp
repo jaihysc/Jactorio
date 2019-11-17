@@ -55,13 +55,9 @@ void jactorio::data::data_manager::load_data(
 
 		// data.cfg file does not exist
 		if (py_file_contents.empty()) {
-			std::stringstream log_ss;
-			log_ss << "Directory " << data_folder_path << "/" << directory_name
-				<< " has empty or no data.py file. Ignoring.";
-			log_message(core::logger::warning,
-			            "Data manager",
-			            log_ss.str());
-
+			LOG_MESSAGE_f(warning, "Directory %s/%s has no or empty data.py file. Ignoring",
+			              data_folder_path.c_str(),
+			              directory_name.c_str())
 			continue;
 		}
 
@@ -69,15 +65,13 @@ void jactorio::data::data_manager::load_data(
 		std::string result = pybind_manager::exec(py_file_contents, directory_name);
 		if (!result.empty()) {
 			// Error occurred
-			log_message(core::logger::error, "Data manager", result);
+			LOG_MESSAGE_f(error, "%s", result.c_str())
 			continue;
 		}
 
-		std::stringstream log_ss;
-		log_ss << data_folder_path << "/" << directory_name <<
-			" loaded successfully";
-		log_message(core::logger::info,
-		            "Data manager", log_ss.str());
+		LOG_MESSAGE_f(warning, "Directory %s/%s loaded",
+		              data_folder_path.c_str(),
+		              directory_name.c_str())
 	}
 }
 

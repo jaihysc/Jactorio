@@ -118,7 +118,7 @@ void jactorio::renderer::render_init() {
 
 	
 	// #################################################################
-	log_message(core::logger::info, "Jactorio", "2 - Runtime stage");
+	LOG_MESSAGE(info, "2 - Runtime stage")
 
 	core::loop_manager::render_loop_ready(renderer_draw);
 	while (!glfwWindowShouldClose(window)) {

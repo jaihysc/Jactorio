@@ -2,8 +2,6 @@
 
 #include "core/logger.h"
 
-namespace logger = jactorio::core::logger;
-
 void jactorio::renderer::Renderer_sprites::set_image_positions(
 	Image_position& image_position,
 	const sf::Vector2u image_dimensions,
@@ -30,7 +28,7 @@ void jactorio::renderer::Renderer_sprites::set_image_positions(
 
 jactorio::renderer::Renderer_sprites::Spritemap_data jactorio::renderer::
 Renderer_sprites::gen_spritemap(data::Prototype_base* images, const unsigned short count) const {
-	log_message(logger::info, "Renderer sprites", "Generating spritemap");
+	LOG_MESSAGE(info, "Generating spritemap...")
 	
 	std::unordered_map<std::string, Image_position> image_positions;
 	unsigned int image_position_offset_x = 0;

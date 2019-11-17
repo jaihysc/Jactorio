@@ -32,7 +32,7 @@ namespace jactorio::core::loop_manager
 	bool logic_loop_finished = false;
 
 	void loop_manager_loop() {
-		log_message(logger::debug, "Loop Manager", "Loop manager initialized");
+		LOG_MESSAGE(debug, "Loop manager initialized")
 
 		while (!loop_terminate) {
 			// Wait for both loops to be ready
@@ -44,8 +44,9 @@ namespace jactorio::core::loop_manager
 			if (time - render_last_time > render_update_interval) {
 				render_last_time = time;
 
-				if (!render_loop_finished)
-					log_message(logger::warning, "Loop Manager", "Render loop missed tick");
+				if (!render_loop_finished) {
+					LOG_MESSAGE(warning, "Render loop missed tick")
+				}
 
 				render_loop_finished = false;
 				render_callback();
@@ -53,15 +54,16 @@ namespace jactorio::core::loop_manager
 			if (time - logic_last_time > logic_update_interval) {
 				logic_last_time = time;
 
-				if (!logic_loop_finished)
-					log_message(logger::warning, "Loop Manager", "Logic loop missed tick");
+				if (!logic_loop_finished) {
+					LOG_MESSAGE(warning, "Logic loop missed tick")
+				}
 
 				logic_loop_finished = false;
 				logic_callback();
 			}
 
 		}
-		log_message(logger::debug, "Loop Manager", "Loop manager terminated");
+		LOG_MESSAGE(debug, "Loop manager terminated")
 	}
 }
 

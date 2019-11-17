@@ -12,8 +12,6 @@
 #include "renderer/rendering/renderer.h"
 #include "renderer/rendering/world_renderer.h"
 
-namespace logger = jactorio::core::logger;
-
 // States
 bool show_demo_window = false;
 
@@ -33,7 +31,7 @@ void jactorio::renderer::setup(GLFWwindow* window) {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
-	log_message(logger::info, "Imgui", "imgui Initialized");
+	LOG_MESSAGE(info, "Imgui initialized")
 }
 
 void jactorio::renderer::imgui_draw() {
@@ -79,5 +77,6 @@ void jactorio::renderer::imgui_terminate() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-	log_message(logger::info, "Imgui", "imgui terminated");
+
+	LOG_MESSAGE(info, "Imgui terminated")
 }

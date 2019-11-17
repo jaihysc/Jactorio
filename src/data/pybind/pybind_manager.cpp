@@ -4,7 +4,6 @@
 
 #include "core/logger.h"
 
-namespace logger = jactorio::core::logger;
 namespace py = pybind11;
 
 // Bindings to expose to python
@@ -25,13 +24,12 @@ std::string jactorio::data::pybind_manager::exec(const std::string& python_str, 
 		const std::string std_out = py::str(py_stdout_buffer.attr("read")());
 		const std::string std_err = py::str(py_stderr_buffer.attr("read")());
 
-		if (!std_out.empty())
-			log_message(logger::info, "Python interpreter - " + file_name,
-			            std_out);
-
-		if (!std_err.empty())
-			log_message(logger::error, "Python interpreter - " + file_name,
-			            std_err);
+		if (!std_out.empty()) {
+			LOG_MESSAGE_f(info, "%s %s", file_name.c_str(), std_out.c_str())
+		}
+		if (!std_err.empty()) {
+			LOG_MESSAGE_f(error, "%s - %s", file_name.c_str(), std_err.c_str())
+		}
 		
 		return "";
 	}
@@ -60,8 +58,8 @@ void jactorio::data::pybind_manager::py_interpreter_init() {
 	
 	sysm.attr("stdout") = py_stdout_buffer;
 	sysm.attr("stderr") = py_stderr_buffer;
-	
-	log_message(logger::debug, "Python interpreter", "Interpreter initialized");
+
+	LOG_MESSAGE(debug, "Python interpreter initialized")
 }
 
 void jactorio::data::pybind_manager::py_interpreter_terminate() {
@@ -78,5 +76,5 @@ void jactorio::data::pybind_manager::py_interpreter_terminate() {
 	// Remove all py::objects before deleting the interpreter
 	py::finalize_interpreter();
 
-	log_message(logger::debug, "Python interpreter", "Interpreter terminated");
+	LOG_MESSAGE(debug, "Python interpreter terminated")
 }
