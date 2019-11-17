@@ -9,7 +9,6 @@
 namespace jactorio::core::loop_manager
 {
 	bool loop_terminate;
-	bool loop_ready;
 	std::thread loop_manager_thread;
 
 	loop_run_callback render_callback;
@@ -33,8 +32,9 @@ namespace jactorio::core::loop_manager
 	bool logic_loop_finished = false;
 
 	void loop_manager_loop() {
+		log_message(logger::debug, "Loop Manager", "Loop manager initialized");
+
 		while (!loop_terminate) {
-			loop_ready = true;
 			// Wait for both loops to be ready
 			if (callbacks_count != 2)
 				continue;
@@ -91,17 +91,7 @@ unsigned short jactorio::core::loop_manager::get_logic_refresh_rate() {
 
 void jactorio::core::loop_manager::initialize_loop_manager() {
 	loop_terminate = false;
-	loop_ready = false;
 	loop_manager_thread = std::thread(loop_manager_loop);
-
-	// Wait until loop_ready is set to know the loop is ready
-	log_message(logger::debug, "Loop Manager", "Waiting for loop manager to initialize...");
-	while (true) {
-		if (loop_ready)
-			break;
-	}
-
-	log_message(logger::debug, "Loop Manager", "Loop manager initialized");
 }
 
 void jactorio::core::loop_manager::terminate_loop_manager() {

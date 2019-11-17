@@ -8,8 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project("jactorio")
 
-add_compile_definitions(JACTORIO_VERSION="0.1.0")
+option(JACTORIO_BUILD_TESTS "JACTORIO_BUILD_TESTS")
 
+add_compile_definitions(JACTORIO_VERSION="0.1.0")
 add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
 
 ############# Include folders .h
@@ -127,6 +128,8 @@ add_subdirectory("lib/glew-cmake")
 add_subdirectory("lib/glfw")
 add_subdirectory("lib/SFML")
 add_subdirectory("lib/pybind11")
+add_subdirectory("lib/libnoise")
+
 
 
 find_package(SFML 2.5 COMPONENTS graphics)
@@ -139,12 +142,14 @@ set(
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
 )
+
+# Additional files to compile
 set(
 	ADDITIONAL_BUILD_FILES
 	${IMGUI_FILES}
 )
 
-# Platform dependencies
+# Platform link libraries
 set(
 	LIBS_WIN
 
@@ -152,6 +157,7 @@ set(
 	sfml-graphics
 	glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib
 	pybind11::embed
+	libnoise
 )
 set(
 	LIBS_UNIX
@@ -160,10 +166,13 @@ set(
 	sfml-graphics
 	libGLU.so libGL.so
 	pybind11::embed
+	libnoise
 )
 
 
-message("========== Building jactorio...")
+message("========== Jactorio files")
 
 add_subdirectory("src")
-add_subdirectory("test")
+if (JACTORIO_BUILD_TESTS)
+	add_subdirectory("test")
+endif ()
