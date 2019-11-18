@@ -18,11 +18,7 @@ unsigned short jactorio::renderer::Renderer::window_height_ = 0;
 
 
 void jactorio::renderer::Renderer::update_tile_projection_matrix() {
-	// Disallow zooming out too far to see the edges of the render bounds
-	// Since the view transform moves to a maximum of tile_width, shrink the max zoom by tile_width
-	if (tile_projection_matrix_offset < tile_width)
-		tile_projection_matrix_offset = tile_width;
-
+	// TODO a way to prevent zooming out too far respecting the different screen resolutions
 	setg_projection_matrix(
 		mvp_manager::to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset)
 	);

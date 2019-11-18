@@ -10,6 +10,8 @@ namespace jactorio::game::world_manager
 {
 	// The world is make up of chunks
 	// Each chunk contains 32 x 32 tiles
+	// 
+	// Chunks increment heading right and down
 
 	/**
 	 * Adds a chunk into the game world
@@ -49,6 +51,9 @@ namespace jactorio::game::world_manager
 	                 const int window_start_y,
 	                 int chunk_start_x, int chunk_start_y, unsigned chunk_amount_x, unsigned
 	                 chunk_amount_y);
+
+	// Chunk generation
+	Chunk* generate_chunk(const int x, const int y);
 }
 
 #endif // GAME_WORLD_WORLD_MANAGER_H

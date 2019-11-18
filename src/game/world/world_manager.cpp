@@ -1,6 +1,8 @@
 #include "game/world/world_manager.h"
 
 #include <unordered_map>
+#include "core/logger.h"
+#include "data/data_manager.h"
 
 using world_chunks_key = unsigned long long;
 
@@ -53,9 +55,15 @@ void jactorio::game::world_manager::draw_chunks(const renderer::Renderer& render
 
 		for (unsigned int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
 			const unsigned int chunk_x_offset = chunk_x * 32;
+
+			auto chunk = get_chunk(chunk_start_x + chunk_x,
+			                       chunk_start_y + chunk_y);
+
+			if (chunk == nullptr) {
+				chunk = generate_chunk(chunk_start_x + chunk_x, chunk_start_y + chunk_y);
+			}
 			
-			Tile* const* chunk = get_chunk(chunk_start_x + chunk_x,
-			                               chunk_start_y + chunk_y)->tiles_ptr();
+			Tile* const* tiles = chunk->tiles_ptr();
 
 			// Iterate through and draw tiles of a chunk
 			for (int tile_y = 0; tile_y < 32; ++tile_y) {
@@ -64,11 +72,36 @@ void jactorio::game::world_manager::draw_chunks(const renderer::Renderer& render
 						// Window offset, chunk offset, tile offset
 						window_start_x + chunk_x_offset + tile_x,
 						window_start_y + chunk_y_offset + tile_y,
-						chunk[tile_x + tile_y]->tile_prototype->name);
+						tiles[tile_x + tile_y]->tile_prototype->name);
 				}
 			}
 		}
 	}
+}
+
+jactorio::game::Chunk* jactorio::game::world_manager::generate_chunk(const int x, const int y) {
+	LOG_MESSAGE_f(debug, "Generating new chunk at %d, %d...", x, y);
+	
+	// World generator test
+	// TODO, the data which the chunk tiles point to needs to be deleted
+
+	// TODO perlin noise tile generation
+	auto* tiles = new Tile[1024];
+	for (int i = 0; i < 32 * 32; ++i) {
+		const auto proto_tile = data::data_manager::data_raw_get(data::data_category::tile, "test_tile");
+
+		tiles[i].tile_prototype = static_cast<data::Tile*>(proto_tile);
+	}
+
+	Chunk* chunk_ptr = add_chunk(new Chunk{x, y, tiles});
+
+	// This is just a test to mark the start of each chunk
+	auto* g_tile = new Tile{};
+	g_tile->tile_prototype = static_cast<data::Tile*>(data::data_manager::data_raw_get(
+		data::data_category::tile, "grass-1"));
+	get_chunk(x, y)->tiles_ptr()[0] = g_tile;
+
+	return chunk_ptr;
 }
 
 

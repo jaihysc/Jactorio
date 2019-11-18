@@ -11,6 +11,7 @@
 #endif
 
 #ifdef __GNUC__
+#include <cstring>
 #define FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #undef _MSC_VER
 #endif
@@ -28,7 +29,7 @@ message);
 // Allows the message to contain a format, similar to printf
 #define LOG_MESSAGE_f(severity, format, ...)\
 {    \
-char buffer[5000];\
+char buffer[10000];\
 snprintf(buffer, sizeof(char) * 10000, format, __VA_ARGS__);\
 log_message(\
 	jactorio::core::logger::log_severity::severity, \

@@ -10,7 +10,7 @@ namespace jactorio::game
 	bool run_logic_loop = false;
 }
 
-const long long move_speed = 1;
+const long long move_speed = 10;
 void jactorio::game::logic_loop() {
 	// Logic initialization here...
 

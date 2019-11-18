@@ -7,7 +7,6 @@
 #include "core/logger.h"
 #include "core/loop_manager.h"
 #include "data/data_manager.h"
-#include "game/world/world_manager.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/window/window_manager.h"
 #include "renderer/opengl/shader_manager.h"
@@ -17,7 +16,6 @@
 #include "renderer/rendering/spritemap_generator.h"
 #include "renderer/render_loop.h"
 #include "game/input/input_manager.h"
-#include "renderer/rendering/world_renderer.h"
 
 namespace jactorio::renderer
 {
@@ -82,30 +80,6 @@ void jactorio::renderer::render_init() {
 
 
 	auto* renderer = new Renderer(spritemap_data.sprite_positions);
-
-
-	// World generator test
-	// TODO chunk data needs to be deleted
-	auto* tiles = new game::Tile[1024];
-	for (int i = 0; i < 32 * 32; ++i) {
-		const auto proto_tile = data::data_manager::data_raw_get(data::data_category::tile, "test_tile");
-
-		tiles[i].tile_prototype = static_cast<data::Tile*>(proto_tile);
-	}
-	
-	for (int y = 0; y < 5; ++y) {
-		for (int x = 0; x < 5; ++x) {
-			game::world_manager::add_chunk(new game::Chunk{ x, y, tiles});
-
-		}
-	}
-
-	auto* g_tile = new game::Tile{};
-	g_tile->tile_prototype = static_cast<data::Tile*>(data::data_manager::data_raw_get(
-		data::data_category::tile, "grass-1"));
-	
-	game::world_manager::get_chunk(1, 1)->tiles_ptr()[0] = g_tile;
-
 	
 	game::input_manager::register_input_callback([]() {
 		glfwSetWindowShouldClose(window_manager::get_window(), GL_TRUE);
@@ -131,8 +105,6 @@ void jactorio::renderer::render_init() {
 			}
 			
 			render_draw = false;
-			world_renderer::render_player_position(renderer);
-
 			// Don't multi-thread opengl
 			render_loop(renderer);
 

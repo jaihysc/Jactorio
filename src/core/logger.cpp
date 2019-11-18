@@ -29,11 +29,11 @@ std::string jactorio::core::logger::gen_log_message(const log_severity severity,
 	const float time = static_cast<float>(clock() - start_time) / CLOCKS_PER_SEC;
 
 	char s[10000];
-	sprintf_s(s, "%10.3f %s [%s:%d] %s\n", time,
-	          log_severity_str(severity).c_str(), 
-	          group.c_str(),
-	          line,
-	          message.c_str());
+	snprintf(s, 10000 * sizeof(char), "%10.3f %s [%s:%d] %s\n", time,
+	         log_severity_str(severity).c_str(), 
+	         group.c_str(),
+	         line,
+	         message.c_str());
 	
 	return s;
 }

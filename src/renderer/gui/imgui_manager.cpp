@@ -52,9 +52,6 @@ void jactorio::renderer::imgui_draw() {
 	                    2000.0f);
 	ImGui::SliderFloat("Zoom", &Renderer::tile_projection_matrix_offset, 0.f,
 	                   2000.0f);
-
-	mvp_manager::update_view_transform();
-	Renderer::update_tile_projection_matrix();
 	
 	// Buttons return true when clicked (most widgets return true when edited/activated)
 	ImGui::Text("Player position %lld %lld", 
