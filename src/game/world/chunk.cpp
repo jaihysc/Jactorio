@@ -21,8 +21,8 @@ jactorio::game::Chunk::Chunk(const int x, const int y, Tile* tiles) {
 }
 
 jactorio::game::Chunk::~Chunk() {
-	for (int i = 0; i < 32 * 32; ++i) {
-		delete tiles_[i];
+	for (auto& tile : tiles_) {
+		delete tile;
 	}
 }
 
