@@ -5,31 +5,27 @@
 #include <chrono>
 
 #include "core/logger.h"
+#include "core/data_type/unordered_map.h"
 #include "data/data_manager.h"
+#include "game/world/world_generator.h"
 
 using world_chunks_key = unsigned long long;
 
 namespace
 {
 	// world_chunks_key correlate to a chunk
-	std::unordered_map<world_chunks_key, jactorio::game::Chunk*> world_chunks;
+	std::unordered_map<std::tuple<int, int>, jactorio::game::Chunk*,
+	                   jactorio::core::hash<std::tuple<int, int>>> world_chunks;
 
 	// Threads for generating new chunks, threading world gen prevents the renderer from being blocked
 	// while generating
 	std::vector<std::future<void>> world_gen_threads;
 }
 
-
-// Packs 2 32 bit integers into a 64 bit integer to index world_chunks
-world_chunks_key to_world_chunks_key(const int x, const int y) {
-	const world_chunks_key i = static_cast<world_chunks_key>(x) << 32 | y;
-	return i;	
-}
-
-
 jactorio::game::Chunk* jactorio::game::world_manager::add_chunk(Chunk* chunk) {
 	const auto position = chunk->get_position();
-	const world_chunks_key coords = to_world_chunks_key(position.first, position.second);
+	const auto coords = std::tuple<int, int>{ position.first, position.second};
+
 	world_chunks[coords] = chunk;
 
 	// Return pointer to allocated chunk
@@ -37,8 +33,7 @@ jactorio::game::Chunk* jactorio::game::world_manager::add_chunk(Chunk* chunk) {
 }
 
 jactorio::game::Chunk* jactorio::game::world_manager::get_chunk(int x, int y) {
-	const world_chunks_key coords = to_world_chunks_key(x, y);
-	return world_chunks[coords];
+	return world_chunks[std::tuple<int, int>{x, y}];
 }
 
 void jactorio::game::world_manager::clear_chunk_data() {
@@ -86,7 +81,7 @@ void jactorio::game::world_manager::draw_chunks(const renderer::Renderer& render
 				// Chunk is asynchronously generated
 				world_gen_threads.push_back(
 					std::async(std::launch::async,
-					           generate_chunk, 
+					           world_generator::generate_chunk, 
 					           chunk_start_x + chunk_x,
 					           chunk_start_y + chunk_y));
 
@@ -108,34 +103,9 @@ void jactorio::game::world_manager::draw_chunks(const renderer::Renderer& render
 						// Window offset, chunk offset, tile offset
 						window_start_x + chunk_x_offset + tile_x,
 						window_start_y + chunk_y_offset + tile_y,
-						tiles[tile_x + tile_y]->tile_prototype->name);
+						tiles[tile_y * 32 + tile_x]->tile_prototype->name);
 				}
 			}
 		}
 	}
 }
-
-void jactorio::game::world_manager::generate_chunk(const int x, const int y) {
-	LOG_MESSAGE_f(debug, "Generating new chunk at %d, %d...", x, y);
-	
-	// World generator test
-	// TODO, the data which the chunk tiles point to needs to be deleted
-
-	// TODO perlin noise tile generation
-	auto* tiles = new Tile[1024];
-	for (int i = 0; i < 32 * 32; ++i) {
-		const auto proto_tile = data::data_manager::data_raw_get(data::data_category::tile, "test_tile");
-
-		tiles[i].tile_prototype = static_cast<data::Tile*>(proto_tile);
-	}
-
-	add_chunk(new Chunk{x, y, tiles});
-
-	// This is just a test to mark the start of each chunk
-	auto* g_tile = new Tile{};
-	g_tile->tile_prototype = static_cast<data::Tile*>(data::data_manager::data_raw_get(
-		data::data_category::tile, "grass-1"));
-	get_chunk(x, y)->tiles_ptr()[0] = g_tile;
-}
-
-

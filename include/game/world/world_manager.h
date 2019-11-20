@@ -51,14 +51,6 @@ namespace jactorio::game::world_manager
 	                 const int window_start_y,
 	                 int chunk_start_x, int chunk_start_y, unsigned chunk_amount_x, unsigned
 	                 chunk_amount_y);
-
-	// Chunk generation
-	/**
-	 * Asynchronously generates a chunk and adds it to the world when done
-	 * @param x X position of chunk to generate
-	 * @param y Y position of chunk to generate
-	 */
-	void generate_chunk(int x, int y);
 }
 
 #endif // GAME_WORLD_WORLD_MANAGER_H

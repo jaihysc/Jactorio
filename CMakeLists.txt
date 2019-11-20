@@ -23,6 +23,7 @@ set(JACTORIO_INCLUDE_FILES
 	${PROJECT_SOURCE_DIR}/lib/imgui/
 	${PROJECT_SOURCE_DIR}/lib/SFML/include
 	${PROJECT_SOURCE_DIR}/lib/pybind11/include
+	${PROJECT_SOURCE_DIR}/lib/libnoise/include
 )
 #------------ Source files .cpp
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
@@ -40,6 +41,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/tile.cpp
 	${JACTORIO_DIR}/game/world/world_manager.cpp
+	${JACTORIO_DIR}/game/world/world_generator.cpp
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
 	${JACTORIO_DIR}/renderer/render_loop.cpp
