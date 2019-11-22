@@ -10,15 +10,14 @@
 #include "renderer/opengl/error.h"
 #include "data/data_manager.h"
 
-
-float jactorio::renderer::Renderer::tile_projection_matrix_offset = 0;
-
 unsigned short jactorio::renderer::Renderer::window_width_ = 0;
 unsigned short jactorio::renderer::Renderer::window_height_ = 0;
 
 
 void jactorio::renderer::Renderer::update_tile_projection_matrix() {
-	// TODO a way to prevent zooming out too far respecting the different screen resolutions
+	if (tile_projection_matrix_offset < static_cast<float>(tile_width))
+		tile_projection_matrix_offset = tile_width;
+	
 	setg_projection_matrix(
 		mvp_manager::to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset)
 	);

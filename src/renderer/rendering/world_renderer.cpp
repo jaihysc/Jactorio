@@ -177,8 +177,8 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	            // of chunk offset and window size
 	            chunk_offset_x - 1, 
 	            chunk_offset_y - 1,
-	            renderer->get_grid_size_x() / 32 + 1 + 1, 
-	            renderer->get_grid_size_y() / 32 + 1 + 1);
+	            renderer->get_grid_size_x() / 32 + 2 + 1, 
+	            renderer->get_grid_size_y() / 32 + 2 + 1);
 
 
 	// Tile transitions

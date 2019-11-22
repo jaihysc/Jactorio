@@ -39,7 +39,9 @@ namespace jactorio::renderer::mvp_manager
 		unsigned short window_height);
 
 	/**
-	 * Converts Projection_tile_data from projection_calculate_tile_properties into a matrix
+	 * Converts Projection_tile_data from projection_calculate_tile_properties into a matrix <br>
+	 * Guarantees a zoom of minimum of offset on all axis <br>
+	 * May offset more in a certain axis to preserve aspect ratio
 	 * @param window_width width of display area in pixels
 	 * @param window_height Height of display area in pixels
 	 * @param offset number of tiles horizontally to from the edge to hide (giving a zoom effect) <br>

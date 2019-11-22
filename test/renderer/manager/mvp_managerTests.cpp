@@ -40,19 +40,65 @@ TEST(mvp_manager, projection_tile_calculation_and_matrix) {
 }
 
 TEST(mvp_manager, projection_zoom) {
-	jactorio::renderer::mvp_manager::Projection_tile_data tile_prop{};
+	// X axis is longer
+	{
+		jactorio::renderer::mvp_manager::Projection_tile_data tile_prop{};
 
-	tile_prop.tiles_x = 20;
-	tile_prop.tiles_y = 30;
+		tile_prop.tiles_x = 20;
+		tile_prop.tiles_y = 10;
 
-	const auto proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
-		tile_prop.tiles_x, tile_prop.tiles_y, 10);
+		// Zoom guarantees a minimum of offset
+		auto proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+			tile_prop.tiles_x, tile_prop.tiles_y, 0);
 
+		EXPECT_EQ(proj_matrix, glm::ortho(
+			          0.f, 20.f,
+			          10.f, 0.f,
+			          -1.f, 1.f)
+		);
 
-	EXPECT_EQ(proj_matrix, glm::ortho(
-		          10.f, 10.f,
-		          15.f, 15.f,
-		          -1.f, 1.f)
-	);
+		// Zoom guarantees a minimum of offset
+		proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+			tile_prop.tiles_x, tile_prop.tiles_y, 2.5);
 
+		// Y is smaller axis
+
+		// Scale factor of 2 for X axis
+		// L R B T
+		EXPECT_EQ(proj_matrix, glm::ortho(
+			          5.f, 15.f,
+			          7.5f, 2.5f,
+			          -1.f, 1.f)
+		);
+	}
+
+	// Y axis is longer
+	{
+		jactorio::renderer::mvp_manager::Projection_tile_data tile_prop{};
+
+		tile_prop.tiles_x = 10;
+		tile_prop.tiles_y = 20;
+
+		// Zoom guarantees a minimum of offset
+		auto proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+			tile_prop.tiles_x, tile_prop.tiles_y, 0);
+
+		EXPECT_EQ(proj_matrix, glm::ortho(
+			          0.f, 10.f,
+			          20.f, 0.f,
+			          -1.f, 1.f)
+		);
+
+		// Zoom guarantees a minimum of offset
+		proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+			tile_prop.tiles_x, tile_prop.tiles_y, 2.5);
+
+		// Scale factor of 2 for Y axis
+		// L R B T
+		EXPECT_EQ(proj_matrix, glm::ortho(
+			          2.5f, 7.5f,
+			          15.f, 5.f,
+			          -1.f, 1.f)
+		);
+	}
 }

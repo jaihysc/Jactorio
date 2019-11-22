@@ -12,7 +12,6 @@
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/texture.h"
-#include "renderer/rendering/renderer.h"
 #include "renderer/rendering/spritemap_generator.h"
 #include "renderer/render_loop.h"
 #include "game/input/input_manager.h"
@@ -39,6 +38,10 @@ void jactorio::renderer::set_recalculate_renderer(const unsigned short window_si
 	window_y = window_size_y;
 
 	refresh_renderer = true;
+}
+
+jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
+	return renderer;
 }
 
 

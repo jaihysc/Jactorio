@@ -8,13 +8,13 @@
 #include "renderer/rendering/mvp_manager.h"
 
 void jactorio::renderer::render_loop(Renderer* renderer) {
-	renderer->clear();
+	Renderer::clear();
 
 	world_renderer::render_player_position(renderer);
 	// Set view matrix
 	mvp_manager::update_view_transform();
 	// Set projection matrix
-	Renderer::update_tile_projection_matrix();
+	renderer->update_tile_projection_matrix();
 	// Update matrices
 	update_shader_mvp();
 	renderer->draw(glm::vec3(0, 0, 0));

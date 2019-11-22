@@ -43,7 +43,7 @@ namespace jactorio::renderer
 
 
 	public:
-		static float tile_projection_matrix_offset;
+		float tile_projection_matrix_offset;
 		unsigned short tile_width = 16;
 
 		explicit Renderer(
@@ -96,7 +96,7 @@ namespace jactorio::renderer
 		/**
 		* Updates projection matrix and zoom level
 		*/
-		static void update_tile_projection_matrix();
+		void update_tile_projection_matrix();
 
 		// #################################################
 		// Sprites

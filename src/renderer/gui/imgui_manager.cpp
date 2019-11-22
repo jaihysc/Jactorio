@@ -50,8 +50,6 @@ void jactorio::renderer::imgui_draw() {
 	// Settings
 	ImGui::SliderFloat3("Camera translation", &view_translation->x, -2000.0f,
 	                    2000.0f);
-	ImGui::SliderFloat("Zoom", &Renderer::tile_projection_matrix_offset, 0.f,
-	                   2000.0f);
 	
 	// Buttons return true when clicked (most widgets return true when edited/activated)
 	ImGui::Text("Player position %lld %lld", 

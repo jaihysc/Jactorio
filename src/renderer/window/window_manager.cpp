@@ -108,7 +108,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		game::input_manager::set_input(key, action, mods);
 	});
 	glfwSetScrollCallback(glfw_window, [](GLFWwindow* window, double xoffset, double yoffset) {
-		Renderer::tile_projection_matrix_offset += yoffset * 10;
+		get_base_renderer()->tile_projection_matrix_offset += yoffset * 10;
 	});
 
 	
