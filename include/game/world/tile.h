@@ -8,7 +8,7 @@
 namespace jactorio::game
 {
 	// World tile
-	class Tile
+	class ChunkTile
 	{
 	public:
 		data::Tile* tile_prototype = nullptr;

@@ -11,7 +11,7 @@ namespace jactorio::game
 	{
 		std::pair<int, int> position_;
 		// Pointers to the actual tiles since they are static
-		Tile* tiles_ [32 * 32];
+		ChunkTile* tiles_ [32 * 32];
 		
 	public:
 		/**
@@ -20,12 +20,12 @@ namespace jactorio::game
 		 * @param tiles Array of size 32 * 32 (1024) tiles <br>
 		 *			provide nullptr to use not initialize tiles
 		 */
-		Chunk(int x, int y, Tile* tiles);
+		Chunk(int x, int y, ChunkTile* tiles);
 		~Chunk();
 
 		[[nodiscard]] std::pair<int, int> get_position() const;
 
-		[[nodiscard]] Tile** tiles_ptr() {
+		[[nodiscard]] ChunkTile** tiles_ptr() {
 			return tiles_;
 		};
 	};

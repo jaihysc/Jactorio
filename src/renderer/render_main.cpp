@@ -23,6 +23,7 @@ namespace jactorio::renderer
 	unsigned short window_x = 0;
 	unsigned short window_y = 0;
 
+	Renderer* renderer = nullptr;
 	bool render_draw = false;
 	// Called every renderer cycle, cannot put code in callback due to single thread of opengl
 	void renderer_draw() {
@@ -79,7 +80,7 @@ void jactorio::renderer::render_init() {
 	texture.bind(0);
 
 
-	auto* renderer = new Renderer(spritemap_data.sprite_positions);
+	renderer = new Renderer(spritemap_data.sprite_positions);
 	
 	game::input_manager::register_input_callback([]() {
 		glfwSetWindowShouldClose(window_manager::get_window(), GL_TRUE);
@@ -90,6 +91,15 @@ void jactorio::renderer::render_init() {
 		toggle_fullscreen = true;
 	}, GLFW_KEY_SPACE, GLFW_RELEASE);
 
+	game::input_manager::register_input_callback([]() {
+		renderer->tile_width++;
+		refresh_renderer = true;
+	}, GLFW_KEY_Z, GLFW_RELEASE);
+	game::input_manager::register_input_callback([]() {
+		if (renderer->tile_width > 1)
+			renderer->tile_width--;
+		refresh_renderer = true;
+	}, GLFW_KEY_X, GLFW_RELEASE);
 	
 	// #################################################################
 	LOG_MESSAGE(info, "2 - Runtime stage")

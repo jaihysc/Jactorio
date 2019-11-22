@@ -10,7 +10,10 @@
 
 // TODO, the data which the chunk tiles point to needs to be deleted
 
-void jactorio::game::world_generator::generate_chunk(const int chunk_x, const int chunk_y) {
+void jactorio::game::world_generator::generate_chunk(const int chunk_x, const int chunk_y,
+                                                     std::atomic<int>* thread_counter) {
+	++*thread_counter;
+	
 	LOG_MESSAGE_f(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
 	
 	const module::Perlin noise_module;
@@ -29,7 +32,7 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 	                             chunk_y - 0.5, chunk_y + 0.5);
 	height_map_builder.Build();
 	
-	auto* tiles = new Tile[1024];
+	auto* tiles = new ChunkTile[1024];
 	
 	for (int y = 0; y < 32; ++y) {
 		for (int x = 0; x < 32; ++x) {
