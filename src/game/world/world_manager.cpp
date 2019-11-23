@@ -27,7 +27,11 @@ jactorio::game::Chunk* jactorio::game::world_manager::add_chunk(Chunk* chunk) {
 }
 
 jactorio::game::Chunk* jactorio::game::world_manager::get_chunk(int x, int y) {
-	return world_chunks[std::tuple<int, int>{x, y}];
+	const auto key = std::tuple<int, int>{ x, y };
+	if (world_chunks.find(key) == world_chunks.end())
+		return nullptr;
+	
+	return world_chunks[key];
 }
 
 void jactorio::game::world_manager::clear_chunk_data() {

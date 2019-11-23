@@ -8,10 +8,12 @@
 namespace jactorio::game
 {
 	// World tile
-	class ChunkTile
+	class Chunk_tile
 	{
 	public:
 		data::Tile* tile_prototype = nullptr;
+		// If this tile has a resource, this points to the the prototype for the resource
+		data::Tile* tile_resource_prototype = nullptr;
 	};
 }
 

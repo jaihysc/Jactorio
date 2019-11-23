@@ -29,7 +29,7 @@ namespace
 	 */
 	void buffer_load_chunk(float* buffer, const unsigned int span, const unsigned int height,
 	                       const jactorio::renderer::Renderer* renderer,
-	                       const jactorio::game::ChunkTile* const* tiles,
+	                       const jactorio::game::Chunk_tile* const* tiles,
 	                       const int buffer_x, const int buffer_y) {
 		
 		// Iterate through and draw tiles of a chunk
@@ -118,7 +118,7 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 				continue;
 			}
 
-			game::ChunkTile* const* tiles = chunk->tiles_ptr();
+			game::Chunk_tile* const* tiles = chunk->tiles_ptr();
 			// Chunk is not yet ready if the tiles' prototypes point to nothing
 			if (tiles[0]->tile_prototype == nullptr)
 				continue;

@@ -24,6 +24,14 @@ void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 }
 
 
+void jactorio::renderer::Renderer::delete_data() const {
+	delete vertex_array_;
+	delete render_grid_;
+	delete texture_grid_;
+	delete index_buffer_;
+	delete[] texture_grid_buffer_;
+}
+
 jactorio::renderer::Renderer::Renderer(
 	const std::unordered_map<std::string, Renderer_sprites::Image_position>& spritemap_coords) {
 	spritemap_coords_ = spritemap_coords;
@@ -36,19 +44,12 @@ jactorio::renderer::Renderer::Renderer(
 }
 
 jactorio::renderer::Renderer::~Renderer() {
-	delete vertex_array_;
-	delete render_grid_;
-	delete texture_grid_;
-	delete index_buffer_;
-	delete[] texture_grid_buffer_;
+	delete_data();
 }
 
 void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short window_x,
                                                        const unsigned short window_y) {
-	delete vertex_array_;
-	delete render_grid_;
-	delete texture_grid_;
-	delete index_buffer_;
+	delete_data();
 
 	window_width_ = window_x;
 	window_height_ = window_y;

@@ -29,8 +29,8 @@ namespace jactorio::core::loop_manager
 	double render_last_time = 0;
 	double logic_last_time = 0;
 
-	std::atomic<bool> render_loop_finished = false;
-	std::atomic<bool> logic_loop_finished = false;
+	std::atomic<bool> render_loop_finished = true;
+	std::atomic<bool> logic_loop_finished = true;
 
 	void loop_manager_loop() {
 		LOG_MESSAGE(debug, "Loop manager awaiting logic and render callbacks")
@@ -47,6 +47,7 @@ namespace jactorio::core::loop_manager
 
 				if (!render_loop_finished) {
 					LOG_MESSAGE(warning, "Render loop missed tick")
+					continue;
 				}
 
 				render_loop_finished = false;
@@ -57,6 +58,7 @@ namespace jactorio::core::loop_manager
 
 				if (!logic_loop_finished) {
 					LOG_MESSAGE(warning, "Logic loop missed tick")
+					continue;
 				}
 
 				logic_loop_finished = false;

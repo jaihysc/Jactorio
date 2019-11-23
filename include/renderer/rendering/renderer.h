@@ -15,12 +15,17 @@ namespace jactorio::renderer
 	{
 		// Buffer of spritemap positions for updating the texture_grid_ Vertex_buffer
 		// Recalculated on window resize
-		float* texture_grid_buffer_;
+		float* texture_grid_buffer_ = nullptr;
 		
-		Vertex_array* vertex_array_{};
-		Vertex_buffer *render_grid_{}, *texture_grid_{};
-		Index_buffer* index_buffer_{};
+		Vertex_array* vertex_array_ = nullptr;
+		Vertex_buffer *render_grid_ = nullptr, *texture_grid_ = nullptr;
+		Index_buffer* index_buffer_ = nullptr;
 
+		/**
+		 * Deletes all heap allocated data
+		 */
+		void delete_data() const;
+		
 		// #################################################
 		// Grid properties
 
@@ -28,8 +33,8 @@ namespace jactorio::renderer
 		unsigned int grid_elements_count_{};
 
 
-		unsigned short tile_count_x_;
-		unsigned short tile_count_y_;
+		unsigned short tile_count_x_{};
+		unsigned short tile_count_y_{};
 
 		static unsigned short window_width_;
 		static unsigned short window_height_;
@@ -43,7 +48,7 @@ namespace jactorio::renderer
 
 
 	public:
-		float tile_projection_matrix_offset;
+		float tile_projection_matrix_offset{};
 		unsigned short tile_width = 16;
 
 		explicit Renderer(
