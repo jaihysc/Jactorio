@@ -15,6 +15,7 @@
 #include "renderer/rendering/spritemap_generator.h"
 #include "renderer/render_loop.h"
 #include "game/input/input_manager.h"
+#include "game/world/world_manager.h"
 
 namespace jactorio::renderer
 {
@@ -99,11 +100,13 @@ void jactorio::renderer::render_init() {
 		refresh_renderer = true;
 	}, GLFW_KEY_Z, GLFW_RELEASE);
 	game::input_manager::register_input_callback([]() {
-		if (renderer->tile_width > 1)
+		if (renderer->tile_width > 9) {
 			renderer->tile_width--;
-		refresh_renderer = true;
+			refresh_renderer = true;
+		}
+
 	}, GLFW_KEY_X, GLFW_RELEASE);
-	
+
 	// #################################################################
 	LOG_MESSAGE(info, "2 - Runtime stage")
 
@@ -116,7 +119,7 @@ void jactorio::renderer::render_init() {
 				toggle_fullscreen = false;
 				window_manager::set_fullscreen(!window_manager::is_fullscreen());
 			}
-			
+
 			render_draw = false;
 			// Don't multi-thread opengl
 			render_loop(renderer);

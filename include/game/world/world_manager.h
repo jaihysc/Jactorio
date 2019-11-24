@@ -13,7 +13,9 @@ namespace jactorio::game::world_manager
 	// Chunks increment heading right and down
 
 	/**
-	 * Adds a chunk into the game world
+	 * Adds a chunk into the game world <br>
+	 * Will overwrite existing chunks if they occupy the same position, the overriden chunk's
+	 * destructor will be called
 	 * @param chunk Chunk to be added to the world
 	 * @return Pointer to added chunk
 	 */

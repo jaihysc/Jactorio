@@ -3,9 +3,25 @@
 #include "game/world/chunk.h"
 
 TEST(world_chunk, chunk_set_tile) {
+	// The tiles pointer stored by the Chunk, modifying the original tiles pointer
+	// will modify the tiles of the chunk
 
+	auto chunk_tile_1 = jactorio::game::Chunk_tile();
+	auto tile1 = new jactorio::data::Tile();
+	chunk_tile_1.tile_prototype = tile1;
+	
+	auto chunk_tile_2 = jactorio::game::Chunk_tile();
+	auto tile2 = new jactorio::data::Tile();
+	chunk_tile_2.tile_prototype = tile2;
+
+	
+	auto tiles = new jactorio::game::Chunk_tile[32 * 32];
+	tiles[0] = chunk_tile_1;
+	jactorio::game::Chunk chunk{0, 0, tiles};
+
+	EXPECT_EQ(chunk.tiles_ptr()[0].tile_prototype, tile1);
+
+	tiles[0] = chunk_tile_2;
+	EXPECT_EQ(chunk.tiles_ptr()[0].tile_prototype, tile2);
 }
 
-TEST(world_chunk, chunk_get_tile) {
-
-}

@@ -29,8 +29,6 @@ namespace
 
 void jactorio::game::world_generator::generate_chunk(const int chunk_x, const int chunk_y,
                                                      std::atomic<int>* thread_counter) {
-	++*thread_counter;
-	
 	LOG_MESSAGE_f(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
 
 	// The Y axis for libnoise is inverted. It causes no issues as of right now. I am leaving this here
@@ -108,4 +106,5 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 	// g_tile->tile_prototype = static_cast<data::Tile*>(data::data_manager::data_raw_get(
 	// 	data::data_category::tile, "grass-1"));
 	// world_manager::get_chunk(x, y)->tiles_ptr()[320] = g_tile;
+	--*thread_counter;
 }

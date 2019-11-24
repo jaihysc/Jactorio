@@ -1,9 +1,11 @@
 #include "renderer/rendering/world_renderer.h"
 
-#include "game/world/world_manager.h"
-#include "renderer/rendering/mvp_manager.h"
-#include "game/world/world_generator.h"
 #include <future>
+
+#include "core/data_type/unordered_map.h"
+#include "game/world/world_manager.h"
+#include "game/world/world_generator.h"
+#include "renderer/rendering/mvp_manager.h"
 #include "core/logger.h"
 
 namespace
@@ -11,7 +13,13 @@ namespace
 	// Threads for generating new chunks, threading world gen prevents the renderer from being blocked
 	// while generating
 	std::atomic<int> world_gen_threads_count = 0;
+	// Prevents constant erasing
+	bool world_gen_threads_cleared = true;
+	
 	std::vector<std::future<void>> world_gen_threads;
+	// Stores whether or not a chunk is being generated
+	std::unordered_map<std::tuple<int, int>, bool,
+	                   jactorio::core::hash<std::tuple<int, int>>> world_gen_chunks;
 
 
 	// Tracks number of running buffer_load_chunk threads
@@ -29,7 +37,7 @@ namespace
 	 */
 	void buffer_load_chunk(float* buffer, const unsigned int span, const unsigned int height,
 	                       const jactorio::renderer::Renderer* renderer,
-	                       const jactorio::game::Chunk_tile* const* tiles,
+	                       const jactorio::game::Chunk_tile* tiles,
 	                       const int buffer_x, const int buffer_y) {
 		
 		// Iterate through and draw tiles of a chunk
@@ -45,7 +53,7 @@ namespace
 					continue;
 				
 				const auto positions = renderer->get_sprite_spritemap_coords(
-					tiles[tile_y * 32 + tile_x]->tile_prototype->name);
+					tiles[tile_y * 32 + tile_x].tile_prototype->name);
 
 				const unsigned int buffer_offset = 
 					(y_offset * span + x_offset) * 8;
@@ -76,10 +84,12 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
                                                      const unsigned int chunk_amount_x,
                                                      const unsigned int chunk_amount_y) {
 	// Clear world gen threads once the vector is empty, this is faster than deleting it one by one
-	if (world_gen_threads_count == 0)
+	if (!world_gen_threads_cleared && world_gen_threads_count == 0) {
+		LOG_MESSAGE(debug, "Chunk generation buffer cleared");
 		world_gen_threads.clear();
-
-	// TODO sometimes everything freezes - What could this be from??
+		world_gen_chunks.clear();
+		world_gen_threads_cleared = true;
+	}
 	
 	// Render chunks
 	const unsigned short buffer_span = renderer.get_grid_size_x();
@@ -88,6 +98,7 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 	auto* buffer = renderer.get_texture_grid_buffer();
 
 	std::vector<std::future<void>> chunk_load_threads;
+	chunk_load_threads.reserve(static_cast<unsigned long long>(chunk_amount_x) * chunk_amount_y);
 	
 	for (int chunk_y = 0; chunk_y < chunk_amount_y; ++chunk_y) {
 		const unsigned int chunk_y_offset = chunk_y * 32 + window_start_y;
@@ -101,32 +112,35 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 
 			// Generate chunk if non existent
 			if (chunk == nullptr) {
+				const auto chunk_key = std::tuple<int, int>
+					{ chunk_start_x + chunk_x, chunk_start_y + chunk_y };
+				
+				// Is the chunk already under generation
+				if (world_gen_chunks.find(chunk_key) != world_gen_chunks.end())
+					continue;
+
+				
 				++world_gen_threads_count;
+				world_gen_threads_cleared = false;
+				
+				world_gen_chunks[chunk_key] = true;
+
 				// Chunk is asynchronously generated
-				world_gen_threads.push_back(
+				world_gen_threads.emplace_back(
 					std::async(std::launch::async,
 					           game::world_generator::generate_chunk,
 					           chunk_start_x + chunk_x,
 					           chunk_start_y + chunk_y,
 					           &world_gen_threads_count)
 				);
-
-				// Put a blank chunk as a placeholder while it is being generated
-				game::world_manager::add_chunk(new game::Chunk{
-					chunk_start_x + chunk_x, chunk_start_y + chunk_y, nullptr
-				});
 				continue;
 			}
 
-			game::Chunk_tile* const* tiles = chunk->tiles_ptr();
-			// Chunk is not yet ready if the tiles' prototypes point to nothing
-			if (tiles[0]->tile_prototype == nullptr)
-				continue;
-
+			game::Chunk_tile* tiles = chunk->tiles_ptr();
 
 			// Load chunk into buffer
 			++buffer_load_chunk_thread_counter;
-			chunk_load_threads.push_back(
+			chunk_load_threads.emplace_back(
 				std::async(std::launch::async,
 				           buffer_load_chunk,
 				           buffer, buffer_span, buffer_height,
