@@ -49,7 +49,7 @@ namespace jactorio::renderer
 
 	public:
 		float tile_projection_matrix_offset{};
-		unsigned short tile_width = 16;
+		unsigned short tile_width = 9;
 
 		explicit Renderer(
 			const std::unordered_map<std::string, Renderer_sprites::Image_position>& spritemap_coords);

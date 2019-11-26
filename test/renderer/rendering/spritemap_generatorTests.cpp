@@ -6,7 +6,7 @@ void debug_print_color(const sf::Color color) {
 	printf("%d %d %d %d\n", color.r, color.g, color.b, color.a);
 }
 
-TEST(renderer_sprites, gen_spritemap) {
+TEST(spritemap_generator, gen_spritemap) {
 	// Provide series of sprites in array
 	// Expect concatenated image and its properties
 
@@ -14,18 +14,22 @@ TEST(renderer_sprites, gen_spritemap) {
 	// Image positions are retrieved from the spritemap via the path originally given to create the spritemap
 	
 	// Images are 32 x 32 px
-	const auto prototypes = new jactorio::data::Prototype_base[4];
-	prototypes[0].name = "1";
-	prototypes[0].load_sprite("test/graphics/test/test_tile.png");
+	const auto prototypes = new jactorio::data::Sprite*[4];
+	for (int i = 0; i < 4; ++i) {
+		prototypes[i] = new jactorio::data::Sprite;
+	}
+	
+	prototypes[0]->name = "1";
+	prototypes[0]->load_sprite("test/graphics/test/test_tile.png");
 
-	prototypes[1].name = "2";
-	prototypes[1].load_sprite("test/graphics/test/test_tile1.png");
+	prototypes[1]->name = "2";
+	prototypes[1]->load_sprite("test/graphics/test/test_tile1.png");
 
-	prototypes[2].name = "3";
-	prototypes[2].load_sprite("test/graphics/test/test_tile2.png");
+	prototypes[2]->name = "3";
+	prototypes[2]->load_sprite("test/graphics/test/test_tile2.png");
 
-	prototypes[3].name = "4";
-	prototypes[3].load_sprite("test/graphics/test/test_tile3.png");
+	prototypes[3]->name = "4";
+	prototypes[3]->load_sprite("test/graphics/test/test_tile3.png");
 
 	const auto r_sprites = jactorio::renderer::Renderer_sprites{};
 	

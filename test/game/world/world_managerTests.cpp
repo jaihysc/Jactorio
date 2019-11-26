@@ -60,9 +60,8 @@ TEST(world_manager, world_add_chunk_override) {
 	const auto added_chunk2 = jactorio::game::world_manager::add_chunk(chunk2);
 
 	// chunk should have been deleted as it was overwritten
-	EXPECT_NE(chunk->get_position().first, 5);
-	EXPECT_NE(chunk->get_position().first, 1);
-	
+	// No test exists to test if chunk is valid since one cannot determine if pointer is valid
+
 	// Retrieved chunk should be chunk2
 	EXPECT_NE(added_chunk, added_chunk2);
 

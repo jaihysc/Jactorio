@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <iostream>
-#include "data/data_manager.h"
+
+#include "core/filesystem.h"
 
 int main(int ac, char* av[]) {
 	jactorio::core::filesystem::set_executing_directory(av[0]);

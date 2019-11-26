@@ -80,6 +80,8 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
+	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
+
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp

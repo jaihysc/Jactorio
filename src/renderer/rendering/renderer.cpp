@@ -28,9 +28,10 @@ void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 			smallest_axis = window_width_;
 		}
 
-		// Maximum zoom is 10 less
-		if (tile_projection_matrix_offset > static_cast<float>(smallest_axis) / 2 - 10) {
-			tile_projection_matrix_offset = static_cast<float>(smallest_axis) / 2 + 10;
+		// Maximum zoom is 30 from center
+		const int max_zoom_offset = 30;
+		if (tile_projection_matrix_offset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
+			tile_projection_matrix_offset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
 		}
 	}
 

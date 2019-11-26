@@ -8,7 +8,6 @@
 #include "data/data_manager.h"
 #include "game/world/world_manager.h"
 
-// TODO, the data which the chunk tiles point to needs to be deleted
 namespace
 {
 	void build_height_map(const module::Perlin& noise_module, utils::NoiseMap& height_map,
@@ -38,7 +37,7 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 	base_terrain_noise_module.SetOctaveCount(8);
 	base_terrain_noise_module.SetFrequency(0.25);
 	base_terrain_noise_module.SetPersistence(0.5);
-
+	
 	module::Perlin resource_noise_module;
 	resource_noise_module.SetOctaveCount(2);
 	resource_noise_module.SetFrequency(0.9);
@@ -76,35 +75,28 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 
 
 			// Resources
-			const auto resource_noise_val = resource_height_map.GetValue(x, y);
-
-			if (!in_water) {
-				if (resource_noise_val <= -0.9f)
-					tile_name = "test_tile";
-			}
+			// std::string resource_tile_name = "test_tile";
+			// const auto resource_noise_val = resource_height_map.GetValue(x, y);
+			// bool has_resource = false;
+			// if (!in_water) {
+				// has_resource = true;
+				// if (resource_noise_val <= -0.7f)
+					// resource_tile_name = "crude-oil";
+			// }
 			
-			data::Prototype_base* const proto_tile = data::data_manager::data_raw_get(
+
+			tiles[y * 32 + x].tile_prototype = data::data_manager::data_raw_get<data::Tile>(
 				data::data_category::tile, tile_name);
-	
-			tiles[y * 32 + x].tile_prototype = static_cast<data::Tile*>(proto_tile);
+			
+			// if (has_resource) {
+				// tiles[y * 32 + x].tile_resource_prototype = static_cast<data::Tile*>(
+					// data::data_manager::data_raw_get(
+						// data::data_category::tile, resource_tile_name)
+				// );
+			// }
 		}
 	}
 
 	world_manager::add_chunk(new Chunk{chunk_x, chunk_y, tiles});
-
-	// auto* tiles = new Tile[1024];
-	// for (int i = 0; i < 32 * 32; ++i) {
-	// 	const auto proto_tile = data::data_manager::data_raw_get(data::data_category::tile, "test_tile");
-	//
-	// 	tiles[i].tile_prototype = static_cast<data::Tile*>(proto_tile);
-	// }
-	// world_manager::add_chunk(new Chunk{ x, y, tiles});
-	//
-	//
-	// // This is just a test to mark the start of each chunk
-	// auto* g_tile = new Tile{};
-	// g_tile->tile_prototype = static_cast<data::Tile*>(data::data_manager::data_raw_get(
-	// 	data::data_category::tile, "grass-1"));
-	// world_manager::get_chunk(x, y)->tiles_ptr()[320] = g_tile;
 	--*thread_counter;
 }

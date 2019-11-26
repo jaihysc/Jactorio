@@ -73,8 +73,8 @@ void jactorio::renderer::render_init() {
 
 
 	// Loading textures
-	std::vector<data::Prototype_base> texture_paths = data::data_manager::get_all_data(
-		data::data_category::tile);
+	std::vector<data::Sprite*> texture_paths = 
+		data::data_manager::data_raw_get_all<data::Sprite>(data::data_category::sprite);
 
 	const auto r_sprites = Renderer_sprites{};
 	const Renderer_sprites::Spritemap_data spritemap_data = r_sprites.gen_spritemap(
@@ -134,6 +134,8 @@ void jactorio::renderer::render_init() {
 		}
 	}
 
+	data::data_manager::clear_data();
+	game::world_manager::clear_chunk_data();
 	core::loop_manager::terminate_loop_manager();
 
 	imgui_terminate();

@@ -5,7 +5,7 @@
 #include <string>
 #include <SFML/Graphics/Image.hpp>
 
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/sprite.h"
 
 // Generates spritemaps on initialization with tile sprites
 // - Concatenate sprite into spritemap
@@ -43,8 +43,10 @@ namespace jactorio::renderer
 
 		/*!
 		 * Generated spritemap will be purely horizontal, all images concatenated side by side
+		 * @param images Pointer array to pointers towards sprite prototypes
+		 * @param count Count of pointer array
 		 */
-		Spritemap_data gen_spritemap(data::Prototype_base* images, unsigned short count) const;
+		Spritemap_data gen_spritemap(data::Sprite** images, unsigned short count) const;
 
 
 	private:
