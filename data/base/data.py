@@ -1,37 +1,37 @@
 import jactorio_data as jd
 
-def add_proto(name, sprite_path):
-    sprite_proto = jd.Sprite(sprite_path)
+def addNoiseLayerTile(noiseLayer, endRange, name, spritePath):
+    # Create Sprite
+    sprite_proto = jd.Sprite(spritePath)
     jd.add(jd.category.Sprite, name, sprite_proto)
 
-    jd.add(jd.category.Tile, name, jd.Tile(sprite_proto))
+    # Create tile
+    tile_proto = jd.Tile(sprite_proto)
+    jd.add(jd.category.Tile, name, tile_proto)
 
-add_proto("deep-water-1", "base/graphics/tiles/deep-water.png")
-add_proto("water-1", "base/graphics/tiles/water.png")
-add_proto("shore-1", "base/graphics/tiles/shore.png")
-add_proto("sand-1", "base/graphics/tiles/sand.png")
-add_proto("grass-1", "base/graphics/tiles/grass.png")
-add_proto("dirt-1", "base/graphics/tiles/dirt.png")
- 
- # Resources
- # TODO, the resource generation will be configurable
-add_proto("coal", "base/graphics/resource/coal/coal-ore.png")
-add_proto("copper", "base/graphics/resource/copper/copper-ore.png")
-add_proto("iron", "base/graphics/resource/iron/iron-ore.png")
-add_proto("stone", "base/graphics/resource/stone/stone-ore.png")
-add_proto("uranium", "base/graphics/resource/uranium/uranium-ore.png")
+    # Add Tile to NoiseLayer
+    noiseLayer.addTile(endRange, tile_proto)
 
-add_proto("crude-oil", "base/graphics/resource/oil/crude-oil.png")
-
-"""
-noise_layer = jd.NoiseLayer()
+# Create NoiseLayer
+noise_layer = jd.NoiseLayer(-1)
 noise_layer.name = "base-terrain"
 
-proto = jd.Prototype()
-proto.load_sprite(sprite_path)
-jd.add(jd.category.Tile, "coal", proto)
+addNoiseLayerTile(noise_layer, -0.5, "deep-water-1", "base/graphics/tiles/deep-water.png")
+addNoiseLayerTile(noise_layer, -0.25, "water-1", "base/graphics/tiles/water.png")
+addNoiseLayerTile(noise_layer, -0.2, "sand-1", "base/graphics/tiles/sand.png")
+addNoiseLayerTile(noise_layer, 0.5, "grass-1", "base/graphics/tiles/grass.png")
+addNoiseLayerTile(noise_layer, 1, "dirt-1", "base/graphics/tiles/dirt.png")
 
-noise_layer.add_tile(-1, -0.5, proto)
-
+# Add NoiseLayer
 jd.add(jd.category.NoiseLayer, "base-terrain", noise_layer)
-"""
+
+
+#  # Resources
+#  # TODO, the resource generation will be configurable
+# addNoiseLayerTile("coal", "base/graphics/resource/coal/coal-ore.png")
+# addNoiseLayerTile("copper", "base/graphics/resource/copper/copper-ore.png")
+# addNoiseLayerTile("iron", "base/graphics/resource/iron/iron-ore.png")
+# addNoiseLayerTile("stone", "base/graphics/resource/stone/stone-ore.png")
+# addNoiseLayerTile("uranium", "base/graphics/resource/uranium/uranium-ore.png")
+#
+# addNoiseLayerTile("crude-oil", "base/graphics/resource/oil/crude-oil.png")

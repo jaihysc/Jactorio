@@ -8,6 +8,7 @@
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
 #include "data/prototype/tile.h"
+#include "data/prototype/noise_layer.h"
 
 // All the bindings in bindings/ defined for pybind
 // This should only be included by pybind_manager.h
@@ -42,14 +43,21 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 		.def(py::init<Sprite*>())
 		.def_readwrite("sprite", &Tile::sprite_ptr);
 
-	
+    py::class_<Noise_layer, Prototype_base>(m, "NoiseLayer")
+            .def(py::init())
+            .def(py::init<int>())
+            .def("getStartVal", &Noise_layer::get_start_val)
+            .def("setStartVal", &Noise_layer::set_start_val)
+            .def("addTile", &Noise_layer::add_tile)
+            .def("getTile", &Noise_layer::get_tile);
+
 	// ############################################################
 	// Data_raw + get/set
 
 	py::enum_<data_category>(m, "category")
 		.value("Tile", data_category::tile)
 		.value("Sprite", data_category::sprite)
-		.value("Noise_layer", data_category::noise_layer)
+		.value("NoiseLayer", data_category::noise_layer)
 		.value("Sound", data_category::sound);
 	
 	py::class_<data_raw>(m, "Prototype_data")

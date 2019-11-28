@@ -5,8 +5,9 @@
 
 #include "core/logger.h"
 #include "game/world/tile.h"
-#include "data/data_manager.h"
 #include "game/world/world_manager.h"
+#include "data/data_manager.h"
+#include "data/prototype/noise_layer.h"
 
 namespace
 {
@@ -50,50 +51,27 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 	build_height_map(resource_noise_module, resource_height_map, chunk_x, chunk_y);
 	
 	auto* tiles = new Chunk_tile[1024];
-	
-	for (int y = 0; y < 32; ++y) {
+
+    // base-terrain is default world Noise_layer
+    auto* noise_layer = data::data_manager::data_raw_get<data::Noise_layer>(
+            data::data_category::noise_layer, "base-terrain");
+
+    for (int y = 0; y < 32; ++y) {
 		for (int x = 0; x < 32; ++x) {
 			std::string tile_name = "test_tile";
 
-			// Base terrain
-			const auto noise_val = base_terrain_height_map.GetValue(x, y);
-			bool in_water = false;
-			if (noise_val <= -0.5f) {
-				in_water = true;
-				tile_name = "deep-water-1";
-			}
-			else if (noise_val > -0.5f && noise_val <= -0.25f) {
-				tile_name = "water-1";
-				in_water = true;
-			}
-			else if (noise_val > -0.25f && noise_val <= -0.2f)
-				tile_name = "sand-1";
-			else if (noise_val > -0.2f && noise_val <= 0.5f)
-				tile_name = "grass-1";
-			else if (noise_val > 0.5f)
-				tile_name = "dirt-1";
+			float noise_val = base_terrain_height_map.GetValue(x, y);
 
+			// Libnoise does not guarantee a cap of -1 - 1
+			if (noise_val > 1)
+			    noise_val = 1;
+			if (noise_val < -1)
+			    noise_val = -1;
 
-			// Resources
-			// std::string resource_tile_name = "test_tile";
-			// const auto resource_noise_val = resource_height_map.GetValue(x, y);
-			// bool has_resource = false;
-			// if (!in_water) {
-				// has_resource = true;
-				// if (resource_noise_val <= -0.7f)
-					// resource_tile_name = "crude-oil";
-			// }
-			
+            tile_name = noise_layer->get_tile(noise_val)->name;
 
 			tiles[y * 32 + x].tile_prototype = data::data_manager::data_raw_get<data::Tile>(
 				data::data_category::tile, tile_name);
-			
-			// if (has_resource) {
-				// tiles[y * 32 + x].tile_resource_prototype = static_cast<data::Tile*>(
-					// data::data_manager::data_raw_get(
-						// data::data_category::tile, resource_tile_name)
-				// );
-			// }
 		}
 	}
 
