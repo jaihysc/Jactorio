@@ -114,7 +114,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 	
 	gl_context_active = true;
 
-	LOG_MESSAGE_f(info, "OpenGL initialized\n OpenGL Version: %s", glGetString(GL_VERSION))
+	LOG_MESSAGE_f(info, "OpenGL initialized - OpenGL Version: %s", glGetString(GL_VERSION))
 	return 0;
 }
 

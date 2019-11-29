@@ -51,9 +51,10 @@ namespace
 				
 				if (x_offset >= span)
 					continue;
-				
+
+				// TODO - THIS IS ONLY CAPABLE OF RENDERING THE FIRST PROTOTYPE
 				const auto positions = renderer->get_sprite_spritemap_coords(
-					tiles[tile_y * 32 + tile_x].tile_prototype->name);
+					tiles[tile_y * 32 + tile_x].tile_prototypes[0]->name);
 
 				const unsigned int buffer_offset = 
 					(y_offset * span + x_offset) * 8;

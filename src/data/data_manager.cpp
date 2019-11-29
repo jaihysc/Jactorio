@@ -16,6 +16,13 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 	}
 	if (prototype->category != data_category)
 		prototype->category = data_category;
+
+	// Print warning if overriding another name
+	const auto& category = data_raw[data_category];
+	if (category.find(iname) != category.end()) {
+		LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration", 
+		              iname.c_str(), static_cast<int>(data_category));
+	}
 	
 	data_raw[data_category][iname] = prototype;
 }

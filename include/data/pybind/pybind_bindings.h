@@ -7,8 +7,9 @@
 #include "data/data_manager.h"
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
-#include "data/prototype/tile.h"
 #include "data/prototype/noise_layer.h"
+#include "data/prototype/tile/tile.h"
+
 
 // All the bindings in bindings/ defined for pybind
 // This should only be included by pybind_manager.h

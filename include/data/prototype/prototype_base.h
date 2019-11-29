@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "data/prototype/data_category.h"
+#include "data/data_category.h"
 
 namespace jactorio::data
 {
@@ -12,7 +12,7 @@ namespace jactorio::data
 	public:
 		/**
 		 * Internal name <br>
-		 * MUST BE unique
+		 * MUST BE unique per data_category
 		 */
 		std::string name;
 

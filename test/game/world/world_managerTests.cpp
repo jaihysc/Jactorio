@@ -22,8 +22,13 @@ TEST(world_manager, world_add_chunk) {
 	// Chunk gives its contents in a const array pointer, size 32 * 32
 	const auto chunk_tiles_ptr = added_chunk->tiles_ptr();
 	for (int i = 0; i < 32 * 32; ++i) {
-		// Blank Tile id when the tiles are uninitialized
-		EXPECT_EQ(chunk_tiles_ptr[i].tile_prototype, nullptr);
+		// A tile can have multiple prototypes layered above each other
+		auto tile_prototypes = chunk_tiles_ptr[i].tile_prototypes;
+
+		for (int j = 0; j < tile_prototypes.size(); ++j) {
+			// Blank Tile prototypes when the tiles are uninitialized
+			EXPECT_EQ(tile_prototypes[i], nullptr);
+		}
 	}
 
 	jactorio::game::world_manager::clear_chunk_data();
@@ -96,5 +101,5 @@ TEST(world_manager, clear_chunk_data) {
 }
 
 TEST(world_manager, delete_chunks_in_range) {
-	
+	// TODO
 }

@@ -7,19 +7,30 @@ void jactorio::renderer::Renderer_sprites::set_image_positions(
 	const sf::Vector2u image_dimensions,
 	unsigned int& offset_x) {
 
-	image_position.top_left = Position_pair{static_cast<float>(offset_x), 0};
-	image_position.top_right = Position_pair{
-		static_cast<float>(offset_x + image_dimensions.x), 0
-	};
+	// Shrinks the dimensions of the images by this amount on all sides
+	// Used to avoid texture leaking
+	constexpr float coordinate_shrink_amount = 1;
+	
+	image_position.top_left = 
+		Position_pair{
+			static_cast<float>(offset_x) + coordinate_shrink_amount,
+			coordinate_shrink_amount
+		};
+	image_position.top_right =
+		Position_pair{
+			static_cast<float>(offset_x) + image_dimensions.x - coordinate_shrink_amount,
+			coordinate_shrink_amount
+		};
 
 	image_position.bottom_left =
 		Position_pair{
-			static_cast<float>(offset_x), static_cast<float>(image_dimensions.y)
+			static_cast<float>(offset_x) + coordinate_shrink_amount,
+			static_cast<float>(image_dimensions.y - coordinate_shrink_amount)
 		};
 	image_position.bottom_right =
 		Position_pair{
-			static_cast<float>(offset_x + image_dimensions.x),
-			static_cast<float>(image_dimensions.y)
+			static_cast<float>(offset_x) + image_dimensions.x - coordinate_shrink_amount,
+			static_cast<float>(image_dimensions.y - coordinate_shrink_amount)
 		};
 
 	offset_x += image_dimensions.x;

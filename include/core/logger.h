@@ -29,8 +29,8 @@ message);
 // Allows the message to contain a format, similar to printf
 #define LOG_MESSAGE_f(severity, format, ...)\
 {    \
-char buffer[10000];\
-snprintf(buffer, sizeof(char) * 10000, format, __VA_ARGS__);\
+char buffer[1000];\
+snprintf(buffer, sizeof(char) * 1000, format, __VA_ARGS__);\
 log_message(\
 	jactorio::core::logger::log_severity::severity, \
 	FILENAME, \

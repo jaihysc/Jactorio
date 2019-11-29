@@ -13,7 +13,8 @@ TEST(spritemap_generator, gen_spritemap) {
 	// Spritemap is purely horizontal, with smaller images aligned to the top
 	// Image positions are retrieved from the spritemap via the path originally given to create the spritemap
 	
-	// Images are 32 x 32 px
+	// Images 0 - 2 are 32 x 32 px
+	// Image 3 is 64 x 64
 	const auto prototypes = new jactorio::data::Sprite*[4];
 	for (int i = 0; i < 4; ++i) {
 		prototypes[i] = new jactorio::data::Sprite;
@@ -69,54 +70,54 @@ TEST(spritemap_generator, gen_spritemap) {
 
 	// Validate that the image positions are calculated correctly
 	const auto img1 = spritemap.sprite_positions.at("1");
-	EXPECT_EQ(img1.top_left.x, 0.f);
-	EXPECT_EQ(img1.top_left.y, 0.f);
+	EXPECT_EQ(img1.top_left.x, 0.00625f);
+	EXPECT_EQ(img1.top_left.y, 0.015625f);
 
-	EXPECT_EQ(img1.top_right.x, 0.2f);
-	EXPECT_EQ(img1.top_right.y, 0.f);
+	EXPECT_EQ(img1.top_right.x, 0.19375f);
+	EXPECT_EQ(img1.top_right.y, 0.015625f);
 
-	EXPECT_EQ(img1.bottom_left.x, 0.f);
-	EXPECT_EQ(img1.bottom_left.y, 0.5f);
+	EXPECT_EQ(img1.bottom_left.x, 0.00625f);
+	EXPECT_EQ(img1.bottom_left.y, 0.484375f);
 
-	EXPECT_EQ(img1.bottom_right.x, 0.2f);
-	EXPECT_EQ(img1.bottom_right.y, 0.5f);
+	EXPECT_EQ(img1.bottom_right.x, 0.19375f);
+	EXPECT_EQ(img1.bottom_right.y, 0.484375f);
 
 	const auto img2 = spritemap.sprite_positions.at("2");
-	EXPECT_EQ(img2.top_left.x, 0.2f);
-	EXPECT_EQ(img2.top_left.y, 0.f);
+	EXPECT_EQ(img2.top_left.x, 0.20625f);
+	EXPECT_EQ(img2.top_left.y, 0.015625f);
 
-	EXPECT_EQ(img2.top_right.x, 0.4f);
-	EXPECT_EQ(img2.top_right.y, 0.f);
+	EXPECT_EQ(img2.top_right.x, 0.39375f);
+	EXPECT_EQ(img2.top_right.y, 0.015625f);
 
-	EXPECT_EQ(img2.bottom_left.x, 0.2f);
-	EXPECT_EQ(img2.bottom_left.y, 0.5f);
+	EXPECT_EQ(img2.bottom_left.x, 0.20625f);
+	EXPECT_EQ(img2.bottom_left.y, 0.484375f);
 
-	EXPECT_EQ(img2.bottom_right.x, 0.4f);
-	EXPECT_EQ(img2.bottom_right.y, 0.5f);
+	EXPECT_EQ(img2.bottom_right.x, 0.39375f);
+	EXPECT_EQ(img2.bottom_right.y, 0.484375f);
 
 	const auto img3 = spritemap.sprite_positions.at("3");
-	EXPECT_EQ(img3.top_left.x, 0.4f);
-	EXPECT_EQ(img3.top_left.y, 0.f);
+	EXPECT_EQ(img3.top_left.x, 0.40625f);
+	EXPECT_EQ(img3.top_left.y, 0.015625f);
 
-	EXPECT_EQ(img3.top_right.x, 0.6f);
-	EXPECT_EQ(img3.top_right.y, 0.f);
+	EXPECT_EQ(img3.top_right.x, 0.59375f);
+	EXPECT_EQ(img3.top_right.y, 0.015625f);
 
-	EXPECT_EQ(img3.bottom_left.x, 0.4f);
-	EXPECT_EQ(img3.bottom_left.y, 0.5f);
+	EXPECT_EQ(img3.bottom_left.x, 0.40625f);
+	EXPECT_EQ(img3.bottom_left.y, 0.484375f);
 
-	EXPECT_EQ(img3.bottom_right.x, 0.6f);
-	EXPECT_EQ(img3.bottom_right.y, 0.5f);
+	EXPECT_EQ(img3.bottom_right.x, 0.59375f);
+	EXPECT_EQ(img3.bottom_right.y, 0.484375f);
 
 	const auto img4 = spritemap.sprite_positions.at("4");
-	EXPECT_EQ(img4.top_left.x, 0.6f);
-	EXPECT_EQ(img4.top_left.y, 0.f);
+	EXPECT_EQ(img4.top_left.x, 0.60625f);
+	EXPECT_EQ(img4.top_left.y, 0.015625f);
 
-	EXPECT_EQ(img4.top_right.x, 1.f);
-	EXPECT_EQ(img4.top_right.y, 0.f);
+	EXPECT_EQ(img4.top_right.x, 0.99375f);
+	EXPECT_EQ(img4.top_right.y, 0.015625f);
 
-	EXPECT_EQ(img4.bottom_left.x, 0.6f);
-	EXPECT_EQ(img4.bottom_left.y, 1.f);
+	EXPECT_EQ(img4.bottom_left.x, 0.60625f);
+	EXPECT_EQ(img4.bottom_left.y, 0.984375f);
 
-	EXPECT_EQ(img4.bottom_right.x, 1.f);
-	EXPECT_EQ(img4.bottom_right.y, 1.f);
+	EXPECT_EQ(img4.bottom_right.x, 0.99375f);
+	EXPECT_EQ(img4.bottom_right.y, 0.984375f);
 }

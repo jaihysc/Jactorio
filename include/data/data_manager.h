@@ -4,10 +4,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "data/prototype/data_category.h"
+#include "data/data_category.h"
 #include "data/prototype/prototype_base.h"
 
-#include "data/prototype/tile.h"
+#include "data/prototype/tile/tile.h"
 namespace jactorio::data
 {
 	/**
