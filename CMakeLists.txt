@@ -23,10 +23,11 @@ set(JACTORIO_INCLUDE_FILES
 	${PROJECT_SOURCE_DIR}/lib/imgui/
 	${PROJECT_SOURCE_DIR}/lib/SFML/include
 	${PROJECT_SOURCE_DIR}/lib/pybind11/include
+	${PROJECT_SOURCE_DIR}/lib/libnoise/include
 )
 #------------ Source files .cpp
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
-set(JACTORIO_SRC_FILES 
+set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/filesystem.cpp
 	${JACTORIO_DIR}/core/loop_manager.cpp
@@ -40,6 +41,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/tile.cpp
 	${JACTORIO_DIR}/game/world/world_manager.cpp
+	${JACTORIO_DIR}/game/world/world_generator.cpp
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
 	${JACTORIO_DIR}/renderer/render_loop.cpp
@@ -68,7 +70,7 @@ set(JACTORIO_SRC_FILES
 
 # >>>>>>>>>>> Test files .cpp
 set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
-set(JACTORIO_TEST_FILES 
+set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/jactorioTests.cpp
 
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
@@ -77,6 +79,9 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
+
+	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
@@ -136,7 +141,7 @@ find_package(SFML 2.5 COMPONENTS graphics)
 
 
 set(
-	IMGUI_FILES 
+	IMGUI_FILES
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp

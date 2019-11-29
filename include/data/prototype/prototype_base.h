@@ -1,9 +1,9 @@
 #ifndef DATA_PROTOTYPE_PROTOTYPE_BASE_H
 #define DATA_PROTOTYPE_PROTOTYPE_BASE_H
 
-#include <SFML/Graphics/Image.hpp>
 #include <string>
-#include "core/filesystem.h"
+
+#include "data/data_category.h"
 
 namespace jactorio::data
 {
@@ -12,25 +12,14 @@ namespace jactorio::data
 	public:
 		/**
 		 * Internal name <br>
-		 * MUST BE unique
+		 * MUST BE unique per data_category
 		 */
 		std::string name;
-		
-		/**
-		 * Sprite for the prototype
-		 */
-		sf::Image sprite;
 
 		/**
-		 * Loads a sprite from sprite_path into member sprite <br>
-		 * Do not include ~/data/
+		 * Category of this Prototype item
 		 */
-		void load_sprite(const std::string& sprite_path) {
-			sprite = sf::Image();
-
-			const std::string path = core::filesystem::resolve_path("~/data/" + sprite_path);
-			sprite.loadFromFile(path);
-		}
+		data_category category;
 	};
 }
 

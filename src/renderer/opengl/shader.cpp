@@ -1,6 +1,5 @@
 #include <GL/glew.h>
 
-#include <sstream>
 #include <vector>
 
 #include "core/filesystem.h"
@@ -9,25 +8,19 @@
 #include "renderer/opengl/error.h"
 #include "core/logger.h"
 
-namespace logger = jactorio::core::logger;
-
 unsigned int jactorio::renderer::Shader::compile_shader(
 	const std::string& filepath, const GLenum shader_type) {
-	auto path = core::filesystem::resolve_path(filepath);
-
+	
+	const auto path = core::filesystem::resolve_path(filepath);
 	const std::string source = core::filesystem::read_file_as_str(path);
 
 	if (source.empty()) {
-		std::ostringstream oss;
-		oss << "Shader compilation received empty string, type " << shader_type
-			<< " " <<
-			path;
-		log_message(logger::error, "OpenGL Shader", oss.str());
+		LOG_MESSAGE_f(error, "Shader compilation received empty string, type %d %s",
+		              shader_type, path.c_str())
 		return 0;
 	}
 
-	DEBUG_OPENGL_CALL(
-		const unsigned int shader_id = glCreateShader(shader_type));
+	DEBUG_OPENGL_CALL(const unsigned int shader_id = glCreateShader(shader_type));
 	const char* src = source.c_str();
 
 	DEBUG_OPENGL_CALL(glShaderSource(shader_id, 1, &src, nullptr));
@@ -49,21 +42,17 @@ unsigned int jactorio::renderer::Shader::compile_shader(
 
 		DEBUG_OPENGL_CALL(glDeleteShader(shader_id));
 
-		std::ostringstream oss;
-		oss << "Shader compilation failed, type " << shader_type << " " <<
-			path << "\n";
-		oss << message;
-		log_message(logger::error, "OpenGL Shader", oss.str());
+		LOG_MESSAGE_f(error, "Shader compilation failed, type %d %s\n%s",
+		              shader_type, path.c_str(), message);
 
 		delete[] message;
 
 		return 0;
 	}
 
-	std::ostringstream oss;
-	oss << "Shader compilation successful, type " << shader_type << " " <<
-		path;
-	log_message(logger::debug, "OpenGL Shader", oss.str());
+	LOG_MESSAGE_f(debug, "Shader compilation successful, type %d %s",
+	              shader_type, path.c_str());
+	
 	return shader_id;
 }
 
@@ -110,10 +99,8 @@ int jactorio::renderer::Shader::get_uniform_location(
 		const int location = glGetUniformLocation(id_, name.c_str()));
 
 	if (location == -1) {
-		std::ostringstream oss;
-		oss << "Attempted to get location of uniform: \"" << name <<
-			"\" which does not exist";
-		log_message(logger::error, "OpenGL", oss.str());
+		LOG_MESSAGE_f(error, "Attempted to get location of uniform \"%s\" which does not exist",
+		              name.c_str())
 	}
 
 

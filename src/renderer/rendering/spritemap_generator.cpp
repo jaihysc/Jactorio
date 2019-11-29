@@ -2,26 +2,35 @@
 
 #include "core/logger.h"
 
-namespace logger = jactorio::core::logger;
-
 void jactorio::renderer::Renderer_sprites::set_image_positions(
 	Image_position& image_position,
 	const sf::Vector2u image_dimensions,
 	unsigned int& offset_x) {
 
-	image_position.top_left = Position_pair{static_cast<float>(offset_x), 0};
-	image_position.top_right = Position_pair{
-		static_cast<float>(offset_x + image_dimensions.x), 0
-	};
+	// Shrinks the dimensions of the images by this amount on all sides
+	// Used to avoid texture leaking
+	constexpr float coordinate_shrink_amount = 1;
+	
+	image_position.top_left = 
+		Position_pair{
+			static_cast<float>(offset_x) + coordinate_shrink_amount,
+			coordinate_shrink_amount
+		};
+	image_position.top_right =
+		Position_pair{
+			static_cast<float>(offset_x) + image_dimensions.x - coordinate_shrink_amount,
+			coordinate_shrink_amount
+		};
 
 	image_position.bottom_left =
 		Position_pair{
-			static_cast<float>(offset_x), static_cast<float>(image_dimensions.y)
+			static_cast<float>(offset_x) + coordinate_shrink_amount,
+			static_cast<float>(image_dimensions.y - coordinate_shrink_amount)
 		};
 	image_position.bottom_right =
 		Position_pair{
-			static_cast<float>(offset_x + image_dimensions.x),
-			static_cast<float>(image_dimensions.y)
+			static_cast<float>(offset_x) + image_dimensions.x - coordinate_shrink_amount,
+			static_cast<float>(image_dimensions.y - coordinate_shrink_amount)
 		};
 
 	offset_x += image_dimensions.x;
@@ -29,8 +38,8 @@ void jactorio::renderer::Renderer_sprites::set_image_positions(
 
 
 jactorio::renderer::Renderer_sprites::Spritemap_data jactorio::renderer::
-Renderer_sprites::gen_spritemap(data::Prototype_base* images, const unsigned short count) const {
-	log_message(logger::info, "Renderer sprites", "Generating spritemap");
+Renderer_sprites::gen_spritemap(data::Sprite** images, const unsigned short count) const {
+	LOG_MESSAGE_f(info, "Generating spritemap with %d tiles...", count);
 	
 	std::unordered_map<std::string, Image_position> image_positions;
 	unsigned int image_position_offset_x = 0;
@@ -40,7 +49,7 @@ Renderer_sprites::gen_spritemap(data::Prototype_base* images, const unsigned sho
 	unsigned int pixels_y = 0;
 	
 	for (int i = 0; i < count; ++i) {
-		sf::Vector2u size = images[i].sprite.getSize();
+		sf::Vector2u size = images[i]->sprite_image.getSize();
 		
 		pixels_x += size.x;
 		if (size.y > pixels_y)
@@ -53,7 +62,7 @@ Renderer_sprites::gen_spritemap(data::Prototype_base* images, const unsigned sho
 	// Offset the x pixels of each new image so they don't overwrite each other
 	unsigned int x_offset = 0;
 	for (int i = 0; i < count; ++i) {
-		sf::Image image = images[i].sprite;
+		sf::Image image = images[i]->sprite_image;
 		image.flipVertically();
 
 		const auto image_size = image.getSize();
@@ -65,7 +74,7 @@ Renderer_sprites::gen_spritemap(data::Prototype_base* images, const unsigned sho
 		x_offset += image_size.x;
 
 		// Keep track of image positions within the spritemap
-		set_image_positions(image_positions[images[i].name],
+		set_image_positions(image_positions[images[i]->name],
 		                    image_size, image_position_offset_x);
 	}
 

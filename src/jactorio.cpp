@@ -18,13 +18,14 @@ int main(int ac, char* av[]) {
 		JACTORIO_VERSION << "\n\n\n";
 
 	jactorio::core::filesystem::set_executing_directory(av[0]);
+	jactorio::core::logger::open_log_file("~/log.txt");
 
 	{
 		jactorio::core::loop_manager::initialize_loop_manager();
 
 		
 		// Rendering + logic initialization
-		log_message(jactorio::core::logger::info, "Jactorio", "1 - Data stage");
+		LOG_MESSAGE(info, "1 - Data stage");
 
 		jactorio::data::pybind_manager::py_interpreter_init();
 
@@ -43,6 +44,7 @@ int main(int ac, char* av[]) {
 
 	jactorio::data::pybind_manager::py_interpreter_terminate();
 
-	std::cout << "goodbye!\n";
+	LOG_MESSAGE(none, "goodbye!");
+	jactorio::core::logger::close_log_file();
 	return 0;
 }

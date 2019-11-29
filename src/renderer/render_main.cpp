@@ -7,17 +7,15 @@
 #include "core/logger.h"
 #include "core/loop_manager.h"
 #include "data/data_manager.h"
-#include "game/world/world_manager.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/window/window_manager.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/texture.h"
-#include "renderer/rendering/renderer.h"
 #include "renderer/rendering/spritemap_generator.h"
 #include "renderer/render_loop.h"
 #include "game/input/input_manager.h"
-#include "renderer/rendering/world_renderer.h"
+#include "game/world/world_manager.h"
 
 namespace jactorio::renderer
 {
@@ -25,6 +23,7 @@ namespace jactorio::renderer
 	unsigned short window_x = 0;
 	unsigned short window_y = 0;
 
+	Renderer* renderer = nullptr;
 	bool render_draw = false;
 	// Called every renderer cycle, cannot put code in callback due to single thread of opengl
 	void renderer_draw() {
@@ -40,6 +39,10 @@ void jactorio::renderer::set_recalculate_renderer(const unsigned short window_si
 	window_y = window_size_y;
 
 	refresh_renderer = true;
+}
+
+jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
+	return renderer;
 }
 
 
@@ -70,8 +73,8 @@ void jactorio::renderer::render_init() {
 
 
 	// Loading textures
-	std::vector<data::Prototype_base> texture_paths = data::data_manager::get_all_data(
-		data::data_category::tile);
+	std::vector<data::Sprite*> texture_paths = 
+		data::data_manager::data_raw_get_all<data::Sprite>(data::data_category::sprite);
 
 	const auto r_sprites = Renderer_sprites{};
 	const Renderer_sprites::Spritemap_data spritemap_data = r_sprites.gen_spritemap(
@@ -81,31 +84,7 @@ void jactorio::renderer::render_init() {
 	texture.bind(0);
 
 
-	auto* renderer = new Renderer(spritemap_data.sprite_positions);
-
-
-	// World generator test
-	// TODO chunk data needs to be deleted
-	auto* tiles = new game::Tile[1024];
-	for (int i = 0; i < 32 * 32; ++i) {
-		const auto proto_tile = data::data_manager::data_raw_get(data::data_category::tile, "test_tile");
-
-		tiles[i].tile_prototype = static_cast<data::Tile*>(proto_tile);
-	}
-	
-	for (int y = 0; y < 5; ++y) {
-		for (int x = 0; x < 5; ++x) {
-			game::world_manager::add_chunk(new game::Chunk{ x, y, tiles});
-
-		}
-	}
-
-	auto* g_tile = new game::Tile{};
-	g_tile->tile_prototype = static_cast<data::Tile*>(data::data_manager::data_raw_get(
-		data::data_category::tile, "grass-1"));
-	
-	game::world_manager::get_chunk(1, 1)->tiles_ptr()[0] = g_tile;
-
+	renderer = new Renderer(spritemap_data.sprite_positions);
 	
 	game::input_manager::register_input_callback([]() {
 		glfwSetWindowShouldClose(window_manager::get_window(), GL_TRUE);
@@ -116,9 +95,20 @@ void jactorio::renderer::render_init() {
 		toggle_fullscreen = true;
 	}, GLFW_KEY_SPACE, GLFW_RELEASE);
 
-	
+	game::input_manager::register_input_callback([]() {
+		renderer->tile_width++;
+		refresh_renderer = true;
+	}, GLFW_KEY_Z, GLFW_RELEASE);
+	game::input_manager::register_input_callback([]() {
+		if (renderer->tile_width > 9) {
+			renderer->tile_width--;
+			refresh_renderer = true;
+		}
+
+	}, GLFW_KEY_X, GLFW_RELEASE);
+
 	// #################################################################
-	log_message(core::logger::info, "Jactorio", "2 - Runtime stage");
+	LOG_MESSAGE(info, "2 - Runtime stage")
 
 	core::loop_manager::render_loop_ready(renderer_draw);
 	while (!glfwWindowShouldClose(window)) {
@@ -129,10 +119,8 @@ void jactorio::renderer::render_init() {
 				toggle_fullscreen = false;
 				window_manager::set_fullscreen(!window_manager::is_fullscreen());
 			}
-			
-			render_draw = false;
-			world_renderer::render_player_position(renderer);
 
+			render_draw = false;
 			// Don't multi-thread opengl
 			render_loop(renderer);
 
@@ -146,6 +134,8 @@ void jactorio::renderer::render_init() {
 		}
 	}
 
+	data::data_manager::clear_data();
+	game::world_manager::clear_chunk_data();
 	core::loop_manager::terminate_loop_manager();
 
 	imgui_terminate();

@@ -1,29 +1,23 @@
 #include <game/world/chunk.h>
 
-jactorio::game::Chunk::Chunk(const int x, const int y, Tile* tiles) {
+jactorio::game::Chunk::Chunk(const int x, const int y, Chunk_tile* tiles) {
 	position_.first = x;
 	position_.second = y;
 
 	if (tiles == nullptr) {
-		for (auto& tile : tiles_) {
-			tile = new Tile();
+		// Allocate and initialize
+		tiles_ = new Chunk_tile[32 * 32];
+		for (int i = 0; i < 32 * 32; ++i) {
+			tiles_[i] = Chunk_tile();
 		}
 	}
 	else {
-		for (int i = 0; i < 32 * 32; ++i) {
-			// Make a copy of the provided tile so it can be deleted without affecting anything else
-			const auto tile_copy = new Tile();
-			*tile_copy = tiles[i];
-			
-			tiles_[i] = tile_copy;
-		}
+		tiles_ = tiles;
 	}
 }
 
 jactorio::game::Chunk::~Chunk() {
-	for (int i = 0; i < 32 * 32; ++i) {
-		delete tiles_[i];
-	}
+	delete[] tiles_;
 }
 
 std::pair<int, int> jactorio::game::Chunk::get_position() const {

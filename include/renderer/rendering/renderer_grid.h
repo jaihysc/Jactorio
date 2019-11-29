@@ -4,7 +4,7 @@
 // Maintains the grid layout used by the renderer
 // Examples include:
 //		Tile grid based on screen resolution + zoom for rendering the world
-//		TODO Texture spritemap positions (Is currently constant)
+//		Default Texture spritemap positions
 //		Indices for tile and texture grid
 
 /**

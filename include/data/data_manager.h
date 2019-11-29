@@ -3,25 +3,55 @@
 
 #include <unordered_map>
 #include <vector>
+
+#include "data/data_category.h"
 #include "data/prototype/prototype_base.h"
 
+#include "data/prototype/tile/tile.h"
 namespace jactorio::data
 {
-	enum class data_category
-	{
-		tile,
-		audio
-	};
-
-	/** Accessed via Hdata access methods
+	/**
 	* std::string type -> Everything of specified type (E.g image, audio)
 	* >> std::string id - > std::string path to item
 	*/
 	namespace data_manager
 	{
+		// Example: data_raw[image]["grass-1"] -> Prototype_base
+
+		inline std::unordered_map<data_category, std::unordered_map<
+			                          std::string, Prototype_base*>> data_raw;
+		
 		// Data_raw functions
-		Prototype_base* data_raw_get(data_category data_category, const std::string& iname);
-		void data_raw_add(data_category data_type, const std::string& iname, const Prototype_base& prototype);
+		template <typename T>
+		T* data_raw_get(data_category data_category, const std::string& iname) {
+			auto category = &data_raw[data_category];
+			if (category->find(iname) == category->end())
+				return nullptr;
+
+			// Address of prototype item downcasted to T
+			Prototype_base* base = category->at(iname);
+			return static_cast<T*>(base);
+		}
+		
+		/**
+		 * Gets pointers to all data of specified data_type
+		 */
+		template <typename T>
+		std::vector<T*> data_raw_get_all(const data_category type) {
+			auto category_items = data_raw[type];
+
+			std::vector<T*> items;
+			items.reserve(category_items.size());
+
+			for (auto& it : category_items) {
+				Prototype_base* base_ptr = it.second;
+				items.push_back(static_cast<T*>(base_ptr));
+			}
+
+			return items;
+		}
+		
+		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* const prototype);
 		
 		/**
 		 * Loads data and their properties from data/ folder,
@@ -30,17 +60,10 @@ namespace jactorio::data
 		 */
 		void load_data(const std::string& data_folder_path);
 
-		// Data access methods
 		/**
-		 * Retrieves non resolved path to file based on type and id <br>
-		 * @return string "!" if specified value does not exist
+		 * Frees all pointer data within data_raw, clears data_raw
 		 */
-		std::string get_path(data_category type, const std::string& iname);
-
-		/**
-		 * Gets all data of specified data_type
-		 */
-		std::vector<Prototype_base> get_all_data(data_category type);
+		void clear_data();
 	};
 }
 

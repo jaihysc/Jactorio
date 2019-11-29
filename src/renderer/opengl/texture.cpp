@@ -5,8 +5,6 @@
 #include "renderer/opengl/texture.h"
 #include "renderer/opengl/error.h"
 
-namespace logger = jactorio::core::logger;
-
 jactorio::renderer::Texture::Texture(const sf::Image& image)
 	: renderer_id_(0) {
 	const unsigned char* texture_buffer = image.getPixelsPtr();
@@ -15,8 +13,7 @@ jactorio::renderer::Texture::Texture(const sf::Image& image)
 	height_ = img_dimensions.y;
 	
 	if (!texture_buffer) {
-		log_message(logger::error, "OpenGL Texture",
-		            "Received empty texture");
+		LOG_MESSAGE(error, "Received empty texture")
 		return;
 	}
 

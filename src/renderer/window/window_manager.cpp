@@ -3,9 +3,7 @@
 
 #include "renderer/window/window_manager.h"
 
-#include <sstream>
 #include <array>
-#include <sstream>
 
 #include "core/logger.h"
 #include "core/loop_manager.h"
@@ -13,8 +11,6 @@
 #include "renderer/render_main.h"
 #include "renderer/opengl/error.h"
 #include "renderer/rendering/renderer.h"
-
-namespace logger = jactorio::core::logger;
 
 std::array<int, 2> window_pos{0, 0};
 std::array<int, 2> window_size{0, 0};
@@ -65,7 +61,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 	init_glfw_error_handling();
 
 	if (!glfwInit()) {
-		log_message(logger::error, "Window manager", "glfw initialization failed");
+		LOG_MESSAGE(critical, "glfw initialization failed");
 		return 1;
 	}
 
@@ -73,14 +69,14 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 	glfw_window = glfwCreateWindow(width, height, "Jactorio", nullptr, nullptr);
 	if (glfw_window == nullptr) {
 		glfwTerminate();
-		log_message(logger::error, "Window manager", "Error initializing window");
+		LOG_MESSAGE(critical, "Error initializing window");
 
 		return 1;
 	}
 
 	glfwMakeContextCurrent(glfw_window);
 	if (glewInit() != GLEW_OK) {
-		log_message(logger::error, "Window manager", "GLEW initialization failed");
+		LOG_MESSAGE(critical, "GLEW initialization failed");
 		return 1;
 	}
 
@@ -96,11 +92,9 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		if (cx > 0 && cy > 0) {
 			// glViewport is critical, changes the size of the rendering area
 			glViewport(0, 0, cx, cy);
-			jactorio::renderer::set_recalculate_renderer(cx, cy);
+			set_recalculate_renderer(cx, cy);
 
-			std::stringstream ss;
-			ss << "Resolution changed to: " << cx << " by " << cy;
-			log_message(logger::debug, "Window_manager", ss.str());
+			LOG_MESSAGE_f(debug, "Resolution changed to %dx%d", cx, cy);
 		}
 	});
 
@@ -114,17 +108,13 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		game::input_manager::set_input(key, action, mods);
 	});
 	glfwSetScrollCallback(glfw_window, [](GLFWwindow* window, double xoffset, double yoffset) {
-		Renderer::tile_projection_matrix_offset += yoffset * 10;
+		get_base_renderer()->tile_projection_matrix_offset += yoffset * 10;
 	});
 
 	
 	gl_context_active = true;
 
-	log_message(logger::info, "Window manager", "OpenGL Initialization successful");
-	std::ostringstream oss;
-	oss << "OpenGL version: " << glGetString(GL_VERSION);
-	log_message(logger::info, "Window manager", oss.str());
-
+	LOG_MESSAGE_f(info, "OpenGL initialized - OpenGL Version: %s", glGetString(GL_VERSION))
 	return 0;
 }
 
@@ -135,7 +125,7 @@ int jactorio::renderer::window_manager::terminate() {
 
 	gl_context_active = false;
 
-	log_message(logger::info, "Window manager", "OpenGL terminated");
+	LOG_MESSAGE(info, "OpenGL terminated");
 	return 0;
 }
 
