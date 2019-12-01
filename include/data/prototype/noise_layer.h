@@ -2,29 +2,51 @@
 #define DATA_PROTOTYPE_NOISE_LAYER_H
 
 #include "data/prototype/prototype_base.h"
-
-#include <vector>
-
+#include "data/data_category.h"
 #include "data/prototype/tile/tile.h"
 
 namespace jactorio::data
 {
+	/**
+	 * Note!! MOST values will be in range -1, 1. SOME VALUES will be greater/less than -1, 1
+	 */
 	class Noise_layer : public Prototype_base
 	{
+		// Perlin noise properties
+		// See http://libnoise.sourceforge.net/glossary/ for usage of the following parameters
+	public:
+		int octave_count = 8;
+		double frequency = 0.25;
+		double persistence = 0.5;
+		
+	private:
 		// The inclusive value where the noise range begins
 		std::vector<float> noise_range_tile_ranges_;
 		// Size is 1 less than noise_range_tile_ranges
 		std::vector<Tile*> noise_range_tiles_;
 
 	public:
+		/**
+		 * If true, input values outside of the noise_layer range will be brought to the lowest/highest
+		 * If false, input values outside of the noise_layer range returns nullptr
+		 */
+		bool normalize_val = false;
+
+		/**
+		 * The data category of the tiles which this noise_layer contains
+		 */
+		data_category tile_data_category = data_category::tile;
+
+		
 		Noise_layer() {
-			set_start_val(-1);
+			set_start_val(-1.f);
 		}
 
-		explicit Noise_layer(const int starting_val) {
+		Noise_layer(const float starting_val, const bool normalize_val)
+			: normalize_val(normalize_val) {
 			set_start_val(starting_val);
 		}
-
+		
 		/**
 		 * Retrieves the starting value <br>
 		 * Default value is -1
@@ -34,7 +56,7 @@ namespace jactorio::data
 			return noise_range_tile_ranges_[0];
 		}
 
-		void set_start_val(const int start_val) {
+		void set_start_val(const float start_val) {
 			// Start_val is first value in the noise_range_tile_ranges vector
 			// If already in the vector, modify the first value
 			if (noise_range_tile_ranges_.empty())
@@ -58,46 +80,14 @@ namespace jactorio::data
 		 * @param end_range Exclusive ending range, unless it is last item
 		 * @param tile_ptr Pointer to tile prototype or inheritors
 		 */
-		void add_tile(float end_range, Tile* tile_ptr) {
-			// Will not add if start_val is not set
-			if (noise_range_tile_ranges_.empty())
-				return;
-
-			noise_range_tile_ranges_.push_back(end_range);
-			noise_range_tiles_.push_back(tile_ptr);
-		}
+		void add_tile(float end_range, Tile* tile_ptr);
 
 		/**
 		 * Fetches the tile at the current range <br>
-		 * Nullptr if out of range
+		 * normalize_if_val_out_of_range is false, Nullptr if out of range <br>
+		 * normalize_if_val_out_of_range is true, Min/max value tile if out of range
 		 */
-		Tile* get_tile(float val) {
-			bool last_value = true;
-			for (unsigned int i = noise_range_tile_ranges_.size() - 1; i > 0; --i) {
-				// Less than
-				bool less_than = false;
-				if (last_value) {
-					// ending range inclusive only for the last value
-					last_value = false;
-					if (val <= noise_range_tile_ranges_[i])
-						less_than = true;
-				}
-				else {
-					if (val < noise_range_tile_ranges_[i])
-						less_than = true;
-				}
-				if (!less_than)
-					continue;
-
-				// Greater than
-				if (val >= noise_range_tile_ranges_[i - 1]) {
-					return noise_range_tiles_[i - 1];
-				}
-
-			}
-			// Not found
-			return nullptr;
-		}
+		Tile* get_tile(float val);
 	};
 }
 

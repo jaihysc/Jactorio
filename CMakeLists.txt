@@ -32,6 +32,8 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/filesystem.cpp
 	${JACTORIO_DIR}/core/loop_manager.cpp
 
+	${JACTORIO_DIR}/data/prototype/noise_layer.cpp
+
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/pybind/bindings/data.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp

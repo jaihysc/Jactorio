@@ -7,6 +7,7 @@ namespace jactorio::data
 {
 	class Resource_tile : public Tile
 	{
+		using Tile::Tile;
 	};
 }
 

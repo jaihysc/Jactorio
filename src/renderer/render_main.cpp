@@ -100,7 +100,7 @@ void jactorio::renderer::render_init() {
 		refresh_renderer = true;
 	}, GLFW_KEY_Z, GLFW_RELEASE);
 	game::input_manager::register_input_callback([]() {
-		if (renderer->tile_width > 9) {
+		if (renderer->tile_width > 0) {
 			renderer->tile_width--;
 			refresh_renderer = true;
 		}

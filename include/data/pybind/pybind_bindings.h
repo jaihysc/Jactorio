@@ -9,6 +9,7 @@
 #include "data/prototype/sprite.h"
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/tile/tile.h"
+#include "data/prototype/tile/resource_tile.h"
 
 
 // All the bindings in bindings/ defined for pybind
@@ -21,10 +22,9 @@ using data_raw = std::unordered_map<jactorio::data::data_category, std::unordere
 PYBIND11_MAKE_OPAQUE(data_raw)
 
 
-
 PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 	using namespace jactorio::data;
-	
+
 	// Functions defined for the class bindings must be actually within the class in c++
 
 	// Prototype classes
@@ -38,32 +38,47 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 		.def(py::init<const std::string&>())
 		.def_readwrite("sprite_image", &Sprite::sprite_image)
 		.def("load_sprite", &Sprite::load_sprite);
-	
+
 	py::class_<Tile, Prototype_base>(m, "Tile")
 		.def(py::init())
 		.def(py::init<Sprite*>())
+		.def_readwrite("isWater", &Tile::is_water)
 		.def_readwrite("sprite", &Tile::sprite_ptr);
 
-    py::class_<Noise_layer, Prototype_base>(m, "NoiseLayer")
-            .def(py::init())
-            .def(py::init<int>())
-            .def("getStartVal", &Noise_layer::get_start_val)
-            .def("setStartVal", &Noise_layer::set_start_val)
-            .def("addTile", &Noise_layer::add_tile)
-            .def("getTile", &Noise_layer::get_tile);
+	py::class_<Resource_tile, Tile>(m, "ResourceTile")
+		.def(py::init())
+		.def(py::init<Sprite*>());
+
+	py::class_<Noise_layer, Prototype_base>(m, "NoiseLayer")
+		.def(py::init())
+		.def(py::init<float, bool>())
+	
+		// Perlin noise properties
+		.def_readwrite("octaveCount", &Noise_layer::octave_count)
+		.def_readwrite("frequency", &Noise_layer::frequency)
+		.def_readwrite("persistence", &Noise_layer::persistence)
+
+		.def_readwrite("tileDataCategory", &Noise_layer::tile_data_category)
+		.def_readwrite("normalizeVal", &Noise_layer::normalize_val)
+		.def("getStartVal", &Noise_layer::get_start_val)
+		.def("setStartVal", &Noise_layer::set_start_val)
+		.def("addTile", &Noise_layer::add_tile)
+		.def("getTile", &Noise_layer::get_tile);
 
 	// ############################################################
 	// Data_raw + get/set
 
 	py::enum_<data_category>(m, "category")
 		.value("Tile", data_category::tile)
+		.value("ResourceTile", data_category::resource_tile)
+		.value("EnemyTile", data_category::enemy_tile)
 		.value("Sprite", data_category::sprite)
 		.value("NoiseLayer", data_category::noise_layer)
 		.value("Sound", data_category::sound);
-	
+
 	py::class_<data_raw>(m, "Prototype_data")
 		.def(py::init());
-	
+
 	m.def("get", [](const data_category category, const std::string iname) {
 		// Cannot give pointers back!
 		return *data_manager::data_raw_get<Prototype_base>(category, iname);
@@ -73,8 +88,8 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 	                const py::object prototype) {
 		py::object* const object = new py::object{};
 		*object = prototype;
-		
-		data_manager::data_raw_add(category, iname, 
+
+		data_manager::data_raw_add(category, iname,
 		                           py::cast<Prototype_base*>(*object));
 	});
 

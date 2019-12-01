@@ -6,7 +6,9 @@
 #include "game/world/world_manager.h"
 #include "game/world/world_generator.h"
 #include "renderer/rendering/mvp_manager.h"
+#include "renderer/rendering/renderer_manager.h"
 #include "core/logger.h"
+#include "renderer/opengl/shader_manager.h"
 
 namespace
 {
@@ -34,11 +36,14 @@ namespace
 	 * @param tiles Chunk tiles to render
 	 * @param buffer_x Beginning position of the chunk in buffer (tiles)
 	 * @param buffer_y Beginning position of the chunk in buffer (tiles)
+	 * @param layer_index Prototype layer index to draw, empty will be drawn if tile does not contain
+	 * a prototype at current layer
 	 */
 	void buffer_load_chunk(float* buffer, const unsigned int span, const unsigned int height,
 	                       const jactorio::renderer::Renderer* renderer,
 	                       const jactorio::game::Chunk_tile* tiles,
-	                       const int buffer_x, const int buffer_y) {
+	                       const int buffer_x, const int buffer_y,
+	                       const unsigned int layer_index) {
 		
 		// Iterate through and draw tiles of a chunk
 		for (int tile_y = 0; tile_y < 32; ++tile_y) {
@@ -52,24 +57,43 @@ namespace
 				if (x_offset >= span)
 					continue;
 
-				// TODO - THIS IS ONLY CAPABLE OF RENDERING THE FIRST PROTOTYPE
-				const auto positions = renderer->get_sprite_spritemap_coords(
-					tiles[tile_y * 32 + tile_x].tile_prototypes[0]->name);
+				// Load sprite positions
+				auto& prototypes_vector = tiles[tile_y * 32 + tile_x].
+					tile_prototypes;
 
 				const unsigned int buffer_offset = 
 					(y_offset * span + x_offset) * 8;
-				
-				buffer[buffer_offset + 0] = positions.bottom_left.x;
-				buffer[buffer_offset + 1] = positions.bottom_left.y;
 
-				buffer[buffer_offset + 2] = positions.bottom_right.x;
-				buffer[buffer_offset + 3] = positions.bottom_right.y;
+				if (layer_index >= prototypes_vector.size()) {
+					// -1.f position indicates drawing no sprites to fragment shader
+					buffer[buffer_offset + 0] = -1.f;
+					buffer[buffer_offset + 1] = -1.f;
 
-				buffer[buffer_offset + 4] = positions.top_right.x;
-				buffer[buffer_offset + 5] = positions.top_right.y;
+					buffer[buffer_offset + 2] = -1.f;
+					buffer[buffer_offset + 3] = -1.f;
 
-				buffer[buffer_offset + 6] = positions.top_left.x;
-				buffer[buffer_offset + 7] = positions.top_left.y;
+					buffer[buffer_offset + 4] = -1.f;
+					buffer[buffer_offset + 5] = -1.f;
+
+					buffer[buffer_offset + 6] = -1.f;
+					buffer[buffer_offset + 7] = -1.f;
+				}
+				else {
+					const auto positions = renderer->get_sprite_spritemap_coords(
+						prototypes_vector[layer_index]->name);
+					
+					buffer[buffer_offset + 0] = positions.bottom_left.x;
+					buffer[buffer_offset + 1] = positions.bottom_left.y;
+
+					buffer[buffer_offset + 2] = positions.bottom_right.x;
+					buffer[buffer_offset + 3] = positions.bottom_right.y;
+
+					buffer[buffer_offset + 4] = positions.top_right.x;
+					buffer[buffer_offset + 5] = positions.top_right.y;
+
+					buffer[buffer_offset + 6] = positions.top_left.x;
+					buffer[buffer_offset + 7] = positions.top_left.y;
+				}
 			}
 		}
 
@@ -83,7 +107,8 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
                                                      const int chunk_start_x,
                                                      const int chunk_start_y,
                                                      const unsigned int chunk_amount_x,
-                                                     const unsigned int chunk_amount_y) {
+                                                     const unsigned int chunk_amount_y,
+                                                     const unsigned int layer_index) {
 	// Clear world gen threads once the vector is empty, this is faster than deleting it one by one
 	if (!world_gen_threads_cleared && world_gen_threads_count == 0) {
 		LOG_MESSAGE(debug, "Chunk generation buffer cleared");
@@ -146,7 +171,8 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 				           buffer_load_chunk,
 				           buffer, buffer_span, buffer_height,
 				           &renderer, tiles,
-				           chunk_x_offset, chunk_y_offset)
+				           chunk_x_offset, chunk_y_offset,
+				           layer_index)
 			);
 		}
 	}
@@ -174,6 +200,17 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	const long long position_y = player_position_y;
 
 	
+	// Tile transitions
+	// Pixels not wide enough to form a tile is used to shift the camera
+	const auto camera_offset_x = position_x % tile_width;
+	const auto camera_offset_y = position_y % tile_width;
+
+	
+	const auto view_transform = mvp_manager::get_view_transform();
+	// Invert the camera to give the illusion of moving in the correct direction
+	view_transform->x = camera_offset_x * -1;
+	view_transform->y = camera_offset_y * -1;
+	
 	// How many chunks to offset based on player's position
 	const auto chunk_offset_x = static_cast<int>(position_x / chunk_width);
 	const auto chunk_offset_y = static_cast<int>(position_y / chunk_width);
@@ -183,26 +220,21 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	// Inverted to move the tiles AWAY from the screen instead of following the screen
 	const auto tile_offset_x = static_cast<int>(position_x / tile_width % 32 * -1);
 	const auto tile_offset_y = static_cast<int>(position_y / tile_width % 32 * -1);
-	
-	draw_chunks(*renderer,
-	            // - 32 to hide the 1 extra chunk around the outside screen
-	            tile_offset_x - 32, tile_offset_y - 32,
-	            // 1 extra chunk in either direction ensure 
-	            // window will always be filled with chunks regardless
-	            // of chunk offset and window size
-	            chunk_offset_x - 1, 
-	            chunk_offset_y - 1,
-	            renderer->get_grid_size_x() / 32 + 2 + 1, 
-	            renderer->get_grid_size_y() / 32 + 2 + 1);
 
+	update_shader_mvp();
 
-	// Tile transitions
-	// Pixels not wide enough to form a tile is used to shift the camera
-	const auto camera_offset_x = position_x % tile_width;
-	const auto camera_offset_y = position_y % tile_width;
-
-	const auto view_transform = mvp_manager::get_view_transform();
-	// Invert the camera to give the illusion of moving in the correct direction
-	view_transform->x = camera_offset_x * -1;
-	view_transform->y = camera_offset_y * -1;
+	for (int max_index = 0; max_index < renderer_manager::prototype_layer_count; ++max_index) {
+		draw_chunks(*renderer,
+		            // - 32 to hide the 1 extra chunk around the outside screen
+		            tile_offset_x - 32, tile_offset_y - 32,
+		            // 1 extra chunk in either direction ensure 
+		            // window will always be filled with chunks regardless
+		            // of chunk offset and window size
+		            chunk_offset_x - 1,
+		            chunk_offset_y - 1,
+		            renderer->get_grid_size_x() / 32 + 2 + 1,
+		            renderer->get_grid_size_y() / 32 + 2 + 1,
+		            max_index);
+		renderer->draw(glm::vec3(0, 0, 0));
+	}
 }

@@ -13,6 +13,11 @@ namespace jactorio::data
 	class Tile : public Prototype_base
 	{
 	public:
+		/**
+		 * If true, resources will not spawn on this and player cannot navigate onto it
+		 */
+		bool is_water = false;
+		
 		Tile() = default;
 
 		/**

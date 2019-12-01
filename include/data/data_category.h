@@ -6,6 +6,8 @@ namespace jactorio::data
 	enum class data_category
 	{
 		tile,
+		resource_tile,
+		enemy_tile,
 		sprite,
 		noise_layer,
 		sound

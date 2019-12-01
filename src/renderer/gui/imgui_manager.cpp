@@ -11,6 +11,7 @@
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/rendering/renderer.h"
 #include "renderer/rendering/world_renderer.h"
+#include "renderer/rendering/renderer_manager.h"
 
 // States
 bool show_demo_window = false;
@@ -55,7 +56,10 @@ void jactorio::renderer::imgui_draw() {
 	ImGui::Text("Player position %lld %lld", 
 	            world_renderer::player_position_x, 
 	            world_renderer::player_position_y);
-	
+	ImGui::NewLine();
+	ImGui::Text("Renderer");
+	ImGui::Text("Layer count: %d", renderer_manager::prototype_layer_count);
+
 	ImGui::NewLine();
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

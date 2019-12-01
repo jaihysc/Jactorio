@@ -2,12 +2,14 @@
 
 #include <noise/noise.h>
 #include <noise/noiseutils.h>
+#include <algorithm>
 
 #include "core/logger.h"
 #include "game/world/tile.h"
 #include "game/world/world_manager.h"
 #include "data/data_manager.h"
 #include "data/prototype/noise_layer.h"
+#include "renderer/rendering/renderer_manager.h"
 
 namespace
 {
@@ -29,26 +31,13 @@ namespace
 
 void jactorio::game::world_generator::generate_chunk(const int chunk_x, const int chunk_y,
                                                      std::atomic<int>* thread_counter) {
+	// TODO configurable base seed
+	constexpr int base_seed = 1001;
+	
 	LOG_MESSAGE_f(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
 
 	// The Y axis for libnoise is inverted. It causes no issues as of right now. I am leaving this here
 	// In case something happens in the future
-
-	module::Perlin base_terrain_noise_module;
-	base_terrain_noise_module.SetOctaveCount(8);
-	base_terrain_noise_module.SetFrequency(0.25);
-	base_terrain_noise_module.SetPersistence(0.5);
-
-	module::Perlin resource_noise_module;
-	resource_noise_module.SetOctaveCount(2);
-	resource_noise_module.SetFrequency(0.9);
-	resource_noise_module.SetPersistence(0.3);
-
-	utils::NoiseMap base_terrain_height_map;
-	utils::NoiseMap resource_height_map;
-
-	build_height_map(base_terrain_noise_module, base_terrain_height_map, chunk_x, chunk_y);
-	build_height_map(resource_noise_module, resource_height_map, chunk_x, chunk_y);
 
 	auto* tiles = new Chunk_tile[1024];
 
@@ -57,30 +46,72 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 		Noise_layer>(
 		data::data_category::noise_layer);
 
-	for (int y = 0; y < 32; ++y) {
-		for (int x = 0; x < 32; ++x) {
+	// Non resource noise layers gets generated first, ensuring that all tiles marked is_water
+	// is generated first, then the resources
+	std::sort(noise_layers.begin(), noise_layers.end(), 
+	          [](data::Noise_layer* left, data::Noise_layer* right) {
+		          if (left->tile_data_category == data::data_category::tile && 
+			          right->tile_data_category != data::data_category::tile)
+			          return true;
+		
+		          return false;
+	          }
+	);
 
-			float noise_val = base_terrain_height_map.GetValue(x, y);
+	for (auto& noise_layer : noise_layers) {
 
-			// Libnoise does not guarantee a range of -1 - 1
-			for (auto& noise_layer : noise_layers) {
-				// Round to range of max-min within noise_layer
-				const float start_val = noise_layer->get_start_val();
-				const float end_val = noise_layer->get_max_noise_val();
+		module::Perlin base_terrain_noise_module;
+		base_terrain_noise_module.SetSeed(base_seed);
+
+		// Load properties of each noise layer
+		base_terrain_noise_module.SetOctaveCount(noise_layer->octave_count);
+		base_terrain_noise_module.SetFrequency(noise_layer->frequency);
+		base_terrain_noise_module.SetPersistence(noise_layer->persistence);
+		
+		utils::NoiseMap base_terrain_height_map;
+		build_height_map(base_terrain_noise_module, base_terrain_height_map, chunk_x, chunk_y);
+
+		
+		for (int y = 0; y < 32; ++y) {
+			for (int x = 0; x < 32; ++x) {
+				const auto* tile = noise_layer->get_tile(base_terrain_height_map.GetValue(x, y));
+
+				if (tile == nullptr)
+					continue;
 				
-				if (noise_val > end_val)
-					noise_val = end_val;
-				if (noise_val < start_val)
-					noise_val = start_val;
+				std::vector<data::Tile*>& prototype_vector = tiles[y * 32 + x].tile_prototypes;
 
-				std::string tile_name = noise_layer->get_tile(noise_val)->name;
+				// Noise layer is generating resources, check if at this tile there are any
+				// tiles marked as water, if so, do not place resources
+				if (noise_layer->tile_data_category == data::data_category::resource_tile) {
+					bool water_found = false;
+					for (auto& item : prototype_vector) {
+						if (item->is_water) {
+							water_found = true;
+							break;
+						}
+					}
+					if (water_found)
+						continue;
+				}
 
-				tiles[y * 32 + x].tile_prototypes.push_back(
-					data::data_manager::data_raw_get
-					<data::Tile>(data::data_category::tile, tile_name)
+				// TODO only one resource can exist on a tile
+				
+				// Add the tile prototype to the Chunk_tile
+				prototype_vector.push_back(
+					data::data_manager::data_raw_get<data::Tile>(
+						noise_layer->tile_data_category, tile->name)
 				);
+
+
+				// Increment layer count based on the largest tile_prototypes vector size
+				if (prototype_vector.size() > renderer::renderer_manager::prototype_layer_count) {
+					renderer::renderer_manager::prototype_layer_count = prototype_vector.size();
+				}
+				
 			}
 		}
+
 	}
 
 	world_manager::add_chunk(new Chunk{chunk_x, chunk_y, tiles});
