@@ -3,7 +3,7 @@
 
 #include <GLFW/glfw3.h>
 
-namespace jactorio:: renderer
+namespace jactorio::renderer::imgui_manager
 {
 	void setup(GLFWwindow* window);
 	void imgui_draw();

@@ -5,7 +5,6 @@
  * It will wait for the render and logic loops to set a callback to indicate they are initialized
  * The callbacks of the 2 loops will then be called to indicate they should run
  * After completing an iteration of the loop, x_loop_complete should be called to indicate it is done
- * TODO add a error if loop has not called complete on next iteration
  */
 namespace jactorio::core::loop_manager
 {

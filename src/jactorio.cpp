@@ -3,9 +3,9 @@
 
 #include "jactorio.h"
 
+#include "core/resource_guard.h"
 #include "core/filesystem.h"
 #include "core/logger.h"
-#include "core/loop_manager.h"
 #include "data/data_manager.h"
 #include "data/pybind/pybind_manager.h"
 #include "game/logic_loop.h"
@@ -13,38 +13,36 @@
 
 
 int main(int ac, char* av[]) {
-	// Initial startup message
-	std::cout << JACTORIO_BUILD_TARGET_PLATFORM << "  |  " << BUILD_TYPE << " build, version: " <<
-		JACTORIO_VERSION << "\n\n\n";
+	using namespace jactorio;
 
-	jactorio::core::filesystem::set_executing_directory(av[0]);
-	jactorio::core::logger::open_log_file("~/log.txt");
+	core::filesystem::set_executing_directory(av[0]);
+
+	// Log file
+	core::logger::open_log_file("~/log.txt");
+	auto log_guard = core::Resource_guard(&core::logger::close_log_file);
+	
+	// Initial startup message
+	LOG_MESSAGE_f(none, "%s | %s build, version: %s\n\n", 
+	              JACTORIO_BUILD_TARGET_PLATFORM, BUILD_TYPE, JACTORIO_VERSION)
 
 	{
-		jactorio::core::loop_manager::initialize_loop_manager();
-
-		
 		// Rendering + logic initialization
 		LOG_MESSAGE(info, "1 - Data stage");
 
-		jactorio::data::pybind_manager::py_interpreter_init();
+		auto py_interpreter_guard = core::Resource_guard(&data::pybind_manager::py_interpreter_terminate);
+		data::pybind_manager::py_interpreter_init();
+		
 
-		jactorio::data::data_manager::load_data(
-			jactorio::core::filesystem::resolve_path("~/data")
-		);
+		auto data_manager_guard = core::Resource_guard(&data::data_manager::clear_data);
+		data::data_manager::load_data(core::filesystem::resolve_path("~/data"));
 
-		// Loop manager terminated in renderer_thread as it requires glfw for time
-		std::thread logic_thread = std::thread(jactorio::game::logic_loop);
-		std::thread renderer_thread = std::thread(jactorio::renderer::render_init);
-
+		
+		std::thread logic_thread = std::thread(game::logic_loop);
+		std::thread renderer_thread = std::thread(renderer::render_init);
 		logic_thread.join();
 		renderer_thread.join();
 	}
 
-
-	jactorio::data::pybind_manager::py_interpreter_terminate();
-
 	LOG_MESSAGE(none, "goodbye!");
-	jactorio::core::logger::close_log_file();
 	return 0;
 }

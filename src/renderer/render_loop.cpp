@@ -17,7 +17,7 @@ void jactorio::renderer::render_loop(Renderer* renderer) {
 	// Matricies updated in here
 	world_renderer::render_player_position(renderer);
 
-	imgui_draw();
+	imgui_manager::imgui_draw();
 	
 	glfwSwapBuffers(window_manager::get_window());  // Done rendering
 	glfwPollEvents();

@@ -11,24 +11,6 @@
 #include "data/prototype/noise_layer.h"
 #include "renderer/rendering/renderer_manager.h"
 
-namespace
-{
-	void build_height_map(const module::Perlin& noise_module, utils::NoiseMap& height_map,
-	                      const int chunk_x, const int chunk_y) {
-
-		utils::NoiseMapBuilderPlane height_map_builder;
-		height_map_builder.SetSourceModule(noise_module);
-		height_map_builder.SetDestNoiseMap(height_map);
-		height_map_builder.SetDestSize(32, 32);
-
-		// Since x, y represents the center of the chunk, +- 0.5 to get the edges 
-		height_map_builder.SetBounds(chunk_x - 0.5, chunk_x + 0.5,
-		                             chunk_y - 0.5, chunk_y + 0.5);
-		height_map_builder.Build();
-	}
-}
-
-
 void jactorio::game::world_generator::generate_chunk(const int chunk_x, const int chunk_y,
                                                      std::atomic<int>* thread_counter) {
 	// TODO configurable base seed
@@ -39,9 +21,7 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 	// The Y axis for libnoise is inverted. It causes no issues as of right now. I am leaving this here
 	// In case something happens in the future
 
-	auto* tiles = new Chunk_tile[1024];
-
-	// Call all noise layers to build terrain
+	// Get all noise layers for building terrain
 	std::vector<data::Noise_layer*> noise_layers = data::data_manager::data_raw_get_all<data::
 		Noise_layer>(
 		data::data_category::noise_layer);
@@ -58,6 +38,7 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 	          }
 	);
 
+	auto* tiles = new Chunk_tile[1024];
 	for (auto& noise_layer : noise_layers) {
 
 		module::Perlin base_terrain_noise_module;
@@ -69,41 +50,50 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 		base_terrain_noise_module.SetPersistence(noise_layer->persistence);
 		
 		utils::NoiseMap base_terrain_height_map;
-		build_height_map(base_terrain_noise_module, base_terrain_height_map, chunk_x, chunk_y);
+		utils::NoiseMapBuilderPlane height_map_builder;
+		height_map_builder.SetSourceModule(base_terrain_noise_module);
+		height_map_builder.SetDestNoiseMap(base_terrain_height_map);
+		height_map_builder.SetDestSize(32, 32);
 
-		
+		// Since x, y represents the center of the chunk, +- 0.5 to get the edges 
+		height_map_builder.SetBounds(chunk_x - 0.5, chunk_x + 0.5,
+		                             chunk_y - 0.5, chunk_y + 0.5);
+		height_map_builder.Build();
+
+
+		// Transfer noise values from height map to chunk tiles
 		for (int y = 0; y < 32; ++y) {
 			for (int x = 0; x < 32; ++x) {
-				const auto* tile = noise_layer->get_tile(base_terrain_height_map.GetValue(x, y));
+				const auto* new_tile = noise_layer->get_tile(base_terrain_height_map.GetValue(x, y));
 
-				if (tile == nullptr)
+				if (new_tile == nullptr)
 					continue;
-				
-				std::vector<data::Tile*>& prototype_vector = tiles[y * 32 + x].tile_prototypes;
 
+				auto& chunk_tile = tiles[y * 32 + x];
+				std::vector<data::Tile*>& prototype_vector = chunk_tile.tile_prototypes;
+
+				
 				// Noise layer is generating resources, check if at this tile there are any
 				// tiles marked as water, if so, do not place resources
-				if (noise_layer->tile_data_category == data::data_category::resource_tile) {
-					bool water_found = false;
-					for (auto& item : prototype_vector) {
-						if (item->is_water) {
-							water_found = true;
-							break;
-						}
-					}
-					if (water_found)
-						continue;
-				}
+				if (noise_layer->tile_data_category == data::data_category::resource_tile &&
+					chunk_tile.is_water)
+					continue;
 
-				// TODO only one resource can exist on a tile
 				
 				// Add the tile prototype to the Chunk_tile
 				prototype_vector.push_back(
 					data::data_manager::data_raw_get<data::Tile>(
-						noise_layer->tile_data_category, tile->name)
+						noise_layer->tile_data_category, new_tile->name)
 				);
 
 
+				// ############################################################
+				// Post tile addition processing
+
+				// Set the is_water status of the current Chunk_tile
+				if (new_tile->is_water)
+					chunk_tile.is_water = true;
+				
 				// Increment layer count based on the largest tile_prototypes vector size
 				if (prototype_vector.size() > renderer::renderer_manager::prototype_layer_count) {
 					renderer::renderer_manager::prototype_layer_count = prototype_vector.size();

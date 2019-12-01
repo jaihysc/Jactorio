@@ -2,7 +2,6 @@
 #define RENDERER_RENDERING_MVP_MANAGER_CPP
 
 #include <glm/glm.hpp>
-#include "glm/gtx/associated_min_max.hpp"
 
 namespace jactorio::renderer::mvp_manager
 {

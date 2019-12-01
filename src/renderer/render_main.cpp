@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "core/resource_guard.h"
 #include "core/logger.h"
 #include "core/loop_manager.h"
 #include "data/data_manager.h"
@@ -50,9 +51,9 @@ void jactorio::renderer::render_init() {
 	if (window_manager::init(640, 490) != 0)
 		return;
 
+	auto window_manager_guard = core::Resource_guard(window_manager::terminate);
 	GLFWwindow* window = window_manager::get_window();
-	setup(window);
-
+	
 	// #################################################################
 	// Enables transparency in textures
 	glEnable(GL_BLEND);
@@ -108,36 +109,41 @@ void jactorio::renderer::render_init() {
 	}, GLFW_KEY_X, GLFW_RELEASE);
 
 	// #################################################################
-	LOG_MESSAGE(info, "2 - Runtime stage")
+	{
+		LOG_MESSAGE(info, "2 - Runtime stage")
 
-	core::loop_manager::render_loop_ready(renderer_draw);
-	while (!glfwWindowShouldClose(window)) {
-		if (render_draw) {
+		// The loop manager must terminate before the window, thus it is within this scope
+		auto loop_manager_guard = core::Resource_guard(&core::loop_manager::terminate_loop_manager);
+		core::loop_manager::initialize_loop_manager();
 
-			// Think of a better way to toggle fullscreen?
-			if (toggle_fullscreen) {
-				toggle_fullscreen = false;
-				window_manager::set_fullscreen(!window_manager::is_fullscreen());
+		auto imgui_manager_guard = core::Resource_guard(&imgui_manager::imgui_terminate);
+		imgui_manager::setup(window);
+
+		auto chunk_data_guard = core::Resource_guard(&game::world_manager::clear_chunk_data);
+
+		core::loop_manager::render_loop_ready(renderer_draw);
+		while (!glfwWindowShouldClose(window)) {
+			if (render_draw) {
+
+				// Think of a better way to toggle fullscreen?
+				if (toggle_fullscreen) {
+					toggle_fullscreen = false;
+					window_manager::set_fullscreen(!window_manager::is_fullscreen());
+				}
+
+				render_draw = false;
+				// Don't multi-thread opengl
+				render_loop(renderer);
+
+				// Swap renderers if a new one is placed in swap
+				if (refresh_renderer) {
+					renderer->recalculate_buffers(window_x, window_y);
+					refresh_renderer = false;
+				}
+
+				core::loop_manager::render_loop_complete();
 			}
-
-			render_draw = false;
-			// Don't multi-thread opengl
-			render_loop(renderer);
-
-			// Swap renderers if a new one is placed in swap
-			if (refresh_renderer) {
-				renderer->recalculate_buffers(window_x, window_y);
-				refresh_renderer = false;
-			}
-
-			core::loop_manager::render_loop_complete();
 		}
 	}
 
-	data::data_manager::clear_data();
-	game::world_manager::clear_chunk_data();
-	core::loop_manager::terminate_loop_manager();
-
-	imgui_terminate();
-	window_manager::terminate();
 }

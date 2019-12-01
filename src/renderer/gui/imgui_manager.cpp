@@ -16,7 +16,7 @@
 // States
 bool show_demo_window = false;
 
-void jactorio::renderer::setup(GLFWwindow* window) {
+void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -35,7 +35,7 @@ void jactorio::renderer::setup(GLFWwindow* window) {
 	LOG_MESSAGE(info, "Imgui initialized")
 }
 
-void jactorio::renderer::imgui_draw() {
+void jactorio::renderer::imgui_manager::imgui_draw() {
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -72,7 +72,7 @@ void jactorio::renderer::imgui_draw() {
 
 }
 
-void jactorio::renderer::imgui_terminate() {
+void jactorio::renderer::imgui_manager::imgui_terminate() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
