@@ -5,6 +5,8 @@
 
 namespace jactorio::renderer::imgui_manager
 {
+	inline bool show_debug_menu = false;
+
 	void setup(GLFWwindow* window);
 	void imgui_draw();
 	void imgui_terminate();

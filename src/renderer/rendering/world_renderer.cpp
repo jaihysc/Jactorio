@@ -221,6 +221,10 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	const auto tile_offset_x = static_cast<int>(position_x / tile_width % 32 * -1);
 	const auto tile_offset_y = static_cast<int>(position_y / tile_width % 32 * -1);
 
+	// Set view matrix
+	mvp_manager::update_view_transform();
+	// Set projection matrix
+	renderer->update_tile_projection_matrix();
 	update_shader_mvp();
 
 	for (int max_index = 0; max_index < renderer_manager::prototype_layer_count; ++max_index) {

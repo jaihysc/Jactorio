@@ -9,12 +9,7 @@
 void jactorio::renderer::render_loop(Renderer* renderer) {
 	Renderer::clear();
 
-	// Set view matrix
-	mvp_manager::update_view_transform();
-	// Set projection matrix
-	renderer->update_tile_projection_matrix();
-
-	// Matricies updated in here
+	// MVP Matricies updated in here
 	world_renderer::render_player_position(renderer);
 
 	imgui_manager::imgui_draw();

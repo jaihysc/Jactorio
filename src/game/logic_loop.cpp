@@ -4,6 +4,7 @@
 #include "game/input/input_manager.h"
 #include "core/logger.h"
 #include "renderer/rendering/world_renderer.h"
+#include "renderer/gui/imgui_manager.h"
 
 namespace jactorio::game
 {
@@ -44,6 +45,11 @@ void jactorio::game::logic_loop() {
 		renderer::world_renderer::player_position_x += move_speed;
 	}, GLFW_KEY_D, GLFW_REPEAT);
 
+
+	// Debug menu
+	input_manager::register_input_callback([]() {
+		renderer::imgui_manager::show_debug_menu = !renderer::imgui_manager::show_debug_menu;
+	}, GLFW_KEY_GRAVE_ACCENT, GLFW_RELEASE);
 	
 	core::loop_manager::logic_loop_ready([] {
 		run_logic_loop = true;

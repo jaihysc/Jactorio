@@ -66,7 +66,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 	}
 
 	// Window initialization
-	glfw_window = glfwCreateWindow(width, height, "Jactorio", nullptr, nullptr);
+	glfw_window = glfwCreateWindow(width, height, "Jactorio " JACTORIO_VERSION, nullptr, nullptr);
 	if (glfw_window == nullptr) {
 		glfwTerminate();
 		LOG_MESSAGE(critical, "Error initializing window");
@@ -80,6 +80,21 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		return 1;
 	}
 
+	// Set the Jactorio icon for the window
+	{
+		auto icon = sf::Image();
+		icon.loadFromFile(core::filesystem::resolve_path("~/data/core/graphics/jactorio.png"));
+
+		// Convert the loaded Image into a GLFWImage
+		GLFWimage icons[1];
+		icons[0].pixels = const_cast<unsigned char*>(icon.getPixelsPtr());
+
+		const auto& dimensions = icon.getSize();
+		icons[0].width = dimensions.x;
+		icons[0].height = dimensions.y;
+		
+		glfwSetWindowIcon(glfw_window, 1, icons);
+	}
 
 	monitor = glfwGetPrimaryMonitor();
 	glfwGetWindowSize(glfw_window, &window_size[0], &window_size[1]);

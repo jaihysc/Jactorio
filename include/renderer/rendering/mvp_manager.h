@@ -15,8 +15,7 @@ namespace jactorio::renderer::mvp_manager
 	glm::vec3* get_view_transform();
 
 	/**
-	 * Sends the current view transform to the GPU
-	 * Uniform location for shader_manager must be initialized first
+	 * Sets the current view transform
 	 */
 	void update_view_transform();
 
