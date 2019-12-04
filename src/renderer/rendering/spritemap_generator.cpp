@@ -41,7 +41,7 @@ jactorio::renderer::Renderer_sprites::Spritemap_data jactorio::renderer::
 Renderer_sprites::gen_spritemap(data::Sprite** images, const unsigned short count) const {
 	LOG_MESSAGE_f(info, "Generating spritemap with %d tiles...", count);
 	
-	std::unordered_map<std::string, Image_position> image_positions;
+	std::unordered_map<unsigned int, Image_position> image_positions;
 	unsigned int image_position_offset_x = 0;
 
 	// Calculate spritemap dimensions
@@ -74,7 +74,7 @@ Renderer_sprites::gen_spritemap(data::Sprite** images, const unsigned short coun
 		x_offset += image_size.x;
 
 		// Keep track of image positions within the spritemap
-		set_image_positions(image_positions[images[i]->name],
+		set_image_positions(image_positions[images[i]->internal_id],
 		                    image_size, image_position_offset_x);
 	}
 

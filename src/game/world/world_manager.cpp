@@ -5,7 +5,6 @@
 #include <chrono>
 #include <mutex>
 
-#include "core/logger.h"
 #include "core/data_type/unordered_map.h"
 
 using world_chunks_key = unsigned long long;

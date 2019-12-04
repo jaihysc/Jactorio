@@ -22,7 +22,6 @@ unsigned int current_layer;
  * @param buffer Holds positions for the textures
  * @param max_buffer_span Span of the buffer
  * @param max_buffer_height Height of the buffer
- * @param renderer Renderer which containing the spritemap positions for the tiles which will be drawn
  * @param tiles Chunk tiles to render
  * @param buffer_x Beginning position of the chunk in buffer (tiles)
  * @param buffer_y Beginning position of the chunk in buffer (tiles)
@@ -33,7 +32,6 @@ unsigned int current_layer;
  */
 void buffer_load_chunk(float* buffer, 
                        const unsigned int max_buffer_span, const unsigned int max_buffer_height,
-                       const jactorio::renderer::Renderer* renderer,
                        const jactorio::game::Chunk_tile* tiles,
                        const int buffer_x, const int buffer_y,
                        const jactorio::renderer::world_renderer::get_tile_prototype_func& func) {
@@ -60,12 +58,12 @@ void buffer_load_chunk(float* buffer,
 	// Iterate through and load tiles of a chunk into buffer
 	for (unsigned int tile_y = start_y; tile_y < end_y; ++tile_y) {
 		for (unsigned int tile_x = start_x; tile_x < end_x; ++tile_x) {
-			const std::string& sprite_name = func(tiles[tile_y * 32 + tile_x]);
+			const unsigned int internal_id = func(tiles[tile_y * 32 + tile_x]);
 
 			const unsigned int buffer_offset = 
 				((buffer_y + tile_y) * max_buffer_span + (buffer_x + tile_x)) * 8;
 
-			if (sprite_name.empty()) {
+			if (internal_id == 0) {
 				// -1.f position indicates drawing no sprites to fragment shader
 				buffer[buffer_offset + 0] = -1.f;
 				buffer[buffer_offset + 1] = -1.f;
@@ -80,7 +78,7 @@ void buffer_load_chunk(float* buffer,
 				buffer[buffer_offset + 7] = -1.f;
 			}
 			else {
-				const auto positions = renderer->get_sprite_spritemap_coords(sprite_name);
+				const auto positions = jactorio::renderer::Renderer::get_spritemap_coords(internal_id);
 				
 				buffer[buffer_offset + 0] = positions.bottom_left.x;
 				buffer[buffer_offset + 1] = positions.bottom_left.y;
@@ -147,7 +145,7 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 				std::async(std::launch::async,
 				           buffer_load_chunk,
 				           buffer, buffer_span, buffer_height,
-				           &renderer, tiles,
+				           tiles,
 				           chunk_x_offset, chunk_y_offset,
 				           func)
 			);
@@ -204,6 +202,7 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	renderer->update_tile_projection_matrix();
 	update_shader_mvp();
 
+	EXECUTION_PROFILE_SCOPE(profiler, "Renderer preparation layers");
 	
 	// Rendering layers
 	for (unsigned int layer_index = 0; layer_index < renderer_manager::prototype_layer_count; ++layer_index) {
@@ -218,9 +217,9 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 			const auto& protos = chunk_tile.tile_prototypes;
 
 			if (current_layer >= protos.size())
-				return std::string{};
+				return 0u;
 
-			return protos[current_layer]->name;
+			return protos[current_layer]->sprite_ptr->internal_id;
 		};
 
 		draw_chunks(*renderer,
@@ -241,9 +240,9 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	{
 		const auto get_tile_proto_func = [](const game::Chunk_tile& chunk_tile) {
 			if (chunk_tile.resource_prototype != nullptr)
-				return chunk_tile.resource_prototype->name;
+				return chunk_tile.resource_prototype->sprite_ptr->internal_id;
 
-			return std::string{};
+			return 0u;
 		};
 		
 		draw_chunks(*renderer,

@@ -13,6 +13,21 @@
 unsigned short jactorio::renderer::Renderer::window_width_ = 0;
 unsigned short jactorio::renderer::Renderer::window_height_ = 0;
 
+std::unordered_map<unsigned int, jactorio::renderer::Renderer_sprites::Image_position>
+jactorio::renderer::Renderer::spritemap_coords_{};
+
+void jactorio::renderer::Renderer::set_spritemap_coords(
+	const std::unordered_map<unsigned, Renderer_sprites::Image_position>& spritemap_coords) {
+	spritemap_coords_ = spritemap_coords;
+}
+
+jactorio::renderer::Renderer_sprites::Image_position jactorio::renderer::Renderer::
+get_spritemap_coords(const unsigned internal_id) {
+	return spritemap_coords_.at(internal_id);
+}
+
+
+// non static
 
 void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 	if (tile_projection_matrix_offset < static_cast<float>(tile_width))
@@ -39,8 +54,6 @@ void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 		mvp_manager::to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset)
 	);
 }
-
-
 void jactorio::renderer::Renderer::delete_data() const {
 	delete vertex_array_;
 	delete render_grid_;
@@ -49,10 +62,7 @@ void jactorio::renderer::Renderer::delete_data() const {
 	delete[] texture_grid_buffer_;
 }
 
-jactorio::renderer::Renderer::Renderer(
-	const std::unordered_map<std::string, Renderer_sprites::Image_position>& spritemap_coords) {
-	spritemap_coords_ = spritemap_coords;
-
+jactorio::renderer::Renderer::Renderer() {
 	// Get window size
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
@@ -125,7 +135,7 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	}
 }
 
-// Get all textures
+/*// Get all textures
 // Concat into spritemap
 // Spritemap is parameter of constructor
 void jactorio::renderer::Renderer::set_sprite(const unsigned short index_x,
@@ -153,7 +163,7 @@ void jactorio::renderer::Renderer::set_sprite(const unsigned short index_x,
 	const unsigned int offset = (index_y * tile_count_x_ + index_x) * 8 * sizeof(float);
 
 	texture_grid_->set_buffer_data(data, offset, sizeof(float) * 8);
-}
+}*/
 
 void jactorio::renderer::Renderer::draw(const glm::vec3 transform) const {
 	vertex_array_->bind();

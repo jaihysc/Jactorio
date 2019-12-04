@@ -20,9 +20,6 @@ namespace jactorio::core::loop_manager
 	bool loop_manager_terminated();
 	
 	// Render loop
-	void set_render_refresh_rate(unsigned short refresh_rate);
-	unsigned short get_render_refresh_rate();
-
 	/**
 	 * Call this after render loop is initiated
 	 * @param callback Will be called when the loop should run
@@ -35,9 +32,6 @@ namespace jactorio::core::loop_manager
 
 	
 	// Logic loop
-	void set_logic_refresh_rate(unsigned short refresh_rate);
-	unsigned short get_logic_refresh_rate();
-
 	/**
 	 * Call this after logic loop is initiated
 	 * @param callback Will be called when the loop should run

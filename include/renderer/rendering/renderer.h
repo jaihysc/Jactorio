@@ -13,6 +13,20 @@ namespace jactorio::renderer
 {
 	class Renderer
 	{
+		// #################################################
+		// Sprites
+		// Internal ids to spritemap positions
+		static std::unordered_map<unsigned int, Renderer_sprites::Image_position> spritemap_coords_;
+	public:
+		static void set_spritemap_coords(
+			const std::unordered_map<unsigned, Renderer_sprites::Image_position>& spritemap_coords);
+
+		/**
+		 * Use internal id of sprite prototype
+		 */
+		static Renderer_sprites::Image_position get_spritemap_coords(unsigned int internal_id);
+		
+	private:
 		// Buffer of spritemap positions for updating the texture_grid_ Vertex_buffer
 		// Recalculated on window resize
 		float* texture_grid_buffer_ = nullptr;
@@ -40,19 +54,11 @@ namespace jactorio::renderer
 		static unsigned short window_height_;
 
 
-		// #################################################
-		// Sprites
-
-		// Internal names to spritemap positions
-		std::unordered_map<std::string, Renderer_sprites::Image_position> spritemap_coords_;
-
-
 	public:
 		float tile_projection_matrix_offset{};
 		unsigned short tile_width = 9;
 
-		explicit Renderer(
-			const std::unordered_map<std::string, Renderer_sprites::Image_position>& spritemap_coords);
+		explicit Renderer();
 		~Renderer();
 
 		Renderer(const Renderer& other) = delete;
@@ -103,7 +109,7 @@ namespace jactorio::renderer
 		*/
 		void update_tile_projection_matrix();
 
-		// #################################################
+		/*// #################################################
 		// Sprites
 		
 		/**
@@ -112,14 +118,9 @@ namespace jactorio::renderer
 		 * @param index_x
 		 * @param index_y
 		 * @param sprite_iname Internal name of the sprite
-		 */
+		 #1#
 		void set_sprite(unsigned short index_x, unsigned short index_y, const std::string&
-		                sprite_iname) const;
-
-		[[nodiscard]] Renderer_sprites::Image_position get_sprite_spritemap_coords(
-			const std::string& sprite_iname) const {
-			return spritemap_coords_.at(sprite_iname);
-		}
+		                sprite_iname) const;*/
 	};
 };
 

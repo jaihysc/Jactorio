@@ -9,7 +9,7 @@ namespace jactorio::renderer::world_renderer
 	inline long long player_position_x = 0;
 	inline long long player_position_y = 0;
 
-	using get_tile_prototype_func = std::string (*)(const game::Chunk_tile&);
+	using get_tile_prototype_func = unsigned int (*)(const game::Chunk_tile&);
 
 	/**
 	 * Draws chunks to the screen

@@ -41,8 +41,7 @@ void jactorio::renderer::window_manager::set_fullscreen(const bool fullscreen) {
 		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 		// switch to full screen
-		glfwSetWindowMonitor(glfw_window, monitor, 0, 0, mode->width, mode->height,
-		                     core::loop_manager::get_render_refresh_rate());
+		glfwSetWindowMonitor(glfw_window, monitor, 0, 0, mode->width, mode->height, 60);
 	}
 	else {
 		// restore last window size and position

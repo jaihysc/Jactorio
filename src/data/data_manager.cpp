@@ -7,6 +7,14 @@
 #include "core/logger.h"
 #include "data/pybind/pybind_manager.h"
 
+// Position 0 reserved to indicate error
+#define INTERNAL_ID_START 1
+
+/**
+ * Internal id which will be assigned to the next prototype added
+ */
+unsigned int internal_id_new = INTERNAL_ID_START;
+
 void jactorio::data::data_manager::data_raw_add(const data_category data_category, const std::string& iname,
                                                 Prototype_base* const prototype) {
 	// Enforce prototype name must be the same as iname
@@ -23,7 +31,8 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 		LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration", 
 		              iname.c_str(), static_cast<int>(data_category));
 	}
-	
+
+	prototype->internal_id = internal_id_new++;
 	data_raw[data_category][iname] = prototype;
 }
 
@@ -68,4 +77,5 @@ void jactorio::data::data_manager::load_data(
 
 void jactorio::data::data_manager::clear_data() {
 	data_raw.clear();
+	internal_id_new = INTERNAL_ID_START;
 }

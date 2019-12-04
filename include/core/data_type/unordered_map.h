@@ -7,6 +7,8 @@
 
 namespace jactorio::core
 {
+	// TODO this hash function may be flawed, find a new one?
+	
 	template <typename TT>
 	struct hash
 	{

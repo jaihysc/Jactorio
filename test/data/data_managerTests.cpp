@@ -21,6 +21,8 @@ namespace data
 	}
 
 	TEST(data_manager, data_raw_add) {
+		data_manager::clear_data();
+		
 		jactorio::data::Sprite prototype{};
 		prototype.name = "fishey";
 
@@ -33,6 +35,26 @@ namespace data
 		// Data category should also have been set to the one provided on add
 		EXPECT_EQ(proto.name, "raw-fish");
 		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
+		EXPECT_EQ(proto.internal_id, 1);
+	}
+
+	TEST(data_manager, data_raw_add_increment_id) {
+		data_manager::clear_data();
+
+		jactorio::data::Sprite prototype{};
+
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", &prototype);
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", &prototype);
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", &prototype);
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", &prototype);
+
+		const auto proto =
+			*data_manager::data_raw_get<jactorio::data::Prototype_base>(
+				jactorio::data::data_category::sprite, "raw-fish");
+
+		EXPECT_EQ(proto.name, "raw-fish");
+		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
+		EXPECT_EQ(proto.internal_id, 4);
 	}
 
 	TEST(data_manager, data_raw_override) {

@@ -22,16 +22,16 @@ namespace renderer
 			prototypes[i] = new jactorio::data::Sprite;
 		}
 
-		prototypes[0]->name = "1";
+		prototypes[0]->internal_id = 1;
 		prototypes[0]->load_sprite("test/graphics/test/test_tile.png");
 
-		prototypes[1]->name = "2";
+		prototypes[1]->internal_id = 2;
 		prototypes[1]->load_sprite("test/graphics/test/test_tile1.png");
 
-		prototypes[2]->name = "3";
+		prototypes[2]->internal_id = 3;
 		prototypes[2]->load_sprite("test/graphics/test/test_tile2.png");
 
-		prototypes[3]->name = "4";
+		prototypes[3]->internal_id = 4;
 		prototypes[3]->load_sprite("test/graphics/test/test_tile3.png");
 
 		const auto r_sprites = jactorio::renderer::Renderer_sprites{};
@@ -71,7 +71,7 @@ namespace renderer
 		// 1.f; 1.f;  // bottom right
 
 		// Validate that the image positions are calculated correctly
-		const auto img1 = spritemap.sprite_positions.at("1");
+		const auto img1 = spritemap.sprite_positions.at(1);
 		EXPECT_EQ(img1.top_left.x, 0.00625f);
 		EXPECT_EQ(img1.top_left.y, 0.015625f);
 
@@ -84,7 +84,7 @@ namespace renderer
 		EXPECT_EQ(img1.bottom_right.x, 0.19375f);
 		EXPECT_EQ(img1.bottom_right.y, 0.484375f);
 
-		const auto img2 = spritemap.sprite_positions.at("2");
+		const auto img2 = spritemap.sprite_positions.at(2);
 		EXPECT_EQ(img2.top_left.x, 0.20625f);
 		EXPECT_EQ(img2.top_left.y, 0.015625f);
 
@@ -97,7 +97,7 @@ namespace renderer
 		EXPECT_EQ(img2.bottom_right.x, 0.39375f);
 		EXPECT_EQ(img2.bottom_right.y, 0.484375f);
 
-		const auto img3 = spritemap.sprite_positions.at("3");
+		const auto img3 = spritemap.sprite_positions.at(3);
 		EXPECT_EQ(img3.top_left.x, 0.40625f);
 		EXPECT_EQ(img3.top_left.y, 0.015625f);
 
@@ -110,7 +110,7 @@ namespace renderer
 		EXPECT_EQ(img3.bottom_right.x, 0.59375f);
 		EXPECT_EQ(img3.bottom_right.y, 0.484375f);
 
-		const auto img4 = spritemap.sprite_positions.at("4");
+		const auto img4 = spritemap.sprite_positions.at(4);
 		EXPECT_EQ(img4.top_left.x, 0.60625f);
 		EXPECT_EQ(img4.top_left.y, 0.015625f);
 

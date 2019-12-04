@@ -18,21 +18,19 @@
 #include "game/input/input_manager.h"
 #include "game/world/world_manager.h"
 
-namespace jactorio::renderer
-{
-	bool refresh_renderer = false;
-	unsigned short window_x = 0;
-	unsigned short window_y = 0;
+bool refresh_renderer = false;
+unsigned short window_x = 0;
+unsigned short window_y = 0;
 
-	Renderer* renderer = nullptr;
-	bool render_draw = false;
-	// Called every renderer cycle, cannot put code in callback due to single thread of opengl
-	void renderer_draw() {
-		render_draw = true;
-	}
+jactorio::renderer::Renderer* main_renderer = nullptr;
+bool render_draw = false;
 
-	bool toggle_fullscreen = false;
+// Called every renderer cycle, cannot put code in callback due to single thread of opengl
+void renderer_draw() {
+	render_draw = true;
 }
+
+bool toggle_fullscreen = false;
 
 void jactorio::renderer::set_recalculate_renderer(const unsigned short window_size_x,
                                                   const unsigned short window_size_y) {
@@ -43,7 +41,7 @@ void jactorio::renderer::set_recalculate_renderer(const unsigned short window_si
 }
 
 jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
-	return renderer;
+	return main_renderer;
 }
 
 
@@ -84,8 +82,8 @@ void jactorio::renderer::render_init() {
 	const Texture texture(spritemap_data.spritemap);
 	texture.bind(0);
 
-
-	renderer = new Renderer(spritemap_data.sprite_positions);
+	main_renderer = new Renderer();
+	Renderer::set_spritemap_coords(spritemap_data.sprite_positions);
 	
 	game::input_manager::register_input_callback([]() {
 		glfwSetWindowShouldClose(window_manager::get_window(), GL_TRUE);
@@ -97,12 +95,12 @@ void jactorio::renderer::render_init() {
 	}, GLFW_KEY_SPACE, GLFW_RELEASE);
 
 	game::input_manager::register_input_callback([]() {
-		renderer->tile_width++;
+		main_renderer->tile_width++;
 		refresh_renderer = true;
 	}, GLFW_KEY_Z, GLFW_RELEASE);
 	game::input_manager::register_input_callback([]() {
-		if (renderer->tile_width > 0) {
-			renderer->tile_width--;
+		if (main_renderer->tile_width > 1) {
+			main_renderer->tile_width--;
 			refresh_renderer = true;
 		}
 
@@ -133,11 +131,11 @@ void jactorio::renderer::render_init() {
 
 				render_draw = false;
 				// Don't multi-thread opengl
-				render_loop(renderer);
+				render_loop(main_renderer);
 
 				// Swap renderers if a new one is placed in swap
 				if (refresh_renderer) {
-					renderer->recalculate_buffers(window_x, window_y);
+					main_renderer->recalculate_buffers(window_x, window_y);
 					refresh_renderer = false;
 				}
 

@@ -11,6 +11,11 @@ namespace jactorio::data
 	{
 	public:
 		/**
+		 * Unique per prototype, faster than std::string
+		 */
+		unsigned int internal_id;
+		
+		/**
 		 * Internal name <br>
 		 * MUST BE unique per data_category
 		 */

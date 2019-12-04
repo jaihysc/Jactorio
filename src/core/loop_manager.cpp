@@ -7,90 +7,52 @@
 
 #include "core/logger.h"
 
-namespace jactorio::core::loop_manager
-{
-	std::atomic<bool> loop_terminate;
-	std::thread loop_manager_thread;
+std::atomic<bool> loop_terminate;
+std::thread loop_manager_thread;
 
-	loop_run_callback render_callback;
-	loop_run_callback logic_callback;
-	// 2 callbacks indicate it is ready as both callbacks have been set
-	std::atomic<unsigned short> callbacks_count = 0;
+jactorio::core::loop_manager::loop_run_callback render_callback;
+jactorio::core::loop_manager::loop_run_callback logic_callback;
+// 2 callbacks indicate it is ready as both callbacks have been set
+std::atomic<unsigned short> callbacks_count = 0;
 
-	// Render
-	unsigned short render_refresh_rate = 60;
-	std::atomic<float> render_update_interval = 1.f / static_cast<float>(render_refresh_rate);
+std::atomic<bool> render_loop_finished = true;
+std::atomic<bool> logic_loop_finished = true;
 
-	// Logic
-	unsigned short logic_refresh_rate = 60;
-	std::atomic<float> logic_update_interval = 1.f / static_cast<float>(logic_refresh_rate);
+void loop_manager_loop() {
+	LOG_MESSAGE(debug, "Loop manager awaiting logic and render callbacks")
+	// Wait for both loops to be ready
+	while (!loop_terminate && callbacks_count != 2)
+		;
 
-	// Used for running the loops
-	double render_last_time = 0;
-	double logic_last_time = 0;
-
-	std::atomic<bool> render_loop_finished = true;
-	std::atomic<bool> logic_loop_finished = true;
-
-	void loop_manager_loop() {
-		LOG_MESSAGE(debug, "Loop manager awaiting logic and render callbacks")
-		// Wait for both loops to be ready
-		while (!loop_terminate && callbacks_count != 2)
-			;
-
-		LOG_MESSAGE(debug, "Loop manager initialized")
-		while (!loop_terminate) {
-			const double time = glfwGetTime();
-
-			if (time - render_last_time > render_update_interval) {
-				render_last_time = time;
-
-				if (!render_loop_finished) {
-					// Missing a rendering tick is nowhere as severe as a logic tick, since it does not
-					// affect the outcome of the game
-					LOG_MESSAGE(debug, "Render loop missed tick")
-					continue;
-				}
-
-				render_loop_finished = false;
-				render_callback();
+	LOG_MESSAGE(debug, "Loop manager initialized")
+	auto next_frame = std::chrono::steady_clock::now();
+	while (!loop_terminate) {
+		{
+			if (!render_loop_finished) {
+				// Missing a rendering tick is nowhere as severe as a logic tick, since it does not
+				// affect the outcome of the game
+				LOG_MESSAGE(debug, "Render loop missed tick")
+				continue;
 			}
-			if (time - logic_last_time > logic_update_interval) {
-				logic_last_time = time;
 
-				if (!logic_loop_finished) {
-					LOG_MESSAGE(warning, "Logic loop missed tick")
-					continue;
-				}
-
-				logic_loop_finished = false;
-				logic_callback();
-			}
+			render_loop_finished = false;
+			render_callback();
 		}
-		LOG_MESSAGE(debug, "Loop manager terminated")
+		{
+			if (!logic_loop_finished) {
+				LOG_MESSAGE(warning, "Logic loop missed tick")
+				continue;
+			}
+
+			logic_loop_finished = false;
+			logic_callback();
+		}
+
+		// 1 / 60 seconds
+		next_frame += std::chrono::nanoseconds(16666666);
+		std::this_thread::sleep_until(next_frame);
 	}
-}
-
-// ###################################
-// Loop manager settings
-// 
-void jactorio::core::loop_manager::set_render_refresh_rate(const unsigned short refresh_rate) {
-	render_refresh_rate = refresh_rate;
-	render_update_interval = 1.f / static_cast<float>(render_refresh_rate);
-}
-
-unsigned short jactorio::core::loop_manager::get_render_refresh_rate() {
-	return render_refresh_rate;
-}
-
-
-void jactorio::core::loop_manager::set_logic_refresh_rate(const unsigned short refresh_rate) {
-	logic_refresh_rate = refresh_rate;
-	logic_update_interval = 1.f / static_cast<float>(logic_refresh_rate);
-}
-
-unsigned short jactorio::core::loop_manager::get_logic_refresh_rate() {
-	return logic_refresh_rate;
+	LOG_MESSAGE(debug, "Loop manager terminated")
 }
 
 // ###################################
