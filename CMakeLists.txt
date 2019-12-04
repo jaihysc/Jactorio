@@ -30,7 +30,6 @@ set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
 set(JACTORIO_SRC_FILES 
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/filesystem.cpp
-	${JACTORIO_DIR}/core/loop_manager.cpp
 	${JACTORIO_DIR}/core/debug/execution_timer.cpp
 
 	${JACTORIO_DIR}/data/prototype/noise_layer.cpp
@@ -77,7 +76,6 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
-	${JACTORIO_TEST_DIR}/core/loop_managerTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp

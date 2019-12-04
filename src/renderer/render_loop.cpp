@@ -7,7 +7,7 @@
 #include "renderer/rendering/world_renderer.h"
 
 void jactorio::renderer::render_loop(Renderer* renderer) {
-	EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render preparation");
+	EXECUTION_PROFILE_SCOPE(render_preparation_timer, "Render preparation");
 	
 	Renderer::clear();
 

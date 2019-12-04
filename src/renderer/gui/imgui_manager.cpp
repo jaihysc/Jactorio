@@ -53,10 +53,10 @@ void draw_timings_menu() {
 	using namespace jactorio::core;
 	
 	ImGui::Begin("Timings", nullptr, window_flags);
-	ImGui::Text("%fms Frame time", 1000.0f / ImGui::GetIO().Framerate);
+	ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	
 	for (auto& time : Execution_timer::measured_times) {
-		ImGui::Text("%fms %s", time.second, time.first.c_str());
+		ImGui::Text("%fms (%.1f/s) %s", time.second, 1000 / time.second, time.first.c_str());
 	}
 	ImGui::End();
 }

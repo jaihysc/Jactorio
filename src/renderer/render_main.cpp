@@ -3,11 +3,13 @@
 #include "renderer/render_main.h"
 
 #include <vector>
+#include <thread>
 
+#include "core/debug/execution_timer.h"
 #include "core/resource_guard.h"
 #include "core/logger.h"
-#include "core/loop_manager.h"
 #include "data/data_manager.h"
+
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/window/window_manager.h"
 #include "renderer/opengl/shader_manager.h"
@@ -15,8 +17,10 @@
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/spritemap_generator.h"
 #include "renderer/render_loop.h"
+
 #include "game/input/input_manager.h"
 #include "game/world/world_manager.h"
+#include "game/logic_loop.h"
 
 bool refresh_renderer = false;
 unsigned short window_x = 0;
@@ -110,37 +114,38 @@ void jactorio::renderer::render_init() {
 	{
 		LOG_MESSAGE(info, "2 - Runtime stage")
 
-		// The loop manager must terminate before the window, thus it is within this scope
-		auto loop_manager_guard = core::Resource_guard(&core::loop_manager::terminate_loop_manager);
-		core::loop_manager::initialize_loop_manager();
-
 		auto imgui_manager_guard = core::Resource_guard(&imgui_manager::imgui_terminate);
 		imgui_manager::setup(window);
 
 		auto chunk_data_guard = core::Resource_guard(&game::world_manager::clear_chunk_data);
 
-		core::loop_manager::render_loop_ready(renderer_draw);
+		auto loop_termination_guard = core::Resource_guard(&game::terminate_logic_loop);
+		
+		// core::loop_manager::render_loop_ready(renderer_draw);
+
+		auto next_tick = std::chrono::steady_clock::now();
 		while (!glfwWindowShouldClose(window)) {
-			if (render_draw) {
+			EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-				// Think of a better way to toggle fullscreen?
-				if (toggle_fullscreen) {
-					toggle_fullscreen = false;
-					window_manager::set_fullscreen(!window_manager::is_fullscreen());
-				}
 
-				render_draw = false;
-				// Don't multi-thread opengl
-				render_loop(main_renderer);
-
-				// Swap renderers if a new one is placed in swap
-				if (refresh_renderer) {
-					main_renderer->recalculate_buffers(window_x, window_y);
-					refresh_renderer = false;
-				}
-
-				core::loop_manager::render_loop_complete();
+			// Think of a better way to toggle fullscreen?
+			if (toggle_fullscreen) {
+				toggle_fullscreen = false;
+				window_manager::set_fullscreen(!window_manager::is_fullscreen());
 			}
+
+			render_draw = false;
+			// Don't multi-thread opengl
+			render_loop(main_renderer);
+
+			// Swap renderers if a new one is placed in swap
+			if (refresh_renderer) {
+				main_renderer->recalculate_buffers(window_x, window_y);
+				refresh_renderer = false;
+			}
+			
+			next_tick += std::chrono::microseconds(16666);
+			std::this_thread::sleep_until(next_tick);
 		}
 	}
 

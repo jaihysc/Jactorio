@@ -6,7 +6,6 @@
 #include <array>
 
 #include "core/logger.h"
-#include "core/loop_manager.h"
 #include "game/input/input_manager.h"
 #include "renderer/render_main.h"
 #include "renderer/opengl/error.h"
