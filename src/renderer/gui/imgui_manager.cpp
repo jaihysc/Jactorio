@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "core/logger.h"
-
+#include "core/debug/execution_timer.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/gui/imgui_glfw.h"
 #include "renderer/gui/imgui_opengl3.h"
@@ -13,41 +13,53 @@
 #include "renderer/rendering/world_renderer.h"
 #include "renderer/rendering/renderer_manager.h"
 
-namespace
-{
-	void draw_debug_menu() {
-		using namespace jactorio::renderer;
+bool show_timings_window = false;
+bool show_demo_window = false;
 
-		ImGuiWindowFlags window_flags = 0;
-		window_flags |= ImGuiWindowFlags_NoCollapse;
+ImGuiWindowFlags window_flags = 0;
 
+void draw_debug_menu() {
+	using namespace jactorio::renderer;
 
-		ImGui::Begin("Debug menu", nullptr, window_flags);
+	ImGui::Begin("Debug menu", nullptr, window_flags);
+	ImGui::Text("Units are pixels");
 
-		ImGui::Text("Units are pixels");
+	// Settings
+	glm::vec3* view_translation = mvp_manager::get_view_transform();
+	ImGui::SliderFloat3("Camera translation", &view_translation->x, -100.0f,
+	                    100.0f);
 
-		// Settings
-		glm::vec3* view_translation = mvp_manager::get_view_transform();
-		ImGui::SliderFloat3("Camera translation", &view_translation->x, -100.0f,
-		                    100.0f);
+	ImGui::Text("Player position %lld %lld",
+	            world_renderer::player_position_x,
+	            world_renderer::player_position_y);
 
-		// Buttons return true when clicked (most widgets return true when edited/activated)
-		ImGui::Text("Player position %lld %lld",
-		            world_renderer::player_position_x,
-		            world_renderer::player_position_y);
-		
-		ImGui::NewLine();
-		ImGui::Text("Renderer");
-		ImGui::Text("Layer count: %d", renderer_manager::prototype_layer_count);
+	ImGui::NewLine();
+	ImGui::Text("Renderer");
+	ImGui::Text("Layer count: %d", renderer_manager::prototype_layer_count);
 
-		ImGui::NewLine();
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-		            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		
-		ImGui::End();
-	}
+	
+	ImGui::NewLine();
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+	// Window options
+	ImGui::Checkbox("Timings", &show_timings_window); ImGui::SameLine();
+	ImGui::Checkbox("Demo Window", &show_demo_window);
+	 
+	ImGui::End();
 }
 
+void draw_timings_menu() {
+	using namespace jactorio::core;
+	
+	ImGui::Begin("Timings", nullptr, window_flags);
+	ImGui::Text("%fms Frame time", 1000.0f / ImGui::GetIO().Framerate);
+	
+	for (auto& time : Execution_timer::measured_times) {
+		ImGui::Text("%fms %s", time.second, time.first.c_str());
+	}
+	ImGui::End();
+}
 
 void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	IMGUI_CHECKVERSION();
@@ -62,6 +74,7 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	ImGui_ImplOpenGL3_Init();
 
 	// Factorio inspired Imgui style
+	window_flags |= ImGuiWindowFlags_NoCollapse;
 	auto& style = ImGui::GetStyle();
 	style.WindowRounding = 0.0f;
 	style.ChildRounding = 0.0f;
@@ -73,14 +86,14 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 
 	// Borders
 	style.FrameBorderSize = 1.f;
-	
+
 	// Padding
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 4));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 8));
 
 	// Window colors
 	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 230, 192, 255));
-	
+
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(49, 48, 49, 255));
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, IM_COL32(49, 48, 49, 255));
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, IM_COL32(49, 48, 49, 255));
@@ -117,7 +130,7 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, IM_COL32(128, 129, 129, 255));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, IM_COL32(128, 129, 129, 255));
 
-	LOG_MESSAGE(info, "Imgui initialized")
+	LOG_MESSAGE(info, "Imgui initialized");
 }
 
 void jactorio::renderer::imgui_manager::imgui_draw() {
@@ -131,14 +144,16 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// font->Scale = 1.f;
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
-	
-	// DEMO WINDOW
-	ImGui::ShowDemoWindow();
 
 	// Debug menu is ` key
 	if (show_debug_menu)
 		draw_debug_menu();
-
+	
+	if (show_demo_window)
+		ImGui::ShowDemoWindow();
+	if (show_timings_window)
+		draw_timings_menu();
+	
 	// Render
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -150,5 +165,5 @@ void jactorio::renderer::imgui_manager::imgui_terminate() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	LOG_MESSAGE(info, "Imgui terminated")
+	LOG_MESSAGE(info, "Imgui terminated");
 }

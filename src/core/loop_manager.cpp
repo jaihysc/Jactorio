@@ -46,7 +46,9 @@ namespace jactorio::core::loop_manager
 				render_last_time = time;
 
 				if (!render_loop_finished) {
-					LOG_MESSAGE(warning, "Render loop missed tick")
+					// Missing a rendering tick is nowhere as severe as a logic tick, since it does not
+					// affect the outcome of the game
+					LOG_MESSAGE(debug, "Render loop missed tick")
 					continue;
 				}
 

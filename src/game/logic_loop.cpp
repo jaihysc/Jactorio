@@ -1,8 +1,9 @@
 #include "game/logic_loop.h"
 
 #include "core/loop_manager.h"
-#include "game/input/input_manager.h"
 #include "core/logger.h"
+#include "game/input/input_manager.h"
+#include "game/world/world_generator.h"
 #include "renderer/rendering/world_renderer.h"
 #include "renderer/gui/imgui_manager.h"
 
@@ -62,6 +63,10 @@ void jactorio::game::logic_loop() {
 			// Do things every logic loop tick
 			input_manager::dispatch_input_callbacks();
 
+			// Generate chunks
+			world_generator::gen_chunk();
+
+			
 			core::loop_manager::logic_loop_complete();
 		}
 	}

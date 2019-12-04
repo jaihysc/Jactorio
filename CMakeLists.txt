@@ -31,6 +31,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/filesystem.cpp
 	${JACTORIO_DIR}/core/loop_manager.cpp
+	${JACTORIO_DIR}/core/debug/execution_timer.cpp
 
 	${JACTORIO_DIR}/data/prototype/noise_layer.cpp
 

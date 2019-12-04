@@ -2,11 +2,14 @@
 #define RENDERER_RENDERING_WORLD_RENDERER_H
 
 #include "renderer/rendering/renderer.h"
+#include "game/world/tile.h"
 
 namespace jactorio::renderer::world_renderer
 {
 	inline long long player_position_x = 0;
 	inline long long player_position_y = 0;
+
+	using get_tile_prototype_func = std::string (*)(const game::Chunk_tile&);
 
 	/**
 	 * Draws chunks to the screen
@@ -19,14 +22,13 @@ namespace jactorio::renderer::world_renderer
 	 * @param chunk_start_y Position in chunk grid to begin drawing
 	 * @param chunk_amount_x How many chunks to draw on x axis to the right ->
 	 * @param chunk_amount_y How many chunks to draw on y axis downwards \/
-	 * @param layer_index Prototype layer index to draw, empty will be drawn if tile does not contain
-	 * a prototype at current layer
+	 * @param func Returns internal name of sprite given Chunk_tile
 	 */
 	void draw_chunks(const Renderer& renderer, int window_start_x,
 	                 int window_start_y,
-	                 int chunk_start_x, int chunk_start_y, 
+	                 int chunk_start_x, int chunk_start_y,
 	                 unsigned chunk_amount_x, unsigned chunk_amount_y,
-	                 unsigned int layer_index);
+	                 const get_tile_prototype_func& func);
 	
 	/**
 	 * Moves the world to match player_position_ <br>

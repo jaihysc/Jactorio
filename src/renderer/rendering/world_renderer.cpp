@@ -2,103 +2,102 @@
 
 #include <future>
 
-#include "core/data_type/unordered_map.h"
+#include "core/debug/execution_timer.h"
+
 #include "game/world/world_manager.h"
 #include "game/world/world_generator.h"
+
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/rendering/renderer_manager.h"
-#include "core/logger.h"
 #include "renderer/opengl/shader_manager.h"
 
-namespace
-{
-	// Threads for generating new chunks, threading world gen prevents the renderer from being blocked
-	// while generating
-	std::atomic<int> world_gen_threads_count = 0;
-	// Prevents constant erasing
-	bool world_gen_threads_cleared = true;
+
+// Tracks number of running buffer_load_chunk threads
+std::atomic<int> buffer_load_chunk_thread_counter = 0;
+// Current layer renderer is on
+unsigned int current_layer;
+
+/**
+ * Places tiles from specified chunk into its position within the provided buffer
+ * @param buffer Holds positions for the textures
+ * @param max_buffer_span Span of the buffer
+ * @param max_buffer_height Height of the buffer
+ * @param renderer Renderer which containing the spritemap positions for the tiles which will be drawn
+ * @param tiles Chunk tiles to render
+ * @param buffer_x Beginning position of the chunk in buffer (tiles)
+ * @param buffer_y Beginning position of the chunk in buffer (tiles)
+ * @param func Function which returns internal name of sprite given a Chunk_tile <br>
+ * return empty string to render transparency
+ * 
+ * @exception AccessViolations will occur if input buffer_x/y is greater than span/height
+ */
+void buffer_load_chunk(float* buffer, 
+                       const unsigned int max_buffer_span, const unsigned int max_buffer_height,
+                       const jactorio::renderer::Renderer* renderer,
+                       const jactorio::game::Chunk_tile* tiles,
+                       const int buffer_x, const int buffer_y,
+                       const jactorio::renderer::world_renderer::get_tile_prototype_func& func) {
+	unsigned int start_x = 0;
+	unsigned int start_y = 0;
+
+	unsigned int end_x = 32;
+	unsigned int end_y = 32;
 	
-	std::vector<std::future<void>> world_gen_threads;
-	// Stores whether or not a chunk is being generated
-	std::unordered_map<std::tuple<int, int>, bool,
-	                   jactorio::core::hash<std::tuple<int, int>>> world_gen_chunks;
+	// Don't draw tiles out of frame (up, left)
+	// This occurs when drawing partial chunks
 
+	// Precompute the ranges for the loops ahead of time for PERFORMANCE
+	if (buffer_x < 0)
+		start_x = buffer_x * -1;
+	if (buffer_x + 32 >= static_cast<int>(max_buffer_span))
+		end_x = max_buffer_span - buffer_x;
+	
+	if (buffer_y < 0)
+		start_y = buffer_y * -1;
+	if (buffer_y + 32 >= static_cast<int>(max_buffer_height))
+		end_y = max_buffer_height - buffer_y;
+	
+	// Iterate through and load tiles of a chunk into buffer
+	for (unsigned int tile_y = start_y; tile_y < end_y; ++tile_y) {
+		for (unsigned int tile_x = start_x; tile_x < end_x; ++tile_x) {
+			const std::string& sprite_name = func(tiles[tile_y * 32 + tile_x]);
 
-	// Tracks number of running buffer_load_chunk threads
-	std::atomic<int> buffer_load_chunk_thread_counter = 0;
+			const unsigned int buffer_offset = 
+				((buffer_y + tile_y) * max_buffer_span + (buffer_x + tile_x)) * 8;
 
-	/**
-	 * Places tiles from specified chunk into its position within the provided buffer
-	 * @param buffer Holds positions for the textures
-	 * @param span Span of the buffer
-	 * @param height Height of the buffer
-	 * @param renderer Renderer which containing the spritemap positions for the tiles which will be drawn
-	 * @param tiles Chunk tiles to render
-	 * @param buffer_x Beginning position of the chunk in buffer (tiles)
-	 * @param buffer_y Beginning position of the chunk in buffer (tiles)
-	 * @param layer_index Prototype layer index to draw, empty will be drawn if tile does not contain
-	 * a prototype at current layer
-	 */
-	void buffer_load_chunk(float* buffer, const unsigned int span, const unsigned int height,
-	                       const jactorio::renderer::Renderer* renderer,
-	                       const jactorio::game::Chunk_tile* tiles,
-	                       const int buffer_x, const int buffer_y,
-	                       const unsigned int layer_index) {
-		
-		// Iterate through and draw tiles of a chunk
-		for (int tile_y = 0; tile_y < 32; ++tile_y) {
-			const unsigned int y_offset = buffer_y + tile_y;
-			if (y_offset >= height)
-				continue;
-			
-			for (int tile_x = 0; tile_x < 32; ++tile_x) {
-				const unsigned int x_offset = buffer_x + tile_x;
+			if (sprite_name.empty()) {
+				// -1.f position indicates drawing no sprites to fragment shader
+				buffer[buffer_offset + 0] = -1.f;
+				buffer[buffer_offset + 1] = -1.f;
+
+				buffer[buffer_offset + 2] = -1.f;
+				buffer[buffer_offset + 3] = -1.f;
+
+				buffer[buffer_offset + 4] = -1.f;
+				buffer[buffer_offset + 5] = -1.f;
+
+				buffer[buffer_offset + 6] = -1.f;
+				buffer[buffer_offset + 7] = -1.f;
+			}
+			else {
+				const auto positions = renderer->get_sprite_spritemap_coords(sprite_name);
 				
-				if (x_offset >= span)
-					continue;
+				buffer[buffer_offset + 0] = positions.bottom_left.x;
+				buffer[buffer_offset + 1] = positions.bottom_left.y;
 
-				// Load sprite positions
-				auto& prototypes_vector = tiles[tile_y * 32 + tile_x].
-					tile_prototypes;
+				buffer[buffer_offset + 2] = positions.bottom_right.x;
+				buffer[buffer_offset + 3] = positions.bottom_right.y;
 
-				const unsigned int buffer_offset = 
-					(y_offset * span + x_offset) * 8;
+				buffer[buffer_offset + 4] = positions.top_right.x;
+				buffer[buffer_offset + 5] = positions.top_right.y;
 
-				if (layer_index >= prototypes_vector.size()) {
-					// -1.f position indicates drawing no sprites to fragment shader
-					buffer[buffer_offset + 0] = -1.f;
-					buffer[buffer_offset + 1] = -1.f;
-
-					buffer[buffer_offset + 2] = -1.f;
-					buffer[buffer_offset + 3] = -1.f;
-
-					buffer[buffer_offset + 4] = -1.f;
-					buffer[buffer_offset + 5] = -1.f;
-
-					buffer[buffer_offset + 6] = -1.f;
-					buffer[buffer_offset + 7] = -1.f;
-				}
-				else {
-					const auto positions = renderer->get_sprite_spritemap_coords(
-						prototypes_vector[layer_index]->name);
-					
-					buffer[buffer_offset + 0] = positions.bottom_left.x;
-					buffer[buffer_offset + 1] = positions.bottom_left.y;
-
-					buffer[buffer_offset + 2] = positions.bottom_right.x;
-					buffer[buffer_offset + 3] = positions.bottom_right.y;
-
-					buffer[buffer_offset + 4] = positions.top_right.x;
-					buffer[buffer_offset + 5] = positions.top_right.y;
-
-					buffer[buffer_offset + 6] = positions.top_left.x;
-					buffer[buffer_offset + 7] = positions.top_left.y;
-				}
+				buffer[buffer_offset + 6] = positions.top_left.x;
+				buffer[buffer_offset + 7] = positions.top_left.y;
 			}
 		}
-
-		--buffer_load_chunk_thread_counter;
 	}
+
+	--buffer_load_chunk_thread_counter;
 }
 
 void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
@@ -108,15 +107,7 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
                                                      const int chunk_start_y,
                                                      const unsigned int chunk_amount_x,
                                                      const unsigned int chunk_amount_y,
-                                                     const unsigned int layer_index) {
-	// Clear world gen threads once the vector is empty, this is faster than deleting it one by one
-	if (!world_gen_threads_cleared && world_gen_threads_count == 0) {
-		LOG_MESSAGE(debug, "Chunk generation buffer cleared");
-		world_gen_threads.clear();
-		world_gen_chunks.clear();
-		world_gen_threads_cleared = true;
-	}
-	
+                                                     const get_tile_prototype_func& func) {
 	// Render chunks
 	const unsigned short buffer_span = renderer.get_grid_size_x();
 	const unsigned short buffer_height = renderer.get_grid_size_y();
@@ -127,52 +118,38 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 	chunk_load_threads.reserve(static_cast<unsigned long long>(chunk_amount_x) * chunk_amount_y);
 	
 	for (int chunk_y = 0; chunk_y < chunk_amount_y; ++chunk_y) {
-		const unsigned int chunk_y_offset = chunk_y * 32 + window_start_y;
-		
+		const int chunk_y_offset = chunk_y * 32 + window_start_y;
 
 		for (int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
-			const unsigned int chunk_x_offset = chunk_x * 32 + window_start_x;
+			const int chunk_x_offset = chunk_x * 32 + window_start_x;
 
-			auto chunk = game::world_manager::get_chunk(chunk_start_x + chunk_x,
-			                                            chunk_start_y + chunk_y);
+			const auto chunk = game::world_manager::get_chunk(chunk_start_x + chunk_x,
+			                                                  chunk_start_y + chunk_y);
 
 			// Generate chunk if non existent
 			if (chunk == nullptr) {
-				const auto chunk_key = std::tuple<int, int>
-					{ chunk_start_x + chunk_x, chunk_start_y + chunk_y };
-				
-				// Is the chunk already under generation
-				if (world_gen_chunks.find(chunk_key) != world_gen_chunks.end())
-					continue;
-
-				
-				++world_gen_threads_count;
-				world_gen_threads_cleared = false;
-				
-				world_gen_chunks[chunk_key] = true;
-
-				// Chunk is asynchronously generated
-				world_gen_threads.emplace_back(
-					std::async(std::launch::async,
-					           game::world_generator::generate_chunk,
-					           chunk_start_x + chunk_x,
-					           chunk_start_y + chunk_y,
-					           &world_gen_threads_count)
-				);
+				game::world_generator::queue_chunk_generation(
+					chunk_start_x + chunk_x,
+					chunk_start_y + chunk_y);
 				continue;
 			}
 
-			game::Chunk_tile* tiles = chunk->tiles_ptr();
+
+			// Don't try to render chunks which are out of view
+			if (chunk_x_offset > buffer_span || chunk_y_offset > buffer_height)
+				continue;
 
 			// Load chunk into buffer
+			game::Chunk_tile* tiles = chunk->tiles_ptr();
 			++buffer_load_chunk_thread_counter;
+			
 			chunk_load_threads.emplace_back(
 				std::async(std::launch::async,
 				           buffer_load_chunk,
 				           buffer, buffer_span, buffer_height,
 				           &renderer, tiles,
 				           chunk_x_offset, chunk_y_offset,
-				           layer_index)
+				           func)
 			);
 		}
 	}
@@ -227,7 +204,25 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	renderer->update_tile_projection_matrix();
 	update_shader_mvp();
 
-	for (int max_index = 0; max_index < renderer_manager::prototype_layer_count; ++max_index) {
+	
+	// Rendering layers
+	for (unsigned int layer_index = 0; layer_index < renderer_manager::prototype_layer_count; ++layer_index) {
+		current_layer = layer_index;
+
+		// // Create layer number, e.g layer 0
+		// std::string s("Layer ");
+		// s.append(std::to_string(layer_index));
+		// auto layer_rendering_timer = core::Execution_timer(s);
+
+		const auto get_tile_proto_func = [](const game::Chunk_tile& chunk_tile) {
+			const auto& protos = chunk_tile.tile_prototypes;
+
+			if (current_layer >= protos.size())
+				return std::string{};
+
+			return protos[current_layer]->name;
+		};
+
 		draw_chunks(*renderer,
 		            // - 32 to hide the 1 extra chunk around the outside screen
 		            tile_offset_x - 32, tile_offset_y - 32,
@@ -238,7 +233,32 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 		            chunk_offset_y - 1,
 		            renderer->get_grid_size_x() / 32 + 2 + 1,
 		            renderer->get_grid_size_y() / 32 + 2 + 1,
-		            max_index);
+		            get_tile_proto_func
+		);
+		renderer->draw(glm::vec3(0, 0, 0));
+	}
+	// Resources
+	{
+		const auto get_tile_proto_func = [](const game::Chunk_tile& chunk_tile) {
+			if (chunk_tile.resource_prototype != nullptr)
+				return chunk_tile.resource_prototype->name;
+
+			return std::string{};
+		};
+		
+		draw_chunks(*renderer,
+		            // - 32 to hide the 1 extra chunk around the outside screen
+		            tile_offset_x - 32, tile_offset_y - 32,
+		            // 1 extra chunk in either direction ensure 
+		            // window will always be filled with chunks regardless
+		            // of chunk offset and window size
+		            chunk_offset_x - 1,
+		            chunk_offset_y - 1,
+		            renderer->get_grid_size_x() / 32 + 2 + 1,
+		            renderer->get_grid_size_y() / 32 + 2 + 1,
+		            get_tile_proto_func
+		);
+		
 		renderer->draw(glm::vec3(0, 0, 0));
 	}
 }

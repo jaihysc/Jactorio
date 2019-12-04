@@ -3,6 +3,7 @@
 #include <noise/noise.h>
 #include <noise/noiseutils.h>
 #include <algorithm>
+#include <map>
 
 #include "core/logger.h"
 #include "game/world/tile.h"
@@ -11,8 +12,21 @@
 #include "data/prototype/noise_layer.h"
 #include "renderer/rendering/renderer_manager.h"
 
-void jactorio::game::world_generator::generate_chunk(const int chunk_x, const int chunk_y,
-                                                     std::atomic<int>* thread_counter) {
+// Prevents constant erasing of buffers
+bool world_gen_buffer_cleared = true;
+unsigned int chunks_awaiting_generation = 0;
+// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
+std::map<std::tuple<int, int>, bool> world_gen_chunks;
+
+/**
+ * Generates a chunk and adds it to the world when done <br>
+ * Call this with a std::thread to to this in async
+ * @param chunk_x X position of chunk to generate
+ * @param chunk_y Y position of chunk to generate
+ */
+void generate(const int chunk_x, const int chunk_y) {
+	using namespace jactorio;
+	
 	// TODO configurable base seed
 	constexpr int base_seed = 1001;
 	
@@ -38,7 +52,7 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 	          }
 	);
 
-	auto* tiles = new Chunk_tile[1024];
+	auto* tiles = new game::Chunk_tile[1024];
 	for (auto& noise_layer : noise_layers) {
 
 		module::Perlin base_terrain_noise_module;
@@ -74,18 +88,31 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 
 				
 				// Noise layer is generating resources, check if at this tile there are any
-				// tiles marked as water, if so, do not place resources
-				if (noise_layer->tile_data_category == data::data_category::resource_tile &&
-					chunk_tile.is_water)
-					continue;
+				if (noise_layer->tile_data_category == data::data_category::resource_tile) {
+					// tiles marked as water or not accepting resource, do not place resources
+					if (chunk_tile.is_water || !chunk_tile.accepts_resource)
+						continue;
 
-				
-				// Add the tile prototype to the Chunk_tile
-				prototype_vector.push_back(
-					data::data_manager::data_raw_get<data::Tile>(
-						noise_layer->tile_data_category, new_tile->name)
-				);
+					// A resource already exists at this prototype
+					if (chunk_tile.resource_prototype != nullptr) {
+						// Remove all resources since it cannot be guaranteed which resource is
+						// generated first
+						chunk_tile.accepts_resource = false;
+						chunk_tile.resource_prototype = nullptr;
+						continue;
+					}
 
+					chunk_tile.resource_prototype = data::data_manager::data_raw_get<data::Resource_tile>(
+						data::data_category::resource_tile, new_tile->name
+					);
+				}
+				else {
+					// Add the tile prototype to the Chunk_tile
+					prototype_vector.push_back(
+						data::data_manager::data_raw_get<data::Tile>(
+							data::data_category::tile, new_tile->name)
+					);
+				}
 
 				// ############################################################
 				// Post tile addition processing
@@ -103,7 +130,75 @@ void jactorio::game::world_generator::generate_chunk(const int chunk_x, const in
 		}
 
 	}
+	//
+	// // ############################################################
+	// // Post chunk generation processing
+	// for (int y = 0; y < 32; ++y) {
+	// 	for (int x = 0; x < 32; ++x) {
+	// 		auto& chunk_tile = tiles[y * 32 + x];
+	// 		std::vector<data::Tile*>& prototype_vector = chunk_tile.tile_prototypes;
+	//
+	// 		unsigned int resource_count = 0;
+	// 		for (auto& proto : prototype_vector) {
+	// 			if (proto->category == data::data_category::resource_tile)
+	// 				resource_count++;
+	// 		}
+	// 		// Delete all resources on tiles with overlapping resources
+	// 		if (resource_count > 1) {
+	// 			for (unsigned int i = 0; i < prototype_vector.size(); ++i) {
+	// 				if (prototype_vector[i]->category == data::data_category::resource_tile) {
+	// 					prototype_vector.erase(prototype_vector.begin() + i);
+	// 				}
+	// 			}
+	// 		}
+	// 		if (prototype_vector.size() == 3)
+	// 			__debugbreak();
+	// 		
+	// 	}
+	// }
+	
+	game::world_manager::add_chunk(new game::Chunk{chunk_x, chunk_y, tiles});
+}
 
-	world_manager::add_chunk(new Chunk{chunk_x, chunk_y, tiles});
-	--*thread_counter;
+void jactorio::game::world_generator::queue_chunk_generation(const int chunk_x, const int chunk_y) {
+	const auto chunk_key = std::tuple<int, int>{ + chunk_x, chunk_y };
+
+	// Is the chunk already under generation? If so return
+	if (world_gen_chunks.find(chunk_key) != world_gen_chunks.end())
+		return;
+
+	world_gen_chunks[chunk_key] = true;
+	chunks_awaiting_generation++;
+	
+	// The map is now populated
+	world_gen_buffer_cleared = false;
+}
+
+void jactorio::game::world_generator::gen_chunk() {
+	if (world_gen_buffer_cleared)
+		return;
+	
+	// Clear world gen threads once the vector is empty, this is faster than deleting it one by one
+	if (!world_gen_buffer_cleared && chunks_awaiting_generation == 0) {
+		LOG_MESSAGE(debug, "Chunk generation queue cleared");
+		world_gen_chunks.clear();
+		world_gen_buffer_cleared = true;
+		return;
+	}
+
+
+	// Generate a chunk
+	// Find the first chunk which has yet been generated, ->second is true indicates it NEEDS generation
+	for (auto& c : world_gen_chunks) {
+		if (c.second) {			
+			auto& coords = c.first;
+			generate(std::get<0>(coords), std::get<1>(coords));
+
+			// Mark the chunk as done generating
+			c.second = false;
+			chunks_awaiting_generation--;
+			break;
+		}
+	}
+
 }

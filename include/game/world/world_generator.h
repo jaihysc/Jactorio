@@ -1,18 +1,19 @@
 #ifndef GAME_WORLD_WORLD_GENERATOR_H
 #define GAME_WORLD_WORLD_GENERATOR_H
 
-#include <atomic>
-
 namespace jactorio::game::world_generator
 {
 	/**
-	 * Generates a chunk and adds it to the world when done <br>
-	 * Call this with a std::thread to to this in async
-	 * @param chunk_x X position of chunk to generate
-	 * @param chunk_y Y position of chunk to generate
-	 * @param thread_counter This variable will be decremented once the thread has finished
+	 * Queues a chunk to be generated at specified position, a chunk will be generated on every logic
+	 * loop tick
 	 */
-	void generate_chunk(int chunk_x, int chunk_y, std::atomic<int>* thread_counter);
+	void queue_chunk_generation(int chunk_x, const int chunk_y);
+
+	/**
+	 * Call once per logic loop tick to generate one chunk only, this keeps performance constant
+	 * when generating large amounts of chunks
+	 */
+	void gen_chunk();
 }
 
 #endif // GAME_WORLD_WORLD_GENERATOR_H
