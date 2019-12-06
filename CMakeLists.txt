@@ -27,7 +27,7 @@ set(JACTORIO_INCLUDE_FILES
 )
 #------------ Source files .cpp
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
-set(JACTORIO_SRC_FILES 
+set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/filesystem.cpp
 	${JACTORIO_DIR}/core/debug/execution_timer.cpp
@@ -72,7 +72,7 @@ set(JACTORIO_SRC_FILES
 
 # >>>>>>>>>>> Test files .cpp
 set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
-set(JACTORIO_TEST_FILES 
+set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/jactorioTests.cpp
 
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
@@ -125,7 +125,6 @@ validate_dependency(lib/pybind11)
 validate_dependency(lib/libnoise)
 validate_dependency(lib/SDL-mirror)
 
-
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)
 set(SFML_STATIC_LIBRARIES TRUE)
@@ -138,7 +137,7 @@ add_subdirectory("lib/libnoise")
 add_subdirectory("lib/SDL-mirror")
 
 set(
-	IMGUI_FILES 
+	IMGUI_FILES
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
