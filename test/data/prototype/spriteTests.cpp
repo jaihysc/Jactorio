@@ -8,19 +8,19 @@ namespace data::prototype
 		{
 			jactorio::data::Sprite sprite{};
 
-			EXPECT_EQ(sprite.sprite_image.getSize().x, 0);
-			EXPECT_EQ(sprite.sprite_image.getSize().y, 0);
+			EXPECT_EQ(sprite.get_width(), 0);
+			EXPECT_EQ(sprite.get_height(), 0);
 			
-			sprite.load_sprite("test/graphics/test/test_tile.png");
+			sprite.load_image("test/graphics/test/test_tile.png");
 
-			EXPECT_EQ(sprite.sprite_image.getSize().x, 32);
-			EXPECT_EQ(sprite.sprite_image.getSize().y, 32);
+			EXPECT_EQ(sprite.get_width(), 32);
+			EXPECT_EQ(sprite.get_height(), 32);
 		}
 		{
 			const jactorio::data::Sprite sprite("test/graphics/test/test_tile.png");
 
-			EXPECT_EQ(sprite.sprite_image.getSize().x, 32);
-			EXPECT_EQ(sprite.sprite_image.getSize().y, 32);
+			EXPECT_EQ(sprite.get_width(), 32);
+			EXPECT_EQ(sprite.get_height(), 32);
 		}
 	}
 }

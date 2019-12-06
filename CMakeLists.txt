@@ -21,9 +21,9 @@ set(JACTORIO_INCLUDE_FILES
 	${PROJECT_SOURCE_DIR}/lib/stb/
 	${PROJECT_SOURCE_DIR}/lib/glm/
 	${PROJECT_SOURCE_DIR}/lib/imgui/
-	${PROJECT_SOURCE_DIR}/lib/SFML/include
 	${PROJECT_SOURCE_DIR}/lib/pybind11/include
 	${PROJECT_SOURCE_DIR}/lib/libnoise/include
+	${PROJECT_SOURCE_DIR}/lib/SDL-mirror/include
 )
 #------------ Source files .cpp
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
@@ -33,6 +33,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/debug/execution_timer.cpp
 
 	${JACTORIO_DIR}/data/prototype/noise_layer.cpp
+	${JACTORIO_DIR}/data/prototype/sprite.cpp
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
@@ -104,14 +105,14 @@ function(validate_dependency DEPENDENCY_PATH)
 	file(GLOB RESULT ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}/*)
 	list(LENGTH RESULT RES_LEN)
 
-    if((NOT EXISTS ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}) OR (RES_LEN EQUAL 0))
+	if((NOT EXISTS ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}) OR (RES_LEN EQUAL 0))
 		message("Installing missing dependency ${DEPENDENCY_PATH}")
 
 		execute_process(COMMAND git submodule update --init -- ${DEPENDENCY_PATH}
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-    else()
+	else()
 		message("Found dependency ${DEPENDENCY_PATH}")
-    endif()
+	endif()
 endfunction()
 
 message("========== Resolving dependencies...")
@@ -120,9 +121,9 @@ validate_dependency(lib/glfw)
 validate_dependency(lib/stb/stb)	# HEADER
 validate_dependency(lib/glm)		# HEADER
 validate_dependency(lib/imgui/imgui)	# NC
-validate_dependency(lib/SFML)
 validate_dependency(lib/pybind11)
 validate_dependency(lib/libnoise)
+validate_dependency(lib/SDL-mirror)
 
 
 # Dependencies build arguments
@@ -132,14 +133,9 @@ set(SFML_STATIC_LIBRARIES TRUE)
 # Ones which need to be built
 add_subdirectory("lib/glew-cmake")
 add_subdirectory("lib/glfw")
-add_subdirectory("lib/SFML")
 add_subdirectory("lib/pybind11")
 add_subdirectory("lib/libnoise")
-
-
-
-find_package(SFML 2.5 COMPONENTS graphics)
-
+add_subdirectory("lib/SDL-mirror")
 
 set(
 	IMGUI_FILES 
@@ -160,19 +156,19 @@ set(
 	LIBS_WIN
 
 	glfw libglew_static
-	sfml-graphics
 	glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib
 	pybind11::embed
 	libnoise
+	SDL2main
 )
 set(
 	LIBS_UNIX
 
 	glfw libglew_static
-	sfml-graphics
 	libGLU.so libGL.so
 	pybind11::embed
 	libnoise
+	SDL2main
 )
 
 

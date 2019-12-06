@@ -2,7 +2,6 @@
 #define RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
 
 #include <unordered_map>
-#include <SFML/Graphics/Image.hpp>
 
 #include "data/prototype/sprite.h"
 
@@ -31,7 +30,7 @@ namespace jactorio::renderer
 
 		struct Spritemap_data
 		{
-			sf::Image spritemap;
+			data::Sprite* spritemap;
 
 			// Image positions retrieved via the path originally given to create the spritemap
 			// 0 - 1 positions of the sprite within the spritemap
@@ -41,17 +40,12 @@ namespace jactorio::renderer
 		};
 
 		/*!
-		 * Generated spritemap will be purely horizontal, all images concatenated side by side
-		 * @param images Pointer array to pointers towards sprite prototypes
+		 * Generated spritemap will be purely horizontal, all images concatenated side by side <br>
+		 * Color in non specified areas of the spritemap are undefined
+		 * @param sprites Pointer array to pointers towards sprite prototypes
 		 * @param count Count of pointer array
 		 */
-		Spritemap_data gen_spritemap(data::Sprite** images, unsigned short count) const;
-
-
-	private:
-		static void set_image_positions(Image_position& image_position,
-		                                sf::Vector2u image_dimensions,
-		                                unsigned int& offset_x);
+		Spritemap_data gen_spritemap(data::Sprite** sprites, unsigned short count) const;
 	};
 }
 

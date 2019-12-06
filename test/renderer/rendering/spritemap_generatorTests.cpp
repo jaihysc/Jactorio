@@ -4,10 +4,26 @@
 
 namespace renderer
 {
-	// void debug_print_color(const sf::Color color) {
-	// printf("%d %d %d %d\n", color.r, color.g, color.b, color.a);
-    // }
+	// Returns true if pixel contains specified color
+	bool get_pixel_color(const unsigned char* img_ptr,
+	                     const unsigned int image_width,
+	                     const unsigned int x, const unsigned int y,
+	                     const unsigned short r, const unsigned short g, const unsigned short b,
+	                     const unsigned short a) {
+		const unsigned int offset = (image_width * y + x) * 4;
+		
+		bool valid = true;
 
+		if (img_ptr[offset + 0] != r || 
+			img_ptr[offset + 1] != g ||
+			img_ptr[offset + 2] != b ||
+			img_ptr[offset + 3] != a)
+			valid = false;
+		
+		return valid;
+	}
+
+	
 	TEST(spritemap_generator, gen_spritemap) {
 		// Provide series of sprites in array
 		// Expect concatenated image and its properties
@@ -23,47 +39,45 @@ namespace renderer
 		}
 
 		prototypes[0]->internal_id = 1;
-		prototypes[0]->load_sprite("test/graphics/test/test_tile.png");
+		prototypes[0]->load_image("test/graphics/test/test_tile.png");
 
 		prototypes[1]->internal_id = 2;
-		prototypes[1]->load_sprite("test/graphics/test/test_tile1.png");
+		prototypes[1]->load_image("test/graphics/test/test_tile1.png");
 
 		prototypes[2]->internal_id = 3;
-		prototypes[2]->load_sprite("test/graphics/test/test_tile2.png");
+		prototypes[2]->load_image("test/graphics/test/test_tile2.png");
 
 		prototypes[3]->internal_id = 4;
-		prototypes[3]->load_sprite("test/graphics/test/test_tile3.png");
+		prototypes[3]->load_image("test/graphics/test/test_tile3.png");
 
 		const auto r_sprites = jactorio::renderer::Renderer_sprites{};
 
 		const auto spritemap = r_sprites.gen_spritemap(prototypes, 4);
 
-		EXPECT_EQ(spritemap.spritemap.getSize().x, 160);
-		EXPECT_EQ(spritemap.spritemap.getSize().y, 64);
+		EXPECT_EQ(spritemap.spritemap->get_width(), 160);
+		EXPECT_EQ(spritemap.spritemap->get_height(), 64);
 
 		// Sample spots on the concatenated image
 		// Image 0
-		EXPECT_EQ(spritemap.spritemap.getPixel(26, 6), sf::Color(0, 0, 0, 255));
-		EXPECT_EQ(spritemap.spritemap.getPixel(5, 26), sf::Color(0, 105, 162, 255));
+		auto* img_ptr = spritemap.spritemap->get_sprite_data_ptr();
+
+		EXPECT_EQ(get_pixel_color(img_ptr, 160, 26, 6, 0, 0, 0, 255), true);
+		EXPECT_EQ(get_pixel_color(img_ptr, 160, 5, 26, 0, 105, 162, 255), true);
 
 		// Image 1
-		EXPECT_EQ(spritemap.spritemap.getPixel(47, 26), sf::Color(83, 83, 83, 255));
-		EXPECT_EQ(spritemap.spritemap.getPixel(50, 9), sf::Color(255, 255, 255, 255));
+		EXPECT_EQ(get_pixel_color(img_ptr, 160, 47, 26, 83, 83, 83, 255), true);
+		EXPECT_EQ(get_pixel_color(img_ptr, 160, 50, 9, 255, 255, 255, 255), true);
 
 		// Image 2
-		EXPECT_EQ(spritemap.spritemap.getPixel(83, 5), sf::Color(255, 0, 0, 255));
-		EXPECT_EQ(spritemap.spritemap.getPixel(71, 18), sf::Color(255, 255, 255, 255));
+		EXPECT_EQ(get_pixel_color(img_ptr, 160, 83, 5, 255, 0, 0, 255), true);
+		EXPECT_EQ(get_pixel_color(img_ptr, 160, 71, 18, 255, 255, 255, 255), true);
 
 		// Image 3
-		EXPECT_EQ(spritemap.spritemap.getPixel(125, 53), sf::Color(77, 57, 76, 255));
-		EXPECT_EQ(spritemap.spritemap.getPixel(142, 22), sf::Color(42, 15, 136, 255));
+		EXPECT_EQ(get_pixel_color(img_ptr, 160, 125, 53, 77, 57, 76, 255), true);
+		EXPECT_EQ(get_pixel_color(img_ptr, 160, 142, 22, 42, 15, 136, 255), true);
 
-		// Empty area
-		EXPECT_EQ(spritemap.spritemap.getPixel(95, 32), sf::Color(0, 0, 0, 255));
-		EXPECT_EQ(spritemap.spritemap.getPixel(52, 59), sf::Color(0, 0, 0, 255));
-		EXPECT_EQ(spritemap.spritemap.getPixel(95, 63), sf::Color(0, 0, 0, 255));
-
-
+		// Empty area is undefined
+		
 		// Positions
 		// 0.f; 0.f; // upper left
 		// 1.f; 0.f;  // upper right

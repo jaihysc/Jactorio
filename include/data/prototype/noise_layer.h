@@ -2,8 +2,10 @@
 #define DATA_PROTOTYPE_NOISE_LAYER_H
 
 #include "data/prototype/prototype_base.h"
-#include "data/data_category.h"
 #include "data/prototype/tile/tile.h"
+#include "data/data_category.h"
+
+#include <vector>
 
 namespace jactorio::data
 {

@@ -10,9 +10,13 @@
 #include "data/prototype/tile/tile.h"
 namespace jactorio::data
 {
+	// Internally used internal names
+	// game-renderer-spritemap	Used by spritemap_generator.cpp to store the game's spritemap
+	
 	/**
 	* std::string type -> Everything of specified type (E.g image, audio)
 	* >> std::string id - > std::string path to item
+	* See header for a list of already used internal names
 	*/
 	namespace data_manager
 	{

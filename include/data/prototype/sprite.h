@@ -1,11 +1,9 @@
 #ifndef DATA_PROTOTYPE_SPRITE_H
 #define DATA_PROTOTYPE_SPRITE_H
 
-#include <SFML/Graphics/Image.hpp>
 #include <string>
 
 #include "prototype_base.h"
-#include "core/filesystem.h"
 
 namespace jactorio::data
 {
@@ -14,28 +12,50 @@ namespace jactorio::data
 	 */
 	class Sprite : public Prototype_base
 	{
-	public:
-		Sprite() = default;
+		// Image properties
+		int width_, height_, bytes_per_pixel_;
 
-		explicit Sprite(const std::string& sprite_path) {
-			load_sprite(sprite_path);
-		}
+		// Path is already resolved
+		std::string sprite_path_;
+		unsigned char* sprite_buffer_;
 
 		/**
-		 * Named sprite_image to avoid confusion with Sprite class
+		 * Actually loads the image, load_image only sets the sprite_path and calls this
 		 */
-		sf::Image sprite_image;
+		void load_image_from_file();
+		
+	public:
+		Sprite();
+
+		explicit Sprite(const std::string& sprite_path);
+
+		~Sprite();
+		
+		
+		[[nodiscard]] const unsigned char* get_sprite_data_ptr() const;
+
+		/**
+		 * Provided sprite_data pointer will be managed by the Sprite class, it must not be deleted
+		 */
+		void set_sprite_data_ptr(unsigned char* sprite_data, unsigned sprite_width, unsigned sprite_height);
+
+		
+		/**
+		 * Gets size of image on X axis
+		 */
+		[[nodiscard]] unsigned int get_width() const;
+
+		/**
+		 * Gets size of image on Y axis
+		 */
+		[[nodiscard]] unsigned int get_height() const;
+
 		
 		/**
 		 * Loads a sprite from sprite_path into member sprite <br>
 		 * Do not include ~/data/
 		 */
-		void load_sprite(const std::string& sprite_path) {
-			sprite_image = sf::Image();
-		
-			const std::string path = core::filesystem::resolve_path("~/data/" + sprite_path);
-			sprite_image.loadFromFile(path);
-		}
+		void load_image(const std::string& image_path);
 	};
 }
 

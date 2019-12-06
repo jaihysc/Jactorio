@@ -76,6 +76,14 @@ void jactorio::data::data_manager::load_data(
 }
 
 void jactorio::data::data_manager::clear_data() {
+	// Iterate through both unordered maps and delete all pointers
+	for (auto& pair : data_raw) {
+		// Category unordered maps
+		for (auto& category_pair : pair.second) {
+			delete category_pair.second;
+		}
+	}
+	
 	data_raw.clear();
 	internal_id_new = INTERNAL_ID_START;
 }

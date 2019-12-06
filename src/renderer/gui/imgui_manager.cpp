@@ -5,6 +5,7 @@
 
 #include "core/logger.h"
 #include "core/debug/execution_timer.h"
+#include "game/world/world_generator.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/gui/imgui_glfw.h"
 #include "renderer/gui/imgui_opengl3.h"
@@ -45,7 +46,11 @@ void draw_debug_menu() {
 	// Window options
 	ImGui::Checkbox("Timings", &show_timings_window); ImGui::SameLine();
 	ImGui::Checkbox("Demo Window", &show_demo_window);
-	 
+
+	int seed = jactorio::game::world_generator::get_world_generator_seed();
+	ImGui::InputInt("World generator seed", &seed);
+	jactorio::game::world_generator::set_world_generator_seed(seed);
+	
 	ImGui::End();
 }
 

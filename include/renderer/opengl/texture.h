@@ -1,7 +1,7 @@
 #ifndef RENDERER_OPENGL_TEXTURE_H
 #define RENDERER_OPENGL_TEXTURE_H
 
-#include <SFML/Graphics/Image.hpp>
+#include "data/prototype/sprite.h"
 
 namespace jactorio::renderer
 {
@@ -11,7 +11,7 @@ namespace jactorio::renderer
 		int width_, height_;
 
 	public:
-		explicit Texture(const sf::Image& image);
+		explicit Texture(const data::Sprite* image);
 		~Texture();
 
 		Texture(const Texture& other) = delete;
@@ -20,7 +20,7 @@ namespace jactorio::renderer
 		Texture& operator=(Texture&& other) noexcept = delete;
 
 		void bind(unsigned int slot = 0) const;
-		void unbind() const;
+		static void unbind();
 
 		[[nodiscard]] int get_width() const { return width_; }
 		[[nodiscard]] int get_height() const { return height_; }

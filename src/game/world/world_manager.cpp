@@ -2,7 +2,6 @@
 
 #include <unordered_map>
 #include <future>
-#include <chrono>
 #include <mutex>
 
 #include "core/data_type/unordered_map.h"
@@ -43,5 +42,9 @@ jactorio::game::Chunk* jactorio::game::world_manager::get_chunk(int x, int y) {
 }
 
 void jactorio::game::world_manager::clear_chunk_data() {
+	// The chunk data itself needs to be deleted
+	for (auto& world_chunk : world_chunks) {
+		delete world_chunk.second;
+	}
 	world_chunks.clear();
 }

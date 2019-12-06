@@ -23,6 +23,7 @@
 #include "game/logic_loop.h"
 
 bool refresh_renderer = false;
+bool clear_chunk_data = false;
 unsigned short window_x = 0;
 unsigned short window_y = 0;
 
@@ -30,10 +31,6 @@ jactorio::renderer::Renderer* main_renderer = nullptr;
 bool render_draw = false;
 
 // Called every renderer cycle, cannot put code in callback due to single thread of opengl
-void renderer_draw() {
-	render_draw = true;
-}
-
 bool toggle_fullscreen = false;
 
 void jactorio::renderer::set_recalculate_renderer(const unsigned short window_size_x,
@@ -110,6 +107,10 @@ void jactorio::renderer::render_init() {
 
 	}, GLFW_KEY_X, GLFW_RELEASE);
 
+	game::input_manager::register_input_callback([]() {
+		clear_chunk_data = true;
+	}, GLFW_KEY_R, GLFW_RELEASE);
+
 	// #################################################################
 	{
 		LOG_MESSAGE(info, "2 - Runtime stage")
@@ -142,6 +143,10 @@ void jactorio::renderer::render_init() {
 			if (refresh_renderer) {
 				main_renderer->recalculate_buffers(window_x, window_y);
 				refresh_renderer = false;
+			}
+			if (clear_chunk_data) {
+				clear_chunk_data = false;
+				game::world_manager::clear_chunk_data();
 			}
 			
 			next_tick += std::chrono::microseconds(16666);

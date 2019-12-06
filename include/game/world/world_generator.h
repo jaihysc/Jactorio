@@ -3,6 +3,12 @@
 
 namespace jactorio::game::world_generator
 {
+	// Seed
+	void set_world_generator_seed(int seed);
+	
+	[[nodiscard]] int get_world_generator_seed();
+
+	
 	/**
 	 * Queues a chunk to be generated at specified position, a chunk will be generated on every logic
 	 * loop tick

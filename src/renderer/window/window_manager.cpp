@@ -6,6 +6,7 @@
 #include <array>
 
 #include "core/logger.h"
+#include "core/filesystem.h"
 #include "game/input/input_manager.h"
 #include "renderer/render_main.h"
 #include "renderer/opengl/error.h"
@@ -80,16 +81,14 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 	// Set the Jactorio icon for the window
 	{
-		auto icon = sf::Image();
-		icon.loadFromFile(core::filesystem::resolve_path("~/data/core/graphics/jactorio.png"));
-
+		const auto icon =
+			data::Sprite("core/graphics/jactorio.png");
 		// Convert the loaded Image into a GLFWImage
 		GLFWimage icons[1];
-		icons[0].pixels = const_cast<unsigned char*>(icon.getPixelsPtr());
+		icons[0].pixels = const_cast<unsigned char*>(icon.get_sprite_data_ptr());
 
-		const auto& dimensions = icon.getSize();
-		icons[0].width = dimensions.x;
-		icons[0].height = dimensions.y;
+		icons[0].width = icon.get_width();
+		icons[0].height = icon.get_height();
 		
 		glfwSetWindowIcon(glfw_window, 1, icons);
 	}

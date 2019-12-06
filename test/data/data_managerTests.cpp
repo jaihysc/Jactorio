@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <SFML/Graphics/Image.hpp>
-
 #include "data/data_manager.h"
 #include "data/pybind/pybind_manager.h"
 #include "data/prototype/sprite.h"
@@ -21,12 +19,10 @@ namespace data
 	}
 
 	TEST(data_manager, data_raw_add) {
-		data_manager::clear_data();
-		
-		jactorio::data::Sprite prototype{};
-		prototype.name = "fishey";
+		const auto prototype = new jactorio::data::Sprite{};
+		prototype->name = "fishey";
 
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", &prototype);
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
 		const auto proto =
 			*data_manager::data_raw_get<jactorio::data::Prototype_base>(
 				jactorio::data::data_category::sprite, "raw-fish");
@@ -36,17 +32,17 @@ namespace data
 		EXPECT_EQ(proto.name, "raw-fish");
 		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
 		EXPECT_EQ(proto.internal_id, 1);
+
+		data_manager::clear_data();
 	}
 
 	TEST(data_manager, data_raw_add_increment_id) {
-		data_manager::clear_data();
+		const auto prototype = new jactorio::data::Sprite{};
 
-		jactorio::data::Sprite prototype{};
-
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", &prototype);
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", &prototype);
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", &prototype);
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", &prototype);
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
 
 		const auto proto =
 			*data_manager::data_raw_get<jactorio::data::Prototype_base>(
@@ -55,37 +51,32 @@ namespace data
 		EXPECT_EQ(proto.name, "raw-fish");
 		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
 		EXPECT_EQ(proto.internal_id, 4);
+
+
+		data_manager::clear_data();
 	}
 
 	TEST(data_manager, data_raw_override) {
-		sf::Image img1{};
-		img1.create(10, 10);
-
-		sf::Image img2{};
-		img2.create(20, 20);
-
-		jactorio::data::Sprite prototype{};
-		prototype.name = "small-electric-pole";
-		prototype.sprite_image = img1;
+		const auto prototype = new jactorio::data::Sprite{};
+		prototype->name = "small-electric-pole";
 
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
-		                           &prototype);
+		                           prototype);
 
 		// Override
-		jactorio::data::Sprite prototype2{};
-		prototype2.name = "small-electric-pole";
-		prototype2.sprite_image = img2;
+		const auto prototype2 = new jactorio::data::Sprite{};
+		prototype2->name = "small-electric-pole";
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
-		                           &prototype2);
+		                           prototype2);
 
 		// Get
-		const auto proto = *data_manager::data_raw_get<jactorio::data::Sprite>(
+		const auto proto = data_manager::data_raw_get<jactorio::data::Sprite>(
 			jactorio::data::data_category::sprite,
 			"small-electric-pole");
 
-		EXPECT_NE(img1.getSize(), proto.sprite_image.getSize());
-		EXPECT_EQ(img2.getSize(), proto.sprite_image.getSize());
+		EXPECT_EQ(proto, prototype2);
 
+		data_manager::clear_data();
 	}
 
 	TEST(data_manager, load_data) {
@@ -102,11 +93,12 @@ namespace data
 
 		EXPECT_EQ(proto->name, "test_tile");
 
-		const auto sprite_size = proto->sprite_image.getSize();
-		EXPECT_EQ(sprite_size.x, 32);
-		EXPECT_EQ(sprite_size.y, 32);
+		EXPECT_EQ(proto->get_width(), 32);
+		EXPECT_EQ(proto->get_height(), 32);
 
 		jactorio::data::pybind_manager::py_interpreter_terminate();
+
+		data_manager::clear_data();
 	}
 
 	bool contains(const std::vector<jactorio::data::Sprite*>& vector, const std::string& key) {
@@ -130,17 +122,15 @@ namespace data
 		EXPECT_EQ(contains(paths, "test_tile"), true);
 		EXPECT_EQ(contains(paths, "asdf"), false);
 		jactorio::data::pybind_manager::py_interpreter_terminate();
+
+		data_manager::clear_data();
 	}
 
 	TEST(data_manager, clear_data) {
-		sf::Image img1{};
-		img1.create(10, 10);
-
-		jactorio::data::Sprite prototype{};
-		prototype.sprite_image = img1;
+		const auto prototype = new jactorio::data::Sprite{};
 
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
-		                           &prototype);
+		                           prototype);
 
 		data_manager::clear_data();
 

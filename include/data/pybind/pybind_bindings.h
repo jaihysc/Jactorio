@@ -36,8 +36,7 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 	py::class_<Sprite, Prototype_base>(m, "Sprite")
 		.def(py::init())
 		.def(py::init<const std::string&>())
-		.def_readwrite("sprite_image", &Sprite::sprite_image)
-		.def("load_sprite", &Sprite::load_sprite);
+		.def("load_sprite", &Sprite::load_image);
 
 	py::class_<Tile, Prototype_base>(m, "Tile")
 		.def(py::init())
