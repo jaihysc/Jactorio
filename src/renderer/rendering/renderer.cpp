@@ -13,6 +13,8 @@
 unsigned short jactorio::renderer::Renderer::window_width_ = 0;
 unsigned short jactorio::renderer::Renderer::window_height_ = 0;
 
+unsigned short jactorio::renderer::Renderer::tile_width = 9;
+
 std::unordered_map<unsigned int, jactorio::renderer::Renderer_sprites::Image_position>
 jactorio::renderer::Renderer::spritemap_coords_{};
 

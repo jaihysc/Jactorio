@@ -6,12 +6,12 @@
 #include "core/logger.h"
 #include "core/debug/execution_timer.h"
 #include "game/world/world_generator.h"
+#include "game/player/player_manager.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/gui/imgui_glfw.h"
 #include "renderer/gui/imgui_opengl3.h"
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/rendering/renderer.h"
-#include "renderer/rendering/world_renderer.h"
 #include "renderer/rendering/renderer_manager.h"
 
 bool show_timings_window = false;
@@ -30,9 +30,9 @@ void draw_debug_menu() {
 	ImGui::SliderFloat3("Camera translation", &view_translation->x, -100.0f,
 	                    100.0f);
 
-	ImGui::Text("Player position %lld %lld",
-	            world_renderer::player_position_x,
-	            world_renderer::player_position_y);
+	ImGui::Text("Player position %f %f",
+	            jactorio::game::player_manager::player_position_x,
+	            jactorio::game::player_manager::player_position_y);
 
 	ImGui::NewLine();
 	ImGui::Text("Renderer");

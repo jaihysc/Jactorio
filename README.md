@@ -6,7 +6,7 @@ Check out a [weekly devlog here](https://github.com/jaihysc/Jactorio/wiki/Devlog
 
 ## Work in progress
 
-This is nowhere near ready for usage, this will be updated as conditions change
+The game is currently playable with a procedurally generated world to navigate around
 
 ## Building
 
@@ -29,6 +29,8 @@ sh ./build.sh `See build types above` --no-build-tests
 Add `--no-build-tests` if you don't want to build the tests
 
 ## Dependencies
+
+These may have additional dependencies which you will need to install
 
 These are automatically installed with cmake
 

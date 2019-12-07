@@ -3,6 +3,7 @@
 #include <future>
 
 #include "core/debug/execution_timer.h"
+#include "core/logger.h"
 
 #include "game/world/world_manager.h"
 #include "game/world/world_generator.h"
@@ -161,48 +162,63 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 }
 
 
-void jactorio::renderer::world_renderer::render_player_position(Renderer* renderer) {
+void jactorio::renderer::world_renderer::render_player_position(
+	Renderer* renderer, const float player_x, const float player_y) {
 	// Player movement is in pixels,
 	//		if player has moved a tile's width, the tile shifts
 	//		if player has moved a chunk's width, the chunk shifts
 	// Otherwise only the camera shifts
 
-	const auto tile_width = renderer->tile_width;
-	
-	// 32 is the number of tiles in a chunk
-	const auto chunk_width = 32 * tile_width;
-	
-	const long long position_x = player_position_x;
-	const long long position_y = player_position_y;
+	// Player position with decimal removed
+	const auto position_x = static_cast<int>(player_x);
+	const auto position_y = static_cast<int>(player_y);
 
-	
-	// Tile transitions
-	// Pixels not wide enough to form a tile is used to shift the camera
-	const auto camera_offset_x = position_x % tile_width;
-	const auto camera_offset_y = position_y % tile_width;
+	{
+		// ##################
+		// Tile transitions
 
-	
-	const auto view_transform = mvp_manager::get_view_transform();
-	// Invert the camera to give the illusion of moving in the correct direction
-	view_transform->x = camera_offset_x * -1;
-	view_transform->y = camera_offset_y * -1;
-	
+		const auto tile_width = renderer->tile_width;
+		// Decimal is used to shift the camera
+		const float camera_offset_x = (player_x - position_x) * tile_width;
+		const float camera_offset_y = (player_y - position_y) * tile_width;
+
+		const auto view_transform = mvp_manager::get_view_transform();
+		// Invert the camera to give the illusion of moving in the correct direction
+		view_transform->x = camera_offset_x * -1;
+		view_transform->y = camera_offset_y * -1;
+
+		// Set view matrix
+		mvp_manager::update_view_transform();
+		// Set projection matrix
+		renderer->update_tile_projection_matrix();
+		update_shader_mvp();
+	}
+
 	// How many chunks to offset based on player's position
-	const auto chunk_offset_x = static_cast<int>(position_x / chunk_width);
-	const auto chunk_offset_y = static_cast<int>(position_y / chunk_width);
+	auto chunk_start_x = static_cast<int>(position_x / 32);
+	auto chunk_start_y = static_cast<int>(position_y / 32);
 
 	// Player has not moved an entire chunk's width yet, offset the tiles
 	// Modulus 32 to make it snap back to 0 after offsetting the entirety of a chunk
 	// Inverted to move the tiles AWAY from the screen instead of following the screen
-	const auto tile_offset_x = static_cast<int>(position_x / tile_width % 32 * -1);
-	const auto tile_offset_y = static_cast<int>(position_y / tile_width % 32 * -1);
+	auto tile_start_x = static_cast<int>(position_x % 32 * -1);
+	auto tile_start_y = static_cast<int>(position_y % 32 * -1);
 
-	// Set view matrix
-	mvp_manager::update_view_transform();
-	// Set projection matrix
-	renderer->update_tile_projection_matrix();
-	update_shader_mvp();
 
+	const auto tile_amount_x = renderer->get_grid_size_x();
+	const auto tile_amount_y = renderer->get_grid_size_y();
+	
+	const auto chunk_amount_x = tile_amount_x / 32;
+	const auto chunk_amount_y = tile_amount_y / 32;
+
+	
+	// Render the player position in the center of the screen
+	chunk_start_x -= tile_amount_x / 2 / 32;
+	tile_start_x += tile_amount_x / 2 % 32;
+
+	chunk_start_y -= tile_amount_y / 2 / 32;
+	tile_start_y += tile_amount_y / 2 % 32;
+	
 	EXECUTION_PROFILE_SCOPE(profiler, "Renderer preparation layers");
 	
 	// Rendering layers
@@ -217,24 +233,25 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 		const auto get_tile_proto_func = [](const game::Chunk_tile& chunk_tile) {
 			const auto& protos = chunk_tile.tile_prototypes;
 
-			if (current_layer >= protos.size())
+			if (current_layer >= protos.size() || protos[current_layer] == nullptr)
 				return 0u;
 
 			return protos[current_layer]->sprite_ptr->internal_id;
 		};
 
 		draw_chunks(*renderer,
-		            // - 32 to hide the 1 extra chunk around the outside screen
-		            tile_offset_x - 32, tile_offset_y - 32,
-		            // 1 extra chunk in either direction ensure 
+		            // - 64 to hide the 2extra chunk around the outside screen
+		            tile_start_x - 64, tile_start_y - 64,
+		            // 2 extra chunk in either direction ensure 
 		            // window will always be filled with chunks regardless
 		            // of chunk offset and window size
-		            chunk_offset_x - 1,
-		            chunk_offset_y - 1,
-		            renderer->get_grid_size_x() / 32 + 2 + 1,
-		            renderer->get_grid_size_y() / 32 + 2 + 1,
+		            chunk_start_x - 2,
+		            chunk_start_y - 2,
+		            chunk_amount_x + 2 + 2,
+		            chunk_amount_y + 2 + 2,
 		            get_tile_proto_func
 		);
+		
 		renderer->draw(glm::vec3(0, 0, 0));
 	}
 	// Resources
@@ -245,17 +262,17 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 
 			return 0u;
 		};
-		
+
 		draw_chunks(*renderer,
-		            // - 32 to hide the 1 extra chunk around the outside screen
-		            tile_offset_x - 32, tile_offset_y - 32,
-		            // 1 extra chunk in either direction ensure 
+		            // - 64 to hide the 2extra chunk around the outside screen
+		            tile_start_x - 64, tile_start_y - 64,
+		            // 2 extra chunk in either direction ensure 
 		            // window will always be filled with chunks regardless
 		            // of chunk offset and window size
-		            chunk_offset_x - 1,
-		            chunk_offset_y - 1,
-		            renderer->get_grid_size_x() / 32 + 2 + 1,
-		            renderer->get_grid_size_y() / 32 + 2 + 1,
+		            chunk_start_x - 2,
+		            chunk_start_y - 2,
+		            chunk_amount_x + 2 + 2,
+		            chunk_amount_y + 2 + 2,
 		            get_tile_proto_func
 		);
 		

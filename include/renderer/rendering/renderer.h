@@ -55,8 +55,12 @@ namespace jactorio::renderer
 
 
 	public:
+		/**
+		 * Using this to change zoom is discouraged <br>
+		 * Use tile_width instead for better performance at high zoom levels
+		 */
 		float tile_projection_matrix_offset{};
-		unsigned short tile_width = 9;
+		static unsigned short tile_width;
 
 		explicit Renderer();
 		~Renderer();

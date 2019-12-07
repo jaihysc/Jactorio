@@ -6,9 +6,6 @@
 
 namespace jactorio::renderer::world_renderer
 {
-	inline long long player_position_x = 0;
-	inline long long player_position_y = 0;
-
 	using get_tile_prototype_func = unsigned int (*)(const game::Chunk_tile&);
 
 	/**
@@ -24,8 +21,8 @@ namespace jactorio::renderer::world_renderer
 	 * @param chunk_amount_y How many chunks to draw on y axis downwards \/
 	 * @param func Returns internal name of sprite given Chunk_tile
 	 */
-	void draw_chunks(const Renderer& renderer, int window_start_x,
-	                 int window_start_y,
+	void draw_chunks(const Renderer& renderer,
+	                 int window_start_x, int window_start_y,
 	                 int chunk_start_x, int chunk_start_y,
 	                 unsigned chunk_amount_x, unsigned chunk_amount_y,
 	                 const get_tile_prototype_func& func);
@@ -34,8 +31,10 @@ namespace jactorio::renderer::world_renderer
 	 * Moves the world to match player_position_ <br>
 	 * This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
 	 * @param renderer The renderer on which the world is drawn
+	 * @param player_x X Position of the player in tiles
+	 * @param player_y Y Position of the player in tiles
 	 */
-	void render_player_position(Renderer* renderer);
+	void render_player_position(Renderer* renderer, float player_x, float player_y);
 }
 
 #endif // RENDERER_RENDERING_WORLD_RENDERER_H
