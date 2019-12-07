@@ -120,6 +120,18 @@ void generate(const int chunk_x, const int chunk_y) {
 
 	}
 	
+	// Post generation processing
+	for (int y = 0; y < 32; ++y) {
+		for (int x = 0; x < 32; ++x) {
+			auto& tile = tiles[y * 32 + x];
+
+			// Remove any resources on water
+			if (tile.is_water && tile.resource_prototype != nullptr) {
+				tile.resource_prototype = nullptr;
+			}
+		}
+	}
+	
 	game::world_manager::add_chunk(new game::Chunk{chunk_x, chunk_y, tiles});
 }
 
