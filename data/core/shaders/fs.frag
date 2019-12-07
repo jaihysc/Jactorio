@@ -9,7 +9,7 @@ uniform sampler2D u_texture;
 in vec2 v_tex_coord;
 
 void main() {
-	if (v_tex_coord.x != -1.f && v_tex_coord.y != -1.f) {
+	if (v_tex_coord.x != -1.f) {
 		color = texture(u_texture, v_tex_coord);
 	}
 	else {

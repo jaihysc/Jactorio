@@ -64,18 +64,19 @@ void buffer_load_chunk(float* buffer,
 				((buffer_y + tile_y) * max_buffer_span + (buffer_x + tile_x)) * 8;
 
 			if (internal_id == 0) {
-				// -1.f position indicates drawing no sprites to fragment shader
+				// -1.f for the X position indicates drawing no sprites to fragment shader
+				// Y position does not need to be specified
 				buffer[buffer_offset + 0] = -1.f;
-				buffer[buffer_offset + 1] = -1.f;
+				// buffer[buffer_offset + 1] = -1.f;
 
 				buffer[buffer_offset + 2] = -1.f;
-				buffer[buffer_offset + 3] = -1.f;
+				// buffer[buffer_offset + 3] = -1.f;
 
 				buffer[buffer_offset + 4] = -1.f;
-				buffer[buffer_offset + 5] = -1.f;
+				// buffer[buffer_offset + 5] = -1.f;
 
 				buffer[buffer_offset + 6] = -1.f;
-				buffer[buffer_offset + 7] = -1.f;
+				// buffer[buffer_offset + 7] = -1.f;
 			}
 			else {
 				const auto positions = jactorio::renderer::Renderer::get_spritemap_coords(internal_id);
