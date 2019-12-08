@@ -13,7 +13,7 @@
 
 bool logic_loop_should_terminate = false;
 
-const float move_speed = 5.f;
+const float move_speed = 4.1f;
 void jactorio::game::logic_loop() {
 	// Logic initialization here...
 	logic_loop_should_terminate = false;

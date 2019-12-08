@@ -96,11 +96,17 @@ void generate(const int chunk_x, const int chunk_y) {
 					);
 				}
 				else {
-					// Add the tile prototype to the Chunk_tile
-					prototype_vector.push_back(
-						data::data_manager::data_raw_get<data::Tile>(
-							data::data_category::tile, new_tile->name)
-					);
+					// if (chunk_x == 0 && chunk_y == 0) {
+						// prototype_vector.push_back(nullptr);
+					// }
+					// else {
+						// Add the tile prototype to the Chunk_tile
+						prototype_vector.push_back(
+							data::data_manager::data_raw_get<data::Tile>(
+								data::data_category::tile, new_tile->name)
+						);
+					// }
+					
 				}
 
 				// ############################################################

@@ -30,7 +30,6 @@ get_spritemap_coords(const unsigned internal_id) {
 
 
 // non static
-
 void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 	if (tile_projection_matrix_offset < static_cast<float>(tile_width))
 		// Prevent zooming out too far
@@ -55,13 +54,6 @@ void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 	setg_projection_matrix(
 		mvp_manager::to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset)
 	);
-}
-void jactorio::renderer::Renderer::delete_data() const {
-	delete vertex_array_;
-	delete render_grid_;
-	delete texture_grid_;
-	delete index_buffer_;
-	delete[] texture_grid_buffer_;
 }
 
 jactorio::renderer::Renderer::Renderer() {
@@ -137,35 +129,14 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	}
 }
 
-/*// Get all textures
-// Concat into spritemap
-// Spritemap is parameter of constructor
-void jactorio::renderer::Renderer::set_sprite(const unsigned short index_x,
-                                              const unsigned short index_y,
-                                              const std::string& sprite_iname) const {
-	// Prevent attempting to access non-existent indices
-	if (index_y >= tile_count_y_ || index_x >= tile_count_x_)
-		return;
+void jactorio::renderer::Renderer::delete_data() const {
+	delete vertex_array_;
+	delete render_grid_;
+	delete texture_grid_;
+	delete index_buffer_;
+	delete[] texture_grid_buffer_;
+}
 
-	float data[8];
-
-	const auto sprite_coords = spritemap_coords_.at(sprite_iname);
-	data[0] = sprite_coords.bottom_left.x;
-	data[1] = sprite_coords.bottom_left.y, // bottom left
-
-	data[2] = sprite_coords.bottom_right.x;
-	data[3] = sprite_coords.bottom_right.y; // bottom right
-
-	data[4] = sprite_coords.top_right.x;
-	data[5] = sprite_coords.top_right.y; // upper right
-
-	data[6] = sprite_coords.top_left.x;
-	data[7] = sprite_coords.top_left.y; // upper left
-
-	const unsigned int offset = (index_y * tile_count_x_ + index_x) * 8 * sizeof(float);
-
-	texture_grid_->set_buffer_data(data, offset, sizeof(float) * 8);
-}*/
 
 void jactorio::renderer::Renderer::draw(const glm::vec3 transform) const {
 	vertex_array_->bind();
@@ -182,4 +153,31 @@ void jactorio::renderer::Renderer::draw(const glm::vec3 transform) const {
 
 void jactorio::renderer::Renderer::clear() {
 	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+}
+
+
+// Grid properties
+unsigned short jactorio::renderer::Renderer::get_window_width() {
+	return window_width_;
+}
+
+unsigned short jactorio::renderer::Renderer::get_window_height() {
+	return window_height_;
+}
+
+float* jactorio::renderer::Renderer::get_texture_grid_buffer() const {
+	return texture_grid_buffer_;
+}
+
+void jactorio::renderer::Renderer::update_texture_grid_buffer() const {
+	texture_grid_->set_buffer_data(texture_grid_buffer_, 0,
+	                               tile_count_x_ * tile_count_y_ * sizeof(float) * 8);
+}
+
+unsigned short jactorio::renderer::Renderer::get_grid_size_x() const {
+	return tile_count_x_;
+}
+
+unsigned short jactorio::renderer::Renderer::get_grid_size_y() const {
+	return tile_count_y_;
 }

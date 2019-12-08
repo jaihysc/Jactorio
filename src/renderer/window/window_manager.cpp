@@ -6,8 +6,8 @@
 #include <array>
 
 #include "core/logger.h"
-#include "core/filesystem.h"
 #include "game/input/input_manager.h"
+#include "game/input/mouse_selection.h"
 #include "renderer/render_main.h"
 #include "renderer/opengl/error.h"
 #include "renderer/rendering/renderer.h"
@@ -120,9 +120,12 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		game::input_manager::set_input(key, action, mods);
 	});
 	glfwSetScrollCallback(glfw_window, [](GLFWwindow* window, double xoffset, double yoffset) {
+		// TODO a better zoom
 		get_base_renderer()->tile_projection_matrix_offset += yoffset * 10;
 	});
-
+	glfwSetCursorPosCallback(glfw_window, [](GLFWwindow* window, double xpos, double ypos) {
+		game::mouse_selection::set_cursor_position(xpos, ypos);
+	});
 	
 	gl_context_active = true;
 

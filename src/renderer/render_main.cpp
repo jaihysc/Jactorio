@@ -128,18 +128,11 @@ void jactorio::renderer::render_init() {
 		while (!glfwWindowShouldClose(window)) {
 			EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-
 			// Think of a better way to toggle fullscreen?
 			if (toggle_fullscreen) {
 				toggle_fullscreen = false;
 				window_manager::set_fullscreen(!window_manager::is_fullscreen());
 			}
-
-			render_draw = false;
-			// Don't multi-thread opengl
-			render_loop(main_renderer);
-
-			// Swap renderers if a new one is placed in swap
 			if (refresh_renderer) {
 				main_renderer->recalculate_buffers(window_x, window_y);
 				refresh_renderer = false;
@@ -149,6 +142,11 @@ void jactorio::renderer::render_init() {
 				game::world_manager::clear_chunk_data();
 			}
 			
+			render_draw = false;
+			// Don't multi-thread opengl
+			render_loop(main_renderer);
+
+
 			next_tick += std::chrono::microseconds(16666);
 			std::this_thread::sleep_until(next_tick);
 		}

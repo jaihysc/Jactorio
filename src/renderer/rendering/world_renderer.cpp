@@ -164,35 +164,21 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 
 void jactorio::renderer::world_renderer::render_player_position(
 	Renderer* renderer, const float player_x, const float player_y) {
-	// Player movement is in pixels,
-	//		if player has moved a tile's width, the tile shifts
-	//		if player has moved a chunk's width, the chunk shifts
-	// Otherwise only the camera shifts
+	// Player movement is in tiles
+	// Every 32 tiles, shift 1 chunk
+	// Remaining tiles are offset
+
+	// The top left of the tile at player position will be at the center of the screen
+	
+	// On a 1920 x 1080 screen:
+	// 960 pixels from left
+	// 540 pixels form top
+	// Right and bottom varies depending on tile size
 
 	// Player position with decimal removed
 	const auto position_x = static_cast<int>(player_x);
 	const auto position_y = static_cast<int>(player_y);
-
-	{
-		// ##################
-		// Tile transitions
-
-		const auto tile_width = renderer->tile_width;
-		// Decimal is used to shift the camera
-		const float camera_offset_x = (player_x - position_x) * tile_width;
-		const float camera_offset_y = (player_y - position_y) * tile_width;
-
-		const auto view_transform = mvp_manager::get_view_transform();
-		// Invert the camera to give the illusion of moving in the correct direction
-		view_transform->x = camera_offset_x * -1;
-		view_transform->y = camera_offset_y * -1;
-
-		// Set view matrix
-		mvp_manager::update_view_transform();
-		// Set projection matrix
-		renderer->update_tile_projection_matrix();
-		update_shader_mvp();
-	}
+	
 
 	// How many chunks to offset based on player's position
 	auto chunk_start_x = static_cast<int>(position_x / 32);
@@ -218,7 +204,43 @@ void jactorio::renderer::world_renderer::render_player_position(
 
 	chunk_start_y -= tile_amount_y / 2 / 32;
 	tile_start_y += tile_amount_y / 2 % 32;
-	
+
+	{
+		// ##################
+		// View matrix
+
+		// Negative moves window right and down
+
+		// Decimal is used to shift the camera
+		// Invert the movement to give the illusion of moving in the correct direction
+		const float camera_offset_x = 
+			(player_x - position_x) * static_cast<float>(Renderer::tile_width) * -1;
+		const float camera_offset_y = 
+			(player_y - position_y) * static_cast<float>(Renderer::tile_width) * -1;
+
+		// Remaining pixel distance not covered by tiles and chunks are covered by the view matrix
+		// to center pixel (For centering specification, see top of function)
+		const auto window_width = Renderer::get_window_width();
+		const auto window_height = Renderer::get_window_height();
+
+		// Divide by 2 first to truncate decimals
+		const auto view_transform = mvp_manager::get_view_transform();
+		view_transform->x
+			= static_cast<int>(window_width / 2 - (tile_amount_x / 2 * Renderer::tile_width))
+			+ camera_offset_x;
+		
+		view_transform->y
+			= static_cast<int>(window_height / 2 - (tile_amount_y / 2 * Renderer::tile_width))
+			+ camera_offset_y;
+
+		// Set view matrix
+		mvp_manager::update_view_transform();
+		// Set projection matrix
+		renderer->update_tile_projection_matrix();
+		update_shader_mvp();
+	}
+
+	// Rendering
 	EXECUTION_PROFILE_SCOPE(profiler, "Renderer preparation layers");
 	
 	// Rendering layers

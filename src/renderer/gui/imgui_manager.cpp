@@ -6,6 +6,7 @@
 #include "core/logger.h"
 #include "core/debug/execution_timer.h"
 #include "game/world/world_generator.h"
+#include "game/input/mouse_selection.h"
 #include "game/player/player_manager.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/gui/imgui_glfw.h"
@@ -20,26 +21,24 @@ bool show_demo_window = false;
 ImGuiWindowFlags window_flags = 0;
 
 void draw_debug_menu() {
-	using namespace jactorio::renderer;
-
+	using namespace jactorio;
+	
 	ImGui::Begin("Debug menu", nullptr, window_flags);
-	ImGui::Text("Units are pixels");
-
 	// Settings
-	glm::vec3* view_translation = mvp_manager::get_view_transform();
-	ImGui::SliderFloat3("Camera translation", &view_translation->x, -100.0f,
+	glm::vec3* view_translation = renderer::mvp_manager::get_view_transform();
+	ImGui::SliderFloat2("Camera translation", &view_translation->x, -100.0f,
 	                    100.0f);
 
+	ImGui::Text("Cursor position: %f, %f", 
+	            game::mouse_selection::get_position_x(),
+	            game::mouse_selection::get_position_y());
+
 	ImGui::Text("Player position %f %f",
-	            jactorio::game::player_manager::player_position_x,
-	            jactorio::game::player_manager::player_position_y);
+	            game::player_manager::player_position_x,
+	            game::player_manager::player_position_y);
 
 	ImGui::NewLine();
-	ImGui::Text("Renderer");
-	ImGui::Text("Layer count: %d", renderer_manager::prototype_layer_count);
-
-	
-	ImGui::NewLine();
+	ImGui::Text("Layer count: %d", renderer::renderer_manager::prototype_layer_count);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
@@ -47,9 +46,10 @@ void draw_debug_menu() {
 	ImGui::Checkbox("Timings", &show_timings_window); ImGui::SameLine();
 	ImGui::Checkbox("Demo Window", &show_demo_window);
 
-	int seed = jactorio::game::world_generator::get_world_generator_seed();
+	// World gen seed
+	int seed = game::world_generator::get_world_generator_seed();
 	ImGui::InputInt("World generator seed", &seed);
-	jactorio::game::world_generator::set_world_generator_seed(seed);
+	game::world_generator::set_world_generator_seed(seed);
 	
 	ImGui::End();
 }
