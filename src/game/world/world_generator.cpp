@@ -6,10 +6,11 @@
 #include <map>
 
 #include "core/logger.h"
-#include "game/world/tile.h"
+#include "game/world/chunk_tile.h"
 #include "game/world/world_manager.h"
 #include "data/data_manager.h"
 #include "data/prototype/noise_layer.h"
+#include "data/prototype/tile/resource_tile.h"
 #include "renderer/rendering/renderer_manager.h"
 
 // Prevents constant erasing of buffers
@@ -34,11 +35,21 @@ void generate(const int chunk_x, const int chunk_y) {
 	// The Y axis for libnoise is inverted. It causes no issues as of right now. I am leaving this here
 	// In case something happens in the future
 
+	
 	// Get all noise layers for building terrain
 	std::vector<data::Noise_layer*> noise_layers = data::data_manager::data_raw_get_all<data::
 		Noise_layer>(
 		data::data_category::noise_layer);
 
+
+	// Sort Noise layers, the one with the highest order takes priority if tiles overlap
+	std::sort(noise_layers.begin(), noise_layers.end(),
+	          [](data::Noise_layer* left, data::Noise_layer* right) {
+		          return left->order < right->order;
+	          }
+	);
+
+	
 	// This will be deleted by the world_manager
 	auto* tiles = new game::Chunk_tile[1024];
 
@@ -72,55 +83,31 @@ void generate(const int chunk_x, const int chunk_y) {
 				if (new_tile == nullptr)
 					continue;
 
-				auto& chunk_tile = tiles[y * 32 + x];
-				std::vector<data::Tile*>& prototype_vector = chunk_tile.tile_prototypes;
-
+				game::Chunk_tile& chunk_tile = tiles[y * 32 + x];
 				
 				// Noise layer is generating resources, check if at this tile there are any
 				if (noise_layer->tile_data_category == data::data_category::resource_tile) {
-					// tiles marked as water or not accepting resource, do not place resources
-					if (chunk_tile.is_water || !chunk_tile.accepts_resource)
-						continue;
-
-					// A resource already exists at this prototype
-					if (chunk_tile.resource_prototype != nullptr) {
-						// Remove all resources since it cannot be guaranteed which resource is
-						// generated first
-						chunk_tile.accepts_resource = false;
-						chunk_tile.resource_prototype = nullptr;
-						continue;
-					}
-
-					chunk_tile.resource_prototype = data::data_manager::data_raw_get<data::Resource_tile>(
-						data::data_category::resource_tile, new_tile->name
-					);
+					// RESOURCE
+					chunk_tile.tile_prototypes[1] =
+						data::data_manager::data_raw_get<data::Resource_tile>(
+							data::data_category::resource_tile, new_tile->name);
 				}
 				else {
-					// if (chunk_x == 0 && chunk_y == 0) {
-						// prototype_vector.push_back(nullptr);
-					// }
-					// else {
-						// Add the tile prototype to the Chunk_tile
-						prototype_vector.push_back(
-							data::data_manager::data_raw_get<data::Tile>(
-								data::data_category::tile, new_tile->name)
-						);
-					// }
-					
+					// TILE
+					// Add the tile prototype to the Chunk_tile
+					chunk_tile.set_tile_prototype(
+						game::Chunk_tile::prototype_category::base, 
+						data::data_manager::data_raw_get<data::Tile>(
+							data::data_category::tile, new_tile->name)
+					);
 				}
-
+				
 				// ############################################################
 				// Post tile addition processing
-
+				
 				// Set the is_water status of the current Chunk_tile
 				if (new_tile->is_water)
 					chunk_tile.is_water = true;
-				
-				// Increment layer count based on the largest tile_prototypes vector size
-				if (prototype_vector.size() > renderer::renderer_manager::prototype_layer_count) {
-					renderer::renderer_manager::prototype_layer_count = prototype_vector.size();
-				}
-				
 			}
 		}
 
@@ -132,8 +119,9 @@ void generate(const int chunk_x, const int chunk_y) {
 			auto& tile = tiles[y * 32 + x];
 
 			// Remove any resources on water
-			if (tile.is_water && tile.resource_prototype != nullptr) {
-				tile.resource_prototype = nullptr;
+			if (tile.is_water) {
+				tile.set_tile_prototype(
+					game::Chunk_tile::prototype_category::resource, nullptr);
 			}
 		}
 	}

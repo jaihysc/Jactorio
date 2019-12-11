@@ -2,7 +2,7 @@
 #define RENDERER_RENDERING_WORLD_RENDERER_H
 
 #include "renderer/rendering/renderer.h"
-#include "game/world/tile.h"
+#include "game/world/chunk_tile.h"
 
 namespace jactorio::renderer::world_renderer
 {

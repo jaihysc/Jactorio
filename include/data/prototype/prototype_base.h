@@ -11,9 +11,11 @@ namespace jactorio::data
 	{
 	public:
 		/**
-		 * Unique per prototype, faster than std::string
+		 * Unique per prototype, auto assigned per new prototype added, faster than
+		 * std::string name <br>J
+		 * 0 indicates invalid id
 		 */
-		unsigned int internal_id;
+		unsigned int internal_id = 0;
 		
 		/**
 		 * Internal name <br>
@@ -25,6 +27,14 @@ namespace jactorio::data
 		 * Category of this Prototype item
 		 */
 		data_category category;
+
+		/**
+		 * Determines the priority of this prototype, used in certain situations, see documentation
+		 * within inheritors <br<
+		 * Automatically assigned incrementally alongside internal_id if not defined <br>
+		 * 0 indicates invalid id
+		 */
+		unsigned int order = 0;
 	};
 }
 

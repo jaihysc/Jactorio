@@ -5,6 +5,7 @@
 
 #include "core/logger.h"
 #include "core/debug/execution_timer.h"
+#include "game/world/chunk_tile.h"
 #include "game/world/world_generator.h"
 #include "game/input/mouse_selection.h"
 #include "game/player/player_manager.h"
@@ -13,7 +14,6 @@
 #include "renderer/gui/imgui_opengl3.h"
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/rendering/renderer.h"
-#include "renderer/rendering/renderer_manager.h"
 
 bool show_timings_window = false;
 bool show_demo_window = false;
@@ -38,7 +38,7 @@ void draw_debug_menu() {
 	            game::player_manager::player_position_y);
 
 	ImGui::NewLine();
-	ImGui::Text("Layer count: %d", renderer::renderer_manager::prototype_layer_count);
+	ImGui::Text("Layer count: %d", game::Chunk_tile::tile_prototypes_count);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 

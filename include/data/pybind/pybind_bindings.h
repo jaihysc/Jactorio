@@ -31,7 +31,8 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 	py::class_<Prototype_base>(m, "Prototype")
 		.def(py::init())
 		.def_readwrite("name", &Prototype_base::name)
-		.def_readwrite("category", &Prototype_base::category);
+		.def_readwrite("category", &Prototype_base::category)
+		.def_readwrite("order", &Prototype_base::order);
 
 	py::class_<Sprite, Prototype_base>(m, "Sprite")
 		.def(py::init())

@@ -1,6 +1,7 @@
 #include "renderer/rendering/world_renderer.h"
 
 #include <future>
+#include <vector>
 
 #include "core/debug/execution_timer.h"
 #include "core/logger.h"
@@ -9,7 +10,6 @@
 #include "game/world/world_generator.h"
 
 #include "renderer/rendering/mvp_manager.h"
-#include "renderer/rendering/renderer_manager.h"
 #include "renderer/opengl/shader_manager.h"
 
 
@@ -244,7 +244,7 @@ void jactorio::renderer::world_renderer::render_player_position(
 	EXECUTION_PROFILE_SCOPE(profiler, "Renderer preparation layers");
 	
 	// Rendering layers
-	for (unsigned int layer_index = 0; layer_index < renderer_manager::prototype_layer_count; ++layer_index) {
+	for (unsigned int layer_index = 0; layer_index < game::Chunk_tile::tile_prototypes_count; ++layer_index) {
 		current_layer = layer_index;
 
 		// // Create layer number, e.g layer 0
@@ -255,34 +255,10 @@ void jactorio::renderer::world_renderer::render_player_position(
 		const auto get_tile_proto_func = [](const game::Chunk_tile& chunk_tile) {
 			const auto& protos = chunk_tile.tile_prototypes;
 
-			if (current_layer >= protos.size() || protos[current_layer] == nullptr)
+			if (protos[current_layer] == nullptr)
 				return 0u;
 
 			return protos[current_layer]->sprite_ptr->internal_id;
-		};
-
-		draw_chunks(*renderer,
-		            // - 64 to hide the 2extra chunk around the outside screen
-		            tile_start_x - 64, tile_start_y - 64,
-		            // 2 extra chunk in either direction ensure 
-		            // window will always be filled with chunks regardless
-		            // of chunk offset and window size
-		            chunk_start_x - 2,
-		            chunk_start_y - 2,
-		            chunk_amount_x + 2 + 2,
-		            chunk_amount_y + 2 + 2,
-		            get_tile_proto_func
-		);
-		
-		renderer->draw(glm::vec3(0, 0, 0));
-	}
-	// Resources
-	{
-		const auto get_tile_proto_func = [](const game::Chunk_tile& chunk_tile) {
-			if (chunk_tile.resource_prototype != nullptr)
-				return chunk_tile.resource_prototype->sprite_ptr->internal_id;
-
-			return 0u;
 		};
 
 		draw_chunks(*renderer,

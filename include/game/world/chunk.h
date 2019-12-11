@@ -3,7 +3,7 @@
 
 #include <utility>
 
-#include "game/world/tile.h"
+#include "game/world/chunk_tile.h"
 
 namespace jactorio::game
 {

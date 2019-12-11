@@ -8,16 +8,6 @@ namespace data
 {
 	namespace data_manager = jactorio::data::data_manager;
 
-	TEST(data_manager, data_raw_get_invalid) {
-		// Should return a nullptr if the item is non-existent
-		const auto ptr =
-			data_manager::data_raw_get<jactorio::data::Prototype_base>(
-				jactorio::data::data_category::sprite,
-				"asdfjsadhfkjdsafhs");
-
-		EXPECT_EQ(ptr, nullptr);
-	}
-
 	TEST(data_manager, data_raw_add) {
 		const auto prototype = new jactorio::data::Sprite{};
 		prototype->name = "fishey";
@@ -27,11 +17,14 @@ namespace data
 			*data_manager::data_raw_get<jactorio::data::Prototype_base>(
 				jactorio::data::data_category::sprite, "raw-fish");
 
+		
+		// data_manager should populate certain fields, see Prototype_base.h
 		// Internal name of prototype should have been renamed to match data_raw name
 		// Data category should also have been set to the one provided on add
 		EXPECT_EQ(proto.name, "raw-fish");
 		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
 		EXPECT_EQ(proto.internal_id, 1);
+		EXPECT_EQ(proto.order, 1);
 
 		data_manager::clear_data();
 	}
@@ -79,6 +72,7 @@ namespace data
 		data_manager::clear_data();
 	}
 
+	
 	TEST(data_manager, load_data) {
 		jactorio::data::pybind_manager::py_interpreter_init();
 		data_manager::load_data("data");
@@ -111,6 +105,16 @@ namespace data
 		return false;
 	}
 
+	TEST(data_manager, data_raw_get_invalid) {
+		// Should return a nullptr if the item is non-existent
+		const auto ptr =
+			data_manager::data_raw_get<jactorio::data::Prototype_base>(
+				jactorio::data::data_category::sprite,
+				"asdfjsadhfkjdsafhs");
+
+		EXPECT_EQ(ptr, nullptr);
+	}
+	
 	TEST(data_manager, get_all_data_of_type) {
 		jactorio::data::pybind_manager::py_interpreter_init();
 		data_manager::load_data("data");

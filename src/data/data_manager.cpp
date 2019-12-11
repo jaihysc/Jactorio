@@ -17,14 +17,19 @@ unsigned int internal_id_new = INTERNAL_ID_START;
 
 void jactorio::data::data_manager::data_raw_add(const data_category data_category, const std::string& iname,
                                                 Prototype_base* const prototype) {
-	// Enforce prototype name must be the same as iname
+	// Enforce prototype rules...
+	// name must be the same as iname
 	// data_category should be the same as category
+	// No order, use internal id as order
 	if (prototype->name != iname) {
 		prototype->name = iname;
 	}
 	if (prototype->category != data_category)
 		prototype->category = data_category;
+	if (prototype->order == 0)
+		prototype->order = internal_id_new;
 
+	
 	// Print warning if overriding another name
 	const auto& category = data_raw[data_category];
 	if (category.find(iname) != category.end()) {
