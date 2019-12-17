@@ -3,13 +3,18 @@
 #include <chrono>
 #include <thread>
 
-#include "core/logger.h"
 #include "core/debug/execution_timer.h"
+#include "core/logger.h"
 
 #include "game/input/input_manager.h"
-#include "game/world/world_generator.h"
+#include "game/input/mouse_selection.h"
 #include "game/player/player_manager.h"
+#include "game/world/world_generator.h"
+#include "game/world/world_manager.h"
+
 #include "renderer/gui/imgui_manager.h"
+#include "renderer/rendering/renderer.h"
+#include "renderer/opengl/shader_manager.h"
 
 bool logic_loop_should_terminate = false;
 
@@ -65,6 +70,60 @@ void jactorio::game::logic_loop() {
 		// Generate chunks
 		world_generator::gen_chunk();
 
+		// Mouse selection
+		{
+			const int mouse_x_center = renderer::Renderer::get_window_width() / 2;
+			const int mouse_y_center = renderer::Renderer::get_window_height() / 2;
+
+			// Calculate number of pixels from center
+			double pixels_from_center_x = mouse_selection::get_position_x() - mouse_x_center;
+			double pixels_from_center_y = mouse_selection::get_position_y() - mouse_y_center;
+
+			// TODO, account for MVP matrices - This does not work
+			// pixels_from_center_x = (renderer::get_mvp_matrix() * glm::vec4(pixels_from_center_x)).x;
+			// pixels_from_center_y = (renderer::get_mvp_matrix() * glm::vec4(pixels_from_center_y)).x;
+
+			float world_x = player_manager::player_position_x;
+			float world_y = player_manager::player_position_y;
+			
+			// Calculate tile position
+			world_x += pixels_from_center_x / renderer::Renderer::tile_width;
+			world_y += pixels_from_center_y / renderer::Renderer::tile_width;
+
+			int chunk_index_x = static_cast<int>(world_x / 32);
+			int chunk_index_y = static_cast<int>(world_y / 32);
+
+			// There is no 0, 0 in negative chunks, thus subtract 1 if negative
+			if (pixels_from_center_x < 0) {
+				chunk_index_x -= 1;
+				world_x -= 1;
+			}
+			if (pixels_from_center_y < 0) {
+				chunk_index_y -= 1;
+				world_y -= 1;
+			}
+
+			auto* chunk = world_manager::get_chunk(chunk_index_x, chunk_index_y);
+			
+			if (chunk != nullptr) {
+				int tile_index_x = static_cast<int>(world_x) % 32;
+				int tile_index_y = static_cast<int>(world_y) % 32;
+
+				// Chunk is 32 tiles
+				if (tile_index_x < 0) {
+					tile_index_x = 32 - tile_index_x * -1;
+				}
+				if (tile_index_y < 0) {
+					tile_index_y = 32 - tile_index_y * -1;
+				}
+
+				// LOG_MESSAGE_f(debug, "%d %d", chunk_index_x, tile_index_x);
+
+			
+				auto& tile = chunk->tiles_ptr()[32 * tile_index_y + tile_index_x];
+				tile.set_tile_prototype(Chunk_tile::prototype_category::base, nullptr);
+			}
+		}
 		
 		next_frame += std::chrono::nanoseconds(16666666);
 		std::this_thread::sleep_until(next_frame);

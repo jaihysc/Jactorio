@@ -11,7 +11,6 @@
 #include "data/data_manager.h"
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/tile/resource_tile.h"
-#include "renderer/rendering/renderer_manager.h"
 
 // Prevents constant erasing of buffers
 int world_gen_seed = 1001;
@@ -53,10 +52,11 @@ void generate(const int chunk_x, const int chunk_y) {
 	// This will be deleted by the world_manager
 	auto* tiles = new game::Chunk_tile[1024];
 
+	int seed_offset = 0;
 	for (auto& noise_layer : noise_layers) {
 
 		module::Perlin base_terrain_noise_module;
-		base_terrain_noise_module.SetSeed(world_gen_seed);
+		base_terrain_noise_module.SetSeed(world_gen_seed + seed_offset++);
 
 		// Load properties of each noise layer
 		base_terrain_noise_module.SetOctaveCount(noise_layer->octave_count);

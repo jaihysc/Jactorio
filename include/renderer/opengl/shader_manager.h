@@ -11,6 +11,7 @@ namespace jactorio::renderer
 	 * Sends MVP data to GPU
 	 */
 	void update_shader_mvp();
+	const glm::mat4& get_mvp_matrix();
 
 	void setg_model_matrix(const glm::mat4& matrix);
 	void setg_view_matrix(glm::mat4 matrix);
