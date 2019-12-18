@@ -90,20 +90,21 @@ void jactorio::game::logic_loop() {
 			world_x += pixels_from_center_x / renderer::Renderer::tile_width;
 			world_y += pixels_from_center_y / renderer::Renderer::tile_width;
 
-			int chunk_index_x = static_cast<int>(world_x / 32);
-			int chunk_index_y = static_cast<int>(world_y / 32);
+			float chunk_index_x = world_x / 32;
+			float chunk_index_y = world_y / 32;
 
 			// There is no 0, 0 in negative chunks, thus subtract 1 if negative
-			if (pixels_from_center_x < 0) {
+			if (chunk_index_x < 0) {
 				chunk_index_x -= 1;
 				world_x -= 1;
 			}
-			if (pixels_from_center_y < 0) {
+			if (chunk_index_y < 0) {
 				chunk_index_y -= 1;
 				world_y -= 1;
 			}
 
-			auto* chunk = world_manager::get_chunk(chunk_index_x, chunk_index_y);
+			auto* chunk = world_manager::get_chunk(
+				static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
 			
 			if (chunk != nullptr) {
 				int tile_index_x = static_cast<int>(world_x) % 32;
@@ -117,7 +118,7 @@ void jactorio::game::logic_loop() {
 					tile_index_y = 32 - tile_index_y * -1;
 				}
 
-				// LOG_MESSAGE_f(debug, "%d %d", chunk_index_x, tile_index_x);
+				// LOG_MESSAGE_f(debug, "%d %d", chunk_index_y, tile_index_y);
 
 			
 				auto& tile = chunk->tiles_ptr()[32 * tile_index_y + tile_index_x];
