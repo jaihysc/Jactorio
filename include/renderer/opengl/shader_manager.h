@@ -14,8 +14,8 @@ namespace jactorio::renderer
 	const glm::mat4& get_mvp_matrix();
 
 	void setg_model_matrix(const glm::mat4& matrix);
-	void setg_view_matrix(glm::mat4 matrix);
-	void setg_projection_matrix(glm::mat4 matrix);
+	void setg_view_matrix(const glm::mat4& matrix);
+	void setg_projection_matrix(const glm::mat4& matrix);
 }
 
 #endif // RENDERER_OPENGL_SHADER_MANAGER_H

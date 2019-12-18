@@ -1,6 +1,6 @@
-#include "core/logger.h"
-
 #include "renderer/opengl/shader_manager.h"
+
+#include "core/logger.h"
 #include "renderer/opengl/shader.h"
 
 int mvp_uniform_location = -1;
@@ -12,7 +12,7 @@ glm::mat4 model;
 glm::mat4 view;
 glm::mat4 projection;
 
-glm::mat4 matrix;
+glm::mat4 mvp_matrix;
 
 /*!
  * Uniform location for "u_model_view_projection_matrix"
@@ -30,7 +30,7 @@ void jactorio::renderer::set_mvp_uniform_location(const int location) {
 void calculate_mvp_matrix() {
 	if (calculate_matrix) {
 		// Multiply backwards: projection, view, model
-		matrix = projection * view * model;
+        mvp_matrix = projection * view * model;
 		calculate_matrix = false;
 	}
 }
@@ -40,12 +40,12 @@ void calculate_mvp_matrix() {
  */
 void jactorio::renderer::update_shader_mvp() {
 	calculate_mvp_matrix();
-	Shader::set_uniform_mat_4f(mvp_uniform_location, matrix);
+	Shader::set_uniform_mat_4f(mvp_uniform_location, mvp_matrix);
 }
 
 const glm::mat4& jactorio::renderer::get_mvp_matrix() {
 	calculate_mvp_matrix();
-	return matrix;
+	return mvp_matrix;
 }
 
 void jactorio::renderer::setg_model_matrix(const glm::mat4& matrix) {
@@ -53,12 +53,12 @@ void jactorio::renderer::setg_model_matrix(const glm::mat4& matrix) {
 	calculate_matrix = true;
 }
 
-void jactorio::renderer::setg_view_matrix(const glm::mat4 matrix) {
+void jactorio::renderer::setg_view_matrix(const glm::mat4& matrix) {
 	view = matrix;
 	calculate_matrix = true;
 }
 
-void jactorio::renderer::setg_projection_matrix(const glm::mat4 matrix) {
+void jactorio::renderer::setg_projection_matrix(const glm::mat4& matrix) {
 	projection = matrix;
 	calculate_matrix = true;
 }

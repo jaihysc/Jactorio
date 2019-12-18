@@ -72,16 +72,24 @@ void jactorio::game::logic_loop() {
 
 		// Mouse selection
 		{
-			const int mouse_x_center = renderer::Renderer::get_window_width() / 2;
-			const int mouse_y_center = renderer::Renderer::get_window_height() / 2;
+            int pixels_from_center_x;
+            int pixels_from_center_y;
+            {
+                // Account for MVP matrices
+                // Normalize to -1 | 1 used by the matrix
+                double norm_x = 2 * (mouse_selection::get_position_x() / renderer::Renderer::get_window_width()) - 1;
+                double norm_y = 2 * (mouse_selection::get_position_y() / renderer::Renderer::get_window_height()) - 1;
 
-			// Calculate number of pixels from center
-			double pixels_from_center_x = mouse_selection::get_position_x() - mouse_x_center;
-			double pixels_from_center_y = mouse_selection::get_position_y() - mouse_y_center;
+                // A = C / B
+                glm::vec4 norm_positions = renderer::get_mvp_matrix() / glm::vec4(norm_x, norm_y, 1, 1);
 
-			// TODO, account for MVP matrices - This does not work
-			// pixels_from_center_x = (renderer::get_mvp_matrix() * glm::vec4(pixels_from_center_x)).x;
-			// pixels_from_center_y = (renderer::get_mvp_matrix() * glm::vec4(pixels_from_center_y)).x;
+                // Calculate number of pixels from center
+                const int mouse_x_center = renderer::Renderer::get_window_width() / 2;
+                const int mouse_y_center = renderer::Renderer::get_window_height() / 2;
+
+                pixels_from_center_x = static_cast<int>(norm_positions.x - static_cast<float>(mouse_x_center));
+                pixels_from_center_y = static_cast<int>(static_cast<float>(mouse_y_center) - norm_positions.y);
+            }
 
 			float world_x = player_manager::player_position_x;
 			float world_y = player_manager::player_position_y;
@@ -117,9 +125,6 @@ void jactorio::game::logic_loop() {
 				if (tile_index_y < 0) {
 					tile_index_y = 32 - tile_index_y * -1;
 				}
-
-				// LOG_MESSAGE_f(debug, "%d %d", chunk_index_y, tile_index_y);
-
 			
 				auto& tile = chunk->tiles_ptr()[32 * tile_index_y + tile_index_x];
 				tile.set_tile_prototype(Chunk_tile::prototype_category::base, nullptr);
