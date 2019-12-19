@@ -40,8 +40,8 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
 		pixels_from_center_y = static_cast<int>(static_cast<float>(mouse_y_center) - norm_positions.y);
 	}
 
-	float world_x = player_manager::player_position_x;
-	float world_y = player_manager::player_position_y;
+	float world_x = player_manager::get_player_position_x();
+	float world_y = player_manager::get_player_position_y();
 
 	// Calculate tile position based on current player position
 	world_x += pixels_from_center_x / renderer::Renderer::tile_width;

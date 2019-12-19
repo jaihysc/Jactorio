@@ -15,8 +15,8 @@ void jactorio::renderer::render_loop(Renderer* renderer) {
 	// MVP Matricies updated in here
 	world_renderer::render_player_position(
 		renderer,
-		game::player_manager::player_position_x,
-		game::player_manager::player_position_y);
+		game::player_manager::get_player_position_x(),
+		game::player_manager::get_player_position_y());
 
 	imgui_manager::imgui_draw();
 	

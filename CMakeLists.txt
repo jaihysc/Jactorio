@@ -41,6 +41,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/logic_loop.cpp
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
+	${JACTORIO_DIR}/game/player/player_manager.cpp
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
 	${JACTORIO_DIR}/game/world/world_manager.cpp

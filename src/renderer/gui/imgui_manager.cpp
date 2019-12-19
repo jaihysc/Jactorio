@@ -34,8 +34,8 @@ void draw_debug_menu() {
 	            game::mouse_selection::get_position_y());
 
 	ImGui::Text("Player position %f %f",
-	            game::player_manager::player_position_x,
-	            game::player_manager::player_position_y);
+	            game::player_manager::get_player_position_x(),
+	            game::player_manager::get_player_position_y());
 
 	ImGui::NewLine();
 	ImGui::Text("Layer count: %d", game::Chunk_tile::tile_prototypes_count);

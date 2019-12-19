@@ -16,40 +16,40 @@
 
 bool logic_loop_should_terminate = false;
 
-const float move_speed = 4.1f;
+const float move_speed = 0.9f;
 void jactorio::game::logic_loop() {
 	// Logic initialization here...
 	logic_loop_should_terminate = false;
 	
 	// Movement controls
 	input_manager::register_input_callback([]() {
-		player_manager::player_position_y -= move_speed;
+		player_manager::move_player_y(move_speed * -1);
 	}, GLFW_KEY_W, GLFW_PRESS);
 	input_manager::register_input_callback([]() {
-		player_manager::player_position_y -= move_speed;
-	}, GLFW_KEY_W, GLFW_REPEAT);
+        player_manager::move_player_y(move_speed * -1);
+    }, GLFW_KEY_W, GLFW_REPEAT);
 
 	
 	input_manager::register_input_callback([]() {
-		player_manager::player_position_y += move_speed;
-	}, GLFW_KEY_S, GLFW_PRESS);
+        player_manager::move_player_y(move_speed);
+    }, GLFW_KEY_S, GLFW_PRESS);
 	input_manager::register_input_callback([]() {
-		player_manager::player_position_y += move_speed;
-	}, GLFW_KEY_S, GLFW_REPEAT);
+        player_manager::move_player_y(move_speed);
+    }, GLFW_KEY_S, GLFW_REPEAT);
 	
 	input_manager::register_input_callback([]() {
-		player_manager::player_position_x -= move_speed;
-	}, GLFW_KEY_A, GLFW_PRESS);
+        player_manager::move_player_x(move_speed * -1);
+    }, GLFW_KEY_A, GLFW_PRESS);
 	input_manager::register_input_callback([]() {
-		player_manager::player_position_x -= move_speed;
-	}, GLFW_KEY_A, GLFW_REPEAT);
+        player_manager::move_player_x(move_speed * -1);
+    }, GLFW_KEY_A, GLFW_REPEAT);
 	
 	input_manager::register_input_callback([]() {
-		player_manager::player_position_x += move_speed;
-	}, GLFW_KEY_D, GLFW_PRESS);
+        player_manager::move_player_x(move_speed);
+    }, GLFW_KEY_D, GLFW_PRESS);
 	input_manager::register_input_callback([]() {
-		player_manager::player_position_x += move_speed;
-	}, GLFW_KEY_D, GLFW_REPEAT);
+        player_manager::move_player_x(move_speed);
+    }, GLFW_KEY_D, GLFW_REPEAT);
 
 
 	// Debug menu
