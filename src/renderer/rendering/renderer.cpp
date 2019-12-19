@@ -35,29 +35,29 @@ void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 
     const auto max_tile_width = static_cast<float>(tile_width * 2);
 
-	 if (tile_projection_matrix_offset < max_tile_width)
-	 	// Prevent zooming out too far
-	 	tile_projection_matrix_offset = max_tile_width;
-	 else {
-	 	// Prevent zooming too far in
-	 	unsigned short smallest_axis;
-	 	if (window_width_ > window_height_) {
-	 		smallest_axis = window_height_;
-	 	}
-	 	else {
-	 		smallest_axis = window_width_;
-	 	}
+    if (tile_projection_matrix_offset < max_tile_width)
+	    // Prevent zooming out too far
+	    tile_projection_matrix_offset = max_tile_width;
+    else {
+	    // Prevent zooming too far in
+	    unsigned short smallest_axis;
+	    if (window_width_ > window_height_) {
+		    smallest_axis = window_height_;
+	    }
+	    else {
+		    smallest_axis = window_width_;
+	    }
 
-	 	// Maximum zoom is 30 from center
-	 	const int max_zoom_offset = 30;
-	 	if (tile_projection_matrix_offset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
-	 		tile_projection_matrix_offset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
-	 	}
-	 }
+	    // Maximum zoom is 30 from center
+	    const int max_zoom_offset = 30;
+	    if (tile_projection_matrix_offset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
+		    tile_projection_matrix_offset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
+	    }
+    }
 
-	setg_projection_matrix(
-		mvp_manager::to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset)
-	);
+    setg_projection_matrix(
+	    mvp_manager::to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset)
+    );
 }
 
 jactorio::renderer::Renderer::Renderer() {

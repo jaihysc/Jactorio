@@ -89,6 +89,45 @@ namespace game
 		jactorio::game::world_manager::clear_chunk_data();
 	}
 
+	TEST(world_manager, get_tile_world_coords) {
+		using namespace jactorio::game::world_manager;
+
+		const auto chunk_tile = jactorio::game::Chunk_tile();
+
+		// World coords 0, 0 - Chunk 0 0, position 0 0
+		{
+			const auto tiles = new jactorio::game::Chunk_tile[32 * 32];
+			tiles[0] = chunk_tile;
+			add_chunk(new jactorio::game::Chunk(0, 0, tiles));
+			
+			EXPECT_EQ(get_tile_world_coords(0, 0), &tiles[0]);
+			EXPECT_NE(get_tile_world_coords(0, 1), &tiles[0]);
+		}
+		clear_chunk_data();
+
+		// World coords -31, -31 - Chunk -1 -1, position 1 1
+		{
+			const auto tiles = new jactorio::game::Chunk_tile[32 * 32];
+			tiles[33] = chunk_tile;
+			add_chunk(new jactorio::game::Chunk(-1, -1, tiles));
+
+			EXPECT_EQ(get_tile_world_coords(-31, -31), &tiles[33]);
+			EXPECT_NE(get_tile_world_coords(-31, -32), &tiles[33]);
+		}
+		clear_chunk_data();
+
+		// World coords -32, 0 - Chunk -1 0, position 0 0
+		{
+			const auto tiles = new jactorio::game::Chunk_tile[32 * 32];
+			tiles[0] = chunk_tile;
+			add_chunk(new jactorio::game::Chunk(-1, 0, tiles));
+
+			EXPECT_EQ(get_tile_world_coords(-32, 0), &tiles[0]);
+			EXPECT_NE(get_tile_world_coords(-31, 0), &tiles[0]);
+		}
+		clear_chunk_data();
+
+	}
 
 	TEST(world_manager, clear_chunk_data) {
 		const auto chunk = new jactorio::game::Chunk{ 6, 6, nullptr };
@@ -100,9 +139,5 @@ namespace game
 
 		// Chunk no longer exists after it was cleared
 		EXPECT_EQ(jactorio::game::world_manager::get_chunk(6, 6), nullptr);
-	}
-
-	TEST(world_manager, delete_chunks_in_range) {
-		// TODO
 	}
 }

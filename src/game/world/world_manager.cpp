@@ -8,13 +8,10 @@
 
 using world_chunks_key = unsigned long long;
 
-namespace
-{
-	// world_chunks_key correlate to a chunk
-	std::unordered_map<std::tuple<int, int>, jactorio::game::Chunk*,
-	                   jactorio::core::hash<std::tuple<int, int>>> world_chunks;
-	std::mutex m_world_chunks;
-}
+// world_chunks_key correlate to a chunk
+std::unordered_map<std::tuple<int, int>, jactorio::game::Chunk*,
+                   jactorio::core::hash<std::tuple<int, int>>> world_chunks;
+std::mutex m_world_chunks;
 
 jactorio::game::Chunk* jactorio::game::world_manager::add_chunk(Chunk* chunk) {
 	const auto position = chunk->get_position();
@@ -39,6 +36,52 @@ jactorio::game::Chunk* jactorio::game::world_manager::get_chunk(int x, int y) {
 		return nullptr;
 	
 	return world_chunks[key];
+}
+
+jactorio::game::Chunk_tile* jactorio::game::world_manager::get_tile_world_coords(int world_x,
+                                                                                 int world_y) {
+
+	// The negative chunks start at -1, unlike positive chunks at 0
+	// Thus add 1 to become 0 so the calculations can be performed
+	bool negative_x = false;
+	bool negative_y = false;
+
+	float chunk_index_x = 0;
+	float chunk_index_y = 0;
+
+	if (world_x < 0) {
+		negative_x = true;
+		chunk_index_x -= 1;
+		world_x += 1;
+	}
+	if (world_y < 0) {
+		negative_y = true;
+		chunk_index_y -= 1;
+		world_y += 1;
+	}
+
+	chunk_index_x += static_cast<float>(world_x) / 32;
+	chunk_index_y += static_cast<float>(world_y) / 32;
+
+
+	auto* chunk = get_chunk(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
+
+	if (chunk != nullptr) {
+		int tile_index_x = static_cast<int>(world_x) % 32;
+		int tile_index_y = static_cast<int>(world_y) % 32;
+
+		// Chunk is 32 tiles
+		if (negative_x) {
+			tile_index_x = 31 - tile_index_x * -1;
+		}
+		if (negative_y) {
+			tile_index_y = 31 - tile_index_y * -1;
+		}
+
+		return &chunk->tiles_ptr()[32 * tile_index_y + tile_index_x];
+	}
+
+	return nullptr;
 }
 
 void jactorio::game::world_manager::clear_chunk_data() {

@@ -15,7 +15,8 @@ namespace jactorio::game::world_manager
 	/**
 	 * Adds a chunk into the game world <br>
 	 * Will overwrite existing chunks if they occupy the same position, the overriden chunk's
-	 * destructor will be called
+	 * destructor will be called <br>
+	 * Do NOT delete the provided chunk pointer, it will be automatically deleted
 	 * @param chunk Chunk to be added to the world
 	 * @return Pointer to added chunk
 	 */
@@ -27,6 +28,9 @@ namespace jactorio::game::world_manager
 	 * @param y Y position of CHUNK
 	 */
 	Chunk* get_chunk(int x, int y);
+
+	// Using world coordinates
+	Chunk_tile* get_tile_world_coords(int world_x, int world_y);
 	
 	/**
 	 * Erases, frees memory from all stored chunk data + its subsequent contents

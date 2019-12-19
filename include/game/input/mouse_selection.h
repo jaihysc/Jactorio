@@ -1,6 +1,8 @@
 #ifndef GAME_INPUT_MOUSE_SELECTION_H
 #define GAME_INPUT_MOUSE_SELECTION_H
 
+#include <utility>
+
 /**
  * Handles mouse selection within the game
  */
@@ -14,6 +16,10 @@ namespace jactorio::game::mouse_selection
 	[[nodiscard]] double get_position_x();
 	[[nodiscard]] double get_position_y();
 
+	/**
+	 * Gets the world X, Y of the tile the mouse is hovered over
+	 */
+	std::pair<int, int> get_mouse_selected_tile();
 	
 }
 
