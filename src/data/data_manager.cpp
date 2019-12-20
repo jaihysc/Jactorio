@@ -8,39 +8,55 @@
 #include "data/pybind/pybind_manager.h"
 
 // Position 0 reserved to indicate error
-#define INTERNAL_ID_START 1
+constexpr auto internal_id_start = 1;
 
 /**
  * Internal id which will be assigned to the next prototype added
  */
-unsigned int internal_id_new = INTERNAL_ID_START;
+unsigned int internal_id_new = internal_id_start;
+
+/**
+ * Appended to the beginning of each new prototype
+ */
+std::string directory_prefix;
+
+void jactorio::data::data_manager::set_directory_prefix(const std::string& name) {
+	directory_prefix = name;
+}
 
 void jactorio::data::data_manager::data_raw_add(const data_category data_category, const std::string& iname,
                                                 Prototype_base* const prototype) {
-	// Enforce prototype rules...
-	// name must be the same as iname
-	// data_category should be the same as category
-	// No order, use internal id as order
-	if (prototype->name != iname) {
-		prototype->name = iname;
+	// Use the following format internal name
+	// Format __dir__/iname
+	std::string formatted_iname;
+	{
+		std::ostringstream sstr;
+		sstr << "__" << directory_prefix << "__/" << iname;
+		formatted_iname = sstr.str();
 	}
+
+	// Print warning if overriding another name
+	const auto& category = data_raw[data_category];
+	if (category.find(formatted_iname) != category.end()) {
+		LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration",
+		              formatted_iname.c_str(), static_cast<int>(data_category));
+	}
+	
+	// Enforce prototype rules...
+	// data_category should be the same as category
+	// No order specified, use internal id as order
+	prototype->name = formatted_iname;
+
 	if (prototype->category != data_category)
 		prototype->category = data_category;
 	if (prototype->order == 0)
 		prototype->order = internal_id_new;
 
-	
-	// Print warning if overriding another name
-	const auto& category = data_raw[data_category];
-	if (category.find(iname) != category.end()) {
-		LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration", 
-		              iname.c_str(), static_cast<int>(data_category));
-	}
-
 	prototype->internal_id = internal_id_new++;
-	data_raw[data_category][iname] = prototype;
-}
 
+
+	data_raw[data_category][formatted_iname] = prototype;
+}
 
 void jactorio::data::data_manager::load_data(
 	const std::string& data_folder_path) {
@@ -67,6 +83,7 @@ void jactorio::data::data_manager::load_data(
 		}
 
 
+		set_directory_prefix(directory_name);
 		std::string result = pybind_manager::exec(py_file_contents, directory_name);
 		if (!result.empty()) {
 			// Error occurred
@@ -90,5 +107,5 @@ void jactorio::data::data_manager::clear_data() {
 	}
 	
 	data_raw.clear();
-	internal_id_new = INTERNAL_ID_START;
+	internal_id_new = internal_id_start;
 }

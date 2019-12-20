@@ -29,7 +29,10 @@ namespace jactorio::game::world_manager
 	 */
 	Chunk* get_chunk(int x, int y);
 
-	// Using world coordinates
+	/**
+	 * Gets the tile at the specified world coordinate
+	 * @return nullptr if no tile exists
+	 */
 	Chunk_tile* get_tile_world_coords(int world_x, int world_y);
 	
 	/**

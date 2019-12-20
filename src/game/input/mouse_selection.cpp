@@ -1,8 +1,13 @@
 #include "game/input/mouse_selection.h"
 
-#include "renderer/rendering/renderer.h"
-#include "renderer/opengl/shader_manager.h"
+#include <cmath>
+
+#include "data/data_manager.h"
 #include "game/player/player_manager.h"
+#include "game/world/chunk_tile.h"
+#include "game/world/world_manager.h"
+#include "renderer/opengl/shader_manager.h"
+#include "renderer/rendering/renderer.h"
 
 double x_position = 0.f;
 double y_position = 0.f;
@@ -48,4 +53,36 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
 	world_y += pixels_from_center_y / renderer::Renderer::tile_width;
 
 	return std::pair<int, int>(world_x, world_y);
+}
+
+jactorio::game::Chunk_tile* last_tile = nullptr;
+void jactorio::game::mouse_selection::draw_cursor_selected_tile() {
+	// Maximum distance of from the player where tiles can be reached
+	constexpr unsigned int max_reach = 14;
+	
+	const auto cursor_position = get_mouse_selected_tile();
+	auto* tile = world_manager::get_tile_world_coords(cursor_position.first, cursor_position.second);
+	if (tile == nullptr)
+		return;
+
+	// Delete the cursor at the last_tile if exists
+	if (last_tile != nullptr) {
+		last_tile->set_tile_prototype(Chunk_tile::prototype_category::overlay, nullptr);
+	}
+
+	// Draw invalid cursor if range tis too far
+	const unsigned int tile_dist = 
+		abs(player_manager::get_player_position_x() - cursor_position.first) + 
+		abs(player_manager::get_player_position_y() - cursor_position.second);
+
+	std::string cursor_iname = "__core__/cursor-select";
+	if (tile_dist > max_reach)
+		cursor_iname = "__core__/cursor-invalid";
+	
+	// Draw cursor on the overlay layer
+	tile->set_tile_prototype(
+		Chunk_tile::prototype_category::overlay,
+		data::data_manager::data_raw_get<data::Tile>(data::data_category::tile, cursor_iname)
+	);
+	last_tile = tile;
 }

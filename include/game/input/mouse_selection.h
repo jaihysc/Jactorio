@@ -20,6 +20,11 @@ namespace jactorio::game::mouse_selection
 	 * Gets the world X, Y of the tile the mouse is hovered over
 	 */
 	std::pair<int, int> get_mouse_selected_tile();
+
+	/**
+	 * Draws a cursor over the tile currently selected
+	 */
+	void draw_cursor_selected_tile();
 	
 }
 

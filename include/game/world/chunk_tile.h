@@ -20,14 +20,16 @@ namespace jactorio::game
 		/**
 		 * Maximum number of layers a chunk_tile will have
 		 */
-		static constexpr int tile_prototypes_count = 2;
+		static constexpr int tile_prototypes_count = 3;
 		
 		// Data at pointers does not need to be freed, it is managed by data_manager
 
 		enum class prototype_category
 		{
 			base = 0,
-			resource = 1
+			resource = 1,
+			// Cursor highlights, inserter arrows, etc
+			overlay = 2
 		};
 
 		/**

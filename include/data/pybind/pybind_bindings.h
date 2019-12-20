@@ -79,13 +79,14 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 	py::class_<data_raw>(m, "Prototype_data")
 		.def(py::init());
 
-	m.def("get", [](const data_category category, const std::string iname) {
+	m.def("get", [](const data_category category, const std::string& iname) {
 		// Cannot give pointers back!
 		return *data_manager::data_raw_get<Prototype_base>(category, iname);
 	});
 
-	m.def("add", [](const data_category category, const std::string iname,
-	                const py::object prototype) {
+	m.def("add", [](const data_category category, const std::string& iname,
+	                const py::object& prototype) {
+		// Managed and deleted by the data_manager
 		py::object* const object = new py::object{};
 		*object = prototype;
 

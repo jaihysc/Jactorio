@@ -68,13 +68,7 @@ void jactorio::game::logic_loop() {
 		// Generate chunks
 		world_generator::gen_chunk();
 
-		// Mouse selection
-		{
-			const auto pos = mouse_selection::get_mouse_selected_tile();
-			auto tile = world_manager::get_tile_world_coords(pos.first, pos.second);
-			if (tile != nullptr)
-				tile->set_tile_prototype(Chunk_tile::prototype_category::base, nullptr);
-		}
+		mouse_selection::draw_cursor_selected_tile();
 		
 		next_frame += std::chrono::nanoseconds(16666666);
 		std::this_thread::sleep_until(next_frame);

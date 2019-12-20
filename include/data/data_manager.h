@@ -6,8 +6,8 @@
 
 #include "data/data_category.h"
 #include "data/prototype/prototype_base.h"
+#include "core/logger.h"
 
-#include "data/prototype/tile/tile.h"
 namespace jactorio::data
 {
 	// Internally used internal names
@@ -26,11 +26,19 @@ namespace jactorio::data
 			                          std::string, Prototype_base*>> data_raw;
 		
 		// Data_raw functions
+		
+		/**
+		 * Gets prototype at specified category and name, is casted to T for convenience <br>
+		 * Ensure that the casted type is or a parent of the specified category
+		 * @return nullptr if the specified prototype does not exist
+		 */
 		template <typename T>
-		T* data_raw_get(data_category data_category, const std::string& iname) {
+		T* data_raw_get(const data_category data_category, const std::string& iname) {
 			auto category = &data_raw[data_category];
-			if (category->find(iname) == category->end())
+			if (category->find(iname) == category->end()) {
+				LOG_MESSAGE_f(error, "Attempted to access non-existent prototype %s", iname.c_str());
 				return nullptr;
+			}
 
 			// Address of prototype item downcasted to T
 			Prototype_base* base = category->at(iname);
@@ -55,7 +63,16 @@ namespace jactorio::data
 			return items;
 		}
 		
-		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* const prototype);
+
+		/**
+		 * Sets the prefix which will be added to all internal names <br>
+		 * Prefix of "base"
+		 * "electric-pole" becomes "__base__/electric-pole"
+		 */
+		void set_directory_prefix(const std::string& name);
+		
+		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* prototype);
+
 		
 		/**
 		 * Loads data and their properties from data/ folder,
