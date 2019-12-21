@@ -14,7 +14,8 @@ namespace data
 		const auto prototype = new jactorio::data::Sprite{};
 		prototype->name = "fishey";
 
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
+		data_manager::data_raw_add(
+			jactorio::data::data_category::sprite, "raw-fish", prototype, true);
 		const auto proto =
 			*data_manager::data_raw_get<jactorio::data::Prototype_base>(
 				jactorio::data::data_category::sprite, "__test__/raw-fish");
@@ -31,9 +32,33 @@ namespace data
 		data_manager::clear_data();
 	}
 
-	TEST(data_manager, data_raw_add_increment_id) {
-		data_manager::set_directory_prefix("test");
+	TEST(data_manager, data_raw_add_no_directory_prefix) {
+		data_manager::set_directory_prefix("this_should_not_exist");
 
+		jactorio::data::Sprite* const prototype = new jactorio::data::Sprite{};
+
+		data_manager::data_raw_add(
+			jactorio::data::data_category::sprite, "raw-fish", prototype, false);
+
+		// Prefix __this_should_not_exist/ should not be added
+		{
+			const auto* proto =
+				data_manager::data_raw_get<jactorio::data::Prototype_base>(
+					jactorio::data::data_category::sprite, "__this_should_not_exist__/raw-fish");
+			EXPECT_EQ(proto, nullptr);
+		}
+		{
+			const auto* proto =
+				data_manager::data_raw_get<jactorio::data::Prototype_base>(
+					jactorio::data::data_category::sprite, "raw-fish");
+			EXPECT_EQ(proto, prototype);
+		}
+
+
+		data_manager::clear_data();
+	}
+
+	TEST(data_manager, data_raw_add_increment_id) {
 		const auto prototype = new jactorio::data::Sprite{};
 
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
@@ -43,9 +68,9 @@ namespace data
 
 		const auto proto =
 			*data_manager::data_raw_get<jactorio::data::Prototype_base>(
-				jactorio::data::data_category::sprite, "__test__/raw-fish");
+				jactorio::data::data_category::sprite, "raw-fish");
 
-		EXPECT_EQ(proto.name, "__test__/raw-fish");
+		EXPECT_EQ(proto.name, "raw-fish");
 		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
 		EXPECT_EQ(proto.internal_id, 4);
 
@@ -60,13 +85,13 @@ namespace data
 		prototype->name = "small-electric-pole";
 
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
-		                           prototype);
+		                           prototype, true);
 
 		// Override
 		const auto prototype2 = new jactorio::data::Sprite{};
 		prototype2->name = "small-electric-pole";
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
-		                           prototype2);
+		                           prototype2, true);
 
 		// Get
 		const auto proto = data_manager::data_raw_get<jactorio::data::Sprite>(
@@ -85,7 +110,7 @@ namespace data
 		jactorio::data::pybind_manager::py_interpreter_init();
 		
 		// Load_data should set the directory prefix based on the subfolder
-		data_manager::load_data("data");
+		EXPECT_EQ(data_manager::load_data("data"), 0);
 
 		const auto proto =
 			data_manager::data_raw_get<jactorio::data::Sprite>(
@@ -127,8 +152,6 @@ namespace data
 	}
 	
 	TEST(data_manager, get_all_data_of_type) {
-		data_manager::set_directory_prefix("test");
-
 		const auto prototype = new jactorio::data::Sprite{};
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile", prototype);
 
@@ -139,8 +162,8 @@ namespace data
 			data::Sprite>(
 			jactorio::data::data_category::sprite);
 
-		EXPECT_EQ(contains(paths, "__test__/test_tile"), true);
-		EXPECT_EQ(contains(paths, "__test__/test_tile2"), true);
+		EXPECT_EQ(contains(paths, "test_tile"), true);
+		EXPECT_EQ(contains(paths, "test_tile2"), true);
 		
 		EXPECT_EQ(contains(paths, "asdf"), false);
 

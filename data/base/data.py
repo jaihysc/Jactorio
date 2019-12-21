@@ -3,6 +3,7 @@ import jactorio_data as jd
 def addNoiseLayerTile(noiseLayer, endRange, name, spritePath, resourceTile, isWater = False):
     # Create Sprite
     sprite_proto = jd.Sprite(spritePath)
+    sprite_proto.group = jd.spriteGroup.Terrain
     jd.add(jd.category.Sprite, name, sprite_proto)
 
     # Create tile

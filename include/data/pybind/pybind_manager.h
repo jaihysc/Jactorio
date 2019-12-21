@@ -3,15 +3,19 @@
 
 #include <string>
 
+/**
+ * The python interpreter is NOT thread safe, call py_interpreter_init for each thread it needs to be used in
+ */
 namespace jactorio::data::pybind_manager
 {
+	const std::string& get_last_error_message();
 	/**
 	 * Evaluates string of python
 	 * @param python_str Python string to interpret
 	 * @param file_name if specified, used to display logging information from python sys.stdout
-	 * @return empty string if no errors occurred, if errors occurred-string is error message
+	 * @return non-zero if errors occurred. error message stored in get_error_message()
 	 */
-	std::string exec(const std::string& python_str, const std::string& file_name = "");
+	int exec(const std::string& python_str, const std::string& file_name = "");
 
 	void py_interpreter_init();
 	void py_interpreter_terminate();

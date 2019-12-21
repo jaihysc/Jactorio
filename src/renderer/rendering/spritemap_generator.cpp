@@ -98,10 +98,6 @@ Renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short cou
 	spritemap->set_sprite_data_ptr(spritemap_buffer, pixels_x, pixels_y);
 
 	
-	data::data_manager::data_raw_add(
-		data::data_category::sprite, "game-renderer-spritemap", spritemap);
-
-	
 	Spritemap_data spritemap_data;
 	spritemap_data.spritemap = spritemap;
 	spritemap_data.sprite_positions = image_positions;

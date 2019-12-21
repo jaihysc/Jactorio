@@ -25,13 +25,16 @@ void jactorio::data::data_manager::set_directory_prefix(const std::string& name)
 }
 
 void jactorio::data::data_manager::data_raw_add(const data_category data_category, const std::string& iname,
-                                                Prototype_base* const prototype) {
+                                                Prototype_base* const prototype, const bool add_directory_prefix) {
 	// Use the following format internal name
 	// Format __dir__/iname
 	std::string formatted_iname;
 	{
 		std::ostringstream sstr;
-		sstr << "__" << directory_prefix << "__/" << iname;
+		if (add_directory_prefix)
+			sstr << "__" << directory_prefix << "__/";
+		
+		sstr << iname;
 		formatted_iname = sstr.str();
 	}
 
@@ -58,12 +61,13 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 	data_raw[data_category][formatted_iname] = prototype;
 }
 
-void jactorio::data::data_manager::load_data(
+int jactorio::data::data_manager::load_data(
 	const std::string& data_folder_path) {
 	// Get all sub-folders in ~/data/
 	// Read data.cfg files within each sub-folder
 	// Load extracted data into loaded_data
 
+	int exit_code = 0;
 	for (const auto& entry : std::filesystem::directory_iterator(
 		     data_folder_path)) {
 		const std::string directory_name = entry.path().filename().u8string();
@@ -84,10 +88,10 @@ void jactorio::data::data_manager::load_data(
 
 
 		set_directory_prefix(directory_name);
-		std::string result = pybind_manager::exec(py_file_contents, directory_name);
-		if (!result.empty()) {
+		if (pybind_manager::exec(py_file_contents, directory_name) != 0) {
 			// Error occurred
-			LOG_MESSAGE_f(error, "%s %s", ss.str().c_str(), result.c_str())
+			LOG_MESSAGE_f(error, "%s %s", ss.str().c_str(), pybind_manager::get_last_error_message().c_str());
+			exit_code = 1;
 			continue;
 		}
 
@@ -95,6 +99,8 @@ void jactorio::data::data_manager::load_data(
 		              data_folder_path.c_str(),
 		              directory_name.c_str())
 	}
+
+	return exit_code;
 }
 
 void jactorio::data::data_manager::clear_data() {

@@ -41,7 +41,8 @@ namespace jactorio::renderer
 
 		/*!
 		 * Generated spritemap will be purely horizontal, all images concatenated side by side <br>
-		 * Color in non specified areas of the spritemap are undefined
+		 * Color in non specified areas of the spritemap are undefined <br>
+		 * !!Spritemap pointer must be manually deleted
 		 * @param sprites Pointer array to pointers towards sprite prototypes
 		 * @param count Count of pointer array
 		 */

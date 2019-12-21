@@ -12,13 +12,23 @@ namespace jactorio::data
 	 */
 	class Sprite : public Prototype_base
 	{
+	public:
+		enum class sprite_group
+		{
+			terrain,
+			gui
+		};
+		
+		sprite_group group;
+		
+	private:
 		// Image properties
 		int width_, height_, bytes_per_pixel_;
 
 		// Path is already resolved
 		std::string sprite_path_;
 		unsigned char* sprite_buffer_;
-
+		
 		/**
 		 * Actually loads the image, load_image only sets the sprite_path and calls this
 		 */

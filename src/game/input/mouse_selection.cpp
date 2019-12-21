@@ -85,13 +85,17 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
 	return std::pair<int, int>(world_x, world_y);
 }
 
-jactorio::game::Chunk_tile* last_tile = nullptr;
+// The last tile cannot be stored as a pointer as it can be deleted if the world was regenerated
+std::pair<int, int> last_tile_pos;
 void jactorio::game::mouse_selection::draw_cursor_selected_tile() {
 	// Maximum distance of from the player where tiles can be reached
 	constexpr unsigned int max_reach = 14;
 	
 	const auto cursor_position = get_mouse_selected_tile();
+	
 	auto* tile = world_manager::get_tile_world_coords(cursor_position.first, cursor_position.second);
+	auto* last_tile = world_manager::get_tile_world_coords(last_tile_pos.first, last_tile_pos.second);
+
 	if (tile == nullptr)
 		return;
 
@@ -114,5 +118,5 @@ void jactorio::game::mouse_selection::draw_cursor_selected_tile() {
 		Chunk_tile::prototype_category::overlay,
 		data::data_manager::data_raw_get<data::Tile>(data::data_category::tile, cursor_iname)
 	);
-	last_tile = tile;
+	last_tile_pos = cursor_position;
 }

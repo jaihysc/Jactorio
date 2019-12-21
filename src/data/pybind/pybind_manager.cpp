@@ -14,7 +14,13 @@ py::object py_stderr;
 py::object py_stdout_buffer;
 py::object py_stderr_buffer;
 
-std::string jactorio::data::pybind_manager::exec(const std::string& python_str, const std::string& file_name) {
+std::string error_message;
+
+const std::string& jactorio::data::pybind_manager::get_last_error_message() {
+	return error_message;
+}
+
+int jactorio::data::pybind_manager::exec(const std::string& python_str, const std::string& file_name) {
 	try {
 		py::exec(python_str);
 
@@ -31,14 +37,13 @@ std::string jactorio::data::pybind_manager::exec(const std::string& python_str, 
 			LOG_MESSAGE_f(error, "%s - %s", file_name.c_str(), std_err.c_str())
 		}
 		
-		return "";
+		return 0;
 	}
 		// Catches python execution errors
 	catch (py::error_already_set& err) {
-		std::string err_msg = err.what();
-		
+		error_message = err.what();
 		// log_message(logger::error, "Python interpreter", err_msg);
-		return err_msg;
+		return 1;
 	}
 
 }

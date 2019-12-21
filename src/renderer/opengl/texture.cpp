@@ -5,13 +5,13 @@
 #include "renderer/opengl/texture.h"
 #include "renderer/opengl/error.h"
 
-jactorio::renderer::Texture::Texture(const data::Sprite* image)
-	: renderer_id_(0) {
+jactorio::renderer::Texture::Texture(const data::Sprite* sprite)
+	: renderer_id_(0), sprite_(sprite) {
 	
-	const unsigned char* texture_buffer = image->get_sprite_data_ptr();
+	const unsigned char* texture_buffer = sprite->get_sprite_data_ptr();
 	
-	width_ = image->get_width();
-	height_ = image->get_height();
+	width_ = sprite->get_width();
+	height_ = sprite->get_height();
 	
 	if (!texture_buffer) {
 		LOG_MESSAGE(error, "Received empty texture")
@@ -39,6 +39,7 @@ jactorio::renderer::Texture::Texture(const data::Sprite* image)
 
 jactorio::renderer::Texture::~Texture() {
 	DEBUG_OPENGL_CALL(glDeleteTextures(1, &renderer_id_));
+	delete sprite_;
 }
 
 void jactorio::renderer::Texture::bind(const unsigned int slot) const {

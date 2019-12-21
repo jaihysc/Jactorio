@@ -5,13 +5,18 @@
 
 namespace jactorio::renderer
 {
+	/**
+	 * Manages a jactorio::data::Sprite* and creates a texture for OpenGL <br>
+	 * This will delete the sprite* when the texture is deleted
+	 */
 	class Texture
 	{
 		unsigned int renderer_id_;
 		int width_, height_;
+		const data::Sprite* sprite_;
 
 	public:
-		explicit Texture(const data::Sprite* image);
+		explicit Texture(const data::Sprite* sprite);
 		~Texture();
 
 		Texture(const Texture& other) = delete;

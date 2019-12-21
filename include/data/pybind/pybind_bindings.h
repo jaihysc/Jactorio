@@ -37,7 +37,12 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 	py::class_<Sprite, Prototype_base>(m, "Sprite")
 		.def(py::init())
 		.def(py::init<const std::string&>())
-		.def("load_sprite", &Sprite::load_image);
+		.def_readwrite("group", &Sprite::group)
+		.def("loadSprite", &Sprite::load_image);
+	py::enum_<Sprite::sprite_group>(m, "spriteGroup")
+		.value("Terrain", Sprite::sprite_group::terrain)
+		.value("Gui", Sprite::sprite_group::gui);
+
 
 	py::class_<Tile, Prototype_base>(m, "Tile")
 		.def(py::init())
@@ -91,7 +96,7 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 		*object = prototype;
 
 		data_manager::data_raw_add(category, iname,
-		                           py::cast<Prototype_base*>(*object));
+		                           py::cast<Prototype_base*>(*object), true);
 	});
 
 	// ############################################################

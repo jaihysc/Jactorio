@@ -21,6 +21,8 @@
 #include "game/input/input_manager.h"
 #include "game/world/world_manager.h"
 #include "game/logic_loop.h"
+#include "core/filesystem.h"
+#include "data/pybind/pybind_manager.h"
 
 bool refresh_renderer = false;
 bool clear_chunk_data = false;
@@ -45,19 +47,37 @@ jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
 	return main_renderer;
 }
 
-
-void jactorio::renderer::render_init() {
-	if (window_manager::init(640, 490) != 0)
-		return;
-
+int jactorio::renderer::render_init() {
+	auto loop_termination_guard = core::Resource_guard(&game::terminate_logic_loop);
 	auto window_manager_guard = core::Resource_guard(window_manager::terminate);
-	GLFWwindow* window = window_manager::get_window();
+
+	if (window_manager::init(640, 490) != 0)
+		return 1;
+
 	
-	// #################################################################
+	GLFWwindow* window = window_manager::get_window();
+
+	auto imgui_manager_guard = core::Resource_guard(&imgui_manager::imgui_terminate);
+	imgui_manager::setup(window);
+
+	auto py_interpreter_guard = core::Resource_guard(&data::pybind_manager::py_interpreter_terminate);
+	data::pybind_manager::py_interpreter_init();
+
+	// Load prototype data
+	if (data::data_manager::load_data(core::filesystem::resolve_path("~/data")) != 0) {
+		// error occurred
+		imgui_manager::show_error_prompt(
+			"Failed to load prototype(s)", data::pybind_manager::get_last_error_message());
+		return 2;
+	}
+	
+
 	// Enables transparency in textures
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+
+	// Shader
 	const Shader shader(
 		std::vector<Shader_creation_input>{
 			{"~/data/core/shaders/vs.vert", GL_VERTEX_SHADER},
@@ -73,22 +93,26 @@ void jactorio::renderer::render_init() {
 
 
 	// Loading textures
-	std::vector<data::Sprite*> texture_paths = 
+	std::vector<data::Sprite*> texture_paths =
 		data::data_manager::data_raw_get_all<data::Sprite>(data::data_category::sprite);
 
 	const auto r_sprites = Renderer_sprites{};
 	const Renderer_sprites::Spritemap_data spritemap_data = r_sprites.gen_spritemap(
 		texture_paths.data(), texture_paths.size());
 
+	// This will delete the sprite*
 	const Texture texture(spritemap_data.spritemap);
 	texture.bind(0);
 
+
 	main_renderer = new Renderer();
 	Renderer::set_spritemap_coords(spritemap_data.sprite_positions);
-	
+
+
+	// TODO Temporary keybinds, move this elsewhere
 	game::input_manager::register_input_callback([]() {
 		glfwSetWindowShouldClose(window_manager::get_window(), GL_TRUE);
-		
+
 	}, GLFW_KEY_ESCAPE, GLFW_RELEASE);
 
 	game::input_manager::register_input_callback([]() {
@@ -96,12 +120,12 @@ void jactorio::renderer::render_init() {
 	}, GLFW_KEY_SPACE, GLFW_RELEASE);
 
 	game::input_manager::register_input_callback([]() {
-		main_renderer->tile_width++;
+		Renderer::tile_width++;
 		refresh_renderer = true;
 	}, GLFW_KEY_Z, GLFW_RELEASE);
 	game::input_manager::register_input_callback([]() {
-		if (main_renderer->tile_width > 1) {
-			main_renderer->tile_width--;
+		if (Renderer::tile_width > 1) {
+			Renderer::tile_width--;
 			refresh_renderer = true;
 		}
 
@@ -111,17 +135,13 @@ void jactorio::renderer::render_init() {
 		clear_chunk_data = true;
 	}, GLFW_KEY_R, GLFW_RELEASE);
 
-	// #################################################################
+
+	// Main rendering loop
 	{
 		LOG_MESSAGE(info, "2 - Runtime stage")
 
-		auto imgui_manager_guard = core::Resource_guard(&imgui_manager::imgui_terminate);
-		imgui_manager::setup(window);
-
 		auto chunk_data_guard = core::Resource_guard(&game::world_manager::clear_chunk_data);
 
-		auto loop_termination_guard = core::Resource_guard(&game::terminate_logic_loop);
-		
 		// core::loop_manager::render_loop_ready(renderer_draw);
 
 		auto next_tick = std::chrono::steady_clock::now();
@@ -141,7 +161,7 @@ void jactorio::renderer::render_init() {
 				clear_chunk_data = false;
 				game::world_manager::clear_chunk_data();
 			}
-			
+
 			render_draw = false;
 			// Don't multi-thread opengl
 			render_loop(main_renderer);
@@ -152,4 +172,5 @@ void jactorio::renderer::render_init() {
 		}
 	}
 
+	return 0;
 }

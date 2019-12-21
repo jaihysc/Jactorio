@@ -70,16 +70,24 @@ namespace jactorio::data
 		 * "electric-pole" becomes "__base__/electric-pole"
 		 */
 		void set_directory_prefix(const std::string& name);
-		
-		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* prototype);
+
+		/**
+		 * @param data_category
+		 * @param iname
+		 * @param prototype Prototype pointer, do not delete
+		 * @param add_directory_prefix Should the directory prefix be appended to the provided iname
+		 */
+		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* prototype, 
+		                  bool add_directory_prefix = false);
 
 		
 		/**
 		 * Loads data and their properties from data/ folder,
 		 * data access methods can be used only after calling this
 		 * @param data_folder_path Do not include a / at the end (Valid usage: dc/xy/data)
+		 * @return non-zero if error occurred
 		 */
-		void load_data(const std::string& data_folder_path);
+		int load_data(const std::string& data_folder_path);
 
 		/**
 		 * Frees all pointer data within data_raw, clears data_raw

@@ -3,22 +3,61 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "core/logger.h"
+#include "renderer/gui/imgui_manager.h"
 #include "core/debug/execution_timer.h"
-#include "game/world/chunk_tile.h"
-#include "game/world/world_generator.h"
+#include "core/logger.h"
 #include "game/input/mouse_selection.h"
 #include "game/player/player_manager.h"
-#include "renderer/gui/imgui_manager.h"
+#include "game/world/chunk_tile.h"
+#include "game/world/world_generator.h"
 #include "renderer/gui/imgui_glfw.h"
 #include "renderer/gui/imgui_opengl3.h"
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/rendering/renderer.h"
+#include "renderer/window/window_manager.h"
 
+// Inventory
+jactorio::renderer::Renderer_sprites::Spritemap_data inventory_spritemap_data;
+
+void jactorio::renderer::imgui_manager::set_inventory_spritemap_data(
+	Renderer_sprites::Spritemap_data& spritemap_data) {
+	inventory_spritemap_data = spritemap_data;
+}
+
+
+//
 bool show_timings_window = false;
 bool show_demo_window = false;
 
 ImGuiWindowFlags window_flags = 0;
+
+// Errors
+void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err_title,
+                                                          const std::string& err_message) {
+	bool quit = false;
+	
+	while (!quit) {
+		Renderer::clear();
+		
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		ImGui::Begin("Error", nullptr, window_flags);
+		ImGui::Text("%s", err_title.c_str());
+		ImGui::Text("%s", err_message.c_str());
+
+		quit = ImGui::Button("Close");
+		
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		glfwSwapBuffers(window_manager::get_window());  // Done rendering
+		glfwPollEvents();
+	}
+}
 
 void draw_debug_menu() {
 	using namespace jactorio;
@@ -50,6 +89,11 @@ void draw_debug_menu() {
 	int seed = game::world_generator::get_world_generator_seed();
 	ImGui::InputInt("World generator seed", &seed);
 	game::world_generator::set_world_generator_seed(seed);
+
+	ImGui::ImageButton(
+		(void*)(intptr_t)inventory_spritemap_data.spritemap,
+		ImVec2(32.f, 32.f), 
+		ImVec2(10.0f / 256.0f, 10.0f / 256.0f));
 	
 	ImGui::End();
 }
