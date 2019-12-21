@@ -31,8 +31,6 @@ get_spritemap_coords(const unsigned internal_id) {
 
 // non static
 void jactorio::renderer::Renderer::update_tile_projection_matrix() {
-    // FIXME the tile_width does not at times correspond to the actual tile width with the proj matrix enabled
-
     const auto max_tile_width = static_cast<float>(tile_width * 2);
 
     if (tile_projection_matrix_offset < max_tile_width)

@@ -26,31 +26,61 @@ double jactorio::game::mouse_selection::get_position_y() {
 }
 
 std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
-	int pixels_from_center_x;
-	int pixels_from_center_y;
-	{
-		// Account for MVP matrices
-		// Normalize to -1 | 1 used by the matrix
-		const double norm_x = 2 * (get_position_x() / renderer::Renderer::get_window_width()) - 1;
-		const double norm_y = 2 * (get_position_y() / renderer::Renderer::get_window_height()) - 1;
-
-		// A = C / B
-		const glm::vec4 norm_positions = renderer::get_mvp_matrix() / glm::vec4(norm_x, norm_y, 1, 1);
-
-		// Calculate number of pixels from center
-		const int mouse_x_center = renderer::Renderer::get_window_width() / 2;
-		const int mouse_y_center = renderer::Renderer::get_window_height() / 2;
-
-		pixels_from_center_x = static_cast<int>(norm_positions.x - static_cast<float>(mouse_x_center));
-		pixels_from_center_y = static_cast<int>(static_cast<float>(mouse_y_center) - norm_positions.y);
-	}
-
 	float world_x = player_manager::get_player_position_x();
 	float world_y = player_manager::get_player_position_y();
+	
+	float pixels_from_center_x;
+	float pixels_from_center_y;
+	{
+		const unsigned short window_width = renderer::Renderer::get_window_width();
+		const unsigned short window_height = renderer::Renderer::get_window_height();
+		const auto& matrix = renderer::get_mvp_matrix();
+		
+		// Account for MVP matrices
+		// Normalize to -1 | 1 used by the matrix
+		const double norm_x = 2 * (get_position_x() / window_width) - 1;
+		const double norm_y = 2 * (get_position_y() / window_height) - 1;
 
+		// A = C / B
+		const glm::vec4 norm_positions = matrix / glm::vec4(norm_x, norm_y, 1, 1);
+
+
+		float mouse_x_center;
+		float mouse_y_center;
+		{
+			// Calculate the center tile on screen
+			// Calculate number of pixels from center
+			const double win_center_norm_x = 2 * (static_cast<double>(window_width) / 2 / window_width) - 1;
+			const double win_center_norm_y = 2 * (static_cast<double>(window_height) / 2 / window_height) - 1;
+
+			const glm::vec4 win_center_norm_positions =
+				matrix / glm::vec4(win_center_norm_x, win_center_norm_y, 1, 1);
+
+			mouse_x_center = win_center_norm_positions.x;
+			mouse_y_center = win_center_norm_positions.y;
+		}
+		
+		// If player is standing on a partial tile, adjust the center accordingly to the correct location
+		mouse_x_center -= 
+			static_cast<float>(renderer::Renderer::tile_width) * (world_x - static_cast<int>(world_x));
+		// This is plus since the y axis is inverted
+		mouse_y_center += 
+			static_cast<float>(renderer::Renderer::tile_width) * (world_y - static_cast<int>(world_y));
+
+		
+		pixels_from_center_x = norm_positions.x - mouse_x_center;
+		pixels_from_center_y = mouse_y_center - norm_positions.y;
+	}
+	 
 	// Calculate tile position based on current player position
-	world_x += pixels_from_center_x / renderer::Renderer::tile_width;
-	world_y += pixels_from_center_y / renderer::Renderer::tile_width;
+	world_x = static_cast<int>(world_x) + pixels_from_center_x / static_cast<float>(renderer::Renderer::tile_width);
+	world_y = static_cast<int>(world_y) + pixels_from_center_y / static_cast<float>(renderer::Renderer::tile_width);
+
+	// Subtract extra tile if negative because no tile exists at -0, -0
+	if (world_x < 0)
+		world_x -= 1.f;
+	if (world_y < 0)
+		world_y -= 1.f;
 
 	return std::pair<int, int>(world_x, world_y);
 }
