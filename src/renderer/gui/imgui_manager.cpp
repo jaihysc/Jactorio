@@ -44,9 +44,9 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui::NewFrame();
 
 		ImGui::Begin("Error", nullptr, window_flags);
-		ImGui::Text("%s", err_title.c_str());
-		ImGui::Text("%s", err_message.c_str());
-
+		ImGui::TextWrapped("%s", err_title.c_str());
+		ImGui::TextWrapped("%s", err_message.c_str());
+		ImGui::NewLine();
 		quit = ImGui::Button("Close");
 		
 		ImGui::End();

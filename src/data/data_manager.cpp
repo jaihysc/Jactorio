@@ -67,7 +67,6 @@ int jactorio::data::data_manager::load_data(
 	// Read data.cfg files within each sub-folder
 	// Load extracted data into loaded_data
 
-	int exit_code = 0;
 	for (const auto& entry : std::filesystem::directory_iterator(
 		     data_folder_path)) {
 		const std::string directory_name = entry.path().filename().u8string();
@@ -88,11 +87,10 @@ int jactorio::data::data_manager::load_data(
 
 
 		set_directory_prefix(directory_name);
-		if (pybind_manager::exec(py_file_contents, directory_name) != 0) {
+		if (pybind_manager::exec(py_file_contents, ss.str()) != 0) {
 			// Error occurred
-			LOG_MESSAGE_f(error, "%s %s", ss.str().c_str(), pybind_manager::get_last_error_message().c_str());
-			exit_code = 1;
-			continue;
+			LOG_MESSAGE_f(error, "%s", pybind_manager::get_last_error_message().c_str());
+			return 1;
 		}
 
 		LOG_MESSAGE_f(info, "Directory %s/%s loaded",
@@ -100,7 +98,7 @@ int jactorio::data::data_manager::load_data(
 		              directory_name.c_str())
 	}
 
-	return exit_code;
+	return 0;
 }
 
 void jactorio::data::data_manager::clear_data() {
