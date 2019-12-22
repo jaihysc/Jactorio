@@ -1,8 +1,7 @@
 import jactorio_data as jd
 
 def add_sprite(name, sprite_path):
-    proto = jd.Sprite(sprite_path)
-    proto.group = jd.spriteGroup.Terrain
+    proto = jd.Sprite(sprite_path, jd.spriteGroup.Terrain)
     jd.add(jd.category.Sprite, name, proto)
     return proto
 def add_tile(name, sprite_path):

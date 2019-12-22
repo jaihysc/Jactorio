@@ -5,6 +5,8 @@
 #include "renderer/opengl/texture.h"
 #include "renderer/opengl/error.h"
 
+unsigned int jactorio::renderer::Texture::bound_texture_id_ = 0;
+
 jactorio::renderer::Texture::Texture(const data::Sprite* sprite)
 	: renderer_id_(0), sprite_(sprite) {
 	
@@ -34,7 +36,8 @@ jactorio::renderer::Texture::Texture(const data::Sprite* sprite)
 	DEBUG_OPENGL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
 		width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_buffer));
 
-	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
+	// Rebind the last bound texture
+	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, bound_texture_id_));
 }
 
 jactorio::renderer::Texture::~Texture() {
@@ -46,6 +49,7 @@ void jactorio::renderer::Texture::bind(const unsigned int slot) const {
 	// This can be dangerous, number of available slots unknown, TODO query openGL
 	DEBUG_OPENGL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, renderer_id_));
+	bound_texture_id_ = renderer_id_;
 }
 
 void jactorio::renderer::Texture::unbind() {

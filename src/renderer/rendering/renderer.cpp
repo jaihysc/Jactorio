@@ -15,15 +15,15 @@ unsigned short jactorio::renderer::Renderer::window_height_ = 0;
 
 unsigned short jactorio::renderer::Renderer::tile_width = 9;
 
-std::unordered_map<unsigned int, jactorio::renderer::Renderer_sprites::Image_position>
+std::unordered_map<unsigned int, jactorio::renderer::renderer_sprites::Image_position>
 jactorio::renderer::Renderer::spritemap_coords_{};
 
 void jactorio::renderer::Renderer::set_spritemap_coords(
-	const std::unordered_map<unsigned, Renderer_sprites::Image_position>& spritemap_coords) {
+	const std::unordered_map<unsigned, renderer_sprites::Image_position>& spritemap_coords) {
 	spritemap_coords_ = spritemap_coords;
 }
 
-jactorio::renderer::Renderer_sprites::Image_position jactorio::renderer::Renderer::
+jactorio::renderer::renderer_sprites::Image_position jactorio::renderer::Renderer::
 get_spritemap_coords(const unsigned internal_id) {
 	return spritemap_coords_.at(internal_id);
 }

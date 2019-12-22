@@ -16,20 +16,68 @@
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
 
-// Inventory
-jactorio::renderer::Renderer_sprites::Spritemap_data inventory_spritemap_data;
+ImGuiWindowFlags window_flags = 0;
 
-void jactorio::renderer::imgui_manager::set_inventory_spritemap_data(
-	Renderer_sprites::Spritemap_data& spritemap_data) {
-	inventory_spritemap_data = spritemap_data;
+
+// Inventory
+std::unordered_map<unsigned, jactorio::renderer::renderer_sprites::Image_position> inventory_sprite_positions;
+// Assigned by openGL
+unsigned int inventory_tex_id;
+
+void jactorio::renderer::imgui_manager::setup_character_data() {
+	inventory_sprite_positions = 
+		renderer_sprites::get_spritemap(data::Sprite::sprite_group::gui).sprite_positions;
+	inventory_tex_id = renderer_sprites::get_texture(data::Sprite::sprite_group::gui)->get_id();
 }
 
+void draw_inventory_menu() {
+	ImGui::SetNextWindowPosCenter();
+	ImGui::Begin("Character", nullptr, window_flags);
+
+	for (auto& sprite_position : inventory_sprite_positions) {
+		for (int y = 0; y < 3; ++y) {
+			for (int x = 0; x < 10; ++x) {
+				ImGui::SameLine(10 + x * 38);
+				ImGui::ImageButton(
+					reinterpret_cast<void*>(inventory_tex_id),
+					ImVec2(32, 32),
+	
+					ImVec2(sprite_position.second.top_left.x, sprite_position.second.top_left.y),
+					ImVec2(sprite_position.second.bottom_right.x, sprite_position.second.bottom_right.y),
+					2
+				);
+				ImGui::SameLine(10 + x * 38);
+				ImGui::Text("200");
+			}
+			
+			ImGui::NewLine();
+		}
+	
+	}
+
+	// int counter = 1;
+	// for (auto& sprite_position : inventory_sprite_positions) {
+	// 	ImGui::SameLine();
+	// 	ImGui::ImageButton(
+	// 		reinterpret_cast<void*>(inventory_tex_id),
+	// 		ImVec2(32, 32),
+	//
+	// 		ImVec2(sprite_position.second.top_left.x, sprite_position.second.top_left.y),
+	// 		ImVec2(sprite_position.second.bottom_right.x, sprite_position.second.bottom_right.y),
+	// 		2
+	// 	);
+	//
+	// 	if (counter % 10 == 0)
+	// 		ImGui::NewLine();
+	// 	counter++;
+	// }
+	
+	ImGui::End();
+}
 
 //
 bool show_timings_window = false;
 bool show_demo_window = false;
-
-ImGuiWindowFlags window_flags = 0;
 
 // Errors
 void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err_title,
@@ -43,6 +91,7 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		ImGui::SetNextWindowPosCenter();
 		ImGui::Begin("Error", nullptr, window_flags);
 		ImGui::TextWrapped("%s", err_title.c_str());
 		ImGui::TextWrapped("%s", err_message.c_str());
@@ -90,10 +139,6 @@ void draw_debug_menu() {
 	ImGui::InputInt("World generator seed", &seed);
 	game::world_generator::set_world_generator_seed(seed);
 
-	ImGui::ImageButton(
-		(void*)(intptr_t)inventory_spritemap_data.spritemap,
-		ImVec2(32.f, 32.f), 
-		ImVec2(10.0f / 256.0f, 10.0f / 256.0f));
 	
 	ImGui::End();
 }
@@ -194,6 +239,9 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
+	if (show_inventory_menu)
+		draw_inventory_menu();
+	
 	// Debug menu is ` key
 	if (show_debug_menu)
 		draw_debug_menu();
@@ -214,5 +262,5 @@ void jactorio::renderer::imgui_manager::imgui_terminate() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	LOG_MESSAGE(info, "Imgui terminated");
+	LOG_MESSAGE(debug, "Imgui terminated");
 }

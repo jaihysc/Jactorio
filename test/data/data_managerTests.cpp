@@ -3,12 +3,15 @@
 #include "data/data_manager.h"
 #include "data/pybind/pybind_manager.h"
 #include "data/prototype/sprite.h"
+#include "core/resource_guard.h"
 
 namespace data
 {
 	namespace data_manager = jactorio::data::data_manager;
 
 	TEST(data_manager, data_raw_add) {
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+
 		data_manager::set_directory_prefix("test");
 
 		const auto prototype = new jactorio::data::Sprite{};
@@ -28,11 +31,11 @@ namespace data
 		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
 		EXPECT_EQ(proto.internal_id, 1);
 		EXPECT_EQ(proto.order, 1);
-
-		data_manager::clear_data();
 	}
 
 	TEST(data_manager, data_raw_add_no_directory_prefix) {
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		
 		data_manager::set_directory_prefix("this_should_not_exist");
 
 		jactorio::data::Sprite* const prototype = new jactorio::data::Sprite{};
@@ -53,12 +56,11 @@ namespace data
 					jactorio::data::data_category::sprite, "raw-fish");
 			EXPECT_EQ(proto, prototype);
 		}
-
-
-		data_manager::clear_data();
 	}
 
 	TEST(data_manager, data_raw_add_increment_id) {
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+
 		const auto prototype = new jactorio::data::Sprite{};
 
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
@@ -73,12 +75,11 @@ namespace data
 		EXPECT_EQ(proto.name, "raw-fish");
 		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
 		EXPECT_EQ(proto.internal_id, 4);
-
-
-		data_manager::clear_data();
 	}
 
 	TEST(data_manager, data_raw_override) {
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		
 		data_manager::set_directory_prefix("test");
 
 		const auto prototype = new jactorio::data::Sprite{};
@@ -99,14 +100,14 @@ namespace data
 			"__test__/small-electric-pole");
 
 		EXPECT_EQ(proto, prototype2);
-
-		data_manager::clear_data();
 	}
 
 	
 	TEST(data_manager, load_data) {
 		data_manager::set_directory_prefix("asdf");
 
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		auto py_guard = jactorio::core::Resource_guard(jactorio::data::pybind_manager::py_interpreter_terminate);
 		jactorio::data::pybind_manager::py_interpreter_init();
 		
 		// Load_data should set the directory prefix based on the subfolder
@@ -124,10 +125,6 @@ namespace data
 
 		EXPECT_EQ(proto->get_width(), 32);
 		EXPECT_EQ(proto->get_height(), 32);
-
-		jactorio::data::pybind_manager::py_interpreter_terminate();
-
-		data_manager::clear_data();
 	}
 
 	TEST(data_manager, data_raw_get_invalid) {
@@ -152,6 +149,8 @@ namespace data
 	}
 	
 	TEST(data_manager, get_all_data_of_type) {
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		
 		const auto prototype = new jactorio::data::Sprite{};
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile", prototype);
 
@@ -166,8 +165,6 @@ namespace data
 		EXPECT_EQ(contains(paths, "test_tile2"), true);
 		
 		EXPECT_EQ(contains(paths, "asdf"), false);
-
-		data_manager::clear_data();
 	}
 
 	TEST(data_manager, clear_data) {

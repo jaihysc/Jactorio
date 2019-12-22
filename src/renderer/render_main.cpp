@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <thread>
+#include <algorithm>
 
 #include "core/debug/execution_timer.h"
 #include "core/resource_guard.h"
@@ -93,21 +94,17 @@ int jactorio::renderer::render_init() {
 
 
 	// Loading textures
-	std::vector<data::Sprite*> texture_paths =
-		data::data_manager::data_raw_get_all<data::Sprite>(data::data_category::sprite);
+	auto sprite_map_guard = core::Resource_guard(&renderer_sprites::clear_spritemaps);
+	renderer_sprites::create_spritemap(data::Sprite::sprite_group::terrain, true);
+	renderer_sprites::create_spritemap(data::Sprite::sprite_group::gui, false);
 
-	const auto r_sprites = Renderer_sprites{};
-	const Renderer_sprites::Spritemap_data spritemap_data = r_sprites.gen_spritemap(
-		texture_paths.data(), texture_paths.size());
-
-	// This will delete the sprite*
-	const Texture texture(spritemap_data.spritemap);
-	texture.bind(0);
-
-
-	main_renderer = new Renderer();
-	Renderer::set_spritemap_coords(spritemap_data.sprite_positions);
-
+	// Terrain
+	Renderer::set_spritemap_coords(
+		renderer_sprites::get_spritemap(data::Sprite::sprite_group::terrain).sprite_positions);
+	renderer_sprites::get_texture(data::Sprite::sprite_group::terrain)->bind(0);
+	
+	// Gui
+	imgui_manager::setup_character_data();
 
 	// TODO Temporary keybinds, move this elsewhere
 	game::input_manager::register_input_callback([]() {
@@ -140,6 +137,9 @@ int jactorio::renderer::render_init() {
 	{
 		LOG_MESSAGE(info, "2 - Runtime stage")
 
+		auto renderer_guard = core::Resource_guard<void>([]() { delete main_renderer; });
+		main_renderer = new Renderer();
+		
 		auto chunk_data_guard = core::Resource_guard(&game::world_manager::clear_chunk_data);
 
 		// core::loop_manager::render_loop_ready(renderer_draw);

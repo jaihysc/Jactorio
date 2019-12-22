@@ -52,10 +52,13 @@ void jactorio::game::logic_loop() {
     }, GLFW_KEY_D, GLFW_REPEAT);
 
 
-	// Debug menu
+	// Menus
 	input_manager::register_input_callback([]() {
 		renderer::imgui_manager::show_debug_menu = !renderer::imgui_manager::show_debug_menu;
 	}, GLFW_KEY_GRAVE_ACCENT, GLFW_RELEASE);
+	input_manager::register_input_callback([]() {
+		renderer::imgui_manager::show_inventory_menu = !renderer::imgui_manager::show_inventory_menu;
+	}, GLFW_KEY_TAB, GLFW_RELEASE);
 
 	
 	auto next_frame = std::chrono::steady_clock::now();

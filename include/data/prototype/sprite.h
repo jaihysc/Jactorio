@@ -7,18 +7,19 @@
 
 namespace jactorio::data
 {
-	/**
-	 * Wrapper for sf::sprite
-	 */
 	class Sprite : public Prototype_base
 	{
 	public:
 		enum class sprite_group
 		{
+			none,
 			terrain,
 			gui
 		};
-		
+
+		/**
+		 * Group determines which spritemap this is placed on
+		 */
 		sprite_group group;
 		
 	private:
@@ -36,11 +37,15 @@ namespace jactorio::data
 		
 	public:
 		Sprite();
-
 		explicit Sprite(const std::string& sprite_path);
+		Sprite(const std::string& sprite_path, sprite_group group);
 
 		~Sprite();
-		
+
+		Sprite(const Sprite& other) = delete;
+		Sprite(Sprite&& other) noexcept = default;
+		Sprite& operator=(const Sprite& other) = delete;
+		Sprite& operator=(Sprite&& other) noexcept = default;
 		
 		[[nodiscard]] const unsigned char* get_sprite_data_ptr() const;
 

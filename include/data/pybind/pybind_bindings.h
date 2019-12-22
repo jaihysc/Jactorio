@@ -37,6 +37,7 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 	py::class_<Sprite, Prototype_base>(m, "Sprite")
 		.def(py::init())
 		.def(py::init<const std::string&>())
+		.def(py::init<const std::string&, Sprite::sprite_group>())
 		.def_readwrite("group", &Sprite::group)
 		.def("loadSprite", &Sprite::load_image);
 	py::enum_<Sprite::sprite_group>(m, "spriteGroup")

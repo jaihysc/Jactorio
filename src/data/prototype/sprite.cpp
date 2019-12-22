@@ -8,8 +8,6 @@
 #include "core/logger.h"
 
 void jactorio::data::Sprite::load_image_from_file() {
-	// openGL reads images vertically flipped, bottom left is (0,0)
-	stbi_set_flip_vertically_on_load(true);
 	sprite_buffer_ = stbi_load(
 		sprite_path_.c_str(),
 		&width_,
@@ -24,11 +22,16 @@ void jactorio::data::Sprite::load_image_from_file() {
 }
 
 jactorio::data::Sprite::Sprite()
-	: width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
+	: group(sprite_group::none), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
 }
 
 jactorio::data::Sprite::Sprite(const std::string& sprite_path)
-	: width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
+	: group(sprite_group::none), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
+	load_image(sprite_path);
+}
+
+jactorio::data::Sprite::Sprite(const std::string& sprite_path, const sprite_group group)
+	: group(group), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
 	load_image(sprite_path);
 }
 
