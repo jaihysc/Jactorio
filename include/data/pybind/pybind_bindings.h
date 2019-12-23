@@ -10,6 +10,7 @@
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/tile/tile.h"
 #include "data/prototype/tile/resource_tile.h"
+#include "data/prototype/item/item.h"
 
 
 // All the bindings in bindings/ defined for pybind
@@ -44,6 +45,13 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 		.value("Terrain", Sprite::sprite_group::terrain)
 		.value("Gui", Sprite::sprite_group::gui);
 
+	
+	py::class_<Item, Prototype_base>(m, "Item")
+		.def(py::init())
+		.def(py::init<Sprite*>())
+		.def_readwrite("sprite", &Item::sprite)
+		.def_readwrite("stackSize", &Item::stack_size);
+	
 
 	py::class_<Tile, Prototype_base>(m, "Tile")
 		.def(py::init())
@@ -80,7 +88,8 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 		.value("EnemyTile", data_category::enemy_tile)
 		.value("Sprite", data_category::sprite)
 		.value("NoiseLayer", data_category::noise_layer)
-		.value("Sound", data_category::sound);
+		.value("Sound", data_category::sound)
+		.value("Item", data_category::item);
 
 	py::class_<data_raw>(m, "Prototype_data")
 		.def(py::init());
@@ -98,6 +107,9 @@ PYBIND11_EMBEDDED_MODULE(jactorio_data, m) {
 
 		data_manager::data_raw_add(category, iname,
 		                           py::cast<Prototype_base*>(*object), true);
+
+		// Return the object to allow for simplified initialization
+		return prototype;
 	});
 
 	// ############################################################

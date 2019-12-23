@@ -10,7 +10,8 @@ namespace jactorio::data
 		enemy_tile,
 		sprite,
 		noise_layer,
-		sound
+		sound,
+		item
 	};
 }
 

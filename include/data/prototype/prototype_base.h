@@ -35,6 +35,10 @@ namespace jactorio::data
 		 * 0 indicates invalid id
 		 */
 		unsigned int order = 0;
+
+
+		// Localized
+		std::string localized_name;
 	};
 }
 

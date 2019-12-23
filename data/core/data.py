@@ -1,14 +1,10 @@
 import jactorio_data as jd
 
 def add_sprite(name, sprite_path):
-    proto = jd.Sprite(sprite_path, jd.spriteGroup.Terrain)
-    jd.add(jd.category.Sprite, name, proto)
-    return proto
+    return jd.add(jd.category.Sprite, name, jd.Sprite(sprite_path, jd.spriteGroup.Terrain))
+
 def add_tile(name, sprite_path):
-    sprite_proto = add_sprite(name, sprite_path)
-    tile_proto = jd.Tile(sprite_proto)
-    jd.add(jd.category.Tile, name, tile_proto)
-    return tile_proto
+    return jd.add(jd.category.Tile, name, jd.Tile(add_sprite(name, sprite_path)))
 
 
 add_sprite("menu-background", "core/graphics/menu/background-image.png")

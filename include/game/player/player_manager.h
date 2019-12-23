@@ -1,8 +1,18 @@
 #ifndef GAME_PLAYER_PLAYER_MANAGER_H
 #define GAME_PLAYER_PLAYER_MANAGER_H
 
+
+#include "data/prototype/item/item.h"
+
+/**
+ * Stores information & functions regarding the player
+ */
 namespace jactorio::game::player_manager
 {
+	// Inventory
+    constexpr unsigned short inventory_size = 80;
+	inline data::item_stack player_inventory[inventory_size];  // Holds the internal id of items
+	
     // Movement functions
     /**
      * The tile the player is on, decimals indicate partial tile

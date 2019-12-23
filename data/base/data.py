@@ -2,8 +2,7 @@ import jactorio_data as jd
 
 def addTile(noiseLayer, endRange, name, spritePath, isWater = False):
     # Create Sprite
-    sprite_proto = jd.Sprite(spritePath, jd.spriteGroup.Terrain)
-    jd.add(jd.category.Sprite, name, sprite_proto)
+    sprite_proto = jd.add(jd.category.Sprite, name, jd.Sprite(spritePath, jd.spriteGroup.Terrain))
 
     # Create tile
     tile_proto = jd.Tile(sprite_proto)
@@ -31,21 +30,21 @@ jd.add(jd.category.NoiseLayer, "base-terrain", baseTerrain)
 
 def addResourceTile(
     noiseLayer, endRange, name, tileSpritePath, itemSpritePath):
-    # Create Terrain Sprite
-    sprite_proto = jd.Sprite(tileSpritePath, jd.spriteGroup.Terrain)
-    jd.add(jd.category.Sprite, name, sprite_proto)
-
     # Item sprite
     item_sprite_proto = jd.Sprite(itemSpritePath)
     item_sprite_proto.group = jd.spriteGroup.Gui
+    
     jd.add(jd.category.Sprite, name + "-item", item_sprite_proto)
-
-    # Create tile
-    tile_proto = jd.ResourceTile(sprite_proto)
-    jd.add(jd.category.ResourceTile, name, tile_proto)
+    jd.add(jd.category.Item, name + "-item", jd.Item(item_sprite_proto))
 
     # Add Tile to NoiseLayer
-    noiseLayer.addTile(endRange, tile_proto)
+    noiseLayer.addTile(endRange, 
+        jd.add(jd.category.ResourceTile, name, 
+            jd.ResourceTile(
+                jd.add(jd.category.Sprite, name, jd.Sprite(tileSpritePath, jd.spriteGroup.Terrain))
+            )
+        )
+    )
 
 # Only use the tips of the noise to ensure that the resources is in one big patch
 coalLayer = jd.NoiseLayer(0.8, False)

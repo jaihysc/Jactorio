@@ -6,9 +6,13 @@ float player_position_x = 0;
 float player_position_y = 0;
 
 // Returns true if the tile can be walked on and is not walter
-bool target_tile_valid(float x, float y) {
-    // If the player is on water, they are allowed to walk on water
-    if (jactorio::game::world_manager::get_tile_world_coords(player_position_x, player_position_y)->is_water)
+bool target_tile_valid(const float x, const float y) {
+    const auto origin_tile = jactorio::game::world_manager::get_tile_world_coords(player_position_x, player_position_y);
+    if (origin_tile == nullptr)
+        return false;
+	
+	// If the player is on water, they are allowed to walk on water
+    if (origin_tile->is_water)
         return true;
 
     const jactorio::game::Chunk_tile* tile = jactorio::game::world_manager::get_tile_world_coords(x, y);

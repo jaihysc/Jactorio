@@ -6,6 +6,7 @@
 #include "renderer/gui/imgui_manager.h"
 #include "core/debug/execution_timer.h"
 #include "core/logger.h"
+#include "data/data_manager.h"
 #include "game/input/mouse_selection.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
@@ -16,7 +17,8 @@
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
 
-ImGuiWindowFlags window_flags = 0;
+ImGuiWindowFlags debug_window_flags = 0;
+ImGuiWindowFlags release_window_flags = 0;
 
 
 // Inventory
@@ -32,27 +34,78 @@ void jactorio::renderer::imgui_manager::setup_character_data() {
 
 void draw_inventory_menu() {
 	ImGui::SetNextWindowPosCenter();
-	ImGui::Begin("Character", nullptr, window_flags);
 
-	for (auto& sprite_position : inventory_sprite_positions) {
-		for (int y = 0; y < 3; ++y) {
-			for (int x = 0; x < 10; ++x) {
-				ImGui::SameLine(10 + x * 38);
+	const int inventory_size = 80;
+	jactorio::data::item_stack* inventory = jactorio::game::player_manager::player_inventory;
+
+	// TODO REMOVE | Test data
+	{
+		using namespace jactorio::data;
+		auto x = data_manager::data_raw_get_all<Item>(data_category::item);
+		inventory[0] = std::pair(x[0], 10);
+		inventory[1] = std::pair(x[0], 8);
+		inventory[4] = std::pair(x[0], 100);
+		inventory[5] = std::pair(x[1], 2000);
+	}
+	
+	ImGui::Begin("Character", nullptr, 
+	             ImVec2(20 + 10 * 38, inventory_size / 10 * 38 + 80), 
+	             -1, release_window_flags);
+	
+	bool quit = false;
+	int y = 0;
+	int inventory_drawn = 0;
+	while (!quit) {
+		for (int x = 0; x < 10; ++x) {
+			const auto& item = inventory[y * 10 + x];
+
+			ImGui::SameLine(10.f + x * 38);
+
+			// Does the item exist? A count of 0 indicates it does not
+			if (item.second != 0) {
+				const auto& positions = inventory_sprite_positions[item.first->sprite->internal_id];
 				ImGui::ImageButton(
 					reinterpret_cast<void*>(inventory_tex_id),
 					ImVec2(32, 32),
-	
-					ImVec2(sprite_position.second.top_left.x, sprite_position.second.top_left.y),
-					ImVec2(sprite_position.second.bottom_right.x, sprite_position.second.bottom_right.y),
+
+					ImVec2(positions.top_left.x, positions.top_left.y),
+					ImVec2(positions.bottom_right.x, positions.bottom_right.y),
 					2
 				);
-				ImGui::SameLine(10 + x * 38);
-				ImGui::Text("200");
+
+				// Tooltip
+				if (ImGui::IsItemHovered()) {
+					ImGui::BeginTooltip();
+					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+					ImGui::TextUnformatted(item.first->localized_name.c_str());
+					ImGui::PopTextWrapPos();
+					ImGui::EndTooltip();
+				}
+
+				// Stack size
+				ImGui::SameLine(10.f + x * 38);
+				ImGui::Text("%d", item.second);
 			}
-			
-			ImGui::NewLine();
+			else {
+				// Empty button
+				ImGui::ImageButton(
+					nullptr,
+					ImVec2(0, 0),
+					ImVec2(-1, -1),
+					ImVec2(-1, -1),
+					18 // 32 / 2 + 2
+				);
+			}
+
+			// Break once the inventory has been drawn
+			if (++inventory_drawn >= inventory_size) {
+				quit = true;
+				break;
+			}
 		}
-	
+		
+		ImGui::NewLine();
+		y++;
 	}
 
 	// int counter = 1;
@@ -92,7 +145,7 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui::NewFrame();
 
 		ImGui::SetNextWindowPosCenter();
-		ImGui::Begin("Error", nullptr, window_flags);
+		ImGui::Begin("Error", nullptr, debug_window_flags);
 		ImGui::TextWrapped("%s", err_title.c_str());
 		ImGui::TextWrapped("%s", err_message.c_str());
 		ImGui::NewLine();
@@ -111,7 +164,7 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 void draw_debug_menu() {
 	using namespace jactorio;
 	
-	ImGui::Begin("Debug menu", nullptr, window_flags);
+	ImGui::Begin("Debug menu", nullptr, debug_window_flags);
 	// Settings
 	glm::vec3* view_translation = renderer::mvp_manager::get_view_transform();
 	ImGui::SliderFloat2("Camera translation", &view_translation->x, -100.0f,
@@ -146,7 +199,7 @@ void draw_debug_menu() {
 void draw_timings_menu() {
 	using namespace jactorio::core;
 	
-	ImGui::Begin("Timings", nullptr, window_flags);
+	ImGui::Begin("Timings", nullptr, debug_window_flags);
 	ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	
 	for (auto& time : Execution_timer::measured_times) {
@@ -159,16 +212,24 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	(void)io;
+	// (void)io;
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
+	// Disables imgui saving
+	io.IniFilename = NULL;
+	
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
+	
 	// Factorio inspired Imgui style
-	window_flags |= ImGuiWindowFlags_NoCollapse;
+	debug_window_flags |= ImGuiWindowFlags_NoCollapse;
+
+	release_window_flags |= ImGuiWindowFlags_NoCollapse;
+	release_window_flags |= ImGuiWindowFlags_NoResize;
+	
 	auto& style = ImGui::GetStyle();
 	style.WindowRounding = 0.0f;
 	style.ChildRounding = 0.0f;
@@ -223,6 +284,9 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	ImGui::PushStyleColor(ImGuiCol_Separator, IM_COL32(128, 129, 129, 255));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, IM_COL32(128, 129, 129, 255));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, IM_COL32(128, 129, 129, 255));
+
+	// Popup
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(49, 48, 49, 200));
 
 	LOG_MESSAGE(info, "Imgui initialized");
 }
