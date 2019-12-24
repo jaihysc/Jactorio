@@ -8,7 +8,6 @@
 #include "core/logger.h"
 #include "data/data_manager.h"
 #include "game/input/mouse_selection.h"
-#include "game/player/player_inventory.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world_generator.h"
@@ -33,122 +32,100 @@ void jactorio::renderer::imgui_manager::setup_character_data() {
 }
 
 void draw_inventory_menu() {
-	namespace inventory_manager = jactorio::game::player_inventory;
+	namespace player_manager = jactorio::game::player_manager;
 	constexpr float inventory_slot_width = 32.f;
 	constexpr float inventory_slot_padding = 6.f;
 	
 	// ImGui::SetNextWindowPosCenter();
 
-	jactorio::data::item_stack* inventory = inventory_manager::player_inventory;
+	jactorio::data::item_stack* inventory = player_manager::player_inventory;
 	
 	ImGui::Begin("Character", nullptr, 
 	             ImVec2(20 + 10 * (inventory_slot_width + inventory_slot_padding),
-	                    jactorio::game::player_inventory::inventory_size / 10 * (inventory_slot_width +
+	                    player_manager::inventory_size / 10 * (inventory_slot_width +
 		                    inventory_slot_padding) + 80),
 	             -1, release_window_flags);
-	
-	bool quit = false;
-	int y = 0;
-	int inventory_drawn = 0;
-	while (!quit) {
-		for (int x = 0; x < 10; ++x) {
-			ImGui::SameLine(10.f + x * (inventory_slot_width + inventory_slot_padding));
 
-			ImGui::PushID(inventory_drawn);  // Uniquely identifies the button
+	int index = 0;
+	do {
+		const int x = index % 10;
+		ImGui::SameLine(10.f + x * (inventory_slot_width + inventory_slot_padding));
 
-			const auto& item = inventory[y * 10 + x];
-			// Does the item exist? A count of 0 indicates it does not
-			if (item.second != 0) {
-				const auto& positions = inventory_sprite_positions[item.first->sprite->internal_id];
+		ImGui::PushID(index);  // Uniquely identifies the button
 
-				if (ImGui::ImageButton(
-					reinterpret_cast<void*>(inventory_tex_id),
-					ImVec2(inventory_slot_width, inventory_slot_width),
+		const auto& item = inventory[index];
+		// Does the item exist? A count of 0 indicates it does not
+		if (item.second != 0) {
+			const auto& positions = inventory_sprite_positions[item.first->sprite->internal_id];
 
-					ImVec2(positions.top_left.x, positions.top_left.y),
-					ImVec2(positions.bottom_right.x, positions.bottom_right.y),
-					2
-				)) {
-					inventory_manager::set_clicked_inventory(inventory_drawn, false);
-				}
+			if (ImGui::ImageButton(
+				reinterpret_cast<void*>(inventory_tex_id),
+				ImVec2(inventory_slot_width, inventory_slot_width),
 
-				// Item tooltip
-				if (ImGui::IsItemHovered()) {
-					ImVec2 cursor_pos(
-						jactorio::game::mouse_selection::get_position_x(), 
-						jactorio::game::mouse_selection::get_position_y() + 10.f
-					);
-					// If an item is currently selected, move the tooltip down to not overlap
-					if (jactorio::game::player_inventory::get_selected_item())
-						cursor_pos.y += inventory_slot_width;
-					
-					ImGui::SetNextWindowPos(cursor_pos);
-
-					auto flags = release_window_flags;
-					flags |= ImGuiWindowFlags_AlwaysAutoResize;
-					ImGui::Begin(item.first->localized_name.c_str(), nullptr,
-					             flags);
-					// ___ Begin
-					
-					// Since the window auto-fit does not account for the title, print the title in the menu
-					// so imgui can account for it
-					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 0));
-					ImGui::TextUnformatted(item.first->localized_name.c_str());
-					ImGui::PopStyleColor();
-					
-					// ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-					// ImGui::TextUnformatted(i);
-					// ImGui::PopTextWrapPos();
-
-					ImGui::End();
-				}
-
-				// Stack size
-				ImGui::SameLine(10.f + x * (inventory_slot_width + inventory_slot_padding));
-				ImGui::Text("%d", item.second);
+				ImVec2(positions.top_left.x, positions.top_left.y),
+				ImVec2(positions.bottom_right.x, positions.bottom_right.y),
+				2
+			)) {
+				// !! This may modify item
+				player_manager::set_clicked_inventory(index);
 			}
-			else {
-				// Empty button
-				if (ImGui::ImageButton(
-					nullptr,
-					ImVec2(0, 0),
-					ImVec2(-1, -1),
-					ImVec2(-1, -1),
-					inventory_slot_width / 2 + 2 // 32 / 2 + 2
-				)) {
-					inventory_manager::set_clicked_inventory(inventory_drawn, true);
-				}
-			}
-			ImGui::PopID();
-
-			// Break once the inventory has been drawn
-			if (++inventory_drawn >= jactorio::game::player_inventory::inventory_size) {
-				quit = true;
-				break;
+		}
+		else {
+			// Empty button
+			if (ImGui::ImageButton(
+				nullptr,
+				ImVec2(0, 0),
+				ImVec2(-1, -1),
+				ImVec2(-1, -1),
+				inventory_slot_width / 2 + 2 // 32 / 2 + 2
+			)) {
+				player_manager::set_clicked_inventory(index);
 			}
 		}
 		
-		ImGui::NewLine();
-		y++;
-	}
+		// Has this position become invalid after updating the inventory update?
+		if (item.second != 0) {
+			// Item tooltip
+			if (ImGui::IsItemHovered()) {
+				ImVec2 cursor_pos(
+					jactorio::game::mouse_selection::get_position_x(),
+					jactorio::game::mouse_selection::get_position_y() + 10.f
+				);
+				// If an item is currently selected, move the tooltip down to not overlap
+				if (player_manager::get_selected_item())
+					cursor_pos.y += inventory_slot_width;
 
-	// int counter = 1;
-	// for (auto& sprite_position : inventory_sprite_positions) {
-	// 	ImGui::SameLine();
-	// 	ImGui::ImageButton(
-	// 		reinterpret_cast<void*>(inventory_tex_id),
-	// 		ImVec2(32, 32),
-	//
-	// 		ImVec2(sprite_position.second.top_left.x, sprite_position.second.top_left.y),
-	// 		ImVec2(sprite_position.second.bottom_right.x, sprite_position.second.bottom_right.y),
-	// 		2
-	// 	);
-	//
-	// 	if (counter % 10 == 0)
-	// 		ImGui::NewLine();
-	// 	counter++;
-	// }
-	
+				ImGui::SetNextWindowPos(cursor_pos);
+
+				auto flags = release_window_flags;
+				flags |= ImGuiWindowFlags_AlwaysAutoResize;
+				ImGui::Begin(item.first->localized_name.c_str(), nullptr,
+				             flags);
+				
+				// Since the window auto-fit does not account for the title, print the title in the menu
+				// so imgui can account for it
+				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 0));
+				ImGui::TextUnformatted(item.first->localized_name.c_str());
+				ImGui::PopStyleColor();
+
+				// ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				// ImGui::TextUnformatted(i);
+				// ImGui::PopTextWrapPos();
+
+				ImGui::End();
+			}
+
+			// Stack size
+			ImGui::SameLine(10.f + x * (inventory_slot_width + inventory_slot_padding));
+			ImGui::Text("%d", item.second);
+		}
+
+		ImGui::PopID();
+
+		if (x == 9)
+			ImGui::NewLine();
+	} while (++index < player_manager::inventory_size);
+
 	ImGui::End();
 }
 
@@ -331,7 +308,7 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	{
 		// Player has an item selected, draw it on the tooltip
 		data::item_stack* selected_item;
-		if ((selected_item = game::player_inventory::get_selected_item()) != nullptr) {
+		if ((selected_item = game::player_manager::get_selected_item()) != nullptr) {
 			ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
 			ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(0, 0, 0, 0));
 

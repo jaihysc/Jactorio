@@ -20,6 +20,8 @@ namespace jactorio::data
 
 	// Makes arrays holding items more clear than just unsigned int
 	// Item* and amount in current stack
+	// Left: Item prototype
+	// Right: Item count
 	using item_stack = std::pair<Item*, unsigned short>;
 }
 

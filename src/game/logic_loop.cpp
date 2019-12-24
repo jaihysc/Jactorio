@@ -14,7 +14,6 @@
 #include "renderer/gui/imgui_manager.h"
 #include "data/prototype/item/item.h"
 #include "data/data_manager.h"
-#include "game/player/player_inventory.h"
 
 bool logic_loop_should_terminate = false;
 
@@ -65,7 +64,7 @@ void jactorio::game::logic_loop() {
 
 	// TODO REMOVE
 	input_manager::register_input_callback([]() {
-		data::item_stack* inventory = player_inventory::player_inventory;
+		data::item_stack* inventory = player_manager::player_inventory;
 
 		// TODO REMOVE | Test data
 		{

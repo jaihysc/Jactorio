@@ -42,11 +42,11 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
 	${JACTORIO_DIR}/game/player/player_manager.cpp
-	${JACTORIO_DIR}/game/player/player_inventory.cpp
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
 	${JACTORIO_DIR}/game/world/world_manager.cpp
 	${JACTORIO_DIR}/game/world/world_generator.cpp
+	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
 	${JACTORIO_DIR}/renderer/render_loop.cpp
@@ -92,6 +92,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/manager/renderer_managerTests.cpp

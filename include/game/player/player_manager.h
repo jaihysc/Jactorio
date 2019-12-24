@@ -1,6 +1,8 @@
 #ifndef GAME_PLAYER_PLAYER_MANAGER_H
 #define GAME_PLAYER_PLAYER_MANAGER_H
 
+#include "data/prototype/item/item.h"
+
 /**
  * Stores information & functions regarding the player
  */
@@ -23,6 +25,22 @@ namespace jactorio::game::player_manager
      * @param amount
      */
     void move_player_y(float amount);
+
+    // Inventory
+    constexpr unsigned short inventory_size = 80;
+    inline data::item_stack player_inventory[inventory_size];  // Holds the internal id of items
+
+    /**
+     * Interacts with the player inventory at index
+     * @param index The player inventory index
+     */
+    void set_clicked_inventory(unsigned short index);
+
+    /**
+     * Gets the currently item player is currently holding on the cursor
+     * @return nullptr if there is no item selected
+     */
+    [[nodiscard]] data::item_stack* get_selected_item();
 }
 
 #endif // GAME_PLAYER_PLAYER_MANAGER_H

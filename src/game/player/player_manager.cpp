@@ -1,5 +1,8 @@
 #include "game/player/player_manager.h"
 
+#include <cassert>
+
+#include "game/logic/inventory_controller.h"
 #include "game/world/world_manager.h"
 
 float player_position_x = 0;
@@ -33,16 +36,34 @@ float jactorio::game::player_manager::get_player_position_y() {
 }
 
 
-void jactorio::game::player_manager::move_player_x(float amount) {
+void jactorio::game::player_manager::move_player_x(const float amount) {
     float target_x = player_position_x + amount;
 
     if (target_tile_valid(target_x, player_position_y))
         player_position_x = target_x;
 }
 
-void jactorio::game::player_manager::move_player_y(float amount) {
+void jactorio::game::player_manager::move_player_y(const float amount) {
     float target_y = player_position_y + amount;
 
     if (target_tile_valid(player_position_x, target_y))
         player_position_y = target_y;
+}
+
+// Inventory
+
+jactorio::data::item_stack selected_item;
+
+void jactorio::game::player_manager::set_clicked_inventory(const unsigned short index) {
+    assert(index < inventory_size);
+
+    inventory_controller::move_itemstack_to_index(&selected_item, 0, 
+                                                  player_inventory, index);
+}
+
+jactorio::data::item_stack* jactorio::game::player_manager::get_selected_item() {
+    if (selected_item.first == nullptr)
+        return nullptr;
+
+    return &selected_item;
 }
