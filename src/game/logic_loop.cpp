@@ -10,9 +10,11 @@
 #include "game/input/mouse_selection.h"
 #include "game/player/player_manager.h"
 #include "game/world/world_generator.h"
-#include "game/world/world_manager.h"
 
 #include "renderer/gui/imgui_manager.h"
+#include "data/prototype/item/item.h"
+#include "data/data_manager.h"
+#include "game/player/player_inventory.h"
 
 bool logic_loop_should_terminate = false;
 
@@ -60,6 +62,21 @@ void jactorio::game::logic_loop() {
 		renderer::imgui_manager::show_inventory_menu = !renderer::imgui_manager::show_inventory_menu;
 	}, GLFW_KEY_TAB, GLFW_RELEASE);
 
+
+	// TODO REMOVE
+	input_manager::register_input_callback([]() {
+		data::item_stack* inventory = player_inventory::player_inventory;
+
+		// TODO REMOVE | Test data
+		{
+			using namespace data;
+			auto x = data_manager::data_raw_get_all<Item>(data_category::item);
+			inventory[0] = std::pair(x[0], 10);
+			inventory[1] = std::pair(x[0], 8);
+			inventory[4] = std::pair(x[0], 100);
+			inventory[5] = std::pair(x[1], 2000);
+		};
+	}, GLFW_KEY_0, GLFW_RELEASE);
 	
 	auto next_frame = std::chrono::steady_clock::now();
 	while (!logic_loop_should_terminate) {

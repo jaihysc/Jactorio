@@ -8,6 +8,7 @@
 #include "core/logger.h"
 #include "data/data_manager.h"
 #include "game/input/mouse_selection.h"
+#include "game/player/player_inventory.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world_generator.h"
@@ -19,7 +20,6 @@
 
 ImGuiWindowFlags debug_window_flags = 0;
 ImGuiWindowFlags release_window_flags = 0;
-
 
 // Inventory
 std::unordered_map<unsigned, jactorio::renderer::renderer_sprites::Image_position> inventory_sprite_positions;
@@ -33,23 +33,18 @@ void jactorio::renderer::imgui_manager::setup_character_data() {
 }
 
 void draw_inventory_menu() {
-	ImGui::SetNextWindowPosCenter();
+	namespace inventory_manager = jactorio::game::player_inventory;
+	constexpr float inventory_slot_width = 32.f;
+	constexpr float inventory_slot_padding = 6.f;
+	
+	// ImGui::SetNextWindowPosCenter();
 
-	const int inventory_size = 80;
-	jactorio::data::item_stack* inventory = jactorio::game::player_manager::player_inventory;
-
-	// TODO REMOVE | Test data
-	{
-		using namespace jactorio::data;
-		auto x = data_manager::data_raw_get_all<Item>(data_category::item);
-		inventory[0] = std::pair(x[0], 10);
-		inventory[1] = std::pair(x[0], 8);
-		inventory[4] = std::pair(x[0], 100);
-		inventory[5] = std::pair(x[1], 2000);
-	}
+	jactorio::data::item_stack* inventory = inventory_manager::player_inventory;
 	
 	ImGui::Begin("Character", nullptr, 
-	             ImVec2(20 + 10 * 38, inventory_size / 10 * 38 + 80), 
+	             ImVec2(20 + 10 * (inventory_slot_width + inventory_slot_padding),
+	                    jactorio::game::player_inventory::inventory_size / 10 * (inventory_slot_width +
+		                    inventory_slot_padding) + 80),
 	             -1, release_window_flags);
 	
 	bool quit = false;
@@ -57,48 +52,77 @@ void draw_inventory_menu() {
 	int inventory_drawn = 0;
 	while (!quit) {
 		for (int x = 0; x < 10; ++x) {
+			ImGui::SameLine(10.f + x * (inventory_slot_width + inventory_slot_padding));
+
+			ImGui::PushID(inventory_drawn);  // Uniquely identifies the button
+
 			const auto& item = inventory[y * 10 + x];
-
-			ImGui::SameLine(10.f + x * 38);
-
 			// Does the item exist? A count of 0 indicates it does not
 			if (item.second != 0) {
 				const auto& positions = inventory_sprite_positions[item.first->sprite->internal_id];
-				ImGui::ImageButton(
+
+				if (ImGui::ImageButton(
 					reinterpret_cast<void*>(inventory_tex_id),
-					ImVec2(32, 32),
+					ImVec2(inventory_slot_width, inventory_slot_width),
 
 					ImVec2(positions.top_left.x, positions.top_left.y),
 					ImVec2(positions.bottom_right.x, positions.bottom_right.y),
 					2
-				);
+				)) {
+					inventory_manager::set_clicked_inventory(inventory_drawn, false);
+				}
 
-				// Tooltip
+				// Item tooltip
 				if (ImGui::IsItemHovered()) {
-					ImGui::BeginTooltip();
-					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+					ImVec2 cursor_pos(
+						jactorio::game::mouse_selection::get_position_x(), 
+						jactorio::game::mouse_selection::get_position_y() + 10.f
+					);
+					// If an item is currently selected, move the tooltip down to not overlap
+					if (jactorio::game::player_inventory::get_selected_item())
+						cursor_pos.y += inventory_slot_width;
+					
+					ImGui::SetNextWindowPos(cursor_pos);
+
+					auto flags = release_window_flags;
+					flags |= ImGuiWindowFlags_AlwaysAutoResize;
+					ImGui::Begin(item.first->localized_name.c_str(), nullptr,
+					             flags);
+					// ___ Begin
+					
+					// Since the window auto-fit does not account for the title, print the title in the menu
+					// so imgui can account for it
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 0));
 					ImGui::TextUnformatted(item.first->localized_name.c_str());
-					ImGui::PopTextWrapPos();
-					ImGui::EndTooltip();
+					ImGui::PopStyleColor();
+					
+					// ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+					// ImGui::TextUnformatted(i);
+					// ImGui::PopTextWrapPos();
+
+					ImGui::End();
 				}
 
 				// Stack size
-				ImGui::SameLine(10.f + x * 38);
+				ImGui::SameLine(10.f + x * (inventory_slot_width + inventory_slot_padding));
 				ImGui::Text("%d", item.second);
 			}
 			else {
 				// Empty button
-				ImGui::ImageButton(
+				if (ImGui::ImageButton(
 					nullptr,
 					ImVec2(0, 0),
 					ImVec2(-1, -1),
 					ImVec2(-1, -1),
-					18 // 32 / 2 + 2
-				);
+					inventory_slot_width / 2 + 2 // 32 / 2 + 2
+				)) {
+					inventory_manager::set_clicked_inventory(inventory_drawn, true);
+				}
 			}
+			ImGui::PopID();
 
 			// Break once the inventory has been drawn
-			if (++inventory_drawn >= inventory_size) {
+			if (++inventory_drawn >= jactorio::game::player_inventory::inventory_size) {
 				quit = true;
 				break;
 			}
@@ -215,9 +239,9 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	// (void)io;
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-	// Disables imgui saving
-	io.IniFilename = NULL;
+	
+	io.IniFilename = NULL;  // Disables imgui saving
+	io.ConfigWindowsMoveFromTitleBarOnly = true;  //
 	
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -229,7 +253,7 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 
 	release_window_flags |= ImGuiWindowFlags_NoCollapse;
 	release_window_flags |= ImGuiWindowFlags_NoResize;
-	
+
 	auto& style = ImGui::GetStyle();
 	style.WindowRounding = 0.0f;
 	style.ChildRounding = 0.0f;
@@ -303,6 +327,51 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
+	// Draw the tooltip of what is currently selected
+	{
+		// Player has an item selected, draw it on the tooltip
+		data::item_stack* selected_item;
+		if ((selected_item = game::player_inventory::get_selected_item()) != nullptr) {
+			ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
+			ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(0, 0, 0, 0));
+
+			// Draw the window at the cursor
+			ImVec2 cursor_pos(
+				game::mouse_selection::get_position_x(),
+				game::mouse_selection::get_position_y() + 2.f
+			);
+			ImGui::SetNextWindowPos(cursor_pos);
+			
+			ImGuiWindowFlags flags = 0;
+			flags |= ImGuiWindowFlags_NoBackground;
+			flags |= ImGuiWindowFlags_NoTitleBar;
+			flags |= ImGuiWindowFlags_NoCollapse;
+			flags |= ImGuiWindowFlags_NoMove;
+			flags |= ImGuiWindowFlags_NoResize;
+
+			ImGui::SetNextWindowFocus();
+			ImGui::Begin("Selected-item", nullptr, flags);
+
+			const auto& positions = inventory_sprite_positions[selected_item->first->sprite->internal_id];
+
+			ImGui::SameLine(10.f);
+			ImGui::Image(
+				reinterpret_cast<void*>(inventory_tex_id),
+				ImVec2(32, 32),
+
+				ImVec2(positions.top_left.x, positions.top_left.y),
+				ImVec2(positions.bottom_right.x, positions.bottom_right.y)
+			);
+
+			ImGui::SameLine(10.f);
+			ImGui::Text("%d", selected_item->second);
+
+			ImGui::End();
+			ImGui::PopStyleColor(2);
+
+		}
+	}
+	
 	if (show_inventory_menu)
 		draw_inventory_menu();
 	
