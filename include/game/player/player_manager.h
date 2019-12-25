@@ -33,14 +33,20 @@ namespace jactorio::game::player_manager
     /**
      * Interacts with the player inventory at index
      * @param index The player inventory index
+     * @param mouse_button Mouse button pressed; 0 - Left, 1 - Right
      */
-    void set_clicked_inventory(unsigned short index);
+    void set_clicked_inventory(unsigned short index, unsigned short mouse_button);
 
     /**
      * Gets the currently item player is currently holding on the cursor
      * @return nullptr if there is no item selected
      */
     [[nodiscard]] data::item_stack* get_selected_item();
+
+	/**
+	 * !! Tests use only !!
+	 */
+    void reset_inventory_variables();
 }
 
 #endif // GAME_PLAYER_PLAYER_MANAGER_H

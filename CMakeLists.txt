@@ -92,6 +92,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/player/player_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp

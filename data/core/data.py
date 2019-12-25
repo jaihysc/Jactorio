@@ -12,3 +12,12 @@ add_sprite("menu-logo", "core/graphics/menu/background-image-logo.png")
  
 add_tile("cursor-select", "core/graphics/cursor-select.png")
 add_tile("cursor-invalid", "core/graphics/cursor-invalid.png")
+
+
+# Inventory selection cursor
+item_sprite_proto = jd.Sprite("core/graphics/hand.png")
+item_sprite_proto.group = jd.spriteGroup.Gui
+
+jd.add(jd.category.Item, "inventory-selected-cursor", jd.Item(
+    jd.add(jd.category.Sprite, "inventory-selected-cursor", item_sprite_proto)
+))

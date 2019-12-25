@@ -54,70 +54,83 @@ void draw_inventory_menu() {
 		ImGui::PushID(index);  // Uniquely identifies the button
 
 		const auto& item = inventory[index];
-		// Does the item exist? A count of 0 indicates it does not
-		if (item.second != 0) {
+		
+		// Item exists at inventory slot?
+		if (item.first != nullptr) {
 			const auto& positions = inventory_sprite_positions[item.first->sprite->internal_id];
 
-			if (ImGui::ImageButton(
+			ImGui::ImageButton(
 				reinterpret_cast<void*>(inventory_tex_id),
 				ImVec2(inventory_slot_width, inventory_slot_width),
 
 				ImVec2(positions.top_left.x, positions.top_left.y),
 				ImVec2(positions.bottom_right.x, positions.bottom_right.y),
 				2
-			)) {
-				// !! This may modify item
-				player_manager::set_clicked_inventory(index);
+			);
+
+			// Click event
+			if (ImGui::IsItemClicked()) {
+				player_manager::set_clicked_inventory(index, 0);
 			}
+			else if (ImGui::IsItemClicked(1)) {
+				player_manager::set_clicked_inventory(index, 1);
+			}
+			
+			// Only draw tooltip + item count if item count is not 0
+			if (item.second != 0) {
+				// Item tooltip
+				if (ImGui::IsItemHovered()) {
+					ImVec2 cursor_pos(
+						jactorio::game::mouse_selection::get_position_x(),
+						jactorio::game::mouse_selection::get_position_y() + 10.f
+					);
+					// If an item is currently selected, move the tooltip down to not overlap
+					if (player_manager::get_selected_item())
+						cursor_pos.y += inventory_slot_width;
+
+					ImGui::SetNextWindowPos(cursor_pos);
+
+					auto flags = release_window_flags;
+					flags |= ImGuiWindowFlags_AlwaysAutoResize;
+					ImGui::Begin(item.first->localized_name.c_str(), nullptr,
+					             flags);
+					
+					// Since the window auto-fit does not account for the title, print the title in the menu
+					// so imgui can account for it
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 0));
+					ImGui::TextUnformatted(item.first->localized_name.c_str());
+					ImGui::PopStyleColor();
+
+					// ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+					// ImGui::TextUnformatted(i);
+					// ImGui::PopTextWrapPos();
+
+					ImGui::End();
+				}
+
+
+				// Stack size
+				ImGui::SameLine(10.f + x * (inventory_slot_width + inventory_slot_padding));
+				ImGui::Text("%d", item.second);
+			}
+
 		}
 		else {
 			// Empty button
-			if (ImGui::ImageButton(
+			ImGui::ImageButton(
 				nullptr,
 				ImVec2(0, 0),
 				ImVec2(-1, -1),
 				ImVec2(-1, -1),
 				inventory_slot_width / 2 + 2 // 32 / 2 + 2
-			)) {
-				player_manager::set_clicked_inventory(index);
+			);
+			// Click event
+			if (ImGui::IsItemClicked()) {
+				player_manager::set_clicked_inventory(index, 0);
 			}
-		}
-		
-		// Has this position become invalid after updating the inventory update?
-		if (item.second != 0) {
-			// Item tooltip
-			if (ImGui::IsItemHovered()) {
-				ImVec2 cursor_pos(
-					jactorio::game::mouse_selection::get_position_x(),
-					jactorio::game::mouse_selection::get_position_y() + 10.f
-				);
-				// If an item is currently selected, move the tooltip down to not overlap
-				if (player_manager::get_selected_item())
-					cursor_pos.y += inventory_slot_width;
-
-				ImGui::SetNextWindowPos(cursor_pos);
-
-				auto flags = release_window_flags;
-				flags |= ImGuiWindowFlags_AlwaysAutoResize;
-				ImGui::Begin(item.first->localized_name.c_str(), nullptr,
-				             flags);
-				
-				// Since the window auto-fit does not account for the title, print the title in the menu
-				// so imgui can account for it
-				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 0));
-				ImGui::TextUnformatted(item.first->localized_name.c_str());
-				ImGui::PopStyleColor();
-
-				// ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-				// ImGui::TextUnformatted(i);
-				// ImGui::PopTextWrapPos();
-
-				ImGui::End();
+			else if (ImGui::IsItemClicked(1)) {
+				player_manager::set_clicked_inventory(index, 1);
 			}
-
-			// Stack size
-			ImGui::SameLine(10.f + x * (inventory_slot_width + inventory_slot_padding));
-			ImGui::Text("%d", item.second);
 		}
 
 		ImGui::PopID();
@@ -293,6 +306,8 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 }
 
 void jactorio::renderer::imgui_manager::imgui_draw() {
+	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
+
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();

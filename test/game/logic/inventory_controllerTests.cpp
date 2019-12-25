@@ -24,7 +24,7 @@ namespace game
 		inv[3].first = nullptr;
 		inv[3].second = 0;
 		
-		const bool result = move_itemstack_to_index(inv, 0, inv, 3);
+		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, true);
 
 		EXPECT_EQ(inv[0].first, nullptr);
@@ -53,7 +53,7 @@ namespace game
 		inv[3].first = item.get();
 		inv[3].second = 30;
 
-		const bool result = move_itemstack_to_index(inv, 0, inv, 3);
+		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, true);
 
 		EXPECT_EQ(inv[0].first, nullptr);
@@ -83,7 +83,7 @@ namespace game
 		inv[3].first = item.get();
 		inv[3].second = 30;
 
-		const bool result = move_itemstack_to_index(inv, 0, inv, 3);
+		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -115,7 +115,7 @@ namespace game
 		inv[3].first = item2.get();
 		inv[3].second = 10;
 
-		const bool result = move_itemstack_to_index(inv, 0, inv, 3);
+		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item2.get());
@@ -143,7 +143,7 @@ namespace game
 		inv[3].first = item.get();
 		inv[3].second = 50;
 
-		const bool result = move_itemstack_to_index(inv, 0, inv, 3);
+		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -168,7 +168,7 @@ namespace game
 		inv[3].first = nullptr;
 		inv[3].second = 0;
 
-		const bool result = move_itemstack_to_index(inv, 0, inv, 3);
+		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, true);
 
 		EXPECT_EQ(inv[0].first, nullptr);
@@ -199,7 +199,7 @@ namespace game
 		inv[3].first = nullptr;
 		inv[3].second = 0;
 
-		const bool result = move_itemstack_to_index(inv, 0, inv, 3);
+		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -228,7 +228,7 @@ namespace game
 		inv[3].first = item.get();
 		inv[3].second = 9000;
 
-		const bool result = move_itemstack_to_index(inv, 0, inv, 3);
+		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -257,7 +257,7 @@ namespace game
 		inv[3].first = item.get();
 		inv[3].second = 40;
 
-		const bool result = move_itemstack_to_index(inv, 0, inv, 3);
+		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -265,5 +265,181 @@ namespace game
 
 		EXPECT_EQ(inv[3].first, item.get());
 		EXPECT_EQ(inv[3].second, 50);
+	}
+
+	// ------------------------------------------------------
+	// RIGHT click tests
+	// ------------------------------------------------------
+	TEST(inventory_controller, move_rclick_empty_origin_inv) {
+		// Moving from inventory position 0 to position 3.
+		// Origin inventory is empty, right clicking on an item takes half of it
+		// round down, unless there is only 1, where one is taken
+
+		using namespace jactorio::game::inventory_controller;
+
+		constexpr unsigned short inv_size = 10;
+		jactorio::data::item_stack inv[inv_size];
+
+		auto item = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+
+		// Case 1, even number
+		{
+			inv[0].first = nullptr;
+			inv[0].second = 0;
+
+			inv[3].first = item.get();
+			inv[3].second = 40;
+
+			const bool result = move_itemstack_to_index(inv, 0, inv, 3, 
+			                                            1);
+			EXPECT_EQ(result, false);
+
+			EXPECT_EQ(inv[0].first, item.get());
+			EXPECT_EQ(inv[0].second, 20);
+
+			EXPECT_EQ(inv[3].first, item.get());
+			EXPECT_EQ(inv[3].second, 20);
+		}
+		// Case 2, odd number
+		{
+			inv[0].first = nullptr;
+			inv[0].second = 0;
+
+			inv[3].first = item.get();
+			inv[3].second = 39;
+
+			const bool result = move_itemstack_to_index(inv, 0, inv, 3,
+			                                            1);
+			EXPECT_EQ(result, false);
+
+			EXPECT_EQ(inv[0].first, item.get());
+			EXPECT_EQ(inv[0].second, 19);
+
+			EXPECT_EQ(inv[3].first, item.get());
+			EXPECT_EQ(inv[3].second, 20);
+		}
+		// Case 3, 1 item
+		{
+			inv[0].first = nullptr;
+			inv[0].second = 0;
+
+			inv[3].first = item.get();
+			inv[3].second = 1;
+
+			const bool result = move_itemstack_to_index(inv, 0, inv, 3,
+			                                            1);
+			EXPECT_EQ(result, false);
+
+			EXPECT_EQ(inv[0].first, item.get());
+			EXPECT_EQ(inv[0].second, 1);
+
+			EXPECT_EQ(inv[3].first, nullptr);
+			EXPECT_EQ(inv[3].second, 0);
+		}
+		// Case 4, Exceed stack size
+		{
+			inv[0].first = nullptr;
+			inv[0].second = 0;
+
+			inv[3].first = item.get();
+			inv[3].second = 110;
+
+			const bool result = move_itemstack_to_index(inv, 0, inv, 3,
+			                                            1);
+			EXPECT_EQ(result, false);
+
+			EXPECT_EQ(inv[0].first, item.get());
+			EXPECT_EQ(inv[0].second, 50);
+
+			EXPECT_EQ(inv[3].first, item.get());
+			EXPECT_EQ(inv[3].second, 60);
+		}
+	}
+
+	TEST(inventory_controller, move_rclick_empty_target_inv) {
+		// Moving from inventory position 0 to position 3.
+		// Target inventory is empty, right clicking drops 1 item off
+
+		using namespace jactorio::game::inventory_controller;
+
+		constexpr unsigned short inv_size = 10;
+		jactorio::data::item_stack inv[inv_size];
+
+		auto item = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+
+		// Case 1, > 1 item
+		{
+			inv[0].first = item.get();
+			inv[0].second = 10;
+
+			inv[3].first = nullptr;
+			inv[3].second = 0;
+
+			const bool result = move_itemstack_to_index(inv, 0, inv, 3,
+			                                            1);
+			EXPECT_EQ(result, false);
+
+			EXPECT_EQ(inv[0].first, item.get());
+			EXPECT_EQ(inv[0].second, 9);
+
+			EXPECT_EQ(inv[3].first, item.get());
+			EXPECT_EQ(inv[3].second, 1);
+		}
+		// Case 2, 1 item
+		{
+			inv[0].first = item.get();
+			inv[0].second = 1;
+
+			inv[3].first = nullptr;
+			inv[3].second = 0;
+
+			const bool result = move_itemstack_to_index(inv, 0, inv, 3,
+			                                            1);
+			EXPECT_EQ(result, true);
+
+			EXPECT_EQ(inv[0].first, nullptr);
+			EXPECT_EQ(inv[0].second, 0);
+
+			EXPECT_EQ(inv[3].first, item.get());
+			EXPECT_EQ(inv[3].second, 1);
+		}
+		// Case 3, Target has 1 of the item
+		{
+			inv[0].first = item.get();
+			inv[0].second = 1;
+
+			inv[3].first = item.get();
+			inv[3].second = 1;
+
+			const bool result = move_itemstack_to_index(inv, 0, inv, 3,
+			                                            1);
+			EXPECT_EQ(result, true);
+
+			EXPECT_EQ(inv[0].first, nullptr);
+			EXPECT_EQ(inv[0].second, 0);
+
+			EXPECT_EQ(inv[3].first, item.get());
+			EXPECT_EQ(inv[3].second, 2);
+		}
+		// Case 4, target has > 1 of the item
+		{
+			inv[0].first = item.get();
+			inv[0].second = 10;
+
+			inv[3].first = item.get();
+			inv[3].second = 1;
+
+			const bool result = move_itemstack_to_index(inv, 0, inv, 3,
+			                                            1);
+			EXPECT_EQ(result, false);
+
+			EXPECT_EQ(inv[0].first, item.get());
+			EXPECT_EQ(inv[0].second, 9);
+
+			EXPECT_EQ(inv[3].first, item.get());
+			EXPECT_EQ(inv[3].second, 2);
+		}
 	}
 }

@@ -11,7 +11,8 @@ namespace jactorio::game::inventory_controller
 	 * @return true if origin_inv is empty after the move
 	 */
 	bool move_itemstack_to_index(data::item_stack* origin_inv, unsigned short origin_inv_index,
-	                             data::item_stack* target_inv, unsigned short target_inv_index);
+	                             data::item_stack* target_inv, unsigned short target_inv_index, 
+	                             unsigned short mouse_button);
 
 	// bool move_itemstack(data::item_stack* origin_inv, unsigned short origin_inv_size, unsigned short origin_inv_index,
 		// data::item_stack* target_inv, unsigned short target_inv_size, unsigned short target_inv_index);
