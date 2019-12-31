@@ -18,7 +18,7 @@ void initialize_game() {
 	
 	auto data_manager_guard = core::Resource_guard(&data::data_manager::clear_data);
 
-	std::thread logic_thread = std::thread(game::logic_loop);
+	std::thread logic_thread = std::thread(game::init_logic_loop);
 	std::thread renderer_thread = std::thread(renderer::render_init);
 
 	logic_thread.join();

@@ -3,7 +3,7 @@
 
 namespace jactorio::game
 {
-	void logic_loop();
+	void init_logic_loop();
 	void terminate_logic_loop();
 }
 

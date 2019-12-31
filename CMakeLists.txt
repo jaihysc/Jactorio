@@ -39,6 +39,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/data/data_manager.cpp
 
 	${JACTORIO_DIR}/game/logic_loop.cpp
+	${JACTORIO_DIR}/game/event/event.cpp
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
 	${JACTORIO_DIR}/game/player/player_manager.cpp
@@ -94,6 +95,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/eventTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/manager/renderer_managerTests.cpp

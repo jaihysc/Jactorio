@@ -1,9 +1,11 @@
+#include "renderer/gui/imgui_manager.h"
+
 #include <imgui/imgui.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <unordered_map>
 
-#include "renderer/gui/imgui_manager.h"
 #include "core/debug/execution_timer.h"
 #include "core/logger.h"
 #include "data/data_manager.h"
@@ -16,6 +18,13 @@
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
+
+// Last window state
+// True - Window was open last tick
+// False - Window was closed last tick
+int window_index;
+std::unordered_map<unsigned int, bool> window_state;
+
 
 ImGuiWindowFlags debug_window_flags = 0;
 ImGuiWindowFlags release_window_flags = 0;
@@ -175,6 +184,53 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 	}
 }
 
+void draw_cursor() {
+	using namespace jactorio;
+	// Draw the tooltip of what is currently selected
+
+	// Player has an item selected, draw it on the tooltip
+	data::item_stack* selected_item;
+	if ((selected_item = game::player_manager::get_selected_item()) != nullptr) {
+		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(0, 0, 0, 0));
+
+		// Draw the window at the cursor
+		ImVec2 cursor_pos(
+			game::mouse_selection::get_position_x(),
+			game::mouse_selection::get_position_y() + 2.f
+		);
+		ImGui::SetNextWindowPos(cursor_pos);
+
+		ImGuiWindowFlags flags = 0;
+		flags |= ImGuiWindowFlags_NoBackground;
+		flags |= ImGuiWindowFlags_NoTitleBar;
+		flags |= ImGuiWindowFlags_NoCollapse;
+		flags |= ImGuiWindowFlags_NoMove;
+		flags |= ImGuiWindowFlags_NoResize;
+
+		ImGui::SetNextWindowFocus();
+		ImGui::Begin("Selected-item", nullptr, flags);
+
+		const auto& positions = inventory_sprite_positions[selected_item->first->sprite->internal_id];
+
+		ImGui::SameLine(10.f);
+		ImGui::Image(
+			reinterpret_cast<void*>(inventory_tex_id),
+			ImVec2(32, 32),
+
+			ImVec2(positions.top_left.x, positions.top_left.y),
+			ImVec2(positions.bottom_right.x, positions.bottom_right.y)
+		);
+
+		ImGui::SameLine(10.f);
+		ImGui::Text("%d", selected_item->second);
+
+		ImGui::End();
+		ImGui::PopStyleColor(2);
+
+	}
+}
+
 void draw_debug_menu() {
 	using namespace jactorio;
 	
@@ -319,51 +375,8 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
-	// Draw the tooltip of what is currently selected
-	{
-		// Player has an item selected, draw it on the tooltip
-		data::item_stack* selected_item;
-		if ((selected_item = game::player_manager::get_selected_item()) != nullptr) {
-			ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
-			ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(0, 0, 0, 0));
+	draw_cursor();
 
-			// Draw the window at the cursor
-			ImVec2 cursor_pos(
-				game::mouse_selection::get_position_x(),
-				game::mouse_selection::get_position_y() + 2.f
-			);
-			ImGui::SetNextWindowPos(cursor_pos);
-			
-			ImGuiWindowFlags flags = 0;
-			flags |= ImGuiWindowFlags_NoBackground;
-			flags |= ImGuiWindowFlags_NoTitleBar;
-			flags |= ImGuiWindowFlags_NoCollapse;
-			flags |= ImGuiWindowFlags_NoMove;
-			flags |= ImGuiWindowFlags_NoResize;
-
-			ImGui::SetNextWindowFocus();
-			ImGui::Begin("Selected-item", nullptr, flags);
-
-			const auto& positions = inventory_sprite_positions[selected_item->first->sprite->internal_id];
-
-			ImGui::SameLine(10.f);
-			ImGui::Image(
-				reinterpret_cast<void*>(inventory_tex_id),
-				ImVec2(32, 32),
-
-				ImVec2(positions.top_left.x, positions.top_left.y),
-				ImVec2(positions.bottom_right.x, positions.bottom_right.y)
-			);
-
-			ImGui::SameLine(10.f);
-			ImGui::Text("%d", selected_item->second);
-
-			ImGui::End();
-			ImGui::PopStyleColor(2);
-
-		}
-	}
-	
 	if (show_inventory_menu)
 		draw_inventory_menu();
 	

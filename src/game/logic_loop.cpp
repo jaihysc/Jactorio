@@ -10,15 +10,30 @@
 #include "game/input/mouse_selection.h"
 #include "game/player/player_manager.h"
 #include "game/world/world_generator.h"
+#include "game/event/event.h"
 
 #include "renderer/gui/imgui_manager.h"
 #include "data/prototype/item/item.h"
 #include "data/data_manager.h"
 
+// Register this to the game_tick event
+void logic_loop() {
+	using namespace jactorio::game;
+	
+	// Do things every logic loop tick
+	input_manager::dispatch_input_callbacks();
+
+	// Generate chunks
+	world_generator::gen_chunk();
+
+	mouse_selection::draw_cursor_selected_tile();
+}
+
+
 bool logic_loop_should_terminate = false;
 
 const float move_speed = 0.9f;
-void jactorio::game::logic_loop() {
+void jactorio::game::init_logic_loop() {
 	// Logic initialization here...
 	logic_loop_should_terminate = false;
 	
@@ -76,18 +91,14 @@ void jactorio::game::logic_loop() {
 			inventory[5] = std::pair(x[1], 2000);
 		};
 	}, GLFW_KEY_0, GLFW_RELEASE);
-	
+
+	Event::subscribe(event_type::logic_tick, logic_loop);
+	// Runtime
 	auto next_frame = std::chrono::steady_clock::now();
 	while (!logic_loop_should_terminate) {
 		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
-		// Do things every logic loop tick
-		input_manager::dispatch_input_callbacks();
-
-		// Generate chunks
-		world_generator::gen_chunk();
-
-		mouse_selection::draw_cursor_selected_tile();
+		Event::raise(event_type::logic_tick);
 		
 		next_frame += std::chrono::nanoseconds(16666666);
 		std::this_thread::sleep_until(next_frame);
