@@ -67,37 +67,37 @@ void jactorio::game::init_logic_loop() {
 	}, GLFW_KEY_D, GLFW_REPEAT);
 
 
-	// Menus
-	input_manager::register_input_callback([]() {
-		renderer::imgui_manager::show_debug_menu = !renderer::imgui_manager::show_debug_menu;
-	}, GLFW_KEY_GRAVE_ACCENT, GLFW_RELEASE);
-	input_manager::register_input_callback([]() {
-		renderer::imgui_manager::show_inventory_menu = !renderer::imgui_manager::show_inventory_menu;
-	}, GLFW_KEY_TAB, GLFW_RELEASE);
+	{
+		using namespace renderer::imgui_manager;
+		// Menus
+		input_manager::register_input_callback([]() {
+			set_window_visibility(gui_window::debug, !get_window_visibility(gui_window::debug));
+		}, GLFW_KEY_GRAVE_ACCENT, GLFW_RELEASE);
+		input_manager::register_input_callback([]() {
+			set_window_visibility(gui_window::character, !get_window_visibility(gui_window::character));
+		}, GLFW_KEY_TAB, GLFW_RELEASE);
+	}
 
-
-	// TODO REMOVE
-	input_manager::register_input_callback([]() {
+	// TODO REMOVE | Test data
+	Event::subscribe(event_type::game_gui_open, []() {
 		data::item_stack* inventory = player_manager::player_inventory;
 
-		// TODO REMOVE | Test data
-		{
-			using namespace data;
-			auto x = data_manager::data_raw_get_all<Item>(data_category::item);
-			inventory[0] = std::pair(x[0], 10);
-			inventory[1] = std::pair(x[0], 8);
-			inventory[4] = std::pair(x[0], 100);
-			inventory[5] = std::pair(x[1], 2000);
-		}
-	}, GLFW_KEY_0, GLFW_RELEASE);
+		using namespace data;
+		auto x = data_manager::data_raw_get_all<Item>(data_category::item);
+		inventory[0] = std::pair(x[0], 10);
+		inventory[1] = std::pair(x[0], 8);
+		inventory[4] = std::pair(x[0], 100);
+		inventory[5] = std::pair(x[1], 2000);
+	});
 
+	
 	// Runtime
 	auto next_frame = std::chrono::steady_clock::now();
 	while (!logic_loop_should_terminate) {
 		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
 		logic_loop();
-		
+
 		next_frame += std::chrono::nanoseconds(16666666);
 		std::this_thread::sleep_until(next_frame);
 	}

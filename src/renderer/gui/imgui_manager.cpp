@@ -1,11 +1,10 @@
 #include "renderer/gui/imgui_manager.h"
 
-#include <glm/glm.hpp>
 #include <imgui/imgui.h>
 
 #include <unordered_map>
+#include <cassert>
 
-#include "game/player/player_manager.h"
 #include "jactorio.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/gui_menus_debug.h"
@@ -13,13 +12,7 @@
 #include "renderer/gui/imgui_opengl3.h"
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
-
-// Last window state
-// True - Window was open last tick
-// False - Window was closed last tick
-int window_index;
-std::unordered_map<unsigned int, bool> window_state;
-
+#include "game/event/event.h"
 
 ImGuiWindowFlags debug_window_flags = 0;
 ImGuiWindowFlags release_window_flags = 0;
@@ -46,7 +39,7 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui::NewFrame();
 
 		ImGui::SetNextWindowPosCenter();
-		ImGui::Begin("Error", nullptr, debug_window_flags);
+		ImGui::Begin("Error", nullptr, release_window_flags);
 		ImGui::TextWrapped("%s", err_title.c_str());
 		ImGui::TextWrapped("%s", err_message.c_str());
 		ImGui::NewLine();
@@ -61,6 +54,7 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		glfwPollEvents();
 	}
 }
+
 
 void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	IMGUI_CHECKVERSION();
@@ -145,6 +139,60 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	LOG_MESSAGE(info, "Imgui initialized");
 }
 
+
+#define WINDOW_PTR(function) (reinterpret_cast<void*>(jactorio::renderer::gui::function))
+void* windows[]{
+	WINDOW_PTR(character_menu),
+	WINDOW_PTR(debug_menu_main)
+};
+#undef WINDOW_PTR
+
+bool window_visibility[sizeof(windows) / sizeof(windows[0])];
+
+
+void jactorio::renderer::imgui_manager::set_window_visibility(const gui_window window, const bool visibility) {
+	const auto index = static_cast<int>(window);
+	assert(index != -1);
+	
+	bool& old_visibility = window_visibility[index];
+
+	if (visibility && !old_visibility) {
+		// Window opened
+		game::Event::raise<game::Gui_opened>(game::event_type::game_gui_open);
+	}
+	
+	old_visibility = visibility;
+}
+
+bool jactorio::renderer::imgui_manager::get_window_visibility(gui_window window) {
+	const auto index = static_cast<int>(window);
+	assert(index != -1);
+
+	return window_visibility[index];
+}
+
+/**
+ * Draws windows conditionally
+ * @param gui_window
+ * @param window_flags
+ * @param params Parameters to pass to the window function after the window flags
+ */
+template <typename ... ArgsT>
+void draw_window(jactorio::renderer::imgui_manager::gui_window gui_window, const ImGuiWindowFlags window_flags, 
+                 ArgsT& ... params) {
+	const int window_index = static_cast<int>(gui_window);
+	assert(window_index != -1);
+
+	// Window is hidden?
+	if (!window_visibility[window_index])
+		return;
+	
+	const auto function_ptr = reinterpret_cast<void(*)(ImGuiWindowFlags, ArgsT ...)>
+		(windows[window_index]);
+
+	function_ptr(window_flags, params ...);
+}
+
 void jactorio::renderer::imgui_manager::imgui_draw() {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
@@ -161,12 +209,8 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 
 	gui::cursor_window(release_window_flags, menu_data);
 
-	if (show_inventory_menu)
-		gui::character_menu(release_window_flags, menu_data);
-
-	// Debug menu is ` key
-	if (show_debug_menu)
-		gui::debug_menu_main(debug_window_flags);
+	draw_window(gui_window::character, release_window_flags, menu_data);
+	draw_window(gui_window::debug, debug_window_flags);
 
 	// Render
 	ImGui::Render();

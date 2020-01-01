@@ -15,6 +15,7 @@ namespace jactorio::game
 	 */
 	class Event
 	{
+		using void_ptr = void(*)();
 	public:
 		Event() = delete;
 		~Event() = delete;
@@ -24,7 +25,7 @@ namespace jactorio::game
 		Event& operator=(const Event& other) = delete;
 		Event& operator=(Event&& other) noexcept = delete;
 	private:
-		static std::unordered_map<event_type, std::vector<void*>> event_handlers_;
+		static std::unordered_map<event_type, std::vector<void_ptr>> event_handlers_;
 
 	public:
 		/**
@@ -33,7 +34,7 @@ namespace jactorio::game
 		template <typename T>
 		static void subscribe(const event_type event_type, T callback) {
 			event_handlers_[event_type]
-				.push_back(reinterpret_cast<void*>(callback));
+				.push_back((void_ptr)(callback));
 		}
 
 		/**
@@ -47,7 +48,7 @@ namespace jactorio::game
 			auto& handlers = event_handlers_[event_type];  // Event handlers of event_type
 			// Find callback in vector and remove
 			for (unsigned int i = 0; i < handlers.size(); ++i) {
-				if (handlers[i] == reinterpret_cast<void*>(callback)) {
+				if (handlers[i] == (void_ptr)(callback)) {
 					handlers.erase(handlers.begin() + i);
 					
 					removed = true;
@@ -70,7 +71,8 @@ namespace jactorio::game
 				auto fun_ptr = reinterpret_cast<void(*)(T&)>(callback);
 
 				// Construct T, pass to function ptr
-				fun_ptr(T(args...));
+				T event = T(args...);
+				fun_ptr(event);
 			}
 		}
 		

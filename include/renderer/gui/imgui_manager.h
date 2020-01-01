@@ -10,10 +10,12 @@ namespace jactorio::renderer::imgui_manager
 	/**
 	 * Specifies gui window to draw
 	 */
-	enum gui_window_type
+	enum class gui_window
 	{
 		none = -1,
+		
 		character = 0,
+		debug
 	};
 
 	struct Character_menu_data
@@ -27,9 +29,6 @@ namespace jactorio::renderer::imgui_manager
 	 * Requires Sprite::sprite_group::gui to be initialized
 	 */
 	void setup_character_data();
-	
-	inline bool show_debug_menu = false;
-	inline bool show_inventory_menu = false;
 
 	/**
 	 * Begins a self contained drawing loop which displays the specified error message
@@ -37,7 +36,12 @@ namespace jactorio::renderer::imgui_manager
 	void show_error_prompt(const std::string& err_title, const std::string& err_message);
 	
 	void setup(GLFWwindow* window);
+
+	void set_window_visibility(gui_window window, bool visibility);
+	bool get_window_visibility(gui_window window);
+	
 	void imgui_draw();
+	
 	void imgui_terminate();
 }
 

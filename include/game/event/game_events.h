@@ -10,7 +10,7 @@ namespace jactorio::game
 	{
 	protected:
 		Event_base() = default;
-		~Event_base() = default;
+		virtual ~Event_base() = default;
 		
 	public:
 		Event_base(const Event_base& other) = default;
@@ -46,6 +46,14 @@ namespace jactorio::game
 		unsigned short game_tick;
 		
 		EVENT_TYPE(logic_tick)
+		EVENT_CATEGORY(in_game)
+	};
+
+	
+	class Gui_opened : public Event_base
+	{
+	public:
+		EVENT_TYPE(game_gui_open)
 		EVENT_CATEGORY(in_game)
 	};
 	

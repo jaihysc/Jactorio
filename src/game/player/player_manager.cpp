@@ -77,6 +77,10 @@ void jactorio::game::player_manager::set_clicked_inventory(const unsigned short 
 	
 	// Selection mode can only be set upon first item selection
 	if (!has_item_selected) {
+		// Clicking empty slot
+		if (player_inventory[index].first == nullptr)
+			return;
+		
 		has_item_selected = true;
 		selected_item_index = index;
 

@@ -274,4 +274,25 @@ namespace game
 		EXPECT_EQ(player_inventory[3].first, item.get());
 		EXPECT_EQ(player_inventory[3].second, 5);
 	}
+
+	TEST(player_manager, inventory_click_empty_slot) {
+		// Left click on empty slot
+		// Should remain unchanged
+
+		using namespace jactorio::game::player_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+
+		player_inventory[0].first = nullptr;
+		player_inventory[0].second = 0;
+
+		set_clicked_inventory(0, 0);  // Pick up half
+
+		EXPECT_EQ(player_inventory[0].first, nullptr);
+		EXPECT_EQ(player_inventory[0].second, 0);
+
+		const auto cursor_item = get_selected_item();
+		EXPECT_EQ(cursor_item, nullptr);
+	}
 }
