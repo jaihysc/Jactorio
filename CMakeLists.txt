@@ -55,6 +55,8 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
+	${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
+	${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
 
 	${JACTORIO_DIR}/renderer/opengl/error.cpp
 	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
