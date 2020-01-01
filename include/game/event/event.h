@@ -1,19 +1,18 @@
 #ifndef GAME_EVENT_EVENT_H
 #define GAME_EVENT_EVENT_H
 
-#include "game/event/event_type.h"
-
 #include <unordered_map>
 #include <vector>
 
+#include "jactorio.h"
+#include "game/event/game_events.h"
+
 // TODO, when adding loading of saves, clear the event data
-/**
- * Handles the events of the game
- * !! Ensure that all handlers and raisers of events all provide the same parameters !!
- * !! This is NOT type safe !!
- */
 namespace jactorio::game
 {
+	/**
+	 * Used for dispatching and listening to events
+	 */
 	class Event
 	{
 	public:
@@ -59,23 +58,22 @@ namespace jactorio::game
 			return removed;
 		}
 
-		
 		/**
-		 * Raises an event of event_type, providing the specified args
+		 * Raises event of event_type, forwards args to constructor of event class T,
+		 * Constructed event is provided by reference to all callbacks
 		 */
-		template <typename... ArgsT>
+		template <typename T, typename ... ArgsT>
 		static void raise(const event_type event_type, const ArgsT& ... args) {
-			// All callbacks registered to event
+			// TODO raise not implemented
 			for (auto& callback : event_handlers_[event_type]) {
+				// Cast function pointer parameter to T
+				auto fun_ptr = reinterpret_cast<void(*)(T&)>(callback);
 
-				// Cast function pointer to specified args count
-				auto fun_ptr =
-					reinterpret_cast<void(*)(ArgsT ...)>(callback);
-
-				// Expand args for function ptr
-				fun_ptr(args...);
+				// Construct T, pass to function ptr
+				fun_ptr(T(args...));
 			}
 		}
+		
 
 		/**
 		 * Erases all data held in event_handlers_

@@ -5,6 +5,7 @@ namespace jactorio::game
 {
 	enum class event_type
 	{
+		// TODO events except logic_tick are not implemented
 		none = 0,
 
 		// User playing the game
@@ -38,7 +39,7 @@ namespace jactorio::game
 #define BIT_F(n) (1 << (n))
 
 	// Bitfield of categories
-	enum class event_category
+	enum event_category
 	{
 		none = 0,
 

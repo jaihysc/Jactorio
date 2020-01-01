@@ -135,7 +135,6 @@ validate_dependency(lib/SDL-mirror)
 
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)
-set(SFML_STATIC_LIBRARIES TRUE)
 
 # Ones which need to be built
 add_subdirectory("lib/glew-cmake")

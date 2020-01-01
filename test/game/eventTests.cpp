@@ -13,59 +13,53 @@ namespace game
 	}
 
 	
-	void test_func(int a, int b) {
-		counter++;
+	void test_callback1(jactorio::game::Logic_tick_event& e) {
+		counter = e.game_tick;
 	}
-	
-	void test_func2(int a) {
-		counter2--;
+
+	void test_callback2(int a, int b) {
+		counter2++;
 	}
-	
+
 	TEST(event, subscribe_raise_event) {
 		using namespace jactorio::game;
 
 		reset_counter();
 		Event::clear_all_data();
 
-		Event::subscribe(event_type::game_chunk_generated, test_func);
-		Event::subscribe(event_type::game_gui_character_open, test_func2);
-		
-		Event::raise(event_type::game_chunk_generated, 1, 2);
-		EXPECT_EQ(counter, 1);
+		Event::subscribe(event_type::logic_tick, test_callback1);
+		// Event::subscribe(event_type::game_gui_character_open, test_callback2);
 
-		// Subscribing same handler twice, means it gets called twice
-		Event::subscribe(event_type::game_gui_character_open, test_func2);
-		Event::raise(event_type::game_gui_character_open, 1);
-
-		EXPECT_EQ(counter2, -2);
+		Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
+		EXPECT_EQ(counter, 12);
 	}
-
+	
 	TEST(event, unsubscribe_event) {
 		using namespace jactorio::game;
-
+	
 		reset_counter();
 		Event::clear_all_data();
 		
-		Event::subscribe(event_type::game_chunk_generated, test_func);
+		Event::subscribe(event_type::game_chunk_generated, test_callback1);
 		
-		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_func), true);
-		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_func2), false);  // Does not exist
-
-		
-		Event::raise(event_type::game_chunk_generated, 1);
+		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback1), true);
+		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback2), false);  // Does not exist
+	
+		// Unchanged since unsubscribed
+		Event::raise<Logic_tick_event>(event_type::game_chunk_generated, 1);
 		EXPECT_EQ(counter, 0);
 	}
-
+	
 	TEST(event, clear_all_data) {
 		using namespace jactorio::game;
-
+	
 		reset_counter();
-
-		Event::subscribe(event_type::game_chunk_generated, test_func);
+	
+		Event::subscribe(event_type::game_chunk_generated, test_callback1);
 		Event::clear_all_data();
-
+	
 		// Nothing gets raises since it is cleared
-		Event::raise(event_type::game_chunk_generated, 1);
+		Event::raise<Logic_tick_event>(event_type::game_chunk_generated, 1);
 		EXPECT_EQ(counter, 0);
 	}
 }

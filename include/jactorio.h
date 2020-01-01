@@ -1,6 +1,7 @@
 #ifndef JACTORIO_H
 #define JACTORIO_H
 
+#include "core/debug/execution_timer.h"
 #include "core/logger.h"
 
 #define J_NO_DISCARD [[nodiscard]]

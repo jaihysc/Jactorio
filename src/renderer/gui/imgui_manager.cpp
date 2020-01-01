@@ -6,8 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
 
-#include "core/debug/execution_timer.h"
-#include "core/logger.h"
+#include "jactorio.h"
 #include "data/data_manager.h"
 #include "game/input/mouse_selection.h"
 #include "game/player/player_manager.h"
@@ -35,7 +34,7 @@ std::unordered_map<unsigned, jactorio::renderer::renderer_sprites::Image_positio
 unsigned int inventory_tex_id;
 
 void jactorio::renderer::imgui_manager::setup_character_data() {
-	inventory_sprite_positions = 
+	inventory_sprite_positions =
 		renderer_sprites::get_spritemap(data::Sprite::sprite_group::gui).sprite_positions;
 	inventory_tex_id = renderer_sprites::get_texture(data::Sprite::sprite_group::gui)->get_id();
 }
@@ -44,12 +43,12 @@ void draw_inventory_menu() {
 	namespace player_manager = jactorio::game::player_manager;
 	constexpr float inventory_slot_width = 32.f;
 	constexpr float inventory_slot_padding = 6.f;
-	
+
 	// ImGui::SetNextWindowPosCenter();
 
 	jactorio::data::item_stack* inventory = player_manager::player_inventory;
-	
-	ImGui::Begin("Character", nullptr, 
+
+	ImGui::Begin("Character", nullptr,
 	             ImVec2(20 + 10 * (inventory_slot_width + inventory_slot_padding),
 	                    player_manager::inventory_size / 10 * (inventory_slot_width +
 		                    inventory_slot_padding) + 80),
@@ -63,7 +62,7 @@ void draw_inventory_menu() {
 		ImGui::PushID(index);  // Uniquely identifies the button
 
 		const auto& item = inventory[index];
-		
+
 		// Item exists at inventory slot?
 		if (item.first != nullptr) {
 			const auto& positions = inventory_sprite_positions[item.first->sprite->internal_id];
@@ -84,7 +83,7 @@ void draw_inventory_menu() {
 			else if (ImGui::IsItemClicked(1)) {
 				player_manager::set_clicked_inventory(index, 1);
 			}
-			
+
 			// Only draw tooltip + item count if item count is not 0
 			if (item.second != 0) {
 				// Item tooltip
@@ -103,7 +102,7 @@ void draw_inventory_menu() {
 					flags |= ImGuiWindowFlags_AlwaysAutoResize;
 					ImGui::Begin(item.first->localized_name.c_str(), nullptr,
 					             flags);
-					
+
 					// Since the window auto-fit does not account for the title, print the title in the menu
 					// so imgui can account for it
 					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 0));
@@ -159,10 +158,10 @@ bool show_demo_window = false;
 void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err_title,
                                                           const std::string& err_message) {
 	bool quit = false;
-	
+
 	while (!quit) {
 		Renderer::clear();
-		
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -173,7 +172,7 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui::TextWrapped("%s", err_message.c_str());
 		ImGui::NewLine();
 		quit = ImGui::Button("Close");
-		
+
 		ImGui::End();
 
 		ImGui::Render();
@@ -195,7 +194,7 @@ void draw_cursor() {
 		ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(0, 0, 0, 0));
 
 		// Draw the window at the cursor
-		ImVec2 cursor_pos(
+		const ImVec2 cursor_pos(
 			game::mouse_selection::get_position_x(),
 			game::mouse_selection::get_position_y() + 2.f
 		);
@@ -233,14 +232,14 @@ void draw_cursor() {
 
 void draw_debug_menu() {
 	using namespace jactorio;
-	
+
 	ImGui::Begin("Debug menu", nullptr, debug_window_flags);
 	// Settings
 	glm::vec3* view_translation = renderer::mvp_manager::get_view_transform();
 	ImGui::SliderFloat2("Camera translation", &view_translation->x, -100.0f,
 	                    100.0f);
 
-	ImGui::Text("Cursor position: %f, %f", 
+	ImGui::Text("Cursor position: %f, %f",
 	            game::mouse_selection::get_position_x(),
 	            game::mouse_selection::get_position_y());
 
@@ -254,7 +253,8 @@ void draw_debug_menu() {
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	// Window options
-	ImGui::Checkbox("Timings", &show_timings_window); ImGui::SameLine();
+	ImGui::Checkbox("Timings", &show_timings_window);
+	ImGui::SameLine();
 	ImGui::Checkbox("Demo Window", &show_demo_window);
 
 	// World gen seed
@@ -262,16 +262,16 @@ void draw_debug_menu() {
 	ImGui::InputInt("World generator seed", &seed);
 	game::world_generator::set_world_generator_seed(seed);
 
-	
+
 	ImGui::End();
 }
 
 void draw_timings_menu() {
 	using namespace jactorio::core;
-	
+
 	ImGui::Begin("Timings", nullptr, debug_window_flags);
 	ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	
+
 	for (auto& time : Execution_timer::measured_times) {
 		ImGui::Text("%fms (%.1f/s) %s", time.second, 1000 / time.second, time.first.c_str());
 	}
@@ -285,15 +285,15 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	// (void)io;
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	
+
 	io.IniFilename = NULL;  // Disables imgui saving
 	io.ConfigWindowsMoveFromTitleBarOnly = true;  //
-	
+
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
-	
+
 	// Factorio inspired Imgui style
 	debug_window_flags |= ImGuiWindowFlags_NoCollapse;
 
@@ -379,16 +379,16 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 
 	if (show_inventory_menu)
 		draw_inventory_menu();
-	
+
 	// Debug menu is ` key
 	if (show_debug_menu)
 		draw_debug_menu();
-	
+
 	if (show_demo_window)
 		ImGui::ShowDemoWindow();
 	if (show_timings_window)
 		draw_timings_menu();
-	
+
 	// Render
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
