@@ -1,28 +1,30 @@
-import jactorio_data as jd
+import jactorioData as j
+c = j.category
+import data.base.prototypes.entity.containers
 
 def addTile(noiseLayer, endRange, name, spritePath, isWater = False):
-    # Create Sprite
-    sprite_proto = jd.add(jd.category.Sprite, name, jd.Sprite(spritePath, jd.spriteGroup.Terrain))
+    # Sprite
+    sprite = j.add(c.Sprite)
+    sprite.load(spritePath)
+    sprite.group = j.spriteGroup.Terrain
 
-    # Create tile
-    tile_proto = jd.Tile(sprite_proto)
-    tile_proto.isWater = isWater
-    jd.add(jd.category.Tile, name, tile_proto)
-
-    # Add Tile to NoiseLayer
-    noiseLayer.addTile(endRange, tile_proto)
+    # Tile
+    tile = j.add(c.Tile)
+    tile.sprite = sprite
+    tile.isWater = isWater
+    
+    noiseLayer.addTile(endRange, tile)
 
 # Create NoiseLayer
-baseTerrain = jd.NoiseLayer(-1, True)
+baseTerrain = j.add(c.NoiseLayer, "base-terrain")
+baseTerrain.startVal(-1)
+baseTerrain.normalize = True
 
 addTile(baseTerrain, -0.5, "deep-water-1", "base/graphics/tiles/deep-water.png", True)
 addTile(baseTerrain, -0.25, "water-1", "base/graphics/tiles/water.png", True)
 addTile(baseTerrain, -0.2, "sand-1", "base/graphics/tiles/sand.png")
 addTile(baseTerrain, 0.5, "grass-1", "base/graphics/tiles/grass.png")
 addTile(baseTerrain, 1, "dirt-1", "base/graphics/tiles/dirt.png")
-
-# Add NoiseLayer
-jd.add(jd.category.NoiseLayer, "base-terrain", baseTerrain)
 
 
 ##########################################################
@@ -31,40 +33,42 @@ jd.add(jd.category.NoiseLayer, "base-terrain", baseTerrain)
 def addResourceTile(
     noiseLayer, endRange, name, tileSpritePath, itemSpritePath):
     # Item sprite
-    item_sprite_proto = jd.Sprite(itemSpritePath)
-    item_sprite_proto.group = jd.spriteGroup.Gui
-    
-    jd.add(jd.category.Sprite, name + "-item", item_sprite_proto)
-    jd.add(jd.category.Item, name + "-item", jd.Item(item_sprite_proto))
+    item = j.add(c.Item, name + "-item")
+    itemSprite = j.add(c.Sprite)
+    itemSprite.load(itemSpritePath)
+    itemSprite.group = j.spriteGroup.Gui
+    item.sprite = itemSprite
 
     # Add Tile to NoiseLayer
-    noiseLayer.addTile(endRange, 
-        jd.add(jd.category.ResourceTile, name, 
-            jd.ResourceTile(
-                jd.add(jd.category.Sprite, name, jd.Sprite(tileSpritePath, jd.spriteGroup.Terrain))
-            )
-        )
-    )
+    resourceTile = j.add(c.ResourceTile)
+    resourceTile.sprite = j.add(c.Sprite)
+    resourceTile.sprite.load(tileSpritePath)
+    resourceTile.sprite.group = j.spriteGroup.Terrain
+
+    noiseLayer.addTile(endRange, resourceTile)
 
 # Only use the tips of the noise to ensure that the resources is in one big patch
-coalLayer = jd.NoiseLayer(0.8, False)
-coalLayer.tileDataCategory = jd.category.ResourceTile
+coalLayer = j.add(c.NoiseLayer, "coal-layer")
+coalLayer.startVal(0.8)
+coalLayer.normalize = False
+
+coalLayer.tileDataCategory = j.category.ResourceTile
 coalLayer.octaveCount = 2
 coalLayer.frequency = 0.3
 coalLayer.persistence = 0.6
 
 addResourceTile(coalLayer, 2, "coal", "base/graphics/resource/coal/coal-ore.png", "base/graphics/icon/coal.png")
-jd.add(jd.category.NoiseLayer, "coal-layer", coalLayer)
 
-copperLayer = jd.NoiseLayer(1, False)
-copperLayer.tileDataCategory = jd.category.ResourceTile
+copperLayer = j.add(c.NoiseLayer, "copper-layer")
+copperLayer.startVal(1)
+copperLayer.normalize = False
+
+copperLayer.tileDataCategory = j.category.ResourceTile
 copperLayer.octaveCount = 2
 copperLayer.frequency = 0.5
 copperLayer.persistence = 0.7
 
 addResourceTile(copperLayer, 2, "copper", "base/graphics/resource/copper/copper-ore.png", "base/graphics/icon/copper.png")
-jd.add(jd.category.NoiseLayer, "copper-layer", copperLayer)
-
 
 # addNoiseLayerTile("iron", "base/graphics/resource/iron/iron-ore.png")
 # addNoiseLayerTile("stone", "base/graphics/resource/stone/stone-ore.png")

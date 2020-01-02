@@ -17,6 +17,9 @@ namespace jactorio::data
 		 * If true, resources will not spawn on this and player cannot navigate onto it
 		 */
 		bool is_water = false;
+
+		Sprite* sprite_ptr = nullptr;
+
 		
 		Tile() = default;
 
@@ -24,9 +27,10 @@ namespace jactorio::data
 		 * @param sprite_ptr Points to a sprite prototype
 		 */
 		explicit Tile(Sprite* sprite_ptr)
-			: sprite_ptr(sprite_ptr) {}
+			: sprite_ptr(sprite_ptr) {
+		}
 
-		Sprite* sprite_ptr = nullptr;
+		~Tile() override = default;
 	};
 }
 

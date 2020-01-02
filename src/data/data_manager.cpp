@@ -6,6 +6,7 @@
 #include "core/filesystem.h"
 #include "core/logger.h"
 #include "data/pybind/pybind_manager.h"
+#include "core/resource_guard.h"
 
 // Position 0 reserved to indicate error
 constexpr auto internal_id_start = 1;
@@ -39,10 +40,19 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 	}
 
 	// Print warning if overriding another name
-	const auto& category = data_raw[data_category];
-	if (category.find(formatted_iname) != category.end()) {
-		LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration",
-		              formatted_iname.c_str(), static_cast<int>(data_category));
+	// Do not print warning in iname is empty
+	if (iname.empty()) {
+		// Generate a internal name based on the id
+		std::ostringstream sstr;
+		sstr << "@" << internal_id_new;
+		formatted_iname = sstr.str();
+	}
+	else {
+		const auto& category = data_raw[data_category];
+		if (category.find(formatted_iname) != category.end()) {
+			LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration",
+			              formatted_iname.c_str(), static_cast<int>(data_category));
+		}
 	}
 	
 	// Enforce prototype rules...
@@ -61,6 +71,7 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 
 
 	data_raw[data_category][formatted_iname] = prototype;
+	LOG_MESSAGE_f(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
 int jactorio::data::data_manager::load_data(
@@ -69,8 +80,12 @@ int jactorio::data::data_manager::load_data(
 	// Read data.cfg files within each sub-folder
 	// Load extracted data into loaded_data
 
-	for (const auto& entry : std::filesystem::directory_iterator(
-		     data_folder_path)) {
+	// Terminate the interpreter after loading prototypes
+	auto py_guard = core::Resource_guard(pybind_manager::py_interpreter_terminate);
+	pybind_manager::py_interpreter_init();
+
+	
+	for (const auto& entry : std::filesystem::directory_iterator(data_folder_path)) {		
 		const std::string directory_name = entry.path().filename().u8string();
 
 		std::stringstream ss;

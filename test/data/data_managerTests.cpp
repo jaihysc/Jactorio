@@ -85,24 +85,50 @@ namespace data
 		
 		data_manager::set_directory_prefix("test");
 
-		const auto prototype = new jactorio::data::Sprite{};
-		prototype->name = "small-electric-pole";
+		// Normal name
+		{
+			const auto prototype = new jactorio::data::Sprite{};
+			prototype->name = "small-electric-pole";
 
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
-		                           prototype, true);
+			data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
+			                           prototype, true);
 
-		// Override
-		const auto prototype2 = new jactorio::data::Sprite{};
-		prototype2->name = "small-electric-pole";
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
-		                           prototype2, true);
+			// Override
+			const auto prototype2 = new jactorio::data::Sprite{};
+			prototype2->name = "small-electric-pole";
+			data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
+			                           prototype2, true);
 
-		// Get
-		const auto proto = data_manager::data_raw_get<jactorio::data::Sprite>(
-			jactorio::data::data_category::sprite,
-			"__test__/small-electric-pole");
+			// Get
+			const auto proto = data_manager::data_raw_get<jactorio::data::Sprite>(
+				jactorio::data::data_category::sprite,
+				"__test__/small-electric-pole");
+			EXPECT_EQ(proto, prototype2);
+		}
+		data_manager::clear_data();
+		// Empty name - Overriding is disabled for empty names, this is for destructor data_raw add
+		{
+			const auto prototype = new jactorio::data::Sprite{};
+			data_manager::data_raw_add(jactorio::data::data_category::sprite, "",
+			                           prototype, true);
 
-		EXPECT_EQ(proto, prototype2);
+			// No Override
+			const auto prototype2 = new jactorio::data::Sprite{};
+			data_manager::data_raw_add(jactorio::data::data_category::sprite, "",
+			                           prototype2, true);
+
+			// Get
+			auto v = data_manager::data_raw_get_all<jactorio::data::Sprite>(jactorio::data::data_category::sprite);
+			EXPECT_EQ(v.size(), 2);
+
+			
+			const auto proto = data_manager::data_raw_get<jactorio::data::Sprite>(
+				jactorio::data::data_category::sprite, "");
+
+			// The empty name will be automatically assigned to something else
+			EXPECT_EQ(proto, nullptr);
+		}
+
 	}
 
 	
@@ -110,8 +136,6 @@ namespace data
 		data_manager::set_directory_prefix("asdf");
 
 		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
-		auto py_guard = jactorio::core::Resource_guard(jactorio::data::pybind_manager::py_interpreter_terminate);
-		jactorio::data::pybind_manager::py_interpreter_init();
 		
 		// Load_data should set the directory prefix based on the subfolder
 		EXPECT_EQ(data_manager::load_data("data"), 0);

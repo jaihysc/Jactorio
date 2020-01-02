@@ -9,7 +9,7 @@
 #include "core/logger.h"
 
 namespace jactorio::data
-{
+{	
 	/**
 	* std::string type -> Everything of specified type (E.g image, audio)
 	* >> std::string id - > std::string path to item

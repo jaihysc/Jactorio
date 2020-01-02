@@ -20,7 +20,7 @@ namespace jactorio::data
 		int octave_count = 8;
 		double frequency = 0.25;
 		double persistence = 0.5;
-		
+
 	private:
 		// The inclusive value where the noise range begins
 		std::vector<float> noise_range_tile_ranges_;
@@ -28,6 +28,25 @@ namespace jactorio::data
 		std::vector<Tile*> noise_range_tiles_;
 
 	public:
+		Noise_layer() {
+			set_start_val(-1.f);
+		}
+
+		Noise_layer(const float starting_val, const bool normalize_val)
+			: normalize_val(normalize_val) {
+			set_start_val(starting_val);
+		}
+
+		~Noise_layer() override = default;
+
+		Noise_layer(const Noise_layer& other) = default;
+
+		Noise_layer(Noise_layer&& other) noexcept = default;
+
+		Noise_layer& operator=(const Noise_layer& other) = default;
+
+		Noise_layer& operator=(Noise_layer&& other) noexcept = default;
+
 		/**
 		 * If true, input values outside of the noise_layer range will be brought to the lowest/highest
 		 * If false, input values outside of the noise_layer range returns nullptr
@@ -39,16 +58,6 @@ namespace jactorio::data
 		 */
 		data_category tile_data_category = data_category::tile;
 
-		
-		Noise_layer() {
-			set_start_val(-1.f);
-		}
-
-		Noise_layer(const float starting_val, const bool normalize_val)
-			: normalize_val(normalize_val) {
-			set_start_val(starting_val);
-		}
-		
 		/**
 		 * Retrieves the starting value <br>
 		 * Default value is -1

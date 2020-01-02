@@ -14,8 +14,15 @@ namespace jactorio::data
 		Sprite* sprite = nullptr;
 		unsigned short stack_size = 50;
 
+		
 		Item() = default;
-		explicit Item(Sprite* sprite) : sprite(sprite) {}
+
+		explicit Item(Sprite* sprite)
+			: sprite(sprite) {
+			
+		}
+
+		~Item() override = default;
 	};
 
 	// Makes arrays holding items more clear than just unsigned int

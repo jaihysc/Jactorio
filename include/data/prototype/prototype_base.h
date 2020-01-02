@@ -10,6 +10,11 @@ namespace jactorio::data
 	class Prototype_base
 	{
 	public:
+		Prototype_base() = default;
+
+		// This is needed so pybind can return the right type on .add()
+		virtual ~Prototype_base() = default;
+		
 		/**
 		 * Unique per prototype, auto assigned per new prototype added, faster than
 		 * std::string name <br>J

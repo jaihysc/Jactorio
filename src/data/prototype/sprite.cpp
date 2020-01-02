@@ -39,6 +39,43 @@ jactorio::data::Sprite::~Sprite() {
 	delete[] sprite_buffer_;
 }
 
+jactorio::data::Sprite::Sprite(const Sprite& other)
+	: Prototype_base(other),
+	  group(other.group),
+	  width_(other.width_),
+	  height_(other.height_),
+	  bytes_per_pixel_(other.bytes_per_pixel_),
+	  sprite_path_(other.sprite_path_),
+	  sprite_buffer_(other.sprite_buffer_) {
+
+	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytes_per_pixel_;
+	sprite_buffer_ = new unsigned char[size];
+	for (int i = 0; i < size; ++i) {
+		sprite_buffer_[i] = other.sprite_buffer_[i];
+	}
+}
+
+jactorio::data::Sprite& jactorio::data::Sprite::operator=(const Sprite& other) {
+	if (this == &other)
+		return *this;
+	Prototype_base::operator =(other);
+	group = other.group;
+	width_ = other.width_;
+	height_ = other.height_;
+	bytes_per_pixel_ = other.bytes_per_pixel_;
+	sprite_path_ = other.sprite_path_;
+	sprite_buffer_ = other.sprite_buffer_;
+
+	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytes_per_pixel_;
+	sprite_buffer_ = new unsigned char[size];
+	for (int i = 0; i < size; ++i) {
+		sprite_buffer_[i] = other.sprite_buffer_[i];
+	}
+
+	return *this;
+}
+
+
 const unsigned char* jactorio::data::Sprite::get_sprite_data_ptr() const {
 	return sprite_buffer_;
 }

@@ -1,23 +1,27 @@
-import jactorio_data as jd
+import jactorioData as j
+c = j.category
 
-def add_sprite(name, sprite_path):
-    return jd.add(jd.category.Sprite, name, jd.Sprite(sprite_path, jd.spriteGroup.Terrain))
+def addSprite(name, spritePath):
+    spriteProto = j.add(c.Sprite, name)
+    spriteProto.load(spritePath)
+    spriteProto.group = j.spriteGroup.Terrain
+    return spriteProto
 
-def add_tile(name, sprite_path):
-    return jd.add(jd.category.Tile, name, jd.Tile(add_sprite(name, sprite_path)))
+def addTile(name, spritePath):
+    tileProto = j.add(c.Tile, name)
+    tileProto.sprite = addSprite(name, spritePath)
 
+addSprite("menu-background", "core/graphics/menu/background-image.png")
+addSprite("menu-logo", "core/graphics/menu/background-image-logo.png")
 
-add_sprite("menu-background", "core/graphics/menu/background-image.png")
-add_sprite("menu-logo", "core/graphics/menu/background-image-logo.png")
- 
-add_tile("cursor-select", "core/graphics/cursor-select.png")
-add_tile("cursor-invalid", "core/graphics/cursor-invalid.png")
+addTile("cursor-select", "core/graphics/cursor-select.png")
+addTile("cursor-invalid", "core/graphics/cursor-invalid.png")
 
 
 # Inventory selection cursor
-item_sprite_proto = jd.Sprite("core/graphics/hand.png")
-item_sprite_proto.group = jd.spriteGroup.Gui
+itemSprite = j.add(c.Sprite)
+itemSprite.load("core/graphics/hand.png")
+itemSprite.group = j.spriteGroup.Gui
 
-jd.add(jd.category.Item, "inventory-selected-cursor", jd.Item(
-    jd.add(jd.category.Sprite, "inventory-selected-cursor", item_sprite_proto)
-))
+itemCursor = j.add(c.Item, "inventory-selected-cursor")
+itemCursor.sprite = itemSprite

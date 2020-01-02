@@ -241,7 +241,7 @@ void jactorio::renderer::world_renderer::render_player_position(
 	}
 
 	// Rendering
-	EXECUTION_PROFILE_SCOPE(profiler, "Renderer preparation layers");
+	EXECUTION_PROFILE_SCOPE(profiler, "World draw");
 	
 	// Rendering layers
 	for (unsigned int layer_index = 0; layer_index < game::Chunk_tile::tile_prototypes_count; ++layer_index) {

@@ -61,9 +61,6 @@ int jactorio::renderer::render_init() {
 	auto imgui_manager_guard = core::Resource_guard(&imgui_manager::imgui_terminate);
 	imgui_manager::setup(window);
 
-	auto py_interpreter_guard = core::Resource_guard(&data::pybind_manager::py_interpreter_terminate);
-	data::pybind_manager::py_interpreter_init();
-
 	// Load prototype data
 	if (data::data_manager::load_data(core::filesystem::resolve_path("~/data")) != 0) {
 		// error occurred

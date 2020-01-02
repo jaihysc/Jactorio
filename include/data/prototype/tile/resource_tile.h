@@ -8,6 +8,10 @@ namespace jactorio::data
 	class Resource_tile : public Tile
 	{
 		using Tile::Tile;
+	public:
+		Resource_tile() = default;
+
+		~Resource_tile() override = default;
 	};
 }
 

@@ -40,12 +40,17 @@ namespace jactorio::data
 		explicit Sprite(const std::string& sprite_path);
 		Sprite(const std::string& sprite_path, sprite_group group);
 
-		~Sprite();
+		~Sprite() override;
 
-		Sprite(const Sprite& other) = delete;
-		Sprite(Sprite&& other) noexcept = default;
-		Sprite& operator=(const Sprite& other) = delete;
-		Sprite& operator=(Sprite&& other) noexcept = default;
+
+		Sprite(const Sprite& other);
+
+		Sprite(Sprite&& other) noexcept = delete;
+
+		Sprite& operator=(const Sprite& other);
+
+		Sprite& operator=(Sprite&& other) noexcept = delete;
+
 		
 		[[nodiscard]] const unsigned char* get_sprite_data_ptr() const;
 
