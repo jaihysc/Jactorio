@@ -95,7 +95,9 @@ unsigned jactorio::data::Sprite::get_height() const {
 	return height_;
 }
 
-void jactorio::data::Sprite::load_image(const std::string& image_path) {
+jactorio::data::Sprite* jactorio::data::Sprite::load_image(const std::string& image_path) {
 	sprite_path_ = core::filesystem::resolve_path("~/data/" + image_path);
 	load_image_from_file();
+
+	return this;
 }

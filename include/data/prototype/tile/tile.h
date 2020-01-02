@@ -12,25 +12,26 @@ namespace jactorio::data
 	 */
 	class Tile : public Prototype_base
 	{
-	public:
-		/**
-		 * If true, resources will not spawn on this and player cannot navigate onto it
-		 */
-		bool is_water = false;
-
-		Sprite* sprite_ptr = nullptr;
-
-		
-		Tile() = default;
+	public:		
+		Tile()
+			: is_water(false), sprite_ptr(nullptr) {
+		}
 
 		/**
 		 * @param sprite_ptr Points to a sprite prototype
 		 */
 		explicit Tile(Sprite* sprite_ptr)
-			: sprite_ptr(sprite_ptr) {
+			: is_water(false), sprite_ptr(sprite_ptr) {
 		}
 
 		~Tile() override = default;
+
+		/**
+		 * If true, resources will not spawn on this and player cannot navigate onto it
+		 */
+		PYTHON_PROP_REF(Tile, bool, is_water)
+
+		PYTHON_PROP(Tile, Sprite*, sprite_ptr)
 	};
 }
 

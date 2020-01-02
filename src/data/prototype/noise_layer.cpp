@@ -2,13 +2,15 @@
 
 #include <vector>
 
-void jactorio::data::Noise_layer::add_tile(const float end_range, Tile* tile_ptr) {
+jactorio::data::Noise_layer* jactorio::data::Noise_layer::add_tile(const float end_range, Tile* tile_ptr) {
 	// Will not add if start_val is not set
 	if (noise_range_tile_ranges_.empty())
-		return;
+		return this;
 
 	noise_range_tile_ranges_.push_back(end_range);
 	noise_range_tiles_.push_back(tile_ptr);
+
+	return this;
 }
 
 jactorio::data::Tile* jactorio::data::Noise_layer::get_tile(float val) {

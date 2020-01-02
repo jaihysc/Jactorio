@@ -11,16 +11,19 @@ namespace jactorio::data
 	class Container_entity : public Health_entity
 	{
 	public:
-		Container_entity() = default;
+		Container_entity()
+			: inventory_size(0), sprite(nullptr) {
+		}
 
 		~Container_entity() override = default;
 
-		unsigned short inventory_size;
+		
+		PYTHON_PROP_REF(Container_entity, unsigned short, inventory_size)
 
 		/**
 		 * Sprite drawn when placed in the world
 		 */
-		Sprite* sprite;
+		PYTHON_PROP(Container_entity, Sprite*, sprite)
 	};
 }
 

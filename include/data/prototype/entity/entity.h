@@ -12,17 +12,21 @@ namespace jactorio::data
 	class Entity : public Prototype_base
 	{
 	public:
+		Entity()
+			: tile_width(1), tile_height(1), rotatable(false), item(nullptr) {
+		}
+		
 		~Entity() override = default;
 		
 		// Number of tiles this entity spans
-		unsigned short tile_width = 1;
-		unsigned short tile_height = 1;
+		PYTHON_PROP_REF(Entity, unsigned short, tile_width)
+		PYTHON_PROP_REF(Entity, unsigned short, tile_height)
 		
 		// Can be rotated by player?
-		bool rotatable = false;
-		
+		PYTHON_PROP_REF(Entity, bool, rotatable)
+
 		// Item when entity is picked up
-		Item* item = nullptr;
+		PYTHON_PROP(Entity, Item*, item)
 	};
 }
 

@@ -8,11 +8,17 @@ namespace jactorio::data
 	class Health_entity : public Entity
 	{
 	public:
-		Health_entity() = default;
+		Health_entity()
+			: max_health(0) {
+		}
 
 		~Health_entity() override = default;
-		
-		unsigned short max_health;
+
+		/**
+		 * How many hit points this entity can have before it dies <br>
+		 * 0 max health is invalid
+		 */
+		PYTHON_PROP_REF(Health_entity, unsigned short, max_health)
 	};
 }
 

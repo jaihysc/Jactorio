@@ -29,44 +29,57 @@ PYBIND11_MAKE_OPAQUE(data_raw)
 PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	using namespace jactorio::data;
 
-	// Functions defined for the class bindings must be actually within the class in c++
+	// Generates a self returning setter and the actual variable
+	/*
+		PYBIND_PROP(Prototype_base, category)
 
+		vvv
+		
+		.def("category", &Prototype_base::set_category)
+		.def_readwrite("_""category", &Prototype_base::category)
+	*/
+#define PYBIND_PROP(class_, name)\
+	.def(#name, &class_::set_##name, pybind11::return_value_policy::reference)\
+	.def_readwrite("_" #name, &class_::name)
+
+// If the python name is different from the c++ name
+#define PYBIND_PROP_SEPARATE(class_, py_name, cpp_name)\
+	.def(#py_name, &class_::set_##cpp_name, pybind11::return_value_policy::reference)\
+	.def_readwrite("_" #py_name, &class_::cpp_name)
+
+	
 	// Prototype classes
 	py::class_<Prototype_base>(m, "PrototypeBase")
-		// .def_readwrite("name", &Prototype_base::name)
-		.def_readwrite("category", &Prototype_base::category)
-		.def_readwrite("order", &Prototype_base::order);
+		.def("name", &Prototype_base::set_name)
+		PYBIND_PROP(Prototype_base, category)
+		PYBIND_PROP(Prototype_base, order);
 
 	py::class_<Sprite, Prototype_base>(m, "Sprite")
-		.def(py::init())
-		.def(py::init<const std::string&>())
-		.def(py::init<const std::string&, Sprite::sprite_group>())
-		.def_readwrite("group", &Sprite::group)
+		PYBIND_PROP(Sprite, group)
 		.def("load", &Sprite::load_image);
 	py::enum_<Sprite::sprite_group>(m, "spriteGroup")
 		.value("Terrain", Sprite::sprite_group::terrain)
 		.value("Gui", Sprite::sprite_group::gui);
 
-
 	py::class_<Item, Prototype_base>(m, "Item")
-		.def_readwrite("sprite", &Item::sprite)
-		.def_readwrite("stackSize", &Item::stack_size);
-
+		PYBIND_PROP(Item, sprite)
+		PYBIND_PROP_SEPARATE(Item, stackSize, stack_size);
 
 	py::class_<Tile, Prototype_base>(m, "Tile")
-		.def_readwrite("isWater", &Tile::is_water)
-		.def_readwrite("sprite", &Tile::sprite_ptr);
+		PYBIND_PROP_SEPARATE(Tile, isWater, is_water)
+		PYBIND_PROP_SEPARATE(Tile, sprite, sprite_ptr);
 
 	py::class_<Resource_tile, Tile>(m, "ResourceTile");
 
 	py::class_<Noise_layer, Prototype_base>(m, "NoiseLayer")
 		// Perlin noise properties
-		.def_readwrite("octaveCount", &Noise_layer::octave_count)
-		.def_readwrite("frequency", &Noise_layer::frequency)
-		.def_readwrite("persistence", &Noise_layer::persistence)
+		PYBIND_PROP_SEPARATE(Noise_layer, octaveCount, octave_count)
+		PYBIND_PROP(Noise_layer, frequency)
+		PYBIND_PROP(Noise_layer, persistence)
 
-		.def_readwrite("tileDataCategory", &Noise_layer::tile_data_category)
-		.def_readwrite("normalize", &Noise_layer::normalize_val)
+		PYBIND_PROP_SEPARATE(Noise_layer, tileDataCategory, tile_data_category)
+		PYBIND_PROP_SEPARATE(Noise_layer, normalize, normalize_val)
+
 		.def("getStartVal", &Noise_layer::get_start_val)
 		.def("startVal", &Noise_layer::set_start_val)
 		.def("addTile", &Noise_layer::add_tile)
@@ -75,17 +88,17 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	// Entity
 	py::class_<Entity, Prototype_base>(m, "Entity")
-		.def_readwrite("item", &Entity::item)
-		.def_readwrite("rotatable", &Entity::rotatable)
-		.def_readwrite("tileWidth", &Entity::tile_width)
-		.def_readwrite("tileHeight", &Entity::tile_height);
+		PYBIND_PROP(Entity, item)
+		PYBIND_PROP(Entity, rotatable)
+		PYBIND_PROP_SEPARATE(Entity, tileWidth, tile_width)
+		PYBIND_PROP_SEPARATE(Entity, tileHeight, tile_height);
 
 	py::class_<Health_entity, Entity>(m, "HealthEntity")
-		.def_readwrite("maxHealth", &Health_entity::max_health);
+		PYBIND_PROP_SEPARATE(Health_entity, maxHealth, max_health);
 
 	py::class_<Container_entity, Health_entity>(m, "ContainerEntity")
-		.def_readwrite("sprite", &Container_entity::sprite)
-		.def_readwrite("inventorySize", &Container_entity::inventory_size);
+		PYBIND_PROP(Container_entity, sprite)
+		PYBIND_PROP_SEPARATE(Container_entity, inventorySize, inventory_size);
 
 	// ############################################################
 	// Data_raw + get/set

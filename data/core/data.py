@@ -2,14 +2,10 @@ import jactorioData as j
 c = j.category
 
 def addSprite(name, spritePath):
-    spriteProto = j.add(c.Sprite, name)
-    spriteProto.load(spritePath)
-    spriteProto.group = j.spriteGroup.Terrain
-    return spriteProto
+    return j.add(c.Sprite, name).load(spritePath).group(j.spriteGroup.Terrain)
 
 def addTile(name, spritePath):
-    tileProto = j.add(c.Tile, name)
-    tileProto.sprite = addSprite(name, spritePath)
+    return j.add(c.Tile, name).sprite(addSprite(name, spritePath))
 
 addSprite("menu-background", "core/graphics/menu/background-image.png")
 addSprite("menu-logo", "core/graphics/menu/background-image-logo.png")
@@ -19,9 +15,6 @@ addTile("cursor-invalid", "core/graphics/cursor-invalid.png")
 
 
 # Inventory selection cursor
-itemSprite = j.add(c.Sprite)
-itemSprite.load("core/graphics/hand.png")
-itemSprite.group = j.spriteGroup.Gui
-
-itemCursor = j.add(c.Item, "inventory-selected-cursor")
-itemCursor.sprite = itemSprite
+j.add(c.Item, "inventory-selected-cursor").sprite(
+    j.add(c.Sprite).load("core/graphics/hand.png").group(j.spriteGroup.Gui)
+)

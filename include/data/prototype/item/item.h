@@ -11,11 +11,9 @@ namespace jactorio::data
 	class Item : public Prototype_base
 	{
 	public:
-		Sprite* sprite = nullptr;
-		unsigned short stack_size = 50;
-
-		
-		Item() = default;
+		Item()
+			:sprite(nullptr), stack_size(50) {
+		}
 
 		explicit Item(Sprite* sprite)
 			: sprite(sprite) {
@@ -23,6 +21,14 @@ namespace jactorio::data
 		}
 
 		~Item() override = default;
+
+		
+		PYTHON_PROP(Item, Sprite*, sprite)
+
+		/**
+		 * Number of items which can be together
+		 */
+		PYTHON_PROP_REF(Item, unsigned short, stack_size)
 	};
 
 	// Makes arrays holding items more clear than just unsigned int

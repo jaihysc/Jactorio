@@ -20,7 +20,7 @@ namespace jactorio::data
 		/**
 		 * Group determines which spritemap this is placed on
 		 */
-		sprite_group group;
+		PYTHON_PROP_REF(Sprite, sprite_group, group)
 		
 	private:
 		// Image properties
@@ -51,6 +51,7 @@ namespace jactorio::data
 
 		Sprite& operator=(Sprite&& other) noexcept = delete;
 
+	public:
 		
 		[[nodiscard]] const unsigned char* get_sprite_data_ptr() const;
 
@@ -75,7 +76,7 @@ namespace jactorio::data
 		 * Loads a sprite from sprite_path into member sprite <br>
 		 * Do not include ~/data/
 		 */
-		void load_image(const std::string& image_path);
+		Sprite* load_image(const std::string& image_path);
 	};
 }
 
