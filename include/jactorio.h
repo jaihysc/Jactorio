@@ -3,8 +3,9 @@
 
 #include "core/debug/execution_timer.h"
 #include "core/logger.h"
+#include <cassert>
 
-#define J_NO_DISCARD [[nodiscard]]
+#define J_NODISCARD [[nodiscard]]
 
 // Build type
 #ifdef JACTORIO_DEBUG_BUILD

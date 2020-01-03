@@ -2,6 +2,7 @@
 #define GAME_INPUT_MOUSE_SELECTION_H
 
 #include <utility>
+#include <string>
 
 /**
  * Handles mouse selection within the game
@@ -22,9 +23,14 @@ namespace jactorio::game::mouse_selection
 	std::pair<int, int> get_mouse_selected_tile();
 
 	/**
+	 * Draws a sprite with specified internal name at the cursor
+	 */
+	void draw_tile_at_cursor(const std::string& iname);
+	
+	/**
 	 * Draws a cursor over the tile currently selected
 	 */
-	void draw_cursor_selected_tile();
+	void draw_selection_box();
 	
 }
 

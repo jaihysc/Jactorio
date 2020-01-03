@@ -19,12 +19,17 @@ void logic_loop() {
 	using namespace jactorio::game;
 
 	// Do things every logic loop tick
-	input_manager::dispatch_input_callbacks();
+	input_manager::raise();
 
 	// Generate chunks
 	world_generator::gen_chunk();
 
-	mouse_selection::draw_cursor_selected_tile();
+	// jactorio::data::item_stack* ptr;
+	// if ((ptr = player_manager::get_selected_item()) != nullptr) {
+		// mouse_selection::draw_tile_at_cursor(ptr->first->sprite->name);
+	// }
+	// else
+		mouse_selection::draw_selection_box();
 }
 
 
@@ -37,32 +42,32 @@ void jactorio::game::init_logic_loop() {
 	logic_loop_should_terminate = false;
 
 	// Movement controls
-	input_manager::register_input_callback([]() {
+	input_manager::subscribe([]() {
 		player_manager::move_player_y(move_speed * -1);
 	}, GLFW_KEY_W, GLFW_PRESS);
-	input_manager::register_input_callback([]() {
+	input_manager::subscribe([]() {
 		player_manager::move_player_y(move_speed * -1);
 	}, GLFW_KEY_W, GLFW_REPEAT);
 
 
-	input_manager::register_input_callback([]() {
+	input_manager::subscribe([]() {
 		player_manager::move_player_y(move_speed);
 	}, GLFW_KEY_S, GLFW_PRESS);
-	input_manager::register_input_callback([]() {
+	input_manager::subscribe([]() {
 		player_manager::move_player_y(move_speed);
 	}, GLFW_KEY_S, GLFW_REPEAT);
 
-	input_manager::register_input_callback([]() {
+	input_manager::subscribe([]() {
 		player_manager::move_player_x(move_speed * -1);
 	}, GLFW_KEY_A, GLFW_PRESS);
-	input_manager::register_input_callback([]() {
+	input_manager::subscribe([]() {
 		player_manager::move_player_x(move_speed * -1);
 	}, GLFW_KEY_A, GLFW_REPEAT);
 
-	input_manager::register_input_callback([]() {
+	input_manager::subscribe([]() {
 		player_manager::move_player_x(move_speed);
 	}, GLFW_KEY_D, GLFW_PRESS);
-	input_manager::register_input_callback([]() {
+	input_manager::subscribe([]() {
 		player_manager::move_player_x(move_speed);
 	}, GLFW_KEY_D, GLFW_REPEAT);
 
@@ -70,10 +75,10 @@ void jactorio::game::init_logic_loop() {
 	{
 		using namespace renderer::imgui_manager;
 		// Menus
-		input_manager::register_input_callback([]() {
+		input_manager::subscribe([]() {
 			set_window_visibility(gui_window::debug, !get_window_visibility(gui_window::debug));
 		}, GLFW_KEY_GRAVE_ACCENT, GLFW_RELEASE);
-		input_manager::register_input_callback([]() {
+		input_manager::subscribe([]() {
 			set_window_visibility(gui_window::character, !get_window_visibility(gui_window::character));
 		}, GLFW_KEY_TAB, GLFW_RELEASE);
 	}

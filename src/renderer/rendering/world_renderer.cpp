@@ -244,7 +244,7 @@ void jactorio::renderer::world_renderer::render_player_position(
 	EXECUTION_PROFILE_SCOPE(profiler, "World draw");
 	
 	// Rendering layers
-	for (unsigned int layer_index = 0; layer_index < game::Chunk_tile::tile_prototypes_count; ++layer_index) {
+	for (unsigned int layer_index = 0; layer_index < game::Chunk_tile::layers_count; ++layer_index) {
 		current_layer = layer_index;
 
 		// // Create layer number, e.g layer 0
@@ -253,12 +253,12 @@ void jactorio::renderer::world_renderer::render_player_position(
 		// auto layer_rendering_timer = core::Execution_timer(s);
 
 		const auto get_tile_proto_func = [](const game::Chunk_tile& chunk_tile) {
-			const auto& protos = chunk_tile.tile_prototypes;
+			const auto& layer = chunk_tile.layers[current_layer];
 
-			if (protos[current_layer] == nullptr)
+			if (layer.sprite == nullptr)
 				return 0u;
 
-			return protos[current_layer]->sprite_ptr->internal_id;
+			return layer.sprite->internal_id;
 		};
 
 		draw_chunks(*renderer,

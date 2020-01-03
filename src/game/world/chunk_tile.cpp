@@ -1,16 +1,32 @@
 #include "game/world/chunk_tile.h"
 
-jactorio::game::Chunk_tile::Chunk_tile() {
-	for (auto& tile_prototype : tile_prototypes) {
-		tile_prototype = nullptr;
-	}
+void jactorio::game::Chunk_tile_layer::set_tile_prototype(data::Tile* const tile_prototype) {
+	tile_prototype_ = tile_prototype;
+
+	if (tile_prototype != nullptr)
+		sprite = tile_prototype->sprite_ptr;
 }
 
-jactorio::data::Tile* jactorio::game::Chunk_tile::get_tile_prototype(prototype_category category) const {
-	return tile_prototypes[static_cast<int>(category)];
+inline unsigned short jactorio::game::Chunk_tile::get_layer_index(chunk_layer category) {
+	return static_cast<unsigned short>(category);
 }
 
-void jactorio::game::Chunk_tile::set_tile_prototype(prototype_category category,
-                                                    data::Tile* tile_prototype) {
-	tile_prototypes[static_cast<int>(category)] = tile_prototype;
+// Tile prototype
+jactorio::data::Tile* jactorio::game::Chunk_tile::get_tile_layer_tile_prototype(const chunk_layer category) const {
+	return layers[get_layer_index(category)].get_tile_prototype();
+}
+
+void jactorio::game::Chunk_tile::set_tile_layer_tile_prototype(const chunk_layer category,
+                                                               data::Tile* tile_prototype) {
+	layers[get_layer_index(category)].set_tile_prototype(tile_prototype);
+}
+
+// Sprite prototype
+jactorio::data::Sprite* jactorio::game::Chunk_tile::get_tile_layer_sprite_prototype(const chunk_layer category) const {
+	return layers[get_layer_index(category)].sprite;
+}
+
+void jactorio::game::Chunk_tile::set_tile_layer_sprite_prototype(const chunk_layer category,
+                                                                 data::Sprite* sprite_prototype) {
+	layers[get_layer_index(category)].sprite = sprite_prototype;
 }

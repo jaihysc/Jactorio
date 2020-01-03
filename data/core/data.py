@@ -4,14 +4,11 @@ c = j.category
 def addSprite(name, spritePath):
     return j.add(c.Sprite, name).load(spritePath).group(j.spriteGroup.Terrain)
 
-def addTile(name, spritePath):
-    return j.add(c.Tile, name).sprite(addSprite(name, spritePath))
-
 addSprite("menu-background", "core/graphics/menu/background-image.png")
 addSprite("menu-logo", "core/graphics/menu/background-image-logo.png")
 
-addTile("cursor-select", "core/graphics/cursor-select.png")
-addTile("cursor-invalid", "core/graphics/cursor-invalid.png")
+addSprite("cursor-select", "core/graphics/cursor-select.png")
+addSprite("cursor-invalid", "core/graphics/cursor-invalid.png")
 
 
 # Inventory selection cursor

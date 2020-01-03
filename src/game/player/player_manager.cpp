@@ -16,7 +16,7 @@ bool target_tile_valid(const float x, const float y) {
 		return false;
 
 	// If the player is on water, they are allowed to walk on water
-	if (origin_tile->is_water)
+	if (origin_tile->get_tile_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base)->is_water)
 		return true;
 
 	const jactorio::game::Chunk_tile* tile = jactorio::game::world_manager::get_tile_world_coords(x, y);
@@ -24,7 +24,7 @@ bool target_tile_valid(const float x, const float y) {
 	if (tile == nullptr)
 		return false;
 
-	return !tile->is_water;
+	return !tile->get_tile_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base)->is_water;
 }
 
 

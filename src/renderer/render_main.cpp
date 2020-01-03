@@ -104,20 +104,20 @@ int jactorio::renderer::render_init() {
 	imgui_manager::setup_character_data();
 
 	// TODO Temporary keybinds, move this elsewhere
-	game::input_manager::register_input_callback([]() {
+	game::input_manager::subscribe([]() {
 		glfwSetWindowShouldClose(window_manager::get_window(), GL_TRUE);
 
 	}, GLFW_KEY_ESCAPE, GLFW_RELEASE);
 
-	game::input_manager::register_input_callback([]() {
+	game::input_manager::subscribe([]() {
 		toggle_fullscreen = true;
 	}, GLFW_KEY_SPACE, GLFW_RELEASE);
 
-	game::input_manager::register_input_callback([]() {
+	game::input_manager::subscribe([]() {
 		Renderer::tile_width++;
 		refresh_renderer = true;
 	}, GLFW_KEY_Z, GLFW_RELEASE);
-	game::input_manager::register_input_callback([]() {
+	game::input_manager::subscribe([]() {
 		if (Renderer::tile_width > 1) {
 			Renderer::tile_width--;
 			refresh_renderer = true;
@@ -125,7 +125,7 @@ int jactorio::renderer::render_init() {
 
 	}, GLFW_KEY_X, GLFW_RELEASE);
 
-	game::input_manager::register_input_callback([]() {
+	game::input_manager::subscribe([]() {
 		clear_chunk_data = true;
 	}, GLFW_KEY_R, GLFW_RELEASE);
 

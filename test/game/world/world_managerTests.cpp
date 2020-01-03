@@ -20,19 +20,6 @@ namespace game
 		EXPECT_EQ(jactorio::game::world_manager::get_chunk(-1, -1), nullptr);
 		EXPECT_EQ(jactorio::game::world_manager::get_chunk(1, 1), nullptr);
 
-
-		// Chunk gives its contents in a const array pointer, size 32 * 32
-		const auto chunk_tiles_ptr = added_chunk->tiles_ptr();
-		for (int i = 0; i < 32 * 32; ++i) {
-			// A tile can have multiple prototypes layered above each other
-			const auto tile_prototypes = chunk_tiles_ptr[i].tile_prototypes;
-
-			for (int j = 0; j < jactorio::game::Chunk_tile::tile_prototypes_count; ++j) {
-				// Blank Tile prototypes when the tiles are uninitialized
-				EXPECT_EQ(tile_prototypes[j], nullptr);
-			}
-		}
-
 		jactorio::game::world_manager::clear_chunk_data();
 	}
 

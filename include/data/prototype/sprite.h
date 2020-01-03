@@ -45,11 +45,11 @@ namespace jactorio::data
 
 		Sprite(const Sprite& other);
 
-		Sprite(Sprite&& other) noexcept = delete;
+		Sprite(Sprite&& other) noexcept = default;
 
 		Sprite& operator=(const Sprite& other);
 
-		Sprite& operator=(Sprite&& other) noexcept = delete;
+		Sprite& operator=(Sprite&& other) noexcept = default;
 
 	public:
 		

@@ -5,7 +5,7 @@ namespace jactorio::game
 {
 	enum class event_type
 	{
-		// TODO events except logic_tick are not implemented
+		// TODO world gen events, entity, player are not implemented
 		none = 0,
 
 		// User playing the game
@@ -14,8 +14,8 @@ namespace jactorio::game
 		window_move, window_resize,
 		
 		// Keyboard/mouse input
-		key_press, key_release,
-		mouse_press, mouse_release, mouse_move, mouse_scroll,
+		key_press, key_repeat, key_release,
+		mouse_move, mouse_scroll,
 
 		
 		// In-game

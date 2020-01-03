@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "jactorio.h"
+
 #include "data/data_manager.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
@@ -87,36 +89,38 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
 
 // The last tile cannot be stored as a pointer as it can be deleted if the world was regenerated
 std::pair<int, int> last_tile_pos;
-void jactorio::game::mouse_selection::draw_cursor_selected_tile() {
-	// Maximum distance of from the player where tiles can be reached
-	constexpr unsigned int max_reach = 14;
-	
+void jactorio::game::mouse_selection::draw_tile_at_cursor(const std::string& iname) {
 	const auto cursor_position = get_mouse_selected_tile();
-	
+
 	auto* tile = world_manager::get_tile_world_coords(cursor_position.first, cursor_position.second);
 	auto* last_tile = world_manager::get_tile_world_coords(last_tile_pos.first, last_tile_pos.second);
 
 	if (tile == nullptr)
 		return;
 
-	// Delete the cursor at the last_tile if exists
+	// Clear the tile at the last_tile if exists
 	if (last_tile != nullptr) {
-		last_tile->set_tile_prototype(Chunk_tile::prototype_category::overlay, nullptr);
+		last_tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, nullptr);
 	}
 
+	// Draw tile on the overlay layer
+	const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, iname);
+	assert(sprite_ptr != nullptr);
+	tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, sprite_ptr);
+	
+	last_tile_pos = cursor_position;
+}
+
+// The last tile cannot be stored as a pointer as it can be deleted if the world was regenerated
+void jactorio::game::mouse_selection::draw_selection_box() {
+	// Maximum distance of from the player where tiles can be reached
+	constexpr unsigned int max_reach = 14;
+
 	// Draw invalid cursor if range tis too far
+	const auto cursor_position = get_mouse_selected_tile();
 	const unsigned int tile_dist = 
 		abs(player_manager::get_player_position_x() - cursor_position.first) + 
 		abs(player_manager::get_player_position_y() - cursor_position.second);
 
-	std::string cursor_iname = "__core__/cursor-select";
-	if (tile_dist > max_reach)
-		cursor_iname = "__core__/cursor-invalid";
-	
-	// Draw cursor on the overlay layer
-	tile->set_tile_prototype(
-		Chunk_tile::prototype_category::overlay,
-		data::data_manager::data_raw_get<data::Tile>(data::data_category::tile, cursor_iname)
-	);
-	last_tile_pos = cursor_position;
+	draw_tile_at_cursor(tile_dist > max_reach ? "__core__/cursor-invalid" : "__core__/cursor-select");
 }

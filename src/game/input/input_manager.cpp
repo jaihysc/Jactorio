@@ -21,7 +21,7 @@ std::unordered_map<unsigned int, input_callback> input_callbacks;
 // Currently set input(s)
 std::unordered_map<int, std::tuple<int, int, int>> active_inputs;
 
-unsigned jactorio::game::input_manager::register_input_callback(const input_callback callback,
+unsigned jactorio::game::input_manager::subscribe(const input_callback callback,
                                                                 const int key, const int action,
                                                                 const int mods) {
 	// // Retrieve scancode of specified key
@@ -44,7 +44,7 @@ void jactorio::game::input_manager::set_input(const int key, const int action, c
 	active_inputs[key] = input;
 }
 
-void jactorio::game::input_manager::dispatch_input_callbacks() {
+void jactorio::game::input_manager::raise() {
 	for (auto& active_input : active_inputs) {
 		std::tuple<int, int, int>& input = active_input.second;
 		
@@ -65,7 +65,7 @@ void jactorio::game::input_manager::dispatch_input_callbacks() {
 	}
 }
 
-void jactorio::game::input_manager::remove_input_callback(const unsigned callback_id, const int key,
+void jactorio::game::input_manager::unsubscribe(const unsigned callback_id, const int key,
                                                           const int action, const int mods) {
 	auto& id_vector = callback_ids[
 		std::tuple<int, int, int>{key, action, mods}

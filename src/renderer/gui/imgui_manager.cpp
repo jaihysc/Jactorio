@@ -158,7 +158,7 @@ void jactorio::renderer::imgui_manager::set_window_visibility(const gui_window w
 
 	if (visibility && !old_visibility) {
 		// Window opened
-		game::Event::raise<game::Gui_opened>(game::event_type::game_gui_open);
+		game::Event::raise<game::Gui_opened_event>(game::event_type::game_gui_open);
 	}
 	
 	old_visibility = visibility;
