@@ -12,21 +12,28 @@ namespace jactorio::data
 	{
 	public:
 		Item()
-			:sprite(nullptr), stack_size(50) {
+			: sprite(nullptr), stack_size(50) {
 		}
 
 		explicit Item(Sprite* sprite)
-			: sprite(sprite) {
-			
+			: sprite(sprite), stack_size(50) {
+
 		}
 
 		~Item() override = default;
+
+		/**
+		 * If this item belongs to an entity - otherwise nullptr
+		 */
+		void* entity_prototype = nullptr;
+		data_category entity_prototype_category = data_category::none;
 
 		
 		PYTHON_PROP(Item, Sprite*, sprite)
 
 		/**
-		 * Number of items which can be together
+		 * Number of items which can be together <br>
+		 * Default to 50
 		 */
 		PYTHON_PROP_REF(Item, unsigned short, stack_size)
 	};

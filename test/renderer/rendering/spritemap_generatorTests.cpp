@@ -37,6 +37,48 @@ namespace renderer
 		EXPECT_EQ(data.spritemap->get_height(), 32);
 
 	}
+
+	TEST(spritemap_generator, create_spritemap_category_none) {
+		// If a sprite does not have a group specified (sprite_group::none):
+		// it will be added with every spritemap generated
+		
+		using namespace jactorio::renderer::renderer_sprites;
+		namespace data_manager = jactorio::data::data_manager;
+
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		auto guard2 = jactorio::core::Resource_guard(clear_spritemaps);
+
+		// Sprite data delete by guard
+		// Terrain
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite1",
+		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
+		                                                      jactorio::data::Sprite::sprite_group::terrain));
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite2",
+		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
+		                                                      jactorio::data::Sprite::sprite_group::terrain));
+
+		// Gui
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite3",
+		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
+		                                                      jactorio::data::Sprite::sprite_group::gui));
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite4",
+		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
+		                                                      jactorio::data::Sprite::sprite_group::gui));
+
+		// None
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "spriteNone",
+		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
+		                                                      jactorio::data::Sprite::sprite_group::none));
+		
+		// Should filter out to 3 entries, total width of 32 * 3
+		create_spritemap(jactorio::data::Sprite::sprite_group::terrain, false);
+
+		const Spritemap_data& data = get_spritemap(jactorio::data::Sprite::sprite_group::terrain);
+
+		EXPECT_EQ(data.spritemap->get_width(), 96);
+		EXPECT_EQ(data.spritemap->get_height(), 32);
+
+	}
 	
 	// Returns true if pixel contains specified color
 	bool get_pixel_color(const unsigned char* img_ptr,

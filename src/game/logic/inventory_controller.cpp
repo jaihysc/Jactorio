@@ -36,6 +36,9 @@ bool jactorio::game::inventory_controller::move_itemstack_to_index(
 		assert(origin_item_stack.second != 0);      // Invalid itemstack
 		assert(target_item_stack.second != 0);      // Invalid itemstack
 
+		assert(origin_item_stack.first->stack_size > 0);      // Invalid itemstack stacksize
+		assert(target_item_stack.first->stack_size > 0);      // Invalid itemstack stacksize
+		
 		if (mouse_button == 0) {
 			// Not exceeding max stack size
 			if (origin_item_stack.second + target_item_stack.second <= origin_item_stack.first->stack_size) {
@@ -82,6 +85,8 @@ bool jactorio::game::inventory_controller::move_itemstack_to_index(
 
 		// Origin item exceeding item stack limit
 		if (target_item_stack.first == nullptr) {
+			assert(origin_item_stack.first->stack_size > 0);      // Invalid itemstack stacksize
+
 			if (origin_item_stack.second > origin_item_stack.first->stack_size) {
 				const unsigned short stack_size = origin_item_stack.first->stack_size;
 
@@ -99,6 +104,8 @@ bool jactorio::game::inventory_controller::move_itemstack_to_index(
 		}
 		// Target item exceeding item stack limit
 		if (origin_item_stack.first == nullptr) {
+			assert(target_item_stack.first->stack_size > 0);      // Invalid itemstack stacksize
+			
 			if (target_item_stack.second > target_item_stack.first->stack_size) {
 				const unsigned short stack_size = target_item_stack.first->stack_size;
 

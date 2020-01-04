@@ -12,18 +12,13 @@ namespace jactorio::data
 	{
 	public:
 		Container_entity()
-			: inventory_size(0), sprite(nullptr) {
+			: inventory_size(0) {
 		}
 
 		~Container_entity() override = default;
 
 		
 		PYTHON_PROP_REF(Container_entity, unsigned short, inventory_size)
-
-		/**
-		 * Sprite drawn when placed in the world
-		 */
-		PYTHON_PROP(Container_entity, Sprite*, sprite)
 	};
 }
 

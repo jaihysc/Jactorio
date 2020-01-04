@@ -24,12 +24,7 @@ void logic_loop() {
 	// Generate chunks
 	world_generator::gen_chunk();
 
-	// jactorio::data::item_stack* ptr;
-	// if ((ptr = player_manager::get_selected_item()) != nullptr) {
-		// mouse_selection::draw_tile_at_cursor(ptr->first->sprite->name);
-	// }
-	// else
-		mouse_selection::draw_selection_box();
+	mouse_selection::draw_cursor_overlay();
 }
 
 

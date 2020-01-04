@@ -28,10 +28,9 @@ namespace jactorio::game::mouse_selection
 	void draw_tile_at_cursor(const std::string& iname);
 	
 	/**
-	 * Draws a cursor over the tile currently selected
+	 * Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the cursor
 	 */
-	void draw_selection_box();
-	
+	void draw_cursor_overlay();
 }
 
 #endif // GAME_INPUT_MOUSE_SELECTION_H

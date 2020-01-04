@@ -26,18 +26,28 @@ using data_raw = std::unordered_map<jactorio::data::data_category, std::unordere
 PYBIND11_MAKE_OPAQUE(data_raw)
 
 
-PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
-	using namespace jactorio::data;
+// Macros below generates a self returning setter and the actual variable
+// For standard class members, a setter exists: set_NAME_OF_MEMBER
+//		This becomes NAME_OF_MEMBER in Python
+// To read standard class members, the member NAME_OF_MEMBER is available as _NAME_OF_MEMBER
+// (note the leading underscore)
 
-	// Generates a self returning setter and the actual variable
-	/*
-		PYBIND_PROP(Prototype_base, category)
+// If a class member utilizes a non-standard settler, a getter must be implemented,
+// reading and writing in python becomes:
+// 
+// NAME_OF_MEMBER to set
+// get_NAME_OF_MEMBER to get
 
-		vvv
-		
-		.def("category", &Prototype_base::set_category)
-		.def_readwrite("_""category", &Prototype_base::category)
-	*/
+/*
+	PYBIND_PROP(Prototype_base, category)
+
+	vvv
+
+	.def("category", &Prototype_base::set_category)
+	.def_readwrite("_""category", &Prototype_base::category)
+*/
+
+// Python name is he same as the cpp name (commonly single word members)
 #define PYBIND_PROP(class_, name)\
 	.def(#name, &class_::set_##name, pybind11::return_value_policy::reference)\
 	.def_readwrite("_" #name, &class_::name)
@@ -47,6 +57,15 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	.def(#py_name, &class_::set_##cpp_name, pybind11::return_value_policy::reference)\
 	.def_readwrite("_" #py_name, &class_::cpp_name)
 
+
+// If the member utilizes a getter and settler
+#define PYBIND_PROP_GET_SET(class_, py_name, cpp_name)\
+	.def(#py_name, &class_::set_##cpp_name, pybind11::return_value_policy::reference)\
+	.def("get_" #py_name, &class_::get_##cpp_name, pybind11::return_value_policy::reference)
+
+
+PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
+	using namespace jactorio::data;
 	
 	// Prototype classes
 	py::class_<Prototype_base>(m, "PrototypeBase")
@@ -88,8 +107,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	// Entity
 	py::class_<Entity, Prototype_base>(m, "Entity")
-		PYBIND_PROP(Entity, item)
+		PYBIND_PROP(Entity, sprite)
 		PYBIND_PROP(Entity, rotatable)
+		PYBIND_PROP_GET_SET(Entity, item, item)
 		PYBIND_PROP_SEPARATE(Entity, tileWidth, tile_width)
 		PYBIND_PROP_SEPARATE(Entity, tileHeight, tile_height);
 
@@ -97,7 +117,6 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP_SEPARATE(Health_entity, maxHealth, max_health);
 
 	py::class_<Container_entity, Health_entity>(m, "ContainerEntity")
-		PYBIND_PROP(Container_entity, sprite)
 		PYBIND_PROP_SEPARATE(Container_entity, inventorySize, inventory_size);
 
 	// ############################################################
@@ -120,9 +139,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.def(py::init());
 
 	m.def("get", [](const data_category category, const std::string& iname) {
-		// Cannot give pointers back!
-		return *data_manager::data_raw_get<Prototype_base>(category, iname);
-	});
+		return data_manager::data_raw_get<Prototype_base>(category, iname);
+	}, pybind11::return_value_policy::reference);
 
 
 #define PROTOTYPE_CATEGORY(category, class_) case data_category::category: prototype = new (class_); break;
@@ -158,8 +176,12 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 #undef PROTOTYPE_CATEGORY
 	
 	// ############################################################
-
 }
+
+// Pybind binding macros should only be used in this file
+#undef PYBIND_PROP
+#undef PYBIND_PROP_SEPARATE
+#undef PYBIND_PROP_GET_SET
 
 
 #endif // DATA_PYBIND_PYBIND_BINDINGS_H

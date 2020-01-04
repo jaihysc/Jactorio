@@ -5,6 +5,7 @@
 #include "jactorio.h"
 
 #include "data/data_manager.h"
+#include "data/prototype/entity/entity.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world_manager.h"
@@ -30,14 +31,14 @@ double jactorio::game::mouse_selection::get_position_y() {
 std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
 	float world_x = player_manager::get_player_position_x();
 	float world_y = player_manager::get_player_position_y();
-	
+
 	float pixels_from_center_x;
 	float pixels_from_center_y;
 	{
 		const unsigned short window_width = renderer::Renderer::get_window_width();
 		const unsigned short window_height = renderer::Renderer::get_window_height();
 		const auto& matrix = renderer::get_mvp_matrix();
-		
+
 		// Account for MVP matrices
 		// Normalize to -1 | 1 used by the matrix
 		const double norm_x = 2 * (get_position_x() / window_width) - 1;
@@ -61,19 +62,19 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
 			mouse_x_center = win_center_norm_positions.x;
 			mouse_y_center = win_center_norm_positions.y;
 		}
-		
+
 		// If player is standing on a partial tile, adjust the center accordingly to the correct location
-		mouse_x_center -= 
+		mouse_x_center -=
 			static_cast<float>(renderer::Renderer::tile_width) * (world_x - static_cast<int>(world_x));
 		// This is plus since the y axis is inverted
-		mouse_y_center += 
+		mouse_y_center +=
 			static_cast<float>(renderer::Renderer::tile_width) * (world_y - static_cast<int>(world_y));
 
-		
+
 		pixels_from_center_x = norm_positions.x - mouse_x_center;
 		pixels_from_center_y = mouse_y_center - norm_positions.y;
 	}
-	 
+
 	// Calculate tile position based on current player position
 	world_x = static_cast<int>(world_x) + pixels_from_center_x / static_cast<float>(renderer::Renderer::tile_width);
 	world_y = static_cast<int>(world_y) + pixels_from_center_y / static_cast<float>(renderer::Renderer::tile_width);
@@ -89,6 +90,7 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
 
 // The last tile cannot be stored as a pointer as it can be deleted if the world was regenerated
 std::pair<int, int> last_tile_pos;
+
 void jactorio::game::mouse_selection::draw_tile_at_cursor(const std::string& iname) {
 	const auto cursor_position = get_mouse_selected_tile();
 
@@ -107,20 +109,42 @@ void jactorio::game::mouse_selection::draw_tile_at_cursor(const std::string& ina
 	const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, iname);
 	assert(sprite_ptr != nullptr);
 	tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, sprite_ptr);
-	
+
 	last_tile_pos = cursor_position;
 }
 
 // The last tile cannot be stored as a pointer as it can be deleted if the world was regenerated
-void jactorio::game::mouse_selection::draw_selection_box() {
+/**
+ * Draws a cursor over the tile currently selected
+ */
+void draw_selection_box() {
+	using namespace jactorio::game;
+
 	// Maximum distance of from the player where tiles can be reached
 	constexpr unsigned int max_reach = 14;
 
 	// Draw invalid cursor if range tis too far
-	const auto cursor_position = get_mouse_selected_tile();
-	const unsigned int tile_dist = 
-		abs(player_manager::get_player_position_x() - cursor_position.first) + 
+	const auto cursor_position = mouse_selection::get_mouse_selected_tile();
+	const unsigned int tile_dist =
+		abs(player_manager::get_player_position_x() - cursor_position.first) +
 		abs(player_manager::get_player_position_y() - cursor_position.second);
 
-	draw_tile_at_cursor(tile_dist > max_reach ? "__core__/cursor-invalid" : "__core__/cursor-select");
+	mouse_selection::draw_tile_at_cursor(tile_dist > max_reach ? "__core__/cursor-invalid" : "__core__/cursor-select");
+}
+
+void jactorio::game::mouse_selection::draw_cursor_overlay() {
+	bool draw_cursor = true;
+	data::item_stack* ptr;
+	if ((ptr = player_manager::get_selected_item()) != nullptr) {
+		const auto entity_ptr = ptr->first->entity_prototype;
+
+		// Not an entity
+		if (entity_ptr != nullptr) {
+			draw_tile_at_cursor(static_cast<data::Entity*>(entity_ptr)->sprite->name);
+			draw_cursor = false;
+		}
+	}
+
+	if (draw_cursor)
+		draw_selection_box();
 }

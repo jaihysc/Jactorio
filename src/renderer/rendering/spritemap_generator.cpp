@@ -28,11 +28,21 @@ void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::sprite
 
 	// Filter to group only
 	sprites.erase(
-		std::remove_if(
-			sprites.begin(), sprites.end(),
-			[group](data::Sprite* ptr) {
-				return ptr->group != group;
-			}),
+		std::remove_if(sprites.begin(), sprites.end(), [group](data::Sprite* ptr) {
+			const auto sprite_group = ptr->group;
+
+			// Return false to NOT remove
+			// Category of none is never removed
+			if (sprite_group == data::Sprite::sprite_group::none) {
+				LOG_MESSAGE_f(warning, 
+				              "Sprite prototype '%s' has category none, and will be added to all sprite groups." 
+				              " Consider giving it a category",
+				              ptr->name.c_str())
+				return false;
+			}
+
+			return sprite_group != group;
+		}),
 		sprites.end()
 	);
 
