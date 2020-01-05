@@ -23,6 +23,12 @@ namespace jactorio::game::mouse_selection
 	std::pair<int, int> get_mouse_selected_tile();
 
 	/**
+	 * Returns true if selected tile is within placement range
+	 */
+	bool selected_tile_in_range();
+
+	
+	/**
 	 * Draws a sprite with specified internal name at the cursor
 	 */
 	void draw_tile_at_cursor(const std::string& iname);

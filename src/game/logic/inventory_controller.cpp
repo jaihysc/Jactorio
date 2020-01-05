@@ -18,7 +18,7 @@ bool drop_one_origin_item(jactorio::data::item_stack& origin_item_stack,
 	return false;
 }
 
-bool jactorio::game::inventory_controller::move_itemstack_to_index(
+bool jactorio::game::logic::move_itemstack_to_index(
 	data::item_stack* origin_inv, const unsigned short origin_inv_index,
 	data::item_stack* target_inv, const unsigned short target_inv_index, unsigned short mouse_button) {
 

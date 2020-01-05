@@ -3,6 +3,7 @@
 
 #include "jactorio.h"
 #include "data/prototype/tile/tile.h"
+#include "data/prototype/entity/entity.h"
 
 namespace jactorio::game
 {
@@ -73,6 +74,9 @@ namespace jactorio::game
 		 */
 		Chunk_tile_layer layers[layers_count];
 
+		// The entity which exists on this tile
+		data::Entity* entity = nullptr;
+		
 		J_NODISCARD data::Tile* get_tile_layer_tile_prototype(chunk_layer category) const;
 		void set_tile_layer_tile_prototype(chunk_layer category, data::Tile* tile_prototype);
 

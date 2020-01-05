@@ -3,7 +3,7 @@
 
 #include "data/prototype/item/item.h"
 
-namespace jactorio::game::inventory_controller
+namespace jactorio::game::logic
 {
 	/**
 	 * Moves itemstack from index in origin to target inventory index <br>

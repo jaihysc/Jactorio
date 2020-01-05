@@ -4,12 +4,12 @@
 
 #include "game/logic/inventory_controller.h"
 
-namespace game
+namespace game::logic
 {
 	TEST(inventory_controller, move_stack_to_empty_slot) {
 		// Moving from inventory position 0 to position 3
 		
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -39,7 +39,7 @@ namespace game
 		// moving 10 items:
 		// position 3 already has 30 items, adding 10 from position 0 to equal 40.
 
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -69,7 +69,7 @@ namespace game
 		// position 3 already has 30 items, meaning only 20 can be moved into it to reach the stack size of 50.
 		// this leaves 10 in the original location (0) and 50 in the target location (3)
 
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -97,7 +97,7 @@ namespace game
 		// Moving from inventory position 0 to position 3
 		// The item stacks are of different items, therefore only swapping positions
 
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -129,7 +129,7 @@ namespace game
 		// Moving from inventory position 0 to position 3.
 		// The target slot is full, origin slot has something
 		// swap the 2 items
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -157,7 +157,7 @@ namespace game
 		// Moving from inventory position 0 to position 3
 		// Moving nothing to nothing results in nothing!
 
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -185,7 +185,7 @@ namespace game
 		// The origin item is somehow exceeding its stack size, perhaps a prototype update
 		// Move out only the stack size into the empty slot
 		
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -214,7 +214,7 @@ namespace game
 		// The TARGET item is somehow exceeding its stack size, perhaps a prototype update
 		// Move out only the stack size into the empty origin slot
 
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -243,7 +243,7 @@ namespace game
 		// The origin item is somehow exceeding its stack size, perhaps a prototype update
 		// Move out only 10 to reach the stack size in the target slot
 
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -275,7 +275,7 @@ namespace game
 		// Origin inventory is empty, right clicking on an item takes half of it
 		// round down, unless there is only 1, where one is taken
 
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
@@ -361,7 +361,7 @@ namespace game
 		// Moving from inventory position 0 to position 3.
 		// Target inventory is empty, right clicking drops 1 item off
 
-		using namespace jactorio::game::inventory_controller;
+		using namespace jactorio::game::logic;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];

@@ -13,6 +13,11 @@ inline unsigned short jactorio::game::Chunk_tile::get_layer_index(chunk_layer ca
 
 // Tile prototype
 jactorio::data::Tile* jactorio::game::Chunk_tile::get_tile_layer_tile_prototype(const chunk_layer category) const {
+	if (entity == nullptr) {
+		// Sprite should not exist in the entity layer without an entity prototype set
+		assert(layers[get_layer_index(chunk_layer::entity)].sprite == nullptr);
+	}
+	
 	return layers[get_layer_index(category)].get_tile_prototype();
 }
 
@@ -23,6 +28,11 @@ void jactorio::game::Chunk_tile::set_tile_layer_tile_prototype(const chunk_layer
 
 // Sprite prototype
 jactorio::data::Sprite* jactorio::game::Chunk_tile::get_tile_layer_sprite_prototype(const chunk_layer category) const {
+	if (entity == nullptr) {
+		// Sprite should not exist in the entity layer without an entity prototype set
+		assert(layers[get_layer_index(chunk_layer::entity)].sprite == nullptr);
+	}
+	
 	return layers[get_layer_index(category)].sprite;
 }
 

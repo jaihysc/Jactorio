@@ -29,6 +29,7 @@ double jactorio::game::mouse_selection::get_position_y() {
 }
 
 std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
+	// TODO buffer the mouse selected tile??
 	float world_x = player_manager::get_player_position_x();
 	float world_y = player_manager::get_player_position_y();
 
@@ -88,6 +89,18 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
 	return std::pair<int, int>(world_x, world_y);
 }
 
+bool jactorio::game::mouse_selection::selected_tile_in_range() {
+	const auto cursor_position = get_mouse_selected_tile();
+
+	// Maximum distance of from the player where tiles can be reached
+	constexpr unsigned int max_reach = 14;
+	const unsigned int tile_dist =
+		abs(player_manager::get_player_position_x() - cursor_position.first) +
+		abs(player_manager::get_player_position_y() - cursor_position.second);
+	
+	return tile_dist <= max_reach;
+}
+
 // The last tile cannot be stored as a pointer as it can be deleted if the world was regenerated
 std::pair<int, int> last_tile_pos;
 
@@ -105,6 +118,9 @@ void jactorio::game::mouse_selection::draw_tile_at_cursor(const std::string& ina
 		last_tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, nullptr);
 	}
 
+	if (iname.empty())
+		return;
+	
 	// Draw tile on the overlay layer
 	const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, iname);
 	assert(sprite_ptr != nullptr);
@@ -113,23 +129,24 @@ void jactorio::game::mouse_selection::draw_tile_at_cursor(const std::string& ina
 	last_tile_pos = cursor_position;
 }
 
-// The last tile cannot be stored as a pointer as it can be deleted if the world was regenerated
 /**
  * Draws a cursor over the tile currently selected
  */
 void draw_selection_box() {
 	using namespace jactorio::game;
 
-	// Maximum distance of from the player where tiles can be reached
-	constexpr unsigned int max_reach = 14;
-
-	// Draw invalid cursor if range tis too far
 	const auto cursor_position = mouse_selection::get_mouse_selected_tile();
-	const unsigned int tile_dist =
-		abs(player_manager::get_player_position_x() - cursor_position.first) +
-		abs(player_manager::get_player_position_y() - cursor_position.second);
 
-	mouse_selection::draw_tile_at_cursor(tile_dist > max_reach ? "__core__/cursor-invalid" : "__core__/cursor-select");
+	// Only draw cursor when over entities
+	const auto tile = world_manager::get_tile_world_coords(cursor_position.first, cursor_position.second);
+	if (tile == nullptr || tile->entity == nullptr) {
+		mouse_selection::draw_tile_at_cursor("");
+		return;
+	}
+	
+	// Draw invalid cursor if range tis too far
+	mouse_selection::draw_tile_at_cursor(
+		mouse_selection::selected_tile_in_range() ? "__core__/cursor-select" : "__core__/cursor-invalid");
 }
 
 void jactorio::game::mouse_selection::draw_cursor_overlay() {

@@ -5,15 +5,17 @@
 
 #include "jactorio.h"
 
+#include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
+#include "game/logic/entity_place_controller.h"
 #include "game/player/player_manager.h"
 #include "game/world/world_generator.h"
-#include "game/event/event.h"
+#include "game/world/world_manager.h"
 
-#include "renderer/gui/imgui_manager.h"
-#include "data/prototype/item/item.h"
 #include "data/data_manager.h"
+#include "data/prototype/item/item.h"
+#include "renderer/gui/imgui_manager.h"
 
 void logic_loop() {
 	using namespace jactorio::game;
@@ -30,7 +32,9 @@ void logic_loop() {
 
 bool logic_loop_should_terminate = false;
 
-const float move_speed = 0.9f;
+const float move_speed = 0.1f;
+
+int test_rm_counter = 0;
 
 void jactorio::game::init_logic_loop() {
 	// Logic initialization here...
@@ -89,6 +93,38 @@ void jactorio::game::init_logic_loop() {
 		inventory[4] = std::pair(x[0], 100);
 		inventory[5] = std::pair(x[1], 2000);
 	});
+
+	// TODO MOVE, test entity placement
+	{
+		input_manager::subscribe([]() {
+			// Place
+			data::item_stack* ptr;
+			if ((ptr = player_manager::get_selected_item()) != nullptr) {
+				auto* entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
+
+				// Entities only
+				const auto tile_selected = mouse_selection::get_mouse_selected_tile();
+				if (entity_ptr != nullptr) {
+					logic::place_entity_at_coords(entity_ptr, tile_selected.first, tile_selected.second);
+				}
+			}
+		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS);
+		input_manager::subscribe([]() {
+			// Remove
+			// Entities only
+			const auto tile_selected = mouse_selection::get_mouse_selected_tile();
+			const auto entity_ptr = world_manager::get_tile_world_coords(
+				tile_selected.first, tile_selected.second)->entity;
+			
+			if (entity_ptr != nullptr) {
+				test_rm_counter++;
+				if (test_rm_counter == 60) {
+					test_rm_counter = 0;
+					logic::place_entity_at_coords(nullptr, tile_selected.first, tile_selected.second);
+				}
+			}
+		}, GLFW_MOUSE_BUTTON_2, GLFW_PRESS);
+	}
 
 	
 	// Runtime
