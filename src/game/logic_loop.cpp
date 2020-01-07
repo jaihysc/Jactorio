@@ -98,6 +98,9 @@ void jactorio::game::init_logic_loop() {
 	{
 		input_manager::subscribe([]() {
 			// Place
+			if (renderer::imgui_manager::input_captured)
+				return;
+			
 			data::item_stack* ptr;
 			if ((ptr = player_manager::get_selected_item()) != nullptr) {
 				auto* entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);

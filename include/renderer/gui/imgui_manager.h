@@ -7,6 +7,9 @@
 
 namespace jactorio::renderer::imgui_manager
 {
+	// If true, ImGui has handled the a input event and thus should not be carried to down the layer
+	inline bool input_captured = false;
+	
 	/**
 	 * Specifies gui window to draw
 	 */

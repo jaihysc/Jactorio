@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "GLFW/glfw3.h"
+#include "jactorio.h"
 
 #include "game/input/input_manager.h"
+#include "renderer/gui/imgui_manager.h"
 
 namespace game
 {
@@ -19,6 +20,8 @@ namespace game
 	}
 
 	TEST(input_manager, input_callback_register) {
+		auto guard = jactorio::core::Resource_guard(&input::clear_data);
+		
 		// Key is converted to a scancode
 		const unsigned int callback_id = input::subscribe(
 			test_input_callback,
@@ -46,10 +49,13 @@ namespace game
 	}
 
 	TEST(input_manager, dispatch_input_callbacks) {
+		auto guard = jactorio::core::Resource_guard(&input::clear_data);
+
+		counter = 0;
+
 		input::subscribe(test_callback2, GLFW_KEY_V, GLFW_PRESS);
 		input::subscribe(test_callback2, GLFW_KEY_Z, GLFW_PRESS);
-		input::subscribe(test_callback3,
-		                               GLFW_KEY_X, GLFW_RELEASE, GLFW_MOD_CAPS_LOCK);
+		input::subscribe(test_callback3, GLFW_KEY_X, GLFW_RELEASE, GLFW_MOD_CAPS_LOCK);
 
 		input::set_input(GLFW_KEY_T, GLFW_PRESS, GLFW_MOD_SUPER);
 		input::raise();
@@ -83,6 +89,24 @@ namespace game
 
 	}
 
+	// TEST(input_manager, dispatch_input_callbacks_imgui_block) {
+	// 	auto guard = jactorio::core::Resource_guard(&input::clear_data);
+	//
+	// 	counter = 0;
+	// 	input::subscribe(test_callback2, GLFW_KEY_V, GLFW_PRESS);
+	//
+	// 	input::set_input(GLFW_KEY_V, GLFW_PRESS);
+	//
+	// 	// Block
+	// 	jactorio::renderer::imgui_manager::input_captured = true;
+	// 	input::raise();
+	// 	EXPECT_EQ(counter, 0);
+	//
+	// 	// Unblock
+	// 	jactorio::renderer::imgui_manager::input_captured = false;
+	// 	input::raise();
+	// 	EXPECT_EQ(counter, 1);
+	// }
 
 	namespace
 	{
@@ -94,6 +118,10 @@ namespace game
 	}
 
 	TEST(input_manager, remove_input_callback) {
+		auto guard = jactorio::core::Resource_guard(&input::clear_data);
+
+		counter = 0;
+
 		const unsigned int callback_id = input::subscribe(
 			test_callback5, GLFW_KEY_SPACE, GLFW_PRESS);
 		input::subscribe(test_callback5, GLFW_KEY_SPACE, GLFW_PRESS);
@@ -106,5 +134,24 @@ namespace game
 		// Only one of the callbacks was erased, therefore it should increment counter2 only once
 		// instead of twice
 		EXPECT_EQ(counter2, 1);
+	}
+
+	TEST(input_manager, clear_data) {
+		auto guard = jactorio::core::Resource_guard(&input::clear_data);
+
+		counter2 = 0;
+
+		input::subscribe(test_callback5, GLFW_KEY_SPACE, GLFW_PRESS);
+		input::subscribe(test_callback5, GLFW_KEY_SPACE, GLFW_PRESS);
+
+		input::clear_data();
+
+		// Should not increment counter2 since all callbacks were cleared
+		input::set_input(GLFW_KEY_SPACE, GLFW_PRESS);
+		input::raise();
+
+		// Only one of the callbacks was erased, therefore it should increment counter2 only once
+		// instead of twice
+		EXPECT_EQ(counter2, 0);
 	}
 }

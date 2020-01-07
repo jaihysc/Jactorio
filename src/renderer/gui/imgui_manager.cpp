@@ -201,6 +201,10 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
+	// Has imgui handled a mouse or keyboard event?
+	ImGuiIO& io = ImGui::GetIO();
+	input_captured = io.WantCaptureKeyboard || io.WantCaptureMouse;
+
 	// Make the font bigger
 	// auto font = ImGui::GetFont();
 	// font->Scale = 1.f;

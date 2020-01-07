@@ -34,6 +34,11 @@ namespace jactorio::game::input_manager
 	 * The key, action, and mods the callback was registered to must be specified
 	 */
 	void unsubscribe(unsigned int callback_id, int key, int action, int mods = 0);
+
+	/**
+	 * Deletes all callback data
+	 */
+	void clear_data();
 }
 
 #endif // GAME_INPUT_INPUT_MANAGER_H

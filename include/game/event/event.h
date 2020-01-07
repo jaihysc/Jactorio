@@ -6,6 +6,8 @@
 
 #include "jactorio.h"
 #include "game/event/game_events.h"
+#include "game/world/chunk_tile.h"  // Use chunk layers from this header
+#include "renderer/gui/imgui_manager.h"
 
 // TODO, when adding loading of saves, clear the event data
 namespace jactorio::game
@@ -65,7 +67,12 @@ namespace jactorio::game
 		 */
 		template <typename T, typename ... ArgsT>
 		static void raise(const event_type event_type, const ArgsT& ... args) {
-			// TODO raise not implemented
+			// Imgui sets the bool property input_captured
+			// This takes priority over all events, and if true no events are allowed to be emitted
+			// if (renderer::imgui_manager::input_captured)
+				// return;
+			
+			// TODO Send events backwards through layers
 			for (auto& callback : event_handlers_[event_type]) {
 				// Cast function pointer parameter to T
 				auto fun_ptr = reinterpret_cast<void(*)(T&)>(callback);

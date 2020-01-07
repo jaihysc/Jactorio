@@ -33,6 +33,28 @@ namespace game
 		Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
 		EXPECT_EQ(counter, 12);
 	}
+
+	// TEST(event, subscribe_raise_event_imgui_bock) {
+	// 	// Imgui sets the bool property input_captured
+	// 	// This takes priority over all events, and if true no events are allowed to be emitted
+	// 	using namespace jactorio::game;
+	//
+	// 	reset_counter();
+	// 	Event::clear_all_data();
+	//
+	// 	Event::subscribe(event_type::logic_tick, test_callback1);
+	// 	// Event::subscribe(event_type::game_gui_character_open, test_callback2);
+	//
+	// 	// Event blocked
+	// 	jactorio::renderer::imgui_manager::input_captured = true;
+	// 	Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
+	// 	EXPECT_EQ(counter, 0);
+	//
+	// 	// Unblocked
+	// 	jactorio::renderer::imgui_manager::input_captured = false;
+	// 	Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
+	// 	EXPECT_EQ(counter, 12);
+	// }
 	
 	TEST(event, unsubscribe_event) {
 		using namespace jactorio::game;
