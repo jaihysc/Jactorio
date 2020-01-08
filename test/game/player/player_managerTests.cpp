@@ -287,12 +287,166 @@ namespace game
 		player_inventory[0].first = nullptr;
 		player_inventory[0].second = 0;
 
-		set_clicked_inventory(0, 0);  // Pick up half
+		set_clicked_inventory(0, 0);
 
 		EXPECT_EQ(player_inventory[0].first, nullptr);
 		EXPECT_EQ(player_inventory[0].second, 0);
 
 		const auto cursor_item = get_selected_item();
 		EXPECT_EQ(cursor_item, nullptr);
+	}
+
+
+	// Increment / decrement selected item
+	TEST(player_manager, increment_selected_item) {
+		// If player selects item by "unique" or "reference",
+		// It should function the same as it only modifies the cursor item stack
+
+		using namespace jactorio::game::player_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+
+
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+		player_inventory[0].first = item.get();
+		player_inventory[0].second = 10;
+		
+		// Pickup
+		{
+			// Pick up 5 of item, now selected
+			set_clicked_inventory(0, 1);
+
+			// Check if item was incremented
+			EXPECT_EQ(increment_selected_item(), true);
+
+			EXPECT_EQ(player_inventory[0].first, item.get());
+			EXPECT_EQ(player_inventory[0].second, 5);
+
+			const auto cursor_item = get_selected_item();
+			EXPECT_EQ(cursor_item->first, item.get());
+			EXPECT_EQ(cursor_item->second, 6);  // This incremented by 1
+		}
+
+		// Drop item down at inv slot 1
+		{
+			set_clicked_inventory(1, 0);
+
+			// Inv now empty, contents in inv slot 1
+			EXPECT_EQ(player_inventory[1].first, item.get());
+			EXPECT_EQ(player_inventory[1].second, 6);
+			
+			const auto cursor_item = get_selected_item();
+			EXPECT_EQ(cursor_item, nullptr);
+		}
+
+	}
+
+	TEST(player_manager, increment_selected_item_exceed_item_stack) {
+		// Attempting to increment an item exceeding item stack returns false and fails the increment
+
+		using namespace jactorio::game::player_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+
+
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+		player_inventory[0].first = item.get();
+		player_inventory[0].second = 50;
+
+		// Pickup
+		set_clicked_inventory(0, 0);
+
+		// Failed to add item: Item stack already full
+		EXPECT_EQ(increment_selected_item(), false);
+
+		const auto cursor_item = get_selected_item();
+		EXPECT_EQ(cursor_item->first, item.get());
+		EXPECT_EQ(cursor_item->second, 50);  // This unchanged
+	}
+
+
+	TEST(player_manager, decrement_selected_item_unique) {
+		// If player selects item by "unique"
+		// If decremented to 0, deselect the cursor item
+
+		using namespace jactorio::game::player_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+
+
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+		player_inventory[0].first = item.get();
+		player_inventory[0].second = 10;
+
+		// Pickup
+		{
+			// Pick up 5 of item, now selected
+			set_clicked_inventory(0, 1);
+
+			// Check if item was incremented
+			EXPECT_EQ(decrement_selected_item(), true);
+
+			EXPECT_EQ(player_inventory[0].first, item.get());
+			EXPECT_EQ(player_inventory[0].second, 5);
+
+			const auto cursor_item = get_selected_item();
+			EXPECT_EQ(cursor_item->first, item.get());
+			EXPECT_EQ(cursor_item->second, 4);  // This decremented by 1
+		}
+
+		// Drop item down at inv slot 1
+		{
+			set_clicked_inventory(1, 0);
+
+			// Inv now empty, contents in inv slot 1
+			EXPECT_EQ(player_inventory[1].first, item.get());
+			EXPECT_EQ(player_inventory[1].second, 4);
+
+			const auto cursor_item = get_selected_item();
+			EXPECT_EQ(cursor_item, nullptr);
+		}
+
+	}
+
+	TEST(player_manager, decrement_selected_item_reach_zero_reference) {
+		// Selected by reference
+		// If decremented to 0, deselect the cursor item
+
+		using namespace jactorio::game::player_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+
+		// Setup
+		auto data_manager_guard = jactorio::core::Resource_guard(jactorio::data::data_manager::clear_data);
+
+		// Create the cursor prototype
+		auto* cursor = new jactorio::data::Item();
+		jactorio::data::data_manager::data_raw_add(
+			jactorio::data::data_category::item, "__core__/inventory-selected-cursor", cursor);
+
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+		player_inventory[0].first = item.get();
+		player_inventory[0].second = 1;
+
+		// Pickup
+		set_clicked_inventory(0, 0);
+
+		EXPECT_EQ(decrement_selected_item(), true);
+
+		// Cursor is nullptr: no item selected
+		const auto cursor_item = get_selected_item();
+		EXPECT_EQ(cursor_item, nullptr);
+
+		// Should remove the selection cursor on the item
+		EXPECT_EQ(player_inventory[0].first, nullptr);
+		EXPECT_EQ(player_inventory[0].second, 0);
 	}
 }

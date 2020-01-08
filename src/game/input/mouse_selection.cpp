@@ -151,7 +151,7 @@ void draw_selection_box() {
 
 void jactorio::game::mouse_selection::draw_cursor_overlay() {
 	bool draw_cursor = true;
-	data::item_stack* ptr;
+	const data::item_stack* ptr;
 	if ((ptr = player_manager::get_selected_item()) != nullptr) {
 		const auto entity_ptr = ptr->first->entity_prototype;
 

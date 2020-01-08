@@ -124,7 +124,7 @@ void jactorio::renderer::gui::cursor_window(ImGuiWindowFlags window_flags,
 	// Draw the tooltip of what is currently selected
 
 	// Player has an item selected, draw it on the tooltip
-	data::item_stack* selected_item;
+	const data::item_stack* selected_item;
 	if ((selected_item = game::player_manager::get_selected_item()) != nullptr) {
 		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
 		ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(0, 0, 0, 0));

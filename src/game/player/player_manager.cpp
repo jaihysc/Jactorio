@@ -126,12 +126,42 @@ void jactorio::game::player_manager::set_clicked_inventory(const unsigned short 
 	}
 }
 
-jactorio::data::item_stack* jactorio::game::player_manager::get_selected_item() {
+const jactorio::data::item_stack* jactorio::game::player_manager::get_selected_item() {
 	if (!has_item_selected)
 		return nullptr;
 	
 	return &selected_item;
 }
+
+bool jactorio::game::player_manager::increment_selected_item() {
+	assert(has_item_selected);
+
+	// DO not increment if it will exceed the stack size
+	if (selected_item.second < selected_item.first->stack_size) {
+		selected_item.second++;
+		return true;
+	}
+	
+	return false;
+}
+
+bool jactorio::game::player_manager::decrement_selected_item() {
+	assert(has_item_selected);
+
+	if (--selected_item.second == 0) {
+		// Item stack now empty
+		has_item_selected = false;
+		// Remove selection cursor
+		player_inventory[selected_item_index].first = nullptr;
+		player_inventory[selected_item_index].second = 0;
+		
+		return true;
+	}
+	return true;
+}
+
+
+// Reserved
 
 void jactorio::game::player_manager::reset_inventory_variables() {
 	has_item_selected = false;

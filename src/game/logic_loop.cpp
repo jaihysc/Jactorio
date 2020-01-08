@@ -100,15 +100,22 @@ void jactorio::game::init_logic_loop() {
 			// Place
 			if (renderer::imgui_manager::input_captured)
 				return;
-			
-			data::item_stack* ptr;
+
+			const data::item_stack* ptr;
 			if ((ptr = player_manager::get_selected_item()) != nullptr) {
-				auto* entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
+				const auto tile_selected = mouse_selection::get_mouse_selected_tile();
+
+				// Does an entity already exist at this location?
+				if (world_manager::get_tile_world_coords(tile_selected.first, tile_selected.second)
+					->get_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::entity) != nullptr)
+					return;
 
 				// Entities only
-				const auto tile_selected = mouse_selection::get_mouse_selected_tile();
+				auto* entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
 				if (entity_ptr != nullptr) {
+					// Entity placed
 					logic::place_entity_at_coords(entity_ptr, tile_selected.first, tile_selected.second);
+					player_manager::decrement_selected_item();
 				}
 			}
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS);

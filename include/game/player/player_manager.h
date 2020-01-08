@@ -26,7 +26,9 @@ namespace jactorio::game::player_manager
      */
     void move_player_y(float amount);
 
+	
     // Inventory
+	
     constexpr unsigned short inventory_size = 80;
     inline data::item_stack player_inventory[inventory_size];  // Holds the internal id of items
 
@@ -41,11 +43,27 @@ namespace jactorio::game::player_manager
      * Gets the currently item player is currently holding on the cursor
      * @return nullptr if there is no item selected
      */
-    [[nodiscard]] data::item_stack* get_selected_item();
+    [[nodiscard]] const data::item_stack* get_selected_item();
 
-	/**
-	 * !! Tests use only !!
-	 */
+
+    /**
+     * Increments the selected item to the stack size
+     * @return true if successfully incremented
+     */
+    bool increment_selected_item();
+
+    /**
+     * Once item count reaches 0, the selected item slot is cleared
+     * @return true if successfully decremented, false if slot is empty
+     */
+    bool decrement_selected_item();
+
+	
+    // Reserved
+	
+    /**
+     * !! Tests use only !!
+     */
     void reset_inventory_variables();
 }
 
