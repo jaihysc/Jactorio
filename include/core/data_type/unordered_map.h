@@ -7,8 +7,6 @@
 
 namespace jactorio::core
 {
-	// TODO this hash function may be flawed, find a new one?
-	
 	template <typename TT>
 	struct hash
 	{
@@ -19,7 +17,7 @@ namespace jactorio::core
 	
 	template <class T>
 	void hash_combine(std::size_t& seed, T const& v) {
-		seed ^= std::hash<T>()(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hash<T>()(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 	}
 
 	template <class Tuple, size_t Index = std::tuple_size<Tuple>::value - 1>

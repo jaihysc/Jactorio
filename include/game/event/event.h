@@ -4,10 +4,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "jactorio.h"
 #include "game/event/game_events.h"
-#include "game/world/chunk_tile.h"  // Use chunk layers from this header
-#include "renderer/gui/imgui_manager.h"
+// #include "game/world/chunk_tile.h"  // Use chunk layers from this header
 
 // TODO, when adding loading of saves, clear the event data
 namespace jactorio::game

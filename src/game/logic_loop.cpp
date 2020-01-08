@@ -17,19 +17,6 @@
 #include "data/prototype/item/item.h"
 #include "renderer/gui/imgui_manager.h"
 
-void logic_loop() {
-	using namespace jactorio::game;
-
-	// Do things every logic loop tick
-	input_manager::raise();
-
-	// Generate chunks
-	world_generator::gen_chunk();
-
-	mouse_selection::draw_cursor_overlay();
-}
-
-
 bool logic_loop_should_terminate = false;
 
 const float move_speed = 0.1f;
@@ -139,10 +126,24 @@ void jactorio::game::init_logic_loop() {
 	
 	// Runtime
 	auto next_frame = std::chrono::steady_clock::now();
+	unsigned short logic_tick = 1;
 	while (!logic_loop_should_terminate) {
 		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
-		logic_loop();
+		{
+			// Do things every logic loop tick
+			Event::raise<Logic_tick_event>(event_type::logic_tick, logic_tick);
+
+			input_manager::raise();
+
+			// Generate chunks
+			world_generator::gen_chunk();
+
+			mouse_selection::draw_cursor_overlay();
+		}
+
+		if (++logic_tick > 60)
+			logic_tick = 1;
 
 		next_frame += std::chrono::nanoseconds(16666666);
 		std::this_thread::sleep_until(next_frame);
