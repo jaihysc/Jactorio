@@ -31,7 +31,12 @@ namespace jactorio::game::mouse_selection
 	/**
 	 * Draws a sprite with specified internal name at the cursor
 	 */
-	void draw_tile_at_cursor(const std::string& iname);
+	void draw_tile_at_cursor(const std::string& iname, const int offset_x, const int offset_y);
+
+	/**
+	 * Clears the last drawn tile with the specified width, height
+	 */
+	void clear_last_tile(int width, int height);
 	
 	/**
 	 * Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the cursor

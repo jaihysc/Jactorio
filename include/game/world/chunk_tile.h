@@ -76,6 +76,13 @@ namespace jactorio::game
 
 		// The entity which exists on this tile
 		data::Entity* entity = nullptr;
+		// If the entity is multi-tile, eg: 3 x 3, this holds the index of this tile (see below)
+		/*
+		 * 0 1 2
+		 * 3 4 5
+		 * 6 7 8
+		 */
+		unsigned short entity_index = 0;
 		
 		J_NODISCARD data::Tile* get_tile_layer_tile_prototype(chunk_layer category) const;
 		void set_tile_layer_tile_prototype(chunk_layer category, data::Tile* tile_prototype);

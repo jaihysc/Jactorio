@@ -100,8 +100,10 @@ void jactorio::game::init_logic_loop() {
 				// Entities only
 				auto* entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
 				if (entity_ptr != nullptr) {
-					// Entity placed
-					logic::place_entity_at_coords(entity_ptr, tile_selected.first, tile_selected.second);
+					// Entity placed successfully?
+					if (!logic::place_entity_at_coords(entity_ptr, tile_selected.first, tile_selected.second))
+						return;
+					
 					player_manager::decrement_selected_item();
 				}
 			}
@@ -115,7 +117,7 @@ void jactorio::game::init_logic_loop() {
 			
 			if (entity_ptr != nullptr) {
 				test_rm_counter++;
-				if (test_rm_counter == 60) {
+				if (test_rm_counter >= 10) {
 					test_rm_counter = 0;
 					logic::place_entity_at_coords(nullptr, tile_selected.first, tile_selected.second);
 				}

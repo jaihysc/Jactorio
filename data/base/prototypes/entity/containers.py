@@ -1,7 +1,7 @@
 import jactorioData as j
 c = j.category
 
-container = j.add(c.ContainerEntity, "chest")
+container = j.add(c.ContainerEntity, "chest").tileWidth(2).tileHeight(2)
 container._maxHealth = 50
 container._inventorySize = 14
 
