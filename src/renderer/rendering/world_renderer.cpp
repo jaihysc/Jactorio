@@ -59,7 +59,8 @@ void buffer_load_chunk(float* buffer,
 	// Iterate through and load tiles of a chunk into buffer
 	for (unsigned int tile_y = start_y; tile_y < end_y; ++tile_y) {
 		for (unsigned int tile_x = start_x; tile_x < end_x; ++tile_x) {
-			const unsigned int internal_id = func(tiles[tile_y * 32 + tile_x]);
+			auto tile = tiles[tile_y * 32 + tile_x];
+			const unsigned int internal_id = func(tile);
 
 			const unsigned int buffer_offset = 
 				((buffer_y + tile_y) * max_buffer_span + (buffer_x + tile_x)) * 8;
@@ -81,18 +82,58 @@ void buffer_load_chunk(float* buffer,
 			}
 			else {
 				const auto positions = jactorio::renderer::Renderer::get_spritemap_coords(internal_id);
-				
-				buffer[buffer_offset + 0] = positions.bottom_left.x;
-				buffer[buffer_offset + 1] = positions.bottom_left.y;
 
-				buffer[buffer_offset + 2] = positions.bottom_right.x;
-				buffer[buffer_offset + 3] = positions.bottom_right.y;
+				// Calculate the correct UV coordinates for multi-tile entities
 
-				buffer[buffer_offset + 4] = positions.top_right.x;
-				buffer[buffer_offset + 5] = positions.top_right.y;
+				// The uv length of one tile
+				float top_left_x = positions.top_left.x;
+				float top_left_y = positions.top_left.y;
 
-				buffer[buffer_offset + 6] = positions.top_left.x;
-				buffer[buffer_offset + 7] = positions.top_left.y;
+				float bottom_right_x = positions.bottom_right.x;
+				float bottom_right_y = positions.bottom_right.y;
+
+				// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
+				auto& layer_tile = tile.get_layer(current_layer);
+				if (layer_tile.multi_tile_span != 1) {
+					const auto len_x = 
+						(positions.bottom_right.x - positions.top_left.x) / static_cast<float>(layer_tile.multi_tile_span);
+					
+					const auto len_y =
+						(positions.bottom_right.y - positions.top_left.y) / static_cast<float>(layer_tile.multi_tile_height);
+
+					const auto x_multiplier = 
+						static_cast<int>(layer_tile.multi_tile_index) % layer_tile.multi_tile_span;
+					const auto y_multiplier = 
+						static_cast<int>(layer_tile.multi_tile_index) / layer_tile.multi_tile_span;  // This is correct, divide by width for both calculations
+
+					// Opengl flips vertically, thus the y multiplier is inverted
+					
+					// bottom right
+					bottom_right_x =
+						positions.bottom_right.x - len_x * static_cast<float>(layer_tile.multi_tile_span - x_multiplier - 1);
+					bottom_right_y = positions.bottom_right.y - len_y * y_multiplier;
+
+					// top left
+					top_left_x = positions.top_left.x + len_x * x_multiplier;
+					top_left_y = 
+						positions.top_left.y + len_y * static_cast<float>(layer_tile.multi_tile_height - y_multiplier - 1);
+				}
+
+				// bottom left
+				buffer[buffer_offset + 0] = top_left_x;
+				buffer[buffer_offset + 1] = bottom_right_y;
+
+				// bottom right
+				buffer[buffer_offset + 2] = bottom_right_x;
+				buffer[buffer_offset + 3] = bottom_right_y;
+
+				// top right
+				buffer[buffer_offset + 4] = bottom_right_x;
+				buffer[buffer_offset + 5] = top_left_y;
+
+				// top left
+				buffer[buffer_offset + 6] = top_left_x;
+				buffer[buffer_offset + 7] = top_left_y;
 			}
 		}
 	}
@@ -244,7 +285,7 @@ void jactorio::renderer::world_renderer::render_player_position(
 	EXECUTION_PROFILE_SCOPE(profiler, "World draw");
 	
 	// Rendering layers
-	for (unsigned int layer_index = 0; layer_index < game::Chunk_tile::layers_count; ++layer_index) {
+	for (unsigned int layer_index = 0; layer_index < game::Chunk_tile::layer_count; ++layer_index) {
 		current_layer = layer_index;
 
 		// // Create layer number, e.g layer 0

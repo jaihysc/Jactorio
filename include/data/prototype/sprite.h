@@ -1,6 +1,8 @@
 #ifndef DATA_PROTOTYPE_SPRITE_H
 #define DATA_PROTOTYPE_SPRITE_H
 
+#include "jactorio.h"
+
 #include <string>
 
 #include "prototype_base.h"
@@ -10,6 +12,8 @@ namespace jactorio::data
 	class Sprite : public Prototype_base
 	{
 	public:
+		// =======================================
+		// Pybind
 		enum class sprite_group
 		{
 			none,
@@ -51,9 +55,10 @@ namespace jactorio::data
 
 		Sprite& operator=(Sprite&& other) noexcept = default;
 
-	public:
+		// =======================================
+		// Sprite ptr
 		
-		[[nodiscard]] const unsigned char* get_sprite_data_ptr() const;
+		J_NODISCARD const unsigned char* get_sprite_data_ptr() const;
 
 		/**
 		 * Provided sprite_data pointer will be managed by the Sprite class, it must not be deleted
@@ -64,12 +69,12 @@ namespace jactorio::data
 		/**
 		 * Gets size of image on X axis
 		 */
-		[[nodiscard]] unsigned int get_width() const;
+		J_NODISCARD unsigned int get_width() const;
 
 		/**
 		 * Gets size of image on Y axis
 		 */
-		[[nodiscard]] unsigned int get_height() const;
+		J_NODISCARD unsigned int get_height() const;
 
 		
 		/**

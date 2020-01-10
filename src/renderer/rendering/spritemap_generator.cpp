@@ -127,17 +127,7 @@ renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short cou
 					static_cast<float>(x_offset) + coordinate_shrink_amount,
 					coordinate_shrink_amount
 				};
-			image_position.top_right =
-				Position_pair{
-					static_cast<float>(x_offset + sprite_width) - coordinate_shrink_amount,
-					coordinate_shrink_amount
-				};
 
-			image_position.bottom_left =
-				Position_pair{
-					static_cast<float>(x_offset) + coordinate_shrink_amount,
-					static_cast<float>(sprite_height) - coordinate_shrink_amount
-				};
 			image_position.bottom_right =
 				Position_pair{
 					static_cast<float>(x_offset + sprite_width) - coordinate_shrink_amount,
@@ -155,12 +145,6 @@ renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short cou
 
 		position.top_left.x /= static_cast<float>(pixels_x);
 		position.top_left.y /= static_cast<float>(pixels_y);
-
-		position.top_right.x /= static_cast<float>(pixels_x);
-		position.top_right.y /= static_cast<float>(pixels_y);
-
-		position.bottom_left.x /= static_cast<float>(pixels_x);
-		position.bottom_left.y /= static_cast<float>(pixels_y);
 
 		position.bottom_right.x /= static_cast<float>(pixels_x);
 		position.bottom_right.y /= static_cast<float>(pixels_y);

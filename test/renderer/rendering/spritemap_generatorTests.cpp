@@ -163,11 +163,11 @@ namespace renderer
 		EXPECT_EQ(img1.top_left.x, 0.00625f);
 		EXPECT_EQ(img1.top_left.y, 0.015625f);
 
-		EXPECT_EQ(img1.top_right.x, 0.19375f);
-		EXPECT_EQ(img1.top_right.y, 0.015625f);
+		EXPECT_EQ(img1.bottom_right.x, 0.19375f);
+		EXPECT_EQ(img1.top_left.y, 0.015625f);
 
-		EXPECT_EQ(img1.bottom_left.x, 0.00625f);
-		EXPECT_EQ(img1.bottom_left.y, 0.484375f);
+		EXPECT_EQ(img1.top_left.x, 0.00625f);
+		EXPECT_EQ(img1.bottom_right.y, 0.484375f);
 
 		EXPECT_EQ(img1.bottom_right.x, 0.19375f);
 		EXPECT_EQ(img1.bottom_right.y, 0.484375f);
@@ -176,11 +176,11 @@ namespace renderer
 		EXPECT_EQ(img2.top_left.x, 0.20625f);
 		EXPECT_EQ(img2.top_left.y, 0.015625f);
 
-		EXPECT_EQ(img2.top_right.x, 0.39375f);
-		EXPECT_EQ(img2.top_right.y, 0.015625f);
+		EXPECT_EQ(img2.bottom_right.x, 0.39375f);
+		EXPECT_EQ(img2.top_left.y, 0.015625f);
 
-		EXPECT_EQ(img2.bottom_left.x, 0.20625f);
-		EXPECT_EQ(img2.bottom_left.y, 0.484375f);
+		EXPECT_EQ(img2.top_left.x, 0.20625f);
+		EXPECT_EQ(img2.bottom_right.y, 0.484375f);
 
 		EXPECT_EQ(img2.bottom_right.x, 0.39375f);
 		EXPECT_EQ(img2.bottom_right.y, 0.484375f);
@@ -189,11 +189,11 @@ namespace renderer
 		EXPECT_EQ(img3.top_left.x, 0.40625f);
 		EXPECT_EQ(img3.top_left.y, 0.015625f);
 
-		EXPECT_EQ(img3.top_right.x, 0.59375f);
-		EXPECT_EQ(img3.top_right.y, 0.015625f);
+		EXPECT_EQ(img3.bottom_right.x, 0.59375f);
+		EXPECT_EQ(img3.top_left.y, 0.015625f);
 
-		EXPECT_EQ(img3.bottom_left.x, 0.40625f);
-		EXPECT_EQ(img3.bottom_left.y, 0.484375f);
+		EXPECT_EQ(img3.top_left.x, 0.40625f);
+		EXPECT_EQ(img3.bottom_right.y, 0.484375f);
 
 		EXPECT_EQ(img3.bottom_right.x, 0.59375f);
 		EXPECT_EQ(img3.bottom_right.y, 0.484375f);
@@ -202,11 +202,11 @@ namespace renderer
 		EXPECT_EQ(img4.top_left.x, 0.60625f);
 		EXPECT_EQ(img4.top_left.y, 0.015625f);
 
-		EXPECT_EQ(img4.top_right.x, 0.99375f);
-		EXPECT_EQ(img4.top_right.y, 0.015625f);
+		EXPECT_EQ(img4.bottom_right.x, 0.99375f);
+		EXPECT_EQ(img4.top_left.y, 0.015625f);
 
-		EXPECT_EQ(img4.bottom_left.x, 0.60625f);
-		EXPECT_EQ(img4.bottom_left.y, 0.984375f);
+		EXPECT_EQ(img4.top_left.x, 0.60625f);
+		EXPECT_EQ(img4.bottom_right.y, 0.984375f);
 
 		EXPECT_EQ(img4.bottom_right.x, 0.99375f);
 		EXPECT_EQ(img4.bottom_right.y, 0.984375f);

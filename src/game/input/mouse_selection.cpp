@@ -6,6 +6,7 @@
 
 #include "data/data_manager.h"
 #include "data/prototype/entity/entity.h"
+#include "game/logic/entity_place_controller.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world_manager.h"
@@ -118,26 +119,14 @@ void jactorio::game::mouse_selection::draw_tile_at_cursor(const std::string& ina
 	// Draw tile on the overlay layer
 	const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, iname);
 	assert(sprite_ptr != nullptr);
+	
 	tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, sprite_ptr);
-
+	tile->get_layer(Chunk_tile::chunk_layer::overlay).multi_tile_span = 1;
+	
 	last_tile_pos = cursor_position;
 }
 
 std::pair<int, int> last_tile_dimensions;
-
-void jactorio::game::mouse_selection::clear_last_tile(const int width = 1, const int height = 1) {
-	// Clear the tile at the last_tile if exists
-	for (int y = last_tile_pos.second - height + 1; y <= last_tile_pos.second; ++y) {
-		for (int x = last_tile_pos.first - width + 1; x <= last_tile_pos.first; ++x) {
-			auto* last_tile = world_manager::get_tile_world_coords(x, y);
-			if (last_tile == nullptr)
-				continue;
-			
-			last_tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay,
-			                                           nullptr);
-		}
-	}
-}
 
 /**
  * Draws a cursor over the tile currently selected
@@ -161,9 +150,35 @@ void draw_selection_box() {
 	last_tile_dimensions.second = 1;
 }
 
+bool clear_entity_placement_ghost = false;
 void jactorio::game::mouse_selection::draw_cursor_overlay() {
-	clear_last_tile(last_tile_dimensions.first,
-	                last_tile_dimensions.second);
+	// Remove selection cursor
+	{
+		auto* last_tile = world_manager::get_tile_world_coords(last_tile_pos.first,
+		                                                       last_tile_pos.second);
+		if (last_tile == nullptr)
+			return;
+
+		last_tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay,
+		                                           nullptr);
+	}
+	
+
+	// Clear last entity ghost
+	if (clear_entity_placement_ghost) {
+		logic::place_sprite_at_coords(
+			Chunk_tile::chunk_layer::overlay,
+			nullptr,
+			last_tile_dimensions.first, last_tile_dimensions.second,
+			last_tile_pos.first, last_tile_pos.second);
+
+		clear_entity_placement_ghost = false;
+	}
+
+
+	// Draw new overlay
+	const auto cursor_position = get_mouse_selected_tile();
+	last_tile_pos = cursor_position;
 	
 	const data::item_stack* ptr;
 	if ((ptr = player_manager::get_selected_item()) != nullptr) {
@@ -171,14 +186,16 @@ void jactorio::game::mouse_selection::draw_cursor_overlay() {
 
 		// Ensure selected item is an entity to draw preview
 		if (entity_ptr != nullptr) {
-			for (int y = 0; y < entity_ptr->tile_height; ++y) {
-				for (int x = 0; x < entity_ptr->tile_width; ++x) {
-					draw_tile_at_cursor(entity_ptr->sprite->name, x, y);
-				}
-			}
+			logic::place_sprite_at_coords(
+				Chunk_tile::chunk_layer::overlay, 
+				entity_ptr->sprite,
+				entity_ptr->tile_width, entity_ptr->tile_height, 
+				cursor_position.first, cursor_position.second);
+			
 			last_tile_dimensions.first = entity_ptr->tile_width;
 			last_tile_dimensions.second = entity_ptr->tile_height;
 
+			clear_entity_placement_ghost = true;
 			return;
 		}
 	}

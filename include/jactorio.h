@@ -4,7 +4,9 @@
 #include "core/resource_guard.h"
 #include "core/debug/execution_timer.h"
 #include "core/logger.h"
+
 #include <cassert>
+#include <cstdint>
 
 #define J_NODISCARD [[nodiscard]]
 

@@ -20,8 +20,8 @@ namespace jactorio::renderer::renderer_sprites
 	struct Image_position
 	{
 		Position_pair top_left;
-		Position_pair top_right;
-		Position_pair bottom_left;
+		// Position_pair top_right;
+		// Position_pair bottom_left;
 		Position_pair bottom_right;
 	};
 

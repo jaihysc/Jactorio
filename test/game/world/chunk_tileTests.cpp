@@ -68,9 +68,8 @@ namespace game
 		
 		// Should all be nullptr
 		EXPECT_EQ(ct.entity, nullptr);
-		EXPECT_EQ(ct.entity_index, 0);  // Defaults to 0, which is used for single tiles
 		
-		for (int i = 0; i < jactorio::game::Chunk_tile::layers_count; ++i) {
+		for (int i = 0; i < jactorio::game::Chunk_tile::layer_count; ++i) {
 			EXPECT_EQ(ct.layers[i].sprite, nullptr);
 			EXPECT_EQ(ct.layers[i].get_tile_prototype(), nullptr);
 		}

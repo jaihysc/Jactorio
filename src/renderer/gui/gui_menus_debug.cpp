@@ -32,7 +32,7 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 	            game::player_manager::get_player_position_y());
 
 	ImGui::NewLine();
-	ImGui::Text("Layer count: %d", game::Chunk_tile::layers_count);
+	ImGui::Text("Layer count: %d", game::Chunk_tile::layer_count);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 

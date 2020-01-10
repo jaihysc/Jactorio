@@ -1,5 +1,8 @@
 #include "game/world/chunk_tile.h"
 
+// ====================================
+// Chunk_tile_layer
+
 void jactorio::game::Chunk_tile_layer::set_tile_prototype(data::Tile* const tile_prototype) {
 	tile_prototype_ = tile_prototype;
 
@@ -7,7 +10,10 @@ void jactorio::game::Chunk_tile_layer::set_tile_prototype(data::Tile* const tile
 		sprite = tile_prototype->sprite_ptr;
 }
 
-inline unsigned short jactorio::game::Chunk_tile::get_layer_index(chunk_layer category) {
+// ====================================
+// Chunk_tile
+
+unsigned short jactorio::game::Chunk_tile::get_layer_index(chunk_layer category) {
 	return static_cast<unsigned short>(category);
 }
 
