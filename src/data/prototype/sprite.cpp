@@ -5,7 +5,7 @@
 #include <stb/stb_image.h>
 
 #include "core/filesystem.h"
-#include "core/logger.h"
+#include "data/data_exception.h"
 
 void jactorio::data::Sprite::load_image_from_file() {
 	sprite_buffer_ = stbi_load(
@@ -17,7 +17,12 @@ void jactorio::data::Sprite::load_image_from_file() {
 	);
 
 	if (!sprite_buffer_) {
-		LOG_MESSAGE_f(error, "Failed to read texture %s", sprite_path_.c_str());
+		LOG_MESSAGE_f(error, "Failed to read sprite at: %s", sprite_path_.c_str());
+		
+		std::ostringstream sstr;
+		sstr << "Failed to read sprite at: " << sprite_path_;
+		
+		throw Data_exception(sstr.str());
 	}
 }
 

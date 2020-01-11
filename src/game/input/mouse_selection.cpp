@@ -29,7 +29,7 @@ double jactorio::game::mouse_selection::get_position_y() {
 	return y_position;
 }
 
-std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
+std::pair<int, int> jactorio::game::mouse_selection::get_mouse_tile_coords() {
 	// TODO buffer the mouse selected tile??
 	float world_x = player_manager::get_player_position_x();
 	float world_y = player_manager::get_player_position_y();
@@ -91,7 +91,7 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_selected_tile() {
 }
 
 bool jactorio::game::mouse_selection::selected_tile_in_range() {
-	const auto cursor_position = get_mouse_selected_tile();
+	const auto cursor_position = get_mouse_tile_coords();
 
 	// Maximum distance of from the player where tiles can be reached
 	constexpr unsigned int max_reach = 14;
@@ -107,7 +107,7 @@ std::pair<int, int> last_tile_pos;
 
 void jactorio::game::mouse_selection::draw_tile_at_cursor(const std::string& iname,
                                                           const int offset_x = 0, const int offset_y = 0) {
-	auto cursor_position = get_mouse_selected_tile();
+	auto cursor_position = get_mouse_tile_coords();
 	cursor_position.first += offset_x;
 	cursor_position.second += offset_y;
 	
@@ -134,7 +134,7 @@ std::pair<int, int> last_tile_dimensions;
 void draw_selection_box() {
 	using namespace jactorio::game;
 
-	const auto cursor_position = mouse_selection::get_mouse_selected_tile();
+	const auto cursor_position = mouse_selection::get_mouse_tile_coords();
 
 	// Only draw cursor when over entities
 	const auto tile = world_manager::get_tile_world_coords(cursor_position.first, cursor_position.second);
@@ -177,7 +177,7 @@ void jactorio::game::mouse_selection::draw_cursor_overlay() {
 
 
 	// Draw new overlay
-	const auto cursor_position = get_mouse_selected_tile();
+	const auto cursor_position = get_mouse_tile_coords();
 	last_tile_pos = cursor_position;
 	
 	const data::item_stack* ptr;

@@ -442,4 +442,123 @@ namespace game::logic
 			EXPECT_EQ(inv[3].second, 2);
 		}
 	}
+
+
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	// add_itemstack_to_inv
+	TEST(inventory_controller, add_itemstack_to_inv_add_to_empty_slot) {
+		// Should find the first empty slot and add the item there
+		// Slots, 0, 1 Will be with another item
+		// Should place in slot 2
+
+		using namespace jactorio::game::logic;
+
+		constexpr unsigned short inv_size = 10;
+		jactorio::data::item_stack inv[inv_size];
+
+		auto item = std::make_unique<jactorio::data::Item>();
+		auto item2 = std::make_unique<jactorio::data::Item>();
+
+		// Another item
+		inv[0].first = item.get();
+		inv[0].second = 10;
+		inv[1].first = item.get();
+		inv[1].second = 21;
+
+		auto add_item = jactorio::data::item_stack(item2.get(), 20);
+		EXPECT_EQ(add_itemstack_to_inv(inv, inv_size, add_item), true);
+
+		EXPECT_EQ(add_item.second, 0);
+		
+		// Did not modify existing items
+		EXPECT_EQ(inv[0].first, item.get());
+		EXPECT_EQ(inv[0].second, 10);
+		EXPECT_EQ(inv[1].first, item.get());
+		EXPECT_EQ(inv[1].second, 21);
+
+		// Added itemstack
+		EXPECT_EQ(inv[2].first, item2.get());
+		EXPECT_EQ(inv[2].second, 20);
+	}
+
+	TEST(inventory_controller, add_itemstack_to_inv_add_to_existing_slot) {
+		// Should find slot with item of same type, respecting max stack size, add the remaining at the next
+		// available slot which is another item of the same type
+		// 
+		// Slots, 0 Will be with another item
+		// Should place in slot 1 2 3 | Add amounts: (10, 10, 30)
+
+		using namespace jactorio::game::logic;
+
+		constexpr unsigned short inv_size = 10;
+		jactorio::data::item_stack inv[inv_size];
+
+		auto another_item = std::make_unique<jactorio::data::Item>();
+		auto item_we_add_to = std::make_unique<jactorio::data::Item>();
+		item_we_add_to->stack_size = 50;
+		
+		inv[0].first = another_item.get();
+		inv[0].second = 10;
+
+		// Will fill up first 2, then dump the remaining in 3
+		inv[1].first = item_we_add_to.get();
+		inv[1].second = 40;
+		inv[2].first = item_we_add_to.get();
+		inv[2].second = 40;
+		
+		inv[3].first = item_we_add_to.get();
+		inv[3].second = 20;
+
+		auto add_item = jactorio::data::item_stack(item_we_add_to.get(), 50);
+		EXPECT_EQ(add_itemstack_to_inv(inv, inv_size, add_item), true);
+
+		EXPECT_EQ(add_item.second, 0);
+
+		// Did not modify other items
+		EXPECT_EQ(inv[0].first, another_item.get());
+		EXPECT_EQ(inv[0].second, 10);
+
+		// Added correctly??
+		EXPECT_EQ(inv[1].first, item_we_add_to.get());
+		EXPECT_EQ(inv[1].second, 50);
+		EXPECT_EQ(inv[2].first, item_we_add_to.get());
+		EXPECT_EQ(inv[2].second, 50);
+		
+		EXPECT_EQ(inv[3].first, item_we_add_to.get());
+		EXPECT_EQ(inv[3].second, 50);
+
+		// No items should be added to the 4th slot index
+		EXPECT_EQ(inv[4].first, nullptr);
+		EXPECT_EQ(inv[4].second, 0);
+	}
+
+	TEST(inventory_controller, add_itemstack_to_inv_no_available_slots) {
+		// Slots 1 is full, inv size is 1, will return false
+		using namespace jactorio::game::logic;
+
+		constexpr unsigned short inv_size = 1;
+		jactorio::data::item_stack inv[inv_size];
+
+		auto item = std::make_unique<jactorio::data::Item>();
+		auto item2 = std::make_unique<jactorio::data::Item>();
+
+		inv[0].first = item.get();
+		inv[0].second = 10;
+
+		auto add_item = jactorio::data::item_stack(item2.get(), 20);
+		EXPECT_EQ(add_itemstack_to_inv(inv, inv_size, add_item), false);
+
+		EXPECT_EQ(add_item.second, 20);
+
+		// Did not modify existing items
+		EXPECT_EQ(inv[0].first, item.get());
+		EXPECT_EQ(inv[0].second, 10);
+	}
 }

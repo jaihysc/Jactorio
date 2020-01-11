@@ -22,7 +22,7 @@ namespace jactorio::game::mouse_selection
 	/**
 	 * Gets the world X, Y of the tile the mouse is hovered over
 	 */
-	std::pair<int, int> get_mouse_selected_tile();
+	std::pair<int, int> get_mouse_tile_coords();
 
 	/**
 	 * Returns true if selected tile is within placement range

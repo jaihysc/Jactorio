@@ -3,8 +3,13 @@ c = j.category
 import data.base.prototypes.entity.containers
 
 def addTile(noiseLayer, endRange, name, spritePath, isWater = False):
-    sprite = j.add(c.Sprite).load(spritePath).group(j.spriteGroup.Terrain)
-    tile = j.add(c.Tile).sprite(sprite).isWater(isWater)
+    tile = (j.add(c.Tile, name)
+                .sprite((j.add(c.Sprite)
+                    .load(spritePath)
+                    .group(j.spriteGroup.Terrain)
+                ))
+                .isWater(isWater)
+    )
     
     noiseLayer.addTile(endRange, tile)
 
@@ -24,33 +29,45 @@ addTile(baseTerrain, 1, "dirt-1", "base/graphics/tiles/dirt.png")
 def addResourceTile(
     noiseLayer, endRange, name, tileSpritePath, itemSpritePath):
     # Item for resource
-    j.add(c.Item, name + "-item").sprite(
-        j.add(c.Sprite).load(itemSpritePath).group(j.spriteGroup.Gui)
+    (j.add(c.Item, name + "-item")
+        .sprite((j.add(c.Sprite)
+                    .load(itemSpritePath)
+                    .group(j.spriteGroup.Gui)
+                ))
     )
 
-    # Add resource tile to NoiseLayer
-    noiseLayer.addTile(endRange, j.add(c.ResourceTile).sprite(
-            j.add(c.Sprite).load(tileSpritePath).group(j.spriteGroup.Terrain)
-        )
+    resourceTile = (j.add(c.ResourceTile)
+                        .sprite((j.add(c.Sprite)
+                            .load(tileSpritePath)
+                            .group(j.spriteGroup.Terrain)
+                        ))
     )
+    # Add resource tile to NoiseLayer
+    noiseLayer.addTile(endRange, resourceTile)
+
 
 # Only use the tips of the noise to ensure that the resources is in one big patch
-coalLayer = j.add(c.NoiseLayer, "coal-layer").startVal(0.8).normalize(False)
-
-coalLayer._tileDataCategory = j.category.ResourceTile
-coalLayer._octaveCount = 2
-coalLayer._frequency = 0.3
-coalLayer._persistence = 0.6
-
+coalLayer = (j.add(c.NoiseLayer, "coal-layer")
+                .startVal(0.8)
+                .normalize(False)
+                
+                .tileDataCategory(j.category.ResourceTile)
+                .octaveCount(2)
+                .frequency(0.3)
+                .persistence(0.6)
+)
 addResourceTile(coalLayer, 2, "coal", "base/graphics/resource/coal/coal-ore.png", "base/graphics/icon/coal.png")
 
-copperLayer = j.add(c.NoiseLayer, "copper-layer").startVal(1).normalize(False)
 
-copperLayer._tileDataCategory = j.category.ResourceTile
-copperLayer._octaveCount = 2
-copperLayer._frequency = 0.5
-copperLayer._persistence = 0.7
+copperLayer = (j.add(c.NoiseLayer, "copper-layer")
+                .startVal(1)
+                .normalize(False)
 
+                .tileDataCategory(j.category.ResourceTile)
+                .octaveCount(2)
+                .frequency(0.5)
+                .persistence(0.7)
+)
 addResourceTile(copperLayer, 2, "copper", "base/graphics/resource/copper/copper-ore.png", "base/graphics/icon/copper.png")
 
 # addNoiseLayerTile("iron", "base/graphics/resource/iron/iron-ore.png")

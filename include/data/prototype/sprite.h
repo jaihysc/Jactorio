@@ -36,6 +36,7 @@ namespace jactorio::data
 		
 		/**
 		 * Actually loads the image, load_image only sets the sprite_path and calls this
+		 * @exception Data_exception Failed to load from file
 		 */
 		void load_image_from_file();
 		

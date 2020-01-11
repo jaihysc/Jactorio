@@ -3,6 +3,9 @@
 #include <cassert>
 #include <utility>
 
+/**
+ * Attempts to drop one item from origin item stack to target itme stack
+ */
 bool drop_one_origin_item(jactorio::data::item_stack& origin_item_stack,
                           jactorio::data::item_stack& target_item_stack) {
 	target_item_stack.first = origin_item_stack.first;
@@ -19,9 +22,10 @@ bool drop_one_origin_item(jactorio::data::item_stack& origin_item_stack,
 }
 
 bool jactorio::game::logic::move_itemstack_to_index(
-	data::item_stack* origin_inv, const unsigned short origin_inv_index,
-	data::item_stack* target_inv, const unsigned short target_inv_index, unsigned short mouse_button) {
-
+	data::item_stack* origin_inv, const uint16_t origin_inv_index,
+	data::item_stack* target_inv, const uint16_t target_inv_index, const unsigned short mouse_button) {
+	assert(mouse_button == 0 || mouse_button == 1); // Only left and right click are currently supported
+	
 	auto& origin_item_stack = origin_inv[origin_inv_index];
 	auto& target_item_stack = target_inv[target_inv_index];
 
@@ -158,5 +162,44 @@ bool jactorio::game::logic::move_itemstack_to_index(
 	return false;
 }
 
-// assert(origin_inv_index < origin_inv_size);  // Inventory index out of range
-// assert(target_inv_index < target_inv_size);  // Inventory index out of range
+// Can be used by non-player inventories 
+
+bool jactorio::game::logic::add_itemstack_to_inv(data::item_stack* target_inv, const uint16_t target_inv_size,
+                                                 data::item_stack& item_stack) {
+	assert(target_inv != nullptr); // Invalid item_stack to add
+
+	for (int i = 0; i < target_inv_size; ++i) {
+		data::item_stack& slot = target_inv[i];
+
+		// Item of same type
+		if (slot.first == item_stack.first) {
+			// Amount that can be added to fill the slot
+			auto max_add_amount = item_stack.first->stack_size - slot.second;
+			if (max_add_amount < 0)
+				max_add_amount = 0;
+			
+			assert(max_add_amount >= 0);
+			
+			// Attempting to add more than what is available from item_stack
+			if (max_add_amount >= item_stack.second) {
+				slot.second += item_stack.second;
+				item_stack.second = 0;
+				return true;
+			}
+			
+			slot.second += max_add_amount;
+			item_stack.second -= max_add_amount;
+		}
+		
+		// Empty slot
+		if (slot.first == nullptr) {
+			slot.first = item_stack.first;
+			slot.second = item_stack.second;
+
+			item_stack.second = 0;
+			return true;
+		}
+	}
+	
+	return false;
+}

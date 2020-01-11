@@ -5,6 +5,7 @@
 #include <mutex>
 
 #include "core/data_type/unordered_map.h"
+#include "game/input/mouse_selection.h"
 
 using world_chunks_key = unsigned long long;
 
@@ -135,6 +136,11 @@ jactorio::game::Chunk_tile* jactorio::game::world_manager::get_tile_world_coords
 	}
 
 	return nullptr;
+}
+
+jactorio::game::Chunk_tile* jactorio::game::world_manager::get_mouse_selected_tile() {
+	const auto tile_selected = mouse_selection::get_mouse_tile_coords();
+	return get_tile_world_coords(tile_selected.first, tile_selected.second);
 }
 
 void jactorio::game::world_manager::clear_chunk_data() {
