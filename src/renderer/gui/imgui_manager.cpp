@@ -32,7 +32,7 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 	bool quit = false;
 
 	while (!quit) {
-		Renderer::clear();
+		Renderer::g_clear();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

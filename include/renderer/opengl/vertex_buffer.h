@@ -23,7 +23,7 @@ namespace jactorio::renderer
 		void set_buffer_data(const void* data, const unsigned offset, const unsigned size) const;
 		
 		void bind() const;
-		void unbind() const;
+		static void unbind();
 	};
 }
 

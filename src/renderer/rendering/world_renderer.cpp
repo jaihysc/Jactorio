@@ -153,7 +153,7 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 	const unsigned short buffer_span = renderer.get_grid_size_x();
 	const unsigned short buffer_height = renderer.get_grid_size_y();
 
-	auto* buffer = renderer.get_texture_grid_buffer();
+	auto* buffer = renderer.render_layer->get_buf_uv().ptr;
 
 	std::vector<std::future<void>> chunk_load_threads;
 	chunk_load_threads.reserve(static_cast<unsigned long long>(chunk_amount_x) * chunk_amount_y);
@@ -199,7 +199,7 @@ void jactorio::renderer::world_renderer::draw_chunks(const Renderer& renderer,
 	while (buffer_load_chunk_thread_counter != 0)
 		;
 
-	renderer.update_texture_grid_buffer();
+	renderer.render_layer->g_update_data();
 }
 
 
@@ -314,7 +314,8 @@ void jactorio::renderer::world_renderer::render_player_position(
 		            chunk_amount_y + 2 + 2,
 		            get_tile_proto_func
 		);
-		
-		renderer->draw(glm::vec3(0, 0, 0));
+
+		renderer->render_layer->g_buffer_bind();
+		renderer->g_draw(glm::vec3(0, 0, 0));
 	}
 }

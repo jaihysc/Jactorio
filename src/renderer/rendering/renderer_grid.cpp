@@ -1,5 +1,34 @@
 #include "renderer/rendering/renderer_grid.h"
 
+void jactorio::renderer::renderer_grid::gen_render_grid(Renderer_layer* r_layer,
+                                                        const uint16_t tiles_x, const uint16_t tiles_y,
+                                                        const uint16_t tile_width) {
+	const auto required_size = static_cast<unsigned long long>(tiles_x) * static_cast<unsigned long long>(tiles_y);
+
+	// Resize up if necessary
+	if (r_layer->e_count() < required_size)
+		r_layer->resize(required_size);
+
+	
+	unsigned int index = 0;
+	for (unsigned short y = 0; y < tiles_y; ++y) {
+		// Multiply to create specified tile width
+		const auto local_y = y * tile_width;
+
+		for (unsigned short x = 0; x < tiles_x; ++x) {
+			const auto local_x = x * tile_width;
+
+			r_layer->set_vertex(
+				index++,
+				core::Quad_position(
+					core::Position2<float>(local_x, local_y),
+					core::Position2<float>(local_x + tile_width, local_y + tile_width)
+				)
+			);
+		}
+	}
+}
+
 float* jactorio::renderer::renderer_grid::gen_render_grid(
 	const unsigned short vertices_x,
 	const unsigned short vertices_y) {

@@ -9,6 +9,7 @@
 #include <cstdint>
 
 #define J_NODISCARD [[nodiscard]]
+#define J_DEPRECATED [[deprecated]]
 
 // Build type
 #ifdef JACTORIO_DEBUG_BUILD

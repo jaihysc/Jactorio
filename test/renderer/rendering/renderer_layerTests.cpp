@@ -69,18 +69,19 @@ namespace renderer
 		);
 
 		const auto vertex_ptr = r_layer.get_buf_vertex().ptr;
-		EXPECT_EQ(vertex_ptr[8 ], 0.11f);
-		EXPECT_EQ(vertex_ptr[9 ], 0.44f);
-		
+
+		EXPECT_EQ(vertex_ptr[8], 0.11f);
+		EXPECT_EQ(vertex_ptr[9], 0.22f);
+
 		EXPECT_EQ(vertex_ptr[10], 0.33f);
-		EXPECT_EQ(vertex_ptr[11], 0.44f);
+		EXPECT_EQ(vertex_ptr[11], 0.22f);
 		
 		EXPECT_EQ(vertex_ptr[12], 0.33f);
-		EXPECT_EQ(vertex_ptr[13], 0.22f);
-		
-		EXPECT_EQ(vertex_ptr[14], 0.11f);
-		EXPECT_EQ(vertex_ptr[15], 0.22f);
+		EXPECT_EQ(vertex_ptr[13], 0.44f);
 
+		EXPECT_EQ(vertex_ptr[14], 0.11f);
+		EXPECT_EQ(vertex_ptr[15], 0.44f);
+		
 		const auto uv_ptr = r_layer.get_buf_uv().ptr;
 		EXPECT_EQ(uv_ptr[8 ], 0.1f);
 		EXPECT_EQ(uv_ptr[9 ], 0.4f);
@@ -137,6 +138,18 @@ namespace renderer
 
 		// Ensure values still remain after resizing
 		const auto vertex_ptr = r_layer.get_buf_vertex().ptr;
+		EXPECT_EQ(vertex_ptr[8], 0.11f);
+		EXPECT_EQ(vertex_ptr[9], 0.22f);
+
+		EXPECT_EQ(vertex_ptr[10], 0.33f);
+		EXPECT_EQ(vertex_ptr[11], 0.22f);
+		
+		EXPECT_EQ(vertex_ptr[12], 0.33f);
+		EXPECT_EQ(vertex_ptr[13], 0.44f);
+
+		EXPECT_EQ(vertex_ptr[14], 0.11f);
+		EXPECT_EQ(vertex_ptr[15], 0.44f);
+		/* Inverted
 		EXPECT_EQ(vertex_ptr[8 ], 0.11f);
 		EXPECT_EQ(vertex_ptr[9 ], 0.44f);
 		
@@ -148,6 +161,7 @@ namespace renderer
 		
 		EXPECT_EQ(vertex_ptr[14], 0.11f);
 		EXPECT_EQ(vertex_ptr[15], 0.22f);
+		 */
 
 		const auto uv_ptr = r_layer.get_buf_uv().ptr;
 		EXPECT_EQ(uv_ptr[8 ], 0.1f);

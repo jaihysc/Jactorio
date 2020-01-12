@@ -4,6 +4,42 @@
 
 namespace renderer
 {
+	TEST(Renderer_grid, gen_render_tile_grid) {
+		using namespace jactorio::renderer;
+		Renderer_layer r_layer(true);
+
+		// Will automatically resize up but not down
+		renderer_grid::gen_render_grid(&r_layer, 10, 10, 16);
+
+		auto grid = r_layer.get_buf_vertex().ptr;
+		
+		// 0, 0
+		EXPECT_EQ(grid[0], 0.f);
+		EXPECT_EQ(grid[1], 0.f);
+
+		EXPECT_EQ(grid[2], 16.f);
+		EXPECT_EQ(grid[3], 0.f);
+
+		EXPECT_EQ(grid[4], 16.f);
+		EXPECT_EQ(grid[5], 16.f);
+
+		EXPECT_EQ(grid[6], 0.f);
+		EXPECT_EQ(grid[7], 16.f);
+
+		// 9, 9
+		EXPECT_EQ(grid[792], 144.f);
+		EXPECT_EQ(grid[793], 144.f);
+
+		EXPECT_EQ(grid[794], 160.f);
+		EXPECT_EQ(grid[795], 144.f);
+
+		EXPECT_EQ(grid[796], 160.f);
+		EXPECT_EQ(grid[797], 160.f);
+
+		EXPECT_EQ(grid[798], 144.f);
+		EXPECT_EQ(grid[799], 160.f);
+	}
+	
 	TEST(Renderer_grid, genRenderGrid) {
 		const auto grid = jactorio::renderer::renderer_grid::
 			gen_render_grid(10, 10);
@@ -23,7 +59,7 @@ namespace renderer
 		delete[] grid;
 	}
 
-	TEST(Renderer_grid, gen_render_tile_grid) {
+	TEST(Renderer_grid, gen_render_tile_grid_old) {
 		const auto grid = jactorio::renderer::renderer_grid::
 			gen_render_tile_grid(10, 10, 16);
 

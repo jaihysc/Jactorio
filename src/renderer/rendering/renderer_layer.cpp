@@ -1,4 +1,5 @@
 #include "renderer/rendering/renderer_layer.h"
+#include "renderer/opengl/vertex_array.h"
 
 // Settings
 
@@ -14,6 +15,10 @@ jactorio::renderer::Renderer_layer::Renderer_layer(const bool static_layer)
 
 jactorio::renderer::Renderer_layer::~Renderer_layer() {
 	delete_buffers_s();
+
+	// OpenGL buffers
+	delete vertex_vb_;
+	delete uv_vb_;
 }
 
 // Set
@@ -36,36 +41,50 @@ void jactorio::renderer::Renderer_layer::push_back(const Element element) {
 	set(next_element_index_++, element);
 }
 
-void jactorio::renderer::Renderer_layer::set(const uint32_t element_index, const Element element) const {
+void jactorio::renderer::Renderer_layer::set_vertex(const uint32_t element_index, const core::Quad_position element) const {
+	const auto buffer_index = element_index * 8;
+
+	// Populate in following order: topL, topR, bottomR, bottomL (X Y)
+	
+	// Vertex
+
+	vertex_buffer_.ptr[buffer_index + 0] = element.top_left.x;
+	vertex_buffer_.ptr[buffer_index + 1] = element.top_left.y;
+
+
+	vertex_buffer_.ptr[buffer_index + 2] = element.bottom_right.x;
+	vertex_buffer_.ptr[buffer_index + 3] = element.top_left.y;
+
+	vertex_buffer_.ptr[buffer_index + 4] = element.bottom_right.x;
+	vertex_buffer_.ptr[buffer_index + 5] = element.bottom_right.y;
+
+	vertex_buffer_.ptr[buffer_index + 6] = element.top_left.x;
+	vertex_buffer_.ptr[buffer_index + 7] = element.bottom_right.y;
+
+}
+
+void jactorio::renderer::Renderer_layer::set_uv(const uint32_t element_index, const core::Quad_position element) const {
 	const auto buffer_index = element_index * 8;
 
 	// Populate in following order: bottomL, bottomR, topR, topL (X Y)
 	
-	// Vertex
-	vertex_buffer_.ptr[buffer_index + 0] = element.vertex.top_left.x;
-	vertex_buffer_.ptr[buffer_index + 1] = element.vertex.bottom_right.y;
-
-	vertex_buffer_.ptr[buffer_index + 2] = element.vertex.bottom_right.x;
-	vertex_buffer_.ptr[buffer_index + 3] = element.vertex.bottom_right.y;
-
-	vertex_buffer_.ptr[buffer_index + 4] = element.vertex.bottom_right.x;
-	vertex_buffer_.ptr[buffer_index + 5] = element.vertex.top_left.y;
-
-	vertex_buffer_.ptr[buffer_index + 6] = element.vertex.top_left.x;
-	vertex_buffer_.ptr[buffer_index + 7] = element.vertex.top_left.y;
-
 	// UV
-	uv_buffer_.ptr[buffer_index + 0] = element.uv.top_left.x;
-	uv_buffer_.ptr[buffer_index + 1] = element.uv.bottom_right.y;
+	uv_buffer_.ptr[buffer_index + 0] = element.top_left.x;
+	uv_buffer_.ptr[buffer_index + 1] = element.bottom_right.y;
 
-	uv_buffer_.ptr[buffer_index + 2] = element.uv.bottom_right.x;
-	uv_buffer_.ptr[buffer_index + 3] = element.uv.bottom_right.y;
+	uv_buffer_.ptr[buffer_index + 2] = element.bottom_right.x;
+	uv_buffer_.ptr[buffer_index + 3] = element.bottom_right.y;
 
-	uv_buffer_.ptr[buffer_index + 4] = element.uv.bottom_right.x;
-	uv_buffer_.ptr[buffer_index + 5] = element.uv.top_left.y;
+	uv_buffer_.ptr[buffer_index + 4] = element.bottom_right.x;
+	uv_buffer_.ptr[buffer_index + 5] = element.top_left.y;
 
-	uv_buffer_.ptr[buffer_index + 6] = element.uv.top_left.x;
-	uv_buffer_.ptr[buffer_index + 7] = element.uv.top_left.y;
+	uv_buffer_.ptr[buffer_index + 6] = element.top_left.x;
+	uv_buffer_.ptr[buffer_index + 7] = element.top_left.y;
+}
+
+void jactorio::renderer::Renderer_layer::set(const uint32_t element_index, const Element element) const {
+	set_vertex(element_index, element.vertex);
+	set_uv(element_index, element.uv);
 }
 
 
@@ -141,4 +160,39 @@ void jactorio::renderer::Renderer_layer::delete_buffer() noexcept {
 
 	vertex_buffer_.ptr = nullptr;
 	uv_buffer_.ptr = nullptr;
+}
+
+
+// OpenGL methods
+constexpr uint64_t g_byte_multiplier = 8 * sizeof(float);  // Multiply by this to convert to bytes
+
+void jactorio::renderer::Renderer_layer::g_init_buffer() {
+	vertex_vb_ = new Vertex_buffer(vertex_buffer_.ptr, e_count_ * g_byte_multiplier);
+	uv_vb_ = new Vertex_buffer(uv_buffer_.ptr, e_count_ * g_byte_multiplier);
+
+	// Register buffer properties and shader location
+	// Vertex - location 0
+	// UV - location 1
+	Vertex_array::add_buffer(vertex_vb_, 2, 0);
+	Vertex_array::add_buffer(uv_vb_, 2, 1);
+}
+
+void jactorio::renderer::Renderer_layer::g_update_data() {
+	if (!vertex_buffers_generated_) {
+		// Create buffers on first call
+		g_init_buffer();
+
+		vertex_buffers_generated_ = true;
+		return;
+	}
+
+	// Update existing buffer data
+	// TODO only partial updates to reduce data uploaded
+	vertex_vb_->set_buffer_data(vertex_buffer_.ptr, 0, e_count_ * g_byte_multiplier);
+	uv_vb_->set_buffer_data(uv_buffer_.ptr, 0, e_count_ * g_byte_multiplier);
+}
+
+void jactorio::renderer::Renderer_layer::g_buffer_bind() const {
+	vertex_vb_->bind();
+	uv_vb_->bind();
 }

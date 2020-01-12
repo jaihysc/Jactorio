@@ -4,12 +4,14 @@
 #include "jactorio.h"
 
 #include "core/data_type.h"
+#include "renderer/opengl/vertex_buffer.h"
 
 namespace jactorio::renderer
 {	
 	/**
 	 * Generates and maintains the buffers of a rendering layer <br>
 	 * Currently 2 buffers are used: Vertex and UV
+	 * 
 	 */
 	class Renderer_layer
 	{
@@ -89,8 +91,10 @@ namespace jactorio::renderer
 		 * Appends element to layer, resizes if static_layer_ is false
 		 */
 		void push_back(Element element);
-		
-		void set(uint32_t element_index, Element element) const;
+
+		void set(uint32_t element_index, Element element) const;  // Both vertex and uv
+		void set_vertex(uint32_t element_index, core::Quad_position element) const;
+		void set_uv(uint32_t element_index, core::Quad_position element) const;
 
 		// Get buffers
 
@@ -118,6 +122,32 @@ namespace jactorio::renderer
 		 * Deallocates vertex and uv buffers, clearing any stored data
 		 */
 		void delete_buffer() noexcept;
+
+
+	private:
+		// OpenGL methods | The methods below MUST be called from an openGL context
+		
+		Vertex_buffer* vertex_vb_ = nullptr;
+		Vertex_buffer* uv_vb_ = nullptr;
+		
+		bool vertex_buffers_generated_ = false;
+
+		/**
+		 * Initializes vertex buffers for rendering the 2 buffers <br>
+		 * Should only be called once
+		 */
+		void g_init_buffer();
+		
+	public:
+		/**
+		 * Updates vertex buffers based on the current data in the 2 buffers
+		 */
+		void g_update_data();
+
+		/**
+		 * Binds the vertex buffers, call this prior to drawing
+		 */
+		void g_buffer_bind() const;
 	};
 }
 

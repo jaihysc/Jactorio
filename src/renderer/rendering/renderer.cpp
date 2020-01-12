@@ -15,8 +15,7 @@ unsigned short jactorio::renderer::Renderer::window_height_ = 0;
 
 unsigned short jactorio::renderer::Renderer::tile_width = 9;
 
-std::unordered_map<unsigned int, jactorio::core::Quad_position>
-jactorio::renderer::Renderer::spritemap_coords_{};
+std::unordered_map<unsigned int, jactorio::core::Quad_position> jactorio::renderer::Renderer::spritemap_coords_{};
 
 void jactorio::renderer::Renderer::set_spritemap_coords(
 	const std::unordered_map<unsigned, core::Quad_position>& spritemap_coords) {
@@ -93,31 +92,13 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	// Initialization of vertex array and its buffers
 	vertex_array_ = new Vertex_array();
 
-	// Render grid
-	{
-		const auto data = renderer_grid::gen_render_tile_grid(
-			tile_count_x_,
-			tile_count_y_,
-			tile_width);
+	// Render layer
+	render_layer = new Renderer_layer(true);
+	render_layer->reserve(grid_elements_count_);
 
-		// Size of 1 element: 8 * sizeof(float)
-		render_grid_ = new Vertex_buffer(data, grid_elements_count_ * 4 * 2 * sizeof(float));
-		vertex_array_->add_buffer(*render_grid_, 2, 0);
-		delete[] data;
-	}
-
-	// Spritemap positions
-	{
-		const auto data = renderer_grid::gen_texture_grid(grid_elements_count_);
-
-		texture_grid_ = new Vertex_buffer(data, grid_elements_count_ * 4 * 2 * sizeof(float));
-		vertex_array_->add_buffer(*texture_grid_, 2, 1);
-		delete[] data;
-	}
-	texture_grid_buffer_ = new float[
-		static_cast<unsigned long long>(tile_count_x_) * tile_count_y_ * 8];
-
-
+	// Vertex positions
+	renderer_grid::gen_render_grid(render_layer, tile_count_x_, tile_count_y_, tile_width);
+	
 	// Index buffer
 	{
 		const auto data = renderer_grid::gen_render_grid_indices(
@@ -132,14 +113,12 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 
 void jactorio::renderer::Renderer::delete_data() const {
 	delete vertex_array_;
-	delete render_grid_;
-	delete texture_grid_;
+	delete render_layer;
 	delete index_buffer_;
-	delete[] texture_grid_buffer_;
 }
 
 
-void jactorio::renderer::Renderer::draw(const glm::vec3 transform) const {
+void jactorio::renderer::Renderer::g_draw(const glm::vec3 transform) const {
 	vertex_array_->bind();
 	index_buffer_->bind();
 
@@ -152,7 +131,7 @@ void jactorio::renderer::Renderer::draw(const glm::vec3 transform) const {
 	); // Pointer not needed as buffer is already bound
 }
 
-void jactorio::renderer::Renderer::clear() {
+void jactorio::renderer::Renderer::g_clear() {
 	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 }
 
@@ -166,14 +145,6 @@ unsigned short jactorio::renderer::Renderer::get_window_height() {
 	return window_height_;
 }
 
-float* jactorio::renderer::Renderer::get_texture_grid_buffer() const {
-	return texture_grid_buffer_;
-}
-
-void jactorio::renderer::Renderer::update_texture_grid_buffer() const {
-	texture_grid_->set_buffer_data(texture_grid_buffer_, 0,
-	                               tile_count_x_ * tile_count_y_ * sizeof(float) * 8);
-}
 
 unsigned short jactorio::renderer::Renderer::get_grid_size_x() const {
 	return tile_count_x_;
