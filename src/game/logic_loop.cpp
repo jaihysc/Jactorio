@@ -8,7 +8,7 @@
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-#include "game/logic/entity_place_controller.h"
+#include "game/logic/placement_controller.h"
 #include "game/logic/inventory_controller.h"
 #include "game/player/player_manager.h"
 #include "game/world/world_generator.h"
@@ -17,10 +17,11 @@
 #include "data/data_manager.h"
 #include "data/prototype/item/item.h"
 #include "renderer/gui/imgui_manager.h"
+#include "data/prototype/tile/resource_tile.h"
 
 bool logic_loop_should_terminate = false;
 
-const float move_speed = 0.1f;
+const float move_speed = 1.1f;
 
 int test_rm_counter = 0;
 
@@ -102,7 +103,7 @@ void jactorio::game::init_logic_loop() {
 				auto* entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
 				if (entity_ptr != nullptr) {
 					// Do not take item away from player unless item was successfully placed
-					if (!logic::place_entity_at_coords_ranged(entity_ptr, tile_selected.first, tile_selected.second))
+					if (!placement_c::place_entity_at_coords_ranged(entity_ptr, tile_selected.first, tile_selected.second))
 						return;
 					
 					player_manager::decrement_selected_item();
@@ -110,21 +111,31 @@ void jactorio::game::init_logic_loop() {
 			}
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS);
 
-		// Remove entities
+		// Remove entities resource
 		input_manager::subscribe([]() {
 			const auto tile_selected = mouse_selection::get_mouse_tile_coords();
-			const auto entity_ptr = world_manager::get_tile_world_coords(
-				tile_selected.first, tile_selected.second)->entity;
+			const auto* tile = world_manager::get_tile_world_coords(tile_selected.first, tile_selected.second);
 			
-			if (entity_ptr == nullptr)
+			const auto* entity_ptr = tile->entity;
+			// Pickup entity has priority over extract resource
+			if (entity_ptr == nullptr) {
+				// Extract resource
+				auto* resource_tile = static_cast<data::Resource_tile*>(
+					tile->get_tile_layer_tile_prototype(Chunk_tile::chunk_layer::resource));
+				if (resource_tile != nullptr) {
+					LOG_MESSAGE(debug, "MINING AWAY p");
+				}
+				
 				return;
-			
+			}
+
+			// Pickup entity
 			test_rm_counter++;
 			if (test_rm_counter >= 10) {
-				if (logic::place_entity_at_coords_ranged(nullptr, tile_selected.first, tile_selected.second)) {
+				if (placement_c::place_entity_at_coords_ranged(nullptr, tile_selected.first, tile_selected.second)) {
 					test_rm_counter = 0;
 					auto item_stack = data::item_stack(entity_ptr->get_item(), 1);
-					logic::add_itemstack_to_inv(
+					inventory_c::add_itemstack_to_inv(
 						player_manager::player_inventory, player_manager::inventory_size, item_stack);
 					// TODO do something if the inventory is full
 				}

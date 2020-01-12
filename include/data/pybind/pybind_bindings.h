@@ -88,7 +88,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP_SEPARATE(Tile, isWater, is_water)
 		PYBIND_PROP_SEPARATE(Tile, sprite, sprite_ptr);
 
-	py::class_<Resource_tile, Tile>(m, "ResourceTile");
+	py::class_<Resource_tile, Tile>(m, "ResourceTile")
+		PYBIND_PROP(Resource_tile, product);
 
 	py::class_<Noise_layer, Prototype_base>(m, "NoiseLayer")
 		// Perlin noise properties

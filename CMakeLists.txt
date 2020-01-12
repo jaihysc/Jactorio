@@ -52,7 +52,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 
 	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
-	${JACTORIO_DIR}/game/logic/entity_place_controller.cpp
+	${JACTORIO_DIR}/game/logic/placement_controller.cpp
 
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
@@ -77,6 +77,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_grid.cpp
+	${JACTORIO_DIR}/renderer/rendering/renderer_layer.cpp
 	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
 
 	${JACTORIO_DIR}/renderer/window/window_manager.cpp
@@ -106,13 +107,12 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/entity_place_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
 
-	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp
-	${JACTORIO_TEST_DIR}/renderer/manager/renderer_managerTests.cpp
-
+	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_layerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
 )

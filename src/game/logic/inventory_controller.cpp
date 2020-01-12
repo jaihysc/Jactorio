@@ -21,7 +21,7 @@ bool drop_one_origin_item(jactorio::data::item_stack& origin_item_stack,
 	return false;
 }
 
-bool jactorio::game::logic::move_itemstack_to_index(
+bool jactorio::game::inventory_c::move_itemstack_to_index(
 	data::item_stack* origin_inv, const uint16_t origin_inv_index,
 	data::item_stack* target_inv, const uint16_t target_inv_index, const unsigned short mouse_button) {
 	assert(mouse_button == 0 || mouse_button == 1); // Only left and right click are currently supported
@@ -164,8 +164,8 @@ bool jactorio::game::logic::move_itemstack_to_index(
 
 // Can be used by non-player inventories 
 
-bool jactorio::game::logic::add_itemstack_to_inv(data::item_stack* target_inv, const uint16_t target_inv_size,
-                                                 data::item_stack& item_stack) {
+bool jactorio::game::inventory_c::add_itemstack_to_inv(data::item_stack* target_inv, const uint16_t target_inv_size,
+                                                       data::item_stack& item_stack) {
 	assert(target_inv != nullptr); // Invalid item_stack to add
 
 	for (int i = 0; i < target_inv_size; ++i) {

@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 
+#include "core/data_type.h"
 #include "data/prototype/sprite.h"
 #include "renderer/opengl/texture.h"
 
@@ -11,20 +12,6 @@
 // - Location of a sprite within spritemap
 namespace jactorio::renderer::renderer_sprites
 {
-	struct Position_pair
-	{
-		float x;
-		float y;
-	};
-
-	struct Image_position
-	{
-		Position_pair top_left;
-		// Position_pair top_right;
-		// Position_pair bottom_left;
-		Position_pair bottom_right;
-	};
-
 	struct Spritemap_data
 	{
 		data::Sprite* spritemap = nullptr;
@@ -33,7 +20,7 @@ namespace jactorio::renderer::renderer_sprites
 		// 0 - 1 positions of the sprite within the spritemap
 		// Upper left is 0, 0 - bottom right is 1, 1
 		// std::string is internal name of prototype
-		std::unordered_map<unsigned int, Image_position> sprite_positions;
+		std::unordered_map<unsigned int, core::Quad_position> sprite_positions;
 	};
 
 	/**

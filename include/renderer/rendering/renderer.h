@@ -26,15 +26,15 @@ namespace jactorio::renderer
 		// #################################################
 		// Sprites
 		// Internal ids to spritemap positions
-		static std::unordered_map<unsigned int, renderer_sprites::Image_position> spritemap_coords_;
+		static std::unordered_map<unsigned int, core::Quad_position> spritemap_coords_;
 	public:
 		static void set_spritemap_coords(
-			const std::unordered_map<unsigned, renderer_sprites::Image_position>& spritemap_coords);
+			const std::unordered_map<unsigned, core::Quad_position>& spritemap_coords);
 
 		/**
 		 * Use internal id of sprite prototype
 		 */
-		static renderer_sprites::Image_position get_spritemap_coords(unsigned int internal_id);
+		static core::Quad_position get_spritemap_coords(unsigned int internal_id);
 		
 	private:
 		// #################################################

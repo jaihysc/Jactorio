@@ -109,9 +109,9 @@ void jactorio::game::player_manager::set_clicked_inventory(const unsigned short 
 	}
 
 	const bool cursor_empty =
-		logic::move_itemstack_to_index(&selected_item, 0,
-		                               player_inventory, index,
-		                               mouse_button);
+		inventory_c::move_itemstack_to_index(&selected_item, 0,
+		                                     player_inventory, index,
+		                                     mouse_button);
 	// Cursor slot is empty
 	if (cursor_empty) {
 		has_item_selected = false;

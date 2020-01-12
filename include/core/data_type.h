@@ -1,12 +1,45 @@
-#ifndef CORE_DATA_TYPE_UNORDERED_MAP_H
-#define CORE_DATA_TYPE_UNORDERED_MAP_H
+#ifndef CORE_DATA_TYPE_H
+#define CORE_DATA_TYPE_H
 
 #include <tuple>
 
-// Defines hash functions for tuples as keys in std::unordered_map
-
 namespace jactorio::core
 {
+	// Defines standard data pairs for use across this application
+	// This is used for better naming compared to std::pair's .first and .second
+	
+	template <typename T>
+	struct Position2
+	{
+		Position2()
+			: x(0), y(0) {
+		}
+
+		Position2(T x, T y)
+			: x(x), y(y) {
+		}
+		
+		T x;
+		T y;
+	};
+
+	
+	struct Quad_position
+	{
+		Quad_position() = default;
+
+		Quad_position(const Position2<float> top_left, const Position2<float> bottom_right)
+			: top_left(top_left), bottom_right(bottom_right) {
+		}
+		
+		Position2<float> top_left;
+		Position2<float> bottom_right;
+	};
+
+
+	// =================================================
+	// Defines hash functions for tuples as keys in std::unordered_map
+	
 	template <typename TT>
 	struct hash
 	{
@@ -48,4 +81,4 @@ namespace jactorio::core
 	};
 }
 
-#endif // CORE_DATA_TYPE_UNORDERED_MAP_H
+#endif // CORE_DATA_TYPE_H

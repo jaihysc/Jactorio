@@ -23,7 +23,7 @@ namespace jactorio::renderer::imgui_manager
 
 	struct Character_menu_data
 	{
-		std::unordered_map<unsigned, renderer_sprites::Image_position> sprite_positions;
+		std::unordered_map<unsigned, core::Quad_position> sprite_positions;
 		unsigned int tex_id = 0;  // Assigned by openGL
 	};
 	

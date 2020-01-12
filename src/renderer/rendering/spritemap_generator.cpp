@@ -82,7 +82,7 @@ renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short cou
 	auto* spritemap_buffer = new unsigned char[
 		static_cast<unsigned long long>(pixels_x) * pixels_y * 4];
 
-	std::unordered_map<unsigned int, Image_position> image_positions;
+	std::unordered_map<unsigned int, core::Quad_position> image_positions;
 
 
 	// Offset the x pixels of each new sprite so they don't overlap each other
@@ -123,13 +123,13 @@ renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short cou
 			constexpr float coordinate_shrink_amount = 1;
 
 			image_position.top_left =
-				Position_pair{
+				core::Position2{
 					static_cast<float>(x_offset) + coordinate_shrink_amount,
 					coordinate_shrink_amount
 				};
 
 			image_position.bottom_right =
-				Position_pair{
+				core::Position2{
 					static_cast<float>(x_offset + sprite_width) - coordinate_shrink_amount,
 					static_cast<float>(sprite_height) - coordinate_shrink_amount
 				};

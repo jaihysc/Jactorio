@@ -1,11 +1,12 @@
-#include "game/logic/entity_place_controller.h"
+#include "game/logic/placement_controller.h"
 
 #include "jactorio.h"
-#include "game/world/world_manager.h"
-#include "game/input/mouse_selection.h"
 
-bool jactorio::game::logic::placement_location_valid(const uint8_t tile_width, const uint8_t tile_height,
-                                                     const int x, const int y) {
+#include "game/input/mouse_selection.h"
+#include "game/world/world_manager.h"
+
+bool jactorio::game::placement_c::placement_location_valid(const uint8_t tile_width, const uint8_t tile_height,
+                                                           const int x, const int y) {
 	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
 		for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
 			const auto tile =
@@ -25,7 +26,7 @@ bool jactorio::game::logic::placement_location_valid(const uint8_t tile_width, c
 
 // Entity placement
 
-bool jactorio::game::logic::place_entity_at_coords_ranged(data::Entity* entity, const int x, const int y) {
+bool jactorio::game::placement_c::place_entity_at_coords_ranged(data::Entity* entity, const int x, const int y) {
 	if (!mouse_selection::selected_tile_in_range())
 		return false;
 
@@ -33,7 +34,7 @@ bool jactorio::game::logic::place_entity_at_coords_ranged(data::Entity* entity, 
 }
 
 jactorio::data::Entity* placement_entity;  // This is for the lambda of the place function
-bool jactorio::game::logic::place_entity_at_coords(data::Entity* entity, const int x, const int y) {
+bool jactorio::game::placement_c::place_entity_at_coords(data::Entity* entity, const int x, const int y) {
 	const auto tile = world_manager::get_tile_world_coords(x, y);
 	assert(tile != nullptr);
 
@@ -73,10 +74,10 @@ bool jactorio::game::logic::place_entity_at_coords(data::Entity* entity, const i
 jactorio::data::Sprite* placement_sprite;
 jactorio::game::Chunk_tile::chunk_layer placement_sprite_layer;
 
-void jactorio::game::logic::place_sprite_at_coords(const Chunk_tile::chunk_layer layer,
-                                                   data::Sprite* sprite,
-                                                   const uint8_t tile_width, const uint8_t tile_height,
-                                                   const int x, const int y) {
+void jactorio::game::placement_c::place_sprite_at_coords(const Chunk_tile::chunk_layer layer,
+                                                         data::Sprite* sprite,
+                                                         const uint8_t tile_width, const uint8_t tile_height,
+                                                         const int x, const int y) {
 
 	const auto tile = world_manager::get_tile_world_coords(x, y);
 	assert(tile != nullptr);
@@ -103,10 +104,10 @@ void jactorio::game::logic::place_sprite_at_coords(const Chunk_tile::chunk_layer
 
 
 // Lower level functions
-void jactorio::game::logic::place_at_coords(const Chunk_tile::chunk_layer layer,
-                                            const uint8_t tile_width, const uint8_t tile_height,
-                                            const int x, const int y,
-                                            void (*place_func)(Chunk_tile*)) {
+void jactorio::game::placement_c::place_at_coords(const Chunk_tile::chunk_layer layer,
+                                                  const uint8_t tile_width, const uint8_t tile_height,
+                                                  const int x, const int y,
+                                                  void (*place_func)(Chunk_tile*)) {
 	// Place --- The places tiles are known to be valid
 	int entity_index = 0;
 	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
@@ -124,10 +125,10 @@ void jactorio::game::logic::place_at_coords(const Chunk_tile::chunk_layer layer,
 	}
 }
 
-void jactorio::game::logic::remove_at_coords(const Chunk_tile::chunk_layer layer,
-                                             const uint8_t tile_width, const uint8_t tile_height,
-                                             int x, int y,
-                                             void (*remove_func)(Chunk_tile*)) {
+void jactorio::game::placement_c::remove_at_coords(const Chunk_tile::chunk_layer layer,
+                                                   const uint8_t tile_width, const uint8_t tile_height,
+                                                   int x, int y,
+                                                   void (*remove_func)(Chunk_tile*)) {
 	// If the current sprite is already nullptr, it means the rest of the multi-tile sprite is already removed
 	// if (tile->get_tile_layer_sprite_prototype(layer) == nullptr)
 	// return false;

@@ -6,7 +6,7 @@
 
 #include "data/data_manager.h"
 #include "data/prototype/entity/entity.h"
-#include "game/logic/entity_place_controller.h"
+#include "game/logic/placement_controller.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world_manager.h"
@@ -136,9 +136,12 @@ void draw_selection_box() {
 
 	const auto cursor_position = mouse_selection::get_mouse_tile_coords();
 
-	// Only draw cursor when over entities
+	// Only draw cursor when over entities or resources
 	const auto tile = world_manager::get_tile_world_coords(cursor_position.first, cursor_position.second);
-	if (tile == nullptr || tile->entity == nullptr) {
+	if (tile == nullptr || 
+		(tile->entity == nullptr && 
+			tile->get_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::resource) == nullptr
+		)) {
 		return;
 	}
 	
@@ -166,7 +169,7 @@ void jactorio::game::mouse_selection::draw_cursor_overlay() {
 
 	// Clear last entity ghost
 	if (clear_entity_placement_ghost) {
-		logic::place_sprite_at_coords(
+		placement_c::place_sprite_at_coords(
 			Chunk_tile::chunk_layer::overlay,
 			nullptr,
 			last_tile_dimensions.first, last_tile_dimensions.second,
@@ -186,7 +189,7 @@ void jactorio::game::mouse_selection::draw_cursor_overlay() {
 
 		// Ensure selected item is an entity to draw preview
 		if (entity_ptr != nullptr) {
-			logic::place_sprite_at_coords(
+			placement_c::place_sprite_at_coords(
 				Chunk_tile::chunk_layer::overlay, 
 				entity_ptr->sprite,
 				entity_ptr->tile_width, entity_ptr->tile_height, 
