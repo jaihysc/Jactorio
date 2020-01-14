@@ -18,6 +18,14 @@ namespace jactorio::game
 		EVENT_CATEGORY(in_game)
 	};
 
+	class Renderer_tick_event final : public Event_base
+	{
+	public:
+		Renderer_tick_event() = default;
+		
+		EVENT_TYPE(renderer_tick)
+		EVENT_CATEGORY(application)
+	};
 
 	// Gui
 	class Gui_opened_event : public Event_base

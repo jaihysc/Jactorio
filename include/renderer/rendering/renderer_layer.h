@@ -102,7 +102,7 @@ namespace jactorio::renderer
 
 		J_NODISCARD Buffer<float> get_buf_vertex();
 		J_NODISCARD Buffer<float> get_buf_uv();
-		J_NODISCARD const Index_buffer * get_buf_index();
+		J_NODISCARD const Index_buffer * get_buf_index() const;
 
 		// Resize
 		
@@ -140,7 +140,7 @@ namespace jactorio::renderer
 		/**
 		 * Only deletes heap vertex buffers, does not set pointers to nullptr or vertex_buffers_generated_ to false
 		 */
-		void g_delete_buffer_s();
+		void g_delete_buffer_s() const;
 
 	public:
 		/**

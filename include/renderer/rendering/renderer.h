@@ -3,8 +3,6 @@
 
 #include <glm/glm.hpp>
 
-#include "renderer/opengl/index_buffer.h"
-#include "renderer/opengl/vertex_array.h"
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/rendering/spritemap_generator.h"
 
@@ -37,24 +35,17 @@ namespace jactorio::renderer
 		 */
 		static core::Quad_position get_spritemap_coords(unsigned int internal_id);
 		
-	private:
+	public:
 		// #################################################
 		// Rendering (Recalculated on window resize)
 
-		Vertex_array* vertex_array_ = nullptr;
-
-		/**
-		 * Deletes all heap allocated data
-		 */
-		void delete_data() const;
-	public:
 		Renderer_layer* render_layer = nullptr;
 		
 		/**
 		 * Using this to change zoom is discouraged <br>
 		 * Use tile_width instead for better performance at high zoom levels
 		 */
-		float tile_projection_matrix_offset{};
+		float tile_projection_matrix_offset = 0;
 		static unsigned short tile_width;
 
 		/**
@@ -70,6 +61,7 @@ namespace jactorio::renderer
 		void g_draw(glm::vec3 transform) const;
 		static void g_clear();
 
+		
 	private:
 		// #################################################
 		// Window properties
@@ -80,15 +72,16 @@ namespace jactorio::renderer
 		J_NODISCARD static unsigned short get_window_width();
 		J_NODISCARD static unsigned short get_window_height();
 
+		
 	private:
 		// #################################################
 		// Grid properties (rendering, MVP matrices)
 
-		unsigned int grid_vertices_count_{};
-		unsigned int grid_elements_count_{};
+		unsigned int grid_vertices_count_ = 0;
+		unsigned int grid_elements_count_ = 0;
 
-		unsigned short tile_count_x_{};
-		unsigned short tile_count_y_{};
+		unsigned short tile_count_x_ = 0;
+		unsigned short tile_count_y_ = 0;
 		
 	public:
 		J_NODISCARD unsigned short get_grid_size_x() const;

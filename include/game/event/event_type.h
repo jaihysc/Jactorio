@@ -21,7 +21,8 @@ namespace jactorio::game
 		// In-game
 		
 		logic_tick,  // Called every game tick
-
+		renderer_tick,  // Called prior event tick PRIOR to rendering
+		
 		// World gen
 		game_chunk_generated,
 		

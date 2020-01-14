@@ -2,45 +2,42 @@
 
 #include "renderer/render_main.h"
 
-#include <vector>
 #include <thread>
+#include <vector>
 
 #include "core/debug/execution_timer.h"
-#include "core/resource_guard.h"
 #include "core/logger.h"
+#include "core/resource_guard.h"
 #include "data/data_manager.h"
 
 #include "renderer/gui/imgui_manager.h"
-#include "renderer/window/window_manager.h"
-#include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/shader.h"
+#include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/texture.h"
-#include "renderer/rendering/spritemap_generator.h"
 #include "renderer/render_loop.h"
+#include "renderer/rendering/spritemap_generator.h"
+#include "renderer/window/window_manager.h"
 
-#include "game/input/input_manager.h"
-#include "game/world/world_manager.h"
-#include "game/logic_loop.h"
 #include "core/filesystem.h"
 #include "data/pybind/pybind_manager.h"
+#include "game/event/event.h"
+#include "game/input/input_manager.h"
+#include "game/logic_loop.h"
+#include "game/world/world_manager.h"
 
-bool refresh_renderer = false;
-bool clear_chunk_data = false;
 unsigned short window_x = 0;
 unsigned short window_y = 0;
 
 jactorio::renderer::Renderer* main_renderer = nullptr;
-bool render_draw = false;
-
-// Called every renderer cycle, cannot put code in callback due to single thread of opengl
-bool toggle_fullscreen = false;
 
 void jactorio::renderer::set_recalculate_renderer(const unsigned short window_size_x,
                                                   const unsigned short window_size_y) {
 	window_x = window_size_x;
 	window_y = window_size_y;
 
-	refresh_renderer = true;
+	game::Event::subscribe_once(game::event_type::renderer_tick, []() {
+		main_renderer->recalculate_buffers(window_x, window_y);
+	});
 }
 
 jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
@@ -109,23 +106,32 @@ int jactorio::renderer::render_init() {
 	}, GLFW_KEY_ESCAPE, GLFW_RELEASE);
 
 	game::input_manager::subscribe([]() {
-		toggle_fullscreen = true;
+		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
+			window_manager::set_fullscreen(!window_manager::is_fullscreen());
+		});
 	}, GLFW_KEY_SPACE, GLFW_RELEASE);
 
 	game::input_manager::subscribe([]() {
 		Renderer::tile_width++;
-		refresh_renderer = true;
+		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
+			main_renderer->recalculate_buffers(window_x, window_y);
+		});
+		
 	}, GLFW_KEY_Z, GLFW_RELEASE);
 	game::input_manager::subscribe([]() {
 		if (Renderer::tile_width > 1) {
 			Renderer::tile_width--;
-			refresh_renderer = true;
+			game::Event::subscribe_once(game::event_type::renderer_tick, []() {
+				main_renderer->recalculate_buffers(window_x, window_y);
+			});
 		}
 
 	}, GLFW_KEY_X, GLFW_RELEASE);
 
 	game::input_manager::subscribe([]() {
-		clear_chunk_data = true;
+		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
+			game::world_manager::clear_chunk_data();
+		});
 	}, GLFW_KEY_R, GLFW_RELEASE);
 
 
@@ -144,21 +150,8 @@ int jactorio::renderer::render_init() {
 		while (!glfwWindowShouldClose(window)) {
 			EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-			// Think of a better way to toggle fullscreen?
-			if (toggle_fullscreen) {
-				toggle_fullscreen = false;
-				window_manager::set_fullscreen(!window_manager::is_fullscreen());
-			}
-			if (refresh_renderer) {
-				main_renderer->recalculate_buffers(window_x, window_y);
-				refresh_renderer = false;
-			}
-			if (clear_chunk_data) {
-				clear_chunk_data = false;
-				game::world_manager::clear_chunk_data();
-			}
+			game::Event::raise<game::Renderer_tick_event>(game::event_type::renderer_tick);
 
-			render_draw = false;
 			// Don't multi-thread opengl
 			render_loop(main_renderer);
 

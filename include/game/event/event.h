@@ -26,6 +26,8 @@ namespace jactorio::game
 		Event& operator=(Event&& other) noexcept = delete;
 	private:
 		static std::unordered_map<event_type, std::vector<void_ptr>> event_handlers_;
+		// Handlers will only run once, and will need to be registered again with subscribe_once()
+		static std::unordered_map<event_type, std::vector<void_ptr>> event_handlers_once_;
 
 	public:
 		/**
@@ -34,6 +36,15 @@ namespace jactorio::game
 		template <typename T>
 		static void subscribe(const event_type event_type, T callback) {
 			event_handlers_[event_type]
+				.push_back((void_ptr)(callback));
+		}
+
+		/**
+		 * Subscribes a callback to an event which will only run once
+		 */
+		template <typename T>
+		static void subscribe_once(const event_type event_type, T callback) {
+			event_handlers_once_[event_type]
 				.push_back((void_ptr)(callback));
 		}
 
@@ -56,6 +67,18 @@ namespace jactorio::game
 				}
 			}
 
+			// Single time events
+			auto& handlers_once = event_handlers_once_[event_type];
+			// Find callback in vector and remove
+			for (unsigned int i = 0; i < handlers_once.size(); ++i) {
+				if (handlers_once[i] == (void_ptr)(callback)) {
+					handlers_once.erase(handlers_once.begin() + i);
+					
+					removed = true;
+					break;
+				}
+			}
+			
 			return removed;
 		}
 
@@ -67,8 +90,7 @@ namespace jactorio::game
 		static void raise(const event_type event_type, const ArgsT& ... args) {
 			// Imgui sets the bool property input_captured
 			// This takes priority over all events, and if true no events are allowed to be emitted
-			// if (renderer::imgui_manager::input_captured)
-				// return;
+			// TODO ability to set if event runs when input is captured by imgui
 			
 			// TODO Send events backwards through layers
 			for (auto& callback : event_handlers_[event_type]) {
@@ -79,6 +101,17 @@ namespace jactorio::game
 				T event = T(args...);
 				fun_ptr(event);
 			}
+
+			// Single time events
+			for (auto& callback : event_handlers_once_[event_type]) {
+				// Cast function pointer parameter to T
+				auto fun_ptr = reinterpret_cast<void(*)(T&)>(callback);
+
+				// Construct T, pass to function ptr
+				T event = T(args...);
+				fun_ptr(event);
+			}
+			event_handlers_once_[event_type].clear();
 		}
 		
 

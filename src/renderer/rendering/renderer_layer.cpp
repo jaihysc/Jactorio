@@ -11,6 +11,7 @@ constexpr uint32_t increment_on_resize = 1;  // How many more elements to reserv
 
 jactorio::renderer::Renderer_layer::Renderer_layer(const bool static_layer)
 	: static_layer_(static_layer) {
+	LOG_MESSAGE_f(debug, "Creating %s Renderer_layer", static_layer ? "static" : "non-static");
 	reserve(initial_size);
 }
 
@@ -110,7 +111,7 @@ jactorio::renderer::Renderer_layer::Buffer<float> jactorio::renderer::Renderer_l
 	return uv_buffer_;
 }
 
-const jactorio::renderer::Index_buffer* jactorio::renderer::Renderer_layer::get_buf_index() {
+const jactorio::renderer::Index_buffer* jactorio::renderer::Renderer_layer::get_buf_index() const {
 	return index_ib;
 }
 
@@ -182,7 +183,7 @@ void jactorio::renderer::Renderer_layer::delete_buffer() noexcept {
 // OpenGL methods
 constexpr uint64_t g_byte_multiplier = 8 * sizeof(float);  // Multiply by this to convert to bytes
 
-void jactorio::renderer::Renderer_layer::g_delete_buffer_s() {
+void jactorio::renderer::Renderer_layer::g_delete_buffer_s() const {
 	delete vertex_vb_;
 	delete uv_vb_;
 	delete index_ib;

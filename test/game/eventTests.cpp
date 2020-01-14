@@ -34,6 +34,23 @@ namespace game
 		EXPECT_EQ(counter, 12);
 	}
 
+	TEST(event, subscribe_once) {
+		// After handling, it will not run again
+		using namespace jactorio::game;
+
+		reset_counter();
+		Event::clear_all_data();
+
+		Event::subscribe_once(event_type::logic_tick, test_callback1);
+
+		Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
+		EXPECT_EQ(counter, 12);
+
+		// This will no longer run since it has been handled once above
+		Event::raise<Logic_tick_event>(event_type::logic_tick, 22);
+		EXPECT_EQ(counter, 12);  // Keeps origin val above
+	}
+
 	// TEST(event, subscribe_raise_event_imgui_bock) {
 	// 	// Imgui sets the bool property input_captured
 	// 	// This takes priority over all events, and if true no events are allowed to be emitted
@@ -66,7 +83,13 @@ namespace game
 		
 		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback1), true);
 		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback2), false);  // Does not exist
-	
+
+
+		// One time
+		Event::subscribe_once(event_type::game_chunk_generated, test_callback1);
+		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback1), true);
+		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback2), false);  // Does not exist
+		
 		// Unchanged since unsubscribed
 		Event::raise<Logic_tick_event>(event_type::game_chunk_generated, 1);
 		EXPECT_EQ(counter, 0);

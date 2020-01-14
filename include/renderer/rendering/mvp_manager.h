@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 
+#include "jactorio.h"
+
 namespace jactorio::renderer::mvp_manager
 {
 	// Functions for the Model, View and Projection matrices
@@ -32,7 +34,7 @@ namespace jactorio::renderer::mvp_manager
 	 * Recalculates number of tiles X and Y <br>
 	 * Upper left is (0, 0)
 	 */
-	Projection_tile_data projection_calculate_tile_properties(
+	J_DEPRECATED Projection_tile_data projection_calculate_tile_properties(
 		unsigned short tile_width, unsigned short window_width,
 		unsigned short window_height);
 
