@@ -4,7 +4,6 @@
 
 #include <vector>
 #include <thread>
-#include <algorithm>
 
 #include "core/debug/execution_timer.h"
 #include "core/resource_guard.h"

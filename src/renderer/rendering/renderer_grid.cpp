@@ -113,9 +113,7 @@ float* jactorio::renderer::renderer_grid::gen_texture_grid(
 	return tex_coords;
 }
 
-unsigned* jactorio::renderer::renderer_grid::gen_render_grid_indices(
-	const unsigned short tiles_x,
-	const unsigned short tiles_y) {
+unsigned* jactorio::renderer::renderer_grid::gen_render_grid_indices(uint32_t tile_count) {
 
 	// Indices generation pattern:
 	// top left
@@ -123,34 +121,31 @@ unsigned* jactorio::renderer::renderer_grid::gen_render_grid_indices(
 	// bottom right
 	// bottom left
 
-	const auto positions = new unsigned int[
-		static_cast<unsigned long long>(tiles_x) * static_cast<unsigned long
-			long>(tiles_y) * 6];
+	const auto positions = new unsigned int[tile_count * 6];
 
 	unsigned int positions_index = 0;
 	unsigned int index_buffer_index = 0; // Index to be saved into positions
-	for (auto y = 0; y < tiles_y; ++y) {
-		for (auto x = 0; x < tiles_x; ++x) {
-			positions[positions_index++] = index_buffer_index;
-			positions[positions_index++] = index_buffer_index + 1;
-			positions[positions_index++] = index_buffer_index + 2;
 
-			positions[positions_index++] = index_buffer_index + 2;
-			positions[positions_index++] = index_buffer_index + 3;
-			positions[positions_index++] = index_buffer_index;
+	for (auto i = 0; i < tile_count; ++i) {
+		positions[positions_index++] = index_buffer_index;
+		positions[positions_index++] = index_buffer_index + 1;
+		positions[positions_index++] = index_buffer_index + 2;
 
-			index_buffer_index += 4;
+		positions[positions_index++] = index_buffer_index + 2;
+		positions[positions_index++] = index_buffer_index + 3;
+		positions[positions_index++] = index_buffer_index;
 
-			// const unsigned int start = x + y * tiles_x;
-			//
-			// positions[index++] = start;
-			// positions[index++] = start + 1;
-			// positions[index++] = start + 1 + tiles_x;
-			//
-			// positions[index++] = start + 1 + tiles_x;
-			// positions[index++] = start + tiles_x;
-			// positions[index++] = start;
-		}
+		index_buffer_index += 4;
+
+		// const unsigned int start = x + y * tiles_x;
+		//
+		// positions[index++] = start;
+		// positions[index++] = start + 1;
+		// positions[index++] = start + 1 + tiles_x;
+		//
+		// positions[index++] = start + 1 + tiles_x;
+		// positions[index++] = start + tiles_x;
+		// positions[index++] = start;
 	}
 
 	return positions;

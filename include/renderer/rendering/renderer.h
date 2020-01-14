@@ -42,7 +42,6 @@ namespace jactorio::renderer
 		// Rendering (Recalculated on window resize)
 
 		Vertex_array* vertex_array_ = nullptr;
-		Index_buffer* index_buffer_ = nullptr;
 
 		/**
 		 * Deletes all heap allocated data

@@ -95,39 +95,27 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	// Render layer
 	render_layer = new Renderer_layer(true);
 	render_layer->reserve(grid_elements_count_);
+	render_layer->g_init_buffer();
 
 	// Vertex positions
 	renderer_grid::gen_render_grid(render_layer, tile_count_x_, tile_count_y_, tile_width);
-	
-	// Index buffer
-	{
-		const auto data = renderer_grid::gen_render_grid_indices(
-			tile_count_x_,
-			tile_count_y_
-		);
-
-		index_buffer_ = new Index_buffer(data, grid_elements_count_ * 6);
-		delete[] data;
-	}
 }
 
 void jactorio::renderer::Renderer::delete_data() const {
 	delete vertex_array_;
 	delete render_layer;
-	delete index_buffer_;
 }
 
 
 void jactorio::renderer::Renderer::g_draw(const glm::vec3 transform) const {
 	vertex_array_->bind();
-	index_buffer_->bind();
 
 	const glm::mat4 model_matrix = translate(glm::mat4(1.f), transform);
 	setg_model_matrix(model_matrix);
 	update_shader_mvp();
 
 	DEBUG_OPENGL_CALL(
-		glDrawElements(GL_TRIANGLES, index_buffer_->count(), GL_UNSIGNED_INT, nullptr)
+		glDrawElements(GL_TRIANGLES, render_layer->get_buf_index()->count(), GL_UNSIGNED_INT, nullptr)
 	); // Pointer not needed as buffer is already bound
 }
 

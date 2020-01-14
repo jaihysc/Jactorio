@@ -23,10 +23,10 @@ Open the `jactorio/` directory in Visual Studio, ensure you have the [sufficient
 ```bash
 git clone https://github.com/jaihysc/Jactorio.git
 cd Jactorio
-sh ./build.sh `See build types above` --no-build-tests
+sh ./build.sh `See build types above` --notest
 ```
 
-Add `--no-build-tests` if you don't want to build the tests
+Add `--notest` if you don't want to build the tests
 
 ## Dependencies
 
@@ -39,5 +39,5 @@ These are automatically installed with cmake
 - [stb](https://github.com/nothings/stb)
 - [glm](https://github.com/g-truc/glm)
 - [imgui](https://github.com/ocornut/imgui)
-- [SFML](https://github.com/SFML/SFML)
+- [SDL2](https://github.com/spurious/SDL-mirror)
 - [libnoise](https://github.com/jaihysc/libnoise)

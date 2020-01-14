@@ -19,7 +19,6 @@ namespace jactorio::renderer::renderer_grid
 {
 	void gen_render_grid(Renderer_layer* r_layer, uint16_t tiles_x, uint16_t tiles_y, uint16_t tile_width);
 
-	
 	// Functions below are DEPRECATED, they are unsafe in memory allocation
 	
 	/**
@@ -57,7 +56,7 @@ namespace jactorio::renderer::renderer_grid
 	 * Generates indices to draw tiles using the grid from gen_render_grid
 	 * @returns Indices to be feed into Index_buffer
 	 */
-	J_DEPRECATED unsigned int* gen_render_grid_indices(unsigned short tiles_x, unsigned short tiles_y);
+	unsigned int* gen_render_grid_indices(uint32_t tile_count);
 }
 
 #endif // RENDERER_RENDERING_RENDERER_GRID_H

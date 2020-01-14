@@ -130,9 +130,8 @@ namespace renderer
 		delete[] grid;
 	}
 
-	TEST(Renderer_grid, genRenderGridIndices) {
-		const auto grid = jactorio::renderer::renderer_grid::
-			gen_render_grid_indices(11, 11);
+	TEST(Renderer_grid, gen_render_grid_indices) {
+		const auto grid = jactorio::renderer::renderer_grid::gen_render_grid_indices(121);
 		// Indices generation pattern:
 		// top left
 		// top right

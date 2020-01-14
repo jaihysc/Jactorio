@@ -5,6 +5,7 @@
 
 #include "core/data_type.h"
 #include "renderer/opengl/vertex_buffer.h"
+#include <renderer/opengl/index_buffer.h>
 
 namespace jactorio::renderer
 {	
@@ -77,10 +78,10 @@ namespace jactorio::renderer
 		/**
 		 * Buffer index to insert the next element on push_back
 		 */
-		uint32_t next_element_index_ = 0;
+		mutable uint32_t next_element_index_ = 0;
 
 		/**
-		 * Current size of buffers
+		 * Current element size of VERTEX buffers, for index buffer size, multiply by 6
 		 */
 		uint32_t e_count_ = 0;
 
@@ -88,7 +89,8 @@ namespace jactorio::renderer
 		// Set
 		
 		/**
-		 * Appends element to layer, resizes if static_layer_ is false
+		 * Appends element to layer, after the highest element index where values were assigned<br>
+		 * Resizes if static_layer_ is false
 		 */
 		void push_back(Element element);
 
@@ -100,7 +102,8 @@ namespace jactorio::renderer
 
 		J_NODISCARD Buffer<float> get_buf_vertex();
 		J_NODISCARD Buffer<float> get_buf_uv();
-		
+		J_NODISCARD const Index_buffer * get_buf_index();
+
 		// Resize
 		
 		/**
@@ -125,24 +128,36 @@ namespace jactorio::renderer
 
 
 	private:
+		// #######################################################################
 		// OpenGL methods | The methods below MUST be called from an openGL context
 		
 		Vertex_buffer* vertex_vb_ = nullptr;
 		Vertex_buffer* uv_vb_ = nullptr;
+		Index_buffer* index_ib = nullptr;
 		
-		bool vertex_buffers_generated_ = false;
+		bool g_resize_vertex_buffers_ = false;
 
 		/**
-		 * Initializes vertex buffers for rendering the 2 buffers <br>
+		 * Only deletes heap vertex buffers, does not set pointers to nullptr or vertex_buffers_generated_ to false
+		 */
+		void g_delete_buffer_s();
+
+	public:
+		/**
+		 * Initializes vertex buffers for rendering vertex and uv buffers + index buffer<br>
 		 * Should only be called once
 		 */
 		void g_init_buffer();
-		
-	public:
+
 		/**
-		 * Updates vertex buffers based on the current data in the 2 buffers
+		 * Updates vertex buffers based on the current data in the vertex and uv buffer
 		 */
 		void g_update_data();
+
+		/**
+		 * Deletes vertex and index buffers
+		 */
+		void g_delete_buffer();
 
 		/**
 		 * Binds the vertex buffers, call this prior to drawing
