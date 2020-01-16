@@ -15,6 +15,8 @@
 #include "data/prototype/tile/enemy_tile.h"
 #include "data/prototype/tile/resource_tile.h"
 #include "data/prototype/tile/tile.h"
+#include "data/prototype/item/recipe_group.h"
+#include "data/prototype/item/recipe_category.h"
 
 // All the bindings in bindings/ defined for pybind
 // This should only be included by pybind_manager.h
@@ -120,6 +122,14 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	py::class_<Container_entity, Health_entity>(m, "ContainerEntity")
 		PYBIND_PROP_SEPARATE(Container_entity, inventorySize, inventory_size);
 
+	// Recipes
+	py::class_<Recipe_group, Prototype_base>(m, "RecipeGroup")
+		PYBIND_PROP(Recipe_group, sprite);
+
+	py::class_<Recipe_category, Prototype_base>(m, "RecipeCategory")
+		PYBIND_PROP_SEPARATE(Recipe_category, recipeGroup, recipe_group);
+
+	
 	// ############################################################
 	// Data_raw + get/set
 
@@ -131,6 +141,10 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("NoiseLayer", data_category::noise_layer)
 		.value("Sound", data_category::sound)
 		.value("Item", data_category::item)
+
+		.value("Recipe", data_category::recipe)
+		.value("RecipeCategory", data_category::recipe_category)
+		.value("RecipeGroup", data_category::recipe_group)
 
 		.value("Entity", data_category::entity)
 		.value("HealthEntity", data_category::health_entity)
@@ -155,6 +169,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		Prototype_base* prototype = nullptr;
 		
 		switch (category) {
+			// Maps enum to a class which is constructed and returned
 			PROTOTYPE_CATEGORY(tile, Tile);
 			PROTOTYPE_CATEGORY(resource_tile, Resource_tile);
 			PROTOTYPE_CATEGORY(enemy_tile, Enemy_tile);
@@ -162,9 +177,14 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 			PROTOTYPE_CATEGORY(noise_layer, Noise_layer);
 			// PROTOTYPE_CATEGORY(sound, Sound);
 			PROTOTYPE_CATEGORY(item, Item);
+			
 			PROTOTYPE_CATEGORY(entity, Entity);
 			PROTOTYPE_CATEGORY(health_entity, Health_entity);
 			PROTOTYPE_CATEGORY(container_entity, Container_entity);
+
+			// PROTOTYPE_CATEGORY(recipe, Recipe);
+			PROTOTYPE_CATEGORY(recipe_category, Recipe_category);
+			PROTOTYPE_CATEGORY(recipe_group, Recipe_group);
 		
 		default:
 			assert(false);  // Missing case for category

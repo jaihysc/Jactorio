@@ -449,4 +449,21 @@ namespace game
 		EXPECT_EQ(player_inventory[0].first, nullptr);
 		EXPECT_EQ(player_inventory[0].second, 0);
 	}
+
+	//
+	//
+	//
+	//
+	// RECIPE MENU
+	//
+	//
+	//
+	//
+	
+	TEST(player_manager, recipe_select_recipe_group) {
+		using namespace jactorio::game::player_manager;
+		select_recipe_group(1);
+
+		EXPECT_EQ(get_selected_recipe_group(), 1);
+	}
 }

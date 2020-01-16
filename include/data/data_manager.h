@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 
 #include "data/data_category.h"
 #include "data/prototype/prototype_base.h"
@@ -17,6 +18,9 @@ namespace jactorio::data
 	*/
 	namespace data_manager
 	{
+		// Path of the data folder from the executing directory
+		constexpr char* data_folder = "data";
+		
 		// Example: data_raw[image]["grass-1"] -> Prototype_base
 
 		inline std::unordered_map<data_category, std::unordered_map<
@@ -59,7 +63,28 @@ namespace jactorio::data
 
 			return items;
 		}
-		
+
+		/**
+		 * Gets pointers to all data of specified data_type, sorted by Prototype_base.order
+		 */
+		template <typename T>
+		std::vector<T*> data_raw_get_all_sorted(const data_category type) {
+			auto category_items = data_raw[type];
+
+			std::vector<T*> items;
+			items.reserve(category_items.size());
+
+			for (auto& it : category_items) {
+				Prototype_base* base_ptr = it.second;
+				items.push_back(static_cast<T*>(base_ptr));
+			}
+
+			// Sort
+			std::sort(items.begin(), items.end(), [](Prototype_base* a, Prototype_base* b) {
+				return a->order < b->order;
+			});
+			return items;
+		}
 
 		/**
 		 * Sets the prefix which will be added to all internal names <br>

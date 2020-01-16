@@ -1,6 +1,8 @@
+import base.prototypes.entity.containers
+import base.prototypes.recipe
+
 import jactorioData as j
 c = j.category
-import data.base.prototypes.entity.containers
 
 def addTile(noiseLayer, endRange, name, spritePath, isWater = False):
     tile = (j.add(c.Tile, name)

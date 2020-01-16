@@ -4,6 +4,7 @@
 #include <pybind11/embed.h>
 
 #include "core/logger.h"
+#include "core/filesystem.h"
 
 namespace py = pybind11;
 
@@ -71,6 +72,17 @@ void jactorio::data::pybind_manager::py_interpreter_init() {
 
 	// Used to redirect python sys.stdout
 	const auto sysm = py::module::import("sys");
+	{
+		// Clear all existing import paths to avoid conflicts
+		sysm.attr("path").attr("clear")();
+		
+		// Include the data_manager::data_folder/ as a python search path to shorten imports
+		std::stringstream s;
+		s << core::filesystem::get_executing_directory() << "/"
+			<< data_manager::data_folder << "/";
+		sysm.attr("path").attr("append")(s.str());
+	}
+
 	py_stdout = sysm.attr("stdout");
 	py_stderr = sysm.attr("stderr");
 

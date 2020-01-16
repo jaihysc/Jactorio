@@ -161,6 +161,18 @@ bool jactorio::game::player_manager::decrement_selected_item() {
 }
 
 
+// Recipe
+uint16_t selected_recipe_group = 0;
+
+void jactorio::game::player_manager::select_recipe_group(const uint16_t index) {
+	selected_recipe_group = index;
+}
+
+uint16_t jactorio::game::player_manager::get_selected_recipe_group() {
+	return selected_recipe_group;
+}
+
+
 // Reserved
 
 void jactorio::game::player_manager::reset_inventory_variables() {

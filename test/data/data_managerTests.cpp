@@ -194,6 +194,33 @@ namespace data
 		EXPECT_EQ(contains(paths, "asdf"), false);
 	}
 
+	TEST(data_manager, get_all_sorted) {
+		// Retrieved vector should have prototypes sorted in order of addition, first one being added is first in vector
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+
+		const auto prototype = new jactorio::data::Sprite{};
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile", prototype);
+
+		const auto prototype2 = new jactorio::data::Sprite{};
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile2", prototype2);
+
+		const auto prototype3 = new jactorio::data::Sprite{};
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile3", prototype3);
+
+		const auto prototype4 = new jactorio::data::Sprite{};
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile4", prototype4);
+
+		// Get
+		const std::vector<jactorio::data::Sprite*> protos = data_manager::data_raw_get_all_sorted<jactorio::
+			data::Sprite>(jactorio::data::data_category::sprite);
+
+		
+		EXPECT_EQ(protos[0]->name, "test_tile");
+		EXPECT_EQ(protos[1]->name, "test_tile2");
+		EXPECT_EQ(protos[2]->name, "test_tile3");
+		EXPECT_EQ(protos[3]->name, "test_tile4");
+	}
+
 	TEST(data_manager, clear_data) {
 		data_manager::set_directory_prefix("test");
 

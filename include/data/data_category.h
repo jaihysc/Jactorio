@@ -16,7 +16,11 @@ namespace jactorio::data
 		
 		entity,
 		health_entity,
-		container_entity
+		container_entity,
+
+		recipe,
+		recipe_category,
+		recipe_group,
 	};
 }
 

@@ -43,7 +43,7 @@ namespace jactorio::game::player_manager
      * Gets the currently item player is currently holding on the cursor
      * @return nullptr if there is no item selected
      */
-    [[nodiscard]] const data::item_stack* get_selected_item();
+    J_NODISCARD const data::item_stack* get_selected_item();
 
 
     /**
@@ -58,6 +58,11 @@ namespace jactorio::game::player_manager
      */
     bool decrement_selected_item();
 
+
+    // Recipe
+    void select_recipe_group(uint16_t index);
+    J_NODISCARD uint16_t get_selected_recipe_group();
+	
 	
     // Reserved
 	

@@ -1,6 +1,8 @@
 import jactorioData as j
 c = j.category
 
+import test.subdir.test
+
 def addProto(name, sprite_path):
     j.add(c.Sprite, name).load(sprite_path).group(j.spriteGroup.Terrain)
 
