@@ -20,7 +20,7 @@
 //
 // Prefer calling LOG_MESSAGE to log a message over log_message()
 #define LOG_MESSAGE(severity, message)\
-if (static_cast<int>(jactorio::core::logger::log_severity::severity) >= JACTORIO_LOG_LEVEL) { \
+if constexpr(static_cast<int>(jactorio::core::logger::log_severity::severity) >= JACTORIO_LOG_LEVEL) { \
 	log_message(\
 	jactorio::core::logger::log_severity::severity, \
 	FILENAME, \
@@ -30,7 +30,7 @@ if (static_cast<int>(jactorio::core::logger::log_severity::severity) >= JACTORIO
 
 // Allows the message to contain a format, similar to printf
 #define LOG_MESSAGE_f(severity, format, ...)\
-if (static_cast<int>(jactorio::core::logger::log_severity::severity) >= JACTORIO_LOG_LEVEL) {    \
+if constexpr(static_cast<int>(jactorio::core::logger::log_severity::severity) >= JACTORIO_LOG_LEVEL) {    \
 char buffer[1000];\
 snprintf(buffer, sizeof(char) * 1000, format, __VA_ARGS__);\
 log_message(\

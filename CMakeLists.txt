@@ -39,6 +39,7 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
+	${JACTORIO_DIR}/data/local_parser.cpp
 
 	${JACTORIO_DIR}/game/logic_loop.cpp
 	${JACTORIO_DIR}/game/event/event.cpp
@@ -95,6 +96,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp

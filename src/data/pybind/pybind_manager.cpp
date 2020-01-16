@@ -74,7 +74,7 @@ void jactorio::data::pybind_manager::py_interpreter_init() {
 	py_stdout = sysm.attr("stdout");
 	py_stderr = sysm.attr("stderr");
 
-	LOG_MESSAGE(debug, "Python interpreter initialized")
+	LOG_MESSAGE(info, "Python interpreter initialized")
 }
 
 void jactorio::data::pybind_manager::py_interpreter_terminate() {
@@ -91,5 +91,5 @@ void jactorio::data::pybind_manager::py_interpreter_terminate() {
 	// Remove all py::objects before deleting the interpreter
 	py::finalize_interpreter();
 
-	LOG_MESSAGE(debug, "Python interpreter terminated")
+	LOG_MESSAGE(info, "Python interpreter terminated")
 }

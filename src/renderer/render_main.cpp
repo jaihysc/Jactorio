@@ -108,6 +108,7 @@ int jactorio::renderer::render_init() {
 	game::input_manager::subscribe([]() {
 		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
 			window_manager::set_fullscreen(!window_manager::is_fullscreen());
+			main_renderer->recalculate_buffers(window_x, window_y);
 		});
 	}, GLFW_KEY_SPACE, GLFW_RELEASE);
 

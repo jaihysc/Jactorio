@@ -6,7 +6,9 @@
 
 namespace jactorio::renderer::gui
 {
-	void character_menu(ImGuiWindowFlags window_flags, imgui_manager::Character_menu_data menu_data);
+	void character_menu(ImGuiWindowFlags window_flags, const imgui_manager::Character_menu_data& menu_data);
+	void recipe_menu(ImGuiWindowFlags window_flags, const imgui_manager::Character_menu_data& menu_data);
+	
 	void cursor_window(ImGuiWindowFlags window_flags, imgui_manager::Character_menu_data menu_data);
 }
 

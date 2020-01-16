@@ -82,7 +82,7 @@ namespace jactorio::data
 
 
 		// Localized
-		PYTHON_PROP_REF(Prototype_base, std::string, localized_name)
+		std::string localized_name;
 	};
 }
 
