@@ -2,7 +2,7 @@
 #define DATA_PROTOTYPE_ITEM_RECIPE_CATEGORY_H
 
 #include "data/prototype/prototype_base.h"
-#include "data/prototype/item/recipe_group.h"
+#include "data/prototype/item/recipe.h"
 
 namespace jactorio::data
 {
@@ -12,12 +12,10 @@ namespace jactorio::data
 	class Recipe_category final : public Prototype_base
 	{
 	public:
-		Recipe_category()
-			: recipe_group(nullptr) {
-		}
+		Recipe_category() = default;
 
-		// Group which this category falls under
-		PYTHON_PROP(Recipe_category, Recipe_group*, recipe_group);
+		// Recipes belonging to this category
+		PYTHON_PROP_REF(Recipe_category, std::vector<Recipe*>, recipes);
 	};
 }
 

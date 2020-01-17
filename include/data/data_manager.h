@@ -12,9 +12,7 @@
 namespace jactorio::data
 {	
 	/**
-	* std::string type -> Everything of specified type (E.g image, audio)
-	* >> std::string id - > std::string path to item
-	* See header for a list of already used internal names
+	* Restricted symbols in internal name; for internal use only: #
 	*/
 	namespace data_manager
 	{

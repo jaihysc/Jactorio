@@ -12,7 +12,10 @@ namespace jactorio::data
 	 */
 	class Entity : public Prototype_base
 	{
-		// Item when entity is picked up
+		/**
+		 * Item when entity is picked up <br>
+		 * Naming scheme should be <localized name of entity>-item
+		 */
 		Item* item_;
 
 	public:

@@ -217,31 +217,69 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 		});
 
 		// Menu recipes
-		draw_slots(10, player_manager::inventory_size, 1, [&](auto index) {
-			ImGui::ImageButton(
-				reinterpret_cast<void*>(menu_data.tex_id),
-				ImVec2(inventory_slot_width, inventory_slot_width),
+		const auto& selected_group = groups[player_manager::get_selected_recipe_group()];
+		for (auto& recipe_category : selected_group->recipe_categories) {
+			const auto& recipes = recipe_category->recipes;
+			
+			draw_slots(10, recipes.size(), 1, [&](auto index) {
+				data::Recipe* recipe = recipes.at(index);
 
-				ImVec2(0, 0),
-				ImVec2(1, 1),
-				2
-			);
+				const auto product = 
+					data::data_manager::data_raw_get<data::Item>(data::data_category::item, recipe->product);
+				assert(product != nullptr);  // Invalid recipe product
+				
+				const auto& uv = menu_data.sprite_positions.at(product->sprite->internal_id);
+				ImGui::ImageButton(
+					reinterpret_cast<void*>(menu_data.tex_id),
+					ImVec2(inventory_slot_width, inventory_slot_width),
 
-			// Click event
-			if (ImGui::IsItemClicked()) {
-				player_manager::set_clicked_inventory(index, 0);
-			}
-
-			// Item tooltip
-			if (ImGui::IsItemHovered()) {
-				draw_cursor_tooltip(
-					"???",
-					"sample description",
-					[&]() {
-					}
+					ImVec2(uv.top_left.x, uv.top_left.y),
+					ImVec2(uv.bottom_right.x, uv.bottom_right.y),
+					2
 				);
-			}
-		});
+
+				// Click event
+				if (ImGui::IsItemClicked()) {
+					LOG_MESSAGE_f(debug, "Recipe click at index %d", index);
+				}
+
+				// Item tooltip
+				if (ImGui::IsItemHovered()) {
+					draw_cursor_tooltip(
+						product->get_localized_name().c_str(),
+						"sample description",
+						[&]() {
+							// Draw ingredients
+							for (const auto& ingredient_pair : recipe->ingredients) {
+								const auto ingredient =
+									data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+									                                             ingredient_pair.first);
+								assert(ingredient != nullptr);  // Invalid ingredient
+
+								const auto& uv = menu_data.sprite_positions.at(ingredient->sprite->internal_id);
+								ImGui::ImageButton(
+									reinterpret_cast<void*>(menu_data.tex_id),
+									ImVec2(inventory_slot_width, inventory_slot_width),
+
+									// ImVec2(0, 0),
+									// ImVec2(1, 1),
+									ImVec2(uv.top_left.x, uv.top_left.y),
+									ImVec2(uv.bottom_right.x, uv.bottom_right.y),
+									2
+								);
+
+								// Amount required
+								ImGui::SameLine();
+								ImGui::Text("%d", ingredient_pair.second);
+								
+							}
+							
+						}
+					);
+				}
+			});
+		}
+		
 
 		ImGui::End();
 	}

@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 
 #include "data/data_manager.h"
 #include "data/prototype/entity/container_entity.h"
@@ -23,10 +24,6 @@
 
 using data_raw = std::unordered_map<jactorio::data::data_category, std::unordered_map<
 	                                    std::string, jactorio::data::Prototype_base>>;
-
-// Types to pass by reference
-PYBIND11_MAKE_OPAQUE(data_raw)
-
 
 // Macros below generates a self returning setter and the actual variable
 // For standard class members, a setter exists: set_NAME_OF_MEMBER
@@ -124,11 +121,15 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	// Recipes
 	py::class_<Recipe_group, Prototype_base>(m, "RecipeGroup")
-		PYBIND_PROP(Recipe_group, sprite);
+		PYBIND_PROP(Recipe_group, sprite)
+		PYBIND_PROP_SEPARATE(Recipe_group, recipeCategories, recipe_categories);
 
 	py::class_<Recipe_category, Prototype_base>(m, "RecipeCategory")
-		PYBIND_PROP_SEPARATE(Recipe_category, recipeGroup, recipe_group);
+		PYBIND_PROP(Recipe_category, recipes);
 
+	py::class_<Recipe, Prototype_base>(m, "Recipe")
+		PYBIND_PROP(Recipe, ingredients)
+		PYBIND_PROP(Recipe, product);
 	
 	// ############################################################
 	// Data_raw + get/set
@@ -182,7 +183,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 			PROTOTYPE_CATEGORY(health_entity, Health_entity);
 			PROTOTYPE_CATEGORY(container_entity, Container_entity);
 
-			// PROTOTYPE_CATEGORY(recipe, Recipe);
+			PROTOTYPE_CATEGORY(recipe, Recipe);
 			PROTOTYPE_CATEGORY(recipe_category, Recipe_category);
 			PROTOTYPE_CATEGORY(recipe_group, Recipe_group);
 		

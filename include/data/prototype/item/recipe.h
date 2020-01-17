@@ -1,20 +1,32 @@
 #ifndef DATA_PROTOTYPE_ITEM_RECIPE_H
 #define DATA_PROTOTYPE_ITEM_RECIPE_H
 
+#include <utility>
+
 #include "data/prototype/prototype_base.h"
-#include "data/prototype/item/recipe_category.h"
 
 namespace jactorio::data
 {
+	/**
+	 * Defines an in game recipe to craft items
+	 */
 	class Recipe : public Prototype_base
 	{
 	public:
 		Recipe() = default;
 
-		PYTHON_PROP_REF(Recipe, Recipe_category, recipe_category);
+		// std::string is internal name
 
-		// Recipe props
-		// TODO
+		// Internal name, amount required
+		std::vector<std::pair<std::string, uint16_t>> ingredients;
+
+		Recipe* set_ingredients(const std::vector<std::pair<std::string, uint16_t>>& ingredients) {
+			this->ingredients = ingredients;
+			return this;
+		};
+
+		
+		PYTHON_PROP_REF(Recipe, std::string, product);
 	};
 }
 
