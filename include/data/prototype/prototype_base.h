@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "jactorio.h"
+
 #include "data/data_category.h"
 
 namespace jactorio::data
@@ -81,8 +83,27 @@ namespace jactorio::data
 		PYTHON_PROP_REF(Prototype_base, unsigned int, order)
 
 
-		// Localized
-		std::string localized_name;
+		// Localized names
+	protected:
+		std::string localized_name_;
+		std::string localized_description_;
+		
+	public:
+		J_NODISCARD const std::string& get_localized_name() const {
+			return localized_name_;
+		}
+
+		virtual void set_localized_name(const std::string& localized_name) {
+			this->localized_name_ = localized_name;
+		}
+
+		J_NODISCARD const std::string& get_localized_description() const {
+			return localized_description_;
+		}
+
+		virtual void set_localized_description(const std::string& localized_description) {
+			this->localized_description_ = localized_description;
+		}
 	};
 }
 

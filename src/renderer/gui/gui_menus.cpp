@@ -135,14 +135,12 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			if (item.second != 0) {
 				// Item tooltip
 				if (ImGui::IsItemHovered()) {
-					const auto entity_ptr = static_cast<data::Entity*>(item.first->entity_prototype);
-
 					draw_cursor_tooltip(
-						entity_ptr->localized_name.c_str(),
+						item.first->get_localized_name().c_str(),
 						"sample description",
 						[&]() {
 							ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 0));
-							ImGui::TextUnformatted(entity_ptr->localized_name.c_str());
+							ImGui::TextUnformatted(item.first->get_localized_name().c_str());
 							ImGui::PopStyleColor();
 						}
 					);
@@ -210,7 +208,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			// Item tooltip
 			if (ImGui::IsItemHovered()) {
 				draw_cursor_tooltip(
-					recipe_group->localized_name.c_str(),
+					recipe_group->get_localized_name().c_str(),
 					"it's a category!",
 					[&]() {
 					}

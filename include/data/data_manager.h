@@ -19,7 +19,7 @@ namespace jactorio::data
 	namespace data_manager
 	{
 		// Path of the data folder from the executing directory
-		constexpr char* data_folder = "data";
+		constexpr char data_folder[] = "data";
 		
 		// Example: data_raw[image]["grass-1"] -> Prototype_base
 
@@ -69,15 +69,7 @@ namespace jactorio::data
 		 */
 		template <typename T>
 		std::vector<T*> data_raw_get_all_sorted(const data_category type) {
-			auto category_items = data_raw[type];
-
-			std::vector<T*> items;
-			items.reserve(category_items.size());
-
-			for (auto& it : category_items) {
-				Prototype_base* base_ptr = it.second;
-				items.push_back(static_cast<T*>(base_ptr));
-			}
+			std::vector<T*> items = data_raw_get_all<T>(type);
 
 			// Sort
 			std::sort(items.begin(), items.end(), [](Prototype_base* a, Prototype_base* b) {

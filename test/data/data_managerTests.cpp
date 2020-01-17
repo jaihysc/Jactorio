@@ -32,7 +32,7 @@ namespace data
 		EXPECT_EQ(proto.internal_id, 1);
 		EXPECT_EQ(proto.order, 1);
 		// Since no localized name was specified, it uses the internal name
-		EXPECT_EQ(proto.localized_name, "__test__/raw-fish");  
+		EXPECT_EQ(proto.get_localized_name(), "__test__/raw-fish");  
 
 	}
 

@@ -70,7 +70,7 @@ void parse_eol(const std::string& directory_prefix) {
 		for (auto& prototype : category.second) {
 			if (prototype.first == str_s.str()) {
 				found = true;
-				prototype.second->localized_name = current_line_buffer;
+				prototype.second->set_localized_name(current_line_buffer);
 
 				LOG_MESSAGE_f(debug, "Registered local '%s' '%s'", str_s.str().c_str(), current_line_buffer.c_str());
 				goto loop_exit;

@@ -36,6 +36,7 @@ namespace jactorio::data
 		// Can be rotated by player?
 		PYTHON_PROP_REF(Entity, bool, rotatable)
 
+		// Item
 		J_NODISCARD Item* get_item() const {
 			return item_;
 		}
@@ -45,6 +46,20 @@ namespace jactorio::data
 			this->item_ = item;
 			
 			return this;
+		}
+
+		// Localized names
+		// Override the default setter to also set for the item associated with this
+		void set_localized_name(const std::string& localized_name) override {
+			this->localized_name_ = localized_name;
+			if (item_ != nullptr)
+				item_->set_localized_name(localized_name);
+		}
+
+		void set_localized_description(const std::string& localized_description) override {
+			this->localized_description_ = localized_description;
+			if (item_ != nullptr)
+				item_->set_localized_description(localized_description);
 		}
 	};
 

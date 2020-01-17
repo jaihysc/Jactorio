@@ -65,8 +65,8 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 		prototype->category = data_category;
 	if (prototype->order == 0)
 		prototype->order = internal_id_new;
-	if (prototype->localized_name.empty())
-		prototype->localized_name = formatted_iname;
+	if (prototype->get_localized_name().empty())
+		prototype->set_localized_name(formatted_iname);
 
 	prototype->internal_id = internal_id_new++;
 

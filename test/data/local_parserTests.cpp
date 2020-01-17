@@ -32,8 +32,8 @@ namespace data
 		jactorio::data::local_parser::parse(str, "test");
 
 		// Validate local was set
-		EXPECT_EQ(prototype->localized_name, "Test tile 1");
-		EXPECT_EQ(prototype2->localized_name, "Test tile 2");
+		EXPECT_EQ(prototype->get_localized_name(), "Test tile 1");
+		EXPECT_EQ(prototype2->get_localized_name(), "Test tile 2");
 	}
 
 	void expect_err(const std::string& str) {
