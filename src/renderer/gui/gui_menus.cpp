@@ -8,6 +8,7 @@
 #include "game/player/player_manager.h"
 #include "data/prototype/entity/entity.h"
 #include "data/prototype/item/recipe_group.h"
+#include "renderer/rendering/renderer.h"
 
 constexpr float inventory_slot_width = 32.f;
 constexpr float inventory_slot_padding = 6.f;
@@ -51,6 +52,9 @@ void draw_cursor_tooltip(const char* title, const char* description, const std::
 	ImGui::End();
 
 	ImGui::PopStyleColor(2);
+
+	// This window is always in front
+	ImGui::SetWindowFocus(title);
 }
 
 /**
@@ -97,14 +101,17 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
                                              const imgui_manager::Character_menu_data& menu_data) {
 	namespace player_manager = game::player_manager;
 
-	// ImGui::SetNextWindowPosCenter();
-
 	data::item_stack* inventory = player_manager::player_inventory;
 
-	auto window_size = 
+	const auto window_size = 
 		ImVec2(20 + 10 * (inventory_slot_width + inventory_slot_padding),
 		       player_manager::inventory_size / 10 * (inventory_slot_width + inventory_slot_padding) + 80);
+
+	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
+	// Character window is left of the center
+	const ImVec2 window_center(Renderer::get_window_width() / 2, Renderer::get_window_height() / 2);
 	
+	ImGui::SetNextWindowPos(ImVec2(window_center.x - window_size.x, window_center.y - window_size.y / 2));
 	ImGui::Begin("Character", nullptr, window_size, -1, window_flags);
 
 	draw_slots(10, player_manager::inventory_size, 1, [&](auto index) {
@@ -174,115 +181,112 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 	ImGui::End();
 
 	// Recipe menu
-	{
-		ImGui::Begin("Recipe", nullptr, window_size, -1, window_flags);
+	ImGui::SetNextWindowPos(ImVec2(window_center.x, window_center.y - window_size.y / 2));
+	ImGui::Begin("Recipe", nullptr, window_size, -1, window_flags);
 
-		// Menu groups | A group button is twice the size of a slot
-		auto groups = data::data_manager::data_raw_get_all_sorted<data::Recipe_group
-		>(data::data_category::recipe_group);
-		draw_slots(5, groups.size(), 2, [&](const uint16_t index) {
-			const auto& recipe_group = groups[index];
+	// Menu groups | A group button is twice the size of a slot
+	auto groups = data::data_manager::data_raw_get_all_sorted<data::Recipe_group>(data::data_category::recipe_group);
+	draw_slots(5, groups.size(), 2, [&](const uint16_t index) {
+		const auto& recipe_group = groups[index];
 
-			const auto& positions = menu_data.sprite_positions.at(recipe_group->sprite->internal_id);
+		const auto& positions = menu_data.sprite_positions.at(recipe_group->sprite->internal_id);
 
-			// Different color for currently selected recipe group
-			if (index == player_manager::get_selected_recipe_group())
-				ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(227, 152, 39, 255));
+		// Different color for currently selected recipe group
+		if (index == player_manager::get_selected_recipe_group())
+			ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(227, 152, 39, 255));
+		
+		ImGui::ImageButton(
+			reinterpret_cast<void*>(menu_data.tex_id),
+			ImVec2(inventory_slot_width * 2, inventory_slot_width * 2),
+
+			ImVec2(positions.top_left.x, positions.top_left.y),
+			ImVec2(positions.bottom_right.x, positions.bottom_right.y),
+			2
+		);
+		
+		if (index == player_manager::get_selected_recipe_group())
+			ImGui::PopStyleColor();
+
+		// Recipe group click
+		if (ImGui::IsItemClicked())
+			player_manager::select_recipe_group(index);
+
+		// Item tooltip
+		if (ImGui::IsItemHovered()) {
+			draw_cursor_tooltip(
+				recipe_group->get_localized_name().c_str(),
+				"it's a category!",
+				[&]() {
+				}
+			);
+		}
+	});
+
+	// Menu recipes
+	const auto& selected_group = groups[player_manager::get_selected_recipe_group()];
+	for (auto& recipe_category : selected_group->recipe_categories) {
+		const auto& recipes = recipe_category->recipes;
+		
+		draw_slots(10, recipes.size(), 1, [&](auto index) {
+			data::Recipe* recipe = recipes.at(index);
+
+			const auto product = 
+				data::data_manager::data_raw_get<data::Item>(data::data_category::item, recipe->product);
+			assert(product != nullptr);  // Invalid recipe product
 			
+			const auto& uv = menu_data.sprite_positions.at(product->sprite->internal_id);
 			ImGui::ImageButton(
 				reinterpret_cast<void*>(menu_data.tex_id),
-				ImVec2(inventory_slot_width * 2, inventory_slot_width * 2),
+				ImVec2(inventory_slot_width, inventory_slot_width),
 
-				ImVec2(positions.top_left.x, positions.top_left.y),
-				ImVec2(positions.bottom_right.x, positions.bottom_right.y),
+				ImVec2(uv.top_left.x, uv.top_left.y),
+				ImVec2(uv.bottom_right.x, uv.bottom_right.y),
 				2
 			);
-			
-			if (index == player_manager::get_selected_recipe_group())
-				ImGui::PopStyleColor();
 
-			// Recipe group click
-			if (ImGui::IsItemClicked())
-				player_manager::select_recipe_group(index);
+			// Click event
+			if (ImGui::IsItemClicked()) {
+				LOG_MESSAGE_f(debug, "Recipe click at index %d", index);
+			}
 
 			// Item tooltip
 			if (ImGui::IsItemHovered()) {
 				draw_cursor_tooltip(
-					recipe_group->get_localized_name().c_str(),
-					"it's a category!",
+					product->get_localized_name().c_str(),
+					"Ingredients:",
 					[&]() {
+						// Draw ingredients
+						for (const auto& ingredient_pair : recipe->ingredients) {
+							const auto ingredient =
+								data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+								                                             ingredient_pair.first);
+							assert(ingredient != nullptr);  // Invalid ingredient
+
+							const auto& uv = menu_data.sprite_positions.at(ingredient->sprite->internal_id);
+							ImGui::Image(
+								reinterpret_cast<void*>(menu_data.tex_id),
+								ImVec2(inventory_slot_width, inventory_slot_width),
+
+								// ImVec2(0, 0),
+								// ImVec2(1, 1),
+								ImVec2(uv.top_left.x, uv.top_left.y),
+								ImVec2(uv.bottom_right.x, uv.bottom_right.y)
+							);
+
+							// Amount required
+							ImGui::SameLine();
+							ImGui::Text("%d", ingredient_pair.second);
+							
+						}
+						
 					}
 				);
 			}
 		});
 
-		// Menu recipes
-		const auto& selected_group = groups[player_manager::get_selected_recipe_group()];
-		for (auto& recipe_category : selected_group->recipe_categories) {
-			const auto& recipes = recipe_category->recipes;
-			
-			draw_slots(10, recipes.size(), 1, [&](auto index) {
-				data::Recipe* recipe = recipes.at(index);
-
-				const auto product = 
-					data::data_manager::data_raw_get<data::Item>(data::data_category::item, recipe->product);
-				assert(product != nullptr);  // Invalid recipe product
-				
-				const auto& uv = menu_data.sprite_positions.at(product->sprite->internal_id);
-				ImGui::ImageButton(
-					reinterpret_cast<void*>(menu_data.tex_id),
-					ImVec2(inventory_slot_width, inventory_slot_width),
-
-					ImVec2(uv.top_left.x, uv.top_left.y),
-					ImVec2(uv.bottom_right.x, uv.bottom_right.y),
-					2
-				);
-
-				// Click event
-				if (ImGui::IsItemClicked()) {
-					LOG_MESSAGE_f(debug, "Recipe click at index %d", index);
-				}
-
-				// Item tooltip
-				if (ImGui::IsItemHovered()) {
-					draw_cursor_tooltip(
-						product->get_localized_name().c_str(),
-						"sample description",
-						[&]() {
-							// Draw ingredients
-							for (const auto& ingredient_pair : recipe->ingredients) {
-								const auto ingredient =
-									data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-									                                             ingredient_pair.first);
-								assert(ingredient != nullptr);  // Invalid ingredient
-
-								const auto& uv = menu_data.sprite_positions.at(ingredient->sprite->internal_id);
-								ImGui::ImageButton(
-									reinterpret_cast<void*>(menu_data.tex_id),
-									ImVec2(inventory_slot_width, inventory_slot_width),
-
-									// ImVec2(0, 0),
-									// ImVec2(1, 1),
-									ImVec2(uv.top_left.x, uv.top_left.y),
-									ImVec2(uv.bottom_right.x, uv.bottom_right.y),
-									2
-								);
-
-								// Amount required
-								ImGui::SameLine();
-								ImGui::Text("%d", ingredient_pair.second);
-								
-							}
-							
-						}
-					);
-				}
-			});
-		}
-		
-
-		ImGui::End();
 	}
+
+	ImGui::End();
 
 }
 
