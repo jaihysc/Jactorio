@@ -1,0 +1,31 @@
+steps:
+- task: Bash@3
+  displayName: Install dependencies
+  inputs:
+    targetType: 'inline'
+    script: '$(installCommand)'
+
+- task: Bash@3
+  displayName: Build
+  inputs:
+    targetType: 'inline'
+    script: 'sh ./build.sh $(buildConfiguration)'
+
+- task: Bash@3
+  displayName: Run tests
+  inputs:
+    targetType: 'inline'
+    script: 'sh ./runtests.sh $(buildConfiguration)'
+
+- task: PublishTestResults@2
+  displayName: Publish test results
+  inputs:
+    testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+    testResultsFiles: '**/TEST-*.xml' 
+    #searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+    #mergeTestResults: false # Optional
+    failTaskOnFailedTests: true # Optional
+    #testRunTitle: # Optional
+    #buildPlatform: # Optional
+    #buildConfiguration: # Optional
+    #publishRunAttachments: true # Optional

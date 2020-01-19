@@ -6,6 +6,10 @@ cmake_minimum_required (VERSION 3.8)
 message("")
 message("~~~~~ [ jactorio tests ] ~~~~~")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR})
+message("Binary directory: " ${CMAKE_CURRENT_BINARY_DIR})
+
 # Copy data folder for certain tests
 message(">> Copying files to output directory")
 file(GLOB_RECURSE DATA_FILES 

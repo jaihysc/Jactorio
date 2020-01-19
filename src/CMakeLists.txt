@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 3.8)
 
 message("~~~~~ [ jactorio ] ~~~~~")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR})
+message("Binary directory: " ${CMAKE_CURRENT_BINARY_DIR})
+
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
 	message("Type: Debug")
     add_compile_definitions(JACTORIO_DEBUG_BUILD)  # Break on openGL error

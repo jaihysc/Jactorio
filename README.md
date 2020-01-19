@@ -12,32 +12,49 @@ The game is currently playable with a procedurally generated world to navigate a
 
 **Build types:** `Debug, Release`
 
-Executables will be placed in `out/`
+**Parameters:** `--notest` if you do not want to build the tests
 
-### Windows
+---
 
-Open the `jactorio/` directory in Visual Studio, ensure you have the [sufficient packages for CMake and C++](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019)
+General requirements:
 
-### Linux
+* Compiler supporting c++17 [gcc >= 9, clang >= 9, msvc >= 142]
+  * MacOS version >= 10.15
+* CMake
+  * Windows - ensure CMake is added to the `Paths` environmental variable
+* Git / Git bash
+  * Windows - Use Git bash
+
+In a bash shell on Mac and Linux / Git bash on Windows, run
 
 ```bash
 git clone https://github.com/jaihysc/Jactorio.git
 cd Jactorio
-sh ./build.sh `See build types above` --notest
+sh ./build.sh <See build types above> --notest
 ```
 
-Add `--notest` if you don't want to build the tests
+Executable will be placed in `out/<Build type>/src/`
+
+## Running tests
+
+After following the build steps above **without** `--notest`, run the following in a shell or Git bash
+
+```bash
+sh ./runtests.sh <Build type used to build>
+```
+
+The test results will be placed in the directory of `runtests.sh`
 
 ## Dependencies
 
-These may have additional dependencies which you will need to install
+The installation of dependencies listed below is automatic
 
-These are automatically installed with cmake
+However, they may carry additional dependencies you will need to manually install
 
-- [GLEW](http://glew.sourceforge.net/)
-- [GLFW](https://www.glfw.org/)
-- [stb](https://github.com/nothings/stb)
-- [glm](https://github.com/g-truc/glm)
-- [imgui](https://github.com/ocornut/imgui)
-- [SDL2](https://github.com/spurious/SDL-mirror)
-- [libnoise](https://github.com/jaihysc/libnoise)
+* [GLEW](http://glew.sourceforge.net/)
+* [GLFW](https://www.glfw.org/)
+* [stb](https://github.com/nothings/stb)
+* [glm](https://github.com/g-truc/glm)
+* [imgui](https://github.com/ocornut/imgui)
+* [SDL2](https://github.com/spurious/SDL-mirror)
+* [libnoise](https://github.com/jaihysc/libnoise)

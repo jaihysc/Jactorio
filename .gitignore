@@ -9,3 +9,4 @@ out/
 
 # Program generated files
 imgui.ini
+**/TEST-*.xml
