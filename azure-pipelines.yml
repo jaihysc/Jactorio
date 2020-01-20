@@ -1,0 +1,74 @@
+# Builds and runs unit tests
+
+trigger:  # Run for all branches
+  branches:
+    include:
+    - '*'
+
+stages:
+- stage: RunTest
+  displayName: Test
+  jobs:
+  # Linux
+  - job: Linux_gcc9
+    displayName: Linux (GCC 9)
+    pool:
+      vmImage: 'ubuntu 18.04'
+
+    variables:
+      compiler: gcc9
+      CC: gcc-9
+      CXX: g++-9
+      installCommand: |
+          sudo apt-get update
+          sudo apt-get install -y g++-9
+          sudo apt-get install -y libxrandr-dev libx11-dev libgl1-mesa-dev libglu1-mesa-dev libasound2-dev libgtk2.0-dev xorg-dev libxinerama-dev libxcursor-dev libxi-dev
+        # sudo apt-get install -y libjack0 libjack-dev librtaudio4v5 librtmidi-dev
+    steps:
+      - template: CI/AzurePipelines/ContinuousBuild.yml
+
+  - job: Linux_clang9
+    displayName: Linux (Clang 9)
+    pool:
+      vmImage: 'ubuntu 18.04'
+
+    variables:
+      compiler: clang9
+      CC: clang-9
+      CXX: clang++-9
+      installCommand: |
+          sudo apt-get update
+          sudo apt-get install -y clang-9 libstdc++-9-dev lld-9
+          sudo apt-get install -y libxrandr-dev libx11-dev libgl1-mesa-dev libglu1-mesa-dev libasound2-dev libgtk2.0-dev xorg-dev libxinerama-dev libxcursor-dev libxi-dev
+    steps:
+      - template: CI/AzurePipelines/ContinuousBuild.yml
+  
+  # Mac
+  # - job: macOS_10_clang9
+  #   displayName: MacOS 10 (Clang 9)
+  #   pool:
+  #     vmImage: macOS 10.15 # Needs minimum 10.15
+
+  #   variables:
+  #     compiler: clang9
+  #     installCommand: |
+  #       brew update
+  #       brew install glfw3 glew
+  #     CC: clang
+  #     CXX: clang++
+
+  #   steps:
+  #   - template: CI/AzurePipelines/ContinuousBuild.yml
+  
+  # Windows
+  - job: Windows_vc142_x64
+    displayName: Windows 2019 (MSVC 142)
+    pool:
+      vmImage: windows-2019
+
+    variables:
+      compiler: vc142
+      installCommand: ''
+
+    steps:
+    - template: CI/AzurePipelines/ContinuousBuild.yml

@@ -3,13 +3,10 @@
 #include "renderer/opengl/error.h"
 #include "renderer/opengl/vertex_buffer.h"
 
-jactorio::renderer::Vertex_buffer::Vertex_buffer(const void* data, const unsigned size) {
-	// Create buffer
+jactorio::renderer::Vertex_buffer::Vertex_buffer(const void *data, uint32_t byte_size, bool static_buffer) {
 	DEBUG_OPENGL_CALL(glGenBuffers(1, &id_));
 
-	// Load data into buffer
-	bind();
-	DEBUG_OPENGL_CALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+	reserve(data, byte_size, static_buffer);
 }
 
 jactorio::renderer::Vertex_buffer::~Vertex_buffer() {
@@ -17,15 +14,26 @@ jactorio::renderer::Vertex_buffer::~Vertex_buffer() {
 	DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 };
 
-void jactorio::renderer::Vertex_buffer::set_buffer_data(const void* data, const unsigned offset, const unsigned size) const {
+// Buffering data
+
+void jactorio::renderer::Vertex_buffer::update_data(const void* data, const uint32_t offset, const uint32_t size) const {
+    bind();
 	DEBUG_OPENGL_CALL(glBufferSubData(GL_ARRAY_BUFFER, offset, size, data));
 }
+
+void jactorio::renderer::Vertex_buffer::reserve(const void *data, uint32_t byte_size, bool static_buffer) const {
+	bind();
+	DEBUG_OPENGL_CALL(glBufferData(GL_ARRAY_BUFFER, byte_size, data,
+			static_buffer ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW));
+}
+
+// Binding
 
 void jactorio::renderer::Vertex_buffer::bind() const {
 	DEBUG_OPENGL_CALL(glBindBuffer(GL_ARRAY_BUFFER, id_));
 
 }
 
-void jactorio::renderer::Vertex_buffer::unbind() const {
+void jactorio::renderer::Vertex_buffer::unbind() {
 	DEBUG_OPENGL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }

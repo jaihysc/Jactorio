@@ -22,12 +22,12 @@ namespace jactorio::renderer
 		 * Adds specified buffer to the vertex array <br>
 		 * Vertex_buffer must be deleted manually, it is not managed by the vertex array
 		 * @param vb Vertex buffer to add to vertex array
-		 * @param span Size in bytes of one set of coordinates
+		 * @param span Number of floats for one set of coordinates (2 for X and Y)
 		 * @param location Slot in vertex array in which vertex buffer is placed <br>
 		 * This must be managed manually to avoid conflicts
 		 */
-		void add_buffer(const Vertex_buffer& vb, unsigned span,
-		                unsigned location) const;
+		static void add_buffer(const Vertex_buffer* vb, unsigned span,
+		                       unsigned location);
 
 		void bind() const;
 		static void unbind();

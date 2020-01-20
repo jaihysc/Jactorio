@@ -14,7 +14,7 @@ namespace jactorio::game::input_manager
 	 * @param mods Modifier keys which also have to be pressed
 	 * @return id of the registered callback, use it to un-register it - 0 Indicates error
 	 */
-	unsigned register_input_callback(input_callback, int key, int action, int mods = 0);
+	unsigned subscribe(input_callback, int key, int action, int mods = 0);
 
 	
 	/**
@@ -26,14 +26,19 @@ namespace jactorio::game::input_manager
 	/**
 	 * Calls registered callbacks based on the input set with set_input(...)
 	 */
-	void dispatch_input_callbacks();
+	void raise();
 
 
 	/**
 	 * Removes specified callback at callback_id <br>
 	 * The key, action, and mods the callback was registered to must be specified
 	 */
-	void remove_input_callback(unsigned int callback_id, int key, int action, int mods = 0);
+	void unsubscribe(unsigned int callback_id, int key, int action, int mods = 0);
+
+	/**
+	 * Deletes all callback data
+	 */
+	void clear_data();
 }
 
 #endif // GAME_INPUT_INPUT_MANAGER_H

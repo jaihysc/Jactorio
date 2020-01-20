@@ -88,26 +88,19 @@ void generate(const int chunk_x, const int chunk_y) {
 				// Noise layer is generating resources, check if at this tile there are any
 				if (noise_layer->tile_data_category == data::data_category::resource_tile) {
 					// RESOURCE
-					chunk_tile.tile_prototypes[1] =
-						data::data_manager::data_raw_get<data::Resource_tile>(
-							data::data_category::resource_tile, new_tile->name);
+					chunk_tile.set_tile_layer_tile_prototype(game::Chunk_tile::chunk_layer::resource, 
+					                                         data::data_manager::data_raw_get<data::Resource_tile>(
+						                                         data::data_category::resource_tile, new_tile->name));
 				}
 				else {
 					// TILE
 					// Add the tile prototype to the Chunk_tile
-					chunk_tile.set_tile_prototype(
-						game::Chunk_tile::prototype_category::base, 
-						data::data_manager::data_raw_get<data::Tile>(
-							data::data_category::tile, new_tile->name)
+					chunk_tile.set_tile_layer_tile_prototype(game::Chunk_tile::chunk_layer::base, 
+					                                         data::data_manager::data_raw_get<data::Tile>(
+						                                         data::data_category::tile, new_tile->name)
 					);
 				}
 				
-				// ############################################################
-				// Post tile addition processing
-				
-				// Set the is_water status of the current Chunk_tile
-				if (new_tile->is_water)
-					chunk_tile.is_water = true;
 			}
 		}
 
@@ -119,9 +112,9 @@ void generate(const int chunk_x, const int chunk_y) {
 			auto& tile = tiles[y * 32 + x];
 
 			// Remove any resources on water
-			if (tile.is_water) {
-				tile.set_tile_prototype(
-					game::Chunk_tile::prototype_category::resource, nullptr);
+			if (tile.get_tile_layer_tile_prototype(game::Chunk_tile::chunk_layer::base)->is_water) {
+				tile.set_tile_layer_sprite_prototype(game::Chunk_tile::chunk_layer::resource, nullptr);
+				tile.set_tile_layer_tile_prototype(game::Chunk_tile::chunk_layer::resource, nullptr);
 			}
 		}
 	}

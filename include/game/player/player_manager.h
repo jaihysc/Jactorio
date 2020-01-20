@@ -1,6 +1,11 @@
 #ifndef GAME_PLAYER_PLAYER_MANAGER_H
 #define GAME_PLAYER_PLAYER_MANAGER_H
 
+#include "data/prototype/item/item.h"
+
+/**
+ * Stores information & functions regarding the player
+ */
 namespace jactorio::game::player_manager
 {
     // Movement functions
@@ -20,6 +25,51 @@ namespace jactorio::game::player_manager
      * @param amount
      */
     void move_player_y(float amount);
+
+	
+    // Inventory
+	
+    constexpr unsigned short inventory_size = 80;
+    inline data::item_stack player_inventory[inventory_size];  // Holds the internal id of items
+
+    /**
+     * Interacts with the player inventory at index
+     * @param index The player inventory index
+     * @param mouse_button Mouse button pressed; 0 - Left, 1 - Right
+     */
+    void set_clicked_inventory(unsigned short index, unsigned short mouse_button);
+
+    /**
+     * Gets the currently item player is currently holding on the cursor
+     * @return nullptr if there is no item selected
+     */
+    J_NODISCARD const data::item_stack* get_selected_item();
+
+
+    /**
+     * Increments the selected item to the stack size
+     * @return true if successfully incremented
+     */
+    bool increment_selected_item();
+
+    /**
+     * Once item count reaches 0, the selected item slot is cleared
+     * @return true if successfully decremented, false if slot is empty
+     */
+    bool decrement_selected_item();
+
+
+    // Recipe
+    void select_recipe_group(uint16_t index);
+    J_NODISCARD uint16_t get_selected_recipe_group();
+	
+	
+    // Reserved
+	
+    /**
+     * !! Tests use only !!
+     */
+    void reset_inventory_variables();
 }
 
 #endif // GAME_PLAYER_PLAYER_MANAGER_H

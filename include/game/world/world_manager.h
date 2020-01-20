@@ -34,6 +34,11 @@ namespace jactorio::game::world_manager
 	 * @return nullptr if no tile exists
 	 */
 	Chunk_tile* get_tile_world_coords(int world_x, int world_y);
+
+	/**
+	 * Gets the tile the mouse is hovered over
+	 */
+	Chunk_tile* get_mouse_selected_tile();
 	
 	/**
 	 * Erases, frees memory from all stored chunk data + its subsequent contents

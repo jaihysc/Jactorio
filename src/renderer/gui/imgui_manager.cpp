@@ -1,85 +1,83 @@
+#include "renderer/gui/imgui_manager.h"
+
 #include <imgui/imgui.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <unordered_map>
+#include <cassert>
 
-#include "core/logger.h"
-#include "core/debug/execution_timer.h"
-#include "game/world/chunk_tile.h"
-#include "game/world/world_generator.h"
-#include "game/input/mouse_selection.h"
-#include "game/player/player_manager.h"
-#include "renderer/gui/imgui_manager.h"
+#include "jactorio.h"
+#include "renderer/gui/gui_menus.h"
+#include "renderer/gui/gui_menus_debug.h"
 #include "renderer/gui/imgui_glfw.h"
 #include "renderer/gui/imgui_opengl3.h"
-#include "renderer/rendering/mvp_manager.h"
 #include "renderer/rendering/renderer.h"
+#include "renderer/window/window_manager.h"
+#include "game/event/event.h"
 
-bool show_timings_window = false;
-bool show_demo_window = false;
+ImGuiWindowFlags debug_window_flags = 0;
+ImGuiWindowFlags release_window_flags = 0;
 
-ImGuiWindowFlags window_flags = 0;
+// Inventory
+jactorio::renderer::imgui_manager::Character_menu_data menu_data;
 
-void draw_debug_menu() {
-	using namespace jactorio;
-	
-	ImGui::Begin("Debug menu", nullptr, window_flags);
-	// Settings
-	glm::vec3* view_translation = renderer::mvp_manager::get_view_transform();
-	ImGui::SliderFloat2("Camera translation", &view_translation->x, -100.0f,
-	                    100.0f);
-
-	ImGui::Text("Cursor position: %f, %f", 
-	            game::mouse_selection::get_position_x(),
-	            game::mouse_selection::get_position_y());
-
-	ImGui::Text("Player position %f %f",
-	            game::player_manager::get_player_position_x(),
-	            game::player_manager::get_player_position_y());
-
-	ImGui::NewLine();
-	ImGui::Text("Layer count: %d", game::Chunk_tile::tile_prototypes_count);
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-	// Window options
-	ImGui::Checkbox("Timings", &show_timings_window); ImGui::SameLine();
-	ImGui::Checkbox("Demo Window", &show_demo_window);
-
-	// World gen seed
-	int seed = game::world_generator::get_world_generator_seed();
-	ImGui::InputInt("World generator seed", &seed);
-	game::world_generator::set_world_generator_seed(seed);
-	
-	ImGui::End();
+void jactorio::renderer::imgui_manager::setup_character_data() {
+	menu_data.sprite_positions =
+		renderer_sprites::get_spritemap(data::Sprite::sprite_group::gui).sprite_positions;
+	menu_data.tex_id = renderer_sprites::get_texture(data::Sprite::sprite_group::gui)->get_id();
 }
 
-void draw_timings_menu() {
-	using namespace jactorio::core;
-	
-	ImGui::Begin("Timings", nullptr, window_flags);
-	ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	
-	for (auto& time : Execution_timer::measured_times) {
-		ImGui::Text("%fms (%.1f/s) %s", time.second, 1000 / time.second, time.first.c_str());
+// Errors
+void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err_title,
+                                                          const std::string& err_message) {
+	bool quit = false;
+
+	while (!quit) {
+		Renderer::g_clear();
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		ImGui::SetNextWindowPosCenter();
+		ImGui::Begin("Error", nullptr, debug_window_flags);
+		ImGui::TextWrapped("%s", err_title.c_str());
+		ImGui::TextWrapped("%s", err_message.c_str());
+		ImGui::NewLine();
+		quit = ImGui::Button("Close");
+
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		glfwSwapBuffers(window_manager::get_window());  // Done rendering
+		glfwPollEvents();
 	}
-	ImGui::End();
 }
+
 
 void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	(void)io;
+	// (void)io;
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	io.IniFilename = NULL;  // Disables imgui saving
+	io.ConfigWindowsMoveFromTitleBarOnly = true;  //
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
+
 	// Factorio inspired Imgui style
-	window_flags |= ImGuiWindowFlags_NoCollapse;
+	debug_window_flags |= ImGuiWindowFlags_NoCollapse;
+
+	release_window_flags |= ImGuiWindowFlags_NoCollapse;
+	release_window_flags |= ImGuiWindowFlags_NoResize;
+
 	auto& style = ImGui::GetStyle();
 	style.WindowRounding = 0.0f;
 	style.ChildRounding = 0.0f;
@@ -135,14 +133,77 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, IM_COL32(128, 129, 129, 255));
 	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, IM_COL32(128, 129, 129, 255));
 
+	// Popup
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(49, 48, 49, 200));
+
 	LOG_MESSAGE(info, "Imgui initialized");
 }
 
+
+#define WINDOW_PTR(function) (reinterpret_cast<void*>(jactorio::renderer::gui::function))
+void* windows[]{
+	WINDOW_PTR(character_menu),
+	WINDOW_PTR(debug_menu_main)
+};
+#undef WINDOW_PTR
+
+bool window_visibility[sizeof(windows) / sizeof(windows[0])];
+
+
+void jactorio::renderer::imgui_manager::set_window_visibility(const gui_window window, const bool visibility) {
+	const auto index = static_cast<int>(window);
+	assert(index != -1);
+	
+	bool& old_visibility = window_visibility[index];
+
+	if (visibility && !old_visibility) {
+		// Window opened
+		game::Event::raise<game::Gui_opened_event>(game::event_type::game_gui_open);
+	}
+	
+	old_visibility = visibility;
+}
+
+bool jactorio::renderer::imgui_manager::get_window_visibility(gui_window window) {
+	const auto index = static_cast<int>(window);
+	assert(index != -1);
+
+	return window_visibility[index];
+}
+
+/**
+ * Draws windows conditionally
+ * @param gui_window
+ * @param window_flags
+ * @param params Parameters to pass to the window function after the window flags
+ */
+template <typename ... ArgsT>
+void draw_window(jactorio::renderer::imgui_manager::gui_window gui_window, const ImGuiWindowFlags window_flags, 
+                 ArgsT& ... params) {
+	const int window_index = static_cast<int>(gui_window);
+	assert(window_index != -1);
+
+	// Window is hidden?
+	if (!window_visibility[window_index])
+		return;
+	
+	const auto function_ptr = reinterpret_cast<void(*)(ImGuiWindowFlags, ArgsT ...)>
+		(windows[window_index]);
+
+	function_ptr(window_flags, params ...);
+}
+
 void jactorio::renderer::imgui_manager::imgui_draw() {
+	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
+
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+
+	// Has imgui handled a mouse or keyboard event?
+	ImGuiIO& io = ImGui::GetIO();
+	input_captured = io.WantCaptureKeyboard || io.WantCaptureMouse;
 
 	// Make the font bigger
 	// auto font = ImGui::GetFont();
@@ -150,15 +211,11 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
-	// Debug menu is ` key
-	if (show_debug_menu)
-		draw_debug_menu();
-	
-	if (show_demo_window)
-		ImGui::ShowDemoWindow();
-	if (show_timings_window)
-		draw_timings_menu();
-	
+	gui::cursor_window(release_window_flags, menu_data);
+
+	draw_window(gui_window::character, release_window_flags, menu_data);
+	draw_window(gui_window::debug, debug_window_flags);
+
 	// Render
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -170,5 +227,5 @@ void jactorio::renderer::imgui_manager::imgui_terminate() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	LOG_MESSAGE(info, "Imgui terminated");
+	LOG_MESSAGE(debug, "Imgui terminated");
 }

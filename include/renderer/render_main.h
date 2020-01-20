@@ -11,7 +11,11 @@ namespace jactorio::renderer
 	 */
 	Renderer* get_base_renderer();
 
-	void render_init();
+	/**
+	 * Initiates rendering and starts the rendering thread
+	 * @return non-zero if error occurred
+	 */
+	int render_init();
 }
 
 #endif // RENDER_MAIN_H

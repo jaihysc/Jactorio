@@ -11,6 +11,8 @@ project("jactorio")
 option(JACTORIO_BUILD_TESTS "JACTORIO_BUILD_TESTS")
 
 add_compile_definitions(JACTORIO_VERSION="0.1.0")
+add_compile_definitions(JACTORIO_LOG_LEVEL=0)
+# 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
 add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
 
 ############# Include folders .h
@@ -37,15 +39,24 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
+	${JACTORIO_DIR}/data/local_parser.cpp
 
 	${JACTORIO_DIR}/game/logic_loop.cpp
+	${JACTORIO_DIR}/game/event/event.cpp
+
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
+
 	${JACTORIO_DIR}/game/player/player_manager.cpp
+
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
 	${JACTORIO_DIR}/game/world/world_manager.cpp
 	${JACTORIO_DIR}/game/world/world_generator.cpp
+
+	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
+	${JACTORIO_DIR}/game/logic/placement_controller.cpp
+
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
 	${JACTORIO_DIR}/renderer/render_loop.cpp
@@ -53,6 +64,8 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
+	${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
+	${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
 
 	${JACTORIO_DIR}/renderer/opengl/error.cpp
 	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
@@ -67,6 +80,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_grid.cpp
+	${JACTORIO_DIR}/renderer/rendering/renderer_layer.cpp
 	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
 
 	${JACTORIO_DIR}/renderer/window/window_manager.cpp
@@ -82,21 +96,27 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/player/player_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/eventTests.cpp
 
-	${JACTORIO_TEST_DIR}/renderer/manager/mvp_managerTests.cpp
-	${JACTORIO_TEST_DIR}/renderer/manager/renderer_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
 
+	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_layerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
 )
@@ -130,7 +150,6 @@ validate_dependency(lib/SDL-mirror)
 
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)
-set(SFML_STATIC_LIBRARIES TRUE)
 
 # Ones which need to be built
 add_subdirectory("lib/glew-cmake")

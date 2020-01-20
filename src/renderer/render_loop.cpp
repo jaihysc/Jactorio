@@ -10,7 +10,7 @@
 void jactorio::renderer::render_loop(Renderer* renderer) {
 	EXECUTION_PROFILE_SCOPE(render_preparation_timer, "Render preparation");
 	
-	Renderer::clear();
+	Renderer::g_clear();
 
 	// MVP Matricies updated in here
 	world_renderer::render_player_position(

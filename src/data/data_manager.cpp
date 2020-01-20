@@ -5,7 +5,9 @@
 
 #include "core/filesystem.h"
 #include "core/logger.h"
+#include "core/resource_guard.h"
 #include "data/pybind/pybind_manager.h"
+#include "data/local_parser.h"
 
 // Position 0 reserved to indicate error
 constexpr auto internal_id_start = 1;
@@ -25,23 +27,35 @@ void jactorio::data::data_manager::set_directory_prefix(const std::string& name)
 }
 
 void jactorio::data::data_manager::data_raw_add(const data_category data_category, const std::string& iname,
-                                                Prototype_base* const prototype) {
+                                                Prototype_base* const prototype, const bool add_directory_prefix) {
 	// Use the following format internal name
 	// Format __dir__/iname
 	std::string formatted_iname;
 	{
 		std::ostringstream sstr;
-		sstr << "__" << directory_prefix << "__/" << iname;
+		if (add_directory_prefix)
+			sstr << "__" << directory_prefix << "__/";
+
+		sstr << iname;
 		formatted_iname = sstr.str();
 	}
 
 	// Print warning if overriding another name
-	const auto& category = data_raw[data_category];
-	if (category.find(formatted_iname) != category.end()) {
-		LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration",
-		              formatted_iname.c_str(), static_cast<int>(data_category));
+	// Do not print warning in iname is empty
+	if (iname.empty()) {
+		// Generate a internal name based on the id
+		std::ostringstream sstr;
+		sstr << "@" << internal_id_new;
+		formatted_iname = sstr.str();
 	}
-	
+	else {
+		const auto& category = data_raw[data_category];
+		if (category.find(formatted_iname) != category.end()) {
+			LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration",
+			              formatted_iname.c_str(), static_cast<int>(data_category));
+		}
+	}
+
 	// Enforce prototype rules...
 	// data_category should be the same as category
 	// No order specified, use internal id as order
@@ -51,50 +65,79 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 		prototype->category = data_category;
 	if (prototype->order == 0)
 		prototype->order = internal_id_new;
+	if (prototype->get_localized_name().empty())
+		prototype->set_localized_name(formatted_iname);
 
 	prototype->internal_id = internal_id_new++;
 
 
 	data_raw[data_category][formatted_iname] = prototype;
+	LOG_MESSAGE_f(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void jactorio::data::data_manager::load_data(
+int jactorio::data::data_manager::load_data(
 	const std::string& data_folder_path) {
 	// Get all sub-folders in ~/data/
 	// Read data.cfg files within each sub-folder
 	// Load extracted data into loaded_data
 
-	for (const auto& entry : std::filesystem::directory_iterator(
-		     data_folder_path)) {
+	// Terminate the interpreter after loading prototypes
+	auto py_guard = core::Resource_guard(pybind_manager::py_interpreter_terminate);
+	pybind_manager::py_interpreter_init();
+
+
+	for (const auto& entry : std::filesystem::directory_iterator(data_folder_path)) {
 		const std::string directory_name = entry.path().filename().u8string();
 
-		std::stringstream ss;
-		ss << data_folder_path << "/" << directory_name << "/data.py";
+		// Directory including current folder: eg: /data/base
+		std::string current_directory;
+		{
+			std::stringstream ss;
+			ss << data_folder_path << "/" << directory_name;
+			current_directory = ss.str();
+		}
 
-		const std::string py_file_contents = core::filesystem::
-			read_file_as_str(ss.str());
+		// Python file
+		{
+			std::stringstream py_file_path;
+			py_file_path << current_directory << "/data.py";
 
-		// data.cfg file does not exist
-		if (py_file_contents.empty()) {
-			LOG_MESSAGE_f(warning, "Directory %s/%s has no or empty data.py file. Ignoring",
-			              data_folder_path.c_str(),
-			              directory_name.c_str())
-			continue;
+			const std::string py_file_contents = core::filesystem::read_file_as_str(py_file_path.str());
+			// data.py file does not exist
+			if (py_file_contents.empty()) {
+				LOG_MESSAGE_f(warning, "Directory %s has no or empty data.py file. Ignoring", current_directory.c_str())
+				continue;
+			}
+
+
+			set_directory_prefix(directory_name);
+			if (pybind_manager::exec(py_file_contents, py_file_path.str()) != 0) {
+				// Error occurred
+				LOG_MESSAGE_f(error, "%s", pybind_manager::get_last_error_message().c_str());
+				return 1;
+			}
 		}
 
 
-		set_directory_prefix(directory_name);
-		std::string result = pybind_manager::exec(py_file_contents, directory_name);
-		if (!result.empty()) {
-			// Error occurred
-			LOG_MESSAGE_f(error, "%s %s", ss.str().c_str(), result.c_str())
-			continue;
+		// Load local file for the directory
+		{
+			std::stringstream cfg_file_path;
+			// TODO local language other than en
+			cfg_file_path << current_directory << "/local/en.cfg";
+
+			auto local_contents = core::filesystem::read_file_as_str(cfg_file_path.str());
+			if (local_contents.empty()) {
+				LOG_MESSAGE_f(warning, "Directory %s missing local at %s",
+				              current_directory.c_str(), cfg_file_path.str().c_str())
+				continue;
+			}
+			local_parser::parse_s(local_contents, directory_name);
 		}
 
-		LOG_MESSAGE_f(info, "Directory %s/%s loaded",
-		              data_folder_path.c_str(),
-		              directory_name.c_str())
+		LOG_MESSAGE_f(info, "Directory %s loaded", current_directory.c_str())
 	}
+
+	return 0;
 }
 
 void jactorio::data::data_manager::clear_data() {
@@ -105,7 +148,7 @@ void jactorio::data::data_manager::clear_data() {
 			delete category_pair.second;
 		}
 	}
-	
+
 	data_raw.clear();
 	internal_id_new = internal_id_start;
 }

@@ -30,7 +30,7 @@ void jactorio::renderer::set_mvp_uniform_location(const int location) {
 void calculate_mvp_matrix() {
 	if (calculate_matrix) {
 		// Multiply backwards: projection, view, model
-        mvp_matrix = projection * view * model;
+		mvp_matrix = projection * view * model;
 		calculate_matrix = false;
 	}
 }

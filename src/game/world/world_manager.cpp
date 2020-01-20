@@ -4,14 +4,25 @@
 #include <future>
 #include <mutex>
 
-#include "core/data_type/unordered_map.h"
+#include "core/data_type.h"
+#include "game/input/mouse_selection.h"
 
 using world_chunks_key = unsigned long long;
 
 // world_chunks_key correlate to a chunk
 std::unordered_map<std::tuple<int, int>, jactorio::game::Chunk*,
                    jactorio::core::hash<std::tuple<int, int>>> world_chunks;
+
 std::mutex m_world_chunks;
+// /**
+//  * 3 possible states for unordered map write lock
+//  * 0 - Not locked
+//  * 1 - Awaiting lock
+//  * 2 - Locked
+//  */
+// std::atomic<unsigned short> mp_world_chunks_write_lock_status = 0;
+// std::atomic<int> mp_world_chunks_read_thread_count = 0;
+// std::condition_variable mp_world_chunks_cv;  // Used to notify lock gained
 
 jactorio::game::Chunk* jactorio::game::world_manager::add_chunk(Chunk* chunk) {
 	const auto position = chunk->get_position();
@@ -27,15 +38,58 @@ jactorio::game::Chunk* jactorio::game::world_manager::add_chunk(Chunk* chunk) {
 	world_chunks[coords] = chunk;
 
 	// Return pointer to allocated chunk
-	return world_chunks[coords];
+	return chunk;
 }
 
-jactorio::game::Chunk* jactorio::game::world_manager::get_chunk(int x, int y) {
+inline jactorio::game::Chunk* p_get_chunk(int x, int y) {
 	const auto key = std::tuple<int, int>{ x, y };
+
 	if (world_chunks.find(key) == world_chunks.end())
 		return nullptr;
-	
+
 	return world_chunks[key];
+}
+
+jactorio::game::Chunk* jactorio::game::world_manager::get_chunk(const int x, const int y) {
+	std::lock_guard<std::mutex> guard(m_world_chunks);
+	return p_get_chunk(x, y);
+
+	// Unordered_map must be locked to prevent writing to while reading from it
+	// Once one read thread locks the mutex, subsequent read threads do not need to lock
+
+	// auto unlock_guard = core::Resource_guard<void>([]() {
+	// 	// Unlock if this is the final read thread and it is locked
+	// 	--mp_world_chunks_read_thread_count;
+	// 	if (mp_world_chunks_read_thread_count == 0 && mp_world_chunks_write_lock_status == 2) {
+	// 		mp_world_chunks_write_lock_status = 0;
+	// 		m_world_chunks.unlock();
+	// 	}
+	// 	else {
+	// 		mp_world_chunks_cv.notify_one();
+	// 	}
+	// });
+	// ++mp_world_chunks_read_thread_count;
+	//
+	// // Has not been locked yet
+	// unsigned short zero = 0;
+	// const unsigned short one = 1;
+	// if (mp_world_chunks_write_lock_status.compare_exchange_weak(zero, one)) {
+	// 	m_world_chunks.lock();
+	// 	mp_world_chunks_write_lock_status = 2;  // Lock acquired
+	// 	
+	// 	return p_get_chunk(x, y);
+	// }
+	//
+	// // Another read thread is already waiting for a lock
+	// if (mp_world_chunks_write_lock_status == 1) {
+	// 	// Wait until lock acquired
+	// 	std::mutex m;
+	// 	std::unique_lock<std::mutex> lk(m);
+	// 	mp_world_chunks_cv.wait(lk, [&](){ return p_get_chunk(x, y); });
+	// }
+	//
+	// // Lock already acquired
+	// return p_get_chunk(x, y);
 }
 
 jactorio::game::Chunk_tile* jactorio::game::world_manager::get_tile_world_coords(int world_x,
@@ -84,7 +138,14 @@ jactorio::game::Chunk_tile* jactorio::game::world_manager::get_tile_world_coords
 	return nullptr;
 }
 
+jactorio::game::Chunk_tile* jactorio::game::world_manager::get_mouse_selected_tile() {
+	const auto tile_selected = mouse_selection::get_mouse_tile_coords();
+	return get_tile_world_coords(tile_selected.first, tile_selected.second);
+}
+
 void jactorio::game::world_manager::clear_chunk_data() {
+	std::lock_guard<std::mutex> guard(m_world_chunks);
+
 	// The chunk data itself needs to be deleted
 	for (auto& world_chunk : world_chunks) {
 		delete world_chunk.second;

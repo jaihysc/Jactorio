@@ -7,26 +7,31 @@
 namespace jactorio::data
 {
 	/**
-	 * Items which are auto-placed by the world generator <br>
+	 * Tiles which are auto-placed by the world generator <br>
 	 * Configure how the world generator places these tiles with a Noise_layer
 	 */
 	class Tile : public Prototype_base
 	{
-	public:
-		/**
-		 * If true, resources will not spawn on this and player cannot navigate onto it
-		 */
-		bool is_water = false;
-		
-		Tile() = default;
+	public:		
+		Tile()
+			: is_water(false), sprite_ptr(nullptr) {
+		}
 
 		/**
 		 * @param sprite_ptr Points to a sprite prototype
 		 */
 		explicit Tile(Sprite* sprite_ptr)
-			: sprite_ptr(sprite_ptr) {}
+			: is_water(false), sprite_ptr(sprite_ptr) {
+		}
 
-		Sprite* sprite_ptr = nullptr;
+		~Tile() override = default;
+
+		/**
+		 * If true, resources will not spawn on this and player cannot navigate onto it
+		 */
+		PYTHON_PROP_REF(Tile, bool, is_water)
+
+		PYTHON_PROP(Tile, Sprite*, sprite_ptr)
 	};
 }
 

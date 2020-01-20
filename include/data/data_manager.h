@@ -3,23 +3,22 @@
 
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 
 #include "data/data_category.h"
 #include "data/prototype/prototype_base.h"
 #include "core/logger.h"
 
 namespace jactorio::data
-{
-	// Internally used internal names
-	// game-renderer-spritemap	Used by spritemap_generator.cpp to store the game's spritemap
-	
+{	
 	/**
-	* std::string type -> Everything of specified type (E.g image, audio)
-	* >> std::string id - > std::string path to item
-	* See header for a list of already used internal names
+	* Restricted symbols in internal name; for internal use only: #
 	*/
 	namespace data_manager
 	{
+		// Path of the data folder from the executing directory
+		constexpr char data_folder[] = "data";
+		
 		// Example: data_raw[image]["grass-1"] -> Prototype_base
 
 		inline std::unordered_map<data_category, std::unordered_map<
@@ -62,7 +61,20 @@ namespace jactorio::data
 
 			return items;
 		}
-		
+
+		/**
+		 * Gets pointers to all data of specified data_type, sorted by Prototype_base.order
+		 */
+		template <typename T>
+		std::vector<T*> data_raw_get_all_sorted(const data_category type) {
+			std::vector<T*> items = data_raw_get_all<T>(type);
+
+			// Sort
+			std::sort(items.begin(), items.end(), [](Prototype_base* a, Prototype_base* b) {
+				return a->order < b->order;
+			});
+			return items;
+		}
 
 		/**
 		 * Sets the prefix which will be added to all internal names <br>
@@ -70,16 +82,24 @@ namespace jactorio::data
 		 * "electric-pole" becomes "__base__/electric-pole"
 		 */
 		void set_directory_prefix(const std::string& name);
-		
-		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* prototype);
+
+		/**
+		 * @param data_category
+		 * @param iname
+		 * @param prototype Prototype pointer, do not delete
+		 * @param add_directory_prefix Should the directory prefix be appended to the provided iname
+		 */
+		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* prototype, 
+		                  bool add_directory_prefix = false);
 
 		
 		/**
 		 * Loads data and their properties from data/ folder,
 		 * data access methods can be used only after calling this
 		 * @param data_folder_path Do not include a / at the end (Valid usage: dc/xy/data)
+		 * @return non-zero if error occurred
 		 */
-		void load_data(const std::string& data_folder_path);
+		int load_data(const std::string& data_folder_path);
 
 		/**
 		 * Frees all pointer data within data_raw, clears data_raw
