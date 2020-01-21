@@ -12,7 +12,7 @@
  */
 namespace jactorio::data::local_parser
 {
-	// Define identifiers for supported languages
+	/*// Define identifiers for supported languages
 #define KEY_DEF( identifier, name )  identifier
 #define KEYS_DEF \
     KEY_DEF( en, "en" ), \
@@ -21,7 +21,7 @@ namespace jactorio::data::local_parser
 	
 	/**
 	 * Enum below lists supported languages, for the identifier string, use: language_identifier
-	 */
+	 #1#
 	enum language { KEYS_DEF };
 
 #undef KEY_DEF
@@ -29,7 +29,7 @@ namespace jactorio::data::local_parser
 
 	char const* const language_identifier[] = { KEYS_DEF };
 	
-#undef KEY_DEF
+#undef KEY_DEF*/
 
 	/**
 	 * Parses a .cfg file, will throw exceptions on error

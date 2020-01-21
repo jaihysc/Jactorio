@@ -18,9 +18,9 @@ g_logistics.recipeCategories(([j.add(c.RecipeCategory)
     .recipes(([
         j.add(c.Recipe)
             .ingredients([("__base__/coal-item", 10), ("__base__/copper-item", 5)])
-            .product("__base__/wooden-chest-item"),
+            .product(("__base__/wooden-chest-item", 2)),
         j.add(c.Recipe)
             .ingredients([("__base__/wooden-chest-item", 1), ("__base__/copper-item", 5)])
-            .product("__base__/iron-chest-item"),
+            .product(("__base__/iron-chest-item", 1)),
     ]))
 ]))

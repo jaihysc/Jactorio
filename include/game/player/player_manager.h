@@ -2,6 +2,9 @@
 #define GAME_PLAYER_PLAYER_MANAGER_H
 
 #include "data/prototype/item/item.h"
+#include "data/prototype/item/recipe.h"
+
+#include <vector>
 
 /**
  * Stores information & functions regarding the player

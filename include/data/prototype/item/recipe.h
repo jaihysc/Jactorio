@@ -4,29 +4,53 @@
 #include <utility>
 
 #include "data/prototype/prototype_base.h"
+#include <vector>
+#include <unordered_map>
 
 namespace jactorio::data
 {
+	// Internal name, amount required
+	using recipe_item = std::pair<std::string, uint16_t>;
+	
 	/**
 	 * Defines an in game recipe to craft items
 	 */
 	class Recipe : public Prototype_base
 	{
 	public:
+		/**
+		 * Looks up recipe for item of iname
+		 * @returns nullptr if not found
+		 */
+		static Recipe* get_item_recipe(const std::string& iname);
+
+		/**
+		 * Returns raw materials for a recipe <br>
+		 * Assumes all provided names are valid <br>
+		 * A raw material is something which cannot be hand crafted
+		 */
+		static std::vector<recipe_item> recipe_get_total_raw(const std::string& iname);
+		
+	private:
+		static std::unordered_map<std::string, Recipe*> item_recipes_;
+		recipe_item product_;
+
+	public:
 		Recipe() = default;
 
-		// std::string is internal name
 
-		// Internal name, amount required
-		std::vector<std::pair<std::string, uint16_t>> ingredients;
+		PYTHON_PROP_REF(Recipe, std::vector<recipe_item>, ingredients);
 
-		Recipe* set_ingredients(const std::vector<std::pair<std::string, uint16_t>>& ingredients) {
-			this->ingredients = ingredients;
+		// Product
+		J_NODISCARD recipe_item get_product() const { return this->product_; }
+
+		Recipe* set_product(const recipe_item& (product)) {
+			// Save recipe in lookup
+			item_recipes_[product.first] = this;
+
+			this->product_ = product;
 			return this;
-		};
-
-		
-		PYTHON_PROP_REF(Recipe, std::string, product);
+		}
 	};
 }
 

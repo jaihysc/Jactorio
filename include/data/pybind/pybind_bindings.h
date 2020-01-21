@@ -129,7 +129,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	py::class_<Recipe, Prototype_base>(m, "Recipe")
 		PYBIND_PROP(Recipe, ingredients)
-		PYBIND_PROP(Recipe, product);
+		PYBIND_PROP_GET_SET(Recipe, product, product);
 	
 	// ############################################################
 	// Data_raw + get/set

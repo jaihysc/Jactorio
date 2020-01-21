@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <imgui/imgui.h>
+#include <sstream>
 
 #include "data/data_manager.h"
 #include "game/input/mouse_selection.h"
@@ -97,6 +98,47 @@ void draw_slots(const uint8_t slot_span, const uint16_t slot_count, const uint8_
 		}
 }
 
+/**
+ * Draws a inventory slot
+ * @param menu_data
+ * @param l_offset How many slots to offset from the left
+ * @param item_iname
+ * @param item_count Number to display on the item, 0 to hide
+ * @param button_event_func Register events with the button click
+ */
+void draw_slot(const jactorio::renderer::imgui_manager::Character_menu_data& menu_data,
+               const uint16_t l_offset,
+               const std::string& item_iname,
+               const uint16_t item_count,
+               const std::function<void()>& button_event_func = nullptr) {
+	using namespace jactorio;
+	const auto* item =
+		data::data_manager::data_raw_get<data::Item>(data::data_category::item, item_iname);
+	assert(item != nullptr);
+	
+	// TODO A better, accurrate calculate of the offset
+	ImGui::SameLine(10.f + l_offset * (inventory_slot_width + inventory_slot_padding));
+
+	const auto& uv = menu_data.sprite_positions.at(item->sprite->internal_id);
+	ImGui::ImageButton(
+		reinterpret_cast<void*>(menu_data.tex_id),
+		ImVec2(inventory_slot_width, inventory_slot_width),
+
+		ImVec2(uv.top_left.x, uv.top_left.y),
+		ImVec2(uv.bottom_right.x, uv.bottom_right.y),
+		2
+	);
+
+	if (button_event_func != nullptr)
+		button_event_func();
+
+	// Total raw count
+	if (item_count != 0) {
+		ImGui::SameLine(10.f + l_offset * (inventory_slot_width + inventory_slot_padding));
+		ImGui::Text("%d", item_count);
+	}
+}
+
 void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags,
                                              const imgui_manager::Character_menu_data& menu_data) {
 	namespace player_manager = game::player_manager;
@@ -119,29 +161,16 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 
 		// Item exists at inventory slot?
 		if (item.first != nullptr) {
-			const auto& positions = menu_data.sprite_positions.at(item.first->sprite->internal_id);
+			draw_slot(menu_data, index % 10, item.first->name, item.second, [index, item]() {
+				if (ImGui::IsItemClicked()) {
+					player_manager::set_clicked_inventory(index, 0);
+				}
+				else if (ImGui::IsItemClicked(1)) {
+					player_manager::set_clicked_inventory(index, 1);
+				}
 
-			ImGui::ImageButton(
-				reinterpret_cast<void*>(menu_data.tex_id),
-				ImVec2(inventory_slot_width, inventory_slot_width),
-
-				ImVec2(positions.top_left.x, positions.top_left.y),
-				ImVec2(positions.bottom_right.x, positions.bottom_right.y),
-				2
-			);
-
-			// Click event
-			if (ImGui::IsItemClicked()) {
-				player_manager::set_clicked_inventory(index, 0);
-			}
-			else if (ImGui::IsItemClicked(1)) {
-				player_manager::set_clicked_inventory(index, 1);
-			}
-
-			// Only draw tooltip + item count if item count is not 0
-			if (item.second != 0) {
-				// Item tooltip
-				if (ImGui::IsItemHovered()) {
+				// Only draw tooltip + item count if item count is not 0
+				if (ImGui::IsItemHovered() && item.second != 0) {
 					draw_cursor_tooltip(
 						item.first->get_localized_name().c_str(),
 						"sample description",
@@ -152,12 +181,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 						}
 					);
 				}
-
-				// Stack size
-				ImGui::SameLine(10.f + (index % 10) * (inventory_slot_width + inventory_slot_padding));
-				ImGui::Text("%d", item.second);
-			}
-
+			});
 		}
 		else {
 			// Empty button
@@ -230,8 +254,9 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 		draw_slots(10, recipes.size(), 1, [&](auto index) {
 			data::Recipe* recipe = recipes.at(index);
 
+			
 			const auto product = 
-				data::data_manager::data_raw_get<data::Item>(data::data_category::item, recipe->product);
+				data::data_manager::data_raw_get<data::Item>(data::data_category::item, recipe->get_product().first);
 			assert(product != nullptr);  // Invalid recipe product
 			
 			const auto& uv = menu_data.sprite_positions.at(product->sprite->internal_id);
@@ -251,34 +276,42 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 
 			// Item tooltip
 			if (ImGui::IsItemHovered()) {
+				std::stringstream title_ss;
+				// Show the product yield in the title
+				title_ss << product->get_localized_name().c_str() << " (" << recipe->get_product().second << ")";
+
+				// In order to auto resize to fit the title's text since the title is not accounted
+				// Pad the ingredients: text with trailing whitespace to reach the length of the title
+				std::stringstream description_ss;
+				description_ss << "Ingredients:";
+				
+				uint16_t len = 12;  // Length of the initial string
+				const uint16_t target_len = title_ss.str().size();
+				while (len++ != target_len)
+					description_ss << " ";
+
 				draw_cursor_tooltip(
-					product->get_localized_name().c_str(),
-					"Ingredients:",
+					title_ss.str().c_str(),
+					description_ss.str().c_str(),
 					[&]() {
 						// Draw ingredients
 						for (const auto& ingredient_pair : recipe->ingredients) {
-							const auto ingredient =
-								data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-								                                             ingredient_pair.first);
-							assert(ingredient != nullptr);  // Invalid ingredient
-
-							const auto& uv = menu_data.sprite_positions.at(ingredient->sprite->internal_id);
-							ImGui::Image(
-								reinterpret_cast<void*>(menu_data.tex_id),
-								ImVec2(inventory_slot_width, inventory_slot_width),
-
-								// ImVec2(0, 0),
-								// ImVec2(1, 1),
-								ImVec2(uv.top_left.x, uv.top_left.y),
-								ImVec2(uv.bottom_right.x, uv.bottom_right.y)
-							);
-
+							ImGui::NewLine();
+							draw_slot(menu_data, 0,
+							          ingredient_pair.first, 0);
 							// Amount required
 							ImGui::SameLine();
 							ImGui::Text("%d", ingredient_pair.second);
-							
 						}
-						
+
+						// Total raw
+						ImGui::Separator();
+						ImGui::Text("%s", "Total\nRaw");
+						auto raw_inames = data::Recipe::recipe_get_total_raw(product->name);
+						draw_slots(5, raw_inames.size(), 1, [&](auto index) {
+							draw_slot(menu_data, index + 1,
+							          raw_inames[index].first, raw_inames[index].second);
+						});
 					}
 				);
 			}

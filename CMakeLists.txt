@@ -36,6 +36,7 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/data/prototype/noise_layer.cpp
 	${JACTORIO_DIR}/data/prototype/sprite.cpp
+	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
@@ -101,6 +102,7 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
