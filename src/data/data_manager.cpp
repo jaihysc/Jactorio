@@ -49,7 +49,7 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 		formatted_iname = sstr.str();
 	}
 	else {
-		const auto& category = data_raw[data_category];
+		const auto& category = data_raw[static_cast<uint16_t>(data_category)];
 		if (category.find(formatted_iname) != category.end()) {
 			LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration",
 			              formatted_iname.c_str(), static_cast<int>(data_category));
@@ -71,7 +71,7 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 	prototype->internal_id = internal_id_new++;
 
 
-	data_raw[data_category][formatted_iname] = prototype;
+	data_raw[static_cast<uint16_t>(data_category)][formatted_iname] = prototype;
 	LOG_MESSAGE_f(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
@@ -142,13 +142,13 @@ int jactorio::data::data_manager::load_data(
 
 void jactorio::data::data_manager::clear_data() {
 	// Iterate through both unordered maps and delete all pointers
-	for (auto& pair : data_raw) {
+	for (auto& map : data_raw) {
 		// Category unordered maps
-		for (auto& category_pair : pair.second) {
+		for (auto& category_pair : map) {
 			delete category_pair.second;
 		}
+		map.clear();
 	}
 
-	data_raw.clear();
 	internal_id_new = internal_id_start;
 }

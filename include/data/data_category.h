@@ -21,6 +21,8 @@ namespace jactorio::data
 		recipe,
 		recipe_category,
 		recipe_group,
+
+		count_
 	};
 }
 

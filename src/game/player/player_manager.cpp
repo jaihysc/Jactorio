@@ -97,7 +97,14 @@ void jactorio::game::player_manager::player_inventory_sort() {
 		j++;
 
 		for (j; j < i; ++j) {
+
+			// If item somehow exceeds stack do not attempt to stack into it
+			if (inv_temp[j].second > stack_size)
+				continue;
+
+			// Amount which can be dropped is space left until reaching stack size
 			const uint16_t max_drop_amount = stack_size - inv_temp[j].second;
+
 			// Has enough to max current stack and move on
 			if (buffer_item_count > max_drop_amount) {
 				inv_temp[j].second = stack_size;
@@ -257,7 +264,7 @@ bool jactorio::game::player_manager::decrement_selected_item() {
 		player_inventory[selected_item_index].first = nullptr;
 		player_inventory[selected_item_index].second = 0;
 		
-		return true;
+		return false;
 	}
 	return true;
 }

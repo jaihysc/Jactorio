@@ -222,8 +222,6 @@ namespace data
 	}
 
 	TEST(data_manager, clear_data) {
-		data_manager::set_directory_prefix("test");
-
 		const auto prototype = new jactorio::data::Sprite{};
 
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
@@ -235,7 +233,7 @@ namespace data
 		// Get
 		auto* data = data_manager::data_raw_get<jactorio::data::Sprite>(
 			jactorio::data::data_category::sprite,
-			"__test__/small-electric-pole");
+			"small-electric-pole");
 		EXPECT_EQ(data, nullptr);
 
 		// Get all

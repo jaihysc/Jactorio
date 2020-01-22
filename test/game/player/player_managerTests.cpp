@@ -417,6 +417,7 @@ namespace game
 	TEST(player_manager, decrement_selected_item_reach_zero_reference) {
 		// Selected by reference
 		// If decremented to 0, deselect the cursor item
+		// If the selected item is empty after decrementing, return false
 
 		using namespace jactorio::game::player_manager;
 
@@ -439,7 +440,7 @@ namespace game
 		// Pickup
 		set_clicked_inventory(0, 0);
 
-		EXPECT_EQ(decrement_selected_item(), true);
+		EXPECT_EQ(decrement_selected_item(), false);
 
 		// Cursor is nullptr: no item selected
 		const auto cursor_item = get_selected_item();
@@ -538,6 +539,40 @@ namespace game
 				continue;
 			EXPECT_NE(player_inventory[i].first, cursor);
 		}
+	}
+
+	TEST(player_maanger, player_inventory_sort_item_exceding_stack) {
+		// If there is an item which exceeds its stack size, do not attempt to stack into it
+		using namespace jactorio::game::player_manager;
+		namespace data_manager = jactorio::data::data_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+
+		player_inventory[10].first = item.get();
+		player_inventory[10].second = 100;
+
+		player_inventory[11].first = item.get();
+		player_inventory[11].second = 100;
+
+		player_inventory[12].first = item.get();
+		player_inventory[12].second = 10;
+
+		player_inventory_sort();
+
+		EXPECT_EQ(player_inventory[0].first, item.get());
+		EXPECT_EQ(player_inventory[0].second, 100);
+
+		EXPECT_EQ(player_inventory[1].first, item.get());
+		EXPECT_EQ(player_inventory[1].second, 100);
+
+		EXPECT_EQ(player_inventory[2].first, item.get());
+		EXPECT_EQ(player_inventory[2].second, 10);
 	}
 	
 	//

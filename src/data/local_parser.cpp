@@ -67,7 +67,7 @@ void parse_eol(const std::string& directory_prefix) {
 
 	bool found = false;
 	for (auto& category : data::data_manager::data_raw) {
-		for (auto& prototype : category.second) {
+		for (auto& prototype : category) {
 			if (prototype.first == str_s.str()) {
 				found = true;
 				prototype.second->set_localized_name(current_line_buffer);

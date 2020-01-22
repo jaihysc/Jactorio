@@ -64,7 +64,7 @@ namespace jactorio::game::player_manager
 
     /**
      * Once item count reaches 0, the selected item slot is cleared
-     * @return true if successfully decremented, false if slot is empty
+     * @return true if items still remain in stack, false if now empty
      */
     bool decrement_selected_item();
 

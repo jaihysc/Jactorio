@@ -19,10 +19,9 @@ namespace jactorio::data
 		// Path of the data folder from the executing directory
 		constexpr char data_folder[] = "data";
 		
-		// Example: data_raw[image]["grass-1"] -> Prototype_base
+		// Example: data_raw[static_cast<int>(image)]["grass-1"] -> Prototype_base
 
-		inline std::unordered_map<data_category, std::unordered_map<
-			                          std::string, Prototype_base*>> data_raw;
+		inline std::unordered_map<std::string, Prototype_base*> data_raw[static_cast<int>(data_category::count_)];
 		
 		// Data_raw functions
 		
@@ -33,7 +32,7 @@ namespace jactorio::data
 		 */
 		template <typename T>
 		T* data_raw_get(const data_category data_category, const std::string& iname) {
-			auto category = &data_raw[data_category];
+			auto category = &data_raw[static_cast<uint16_t>(data_category)];
 			if (category->find(iname) == category->end()) {
 				LOG_MESSAGE_f(error, "Attempted to access non-existent prototype %s", iname.c_str());
 				return nullptr;
@@ -49,7 +48,7 @@ namespace jactorio::data
 		 */
 		template <typename T>
 		std::vector<T*> data_raw_get_all(const data_category type) {
-			auto category_items = data_raw[type];
+			auto category_items = data_raw[static_cast<uint16_t>(type)];
 
 			std::vector<T*> items;
 			items.reserve(category_items.size());

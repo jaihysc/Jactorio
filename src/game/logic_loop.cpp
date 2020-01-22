@@ -105,8 +105,11 @@ void jactorio::game::init_logic_loop() {
 					// Do not take item away from player unless item was successfully placed
 					if (!placement_c::place_entity_at_coords_ranged(entity_ptr, tile_selected.first, tile_selected.second))
 						return;
-					
-					player_manager::decrement_selected_item();
+
+					// Item stack used up, sort player inventory to fill gap
+					if (!player_manager::decrement_selected_item()) {
+						player_manager::player_inventory_sort();
+					}
 				}
 			}
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS);
@@ -137,6 +140,9 @@ void jactorio::game::init_logic_loop() {
 					auto item_stack = data::item_stack(entity_ptr->get_item(), 1);
 					inventory_c::add_itemstack_to_inv(
 						player_manager::player_inventory, player_manager::player_inventory_size, item_stack);
+
+					player_manager::player_inventory_sort();
+
 					// TODO do something if the inventory is full
 				}
 			}

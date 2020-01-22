@@ -76,13 +76,14 @@ namespace jactorio::game
 			base = 0,
 			resource,
 			entity,
-			overlay  // Cursor highlights, inserter arrows, etc
+			overlay,  // Cursor highlights, inserter arrows, etc
+			count_
 		};
 
 		/**
 		 * Maximum number of layers a chunk_tile will have
 		 */
-		static constexpr int layer_count = sizeof(chunk_layer);
+		static constexpr int layer_count = static_cast<int>(chunk_layer::count_);
 
 
 		// Layer getters setters

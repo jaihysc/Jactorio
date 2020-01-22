@@ -4,7 +4,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "jactorio.h"
-#include "data/data_manager.h"
 #include "game/input/mouse_selection.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
