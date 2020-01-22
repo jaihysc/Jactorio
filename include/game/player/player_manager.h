@@ -31,10 +31,17 @@ namespace jactorio::game::player_manager
 
 	
     // Inventory
-	
-    constexpr unsigned short inventory_size = 80;
-    inline data::item_stack player_inventory[inventory_size];  // Holds the internal id of items
 
+    constexpr char inventory_selected_cursor_iname[] = "__core__/inventory-selected-cursor";
+
+    /**
+     * Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying stack size
+     */
+    void player_inventory_sort();
+	
+    constexpr unsigned short player_inventory_size = 80;
+    inline data::item_stack player_inventory[player_inventory_size];  // Holds the internal id of items
+	
     /**
      * Interacts with the player inventory at index
      * @param index The player inventory index

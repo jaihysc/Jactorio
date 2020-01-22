@@ -136,7 +136,7 @@ void jactorio::game::init_logic_loop() {
 					test_rm_counter = 0;
 					auto item_stack = data::item_stack(entity_ptr->get_item(), 1);
 					inventory_c::add_itemstack_to_inv(
-						player_manager::player_inventory, player_manager::inventory_size, item_stack);
+						player_manager::player_inventory, player_manager::player_inventory_size, item_stack);
 					// TODO do something if the inventory is full
 				}
 			}

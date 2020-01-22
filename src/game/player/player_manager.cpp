@@ -1,6 +1,7 @@
 #include "game/player/player_manager.h"
 
 #include <cassert>
+#include <algorithm>
 
 #include "game/logic/inventory_controller.h"
 #include "game/world/world_manager.h"
@@ -53,6 +54,107 @@ void jactorio::game::player_manager::move_player_y(const float amount) {
 
 // Inventory
 
+void jactorio::game::player_manager::player_inventory_sort() {
+	// The inventory must be sorted without moving the selected cursor
+
+	// Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
+	std::vector<data::item_stack> inv_temp;
+	inv_temp.reserve(player_inventory_size);
+	for (const auto& i : player_inventory) {
+		// Skip the cursor
+		if (i.first == nullptr ||
+			i.first->get_localized_name() == inventory_selected_cursor_iname) {
+			continue;
+		}
+		
+		inv_temp.push_back(i);
+	}
+	
+	// Sort temp inventory (does not contain cursor)
+	std::sort(inv_temp.begin(), inv_temp.end(),
+	          [](const data::item_stack a, const data::item_stack b) {
+		          auto& a_name = a.first->get_localized_name();
+		          auto& b_name = b.first->get_localized_name();
+
+		          return a_name < b_name;
+	          });
+
+	// Compress item stacks
+	for (int i = inv_temp.size() - 1; i >= 0; --i) {
+		uint16_t buffer_item_count = inv_temp[i].second;
+		const uint16_t stack_size = inv_temp[i].first->stack_size;
+
+		// Find index which the same item type begins
+		int j = i;
+		while (inv_temp[j].first == inv_temp[i].first) {
+			if (j == 0) {
+				j = -1;
+				break;
+			}
+			j--;
+		}
+		// Ends 1 before, shift 1 ahead
+		j++;
+
+		for (j; j < i; ++j) {
+			const uint16_t max_drop_amount = stack_size - inv_temp[j].second;
+			// Has enough to max current stack and move on
+			if (buffer_item_count > max_drop_amount) {
+				inv_temp[j].second = stack_size;
+				buffer_item_count -= max_drop_amount;
+			}
+				// Not enough to drop and move on
+			else {
+				inv_temp[j].second += buffer_item_count;
+				inv_temp[i].first = nullptr;
+				buffer_item_count = 0;
+				break;
+			}
+		}
+		// Did not drop all items off
+		if (buffer_item_count > 0) {
+			inv_temp[i].second = buffer_item_count;
+		}
+
+	}
+	
+	// Copy back into origin inventory
+	unsigned int start = 0;  // The index of the first blank slot post sorting
+	unsigned int inv_temp_index = 0;
+	for (auto i = 0; i < player_inventory_size; ++i) {
+		// Skip the cursor
+		if (player_inventory[i].first != nullptr && 
+			player_inventory[i].first->get_localized_name() == inventory_selected_cursor_iname)
+			continue;
+		
+		if (inv_temp_index >= inv_temp.size()) {
+			start = i;
+			break;
+		}
+		// Omit empty gaps in inv_temp from the compressing process
+		while (inv_temp[inv_temp_index].first == nullptr) {
+			inv_temp_index++;
+			if (inv_temp_index >= inv_temp.size()) {
+				start = i;
+				goto loop_exit;
+			}
+		};
+		
+		player_inventory[i] = inv_temp[inv_temp_index++];
+	}
+loop_exit:
+	
+	// Copy empty spaces into the remainder of the slots
+	for (auto i = start; i < player_inventory_size; ++i) {
+		// Skip the cursor
+		if (player_inventory[i].first != nullptr &&
+			player_inventory[i].first->get_localized_name() == inventory_selected_cursor_iname)
+			continue;
+		
+		player_inventory[i] = {nullptr, 0};
+	}
+}
+
 // LEFT CLICK - Select by reference, the item in the cursor mirrors the inventory item
 // RIGHT CLICK - Select unique, the item in the cursor exists independently of the inventory item
 jactorio::data::item_stack selected_item;
@@ -63,7 +165,7 @@ bool select_by_reference = false;
 
 void jactorio::game::player_manager::set_clicked_inventory(const unsigned short index,
                                                            const unsigned short mouse_button) {
-	assert(index < inventory_size);
+	assert(index < player_inventory_size);
 	assert(mouse_button == 0 || mouse_button == 1);  // Only left + right click supported
 	
 	// Clicking on the same location, selecting by reference: deselect
@@ -91,7 +193,7 @@ void jactorio::game::player_manager::set_clicked_inventory(const unsigned short 
 
 			// Swap icon out for a cursor indicating the current index is selected
 			player_inventory[index].first = data::data_manager::data_raw_get<data::Item>(
-				data::data_category::item, "__core__/inventory-selected-cursor");
+				data::data_category::item, inventory_selected_cursor_iname);
 			player_inventory[index].second = 0;
 
 			// Return is necessary when selecting by reference
@@ -118,7 +220,7 @@ void jactorio::game::player_manager::set_clicked_inventory(const unsigned short 
 		
 		if (select_by_reference) {
 			// Remove cursor icon
-			assert(selected_item_index < inventory_size);
+			assert(selected_item_index < player_inventory_size);
 
 			player_inventory[selected_item_index].first = nullptr;
 			player_inventory[selected_item_index].second = 0;

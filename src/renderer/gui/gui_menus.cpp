@@ -147,7 +147,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 
 	const auto window_size = 
 		ImVec2(20 + 10 * (inventory_slot_width + inventory_slot_padding),
-		       player_manager::inventory_size / 10 * (inventory_slot_width + inventory_slot_padding) + 80);
+		       player_manager::player_inventory_size / 10 * (inventory_slot_width + inventory_slot_padding) + 80);
 
 	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
 	// Character window is left of the center
@@ -156,7 +156,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 	ImGui::SetNextWindowPos(ImVec2(window_center.x - window_size.x, window_center.y - window_size.y / 2));
 	ImGui::Begin("Character", nullptr, window_size, -1, window_flags);
 
-	draw_slots(10, player_manager::inventory_size, 1, [&](auto index) {
+	draw_slots(10, player_manager::player_inventory_size, 1, [&](auto index) {
 		const auto& item = inventory[index];
 
 		// Item exists at inventory slot?
@@ -164,9 +164,11 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			draw_slot(menu_data, index % 10, item.first->name, item.second, [index, item]() {
 				if (ImGui::IsItemClicked()) {
 					player_manager::set_clicked_inventory(index, 0);
+					player_manager::player_inventory_sort();
 				}
 				else if (ImGui::IsItemClicked(1)) {
 					player_manager::set_clicked_inventory(index, 1);
+					player_manager::player_inventory_sort();
 				}
 
 				// Only draw tooltip + item count if item count is not 0
@@ -195,9 +197,11 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			// Click event
 			if (ImGui::IsItemClicked()) {
 				player_manager::set_clicked_inventory(index, 0);
+				player_manager::player_inventory_sort();
 			}
 			else if (ImGui::IsItemClicked(1)) {
 				player_manager::set_clicked_inventory(index, 1);
+				player_manager::player_inventory_sort();
 			}
 		}
 	});

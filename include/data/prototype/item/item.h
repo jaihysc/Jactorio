@@ -42,7 +42,7 @@ namespace jactorio::data
 	// Item* and amount in current stack
 	// Left: Item prototype
 	// Right: Item count
-	using item_stack = std::pair<Item*, unsigned short>;
+	using item_stack = std::pair<Item*, uint16_t>;
 }
 
 #endif // DATA_PROTOTYPE_ITEM_ITEM_H

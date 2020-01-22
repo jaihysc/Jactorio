@@ -32,7 +32,7 @@ namespace game
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "__core__/inventory-selected-cursor", cursor);
+			jactorio::data::data_category::item, inventory_selected_cursor_iname, cursor);
 		
 		const auto item = std::make_unique<jactorio::data::Item>();
 
@@ -66,7 +66,7 @@ namespace game
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "__core__/inventory-selected-cursor", cursor);
+			jactorio::data::data_category::item, inventory_selected_cursor_iname, cursor);
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 
@@ -122,7 +122,7 @@ namespace game
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "__core__/inventory-selected-cursor", cursor);
+			jactorio::data::data_category::item, inventory_selected_cursor_iname, cursor);
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 
@@ -429,7 +429,7 @@ namespace game
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
 		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::data_category::item, "__core__/inventory-selected-cursor", cursor);
+			jactorio::data::data_category::item, inventory_selected_cursor_iname, cursor);
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
@@ -450,6 +450,96 @@ namespace game
 		EXPECT_EQ(player_inventory[0].second, 0);
 	}
 
+	TEST(player_maanger, player_inventory_sort) {
+		using namespace jactorio::game::player_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+
+		const auto item2 = std::make_unique<jactorio::data::Item>();
+		item2->stack_size = 10;
+
+		// Item 1
+		player_inventory[0].first = item.get();
+		player_inventory[0].second = 10;
+
+		player_inventory[10].first = item.get();
+		player_inventory[10].second = 25;
+
+		player_inventory[20].first = item.get();
+		player_inventory[20].second = 25;
+
+		player_inventory[13].first = item.get();
+		player_inventory[13].second = 20;
+
+		player_inventory[14].first = item.get();
+		player_inventory[14].second = 30;
+
+		// Item 2
+		player_inventory[31].first = item2.get();
+		player_inventory[31].second = 4;
+
+		player_inventory[32].first = item2.get();
+		player_inventory[32].second = 6;
+		
+		player_inventory[22].first = item2.get();
+		player_inventory[22].second = 1;
+
+		
+		// Sorted inventory should be as follows
+		// Item(count)
+		// 1(50), 1(50), 1(10), 2(10), 2(1)
+		player_inventory_sort();
+
+		EXPECT_EQ(player_inventory[0].first, item.get());
+		EXPECT_EQ(player_inventory[0].second, 50);
+		EXPECT_EQ(player_inventory[1].first, item.get());
+		EXPECT_EQ(player_inventory[1].second, 50);
+		EXPECT_EQ(player_inventory[2].first, item.get());
+		EXPECT_EQ(player_inventory[2].second, 10);
+
+		EXPECT_EQ(player_inventory[3].first, item2.get());
+		EXPECT_EQ(player_inventory[3].second, 10);
+		EXPECT_EQ(player_inventory[4].first, item2.get());
+		EXPECT_EQ(player_inventory[4].second, 1);
+	}
+
+	TEST(player_maanger, player_inventory_sort2) {
+		// Sorting will not move the item with inventory_selected_cursor_iname (to prevent breaking the inventory logic)
+		using namespace jactorio::game::player_manager;
+		namespace data_manager = jactorio::data::data_manager;
+		
+		clear_player_inventory();
+		reset_inventory_variables();
+
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+
+		
+		// Create the cursor prototype
+		auto* cursor = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, inventory_selected_cursor_iname, cursor);
+
+		player_inventory[10].first = cursor;
+		player_inventory[10].second = 0;
+
+
+		player_inventory_sort();
+
+		EXPECT_EQ(player_inventory[10].first, cursor);
+		EXPECT_EQ(player_inventory[10].second, 0);
+
+		// There should have been no new cursors created anywhere
+		for (int i = 0; i < player_inventory_size; ++i) {
+			if (i == 10)
+				continue;
+			EXPECT_NE(player_inventory[i].first, cursor);
+		}
+	}
+	
 	//
 	//
 	//
