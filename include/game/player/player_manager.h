@@ -72,7 +72,12 @@ namespace jactorio::game::player_manager
     // Recipe
     void select_recipe_group(uint16_t index);
     J_NODISCARD uint16_t get_selected_recipe_group();
-	
+
+    /**
+     * Attempts to craft the specified recipe
+     * @return false if unable to craft (lacking ingredients, etc)
+     */
+    bool recipe_craft(data::Recipe* recipe);
 	
     // Reserved
 	

@@ -561,4 +561,72 @@ namespace game::logic
 		EXPECT_EQ(inv[0].first, item.get());
 		EXPECT_EQ(inv[0].second, 10);
 	}
+
+
+	//
+	//
+	//
+	// Get item stack count
+	//
+	//
+	TEST(inventory_controller, get_inv_item_count) {
+		using namespace jactorio;
+
+		auto item = std::make_unique<data::Item>();
+		auto item2 = std::make_unique<data::Item>();
+		
+		data::item_stack inv [30];
+
+		// Count these to a sum of 101
+		inv[0] = {item.get(), 20};
+		inv[5] = {item.get(), 30};
+		inv[8] = {item.get(), 20};
+		inv[14] = {item.get(), 20};
+		inv[20] = {item.get(), 5};
+		inv[29] = {item.get(), 6};
+
+		// Should not count these
+		inv[3] = {item2.get(), 200};
+		inv[9] = {item2.get(), 200};
+		inv[13] = {item2.get(), 200};
+		inv[28] = {item2.get(), 200};
+		
+		EXPECT_EQ(jactorio::game::inventory_c::get_inv_item_count(inv, 30, item.get()), 101);
+	}
+
+	TEST(inventory_controller, remove_inv_item_s) {
+		using namespace jactorio;
+		data::item_stack inv[30];
+
+		auto item = std::make_unique<data::Item>();
+		inv[20] = {item.get(), 5};
+		inv[23] = {item.get(), 5};
+
+		EXPECT_EQ(
+			jactorio::game::inventory_c::remove_inv_item_s(inv, 30, item.get(), 10),
+			true);
+
+		// Inventory should be empty
+		for (auto& i : inv) {
+			EXPECT_EQ(i.first, nullptr);
+			// EXPECT_EQ(i.second, 0);
+		}
+	}
+
+	TEST(inventory_controller, remove_inv_item_s_invalid) {
+		using namespace jactorio;
+		data::item_stack inv[30];
+
+		auto item = std::make_unique<data::Item>();
+		inv[20] = {item.get(), 5};
+
+		// Attempting to remove 10 when only 5 exists
+		EXPECT_EQ(
+			jactorio::game::inventory_c::remove_inv_item_s(inv, 30, item.get(), 10),
+			false);
+
+		// Inventory unchanged
+		EXPECT_EQ(inv[20].first, item.get());
+		EXPECT_EQ(inv[20].second, 5);
+	}
 }

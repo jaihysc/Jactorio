@@ -15,7 +15,7 @@ namespace game
 			i.second = 0;
 		}
 	}
-	
+
 	TEST(player_manager, inventory_lclick_select_item_by_reference) {
 		// Left click on a slot picks up items by reference
 		// The inventory slot becomes the cursor
@@ -25,7 +25,7 @@ namespace game
 
 		clear_player_inventory();
 		reset_inventory_variables();
-		
+
 		// Setup
 		auto data_manager_guard = jactorio::core::Resource_guard(data_manager::clear_data);
 
@@ -33,10 +33,10 @@ namespace game
 		auto* cursor = new jactorio::data::Item();
 		data_manager::data_raw_add(
 			jactorio::data::data_category::item, inventory_selected_cursor_iname, cursor);
-		
+
 		const auto item = std::make_unique<jactorio::data::Item>();
 
-		
+
 		// Position 3 should have the 50 items + item prototype after moving
 		player_inventory[0].first = item.get();
 		player_inventory[0].second = 50;
@@ -165,7 +165,7 @@ namespace game
 
 		player_inventory[0].first = item.get();
 		player_inventory[0].second = 20;
-		
+
 		const auto cursor_item = get_selected_item();
 		EXPECT_EQ(cursor_item->first, item.get());
 		EXPECT_EQ(cursor_item->second, 20);
@@ -249,7 +249,7 @@ namespace game
 		player_inventory[0].first = item.get();
 		player_inventory[0].second = 10;
 
-		
+
 		set_clicked_inventory(0, 1);  // Pick up half
 
 		EXPECT_EQ(player_inventory[0].first, item.get());
@@ -312,7 +312,7 @@ namespace game
 		item->stack_size = 50;
 		player_inventory[0].first = item.get();
 		player_inventory[0].second = 10;
-		
+
 		// Pickup
 		{
 			// Pick up 5 of item, now selected
@@ -336,7 +336,7 @@ namespace game
 			// Inv now empty, contents in inv slot 1
 			EXPECT_EQ(player_inventory[1].first, item.get());
 			EXPECT_EQ(player_inventory[1].second, 6);
-			
+
 			const auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item, nullptr);
 		}
@@ -485,11 +485,11 @@ namespace game
 
 		player_inventory[32].first = item2.get();
 		player_inventory[32].second = 6;
-		
+
 		player_inventory[22].first = item2.get();
 		player_inventory[22].second = 1;
 
-		
+
 		// Sorted inventory should be as follows
 		// Item(count)
 		// 1(50), 1(50), 1(10), 2(10), 2(1)
@@ -512,13 +512,13 @@ namespace game
 		// Sorting will not move the item with inventory_selected_cursor_iname (to prevent breaking the inventory logic)
 		using namespace jactorio::game::player_manager;
 		namespace data_manager = jactorio::data::data_manager;
-		
+
 		clear_player_inventory();
 		reset_inventory_variables();
 
-		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
-		
+
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
 		data_manager::data_raw_add(
@@ -549,7 +549,7 @@ namespace game
 		clear_player_inventory();
 		reset_inventory_variables();
 
-		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
@@ -574,7 +574,7 @@ namespace game
 		EXPECT_EQ(player_inventory[2].first, item.get());
 		EXPECT_EQ(player_inventory[2].second, 10);
 	}
-	
+
 	//
 	//
 	//
@@ -584,11 +584,75 @@ namespace game
 	//
 	//
 	//
-	
+
 	TEST(player_manager, recipe_select_recipe_group) {
 		using namespace jactorio::game::player_manager;
 		select_recipe_group(1);
 
 		EXPECT_EQ(get_selected_recipe_group(), 1);
+	}
+
+	// TODO these tests don't work yet
+	TEST(player_manager, recipe_craft) {
+		using namespace jactorio::game::player_manager;
+		namespace data_manager = jactorio::data::data_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
+
+		// With the given recipe and materials, the a item should have been crafted, decreasing the original material
+		const auto item = new jactorio::data::Item();
+		const auto item_product = new jactorio::data::Item();
+
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-1", item);
+
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-product", item_product);
+		
+		player_inventory[0] = {item, 10};
+
+		auto recipe = jactorio::data::Recipe();
+		recipe.set_ingredients({{"item-1", 2}});
+		recipe.set_product({"item-product", 1});
+		
+		// Craft 2 times
+		EXPECT_EQ(recipe_craft(&recipe), true);
+		EXPECT_EQ(recipe_craft(&recipe), true);
+
+		// Ingredient decreased
+		EXPECT_EQ(player_inventory[0].first, item);
+		EXPECT_EQ(player_inventory[0].second, 6);
+		// Final product outputted in the next free slot
+		EXPECT_EQ(player_inventory[1].first, item_product);
+		EXPECT_EQ(player_inventory[1].second, 2);
+	}
+
+	TEST(player_manager, recipe_craft_invalid) {
+		// Not enough ingredients to craft
+		
+		using namespace jactorio::game::player_manager;
+		namespace data_manager = jactorio::data::data_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
+
+		// With the given recipe and materials, the a item should have been crafted, decreasing the original material
+		const auto item = new jactorio::data::Item();
+		const auto item_product = new jactorio::data::Item();
+
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-1", item);
+
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-product", item_product);
+
+		auto recipe = jactorio::data::Recipe();
+		recipe.set_ingredients({{"item-1", 2}});
+		recipe.set_product({"item-product", 1});
+
+		EXPECT_EQ(recipe_craft(&recipe), false);
 	}
 }

@@ -281,6 +281,34 @@ uint16_t jactorio::game::player_manager::get_selected_recipe_group() {
 	return selected_recipe_group;
 }
 
+bool jactorio::game::player_manager::recipe_craft(data::Recipe* recipe) {
+	// Ensure ingredients are met
+	for (auto& ingredient : recipe->ingredients) {
+		auto* item = data::data_manager::data_raw_get<data::Item>(
+			data::data_category::item, ingredient.first);
+
+		if (inventory_c::get_inv_item_count(player_inventory,  player_inventory_size, item) < ingredient.second) {
+			return false;
+		}
+	}
+
+	// Ingredients exist, remove them
+	for (auto& ingredient : recipe->ingredients) {
+		auto* item = data::data_manager::data_raw_get<data::Item>(
+			data::data_category::item, ingredient.first);
+
+		inventory_c::remove_inv_item(player_inventory, player_inventory_size, item, ingredient.second);
+	}
+
+	// Return product
+	auto* product_item = data::data_manager::data_raw_get<data::Item>(
+		data::data_category::item, recipe->get_product().first);
+	data::item_stack i = {product_item, recipe->get_product().second};
+	
+	inventory_c::add_itemstack_to_inv(player_inventory, player_inventory_size, i);
+	return true;
+}
+
 
 // Reserved
 

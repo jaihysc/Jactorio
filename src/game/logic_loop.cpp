@@ -71,18 +71,6 @@ void jactorio::game::init_logic_loop() {
 		}, GLFW_KEY_TAB, GLFW_RELEASE);
 	}
 
-	// TODO REMOVE | Test data
-	Event::subscribe(event_type::game_gui_open, []() {
-		data::item_stack* inventory = player_manager::player_inventory;
-
-		using namespace data;
-		auto x = data_manager::data_raw_get_all<Item>(data_category::item);
-		inventory[0] = std::pair(x[0], 10);
-		inventory[1] = std::pair(x[0], 8);
-		inventory[4] = std::pair(x[0], 100);
-		inventory[5] = std::pair(x[1], 2000);
-	});
-
 	// TODO MOVE, test entity placement
 	{
 		// Place entities

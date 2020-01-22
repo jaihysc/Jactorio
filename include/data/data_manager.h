@@ -83,6 +83,7 @@ namespace jactorio::data
 		void set_directory_prefix(const std::string& name);
 
 		/**
+		 * Adds a prototype
 		 * @param data_category
 		 * @param iname
 		 * @param prototype Prototype pointer, do not delete

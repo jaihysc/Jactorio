@@ -30,6 +30,28 @@ namespace jactorio::game
 		 */
 		bool add_itemstack_to_inv(data::item_stack* target_inv, uint16_t target_inv_size,
 		                          data::item_stack& item_stack);
+
+		/**
+		 * Gets count of items matching item in inv of inv_size
+		 * @return Item count with internal id iid
+		 */
+		uint32_t get_inv_item_count(data::item_stack* inv, uint16_t inv_size, const data::Item* item);
+
+		
+		/**
+		 * Removes remove_amount of specified item from inventory inv <br>
+		 * @return false if there is insufficient items to remove remove_amount
+		 */
+		bool remove_inv_item_s(data::item_stack* inv, uint16_t inv_size,
+		                       const data::Item* item, uint32_t remove_amount);
+
+		/**
+		 * Removes remove_amount of specified item from inventory inv <br>
+		 * Sets inv[i].first to nullptr
+		 * !! DOES NOT check that there is sufficient items to remove, use remove_inv_item_s() if checking is needed
+		 */
+		void remove_inv_item(data::item_stack* inv, uint16_t inv_size,
+		                     const data::Item* item, uint32_t remove_amount);
 	}
 }
 
