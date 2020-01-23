@@ -21,7 +21,7 @@
 
 bool logic_loop_should_terminate = false;
 
-const float move_speed = 1.1f;
+const float move_speed = 0.1f;
 
 int test_rm_counter = 0;
 

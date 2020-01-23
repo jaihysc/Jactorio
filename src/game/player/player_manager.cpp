@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <algorithm>
+#include <map>
 
 #include "game/logic/inventory_controller.h"
 #include "game/world/world_manager.h"
@@ -282,6 +283,8 @@ uint16_t jactorio::game::player_manager::get_selected_recipe_group() {
 }
 
 bool jactorio::game::player_manager::recipe_craft(data::Recipe* recipe) {
+	assert(recipe != nullptr);  // Invalid recipe given
+
 	// Ensure ingredients are met
 	for (auto& ingredient : recipe->ingredients) {
 		auto* item = data::data_manager::data_raw_get<data::Item>(
@@ -307,6 +310,99 @@ bool jactorio::game::player_manager::recipe_craft(data::Recipe* recipe) {
 	
 	inventory_c::add_itemstack_to_inv(player_inventory, player_inventory_size, i);
 	return true;
+}
+
+void jactorio::game::player_manager::recipe_craft_r(data::Recipe* recipe) {
+	assert(recipe != nullptr);  // Invalid recipe given
+	
+	for (auto& ingredient : recipe->ingredients) {
+		const auto ingredient_proto = data::data_manager::data_raw_get<data::Item>(
+			data::data_category::item, ingredient.first);
+
+		const uint32_t possess_amount = 
+			inventory_c::get_inv_item_count(player_inventory, player_inventory_size, ingredient_proto);
+
+		// Craft sub-recipes recursively first if they are not sufficient
+		if (possess_amount < ingredient.second)
+			recipe_craft_r(data::Recipe::get_item_recipe(ingredient.first));
+
+		
+		// Sub-recipes met, remove items for crafting
+		auto* item = data::data_manager::data_raw_get<data::Item>(
+			data::data_category::item, ingredient.first);
+
+		inventory_c::remove_inv_item(player_inventory, player_inventory_size, item, ingredient.second);
+	}
+
+	// Return product
+	auto* product_item = data::data_manager::data_raw_get<data::Item>(
+		data::data_category::item, recipe->get_product().first);
+	data::item_stack i = {product_item, recipe->get_product().second};
+
+	inventory_c::add_itemstack_to_inv(player_inventory, player_inventory_size, i);
+}
+
+
+// used_items tracks amount of an item that has already been used,
+// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the inventory
+bool recipe_can_craft_r(std::map<jactorio::data::Item*, uint32_t>& used_items,
+                        const jactorio::data::Recipe* recipe, const uint16_t batches) {
+	using namespace jactorio;
+	
+	assert(recipe != nullptr);  // Invalid recipe given
+
+	for (auto& ingredient : recipe->ingredients) {
+		const auto ingredient_proto = data::data_manager::data_raw_get<data::Item>(
+			data::data_category::item, ingredient.first);
+
+		// If item has already been counted, use the map used_items. Otherwise, count from inventory
+		uint32_t possess_amount;
+		if (used_items.find(ingredient_proto) != used_items.end()) {
+			possess_amount = used_items[ingredient_proto];
+		}
+		else {
+			possess_amount = game::inventory_c::get_inv_item_count(game::player_manager::player_inventory,
+			                                                       game::player_manager::player_inventory_size,
+			                                                       ingredient_proto);
+			used_items[ingredient_proto] = possess_amount;
+		}
+
+		// Ingredient met, subtract from used_items, check others
+		if (possess_amount >= ingredient.second * batches) {
+			used_items[ingredient_proto] -= ingredient.second * batches;
+			continue;
+		}
+
+		const auto* ingredient_recipe = data::Recipe::get_item_recipe(ingredient.first);
+		// Ingredient cannot be crafted
+		if (ingredient_recipe == nullptr)
+			return false;
+
+		// Ingredient craftable but not met
+
+		// Amount still needed to be crafted
+		unsigned int ingredient_required_batches;
+		{
+			used_items[ingredient_proto] = 0;  // Use up amount available + craft to reach desired amount
+
+			const unsigned int x = ingredient.second * batches - possess_amount;
+			const unsigned int y = ingredient_recipe->get_product().second;
+			// Round up to always ensure enough is crafted
+			ingredient_required_batches = (x + y - 1) / y;
+		}
+
+		// Is able to craft desired amount of ingredient recursively?
+		if (!recipe_can_craft_r(used_items, ingredient_recipe, ingredient_required_batches)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool jactorio::game::player_manager::recipe_can_craft(const data::Recipe* recipe, const uint16_t batches) {
+	std::map<data::Item*, uint32_t> used_items;
+	return recipe_can_craft_r(used_items, recipe, batches);
 }
 
 

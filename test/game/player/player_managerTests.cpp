@@ -592,7 +592,6 @@ namespace game
 		EXPECT_EQ(get_selected_recipe_group(), 1);
 	}
 
-	// TODO these tests don't work yet
 	TEST(player_manager, recipe_craft) {
 		using namespace jactorio::game::player_manager;
 		namespace data_manager = jactorio::data::data_manager;
@@ -654,5 +653,213 @@ namespace game
 		recipe.set_product({"item-product", 1});
 
 		EXPECT_EQ(recipe_craft(&recipe), false);
+	}
+
+	TEST(player_manager, recipe_craft_resurse) {
+		// Should recursively craft the product, crafting intermediate products as necessary
+		using namespace jactorio::game::player_manager;
+		namespace data_manager = jactorio::data::data_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
+
+		auto* item_product = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-product", item_product);
+
+		auto* item1 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-1", item1);
+		auto* item2 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-2", item2);
+
+		auto* item_sub1 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-sub-1", item_sub1);
+		auto* item_sub2 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-sub-2", item_sub2);
+
+		auto* final_recipe = new jactorio::data::Recipe();
+		final_recipe->set_ingredients({{"item-1", 3}, {"item-2", 1}});
+		final_recipe->set_product({"item-product", 1});
+		data_manager::data_raw_add(
+			jactorio::data::data_category::recipe, "item-product-recipe", final_recipe);
+
+		auto* item_recipe = new jactorio::data::Recipe();
+		item_recipe->set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});
+		item_recipe->set_product({"item-1", 2});
+		data_manager::data_raw_add(
+			jactorio::data::data_category::recipe, "item-1-recipe", item_recipe);
+
+		// 3-B + 1-C -> 1-A
+		// 5-B1 + 10-B2 -> 2-B
+		player_inventory[0] = {item1, 1};  // One batch of this will be crafted
+		player_inventory[1] = {item2, 1};
+
+		player_inventory[2] = {item_sub1, 5};
+		player_inventory[3] = {item_sub2, 10};
+
+		recipe_craft_r(final_recipe);
+		EXPECT_EQ(player_inventory[0].first, item_product);
+		EXPECT_EQ(player_inventory[0].second, 1);
+	}
+	
+
+	TEST(player_manager, recipe_can_craft) {
+		// Should recursively step through a recipe and determine that it can be crafted
+		using namespace jactorio::game::player_manager;
+		namespace data_manager = jactorio::data::data_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
+
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-product", new jactorio::data::Item());
+
+
+		auto* item1 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-1", item1);
+		auto* item2 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-2", item2);
+
+		auto* item_sub1 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-sub-1", item_sub1);
+		auto* item_sub2 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-sub-2", item_sub2);
+
+		auto* final_recipe = new jactorio::data::Recipe();
+		final_recipe->set_ingredients({ {"item-1", 3}, {"item-2", 1}});
+		final_recipe->set_product({"item-product", 1});
+		data_manager::data_raw_add(
+			jactorio::data::data_category::recipe, "item-product-recipe", final_recipe);
+		
+		auto* item_recipe = new jactorio::data::Recipe();
+		item_recipe->set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});
+		item_recipe->set_product({"item-1", 2});
+		data_manager::data_raw_add(
+			jactorio::data::data_category::recipe, "item-1-recipe", item_recipe);
+
+		// 3-B + 1-C -> 1-A
+		// 5-B1 + 10-B2 -> 2-B
+		player_inventory[0] = {item1, 1};
+		player_inventory[1] = {item2, 2};
+		
+		player_inventory[2] = {item_sub1, 5};
+		player_inventory[3] = {item_sub2, 10};
+
+		// Crafting item-product:
+		// Item 1 requires one batch to be crafted
+		// Crafting requires for item 2 met
+		EXPECT_EQ(recipe_can_craft(final_recipe, 1), true);
+	}
+
+	TEST(player_manager, recipe_can_craft_invalid) {
+		// Should recursively step through a recipe and determine that it canNOT in fact be crafted
+		using namespace jactorio::game::player_manager;
+		namespace data_manager = jactorio::data::data_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
+
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-product", new jactorio::data::Item());
+
+
+		auto* item1 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-1", item1);
+		auto* item2 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-2", item2);
+
+		auto* item_sub1 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-sub-1", item_sub1);
+		auto* item_sub2 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-sub-2", item_sub2);
+
+		auto* final_recipe = new jactorio::data::Recipe();
+		final_recipe->set_ingredients({{"item-1", 3}, {"item-2", 1}});
+		final_recipe->set_product({"item-product", 1});
+		data_manager::data_raw_add(
+			jactorio::data::data_category::recipe, "item-product-recipe", final_recipe);
+
+		auto* item_recipe = new jactorio::data::Recipe();
+		item_recipe->set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});
+		item_recipe->set_product({"item-1", 2});
+		data_manager::data_raw_add(
+			jactorio::data::data_category::recipe, "item-1-recipe", item_recipe);
+
+		// 3-B + 1-C -> 1-A
+		// 5-B1 + 10-B2 -> 2-B
+		player_inventory[0] = {item1, 1};
+		player_inventory[1] = {item2, 2};
+
+		player_inventory[2] = {item_sub1, 5};
+		// player_inventory[3] = {item_sub2, 10};  // Without this, the recipe cannot be crafted
+
+		// Crafting item-product:
+		// Item 1 requires one batch to be crafted
+		// Crafting requires for item 2 met
+		EXPECT_EQ(recipe_can_craft(final_recipe, 1), false);
+	}
+
+	TEST(player_manager, recipe_can_craft_invalid2) {
+		// When encountering the same items, it must account for the fact it has already been used earlier
+		// Should recursively step through a recipe and determine that it canNOT in fact be crafted
+		using namespace jactorio::game::player_manager;
+		namespace data_manager = jactorio::data::data_manager;
+
+		clear_player_inventory();
+		reset_inventory_variables();
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
+
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-product", new jactorio::data::Item());
+
+
+		auto* item1 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-1", item1);
+
+		auto* item_sub1 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-sub-1", item_sub1);
+		auto* item_sub2 = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, "item-sub-2", item_sub2);
+
+		
+		auto* final_recipe = new jactorio::data::Recipe();
+		final_recipe->set_ingredients({{"item-1", 1}, {"item-sub-2", 5}});
+		final_recipe->set_product({"item-product", 1});
+		
+		data_manager::data_raw_add(
+			jactorio::data::data_category::recipe, "item-product-recipe", final_recipe);
+
+		auto* item_recipe = new jactorio::data::Recipe();
+		item_recipe->set_ingredients({{"item-sub-1", 10}, {"item-sub-2", 5}});
+		item_recipe->set_product({"item-1", 2});
+		
+		data_manager::data_raw_add(
+			jactorio::data::data_category::recipe, "item-1-recipe", item_recipe);
+
+		// Final product: item-1 + item-sub-2
+		// item-2: item-sub-1 + item-sub-2
+		
+		player_inventory[1] = {item_sub1, 10};
+		player_inventory[2] = {item_sub2, 5};
+
+		EXPECT_EQ(recipe_can_craft(final_recipe, 1), false);
 	}
 }

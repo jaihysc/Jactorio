@@ -274,8 +274,10 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			// Click event
 			if (ImGui::IsItemClicked()) {
 				LOG_MESSAGE_f(debug, "Recipe click at index %d in category", index);
-				player_manager::recipe_craft(recipe);
-				player_manager::player_inventory_sort();
+				if (player_manager::recipe_can_craft(recipe, 1)) {
+					player_manager::recipe_craft_r(recipe);
+					player_manager::player_inventory_sort();
+				}
 			}
 
 			// Draw item tooltip
@@ -316,9 +318,18 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 						
 						// Draw ingredient amount required
 						ImGui::SameLine();
-						// Not enough
+						// Does not have ingredient
 						if (player_item_count < ingredient_pair.second) {
-							ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(194, 101, 99, 255));
+							const bool can_be_recurse_crafted = player_manager::recipe_can_craft(recipe, 1);
+							if (can_be_recurse_crafted) {
+								// Ingredient can be crafted recursively
+								ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(194, 201, 99, 255));
+							}
+							else {
+								// Ingredient cannot be crafted
+								ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(194, 101, 99, 255));
+							}
+
 							ImGui::Text("%d/%d x %s", player_item_count, ingredient_pair.second,
 							            item->get_localized_name().c_str());
 							ImGui::PopStyleColor();

@@ -94,6 +94,9 @@ void jactorio::renderer::gui::debug_item_spawner(const ImGuiWindowFlags window_f
 
 	ImGui::Separator();
 	ImGui::InputInt("Give amount", &give_amount);
+	if (give_amount <= 0)
+		give_amount = 1;
+	
 	if (ImGui::Button("Clear inventory")) {
 		for (auto& i : game::player_manager::player_inventory) {
 			i = {nullptr, 0};

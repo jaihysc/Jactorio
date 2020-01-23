@@ -78,6 +78,19 @@ namespace jactorio::game::player_manager
      * @return false if unable to craft (lacking ingredients, etc)
      */
     bool recipe_craft(data::Recipe* recipe);
+
+    /**
+     * Recursively depth first crafts the recipe
+     * !! This WILL NOT check that the given recipe is valid or required ingredients are present and assumes it is!!
+     */
+    void recipe_craft_r(data::Recipe* recipe);
+	
+    /**
+     * Recursively steps through a recipe and subrecipies to determine if it is craftable
+     * @param recipe
+     * @param batches How many runs of the recipe
+     */
+    bool recipe_can_craft(const data::Recipe* recipe, uint16_t batches);
 	
     // Reserved
 	
