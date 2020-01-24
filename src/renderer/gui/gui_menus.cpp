@@ -11,6 +11,7 @@
 #include "data/prototype/item/recipe_group.h"
 #include "renderer/rendering/renderer.h"
 #include "game/logic/inventory_controller.h"
+#include "renderer/gui/gui_colors.h"
 
 constexpr float inventory_slot_width = 32.f;
 constexpr float inventory_slot_padding = 6.f;
@@ -42,9 +43,9 @@ void draw_cursor_tooltip(const char* title, const char* description, const std::
 	flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
 	// Draw tooltip
-	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, IM_COL32(224, 202, 169, 255));
-	ImGui::PushStyleColor(ImGuiCol_TitleBg, IM_COL32(224, 202, 169, 255));
-	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(49, 48, 49, 255));
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, J_GUI_COL_TOOLTIP_TITLE_BG);
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, J_GUI_COL_TOOLTIP_TITLE_BG);
+	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TOOLTIP_TITLE_TEXT);
 
 	ImGui::Begin(title, nullptr, flags);
 	ImGui::PopStyleColor();  // Pop the black text
@@ -175,7 +176,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 						item.first->get_localized_name().c_str(),
 						"sample description",
 						[&]() {
-							ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 0, 0, 0));
+							ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_NONE);
 							ImGui::TextUnformatted(item.first->get_localized_name().c_str());
 							ImGui::PopStyleColor();
 						}
@@ -219,7 +220,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 
 		// Different color for currently selected recipe group
 		if (index == player_manager::get_selected_recipe_group())
-			ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(227, 152, 39, 255));
+			ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
 		
 		ImGui::ImageButton(
 			reinterpret_cast<void*>(menu_data.tex_id),
@@ -323,11 +324,11 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 							const bool can_be_recurse_crafted = player_manager::recipe_can_craft(recipe, 1);
 							if (can_be_recurse_crafted) {
 								// Ingredient can be crafted recursively
-								ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(194, 201, 99, 255));
+								ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_WARNING);
 							}
 							else {
 								// Ingredient cannot be crafted
-								ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(194, 101, 99, 255));
+								ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
 							}
 
 							ImGui::Text("%d/%d x %s", player_item_count, ingredient_pair.second,
@@ -371,8 +372,8 @@ void jactorio::renderer::gui::cursor_window(ImGuiWindowFlags window_flags,
 	// Player has an item selected, draw it on the tooltip
 	const data::item_stack* selected_item;
 	if ((selected_item = game::player_manager::get_selected_item()) != nullptr) {
-		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
-		ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
+		ImGui::PushStyleColor(ImGuiCol_PopupBg, J_GUI_COL_NONE);
 
 		// Draw the window at the cursor
 		const ImVec2 cursor_pos(

@@ -6,6 +6,8 @@
 #include <cassert>
 
 #include "jactorio.h"
+
+#include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/gui_menus_debug.h"
 #include "renderer/gui/imgui_glfw.h"
@@ -95,46 +97,46 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 8));
 
 	// Window colors
-	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 230, 192, 255));
+	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
 
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(49, 48, 49, 255));
-	ImGui::PushStyleColor(ImGuiCol_TitleBg, IM_COL32(49, 48, 49, 255));
-	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, IM_COL32(49, 48, 49, 255));
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, J_GUI_COL_WINDOW_BG);
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, J_GUI_COL_TITLE_BG);
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, J_GUI_COL_TITLE_BG_ACTIVE);
 
 	// Inventory boxes
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(128, 129, 129, 255));
-	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, IM_COL32(144, 144, 145, 255));
-	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, IM_COL32(144, 144, 145, 255));
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, J_GUI_COL_FRAME_BG);
+	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, J_GUI_COL_FRAME_BG_HOVER);
+	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, J_GUI_COL_FRAME_BG_ACTIVE);
 
 	// Buttons
-	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(128, 129, 129, 255));
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(227, 152, 39, 255));
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(227, 152, 39, 255));
+	ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON);
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, J_GUI_COL_BUTTON_HOVER);
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, J_GUI_COL_BUTTON_ACTIVE);
 
-	ImGui::PushStyleColor(ImGuiCol_CheckMark, IM_COL32(0, 0, 0, 255));
+	ImGui::PushStyleColor(ImGuiCol_CheckMark, J_GUI_COL_CHECKMARK);
 
 	// The large horizontal row button like
-	ImGui::PushStyleColor(ImGuiCol_Header, IM_COL32(128, 129, 129, 255));
-	ImGui::PushStyleColor(ImGuiCol_HeaderHovered, IM_COL32(227, 152, 39, 255));
-	ImGui::PushStyleColor(ImGuiCol_HeaderActive, IM_COL32(227, 152, 39, 255));
+	ImGui::PushStyleColor(ImGuiCol_Header, J_GUI_COL_HEADER);
+	ImGui::PushStyleColor(ImGuiCol_HeaderHovered, J_GUI_COL_HEADER_HOVER);
+	ImGui::PushStyleColor(ImGuiCol_HeaderActive, J_GUI_COL_HEADER_ACTIVE);
 
 	// Menu tabs
-	ImGui::PushStyleColor(ImGuiCol_Tab, IM_COL32(128, 129, 129, 255));
-	ImGui::PushStyleColor(ImGuiCol_TabHovered, IM_COL32(227, 152, 39, 255));
-	ImGui::PushStyleColor(ImGuiCol_TabActive, IM_COL32(49, 48, 49, 255));
+	ImGui::PushStyleColor(ImGuiCol_Tab, J_GUI_COL_TAB);
+	ImGui::PushStyleColor(ImGuiCol_TabHovered, J_GUI_COL_TAB_HOVER);
+	ImGui::PushStyleColor(ImGuiCol_TabActive, J_GUI_COL_TAB_ACTIVE);
 
 	// Resize tab
-	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, IM_COL32(98, 98, 98, 255));
-	ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, IM_COL32(128, 129, 129, 255));
-	ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, IM_COL32(128, 129, 129, 255));
+	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, J_GUI_COL_RESIZE_GRIP);
+	ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, J_GUI_COL_RESIZE_GRIP_HOVER);
+	ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, J_GUI_COL_RESIZE_GRIP_ACTIVE);
 
 	// Separators
-	ImGui::PushStyleColor(ImGuiCol_Separator, IM_COL32(128, 129, 129, 255));
-	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, IM_COL32(128, 129, 129, 255));
-	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, IM_COL32(128, 129, 129, 255));
+	ImGui::PushStyleColor(ImGuiCol_Separator, J_GUI_COL_SEPARATOR);
+	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, J_GUI_COL_SEPARATOR_HOVER);
+	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, J_GUI_COL_SEPARATOR_ACTIVE);
 
 	// Popup
-	ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(49, 48, 49, 200));
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, J_GUI_COL_POPUP_BG);
 
 	LOG_MESSAGE(info, "Imgui initialized");
 }
