@@ -57,3 +57,14 @@ std::vector<jactorio::data::recipe_item> jactorio::data::Recipe::recipe_get_tota
 	}
 	return v;
 }
+
+void jactorio::data::Recipe::post_load_validate() const {
+	J_DATA_ASSERT(!ingredients.empty(), "No ingredients specified for recipe")
+	for (auto& ingredient : ingredients) {
+		J_DATA_ASSERT(!ingredient.first.empty(), "Empty ingredient internal name specifier");
+		J_DATA_ASSERT(ingredient.second > 0, "Ingredient required amount minimum is 1");
+	}
+	
+	J_DATA_ASSERT(!product_.first.empty(), "No product specified for recipe");
+	J_DATA_ASSERT(product_.second > 0, "Product yield amount minimum is 1");
+}

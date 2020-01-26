@@ -32,7 +32,14 @@ namespace jactorio::data
 		PYTHON_PROP_REF(Tile, bool, is_water)
 
 		PYTHON_PROP(Tile, Sprite*, sprite_ptr)
+
+		
+		void post_load_validate() const override;
 	};
+
+	inline void Tile::post_load_validate() const {
+		J_DATA_ASSERT(sprite_ptr != nullptr, "Sprite was not provided");
+	}
 }
 
 #endif // DATA_PROTOTYPE_TILE_TILE_H

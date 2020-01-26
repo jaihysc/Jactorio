@@ -17,6 +17,15 @@ constexpr float inventory_slot_width = 32.f;
 constexpr float inventory_slot_padding = 6.f;
 
 /**
+ * In order to auto resize to fit the title's text since the title is not accounted
+ * Pad the ingredients: text with trailing whitespace to reach the length of the title
+ */
+void fit_title(std::stringstream& description_ss, const uint16_t target_len) {
+	while (description_ss.str().size() < target_len)
+		description_ss << " ";
+}
+
+/**
  * @param title Title of the tooltip
  * @param description
  * @param draw_func Code to run while drawing the tooltip
@@ -238,10 +247,14 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			player_manager::recipe_group_select(index);
 
 		// Item tooltip
+		std::stringstream description_ss;
+		description_ss << recipe_group->get_localized_description().c_str();
+		fit_title(description_ss, recipe_group->get_localized_name().size());
+
 		if (ImGui::IsItemHovered()) {
 			draw_cursor_tooltip(
 				recipe_group->get_localized_name().c_str(),
-				"it's a category!",
+				description_ss.str().c_str(),
 				[&]() {
 				}
 			);
@@ -288,15 +301,9 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			// Show the product yield in the title
 			title_ss << product->get_localized_name().c_str() << " (" << recipe->get_product().second << ")";
 
-			// In order to auto resize to fit the title's text since the title is not accounted
-			// Pad the ingredients: text with trailing whitespace to reach the length of the title
 			std::stringstream description_ss;
 			description_ss << "Ingredients:";
-			
-			uint16_t len = 12;  // Length of the initial string
-			const uint16_t target_len = title_ss.str().size();
-			while (len++ != target_len)
-				description_ss << " ";
+			fit_title(description_ss, title_ss.str().size());
 
 			draw_cursor_tooltip(
 				title_ss.str().c_str(),

@@ -5,7 +5,7 @@
 
 namespace data::prototype
 {
-	TEST(Recipe, get_item_recipe) {
+	TEST(recipe, get_item_recipe) {
 		// Allows for fast lookup of item recipes instead of searching through an entire unordered_map
 		
 		using namespace jactorio::data;
@@ -36,7 +36,7 @@ namespace data::prototype
 		return false;
 	}
 
-	TEST(player_manager, recipe_get_total_raw) {
+	TEST(recipe, recipe_get_total_raw) {
 		namespace data_manager = jactorio::data::data_manager;
 
 		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
@@ -67,5 +67,22 @@ namespace data::prototype
 		auto v = jactorio::data::Recipe::recipe_get_total_raw("final");
 		EXPECT_TRUE(vector_get_val(v, "raw-1", 141));
 		EXPECT_TRUE(vector_get_val(v, "raw-2", 30));
+	}
+
+	TEST(recipe, post_load_validate) {
+		auto recipe = jactorio::data::Recipe();
+
+		// Not specifying any ingredients or products should throw an data exception
+		bool caught = false;
+		try {
+			recipe.post_load_validate();
+		}
+		catch (jactorio::data::Data_exception& e) {
+			caught = true;
+		}
+
+		if (!caught) {
+			FAIL();
+		}
 	}
 }

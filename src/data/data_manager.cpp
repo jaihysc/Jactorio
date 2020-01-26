@@ -75,7 +75,7 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 	LOG_MESSAGE_f(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-int jactorio::data::data_manager::load_data(
+void jactorio::data::data_manager::load_data(
 	const std::string& data_folder_path) {
 	// Get all sub-folders in ~/data/
 	// Read data.cfg files within each sub-folder
@@ -111,10 +111,12 @@ int jactorio::data::data_manager::load_data(
 
 
 			set_directory_prefix(directory_name);
-			if (pybind_manager::exec(py_file_contents, py_file_path.str()) != 0) {
-				// Error occurred
-				LOG_MESSAGE_f(error, "%s", pybind_manager::get_last_error_message().c_str());
-				return 1;
+			try {
+				pybind_manager::exec(py_file_contents, py_file_path.str());
+			}
+			catch (Data_exception & e) {
+				LOG_MESSAGE_f(error, "%s", e.what());
+				throw;
 			}
 		}
 
@@ -122,8 +124,9 @@ int jactorio::data::data_manager::load_data(
 		// Load local file for the directory
 		{
 			std::stringstream cfg_file_path;
-			// TODO local language other than en
-			cfg_file_path << current_directory << "/local/en.cfg";
+			// TODO selectable language
+			cfg_file_path << current_directory << "/local/" << 
+				local_parser::language_identifier[static_cast<int>(local_parser::language::en)] << ".cfg";
 
 			auto local_contents = core::filesystem::read_file_as_str(cfg_file_path.str());
 			if (local_contents.empty()) {
@@ -137,7 +140,20 @@ int jactorio::data::data_manager::load_data(
 		LOG_MESSAGE_f(info, "Directory %s loaded", current_directory.c_str())
 	}
 
-	return 0;
+	LOG_MESSAGE(info, "Validating loaded prototypes")
+	for (auto& pairs : data_raw) {
+		for (auto& pair : pairs) {
+			try {
+				auto& prototype = pair.second;
+				prototype->post_load_validate();
+			}
+			catch (Data_exception& e) {
+				LOG_MESSAGE_f(error, "Prototype validation failed: `%s`", e.what());
+				throw;
+			}
+			
+		}
+	}
 }
 
 void jactorio::data::data_manager::clear_data() {

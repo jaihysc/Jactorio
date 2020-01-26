@@ -36,7 +36,13 @@ namespace jactorio::data
 		 * Default to 50
 		 */
 		PYTHON_PROP_REF(Item, unsigned short, stack_size)
+
+		void post_load_validate() const override;
 	};
+
+	inline void Item::post_load_validate() const {
+		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
+	}
 
 	// Makes arrays holding items more clear than just unsigned int
 	// Item* and amount in current stack

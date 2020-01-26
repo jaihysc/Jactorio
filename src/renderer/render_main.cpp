@@ -19,7 +19,6 @@
 #include "renderer/window/window_manager.h"
 
 #include "core/filesystem.h"
-#include "data/pybind/pybind_manager.h"
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/logic_loop.h"
@@ -58,10 +57,13 @@ int jactorio::renderer::render_init() {
 	imgui_manager::setup(window);
 
 	// Load prototype data
-	if (data::data_manager::load_data(core::filesystem::resolve_path("~/data")) != 0) {
+	try {
+		data::data_manager::load_data(core::filesystem::resolve_path("~/data"));
+	}
+	catch (data::Data_exception& e) {
 		// error occurred
 		imgui_manager::show_error_prompt(
-			"Failed to load prototype(s)", data::pybind_manager::get_last_error_message());
+			"Failed to load prototype(s)", e.what());
 		return 2;
 	}
 	

@@ -106,6 +106,10 @@ namespace jactorio::data
 		 * normalize_if_val_out_of_range is true, Min/max value tile if out of range
 		 */
 		Tile* get_tile(float val);
+
+
+		void post_load_validate() const override {
+		}
 	};
 }
 

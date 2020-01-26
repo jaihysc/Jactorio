@@ -20,7 +20,7 @@ namespace data
 		data_manager::data_raw_add(
 			jactorio::data::data_category::sprite, "raw-fish", prototype, true);
 		const auto proto =
-			*data_manager::data_raw_get<jactorio::data::Prototype_base>(
+			*data_manager::data_raw_get<jactorio::data::Sprite>(
 				jactorio::data::data_category::sprite, "__test__/raw-fish");
 
 		
@@ -72,7 +72,7 @@ namespace data
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
 
 		const auto proto =
-			*data_manager::data_raw_get<jactorio::data::Prototype_base>(
+			*data_manager::data_raw_get<jactorio::data::Sprite>(
 				jactorio::data::data_category::sprite, "raw-fish");
 
 		EXPECT_EQ(proto.name, "raw-fish");
@@ -138,7 +138,7 @@ namespace data
 		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
 		
 		// Load_data should set the directory prefix based on the subfolder
-		EXPECT_EQ(data_manager::load_data("data"), 0);
+		data_manager::load_data("data");
 
 		const auto proto =
 			data_manager::data_raw_get<jactorio::data::Sprite>(

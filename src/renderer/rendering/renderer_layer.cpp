@@ -44,7 +44,6 @@ void jactorio::renderer::Renderer_layer::push_back(const Element element) {
 void jactorio::renderer::Renderer_layer::set_vertex(const uint32_t element_index, const core::Quad_position element) const {
 	assert(element_index < e_count_);  // Index out of range
 
-	// TODO separate these 2
 	if (element_index >= next_element_index_)
 		next_element_index_ = element_index + 1;
 
@@ -212,7 +211,7 @@ void jactorio::renderer::Renderer_layer::g_init_buffer() {
 	g_resize_vertex_buffers_ = false;
 }
 
-void jactorio::renderer::Renderer_layer::g_update_data() {
+void jactorio::renderer::Renderer_layer::g_update_data(const bool update_vertex, const bool update_uv) {
 	// Only resize if resize is set
 	if (g_resize_vertex_buffers_) {
 		g_resize_vertex_buffers_ = false;
@@ -229,9 +228,11 @@ void jactorio::renderer::Renderer_layer::g_update_data() {
 	}
 
 	// Update existing buffer data
-	// TODO only partial updates to reduce data uploaded?
-	vertex_vb_->update_data(vertex_buffer_.ptr, 0, e_count_ * g_byte_multiplier);
-	uv_vb_->update_data(uv_buffer_.ptr, 0, e_count_ * g_byte_multiplier);
+	if (update_vertex)
+		vertex_vb_->update_data(vertex_buffer_.ptr, 0, e_count_ * g_byte_multiplier);
+
+	if (update_uv)
+		uv_vb_->update_data(uv_buffer_.ptr, 0, e_count_ * g_byte_multiplier);
 }
 
 void jactorio::renderer::Renderer_layer::g_delete_buffer() {

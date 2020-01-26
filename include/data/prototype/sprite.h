@@ -83,6 +83,10 @@ namespace jactorio::data
 		 * Do not include ~/data/
 		 */
 		Sprite* load_image(const std::string& image_path);
+
+		
+		void post_load_validate() const override {
+		}
 	};
 }
 

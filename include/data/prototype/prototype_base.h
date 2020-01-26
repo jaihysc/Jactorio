@@ -6,6 +6,7 @@
 #include "jactorio.h"
 
 #include "data/data_category.h"
+#include "data/data_exception.h"
 
 namespace jactorio::data
 {
@@ -58,6 +59,11 @@ namespace jactorio::data
 			return this;
 		}
 	*/
+
+	// Assertions for post_load_validate
+#define J_DATA_ASSERT(condition, error_msg)\
+	if (!(condition)) { std::string s = this->name; s.append(error_msg); throw jactorio::data::Data_exception(s); }
+
 	
 	class Prototype_base
 	{
@@ -80,7 +86,7 @@ namespace jactorio::data
 		 * std::string name <br>J
 		 * 0 indicates invalid id
 		 */
-		PYTHON_PROP_REF(Prototype_base, unsigned int, internal_id)
+		unsigned int internal_id;
 		
 		/**
 		 * Internal name <br>
@@ -123,6 +129,13 @@ namespace jactorio::data
 		virtual void set_localized_description(const std::string& localized_description) {
 			this->localized_description_ = localized_description;
 		}
+
+		// Required
+		/**
+		 * Validates properties of the prototype are valid
+		 * @exception data::Data_exception If invalid
+		 */
+		virtual void post_load_validate() const = 0;
 	};
 }
 

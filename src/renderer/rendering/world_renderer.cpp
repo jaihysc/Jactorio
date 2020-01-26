@@ -324,7 +324,7 @@ void jactorio::renderer::world_renderer::render_player_position(
 
 			preparing_thread2.wait();
 
-			renderer->render_layer2.g_update_data();
+			renderer->render_layer2.g_update_data(false, true);
 			renderer->render_layer2.g_buffer_bind();
 		}
 			// Prepare 2
@@ -345,7 +345,7 @@ void jactorio::renderer::world_renderer::render_player_position(
 
 			preparing_thread1.wait();
 
-			renderer->render_layer.g_update_data();
+			renderer->render_layer.g_update_data(false, true);
 			renderer->render_layer.g_buffer_bind();
 		}
 
@@ -356,12 +356,12 @@ void jactorio::renderer::world_renderer::render_player_position(
 	// Wait for the final layer to draw
 	if (using_buffer1) {
 		preparing_thread2.wait();
-		renderer->render_layer2.g_update_data();
+		renderer->render_layer2.g_update_data(false, true);
 		renderer->render_layer2.g_buffer_bind();
 	}
 	else {
 		preparing_thread1.wait();
-		renderer->render_layer.g_update_data();
+		renderer->render_layer.g_update_data(false, true);
 		renderer->render_layer.g_buffer_bind();
 	}
 

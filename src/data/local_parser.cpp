@@ -140,7 +140,7 @@ void jactorio::data::local_parser::parse(const std::string& file_str, const std:
 	parse_eol(directory_prefix);
 }
 
-int jactorio::data::local_parser::parse_s(const std::string& file_str, const std::string& directory_prefix) noexcept {
+int jactorio::data::local_parser::parse_s(const std::string& file_str, const std::string& directory_prefix) {
 	try {
 		parse(file_str, directory_prefix);
 	}

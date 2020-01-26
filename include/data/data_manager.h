@@ -97,9 +97,9 @@ namespace jactorio::data
 		 * Loads data and their properties from data/ folder,
 		 * data access methods can be used only after calling this
 		 * @param data_folder_path Do not include a / at the end (Valid usage: dc/xy/data)
-		 * @return non-zero if error occurred
+		 * @exception Data_exception Prototype validation failed or Pybind error
 		 */
-		int load_data(const std::string& data_folder_path);
+		void load_data(const std::string& data_folder_path);
 
 		/**
 		 * Frees all pointer data within data_raw, clears data_raw

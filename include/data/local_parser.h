@@ -12,24 +12,22 @@
  */
 namespace jactorio::data::local_parser
 {
-	/*// Define identifiers for supported languages
-#define KEY_DEF( identifier, name )  identifier
+	// Define identifiers for supported languages
 #define KEYS_DEF \
     KEY_DEF( en, "en" ), \
     KEY_DEF( fr, "fr" ), \
     KEY_DEF( ge, "ge" )
-	
+
+#define KEY_DEF( identifier, name )  identifier
 	/**
-	 * Enum below lists supported languages, for the identifier string, use: language_identifier
-	 #1#
-	enum language { KEYS_DEF };
-
+	 * Supported languages, for the identifier string, use: language_identifier[static_cast<int>(language)]
+	 */
+	enum class language { KEYS_DEF };
 #undef KEY_DEF
-#define KEY_DEF( identifier, name )  { name }
-
-	char const* const language_identifier[] = { KEYS_DEF };
 	
-#undef KEY_DEF*/
+#define KEY_DEF( identifier, name )  { name }
+	char const* const language_identifier[] = { KEYS_DEF };
+#undef KEY_DEF
 
 	/**
 	 * Parses a .cfg file, will throw exceptions on error
@@ -44,7 +42,7 @@ namespace jactorio::data::local_parser
 	 * @param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
 	 * @return non-zero if error occurred
 	 */
-	int parse_s(const std::string& file_str, const std::string& directory_prefix) noexcept;
+	int parse_s(const std::string& file_str, const std::string& directory_prefix);
 }
 
 #endif // DATA_LOCAL_PARSER_H

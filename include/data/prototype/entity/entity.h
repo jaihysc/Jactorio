@@ -64,9 +64,14 @@ namespace jactorio::data
 			if (item_ != nullptr)
 				item_->set_localized_description(localized_description);
 		}
+
+
+		void post_load_validate() const override;
 	};
 
-
+	inline void Entity::post_load_validate() const {
+		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
+	}
 }
 
 #endif // DATA_PROTOTYPE_ENTITY_ENTITY_H

@@ -56,6 +56,9 @@ namespace jactorio::data
 			this->product_ = product;
 			return this;
 		}
+
+
+		void post_load_validate() const override;
 	};
 }
 

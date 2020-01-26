@@ -23,7 +23,7 @@
 // This should only be included by pybind_manager.h
 
 using data_raw = std::unordered_map<jactorio::data::data_category, std::unordered_map<
-	                                    std::string, jactorio::data::Prototype_base>>;
+	                                    std::string, jactorio::data::Prototype_base*>>;
 
 // Macros below generates a self returning setter and the actual variable
 // For standard class members, a setter exists: set_NAME_OF_MEMBER
