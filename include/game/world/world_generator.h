@@ -1,12 +1,14 @@
 #ifndef GAME_WORLD_WORLD_GENERATOR_H
 #define GAME_WORLD_WORLD_GENERATOR_H
 
+#include "jactorio.h"
+
 namespace jactorio::game::world_generator
 {
 	// Seed
 	void set_world_generator_seed(int seed);
 	
-	[[nodiscard]] int get_world_generator_seed();
+	J_NODISCARD int get_world_generator_seed();
 
 	
 	/**
@@ -19,7 +21,7 @@ namespace jactorio::game::world_generator
 	 * Call once per logic loop tick to generate one chunk only, this keeps performance constant
 	 * when generating large amounts of chunks
 	 */
-	void gen_chunk();
+	void gen_chunk(uint8_t amount = 1);
 }
 
 #endif // GAME_WORLD_WORLD_GENERATOR_H

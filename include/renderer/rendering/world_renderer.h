@@ -6,13 +6,14 @@
 
 namespace jactorio::renderer::world_renderer
 {
-	using get_tile_prototype_func = unsigned int (*)(const game::Chunk_tile&);
+	using get_tile_prototype_func = unsigned int (*)(const game::Chunk_tile&, unsigned int layer_index);
 
 	/**
 	 * Draws chunks to the screen
 	 * Attempting to draw chunks which do not exist will result in undefined behavior
 	 *
 	 * @param renderer Renderer on which to draw the chunks
+	 * @param layer_index Index of layer to render
 	 * @param window_start_x Position on window to begin drawing upper left corner of chunks
 	 * @param window_start_y Position on window to begin drawing upper left corner of chunks
 	 * @param chunk_start_x Position in chunk grid to begin drawing
@@ -20,13 +21,14 @@ namespace jactorio::renderer::world_renderer
 	 * @param chunk_amount_x How many chunks to draw on x axis to the right ->
 	 * @param chunk_amount_y How many chunks to draw on y axis downwards \/
 	 * @param func Returns internal name of sprite given Chunk_tile
+	 * @param using_buffer1
 	 */
-	void draw_chunks(const Renderer& renderer,
-	                 int window_start_x, int window_start_y,
-	                 int chunk_start_x, int chunk_start_y,
-	                 unsigned chunk_amount_x, unsigned chunk_amount_y,
-	                 const get_tile_prototype_func& func);
-	
+	void draw_chunks(const Renderer* renderer,
+	                 unsigned int layer_index, int window_start_x,
+	                 int window_start_y, int chunk_start_x,
+	                 int chunk_start_y, unsigned chunk_amount_x,
+	                 unsigned chunk_amount_y, const get_tile_prototype_func& func, bool using_buffer1);
+
 	/**
 	 * Moves the world to match player_position_ <br>
 	 * This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used

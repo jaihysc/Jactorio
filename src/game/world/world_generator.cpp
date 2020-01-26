@@ -3,7 +3,8 @@
 #include <noise/noise.h>
 #include <noise/noiseutils.h>
 #include <algorithm>
-#include <map>
+#include <set>
+#include <mutex>
 
 #include "core/logger.h"
 #include "game/world/chunk_tile.h"
@@ -15,10 +16,8 @@
 // Prevents constant erasing of buffers
 int world_gen_seed = 1001;
 
-bool world_gen_buffer_cleared = true;
-unsigned int chunks_awaiting_generation = 0;
 // Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
-std::map<std::tuple<int, int>, bool> world_gen_chunks;
+std::set<std::tuple<int, int>> world_gen_chunks;
 
 /**
  * Generates a chunk and adds it to the world when done <br>
@@ -123,7 +122,7 @@ void generate(const int chunk_x, const int chunk_y) {
 }
 
 
-void jactorio::game::world_generator::set_world_generator_seed(int seed) {
+void jactorio::game::world_generator::set_world_generator_seed(const int seed) {
 	world_gen_seed = seed;
 }
 
@@ -131,45 +130,32 @@ int jactorio::game::world_generator::get_world_generator_seed() {
 	return world_gen_seed;
 }
 
+std::mutex m;
 void jactorio::game::world_generator::queue_chunk_generation(const int chunk_x, const int chunk_y) {
 	const auto chunk_key = std::tuple<int, int>{ + chunk_x, chunk_y };
-
+	
 	// Is the chunk already under generation? If so return
 	if (world_gen_chunks.find(chunk_key) != world_gen_chunks.end())
 		return;
 
-	world_gen_chunks[chunk_key] = true;
-	chunks_awaiting_generation++;
-	
-	// The map is now populated
-	world_gen_buffer_cleared = false;
+	// Writing
+	std::lock_guard<std::mutex> lk{m};
+	world_gen_chunks.insert(std::pair{chunk_x, chunk_y});
 }
 
-void jactorio::game::world_generator::gen_chunk() {
-	if (world_gen_buffer_cleared)
-		return;
+void jactorio::game::world_generator::gen_chunk(uint8_t amount) {
+	assert(amount > 0);
 	
-	// Clear world gen threads once the vector is empty, this is faster than deleting it one by one
-	if (!world_gen_buffer_cleared && chunks_awaiting_generation == 0) {
-		LOG_MESSAGE(debug, "Chunk generation queue cleared");
-		world_gen_chunks.clear();
-		world_gen_buffer_cleared = true;
-		return;
-	}
-
-
 	// Generate a chunk
 	// Find the first chunk which has yet been generated, ->second is true indicates it NEEDS generation
-	for (auto& c : world_gen_chunks) {
-		if (c.second) {			
-			auto& coords = c.first;
-			generate(std::get<0>(coords), std::get<1>(coords));
+	for (auto& coords : world_gen_chunks) {
+		generate(std::get<0>(coords), std::get<1>(coords));
 
-			// Mark the chunk as done generating
-			c.second = false;
-			chunks_awaiting_generation--;
+		// Mark the chunk as done generating
+		world_gen_chunks.erase(coords);
+
+		if (--amount == 0)
 			break;
-		}
 	}
 
 }

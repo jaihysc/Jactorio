@@ -26,8 +26,8 @@ namespace jactorio::renderer
 		 * @param location Slot in vertex array in which vertex buffer is placed <br>
 		 * This must be managed manually to avoid conflicts
 		 */
-		static void add_buffer(const Vertex_buffer* vb, unsigned span,
-		                       unsigned location);
+		void add_buffer(const Vertex_buffer* vb, unsigned span,
+		                unsigned location) const;
 
 		void bind() const;
 		static void unbind();

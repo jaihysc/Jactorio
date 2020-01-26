@@ -13,8 +13,9 @@ jactorio::renderer::Vertex_array::~Vertex_array() {
 	DEBUG_OPENGL_CALL(glDeleteVertexArrays(1, &id_));
 }
 
-void jactorio::renderer::Vertex_array::add_buffer(const jactorio::renderer::Vertex_buffer* vb, const unsigned span,
-                                                  const unsigned int location) {
+void jactorio::renderer::Vertex_array::add_buffer(const Vertex_buffer* vb, const unsigned span,
+                                                  const unsigned int location) const {
+	this->bind();
 	vb->bind();
 
 	// location here is referenced by the shader

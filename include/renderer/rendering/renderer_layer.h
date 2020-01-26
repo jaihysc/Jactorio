@@ -5,7 +5,8 @@
 
 #include "core/data_type.h"
 #include "renderer/opengl/vertex_buffer.h"
-#include <renderer/opengl/index_buffer.h>
+#include "renderer/opengl/index_buffer.h"
+#include "renderer/opengl/vertex_array.h"
 
 namespace jactorio::renderer
 {	
@@ -130,6 +131,8 @@ namespace jactorio::renderer
 	private:
 		// #######################################################################
 		// OpenGL methods | The methods below MUST be called from an openGL context
+
+		Vertex_array* vertex_array_ = nullptr;
 		
 		Vertex_buffer* vertex_vb_ = nullptr;
 		Vertex_buffer* uv_vb_ = nullptr;

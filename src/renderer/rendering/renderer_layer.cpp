@@ -184,6 +184,7 @@ void jactorio::renderer::Renderer_layer::delete_buffer() noexcept {
 constexpr uint64_t g_byte_multiplier = 8 * sizeof(float);  // Multiply by this to convert to bytes
 
 void jactorio::renderer::Renderer_layer::g_delete_buffer_s() const {
+	delete vertex_array_;
 	delete vertex_vb_;
 	delete uv_vb_;
 	delete index_ib;
@@ -193,11 +194,12 @@ void jactorio::renderer::Renderer_layer::g_init_buffer() {
 	vertex_vb_ = new Vertex_buffer(vertex_buffer_.ptr, e_count_ * g_byte_multiplier, static_layer_);
 	uv_vb_ = new Vertex_buffer(uv_buffer_.ptr, e_count_ * g_byte_multiplier, static_layer_);
 
+	vertex_array_ = new Vertex_array();
 	// Register buffer properties and shader location
 	// Vertex - location 0
 	// UV - location 1
-	Vertex_array::add_buffer(vertex_vb_, 2, 0);
-	Vertex_array::add_buffer(uv_vb_, 2, 1);
+	vertex_array_->add_buffer(vertex_vb_, 2, 0);
+	vertex_array_->add_buffer(uv_vb_, 2, 1);
 
 	// Index buffer
 	// As of right now there is no point holding onto the index_buffer data pointer after handing it to the GPu
@@ -235,12 +237,14 @@ void jactorio::renderer::Renderer_layer::g_update_data() {
 void jactorio::renderer::Renderer_layer::g_delete_buffer() {
 	g_delete_buffer_s();
 
+	vertex_array_ = nullptr;
 	vertex_vb_ = nullptr;
 	uv_vb_ = nullptr;
 	index_ib = nullptr;
 }
 
 void jactorio::renderer::Renderer_layer::g_buffer_bind() const {
+	vertex_array_->bind();
 	vertex_vb_->bind();
 	uv_vb_->bind();
 	index_ib->bind();

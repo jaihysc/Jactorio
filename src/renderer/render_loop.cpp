@@ -1,6 +1,5 @@
 #include "renderer/render_loop.h"
 
-#include "core/debug/execution_timer.h"
 #include "game/player/player_manager.h"
 #include "renderer/rendering/renderer.h"
 #include "renderer/gui/imgui_manager.h"
@@ -8,8 +7,6 @@
 #include "renderer/rendering/world_renderer.h"
 
 void jactorio::renderer::render_loop(Renderer* renderer) {
-	EXECUTION_PROFILE_SCOPE(render_preparation_timer, "Render preparation");
-	
 	Renderer::g_clear();
 
 	// MVP Matricies updated in here
