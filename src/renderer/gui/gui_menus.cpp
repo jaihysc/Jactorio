@@ -112,7 +112,7 @@ void draw_slot(const jactorio::renderer::imgui_manager::Character_menu_data& men
                const uint16_t l_offset,
                const uint32_t sprite_iid,
                const uint16_t item_count,
-               const std::function<void()>& button_event_func = nullptr) {
+               const std::function<void()>& button_event_func = [](){}) {
 	using namespace jactorio;
 	
 	// TODO A better, accurrate calculate of the offset
@@ -128,8 +128,7 @@ void draw_slot(const jactorio::renderer::imgui_manager::Character_menu_data& men
 		2
 	);
 
-	if (button_event_func != nullptr)
-		button_event_func();
+	button_event_func();
 
 	// Total raw count
 	if (item_count != 0) {
@@ -142,11 +141,11 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
                                              const imgui_manager::Character_menu_data& menu_data) {
 	namespace player_manager = game::player_manager;
 
-	data::item_stack* inventory = player_manager::player_inventory;
+	data::item_stack* inventory = player_manager::inventory_player;
 
 	const auto window_size = 
 		ImVec2(20 + 10 * (inventory_slot_width + inventory_slot_padding),
-		       player_manager::player_inventory_size / 10 * (inventory_slot_width + inventory_slot_padding) + 80);
+		       player_manager::inventory_size / 10 * (inventory_slot_width + inventory_slot_padding) + 80);
 
 	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
 	// Character window is left of the center
@@ -155,19 +154,19 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 	ImGui::SetNextWindowPos(ImVec2(window_center.x - window_size.x, window_center.y - window_size.y / 2));
 	ImGui::Begin("Character", nullptr, window_size, -1, window_flags);
 
-	draw_slots(10, player_manager::player_inventory_size, 1, [&](auto index) {
+	draw_slots(10, player_manager::inventory_size, 1, [&](auto index) {
 		const auto& item = inventory[index];
 
 		// Item exists at inventory slot?
 		if (item.first != nullptr) {
 			draw_slot(menu_data, index % 10, item.first->sprite->internal_id, item.second, [index, item]() {
 				if (ImGui::IsItemClicked()) {
-					player_manager::set_clicked_inventory(index, 0);
-					player_manager::player_inventory_sort();
+					player_manager::inventory_click(index, 0);
+					player_manager::inventory_sort();
 				}
 				else if (ImGui::IsItemClicked(1)) {
-					player_manager::set_clicked_inventory(index, 1);
-					player_manager::player_inventory_sort();
+					player_manager::inventory_click(index, 1);
+					player_manager::inventory_sort();
 				}
 
 				// Only draw tooltip + item count if item count is not 0
@@ -195,12 +194,12 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			);
 			// Click event
 			if (ImGui::IsItemClicked()) {
-				player_manager::set_clicked_inventory(index, 0);
-				player_manager::player_inventory_sort();
+				player_manager::inventory_click(index, 0);
+				player_manager::inventory_sort();
 			}
 			else if (ImGui::IsItemClicked(1)) {
-				player_manager::set_clicked_inventory(index, 1);
-				player_manager::player_inventory_sort();
+				player_manager::inventory_click(index, 1);
+				player_manager::inventory_sort();
 			}
 		}
 	});
@@ -219,7 +218,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 		const auto& positions = menu_data.sprite_positions.at(recipe_group->sprite->internal_id);
 
 		// Different color for currently selected recipe group
-		if (index == player_manager::get_selected_recipe_group())
+		if (index == player_manager::recipe_group_get_selected())
 			ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
 		
 		ImGui::ImageButton(
@@ -231,12 +230,12 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			2
 		);
 		
-		if (index == player_manager::get_selected_recipe_group())
+		if (index == player_manager::recipe_group_get_selected())
 			ImGui::PopStyleColor();
 
 		// Recipe group click
 		if (ImGui::IsItemClicked())
-			player_manager::select_recipe_group(index);
+			player_manager::recipe_group_select(index);
 
 		// Item tooltip
 		if (ImGui::IsItemHovered()) {
@@ -250,7 +249,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 	});
 
 	// Menu recipes
-	const auto& selected_group = groups[player_manager::get_selected_recipe_group()];
+	const auto& selected_group = groups[player_manager::recipe_group_get_selected()];
 	for (auto& recipe_category : selected_group->recipe_categories) {
 		const auto& recipes = recipe_category->recipes;
 		
@@ -277,7 +276,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 				LOG_MESSAGE_f(debug, "Recipe click at index %d in category", index);
 				if (player_manager::recipe_can_craft(recipe, 1)) {
 					player_manager::recipe_craft_r(recipe);
-					player_manager::player_inventory_sort();
+					player_manager::inventory_sort();
 				}
 			}
 
@@ -314,7 +313,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 
 						// Amount of the current ingredient the player has in inventory
 						const auto player_item_count = game::inventory_c::get_inv_item_count(
-							player_manager::player_inventory, player_manager::player_inventory_size, 
+							player_manager::inventory_player, player_manager::inventory_size, 
 							item);
 						
 						// Draw ingredient amount required
@@ -341,8 +340,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 							            item->get_localized_name().c_str());
 						}
 					}
-					// TODO Crafting time
-					ImGui::Text("%.1f seconds", 3.1);
+					ImGui::Text("%.1f seconds", recipe->crafting_time);
 				
 					// Total raw
 					ImGui::Separator();
@@ -364,8 +362,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 
 }
 
-void jactorio::renderer::gui::cursor_window(ImGuiWindowFlags window_flags,
-                                            imgui_manager::Character_menu_data menu_data) {
+void jactorio::renderer::gui::cursor_window(const imgui_manager::Character_menu_data& menu_data) {
 	using namespace jactorio;
 	// Draw the tooltip of what is currently selected
 
@@ -392,7 +389,7 @@ void jactorio::renderer::gui::cursor_window(ImGuiWindowFlags window_flags,
 		ImGui::SetNextWindowFocus();
 		ImGui::Begin("Selected-item", nullptr, flags);
 
-		const auto& positions = menu_data.sprite_positions[selected_item->first->sprite->internal_id];
+		const auto& positions = menu_data.sprite_positions.at(selected_item->first->sprite->internal_id);
 
 		ImGui::SameLine(10.f);
 		ImGui::Image(
@@ -410,4 +407,36 @@ void jactorio::renderer::gui::cursor_window(ImGuiWindowFlags window_flags,
 		ImGui::PopStyleColor(2);
 
 	}
+}
+
+void jactorio::renderer::gui::crafting_queue(const imgui_manager::Character_menu_data& menu_data) {
+	ImGuiWindowFlags flags = 0;
+	flags |= ImGuiWindowFlags_NoBackground;
+	flags |= ImGuiWindowFlags_NoTitleBar;
+	flags |= ImGuiWindowFlags_NoMove;
+	flags |= ImGuiWindowFlags_NoResize;
+
+	// TODO window size and positioning calculation right
+	ImGui::SetNextWindowPos(
+		ImVec2(0, Renderer::get_window_height() - (inventory_slot_width + inventory_slot_padding)));
+
+	const ImVec2 window_size(11 * (inventory_slot_padding + inventory_slot_width),
+	                         inventory_slot_width + 2 * inventory_slot_padding);
+	
+	ImGui::Begin("queue", nullptr, window_size, -1, flags);
+	ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
+	ImGui::PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
+
+	auto& recipe_queue = game::player_manager::get_recipe_queue();
+	draw_slots(10, recipe_queue.size(), 1, [&](auto index) {
+		data::Recipe* recipe = recipe_queue.at(index);
+		
+		const auto* item =
+			data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+			                                             recipe->get_product().first);
+		draw_slot(menu_data, index % 10, item->sprite->internal_id, 1);
+	});
+	
+	ImGui::PopStyleColor(2);
+	ImGui::End();
 }

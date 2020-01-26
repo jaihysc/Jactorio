@@ -96,7 +96,7 @@ void jactorio::game::init_logic_loop() {
 
 					// Item stack used up, sort player inventory to fill gap
 					if (!player_manager::decrement_selected_item()) {
-						player_manager::player_inventory_sort();
+						player_manager::inventory_sort();
 					}
 				}
 			}
@@ -127,9 +127,9 @@ void jactorio::game::init_logic_loop() {
 					test_rm_counter = 0;
 					auto item_stack = data::item_stack(entity_ptr->get_item(), 1);
 					inventory_c::add_itemstack_to_inv(
-						player_manager::player_inventory, player_manager::player_inventory_size, item_stack);
+						player_manager::inventory_player, player_manager::inventory_size, item_stack);
 
-					player_manager::player_inventory_sort();
+					player_manager::inventory_sort();
 
 					// TODO do something if the inventory is full
 				}
@@ -154,6 +154,8 @@ void jactorio::game::init_logic_loop() {
 			world_generator::gen_chunk();
 
 			mouse_selection::draw_cursor_overlay();
+
+			player_manager::recipe_craft_tick();
 		}
 
 		if (++logic_tick > 60)

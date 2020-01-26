@@ -11,7 +11,9 @@
 float player_position_x = 0;
 float player_position_y = 0;
 
+// ============================================================================================
 // Returns true if the tile can be walked on and is not walter
+
 bool target_tile_valid(const float x, const float y) {
 	const auto origin_tile = jactorio::game::world_manager::get_tile_world_coords(player_position_x, player_position_y);
 	if (origin_tile == nullptr)
@@ -53,24 +55,27 @@ void jactorio::game::player_manager::move_player_y(const float amount) {
 		player_position_y = target_y;
 }
 
+// ============================================================================================
 // Inventory
 
-void jactorio::game::player_manager::player_inventory_sort() {
+void jactorio::game::player_manager::inventory_sort() {
 	// The inventory must be sorted without moving the selected cursor
 
+	LOG_MESSAGE(debug, "Sorting player inventory");
+	
 	// Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
 	std::vector<data::item_stack> inv_temp;
-	inv_temp.reserve(player_inventory_size);
-	for (const auto& i : player_inventory) {
+	inv_temp.reserve(inventory_size);
+	for (const auto& i : inventory_player) {
 		// Skip the cursor
 		if (i.first == nullptr ||
 			i.first->get_localized_name() == inventory_selected_cursor_iname) {
 			continue;
 		}
-		
+
 		inv_temp.push_back(i);
 	}
-	
+
 	// Sort temp inventory (does not contain cursor)
 	std::sort(inv_temp.begin(), inv_temp.end(),
 	          [](const data::item_stack a, const data::item_stack b) {
@@ -125,16 +130,16 @@ void jactorio::game::player_manager::player_inventory_sort() {
 		}
 
 	}
-	
+
 	// Copy back into origin inventory
 	unsigned int start = 0;  // The index of the first blank slot post sorting
 	unsigned int inv_temp_index = 0;
-	for (auto i = 0; i < player_inventory_size; ++i) {
+	for (auto i = 0; i < inventory_size; ++i) {
 		// Skip the cursor
-		if (player_inventory[i].first != nullptr && 
-			player_inventory[i].first->get_localized_name() == inventory_selected_cursor_iname)
+		if (inventory_player[i].first != nullptr &&
+			inventory_player[i].first->get_localized_name() == inventory_selected_cursor_iname)
 			continue;
-		
+
 		if (inv_temp_index >= inv_temp.size()) {
 			start = i;
 			break;
@@ -146,20 +151,20 @@ void jactorio::game::player_manager::player_inventory_sort() {
 				start = i;
 				goto loop_exit;
 			}
-		};
-		
-		player_inventory[i] = inv_temp[inv_temp_index++];
+		}
+
+		inventory_player[i] = inv_temp[inv_temp_index++];
 	}
 loop_exit:
-	
+
 	// Copy empty spaces into the remainder of the slots
-	for (auto i = start; i < player_inventory_size; ++i) {
+	for (auto i = start; i < inventory_size; ++i) {
 		// Skip the cursor
-		if (player_inventory[i].first != nullptr &&
-			player_inventory[i].first->get_localized_name() == inventory_selected_cursor_iname)
+		if (inventory_player[i].first != nullptr &&
+			inventory_player[i].first->get_localized_name() == inventory_selected_cursor_iname)
 			continue;
-		
-		player_inventory[i] = {nullptr, 0};
+
+		inventory_player[i] = {nullptr, 0};
 	}
 }
 
@@ -171,38 +176,38 @@ bool has_item_selected = false;
 unsigned short selected_item_index;
 bool select_by_reference = false;
 
-void jactorio::game::player_manager::set_clicked_inventory(const unsigned short index,
-                                                           const unsigned short mouse_button) {
-	assert(index < player_inventory_size);
+void jactorio::game::player_manager::inventory_click(const unsigned short index,
+                                                     const unsigned short mouse_button) {
+	assert(index < inventory_size);
 	assert(mouse_button == 0 || mouse_button == 1);  // Only left + right click supported
-	
+
 	// Clicking on the same location, selecting by reference: deselect
 	if (has_item_selected && selected_item_index == index && select_by_reference) {
 		has_item_selected = false;
-		player_inventory[selected_item_index] = selected_item;
+		inventory_player[selected_item_index] = selected_item;
 
 		return;
 	}
-	
-	
+
+
 	// Selection mode can only be set upon first item selection
 	if (!has_item_selected) {
 		// Clicking empty slot
-		if (player_inventory[index].first == nullptr)
+		if (inventory_player[index].first == nullptr)
 			return;
-		
+
 		has_item_selected = true;
 		selected_item_index = index;
 
 		// Reference
 		if (mouse_button == 0) {
 			select_by_reference = true;
-			selected_item = player_inventory[index];
+			selected_item = inventory_player[index];
 
 			// Swap icon out for a cursor indicating the current index is selected
-			player_inventory[index].first = data::data_manager::data_raw_get<data::Item>(
+			inventory_player[index].first = data::data_manager::data_raw_get<data::Item>(
 				data::data_category::item, inventory_selected_cursor_iname);
-			player_inventory[index].second = 0;
+			inventory_player[index].second = 0;
 
 			// Return is necessary when selecting by reference
 			// The item needs to be moved after selecting the next inventory slot
@@ -220,18 +225,18 @@ void jactorio::game::player_manager::set_clicked_inventory(const unsigned short 
 
 	const bool cursor_empty =
 		inventory_c::move_itemstack_to_index(&selected_item, 0,
-		                                     player_inventory, index,
+		                                     inventory_player, index,
 		                                     mouse_button);
 	// Cursor slot is empty
 	if (cursor_empty) {
 		has_item_selected = false;
-		
+
 		if (select_by_reference) {
 			// Remove cursor icon
-			assert(selected_item_index < player_inventory_size);
+			assert(selected_item_index < inventory_size);
 
-			player_inventory[selected_item_index].first = nullptr;
-			player_inventory[selected_item_index].second = 0;
+			inventory_player[selected_item_index].first = nullptr;
+			inventory_player[selected_item_index].second = 0;
 		}
 	}
 }
@@ -239,7 +244,7 @@ void jactorio::game::player_manager::set_clicked_inventory(const unsigned short 
 const jactorio::data::item_stack* jactorio::game::player_manager::get_selected_item() {
 	if (!has_item_selected)
 		return nullptr;
-	
+
 	return &selected_item;
 }
 
@@ -251,7 +256,7 @@ bool jactorio::game::player_manager::increment_selected_item() {
 		selected_item.second++;
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -262,84 +267,144 @@ bool jactorio::game::player_manager::decrement_selected_item() {
 		// Item stack now empty
 		has_item_selected = false;
 		// Remove selection cursor
-		player_inventory[selected_item_index].first = nullptr;
-		player_inventory[selected_item_index].second = 0;
-		
+		inventory_player[selected_item_index].first = nullptr;
+		inventory_player[selected_item_index].second = 0;
+
 		return false;
 	}
 	return true;
 }
 
-
+// ============================================================================================
 // Recipe
+
 uint16_t selected_recipe_group = 0;
 
-void jactorio::game::player_manager::select_recipe_group(const uint16_t index) {
+void jactorio::game::player_manager::recipe_group_select(const uint16_t index) {
 	selected_recipe_group = index;
 }
 
-uint16_t jactorio::game::player_manager::get_selected_recipe_group() {
+uint16_t jactorio::game::player_manager::recipe_group_get_selected() {
 	return selected_recipe_group;
 }
 
-bool jactorio::game::player_manager::recipe_craft(data::Recipe* recipe) {
-	assert(recipe != nullptr);  // Invalid recipe given
 
-	// Ensure ingredients are met
-	for (auto& ingredient : recipe->ingredients) {
-		auto* item = data::data_manager::data_raw_get<data::Item>(
-			data::data_category::item, ingredient.first);
+std::deque<jactorio::data::Recipe*> crafting_queue;
+uint16_t crafting_ticks_remaining = 0;
 
-		if (inventory_c::get_inv_item_count(player_inventory,  player_inventory_size, item) < ingredient.second) {
-			return false;
+// TODO reimplement this as extra items left over so queuing multiple will use the extras instead of using the ones from
+// inventory
+// Items to be deducted away during crafting and not returned to the player inventory
+// Used for recipes requiring subrecipes, where intermediate items must be satisfied first
+std::map<std::string, uint16_t> crafting_item_deductions;
+
+// ~to future me, remember that you banged your head against the ground for 4 hours trying to
+// figure out how to implement this
+
+void jactorio::game::player_manager::recipe_craft_tick(uint16_t ticks) {
+	while (ticks != 0 && !crafting_queue.empty()) {
+		// Ticks available greater than or equal to crafting ticks remaining
+		if (ticks >= crafting_ticks_remaining) {
+			ticks -= crafting_ticks_remaining;
+			
+			auto* recipe = crafting_queue.front();
+			crafting_queue.pop_front();
+
+			// Return product
+			data::recipe_item recipe_item = recipe->get_product();
+			auto* product_item = data::data_manager::data_raw_get<data::Item>(
+				data::data_category::item, recipe_item.first);
+			
+			data::item_stack i = {product_item, recipe_item.second};
+
+			// Deduct based on the deductions
+			std::map<std::string, uint16_t>::iterator element;
+			if ((element = crafting_item_deductions.find(recipe_item.first)) != crafting_item_deductions.end()) {
+				auto& deduct_amount = element->second;
+				
+				if (i.second >= deduct_amount) {
+					i.second -= deduct_amount;
+
+					LOG_MESSAGE_f(debug, "Crafting return deducting %d of '%s'",
+					              deduct_amount, recipe_item.first.c_str());
+
+					crafting_item_deductions.erase(recipe_item.first);  // Now empty
+				}
+					// Deduct amount greater than i.second
+				else {
+					deduct_amount -= i.second;
+					i.second = 0;
+
+					LOG_MESSAGE_f(debug, "Crafting return deducting %d of '%s', no items returned",
+					              deduct_amount, recipe_item.first.c_str());
+				}
+			}
+
+			if (i.second != 0)
+				inventory_c::add_itemstack_to_inv(inventory_player, inventory_size, i);
+
+			// Set crafting ticks remaining to the next item
+			if (!crafting_queue.empty())
+				crafting_ticks_remaining = crafting_queue.front()->crafting_time * 60;
+		}
+			// Crafting ticks remaining is greater, decrement ticks remaining
+		else {
+			crafting_ticks_remaining -= ticks;
+			break;
 		}
 	}
+	
+}
 
-	// Ingredients exist, remove them
+void jactorio::game::player_manager::recipe_queue(data::Recipe* recipe) {
+	assert(recipe != nullptr);  // Invalid recipe given
+
+	LOG_MESSAGE_f(debug, "Queuing recipe: '%s'", recipe->get_product().first.c_str());
+	
+	// Remove ingredients
 	for (auto& ingredient : recipe->ingredients) {
 		auto* item = data::data_manager::data_raw_get<data::Item>(
 			data::data_category::item, ingredient.first);
-
-		inventory_c::remove_inv_item(player_inventory, player_inventory_size, item, ingredient.second);
+	
+		inventory_c::remove_inv_item(inventory_player, inventory_size, item, ingredient.second);
 	}
 
-	// Return product
-	auto* product_item = data::data_manager::data_raw_get<data::Item>(
-		data::data_category::item, recipe->get_product().first);
-	data::item_stack i = {product_item, recipe->get_product().second};
+	// Queue is empty, crafting time for the first item in queue must be set here
+	if (crafting_queue.empty())
+		crafting_ticks_remaining = recipe->crafting_time * 60;
 	
-	inventory_c::add_itemstack_to_inv(player_inventory, player_inventory_size, i);
-	return true;
+	crafting_queue.push_back(recipe);
+}
+
+const std::deque<jactorio::data::Recipe*>& jactorio::game::player_manager::get_recipe_queue() {
+	return crafting_queue;
+}
+
+uint16_t jactorio::game::player_manager::get_crafting_ticks_remaining() {
+	return crafting_ticks_remaining;
 }
 
 void jactorio::game::player_manager::recipe_craft_r(data::Recipe* recipe) {
 	assert(recipe != nullptr);  // Invalid recipe given
-	
+
 	for (auto& ingredient : recipe->ingredients) {
 		const auto ingredient_proto = data::data_manager::data_raw_get<data::Item>(
 			data::data_category::item, ingredient.first);
 
-		const uint32_t possess_amount = 
-			inventory_c::get_inv_item_count(player_inventory, player_inventory_size, ingredient_proto);
+		const uint32_t possess_amount =
+			inventory_c::get_inv_item_count(inventory_player, inventory_size, ingredient_proto);
 
 		// Craft sub-recipes recursively first if they are not sufficient
-		if (possess_amount < ingredient.second)
+		if (possess_amount < ingredient.second) {
+			// Deduct from returning to player inventory as it is used for crafting
+			crafting_item_deductions[ingredient.first] += ingredient.second - possess_amount;
+			
 			recipe_craft_r(data::Recipe::get_item_recipe(ingredient.first));
-
-		
-		// Sub-recipes met, remove items for crafting
-		auto* item = data::data_manager::data_raw_get<data::Item>(
-			data::data_category::item, ingredient.first);
-
-		inventory_c::remove_inv_item(player_inventory, player_inventory_size, item, ingredient.second);
+		}
 	}
 
-	// Return product
-	auto* product_item = data::data_manager::data_raw_get<data::Item>(
-		data::data_category::item, recipe->get_product().first);
-	data::item_stack i = {product_item, recipe->get_product().second};
-
-	inventory_c::add_itemstack_to_inv(player_inventory, player_inventory_size, i);
+	// Ingredients met - Queue crafting recipe
+	recipe_queue(recipe);
 }
 
 
@@ -348,7 +413,7 @@ void jactorio::game::player_manager::recipe_craft_r(data::Recipe* recipe) {
 bool recipe_can_craft_r(std::map<jactorio::data::Item*, uint32_t>& used_items,
                         const jactorio::data::Recipe* recipe, const uint16_t batches) {
 	using namespace jactorio;
-	
+
 	assert(recipe != nullptr);  // Invalid recipe given
 
 	for (auto& ingredient : recipe->ingredients) {
@@ -361,8 +426,8 @@ bool recipe_can_craft_r(std::map<jactorio::data::Item*, uint32_t>& used_items,
 			possess_amount = used_items[ingredient_proto];
 		}
 		else {
-			possess_amount = game::inventory_c::get_inv_item_count(game::player_manager::player_inventory,
-			                                                       game::player_manager::player_inventory_size,
+			possess_amount = game::inventory_c::get_inv_item_count(game::player_manager::inventory_player,
+			                                                       game::player_manager::inventory_size,
 			                                                       ingredient_proto);
 			used_items[ingredient_proto] = possess_amount;
 		}
@@ -406,9 +471,10 @@ bool jactorio::game::player_manager::recipe_can_craft(const data::Recipe* recipe
 }
 
 
+// ============================================================================================
 // Reserved
 
-void jactorio::game::player_manager::reset_inventory_variables() {
+void jactorio::game::player_manager::r_reset_inventory_variables() {
 	has_item_selected = false;
 	select_by_reference = false;
 }

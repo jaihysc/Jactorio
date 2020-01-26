@@ -5,6 +5,11 @@
 
 // Defines macros for the color scheme used in Jactorio
 
+// RAII style color pop
+#define J_GUI_RAII_STYLE_POP(count) \
+	jactorio::core::Resource_guard<void> imgui_style_guard([]() {ImGui::PopStyleColor(count); })
+
+
 #define J_GUI_COL_NONE                    IM_COL32(0, 0, 0, 0)
 
 // Text
@@ -21,12 +26,12 @@
 #define J_GUI_COL_TITLE_BG                IM_COL32(49, 48, 49, 255)
 #define J_GUI_COL_TITLE_BG_ACTIVE         IM_COL32(49, 48, 49, 255)
 
-// Inventory boxes
+// Message / display boxes
 #define J_GUI_COL_FRAME_BG                IM_COL32(128, 129, 129, 255)
 #define J_GUI_COL_FRAME_BG_HOVER          IM_COL32(144, 144, 145, 255)
 #define J_GUI_COL_FRAME_BG_ACTIVE         IM_COL32(144, 144, 145, 255)
 
-// Buttons
+// Buttons - Inventory boxes
 #define J_GUI_COL_BUTTON                  IM_COL32(128, 129, 129, 255)
 #define J_GUI_COL_BUTTON_HOVER            IM_COL32(227, 152, 39, 255)
 #define J_GUI_COL_BUTTON_ACTIVE           IM_COL32(227, 152, 39, 255)

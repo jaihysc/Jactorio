@@ -213,10 +213,11 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
-	gui::cursor_window(release_window_flags, menu_data);
-
 	draw_window(gui_window::character, release_window_flags, menu_data);
 	draw_window(gui_window::debug, debug_window_flags);
+
+	gui::crafting_queue(menu_data);
+	gui::cursor_window(menu_data);
 
 	// Render
 	ImGui::Render();

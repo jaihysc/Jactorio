@@ -12,14 +12,33 @@ namespace jactorio::data
 	// Creates a setters for python API primarily, to chain initialization
 
 	// Setter passed by reference
-#define PYTHON_PROP_REF(class_, type, var_name) type var_name; \
+#define PYTHON_PROP_REF(class_, type, var_name) \
+	type var_name; \
 	class_* set_##var_name(const type& (var_name)) {\
 		this->var_name = var_name;\
 		return this;\
 	}
 
+	// Setter passed by reference with initializer
+#define PYTHON_PROP_REF_I(class_, type, var_name, initializer) \
+	type var_name = initializer; \
+	class_* set_##var_name(const type& (var_name)) {\
+		this->var_name = var_name;\
+		return this;\
+	}
+
+	
 	// Setter passed by value
-#define PYTHON_PROP(class_, type, var_name) type var_name; \
+#define PYTHON_PROP(class_, type, var_name) \
+	type var_name; \
+	class_* set_##var_name(type (var_name)) {\
+		this->var_name = var_name;\
+		return this;\
+	}
+
+	// Setter passed by value with initializer
+#define PYTHON_PROP_I(class_, type, var_name, initializer) \
+	type var_name = initializer; \
 	class_* set_##var_name(type (var_name)) {\
 		this->var_name = var_name;\
 		return this;\

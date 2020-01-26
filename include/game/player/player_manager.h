@@ -5,13 +5,16 @@
 #include "data/prototype/item/recipe.h"
 
 #include <vector>
+#include <queue>
 
 /**
  * Stores information & functions regarding the player
  */
 namespace jactorio::game::player_manager
 {
-    // Movement functions
+	// ============================================================================================
+    // Movement
+	
     /**
      * The tile the player is on, decimals indicate partial tile
      */
@@ -29,7 +32,7 @@ namespace jactorio::game::player_manager
      */
     void move_player_y(float amount);
 
-	
+    // ============================================================================================
     // Inventory
 
     constexpr char inventory_selected_cursor_iname[] = "__core__/inventory-selected-cursor";
@@ -37,17 +40,17 @@ namespace jactorio::game::player_manager
     /**
      * Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying stack size
      */
-    void player_inventory_sort();
+    void inventory_sort();
 	
-    constexpr unsigned short player_inventory_size = 80;
-    inline data::item_stack player_inventory[player_inventory_size];  // Holds the internal id of items
+    constexpr unsigned short inventory_size = 80;
+    inline data::item_stack inventory_player[inventory_size];  // Holds the internal id of items
 	
     /**
      * Interacts with the player inventory at index
      * @param index The player inventory index
      * @param mouse_button Mouse button pressed; 0 - Left, 1 - Right
      */
-    void set_clicked_inventory(unsigned short index, unsigned short mouse_button);
+    void inventory_click(unsigned short index, unsigned short mouse_button);
 
     /**
      * Gets the currently item player is currently holding on the cursor
@@ -69,35 +72,48 @@ namespace jactorio::game::player_manager
     bool decrement_selected_item();
 
 
+    // ============================================================================================
     // Recipe
-    void select_recipe_group(uint16_t index);
-    J_NODISCARD uint16_t get_selected_recipe_group();
 
-    /**
-     * Attempts to craft the specified recipe
-     * @return false if unable to craft (lacking ingredients, etc)
-     */
-    bool recipe_craft(data::Recipe* recipe);
+    void recipe_group_select(uint16_t index);
+    J_NODISCARD uint16_t recipe_group_get_selected();
 
-    /**
-     * Recursively depth first crafts the recipe
-     * !! This WILL NOT check that the given recipe is valid or required ingredients are present and assumes it is!!
-     */
-    void recipe_craft_r(data::Recipe* recipe);
+	/**
+	 * Call every tick to count down the crafting time for the currently queued item (60 ticks = 1 second)
+	 */
+	void recipe_craft_tick(uint16_t ticks = 1);
+
+	/**
+	 * Queues a recipe to be crafted, this is displayed by the gui is the lower right corner
+	 */
+	void recipe_queue(data::Recipe* recipe);
+
+	/**
+	 * Returns const reference to recipe queue for rendering in gui
+	 */
+	J_NODISCARD const std::deque<data::Recipe*>& get_recipe_queue();
+	J_NODISCARD uint16_t get_crafting_ticks_remaining();
 	
-    /**
-     * Recursively steps through a recipe and subrecipies to determine if it is craftable
-     * @param recipe
-     * @param batches How many runs of the recipe
-     */
-    bool recipe_can_craft(const data::Recipe* recipe, uint16_t batches);
+	/**
+	 * Recursively depth first crafts the recipe
+	 * !! This WILL NOT check that the given recipe is valid or required ingredients are present and assumes it is!!
+	 */
+	void recipe_craft_r(data::Recipe* recipe);
 	
-    // Reserved
+	/**
+	 * Recursively steps through a recipe and subrecipies to determine if it is craftable
+	 * @param recipe
+	 * @param batches How many runs of the recipe
+	 */
+	bool recipe_can_craft(const data::Recipe* recipe, uint16_t batches);
+
+	// ============================================================================================
+	// Reserved
 	
-    /**
-     * !! Tests use only !!
-     */
-    void reset_inventory_variables();
+	/**
+	 * !! Tests use only !!
+	 */
+	J_DEPRECATED void r_reset_inventory_variables();
 }
 
 #endif // GAME_PLAYER_PLAYER_MANAGER_H

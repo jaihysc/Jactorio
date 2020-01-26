@@ -8,7 +8,12 @@ namespace jactorio::renderer::gui
 {
 	void character_menu(ImGuiWindowFlags window_flags, const imgui_manager::Character_menu_data& menu_data);
 	
-	void cursor_window(ImGuiWindowFlags window_flags, imgui_manager::Character_menu_data menu_data);
+	void cursor_window(const imgui_manager::Character_menu_data& menu_data);
+
+	/**
+	 * Draws the crafting queue in the bottom left of the screen
+	 */
+	void crafting_queue(const imgui_manager::Character_menu_data& menu_data);
 }
 
 #endif // RENDERER_GUI_GUI_MENUS_H

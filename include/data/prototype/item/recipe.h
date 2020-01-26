@@ -38,7 +38,12 @@ namespace jactorio::data
 	public:
 		Recipe() = default;
 
+		/**
+		 * Seconds to complete recipe
+		 */
+		PYTHON_PROP_REF_I(Recipe, float, crafting_time, 1);
 
+		
 		PYTHON_PROP_REF(Recipe, std::vector<recipe_item>, ingredients);
 
 		// Product

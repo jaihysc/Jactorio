@@ -128,6 +128,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(Recipe_category, recipes);
 
 	py::class_<Recipe, Prototype_base>(m, "Recipe")
+		PYBIND_PROP_SEPARATE(Recipe, craftingTime, crafting_time)
 		PYBIND_PROP(Recipe, ingredients)
 		PYBIND_PROP_GET_SET(Recipe, product, product);
 	

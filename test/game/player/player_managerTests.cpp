@@ -10,7 +10,7 @@ namespace game
 	void clear_player_inventory() {
 		using namespace jactorio::game::player_manager;
 
-		for (auto& i : player_inventory) {
+		for (auto& i : inventory_player) {
 			i.first = nullptr;
 			i.second = 0;
 		}
@@ -24,7 +24,7 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		// Setup
 		auto data_manager_guard = jactorio::core::Resource_guard(data_manager::clear_data);
@@ -38,13 +38,13 @@ namespace game
 
 
 		// Position 3 should have the 50 items + item prototype after moving
-		player_inventory[0].first = item.get();
-		player_inventory[0].second = 50;
+		inventory_player[0].first = item.get();
+		inventory_player[0].second = 50;
 
-		set_clicked_inventory(0, 0);
+		inventory_click(0, 0);
 
-		EXPECT_EQ(player_inventory[0].first, cursor);
-		EXPECT_EQ(player_inventory[0].second, 0);
+		EXPECT_EQ(inventory_player[0].first, cursor);
+		EXPECT_EQ(inventory_player[0].second, 0);
 
 		const auto cursor_item = get_selected_item();
 		EXPECT_EQ(cursor_item->first, item.get());
@@ -58,7 +58,7 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		// Setup
 		auto data_manager_guard = jactorio::core::Resource_guard(data_manager::clear_data);
@@ -73,15 +73,15 @@ namespace game
 		// Left click
 		{
 			// Position 3 should have the 50 items + item prototype after moving
-			player_inventory[0].first = item.get();
-			player_inventory[0].second = 50;
+			inventory_player[0].first = item.get();
+			inventory_player[0].second = 50;
 
-			set_clicked_inventory(0, 0);  // Select
-			set_clicked_inventory(0, 0);  // Deselect
+			inventory_click(0, 0);  // Select
+			inventory_click(0, 0);  // Deselect
 
 
-			EXPECT_EQ(player_inventory[0].first, item.get());
-			EXPECT_EQ(player_inventory[0].second, 50);
+			EXPECT_EQ(inventory_player[0].first, item.get());
+			EXPECT_EQ(inventory_player[0].second, 50);
 
 			const auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item, nullptr);
@@ -90,15 +90,15 @@ namespace game
 		// Right click
 		{
 			// Position 3 should have the 50 items + item prototype after moving
-			player_inventory[0].first = item.get();
-			player_inventory[0].second = 50;
+			inventory_player[0].first = item.get();
+			inventory_player[0].second = 50;
 
-			set_clicked_inventory(0, 0);  // Select
-			set_clicked_inventory(0, 1);  // Deselect
+			inventory_click(0, 0);  // Select
+			inventory_click(0, 1);  // Deselect
 
 
-			EXPECT_EQ(player_inventory[0].first, item.get());
-			EXPECT_EQ(player_inventory[0].second, 50);
+			EXPECT_EQ(inventory_player[0].first, item.get());
+			EXPECT_EQ(inventory_player[0].second, 50);
 
 			const auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item, nullptr);
@@ -114,7 +114,7 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		// Setup
 		auto data_manager_guard = jactorio::core::Resource_guard(data_manager::clear_data);
@@ -129,18 +129,18 @@ namespace game
 		// Left click
 		{
 			// Position 3 should have the 50 items + item prototype after moving
-			player_inventory[0].first = item.get();
-			player_inventory[0].second = 50;
+			inventory_player[0].first = item.get();
+			inventory_player[0].second = 50;
 
-			set_clicked_inventory(0, 0);  // Select item
-			set_clicked_inventory(3, 0);  // Drop item off
+			inventory_click(0, 0);  // Select item
+			inventory_click(3, 0);  // Drop item off
 
 
-			EXPECT_EQ(player_inventory[0].first, nullptr);
-			EXPECT_EQ(player_inventory[0].second, 0);
+			EXPECT_EQ(inventory_player[0].first, nullptr);
+			EXPECT_EQ(inventory_player[0].second, 0);
 
-			EXPECT_EQ(player_inventory[3].first, item.get());
-			EXPECT_EQ(player_inventory[3].second, 50);
+			EXPECT_EQ(inventory_player[3].first, item.get());
+			EXPECT_EQ(inventory_player[3].second, 50);
 
 			const auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item, nullptr);
@@ -153,18 +153,18 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 
 
-		player_inventory[0].first = item.get();
-		player_inventory[0].second = 40;
+		inventory_player[0].first = item.get();
+		inventory_player[0].second = 40;
 
-		set_clicked_inventory(0, 1);  // Pick up half
+		inventory_click(0, 1);  // Pick up half
 
-		player_inventory[0].first = item.get();
-		player_inventory[0].second = 20;
+		inventory_player[0].first = item.get();
+		inventory_player[0].second = 20;
 
 		const auto cursor_item = get_selected_item();
 		EXPECT_EQ(cursor_item->first, item.get());
@@ -178,30 +178,30 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 
 		// Drop one on another location
 		{
-			player_inventory[0].first = item.get();
-			player_inventory[0].second = 10;
+			inventory_player[0].first = item.get();
+			inventory_player[0].second = 10;
 
-			set_clicked_inventory(0, 1);  // Pick up half
+			inventory_click(0, 1);  // Pick up half
 
-			EXPECT_EQ(player_inventory[0].first, item.get());
-			EXPECT_EQ(player_inventory[0].second, 5);
+			EXPECT_EQ(inventory_player[0].first, item.get());
+			EXPECT_EQ(inventory_player[0].second, 5);
 
 			auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item->first, item.get());
 			EXPECT_EQ(cursor_item->second, 5);
 
 
-			set_clicked_inventory(3, 1);  // Drop 1 at index 3
+			inventory_click(3, 1);  // Drop 1 at index 3
 
 			// Should remain unchanged
-			EXPECT_EQ(player_inventory[0].first, item.get());
-			EXPECT_EQ(player_inventory[0].second, 5);
+			EXPECT_EQ(inventory_player[0].first, item.get());
+			EXPECT_EQ(inventory_player[0].second, 5);
 
 			// Loses 1
 			cursor_item = get_selected_item();
@@ -209,19 +209,19 @@ namespace game
 			EXPECT_EQ(cursor_item->second, 4);
 
 			// Gain 1
-			EXPECT_EQ(player_inventory[3].first, item.get());
-			EXPECT_EQ(player_inventory[3].second, 1);
+			EXPECT_EQ(inventory_player[3].first, item.get());
+			EXPECT_EQ(inventory_player[3].second, 1);
 		}
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 		// Drop 1 on the original item stack where half was taken from
 		{
-			player_inventory[0].first = item.get();
-			player_inventory[0].second = 10;
+			inventory_player[0].first = item.get();
+			inventory_player[0].second = 10;
 
-			set_clicked_inventory(0, 1);  // Pick up half
-			set_clicked_inventory(0, 1);  // Drop 1 one the stack it picked up from
+			inventory_click(0, 1);  // Pick up half
+			inventory_click(0, 1);  // Drop 1 one the stack it picked up from
 
 			// Loses 1
 			const auto cursor_item = get_selected_item();
@@ -229,8 +229,8 @@ namespace game
 			EXPECT_EQ(cursor_item->second, 4);
 
 			// Half (5) plus 1 = 6
-			EXPECT_EQ(player_inventory[0].first, item.get());
-			EXPECT_EQ(player_inventory[0].second, 6);
+			EXPECT_EQ(inventory_player[0].first, item.get());
+			EXPECT_EQ(inventory_player[0].second, 6);
 		}
 	}
 
@@ -241,38 +241,38 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 
 
-		player_inventory[0].first = item.get();
-		player_inventory[0].second = 10;
+		inventory_player[0].first = item.get();
+		inventory_player[0].second = 10;
 
 
-		set_clicked_inventory(0, 1);  // Pick up half
+		inventory_click(0, 1);  // Pick up half
 
-		EXPECT_EQ(player_inventory[0].first, item.get());
-		EXPECT_EQ(player_inventory[0].second, 5);
+		EXPECT_EQ(inventory_player[0].first, item.get());
+		EXPECT_EQ(inventory_player[0].second, 5);
 
 		auto cursor_item = get_selected_item();
 		EXPECT_EQ(cursor_item->first, item.get());
 		EXPECT_EQ(cursor_item->second, 5);
 
 
-		set_clicked_inventory(3, 0);  // Drop stack at index 3
+		inventory_click(3, 0);  // Drop stack at index 3
 
 		// Should remain unchanged
-		EXPECT_EQ(player_inventory[0].first, item.get());
-		EXPECT_EQ(player_inventory[0].second, 5);
+		EXPECT_EQ(inventory_player[0].first, item.get());
+		EXPECT_EQ(inventory_player[0].second, 5);
 
 		// Empty
 		cursor_item = get_selected_item();
 		EXPECT_EQ(cursor_item, nullptr);
 
 		// Gain 10
-		EXPECT_EQ(player_inventory[3].first, item.get());
-		EXPECT_EQ(player_inventory[3].second, 5);
+		EXPECT_EQ(inventory_player[3].first, item.get());
+		EXPECT_EQ(inventory_player[3].second, 5);
 	}
 
 	TEST(player_manager, inventory_click_empty_slot) {
@@ -282,15 +282,15 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
-		player_inventory[0].first = nullptr;
-		player_inventory[0].second = 0;
+		inventory_player[0].first = nullptr;
+		inventory_player[0].second = 0;
 
-		set_clicked_inventory(0, 0);
+		inventory_click(0, 0);
 
-		EXPECT_EQ(player_inventory[0].first, nullptr);
-		EXPECT_EQ(player_inventory[0].second, 0);
+		EXPECT_EQ(inventory_player[0].first, nullptr);
+		EXPECT_EQ(inventory_player[0].second, 0);
 
 		const auto cursor_item = get_selected_item();
 		EXPECT_EQ(cursor_item, nullptr);
@@ -305,24 +305,24 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
-		player_inventory[0].first = item.get();
-		player_inventory[0].second = 10;
+		inventory_player[0].first = item.get();
+		inventory_player[0].second = 10;
 
 		// Pickup
 		{
 			// Pick up 5 of item, now selected
-			set_clicked_inventory(0, 1);
+			inventory_click(0, 1);
 
 			// Check if item was incremented
 			EXPECT_EQ(increment_selected_item(), true);
 
-			EXPECT_EQ(player_inventory[0].first, item.get());
-			EXPECT_EQ(player_inventory[0].second, 5);
+			EXPECT_EQ(inventory_player[0].first, item.get());
+			EXPECT_EQ(inventory_player[0].second, 5);
 
 			const auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item->first, item.get());
@@ -331,11 +331,11 @@ namespace game
 
 		// Drop item down at inv slot 1
 		{
-			set_clicked_inventory(1, 0);
+			inventory_click(1, 0);
 
 			// Inv now empty, contents in inv slot 1
-			EXPECT_EQ(player_inventory[1].first, item.get());
-			EXPECT_EQ(player_inventory[1].second, 6);
+			EXPECT_EQ(inventory_player[1].first, item.get());
+			EXPECT_EQ(inventory_player[1].second, 6);
 
 			const auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item, nullptr);
@@ -349,16 +349,16 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
-		player_inventory[0].first = item.get();
-		player_inventory[0].second = 50;
+		inventory_player[0].first = item.get();
+		inventory_player[0].second = 50;
 
 		// Pickup
-		set_clicked_inventory(0, 0);
+		inventory_click(0, 0);
 
 		// Failed to add item: Item stack already full
 		EXPECT_EQ(increment_selected_item(), false);
@@ -376,24 +376,24 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
-		player_inventory[0].first = item.get();
-		player_inventory[0].second = 10;
+		inventory_player[0].first = item.get();
+		inventory_player[0].second = 10;
 
 		// Pickup
 		{
 			// Pick up 5 of item, now selected
-			set_clicked_inventory(0, 1);
+			inventory_click(0, 1);
 
 			// Check if item was incremented
 			EXPECT_EQ(decrement_selected_item(), true);
 
-			EXPECT_EQ(player_inventory[0].first, item.get());
-			EXPECT_EQ(player_inventory[0].second, 5);
+			EXPECT_EQ(inventory_player[0].first, item.get());
+			EXPECT_EQ(inventory_player[0].second, 5);
 
 			const auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item->first, item.get());
@@ -402,11 +402,11 @@ namespace game
 
 		// Drop item down at inv slot 1
 		{
-			set_clicked_inventory(1, 0);
+			inventory_click(1, 0);
 
 			// Inv now empty, contents in inv slot 1
-			EXPECT_EQ(player_inventory[1].first, item.get());
-			EXPECT_EQ(player_inventory[1].second, 4);
+			EXPECT_EQ(inventory_player[1].first, item.get());
+			EXPECT_EQ(inventory_player[1].second, 4);
 
 			const auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item, nullptr);
@@ -422,7 +422,7 @@ namespace game
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		// Setup
 		auto data_manager_guard = jactorio::core::Resource_guard(jactorio::data::data_manager::clear_data);
@@ -434,11 +434,11 @@ namespace game
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
-		player_inventory[0].first = item.get();
-		player_inventory[0].second = 1;
+		inventory_player[0].first = item.get();
+		inventory_player[0].second = 1;
 
 		// Pickup
-		set_clicked_inventory(0, 0);
+		inventory_click(0, 0);
 
 		EXPECT_EQ(decrement_selected_item(), false);
 
@@ -447,15 +447,15 @@ namespace game
 		EXPECT_EQ(cursor_item, nullptr);
 
 		// Should remove the selection cursor on the item
-		EXPECT_EQ(player_inventory[0].first, nullptr);
-		EXPECT_EQ(player_inventory[0].second, 0);
+		EXPECT_EQ(inventory_player[0].first, nullptr);
+		EXPECT_EQ(inventory_player[0].second, 0);
 	}
 
 	TEST(player_maanger, player_inventory_sort) {
 		using namespace jactorio::game::player_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
@@ -464,48 +464,48 @@ namespace game
 		item2->stack_size = 10;
 
 		// Item 1
-		player_inventory[0].first = item.get();
-		player_inventory[0].second = 10;
+		inventory_player[0].first = item.get();
+		inventory_player[0].second = 10;
 
-		player_inventory[10].first = item.get();
-		player_inventory[10].second = 25;
+		inventory_player[10].first = item.get();
+		inventory_player[10].second = 25;
 
-		player_inventory[20].first = item.get();
-		player_inventory[20].second = 25;
+		inventory_player[20].first = item.get();
+		inventory_player[20].second = 25;
 
-		player_inventory[13].first = item.get();
-		player_inventory[13].second = 20;
+		inventory_player[13].first = item.get();
+		inventory_player[13].second = 20;
 
-		player_inventory[14].first = item.get();
-		player_inventory[14].second = 30;
+		inventory_player[14].first = item.get();
+		inventory_player[14].second = 30;
 
 		// Item 2
-		player_inventory[31].first = item2.get();
-		player_inventory[31].second = 4;
+		inventory_player[31].first = item2.get();
+		inventory_player[31].second = 4;
 
-		player_inventory[32].first = item2.get();
-		player_inventory[32].second = 6;
+		inventory_player[32].first = item2.get();
+		inventory_player[32].second = 6;
 
-		player_inventory[22].first = item2.get();
-		player_inventory[22].second = 1;
+		inventory_player[22].first = item2.get();
+		inventory_player[22].second = 1;
 
 
 		// Sorted inventory should be as follows
 		// Item(count)
 		// 1(50), 1(50), 1(10), 2(10), 2(1)
-		player_inventory_sort();
+		inventory_sort();
 
-		EXPECT_EQ(player_inventory[0].first, item.get());
-		EXPECT_EQ(player_inventory[0].second, 50);
-		EXPECT_EQ(player_inventory[1].first, item.get());
-		EXPECT_EQ(player_inventory[1].second, 50);
-		EXPECT_EQ(player_inventory[2].first, item.get());
-		EXPECT_EQ(player_inventory[2].second, 10);
+		EXPECT_EQ(inventory_player[0].first, item.get());
+		EXPECT_EQ(inventory_player[0].second, 50);
+		EXPECT_EQ(inventory_player[1].first, item.get());
+		EXPECT_EQ(inventory_player[1].second, 50);
+		EXPECT_EQ(inventory_player[2].first, item.get());
+		EXPECT_EQ(inventory_player[2].second, 10);
 
-		EXPECT_EQ(player_inventory[3].first, item2.get());
-		EXPECT_EQ(player_inventory[3].second, 10);
-		EXPECT_EQ(player_inventory[4].first, item2.get());
-		EXPECT_EQ(player_inventory[4].second, 1);
+		EXPECT_EQ(inventory_player[3].first, item2.get());
+		EXPECT_EQ(inventory_player[3].second, 10);
+		EXPECT_EQ(inventory_player[4].first, item2.get());
+		EXPECT_EQ(inventory_player[4].second, 1);
 	}
 
 	TEST(player_maanger, player_inventory_sort2) {
@@ -514,7 +514,7 @@ namespace game
 		namespace data_manager = jactorio::data::data_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
@@ -524,20 +524,20 @@ namespace game
 		data_manager::data_raw_add(
 			jactorio::data::data_category::item, inventory_selected_cursor_iname, cursor);
 
-		player_inventory[10].first = cursor;
-		player_inventory[10].second = 0;
+		inventory_player[10].first = cursor;
+		inventory_player[10].second = 0;
 
 
-		player_inventory_sort();
+		inventory_sort();
 
-		EXPECT_EQ(player_inventory[10].first, cursor);
-		EXPECT_EQ(player_inventory[10].second, 0);
+		EXPECT_EQ(inventory_player[10].first, cursor);
+		EXPECT_EQ(inventory_player[10].second, 0);
 
 		// There should have been no new cursors created anywhere
-		for (int i = 0; i < player_inventory_size; ++i) {
+		for (int i = 0; i < inventory_size; ++i) {
 			if (i == 10)
 				continue;
-			EXPECT_NE(player_inventory[i].first, cursor);
+			EXPECT_NE(inventory_player[i].first, cursor);
 		}
 	}
 
@@ -547,32 +547,32 @@ namespace game
 		namespace data_manager = jactorio::data::data_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
+		r_reset_inventory_variables();
 
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
 
-		player_inventory[10].first = item.get();
-		player_inventory[10].second = 100;
+		inventory_player[10].first = item.get();
+		inventory_player[10].second = 100;
 
-		player_inventory[11].first = item.get();
-		player_inventory[11].second = 100;
+		inventory_player[11].first = item.get();
+		inventory_player[11].second = 100;
 
-		player_inventory[12].first = item.get();
-		player_inventory[12].second = 10;
+		inventory_player[12].first = item.get();
+		inventory_player[12].second = 10;
 
-		player_inventory_sort();
+		inventory_sort();
 
-		EXPECT_EQ(player_inventory[0].first, item.get());
-		EXPECT_EQ(player_inventory[0].second, 100);
+		EXPECT_EQ(inventory_player[0].first, item.get());
+		EXPECT_EQ(inventory_player[0].second, 100);
 
-		EXPECT_EQ(player_inventory[1].first, item.get());
-		EXPECT_EQ(player_inventory[1].second, 100);
+		EXPECT_EQ(inventory_player[1].first, item.get());
+		EXPECT_EQ(inventory_player[1].second, 100);
 
-		EXPECT_EQ(player_inventory[2].first, item.get());
-		EXPECT_EQ(player_inventory[2].second, 10);
+		EXPECT_EQ(inventory_player[2].first, item.get());
+		EXPECT_EQ(inventory_player[2].second, 10);
 	}
 
 	//
@@ -587,81 +587,73 @@ namespace game
 
 	TEST(player_manager, recipe_select_recipe_group) {
 		using namespace jactorio::game::player_manager;
-		select_recipe_group(1);
+		recipe_group_select(1);
 
-		EXPECT_EQ(get_selected_recipe_group(), 1);
+		EXPECT_EQ(recipe_group_get_selected(), 1);
 	}
 
-	TEST(player_manager, recipe_craft) {
-		using namespace jactorio::game::player_manager;
-		namespace data_manager = jactorio::data::data_manager;
+	
+	TEST(player_manager, recipe_queue) {
+		// Queueing 2 recipes will remove the ingredients from the player inventory, but will not return any products
+		// since recipe_craft_tick() is not called
 
 		clear_player_inventory();
-		reset_inventory_variables();
-		jactorio::core::Resource_guard guard(data_manager::clear_data);
-
-		// With the given recipe and materials, the a item should have been crafted, decreasing the original material
+		jactorio::core::Resource_guard guard(jactorio::data::data_manager::clear_data);
+		
 		const auto item = new jactorio::data::Item();
 		const auto item_product = new jactorio::data::Item();
 
-		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-1", item);
-
-		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-product", item_product);
-		
-		player_inventory[0] = {item, 10};
-
-		auto recipe = jactorio::data::Recipe();
-		recipe.set_ingredients({{"item-1", 2}});
-		recipe.set_product({"item-product", 1});
-		
-		// Craft 2 times
-		EXPECT_EQ(recipe_craft(&recipe), true);
-		EXPECT_EQ(recipe_craft(&recipe), true);
-
-		// Ingredient decreased
-		EXPECT_EQ(player_inventory[0].first, item);
-		EXPECT_EQ(player_inventory[0].second, 6);
-		// Final product outputted in the next free slot
-		EXPECT_EQ(player_inventory[1].first, item_product);
-		EXPECT_EQ(player_inventory[1].second, 2);
-	}
-
-	TEST(player_manager, recipe_craft_invalid) {
-		// Not enough ingredients to craft
-		
 		using namespace jactorio::game::player_manager;
 		namespace data_manager = jactorio::data::data_manager;
 
-		clear_player_inventory();
-		reset_inventory_variables();
-		jactorio::core::Resource_guard guard(data_manager::clear_data);
-
-		// With the given recipe and materials, the a item should have been crafted, decreasing the original material
-		const auto item = new jactorio::data::Item();
-		const auto item_product = new jactorio::data::Item();
-
+		// Register items
 		data_manager::data_raw_add(
 			jactorio::data::data_category::item, "item-1", item);
 
 		data_manager::data_raw_add(
 			jactorio::data::data_category::item, "item-product", item_product);
 
+		// Register recipes
 		auto recipe = jactorio::data::Recipe();
 		recipe.set_ingredients({{"item-1", 2}});
 		recipe.set_product({"item-product", 1});
+		recipe.set_crafting_time(1);
 
-		EXPECT_EQ(recipe_craft(&recipe), false);
+		// 10 of item in player inventory
+		inventory_player[0] = {item, 10};
+
+		// Queue 2 crafts
+		recipe_queue(&recipe);
+		recipe_queue(&recipe);
+
+		// Used up 2 * 2 (4) items
+		EXPECT_EQ(inventory_player[0].first, item);
+		EXPECT_EQ(inventory_player[0].second, 6);
+		
+		EXPECT_EQ(inventory_player[1].first, nullptr);
+
+
+		//
+
+
+		// Output items should be in slot index 1 after 60 ticks (1 second) for each item
+		recipe_craft_tick(30);  // Not done yet
+
+		EXPECT_EQ(inventory_player[1].first, nullptr);
+		
+		recipe_craft_tick(90);
+
+		EXPECT_EQ(inventory_player[1].first, item_product);
+		EXPECT_EQ(inventory_player[1].second, 2);
 	}
 
+	
 	TEST(player_manager, recipe_craft_resurse) {
 		// Should recursively craft the product, crafting intermediate products as necessary
 		using namespace jactorio::game::player_manager;
 		namespace data_manager = jactorio::data::data_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		auto* item_product = new jactorio::data::Item();
@@ -696,15 +688,18 @@ namespace game
 
 		// 3-B + 1-C -> 1-A
 		// 5-B1 + 10-B2 -> 2-B
-		player_inventory[0] = {item1, 1};  // One batch of this will be crafted
-		player_inventory[1] = {item2, 1};
+		inventory_player[0] = {item1, 1};  // One batch of this will be crafted
+		inventory_player[1] = {item2, 1};
 
-		player_inventory[2] = {item_sub1, 5};
-		player_inventory[3] = {item_sub2, 10};
+		inventory_player[2] = {item_sub1, 5};
+		inventory_player[3] = {item_sub2, 10};
 
 		recipe_craft_r(final_recipe);
-		EXPECT_EQ(player_inventory[0].first, item_product);
-		EXPECT_EQ(player_inventory[0].second, 1);
+
+		recipe_craft_tick(9999);  // Should be enough ticks to finish crafting
+		
+		EXPECT_EQ(inventory_player[0].first, item_product);
+		EXPECT_EQ(inventory_player[0].second, 1);
 	}
 	
 
@@ -714,7 +709,6 @@ namespace game
 		namespace data_manager = jactorio::data::data_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		data_manager::data_raw_add(
@@ -749,11 +743,11 @@ namespace game
 
 		// 3-B + 1-C -> 1-A
 		// 5-B1 + 10-B2 -> 2-B
-		player_inventory[0] = {item1, 1};
-		player_inventory[1] = {item2, 2};
+		inventory_player[0] = {item1, 1};
+		inventory_player[1] = {item2, 2};
 		
-		player_inventory[2] = {item_sub1, 5};
-		player_inventory[3] = {item_sub2, 10};
+		inventory_player[2] = {item_sub1, 5};
+		inventory_player[3] = {item_sub2, 10};
 
 		// Crafting item-product:
 		// Item 1 requires one batch to be crafted
@@ -767,7 +761,6 @@ namespace game
 		namespace data_manager = jactorio::data::data_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		data_manager::data_raw_add(
@@ -802,10 +795,10 @@ namespace game
 
 		// 3-B + 1-C -> 1-A
 		// 5-B1 + 10-B2 -> 2-B
-		player_inventory[0] = {item1, 1};
-		player_inventory[1] = {item2, 2};
+		inventory_player[0] = {item1, 1};
+		inventory_player[1] = {item2, 2};
 
-		player_inventory[2] = {item_sub1, 5};
+		inventory_player[2] = {item_sub1, 5};
 		// player_inventory[3] = {item_sub2, 10};  // Without this, the recipe cannot be crafted
 
 		// Crafting item-product:
@@ -821,7 +814,6 @@ namespace game
 		namespace data_manager = jactorio::data::data_manager;
 
 		clear_player_inventory();
-		reset_inventory_variables();
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		data_manager::data_raw_add(
@@ -857,8 +849,8 @@ namespace game
 		// Final product: item-1 + item-sub-2
 		// item-2: item-sub-1 + item-sub-2
 		
-		player_inventory[1] = {item_sub1, 10};
-		player_inventory[2] = {item_sub2, 5};
+		inventory_player[1] = {item_sub1, 10};
+		inventory_player[2] = {item_sub2, 5};
 
 		EXPECT_EQ(recipe_can_craft(final_recipe, 1), false);
 	}

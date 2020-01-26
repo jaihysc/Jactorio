@@ -87,7 +87,7 @@ void jactorio::renderer::gui::debug_item_spawner(const ImGuiWindowFlags window_f
 		if (ImGui::Button(item->get_localized_name().c_str())) {
 			data::item_stack item_stack = {item, give_amount};
 			game::inventory_c::add_itemstack_to_inv(
-				game::player_manager::player_inventory, game::player_manager::player_inventory_size, item_stack);
+				game::player_manager::inventory_player, game::player_manager::inventory_size, item_stack);
 		}
 		ImGui::PopID();
 	}
@@ -98,7 +98,7 @@ void jactorio::renderer::gui::debug_item_spawner(const ImGuiWindowFlags window_f
 		give_amount = 1;
 	
 	if (ImGui::Button("Clear inventory")) {
-		for (auto& i : game::player_manager::player_inventory) {
+		for (auto& i : game::player_manager::inventory_player) {
 			i = {nullptr, 0};
 		}
 	}
