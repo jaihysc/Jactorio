@@ -4,6 +4,13 @@
 #include "data/data_manager.h"
 #include "core/resource_guard.h"
 
+// Prepares an inventory test by resetting the appropriate variables and creating the RAII guards
+#define INVENTORY_TEST_HEADER\
+	namespace data_manager = jactorio::data::data_manager;\
+	using namespace jactorio::game::player_manager;\
+	clear_player_inventory();\
+	r_reset_inventory_variables();
+
 namespace game
 {
 	// Clears the player inventory for the next test
@@ -20,14 +27,8 @@ namespace game
 		// Left click on a slot picks up items by reference
 		// The inventory slot becomes the cursor
 		// The cursor holds the item
-		namespace data_manager = jactorio::data::data_manager;
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
-
-		// Setup
-		auto data_manager_guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		INVENTORY_TEST_HEADER
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
@@ -54,14 +55,8 @@ namespace game
 	TEST(player_manager, inventory_deselect_referenced_item) {
 		// Left click on a slot picks up items by reference
 		// Left / right clicking again on the same slot deselects the item
-		namespace data_manager = jactorio::data::data_manager;
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
-
-		// Setup
-		auto data_manager_guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		INVENTORY_TEST_HEADER
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
@@ -110,14 +105,8 @@ namespace game
 		// Left click on index 3 to drop off the item at index
 
 		// Index 0 (origin) should be empty
-		namespace data_manager = jactorio::data::data_manager;
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
-
-		// Setup
-		auto data_manager_guard = jactorio::core::Resource_guard(data_manager::clear_data);
+		INVENTORY_TEST_HEADER
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
@@ -150,10 +139,7 @@ namespace game
 
 	TEST(player_manager, inventory_Rclick_select_item_by_unique) {
 		// Right click on a slot creates a new inventory slot in the cursor and places half from the inventory into it
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
+		INVENTORY_TEST_HEADER
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 
@@ -174,11 +160,7 @@ namespace game
 	TEST(player_manager, inventory_drop_single_unique_item) {
 		// Right click on item to pick up half into cursor
 		// Right click on empty slot to drop 1 off from the cursor
-
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
+		INVENTORY_TEST_HEADER
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 
@@ -237,11 +219,7 @@ namespace game
 	TEST(player_manager, inventory_drop_stack_unique_item) {
 		// Right click on item to pick up half into cursor
 		// Left click on empty slot to drop entire stack off from the cursor
-
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
+		INVENTORY_TEST_HEADER
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 
@@ -278,11 +256,7 @@ namespace game
 	TEST(player_manager, inventory_click_empty_slot) {
 		// Left click on empty slot
 		// Should remain unchanged
-
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
+		INVENTORY_TEST_HEADER
 
 		inventory_player[0].first = nullptr;
 		inventory_player[0].second = 0;
@@ -301,12 +275,7 @@ namespace game
 	TEST(player_manager, increment_selected_item) {
 		// If player selects item by "unique" or "reference",
 		// It should function the same as it only modifies the cursor item stack
-
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
-
+		INVENTORY_TEST_HEADER
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
@@ -345,12 +314,7 @@ namespace game
 
 	TEST(player_manager, increment_selected_item_exceed_item_stack) {
 		// Attempting to increment an item exceeding item stack returns false and fails the increment
-
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
-
+		INVENTORY_TEST_HEADER
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
@@ -372,12 +336,7 @@ namespace game
 	TEST(player_manager, decrement_selected_item_unique) {
 		// If player selects item by "unique"
 		// If decremented to 0, deselect the cursor item
-
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
-
+		INVENTORY_TEST_HEADER
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
@@ -418,18 +377,12 @@ namespace game
 		// Selected by reference
 		// If decremented to 0, deselect the cursor item
 		// If the selected item is empty after decrementing, return false
-
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
-
-		// Setup
-		auto data_manager_guard = jactorio::core::Resource_guard(jactorio::data::data_manager::clear_data);
+		INVENTORY_TEST_HEADER
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
-		jactorio::data::data_manager::data_raw_add(
+		data_manager::data_raw_add(
 			jactorio::data::data_category::item, inventory_selected_cursor_iname, cursor);
 
 		const auto item = std::make_unique<jactorio::data::Item>();
@@ -452,10 +405,7 @@ namespace game
 	}
 
 	TEST(player_maanger, player_inventory_sort) {
-		using namespace jactorio::game::player_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
+		INVENTORY_TEST_HEADER
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
@@ -510,14 +460,8 @@ namespace game
 
 	TEST(player_maanger, player_inventory_sort2) {
 		// Sorting will not move the item with inventory_selected_cursor_iname (to prevent breaking the inventory logic)
-		using namespace jactorio::game::player_manager;
-		namespace data_manager = jactorio::data::data_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
-
+		INVENTORY_TEST_HEADER
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
-
 
 		// Create the cursor prototype
 		auto* cursor = new jactorio::data::Item();
@@ -543,13 +487,7 @@ namespace game
 
 	TEST(player_maanger, player_inventory_sort_item_exceding_stack) {
 		// If there is an item which exceeds its stack size, do not attempt to stack into it
-		using namespace jactorio::game::player_manager;
-		namespace data_manager = jactorio::data::data_manager;
-
-		clear_player_inventory();
-		r_reset_inventory_variables();
-
-		jactorio::core::Resource_guard guard(data_manager::clear_data);
+		INVENTORY_TEST_HEADER
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
@@ -575,6 +513,7 @@ namespace game
 		EXPECT_EQ(inventory_player[2].second, 10);
 	}
 
+#undef INVENTORY_TEST_HEADER
 	//
 	//
 	//

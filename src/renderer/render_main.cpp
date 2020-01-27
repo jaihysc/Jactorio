@@ -6,22 +6,24 @@
 #include <vector>
 
 #include "core/debug/execution_timer.h"
+#include "core/filesystem.h"
 #include "core/logger.h"
 #include "core/resource_guard.h"
+
 #include "data/data_manager.h"
 
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/texture.h"
-#include "renderer/render_loop.h"
 #include "renderer/rendering/spritemap_generator.h"
+#include "renderer/rendering/world_renderer.h"
 #include "renderer/window/window_manager.h"
 
-#include "core/filesystem.h"
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/logic_loop.h"
+#include "game/player/player_manager.h"
 #include "game/world/world_manager.h"
 
 unsigned short window_x = 0;
@@ -44,8 +46,8 @@ jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
 }
 
 int jactorio::renderer::render_init() {
-	auto loop_termination_guard = core::Resource_guard(&game::terminate_logic_loop);
-	auto window_manager_guard = core::Resource_guard(window_manager::terminate);
+	core::Resource_guard loop_termination_guard(&game::terminate_logic_loop);
+	core::Resource_guard window_manager_guard(&window_manager::terminate);
 
 	if (window_manager::init(640, 490) != 0)
 		return 1;
@@ -53,7 +55,7 @@ int jactorio::renderer::render_init() {
 	
 	GLFWwindow* window = window_manager::get_window();
 
-	auto imgui_manager_guard = core::Resource_guard(&imgui_manager::imgui_terminate);
+	core::Resource_guard imgui_manager_guard(&imgui_manager::imgui_terminate);
 	imgui_manager::setup(window);
 
 	// Load prototype data
@@ -89,7 +91,7 @@ int jactorio::renderer::render_init() {
 
 
 	// Loading textures
-	auto sprite_map_guard = core::Resource_guard(&renderer_sprites::clear_spritemaps);
+	core::Resource_guard sprite_map_guard(&renderer_sprites::clear_spritemaps);
 	renderer_sprites::create_spritemap(data::Sprite::sprite_group::terrain, true);
 	renderer_sprites::create_spritemap(data::Sprite::sprite_group::gui, false);
 
@@ -142,10 +144,10 @@ int jactorio::renderer::render_init() {
 	{
 		LOG_MESSAGE(info, "2 - Runtime stage")
 
-		auto renderer_guard = core::Resource_guard<void>([]() { delete main_renderer; });
+		core::Resource_guard<void> renderer_guard([]() { delete main_renderer; });
 		main_renderer = new Renderer();
 		
-		auto chunk_data_guard = core::Resource_guard(&game::world_manager::clear_chunk_data);
+		core::Resource_guard chunk_data_guard(&game::world_manager::clear_chunk_data);
 
 		// core::loop_manager::render_loop_ready(renderer_draw);
 
@@ -155,8 +157,20 @@ int jactorio::renderer::render_init() {
 
 			game::Event::raise<game::Renderer_tick_event>(game::event_type::renderer_tick);
 
-			// Don't multi-thread opengl
-			render_loop(main_renderer);
+			{
+				Renderer::g_clear();
+
+				// MVP Matricies updated in here
+				world_renderer::render_player_position(
+					main_renderer,
+					game::player_manager::get_player_position_x(),
+					game::player_manager::get_player_position_y());
+
+				imgui_manager::imgui_draw();
+
+				glfwSwapBuffers(window_manager::get_window());  // Done rendering
+				glfwPollEvents();
+			}
 
 
 			next_tick += std::chrono::microseconds(16666);

@@ -60,7 +60,6 @@ set(JACTORIO_SRC_FILES
 
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
-	${JACTORIO_DIR}/renderer/render_loop.cpp
 
 	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp

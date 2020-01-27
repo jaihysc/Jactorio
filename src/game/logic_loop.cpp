@@ -26,9 +26,6 @@ const float move_speed = 0.1f;
 int test_rm_counter = 0;
 
 void jactorio::game::init_logic_loop() {
-	// Logic initialization here...
-	logic_loop_should_terminate = false;
-
 	// Movement controls
 	input_manager::subscribe([]() {
 		player_manager::move_player_y(move_speed * -1);
