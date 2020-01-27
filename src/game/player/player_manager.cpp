@@ -292,11 +292,13 @@ uint16_t jactorio::game::player_manager::recipe_group_get_selected() {
 std::deque<jactorio::data::Recipe*> crafting_queue;
 uint16_t crafting_ticks_remaining = 0;
 
-// TODO reimplement this as extra items left over so queuing multiple will use the extras instead of using the ones from
-// inventory
 // Items to be deducted away during crafting and not returned to the player inventory
 // Used for recipes requiring subrecipes, where intermediate items must be satisfied first
 std::map<std::string, uint16_t> crafting_item_deductions;
+
+// Excess items which queued recipes will return to the player inventory
+std::map<std::string, uint16_t> crafting_item_extras;
+
 
 // ~to future me, remember that you banged your head against the ground for 4 hours trying to
 // figure out how to implement this
@@ -340,8 +342,18 @@ void jactorio::game::player_manager::recipe_craft_tick(uint16_t ticks) {
 				}
 			}
 
-			if (i.second != 0)
+			// Still has items to return to player inventory
+			if (i.second != 0) {
+				// Extra not available in queue anymore since it has been returned to the player
+				auto& queue_extras = crafting_item_extras[recipe_item.first];
+				if (queue_extras > i.second)
+					queue_extras -= i.second;
+				else
+					// If entry is 0, erase it
+					crafting_item_extras.erase(recipe_item.first);
+				
 				inventory_c::add_itemstack_to_inv(inventory_player, inventory_size, i);
+			}
 
 			// Set crafting ticks remaining to the next item
 			if (!crafting_queue.empty())
@@ -394,12 +406,55 @@ void jactorio::game::player_manager::recipe_craft_r(data::Recipe* recipe) {
 		const uint32_t possess_amount =
 			inventory_c::get_inv_item_count(inventory_player, inventory_size, ingredient_proto);
 
-		// Craft sub-recipes recursively first if they are not sufficient
+		// Insufficient ingredient amount in player inventory
 		if (possess_amount < ingredient.second) {
-			// Deduct from returning to player inventory as it is used for crafting
-			crafting_item_deductions[ingredient.first] += ingredient.second - possess_amount;
-			
-			recipe_craft_r(data::Recipe::get_item_recipe(ingredient.first));
+			auto amount_needed = ingredient.second - possess_amount;
+			// If there any items being queued to be returned to the player, do not return and instead
+			// use it to craft
+			auto& queued_available = crafting_item_extras[ingredient.first];
+			auto& return_deductions = crafting_item_deductions[ingredient.first];
+
+			if (amount_needed < queued_available) {
+				// Available through what is queued
+				queued_available -= possess_amount;
+				return_deductions += possess_amount;  // Not available anymore, so deduct it after crafting
+
+				LOG_MESSAGE_f(debug, "Increasing crafting deductions of '%s' by %d",
+				              ingredient.first.c_str(), possess_amount);
+			}
+			else {
+				// More than what is queued
+
+				// Use what is available from queue
+				amount_needed -= queued_available;
+
+				// amount_needed: Deduct from returning to player inventory as it is used for crafting
+				// queued_available: Queued available items not available anymore, so deduct it after crafting
+				LOG_MESSAGE_f(debug, "Increasing crafting deductions of '%s' by %d",
+				              ingredient.first.c_str(), amount_needed + queued_available);
+				return_deductions += amount_needed + queued_available;
+
+				
+				auto* ingredient_recipe = data::Recipe::get_item_recipe(ingredient.first);
+
+				// Round up to always ensure enough is crafted
+				const unsigned int yield = ingredient_recipe->get_product().second;
+				const auto batches = (amount_needed + yield - 1) / yield;
+
+				// Keep track of excess amounts
+				const auto excess = batches * yield - amount_needed;
+				if (excess > 0)
+					crafting_item_extras[ingredient.first] += excess;
+				else
+					// All available from queue used up, delete entry
+					crafting_item_extras.erase(ingredient.first);
+				
+				// Craft sub-recipes recursively until met
+				for (unsigned int i = 0; i < batches; ++i) {
+					recipe_craft_r(ingredient_recipe);
+				}
+			}
+
 		}
 	}
 
@@ -472,9 +527,17 @@ bool jactorio::game::player_manager::recipe_can_craft(const data::Recipe* recipe
 
 
 // ============================================================================================
-// Reserved
+// TEST use only
 
 void jactorio::game::player_manager::r_reset_inventory_variables() {
 	has_item_selected = false;
 	select_by_reference = false;
+}
+
+std::map<std::string, uint16_t>& jactorio::game::player_manager::get_crafting_item_deductions() {
+	return crafting_item_deductions;
+}
+
+std::map<std::string, uint16_t>& jactorio::game::player_manager::get_crafting_item_extras() {
+	return crafting_item_extras;
 }

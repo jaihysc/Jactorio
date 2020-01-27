@@ -113,7 +113,10 @@ namespace jactorio::game::player_manager
 	/**
 	 * !! Tests use only !!
 	 */
-	J_DEPRECATED void r_reset_inventory_variables();
+	J_TEST_USE_ONLY void r_reset_inventory_variables();
+
+	J_TEST_USE_ONLY std::map<std::string, uint16_t>& get_crafting_item_deductions();
+	J_TEST_USE_ONLY std::map<std::string, uint16_t>& get_crafting_item_extras();
 }
 
 #endif // GAME_PLAYER_PLAYER_MANAGER_H

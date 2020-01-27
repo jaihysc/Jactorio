@@ -10,6 +10,7 @@
 
 #define J_NODISCARD [[nodiscard]]
 #define J_DEPRECATED [[deprecated]]
+#define J_TEST_USE_ONLY [[deprecated("Function is for test use only (May be ignored if compiling for a test)")]]
 
 // Build type
 #ifdef JACTORIO_DEBUG_BUILD
