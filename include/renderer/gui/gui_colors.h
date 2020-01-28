@@ -60,4 +60,17 @@
 // Popup
 #define J_GUI_COL_POPUP_BG                IM_COL32(49, 48, 49, 200)
 
+
+//
+// Formatting
+// 
+
+// Body
+#define J_GUI_STYLE_WINDOW_PADDING_X 10
+#define J_GUI_STYLE_WINDOW_PADDING_Y 0
+
+// Title bar
+#define J_GUI_STYLE_FRAME_PADDING_X 10
+#define J_GUI_STYLE_FRAME_PADDING_Y 10
+
 #endif // RENDERER_GUI_GUI_COLORS_H

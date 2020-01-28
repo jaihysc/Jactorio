@@ -110,9 +110,6 @@ namespace jactorio::game::player_manager
 	// ============================================================================================
 	// Reserved
 	
-	/**
-	 * !! Tests use only !!
-	 */
 	J_TEST_USE_ONLY void r_reset_inventory_variables();
 
 	J_TEST_USE_ONLY std::map<std::string, uint16_t>& get_crafting_item_deductions();

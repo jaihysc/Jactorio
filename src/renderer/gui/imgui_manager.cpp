@@ -90,11 +90,13 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	style.TabRounding = 0.0f;
 
 	// Borders
-	style.FrameBorderSize = 1.f;
+	style.FrameBorderSize = 0.f;
 
 	// Padding
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 4));
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 8));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, 
+	                    ImVec2(J_GUI_STYLE_WINDOW_PADDING_X, J_GUI_STYLE_WINDOW_PADDING_Y));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, 
+	                    ImVec2(J_GUI_STYLE_FRAME_PADDING_X, J_GUI_STYLE_FRAME_PADDING_Y));
 
 	// Window colors
 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
