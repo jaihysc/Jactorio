@@ -111,7 +111,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(Entity, rotatable)
 		PYBIND_PROP_GET_SET(Entity, item, item)
 		PYBIND_PROP_SEPARATE(Entity, tileWidth, tile_width)
-		PYBIND_PROP_SEPARATE(Entity, tileHeight, tile_height);
+		PYBIND_PROP_SEPARATE(Entity, tileHeight, tile_height)
+		PYBIND_PROP_SEPARATE(Entity, pickupTime, pickup_time);
 
 	py::class_<Health_entity, Entity>(m, "HealthEntity")
 		PYBIND_PROP_SEPARATE(Health_entity, maxHealth, max_health);

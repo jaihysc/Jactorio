@@ -61,6 +61,10 @@
 #define J_GUI_COL_POPUP_BG                IM_COL32(49, 48, 49, 200)
 
 
+// Progress bar
+#define J_GUI_COL_PROGRESS                IM_COL32(250, 168, 56, 255)
+#define J_GUI_COL_PROGRESS_BG             IM_COL32(0, 0, 0, 255)
+
 //
 // Formatting
 // 

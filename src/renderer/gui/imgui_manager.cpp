@@ -20,13 +20,18 @@ ImGuiWindowFlags debug_window_flags = 0;
 ImGuiWindowFlags release_window_flags = 0;
 
 // Inventory
-jactorio::renderer::imgui_manager::Character_menu_data menu_data;
+jactorio::renderer::imgui_manager::Menu_data menu_data;
 
 void jactorio::renderer::imgui_manager::setup_character_data() {
 	menu_data.sprite_positions =
 		renderer_sprites::get_spritemap(data::Sprite::sprite_group::gui).sprite_positions;
 	menu_data.tex_id = renderer_sprites::get_texture(data::Sprite::sprite_group::gui)->get_id();
 }
+
+jactorio::renderer::imgui_manager::Menu_data& jactorio::renderer::imgui_manager::get_menu_data() {
+	return menu_data;
+}
+
 
 // Errors
 void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err_title,
@@ -215,11 +220,12 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
-	draw_window(gui_window::character, release_window_flags, menu_data);
+	draw_window(gui_window::character, release_window_flags);
 	draw_window(gui_window::debug, debug_window_flags);
 
-	gui::crafting_queue(menu_data);
-	gui::cursor_window(menu_data);
+	gui::crafting_queue();
+	gui::cursor_window();
+	gui::pickup_progressbar();
 
 	// Render
 	ImGui::Render();

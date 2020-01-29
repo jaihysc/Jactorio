@@ -1,15 +1,17 @@
 #include <gtest/gtest.h>
 
 #include "game/player/player_manager.h"
+#include "game/world/world_manager.h"
 #include "data/data_manager.h"
 #include "core/resource_guard.h"
+#include "data/prototype/entity/container_entity.h"
 
 // Prepares an inventory test by resetting the appropriate variables and creating the RAII guards
 #define INVENTORY_TEST_HEADER\
 	namespace data_manager = jactorio::data::data_manager;\
 	using namespace jactorio::game::player_manager;\
 	clear_player_inventory();\
-	r_reset_inventory_variables();
+	reset_inventory_variables();
 
 namespace game
 {
@@ -22,6 +24,124 @@ namespace game
 			i.second = 0;
 		}
 	}
+
+	TEST(player_manager, try_place_entity) {
+		INVENTORY_TEST_HEADER
+
+		jactorio::core::Resource_guard chunk_guard(&jactorio::game::world_manager::clear_chunk_data);
+		jactorio::core::Resource_guard data_guard(&jactorio::game::world_manager::clear_chunk_data);
+
+		// Create entity
+		auto item = jactorio::data::Item();
+		auto item_no_entity = jactorio::data::Item();  // Does not hold an entity reference
+
+		auto* entity = new jactorio::data::Container_entity();
+		entity->set_item(&item);
+		data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity);
+
+		
+		auto* entity2 = new jactorio::data::Container_entity();
+		data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity2);
+
+
+		auto tile_proto = jactorio::data::Tile();
+		tile_proto.is_water = false;
+		
+		// Create world with entity at 0, 0
+		auto* tiles = new jactorio::game::Chunk_tile[1024];
+		tiles[0].set_tile_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base, &tile_proto);
+
+		tiles[1].set_tile_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base, &tile_proto);
+		tiles[1].entity = entity2;
+		
+
+		jactorio::game::world_manager::add_chunk(
+			new jactorio::game::Chunk(0, 0, tiles));
+
+		// Edge cases
+		try_place(0, 0);  // Placing with no items selected
+
+		jactorio::data::item_stack selected_item = {&item_no_entity, 2};
+		set_selected_item(selected_item);
+		
+		tiles[0].entity = entity;
+		try_place(0, 0);  // Item holds no reference to an entity
+		EXPECT_EQ(tiles[0].entity, entity);  // Should not delete item at this location
+
+		
+		// Placement tests
+		selected_item = {&item, 2};
+		set_selected_item(selected_item);
+
+		tiles[0].entity = nullptr;
+		try_place(0, 0);  // Place on empty tile 0, 0
+		EXPECT_EQ(tiles[0].entity, entity);
+		EXPECT_EQ(get_selected_item()->second, 1);  // 1 less item 
+		
+		
+		try_place(1, 0);  // A tile already exists on 1, 0 - Should not override it
+		EXPECT_EQ(tiles[1].entity, entity2);
+	}
+	
+	TEST(player_manager, try_pickup_entity) {
+		INVENTORY_TEST_HEADER
+		
+		jactorio::core::Resource_guard chunk_guard(&jactorio::game::world_manager::clear_chunk_data);
+		jactorio::core::Resource_guard data_guard(&jactorio::game::world_manager::clear_chunk_data);
+
+		// Create entity
+		auto item = jactorio::data::Item();
+		
+		auto* entity = new jactorio::data::Container_entity();
+		entity->pickup_time = 1.f;
+		entity->set_item(&item);
+		data_manager::data_raw_add(jactorio::data::data_category::container_entity, "chester", entity);
+
+		// Create world with entity at 0, 0
+		auto* tiles = new jactorio::game::Chunk_tile[1024];
+		tiles[0].entity = entity;
+		tiles[1].entity = entity;
+
+		jactorio::game::world_manager::add_chunk(
+			new jactorio::game::Chunk(0, 0, tiles));
+
+
+		// 
+		EXPECT_EQ(get_pickup_percentage(), 0.f);  // Defaults to 0
+		try_pickup(0, 2, 990);  // Will not attempt to pickup non entity tiles
+
+		
+		// Test pickup
+		try_pickup(0, 0, 30);
+		EXPECT_EQ(get_pickup_percentage(), 0.5f);  // 50% picked up 30 ticks out of 60
+		EXPECT_EQ(tiles[0].entity, entity);  // Not picked up yet - 10 more ticks needed to reach 1 second
+
+		
+		try_pickup(1, 0, 10);  // Selecting different tile will reset pickup counter
+		EXPECT_EQ(tiles[1].entity, entity);  // Not picked up yet - 50 more to 1 second since counter reset
+
+		
+		try_pickup(0, 0, 50);
+		try_pickup(0, 0, 10);
+		EXPECT_EQ(tiles[0].entity, nullptr);  // Picked up, item given to inventory
+
+		EXPECT_EQ(inventory_player[0].first, &item);
+		EXPECT_EQ(inventory_player[0].second, 1);
+	}
+
+	TEST(player_manager, try_pickup_resource) {
+		// TODO when resources are implemented
+	}
+	
+	//
+	//
+	//
+	//
+	// PLAYER INVENTORY MENU
+	//
+	//
+	//
+	//
 
 	TEST(player_manager, inventory_lclick_select_item_by_reference) {
 		// Left click on a slot picks up items by reference
@@ -196,7 +316,7 @@ namespace game
 		}
 
 		clear_player_inventory();
-		r_reset_inventory_variables();
+		reset_inventory_variables();
 		// Drop 1 on the original item stack where half was taken from
 		{
 			inventory_player[0].first = item.get();

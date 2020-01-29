@@ -8,22 +8,16 @@
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-#include "game/logic/placement_controller.h"
-#include "game/logic/inventory_controller.h"
 #include "game/player/player_manager.h"
 #include "game/world/world_generator.h"
-#include "game/world/world_manager.h"
 
 #include "data/data_manager.h"
-#include "data/prototype/item/item.h"
+
 #include "renderer/gui/imgui_manager.h"
-#include "data/prototype/tile/resource_tile.h"
 
 bool logic_loop_should_terminate = false;
 
-const float move_speed = 0.1f;
-
-int test_rm_counter = 0;
+constexpr float move_speed = 0.1f;
 
 void jactorio::game::init_logic_loop() {
 	// Movement controls
@@ -68,69 +62,23 @@ void jactorio::game::init_logic_loop() {
 		}, GLFW_KEY_TAB, GLFW_RELEASE);
 	}
 
-	// TODO MOVE, test entity placement
 	{
 		// Place entities
 		input_manager::subscribe([]() {
 			if (renderer::imgui_manager::input_captured)
 				return;
 
-			const data::item_stack* ptr;
-			if ((ptr = player_manager::get_selected_item()) != nullptr) {
-				const auto tile_selected = mouse_selection::get_mouse_tile_coords();
-
-				// Does an entity already exist at this location?
-				if (world_manager::get_tile_world_coords(tile_selected.first, tile_selected.second)
-					->get_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::entity) != nullptr)
-					return;
-
-				// Entities only
-				auto* entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
-				if (entity_ptr != nullptr) {
-					// Do not take item away from player unless item was successfully placed
-					if (!placement_c::place_entity_at_coords_ranged(entity_ptr, tile_selected.first, tile_selected.second))
-						return;
-
-					// Item stack used up, sort player inventory to fill gap
-					if (!player_manager::decrement_selected_item()) {
-						player_manager::inventory_sort();
-					}
-				}
-			}
+			const auto tile_selected = mouse_selection::get_mouse_tile_coords();
+			player_manager::try_place(tile_selected.first, tile_selected.second);
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS);
 
-		// Remove entities resource
+		// Remove entities or mine resource
 		input_manager::subscribe([]() {
-			const auto tile_selected = mouse_selection::get_mouse_tile_coords();
-			const auto* tile = world_manager::get_tile_world_coords(tile_selected.first, tile_selected.second);
-			
-			const auto* entity_ptr = tile->entity;
-			// Pickup entity has priority over extract resource
-			if (entity_ptr == nullptr) {
-				// Extract resource
-				auto* resource_tile = static_cast<data::Resource_tile*>(
-					tile->get_tile_layer_tile_prototype(Chunk_tile::chunk_layer::resource));
-				if (resource_tile != nullptr) {
-					LOG_MESSAGE(debug, "MINING AWAY p");
-				}
-				
+			if (renderer::imgui_manager::input_captured)
 				return;
-			}
 
-			// Pickup entity
-			test_rm_counter++;
-			if (test_rm_counter >= 10) {
-				if (placement_c::place_entity_at_coords_ranged(nullptr, tile_selected.first, tile_selected.second)) {
-					test_rm_counter = 0;
-					auto item_stack = data::item_stack(entity_ptr->get_item(), 1);
-					inventory_c::add_itemstack_to_inv(
-						player_manager::inventory_player, player_manager::inventory_size, item_stack);
-
-					player_manager::inventory_sort();
-
-					// TODO do something if the inventory is full
-				}
-			}
+			const auto tile_selected = mouse_selection::get_mouse_tile_coords();
+			player_manager::try_pickup(tile_selected.first, tile_selected.second);
 		}, GLFW_MOUSE_BUTTON_2, GLFW_PRESS);
 	}
 

@@ -51,6 +51,12 @@ namespace jactorio::data
 			return this;
 		}
 
+		/**
+		 * Seconds to pickup entity
+		 */
+		PYTHON_PROP_REF_I(Entity, float, pickup_time, 1);
+
+
 		// Localized names
 		// Override the default setter to also set for the item associated with this
 		void set_localized_name(const std::string& localized_name) override {
@@ -71,6 +77,7 @@ namespace jactorio::data
 
 	inline void Entity::post_load_validate() const {
 		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
+		J_DATA_ASSERT(pickup_time >= 0, "Pickup time must be 0 or positive")
 	}
 }
 

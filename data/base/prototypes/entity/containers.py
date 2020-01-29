@@ -9,6 +9,8 @@ def addContainer(name, invSize, health, worldSprite, itemSprite):
 
         .maxHealth(health)
         .inventorySize(invSize)
+
+        .pickupTime(0.1)
         
         .sprite((j.add(c.Sprite)
                 .load(worldSprite)

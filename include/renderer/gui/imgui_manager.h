@@ -21,7 +21,7 @@ namespace jactorio::renderer::imgui_manager
 		debug
 	};
 
-	struct Character_menu_data
+	struct Menu_data
 	{
 		std::unordered_map<unsigned, core::Quad_position> sprite_positions;
 		unsigned int tex_id = 0;  // Assigned by openGL
@@ -32,7 +32,8 @@ namespace jactorio::renderer::imgui_manager
 	 * Requires Sprite::sprite_group::gui to be initialized
 	 */
 	void setup_character_data();
-
+	J_NODISCARD Menu_data& get_menu_data();
+	
 	/**
 	 * Begins a self contained drawing loop which displays the specified error message
 	 */

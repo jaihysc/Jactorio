@@ -7,6 +7,9 @@
 #include "game/logic/inventory_controller.h"
 #include "game/world/world_manager.h"
 #include "data/data_manager.h"
+#include "game/logic/placement_controller.h"
+#include "game/input/mouse_selection.h"
+#include "data/prototype/tile/resource_tile.h"
 
 float player_position_x = 0;
 float player_position_y = 0;
@@ -56,13 +59,106 @@ void jactorio::game::player_manager::move_player_y(const float amount) {
 }
 
 // ============================================================================================
+// Entity placement / pickup
+
+void jactorio::game::player_manager::try_place(const int tile_x, const int tile_y) {
+	const data::item_stack* ptr = get_selected_item();
+	if (ptr == nullptr)
+		return;
+
+	// Ensure item attempting to place is an entity
+	auto* entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
+	if (entity_ptr == nullptr)
+		return;
+
+
+	// Do not take item away from player unless item was successfully placed
+	if (!placement_c::place_entity_at_coords_ranged(entity_ptr, tile_x, tile_y))
+		return;
+
+	// If item stack was used up, sort player inventory to fill gap
+	if (!decrement_selected_item()) {
+		inventory_sort();
+	}
+}
+
+uint16_t pickup_tick_counter;
+uint16_t pickup_tick_target;
+
+// On first run, the pickup_tick_counter and pickup_tick_target needs to be initialized
+bool last_selected_initialized = false;
+std::pair<int, int> last_selected_tile_pos;
+
+void jactorio::game::player_manager::try_pickup(const int tile_x, const int tile_y, const uint16_t ticks) {
+	if (!mouse_selection::selected_tile_in_range())
+		return;
+	
+	const auto* tile = world_manager::get_tile_world_coords(tile_x, tile_y);
+	const auto entity_ptr = tile->entity;
+
+	if (entity_ptr == nullptr)
+		return;
+	
+	// Selecting a new tile different from the last selected tile will reset the counter
+	if (last_selected_tile_pos.first != tile_x || last_selected_tile_pos.second != tile_y
+		|| !last_selected_initialized) {
+		last_selected_initialized = true;
+		pickup_tick_counter = 0;
+		pickup_tick_target = entity_ptr->pickup_time * 60;  // Seconds to ticks
+	}
+
+	pickup_tick_counter += ticks;
+	if (pickup_tick_counter >= pickup_tick_target) {
+		// Entity picked up
+		LOG_MESSAGE(debug, "Player picked up entity");
+
+		const bool result = placement_c::place_entity_at_coords(nullptr, tile_x, tile_y);
+		assert(result);  // false indicates failed to remove entity
+		pickup_tick_counter = 0;
+
+		// Give picked up item to player
+		auto item_stack = data::item_stack(entity_ptr->get_item(), 1);
+		inventory_c::add_itemstack_to_inv(
+			inventory_player, inventory_size, item_stack);
+
+		inventory_sort();
+
+		// TODO do something if the inventory is full
+	}
+
+	// Remember the tile which was selected
+	last_selected_tile_pos.first = tile_x;
+	last_selected_tile_pos.second = tile_y;
+	
+	/*const auto* entity_ptr = tile->entity;
+	// Pickup entity has priority over extract resource
+	if (entity_ptr == nullptr) {
+		// Extract resource
+		auto* resource_tile = static_cast<data::Resource_tile*>(
+			tile->get_tile_layer_tile_prototype(Chunk_tile::chunk_layer::resource));
+		if (resource_tile != nullptr) {
+			LOG_MESSAGE(debug, "MINING AWAY p");
+		}
+
+		return;
+	}*/
+}
+
+float jactorio::game::player_manager::get_pickup_percentage() {
+	if (!last_selected_initialized)
+		return 0.f;
+	
+	return static_cast<float>(pickup_tick_counter) / pickup_tick_target;
+}
+
+// ============================================================================================
 // Inventory
 
 void jactorio::game::player_manager::inventory_sort() {
 	// The inventory must be sorted without moving the selected cursor
 
 	LOG_MESSAGE(debug, "Sorting player inventory");
-	
+
 	// Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
 	std::vector<data::item_stack> inv_temp;
 	inv_temp.reserve(inventory_size);
@@ -308,7 +404,7 @@ void jactorio::game::player_manager::recipe_craft_tick(uint16_t ticks) {
 		// Ticks available greater than or equal to crafting ticks remaining
 		if (ticks >= crafting_ticks_remaining) {
 			ticks -= crafting_ticks_remaining;
-			
+
 			auto* recipe = crafting_queue.front();
 			crafting_queue.pop_front();
 
@@ -316,14 +412,14 @@ void jactorio::game::player_manager::recipe_craft_tick(uint16_t ticks) {
 			data::recipe_item recipe_item = recipe->get_product();
 			auto* product_item = data::data_manager::data_raw_get<data::Item>(
 				data::data_category::item, recipe_item.first);
-			
+
 			data::item_stack i = {product_item, recipe_item.second};
 
 			// Deduct based on the deductions
 			std::map<std::string, uint16_t>::iterator element;
 			if ((element = crafting_item_deductions.find(recipe_item.first)) != crafting_item_deductions.end()) {
 				auto& deduct_amount = element->second;
-				
+
 				if (i.second >= deduct_amount) {
 					i.second -= deduct_amount;
 
@@ -351,7 +447,7 @@ void jactorio::game::player_manager::recipe_craft_tick(uint16_t ticks) {
 				else
 					// If entry is 0, erase it
 					crafting_item_extras.erase(recipe_item.first);
-				
+
 				inventory_c::add_itemstack_to_inv(inventory_player, inventory_size, i);
 			}
 
@@ -365,26 +461,26 @@ void jactorio::game::player_manager::recipe_craft_tick(uint16_t ticks) {
 			break;
 		}
 	}
-	
+
 }
 
 void jactorio::game::player_manager::recipe_queue(data::Recipe* recipe) {
 	assert(recipe != nullptr);  // Invalid recipe given
 
 	LOG_MESSAGE_f(debug, "Queuing recipe: '%s'", recipe->get_product().first.c_str());
-	
+
 	// Remove ingredients
 	for (auto& ingredient : recipe->ingredients) {
 		auto* item = data::data_manager::data_raw_get<data::Item>(
 			data::data_category::item, ingredient.first);
-	
+
 		inventory_c::remove_inv_item(inventory_player, inventory_size, item, ingredient.second);
 	}
 
 	// Queue is empty, crafting time for the first item in queue must be set here
 	if (crafting_queue.empty())
 		crafting_ticks_remaining = recipe->crafting_time * 60;
-	
+
 	crafting_queue.push_back(recipe);
 }
 
@@ -434,7 +530,7 @@ void jactorio::game::player_manager::recipe_craft_r(data::Recipe* recipe) {
 				              ingredient.first.c_str(), amount_needed + queued_available);
 				return_deductions += amount_needed + queued_available;
 
-				
+
 				auto* ingredient_recipe = data::Recipe::get_item_recipe(ingredient.first);
 
 				// Round up to always ensure enough is crafted
@@ -448,7 +544,7 @@ void jactorio::game::player_manager::recipe_craft_r(data::Recipe* recipe) {
 				else
 					// All available from queue used up, delete entry
 					crafting_item_extras.erase(ingredient.first);
-				
+
 				// Craft sub-recipes recursively until met
 				for (unsigned int i = 0; i < batches; ++i) {
 					recipe_craft_r(ingredient_recipe);
@@ -529,7 +625,7 @@ bool jactorio::game::player_manager::recipe_can_craft(const data::Recipe* recipe
 // ============================================================================================
 // TEST use only
 
-void jactorio::game::player_manager::r_reset_inventory_variables() {
+void jactorio::game::player_manager::reset_inventory_variables() {
 	has_item_selected = false;
 	select_by_reference = false;
 }
@@ -540,4 +636,9 @@ std::map<std::string, uint16_t>& jactorio::game::player_manager::get_crafting_it
 
 std::map<std::string, uint16_t>& jactorio::game::player_manager::get_crafting_item_extras() {
 	return crafting_item_extras;
+}
+
+void jactorio::game::player_manager::set_selected_item(data::item_stack& item) {
+	has_item_selected = true;
+	selected_item = item;
 }
