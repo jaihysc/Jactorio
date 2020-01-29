@@ -34,7 +34,6 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/filesystem.cpp
 	${JACTORIO_DIR}/core/debug/execution_timer.cpp
 
-	${JACTORIO_DIR}/data/prototype/noise_layer.cpp
 	${JACTORIO_DIR}/data/prototype/sprite.cpp
 	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
 

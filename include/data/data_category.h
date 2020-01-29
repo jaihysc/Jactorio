@@ -7,14 +7,16 @@ namespace jactorio::data
 	{
 		none = 0,
 		tile,
-		resource_tile,
-		enemy_tile,
 		sprite,
-		noise_layer,
+		noise_layer_tile,
+		noise_layer_entity,
 		sound,
 		item,
 		
 		entity,
+		resource_entity,
+		enemy_entity,
+		
 		health_entity,
 		container_entity,
 

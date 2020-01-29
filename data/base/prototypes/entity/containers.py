@@ -1,9 +1,8 @@
 import jactorioData as j
-c = j.category
 
 # An item will be created with the name {name}-item | With `wooden-chest`: `wooden-chest-item`
 def addContainer(name, invSize, health, worldSprite, itemSprite):
-    (j.add(c.ContainerEntity, name)
+    (j.ContainerEntity(name)
         .tileWidth(1)
         .tileHeight(1)
 
@@ -12,13 +11,13 @@ def addContainer(name, invSize, health, worldSprite, itemSprite):
 
         .pickupTime(0.1)
         
-        .sprite((j.add(c.Sprite)
+        .sprite((j.Sprite()
                 .load(worldSprite)
                 .group(j.spriteGroup.Terrain)
             )
         )
-        .item((j.add(c.Item, name + "-item")
-                .sprite((j.add(c.Sprite)
+        .item((j.Item(name + "-item")
+                .sprite((j.Sprite()
                         .load(itemSprite)
                         .group(j.spriteGroup.Gui)
                     )

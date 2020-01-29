@@ -13,17 +13,40 @@
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
-#include "data/prototype/tile/enemy_tile.h"
-#include "data/prototype/tile/resource_tile.h"
 #include "data/prototype/tile/tile.h"
 #include "data/prototype/item/recipe_group.h"
 #include "data/prototype/item/recipe_category.h"
+#include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/entity/enemy_entity.h"
 
 // All the bindings in bindings/ defined for pybind
 // This should only be included by pybind_manager.h
 
 using data_raw = std::unordered_map<jactorio::data::data_category, std::unordered_map<
 	                                    std::string, jactorio::data::Prototype_base*>>;
+
+// Generates a function for constructing a data class
+// Example: >Sprite<, inherits >Prototype_base< in category data_category::sprite
+// 
+// A python object with name _Sprite will be generated to avoid ambiguity
+// To construct sprite, a constructor with the name Sprite(...) is available
+
+#define PYBIND_DATA_CLASS(cpp_class_, inherits_, category_)\
+	m.def(#cpp_class_, [](const std::string& iname = "") {\
+		auto* prototype = new (cpp_class_);\
+		data_manager::data_raw_add((jactorio::data::data_category::category_), iname, prototype, true);\
+		return prototype;\
+	}, py::arg("iname") = "", pybind11::return_value_policy::reference);\
+	py::class_<cpp_class_, inherits_>(m, "_" #cpp_class_)
+
+// Python property gets a separate specified name, typically for class names with underscores
+#define PYBIND_DATA_CLASS_SEPARATE(cpp_class_, py_name_, inherits_, category_)\
+	m.def(#py_name_, [](const std::string& iname = "") {\
+		auto* prototype = new (cpp_class_);\
+		data_manager::data_raw_add((jactorio::data::data_category::category_), iname, prototype, true);\
+		return prototype;\
+	}, py::arg("iname") = "", pybind11::return_value_policy::reference);\
+	py::class_<cpp_class_, inherits_>(m, "_" #py_name_)
 
 // Macros below generates a self returning setter and the actual variable
 // For standard class members, a setter exists: set_NAME_OF_MEMBER
@@ -72,38 +95,47 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(Prototype_base, category)
 		PYBIND_PROP(Prototype_base, order);
 
-	py::class_<Sprite, Prototype_base>(m, "Sprite")
+	PYBIND_DATA_CLASS(Sprite, Prototype_base, sprite)
 		PYBIND_PROP(Sprite, group)
 		.def("load", &Sprite::load_image);
 	py::enum_<Sprite::sprite_group>(m, "spriteGroup")
 		.value("Terrain", Sprite::sprite_group::terrain)
 		.value("Gui", Sprite::sprite_group::gui);
 
-	py::class_<Item, Prototype_base>(m, "Item")
+	PYBIND_DATA_CLASS(Item, Prototype_base, item)
 		PYBIND_PROP(Item, sprite)
 		PYBIND_PROP_SEPARATE(Item, stackSize, stack_size);
 
-	py::class_<Tile, Prototype_base>(m, "Tile")
+	PYBIND_DATA_CLASS(Tile, Prototype_base, tile)
 		PYBIND_PROP_SEPARATE(Tile, isWater, is_water)
 		PYBIND_PROP_SEPARATE(Tile, sprite, sprite_ptr);
 
-	py::class_<Resource_tile, Tile>(m, "ResourceTile")
-		PYBIND_PROP(Resource_tile, product);
-
-	py::class_<Noise_layer, Prototype_base>(m, "NoiseLayer")
+	PYBIND_DATA_CLASS_SEPARATE(Noise_layer<Tile>, NoiseLayerTile, Prototype_base, noise_layer_tile)
 		// Perlin noise properties
-		PYBIND_PROP_SEPARATE(Noise_layer, octaveCount, octave_count)
-		PYBIND_PROP(Noise_layer, frequency)
-		PYBIND_PROP(Noise_layer, persistence)
+		PYBIND_PROP_SEPARATE(Noise_layer<Tile>, octaveCount, octave_count)
+		PYBIND_PROP(Noise_layer<Tile>, frequency)
+		PYBIND_PROP(Noise_layer<Tile>, persistence)
 
-		PYBIND_PROP_SEPARATE(Noise_layer, tileDataCategory, tile_data_category)
-		PYBIND_PROP_SEPARATE(Noise_layer, normalize, normalize_val)
+		PYBIND_PROP_SEPARATE(Noise_layer<Tile>, normalize, normalize_val)
 
-		.def("getStartVal", &Noise_layer::get_start_val)
-		.def("startVal", &Noise_layer::set_start_val)
-		.def("addTile", &Noise_layer::add_tile)
-		.def("getTile", &Noise_layer::get_tile);
+		.def("getStartVal", &Noise_layer<Tile>::get_start_val)
+		.def("startVal", &Noise_layer<Tile>::set_start_val)
+		.def("add", &Noise_layer<Tile>::add)
+		.def("get", &Noise_layer<Tile>::get);
 
+	PYBIND_DATA_CLASS_SEPARATE(Noise_layer<Entity>, NoiseLayerEntity, Prototype_base, noise_layer_entity)
+		// Perlin noise properties
+		PYBIND_PROP_SEPARATE(Noise_layer<Entity>, octaveCount, octave_count)
+		PYBIND_PROP(Noise_layer<Entity>, frequency)
+		PYBIND_PROP(Noise_layer<Entity>, persistence)
+
+		PYBIND_PROP_SEPARATE(Noise_layer<Entity>, normalize, normalize_val)
+
+		.def("getStartVal", &Noise_layer<Entity>::get_start_val)
+		.def("startVal", &Noise_layer<Entity>::set_start_val)
+		.def("add", &Noise_layer<Entity>::add)
+		.def("get", &Noise_layer<Entity>::get);
+	
 
 	// Entity
 	py::class_<Entity, Prototype_base>(m, "Entity")
@@ -114,21 +146,25 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP_SEPARATE(Entity, tileHeight, tile_height)
 		PYBIND_PROP_SEPARATE(Entity, pickupTime, pickup_time);
 
-	py::class_<Health_entity, Entity>(m, "HealthEntity")
+	PYBIND_DATA_CLASS_SEPARATE(Health_entity, HealthEntity, Entity, health_entity)
 		PYBIND_PROP_SEPARATE(Health_entity, maxHealth, max_health);
 
-	py::class_<Container_entity, Health_entity>(m, "ContainerEntity")
+	PYBIND_DATA_CLASS_SEPARATE(Container_entity, ContainerEntity, Health_entity, container_entity)
 		PYBIND_PROP_SEPARATE(Container_entity, inventorySize, inventory_size);
 
+	PYBIND_DATA_CLASS_SEPARATE(Resource_entity, ResourceEntity, Entity, resource_entity)
+		PYBIND_PROP(Resource_entity, product);
+
+	
 	// Recipes
-	py::class_<Recipe_group, Prototype_base>(m, "RecipeGroup")
+	PYBIND_DATA_CLASS_SEPARATE(Recipe_group, RecipeGroup, Prototype_base, recipe_group)
 		PYBIND_PROP(Recipe_group, sprite)
 		PYBIND_PROP_SEPARATE(Recipe_group, recipeCategories, recipe_categories);
 
-	py::class_<Recipe_category, Prototype_base>(m, "RecipeCategory")
+	PYBIND_DATA_CLASS_SEPARATE(Recipe_category, RecipeCategory, Prototype_base, recipe_category)
 		PYBIND_PROP(Recipe_category, recipes);
 
-	py::class_<Recipe, Prototype_base>(m, "Recipe")
+	PYBIND_DATA_CLASS(Recipe, Prototype_base, recipe)
 		PYBIND_PROP_SEPARATE(Recipe, craftingTime, crafting_time)
 		PYBIND_PROP(Recipe, ingredients)
 		PYBIND_PROP_GET_SET(Recipe, product, product);
@@ -138,10 +174,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	py::enum_<data_category>(m, "category")
 		.value("Tile", data_category::tile)
-		.value("ResourceTile", data_category::resource_tile)
-		.value("EnemyTile", data_category::enemy_tile)
 		.value("Sprite", data_category::sprite)
-		.value("NoiseLayer", data_category::noise_layer)
+		.value("NoiseLayerTile", data_category::noise_layer_tile)
+		.value("NoiseLayerEntity", data_category::noise_layer_entity)
 		.value("Sound", data_category::sound)
 		.value("Item", data_category::item)
 
@@ -150,55 +185,16 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("RecipeGroup", data_category::recipe_group)
 
 		.value("Entity", data_category::entity)
+		.value("ResourceEntity", data_category::resource_entity)
+		.value("EnemyEntity", data_category::enemy_entity)
+
 		.value("HealthEntity", data_category::health_entity)
 		.value("ContainerEntity", data_category::container_entity);
-
-	py::class_<data_raw>(m, "Prototype_data")
-		.def(py::init());
 
 	m.def("get", [](const data_category category, const std::string& iname) {
 		return data_manager::data_raw_get<Prototype_base>(category, iname);
 	}, pybind11::return_value_policy::reference);
 
-
-#define PROTOTYPE_CATEGORY(category, class_) case data_category::category: prototype = new (class_); break;
-	/**
-	 * Call add from python to retrieve a new pointer to the prototype <br>
-	 * Prototypes cannot be made in Python as they need to be copied back to c++
-	 */
-	m.def("add", [](const data_category category, const std::string& iname = "") -> Prototype_base* {
-		assert(category != data_category::none);
-		
-		Prototype_base* prototype = nullptr;
-		
-		switch (category) {
-			// Maps enum to a class which is constructed and returned
-			PROTOTYPE_CATEGORY(tile, Tile);
-			PROTOTYPE_CATEGORY(resource_tile, Resource_tile);
-			PROTOTYPE_CATEGORY(enemy_tile, Enemy_tile);
-			PROTOTYPE_CATEGORY(sprite, Sprite);
-			PROTOTYPE_CATEGORY(noise_layer, Noise_layer);
-			// PROTOTYPE_CATEGORY(sound, Sound);
-			PROTOTYPE_CATEGORY(item, Item);
-			
-			PROTOTYPE_CATEGORY(entity, Entity);
-			PROTOTYPE_CATEGORY(health_entity, Health_entity);
-			PROTOTYPE_CATEGORY(container_entity, Container_entity);
-
-			PROTOTYPE_CATEGORY(recipe, Recipe);
-			PROTOTYPE_CATEGORY(recipe_category, Recipe_category);
-			PROTOTYPE_CATEGORY(recipe_group, Recipe_group);
-		
-		default:
-			assert(false);  // Missing case for category
-			break;
-		}
-		
-		data_manager::data_raw_add(category, iname, prototype, true);
-		return prototype;
-	}, py::arg("category"), py::arg("iname") = "", pybind11::return_value_policy::reference);
-#undef PROTOTYPE_CATEGORY
-	
 	// ############################################################
 }
 

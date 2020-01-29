@@ -49,10 +49,10 @@ namespace game
 		
 		// Create world with entity at 0, 0
 		auto* tiles = new jactorio::game::Chunk_tile[1024];
-		tiles[0].set_tile_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base, &tile_proto);
+		tiles[0].set_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base, &tile_proto);
 
-		tiles[1].set_tile_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base, &tile_proto);
-		tiles[1].entity = entity2;
+		tiles[1].set_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base, &tile_proto);
+		tiles[1].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, entity2);
 		
 
 		jactorio::game::world_manager::add_chunk(
@@ -64,23 +64,24 @@ namespace game
 		jactorio::data::item_stack selected_item = {&item_no_entity, 2};
 		set_selected_item(selected_item);
 		
-		tiles[0].entity = entity;
+		tiles[0].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, entity);
 		try_place(0, 0);  // Item holds no reference to an entity
-		EXPECT_EQ(tiles[0].entity, entity);  // Should not delete item at this location
+		EXPECT_EQ(tiles[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+		          entity);  // Should not delete item at this location
 
 		
 		// Placement tests
 		selected_item = {&item, 2};
 		set_selected_item(selected_item);
 
-		tiles[0].entity = nullptr;
+		tiles[0].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, nullptr);
 		try_place(0, 0);  // Place on empty tile 0, 0
-		EXPECT_EQ(tiles[0].entity, entity);
+		EXPECT_EQ(tiles[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity), entity);
 		EXPECT_EQ(get_selected_item()->second, 1);  // 1 less item 
 		
 		
 		try_place(1, 0);  // A tile already exists on 1, 0 - Should not override it
-		EXPECT_EQ(tiles[1].entity, entity2);
+		EXPECT_EQ(tiles[1].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity), entity2);
 	}
 	
 	TEST(player_manager, try_pickup_entity) {
@@ -99,8 +100,8 @@ namespace game
 
 		// Create world with entity at 0, 0
 		auto* tiles = new jactorio::game::Chunk_tile[1024];
-		tiles[0].entity = entity;
-		tiles[1].entity = entity;
+		tiles[0].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, entity);
+		tiles[1].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, entity);
 
 		jactorio::game::world_manager::add_chunk(
 			new jactorio::game::Chunk(0, 0, tiles));
@@ -114,16 +115,19 @@ namespace game
 		// Test pickup
 		try_pickup(0, 0, 30);
 		EXPECT_EQ(get_pickup_percentage(), 0.5f);  // 50% picked up 30 ticks out of 60
-		EXPECT_EQ(tiles[0].entity, entity);  // Not picked up yet - 10 more ticks needed to reach 1 second
+		EXPECT_EQ(tiles[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+		          entity);  // Not picked up yet - 10 more ticks needed to reach 1 second
 
 		
 		try_pickup(1, 0, 10);  // Selecting different tile will reset pickup counter
-		EXPECT_EQ(tiles[1].entity, entity);  // Not picked up yet - 50 more to 1 second since counter reset
+		EXPECT_EQ(tiles[1].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+		          entity);  // Not picked up yet - 50 more to 1 second since counter reset
 
 		
 		try_pickup(0, 0, 50);
 		try_pickup(0, 0, 10);
-		EXPECT_EQ(tiles[0].entity, nullptr);  // Picked up, item given to inventory
+		EXPECT_EQ(tiles[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+		          nullptr);  // Picked up, item given to inventory
 
 		EXPECT_EQ(inventory_player[0].first, &item);
 		EXPECT_EQ(inventory_player[0].second, 1);

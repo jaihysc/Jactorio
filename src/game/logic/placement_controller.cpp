@@ -13,8 +13,10 @@ bool jactorio::game::placement_c::placement_location_valid(const uint8_t tile_wi
 				world_manager::get_tile_world_coords(x + offset_x, y + offset_y);
 
 			// If the tile proto does not exist, or base tile prototype is water, NOT VALID placement
-			const auto tile_proto = tile->get_tile_layer_tile_prototype(Chunk_tile::chunk_layer::base);
-			if (tile->entity != nullptr || tile_proto == nullptr || tile_proto->is_water) {
+			const auto tile_proto = tile->get_layer_tile_prototype(Chunk_tile::chunk_layer::base);
+			const auto entity_proto = tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::entity);
+			
+			if (entity_proto != nullptr || tile_proto == nullptr || tile_proto->is_water) {
 				return false;
 			}
 		}
@@ -40,15 +42,14 @@ bool jactorio::game::placement_c::place_entity_at_coords(data::Entity* entity, c
 
 	// entity is nullptr indicates removing an entity
 	if (entity == nullptr) {
-		data::Entity* t_entity = tile->entity;
+		data::Entity* t_entity = tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::entity);
 		if (t_entity == nullptr)  // Already removed
 			return false;
 
 		remove_at_coords(
 			Chunk_tile::chunk_layer::entity, t_entity->tile_width, t_entity->tile_height,
 			x, y, [](Chunk_tile* chunk_tile) {
-				chunk_tile->entity = nullptr;
-				chunk_tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::entity, nullptr);
+				chunk_tile->set_layer_entity_prototype(Chunk_tile::chunk_layer::entity, nullptr);
 			});
 
 		return true;
@@ -62,8 +63,7 @@ bool jactorio::game::placement_c::place_entity_at_coords(data::Entity* entity, c
 	place_at_coords(
 		Chunk_tile::chunk_layer::entity, entity->tile_width, entity->tile_height, x, y,
 		[](Chunk_tile* chunk_tile) {
-			chunk_tile->entity = placement_entity;
-			chunk_tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::entity, placement_entity->sprite);
+			chunk_tile->set_layer_entity_prototype(Chunk_tile::chunk_layer::entity, placement_entity);
 		});
 
 	return true;
@@ -89,7 +89,7 @@ void jactorio::game::placement_c::place_sprite_at_coords(const Chunk_tile::chunk
 		remove_at_coords(
 			layer, tile_width, tile_height, x, y,
 			[](Chunk_tile* chunk_tile) {
-				chunk_tile->set_tile_layer_sprite_prototype(placement_sprite_layer, nullptr);
+				chunk_tile->set_layer_sprite_prototype(placement_sprite_layer, nullptr);
 			});
 	}
 
@@ -98,7 +98,7 @@ void jactorio::game::placement_c::place_sprite_at_coords(const Chunk_tile::chunk
 	place_at_coords(
 		layer, tile_width, tile_height, x, y,
 		[](Chunk_tile* chunk_tile) {
-			chunk_tile->set_tile_layer_sprite_prototype(placement_sprite_layer, placement_sprite);
+			chunk_tile->set_layer_sprite_prototype(placement_sprite_layer, placement_sprite);
 		});
 }
 

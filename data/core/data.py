@@ -1,8 +1,7 @@
 import jactorioData as j
-c = j.category
 
 def addSprite(name, spritePath):
-    return (j.add(c.Sprite, name)
+    return (j.Sprite(name)
                 .load(spritePath)
                 .group(j.spriteGroup.Terrain)
     )
@@ -15,8 +14,8 @@ addSprite("cursor-invalid", "core/graphics/cursor-invalid.png")
 
 
 # Inventory selection cursor
-(j.add(c.Item, "inventory-selected-cursor")
-    .sprite((j.add(c.Sprite)
+(j.Item("inventory-selected-cursor")
+    .sprite((j.Sprite()
         .load("core/graphics/hand.png")
         .group(j.spriteGroup.Gui)
     ))

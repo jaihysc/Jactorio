@@ -1,10 +1,9 @@
 import jactorioData as j
-c = j.category
 
 import test.subdir.test
 
 def addProto(name, sprite_path):
-    j.add(c.Sprite, name).load(sprite_path).group(j.spriteGroup.Terrain)
+    j.Sprite(name).load(sprite_path).group(j.spriteGroup.Terrain)
 
 addProto("test_tile", "test/graphics/test/test_tile.png")
 addProto("test_tile1", "test/graphics/test/test_tile1.png")

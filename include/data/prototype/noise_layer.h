@@ -1,8 +1,9 @@
 #ifndef DATA_PROTOTYPE_NOISE_LAYER_H
 #define DATA_PROTOTYPE_NOISE_LAYER_H
 
+#include "jactorio.h"
+
 #include "data/prototype/prototype_base.h"
-#include "data/prototype/tile/tile.h"
 #include "data/data_category.h"
 
 #include <vector>
@@ -10,25 +11,25 @@
 namespace jactorio::data
 {
 	/**
-	 * Note!! MOST values will be in range -1, 1. SOME VALUES will be greater/less than -1, 1
+	 * Note!! MOST values will be in range -1, 1. SOME VALUES will be greater/less than -1, 1 <br>
+	 * T is type stored in noise_layer
 	 */
-	class Noise_layer : public Prototype_base
+	template <typename T>
+	class Noise_layer final : public Prototype_base
 	{
 		// The inclusive value where the noise range begins
 		std::vector<float> noise_range_tile_ranges_;
 		// Size is 1 less than noise_range_tile_ranges
-		std::vector<Tile*> noise_range_tiles_;
+		std::vector<T*> noise_range_tiles_;
 
 	public:
 		Noise_layer()
-			: octave_count(8), frequency(0.25f), persistence(0.5f), normalize_val(false),
-			  tile_data_category(data_category::tile) {
+			: octave_count(8), frequency(0.25f), persistence(0.5f), normalize_val(false) {
 			set_start_val(-1.f);
 		}
 
 		Noise_layer(const float starting_val, const bool normalize_val)
-			: octave_count(8), frequency(0.25f), persistence(0.5f), normalize_val(normalize_val),
-			  tile_data_category(data_category::tile) {
+			: octave_count(8), frequency(0.25f), persistence(0.5f), normalize_val(normalize_val) {
 			set_start_val(starting_val);
 		}
 
@@ -56,19 +57,13 @@ namespace jactorio::data
 		 * If false, input values outside of the noise_layer range returns nullptr
 		 */
 		PYTHON_PROP_REF(Noise_layer, bool, normalize_val)
-
-		/**
-		 * The data category of the tiles which this noise_layer contains
-		 */
-		PYTHON_PROP_REF(Noise_layer, data_category, tile_data_category)
-
 		
 		/**
 		 * Retrieves the starting value <br>
 		 * Default value is -1
 		 * @return
 		 */
-		[[nodiscard]] float get_start_val() const {
+		J_NODISCARD float get_start_val() const {
 			return noise_range_tile_ranges_[0];
 		}
 
@@ -98,14 +93,60 @@ namespace jactorio::data
 		 * @param end_range Exclusive ending range, unless it is last item
 		 * @param tile_ptr Pointer to tile prototype or inheritors
 		 */
-		Noise_layer* add_tile(float end_range, Tile* tile_ptr);
+		Noise_layer* add(const float end_range, T* tile_ptr) {
+			// Will not add if start_val is not set
+			if (noise_range_tile_ranges_.empty())
+				return this;
+
+			noise_range_tile_ranges_.push_back(end_range);
+			noise_range_tiles_.push_back(tile_ptr);
+
+			return this;
+		}
 
 		/**
 		 * Fetches the tile at the current range <br>
 		 * normalize_if_val_out_of_range is false, Nullptr if out of range <br>
 		 * normalize_if_val_out_of_range is true, Min/max value tile if out of range
 		 */
-		Tile* get_tile(float val);
+		T* get(float val) {
+			if (normalize_val) {
+				// Normalize out of range of max-min within noise_layer
+				const float start_val = get_start_val();
+				const float end_val = get_max_noise_val();
+
+				if (val > end_val)
+					val = end_val;
+				if (val < start_val)
+					val = start_val;
+			}
+
+			bool last_value = true;
+			for (unsigned int i = noise_range_tile_ranges_.size() - 1; i > 0; --i) {
+				// Less than
+				bool less_than = false;
+				if (last_value) {
+					// ending range inclusive only for the last value
+					last_value = false;
+					if (val <= noise_range_tile_ranges_[i])
+						less_than = true;
+				}
+				else {
+					if (val < noise_range_tile_ranges_[i])
+						less_than = true;
+				}
+				if (!less_than)
+					continue;
+
+				// Greater than
+				if (val >= noise_range_tile_ranges_[i - 1]) {
+					return noise_range_tiles_[i - 1];
+				}
+
+			}
+			// Not found
+			return nullptr;
+		}
 
 
 		void post_load_validate() const override {

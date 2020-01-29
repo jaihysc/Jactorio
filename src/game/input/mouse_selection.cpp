@@ -120,7 +120,7 @@ void jactorio::game::mouse_selection::draw_tile_at_cursor(const std::string& ina
 	const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, iname);
 	assert(sprite_ptr != nullptr);
 	
-	tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, sprite_ptr);
+	tile->set_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, sprite_ptr);
 	tile->get_layer(Chunk_tile::chunk_layer::overlay).multi_tile_span = 1;
 	
 	last_tile_pos = cursor_position;
@@ -136,12 +136,11 @@ void draw_selection_box() {
 
 	const auto cursor_position = mouse_selection::get_mouse_tile_coords();
 
-	// Only draw cursor when over entities or resources
+	// Only draw cursor when over entities
 	const auto tile = world_manager::get_tile_world_coords(cursor_position.first, cursor_position.second);
-	if (tile == nullptr || 
-		(tile->entity == nullptr && 
-			tile->get_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::resource) == nullptr
-		)) {
+	if (tile == nullptr 
+		|| (tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::resource) == nullptr &&
+			tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::entity) == nullptr)) {
 		return;
 	}
 	
@@ -162,8 +161,7 @@ void jactorio::game::mouse_selection::draw_cursor_overlay() {
 		if (last_tile == nullptr)
 			return;
 
-		last_tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay,
-		                                           nullptr);
+		last_tile->set_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, nullptr);
 	}
 	
 

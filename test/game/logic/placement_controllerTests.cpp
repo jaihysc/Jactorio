@@ -70,7 +70,7 @@ namespace game::logic
 					// printf("#");
 				
 				chunk_tiles[y * 32 + x]
-					.set_tile_layer_tile_prototype(Chunk_tile::chunk_layer::base, tile_ptr);
+					.set_layer_tile_prototype(Chunk_tile::chunk_layer::base, tile_ptr);
 			}
 			// printf("\n");
 		}
@@ -83,8 +83,8 @@ namespace game::logic
 		// Delete the land and water tile prototype
 		const auto chunk = world_manager::get_chunk(0, 0);
 		
-		delete chunk->tiles_ptr()[0].get_tile_layer_tile_prototype(Chunk_tile::chunk_layer::entity);
-		delete chunk->tiles_ptr()[1].get_tile_layer_tile_prototype(Chunk_tile::chunk_layer::entity);
+		delete chunk->tiles_ptr()[0].get_layer_tile_prototype(Chunk_tile::chunk_layer::base);
+		delete chunk->tiles_ptr()[1].get_layer_tile_prototype(Chunk_tile::chunk_layer::base);
 
 		// Delete chunk tiles
 		world_manager::clear_chunk_data();
@@ -107,10 +107,9 @@ namespace game::logic
 		EXPECT_EQ(jactorio::game::placement_c::place_entity_at_coords(entity.get(), 0, 0), true);
 
 		// Set entity and sprite layer
-		EXPECT_EQ(chunk->tiles_ptr()[0].entity, entity.get());
 		EXPECT_EQ(
-			chunk->tiles_ptr()[0].get_tile_layer_sprite_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
-			entity.get()->sprite);
+			chunk->tiles_ptr()[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+			entity.get());
 	}
 	
 	TEST(placement_controller, place_entity_1x1_invalid) {
@@ -125,9 +124,8 @@ namespace game::logic
 		const auto chunk = jactorio::game::world_manager::get_chunk(0, 0);
 
 		EXPECT_EQ(jactorio::game::placement_c::place_entity_at_coords(entity.get(), 1, 0), false);
-		EXPECT_EQ(chunk->tiles_ptr()[1].entity, nullptr);
 		EXPECT_EQ(
-			chunk->tiles_ptr()[0].get_tile_layer_sprite_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+			chunk->tiles_ptr()[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
 			nullptr);
 
 	}
@@ -152,19 +150,17 @@ namespace game::logic
 			EXPECT_EQ(jactorio::game::placement_c::place_entity_at_coords(entity.get(), 0, 0), true);
 
 			// Set entity and sprite layer
-			EXPECT_EQ(chunk->tiles_ptr()[0].entity, entity.get());
 			EXPECT_EQ(
-				chunk->tiles_ptr()[0].get_tile_layer_sprite_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
-				entity.get()->sprite);
+				chunk->tiles_ptr()[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+				entity.get());
 		}
 
 		// Valid Removal
 		EXPECT_EQ(jactorio::game::placement_c::place_entity_at_coords(nullptr, 0, 0), true);
 
 		// Should all be nullptr after being removed
-		EXPECT_EQ(chunk->tiles_ptr()[0].entity, nullptr);
 		EXPECT_EQ(
-			chunk->tiles_ptr()[0].get_tile_layer_sprite_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+			chunk->tiles_ptr()[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
 			nullptr);
 	}
 
@@ -180,9 +176,8 @@ namespace game::logic
 		EXPECT_EQ(jactorio::game::placement_c::place_entity_at_coords(nullptr, 0, 0), false);
 
 		// Should all remain nullptr
-		EXPECT_EQ(chunk->tiles_ptr()[0].entity, nullptr);
 		EXPECT_EQ(
-			chunk->tiles_ptr()[0].get_tile_layer_sprite_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+			chunk->tiles_ptr()[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
 			nullptr);
 	}
 
@@ -208,11 +203,10 @@ namespace game::logic
 		for (int y = 5; y < 5 + 3; ++y) {
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(chunk->tiles_ptr()[index].entity, entity.get());
 				EXPECT_EQ(
-					chunk->tiles_ptr()[index].get_tile_layer_sprite_prototype(
+					chunk->tiles_ptr()[index].get_layer_entity_prototype(
 						jactorio::game::Chunk_tile::chunk_layer::entity),
-					entity.get()->sprite);
+					entity.get());
 
 				// Should count up according to the rules specified in entity_index
 				EXPECT_EQ(
@@ -243,9 +237,8 @@ namespace game::logic
 		for (int y = 5; y < 5 + 3; ++y) {
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(chunk->tiles_ptr()[index].entity, nullptr);
 				EXPECT_EQ(
-					chunk->tiles_ptr()[index].get_tile_layer_sprite_prototype(
+					chunk->tiles_ptr()[index].get_layer_entity_prototype(
 						jactorio::game::Chunk_tile::chunk_layer::entity),
 					nullptr);
 			}
@@ -273,9 +266,8 @@ namespace game::logic
 		for (int y = 5; y < 5 + 3; ++y) {
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(chunk->tiles_ptr()[index].entity, nullptr);
 				EXPECT_EQ(
-					chunk->tiles_ptr()[index].get_tile_layer_sprite_prototype(
+					chunk->tiles_ptr()[index].get_layer_entity_prototype(
 						jactorio::game::Chunk_tile::chunk_layer::entity),
 					nullptr);
 			}
@@ -292,9 +284,8 @@ namespace game::logic
 		const auto entity = std::make_unique<jactorio::data::Container_entity>();
 		entity->tile_width = 3;
 		entity->tile_height = 3;
-		const auto chunk = jactorio::game::world_manager::get_chunk(0, 0);
 
-
+		
 		EXPECT_EQ(jactorio::game::placement_c::place_entity_at_coords(entity.get(), 9, 10), true);
 		EXPECT_EQ(jactorio::game::placement_c::place_entity_at_coords(entity.get(), 9, 9), false);
 
@@ -319,8 +310,7 @@ namespace game::logic
 		for (int y = 5; y < 5 + 3; ++y) {
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(chunk->tiles_ptr()[index].entity, nullptr);
-				EXPECT_EQ(chunk->tiles_ptr()[index].get_tile_layer_sprite_prototype(
+				EXPECT_EQ(chunk->tiles_ptr()[index].get_layer_entity_prototype(
 					          jactorio::game::Chunk_tile::chunk_layer::entity),
 				          nullptr);
 
@@ -348,8 +338,7 @@ namespace game::logic
 		for (int y = 5; y < 5 + 3; ++y) {
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(chunk->tiles_ptr()[index].entity, nullptr);
-				EXPECT_EQ(chunk->tiles_ptr()[index].get_tile_layer_sprite_prototype(
+				EXPECT_EQ(chunk->tiles_ptr()[index].get_layer_entity_prototype(
 					          jactorio::game::Chunk_tile::chunk_layer::entity),
 				          nullptr);
 
@@ -382,11 +371,10 @@ namespace game::logic
 		for (int y = 10; y < 10 + 4; ++y) {
 			for (int x = 9; x < 9 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(chunk->tiles_ptr()[index].entity, entity.get());
 				EXPECT_EQ(
-					chunk->tiles_ptr()[index].get_tile_layer_sprite_prototype(
+					chunk->tiles_ptr()[index].get_layer_entity_prototype(
 						jactorio::game::Chunk_tile::chunk_layer::entity),
-					entity.get()->sprite);
+					entity.get());
 
 				// Should count up according to the rules specified in entity_index
 				EXPECT_EQ(
@@ -426,8 +414,7 @@ namespace game::logic
 		for (int y = 10; y < 10 + 4; ++y) {
 			for (int x = 9; x < 9 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(chunk->tiles_ptr()[index].entity, nullptr);
-				EXPECT_EQ(chunk->tiles_ptr()[index].get_tile_layer_sprite_prototype(
+				EXPECT_EQ(chunk->tiles_ptr()[index].get_layer_entity_prototype(
 					          jactorio::game::Chunk_tile::chunk_layer::entity),
 				          nullptr);
 			}

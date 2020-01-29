@@ -72,7 +72,7 @@ void buffer_load_chunk(const unsigned int layer_index, float* buffer,
 				// buffer[buffer_offset + 7] = -1.f;
 				continue;
 			}
-			
+
 			const auto positions = jactorio::renderer::Renderer::get_spritemap_coords(internal_id);
 
 			// Calculate the correct UV coordinates for multi-tile entities
@@ -269,10 +269,37 @@ void jactorio::renderer::world_renderer::render_player_position(
 	const auto get_tile_proto_func = [](const game::Chunk_tile& chunk_tile, const unsigned int layer_index) {
 		const auto& layer = chunk_tile.layers[layer_index];
 
-		if (layer.sprite == nullptr)
-			return 0u;
+		switch (layer_index) {
 
-		return layer.sprite->internal_id;
+		case static_cast<int>(game::Chunk_tile::chunk_layer::base):
+			{
+				const auto x = layer.get_tile_prototype();
+				if (x->sprite_ptr == nullptr)
+					return 0u;
+				return x->sprite_ptr->internal_id;
+			}
+
+
+		case static_cast<int>(game::Chunk_tile::chunk_layer::resource):
+		case static_cast<int>(game::Chunk_tile::chunk_layer::entity):
+			{
+				const auto y = layer.get_entity_prototype();
+				if (y == nullptr || y->sprite == nullptr)
+					return 0u;
+				return y->sprite->internal_id;
+			}
+
+		case static_cast<int>(game::Chunk_tile::chunk_layer::overlay):
+			{
+				const auto z = layer.get_sprite_prototype();
+				if (z == nullptr)
+					return 0u;
+				return z->internal_id;
+			}
+			
+		default:
+			assert(false);  // Failed to match case
+		}
 	};
 
 	// Rendering layers utilizes the following pattern looped
