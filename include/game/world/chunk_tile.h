@@ -15,6 +15,21 @@ namespace jactorio::game
 	{
 		Chunk_tile_layer() = default;
 
+		// Prototype data must be deleted after chunk data
+		~Chunk_tile_layer() {
+			if (unique_data != nullptr) {
+				assert(prototype_data_ != nullptr);  // Unique_data_ was defined, but no prototype_data_ is available to delete it
+				prototype_data_->delete_unique_data(unique_data);
+			}
+		}
+
+		Chunk_tile_layer(const Chunk_tile_layer& other);
+		Chunk_tile_layer(Chunk_tile_layer&& other) noexcept;
+
+		Chunk_tile_layer& operator=(const Chunk_tile_layer& other);
+		Chunk_tile_layer& operator=(Chunk_tile_layer&& other) noexcept;
+
+		
 		explicit Chunk_tile_layer(data::Tile* data) {
 			set_data(data);
 		}
@@ -28,41 +43,36 @@ namespace jactorio::game
 		}
 
 		J_NODISCARD data::Tile* get_tile_prototype() const {
-			return static_cast<data::Tile*>(data_);
+			return static_cast<data::Tile*>(prototype_data_);
 		}
 
 		J_NODISCARD data::Entity* get_entity_prototype() const {
-			return static_cast<data::Entity*>(data_);
+			return static_cast<data::Entity*>(prototype_data_);
 		}
 
 		J_NODISCARD data::Sprite* get_sprite_prototype() const {
-			return reinterpret_cast<data::Sprite*>(data_);
+			return reinterpret_cast<data::Sprite*>(prototype_data_);
 		}
 		
 		void set_data(data::Tile* data) {
-			data_ = data;
+			prototype_data_ = data;
 		}
 
 		void set_data(data::Entity* data) {
-			data_ = data;
+			prototype_data_ = data;
 		}
 
 		void set_data(data::Sprite* data) {
-			data_ = data;
+			prototype_data_ = data;
 		}
 
 		void set_data(std::nullptr_t) {
-			data_ = nullptr;
+			prototype_data_ = nullptr;
 		}
 
 		// ============================================================================================
 		// Minimize the variables below vvvvvv
 	private:
-		/**
-		 * Depending on the layer, this will be either a data::Tile*, data::Entity* or a data::Sprite* <br>
-		 */
-		void* data_ = nullptr;
-		
 		/*
 		 * A layer may point to a tile prototype to provide additional data (collisions, world gen) <br>
 		 * The sprite is stored within the tile prototype instead <br>
@@ -72,7 +82,19 @@ namespace jactorio::game
 		/**
 		 * Entities also possesses a sprite pointer within their prototype
 		 */
+		
+		/**
+		 * Depending on the layer, this will be either a data::Tile*, data::Entity* or a data::Sprite* <br>
+		 */
+		data::Prototype_base* prototype_data_ = nullptr;
+
 	public:
+		/**
+		 * Data for the prototype which is unique per tile and layer <br>
+		 * When this layer is deleted, unique_data_ will be deleted with delete method in prototype_data_
+		 */
+		void* unique_data = nullptr;
+		
 		/**
 		 * If the layer is multi-tile, eg: 3 x 3, this holds the index of this tile (see below) <br>
 		 * Non multi tile has 0 for index, but it can also exist on multi tile tiles <br>

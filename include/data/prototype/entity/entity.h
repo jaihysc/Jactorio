@@ -7,6 +7,11 @@
 
 namespace jactorio::data
 {
+	// Unique per entity placed in the world
+	struct Entity_data
+	{
+	};
+	
 	/**
 	 * Placeable items in the world
 	 */

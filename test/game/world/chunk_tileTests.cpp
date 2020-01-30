@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include "data/prototype/entity/resource_entity.h"
+
 namespace game
 {
 	TEST(chunk_tile, chunk_tile_layer_init) {
@@ -48,6 +50,25 @@ namespace game
 			EXPECT_EQ(tile_layer.get_entity_prototype(), nullptr);
 			EXPECT_EQ(tile_layer.get_sprite_prototype(), nullptr);
 		}
+	}
+
+	TEST(chunk_tile, layer_copy) {
+		// Copying a chunk tile needs to also make a unique copy of unique_data_
+		const auto entity_proto = std::make_unique<jactorio::data::Resource_entity>(jactorio::data::Resource_entity());
+
+		auto* u_data1 = new jactorio::data::Resource_entity_data();
+		
+		auto tile_layer = jactorio::game::Chunk_tile_layer();
+		tile_layer.set_data(entity_proto.get());
+		tile_layer.unique_data = u_data1;
+
+		// Copy layer
+		auto tile_layer_copy = tile_layer;
+
+		// Data should have been allocated differently
+		EXPECT_NE(tile_layer_copy.unique_data, tile_layer.unique_data);
+
+		// Heap allocated data cleaned up by chunk_tile_layer destructors
 	}
 	
 	

@@ -300,6 +300,8 @@ void jactorio::renderer::world_renderer::render_player_position(
 		default:
 			assert(false);  // Failed to match case
 		}
+
+		return 0u;
 	};
 
 	// Rendering layers utilizes the following pattern looped

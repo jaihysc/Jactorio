@@ -30,7 +30,7 @@ addTile(baseTerrain, 1, "dirt-1", "base/graphics/tiles/dirt.png")
 def addResourceEntity(
     noiseLayer, endRange, name, tileSpritePath, itemSpritePath):
     # Item for resource
-    (j.Item(name + "-item")
+    product = (j.Item(name + "-item")
         .sprite((j.Sprite()
                     .load(itemSpritePath)
                     .group(j.spriteGroup.Gui)
@@ -42,6 +42,7 @@ def addResourceEntity(
                             .load(tileSpritePath)
                             .group(j.spriteGroup.Terrain)
                         ))
+                        .product(product)
     )
     # Add resource tile to NoiseLayer
     noiseLayer.add(endRange, resourceTile)

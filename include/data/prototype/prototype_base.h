@@ -131,6 +131,18 @@ namespace jactorio::data
 		}
 
 		// Required
+		
+		/**
+		 * If the prototype has unique data per tile, override the method for deleting it
+		 * Deletes unique data for the prototype given through ptr
+		 */
+		virtual void delete_unique_data(void* ptr) const {
+		}
+
+		virtual void* copy_unique_data(void* ptr) const {
+			return nullptr;
+		}
+		
 		/**
 		 * Validates properties of the prototype are valid
 		 * @exception data::Data_exception If invalid

@@ -82,12 +82,16 @@ namespace game::logic
 		using namespace jactorio::game;
 		// Delete the land and water tile prototype
 		const auto chunk = world_manager::get_chunk(0, 0);
-		
-		delete chunk->tiles_ptr()[0].get_layer_tile_prototype(Chunk_tile::chunk_layer::base);
-		delete chunk->tiles_ptr()[1].get_layer_tile_prototype(Chunk_tile::chunk_layer::base);
 
+		auto p1 = chunk->tiles_ptr()[0].get_layer_tile_prototype(Chunk_tile::chunk_layer::base);
+		auto p2 = chunk->tiles_ptr()[1].get_layer_tile_prototype(Chunk_tile::chunk_layer::base);
+		
 		// Delete chunk tiles
 		world_manager::clear_chunk_data();
+
+		// Prototype data must be deleted after world data
+		delete p1;
+		delete p2;
 	}
 
 	//

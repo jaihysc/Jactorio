@@ -5,11 +5,26 @@
 
 namespace jactorio::data
 {
+	// Unique per resource entity placed
+	struct Resource_entity_data : Entity_data
+	{
+		Resource_entity_data() = default;
+		
+		explicit Resource_entity_data(const uint16_t resource_amount)
+			: resource_amount(resource_amount) {
+		}
+		
+		/**
+		 * Amount of product which can still be extracted from this tile
+		 */
+		uint16_t resource_amount;
+	};
+	
 	class Resource_entity final : public Entity
 	{
 	public:
 		Resource_entity()
-			: product(nullptr), resource_amount(1) {
+			: product(nullptr) {
 		}
 
 		~Resource_entity() override = default;
@@ -27,12 +42,19 @@ namespace jactorio::data
 		PYTHON_PROP(Resource_entity, Item*, product)
 
 		
-		// Unique per tile
+		void delete_unique_data(void* ptr) const override {
+			delete static_cast<Resource_entity_data*>(ptr);
+		}
 
-		/**
-		 * Amount of product which can still be extracted from this tile
-		 */
-		uint16_t resource_amount;
+		void* copy_unique_data(void* ptr) const override {
+			const auto other = new Resource_entity_data();
+			*other = *static_cast<Resource_entity_data*>(ptr);
+			return other;
+		}
+		
+		void post_load_validate() const override {
+			J_DATA_ASSERT(product != nullptr, "Resource entity must have a product");
+		}
 	};
 }
 

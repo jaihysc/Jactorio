@@ -12,6 +12,7 @@
 #include "game/world/world_manager.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
+#include "data/prototype/entity/resource_entity.h"
 
 double x_position = 0.f;
 double y_position = 0.f;
@@ -142,6 +143,16 @@ void draw_selection_box() {
 		|| (tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::resource) == nullptr &&
 			tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::entity) == nullptr)) {
 		return;
+	}
+
+	// TODO remove testing only
+	{
+		const auto resource =
+			static_cast<jactorio::data::Resource_entity_data*>(
+				tile->get_layer(Chunk_tile::chunk_layer::resource).unique_data);
+		if (resource != nullptr) {
+			LOG_MESSAGE_f(debug, "%d", resource->resource_amount);
+		}
 	}
 	
 	// Draw invalid cursor if range tis too far

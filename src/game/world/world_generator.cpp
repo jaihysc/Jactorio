@@ -23,7 +23,7 @@ std::set<std::tuple<int, int>> world_gen_chunks;
 template <typename T>
 void generate_chunk(const int chunk_x, const int chunk_y,
                     const jactorio::data::data_category data_category,
-                    void (*func)(jactorio::game::Chunk_tile&, void*)) {
+                    void (*func)(jactorio::game::Chunk_tile&, void*, float)) {
 	using namespace jactorio;
 
 	// The Y axis for libnoise is inverted. It causes no issues as of right now. I am leaving this here
@@ -75,9 +75,10 @@ void generate_chunk(const int chunk_x, const int chunk_y,
 		// Transfer noise values from height map to chunk tiles
 		for (int y = 0; y < 32; ++y) {
 			for (int x = 0; x < 32; ++x) {
-				auto* new_tile = noise_layer->get(base_terrain_height_map.GetValue(x, y));
+				float noise_val = base_terrain_height_map.GetValue(x, y);
+				auto* new_tile = noise_layer->get(noise_val);
 
-				func(tiles[y * 32 + x], new_tile);
+				func(tiles[y * 32 + x], new_tile, noise_val);
 			}
 		}
 
@@ -101,7 +102,7 @@ void generate(const int chunk_x, const int chunk_y) {
 
 	// Base
 	generate_chunk<data::Tile>(
-		chunk_x, chunk_y, data::data_category::noise_layer_tile, [](game::Chunk_tile& target, void* tile) {
+		chunk_x, chunk_y, data::data_category::noise_layer_tile, [](game::Chunk_tile& target, void* tile, float) {
 			assert(tile != nullptr);  // Base tile should never generate nullptr
 			// Add the tile prototype to the Chunk_tile
 			auto* new_tile = static_cast<data::Tile*>(tile);
@@ -111,15 +112,18 @@ void generate(const int chunk_x, const int chunk_y) {
 
 	// Resources
 	generate_chunk<data::Resource_entity>(
-		chunk_x, chunk_y, data::data_category::noise_layer_entity, [](game::Chunk_tile& target, void* tile) {
+		chunk_x, chunk_y, data::data_category::noise_layer_entity, [](game::Chunk_tile& target, void* tile, float val) {
 			if (tile == nullptr)  // Do not override existing tiles with nullptr
 				return;
 		
 			// Add the tile prototype to the Chunk_tile
 			auto* new_tile = static_cast<data::Resource_entity*>(tile);
-	
-			target.set_layer_entity_prototype(
-				game::Chunk_tile::chunk_layer::resource, new_tile);
+
+			auto& layer = target.get_layer(game::Chunk_tile::chunk_layer::resource);
+			layer.set_data(new_tile);
+
+			// For resource amount, multiply by arbitrary number to scale noise val (0 - 1) to a reasonable number
+			layer.unique_data = new data::Resource_entity_data(val * 7823);
 		});
 }
 
