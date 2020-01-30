@@ -42,7 +42,7 @@ def addResourceEntity(
                             .load(tileSpritePath)
                             .group(j.spriteGroup.Terrain)
                         ))
-                        .product(product)
+                        .item(product)
     )
     # Add resource tile to NoiseLayer
     noiseLayer.add(endRange, resourceTile)

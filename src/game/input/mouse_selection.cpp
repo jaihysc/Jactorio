@@ -30,8 +30,10 @@ double jactorio::game::mouse_selection::get_position_y() {
 	return y_position;
 }
 
-std::pair<int, int> jactorio::game::mouse_selection::get_mouse_tile_coords() {
-	// TODO buffer the mouse selected tile??
+
+std::pair<int, int> mouse_selected_tile;
+
+void jactorio::game::mouse_selection::calculate_mouse_tile_coords() {
 	float world_x = player_manager::get_player_position_x();
 	float world_y = player_manager::get_player_position_y();
 
@@ -68,10 +70,10 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_tile_coords() {
 
 		// If player is standing on a partial tile, adjust the center accordingly to the correct location
 		mouse_x_center -=
-			static_cast<float>(renderer::Renderer::tile_width) * (world_x - static_cast<int>(world_x));
+			static_cast<float>(renderer::Renderer::tile_width)* (world_x - static_cast<int>(world_x));
 		// This is plus since the y axis is inverted
 		mouse_y_center +=
-			static_cast<float>(renderer::Renderer::tile_width) * (world_y - static_cast<int>(world_y));
+			static_cast<float>(renderer::Renderer::tile_width)* (world_y - static_cast<int>(world_y));
 
 
 		pixels_from_center_x = norm_positions.x - mouse_x_center;
@@ -88,8 +90,13 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_tile_coords() {
 	if (world_y < 0)
 		world_y -= 1.f;
 
-	return std::pair<int, int>(world_x, world_y);
+	mouse_selected_tile = std::pair<int, int>(world_x, world_y);
 }
+
+std::pair<int, int> jactorio::game::mouse_selection::get_mouse_tile_coords() {
+	return mouse_selected_tile;
+}
+
 
 bool jactorio::game::mouse_selection::selected_tile_in_range() {
 	const auto cursor_position = get_mouse_tile_coords();
@@ -143,16 +150,6 @@ void draw_selection_box() {
 		|| (tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::resource) == nullptr &&
 			tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::entity) == nullptr)) {
 		return;
-	}
-
-	// TODO remove testing only
-	{
-		const auto resource =
-			static_cast<jactorio::data::Resource_entity_data*>(
-				tile->get_layer(Chunk_tile::chunk_layer::resource).unique_data);
-		if (resource != nullptr) {
-			LOG_MESSAGE_f(debug, "%d", resource->resource_amount);
-		}
 	}
 	
 	// Draw invalid cursor if range tis too far

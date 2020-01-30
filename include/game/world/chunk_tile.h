@@ -138,11 +138,11 @@ namespace jactorio::game
 		static constexpr int layer_count = static_cast<int>(chunk_layer::count_);
 
 		
-		J_NODISCARD Chunk_tile_layer& get_layer(const chunk_layer layer) {
+		J_NODISCARD Chunk_tile_layer& get_layer(const chunk_layer layer) const {
 			return layers[get_layer_index(layer)];
 		}
 
-		J_NODISCARD Chunk_tile_layer& get_layer(const uint8_t layer_index) {
+		J_NODISCARD Chunk_tile_layer& get_layer(const uint8_t layer_index) const {
 			return layers[layer_index];
 		}
 
@@ -170,7 +170,7 @@ namespace jactorio::game
 		/**
 		 * To access prototype at each location, cast desired prototype_category to int and index tile_prototypes
 		 */
-		Chunk_tile_layer layers[layer_count];
+		mutable Chunk_tile_layer layers[layer_count];
 	};
 }
 

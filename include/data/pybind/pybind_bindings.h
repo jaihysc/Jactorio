@@ -152,9 +152,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	PYBIND_DATA_CLASS_SEPARATE(Container_entity, ContainerEntity, Health_entity, container_entity)
 		PYBIND_PROP_SEPARATE(Container_entity, inventorySize, inventory_size);
 
-	PYBIND_DATA_CLASS_SEPARATE(Resource_entity, ResourceEntity, Entity, resource_entity)
-		PYBIND_PROP(Resource_entity, product);
-
+	PYBIND_DATA_CLASS_SEPARATE(Resource_entity, ResourceEntity, Entity, resource_entity);
 	
 	// Recipes
 	PYBIND_DATA_CLASS_SEPARATE(Recipe_group, RecipeGroup, Prototype_base, recipe_group)

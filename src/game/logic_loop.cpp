@@ -90,6 +90,8 @@ void jactorio::game::init_logic_loop() {
 		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
 		{
+			mouse_selection::calculate_mouse_tile_coords();
+			
 			// Do things every logic loop tick
 			Event::raise<Logic_tick_event>(event_type::logic_tick, logic_tick);
 

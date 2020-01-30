@@ -5,6 +5,7 @@
 #include "data/data_manager.h"
 #include "core/resource_guard.h"
 #include "data/prototype/entity/container_entity.h"
+#include "data/prototype/entity/resource_entity.h"
 
 // Prepares an inventory test by resetting the appropriate variables and creating the RAII guards
 #define INVENTORY_TEST_HEADER\
@@ -119,7 +120,7 @@ namespace game
 		          entity);  // Not picked up yet - 10 more ticks needed to reach 1 second
 
 		
-		try_pickup(1, 0, 10);  // Selecting different tile will reset pickup counter
+		try_pickup(1, 0, 30);  // Selecting different tile will reset pickup counter
 		EXPECT_EQ(tiles[1].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
 		          entity);  // Not picked up yet - 50 more to 1 second since counter reset
 
@@ -134,7 +135,105 @@ namespace game
 	}
 
 	TEST(player_manager, try_pickup_resource) {
-		// TODO when resources are implemented
+		INVENTORY_TEST_HEADER
+
+		jactorio::core::Resource_guard chunk_guard(&jactorio::game::world_manager::clear_chunk_data);
+		jactorio::core::Resource_guard data_guard(&jactorio::game::world_manager::clear_chunk_data);
+
+		// Create resource entity
+		auto item = jactorio::data::Item();
+
+		auto* entity = new jactorio::data::Resource_entity();
+		entity->pickup_time = 3.f;
+		entity->set_item(&item);
+		data_manager::data_raw_add(jactorio::data::data_category::resource_entity, "diamond", entity);
+
+		// Create world with the resource entity at 0, 0
+		auto* tiles = new jactorio::game::Chunk_tile[1024];
+		jactorio::game::world_manager::add_chunk(
+			new jactorio::game::Chunk(0, 0, tiles));
+
+		
+		tiles[0].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::resource, entity);
+
+		// Holds the resources available at the tile, should be decremented when extracted
+		auto* resource_data = new jactorio::data::Resource_entity_data(2);
+		tiles[0].get_layer(jactorio::game::Chunk_tile::chunk_layer::resource).unique_data = resource_data;
+
+		
+		//
+		try_pickup(0, 0, 180);
+		// Resource entity should only become nullptr after all the resources are extracted
+		EXPECT_EQ(tiles[0].get_layer_entity_prototype(
+			          jactorio::game::Chunk_tile::chunk_layer::resource), entity);
+
+		EXPECT_EQ(resource_data->resource_amount, 1);
+
+		EXPECT_EQ(inventory_player[0].first, &item);  // Gave 1 resource to player
+		EXPECT_EQ(inventory_player[0].second, 1);
+
+		
+		// All resources extracted from resource entity, should now become nullptr
+		try_pickup(0, 0, 60);
+		try_pickup(0, 0, 60);
+		try_pickup(0, 0, 60);
+		EXPECT_EQ(tiles[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::resource),
+		          nullptr);  // Picked up, item given to inventory
+
+		// Resource_data should be deleted
+
+		EXPECT_EQ(inventory_player[0].first, &item);
+		EXPECT_EQ(inventory_player[0].second, 2);  // Player has 2 of resource
+	}
+
+	TEST(player_manager, try_pickup_layered) {
+		INVENTORY_TEST_HEADER
+
+		jactorio::core::Resource_guard chunk_guard(&jactorio::game::world_manager::clear_chunk_data);
+		jactorio::core::Resource_guard data_guard(&jactorio::game::world_manager::clear_chunk_data);
+
+		auto item = jactorio::data::Item();
+		// Create world with the resource entity at 0, 0
+		auto* tiles = new jactorio::game::Chunk_tile[1024];
+		jactorio::game::world_manager::add_chunk(
+			new jactorio::game::Chunk(0, 0, tiles));
+
+
+		// Resource entity
+		auto* resource_entity = new jactorio::data::Resource_entity();
+		resource_entity->pickup_time = 3.f;
+		resource_entity->set_item(&item);
+		data_manager::data_raw_add(jactorio::data::data_category::resource_entity, "diamond", resource_entity);
+
+
+		tiles[0].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::resource, resource_entity);
+
+		// Holds the resources available at the tile, should be decremented when extracted
+		auto* resource_data = new jactorio::data::Resource_entity_data(2);
+		tiles[0].get_layer(jactorio::game::Chunk_tile::chunk_layer::resource).unique_data = resource_data;
+
+		
+		// Other entity (e.g Container_entity)
+		auto* container_entity = new jactorio::data::Container_entity();
+		container_entity->pickup_time = 1.f;
+		container_entity->set_item(&item);
+
+		data_manager::data_raw_add(jactorio::data::data_category::container_entity, "chester", container_entity);
+		tiles[0].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, container_entity);
+
+		//
+		try_pickup(0, 0, 60);  // Container entity takes priority
+		EXPECT_EQ(tiles[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
+		          nullptr);  // Picked up, item given to inventory
+
+		
+		// Now that container entity is picked up, resource entity is next
+		try_pickup(0, 0, 60);
+		try_pickup(0, 0, 60);
+		EXPECT_EQ(resource_data->resource_amount, 2);  // Not picked up, still 60 more ticks required
+
+		try_pickup(0, 0, 60);
+		EXPECT_EQ(resource_data->resource_amount, 1);  // Picked up
 	}
 	
 	//
@@ -606,6 +705,28 @@ namespace game
 			if (i == 10)
 				continue;
 			EXPECT_NE(inventory_player[i].first, cursor);
+		}
+	}
+
+	TEST(player_maanger, player_inventory_sort_full) {
+		// Sorting the inventory when it is full should also work
+		INVENTORY_TEST_HEADER
+
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+		
+		for (int i = 0; i < inventory_size; ++i) {
+			inventory_player[i].first = item.get();
+			inventory_player[i].second = 50;
+		}
+
+		inventory_sort();
+
+
+		// There should have been no new cursors created anywhere
+		for (int i = 0; i < inventory_size; ++i) {
+			EXPECT_EQ(inventory_player[i].first, item.get());
+			EXPECT_EQ(inventory_player[i].second, 50);
 		}
 	}
 

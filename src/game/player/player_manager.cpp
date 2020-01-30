@@ -1,14 +1,15 @@
 #include "game/player/player_manager.h"
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 #include <map>
 
-#include "game/logic/inventory_controller.h"
-#include "game/world/world_manager.h"
 #include "data/data_manager.h"
-#include "game/logic/placement_controller.h"
+#include "data/prototype/entity/resource_entity.h"
 #include "game/input/mouse_selection.h"
+#include "game/logic/inventory_controller.h"
+#include "game/logic/placement_controller.h"
+#include "game/world/world_manager.h"
 
 float player_position_x = 0;
 float player_position_y = 0;
@@ -84,70 +85,85 @@ void jactorio::game::player_manager::try_place(const int tile_x, const int tile_
 uint16_t pickup_tick_counter;
 uint16_t pickup_tick_target;
 
-// On first run, the pickup_tick_counter and pickup_tick_target needs to be initialized
-bool last_selected_initialized = false;
-std::pair<int, int> last_selected_tile_pos;
+// Do not reference this, this only tracks whether or not a different entity or another tile
+// is selected by comparing pointers
+void* last_selected_ptr = nullptr;
+void* last_tile_ptr = nullptr;
 
 void jactorio::game::player_manager::try_pickup(const int tile_x, const int tile_y, const uint16_t ticks) {
 	if (!mouse_selection::selected_tile_in_range())
 		return;
 	
-	const auto* tile = world_manager::get_tile_world_coords(tile_x, tile_y);
-	const auto entity_ptr = tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::entity);
+	auto* tile = world_manager::get_tile_world_coords(tile_x, tile_y);
 
-	if (entity_ptr == nullptr)
-		return;
+	data::Entity* chosen_ptr;
+	bool is_resource_ptr = true;
+	{
+		const auto entity_ptr = tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::entity);
+		const auto resource_ptr = tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::resource);
+
+		// Picking up entities takes priority since it is higher on the layer
+		if (entity_ptr != nullptr) {
+			is_resource_ptr = false;
+			chosen_ptr = entity_ptr;
+		}
+		else if (resource_ptr != nullptr)
+			chosen_ptr = resource_ptr;
+		else
+			// No valid pointers
+			return;
+	}
 	
 	// Selecting a new tile different from the last selected tile will reset the counter
-	if (last_selected_tile_pos.first != tile_x || last_selected_tile_pos.second != tile_y
-		|| !last_selected_initialized) {
-		last_selected_initialized = true;
+	if (last_selected_ptr != chosen_ptr || last_tile_ptr != tile) {
 		pickup_tick_counter = 0;
-		pickup_tick_target = entity_ptr->pickup_time * 60;  // Seconds to ticks
+		pickup_tick_target = chosen_ptr->pickup_time * 60;  // Seconds to ticks
 	}
-
+	// Remember the entity + tile which was selected
+	last_selected_ptr = chosen_ptr;
+	last_tile_ptr = tile;
+	
 	pickup_tick_counter += ticks;
 	if (pickup_tick_counter >= pickup_tick_target) {
 		// Entity picked up
 		LOG_MESSAGE(debug, "Player picked up entity");
 
-		const bool result = placement_c::place_entity_at_coords(nullptr, tile_x, tile_y);
-		assert(result);  // false indicates failed to remove entity
-		pickup_tick_counter = 0;
-
 		// Give picked up item to player
-		auto item_stack = data::item_stack(entity_ptr->get_item(), 1);
-		inventory_c::add_itemstack_to_inv(
-			inventory_player, inventory_size, item_stack);
+		auto item_stack = data::item_stack(chosen_ptr->get_item(), 1);
+		const bool added_item = inventory_c::add_itemstack_to_inv(inventory_player, inventory_size, item_stack);
 
+		if (!added_item) {  // Failed to add item, likely because the inventory is full
+			return;
+		}
 		inventory_sort();
 
-		// TODO do something if the inventory is full
-	}
-
-	// Remember the tile which was selected
-	last_selected_tile_pos.first = tile_x;
-	last_selected_tile_pos.second = tile_y;
-	
-	/*const auto* entity_ptr = tile->entity;
-	// Pickup entity has priority over extract resource
-	if (entity_ptr == nullptr) {
-		// Extract resource
-		auto* resource_tile = static_cast<data::Resource_tile*>(
-			tile->get_tile_layer_tile_prototype(Chunk_tile::chunk_layer::resource));
-		if (resource_tile != nullptr) {
-			LOG_MESSAGE(debug, "MINING AWAY p");
+		pickup_tick_counter = 0;
+		// Resource entity
+		if (is_resource_ptr) {
+			auto& layer = tile->get_layer(Chunk_tile::chunk_layer::resource);
+			auto* resource_data = static_cast<data::Resource_entity_data*>(layer.unique_data);
+			
+			assert(resource_data != nullptr);  // Resource tiles should have valid data
+			
+			// Delete resource tile if it is empty after extracting
+			if (--resource_data->resource_amount == 0) {
+				layer.unique_data = nullptr;
+				layer.set_data(nullptr);
+			}
 		}
-
-		return;
-	}*/
+			// Is normal entity
+		else {
+			const bool result = placement_c::place_entity_at_coords(nullptr, tile_x, tile_y);
+			assert(result);  // false indicates failed to remove entity
+		}
+	}
 }
 
 float jactorio::game::player_manager::get_pickup_percentage() {
-	if (!last_selected_initialized)
+	if (last_selected_ptr == nullptr)  // Not initialized yet
 		return 0.f;
 	
-	return static_cast<float>(pickup_tick_counter) / pickup_tick_target;
+	return static_cast<float>(pickup_tick_counter) / static_cast<float>(pickup_tick_target);
 }
 
 // ============================================================================================
@@ -197,7 +213,7 @@ void jactorio::game::player_manager::inventory_sort() {
 		// Ends 1 before, shift 1 ahead
 		j++;
 
-		for (j; j < i; ++j) {
+		for (; j < i; ++j) {
 
 			// If item somehow exceeds stack do not attempt to stack into it
 			if (inv_temp[j].second > stack_size)
@@ -227,7 +243,7 @@ void jactorio::game::player_manager::inventory_sort() {
 	}
 
 	// Copy back into origin inventory
-	unsigned int start = 0;  // The index of the first blank slot post sorting
+	int start = -1;  // The index of the first blank slot post sorting
 	unsigned int inv_temp_index = 0;
 	for (auto i = 0; i < inventory_size; ++i) {
 		// Skip the cursor
@@ -252,6 +268,9 @@ void jactorio::game::player_manager::inventory_sort() {
 	}
 loop_exit:
 
+	if (start == -1)  // Start being -1 means that there is no empty slots
+		return;
+	
 	// Copy empty spaces into the remainder of the slots
 	for (auto i = start; i < inventory_size; ++i) {
 		// Skip the cursor

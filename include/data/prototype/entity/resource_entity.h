@@ -23,9 +23,7 @@ namespace jactorio::data
 	class Resource_entity final : public Entity
 	{
 	public:
-		Resource_entity()
-			: product(nullptr) {
-		}
+		Resource_entity() = default;
 
 		~Resource_entity() override = default;
 
@@ -34,12 +32,6 @@ namespace jactorio::data
 		
 		Resource_entity& operator=(const Resource_entity& other) = default;
 		Resource_entity& operator=(Resource_entity&& other) noexcept = default;
-
-
-		/**
-		 * Item given when this resource is extracted
-		 */
-		PYTHON_PROP(Resource_entity, Item*, product)
 
 		
 		void delete_unique_data(void* ptr) const override {
@@ -50,10 +42,6 @@ namespace jactorio::data
 			const auto other = new Resource_entity_data();
 			*other = *static_cast<Resource_entity_data*>(ptr);
 			return other;
-		}
-		
-		void post_load_validate() const override {
-			J_DATA_ASSERT(product != nullptr, "Resource entity must have a product");
 		}
 	};
 }
