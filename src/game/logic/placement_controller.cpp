@@ -49,7 +49,8 @@ bool jactorio::game::placement_c::place_entity_at_coords(data::Entity* entity, c
 		remove_at_coords(
 			Chunk_tile::chunk_layer::entity, t_entity->tile_width, t_entity->tile_height,
 			x, y, [](Chunk_tile* chunk_tile) {
-				chunk_tile->set_layer_entity_prototype(Chunk_tile::chunk_layer::entity, nullptr);
+				chunk_tile->get_layer(Chunk_tile::chunk_layer::entity).clear();
+				// chunk_tile->set_layer_entity_prototype(Chunk_tile::chunk_layer::entity, nullptr);
 			});
 
 		return true;

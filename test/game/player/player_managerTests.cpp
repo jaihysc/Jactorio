@@ -38,11 +38,11 @@ namespace game
 
 		auto* entity = new jactorio::data::Container_entity();
 		entity->set_item(&item);
-		data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity);
+		// data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity);
 
 		
 		auto* entity2 = new jactorio::data::Container_entity();
-		data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity2);
+		// data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity2);
 
 
 		auto tile_proto = jactorio::data::Tile();
@@ -72,6 +72,8 @@ namespace game
 
 		
 		// Placement tests
+
+		// Place at 0, 0
 		selected_item = {&item, 2};
 		set_selected_item(selected_item);
 
@@ -80,9 +82,107 @@ namespace game
 		EXPECT_EQ(tiles[0].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity), entity);
 		EXPECT_EQ(get_selected_item()->second, 1);  // 1 less item 
 		
-		
+		// The on_build() method should get called, creating unique data on the tile which holds the inventory
+		EXPECT_NE(tiles[0].get_layer(jactorio::game::Chunk_tile::chunk_layer::entity).unique_data, nullptr);
+
+
+		// Do not place at 1, 0 
 		try_place(1, 0);  // A tile already exists on 1, 0 - Should not override it
-		EXPECT_EQ(tiles[1].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity), entity2);
+		EXPECT_EQ(tiles[1].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity), entity2);	
+	}
+
+	TEST(player_manager, try_place_entity_activate_layer) {
+		INVENTORY_TEST_HEADER
+
+		jactorio::core::Resource_guard chunk_guard(&jactorio::game::world_manager::clear_chunk_data);
+		jactorio::core::Resource_guard data_guard(&jactorio::game::world_manager::clear_chunk_data);
+
+		// Create entity
+		auto item = jactorio::data::Item();
+		auto item_no_entity = jactorio::data::Item();  // Does not hold an entity reference
+
+		auto* entity = new jactorio::data::Container_entity();
+		entity->placeable = true;
+		entity->set_item(&item);
+		// data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity);
+
+
+		auto tile_proto = jactorio::data::Tile();
+		tile_proto.is_water = false;
+
+		// Create world with entity at 0, 0
+		auto* tiles = new jactorio::game::Chunk_tile[1024];
+		tiles[0].set_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base, &tile_proto);
+		tiles[0].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, entity);
+
+
+		jactorio::game::world_manager::add_chunk(
+			new jactorio::game::Chunk(0, 0, tiles));
+
+		// If selected item's entity is placeable, do not set activated_layer
+		jactorio::data::item_stack selected_item = {&item, 2};
+		set_selected_item(selected_item);
+
+		try_place(0, 0, true);
+		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), nullptr);
+		
+		// Clicking on an entity with no placeable items selected will set activated_layer
+		selected_item = {&item_no_entity, 2};
+		set_selected_item(selected_item);
+
+		// However! If mouse_release is not true, do not set activated_layer
+		try_place(0, 0);
+		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), nullptr);
+
+		try_place(0, 0, true);
+		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), 
+				  &tiles[0].get_layer(jactorio::game::Chunk_tile::chunk_layer::entity));
+
+		// Clicking again will unset
+		try_place(0, 0, true);
+		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), nullptr);
+
+	}
+
+	TEST(player_manager, try_place_entity_pickup_activate_layer) {
+		INVENTORY_TEST_HEADER
+
+		jactorio::core::Resource_guard chunk_guard(&jactorio::game::world_manager::clear_chunk_data);
+		jactorio::core::Resource_guard data_guard(&jactorio::game::world_manager::clear_chunk_data);
+
+		// Create entity
+		auto item = jactorio::data::Item();
+
+		auto* entity = new jactorio::data::Container_entity();
+		entity->placeable = false;
+		entity->set_item(&item);
+
+
+		auto tile_proto = jactorio::data::Tile();
+		tile_proto.is_water = false;
+
+		// Create world with entity at 0, 0
+		auto* tiles = new jactorio::game::Chunk_tile[1024];
+		tiles[0].set_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base, &tile_proto);
+		tiles[0].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, entity);
+
+
+		jactorio::game::world_manager::add_chunk(
+			new jactorio::game::Chunk(0, 0, tiles));
+
+		// Entity is non-placeable, therefore when clicking on an entity, it will get activated_layer
+		jactorio::data::item_stack selected_item = {&item, 2};
+		set_selected_item(selected_item);
+
+		// Set
+		try_place(0, 0, true);
+		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), 
+				  &tiles[0].get_layer(jactorio::game::Chunk_tile::chunk_layer::entity));
+
+		// Picking up entity will unset
+		try_pickup(0, 0, 1000);
+		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), nullptr);
+
 	}
 	
 	TEST(player_manager, try_pickup_entity) {
@@ -104,6 +204,9 @@ namespace game
 		tiles[0].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, entity);
 		tiles[1].set_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity, entity);
 
+		// Create unique data by calling build event for prototype with layer
+		entity->on_build(&tiles[0].get_layer(jactorio::game::Chunk_tile::chunk_layer::entity));
+		
 		jactorio::game::world_manager::add_chunk(
 			new jactorio::game::Chunk(0, 0, tiles));
 
@@ -123,7 +226,6 @@ namespace game
 		try_pickup(1, 0, 30);  // Selecting different tile will reset pickup counter
 		EXPECT_EQ(tiles[1].get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity),
 		          entity);  // Not picked up yet - 50 more to 1 second since counter reset
-
 		
 		try_pickup(0, 0, 50);
 		try_pickup(0, 0, 10);
@@ -132,6 +234,9 @@ namespace game
 
 		EXPECT_EQ(inventory_player[0].first, &item);
 		EXPECT_EQ(inventory_player[0].second, 1);
+
+		// Unique data for layer should have been deleted
+		EXPECT_EQ(tiles[0].get_layer(jactorio::game::Chunk_tile::chunk_layer::entity).unique_data, nullptr);
 	}
 
 	TEST(player_manager, try_pickup_resource) {
@@ -265,7 +370,7 @@ namespace game
 		inventory_player[0].first = item.get();
 		inventory_player[0].second = 50;
 
-		inventory_click(0, 0);
+		inventory_click(0, 0, true, inventory_player);
 
 		EXPECT_EQ(inventory_player[0].first, cursor);
 		EXPECT_EQ(inventory_player[0].second, 0);
@@ -294,8 +399,8 @@ namespace game
 			inventory_player[0].first = item.get();
 			inventory_player[0].second = 50;
 
-			inventory_click(0, 0);  // Select
-			inventory_click(0, 0);  // Deselect
+			inventory_click(0, 0, true, inventory_player);  // Select
+			inventory_click(0, 0, true, inventory_player);  // Deselect
 
 
 			EXPECT_EQ(inventory_player[0].first, item.get());
@@ -311,8 +416,8 @@ namespace game
 			inventory_player[0].first = item.get();
 			inventory_player[0].second = 50;
 
-			inventory_click(0, 0);  // Select
-			inventory_click(0, 1);  // Deselect
+			inventory_click(0, 0, true, inventory_player);  // Select
+			inventory_click(0, 1, true, inventory_player);  // Deselect
 
 
 			EXPECT_EQ(inventory_player[0].first, item.get());
@@ -320,6 +425,68 @@ namespace game
 
 			const auto cursor_item = get_selected_item();
 			EXPECT_EQ(cursor_item, nullptr);
+		}
+	}
+	
+	TEST(player_manager, inventory_deselect_referenced_item_2_inventories) {
+		// Left click on a slot picks up items by reference
+		// Left / right clicking again on the same slot in another inventory however will not deselect the item
+		INVENTORY_TEST_HEADER
+
+		jactorio::core::Resource_guard guard(data_manager::clear_data);
+
+		// Create the cursor prototype
+		auto* cursor = new jactorio::data::Item();
+		data_manager::data_raw_add(
+			jactorio::data::data_category::item, inventory_selected_cursor_iname, cursor);
+
+		const auto item = std::make_unique<jactorio::data::Item>();
+
+		clear_player_inventory();
+		// Left click into another inventory
+		{
+			// Position 3 should have the 50 items + item prototype after moving
+			inventory_player[0].first = item.get();
+			inventory_player[0].second = 50;
+
+			inventory_click(0, 0, true, inventory_player);  // Select
+
+			// Deselect into inv_2
+			jactorio::data::item_stack inv_2[10];
+			inventory_click(0, 0, true, inv_2);  // Deselect
+
+			EXPECT_EQ(inv_2[0].first, item.get());
+			EXPECT_EQ(inv_2[0].second, 50);
+
+			const auto cursor_item = get_selected_item();
+			EXPECT_EQ(cursor_item, nullptr);
+
+			// Selected cursor should no longer exist in inventory_player
+			EXPECT_EQ(inventory_player[0].first, nullptr);
+		}
+		clear_player_inventory();
+		// Right click into another inventory
+		{
+			// Position 3 should have the 50 items + item prototype after moving
+			inventory_player[0].first = item.get();
+			inventory_player[0].second = 50;
+
+			inventory_click(0, 0, true, inventory_player);  // Select
+
+			// Deselect into inv_2
+			jactorio::data::item_stack inv_2[10];
+			inventory_click(0, 1, true, inv_2);  // Will NOT Deselect since in another inventory
+
+			EXPECT_EQ(inv_2[0].first, item.get());
+			EXPECT_EQ(inv_2[0].second, 1);
+
+			// Cursor still holds 49
+			const auto cursor_item = get_selected_item();
+			EXPECT_EQ(cursor_item->first, item.get());
+			EXPECT_EQ(cursor_item->second, 49);
+
+			// Selected cursor should STILL exist in inventory_player since not deselected
+			EXPECT_NE(inventory_player[0].first, nullptr);
 		}
 	}
 
@@ -344,8 +511,8 @@ namespace game
 			inventory_player[0].first = item.get();
 			inventory_player[0].second = 50;
 
-			inventory_click(0, 0);  // Select item
-			inventory_click(3, 0);  // Drop item off
+			inventory_click(0, 0, true, inventory_player);  // Select item
+			inventory_click(3, 0, true, inventory_player);  // Drop item off
 
 
 			EXPECT_EQ(inventory_player[0].first, nullptr);
@@ -370,7 +537,7 @@ namespace game
 		inventory_player[0].first = item.get();
 		inventory_player[0].second = 40;
 
-		inventory_click(0, 1);  // Pick up half
+		inventory_click(0, 1, true, inventory_player);  // Pick up half
 
 		inventory_player[0].first = item.get();
 		inventory_player[0].second = 20;
@@ -392,7 +559,7 @@ namespace game
 			inventory_player[0].first = item.get();
 			inventory_player[0].second = 10;
 
-			inventory_click(0, 1);  // Pick up half
+			inventory_click(0, 1, true, inventory_player);  // Pick up half
 
 			EXPECT_EQ(inventory_player[0].first, item.get());
 			EXPECT_EQ(inventory_player[0].second, 5);
@@ -402,7 +569,7 @@ namespace game
 			EXPECT_EQ(cursor_item->second, 5);
 
 
-			inventory_click(3, 1);  // Drop 1 at index 3
+			inventory_click(3, 1, true, inventory_player);  // Drop 1 at index 3
 
 			// Should remain unchanged
 			EXPECT_EQ(inventory_player[0].first, item.get());
@@ -425,8 +592,8 @@ namespace game
 			inventory_player[0].first = item.get();
 			inventory_player[0].second = 10;
 
-			inventory_click(0, 1);  // Pick up half
-			inventory_click(0, 1);  // Drop 1 one the stack it picked up from
+			inventory_click(0, 1, true, inventory_player);  // Pick up half
+			inventory_click(0, 1, true, inventory_player);  // Drop 1 one the stack it picked up from
 
 			// Loses 1
 			const auto cursor_item = get_selected_item();
@@ -451,7 +618,7 @@ namespace game
 		inventory_player[0].second = 10;
 
 
-		inventory_click(0, 1);  // Pick up half
+		inventory_click(0, 1, true, inventory_player);  // Pick up half
 
 		EXPECT_EQ(inventory_player[0].first, item.get());
 		EXPECT_EQ(inventory_player[0].second, 5);
@@ -461,7 +628,7 @@ namespace game
 		EXPECT_EQ(cursor_item->second, 5);
 
 
-		inventory_click(3, 0);  // Drop stack at index 3
+		inventory_click(3, 0, true, inventory_player);  // Drop stack at index 3
 
 		// Should remain unchanged
 		EXPECT_EQ(inventory_player[0].first, item.get());
@@ -484,7 +651,7 @@ namespace game
 		inventory_player[0].first = nullptr;
 		inventory_player[0].second = 0;
 
-		inventory_click(0, 0);
+		inventory_click(0, 0, true, inventory_player);
 
 		EXPECT_EQ(inventory_player[0].first, nullptr);
 		EXPECT_EQ(inventory_player[0].second, 0);
@@ -508,7 +675,7 @@ namespace game
 		// Pickup
 		{
 			// Pick up 5 of item, now selected
-			inventory_click(0, 1);
+			inventory_click(0, 1, true, inventory_player);
 
 			// Check if item was incremented
 			EXPECT_EQ(increment_selected_item(), true);
@@ -523,7 +690,7 @@ namespace game
 
 		// Drop item down at inv slot 1
 		{
-			inventory_click(1, 0);
+			inventory_click(1, 0, true, inventory_player);
 
 			// Inv now empty, contents in inv slot 1
 			EXPECT_EQ(inventory_player[1].first, item.get());
@@ -545,7 +712,7 @@ namespace game
 		inventory_player[0].second = 50;
 
 		// Pickup
-		inventory_click(0, 0);
+		inventory_click(0, 0, true, inventory_player);
 
 		// Failed to add item: Item stack already full
 		EXPECT_EQ(increment_selected_item(), false);
@@ -569,7 +736,7 @@ namespace game
 		// Pickup
 		{
 			// Pick up 5 of item, now selected
-			inventory_click(0, 1);
+			inventory_click(0, 1, true, inventory_player);
 
 			// Check if item was incremented
 			EXPECT_EQ(decrement_selected_item(), true);
@@ -584,7 +751,7 @@ namespace game
 
 		// Drop item down at inv slot 1
 		{
-			inventory_click(1, 0);
+			inventory_click(1, 0, true, inventory_player);
 
 			// Inv now empty, contents in inv slot 1
 			EXPECT_EQ(inventory_player[1].first, item.get());
@@ -614,7 +781,7 @@ namespace game
 		inventory_player[0].second = 1;
 
 		// Pickup
-		inventory_click(0, 0);
+		inventory_click(0, 0, true, inventory_player);
 
 		EXPECT_EQ(decrement_selected_item(), false);
 

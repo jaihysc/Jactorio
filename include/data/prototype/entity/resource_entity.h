@@ -23,7 +23,10 @@ namespace jactorio::data
 	class Resource_entity final : public Entity
 	{
 	public:
-		Resource_entity() = default;
+		Resource_entity() {
+			// Resource entities can never be placed
+			this->placeable = false;
+		}
 
 		~Resource_entity() override = default;
 

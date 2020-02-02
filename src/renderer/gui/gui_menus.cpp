@@ -162,6 +162,22 @@ void draw_slot(const jactorio::renderer::imgui_manager::Menu_data& menu_data,
 	}
 }
 
+/**
+ * Draws empty inventory slot
+ */
+void draw_empty_slot() {
+	ImGui::ImageButton(
+		nullptr,
+		ImVec2(0, 0),
+		ImVec2(-1, -1),
+		ImVec2(-1, -1),
+		inventory_slot_width / 2 // 32 / 2
+	);
+}
+
+// ==========================================================================================
+// Player menus (Excluding entity menus)
+
 void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags) {
 	namespace player_manager = game::player_manager;
 
@@ -193,11 +209,11 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 		if (item.first != nullptr) {
 			draw_slot(menu_data, 1, index % 10, item.first->sprite->internal_id, item.second, [index, item]() {
 				if (ImGui::IsItemClicked()) {
-					player_manager::inventory_click(index, 0);
+					player_manager::inventory_click(index, 0, true, player_manager::inventory_player);
 					player_manager::inventory_sort();
 				}
 				else if (ImGui::IsItemClicked(1)) {
-					player_manager::inventory_click(index, 1);
+					player_manager::inventory_click(index, 1, true, player_manager::inventory_player);
 					player_manager::inventory_sort();
 				}
 
@@ -217,20 +233,14 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 		}
 		else {
 			// Empty button
-			ImGui::ImageButton(
-				nullptr,
-				ImVec2(0, 0),
-				ImVec2(-1, -1),
-				ImVec2(-1, -1),
-				inventory_slot_width / 2 // 32 / 2
-			);
+			draw_empty_slot();
 			// Click event
 			if (ImGui::IsItemClicked()) {
-				player_manager::inventory_click(index, 0);
+				player_manager::inventory_click(index, 0, true, player_manager::inventory_player);
 				player_manager::inventory_sort();
 			}
 			else if (ImGui::IsItemClicked(1)) {
-				player_manager::inventory_click(index, 1);
+				player_manager::inventory_click(index, 1, true, player_manager::inventory_player);
 				player_manager::inventory_sort();
 			}
 		}
@@ -518,6 +528,50 @@ void jactorio::renderer::gui::pickup_progressbar() {
 	ImGui::ProgressBar(pickup_fraction, ImVec2(progress_bar_width, progress_bar_height));
 
 	ImGui::PopStyleColor(3);
+	
+	ImGui::End();
+}
+
+// ==========================================================================================
+// Entity menus
+
+void jactorio::renderer::gui::container_entity(data::item_stack* inv, const uint16_t inv_size) {
+	ImGuiWindowFlags flags = 0;
+	flags |= ImGuiWindowFlags_NoMove;
+	flags |= ImGuiWindowFlags_NoResize;
+	flags |= ImGuiWindowFlags_NoCollapse;
+	flags |= ImGuiWindowFlags_AlwaysAutoResize;
+	
+	ImGui::SetNextWindowPosCenter();
+	ImGui::Begin("Container", nullptr, flags);
+
+	draw_slots(10, inv_size, [&](auto i) {
+		if (inv[i].first == nullptr) {
+			draw_empty_slot();
+			if (ImGui::IsItemClicked()) {
+				game::player_manager::inventory_click(i, 0, false, inv);
+				game::player_manager::inventory_sort();
+			}
+			else if (ImGui::IsItemClicked(1)) {
+				game::player_manager::inventory_click(i, 1, false, inv);
+				game::player_manager::inventory_sort();
+			}
+		}
+		else
+			// BUG this may throw exception due to concurrency and inv being deleted
+			draw_slot(
+				imgui_manager::get_menu_data(), 1, i % 10,
+				inv[i].first->sprite->internal_id, inv[i].second, [&]() {
+					if (ImGui::IsItemClicked()) {
+						game::player_manager::inventory_click(i, 0, false, inv);
+						game::player_manager::inventory_sort();
+					}
+					else if (ImGui::IsItemClicked(1)) {
+						game::player_manager::inventory_click(i, 1, false, inv);
+						game::player_manager::inventory_sort();
+					}
+				});
+	});
 	
 	ImGui::End();
 }

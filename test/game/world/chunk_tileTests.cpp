@@ -8,6 +8,7 @@
 
 namespace game
 {
+	/*
 	TEST(chunk_tile, chunk_tile_layer_init) {
 		// Init without tile
 		const jactorio::game::Chunk_tile_layer tile_layer;
@@ -51,6 +52,7 @@ namespace game
 			EXPECT_EQ(tile_layer.get_sprite_prototype(), nullptr);
 		}
 	}
+	*/
 
 	TEST(chunk_tile, layer_copy) {
 		// Copying a chunk tile needs to also make a unique copy of unique_data_
@@ -59,7 +61,7 @@ namespace game
 		auto* u_data1 = new jactorio::data::Resource_entity_data();
 		
 		auto tile_layer = jactorio::game::Chunk_tile_layer();
-		tile_layer.set_data(entity_proto.get());
+		tile_layer.prototype_data = entity_proto.get();
 		tile_layer.unique_data = u_data1;
 
 		// Copy layer
@@ -77,7 +79,7 @@ namespace game
 		
 		// Should all be nullptr
 		for (auto layer : ct.layers) {
-			EXPECT_EQ(layer.get_tile_prototype(), nullptr);
+			EXPECT_EQ(layer.prototype_data, nullptr);
 		}
 	}
 

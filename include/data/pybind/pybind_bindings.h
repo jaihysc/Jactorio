@@ -141,6 +141,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	py::class_<Entity, Prototype_base>(m, "Entity")
 		PYBIND_PROP(Entity, sprite)
 		PYBIND_PROP(Entity, rotatable)
+		PYBIND_PROP(Entity, placeable)
 		PYBIND_PROP_GET_SET(Entity, item, item)
 		PYBIND_PROP_SEPARATE(Entity, tileWidth, tile_width)
 		PYBIND_PROP_SEPARATE(Entity, tileHeight, tile_height)

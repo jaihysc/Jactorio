@@ -62,6 +62,8 @@ endif()
 
 
 # Add source to this project's executable.
+add_compile_definitions(JACTORIO_BUILD_TEST)  # Disables warning when using test only functions
+
 add_executable (
 	jactorioTest
 	${JACTORIO_SRC_FILES}

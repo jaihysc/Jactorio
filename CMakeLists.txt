@@ -36,6 +36,7 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/data/prototype/sprite.cpp
 	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
+	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
@@ -51,6 +52,7 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
+	${JACTORIO_DIR}/game/world/chunk_tile_layer.cpp
 	${JACTORIO_DIR}/game/world/world_manager.cpp
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 

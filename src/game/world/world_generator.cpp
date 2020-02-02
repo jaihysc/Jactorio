@@ -120,7 +120,7 @@ void generate(const int chunk_x, const int chunk_y) {
 			auto* new_tile = static_cast<data::Resource_entity*>(tile);
 
 			auto& layer = target.get_layer(game::Chunk_tile::chunk_layer::resource);
-			layer.set_data(new_tile);
+			layer.prototype_data = new_tile;
 
 			// For resource amount, multiply by arbitrary number to scale noise val (0 - 1) to a reasonable number
 			layer.unique_data = new data::Resource_entity_data(val * 7823);

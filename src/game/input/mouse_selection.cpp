@@ -194,7 +194,7 @@ void jactorio::game::mouse_selection::draw_cursor_overlay() {
 		const auto entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
 
 		// Ensure selected item is an entity to draw preview
-		if (entity_ptr != nullptr) {
+		if (entity_ptr != nullptr && entity_ptr->placeable) {
 			placement_c::place_sprite_at_coords(
 				Chunk_tile::chunk_layer::overlay, 
 				entity_ptr->sprite,

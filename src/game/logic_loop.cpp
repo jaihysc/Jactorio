@@ -72,6 +72,14 @@ void jactorio::game::init_logic_loop() {
 			player_manager::try_place(tile_selected.first, tile_selected.second);
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS);
 
+		input_manager::subscribe([]() {
+			if (renderer::imgui_manager::input_captured)
+				return;
+
+			const auto tile_selected = mouse_selection::get_mouse_tile_coords();
+			player_manager::try_place(tile_selected.first, tile_selected.second, true);
+		}, GLFW_MOUSE_BUTTON_1, GLFW_RELEASE);
+		
 		// Remove entities or mine resource
 		input_manager::subscribe([]() {
 			if (renderer::imgui_manager::input_captured)

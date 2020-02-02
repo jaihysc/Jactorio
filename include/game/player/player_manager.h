@@ -3,6 +3,7 @@
 
 #include "data/prototype/item/item.h"
 #include "data/prototype/item/recipe.h"
+#include "game/world/chunk_tile_layer.h"
 
 #include <vector>
 #include <queue>
@@ -36,10 +37,19 @@ namespace jactorio::game::player_manager
 	// Entity placement / pickup
 
 	/**
+	 * Gets the layer of the entity activated on by the player
+	 * @return nullptr If no layer is activated by the player
+	 */
+	J_NODISCARD Chunk_tile_layer* get_activated_layer();
+	
+	/**
 	 * Call when the key for placing entities is pressed <br>
+	 * Will place am entity at the location or if an entity already exists <br>
+	 * Activated_layer will be set to the clicked entity's layer IF mouse_release is true <br>
+	 * 
 	 * Everything occurs in a single tick
 	 */
-	void try_place(int tile_x, int tile_y);
+	void try_place(int tile_x, int tile_y, bool mouse_release = false);
 
 	/**
 	 * Call when the key for picking up entities is pressed <br>
@@ -70,8 +80,9 @@ namespace jactorio::game::player_manager
 	 * Interacts with the player inventory at index
 	 * @param index The player inventory index
 	 * @param mouse_button Mouse button pressed; 0 - Left, 1 - Right
+	 * @param allow_reference_select If true, left clicking will select the item by reference
 	 */
-	void inventory_click(unsigned short index, unsigned short mouse_button);
+	void inventory_click(unsigned short index, unsigned short mouse_button, bool allow_reference_select, data::item_stack* inv);
 
 	/**
 	 * Gets the currently item player is currently holding on the cursor

@@ -267,31 +267,39 @@ void jactorio::renderer::world_renderer::render_player_position(
 	EXECUTION_PROFILE_SCOPE(profiler, "World draw");
 
 	const auto get_tile_proto_func = [](const game::Chunk_tile& chunk_tile, const unsigned int layer_index) {
-		const auto& layer = chunk_tile.layers[layer_index];
-
+		// Layers hold only pointers to certain prototypes
+		
 		switch (layer_index) {
 
+			// Tile
 		case static_cast<int>(game::Chunk_tile::chunk_layer::base):
 			{
-				const auto x = layer.get_tile_prototype();
+				const auto x = chunk_tile.get_layer_tile_prototype(game::Chunk_tile::chunk_layer::base);
 				if (x->sprite_ptr == nullptr)
 					return 0u;
 				return x->sprite_ptr->internal_id;
 			}
 
-
+			// Entity
 		case static_cast<int>(game::Chunk_tile::chunk_layer::resource):
+			{
+				const auto y = chunk_tile.get_layer_entity_prototype(game::Chunk_tile::chunk_layer::resource);
+				if (y == nullptr || y->sprite == nullptr)
+					return 0u;
+				return y->sprite->internal_id;
+			}
 		case static_cast<int>(game::Chunk_tile::chunk_layer::entity):
 			{
-				const auto y = layer.get_entity_prototype();
+				const auto y = chunk_tile.get_layer_entity_prototype(game::Chunk_tile::chunk_layer::entity);
 				if (y == nullptr || y->sprite == nullptr)
 					return 0u;
 				return y->sprite->internal_id;
 			}
 
+			// Sprite
 		case static_cast<int>(game::Chunk_tile::chunk_layer::overlay):
 			{
-				const auto z = layer.get_sprite_prototype();
+				const auto z = chunk_tile.get_layer_sprite_prototype(game::Chunk_tile::chunk_layer::overlay);
 				if (z == nullptr)
 					return 0u;
 				return z->internal_id;

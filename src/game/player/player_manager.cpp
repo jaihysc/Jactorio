@@ -61,25 +61,66 @@ void jactorio::game::player_manager::move_player_y(const float amount) {
 // ============================================================================================
 // Entity placement / pickup
 
-void jactorio::game::player_manager::try_place(const int tile_x, const int tile_y) {
-	const data::item_stack* ptr = get_selected_item();
-	if (ptr == nullptr)
-		return;
+jactorio::game::Chunk_tile_layer* activated_layer = nullptr;
 
+jactorio::game::Chunk_tile_layer* jactorio::game::player_manager::get_activated_layer() {
+	return activated_layer;
+}
+
+void jactorio::game::player_manager::try_place(const int tile_x, const int tile_y, const bool mouse_release) {
+	auto* tile = world_manager::get_tile_world_coords(tile_x, tile_y);
+	if (tile == nullptr)
+		return;
+	
+	auto& selected_layer = tile->get_layer(Chunk_tile::chunk_layer::entity);
+
+	const data::item_stack* item = get_selected_item();
 	// Ensure item attempting to place is an entity
-	auto* entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
-	if (entity_ptr == nullptr)
+	data::Entity* entity_ptr;
+
+	// No selected item or selected item is not placeable and clicked on a entity
+	bool check_selection = false;
+	if (item == nullptr)
+		check_selection = true;
+	else {
+		entity_ptr = static_cast<data::Entity*>(item->first->entity_prototype);
+		if (entity_ptr == nullptr || !entity_ptr->placeable)
+			check_selection = true;
+	}
+	
+	if (check_selection) {
+		// Only set activated_layer on mouse_release
+		if (!mouse_release)
+			return;
+		
+		// Since this is entity layer, everything is guaranteed to be an entity
+		if (selected_layer.prototype_data) {
+			// If clicking again on the same entity, deactivate
+			if (activated_layer == &selected_layer)
+				activated_layer = nullptr;
+			else
+				// Clicking on an existing entity will activate it
+				activated_layer = &selected_layer;
+		}
+
 		return;
+	}
 
-
+	
+	assert(entity_ptr != nullptr);
 	// Do not take item away from player unless item was successfully placed
-	if (!placement_c::place_entity_at_coords_ranged(entity_ptr, tile_x, tile_y))
+	if (!placement_c::place_entity_at_coords_ranged(entity_ptr, tile_x, tile_y)) {
+		// Failed to place because an entity already exists
 		return;
+	}
 
 	// If item stack was used up, sort player inventory to fill gap
 	if (!decrement_selected_item()) {
 		inventory_sort();
 	}
+
+	// Call events
+	entity_ptr->on_build(&selected_layer);
 }
 
 uint16_t pickup_tick_counter;
@@ -147,12 +188,15 @@ void jactorio::game::player_manager::try_pickup(const int tile_x, const int tile
 			
 			// Delete resource tile if it is empty after extracting
 			if (--resource_data->resource_amount == 0) {
-				layer.unique_data = nullptr;
-				layer.set_data(nullptr);
+				layer.clear();
 			}
 		}
 			// Is normal entity
 		else {
+			// Picking up an entity which is set in activated_layer will unset activated_layer
+			if (activated_layer == &tile->get_layer(Chunk_tile::chunk_layer::entity))
+				activated_layer = nullptr;
+			
 			const bool result = placement_c::place_entity_at_coords(nullptr, tile_x, tile_y);
 			assert(result);  // false indicates failed to remove entity
 		}
@@ -288,18 +332,27 @@ jactorio::data::item_stack selected_item;
 
 bool has_item_selected = false;
 unsigned short selected_item_index;
+jactorio::data::item_stack* selected_item_inventory;
 bool select_by_reference = false;
 
 void jactorio::game::player_manager::inventory_click(const unsigned short index,
-                                                     const unsigned short mouse_button) {
+                                                     const unsigned short mouse_button,
+                                                     const bool allow_reference_select, 
+                                                     data::item_stack* inv) {
 	assert(index < inventory_size);
 	assert(mouse_button == 0 || mouse_button == 1);  // Only left + right click supported
 
-	// Clicking on the same location, selecting by reference: deselect
-	if (has_item_selected && selected_item_index == index && select_by_reference) {
+	// Clicking on the same location + inventory, selecting by reference: deselect
+	if (has_item_selected && select_by_reference &&
+		selected_item_index == index && selected_item_inventory == inv) {
 		has_item_selected = false;
-		inventory_player[selected_item_index] = selected_item;
 
+		// Remove selection cursor from inventory_player
+		inventory_player[selected_item_index].first = nullptr;
+		inventory_player[selected_item_index].second = 0;
+
+		// Add referenced item to slot
+		inv[selected_item_index] = selected_item;
 		return;
 	}
 
@@ -307,16 +360,18 @@ void jactorio::game::player_manager::inventory_click(const unsigned short index,
 	// Selection mode can only be set upon first item selection
 	if (!has_item_selected) {
 		// Clicking empty slot
-		if (inventory_player[index].first == nullptr)
+		if (inv[index].first == nullptr)
 			return;
 
 		has_item_selected = true;
 		selected_item_index = index;
-
+		selected_item_inventory = inv;
+		
 		// Reference
-		if (mouse_button == 0) {
+		if (allow_reference_select && mouse_button == 0) {
+			assert(inv == inventory_player);  // Select by reference only allowed for player inventory
 			select_by_reference = true;
-			selected_item = inventory_player[index];
+			selected_item = inv[index];
 
 			// Swap icon out for a cursor indicating the current index is selected
 			inventory_player[index].first = data::data_manager::data_raw_get<data::Item>(
@@ -339,7 +394,7 @@ void jactorio::game::player_manager::inventory_click(const unsigned short index,
 
 	const bool cursor_empty =
 		inventory_c::move_itemstack_to_index(&selected_item, 0,
-		                                     inventory_player, index,
+		                                     inv, index,
 		                                     mouse_button);
 	// Cursor slot is empty
 	if (cursor_empty) {
@@ -348,7 +403,7 @@ void jactorio::game::player_manager::inventory_click(const unsigned short index,
 		if (select_by_reference) {
 			// Remove cursor icon
 			assert(selected_item_index < inventory_size);
-
+			// Select by reference is only for inventory_player
 			inventory_player[selected_item_index].first = nullptr;
 			inventory_player[selected_item_index].second = 0;
 		}

@@ -15,6 +15,8 @@
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
 #include "game/event/event.h"
+#include "game/player/player_manager.h"
+#include "data/prototype/entity/entity.h"
 
 ImGuiWindowFlags debug_window_flags = 0;
 ImGuiWindowFlags release_window_flags = 0;
@@ -222,6 +224,12 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 
 	draw_window(gui_window::character, release_window_flags);
 	draw_window(gui_window::debug, debug_window_flags);
+
+	// Draw gui for active entity
+	auto* layer = game::player_manager::get_activated_layer();
+	if (layer != nullptr) {
+		static_cast<data::Entity*>(layer->prototype_data)->on_show_gui(layer);
+	}
 
 	gui::crafting_queue();
 	gui::cursor_window();

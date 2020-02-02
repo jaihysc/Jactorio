@@ -130,16 +130,19 @@ namespace jactorio::data
 			this->localized_description_ = localized_description;
 		}
 
-		// Required
+		// ======================================================================
+		// Unique data associated with entity
 		
 		/**
 		 * If the prototype has unique data per tile, override the method for deleting it
 		 * Deletes unique data for the prototype given through ptr
 		 */
 		virtual void delete_unique_data(void* ptr) const {
+			assert(false);  // Not implemented
 		}
 
 		virtual void* copy_unique_data(void* ptr) const {
+			assert(false);  // Not implemented
 			return nullptr;
 		}
 		
