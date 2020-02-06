@@ -53,6 +53,7 @@ stages:
       compiler: clang9
       installCommand: |
         brew update
+        brew cask install xquartz
         brew install glfw3 glew mesa
       CC: clang
       CXX: clang++

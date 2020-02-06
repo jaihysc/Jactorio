@@ -56,9 +56,4 @@ add_executable(
 target_include_directories(jactorio PRIVATE ${JACTORIO_INCLUDE_FILES})
 
 # Dependencies
-if (WIN32)
-	target_link_libraries(jactorio ${LIBS_WIN})
-endif (WIN32)
-if (UNIX)
-    target_link_libraries(jactorio ${LIBS_UNIX})
-endif (UNIX)
+target_link_libraries(jactorio ${JACTORIO_LINK_LIBS})

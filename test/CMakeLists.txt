@@ -79,9 +79,4 @@ target_link_libraries(jactorioTest gtest_main)
 target_include_directories(jactorioTest PRIVATE ${JACTORIO_INCLUDE_FILES})
 
 # Dependencies libraries
-if (WIN32)
-	target_link_libraries(jactorioTest ${LIBS_WIN})
-endif (WIN32)
-if (UNIX)
-    target_link_libraries(jactorioTest ${LIBS_UNIX})
-endif (UNIX)
+target_link_libraries(jactorioTest ${JACTORIO_LINK_LIBS})

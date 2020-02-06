@@ -15,6 +15,17 @@ add_compile_definitions(JACTORIO_LOG_LEVEL=0)
 # 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
 add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
 
+# Ensure OpenGL exists
+find_package(OpenGL REQUIRED)
+
+if (OPENGL_FOUND)
+	message("Found OpenGL")
+	message("OpenGL include dir: ${OPENGL_INCLUDE_DIR}")
+	message("OpenGL link libraries: ${OPENGL_gl_LIBRARY}")
+else (OPENGL_FOUND)
+	message(FATAL_ERROR "OpenGL for not found")
+endif()
+
 ############# Include folders .h
 set(JACTORIO_INCLUDE_FILES
 	${PROJECT_SOURCE_DIR}/include
@@ -175,23 +186,39 @@ set(
 
 # Platform link libraries
 set(
-	LIBS_WIN
+	LIBS_COMMON
 
 	glfw libglew_static
-	glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib
 	pybind11::embed
 	libnoise
 	SDL2main
 )
-set(
-	LIBS_UNIX
 
-	glfw libglew_static
-	libGLU.so libGL.so
-	pybind11::embed
-	libnoise
-	SDL2main
-)
+if (WIN32)
+	message("==== Using Windows link targets")
+	set(
+		JACTORIO_LINK_LIBS
+
+		${LIBS_COMMON}
+		glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib
+	)
+elseif (APPLE)
+	message("==== Using Apple link targets")
+    set(
+		JACTORIO_LINK_LIBS
+
+		${LIBS_COMMON}
+		"-framework OpenGL"
+	)
+elseif (UNIX)
+	message("==== Using UNIX (Not Apple!) link targets")
+    set(
+		JACTORIO_LINK_LIBS
+
+		${LIBS_COMMON}
+		libGLU.so libGL.so
+	)
+endif (WIN32)
 
 
 message("========== Jactorio files")
