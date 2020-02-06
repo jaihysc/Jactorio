@@ -175,46 +175,80 @@ void draw_empty_slot() {
 	);
 }
 
-// ==========================================================================================
-// Player menus (Excluding entity menus)
-
-void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags) {
-	namespace player_manager = game::player_manager;
-
-	auto& menu_data = imgui_manager::get_menu_data();
-
-	data::item_stack* inventory = player_manager::inventory_player;
-
+// Window positioning
+/**
+ * The window size is calculated on the size of the player's inventory
+ */
+ImVec2 get_window_size() {
 	// 20 is window padding on both sides, 80 for y is to avoid the scrollbar
 	auto window_size = ImVec2(
 		2 * J_GUI_STYLE_WINDOW_PADDING_X,
 		2 * J_GUI_STYLE_WINDOW_PADDING_Y + 80);
 
 	window_size.x += 10 * (inventory_slot_width + inventory_slot_padding) - inventory_slot_padding;
-	window_size.y += static_cast<unsigned int>(player_manager::inventory_size / 10) *
+	window_size.y += static_cast<unsigned int>(jactorio::game::player_manager::inventory_size / 10) *
 		(inventory_slot_width + inventory_slot_padding) - inventory_slot_padding;
 
+	return window_size;
+}
+
+/**
+ * The next window drawn will be on the left center of the screen
+ */
+void setup_next_window_left(const ImVec2& window_size) {
 	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
 	// Character window is left of the center
-	const ImVec2 window_center(Renderer::get_window_width() / 2, Renderer::get_window_height() / 2);
+	const ImVec2 window_center(jactorio::renderer::Renderer::get_window_width() / 2,
+	                           jactorio::renderer::Renderer::get_window_height() / 2);
 
+	ImGui::SetNextWindowPos(ImVec2(window_center.x - window_size.x,
+	                               window_center.y - window_size.y / 2));
+}
 
-	ImGui::SetNextWindowPos(ImVec2(window_center.x - window_size.x, window_center.y - window_size.y / 2));
+/**
+ * The next window drawn will be on the left center of the screen
+ */
+void setup_next_window_right(const ImVec2& window_size) {
+	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
+	// Character window is left of the center
+	const ImVec2 window_center(jactorio::renderer::Renderer::get_window_width() / 2,
+	                           jactorio::renderer::Renderer::get_window_height() / 2);
+
+	// Recipe menu
+	ImGui::SetNextWindowPos(ImVec2(window_center.x,
+	                               window_center.y - window_size.y / 2));
+
+}
+
+/**
+ * Draws the player's inventory menu
+ */
+void player_inventory_menu() {
+	const ImVec2 window_size = get_window_size();
+	setup_next_window_left(window_size);
+
+	ImGuiWindowFlags window_flags = 0;
+	window_flags |= ImGuiWindowFlags_NoCollapse;
+	window_flags |= ImGuiWindowFlags_NoResize;
+
 	ImGui::Begin("Character", nullptr, window_size, -1, window_flags);
 
-	draw_slots(10, player_manager::inventory_size, [&](auto index) {
-		const auto& item = inventory[index];
+	auto& menu_data = jactorio::renderer::imgui_manager::get_menu_data();
+	draw_slots(10, jactorio::game::player_manager::inventory_size, [&](auto index) {
+		const auto& item = jactorio::game::player_manager::inventory_player[index];
 
 		// Item exists at inventory slot?
 		if (item.first != nullptr) {
 			draw_slot(menu_data, 1, index % 10, item.first->sprite->internal_id, item.second, [index, item]() {
 				if (ImGui::IsItemClicked()) {
-					player_manager::inventory_click(index, 0, true, player_manager::inventory_player);
-					player_manager::inventory_sort();
+					jactorio::game::player_manager::inventory_click(
+						index, 0, true, jactorio::game::player_manager::inventory_player);
+					jactorio::game::player_manager::inventory_sort();
 				}
 				else if (ImGui::IsItemClicked(1)) {
-					player_manager::inventory_click(index, 1, true, player_manager::inventory_player);
-					player_manager::inventory_sort();
+					jactorio::game::player_manager::inventory_click(
+						index, 1, true, jactorio::game::player_manager::inventory_player);
+					jactorio::game::player_manager::inventory_sort();
 				}
 
 				// Only draw tooltip + item count if item count is not 0
@@ -236,20 +270,34 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			draw_empty_slot();
 			// Click event
 			if (ImGui::IsItemClicked()) {
-				player_manager::inventory_click(index, 0, true, player_manager::inventory_player);
-				player_manager::inventory_sort();
+				jactorio::game::player_manager::inventory_click(
+					index, 0, true, jactorio::game::player_manager::inventory_player);
+				jactorio::game::player_manager::inventory_sort();
 			}
 			else if (ImGui::IsItemClicked(1)) {
-				player_manager::inventory_click(index, 1, true, player_manager::inventory_player);
-				player_manager::inventory_sort();
+				jactorio::game::player_manager::inventory_click(
+					index, 1, true, jactorio::game::player_manager::inventory_player);
+				jactorio::game::player_manager::inventory_sort();
 			}
 		}
 	});
 
 	ImGui::End();
+}
 
-	// Recipe menu
-	ImGui::SetNextWindowPos(ImVec2(window_center.x, window_center.y - window_size.y / 2));
+// ==========================================================================================
+// Player menus (Excluding entity menus)
+
+void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags) {
+	namespace player_manager = game::player_manager;
+
+	player_inventory_menu();
+
+
+	auto& menu_data = imgui_manager::get_menu_data();
+
+	const ImVec2 window_size = get_window_size();
+	setup_next_window_right(window_size);
 	ImGui::Begin("Recipe", nullptr, window_size, -1, window_flags);
 
 	// Menu groups | A group button is twice the size of a slot
@@ -446,10 +494,10 @@ void jactorio::renderer::gui::crafting_queue() {
 
 	auto& recipe_queue = game::player_manager::get_recipe_queue();
 
-	
+
 	const unsigned int y_slots = (recipe_queue.size() + 10 - 1) / 10;  // Always round up for slot count
 	auto y_offset = y_slots * (inventory_slot_width + inventory_slot_padding);
-	
+
 	const unsigned int max_queue_height = Renderer::get_window_height() / 2; // Pixels
 
 	// Clamp to max queue height if greater
@@ -467,7 +515,7 @@ void jactorio::renderer::gui::crafting_queue() {
 
 	// Window
 	ImGui::Begin("_crafting_queue", nullptr, flags);
-	
+
 	ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
 	ImGui::PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
 
@@ -505,7 +553,7 @@ void jactorio::renderer::gui::pickup_progressbar() {
 		return;
 	last_pickup_fraction = pickup_fraction;
 
-	
+
 	ImGuiWindowFlags flags = 0;
 	flags |= ImGuiWindowFlags_NoBackground;
 	flags |= ImGuiWindowFlags_NoTitleBar;
@@ -520,15 +568,15 @@ void jactorio::renderer::gui::pickup_progressbar() {
 
 	// Window
 	ImGui::Begin("_entity_pickup_status", nullptr, flags);
-	
+
 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_NONE);
 	ImGui::PushStyleColor(ImGuiCol_FrameBg, J_GUI_COL_PROGRESS_BG);
 	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, J_GUI_COL_PROGRESS);
-	
+
 	ImGui::ProgressBar(pickup_fraction, ImVec2(progress_bar_width, progress_bar_height));
 
 	ImGui::PopStyleColor(3);
-	
+
 	ImGui::End();
 }
 
@@ -537,13 +585,14 @@ void jactorio::renderer::gui::pickup_progressbar() {
 
 void jactorio::renderer::gui::container_entity(data::item_stack* inv, const uint16_t inv_size) {
 	ImGuiWindowFlags flags = 0;
-	flags |= ImGuiWindowFlags_NoMove;
 	flags |= ImGuiWindowFlags_NoResize;
 	flags |= ImGuiWindowFlags_NoCollapse;
-	flags |= ImGuiWindowFlags_AlwaysAutoResize;
-	
-	ImGui::SetNextWindowPosCenter();
-	ImGui::Begin("Container", nullptr, flags);
+
+	player_inventory_menu();
+
+	const auto window_size = get_window_size();
+	setup_next_window_right(window_size);
+	ImGui::Begin("Container", nullptr, window_size, -1, flags);
 
 	draw_slots(10, inv_size, [&](auto i) {
 		if (inv[i].first == nullptr) {
@@ -572,6 +621,6 @@ void jactorio::renderer::gui::container_entity(data::item_stack* inv, const uint
 					}
 				});
 	});
-	
+
 	ImGui::End();
 }

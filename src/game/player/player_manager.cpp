@@ -63,11 +63,15 @@ void jactorio::game::player_manager::move_player_y(const float amount) {
 
 jactorio::game::Chunk_tile_layer* activated_layer = nullptr;
 
+void jactorio::game::player_manager::set_activated_layer(Chunk_tile_layer* layer) {
+	activated_layer = layer;
+}
+
 jactorio::game::Chunk_tile_layer* jactorio::game::player_manager::get_activated_layer() {
 	return activated_layer;
 }
 
-void jactorio::game::player_manager::try_place(const int tile_x, const int tile_y, const bool mouse_release) {
+void jactorio::game::player_manager::try_place(const int tile_x, const int tile_y, const bool can_activate_layer) {
 	auto* tile = world_manager::get_tile_world_coords(tile_x, tile_y);
 	if (tile == nullptr)
 		return;
@@ -89,18 +93,18 @@ void jactorio::game::player_manager::try_place(const int tile_x, const int tile_
 	}
 	
 	if (check_selection) {
-		// Only set activated_layer on mouse_release
-		if (!mouse_release)
+		if (!can_activate_layer)
 			return;
 		
 		// Since this is entity layer, everything is guaranteed to be an entity
 		if (selected_layer.prototype_data) {
-			// If clicking again on the same entity, deactivate
-			if (activated_layer == &selected_layer)
-				activated_layer = nullptr;
-			else
-				// Clicking on an existing entity will activate it
-				activated_layer = &selected_layer;
+			// // If clicking again on the same entity, deactivate
+			// if (activated_layer == &selected_layer)
+			// 	activated_layer = nullptr;
+			// else
+			
+			// Clicking on an existing entity will activate it
+			activated_layer = &selected_layer;
 		}
 
 		return;

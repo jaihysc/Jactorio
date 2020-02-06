@@ -37,6 +37,11 @@ namespace jactorio::game::player_manager
 	// Entity placement / pickup
 
 	/**
+	 * Sets the activated layer, use nullptr to unset
+	 */
+	void set_activated_layer(Chunk_tile_layer* layer);
+	
+	/**
 	 * Gets the layer of the entity activated on by the player
 	 * @return nullptr If no layer is activated by the player
 	 */
@@ -49,7 +54,7 @@ namespace jactorio::game::player_manager
 	 * 
 	 * Everything occurs in a single tick
 	 */
-	void try_place(int tile_x, int tile_y, bool mouse_release = false);
+	void try_place(int tile_x, int tile_y, bool can_activate_layer = false);
 
 	/**
 	 * Call when the key for picking up entities is pressed <br>

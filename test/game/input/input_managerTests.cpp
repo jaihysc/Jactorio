@@ -89,6 +89,32 @@ namespace game
 
 	}
 
+	TEST(input_manager, input_callback_press_first) {
+		auto guard = jactorio::core::Resource_guard(&input::clear_data);
+
+		counter = 0;
+		// The action GLFW_PRESS_FIRST will only raise once compared to GLFW_PRESS which repeatedly raises
+
+		input::subscribe([]() {  // Callback 1
+			counter -= 50;
+		}, GLFW_KEY_V, GLFW_PRESS_FIRST, GLFW_MOD_SUPER);
+
+		input::subscribe([]() {  // Callback 2
+			counter += 100;
+		}, GLFW_KEY_V, GLFW_PRESS, GLFW_MOD_SUPER);
+
+
+		input::set_input(GLFW_KEY_V, GLFW_PRESS, GLFW_MOD_SUPER);
+		input::raise();
+		EXPECT_EQ(counter, 50);  // Callback 1 + 2 called
+
+		input::raise();
+		EXPECT_EQ(counter, 150);  // Callback 2 called
+
+		input::raise();
+		EXPECT_EQ(counter, 250);  // Callback 2 called
+	}
+
 	// TEST(input_manager, dispatch_input_callbacks_imgui_block) {
 	// 	auto guard = jactorio::core::Resource_guard(&input::clear_data);
 	//

@@ -3,6 +3,9 @@
 
 #include <GLFW/glfw3.h>
 
+// Different from GLFW_PRESS, PRESS_FIRST is only raised once whereas GLFW_PRESS is repeated
+#define GLFW_PRESS_FIRST -2
+
 using input_callback = void(*)();
 
 namespace jactorio::game::input_manager

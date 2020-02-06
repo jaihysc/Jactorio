@@ -58,7 +58,11 @@ void jactorio::game::init_logic_loop() {
 			set_window_visibility(gui_window::debug, !get_window_visibility(gui_window::debug));
 		}, GLFW_KEY_GRAVE_ACCENT, GLFW_RELEASE);
 		input_manager::subscribe([]() {
-			set_window_visibility(gui_window::character, !get_window_visibility(gui_window::character));
+			// If a layer is already activated, deactivate it, otherwise open the gui menu
+			if (player_manager::get_activated_layer() != nullptr)
+				player_manager::set_activated_layer(nullptr);
+			else
+				set_window_visibility(gui_window::character, !get_window_visibility(gui_window::character));
 		}, GLFW_KEY_TAB, GLFW_RELEASE);
 	}
 
@@ -78,7 +82,7 @@ void jactorio::game::init_logic_loop() {
 
 			const auto tile_selected = mouse_selection::get_mouse_tile_coords();
 			player_manager::try_place(tile_selected.first, tile_selected.second, true);
-		}, GLFW_MOUSE_BUTTON_1, GLFW_RELEASE);
+		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS_FIRST);
 		
 		// Remove entities or mine resource
 		input_manager::subscribe([]() {

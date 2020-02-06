@@ -124,7 +124,7 @@ namespace game
 		set_selected_item(selected_item);
 
 		try_place(0, 0, true);
-		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), nullptr);
+		EXPECT_EQ(get_activated_layer(), nullptr);
 		
 		// Clicking on an entity with no placeable items selected will set activated_layer
 		selected_item = {&item_no_entity, 2};
@@ -132,20 +132,27 @@ namespace game
 
 		// However! If mouse_release is not true, do not set activated_layer
 		try_place(0, 0);
-		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), nullptr);
+		EXPECT_EQ(get_activated_layer(), nullptr);
 
 		try_place(0, 0, true);
-		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), 
+		EXPECT_EQ(get_activated_layer(), 
 				  &tiles[0].get_layer(jactorio::game::Chunk_tile::chunk_layer::entity));
 
-		// Clicking again will unset
+		// Clicking again will NOT unset
 		try_place(0, 0, true);
-		EXPECT_EQ(jactorio::game::player_manager::get_activated_layer(), nullptr);
+		EXPECT_EQ(get_activated_layer(), 
+				  &tiles[0].get_layer(jactorio::game::Chunk_tile::chunk_layer::entity));
+
+		
+		// Activated layer can be set to nullptr to unactivate layers
+		set_activated_layer(nullptr);
+		EXPECT_EQ(get_activated_layer(), nullptr);
 
 	}
 
-	TEST(player_manager, try_place_entity_pickup_activate_layer) {
-		INVENTORY_TEST_HEADER
+	TEST(player_manager, try_pickup_entity_deactivate_layer) {
+		// Picking up an entity wil unset activated layer if activated layer was the entity
+		using namespace jactorio::game::player_manager;
 
 		jactorio::core::Resource_guard chunk_guard(&jactorio::game::world_manager::clear_chunk_data);
 		jactorio::core::Resource_guard data_guard(&jactorio::game::world_manager::clear_chunk_data);

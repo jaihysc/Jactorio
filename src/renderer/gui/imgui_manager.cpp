@@ -150,7 +150,11 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	LOG_MESSAGE(info, "Imgui initialized");
 }
 
-
+// Pointers to windows are kept in a list defined below
+// A boolean array is generated equal to the number of window pointers
+// It stores whether or not the window is open or closed
+//
+// Use set_window_visibility() to set the visibility of the windows
 #define WINDOW_PTR(function) (reinterpret_cast<void*>(jactorio::renderer::gui::function))
 void* windows[]{
 	WINDOW_PTR(character_menu),
@@ -222,13 +226,18 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
-	draw_window(gui_window::character, release_window_flags);
 	draw_window(gui_window::debug, debug_window_flags);
 
 	// Draw gui for active entity
+	// Do not draw character and recipe menu while in an entity menu
 	auto* layer = game::player_manager::get_activated_layer();
 	if (layer != nullptr) {
+		set_window_visibility(gui_window::character, false);
+
 		static_cast<data::Entity*>(layer->prototype_data)->on_show_gui(layer);
+	}
+	else {
+		draw_window(gui_window::character, release_window_flags);
 	}
 
 	gui::crafting_queue();
