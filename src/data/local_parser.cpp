@@ -67,7 +67,7 @@ void parse_eol(const std::string& directory_prefix) {
 
 	bool found = false;
 	for (auto& category : data::data_manager::data_raw) {
-		for (auto& prototype : category.second) {
+		for (auto& prototype : category) {
 			if (prototype.first == str_s.str()) {
 				found = true;
 				prototype.second->set_localized_name(current_line_buffer);
@@ -140,7 +140,7 @@ void jactorio::data::local_parser::parse(const std::string& file_str, const std:
 	parse_eol(directory_prefix);
 }
 
-int jactorio::data::local_parser::parse_s(const std::string& file_str, const std::string& directory_prefix) noexcept {
+int jactorio::data::local_parser::parse_s(const std::string& file_str, const std::string& directory_prefix) {
 	try {
 		parse(file_str, directory_prefix);
 	}

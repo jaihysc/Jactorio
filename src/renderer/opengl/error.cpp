@@ -1,7 +1,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <iostream>
+#include <sstream>
+
+#include "jactorio.h"
 
 #include "renderer/opengl/error.h"
 #include "renderer/window/window_manager.h"
@@ -21,15 +23,19 @@ bool jactorio::renderer::opengl_print_errors(const char* function_name, const ch
 	
 	GLenum error;
 	while (error_count < max_errors && (error = glGetError()) != GL_NO_ERROR) {
-		std::cerr << "[OpenGL ERROR] 0x" << std::hex << error
-		<< std::dec << " - " << function_name << " | LINE: " << line << " | FILE: " << file << "\n";
+		std::stringstream err_ss;
+		err_ss << std::hex << error;
+		
+		LOG_MESSAGE_f(error, "OpenGL: 0x%s, function %s in file %s at line %d", 
+		              err_ss.str().c_str(), function_name, file, line);
 
 		found_error = true;
 		error_count++;
 	}
 
-	if (error_count >= max_errors)
-		std::cerr << "[OpenGL ERROR] Errors cut, exceeded maximum " << max_errors << " errors";
+	if (error_count >= max_errors) {
+		LOG_MESSAGE_f(error, "OpenGL: Errors cut, exceeded maximum %d errors", max_errors);
+	}
 	
 	return found_error;
 }
@@ -47,14 +53,15 @@ void jactorio::renderer::opengl_clear_errors() {	// Do not log error if there is
 	while (error_count < max_errors && glGetError() != GL_NO_ERROR)
 		error_count++;
 
-	if (error_count >= max_errors)
-		std::cerr << "[OpenGL] Clear errors cut, exceeded maximum " << max_errors << " clear errors";
+	if (error_count >= max_errors) {
+		LOG_MESSAGE_f(error, "OpenGL: Errors cut, exceeded maximum %d clear errors", max_errors);
+	}
 }
 
 
 // GLFW errors
-static void error_callback(int error, const char* description) {
-	std::cerr << "[GLFW OpenGL] Error: " << error << " - " << description << "\n";
+static void error_callback(const int error, const char* description) {
+	LOG_MESSAGE_f(error, "GLFW OpenGL: %d - %s", error, description);
 }
 
 // Initializes error handling for GLFW errors

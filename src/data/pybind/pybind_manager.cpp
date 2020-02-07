@@ -5,6 +5,7 @@
 
 #include "core/logger.h"
 #include "core/filesystem.h"
+#include "data/data_exception.h"
 
 namespace py = pybind11;
 
@@ -15,12 +16,6 @@ py::object py_stdout;
 py::object py_stderr;
 py::object py_stdout_buffer;
 py::object py_stderr_buffer;
-
-std::string error_message;
-
-const std::string& jactorio::data::pybind_manager::get_last_error_message() {
-	return error_message;
-}
 
 int jactorio::data::pybind_manager::exec(const std::string& python_str, const std::string& file_name) {
 	try {
@@ -59,10 +54,7 @@ int jactorio::data::pybind_manager::exec(const std::string& python_str, const st
 	catch (py::error_already_set& err) {
 		std::ostringstream oss;
 		oss << file_name << "\n" << err.what();
-		error_message = oss.str();
-		
-		// log_message(logger::error, "Python interpreter", err_msg);
-		return 1;
+		throw Data_exception(oss.str());
 	}
 
 }

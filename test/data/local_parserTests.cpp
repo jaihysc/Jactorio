@@ -4,6 +4,7 @@
 #include "data/data_exception.h"
 #include "data/data_manager.h"
 #include "core/resource_guard.h"
+#include "data/prototype/sprite.h"
 
 namespace data
 {
@@ -13,11 +14,11 @@ namespace data
 		// Setup prototypes
 		jactorio::data::data_manager::set_directory_prefix("test");
 		
-		const auto prototype = new jactorio::data::Prototype_base();
+		const auto prototype = new jactorio::data::Sprite();
 		jactorio::data::data_manager::data_raw_add(
 			jactorio::data::data_category::sprite, "test_tile", prototype, true);
 
-		const auto prototype2 = new jactorio::data::Prototype_base();
+		const auto prototype2 = new jactorio::data::Sprite();
 		jactorio::data::data_manager::data_raw_add(
 			jactorio::data::data_category::sprite, "test_tile1", prototype2, true);
 

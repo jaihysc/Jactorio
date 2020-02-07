@@ -34,12 +34,10 @@ namespace game
 		tiles[0] = chunk_tile_1;
 
 		const jactorio::game::Chunk chunk{0, 0, tiles};
-		EXPECT_EQ(chunk.tiles_ptr()[0].layers[0].sprite, tile_layer_1.sprite);
-		EXPECT_EQ(chunk.tiles_ptr()[0].layers[0].get_tile_prototype(), tile_layer_1.get_tile_prototype());
+		EXPECT_EQ(chunk.tiles_ptr()[0].layers[0].prototype_data, tile_layer_1.prototype_data);
 
 		tiles[0] = chunk_tile_2;
-		EXPECT_EQ(chunk.tiles_ptr()[0].layers[0].sprite, tile_layer_2.sprite);
-		EXPECT_EQ(chunk.tiles_ptr()[0].layers[0].get_tile_prototype(), tile_layer_2.get_tile_prototype());
+		EXPECT_EQ(chunk.tiles_ptr()[0].layers[0].prototype_data, tile_layer_2.prototype_data);
 
 
 		// Prototype data in the actual application is managed by data_manager

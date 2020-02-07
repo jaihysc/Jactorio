@@ -15,6 +15,17 @@ add_compile_definitions(JACTORIO_LOG_LEVEL=0)
 # 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
 add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
 
+# Ensure OpenGL exists
+find_package(OpenGL REQUIRED)
+
+if (OPENGL_FOUND)
+	message("Found OpenGL")
+	message("OpenGL include dir: ${OPENGL_INCLUDE_DIR}")
+	message("OpenGL link libraries: ${OPENGL_gl_LIBRARY}")
+else (OPENGL_FOUND)
+	message(FATAL_ERROR "OpenGL for not found")
+endif()
+
 ############# Include folders .h
 set(JACTORIO_INCLUDE_FILES
 	${PROJECT_SOURCE_DIR}/include
@@ -34,8 +45,9 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/filesystem.cpp
 	${JACTORIO_DIR}/core/debug/execution_timer.cpp
 
-	${JACTORIO_DIR}/data/prototype/noise_layer.cpp
 	${JACTORIO_DIR}/data/prototype/sprite.cpp
+	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
+	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
@@ -51,6 +63,7 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
+	${JACTORIO_DIR}/game/world/chunk_tile_layer.cpp
 	${JACTORIO_DIR}/game/world/world_manager.cpp
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 
@@ -59,7 +72,6 @@ set(JACTORIO_SRC_FILES
 
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
-	${JACTORIO_DIR}/renderer/render_loop.cpp
 
 	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
 	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
@@ -75,7 +87,6 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
 
-	${JACTORIO_DIR}/renderer/rendering/renderer_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/world_renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
@@ -101,6 +112,7 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
@@ -174,23 +186,39 @@ set(
 
 # Platform link libraries
 set(
-	LIBS_WIN
+	LIBS_COMMON
 
 	glfw libglew_static
-	glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib
 	pybind11::embed
 	libnoise
 	SDL2main
 )
-set(
-	LIBS_UNIX
 
-	glfw libglew_static
-	libGLU.so libGL.so
-	pybind11::embed
-	libnoise
-	SDL2main
-)
+if (WIN32)
+	message("==== Using Windows link targets")
+	set(
+		JACTORIO_LINK_LIBS
+
+		${LIBS_COMMON}
+		glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib
+	)
+elseif (APPLE)
+	message("==== Using Apple link targets")
+    set(
+		JACTORIO_LINK_LIBS
+
+		${LIBS_COMMON}
+		"-framework OpenGL"
+	)
+elseif (UNIX)
+	message("==== Using UNIX (Not Apple!) link targets")
+    set(
+		JACTORIO_LINK_LIBS
+
+		${LIBS_COMMON}
+		libGLU.so libGL.so
+	)
+endif (WIN32)
 
 
 message("========== Jactorio files")

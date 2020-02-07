@@ -40,7 +40,11 @@ unsigned jactorio::game::input_manager::subscribe(const input_callback callback,
 	return callback_id++;
 }
 
-void jactorio::game::input_manager::set_input(const int key, const int action, const int mods) {
+void jactorio::game::input_manager::set_input(const int key, int action, const int mods) {
+	// GLFW_PRESS becomes GLFW_PRESS_FIRST
+	if (action == GLFW_PRESS)
+		action = GLFW_PRESS_FIRST;
+	
 	const auto input = std::tuple<int, int, int>{ key, action, mods};
 	active_inputs[key] = input;
 }
@@ -53,8 +57,19 @@ void jactorio::game::input_manager::raise() {
 		std::tuple<int, int, int>& input = active_input.second;
 		
 		// No callbacks registered for input
-		if (callback_ids.find(input) == callback_ids.end())
-			continue;
+		// if (callback_ids.find(input) == callback_ids.end())
+			// continue;
+
+		if (std::get<1>(input) == GLFW_PRESS_FIRST) {
+			// Dispatch callbacks for GLFW_PRESS_FIRST
+			const auto& vector = callback_ids[input];
+			for (unsigned int id : vector) {
+				input_callbacks[id]();
+			}
+
+			// Then dispatch callbacks for GLFW_PRESS
+			std::get<1>(input) = GLFW_PRESS;
+		}
 
 		// Call callbacks registered to the input
 		const auto& vector = callback_ids[input];

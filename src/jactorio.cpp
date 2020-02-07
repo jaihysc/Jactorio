@@ -16,7 +16,7 @@ void initialize_game() {
 	// Rendering + logic initialization
 	LOG_MESSAGE(info, "1 - Data stage");
 	
-	auto data_manager_guard = core::Resource_guard(&data::data_manager::clear_data);
+	core::Resource_guard data_manager_guard(&data::data_manager::clear_data);
 
 	std::thread logic_thread = std::thread(game::init_logic_loop);
 	std::thread renderer_thread = std::thread(renderer::render_init);
@@ -31,8 +31,8 @@ int main(int ac, char* av[]) {
 	core::filesystem::set_executing_directory(av[0]);
 
 	// Log file
+	core::Resource_guard log_guard(&core::logger::close_log_file);
 	core::logger::open_log_file("~/log.txt");
-	auto log_guard = core::Resource_guard(&core::logger::close_log_file);
 	
 	// Initial startup message
 	LOG_MESSAGE_f(none, "%s | %s build, version: %s\n\n", 

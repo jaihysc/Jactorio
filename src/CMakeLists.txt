@@ -1,7 +1,9 @@
 ﻿# CMakeList.txt : CMake project for jactorio, include source and define
 # project specific logic here.
 #
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.9)
+include(CheckIPOSupported)
+
 
 message("~~~~~ [ jactorio ] ~~~~~")
 
@@ -15,7 +17,14 @@ IF(CMAKE_BUILD_TYPE MATCHES Debug)
 
 ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
 	message("Type: <<<<< Release >>>>>")
-
+	# Enable link time optimization if available
+	check_ipo_supported(RESULT result)
+	if(result)
+		message("Link time optimization: Available - Enabled")
+		set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+	else()
+		message("Link time optimization: ~~Unavailable~~")
+	endif()
 ELSE()
   message(FATAL_ERROR "Unknown build type, specify with -D CMAKE_BUILD_TYPE=")
 ENDIF()
@@ -47,9 +56,4 @@ add_executable(
 target_include_directories(jactorio PRIVATE ${JACTORIO_INCLUDE_FILES})
 
 # Dependencies
-if (WIN32)
-	target_link_libraries(jactorio ${LIBS_WIN})
-endif (WIN32)
-if (UNIX)
-    target_link_libraries(jactorio ${LIBS_UNIX})
-endif (UNIX)
+target_link_libraries(jactorio ${JACTORIO_LINK_LIBS})

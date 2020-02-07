@@ -20,6 +20,11 @@ namespace jactorio::game::mouse_selection
 	J_NODISCARD double get_position_y();
 
 	/**
+	 * Call this on game tick to calculate the mouse selected tile and avoid repetitive calculations
+	 */
+	void calculate_mouse_tile_coords();
+	
+	/**
 	 * Gets the world X, Y of the tile the mouse is hovered over
 	 */
 	std::pair<int, int> get_mouse_tile_coords();

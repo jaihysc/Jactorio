@@ -13,22 +13,20 @@
 namespace jactorio::data::local_parser
 {
 	// Define identifiers for supported languages
-#define KEY_DEF( identifier, name )  identifier
 #define KEYS_DEF \
     KEY_DEF( en, "en" ), \
     KEY_DEF( fr, "fr" ), \
     KEY_DEF( ge, "ge" )
-	
+
+#define KEY_DEF( identifier, name )  identifier
 	/**
-	 * Enum below lists supported languages, for the identifier string, use: language_identifier
+	 * Supported languages, for the identifier string, use: language_identifier[static_cast<int>(language)]
 	 */
-	enum language { KEYS_DEF };
-
+	enum class language { KEYS_DEF };
 #undef KEY_DEF
-#define KEY_DEF( identifier, name )  { name }
-
-	char const* const language_identifier[] = { KEYS_DEF };
 	
+#define KEY_DEF( identifier, name )  { name }
+	char const* const language_identifier[] = { KEYS_DEF };
 #undef KEY_DEF
 
 	/**
@@ -44,7 +42,7 @@ namespace jactorio::data::local_parser
 	 * @param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
 	 * @return non-zero if error occurred
 	 */
-	int parse_s(const std::string& file_str, const std::string& directory_prefix) noexcept;
+	int parse_s(const std::string& file_str, const std::string& directory_prefix);
 }
 
 #endif // DATA_LOCAL_PARSER_H

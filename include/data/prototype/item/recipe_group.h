@@ -27,6 +27,10 @@ namespace jactorio::data
 
 		// Categories belonging to this Recipe_group
 		PYTHON_PROP_REF(Recipe_group, std::vector<Recipe_category*>, recipe_categories);
+
+		
+		void post_load_validate() const override {
+		}
 	};
 }
 

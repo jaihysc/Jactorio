@@ -12,7 +12,7 @@
 unsigned short jactorio::renderer::Renderer::window_width_ = 0;
 unsigned short jactorio::renderer::Renderer::window_height_ = 0;
 
-unsigned short jactorio::renderer::Renderer::tile_width = 9;
+unsigned short jactorio::renderer::Renderer::tile_width = 6;
 
 std::unordered_map<unsigned int, jactorio::core::Quad_position> jactorio::renderer::Renderer::spritemap_coords_{};
 
@@ -29,18 +29,19 @@ jactorio::core::Quad_position jactorio::renderer::Renderer::get_spritemap_coords
 // non static
 
 jactorio::renderer::Renderer::Renderer() {
+	// Initialize model matrix
+	const glm::mat4 model_matrix = translate(glm::mat4(1.f), glm::vec3(0, 0, 0));
+	setg_model_matrix(model_matrix);
+	update_shader_mvp();
+	
 	// Get window size
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
 
-	render_layer = new Renderer_layer(true);
-	render_layer->g_init_buffer();
+	render_layer.g_init_buffer();
+	render_layer2.g_init_buffer();
 	
 	recalculate_buffers(m_viewport[2], m_viewport[3]);
-}
-
-jactorio::renderer::Renderer::~Renderer() {
-	delete render_layer;
 }
 
 void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short window_x,
@@ -59,25 +60,26 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 
 
 	// Render layer
-	render_layer->reserve(grid_elements_count_);
+	render_layer.reserve(grid_elements_count_);
+	render_layer2.reserve(grid_elements_count_);
 
 	// Vertex positions
-	renderer_grid::gen_render_grid(render_layer, 
-	                               tile_count_x_, tile_count_y_, tile_width);
+	renderer_grid::gen_render_grid(&render_layer, tile_count_x_, tile_count_y_, tile_width);
+	renderer_grid::gen_render_grid(&render_layer2, tile_count_x_, tile_count_y_, tile_width);
 }
 
 
 // openGL methods
 
-void jactorio::renderer::Renderer::g_draw(const glm::vec3 transform) const {
-	// vertex_array_->bind();
+void jactorio::renderer::Renderer::g_draw() const {
+	// Count should be the same for both layers
+	const unsigned int count = render_layer.get_buf_index()->count();
+	// unsigned int count2 = render_layer2.get_buf_index()->count();
 
-	const glm::mat4 model_matrix = translate(glm::mat4(1.f), transform);
-	setg_model_matrix(model_matrix);
-	update_shader_mvp();
-
+	// assert(render_layer.get_buf_index()->count() == render_layer2.get_buf_index()->count());
+	
 	DEBUG_OPENGL_CALL(
-		glDrawElements(GL_TRIANGLES, render_layer->get_buf_index()->count(), GL_UNSIGNED_INT, nullptr)
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr)
 	); // Pointer not needed as buffer is already bound
 }
 

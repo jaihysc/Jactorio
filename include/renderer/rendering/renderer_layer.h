@@ -5,7 +5,8 @@
 
 #include "core/data_type.h"
 #include "renderer/opengl/vertex_buffer.h"
-#include <renderer/opengl/index_buffer.h>
+#include "renderer/opengl/index_buffer.h"
+#include "renderer/opengl/vertex_array.h"
 
 namespace jactorio::renderer
 {	
@@ -17,7 +18,6 @@ namespace jactorio::renderer
 	class Renderer_layer
 	{
 		// This is essentially a std::vector with most methods removed for SPEED and additional openGL calls
-		// TODO if buffer type is marked as static, resize one large buffer which is used by multiple static renderer_layers...
 		// Each records their begin and end point within the large buffer
 	public:
 		struct Element
@@ -130,6 +130,8 @@ namespace jactorio::renderer
 	private:
 		// #######################################################################
 		// OpenGL methods | The methods below MUST be called from an openGL context
+
+		Vertex_array* vertex_array_ = nullptr;
 		
 		Vertex_buffer* vertex_vb_ = nullptr;
 		Vertex_buffer* uv_vb_ = nullptr;
@@ -152,7 +154,7 @@ namespace jactorio::renderer
 		/**
 		 * Updates vertex buffers based on the current data in the vertex and uv buffer
 		 */
-		void g_update_data();
+		void g_update_data(bool update_vertex, bool update_uv);
 
 		/**
 		 * Deletes vertex and index buffers

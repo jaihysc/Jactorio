@@ -8,12 +8,11 @@
  */
 namespace jactorio::data::pybind_manager
 {
-	const std::string& get_last_error_message();
 	/**
 	 * Evaluates string of python
 	 * @param python_str Python string to interpret
 	 * @param file_name if specified, used to display logging information from python sys.stdout
-	 * @return non-zero if errors occurred. error message stored in get_error_message()
+	 * @exception Data_exception if error occurred
 	 */
 	int exec(const std::string& python_str, const std::string& file_name = "");
 

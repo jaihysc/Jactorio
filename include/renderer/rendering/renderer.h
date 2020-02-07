@@ -11,14 +11,7 @@ namespace jactorio::renderer
 	class Renderer
 	{		
 	public:
-		explicit Renderer();
-		~Renderer();
-
-		Renderer(const Renderer& other) = delete;
-		Renderer(Renderer&& other) = delete;
-
-		Renderer& operator=(const Renderer& other) = delete;
-		Renderer& operator=(Renderer&& other) = delete;
+		Renderer();
 		
 	private:
 		// #################################################
@@ -39,7 +32,9 @@ namespace jactorio::renderer
 		// #################################################
 		// Rendering (Recalculated on window resize)
 
-		Renderer_layer* render_layer = nullptr;
+		// 2 Rendering layers so that one can be drawn to while another is being rendered
+		mutable Renderer_layer render_layer = Renderer_layer(true);
+		mutable Renderer_layer render_layer2 = Renderer_layer(true);
 		
 		/**
 		 * Using this to change zoom is discouraged <br>
@@ -56,9 +51,8 @@ namespace jactorio::renderer
 
 		/**
 		 * Draws current data to the screen
-		 * @param transform Offset to shift the image drawn
 		 */
-		void g_draw(glm::vec3 transform) const;
+		void g_draw() const;
 		static void g_clear();
 
 		

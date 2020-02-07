@@ -6,20 +6,40 @@
 #include "jactorio.h"
 
 #include "data/data_category.h"
+#include "data/data_exception.h"
 
 namespace jactorio::data
 {
 	// Creates a setters for python API primarily, to chain initialization
 
 	// Setter passed by reference
-#define PYTHON_PROP_REF(class_, type, var_name) type var_name; \
+#define PYTHON_PROP_REF(class_, type, var_name) \
+	type var_name; \
 	class_* set_##var_name(const type& (var_name)) {\
 		this->var_name = var_name;\
 		return this;\
 	}
 
+	// Setter passed by reference with initializer
+#define PYTHON_PROP_REF_I(class_, type, var_name, initializer) \
+	type var_name = initializer; \
+	class_* set_##var_name(const type& (var_name)) {\
+		this->var_name = var_name;\
+		return this;\
+	}
+
+	
 	// Setter passed by value
-#define PYTHON_PROP(class_, type, var_name) type var_name; \
+#define PYTHON_PROP(class_, type, var_name) \
+	type var_name; \
+	class_* set_##var_name(type (var_name)) {\
+		this->var_name = var_name;\
+		return this;\
+	}
+
+	// Setter passed by value with initializer
+#define PYTHON_PROP_I(class_, type, var_name, initializer) \
+	type var_name = initializer; \
 	class_* set_##var_name(type (var_name)) {\
 		this->var_name = var_name;\
 		return this;\
@@ -39,6 +59,11 @@ namespace jactorio::data
 			return this;
 		}
 	*/
+
+	// Assertions for post_load_validate
+#define J_DATA_ASSERT(condition, error_msg)\
+	if (!(condition)) { std::string s = this->name; s.append(error_msg); throw jactorio::data::Data_exception(s); }
+
 	
 	class Prototype_base
 	{
@@ -61,7 +86,7 @@ namespace jactorio::data
 		 * std::string name <br>J
 		 * 0 indicates invalid id
 		 */
-		PYTHON_PROP_REF(Prototype_base, unsigned int, internal_id)
+		unsigned int internal_id;
 		
 		/**
 		 * Internal name <br>
@@ -104,6 +129,28 @@ namespace jactorio::data
 		virtual void set_localized_description(const std::string& localized_description) {
 			this->localized_description_ = localized_description;
 		}
+
+		// ======================================================================
+		// Unique data associated with entity
+		
+		/**
+		 * If the prototype has unique data per tile, override the method for deleting it
+		 * Deletes unique data for the prototype given through ptr
+		 */
+		virtual void delete_unique_data(void* ptr) const {
+			assert(false);  // Not implemented
+		}
+
+		virtual void* copy_unique_data(void* ptr) const {
+			assert(false);  // Not implemented
+			return nullptr;
+		}
+		
+		/**
+		 * Validates properties of the prototype are valid
+		 * @exception data::Data_exception If invalid
+		 */
+		virtual void post_load_validate() const = 0;
 	};
 }
 

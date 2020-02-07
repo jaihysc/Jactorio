@@ -12,6 +12,7 @@
 #include "game/world/world_manager.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
+#include "data/prototype/entity/resource_entity.h"
 
 double x_position = 0.f;
 double y_position = 0.f;
@@ -29,8 +30,10 @@ double jactorio::game::mouse_selection::get_position_y() {
 	return y_position;
 }
 
-std::pair<int, int> jactorio::game::mouse_selection::get_mouse_tile_coords() {
-	// TODO buffer the mouse selected tile??
+
+std::pair<int, int> mouse_selected_tile;
+
+void jactorio::game::mouse_selection::calculate_mouse_tile_coords() {
 	float world_x = player_manager::get_player_position_x();
 	float world_y = player_manager::get_player_position_y();
 
@@ -67,10 +70,10 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_tile_coords() {
 
 		// If player is standing on a partial tile, adjust the center accordingly to the correct location
 		mouse_x_center -=
-			static_cast<float>(renderer::Renderer::tile_width) * (world_x - static_cast<int>(world_x));
+			static_cast<float>(renderer::Renderer::tile_width)* (world_x - static_cast<int>(world_x));
 		// This is plus since the y axis is inverted
 		mouse_y_center +=
-			static_cast<float>(renderer::Renderer::tile_width) * (world_y - static_cast<int>(world_y));
+			static_cast<float>(renderer::Renderer::tile_width)* (world_y - static_cast<int>(world_y));
 
 
 		pixels_from_center_x = norm_positions.x - mouse_x_center;
@@ -87,8 +90,13 @@ std::pair<int, int> jactorio::game::mouse_selection::get_mouse_tile_coords() {
 	if (world_y < 0)
 		world_y -= 1.f;
 
-	return std::pair<int, int>(world_x, world_y);
+	mouse_selected_tile = std::pair<int, int>(world_x, world_y);
 }
+
+std::pair<int, int> jactorio::game::mouse_selection::get_mouse_tile_coords() {
+	return mouse_selected_tile;
+}
+
 
 bool jactorio::game::mouse_selection::selected_tile_in_range() {
 	const auto cursor_position = get_mouse_tile_coords();
@@ -120,7 +128,7 @@ void jactorio::game::mouse_selection::draw_tile_at_cursor(const std::string& ina
 	const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, iname);
 	assert(sprite_ptr != nullptr);
 	
-	tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, sprite_ptr);
+	tile->set_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, sprite_ptr);
 	tile->get_layer(Chunk_tile::chunk_layer::overlay).multi_tile_span = 1;
 	
 	last_tile_pos = cursor_position;
@@ -136,12 +144,11 @@ void draw_selection_box() {
 
 	const auto cursor_position = mouse_selection::get_mouse_tile_coords();
 
-	// Only draw cursor when over entities or resources
+	// Only draw cursor when over entities
 	const auto tile = world_manager::get_tile_world_coords(cursor_position.first, cursor_position.second);
-	if (tile == nullptr || 
-		(tile->entity == nullptr && 
-			tile->get_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::resource) == nullptr
-		)) {
+	if (tile == nullptr 
+		|| (tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::resource) == nullptr &&
+			tile->get_layer_entity_prototype(Chunk_tile::chunk_layer::entity) == nullptr)) {
 		return;
 	}
 	
@@ -162,8 +169,7 @@ void jactorio::game::mouse_selection::draw_cursor_overlay() {
 		if (last_tile == nullptr)
 			return;
 
-		last_tile->set_tile_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay,
-		                                           nullptr);
+		last_tile->set_layer_sprite_prototype(Chunk_tile::chunk_layer::overlay, nullptr);
 	}
 	
 
@@ -188,7 +194,7 @@ void jactorio::game::mouse_selection::draw_cursor_overlay() {
 		const auto entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
 
 		// Ensure selected item is an entity to draw preview
-		if (entity_ptr != nullptr) {
+		if (entity_ptr != nullptr && entity_ptr->placeable) {
 			placement_c::place_sprite_at_coords(
 				Chunk_tile::chunk_layer::overlay, 
 				entity_ptr->sprite,
