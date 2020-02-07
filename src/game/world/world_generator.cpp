@@ -115,7 +115,12 @@ void generate(const int chunk_x, const int chunk_y) {
 		chunk_x, chunk_y, data::data_category::noise_layer_entity, [](game::Chunk_tile& target, void* tile, float val) {
 			if (tile == nullptr)  // Do not override existing tiles with nullptr
 				return;
-		
+
+			// Do not place resource on water
+			auto* base_layer = target.get_layer_tile_prototype(game::Chunk_tile::chunk_layer::base);
+			if (base_layer != nullptr && base_layer->is_water)
+				return;
+
 			// Add the tile prototype to the Chunk_tile
 			auto* new_tile = static_cast<data::Resource_entity*>(tile);
 

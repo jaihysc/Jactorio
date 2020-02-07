@@ -17,7 +17,7 @@
 
 bool logic_loop_should_terminate = false;
 
-constexpr float move_speed = 0.1f;
+constexpr float move_speed = 0.8f;
 
 void jactorio::game::init_logic_loop() {
 	// Movement controls

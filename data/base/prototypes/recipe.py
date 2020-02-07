@@ -13,15 +13,25 @@ g_intermediate = addRecipeGroup("recipegroup-intermediate", "base/graphics/item-
 g_combat = addRecipeGroup("recipegroup-combat", "base/graphics/item-group/military.png")
 
 # Be careful using _members for lists, any modifications to them is not known to the c++ side
-g_logistics.recipeCategories(([j.RecipeCategory()
-    .recipes(([
-        j.Recipe()
-            .ingredients([("__base__/coal-item", 10), ("__base__/copper-item", 5)])
-            .product(("__base__/wooden-chest-item", 2))
-            .craftingTime(0.1),
-        j.Recipe()
-            .ingredients([("__base__/wooden-chest-item", 1), ("__base__/copper-item", 5)])
-            .product(("__base__/iron-chest-item", 1))
-            .craftingTime(1),
-    ]))
+g_logistics.recipeCategories(([
+    # Containers
+    j.RecipeCategory()
+        .recipes(([
+            j.Recipe()
+                .ingredients([("__base__/coal-item", 10), ("__base__/copper-item", 5)])
+                .product(("__base__/wooden-chest-item", 2))
+                .craftingTime(0.1),
+            j.Recipe()
+                .ingredients([("__base__/wooden-chest-item", 1), ("__base__/copper-item", 5)])
+                .product(("__base__/iron-chest-item", 1))
+                .craftingTime(1),
+        ])),
+    # Belts
+    j.RecipeCategory()
+        .recipes(([
+            j.Recipe()
+                .ingredients([("__base__/coal-item", 2)])
+                .product(("__base__/transport-belt-basic-item", 2))
+                .craftingTime(0.1),
+        ]))
 ]))
