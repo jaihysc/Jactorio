@@ -1,12 +1,22 @@
 #ifndef GAME_WORLD_CHUNK_H
 #define GAME_WORLD_CHUNK_H
 
+#include "jactorio.h"
+
 #include <utility>
+#include <vector>
 
 #include "game/world/chunk_tile.h"
+#include "game/world/chunk_object_layer.h"
 
 namespace jactorio::game
 {
+	/**
+	 * A chunk within the game <br>
+	 * Made up of tiles and objects:
+	 *		tiles: Has 32 x 32, fixed grid location
+	 *		objects: Has no set amount, can exist anywhere on chunk
+	 */
 	class Chunk
 	{
 		std::pair<int, int> position_;
@@ -25,11 +35,24 @@ namespace jactorio::game
 		Chunk(int x, int y, Chunk_tile* tiles);
 		~Chunk();
 
-		[[nodiscard]] std::pair<int, int> get_position() const;
+		// Tiles
 
-		[[nodiscard]] Chunk_tile* tiles_ptr() const {
+		J_NODISCARD std::pair<int, int> get_position() const;
+
+		J_NODISCARD Chunk_tile* tiles_ptr() const {
 			return tiles_;
+		}
+
+		// Objects
+
+		enum class object_layer
+		{
+			item_entity = 0,
+			tree,
+			_count
 		};
+		
+		std::vector<Chunk_object_layer> objects [2];
 	};
 }
 

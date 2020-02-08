@@ -17,8 +17,9 @@
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/spritemap_generator.h"
-#include "renderer/rendering/world_renderer.h"
+#include "renderer/rendering/tile_renderer.h"
 #include "renderer/window/window_manager.h"
+#include "renderer/rendering/position_renderer.h"
 
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
@@ -140,6 +141,13 @@ int jactorio::renderer::render_init() {
 	}, GLFW_KEY_R, GLFW_RELEASE);
 
 
+	game::input_manager::subscribe([]() {
+		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
+			game::world_manager::get_chunk(0, 0)->objects[0].emplace_back(
+			);
+		});
+	}, GLFW_KEY_Q, GLFW_RELEASE);
+	
 	// Main rendering loop
 	{
 		LOG_MESSAGE(info, "2 - Runtime stage")
@@ -148,8 +156,6 @@ int jactorio::renderer::render_init() {
 		main_renderer = new Renderer();
 		
 		core::Resource_guard chunk_data_guard(&game::world_manager::clear_chunk_data);
-
-		// core::loop_manager::render_loop_ready(renderer_draw);
 
 		auto next_tick = std::chrono::steady_clock::now();
 		while (!glfwWindowShouldClose(window)) {
@@ -161,11 +167,13 @@ int jactorio::renderer::render_init() {
 				Renderer::g_clear();
 
 				// MVP Matricies updated in here
-				world_renderer::render_player_position(
+				tile_renderer::render_player_position(
 					main_renderer,
 					game::player_manager::get_player_position_x(),
 					game::player_manager::get_player_position_y());
 
+				position_renderer::render_object_layers(main_renderer, 0, 0);
+				
 				imgui_manager::imgui_draw();
 
 				glfwSwapBuffers(window_manager::get_window());  // Done rendering

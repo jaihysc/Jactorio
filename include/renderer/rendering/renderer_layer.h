@@ -81,7 +81,9 @@ namespace jactorio::renderer
 		mutable uint32_t next_element_index_ = 0;
 
 		/**
-		 * Current element size of VERTEX buffers, for index buffer size, multiply by 6
+		 * Current *element* size of VERTEX buffers <br>
+		 * for index buffer size, multiply by 6, <br>
+		 * for raw size of float array, multiply by 8 <br>
 		 */
 		uint32_t e_count_ = 0;
 
@@ -97,7 +99,12 @@ namespace jactorio::renderer
 		void set(uint32_t element_index, Element element) const;  // Both vertex and uv
 		void set_vertex(uint32_t element_index, core::Quad_position element) const;
 		void set_uv(uint32_t element_index, core::Quad_position element) const;
-
+	private:
+		// Sets the positions within the buffer, but will not increment next_element_index_;
+		void set_buffer_vertex(uint32_t element_index, const core::Quad_position& element) const;
+		void set_buffer_uv(uint32_t element_index, const core::Quad_position& element) const;
+		
+	public:
 		// Get buffers
 
 		J_NODISCARD Buffer<float> get_buf_vertex();
@@ -127,6 +134,12 @@ namespace jactorio::renderer
 		void delete_buffer() noexcept;
 
 
+		/**
+		 * Sets next_element_index_ to 0, does not guarantee that underlying buffers will be zeroed, merely that
+		 * the data will not by uploaded with glBufferSubData
+		 */
+		void clear() const;
+
 	private:
 		// #######################################################################
 		// OpenGL methods | The methods below MUST be called from an openGL context
@@ -135,7 +148,7 @@ namespace jactorio::renderer
 		
 		Vertex_buffer* vertex_vb_ = nullptr;
 		Vertex_buffer* uv_vb_ = nullptr;
-		Index_buffer* index_ib = nullptr;
+		Index_buffer* index_ib_ = nullptr;
 		
 		bool g_resize_vertex_buffers_ = false;
 
@@ -152,7 +165,8 @@ namespace jactorio::renderer
 		void g_init_buffer();
 
 		/**
-		 * Updates vertex buffers based on the current data in the vertex and uv buffer
+		 * Updates vertex buffers based on the current data in the vertex and uv buffer <br>
+		 * Will only upload elements from 0 to next_element_index_ - 1
 		 */
 		void g_update_data(bool update_vertex, bool update_uv);
 
@@ -165,6 +179,10 @@ namespace jactorio::renderer
 		 * Binds the vertex buffers, call this prior to drawing
 		 */
 		void g_buffer_bind() const;
+
+		// #######################################################################
+		// Test only
+		J_TEST_USE_ONLY uint32_t get_next_element_index() const;
 	};
 }
 

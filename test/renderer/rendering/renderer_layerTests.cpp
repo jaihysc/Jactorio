@@ -10,21 +10,21 @@ namespace renderer
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
+
 		auto r_layer = Renderer_layer(false);
 		r_layer.reserve(10);
 
 		r_layer.set(9,
-		Renderer_layer::Element(
-					Quad_position(
-					Position2<float>(0.0, 0.0),
-					Position2<float>(0.0, 0.0)
-				),
-					Quad_position(
-					Position2<float>(0.0, 0.0),
-					Position2<float>(0.0, 0.0)
-				)
-			)
+		            Renderer_layer::Element(
+			            Quad_position(
+				            Position2<float>(0.0, 0.0),
+				            Position2<float>(0.0, 0.0)
+			            ),
+			            Quad_position(
+				            Position2<float>(0.0, 0.0),
+				            Position2<float>(0.0, 0.0)
+			            )
+		            )
 		);
 		// Resize
 		r_layer.push_back(
@@ -71,14 +71,14 @@ namespace renderer
 		EXPECT_EQ(r_layer.get_buf_vertex().count, 11);
 		EXPECT_EQ(r_layer.get_buf_uv().count, 11);
 	}
-	
+
 	TEST(renderer_layer, set_element) {
 		// Set element at element position 1
 		// Reading from the buffer, this is index 8 - 15
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
+
 		auto r_layer = Renderer_layer(false);
 
 		r_layer.reserve(10);
@@ -102,23 +102,23 @@ namespace renderer
 
 		EXPECT_EQ(vertex_ptr[10], 0.33f);
 		EXPECT_EQ(vertex_ptr[11], 0.22f);
-		
+
 		EXPECT_EQ(vertex_ptr[12], 0.33f);
 		EXPECT_EQ(vertex_ptr[13], 0.44f);
 
 		EXPECT_EQ(vertex_ptr[14], 0.11f);
 		EXPECT_EQ(vertex_ptr[15], 0.44f);
-		
+
 		const auto uv_ptr = r_layer.get_buf_uv().ptr;
 		EXPECT_EQ(uv_ptr[8 ], 0.1f);
 		EXPECT_EQ(uv_ptr[9 ], 0.4f);
-		
+
 		EXPECT_EQ(uv_ptr[10], 0.3f);
 		EXPECT_EQ(uv_ptr[11], 0.4f);
-		
+
 		EXPECT_EQ(uv_ptr[12], 0.3f);
 		EXPECT_EQ(uv_ptr[13], 0.2f);
-		
+
 		EXPECT_EQ(uv_ptr[14], 0.1f);
 		EXPECT_EQ(uv_ptr[15], 0.2f);
 	}
@@ -128,23 +128,31 @@ namespace renderer
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
+
 		auto r_layer = Renderer_layer(false);
 
 		r_layer.reserve(10);
 
 		EXPECT_EQ(r_layer.e_count(), 10);
-		
+
 		EXPECT_EQ(r_layer.get_buf_vertex().count, 10);
 		EXPECT_EQ(r_layer.get_buf_uv().count, 10);
 	}
+	
+	TEST(renderer_layer, reserve_static) {
+		auto r_layer = jactorio::renderer::Renderer_layer(true);
+		r_layer.resize(10);
+
+		EXPECT_EQ(r_layer.get_next_element_index(), 10);
+	}
+
 
 	TEST(renderer_layer, resize) {
 		// Ensure values still remain in correct places after resizing
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
+
 		auto r_layer = Renderer_layer(false);
 
 		r_layer.reserve(10);
@@ -170,7 +178,7 @@ namespace renderer
 
 		EXPECT_EQ(vertex_ptr[10], 0.33f);
 		EXPECT_EQ(vertex_ptr[11], 0.22f);
-		
+
 		EXPECT_EQ(vertex_ptr[12], 0.33f);
 		EXPECT_EQ(vertex_ptr[13], 0.44f);
 
@@ -193,13 +201,13 @@ namespace renderer
 		const auto uv_ptr = r_layer.get_buf_uv().ptr;
 		EXPECT_EQ(uv_ptr[8 ], 0.1f);
 		EXPECT_EQ(uv_ptr[9 ], 0.4f);
-		
+
 		EXPECT_EQ(uv_ptr[10], 0.3f);
 		EXPECT_EQ(uv_ptr[11], 0.4f);
-		
+
 		EXPECT_EQ(uv_ptr[12], 0.3f);
 		EXPECT_EQ(uv_ptr[13], 0.2f);
-		
+
 		EXPECT_EQ(uv_ptr[14], 0.1f);
 		EXPECT_EQ(uv_ptr[15], 0.2f);
 
@@ -208,12 +216,19 @@ namespace renderer
 		EXPECT_EQ(r_layer.get_buf_uv().count, 5);
 	}
 
+	TEST(renderer_layer, resize_static) {
+		auto r_layer = jactorio::renderer::Renderer_layer(true);
+		r_layer.resize(10);
+
+		EXPECT_EQ(r_layer.get_next_element_index(), 10);
+	}
+
 	TEST(renderer_layer, delete_buffer) {
 		// When reserving, the count should be updated appropriately for the buffers
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
+
 		auto r_layer = Renderer_layer(false);
 
 		r_layer.reserve(10);

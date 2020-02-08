@@ -40,6 +40,9 @@ jactorio::renderer::Renderer::Renderer() {
 
 	render_layer.g_init_buffer();
 	render_layer2.g_init_buffer();
+
+	render_layer_object.g_init_buffer();
+	render_layer_object2.g_init_buffer();
 	
 	recalculate_buffers(m_viewport[2], m_viewport[3]);
 }

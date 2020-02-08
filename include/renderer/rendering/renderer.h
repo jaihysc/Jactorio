@@ -35,6 +35,12 @@ namespace jactorio::renderer
 		// 2 Rendering layers so that one can be drawn to while another is being rendered
 		mutable Renderer_layer render_layer = Renderer_layer(true);
 		mutable Renderer_layer render_layer2 = Renderer_layer(true);
+
+		/**
+		 * Since objects are of varying lengths, the layer must resize
+		 */
+		mutable Renderer_layer render_layer_object = Renderer_layer(false);
+		mutable Renderer_layer render_layer_object2 = Renderer_layer(false);
 		
 		/**
 		 * Using this to change zoom is discouraged <br>
