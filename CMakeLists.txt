@@ -86,8 +86,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
 
-	${JACTORIO_DIR}/renderer/rendering/tile_renderer.cpp
-	${JACTORIO_DIR}/renderer/rendering/position_renderer.cpp
+	${JACTORIO_DIR}/renderer/rendering/world_renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_grid.cpp

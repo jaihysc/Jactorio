@@ -55,7 +55,6 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	tile_count_x_ = window_width_ / tile_width + 1;
 	tile_count_y_ = window_height_ / tile_width + 1;
 
-	grid_vertices_count_ = (tile_count_x_ + 1) * (tile_count_y_ + 1);
 	grid_elements_count_ = tile_count_x_ * tile_count_y_;
 
 

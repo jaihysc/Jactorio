@@ -5,7 +5,7 @@
 // Settings
 
 constexpr uint32_t initial_size = 1;  // How many elements to reserve upon construction
-constexpr uint32_t increment_on_resize = 100;  // How many more elements to reserve on resize
+constexpr uint32_t increment_on_resize = 300;  // How many more elements to reserve on resize
 
 // Construct
 

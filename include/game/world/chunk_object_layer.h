@@ -16,6 +16,13 @@ namespace jactorio::game
 			: Chunk_layer(proto) {
 		}
 
+		explicit Chunk_object_layer(data::Prototype_base* proto,
+		                            const float position_x, const float position_y,
+		                            const float size_x, const float size_y)
+			: Chunk_layer(proto),
+			  position_x(position_x), position_y(position_y), size_x(size_x), size_y(size_y) {
+		}
+
 		// Distance (tiles) from top left of chunk to top left of object
 		float position_x = 0;
 		float position_y = 0;

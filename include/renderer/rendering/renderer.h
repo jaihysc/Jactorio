@@ -54,7 +54,7 @@ namespace jactorio::renderer
 
 		/**
 		 * Draws current data to the screen
-		 * @param element_count Count of indices in index buffer
+		 * @param element_count Count of elements to draw (1 element = 6 indices)
 		 */
 		static void g_draw(unsigned int element_count);
 		static void g_clear();

@@ -17,9 +17,8 @@
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/spritemap_generator.h"
-#include "renderer/rendering/tile_renderer.h"
+#include "renderer/rendering/world_renderer.h"
 #include "renderer/window/window_manager.h"
-#include "renderer/rendering/position_renderer.h"
 
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
@@ -141,10 +140,13 @@ int jactorio::renderer::render_init() {
 	}, GLFW_KEY_R, GLFW_RELEASE);
 
 
+	// TODO remove this
 	game::input_manager::subscribe([]() {
 		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
-			game::world_manager::get_chunk(0, 0)->objects[0].emplace_back(
-			);
+			game::world_manager::get_chunk(-3, 0)->objects[0]
+				.emplace_back(data::data_manager::data_raw_get<data::Entity>(data::data_category::container_entity,
+																			 "__base__/steel-chest"),
+							  0.3, 0.3, 0.3, 0.3);
 		});
 	}, GLFW_KEY_Q, GLFW_RELEASE);
 	
@@ -152,6 +154,7 @@ int jactorio::renderer::render_init() {
 	{
 		LOG_MESSAGE(info, "2 - Runtime stage")
 
+		// From my testing, allocating it on the heap is faster than using the stack
 		core::Resource_guard<void> renderer_guard([]() { delete main_renderer; });
 		main_renderer = new Renderer();
 		
@@ -166,14 +169,12 @@ int jactorio::renderer::render_init() {
 			{
 				Renderer::g_clear();
 
-				// MVP Matricies updated in here
-				tile_renderer::render_player_position(
+				// MVP Matrices updated in here
+				world_renderer::render_player_position(
 					main_renderer,
 					game::player_manager::get_player_position_x(),
 					game::player_manager::get_player_position_y());
 
-				position_renderer::render_object_layers(main_renderer, 0, 0);
-				
 				imgui_manager::imgui_draw();
 
 				glfwSwapBuffers(window_manager::get_window());  // Done rendering
