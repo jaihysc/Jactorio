@@ -41,9 +41,6 @@ jactorio::renderer::Renderer::Renderer() {
 	render_layer.g_init_buffer();
 	render_layer2.g_init_buffer();
 
-	render_layer_object.g_init_buffer();
-	render_layer_object2.g_init_buffer();
-	
 	recalculate_buffers(m_viewport[2], m_viewport[3]);
 }
 
@@ -62,27 +59,18 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	grid_elements_count_ = tile_count_x_ * tile_count_y_;
 
 
-	// Render layer
+	// Render layer (More may be reserved as needed by the renderer)
 	render_layer.reserve(grid_elements_count_);
 	render_layer2.reserve(grid_elements_count_);
-
-	// Vertex positions
-	renderer_grid::gen_render_grid(&render_layer, tile_count_x_, tile_count_y_, tile_width);
-	renderer_grid::gen_render_grid(&render_layer2, tile_count_x_, tile_count_y_, tile_width);
 }
 
 
 // openGL methods
 
-void jactorio::renderer::Renderer::g_draw() const {
-	// Count should be the same for both layers
-	const unsigned int count = render_layer.get_buf_index()->count();
-	// unsigned int count2 = render_layer2.get_buf_index()->count();
-
-	// assert(render_layer.get_buf_index()->count() == render_layer2.get_buf_index()->count());
-	
+void jactorio::renderer::Renderer::g_draw(const unsigned int element_count) {
 	DEBUG_OPENGL_CALL(
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr)
+		// There are 6 indices for each tile
+		glDrawElements(GL_TRIANGLES, element_count * 6, GL_UNSIGNED_INT, nullptr)
 	); // Pointer not needed as buffer is already bound
 }
 

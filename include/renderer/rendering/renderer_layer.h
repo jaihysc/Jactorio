@@ -49,7 +49,7 @@ namespace jactorio::renderer
 		};
 		
 	public:
-		explicit Renderer_layer(bool static_layer);
+		explicit Renderer_layer();
 
 		~Renderer_layer();
 
@@ -70,22 +70,16 @@ namespace jactorio::renderer
 		void delete_buffers_s() const;
 		
 		/**
-		 * If static the layer will not automatically resize on push_back if exceeding maximum capacity, instead
-		 * reserve or resize must be called manually
-		 */
-		bool static_layer_ = false;
-
-		/**
 		 * Buffer index to insert the next element on push_back
 		 */
 		mutable uint32_t next_element_index_ = 0;
 
 		/**
-		 * Current *element* size of VERTEX buffers <br>
+		 * Current *element* capacity of VERTEX buffers <br>
 		 * for index buffer size, multiply by 6, <br>
 		 * for raw size of float array, multiply by 8 <br>
 		 */
-		uint32_t e_count_ = 0;
+		uint32_t e_capacity_ = 0;
 
 	public:
 		// Set
@@ -94,22 +88,22 @@ namespace jactorio::renderer
 		 * Appends element to layer, after the highest element index where values were assigned<br>
 		 * Resizes if static_layer_ is false
 		 */
-		void push_back(Element element);
+		void push_back(const Element& element);
 
 		void set(uint32_t element_index, Element element) const;  // Both vertex and uv
 		void set_vertex(uint32_t element_index, core::Quad_position element) const;
 		void set_uv(uint32_t element_index, core::Quad_position element) const;
 	private:
 		// Sets the positions within the buffer, but will not increment next_element_index_;
-		void set_buffer_vertex(uint32_t element_index, const core::Quad_position& element) const;
-		void set_buffer_uv(uint32_t element_index, const core::Quad_position& element) const;
+		void set_buffer_vertex(uint32_t buffer_index, const core::Quad_position& element) const;
+		void set_buffer_uv(uint32_t buffer_index, const core::Quad_position& element) const;
 		
 	public:
 		// Get buffers
 
 		J_NODISCARD Buffer<float> get_buf_vertex();
 		J_NODISCARD Buffer<float> get_buf_uv();
-		J_NODISCARD const Index_buffer * get_buf_index() const;
+		J_NODISCARD const Index_buffer* get_buf_index() const;
 
 		// Resize
 		
@@ -124,9 +118,13 @@ namespace jactorio::renderer
 		void resize(uint32_t count);
 
 		/**
-		 * Returns current element count of buffers
+		 * Returns current element capacity of buffers
 		 */
-		J_NODISCARD uint32_t e_count() const;
+		J_NODISCARD uint32_t get_capacity() const;
+		/**
+		 * Returns count of elements in buffers
+		 */
+		J_NODISCARD uint32_t get_element_count() const;
 		
 		/**
 		 * Deallocates vertex and uv buffers, clearing any stored data
@@ -168,7 +166,7 @@ namespace jactorio::renderer
 		 * Updates vertex buffers based on the current data in the vertex and uv buffer <br>
 		 * Will only upload elements from 0 to next_element_index_ - 1
 		 */
-		void g_update_data(bool update_vertex, bool update_uv);
+		void g_update_data();
 
 		/**
 		 * Deletes vertex and index buffers
@@ -179,10 +177,6 @@ namespace jactorio::renderer
 		 * Binds the vertex buffers, call this prior to drawing
 		 */
 		void g_buffer_bind() const;
-
-		// #######################################################################
-		// Test only
-		J_TEST_USE_ONLY uint32_t get_next_element_index() const;
 	};
 }
 

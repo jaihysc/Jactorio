@@ -6,7 +6,7 @@ namespace renderer
 {
 	TEST(Renderer_grid, gen_render_tile_grid) {
 		using namespace jactorio::renderer;
-		Renderer_layer r_layer(true);
+		Renderer_layer r_layer{};
 
 		// Will automatically resize up but not down
 		renderer_grid::gen_render_grid(&r_layer, 10, 10, 16);

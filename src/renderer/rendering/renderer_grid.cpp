@@ -6,7 +6,7 @@ void jactorio::renderer::renderer_grid::gen_render_grid(Renderer_layer* r_layer,
 	const auto required_size = static_cast<unsigned long long>(tiles_x) * static_cast<unsigned long long>(tiles_y);
 
 	// Resize up if necessary
-	if (r_layer->e_count() < required_size)
+	if (r_layer->get_capacity() < required_size)
 		r_layer->resize(required_size);
 
 	

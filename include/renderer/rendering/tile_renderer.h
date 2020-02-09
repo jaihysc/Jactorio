@@ -14,25 +14,22 @@ namespace jactorio::renderer::tile_renderer
 
 	/**
 	 * Draws chunks to the screen
-	 * Attempting to draw chunks which do not exist will result in undefined behavior
-	 *
+	 * Attempting to draw chunks which do not exist will result in the chunk being queued for generation
 	 * @param layer_index Index of layer to render
-	 * @param window_start_x Position on window to begin drawing upper left corner of chunks
-	 * @param window_start_y Position on window to begin drawing upper left corner of chunks
+	 * @param render_offset_x Tiles from window left to offset drawing
+	 * @param render_offset_y Tiles from window top to offset drawing
 	 * @param chunk_start_x Position in chunk grid to begin drawing
 	 * @param chunk_start_y Position in chunk grid to begin drawing
 	 * @param chunk_amount_x Number of chunks on X axis to draw
 	 * @param chunk_amount_y Number of chunks on Y axis to draw
-	 * @param buffer UV draw data will be placed in this
-	 * @param buffer_span Span of the buffer, in element count
-	 * @param buffer_height Height of the buffer, in element count
+	 * @param layer Layer on which vertex and UV draw data will be placed
 	 */
 	void draw_chunks(
-		unsigned layer_index, 
-		int window_start_x, int window_start_y, 
+		unsigned layer_index,
+		int render_offset_x, int render_offset_y,
 		int chunk_start_x, int chunk_start_y,
 		int chunk_amount_x, int chunk_amount_y,
-		float* buffer, unsigned short buffer_span, unsigned short buffer_height);
+		Renderer_layer* layer);
 
 	/**
 	 * Moves the world to match player_position_ <br>

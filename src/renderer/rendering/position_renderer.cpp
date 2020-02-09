@@ -5,8 +5,8 @@
 void jactorio::renderer::position_renderer::render_object_layers(Renderer* renderer, float player_x, float player_y) {
 	// TODO I do not need to recalculate the centering, the calculations from tile_renderer can be reused
 
-	auto& layer_1 = renderer->render_layer_object;
-	auto& layer_2 = renderer->render_layer_object2;
+	auto& layer_1 = renderer->render_layer;
+	auto& layer_2 = renderer->render_layer2;
 
 	layer_1.clear();
 	
@@ -23,6 +23,6 @@ void jactorio::renderer::position_renderer::render_object_layers(Renderer* rende
 	}
 
 	layer_1.g_buffer_bind();
-	layer_1.g_update_data(true, true);
-	renderer->g_draw();
+	layer_1.g_update_data();
+	Renderer::g_draw(thing.size());
 }

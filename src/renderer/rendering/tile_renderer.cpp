@@ -40,159 +40,111 @@ jactorio::renderer::tile_renderer::tile_draw_func draw_funcs[]{
 	}
 };
 
-/**
- * Places tiles from specified chunk into its position within the provided buffer
- * @param layer_index
- * @param buffer Holds positions for the textures
- * @param max_buffer_span Span of the buffer
- * @param max_buffer_height Height of the buffer
- * @param tiles Chunk tiles to render
- * @param buffer_x Beginning position of the chunk in buffer (tiles)
- * @param buffer_y Beginning position of the chunk in buffer (tiles)
- */
-void buffer_load_chunk(const unsigned int layer_index,
-                       float* buffer,
-                       const unsigned int max_buffer_span, const unsigned int max_buffer_height,
-                       const jactorio::game::Chunk_tile* tiles,
-                       const int buffer_x, const int buffer_y) {
-	unsigned int start_x = 0;
-	unsigned int start_y = 0;
-
-	unsigned int end_x = 32;
-	unsigned int end_y = 32;
-
-	// Don't draw tiles out of frame (up, left)
-	// This occurs when drawing partial chunks
-
-	// Precompute the ranges for the loops ahead of time for PERFORMANCE
-	if (buffer_x < 0)
-		start_x = buffer_x * -1;
-	if (buffer_x + 32 >= static_cast<int>(max_buffer_span))
-		end_x = max_buffer_span - buffer_x;
-
-	if (buffer_y < 0)
-		start_y = buffer_y * -1;
-	if (buffer_y + 32 >= static_cast<int>(max_buffer_height))
-		end_y = max_buffer_height - buffer_y;
-
-	// Iterate through and load tiles of a chunk into buffer
-	for (unsigned int tile_y = start_y; tile_y < end_y; ++tile_y) {
-		for (unsigned int tile_x = start_x; tile_x < end_x; ++tile_x) {
-			auto tile = tiles[tile_y * 32 + tile_x];
-			const unsigned int internal_id = draw_funcs[layer_index](tile);
-
-			const unsigned int buffer_offset =
-				((buffer_y + tile_y) * max_buffer_span + (buffer_x + tile_x)) * 8;
-
-			if (internal_id == 0) {
-				// -1.f for the X position indicates drawing no sprites to fragment shader
-				// Y position does not need to be specified
-				buffer[buffer_offset + 0] = -1.f;
-				// buffer[buffer_offset + 1] = -1.f;
-
-				buffer[buffer_offset + 2] = -1.f;
-				// buffer[buffer_offset + 3] = -1.f;
-
-				buffer[buffer_offset + 4] = -1.f;
-				// buffer[buffer_offset + 5] = -1.f;
-
-				buffer[buffer_offset + 6] = -1.f;
-				// buffer[buffer_offset + 7] = -1.f;
-				continue;
-			}
-
-			const auto positions = jactorio::renderer::Renderer::get_spritemap_coords(internal_id);
-
-			// Calculate the correct UV coordinates for multi-tile entities
-
-			// The uv length of one tile
-			float top_left_x = positions.top_left.x;
-			float top_left_y = positions.top_left.y;
-
-			float bottom_right_x = positions.bottom_right.x;
-			float bottom_right_y = positions.bottom_right.y;
-
-			// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
-			auto& layer_tile = tile.get_layer(layer_index);
-			if (layer_tile.multi_tile_span != 1) {
-				const auto len_x =
-					(positions.bottom_right.x - positions.top_left.x) / static_cast<float>(layer_tile.
-						multi_tile_span);
-
-				const auto len_y =
-					(positions.bottom_right.y - positions.top_left.y) / static_cast<float>(layer_tile.
-						multi_tile_height);
-
-				const auto x_multiplier =
-					static_cast<int>(layer_tile.multi_tile_index) % layer_tile.multi_tile_span;
-				const auto y_multiplier =
-					static_cast<int>(layer_tile.multi_tile_index) / layer_tile.
-					multi_tile_span;  // This is correct, divide by width for both calculations
-
-				// Opengl flips vertically, thus the y multiplier is inverted
-
-				// bottom right
-				bottom_right_x =
-					positions.bottom_right.x - len_x * static_cast<float>(layer_tile.multi_tile_span - x_multiplier
-						- 1);
-				bottom_right_y = positions.bottom_right.y - len_y * y_multiplier;
-
-				// top left
-				top_left_x = positions.top_left.x + len_x * x_multiplier;
-				top_left_y =
-					positions.top_left.y + len_y * static_cast<float>(layer_tile.multi_tile_height - y_multiplier -
-						1);
-			}
-
-			// bottom left
-			buffer[buffer_offset + 0] = top_left_x;
-			buffer[buffer_offset + 1] = bottom_right_y;
-
-			// bottom right
-			buffer[buffer_offset + 2] = bottom_right_x;
-			buffer[buffer_offset + 3] = bottom_right_y;
-
-			// top right
-			buffer[buffer_offset + 4] = bottom_right_x;
-			buffer[buffer_offset + 5] = top_left_y;
-
-			// top left
-			buffer[buffer_offset + 6] = top_left_x;
-			buffer[buffer_offset + 7] = top_left_y;
-		}
-	}
-}
-
 void jactorio::renderer::tile_renderer::draw_chunks(const unsigned int layer_index,
-                                                    const int window_start_x, const int window_start_y,
+                                                    const int render_offset_x, const int render_offset_y,
                                                     const int chunk_start_x, const int chunk_start_y,
                                                     const int chunk_amount_x, const int chunk_amount_y,
-                                                    float* buffer,
-                                                    const unsigned short buffer_span,
-                                                    const unsigned short buffer_height) {
-	for (int y = 0; y < chunk_amount_y; ++y) {
-		const int chunk_y_offset = y * 32 + window_start_y;
+                                                    Renderer_layer* layer) {
+	for (int chunk_y = 0; chunk_y < chunk_amount_y; ++chunk_y) {
+		const int chunk_y_offset = chunk_y * 32 + render_offset_y;
 
-		for (int x = 0; x < chunk_amount_x; ++x) {
-			const auto chunk = game::world_manager::get_chunk(chunk_start_x + x,
-			                                                  chunk_start_y + y);
+		for (int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
+			const int chunk_x_offset = chunk_x * 32 + render_offset_x;
+
+			const auto chunk = game::world_manager::get_chunk(chunk_start_x + chunk_x,
+			                                                  chunk_start_y + chunk_y);
 
 			// Generate chunk if non existent
 			if (chunk == nullptr) {
 				game::world_generator::queue_chunk_generation(
-					chunk_start_x + x,
-					chunk_start_y + y);
+					chunk_start_x + chunk_x,
+					chunk_start_y + chunk_y);
 				continue;
 			}
 
 			// Load chunk into buffer
 			game::Chunk_tile* tiles = chunk->tiles_ptr();
 
-			const int chunk_x_offset = x * 32 + window_start_x;
-			buffer_load_chunk(layer_index,
-			                  buffer, buffer_span, buffer_height,
-			                  tiles,
-			                  chunk_x_offset, chunk_y_offset);
+
+			// Iterate through and load tiles of a chunk into layer for rendering
+			for (unsigned int tile_y = 0; tile_y < 32; ++tile_y) {
+				for (unsigned int tile_x = 0; tile_x < 32; ++tile_x) {
+					const auto& tile = tiles[tile_y * 32 + tile_x];
+					const unsigned int internal_id = draw_funcs[layer_index](tile);
+
+					// Internal id of 0 indicates no tile
+					if (internal_id == 0) {
+						continue;
+					}
+
+					const auto positions = Renderer::get_spritemap_coords(internal_id);
+
+					// Calculate the correct UV coordinates for multi-tile entities
+
+					// The uv length of one tile
+					float top_left_x = positions.top_left.x;
+					float top_left_y = positions.top_left.y;
+
+					float bottom_right_x = positions.bottom_right.x;
+					float bottom_right_y = positions.bottom_right.y;
+
+					// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
+					auto& layer_tile = tile.get_layer(layer_index);
+					if (layer_tile.multi_tile_span != 1) {
+						const auto len_x =
+							(positions.bottom_right.x - positions.top_left.x) / static_cast<float>(layer_tile.
+								multi_tile_span);
+
+						const auto len_y =
+							(positions.bottom_right.y - positions.top_left.y) / static_cast<float>(layer_tile.
+								multi_tile_height);
+
+						const auto x_multiplier =
+							static_cast<int>(layer_tile.multi_tile_index) % layer_tile.multi_tile_span;
+						const auto y_multiplier =
+							static_cast<int>(layer_tile.multi_tile_index) / layer_tile.
+							multi_tile_span;  // This is correct, divide by width for both calculations
+
+						// Opengl flips vertically, thus the y multiplier is inverted
+
+						// bottom right
+						bottom_right_x =
+							positions.bottom_right.x - len_x * static_cast<float>(layer_tile.multi_tile_span -
+								x_multiplier - 1);
+						bottom_right_y = positions.bottom_right.y - len_y * y_multiplier;
+
+						// top left
+						top_left_x = positions.top_left.x + len_x * x_multiplier;
+						top_left_y =
+							positions.top_left.y + len_y * static_cast<float>(layer_tile.multi_tile_height -
+								y_multiplier - 1);
+					}
+
+					// Calculate screen coordinates
+					const auto uv_x = static_cast<float>((chunk_x_offset + tile_x) * Renderer::tile_width);
+					const auto uv_y = static_cast<float>((chunk_y_offset + tile_y) * Renderer::tile_width);
+					
+					layer->push_back(
+						Renderer_layer::Element(
+							{
+								{
+									uv_x,
+									uv_y
+								},
+								// One tile right and down
+								{
+									uv_x + static_cast<float>(Renderer::tile_width),
+									uv_y + static_cast<float>(Renderer::tile_width)
+								}
+							}, 
+							{{top_left_x, top_left_y}, {bottom_right_x, bottom_right_y}}
+						)
+					);
+
+				}
+			}
+
+			// End tile loop
 		}
 	}
 }
@@ -286,13 +238,7 @@ void jactorio::renderer::tile_renderer::render_player_position(Renderer* rendere
 	// Wait 1
 	// Update 1
 	// Draw 1
-
-	float* buffer1 = renderer->render_layer.get_buf_uv().ptr;
-	float* buffer2 = renderer->render_layer2.get_buf_uv().ptr;
-
-	const unsigned short buffer_span = renderer->get_grid_size_x();
-	const unsigned short buffer_height = renderer->get_grid_size_y();
-
+	
 	// -64 to hide the 2 extra chunk around the outside screen
 	const auto window_start_x = tile_start_x - 64;
 	const auto window_start_y = tile_start_y - 64;
@@ -300,72 +246,78 @@ void jactorio::renderer::tile_renderer::render_player_position(Renderer* rendere
 	// Match the tile offset with start offset
 	chunk_start_x -= 2;
 	chunk_start_y -= 2;
-	
+
 	// Calculate the maximum number of chunks which can be rendered
-	const auto end_x = (buffer_span - window_start_x) / 32 + 1;  // Render 1 extra chunk on the edge
-	const auto end_y = (buffer_height - window_start_y) / 32 + 1;
+	const auto end_x = (renderer->get_grid_size_x() - window_start_x) / 32 + 1;  // Render 1 extra chunk on the edge
+	const auto end_y = (renderer->get_grid_size_y() - window_start_y) / 32 + 1;
 
 
+	auto* layer_1 = &renderer->render_layer;
+	auto* layer_2 = &renderer->render_layer2;
+	// !Very important! Remember to clear the layers or else it will keep trying to append into it
+	layer_2->clear();
+	
 	std::future<void> preparing_thread1;
 	std::future<void> preparing_thread2 =
 		std::async(std::launch::async, draw_chunks,
 		           0,
 		           window_start_x, window_start_y,
-		           chunk_start_x, chunk_start_y, 
+		           chunk_start_x, chunk_start_y,
 		           end_x, end_y,
-		           buffer2, buffer_span, buffer_height);
-
+		           layer_2);
 
 	bool using_buffer1 = true;
-
 	// Begin at index 1, since index 0 is handled above
 	for (unsigned int layer_index = 1; layer_index < game::Chunk_tile::layer_count; ++layer_index) {
 		// Prepare 1
 		if (using_buffer1) {
+			layer_1->clear();
 			preparing_thread1 =
 				std::async(std::launch::async, draw_chunks,
 				           layer_index,
 				           window_start_x, window_start_y,
 				           chunk_start_x, chunk_start_y,
 				           end_x, end_y,
-				           buffer1, buffer_span, buffer_height);
-
+				           layer_1);
+			
 			preparing_thread2.wait();
-
-			renderer->render_layer2.g_update_data(false, true);
+	
+			renderer->render_layer2.g_update_data();
 			renderer->render_layer2.g_buffer_bind();
+			Renderer::g_draw(layer_2->get_element_count());
 		}
 			// Prepare 2
 		else {
+			layer_2->clear();
 			preparing_thread2 =
 				std::async(std::launch::async, draw_chunks,
 				           layer_index,
 				           window_start_x, window_start_y,
 				           chunk_start_x, chunk_start_y,
 				           end_x, end_y,
-				           buffer2, buffer_span, buffer_height);
-
+				           layer_2);
+	
 			preparing_thread1.wait();
-
-			renderer->render_layer.g_update_data(false, true);
+	
+			renderer->render_layer.g_update_data();
 			renderer->render_layer.g_buffer_bind();
+			Renderer::g_draw(layer_1->get_element_count());
 		}
-
-		renderer->g_draw();
 		using_buffer1 = !using_buffer1;
 	}
 
 	// Wait for the final layer to draw
 	if (using_buffer1) {
 		preparing_thread2.wait();
-		renderer->render_layer2.g_update_data(false, true);
-		renderer->render_layer2.g_buffer_bind();
+		layer_2->g_update_data();
+		layer_2->g_buffer_bind();
+		Renderer::g_draw(layer_2->get_element_count());
 	}
 	else {
 		preparing_thread1.wait();
-		renderer->render_layer.g_update_data(false, true);
-		renderer->render_layer.g_buffer_bind();
+		layer_1->g_update_data();
+		layer_1->g_buffer_bind();
+		Renderer::g_draw(layer_1->get_element_count());
 	}
 
-	renderer->g_draw();
 }

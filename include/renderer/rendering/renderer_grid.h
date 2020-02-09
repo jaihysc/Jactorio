@@ -17,7 +17,8 @@
  */
 namespace jactorio::renderer::renderer_grid
 {
-	void gen_render_grid(Renderer_layer* r_layer, uint16_t tiles_x, uint16_t tiles_y, uint16_t tile_width);
+	// Renderer layers now dynamically generate vertices to avoid drawing needless transparent tiles
+	J_DEPRECATED void gen_render_grid(Renderer_layer* r_layer, uint16_t tiles_x, uint16_t tiles_y, uint16_t tile_width);
 
 	// Functions below are DEPRECATED, they are unsafe in memory allocation
 	
