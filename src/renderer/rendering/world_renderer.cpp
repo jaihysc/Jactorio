@@ -44,14 +44,14 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 };
 
 object_draw_func object_layer_get_sprite_id_func[]{
-	// Trees?!
-	[](const jactorio::game::Chunk_object_layer& layer) {
-		auto* entity = static_cast<jactorio::data::Entity*>(layer.prototype_data);
-		if (entity == nullptr || entity->sprite == nullptr)
-			return 0u;
-		return entity->sprite->internal_id;
-	},
 	// Item entities
+	[](const jactorio::game::Chunk_object_layer& layer) {
+		auto* sprite = static_cast<jactorio::data::Sprite*>(layer.prototype_data);
+		if (sprite == nullptr)
+			return 0u;
+		return sprite->internal_id;
+	},
+	// Trees?!
 	[](const jactorio::game::Chunk_object_layer& layer) {
 		auto* entity = static_cast<jactorio::data::Entity*>(layer.prototype_data);
 		if (entity == nullptr || entity->sprite == nullptr)
@@ -147,7 +147,7 @@ void prepare_object_data(const unsigned layer_index,
                          jactorio::renderer::Renderer_layer* layer, 
                          const int chunk_y_offset, const int chunk_x_offset, 
                          jactorio::game::Chunk* const chunk) {
-	auto& objects = chunk->objects[0];
+	auto& objects = chunk->objects[layer_index];
 	for (auto& object_layer : objects) {
 		const unsigned int internal_id = object_layer_get_sprite_id_func[layer_index](object_layer);
 		

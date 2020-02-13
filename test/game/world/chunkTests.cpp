@@ -51,4 +51,11 @@ namespace game
 		// Should not copy the pointer for tiles
 		EXPECT_NE(chunk_copy.tiles_ptr(), chunk_a.tiles_ptr());
 	}
+
+	TEST(chunk, get_object_layer) {
+		jactorio::game::Chunk chunk_a{0, 0, nullptr};
+
+		// Should return the layer specified by the index of the enum object_layer
+		EXPECT_EQ(&chunk_a.get_object(jactorio::game::Chunk::object_layer::item_entity), &chunk_a.objects[0]);
+	}
 }

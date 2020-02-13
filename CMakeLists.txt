@@ -23,7 +23,7 @@ if (OPENGL_FOUND)
 	message("OpenGL include dir: ${OPENGL_INCLUDE_DIR}")
 	message("OpenGL link libraries: ${OPENGL_gl_LIBRARY}")
 else (OPENGL_FOUND)
-	message(FATAL_ERROR "OpenGL for not found")
+	message(FATAL_ERROR "OpenGL not found")
 endif()
 
 ############# Include folders .h
@@ -68,6 +68,7 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
 	${JACTORIO_DIR}/game/logic/placement_controller.cpp
+	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
 
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
@@ -104,6 +105,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
+	${JACTORIO_TEST_DIR}/core/float_mathTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
@@ -123,6 +125,7 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp

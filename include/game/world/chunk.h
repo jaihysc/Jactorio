@@ -50,15 +50,18 @@ namespace jactorio::game
 		}
 
 		// Objects
-
 		enum class object_layer
 		{
-			item_entity = 0,
+			item_entity = 0,  // data::Sprite
 			tree,
 			_count
 		};
-		
-		std::vector<Chunk_object_layer> objects [2];
+
+		std::vector<Chunk_object_layer> objects[static_cast<int>(object_layer::_count)];
+
+		std::vector<Chunk_object_layer>& get_object(object_layer layer) {
+			return objects[static_cast<int>(layer)];
+		}
 	};
 }
 
