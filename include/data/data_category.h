@@ -20,6 +20,8 @@ namespace jactorio::data
 		health_entity,
 		container_entity,
 
+		transport_belt,
+		
 		recipe,
 		recipe_category,
 		recipe_group,

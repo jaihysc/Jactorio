@@ -138,17 +138,6 @@ int jactorio::renderer::render_init() {
 			game::world_manager::clear_chunk_data();
 		});
 	}, GLFW_KEY_R, GLFW_RELEASE);
-
-
-	// TODO remove this
-	game::input_manager::subscribe([]() {
-		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
-			game::world_manager::get_chunk(-3, 0)->objects[0]
-				.emplace_back(data::data_manager::data_raw_get<data::Entity>(data::data_category::container_entity,
-																			 "__base__/steel-chest"),
-							  0.3, 0.3, 0.3, 0.3);
-		});
-	}, GLFW_KEY_Q, GLFW_RELEASE);
 	
 	// Main rendering loop
 	{

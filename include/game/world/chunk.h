@@ -35,6 +35,12 @@ namespace jactorio::game
 		Chunk(int x, int y, Chunk_tile* tiles);
 		~Chunk();
 
+		Chunk(const Chunk& other);
+		Chunk(Chunk&& other) noexcept;
+		
+		Chunk& operator=(const Chunk& other);
+		Chunk& operator=(Chunk&& other) noexcept;
+
 		// Tiles
 
 		J_NODISCARD std::pair<int, int> get_position() const;

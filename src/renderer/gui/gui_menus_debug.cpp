@@ -4,13 +4,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "jactorio.h"
+
+#include "data/data_manager.h"
 #include "game/input/mouse_selection.h"
+#include "game/logic/inventory_controller.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world_generator.h"
+#include "game/world/world_manager.h"
 #include "renderer/rendering/mvp_manager.h"
-#include "data/data_manager.h"
-#include "game/logic/inventory_controller.h"
 
 bool show_timings_window = false;
 bool show_demo_window = false;
@@ -35,6 +37,7 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 
 	ImGui::NewLine();
 	ImGui::Text("Layer count: %d", game::Chunk_tile::layer_count);
+	ImGui::Text("Chunk updates: %d", game::world_manager::logic_get_all_chunks().size());
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 

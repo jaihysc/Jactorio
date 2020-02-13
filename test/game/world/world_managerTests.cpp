@@ -127,4 +127,50 @@ namespace game
 		// Chunk no longer exists after it was cleared
 		EXPECT_EQ(jactorio::game::world_manager::get_chunk(6, 6), nullptr);
 	}
+
+
+	// Logic chunks
+
+
+	TEST(world_manager, logic_add_chunk) {
+		jactorio::core::Resource_guard guard(&jactorio::game::world_manager::clear_chunk_data);
+		
+		using namespace jactorio::game;
+		Chunk chunk(0, 0, nullptr);
+		
+		auto& logic_chunk = world_manager::logic_add_chunk(&chunk);
+		// Should return reference to newly created and added chunk
+		
+		EXPECT_EQ(world_manager::logic_get_all_chunks().size(), 1);
+
+		// Should be referencing the same logic chunk
+		EXPECT_EQ(&world_manager::logic_get_all_chunks()[0], &logic_chunk);
+	}
+
+	TEST(world_manager, logic_remove_chunk) {
+		jactorio::core::Resource_guard guard(&jactorio::game::world_manager::clear_chunk_data);
+
+		using namespace jactorio::game;
+		Chunk chunk(0, 0, nullptr);
+
+		auto& logic_chunk = world_manager::logic_add_chunk(&chunk);  // Add
+		world_manager::logic_remove_chunk(logic_chunk);  // Remove
+
+		EXPECT_EQ(world_manager::logic_get_all_chunks().size(), 0);
+	}
+	
+	TEST(world_manager, logic_clear_chunk_data) {
+		jactorio::core::Resource_guard guard(&jactorio::game::world_manager::clear_chunk_data);
+
+		using namespace jactorio::game;
+		Chunk chunk(0, 0, nullptr);
+
+		world_manager::logic_add_chunk(&chunk);
+
+		// Clear
+		world_manager::clear_chunk_data();
+
+		// Vector reference should now be empty
+		EXPECT_EQ(world_manager::logic_get_all_chunks().size(), 0);
+	}
 }

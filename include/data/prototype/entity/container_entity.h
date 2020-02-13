@@ -5,7 +5,7 @@
 
 namespace jactorio::data
 {
-	struct Container_entity_data : Entity_data
+	struct Container_entity_data : Health_entity_data
 	{
 		explicit Container_entity_data(const uint16_t inventory_size) {
 			inventory = new item_stack[inventory_size];

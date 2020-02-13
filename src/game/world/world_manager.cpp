@@ -92,6 +92,9 @@ jactorio::game::Chunk* jactorio::game::world_manager::get_chunk(const int x, con
 	// return p_get_chunk(x, y);
 }
 
+// Chunk tiles
+
+
 jactorio::game::Chunk_tile* jactorio::game::world_manager::get_tile_world_coords(int world_x,
                                                                                  int world_y) {
 
@@ -143,6 +146,27 @@ jactorio::game::Chunk_tile* jactorio::game::world_manager::get_mouse_selected_ti
 	return get_tile_world_coords(tile_selected.first, tile_selected.second);
 }
 
+
+// Logic chunks
+
+std::vector<jactorio::game::Logic_chunk> logic_chunks;
+
+jactorio::game::Logic_chunk& jactorio::game::world_manager::logic_add_chunk(Chunk* chunk){
+	return logic_chunks.emplace_back(chunk);
+}
+
+void jactorio::game::world_manager::logic_remove_chunk(const Logic_chunk& chunk) {
+	for (auto i = 0; i < logic_chunks.size(); ++i) {
+		if (&logic_chunks[i] == &chunk) {
+			logic_chunks.erase(logic_chunks.begin() + i);
+		}
+	}
+}
+
+std::vector<jactorio::game::Logic_chunk>& jactorio::game::world_manager::logic_get_all_chunks() {
+	return logic_chunks;
+}
+
 void jactorio::game::world_manager::clear_chunk_data() {
 	std::lock_guard<std::mutex> guard(m_world_chunks);
 
@@ -151,4 +175,5 @@ void jactorio::game::world_manager::clear_chunk_data() {
 		delete world_chunk.second;
 	}
 	world_chunks.clear();
+	logic_chunks.clear();
 }

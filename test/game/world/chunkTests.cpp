@@ -5,7 +5,7 @@
 
 namespace game
 {
-	TEST(world_chunk, chunk_set_tile) {
+	TEST(chunk, chunk_set_tile) {
 		// The tiles pointer is only stored by the Chunk, modifying the original tiles pointer
 		// will modify the tiles of the chunk
 
@@ -41,5 +41,14 @@ namespace game
 
 
 		// Prototype data in the actual application is managed by data_manager
+	}
+
+	TEST(chunk, chunk_copy) {
+		auto* tiles = new jactorio::game::Chunk_tile[32 * 32];
+		const jactorio::game::Chunk chunk_a{0, 0, tiles};
+
+		const auto chunk_copy = chunk_a;
+		// Should not copy the pointer for tiles
+		EXPECT_NE(chunk_copy.tiles_ptr(), chunk_a.tiles_ptr());
 	}
 }
