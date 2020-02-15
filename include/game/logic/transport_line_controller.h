@@ -2,7 +2,7 @@
 #define GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
 
 #include "game/world/logic_chunk.h"
-#include "data/prototype/item/item.h"
+#include "data/prototype/sprite.h"
 
 /**
  * Transport line logic for anything moving items
@@ -45,16 +45,21 @@ namespace jactorio::game::transport_line_c
 	 * A left item will occupy the entire space from 0.5 to 0.9
 	 */
 
+	// Width of one item on a belt (in tiles)
+	constexpr float item_width = 0.4f;
+
 	
 	// Updates belt logic for a logic chunk
 	void logic_update(Logic_chunk* l_chunk);
 
 
+	// When inserting an item, it will insert it onto the center of the belt
+	
 	// Inserts an item onto a belt LEFT side
-	void belt_insert_item_l(data::Item* item);
+	void belt_insert_item_l(int tile_x, int tile_y, data::Sprite* item_sprite);
 
 	// Inserts an item onto a belt RIGHT side
-	void belt_insert_item_r(data::Item* item);
+	void belt_insert_item_r(int tile_x, int tile_y, data::Sprite* item);
 }
 
 #endif // GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H

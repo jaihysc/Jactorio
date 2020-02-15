@@ -4,27 +4,31 @@
 #include "jactorio.h"
 
 #include <string>
+#include <vector>
 
 #include "prototype_base.h"
 
 namespace jactorio::data
 {
-	class Sprite : public Prototype_base
+	class Sprite final : public Prototype_base
 	{
 	public:
-		// =======================================
-		// Pybind
 		enum class sprite_group
 		{
-			none,
-			terrain,
-			gui
+			terrain = 0,
+			gui,
+			_count
 		};
+		
+		/**
+		 * Group(s) determines which spritemap(s) this sprite is placed on
+		 */
+		PYTHON_PROP_REF(Sprite, std::vector<sprite_group>, group);
 
 		/**
-		 * Group determines which spritemap this is placed on
+		 * @return true is Sprite is in specified group
 		 */
-		PYTHON_PROP_REF(Sprite, sprite_group, group)
+		bool is_in_group(sprite_group group);
 		
 	private:
 		// Image properties
@@ -43,17 +47,15 @@ namespace jactorio::data
 	public:
 		Sprite();
 		explicit Sprite(const std::string& sprite_path);
-		Sprite(const std::string& sprite_path, sprite_group group);
+		Sprite(const std::string& sprite_path, std::vector<sprite_group> group);
 
 		~Sprite() override;
 
 
 		Sprite(const Sprite& other);
-
 		Sprite(Sprite&& other) noexcept = default;
 
 		Sprite& operator=(const Sprite& other);
-
 		Sprite& operator=(Sprite&& other) noexcept = default;
 
 		// =======================================

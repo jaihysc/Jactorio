@@ -20,7 +20,7 @@ namespace jactorio::data
 		Sprite* sprite = nullptr;
 
 		Recipe_group* set_sprite(Sprite* (sprite)) {
-			sprite->group = Sprite::sprite_group::gui;
+			sprite->group.push_back(Sprite::sprite_group::gui);
 			this->sprite = sprite;
 			return this;
 		}

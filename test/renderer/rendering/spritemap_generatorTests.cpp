@@ -16,17 +16,17 @@ namespace renderer
 		// Sprite data delete by guard
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite1", 
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png", 
-		                                                      jactorio::data::Sprite::sprite_group::terrain));
+		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite2",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                                      jactorio::data::Sprite::sprite_group::terrain));
+		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
 		
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite3",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                                      jactorio::data::Sprite::sprite_group::gui));
+		                                                      {jactorio::data::Sprite::sprite_group::gui}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite4",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                                      jactorio::data::Sprite::sprite_group::gui));
+		                                                      {jactorio::data::Sprite::sprite_group::gui}));
 		
 		// Should filter out to only 2 entries
 		create_spritemap(jactorio::data::Sprite::sprite_group::terrain, false);
@@ -52,23 +52,23 @@ namespace renderer
 		// Terrain
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite1",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                                      jactorio::data::Sprite::sprite_group::terrain));
+		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite2",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                                      jactorio::data::Sprite::sprite_group::terrain));
+		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
 
 		// Gui
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite3",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                                      jactorio::data::Sprite::sprite_group::gui));
+		                                                      {jactorio::data::Sprite::sprite_group::gui}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite4",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                                      jactorio::data::Sprite::sprite_group::gui));
+		                                                      {jactorio::data::Sprite::sprite_group::gui}));
 
 		// None
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "spriteNone",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                                      jactorio::data::Sprite::sprite_group::none));
+		                                                      {}));
 		
 		// Should filter out to 3 entries, total width of 32 * 3
 		create_spritemap(jactorio::data::Sprite::sprite_group::terrain, false);

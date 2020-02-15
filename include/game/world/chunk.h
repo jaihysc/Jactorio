@@ -52,7 +52,7 @@ namespace jactorio::game
 		// Objects
 		enum class object_layer
 		{
-			item_entity = 0,  // data::Sprite
+			item_entity = 0,  // data::Transport_line_item
 			tree,
 			_count
 		};

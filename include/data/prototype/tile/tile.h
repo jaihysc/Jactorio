@@ -14,14 +14,14 @@ namespace jactorio::data
 	{
 	public:		
 		Tile()
-			: is_water(false), sprite_ptr(nullptr) {
+			: is_water(false), sprite(nullptr) {
 		}
 
 		/**
 		 * @param sprite_ptr Points to a sprite prototype
 		 */
 		explicit Tile(Sprite* sprite_ptr)
-			: is_water(false), sprite_ptr(sprite_ptr) {
+			: is_water(false), sprite(sprite_ptr) {
 		}
 
 		~Tile() override = default;
@@ -31,14 +31,14 @@ namespace jactorio::data
 		 */
 		PYTHON_PROP_REF(Tile, bool, is_water)
 
-		PYTHON_PROP(Tile, Sprite*, sprite_ptr)
+		PYTHON_PROP(Tile, Sprite*, sprite)
 
 		
 		void post_load_validate() const override;
 	};
 
 	inline void Tile::post_load_validate() const {
-		J_DATA_ASSERT(sprite_ptr != nullptr, "Sprite was not provided");
+		J_DATA_ASSERT(sprite != nullptr, "Sprite was not provided");
 	}
 }
 

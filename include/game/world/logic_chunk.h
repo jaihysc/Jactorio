@@ -32,6 +32,7 @@ namespace jactorio::game
 		 * 3 = down,
 		 * 4 = left
 		 */
+		// <Index for item in Chunk_object_layer vector, Direction>
 		std::map<uint32_t, uint8_t> item_direction;
 	};
 }

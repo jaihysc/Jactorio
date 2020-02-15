@@ -4,6 +4,8 @@
 
 #include "core/debug/execution_timer.h"
 
+#include "data/prototype/entity/transport/transport_line_item.h"
+
 #include "game/world/world_manager.h"
 #include "game/world/world_generator.h"
 
@@ -17,20 +19,19 @@ using object_draw_func = unsigned int (*)(const jactorio::game::Chunk_object_lay
 tile_draw_func tile_layer_get_sprite_id_func[]{
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
 		const auto x = chunk_tile.get_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base);
-		if (x->sprite_ptr == nullptr)
-			return 0u;
-		return x->sprite_ptr->internal_id;
+		return x->sprite->internal_id;
 	},
 
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
 		const auto y = chunk_tile.get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::resource);
-		if (y == nullptr || y->sprite == nullptr)
+		// Sprites are guaranteed not nullptr
+		if (y == nullptr)
 			return 0u;
 		return y->sprite->internal_id;
 	},
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
 		const auto y = chunk_tile.get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity);
-		if (y == nullptr || y->sprite == nullptr)
+		if (y == nullptr)
 			return 0u;
 		return y->sprite->internal_id;
 	},
@@ -44,12 +45,12 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 };
 
 object_draw_func object_layer_get_sprite_id_func[]{
-	// Item entities
+	// Transport line items
 	[](const jactorio::game::Chunk_object_layer& layer) {
-		auto* sprite = static_cast<jactorio::data::Sprite*>(layer.prototype_data);
-		if (sprite == nullptr)
+		auto* line_item = static_cast<jactorio::data::Transport_line_item*>(layer.prototype_data);
+		if (line_item == nullptr)
 			return 0u;
-		return sprite->internal_id;
+		return line_item->sprite->internal_id;
 	},
 	// Trees?!
 	[](const jactorio::game::Chunk_object_layer& layer) {

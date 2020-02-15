@@ -7,6 +7,15 @@
 #include "core/filesystem.h"
 #include "data/data_exception.h"
 
+bool jactorio::data::Sprite::is_in_group(const sprite_group group) {
+	for (auto& i : this->group) {
+		if (i == group)
+			return true;
+	}
+
+	return false;
+}
+
 void jactorio::data::Sprite::load_image_from_file() {
 	sprite_buffer_ = stbi_load(
 		sprite_path_.c_str(),
@@ -27,15 +36,15 @@ void jactorio::data::Sprite::load_image_from_file() {
 }
 
 jactorio::data::Sprite::Sprite()
-	: group(sprite_group::none), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
+	: width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
 }
 
 jactorio::data::Sprite::Sprite(const std::string& sprite_path)
-	: group(sprite_group::none), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
+	: width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
 	load_image(sprite_path);
 }
 
-jactorio::data::Sprite::Sprite(const std::string& sprite_path, const sprite_group group)
+jactorio::data::Sprite::Sprite(const std::string& sprite_path, const std::vector<sprite_group> group)
 	: group(group), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
 	load_image(sprite_path);
 }

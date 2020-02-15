@@ -116,6 +116,22 @@ namespace game
 
 	}
 
+	TEST(world_manager, get_chunk_world_coords) {
+		using namespace jactorio::game::world_manager;
+		jactorio::core::Resource_guard guard(&clear_chunk_data);
+
+		{
+			const auto chunk = add_chunk(new jactorio::game::Chunk(0, 0, nullptr));
+			EXPECT_EQ(get_chunk_world_coords(31, 31), chunk);
+		}
+		
+		{
+			const auto chunk = add_chunk(new jactorio::game::Chunk(-1, 0, nullptr));
+			EXPECT_EQ(get_chunk_world_coords(-1, 0), chunk);
+		}
+	}
+	
+
 	TEST(world_manager, clear_chunk_data) {
 		const auto chunk = new jactorio::game::Chunk{ 6, 6, nullptr };
 		const auto* added_chunk = jactorio::game::world_manager::add_chunk(chunk);

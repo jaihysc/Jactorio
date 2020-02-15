@@ -41,8 +41,8 @@ jactorio::game::Chunk* jactorio::game::world_manager::add_chunk(Chunk* chunk) {
 	return chunk;
 }
 
-inline jactorio::game::Chunk* p_get_chunk(int x, int y) {
-	const auto key = std::tuple<int, int>{ x, y };
+inline jactorio::game::Chunk* p_get_chunk(int chunk_x, int chunk_y) {
+	const auto key = std::tuple<int, int>{ chunk_x, chunk_y };
 
 	if (world_chunks.find(key) == world_chunks.end())
 		return nullptr;
@@ -50,9 +50,9 @@ inline jactorio::game::Chunk* p_get_chunk(int x, int y) {
 	return world_chunks[key];
 }
 
-jactorio::game::Chunk* jactorio::game::world_manager::get_chunk(const int x, const int y) {
+jactorio::game::Chunk* jactorio::game::world_manager::get_chunk(const int chunk_x, const int chunk_y) {
 	std::lock_guard<std::mutex> guard(m_world_chunks);
-	return p_get_chunk(x, y);
+	return p_get_chunk(chunk_x, chunk_y);
 
 	// Unordered_map must be locked to prevent writing to while reading from it
 	// Once one read thread locks the mutex, subsequent read threads do not need to lock
@@ -139,6 +139,27 @@ jactorio::game::Chunk_tile* jactorio::game::world_manager::get_tile_world_coords
 	}
 
 	return nullptr;
+}
+
+jactorio::game::Chunk* jactorio::game::world_manager::get_chunk_world_coords(int world_x, int world_y) {
+	// See get_tile_world_coords() for documentation on the purpose of if statements
+	
+	float chunk_index_x = 0;
+	float chunk_index_y = 0;
+
+	if (world_x < 0) {
+		chunk_index_x -= 1;
+		world_x += 1;
+	}
+	if (world_y < 0) {
+		chunk_index_y -= 1;
+		world_y += 1;
+	}
+
+	chunk_index_x += static_cast<float>(world_x) / 32;
+	chunk_index_y += static_cast<float>(world_y) / 32;
+
+	return get_chunk(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
 }
 
 jactorio::game::Chunk_tile* jactorio::game::world_manager::get_mouse_selected_tile() {

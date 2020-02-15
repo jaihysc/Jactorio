@@ -25,10 +25,10 @@ namespace jactorio::game::world_manager
 
 	/**
 	 * Retrieves a chunk in game world
-	 * @param x X position of CHUNK
-	 * @param y Y position of CHUNK
+	 * @param chunk_x X position of CHUNK
+	 * @param chunk_y Y position of CHUNK
 	 */
-	Chunk* get_chunk(int x, int y);
+	Chunk* get_chunk(int chunk_x, int chunk_y);
 
 	/**
 	 * Erases, frees memory from all stored chunk data + its subsequent contents and logic chunks
@@ -43,7 +43,14 @@ namespace jactorio::game::world_manager
 	 * @return nullptr if no tile exists
 	 */
 	Chunk_tile* get_tile_world_coords(int world_x, int world_y);
+	
+	/**
+	 * Gets the chunk at the specified world coordinate
+	 * @return nullptr if no chunk exists
+	 */
+	Chunk* get_chunk_world_coords(int world_x, int world_y);
 
+	
 	/**
 	 * Gets the tile the mouse is hovered over
 	 */

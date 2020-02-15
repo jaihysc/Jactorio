@@ -1,18 +1,16 @@
 import jactorioData as j
 
 def addBelt(name, iconSpritePath, worldSpritePath):
-    item = (j.Item(name + "-item")
-        .sprite((j.Sprite()
-            .load(iconSpritePath)
-            .group(j.spriteGroup.Gui)
-        ))
-    )
-
     (j.TransportBelt(name)
-        .item(item)
+        .item((j.Item(name + "-item")
+            .sprite((j.Sprite()
+                .load(iconSpritePath)
+                .group([j.spriteGroup.Terrain, j.spriteGroup.Gui])
+            ))
+        ))
         .sprite((j.Sprite()
             .load(worldSpritePath)
-            .group(j.spriteGroup.Terrain)
+            .group([j.spriteGroup.Terrain])
         ))
         .pickupTime(0.1)
     )

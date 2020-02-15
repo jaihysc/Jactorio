@@ -16,6 +16,7 @@
 #include "game/logic/transport_line_controller.h"
 
 #include "data/data_manager.h"
+#include "data/prototype/entity/transport/transport_line_item.h"
 
 bool logic_loop_should_terminate = false;
 
@@ -119,11 +120,11 @@ void jactorio::game::init_logic_loop() {
 			}
 
 			auto& object_layer = chunk->objects[static_cast<int>(Chunk::object_layer::item_entity)];
-			auto proto = data::data_manager::data_raw_get<data::Entity>(data::data_category::container_entity,
-			                                                            "__base__/steel-chest");
-
+			auto proto =
+				data::data_manager::data_raw_get<data::Transport_line_item>(data::data_category::item,
+				                                                            "__base__/transport-belt-basic-item");
 			for (int i = 0; i < 1; ++i) {
-				auto* added_item = &object_layer.emplace_back(proto->sprite, 3.f, 5.1f, 0.4, 0.4);
+				auto* added_item = &object_layer.emplace_back(proto, 3.f, 5.1f, 0.4, 0.4);
 				logic_chunk->item_direction[object_layer.size() - 1] = 4;  // Moving left
 			}
 		});

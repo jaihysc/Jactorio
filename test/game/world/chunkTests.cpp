@@ -12,7 +12,7 @@ namespace game
 		// Mock data
 		const auto sprite_proto = std::make_unique<jactorio::data::Sprite>(jactorio::data::Sprite());
 		const auto tile_proto = std::make_unique<jactorio::data::Tile>(jactorio::data::Tile());
-		tile_proto->sprite_ptr = sprite_proto.get();
+		tile_proto->sprite = sprite_proto.get();
 
 
 		// Chunk tile 1

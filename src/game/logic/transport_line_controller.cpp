@@ -1,6 +1,11 @@
 #include "game/logic/transport_line_controller.h"
 
 #include "core/float_math.h"
+#include "game/world/world_manager.h"
+
+// TODO Instead of terating through a list of positions in order to determine an item direction change is valid,
+// store them behind a std::map, with a custom float comparison function using core::f_eq.
+// This gives a faster O(log n) speed over O(n)
 
 void jactorio::game::transport_line_c::logic_update(Logic_chunk* l_chunk) {
 	auto& layer = const_cast<std::vector<Chunk_object_layer>&>(
@@ -57,4 +62,25 @@ void jactorio::game::transport_line_c::logic_update(Logic_chunk* l_chunk) {
 			;
 		}
 	}
+}
+
+
+// Item insertion
+
+void jactorio::game::transport_line_c::belt_insert_item_l(const int tile_x, const int tile_y,
+                                                          data::Sprite* item_sprite) {
+	world_manager::get_chunk_world_coords(tile_x, tile_y)
+		->get_object(Chunk::object_layer::item_entity)
+		.emplace_back(item_sprite, 
+		              static_cast<float>(tile_x) + 0.3f, static_cast<float>(tile_y) + 0.1f,
+		              item_width, item_width);
+
+	// TODO need to add current chunk to logic_chunks array if no tin it
+	// TODO need to give the item a direction
+
+	// TODO logic chunks turns into map
+}
+
+void jactorio::game::transport_line_c::belt_insert_item_r(int tile_x, int tile_y, data::Sprite* item) {
+	
 }
