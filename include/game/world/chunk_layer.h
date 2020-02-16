@@ -74,6 +74,8 @@ namespace jactorio::game
 	inline Chunk_layer::Chunk_layer(Chunk_layer&& other) noexcept
 		: prototype_data(other.prototype_data),
 		  unique_data(other.unique_data) {
+		// After moving data away, set unique_data to nullptr so it is not deleted
+		other.unique_data = nullptr;
 	}
 
 	inline Chunk_layer& Chunk_layer::operator=(const Chunk_layer& other) {
@@ -93,6 +95,7 @@ namespace jactorio::game
 	inline Chunk_layer& Chunk_layer::operator=(Chunk_layer&& other) noexcept {
 		prototype_data = other.prototype_data;
 		unique_data = other.unique_data;
+		other.unique_data = nullptr;
 
 		return *this;
 	}

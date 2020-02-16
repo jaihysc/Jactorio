@@ -3,59 +3,55 @@
 #include "core/float_math.h"
 #include "game/world/world_manager.h"
 
-// TODO Instead of terating through a list of positions in order to determine an item direction change is valid,
-// store them behind a std::map, with a custom float comparison function using core::f_eq.
-// This gives a faster O(log n) speed over O(n)
-
 void jactorio::game::transport_line_c::logic_update(Logic_chunk* l_chunk) {
 	auto& layer = const_cast<std::vector<Chunk_object_layer>&>(
 		l_chunk->chunk->objects[static_cast<int>(Chunk::object_layer::item_entity)]
 	);
 
-	for (unsigned long long i = 0; i < layer.size(); ++i) {
-		auto& object = layer[i];
-		auto& direction = l_chunk->item_direction[i];
-
-		// vvvv TODO make modular
+	auto& line_updates = l_chunk->transport_line_updates;
+	
+	for (auto& object : layer) {
+		float lower_y = object.position_y - core::epsilon;
+		float upper_y = object.position_y + core::epsilon;
 		
-		// left to up
-		// LOG_MESSAGE_f(debug, "%f %f", object.position_x, object.position_y);
-		if (core::f_eq(object.position_x, 0.5f) && core::f_eq(object.position_y, 5.1f)) {
-			// LOG_MESSAGE(debug, "Match 1");
-			direction = 1;
+		auto lower_iterator = line_updates.lower_bound({
+			object.position_x - core::epsilon, 
+			lower_y
+		});
+		auto upper_iterator = line_updates.upper_bound({
+			object.position_x + core::epsilon,
+			upper_y
+		});
+
+		// lower, upper x iterators found X values in range, now find iterator with y within epsilon range
+		bool match = false;
+		while (lower_iterator != upper_iterator) {
+			const float y_val = lower_iterator->first.second;
+			if (y_val >= lower_y && y_val < upper_y) {
+				match = true;
+				break;
+			}
+			++lower_iterator;
 		}
 
-			// up to right
-		else if (core::f_eq(object.position_x, 0.5f) && core::f_eq(object.position_y, 0.5f)) {
-			// LOG_MESSAGE(debug, "Match 2");
-			direction = 2;
+		
+		auto* line_item_data = static_cast<data::Transport_line_item_data*>(object.unique_data);
+		if (match) {
+			// Found update location, update the item direction
+			line_item_data->direction = lower_iterator->second;
 		}
 
-			// right to down
-		else if (core::f_eq(object.position_x, 4.1f) && core::f_eq(object.position_y, 0.5f)) {
-			// LOG_MESSAGE(debug, "Match 3");
-			direction = 3;
-		}
-
-			// down to left
-		else if (core::f_eq(object.position_x, 4.1f) && core::f_eq(object.position_y, 5.1f)) {
-			// LOG_MESSAGE(debug, "Match 4");
-			direction = 4;
-		}
-
-		// ^^^^ TODO make modular
-
-		switch (direction) {
-		case 1:
+		switch (line_item_data->direction) {
+		case data::Transport_line_item_data::move_dir::up:
 			object.position_y -= 0.01;
 			break;
-		case 2:
+		case data::Transport_line_item_data::move_dir::right:
 			object.position_x += 0.01;
 			break;
-		case 3:
+		case data::Transport_line_item_data::move_dir::down:
 			object.position_y += 0.01;
 			break;
-		case 4:
+		case data::Transport_line_item_data::move_dir::left:
 			object.position_x -= 0.01;
 			break;
 		default:
@@ -68,19 +64,27 @@ void jactorio::game::transport_line_c::logic_update(Logic_chunk* l_chunk) {
 // Item insertion
 
 void jactorio::game::transport_line_c::belt_insert_item_l(const int tile_x, const int tile_y,
-                                                          data::Sprite* item_sprite) {
-	world_manager::get_chunk_world_coords(tile_x, tile_y)
-		->get_object(Chunk::object_layer::item_entity)
-		.emplace_back(item_sprite, 
-		              static_cast<float>(tile_x) + 0.3f, static_cast<float>(tile_y) + 0.1f,
-		              item_width, item_width);
-
-	// TODO need to add current chunk to logic_chunks array if no tin it
-	// TODO need to give the item a direction
-
-	// TODO logic chunks turns into map
+                                                          data::Item* item) {
+	// world_manager::get_chunk_world_coords(tile_x, tile_y)
 }
 
-void jactorio::game::transport_line_c::belt_insert_item_r(int tile_x, int tile_y, data::Sprite* item) {
+void jactorio::game::transport_line_c::belt_insert_item_r(int tile_x, int tile_y,
+                                                          data::Item* item) {
 	
+}
+
+void jactorio::game::transport_line_c::chunk_insert_item(Chunk* chunk, float position_x, float position_y,
+                                                         data::Item* item) {
+	auto& added_object = 
+		chunk->get_object(Chunk::object_layer::item_entity)
+		     .emplace_back(item, position_x, position_y,
+		                   item_width, item_width);
+
+	auto* item_data = new data::Transport_line_item_data();
+	added_object.unique_data = item_data;
+
+	item_data->direction = data::Transport_line_item_data::move_dir::left;
+
+	// Add current chunk to logic_chunks array if not in it
+	// world_manager::logic_add_chunk(chunk);
 }

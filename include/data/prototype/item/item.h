@@ -9,6 +9,24 @@
 
 namespace jactorio::data
 {
+	struct Transport_line_item_data
+	{
+		/**
+		 * Item move direction
+		 */
+		enum class move_dir
+		{
+			stop = 0,
+			up,
+			right,
+			down,
+			left
+		};
+
+		move_dir direction;
+	};
+
+	
 	class Item final : public Item_base
 	{
 	public:
@@ -32,8 +50,19 @@ namespace jactorio::data
 		 * Default to 50
 		 */
 		PYTHON_PROP_REF(Item, unsigned short, stack_size)
+
+
+		// ======================================================
+		// Transport line items
+
+		// Normal items will never be assigned to a tile (Thus the same prototype can be used for transport lines)
+		// Deletes transport line item data
+		void delete_unique_data(void* ptr) const override {
+			delete static_cast<Transport_line_item_data*>(ptr);
+		}
 	};
 
+	
 	// Makes arrays holding items more clear than just unsigned int
 	// Item* and amount in current stack
 	// Left: Item prototype

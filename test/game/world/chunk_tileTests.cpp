@@ -72,6 +72,25 @@ namespace game
 
 		// Heap allocated data cleaned up by chunk_tile_layer destructors
 	}
+
+
+	TEST(chunk_tile, layer_move) {
+		// Moving unique_data will set the original unique_data to nullptr to avoid deletion
+		auto* u_data = new jactorio::data::Resource_entity_data();
+		const auto entity_proto = std::make_unique<jactorio::data::Resource_entity>(jactorio::data::Resource_entity());
+
+		auto tile_layer = jactorio::game::Chunk_tile_layer();
+		tile_layer.prototype_data = entity_proto.get();  // Prototype data needed to delete unique data
+		tile_layer.unique_data = u_data;
+
+		// MOVE layer
+		auto tile_layer_new = std::move(tile_layer);
+
+		EXPECT_EQ(tile_layer_new.unique_data, u_data);
+		EXPECT_EQ(tile_layer.unique_data, nullptr);  // Moved into tile_layer_new, this becomes nullptr
+
+		// Heap allocated data cleaned up by chunk_tile_layer destructors
+	}
 	
 	
 	TEST(chunk_tile, tile_prototypes_initialization) {

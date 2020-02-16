@@ -4,6 +4,8 @@
 #include "game/world/chunk.h"
 #include "game/world/logic_chunk.h"
 
+#include <set>
+
 // Manages the game world, the tiles and the entities on it
 // Handles saving and loading the world
 namespace jactorio::game::world_manager
@@ -73,12 +75,12 @@ namespace jactorio::game::world_manager
 	 * O(n) time complexity
 	 * @param chunk Logic chunk to remove
 	 */
-	void logic_remove_chunk(const Logic_chunk& chunk);
+	// void logic_remove_chunk(Logic_chunk* chunk);
 
 	/**
 	 * Returns all the chunks which require logic updates
 	 */
-	std::vector<Logic_chunk>& logic_get_all_chunks();
+	std::map<Chunk*, Logic_chunk>& logic_get_all_chunks();
 
 }
 

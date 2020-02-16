@@ -2,7 +2,8 @@
 #define GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
 
 #include "game/world/logic_chunk.h"
-#include "data/prototype/sprite.h"
+
+#include "data/prototype/item/item.h"
 
 /**
  * Transport line logic for anything moving items
@@ -16,6 +17,10 @@ namespace jactorio::game::transport_line_c
 	// with a 32 x 32 chunk and 9 items per chunk: (9216 iterations max) (~120 chunks average)
 	//
 	// After an item exits a chunk, it needs to be moved to the next chunk
+
+	// A list of positions is stored them behind a std::map per chunk,
+	// with a custom float comparison function accounting for epsilon
+	// This gives a faster O(log n) speed over O(n) iterating over every update tile
 
 	/*
 	 * Measured performance (Debug config):
@@ -56,10 +61,17 @@ namespace jactorio::game::transport_line_c
 	// When inserting an item, it will insert it onto the center of the belt
 	
 	// Inserts an item onto a belt LEFT side
-	void belt_insert_item_l(int tile_x, int tile_y, data::Sprite* item_sprite);
+	void belt_insert_item_l(int tile_x, int tile_y, data::Item* item);
 
 	// Inserts an item onto a belt RIGHT side
-	void belt_insert_item_r(int tile_x, int tile_y, data::Sprite* item);
+	void belt_insert_item_r(int tile_x, int tile_y, data::Item* item);
+
+
+	/**
+	 * Adds item to chunk with specified offsets (Prefer belt_insert_item_x() over this)
+	 * Will not add chunk to logic chunks list automatically
+	 */
+	void chunk_insert_item(Chunk* chunk, float position_x, float position_y, data::Item* item);
 }
 
 #endif // GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H

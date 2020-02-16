@@ -2,6 +2,7 @@
 #define GAME_WORLD_LOGIC_CHUNK_H
 
 #include "game/world/chunk.h"
+#include "data/prototype/item/item.h"
 
 #include <map>
 
@@ -14,6 +15,10 @@ namespace jactorio::game
 	class Logic_chunk
 	{
 	public:
+		Logic_chunk() {
+			assert(false);  // A chunk pointer needs to be provided - Was there a logic chunk created when it was accessed?
+		}
+		
 		explicit Logic_chunk(Chunk* chunk)
 			: chunk(chunk){
 			assert(chunk != nullptr);  // Logic chunks should always be associated with a chunk
@@ -23,17 +28,9 @@ namespace jactorio::game
 		const Chunk* chunk;
 
 		
-		// The directions for items on belts stored on this chunk
-		/**
-		 * Directions:
-		 * 0 = none,
-		 * 1 = up,
-		 * 2 = right,
-		 * 3 = down,
-		 * 4 = left
-		 */
-		// <Index for item in Chunk_object_layer vector, Direction>
-		std::map<uint32_t, uint8_t> item_direction;
+		// If an item's positions matches against an entry within this map, its movement direction should
+		// be updated to the one provided
+		std::map<std::pair<float, float>, data::Transport_line_item_data::move_dir> transport_line_updates{};
 	};
 }
 

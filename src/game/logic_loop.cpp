@@ -16,7 +16,7 @@
 #include "game/logic/transport_line_controller.h"
 
 #include "data/data_manager.h"
-#include "data/prototype/entity/transport/transport_line_item.h"
+#include "data/prototype/item/item.h"
 
 bool logic_loop_should_terminate = false;
 
@@ -102,34 +102,39 @@ void jactorio::game::init_logic_loop() {
 	input_manager::subscribe([]() {
 		Event::subscribe_once(event_type::logic_tick, []() {
 			auto* chunk = world_manager::get_chunk(0, 0);
+			auto* proto =
+				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+				                                             "__base__/transport-belt-basic-item");
 
-			auto& logic_chunks = world_manager::logic_get_all_chunks();
-			// Check if chunk has already been added
-			Logic_chunk* logic_chunk;
+			transport_line_c::chunk_insert_item(chunk, 3.f, 5.1f, proto);
 
-			bool found = false;
-			for (auto& clunk : logic_chunks) {
-				if (clunk.chunk == chunk) {
-					found = true;
-					logic_chunk = &clunk;
-					break;
-				}
-			}
-			if (!found) {
-				logic_chunk = &world_manager::logic_add_chunk(chunk);
-			}
+			world_manager::logic_add_chunk(chunk);
+			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{0.5f, 5.1f}] =
+				data::Transport_line_item_data::move_dir::up;
 
-			auto& object_layer = chunk->objects[static_cast<int>(Chunk::object_layer::item_entity)];
-			auto proto =
-				data::data_manager::data_raw_get<data::Transport_line_item>(data::data_category::item,
-				                                                            "__base__/transport-belt-basic-item");
-			for (int i = 0; i < 1; ++i) {
-				auto* added_item = &object_layer.emplace_back(proto, 3.f, 5.1f, 0.4, 0.4);
-				logic_chunk->item_direction[object_layer.size() - 1] = 4;  // Moving left
-			}
+			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{0.5f, 0.5f}] =
+				data::Transport_line_item_data::move_dir::right;
+
+			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{4.1f, 0.5f}] =
+				data::Transport_line_item_data::move_dir::down;
+
+			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{4.1f, 5.1f}] =
+				data::Transport_line_item_data::move_dir::left;
 		});
-	}, GLFW_KEY_Q, GLFW_RELEASE);
+	}, GLFW_KEY_Q, GLFW_PRESS);
+	input_manager::subscribe([]() {
+		Event::subscribe_once(event_type::logic_tick, []() {
+			auto* chunk = world_manager::get_chunk(0, 0);
+			auto* proto =
+				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+				                                             "__base__/transport-belt-basic-item");
 
+			transport_line_c::chunk_insert_item(chunk, 3.f, 5.1f, proto);
+
+			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{2.1f, 0.5f}] =
+				data::Transport_line_item_data::move_dir::down;
+		});
+	}, GLFW_KEY_1, GLFW_PRESS);
 	
 	// BUG everything which modifies chunk data is not thread safe. Merely luck that it managed
 	// to complete before the renderer reads incomplete memory or object
@@ -161,7 +166,7 @@ void jactorio::game::init_logic_loop() {
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
 				for (auto& logic_chunk : world_manager::logic_get_all_chunks()) {
-					transport_line_c::logic_update(&logic_chunk);
+					transport_line_c::logic_update(&logic_chunk.second);
 				}
 			}
 		}

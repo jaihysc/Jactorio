@@ -170,21 +170,15 @@ jactorio::game::Chunk_tile* jactorio::game::world_manager::get_mouse_selected_ti
 
 // Logic chunks
 
-std::vector<jactorio::game::Logic_chunk> logic_chunks;
+std::map<jactorio::game::Chunk*, jactorio::game::Logic_chunk> logic_chunks;
 
 jactorio::game::Logic_chunk& jactorio::game::world_manager::logic_add_chunk(Chunk* chunk){
-	return logic_chunks.emplace_back(chunk);
+	assert(chunk != nullptr);
+	const auto& iterator = logic_chunks.emplace(chunk, chunk);
+	return iterator.first->second;
 }
 
-void jactorio::game::world_manager::logic_remove_chunk(const Logic_chunk& chunk) {
-	for (auto i = 0; i < logic_chunks.size(); ++i) {
-		if (&logic_chunks[i] == &chunk) {
-			logic_chunks.erase(logic_chunks.begin() + i);
-		}
-	}
-}
-
-std::vector<jactorio::game::Logic_chunk>& jactorio::game::world_manager::logic_get_all_chunks() {
+std::map<jactorio::game::Chunk*, jactorio::game::Logic_chunk>& jactorio::game::world_manager::logic_get_all_chunks() {
 	return logic_chunks;
 }
 

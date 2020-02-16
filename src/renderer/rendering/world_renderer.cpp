@@ -4,8 +4,6 @@
 
 #include "core/debug/execution_timer.h"
 
-#include "data/prototype/entity/transport/transport_line_item.h"
-
 #include "game/world/world_manager.h"
 #include "game/world/world_generator.h"
 
@@ -47,7 +45,7 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 object_draw_func object_layer_get_sprite_id_func[]{
 	// Transport line items
 	[](const jactorio::game::Chunk_object_layer& layer) {
-		auto* line_item = static_cast<jactorio::data::Transport_line_item*>(layer.prototype_data);
+		auto* line_item = static_cast<jactorio::data::Item*>(layer.prototype_data);
 		if (line_item == nullptr)
 			return 0u;
 		return line_item->sprite->internal_id;
