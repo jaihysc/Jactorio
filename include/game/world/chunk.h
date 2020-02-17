@@ -54,10 +54,13 @@ namespace jactorio::game
 		{
 			item_entity = 0,  // data::Transport_line_item
 			tree,
-			_count
+			debug_overlay,  // data::Sprite
+			count_
 		};
 
-		std::vector<Chunk_object_layer> objects[static_cast<int>(object_layer::_count)];
+		static constexpr int object_layer_count = static_cast<int>(object_layer::count_);
+
+		std::vector<Chunk_object_layer> objects[object_layer_count];
 
 		std::vector<Chunk_object_layer>& get_object(object_layer layer) {
 			return objects[static_cast<int>(layer)];

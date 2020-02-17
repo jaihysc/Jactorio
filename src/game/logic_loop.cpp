@@ -120,16 +120,14 @@ void jactorio::game::init_logic_loop() {
 
 			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{4.1f, 5.1f}] =
 				data::Transport_line_item_data::move_dir::left;
+
+			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{2.1f, 6.5f}] =
+				data::Transport_line_item_data::move_dir::stop;
 		});
 	}, GLFW_KEY_Q, GLFW_PRESS);
 	input_manager::subscribe([]() {
 		Event::subscribe_once(event_type::logic_tick, []() {
 			auto* chunk = world_manager::get_chunk(0, 0);
-			auto* proto =
-				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-				                                             "__base__/transport-belt-basic-item");
-
-			transport_line_c::chunk_insert_item(chunk, 3.f, 5.1f, proto);
 
 			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{2.1f, 0.5f}] =
 				data::Transport_line_item_data::move_dir::down;

@@ -25,7 +25,7 @@ namespace jactorio::game
 		}
 
 		// The chunk which this logic chunk is associated with
-		const Chunk* chunk;
+		Chunk* const chunk = nullptr;
 
 		
 		// If an item's positions matches against an entry within this map, its movement direction should

@@ -57,6 +57,11 @@ object_draw_func object_layer_get_sprite_id_func[]{
 			return 0u;
 		return entity->sprite->internal_id;
 	},
+	// Debug overlay
+	[](const jactorio::game::Chunk_object_layer& layer) {
+		auto* sprite = static_cast<jactorio::data::Sprite*>(layer.prototype_data);
+		return sprite->internal_id;
+	},
 };
 
 
@@ -331,7 +336,7 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 
 	bool using_buffer1 = true;
 	// Begin at index 1, since index 0 is handled above
-	for (unsigned int layer_index = 1; layer_index < game::Chunk_tile::layer_count; ++layer_index) {
+	for (unsigned int layer_index = 1; layer_index < game::Chunk_tile::tile_layer_count; ++layer_index) {
 		// Prepare 1
 		if (using_buffer1) {
 			layer_1->clear();
@@ -372,7 +377,7 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	// ==============================================================
 	// Draw object layers
 	for (unsigned int layer_index = 0; 
-	     layer_index < static_cast<unsigned int>(game::Chunk::object_layer::_count); ++layer_index) {
+	     layer_index < game::Chunk::object_layer_count; ++layer_index) {
 		// Prepare 1
 		if (using_buffer1) {
 			layer_1->clear();

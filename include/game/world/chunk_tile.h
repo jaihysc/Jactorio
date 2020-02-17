@@ -27,10 +27,7 @@ namespace jactorio::game
 			count_
 		};
 
-		/**
-		 * Maximum number of layers a chunk_tile will have
-		 */
-		static constexpr int layer_count = static_cast<int>(chunk_layer::count_);
+		static constexpr int tile_layer_count = static_cast<int>(chunk_layer::count_);
 
 		
 		J_NODISCARD Chunk_tile_layer& get_layer(const chunk_layer layer) const {
@@ -66,7 +63,7 @@ namespace jactorio::game
 		/**
 		 * To access prototype at each location, cast desired prototype_category to int and index tile_prototypes
 		 */
-		mutable Chunk_tile_layer layers[layer_count];
+		mutable Chunk_tile_layer layers[tile_layer_count];
 	};
 }
 

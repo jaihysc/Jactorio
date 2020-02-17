@@ -18,7 +18,6 @@
 #include "game/player/player_manager.h"
 #include "data/prototype/entity/entity.h"
 
-ImGuiWindowFlags debug_window_flags = 0;
 ImGuiWindowFlags release_window_flags = 0;
 
 // Inventory
@@ -48,7 +47,11 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui::NewFrame();
 
 		ImGui::SetNextWindowPosCenter();
-		ImGui::Begin("Error", nullptr, debug_window_flags);
+
+		ImGuiWindowFlags flags = 0;
+		flags |= ImGuiWindowFlags_AlwaysAutoResize;
+		ImGui::Begin("Error", nullptr, flags);
+		
 		ImGui::TextWrapped("%s", err_title.c_str());
 		ImGui::TextWrapped("%s", err_message.c_str());
 		ImGui::NewLine();
@@ -82,8 +85,6 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 
 
 	// Factorio inspired Imgui style
-	debug_window_flags |= ImGuiWindowFlags_NoCollapse;
-
 	release_window_flags |= ImGuiWindowFlags_NoCollapse;
 	release_window_flags |= ImGuiWindowFlags_NoResize;
 
@@ -226,7 +227,7 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
-	draw_window(gui_window::debug, debug_window_flags);
+	draw_window(gui_window::debug, 0);
 
 	// Draw gui for active entity
 	// Do not draw character and recipe menu while in an entity menu

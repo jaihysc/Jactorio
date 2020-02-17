@@ -65,7 +65,11 @@ void jactorio::game::transport_line_c::logic_update(Logic_chunk* l_chunk) {
 
 void jactorio::game::transport_line_c::belt_insert_item_l(const int tile_x, const int tile_y,
                                                           data::Item* item) {
-	// world_manager::get_chunk_world_coords(tile_x, tile_y)
+	// auto* chunk = world_manager::get_chunk_world_coords(tile_x, tile_y);
+	// chunk_insert_item(chunk, 
+	//                   static_cast<float>(tile_x) + 0.3f, 
+	//                   static_cast<float>(tile_y) + 0.5f, 
+	//                   item);
 }
 
 void jactorio::game::transport_line_c::belt_insert_item_r(int tile_x, int tile_y,
