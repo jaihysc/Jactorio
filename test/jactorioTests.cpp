@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <iostream>
-
 #include "core/filesystem.h"
 
 int main(int ac, char* av[]) {
@@ -9,5 +7,6 @@ int main(int ac, char* av[]) {
 
 	
 	testing::InitGoogleTest(&ac, av);
-	return RUN_ALL_TESTS();
+	RUN_ALL_TESTS();
+	return 0;  // Always return 0 even if tests fail, as a non-zero return code is seen as abnormal test suite exit
 }

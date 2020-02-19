@@ -93,13 +93,12 @@ namespace game::logic
 		jactorio::core::Resource_guard guard(&jactorio::game::world_manager::clear_chunk_data);
 		
 		// Insert item on belt left side
-		
-		jactorio::game::Chunk chunk{0, 0, nullptr};  // Tiles not needed as items do not follow tile grid
-		
-		jactorio::data::Item item;
-		jactorio::game::transport_line_c::chunk_insert_item(&chunk, 1.3, 0.5, &item);
 
-		
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+		jactorio::game::Chunk chunk{0, 0, nullptr};  // Tiles not needed as items do not follow tile grid
+
+		jactorio::game::transport_line_c::chunk_insert_item(&chunk, 1.3, 0.5, item_proto.get());
+
 		// Should have placed the item according to placement specifications in transport_line_controller.h
 		ASSERT_FLOAT_EQ(
 			chunk.get_object(jactorio::game::Chunk::object_layer::item_entity)[0].position_x,
