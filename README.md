@@ -18,8 +18,10 @@ The game is currently playable with a procedurally generated world to navigate a
 
 General requirements:
 
+**NOTE:** Functionality not guaranteed on MacOS
+
 * Compiler supporting c++17 [gcc >= 9, clang >= 9, msvc >= 142]
-  * MacOS version >= 10.15
+  * MacOS - version >= 10.15
 * CMake
   * Windows - ensure CMake is added to the `Paths` environmental variable
 * Git / Git bash

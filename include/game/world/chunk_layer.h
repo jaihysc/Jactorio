@@ -64,10 +64,10 @@ namespace jactorio::game
 	inline Chunk_layer::Chunk_layer(const Chunk_layer& other)
 		: prototype_data(other.prototype_data) {
 
-		// Use prototype defined method for copying unique_data_
-		if (unique_data != nullptr) {
-			assert(prototype_data != nullptr);  // No prototype_data_ available for copying unique_data_
-			unique_data = prototype_data->copy_unique_data(other.unique_data);
+		// Use prototype defined method for copying unique_data_ if other has data to copy
+		if (other.unique_data != nullptr) {
+			assert(other.prototype_data != nullptr);  // No prototype_data_ available for copying unique_data_
+			unique_data = other.prototype_data->copy_unique_data(other.unique_data);
 		}
 	}
 

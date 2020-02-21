@@ -59,7 +59,7 @@ namespace game
 		const auto entity_proto = std::make_unique<jactorio::data::Resource_entity>(jactorio::data::Resource_entity());
 
 		auto* u_data1 = new jactorio::data::Resource_entity_data();
-		
+
 		auto tile_layer = jactorio::game::Chunk_tile_layer();
 		tile_layer.prototype_data = entity_proto.get();
 		tile_layer.unique_data = u_data1;
@@ -69,6 +69,7 @@ namespace game
 
 		// Data should have been allocated differently
 		EXPECT_NE(tile_layer_copy.unique_data, tile_layer.unique_data);
+		EXPECT_NE(tile_layer_copy.unique_data, nullptr);  // Data should have been copied
 
 		// Heap allocated data cleaned up by chunk_tile_layer destructors
 	}
