@@ -18,19 +18,21 @@ namespace jactorio::game
 		Logic_chunk() {
 			assert(false);  // A chunk pointer needs to be provided - Was there a logic chunk created when it was accessed?
 		}
-		
+
 		explicit Logic_chunk(Chunk* chunk)
-			: chunk(chunk){
+			: chunk(chunk) {
 			assert(chunk != nullptr);  // Logic chunks should always be associated with a chunk
 		}
 
 		// The chunk which this logic chunk is associated with
 		Chunk* const chunk = nullptr;
 
-		
+
+		// NO LONER NECESSARY, transport lines are now grouped by "segments" with one direction, items no longer store any data
+
 		// If an item's positions matches against an entry within this map, its movement direction should
 		// be updated to the one provided
-		std::map<std::pair<float, float>, data::Transport_line_item_data::move_dir> transport_line_updates{};
+//		std::map<std::pair<float, float>, data::Transport_line_item_data::move_dir> transport_line_updates{};
 	};
 }
 

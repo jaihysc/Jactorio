@@ -22,14 +22,12 @@ bool show_item_spawner_window = false;
 // Game
 bool show_belt_item_position_update_points = false;
 
-// For performing logic when certain debug options are checked
-void debug_meu_logic() {
-	using namespace jactorio;
+void jactorio::renderer::gui::debug_menu_logic() {
 	if (show_belt_item_position_update_points) {
 		// Sprite representing the update point
 		auto* sprite_stop =
 			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-stop");
-		
+
 		auto* sprite_up =
 			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-up");
 		auto* sprite_right =
@@ -46,37 +44,38 @@ void debug_meu_logic() {
 			auto& object_layer = l_chunk.chunk->get_object(game::Chunk::object_layer::debug_overlay);
 			object_layer.clear();
 
-			for (auto& update_point : l_chunk.transport_line_updates) {
-				// Correspond the direction with a sprite representing the direction
-				data::Sprite* sprite;
-				switch (update_point.second) {
-
-				case data::Transport_line_item_data::move_dir::stop:
-					sprite = sprite_stop;
-					break;
-
-				case data::Transport_line_item_data::move_dir::up:
-					sprite = sprite_up;
-					break;
-				case data::Transport_line_item_data::move_dir::right:
-					sprite = sprite_right;
-					break;
-				case data::Transport_line_item_data::move_dir::down:
-					sprite = sprite_down;
-					break;
-				case data::Transport_line_item_data::move_dir::left:
-					sprite = sprite_left;
-					break;
-
-				default:
-					assert(false);  // Missing case label
-				}
-
-				object_layer
-					.emplace_back(sprite,
-					              update_point.first.first, update_point.first.second,
-					              game::transport_line_c::item_width, game::transport_line_c::item_width);
-			}
+			// TODO
+//			for (auto& update_point : l_chunk.transport_line_updates) {
+//				// Correspond the direction with a sprite representing the direction
+//				data::Sprite* sprite;
+//				switch (update_point.second) {
+//
+//				case data::Transport_line_item_data::move_dir::stop:
+//					sprite = sprite_stop;
+//					break;
+//
+//				case data::Transport_line_item_data::move_dir::up:
+//					sprite = sprite_up;
+//					break;
+//				case data::Transport_line_item_data::move_dir::right:
+//					sprite = sprite_right;
+//					break;
+//				case data::Transport_line_item_data::move_dir::down:
+//					sprite = sprite_down;
+//					break;
+//				case data::Transport_line_item_data::move_dir::left:
+//					sprite = sprite_left;
+//					break;
+//
+//				default:
+//					assert(false);  // Missing case label
+//				}
+//
+//				object_layer
+//					.emplace_back(sprite,
+//					              update_point.first.first, update_point.first.second,
+//					              game::transport_line_c::item_width, game::transport_line_c::item_width);
+//			}
 		}
 	}
 
@@ -84,8 +83,6 @@ void debug_meu_logic() {
 
 void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flags) {
 	using namespace jactorio;
-
-	debug_meu_logic();
 
 	auto main_window_flags = window_flags;
 	main_window_flags |= ImGuiWindowFlags_AlwaysAutoResize;

@@ -228,6 +228,7 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PopFont();
 
 	draw_window(gui_window::debug, 0);
+	gui::debug_menu_logic();
 
 	// Draw gui for active entity
 	// Do not draw character and recipe menu while in an entity menu

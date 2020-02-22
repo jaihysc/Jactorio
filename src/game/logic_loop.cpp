@@ -116,32 +116,34 @@ void jactorio::game::init_logic_loop() {
 				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
 															 "__base__/transport-belt-basic-item");
 
-			transport_line_c::chunk_insert_item(chunk_2, 1.f, 5.1f, proto);
+			for (int i = 0; i < 10000; ++i) {
+				// TODO
+//				transport_line_c::belt_insert_item(false, chunk_2, 1.f, proto);
+			}
 
-
-			world_manager::logic_get_all_chunks()[chunk_2].transport_line_updates[{4.1f, 5.1f}] =
-				data::Transport_line_item_data::move_dir::left;
-
-			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{2.f, 5.1f}] =
-				data::Transport_line_item_data::move_dir::down;
-
-			world_manager::logic_get_all_chunks()[chunk_3].transport_line_updates[{2.f, 2.1f}] =
-				data::Transport_line_item_data::move_dir::right;
-
-			world_manager::logic_get_all_chunks()[chunk_4].transport_line_updates[{4.1f, 2.1f}] =
-				data::Transport_line_item_data::move_dir::up;
-
-
-			world_manager::logic_get_all_chunks()[chunk_2].transport_line_updates[{2.1f, 6.5f}] =
-				data::Transport_line_item_data::move_dir::stop;
+//			world_manager::logic_get_all_chunks()[chunk_2].transport_line_updates[{4.1f, 5.1f}] =
+//				data::Transport_line_item_data::move_dir::left;
+//
+//			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{2.f, 5.1f}] =
+//				data::Transport_line_item_data::move_dir::down;
+//
+//			world_manager::logic_get_all_chunks()[chunk_3].transport_line_updates[{2.f, 2.1f}] =
+//				data::Transport_line_item_data::move_dir::right;
+//
+//			world_manager::logic_get_all_chunks()[chunk_4].transport_line_updates[{4.1f, 2.1f}] =
+//				data::Transport_line_item_data::move_dir::up;
+//
+//
+//			world_manager::logic_get_all_chunks()[chunk_2].transport_line_updates[{2.1f, 10.5f}] =
+//				data::Transport_line_item_data::move_dir::stop;
 		});
 	}, GLFW_KEY_Q, GLFW_RELEASE);
 	input_manager::subscribe([]() {
 		Event::subscribe_once(event_type::logic_tick, []() {
 			auto* chunk = world_manager::get_chunk(0, 0);
 
-			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{2.1f, 0.5f}] =
-				data::Transport_line_item_data::move_dir::down;
+//			world_manager::logic_get_all_chunks()[chunk].transport_line_updates[{2.1f, 5.1f}] =
+//				data::Transport_line_item_data::move_dir::down;
 		});
 	}, GLFW_KEY_1, GLFW_PRESS);
 	
@@ -174,7 +176,7 @@ void jactorio::game::init_logic_loop() {
 			{
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-				std::queue<transport_line_c::chunk_transition_item_queue> queue;
+				std::queue<transport_line_c::segment_transition_item> queue;
 				for (auto& logic_chunk : world_manager::logic_get_all_chunks()) {
 					transport_line_c::logic_update(queue, &logic_chunk.second);
 				}

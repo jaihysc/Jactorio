@@ -1,5 +1,5 @@
-#ifndef GAME_WORLD_CHUNK_H
-#define GAME_WORLD_CHUNK_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_H
+#define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_H
 
 #include "jactorio.h"
 
@@ -52,7 +52,7 @@ namespace jactorio::game
 		// Objects
 		enum class object_layer
 		{
-			item_entity = 0,  // data::Transport_line_item
+			transport_line = 0,  // game::Transport_line_segment
 			tree,
 			debug_overlay,  // data::Sprite
 			count_
@@ -65,7 +65,10 @@ namespace jactorio::game
 		std::vector<Chunk_object_layer>& get_object(object_layer layer) {
 			return objects[static_cast<int>(layer)];
 		}
+
+		// TODO Structures - Objects but not rendered with no coordinate attached
+
 	};
 }
 
-#endif // GAME_WORLD_CHUNK_H
+#endif //JACTORIO_INCLUDE_GAME_WORLD_CHUNK_H

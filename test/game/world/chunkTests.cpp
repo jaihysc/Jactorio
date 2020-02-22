@@ -56,6 +56,6 @@ namespace game
 		jactorio::game::Chunk chunk_a{0, 0, nullptr};
 
 		// Should return the layer specified by the index of the enum object_layer
-		EXPECT_EQ(&chunk_a.get_object(jactorio::game::Chunk::object_layer::item_entity), &chunk_a.objects[0]);
+		EXPECT_EQ(&chunk_a.get_object(jactorio::game::Chunk::object_layer::transport_line), &chunk_a.objects[0]);
 	}
 }

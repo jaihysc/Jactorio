@@ -5,9 +5,13 @@
 
 namespace jactorio::renderer::gui
 {
+	// For performing logic when certain debug options are checked
+	void debug_menu_logic();
+
 	void debug_menu_main(ImGuiWindowFlags window_flags);
-	
+
 	void debug_timings(ImGuiWindowFlags window_flags);
+
 	void debug_item_spawner(ImGuiWindowFlags window_flags);
 
 }

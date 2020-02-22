@@ -4,6 +4,7 @@
 #include "game/world/logic_chunk.h"
 
 #include "data/prototype/item/item.h"
+#include "transport_line_structure.h"
 
 #include <queue>
 
@@ -12,8 +13,6 @@
  */
 namespace jactorio::game::transport_line_c
 {
-	// Each item on belt gets a SINGLE float of the distance to the next item / end of belt
-	//
 	// Update tiles are iterated over by the update logic, since items are stored per chunk. It
 	// iterates through all items of a chunk, checking if any of the conditions are met
 	// with a 32 x 32 chunk and 9 items per chunk: (9216 iterations max) (~120 chunks average)
@@ -27,9 +26,6 @@ namespace jactorio::game::transport_line_c
 	/*
 	 * Measured performance (Debug config):
 	 * Copying 120 000 objects: 7ms
-	 *		This makes it feasible to store items for transport belts based on the chunk(or tile)
-	 *		they reside in
-	 *
 	 */
 
 	/* Placement of items on transport line (Expressed as decimal percentages of a tile)
@@ -56,22 +52,22 @@ namespace jactorio::game::transport_line_c
 	constexpr float item_width = 0.4f;
 
 	// Destination chunk's item entity layer pointer, pointer to items which needs to be moved there
-	using chunk_transition_item_queue = std::pair<std::vector<Chunk_object_layer>*, std::vector<Chunk_object_layer>>;
+	// The offset in transport_line_item is negative to indicate it belongs to the left side, positive for right
+	using segment_transition_item = std::pair<game::Transport_line_segment*, std::vector<transport_line_item>>;
 
 	/**
 	 * Updates belt logic for a logic chunk
-	 * Item will be queued for chunk transition when location is less than 0 + epsilon or greater than 32 - epsilon
-	 * @param chunk_transition_items Queue of items which needs to be moved into another chunk as it has crossed chunk boundaries <br>
+	 * @param queue Queue of items which needs to be moved into another line segment as it has crossed this one's end <br>
 	 * @param l_chunk Chunk to update
 	 */
-	void logic_update(std::queue<chunk_transition_item_queue>& chunk_transition_items, Logic_chunk* l_chunk);
+	void logic_update(std::queue<segment_transition_item>& queue, Logic_chunk* l_chunk);
 
 	/**
-	 * Will append everything from chunk_transition_item_queue.second into the layer at chunk_transition_item_queue.first <br>
+	 * Attempts to move items in the queue to their new transport line segments
 	 * The queue is empty and will be usable after calling this
-	 * @param chunk_transition_items  Queue to process
+	 * @param queue  Queue to process
 	 */
-	void logic_process_queued_items(std::queue<chunk_transition_item_queue>& chunk_transition_items);
+	void logic_process_queued_items(std::queue<segment_transition_item>& queue);
 
 
 	// When inserting an item, it will insert it onto the center of the belt
@@ -86,8 +82,10 @@ namespace jactorio::game::transport_line_c
 	/**
 	 * Adds item to chunk with specified offsets (Prefer belt_insert_item_x() over this)
 	 * Will not add chunk to logic chunks list automatically
+	 * @param insert_left True to insert item on left size of belt
+	 * @param offset Number of tiles to offset from the end of the transport line segment
 	 */
-	void chunk_insert_item(Chunk* chunk, float position_x, float position_y, data::Item* item);
+	void belt_insert_item(bool insert_left, game::Transport_line_segment* belt, float offset, data::Item* item);
 }
 
 #endif // GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
