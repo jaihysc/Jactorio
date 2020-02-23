@@ -41,7 +41,7 @@ void jactorio::renderer::gui::debug_menu_logic() {
 		for (auto& pair : game::world_manager::logic_get_all_chunks()) {
 			auto& l_chunk = pair.second;
 
-			auto& object_layer = l_chunk.chunk->get_object(game::Chunk::object_layer::debug_overlay);
+			auto& object_layer = l_chunk.chunk->get_object(game::Chunk::objectLayer::debug_overlay);
 			object_layer.clear();
 
 			// TODO
@@ -71,7 +71,7 @@ void jactorio::renderer::gui::debug_menu_logic() {
 //					assert(false);  // Missing case label
 //				}
 //
-//				object_layer
+//				objectLayer
 //					.emplace_back(sprite,
 //					              update_point.first.first, update_point.first.second,
 //					              game::transport_line_c::item_width, game::transport_line_c::item_width);

@@ -1,6 +1,8 @@
 #include "renderer/rendering/world_renderer.h"
 
 #include <future>
+#include <game/logic/transport_line_structure.h>
+#include <game/logic/transport_line_controller.h>
 
 #include "core/debug/execution_timer.h"
 
@@ -43,13 +45,6 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 };
 
 object_draw_func object_layer_get_sprite_id_func[]{
-	// Transport line items
-	[](const jactorio::game::Chunk_object_layer& layer) {
-		auto* line_item = static_cast<jactorio::data::Item*>(layer.prototype_data);
-		if (line_item == nullptr)
-			return 0u;
-		return line_item->sprite->internal_id;
-	},
 	// Trees?!
 	[](const jactorio::game::Chunk_object_layer& layer) {
 		auto* entity = static_cast<jactorio::data::Entity*>(layer.prototype_data);
@@ -67,17 +62,17 @@ object_draw_func object_layer_get_sprite_id_func[]{
 
 // prepare_chunk_draw_data will select either
 // prepare_tile_data or prepare_object_data based on the layer it is rendering
-void prepare_tile_data(const unsigned layer_index, 
-                       jactorio::renderer::Renderer_layer* layer, 
-                       const int chunk_y_offset, const int chunk_x_offset, 
-                       jactorio::game::Chunk* const chunk) {
+void prepare_tile_data(const unsigned layer_index,
+					   jactorio::renderer::Renderer_layer* layer,
+					   const float chunk_y_offset, const float chunk_x_offset,
+					   jactorio::game::Chunk* const chunk) {
 	// Load chunk into buffer
 	jactorio::game::Chunk_tile* tiles = chunk->tiles_ptr();
 
 
 	// Iterate through and load tiles of a chunk into layer for rendering
 	for (unsigned int tile_y = 0; tile_y < 32; ++tile_y) {
-		const auto uv_y = static_cast<float>((chunk_y_offset + tile_y) * jactorio::renderer::Renderer::tile_width);
+		const float uv_y = (chunk_y_offset + tile_y) * jactorio::renderer::Renderer::tile_width;
 
 		for (unsigned int tile_x = 0; tile_x < 32; ++tile_x) {
 			const auto& tile = tiles[tile_y * 32 + tile_x];
@@ -106,25 +101,25 @@ void prepare_tile_data(const unsigned layer_index,
 					static_cast<int>(layer_tile.multi_tile_index) % layer_tile.multi_tile_span;
 				const auto y_multiplier =
 					static_cast<int>(layer_tile.multi_tile_index) / layer_tile.
-					multi_tile_span;  // This is correct, divide by width for both calculations
+						multi_tile_span;  // This is correct, divide by width for both calculations
 
 				// Opengl flips vertically, thus the y multiplier is inverted
 
 				// bottom right
 				positions.bottom_right.x =
 					positions.bottom_right.x - len_x * static_cast<float>(layer_tile.multi_tile_span -
-						x_multiplier - 1);
+																		  x_multiplier - 1);
 				positions.bottom_right.y = positions.bottom_right.y - len_y * y_multiplier;
 
 				// top left
 				positions.top_left.x = positions.top_left.x + len_x * x_multiplier;
 				positions.top_left.y =
 					positions.top_left.y + len_y * static_cast<float>(layer_tile.multi_tile_height -
-						y_multiplier - 1);
+																	  y_multiplier - 1);
 			}
 
 			// Calculate screen coordinates
-			const auto uv_x = static_cast<float>((chunk_x_offset + tile_x) * jactorio::renderer::Renderer::tile_width);
+			const float uv_x = (chunk_x_offset + tile_x) * jactorio::renderer::Renderer::tile_width;
 
 			layer->push_back(
 				jactorio::renderer::Renderer_layer::Element(
@@ -147,62 +142,132 @@ void prepare_tile_data(const unsigned layer_index,
 	}
 }
 
-void prepare_object_data(const unsigned layer_index, 
-                         jactorio::renderer::Renderer_layer* layer, 
-                         const int chunk_y_offset, const int chunk_x_offset, 
-                         jactorio::game::Chunk* const chunk) {
-	auto& objects = chunk->objects[layer_index];
-	for (auto& object_layer : objects) {
-		const unsigned int internal_id = object_layer_get_sprite_id_func[layer_index](object_layer);
-		
-		// Internal id of 0 indicates no tile
-		if (internal_id == 0)
-			continue;
-		
-		const auto& uv_pos = jactorio::renderer::Renderer::get_spritemap_coords(internal_id);
-			
+void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
+									const float chunk_y_offset, const float chunk_x_offset,
+									const jactorio::game::Transport_line_segment* line_segment,
+									std::deque<jactorio::game::transport_line_item>& line_segment_side,
+									float& offset_x, float& offset_y) {
+	for (const auto& line_item : line_segment_side) {
+		switch (line_segment->direction) {
+			case jactorio::game::Transport_line_segment::move_dir::up:
+				offset_y += line_item.first;
+				break;
+			case jactorio::game::Transport_line_segment::move_dir::right:
+				offset_x -= line_item.first;
+				break;
+			case jactorio::game::Transport_line_segment::move_dir::down:
+				offset_y -= line_item.first;
+				break;
+			case jactorio::game::Transport_line_segment::move_dir::left:
+				offset_x += line_item.first;
+				break;
+		}
+
+		const auto& uv_pos = jactorio::renderer::Renderer::get_spritemap_coords(line_item.second->sprite->internal_id);
+
+		float top_x = (chunk_x_offset + offset_x)
+					  * static_cast<float>(jactorio::renderer::Renderer::tile_width);
+		float top_y = (chunk_y_offset + offset_y)
+					  * static_cast<float>(jactorio::renderer::Renderer::tile_width);
+
 		layer->push_back(jactorio::renderer::Renderer_layer::Element(
 			{
 				{
-					(static_cast<float>(chunk_x_offset) + object_layer.position_x)
+					{top_x, top_y},
+					{
+						top_x
+						+ jactorio::game::transport_line_c::item_width *
+						  static_cast<float>(jactorio::renderer::Renderer::tile_width),
+						top_y
+						+ jactorio::game::transport_line_c::item_width *
+						  static_cast<float>(jactorio::renderer::Renderer::tile_width)
+					},
+				},
+				{   uv_pos.top_left, uv_pos.bottom_right}
+			}
+		));
+	}
+}
+
+
+void prepare_object_data(const unsigned layer_index,
+						 jactorio::renderer::Renderer_layer* layer,
+						 const float chunk_y_offset, const float chunk_x_offset,
+						 jactorio::game::Chunk* const chunk) {
+	// Draw logic chunk contents if it exists
+	auto& logic_chunks = jactorio::game::world_manager::logic_get_all_chunks();
+	auto logic_chunk = logic_chunks.find(chunk);
+
+	if (logic_chunk != logic_chunks.end()) {
+		auto& transport_line_layer = logic_chunk->second.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+		for (const auto& line_layer : transport_line_layer) {
+			auto* line_segment = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
+
+			float offset_x = line_layer.position_x;
+			float offset_y = line_layer.position_y;
+
+			// TODO better calculate the offset to represent the position of the rail
+			prepare_transport_segment_data(layer,
+										   chunk_y_offset, chunk_x_offset,
+										   line_segment, line_segment->left, offset_x, offset_y);
+
+			prepare_transport_segment_data(layer,
+										   chunk_y_offset, chunk_x_offset,
+										   line_segment, line_segment->right, offset_x, offset_y);
+		}
+	}
+
+	auto& objects = chunk->objects[layer_index];
+	for (auto& object_layer : objects) {
+		const unsigned int internal_id = object_layer_get_sprite_id_func[layer_index](object_layer);
+
+		// Internal id of 0 indicates no tile
+		if (internal_id == 0)
+			continue;
+
+		const auto& uv_pos = jactorio::renderer::Renderer::get_spritemap_coords(internal_id);
+
+		layer->push_back(jactorio::renderer::Renderer_layer::Element(
+			{
+				{
+					(chunk_x_offset + object_layer.position_x)
 					* static_cast<float>(jactorio::renderer::Renderer::tile_width),
-						
-					(static_cast<float>(chunk_y_offset) + object_layer.position_y)
+
+					(chunk_y_offset + object_layer.position_y)
 					* static_cast<float>(jactorio::renderer::Renderer::tile_width)
 				},
 				{
-					(static_cast<float>(chunk_x_offset) + object_layer.position_x + object_layer.size_x)
+					(chunk_x_offset + object_layer.position_x + object_layer.size_x)
 					* static_cast<float>(jactorio::renderer::Renderer::tile_width),
-						
-					(static_cast<float>(chunk_y_offset) + object_layer.position_y + object_layer.size_y)
+
+					(chunk_y_offset + object_layer.position_y + object_layer.size_y)
 					* static_cast<float>(jactorio::renderer::Renderer::tile_width)
 				}
 			},
 			{uv_pos.top_left, uv_pos.bottom_right}
-			// {{0, 0}, {1, 1}}
 		));
 	}
 }
 
 void jactorio::renderer::world_renderer::prepare_chunk_draw_data(const int layer_index, const bool is_tile_layer,
-                                                                 const int render_offset_x, const int render_offset_y,
-                                                                 const int chunk_start_x, const int chunk_start_y,
-                                                                 const int chunk_amount_x, const int chunk_amount_y,
-                                                                 Renderer_layer* layer) {
-	void (*func_to_use)(unsigned, Renderer_layer*, int, int, game::Chunk*);
-	if (is_tile_layer)
-		func_to_use = &prepare_tile_data;
+																 const int render_offset_x, const int render_offset_y,
+																 const int chunk_start_x, const int chunk_start_y,
+																 const int chunk_amount_x, const int chunk_amount_y,
+																 Renderer_layer* layer) {
+	void (* prepare_func)(unsigned, Renderer_layer*, float, float, game::Chunk*);
+	if (is_tile_layer)  // Either prepare tiles or objects in chunk
+		prepare_func = &prepare_tile_data;
 	else
-		func_to_use = &prepare_object_data;
-	
+		prepare_func = &prepare_object_data;
+
 	for (int chunk_y = 0; chunk_y < chunk_amount_y; ++chunk_y) {
 		const int chunk_y_offset = chunk_y * 32 + render_offset_y;
 
 		for (int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
 			const int chunk_x_offset = chunk_x * 32 + render_offset_x;
 
-			const auto chunk = game::world_manager::get_chunk(chunk_start_x + chunk_x,
-			                                                  chunk_start_y + chunk_y);
+			auto* chunk = game::world_manager::get_chunk(chunk_start_x + chunk_x,
+														 chunk_start_y + chunk_y);
 
 			// Generate chunk if non existent
 			if (chunk == nullptr) {
@@ -212,15 +277,21 @@ void jactorio::renderer::world_renderer::prepare_chunk_draw_data(const int layer
 				continue;
 			}
 
-			func_to_use(layer_index, layer, chunk_y_offset, chunk_x_offset, chunk);
+			prepare_func(layer_index, layer,
+						 static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
+						 chunk);
 		}
 	}
 }
 
+void jactorio::renderer::world_renderer::prepare_logic_chunk_draw_data(jactorio::game::Logic_chunk* l_chunk,
+																	   jactorio::renderer::Renderer_layer* layer) {
+}
+
 
 void jactorio::renderer::world_renderer::render_player_position(Renderer* renderer,
-                                                                const float player_x,
-                                                                const float player_y) {
+																const float player_x,
+																const float player_y) {
 	// Player movement is in tiles
 	// Every 32 tiles, shift 1 chunk
 	// Remaining tiles are offset
@@ -281,11 +352,11 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 		const auto view_transform = mvp_manager::get_view_transform();
 		view_transform->x
 			= static_cast<int>(window_width / 2 - (tile_amount_x / 2 * Renderer::tile_width))
-			+ camera_offset_x;
+			  + camera_offset_x;
 
 		view_transform->y
 			= static_cast<int>(window_height / 2 - (tile_amount_y / 2 * Renderer::tile_width))
-			+ camera_offset_y;
+			  + camera_offset_y;
 
 		// Set view matrix
 		mvp_manager::update_view_transform();
@@ -328,11 +399,11 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	std::future<void> preparing_thread1;
 	std::future<void> preparing_thread2 =
 		std::async(std::launch::async, prepare_chunk_draw_data,
-		           0, true,
-		           window_start_x, window_start_y,
-		           chunk_start_x, chunk_start_y,
-		           amount_x, amount_y,
-		           layer_2);
+				   0, true,
+				   window_start_x, window_start_y,
+				   chunk_start_x, chunk_start_y,
+				   amount_x, amount_y,
+				   layer_2);
 
 	bool using_buffer1 = true;
 	// Begin at index 1, since index 0 is handled above
@@ -342,11 +413,11 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 			layer_1->clear();
 			preparing_thread1 =
 				std::async(std::launch::async, prepare_chunk_draw_data,
-				           layer_index, true,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_1);
+						   layer_index, true,
+						   window_start_x, window_start_y,
+						   chunk_start_x, chunk_start_y,
+						   amount_x, amount_y,
+						   layer_1);
 
 			preparing_thread2.wait();
 
@@ -359,11 +430,11 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 			layer_2->clear();
 			preparing_thread2 =
 				std::async(std::launch::async, prepare_chunk_draw_data,
-				           layer_index, true,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_2);
+						   layer_index, true,
+						   window_start_x, window_start_y,
+						   chunk_start_x, chunk_start_y,
+						   amount_x, amount_y,
+						   layer_2);
 
 			preparing_thread1.wait();
 
@@ -376,18 +447,18 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 
 	// ==============================================================
 	// Draw object layers
-	for (unsigned int layer_index = 0; 
-	     layer_index < game::Chunk::object_layer_count; ++layer_index) {
+	for (unsigned int layer_index = 0;
+		 layer_index < game::Chunk::object_layer_count; ++layer_index) {
 		// Prepare 1
 		if (using_buffer1) {
 			layer_1->clear();
 			preparing_thread1 =
 				std::async(std::launch::async, prepare_chunk_draw_data,
-				           layer_index, false,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_1);
+						   layer_index, false,
+						   window_start_x, window_start_y,
+						   chunk_start_x, chunk_start_y,
+						   amount_x, amount_y,
+						   layer_1);
 
 			preparing_thread2.wait();
 
@@ -400,11 +471,11 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 			layer_2->clear();
 			preparing_thread2 =
 				std::async(std::launch::async, prepare_chunk_draw_data,
-				           layer_index, false,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_2);
+						   layer_index, false,
+						   window_start_x, window_start_y,
+						   chunk_start_x, chunk_start_y,
+						   amount_x, amount_y,
+						   layer_2);
 
 			preparing_thread1.wait();
 
@@ -414,7 +485,7 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 		}
 		using_buffer1 = !using_buffer1;
 	}
-	
+
 	// Wait for the final layer to draw
 	if (using_buffer1) {
 		preparing_thread2.wait();

@@ -39,6 +39,7 @@ namespace jactorio::game
 		Chunk(Chunk&& other) noexcept;
 		
 		Chunk& operator=(const Chunk& other);
+
 		Chunk& operator=(Chunk&& other) noexcept;
 
 		// Tiles
@@ -49,25 +50,21 @@ namespace jactorio::game
 			return tiles_;
 		}
 
-		// Objects
-		enum class object_layer
+		// Objects - Rendered without being fixed to a tile position
+		enum class objectLayer
 		{
-			transport_line = 0,  // game::Transport_line_segment
-			tree,
+			tree = 0,
 			debug_overlay,  // data::Sprite
 			count_
 		};
 
-		static constexpr int object_layer_count = static_cast<int>(object_layer::count_);
+		static constexpr int object_layer_count = static_cast<int>(objectLayer::count_);
 
 		std::vector<Chunk_object_layer> objects[object_layer_count];
 
-		std::vector<Chunk_object_layer>& get_object(object_layer layer) {
+		std::vector<Chunk_object_layer>& get_object(objectLayer layer) {
 			return objects[static_cast<int>(layer)];
 		}
-
-		// TODO Structures - Objects but not rendered with no coordinate attached
-
 	};
 }
 

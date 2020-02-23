@@ -5,10 +5,38 @@
 #include "game/world/world_manager.h"
 #include "game/logic/transport_line_structure.h"
 
-void jactorio::game::transport_line_c::logic_update(std::queue<segment_transition_item>& queue, Logic_chunk* l_chunk) {
-	auto& layers = l_chunk->chunk->get_object(Chunk::object_layer::transport_line);
+void apply_termination_deduction_l(jactorio::game::Transport_line_segment::terminationType termination_type, float& offset) {
+	switch (termination_type) {
+		case jactorio::game::Transport_line_segment::terminationType::bend_left:
+			offset -= jactorio::game::Transport_line_segment::bend_left_l_reduction;
+			break;
+		case jactorio::game::Transport_line_segment::terminationType::bend_right:
+			offset -= jactorio::game::Transport_line_segment::bend_right_l_reduction;
+			break;
 
-	// Each object_layer holds a transport line segment
+		case jactorio::game::Transport_line_segment::terminationType::straight:
+			break;
+	}
+}
+
+void apply_termination_deduction_r(jactorio::game::Transport_line_segment::terminationType termination_type, float& offset) {
+	switch (termination_type) {
+		case jactorio::game::Transport_line_segment::terminationType::bend_left:
+			offset -= jactorio::game::Transport_line_segment::bend_left_r_reduction;
+			break;
+		case jactorio::game::Transport_line_segment::terminationType::bend_right:
+			offset -= jactorio::game::Transport_line_segment::bend_right_r_reduction;
+			break;
+
+		case jactorio::game::Transport_line_segment::terminationType::straight:
+			break;
+	}
+}
+
+void jactorio::game::transport_line_c::logic_update(std::queue<segment_transition_item>& queue, Logic_chunk* l_chunk) {
+	auto& layers = l_chunk->get_struct(Logic_chunk::structLayer::transport_line);
+
+	// Each objectLayer holds a transport line segment
 	for (auto& object_layer : layers) {
 		std::vector<transport_line_item> transition_items;
 
@@ -20,14 +48,7 @@ void jactorio::game::transport_line_c::logic_update(std::queue<segment_transitio
 		if (!left.empty()) {
 			auto& offset = left.front().first;
 			if ((offset -= line_proto->speed) < 0.f - jactorio::core::transport_line_epsilon) {
-				switch (line_segment->termination_type) {
-					case Transport_line_segment::termination_type::bend_left:
-						offset -= Transport_line_segment::bend_left_l_reduction;
-						break;
-					case Transport_line_segment::termination_type::bend_right:
-						offset -= Transport_line_segment::bend_right_l_reduction;
-						break;
-				}
+				apply_termination_deduction_l(line_segment->termination_type, offset);
 
 				transition_items.emplace_back(std::move(left.front()));
 				left.pop_front();  // Remove item now moved away
@@ -39,14 +60,7 @@ void jactorio::game::transport_line_c::logic_update(std::queue<segment_transitio
 			auto& offset = right.front().first;
 			if ((offset -= line_proto->speed) < 0.f - jactorio::core::transport_line_epsilon) {
 				// Account for termination type by increasing the current offset
-				switch (line_segment->termination_type) {
-					case Transport_line_segment::termination_type::bend_left:
-						offset -= Transport_line_segment::bend_left_r_reduction;
-						break;
-					case Transport_line_segment::termination_type::bend_right:
-						offset -= Transport_line_segment::bend_right_r_reduction;
-						break;
-				}
+				apply_termination_deduction_r(line_segment->termination_type, offset);
 
 				right.front().first *= -1;  // Invert to positive to indicate it belongs on the right side
 				transition_items.emplace_back(std::move(right.front()));
@@ -73,26 +87,10 @@ void jactorio::game::transport_line_c::logic_process_queued_items(std::queue<seg
 			const bool left = line_item.first < 0.f;
 
 			// Account for the termination type of the new line segment
-			if (left) {
-				switch (pair.first->termination_type) {
-					case Transport_line_segment::termination_type::bend_left:
-						offset -= Transport_line_segment::bend_left_l_reduction;
-						break;
-					case Transport_line_segment::termination_type::bend_right:
-						offset -= Transport_line_segment::bend_right_l_reduction;
-						break;
-				}
-			}
-			else {
-				switch (pair.first->termination_type) {
-					case Transport_line_segment::termination_type::bend_left:
-						offset -= Transport_line_segment::bend_left_r_reduction;
-						break;
-					case Transport_line_segment::termination_type::bend_right:
-						offset -= Transport_line_segment::bend_right_r_reduction;
-						break;
-				}
-			}
+			if (left)
+				apply_termination_deduction_l(pair.first->termination_type, offset);
+			else
+				apply_termination_deduction_r(pair.first->termination_type, offset);
 
 			// Item goes on left side if offset is negative
 			belt_insert_item(left, pair.first, offset, line_item.second);

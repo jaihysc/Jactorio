@@ -1,11 +1,8 @@
-﻿#include <iostream>
+﻿#include "jactorio.h"
+
 #include <thread>
 
-#include "jactorio.h"
-
-#include "core/resource_guard.h"
 #include "core/filesystem.h"
-#include "core/logger.h"
 #include "data/data_manager.h"
 #include "game/logic_loop.h"
 #include "renderer/render_main.h"
@@ -15,11 +12,12 @@ void initialize_game() {
 
 	// Rendering + logic initialization
 	LOG_MESSAGE(info, "1 - Data stage");
-	
+
 	core::Resource_guard data_manager_guard(&data::data_manager::clear_data);
 
-	std::thread logic_thread = std::thread(game::init_logic_loop);
-	std::thread renderer_thread = std::thread(renderer::render_init);
+	std::mutex m;
+	std::thread logic_thread = std::thread(game::init_logic_loop, &m);
+	std::thread renderer_thread = std::thread(renderer::render_init, &m);
 
 	logic_thread.join();
 	renderer_thread.join();

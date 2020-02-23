@@ -2,6 +2,7 @@
 
 #include "game/world/chunk.h"
 #include <memory>
+#include <game/world/logic_chunk.h>
 
 namespace game
 {
@@ -55,7 +56,15 @@ namespace game
 	TEST(chunk, get_object_layer) {
 		jactorio::game::Chunk chunk_a{0, 0, nullptr};
 
-		// Should return the layer specified by the index of the enum object_layer
-		EXPECT_EQ(&chunk_a.get_object(jactorio::game::Chunk::object_layer::transport_line), &chunk_a.objects[0]);
+		// Should return the layer specified by the index of the enum objectLayer
+		EXPECT_EQ(&chunk_a.get_object(jactorio::game::Chunk::objectLayer::tree), &chunk_a.objects[0]);
+	}
+
+	TEST(logic_chunk, get_struct_layer) {
+		jactorio::game::Chunk chunk_a{0, 0, nullptr};
+		jactorio::game::Logic_chunk l_chunk(&chunk_a);
+
+		// Should return the layer specified by the index of the enum objectLayer
+		EXPECT_EQ(&l_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line), &l_chunk.structs[0]);
 	}
 }

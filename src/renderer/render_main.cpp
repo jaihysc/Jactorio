@@ -45,14 +45,14 @@ jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
 	return main_renderer;
 }
 
-int jactorio::renderer::render_init() {
+int jactorio::renderer::render_init(std::mutex* mutex) {
 	core::Resource_guard loop_termination_guard(&game::terminate_logic_loop);
 	core::Resource_guard window_manager_guard(&window_manager::terminate);
 
 	if (window_manager::init(640, 490) != 0)
 		return 1;
 
-	
+
 	GLFWwindow* window = window_manager::get_window();
 
 	core::Resource_guard imgui_manager_guard(&imgui_manager::imgui_terminate);
@@ -153,9 +153,11 @@ int jactorio::renderer::render_init() {
 		while (!glfwWindowShouldClose(window)) {
 			EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-			game::Event::raise<game::Renderer_tick_event>(game::event_type::renderer_tick);
-
 			{
+//				std::lock_guard lk(*mutex);
+
+				game::Event::raise<game::Renderer_tick_event>(game::event_type::renderer_tick);
+
 				Renderer::g_clear();
 
 				// MVP Matrices updated in here

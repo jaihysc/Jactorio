@@ -1,10 +1,11 @@
-#ifndef GAME_WORLD_LOGIC_CHUNK_H
-#define GAME_WORLD_LOGIC_CHUNK_H
-
-#include "game/world/chunk.h"
-#include "data/prototype/item/item.h"
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_LOGIC_CHUNK_H
+#define JACTORIO_INCLUDE_GAME_WORLD_LOGIC_CHUNK_H
 
 #include <map>
+
+#include "game/world/chunk.h"
+#include "game/world/chunk_struct_layer.h"
+#include "data/prototype/item/item.h"
 
 namespace jactorio::game
 {
@@ -15,7 +16,8 @@ namespace jactorio::game
 	class Logic_chunk
 	{
 	public:
-		Logic_chunk() {
+		Logic_chunk()
+			: chunk(nullptr) {
 			assert(false);  // A chunk pointer needs to be provided - Was there a logic chunk created when it was accessed?
 		}
 
@@ -25,15 +27,25 @@ namespace jactorio::game
 		}
 
 		// The chunk which this logic chunk is associated with
-		Chunk* const chunk = nullptr;
+		Chunk* const chunk;
 
 
-		// NO LONER NECESSARY, transport lines are now grouped by "segments" with one direction, items no longer store any data
+		// Structures - Objects but not rendered with no coordinate attached
+		enum class structLayer
+		{
+			transport_line = 0,  // game::Transport_line_segment
+			count_
+		};
 
-		// If an item's positions matches against an entry within this map, its movement direction should
-		// be updated to the one provided
-//		std::map<std::pair<float, float>, data::Transport_line_item_data::move_dir> transport_line_updates{};
+		static constexpr int struct_layer_count = static_cast<int>(structLayer::count_);
+
+		std::vector<Chunk_struct_layer> structs[struct_layer_count];
+
+		std::vector<Chunk_struct_layer>& get_struct(structLayer layer) {
+			return structs[static_cast<int>(layer)];
+		}
+
 	};
 }
 
-#endif // GAME_WORLD_LOGIC_CHUNK_H
+#endif //JACTORIO_INCLUDE_GAME_WORLD_LOGIC_CHUNK_H

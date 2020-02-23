@@ -49,7 +49,7 @@ namespace jactorio::game
 		static constexpr float bend_right_l_reduction = 0.3;
 		static constexpr float bend_right_r_reduction = 0.7;
 
-		enum class termination_type
+		enum class terminationType
 		{
 			straight,
 			// Left length -0.7
@@ -60,11 +60,11 @@ namespace jactorio::game
 			bend_right
 		};
 
-		Transport_line_segment(move_dir direction, termination_type termination_type, uint8_t segment_length)
+		Transport_line_segment(move_dir direction, terminationType termination_type, uint8_t segment_length)
 			: direction(direction), termination_type(termination_type), segment_length(segment_length) {
 		}
 
-		Transport_line_segment(move_dir direction, termination_type termination_type,
+		Transport_line_segment(move_dir direction, terminationType termination_type,
 							   Transport_line_segment* target_segment, uint8_t segment_length)
 			: direction(direction), termination_type(termination_type), target_segment(target_segment), segment_length(segment_length) {
 		}
@@ -80,7 +80,7 @@ namespace jactorio::game
 		// Direction items in this segment travel in
 		move_dir direction;
 		// How the belt terminates (bends left, right, straight)
-		termination_type termination_type;
+		terminationType termination_type;
 
 		// Segment this transport line feeds into
 		Transport_line_segment* target_segment = nullptr;

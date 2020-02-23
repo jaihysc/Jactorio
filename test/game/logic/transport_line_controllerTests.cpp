@@ -25,19 +25,19 @@ namespace game::logic
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new jactorio::game::Transport_line_segment(
 			jactorio::game::Transport_line_segment::move_dir::up,
-			jactorio::game::Transport_line_segment::termination_type::bend_right,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			5);
 		auto* right_segment = new jactorio::game::Transport_line_segment(
 			jactorio::game::Transport_line_segment::move_dir::right,
-			jactorio::game::Transport_line_segment::termination_type::bend_right,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			4);
 		auto* down_segment = new jactorio::game::Transport_line_segment(
 			jactorio::game::Transport_line_segment::move_dir::down,
-			jactorio::game::Transport_line_segment::termination_type::bend_right,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			5);
 		auto* left_segment = new jactorio::game::Transport_line_segment(
 			jactorio::game::Transport_line_segment::move_dir::left,
-			jactorio::game::Transport_line_segment::termination_type::bend_right,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			4);
 
 		// What each transport segment empties into
@@ -46,20 +46,21 @@ namespace game::logic
 		down_segment->target_segment = left_segment;
 		left_segment->target_segment = up_segment;
 		{
-			auto& up = chunk.get_object(Chunk::object_layer::transport_line)
-				.emplace_back(transport_belt_proto.get(), 0, 5, 1, 1);
+
+			auto& up = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+				.emplace_back(transport_belt_proto.get(), 0, 0);
 			up.unique_data = up_segment;
 
-			auto& right = chunk.get_object(Chunk::object_layer::transport_line)
-				.emplace_back(transport_belt_proto.get(), 0, 0, 1, 1);
+			auto& right = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+				.emplace_back(transport_belt_proto.get(), 4, 0);
 			right.unique_data = right_segment;
 
-			auto& down = chunk.get_object(Chunk::object_layer::transport_line)
-				.emplace_back(transport_belt_proto.get(), 4, 0, 1, 1);
+			auto& down = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+				.emplace_back(transport_belt_proto.get(), 4, 5);
 			down.unique_data = down_segment;
 
-			auto& left = chunk.get_object(Chunk::object_layer::transport_line)
-				.emplace_back(transport_belt_proto.get(), 4, 5, 1, 1);
+			auto& left = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+				.emplace_back(transport_belt_proto.get(), 0, 5);
 			left.unique_data = left_segment;
 		}
 
@@ -128,7 +129,7 @@ namespace game::logic
 		// Segments (Logic chunk must be created first)
 		auto* line_segment = new jactorio::game::Transport_line_segment(
 			jactorio::game::Transport_line_segment::move_dir::up,
-			jactorio::game::Transport_line_segment::termination_type::bend_right,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			5);
 
 		jactorio::game::transport_line_c::belt_insert_item(true, line_segment, 1.3, item_proto.get());
