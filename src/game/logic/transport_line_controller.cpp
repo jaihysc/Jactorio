@@ -33,7 +33,7 @@ void apply_termination_deduction_r(jactorio::game::Transport_line_segment::termi
 	}
 }
 
-void jactorio::game::transport_line_c::logic_update(std::queue<segment_transition_item>& queue, Logic_chunk* l_chunk) {
+void jactorio::game::transport_line_c::logic_update(std::queue<Segment_transition_item>& queue, Logic_chunk* l_chunk) {
 	auto& layers = l_chunk->get_struct(Logic_chunk::structLayer::transport_line);
 
 	// Each objectLayer holds a transport line segment
@@ -48,10 +48,12 @@ void jactorio::game::transport_line_c::logic_update(std::queue<segment_transitio
 		if (!left.empty()) {
 			auto& offset = left.front().first;
 			if ((offset -= line_proto->speed) < 0.f - jactorio::core::transport_line_epsilon) {
-				apply_termination_deduction_l(line_segment->termination_type, offset);
-
 				transition_items.emplace_back(std::move(left.front()));
 				left.pop_front();  // Remove item now moved away
+
+				// Move the next item forwards to preserve spacing
+				if (!left.empty())
+					left.front().first -= line_proto->speed;
 			}
 		}
 
@@ -59,41 +61,68 @@ void jactorio::game::transport_line_c::logic_update(std::queue<segment_transitio
 		if (!right.empty()) {
 			auto& offset = right.front().first;
 			if ((offset -= line_proto->speed) < 0.f - jactorio::core::transport_line_epsilon) {
-				// Account for termination type by increasing the current offset
-				apply_termination_deduction_r(line_segment->termination_type, offset);
-
 				right.front().first *= -1;  // Invert to positive to indicate it belongs on the right side
 				transition_items.emplace_back(std::move(right.front()));
 				right.pop_front();  // Remove item now moved away
+
+				// Move the next item forwards to preserve spacing
+				if (!right.empty())
+					right.front().first -= line_proto->speed;
 			}
 		}
 
 
 		// Add to the chunk transition item queue if it the local queue has items
 		if (!transition_items.empty()) {
-			queue.push({line_segment->target_segment, std::move(transition_items)});
+			queue.emplace(line_segment->target_segment, line_segment, std::move(transition_items));
 		}
 
 	}
 }
 
-void jactorio::game::transport_line_c::logic_process_queued_items(std::queue<segment_transition_item>& queue) {
+void jactorio::game::transport_line_c::logic_process_queued_items(std::queue<Segment_transition_item>& queue) {
 	while (!queue.empty()) {
-		auto& pair = queue.front();
+		auto& transition_items = queue.front();
 
 		// Add everything in pair.second into the segment at pair.first
-		for (transport_line_item& line_item : pair.second) {
-			float offset = static_cast<float>(pair.first->segment_length) - fabs(line_item.first);
-			const bool left = line_item.first < 0.f;
+		for (transport_line_item& line_item : transition_items.items) {
+			// Faster version of iterating thorugh all existing items:
+			// This can be mitigated by saving the distance to end of the back item
+			// Avoids having to iterate through and count
 
-			// Account for the termination type of the new line segment
-			if (left)
-				apply_termination_deduction_l(pair.first->termination_type, offset);
-			else
-				apply_termination_deduction_r(pair.first->termination_type, offset);
+			float offset = static_cast<float>(transition_items.target_segment->segment_length) - fabs(line_item.first);
+			const bool is_left_side = line_item.first < 0.f;
+
+			// Offset from end of transport line only calculated if line is empty, otherwise it maintains distance to previous item
+			if (is_left_side) {
+				// Account for the termination type of the new line segment
+				apply_termination_deduction_l(transition_items.previous_segment->termination_type, offset);
+				apply_termination_deduction_l(transition_items.target_segment->termination_type, offset);
+
+				// The offset to the next item is the current calculated offset from end - last item's position
+//				if (!transition_items.target_segment->left.empty()) {
+				// TODO see todo above for a more efficient approach (This only passes the test)
+				for (const auto& item : transition_items.target_segment->left) {
+					offset -= item.first;
+				}
+
+//					offset -= transition_items.target_segment->left.back().first;
+//				}
+			}
+			else {
+				apply_termination_deduction_r(transition_items.previous_segment->termination_type, offset);
+				apply_termination_deduction_r(transition_items.target_segment->termination_type, offset);
+
+//				if (!transition_items.target_segment->right.empty()) {
+				for (const auto& item : transition_items.target_segment->right) {
+					offset -= item.first;
+				}
+//					offset -= transition_items.target_segment->right.back().first;
+//				}
+			}
 
 			// Item goes on left side if offset is negative
-			belt_insert_item(left, pair.first, offset, line_item.second);
+			belt_insert_item(is_left_side, transition_items.target_segment, offset, line_item.second);
 		}
 
 		queue.pop();
@@ -103,31 +132,13 @@ void jactorio::game::transport_line_c::logic_process_queued_items(std::queue<seg
 
 // Item insertion
 
-void jactorio::game::transport_line_c::belt_insert_item_l(const int tile_x, const int tile_y,
-														  data::Item* item) {
-	// auto* chunk = world_manager::get_chunk_world_coords(tile_x, tile_y);
-	// chunk_insert_item(chunk,
-	//                   static_cast<float>(tile_x) + 0.3f, 
-	//                   static_cast<float>(tile_y) + 0.5f, 
-	//                   item);
-}
-
-void jactorio::game::transport_line_c::belt_insert_item_r(int tile_x, int tile_y,
-														  data::Item* item) {
-
-}
-
 void jactorio::game::transport_line_c::belt_insert_item(bool insert_left,
 														game::Transport_line_segment* belt, float offset, data::Item* item) {
 	std::deque<std::pair<float, data::Item*>>& target_queue = insert_left ? belt->left : belt->right;
-	auto iterator = target_queue.begin();
 
-	// Insert to the next location where [i].offset < [i + 1].offset
-	while (iterator != target_queue.end()) {
-		if (offset < iterator->first) {
-			break;
-		}
-		++iterator;
-	}
-	target_queue.insert(iterator, {offset, item});
+	// A minimum distance of transport_line_c::item_spacing is maintained between items (AFTER the initial item)
+	if (offset < item_spacing && !target_queue.empty())
+		offset = item_spacing;
+
+	target_queue.emplace_back(offset, item);
 }

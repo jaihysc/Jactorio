@@ -124,19 +124,19 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 			auto* up_segment = new jactorio::game::Transport_line_segment(
 				jactorio::game::Transport_line_segment::move_dir::up,
 				jactorio::game::Transport_line_segment::terminationType::bend_right,
-				5);
+				6);
 			auto* right_segment = new jactorio::game::Transport_line_segment(
 				jactorio::game::Transport_line_segment::move_dir::right,
 				jactorio::game::Transport_line_segment::terminationType::bend_right,
-				4);
+				5);
 			auto* down_segment = new jactorio::game::Transport_line_segment(
 				jactorio::game::Transport_line_segment::move_dir::down,
 				jactorio::game::Transport_line_segment::terminationType::bend_right,
-				5);
+				6);
 			auto* left_segment = new jactorio::game::Transport_line_segment(
 				jactorio::game::Transport_line_segment::move_dir::left,
 				jactorio::game::Transport_line_segment::terminationType::bend_right,
-				4);
+				5);
 
 			// What each transport segment empties into
 			up_segment->target_segment = right_segment;
@@ -161,7 +161,10 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 			left.unique_data = left_segment;
 
 			// Insert item
-			transport_line_c::belt_insert_item(false, left_segment, 2.5f, proto);
+			for (int i = 0; i < 100; ++i) {
+//				transport_line_c::belt_insert_item(true, left_segment, 0.f, proto);
+				transport_line_c::belt_insert_item(false, left_segment, 0.f, proto);
+			}
 		});
 	}, GLFW_KEY_1, GLFW_RELEASE);
 	input_manager::subscribe([]() {
@@ -199,7 +202,7 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 			{
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-				std::queue<transport_line_c::segment_transition_item> queue;
+				std::queue<transport_line_c::Segment_transition_item> queue;
 				for (auto& logic_chunk : world_manager::logic_get_all_chunks()) {
 					transport_line_c::logic_update(queue, &logic_chunk.second);
 				}
