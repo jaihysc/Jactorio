@@ -209,6 +209,62 @@ namespace game::logic
 		EXPECT_NEAR(right_segment->left[2].first, 1.f, jactorio::core::transport_line_epsilon);
 	}
 
+	TEST(transport, line_logic_transition_straight) {
+		// Transferring from a straight segment traveling left to another one traveling left
+		/*
+		 * < ------ LEFT (!) ------		< ------ LEFT (2) -------
+		 */
+
+		using namespace jactorio::game;
+
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
+		transport_belt_proto->speed = 0.01f;
+
+		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+
+		auto chunk = Chunk(0, 0, nullptr);
+		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+
+		auto* segment_1 = new jactorio::game::Transport_line_segment(
+			jactorio::game::Transport_line_segment::move_dir::left,
+			jactorio::game::Transport_line_segment::terminationType::straight,
+			4);
+		auto* segment_2 = new jactorio::game::Transport_line_segment(
+			jactorio::game::Transport_line_segment::move_dir::left,
+			jactorio::game::Transport_line_segment::terminationType::straight,
+			4);
+
+		segment_2->target_segment = segment_1;
+		{
+			auto& structs = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line);
+
+			auto& seg_1 = structs.emplace_back(transport_belt_proto.get(), 0, 0);
+			seg_1.unique_data = segment_1;
+
+			auto& seg_2 = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+				.emplace_back(transport_belt_proto.get(), 3, 0);
+			seg_2.unique_data = segment_2;
+		}
+
+		// Insert item on left + right side
+		transport_line_c::belt_insert_item(true, segment_2, 0.02f, item_proto.get());
+		transport_line_c::belt_insert_item(false, segment_2, 0.02f, item_proto.get());
+
+		// Travel to the next belt in 0.02 / 0.01 + 1 updates
+		std::queue<jactorio::game::transport_line_c::Segment_transition_item> queue;
+		for (int i = 0; i < 3; ++i) {
+			transport_line_c::logic_update(queue, logic_chunk);
+			transport_line_c::logic_process_queued_items(queue);
+		}
+
+		EXPECT_EQ(segment_2->left.size(), 0);
+		EXPECT_EQ(segment_2->right.size(), 0);
+		// 3.99 tiles from the end of this transport line
+		EXPECT_NEAR(segment_1->left[0].first, 3.99, jactorio::core::transport_line_epsilon);
+		EXPECT_NEAR(segment_1->right[0].first, 3.99, jactorio::core::transport_line_epsilon);
+	}
+
 	TEST(transport_line, line_logic_item_spacing) {
 		// A minimum distance of transport_line_c::item_spacing is maintained between items
 		using namespace jactorio::game;

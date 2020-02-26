@@ -146,41 +146,33 @@ void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
 									const float chunk_y_offset, const float chunk_x_offset,
 									const jactorio::game::Transport_line_segment* line_segment,
 									std::deque<jactorio::game::transport_line_item>& line_segment_side,
-									float& offset_x, float& offset_y) {
+									float offset_x, float offset_y) {
 	using namespace jactorio::game;
 
-	// TODO give these constants
+	// Either offset_x or offset_y which will be INCREASED or DECREASED
+	float* target_offset;
+	float multiplier = 1;  // Either 1 or -1 to add or subtract
+
 	switch (line_segment->direction) {
 		case jactorio::game::Transport_line_segment::move_dir::up:
-			offset_x += transport_line_c::line_up_r_item_offset;
+			target_offset = &offset_y;
 			break;
 		case jactorio::game::Transport_line_segment::move_dir::right:
-			offset_y += transport_line_c::line_right_r_item_offset;
+			target_offset = &offset_x;
+			multiplier = -1;
 			break;
 		case jactorio::game::Transport_line_segment::move_dir::down:
-			offset_x += transport_line_c::line_down_r_item_offset;
+			target_offset = &offset_y;
+			multiplier = -1;
 			break;
 		case jactorio::game::Transport_line_segment::move_dir::left:
-			offset_y += transport_line_c::line_left_r_item_offset;
+			target_offset = &offset_x;
 			break;
 	}
 
 	for (const auto& line_item : line_segment_side) {
-		// Think of a constant expression for this to avoid having to switch
-		switch (line_segment->direction) {
-			case jactorio::game::Transport_line_segment::move_dir::up:
-				offset_y += line_item.first;
-				break;
-			case jactorio::game::Transport_line_segment::move_dir::right:
-				offset_x -= line_item.first;
-				break;
-			case jactorio::game::Transport_line_segment::move_dir::down:
-				offset_y -= line_item.first;
-				break;
-			case jactorio::game::Transport_line_segment::move_dir::left:
-				offset_x += line_item.first;
-				break;
-		}
+		// Move the target offset (up or down depending on multiplier)
+		*target_offset += line_item.first * multiplier;
 
 		const auto& uv_pos = jactorio::renderer::Renderer::get_spritemap_coords(line_item.second->sprite->internal_id);
 
@@ -225,28 +217,121 @@ void prepare_object_data(const unsigned layer_index,
 			float offset_x = line_layer.position_x;
 			float offset_y = line_layer.position_y;
 
-			// TODO better calculate the offset to represent the position of the rail
-			// This is probably due to how the endings work and that the offset begins from top left, but I am not too sure
+			// Left
+			// The offsets for straight are always applied to bend left and right
 			switch (line_segment->direction) {
 				case jactorio::game::Transport_line_segment::move_dir::up:
-					offset_y += 0.7f;
+					offset_x += jactorio::game::transport_line_c::line_up_l_item_offset_x;
 					break;
-//				case jactorio::game::Transport_line_segment::move_dir::right:
-//					offset_x += 0.7f;
-//					break;
-//				case jactorio::game::Transport_line_segment::move_dir::down:
-//					offset_y += 0.7f;
-//					break;
+				case jactorio::game::Transport_line_segment::move_dir::right:
+					offset_y += jactorio::game::transport_line_c::line_right_l_item_offset_y;
+					break;
+				case jactorio::game::Transport_line_segment::move_dir::down:
+					offset_x += jactorio::game::transport_line_c::line_down_l_item_offset_x;
+					break;
 				case jactorio::game::Transport_line_segment::move_dir::left:
-					offset_x += 0.7f;
+					offset_y += jactorio::game::transport_line_c::line_left_l_item_offset_y;
 					break;
 			}
+			switch (line_segment->termination_type) {
+				case jactorio::game::Transport_line_segment::terminationType::straight:
+					break;
 
-			// Left TODO
-//			prepare_transport_segment_data(layer,
-//										   chunk_y_offset, chunk_x_offset,
-//										   line_segment, line_segment->left, offset_x, offset_y);
+				case jactorio::game::Transport_line_segment::terminationType::bend_left:
+					switch (line_segment->direction) {
+						case jactorio::game::Transport_line_segment::move_dir::up:
+							offset_y += jactorio::game::transport_line_c::line_up_bl_l_item_offset_y;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::right:
+							offset_x += jactorio::game::transport_line_c::line_right_bl_l_item_offset_x;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::down:
+							offset_y += jactorio::game::transport_line_c::line_down_bl_l_item_offset_y;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::left:
+							offset_x += jactorio::game::transport_line_c::line_left_bl_l_item_offset_x;
+							break;
+					}
+					break;
 
+				case jactorio::game::Transport_line_segment::terminationType::bend_right:
+					switch (line_segment->direction) {
+						case jactorio::game::Transport_line_segment::move_dir::up:
+							offset_y += jactorio::game::transport_line_c::line_up_br_l_item_offset_y;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::right:
+							offset_x += jactorio::game::transport_line_c::line_right_br_l_item_offset_x;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::down:
+							offset_y += jactorio::game::transport_line_c::line_down_br_l_item_offset_y;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::left:
+							offset_x += jactorio::game::transport_line_c::line_left_br_l_item_offset_x;
+							break;
+					}
+					break;
+			}
+			prepare_transport_segment_data(layer,
+										   chunk_y_offset, chunk_x_offset,
+										   line_segment, line_segment->left, offset_x, offset_y);
+
+			// Right
+			offset_x = line_layer.position_x;
+			offset_y = line_layer.position_y;
+
+			// The offsets for straight are always applied to bend left and right
+			switch (line_segment->direction) {
+				case jactorio::game::Transport_line_segment::move_dir::up:
+					offset_x += jactorio::game::transport_line_c::line_up_r_item_offset_x;
+					break;
+				case jactorio::game::Transport_line_segment::move_dir::right:
+					offset_y += jactorio::game::transport_line_c::line_right_r_item_offset_y;
+					break;
+				case jactorio::game::Transport_line_segment::move_dir::down:
+					offset_x += jactorio::game::transport_line_c::line_down_r_item_offset_x;
+					break;
+				case jactorio::game::Transport_line_segment::move_dir::left:
+					offset_y += jactorio::game::transport_line_c::line_left_r_item_offset_y;
+					break;
+			}
+			switch (line_segment->termination_type) {
+				case jactorio::game::Transport_line_segment::terminationType::straight:
+					break;
+
+				case jactorio::game::Transport_line_segment::terminationType::bend_left:
+					switch (line_segment->direction) {
+						case jactorio::game::Transport_line_segment::move_dir::up:
+							offset_y += jactorio::game::transport_line_c::line_up_bl_r_item_offset_y;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::right:
+							offset_x += jactorio::game::transport_line_c::line_right_bl_r_item_offset_x;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::down:
+							offset_y += jactorio::game::transport_line_c::line_down_bl_r_item_offset_y;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::left:
+							offset_x += jactorio::game::transport_line_c::line_left_bl_r_item_offset_x;
+							break;
+					}
+					break;
+
+				case jactorio::game::Transport_line_segment::terminationType::bend_right:
+					switch (line_segment->direction) {
+						case jactorio::game::Transport_line_segment::move_dir::up:
+							offset_y += jactorio::game::transport_line_c::line_up_br_r_item_offset_y;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::right:
+							offset_x += jactorio::game::transport_line_c::line_right_br_r_item_offset_x;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::down:
+							offset_y += jactorio::game::transport_line_c::line_down_br_r_item_offset_y;
+							break;
+						case jactorio::game::Transport_line_segment::move_dir::left:
+							offset_x += jactorio::game::transport_line_c::line_left_br_r_item_offset_x;
+							break;
+					}
+					break;
+			}
 			prepare_transport_segment_data(layer,
 										   chunk_y_offset, chunk_x_offset,
 										   line_segment, line_segment->right, offset_x, offset_y);
