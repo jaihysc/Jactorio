@@ -24,7 +24,7 @@ namespace jactorio::game
 	 */
 	struct Transport_line_segment
 	{
-		enum class move_dir
+		enum class moveDir
 		{
 			up,
 			right,
@@ -60,11 +60,11 @@ namespace jactorio::game
 			bend_right
 		};
 
-		Transport_line_segment(move_dir direction, terminationType termination_type, uint8_t segment_length)
+		Transport_line_segment(moveDir direction, terminationType termination_type, uint8_t segment_length)
 			: direction(direction), termination_type(termination_type), segment_length(segment_length) {
 		}
 
-		Transport_line_segment(move_dir direction, terminationType termination_type,
+		Transport_line_segment(moveDir direction, terminationType termination_type,
 							   Transport_line_segment* target_segment, uint8_t segment_length)
 			: direction(direction), termination_type(termination_type), target_segment(target_segment), segment_length(segment_length) {
 		}
@@ -78,7 +78,7 @@ namespace jactorio::game
 		std::deque<transport_line_item> right;
 
 		// Direction items in this segment travel in
-		move_dir direction;
+		moveDir direction;
 		// How the belt terminates (bends left, right, straight)
 		terminationType termination_type;
 

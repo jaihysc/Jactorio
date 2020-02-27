@@ -154,18 +154,18 @@ void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
 	float multiplier = 1;  // Either 1 or -1 to add or subtract
 
 	switch (line_segment->direction) {
-		case jactorio::game::Transport_line_segment::move_dir::up:
+		case jactorio::game::Transport_line_segment::moveDir::up:
 			target_offset = &offset_y;
 			break;
-		case jactorio::game::Transport_line_segment::move_dir::right:
+		case jactorio::game::Transport_line_segment::moveDir::right:
 			target_offset = &offset_x;
 			multiplier = -1;
 			break;
-		case jactorio::game::Transport_line_segment::move_dir::down:
+		case jactorio::game::Transport_line_segment::moveDir::down:
 			target_offset = &offset_y;
 			multiplier = -1;
 			break;
-		case jactorio::game::Transport_line_segment::move_dir::left:
+		case jactorio::game::Transport_line_segment::moveDir::left:
 			target_offset = &offset_x;
 			break;
 	}
@@ -220,16 +220,16 @@ void prepare_object_data(const unsigned layer_index,
 			// Left
 			// The offsets for straight are always applied to bend left and right
 			switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::move_dir::up:
+				case jactorio::game::Transport_line_segment::moveDir::up:
 					offset_x += jactorio::game::transport_line_c::line_up_l_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::move_dir::right:
+				case jactorio::game::Transport_line_segment::moveDir::right:
 					offset_y += jactorio::game::transport_line_c::line_right_l_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::move_dir::down:
+				case jactorio::game::Transport_line_segment::moveDir::down:
 					offset_x += jactorio::game::transport_line_c::line_down_l_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::move_dir::left:
+				case jactorio::game::Transport_line_segment::moveDir::left:
 					offset_y += jactorio::game::transport_line_c::line_left_l_item_offset_y;
 					break;
 			}
@@ -239,16 +239,16 @@ void prepare_object_data(const unsigned layer_index,
 
 				case jactorio::game::Transport_line_segment::terminationType::bend_left:
 					switch (line_segment->direction) {
-						case jactorio::game::Transport_line_segment::move_dir::up:
+						case jactorio::game::Transport_line_segment::moveDir::up:
 							offset_y += jactorio::game::transport_line_c::line_up_bl_l_item_offset_y;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::right:
+						case jactorio::game::Transport_line_segment::moveDir::right:
 							offset_x += jactorio::game::transport_line_c::line_right_bl_l_item_offset_x;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::down:
+						case jactorio::game::Transport_line_segment::moveDir::down:
 							offset_y += jactorio::game::transport_line_c::line_down_bl_l_item_offset_y;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::left:
+						case jactorio::game::Transport_line_segment::moveDir::left:
 							offset_x += jactorio::game::transport_line_c::line_left_bl_l_item_offset_x;
 							break;
 					}
@@ -256,16 +256,16 @@ void prepare_object_data(const unsigned layer_index,
 
 				case jactorio::game::Transport_line_segment::terminationType::bend_right:
 					switch (line_segment->direction) {
-						case jactorio::game::Transport_line_segment::move_dir::up:
+						case jactorio::game::Transport_line_segment::moveDir::up:
 							offset_y += jactorio::game::transport_line_c::line_up_br_l_item_offset_y;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::right:
+						case jactorio::game::Transport_line_segment::moveDir::right:
 							offset_x += jactorio::game::transport_line_c::line_right_br_l_item_offset_x;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::down:
+						case jactorio::game::Transport_line_segment::moveDir::down:
 							offset_y += jactorio::game::transport_line_c::line_down_br_l_item_offset_y;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::left:
+						case jactorio::game::Transport_line_segment::moveDir::left:
 							offset_x += jactorio::game::transport_line_c::line_left_br_l_item_offset_x;
 							break;
 					}
@@ -281,16 +281,16 @@ void prepare_object_data(const unsigned layer_index,
 
 			// The offsets for straight are always applied to bend left and right
 			switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::move_dir::up:
+				case jactorio::game::Transport_line_segment::moveDir::up:
 					offset_x += jactorio::game::transport_line_c::line_up_r_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::move_dir::right:
+				case jactorio::game::Transport_line_segment::moveDir::right:
 					offset_y += jactorio::game::transport_line_c::line_right_r_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::move_dir::down:
+				case jactorio::game::Transport_line_segment::moveDir::down:
 					offset_x += jactorio::game::transport_line_c::line_down_r_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::move_dir::left:
+				case jactorio::game::Transport_line_segment::moveDir::left:
 					offset_y += jactorio::game::transport_line_c::line_left_r_item_offset_y;
 					break;
 			}
@@ -300,16 +300,16 @@ void prepare_object_data(const unsigned layer_index,
 
 				case jactorio::game::Transport_line_segment::terminationType::bend_left:
 					switch (line_segment->direction) {
-						case jactorio::game::Transport_line_segment::move_dir::up:
+						case jactorio::game::Transport_line_segment::moveDir::up:
 							offset_y += jactorio::game::transport_line_c::line_up_bl_r_item_offset_y;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::right:
+						case jactorio::game::Transport_line_segment::moveDir::right:
 							offset_x += jactorio::game::transport_line_c::line_right_bl_r_item_offset_x;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::down:
+						case jactorio::game::Transport_line_segment::moveDir::down:
 							offset_y += jactorio::game::transport_line_c::line_down_bl_r_item_offset_y;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::left:
+						case jactorio::game::Transport_line_segment::moveDir::left:
 							offset_x += jactorio::game::transport_line_c::line_left_bl_r_item_offset_x;
 							break;
 					}
@@ -317,16 +317,16 @@ void prepare_object_data(const unsigned layer_index,
 
 				case jactorio::game::Transport_line_segment::terminationType::bend_right:
 					switch (line_segment->direction) {
-						case jactorio::game::Transport_line_segment::move_dir::up:
+						case jactorio::game::Transport_line_segment::moveDir::up:
 							offset_y += jactorio::game::transport_line_c::line_up_br_r_item_offset_y;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::right:
+						case jactorio::game::Transport_line_segment::moveDir::right:
 							offset_x += jactorio::game::transport_line_c::line_right_br_r_item_offset_x;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::down:
+						case jactorio::game::Transport_line_segment::moveDir::down:
 							offset_y += jactorio::game::transport_line_c::line_down_br_r_item_offset_y;
 							break;
-						case jactorio::game::Transport_line_segment::move_dir::left:
+						case jactorio::game::Transport_line_segment::moveDir::left:
 							offset_x += jactorio::game::transport_line_c::line_left_br_r_item_offset_x;
 							break;
 					}

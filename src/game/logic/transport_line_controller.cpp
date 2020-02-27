@@ -33,6 +33,72 @@ void apply_termination_deduction_r(jactorio::game::Transport_line_segment::termi
 	}
 }
 
+void update_side(std::vector<jactorio::game::transport_line_item>& transition_items,
+				 const float tiles_moved,
+				 jactorio::game::Transport_line_segment* segment,
+				 bool is_left) {
+	std::deque<jactorio::game::transport_line_item>& line_side = is_left ? segment->left : segment->right;
+	uint16_t& index = is_left ? segment->l_index : segment->r_index;
+
+	// Empty or index indicates nothing should be moved
+	if (line_side.empty() || index == line_side.size())
+		return;
+
+	auto& offset = line_side[index].first;
+	offset -= tiles_moved;
+
+	if (index == 0) {
+		// Beginning of transport line
+
+		// The first item in transport line will transition to next segment upon reaching a distance of 0
+		if (offset < 0.f - jactorio::core::transport_line_epsilon) {
+			// Move item to next transport line if it exists
+			if (segment->target_segment) {
+				if (!is_left)  // Invert to positive to indicate it belongs on the right side
+					offset *= -1;
+
+				transition_items.emplace_back(std::move(line_side[index]));
+				line_side.pop_front();  // Remove item now moved away
+
+				// Move the next item forwards to preserve spacing
+				if (!line_side.empty())
+					line_side.front().first -= tiles_moved;
+				return;
+			}
+
+			// Set the item back to 0, the distance will be made up for by decreasing the distance of the next item
+			offset = 0;
+			goto move_next_item;
+		}
+	}
+	else {
+		// Items behind another item in transport line
+
+		// Items following the first item will leave a gap of item_width
+		if (offset > jactorio::game::transport_line_c::item_spacing - jactorio::core::transport_line_epsilon)
+			return;
+
+		// Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
+		offset = jactorio::game::transport_line_c::item_spacing;
+
+		// Set index to the next item with a distance greater than item_width and decrement it
+		move_next_item:
+		for (int i = index + 1; i < line_side.size(); ++i) {
+			auto& i_item_offset = line_side[i].first;
+			if (i_item_offset > jactorio::game::transport_line_c::item_spacing + jactorio::core::transport_line_epsilon) {
+				// Found a valid item to decrement
+				index = i;
+				i_item_offset -= tiles_moved;
+				return;
+			}
+		}
+
+		// Failed to find another item, set to 1 past the index of the last item
+		index = line_side.size();
+	}
+
+}
+
 void jactorio::game::transport_line_c::logic_update(std::queue<Segment_transition_item>& queue, Logic_chunk* l_chunk) {
 	auto& layers = l_chunk->get_struct(Logic_chunk::structLayer::transport_line);
 
@@ -44,33 +110,8 @@ void jactorio::game::transport_line_c::logic_update(std::queue<Segment_transitio
 		auto* line_segment = static_cast<game::Transport_line_segment*>(object_layer.unique_data);
 
 		// Left and right sides of the belt
-		auto& left = line_segment->left;
-		if (!left.empty()) {
-			auto& offset = left.front().first;
-			if ((offset -= line_proto->speed) < 0.f - jactorio::core::transport_line_epsilon) {
-				transition_items.emplace_back(std::move(left.front()));
-				left.pop_front();  // Remove item now moved away
-
-				// Move the next item forwards to preserve spacing
-				if (!left.empty())
-					left.front().first -= line_proto->speed;
-			}
-		}
-
-		auto& right = line_segment->right;
-		if (!right.empty()) {
-			auto& offset = right.front().first;
-			if ((offset -= line_proto->speed) < 0.f - jactorio::core::transport_line_epsilon) {
-				right.front().first *= -1;  // Invert to positive to indicate it belongs on the right side
-				transition_items.emplace_back(std::move(right.front()));
-				right.pop_front();  // Remove item now moved away
-
-				// Move the next item forwards to preserve spacing
-				if (!right.empty())
-					right.front().first -= line_proto->speed;
-			}
-		}
-
+		update_side(transition_items, line_proto->speed, line_segment, true);
+		update_side(transition_items, line_proto->speed, line_segment, false);
 
 		// Add to the chunk transition item queue if it the local queue has items
 		if (!transition_items.empty()) {

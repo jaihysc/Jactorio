@@ -25,19 +25,19 @@ namespace game::logic
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::up,
+			jactorio::game::Transport_line_segment::moveDir::up,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			5);
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::right,
+			jactorio::game::Transport_line_segment::moveDir::right,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			4);
 		auto* down_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::down,
+			jactorio::game::Transport_line_segment::moveDir::down,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			5);
 		auto* left_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::left,
+			jactorio::game::Transport_line_segment::moveDir::left,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			4);
 
@@ -142,11 +142,11 @@ namespace game::logic
 		 */
 
 		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::up,
+			jactorio::game::Transport_line_segment::moveDir::up,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			4);
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::right,
+			jactorio::game::Transport_line_segment::moveDir::right,
 			jactorio::game::Transport_line_segment::terminationType::straight,
 			4);
 
@@ -209,7 +209,7 @@ namespace game::logic
 		EXPECT_NEAR(right_segment->left[2].first, 1.f, jactorio::core::transport_line_epsilon);
 	}
 
-	TEST(transport, line_logic_transition_straight) {
+	TEST(transport_line, line_logic_transition_straight) {
 		// Transferring from a straight segment traveling left to another one traveling left
 		/*
 		 * < ------ LEFT (!) ------		< ------ LEFT (2) -------
@@ -227,11 +227,11 @@ namespace game::logic
 		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
 
 		auto* segment_1 = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::left,
+			jactorio::game::Transport_line_segment::moveDir::left,
 			jactorio::game::Transport_line_segment::terminationType::straight,
 			4);
 		auto* segment_2 = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::left,
+			jactorio::game::Transport_line_segment::moveDir::left,
 			jactorio::game::Transport_line_segment::terminationType::straight,
 			4);
 
@@ -265,6 +265,78 @@ namespace game::logic
 		EXPECT_NEAR(segment_1->right[0].first, 3.99, jactorio::core::transport_line_epsilon);
 	}
 
+	TEST(transport_line, line_logic_stop_at_end_of_line) {
+		// When no target_segment is provided:
+		// First Item will stop at the end of line (Distance is 0)
+		// Trailing items will stop at item_width from the previous item
+
+		using namespace jactorio::game;
+
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
+		transport_belt_proto->speed = 0.01f;
+
+		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+
+		auto chunk = Chunk(0, 0, nullptr);
+		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+
+		auto* segment = new jactorio::game::Transport_line_segment(
+			jactorio::game::Transport_line_segment::moveDir::left,
+			jactorio::game::Transport_line_segment::terminationType::straight, 10);
+
+		{
+			auto& structs = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line);
+			auto& seg_1 = structs.emplace_back(transport_belt_proto.get(), 0, 0);
+			seg_1.unique_data = segment;
+		}
+
+		transport_line_c::belt_insert_item(true, segment, 0.5f, item_proto.get());
+		transport_line_c::belt_insert_item(true, segment, transport_line_c::item_spacing, item_proto.get());
+		transport_line_c::belt_insert_item(true, segment, transport_line_c::item_spacing + 1.f, item_proto.get());
+
+		// Will reach distance 0 after 0.5 / 0.01 updates
+		std::queue<jactorio::game::transport_line_c::Segment_transition_item> queue;
+		for (int i = 0; i < 50; ++i) {
+			transport_line_c::logic_update(queue, logic_chunk);
+			transport_line_c::logic_process_queued_items(queue);
+		}
+
+		EXPECT_EQ(segment->l_index, 0);
+		EXPECT_NEAR(segment->left[0].first, 0, jactorio::core::transport_line_epsilon);
+
+		// On the next update, with no target segment, first item is kept at 0, second item untouched
+		// move index to 2 (was 0) as it has a distance greater than item_width
+		transport_line_c::logic_update(queue, logic_chunk);
+		transport_line_c::logic_process_queued_items(queue);
+
+		EXPECT_EQ(segment->l_index, 2);
+		EXPECT_NEAR(segment->left[0].first, 0, jactorio::core::transport_line_epsilon);
+		EXPECT_NEAR(segment->left[1].first, transport_line_c::item_spacing, jactorio::core::transport_line_epsilon);
+		EXPECT_NEAR(segment->left[2].first, transport_line_c::item_spacing + 0.99f, jactorio::core::transport_line_epsilon);
+
+		// After 0.2 + 0.99 / 0.01 updates, the Third item will not move in following updates
+		for (int j = 0; j < 99; ++j) {
+			transport_line_c::logic_update(queue, logic_chunk);
+			transport_line_c::logic_process_queued_items(queue);
+		}
+		EXPECT_NEAR(segment->left[2].first, transport_line_c::item_spacing, jactorio::core::transport_line_epsilon);
+
+		// Index set to 3 (indicating the current items should not be moved)
+		// Should not move after further updates
+		transport_line_c::logic_update(queue, logic_chunk);
+		transport_line_c::logic_process_queued_items(queue);
+		EXPECT_EQ(segment->l_index, 3);
+		EXPECT_NEAR(segment->left[2].first, transport_line_c::item_spacing, jactorio::core::transport_line_epsilon);
+
+
+		// Updates not do nothing as index is at 3, where no item exists
+		for (int k = 0; k < 50; ++k) {
+			transport_line_c::logic_update(queue, logic_chunk);
+			transport_line_c::logic_process_queued_items(queue);
+		}
+	}
+
 	TEST(transport_line, line_logic_item_spacing) {
 		// A minimum distance of transport_line_c::item_spacing is maintained between items
 		using namespace jactorio::game;
@@ -278,7 +350,7 @@ namespace game::logic
 		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
 
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::right,
+			jactorio::game::Transport_line_segment::moveDir::right,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			4);
 
@@ -305,7 +377,7 @@ namespace game::logic
 
 		// Segments (Logic chunk must be created first)
 		auto* line_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::move_dir::up,
+			jactorio::game::Transport_line_segment::moveDir::up,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			5);
 
