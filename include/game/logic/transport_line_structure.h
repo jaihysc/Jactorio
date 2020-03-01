@@ -91,6 +91,14 @@ namespace jactorio::game
 
 		// Length of this segment in tiles
 		uint8_t segment_length;
+
+
+		/**
+		 * Returns true if an item can be inserted into this transport line
+		 * @param start_offset Item offset from the start of transport line in tiles
+		 * @return
+		 */
+		J_NODISCARD bool can_insert(bool left_side, float start_offset);
 	};
 }
 

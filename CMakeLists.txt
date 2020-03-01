@@ -59,25 +59,26 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
 
-	${JACTORIO_DIR}/game/player/player_manager.cpp
+		${JACTORIO_DIR}/game/player/player_manager.cpp
 
-	${JACTORIO_DIR}/game/world/chunk.cpp
-	${JACTORIO_DIR}/game/world/chunk_tile.cpp
-	${JACTORIO_DIR}/game/world/world_manager.cpp
-	${JACTORIO_DIR}/game/world/world_generator.cpp
+		${JACTORIO_DIR}/game/world/chunk.cpp
+		${JACTORIO_DIR}/game/world/chunk_tile.cpp
+		${JACTORIO_DIR}/game/world/world_manager.cpp
+		${JACTORIO_DIR}/game/world/world_generator.cpp
 
-	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
-	${JACTORIO_DIR}/game/logic/placement_controller.cpp
-	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
+		${JACTORIO_DIR}/game/logic/inventory_controller.cpp
+		${JACTORIO_DIR}/game/logic/placement_controller.cpp
+		${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
+		${JACTORIO_DIR}/game/logic/transport_line_structure.cpp
 
 
-	${JACTORIO_DIR}/renderer/render_main.cpp
+		${JACTORIO_DIR}/renderer/render_main.cpp
 
-	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
-	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
-	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
-	${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
-	${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
+		${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
+		${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
+		${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
+		${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
+		${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
 
 	${JACTORIO_DIR}/renderer/opengl/error.cpp
 	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
@@ -116,24 +117,25 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
-	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
-	${JACTORIO_TEST_DIR}/game/player/player_managerTests.cpp
-	${JACTORIO_TEST_DIR}/game/eventTests.cpp
+		${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
+		${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
+		${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
+		${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
+		${JACTORIO_TEST_DIR}/game/player/player_managerTests.cpp
+		${JACTORIO_TEST_DIR}/game/eventTests.cpp
 
-	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
+		${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
+		${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
+		${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
+		${JACTORIO_TEST_DIR}/game/logic/transport_line_structureTests.cpp
 
-	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
-	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
-	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
-	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_layerTests.cpp
+		${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
+		${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
+		${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
+		${JACTORIO_TEST_DIR}/renderer/rendering/renderer_layerTests.cpp
 
-	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
-)
+		${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
+		)
 
 
 ############# Dependencies #############

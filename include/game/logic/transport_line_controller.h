@@ -52,48 +52,51 @@ namespace jactorio::game::transport_line_c
 	// Width of one item on a belt (in tiles)
 	constexpr float item_width = 0.4f;
 	// Distance left between each item when transport line is fully compressed (in tiles)
-	constexpr float item_spacing = 0.2f;
+	constexpr float item_spacing = 0.25f;
 
 	// Number of tiles to offset items in order to line up on the L / R sides of the belt for all 4 directions
 	// Direction is direction of item movement for the transport line
 
-	constexpr float line_up_l_item_offset_x = 0.3f - item_width / 2;
-	constexpr float line_up_r_item_offset_x = 0.7f - item_width / 2;
+	constexpr float line_base_offset_left = 0.3;
+	constexpr float line_base_offset_right = 0.7;
 
-	constexpr float line_right_l_item_offset_y = 0.3f - item_width / 2;
-	constexpr float line_right_r_item_offset_y = 0.7f - item_width / 2;
+	constexpr float line_up_l_item_offset_x = line_base_offset_left - item_width / 2;
+	constexpr float line_up_r_item_offset_x = line_base_offset_right - item_width / 2;
 
-	constexpr float line_down_l_item_offset_x = 0.7f - item_width / 2;
-	constexpr float line_down_r_item_offset_x = 0.3f - item_width / 2;
+	constexpr float line_right_l_item_offset_y = line_base_offset_left - item_width / 2;
+	constexpr float line_right_r_item_offset_y = line_base_offset_right - item_width / 2;
 
-	constexpr float line_left_l_item_offset_y = 0.7f - item_width / 2;
-	constexpr float line_left_r_item_offset_y = 0.3f - item_width / 2;
+	constexpr float line_down_l_item_offset_x = line_base_offset_right - item_width / 2;
+	constexpr float line_down_r_item_offset_x = line_base_offset_left - item_width / 2;
+
+	constexpr float line_left_l_item_offset_y = line_base_offset_right - item_width / 2;
+	constexpr float line_left_r_item_offset_y = line_base_offset_left - item_width / 2;
 
 	// Bend left
-	constexpr float line_up_bl_l_item_offset_y = 0.7f - item_width / 2;
-	constexpr float line_up_bl_r_item_offset_y = 0.3f - item_width / 2;
+	constexpr float line_up_bl_l_item_offset_y = line_base_offset_right - item_width / 2;
+	constexpr float line_up_bl_r_item_offset_y = line_base_offset_left - item_width / 2;
 
-	constexpr float line_right_bl_l_item_offset_x = 0.3f - item_width / 2;
-	constexpr float line_right_bl_r_item_offset_x = 0.7f - item_width / 2;
+	constexpr float line_right_bl_l_item_offset_x = line_base_offset_left - item_width / 2;
+	constexpr float line_right_bl_r_item_offset_x = line_base_offset_right - item_width / 2;
 
-	constexpr float line_down_bl_l_item_offset_y = 0.3f - item_width / 2;
-	constexpr float line_down_bl_r_item_offset_y = 0.7f - item_width / 2;
+	constexpr float line_down_bl_l_item_offset_y = line_base_offset_left - item_width / 2;
+	constexpr float line_down_bl_r_item_offset_y = line_base_offset_right - item_width / 2;
 
-	constexpr float line_left_bl_l_item_offset_x = 0.7f - item_width / 2;
-	constexpr float line_left_bl_r_item_offset_x = 0.3f - item_width / 2;
+	constexpr float line_left_bl_l_item_offset_x = line_base_offset_right - item_width / 2;
+	constexpr float line_left_bl_r_item_offset_x = line_base_offset_left - item_width / 2;
 
 	// Bend right
-	constexpr float line_up_br_l_item_offset_y = 0.3f - item_width / 2;
-	constexpr float line_up_br_r_item_offset_y = 0.7f - item_width / 2;
+	constexpr float line_up_br_l_item_offset_y = line_base_offset_left - item_width / 2;
+	constexpr float line_up_br_r_item_offset_y = line_base_offset_right - item_width / 2;
 
-	constexpr float line_right_br_l_item_offset_x = 0.7f - item_width / 2;
-	constexpr float line_right_br_r_item_offset_x = 0.3f - item_width / 2;
+	constexpr float line_right_br_l_item_offset_x = line_base_offset_right - item_width / 2;
+	constexpr float line_right_br_r_item_offset_x = line_base_offset_left - item_width / 2;
 
-	constexpr float line_down_br_l_item_offset_y = 0.7f - item_width / 2;
-	constexpr float line_down_br_r_item_offset_y = 0.3f - item_width / 2;
+	constexpr float line_down_br_l_item_offset_y = line_base_offset_right - item_width / 2;
+	constexpr float line_down_br_r_item_offset_y = line_base_offset_left - item_width / 2;
 
-	constexpr float line_left_br_l_item_offset_x = 0.3f - item_width / 2;
-	constexpr float line_left_br_r_item_offset_x = 0.7f - item_width / 2;
+	constexpr float line_left_br_l_item_offset_x = line_base_offset_left - item_width / 2;
+	constexpr float line_left_br_r_item_offset_x = line_base_offset_right - item_width / 2;
 
 
 	/**

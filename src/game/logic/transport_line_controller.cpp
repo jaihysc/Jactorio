@@ -52,18 +52,33 @@ void update_side(std::vector<jactorio::game::transport_line_item>& transition_it
 
 		// The first item in transport line will transition to next segment upon reaching a distance of 0
 		if (offset < 0.f - jactorio::core::transport_line_epsilon) {
-			// Move item to next transport line if it exists
+			// Move item to next transport line if it exists and can be inserted to
 			if (segment->target_segment) {
-				if (!is_left)  // Invert to positive to indicate it belongs on the right side
-					offset *= -1;
+				float target_offset = static_cast<float>(segment->target_segment->segment_length) - fabs(offset);
+				// Account for the termination type of the line segments for the offset from start to insert into
+				if (is_left) {
+					apply_termination_deduction_l(segment->termination_type, target_offset);
+					apply_termination_deduction_l(segment->target_segment->termination_type, target_offset);
+				}
+				else {
+					apply_termination_deduction_r(segment->termination_type, target_offset);
+					apply_termination_deduction_r(segment->target_segment->termination_type, target_offset);
+				}
 
-				transition_items.emplace_back(std::move(line_side[index]));
-				line_side.pop_front();  // Remove item now moved away
+				// Subtract one item_spacing since it places 1 extra item
+				if (segment->target_segment->can_insert(is_left, target_offset)) {
 
-				// Move the next item forwards to preserve spacing
-				if (!line_side.empty())
-					line_side.front().first -= tiles_moved;
-				return;
+					if (!is_left)  // Invert to positive to indicate it belongs on the right side
+						offset *= -1;
+
+					transition_items.emplace_back(std::move(line_side[index]));
+					line_side.pop_front();  // Remove item now moved away
+
+					// Move the next item forwards to preserve spacing
+					if (!line_side.empty())
+						line_side.front().first -= tiles_moved;
+					return;
+				}
 			}
 
 			// Set the item back to 0, the distance will be made up for by decreasing the distance of the next item

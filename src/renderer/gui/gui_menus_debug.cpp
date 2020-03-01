@@ -1,7 +1,6 @@
 #include "renderer/gui/gui_menus_debug.h"
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "jactorio.h"
 
@@ -20,10 +19,10 @@ bool show_demo_window = false;
 bool show_item_spawner_window = false;
 
 // Game
-bool show_belt_item_position_update_points = false;
+bool show_belt_structure = false;
 
 void jactorio::renderer::gui::debug_menu_logic() {
-	if (show_belt_item_position_update_points) {
+	if (show_belt_structure) {
 		// Sprite representing the update point
 		auto* sprite_stop =
 			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-stop");
@@ -44,38 +43,38 @@ void jactorio::renderer::gui::debug_menu_logic() {
 			auto& object_layer = l_chunk.chunk->get_object(game::Chunk::objectLayer::debug_overlay);
 			object_layer.clear();
 
-			// TODO
-//			for (auto& update_point : l_chunk.transport_line_updates) {
-//				// Correspond the direction with a sprite representing the direction
-//				data::Sprite* sprite;
-//				switch (update_point.second) {
-//
-//				case data::Transport_line_item_data::move_dir::stop:
-//					sprite = sprite_stop;
-//					break;
-//
-//				case data::Transport_line_item_data::move_dir::up:
-//					sprite = sprite_up;
-//					break;
-//				case data::Transport_line_item_data::move_dir::right:
-//					sprite = sprite_right;
-//					break;
-//				case data::Transport_line_item_data::move_dir::down:
-//					sprite = sprite_down;
-//					break;
-//				case data::Transport_line_item_data::move_dir::left:
-//					sprite = sprite_left;
-//					break;
-//
-//				default:
-//					assert(false);  // Missing case label
-//				}
-//
-//				objectLayer
-//					.emplace_back(sprite,
-//					              update_point.first.first, update_point.first.second,
-//					              game::transport_line_c::item_width, game::transport_line_c::item_width);
-//			}
+			for (auto& l_struct : l_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line)) {
+				auto* line_segment = static_cast<game::Transport_line_segment*>(l_struct.unique_data);
+
+				// Correspond the direction with a sprite representing the direction
+				switch (line_segment->direction) {
+					default:
+						assert(false);  // Missing case label
+
+					case game::Transport_line_segment::moveDir::up:
+						object_layer.emplace_back(sprite_up,
+												  l_struct.position_x, l_struct.position_y,
+												  1, line_segment->segment_length);
+						break;
+					case game::Transport_line_segment::moveDir::right:
+						object_layer.emplace_back(sprite_right,
+												  l_struct.position_x - line_segment->segment_length + 1, l_struct.position_y,
+												  line_segment->segment_length, 1);
+						break;
+					case game::Transport_line_segment::moveDir::down:
+						object_layer.emplace_back(sprite_down,
+												  l_struct.position_x, l_struct.position_y - line_segment->segment_length + 1,
+												  1, line_segment->segment_length);
+						break;
+					case game::Transport_line_segment::moveDir::left:
+						object_layer.emplace_back(sprite_left,
+												  l_struct.position_x, l_struct.position_y,
+												  line_segment->segment_length, 1);
+						break;
+				}
+
+
+			}
 		}
 	}
 
@@ -101,21 +100,21 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 
 	if (ImGui::CollapsingHeader("Game")) {
 		ImGui::Text("Cursor position: %f, %f",
-		            game::mouse_selection::get_position_x(),
-		            game::mouse_selection::get_position_y());
+					game::mouse_selection::get_position_x(),
+					game::mouse_selection::get_position_y());
 
 		ImGui::Text("Player position %f %f",
-		            game::player_manager::get_player_position_x(),
-		            game::player_manager::get_player_position_y());
+					game::player_manager::get_player_position_x(),
+					game::player_manager::get_player_position_y());
 
-		ImGui::Text("Chunk updates: %d", game::world_manager::logic_get_all_chunks().size());
+		ImGui::Text("Chunk updates: %llu", game::world_manager::logic_get_all_chunks().size());
 
 
 		int seed = game::world_generator::get_world_generator_seed();
 		ImGui::InputInt("World generator seed", &seed);
 		game::world_generator::set_world_generator_seed(seed);
 
-		ImGui::Checkbox("Show belt item position update points", &show_belt_item_position_update_points);
+		ImGui::Checkbox("Show belt structures", &show_belt_structure);
 	}
 
 	ImGui::Separator();
