@@ -274,6 +274,50 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 
 		});
 	}, GLFW_KEY_3, GLFW_RELEASE);
+	input_manager::subscribe([]() {
+		auto* chunk = world_manager::get_chunk(-1, 0);
+		auto& logic_chunk = world_manager::logic_add_chunk(chunk);
+
+		auto* belt_proto =
+			data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
+																   "__base__/transport-belt-basic");
+
+		// Segments (Logic chunk must be created first)
+		auto* up_segment = new jactorio::game::Transport_line_segment(
+			jactorio::game::Transport_line_segment::moveDir::up,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			6);
+		auto* right_segment = new jactorio::game::Transport_line_segment(
+			jactorio::game::Transport_line_segment::moveDir::right,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			5);
+
+		// What each transport segment empties into
+		up_segment->target_segment = right_segment;
+
+		auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
+			.emplace_back(belt_proto, 0, 0);
+		up.unique_data = up_segment;
+
+		auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
+			.emplace_back(belt_proto, 4, 0);
+		right.unique_data = right_segment;
+
+		// Insert item
+		auto* proto =
+			data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+														 "__base__/transport-belt-basic-item");
+		auto* proto_2 =
+			data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+														 "__base__/steel-chest-item");
+
+		transport_line_c::belt_insert_item(true, up_segment, 1.f, proto_2);
+		transport_line_c::belt_insert_item(false, up_segment, 1.f, proto_2);
+		for (int i = 0; i < 1; ++i) {
+			transport_line_c::belt_insert_item(true, up_segment, 0.f, proto);
+			transport_line_c::belt_insert_item(false, up_segment, 0.f, proto);
+		}
+	}, GLFW_KEY_4, GLFW_RELEASE);
 
 	// Runtime
 	auto next_frame = std::chrono::steady_clock::now();
@@ -302,11 +346,7 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 			{
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-				std::queue<transport_line_c::Segment_transition_item> queue;
-				for (auto& logic_chunk : world_manager::logic_get_all_chunks()) {
-					transport_line_c::logic_update(queue, &logic_chunk.second);
-				}
-				transport_line_c::logic_process_queued_items(queue);
+				transport_line_c::transport_line_logic_update();
 			}
 		}
 

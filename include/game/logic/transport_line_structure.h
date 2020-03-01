@@ -99,6 +99,20 @@ namespace jactorio::game
 		 * @return
 		 */
 		J_NODISCARD bool can_insert(bool left_side, float start_offset);
+
+
+		/**
+		 * @return true if left size is not empty and has a valid index
+		 */
+		J_NODISCARD bool is_active_left() {
+			return !(left.empty() || l_index >= left.size());
+		}
+		/**
+		 * @return  true if right side is not empty and has a valid index
+		 */
+		J_NODISCARD bool is_active_right() {
+			return !(right.empty() || r_index >= right.size());
+		}
 	};
 }
 

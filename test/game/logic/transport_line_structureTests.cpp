@@ -85,3 +85,25 @@ TEST(transport_line_structure, can_insert_gap) {
 	// Sufficient space ahead and behind
 	EXPECT_TRUE(segment->can_insert(false, 1.25));
 }
+
+TEST(transport_line_structure, is_active) {
+	// Insert into a gap between 1 and 1.5
+	// Is wide enough for the item (item_width - item_spacing) to fit there
+	TRANSPORT_LINE_SEGMENT
+
+	EXPECT_FALSE(segment->is_active_left());
+	EXPECT_FALSE(segment->is_active_right());
+
+	transport_line_c::belt_insert_item(false, segment, 0.f, item_proto.get());
+	transport_line_c::belt_insert_item(true, segment, 0.f, item_proto.get());
+
+	// Has items, now active
+	EXPECT_TRUE(segment->is_active_left());
+	EXPECT_TRUE(segment->is_active_right());
+
+	// Invalid indices, inactive
+	segment->l_index = 100;
+	segment->r_index = 100;
+	EXPECT_FALSE(segment->is_active_left());
+	EXPECT_FALSE(segment->is_active_right());
+}

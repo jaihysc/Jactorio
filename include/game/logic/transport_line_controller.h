@@ -1,5 +1,5 @@
-#ifndef GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
-#define GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
 
 #include "game/world/logic_chunk.h"
 
@@ -100,35 +100,24 @@ namespace jactorio::game::transport_line_c
 
 
 	/**
-	 * Holds items which are to be transferred to another transport line
+	 * Moves items for transport lines
+	 * @param l_chunk Chunk to update
 	 */
-	struct Segment_transition_item
-	{
-		Segment_transition_item(Transport_line_segment* target_segment, Transport_line_segment* previous_segment,
-								std::vector<transport_line_item>&& items)
-			: target_segment(target_segment), previous_segment(previous_segment), items(std::move(items)) {
-		}
+	void logic_update_move_items(Logic_chunk* l_chunk);
 
-		game::Transport_line_segment* target_segment;
-		game::Transport_line_segment* previous_segment;
+	/**
+	 * Transitions items on transport lines to other lines and modifies whether of not the line is active
+	 * @param l_chunk Chunk to update
+	 */
+	void logic_update_transition_items(Logic_chunk* l_chunk);
 
-		// The offset in transport_line_item is negative to indicate it belongs to the left side, positive for right
-		std::vector<transport_line_item> items;
-	};
 
 	/**
 	 * Updates belt logic for a logic chunk
 	 * @param queue Queue of items which needs to be moved into another line segment as it has crossed this one's end <br>
 	 * @param l_chunk Chunk to update
 	 */
-	void logic_update(std::queue<Segment_transition_item>& queue, Logic_chunk* l_chunk);
-
-	/**
-	 * Attempts to move items in the queue to their new transport line segments
-	 * The queue is empty and will be usable after calling this
-	 * @param queue  Queue to process
-	 */
-	void logic_process_queued_items(std::queue<Segment_transition_item>& queue);
+	void transport_line_logic_update();
 
 
 	// Item insertion
@@ -140,4 +129,4 @@ namespace jactorio::game::transport_line_c
 	void belt_insert_item(bool insert_left, game::Transport_line_segment* belt, float offset, data::Item* item);
 }
 
-#endif // GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
+#endif //JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
