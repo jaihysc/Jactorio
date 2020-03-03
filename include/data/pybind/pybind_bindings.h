@@ -1,5 +1,5 @@
-#ifndef DATA_PYBIND_PYBIND_BINDINGS_H
-#define DATA_PYBIND_PYBIND_BINDINGS_H
+#ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
+#define JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -154,7 +154,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	// Belts
 	PYBIND_DATA_CLASS_ABSTRACT(Transport_line, TransportLine, Health_entity, transport_line)
-		PYBIND_PROP(Transport_line, speed);
+		PYBIND_PROP_S(Transport_line, speed, speed_float);
 
 	PYBIND_DATA_CLASS(Transport_belt, TransportBelt, Transport_line, transport_belt);
 
@@ -209,4 +209,4 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 #undef PYBIND_PROP_GET_SET
 
 
-#endif // DATA_PYBIND_PYBIND_BINDINGS_H
+#endif //JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H

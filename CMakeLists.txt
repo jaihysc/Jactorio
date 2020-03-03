@@ -37,6 +37,9 @@ set(JACTORIO_INCLUDE_FILES
 	${PROJECT_SOURCE_DIR}/lib/pybind11/include
 	${PROJECT_SOURCE_DIR}/lib/libnoise/include
 	${PROJECT_SOURCE_DIR}/lib/SDL-mirror/include
+
+	${PROJECT_SOURCE_DIR}/lib/decimal_for_cpp/include
+
 )
 #------------ Source files .cpp
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
@@ -59,26 +62,26 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
 
-		${JACTORIO_DIR}/game/player/player_manager.cpp
+	${JACTORIO_DIR}/game/player/player_manager.cpp
 
-		${JACTORIO_DIR}/game/world/chunk.cpp
-		${JACTORIO_DIR}/game/world/chunk_tile.cpp
-		${JACTORIO_DIR}/game/world/world_manager.cpp
-		${JACTORIO_DIR}/game/world/world_generator.cpp
+	${JACTORIO_DIR}/game/world/chunk.cpp
+	${JACTORIO_DIR}/game/world/chunk_tile.cpp
+	${JACTORIO_DIR}/game/world/world_manager.cpp
+	${JACTORIO_DIR}/game/world/world_generator.cpp
 
-		${JACTORIO_DIR}/game/logic/inventory_controller.cpp
-		${JACTORIO_DIR}/game/logic/placement_controller.cpp
-		${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
-		${JACTORIO_DIR}/game/logic/transport_line_structure.cpp
+	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
+	${JACTORIO_DIR}/game/logic/placement_controller.cpp
+	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
+	${JACTORIO_DIR}/game/logic/transport_line_structure.cpp
 
 
-		${JACTORIO_DIR}/renderer/render_main.cpp
+	${JACTORIO_DIR}/renderer/render_main.cpp
 
-		${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
-		${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
-		${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
-		${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
-		${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
+	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
+	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
+	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
+	${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
+	${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
 
 	${JACTORIO_DIR}/renderer/opengl/error.cpp
 	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
@@ -117,25 +120,25 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
-		${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
-		${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
-		${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
-		${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
-		${JACTORIO_TEST_DIR}/game/player/player_managerTests.cpp
-		${JACTORIO_TEST_DIR}/game/eventTests.cpp
+	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/player/player_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/eventTests.cpp
 
-		${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
-		${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
-		${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
-		${JACTORIO_TEST_DIR}/game/logic/transport_line_structureTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/transport_line_structureTests.cpp
 
-		${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
-		${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
-		${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
-		${JACTORIO_TEST_DIR}/renderer/rendering/renderer_layerTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_gridTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_layerTests.cpp
 
-		${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
-		)
+	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
+)
 
 
 ############# Dependencies #############
@@ -147,7 +150,7 @@ function(validate_dependency DEPENDENCY_PATH)
 	if((NOT EXISTS ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}) OR (RES_LEN EQUAL 0))
 		message("Installing missing dependency ${DEPENDENCY_PATH}")
 
-		execute_process(COMMAND git submodule update --init -- ${DEPENDENCY_PATH}
+		execute_process(COMMAND git submodule update --init --recursive -- ${DEPENDENCY_PATH}
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	else()
 		message("Found dependency ${DEPENDENCY_PATH}")
@@ -163,6 +166,7 @@ validate_dependency(lib/imgui/imgui)	# NC
 validate_dependency(lib/pybind11)
 validate_dependency(lib/libnoise)
 validate_dependency(lib/SDL-mirror)
+validate_dependency(lib/decimal_for_cpp)
 
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)

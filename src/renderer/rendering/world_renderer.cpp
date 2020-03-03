@@ -172,7 +172,7 @@ void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
 
 	for (const auto& line_item : line_segment_side) {
 		// Move the target offset (up or down depending on multiplier)
-		*target_offset += line_item.first * multiplier;
+		*target_offset += line_item.first.getAsDouble() * multiplier;
 
 		const auto& uv_pos = jactorio::renderer::Renderer::get_spritemap_coords(line_item.second->sprite->internal_id);
 
@@ -186,12 +186,13 @@ void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
 				{
 					{top_x, top_y},
 					{
-						top_x
+						static_cast<float>(top_x
 						+ jactorio::game::transport_line_c::item_width *
-						  static_cast<float>(jactorio::renderer::Renderer::tile_width),
-						top_y
+						  static_cast<float>(jactorio::renderer::Renderer::tile_width)),
+
+						static_cast<float>(top_y
 						+ jactorio::game::transport_line_c::item_width *
-						  static_cast<float>(jactorio::renderer::Renderer::tile_width)
+						  static_cast<float>(jactorio::renderer::Renderer::tile_width))
 					},
 				},
 				{   uv_pos.top_left, uv_pos.bottom_right}

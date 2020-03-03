@@ -53,10 +53,12 @@ The installation of dependencies listed below is automatic
 
 However, they may carry additional dependencies you will need to manually install
 
+* [decimal_for_cpp](https://github.com/vpiotr/decimal_for_cpp)
 * [GLEW](http://glew.sourceforge.net/)
 * [GLFW](https://www.glfw.org/)
-* [stb](https://github.com/nothings/stb)
 * [glm](https://github.com/g-truc/glm)
 * [imgui](https://github.com/ocornut/imgui)
-* [SDL2](https://github.com/spurious/SDL-mirror)
 * [libnoise](https://github.com/jaihysc/libnoise)
+* [pybind11](https://github.com/pybind/pybind11)
+* [SDL2](https://github.com/spurious/SDL-mirror)
+* [stb](https://github.com/nothings/stb)

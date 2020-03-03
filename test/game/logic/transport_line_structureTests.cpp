@@ -56,13 +56,15 @@ TEST(transport_line_structure, can_insert_filled_transport_line) {
 //	transport_line_c::belt_insert_item(true, segment, transport_line_c::item_spacing, item_proto.get());
 
 	// Location 1.75 tiles from beginning of transport line is filled
-	EXPECT_FALSE(segment->can_insert(true, 1.75));
+	EXPECT_FALSE(segment->can_insert(true,
+									 dec::decimal_cast<jactorio::transport_line_decimal_place>(1.75)));
 }
 
 TEST(transport_line_structure, can_insert_empty_transport_line) {
 	// THe entire transport line is empty and can thus insert
 	TRANSPORT_LINE_SEGMENT
-	EXPECT_TRUE(segment->can_insert(false, 1.75));
+	EXPECT_TRUE(segment->can_insert(false,
+									dec::decimal_cast<jactorio::transport_line_decimal_place>(1.75)));
 }
 
 TEST(transport_line_structure, can_insert_gap) {
@@ -77,13 +79,16 @@ TEST(transport_line_structure, can_insert_gap) {
 
 
 	// Overlaps with the item at 1 by 0.01
-	EXPECT_FALSE(segment->can_insert(false, transport_line_c::item_spacing - 0.01));
+	EXPECT_FALSE(segment->can_insert(false,
+									 dec::decimal_cast<jactorio::transport_line_decimal_place>(transport_line_c::item_spacing - 0.01)));
 	// Will overlap with item at 1.5
-	EXPECT_FALSE(segment->can_insert(false, 1.45));
+	EXPECT_FALSE(segment->can_insert(false,
+									 dec::decimal_cast<jactorio::transport_line_decimal_place>(1.45)));
 
 
 	// Sufficient space ahead and behind
-	EXPECT_TRUE(segment->can_insert(false, 1.25));
+	EXPECT_TRUE(segment->can_insert(false,
+									dec::decimal_cast<jactorio::transport_line_decimal_place>(1.25)));
 }
 
 TEST(transport_line_structure, is_active) {

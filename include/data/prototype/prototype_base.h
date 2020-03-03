@@ -1,5 +1,9 @@
-#ifndef DATA_PROTOTYPE_PROTOTYPE_BASE_H
-#define DATA_PROTOTYPE_PROTOTYPE_BASE_H
+//
+// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
+//
+
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
 
 #include <string>
 
@@ -145,7 +149,14 @@ namespace jactorio::data
 			assert(false);  // Not implemented
 			return nullptr;
 		}
-		
+
+
+		/**
+		 * Called after all prototypes are loaded
+		 */
+		virtual void post_load() {
+		}
+
 		/**
 		 * Validates properties of the prototype are valid
 		 * @exception data::Data_exception If invalid
@@ -154,4 +165,4 @@ namespace jactorio::data
 	};
 }
 
-#endif // DATA_PROTOTYPE_PROTOTYPE_BASE_H
+#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H

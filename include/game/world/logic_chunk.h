@@ -16,10 +16,10 @@ namespace jactorio::game
 	class Logic_chunk
 	{
 	public:
-		Logic_chunk()
-			: chunk(nullptr) {
-			assert(false);  // A chunk pointer needs to be provided - Was there a logic chunk created when it was accessed?
-		}
+//		Logic_chunk()
+//			: chunk(nullptr) {
+//			assert(false);  // A chunk pointer needs to be provided - Was there a logic chunk created when it was accessed?
+//		}
 
 		explicit Logic_chunk(Chunk* chunk)
 			: chunk(chunk) {

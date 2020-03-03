@@ -7,6 +7,7 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
 
 #include "data/prototype/item/item.h"
+#include "core/data_type.h"
 
 #include <deque>
 
@@ -16,7 +17,7 @@ namespace jactorio::game
 	 * Item on a transport line
 	 * Tile distance from next item or end of transport line, pointer to item
 	 */
-	using transport_line_item = std::pair<float, data::Item*>;
+	using transport_line_item = std::pair<transport_line_offset, data::Item*>;
 
 	/**
 	 * 	Stores a collection of items heading in one direction
@@ -43,11 +44,11 @@ namespace jactorio::game
 		 *     |    |    *
 		 *     |    |    *
 		 */
-		static constexpr float bend_left_l_reduction = 0.7;
-		static constexpr float bend_left_r_reduction = 0.3;
+		static constexpr double bend_left_l_reduction = 0.7;
+		static constexpr double bend_left_r_reduction = 0.3;
 
-		static constexpr float bend_right_l_reduction = 0.3;
-		static constexpr float bend_right_r_reduction = 0.7;
+		static constexpr double bend_right_l_reduction = 0.3;
+		static constexpr double bend_right_r_reduction = 0.7;
 
 		enum class terminationType
 		{
@@ -98,7 +99,7 @@ namespace jactorio::game
 		 * @param start_offset Item offset from the start of transport line in tiles
 		 * @return
 		 */
-		J_NODISCARD bool can_insert(bool left_side, float start_offset);
+		J_NODISCARD bool can_insert(bool left_side, const transport_line_offset& start_offset);
 
 
 		/**

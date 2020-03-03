@@ -1,14 +1,23 @@
-#ifndef CORE_DATA_TYPE_H
-#define CORE_DATA_TYPE_H
+#ifndef JACTORIO_INCLUDE_CORE_DATA_TYPE_H
+#define JACTORIO_INCLUDE_CORE_DATA_TYPE_H
+
+#include <decimal.h>
 
 #include <tuple>
+
+// Data types of the various components within Jactorio
+namespace jactorio
+{
+	constexpr int transport_line_decimal_place = 3;
+	using transport_line_offset = dec::decimal<transport_line_decimal_place>;
+}
 
 namespace jactorio::core
 {
 	// Defines standard data pairs for use across this application
 	// This is used for better naming compared to std::pair's .first and .second
-	
-	template <typename T>
+
+	template<typename T>
 	struct Position2
 	{
 		Position2()
@@ -81,4 +90,4 @@ namespace jactorio::core
 	};
 }
 
-#endif // CORE_DATA_TYPE_H
+#endif //JACTORIO_INCLUDE_CORE_DATA_TYPE_H

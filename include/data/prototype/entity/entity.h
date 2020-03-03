@@ -1,5 +1,9 @@
-#ifndef DATA_PROTOTYPE_ENTITY_ENTITY_H
-#define DATA_PROTOTYPE_ENTITY_ENTITY_H
+//
+// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
+//
+
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
 
 #include "jactorio.h"
 #include "data/prototype/prototype_base.h"
@@ -115,4 +119,4 @@ namespace jactorio::data
 	}
 }
 
-#endif // DATA_PROTOTYPE_ENTITY_ENTITY_H
+#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H

@@ -1,3 +1,7 @@
+//
+// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
+//
+
 #include "data/data_manager.h"
 
 #include <filesystem>
@@ -145,6 +149,7 @@ void jactorio::data::data_manager::load_data(
 		for (auto& pair : pairs) {
 			try {
 				auto& prototype = pair.second;
+				prototype->post_load();
 				prototype->post_load_validate();
 			}
 			catch (Data_exception& e) {

@@ -1,10 +1,15 @@
+//
+// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
+//
+
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
 #define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
 
 #include "game/world/logic_chunk.h"
 
 #include "data/prototype/item/item.h"
-#include "transport_line_structure.h"
+#include "game/logic/transport_line_structure.h"
+#include "core/data_type.h"
 
 #include <queue>
 #include <utility>
@@ -50,53 +55,53 @@ namespace jactorio::game::transport_line_c
 	 */
 
 	// Width of one item on a belt (in tiles)
-	constexpr float item_width = 0.4f;
+	constexpr double item_width = 0.4f;
 	// Distance left between each item when transport line is fully compressed (in tiles)
-	constexpr float item_spacing = 0.25f;
+	constexpr double item_spacing = 0.25f;
 
 	// Number of tiles to offset items in order to line up on the L / R sides of the belt for all 4 directions
 	// Direction is direction of item movement for the transport line
 
-	constexpr float line_base_offset_left = 0.3;
-	constexpr float line_base_offset_right = 0.7;
+	constexpr double line_base_offset_left  = 0.3;
+	constexpr double line_base_offset_right = 0.7;
 
-	constexpr float line_up_l_item_offset_x = line_base_offset_left - item_width / 2;
-	constexpr float line_up_r_item_offset_x = line_base_offset_right - item_width / 2;
+	constexpr double line_up_l_item_offset_x        = line_base_offset_left  - item_width / 2;
+	constexpr double line_up_r_item_offset_x        = line_base_offset_right - item_width / 2;
 
-	constexpr float line_right_l_item_offset_y = line_base_offset_left - item_width / 2;
-	constexpr float line_right_r_item_offset_y = line_base_offset_right - item_width / 2;
+	constexpr double line_right_l_item_offset_y     = line_base_offset_left  - item_width / 2;
+	constexpr double line_right_r_item_offset_y     = line_base_offset_right - item_width / 2;
 
-	constexpr float line_down_l_item_offset_x = line_base_offset_right - item_width / 2;
-	constexpr float line_down_r_item_offset_x = line_base_offset_left - item_width / 2;
+	constexpr double line_down_l_item_offset_x      = line_base_offset_right - item_width / 2;
+	constexpr double line_down_r_item_offset_x      = line_base_offset_left  - item_width / 2;
 
-	constexpr float line_left_l_item_offset_y = line_base_offset_right - item_width / 2;
-	constexpr float line_left_r_item_offset_y = line_base_offset_left - item_width / 2;
+	constexpr double line_left_l_item_offset_y      = line_base_offset_right - item_width / 2;
+	constexpr double line_left_r_item_offset_y      = line_base_offset_left  - item_width / 2;
 
 	// Bend left
-	constexpr float line_up_bl_l_item_offset_y = line_base_offset_right - item_width / 2;
-	constexpr float line_up_bl_r_item_offset_y = line_base_offset_left - item_width / 2;
+	constexpr double line_up_bl_l_item_offset_y     = line_base_offset_right - item_width / 2;
+	constexpr double line_up_bl_r_item_offset_y     = line_base_offset_left  - item_width / 2;
 
-	constexpr float line_right_bl_l_item_offset_x = line_base_offset_left - item_width / 2;
-	constexpr float line_right_bl_r_item_offset_x = line_base_offset_right - item_width / 2;
+	constexpr double line_right_bl_l_item_offset_x  = line_base_offset_left  - item_width / 2;
+	constexpr double line_right_bl_r_item_offset_x  = line_base_offset_right - item_width / 2;
 
-	constexpr float line_down_bl_l_item_offset_y = line_base_offset_left - item_width / 2;
-	constexpr float line_down_bl_r_item_offset_y = line_base_offset_right - item_width / 2;
+	constexpr double line_down_bl_l_item_offset_y   = line_base_offset_left  - item_width / 2;
+	constexpr double line_down_bl_r_item_offset_y   = line_base_offset_right - item_width / 2;
 
-	constexpr float line_left_bl_l_item_offset_x = line_base_offset_right - item_width / 2;
-	constexpr float line_left_bl_r_item_offset_x = line_base_offset_left - item_width / 2;
+	constexpr double line_left_bl_l_item_offset_x   = line_base_offset_right - item_width / 2;
+	constexpr double line_left_bl_r_item_offset_x   = line_base_offset_left  - item_width / 2;
 
 	// Bend right
-	constexpr float line_up_br_l_item_offset_y = line_base_offset_left - item_width / 2;
-	constexpr float line_up_br_r_item_offset_y = line_base_offset_right - item_width / 2;
+	constexpr double line_up_br_l_item_offset_y     = line_base_offset_left  - item_width / 2;
+	constexpr double line_up_br_r_item_offset_y     = line_base_offset_right - item_width / 2;
 
-	constexpr float line_right_br_l_item_offset_x = line_base_offset_right - item_width / 2;
-	constexpr float line_right_br_r_item_offset_x = line_base_offset_left - item_width / 2;
+	constexpr double line_right_br_l_item_offset_x  = line_base_offset_right - item_width / 2;
+	constexpr double line_right_br_r_item_offset_x  = line_base_offset_left  - item_width / 2;
 
-	constexpr float line_down_br_l_item_offset_y = line_base_offset_right - item_width / 2;
-	constexpr float line_down_br_r_item_offset_y = line_base_offset_left - item_width / 2;
+	constexpr double line_down_br_l_item_offset_y   = line_base_offset_right - item_width / 2;
+	constexpr double line_down_br_r_item_offset_y   = line_base_offset_left  - item_width / 2;
 
-	constexpr float line_left_br_l_item_offset_x = line_base_offset_left - item_width / 2;
-	constexpr float line_left_br_r_item_offset_x = line_base_offset_right - item_width / 2;
+	constexpr double line_left_br_l_item_offset_x   = line_base_offset_left  - item_width / 2;
+	constexpr double line_left_br_r_item_offset_x   = line_base_offset_right - item_width / 2;
 
 
 	/**
@@ -126,7 +131,7 @@ namespace jactorio::game::transport_line_c
 	 * @param insert_left True to insert item on left size of belt
 	 * @param offset Number of tiles to offset from previous item or the end of the transport line segment when there are no items
 	 */
-	void belt_insert_item(bool insert_left, game::Transport_line_segment* belt, float offset, data::Item* item);
+	void belt_insert_item(bool insert_left, game::Transport_line_segment* belt, double offset, data::Item* item);
 }
 
 #endif //JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
