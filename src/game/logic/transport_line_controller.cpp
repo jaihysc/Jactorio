@@ -97,8 +97,8 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 				line_side.pop_front();  // Remove item in current segment now moved away
 
 				// Move the next item forwards to preserve spacing
-				if (!line_side.empty())
-					line_side.front().first -= tiles_moved;
+				if (!line_side.empty())  // This will not work with speeds greater than item_spacing
+					line_side.front().first += offset;  // Offset is negative
 				return;
 			}
 		}

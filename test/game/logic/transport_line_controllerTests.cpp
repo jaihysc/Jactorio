@@ -182,6 +182,108 @@ namespace game::logic
 		}
 	}
 
+	TEST(transport_line, line_logic_fast) {
+		// Same as line logic, but belts are faster (0.06), which seems to break the current logic at the time of writing
+		using namespace jactorio::game;
+
+		// Shortened versions
+		const auto j_epsilon = jactorio::core::transport_line_epsilon;
+		const auto j_belt_speed = 0.06f;
+
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
+		transport_belt_proto->speed = j_belt_speed;  // <---
+
+		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+
+		auto chunk = Chunk(0, 0, nullptr);
+		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+
+		// Segments (Logic chunk must be created first)
+		auto* up_segment = new jactorio::game::Transport_line_segment(
+			jactorio::game::Transport_line_segment::moveDir::up,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			5);
+		auto* right_segment = new jactorio::game::Transport_line_segment(
+			jactorio::game::Transport_line_segment::moveDir::right,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			5);
+		auto* down_segment = new jactorio::game::Transport_line_segment(
+			jactorio::game::Transport_line_segment::moveDir::down,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			5);
+		auto* left_segment = new jactorio::game::Transport_line_segment(
+			jactorio::game::Transport_line_segment::moveDir::left,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			5);
+
+		// What each transport segment empties into
+		up_segment->target_segment = right_segment;
+		right_segment->target_segment = down_segment;
+		down_segment->target_segment = left_segment;
+		left_segment->target_segment = up_segment;
+		{
+
+			auto& up = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+				.emplace_back(transport_belt_proto.get(), 0, 0);
+			up.unique_data = up_segment;
+
+			auto& right = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+				.emplace_back(transport_belt_proto.get(), 4, 0);
+			right.unique_data = right_segment;
+
+			auto& down = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+				.emplace_back(transport_belt_proto.get(), 4, 5);
+			down.unique_data = down_segment;
+
+			auto& left = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+				.emplace_back(transport_belt_proto.get(), 0, 5);
+			left.unique_data = left_segment;
+		}
+
+		// Logic
+		transport_line_c::belt_insert_item(true, left_segment, 0.f, item_proto.get());
+		transport_line_c::belt_insert_item(true, left_segment, jactorio::game::transport_line_c::item_spacing, item_proto.get());
+		transport_line_c::belt_insert_item(true, left_segment, jactorio::game::transport_line_c::item_spacing, item_proto.get());
+
+		// 1 update
+		// first item moved to up segment
+		transport_line_c::transport_line_logic_update();
+		ASSERT_EQ(up_segment->left.size(), 1);
+		ASSERT_EQ(left_segment->left.size(), 2);
+
+		EXPECT_NEAR(up_segment->left[0].first.getAsDouble(), 4.40 - j_belt_speed, j_epsilon);
+		EXPECT_NEAR(left_segment->left[0].first.getAsDouble(), 0.25 - j_belt_speed, j_epsilon);
+		EXPECT_NEAR(left_segment->left[1].first.getAsDouble(), 0.25, j_epsilon);
+
+		// 2 updates | 0.12
+		for (int i = 0; i < 2; ++i) {
+			transport_line_c::transport_line_logic_update();
+		}
+		ASSERT_EQ(up_segment->left.size(), 1);
+		ASSERT_EQ(left_segment->left.size(), 2);
+
+		EXPECT_NEAR(up_segment->left[0].first.getAsDouble(), 4.40 - (3 * j_belt_speed), j_epsilon);
+		EXPECT_NEAR(left_segment->left[0].first.getAsDouble(), 0.25 - (3 * j_belt_speed), j_epsilon);
+		EXPECT_NEAR(left_segment->left[1].first.getAsDouble(), 0.25, j_epsilon);
+
+
+		// 2 updates | Total distance = 4(0.06) = 0.24
+		// second item moved to up segment
+		for (int i = 0; i < 2; ++i) {
+			transport_line_c::transport_line_logic_update();
+		}
+		ASSERT_EQ(up_segment->left.size(), 2);
+		ASSERT_EQ(left_segment->left.size(), 1);
+
+		EXPECT_NEAR(up_segment->left[0].first.getAsDouble(), 4.40 - (5 * j_belt_speed), j_epsilon);
+		EXPECT_NEAR(up_segment->left[1].first.getAsDouble(), 0.25, j_epsilon);  // Spacing maintained
+		// Item 2 was 0.01 -> -0.05
+		// | -0.05 - 0.20 | = 0.25 Maintains distance
+		EXPECT_NEAR(left_segment->left[0].first.getAsDouble(), 0.20, j_epsilon);
+	}
+
+
 	TEST(transport_line, line_logic_right_bend) {
 		// Validates the correct handling of multiple items across transport lines
 		// The spacing between items should be maintained

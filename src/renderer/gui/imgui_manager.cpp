@@ -49,7 +49,6 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui::SetNextWindowPosCenter();
 
 		ImGuiWindowFlags flags = 0;
-		flags |= ImGuiWindowFlags_AlwaysAutoResize;
 		ImGui::Begin("Error", nullptr, flags);
 		
 		ImGui::TextWrapped("%s", err_title.c_str());

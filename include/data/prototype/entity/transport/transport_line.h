@@ -49,9 +49,9 @@ namespace jactorio::data
 		}
 
 		void post_load_validate() const override {
-			// Capped at epsilon because of precision limitations
 			J_DATA_ASSERT(speed_float > 0.001, "Transport line speed below minimum 0.001");
-			J_DATA_ASSERT(speed_float < 1, "Transport line speed above maximum of 1");
+			// Cannot exceed item_width because of limitations in the logic
+			J_DATA_ASSERT(speed_float < 0.25, "Transport line speed equal or above maximum of 0.25");
 		}
 	};
 }
