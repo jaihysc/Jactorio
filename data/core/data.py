@@ -12,12 +12,17 @@ def addSprite(name, spritePath):
 addSprite("cursor-select", "core/graphics/cursor-select.png")
 addSprite("cursor-invalid", "core/graphics/cursor-invalid.png")
 
-# For debug purposes
-addSprite("rect-up", "core/graphics/rect-up.png")
-addSprite("rect-right", "core/graphics/rect-right.png")
-addSprite("rect-down", "core/graphics/rect-down.png")
-addSprite("rect-left", "core/graphics/rect-left.png")
-addSprite("rect-stop", "core/graphics/rect-stop.png")
+# For transport line debug purposes
+addSprite("arrow-up", "core/graphics/arrow-up.png")
+addSprite("arrow-right", "core/graphics/arrow-right.png")
+addSprite("arrow-down", "core/graphics/arrow-down.png")
+addSprite("arrow-left", "core/graphics/arrow-left.png")
+
+addSprite("rect-green", "core/graphics/rect-green.png")
+addSprite("rect-aqua", "core/graphics/rect-aqua.png")
+addSprite("rect-red", "core/graphics/rect-red.png")
+addSprite("rect-pink", "core/graphics/rect-pink.png")
+
 
 # Inventory selection cursor
 (j.Item("inventory-selected-cursor")

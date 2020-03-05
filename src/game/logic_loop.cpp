@@ -195,6 +195,7 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 				jactorio::game::Transport_line_segment::moveDir::down,
 				jactorio::game::Transport_line_segment::terminationType::bend_left,
 				6);
+			down_segment->item_visible = false;
 			auto* left_segment = new jactorio::game::Transport_line_segment(
 				jactorio::game::Transport_line_segment::moveDir::left,
 				jactorio::game::Transport_line_segment::terminationType::bend_left,

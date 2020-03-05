@@ -13,6 +13,6 @@ def addBelt(name, iconSpritePath, worldSpritePath):
               .group([j.spriteGroup.Terrain])
               ))
      .pickupTime(0.1)
-     .speed(0.01)
+     .speed(0.1)
     )
 addBelt("transport-belt-basic", "base/graphics/icon/transport-belt.png", "base/graphics/entity/transport-belt/transport_belt_temp.png")

@@ -78,6 +78,9 @@ namespace jactorio::game
 		std::deque<transport_line_item> left;
 		std::deque<transport_line_item> right;
 
+		// Are the items on this transport line visible?
+		bool item_visible = true;
+
 		// Direction items in this segment travel in
 		moveDir direction;
 		// How the belt terminates (bends left, right, straight)

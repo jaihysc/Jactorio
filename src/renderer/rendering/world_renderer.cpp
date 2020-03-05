@@ -215,6 +215,10 @@ void prepare_object_data(const unsigned layer_index,
 		for (const auto& line_layer : transport_line_layer) {
 			auto* line_segment = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
 
+			// Don't render if items are not marked visible! Wow!
+			if (!line_segment->item_visible)
+				continue;
+
 			float offset_x = line_layer.position_x;
 			float offset_y = line_layer.position_y;
 

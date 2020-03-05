@@ -25,16 +25,22 @@ void jactorio::renderer::gui::debug_menu_logic() {
 	if (show_belt_structure) {
 		// Sprite representing the update point
 		auto* sprite_stop =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-stop");
+			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-red");
+		auto* sprite_moving =
+			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-green");
+		auto* sprite_left_moving =
+			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-aqua");
+		auto* sprite_right_moving =
+			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-pink");
 
 		auto* sprite_up =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-up");
+			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/arrow-up");
 		auto* sprite_right =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-right");
+			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/arrow-right");
 		auto* sprite_down =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-down");
+			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/arrow-down");
 		auto* sprite_left =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-left");
+			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/arrow-left");
 
 		// Get all update points and add it to the chunk's objects for drawing
 		for (auto& pair : game::world_manager::logic_get_all_chunks()) {
@@ -46,32 +52,66 @@ void jactorio::renderer::gui::debug_menu_logic() {
 			for (auto& l_struct : l_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line)) {
 				auto* line_segment = static_cast<game::Transport_line_segment*>(l_struct.unique_data);
 
+				float pos_x;
+				float pos_y;
+				float segment_len_x;
+				float segment_len_y;
+
+				data::Sprite* direction_sprite;
+				data::Sprite* outline_sprite;
+
 				// Correspond the direction with a sprite representing the direction
 				switch (line_segment->direction) {
 					default:
 						assert(false);  // Missing case label
 
 					case game::Transport_line_segment::moveDir::up:
-						object_layer.emplace_back(sprite_up,
-												  l_struct.position_x, l_struct.position_y,
-												  1, line_segment->segment_length);
+						pos_x = l_struct.position_x;
+						pos_y = l_struct.position_y;
+						segment_len_x = 1;
+						segment_len_y = line_segment->segment_length;
+
+						direction_sprite = sprite_up;
 						break;
 					case game::Transport_line_segment::moveDir::right:
-						object_layer.emplace_back(sprite_right,
-												  l_struct.position_x - line_segment->segment_length + 1, l_struct.position_y,
-												  line_segment->segment_length, 1);
+						pos_x = l_struct.position_x - line_segment->segment_length + 1;
+						pos_y = l_struct.position_y;
+						segment_len_x = line_segment->segment_length;
+						segment_len_y = 1;
+
+						direction_sprite = sprite_right;
 						break;
 					case game::Transport_line_segment::moveDir::down:
-						object_layer.emplace_back(sprite_down,
-												  l_struct.position_x, l_struct.position_y - line_segment->segment_length + 1,
-												  1, line_segment->segment_length);
+						pos_x = l_struct.position_x;
+						pos_y = l_struct.position_y - line_segment->segment_length + 1;
+						segment_len_x = 1;
+						segment_len_y = line_segment->segment_length;
+
+						direction_sprite = sprite_down;
 						break;
 					case game::Transport_line_segment::moveDir::left:
-						object_layer.emplace_back(sprite_left,
-												  l_struct.position_x, l_struct.position_y,
-												  line_segment->segment_length, 1);
+						pos_x = l_struct.position_x;
+						pos_y = l_struct.position_y;
+						segment_len_x = line_segment->segment_length;
+						segment_len_y = 1;
+
+						direction_sprite = sprite_left;
 						break;
 				}
+
+
+				// Correspond a color of rectangle
+				if (line_segment->is_active_left() && line_segment->is_active_right())
+					outline_sprite = sprite_moving;  // Both moving
+				else if (line_segment->is_active_left())
+					outline_sprite = sprite_left_moving;  // Only left move
+				else if (line_segment->is_active_right())
+					outline_sprite = sprite_right_moving;  // Only right moving
+				else
+					outline_sprite = sprite_stop;  // None moving
+
+				object_layer.emplace_back(direction_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
+				object_layer.emplace_back(outline_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
 
 
 			}
@@ -114,7 +154,16 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 		ImGui::InputInt("World generator seed", &seed);
 		game::world_generator::set_world_generator_seed(seed);
 
+		// Options
 		ImGui::Checkbox("Show belt structures", &show_belt_structure);
+		if (ImGui::Button("Make all belt items visible")) {
+			for (auto& pair : game::world_manager::logic_get_all_chunks()) {
+				auto& l_chunk = pair.second;
+				for (auto& transport_line : l_chunk.get_struct(game::Logic_chunk::structLayer::transport_line)) {
+					static_cast<game::Transport_line_segment*>(transport_line.unique_data)->item_visible = true;
+				}
+			}
+		}
 	}
 
 	ImGui::Separator();
