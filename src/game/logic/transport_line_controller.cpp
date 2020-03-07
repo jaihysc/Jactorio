@@ -118,7 +118,7 @@ trailing_item:
 
 	// Items following the first item will leave a gap of item_width
 	if (offset > dec::decimal_cast<jactorio::transport_line_decimal_place>(
-		jactorio::game::transport_line_c::item_spacing - jactorio::core::transport_line_epsilon))
+		jactorio::game::transport_line_c::item_spacing))
 		return;
 
 	// Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
@@ -133,8 +133,7 @@ move_next_item:
 	// Set index to the next item with a distance greater than item_width and decrement it
 	for (int i = index + 1; i < line_side.size(); ++i) {
 		auto& i_item_offset = line_side[i].first;
-		if (i_item_offset > dec::decimal_cast<jactorio::transport_line_decimal_place>(
-			jactorio::game::transport_line_c::item_spacing + jactorio::core::transport_line_epsilon)) {
+		if (i_item_offset > dec::decimal_cast<jactorio::transport_line_decimal_place>(jactorio::game::transport_line_c::item_spacing)) {
 
 			// Found a valid item to decrement
 			index = i;

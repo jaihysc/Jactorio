@@ -4,7 +4,6 @@
 //
 
 #include "core/data_type.h"
-#include "core/float_math.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_line_structure.h"
 
@@ -17,7 +16,7 @@ bool jactorio::game::Transport_line_segment::can_insert(bool left_side, const tr
 	for (const auto& item : side) {
 		// Item is not compressed with the previous item
 		if (item.first >
-			dec::decimal_cast<jactorio::transport_line_decimal_place>(transport_line_c::item_spacing + core::transport_line_epsilon)) {
+			dec::decimal_cast<jactorio::transport_line_decimal_place>(transport_line_c::item_spacing)) {
 			//  OFFSET item_spacing               item_spacing   OFFSET + item.first
 			//     | -------------- |   GAP FOR ITEM   | ------------ |
 			if (dec::decimal_cast<jactorio::transport_line_decimal_place>(transport_line_c::item_spacing) + offset <=
