@@ -1,10 +1,14 @@
-//
-// Created on 2/21/2020.
-// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
-//
+// 
+// transport_line_structure.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 02/21/2020
+// Last modified: 03/08/2020
+// 
 
-#ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
-#define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
+#ifndef JACTORIO_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
+#define JACTORIO_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
+#pragma once
 
 #include "data/prototype/item/item.h"
 #include "core/data_type.h"
@@ -27,7 +31,7 @@ namespace jactorio::game
 	{
 		enum class moveDir
 		{
-			up,
+			up = 0,
 			right,
 			down,
 			left,
@@ -52,7 +56,7 @@ namespace jactorio::game
 
 		enum class terminationType
 		{
-			straight,
+			straight = 0,
 			// Left length -0.7
 			// Right length -0.3
 			bend_left,
@@ -61,13 +65,32 @@ namespace jactorio::game
 			bend_right
 		};
 
-		Transport_line_segment(moveDir direction, terminationType termination_type, uint8_t segment_length)
+		/**
+		 * Lane behavior of items when transitioning to target_segment
+		 * if terminationFeedType is not standard, terminationType should be bend_left or bend_right
+		 */
+		enum class terminationFeedType
+		{
+			// Left lane -> Left lane, Right lane -> Right lane
+			standard = 0,
+			// Left + Right lane -> Left lane
+			left_only,
+			// Left + Right Lane -> Right lane
+			right_only
+		};
+
+
+		Transport_line_segment(const moveDir direction, const terminationType termination_type,
+		                       const uint8_t segment_length)
 			: direction(direction), termination_type(termination_type), segment_length(segment_length) {
 		}
 
-		Transport_line_segment(moveDir direction, terminationType termination_type,
-							   Transport_line_segment* target_segment, uint8_t segment_length)
-			: direction(direction), termination_type(termination_type), target_segment(target_segment), segment_length(segment_length) {
+		Transport_line_segment(const moveDir direction, const terminationType termination_type,
+		                       Transport_line_segment* target_segment, const uint8_t segment_length,
+		                       const terminationFeedType termination_feed_type)
+			: direction(direction), target_segment(target_segment),
+			  termination_type(termination_type), termination_feed_type(termination_feed_type),
+			  segment_length(segment_length) {
 		}
 
 		// Each item's distance (in tiles) to the next item or the end of this transport line segment
@@ -83,11 +106,14 @@ namespace jactorio::game
 
 		// Direction items in this segment travel in
 		moveDir direction;
-		// How the belt terminates (bends left, right, straight)
-		terminationType termination_type;
 
 		// Segment this transport line feeds into
 		Transport_line_segment* target_segment = nullptr;
+
+		// How the belt terminates (bends left, right, straight)
+		terminationType termination_type;
+		// How items are fed into he target_segment
+		terminationFeedType termination_feed_type = terminationFeedType::standard;
 
 		// Index to the next item still with space to move
 		uint16_t l_index = 0;
@@ -108,17 +134,35 @@ namespace jactorio::game
 		/**
 		 * @return true if left size is not empty and has a valid index
 		 */
-		J_NODISCARD bool is_active_left() {
+		J_NODISCARD bool is_active_left() const {
 			return !(left.empty() || l_index >= left.size());
 		}
+
 		/**
 		 * @return  true if right side is not empty and has a valid index
 		 */
-		J_NODISCARD bool is_active_right() {
+		J_NODISCARD bool is_active_right() const {
 			return !(right.empty() || r_index >= right.size());
 		}
+
+
+		// Item insertion
+
+		/**
+		 * Appends item onto the specified side of a belt behind the last item
+		 * @param insert_left True to insert item on left size of belt
+		 * @param offset Number of tiles to offset from previous item or the end of the transport line segment when there are no items
+		 */
+		void append_item(bool insert_left, double offset, data::Item* item);
+
+		/**
+		 * Inserts the item onto the specified belt side at the offset from the beginning of the transport line
+		 * @param insert_left True to insert item on left size of belt
+		 * @param offset Distance from beginning of transport line
+		 */
+		void insert_item(bool insert_left, double offset, data::Item* item);
 	};
 }
 
 
-#endif //JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
+#endif // JACTORIO_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H

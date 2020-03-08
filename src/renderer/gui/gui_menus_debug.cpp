@@ -1,3 +1,11 @@
+// 
+// gui_menus_debug.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/01/2020
+// Last modified: 03/08/2020
+// 
+
 #include "renderer/gui/gui_menus_debug.h"
 
 #include <glm/glm.hpp>
@@ -7,7 +15,7 @@
 #include "data/data_manager.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
-#include "game/logic/transport_line_controller.h"
+#include "game/logic/transport_line_structure.h"
 #include "game/player/player_manager.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world_generator.h"
@@ -49,7 +57,7 @@ void jactorio::renderer::gui::debug_menu_logic() {
 			auto& object_layer = l_chunk.chunk->get_object(game::Chunk::objectLayer::debug_overlay);
 			object_layer.clear();
 
-			for (auto& l_struct : l_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line)) {
+			for (auto& l_struct : l_chunk.get_struct(game::Logic_chunk::structLayer::transport_line)) {
 				auto* line_segment = static_cast<game::Transport_line_segment*>(l_struct.unique_data);
 
 				float pos_x;
@@ -62,41 +70,41 @@ void jactorio::renderer::gui::debug_menu_logic() {
 
 				// Correspond the direction with a sprite representing the direction
 				switch (line_segment->direction) {
-					default:
-						assert(false);  // Missing case label
+				default:
+					assert(false);  // Missing case label
 
-					case game::Transport_line_segment::moveDir::up:
-						pos_x = l_struct.position_x;
-						pos_y = l_struct.position_y;
-						segment_len_x = 1;
-						segment_len_y = line_segment->segment_length;
+				case game::Transport_line_segment::moveDir::up:
+					pos_x = l_struct.position_x;
+					pos_y = l_struct.position_y;
+					segment_len_x = 1;
+					segment_len_y = line_segment->segment_length;
 
-						direction_sprite = sprite_up;
-						break;
-					case game::Transport_line_segment::moveDir::right:
-						pos_x = l_struct.position_x - line_segment->segment_length + 1;
-						pos_y = l_struct.position_y;
-						segment_len_x = line_segment->segment_length;
-						segment_len_y = 1;
+					direction_sprite = sprite_up;
+					break;
+				case game::Transport_line_segment::moveDir::right:
+					pos_x = l_struct.position_x - line_segment->segment_length + 1;
+					pos_y = l_struct.position_y;
+					segment_len_x = line_segment->segment_length;
+					segment_len_y = 1;
 
-						direction_sprite = sprite_right;
-						break;
-					case game::Transport_line_segment::moveDir::down:
-						pos_x = l_struct.position_x;
-						pos_y = l_struct.position_y - line_segment->segment_length + 1;
-						segment_len_x = 1;
-						segment_len_y = line_segment->segment_length;
+					direction_sprite = sprite_right;
+					break;
+				case game::Transport_line_segment::moveDir::down:
+					pos_x = l_struct.position_x;
+					pos_y = l_struct.position_y - line_segment->segment_length + 1;
+					segment_len_x = 1;
+					segment_len_y = line_segment->segment_length;
 
-						direction_sprite = sprite_down;
-						break;
-					case game::Transport_line_segment::moveDir::left:
-						pos_x = l_struct.position_x;
-						pos_y = l_struct.position_y;
-						segment_len_x = line_segment->segment_length;
-						segment_len_y = 1;
+					direction_sprite = sprite_down;
+					break;
+				case game::Transport_line_segment::moveDir::left:
+					pos_x = l_struct.position_x;
+					pos_y = l_struct.position_y;
+					segment_len_x = line_segment->segment_length;
+					segment_len_y = 1;
 
-						direction_sprite = sprite_left;
-						break;
+					direction_sprite = sprite_left;
+					break;
 				}
 
 
@@ -140,12 +148,12 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 
 	if (ImGui::CollapsingHeader("Game")) {
 		ImGui::Text("Cursor position: %f, %f",
-					game::mouse_selection::get_position_x(),
-					game::mouse_selection::get_position_y());
+		            game::mouse_selection::get_position_x(),
+		            game::mouse_selection::get_position_y());
 
 		ImGui::Text("Player position %f %f",
-					game::player_manager::get_player_position_x(),
-					game::player_manager::get_player_position_y());
+		            game::player_manager::get_player_position_x(),
+		            game::player_manager::get_player_position_y());
 
 		ImGui::Text("Chunk updates: %llu", game::world_manager::logic_get_all_chunks().size());
 

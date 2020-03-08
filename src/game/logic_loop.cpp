@@ -1,3 +1,11 @@
+// 
+// logic_loop.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/08/2020
+// 
+
 #include "game/logic_loop.h"
 
 #include <chrono>
@@ -114,24 +122,24 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 
 			auto* belt_proto =
 				data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
-																	   "__base__/transport-belt-basic");
+				                                                       "__base__/transport-belt-basic");
 
 			// Segments (Logic chunk must be created first)
-			auto* up_segment = new jactorio::game::Transport_line_segment(
-				jactorio::game::Transport_line_segment::moveDir::up,
-				jactorio::game::Transport_line_segment::terminationType::bend_right,
+			auto* up_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::up,
+				Transport_line_segment::terminationType::bend_right,
 				6);
-			auto* right_segment = new jactorio::game::Transport_line_segment(
-				jactorio::game::Transport_line_segment::moveDir::right,
-				jactorio::game::Transport_line_segment::terminationType::bend_right,
+			auto* right_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::right,
+				Transport_line_segment::terminationType::bend_right,
 				5);
-			auto* down_segment = new jactorio::game::Transport_line_segment(
-				jactorio::game::Transport_line_segment::moveDir::down,
-				jactorio::game::Transport_line_segment::terminationType::bend_right,
+			auto* down_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::down,
+				Transport_line_segment::terminationType::bend_right,
 				6);
-			auto* left_segment = new jactorio::game::Transport_line_segment(
-				jactorio::game::Transport_line_segment::moveDir::left,
-				jactorio::game::Transport_line_segment::terminationType::bend_right,
+			auto* left_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::left,
+				Transport_line_segment::terminationType::bend_right,
 				5);
 
 			// What each transport segment empties into
@@ -141,34 +149,34 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 			left_segment->target_segment = up_segment;
 
 			auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-				.emplace_back(belt_proto, 0, 0);
+			                      .emplace_back(belt_proto, 0, 0);
 			up.unique_data = up_segment;
 
 			auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-				.emplace_back(belt_proto, 4, 0);
+			                         .emplace_back(belt_proto, 4, 0);
 			right.unique_data = right_segment;
 
 			auto& down = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-				.emplace_back(belt_proto, 4, 5);
+			                        .emplace_back(belt_proto, 4, 5);
 			down.unique_data = down_segment;
 
 			auto& left = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-				.emplace_back(belt_proto, 0, 5);
+			                        .emplace_back(belt_proto, 0, 5);
 			left.unique_data = left_segment;
 
 			// Insert item
 			auto* proto =
 				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-															 "__base__/transport-belt-basic-item");
+				                                             "__base__/transport-belt-basic-item");
 			auto* proto_2 =
 				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-															 "__base__/steel-chest-item");
+				                                             "__base__/steel-chest-item");
 
-			transport_line_c::belt_insert_item(true, left_segment, 0.f, proto_2);
-			transport_line_c::belt_insert_item(false, left_segment, 0.f, proto_2);
+			left_segment->append_item(true, 0.f, proto_2);
+			left_segment->append_item(false, 0.f, proto_2);
 			for (int i = 0; i < 200; ++i) {
-				transport_line_c::belt_insert_item(true, left_segment, 0.f, proto);
-				transport_line_c::belt_insert_item(false, left_segment, 0.f, proto);
+				left_segment->append_item(true, 0.f, proto);
+				left_segment->append_item(false, 0.f, proto);
 			}
 		});
 	}, GLFW_KEY_1, GLFW_RELEASE);
@@ -180,25 +188,25 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 
 			auto* belt_proto =
 				data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
-																	   "__base__/transport-belt-basic");
+				                                                       "__base__/transport-belt-basic");
 
 			// Segments (Logic chunk must be created first)
-			auto* up_segment = new jactorio::game::Transport_line_segment(
-				jactorio::game::Transport_line_segment::moveDir::up,
-				jactorio::game::Transport_line_segment::terminationType::bend_left,
+			auto* up_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::up,
+				Transport_line_segment::terminationType::bend_left,
 				6);
-			auto* right_segment = new jactorio::game::Transport_line_segment(
-				jactorio::game::Transport_line_segment::moveDir::right,
-				jactorio::game::Transport_line_segment::terminationType::bend_left,
+			auto* right_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::right,
+				Transport_line_segment::terminationType::bend_left,
 				5);
-			auto* down_segment = new jactorio::game::Transport_line_segment(
-				jactorio::game::Transport_line_segment::moveDir::down,
-				jactorio::game::Transport_line_segment::terminationType::bend_left,
+			auto* down_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::down,
+				Transport_line_segment::terminationType::bend_left,
 				6);
 			down_segment->item_visible = false;
-			auto* left_segment = new jactorio::game::Transport_line_segment(
-				jactorio::game::Transport_line_segment::moveDir::left,
-				jactorio::game::Transport_line_segment::terminationType::bend_left,
+			auto* left_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::left,
+				Transport_line_segment::terminationType::bend_left,
 				5);
 
 			// What each transport segment empties into
@@ -208,34 +216,34 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 			left_segment->target_segment = down_segment;
 
 			auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-				.emplace_back(belt_proto, 4, 0);
+			                      .emplace_back(belt_proto, 4, 0);
 			up.unique_data = up_segment;
 
 			auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-				.emplace_back(belt_proto, 4, 5);
+			                         .emplace_back(belt_proto, 4, 5);
 			right.unique_data = right_segment;
 
 			auto& down = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-				.emplace_back(belt_proto, 0, 5);
+			                        .emplace_back(belt_proto, 0, 5);
 			down.unique_data = down_segment;
 
 			auto& left = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-				.emplace_back(belt_proto, 0, 0);
+			                        .emplace_back(belt_proto, 0, 0);
 			left.unique_data = left_segment;
 
 			// Insert item
 			auto* proto =
 				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-															 "__base__/transport-belt-basic-item");
+				                                             "__base__/transport-belt-basic-item");
 			auto* proto_2 =
 				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-															 "__base__/steel-chest-item");
+				                                             "__base__/steel-chest-item");
 
-			transport_line_c::belt_insert_item(true, left_segment, 0.f, proto_2);
-			transport_line_c::belt_insert_item(false, left_segment, 0.f, proto_2);
+			left_segment->append_item(true, 0.f, proto_2);
+			left_segment->append_item(false, 0.f, proto_2);
 			for (int i = 0; i < 20; ++i) {
-				transport_line_c::belt_insert_item(true, left_segment, 0.f, proto);
-				transport_line_c::belt_insert_item(false, left_segment, 0.f, proto);
+				left_segment->append_item(true, 0.f, proto);
+				left_segment->append_item(false, 0.f, proto);
 			}
 
 		});
@@ -247,30 +255,30 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 
 			auto* belt_proto =
 				data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
-																	   "__base__/transport-belt-basic");
+				                                                       "__base__/transport-belt-basic");
 
-			auto* left_segment = new jactorio::game::Transport_line_segment(
-				jactorio::game::Transport_line_segment::moveDir::left,
-				jactorio::game::Transport_line_segment::terminationType::straight,
+			auto* left_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::left,
+				Transport_line_segment::terminationType::straight,
 				5);
 
 			auto& left = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-				.emplace_back(belt_proto, 0, 0);
+			                        .emplace_back(belt_proto, 0, 0);
 			left.unique_data = left_segment;
 
 			// Insert item
 			auto* proto =
 				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-															 "__base__/transport-belt-basic-item");
+				                                             "__base__/transport-belt-basic-item");
 			auto* proto_2 =
 				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-															 "__base__/steel-chest-item");
+				                                             "__base__/steel-chest-item");
 
-			transport_line_c::belt_insert_item(true, left_segment, 1.f, proto_2);
-			transport_line_c::belt_insert_item(false, left_segment, 1.f, proto_2);
+			left_segment->append_item(true, 1.f, proto_2);
+			left_segment->append_item(false, 1.f, proto_2);
 			for (int i = 0; i < 3; ++i) {
-				transport_line_c::belt_insert_item(true, left_segment, 1.f, proto);
-				transport_line_c::belt_insert_item(false, left_segment, 1.f, proto);
+				left_segment->append_item(true, 1.f, proto);
+				left_segment->append_item(false, 1.f, proto);
 			}
 
 		});
@@ -281,44 +289,115 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 
 		auto* belt_proto =
 			data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
-																   "__base__/transport-belt-basic");
+			                                                       "__base__/transport-belt-basic");
 
 		// Segments (Logic chunk must be created first)
-		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+		auto* up_segment = new Transport_line_segment(
+			Transport_line_segment::moveDir::up,
+			Transport_line_segment::terminationType::bend_right,
 			6);
-		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::right,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+		auto* right_segment = new Transport_line_segment(
+			Transport_line_segment::moveDir::right,
+			Transport_line_segment::terminationType::bend_right,
 			5);
 
 		// What each transport segment empties into
 		up_segment->target_segment = right_segment;
 
 		auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-			.emplace_back(belt_proto, 0, 0);
+		                      .emplace_back(belt_proto, 0, 0);
 		up.unique_data = up_segment;
 
 		auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
-			.emplace_back(belt_proto, 4, 0);
+		                         .emplace_back(belt_proto, 4, 0);
 		right.unique_data = right_segment;
 
 		// Insert item
 		auto* proto =
 			data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-														 "__base__/transport-belt-basic-item");
+			                                             "__base__/transport-belt-basic-item");
 		auto* proto_2 =
 			data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-														 "__base__/steel-chest-item");
+			                                             "__base__/steel-chest-item");
 
-		transport_line_c::belt_insert_item(true, up_segment, 1.f, proto_2);
-		transport_line_c::belt_insert_item(false, up_segment, 1.f, proto_2);
+		up_segment->append_item(true, 1.f, proto_2);
+		up_segment->append_item(false, 1.f, proto_2);
 		for (int i = 0; i < 1; ++i) {
-			transport_line_c::belt_insert_item(true, up_segment, 0.f, proto);
-			transport_line_c::belt_insert_item(false, up_segment, 0.f, proto);
+			up_segment->append_item(true, 0.f, proto);
+			up_segment->append_item(false, 0.f, proto);
 		}
 	}, GLFW_KEY_4, GLFW_RELEASE);
+
+	// T movement of items -> v <-
+	input_manager::subscribe([]() {
+		Event::subscribe_once(event_type::logic_tick, []() {
+			auto* chunk = world_manager::get_chunk(-1, 0);
+
+			auto& logic_chunk = world_manager::logic_add_chunk(chunk);
+
+			auto* belt_proto =
+				data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
+				                                                       "__base__/transport-belt-basic");
+
+			// Segments (Logic chunk must be created first)
+			auto* right_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::right,
+				Transport_line_segment::terminationType::bend_right,
+				5);
+			auto* down_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::down,
+				Transport_line_segment::terminationType::straight,
+				60);
+			auto* left_segment = new Transport_line_segment(
+				Transport_line_segment::moveDir::left,
+				Transport_line_segment::terminationType::bend_left,
+				5);
+
+			right_segment->target_segment = down_segment;
+			left_segment->target_segment = down_segment;
+
+			// Right dir belt empties only onto down belt Right side
+			// Left dir belt empties only onto down belt left side
+			right_segment->termination_feed_type = Transport_line_segment::terminationFeedType::right_only;
+			left_segment->termination_feed_type = Transport_line_segment::terminationFeedType::left_only;
+
+			auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
+			                         .emplace_back(belt_proto, 4, 0);
+			right.unique_data = right_segment;
+
+			auto& down = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
+			                        .emplace_back(belt_proto, 4, 59);
+			down.unique_data = down_segment;
+
+			auto& left = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
+			                        .emplace_back(belt_proto, 4, 0);
+			left.unique_data = left_segment;
+
+			// Insert item
+			auto* proto =
+				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+				                                             "__base__/transport-belt-basic-item");
+			auto* proto_2 =
+				data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+				                                             "__base__/steel-chest-item");
+
+			// left
+			left_segment->append_item(true, 0.f, proto_2);
+			left_segment->append_item(false, 0.f, proto_2);
+			for (int i = 0; i < 20; ++i) {
+				left_segment->append_item(true, 0.f, proto);
+				left_segment->append_item(false, 0.f, proto);
+			}
+
+			// right
+			// right_segment->append_item(true, 0.f, proto_2);
+			// right_segment->append_item(false, 0.f, proto_2);
+			// for (int i = 0; i < 20; ++i) {
+				// right_segment->append_item(true, 0.f, proto);
+				// right_segment->append_item(false, 0.f, proto);
+			// }
+		});
+	}, GLFW_KEY_5, GLFW_RELEASE);
 
 	// Runtime
 	auto next_frame = std::chrono::steady_clock::now();
@@ -327,7 +406,7 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
 		{
-//			std::lock_guard lk(*mutex);
+			//			std::lock_guard lk(*mutex);
 
 			mouse_selection::calculate_mouse_tile_coords();
 
