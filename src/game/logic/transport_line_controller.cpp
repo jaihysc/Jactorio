@@ -3,10 +3,10 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/13/2020
-// Last modified: 03/08/2020
+// Last modified: 03/10/2020
 // 
 
-#include <data/prototype/entity/transport/transport_line.h>
+#include "data/prototype/entity/transport/transport_line.h"
 #include "game/logic/transport_line_controller.h"
 
 #include "game/world/world_manager.h"
@@ -15,10 +15,14 @@
 void apply_termination_deduction_l(const jactorio::game::Transport_line_segment::terminationType termination_type,
                                    jactorio::transport_line_offset& offset) {
 	switch (termination_type) {
+		// Feeding into another belt also needs to be deducted to feed at the right offset on the target belt
+	case jactorio::game::Transport_line_segment::terminationType::left_only:
 	case jactorio::game::Transport_line_segment::terminationType::bend_left:
 		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
 			jactorio::game::Transport_line_segment::bend_left_l_reduction);
 		break;
+
+	case jactorio::game::Transport_line_segment::terminationType::right_only:
 	case jactorio::game::Transport_line_segment::terminationType::bend_right:
 		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
 			jactorio::game::Transport_line_segment::bend_right_l_reduction);
@@ -32,10 +36,13 @@ void apply_termination_deduction_l(const jactorio::game::Transport_line_segment:
 void apply_termination_deduction_r(const jactorio::game::Transport_line_segment::terminationType termination_type,
                                    jactorio::transport_line_offset& offset) {
 	switch (termination_type) {
+	case jactorio::game::Transport_line_segment::terminationType::left_only:
 	case jactorio::game::Transport_line_segment::terminationType::bend_left:
 		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
 			jactorio::game::Transport_line_segment::bend_left_r_reduction);
 		break;
+
+	case jactorio::game::Transport_line_segment::terminationType::right_only:
 	case jactorio::game::Transport_line_segment::terminationType::bend_right:
 		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
 			jactorio::game::Transport_line_segment::bend_right_r_reduction);
@@ -118,25 +125,44 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 					}
 				}
 
+				// LOG_MESSAGE_f(debug, "%s %f", is_left ? "Left" : "right", target_offset.getAsDouble());
 
-				if (segment->target_segment->can_insert(is_left, target_offset)) {
-					// Decides how the items will be fed into the target segment
-					switch (segment->termination_feed_type) {
-					case jactorio::game::Transport_line_segment::terminationFeedType::standard:
-						segment->target_segment->append_item(is_left,
-						                                     target_offset_tile.getAsDouble(), line_side[index].second);
-						break;
-
-					case jactorio::game::Transport_line_segment::terminationFeedType::left_only:
-						segment->target_segment->insert_item(true,
-						                                     target_offset.getAsDouble(), line_side[index].second);
-						break;
-					case jactorio::game::Transport_line_segment::terminationFeedType::right_only:
-						segment->target_segment->insert_item(false,
-						                                     target_offset.getAsDouble(), line_side[index].second);
-						break;
+				bool added_item = false;
+				// Decides how the items will be fed into the target segment (if at all)
+				switch (segment->termination_type) {
+				default:
+					if (segment->target_segment->can_insert(is_left, target_offset)) {
+						added_item = true;
+						segment->target_segment->append_item(
+							is_left,
+							target_offset_tile.getAsDouble(), line_side[index].second);
 					}
-					
+
+					break;
+
+					// Side insertion
+				case jactorio::game::Transport_line_segment::terminationType::left_only:
+					if (segment->target_segment->can_insert(true, target_offset)) {
+						segment->target_segment->insert_item(
+							true,
+							target_offset.getAsDouble(), line_side[index].second);
+						added_item = true;
+					}
+
+					break;
+				case jactorio::game::Transport_line_segment::terminationType::right_only:
+					if (segment->target_segment->can_insert(false, target_offset)) {
+						segment->target_segment->insert_item(
+							false,
+							target_offset.getAsDouble(), line_side[index].second);
+						added_item = true;
+
+					}
+
+					break;
+				}
+
+				if (added_item) {
 					line_side.pop_front();  // Remove item in current segment now moved away
 
 					// Move the next item forwards to preserve spacing
@@ -144,6 +170,7 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 						line_side.front().first += offset;  // Offset is negative
 					return;
 				}
+
 			}
 			// No target segment or cannot move to the target segment
 
@@ -205,15 +232,6 @@ void jactorio::game::transport_line_c::logic_update_transition_items(Logic_chunk
 		auto* line_proto = static_cast<data::Transport_line*>(object_layer.prototype_data
 		); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 		auto* line_segment = static_cast<Transport_line_segment*>(object_layer.unique_data);
-
-
-		// Debug, ensure the segment has a valid state
-		if (line_segment->termination_feed_type != Transport_line_segment::terminationFeedType::standard) {
-			// A non-standard termination feed should have a non-straight terminationType
-			assert(line_segment->termination_type != Transport_line_segment::terminationType::straight);
-		}
-
-		// End Debug validation
 
 
 		auto tiles_moved = line_proto->speed;

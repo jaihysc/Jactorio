@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/13/2020
-// Last modified: 03/08/2020
+// Last modified: 03/10/2020
 // 
 
 #include <gtest/gtest.h>
@@ -652,7 +652,7 @@ namespace game::logic
 		EXPECT_FLOAT_EQ(right_segment->left[1].first.getAsDouble(), transport_line_c::item_spacing);
 	}
 
-	TEST(transport_line, line_logic_transition_side) {
+	TEST(transport_line, line_logic_transition_side_left) {
 		// Belt feeding into only one side of another belt
 		/*
 		 *                           Right     Left
@@ -680,7 +680,7 @@ namespace game::logic
 		// Segments (Logic chunk must be created first)
 		auto* right_segment = new Transport_line_segment(
 			Transport_line_segment::moveDir::right,
-			Transport_line_segment::terminationType::bend_right,
+			Transport_line_segment::terminationType::right_only,
 			5);
 		auto* down_segment = new Transport_line_segment(
 			Transport_line_segment::moveDir::down,
@@ -690,12 +690,10 @@ namespace game::logic
 		right_segment->target_segment = down_segment;
 
 		// Right dir belt empties only onto down belt Right side
-		// Left dir belt empties only onto down belt left side
-		right_segment->termination_feed_type = Transport_line_segment::terminationFeedType::right_only;
-
 		auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 		                         .emplace_back(transport_belt_proto.get(), 4, 0);
 		right.unique_data = right_segment;
+
 
 		auto& down = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 		                        .emplace_back(transport_belt_proto.get(), 4, 9);
@@ -761,11 +759,128 @@ namespace game::logic
 		}
 		EXPECT_EQ(right_segment->left.size(), 0);
 		EXPECT_EQ(right_segment->right.size(), 1);  // Woke and moved
-		
+
 		ASSERT_EQ(down_segment->right.size(), 5);
 		EXPECT_FLOAT_EQ(down_segment->right[0].first.getAsDouble(), 8.10f);
 		EXPECT_FLOAT_EQ(down_segment->right[3].first.getAsDouble(), 0.25f);
-		
+
+	}
+
+	TEST(transport_line, line_logic_transition_side_right) {
+		// Belt feeding into only one side of another belt moving updards
+		/*
+		 * Left     Right
+		 *  |    -    |
+		 *  |    -    |
+		 *  |    -    |	<------------ A -------------
+		 *  |  ^ -    | <------------ B -------------
+		 *  |    -    |
+		 *  |    -    |
+		 *  |    -    |
+		 */
+		// B first, fill entire lane, if B is not compressed, A moves
+		using namespace jactorio::game;
+
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
+		transport_belt_proto->speed = 0.05;
+
+		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+
+		auto chunk = Chunk(0, 0, nullptr);
+
+		auto& logic_chunk = world_manager::logic_add_chunk(&chunk);
+
+		// Segments (Logic chunk must be created first)
+		auto* left_segment = new Transport_line_segment(
+			Transport_line_segment::moveDir::left,
+			Transport_line_segment::terminationType::right_only,
+			5);
+		auto* up_segment = new Transport_line_segment(
+			Transport_line_segment::moveDir::down,
+			Transport_line_segment::terminationType::straight,
+			10);
+
+		left_segment->target_segment = up_segment;
+
+		// Right dir belt empties only onto down belt Right side
+		{
+			auto& left = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
+			                        .emplace_back(transport_belt_proto.get(), 4, 0);
+			left.unique_data = left_segment;
+
+
+			auto& down = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
+			                        .emplace_back(transport_belt_proto.get(), 4, 9);
+			down.unique_data = up_segment;
+		}
+
+
+		// Insert items
+		for (int i = 0; i < 3; ++i) {
+			left_segment->append_item(true, 0.f, item_proto.get());
+			left_segment->append_item(false, 0.f, item_proto.get());
+		}
+
+		// Logic tests
+		transport_line_c::transport_line_logic_update();
+
+		// Since the target belt is empty, both A + B inserts into right lane
+		EXPECT_EQ(left_segment->left.size(), 2);
+		EXPECT_EQ(left_segment->left[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
+
+		EXPECT_EQ(left_segment->right.size(), 2);
+		EXPECT_EQ(left_segment->right[0].first.getAsDouble(), 0.2);
+
+
+		ASSERT_EQ(up_segment->right.size(), 2);
+		// 10 - 0.7 - 0.05
+		EXPECT_FLOAT_EQ(up_segment->right[0].first.getAsDouble(), 9.25f);
+		// (10 - 0.3 - 0.05) - (10 - 0.7 - 0.05)
+		EXPECT_FLOAT_EQ(up_segment->right[1].first.getAsDouble(), 0.4f);
+
+
+		// ======================================================================
+		// End on One update prior to transitioning
+		for (int j = 0; j < 4; ++j) {
+			transport_line_c::transport_line_logic_update();
+		}
+		EXPECT_EQ(left_segment->left[0].first.getAsDouble(), 0.0);
+		EXPECT_EQ(left_segment->right[0].first.getAsDouble(), 0.0);
+
+		EXPECT_FLOAT_EQ(up_segment->right[0].first.getAsDouble(), 9.05f);
+
+
+		// ======================================================================
+		// Transition items
+		transport_line_c::transport_line_logic_update();
+		EXPECT_EQ(left_segment->left.size(), 1);
+		EXPECT_EQ(left_segment->left[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
+
+
+		// ======================================================================
+		// Right lane (B) stops, left (A) takes priority
+		EXPECT_EQ(left_segment->right.size(), 2);  // Unmoved
+		EXPECT_EQ(left_segment->right[0].first.getAsDouble(), 0.f);
+
+		ASSERT_EQ(up_segment->right.size(), 3);
+		EXPECT_FLOAT_EQ(up_segment->right[0].first.getAsDouble(), 9.00f);
+		EXPECT_FLOAT_EQ(up_segment->right[1].first.getAsDouble(), 0.4f);
+		EXPECT_FLOAT_EQ(up_segment->right[2].first.getAsDouble(), 0.25f);
+
+
+		// ======================================================================
+		// Transition third item for Lane A, should wake up lane B after passing
+		for (int j = 0; j < 4 + 13 + 1; ++j) {  // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
+			transport_line_c::transport_line_logic_update();
+		}
+		EXPECT_EQ(left_segment->left.size(), 0);
+		EXPECT_EQ(left_segment->right.size(), 1);  // Woke and moved
+
+		ASSERT_EQ(up_segment->right.size(), 5);
+		EXPECT_FLOAT_EQ(up_segment->right[0].first.getAsDouble(), 8.10f);
+		EXPECT_FLOAT_EQ(up_segment->right[3].first.getAsDouble(), 0.25f);
+
 	}
 
 	// TODO if target segment is stopped, the segment pointing to it will also be stopped

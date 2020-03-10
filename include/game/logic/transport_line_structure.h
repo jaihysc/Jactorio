@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/21/2020
-// Last modified: 03/08/2020
+// Last modified: 03/10/2020
 // 
 
 #ifndef JACTORIO_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
@@ -23,10 +23,8 @@ namespace jactorio::game
 	 */
 	using transport_line_item = std::pair<transport_line_offset, data::Item*>;
 
-	/**
-	 * 	Stores a collection of items heading in one direction
-	 * 	When stored in a chunk, this is associated with a transport_line prototype
-	 */
+	///
+	/// \brief Stores a collection of items heading in one direction
 	struct Transport_line_segment
 	{
 		enum class moveDir
@@ -62,17 +60,8 @@ namespace jactorio::game
 			bend_left,
 			// Left length -0.3
 			// Right length -0.7
-			bend_right
-		};
+			bend_right,
 
-		/**
-		 * Lane behavior of items when transitioning to target_segment
-		 * if terminationFeedType is not standard, terminationType should be bend_left or bend_right
-		 */
-		enum class terminationFeedType
-		{
-			// Left lane -> Left lane, Right lane -> Right lane
-			standard = 0,
 			// Left + Right lane -> Left lane
 			left_only,
 			// Left + Right Lane -> Right lane
@@ -86,10 +75,9 @@ namespace jactorio::game
 		}
 
 		Transport_line_segment(const moveDir direction, const terminationType termination_type,
-		                       Transport_line_segment* target_segment, const uint8_t segment_length,
-		                       const terminationFeedType termination_feed_type)
+		                       Transport_line_segment* target_segment, const uint8_t segment_length)
 			: direction(direction), target_segment(target_segment),
-			  termination_type(termination_type), termination_feed_type(termination_feed_type),
+			  termination_type(termination_type),
 			  segment_length(segment_length) {
 		}
 
@@ -110,10 +98,8 @@ namespace jactorio::game
 		// Segment this transport line feeds into
 		Transport_line_segment* target_segment = nullptr;
 
-		// How the belt terminates (bends left, right, straight)
+		/// How the belt terminates (bends left, right, straight) (Single belt side)
 		terminationType termination_type;
-		// How items are fed into he target_segment
-		terminationFeedType termination_feed_type = terminationFeedType::standard;
 
 		// Index to the next item still with space to move
 		uint16_t l_index = 0;

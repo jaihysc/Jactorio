@@ -50,10 +50,13 @@ namespace jactorio::game::transport_line_c
 
 	// Number of tiles to offset items in order to line up on the L / R sides of the belt for all 4 directions
 	// Direction is direction of item movement for the transport line
-
+	
 	constexpr double line_base_offset_left = 0.3;
 	constexpr double line_base_offset_right = 0.7;
 
+	constexpr double line_left_up_straight_item_offset = 0.25;
+	constexpr double line_right_down_straight_item_offset = 0.75;
+	
 	constexpr double line_up_l_item_offset_x = line_base_offset_left - item_width / 2;
 	constexpr double line_up_r_item_offset_x = line_base_offset_right - item_width / 2;
 
@@ -92,7 +95,12 @@ namespace jactorio::game::transport_line_c
 	constexpr double line_left_br_l_item_offset_x = line_base_offset_left - item_width / 2;
 	constexpr double line_left_br_r_item_offset_x = line_base_offset_right - item_width / 2;
 
-
+	// Feed side (left and right lanes are the same)
+	constexpr double line_up_single_side_item_offset_y = line_base_offset_right - item_width / 2;
+	constexpr double line_right_single_side_item_offset_x = line_base_offset_left - item_width / 2;
+	constexpr double line_down_single_side_item_offset_y = line_base_offset_left - item_width / 2;
+	constexpr double line_left_single_side_item_offset_x = line_base_offset_right - item_width / 2;
+	
 	/**
 	 * Moves items for transport lines
 	 * @param l_chunk Chunk to update
