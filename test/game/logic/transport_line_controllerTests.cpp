@@ -3,13 +3,13 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/13/2020
-// Last modified: 03/10/2020
+// Last modified: 03/14/2020
 // 
 
 #include <gtest/gtest.h>
 
 #include "game/logic/transport_line_controller.h"
-#include "game/world/world_manager.h"
+#include "game/world/world_data.h"
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "game/logic/transport_line_structure.h"
 
@@ -18,7 +18,8 @@
 namespace game::logic
 {
 	// For line_logic and line_logic_precision
-	void test_item_positions(const jactorio::game::Transport_line_segment* up_segment,
+	void test_item_positions(jactorio::game::World_data& world_data,
+	                         const jactorio::game::Transport_line_segment* up_segment,
 	                         const jactorio::game::Transport_line_segment* right_segment,
 	                         const jactorio::game::Transport_line_segment* down_segment,
 	                         const jactorio::game::Transport_line_segment* left_segment) {
@@ -29,28 +30,28 @@ namespace game::logic
 
 		// End of U | 5 - 2(0.7) / 0.01 = 360
 		for (int i = 0; i < 360; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		ASSERT_FLOAT_EQ(up_segment->right.front().first.getAsDouble(), 0.f);
 		ASSERT_EQ(up_segment->right.size(), 1);
 
 		// End of R | 4 - 2(0.7) / 0.01 = 260 updates
 		for (int i = 0; i < 260; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		ASSERT_FLOAT_EQ(right_segment->right.front().first.getAsDouble(), 0.f);
 		ASSERT_EQ(right_segment->right.size(), 1);
 
 		// End of D
 		for (int i = 0; i < 360; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		ASSERT_FLOAT_EQ(down_segment->right.front().first.getAsDouble(), 0.f);
 		ASSERT_EQ(down_segment->right.size(), 1);
 
 		// End of L 4 - 2(0.7)
 		for (int i = 0; i < 260; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		ASSERT_FLOAT_EQ(left_segment->right.front().first.getAsDouble(), 0.f);
 		ASSERT_EQ(left_segment->right.size(), 1);
@@ -64,10 +65,10 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
-		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new Transport_line_segment(
@@ -115,7 +116,7 @@ namespace game::logic
 		// Insert item
 		left_segment->append_item(false, 0.f, item_proto.get());
 
-		test_item_positions(up_segment, right_segment, down_segment, left_segment);
+		test_item_positions(world_data, up_segment, right_segment, down_segment, left_segment);
 	}
 
 	TEST(transport_line, line_logic_precision) {
@@ -126,10 +127,10 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
-		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new Transport_line_segment(
@@ -178,7 +179,7 @@ namespace game::logic
 
 		// Should manage to make 100 000 laps
 		for (int i = 0; i < 100000; ++i) {
-			test_item_positions(up_segment, right_segment, down_segment, left_segment);
+			test_item_positions(world_data, up_segment, right_segment, down_segment, left_segment);
 
 			if (HasFatalFailure()) {
 				printf("Precision failed on lap %d/100000\n", i + 1);
@@ -197,10 +198,10 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = j_belt_speed;  // <---
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
-		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new Transport_line_segment(
@@ -250,7 +251,7 @@ namespace game::logic
 
 		// 1 update
 		// first item moved to up segment
-		transport_line_c::transport_line_logic_update();
+		transport_line_c::transport_line_logic_update(world_data);
 		ASSERT_EQ(up_segment->left.size(), 1);
 		ASSERT_EQ(left_segment->left.size(), 2);
 
@@ -260,7 +261,7 @@ namespace game::logic
 
 		// 2 updates | 0.12
 		for (int i = 0; i < 2; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		ASSERT_EQ(up_segment->left.size(), 1);
 		ASSERT_EQ(left_segment->left.size(), 2);
@@ -273,7 +274,7 @@ namespace game::logic
 		// 2 updates | Total distance = 4(0.06) = 0.24
 		// second item moved to up segment
 		for (int i = 0; i < 2; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		ASSERT_EQ(up_segment->left.size(), 2);
 		ASSERT_EQ(left_segment->left.size(), 1);
@@ -295,10 +296,10 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
-		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		/*
 		 *    --------- RIGHT -------- >
@@ -337,7 +338,7 @@ namespace game::logic
 
 		// Logic
 		// Should transfer the first item
-		transport_line_c::transport_line_logic_update();
+		transport_line_c::transport_line_logic_update(world_data);
 
 
 		EXPECT_EQ(up_segment->left.size(), 2);
@@ -350,7 +351,7 @@ namespace game::logic
 
 		// Transfer second item after (1 / 0.01) + 1 update - 1 update (Already moved once above)
 		for (int i = 0; i < 100; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 
 		EXPECT_EQ(up_segment->left.size(), 1);
@@ -362,7 +363,7 @@ namespace game::logic
 
 		// Third item
 		for (int i = 0; i < 100; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		EXPECT_EQ(up_segment->left.size(), 0);
 		EXPECT_EQ(right_segment->left.size(), 3);
@@ -380,10 +381,10 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
-		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		/*
 		 * COMPRESSED
@@ -420,7 +421,7 @@ namespace game::logic
 		up_segment->append_item(true, transport_line_c::item_spacing, item_proto.get());
 
 		// First item
-		transport_line_c::transport_line_logic_update();
+		transport_line_c::transport_line_logic_update(world_data);
 
 
 		EXPECT_EQ(up_segment->left.size(), 1);
@@ -433,7 +434,7 @@ namespace game::logic
 
 		// Transfer second item after (0.25 / 0.01) + 1 update - 1 update (Already moved once above)
 		for (int i = 0; i < 25; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 
 		EXPECT_EQ(up_segment->left.size(), 0);
@@ -455,10 +456,10 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
-		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		auto* segment_1 = new Transport_line_segment(
 			Transport_line_segment::moveDir::left,
@@ -487,7 +488,7 @@ namespace game::logic
 
 		// Travel to the next belt in 0.02 / 0.01 + 1 updates
 		for (int i = 0; i < 3; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 
 		EXPECT_EQ(segment_2->left.size(), 0);
@@ -508,10 +509,10 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
-		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		auto* segment = new Transport_line_segment(
 			Transport_line_segment::moveDir::left,
@@ -529,7 +530,7 @@ namespace game::logic
 
 		// Will reach distance 0 after 0.5 / 0.01 updates
 		for (int i = 0; i < 50; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 
 		EXPECT_EQ(segment->l_index, 0);
@@ -537,7 +538,7 @@ namespace game::logic
 
 		// On the next update, with no target segment, first item is kept at 0, second item untouched
 		// move index to 2 (was 0) as it has a distance greater than item_width
-		transport_line_c::transport_line_logic_update();
+		transport_line_c::transport_line_logic_update(world_data);
 
 
 		EXPECT_EQ(segment->l_index, 2);
@@ -547,13 +548,13 @@ namespace game::logic
 
 		// After 0.2 + 0.99 / 0.01 updates, the Third item will not move in following updates
 		for (int j = 0; j < 99; ++j) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		EXPECT_FLOAT_EQ(segment->left[2].first.getAsDouble(), transport_line_c::item_spacing);
 
 		// Index set to 3 (indicating the current items should not be moved)
 		// Should not move after further updates
-		transport_line_c::transport_line_logic_update();
+		transport_line_c::transport_line_logic_update(world_data);
 
 		EXPECT_EQ(segment->l_index, 3);
 		EXPECT_FLOAT_EQ(segment->left[2].first.getAsDouble(), transport_line_c::item_spacing);
@@ -561,7 +562,7 @@ namespace game::logic
 
 		// Updates not do nothing as index is at 3, where no item exists
 		for (int k = 0; k < 50; ++k) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 	}
 
@@ -573,10 +574,10 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
-		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		/*
 		 *    --------- RIGHT -------- >
@@ -617,7 +618,7 @@ namespace game::logic
 
 		// WIll not move after an arbitrary number of updates
 		for (int i = 0; i < 34; ++i) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 
 		EXPECT_FLOAT_EQ(up_segment->right.front().first.getAsDouble(), 0);
@@ -630,10 +631,10 @@ namespace game::logic
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
-		auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);
+		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		auto* right_segment = new Transport_line_segment(
 			Transport_line_segment::moveDir::right,
@@ -671,11 +672,11 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.05;
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
 
-		auto& logic_chunk = world_manager::logic_add_chunk(&chunk);
+		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* right_segment = new Transport_line_segment(
@@ -706,7 +707,7 @@ namespace game::logic
 		}
 
 		// Logic tests
-		transport_line_c::transport_line_logic_update();
+		transport_line_c::transport_line_logic_update(world_data);
 
 		// Since the target belt is empty, both A + B inserts into right lane
 		EXPECT_EQ(right_segment->left.size(), 2);
@@ -726,7 +727,7 @@ namespace game::logic
 		// ======================================================================
 		// End on One update prior to transitioning
 		for (int j = 0; j < 4; ++j) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		EXPECT_EQ(right_segment->left[0].first.getAsDouble(), 0.0);
 		EXPECT_EQ(right_segment->right[0].first.getAsDouble(), 0.0);
@@ -736,7 +737,7 @@ namespace game::logic
 
 		// ======================================================================
 		// Transition items
-		transport_line_c::transport_line_logic_update();
+		transport_line_c::transport_line_logic_update(world_data);
 		EXPECT_EQ(right_segment->left.size(), 1);
 		EXPECT_EQ(right_segment->left[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
 
@@ -755,7 +756,7 @@ namespace game::logic
 		// ======================================================================
 		// Transition third item for Lane A, should wake up lane B after passing
 		for (int j = 0; j < 4 + 13 + 1; ++j) {  // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		EXPECT_EQ(right_segment->left.size(), 0);
 		EXPECT_EQ(right_segment->right.size(), 1);  // Woke and moved
@@ -785,11 +786,11 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.05;
 
-		jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);
+		World_data world_data{};
 
 		auto chunk = Chunk(0, 0, nullptr);
 
-		auto& logic_chunk = world_manager::logic_add_chunk(&chunk);
+		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* left_segment = new Transport_line_segment(
@@ -823,7 +824,7 @@ namespace game::logic
 		}
 
 		// Logic tests
-		transport_line_c::transport_line_logic_update();
+		transport_line_c::transport_line_logic_update(world_data);
 
 		// Since the target belt is empty, both A + B inserts into right lane
 		EXPECT_EQ(left_segment->left.size(), 2);
@@ -843,7 +844,7 @@ namespace game::logic
 		// ======================================================================
 		// End on One update prior to transitioning
 		for (int j = 0; j < 4; ++j) {
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		EXPECT_EQ(left_segment->left[0].first.getAsDouble(), 0.0);
 		EXPECT_EQ(left_segment->right[0].first.getAsDouble(), 0.0);
@@ -853,7 +854,7 @@ namespace game::logic
 
 		// ======================================================================
 		// Transition items
-		transport_line_c::transport_line_logic_update();
+		transport_line_c::transport_line_logic_update(world_data);
 		EXPECT_EQ(left_segment->left.size(), 1);
 		EXPECT_EQ(left_segment->left[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
 
@@ -872,7 +873,7 @@ namespace game::logic
 		// ======================================================================
 		// Transition third item for Lane A, should wake up lane B after passing
 		for (int j = 0; j < 4 + 13 + 1; ++j) {  // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
-			transport_line_c::transport_line_logic_update();
+			transport_line_c::transport_line_logic_update(world_data);
 		}
 		EXPECT_EQ(left_segment->left.size(), 0);
 		EXPECT_EQ(left_segment->right.size(), 1);  // Woke and moved

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/01/2020
-// Last modified: 03/08/2020
+// Last modified: 03/12/2020
 // 
 
 #include "renderer/gui/gui_menus_debug.h"
@@ -16,10 +16,8 @@
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/transport_line_structure.h"
-#include "game/player/player_manager.h"
+#include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
-#include "game/world/world_generator.h"
-#include "game/world/world_manager.h"
 #include "renderer/rendering/mvp_manager.h"
 
 bool show_timings_window = false;
@@ -29,7 +27,9 @@ bool show_item_spawner_window = false;
 // Game
 bool show_belt_structure = false;
 
-void jactorio::renderer::gui::debug_menu_logic() {
+void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
+	auto& world_data = player_data.get_player_world();
+
 	if (show_belt_structure) {
 		// Sprite representing the update point
 		auto* sprite_stop =
@@ -51,7 +51,7 @@ void jactorio::renderer::gui::debug_menu_logic() {
 			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/arrow-left");
 
 		// Get all update points and add it to the chunk's objects for drawing
-		for (auto& pair : game::world_manager::logic_get_all_chunks()) {
+		for (auto& pair : world_data.logic_get_all_chunks()) {
 			auto& l_chunk = pair.second;
 
 			auto& object_layer = l_chunk.chunk->get_object(game::Chunk::objectLayer::debug_overlay);
@@ -128,7 +128,7 @@ void jactorio::renderer::gui::debug_menu_logic() {
 
 }
 
-void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flags) {
+void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flags, game::Player_data& player_data) {
 	using namespace jactorio;
 
 	auto main_window_flags = window_flags;
@@ -147,25 +147,27 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 	}
 
 	if (ImGui::CollapsingHeader("Game")) {
+		auto& world_data = player_data.get_player_world();
+
 		ImGui::Text("Cursor position: %f, %f",
-		            game::mouse_selection::get_position_x(),
-		            game::mouse_selection::get_position_y());
+		            game::Mouse_selection::get_cursor_x(),
+		            game::Mouse_selection::get_cursor_y());
 
 		ImGui::Text("Player position %f %f",
-		            game::player_manager::get_player_position_x(),
-		            game::player_manager::get_player_position_y());
+		            player_data.get_player_position_x(),
+		            player_data.get_player_position_y());
 
-		ImGui::Text("Chunk updates: %llu", game::world_manager::logic_get_all_chunks().size());
+		ImGui::Text("Chunk updates: %llu", world_data.logic_get_all_chunks().size());
 
 
-		int seed = game::world_generator::get_world_generator_seed();
+		int seed = world_data.get_world_generator_seed();
 		ImGui::InputInt("World generator seed", &seed);
-		game::world_generator::set_world_generator_seed(seed);
+		world_data.set_world_generator_seed(seed);
 
 		// Options
 		ImGui::Checkbox("Show belt structures", &show_belt_structure);
 		if (ImGui::Button("Make all belt items visible")) {
-			for (auto& pair : game::world_manager::logic_get_all_chunks()) {
+			for (auto& pair : world_data.logic_get_all_chunks()) {
 				auto& l_chunk = pair.second;
 				for (auto& transport_line : l_chunk.get_struct(game::Logic_chunk::structLayer::transport_line)) {
 					static_cast<game::Transport_line_segment*>(transport_line.unique_data)->item_visible = true;
@@ -192,7 +194,7 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 		debug_timings(window_flags);
 
 	if (show_item_spawner_window)
-		debug_item_spawner(window_flags);
+		debug_item_spawner(window_flags, player_data);
 }
 
 void jactorio::renderer::gui::debug_timings(const ImGuiWindowFlags window_flags) {
@@ -209,7 +211,8 @@ void jactorio::renderer::gui::debug_timings(const ImGuiWindowFlags window_flags)
 
 int give_amount = 1;
 
-void jactorio::renderer::gui::debug_item_spawner(const ImGuiWindowFlags window_flags) {
+void jactorio::renderer::gui::debug_item_spawner(const ImGuiWindowFlags window_flags,
+                                                 game::Player_data& player_data) {
 	using namespace core;
 
 	ImGui::Begin("Item spawner", nullptr, window_flags);
@@ -217,10 +220,11 @@ void jactorio::renderer::gui::debug_item_spawner(const ImGuiWindowFlags window_f
 	auto game_items = data::data_manager::data_raw_get_all<data::Item>(data::data_category::item);
 	for (auto& item : game_items) {
 		ImGui::PushID(item->name.c_str());
+		
 		if (ImGui::Button(item->get_localized_name().c_str())) {
 			data::item_stack item_stack = {item, give_amount};
 			game::inventory_c::add_itemstack_to_inv(
-				game::player_manager::inventory_player, game::player_manager::inventory_size, item_stack);
+				player_data.inventory_player, game::Player_data::inventory_size, item_stack);
 		}
 		ImGui::PopID();
 	}
@@ -231,7 +235,7 @@ void jactorio::renderer::gui::debug_item_spawner(const ImGuiWindowFlags window_f
 		give_amount = 1;
 
 	if (ImGui::Button("Clear inventory")) {
-		for (auto& i : game::player_manager::inventory_player) {
+		for (auto& i : player_data.inventory_player) {
 			i = {nullptr, 0};
 		}
 	}

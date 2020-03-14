@@ -48,7 +48,7 @@ namespace jactorio::data
 
 		void on_build(game::Chunk_tile_layer* tile_layer) const override;
 
-		void on_show_gui(game::Chunk_tile_layer* tile_layer) const override;
+		void on_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override;
 	};
 }
 

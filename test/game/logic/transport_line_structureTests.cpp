@@ -10,7 +10,7 @@
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "game/logic/transport_line_structure.h"
 #include "game/logic/transport_line_controller.h"
-#include "game/world/world_manager.h"
+#include "game/world/world_data.h"
 
 #include <gtest/gtest.h>
 
@@ -23,10 +23,10 @@ const auto item_proto = std::make_unique<jactorio::data::Item>();\
 const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();\
 transport_belt_proto->speed = 0.01f;\
 \
-jactorio::core::Resource_guard guard(&world_manager::clear_chunk_data);\
+jactorio::game::World_data world_data{};\
 \
 auto chunk = Chunk(0, 0, nullptr);\
-auto* logic_chunk = &world_manager::logic_add_chunk(&chunk);\
+auto* logic_chunk = &world_data.logic_add_chunk(&chunk);\
 \
 auto* segment = new jactorio::game::Transport_line_segment(\
     jactorio::game::Transport_line_segment::moveDir::left,\

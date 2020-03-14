@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/08/2020
+// Last modified: 03/11/2020
 // 
 
 #include "game/logic_loop.h"
@@ -12,17 +12,20 @@
 #include <thread>
 #include <data/prototype/entity/transport/transport_line.h>
 
+
 #include "jactorio.h"
+
+#include "core/filesystem.h"
 
 #include "renderer/gui/imgui_manager.h"
 
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-#include "game/player/player_manager.h"
-#include "game/world/world_generator.h"
-#include "game/world/world_manager.h"
+#include "game/player/player_data.h"
 #include "game/logic/transport_line_controller.h"
+#include "game/game_data.h"
+
 
 #include "data/data_manager.h"
 #include "data/prototype/item/item.h"
@@ -30,35 +33,56 @@
 bool logic_loop_should_terminate = false;
 constexpr float move_speed = 0.8f;
 
-void jactorio::game::init_logic_loop(std::mutex* mutex) {
+void jactorio::game::init_logic_loop(std::mutex*) {
+	// Initialize game data
+	// ReSharper disable once CppLocalVariableWithNonTrivialDtorIsNeverUsed
+	core::Resource_guard<void> game_data_guard([]() { delete game_data; });
+	game_data = new Game_data();
+
+	// Load prototype data
+	try {
+		data::data_manager::load_data(core::filesystem::resolve_path("~/data"));
+	}
+	catch (data::Data_exception& e) {
+		// error occurred
+		return;
+	}
+
+	// ======================================================================
+	// Temporary Startup settings
+	game_data->player.set_player_world(&game_data->world);  // Main world is player's world
+	
+
+	// ======================================================================
+
 	// Movement controls
 	input_manager::subscribe([]() {
-		player_manager::move_player_y(move_speed * -1);
+		game_data->player.move_player_y(move_speed * -1);
 	}, GLFW_KEY_W, GLFW_PRESS);
 	input_manager::subscribe([]() {
-		player_manager::move_player_y(move_speed * -1);
+		game_data->player.move_player_y(move_speed * -1);
 	}, GLFW_KEY_W, GLFW_REPEAT);
 
 
 	input_manager::subscribe([]() {
-		player_manager::move_player_y(move_speed);
+		game_data->player.move_player_y(move_speed);
 	}, GLFW_KEY_S, GLFW_PRESS);
 	input_manager::subscribe([]() {
-		player_manager::move_player_y(move_speed);
+		game_data->player.move_player_y(move_speed);
 	}, GLFW_KEY_S, GLFW_REPEAT);
 
 	input_manager::subscribe([]() {
-		player_manager::move_player_x(move_speed * -1);
+		game_data->player.move_player_x(move_speed * -1);
 	}, GLFW_KEY_A, GLFW_PRESS);
 	input_manager::subscribe([]() {
-		player_manager::move_player_x(move_speed * -1);
+		game_data->player.move_player_x(move_speed * -1);
 	}, GLFW_KEY_A, GLFW_REPEAT);
 
 	input_manager::subscribe([]() {
-		player_manager::move_player_x(move_speed);
+		game_data->player.move_player_x(move_speed);
 	}, GLFW_KEY_D, GLFW_PRESS);
 	input_manager::subscribe([]() {
-		player_manager::move_player_x(move_speed);
+		game_data->player.move_player_x(move_speed);
 	}, GLFW_KEY_D, GLFW_REPEAT);
 
 
@@ -66,42 +90,45 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 		using namespace renderer::imgui_manager;
 		// Menus
 		input_manager::subscribe([]() {
-			set_window_visibility(gui_window::debug, !get_window_visibility(gui_window::debug));
+			set_window_visibility(guiWindow::debug, !get_window_visibility(guiWindow::debug));
 		}, GLFW_KEY_GRAVE_ACCENT, GLFW_RELEASE);
 		input_manager::subscribe([]() {
 			// If a layer is already activated, deactivate it, otherwise open the gui menu
-			if (player_manager::get_activated_layer() != nullptr)
-				player_manager::set_activated_layer(nullptr);
+			if (game_data->player.get_activated_layer() != nullptr)
+				game_data->player.set_activated_layer(nullptr);
 			else
-				set_window_visibility(gui_window::character, !get_window_visibility(gui_window::character));
+				set_window_visibility(guiWindow::character, !get_window_visibility(guiWindow::character));
 		}, GLFW_KEY_TAB, GLFW_RELEASE);
 	}
 
 	{
 		// Place entities
 		input_manager::subscribe([]() {
-			if (renderer::imgui_manager::input_captured)
+			if (renderer::imgui_manager::input_captured || !game_data->input.mouse.selected_tile_in_range())
 				return;
 
-			const auto tile_selected = mouse_selection::get_mouse_tile_coords();
-			player_manager::try_place(tile_selected.first, tile_selected.second);
+			const auto tile_selected = game_data->input.mouse.get_mouse_tile_coords();
+			game_data->player.try_place_entity(game_data->world, 
+											   tile_selected.first, tile_selected.second);
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS);
 
 		input_manager::subscribe([]() {
-			if (renderer::imgui_manager::input_captured)
+			if (renderer::imgui_manager::input_captured || !game_data->input.mouse.selected_tile_in_range())
 				return;
 
-			const auto tile_selected = mouse_selection::get_mouse_tile_coords();
-			player_manager::try_place(tile_selected.first, tile_selected.second, true);
+			const auto tile_selected = game_data->input.mouse.get_mouse_tile_coords();
+			game_data->player.try_place_entity(game_data->world, 
+											   tile_selected.first, tile_selected.second, true);
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS_FIRST);
 
 		// Remove entities or mine resource
 		input_manager::subscribe([]() {
-			if (renderer::imgui_manager::input_captured)
+			if (renderer::imgui_manager::input_captured || !game_data->input.mouse.selected_tile_in_range())
 				return;
 
-			const auto tile_selected = mouse_selection::get_mouse_tile_coords();
-			player_manager::try_pickup(tile_selected.first, tile_selected.second);
+			const auto tile_selected = game_data->input.mouse.get_mouse_tile_coords();
+			game_data->player.try_pickup(game_data->world,
+										 tile_selected.first, tile_selected.second);
 		}, GLFW_MOUSE_BUTTON_2, GLFW_PRESS);
 	}
 
@@ -109,16 +136,16 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 	// TODO remove this
 	input_manager::subscribe([]() {
 		Event::subscribe_once(event_type::logic_tick, []() {
-			auto* chunk = world_manager::get_chunk(-1, 0);
-			auto* chunk_2 = world_manager::get_chunk(0, 0);
+			auto* chunk = game_data->world.get_chunk(-1, 0);
+			auto* chunk_2 = game_data->world.get_chunk(0, 0);
 
-			auto* chunk_3 = world_manager::get_chunk(-1, 1);
-			auto* chunk_4 = world_manager::get_chunk(0, 1);
+			auto* chunk_3 = game_data->world.get_chunk(-1, 1);
+			auto* chunk_4 = game_data->world.get_chunk(0, 1);
 
-			auto& logic_chunk = world_manager::logic_add_chunk(chunk);
-			world_manager::logic_add_chunk(chunk_2);
-			world_manager::logic_add_chunk(chunk_3);
-			world_manager::logic_add_chunk(chunk_4);
+			auto& logic_chunk = game_data->world.logic_add_chunk(chunk);
+			game_data->world.logic_add_chunk(chunk_2);
+			game_data->world.logic_add_chunk(chunk_3);
+			game_data->world.logic_add_chunk(chunk_4);
 
 			auto* belt_proto =
 				data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
@@ -184,9 +211,9 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 	}, GLFW_KEY_1, GLFW_RELEASE);
 	input_manager::subscribe([]() {
 		Event::subscribe_once(event_type::logic_tick, []() {
-			auto* chunk = world_manager::get_chunk(-1, 0);
+			auto* chunk = game_data->world.get_chunk(-1, 0);
 
-			auto& logic_chunk = world_manager::logic_add_chunk(chunk);
+			auto& logic_chunk = game_data->world.logic_add_chunk(chunk);
 
 			auto* belt_proto =
 				data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
@@ -255,8 +282,8 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 	}, GLFW_KEY_2, GLFW_RELEASE);
 	input_manager::subscribe([]() {
 		Event::subscribe_once(event_type::logic_tick, []() {
-			auto* chunk = world_manager::get_chunk(-1, 0);
-			auto& logic_chunk = world_manager::logic_add_chunk(chunk);
+			auto* chunk = game_data->world.get_chunk(-1, 0);
+			auto& logic_chunk = game_data->world.logic_add_chunk(chunk);
 
 			auto* belt_proto =
 				data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
@@ -289,8 +316,8 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 		});
 	}, GLFW_KEY_3, GLFW_RELEASE);
 	input_manager::subscribe([]() {
-		auto* chunk = world_manager::get_chunk(-1, 0);
-		auto& logic_chunk = world_manager::logic_add_chunk(chunk);
+		auto* chunk = game_data->world.get_chunk(-1, 0);
+		auto& logic_chunk = game_data->world.logic_add_chunk(chunk);
 
 		auto* belt_proto =
 			data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
@@ -338,9 +365,9 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 	// T movement of items -> v <-
 	input_manager::subscribe([]() {
 		Event::subscribe_once(event_type::logic_tick, []() {
-			auto* chunk = world_manager::get_chunk(-1, 0);
+			auto* chunk = game_data->world.get_chunk(-1, 0);
 
-			auto& logic_chunk = world_manager::logic_add_chunk(chunk);
+			auto& logic_chunk = game_data->world.logic_add_chunk(chunk);
 
 			auto* belt_proto =
 				data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
@@ -408,9 +435,9 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 
 	input_manager::subscribe([]() {
 		Event::subscribe_once(event_type::logic_tick, []() {
-			auto* chunk = world_manager::get_chunk(-1, 0);
+			auto* chunk = game_data->world.get_chunk(-1, 0);
 
-			auto& logic_chunk = world_manager::logic_add_chunk(chunk);
+			auto& logic_chunk = game_data->world.logic_add_chunk(chunk);
 
 			auto* belt_proto =
 				data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
@@ -486,7 +513,8 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 		{
 			//			std::lock_guard lk(*mutex);
 
-			mouse_selection::calculate_mouse_tile_coords();
+			game_data->input.mouse.calculate_selected_tile(game_data->player.get_player_position_x(),
+			                                               game_data->player.get_player_position_y());
 
 			// Do things every logic loop tick
 			Event::raise<Logic_tick_event>(event_type::logic_tick, logic_tick);
@@ -494,17 +522,18 @@ void jactorio::game::init_logic_loop(std::mutex* mutex) {
 			input_manager::raise();
 
 			// Generate chunks
-			world_generator::gen_chunk();
+			game_data->world.gen_chunk();
 
-			mouse_selection::draw_cursor_overlay();
+			game_data->input.mouse.draw_cursor_overlay(game_data->player);
 
-			player_manager::recipe_craft_tick();
+			// Character logic
+			game_data->player.recipe_craft_tick();
 
 			// Logistics logic
 			{
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-				transport_line_c::transport_line_logic_update();
+				transport_line_c::transport_line_logic_update(game_data->world);
 			}
 		}
 

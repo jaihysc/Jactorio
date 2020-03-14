@@ -1,11 +1,8 @@
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_LOGIC_CHUNK_H
 #define JACTORIO_INCLUDE_GAME_WORLD_LOGIC_CHUNK_H
 
-#include <map>
-
 #include "game/world/chunk.h"
 #include "game/world/chunk_struct_layer.h"
-#include "data/prototype/item/item.h"
 
 namespace jactorio::game
 {

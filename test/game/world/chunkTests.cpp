@@ -1,8 +1,19 @@
+// 
+// chunkTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/09/2019
+// Last modified: 03/12/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "game/world/chunk.h"
+#include "game/world/logic_chunk.h"
+#include "data/prototype/sprite.h"
+#include "data/prototype/tile/tile.h"
+
 #include <memory>
-#include <game/world/logic_chunk.h>
 
 namespace game
 {
@@ -25,7 +36,7 @@ namespace game
 
 		// Chunk tile 2
 		auto chunk_tile_2 = jactorio::game::Chunk_tile();
-		
+
 		const jactorio::game::Chunk_tile_layer tile_layer_2{};
 		chunk_tile_2.layers[0] = tile_layer_2;
 

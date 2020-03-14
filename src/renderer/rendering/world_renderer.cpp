@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/15/2019
-// Last modified: 03/10/2020
+// Last modified: 03/12/2020
 // 
 
 #include "renderer/rendering/world_renderer.h"
@@ -14,8 +14,8 @@
 
 #include "core/debug/execution_timer.h"
 
-#include "game/world/world_manager.h"
-#include "game/world/world_generator.h"
+#include "game/world/world_data.h"
+#include "game/world/chunk_tile_getters.h"
 
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/opengl/shader_manager.h"
@@ -26,29 +26,37 @@ using object_draw_func = unsigned int (*)(const jactorio::game::Chunk_object_lay
 // Functions for drawing each layer, they are accessed by layer_index
 tile_draw_func tile_layer_get_sprite_id_func[]{
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
-		const auto x = chunk_tile.get_layer_tile_prototype(jactorio::game::Chunk_tile::chunk_layer::base);
-		return x->sprite->internal_id;
+		const auto t =
+			jactorio::game::chunk_tile_getter::get_tile_prototype(
+				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::base);
+		return t->sprite->internal_id;
 	},
 
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
-		const auto y = chunk_tile.get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::resource);
+		const auto t =
+			jactorio::game::chunk_tile_getter::get_entity_prototype(
+				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::resource);
 		// Sprites are guaranteed not nullptr
-		if (y == nullptr)
+		if (t == nullptr)
 			return 0u;
-		return y->sprite->internal_id;
+		return t->sprite->internal_id;
 	},
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
-		const auto y = chunk_tile.get_layer_entity_prototype(jactorio::game::Chunk_tile::chunk_layer::entity);
-		if (y == nullptr)
+		const auto t =
+			jactorio::game::chunk_tile_getter::get_entity_prototype(
+				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::entity);
+		if (t == nullptr)
 			return 0u;
-		return y->sprite->internal_id;
+		return t->sprite->internal_id;
 	},
 
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
-		const auto z = chunk_tile.get_layer_sprite_prototype(jactorio::game::Chunk_tile::chunk_layer::overlay);
-		if (z == nullptr)
+		const auto t =
+			jactorio::game::chunk_tile_getter::get_sprite_prototype(
+				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::overlay);
+		if (t == nullptr)
 			return 0u;
-		return z->internal_id;
+		return t->internal_id;
 	}
 };
 
@@ -70,7 +78,8 @@ object_draw_func object_layer_get_sprite_id_func[]{
 
 // prepare_chunk_draw_data will select either
 // prepare_tile_data or prepare_object_data based on the layer it is rendering
-void prepare_tile_data(const unsigned layer_index,
+void prepare_tile_data(jactorio::game::World_data&,
+                       const unsigned layer_index,
                        jactorio::renderer::Renderer_layer* layer,
                        const float chunk_y_offset, const float chunk_x_offset,
                        jactorio::game::Chunk* const chunk) {
@@ -210,12 +219,14 @@ void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
 }
 
 
-void prepare_object_data(const unsigned layer_index,
+void prepare_object_data(jactorio::game::World_data& world_data,
+                         const unsigned layer_index,
                          jactorio::renderer::Renderer_layer* layer,
                          const float chunk_y_offset, const float chunk_x_offset,
                          jactorio::game::Chunk* const chunk) {
+
 	// Draw logic chunk contents if it exists
-	auto& logic_chunks = jactorio::game::world_manager::logic_get_all_chunks();
+	auto& logic_chunks = world_data.logic_get_all_chunks();
 	auto logic_chunk = logic_chunks.find(chunk);
 
 	if (logic_chunk != logic_chunks.end()) {
@@ -455,12 +466,14 @@ void prepare_object_data(const unsigned layer_index,
 	}
 }
 
-void jactorio::renderer::world_renderer::prepare_chunk_draw_data(const int layer_index, const bool is_tile_layer,
+void jactorio::renderer::world_renderer::prepare_chunk_draw_data(game::World_data& world_data,
+                                                                 const int layer_index, const bool is_tile_layer,
                                                                  const int render_offset_x, const int render_offset_y,
                                                                  const int chunk_start_x, const int chunk_start_y,
                                                                  const int chunk_amount_x, const int chunk_amount_y,
                                                                  Renderer_layer* layer) {
-	void (* prepare_func)(unsigned, Renderer_layer*, float, float, game::Chunk*);
+	void (* prepare_func)(game::World_data&, unsigned, Renderer_layer*, float, float, game::Chunk*);
+
 	if (is_tile_layer)  // Either prepare tiles or objects in chunk
 		prepare_func = &prepare_tile_data;
 	else
@@ -472,18 +485,19 @@ void jactorio::renderer::world_renderer::prepare_chunk_draw_data(const int layer
 		for (int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
 			const int chunk_x_offset = chunk_x * 32 + render_offset_x;
 
-			auto* chunk = game::world_manager::get_chunk(chunk_start_x + chunk_x,
-			                                             chunk_start_y + chunk_y);
+			auto* chunk = world_data.get_chunk(chunk_start_x + chunk_x,
+			                                   chunk_start_y + chunk_y);
 
 			// Generate chunk if non existent
 			if (chunk == nullptr) {
-				game::world_generator::queue_chunk_generation(
+				world_data.queue_chunk_generation(
 					chunk_start_x + chunk_x,
 					chunk_start_y + chunk_y);
 				continue;
 			}
 
-			prepare_func(layer_index, layer,
+			prepare_func(world_data,
+			             layer_index, layer,
 			             static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
 			             chunk);
 		}
@@ -495,9 +509,9 @@ void jactorio::renderer::world_renderer::prepare_logic_chunk_draw_data(game::Log
 }
 
 
-void jactorio::renderer::world_renderer::render_player_position(Renderer* renderer,
-                                                                const float player_x,
-                                                                const float player_y) {
+void jactorio::renderer::world_renderer::render_player_position(game::World_data& world_data,
+                                                                Renderer* renderer,
+                                                                const float player_x, const float player_y) {
 	// Player movement is in tiles
 	// Every 32 tiles, shift 1 chunk
 	// Remaining tiles are offset
@@ -605,7 +619,7 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 	std::future<void> preparing_thread1;
 	std::future<void> preparing_thread2 =
 		std::async(std::launch::async, prepare_chunk_draw_data,
-		           0, true,
+		           std::ref(world_data), 0, true,
 		           window_start_x, window_start_y,
 		           chunk_start_x, chunk_start_y,
 		           amount_x, amount_y,
@@ -619,7 +633,7 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 			layer_1->clear();
 			preparing_thread1 =
 				std::async(std::launch::async, prepare_chunk_draw_data,
-				           layer_index, true,
+				           std::ref(world_data), layer_index, true,
 				           window_start_x, window_start_y,
 				           chunk_start_x, chunk_start_y,
 				           amount_x, amount_y,
@@ -636,7 +650,7 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 			layer_2->clear();
 			preparing_thread2 =
 				std::async(std::launch::async, prepare_chunk_draw_data,
-				           layer_index, true,
+				           std::ref(world_data), layer_index, true,
 				           window_start_x, window_start_y,
 				           chunk_start_x, chunk_start_y,
 				           amount_x, amount_y,
@@ -660,7 +674,7 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 			layer_1->clear();
 			preparing_thread1 =
 				std::async(std::launch::async, prepare_chunk_draw_data,
-				           layer_index, false,
+				           std::ref(world_data), layer_index, false,
 				           window_start_x, window_start_y,
 				           chunk_start_x, chunk_start_y,
 				           amount_x, amount_y,
@@ -677,7 +691,7 @@ void jactorio::renderer::world_renderer::render_player_position(Renderer* render
 			layer_2->clear();
 			preparing_thread2 =
 				std::async(std::launch::async, prepare_chunk_draw_data,
-				           layer_index, false,
+				           std::ref(world_data), layer_index, false,
 				           window_start_x, window_start_y,
 				           chunk_start_x, chunk_start_y,
 				           amount_x, amount_y,

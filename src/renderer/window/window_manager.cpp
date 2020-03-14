@@ -124,7 +124,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		get_base_renderer()->tile_projection_matrix_offset += yoffset * 10;
 	});
 	glfwSetCursorPosCallback(glfw_window, [](GLFWwindow* window, double xpos, double ypos) {
-		game::mouse_selection::set_cursor_position(xpos, ypos);
+		game::set_cursor_position(xpos, ypos);
 	});
 	
 	gl_context_active = true;

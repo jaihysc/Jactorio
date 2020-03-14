@@ -1,13 +1,19 @@
-//
-// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
-//
+// 
+// entity.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/20/2020
+// Last modified: 03/12/2020
+// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
+#pragma once
 
 #include "jactorio.h"
-#include "data/prototype/prototype_base.h"
+
 #include "data/prototype/item/item.h"
+#include "game/player/player_data.h"
 #include "game/world/chunk_tile_layer.h"
 
 namespace jactorio::data
@@ -16,7 +22,7 @@ namespace jactorio::data
 	struct Entity_data
 	{
 	};
-	
+
 	/**
 	 * Placeable items in the world
 	 */
@@ -35,7 +41,7 @@ namespace jactorio::data
 
 		Entity(const Entity& other) = default;
 		Entity(Entity&& other) noexcept = default;
-		
+
 		Entity& operator=(const Entity& other) = default;
 		Entity& operator=(Entity&& other) noexcept = default;
 
@@ -44,11 +50,11 @@ namespace jactorio::data
 		 */
 		PYTHON_PROP_I(Entity, Sprite*, sprite, nullptr)
 
-		
+
 		// Number of tiles this entity spans
 		PYTHON_PROP_REF_I(Entity, unsigned short, tile_width, 1)
 		PYTHON_PROP_REF_I(Entity, unsigned short, tile_height, 1)
-		
+
 		// Can be rotated by player?
 		PYTHON_PROP_REF_I(Entity, bool, rotatable, false)
 		// Can be placed by player?
@@ -58,11 +64,11 @@ namespace jactorio::data
 		J_NODISCARD Item* get_item() const {
 			return item_;
 		}
-		
+
 		Entity* set_item(Item* item) {
 			item->entity_prototype = this;
 			this->item_ = item;
-			
+
 			return this;
 		}
 
@@ -109,7 +115,7 @@ namespace jactorio::data
 		/**
 		 * Displays the menu associated with itself with the provided data
 		 */
-		virtual void on_show_gui(game::Chunk_tile_layer* tile_layer) const {
+		virtual void on_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const {
 		}
 	};
 

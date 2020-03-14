@@ -9,7 +9,7 @@
 #include "data/prototype/entity/transport/transport_line.h"
 #include "game/logic/transport_line_controller.h"
 
-#include "game/world/world_manager.h"
+#include "game/world/world_data.h"
 #include "game/logic/transport_line_structure.h"
 
 void apply_termination_deduction_l(const jactorio::game::Transport_line_segment::terminationType termination_type,
@@ -244,16 +244,16 @@ void jactorio::game::transport_line_c::logic_update_transition_items(Logic_chunk
 	}
 }
 
-void jactorio::game::transport_line_c::transport_line_logic_update() {
+void jactorio::game::transport_line_c::transport_line_logic_update(World_data& world_data) {
 	// The logic update of transport line items occur in 2 stages:
 	// 		1. Move items on their transport lines
 	//		2. Check if any items have reached the end of their lines, and need to be moved to another one
 
-	for (auto& logic_chunk_pair : world_manager::logic_get_all_chunks()) {
+	for (auto& logic_chunk_pair : world_data.logic_get_all_chunks()) {
 		logic_update_move_items(&logic_chunk_pair.second);
 	}
 
-	for (auto& logic_chunk_pair : world_manager::logic_get_all_chunks()) {
+	for (auto& logic_chunk_pair : world_data.logic_get_all_chunks()) {
 		logic_update_transition_items(&logic_chunk_pair.second);
 	}
 }

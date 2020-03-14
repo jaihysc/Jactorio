@@ -15,7 +15,7 @@
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
 #include "game/event/event.h"
-#include "game/player/player_manager.h"
+#include "game/player/player_data.h"
 #include "data/prototype/entity/entity.h"
 
 ImGuiWindowFlags release_window_flags = 0;
@@ -165,7 +165,7 @@ void* windows[]{
 bool window_visibility[sizeof(windows) / sizeof(windows[0])];
 
 
-void jactorio::renderer::imgui_manager::set_window_visibility(const gui_window window, const bool visibility) {
+void jactorio::renderer::imgui_manager::set_window_visibility(const guiWindow window, const bool visibility) {
 	const auto index = static_cast<int>(window);
 	assert(index != -1);
 	
@@ -179,13 +179,14 @@ void jactorio::renderer::imgui_manager::set_window_visibility(const gui_window w
 	old_visibility = visibility;
 }
 
-bool jactorio::renderer::imgui_manager::get_window_visibility(gui_window window) {
+bool jactorio::renderer::imgui_manager::get_window_visibility(guiWindow window) {
 	const auto index = static_cast<int>(window);
 	assert(index != -1);
 
 	return window_visibility[index];
 }
 
+// TODO get rid of this vvv, it is unsafe with how it erases types
 /**
  * Draws windows conditionally
  * @param gui_window
@@ -193,7 +194,7 @@ bool jactorio::renderer::imgui_manager::get_window_visibility(gui_window window)
  * @param params Parameters to pass to the window function after the window flags
  */
 template <typename ... ArgsT>
-void draw_window(jactorio::renderer::imgui_manager::gui_window gui_window, const ImGuiWindowFlags window_flags, 
+void draw_window(jactorio::renderer::imgui_manager::guiWindow gui_window, const ImGuiWindowFlags window_flags, 
                  ArgsT& ... params) {
 	const int window_index = static_cast<int>(gui_window);
 	assert(window_index != -1);
@@ -208,7 +209,7 @@ void draw_window(jactorio::renderer::imgui_manager::gui_window gui_window, const
 	function_ptr(window_flags, params ...);
 }
 
-void jactorio::renderer::imgui_manager::imgui_draw() {
+void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_data) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame
@@ -226,24 +227,24 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
-	draw_window(gui_window::debug, 0);
-	gui::debug_menu_logic();
+	draw_window<game::Player_data&>(guiWindow::debug, 0, player_data);
+	gui::debug_menu_logic(player_data);
 
 	// Draw gui for active entity
 	// Do not draw character and recipe menu while in an entity menu
-	auto* layer = game::player_manager::get_activated_layer();
+	auto* layer = player_data.get_activated_layer();
 	if (layer != nullptr) {
-		set_window_visibility(gui_window::character, false);
+		set_window_visibility(guiWindow::character, false);
 
-		static_cast<data::Entity*>(layer->prototype_data)->on_show_gui(layer);
+		static_cast<data::Entity*>(layer->prototype_data)->on_show_gui(player_data, layer);
 	}
 	else {
-		draw_window(gui_window::character, release_window_flags);
+		draw_window<game::Player_data&>(guiWindow::character, release_window_flags, player_data);
 	}
 
-	gui::crafting_queue();
-	gui::cursor_window();
-	gui::pickup_progressbar();
+	gui::crafting_queue(player_data);
+	gui::cursor_window(player_data);
+	gui::pickup_progressbar(player_data);
 
 	// Render
 	ImGui::Render();
