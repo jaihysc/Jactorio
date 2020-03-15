@@ -1,6 +1,10 @@
-//
-// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
-//
+// 
+// data_manager.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
 
 #include "data/data_manager.h"
 
@@ -118,7 +122,7 @@ void jactorio::data::data_manager::load_data(
 			try {
 				pybind_manager::exec(py_file_contents, py_file_path.str());
 			}
-			catch (Data_exception & e) {
+			catch (Data_exception& e) {
 				LOG_MESSAGE_f(error, "%s", e.what());
 				throw;
 			}
@@ -129,7 +133,7 @@ void jactorio::data::data_manager::load_data(
 		{
 			std::stringstream cfg_file_path;
 			// TODO selectable language
-			cfg_file_path << current_directory << "/local/" << 
+			cfg_file_path << current_directory << "/local/" <<
 				local_parser::language_identifier[static_cast<int>(local_parser::language::en)] << ".cfg";
 
 			auto local_contents = core::filesystem::read_file_as_str(cfg_file_path.str());
@@ -156,7 +160,7 @@ void jactorio::data::data_manager::load_data(
 				LOG_MESSAGE_f(error, "Prototype validation failed: `%s`", e.what());
 				throw;
 			}
-			
+
 		}
 	}
 }

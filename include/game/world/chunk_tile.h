@@ -6,8 +6,9 @@
 // Last modified: 03/12/2020
 // 
 
-#ifndef GAME_WORLD_TILE_H
-#define GAME_WORLD_TILE_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H
+#define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H
+#pragma once
 
 #include "jactorio.h"
 
@@ -58,4 +59,4 @@ namespace jactorio::game
 	};
 }
 
-#endif // GAME_WORLD_TILE_H
+#endif //JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H

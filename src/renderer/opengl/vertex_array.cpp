@@ -1,3 +1,11 @@
+// 
+// vertex_array.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
 #include <GL/glew.h>
 
 #include "renderer/opengl/vertex_array.h"
@@ -21,7 +29,7 @@ void jactorio::renderer::Vertex_array::add_buffer(const Vertex_buffer* vb, const
 	// location here is referenced by the shader
 	DEBUG_OPENGL_CALL(glEnableVertexAttribArray(location));
 	DEBUG_OPENGL_CALL(
-		glVertexAttribPointer(location, span, GL_FLOAT, GL_FALSE, sizeof(float) * span, 
+		glVertexAttribPointer(location, span, GL_FLOAT, GL_FALSE, sizeof(float) * span,
 			static_cast<const void*>(nullptr)));
 }
 

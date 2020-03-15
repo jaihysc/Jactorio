@@ -1,3 +1,11 @@
+// 
+// error.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -15,18 +23,18 @@ bool jactorio::renderer::opengl_print_errors(const char* function_name, const ch
 	// Do not log error if there is no opengl context
 	if (!window_manager::context_active())
 		return false;
-	
+
 	const unsigned int max_errors = 1000;
 	unsigned int error_count = 0;  // Break after writing 1000 errors, in case this is stuck in a loop
 
 	bool found_error = false;
-	
+
 	GLenum error;
 	while (error_count < max_errors && (error = glGetError()) != GL_NO_ERROR) {
 		std::stringstream err_ss;
 		err_ss << std::hex << error;
-		
-		LOG_MESSAGE_f(error, "OpenGL: 0x%s, function %s in file %s at line %d", 
+
+		LOG_MESSAGE_f(error, "OpenGL: 0x%s, function %s in file %s at line %d",
 		              err_ss.str().c_str(), function_name, file, line);
 
 		found_error = true;
@@ -36,7 +44,7 @@ bool jactorio::renderer::opengl_print_errors(const char* function_name, const ch
 	if (error_count >= max_errors) {
 		LOG_MESSAGE_f(error, "OpenGL: Errors cut, exceeded maximum %d errors", max_errors);
 	}
-	
+
 	return found_error;
 }
 
@@ -46,10 +54,10 @@ bool jactorio::renderer::opengl_print_errors(const char* function_name, const ch
 void jactorio::renderer::opengl_clear_errors() {	// Do not log error if there is no opengl context
 	if (!window_manager::context_active())
 		return;
-	
+
 	const unsigned int max_errors = 1000;
 	unsigned int error_count = 0;  // Break after writing 1000 errors, in case this is stuck in a loop
-	
+
 	while (error_count < max_errors && glGetError() != GL_NO_ERROR)
 		error_count++;
 

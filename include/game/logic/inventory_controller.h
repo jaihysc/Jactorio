@@ -1,5 +1,14 @@
-#ifndef GAME_LOGIC_INVENTORY_CONTROLLER_H
-#define GAME_LOGIC_INVENTORY_CONTROLLER_H
+// 
+// inventory_controller.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/20/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_INVENTORY_CONTROLLER_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_INVENTORY_CONTROLLER_H
+#pragma once
 
 #include "jactorio.h"
 
@@ -8,7 +17,7 @@
 namespace jactorio::game
 {
 	namespace inventory_c
-	{		
+	{
 		/**
 		 * Moves itemstack from index in origin to target inventory index <br>
 		 * When stacking items, the stack prioritizes the target inventory <br>
@@ -20,7 +29,7 @@ namespace jactorio::game
 		                             unsigned short mouse_button);
 
 		// Non-player inventories
-		
+
 		/**
 		 * Attempts to add the specified item stack to the target_inv <br>
 		 * Will not set item_stack to nullptr
@@ -37,7 +46,7 @@ namespace jactorio::game
 		 */
 		uint32_t get_inv_item_count(data::item_stack* inv, uint16_t inv_size, const data::Item* item);
 
-		
+
 		/**
 		 * Removes remove_amount of specified item from inventory inv <br>
 		 * @return false if there is insufficient items to remove remove_amount
@@ -55,4 +64,4 @@ namespace jactorio::game
 	}
 }
 
-#endif // GAME_LOGIC_INVENTORY_CONTROLLER_H
+#endif //JACTORIO_INCLUDE_GAME_LOGIC_INVENTORY_CONTROLLER_H

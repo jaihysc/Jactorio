@@ -26,6 +26,7 @@ General requirements:
   * Windows - ensure CMake is added to the `Paths` environmental variable
 * Git / Git bash
   * Windows - Use Git bash
+* Python interpreter installed
 
 In a bash shell on Mac and Linux / Git bash on Windows, run
 
@@ -49,9 +50,9 @@ The test results will be placed in the directory of `runtests.sh`
 
 ## Dependencies
 
-The installation of dependencies listed below is automatic
+The application utilises Python to load data, this requires a Python interpreter to be installed on the system
 
-However, they may carry additional dependencies you will need to manually install
+The installation of dependencies listed below is automatic
 
 * [decimal_for_cpp](https://github.com/vpiotr/decimal_for_cpp)
 * [GLEW](http://glew.sourceforge.net/)

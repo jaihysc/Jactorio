@@ -1,3 +1,11 @@
+// 
+// chunk.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
 #include <game/world/chunk.h>
 
 jactorio::game::Chunk::Chunk(const int x, const int y, Chunk_tile* tiles) {
@@ -22,7 +30,7 @@ jactorio::game::Chunk::~Chunk() {
 
 jactorio::game::Chunk::Chunk(const Chunk& other)
 	: position_(other.position_) {
-	
+
 	tiles_ = new Chunk_tile[32 * 32];
 	for (int i = 0; i < 32 * 32; ++i) {
 		tiles_[i] = other.tiles_[i];

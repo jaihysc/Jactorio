@@ -1,3 +1,11 @@
+// 
+// recipeTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 02/07/2020
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "data/prototype/item/recipe.h"
@@ -7,14 +15,14 @@ namespace data::prototype
 {
 	TEST(recipe, get_item_recipe) {
 		// Allows for fast lookup of item recipes instead of searching through an entire unordered_map
-		
+
 		using namespace jactorio::data;
 
 		EXPECT_EQ(Recipe::get_item_recipe("non-existent-item"), nullptr);
-		
+
 		auto laptop_recipe = Recipe();
 		laptop_recipe.set_product({"Laptop", 1});
-		
+
 		auto* recipe = Recipe::get_item_recipe("Laptop");
 		EXPECT_EQ(recipe, &laptop_recipe);
 	}
@@ -70,7 +78,7 @@ namespace data::prototype
 	}
 
 	TEST(recipe, post_load_validate) {
-		auto recipe = jactorio::data::Recipe();
+		const auto recipe = jactorio::data::Recipe();
 
 		// Not specifying any ingredients or products should throw an data exception
 		bool caught = false;

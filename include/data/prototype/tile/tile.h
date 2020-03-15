@@ -1,3 +1,11 @@
+// 
+// tile.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 12/06/2019
+// Last modified: 03/14/2020
+// 
+
 #ifndef DATA_PROTOTYPE_TILE_TILE_H
 #define DATA_PROTOTYPE_TILE_TILE_H
 
@@ -12,7 +20,7 @@ namespace jactorio::data
 	 */
 	class Tile : public Prototype_base
 	{
-	public:		
+	public:
 		Tile()
 			: is_water(false), sprite(nullptr) {
 		}
@@ -33,7 +41,7 @@ namespace jactorio::data
 
 		PYTHON_PROP(Tile, Sprite*, sprite)
 
-		
+
 		void post_load_validate() const override;
 	};
 

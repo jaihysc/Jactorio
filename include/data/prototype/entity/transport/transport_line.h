@@ -1,11 +1,15 @@
-//
-// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
-//
+// 
+// transport_line.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 02/10/2020
+// Last modified: 03/14/2020
+// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
+#pragma once
 
-#include "core/float_math.h"
 #include "core/data_type.h"
 #include "data/prototype/entity/health_entity.h"
 
@@ -45,7 +49,7 @@ namespace jactorio::data
 
 		void post_load() override {
 			// Convert floating point speed to fixed precision decimal speed
-			speed = transport_line_offset (speed_float);
+			speed = transport_line_offset(speed_float);
 		}
 
 		void post_load_validate() const override {

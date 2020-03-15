@@ -1,5 +1,14 @@
-#ifndef DATA_PROTOTYPE_ITEM_ITEM_H
-#define DATA_PROTOTYPE_ITEM_ITEM_H
+// 
+// item.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/20/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H
+#pragma once
 
 #include <utility>
 
@@ -26,7 +35,7 @@ namespace jactorio::data
 		void* entity_prototype = nullptr;
 		data_category entity_prototype_category = data_category::none;
 
-		
+
 		/**
 		 * Number of items which can be together <br>
 		 * Default to 50
@@ -34,7 +43,7 @@ namespace jactorio::data
 		PYTHON_PROP_REF(Item, unsigned short, stack_size)
 	};
 
-	
+
 	// Makes arrays holding items more clear than just unsigned int
 	// Item* and amount in current stack
 	// Left: Item prototype
@@ -42,4 +51,4 @@ namespace jactorio::data
 	using item_stack = std::pair<Item*, uint16_t>;
 }
 
-#endif // DATA_PROTOTYPE_ITEM_ITEM_H
+#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H

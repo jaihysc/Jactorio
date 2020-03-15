@@ -1,3 +1,11 @@
+// 
+// renderer.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
+
 #include <GL/glew.h>
 
 #include "renderer/rendering/renderer.h"
@@ -33,7 +41,7 @@ jactorio::renderer::Renderer::Renderer() {
 	const glm::mat4 model_matrix = translate(glm::mat4(1.f), glm::vec3(0, 0, 0));
 	setg_model_matrix(model_matrix);
 	update_shader_mvp();
-	
+
 	// Get window size
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);

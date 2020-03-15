@@ -1,7 +1,16 @@
+// 
+// sprite.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 12/06/2019
+// Last modified: 03/14/2020
+// 
+
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "data/prototype/sprite.h"
 
+#include <sstream>
 #include <stb/stb_image.h>
 
 #include "core/filesystem.h"
@@ -27,10 +36,10 @@ void jactorio::data::Sprite::load_image_from_file() {
 
 	if (!sprite_buffer_) {
 		LOG_MESSAGE_f(error, "Failed to read sprite at: %s", sprite_path_.c_str());
-		
+
 		std::ostringstream sstr;
 		sstr << "Failed to read sprite at: " << sprite_path_;
-		
+
 		throw Data_exception(sstr.str());
 	}
 }

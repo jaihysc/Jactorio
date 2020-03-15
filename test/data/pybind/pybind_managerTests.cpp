@@ -1,3 +1,11 @@
+// 
+// pybind_managerTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/09/2019
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "core/resource_guard.h"
@@ -8,13 +16,14 @@ namespace data
 {
 	TEST(pybind_manager, invalid_python_str) {
 		jactorio::core::Resource_guard<void> guard(
-			[]() {jactorio::data::pybind_manager::py_interpreter_terminate(); });
+			[]() { jactorio::data::pybind_manager::py_interpreter_terminate(); });
 		jactorio::data::pybind_manager::py_interpreter_init();
 
 		bool caught = false;
 		try {
 			jactorio::data::pybind_manager::exec("asdf");
-		} catch (jactorio::data::Data_exception& e) {
+		}
+		catch (jactorio::data::Data_exception& e) {
 			caught = true;
 		}
 
@@ -25,8 +34,8 @@ namespace data
 
 	TEST(pybind_manager, valid_python_str) {
 		jactorio::core::Resource_guard<void> guard(
-			[]() {jactorio::data::pybind_manager::py_interpreter_terminate(); });
-		
+			[]() { jactorio::data::pybind_manager::py_interpreter_terminate(); });
+
 		jactorio::data::pybind_manager::py_interpreter_init();
 		EXPECT_EQ(jactorio::data::pybind_manager::exec("print(\"Hello\")"), 0);
 	}

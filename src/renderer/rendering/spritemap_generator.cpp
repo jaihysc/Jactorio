@@ -1,3 +1,11 @@
+// 
+// spritemap_generator.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
+
 #include "renderer/rendering/spritemap_generator.h"
 
 #include <map>
@@ -21,7 +29,7 @@ void jactorio::renderer::renderer_sprites::clear_spritemaps() {
 	LOG_MESSAGE(debug, "Spritemap data cleared");
 }
 
-void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::sprite_group group, 
+void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::sprite_group group,
                                                             const bool invert_sprites) {
 	std::vector<data::Sprite*> sprites =
 		data::data_manager::data_raw_get_all<data::Sprite>(data::data_category::sprite);
@@ -32,8 +40,8 @@ void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::sprite
 			// Return false to NOT remove
 			// Category of none is never removed
 			if (ptr->group.empty()) {
-				LOG_MESSAGE_f(warning, 
-				              "Sprite prototype '%s' does not have a category, and will be added to all sprite groups." 
+				LOG_MESSAGE_f(warning,
+				              "Sprite prototype '%s' does not have a category, and will be added to all sprite groups."
 				              " Consider giving it a category",
 				              ptr->name.c_str())
 				return false;
@@ -89,9 +97,9 @@ renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short cou
 	for (int i = 0; i < count; ++i) {
 		const unsigned char* sprite_data = sprites[i]->get_sprite_data_ptr();
 
-		const unsigned int sprite_width  = sprites[i]->get_width();
+		const unsigned int sprite_width = sprites[i]->get_width();
 		const unsigned int sprite_height = sprites[i]->get_height();
-		
+
 		// Copy data onto spritemap
 		for (unsigned int y = 0; y < sprite_height; ++y) {
 			for (unsigned int x = 0; x < sprite_width; ++x) {
@@ -99,13 +107,13 @@ renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short cou
 					unsigned int sprite_index;
 
 					if (invert_sprites) {
-						sprite_index = 
+						sprite_index =
 							(sprite_width * (sprite_height - 1 - y) + x) * 4 + color_offset;
 					}
 					else {
 						sprite_index = (sprite_width * y + x) * 4 + color_offset;
 					}
-					
+
 					spritemap_buffer[(pixels_x * y + x + x_offset) * 4 + color_offset]
 						= sprite_data[sprite_index];
 				}

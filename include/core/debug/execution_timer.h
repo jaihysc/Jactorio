@@ -1,5 +1,14 @@
-#ifndef CORE_DEBUG_EXECUTION_TIMER_H
-#define CORE_DEBUG_EXECUTION_TIMER_H
+// 
+// execution_timer.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 12/06/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
+#define JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
+#pragma once
 
 #include <chrono>
 #include <string>
@@ -27,17 +36,17 @@ namespace jactorio::core
 		 * Value is time taken in milliseconds
 		 */
 		static std::map<std::string, double> measured_times;
-		
+
 	private:
 		static std::mutex measured_times_mutex_;
-		
+
 		// Name of item being timed, used for tracking timers
 		std::string timer_name_;
 		std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
 
 	public:
 		Execution_timer(const std::string& name);
-		
+
 		~Execution_timer();
 
 		/**
@@ -52,4 +61,4 @@ namespace jactorio::core
 	};
 }
 
-#endif // CORE_DEBUG_EXECUTION_TIMER_H
+#endif //JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H

@@ -1,5 +1,14 @@
-#ifndef RENDERER_GUI_GUI_MENUS_H
-#define RENDERER_GUI_GUI_MENUS_H
+// 
+// gui_menus.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/01/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
+#define JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
+#pragma once
 
 #include <imgui/imgui.h>
 
@@ -11,7 +20,7 @@ namespace jactorio::renderer::gui
 	// ==========================================================================================
 	// Player menus
 	void character_menu(ImGuiWindowFlags window_flags, game::Player_data& player_data);
-	
+
 	void cursor_window(game::Player_data& player_data);
 
 	/**
@@ -29,4 +38,4 @@ namespace jactorio::renderer::gui
 	void container_entity(game::Player_data& player_data, data::item_stack* inv, uint16_t inv_size);
 }
 
-#endif // RENDERER_GUI_GUI_MENUS_H
+#endif //JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H

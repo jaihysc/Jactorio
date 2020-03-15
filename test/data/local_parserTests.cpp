@@ -1,3 +1,11 @@
+// 
+// local_parserTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/15/2020
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "data/local_parser.h"
@@ -13,7 +21,7 @@ namespace data
 
 		// Setup prototypes
 		jactorio::data::data_manager::set_directory_prefix("test");
-		
+
 		const auto prototype = new jactorio::data::Sprite();
 		jactorio::data::data_manager::data_raw_add(
 			jactorio::data::data_category::sprite, "test_tile", prototype, true);
@@ -22,7 +30,7 @@ namespace data
 		jactorio::data::data_manager::data_raw_add(
 			jactorio::data::data_category::sprite, "test_tile1", prototype2, true);
 
-		
+
 		const std::string str =
 			R"(test_tile=Test tile 1
 
@@ -49,7 +57,7 @@ namespace data
 		printf("Expected parse failure with: %s\n", str.c_str());
 		FAIL();
 	}
-	
+
 	TEST(local_parser, parse_err) {
 		// Illegal character (=)
 		// Missing r val after =

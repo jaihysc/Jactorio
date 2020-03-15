@@ -1,5 +1,14 @@
-#ifndef GAME_EVENT_EVENT_BASE_H
-#define GAME_EVENT_EVENT_BASE_H
+// 
+// event_base.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/20/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_GAME_EVENT_EVENT_BASE_H
+#define JACTORIO_INCLUDE_GAME_EVENT_EVENT_BASE_H
+#pragma once
 
 #include "jactorio.h"
 #include "event_type.h"
@@ -34,4 +43,4 @@ namespace jactorio::game
 	};
 }
 
-#endif // GAME_EVENT_EVENT_BASE_H
+#endif //JACTORIO_INCLUDE_GAME_EVENT_EVENT_BASE_H

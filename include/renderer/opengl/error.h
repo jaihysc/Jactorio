@@ -1,5 +1,14 @@
-#ifndef RENDERER_OPENGL_ERROR_H
-#define RENDERER_OPENGL_ERROR_H
+// 
+// error.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H
+#define JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H
+#pragma once
 
 // Different break statements depending on the compiler
 #ifdef _MSC_VER
@@ -34,4 +43,4 @@ namespace jactorio::renderer
 	void init_glfw_error_handling();
 }
 
-#endif // RENDERER_OPENGL_ERROR_H
+#endif //JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H

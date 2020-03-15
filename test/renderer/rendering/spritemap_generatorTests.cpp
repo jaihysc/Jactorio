@@ -1,3 +1,11 @@
+// 
+// spritemap_generatorTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "renderer/rendering/spritemap_generator.h"
@@ -14,25 +22,25 @@ namespace renderer
 		auto guard2 = jactorio::core::Resource_guard(clear_spritemaps);
 
 		// Sprite data delete by guard
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite1", 
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png", 
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite1",
+		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
 		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite2",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
 		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
-		
+
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite3",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
 		                                                      {jactorio::data::Sprite::sprite_group::gui}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite4",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
 		                                                      {jactorio::data::Sprite::sprite_group::gui}));
-		
+
 		// Should filter out to only 2 entries
 		create_spritemap(jactorio::data::Sprite::sprite_group::terrain, false);
 
 		const Spritemap_data& data = get_spritemap(jactorio::data::Sprite::sprite_group::terrain);
-		
+
 		EXPECT_EQ(data.spritemap->get_width(), 64);
 		EXPECT_EQ(data.spritemap->get_height(), 32);
 
@@ -41,7 +49,7 @@ namespace renderer
 	TEST(spritemap_generator, create_spritemap_category_none) {
 		// If a sprite does not have a group specified (sprite_group::none):
 		// it will be added with every spritemap generated
-		
+
 		using namespace jactorio::renderer::renderer_sprites;
 		namespace data_manager = jactorio::data::data_manager;
 
@@ -69,7 +77,7 @@ namespace renderer
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "spriteNone",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
 		                                                      {}));
-		
+
 		// Should filter out to 3 entries, total width of 32 * 3
 		create_spritemap(jactorio::data::Sprite::sprite_group::terrain, false);
 
@@ -79,7 +87,7 @@ namespace renderer
 		EXPECT_EQ(data.spritemap->get_height(), 32);
 
 	}
-	
+
 	// Returns true if pixel contains specified color
 	bool get_pixel_color(const unsigned char* img_ptr,
 	                     const unsigned int image_width,
@@ -87,19 +95,19 @@ namespace renderer
 	                     const unsigned short r, const unsigned short g, const unsigned short b,
 	                     const unsigned short a) {
 		const unsigned int offset = (image_width * y + x) * 4;
-		
+
 		bool valid = true;
 
-		if (img_ptr[offset + 0] != r || 
+		if (img_ptr[offset + 0] != r ||
 			img_ptr[offset + 1] != g ||
 			img_ptr[offset + 2] != b ||
 			img_ptr[offset + 3] != a)
 			valid = false;
-		
+
 		return valid;
 	}
 
-	
+
 	TEST(spritemap_generator, gen_spritemap_inverted) {
 		// Provide series of sprites in array
 		// Expect concatenated image and its properties
@@ -109,7 +117,7 @@ namespace renderer
 
 		// Images 0 - 2 are 32 x 32 px
 		// Image 3 is 64 x 64
-		const auto prototypes = new jactorio::data::Sprite * [4];
+		const auto prototypes = new jactorio::data::Sprite* [4];
 		for (int i = 0; i < 4; ++i) {
 			prototypes[i] = new jactorio::data::Sprite;
 		}
@@ -151,7 +159,7 @@ namespace renderer
 		EXPECT_EQ(get_pixel_color(img_ptr, 160, 142, 22, 42, 15, 136, 255), true);
 
 		// Empty area is undefined
-		
+
 		// Positions
 		// 0.f; 0.f; // upper left
 		// 1.f; 0.f;  // upper right

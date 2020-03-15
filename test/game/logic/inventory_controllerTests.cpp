@@ -1,3 +1,11 @@
+// 
+// inventory_controllerTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/20/2020
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -8,28 +16,28 @@ namespace game::logic
 {
 	TEST(inventory_controller, move_stack_to_empty_slot) {
 		// Moving from inventory position 0 to position 3
-		
+
 		using namespace jactorio::game::inventory_c;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
-		
+
 		// Position 3 should have the 50 items + item prototype after moving
 		inv[0].first = item.get();
 		inv[0].second = 50;
-		
+
 		inv[3].first = nullptr;
 		inv[3].second = 0;
-		
+
 		const bool result = move_itemstack_to_index(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, true);
 
 		EXPECT_EQ(inv[0].first, nullptr);
 		EXPECT_EQ(inv[0].second, 0);
-		
+
 		EXPECT_EQ(inv[3].first, item.get());
 		EXPECT_EQ(inv[3].second, 50);
 	}
@@ -44,7 +52,7 @@ namespace game::logic
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
 
 		inv[0].first = item.get();
@@ -74,7 +82,7 @@ namespace game::logic
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
 
 		inv[0].first = item.get();
@@ -88,7 +96,7 @@ namespace game::logic
 
 		EXPECT_EQ(inv[0].first, item.get());
 		EXPECT_EQ(inv[0].second, 10);
-		
+
 		EXPECT_EQ(inv[3].first, item.get());
 		EXPECT_EQ(inv[3].second, 50);
 	}
@@ -102,10 +110,10 @@ namespace game::logic
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
 
-		auto item2 = std::make_unique<jactorio::data::Item>();
+		const auto item2 = std::make_unique<jactorio::data::Item>();
 		item2->stack_size = 100;
 
 		// Position 3 should have the 50 items + item prototype after moving
@@ -134,7 +142,7 @@ namespace game::logic
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
 
 		inv[0].first = item.get();
@@ -179,18 +187,18 @@ namespace game::logic
 	}
 
 	// Items somehow exceeding their item stacks
-	
+
 	TEST(inventory_controller, move_exceeding_stack_to_empty_slot) {
 		// Moving from inventory position 0 to position 3.
 		// The origin item is somehow exceeding its stack size, perhaps a prototype update
 		// Move out only the stack size into the empty slot
-		
+
 		using namespace jactorio::game::inventory_c;
 
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
 
 		inv[0].first = item.get();
@@ -219,12 +227,12 @@ namespace game::logic
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
 
 		inv[0].first = nullptr;
 		inv[0].second = 0;
-		
+
 		inv[3].first = item.get();
 		inv[3].second = 9000;
 
@@ -248,7 +256,7 @@ namespace game::logic
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
 		item->stack_size = 50;
 
 		inv[0].first = item.get();
@@ -291,7 +299,7 @@ namespace game::logic
 			inv[3].first = item.get();
 			inv[3].second = 40;
 
-			const bool result = move_itemstack_to_index(inv, 0, inv, 3, 
+			const bool result = move_itemstack_to_index(inv, 0, inv, 3,
 			                                            1);
 			EXPECT_EQ(result, false);
 
@@ -463,8 +471,8 @@ namespace game::logic
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
-		auto item2 = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item2 = std::make_unique<jactorio::data::Item>();
 
 		// Another item
 		inv[0].first = item.get();
@@ -476,7 +484,7 @@ namespace game::logic
 		EXPECT_EQ(add_itemstack_to_inv(inv, inv_size, add_item), true);
 
 		EXPECT_EQ(add_item.second, 0);
-		
+
 		// Did not modify existing items
 		EXPECT_EQ(inv[0].first, item.get());
 		EXPECT_EQ(inv[0].second, 10);
@@ -500,10 +508,10 @@ namespace game::logic
 		constexpr unsigned short inv_size = 10;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto another_item = std::make_unique<jactorio::data::Item>();
-		auto item_we_add_to = std::make_unique<jactorio::data::Item>();
+		const auto another_item = std::make_unique<jactorio::data::Item>();
+		const auto item_we_add_to = std::make_unique<jactorio::data::Item>();
 		item_we_add_to->stack_size = 50;
-		
+
 		inv[0].first = another_item.get();
 		inv[0].second = 10;
 
@@ -512,7 +520,7 @@ namespace game::logic
 		inv[1].second = 40;
 		inv[2].first = item_we_add_to.get();
 		inv[2].second = 40;
-		
+
 		inv[3].first = item_we_add_to.get();
 		inv[3].second = 20;
 
@@ -530,7 +538,7 @@ namespace game::logic
 		EXPECT_EQ(inv[1].second, 50);
 		EXPECT_EQ(inv[2].first, item_we_add_to.get());
 		EXPECT_EQ(inv[2].second, 50);
-		
+
 		EXPECT_EQ(inv[3].first, item_we_add_to.get());
 		EXPECT_EQ(inv[3].second, 50);
 
@@ -546,8 +554,8 @@ namespace game::logic
 		constexpr unsigned short inv_size = 1;
 		jactorio::data::item_stack inv[inv_size];
 
-		auto item = std::make_unique<jactorio::data::Item>();
-		auto item2 = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item2 = std::make_unique<jactorio::data::Item>();
 
 		inv[0].first = item.get();
 		inv[0].second = 10;
@@ -572,9 +580,9 @@ namespace game::logic
 	TEST(inventory_controller, get_inv_item_count) {
 		using namespace jactorio;
 
-		auto item = std::make_unique<data::Item>();
-		auto item2 = std::make_unique<data::Item>();
-		
+		const auto item = std::make_unique<data::Item>();
+		const auto item2 = std::make_unique<data::Item>();
+
 		data::item_stack inv [30];
 
 		// Count these to a sum of 101
@@ -590,7 +598,7 @@ namespace game::logic
 		inv[9] = {item2.get(), 200};
 		inv[13] = {item2.get(), 200};
 		inv[28] = {item2.get(), 200};
-		
+
 		EXPECT_EQ(jactorio::game::inventory_c::get_inv_item_count(inv, 30, item.get()), 101);
 	}
 
@@ -598,7 +606,7 @@ namespace game::logic
 		using namespace jactorio;
 		data::item_stack inv[30];
 
-		auto item = std::make_unique<data::Item>();
+		const auto item = std::make_unique<data::Item>();
 		inv[20] = {item.get(), 5};
 		inv[23] = {item.get(), 5};
 
@@ -617,7 +625,7 @@ namespace game::logic
 		using namespace jactorio;
 		data::item_stack inv[30];
 
-		auto item = std::make_unique<data::Item>();
+		const auto item = std::make_unique<data::Item>();
 		inv[20] = {item.get(), 5};
 
 		// Attempting to remove 10 when only 5 exists

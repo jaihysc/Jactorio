@@ -1,5 +1,14 @@
-#ifndef RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
-#define RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
+// 
+// spritemap_generator.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
+#define JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
+#pragma once
 
 #include <unordered_map>
 
@@ -27,7 +36,7 @@ namespace jactorio::renderer::renderer_sprites
 	 * Frees all spritemap memory
 	 */
 	void clear_spritemaps();
-	
+
 	/**
 	 * Creates a spritemap and stores it as a renderer::Texture
 	 */
@@ -38,7 +47,7 @@ namespace jactorio::renderer::renderer_sprites
 	 */
 	const Spritemap_data& get_spritemap(data::Sprite::sprite_group group);
 	const Texture* get_texture(data::Sprite::sprite_group group);
-	
+
 	/*!
 	 * Generated spritemap will be purely horizontal, all images concatenated side by side <br>
 	 * Color in non specified areas of the spritemap are undefined <br>
@@ -50,4 +59,4 @@ namespace jactorio::renderer::renderer_sprites
 	Spritemap_data gen_spritemap(data::Sprite** sprites, unsigned short count, bool invert_sprites);
 }
 
-#endif // RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
+#endif //JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H

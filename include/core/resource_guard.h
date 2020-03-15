@@ -6,8 +6,8 @@
 // Last modified: 03/14/2020
 // 
 
-#ifndef CORE_RESOURCE_GUARD_H
-#define CORE_RESOURCE_GUARD_H
+#ifndef JACTORIO_INCLUDE_CORE_RESOURCE_GUARD_H
+#define JACTORIO_INCLUDE_CORE_RESOURCE_GUARD_H
 #pragma once
 
 #include <functional>
@@ -67,4 +67,4 @@ namespace jactorio::core
 		Capturing_guard& operator=(Capturing_guard&& other) noexcept = delete;
 	};
 }
-#endif // CORE_RESOURCE_GUARD_H
+#endif //JACTORIO_INCLUDE_CORE_RESOURCE_GUARD_H

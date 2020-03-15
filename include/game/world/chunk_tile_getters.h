@@ -6,8 +6,8 @@
 // Last modified: 03/12/2020
 // 
 
-#ifndef JACTORIO_GAME_WORLD_CHUNK_TILE_GETTERS_H
-#define JACTORIO_GAME_WORLD_CHUNK_TILE_GETTERS_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_GETTERS_H
+#define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_GETTERS_H
 #pragma once
 
 #include "jactorio.h"
@@ -47,4 +47,4 @@ namespace jactorio::game::chunk_tile_getter
 	                          data::Sprite* tile_prototype);
 }
 
-#endif // JACTORIO_GAME_WORLD_CHUNK_TILE_GETTERS_H
+#endif //JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_GETTERS_H

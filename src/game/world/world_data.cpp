@@ -1,3 +1,11 @@
+// 
+// world_data.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
 #include "game/world/world_data.h"
 
 #include <future>
@@ -7,7 +15,7 @@
 
 jactorio::game::Chunk* jactorio::game::World_data::add_chunk(Chunk* chunk) {
 	const auto position = chunk->get_position();
-	const auto coords = std::tuple<int, int>{ position.first, position.second};
+	const auto coords = std::tuple<int, int>{position.first, position.second};
 
 	std::lock_guard<std::mutex> guard(mutex_);
 
@@ -15,7 +23,7 @@ jactorio::game::Chunk* jactorio::game::World_data::add_chunk(Chunk* chunk) {
 	if (world_chunks_.find(coords) != world_chunks_.end()) {
 		delete world_chunks_[coords];
 	}
-	
+
 	world_chunks_[coords] = chunk;
 
 	// Return pointer to allocated chunk
@@ -25,7 +33,7 @@ jactorio::game::Chunk* jactorio::game::World_data::add_chunk(Chunk* chunk) {
 jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const int chunk_x, const int chunk_y) {
 	std::lock_guard<std::mutex> guard(mutex_);
 
-	const auto key = std::tuple<int, int>{ chunk_x, chunk_y };
+	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
 	if (world_chunks_.find(key) == world_chunks_.end())
 		return nullptr;
@@ -36,7 +44,7 @@ jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const int chunk_x, 
 
 // Chunk tiles
 jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(int world_x,
-                                                                                 int world_y) {
+                                                                              int world_y) {
 
 	// The negative chunks start at -1, unlike positive chunks at 0
 	// Thus add 1 to become 0 so the calculations can be performed
@@ -83,7 +91,7 @@ jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(in
 
 jactorio::game::Chunk* jactorio::game::World_data::get_chunk_world_coords(int world_x, int world_y) {
 	// See get_tile_world_coords() for documentation on the purpose of if statements
-	
+
 	float chunk_index_x = 0;
 	float chunk_index_y = 0;
 
@@ -104,7 +112,7 @@ jactorio::game::Chunk* jactorio::game::World_data::get_chunk_world_coords(int wo
 
 
 // Logic chunks
-jactorio::game::Logic_chunk& jactorio::game::World_data::logic_add_chunk(Chunk* chunk){
+jactorio::game::Logic_chunk& jactorio::game::World_data::logic_add_chunk(Chunk* chunk) {
 	assert(chunk != nullptr);
 	const auto& iterator = logic_chunks_.emplace(chunk, chunk);
 	return iterator.first->second;

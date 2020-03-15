@@ -6,8 +6,9 @@
 // Last modified: 03/12/2020
 // 
 
-#ifndef GAME_PLAYER_PLAYER_MANAGER_H
-#define GAME_PLAYER_PLAYER_MANAGER_H
+#ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
+#define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
+#pragma once
 
 #include "data/prototype/item/item.h"
 #include "data/prototype/item/recipe.h"
@@ -217,4 +218,4 @@ namespace jactorio::game
 	};
 }
 
-#endif // GAME_PLAYER_PLAYER_MANAGER_H
+#endif //JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H

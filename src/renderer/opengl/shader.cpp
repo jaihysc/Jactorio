@@ -1,3 +1,11 @@
+// 
+// shader.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
 #include <GL/glew.h>
 
 #include <vector>
@@ -10,7 +18,7 @@
 
 unsigned int jactorio::renderer::Shader::compile_shader(
 	const std::string& filepath, const GLenum shader_type) {
-	
+
 	const auto path = core::filesystem::resolve_path(filepath);
 	const std::string source = core::filesystem::read_file_as_str(path);
 
@@ -52,7 +60,7 @@ unsigned int jactorio::renderer::Shader::compile_shader(
 
 	LOG_MESSAGE_f(debug, "Shader compilation successful, type %d %s",
 	              shader_type, path.c_str());
-	
+
 	return shader_id;
 }
 

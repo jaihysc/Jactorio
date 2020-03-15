@@ -1,3 +1,11 @@
+// 
+// float_mathTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 02/12/2020
+// Last modified: 03/14/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "core/float_math.h"

@@ -1,5 +1,14 @@
-#ifndef RENDERER_GUI_GUI_COLORS_H
-#define RENDERER_GUI_GUI_COLORS_H
+// 
+// gui_colors.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 02/07/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H
+#define JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H
+#pragma once
 
 #include "imgui/imgui.h"
 
@@ -77,4 +86,4 @@
 #define J_GUI_STYLE_FRAME_PADDING_X 10
 #define J_GUI_STYLE_FRAME_PADDING_Y 10
 
-#endif // RENDERER_GUI_GUI_COLORS_H
+#endif //JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H

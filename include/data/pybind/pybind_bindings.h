@@ -1,5 +1,14 @@
+// 
+// pybind_bindings.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/09/2019
+// Last modified: 03/14/2020
+// 
+
 #ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
 #define JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
+#pragma once
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -84,7 +93,7 @@ using data_raw = std::unordered_map<jactorio::data::data_category, std::unordere
 
 PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	using namespace jactorio::data;
-	
+
 	// Prototype classes
 	py::class_<Prototype_base>(m, "_PrototypeBase")
 		.def("name", &Prototype_base::set_name)
@@ -93,7 +102,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	PYBIND_DATA_CLASS(Sprite, Sprite, Prototype_base, sprite)
 		PYBIND_PROP(Sprite, group)
-		.def("load", &Sprite::load_image);
+		                          .def("load", &Sprite::load_image);
 	py::enum_<Sprite::sprite_group>(m, "spriteGroup")
 		.value("Terrain", Sprite::sprite_group::terrain)
 		.value("Gui", Sprite::sprite_group::gui);
@@ -131,7 +140,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.def("startVal", &Noise_layer<Entity>::set_start_val)
 		.def("add", &Noise_layer<Entity>::add)
 		.def("get", &Noise_layer<Entity>::get);
-	
+
 
 	// Entity
 	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, Prototype_base, entity)
@@ -158,7 +167,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	PYBIND_DATA_CLASS(Transport_belt, TransportBelt, Transport_line, transport_belt);
 
-	
+
 	// Recipes
 	PYBIND_DATA_CLASS(Recipe_group, RecipeGroup, Prototype_base, recipe_group)
 		PYBIND_PROP(Recipe_group, sprite)
@@ -171,7 +180,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP_S(Recipe, craftingTime, crafting_time)
 		PYBIND_PROP(Recipe, ingredients)
 		PYBIND_PROP_GET_SET(Recipe, product, product);
-	
+
 	// ############################################################
 	// Data_raw + get/set
 

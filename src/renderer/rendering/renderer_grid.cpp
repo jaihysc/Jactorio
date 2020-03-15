@@ -1,3 +1,11 @@
+// 
+// renderer_grid.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
+
 #include "renderer/rendering/renderer_grid.h"
 
 void jactorio::renderer::renderer_grid::gen_render_grid(Renderer_layer* r_layer,
@@ -9,7 +17,7 @@ void jactorio::renderer::renderer_grid::gen_render_grid(Renderer_layer* r_layer,
 	if (r_layer->get_capacity() < required_size)
 		r_layer->resize(required_size);
 
-	
+
 	unsigned int index = 0;
 	for (unsigned short y = 0; y < tiles_y; ++y) {
 		// Multiply to create specified tile width
@@ -61,7 +69,7 @@ float* jactorio::renderer::renderer_grid::gen_render_tile_grid(
 
 		for (unsigned short x = 0; x < tiles_x; ++x) {
 			const auto local_x = x * tile_width;
-			
+
 			// Top left
 			grid[index++] = static_cast<float>(local_x);
 			grid[index++] = static_cast<float>(local_y);
@@ -99,10 +107,10 @@ float* jactorio::renderer::renderer_grid::gen_texture_grid(
 		// tex_coords[index++] = 0.f; // upper right
 		// tex_coords[index++] = 0.f;
 		// tex_coords[index++] = 0.f; // upper left
-		
+
 		tex_coords[index++] = 0.f;
 		tex_coords[index++] = 0.f, // bottom left
-		tex_coords[index++] = 0.f;
+			tex_coords[index++] = 0.f;
 		tex_coords[index++] = 0.f; // bottom right
 		tex_coords[index++] = 0.f;
 		tex_coords[index++] = 0.f; // upper right

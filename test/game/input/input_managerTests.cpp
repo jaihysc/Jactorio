@@ -1,3 +1,11 @@
+// 
+// input_managerTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/15/2019
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "jactorio.h"
@@ -21,7 +29,7 @@ namespace game
 
 	TEST(input_manager, input_callback_register) {
 		auto guard = jactorio::core::Resource_guard(&input::clear_data);
-		
+
 		// Key is converted to a scancode
 		const unsigned int callback_id = input::subscribe(
 			test_input_callback,

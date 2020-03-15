@@ -1,3 +1,11 @@
+// 
+// renderer_layerTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/12/2020
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "renderer/rendering/renderer_layer.h"
@@ -139,7 +147,7 @@ namespace renderer
 		EXPECT_EQ(r_layer.get_buf_vertex().count, 10);
 		EXPECT_EQ(r_layer.get_buf_uv().count, 10);
 	}
-	
+
 	TEST(renderer_layer, resize) {
 		// Ensure values still remain in correct places after resizing
 

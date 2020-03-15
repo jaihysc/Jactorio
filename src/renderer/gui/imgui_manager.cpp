@@ -1,9 +1,16 @@
-#include "renderer/gui/imgui_manager.h"
+// 
+// imgui_manager.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
 
-#include <imgui/imgui.h>
+#include "renderer/gui/imgui_manager.h"
 
 #include <unordered_map>
 #include <cassert>
+#include <imgui/imgui.h>
 
 #include "jactorio.h"
 
@@ -48,9 +55,9 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 
 		ImGui::SetNextWindowPosCenter();
 
-		ImGuiWindowFlags flags = 0;
+		const ImGuiWindowFlags flags = 0;
 		ImGui::Begin("Error", nullptr, flags);
-		
+
 		ImGui::TextWrapped("%s", err_title.c_str());
 		ImGui::TextWrapped("%s", err_message.c_str());
 		ImGui::NewLine();
@@ -75,7 +82,7 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
-	io.IniFilename = NULL;  // Disables imgui saving
+	io.IniFilename = nullptr;  // Disables imgui saving
 	io.ConfigWindowsMoveFromTitleBarOnly = true;  //
 
 	// Setup Platform/Renderer bindings
@@ -100,9 +107,9 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	style.FrameBorderSize = 0.f;
 
 	// Padding
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, 
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
 	                    ImVec2(J_GUI_STYLE_WINDOW_PADDING_X, J_GUI_STYLE_WINDOW_PADDING_Y));
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, 
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
 	                    ImVec2(J_GUI_STYLE_FRAME_PADDING_X, J_GUI_STYLE_FRAME_PADDING_Y));
 
 	// Window colors
@@ -168,14 +175,14 @@ bool window_visibility[sizeof(windows) / sizeof(windows[0])];
 void jactorio::renderer::imgui_manager::set_window_visibility(const guiWindow window, const bool visibility) {
 	const auto index = static_cast<int>(window);
 	assert(index != -1);
-	
+
 	bool& old_visibility = window_visibility[index];
 
 	if (visibility && !old_visibility) {
 		// Window opened
 		game::Event::raise<game::Gui_opened_event>(game::event_type::game_gui_open);
 	}
-	
+
 	old_visibility = visibility;
 }
 
@@ -194,7 +201,7 @@ bool jactorio::renderer::imgui_manager::get_window_visibility(guiWindow window) 
  * @param params Parameters to pass to the window function after the window flags
  */
 template <typename ... ArgsT>
-void draw_window(jactorio::renderer::imgui_manager::guiWindow gui_window, const ImGuiWindowFlags window_flags, 
+void draw_window(jactorio::renderer::imgui_manager::guiWindow gui_window, const ImGuiWindowFlags window_flags,
                  ArgsT& ... params) {
 	const int window_index = static_cast<int>(gui_window);
 	assert(window_index != -1);
@@ -202,7 +209,7 @@ void draw_window(jactorio::renderer::imgui_manager::guiWindow gui_window, const 
 	// Window is hidden?
 	if (!window_visibility[window_index])
 		return;
-	
+
 	const auto function_ptr = reinterpret_cast<void(*)(ImGuiWindowFlags, ArgsT ...)>
 		(windows[window_index]);
 

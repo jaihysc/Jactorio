@@ -1,10 +1,20 @@
-#ifndef GAME_EVENT_EVENT_H
-#define GAME_EVENT_EVENT_H
+// 
+// event.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/20/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_GAME_EVENT_EVENT_H
+#define JACTORIO_INCLUDE_GAME_EVENT_EVENT_H
+#pragma once
 
 #include <unordered_map>
 #include <vector>
 
 #include "game/event/game_events.h"
+
 // #include "game/world/chunk_tile.h"  // Use chunk layers from this header
 
 // TODO, when adding loading of saves, clear the event data
@@ -61,7 +71,7 @@ namespace jactorio::game
 			for (unsigned int i = 0; i < handlers.size(); ++i) {
 				if (handlers[i] == (void_ptr)(callback)) {
 					handlers.erase(handlers.begin() + i);
-					
+
 					removed = true;
 					break;
 				}
@@ -73,12 +83,12 @@ namespace jactorio::game
 			for (unsigned int i = 0; i < handlers_once.size(); ++i) {
 				if (handlers_once[i] == (void_ptr)(callback)) {
 					handlers_once.erase(handlers_once.begin() + i);
-					
+
 					removed = true;
 					break;
 				}
 			}
-			
+
 			return removed;
 		}
 
@@ -91,7 +101,7 @@ namespace jactorio::game
 			// Imgui sets the bool property input_captured
 			// This takes priority over all events, and if true no events are allowed to be emitted
 			// TODO ability to set if event runs when input is captured by imgui
-			
+
 			// TODO Send events backwards through layers
 			for (auto& callback : event_handlers_[event_type]) {
 				// Cast function pointer parameter to T
@@ -113,7 +123,7 @@ namespace jactorio::game
 			}
 			event_handlers_once_[event_type].clear();
 		}
-		
+
 
 		/**
 		 * Erases all data held in event_handlers_
@@ -129,4 +139,4 @@ namespace jactorio::game
 	};
 }
 
-#endif // GAME_EVENT_EVENT_H
+#endif //JACTORIO_INCLUDE_GAME_EVENT_EVENT_H

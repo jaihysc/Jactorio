@@ -6,8 +6,8 @@
 // Last modified: 03/12/2020
 // 
 
-#ifndef RENDERER_GUI_IMGUI_MANAGER_H
-#define RENDERER_GUI_IMGUI_MANAGER_H
+#ifndef JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
+#define JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
 #pragma once
 
 #include <GLFW/glfw3.h>
@@ -58,4 +58,4 @@ namespace jactorio::renderer::imgui_manager
 	void imgui_terminate();
 }
 
-#endif // RENDERER_GUI_IMGUI_MANAGER_H
+#endif //JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H

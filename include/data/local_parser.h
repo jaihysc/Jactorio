@@ -1,5 +1,14 @@
-#ifndef DATA_LOCAL_PARSER_H
-#define DATA_LOCAL_PARSER_H
+// 
+// local_parser.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/15/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_DATA_LOCAL_PARSER_H
+#define JACTORIO_INCLUDE_DATA_LOCAL_PARSER_H
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -19,14 +28,15 @@ namespace jactorio::data::local_parser
     KEY_DEF( ge, "ge" )
 
 #define KEY_DEF( identifier, name )  identifier
+
 	/**
 	 * Supported languages, for the identifier string, use: language_identifier[static_cast<int>(language)]
 	 */
 	enum class language { KEYS_DEF };
 #undef KEY_DEF
-	
+
 #define KEY_DEF( identifier, name )  { name }
-	char const* const language_identifier[] = { KEYS_DEF };
+	char const* const language_identifier[] = {KEYS_DEF};
 #undef KEY_DEF
 
 	/**
@@ -35,7 +45,7 @@ namespace jactorio::data::local_parser
 	 * @param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
 	 */
 	void parse(const std::string& file_str, const std::string& directory_prefix);
-	
+
 	/**
 	 * Parses a .cfg file, does not throw
 	 * @param file_str File contents
@@ -45,4 +55,4 @@ namespace jactorio::data::local_parser
 	int parse_s(const std::string& file_str, const std::string& directory_prefix);
 }
 
-#endif // DATA_LOCAL_PARSER_H
+#endif //JACTORIO_INCLUDE_DATA_LOCAL_PARSER_H

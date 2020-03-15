@@ -1,5 +1,14 @@
-#ifndef GAME_WORLD_CHUNK_LAYER_H
-#define GAME_WORLD_CHUNK_LAYER_H
+// 
+// chunk_layer.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 02/08/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_LAYER_H
+#define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_LAYER_H
+#pragma once
 
 #include "data/prototype/prototype_base.h"
 
@@ -81,9 +90,9 @@ namespace jactorio::game
 	inline Chunk_layer& Chunk_layer::operator=(const Chunk_layer& other) {
 		if (this == &other)
 			return *this;
-		
+
 		prototype_data = other.prototype_data;
-		
+
 		// Use prototype defined method for copying unique_data_
 		if (unique_data != nullptr) {
 			assert(prototype_data != nullptr);  // No prototype_data_ available for copying unique_data_
@@ -102,4 +111,4 @@ namespace jactorio::game
 }
 
 
-#endif // GAME_WORLD_CHUNK_LAYER_H
+#endif //JACTORIO_INCLUDE_GAME_WORLD_CHUNK_LAYER_H

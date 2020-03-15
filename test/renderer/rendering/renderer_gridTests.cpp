@@ -1,10 +1,18 @@
+// 
+// renderer_gridTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "renderer/rendering/renderer_grid.h"
 
 namespace renderer
 {
-	TEST(Renderer_grid, gen_render_tile_grid) {
+	TEST(renderer_grid, gen_render_tile_grid) {
 		using namespace jactorio::renderer;
 		Renderer_layer r_layer{};
 
@@ -12,7 +20,7 @@ namespace renderer
 		renderer_grid::gen_render_grid(&r_layer, 10, 10, 16);
 
 		auto grid = r_layer.get_buf_vertex().ptr;
-		
+
 		// 0, 0
 		EXPECT_EQ(grid[0], 0.f);
 		EXPECT_EQ(grid[1], 0.f);
@@ -39,8 +47,8 @@ namespace renderer
 		EXPECT_EQ(grid[798], 144.f);
 		EXPECT_EQ(grid[799], 160.f);
 	}
-	
-	TEST(Renderer_grid, genRenderGrid) {
+
+	TEST(renderer_grid, genRenderGrid) {
 		const auto grid = jactorio::renderer::renderer_grid::
 			gen_render_grid(10, 10);
 
@@ -59,7 +67,7 @@ namespace renderer
 		delete[] grid;
 	}
 
-	TEST(Renderer_grid, gen_render_tile_grid_old) {
+	TEST(renderer_grid, gen_render_tile_grid_old) {
 		const auto grid = jactorio::renderer::renderer_grid::
 			gen_render_tile_grid(10, 10, 16);
 
@@ -92,7 +100,7 @@ namespace renderer
 		delete[] grid;
 	}
 
-	TEST(Renderer_grid, genTextureGrid) {
+	TEST(renderer_grid, genTextureGrid) {
 		// This test will fail if genRenderGridIndices fails
 		const auto grid = jactorio::renderer::renderer_grid::gen_texture_grid(12);
 
@@ -130,7 +138,7 @@ namespace renderer
 		delete[] grid;
 	}
 
-	TEST(Renderer_grid, gen_render_grid_indices) {
+	TEST(renderer_grid, gen_render_grid_indices) {
 		const auto grid = jactorio::renderer::renderer_grid::gen_render_grid_indices(121);
 		// Indices generation pattern:
 		// top left

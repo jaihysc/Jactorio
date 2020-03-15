@@ -1,5 +1,14 @@
+// 
+// data_type.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/12/2020
+// Last modified: 03/14/2020
+// 
+
 #ifndef JACTORIO_INCLUDE_CORE_DATA_TYPE_H
 #define JACTORIO_INCLUDE_CORE_DATA_TYPE_H
+#pragma once
 
 #include <decimal.h>
 
@@ -17,7 +26,7 @@ namespace jactorio::core
 	// Defines standard data pairs for use across this application
 	// This is used for better naming compared to std::pair's .first and .second
 
-	template<typename T>
+	template <typename T>
 	struct Position2
 	{
 		Position2()
@@ -27,12 +36,12 @@ namespace jactorio::core
 		Position2(T x, T y)
 			: x(x), y(y) {
 		}
-		
+
 		T x;
 		T y;
 	};
 
-	
+
 	struct Quad_position
 	{
 		Quad_position() = default;
@@ -40,7 +49,7 @@ namespace jactorio::core
 		Quad_position(const Position2<float> top_left, const Position2<float> bottom_right)
 			: top_left(top_left), bottom_right(bottom_right) {
 		}
-		
+
 		Position2<float> top_left;
 		Position2<float> bottom_right;
 	};
@@ -48,15 +57,15 @@ namespace jactorio::core
 
 	// =================================================
 	// Defines hash functions for tuples as keys in std::unordered_map
-	
-	template <typename TT>
+
+	template <typename Tt>
 	struct hash
 	{
-		size_t operator()(TT const& tt) const {
-			return std::hash<TT>()(tt);
+		size_t operator()(Tt const& tt) const {
+			return std::hash<Tt>()(tt);
 		}
 	};
-	
+
 	template <class T>
 	void hash_combine(std::size_t& seed, T const& v) {
 		seed ^= hash<T>()(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
@@ -79,12 +88,12 @@ namespace jactorio::core
 		}
 	};
 
-	template <typename ... TT>
-	struct hash<std::tuple<TT...>>
+	template <typename ... Tt>
+	struct hash<std::tuple<Tt...>>
 	{
-		size_t operator()(std::tuple<TT...> const& tt) const {
+		size_t operator()(std::tuple<Tt...> const& tt) const {
 			size_t seed = 0;
-			Hash_value_impl<std::tuple<TT...>>::apply(seed, tt);
+			Hash_value_impl<std::tuple<Tt...>>::apply(seed, tt);
 			return seed;
 		}
 	};

@@ -1,9 +1,14 @@
-//
-// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
-//
+// 
+// prototype_base.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/09/2019
+// Last modified: 03/14/2020
+// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
+#pragma once
 
 #include <string>
 
@@ -32,7 +37,7 @@ namespace jactorio::data
 		return this;\
 	}
 
-	
+
 	// Setter passed by value
 #define PYTHON_PROP(class_, type, var_name) \
 	type var_name; \
@@ -48,7 +53,7 @@ namespace jactorio::data
 		this->var_name = var_name;\
 		return this;\
 	}
-	
+
 	/*
 		The following is an example:
 
@@ -68,7 +73,7 @@ namespace jactorio::data
 #define J_DATA_ASSERT(condition, error_msg)\
 	if (!(condition)) { std::string s = this->name; s.append(error_msg); throw jactorio::data::Data_exception(s); }
 
-	
+
 	class Prototype_base
 	{
 	public:
@@ -84,14 +89,14 @@ namespace jactorio::data
 		Prototype_base(Prototype_base&& other) noexcept = default;
 		Prototype_base& operator=(const Prototype_base& other) = default;
 		Prototype_base& operator=(Prototype_base&& other) noexcept = default;
-		
+
 		/**
 		 * Unique per prototype, auto assigned per new prototype added, faster than
 		 * std::string name <br>J
 		 * 0 indicates invalid id
 		 */
 		unsigned int internal_id;
-		
+
 		/**
 		 * Internal name <br>
 		 * MUST BE unique per data_category
@@ -116,7 +121,7 @@ namespace jactorio::data
 	protected:
 		std::string localized_name_;
 		std::string localized_description_;
-		
+
 	public:
 		J_NODISCARD const std::string& get_localized_name() const {
 			return localized_name_;
@@ -136,7 +141,7 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Unique data associated with entity
-		
+
 		/**
 		 * If the prototype has unique data per tile, override the method for deleting it
 		 * Deletes unique data for the prototype given through ptr

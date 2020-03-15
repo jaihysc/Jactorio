@@ -1,10 +1,19 @@
-#ifndef GAME_INPUT_INPUT_MANAGER_H
-#define GAME_INPUT_INPUT_MANAGER_H
+// 
+// input_manager.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/15/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_GAME_INPUT_INPUT_MANAGER_H
+#define JACTORIO_INCLUDE_GAME_INPUT_INPUT_MANAGER_H
+#pragma once
 
 #include <GLFW/glfw3.h>
 
 // Different from GLFW_PRESS, PRESS_FIRST is only raised once whereas GLFW_PRESS is repeated
-#define GLFW_PRESS_FIRST -2
+#define GLFW_PRESS_FIRST (-2)
 
 using input_callback = void(*)();
 
@@ -19,7 +28,7 @@ namespace jactorio::game::input_manager
 	 */
 	unsigned subscribe(input_callback, int key, int action, int mods = 0);
 
-	
+
 	/**
 	 * Sets the static of an input<br>
 	 * Callbacks for the respective inputs are called when dispatch_input_callbacks() is called
@@ -44,4 +53,4 @@ namespace jactorio::game::input_manager
 	void clear_data();
 }
 
-#endif // GAME_INPUT_INPUT_MANAGER_H
+#endif //JACTORIO_INCLUDE_GAME_INPUT_INPUT_MANAGER_H

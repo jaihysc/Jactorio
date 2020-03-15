@@ -1,5 +1,14 @@
-#ifndef DATA_PROTOTYPE_ITEM_RECIPE_H
-#define DATA_PROTOTYPE_ITEM_RECIPE_H
+// 
+// recipe.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/20/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_H
+#pragma once
 
 #include <utility>
 
@@ -11,7 +20,7 @@ namespace jactorio::data
 {
 	// Internal name, amount required
 	using recipe_item = std::pair<std::string, uint16_t>;
-	
+
 	/**
 	 * Defines an in game recipe to craft items
 	 */
@@ -30,7 +39,7 @@ namespace jactorio::data
 		 * A raw material is something which cannot be hand crafted
 		 */
 		static std::vector<recipe_item> recipe_get_total_raw(const std::string& iname);
-		
+
 	private:
 		static std::unordered_map<std::string, Recipe*> item_recipes_;
 		recipe_item product_;
@@ -43,7 +52,7 @@ namespace jactorio::data
 		 */
 		PYTHON_PROP_REF_I(Recipe, float, crafting_time, 1);
 
-		
+
 		PYTHON_PROP_REF(Recipe, std::vector<recipe_item>, ingredients);
 
 		// Product
@@ -62,4 +71,4 @@ namespace jactorio::data
 	};
 }
 
-#endif // DATA_PROTOTYPE_ITEM_RECIPE_H
+#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_H

@@ -1,3 +1,11 @@
+// 
+// resource_guardTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 12/01/2019
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "core/resource_guard.h"
@@ -7,12 +15,12 @@ namespace core
 	namespace
 	{
 		int counter = 0;
-		
+
 		void func() {
 			counter = 1;
 		}
 	}
-	
+
 	TEST(resource_guard, call_destructor) {
 		counter = 0;
 		{

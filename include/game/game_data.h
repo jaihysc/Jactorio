@@ -6,8 +6,8 @@
 // Last modified: 03/11/2020
 // 
 
-#ifndef JACTORIO_GAME_GAME_H
-#define JACTORIO_GAME_GAME_H
+#ifndef JACTORIO_INCLUDE_GAME_GAME_DATA_H
+#define JACTORIO_INCLUDE_GAME_GAME_DATA_H
 #pragma once
 
 #include "game/input/mouse_selection.h"
@@ -37,4 +37,4 @@ namespace jactorio::game
 	inline Game_data* game_data;
 }
 
-#endif // JACTORIO_GAME_GAME_H
+#endif //JACTORIO_INCLUDE_GAME_GAME_DATA_H

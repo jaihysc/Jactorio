@@ -1,10 +1,14 @@
-//
-// Created on 2/22/2020.
-// This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
-//
+// 
+// chunk_struct_layer.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 02/22/2020
+// Last modified: 03/14/2020
+// 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_STRUCT_LAYER_H
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_STRUCT_LAYER_H
+#pragma once
 
 namespace jactorio::game
 {
@@ -20,7 +24,7 @@ namespace jactorio::game
 		}
 
 		explicit Chunk_struct_layer(data::Prototype_base* proto,
-									const float position_x, const float position_y)
+		                            const float position_x, const float position_y)
 			: Chunk_layer(proto), position_x(position_x), position_y(position_y) {
 		}
 

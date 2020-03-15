@@ -1,5 +1,14 @@
+// 
+// chunk.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/29/2019
+// Last modified: 03/14/2020
+// 
+
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_H
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_H
+#pragma once
 
 #include "jactorio.h"
 
@@ -22,7 +31,7 @@ namespace jactorio::game
 		std::pair<int, int> position_;
 		// Pointers to the actual tiles since they are static size of 32x32
 		Chunk_tile* tiles_ = nullptr;
-		
+
 	public:
 		/**
 		 * @param x X position of chunk
@@ -37,7 +46,7 @@ namespace jactorio::game
 
 		Chunk(const Chunk& other);
 		Chunk(Chunk&& other) noexcept;
-		
+
 		Chunk& operator=(const Chunk& other);
 
 		Chunk& operator=(Chunk&& other) noexcept;

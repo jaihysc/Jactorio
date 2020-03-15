@@ -1,5 +1,14 @@
-#ifndef RENDERER_RENDERING_RENDERER_GRID_H
-#define RENDERER_RENDERING_RENDERER_GRID_H
+// 
+// renderer_grid.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_GRID_H
+#define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_GRID_H
+#pragma once
 
 #include "jactorio.h"
 
@@ -21,7 +30,7 @@ namespace jactorio::renderer::renderer_grid
 	J_DEPRECATED void gen_render_grid(Renderer_layer* r_layer, uint16_t tiles_x, uint16_t tiles_y, uint16_t tile_width);
 
 	// Functions below are DEPRECATED, they are unsafe in memory allocation
-	
+
 	/**
 	 * Generates grid positions with the specified width and height <br>
 	 * Starts with 0 being top left, ascends going right, then down <br>
@@ -60,4 +69,4 @@ namespace jactorio::renderer::renderer_grid
 	unsigned int* gen_render_grid_indices(uint32_t tile_count);
 }
 
-#endif // RENDERER_RENDERING_RENDERER_GRID_H
+#endif //JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_GRID_H

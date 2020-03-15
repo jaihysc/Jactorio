@@ -1,3 +1,11 @@
+// 
+// eventTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 12/31/2019
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "game/event/event.h"
@@ -12,7 +20,7 @@ namespace game
 		counter2 = 0;
 	}
 
-	
+
 	void test_callback1(jactorio::game::Logic_tick_event& e) {
 		counter = e.game_tick;
 	}
@@ -72,15 +80,15 @@ namespace game
 	// 	Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
 	// 	EXPECT_EQ(counter, 12);
 	// }
-	
+
 	TEST(event, unsubscribe_event) {
 		using namespace jactorio::game;
-	
+
 		reset_counter();
 		Event::clear_all_data();
-		
+
 		Event::subscribe(event_type::game_chunk_generated, test_callback1);
-		
+
 		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback1), true);
 		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback2), false);  // Does not exist
 
@@ -89,20 +97,20 @@ namespace game
 		Event::subscribe_once(event_type::game_chunk_generated, test_callback1);
 		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback1), true);
 		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback2), false);  // Does not exist
-		
+
 		// Unchanged since unsubscribed
 		Event::raise<Logic_tick_event>(event_type::game_chunk_generated, 1);
 		EXPECT_EQ(counter, 0);
 	}
-	
+
 	TEST(event, clear_all_data) {
 		using namespace jactorio::game;
-	
+
 		reset_counter();
-	
+
 		Event::subscribe(event_type::game_chunk_generated, test_callback1);
 		Event::clear_all_data();
-	
+
 		// Nothing gets raises since it is cleared
 		Event::raise<Logic_tick_event>(event_type::game_chunk_generated, 1);
 		EXPECT_EQ(counter, 0);

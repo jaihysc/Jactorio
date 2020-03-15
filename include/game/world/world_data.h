@@ -6,8 +6,9 @@
 // Last modified: 03/12/2020
 // 
 
-#ifndef GAME_WORLD_WORLD_MANAGER_H
-#define GAME_WORLD_WORLD_MANAGER_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
+#define JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
+#pragma once
 
 #include "game/world/chunk.h"
 #include "game/world/logic_chunk.h"
@@ -135,4 +136,4 @@ namespace jactorio::game
 	};
 }
 
-#endif // GAME_WORLD_WORLD_MANAGER_H
+#endif //JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H

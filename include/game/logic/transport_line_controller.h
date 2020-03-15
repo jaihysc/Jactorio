@@ -8,6 +8,7 @@
 
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
 #define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
+#pragma once
 
 #include "game/world/logic_chunk.h"
 #include "game/world/world_data.h"

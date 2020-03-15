@@ -1,3 +1,11 @@
+// 
+// renderer_layer.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/12/2020
+// Last modified: 03/14/2020
+// 
+
 #include <renderer/rendering/renderer_grid.h>
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/opengl/vertex_array.h"
@@ -54,7 +62,8 @@ void jactorio::renderer::Renderer_layer::set(const uint32_t element_index, const
 	set_buffer_uv(buffer_index, element.uv);
 }
 
-void jactorio::renderer::Renderer_layer::set_vertex(const uint32_t element_index, const core::Quad_position element) const {
+void jactorio::renderer::Renderer_layer::set_vertex(const uint32_t element_index,
+                                                    const core::Quad_position element) const {
 	CHECK_ELEMENT_INDEX;
 	set_buffer_vertex(element_index * 8, element);
 }
@@ -85,7 +94,7 @@ void jactorio::renderer::Renderer_layer::set_buffer_vertex(const uint32_t buffer
 	vertex_buffer_.ptr[buffer_index + 7] = element.bottom_right.y;
 }
 
-void jactorio::renderer::Renderer_layer::set_buffer_uv(const uint32_t buffer_index, 
+void jactorio::renderer::Renderer_layer::set_buffer_uv(const uint32_t buffer_index,
                                                        const core::Quad_position& element) const {
 	// Populate in following order: bottomL, bottomR, topR, topL (X Y) (NOT THE SAME AS ABOVE!!)
 
@@ -125,12 +134,12 @@ const jactorio::renderer::Index_buffer* jactorio::renderer::Renderer_layer::get_
 
 void jactorio::renderer::Renderer_layer::reserve(const uint32_t count) {
 	assert(count > 0);  // Count must be greater than 0
-	
+
 	delete_buffers_s();
 	g_resize_vertex_buffers_ = true;
 
 	const auto floats = count * 8;  // 4 positions, of X and Y (8 floats in total)
-	
+
 	vertex_buffer_.ptr = new float[floats];
 	uv_buffer_.ptr = new float[floats];
 
@@ -154,9 +163,9 @@ void jactorio::renderer::Renderer_layer::resize(const uint32_t count) {
 		end = count;
 	else
 		end = e_capacity_;
-	
+
 	end *= 8;  // 8 floats per element
-	
+
 	for (uint32_t i = 0; i < end; ++i) {
 		vertex_buffer_new[i] = vertex_buffer_.ptr[i];
 		uv_buffer_new[i] = uv_buffer_.ptr[i];
@@ -181,7 +190,7 @@ uint32_t jactorio::renderer::Renderer_layer::get_element_count() const {
 
 void jactorio::renderer::Renderer_layer::delete_buffer() noexcept {
 	e_capacity_ = 0;
-	
+
 	delete_buffers_s();
 
 	vertex_buffer_.ptr = nullptr;

@@ -6,8 +6,8 @@
 // Last modified: 03/11/2020
 // 
 
-#ifndef GAME_INPUT_MOUSE_SELECTION_H
-#define GAME_INPUT_MOUSE_SELECTION_H
+#ifndef JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
+#define JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
 #pragma once
 
 #include <utility>
@@ -82,4 +82,4 @@ namespace jactorio::game
 	void set_cursor_position(double x_pos, double y_pos);
 }
 
-#endif // GAME_INPUT_MOUSE_SELECTION_H
+#endif //JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H

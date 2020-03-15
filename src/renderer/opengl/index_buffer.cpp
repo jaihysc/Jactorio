@@ -1,3 +1,11 @@
+// 
+// index_buffer.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
 #include <GL/glew.h>
 
 #include "renderer/opengl/index_buffer.h"
@@ -13,7 +21,7 @@ jactorio::renderer::Index_buffer::~Index_buffer() {
 	DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 
-void jactorio::renderer::Index_buffer::reserve(const void *data, uint32_t index_count) {
+void jactorio::renderer::Index_buffer::reserve(const void* data, uint32_t index_count) {
 	bind();
 	DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(GLuint), data, GL_STATIC_DRAW));
 	count_ = index_count;
