@@ -3,13 +3,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
+// Last modified: 03/15/2020
 // 
 
 #include <GL/glew.h>
 
 #include "core/logger.h"
 
+#include "renderer/renderer_exception.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/opengl/error.h"
 
@@ -20,8 +21,8 @@ jactorio::renderer::Texture::Texture(const data::Sprite* sprite)
 
 	const unsigned char* texture_buffer = sprite->get_sprite_data_ptr();
 
-	width_ = sprite->get_width();
-	height_ = sprite->get_height();
+	width_ = static_cast<int>(sprite->get_width());
+	height_ = static_cast<int>(sprite->get_height());
 
 	if (!texture_buffer) {
 		LOG_MESSAGE(error, "Received empty texture")
@@ -54,7 +55,15 @@ jactorio::renderer::Texture::~Texture() {
 }
 
 void jactorio::renderer::Texture::bind(const unsigned int slot) const {
-	// This can be dangerous, number of available slots unknown, TODO query openGL
+	// Ensure there is sufficient slots to bind the texture
+	int texture_units;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
+	if (slot >= static_cast<unsigned int>(texture_units)) {
+		LOG_MESSAGE_f(error,
+		              "Texture slot out of bounds, attempting to bind at index %d", slot);
+		throw Renderer_exception("Texture slot out of bounds");
+	}
+
 	DEBUG_OPENGL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, renderer_id_));
 	bound_texture_id_ = renderer_id_;

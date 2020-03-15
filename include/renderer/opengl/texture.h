@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
+// Last modified: 03/15/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_TEXTURE_H
@@ -39,6 +39,8 @@ namespace jactorio::renderer
 
 		Texture& operator=(Texture&& other) noexcept = delete;
 
+		///
+		/// \exception Renderer_exception Index out of bounds
 		void bind(unsigned int slot = 0) const;
 
 		static void unbind();

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 03/14/2020
+// Last modified: 03/15/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
@@ -42,7 +42,6 @@ namespace jactorio::game
 		 */
 		uint8_t multi_tile_index = 0;
 
-		// TODO, somehow store these variables elsewhere instead of having a copy for each tile
 		/**
 		 * How many tiles does this sprite span? <br>
 		 * Only the width is needed for most calculations

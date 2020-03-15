@@ -3,14 +3,15 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/29/2020
-// Last modified: 03/08/2020
+// Last modified: 03/15/2020
 // 
 
 #include "core/data_type.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_line_structure.h"
 
-bool jactorio::game::Transport_line_segment::can_insert(const bool left_side, const transport_line_offset& start_offset) {
+bool jactorio::game::Transport_line_segment::
+can_insert(const bool left_side, const transport_line_offset& start_offset) {
 	std::deque<transport_line_item>& side = left_side ? this->left : this->right;
 
 	// Check if start_offset already has an item
@@ -50,12 +51,14 @@ void jactorio::game::Transport_line_segment::append_item(const bool insert_left,
 	if (offset < transport_line_c::item_spacing && !target_queue.empty())
 		offset = transport_line_c::item_spacing;
 
-	//	LOG_MESSAGE_f(debug, "Transport line %s: Inserting at offset %f", insert_left ? "LEFT" : "RIGHT", offset);
-
 	target_queue.emplace_back(offset, item);
+	insert_left
+		? l_back_item_distance += transport_line_offset{offset}
+		: r_back_item_distance += transport_line_offset{offset};
 }
 
-void jactorio::game::Transport_line_segment::insert_item(const bool insert_left, const double offset, data::Item* item) {
+void jactorio::game::Transport_line_segment::
+insert_item(const bool insert_left, const double offset, data::Item* item) {
 	std::deque<transport_line_item>& target_queue = insert_left ? this->left : this->right;
 
 	transport_line_offset target_offset{offset};
@@ -74,6 +77,9 @@ void jactorio::game::Transport_line_segment::insert_item(const bool insert_left,
 	}
 	// Failed to find a greater item
 	it = target_queue.end();
+	insert_left
+		? l_back_item_distance = target_offset
+		: r_back_item_distance = target_offset;
 
 loop_exit:
 	// Modify target offset relative to previous item

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/21/2020
-// Last modified: 03/10/2020
+// Last modified: 03/15/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
@@ -85,48 +85,50 @@ namespace jactorio::game
 		// Items closest to the end are stored at the front
 		// See FFF 176 https://factorio.com/blog/post/fff-176
 
-		// <distance, spritemap_id for item>
+		/// <distance, spritemap_id for item>
 		std::deque<transport_line_item> left;
 		std::deque<transport_line_item> right;
 
-		// Are the items on this transport line visible?
+		/// Are the items on this transport line visible?
 		bool item_visible = true;
 
-		// Direction items in this segment travel in
+		/// Direction items in this segment travel in
 		moveDir direction;
 
-		// Segment this transport line feeds into
+		/// Segment this transport line feeds into
 		Transport_line_segment* target_segment = nullptr;
 
 		/// How the belt terminates (bends left, right, straight) (Single belt side)
 		terminationType termination_type;
 
-		// Index to the next item still with space to move
+		/// Index to the next item still with space to move
 		uint16_t l_index = 0;
 		uint16_t r_index = 0;
 
-		// Length of this segment in tiles
+		/// Distance to the last item from beginning of transport line
+		/// Avoids having to iterate through and count each time
+		transport_line_offset l_back_item_distance;
+		transport_line_offset r_back_item_distance;
+
+		
+		/// Length of this segment in tiles
 		uint8_t segment_length;
 
-
-		/**
-		 * Returns true if an item can be inserted into this transport line
-		 * @param start_offset Item offset from the start of transport line in tiles
-		 * @return
-		 */
+		///
+		/// Returns true if an item can be inserted into this transport line
+		/// \param start_offset Item offset from the start of transport line in tiles
+		/// \return
 		J_NODISCARD bool can_insert(bool left_side, const transport_line_offset& start_offset);
 
 
-		/**
-		 * @return true if left size is not empty and has a valid index
-		 */
+		///
+		/// \return true if left size is not empty and has a valid index
 		J_NODISCARD bool is_active_left() const {
 			return !(left.empty() || l_index >= left.size());
 		}
 
-		/**
-		 * @return  true if right side is not empty and has a valid index
-		 */
+		///
+		/// \return  true if right side is not empty and has a valid index
 		J_NODISCARD bool is_active_right() const {
 			return !(right.empty() || r_index >= right.size());
 		}
@@ -134,18 +136,17 @@ namespace jactorio::game
 
 		// Item insertion
 
-		/**
-		 * Appends item onto the specified side of a belt behind the last item
-		 * @param insert_left True to insert item on left size of belt
-		 * @param offset Number of tiles to offset from previous item or the end of the transport line segment when there are no items
-		 */
+		///
+		/// \brief Appends item onto the specified side of a belt behind the last item
+		/// \param insert_left True to insert item on left size of belt
+		/// \param offset Number of tiles to offset from previous item or the end of the transport line segment when there are no items
 		void append_item(bool insert_left, double offset, data::Item* item);
 
-		/**
-		 * Inserts the item onto the specified belt side at the offset from the beginning of the transport line
-		 * @param insert_left True to insert item on left size of belt
-		 * @param offset Distance from beginning of transport line
-		 */
+		///
+		/// \brief Inserts the item onto the specified belt side at the offset
+		/// from the beginning of the transport line
+		/// \param insert_left True to insert item on left size of belt
+		/// \param offset Distance from beginning of transport line
 		void insert_item(bool insert_left, double offset, data::Item* item);
 	};
 }

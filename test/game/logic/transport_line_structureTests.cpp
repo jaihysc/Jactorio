@@ -3,17 +3,15 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/29/2020
-// Last modified: 03/08/2020
+// Last modified: 03/15/2020
 // 
 
-#include "core/float_math.h"
+#include <gtest/gtest.h>
+
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "game/logic/transport_line_structure.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/world/world_data.h"
-
-#include <gtest/gtest.h>
-
 
 // Common code for setting up a line segment
 #define TRANSPORT_LINE_SEGMENT\
@@ -170,5 +168,69 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment.get()->left[1].first.getAsDouble(), 0.4);  // 0.5
 		EXPECT_FLOAT_EQ(line_segment.get()->left[2].first.getAsDouble(), 0.7);  // 1.2
 		EXPECT_FLOAT_EQ(line_segment.get()->left[3].first.getAsDouble(), 0.3);  // 1.5
+	}
+
+	TEST(transport_line_structure, back_item_distance_left) {
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+
+		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
+			jactorio::game::Transport_line_segment::moveDir::up,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			5
+		);
+
+		EXPECT_FLOAT_EQ(line_segment->l_back_item_distance.getAsDouble(), 0.f);
+
+
+		// Appending
+		line_segment->append_item(true, 1.2, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->l_back_item_distance.getAsDouble(), 1.2f);
+
+		line_segment->append_item(true, 3, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->l_back_item_distance.getAsDouble(), 4.2f);
+
+		line_segment->append_item(true, 1.8, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->l_back_item_distance.getAsDouble(), 6.f);
+
+		// Inserting (Starting at 6.f)
+		line_segment->insert_item(true, 7, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->l_back_item_distance.getAsDouble(), 7.f);
+
+		line_segment->insert_item(true, 2, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->l_back_item_distance.getAsDouble(), 7.f);  // Unchanged
+
+		EXPECT_FLOAT_EQ(line_segment->r_back_item_distance.getAsDouble(), 0.f);
+	}
+
+	TEST(transport_line_structure, back_item_distance_right) {
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+
+		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
+			jactorio::game::Transport_line_segment::moveDir::up,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			5
+		);
+
+		EXPECT_FLOAT_EQ(line_segment->r_back_item_distance.getAsDouble(), 0.f);
+
+
+		// Appending
+		line_segment->append_item(false, 1.2, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->r_back_item_distance.getAsDouble(), 1.2f);
+
+		line_segment->append_item(false, 3, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->r_back_item_distance.getAsDouble(), 4.2f);
+
+		line_segment->append_item(false, 1.8, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->r_back_item_distance.getAsDouble(), 6.f);
+
+		// Inserting (Starting at 6.f)
+		line_segment->insert_item(false, 7, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->r_back_item_distance.getAsDouble(), 7.f);
+
+		line_segment->insert_item(false, 2, item_proto.get());
+		EXPECT_FLOAT_EQ(line_segment->r_back_item_distance.getAsDouble(), 7.f);  // Unchanged
+
+		EXPECT_FLOAT_EQ(line_segment->l_back_item_distance.getAsDouble(), 0.f);
 	}
 }

@@ -56,13 +56,13 @@ void apply_termination_deduction_r(const jactorio::game::Transport_line_segment:
 	}
 }
 
-/**
- * Sets index to the next item with a distance greater than item_width and decrement it
- * If there is no item AND has_target_segment == false, index is set as size of transport line
- */
-void move_next_item(const jactorio::transport_line_offset& tiles_moved,
-                    std::deque<jactorio::game::transport_line_item>& line_side,
-                    uint16_t& index, const bool has_target_segment) {
+///
+/// \brief Sets index to the next item with a distance greater than item_width and decrement it
+/// If there is no item AND has_target_segment == false, index is set as size of transport line
+/// \return true if an item was decremented
+J_NODISCARD bool move_next_item(const jactorio::transport_line_offset& tiles_moved,
+                                std::deque<jactorio::game::transport_line_item>& line_side,
+                                uint16_t& index, const bool has_target_segment) {
 	for (unsigned i = index + 1; i < line_side.size(); ++i) {
 		auto& i_item_offset = line_side[i].first;
 		if (i_item_offset > dec::decimal_cast<jactorio::transport_line_decimal_place>(
@@ -71,7 +71,7 @@ void move_next_item(const jactorio::transport_line_offset& tiles_moved,
 			// Found a valid item to decrement
 			index = i;
 			i_item_offset -= tiles_moved;
-			return;
+			return true;
 		}
 	}
 
@@ -81,6 +81,8 @@ void move_next_item(const jactorio::transport_line_offset& tiles_moved,
 		index = line_side.size();
 	else
 		index = 0;
+
+	return false;
 }
 
 void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::game::Transport_line_segment* segment,
@@ -102,33 +104,22 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 
 				jactorio::transport_line_offset target_offset_tile;  // From previous item
 
-				// Faster version of iterating through all existing items:
-				// This can be mitigated by saving the distance to end of the back item
-				// Avoids having to iterate through and count
 
 				// Account for the termination type of the line segments for the offset from start to insert into
 				if (is_left) {
 					apply_termination_deduction_l(segment->termination_type, target_offset);
 					apply_termination_deduction_l(segment->target_segment->termination_type, target_offset);
 
-					// Offset from end of transport line only calculated if line is empty, otherwise it maintains distance to previous item
-					target_offset_tile = target_offset;
-					// TODO see todo above for a more efficient approach (This only passes the test)
-					for (const auto& item : segment->target_segment->left) {
-						target_offset_tile -= item.first;
-					}
+					// Offset from end of transport line only calculated if line is empty,
+					// otherwise it maintains distance to previous item
+					target_offset_tile = target_offset - segment->target_segment->l_back_item_distance;
 				}
 				else {
 					apply_termination_deduction_r(segment->termination_type, target_offset);
 					apply_termination_deduction_r(segment->target_segment->termination_type, target_offset);
 
-					target_offset_tile = target_offset;
-					for (const auto& item : segment->target_segment->right) {
-						target_offset_tile -= item.first;
-					}
+					target_offset_tile = target_offset - segment->target_segment->r_back_item_distance;
 				}
-
-				// LOG_MESSAGE_f(debug, "%s %f", is_left ? "Left" : "right", target_offset.getAsDouble());
 
 				bool added_item = false;
 				// Decides how the items will be fed into the target segment (if at all)
@@ -168,9 +159,17 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 				if (added_item) {
 					line_side.pop_front();  // Remove item in current segment now moved away
 
-					// Move the next item forwards to preserve spacing
-					if (!line_side.empty())  // This will not work with speeds greater than item_spacing
-						line_side.front().first += offset;  // Offset is negative
+					// Move the next item forwards to preserve spacing & update back_item_distance
+					if (!line_side.empty()) {  // This will not work with speeds greater than item_spacing
+						// Offset is always negative
+						line_side.front().first += offset;
+					}
+					else {
+						// No items left in segment
+						is_left
+							? segment->l_back_item_distance = 0
+							: segment->r_back_item_distance = 0;
+					}
 					return;
 				}
 
@@ -179,7 +178,12 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 
 			// Set the item back to 0, the distance will be made up for by decreasing the distance of the next item
 			offset = 0;
-			move_next_item(tiles_moved, line_side, index, segment->target_segment != nullptr);
+			if (move_next_item(tiles_moved, line_side, index,
+			                   segment->target_segment != nullptr)) {
+				is_left
+					? segment->l_back_item_distance -= tiles_moved
+					: segment->r_back_item_distance -= tiles_moved;
+			}
 		}
 		// Front item does not need to be moved
 		return;
@@ -195,7 +199,12 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 
 	// Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
 	offset = jactorio::game::transport_line_c::item_spacing;
-	move_next_item(tiles_moved, line_side, index, segment->target_segment != nullptr);
+	if (move_next_item(tiles_moved, line_side, index,
+	                   segment->target_segment != nullptr)) {
+		is_left
+			? segment->l_back_item_distance -= tiles_moved
+			: segment->r_back_item_distance -= tiles_moved;
+	}
 }
 
 void jactorio::game::transport_line_c::logic_update_move_items(Logic_chunk* l_chunk) {
@@ -212,8 +221,10 @@ void jactorio::game::transport_line_c::logic_update_move_items(Logic_chunk* l_ch
 			auto& left = line_segment->left;
 			const auto index = line_segment->l_index;
 			// Empty or index indicates nothing should be moved
-			if (line_segment->is_active_left())
+			if (line_segment->is_active_left()) {
 				left[index].first -= line_proto->speed;
+				line_segment->l_back_item_distance -= line_proto->speed;
+			}
 		}
 
 		// Right
@@ -221,8 +232,10 @@ void jactorio::game::transport_line_c::logic_update_move_items(Logic_chunk* l_ch
 			auto& right = line_segment->right;
 			const auto index = line_segment->r_index;
 			// Empty or index indicates nothing should be moved
-			if (line_segment->is_active_right())
+			if (line_segment->is_active_right()) {
 				right[index].first -= line_proto->speed;
+				line_segment->r_back_item_distance -= line_proto->speed;
+			}
 		}
 	}
 }
