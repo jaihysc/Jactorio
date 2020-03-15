@@ -3,10 +3,13 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/13/2020
-// Last modified: 03/10/2020
+// Last modified: 03/15/2020
 // 
 
 #include "data/prototype/entity/transport/transport_line.h"
+
+#include <cmath>
+
 #include "game/logic/transport_line_controller.h"
 
 #include "game/world/world_data.h"
