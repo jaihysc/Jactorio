@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/15/2019
-// Last modified: 03/12/2020
+// Last modified: 03/16/2020
 // 
 
 #include "renderer/rendering/world_renderer.h"
@@ -20,16 +20,37 @@
 #include "renderer/rendering/mvp_manager.h"
 #include "renderer/opengl/shader_manager.h"
 
-using tile_draw_func = unsigned int (*)(const jactorio::game::Chunk_tile&);
+using tile_draw_func = jactorio::core::Quad_position (*)(const jactorio::game::Chunk_tile&);
 using object_draw_func = unsigned int (*)(const jactorio::game::Chunk_object_layer&);
 
-// Functions for drawing each layer, they are accessed by layer_index
+const jactorio::core::Quad_position no_draw{{-1.f, -1.f}, {-1.f, -1.f}};
+
+void apply_uv_offset(jactorio::core::Quad_position& uv, const jactorio::core::Quad_position& uv_offset) {
+	const auto difference = uv.bottom_right - uv.top_left;
+
+	assert(difference.x >= 0);
+	assert(difference.y >= 0);
+
+	// Calculate bottom first since it needs the unmodified top_left
+	uv.bottom_right = uv.top_left + difference * uv_offset.bottom_right;
+	uv.top_left += difference * uv_offset.top_left;
+}
+
+
+/// \brief Functions for drawing each layer, they are accessed by layer_index
+/// \remark return top_left.x -1 to skip
 tile_draw_func tile_layer_get_sprite_id_func[]{
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
 		const auto t =
 			jactorio::game::chunk_tile_getter::get_tile_prototype(
 				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::base);
-		return t->sprite->internal_id;
+
+		auto* unique_data = chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::base).unique_data;
+
+		auto uv = jactorio::renderer::Renderer::get_spritemap_coords(t->on_r_get_sprite(unique_data)->internal_id);
+		apply_uv_offset(uv, t->on_r_get_sprite_uv(unique_data));
+
+		return uv;
 	},
 
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
@@ -38,16 +59,28 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::resource);
 		// Sprites are guaranteed not nullptr
 		if (t == nullptr)
-			return 0u;
-		return t->sprite->internal_id;
+			return no_draw;
+
+		auto* unique_data = chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).unique_data;
+
+		auto uv = jactorio::renderer::Renderer::get_spritemap_coords(t->on_r_get_sprite(unique_data)->internal_id);
+		apply_uv_offset(uv, t->on_r_get_sprite_uv(unique_data));
+
+		return uv;
 	},
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
 		const auto t =
 			jactorio::game::chunk_tile_getter::get_entity_prototype(
 				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::entity);
 		if (t == nullptr)
-			return 0u;
-		return t->sprite->internal_id;
+			return no_draw;
+
+		auto* unique_data = chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).unique_data;
+
+		auto uv = jactorio::renderer::Renderer::get_spritemap_coords(t->on_r_get_sprite(unique_data)->internal_id);
+		apply_uv_offset(uv, t->on_r_get_sprite_uv(unique_data));
+
+		return uv;
 	},
 
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
@@ -55,8 +88,11 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 			jactorio::game::chunk_tile_getter::get_sprite_prototype(
 				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::overlay);
 		if (t == nullptr)
-			return 0u;
-		return t->internal_id;
+			return no_draw;
+
+		const auto uv = jactorio::renderer::Renderer::get_spritemap_coords(t->internal_id);
+		// apply_uv_offset(uv, t->on_r_get_sprite_uv(nullptr));
+		return uv;
 	}
 };
 
@@ -66,7 +102,7 @@ object_draw_func object_layer_get_sprite_id_func[]{
 		auto* entity = static_cast<jactorio::data::Entity*>(layer.prototype_data);
 		if (entity == nullptr || entity->sprite == nullptr)
 			return 0u;
-		return entity->sprite->internal_id;
+		return entity->on_r_get_sprite(layer.unique_data)->internal_id;
 	},
 	// Debug overlay
 	[](const jactorio::game::Chunk_object_layer& layer) {
@@ -89,29 +125,27 @@ void prepare_tile_data(jactorio::game::World_data&,
 
 	// Iterate through and load tiles of a chunk into layer for rendering
 	for (unsigned int tile_y = 0; tile_y < 32; ++tile_y) {
-		const float uv_y = (chunk_y_offset + tile_y) * jactorio::renderer::Renderer::tile_width;
+		const float y = (chunk_y_offset + tile_y) * jactorio::renderer::Renderer::tile_width;
 
 		for (unsigned int tile_x = 0; tile_x < 32; ++tile_x) {
 			const auto& tile = tiles[tile_y * 32 + tile_x];
-			const unsigned int internal_id = tile_layer_get_sprite_id_func[layer_index](tile);
+			auto uv = tile_layer_get_sprite_id_func[layer_index](tile);
 
-			// Internal id of 0 indicates no tile
-			if (internal_id == 0) {
+			// uv top left.x = -1.f means no tile
+			if (uv.top_left.x == -1.f) {
 				continue;
 			}
-
-			auto positions = jactorio::renderer::Renderer::get_spritemap_coords(internal_id);
 
 			// Calculate the correct UV coordinates for multi-tile entities
 			// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
 			auto& layer_tile = tile.get_layer(layer_index);
 			if (layer_tile.multi_tile_span != 1) {
 				const auto len_x =
-					(positions.bottom_right.x - positions.top_left.x) / static_cast<float>(layer_tile.
+					(uv.bottom_right.x - uv.top_left.x) / static_cast<float>(layer_tile.
 						multi_tile_span);
 
 				const auto len_y =
-					(positions.bottom_right.y - positions.top_left.y) / static_cast<float>(layer_tile.
+					(uv.bottom_right.y - uv.top_left.y) / static_cast<float>(layer_tile.
 						multi_tile_height);
 
 				const auto x_multiplier =
@@ -123,35 +157,35 @@ void prepare_tile_data(jactorio::game::World_data&,
 				// Opengl flips vertically, thus the y multiplier is inverted
 
 				// bottom right
-				positions.bottom_right.x =
-					positions.bottom_right.x - len_x * static_cast<float>(layer_tile.multi_tile_span -
+				uv.bottom_right.x =
+					uv.bottom_right.x - len_x * static_cast<float>(layer_tile.multi_tile_span -
 						x_multiplier - 1);
-				positions.bottom_right.y = positions.bottom_right.y - len_y * y_multiplier;
+				uv.bottom_right.y = uv.bottom_right.y - len_y * y_multiplier;
 
 				// top left
-				positions.top_left.x = positions.top_left.x + len_x * x_multiplier;
-				positions.top_left.y =
-					positions.top_left.y + len_y * static_cast<float>(layer_tile.multi_tile_height -
+				uv.top_left.x = uv.top_left.x + len_x * x_multiplier;
+				uv.top_left.y =
+					uv.top_left.y + len_y * static_cast<float>(layer_tile.multi_tile_height -
 						y_multiplier - 1);
 			}
 
 			// Calculate screen coordinates
-			const float uv_x = (chunk_x_offset + tile_x) * jactorio::renderer::Renderer::tile_width;
+			const float x = (chunk_x_offset + tile_x) * jactorio::renderer::Renderer::tile_width;
 
 			layer->push_back(
 				jactorio::renderer::Renderer_layer::Element(
 					{
 						{
-							uv_x,
-							uv_y
+							x,
+							y
 						},
 						// One tile right and down
 						{
-							uv_x + static_cast<float>(jactorio::renderer::Renderer::tile_width),
-							uv_y + static_cast<float>(jactorio::renderer::Renderer::tile_width)
+							x + static_cast<float>(jactorio::renderer::Renderer::tile_width),
+							y + static_cast<float>(jactorio::renderer::Renderer::tile_width)
 						}
 					},
-					{positions.top_left, positions.bottom_right}
+					{uv.top_left, uv.bottom_right}
 				)
 			);
 

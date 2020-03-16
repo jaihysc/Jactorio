@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/24/2019
-// Last modified: 03/14/2020
+// Last modified: 03/16/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
@@ -15,7 +15,9 @@
 #include <string>
 #include <vector>
 
-#include "prototype_base.h"
+
+#include "core/data_type.h"
+#include "data/prototype/prototype_base.h"
 
 namespace jactorio::data
 {
@@ -26,17 +28,34 @@ namespace jactorio::data
 		{
 			terrain = 0,
 			gui,
-			_count
+			count_
 		};
 
-		/**
-		 * Group(s) determines which spritemap(s) this sprite is placed on
-		 */
+		///
+		/// \brief Group(s) determines which spritemap(s) this sprite is placed on
 		PYTHON_PROP_REF(Sprite, std::vector<sprite_group>, group);
 
-		/**
-		 * @return true is Sprite is in specified group
+		/*
+		 *     F0 F1 F2 F3 F4
+		 *    ----------------
+		 * S0 |  |  |  |  |  |
+		 *    ----------------
+		 * S1 |  |  |  |  |  |
+		 *    ----------------
+		 * S2 |  |  |  |  |  |
+		 *    ----------------
 		 */
+
+		///
+		/// \brief Animation frames, X axis, indexed by 0 based index, 1 if single
+		PYTHON_PROP_REF_I(Sprite, uint16_t, frames, 1);
+		///
+		/// \brief Y axis, indexed by 0 based index, 1 if single
+		PYTHON_PROP_REF_I(Sprite, uint16_t, sets, 1);
+
+
+		///
+		/// \return true is Sprite is in specified group
 		bool is_in_group(sprite_group group);
 
 	private:
@@ -67,7 +86,16 @@ namespace jactorio::data
 		Sprite& operator=(const Sprite& other);
 		Sprite& operator=(Sprite&& other) noexcept = default;
 
-		// =======================================
+		// ======================================================================
+		// Image extraction
+
+		///
+		/// \param set 
+		/// \param frame 
+		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
+		J_NODISCARD core::Quad_position get_coords(uint16_t set, uint16_t frame) const;
+
+		// ======================================================================
 		// Sprite ptr
 
 		J_NODISCARD const unsigned char* get_sprite_data_ptr() const;

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 03/14/2020
+// Last modified: 03/15/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
@@ -54,6 +54,10 @@ namespace jactorio::data
 			const auto other = new Resource_entity_data();
 			*other = *static_cast<Resource_entity_data*>(ptr);
 			return other;
+		}
+
+
+		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override {
 		}
 	};
 }

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/11/2020
+// Last modified: 03/16/2020
 // 
 
 #include "game/logic_loop.h"
@@ -29,11 +29,16 @@
 
 #include "data/data_manager.h"
 #include "data/prototype/item/item.h"
+#include "renderer/render_main.h"
 
-bool logic_loop_should_terminate = false;
 constexpr float move_speed = 0.8f;
 
 void jactorio::game::init_logic_loop(std::mutex*) {
+	core::Resource_guard<void> loop_termination_guard([]() {
+		renderer::render_thread_should_exit = true;
+		logic_thread_should_exit = true;
+	});
+
 	// Initialize game data
 	// ReSharper disable once CppLocalVariableWithNonTrivialDtorIsNeverUsed
 	core::Resource_guard<void> game_data_guard([]() { delete game_data; });
@@ -51,7 +56,7 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 	// ======================================================================
 	// Temporary Startup settings
 	game_data->player.set_player_world(&game_data->world);  // Main world is player's world
-	
+
 
 	// ======================================================================
 
@@ -108,8 +113,8 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 				return;
 
 			const auto tile_selected = game_data->input.mouse.get_mouse_tile_coords();
-			game_data->player.try_place_entity(game_data->world, 
-											   tile_selected.first, tile_selected.second);
+			game_data->player.try_place_entity(game_data->world,
+			                                   tile_selected.first, tile_selected.second);
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS);
 
 		input_manager::subscribe([]() {
@@ -117,8 +122,8 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 				return;
 
 			const auto tile_selected = game_data->input.mouse.get_mouse_tile_coords();
-			game_data->player.try_place_entity(game_data->world, 
-											   tile_selected.first, tile_selected.second, true);
+			game_data->player.try_place_entity(game_data->world,
+			                                   tile_selected.first, tile_selected.second, true);
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS_FIRST);
 
 		// Remove entities or mine resource
@@ -128,7 +133,7 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 
 			const auto tile_selected = game_data->input.mouse.get_mouse_tile_coords();
 			game_data->player.try_pickup(game_data->world,
-										 tile_selected.first, tile_selected.second);
+			                             tile_selected.first, tile_selected.second);
 		}, GLFW_MOUSE_BUTTON_2, GLFW_PRESS);
 	}
 
@@ -507,7 +512,7 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 	// Runtime
 	auto next_frame = std::chrono::steady_clock::now();
 	unsigned short logic_tick = 1;
-	while (!logic_loop_should_terminate) {
+	while (!logic_thread_should_exit) {
 		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
 		{
@@ -543,8 +548,6 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 		next_frame += std::chrono::nanoseconds(16666666);
 		std::this_thread::sleep_until(next_frame);
 	}
-}
 
-void jactorio::game::terminate_logic_loop() {
-	logic_loop_should_terminate = true;
+	LOG_MESSAGE(debug, "Logic thread exited");
 }

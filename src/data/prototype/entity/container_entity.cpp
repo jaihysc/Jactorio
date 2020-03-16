@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 03/12/2020
+// Last modified: 03/15/2020
 // 
 
 #include "data/prototype/entity/container_entity.h"
@@ -30,7 +30,7 @@ void jactorio::data::Container_entity::on_build(game::Chunk_tile_layer* tile_lay
 	tile_layer->unique_data = new Container_entity_data(inventory_size);
 }
 
-void jactorio::data::Container_entity::on_show_gui(game::Player_data& player_data,
+void jactorio::data::Container_entity::on_r_show_gui(game::Player_data& player_data,
                                                    game::Chunk_tile_layer* tile_layer) const {
 	renderer::gui::container_entity(player_data,
 	                                static_cast<Container_entity_data*>(tile_layer->unique_data)->inventory,

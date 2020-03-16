@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
+// Last modified: 03/16/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDER_MAIN_H
@@ -23,11 +23,12 @@ namespace jactorio::renderer
 	 */
 	Renderer* get_base_renderer();
 
-	/**
-	 * Initiates rendering and starts the rendering thread
-	 * @param mutex Will lock when preparing render data and rendering, unlock while sleeping until the next frame
-	 * @return non-zero if error occurred
-	 */
+	inline bool render_thread_should_exit = false;
+
+	///
+	/// \brief Initiates rendering and starts the rendering thread
+	/// \param mutex Will lock when preparing render data and rendering, unlock while sleeping until the next frame
+	/// \return non-zero if error occurred
 	int render_init(std::mutex* mutex);
 }
 

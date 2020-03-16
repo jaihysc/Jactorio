@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/13/2020
+// Last modified: 03/16/2020
 // 
 
 #include <GL/glew.h>
@@ -50,7 +50,10 @@ jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
 }
 
 int jactorio::renderer::render_init(std::mutex* mutex) {
-	core::Resource_guard loop_termination_guard(&game::terminate_logic_loop);
+	core::Resource_guard<void> loop_termination_guard([]() {
+		render_thread_should_exit = true;
+		game::logic_thread_should_exit = true;
+	});
 	core::Resource_guard window_manager_guard(&window_manager::terminate);
 
 	if (window_manager::init(640, 490) != 0)
@@ -141,7 +144,7 @@ int jactorio::renderer::render_init(std::mutex* mutex) {
 		main_renderer = new Renderer();
 
 		auto next_tick = std::chrono::steady_clock::now();
-		while (!glfwWindowShouldClose(window)) {
+		while (!render_thread_should_exit) {
 			EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
 			{
@@ -163,11 +166,14 @@ int jactorio::renderer::render_init(std::mutex* mutex) {
 				glfwPollEvents();
 			}
 
+			if (glfwWindowShouldClose(window))
+				render_thread_should_exit = true;
 
 			next_tick += std::chrono::microseconds(16666);
 			std::this_thread::sleep_until(next_tick);
 		}
 	}
 
+	LOG_MESSAGE(debug, "Renderer thread exited");
 	return 0;
 }

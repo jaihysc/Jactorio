@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/12/2020
+// Last modified: 03/16/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
@@ -13,6 +13,7 @@
 #include "jactorio.h"
 
 #include "data/prototype/item/item.h"
+#include "data/prototype/interface/renderable.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile_layer.h"
 
@@ -26,7 +27,7 @@ namespace jactorio::data
 	/**
 	 * Placeable items in the world
 	 */
-	class Entity : public Prototype_base
+	class Entity : public Prototype_base, public Renderable
 	{
 		/**
 		 * Item when entity is picked up <br>
@@ -78,6 +79,8 @@ namespace jactorio::data
 		PYTHON_PROP_REF_I(Entity, float, pickup_time, 1);
 
 
+		void post_load_validate() const override;
+
 		// ======================================================================
 		// Localized names
 
@@ -95,9 +98,18 @@ namespace jactorio::data
 		}
 
 		// ======================================================================
-		// Events
+		// Renderer events
 
-		void post_load_validate() const override;
+		Sprite* on_r_get_sprite(void* unique_data) const override {
+			return this->sprite;
+		}
+
+		core::Quad_position on_r_get_sprite_uv(void* unique_data) const override {
+			return {{0, 0}, {1, 1}};
+		}
+
+		// ======================================================================
+		// Game events
 
 		/**
 		 * Entity was build in the world
@@ -110,12 +122,6 @@ namespace jactorio::data
 		 * Entity was picked up from a built state
 		 */
 		virtual void on_remove() const {
-		}
-
-		/**
-		 * Displays the menu associated with itself with the provided data
-		 */
-		virtual void on_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const {
 		}
 	};
 

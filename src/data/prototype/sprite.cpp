@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/06/2019
-// Last modified: 03/14/2020
+// Last modified: 03/16/2020
 // 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -98,6 +98,22 @@ jactorio::data::Sprite& jactorio::data::Sprite::operator=(const Sprite& other) {
 	return *this;
 }
 
+
+jactorio::core::Quad_position jactorio::data::Sprite::get_coords(const uint16_t set, const uint16_t frame) const {
+	assert(set < sets);  // Out of range
+	assert(frame < frames);
+	
+	return {
+		{
+			1.f / frames * frame,
+			1.f / sets * set
+		},
+		{
+			1.f / frames * (frame + 1),
+			1.f / sets * (set + 1)
+		}
+	};
+}
 
 const unsigned char* jactorio::data::Sprite::get_sprite_data_ptr() const {
 	return sprite_buffer_;
