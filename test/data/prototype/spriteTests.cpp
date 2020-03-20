@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/06/2019
-// Last modified: 03/16/2020
+// Last modified: 03/17/2020
 // 
 
 #include <gtest/gtest.h>
@@ -56,6 +56,26 @@ namespace data::prototype
 
 			EXPECT_FLOAT_EQ(coords.bottom_right.x, 1.f);
 			EXPECT_FLOAT_EQ(coords.bottom_right.y, 0.14285714285714f);
+		}
+	}
+
+	TEST(sprite, get_coords_trimmed) {
+		// This requires width_ and height_ to be initialized
+		{
+			jactorio::data::Sprite sprite{};
+			sprite.sets = 2;
+			sprite.frames = 3;
+
+			sprite.set_width(620);
+			sprite.set_height(190);
+			sprite.trim = 12;
+
+			const auto coords = sprite.get_coords_trimmed(1, 2);
+			EXPECT_FLOAT_EQ(coords.top_left.x, 0.686021505f);
+			EXPECT_FLOAT_EQ(coords.top_left.y, 0.563157894f);
+
+			EXPECT_FLOAT_EQ(coords.bottom_right.x, 0.980645161f);
+			EXPECT_FLOAT_EQ(coords.bottom_right.y, 0.936842105f);
 		}
 	}
 }

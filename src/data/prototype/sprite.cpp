@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/06/2019
-// Last modified: 03/16/2020
+// Last modified: 03/19/2020
 // 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -15,6 +15,7 @@
 
 #include "core/filesystem.h"
 #include "data/data_exception.h"
+#include "data/prototype/interface/renderable.h"
 
 bool jactorio::data::Sprite::is_in_group(const sprite_group group) {
 	for (auto& i : this->group) {
@@ -102,15 +103,39 @@ jactorio::data::Sprite& jactorio::data::Sprite::operator=(const Sprite& other) {
 jactorio::core::Quad_position jactorio::data::Sprite::get_coords(const uint16_t set, const uint16_t frame) const {
 	assert(set < sets);  // Out of range
 	assert(frame < frames);
-	
+
 	return {
 		{
-			1.f / frames * frame,
-			1.f / sets * set
+			1.f / static_cast<float>(frames) * static_cast<float>(frame),
+			1.f / static_cast<float>(sets) * static_cast<float>(set)
 		},
 		{
-			1.f / frames * (frame + 1),
-			1.f / sets * (set + 1)
+			1.f / static_cast<float>(frames) * static_cast<float>(frame + 1),
+			1.f / static_cast<float>(sets) * static_cast<float>(set + 1)
+		}
+	};
+}
+
+jactorio::core::Quad_position jactorio::data::Sprite::
+get_coords_trimmed(const uint16_t set, const uint16_t frame) const {
+	assert(set < sets);  // Out of range
+	assert(frame < frames);
+
+	const auto width_base = static_cast<float>(width_) / static_cast<float>(frames);
+	const auto height_base = static_cast<float>(height_) / static_cast<float>(sets);
+
+	return {
+		{
+			(width_base * static_cast<float>(frame) + static_cast<float>(trim))
+			/ static_cast<float>(width_),
+			(height_base * static_cast<float>(set) + static_cast<float>(trim))
+			/ static_cast<float>(height_)
+		},
+		{
+			(width_base * static_cast<float>(frame + 1) - static_cast<float>(trim))
+			/ static_cast<float>(width_),
+			(height_base * static_cast<float>(set + 1) - static_cast<float>(trim))
+			/ static_cast<float>(height_)
 		}
 	};
 }
@@ -139,4 +164,13 @@ jactorio::data::Sprite* jactorio::data::Sprite::load_image(const std::string& im
 	load_image_from_file();
 
 	return this;
+}
+
+void jactorio::data::Sprite::post_load_validate() const {
+	J_DATA_ASSERT(frames > 0, "Frames must be at least 1");
+	J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
+}
+
+void jactorio::data::Sprite::delete_unique_data(void* ptr) const {
+	delete static_cast<Renderable_data*>(ptr);
 }

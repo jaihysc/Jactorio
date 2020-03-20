@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/06/2019
-// Last modified: 03/16/2020
+// Last modified: 03/18/2020
 // 
 
 #ifndef DATA_PROTOTYPE_TILE_TILE_H
@@ -48,11 +48,6 @@ namespace jactorio::data
 		// ======================================================================
 		// Renderer
 		Sprite* on_r_get_sprite(void* unique_data) const override { return sprite; }
-
-		core::Quad_position on_r_get_sprite_uv(void* unique_data) const override {
-			return {{0, 0}, {1, 1}};
-		}
-
 
 		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override {
 		}

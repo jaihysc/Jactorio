@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/16/2020
+// Last modified: 03/20/2020
 // 
 
 #include "game/logic_loop.h"
@@ -29,6 +29,7 @@
 
 #include "data/data_manager.h"
 #include "data/prototype/item/item.h"
+#include "game/logic/transport_line_structure.h"
 #include "renderer/render_main.h"
 
 constexpr float move_speed = 0.8f;
@@ -107,6 +108,15 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 	}
 
 	{
+		// Rotating orientation	
+		input_manager::subscribe([]() {
+			game_data->player.rotate_placement_orientation();
+		}, GLFW_KEY_R, GLFW_RELEASE);
+		input_manager::subscribe([]() {
+			game_data->player.counter_rotate_placement_orientation();
+		}, GLFW_KEY_R, GLFW_RELEASE, GLFW_MOD_SHIFT);
+
+
 		// Place entities
 		input_manager::subscribe([]() {
 			if (renderer::imgui_manager::input_captured || !game_data->input.mouse.selected_tile_in_range())

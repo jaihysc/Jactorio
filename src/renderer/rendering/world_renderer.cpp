@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/15/2019
-// Last modified: 03/16/2020
+// Last modified: 03/19/2020
 // 
 
 #include "renderer/rendering/world_renderer.h"
@@ -45,10 +45,14 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 			jactorio::game::chunk_tile_getter::get_tile_prototype(
 				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::base);
 
-		auto* unique_data = chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::base).unique_data;
+		auto* unique_data =
+			static_cast<jactorio::data::Renderable_data*>(
+				chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::base).unique_data);
 
 		auto uv = jactorio::renderer::Renderer::get_spritemap_coords(t->on_r_get_sprite(unique_data)->internal_id);
-		apply_uv_offset(uv, t->on_r_get_sprite_uv(unique_data));
+
+		if (unique_data)
+			apply_uv_offset(uv, t->sprite->get_coords_trimmed(unique_data->set, unique_data->frame));
 
 		return uv;
 	},
@@ -61,10 +65,15 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).unique_data;
+		auto* unique_data =
+			static_cast<jactorio::data::Renderable_data*>(
+				chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).unique_data);
 
 		auto uv = jactorio::renderer::Renderer::get_spritemap_coords(t->on_r_get_sprite(unique_data)->internal_id);
-		apply_uv_offset(uv, t->on_r_get_sprite_uv(unique_data));
+
+
+		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
+			apply_uv_offset(uv, t->sprite->get_coords_trimmed(unique_data->set, unique_data->frame));
 
 		return uv;
 	},
@@ -75,10 +84,14 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).unique_data;
+		auto* unique_data =
+			static_cast<jactorio::data::Renderable_data*>(
+				chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).unique_data);
 
 		auto uv = jactorio::renderer::Renderer::get_spritemap_coords(t->on_r_get_sprite(unique_data)->internal_id);
-		apply_uv_offset(uv, t->on_r_get_sprite_uv(unique_data));
+
+		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
+			apply_uv_offset(uv, t->sprite->get_coords_trimmed(unique_data->set, unique_data->frame));
 
 		return uv;
 	},
@@ -90,8 +103,15 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 		if (t == nullptr)
 			return no_draw;
 
-		const auto uv = jactorio::renderer::Renderer::get_spritemap_coords(t->internal_id);
-		// apply_uv_offset(uv, t->on_r_get_sprite_uv(nullptr));
+		auto* unique_data =
+			static_cast<jactorio::data::Renderable_data*>(
+				chunk_tile.get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).unique_data);
+
+		auto uv = jactorio::renderer::Renderer::get_spritemap_coords(t->internal_id);
+
+		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
+			apply_uv_offset(uv, t->get_coords_trimmed(unique_data->set, unique_data->frame));
+
 		return uv;
 	}
 };

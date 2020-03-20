@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/16/2020
+// Last modified: 03/20/2020
 // 
 
 #include <GL/glew.h>
@@ -133,7 +133,7 @@ int jactorio::renderer::render_init(std::mutex* mutex) {
 		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
 			game::game_data->player.get_player_world().clear_chunk_data();
 		});
-	}, GLFW_KEY_R, GLFW_RELEASE);
+	}, GLFW_KEY_P, GLFW_RELEASE);
 
 	// Main rendering loop
 	{

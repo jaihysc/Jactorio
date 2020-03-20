@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/10/2020
-// Last modified: 03/16/2020
+// Last modified: 03/20/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
@@ -12,8 +12,6 @@
 
 #include "core/data_type.h"
 #include "data/prototype/entity/health_entity.h"
-
-#include "game/logic/transport_line_structure.h"
 
 namespace jactorio::data
 {
@@ -42,12 +40,12 @@ namespace jactorio::data
 			count_
 		};
 
-		orientation orientation;
+		orientation orientation = orientation::up;
 	};
 
 	///
 	/// \brief Abstract class for all everything which moves items (belts, underground belts, splitters)
-	class Transport_line : public Health_entity
+	class Transport_line : public Health_entity, public Rotatable_entity
 	{
 	protected:
 		Transport_line() = default;
@@ -61,13 +59,43 @@ namespace jactorio::data
 		/// Number of tiles traveled by each item on the belt per tick
 		transport_line_offset speed;
 
-		///
-		/// \brief Deletes the internal structure behind transport lines, NOT the entities!
+
 		void delete_unique_data(void* ptr) const override {
-			delete static_cast<game::Transport_line_segment*>(ptr);
+			delete static_cast<Transport_line_data*>(ptr);
 		}
 
 
+		// ======================================================================
+		// Game events
+		void on_build(game::Chunk_tile_layer* tile_layer) const override {
+			tile_layer->unique_data = new Transport_line_data();
+		}
+
+
+		std::pair<uint16_t, uint16_t> map_placement_orientation(const placementOrientation orientation,
+		                                                        game::Chunk_tile_layer* up,
+		                                                        game::Chunk_tile_layer* right,
+		                                                        game::Chunk_tile_layer* down,
+		                                                        game::Chunk_tile_layer* left) const override {
+			switch (orientation) {
+			case placementOrientation::up:
+				return {17, 0};
+			case placementOrientation::right:
+				return {19, 0};
+			case placementOrientation::down:
+				return {16, 0};
+			case placementOrientation::left:
+				return {18, 0};
+			default:
+				assert(false); // Missing switch case
+			}
+
+			return {0, 0};
+		}
+
+
+		// ======================================================================
+		// Data events
 		void post_load() override {
 			// Convert floating point speed to fixed precision decimal speed
 			speed = transport_line_offset(speed_float);
@@ -77,11 +105,6 @@ namespace jactorio::data
 			J_DATA_ASSERT(speed_float > 0.001, "Transport line speed below minimum 0.001");
 			// Cannot exceed item_width because of limitations in the logic
 			J_DATA_ASSERT(speed_float < 0.25, "Transport line speed equal or above maximum of 0.25");
-		}
-
-
-		core::Quad_position on_r_get_sprite_uv(void* unique_data) const override {
-			return sprite->get_coords(19, 3);  // Inverted across X axis
 		}
 
 		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override {

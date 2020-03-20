@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/16/2020
+// Last modified: 03/18/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
@@ -20,7 +20,7 @@
 namespace jactorio::data
 {
 	// Unique per entity placed in the world
-	struct Entity_data
+	struct Entity_data : Renderable_data
 	{
 	};
 
@@ -102,10 +102,6 @@ namespace jactorio::data
 
 		Sprite* on_r_get_sprite(void* unique_data) const override {
 			return this->sprite;
-		}
-
-		core::Quad_position on_r_get_sprite_uv(void* unique_data) const override {
-			return {{0, 0}, {1, 1}};
 		}
 
 		// ======================================================================

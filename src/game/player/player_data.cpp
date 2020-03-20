@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/12/2020
+// Last modified: 03/20/2020
 // 
 
 #include "game/player/player_data.h"
@@ -60,6 +60,44 @@ void jactorio::game::Player_data::move_player_y(const float amount) {
 
 // ============================================================================================
 // Entity placement / pickup
+
+void jactorio::game::Player_data::rotate_placement_orientation() {
+	switch (placement_orientation) {
+	case data::placementOrientation::up:
+		placement_orientation = data::placementOrientation::right;
+		break;
+	case data::placementOrientation::right:
+		placement_orientation = data::placementOrientation::down;
+		break;
+	case data::placementOrientation::down:
+		placement_orientation = data::placementOrientation::left;
+		break;
+	case data::placementOrientation::left:
+		placement_orientation = data::placementOrientation::up;
+		break;
+	default:
+		assert(false);  // Missing switch case
+	}
+}
+
+void jactorio::game::Player_data::counter_rotate_placement_orientation() {
+	switch (placement_orientation) {
+	case data::placementOrientation::up:
+		placement_orientation = data::placementOrientation::left;
+		break;
+	case data::placementOrientation::left:
+		placement_orientation = data::placementOrientation::down;
+		break;
+	case data::placementOrientation::down:
+		placement_orientation = data::placementOrientation::right;
+		break;
+	case data::placementOrientation::right:
+		placement_orientation = data::placementOrientation::up;
+		break;
+	default:
+		assert(false);  // Missing switch case
+	}
+}
 
 void jactorio::game::Player_data::try_place_entity(World_data& world_data,
                                                    const int tile_x, const int tile_y,

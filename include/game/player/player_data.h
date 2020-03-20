@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/12/2020
+// Last modified: 03/20/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
@@ -13,10 +13,11 @@
 #include "data/prototype/item/item.h"
 #include "data/prototype/item/recipe.h"
 #include "game/world/chunk_tile_layer.h"
+#include "data/prototype/interface/rotatable.h"
+#include "game/world/world_data.h"
 
 #include <queue>
 
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
@@ -75,6 +76,16 @@ namespace jactorio::game
 		void* last_tile_ptr_ = nullptr;
 
 	public:
+		data::placementOrientation placement_orientation = data::placementOrientation::up;
+
+		///
+		/// \brief Rotates placement_orientation clockwise 
+		void rotate_placement_orientation();
+		///
+		/// \brief Rotates placement_orientation counter clockwise 
+		void counter_rotate_placement_orientation();
+
+
 		///
 		/// \brief Sets the activated layer, use nullptr to unset
 		void set_activated_layer(Chunk_tile_layer* layer) { activated_layer_ = layer; }
@@ -84,7 +95,7 @@ namespace jactorio::game
 		/// \return nullptr If no layer is activated by the player
 		J_NODISCARD Chunk_tile_layer* get_activated_layer() const { return activated_layer_; }
 
-		
+
 		///
 		/// \brief Will place an entity at the location or if an entity does not already exist
 		/// Call when the key for placing entities is pressed

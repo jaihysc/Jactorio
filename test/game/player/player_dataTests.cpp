@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/12/2020
+// Last modified: 03/20/2020
 // 
 
 #include <gtest/gtest.h>
@@ -18,7 +18,43 @@
 
 namespace game
 {
-	TEST(player_manager, try_place_entity) {
+	TEST(player_data, rotate_placement_orientation) {
+		jactorio::game::Player_data player_data{};
+
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::up);
+
+		player_data.rotate_placement_orientation();
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::right);
+
+		player_data.rotate_placement_orientation();
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::down);
+
+		player_data.rotate_placement_orientation();
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::left);
+
+		player_data.rotate_placement_orientation();
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::up);
+	}
+
+	TEST(player_data, counter_rotate_placement_orientation) {
+		jactorio::game::Player_data player_data{};
+
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::up);
+
+		player_data.counter_rotate_placement_orientation();
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::left);
+
+		player_data.counter_rotate_placement_orientation();
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::down);
+
+		player_data.counter_rotate_placement_orientation();
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::right);
+
+		player_data.counter_rotate_placement_orientation();
+		EXPECT_EQ(player_data.placement_orientation, jactorio::data::placementOrientation::up);
+	}
+
+	TEST(player_data, try_place_entity) {
 		jactorio::game::Player_data player_data{};
 		jactorio::game::World_data world_data{};
 
@@ -101,7 +137,7 @@ namespace game
 			entity2);
 	}
 
-	TEST(player_manager, try_place_entity_activate_layer) {
+	TEST(player_data, try_place_entity_activate_layer) {
 		jactorio::game::Player_data player_data{};
 		jactorio::game::World_data world_data{};
 
@@ -160,7 +196,7 @@ namespace game
 
 	}
 
-	TEST(player_manager, try_pickup_entity_deactivate_layer) {
+	TEST(player_data, try_pickup_entity_deactivate_layer) {
 		// Picking up an entity wil unset activated layer if activated layer was the entity
 
 		jactorio::game::Player_data player_data{};
@@ -204,7 +240,7 @@ namespace game
 
 	}
 
-	TEST(player_manager, try_pickup_entity) {
+	TEST(player_data, try_pickup_entity) {
 		jactorio::game::Player_data player_data{};
 		jactorio::game::World_data world_data{};
 
@@ -269,7 +305,7 @@ namespace game
 		EXPECT_EQ(tiles[0].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).unique_data, nullptr);
 	}
 
-	TEST(player_manager, try_pickup_resource) {
+	TEST(player_data, try_pickup_resource) {
 		jactorio::game::Player_data player_data{};
 		jactorio::game::World_data world_data{};
 
@@ -328,9 +364,9 @@ namespace game
 		EXPECT_EQ(player_data.inventory_player[0].second, 2);  // Player has 2 of resource
 	}
 
-	TEST(player_manager, try_pickup_layered) {
+	TEST(player_data, try_pickup_layered) {
 		jactorio::core::Resource_guard guard(jactorio::data::data_manager::clear_data);
-		
+
 		jactorio::game::Player_data player_data{};
 		jactorio::game::World_data world_data{};
 
@@ -402,7 +438,7 @@ namespace game
 			jactorio::data::data_category::item, \
 			jactorio::game::Player_data::inventory_selected_cursor_iname, \
 			cursor);
-	TEST(player_manager, inventory_lclick_select_item_by_reference) {
+	TEST(player_data, inventory_lclick_select_item_by_reference) {
 		// Left click on a slot picks up items by reference
 		// The inventory slot becomes the cursor
 		// The cursor holds the item
@@ -428,7 +464,7 @@ namespace game
 		EXPECT_EQ(cursor_item->second, 50);
 	}
 
-	TEST(player_manager, inventory_deselect_referenced_item) {
+	TEST(player_data, inventory_deselect_referenced_item) {
 		// Left click on a slot picks up items by reference
 		// Left / right clicking again on the same slot deselects the item
 		jactorio::game::Player_data player_data{};
@@ -473,7 +509,7 @@ namespace game
 		}
 	}
 
-	TEST(player_manager, inventory_deselect_referenced_item_2_inventories) {
+	TEST(player_data, inventory_deselect_referenced_item_2_inventories) {
 		// Left click on a slot picks up items by reference
 		// Left / right clicking again on the same slot in another inventory however will not deselect the item
 		jactorio::game::Player_data player_data{};
@@ -532,7 +568,7 @@ namespace game
 		}
 	}
 
-	TEST(player_manager, inventory_move_referenced_item) {
+	TEST(player_data, inventory_move_referenced_item) {
 		// Left click on a slot picks up items by reference
 		// Left click on index 3 to drop off the item at index
 
@@ -567,7 +603,7 @@ namespace game
 	}
 
 
-	TEST(player_manager, inventory_Rclick_select_item_by_unique) {
+	TEST(player_data, inventory_Rclick_select_item_by_unique) {
 		// Right click on a slot creates a new inventory slot in the cursor and places half from the inventory into it
 		jactorio::game::Player_data player_data{};
 
@@ -587,7 +623,7 @@ namespace game
 		EXPECT_EQ(cursor_item->second, 20);
 	}
 
-	TEST(player_manager, inventory_drop_single_unique_item) {
+	TEST(player_data, inventory_drop_single_unique_item) {
 		// Right click on item to pick up half into cursor
 		// Right click on empty slot to drop 1 off from the cursor
 		jactorio::game::Player_data player_data{};
@@ -647,7 +683,7 @@ namespace game
 		}
 	}
 
-	TEST(player_manager, inventory_drop_stack_unique_item) {
+	TEST(player_data, inventory_drop_stack_unique_item) {
 		// Right click on item to pick up half into cursor
 		// Left click on empty slot to drop entire stack off from the cursor
 		jactorio::game::Player_data player_data{};
@@ -684,7 +720,7 @@ namespace game
 		EXPECT_EQ(player_data.inventory_player[3].second, 5);
 	}
 
-	TEST(player_manager, inventory_click_empty_slot) {
+	TEST(player_data, inventory_click_empty_slot) {
 		// Left click on empty slot
 		// Should remain unchanged
 		jactorio::game::Player_data player_data{};
@@ -703,7 +739,7 @@ namespace game
 
 
 	// Increment / decrement selected item
-	TEST(player_manager, increment_selected_item) {
+	TEST(player_data, increment_selected_item) {
 		// If player selects item by "unique" or "reference",
 		// It should function the same as it only modifies the cursor item stack
 		jactorio::game::Player_data player_data{};
@@ -743,7 +779,7 @@ namespace game
 
 	}
 
-	TEST(player_manager, increment_selected_item_exceed_item_stack) {
+	TEST(player_data, increment_selected_item_exceed_item_stack) {
 		// Attempting to increment an item exceeding item stack returns false and fails the increment
 		jactorio::game::Player_data player_data{};
 
@@ -764,7 +800,7 @@ namespace game
 	}
 
 
-	TEST(player_manager, decrement_selected_item_unique) {
+	TEST(player_data, decrement_selected_item_unique) {
 		// If player selects item by "unique"
 		// If decremented to 0, deselect the cursor item
 		jactorio::game::Player_data player_data{};
@@ -804,7 +840,7 @@ namespace game
 
 	}
 
-	TEST(player_manager, decrement_selected_item_reach_zero_reference) {
+	TEST(player_data, decrement_selected_item_reach_zero_reference) {
 		// Selected by reference
 		// If decremented to 0, deselect the cursor item
 		// If the selected item is empty after decrementing, return false
@@ -970,7 +1006,7 @@ namespace game
 	//
 	//
 
-	TEST(player_manager, recipe_select_recipe_group) {
+	TEST(player_data, recipe_select_recipe_group) {
 		jactorio::game::Player_data player_data{};
 		player_data.recipe_group_select(1);
 
@@ -978,7 +1014,7 @@ namespace game
 	}
 
 
-	TEST(player_manager, recipe_queue) {
+	TEST(player_data, recipe_queue) {
 		// Queueing 2 recipes will remove the ingredients from the player inventory, but will not return any products
 		// since recipe_craft_tick() is not called
 
@@ -1078,7 +1114,7 @@ namespace game
 	data_manager::data_raw_add(\
 		jactorio::data::data_category::recipe, "item-1-recipe", item_recipe);
 
-	TEST(player_manager, recipe_craft_resurse) {
+	TEST(player_data, recipe_craft_resurse) {
 		// Should recursively craft the product, crafting intermediate products as necessary
 		jactorio::game::Player_data player_data{};
 		namespace data_manager = jactorio::data::data_manager;
@@ -1106,7 +1142,7 @@ namespace game
 		EXPECT_EQ(player_data.get_crafting_item_extras().size(), 0);
 	}
 
-	TEST(player_manager, recipe_craft_resurse2) {
+	TEST(player_data, recipe_craft_resurse2) {
 		// Calculations for recursive crafting should also factor in the excess left by previous recipes
 
 		jactorio::game::Player_data player_data{};
@@ -1142,7 +1178,7 @@ namespace game
 		}
 	}
 
-	TEST(player_manager, recipe_can_craft) {
+	TEST(player_data, recipe_can_craft) {
 		// Should recursively step through a recipe and determine that it can be crafted
 		jactorio::game::Player_data player_data{};
 		namespace data_manager = jactorio::data::data_manager;
@@ -1193,7 +1229,7 @@ namespace game
 		EXPECT_EQ(player_data.recipe_can_craft(final_recipe, 1), true);
 	}
 
-	TEST(player_manager, recipe_can_craft_invalid) {
+	TEST(player_data, recipe_can_craft_invalid) {
 		// Should recursively step through a recipe and determine that it canNOT in fact be crafted
 		jactorio::game::Player_data player_data{};
 		namespace data_manager = jactorio::data::data_manager;
@@ -1244,7 +1280,7 @@ namespace game
 		EXPECT_EQ(player_data.recipe_can_craft(final_recipe, 1), false);
 	}
 
-	TEST(player_manager, recipe_can_craft_invalid2) {
+	TEST(player_data, recipe_can_craft_invalid2) {
 		// When encountering the same items, it must account for the fact it has already been used earlier
 		// Should recursively step through a recipe and determine that it canNOT in fact be crafted
 		jactorio::game::Player_data player_data{};

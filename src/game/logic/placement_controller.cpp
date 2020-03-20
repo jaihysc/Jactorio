@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/12/2020
+// Last modified: 03/20/2020
 // 
 
 #include "game/logic/placement_controller.h"
@@ -103,8 +103,9 @@ void jactorio::game::placement_c::place_sprite_at_coords(World_data& world_data,
 		remove_at_coords(
 			world_data, layer, tile_width, tile_height, x,
 			y, [](Chunk_tile* chunk_tile) {
-				chunk_tile_getter::set_sprite_prototype(*chunk_tile,
-				                                        Chunk_tile::chunkLayer::overlay, nullptr);
+				chunk_tile->get_layer(Chunk_tile::chunkLayer::overlay).clear();
+				// chunk_tile_getter::set_sprite_prototype(*chunk_tile,
+				//                                         Chunk_tile::chunkLayer::overlay, nullptr);
 			});
 	}
 

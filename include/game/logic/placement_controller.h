@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/12/2020
+// Last modified: 03/20/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_PLACEMENT_CONTROLLER_H
@@ -29,15 +29,19 @@ namespace jactorio::game
 		// Entity placement
 
 		///
-		/// \brief Same as place_entity_at_coords(), range check is not performed
+		/// \brief Places / removes entities at world coordinates
+		/// \remark Pass nullptr for entity to remove
+		/// \remark Assumes placement / removal location is valid
+		/// Chunk_tile_layer.clear() for the entity layer is called on removal 
 		bool place_entity_at_coords(World_data& world_data, data::Entity* entity, int x, int y);
 
 
 		// ======================================================================
 		// Sprite placement
 
-		/// \brief Pass nullptr as sprite to remove
-		/// Assumes placement / removal location is valid
+		/// \brief Places / remove sprite at world coordinates
+		/// \remark Pass nullptr for sprite to remove
+		/// \remark Assumes placement / removal location is valid
 		void place_sprite_at_coords(World_data& world_data, Chunk_tile::chunkLayer layer,
 		                            data::Sprite* sprite, uint8_t tile_width, uint8_t tile_height, int x, int y);
 

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/12/2020
+// Last modified: 03/20/2020
 // 
 
 #include "game/input/mouse_selection.h"
@@ -162,18 +162,6 @@ void jactorio::game::Mouse_selection::set_tile_at_cursor(Player_data& player_dat
 }
 
 void jactorio::game::Mouse_selection::draw_cursor_overlay(Player_data& player_data) {
-	// Remove selection cursor
-	{
-		auto* last_tile = player_data.get_player_world().get_tile_world_coords(last_tile_pos_.first,
-		                                                                       last_tile_pos_.second);
-		if (last_tile == nullptr)
-			return;
-
-		chunk_tile_getter::set_sprite_prototype(*last_tile,
-		                                        Chunk_tile::chunkLayer::overlay, nullptr);
-	}
-
-
 	// Clear last entity ghost
 	if (clear_entity_placement_ghost_) {
 		placement_c::place_sprite_at_coords(
@@ -183,6 +171,17 @@ void jactorio::game::Mouse_selection::draw_cursor_overlay(Player_data& player_da
 			last_tile_dimensions_.second, last_tile_pos_.first, last_tile_pos_.second);
 
 		clear_entity_placement_ghost_ = false;
+	}
+
+	// Remove selection cursor
+	{
+		auto* last_tile = player_data.get_player_world().get_tile_world_coords(last_tile_pos_.first,
+		                                                                       last_tile_pos_.second);
+		if (last_tile == nullptr)
+			return;
+
+		chunk_tile_getter::set_sprite_prototype(*last_tile,
+		                                        Chunk_tile::chunkLayer::overlay, nullptr);
 	}
 
 
@@ -201,6 +200,29 @@ void jactorio::game::Mouse_selection::draw_cursor_overlay(Player_data& player_da
 				Chunk_tile::chunkLayer::overlay,
 				entity_ptr->sprite, entity_ptr->tile_width,
 				entity_ptr->tile_height, cursor_position.first, cursor_position.second);
+
+			const data::Rotatable_entity* rotatable_entity;
+			if (entity_ptr->rotatable && (rotatable_entity = dynamic_cast<data::Rotatable_entity*>(entity_ptr))) {
+				auto& world = player_data.get_player_world();
+
+				const auto target = rotatable_entity->map_placement_orientation(
+					player_data.placement_orientation,
+					&world.get_tile_world_coords(cursor_position.first, cursor_position.second - 1)
+					      ->get_layer(Chunk_tile::chunkLayer::entity),
+					&world.get_tile_world_coords(cursor_position.first + 1, cursor_position.second)
+					      ->get_layer(Chunk_tile::chunkLayer::entity),
+					&world.get_tile_world_coords(cursor_position.first, cursor_position.second + 1)
+					      ->get_layer(Chunk_tile::chunkLayer::entity),
+					&world.get_tile_world_coords(cursor_position.first - 1, cursor_position.second)
+					      ->get_layer(Chunk_tile::chunkLayer::entity));
+
+				const auto tile = world.get_tile_world_coords(cursor_position.first,
+				                                              cursor_position.second);
+
+				tile->get_layer(Chunk_tile::chunkLayer::overlay).prototype_data = entity_ptr->sprite;
+				tile->get_layer(Chunk_tile::chunkLayer::overlay).unique_data =
+					new data::Renderable_data(target.first, target.second);
+			}
 
 			last_tile_dimensions_.first = entity_ptr->tile_width;
 			last_tile_dimensions_.second = entity_ptr->tile_height;

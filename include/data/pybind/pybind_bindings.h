@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/09/2019
-// Last modified: 03/16/2020
+// Last modified: 03/17/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
@@ -104,6 +104,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(Sprite, group)
 		PYBIND_PROP(Sprite, frames)
 		PYBIND_PROP(Sprite, sets)
+		PYBIND_PROP(Sprite, trim)
 		.def("load", &Sprite::load_image);
 
 	py::enum_<Sprite::sprite_group>(m, "spriteGroup")
