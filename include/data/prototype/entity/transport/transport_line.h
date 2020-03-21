@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/10/2020
-// Last modified: 03/20/2020
+// Last modified: 03/21/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
@@ -67,8 +67,12 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Game events
-		void on_build(game::Chunk_tile_layer* tile_layer) const override {
-			tile_layer->unique_data = new Transport_line_data();
+		void on_build(game::Chunk_tile_layer* tile_layer, std::pair<uint16_t, uint16_t>& set_frame) const override {
+			auto* data = new Transport_line_data();
+			data->set = set_frame.first;
+			data->frame = set_frame.second;
+
+			tile_layer->unique_data = data;
 		}
 
 

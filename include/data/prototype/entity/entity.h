@@ -3,12 +3,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/18/2020
+// Last modified: 03/21/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
 #pragma once
+
+#include <utility>
 
 #include "jactorio.h"
 
@@ -111,7 +113,7 @@ namespace jactorio::data
 		 * Entity was build in the world
 		 * @param tile_layer Tile layer which the entity was built on
 		 */
-		virtual void on_build(game::Chunk_tile_layer* tile_layer) const {
+		virtual void on_build(game::Chunk_tile_layer* tile_layer, std::pair<uint16_t, uint16_t>& set_frame) const {
 		}
 
 		/**

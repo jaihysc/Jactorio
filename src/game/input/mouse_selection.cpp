@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/20/2020
+// Last modified: 03/21/2020
 // 
 
 #include "game/input/mouse_selection.h"
@@ -114,124 +114,96 @@ bool jactorio::game::Mouse_selection::selected_tile_in_range() const {
 	return tile_dist <= max_reach;
 }
 
-
-void jactorio::game::Mouse_selection::draw_selection_box(Player_data& player_data) {
-	// Only draw cursor when over entities
-	const auto* tile =
-		player_data.get_player_world()
-		           .get_tile_world_coords(mouse_selected_tile_.first,
-		                                  mouse_selected_tile_.second);
-
-	// Tile is nullptr or the prototypes are nullptr
-	if (tile == nullptr ||
-		(!chunk_tile_getter::get_entity_prototype(*tile, Chunk_tile::chunkLayer::resource) &&
-			!chunk_tile_getter::get_entity_prototype(*tile, Chunk_tile::chunkLayer::entity))
-	) {
-		return;
-	}
-
-	// Draw invalid cursor if range tis too far
-	set_tile_at_cursor(player_data,
-	                   selected_tile_in_range() ? "__core__/cursor-select" : "__core__/cursor-invalid");
-
-	last_tile_dimensions_.first = 1;
-	last_tile_dimensions_.second = 1;
-}
-
-
-void jactorio::game::Mouse_selection::set_tile_at_cursor(Player_data& player_data,
-                                                         const std::string& iname,
-                                                         const int offset_x, const int offset_y) {
-	auto cursor_position = get_mouse_tile_coords();
-	cursor_position.first += offset_x;
-	cursor_position.second += offset_y;
-
-	auto* tile = player_data.get_player_world().get_tile_world_coords(cursor_position.first, cursor_position.second);
-
-	if (tile == nullptr)
-		return;
-
-	// Draw tile on the overlay layer
-	const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, iname);
-	assert(sprite_ptr != nullptr);
-
-	chunk_tile_getter::set_sprite_prototype(*tile, Chunk_tile::chunkLayer::overlay, sprite_ptr);
-	tile->get_layer(Chunk_tile::chunkLayer::overlay).multi_tile_span = 1;
-
-	last_tile_pos_ = cursor_position;
-}
-
 void jactorio::game::Mouse_selection::draw_cursor_overlay(Player_data& player_data) {
-	// Clear last entity ghost
-	if (clear_entity_placement_ghost_) {
-		placement_c::place_sprite_at_coords(
-			player_data.get_player_world(),
-			Chunk_tile::chunkLayer::overlay,
-			nullptr, last_tile_dimensions_.first,
-			last_tile_dimensions_.second, last_tile_pos_.first, last_tile_pos_.second);
+	auto* last_tile = player_data.get_player_world().get_tile_world_coords(last_tile_pos_.first,
+	                                                                       last_tile_pos_.second);
+	if (last_tile == nullptr)
+		return;
 
-		clear_entity_placement_ghost_ = false;
-	}
 
-	// Remove selection cursor
-	{
-		auto* last_tile = player_data.get_player_world().get_tile_world_coords(last_tile_pos_.first,
-		                                                                       last_tile_pos_.second);
-		if (last_tile == nullptr)
-			return;
+	const auto cursor_position = get_mouse_tile_coords();
+	const data::item_stack* ptr;
+	if ((ptr = player_data.get_selected_item()) != nullptr)
+		draw_overlay(player_data.get_player_world(), static_cast<data::Entity*>(ptr->first->entity_prototype),
+		             cursor_position.first, cursor_position.second, player_data.placement_orientation);
+	else
+		draw_overlay(player_data.get_player_world(), nullptr,
+		             cursor_position.first, cursor_position.second, player_data.placement_orientation);
+}
 
-		chunk_tile_getter::set_sprite_prototype(*last_tile,
-		                                        Chunk_tile::chunkLayer::overlay, nullptr);
-	}
+void jactorio::game::Mouse_selection::draw_overlay(World_data& world_data, data::Entity* const selected_entity,
+                                                   const int world_x, const int world_y,
+                                                   const data::placementOrientation placement_orientation) {
+	auto* last_tile = world_data.get_tile_world_coords(last_tile_pos_.first,
+	                                                   last_tile_pos_.second);
+	auto* tile = world_data.get_tile_world_coords(world_x, world_y);
+
+
+	// Clear last overlay
+	if (!last_tile)
+		return;
+	placement_c::place_sprite_at_coords(
+		world_data,
+		Chunk_tile::chunkLayer::overlay,
+		nullptr,
+		last_tile_dimensions_.first, last_tile_dimensions_.second,
+		last_tile_pos_.first, last_tile_pos_.second);
 
 
 	// Draw new overlay
-	const auto cursor_position = get_mouse_tile_coords();
-	last_tile_pos_ = cursor_position;
+	if (!tile)
+		return;
+	last_tile_pos_ = {world_x, world_y};
 
-	const data::item_stack* ptr;
-	if ((ptr = player_data.get_selected_item()) != nullptr) {
-		const auto entity_ptr = static_cast<data::Entity*>(ptr->first->entity_prototype);
+	if (selected_entity && selected_entity->placeable) {
+		// Has item selected
+		placement_c::place_sprite_at_coords(world_data, Chunk_tile::chunkLayer::overlay, selected_entity->sprite,
+		                                    selected_entity->tile_width, selected_entity->tile_height, world_x,
+		                                    world_y);
 
-		// Ensure selected item is an entity to draw preview
-		if (entity_ptr != nullptr && entity_ptr->placeable) {
-			placement_c::place_sprite_at_coords(
-				player_data.get_player_world(),
-				Chunk_tile::chunkLayer::overlay,
-				entity_ptr->sprite, entity_ptr->tile_width,
-				entity_ptr->tile_height, cursor_position.first, cursor_position.second);
+		// Rotatable entities
+		const data::Rotatable_entity* rotatable_entity;
+		if (selected_entity->rotatable &&
+			(rotatable_entity = dynamic_cast<data::Rotatable_entity*>(selected_entity)) != nullptr) {
+			const auto target = rotatable_entity->map_placement_orientation(
+				placement_orientation,
+				&world_data.get_tile_world_coords(
+					           world_x,
+					           world_y - 1)
+				           ->get_layer(Chunk_tile::chunkLayer::entity),
+				&world_data.get_tile_world_coords(
+					           world_x + 1,
+					           world_y)
+				           ->get_layer(Chunk_tile::chunkLayer::entity),
+				&world_data.get_tile_world_coords(
+					           world_x,
+					           world_y + 1)
+				           ->get_layer(Chunk_tile::chunkLayer::entity),
+				&world_data.get_tile_world_coords(
+					           world_x - 1,
+					           world_y)
+				           ->get_layer(Chunk_tile::chunkLayer::entity));
 
-			const data::Rotatable_entity* rotatable_entity;
-			if (entity_ptr->rotatable && (rotatable_entity = dynamic_cast<data::Rotatable_entity*>(entity_ptr))) {
-				auto& world = player_data.get_player_world();
+			tile->get_layer(Chunk_tile::chunkLayer::overlay).prototype_data = selected_entity->sprite;
+			tile->get_layer(Chunk_tile::chunkLayer::overlay).unique_data =
+				new data::Renderable_data(target.first, target.second);
+		}
 
-				const auto target = rotatable_entity->map_placement_orientation(
-					player_data.placement_orientation,
-					&world.get_tile_world_coords(cursor_position.first, cursor_position.second - 1)
-					      ->get_layer(Chunk_tile::chunkLayer::entity),
-					&world.get_tile_world_coords(cursor_position.first + 1, cursor_position.second)
-					      ->get_layer(Chunk_tile::chunkLayer::entity),
-					&world.get_tile_world_coords(cursor_position.first, cursor_position.second + 1)
-					      ->get_layer(Chunk_tile::chunkLayer::entity),
-					&world.get_tile_world_coords(cursor_position.first - 1, cursor_position.second)
-					      ->get_layer(Chunk_tile::chunkLayer::entity));
+		last_tile_dimensions_ = {selected_entity->tile_width, selected_entity->tile_height};
+	}
+	else {
+		// No item selected
+		if (tile->get_layer(Chunk_tile::chunkLayer::entity).prototype_data ||
+			tile->get_layer(Chunk_tile::chunkLayer::resource).prototype_data) {
 
-				const auto tile = world.get_tile_world_coords(cursor_position.first,
-				                                              cursor_position.second);
+			// Is hovering over entity	
+			const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(
+				data::data_category::sprite,
+				selected_tile_in_range() ? "__core__/cursor-select" : "__core__/cursor-invalid");
+			assert(sprite_ptr != nullptr);
 
-				tile->get_layer(Chunk_tile::chunkLayer::overlay).prototype_data = entity_ptr->sprite;
-				tile->get_layer(Chunk_tile::chunkLayer::overlay).unique_data =
-					new data::Renderable_data(target.first, target.second);
-			}
-
-			last_tile_dimensions_.first = entity_ptr->tile_width;
-			last_tile_dimensions_.second = entity_ptr->tile_height;
-
-			clear_entity_placement_ghost_ = true;
-			return;
+			chunk_tile_getter::set_sprite_prototype(*tile, Chunk_tile::chunkLayer::overlay, sprite_ptr);
+			tile->get_layer(Chunk_tile::chunkLayer::overlay).multi_tile_span = 1;
 		}
 	}
-
-	// Draw selection box if no item selected or item selected is not entity
-	draw_selection_box(player_data);
 }

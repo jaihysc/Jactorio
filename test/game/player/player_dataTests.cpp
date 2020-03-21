@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/20/2020
+// Last modified: 03/21/2020
 // 
 
 #include <gtest/gtest.h>
@@ -263,7 +263,8 @@ namespace game
 			tiles[1], jactorio::game::Chunk_tile::chunkLayer::entity, entity);
 
 		// Create unique data by calling build event for prototype with layer
-		entity->on_build(&tiles[0].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity));
+		auto pair = std::pair<uint16_t, uint16_t>{0, 0};
+		entity->on_build(&tiles[0].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), pair);
 
 		world_data.add_chunk(new jactorio::game::Chunk(0, 0, tiles));
 

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/11/2020
+// Last modified: 03/21/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
@@ -13,6 +13,8 @@
 #include <utility>
 #include <string>
 
+
+#include "data/prototype/entity/entity.h"
 #include "jactorio.h"
 
 #include "game/player/player_data.h"
@@ -56,25 +58,19 @@ namespace jactorio::game
 
 	private:
 		/// The last tile cannot be stored as a pointer as it can be deleted if the world was regenerated
-		std::pair<int, int> last_tile_pos_;
+		std::pair<int, int> last_tile_pos_{0, 0};
 		/// Dimensions of last tile(s), e.g 3 x 4 for a multi tile
-		std::pair<int, int> last_tile_dimensions_;
-
-		bool clear_entity_placement_ghost_ = false;
-
-		///
-		/// \brief Draws a cursor over the tile currently selected
-		void draw_selection_box(Player_data& player_data);
+		std::pair<int, int> last_tile_dimensions_{1, 1};
 
 	public:
 		///
-		/// \brief Sets a sprite on the overlay layer specified internal name at the cursor
-		void set_tile_at_cursor(Player_data& player_data, const std::string& iname,
-		                        int offset_x = 0, int offset_y = 0);
-
-		///
 		/// \brief Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the cursor
 		void draw_cursor_overlay(Player_data& player_data);
+
+		///
+		/// \brief Draws selection box over entity & no item selected. | With item selected: draws ghost of entity
+		void draw_overlay(World_data& world_data, data::Entity* selected_entity, int world_x, int world_y, data::placementOrientation
+		                  placement_orientation);
 	};
 
 	///

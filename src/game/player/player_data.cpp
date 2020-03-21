@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/20/2020
+// Last modified: 03/21/2020
 // 
 
 #include "game/player/player_data.h"
@@ -100,9 +100,9 @@ void jactorio::game::Player_data::counter_rotate_placement_orientation() {
 }
 
 void jactorio::game::Player_data::try_place_entity(World_data& world_data,
-                                                   const int tile_x, const int tile_y,
+                                                   const int world_x, const int world_y,
                                                    const bool can_activate_layer) {
-	auto* tile = world_data.get_tile_world_coords(tile_x, tile_y);
+	auto* tile = world_data.get_tile_world_coords(world_x, world_y);
 	if (tile == nullptr)
 		return;
 
@@ -143,7 +143,7 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 
 	assert(entity_ptr != nullptr);
 	// Do not take item away from player unless item was successfully placed
-	if (! placement_c::place_entity_at_coords(world_data, entity_ptr, tile_x, tile_y)) {
+	if (! placement_c::place_entity_at_coords(world_data, entity_ptr, world_x, world_y)) {
 		// Failed to place because an entity already exists
 		return;
 	}
@@ -154,7 +154,32 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 	}
 
 	// Call events
-	entity_ptr->on_build(&selected_layer);
+	std::pair<uint16_t, uint16_t> set_frame = {0, 0};
+
+	// Calculate correct sprite set / frame if rotatable
+	const data::Rotatable_entity* rotatable_entity;
+	if (entity_ptr->rotatable && (rotatable_entity = dynamic_cast<data::Rotatable_entity*>(entity_ptr)) != nullptr) {
+		set_frame = rotatable_entity->map_placement_orientation(
+			placement_orientation,
+			&world_data.get_tile_world_coords(
+				           world_x,
+				           world_y - 1)
+			           ->get_layer(Chunk_tile::chunkLayer::entity),
+			&world_data.get_tile_world_coords(
+				           world_x + 1,
+				           world_y)
+			           ->get_layer(Chunk_tile::chunkLayer::entity),
+			&world_data.get_tile_world_coords(
+				           world_x,
+				           world_y + 1)
+			           ->get_layer(Chunk_tile::chunkLayer::entity),
+			&world_data.get_tile_world_coords(
+				           world_x - 1,
+				           world_y)
+			           ->get_layer(Chunk_tile::chunkLayer::entity));
+	}
+
+	entity_ptr->on_build(&selected_layer, set_frame);
 }
 
 

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/20/2020
+// Last modified: 03/21/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
@@ -102,9 +102,8 @@ namespace jactorio::game
 		/// Activated_layer will be set to the clicked entity's layer IF mouse_release is true <br>
 		/// 
 		/// Everything occurs in a single tick
-		void try_place_entity(World_data& world_data, int tile_x, int tile_y,
-		                      bool can_activate_layer =
-			                      false);
+		void try_place_entity(World_data& world_data, int world_x, int world_y,
+		                      bool can_activate_layer = false);
 
 		///
 		/// \brief This will either pickup an entity, or mine resources from a resource tile
