@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/21/2020
+// Last modified: 03/22/2020
 // 
 
 #include "game/player/player_data.h"
@@ -154,32 +154,9 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 	}
 
 	// Call events
-	std::pair<uint16_t, uint16_t> set_frame = {0, 0};
 
-	// Calculate correct sprite set / frame if rotatable
-	const data::Rotatable_entity* rotatable_entity;
-	if (entity_ptr->rotatable && (rotatable_entity = dynamic_cast<data::Rotatable_entity*>(entity_ptr)) != nullptr) {
-		set_frame = rotatable_entity->map_placement_orientation(
-			placement_orientation,
-			&world_data.get_tile_world_coords(
-				           world_x,
-				           world_y - 1)
-			           ->get_layer(Chunk_tile::chunkLayer::entity),
-			&world_data.get_tile_world_coords(
-				           world_x + 1,
-				           world_y)
-			           ->get_layer(Chunk_tile::chunkLayer::entity),
-			&world_data.get_tile_world_coords(
-				           world_x,
-				           world_y + 1)
-			           ->get_layer(Chunk_tile::chunkLayer::entity),
-			&world_data.get_tile_world_coords(
-				           world_x - 1,
-				           world_y)
-			           ->get_layer(Chunk_tile::chunkLayer::entity));
-	}
-
-	entity_ptr->on_build(&selected_layer, set_frame);
+	// TODO Frame not yet implemented
+	entity_ptr->on_build(world_data, {world_x, world_y}, &selected_layer, 0, placement_orientation);
 }
 
 

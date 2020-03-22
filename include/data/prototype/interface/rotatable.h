@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/19/2020
-// Last modified: 03/20/2020
+// Last modified: 03/22/2020
 // 
 
 #ifndef JACTORIO_DATA_PROTOTYPE_INTERFACE_ROTATABLE_H
@@ -11,10 +11,11 @@
 #pragma once
 
 #include "jactorio.h"
-#include "game/world/chunk_tile_layer.h"
 
 #include <cstdint>
 #include <utility>
+
+#include "game/world/world_data.h"
 
 namespace jactorio::data
 {
@@ -44,11 +45,8 @@ namespace jactorio::data
 		///
 		/// \brief Maps a placementOrientation to a <set, frame>
 		/// Chunk_tile_layer* are the neighbors of the destination Chunk_tile_layer
-		J_NODISCARD virtual std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation,
-		                                                                            game::Chunk_tile_layer* up,
-		                                                                            game::Chunk_tile_layer* right,
-		                                                                            game::Chunk_tile_layer* down,
-		                                                                            game::Chunk_tile_layer* left) const = 0;
+		J_NODISCARD virtual std::pair<uint16_t, uint16_t> map_placement_orientation(
+			placementOrientation orientation, game::World_data& world_data, std::pair<int, int> world_coords) const = 0;
 	};
 }
 

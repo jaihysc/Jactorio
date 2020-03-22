@@ -3,12 +3,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/10/2020
-// Last modified: 03/21/2020
+// Last modified: 03/22/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
 #pragma once
+
+#include <vector>
 
 #include "core/data_type.h"
 #include "data/prototype/entity/health_entity.h"
@@ -19,28 +21,34 @@ namespace jactorio::data
 	{
 		///
 		/// <Entry direction>_<Exit direction>
-		enum class orientation
+		enum class lineOrientation
 		{
-			up_left = 0,
-			up,
-			up_right,
+			// Following the layout of the sprite
+			up_left = 9,
+			up = 17,
+			up_right = 11,
 
-			right_up,
-			right,
-			right_down,
+			right_up = 13,
+			right = 19,
+			right_down = 8,
 
-			down_right,
-			down,
-			down_left,
+			down_right = 14,
+			down = 16,
+			down_left = 12,
 
-			left_down,
-			left,
-			left_up,
-
-			count_
+			left_down = 10,
+			left = 18,
+			left_up = 15,
 		};
 
-		orientation orientation = orientation::up;
+		lineOrientation orientation = lineOrientation::up;
+
+		///
+		/// \brief Updates orientation and member set for rendering 
+		void set_orientation(lineOrientation orientation) {
+			this->orientation = orientation;
+			this->set = static_cast<uint16_t>(orientation);
+		}
 	};
 
 	///
@@ -60,46 +68,24 @@ namespace jactorio::data
 		transport_line_offset speed;
 
 
-		void delete_unique_data(void* ptr) const override {
-			delete static_cast<Transport_line_data*>(ptr);
-		}
-
-
 		// ======================================================================
 		// Game events
-		void on_build(game::Chunk_tile_layer* tile_layer, std::pair<uint16_t, uint16_t>& set_frame) const override {
-			auto* data = new Transport_line_data();
-			data->set = set_frame.first;
-			data->frame = set_frame.second;
 
-			tile_layer->unique_data = data;
-		}
+		void on_build(game::World_data& world_data, std::pair<int, int> world_coords,
+		              game::Chunk_tile_layer* tile_layer, uint16_t frame,
+		              placementOrientation orientation) const override;
 
-
-		std::pair<uint16_t, uint16_t> map_placement_orientation(const placementOrientation orientation,
-		                                                        game::Chunk_tile_layer* up,
-		                                                        game::Chunk_tile_layer* right,
-		                                                        game::Chunk_tile_layer* down,
-		                                                        game::Chunk_tile_layer* left) const override {
-			switch (orientation) {
-			case placementOrientation::up:
-				return {17, 0};
-			case placementOrientation::right:
-				return {19, 0};
-			case placementOrientation::down:
-				return {16, 0};
-			case placementOrientation::left:
-				return {18, 0};
-			default:
-				assert(false); // Missing switch case
-			}
-
-			return {0, 0};
-		}
+		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation,
+		                                                                    game::World_data& world_data,
+		                                                                    std::pair<int, int> world_coords) const override;
 
 
 		// ======================================================================
 		// Data events
+		void delete_unique_data(void* ptr) const override {
+			delete static_cast<Transport_line_data*>(ptr);
+		}
+
 		void post_load() override {
 			// Convert floating point speed to fixed precision decimal speed
 			speed = transport_line_offset(speed_float);

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/21/2020
+// Last modified: 03/22/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
@@ -51,7 +51,9 @@ namespace jactorio::data
 
 		// Events
 
-		void on_build(game::Chunk_tile_layer* tile_layer, std::pair<uint16_t, uint16_t>& set_frame) const override;
+		void on_build(game::World_data& world_data, std::pair<int, int> world_coords,
+		              game::Chunk_tile_layer* tile_layer, uint16_t frame,
+		              placementOrientation orientation) const override;
 
 		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override;
 	};
