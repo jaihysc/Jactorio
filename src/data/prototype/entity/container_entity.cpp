@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 03/22/2020
+// Last modified: 03/23/2020
 // 
 
 #include "data/prototype/entity/container_entity.h"
@@ -27,9 +27,9 @@ void* jactorio::data::Container_entity::copy_unique_data(void* ptr) const {
 
 
 void jactorio::data::Container_entity::on_build(game::World_data& world_data, std::pair<int, int> world_coords,
-                                                game::Chunk_tile_layer* tile_layer, uint16_t frame,
+                                                jactorio::game::Chunk_tile_layer& tile_layer, uint16_t frame,
                                                 placementOrientation orientation) const {
-	tile_layer->unique_data = new Container_entity_data(inventory_size);
+	tile_layer.unique_data = new Container_entity_data(inventory_size);
 }
 
 void jactorio::data::Container_entity::on_r_show_gui(game::Player_data& player_data,

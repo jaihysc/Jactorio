@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/21/2020
-// Last modified: 03/22/2020
+// Last modified: 03/23/2020
 // 
 
 #include "data/prototype/entity/transport/transport_line.h"
@@ -130,9 +130,13 @@ std::pair<uint16_t, uint16_t> jactorio::data::Transport_line::map_placement_orie
 }
 
 
-void jactorio::data::Transport_line::on_build(game::World_data& world_data, const std::pair<int, int> world_coords,
-                                              game::Chunk_tile_layer* tile_layer, const uint16_t frame,
-                                              const placementOrientation orientation) const {
+void jactorio::data::Transport_line::update_neighboring_orientation(game::World_data& world_data,
+                                                                    const std::pair<int, int> world_coords,
+                                                                    Transport_line_data* t_center,
+                                                                    Transport_line_data* c_right,
+                                                                    Transport_line_data* b_center,
+                                                                    Transport_line_data* c_left,
+                                                                    Transport_line_data* center) {
 	// Building a belt will update all neighboring belts (X), which thus requires tiles (*)
 	/*
 	 *     ---
@@ -153,28 +157,16 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 	auto* left = get_line_data(world_data, world_coords.first - 2, world_coords.second);
 
 	auto* t_left = get_line_data(world_data, world_coords.first - 1, world_coords.second - 1);
-	auto* t_center = get_line_data(world_data, world_coords.first, world_coords.second - 1);
+	// auto* t_center = get_line_data(world_data, world_coords.first, world_coords.second - 1);
 	auto* t_right = get_line_data(world_data, world_coords.first + 1, world_coords.second - 1);
 
-	auto* c_left = get_line_data(world_data, world_coords.first - 1, world_coords.second);
-	auto* c_right = get_line_data(world_data, world_coords.first + 1, world_coords.second);
+	// auto* c_left = get_line_data(world_data, world_coords.first - 1, world_coords.second);
+	// auto* center = static_cast<Transport_line_data*>(center_layer.unique_data);
+	// auto* c_right = get_line_data(world_data, world_coords.first + 1, world_coords.second);
 
 	auto* b_left = get_line_data(world_data, world_coords.first - 1, world_coords.second + 1);
-	auto* b_center = get_line_data(world_data, world_coords.first, world_coords.second + 1);
+	// auto* b_center = get_line_data(world_data, world_coords.first, world_coords.second + 1);
 	auto* b_right = get_line_data(world_data, world_coords.first + 1, world_coords.second + 1);
-
-	// Calculate center first so center unique_data is initialized	
-	{
-		auto* data = new Transport_line_data();
-		auto line_orientation = get_line_orientation(orientation, t_center, c_right, b_center, c_left);
-
-		data->set = static_cast<uint16_t>(line_orientation);
-		data->frame = frame;
-		data->orientation = line_orientation;
-		tile_layer->unique_data = data;
-	}
-
-	auto* center = static_cast<Transport_line_data*>(tile_layer->unique_data);
 
 	// Top neighbor
 	if (t_center)
@@ -192,4 +184,38 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 	if (c_left)
 		c_left->set_orientation(
 			get_line_orientation(to_placement_orientation(c_left->orientation), t_left, center, b_left, left));
+}
+
+void jactorio::data::Transport_line::on_build(game::World_data& world_data, const std::pair<int, int> world_coords,
+                                              game::Chunk_tile_layer& tile_layer, const uint16_t frame,
+                                              const placementOrientation orientation) const {
+
+	auto* t_center = get_line_data(world_data, world_coords.first, world_coords.second - 1);
+	auto* c_left = get_line_data(world_data, world_coords.first - 1, world_coords.second);
+	auto* c_right = get_line_data(world_data, world_coords.first + 1, world_coords.second);
+	auto* b_center = get_line_data(world_data, world_coords.first, world_coords.second + 1);
+
+	// Create transport line at world_coords
+	auto* data = new Transport_line_data();
+	auto line_orientation = get_line_orientation(orientation, t_center, c_right, b_center, c_left);
+
+	data->set = static_cast<uint16_t>(line_orientation);
+	data->frame = frame;
+	data->orientation = line_orientation;
+	tile_layer.unique_data = data;
+
+	// Take the 4 transport lines neighboring the center as parameters to avoid recalculating them
+	update_neighboring_orientation(world_data, world_coords, t_center,
+	                               c_right, b_center, c_left, static_cast<Transport_line_data*>(tile_layer.unique_data));
+}
+
+void jactorio::data::Transport_line::on_remove(game::World_data& world_data, const std::pair<int, int> world_coords,
+                                               game::Chunk_tile_layer& /*tile_layer*/) const {
+	auto* t_center = get_line_data(world_data, world_coords.first, world_coords.second - 1);
+	auto* c_left = get_line_data(world_data, world_coords.first - 1, world_coords.second);
+	auto* c_right = get_line_data(world_data, world_coords.first + 1, world_coords.second);
+	auto* b_center = get_line_data(world_data, world_coords.first, world_coords.second + 1);
+
+	update_neighboring_orientation(world_data, world_coords, t_center,
+	                               c_right, b_center, c_left, nullptr);
 }

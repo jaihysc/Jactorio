@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/22/2020
+// Last modified: 03/23/2020
 // 
 
 #include <gtest/gtest.h>
@@ -266,8 +266,8 @@ namespace game
 		{
 			jactorio::game::World_data world_data{};
 			entity->on_build(world_data, {},
-			                 &tiles[0].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), 0,
-							 jactorio::data::placementOrientation::up);
+			                 tiles[0].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), 0,
+			                 jactorio::data::placementOrientation::up);
 		}
 
 		world_data.add_chunk(new jactorio::game::Chunk(0, 0, tiles));
@@ -424,6 +424,89 @@ namespace game
 
 		player_data.try_pickup(world_data, 0, 0, 60);
 		EXPECT_EQ(resource_data->resource_amount, 1);  // Picked up
+	}
+
+
+	class Mock_entity final : public jactorio::data::Entity
+	{
+	public:
+		mutable bool build_called = false;
+		mutable bool remove_called = false;
+
+		void on_build(jactorio::game::World_data& world_data, std::pair<int, int> world_coords,
+		              jactorio::game::Chunk_tile_layer& tile_layer, uint16_t frame,
+		              jactorio::data::placementOrientation orientation) const override {
+			build_called = true;
+		}
+
+		void on_remove(jactorio::game::World_data& world_data, std::pair<int, int> world_coords,
+		               jactorio::game::Chunk_tile_layer& tile_layer) const override {
+			remove_called = true;
+		}
+
+		void on_r_show_gui(jactorio::game::Player_data& player_data,
+		                   jactorio::game::Chunk_tile_layer* tile_layer) const override {
+		}
+	};
+
+	TEST(player_data, try_place_call_on_build) {
+		jactorio::game::Player_data player_data{};
+		jactorio::game::World_data world_data{};
+
+		// The world tile must have a tile prototype
+		auto tile_proto = jactorio::data::Tile();
+		tile_proto.is_water = false;
+
+		auto* tiles = new jactorio::game::Chunk_tile[1024];
+		jactorio::game::chunk_tile_getter::set_tile_prototype(tiles[0],
+		                                                      jactorio::game::Chunk_tile::chunkLayer::base, &tile_proto);
+
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0, tiles});
+
+
+		// Create entity
+		jactorio::core::Resource_guard guard(jactorio::data::data_manager::clear_data);
+		auto item = jactorio::data::Item{};
+
+		auto* entity = new Mock_entity{};
+		entity->set_item(&item);
+		jactorio::data::data_manager::data_raw_add(jactorio::data::data_category::container_entity,
+		                                           "", entity);
+
+
+		jactorio::data::item_stack selected_item = {&item, 1};
+		player_data.set_selected_item(selected_item);
+
+		player_data.try_place_entity(world_data, 0, 0, true);
+
+		ASSERT_TRUE(entity->build_called);
+	}
+
+	TEST(player_data, try_pickup_call_on_remove) {
+		jactorio::game::Player_data player_data{};
+		jactorio::game::World_data world_data{};
+
+		jactorio::core::Resource_guard guard(jactorio::data::data_manager::clear_data);
+
+		// Create entity
+		auto item = jactorio::data::Item{};
+
+		auto* entity = new Mock_entity{};
+		entity->pickup_time = 1.f;
+		entity->set_item(&item);
+		jactorio::data::data_manager::data_raw_add(jactorio::data::data_category::container_entity,
+		                                           "", entity);
+
+		// Create world with entity at 0, 0
+		auto* tiles = new jactorio::game::Chunk_tile[1024];
+		jactorio::game::chunk_tile_getter::set_entity_prototype(tiles[0],
+		                                                        jactorio::game::Chunk_tile::chunkLayer::entity, entity);
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0, tiles});
+
+
+		player_data.try_pickup(world_data, 0, 0, 60);
+
+		ASSERT_TRUE(entity->remove_called);
 	}
 
 	//

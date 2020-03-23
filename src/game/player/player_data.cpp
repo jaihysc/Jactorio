@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/22/2020
+// Last modified: 03/23/2020
 // 
 
 #include "game/player/player_data.h"
@@ -156,7 +156,7 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 	// Call events
 
 	// TODO Frame not yet implemented
-	entity_ptr->on_build(world_data, {world_x, world_y}, &selected_layer, 0, placement_orientation);
+	entity_ptr->on_build(world_data, {world_x, world_y}, selected_layer, 0, placement_orientation);
 }
 
 
@@ -224,9 +224,14 @@ void jactorio::game::Player_data::try_pickup(World_data& world_data,
 		}
 			// Is normal entity
 		else {
+			auto& layer = tile->get_layer(Chunk_tile::chunkLayer::entity);
+
 			// Picking up an entity which is set in activated_layer will unset activated_layer
-			if (activated_layer_ == &tile->get_layer(Chunk_tile::chunkLayer::entity))
+			if (activated_layer_ == &layer)
 				activated_layer_ = nullptr;
+
+			// Call events
+			static_cast<data::Entity*>(layer.prototype_data)->on_remove(world_data, {tile_x, tile_y}, layer);
 
 			const bool result = placement_c::place_entity_at_coords(world_data, nullptr, tile_x, tile_y);
 			assert(result);  // false indicates failed to remove entity

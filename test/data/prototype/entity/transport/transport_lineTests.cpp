@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/22/2020
-// Last modified: 03/22/2020
+// Last modified: 03/23/2020
 // 
 
 #include <gtest/gtest.h>
@@ -35,44 +35,22 @@ namespace data
 		jactorio::game::World_data world_data{};\
 		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
 
+#define ADD_TRANSPORT_LINE(orientation, x, y)\
+	{\
+		auto& layer = world_data.get_tile_world_coords(x, y)->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);\
+		\
+		layer.prototype_data = &line_proto;\
+		auto* data = new jactorio::data::Transport_line_data();\
+		data->set_orientation(jactorio::data::Transport_line_data::orientation);\
+		layer.unique_data = data;\
+	}
+
 
 	/// Creates a transport line with the provided orientation above/right/below/left of 1, 1
-#define ADD_TOP_TRANSPORT_LINE(orientation)\
-	{\
-		auto& layer = world_data.get_tile_world_coords(1, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);\
-		\
-		layer.prototype_data = &line_proto;\
-		auto* data = new jactorio::data::Transport_line_data();\
-		data->set_orientation(jactorio::data::Transport_line_data::orientation);\
-		layer.unique_data = data;\
-	}
-#define ADD_RIGHT_TRANSPORT_LINE(orientation)\
-	{\
-		auto& layer = world_data.get_tile_world_coords(2, 1)->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);\
-		\
-		layer.prototype_data = &line_proto;\
-		auto* data = new jactorio::data::Transport_line_data();\
-		data->set_orientation(jactorio::data::Transport_line_data::orientation);\
-		layer.unique_data = data;\
-	}
-#define ADD_BOTTOM_TRANSPORT_LINE(orientation)\
-	{\
-		auto& layer = world_data.get_tile_world_coords(1, 2)->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);\
-		\
-		layer.prototype_data = &line_proto;\
-		auto* data = new jactorio::data::Transport_line_data();\
-		data->set_orientation(jactorio::data::Transport_line_data::orientation);\
-		layer.unique_data = data;\
-	}
-#define ADD_LEFT_TRANSPORT_LINE(orientation)\
-	{\
-		auto& layer = world_data.get_tile_world_coords(0, 1)->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);\
-		\
-		layer.prototype_data = &line_proto;\
-		auto* data = new jactorio::data::Transport_line_data();\
-		data->set_orientation(jactorio::data::Transport_line_data::orientation);\
-		layer.unique_data = data;\
-	}
+#define ADD_TOP_TRANSPORT_LINE(orientation)    ADD_TRANSPORT_LINE(orientation, 1, 0)
+#define ADD_RIGHT_TRANSPORT_LINE(orientation)  ADD_TRANSPORT_LINE(orientation, 2, 1)
+#define ADD_BOTTOM_TRANSPORT_LINE(orientation) ADD_TRANSPORT_LINE(orientation, 1, 2)
+#define ADD_LEFT_TRANSPORT_LINE(orientation)   ADD_TRANSPORT_LINE(orientation, 0, 1)
 
 	///
 	/// \brief Validates that a tile at coords 1,1 with the placement orientation produces the expected line orientation
@@ -245,6 +223,71 @@ namespace data
 			ADD_TOP_TRANSPORT_LINE(lineOrientation::up);
 			ADD_BOTTOM_TRANSPORT_LINE(lineOrientation::up);
 			VALIDATE_RESULT_ORIENTATION(placementOrientation::left, lineOrientation::up_left);
+		}
+	}
+
+	TEST(transport_line, on_build_update_neighboring_lines) {
+		TRANSPORT_LINE_TEST_HEAD
+		/*
+		 * >
+		 * ^
+		 */
+		ADD_TOP_TRANSPORT_LINE(lineOrientation::right);
+
+		auto& layer = world_data.get_tile_world_coords(1, 1)
+		                        ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+
+		auto proto = jactorio::data::Transport_belt{};
+		layer.prototype_data = &proto;
+
+
+		// Should update line above, turn right to a up-right
+		line_proto.on_build(world_data, {1, 1}, layer, 0,
+		                    jactorio::data::placementOrientation::up);
+
+		{
+			auto& result_layer = world_data.get_tile_world_coords(1, 0)
+			                               ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+			EXPECT_EQ(
+				static_cast<jactorio::data::Transport_line_data*>(result_layer.unique_data)->orientation,
+				jactorio::data::Transport_line_data::lineOrientation::up_right
+			);
+		}
+	}
+
+	TEST(transport_line, on_remove_update_neighboring_lines) {
+		// The on_remove event should update the orientations of the neighboring belts to if the current transport
+		// line is not there
+		TRANSPORT_LINE_TEST_HEAD
+		/*
+		 *  v
+		 *  >
+		 *  ^
+		 */
+		ADD_TOP_TRANSPORT_LINE(lineOrientation::down);
+		ADD_BOTTOM_TRANSPORT_LINE(lineOrientation::up)
+		ADD_TRANSPORT_LINE(lineOrientation::right, 1, 1);  // Between the 2 above and below
+
+		auto& layer = world_data.get_tile_world_coords(1, 2)
+		                        ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+		auto proto = jactorio::data::Transport_belt{};
+		layer.prototype_data = &proto;
+
+
+		// Removing the bottom line makes the center one bend down-right
+		line_proto.on_remove(world_data, {1, 2}, layer);
+
+		{
+			auto& result_layer = world_data.get_tile_world_coords(1, 1)
+			                               ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+			EXPECT_EQ(
+				static_cast<jactorio::data::Transport_line_data*>(result_layer.unique_data)->orientation,
+				jactorio::data::Transport_line_data::lineOrientation::down_right
+			);
 		}
 	}
 }

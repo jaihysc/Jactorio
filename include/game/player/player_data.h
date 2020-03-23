@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/21/2020
+// Last modified: 03/23/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
@@ -98,10 +98,8 @@ namespace jactorio::game
 
 		///
 		/// \brief Will place an entity at the location or if an entity does not already exist
-		/// Call when the key for placing entities is pressed
-		/// Activated_layer will be set to the clicked entity's layer IF mouse_release is true <br>
-		/// 
-		/// Everything occurs in a single tick
+		/// \remark Call when the key for placing entities is pressed
+		/// \param can_activate_layer will be set activated_layer to the clicked entity's layer if true
 		void try_place_entity(World_data& world_data, int world_x, int world_y,
 		                      bool can_activate_layer = false);
 
