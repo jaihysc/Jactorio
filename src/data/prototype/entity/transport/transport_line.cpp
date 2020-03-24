@@ -190,6 +190,30 @@ void jactorio::data::Transport_line::update_neighboring_orientation(game::World_
 			get_line_orientation(to_placement_orientation(c_left->orientation), t_left, center, b_left, left));
 }
 
+///
+/// \brief Attempts to find transport line with world_x, world_y
+/// \return nullptr if transport line at world_x, world_y could not be found 
+jactorio::game::Transport_line_segment* find_transport_line_structure(jactorio::game::World_data& world_data,
+                                                                      const int world_x, const int world_y) {
+	auto* chunk = world_data.get_chunk_world_coords(world_x, world_y);
+	assert(chunk != nullptr);
+
+	auto& transport_structures =
+		world_data.logic_get_all_chunks().at(chunk)
+		          .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+	for (auto& layer : transport_structures) {
+		if (layer.position_x == jactorio::game::Chunk_struct_layer::to_position(chunk->get_position().first,
+		                                                                        world_x) &&
+			layer.position_y == jactorio::game::Chunk_struct_layer::to_position(chunk->get_position().second,
+			                                                                    world_y)
+		)
+			return static_cast<jactorio::game::Transport_line_segment*>(layer.unique_data);
+	}
+
+	return nullptr;
+}
+
 void jactorio::data::Transport_line::on_build(game::World_data& world_data, const std::pair<int, int> world_coords,
                                               game::Chunk_tile_layer& tile_layer, const uint16_t frame,
                                               const placementOrientation orientation) const {
@@ -214,20 +238,55 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 
 	// Create transport line structure
 	auto* chunk = world_data.get_chunk_world_coords(world_coords.first, world_coords.second);
-	auto& layer = world_data.logic_add_chunk(chunk)
-	                        .get_struct(game::Logic_chunk::structLayer::transport_line)
-	                        .emplace_back(this,
-	                                      abs(chunk->get_position().first * 32 - world_coords.first),
-	                                      abs(chunk->get_position().second * 32 - world_coords.second));
 
-	layer.unique_data =
+	auto& struct_layer =
+		world_data.logic_add_chunk(chunk)
+		          .get_struct(game::Logic_chunk::structLayer::transport_line)
+		          .emplace_back(this,
+		                        game::Chunk_struct_layer::to_position(chunk->get_position().first,
+		                                                              world_coords.first),
+		                        game::Chunk_struct_layer::to_position(chunk->get_position().second,
+		                                                              world_coords.second));
+
+	auto* line_segment =
 		new game::Transport_line_segment{
 			static_cast<const game::Transport_line_segment::moveDir>(orientation),
 			game::Transport_line_segment::terminationType::straight,
 			1
 		};
+	struct_layer.unique_data = line_segment;
 
-	// ((game::Transport_line_segment*)layer.unique_data)
+
+	// Set the target_segment to the neighbor it is pointing to
+	// TODO this does not handle curves and only connects to lines AHEAD of it, not behind
+	switch (orientation) {
+	case placementOrientation::up:
+		if (t_center)
+			line_segment->target_segment =
+				find_transport_line_structure(world_data, world_coords.first, world_coords.second - 1);
+		break;
+	case placementOrientation::right:
+		if (c_right)
+			line_segment->target_segment =
+				find_transport_line_structure(world_data, world_coords.first + 1, world_coords.second);
+		break;
+	case placementOrientation::down:
+		if (b_center)
+			line_segment->target_segment =
+				find_transport_line_structure(world_data, world_coords.first, world_coords.second + 1);
+		break;
+	case placementOrientation::left:
+		if (c_left)
+			line_segment->target_segment =
+				find_transport_line_structure(world_data, world_coords.first - 1, world_coords.second);
+		break;
+
+	default:
+		assert(false);  // Missing switch case
+	}
+
+	// TODO remove this
+	// ((game::Transport_line_segment*)struct_layer.unique_data)
 	// ->append_item(true, 1, 
 	// 							data::data_manager::data_raw_get<Item>(data_category::item,
 	// 															 "__base__/wooden-chest-item"));

@@ -129,6 +129,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_struct_layerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests.cpp
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp

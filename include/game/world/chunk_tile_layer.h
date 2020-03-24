@@ -51,7 +51,7 @@ namespace jactorio::game
 	};
 
 	inline void Chunk_tile_layer::clear() {
-		delete_unique_data();
+		delete unique_data;
 		unique_data = nullptr;
 		prototype_data = nullptr;
 

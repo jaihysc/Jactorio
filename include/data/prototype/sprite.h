@@ -139,10 +139,6 @@ namespace jactorio::data
 
 
 		// ======================================================================
-		// Unique data
-		void delete_unique_data(Unique_data_base* ptr) const override;
-
-		// ======================================================================
 		// Test only
 		J_TEST_USE_ONLY void set_height(const int height) { this->height_ = height; }
 		J_TEST_USE_ONLY void set_width(const int width) { this->width_ = width; }

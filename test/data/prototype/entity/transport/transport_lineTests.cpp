@@ -293,8 +293,8 @@ namespace data
 		}
 	}
 
-	TEST(transport_line, on_build_create_transport_line_structure) {
-		// Should create a transport line structure and add its chunk to logic chunks
+	TEST(transport_line, on_build_create_transport_line_segment) {
+		// Should create a transport line segment and add its chunk to logic chunks
 		jactorio::game::World_data world_data{};
 		world_data.add_chunk(new jactorio::game::Chunk{-1, 0, nullptr});
 
@@ -328,5 +328,72 @@ namespace data
 		// Position_x / position_y is the distance from the top left of the chunk
 		EXPECT_EQ(transport_lines.front().position_x, 27);
 		EXPECT_EQ(transport_lines.front().position_y, 0);
+	}
+
+	TEST(transport_line, on_build_connect_transport_line_segments) {
+		// A transport line pointing to another one will set the target_segment
+		jactorio::game::World_data world_data{};
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+
+		auto proto = jactorio::data::Transport_belt{};
+		{
+			auto& layer = world_data.get_tile_world_coords(0, 0)
+			                        ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+			layer.prototype_data = &proto;
+			proto.on_build(world_data, {0, 0}, layer, 0, jactorio::data::placementOrientation::up);
+		}
+		{
+			// Second transport line should connect to first
+			auto& layer = world_data.get_tile_world_coords(1, 0)
+			                        ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+			layer.prototype_data = &proto;
+			proto.on_build(world_data, {1, 0}, layer, 0, jactorio::data::placementOrientation::left);
+		}
+
+		auto& logic_chunk = world_data.logic_get_all_chunks().at(world_data.get_chunk(0, 0));
+		auto& transport_lines =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(transport_lines.size(), 2);
+		auto* line = static_cast<jactorio::game::Transport_line_segment*>(transport_lines[1].unique_data);
+		EXPECT_EQ(line->target_segment, transport_lines[0].unique_data);
+	}
+
+	TEST(transport_line, on_build_connect_transport_line_segments_cross_chunks) {
+		// A transport line pointing to another one will set the target_segment
+		jactorio::game::World_data world_data{};
+		world_data.add_chunk(new jactorio::game::Chunk{-1, 0, nullptr});
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+
+		auto proto = jactorio::data::Transport_belt{};
+		{
+			auto& layer = world_data.get_tile_world_coords(-1, 0)
+			                        ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+			layer.prototype_data = &proto;
+			proto.on_build(world_data, {-1, 0}, layer, 0, jactorio::data::placementOrientation::left);
+		}
+		{
+			// Second transport line should connect to first
+			auto& layer = world_data.get_tile_world_coords(0, 0)
+			                        ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+			layer.prototype_data = &proto;
+			proto.on_build(world_data, {0, 0}, layer, 0, jactorio::data::placementOrientation::left);
+		}
+
+
+		auto& transport_lines_l =
+			world_data.logic_get_all_chunks().at(world_data.get_chunk(-1, 0))
+			          .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		auto& transport_lines_r =
+			world_data.logic_get_all_chunks().at(world_data.get_chunk(0, 0))
+			          .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(transport_lines_l.size(), 1);
+		ASSERT_EQ(transport_lines_r.size(), 1);
+		auto* line_l = static_cast<jactorio::game::Transport_line_segment*>(transport_lines_l[0].unique_data);
+		auto* line_r = static_cast<jactorio::game::Transport_line_segment*>(transport_lines_r[0].unique_data);
+
+		EXPECT_EQ(line_r->target_segment, line_l);
 	}
 }

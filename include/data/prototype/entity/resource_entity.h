@@ -46,10 +46,6 @@ namespace jactorio::data
 		Resource_entity& operator=(Resource_entity&& other) noexcept = default;
 
 
-		void delete_unique_data(Unique_data_base* ptr) const override {
-			delete static_cast<Resource_entity_data*>(ptr);
-		}
-
 		Unique_data_base* copy_unique_data(Unique_data_base* ptr) const override {
 			const auto other = new Resource_entity_data();
 			*other = *static_cast<Resource_entity_data*>(ptr);

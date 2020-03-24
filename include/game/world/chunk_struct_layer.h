@@ -10,13 +10,17 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_STRUCT_LAYER_H
 #pragma once
 
+#include <cmath>
+
+#include "game/world/chunk_layer.h"
+
 namespace jactorio::game
 {
-	/**
-	* For a Logic_chunk, stores chunk structures (transport line segments (Not the entities), etc)
-	*/
-	struct Chunk_struct_layer : Chunk_layer
+	///
+	/// \brief For a Logic_chunk, stores chunk structures (transport line segments (Not the entities), etc)
+	class Chunk_struct_layer : public Chunk_layer
 	{
+	public:
 		Chunk_struct_layer() = default;
 
 		explicit Chunk_struct_layer(const data::Prototype_base* proto)
@@ -31,6 +35,10 @@ namespace jactorio::game
 		// Distance (tiles) from top left of chunk to top left of object
 		float position_x = 0;
 		float position_y = 0;
+
+		static double to_position(const int32_t chunk_coordinate, const int32_t world_coordinate) {
+			return fabs(chunk_coordinate * 32 - world_coordinate);
+		}
 	};
 }
 

@@ -45,8 +45,6 @@ namespace jactorio::data
 		PYTHON_PROP_REF(Container_entity, uint16_t, inventory_size)
 
 
-		void delete_unique_data(Unique_data_base* ptr) const override;
-
 		Unique_data_base* copy_unique_data(Unique_data_base* ptr) const override;
 
 		// Events

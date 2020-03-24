@@ -145,12 +145,7 @@ namespace jactorio::data
 		// Unique data associated with entity
 
 		///
-		/// \brief If the prototype has unique data per tile, override the method for deleting it
-		/// Deletes unique data for the prototype given through ptr
-		virtual void delete_unique_data(Unique_data_base* ptr) const {
-			assert(false);  // Not implemented
-		}
-
+		/// \brief Copies the unique_data associated with a prototype
 		virtual Unique_data_base* copy_unique_data(Unique_data_base* ptr) const {
 			assert(false);  // Not implemented
 			return nullptr;

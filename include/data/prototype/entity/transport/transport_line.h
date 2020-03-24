@@ -92,10 +92,6 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Data events
-		void delete_unique_data(Unique_data_base* ptr) const override {
-			delete static_cast<Transport_line_data*>(ptr);
-		}
-
 		void post_load() override {
 			// Convert floating point speed to fixed precision decimal speed
 			speed = transport_line_offset(speed_float);

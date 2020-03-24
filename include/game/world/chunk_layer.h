@@ -28,14 +28,7 @@ namespace jactorio::game
 
 		// Prototype data must be deleted after chunk data
 		~Chunk_layer() {
-			delete_unique_data();
-		}
-
-		void delete_unique_data() const {
-			if (unique_data != nullptr) {
-				assert(prototype_data != nullptr);  // Unique_data_ was defined, but no prototype_data_ is available to delete it
-				prototype_data->delete_unique_data(unique_data);
-			}
+			delete unique_data;
 		}
 
 		Chunk_layer(const Chunk_layer& other);
