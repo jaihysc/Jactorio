@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/15/2020
+// Last modified: 03/24/2020
 // 
 
 #include "renderer/gui/imgui_manager.h"
@@ -243,7 +243,7 @@ void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_dat
 	if (layer != nullptr) {
 		set_window_visibility(guiWindow::character, false);
 
-		static_cast<data::Entity*>(layer->prototype_data)->on_r_show_gui(player_data, layer);
+		static_cast<const data::Entity*>(layer->prototype_data)->on_r_show_gui(player_data, layer);
 	}
 	else {
 		draw_window<game::Player_data&>(guiWindow::character, release_window_flags, player_data);

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/23/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
@@ -72,8 +72,8 @@ namespace jactorio::game
 
 		// Do not reference this, this only tracks whether or not a different entity or another tile
 		// is selected by comparing pointers
-		void* last_selected_ptr_ = nullptr;
-		void* last_tile_ptr_ = nullptr;
+		const void* last_selected_ptr_ = nullptr;
+		const void* last_tile_ptr_ = nullptr;
 
 	public:
 		data::placementOrientation placement_orientation = data::placementOrientation::up;

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/23/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
@@ -20,7 +20,7 @@ namespace jactorio::data
 			inventory = new item_stack[inventory_size];
 		}
 
-		~Container_entity_data() {
+		~Container_entity_data() override {
 			delete[] inventory;
 		}
 
@@ -45,9 +45,9 @@ namespace jactorio::data
 		PYTHON_PROP_REF(Container_entity, uint16_t, inventory_size)
 
 
-		void delete_unique_data(void* ptr) const override;
+		void delete_unique_data(Unique_data_base* ptr) const override;
 
-		void* copy_unique_data(void* ptr) const override;
+		Unique_data_base* copy_unique_data(Unique_data_base* ptr) const override;
 
 		// Events
 

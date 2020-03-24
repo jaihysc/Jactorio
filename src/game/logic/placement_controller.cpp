@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/20/2020
+// Last modified: 03/24/2020
 // 
 
 #include "game/logic/placement_controller.h"
@@ -51,7 +51,7 @@ bool jactorio::game::placement_c::place_entity_at_coords(World_data& world_data,
 
 	// entity is nullptr indicates removing an entity
 	if (entity == nullptr) {
-		data::Entity* t_entity =
+		const data::Entity* t_entity =
 			chunk_tile_getter::get_entity_prototype(*tile, Chunk_tile::chunkLayer::entity);
 
 		if (t_entity == nullptr)  // Already removed

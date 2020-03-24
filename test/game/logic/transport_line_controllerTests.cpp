@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/13/2020
-// Last modified: 03/14/2020
+// Last modified: 03/24/2020
 // 
 
 #include <gtest/gtest.h>
@@ -57,7 +57,7 @@ namespace game::logic
 		ASSERT_EQ(left_segment->right.size(), 1);
 	}
 
-	TEST(transport_line, line_logic) {
+	TEST(transport_line_controller, line_logic) {
 		// Tests that items move as expected (within a chunk)
 		using namespace jactorio::game;
 
@@ -119,7 +119,7 @@ namespace game::logic
 		test_item_positions(world_data, up_segment, right_segment, down_segment, left_segment);
 	}
 
-	TEST(transport_line, line_logic_precision) {
+	TEST(transport_line_controller, line_logic_precision) {
 		// Tests for data type precision representing the distance between items
 		using namespace jactorio::game;
 
@@ -188,7 +188,7 @@ namespace game::logic
 		}
 	}
 
-	TEST(transport_line, line_logic_fast) {
+	TEST(transport_line_controller, line_logic_fast) {
 		// Same as line logic, but belts are faster (0.06), which seems to break the current logic at the time of writing
 		using namespace jactorio::game;
 
@@ -287,7 +287,7 @@ namespace game::logic
 	}
 
 
-	TEST(transport_line, line_logic_right_bend) {
+	TEST(transport_line_controller, line_logic_right_bend) {
 		// Validates the correct handling of multiple items across transport lines
 		// The spacing between items should be maintained
 		using namespace jactorio::game;
@@ -373,7 +373,7 @@ namespace game::logic
 		EXPECT_FLOAT_EQ(right_segment->left[2].first.getAsDouble(), 1.f);
 	}
 
-	TEST(transport_line, line_logic_compressed_right_bend) {
+	TEST(transport_line_controller, line_logic_compressed_right_bend) {
 		// Same as line_logic_right_bend, but items are compressed
 		using namespace jactorio::game;
 
@@ -444,7 +444,7 @@ namespace game::logic
 		EXPECT_FLOAT_EQ(right_segment->left[1].first.getAsDouble(), 0.25f);
 	}
 
-	TEST(transport_line, line_logic_transition_straight) {
+	TEST(transport_line_controller, line_logic_transition_straight) {
 		// Transferring from a straight segment traveling left to another one traveling left
 		/*
 		 * < ------ LEFT (1) ------		< ------ LEFT (2) -------
@@ -498,7 +498,7 @@ namespace game::logic
 		EXPECT_FLOAT_EQ(segment_1->right[0].first.getAsDouble(), 3.99);
 	}
 
-	TEST(transport_line, line_logic_stop_at_end_of_line) {
+	TEST(transport_line_controller, line_logic_stop_at_end_of_line) {
 		// When no target_segment is provided:
 		// First Item will stop at the end of line (Distance is 0)
 		// Trailing items will stop at item_width from the previous item
@@ -566,7 +566,7 @@ namespace game::logic
 		}
 	}
 
-	TEST(transport_line, line_logic_stop_at_filled_target_segment) {
+	TEST(transport_line_controller, line_logic_stop_at_filled_target_segment) {
 		// For the right lane:
 		using namespace jactorio::game;
 
@@ -624,7 +624,7 @@ namespace game::logic
 		EXPECT_FLOAT_EQ(up_segment->right.front().first.getAsDouble(), 0);
 	}
 
-	TEST(transport_line, line_logic_item_spacing) {
+	TEST(transport_line_controller, line_logic_item_spacing) {
 		// A minimum distance of transport_line_c::item_spacing is maintained between items
 		using namespace jactorio::game;
 
@@ -653,7 +653,7 @@ namespace game::logic
 		EXPECT_FLOAT_EQ(right_segment->left[1].first.getAsDouble(), transport_line_c::item_spacing);
 	}
 
-	TEST(transport_line, line_logic_transition_side_left) {
+	TEST(transport_line_controller, line_logic_transition_side_left) {
 		// Belt feeding into only one side of another belt
 		/*
 		 *                           Right     Left
@@ -767,7 +767,7 @@ namespace game::logic
 
 	}
 
-	TEST(transport_line, line_logic_transition_side_right) {
+	TEST(transport_line_controller, line_logic_transition_side_right) {
 		// Belt feeding into only one side of another belt moving updards
 		/*
 		 * Left     Right

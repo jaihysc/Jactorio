@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/15/2020
-// Last modified: 03/18/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_RENDERABLE_H
@@ -18,7 +18,7 @@ namespace jactorio::data
 {
 	///
 	/// \brief Inherit to allow drawing portions of a sprite
-	struct Renderable_data
+	struct Renderable_data : Unique_data_base
 	{
 		Renderable_data() = default;
 

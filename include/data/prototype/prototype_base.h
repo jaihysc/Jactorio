@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/09/2019
-// Last modified: 03/15/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
@@ -74,6 +74,23 @@ namespace jactorio::data
 	if (!(condition)) { std::string s = this->name; s.append(error_msg); throw jactorio::data::Data_exception(s); }
 
 
+	///
+	/// \brief Abstract base class for all unique data
+	struct Unique_data_base
+	{
+	protected:
+		Unique_data_base() = default;
+
+	public:
+		virtual ~Unique_data_base() = default;
+
+		Unique_data_base(const Unique_data_base& other) = default;
+		Unique_data_base(Unique_data_base&& other) noexcept = default;
+		Unique_data_base& operator=(const Unique_data_base& other) = default;
+		Unique_data_base& operator=(Unique_data_base&& other) noexcept = default;
+	};
+
+
 	class Prototype_base
 	{
 	public:
@@ -130,11 +147,11 @@ namespace jactorio::data
 		///
 		/// \brief If the prototype has unique data per tile, override the method for deleting it
 		/// Deletes unique data for the prototype given through ptr
-		virtual void delete_unique_data(void* ptr) const {
+		virtual void delete_unique_data(Unique_data_base* ptr) const {
 			assert(false);  // Not implemented
 		}
 
-		virtual void* copy_unique_data(void* ptr) const {
+		virtual Unique_data_base* copy_unique_data(Unique_data_base* ptr) const {
 			assert(false);  // Not implemented
 			return nullptr;
 		}

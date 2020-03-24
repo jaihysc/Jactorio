@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/08/2020
-// Last modified: 03/14/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_LAYER_H
@@ -14,16 +14,15 @@
 
 namespace jactorio::game
 {
-	/**
-	 * Abstract class for Chunk_layer and Chunk_object_layer <br>
-	 * Will only delete unique_data, others must be manually deleted
-	 */
+	///
+	/// \brief Abstract class for Chunk_layer and Chunk_object_layer <br>
+	/// \remark Will only delete unique_data, others must be manually deleted
 	class Chunk_layer
 	{
 	protected:
 		Chunk_layer() = default;
 
-		explicit Chunk_layer(data::Prototype_base* proto)
+		explicit Chunk_layer(const data::Prototype_base* proto)
 			: prototype_data(proto) {
 		}
 
@@ -46,28 +45,21 @@ namespace jactorio::game
 		Chunk_layer& operator=(Chunk_layer&& other) noexcept;
 
 	public:
-		// ============================================================================================
-		// Minimize the variables below vvvvvv
-		/*
-		 * A layer may point to a tile prototype to provide additional data (collisions, world gen) <br>
-		 * The sprite is stored within the tile prototype instead <br>
-		 * If not provided, it is nullptr <br>
-		 */
+		// ======================================================================
+		// Minimize the variables below 
 
-		/*
-		 * Entities also possesses a sprite pointer within their prototype
-		 */
+		// A layer may point to a tile prototype to provide additional data (collisions, world gen) <br>
+		// The sprite is stored within the tile prototype instead <br>
+		// If not provided, it is nullptr <br>
 
-		/**
-		 * Depending on the layer, this will be either a data::Tile*, data::Entity* or a data::Sprite* <br>
-		 */
-		data::Prototype_base* prototype_data = nullptr;
+		// Entities also possesses a sprite pointer within their prototype
 
-		/**
-		 * Data for the prototype which is unique per tile and layer <br>
-		 * When this layer is deleted, unique_data_ will be deleted with delete method in prototype_data_
-		 */
-		void* unique_data = nullptr;
+		/// Depending on the layer, this will be either a data::Tile*, data::Entity* or a data::Sprite* <br>
+		const data::Prototype_base* prototype_data = nullptr;
+
+		/// Data for the prototype which is unique per tile and layer <br>
+		/// When this layer is deleted, unique_data_ will be deleted with delete method in prototype_data_
+		data::Unique_data_base* unique_data = nullptr;
 	};
 
 	inline Chunk_layer::Chunk_layer(const Chunk_layer& other)

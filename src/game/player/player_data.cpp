@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/23/2020
+// Last modified: 03/24/2020
 // 
 
 #include "game/player/player_data.h"
@@ -165,7 +165,7 @@ void jactorio::game::Player_data::try_pickup(World_data& world_data,
                                              const uint16_t ticks) {
 	auto* tile = world_data.get_tile_world_coords(tile_x, tile_y);
 
-	data::Entity* chosen_ptr;
+	const data::Entity* chosen_ptr;
 	bool is_resource_ptr = true;
 	{
 		const auto entity_ptr =
@@ -231,7 +231,8 @@ void jactorio::game::Player_data::try_pickup(World_data& world_data,
 				activated_layer_ = nullptr;
 
 			// Call events
-			static_cast<data::Entity*>(layer.prototype_data)->on_remove(world_data, {tile_x, tile_y}, layer);
+			static_cast<const data::Entity*>(layer.prototype_data)->on_remove(
+				world_data, {tile_x, tile_y}, layer);
 
 			const bool result = placement_c::place_entity_at_coords(world_data, nullptr, tile_x, tile_y);
 			assert(result);  // false indicates failed to remove entity

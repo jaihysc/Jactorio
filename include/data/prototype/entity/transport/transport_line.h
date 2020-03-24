@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/10/2020
-// Last modified: 03/23/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
@@ -92,7 +92,7 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Data events
-		void delete_unique_data(void* ptr) const override {
+		void delete_unique_data(Unique_data_base* ptr) const override {
 			delete static_cast<Transport_line_data*>(ptr);
 		}
 

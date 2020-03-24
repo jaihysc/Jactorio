@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/13/2020
-// Last modified: 03/15/2020
+// Last modified: 03/24/2020
 // 
 
 #include "data/prototype/entity/transport/transport_line.h"
@@ -212,7 +212,7 @@ void jactorio::game::transport_line_c::logic_update_move_items(Logic_chunk* l_ch
 
 	// Each object layer holds a transport line segment
 	for (auto& object_layer : layers) {
-		auto* line_proto = static_cast<data::Transport_line*>(object_layer.prototype_data
+		auto* line_proto = static_cast<const data::Transport_line*>(object_layer.prototype_data
 		); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 		auto* line_segment = static_cast<Transport_line_segment*>(object_layer.unique_data);
 
@@ -245,7 +245,7 @@ void jactorio::game::transport_line_c::logic_update_transition_items(Logic_chunk
 
 	// Each object layer holds a transport line segment
 	for (auto& object_layer : layers) {
-		auto* line_proto = static_cast<data::Transport_line*>(object_layer.prototype_data
+		auto* line_proto = static_cast<const data::Transport_line*>(object_layer.prototype_data
 		); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 		auto* line_segment = static_cast<Transport_line_segment*>(object_layer.unique_data);
 

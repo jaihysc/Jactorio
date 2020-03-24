@@ -3,10 +3,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/21/2020
-// Last modified: 03/23/2020
+// Last modified: 03/24/2020
 // 
 
 #include "data/prototype/entity/transport/transport_line.h"
+
+
+#include "data/data_manager.h"
+#include "game/logic/transport_line_structure.h"
 
 ///
 /// \brief Converts lineOrientation to placementOrientation
@@ -109,7 +113,7 @@ jactorio::data::Transport_line_data* get_line_data(jactorio::game::World_data& w
 
 	auto& layer = tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
 
-	if (!dynamic_cast<jactorio::data::Transport_line*>(  // Not an instance of transport line
+	if (!dynamic_cast<const jactorio::data::Transport_line*>(  // Not an instance of transport line
 		layer.prototype_data))
 		return nullptr;
 
@@ -207,6 +211,26 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 	// Take the 4 transport lines neighboring the center as parameters to avoid recalculating them
 	update_neighboring_orientation(world_data, world_coords, t_center,
 	                               c_right, b_center, c_left, static_cast<Transport_line_data*>(tile_layer.unique_data));
+
+	// Create transport line structure
+	auto* chunk = world_data.get_chunk_world_coords(world_coords.first, world_coords.second);
+	auto& layer = world_data.logic_add_chunk(chunk)
+	                        .get_struct(game::Logic_chunk::structLayer::transport_line)
+	                        .emplace_back(this,
+	                                      abs(chunk->get_position().first * 32 - world_coords.first),
+	                                      abs(chunk->get_position().second * 32 - world_coords.second));
+
+	layer.unique_data =
+		new game::Transport_line_segment{
+			static_cast<const game::Transport_line_segment::moveDir>(orientation),
+			game::Transport_line_segment::terminationType::straight,
+			1
+		};
+
+	// ((game::Transport_line_segment*)layer.unique_data)
+	// ->append_item(true, 1, 
+	// 							data::data_manager::data_raw_get<Item>(data_category::item,
+	// 															 "__base__/wooden-chest-item"));
 }
 
 void jactorio::data::Transport_line::on_remove(game::World_data& world_data, const std::pair<int, int> world_coords,

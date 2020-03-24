@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 03/15/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
@@ -46,11 +46,11 @@ namespace jactorio::data
 		Resource_entity& operator=(Resource_entity&& other) noexcept = default;
 
 
-		void delete_unique_data(void* ptr) const override {
+		void delete_unique_data(Unique_data_base* ptr) const override {
 			delete static_cast<Resource_entity_data*>(ptr);
 		}
 
-		void* copy_unique_data(void* ptr) const override {
+		Unique_data_base* copy_unique_data(Unique_data_base* ptr) const override {
 			const auto other = new Resource_entity_data();
 			*other = *static_cast<Resource_entity_data*>(ptr);
 			return other;

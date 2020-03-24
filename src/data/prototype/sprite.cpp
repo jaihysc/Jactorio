@@ -171,6 +171,6 @@ void jactorio::data::Sprite::post_load_validate() const {
 	J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
 }
 
-void jactorio::data::Sprite::delete_unique_data(void* ptr) const {
+void jactorio::data::Sprite::delete_unique_data(Unique_data_base* ptr) const {
 	delete static_cast<Renderable_data*>(ptr);
 }

@@ -3,13 +3,57 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/22/2020
-// Last modified: 03/23/2020
+// Last modified: 03/24/2020
 // 
 
 #include <gtest/gtest.h>
 
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "data/prototype/entity/transport/transport_line.h"
+#include "game/logic/transport_line_structure.h"
+
+// ======================================================================
+// Tests for the various bend orientations
+
+///
+/// \brief Creates the requisite structures and datatypes for the macros below
+#define TRANSPORT_LINE_TEST_HEAD\
+	jactorio::data::Transport_belt line_proto{};\
+	jactorio::game::World_data world_data{};\
+	world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+
+#define ADD_TRANSPORT_LINE(orientation, x, y)\
+{\
+	auto& layer = world_data.get_tile_world_coords(x, y)->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);\
+	\
+	layer.prototype_data = &line_proto;\
+	auto* data = new jactorio::data::Transport_line_data();\
+	data->set_orientation(jactorio::data::Transport_line_data::orientation);\
+	layer.unique_data = data;\
+}
+
+
+/// Creates a transport line with the provided orientation above/right/below/left of 1, 1
+#define ADD_TOP_TRANSPORT_LINE(orientation)    ADD_TRANSPORT_LINE(orientation, 1, 0)
+#define ADD_RIGHT_TRANSPORT_LINE(orientation)  ADD_TRANSPORT_LINE(orientation, 2, 1)
+#define ADD_BOTTOM_TRANSPORT_LINE(orientation) ADD_TRANSPORT_LINE(orientation, 1, 2)
+#define ADD_LEFT_TRANSPORT_LINE(orientation)   ADD_TRANSPORT_LINE(orientation, 0, 1)
+
+///
+/// \brief Validates that a tile at coords 1,1 with the placement orientation produces the expected line orientation
+#define VALIDATE_RESULT_ORIENTATION(placement_orientation, expected_line_orientation)\
+{\
+	auto pair =\
+		std::pair<uint16_t, uint16_t>{\
+			static_cast<uint16_t>(jactorio::data::Transport_line_data::expected_line_orientation),\
+			0};\
+	EXPECT_EQ(\
+		line_proto.map_placement_orientation(\
+			jactorio::data::placement_orientation, world_data, {1, 1}),\
+		pair\
+	);\
+}
+
 
 namespace data
 {
@@ -23,48 +67,6 @@ namespace data
 
 		line_data.set_orientation(jactorio::data::Transport_line_data::lineOrientation::left_down);
 		EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::data::Transport_line_data::lineOrientation::left_down));
-	}
-
-	// ======================================================================
-	// Tests for the various bend orientations
-
-	///
-	/// \brief Creates the requisite structures and datatypes for the macros below
-#define TRANSPORT_LINE_TEST_HEAD\
-		jactorio::data::Transport_belt line_proto{};\
-		jactorio::game::World_data world_data{};\
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
-
-#define ADD_TRANSPORT_LINE(orientation, x, y)\
-	{\
-		auto& layer = world_data.get_tile_world_coords(x, y)->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);\
-		\
-		layer.prototype_data = &line_proto;\
-		auto* data = new jactorio::data::Transport_line_data();\
-		data->set_orientation(jactorio::data::Transport_line_data::orientation);\
-		layer.unique_data = data;\
-	}
-
-
-	/// Creates a transport line with the provided orientation above/right/below/left of 1, 1
-#define ADD_TOP_TRANSPORT_LINE(orientation)    ADD_TRANSPORT_LINE(orientation, 1, 0)
-#define ADD_RIGHT_TRANSPORT_LINE(orientation)  ADD_TRANSPORT_LINE(orientation, 2, 1)
-#define ADD_BOTTOM_TRANSPORT_LINE(orientation) ADD_TRANSPORT_LINE(orientation, 1, 2)
-#define ADD_LEFT_TRANSPORT_LINE(orientation)   ADD_TRANSPORT_LINE(orientation, 0, 1)
-
-	///
-	/// \brief Validates that a tile at coords 1,1 with the placement orientation produces the expected line orientation
-#define VALIDATE_RESULT_ORIENTATION(placement_orientation, expected_line_orientation)\
-	{\
-		auto pair =\
-			std::pair<uint16_t, uint16_t>{\
-				static_cast<uint16_t>(jactorio::data::Transport_line_data::expected_line_orientation),\
-				0};\
-		EXPECT_EQ(\
-			line_proto.map_placement_orientation(\
-				jactorio::data::placement_orientation, world_data, {1, 1}),\
-			pair\
-		);\
 	}
 
 
@@ -289,5 +291,42 @@ namespace data
 				jactorio::data::Transport_line_data::lineOrientation::down_right
 			);
 		}
+	}
+
+	TEST(transport_line, on_build_create_transport_line_structure) {
+		// Should create a transport line structure and add its chunk to logic chunks
+		jactorio::game::World_data world_data{};
+		world_data.add_chunk(new jactorio::game::Chunk{-1, 0, nullptr});
+
+		auto& layer = world_data.get_tile_world_coords(-5, 0)
+		                        ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+		auto proto = jactorio::data::Transport_belt{};
+		layer.prototype_data = &proto;
+
+		proto.on_build(world_data, {-5, 0}, layer, 0, jactorio::data::placementOrientation::right);
+
+		// Added current chunk as a logic chunk
+		ASSERT_EQ(world_data.logic_get_all_chunks().size(), 1);
+
+		auto& logic_chunk = world_data.logic_get_all_chunks().at(world_data.get_chunk(-1, 0));
+		EXPECT_EQ(logic_chunk.chunk, world_data.get_chunk(-1, 0));
+
+
+		auto& transport_lines =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		// Should have created a transport line structure
+		ASSERT_EQ(transport_lines.size(), 1);
+		ASSERT_TRUE(dynamic_cast<jactorio::game::Transport_line_segment*>(transport_lines.front().unique_data));
+
+		auto* line_data = dynamic_cast<jactorio::game::Transport_line_segment*>(transport_lines.front().unique_data);
+		EXPECT_EQ(line_data->direction, jactorio::game::Transport_line_segment::moveDir::right);
+		EXPECT_EQ(line_data->termination_type, jactorio::game::Transport_line_segment::terminationType::straight);
+		EXPECT_EQ(line_data->segment_length, 1);
+
+		// Position_x / position_y is the distance from the top left of the chunk
+		EXPECT_EQ(transport_lines.front().position_x, 27);
+		EXPECT_EQ(transport_lines.front().position_y, 0);
 	}
 }

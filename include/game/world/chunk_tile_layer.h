@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 03/15/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
@@ -22,7 +22,7 @@ namespace jactorio::game
 	{
 		Chunk_tile_layer() = default;
 
-		explicit Chunk_tile_layer(data::Prototype_base* proto)
+		explicit Chunk_tile_layer(const data::Prototype_base* proto)
 			: Chunk_layer(proto) {
 		}
 

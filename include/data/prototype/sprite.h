@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/24/2019
-// Last modified: 03/19/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
@@ -140,8 +140,8 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Unique data
-		void delete_unique_data(void* ptr) const override;
-		
+		void delete_unique_data(Unique_data_base* ptr) const override;
+
 		// ======================================================================
 		// Test only
 		J_TEST_USE_ONLY void set_height(const int height) { this->height_ = height; }

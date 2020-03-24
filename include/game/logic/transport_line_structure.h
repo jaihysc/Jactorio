@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/21/2020
-// Last modified: 03/15/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
@@ -25,7 +25,7 @@ namespace jactorio::game
 
 	///
 	/// \brief Stores a collection of items heading in one direction
-	struct Transport_line_segment
+	struct Transport_line_segment : data::Unique_data_base
 	{
 		enum class moveDir
 		{
@@ -110,7 +110,7 @@ namespace jactorio::game
 		transport_line_offset l_back_item_distance;
 		transport_line_offset r_back_item_distance;
 
-		
+
 		/// Length of this segment in tiles
 		uint8_t segment_length;
 

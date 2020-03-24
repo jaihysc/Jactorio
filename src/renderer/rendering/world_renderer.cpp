@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/15/2019
-// Last modified: 03/19/2020
+// Last modified: 03/24/2020
 // 
 
 #include "renderer/rendering/world_renderer.h"
@@ -119,14 +119,14 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 object_draw_func object_layer_get_sprite_id_func[]{
 	// Trees?!
 	[](const jactorio::game::Chunk_object_layer& layer) {
-		auto* entity = static_cast<jactorio::data::Entity*>(layer.prototype_data);
+		auto* entity = static_cast<const jactorio::data::Entity*>(layer.prototype_data);
 		if (entity == nullptr || entity->sprite == nullptr)
 			return 0u;
 		return entity->on_r_get_sprite(layer.unique_data)->internal_id;
 	},
 	// Debug overlay
 	[](const jactorio::game::Chunk_object_layer& layer) {
-		auto* sprite = static_cast<jactorio::data::Sprite*>(layer.prototype_data);
+		auto* sprite = static_cast<const jactorio::data::Sprite*>(layer.prototype_data);
 		return sprite->internal_id;
 	},
 };

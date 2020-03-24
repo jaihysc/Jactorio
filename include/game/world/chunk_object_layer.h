@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/08/2020
-// Last modified: 03/14/2020
+// Last modified: 03/24/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_OBJECT_LAYER_H
@@ -21,11 +21,11 @@ namespace jactorio::game
 	{
 		Chunk_object_layer() = default;
 
-		explicit Chunk_object_layer(data::Prototype_base* proto)
+		explicit Chunk_object_layer(const data::Prototype_base* proto)
 			: Chunk_layer(proto) {
 		}
 
-		explicit Chunk_object_layer(data::Prototype_base* proto,
+		explicit Chunk_object_layer(const data::Prototype_base* proto,
 		                            const float position_x, const float position_y,
 		                            const float size_x, const float size_y)
 			: Chunk_layer(proto),

@@ -3,18 +3,18 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 03/23/2020
+// Last modified: 03/24/2020
 // 
 
 #include "data/prototype/entity/container_entity.h"
 
 #include "renderer/gui/gui_menus.h"
 
-void jactorio::data::Container_entity::delete_unique_data(void* ptr) const {
+void jactorio::data::Container_entity::delete_unique_data(Unique_data_base* ptr) const {
 	delete static_cast<Container_entity_data*>(ptr);
 }
 
-void* jactorio::data::Container_entity::copy_unique_data(void* ptr) const {
+jactorio::data::Unique_data_base* jactorio::data::Container_entity::copy_unique_data(Unique_data_base* ptr) const {
 	auto* data = new Container_entity_data(inventory_size);
 
 	// Copy inventory contents over
