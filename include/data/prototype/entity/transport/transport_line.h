@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/10/2020
-// Last modified: 03/24/2020
+// Last modified: 03/26/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
@@ -14,11 +14,16 @@
 
 #include "core/data_type.h"
 #include "data/prototype/entity/health_entity.h"
+#include "game/logic/transport_line_structure.h"
 
 namespace jactorio::data
 {
 	struct Transport_line_data : Health_entity_data
 	{
+		explicit Transport_line_data(game::Transport_line_segment& line_segment)
+			: line_segment(line_segment) {
+		}
+
 		///
 		/// <Entry direction>_<Exit direction>
 		enum class lineOrientation
@@ -49,6 +54,9 @@ namespace jactorio::data
 			this->orientation = orientation;
 			this->set = static_cast<uint16_t>(orientation);
 		}
+
+		/// The logic chunk line_segment associated
+		game::Transport_line_segment& line_segment;
 	};
 
 	///

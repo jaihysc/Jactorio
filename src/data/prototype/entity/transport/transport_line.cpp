@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/21/2020
-// Last modified: 03/25/2020
+// Last modified: 03/26/2020
 // 
 
 #include "data/prototype/entity/transport/transport_line.h"
@@ -103,7 +103,7 @@ jactorio::data::Transport_line_data::lineOrientation get_line_orientation(
 }
 
 ///
-/// \brief Attempts to retrieve transport line data at world coordinates
+/// \brief Attempts to retrieve transport line data at world coordinates on tile
 /// \return pointer to data or nullptr if non existent
 jactorio::data::Transport_line_data* get_line_data(jactorio::game::World_data& world_data,
                                                    const int world_x, const int world_y) {
@@ -191,30 +191,6 @@ void jactorio::data::Transport_line::update_neighboring_orientation(game::World_
 }
 
 ///
-/// \brief Attempts to find transport line with world_x, world_y
-/// \return nullptr if transport line at world_x, world_y could not be found 
-jactorio::game::Transport_line_segment* find_transport_line_structure(jactorio::game::World_data& world_data,
-                                                                      const int world_x, const int world_y) {
-	auto* chunk = world_data.get_chunk_world_coords(world_x, world_y);
-	assert(chunk != nullptr);
-
-	auto& transport_structures =
-		world_data.logic_get_all_chunks().at(chunk)
-		          .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
-
-	for (auto& layer : transport_structures) {
-		if (layer.position_x == jactorio::game::Chunk_struct_layer::to_position(chunk->get_position().first,
-		                                                                        world_x) &&
-			layer.position_y == jactorio::game::Chunk_struct_layer::to_position(chunk->get_position().second,
-			                                                                    world_y)
-		)
-			return static_cast<jactorio::game::Transport_line_segment*>(layer.unique_data);
-	}
-
-	return nullptr;
-}
-
-///
 /// \brief Determines the member target_segment of Transport_line_segment
 /// \param orientation Current orientation
 /// \param origin_connect_orientation Orientation required for origin_segment to connect to neighbor segment
@@ -227,50 +203,57 @@ void update_transport_line_targets(jactorio::game::World_data& world_data,
                                    const jactorio::data::placementOrientation target_connect_orientation) {
 	using namespace jactorio;
 
-	auto* neighbor_segment =
-		find_transport_line_structure(world_data, neighbor_world_x, neighbor_world_y);
+	data::Transport_line_data* neighbor_line_data = get_line_data(world_data, neighbor_world_x, neighbor_world_y);
+	if (neighbor_line_data) {
+		game::Transport_line_segment& neighbor_segment = neighbor_line_data->line_segment;
 
-	if (neighbor_segment) {
 		const bool origin_valid = orientation == origin_connect_orientation;
 		const bool neighbor_valid =
-			static_cast<data::placementOrientation>(neighbor_segment->direction) == target_connect_orientation;
+			static_cast<data::placementOrientation>(neighbor_segment.direction) == target_connect_orientation;
 
 		// Only 1 can be valid at a time
 		if (origin_valid == neighbor_valid)
 			return;
 
 		if (origin_valid)
-			origin_segment->target_segment = neighbor_segment;
+			origin_segment->target_segment = &neighbor_segment;
 		else
-			neighbor_segment->target_segment = origin_segment;
+			neighbor_segment.target_segment = origin_segment;
+	}
+}
+
+///
+/// \brief Finds transport line at world_x, world_y and moves it by world_offset_x, world_offset_y <br>
+/// It will also set the termination_type to the parameter and increase segment length by 1
+void update_transport_segment(jactorio::game::World_data& world_data,
+                              const int world_x, const int world_y,
+                              const float world_offset_x, const float world_offset_y,
+                              const jactorio::game::Transport_line_segment::terminationType termination_type) {
+	auto& transport_structures =
+		world_data.logic_get_all_chunks()
+		          .at(world_data.get_chunk_world_coords(world_x, world_y))
+		          .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+	jactorio::data::Transport_line_data* line_data = get_line_data(world_data, world_x, world_y);
+
+	// Search for the transport line in the chunk struct layer where the
+	// unique_data(Transport_line_data) == one referenced by line_data
+	for (auto& layer : transport_structures) {
+		if (layer.unique_data == &line_data->line_segment) {
+			layer.position_x += world_offset_x;
+			layer.position_y += world_offset_y;
+
+			auto* line_segment = static_cast<jactorio::game::Transport_line_segment*>(layer.unique_data);
+
+			line_segment->segment_length++;
+			line_segment->termination_type = termination_type;
+		}
 	}
 }
 
 void jactorio::data::Transport_line::on_build(game::World_data& world_data, const std::pair<int, int> world_coords,
                                               game::Chunk_tile_layer& tile_layer, const uint16_t frame,
                                               const placementOrientation orientation) const {
-
-	// ======================================================================	
-	// Create transport line structure
-	auto* chunk = world_data.get_chunk_world_coords(world_coords.first, world_coords.second);
-
-	auto& struct_layer =
-		world_data.logic_add_chunk(chunk)
-		          .get_struct(game::Logic_chunk::structLayer::transport_line)
-		          .emplace_back(this,
-		                        game::Chunk_struct_layer::to_position(chunk->get_position().first,
-		                                                              world_coords.first),
-		                        game::Chunk_struct_layer::to_position(chunk->get_position().second,
-		                                                              world_coords.second));
-
-	auto* line_segment =
-		new game::Transport_line_segment{
-			static_cast<const game::Transport_line_segment::moveDir>(orientation),
-			game::Transport_line_segment::terminationType::straight,
-			1
-		};
-	struct_layer.unique_data = line_segment;
-
 
 	// ======================================================================
 	// Update neighbor rendering orientation
@@ -279,32 +262,49 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 	auto* c_left = get_line_data(world_data, world_coords.first - 1, world_coords.second);
 	auto* b_center = get_line_data(world_data, world_coords.first, world_coords.second + 1);
 
-	// Create transport line at world_coords
-	auto* data = new Transport_line_data();
-	auto line_orientation = get_line_orientation(orientation, t_center, c_right, b_center, c_left);
 
-	data->set = static_cast<uint16_t>(line_orientation);
-	data->frame = frame;
-	data->orientation = line_orientation;
-	tile_layer.unique_data = data;
+	auto* line_segment = new game::Transport_line_segment{
+		static_cast<const game::Transport_line_segment::moveDir>(orientation),
+		game::Transport_line_segment::terminationType::straight,
+		1
+	};
 
-	// Take the 4 transport lines neighboring the center as parameters to avoid recalculating them
-	update_neighboring_orientation(
-		world_data, world_coords, t_center,
-		c_right, b_center, c_left, static_cast<Transport_line_data*>(tile_layer.unique_data));
+	// Create transport line data at world_coords
+	Transport_line_data::lineOrientation line_orientation =
+		get_line_orientation(orientation, t_center, c_right, b_center, c_left);
+	{
+		auto* data = new Transport_line_data(*line_segment);
 
+		data->set = static_cast<uint16_t>(line_orientation);
+		data->frame = frame;
+		data->orientation = line_orientation;
+		tile_layer.unique_data = data;
+
+		// Take the 4 transport lines neighboring the center as parameters to avoid recalculating them
+		update_neighboring_orientation(
+			world_data, world_coords, t_center,
+			c_right, b_center, c_left, static_cast<Transport_line_data*>(tile_layer.unique_data));
+	}
 
 	// ======================================================================
 	// Change current line segment termination type to a bend depending on neighbor termination orientation
+	// The location where the line_segment will be added to is adjusted according to the termination type of neighbors 
+	int32_t line_segment_world_x = world_coords.first;
+	int32_t line_segment_world_y = world_coords.second;
+
 	switch (orientation) {
 	case placementOrientation::up:
 		if (t_center)
 			switch (t_center->orientation) {
 			case Transport_line_data::lineOrientation::up_left:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::bend_left;
+				line_segment_world_y--;
+				line_segment->segment_length++;
 				break;
 			case Transport_line_data::lineOrientation::up_right:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::bend_right;
+				line_segment_world_y--;
+				line_segment->segment_length++;
 				break;
 
 			case Transport_line_data::lineOrientation::right:
@@ -323,9 +323,13 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 			switch (c_right->orientation) {
 			case Transport_line_data::lineOrientation::right_up:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::bend_left;
+				line_segment_world_x++;
+				line_segment->segment_length++;
 				break;
 			case Transport_line_data::lineOrientation::right_down:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::bend_right;
+				line_segment_world_x++;
+				line_segment->segment_length++;
 				break;
 
 			case Transport_line_data::lineOrientation::up:
@@ -345,9 +349,13 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 			switch (b_center->orientation) {
 			case Transport_line_data::lineOrientation::down_right:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::bend_left;
+				line_segment_world_y++;
+				line_segment->segment_length++;
 				break;
 			case Transport_line_data::lineOrientation::down_left:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::bend_right;
+				line_segment_world_y++;
+				line_segment->segment_length++;
 				break;
 
 			case Transport_line_data::lineOrientation::right:
@@ -367,9 +375,13 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 			switch (c_left->orientation) {
 			case Transport_line_data::lineOrientation::left_down:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::bend_left;
+				line_segment_world_x--;
+				line_segment->segment_length++;
 				break;
 			case Transport_line_data::lineOrientation::left_up:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::bend_right;
+				line_segment_world_x--;
+				line_segment->segment_length++;
 				break;
 
 			case Transport_line_data::lineOrientation::up:
@@ -389,52 +401,27 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 		assert(false);  // Missing switch case
 	}
 
-	// Change the neighboring line segment termination type to a bend depending on Transport_line_data orientation
-	switch (line_orientation) {
-		// Up
-	case Transport_line_data::lineOrientation::up_left:
-		find_transport_line_structure(world_data, world_coords.first, world_coords.second + 1)
-			->termination_type = game::Transport_line_segment::terminationType::bend_left;
-		break;
-	case Transport_line_data::lineOrientation::up_right:
-		find_transport_line_structure(world_data, world_coords.first, world_coords.second + 1)
-			->termination_type = game::Transport_line_segment::terminationType::bend_right;
-		break;
+	// Add the transport line segment to logic chunk
+	{
+		auto* chunk = world_data.get_chunk_world_coords(line_segment_world_x, line_segment_world_y);
 
-		// Right
-	case Transport_line_data::lineOrientation::right_up:
-		find_transport_line_structure(world_data, world_coords.first - 1, world_coords.second)
-			->termination_type = game::Transport_line_segment::terminationType::bend_left;
-		break;
-	case Transport_line_data::lineOrientation::right_down:
-		find_transport_line_structure(world_data, world_coords.first - 1, world_coords.second)
-			->termination_type = game::Transport_line_segment::terminationType::bend_right;
-		break;
+		auto& struct_layer =
+			world_data.logic_add_chunk(chunk)
+			          .get_struct(game::Logic_chunk::structLayer::transport_line)
+			          .emplace_back(this,
+			                        game::Chunk_struct_layer::to_position(chunk->get_position().first,
+			                                                              line_segment_world_x),
+			                        game::Chunk_struct_layer::to_position(chunk->get_position().second,
+			                                                              line_segment_world_y));
 
-		// Down
-	case Transport_line_data::lineOrientation::down_right:
-		find_transport_line_structure(world_data, world_coords.first, world_coords.second - 1)
-			->termination_type = game::Transport_line_segment::terminationType::bend_left;
-		break;
-	case Transport_line_data::lineOrientation::down_left:
-		find_transport_line_structure(world_data, world_coords.first, world_coords.second - 1)
-			->termination_type = game::Transport_line_segment::terminationType::bend_right;
-		break;
-
-		// Left
-	case Transport_line_data::lineOrientation::left_down:
-		find_transport_line_structure(world_data, world_coords.first + 1, world_coords.second)
-			->termination_type = game::Transport_line_segment::terminationType::bend_left;
-		break;
-	case Transport_line_data::lineOrientation::left_up:
-		find_transport_line_structure(world_data, world_coords.first + 1, world_coords.second)
-			->termination_type = game::Transport_line_segment::terminationType::bend_right;
-		break;
-
-	default:
-		break;
+		struct_layer.unique_data = line_segment;
+		// TODO remove this
+		// if (orientation == placementOrientation::left)
+		// 	((game::Transport_line_segment*)struct_layer.unique_data)
+		// 		->append_item(true, 1, 
+		// 		              data::data_manager::data_raw_get<Item>(data_category::item,
+		// 		                                                     "__base__/wooden-chest-item"));
 	}
-
 
 	// ======================================================================
 	// Set the target_segment to the neighbor it is pointing to, or the neighbor's target segment which is pointing to this
@@ -459,11 +446,63 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 		                              placementOrientation::left,
 		                              placementOrientation::right);
 
-	// TODO remove this
-	// ((game::Transport_line_segment*)struct_layer.unique_data)
-	// ->append_item(true, 1, 
-	// 							data::data_manager::data_raw_get<Item>(data_category::item,
-	// 															 "__base__/wooden-chest-item"));
+	// ======================================================================
+	// Change the neighboring line segment termination type to a bend depending on Transport_line_data orientation
+	// Since the line_orientation was changed to a bend, it is confirmed that segments exist at neighboring locations
+	// NOTE! This does not move across logic chunks and may make the position negative
+	switch (line_orientation) {
+		// Up
+	case Transport_line_data::lineOrientation::up_left:
+		update_transport_segment(world_data, world_coords.first, world_coords.second + 1,
+		                         0, -1,
+		                         game::Transport_line_segment::terminationType::bend_left);
+		break;
+	case Transport_line_data::lineOrientation::up_right:
+		update_transport_segment(world_data, world_coords.first, world_coords.second + 1,
+		                         0, -1,
+		                         game::Transport_line_segment::terminationType::bend_right);
+		break;
+
+		// Right
+	case Transport_line_data::lineOrientation::right_up:
+		update_transport_segment(world_data, world_coords.first - 1, world_coords.second,
+		                         1, 0,
+		                         game::Transport_line_segment::terminationType::bend_left);
+		break;
+	case Transport_line_data::lineOrientation::right_down:
+		update_transport_segment(world_data, world_coords.first - 1, world_coords.second,
+		                         1, 0,
+		                         game::Transport_line_segment::terminationType::bend_right);
+		break;
+
+		// Down
+	case Transport_line_data::lineOrientation::down_right:
+		update_transport_segment(world_data, world_coords.first, world_coords.second - 1,
+		                         0, 1,
+		                         game::Transport_line_segment::terminationType::bend_left);
+		break;
+	case Transport_line_data::lineOrientation::down_left:
+		update_transport_segment(world_data, world_coords.first, world_coords.second - 1,
+		                         0, 1,
+		                         game::Transport_line_segment::terminationType::bend_right);
+		break;
+
+		// Left
+	case Transport_line_data::lineOrientation::left_down:
+		update_transport_segment(world_data, world_coords.first + 1, world_coords.second,
+		                         -1, 0,
+		                         game::Transport_line_segment::terminationType::bend_left);
+		break;
+	case Transport_line_data::lineOrientation::left_up:
+		update_transport_segment(world_data, world_coords.first + 1, world_coords.second,
+		                         -1, 0,
+		                         game::Transport_line_segment::terminationType::bend_right);
+		break;
+
+	default:
+		break;
+	}
+
 }
 
 void jactorio::data::Transport_line::on_remove(game::World_data& world_data, const std::pair<int, int> world_coords,
