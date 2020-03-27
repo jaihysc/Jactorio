@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/01/2020
-// Last modified: 03/14/2020
+// Last modified: 03/27/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_DEBUG_H
@@ -21,9 +21,12 @@ namespace jactorio::renderer::gui
 
 	void debug_menu_main(ImGuiWindowFlags window_flags, game::Player_data& player_data);
 
-	void debug_timings(ImGuiWindowFlags window_flags);
 
-	void debug_item_spawner(ImGuiWindowFlags window_flags, game::Player_data& player_data);
+	void debug_timings();
+
+	void debug_item_spawner(game::Player_data& player_data);
+
+	void debug_transport_line_info(game::Player_data& player_data);
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_DEBUG_H

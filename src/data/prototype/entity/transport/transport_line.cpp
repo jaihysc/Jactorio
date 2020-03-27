@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/21/2020
-// Last modified: 03/26/2020
+// Last modified: 03/27/2020
 // 
 
 #include "data/prototype/entity/transport/transport_line.h"
@@ -102,24 +102,6 @@ jactorio::data::Transport_line_data::lineOrientation get_line_orientation(
 	return Transport_line_data::lineOrientation::up;
 }
 
-///
-/// \brief Attempts to retrieve transport line data at world coordinates on tile
-/// \return pointer to data or nullptr if non existent
-jactorio::data::Transport_line_data* get_line_data(jactorio::game::World_data& world_data,
-                                                   const int world_x, const int world_y) {
-	auto* tile = world_data.get_tile_world_coords(world_x, world_y);
-	if (!tile)  // No tile exists
-		return nullptr;
-
-	auto& layer = tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
-
-	if (!dynamic_cast<const jactorio::data::Transport_line*>(  // Not an instance of transport line
-		layer.prototype_data))
-		return nullptr;
-
-	return static_cast<jactorio::data::Transport_line_data*>(layer.unique_data);
-}
-
 
 std::pair<uint16_t, uint16_t> jactorio::data::Transport_line::map_placement_orientation(
 	const placementOrientation orientation, game::World_data& world_data,
@@ -203,7 +185,8 @@ void update_transport_line_targets(jactorio::game::World_data& world_data,
                                    const jactorio::data::placementOrientation target_connect_orientation) {
 	using namespace jactorio;
 
-	data::Transport_line_data* neighbor_line_data = get_line_data(world_data, neighbor_world_x, neighbor_world_y);
+	data::Transport_line_data* neighbor_line_data = data::Transport_line::get_line_data(
+		world_data, neighbor_world_x, neighbor_world_y);
 	if (neighbor_line_data) {
 		game::Transport_line_segment& neighbor_segment = neighbor_line_data->line_segment;
 
@@ -229,12 +212,15 @@ void update_transport_segment(jactorio::game::World_data& world_data,
                               const int world_x, const int world_y,
                               const float world_offset_x, const float world_offset_y,
                               const jactorio::game::Transport_line_segment::terminationType termination_type) {
+
+	using namespace jactorio;
+
 	auto& transport_structures =
 		world_data.logic_get_all_chunks()
 		          .at(world_data.get_chunk_world_coords(world_x, world_y))
-		          .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+		          .get_struct(game::Logic_chunk::structLayer::transport_line);
 
-	jactorio::data::Transport_line_data* line_data = get_line_data(world_data, world_x, world_y);
+	data::Transport_line_data* line_data = data::Transport_line::get_line_data(world_data, world_x, world_y);
 
 	// Search for the transport line in the chunk struct layer where the
 	// unique_data(Transport_line_data) == one referenced by line_data
@@ -243,13 +229,32 @@ void update_transport_segment(jactorio::game::World_data& world_data,
 			layer.position_x += world_offset_x;
 			layer.position_y += world_offset_y;
 
-			auto* line_segment = static_cast<jactorio::game::Transport_line_segment*>(layer.unique_data);
+			auto* line_segment = static_cast<game::Transport_line_segment*>(layer.unique_data);
 
 			line_segment->segment_length++;
 			line_segment->termination_type = termination_type;
 		}
 	}
 }
+
+
+// ======================================================================
+
+jactorio::data::Transport_line_data* jactorio::data::Transport_line::get_line_data(game::World_data& world_data,
+                                                                                   const int world_x, const int world_y) {
+	auto* tile = world_data.get_tile_world_coords(world_x, world_y);
+	if (!tile)  // No tile exists
+		return nullptr;
+
+	auto& layer = tile->get_layer(game::Chunk_tile::chunkLayer::entity);
+
+	if (!dynamic_cast<const Transport_line*>(  // Not an instance of transport line
+		layer.prototype_data))
+		return nullptr;
+
+	return static_cast<Transport_line_data*>(layer.unique_data);
+}
+
 
 void jactorio::data::Transport_line::on_build(game::World_data& world_data, const std::pair<int, int> world_coords,
                                               game::Chunk_tile_layer& tile_layer, const uint16_t frame,
@@ -415,12 +420,6 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 			                                                              line_segment_world_y));
 
 		struct_layer.unique_data = line_segment;
-		// TODO remove this
-		// if (orientation == placementOrientation::left)
-		// 	((game::Transport_line_segment*)struct_layer.unique_data)
-		// 		->append_item(true, 1, 
-		// 		              data::data_manager::data_raw_get<Item>(data_category::item,
-		// 		                                                     "__base__/wooden-chest-item"));
 	}
 
 	// ======================================================================

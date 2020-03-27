@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/24/2020
+// Last modified: 03/27/2020
 // 
 
 #include "game/player/player_data.h"
@@ -17,8 +17,82 @@
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"
-#include "game/world/world_data.h"
 #include "game/world/chunk_tile_getters.h"
+#include "game/world/world_data.h"
+#include "renderer/opengl/shader_manager.h"
+#include "renderer/rendering/renderer.h"
+
+void jactorio::game::Player_data::mouse_calculate_selected_tile() {
+	float pixels_from_center_x;
+	float pixels_from_center_y;
+	{
+		const unsigned short window_width = renderer::Renderer::get_window_width();
+		const unsigned short window_height = renderer::Renderer::get_window_height();
+		const auto& matrix = renderer::get_mvp_matrix();
+
+		// Account for MVP matrices
+		// Normalize to -1 | 1 used by the matrix
+		const double norm_x = 2 * (Mouse_selection::get_cursor_x() / window_width) - 1;
+		const double norm_y = 2 * (Mouse_selection::get_cursor_y() / window_height) - 1;
+
+		// A = C / B
+		const glm::vec4 norm_positions = matrix / glm::vec4(norm_x, norm_y, 1, 1);
+
+
+		float mouse_x_center;
+		float mouse_y_center;
+		{
+			// Calculate the center tile on screen
+			// Calculate number of pixels from center
+			const double win_center_norm_x = 2 * (static_cast<double>(window_width) / 2 / window_width) - 1;
+			const double win_center_norm_y = 2 * (static_cast<double>(window_height) / 2 / window_height) - 1;
+
+			const glm::vec4 win_center_norm_positions =
+				matrix / glm::vec4(win_center_norm_x, win_center_norm_y, 1, 1);
+
+			mouse_x_center = win_center_norm_positions.x;
+			mouse_y_center = win_center_norm_positions.y;
+		}
+
+		// If player is standing on a partial tile, adjust the center accordingly to the correct location
+		mouse_x_center -=
+			static_cast<float>(renderer::Renderer::tile_width) * (player_position_x_ - static_cast<int>(player_position_x_));
+		// This is plus since the y axis is inverted
+		mouse_y_center +=
+			static_cast<float>(renderer::Renderer::tile_width) * (player_position_y_ - static_cast<int>(player_position_y_));
+
+
+		pixels_from_center_x = norm_positions.x - mouse_x_center;
+		pixels_from_center_y = mouse_y_center - norm_positions.y;
+	}
+
+	// Calculate tile position based on current player position
+	int tile_x = static_cast<int>(player_position_x_) +
+		pixels_from_center_x / static_cast<float>(renderer::Renderer::tile_width);
+
+	int tile_y = static_cast<int>(player_position_y_) +
+		pixels_from_center_y / static_cast<float>(renderer::Renderer::tile_width);
+
+	// Subtract extra tile if negative because no tile exists at -0, -0
+	if (tile_x < 0)
+		tile_x -= 1.f;
+	if (tile_y < 0)
+		tile_y -= 1.f;
+
+	mouse_selected_tile_ = std::pair<int, int>(tile_x, tile_y);
+}
+
+bool jactorio::game::Player_data::mouse_selected_tile_in_range() const {
+	const auto cursor_position = get_mouse_tile_coords();
+
+	// Maximum distance of from the player where tiles can be reached
+	constexpr unsigned int max_reach = 14;
+	const unsigned int tile_dist =
+		abs(player_position_x_ - cursor_position.first) +
+		abs(player_position_y_ - cursor_position.second);
+
+	return tile_dist <= max_reach;
+}
 
 bool jactorio::game::Player_data::target_tile_valid(World_data* world_data, const int x, const int y) const {
 	assert(world_data != nullptr);  // Player is not in a world

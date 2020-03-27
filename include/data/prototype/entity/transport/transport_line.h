@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/10/2020
-// Last modified: 03/26/2020
+// Last modified: 03/27/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
@@ -80,12 +80,19 @@ namespace jactorio::data
 		// Game events
 
 		///
+		/// \brief Attempts to retrieve transport line data at world coordinates on tile
+		/// \return pointer to data or nullptr if non existent
+		J_NODISCARD static Transport_line_data* get_line_data(game::World_data& world_data, int world_x, int world_y);
+
+	private:
+		///
 		///	\brief Updates the orientation of current and neighboring transport lines 
 		static void update_neighboring_orientation(game::World_data& world_data, std::pair<int, int> world_coords,
 		                                           Transport_line_data* t_center,
 		                                           Transport_line_data* c_right,
 		                                           Transport_line_data* b_center,
 		                                           Transport_line_data* c_left, Transport_line_data* center);
+	public:
 
 		void on_build(game::World_data& world_data, std::pair<int, int> world_coords,
 		              game::Chunk_tile_layer& tile_layer, uint16_t frame, placementOrientation orientation) const override;

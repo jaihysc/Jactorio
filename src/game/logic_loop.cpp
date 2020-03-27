@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/20/2020
+// Last modified: 03/27/2020
 // 
 
 #include "game/logic_loop.h"
@@ -119,29 +119,29 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 
 		// Place entities
 		input_manager::subscribe([]() {
-			if (renderer::imgui_manager::input_captured || !game_data->input.mouse.selected_tile_in_range())
+			if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
 				return;
 
-			const auto tile_selected = game_data->input.mouse.get_mouse_tile_coords();
+			const auto tile_selected = game_data->player.get_mouse_tile_coords();
 			game_data->player.try_place_entity(game_data->world,
 			                                   tile_selected.first, tile_selected.second);
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS);
 
 		input_manager::subscribe([]() {
-			if (renderer::imgui_manager::input_captured || !game_data->input.mouse.selected_tile_in_range())
+			if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
 				return;
 
-			const auto tile_selected = game_data->input.mouse.get_mouse_tile_coords();
+			const auto tile_selected = game_data->player.get_mouse_tile_coords();
 			game_data->player.try_place_entity(game_data->world,
 			                                   tile_selected.first, tile_selected.second, true);
 		}, GLFW_MOUSE_BUTTON_1, GLFW_PRESS_FIRST);
 
 		// Remove entities or mine resource
 		input_manager::subscribe([]() {
-			if (renderer::imgui_manager::input_captured || !game_data->input.mouse.selected_tile_in_range())
+			if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
 				return;
 
-			const auto tile_selected = game_data->input.mouse.get_mouse_tile_coords();
+			const auto tile_selected = game_data->player.get_mouse_tile_coords();
 			game_data->player.try_pickup(game_data->world,
 			                             tile_selected.first, tile_selected.second);
 		}, GLFW_MOUSE_BUTTON_2, GLFW_PRESS);
@@ -528,8 +528,7 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 		{
 			//			std::lock_guard lk(*mutex);
 
-			game_data->input.mouse.calculate_selected_tile(game_data->player.get_player_position_x(),
-			                                               game_data->player.get_player_position_y());
+			game_data->player.mouse_calculate_selected_tile();
 
 			// Do things every logic loop tick
 			Event::raise<Logic_tick_event>(event_type::logic_tick, logic_tick);

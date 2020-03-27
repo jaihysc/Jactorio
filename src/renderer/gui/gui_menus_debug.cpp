@@ -3,16 +3,18 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/01/2020
-// Last modified: 03/12/2020
+// Last modified: 03/27/2020
 // 
 
 #include "renderer/gui/gui_menus_debug.h"
 
+#include <ostream>
 #include <glm/glm.hpp>
 
 #include "jactorio.h"
 
 #include "data/data_manager.h"
+#include "data/prototype/entity/transport/transport_line.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/transport_line_structure.h"
@@ -25,12 +27,14 @@ bool show_demo_window = false;
 bool show_item_spawner_window = false;
 
 // Game
-bool show_belt_structure = false;
+bool show_transport_line_info = false;
 
 void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 	auto& world_data = player_data.get_player_world();
 
-	if (show_belt_structure) {
+	if (show_transport_line_info) {
+		debug_transport_line_info(player_data);
+
 		// Sprite representing the update point
 		auto* sprite_stop =
 			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-red");
@@ -120,12 +124,18 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 
 				object_layer.emplace_back(direction_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
 				object_layer.emplace_back(outline_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
-
-
 			}
 		}
 	}
 
+	if (show_demo_window)
+		ImGui::ShowDemoWindow();
+
+	if (show_timings_window)
+		debug_timings();
+
+	if (show_item_spawner_window)
+		debug_item_spawner(player_data);
 }
 
 void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flags, game::Player_data& player_data) {
@@ -165,7 +175,10 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 		world_data.set_world_generator_seed(seed);
 
 		// Options
-		ImGui::Checkbox("Show belt structures", &show_belt_structure);
+		ImGui::Checkbox("Item spawner", &show_item_spawner_window);
+
+		ImGui::Checkbox("Show transport line info", &show_transport_line_info);
+
 		if (ImGui::Button("Make all belt items visible")) {
 			for (auto& pair : world_data.logic_get_all_chunks()) {
 				auto& l_chunk = pair.second;
@@ -183,24 +196,14 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 	ImGui::SameLine();
 	ImGui::Checkbox("Demo Window", &show_demo_window);
 
-	ImGui::Checkbox("Item spawner", &show_item_spawner_window);
 
 	ImGui::End();
-
-	if (show_demo_window)
-		ImGui::ShowDemoWindow();
-
-	if (show_timings_window)
-		debug_timings(window_flags);
-
-	if (show_item_spawner_window)
-		debug_item_spawner(window_flags, player_data);
 }
 
-void jactorio::renderer::gui::debug_timings(const ImGuiWindowFlags window_flags) {
+void jactorio::renderer::gui::debug_timings() {
 	using namespace core;
 
-	ImGui::Begin("Timings", nullptr, window_flags);
+	ImGui::Begin("Timings");
 	ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	for (auto& time : Execution_timer::measured_times) {
@@ -209,18 +212,17 @@ void jactorio::renderer::gui::debug_timings(const ImGuiWindowFlags window_flags)
 	ImGui::End();
 }
 
-int give_amount = 1;
+int give_amount = 100;
 
-void jactorio::renderer::gui::debug_item_spawner(const ImGuiWindowFlags window_flags,
-                                                 game::Player_data& player_data) {
+void jactorio::renderer::gui::debug_item_spawner(game::Player_data& player_data) {
 	using namespace core;
 
-	ImGui::Begin("Item spawner", nullptr, window_flags);
+	ImGui::Begin("Item spawner");
 
 	auto game_items = data::data_manager::data_raw_get_all<data::Item>(data::data_category::item);
 	for (auto& item : game_items) {
 		ImGui::PushID(item->name.c_str());
-		
+
 		if (ImGui::Button(item->get_localized_name().c_str())) {
 			data::item_stack item_stack = {item, give_amount};
 			game::inventory_c::add_itemstack_to_inv(
@@ -238,6 +240,135 @@ void jactorio::renderer::gui::debug_item_spawner(const ImGuiWindowFlags window_f
 		for (auto& i : player_data.inventory_player) {
 			i = {nullptr, 0};
 		}
+	}
+
+	ImGui::End();
+}
+
+std::pair<int32_t, int32_t> last_valid_line_segment{};
+bool use_last_valid_line_segment = false;
+
+void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& player_data) {
+	ImGui::Begin("Transport Line Info");
+
+	const auto selected_tile = player_data.get_mouse_tile_coords();
+	data::Transport_line_data* data = data::Transport_line::get_line_data(player_data.get_player_world(),
+	                                                                      selected_tile.first, selected_tile.second);
+
+	// Try to use current selected line segment first, otherwise used the last valid if checked
+	game::Transport_line_segment* segment_ptr = nullptr;
+
+	if (data) {
+		last_valid_line_segment = selected_tile;
+		segment_ptr = &data->line_segment;
+	}
+	else {
+		ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
+		if (use_last_valid_line_segment) {
+			data::Transport_line_data* data =
+				data::Transport_line::get_line_data(player_data.get_player_world(),
+				                                    last_valid_line_segment.first,
+				                                    last_valid_line_segment.second);
+			if (data)
+				segment_ptr = &data->line_segment;
+		}
+	}
+
+	if (!segment_ptr) {
+		ImGui::Text("Selected tile is not a transport line");
+	}
+	else {
+		game::Transport_line_segment& segment = *segment_ptr;
+
+		// Show transport line properties
+		// Show memory addresses
+		{
+			std::ostringstream sstream;
+			sstream << segment_ptr;
+			ImGui::Text("Segment: %s", sstream.str().c_str());
+
+			
+			std::ostringstream sstream2;
+			sstream2 << segment.target_segment;
+			ImGui::Text("Target segment: %s", segment.target_segment ? sstream2.str().c_str() : "NULL");
+		}
+
+		ImGui::Text("Segment length: %d", segment.segment_length);
+		
+		{
+			std::string s;
+			switch (segment.termination_type) {
+			case game::Transport_line_segment::terminationType::straight:
+				s = "Straight";
+				break;
+			case game::Transport_line_segment::terminationType::bend_left:
+				s = "Bend left";
+				break;
+			case game::Transport_line_segment::terminationType::bend_right:
+				s = "Bend right";
+				break;
+			case game::Transport_line_segment::terminationType::left_only:
+				s = "Left side";
+				break;
+			case game::Transport_line_segment::terminationType::right_only:
+				s = "Right side";
+				break;
+			default:
+				assert(false);  // Missing switch case
+				break;
+			}
+
+			ImGui::Text("Termination Type: %s", s.c_str());
+		}
+		{
+			std::string s;
+			switch (segment.direction) {
+			case game::Transport_line_segment::moveDir::up:
+				s = "Up";
+				break;
+			case game::Transport_line_segment::moveDir::right:
+				s = "Right";
+				break;
+			case game::Transport_line_segment::moveDir::down:
+				s = "Down";
+				break;
+			case game::Transport_line_segment::moveDir::left:
+				s = "Left";
+				break;
+			default:
+				assert(false);  // Missing switch case
+				break;
+			}
+
+			ImGui::Text("Direction: %s", s.c_str());
+		}
+
+		// Display items
+		ImGui::Text("Left ----------");
+		ImGui::Text("Status: %s", segment.is_active_left() ? "Active" : "Stopped");
+		for (auto& item : segment.left) {
+			ImGui::Text("%s %5.5f", item.second->name.c_str(), item.first.getAsDouble());
+		}
+
+		ImGui::Separator();
+		ImGui::Text("Right ----------");
+		ImGui::Text("Status: %s", segment.is_active_right() ? "Active" : "Stopped");
+		for (auto& item : segment.right) {
+			ImGui::Text("%s %5.5f", item.second->name.c_str(), item.first.getAsDouble());
+		}
+
+
+		// Appending item
+		const std::string iname = "__base__/wooden-chest-item";
+		if (ImGui::Button("Append Item Left"))
+			segment.append_item(true,
+			                    0.2,
+			                    data::data_manager::data_raw_get<data::Item>(data::data_category::item, iname));
+
+		if (ImGui::Button("Append Item Right"))
+			segment.append_item(false,
+			                    0.2,
+			                    data::data_manager::data_raw_get<data::Item>(data::data_category::item, iname));
 	}
 
 	ImGui::End();

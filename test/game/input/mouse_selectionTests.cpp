@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/05/2020
-// Last modified: 03/21/2020
+// Last modified: 03/27/2020
 // 
 
 #include <gtest/gtest.h>
@@ -17,6 +17,9 @@ namespace game
 {
 #define MOUSE_SELECTION_TEST_HEADER\
 		jactorio::game::World_data world_data{};\
+		jactorio::game::Player_data player_data{};\
+		player_data.set_player_world(&world_data);\
+		\
 		world_data.add_chunk(new jactorio::game::Chunk(0, 0, nullptr));\
 		jactorio::game::Mouse_selection mouse_selection{};
 
@@ -31,7 +34,7 @@ namespace game
 		entity.placeable = true;
 
 		// Should set item's sprite at overlay layer at world position 0, 0
-		mouse_selection.draw_overlay(world_data, &entity, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, &entity, 0, 0, jactorio::data::placementOrientation::up);
 		EXPECT_EQ(
 			world_data.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data
@@ -40,7 +43,7 @@ namespace game
 		);
 
 		// Should clear last overlay at 0,0 Draw new at 1, 0
-		mouse_selection.draw_overlay(world_data, &entity, 1, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, &entity, 1, 0, jactorio::data::placementOrientation::up);
 		EXPECT_EQ(
 			world_data.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data
@@ -67,7 +70,7 @@ namespace game
 		entity.placeable = false;
 
 		// Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not placeable
-		mouse_selection.draw_overlay(world_data, &entity, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, &entity, 0, 0, jactorio::data::placementOrientation::up);
 		EXPECT_EQ(
 			world_data.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
 			.prototype_data
@@ -96,7 +99,7 @@ namespace game
 
 
 		// Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not placeable
-		mouse_selection.draw_overlay(world_data, &entity, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, &entity, 0, 0, jactorio::data::placementOrientation::up);
 		EXPECT_EQ(
 			world_data.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
 			.prototype_data
@@ -110,7 +113,7 @@ namespace game
 		MOUSE_SELECTION_TEST_HEADER
 
 		// Should set item's sprite at overlay layer at world position 0, 0
-		mouse_selection.draw_overlay(world_data, nullptr, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, nullptr, 0, 0, jactorio::data::placementOrientation::up);
 		EXPECT_EQ(
 			world_data.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data
@@ -119,7 +122,7 @@ namespace game
 		);
 
 		// Should clear last overlay at 0,0 Draw new at 1, 0
-		mouse_selection.draw_overlay(world_data, nullptr, 1, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, nullptr, 1, 0, jactorio::data::placementOrientation::up);
 		EXPECT_EQ(
 			world_data.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data
@@ -154,7 +157,7 @@ namespace game
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).prototype_data = &entity;
 
 
-		mouse_selection.draw_overlay(world_data, nullptr, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, nullptr, 0, 0, jactorio::data::placementOrientation::up);
 		EXPECT_EQ(
 			world_data.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
 			.prototype_data
@@ -172,7 +175,7 @@ namespace game
 		entity.sprite = &entity_sprite;
 		entity.placeable = false;
 
-		
+
 		auto guard = jactorio::core::Resource_guard(jactorio::data::data_manager::clear_data);
 		auto* cursor_sprite = new jactorio::data::Sprite{};
 
@@ -183,7 +186,7 @@ namespace game
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &entity;
 
 
-		mouse_selection.draw_overlay(world_data, nullptr, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, nullptr, 0, 0, jactorio::data::placementOrientation::up);
 		EXPECT_EQ(
 			world_data.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
 			.prototype_data
@@ -196,8 +199,11 @@ namespace game
 		// Attempt to clear last tile and do nothing
 
 		jactorio::game::World_data world_data{};
+		jactorio::game::Player_data player_data{};
+		player_data.set_player_world(&world_data);
+
 		jactorio::game::Mouse_selection mouse_selection{};
 
-		mouse_selection.draw_overlay(world_data, nullptr, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, nullptr, 0, 0, jactorio::data::placementOrientation::up);
 	}
 }

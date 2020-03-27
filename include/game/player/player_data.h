@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/24/2020
+// Last modified: 03/27/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
@@ -25,6 +25,27 @@ namespace jactorio::game
 	/// \brief Stores information & functions regarding a player (Duplicated for multiple players)
 	class Player_data
 	{
+		// ======================================================================
+		// Player specific mouse selection
+
+		std::pair<int, int> mouse_selected_tile_;
+
+	public:
+		///
+		/// \brief Call on game tick to calculate the coordinates of mouse selected tile
+		/// Cached in mouse_selected_tile_
+		void mouse_calculate_selected_tile();
+
+		///
+		/// Gets the world X, Y of the tile the mouse is hovered over, computed by calculate_selected_tile(x, y)
+		J_NODISCARD std::pair<int, int> get_mouse_tile_coords() const { return mouse_selected_tile_; }
+
+		///
+		/// \return true if selected tile is within placement range
+		J_NODISCARD bool mouse_selected_tile_in_range() const;
+
+
+	private:
 		// ============================================================================================
 		// Movement
 		float player_position_x_ = 0;

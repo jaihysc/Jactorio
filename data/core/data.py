@@ -22,6 +22,8 @@ addSprite("rect-green", "core/graphics/rect-green.png")
 addSprite("rect-aqua", "core/graphics/rect-aqua.png")
 addSprite("rect-red", "core/graphics/rect-red.png")
 addSprite("rect-pink", "core/graphics/rect-pink.png")
+addSprite("rect-yellow", "core/graphics/rect-yellow.png")
+addSprite("rect-grey", "core/graphics/rect-grey.png")
 
 
 # Inventory selection cursor
