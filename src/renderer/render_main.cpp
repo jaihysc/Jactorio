@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/20/2020
+// Last modified: 03/28/2020
 // 
 
 #include <GL/glew.h>
@@ -88,13 +88,13 @@ int jactorio::renderer::render_init(std::mutex* mutex) {
 
 	// Loading textures
 	core::Resource_guard sprite_map_guard(&renderer_sprites::clear_spritemaps);
-	renderer_sprites::create_spritemap(data::Sprite::sprite_group::terrain, true);
-	renderer_sprites::create_spritemap(data::Sprite::sprite_group::gui, false);
+	renderer_sprites::create_spritemap(data::Sprite::spriteGroup::terrain, true);
+	renderer_sprites::create_spritemap(data::Sprite::spriteGroup::gui, false);
 
 	// Terrain
 	Renderer::set_spritemap_coords(
-		renderer_sprites::get_spritemap(data::Sprite::sprite_group::terrain).sprite_positions);
-	renderer_sprites::get_texture(data::Sprite::sprite_group::terrain)->bind(0);
+		renderer_sprites::get_spritemap(data::Sprite::spriteGroup::terrain).sprite_positions);
+	renderer_sprites::get_texture(data::Sprite::spriteGroup::terrain)->bind(0);
 
 	// Gui
 	imgui_manager::setup_character_data();

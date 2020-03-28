@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/14/2020
+// Last modified: 03/28/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
@@ -23,7 +23,10 @@ namespace jactorio::renderer::renderer_sprites
 {
 	struct Spritemap_data
 	{
-		data::Sprite* spritemap = nullptr;
+		// For the loaded sprite
+		unsigned char* sprite_buffer = nullptr;
+		unsigned int width = 0;
+		unsigned int height = 0;
 
 		// Image positions retrieved via the path originally given to create the spritemap
 		// 0 - 1 positions of the sprite within the spritemap
@@ -40,13 +43,13 @@ namespace jactorio::renderer::renderer_sprites
 	/**
 	 * Creates a spritemap and stores it as a renderer::Texture
 	 */
-	void create_spritemap(data::Sprite::sprite_group group, bool invert_sprites);
+	void create_spritemap(data::Sprite::spriteGroup group, bool invert_sprites);
 
 	/**
 	 * Retrieves spritemap at specified group
 	 */
-	const Spritemap_data& get_spritemap(data::Sprite::sprite_group group);
-	const Texture* get_texture(data::Sprite::sprite_group group);
+	const Spritemap_data& get_spritemap(data::Sprite::spriteGroup group);
+	const Texture* get_texture(data::Sprite::spriteGroup group);
 
 	/*!
 	 * Generated spritemap will be purely horizontal, all images concatenated side by side <br>

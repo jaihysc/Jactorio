@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/15/2020
+// Last modified: 03/28/2020
 // 
 
 #include <gtest/gtest.h>
@@ -24,25 +24,25 @@ namespace renderer
 		// Sprite data delete by guard
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite1",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
+		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite2",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
+		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
 
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite3",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                                      {jactorio::data::Sprite::sprite_group::gui}));
+		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite4",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                                      {jactorio::data::Sprite::sprite_group::gui}));
+		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
 
 		// Should filter out to only 2 entries
-		create_spritemap(jactorio::data::Sprite::sprite_group::terrain, false);
+		create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
 
-		const Spritemap_data& data = get_spritemap(jactorio::data::Sprite::sprite_group::terrain);
+		const Spritemap_data& data = get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
 
-		EXPECT_EQ(data.spritemap->get_width(), 64);
-		EXPECT_EQ(data.spritemap->get_height(), 32);
+		EXPECT_EQ(data.width, 64);
+		EXPECT_EQ(data.height, 32);
 
 	}
 
@@ -60,18 +60,18 @@ namespace renderer
 		// Terrain
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite1",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
+		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite2",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                                      {jactorio::data::Sprite::sprite_group::terrain}));
+		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
 
 		// Gui
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite3",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                                      {jactorio::data::Sprite::sprite_group::gui}));
+		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite4",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                                      {jactorio::data::Sprite::sprite_group::gui}));
+		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
 
 		// None
 		data_manager::data_raw_add(jactorio::data::data_category::sprite, "spriteNone",
@@ -79,12 +79,12 @@ namespace renderer
 		                                                      {}));
 
 		// Should filter out to 3 entries, total width of 32 * 3
-		create_spritemap(jactorio::data::Sprite::sprite_group::terrain, false);
+		create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
 
-		const Spritemap_data& data = get_spritemap(jactorio::data::Sprite::sprite_group::terrain);
+		const Spritemap_data& data = get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
 
-		EXPECT_EQ(data.spritemap->get_width(), 96);
-		EXPECT_EQ(data.spritemap->get_height(), 32);
+		EXPECT_EQ(data.width, 96);
+		EXPECT_EQ(data.height, 32);
 
 	}
 
@@ -136,12 +136,12 @@ namespace renderer
 
 		const auto spritemap = jactorio::renderer::renderer_sprites::gen_spritemap(prototypes, 4, true);
 
-		EXPECT_EQ(spritemap.spritemap->get_width(), 160);
-		EXPECT_EQ(spritemap.spritemap->get_height(), 64);
+		EXPECT_EQ(spritemap.width, 160);
+		EXPECT_EQ(spritemap.height, 64);
 
 		// Sample spots on the concatenated image
 		// Image 0
-		auto* img_ptr = spritemap.spritemap->get_sprite_data_ptr();
+		auto* img_ptr = spritemap.sprite_buffer;
 
 		EXPECT_EQ(get_pixel_color(img_ptr, 160, 26, 6, 0, 0, 0, 255), true);
 		EXPECT_EQ(get_pixel_color(img_ptr, 160, 5, 26, 0, 105, 162, 255), true);
@@ -235,12 +235,12 @@ namespace renderer
 
 		const auto spritemap = jactorio::renderer::renderer_sprites::gen_spritemap(prototypes, 2, false);
 
-		EXPECT_EQ(spritemap.spritemap->get_width(), 64);
-		EXPECT_EQ(spritemap.spritemap->get_height(), 32);
+		EXPECT_EQ(spritemap.width, 64);
+		EXPECT_EQ(spritemap.height, 32);
 
 		// Sample spots on the concatenated image
 		// Image 0
-		auto* img_ptr = spritemap.spritemap->get_sprite_data_ptr();
+		auto* img_ptr = spritemap.sprite_buffer;
 
 		// Image 1
 		EXPECT_EQ(get_pixel_color(img_ptr, 64, 19, 25, 255, 0, 42, 255), true);

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/24/2019
-// Last modified: 03/24/2020
+// Last modified: 03/28/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
@@ -26,7 +26,7 @@ namespace jactorio::data
 	class Sprite final : public Prototype_base
 	{
 	public:
-		enum class sprite_group
+		enum class spriteGroup
 		{
 			terrain = 0,
 			gui,
@@ -35,7 +35,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Group(s) determines which spritemap(s) this sprite is placed on
-		PYTHON_PROP_REF(Sprite, std::vector<sprite_group>, group);
+		PYTHON_PROP_REF(Sprite, std::vector<spriteGroup>, group);
 
 		/*
 		 *     F0 F1 F2 F3 F4
@@ -62,7 +62,7 @@ namespace jactorio::data
 
 		///
 		/// \return true is Sprite is in specified group
-		bool is_in_group(sprite_group group);
+		bool is_in_group(spriteGroup group);
 
 	private:
 		// Image properties
@@ -81,7 +81,7 @@ namespace jactorio::data
 	public:
 		Sprite();
 		explicit Sprite(const std::string& sprite_path);
-		Sprite(const std::string& sprite_path, std::vector<sprite_group> group);
+		Sprite(const std::string& sprite_path, std::vector<spriteGroup> group);
 
 		~Sprite() override;
 
@@ -115,18 +115,12 @@ namespace jactorio::data
 		J_NODISCARD const unsigned char* get_sprite_data_ptr() const;
 
 		///
-		/// \brief Provided sprite_data pointer will be managed by the Sprite class
-		/// \remark Provided pointer must not be deleted
-		void set_sprite_data_ptr(unsigned char* sprite_data, unsigned sprite_width, unsigned sprite_height);
-
-
-		///
 		/// \brief Gets size of image on X axis
-		J_NODISCARD unsigned int get_width() const;
+		J_NODISCARD unsigned int get_width() const { return width_; }
 
 		///
 		/// \brief Gets size of image on Y axis
-		J_NODISCARD unsigned int get_height() const;
+		J_NODISCARD unsigned int get_height() const { return height_; }
 
 
 		///

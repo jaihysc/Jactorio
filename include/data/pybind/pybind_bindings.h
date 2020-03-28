@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/09/2019
-// Last modified: 03/17/2020
+// Last modified: 03/28/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
@@ -107,9 +107,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(Sprite, trim)
 		.def("load", &Sprite::load_image);
 
-	py::enum_<Sprite::sprite_group>(m, "spriteGroup")
-		.value("Terrain", Sprite::sprite_group::terrain)
-		.value("Gui", Sprite::sprite_group::gui);
+	py::enum_<Sprite::spriteGroup>(m, "spriteGroup")
+		.value("Terrain", Sprite::spriteGroup::terrain)
+		.value("Gui", Sprite::spriteGroup::gui);
 
 	PYBIND_DATA_CLASS(Item, Item, Prototype_base, item)
 		PYBIND_PROP(Item, sprite)

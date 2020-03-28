@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/24/2020
+// Last modified: 03/28/2020
 // 
 
 #include "renderer/gui/imgui_manager.h"
@@ -32,8 +32,8 @@ jactorio::renderer::imgui_manager::Menu_data menu_data;
 
 void jactorio::renderer::imgui_manager::setup_character_data() {
 	menu_data.sprite_positions =
-		renderer_sprites::get_spritemap(data::Sprite::sprite_group::gui).sprite_positions;
-	menu_data.tex_id = renderer_sprites::get_texture(data::Sprite::sprite_group::gui)->get_id();
+		renderer_sprites::get_spritemap(data::Sprite::spriteGroup::gui).sprite_positions;
+	menu_data.tex_id = renderer_sprites::get_texture(data::Sprite::spriteGroup::gui)->get_id();
 }
 
 jactorio::renderer::imgui_manager::Menu_data& jactorio::renderer::imgui_manager::get_menu_data() {

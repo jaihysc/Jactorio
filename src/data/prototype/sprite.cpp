@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/06/2019
-// Last modified: 03/19/2020
+// Last modified: 03/28/2020
 // 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -15,9 +15,8 @@
 
 #include "core/filesystem.h"
 #include "data/data_exception.h"
-#include "data/prototype/interface/renderable.h"
 
-bool jactorio::data::Sprite::is_in_group(const sprite_group group) {
+bool jactorio::data::Sprite::is_in_group(const spriteGroup group) {
 	for (auto& i : this->group) {
 		if (i == group)
 			return true;
@@ -54,13 +53,13 @@ jactorio::data::Sprite::Sprite(const std::string& sprite_path)
 	load_image(sprite_path);
 }
 
-jactorio::data::Sprite::Sprite(const std::string& sprite_path, const std::vector<sprite_group> group)
+jactorio::data::Sprite::Sprite(const std::string& sprite_path, const std::vector<spriteGroup> group)
 	: group(group), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
 	load_image(sprite_path);
 }
 
 jactorio::data::Sprite::~Sprite() {
-	delete[] sprite_buffer_;
+	stbi_image_free(sprite_buffer_);
 }
 
 jactorio::data::Sprite::Sprite(const Sprite& other)
@@ -142,21 +141,6 @@ get_coords_trimmed(const uint16_t set, const uint16_t frame) const {
 
 const unsigned char* jactorio::data::Sprite::get_sprite_data_ptr() const {
 	return sprite_buffer_;
-}
-
-void jactorio::data::Sprite::set_sprite_data_ptr(unsigned char* sprite_data, const unsigned sprite_width,
-                                                 const unsigned sprite_height) {
-	width_ = sprite_width;
-	height_ = sprite_height;
-	sprite_buffer_ = sprite_data;
-}
-
-unsigned jactorio::data::Sprite::get_width() const {
-	return width_;
-}
-
-unsigned jactorio::data::Sprite::get_height() const {
-	return height_;
 }
 
 jactorio::data::Sprite* jactorio::data::Sprite::load_image(const std::string& image_path) {

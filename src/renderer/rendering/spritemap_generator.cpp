@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/14/2020
+// Last modified: 03/28/2020
 // 
 
 #include "renderer/rendering/spritemap_generator.h"
@@ -29,7 +29,7 @@ void jactorio::renderer::renderer_sprites::clear_spritemaps() {
 	LOG_MESSAGE(debug, "Spritemap data cleared");
 }
 
-void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::sprite_group group,
+void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::spriteGroup group,
                                                             const bool invert_sprites) {
 	std::vector<data::Sprite*> sprites =
 		data::data_manager::data_raw_get_all<data::Sprite>(data::data_category::sprite);
@@ -55,18 +55,18 @@ void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::sprite
 	const Spritemap_data spritemap_data = gen_spritemap(sprites.data(), sprites.size(), invert_sprites);
 
 	// Texture will delete the sprite* when deleted
-	textures[static_cast<int>(group)] = new Texture(spritemap_data.spritemap);
+	textures[static_cast<int>(group)] = new Texture(spritemap_data.sprite_buffer, spritemap_data.width, spritemap_data.height);
 	spritemap_datas[static_cast<int>(group)] = (spritemap_data);
 }
 
 
 const jactorio::renderer::renderer_sprites::Spritemap_data& jactorio::renderer::renderer_sprites::get_spritemap(
-	data::Sprite::sprite_group group) {
+	data::Sprite::spriteGroup group) {
 	return spritemap_datas[static_cast<int>(group)];
 }
 
 const jactorio::renderer::Texture* jactorio::renderer::renderer_sprites::get_texture(
-	data::Sprite::sprite_group group) {
+	data::Sprite::spriteGroup group) {
 	return textures[static_cast<int>(group)];
 }
 
@@ -156,12 +156,12 @@ renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short cou
 		position.bottom_right.y /= static_cast<float>(pixels_y);
 	}
 
-	auto spritemap = new data::Sprite;
-	spritemap->set_sprite_data_ptr(spritemap_buffer, pixels_x, pixels_y);
-
 
 	Spritemap_data spritemap_data;
-	spritemap_data.spritemap = spritemap;
+	spritemap_data.sprite_buffer = spritemap_buffer;
+	spritemap_data.width = pixels_x;
+	spritemap_data.height = pixels_y;
+
 	spritemap_data.sprite_positions = image_positions;
 
 	return spritemap_data;
