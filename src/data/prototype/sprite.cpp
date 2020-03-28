@@ -72,9 +72,9 @@ jactorio::data::Sprite::Sprite(const Sprite& other)
 	  sprite_buffer_(other.sprite_buffer_) {
 
 	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytes_per_pixel_;
-	sprite_buffer_ = new unsigned char[size];
+	sprite_buffer_ = static_cast<unsigned char*>(malloc(size * sizeof(*sprite_buffer_)));  // stbi uses malloc
 	for (int i = 0; i < size; ++i) {
-		sprite_buffer_[i] = other.sprite_buffer_[i];
+	sprite_buffer_[i] = other.sprite_buffer_[i];
 	}
 }
 
@@ -90,7 +90,7 @@ jactorio::data::Sprite& jactorio::data::Sprite::operator=(const Sprite& other) {
 	sprite_buffer_ = other.sprite_buffer_;
 
 	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytes_per_pixel_;
-	sprite_buffer_ = new unsigned char[size];
+	sprite_buffer_ = static_cast<unsigned char*>(malloc(size * sizeof(*sprite_buffer_)));
 	for (int i = 0; i < size; ++i) {
 		sprite_buffer_[i] = other.sprite_buffer_[i];
 	}

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/14/2020
+// Last modified: 03/28/2020
 // 
 
 #include "data/data_manager.h"
@@ -13,7 +13,6 @@
 
 #include "core/filesystem.h"
 #include "core/logger.h"
-#include "core/resource_guard.h"
 #include "data/pybind/pybind_manager.h"
 #include "data/local_parser.h"
 
@@ -49,7 +48,7 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 	}
 
 	// Print warning if overriding another name
-	// Do not print warning in iname is empty
+	// Do not print warning in iname is empty and assign a new unique name
 	if (iname.empty()) {
 		// Generate a internal name based on the id
 		std::ostringstream sstr;
@@ -58,9 +57,12 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 	}
 	else {
 		const auto& category = data_raw[static_cast<uint16_t>(data_category)];
-		if (category.find(formatted_iname) != category.end()) {
+		auto it = category.find(formatted_iname);
+		if (it != category.end()) {
 			LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration",
 			              formatted_iname.c_str(), static_cast<int>(data_category));
+			// Free the previous prototype
+			delete it->second;
 		}
 	}
 

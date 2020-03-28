@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/15/2020
+// Last modified: 03/28/2020
 // 
 
 #include <gtest/gtest.h>
@@ -72,18 +72,16 @@ namespace data
 	TEST(data_manager, data_raw_add_increment_id) {
 		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
 
-		const auto prototype = new jactorio::data::Sprite{};
-
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish", prototype);
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish0", new jactorio::data::Sprite{});
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish1", new jactorio::data::Sprite{});
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish2", new jactorio::data::Sprite{});
+		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish3", new jactorio::data::Sprite{});
 
 		const auto proto =
 			*data_manager::data_raw_get<jactorio::data::Sprite>(
-				jactorio::data::data_category::sprite, "raw-fish");
+				jactorio::data::data_category::sprite, "raw-fish3");
 
-		EXPECT_EQ(proto.name, "raw-fish");
+		EXPECT_EQ(proto.name, "raw-fish3");
 		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
 		EXPECT_EQ(proto.internal_id, 4);
 	}

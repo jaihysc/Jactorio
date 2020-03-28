@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/24/2020
+// Last modified: 03/28/2020
 // 
 
 #include <gtest/gtest.h>
@@ -62,13 +62,11 @@ namespace game
 		auto item = jactorio::data::Item();
 		auto item_no_entity = jactorio::data::Item();  // Does not hold an entity reference
 
-		auto* entity = new jactorio::data::Container_entity();
+		auto entity = std::make_unique<jactorio::data::Container_entity>();
 		entity->set_item(&item);
-		// data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity);
 
 
-		auto* entity2 = new jactorio::data::Container_entity();
-		// data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity2);
+		auto entity2 = std::make_unique<jactorio::data::Container_entity>();
 
 
 		auto tile_proto = jactorio::data::Tile();
@@ -83,7 +81,7 @@ namespace game
 			tiles[1], jactorio::game::Chunk_tile::chunkLayer::base, &tile_proto);
 
 		jactorio::game::chunk_tile_getter::set_entity_prototype(
-			tiles[1], jactorio::game::Chunk_tile::chunkLayer::entity, entity2);
+			tiles[1], jactorio::game::Chunk_tile::chunkLayer::entity, entity2.get());
 
 		world_data.add_chunk(
 			new jactorio::game::Chunk(0, 0, tiles));
@@ -95,13 +93,13 @@ namespace game
 		player_data.set_selected_item(selected_item);
 
 		jactorio::game::chunk_tile_getter::set_entity_prototype(
-			tiles[0], jactorio::game::Chunk_tile::chunkLayer::entity, entity);
+			tiles[0], jactorio::game::Chunk_tile::chunkLayer::entity, entity.get());
 
 		player_data.try_place_entity(world_data, 0, 0);  // Item holds no reference to an entity
 		EXPECT_EQ(
 			jactorio::game::chunk_tile_getter::get_entity_prototype(
 				tiles[0], jactorio::game::Chunk_tile::chunkLayer::entity),
-			entity);  // Should not delete item at this location
+			entity.get());  // Should not delete item at this location
 
 
 		// Placement tests
@@ -121,7 +119,7 @@ namespace game
 			jactorio::game::chunk_tile_getter::get_entity_prototype(
 				tiles[0], jactorio::game::Chunk_tile::chunkLayer::entity)
 			,
-			entity);
+			entity.get());
 		EXPECT_EQ(player_data.get_selected_item()->second, 1);  // 1 less item 
 
 		// The on_build() method should get called, creating unique data on the tile which holds the inventory
@@ -134,7 +132,7 @@ namespace game
 			jactorio::game::chunk_tile_getter::get_entity_prototype(
 				tiles[1], jactorio::game::Chunk_tile::chunkLayer::entity)
 			,
-			entity2);
+			entity2.get());
 	}
 
 	TEST(player_data, try_place_entity_activate_layer) {
@@ -146,10 +144,9 @@ namespace game
 		auto item = jactorio::data::Item();
 		auto item_no_entity = jactorio::data::Item();  // Does not hold an entity reference
 
-		auto* entity = new jactorio::data::Container_entity();
+		auto entity = std::make_unique<jactorio::data::Container_entity>();
 		entity->placeable = true;
 		entity->set_item(&item);
-		// data_manager::data_raw_add(jactorio::data::data_category::container_entity, "", entity);
 
 
 		auto tile_proto = jactorio::data::Tile();
@@ -160,7 +157,7 @@ namespace game
 		jactorio::game::chunk_tile_getter::set_tile_prototype(tiles[0], jactorio::game::Chunk_tile::chunkLayer::base,
 		                                                      &tile_proto);
 		jactorio::game::chunk_tile_getter::set_entity_prototype(
-			tiles[0], jactorio::game::Chunk_tile::chunkLayer::entity, entity);
+			tiles[0], jactorio::game::Chunk_tile::chunkLayer::entity, entity.get());
 
 
 		world_data.add_chunk(new jactorio::game::Chunk(0, 0, tiles));
@@ -206,7 +203,7 @@ namespace game
 		// Create entity
 		auto item = jactorio::data::Item();
 
-		auto* entity = new jactorio::data::Container_entity();
+		auto entity = std::make_unique<jactorio::data::Container_entity>();
 		entity->placeable = false;
 		entity->set_item(&item);
 
@@ -219,7 +216,7 @@ namespace game
 		jactorio::game::chunk_tile_getter::set_tile_prototype(tiles[0], jactorio::game::Chunk_tile::chunkLayer::base,
 		                                                      &tile_proto);
 		jactorio::game::chunk_tile_getter::set_entity_prototype(
-			tiles[0], jactorio::game::Chunk_tile::chunkLayer::entity, entity);
+			tiles[0], jactorio::game::Chunk_tile::chunkLayer::entity, entity.get());
 
 
 		world_data.add_chunk(

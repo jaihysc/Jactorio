@@ -117,7 +117,16 @@ namespace renderer
 
 		// Images 0 - 2 are 32 x 32 px
 		// Image 3 is 64 x 64
-		const auto prototypes = new jactorio::data::Sprite* [4];
+
+		jactorio::data::Sprite** prototypes = nullptr;
+		jactorio::core::Capturing_guard<void()> guard([&]{
+			for (int i = 0; i < 4; ++i) {
+				delete prototypes[i];
+			}
+			delete[] prototypes;
+		});
+
+		prototypes = new jactorio::data::Sprite* [4];
 		for (int i = 0; i < 4; ++i) {
 			prototypes[i] = new jactorio::data::Sprite;
 		}
@@ -135,6 +144,7 @@ namespace renderer
 		prototypes[3]->load_image("test/graphics/test/test_tile3.png");
 
 		const auto spritemap = jactorio::renderer::renderer_sprites::gen_spritemap(prototypes, 4, true);
+		jactorio::core::Capturing_guard<void()> guard_2 ([&]{ delete[] spritemap.sprite_buffer; });
 
 		EXPECT_EQ(spritemap.width, 160);
 		EXPECT_EQ(spritemap.height, 64);
@@ -222,7 +232,15 @@ namespace renderer
 
 	TEST(spritemap_generator, gen_spritemap) {
 		// Images 0 - 2 are 32 x 32 px
-		const auto prototypes = new jactorio::data::Sprite* [2];
+		jactorio::data::Sprite** prototypes = nullptr;
+		jactorio::core::Capturing_guard<void()> guard([&]{
+			for (int i = 0; i < 2; ++i) {
+				delete prototypes[i];
+			}
+			delete[] prototypes;
+		});
+
+		prototypes = new jactorio::data::Sprite* [2];
 		for (int i = 0; i < 2; ++i) {
 			prototypes[i] = new jactorio::data::Sprite;
 		}
@@ -234,6 +252,7 @@ namespace renderer
 		prototypes[1]->load_image("test/graphics/test/test_tile1.png");
 
 		const auto spritemap = jactorio::renderer::renderer_sprites::gen_spritemap(prototypes, 2, false);
+		jactorio::core::Capturing_guard<void()> guard_2 ([&]{ delete[] spritemap.sprite_buffer; });
 
 		EXPECT_EQ(spritemap.width, 64);
 		EXPECT_EQ(spritemap.height, 32);
