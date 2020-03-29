@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/29/2020
-// Last modified: 03/15/2020
+// Last modified: 03/28/2020
 // 
 
 #include "core/data_type.h"
@@ -38,8 +38,10 @@ can_insert(const bool left_side, const transport_line_offset& start_offset) {
 		if (offset > start_offset)
 			return false;
 	}
-	// Account for the item width of the last item
-	offset += dec::decimal_cast<transport_line_decimal_place>(transport_line_c::item_spacing);
+
+	// Account for the item width of the last item if not the firs item
+	if (!side.empty())
+		offset += dec::decimal_cast<transport_line_decimal_place>(transport_line_c::item_spacing);
 
 	return offset <= start_offset;
 }

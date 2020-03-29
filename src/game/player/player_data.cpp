@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/27/2020
+// Last modified: 03/28/2020
 // 
 
 #include "game/player/player_data.h"
@@ -67,10 +67,10 @@ void jactorio::game::Player_data::mouse_calculate_selected_tile() {
 	}
 
 	// Calculate tile position based on current player position
-	int tile_x = static_cast<int>(player_position_x_) +
+	float tile_x = static_cast<int>(player_position_x_) +
 		pixels_from_center_x / static_cast<float>(renderer::Renderer::tile_width);
 
-	int tile_y = static_cast<int>(player_position_y_) +
+	float tile_y = static_cast<int>(player_position_y_) +
 		pixels_from_center_y / static_cast<float>(renderer::Renderer::tile_width);
 
 	// Subtract extra tile if negative because no tile exists at -0, -0

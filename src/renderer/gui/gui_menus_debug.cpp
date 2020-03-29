@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/01/2020
-// Last modified: 03/27/2020
+// Last modified: 03/28/2020
 // 
 
 #include "renderer/gui/gui_menus_debug.h"
@@ -258,12 +258,12 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 	// Try to use current selected line segment first, otherwise used the last valid if checked
 	game::Transport_line_segment* segment_ptr = nullptr;
 
+	ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 	if (data) {
 		last_valid_line_segment = selected_tile;
 		segment_ptr = &data->line_segment;
 	}
 	else {
-		ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 		if (use_last_valid_line_segment) {
 			data::Transport_line_data* data =
 				data::Transport_line::get_line_data(player_data.get_player_world(),
@@ -343,6 +343,19 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 			ImGui::Text("Direction: %s", s.c_str());
 		}
 
+		// Appending item
+		const std::string iname = "__base__/wooden-chest-item";
+		if (ImGui::Button("Append Item Left"))
+			segment.append_item(true,
+			                    0.2,
+			                    data::data_manager::data_raw_get<data::Item>(data::data_category::item, iname));
+
+		if (ImGui::Button("Append Item Right"))
+			segment.append_item(false,
+			                    0.2,
+			                    data::data_manager::data_raw_get<data::Item>(data::data_category::item, iname));
+
+
 		// Display items
 		ImGui::Text("Left ----------");
 		ImGui::Text("Status: %s", segment.is_active_left() ? "Active" : "Stopped");
@@ -357,18 +370,6 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 			ImGui::Text("%s %5.5f", item.second->name.c_str(), item.first.getAsDouble());
 		}
 
-
-		// Appending item
-		const std::string iname = "__base__/wooden-chest-item";
-		if (ImGui::Button("Append Item Left"))
-			segment.append_item(true,
-			                    0.2,
-			                    data::data_manager::data_raw_get<data::Item>(data::data_category::item, iname));
-
-		if (ImGui::Button("Append Item Right"))
-			segment.append_item(false,
-			                    0.2,
-			                    data::data_manager::data_raw_get<data::Item>(data::data_category::item, iname));
 	}
 
 	ImGui::End();

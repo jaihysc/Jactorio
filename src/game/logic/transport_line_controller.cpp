@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/13/2020
-// Last modified: 03/24/2020
+// Last modified: 03/28/2020
 // 
 
 #include "data/prototype/entity/transport/transport_line.h"
@@ -121,6 +121,7 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 					target_offset_tile = target_offset - segment->target_segment->r_back_item_distance;
 				}
 
+
 				bool added_item = false;
 				// Decides how the items will be fed into the target segment (if at all)
 				switch (segment->termination_type) {
@@ -156,6 +157,8 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 					break;
 				}
 
+
+				// Handle transition if the item has been added to another transport line
 				if (added_item) {
 					line_side.pop_front();  // Remove item in current segment now moved away
 

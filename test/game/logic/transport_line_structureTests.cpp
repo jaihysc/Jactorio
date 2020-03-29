@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/29/2020
-// Last modified: 03/15/2020
+// Last modified: 03/28/2020
 // 
 
 #include <gtest/gtest.h>
@@ -94,6 +94,27 @@ namespace game
 			dec::decimal_cast<jactorio::transport_line_decimal_place>(1.25)));
 	}
 
+	TEST(transport_line_structure, can_insert_first_item) {
+		// The first item which is appended ignores an additional offset of transport_line_c::item_spacing when calculating
+		// whether or not it can be inserted 
+
+		TRANSPORT_LINE_SEGMENT
+
+		const jactorio::transport_line_offset offset{0.f};
+
+		bool result = segment->can_insert(true, offset);  // Ok, Offset can be 0, is first item
+		EXPECT_TRUE(result);
+
+		segment->append_item(true, 0, item_proto.get());
+		result = segment->can_insert(true, offset);  // Not ok, offset changed to item_spacing
+		EXPECT_FALSE(result);
+
+		segment->append_item(true, 0, item_proto.get());
+		result = segment->can_insert(true, offset);  // Not ok, offset changed to item_spacing
+		EXPECT_FALSE(result);
+	}
+
+
 	TEST(transport_line_structure, is_active) {
 		// Insert into a gap between 1 and 1.5
 		// Is wide enough for the item (item_width - item_spacing) to fit there
@@ -137,6 +158,28 @@ namespace game
 
 		line_segment->append_item(true, 0.5, item_proto.get());
 		EXPECT_FLOAT_EQ(line_segment.get()->left[3].first.getAsDouble(), 0.5);
+	}
+
+	TEST(transport_line_structure, append_item_first_item) {
+		// The first item which is appended ignores an additional offset of transport_line_c::item_spacing when calculating
+		// whether or not it can be appended
+
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+
+		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
+			jactorio::game::Transport_line_segment::moveDir::up,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			5
+		);
+
+		line_segment->append_item(true, 0, item_proto.get());  // Ok, Offset can be 0, is first item
+		EXPECT_FLOAT_EQ(line_segment.get()->left[0].first.getAsDouble(), 0);
+
+		line_segment->append_item(true, 0, item_proto.get());  // Not ok, offset changed to item_spacing
+		EXPECT_FLOAT_EQ(line_segment.get()->left[1].first.getAsDouble(), jactorio::game::transport_line_c::item_spacing);
+
+		line_segment->append_item(true, 0, item_proto.get());  // Not ok, offset changed to item_spacing
+		EXPECT_FLOAT_EQ(line_segment.get()->left[2].first.getAsDouble(), jactorio::game::transport_line_c::item_spacing);
 	}
 
 	TEST(transport_line_structure, insert_item) {

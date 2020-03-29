@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/21/2020
-// Last modified: 03/27/2020
+// Last modified: 03/29/2020
 // 
 
 #include "data/prototype/entity/transport/transport_line.h"
@@ -314,9 +314,13 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 
 			case Transport_line_data::lineOrientation::right:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
+				line_segment_world_y--;
+				line_segment->segment_length++;
 				break;
 			case Transport_line_data::lineOrientation::left:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
+				line_segment_world_y--;
+				line_segment->segment_length++;
 				break;
 
 			default:
@@ -338,11 +342,15 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 				break;
 
 			case Transport_line_data::lineOrientation::up:
-				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
+				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
+				line_segment_world_x++;
+				line_segment->segment_length++;
 				break;
 
 			case Transport_line_data::lineOrientation::down:
-				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
+				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
+				line_segment_world_x++;
+				line_segment->segment_length++;
 				break;
 
 			default:
@@ -364,11 +372,15 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 				break;
 
 			case Transport_line_data::lineOrientation::right:
-				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
+				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
+				line_segment_world_y++;
+				line_segment->segment_length++;
 				break;
 
 			case Transport_line_data::lineOrientation::left:
-				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
+				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
+				line_segment_world_y++;
+				line_segment->segment_length++;
 				break;
 
 			default:
@@ -390,11 +402,15 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 				break;
 
 			case Transport_line_data::lineOrientation::up:
-				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
+				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
+				line_segment_world_x--;
+				line_segment->segment_length++;
 				break;
 
 			case Transport_line_data::lineOrientation::down:
-				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
+				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
+				line_segment_world_x--;
+				line_segment->segment_length++;
 				break;
 
 			default:
