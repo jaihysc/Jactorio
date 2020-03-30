@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/21/2020
-// Last modified: 03/29/2020
+// Last modified: 03/30/2020
 // 
 
 #include "data/prototype/entity/transport/transport_line.h"
@@ -237,6 +237,22 @@ void update_transport_segment(jactorio::game::World_data& world_data,
 	}
 }
 
+///
+/// \brief If a transport segment exists at world_x, world_y and terminationType == termination_type, its terminationType will
+/// be updated to new_termination_type
+void try_update_transport_segment(jactorio::game::World_data& world_data,
+                                  const int32_t world_x, const int32_t world_y,
+                                  const jactorio::game::Transport_line_segment::terminationType termination_type,
+                                  const jactorio::game::Transport_line_segment::terminationType new_termination_type) {
+	using namespace jactorio;
+
+	data::Transport_line_data* line_data = data::Transport_line::get_line_data(world_data, world_x, world_y);
+	if (line_data) {
+		if (line_data->line_segment.termination_type == termination_type) {
+			line_data->line_segment.termination_type = new_termination_type;
+		}
+	}
+}
 
 // ======================================================================
 
@@ -316,11 +332,19 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
 				line_segment_world_y--;
 				line_segment->segment_length++;
+
+				// Check 2 units up and see if there is segment bending left, if so change it to straight
+				try_update_transport_segment(world_data, world_coords.first, world_coords.second - 2,
+				                             game::Transport_line_segment::terminationType::bend_left,
+				                             game::Transport_line_segment::terminationType::left_only);
 				break;
 			case Transport_line_data::lineOrientation::left:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
 				line_segment_world_y--;
 				line_segment->segment_length++;
+				try_update_transport_segment(world_data, world_coords.first, world_coords.second - 2,
+				                             game::Transport_line_segment::terminationType::bend_right,
+				                             game::Transport_line_segment::terminationType::right_only);
 				break;
 
 			default:
@@ -341,17 +365,23 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 				line_segment->segment_length++;
 				break;
 
-			case Transport_line_data::lineOrientation::up:
-				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
-				line_segment_world_x++;
-				line_segment->segment_length++;
-				break;
-
 			case Transport_line_data::lineOrientation::down:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
 				line_segment_world_x++;
 				line_segment->segment_length++;
+				try_update_transport_segment(world_data, world_coords.first + 2, world_coords.second,
+				                             game::Transport_line_segment::terminationType::bend_left,
+				                             game::Transport_line_segment::terminationType::left_only);
 				break;
+			case Transport_line_data::lineOrientation::up:
+				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
+				line_segment_world_x++;
+				line_segment->segment_length++;
+				try_update_transport_segment(world_data, world_coords.first + 2, world_coords.second,
+				                             game::Transport_line_segment::terminationType::bend_right,
+				                             game::Transport_line_segment::terminationType::right_only);
+				break;
+
 
 			default:
 				break;
@@ -371,17 +401,23 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 				line_segment->segment_length++;
 				break;
 
-			case Transport_line_data::lineOrientation::right:
-				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
-				line_segment_world_y++;
-				line_segment->segment_length++;
-				break;
-
 			case Transport_line_data::lineOrientation::left:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
 				line_segment_world_y++;
 				line_segment->segment_length++;
+				try_update_transport_segment(world_data, world_coords.first, world_coords.second + 2,
+				                             game::Transport_line_segment::terminationType::bend_left,
+				                             game::Transport_line_segment::terminationType::left_only);
 				break;
+			case Transport_line_data::lineOrientation::right:
+				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
+				line_segment_world_y++;
+				line_segment->segment_length++;
+				try_update_transport_segment(world_data, world_coords.first, world_coords.second + 2,
+				                             game::Transport_line_segment::terminationType::bend_right,
+				                             game::Transport_line_segment::terminationType::right_only);
+				break;
+
 
 			default:
 				break;
@@ -405,12 +441,18 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 				line_segment->termination_type = game::Transport_line_segment::terminationType::right_only;
 				line_segment_world_x--;
 				line_segment->segment_length++;
+				try_update_transport_segment(world_data, world_coords.first - 2, world_coords.second,
+				                             game::Transport_line_segment::terminationType::bend_left,
+				                             game::Transport_line_segment::terminationType::left_only);
 				break;
 
 			case Transport_line_data::lineOrientation::down:
 				line_segment->termination_type = game::Transport_line_segment::terminationType::left_only;
 				line_segment_world_x--;
 				line_segment->segment_length++;
+				try_update_transport_segment(world_data, world_coords.first - 2, world_coords.second,
+				                             game::Transport_line_segment::terminationType::bend_right,
+				                             game::Transport_line_segment::terminationType::right_only);
 				break;
 
 			default:
