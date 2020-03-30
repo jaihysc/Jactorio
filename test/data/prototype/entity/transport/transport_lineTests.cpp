@@ -285,6 +285,7 @@ namespace data
 		// The on_remove event should update the orientations of the neighboring belts to if the current transport
 		// line is not there
 		TRANSPORT_LINE_TEST_HEAD
+		world_data.logic_add_chunk(world_data.get_chunk_world_coords(0, 0));
 		/*
 		 *  v
 		 *  >
@@ -314,6 +315,10 @@ namespace data
 			);
 		}
 	}
+
+
+	// ======================================================================
+
 
 	TEST(transport_line, on_build_create_transport_line_segment) {
 		// Should create a transport line segment and add its chunk to logic chunks
@@ -354,8 +359,7 @@ namespace data
 
 	TEST(transport_line, on_build_connect_transport_line_segments) {
 		// A transport line pointing to another one will set the target_segment
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		TRANSPORT_LINE_TEST_HEAD
 
 		auto proto = jactorio::data::Transport_belt{};
 		{
@@ -383,8 +387,7 @@ namespace data
 
 	TEST(transport_line, on_build_connect_transport_line_segments_2) {
 		// A transport line placed infront of another one will set the target_segment of the neighbor 
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		TRANSPORT_LINE_TEST_HEAD
 
 		auto proto = jactorio::data::Transport_belt{};
 		{
@@ -411,8 +414,7 @@ namespace data
 
 	TEST(transport_line, on_build_no_connect_transport_line_segments) {
 		// Do not connect transport line segments pointed at each other
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		TRANSPORT_LINE_TEST_HEAD
 
 		auto proto = jactorio::data::Transport_belt{};
 		{
@@ -479,10 +481,185 @@ namespace data
 		EXPECT_EQ(line_r->target_segment, line_l);
 	}
 
+	// ======================================================================
+
+	TEST(transport_line, on_build_up_update_neighboring_segment_to_side_only) {
+		TRANSPORT_LINE_TEST_HEAD
+		/*   
+		 * > ^ < 
+		 *   ^ 
+		 */
+		/* Order:
+		 *   
+		 * 2 4 3
+		 *   1
+		 */
+		auto proto = jactorio::data::Transport_belt{};
+		create_transport_line(world_data, proto, {1, 1}, jactorio::data::placementOrientation::up);
+
+		create_transport_line(world_data, proto, {0, 0}, jactorio::data::placementOrientation::right);
+		create_transport_line(world_data, proto, {2, 0}, jactorio::data::placementOrientation::left);
+
+		create_transport_line(world_data, proto, {1, 0}, jactorio::data::placementOrientation::up);
+
+
+		auto& logic_chunk = world_data.logic_get_all_chunks().at(world_data.get_chunk(0, 0));
+		auto& transport_lines =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(transport_lines.size(), 4);
+
+		{
+			jactorio::game::Chunk_struct_layer& line_layer = transport_lines[1];
+			EXPECT_FLOAT_EQ(line_layer.position_x, 1);
+			EXPECT_FLOAT_EQ(line_layer.position_y, 0);
+
+			auto* line = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
+			EXPECT_EQ(line->termination_type, jactorio::game::Transport_line_segment::terminationType::left_only);
+		}
+		{
+			jactorio::game::Chunk_struct_layer& line_layer = transport_lines[2];
+			EXPECT_FLOAT_EQ(line_layer.position_x, 1);
+			EXPECT_FLOAT_EQ(line_layer.position_y, 0);
+
+			auto* line = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
+			EXPECT_EQ(line->termination_type, jactorio::game::Transport_line_segment::terminationType::right_only);
+		}
+	}
+
+	TEST(transport_line, on_build_right_update_neighboring_segment_to_side_only) {
+		// Line 2 should change to right_only
+		TRANSPORT_LINE_TEST_HEAD
+		/*   v
+		 * > > 
+		 *   ^
+		 */
+		/* Order:
+		 *   3
+		 * 1 4 
+		 *   2
+		 */
+		auto proto = jactorio::data::Transport_belt{};
+		create_transport_line(world_data, proto, {0, 1}, jactorio::data::placementOrientation::right);
+
+		create_transport_line(world_data, proto, {1, 2}, jactorio::data::placementOrientation::up);
+		create_transport_line(world_data, proto, {1, 0}, jactorio::data::placementOrientation::down);
+
+		create_transport_line(world_data, proto, {1, 1}, jactorio::data::placementOrientation::right);
+
+
+		auto& logic_chunk = world_data.logic_get_all_chunks().at(world_data.get_chunk(0, 0));
+		auto& transport_lines =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(transport_lines.size(), 4);
+
+		{
+			jactorio::game::Chunk_struct_layer& line_layer = transport_lines[1];
+			EXPECT_FLOAT_EQ(line_layer.position_x, 1);
+			EXPECT_FLOAT_EQ(line_layer.position_y, 1);
+
+			auto* line = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
+			EXPECT_EQ(line->termination_type, jactorio::game::Transport_line_segment::terminationType::right_only);
+		}
+		{
+			jactorio::game::Chunk_struct_layer& line_layer = transport_lines[2];
+			EXPECT_FLOAT_EQ(line_layer.position_x, 1);
+			EXPECT_FLOAT_EQ(line_layer.position_y, 1);
+
+			auto* line = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
+			EXPECT_EQ(line->termination_type, jactorio::game::Transport_line_segment::terminationType::left_only);
+		}
+	}
+
+	TEST(transport_line, on_build_down_update_neighboring_segment_to_side_only) {
+		TRANSPORT_LINE_TEST_HEAD
+		/*   
+		 * > v < 
+		 */
+		/* Order:
+		 *   
+		 * 1 3 2 
+		 */
+		auto proto = jactorio::data::Transport_belt{};
+		create_transport_line(world_data, proto, {0, 0}, jactorio::data::placementOrientation::right);
+		create_transport_line(world_data, proto, {2, 0}, jactorio::data::placementOrientation::left);
+
+		create_transport_line(world_data, proto, {1, 0}, jactorio::data::placementOrientation::down);
+
+
+		auto& logic_chunk = world_data.logic_get_all_chunks().at(world_data.get_chunk(0, 0));
+		auto& transport_lines =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(transport_lines.size(), 3);
+
+		{
+			jactorio::game::Chunk_struct_layer& line_layer = transport_lines[0];
+			EXPECT_FLOAT_EQ(line_layer.position_x, 1);
+			EXPECT_FLOAT_EQ(line_layer.position_y, 0);
+
+			auto* line = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
+			EXPECT_EQ(line->termination_type, jactorio::game::Transport_line_segment::terminationType::right_only);
+		}
+		{
+			jactorio::game::Chunk_struct_layer& line_layer = transport_lines[1];
+			EXPECT_FLOAT_EQ(line_layer.position_x, 1);
+			EXPECT_FLOAT_EQ(line_layer.position_y, 0);
+
+			auto* line = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
+			EXPECT_EQ(line->termination_type, jactorio::game::Transport_line_segment::terminationType::left_only);
+		}
+	}
+
+	TEST(transport_line, on_build_left_update_neighboring_segment_to_side_only) {
+		// Line 2 should change to right_only
+		TRANSPORT_LINE_TEST_HEAD
+		/*   v
+		 *   < 
+		 *   ^
+		 */
+		/* Order:
+		 *   1 
+		 *   3 
+		 *   2
+		 */
+		auto proto = jactorio::data::Transport_belt{};
+		create_transport_line(world_data, proto, {0, 0}, jactorio::data::placementOrientation::down);
+		create_transport_line(world_data, proto, {0, 2}, jactorio::data::placementOrientation::up);
+
+		create_transport_line(world_data, proto, {0, 1}, jactorio::data::placementOrientation::left);
+
+
+		auto& logic_chunk = world_data.logic_get_all_chunks().at(world_data.get_chunk(0, 0));
+		auto& transport_lines =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(transport_lines.size(), 3);
+
+		{
+			jactorio::game::Chunk_struct_layer& line_layer = transport_lines[0];
+			EXPECT_FLOAT_EQ(line_layer.position_x, 0);
+			EXPECT_FLOAT_EQ(line_layer.position_y, 1);
+
+			auto* line = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
+			EXPECT_EQ(line->termination_type, jactorio::game::Transport_line_segment::terminationType::right_only);
+		}
+		{
+			jactorio::game::Chunk_struct_layer& line_layer = transport_lines[1];
+			EXPECT_FLOAT_EQ(line_layer.position_x, 0);
+			EXPECT_FLOAT_EQ(line_layer.position_y, 1);
+
+			auto* line = static_cast<jactorio::game::Transport_line_segment*>(line_layer.unique_data);
+			EXPECT_EQ(line->termination_type, jactorio::game::Transport_line_segment::terminationType::left_only);
+		}
+	}
+
+	// ======================================================================
+
 	TEST(transport_line, on_build_bending_transport_line_segment) {
 		// Change the transport_line_segment termination type in accordance with orientation when placed behind existing line
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		TRANSPORT_LINE_TEST_HEAD
 
 		auto proto = jactorio::data::Transport_belt{};
 		{
@@ -518,8 +695,7 @@ namespace data
 
 	TEST(transport_line, on_build_bending_transport_line_segment_2) {
 		// Change the transport_line_segment termination type in accordance with orientation when placed ahead of existing line 
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		TRANSPORT_LINE_TEST_HEAD
 
 		auto proto = jactorio::data::Transport_belt{};
 		{
@@ -552,6 +728,42 @@ namespace data
 		EXPECT_FLOAT_EQ(line_layer.position_y, 0.f);
 	}
 
+	TEST(transport_line, on_build_neighbor_bend) {
+		// Removing a transport line must update neighboring transport segments
+		// The bottom segment goes from right_only to bend_right
+		TRANSPORT_LINE_TEST_HEAD
+
+		auto proto = jactorio::data::Transport_belt{};
+
+		/*
+		 *  > > > 
+		 *    ^ 
+		 */
+		/* Order:
+		 * 4 3 2
+		 *   1
+		 */
+		create_transport_line(world_data, proto, {1, 1}, jactorio::data::placementOrientation::up);
+
+		create_transport_line(world_data, proto, {2, 0}, jactorio::data::placementOrientation::right);
+		create_transport_line(world_data, proto, {1, 0}, jactorio::data::placementOrientation::right);
+		create_transport_line(world_data, proto, {0, 0}, jactorio::data::placementOrientation::right);
+
+
+		jactorio::game::Logic_chunk& logic_chunk = world_data.logic_get_all_chunks().begin()->second;
+		std::vector<jactorio::game::Chunk_struct_layer>& struct_layer =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(struct_layer.size(), 4);
+		EXPECT_FLOAT_EQ(struct_layer[0].position_x, 1.f);
+		EXPECT_FLOAT_EQ(struct_layer[0].position_y, 0.f);
+
+		auto* line_segment = static_cast<jactorio::game::Transport_line_segment*>(struct_layer[0].unique_data);
+		EXPECT_EQ(line_segment->termination_type, jactorio::game::Transport_line_segment::terminationType::right_only);
+		EXPECT_EQ(line_segment->segment_length, 2);
+	}
+
+	// ======================================================================
 
 	// Checks that transport_lines.size() == 5, 4th item is right_only, 5th is left_only,
 	// Checks that both lines at at center_x, center_y
@@ -585,14 +797,12 @@ namespace data
 	}
 
 	TEST(transport_line, on_build_up_side_only_transport_segment) {
+		TRANSPORT_LINE_TEST_HEAD
 		/*
 		 *   ^
 		 * > ^ < 
 		 *   ^
 		 */
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
-
 		auto proto = jactorio::data::Transport_belt{};
 
 		create_transport_line(world_data, proto, {1, 0}, jactorio::data::placementOrientation::up);
@@ -606,14 +816,12 @@ namespace data
 	}
 
 	TEST(transport_line, on_build_right_side_only_transport_segment) {
+		TRANSPORT_LINE_TEST_HEAD
 		/*
 		 *   v
 		 * > > > 
 		 *   ^
 		 */
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
-
 		auto proto = jactorio::data::Transport_belt{};
 
 		create_transport_line(world_data, proto, {0, 1}, jactorio::data::placementOrientation::right);
@@ -627,14 +835,12 @@ namespace data
 	}
 
 	TEST(transport_line, on_build_down_side_only_transport_segment) {
+		TRANSPORT_LINE_TEST_HEAD
 		/*
 		 *   v
 		 * > v < 
 		 *   v 
 		 */
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
-
 		auto proto = jactorio::data::Transport_belt{};
 
 		create_transport_line(world_data, proto, {1, 0}, jactorio::data::placementOrientation::down);
@@ -648,14 +854,12 @@ namespace data
 	}
 
 	TEST(transport_line, on_build_left_side_only_transport_segment) {
+		TRANSPORT_LINE_TEST_HEAD
 		/*
 		 *   v
 		 * < < <
 		 *   ^
 		 */
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
-
 		auto proto = jactorio::data::Transport_belt{};
 
 		create_transport_line(world_data, proto, {0, 1}, jactorio::data::placementOrientation::left);
@@ -702,12 +906,11 @@ namespace data
 
 	// Change bend to side only as initially, it forms a bend without the line on top / bottom
 	TEST(transport_line, on_build_up_change_bend_to_side_only) {
+		TRANSPORT_LINE_TEST_HEAD
 		/*
 		 *   ^
 		 * > ^ < 
 		 */
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
 
 		auto proto = jactorio::data::Transport_belt{};
 
@@ -721,13 +924,12 @@ namespace data
 	}
 
 	TEST(transport_line, on_build_right_change_bend_to_side_only) {
+		TRANSPORT_LINE_TEST_HEAD
 		/*
 		 *   v
 		 *   > > 
 		 *   ^
 		 */
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
 
 		auto proto = jactorio::data::Transport_belt{};
 
@@ -741,12 +943,11 @@ namespace data
 	}
 
 	TEST(transport_line, on_build_down_change_bend_to_side_only) {
+		TRANSPORT_LINE_TEST_HEAD
 		/*
 		 * > v < 
 		 *   v 
 		 */
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
 
 		auto proto = jactorio::data::Transport_belt{};
 
@@ -760,13 +961,12 @@ namespace data
 	}
 
 	TEST(transport_line, on_build_left_change_bend_to_side_only) {
+		TRANSPORT_LINE_TEST_HEAD
 		/*
 		 *   v
 		 * < < 
 		 *   ^
 		 */
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
 
 		auto proto = jactorio::data::Transport_belt{};
 
@@ -783,13 +983,11 @@ namespace data
 
 	TEST(transport_line, transport_line_circle) {
 		// Creates a circle of transport lines
+		TRANSPORT_LINE_TEST_HEAD
 		/*
 		 * > v
 		 * ^ <
 		 */
-
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
 
 		auto proto = jactorio::data::Transport_belt{};
 		{
@@ -866,5 +1064,128 @@ namespace data
 			EXPECT_FLOAT_EQ(line_layer.position_x, 0.f);
 			EXPECT_FLOAT_EQ(line_layer.position_y, 0.f);
 		}
+	}
+
+
+	// ======================================================================
+
+
+	TEST(transport_line, on_remove_delete_transport_line_segment) {
+		// Removing a transport line needs to delete the transport line segment associated with it
+		TRANSPORT_LINE_TEST_HEAD
+
+		auto proto = jactorio::data::Transport_belt{};
+		create_transport_line(world_data, proto, {0, 0}, jactorio::data::placementOrientation::left);
+
+
+		auto& tile_layer = world_data.get_tile_world_coords(0, 0)
+		                             ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+		proto.on_remove(world_data, {0, 0}, tile_layer);
+
+		// Transport line structure count should be 0 as it was removed
+		jactorio::game::Logic_chunk& logic_chunk = world_data.logic_get_all_chunks().begin()->second;
+
+		EXPECT_EQ(logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line).size(), 0);
+	}
+
+	TEST(transport_line, on_remove_set_neighbor_target_segment) {
+		// After removing a transport line, anything that points to it as a target_segment needs to be set to NULL
+		TRANSPORT_LINE_TEST_HEAD
+
+		auto proto = jactorio::data::Transport_belt{};
+
+		create_transport_line(world_data, proto, {0, 0}, jactorio::data::placementOrientation::left);
+		create_transport_line(world_data, proto, {1, 0}, jactorio::data::placementOrientation::left);
+
+
+		auto& tile_layer = world_data.get_tile_world_coords(0, 0)
+		                             ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+		proto.on_remove(world_data, {0, 0}, tile_layer);
+
+
+		jactorio::game::Logic_chunk& logic_chunk = world_data.logic_get_all_chunks().begin()->second;
+		std::vector<jactorio::game::Chunk_struct_layer>& struct_layer =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(struct_layer.size(), 1);
+		// Set back to nullptr
+		EXPECT_EQ(
+			static_cast<jactorio::game::Transport_line_segment*>(struct_layer[0].unique_data)->target_segment,
+			nullptr);
+	}
+
+	TEST(transport_line, on_remove_bend) {
+		// After removing a transport line the transport line that connects to it with a bend must become straight,
+		// decrement segment_length by 1, and shift its position
+		TRANSPORT_LINE_TEST_HEAD
+
+		auto proto = jactorio::data::Transport_belt{};
+
+		/*
+		 * v
+		 * >
+		 */
+		create_transport_line(world_data, proto, {0, 0}, jactorio::data::placementOrientation::down);
+		create_transport_line(world_data, proto, {0, 1}, jactorio::data::placementOrientation::right);
+
+		{
+			auto& tile_layer = world_data.get_tile_world_coords(0, 1)
+			                             ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+			proto.on_remove(world_data, {0, 1}, tile_layer);
+		}
+
+
+		jactorio::game::Logic_chunk& logic_chunk = world_data.logic_get_all_chunks().begin()->second;
+		std::vector<jactorio::game::Chunk_struct_layer>& struct_layer =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(struct_layer.size(), 1);
+		EXPECT_FLOAT_EQ(struct_layer[0].position_x, 0.f);
+		EXPECT_FLOAT_EQ(struct_layer[0].position_y, 0.f);
+
+		auto* line_segment = static_cast<jactorio::game::Transport_line_segment*>(struct_layer[0].unique_data);
+		EXPECT_EQ(line_segment->termination_type, jactorio::game::Transport_line_segment::terminationType::straight);
+		EXPECT_EQ(line_segment->segment_length, 1);
+	}
+
+	TEST(transport_line, on_remove_neighbor_bend) {
+		// Removing a transport line must update neighboring transport segments
+		// The bottom segment goes from right_only to bend_right
+		TRANSPORT_LINE_TEST_HEAD
+
+		auto proto = jactorio::data::Transport_belt{};
+
+		/*
+		 * /> > > 
+		 *    ^ 
+		 */
+		create_transport_line(world_data, proto, {0, 0}, jactorio::data::placementOrientation::right);
+		create_transport_line(world_data, proto, {1, 0}, jactorio::data::placementOrientation::right);
+		create_transport_line(world_data, proto, {2, 0}, jactorio::data::placementOrientation::right);
+
+		create_transport_line(world_data, proto, {1, 1}, jactorio::data::placementOrientation::up);
+
+		{
+			auto& tile_layer = world_data.get_tile_world_coords(0, 0)
+			                             ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+			proto.on_remove(world_data, {0, 0}, tile_layer);
+		}
+
+
+		jactorio::game::Logic_chunk& logic_chunk = world_data.logic_get_all_chunks().begin()->second;
+		std::vector<jactorio::game::Chunk_struct_layer>& struct_layer =
+			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
+
+		ASSERT_EQ(struct_layer.size(), 3);
+		EXPECT_FLOAT_EQ(struct_layer[2].position_x, 1.f);
+		EXPECT_FLOAT_EQ(struct_layer[2].position_y, 0.f);
+
+		auto* line_segment = static_cast<jactorio::game::Transport_line_segment*>(struct_layer[2].unique_data);
+		EXPECT_EQ(line_segment->termination_type, jactorio::game::Transport_line_segment::terminationType::bend_right);
+		EXPECT_EQ(line_segment->segment_length, 2);
 	}
 }

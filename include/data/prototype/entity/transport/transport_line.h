@@ -3,14 +3,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/10/2020
-// Last modified: 03/27/2020
+// Last modified: 03/30/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
 #pragma once
 
-#include <vector>
+#include <functional>
 
 #include "core/data_type.h"
 #include "data/prototype/entity/health_entity.h"
@@ -84,6 +84,12 @@ namespace jactorio::data
 		/// \return pointer to data or nullptr if non existent
 		J_NODISCARD static Transport_line_data* get_line_data(game::World_data& world_data, int world_x, int world_y);
 
+		///
+		/// \brief Attempts to find transport line at world_x, world_y
+		/// \param callback Called for each Chunk_struct_layer found matching Transport_line_data at world_x, world_y
+		static void get_transport_line_struct_layer(game::World_data& world_data,
+		                                            int world_x, int world_y,
+		                                            const std::function<void(game::Chunk_struct_layer&)>& callback);
 	private:
 		///
 		///	\brief Updates the orientation of current and neighboring transport lines 
@@ -92,6 +98,39 @@ namespace jactorio::data
 		                                           Transport_line_data* c_right,
 		                                           Transport_line_data* b_center,
 		                                           Transport_line_data* c_left, Transport_line_data* center);
+
+		using update_segment_func = std::function<
+			void(game::World_data& world_data,
+			     int world_x, int world_y,
+			     float world_offset_x, float world_offset_y,
+			     game::Transport_line_segment::terminationType termination_type)>;
+
+		using update_segment_side_only_func = std::function<
+			void(game::World_data& world_data,
+			     int world_x, int world_y,
+			     float world_offset_x, float world_offset_y,
+			     game::Transport_line_segment::moveDir direction,
+			     game::Transport_line_segment::terminationType termination_type)>;
+
+		///
+		/// \brief Change the neighboring line segment termination type to a bend depending on Transport_line_data orientation
+		/// Since the line_orientations were applied, it is confirmed that segments exist at neighboring locations
+		/// \remark This does not move across logic chunks and may make the position negative
+		/// \param func Called when line orientation is bending for updating provided line segment
+		/// \param side_only_func Called when line orientation is straight for updating provided line segment 
+		static void update_neighboring_transport_segment(game::World_data& world_data,
+		                                                 int32_t world_x, int32_t world_y,
+		                                                 Transport_line_data::lineOrientation line_orientation,
+		                                                 const update_segment_func& func,
+		                                                 const update_segment_side_only_func& side_only_func);
+		///
+		/// \brief Updates the transport segments of world_coords neighbor's neighbors
+		static void update_neighboring_neighbor_transport_segment(game::World_data& world_data,
+		                                                          std::pair<int, int> world_coords,
+		                                                          Transport_line_data* t_center,
+		                                                          Transport_line_data* c_right,
+		                                                          Transport_line_data* c_left,
+		                                                          Transport_line_data* b_center);
 	public:
 
 		void on_build(game::World_data& world_data, std::pair<int, int> world_coords,
