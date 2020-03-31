@@ -3,33 +3,29 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/27/2020
+// Last modified: 03/31/2020
 // 
 
 #include "game/logic_loop.h"
 
 #include <chrono>
+#include <filesystem>
 #include <thread>
-#include <data/prototype/entity/transport/transport_line.h>
-
 
 #include "jactorio.h"
 
 #include "core/filesystem.h"
-
-#include "renderer/gui/imgui_manager.h"
-
+#include "data/data_manager.h"
+#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/item/item.h"
 #include "game/event/event.h"
+#include "game/game_data.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-#include "game/player/player_data.h"
 #include "game/logic/transport_line_controller.h"
-#include "game/game_data.h"
-
-
-#include "data/data_manager.h"
-#include "data/prototype/item/item.h"
 #include "game/logic/transport_line_structure.h"
+#include "game/player/player_data.h"
+#include "renderer/gui/imgui_manager.h"
 #include "renderer/render_main.h"
 
 constexpr float move_speed = 0.8f;
@@ -49,8 +45,13 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 	try {
 		data::data_manager::load_data(core::filesystem::resolve_path("~/data"));
 	}
-	catch (data::Data_exception& e) {
-		// error occurred
+	catch (data::Data_exception&) {
+		// Prototype loading error
+		return;
+	}
+	catch (std::filesystem::filesystem_error& e) {
+		// Data folder not found error
+		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::filesystem::resolve_path("~/data").c_str());
 		return;
 	}
 

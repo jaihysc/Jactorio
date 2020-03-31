@@ -3,10 +3,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/28/2020
+// Last modified: 03/31/2020
 // 
 
 #include <gtest/gtest.h>
+
+#include <filesystem>
 
 #include "data/data_manager.h"
 #include "data/pybind/pybind_manager.h"
@@ -159,6 +161,22 @@ namespace data
 
 		EXPECT_EQ(proto->get_width(), 32);
 		EXPECT_EQ(proto->get_height(), 32);
+	}
+
+	TEST(data_manager, load_data_invalid_path) {
+		// Loading an invalid path will throw filesystem exception
+		data_manager::set_directory_prefix("asdf");
+
+		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
+
+		// Load_data should set the directory prefix based on the subfolder
+		try {
+			data_manager::load_data("yeet");
+			FAIL();
+		}
+		catch (std::filesystem::filesystem_error&) {
+			SUCCEED();
+		}
 	}
 
 	TEST(data_manager, data_raw_get_invalid) {

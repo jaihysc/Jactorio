@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/28/2020
+// Last modified: 03/31/2020
 // 
 
 #include <GL/glew.h>
@@ -49,15 +49,21 @@ jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
 	return main_renderer;
 }
 
-int jactorio::renderer::render_init(std::mutex* mutex) {
+void jactorio::renderer::render_init(std::mutex* mutex) {
 	core::Resource_guard<void> loop_termination_guard([]() {
 		render_thread_should_exit = true;
 		game::logic_thread_should_exit = true;
 	});
-	core::Resource_guard window_manager_guard(&window_manager::terminate);
 
-	if (window_manager::init(640, 490) != 0)
-		return 1;
+	// Init window
+	core::Resource_guard window_manager_guard(&window_manager::terminate);
+	try {
+		if (window_manager::init(640, 490) != 0)
+			return;
+	}
+	catch (data::Data_exception&) {
+		return;
+	}
 
 
 	GLFWwindow* window = window_manager::get_window();
@@ -175,5 +181,5 @@ int jactorio::renderer::render_init(std::mutex* mutex) {
 	}
 
 	LOG_MESSAGE(debug, "Renderer thread exited");
-	return 0;
+	return;
 }

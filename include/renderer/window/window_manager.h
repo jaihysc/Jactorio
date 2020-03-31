@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/14/2020
+// Last modified: 03/31/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
@@ -21,10 +21,10 @@
  */
 namespace jactorio::renderer::window_manager
 {
-	/**
-	 * Creates openGL context and window
-	 * @return Non 0 if error occurred
-	 */
+	///
+	/// \brief Creates openGL context and window
+	/// \exception Data_exception if logo cannot be found
+	/// \return Non 0 if error occurred
 	int init(int width, int height);
 
 	/**
