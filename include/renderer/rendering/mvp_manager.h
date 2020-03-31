@@ -1,5 +1,14 @@
-#ifndef RENDERER_RENDERING_MVP_MANAGER_CPP
-#define RENDERER_RENDERING_MVP_MANAGER_CPP
+// 
+// mvp_manager.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_MVP_MANAGER_H
+#define JACTORIO_INCLUDE_RENDERER_RENDERING_MVP_MANAGER_H
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -51,4 +60,4 @@ namespace jactorio::renderer::mvp_manager
 	                         unsigned short window_height, float offset);
 };
 
-#endif // RENDERER_RENDERING_MVP_MANAGER_CPP
+#endif //JACTORIO_INCLUDE_RENDERER_RENDERING_MVP_MANAGER_H

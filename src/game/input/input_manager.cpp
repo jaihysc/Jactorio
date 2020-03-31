@@ -1,3 +1,11 @@
+// 
+// input_manager.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/15/2019
+// Last modified: 03/14/2020
+// 
+
 #include "game/input/input_manager.h"
 
 #include <unordered_map>
@@ -14,7 +22,7 @@ unsigned int callback_id = 1;
 // tuple format: key, action, mods
 // id of callbacks registered to the tuple
 std::unordered_map<std::tuple<int, int, int>, std::vector<unsigned int>,
-                   jactorio::core::hash<std::tuple<int, int, int>> > callback_ids;
+                   jactorio::core::hash<std::tuple<int, int, int>>> callback_ids;
 
 std::unordered_map<unsigned int, input_callback> input_callbacks;
 
@@ -33,7 +41,7 @@ unsigned jactorio::game::input_manager::subscribe(const input_callback callback,
 	// Assign an id to the callback
 	callback_ids[std::tuple<int, int, int>{key, action, mods}]
 		.push_back(callback_id);
-	
+
 	// Store callback under id
 	input_callbacks[callback_id] = callback;
 
@@ -44,21 +52,21 @@ void jactorio::game::input_manager::set_input(const int key, int action, const i
 	// GLFW_PRESS becomes GLFW_PRESS_FIRST
 	if (action == GLFW_PRESS)
 		action = GLFW_PRESS_FIRST;
-	
-	const auto input = std::tuple<int, int, int>{ key, action, mods};
+
+	const auto input = std::tuple<int, int, int>{key, action, mods};
 	active_inputs[key] = input;
 }
 
 void jactorio::game::input_manager::raise() {
 	// if (renderer::imgui_manager::input_captured)
-		// return;
-	
+	// return;
+
 	for (auto& active_input : active_inputs) {
 		std::tuple<int, int, int>& input = active_input.second;
-		
+
 		// No callbacks registered for input
 		// if (callback_ids.find(input) == callback_ids.end())
-			// continue;
+		// continue;
 
 		if (std::get<1>(input) == GLFW_PRESS_FIRST) {
 			// Dispatch callbacks for GLFW_PRESS_FIRST
@@ -92,7 +100,7 @@ void jactorio::game::input_manager::unsubscribe(const unsigned callback_id, cons
 
 	// Erase the callback id to the callback
 	id_vector.erase(
-		std::remove(id_vector.begin(), id_vector.end(), callback_id), 
+		std::remove(id_vector.begin(), id_vector.end(), callback_id),
 		id_vector.end());
 
 	// Erase the callback itself

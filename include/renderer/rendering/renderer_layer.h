@@ -1,5 +1,14 @@
-#ifndef RENDERER_RENDERING_RENDERER_LAYER_H
-#define RENDERER_RENDERING_RENDERER_LAYER_H
+// 
+// renderer_layer.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/12/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
+#define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
+#pragma once
 
 #include "jactorio.h"
 
@@ -9,7 +18,7 @@
 #include "renderer/opengl/vertex_array.h"
 
 namespace jactorio::renderer
-{	
+{
 	/**
 	 * Generates and maintains the buffers of a rendering layer <br>
 	 * Currently 2 buffers are used: Vertex and UV
@@ -23,11 +32,11 @@ namespace jactorio::renderer
 		struct Element
 		{
 			Element() = default;
-			
+
 			Element(const core::Quad_position vertex, const core::Quad_position uv)
 				: vertex(vertex), uv(uv) {
 			}
-			
+
 			core::Quad_position vertex;
 			core::Quad_position uv;
 		};
@@ -40,16 +49,16 @@ namespace jactorio::renderer
 			Buffer(T* ptr, const uint32_t span, const uint32_t count)
 				: ptr(ptr), span(span), count(count) {
 			}
-			
+
 			T* ptr = nullptr;
 
 			// These are only set when called with get_buf_#()
 			uint32_t span = 0;
 			uint32_t count = 0;
 		};
-		
+
 	public:
-		explicit Renderer_layer(bool static_layer);
+		explicit Renderer_layer();
 
 		~Renderer_layer();
 
@@ -58,7 +67,7 @@ namespace jactorio::renderer
 		Renderer_layer(Renderer_layer&& other) noexcept = delete;
 		Renderer_layer& operator=(const Renderer_layer& other) = delete;
 		Renderer_layer& operator=(Renderer_layer&& other) noexcept = delete;
-		
+
 	private:
 		// Buffers
 		Buffer<float> vertex_buffer_;
@@ -68,12 +77,6 @@ namespace jactorio::renderer
 		 * Simplified version of delete_buffers, will only delete - nothing else
 		 */
 		void delete_buffers_s() const;
-		
-		/**
-		 * If static the layer will not automatically resize on push_back if exceeding maximum capacity, instead
-		 * reserve or resize must be called manually
-		 */
-		bool static_layer_ = false;
 
 		/**
 		 * Buffer index to insert the next element on push_back
@@ -81,31 +84,38 @@ namespace jactorio::renderer
 		mutable uint32_t next_element_index_ = 0;
 
 		/**
-		 * Current element size of VERTEX buffers, for index buffer size, multiply by 6
+		 * Current *element* capacity of VERTEX buffers <br>
+		 * for index buffer size, multiply by 6, <br>
+		 * for raw size of float array, multiply by 8 <br>
 		 */
-		uint32_t e_count_ = 0;
+		uint32_t e_capacity_ = 0;
 
 	public:
 		// Set
-		
+
 		/**
 		 * Appends element to layer, after the highest element index where values were assigned<br>
 		 * Resizes if static_layer_ is false
 		 */
-		void push_back(Element element);
+		void push_back(const Element& element);
 
 		void set(uint32_t element_index, Element element) const;  // Both vertex and uv
 		void set_vertex(uint32_t element_index, core::Quad_position element) const;
 		void set_uv(uint32_t element_index, core::Quad_position element) const;
+	private:
+		// Sets the positions within the buffer, but will not increment next_element_index_;
+		void set_buffer_vertex(uint32_t buffer_index, const core::Quad_position& element) const;
+		void set_buffer_uv(uint32_t buffer_index, const core::Quad_position& element) const;
 
+	public:
 		// Get buffers
 
 		J_NODISCARD Buffer<float> get_buf_vertex();
 		J_NODISCARD Buffer<float> get_buf_uv();
-		J_NODISCARD const Index_buffer * get_buf_index() const;
+		J_NODISCARD const Index_buffer* get_buf_index() const;
 
 		// Resize
-		
+
 		/**
 		 * Allocates memory to hold element count, deletes existing elements
 		 */
@@ -117,26 +127,36 @@ namespace jactorio::renderer
 		void resize(uint32_t count);
 
 		/**
-		 * Returns current element count of buffers
+		 * Returns current element capacity of buffers
 		 */
-		J_NODISCARD uint32_t e_count() const;
-		
+		J_NODISCARD uint32_t get_capacity() const;
+		/**
+		 * Returns count of elements in buffers
+		 */
+		J_NODISCARD uint32_t get_element_count() const;
+
 		/**
 		 * Deallocates vertex and uv buffers, clearing any stored data
 		 */
 		void delete_buffer() noexcept;
 
 
+		/**
+		 * Sets next_element_index_ to 0, does not guarantee that underlying buffers will be zeroed, merely that
+		 * the data will not by uploaded with glBufferSubData
+		 */
+		void clear() const;
+
 	private:
 		// #######################################################################
 		// OpenGL methods | The methods below MUST be called from an openGL context
 
 		Vertex_array* vertex_array_ = nullptr;
-		
+
 		Vertex_buffer* vertex_vb_ = nullptr;
 		Vertex_buffer* uv_vb_ = nullptr;
-		Index_buffer* index_ib = nullptr;
-		
+		Index_buffer* index_ib_ = nullptr;
+
 		bool g_resize_vertex_buffers_ = false;
 
 		/**
@@ -152,9 +172,10 @@ namespace jactorio::renderer
 		void g_init_buffer();
 
 		/**
-		 * Updates vertex buffers based on the current data in the vertex and uv buffer
+		 * Updates vertex buffers based on the current data in the vertex and uv buffer <br>
+		 * Will only upload elements from 0 to next_element_index_ - 1
 		 */
-		void g_update_data(bool update_vertex, bool update_uv);
+		void g_update_data();
 
 		/**
 		 * Deletes vertex and index buffers
@@ -168,4 +189,4 @@ namespace jactorio::renderer
 	};
 }
 
-#endif // RENDERER_RENDERING_RENDERER_LAYER_H
+#endif //JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H

@@ -1,4 +1,12 @@
-#include "game/world/world_generator.h"
+// 
+// world_generator.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/19/2019
+// Last modified: 03/12/2020
+// 
+
+#include "game/world/world_data.h"
 
 #include <noise/noise.h>
 #include <noise/noiseutils.h>
@@ -8,20 +16,16 @@
 
 #include "core/logger.h"
 #include "game/world/chunk_tile.h"
-#include "game/world/world_manager.h"
 #include "data/data_manager.h"
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/entity/resource_entity.h"
-
-// Prevents constant erasing of buffers
-int world_gen_seed = 1001;
-
-// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
-std::set<std::tuple<int, int>> world_gen_chunks;
+#include "data/prototype/tile/tile.h"
+#include "game/world/chunk_tile_getters.h"
 
 // T is value stored in noise_layer at data_category
 template <typename T>
-void generate_chunk(const int chunk_x, const int chunk_y,
+void generate_chunk(jactorio::game::World_data& world_data,
+                    const int chunk_x, const int chunk_y,
                     const jactorio::data::data_category data_category,
                     void (*func)(jactorio::game::Chunk_tile&, void*, float)) {
 	using namespace jactorio;
@@ -42,7 +46,7 @@ void generate_chunk(const int chunk_x, const int chunk_y,
 
 
 	// Allocate new tiles if chunk has not been generated yet
-	const auto chunk = game::world_manager::get_chunk(chunk_x, chunk_y);
+	const auto chunk = world_data.get_chunk(chunk_x, chunk_y);
 	game::Chunk_tile* tiles;
 
 	if (chunk == nullptr)
@@ -53,7 +57,7 @@ void generate_chunk(const int chunk_x, const int chunk_y,
 	int seed_offset = 0;  // Incremented every time a noise layer generates to keep terrain unique
 	for (auto& noise_layer : noise_layers) {
 		module::Perlin base_terrain_noise_module;
-		base_terrain_noise_module.SetSeed(world_gen_seed + seed_offset++);
+		base_terrain_noise_module.SetSeed(world_data.get_world_generator_seed() + seed_offset++);
 
 		// Load properties of each noise layer
 		base_terrain_noise_module.SetOctaveCount(noise_layer->octave_count);
@@ -86,45 +90,48 @@ void generate_chunk(const int chunk_x, const int chunk_y,
 
 	// Because the renderer is async, a new chunk is only added at the very end to renderer attempting to render nullptr
 	if (chunk == nullptr)
-		game::world_manager::add_chunk(new game::Chunk{chunk_x, chunk_y, tiles});
+		world_data.add_chunk(new game::Chunk{chunk_x, chunk_y, tiles});
 }
 
-/**
- * Generates a chunk and adds it to the world when done <br>
- * Call this with a std::thread to to this in async
- * @param chunk_x X position of chunk to generate
- * @param chunk_y Y position of chunk to generate
- */
-void generate(const int chunk_x, const int chunk_y) {
+///
+/// Generates a chunk and adds it to the world when done <br>
+/// Call this with a std::thread to to this in async
+void generate(jactorio::game::World_data& world_data, const int chunk_x, const int chunk_y) {
 	using namespace jactorio;
 
 	LOG_MESSAGE_f(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
 
 	// Base
 	generate_chunk<data::Tile>(
-		chunk_x, chunk_y, data::data_category::noise_layer_tile, [](game::Chunk_tile& target, void* tile, float) {
+		world_data, chunk_x, chunk_y,
+		data::data_category::noise_layer_tile,
+		[](game::Chunk_tile& target, void* tile, float) {
 			assert(tile != nullptr);  // Base tile should never generate nullptr
 			// Add the tile prototype to the Chunk_tile
 			auto* new_tile = static_cast<data::Tile*>(tile);
 
-			target.set_layer_tile_prototype(game::Chunk_tile::chunk_layer::base, new_tile);
+			game::chunk_tile_getter::set_tile_prototype(target,
+			                                            game::Chunk_tile::chunkLayer::base, new_tile);
 		});
 
 	// Resources
 	generate_chunk<data::Resource_entity>(
-		chunk_x, chunk_y, data::data_category::noise_layer_entity, [](game::Chunk_tile& target, void* tile, float val) {
+		world_data, chunk_x, chunk_y,
+		data::data_category::noise_layer_entity,
+		[](game::Chunk_tile& target, void* tile, const float val) {
 			if (tile == nullptr)  // Do not override existing tiles with nullptr
 				return;
 
 			// Do not place resource on water
-			auto* base_layer = target.get_layer_tile_prototype(game::Chunk_tile::chunk_layer::base);
+			auto* base_layer =
+				game::chunk_tile_getter::get_tile_prototype(target, game::Chunk_tile::chunkLayer::base);
 			if (base_layer != nullptr && base_layer->is_water)
 				return;
 
 			// Add the tile prototype to the Chunk_tile
 			auto* new_tile = static_cast<data::Resource_entity*>(tile);
 
-			auto& layer = target.get_layer(game::Chunk_tile::chunk_layer::resource);
+			auto& layer = target.get_layer(game::Chunk_tile::chunkLayer::resource);
 			layer.prototype_data = new_tile;
 
 			// For resource amount, multiply by arbitrary number to scale noise val (0 - 1) to a reasonable number
@@ -132,38 +139,29 @@ void generate(const int chunk_x, const int chunk_y) {
 		});
 }
 
-void jactorio::game::world_generator::set_world_generator_seed(const int seed) {
-	world_gen_seed = seed;
-}
 
-int jactorio::game::world_generator::get_world_generator_seed() {
-	return world_gen_seed;
-}
-
-std::mutex m;
-
-void jactorio::game::world_generator::queue_chunk_generation(const int chunk_x, const int chunk_y) {
+void jactorio::game::World_data::queue_chunk_generation(const int chunk_x, const int chunk_y) {
 	const auto chunk_key = std::tuple<int, int>{+ chunk_x, chunk_y};
 
 	// Is the chunk already under generation? If so return
-	if (world_gen_chunks.find(chunk_key) != world_gen_chunks.end())
+	if (world_gen_chunks_.find(chunk_key) != world_gen_chunks_.end())
 		return;
 
 	// Writing
-	std::lock_guard<std::mutex> lk{m};
-	world_gen_chunks.insert(std::pair{chunk_x, chunk_y});
+	std::lock_guard<std::mutex> lk{world_gen_queue_mutex_};
+	world_gen_chunks_.insert(std::pair{chunk_x, chunk_y});
 }
 
-void jactorio::game::world_generator::gen_chunk(uint8_t amount) {
+void jactorio::game::World_data::gen_chunk(uint8_t amount) {
 	assert(amount > 0);
 
 	// Generate a chunk
 	// Find the first chunk which has yet been generated, ->second is true indicates it NEEDS generation
-	for (auto& coords : world_gen_chunks) {
-		generate(std::get<0>(coords), std::get<1>(coords));
+	for (auto& coords : world_gen_chunks_) {
+		generate(*this, std::get<0>(coords), std::get<1>(coords));
 
 		// Mark the chunk as done generating
-		world_gen_chunks.erase(coords);
+		world_gen_chunks_.erase(coords);
 
 		if (--amount == 0)
 			break;

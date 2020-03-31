@@ -44,22 +44,22 @@ stages:
       - template: CI/AzurePipelines/ContinuousBuild.yml
   
   # Mac
-  - job: macOS_10_clang9
-    displayName: MacOS 10 (Clang 9)
-    pool:
-      vmImage: macOS-10.15 # Needs minimum 10.15
-
-    variables:
-      compiler: clang9
-      installCommand: |
-        brew update
-        brew cask install xquartz
-        brew install glfw3 glew mesa
-      CC: clang
-      CXX: clang++
-
-    steps:
-    - template: CI/AzurePipelines/ContinuousBuild.yml
+#  - job: macOS_10_clang9
+#    displayName: MacOS 10 (Clang 9)
+#    pool:
+#      vmImage: macOS-10.15 # Needs minimum 10.15
+#
+#    variables:
+#      compiler: clang9
+#      installCommand: |
+#        brew update
+#        brew cask install xquartz
+#        brew install glfw3 glew mesa
+#      CC: clang
+#      CXX: clang++
+#
+#    steps:
+#    - template: CI/AzurePipelines/ContinuousBuild.yml
   
   # Windows
   - job: Windows_vc142_x64

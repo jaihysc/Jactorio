@@ -1,21 +1,24 @@
+// 
+// texture.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/28/2020
+// 
+
 #include <GL/glew.h>
 
 #include "core/logger.h"
-
+#include "renderer/renderer_exception.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/opengl/error.h"
 
 unsigned int jactorio::renderer::Texture::bound_texture_id_ = 0;
 
-jactorio::renderer::Texture::Texture(const data::Sprite* sprite)
-	: renderer_id_(0), sprite_(sprite) {
-	
-	const unsigned char* texture_buffer = sprite->get_sprite_data_ptr();
-	
-	width_ = sprite->get_width();
-	height_ = sprite->get_height();
-	
-	if (!texture_buffer) {
+jactorio::renderer::Texture::Texture(unsigned char* buffer, unsigned int width, unsigned int height)
+	: renderer_id_(0), width_(width), height_(height), texture_buffer_(buffer) {
+
+	if (!texture_buffer_) {
 		LOG_MESSAGE(error, "Received empty texture")
 		return;
 	}
@@ -34,7 +37,7 @@ jactorio::renderer::Texture::Texture(const data::Sprite* sprite)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
 	DEBUG_OPENGL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-		width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_buffer));
+								   width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_buffer_));
 
 	// Rebind the last bound texture
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, bound_texture_id_));
@@ -42,11 +45,19 @@ jactorio::renderer::Texture::Texture(const data::Sprite* sprite)
 
 jactorio::renderer::Texture::~Texture() {
 	DEBUG_OPENGL_CALL(glDeleteTextures(1, &renderer_id_));
-	delete sprite_;
+	delete[] texture_buffer_;
 }
 
 void jactorio::renderer::Texture::bind(const unsigned int slot) const {
-	// This can be dangerous, number of available slots unknown, TODO query openGL
+	// Ensure there is sufficient slots to bind the texture
+	int texture_units;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
+	if (slot >= static_cast<unsigned int>(texture_units)) {
+		LOG_MESSAGE_f(error,
+		              "Texture slot out of bounds, attempting to bind at index %d", slot);
+		throw Renderer_exception("Texture slot out of bounds");
+	}
+
 	DEBUG_OPENGL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, renderer_id_));
 	bound_texture_id_ = renderer_id_;

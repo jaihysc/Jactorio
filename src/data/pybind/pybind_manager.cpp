@@ -1,3 +1,11 @@
+// 
+// pybind_manager.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/09/2019
+// Last modified: 03/14/2020
+// 
+
 #include "data/pybind/pybind_manager.h"
 
 #include <sstream>
@@ -28,7 +36,7 @@ int jactorio::data::pybind_manager::exec(const std::string& python_str, const st
 		sys.attr("stdout") = py_stdout_buffer;
 		sys.attr("stderr") = py_stderr_buffer;
 
-		
+
 		py::exec(python_str);
 
 
@@ -40,14 +48,14 @@ int jactorio::data::pybind_manager::exec(const std::string& python_str, const st
 
 		py_stdout_buffer.release();
 		py_stderr_buffer.release();
-		
+
 		if (!std_out.empty()) {
 			LOG_MESSAGE_f(info, "Python: %s %s", file_name.c_str(), std_out.c_str())
 		}
 		if (!std_err.empty()) {
 			LOG_MESSAGE_f(error, "Python: %s - %s", file_name.c_str(), std_err.c_str())
 		}
-		
+
 		return 0;
 	}
 		// Catches python execution errors
@@ -67,7 +75,7 @@ void jactorio::data::pybind_manager::py_interpreter_init() {
 	{
 		// Clear all existing import paths to avoid conflicts
 		sysm.attr("path").attr("clear")();
-		
+
 		// Include the data_manager::data_folder/ as a python search path to shorten imports
 		std::stringstream s;
 		s << core::filesystem::get_executing_directory() << "/"

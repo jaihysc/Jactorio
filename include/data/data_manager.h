@@ -1,5 +1,14 @@
-#ifndef DATA_DATA_MANAGER_H
-#define DATA_DATA_MANAGER_H
+// 
+// data_manager.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/28/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
+#define JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
+#pragma once
 
 #include <unordered_map>
 #include <vector>
@@ -10,7 +19,7 @@
 #include "core/logger.h"
 
 namespace jactorio::data
-{	
+{
 	/**
 	* Restricted symbols in internal name; for internal use only: #
 	*/
@@ -18,13 +27,13 @@ namespace jactorio::data
 	{
 		// Path of the data folder from the executing directory
 		constexpr char data_folder[] = "data";
-		
+
 		// Example: data_raw[static_cast<int>(image)]["grass-1"] -> Prototype_base
 
 		inline std::unordered_map<std::string, Prototype_base*> data_raw[static_cast<int>(data_category::count_)];
-		
+
 		// Data_raw functions
-		
+
 		/**
 		 * Gets prototype at specified category and name, is casted to T for convenience <br>
 		 * Ensure that the casted type is or a parent of the specified category
@@ -42,7 +51,7 @@ namespace jactorio::data
 			Prototype_base* base = category->at(iname);
 			return static_cast<T*>(base);
 		}
-		
+
 		/**
 		 * Gets pointers to all data of specified data_type
 		 */
@@ -82,17 +91,16 @@ namespace jactorio::data
 		 */
 		void set_directory_prefix(const std::string& name);
 
-		/**
-		 * Adds a prototype
-		 * @param data_category
-		 * @param iname
-		 * @param prototype Prototype pointer, do not delete
-		 * @param add_directory_prefix Should the directory prefix be appended to the provided iname
-		 */
-		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* prototype, 
+		///
+		/// \brief Adds a prototype
+		/// \param data_category
+		/// \param iname Internal name of prototype
+		/// \param prototype Prototype pointer, do not delete, must be unique for each added
+		/// \param add_directory_prefix Should the directory prefix be appended to the provided iname
+		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* prototype,
 		                  bool add_directory_prefix = false);
 
-		
+
 		/**
 		 * Loads data and their properties from data/ folder,
 		 * data access methods can be used only after calling this
@@ -108,4 +116,4 @@ namespace jactorio::data
 	};
 }
 
-#endif // DATA_DATA_MANAGER_H
+#endif //JACTORIO_INCLUDE_DATA_DATA_MANAGER_H

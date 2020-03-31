@@ -1,11 +1,19 @@
+// 
+// local_parser.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/15/2020
+// Last modified: 03/14/2020
+// 
+
 #include "data/local_parser.h"
+
+#include <sstream>
 
 #include "jactorio.h"
 
 #include "data/data_exception.h"
 #include "data/data_manager.h"
-
-#include <sstream>
 
 // Used to store data as its being parsed
 std::string current_line_buffer;
@@ -89,7 +97,7 @@ loop_exit:
 void jactorio::data::local_parser::parse(const std::string& file_str, const std::string& directory_prefix) {
 	line_number = 1;
 	reset_variables();
-	
+
 	for (char c : file_str) {
 		char_number++;
 
@@ -100,14 +108,14 @@ void jactorio::data::local_parser::parse(const std::string& file_str, const std:
 		if (c == ' ' && !in_l_val)
 			continue;
 
-		
+
 		// End of a line
 		if (c == '\n') {
 			parse_eol(directory_prefix);
 			continue;
 		}
 
-		
+
 		// Enter data if character is not whitespace or = (whitespace checked above)
 		if (c != '=')
 			in_l_val = true;
@@ -117,7 +125,7 @@ void jactorio::data::local_parser::parse(const std::string& file_str, const std:
 			parse_error("attempted to switch to r-value with '=' when already in r-value");
 		}
 			// Is (=), exit data and switch to second data field upon reaching =
-		else if (in_l_val) {			
+		else if (in_l_val) {
 			in_l_val = false;
 			in_r_val = true;
 
@@ -131,7 +139,7 @@ void jactorio::data::local_parser::parse(const std::string& file_str, const std:
 			parse_error("attempted to switch to r-value with '=' without defining a l value");
 		}
 
-		
+
 		// Save characters into buffer
 		if (in_l_val)
 			current_line_buffer.push_back(c);
@@ -147,6 +155,6 @@ int jactorio::data::local_parser::parse_s(const std::string& file_str, const std
 	catch (Data_exception&) {
 		return 1;
 	}
-	
+
 	return 0;
 }

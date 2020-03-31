@@ -1,42 +1,55 @@
-#ifndef RENDERER_RENDERING_WORLD_RENDERER_H
-#define RENDERER_RENDERING_WORLD_RENDERER_H
+// 
+// world_renderer.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/15/2019
+// Last modified: 03/12/2020
+// 
 
+#ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_WORLD_RENDERER_H
+#define JACTORIO_INCLUDE_RENDERER_RENDERING_WORLD_RENDERER_H
+#pragma once
+
+#include "game/world/logic_chunk.h"
+#include "game/world/world_data.h"
 #include "renderer/rendering/renderer.h"
-#include "game/world/chunk_tile.h"
 
+/// Renders items utilizing the grid system of the map
 namespace jactorio::renderer::world_renderer
 {
-	using get_tile_prototype_func = unsigned int (*)(const game::Chunk_tile&, unsigned int layer_index);
+	///
+	/// \brief Draws chunks to the screen
+	/// Attempting to draw chunks which do not exist will result in the chunk being queued for generation
+	/// \param layer_index Index of layer to render
+	/// \param is_tile_layer Is the provided layer_index for a tile layer? If false is object layer
+	/// \param render_offset_x Tiles from window left to offset rendering
+	/// \param render_offset_y Tiles from window top to offset rendering
+	/// \param chunk_start_x Chunk to begin rendering
+	/// \param chunk_start_y Chunk to begin rendering
+	/// \param chunk_amount_x Number of chunks on X axis after chunk_start_x to draw
+	/// \param chunk_amount_y Number of chunks on Y axis after chunk_start_y to draw
+	/// \param layer Layer on which vertex and UV draw data will be placed
+	void prepare_chunk_draw_data(game::World_data& world_data,
+								 int layer_index, bool is_tile_layer,
+	                             int render_offset_x, int render_offset_y,
+	                             int chunk_start_x, int chunk_start_y,
+	                             int chunk_amount_x, int chunk_amount_y,
+	                             Renderer_layer* layer);
 
-	/**
-	 * Draws chunks to the screen
-	 * Attempting to draw chunks which do not exist will result in undefined behavior
-	 *
-	 * @param renderer Renderer on which to draw the chunks
-	 * @param layer_index Index of layer to render
-	 * @param window_start_x Position on window to begin drawing upper left corner of chunks
-	 * @param window_start_y Position on window to begin drawing upper left corner of chunks
-	 * @param chunk_start_x Position in chunk grid to begin drawing
-	 * @param chunk_start_y Position in chunk grid to begin drawing
-	 * @param chunk_amount_x How many chunks to draw on x axis to the right ->
-	 * @param chunk_amount_y How many chunks to draw on y axis downwards \/
-	 * @param func Returns internal name of sprite given Chunk_tile
-	 * @param using_buffer1
-	 */
-	void draw_chunks(const Renderer* renderer,
-	                 unsigned int layer_index, int window_start_x,
-	                 int window_start_y, int chunk_start_x,
-	                 int chunk_start_y, unsigned chunk_amount_x,
-	                 unsigned chunk_amount_y, const get_tile_prototype_func& func, bool using_buffer1);
+	///
+	/// Prepares draw data for some of the structures in chunks (transport segments)
+	/// \param l_chunk
+	/// \param layer
+	void prepare_logic_chunk_draw_data(game::Logic_chunk* l_chunk, Renderer_layer* layer);
 
-	/**
-	 * Moves the world to match player_position_ <br>
-	 * This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
-	 * @param renderer The renderer on which the world is drawn
-	 * @param player_x X Position of the player in tiles
-	 * @param player_y Y Position of the player in tiles
-	 */
-	void render_player_position(Renderer* renderer, float player_x, float player_y);
+	///
+	/// Moves the world to match player_position_ <br>
+	/// This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
+	/// \param world_data World to render
+	/// \param renderer The renderer on which the world is drawn
+	/// \param player_x X Position of the player in tiles
+	/// \param player_y Y Position of the player in tiles
+	void render_player_position(game::World_data& world_data, Renderer* renderer, float player_x, float player_y);
 }
 
-#endif // RENDERER_RENDERING_WORLD_RENDERER_H
+#endif //JACTORIO_INCLUDE_RENDERER_RENDERING_WORLD_RENDERER_H

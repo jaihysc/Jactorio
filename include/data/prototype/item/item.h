@@ -1,26 +1,33 @@
-#ifndef DATA_PROTOTYPE_ITEM_ITEM_H
-#define DATA_PROTOTYPE_ITEM_ITEM_H
+// 
+// item.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/20/2020
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H
+#pragma once
 
 #include <utility>
 
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
+#include "data/prototype/item/item_base.h"
 
 namespace jactorio::data
 {
-	class Item : public Prototype_base
+	class Item final : public Item_base
 	{
 	public:
 		Item()
-			: sprite(nullptr), stack_size(50) {
+			: stack_size(50) {
 		}
 
 		explicit Item(Sprite* sprite)
-			: sprite(sprite), stack_size(50) {
-
+			: Item_base(sprite), stack_size(50) {
 		}
-
-		~Item() override = default;
 
 		/**
 		 * If this item belongs to an entity - otherwise nullptr
@@ -28,21 +35,14 @@ namespace jactorio::data
 		void* entity_prototype = nullptr;
 		data_category entity_prototype_category = data_category::none;
 
-		
-		PYTHON_PROP(Item, Sprite*, sprite)
 
 		/**
 		 * Number of items which can be together <br>
 		 * Default to 50
 		 */
 		PYTHON_PROP_REF(Item, unsigned short, stack_size)
-
-		void post_load_validate() const override;
 	};
 
-	inline void Item::post_load_validate() const {
-		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
-	}
 
 	// Makes arrays holding items more clear than just unsigned int
 	// Item* and amount in current stack
@@ -51,4 +51,4 @@ namespace jactorio::data
 	using item_stack = std::pair<Item*, uint16_t>;
 }
 
-#endif // DATA_PROTOTYPE_ITEM_ITEM_H
+#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H

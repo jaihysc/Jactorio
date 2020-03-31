@@ -1,5 +1,14 @@
-#ifndef RENDERER_OPENGL_INDEX_BUFFER_H
-#define RENDERER_OPENGL_INDEX_BUFFER_H
+// 
+// index_buffer.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_INDEX_BUFFER_H
+#define JACTORIO_INCLUDE_RENDERER_OPENGL_INDEX_BUFFER_H
+#pragma once
 
 #include "jactorio.h"
 
@@ -23,7 +32,7 @@ namespace jactorio::renderer
 		/**
 		 * Creates a new buffer of provided specifications
 		 */
-		void reserve(const void *data, uint32_t index_count);
+		void reserve(const void* data, uint32_t index_count);
 
 		void bind() const;
 		static void unbind();
@@ -36,4 +45,4 @@ namespace jactorio::renderer
 	};
 }
 
-#endif // RENDERER_OPENGL_INDEX_BUFFER_H
+#endif //JACTORIO_INCLUDE_RENDERER_OPENGL_INDEX_BUFFER_H

@@ -1,5 +1,14 @@
-#ifndef CORE_FILE_SYSTEM_H
-#define CORE_FILE_SYSTEM_H
+// 
+// filesystem.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_CORE_FILESYSTEM_H
+#define JACTORIO_INCLUDE_CORE_FILESYSTEM_H
+#pragma once
 
 #include <string>
 
@@ -25,4 +34,4 @@ namespace jactorio::core::filesystem
 	std::string read_file_as_str(const std::string& path);
 }
 
-#endif // CORE_FILE_SYSTEM_H
+#endif //JACTORIO_INCLUDE_CORE_FILESYSTEM_H

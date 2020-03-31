@@ -1,18 +1,30 @@
+// 
+// chunkTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 11/09/2019
+// Last modified: 03/12/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "game/world/chunk.h"
+#include "game/world/logic_chunk.h"
+#include "data/prototype/sprite.h"
+#include "data/prototype/tile/tile.h"
+
 #include <memory>
 
 namespace game
 {
-	TEST(world_chunk, chunk_set_tile) {
+	TEST(chunk, chunk_set_tile) {
 		// The tiles pointer is only stored by the Chunk, modifying the original tiles pointer
 		// will modify the tiles of the chunk
 
 		// Mock data
 		const auto sprite_proto = std::make_unique<jactorio::data::Sprite>(jactorio::data::Sprite());
 		const auto tile_proto = std::make_unique<jactorio::data::Tile>(jactorio::data::Tile());
-		tile_proto->sprite_ptr = sprite_proto.get();
+		tile_proto->sprite = sprite_proto.get();
 
 
 		// Chunk tile 1
@@ -24,7 +36,7 @@ namespace game
 
 		// Chunk tile 2
 		auto chunk_tile_2 = jactorio::game::Chunk_tile();
-		
+
 		const jactorio::game::Chunk_tile_layer tile_layer_2{};
 		chunk_tile_2.layers[0] = tile_layer_2;
 
@@ -41,5 +53,29 @@ namespace game
 
 
 		// Prototype data in the actual application is managed by data_manager
+	}
+
+	TEST(chunk, chunk_copy) {
+		auto* tiles = new jactorio::game::Chunk_tile[32 * 32];
+		const jactorio::game::Chunk chunk_a{0, 0, tiles};
+
+		const auto chunk_copy = chunk_a;
+		// Should not copy the pointer for tiles
+		EXPECT_NE(chunk_copy.tiles_ptr(), chunk_a.tiles_ptr());
+	}
+
+	TEST(chunk, get_object_layer) {
+		jactorio::game::Chunk chunk_a{0, 0, nullptr};
+
+		// Should return the layer specified by the index of the enum objectLayer
+		EXPECT_EQ(&chunk_a.get_object(jactorio::game::Chunk::objectLayer::tree), &chunk_a.objects[0]);
+	}
+
+	TEST(logic_chunk, get_struct_layer) {
+		jactorio::game::Chunk chunk_a{0, 0, nullptr};
+		jactorio::game::Logic_chunk l_chunk(&chunk_a);
+
+		// Should return the layer specified by the index of the enum objectLayer
+		EXPECT_EQ(&l_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line), &l_chunk.structs[0]);
 	}
 }

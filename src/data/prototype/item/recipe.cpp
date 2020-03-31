@@ -1,3 +1,11 @@
+// 
+// recipe.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 02/07/2020
+// Last modified: 03/14/2020
+// 
+
 #include "data/prototype/item/recipe.h"
 
 #include <mutex>
@@ -64,7 +72,7 @@ void jactorio::data::Recipe::post_load_validate() const {
 		J_DATA_ASSERT(!ingredient.first.empty(), "Empty ingredient internal name specifier");
 		J_DATA_ASSERT(ingredient.second > 0, "Ingredient required amount minimum is 1");
 	}
-	
+
 	J_DATA_ASSERT(!product_.first.empty(), "No product specified for recipe");
 	J_DATA_ASSERT(product_.second > 0, "Product yield amount minimum is 1");
 }

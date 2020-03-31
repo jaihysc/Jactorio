@@ -1,14 +1,23 @@
-#ifndef RENDERER_OPENGL_VERTEX_BUFFER_H
-#define RENDERER_OPENGL_VERTEX_BUFFER_H
+// 
+// vertex_buffer.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
 
-#include "jactorio.h"
+#ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_VERTEX_BUFFER_H
+#define JACTORIO_INCLUDE_RENDERER_OPENGL_VERTEX_BUFFER_H
+#pragma once
+
+#include <cstdint>
 
 namespace jactorio::renderer
 {
 	class Vertex_buffer
 	{
 	public:
-		Vertex_buffer(const void *data, uint32_t byte_size, bool static_buffer);
+		Vertex_buffer(const void* data, uint32_t byte_size, bool static_buffer);
 		~Vertex_buffer();
 
 		Vertex_buffer(const Vertex_buffer& other) = delete;
@@ -22,7 +31,7 @@ namespace jactorio::renderer
 		/**
 		 * Creates a new buffer of provided specifications
 		 */
-		void reserve(const void *data, uint32_t byte_size, bool static_buffer) const;
+		void reserve(const void* data, uint32_t byte_size, bool static_buffer) const;
 
 		void bind() const;
 		static void unbind();
@@ -32,4 +41,4 @@ namespace jactorio::renderer
 	};
 }
 
-#endif // RENDERER_OPENGL_VERTEX_BUFFER_H
+#endif //JACTORIO_INCLUDE_RENDERER_OPENGL_VERTEX_BUFFER_H

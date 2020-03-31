@@ -1,3 +1,11 @@
+// 
+// renderer_layerTests.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/12/2020
+// Last modified: 03/15/2020
+// 
+
 #include <gtest/gtest.h>
 
 #include "renderer/rendering/renderer_layer.h"
@@ -10,21 +18,21 @@ namespace renderer
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
-		auto r_layer = Renderer_layer(false);
+
+		auto r_layer = Renderer_layer();
 		r_layer.reserve(10);
 
 		r_layer.set(9,
-		Renderer_layer::Element(
-					Quad_position(
-					Position2<float>(0.0, 0.0),
-					Position2<float>(0.0, 0.0)
-				),
-					Quad_position(
-					Position2<float>(0.0, 0.0),
-					Position2<float>(0.0, 0.0)
-				)
-			)
+		            Renderer_layer::Element(
+			            Quad_position(
+				            Position2<float>(0.0, 0.0),
+				            Position2<float>(0.0, 0.0)
+			            ),
+			            Quad_position(
+				            Position2<float>(0.0, 0.0),
+				            Position2<float>(0.0, 0.0)
+			            )
+		            )
 		);
 		// Resize
 		r_layer.push_back(
@@ -67,19 +75,20 @@ namespace renderer
 		EXPECT_EQ(uv_ptr[86], 0.1f);
 		EXPECT_EQ(uv_ptr[87], 0.2f);
 
-		EXPECT_EQ(r_layer.e_count(), 11);
-		EXPECT_EQ(r_layer.get_buf_vertex().count, 11);
-		EXPECT_EQ(r_layer.get_buf_uv().count, 11);
+		// Size not tested since the new increase in capacity to acquire is arbitrary
+		// EXPECT_EQ(r_layer.e_count(), 11);
+		// EXPECT_EQ(r_layer.get_buf_vertex().count, 11);
+		// EXPECT_EQ(r_layer.get_buf_uv().count, 11);
 	}
-	
+
 	TEST(renderer_layer, set_element) {
 		// Set element at element position 1
 		// Reading from the buffer, this is index 8 - 15
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
-		auto r_layer = Renderer_layer(false);
+
+		auto r_layer = Renderer_layer();
 
 		r_layer.reserve(10);
 		r_layer.set(1,
@@ -102,23 +111,23 @@ namespace renderer
 
 		EXPECT_EQ(vertex_ptr[10], 0.33f);
 		EXPECT_EQ(vertex_ptr[11], 0.22f);
-		
+
 		EXPECT_EQ(vertex_ptr[12], 0.33f);
 		EXPECT_EQ(vertex_ptr[13], 0.44f);
 
 		EXPECT_EQ(vertex_ptr[14], 0.11f);
 		EXPECT_EQ(vertex_ptr[15], 0.44f);
-		
+
 		const auto uv_ptr = r_layer.get_buf_uv().ptr;
 		EXPECT_EQ(uv_ptr[8 ], 0.1f);
 		EXPECT_EQ(uv_ptr[9 ], 0.4f);
-		
+
 		EXPECT_EQ(uv_ptr[10], 0.3f);
 		EXPECT_EQ(uv_ptr[11], 0.4f);
-		
+
 		EXPECT_EQ(uv_ptr[12], 0.3f);
 		EXPECT_EQ(uv_ptr[13], 0.2f);
-		
+
 		EXPECT_EQ(uv_ptr[14], 0.1f);
 		EXPECT_EQ(uv_ptr[15], 0.2f);
 	}
@@ -128,13 +137,13 @@ namespace renderer
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
-		auto r_layer = Renderer_layer(false);
+
+		auto r_layer = Renderer_layer();
 
 		r_layer.reserve(10);
 
-		EXPECT_EQ(r_layer.e_count(), 10);
-		
+		EXPECT_EQ(r_layer.get_capacity(), 10);
+
 		EXPECT_EQ(r_layer.get_buf_vertex().count, 10);
 		EXPECT_EQ(r_layer.get_buf_uv().count, 10);
 	}
@@ -144,8 +153,8 @@ namespace renderer
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
-		auto r_layer = Renderer_layer(false);
+
+		auto r_layer = Renderer_layer();
 
 		r_layer.reserve(10);
 		r_layer.set(1,
@@ -170,7 +179,7 @@ namespace renderer
 
 		EXPECT_EQ(vertex_ptr[10], 0.33f);
 		EXPECT_EQ(vertex_ptr[11], 0.22f);
-		
+
 		EXPECT_EQ(vertex_ptr[12], 0.33f);
 		EXPECT_EQ(vertex_ptr[13], 0.44f);
 
@@ -193,17 +202,19 @@ namespace renderer
 		const auto uv_ptr = r_layer.get_buf_uv().ptr;
 		EXPECT_EQ(uv_ptr[8 ], 0.1f);
 		EXPECT_EQ(uv_ptr[9 ], 0.4f);
-		
+
 		EXPECT_EQ(uv_ptr[10], 0.3f);
 		EXPECT_EQ(uv_ptr[11], 0.4f);
-		
+
 		EXPECT_EQ(uv_ptr[12], 0.3f);
 		EXPECT_EQ(uv_ptr[13], 0.2f);
-		
+
 		EXPECT_EQ(uv_ptr[14], 0.1f);
 		EXPECT_EQ(uv_ptr[15], 0.2f);
 
-		EXPECT_EQ(r_layer.e_count(), 5);
+		EXPECT_EQ(r_layer.get_capacity(), 5);
+		EXPECT_EQ(r_layer.get_element_count(), 2);  // It assumes an element exists at position 0 since one was set at 1
+
 		EXPECT_EQ(r_layer.get_buf_vertex().count, 5);
 		EXPECT_EQ(r_layer.get_buf_uv().count, 5);
 	}
@@ -213,13 +224,13 @@ namespace renderer
 
 		using namespace jactorio::renderer;
 		using namespace jactorio::core;
-	
-		auto r_layer = Renderer_layer(false);
+
+		auto r_layer = Renderer_layer();
 
 		r_layer.reserve(10);
 		r_layer.delete_buffer();
 
-		EXPECT_EQ(r_layer.e_count(), 0);
+		EXPECT_EQ(r_layer.get_capacity(), 0);
 
 		EXPECT_EQ(r_layer.get_buf_vertex().count, 0);
 		EXPECT_EQ(r_layer.get_buf_uv().count, 0);

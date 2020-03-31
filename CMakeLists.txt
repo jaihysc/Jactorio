@@ -23,7 +23,7 @@ if (OPENGL_FOUND)
 	message("OpenGL include dir: ${OPENGL_INCLUDE_DIR}")
 	message("OpenGL link libraries: ${OPENGL_gl_LIBRARY}")
 else (OPENGL_FOUND)
-	message(FATAL_ERROR "OpenGL for not found")
+	message(FATAL_ERROR "OpenGL not found")
 endif()
 
 ############# Include folders .h
@@ -37,6 +37,9 @@ set(JACTORIO_INCLUDE_FILES
 	${PROJECT_SOURCE_DIR}/lib/pybind11/include
 	${PROJECT_SOURCE_DIR}/lib/libnoise/include
 	${PROJECT_SOURCE_DIR}/lib/SDL-mirror/include
+
+	${PROJECT_SOURCE_DIR}/lib/decimal_for_cpp/include
+
 )
 #------------ Source files .cpp
 set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
@@ -48,6 +51,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/data/prototype/sprite.cpp
 	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
 	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
+	${JACTORIO_DIR}/data/prototype/entity/transport/transport_line.cpp
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
@@ -59,16 +63,17 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
 
-	${JACTORIO_DIR}/game/player/player_manager.cpp
+	${JACTORIO_DIR}/game/player/player_data.cpp
 
 	${JACTORIO_DIR}/game/world/chunk.cpp
-	${JACTORIO_DIR}/game/world/chunk_tile.cpp
-	${JACTORIO_DIR}/game/world/chunk_tile_layer.cpp
-	${JACTORIO_DIR}/game/world/world_manager.cpp
+	${JACTORIO_DIR}/game/world/chunk_tile_getter.cpp
+	${JACTORIO_DIR}/game/world/world_data.cpp
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 
 	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
 	${JACTORIO_DIR}/game/logic/placement_controller.cpp
+	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
+	${JACTORIO_DIR}/game/logic/transport_line_structure.cpp
 
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
@@ -105,6 +110,8 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
+	${JACTORIO_TEST_DIR}/core/float_mathTests.cpp
+	${JACTORIO_TEST_DIR}/core/data_typeTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
@@ -113,17 +120,24 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
+	
+	${JACTORIO_TEST_DIR}/data/prototype/entity/transport/transport_lineTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
+
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/world_managerTests.cpp
-	${JACTORIO_TEST_DIR}/game/player/player_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_struct_layerTests.cpp
+
+	${JACTORIO_TEST_DIR}/game/player/player_dataTests.cpp
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/transport_line_structureTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
@@ -143,7 +157,7 @@ function(validate_dependency DEPENDENCY_PATH)
 	if((NOT EXISTS ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}) OR (RES_LEN EQUAL 0))
 		message("Installing missing dependency ${DEPENDENCY_PATH}")
 
-		execute_process(COMMAND git submodule update --init -- ${DEPENDENCY_PATH}
+		execute_process(COMMAND git submodule update --init --recursive -- ${DEPENDENCY_PATH}
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	else()
 		message("Found dependency ${DEPENDENCY_PATH}")
@@ -159,6 +173,7 @@ validate_dependency(lib/imgui/imgui)	# NC
 validate_dependency(lib/pybind11)
 validate_dependency(lib/libnoise)
 validate_dependency(lib/SDL-mirror)
+validate_dependency(lib/decimal_for_cpp)
 
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)

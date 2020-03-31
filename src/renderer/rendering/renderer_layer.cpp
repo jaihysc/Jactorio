@@ -1,3 +1,11 @@
+// 
+// renderer_layer.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 01/12/2020
+// Last modified: 03/14/2020
+// 
+
 #include <renderer/rendering/renderer_grid.h>
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/opengl/vertex_array.h"
@@ -5,13 +13,11 @@
 // Settings
 
 constexpr uint32_t initial_size = 1;  // How many elements to reserve upon construction
-constexpr uint32_t increment_on_resize = 1;  // How many more elements to reserve on resize
+constexpr uint32_t increment_on_resize = 300;  // How many more elements to reserve on resize
 
 // Construct
 
-jactorio::renderer::Renderer_layer::Renderer_layer(const bool static_layer)
-	: static_layer_(static_layer) {
-	LOG_MESSAGE_f(debug, "Creating %s Renderer_layer", static_layer ? "static" : "non-static");
+jactorio::renderer::Renderer_layer::Renderer_layer() {
 	reserve(initial_size);
 }
 
@@ -29,30 +35,51 @@ void jactorio::renderer::Renderer_layer::delete_buffers_s() const {
 	delete[] uv_buffer_.ptr;
 }
 
-void jactorio::renderer::Renderer_layer::push_back(const Element element) {
-	if (next_element_index_ >= e_count_) {
+void jactorio::renderer::Renderer_layer::push_back(const Element& element) {
+	if (next_element_index_ >= e_capacity_) {
 		// No more space, resize
-		assert(!static_layer_);  // Cannot resize static layer
-		
-		resize(e_count_ + increment_on_resize);
+		resize(e_capacity_ + increment_on_resize);
 	}
 
 	// Add
-	set(next_element_index_++, element);
+	const auto buffer_index = next_element_index_ * 8;
+	set_buffer_vertex(buffer_index, element.vertex);
+	set_buffer_uv(buffer_index, element.uv);
+	next_element_index_++;
 }
 
-void jactorio::renderer::Renderer_layer::set_vertex(const uint32_t element_index, const core::Quad_position element) const {
-	assert(element_index < e_count_);  // Index out of range
-
-	if (element_index >= next_element_index_)
+// If assertions enabled: Ensures element_index is in range. Also sets next_element_index_ for push_back to the highest
+#define CHECK_ELEMENT_INDEX\
+	assert(element_index < e_capacity_);\
+	if (element_index >= next_element_index_)\
 		next_element_index_ = element_index + 1;
 
+void jactorio::renderer::Renderer_layer::set(const uint32_t element_index, const Element element) const {
+	CHECK_ELEMENT_INDEX;
+
 	const auto buffer_index = element_index * 8;
+	set_buffer_vertex(buffer_index, element.vertex);
+	set_buffer_uv(buffer_index, element.uv);
+}
 
+void jactorio::renderer::Renderer_layer::set_vertex(const uint32_t element_index,
+                                                    const core::Quad_position element) const {
+	CHECK_ELEMENT_INDEX;
+	set_buffer_vertex(element_index * 8, element);
+}
+
+void jactorio::renderer::Renderer_layer::set_uv(const uint32_t element_index, const core::Quad_position element) const {
+	CHECK_ELEMENT_INDEX;
+	set_buffer_uv(element_index * 8, element);
+}
+
+#undef CHECK_ELEMENT_INDEX
+
+void jactorio::renderer::Renderer_layer::set_buffer_vertex(const uint32_t buffer_index,
+                                                           const core::Quad_position& element) const {
 	// Populate in following order: topL, topR, bottomR, bottomL (X Y)
-	
-	// Vertex
 
+	// Vertex
 	vertex_buffer_.ptr[buffer_index + 0] = element.top_left.x;
 	vertex_buffer_.ptr[buffer_index + 1] = element.top_left.y;
 
@@ -65,19 +92,12 @@ void jactorio::renderer::Renderer_layer::set_vertex(const uint32_t element_index
 
 	vertex_buffer_.ptr[buffer_index + 6] = element.top_left.x;
 	vertex_buffer_.ptr[buffer_index + 7] = element.bottom_right.y;
-
 }
 
-void jactorio::renderer::Renderer_layer::set_uv(const uint32_t element_index, const core::Quad_position element) const {
-	assert(element_index < e_count_);  // Index out of range
+void jactorio::renderer::Renderer_layer::set_buffer_uv(const uint32_t buffer_index,
+                                                       const core::Quad_position& element) const {
+	// Populate in following order: bottomL, bottomR, topR, topL (X Y) (NOT THE SAME AS ABOVE!!)
 
-	if (element_index >= next_element_index_)
-		next_element_index_ = element_index + 1;
-
-	const auto buffer_index = element_index * 8;
-
-	// Populate in following order: bottomL, bottomR, topR, topL (X Y)
-	
 	// UV
 	uv_buffer_.ptr[buffer_index + 0] = element.top_left.x;
 	uv_buffer_.ptr[buffer_index + 1] = element.bottom_right.y;
@@ -92,26 +112,21 @@ void jactorio::renderer::Renderer_layer::set_uv(const uint32_t element_index, co
 	uv_buffer_.ptr[buffer_index + 7] = element.top_left.y;
 }
 
-void jactorio::renderer::Renderer_layer::set(const uint32_t element_index, const Element element) const {
-	set_vertex(element_index, element.vertex);
-	set_uv(element_index, element.uv);
-}
-
 
 // Get buffers
 
 jactorio::renderer::Renderer_layer::Buffer<float> jactorio::renderer::Renderer_layer::get_buf_vertex() {
-	vertex_buffer_.count = e_count_;
+	vertex_buffer_.count = e_capacity_;
 	return vertex_buffer_;
 }
 
 jactorio::renderer::Renderer_layer::Buffer<float> jactorio::renderer::Renderer_layer::get_buf_uv() {
-	uv_buffer_.count = e_count_;
+	uv_buffer_.count = e_capacity_;
 	return uv_buffer_;
 }
 
 const jactorio::renderer::Index_buffer* jactorio::renderer::Renderer_layer::get_buf_index() const {
-	return index_ib;
+	return index_ib_;
 }
 
 
@@ -119,16 +134,16 @@ const jactorio::renderer::Index_buffer* jactorio::renderer::Renderer_layer::get_
 
 void jactorio::renderer::Renderer_layer::reserve(const uint32_t count) {
 	assert(count > 0);  // Count must be greater than 0
-	
+
 	delete_buffers_s();
 	g_resize_vertex_buffers_ = true;
 
 	const auto floats = count * 8;  // 4 positions, of X and Y (8 floats in total)
-	
+
 	vertex_buffer_.ptr = new float[floats];
 	uv_buffer_.ptr = new float[floats];
 
-	e_count_ = count;
+	e_capacity_ = count;
 }
 
 void jactorio::renderer::Renderer_layer::resize(const uint32_t count) {
@@ -144,13 +159,13 @@ void jactorio::renderer::Renderer_layer::resize(const uint32_t count) {
 
 	// End for copying is the smallest element count between old and new size
 	uint32_t end;
-	if (e_count_ > count)
+	if (e_capacity_ > count)
 		end = count;
 	else
-		end = e_count_;
-	
+		end = e_capacity_;
+
 	end *= 8;  // 8 floats per element
-	
+
 	for (uint32_t i = 0; i < end; ++i) {
 		vertex_buffer_new[i] = vertex_buffer_.ptr[i];
 		uv_buffer_new[i] = uv_buffer_.ptr[i];
@@ -162,20 +177,28 @@ void jactorio::renderer::Renderer_layer::resize(const uint32_t count) {
 	vertex_buffer_.ptr = vertex_buffer_new;
 	uv_buffer_.ptr = uv_buffer_new;
 
-	e_count_ = count;
+	e_capacity_ = count;
 }
 
-uint32_t jactorio::renderer::Renderer_layer::e_count() const {
-	return e_count_;
+uint32_t jactorio::renderer::Renderer_layer::get_capacity() const {
+	return e_capacity_;
+}
+
+uint32_t jactorio::renderer::Renderer_layer::get_element_count() const {
+	return next_element_index_;
 }
 
 void jactorio::renderer::Renderer_layer::delete_buffer() noexcept {
-	e_count_ = 0;
-	
+	e_capacity_ = 0;
+
 	delete_buffers_s();
 
 	vertex_buffer_.ptr = nullptr;
 	uv_buffer_.ptr = nullptr;
+}
+
+void jactorio::renderer::Renderer_layer::clear() const {
+	next_element_index_ = 0;
 }
 
 // #######################################################################
@@ -186,12 +209,12 @@ void jactorio::renderer::Renderer_layer::g_delete_buffer_s() const {
 	delete vertex_array_;
 	delete vertex_vb_;
 	delete uv_vb_;
-	delete index_ib;
+	delete index_ib_;
 }
 
 void jactorio::renderer::Renderer_layer::g_init_buffer() {
-	vertex_vb_ = new Vertex_buffer(vertex_buffer_.ptr, e_count_ * g_byte_multiplier, static_layer_);
-	uv_vb_ = new Vertex_buffer(uv_buffer_.ptr, e_count_ * g_byte_multiplier, static_layer_);
+	vertex_vb_ = new Vertex_buffer(vertex_buffer_.ptr, e_capacity_ * g_byte_multiplier, false);
+	uv_vb_ = new Vertex_buffer(uv_buffer_.ptr, e_capacity_ * g_byte_multiplier, false);
 
 	vertex_array_ = new Vertex_array();
 	// Register buffer properties and shader location
@@ -203,36 +226,33 @@ void jactorio::renderer::Renderer_layer::g_init_buffer() {
 	// Index buffer
 	// As of right now there is no point holding onto the index_buffer data pointer after handing it to the GPu
 	// since it is never modified
-	const auto data = renderer_grid::gen_render_grid_indices(e_count_);
-	index_ib = new Index_buffer(data, e_count_ * 6);
+	const auto data = renderer_grid::gen_render_grid_indices(e_capacity_);
+	index_ib_ = new Index_buffer(data, e_capacity_ * 6);
 	delete[] data;
 
 	// No need to resize anymore
 	g_resize_vertex_buffers_ = false;
 }
 
-void jactorio::renderer::Renderer_layer::g_update_data(const bool update_vertex, const bool update_uv) {
+void jactorio::renderer::Renderer_layer::g_update_data() {
 	// Only resize if resize is set
 	if (g_resize_vertex_buffers_) {
 		g_resize_vertex_buffers_ = false;
 
-		vertex_vb_->reserve(vertex_buffer_.ptr, e_count_ * g_byte_multiplier, static_layer_);
-		uv_vb_->reserve(uv_buffer_.ptr, e_count_ * g_byte_multiplier, static_layer_);
+		vertex_vb_->reserve(vertex_buffer_.ptr, e_capacity_ * g_byte_multiplier, false);
+		uv_vb_->reserve(uv_buffer_.ptr, e_capacity_ * g_byte_multiplier, false);
 
 		// Index buffer
-		const auto data = renderer_grid::gen_render_grid_indices(e_count_);
-		index_ib->reserve(data, e_count_ * 6);
+		const auto data = renderer_grid::gen_render_grid_indices(e_capacity_);
+		index_ib_->reserve(data, e_capacity_ * 6);
 		delete[] data;
 
 		return;
 	}
 
-	// Update existing buffer data
-	if (update_vertex)
-		vertex_vb_->update_data(vertex_buffer_.ptr, 0, e_count_ * g_byte_multiplier);
-
-	if (update_uv)
-		uv_vb_->update_data(uv_buffer_.ptr, 0, e_count_ * g_byte_multiplier);
+	// Since this is dealing in size, next_element_index_ is not subtracted by 1
+	vertex_vb_->update_data(vertex_buffer_.ptr, 0, next_element_index_ * g_byte_multiplier);
+	uv_vb_->update_data(uv_buffer_.ptr, 0, next_element_index_ * g_byte_multiplier);
 }
 
 void jactorio::renderer::Renderer_layer::g_delete_buffer() {
@@ -241,12 +261,12 @@ void jactorio::renderer::Renderer_layer::g_delete_buffer() {
 	vertex_array_ = nullptr;
 	vertex_vb_ = nullptr;
 	uv_vb_ = nullptr;
-	index_ib = nullptr;
+	index_ib_ = nullptr;
 }
 
 void jactorio::renderer::Renderer_layer::g_buffer_bind() const {
 	vertex_array_->bind();
 	vertex_vb_->bind();
 	uv_vb_->bind();
-	index_ib->bind();
+	index_ib_->bind();
 }

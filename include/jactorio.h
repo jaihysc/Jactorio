@@ -1,5 +1,6 @@
-#ifndef JACTORIO_H
-#define JACTORIO_H
+#ifndef JACTORIO_INCLUDE_JACTORIO_H
+#define JACTORIO_INCLUDE_JACTORIO_H
+#pragma once
 
 #include "core/resource_guard.h"
 #include "core/debug/execution_timer.h"
@@ -26,4 +27,4 @@
 #endif
 
 
-#endif // JACTORIO_H
+#endif //JACTORIO_INCLUDE_JACTORIO_H

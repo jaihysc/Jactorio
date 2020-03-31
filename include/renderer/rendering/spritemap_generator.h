@@ -1,5 +1,14 @@
-#ifndef RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
-#define RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
+// 
+// spritemap_generator.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/28/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
+#define JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
+#pragma once
 
 #include <unordered_map>
 
@@ -14,7 +23,10 @@ namespace jactorio::renderer::renderer_sprites
 {
 	struct Spritemap_data
 	{
-		data::Sprite* spritemap = nullptr;
+		// For the loaded sprite
+		unsigned char* sprite_buffer = nullptr;
+		unsigned int width = 0;
+		unsigned int height = 0;
 
 		// Image positions retrieved via the path originally given to create the spritemap
 		// 0 - 1 positions of the sprite within the spritemap
@@ -27,18 +39,18 @@ namespace jactorio::renderer::renderer_sprites
 	 * Frees all spritemap memory
 	 */
 	void clear_spritemaps();
-	
+
 	/**
 	 * Creates a spritemap and stores it as a renderer::Texture
 	 */
-	void create_spritemap(data::Sprite::sprite_group group, bool invert_sprites);
+	void create_spritemap(data::Sprite::spriteGroup group, bool invert_sprites);
 
 	/**
 	 * Retrieves spritemap at specified group
 	 */
-	const Spritemap_data& get_spritemap(data::Sprite::sprite_group group);
-	const Texture* get_texture(data::Sprite::sprite_group group);
-	
+	const Spritemap_data& get_spritemap(data::Sprite::spriteGroup group);
+	const Texture* get_texture(data::Sprite::spriteGroup group);
+
 	/*!
 	 * Generated spritemap will be purely horizontal, all images concatenated side by side <br>
 	 * Color in non specified areas of the spritemap are undefined <br>
@@ -50,4 +62,4 @@ namespace jactorio::renderer::renderer_sprites
 	Spritemap_data gen_spritemap(data::Sprite** sprites, unsigned short count, bool invert_sprites);
 }
 
-#endif // RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
+#endif //JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H

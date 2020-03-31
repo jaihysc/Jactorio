@@ -1,7 +1,18 @@
-#ifndef RENDERER_WINDOW_WINDOW_MANAGER_H
-#define RENDERER_WINDOW_WINDOW_MANAGER_H
+// 
+// window_manager.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/31/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
+#define JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
+#pragma once
 
 #include <GLFW/glfw3.h>
+
+#include "jactorio.h"
 
 // https://stackoverflow.com/questions/47402766/switching-between-windowed-and-full-screen-in-opengl-glfw-3-2
 
@@ -10,20 +21,20 @@
  */
 namespace jactorio::renderer::window_manager
 {
-	/**
-	 * Creates openGL context and window
-	 * @return Non 0 if error occurred
-	 */
+	///
+	/// \brief Creates openGL context and window
+	/// \exception Data_exception if logo cannot be found
+	/// \return Non 0 if error occurred
 	int init(int width, int height);
-	
+
 	/**
 	 * Terminates openGL context and window
 	 * @return Non 0 if error occurred
 	 */
 	int terminate();
 
-	
-	[[nodiscard]] bool is_fullscreen();
+
+	J_NODISCARD bool is_fullscreen();
 	void set_fullscreen(bool fullscreen);
 
 
@@ -31,4 +42,4 @@ namespace jactorio::renderer::window_manager
 	bool context_active();
 }
 
-#endif // RENDERER_WINDOW_WINDOW_MANAGER_H
+#endif //JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H

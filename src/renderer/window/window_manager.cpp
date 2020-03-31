@@ -1,3 +1,11 @@
+// 
+// window_manager.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -89,7 +97,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 		icons[0].width = icon.get_width();
 		icons[0].height = icon.get_height();
-		
+
 		glfwSetWindowIcon(glfw_window, 1, icons);
 	}
 
@@ -115,7 +123,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		glfw_window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 			game::input_manager::set_input(key, action, mods);
 		});
-	
+
 	glfwSetMouseButtonCallback(glfw_window, [](GLFWwindow* window, int key, int action, int mods) {
 		game::input_manager::set_input(key, action, mods);
 	});
@@ -124,9 +132,9 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		get_base_renderer()->tile_projection_matrix_offset += yoffset * 10;
 	});
 	glfwSetCursorPosCallback(glfw_window, [](GLFWwindow* window, double xpos, double ypos) {
-		game::mouse_selection::set_cursor_position(xpos, ypos);
+		game::set_cursor_position(xpos, ypos);
 	});
-	
+
 	gl_context_active = true;
 
 	LOG_MESSAGE_f(info, "OpenGL initialized - OpenGL Version: %s", glGetString(GL_VERSION))

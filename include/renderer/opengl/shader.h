@@ -1,11 +1,22 @@
-#ifndef RENDERER_OPENGL_SHADER_H
-#define RENDERER_OPENGL_SHADER_H
+// 
+// shader.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_SHADER_H
+#define JACTORIO_INCLUDE_RENDERER_OPENGL_SHADER_H
+#pragma once
 
 #include <GL/glew.h>
 #include <vector>
 #include <string>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "jactorio.h"
 
 namespace jactorio::renderer
 {
@@ -33,7 +44,7 @@ namespace jactorio::renderer
 		void bind() const;
 		static void unbind();
 
-		[[nodiscard]] int get_uniform_location(const std::string& name) const;
+		J_NODISCARD int get_uniform_location(const std::string& name) const;
 		static void set_uniform_1i(const int& location, int v);
 		static void set_uniform_4f(const int& location, const float& v0,
 		                           const float& v1, const float& v2,
@@ -43,4 +54,4 @@ namespace jactorio::renderer
 	};
 }
 
-#endif // RENDERER_OPENGL_SHADER_H
+#endif //JACTORIO_INCLUDE_RENDERER_OPENGL_SHADER_H

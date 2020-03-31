@@ -1,9 +1,16 @@
-#include "renderer/gui/imgui_manager.h"
+// 
+// imgui_manager.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/28/2020
+// 
 
-#include <imgui/imgui.h>
+#include "renderer/gui/imgui_manager.h"
 
 #include <unordered_map>
 #include <cassert>
+#include <imgui/imgui.h>
 
 #include "jactorio.h"
 
@@ -15,10 +22,9 @@
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
 #include "game/event/event.h"
-#include "game/player/player_manager.h"
+#include "game/player/player_data.h"
 #include "data/prototype/entity/entity.h"
 
-ImGuiWindowFlags debug_window_flags = 0;
 ImGuiWindowFlags release_window_flags = 0;
 
 // Inventory
@@ -26,8 +32,8 @@ jactorio::renderer::imgui_manager::Menu_data menu_data;
 
 void jactorio::renderer::imgui_manager::setup_character_data() {
 	menu_data.sprite_positions =
-		renderer_sprites::get_spritemap(data::Sprite::sprite_group::gui).sprite_positions;
-	menu_data.tex_id = renderer_sprites::get_texture(data::Sprite::sprite_group::gui)->get_id();
+		renderer_sprites::get_spritemap(data::Sprite::spriteGroup::gui).sprite_positions;
+	menu_data.tex_id = renderer_sprites::get_texture(data::Sprite::spriteGroup::gui)->get_id();
 }
 
 jactorio::renderer::imgui_manager::Menu_data& jactorio::renderer::imgui_manager::get_menu_data() {
@@ -48,7 +54,10 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui::NewFrame();
 
 		ImGui::SetNextWindowPosCenter();
-		ImGui::Begin("Error", nullptr, debug_window_flags);
+
+		const ImGuiWindowFlags flags = 0;
+		ImGui::Begin("Error", nullptr, flags);
+
 		ImGui::TextWrapped("%s", err_title.c_str());
 		ImGui::TextWrapped("%s", err_message.c_str());
 		ImGui::NewLine();
@@ -73,7 +82,7 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
-	io.IniFilename = NULL;  // Disables imgui saving
+	io.IniFilename = nullptr;  // Disables imgui saving
 	io.ConfigWindowsMoveFromTitleBarOnly = true;  //
 
 	// Setup Platform/Renderer bindings
@@ -82,8 +91,6 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 
 
 	// Factorio inspired Imgui style
-	debug_window_flags |= ImGuiWindowFlags_NoCollapse;
-
 	release_window_flags |= ImGuiWindowFlags_NoCollapse;
 	release_window_flags |= ImGuiWindowFlags_NoResize;
 
@@ -100,9 +107,9 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	style.FrameBorderSize = 0.f;
 
 	// Padding
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, 
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
 	                    ImVec2(J_GUI_STYLE_WINDOW_PADDING_X, J_GUI_STYLE_WINDOW_PADDING_Y));
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, 
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
 	                    ImVec2(J_GUI_STYLE_FRAME_PADDING_X, J_GUI_STYLE_FRAME_PADDING_Y));
 
 	// Window colors
@@ -165,27 +172,28 @@ void* windows[]{
 bool window_visibility[sizeof(windows) / sizeof(windows[0])];
 
 
-void jactorio::renderer::imgui_manager::set_window_visibility(const gui_window window, const bool visibility) {
+void jactorio::renderer::imgui_manager::set_window_visibility(const guiWindow window, const bool visibility) {
 	const auto index = static_cast<int>(window);
 	assert(index != -1);
-	
+
 	bool& old_visibility = window_visibility[index];
 
 	if (visibility && !old_visibility) {
 		// Window opened
 		game::Event::raise<game::Gui_opened_event>(game::event_type::game_gui_open);
 	}
-	
+
 	old_visibility = visibility;
 }
 
-bool jactorio::renderer::imgui_manager::get_window_visibility(gui_window window) {
+bool jactorio::renderer::imgui_manager::get_window_visibility(guiWindow window) {
 	const auto index = static_cast<int>(window);
 	assert(index != -1);
 
 	return window_visibility[index];
 }
 
+// TODO get rid of this vvv, it is unsafe with how it erases types
 /**
  * Draws windows conditionally
  * @param gui_window
@@ -193,7 +201,7 @@ bool jactorio::renderer::imgui_manager::get_window_visibility(gui_window window)
  * @param params Parameters to pass to the window function after the window flags
  */
 template <typename ... ArgsT>
-void draw_window(jactorio::renderer::imgui_manager::gui_window gui_window, const ImGuiWindowFlags window_flags, 
+void draw_window(jactorio::renderer::imgui_manager::guiWindow gui_window, const ImGuiWindowFlags window_flags,
                  ArgsT& ... params) {
 	const int window_index = static_cast<int>(gui_window);
 	assert(window_index != -1);
@@ -201,14 +209,14 @@ void draw_window(jactorio::renderer::imgui_manager::gui_window gui_window, const
 	// Window is hidden?
 	if (!window_visibility[window_index])
 		return;
-	
+
 	const auto function_ptr = reinterpret_cast<void(*)(ImGuiWindowFlags, ArgsT ...)>
 		(windows[window_index]);
 
 	function_ptr(window_flags, params ...);
 }
 
-void jactorio::renderer::imgui_manager::imgui_draw() {
+void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_data) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame
@@ -226,23 +234,24 @@ void jactorio::renderer::imgui_manager::imgui_draw() {
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
-	draw_window(gui_window::debug, debug_window_flags);
+	draw_window<game::Player_data&>(guiWindow::debug, 0, player_data);
+	gui::debug_menu_logic(player_data);
 
 	// Draw gui for active entity
 	// Do not draw character and recipe menu while in an entity menu
-	auto* layer = game::player_manager::get_activated_layer();
+	auto* layer = player_data.get_activated_layer();
 	if (layer != nullptr) {
-		set_window_visibility(gui_window::character, false);
+		set_window_visibility(guiWindow::character, false);
 
-		static_cast<data::Entity*>(layer->prototype_data)->on_show_gui(layer);
+		static_cast<const data::Entity*>(layer->prototype_data)->on_r_show_gui(player_data, layer);
 	}
 	else {
-		draw_window(gui_window::character, release_window_flags);
+		draw_window<game::Player_data&>(guiWindow::character, release_window_flags, player_data);
 	}
 
-	gui::crafting_queue();
-	gui::cursor_window();
-	gui::pickup_progressbar();
+	gui::crafting_queue(player_data);
+	gui::cursor_window(player_data);
+	gui::pickup_progressbar(player_data);
 
 	// Render
 	ImGui::Render();

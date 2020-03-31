@@ -1,5 +1,14 @@
-#ifndef RENDERER_OPENGL_VERTEX_ARRAY_H
-#define RENDERER_OPENGL_VERTEX_ARRAY_H
+// 
+// vertex_array.h
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/15/2019
+// Last modified: 03/14/2020
+// 
+
+#ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_VERTEX_ARRAY_H
+#define JACTORIO_INCLUDE_RENDERER_OPENGL_VERTEX_ARRAY_H
+#pragma once
 
 #include "renderer/opengl/vertex_buffer.h"
 
@@ -34,4 +43,4 @@ namespace jactorio::renderer
 	};
 }
 
-#endif // RENDERER_OPENGL_VERTEX_ARRAY_H
+#endif //JACTORIO_INCLUDE_RENDERER_OPENGL_VERTEX_ARRAY_H

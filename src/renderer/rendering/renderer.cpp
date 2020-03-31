@@ -1,3 +1,11 @@
+// 
+// renderer.cpp
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// 
+// Created on: 10/22/2019
+// Last modified: 03/14/2020
+// 
+
 #include <GL/glew.h>
 
 #include "renderer/rendering/renderer.h"
@@ -33,14 +41,14 @@ jactorio::renderer::Renderer::Renderer() {
 	const glm::mat4 model_matrix = translate(glm::mat4(1.f), glm::vec3(0, 0, 0));
 	setg_model_matrix(model_matrix);
 	update_shader_mvp();
-	
+
 	// Get window size
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
 
 	render_layer.g_init_buffer();
 	render_layer2.g_init_buffer();
-	
+
 	recalculate_buffers(m_viewport[2], m_viewport[3]);
 }
 
@@ -55,31 +63,21 @@ void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short wind
 	tile_count_x_ = window_width_ / tile_width + 1;
 	tile_count_y_ = window_height_ / tile_width + 1;
 
-	grid_vertices_count_ = (tile_count_x_ + 1) * (tile_count_y_ + 1);
 	grid_elements_count_ = tile_count_x_ * tile_count_y_;
 
 
-	// Render layer
+	// Render layer (More may be reserved as needed by the renderer)
 	render_layer.reserve(grid_elements_count_);
 	render_layer2.reserve(grid_elements_count_);
-
-	// Vertex positions
-	renderer_grid::gen_render_grid(&render_layer, tile_count_x_, tile_count_y_, tile_width);
-	renderer_grid::gen_render_grid(&render_layer2, tile_count_x_, tile_count_y_, tile_width);
 }
 
 
 // openGL methods
 
-void jactorio::renderer::Renderer::g_draw() const {
-	// Count should be the same for both layers
-	const unsigned int count = render_layer.get_buf_index()->count();
-	// unsigned int count2 = render_layer2.get_buf_index()->count();
-
-	// assert(render_layer.get_buf_index()->count() == render_layer2.get_buf_index()->count());
-	
+void jactorio::renderer::Renderer::g_draw(const unsigned int element_count) {
 	DEBUG_OPENGL_CALL(
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr)
+		// There are 6 indices for each tile
+		glDrawElements(GL_TRIANGLES, element_count * 6, GL_UNSIGNED_INT, nullptr)
 	); // Pointer not needed as buffer is already bound
 }
 
