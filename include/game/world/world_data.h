@@ -49,11 +49,13 @@ namespace jactorio::game
 
 		std::map<const Chunk*, Logic_chunk> logic_chunks_;
 
-		mutable std::mutex mutex_{};
+		mutable std::mutex world_chunks_mutex_{};  // Used by methods when accessing world_chunks_
 
 	public:
 		using world_coord = int32_t;  // World coordinates
 		using chunk_coord = int32_t;  // Chunk coordinates
+
+		mutable std::mutex world_data_mutex{};  // Held by the thread which is currently operating on a chunk
 
 		///
 		/// \brief Adds a chunk into the game world

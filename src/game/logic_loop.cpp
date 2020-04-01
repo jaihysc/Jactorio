@@ -154,28 +154,38 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 	while (!logic_thread_should_exit) {
 		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
+		// ======================================================================
+		// LOGIC EVENTS ======================================================================
 		{
-			game_data->player.mouse_calculate_selected_tile();
+			EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic update");
 
-
+			// Events are responsible for locking themselves
 			Event::raise<Logic_tick_event>(event_type::logic_tick, logic_tick);
 			input_manager::raise();
 
-			// Generate chunks
-			game_data->world.gen_chunk();
-
-			game_data->input.mouse.draw_cursor_overlay(game_data->player);
-
-			// Character logic
-			game_data->player.recipe_craft_tick();
-
-			// Logistics logic
+			// ======================================================================	
+			// World chunks			
 			{
+				std::lock_guard<std::mutex> guard{game_data->world.world_data_mutex};
+
+				game_data->player.mouse_calculate_selected_tile();
+
+				game_data->world.gen_chunk();
+				game_data->input.mouse.draw_cursor_overlay(game_data->player);
+
+
+				// Logistics logic
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
 				transport_line_c::transport_line_logic_update(game_data->world);
 			}
+
+			// ======================================================================
+			// Character logic
+			game_data->player.recipe_craft_tick();
 		}
+		// END LOGIC EVENTS ======================================================================
+		// ======================================================================
 
 		if (++logic_tick > 60)
 			logic_tick = 1;

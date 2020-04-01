@@ -539,6 +539,7 @@ void jactorio::renderer::world_renderer::prepare_chunk_draw_data(const game::Wor
 		for (int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
 			const int chunk_x_offset = chunk_x * 32 + render_offset_x;
 
+			std::lock_guard<std::mutex> guard{world_data.world_data_mutex};
 			const game::Chunk* chunk = world_data.get_chunk_read_only(chunk_start_x + chunk_x,
 			                                                          chunk_start_y + chunk_y);
 			// Generate chunk if non existent

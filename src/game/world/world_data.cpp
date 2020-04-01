@@ -17,7 +17,7 @@ jactorio::game::Chunk* jactorio::game::World_data::add_chunk(Chunk* chunk) {
 	const auto position = chunk->get_position();
 	const auto coords = std::tuple<int, int>{position.first, position.second};
 
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
 	// A chunk already exist at this position?
 	if (world_chunks_.find(coords) != world_chunks_.end()) {
@@ -31,7 +31,7 @@ jactorio::game::Chunk* jactorio::game::World_data::add_chunk(Chunk* chunk) {
 }
 
 void jactorio::game::World_data::clear_chunk_data() {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
 	// The chunk data itself needs to be deleted
 	for (auto& world_chunk : world_chunks_) {
@@ -44,7 +44,7 @@ void jactorio::game::World_data::clear_chunk_data() {
 // ======================================================================
 
 jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const chunk_coord chunk_x, const chunk_coord chunk_y) {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
 	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
@@ -55,7 +55,7 @@ jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const chunk_coord c
 }
 
 const jactorio::game::Chunk* jactorio::game::World_data::get_chunk_read_only(chunk_coord chunk_x, chunk_coord chunk_y) const {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
 	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
