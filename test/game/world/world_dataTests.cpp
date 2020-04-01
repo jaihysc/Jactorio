@@ -2,8 +2,8 @@
 // world_dataTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 11/09/2019
-// Last modified: 03/14/2020
+// Created on: 03/31/2020
+// Last modified: 04/01/2020
 // 
 
 #include <gtest/gtest.h>
@@ -48,9 +48,6 @@ namespace game
 		// Should not initialize other chunks
 		EXPECT_EQ(world_data.get_chunk(-1, -1), nullptr);
 		EXPECT_EQ(world_data.get_chunk(1, 1), nullptr);
-
-
-		world_data.clear_chunk_data();
 	}
 
 
@@ -74,8 +71,6 @@ namespace game
 		// Returned pointers are equal
 		EXPECT_EQ(added_chunk, chunk);
 		EXPECT_EQ(added_chunk2, chunk2);
-
-		world_data.clear_chunk_data();
 	}
 
 	TEST(world_manager, world_get_chunk) {
@@ -86,8 +81,18 @@ namespace game
 
 		EXPECT_EQ(world_data.get_chunk(0, 0), nullptr);
 		EXPECT_EQ(world_data.get_chunk(5, 1), added_chunk);
+		EXPECT_EQ(world_data.get_chunk(5, 1), chunk);
+	}
 
-		world_data.clear_chunk_data();
+	TEST(world_manager, world_get_chunk_read_only) {
+		jactorio::game::World_data world_data{};
+
+		const auto chunk = new jactorio::game::Chunk{5, 1, nullptr};
+		const auto* added_chunk = world_data.add_chunk(chunk);
+
+		EXPECT_EQ(world_data.get_chunk_read_only(0, 0), nullptr);
+		EXPECT_EQ(world_data.get_chunk_read_only(5, 1), added_chunk);
+		EXPECT_EQ(world_data.get_chunk_read_only(5, 1), chunk);
 	}
 
 	TEST(world_manager, get_tile_world_coords) {
@@ -201,6 +206,30 @@ namespace game
 	//
 	// 	EXPECT_EQ(world_manager::logic_get_all_chunks().size(), 0);
 	// }
+
+	TEST(world_manager, logic_get_chunk) {
+		using namespace jactorio::game;
+
+		World_data world_data{};
+		Chunk chunk(0, 0, nullptr);
+
+		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
+
+		EXPECT_EQ(world_data.logic_get_chunk(&chunk), &logic_chunk);
+		EXPECT_EQ(world_data.logic_get_chunk(nullptr), nullptr);
+	}
+
+	TEST(world_manager, logic_get_chunk_read_only) {
+		using namespace jactorio::game;
+
+		World_data world_data{};
+		Chunk chunk(0, 0, nullptr);
+
+		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
+
+		EXPECT_EQ(world_data.logic_get_chunk_read_only(&chunk), &logic_chunk);
+		EXPECT_EQ(world_data.logic_get_chunk_read_only(nullptr), nullptr);
+	}
 
 	TEST(world_manager, logic_clear_chunk_data) {
 		jactorio::game::World_data world_data{};

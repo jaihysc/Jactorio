@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/15/2019
-// Last modified: 03/12/2020
+// Last modified: 04/01/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_WORLD_RENDERER_H
@@ -29,8 +29,8 @@ namespace jactorio::renderer::world_renderer
 	/// \param chunk_amount_x Number of chunks on X axis after chunk_start_x to draw
 	/// \param chunk_amount_y Number of chunks on Y axis after chunk_start_y to draw
 	/// \param layer Layer on which vertex and UV draw data will be placed
-	void prepare_chunk_draw_data(game::World_data& world_data,
-								 int layer_index, bool is_tile_layer,
+	void prepare_chunk_draw_data(const game::World_data& world_data,
+	                             int layer_index, bool is_tile_layer,
 	                             int render_offset_x, int render_offset_y,
 	                             int chunk_start_x, int chunk_start_y,
 	                             int chunk_amount_x, int chunk_amount_y,
@@ -49,7 +49,7 @@ namespace jactorio::renderer::world_renderer
 	/// \param renderer The renderer on which the world is drawn
 	/// \param player_x X Position of the player in tiles
 	/// \param player_y Y Position of the player in tiles
-	void render_player_position(game::World_data& world_data, Renderer* renderer, float player_x, float player_y);
+	void render_player_position(const game::World_data& world_data, Renderer* renderer, float player_x, float player_y);
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_RENDERING_WORLD_RENDERER_H
