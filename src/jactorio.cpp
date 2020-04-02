@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
+// Last modified: 04/02/2020
 // 
 
 #include "jactorio.h"
@@ -21,11 +21,8 @@ void initialize_game() {
 	// Rendering + logic initialization
 	LOG_MESSAGE(info, "1 - Data stage");
 
-	core::Resource_guard data_manager_guard(&data::data_manager::clear_data);
-
-	std::mutex m;
-	std::thread logic_thread = std::thread(game::init_logic_loop, &m);
-	std::thread renderer_thread = std::thread(renderer::render_init, &m);
+	std::thread logic_thread = std::thread(game::init_logic_loop);
+	std::thread renderer_thread = std::thread(renderer::render_init);
 
 	logic_thread.join();
 	renderer_thread.join();

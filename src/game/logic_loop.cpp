@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 04/01/2020
+// Last modified: 04/02/2020
 // 
 
 #include "game/logic_loop.h"
@@ -27,23 +27,20 @@
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/render_main.h"
 
-// #include "game/logic/placement_controller.h"
-// bool deed_done = false;
-
 constexpr float move_speed = 0.8f;
 
-void jactorio::game::init_logic_loop(std::mutex*) {
+void jactorio::game::init_logic_loop() {
 	core::Resource_guard<void> loop_termination_guard([]() {
 		renderer::render_thread_should_exit = true;
 		logic_thread_should_exit = true;
 	});
 
 	// Initialize game data
-	// ReSharper disable once CppLocalVariableWithNonTrivialDtorIsNeverUsed
 	core::Resource_guard<void> game_data_guard([]() { delete game_data; });
 	game_data = new Game_data();
 
 	// Load prototype data
+	core::Resource_guard data_manager_guard(&data::data_manager::clear_data);
 	try {
 		data::data_manager::load_data(core::filesystem::resolve_path("~/data"));
 	}
@@ -51,7 +48,7 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 		// Prototype loading error
 		return;
 	}
-	catch (std::filesystem::filesystem_error& e) {
+	catch (std::filesystem::filesystem_error&) {
 		// Data folder not found error
 		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::filesystem::resolve_path("~/data").c_str());
 		return;
@@ -150,40 +147,6 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 		}, GLFW_MOUSE_BUTTON_2, GLFW_PRESS);
 	}
 
-	// Event::subscribe<void(*)(Logic_tick_event&)>(event_type::logic_tick, [](Logic_tick_event& e) {
-	// 	std::lock_guard<std::mutex> guard{game_data->world.world_data_mutex};
-	//
-	// 	game_data->player.rotate_placement_orientation();
-	//
-	// 	if (e.game_tick % 60 == 1) {
-	// 		game_data->world.clear_chunk_data();
-	// 		deed_done = false;	
-	// 	}
-	//
-	// 	auto* chunk = game_data->world.get_chunk(-1, 0);
-	// 	if (chunk && !deed_done) {
-	// 		deed_done = true;
-	// 		auto* proto = data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
-	// 			                                                       "__base__/transport-belt-basic");
-	//
-	// 		placement_c::place_entity_at_coords(game_data->world, proto, -32, 0);
-	//
-	//
-	// 		auto* line_seg = new Transport_line_segment(Transport_line_segment::moveDir::down, 
-	// 													Transport_line_segment::terminationType::bend_left,
-	// 													1);
-	//
-	// 		auto& layer = game_data->world.logic_add_chunk(chunk).get_struct(Logic_chunk::structLayer::transport_line)
-	// 		.emplace_back(Chunk_struct_layer(proto));
-	// 		layer.unique_data = line_seg;
-	//
-	// 		auto* data = new data::Transport_line_data(*line_seg);
-	// 		chunk->tiles_ptr()[0].get_layer(Chunk_tile::chunkLayer::entity).unique_data = data;
-	// 		data->set = 5;
-	// 		data->frame = 4;
-	// 	}
-	// });
-
 	//
 
 	// Runtime
@@ -193,9 +156,9 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
 		// ======================================================================
-		// LOGIC EVENTS ======================================================================
+		// LOGIC LOOP ======================================================================
 		{
-			EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic update");
+			EXECUTION_PROFILE_SCOPE(logic_update_timer, "Logic update");
 
 			// Events are responsible for locking themselves
 			Event::raise<Logic_tick_event>(event_type::logic_tick, logic_tick);
@@ -219,10 +182,14 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 			}
 
 			// ======================================================================
-			// Character logic
-			game_data->player.recipe_craft_tick();
+			// Player logic
+			{
+				std::lock_guard<std::mutex> guard{game_data->player.mutex};
+
+				game_data->player.recipe_craft_tick();
+			}
 		}
-		// END LOGIC EVENTS ======================================================================
+		// ======================================================================
 		// ======================================================================
 
 		if (++logic_tick > 60)
