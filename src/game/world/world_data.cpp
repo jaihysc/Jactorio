@@ -2,8 +2,8 @@
 // world_data.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 10/15/2019
-// Last modified: 03/14/2020
+// Created on: 03/31/2020
+// Last modified: 04/01/2020
 // 
 
 #include "game/world/world_data.h"
@@ -17,7 +17,7 @@ jactorio::game::Chunk* jactorio::game::World_data::add_chunk(Chunk* chunk) {
 	const auto position = chunk->get_position();
 	const auto coords = std::tuple<int, int>{position.first, position.second};
 
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
 	// A chunk already exist at this position?
 	if (world_chunks_.find(coords) != world_chunks_.end()) {
@@ -30,8 +30,21 @@ jactorio::game::Chunk* jactorio::game::World_data::add_chunk(Chunk* chunk) {
 	return chunk;
 }
 
-jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const int chunk_x, const int chunk_y) {
-	std::lock_guard<std::mutex> guard(mutex_);
+void jactorio::game::World_data::clear_chunk_data() {
+	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
+
+	// The chunk data itself needs to be deleted
+	for (auto& world_chunk : world_chunks_) {
+		delete world_chunk.second;
+	}
+	world_chunks_.clear();
+	logic_chunks_.clear();
+}
+
+// ======================================================================
+
+jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const chunk_coord chunk_x, const chunk_coord chunk_y) {
+	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
 	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
@@ -41,11 +54,42 @@ jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const int chunk_x, 
 	return world_chunks_[key];
 }
 
+const jactorio::game::Chunk* jactorio::game::World_data::get_chunk_read_only(chunk_coord chunk_x, chunk_coord chunk_y) const {
+	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
-// Chunk tiles
-jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(int world_x,
-                                                                              int world_y) {
+	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
+	// From testing, not using exceptions can cut up to 30ms per frame in the render thread
+	if (world_chunks_.find(key) == world_chunks_.end())
+		return nullptr;
+
+	return world_chunks_.at(key);
+}
+
+jactorio::game::Chunk* jactorio::game::World_data::get_chunk_world_coords(world_coord world_x, world_coord world_y) {
+	// See get_tile_world_coords() for documentation on the purpose of if statements
+
+	float chunk_index_x = 0;
+	float chunk_index_y = 0;
+
+	if (world_x < 0) {
+		chunk_index_x -= 1;
+		world_x += 1;
+	}
+	if (world_y < 0) {
+		chunk_index_y -= 1;
+		world_y += 1;
+	}
+
+	chunk_index_x += static_cast<float>(world_x) / 32;
+	chunk_index_y += static_cast<float>(world_y) / 32;
+
+	return get_chunk(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
+}
+
+// ======================================================================
+
+jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(world_coord world_x, world_coord world_y) {
 	// The negative chunks start at -1, unlike positive chunks at 0
 	// Thus add 1 to become 0 so the calculations can be performed
 	bool negative_x = false;
@@ -89,28 +133,7 @@ jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(in
 	return nullptr;
 }
 
-jactorio::game::Chunk* jactorio::game::World_data::get_chunk_world_coords(int world_x, int world_y) {
-	// See get_tile_world_coords() for documentation on the purpose of if statements
-
-	float chunk_index_x = 0;
-	float chunk_index_y = 0;
-
-	if (world_x < 0) {
-		chunk_index_x -= 1;
-		world_x += 1;
-	}
-	if (world_y < 0) {
-		chunk_index_y -= 1;
-		world_y += 1;
-	}
-
-	chunk_index_x += static_cast<float>(world_x) / 32;
-	chunk_index_y += static_cast<float>(world_y) / 32;
-
-	return get_chunk(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
-}
-
-
+// ======================================================================
 // Logic chunks
 jactorio::game::Logic_chunk& jactorio::game::World_data::logic_add_chunk(Chunk* chunk) {
 	assert(chunk != nullptr);
@@ -118,17 +141,20 @@ jactorio::game::Logic_chunk& jactorio::game::World_data::logic_add_chunk(Chunk* 
 	return iterator.first->second;
 }
 
-std::map<jactorio::game::Chunk*, jactorio::game::Logic_chunk>& jactorio::game::World_data::logic_get_all_chunks() {
+std::map<const jactorio::game::Chunk*, jactorio::game::Logic_chunk>& jactorio::game::World_data::logic_get_all_chunks() {
 	return logic_chunks_;
 }
 
-void jactorio::game::World_data::clear_chunk_data() {
-	std::lock_guard<std::mutex> guard(mutex_);
+jactorio::game::Logic_chunk* jactorio::game::World_data::logic_get_chunk(const Chunk* chunk) {
+	if (logic_chunks_.find(chunk) == logic_chunks_.end())
+		return nullptr;
 
-	// The chunk data itself needs to be deleted
-	for (auto& world_chunk : world_chunks_) {
-		delete world_chunk.second;
-	}
-	world_chunks_.clear();
-	logic_chunks_.clear();
+	return &logic_chunks_.at(chunk);
+}
+
+const jactorio::game::Logic_chunk* jactorio::game::World_data::logic_get_chunk_read_only(const Chunk* chunk) const {
+	if (logic_chunks_.find(chunk) == logic_chunks_.end())
+		return nullptr;
+
+	return &logic_chunks_.at(chunk);
 }

@@ -2,8 +2,8 @@
 // logic_chunk.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 02/11/2020
-// Last modified: 03/14/2020
+// Created on: 03/31/2020
+// Last modified: 04/01/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_LOGIC_CHUNK_H
@@ -22,11 +22,6 @@ namespace jactorio::game
 	class Logic_chunk
 	{
 	public:
-		//		Logic_chunk()
-		//			: chunk(nullptr) {
-		//			assert(false);  // A chunk pointer needs to be provided - Was there a logic chunk created when it was accessed?
-		//		}
-
 		explicit Logic_chunk(Chunk* chunk)
 			: chunk(chunk) {
 			assert(chunk != nullptr);  // Logic chunks should always be associated with a chunk
@@ -47,7 +42,11 @@ namespace jactorio::game
 
 		std::vector<Chunk_struct_layer> structs[struct_layer_count];
 
-		std::vector<Chunk_struct_layer>& get_struct(structLayer layer) {
+		J_NODISCARD std::vector<Chunk_struct_layer>& get_struct(structLayer layer) {
+			return structs[static_cast<int>(layer)];
+		}
+
+		J_NODISCARD const std::vector<Chunk_struct_layer>& get_struct_read_only(structLayer layer) const {
 			return structs[static_cast<int>(layer)];
 		}
 	};

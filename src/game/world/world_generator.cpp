@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/19/2019
-// Last modified: 03/12/2020
+// Last modified: 04/01/2020
 // 
 
 #include "game/world/world_data.h"
@@ -140,7 +140,7 @@ void generate(jactorio::game::World_data& world_data, const int chunk_x, const i
 }
 
 
-void jactorio::game::World_data::queue_chunk_generation(const int chunk_x, const int chunk_y) {
+void jactorio::game::World_data::queue_chunk_generation(const chunk_coord chunk_x, const chunk_coord chunk_y) const {
 	const auto chunk_key = std::tuple<int, int>{+ chunk_x, chunk_y};
 
 	// Is the chunk already under generation? If so return

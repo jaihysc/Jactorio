@@ -3,14 +3,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/16/2020
+// Last modified: 04/02/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDER_MAIN_H
 #define JACTORIO_INCLUDE_RENDERER_RENDER_MAIN_H
 #pragma once
-
-#include <mutex>
 
 #include "renderer/rendering/renderer.h"
 
@@ -28,7 +26,7 @@ namespace jactorio::renderer
 	///
 	/// \brief Initiates rendering and starts the rendering thread
 	/// \param mutex Will lock when preparing render data and rendering, unlock while sleeping until the next frame
-	void render_init(std::mutex* mutex);
+	void render_init();
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_RENDER_MAIN_H

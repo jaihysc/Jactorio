@@ -2,13 +2,15 @@
 // player_data.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 12/21/2019
-// Last modified: 03/27/2020
+// Created on: 03/31/2020
+// Last modified: 04/02/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
 #define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
 #pragma once
+
+#include <queue>
 
 #include "data/prototype/item/item.h"
 #include "data/prototype/item/recipe.h"
@@ -16,15 +18,17 @@
 #include "data/prototype/interface/rotatable.h"
 #include "game/world/world_data.h"
 
-#include <queue>
-
-
 namespace jactorio::game
 {
 	///
 	/// \brief Stores information & functions regarding a player (Duplicated for multiple players)
 	class Player_data
 	{
+	public:
+		/// Used when concurrently accessing player data, such as for rendering
+		std::mutex mutex;
+
+	private:
 		// ======================================================================
 		// Player specific mouse selection
 

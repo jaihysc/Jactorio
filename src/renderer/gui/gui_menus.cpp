@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/01/2020
-// Last modified: 03/12/2020
+// Last modified: 04/02/2020
 // 
 
 #include "renderer/gui/gui_menus.h"
@@ -615,7 +615,6 @@ void jactorio::renderer::gui::container_entity(game::Player_data& player_data,
 			}
 		}
 		else
-			// BUG this may throw exception due to concurrency and inv being deleted
 			draw_slot(
 				imgui_manager::get_menu_data(), 1, i % 10,
 				inv[i].first->sprite->internal_id, inv[i].second, [&]() {
