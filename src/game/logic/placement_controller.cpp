@@ -3,15 +3,15 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/24/2020
+// Last modified: 04/02/2020
 // 
 
 #include "game/logic/placement_controller.h"
 
 #include "jactorio.h"
 
+#include "data/prototype/tile/tile.h"
 #include "game/world/world_data.h"
-#include "game/world/chunk_tile_getters.h"
 
 bool jactorio::game::placement_c::placement_location_valid(World_data& world_data,
                                                            const uint8_t tile_width, const uint8_t tile_height,
@@ -23,11 +23,8 @@ bool jactorio::game::placement_c::placement_location_valid(World_data& world_dat
 
 			// If the tile proto does not exist, or base tile prototype is water, NOT VALID placement
 
-			const auto tile_proto =
-				chunk_tile_getter::get_tile_prototype(*tile, Chunk_tile::chunkLayer::base);
-
-			const auto entity_proto =
-				chunk_tile_getter::get_entity_prototype(*tile, Chunk_tile::chunkLayer::entity);
+			const auto* tile_proto = tile->get_tile_prototype(Chunk_tile::chunkLayer::base);
+			const auto* entity_proto = tile->get_entity_prototype(Chunk_tile::chunkLayer::entity);
 
 			if (entity_proto != nullptr || tile_proto == nullptr || tile_proto->is_water) {
 				return false;
@@ -51,8 +48,7 @@ bool jactorio::game::placement_c::place_entity_at_coords(World_data& world_data,
 
 	// entity is nullptr indicates removing an entity
 	if (entity == nullptr) {
-		const data::Entity* t_entity =
-			chunk_tile_getter::get_entity_prototype(*tile, Chunk_tile::chunkLayer::entity);
+		const data::Entity* t_entity = tile->get_entity_prototype(Chunk_tile::chunkLayer::entity);
 
 		if (t_entity == nullptr)  // Already removed
 			return false;
@@ -75,8 +71,7 @@ bool jactorio::game::placement_c::place_entity_at_coords(World_data& world_data,
 	place_at_coords(
 		world_data, Chunk_tile::chunkLayer::entity, entity->tile_width, entity->tile_height, x,
 		y, [](Chunk_tile* chunk_tile) {
-			chunk_tile_getter::set_entity_prototype(*chunk_tile,
-			                                        Chunk_tile::chunkLayer::entity, placement_entity);
+			chunk_tile->set_entity_prototype(Chunk_tile::chunkLayer::entity, placement_entity);
 		});
 
 	return true;
@@ -115,8 +110,7 @@ void jactorio::game::placement_c::place_sprite_at_coords(World_data& world_data,
 		world_data, layer,
 		tile_width, tile_height, x, y,
 		[](Chunk_tile* chunk_tile) {
-			chunk_tile_getter::set_sprite_prototype(*chunk_tile,
-			                                        Chunk_tile::chunkLayer::overlay, placement_sprite);
+			chunk_tile->set_sprite_prototype(Chunk_tile::chunkLayer::overlay, placement_sprite);
 		});
 }
 

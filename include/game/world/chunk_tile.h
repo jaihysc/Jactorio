@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/12/2020
+// Last modified: 04/02/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H
@@ -13,6 +13,14 @@
 #include "jactorio.h"
 
 #include "chunk_tile_layer.h"
+
+// Cannot include the data headers
+namespace jactorio::data
+{
+	class Tile;
+	class Entity;
+	class Sprite;
+}
 
 namespace jactorio::game
 {
@@ -47,6 +55,24 @@ namespace jactorio::game
 		static unsigned short get_layer_index(chunkLayer category) {
 			return static_cast<unsigned short>(category);
 		}
+
+
+		// ============================================================================================
+		// Methods below are type checked to avoid getting / setting the wrong data
+
+		// chunk_layer::base only
+		J_NODISCARD const data::Tile* get_tile_prototype(chunkLayer category) const;
+		void set_tile_prototype(chunkLayer category, const data::Tile* tile_prototype) const;
+
+
+		// chunk_layer::resource, chunk_layer::entity only
+		J_NODISCARD const data::Entity* get_entity_prototype(chunkLayer category) const;
+		void set_entity_prototype(chunkLayer category, const data::Entity* tile_prototype) const;
+
+
+		// chunk_layer::overlay only
+		J_NODISCARD const data::Sprite* get_sprite_prototype(chunkLayer category) const;
+		void set_sprite_prototype(chunkLayer category, const data::Sprite* tile_prototype) const;
 
 	public:
 		// ============================================================================================

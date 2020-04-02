@@ -2,8 +2,8 @@
 // player_data.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 12/21/2019
-// Last modified: 03/28/2020
+// Created on: 03/31/2020
+// Last modified: 04/02/2020
 // 
 
 #include "game/player/player_data.h"
@@ -14,10 +14,10 @@
 
 #include "data/data_manager.h"
 #include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/tile/tile.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"
-#include "game/world/chunk_tile_getters.h"
 #include "game/world/world_data.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
@@ -106,7 +106,7 @@ bool jactorio::game::Player_data::target_tile_valid(World_data* world_data, cons
 		return false;
 
 	// If the player is on water, they are allowed to walk on water
-	if (chunk_tile_getter::get_tile_prototype(*origin_tile, Chunk_tile::chunkLayer::base)->is_water)
+	if (origin_tile->get_tile_prototype(Chunk_tile::chunkLayer::base)->is_water)
 		return true;
 
 	const Chunk_tile* tile = world_data->get_tile_world_coords(x, y);
@@ -114,7 +114,7 @@ bool jactorio::game::Player_data::target_tile_valid(World_data* world_data, cons
 	if (tile == nullptr)
 		return false;
 
-	return !chunk_tile_getter::get_tile_prototype(*tile, Chunk_tile::chunkLayer::base)->is_water;
+	return !tile->get_tile_prototype(Chunk_tile::chunkLayer::base)->is_water;
 }
 
 void jactorio::game::Player_data::move_player_x(const float amount) {
@@ -242,11 +242,8 @@ void jactorio::game::Player_data::try_pickup(World_data& world_data,
 	const data::Entity* chosen_ptr;
 	bool is_resource_ptr = true;
 	{
-		const auto entity_ptr =
-			chunk_tile_getter::get_entity_prototype(*tile, Chunk_tile::chunkLayer::entity);
-
-		const auto resource_ptr =
-			chunk_tile_getter::get_entity_prototype(*tile, Chunk_tile::chunkLayer::resource);
+		const auto* entity_ptr = tile->get_entity_prototype(Chunk_tile::chunkLayer::entity);
+		const auto* resource_ptr = tile->get_entity_prototype(Chunk_tile::chunkLayer::resource);
 
 		// Picking up entities takes priority since it is higher on the layer
 		if (entity_ptr != nullptr) {

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 03/27/2020
+// Last modified: 04/02/2020
 // 
 
 #include "game/input/mouse_selection.h"
@@ -15,7 +15,6 @@
 #include "game/logic/placement_controller.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
-#include "game/world/chunk_tile_getters.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
 
@@ -111,7 +110,7 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 				player_data.mouse_selected_tile_in_range() ? "__core__/cursor-select" : "__core__/cursor-invalid");
 			assert(sprite_ptr != nullptr);
 
-			chunk_tile_getter::set_sprite_prototype(*tile, Chunk_tile::chunkLayer::overlay, sprite_ptr);
+			tile->set_sprite_prototype(Chunk_tile::chunkLayer::overlay, sprite_ptr);
 			tile->get_layer(Chunk_tile::chunkLayer::overlay).multi_tile_span = 1;
 		}
 	}

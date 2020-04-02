@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/19/2019
-// Last modified: 04/01/2020
+// Last modified: 04/02/2020
 // 
 
 #include "game/world/world_data.h"
@@ -20,7 +20,6 @@
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/tile/tile.h"
-#include "game/world/chunk_tile_getters.h"
 
 // T is value stored in noise_layer at data_category
 template <typename T>
@@ -110,8 +109,7 @@ void generate(jactorio::game::World_data& world_data, const int chunk_x, const i
 			// Add the tile prototype to the Chunk_tile
 			auto* new_tile = static_cast<data::Tile*>(tile);
 
-			game::chunk_tile_getter::set_tile_prototype(target,
-			                                            game::Chunk_tile::chunkLayer::base, new_tile);
+			target.set_tile_prototype(game::Chunk_tile::chunkLayer::base, new_tile);
 		});
 
 	// Resources
@@ -123,8 +121,7 @@ void generate(jactorio::game::World_data& world_data, const int chunk_x, const i
 				return;
 
 			// Do not place resource on water
-			auto* base_layer =
-				game::chunk_tile_getter::get_tile_prototype(target, game::Chunk_tile::chunkLayer::base);
+			auto* base_layer = target.get_tile_prototype(game::Chunk_tile::chunkLayer::base);
 			if (base_layer != nullptr && base_layer->is_water)
 				return;
 

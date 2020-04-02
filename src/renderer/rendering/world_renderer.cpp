@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/15/2019
-// Last modified: 04/01/2020
+// Last modified: 04/02/2020
 // 
 
 #include "renderer/rendering/world_renderer.h"
@@ -11,14 +11,14 @@
 #include <future>
 
 #include "core/debug/execution_timer.h"
+#include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/interface/renderable.h"
+#include "data/prototype/tile/tile.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_line_structure.h"
-
 #include "game/world/world_data.h"
-#include "game/world/chunk_tile_getters.h"
-
-#include "renderer/rendering/mvp_manager.h"
 #include "renderer/opengl/shader_manager.h"
+#include "renderer/rendering/mvp_manager.h"
 
 using tile_draw_func = jactorio::core::Quad_position (*)(const jactorio::game::Chunk_tile&);
 using object_draw_func = unsigned int (*)(const jactorio::game::Chunk_object_layer&);
@@ -41,9 +41,7 @@ void apply_uv_offset(jactorio::core::Quad_position& uv, const jactorio::core::Qu
 /// \remark return top_left.x -1 to skip
 tile_draw_func tile_layer_get_sprite_id_func[]{
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
-		const auto t =
-			jactorio::game::chunk_tile_getter::get_tile_prototype(
-				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::base);
+		const auto* t = chunk_tile.get_tile_prototype(jactorio::game::Chunk_tile::chunkLayer::base);
 
 		auto* unique_data =
 			static_cast<jactorio::data::Renderable_data*>(
@@ -58,9 +56,8 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 	},
 
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
-		const auto t =
-			jactorio::game::chunk_tile_getter::get_entity_prototype(
-				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::resource);
+		const auto* t = chunk_tile.get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::resource);
+
 		// Sprites are guaranteed not nullptr
 		if (t == nullptr)
 			return no_draw;
@@ -78,9 +75,8 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 		return uv;
 	},
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
-		const auto t =
-			jactorio::game::chunk_tile_getter::get_entity_prototype(
-				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::entity);
+		const auto* t = chunk_tile.get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity);
+
 		if (t == nullptr)
 			return no_draw;
 
@@ -97,9 +93,7 @@ tile_draw_func tile_layer_get_sprite_id_func[]{
 	},
 
 	[](const jactorio::game::Chunk_tile& chunk_tile) {
-		const auto t =
-			jactorio::game::chunk_tile_getter::get_sprite_prototype(
-				chunk_tile, jactorio::game::Chunk_tile::chunkLayer::overlay);
+		const auto* t = chunk_tile.get_sprite_prototype(jactorio::game::Chunk_tile::chunkLayer::overlay);
 		if (t == nullptr)
 			return no_draw;
 

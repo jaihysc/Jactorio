@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/24/2020
+// Last modified: 04/02/2020
 // 
 
 #include <gtest/gtest.h>
@@ -12,7 +12,6 @@
 #include "data/prototype/tile/tile.h"
 #include "game/logic/placement_controller.h"
 #include "game/world/world_data.h"
-#include "game/world/chunk_tile_getters.h"
 
 #include <memory>
 
@@ -75,8 +74,7 @@ namespace game::logic
 				// else
 				// printf("#");
 
-				chunk_tile_getter::set_tile_prototype(
-					chunk_tiles[y * 32 + x], Chunk_tile::chunkLayer::base, tile_ptr);
+				chunk_tiles[y * 32 + x].set_tile_prototype(Chunk_tile::chunkLayer::base, tile_ptr);
 			}
 			// printf("\n");
 		}
@@ -131,8 +129,7 @@ namespace game::logic
 
 		// Set entity and sprite layer
 		EXPECT_EQ(
-			jactorio::game::chunk_tile_getter::get_entity_prototype(
-				chunk->tiles_ptr()[0], jactorio::game::Chunk_tile::chunkLayer::entity)
+			chunk->tiles_ptr()[0].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 			,
 			entity.get());
 	}
@@ -148,8 +145,7 @@ namespace game::logic
 
 		EXPECT_EQ(jactorio::game::placement_c::place_entity_at_coords(world_data, entity.get(), 1, 0), false);
 		EXPECT_EQ(
-			jactorio::game::chunk_tile_getter::get_entity_prototype(
-				chunk->tiles_ptr()[0], jactorio::game::Chunk_tile::chunkLayer::entity)
+			chunk->tiles_ptr()[0].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 			,
 			nullptr);
 
@@ -174,8 +170,7 @@ namespace game::logic
 
 			// Set entity and sprite layer
 			EXPECT_EQ(
-				jactorio::game::chunk_tile_getter::get_entity_prototype(
-					chunk->tiles_ptr()[0], jactorio::game::Chunk_tile::chunkLayer::entity)
+				chunk->tiles_ptr()[0].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 				,
 				entity.get());
 		}
@@ -185,8 +180,7 @@ namespace game::logic
 
 		// Should all be nullptr after being removed
 		EXPECT_EQ(
-			jactorio::game::chunk_tile_getter::get_entity_prototype(
-				chunk->tiles_ptr()[0], jactorio::game::Chunk_tile::chunkLayer::entity)
+			chunk->tiles_ptr()[0].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 			,
 			nullptr);
 	}
@@ -202,8 +196,7 @@ namespace game::logic
 
 		// Should all remain nullptr
 		EXPECT_EQ(
-			jactorio::game::chunk_tile_getter::get_entity_prototype(
-				chunk->tiles_ptr()[0], jactorio::game::Chunk_tile::chunkLayer::entity)
+			chunk->tiles_ptr()[0].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 			,
 			nullptr);
 	}
@@ -229,8 +222,7 @@ namespace game::logic
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
 				EXPECT_EQ(
-					jactorio::game::chunk_tile_getter::get_entity_prototype(
-						chunk->tiles_ptr()[index], jactorio::game::Chunk_tile::chunkLayer::entity)
+					chunk->tiles_ptr()[index].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 					,
 					entity.get());
 
@@ -262,8 +254,7 @@ namespace game::logic
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
 				EXPECT_EQ(
-					jactorio::game::chunk_tile_getter::get_entity_prototype(
-						chunk->tiles_ptr()[index], jactorio::game::Chunk_tile::chunkLayer::entity)
+					chunk->tiles_ptr()[index].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 					,
 					nullptr);
 			}
@@ -290,8 +281,7 @@ namespace game::logic
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
 				EXPECT_EQ(
-					jactorio::game::chunk_tile_getter::get_entity_prototype(
-						chunk->tiles_ptr()[index], jactorio::game::Chunk_tile::chunkLayer::entity)
+					chunk->tiles_ptr()[index].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 					,
 					nullptr);
 			}
@@ -330,8 +320,7 @@ namespace game::logic
 		for (int y = 5; y < 5 + 3; ++y) {
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(jactorio::game::chunk_tile_getter::get_entity_prototype(
-					          chunk->tiles_ptr()[index], jactorio::game::Chunk_tile::chunkLayer::entity)
+				EXPECT_EQ(chunk->tiles_ptr()[index].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 				          ,
 				          nullptr);
 
@@ -356,8 +345,7 @@ namespace game::logic
 		for (int y = 5; y < 5 + 3; ++y) {
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(jactorio::game::chunk_tile_getter::get_entity_prototype(
-					          chunk->tiles_ptr()[index], jactorio::game::Chunk_tile::chunkLayer::entity)
+				EXPECT_EQ(chunk->tiles_ptr()[index].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 				          ,
 				          nullptr);
 
@@ -389,8 +377,7 @@ namespace game::logic
 			for (int x = 9; x < 9 + 3; ++x) {
 				const auto index = y * 32 + x;
 				EXPECT_EQ(
-					jactorio::game::chunk_tile_getter::get_entity_prototype(
-						chunk->tiles_ptr()[index], jactorio::game::Chunk_tile::chunkLayer::entity)
+					chunk->tiles_ptr()[index].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 					,
 					entity.get());
 
@@ -431,8 +418,7 @@ namespace game::logic
 		for (int y = 10; y < 10 + 4; ++y) {
 			for (int x = 9; x < 9 + 3; ++x) {
 				const auto index = y * 32 + x;
-				EXPECT_EQ(jactorio::game::chunk_tile_getter::get_entity_prototype(
-					          chunk->tiles_ptr()[index], jactorio::game::Chunk_tile::chunkLayer::entity)
+				EXPECT_EQ(chunk->tiles_ptr()[index].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 				          ,
 				          nullptr);
 			}
