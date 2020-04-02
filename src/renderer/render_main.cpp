@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/31/2020
+// Last modified: 04/01/2020
 // 
 
 #include <GL/glew.h>
@@ -149,12 +149,15 @@ void jactorio::renderer::render_init(std::mutex* mutex) {
 		core::Resource_guard<void> renderer_guard([]() { delete main_renderer; });
 		main_renderer = new Renderer();
 
-		auto next_tick = std::chrono::steady_clock::now();
+
+		auto next_frame = std::chrono::steady_clock::now();  // For zeroing the time
 		while (!render_thread_should_exit) {
 			EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
 			{
-				//				std::lock_guard lk(*mutex);
+				glfwPollEvents();
+				if (glfwWindowShouldClose(window))
+					render_thread_should_exit = true;
 
 				game::Event::raise<game::Renderer_tick_event>(game::event_type::renderer_tick);
 
@@ -167,19 +170,18 @@ void jactorio::renderer::render_init(std::mutex* mutex) {
 					game::game_data->player.get_player_position_x(), game::game_data->player.get_player_position_y());
 
 				imgui_manager::imgui_draw(game::game_data->player);
-
-				glfwSwapBuffers(window_manager::get_window());  // Done rendering
-				glfwPollEvents();
 			}
 
-			if (glfwWindowShouldClose(window))
-				render_thread_should_exit = true;
+			// Sleep until the next fixed update interval
+			auto time_end = std::chrono::steady_clock::now();
+			while (time_end > next_frame) {
+				next_frame += std::chrono::nanoseconds(16666666);
+			}
+			std::this_thread::sleep_until(next_frame);
 
-			next_tick += std::chrono::microseconds(16666);
-			std::this_thread::sleep_until(next_tick);
+			glfwSwapBuffers(window_manager::get_window());
 		}
 	}
 
 	LOG_MESSAGE(debug, "Renderer thread exited");
-	return;
 }

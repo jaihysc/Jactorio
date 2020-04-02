@@ -27,6 +27,9 @@
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/render_main.h"
 
+// #include "game/logic/placement_controller.h"
+// bool deed_done = false;
+
 constexpr float move_speed = 0.8f;
 
 void jactorio::game::init_logic_loop(std::mutex*) {
@@ -147,6 +150,41 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 		}, GLFW_MOUSE_BUTTON_2, GLFW_PRESS);
 	}
 
+	// Event::subscribe<void(*)(Logic_tick_event&)>(event_type::logic_tick, [](Logic_tick_event& e) {
+	// 	std::lock_guard<std::mutex> guard{game_data->world.world_data_mutex};
+	//
+	// 	game_data->player.rotate_placement_orientation();
+	//
+	// 	if (e.game_tick % 60 == 1) {
+	// 		game_data->world.clear_chunk_data();
+	// 		deed_done = false;	
+	// 	}
+	//
+	// 	auto* chunk = game_data->world.get_chunk(-1, 0);
+	// 	if (chunk && !deed_done) {
+	// 		deed_done = true;
+	// 		auto* proto = data::data_manager::data_raw_get<data::Transport_line>(data::data_category::transport_belt,
+	// 			                                                       "__base__/transport-belt-basic");
+	//
+	// 		placement_c::place_entity_at_coords(game_data->world, proto, -32, 0);
+	//
+	//
+	// 		auto* line_seg = new Transport_line_segment(Transport_line_segment::moveDir::down, 
+	// 													Transport_line_segment::terminationType::bend_left,
+	// 													1);
+	//
+	// 		auto& layer = game_data->world.logic_add_chunk(chunk).get_struct(Logic_chunk::structLayer::transport_line)
+	// 		.emplace_back(Chunk_struct_layer(proto));
+	// 		layer.unique_data = line_seg;
+	//
+	// 		auto* data = new data::Transport_line_data(*line_seg);
+	// 		chunk->tiles_ptr()[0].get_layer(Chunk_tile::chunkLayer::entity).unique_data = data;
+	// 		data->set = 5;
+	// 		data->frame = 4;
+	// 	}
+	// });
+
+	//
 
 	// Runtime
 	auto next_frame = std::chrono::steady_clock::now();
@@ -190,7 +228,10 @@ void jactorio::game::init_logic_loop(std::mutex*) {
 		if (++logic_tick > 60)
 			logic_tick = 1;
 
-		next_frame += std::chrono::nanoseconds(16666666);
+		auto time_end = std::chrono::steady_clock::now();
+		while (time_end > next_frame) {
+			next_frame += std::chrono::nanoseconds(16666666);
+		}
 		std::this_thread::sleep_until(next_frame);
 	}
 
