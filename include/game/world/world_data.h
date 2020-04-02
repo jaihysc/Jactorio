@@ -3,24 +3,28 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/01/2020
+// Last modified: 04/02/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
 #define JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
 #pragma once
 
-#include "game/world/chunk.h"
-#include "game/world/logic_chunk.h"
-#include "core/data_type.h"
-
 #include <set>
 #include <unordered_map>
+
+#include "jactorio.h"
+#include "core/data_type.h"
+#include "game/world/chunk.h"
+#include "game/world/deferral_timer.h"
+#include "game/world/logic_chunk.h"
 
 // Manages the game world, the tiles and the entities on it
 // Handles saving and loading the world
 namespace jactorio::game
 {
+	///
+	/// \brief Stores all data for a world
 	class World_data
 	{
 	public:
@@ -36,6 +40,23 @@ namespace jactorio::game
 			clear_chunk_data();
 		}
 
+
+		// ======================================================================
+		// World properties
+	private:
+		game_tick_t game_tick_ = 0;
+
+	public:
+		/// \brief Called by the logic loop every update
+		void on_tick_advance();
+
+		///
+		/// \brief Number of logic updates since the world was created
+		J_NODISCARD game_tick_t game_tick() const { return game_tick_; }
+
+
+		// ======================================================================
+		// World chunk
 	private:
 		// The world is make up of chunks
 		// Each chunk contains 32 x 32 tiles
@@ -47,8 +68,6 @@ namespace jactorio::game
 		std::unordered_map<std::tuple<int, int>, Chunk*,
 		                   core::hash<std::tuple<int, int>>> world_chunks_;
 
-		std::map<const Chunk*, Logic_chunk> logic_chunks_;
-
 		mutable std::mutex world_chunks_mutex_{};  // Used by methods when accessing world_chunks_
 
 	public:
@@ -56,6 +75,7 @@ namespace jactorio::game
 		using chunk_coord = int32_t;  // Chunk coordinates
 
 		mutable std::mutex world_data_mutex{};  // Held by the thread which is currently operating on a chunk
+
 
 		///
 		/// \brief Adds a chunk into the game world
@@ -69,7 +89,6 @@ namespace jactorio::game
 		/// \brief Erases, frees memory from all stored chunk data + its subsequent contents and logic chunks
 		void clear_chunk_data();
 
-		// ======================================================================
 
 		///
 		/// \brief Retrieves a chunk in game world
@@ -86,7 +105,6 @@ namespace jactorio::game
 		/// \return nullptr if no chunk exists
 		J_NODISCARD Chunk* get_chunk_world_coords(world_coord world_x, world_coord world_y);
 
-		// ==============================================================
 
 		///
 		/// \brief Gets the tile at the specified world coordinate
@@ -95,8 +113,12 @@ namespace jactorio::game
 
 
 		// ==============================================================
-		// World logic
+		// Logic chunk 
+	private:
 
+		std::map<const Chunk*, Logic_chunk> logic_chunks_;
+
+	public:
 		// Stores chunks which have entities requiring logic updates
 
 		///
@@ -126,6 +148,7 @@ namespace jactorio::game
 		/// \return nullptr if Logic_chunk does not exist
 		J_NODISCARD const Logic_chunk* logic_get_chunk_read_only(const Chunk* chunk) const;
 
+
 		// ======================================================================
 		// World generation | Links to game/world/world_generator.cpp
 	private:
@@ -151,6 +174,12 @@ namespace jactorio::game
 		/// Call once per logic loop tick to generate one chunk only, this keeps performance constant
 		/// when generating large amounts of chunks
 		void gen_chunk(uint8_t amount = 1);
+
+
+		// ======================================================================
+		// Logic Deferral
+
+		Deferral_timer deferral_timer{};
 	};
 }
 

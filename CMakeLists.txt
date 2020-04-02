@@ -67,6 +67,7 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
+	${JACTORIO_DIR}/game/world/deferral_timer.cpp
 	${JACTORIO_DIR}/game/world/world_data.cpp
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 
@@ -128,6 +129,7 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/deferral_timerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_struct_layerTests.cpp
 

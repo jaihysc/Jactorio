@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/01/2020
+// Last modified: 04/02/2020
 // 
 
 #include <gtest/gtest.h>
@@ -13,7 +13,24 @@
 
 namespace game
 {
-	TEST(world_manager, world_add_chunk) {
+	TEST(world_data, on_tick_advance) {
+		// Should move the game_tick forward
+
+		jactorio::game::World_data world_data{};
+
+		EXPECT_EQ(world_data.game_tick(), 0);
+
+		world_data.on_tick_advance();
+		EXPECT_EQ(world_data.game_tick(), 1);
+
+		world_data.on_tick_advance();
+		EXPECT_EQ(world_data.game_tick(), 2);
+
+		world_data.on_tick_advance();
+		EXPECT_EQ(world_data.game_tick(), 3);
+	}
+
+	TEST(world_data, world_add_chunk) {
 		jactorio::game::World_data world_data{};
 
 		// Chunks initialized with empty tiles
@@ -31,7 +48,7 @@ namespace game
 		EXPECT_EQ(world_data.get_chunk(1, 1), nullptr);
 	}
 
-	TEST(world_manager, world_add_chunk_negative) {
+	TEST(world_data, world_add_chunk_negative) {
 		jactorio::game::World_data world_data{};
 
 		// Chunks initialized with empty tiles
@@ -51,7 +68,7 @@ namespace game
 	}
 
 
-	TEST(world_manager, world_add_chunk_override) {
+	TEST(world_data, world_add_chunk_override) {
 		jactorio::game::World_data world_data{};
 
 		// Chunks initialized with empty tiles
@@ -73,7 +90,7 @@ namespace game
 		EXPECT_EQ(added_chunk2, chunk2);
 	}
 
-	TEST(world_manager, world_get_chunk) {
+	TEST(world_data, world_get_chunk) {
 		jactorio::game::World_data world_data{};
 
 		const auto chunk = new jactorio::game::Chunk{5, 1, nullptr};
@@ -84,7 +101,7 @@ namespace game
 		EXPECT_EQ(world_data.get_chunk(5, 1), chunk);
 	}
 
-	TEST(world_manager, world_get_chunk_read_only) {
+	TEST(world_data, world_get_chunk_read_only) {
 		jactorio::game::World_data world_data{};
 
 		const auto chunk = new jactorio::game::Chunk{5, 1, nullptr};
@@ -95,7 +112,7 @@ namespace game
 		EXPECT_EQ(world_data.get_chunk_read_only(5, 1), chunk);
 	}
 
-	TEST(world_manager, get_tile_world_coords) {
+	TEST(world_data, get_tile_world_coords) {
 		jactorio::game::World_data world_data{};
 
 		const auto chunk_tile = jactorio::game::Chunk_tile();
@@ -134,7 +151,7 @@ namespace game
 
 	}
 
-	TEST(world_manager, get_chunk_world_coords) {
+	TEST(world_data, get_chunk_world_coords) {
 		jactorio::game::World_data world_data{};
 
 		{
@@ -149,7 +166,7 @@ namespace game
 	}
 
 
-	TEST(world_manager, clear_chunk_data) {
+	TEST(world_data, clear_chunk_data) {
 		jactorio::game::World_data world_data{};
 
 		const auto chunk = new jactorio::game::Chunk{6, 6, nullptr};
@@ -167,7 +184,7 @@ namespace game
 	// Logic chunks
 
 
-	TEST(world_manager, logic_add_chunk) {
+	TEST(world_data, logic_add_chunk) {
 		jactorio::game::World_data world_data{};
 
 		using namespace jactorio::game;
@@ -182,7 +199,7 @@ namespace game
 		EXPECT_EQ(&world_data.logic_get_all_chunks().at(&chunk), &logic_chunk);
 	}
 
-	TEST(world_manager, logic_add_chunk_no_duplicate) {
+	TEST(world_data, logic_add_chunk_no_duplicate) {
 		// If the chunk already exists, it should not add it
 		jactorio::game::World_data world_data{};
 
@@ -195,19 +212,19 @@ namespace game
 		EXPECT_EQ(world_data.logic_get_all_chunks().size(), 1);
 	}
 
-	// TEST(world_manager, logic_remove_chunk) {
+	// TEST(world_data, logic_remove_chunk) {
 	// 	jactorio::core::Resource_guard guard(&world_data.clear_chunk_data);
 	//
 	// 	using namespace jactorio::game;
 	// 	Chunk chunk(0, 0, nullptr);
 	//
-	// 	auto& logic_chunk = world_manager::logic_add_chunk(&chunk);  // Add
-	// 	world_manager::logic_remove_chunk(&logic_chunk);  // Remove
+	// 	auto& logic_chunk = world_data::logic_add_chunk(&chunk);  // Add
+	// 	world_data::logic_remove_chunk(&logic_chunk);  // Remove
 	//
-	// 	EXPECT_EQ(world_manager::logic_get_all_chunks().size(), 0);
+	// 	EXPECT_EQ(world_data::logic_get_all_chunks().size(), 0);
 	// }
 
-	TEST(world_manager, logic_get_chunk) {
+	TEST(world_data, logic_get_chunk) {
 		using namespace jactorio::game;
 
 		World_data world_data{};
@@ -219,7 +236,7 @@ namespace game
 		EXPECT_EQ(world_data.logic_get_chunk(nullptr), nullptr);
 	}
 
-	TEST(world_manager, logic_get_chunk_read_only) {
+	TEST(world_data, logic_get_chunk_read_only) {
 		using namespace jactorio::game;
 
 		World_data world_data{};
@@ -231,7 +248,7 @@ namespace game
 		EXPECT_EQ(world_data.logic_get_chunk_read_only(nullptr), nullptr);
 	}
 
-	TEST(world_manager, logic_clear_chunk_data) {
+	TEST(world_data, logic_clear_chunk_data) {
 		jactorio::game::World_data world_data{};
 
 		using namespace jactorio::game;

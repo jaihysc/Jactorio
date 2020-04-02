@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/12/2020
-// Last modified: 03/16/2020
+// Last modified: 04/02/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_CORE_DATA_TYPE_H
@@ -19,6 +19,8 @@ namespace jactorio
 {
 	constexpr int transport_line_decimal_place = 3;
 	using transport_line_offset = dec::decimal<transport_line_decimal_place>;
+
+	using game_tick_t = uint64_t;
 }
 
 namespace jactorio::core

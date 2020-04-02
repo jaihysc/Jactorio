@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/01/2020
+// Last modified: 04/02/2020
 // 
 
 #include "game/world/world_data.h"
@@ -12,6 +12,13 @@
 #include <mutex>
 
 #include "game/input/mouse_selection.h"
+
+void jactorio::game::World_data::on_tick_advance() {
+	game_tick_++;
+
+	// Dispatch deferred callbacks
+	deferral_timer.deferral_update(game_tick_);
+}
 
 jactorio::game::Chunk* jactorio::game::World_data::add_chunk(Chunk* chunk) {
 	const auto position = chunk->get_position();

@@ -160,15 +160,12 @@ void jactorio::game::init_logic_loop() {
 		{
 			EXECUTION_PROFILE_SCOPE(logic_update_timer, "Logic update");
 
-			// Events are responsible for locking themselves
-			Event::raise<Logic_tick_event>(event_type::logic_tick, logic_tick);
-			input_manager::raise();
-
 			// ======================================================================	
 			// World chunks			
 			{
 				std::lock_guard<std::mutex> guard{game_data->world.world_data_mutex};
 
+				game_data->world.on_tick_advance();
 				game_data->player.mouse_calculate_selected_tile();
 
 				game_data->world.gen_chunk();
@@ -188,6 +185,10 @@ void jactorio::game::init_logic_loop() {
 
 				game_data->player.recipe_craft_tick();
 			}
+
+			// Events are responsible for resource locking themselves
+			Event::raise<Logic_tick_event>(event_type::logic_tick, logic_tick);
+			input_manager::raise();
 		}
 		// ======================================================================
 		// ======================================================================
