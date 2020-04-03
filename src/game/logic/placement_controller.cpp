@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 04/02/2020
+// Last modified: 04/04/2020
 // 
 
 #include "game/logic/placement_controller.h"
@@ -57,7 +57,6 @@ bool jactorio::game::placement_c::place_entity_at_coords(World_data& world_data,
 			world_data, Chunk_tile::chunkLayer::entity, t_entity->tile_width,
 			t_entity->tile_height, x, y, [](Chunk_tile* chunk_tile) {
 				chunk_tile->get_layer(Chunk_tile::chunkLayer::entity).clear();
-				// chunk_tile->set_layer_entity_prototype(Chunk_tile::chunk_layer::entity, nullptr);
 			});
 
 		return true;
@@ -99,12 +98,12 @@ void jactorio::game::placement_c::place_sprite_at_coords(World_data& world_data,
 			world_data, layer, tile_width, tile_height, x,
 			y, [](Chunk_tile* chunk_tile) {
 				chunk_tile->get_layer(Chunk_tile::chunkLayer::overlay).clear();
-				// chunk_tile_getter::set_sprite_prototype(*chunk_tile,
-				//                                         Chunk_tile::chunkLayer::overlay, nullptr);
 			});
+		return;
 	}
 
 	// Place
+	assert(sprite != nullptr);
 	placement_sprite = sprite;
 	place_at_coords(
 		world_data, layer,
@@ -123,18 +122,33 @@ void jactorio::game::placement_c::place_at_coords(World_data& world_data,
                                                   void (*place_func)(Chunk_tile*)) {
 	// Place --- The places tiles are known to be valid
 	int entity_index = 0;
+
+	// The top left is handled differently
+	Chunk_tile* top_left_tile = world_data.get_tile_world_coords(x, y);
+	place_func(top_left_tile);
+
+	Chunk_tile_layer& top_left = top_left_tile->get_layer(layer);
+	top_left.multi_tile_index = entity_index++;
+
+	if (tile_width == 1 && tile_height == 1)
+		return;
+
+	// Multi tile
+
+	top_left.init_multi_tile_prop(tile_width, tile_height);
+
+	int offset_x = 1;
 	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
-		for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
-			const auto tile = world_data.get_tile_world_coords(x + offset_x, y + offset_y);
+		for (; offset_x < tile_width; ++offset_x) {
+			Chunk_tile* tile = world_data.get_tile_world_coords(x + offset_x, y + offset_y);
 			place_func(tile);
 
 			auto& layer_tile = tile->get_layer(layer);
 			layer_tile.multi_tile_index = entity_index++;
 
-			layer_tile.multi_tile_span = tile_width;
-			layer_tile.multi_tile_height = tile_height;
-
+			layer_tile.set_multi_tile_parent(&top_left);
 		}
+		offset_x = 0;
 	}
 }
 
@@ -143,10 +157,6 @@ void jactorio::game::placement_c::remove_at_coords(World_data& world_data,
                                                    const uint8_t tile_width, const uint8_t tile_height,
                                                    int x, int y,
                                                    void (*remove_func)(Chunk_tile*)) {
-	// If the current sprite is already nullptr, it means the rest of the multi-tile sprite is already removed
-	// if (tile->get_tile_layer_sprite_prototype(layer) == nullptr)
-	// return false;
-
 	// Find top left corner
 	{
 		const auto tile = world_data.get_tile_world_coords(x, y);

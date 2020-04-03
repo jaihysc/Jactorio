@@ -243,6 +243,11 @@ void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_dat
 	if (layer != nullptr) {
 		set_window_visibility(guiWindow::character, false);
 
+		// Get the top left corner for non top left multi tiles
+		if (layer->is_multi_tile() && !layer->is_multi_tile_top_left()) {
+			layer = layer->get_multi_tile_parent();
+		}
+
 		static_cast<const data::Entity*>(layer->prototype_data)->on_r_show_gui(player_data, layer);
 	}
 	else {

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 04/03/2020
+// Last modified: 04/04/2020
 // 
 
 #include "game/input/mouse_selection.h"
@@ -111,7 +111,12 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 			assert(sprite_ptr != nullptr);
 
 			tile->set_sprite_prototype(Chunk_tile::chunkLayer::overlay, sprite_ptr);
-			tile->get_layer(Chunk_tile::chunkLayer::overlay).multi_tile_span = 1;
+
+			auto& layer = tile->get_layer(Chunk_tile::chunkLayer::overlay);
+			if (layer.is_multi_tile())
+				layer.get_multi_tile_data().multi_tile_span = 1;
 		}
+
+		last_tile_dimensions_ = {1, 1};
 	}
 }

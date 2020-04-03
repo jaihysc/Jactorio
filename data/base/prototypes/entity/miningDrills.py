@@ -12,6 +12,7 @@ def addSprite(spritePath):
 def createDrill(name, icon, spriteN, spriteE, spriteS, spriteW):
     (j.MiningDrill(name)
         .rotatable(True)
+        .pickupTime(0.1)
         
         .item((j.Item(name + "-item")
                     .sprite((j.Sprite()

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/20/2020
+// Last modified: 04/03/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_PLACEMENT_CONTROLLER_H
@@ -51,7 +51,6 @@ namespace jactorio::game
 
 		///
 		/// Places a multi-tile with x, y being the top left of the multi-tile placed
-		/// \return true if placed successfully
 		void place_at_coords(World_data& world_data,
 		                     Chunk_tile::chunkLayer layer, uint8_t tile_width,
 		                     uint8_t tile_height, int x,

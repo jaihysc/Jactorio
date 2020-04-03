@@ -3,17 +3,19 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 04/02/2020
+// Last modified: 04/04/2020
 // 
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/tile/tile.h"
 #include "game/logic/placement_controller.h"
-#include "game/world/world_data.h"
 
 #include <memory>
+
+#include "data/prototype/entity/container_entity.h"
+#include "data/prototype/entity/entity.h"
+#include "data/prototype/tile/tile.h"
+#include "game/world/world_data.h"
 
 namespace game::logic
 {
@@ -132,6 +134,8 @@ namespace game::logic
 			chunk->tiles_ptr()[0].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity)
 			,
 			entity.get());
+
+		EXPECT_FALSE(chunk->tiles_ptr()[0].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).is_multi_tile());
 	}
 
 	TEST(placement_controller, place_entity_1x1_invalid) {
@@ -389,11 +393,12 @@ namespace game::logic
 
 				// Ensure tile width and height are properly set
 				EXPECT_EQ(
-					chunk->tiles_ptr()[index].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).multi_tile_span,
+					chunk->tiles_ptr()[index].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).get_multi_tile_data()
+					.multi_tile_span,
 					3
 				);
 				EXPECT_EQ(
-					chunk->tiles_ptr()[index].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).
+					chunk->tiles_ptr()[index].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).get_multi_tile_data().
 					multi_tile_height,
 					4
 				);
@@ -423,5 +428,64 @@ namespace game::logic
 				          nullptr);
 			}
 		}
+	}
+
+
+	TEST(placement_controller, place_sprite_3x3) {
+		GENERATE_TEST_WORLD
+
+		const auto sprite = std::make_unique<jactorio::data::Sprite>();
+		const auto chunk = world_data.get_chunk(0, 0);
+
+
+		jactorio::game::placement_c::place_sprite_at_coords(
+			world_data,
+			jactorio::game::Chunk_tile::chunkLayer::overlay, sprite.get(),
+			3, 3,
+			9, 10);
+
+		// Expect entity and sprite layer to be set, as well as entity_index
+		for (int y = 10; y < 10 + 3; ++y) {
+			for (int x = 9; x < 9 + 3; ++x) {
+				const auto index = y * 32 + x;
+				EXPECT_EQ(chunk->tiles_ptr()[index].get_sprite_prototype(jactorio::game::Chunk_tile::chunkLayer::overlay)
+				          ,
+				          sprite.get());
+			}
+		}
+
+	}
+
+	TEST(placement_controller, remove_sprite_3x3) {
+		GENERATE_TEST_WORLD
+
+		const auto sprite = std::make_unique<jactorio::data::Sprite>();
+		const auto chunk = world_data.get_chunk(0, 0);
+
+
+		jactorio::game::placement_c::place_sprite_at_coords(
+			world_data,
+			jactorio::game::Chunk_tile::chunkLayer::overlay, sprite.get(),
+			3, 3,
+			9, 10);
+
+		jactorio::game::placement_c::place_sprite_at_coords(
+			world_data,
+			jactorio::game::Chunk_tile::chunkLayer::overlay, nullptr,
+			3, 3,
+			9, 10);
+
+		// Expect entity and sprite layer to be set, as well as entity_index
+		for (int y = 10; y < 10 + 3; ++y) {
+			for (int x = 9; x < 9 + 3; ++x) {
+				const auto index = y * 32 + x;
+				jactorio::game::Chunk_tile_layer& tile =
+					chunk->tiles_ptr()[index].get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay);
+
+				EXPECT_EQ(tile.prototype_data, nullptr);
+				EXPECT_EQ(tile.multi_tile_index, 0);
+			}
+		}
+
 	}
 }

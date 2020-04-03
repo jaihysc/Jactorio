@@ -127,8 +127,9 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
 
-	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/deferral_timerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_struct_layerTests.cpp

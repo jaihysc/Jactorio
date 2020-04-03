@@ -2,8 +2,8 @@
 // chunk_layer.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 02/08/2020
-// Last modified: 03/24/2020
+// Created on: 03/31/2020
+// Last modified: 04/03/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_LAYER_H
@@ -22,6 +22,7 @@ namespace jactorio::game
 	protected:
 		Chunk_layer() = default;
 
+	public:
 		explicit Chunk_layer(const data::Prototype_base* proto)
 			: prototype_data(proto) {
 		}
@@ -37,7 +38,6 @@ namespace jactorio::game
 		Chunk_layer& operator=(const Chunk_layer& other);
 		Chunk_layer& operator=(Chunk_layer&& other) noexcept;
 
-	public:
 		// ======================================================================
 		// Minimize the variables below 
 
