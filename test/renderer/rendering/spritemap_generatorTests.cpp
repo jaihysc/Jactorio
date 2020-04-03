@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/28/2020
+// Last modified: 04/03/2020
 // 
 
 #include <gtest/gtest.h>
@@ -22,17 +22,17 @@ namespace renderer
 		auto guard2 = jactorio::core::Resource_guard(clear_spritemaps);
 
 		// Sprite data delete by guard
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite1",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "sprite1",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
 		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite2",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "sprite2",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
 		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
 
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite3",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "sprite3",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
 		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite4",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "sprite4",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
 		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
 
@@ -58,23 +58,23 @@ namespace renderer
 
 		// Sprite data delete by guard
 		// Terrain
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite1",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "sprite1",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
 		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite2",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "sprite2",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
 		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
 
 		// Gui
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite3",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "sprite3",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
 		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "sprite4",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "sprite4",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
 		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
 
 		// None
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "spriteNone",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "spriteNone",
 		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
 		                                                      {}));
 
@@ -119,7 +119,7 @@ namespace renderer
 		// Image 3 is 64 x 64
 
 		jactorio::data::Sprite** prototypes = nullptr;
-		jactorio::core::Capturing_guard<void()> guard([&]{
+		jactorio::core::Capturing_guard<void()> guard([&] {
 			for (int i = 0; i < 4; ++i) {
 				delete prototypes[i];
 			}
@@ -144,7 +144,7 @@ namespace renderer
 		prototypes[3]->load_image("test/graphics/test/test_tile3.png");
 
 		const auto spritemap = jactorio::renderer::renderer_sprites::gen_spritemap(prototypes, 4, true);
-		jactorio::core::Capturing_guard<void()> guard_2 ([&]{ delete[] spritemap.sprite_buffer; });
+		jactorio::core::Capturing_guard<void()> guard_2([&] { delete[] spritemap.sprite_buffer; });
 
 		EXPECT_EQ(spritemap.width, 160);
 		EXPECT_EQ(spritemap.height, 64);
@@ -233,7 +233,7 @@ namespace renderer
 	TEST(spritemap_generator, gen_spritemap) {
 		// Images 0 - 2 are 32 x 32 px
 		jactorio::data::Sprite** prototypes = nullptr;
-		jactorio::core::Capturing_guard<void()> guard([&]{
+		jactorio::core::Capturing_guard<void()> guard([&] {
 			for (int i = 0; i < 2; ++i) {
 				delete prototypes[i];
 			}
@@ -252,7 +252,7 @@ namespace renderer
 		prototypes[1]->load_image("test/graphics/test/test_tile1.png");
 
 		const auto spritemap = jactorio::renderer::renderer_sprites::gen_spritemap(prototypes, 2, false);
-		jactorio::core::Capturing_guard<void()> guard_2 ([&]{ delete[] spritemap.sprite_buffer; });
+		jactorio::core::Capturing_guard<void()> guard_2([&] { delete[] spritemap.sprite_buffer; });
 
 		EXPECT_EQ(spritemap.width, 64);
 		EXPECT_EQ(spritemap.height, 32);

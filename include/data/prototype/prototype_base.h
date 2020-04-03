@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/09/2019
-// Last modified: 03/24/2020
+// Last modified: 04/03/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
@@ -71,7 +71,7 @@ namespace jactorio::data
 
 	// Assertions for post_load_validate
 #define J_DATA_ASSERT(condition, error_msg)\
-	if (!(condition)) { std::string s = this->name; s.append(error_msg); throw jactorio::data::Data_exception(s); }
+	if (!(condition)) { std::string s = "\""; s.append(this->name); s.append("\", " error_msg); throw jactorio::data::Data_exception(s); }
 
 
 	///
@@ -114,7 +114,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Category of this Prototype item
-		PYTHON_PROP_REF_I(Prototype_base, data_category, category, data_category::none);
+		PYTHON_PROP_REF_I(Prototype_base, dataCategory, category, dataCategory::none);
 
 		///
 		/// \brief Determines the priority of this prototype used in certain situations

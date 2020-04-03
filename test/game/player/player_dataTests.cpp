@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/02/2020
+// Last modified: 04/03/2020
 // 
 
 #include <gtest/gtest.h>
@@ -237,7 +237,7 @@ namespace game
 		auto* entity = new jactorio::data::Container_entity();
 		entity->pickup_time = 1.f;
 		entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::data_category::container_entity, "chester", entity);
+		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity, "chester", entity);
 
 		// Create world with entity at 0, 0
 		auto* tiles = new jactorio::game::Chunk_tile[1024];
@@ -302,7 +302,7 @@ namespace game
 		auto* entity = new jactorio::data::Resource_entity();
 		entity->pickup_time = 3.f;
 		entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::data_category::resource_entity, "diamond", entity);
+		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::resource_entity, "diamond", entity);
 
 		// Create world with the resource entity at 0, 0
 		auto* tiles = new jactorio::game::Chunk_tile[1024];
@@ -364,7 +364,7 @@ namespace game
 		resource_entity->pickup_time = 3.f;
 		resource_entity->set_item(&item);
 		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::data_category::resource_entity, "diamond", resource_entity);
+			jactorio::data::dataCategory::resource_entity, "diamond", resource_entity);
 
 
 		tiles[0].set_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::resource, resource_entity);
@@ -379,7 +379,7 @@ namespace game
 		container_entity->pickup_time = 1.f;
 		container_entity->set_item(&item);
 
-		jactorio::data::data_manager::data_raw_add(jactorio::data::data_category::container_entity, "chester",
+		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity, "chester",
 		                                           container_entity);
 
 		tiles[0].set_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity, container_entity);
@@ -444,7 +444,7 @@ namespace game
 
 		auto* entity = new Mock_entity{};
 		entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::data_category::container_entity,
+		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity,
 		                                           "", entity);
 
 
@@ -468,7 +468,7 @@ namespace game
 		auto* entity = new Mock_entity{};
 		entity->pickup_time = 1.f;
 		entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::data_category::container_entity,
+		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity,
 		                                           "", entity);
 
 		// Create world with entity at 0, 0
@@ -497,7 +497,7 @@ namespace game
 #define INVENTORY_CURSOR\
 	auto* cursor = new jactorio::data::Item();\
 		jactorio::data::data_manager::data_raw_add(\
-			jactorio::data::data_category::item, \
+			jactorio::data::dataCategory::item, \
 			jactorio::game::Player_data::inventory_selected_cursor_iname, \
 			cursor);
 	TEST(player_data, inventory_lclick_select_item_by_reference) {
@@ -1090,10 +1090,10 @@ namespace game
 
 		// Register items
 		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-1", item);
+			jactorio::data::dataCategory::item, "item-1", item);
 
 		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-product", item_product);
+			jactorio::data::dataCategory::item, "item-product", item_product);
 
 		// Register recipes
 		auto recipe = jactorio::data::Recipe();
@@ -1146,35 +1146,35 @@ namespace game
 #define RECIPE_TEST_RECIPE\
 	auto* item_product = new jactorio::data::Item();\
 	data_manager::data_raw_add(\
-		jactorio::data::data_category::item, "item-product", item_product);\
+		jactorio::data::dataCategory::item, "item-product", item_product);\
 	\
 	auto* item1 = new jactorio::data::Item();\
 	data_manager::data_raw_add(\
-		jactorio::data::data_category::item, "item-1", item1);\
+		jactorio::data::dataCategory::item, "item-1", item1);\
 	auto* item2 = new jactorio::data::Item();\
 	data_manager::data_raw_add(\
-		jactorio::data::data_category::item, "item-2", item2);\
+		jactorio::data::dataCategory::item, "item-2", item2);\
 	\
 	auto* item_sub1 = new jactorio::data::Item();\
 	data_manager::data_raw_add(\
-		jactorio::data::data_category::item, "item-sub-1", item_sub1);\
+		jactorio::data::dataCategory::item, "item-sub-1", item_sub1);\
 	auto* item_sub2 = new jactorio::data::Item();\
 	data_manager::data_raw_add(\
-		jactorio::data::data_category::item, "item-sub-2", item_sub2);\
+		jactorio::data::dataCategory::item, "item-sub-2", item_sub2);\
 	\
 	auto* final_recipe = new jactorio::data::Recipe();\
 	final_recipe->set_ingredients({{"item-1", 3}, {"item-2", 1}});\
 	final_recipe->set_product({"item-product", 1});\
 	\
 	data_manager::data_raw_add(\
-		jactorio::data::data_category::recipe, "item-product-recipe", final_recipe);\
+		jactorio::data::dataCategory::recipe, "item-product-recipe", final_recipe);\
 	\
 	auto* item_recipe = new jactorio::data::Recipe();\
 	item_recipe->set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});\
 	item_recipe->set_product({"item-1", 2});\
 	\
 	data_manager::data_raw_add(\
-		jactorio::data::data_category::recipe, "item-1-recipe", item_recipe);
+		jactorio::data::dataCategory::recipe, "item-1-recipe", item_recipe);
 
 	TEST(player_data, recipe_craft_resurse) {
 		// Should recursively craft the product, crafting intermediate products as necessary
@@ -1248,34 +1248,34 @@ namespace game
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-product", new jactorio::data::Item());
+			jactorio::data::dataCategory::item, "item-product", new jactorio::data::Item());
 
 
 		auto* item1 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-1", item1);
+			jactorio::data::dataCategory::item, "item-1", item1);
 		auto* item2 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-2", item2);
+			jactorio::data::dataCategory::item, "item-2", item2);
 
 		auto* item_sub1 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-sub-1", item_sub1);
+			jactorio::data::dataCategory::item, "item-sub-1", item_sub1);
 		auto* item_sub2 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-sub-2", item_sub2);
+			jactorio::data::dataCategory::item, "item-sub-2", item_sub2);
 
 		auto* final_recipe = new jactorio::data::Recipe();
 		final_recipe->set_ingredients({{"item-1", 3}, {"item-2", 1}});
 		final_recipe->set_product({"item-product", 1});
 		data_manager::data_raw_add(
-			jactorio::data::data_category::recipe, "item-product-recipe", final_recipe);
+			jactorio::data::dataCategory::recipe, "item-product-recipe", final_recipe);
 
 		auto* item_recipe = new jactorio::data::Recipe();
 		item_recipe->set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});
 		item_recipe->set_product({"item-1", 2});
 		data_manager::data_raw_add(
-			jactorio::data::data_category::recipe, "item-1-recipe", item_recipe);
+			jactorio::data::dataCategory::recipe, "item-1-recipe", item_recipe);
 
 		// 3-B + 1-C -> 1-A
 		// 5-B1 + 10-B2 -> 2-B
@@ -1299,34 +1299,34 @@ namespace game
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-product", new jactorio::data::Item());
+			jactorio::data::dataCategory::item, "item-product", new jactorio::data::Item());
 
 
 		auto* item1 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-1", item1);
+			jactorio::data::dataCategory::item, "item-1", item1);
 		auto* item2 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-2", item2);
+			jactorio::data::dataCategory::item, "item-2", item2);
 
 		auto* item_sub1 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-sub-1", item_sub1);
+			jactorio::data::dataCategory::item, "item-sub-1", item_sub1);
 		auto* item_sub2 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-sub-2", item_sub2);
+			jactorio::data::dataCategory::item, "item-sub-2", item_sub2);
 
 		auto* final_recipe = new jactorio::data::Recipe();
 		final_recipe->set_ingredients({{"item-1", 3}, {"item-2", 1}});
 		final_recipe->set_product({"item-product", 1});
 		data_manager::data_raw_add(
-			jactorio::data::data_category::recipe, "item-product-recipe", final_recipe);
+			jactorio::data::dataCategory::recipe, "item-product-recipe", final_recipe);
 
 		auto* item_recipe = new jactorio::data::Recipe();
 		item_recipe->set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});
 		item_recipe->set_product({"item-1", 2});
 		data_manager::data_raw_add(
-			jactorio::data::data_category::recipe, "item-1-recipe", item_recipe);
+			jactorio::data::dataCategory::recipe, "item-1-recipe", item_recipe);
 
 		// 3-B + 1-C -> 1-A
 		// 5-B1 + 10-B2 -> 2-B
@@ -1351,19 +1351,19 @@ namespace game
 		jactorio::core::Resource_guard guard(data_manager::clear_data);
 
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-product", new jactorio::data::Item());
+			jactorio::data::dataCategory::item, "item-product", new jactorio::data::Item());
 
 
 		auto* item1 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-1", item1);
+			jactorio::data::dataCategory::item, "item-1", item1);
 
 		auto* item_sub1 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-sub-1", item_sub1);
+			jactorio::data::dataCategory::item, "item-sub-1", item_sub1);
 		auto* item_sub2 = new jactorio::data::Item();
 		data_manager::data_raw_add(
-			jactorio::data::data_category::item, "item-sub-2", item_sub2);
+			jactorio::data::dataCategory::item, "item-sub-2", item_sub2);
 
 
 		auto* final_recipe = new jactorio::data::Recipe();
@@ -1371,14 +1371,14 @@ namespace game
 		final_recipe->set_product({"item-product", 1});
 
 		data_manager::data_raw_add(
-			jactorio::data::data_category::recipe, "item-product-recipe", final_recipe);
+			jactorio::data::dataCategory::recipe, "item-product-recipe", final_recipe);
 
 		auto* item_recipe = new jactorio::data::Recipe();
 		item_recipe->set_ingredients({{"item-sub-1", 10}, {"item-sub-2", 5}});
 		item_recipe->set_product({"item-1", 2});
 
 		data_manager::data_raw_add(
-			jactorio::data::data_category::recipe, "item-1-recipe", item_recipe);
+			jactorio::data::dataCategory::recipe, "item-1-recipe", item_recipe);
 
 		// Final product: item-1 + item-sub-2
 		// item-2: item-sub-1 + item-sub-2

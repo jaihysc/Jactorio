@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/01/2020
-// Last modified: 03/28/2020
+// Last modified: 04/03/2020
 // 
 
 #include "renderer/gui/gui_menus_debug.h"
@@ -37,22 +37,22 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 
 		// Sprite representing the update point
 		auto* sprite_stop =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-red");
+			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-red");
 		auto* sprite_moving =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-green");
+			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-green");
 		auto* sprite_left_moving =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-aqua");
+			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-aqua");
 		auto* sprite_right_moving =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/rect-pink");
+			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-pink");
 
 		auto* sprite_up =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/arrow-up");
+			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-up");
 		auto* sprite_right =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/arrow-right");
+			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-right");
 		auto* sprite_down =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/arrow-down");
+			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-down");
 		auto* sprite_left =
-			data::data_manager::data_raw_get<data::Sprite>(data::data_category::sprite, "__core__/arrow-left");
+			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-left");
 
 		// Get all update points and add it to the chunk's objects for drawing
 		for (auto& pair : world_data.logic_get_all_chunks()) {
@@ -219,7 +219,7 @@ void jactorio::renderer::gui::debug_item_spawner(game::Player_data& player_data)
 
 	ImGui::Begin("Item spawner");
 
-	auto game_items = data::data_manager::data_raw_get_all<data::Item>(data::data_category::item);
+	auto game_items = data::data_manager::data_raw_get_all<data::Item>(data::dataCategory::item);
 	for (auto& item : game_items) {
 		ImGui::PushID(item->name.c_str());
 
@@ -287,14 +287,14 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 			sstream << segment_ptr;
 			ImGui::Text("Segment: %s", sstream.str().c_str());
 
-			
+
 			std::ostringstream sstream2;
 			sstream2 << segment.target_segment;
 			ImGui::Text("Target segment: %s", segment.target_segment ? sstream2.str().c_str() : "NULL");
 		}
 
 		ImGui::Text("Segment length: %d", segment.segment_length);
-		
+
 		{
 			std::string s;
 			switch (segment.termination_type) {
@@ -348,12 +348,12 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 		if (ImGui::Button("Append Item Left"))
 			segment.append_item(true,
 			                    0.2,
-			                    data::data_manager::data_raw_get<data::Item>(data::data_category::item, iname));
+			                    data::data_manager::data_raw_get<data::Item>(data::dataCategory::item, iname));
 
 		if (ImGui::Button("Append Item Right"))
 			segment.append_item(false,
 			                    0.2,
-			                    data::data_manager::data_raw_get<data::Item>(data::data_category::item, iname));
+			                    data::data_manager::data_raw_get<data::Item>(data::dataCategory::item, iname));
 
 
 		// Display items

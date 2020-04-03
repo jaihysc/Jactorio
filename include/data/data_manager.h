@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/28/2020
+// Last modified: 04/03/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
@@ -30,7 +30,7 @@ namespace jactorio::data
 
 		// Example: data_raw[static_cast<int>(image)]["grass-1"] -> Prototype_base
 
-		inline std::unordered_map<std::string, Prototype_base*> data_raw[static_cast<int>(data_category::count_)];
+		inline std::unordered_map<std::string, Prototype_base*> data_raw[static_cast<int>(dataCategory::count_)];
 
 		// Data_raw functions
 
@@ -40,7 +40,7 @@ namespace jactorio::data
 		 * @return nullptr if the specified prototype does not exist
 		 */
 		template <typename T>
-		T* data_raw_get(const data_category data_category, const std::string& iname) {
+		T* data_raw_get(const dataCategory data_category, const std::string& iname) {
 			auto category = &data_raw[static_cast<uint16_t>(data_category)];
 			if (category->find(iname) == category->end()) {
 				LOG_MESSAGE_f(error, "Attempted to access non-existent prototype %s", iname.c_str());
@@ -56,7 +56,7 @@ namespace jactorio::data
 		 * Gets pointers to all data of specified data_type
 		 */
 		template <typename T>
-		std::vector<T*> data_raw_get_all(const data_category type) {
+		std::vector<T*> data_raw_get_all(const dataCategory type) {
 			auto category_items = data_raw[static_cast<uint16_t>(type)];
 
 			std::vector<T*> items;
@@ -74,7 +74,7 @@ namespace jactorio::data
 		 * Gets pointers to all data of specified data_type, sorted by Prototype_base.order
 		 */
 		template <typename T>
-		std::vector<T*> data_raw_get_all_sorted(const data_category type) {
+		std::vector<T*> data_raw_get_all_sorted(const dataCategory type) {
 			std::vector<T*> items = data_raw_get_all<T>(type);
 
 			// Sort
@@ -97,7 +97,7 @@ namespace jactorio::data
 		/// \param iname Internal name of prototype
 		/// \param prototype Prototype pointer, do not delete, must be unique for each added
 		/// \param add_directory_prefix Should the directory prefix be appended to the provided iname
-		void data_raw_add(data_category data_category, const std::string& iname, Prototype_base* prototype,
+		void data_raw_add(dataCategory data_category, const std::string& iname, Prototype_base* prototype,
 		                  bool add_directory_prefix = false);
 
 

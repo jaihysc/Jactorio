@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/24/2020
+// Last modified: 04/03/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
@@ -49,9 +49,8 @@ namespace jactorio::data
 		Entity& operator=(const Entity& other) = default;
 		Entity& operator=(Entity&& other) noexcept = default;
 
-		/**
-		 * Sprite drawn when placed in the world
-		 */
+		/// Sprite drawn when placed in the world
+		/// \remark For rotatable entities, this serves as the north sprite if multiple sprites are used
 		PYTHON_PROP_I(Entity, Sprite*, sprite, nullptr)
 
 

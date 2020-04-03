@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
+// Last modified: 04/03/2020
 // 
 
 #include <GL/glew.h>
@@ -58,7 +58,7 @@ unsigned int jactorio::renderer::Shader::compile_shader(
 		return 0;
 	}
 
-	LOG_MESSAGE_f(debug, "Shader compilation successful, type %d %s",
+	LOG_MESSAGE_f(info, "Shader compilation successful, type %d %s",
 	              shader_type, path.c_str());
 
 	return shader_id;

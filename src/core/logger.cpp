@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
+// Last modified: 04/03/2020
 // 
 
 #include "core/logger.h"
@@ -33,8 +33,8 @@ std::string jactorio::core::logger::gen_log_message(const logSeverity severity, 
 
 	const float time = static_cast<float>(clock() - start_time) / CLOCKS_PER_SEC;
 
-	char s[10000];
-	snprintf(s, 10000 * sizeof(char), "%10.3f %s [%s:%d] %s\n", time,
+	char s[1100];
+	snprintf(s, 1100 * sizeof(char), "\033[0m%10.3f %s [%s:%d] %s\n", time,
 	         log_severity_str(severity).c_str(),
 	         group.c_str(),
 	         line,
@@ -57,19 +57,19 @@ std::string jactorio::core::logger::log_severity_str(
 	std::string severity_str;
 	switch (severity) {
 	case logSeverity::debug:
-		severity_str = "Debug   ";
+		severity_str = "\033[1;90mDebug   ";  // Gray
 		break;
 	case logSeverity::info:
 		severity_str = "Info    ";
 		break;
 	case logSeverity::warning:
-		severity_str = "Warning ";
+		severity_str = "\033[1;33mWarning ";  // Yellow
 		break;
 	case logSeverity::error:
-		severity_str = "ERROR   ";
+		severity_str = "\033[1;31mERROR   ";  // Red
 		break;
 	case logSeverity::critical:
-		severity_str = "CRITICAL";
+		severity_str = "\033[1;31mCRITICAL";  // Red
 		break;
 	default:
 		severity_str = "        ";

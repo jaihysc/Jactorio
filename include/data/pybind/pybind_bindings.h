@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/09/2019
-// Last modified: 03/28/2020
+// Last modified: 04/03/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
@@ -18,40 +18,45 @@
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/entity.h"
 #include "data/prototype/entity/health_entity.h"
+#include "data/prototype/entity/mining_drill.h"
+#include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/entity/transport/transport_belt.h"
+#include "data/prototype/entity/transport/transport_line.h"
 #include "data/prototype/item/item.h"
+#include "data/prototype/item/recipe_category.h"
+#include "data/prototype/item/recipe_group.h"
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
 #include "data/prototype/tile/tile.h"
-#include "data/prototype/item/recipe_group.h"
-#include "data/prototype/item/recipe_category.h"
-#include "data/prototype/entity/resource_entity.h"
-#include "data/prototype/entity/transport/transport_line.h"
-#include "data/prototype/entity/transport/transport_belt.h"
 
 // All the bindings in bindings/ defined for pybind
 // This should only be included by pybind_manager.h
 
-using data_raw = std::unordered_map<jactorio::data::data_category, std::unordered_map<
+using data_raw = std::unordered_map<jactorio::data::dataCategory, std::unordered_map<
 	                                    std::string, jactorio::data::Prototype_base*>>;
 
 // Generates a function for constructing a data class
-// Example: >Sprite<, inherits >Prototype_base< in category data_category::sprite
+// Example: >Sprite<, inherits >Prototype_base< in category dataCategory::sprite
 // 
 // A python object with name _Sprite will be generated to avoid ambiguity
 // To construct sprite, a constructor with the name Sprite(...) is available
 
-#define PYBIND_DATA_CLASS(cpp_class_, py_name_, inherits_, category_)\
+#define PYBIND_DATA_CLASS(cpp_class_, py_name_, category_, ...)\
 	m.def(#py_name_, [](const std::string& iname = "") {\
 		auto* prototype = new (cpp_class_);\
-		data_manager::data_raw_add((jactorio::data::data_category::category_), iname, prototype, true);\
+		data_manager::data_raw_add((jactorio::data::dataCategory::category_), iname, prototype, true);\
 		return prototype;\
 	}, py::arg("iname") = "", pybind11::return_value_policy::reference);\
-	py::class_<cpp_class_, inherits_>(m, "_" #py_name_)
+	py::class_<cpp_class_, __VA_ARGS__>(m, "_" #py_name_)
 
 // Does not define a function for creating the class
-#define PYBIND_DATA_CLASS_ABSTRACT(cpp_class_, py_name_, inherits_, category_)\
+#define PYBIND_DATA_CLASS_ABSTRACT(cpp_class_, py_name_, inherits_)\
 	py::class_<cpp_class_, inherits_>(m, "_" #py_name_)
+
+
+#define PYBIND_DATA_INTERFACE(cpp_class_, py_name_)\
+	py::class_<cpp_class_>(m, "_" #py_name_)
 
 // Macros below generates a self returning setter and the actual variable
 // For standard class members, a setter exists: set_NAME_OF_MEMBER
@@ -94,13 +99,20 @@ using data_raw = std::unordered_map<jactorio::data::data_category, std::unordere
 PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	using namespace jactorio::data;
 
+	// Interface classes
+	// PYBIND_DATA_INTERFACE(Rotatable_entity, RotatableEntity)
+	// 	PYBIND_PROP_S(Rotatable_entity, spriteE, sprite_e)
+	// 	PYBIND_PROP_S(Rotatable_entity, spriteS, sprite_s)
+	// 	PYBIND_PROP_S(Rotatable_entity, spriteW, sprite_w);
+
+
 	// Prototype classes
 	py::class_<Prototype_base>(m, "_PrototypeBase")
 		.def("name", &Prototype_base::set_name)
 		PYBIND_PROP(Prototype_base, category)
 		PYBIND_PROP(Prototype_base, order);
 
-	PYBIND_DATA_CLASS(Sprite, Sprite, Prototype_base, sprite)
+	PYBIND_DATA_CLASS(Sprite, Sprite, sprite, Prototype_base)
 		PYBIND_PROP(Sprite, group)
 		PYBIND_PROP(Sprite, frames)
 		PYBIND_PROP(Sprite, sets)
@@ -111,15 +123,15 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("Terrain", Sprite::spriteGroup::terrain)
 		.value("Gui", Sprite::spriteGroup::gui);
 
-	PYBIND_DATA_CLASS(Item, Item, Prototype_base, item)
+	PYBIND_DATA_CLASS(Item, Item, item, Prototype_base)
 		PYBIND_PROP(Item, sprite)
 		PYBIND_PROP_S(Item, stackSize, stack_size);
 
-	PYBIND_DATA_CLASS(Tile, Tile, Prototype_base, tile)
+	PYBIND_DATA_CLASS(Tile, Tile, tile, Prototype_base)
 		PYBIND_PROP_S(Tile, isWater, is_water)
 		PYBIND_PROP_S(Tile, sprite, sprite);
 
-	PYBIND_DATA_CLASS(Noise_layer<Tile>, NoiseLayerTile, Prototype_base, noise_layer_tile)
+	PYBIND_DATA_CLASS(Noise_layer<Tile>, NoiseLayerTile, noise_layer_tile, Prototype_base)
 		// Perlin noise properties
 		PYBIND_PROP_S(Noise_layer<Tile>, octaveCount, octave_count)
 		PYBIND_PROP(Noise_layer<Tile>, frequency)
@@ -132,7 +144,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.def("add", &Noise_layer<Tile>::add)
 		.def("get", &Noise_layer<Tile>::get);
 
-	PYBIND_DATA_CLASS(Noise_layer<Entity>, NoiseLayerEntity, Prototype_base, noise_layer_entity)
+	PYBIND_DATA_CLASS(Noise_layer<Entity>, NoiseLayerEntity, noise_layer_entity, Prototype_base)
 		// Perlin noise properties
 		PYBIND_PROP_S(Noise_layer<Entity>, octaveCount, octave_count)
 		PYBIND_PROP(Noise_layer<Entity>, frequency)
@@ -147,7 +159,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 
 	// Entity
-	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, Prototype_base, entity)
+	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, Prototype_base)
 		PYBIND_PROP(Entity, sprite)
 		PYBIND_PROP(Entity, rotatable)
 		PYBIND_PROP(Entity, placeable)
@@ -156,31 +168,38 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP_S(Entity, tileHeight, tile_height)
 		PYBIND_PROP_S(Entity, pickupTime, pickup_time);
 
-	PYBIND_DATA_CLASS_ABSTRACT(Health_entity, HealthEntity, Entity, health_entity)
+	PYBIND_DATA_CLASS_ABSTRACT(Health_entity, HealthEntity, Entity)
 		PYBIND_PROP_S(Health_entity, maxHealth, max_health);
 
-	PYBIND_DATA_CLASS(Container_entity, ContainerEntity, Health_entity, container_entity)
+	PYBIND_DATA_CLASS(Container_entity, ContainerEntity, container_entity, Health_entity)
 		PYBIND_PROP_S(Container_entity, inventorySize, inventory_size);
 
-	PYBIND_DATA_CLASS(Resource_entity, ResourceEntity, Entity, resource_entity);
+	PYBIND_DATA_CLASS(Resource_entity, ResourceEntity, resource_entity, Entity);
 
 
 	// Belts
-	PYBIND_DATA_CLASS_ABSTRACT(Transport_line, TransportLine, Health_entity, transport_line)
+	PYBIND_DATA_CLASS_ABSTRACT(Transport_line, TransportLine, Health_entity)
 		PYBIND_PROP_S(Transport_line, speed, speed_float);
 
-	PYBIND_DATA_CLASS(Transport_belt, TransportBelt, Transport_line, transport_belt);
+	PYBIND_DATA_CLASS(Transport_belt, TransportBelt, transport_belt, Transport_line);
+
+	// Mining drill
+	PYBIND_DATA_CLASS(Mining_drill, MiningDrill, mining_drill, Health_entity)
+		PYBIND_PROP_S(Rotatable_entity, spriteE, sprite_e)
+		PYBIND_PROP_S(Rotatable_entity, spriteS, sprite_s)
+		PYBIND_PROP_S(Rotatable_entity, spriteW, sprite_w)
+		PYBIND_PROP_S(Mining_drill, miningSpeed, mining_speed);
 
 
 	// Recipes
-	PYBIND_DATA_CLASS(Recipe_group, RecipeGroup, Prototype_base, recipe_group)
+	PYBIND_DATA_CLASS(Recipe_group, RecipeGroup, recipe_group, Prototype_base)
 		PYBIND_PROP(Recipe_group, sprite)
 		PYBIND_PROP_S(Recipe_group, recipeCategories, recipe_categories);
 
-	PYBIND_DATA_CLASS(Recipe_category, RecipeCategory, Prototype_base, recipe_category)
+	PYBIND_DATA_CLASS(Recipe_category, RecipeCategory, recipe_category, Prototype_base)
 		PYBIND_PROP(Recipe_category, recipes);
 
-	PYBIND_DATA_CLASS(Recipe, Recipe, Prototype_base, recipe)
+	PYBIND_DATA_CLASS(Recipe, Recipe, recipe, Prototype_base)
 		PYBIND_PROP_S(Recipe, craftingTime, crafting_time)
 		PYBIND_PROP(Recipe, ingredients)
 		PYBIND_PROP_GET_SET(Recipe, product, product);
@@ -188,28 +207,29 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	// ############################################################
 	// Data_raw + get/set
 
-	py::enum_<data_category>(m, "category")
-		.value("Tile", data_category::tile)
-		.value("Sprite", data_category::sprite)
-		.value("NoiseLayerTile", data_category::noise_layer_tile)
-		.value("NoiseLayerEntity", data_category::noise_layer_entity)
-		.value("Sound", data_category::sound)
-		.value("Item", data_category::item)
+	py::enum_<dataCategory>(m, "category")
+		.value("Tile", dataCategory::tile)
+		.value("Sprite", dataCategory::sprite)
+		.value("NoiseLayerTile", dataCategory::noise_layer_tile)
+		.value("NoiseLayerEntity", dataCategory::noise_layer_entity)
+		.value("Sound", dataCategory::sound)
+		.value("Item", dataCategory::item)
 
-		.value("Recipe", data_category::recipe)
-		.value("RecipeCategory", data_category::recipe_category)
-		.value("RecipeGroup", data_category::recipe_group)
+		.value("Recipe", dataCategory::recipe)
+		.value("RecipeCategory", dataCategory::recipe_category)
+		.value("RecipeGroup", dataCategory::recipe_group)
 
-		.value("Entity", data_category::entity)
-		.value("ResourceEntity", data_category::resource_entity)
-		.value("EnemyEntity", data_category::enemy_entity)
+		// .value("Entity", dataCategory::entity)
+		.value("ResourceEntity", dataCategory::resource_entity)
+		.value("EnemyEntity", dataCategory::enemy_entity)
 
-		.value("HealthEntity", data_category::health_entity)
-		.value("ContainerEntity", data_category::container_entity)
+		// .value("HealthEntity", dataCategory::health_entity)
+		.value("ContainerEntity", dataCategory::container_entity)
 
-		.value("TransportBelt", data_category::transport_belt);
+		.value("TransportBelt", dataCategory::transport_belt)
+		.value("MiningDrill", dataCategory::transport_belt);
 
-	m.def("get", [](const data_category category, const std::string& iname) {
+	m.def("get", [](const dataCategory category, const std::string& iname) {
 		return data_manager::data_raw_get<Prototype_base>(category, iname);
 	}, pybind11::return_value_policy::reference);
 

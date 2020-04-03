@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/05/2020
-// Last modified: 03/27/2020
+// Last modified: 04/03/2020
 // 
 
 #include <gtest/gtest.h>
@@ -95,7 +95,7 @@ namespace game
 		auto* cursor_sprite = new jactorio::data::Sprite{};
 
 		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::data_category::sprite, "__core__/cursor-select", cursor_sprite);
+			jactorio::data::dataCategory::sprite, "__core__/cursor-select", cursor_sprite);
 
 
 		// Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not placeable
@@ -151,7 +151,7 @@ namespace game
 		auto* cursor_sprite = new jactorio::data::Sprite{};
 
 		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::data_category::sprite, "__core__/cursor-select", cursor_sprite);
+			jactorio::data::dataCategory::sprite, "__core__/cursor-select", cursor_sprite);
 
 		world_data.get_tile_world_coords(0, 0)
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).prototype_data = &entity;
@@ -180,7 +180,7 @@ namespace game
 		auto* cursor_sprite = new jactorio::data::Sprite{};
 
 		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::data_category::sprite, "__core__/cursor-select", cursor_sprite);
+			jactorio::data::dataCategory::sprite, "__core__/cursor-select", cursor_sprite);
 
 		world_data.get_tile_world_coords(0, 0)
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &entity;

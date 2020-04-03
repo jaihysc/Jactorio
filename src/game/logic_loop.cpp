@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 04/02/2020
+// Last modified: 04/03/2020
 // 
 
 #include "game/logic_loop.h"
@@ -203,5 +203,5 @@ void jactorio::game::init_logic_loop() {
 		std::this_thread::sleep_until(next_frame);
 	}
 
-	LOG_MESSAGE(debug, "Logic thread exited");
+	LOG_MESSAGE(info, "Logic thread exited");
 }

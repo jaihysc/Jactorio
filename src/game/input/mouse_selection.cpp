@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 04/02/2020
+// Last modified: 04/03/2020
 // 
 
 #include "game/input/mouse_selection.h"
@@ -106,7 +106,7 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 
 			// Is hovering over entity	
 			const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(
-				data::data_category::sprite,
+				data::dataCategory::sprite,
 				player_data.mouse_selected_tile_in_range() ? "__core__/cursor-select" : "__core__/cursor-invalid");
 			assert(sprite_ptr != nullptr);
 

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 04/02/2020
+// Last modified: 04/03/2020
 // 
 
 #include <GL/glew.h>
@@ -198,5 +198,5 @@ void jactorio::renderer::render_init() {
 		}
 	}
 
-	LOG_MESSAGE(debug, "Renderer thread exited");
+	LOG_MESSAGE(info, "Renderer thread exited");
 }

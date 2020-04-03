@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/19/2019
-// Last modified: 04/02/2020
+// Last modified: 04/03/2020
 // 
 
 #include "game/world/world_data.h"
@@ -25,7 +25,7 @@
 template <typename T>
 void generate_chunk(jactorio::game::World_data& world_data,
                     const int chunk_x, const int chunk_y,
-                    const jactorio::data::data_category data_category,
+                    const jactorio::data::dataCategory data_category,
                     void (*func)(jactorio::game::Chunk_tile&, void*, float)) {
 	using namespace jactorio;
 
@@ -103,7 +103,7 @@ void generate(jactorio::game::World_data& world_data, const int chunk_x, const i
 	// Base
 	generate_chunk<data::Tile>(
 		world_data, chunk_x, chunk_y,
-		data::data_category::noise_layer_tile,
+		data::dataCategory::noise_layer_tile,
 		[](game::Chunk_tile& target, void* tile, float) {
 			assert(tile != nullptr);  // Base tile should never generate nullptr
 			// Add the tile prototype to the Chunk_tile
@@ -115,7 +115,7 @@ void generate(jactorio::game::World_data& world_data, const int chunk_x, const i
 	// Resources
 	generate_chunk<data::Resource_entity>(
 		world_data, chunk_x, chunk_y,
-		data::data_category::noise_layer_entity,
+		data::dataCategory::noise_layer_entity,
 		[](game::Chunk_tile& target, void* tile, const float val) {
 			if (tile == nullptr)  // Do not override existing tiles with nullptr
 				return;

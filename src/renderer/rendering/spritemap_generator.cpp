@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/28/2020
+// Last modified: 04/03/2020
 // 
 
 #include "renderer/rendering/spritemap_generator.h"
@@ -32,7 +32,7 @@ void jactorio::renderer::renderer_sprites::clear_spritemaps() {
 void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::spriteGroup group,
                                                             const bool invert_sprites) {
 	std::vector<data::Sprite*> sprites =
-		data::data_manager::data_raw_get_all<data::Sprite>(data::data_category::sprite);
+		data::data_manager::data_raw_get_all<data::Sprite>(data::dataCategory::sprite);
 
 	// Filter to group only
 	sprites.erase(

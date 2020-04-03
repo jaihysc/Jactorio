@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/28/2020
+// Last modified: 04/03/2020
 // 
 
 #include "data/data_manager.h"
@@ -33,7 +33,7 @@ void jactorio::data::data_manager::set_directory_prefix(const std::string& name)
 	directory_prefix = name;
 }
 
-void jactorio::data::data_manager::data_raw_add(const data_category data_category, const std::string& iname,
+void jactorio::data::data_manager::data_raw_add(const dataCategory data_category, const std::string& iname,
                                                 Prototype_base* const prototype, const bool add_directory_prefix) {
 	// Use the following format internal name
 	// Format __dir__/iname

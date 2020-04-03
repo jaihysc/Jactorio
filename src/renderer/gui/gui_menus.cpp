@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/01/2020
-// Last modified: 04/02/2020
+// Last modified: 04/03/2020
 // 
 
 #include "renderer/gui/gui_menus.h"
@@ -306,7 +306,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 	ImGui::Begin("Recipe", nullptr, window_size, -1, window_flags);
 
 	// Menu groups | A group button is twice the size of a slot
-	auto groups = data::data_manager::data_raw_get_all_sorted<data::Recipe_group>(data::data_category::recipe_group);
+	auto groups = data::data_manager::data_raw_get_all_sorted<data::Recipe_group>(data::dataCategory::recipe_group);
 	draw_slots(5, groups.size(), [&](const uint16_t index) {
 		const auto& recipe_group = groups[index];
 
@@ -348,7 +348,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 			data::Recipe* recipe = recipes.at(index);
 
 			const auto product =
-				data::data_manager::data_raw_get<data::Item>(data::data_category::item, recipe->get_product().first);
+				data::data_manager::data_raw_get<data::Item>(data::dataCategory::item, recipe->get_product().first);
 			assert(product != nullptr);  // Invalid recipe product
 
 			draw_slot(menu_data, 1, index % 10, product->sprite->internal_id, 0);
@@ -383,7 +383,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 					for (const auto& ingredient_pair : recipe->ingredients) {
 						ImGui::NewLine();
 						const auto* item =
-							data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+							data::data_manager::data_raw_get<data::Item>(data::dataCategory::item,
 							                                             ingredient_pair.first);
 
 						draw_slot(menu_data, 1, 0, item->sprite->internal_id, 0);
@@ -425,7 +425,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 					auto raw_inames = data::Recipe::recipe_get_total_raw(product->name);
 					draw_slots(5, raw_inames.size(), [&](const auto index) {
 						const auto* item =
-							data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+							data::data_manager::data_raw_get<data::Item>(data::dataCategory::item,
 							                                             raw_inames[index].first);
 						draw_slot(menu_data, 1, index + 1,
 						          item->sprite->internal_id, raw_inames[index].second);
@@ -538,7 +538,7 @@ void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data) {
 		}
 
 		const auto* item =
-			data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+			data::data_manager::data_raw_get<data::Item>(data::dataCategory::item,
 			                                             recipe->get_product().first);
 		draw_slot(menu_data, 1, index % 10,
 		          item->sprite->internal_id, recipe->get_product().second);

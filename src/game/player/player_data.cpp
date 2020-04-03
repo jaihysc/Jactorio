@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/02/2020
+// Last modified: 04/03/2020
 // 
 
 #include "game/player/player_data.h"
@@ -477,7 +477,7 @@ void jactorio::game::Player_data::inventory_click(const unsigned short index,
 
 			// Swap icon out for a cursor indicating the current index is selected
 			inventory_player[index].first = data::data_manager::data_raw_get<data::Item>(
-				data::data_category::item, inventory_selected_cursor_iname);
+				data::dataCategory::item, inventory_selected_cursor_iname);
 			inventory_player[index].second = 0;
 
 			// Return is necessary when selecting by reference
@@ -569,7 +569,7 @@ void jactorio::game::Player_data::recipe_craft_tick(uint16_t ticks) {
 			// Return product
 			data::recipe_item recipe_item = recipe->get_product();
 			auto* product_item = data::data_manager::data_raw_get<data::Item>(
-				data::data_category::item, recipe_item.first);
+				data::dataCategory::item, recipe_item.first);
 
 			data::item_stack i = {product_item, recipe_item.second};
 
@@ -630,7 +630,7 @@ void jactorio::game::Player_data::recipe_queue(data::Recipe* recipe) {
 	// Remove ingredients
 	for (auto& ingredient : recipe->ingredients) {
 		auto* item = data::data_manager::data_raw_get<data::Item>(
-			data::data_category::item, ingredient.first);
+			data::dataCategory::item, ingredient.first);
 
 		inventory_c::remove_inv_item(inventory_player, inventory_size, item, ingredient.second);
 	}
@@ -655,7 +655,7 @@ void jactorio::game::Player_data::recipe_craft_r(data::Recipe* recipe) {
 
 	for (auto& ingredient : recipe->ingredients) {
 		const auto ingredient_proto = data::data_manager::data_raw_get<data::Item>(
-			data::data_category::item, ingredient.first);
+			data::dataCategory::item, ingredient.first);
 
 		const uint32_t possess_amount =
 			inventory_c::get_inv_item_count(inventory_player, inventory_size, ingredient_proto);
@@ -723,7 +723,7 @@ bool jactorio::game::Player_data::recipe_can_craft_r(std::map<data::Item*, uint3
 
 	for (auto& ingredient : recipe->ingredients) {
 		const auto ingredient_proto = data::data_manager::data_raw_get<data::Item>(
-			data::data_category::item, ingredient.first);
+			data::dataCategory::item, ingredient.first);
 
 		// If item has already been counted, use the map used_items. Otherwise, count from inventory
 		uint32_t possess_amount;

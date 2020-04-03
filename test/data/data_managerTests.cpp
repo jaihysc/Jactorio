@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 03/31/2020
+// Last modified: 04/03/2020
 // 
 
 #include <gtest/gtest.h>
@@ -11,7 +11,6 @@
 #include <filesystem>
 
 #include "data/data_manager.h"
-#include "data/pybind/pybind_manager.h"
 #include "data/prototype/sprite.h"
 #include "core/resource_guard.h"
 
@@ -28,17 +27,17 @@ namespace data
 		prototype->name = "fishey";
 
 		data_manager::data_raw_add(
-			jactorio::data::data_category::sprite, "raw-fish", prototype, true);
+			jactorio::data::dataCategory::sprite, "raw-fish", prototype, true);
 		const auto proto =
 			*data_manager::data_raw_get<jactorio::data::Sprite>(
-				jactorio::data::data_category::sprite, "__test__/raw-fish");
+				jactorio::data::dataCategory::sprite, "__test__/raw-fish");
 
 
 		// data_manager should populate certain fields, see Prototype_base.h
 		// Internal name of prototype should have been renamed to match data_raw name
 		// Data category should also have been set to the one provided on add
 		EXPECT_EQ(proto.name, "__test__/raw-fish");
-		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
+		EXPECT_EQ(proto.category, jactorio::data::dataCategory::sprite);
 		EXPECT_EQ(proto.internal_id, 1);
 		EXPECT_EQ(proto.order, 1);
 		// Since no localized name was specified, it uses the internal name
@@ -54,19 +53,19 @@ namespace data
 		jactorio::data::Sprite* const prototype = new jactorio::data::Sprite{};
 
 		data_manager::data_raw_add(
-			jactorio::data::data_category::sprite, "raw-fish", prototype, false);
+			jactorio::data::dataCategory::sprite, "raw-fish", prototype, false);
 
 		// Prefix __this_should_not_exist/ should not be added
 		{
 			const auto* proto =
 				data_manager::data_raw_get<jactorio::data::Prototype_base>(
-					jactorio::data::data_category::sprite, "__this_should_not_exist__/raw-fish");
+					jactorio::data::dataCategory::sprite, "__this_should_not_exist__/raw-fish");
 			EXPECT_EQ(proto, nullptr);
 		}
 		{
 			const auto* proto =
 				data_manager::data_raw_get<jactorio::data::Prototype_base>(
-					jactorio::data::data_category::sprite, "raw-fish");
+					jactorio::data::dataCategory::sprite, "raw-fish");
 			EXPECT_EQ(proto, prototype);
 		}
 	}
@@ -74,17 +73,17 @@ namespace data
 	TEST(data_manager, data_raw_add_increment_id) {
 		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
 
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish0", new jactorio::data::Sprite{});
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish1", new jactorio::data::Sprite{});
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish2", new jactorio::data::Sprite{});
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "raw-fish3", new jactorio::data::Sprite{});
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "raw-fish0", new jactorio::data::Sprite{});
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "raw-fish1", new jactorio::data::Sprite{});
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "raw-fish2", new jactorio::data::Sprite{});
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "raw-fish3", new jactorio::data::Sprite{});
 
 		const auto proto =
 			*data_manager::data_raw_get<jactorio::data::Sprite>(
-				jactorio::data::data_category::sprite, "raw-fish3");
+				jactorio::data::dataCategory::sprite, "raw-fish3");
 
 		EXPECT_EQ(proto.name, "raw-fish3");
-		EXPECT_EQ(proto.category, jactorio::data::data_category::sprite);
+		EXPECT_EQ(proto.category, jactorio::data::dataCategory::sprite);
 		EXPECT_EQ(proto.internal_id, 4);
 	}
 
@@ -98,18 +97,18 @@ namespace data
 			const auto prototype = new jactorio::data::Sprite{};
 			prototype->name = "small-electric-pole";
 
-			data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
+			data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "small-electric-pole",
 			                           prototype, true);
 
 			// Override
 			const auto prototype2 = new jactorio::data::Sprite{};
 			prototype2->name = "small-electric-pole";
-			data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
+			data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "small-electric-pole",
 			                           prototype2, true);
 
 			// Get
 			const auto proto = data_manager::data_raw_get<jactorio::data::Sprite>(
-				jactorio::data::data_category::sprite,
+				jactorio::data::dataCategory::sprite,
 				"__test__/small-electric-pole");
 			EXPECT_EQ(proto, prototype2);
 		}
@@ -117,22 +116,22 @@ namespace data
 		// Empty name - Overriding is disabled for empty names, this is for destructor data_raw add
 		{
 			const auto prototype = new jactorio::data::Sprite{};
-			data_manager::data_raw_add(jactorio::data::data_category::sprite, "",
+			data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "",
 			                           prototype, true);
 
 			// No Override
 			const auto prototype2 = new jactorio::data::Sprite{};
-			data_manager::data_raw_add(jactorio::data::data_category::sprite, "",
+			data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "",
 			                           prototype2, true);
 
 			// Get
 			const auto v = data_manager::data_raw_get_all<jactorio::data::Sprite
-			>(jactorio::data::data_category::sprite);
+			>(jactorio::data::dataCategory::sprite);
 			EXPECT_EQ(v.size(), 2);
 
 
 			const auto proto = data_manager::data_raw_get<jactorio::data::Sprite>(
-				jactorio::data::data_category::sprite, "");
+				jactorio::data::dataCategory::sprite, "");
 
 			// The empty name will be automatically assigned to something else
 			EXPECT_EQ(proto, nullptr);
@@ -151,7 +150,7 @@ namespace data
 
 		const auto proto =
 			data_manager::data_raw_get<jactorio::data::Sprite>(
-				jactorio::data::data_category::sprite, "__test__/test_tile");
+				jactorio::data::dataCategory::sprite, "__test__/test_tile");
 
 		if (proto == nullptr) {
 			FAIL();
@@ -183,7 +182,7 @@ namespace data
 		// Should return a nullptr if the item is non-existent
 		const auto ptr =
 			data_manager::data_raw_get<jactorio::data::Prototype_base>(
-				jactorio::data::data_category::sprite,
+				jactorio::data::dataCategory::sprite,
 				"asdfjsadhfkjdsafhs");
 
 		EXPECT_EQ(ptr, nullptr);
@@ -204,14 +203,14 @@ namespace data
 		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
 
 		const auto prototype = new jactorio::data::Sprite{};
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile", prototype);
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "test_tile", prototype);
 
 		const auto prototype2 = new jactorio::data::Sprite{};
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile2", prototype2);
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "test_tile2", prototype2);
 
 		const std::vector<jactorio::data::Sprite*> paths = data_manager::data_raw_get_all<jactorio::
 			data::Sprite>(
-			jactorio::data::data_category::sprite);
+			jactorio::data::dataCategory::sprite);
 
 		EXPECT_EQ(contains(paths, "test_tile"), true);
 		EXPECT_EQ(contains(paths, "test_tile2"), true);
@@ -224,20 +223,20 @@ namespace data
 		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
 
 		const auto prototype = new jactorio::data::Sprite{};
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile", prototype);
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "test_tile", prototype);
 
 		const auto prototype2 = new jactorio::data::Sprite{};
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile2", prototype2);
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "test_tile2", prototype2);
 
 		const auto prototype3 = new jactorio::data::Sprite{};
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile3", prototype3);
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "test_tile3", prototype3);
 
 		const auto prototype4 = new jactorio::data::Sprite{};
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "test_tile4", prototype4);
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "test_tile4", prototype4);
 
 		// Get
 		const std::vector<jactorio::data::Sprite*> protos = data_manager::data_raw_get_all_sorted<jactorio::
-			data::Sprite>(jactorio::data::data_category::sprite);
+			data::Sprite>(jactorio::data::dataCategory::sprite);
 
 
 		EXPECT_EQ(protos[0]->name, "test_tile");
@@ -249,7 +248,7 @@ namespace data
 	TEST(data_manager, clear_data) {
 		const auto prototype = new jactorio::data::Sprite{};
 
-		data_manager::data_raw_add(jactorio::data::data_category::sprite, "small-electric-pole",
+		data_manager::data_raw_add(jactorio::data::dataCategory::sprite, "small-electric-pole",
 		                           prototype);
 
 		data_manager::clear_data();
@@ -257,14 +256,14 @@ namespace data
 
 		// Get
 		auto* data = data_manager::data_raw_get<jactorio::data::Sprite>(
-			jactorio::data::data_category::sprite,
+			jactorio::data::dataCategory::sprite,
 			"small-electric-pole");
 		EXPECT_EQ(data, nullptr);
 
 		// Get all
 		const std::vector<jactorio::data::Sprite*> data_all = data_manager::data_raw_get_all<
 			jactorio::data::Sprite>(
-			jactorio::data::data_category::sprite);
+			jactorio::data::dataCategory::sprite);
 
 		EXPECT_EQ(data_all.size(), 0);
 	}
