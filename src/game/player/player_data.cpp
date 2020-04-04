@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/03/2020
+// Last modified: 04/04/2020
 // 
 
 #include "game/player/player_data.h"
@@ -186,17 +186,18 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 	// Ensure item attempting to place is an entity
 	data::Entity* entity_ptr = nullptr;
 
+	bool activate_selection = false;
 	// No selected item or selected item is not placeable and clicked on a entity
-	bool check_selection = false;
 	if (item == nullptr)
-		check_selection = true;
+		activate_selection = true;
 	else {
 		entity_ptr = static_cast<data::Entity*>(item->first->entity_prototype);
 		if (entity_ptr == nullptr || !entity_ptr->placeable)
-			check_selection = true;
+			activate_selection = true;
 	}
 
-	if (check_selection) {
+	// Activate the clicked entity / prototype. For example: show the gui
+	if (activate_selection) {
 		if (!can_activate_layer)
 			return;
 
@@ -216,11 +217,17 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 
 
 	assert(entity_ptr != nullptr);
+	// Prototypes can perform additional checking on whether the location can be placed on or not
+	if (!entity_ptr->on_can_build(world_data, {world_x, world_y}))
+		return;
+
 	// Do not take item away from player unless item was successfully placed
-	if (! placement_c::place_entity_at_coords(world_data, entity_ptr, world_x, world_y)) {
+	if (!placement_c::place_entity_at_coords(world_data, entity_ptr, world_x, world_y))
 		// Failed to place because an entity already exists
 		return;
-	}
+
+
+	// All validations passed, entity has been placed
 
 	// If item stack was used up, sort player inventory to fill gap
 	if (!decrement_selected_item()) {

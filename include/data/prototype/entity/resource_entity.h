@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 03/24/2020
+// Last modified: 04/04/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
@@ -17,8 +17,6 @@ namespace jactorio::data
 	// Unique per resource entity placed
 	struct Resource_entity_data : Entity_data
 	{
-		Resource_entity_data() = default;
-
 		explicit Resource_entity_data(const uint16_t resource_amount)
 			: resource_amount(resource_amount) {
 		}
@@ -47,9 +45,7 @@ namespace jactorio::data
 
 
 		Unique_data_base* copy_unique_data(Unique_data_base* ptr) const override {
-			const auto other = new Resource_entity_data();
-			*other = *static_cast<Resource_entity_data*>(ptr);
-			return other;
+			return new Resource_entity_data(*static_cast<Resource_entity_data*>(ptr));
 		}
 
 

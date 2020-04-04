@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 04/03/2020
+// Last modified: 04/04/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_PLACEMENT_CONTROLLER_H
@@ -31,7 +31,7 @@ namespace jactorio::game
 		///
 		/// \brief Places / removes entities at world coordinates
 		/// \remark Pass nullptr for entity to remove
-		/// \remark Assumes placement / removal location is valid
+		/// \return true if placed / removed successfully
 		/// Chunk_tile_layer.clear() for the entity layer is called on removal 
 		bool place_entity_at_coords(World_data& world_data, data::Entity* entity, int x, int y);
 

@@ -51,6 +51,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/data/prototype/sprite.cpp
 	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
 	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
+	${JACTORIO_DIR}/data/prototype/entity/mining_drill.cpp
 	${JACTORIO_DIR}/data/prototype/entity/transport/transport_line.cpp
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
@@ -135,6 +136,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/chunk_struct_layerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp

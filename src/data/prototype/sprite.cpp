@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/06/2019
-// Last modified: 03/28/2020
+// Last modified: 04/04/2020
 // 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -74,7 +74,7 @@ jactorio::data::Sprite::Sprite(const Sprite& other)
 	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytes_per_pixel_;
 	sprite_buffer_ = static_cast<unsigned char*>(malloc(size * sizeof(*sprite_buffer_)));  // stbi uses malloc
 	for (int i = 0; i < size; ++i) {
-	sprite_buffer_[i] = other.sprite_buffer_[i];
+		sprite_buffer_[i] = other.sprite_buffer_[i];
 	}
 }
 
@@ -99,25 +99,27 @@ jactorio::data::Sprite& jactorio::data::Sprite::operator=(const Sprite& other) {
 }
 
 
-jactorio::core::Quad_position jactorio::data::Sprite::get_coords(const uint16_t set, const uint16_t frame) const {
-	assert(set < sets);  // Out of range
+jactorio::core::Quad_position jactorio::data::Sprite::get_coords(uint16_t mset, const uint16_t frame) const {
+	mset %= sets;
+	assert(mset < sets);  // Out of range
 	assert(frame < frames);
 
 	return {
 		{
 			1.f / static_cast<float>(frames) * static_cast<float>(frame),
-			1.f / static_cast<float>(sets) * static_cast<float>(set)
+			1.f / static_cast<float>(sets) * static_cast<float>(mset)
 		},
 		{
 			1.f / static_cast<float>(frames) * static_cast<float>(frame + 1),
-			1.f / static_cast<float>(sets) * static_cast<float>(set + 1)
+			1.f / static_cast<float>(sets) * static_cast<float>(mset + 1)
 		}
 	};
 }
 
 jactorio::core::Quad_position jactorio::data::Sprite::
-get_coords_trimmed(const uint16_t set, const uint16_t frame) const {
-	assert(set < sets);  // Out of range
+get_coords_trimmed(uint16_t mset, const uint16_t frame) const {
+	mset %= sets;
+	assert(mset < sets);  // Out of range
 	assert(frame < frames);
 
 	const auto width_base = static_cast<float>(width_) / static_cast<float>(frames);
@@ -127,13 +129,13 @@ get_coords_trimmed(const uint16_t set, const uint16_t frame) const {
 		{
 			(width_base * static_cast<float>(frame) + static_cast<float>(trim))
 			/ static_cast<float>(width_),
-			(height_base * static_cast<float>(set) + static_cast<float>(trim))
+			(height_base * static_cast<float>(mset) + static_cast<float>(trim))
 			/ static_cast<float>(height_)
 		},
 		{
 			(width_base * static_cast<float>(frame + 1) - static_cast<float>(trim))
 			/ static_cast<float>(width_),
-			(height_base * static_cast<float>(set + 1) - static_cast<float>(trim))
+			(height_base * static_cast<float>(mset + 1) - static_cast<float>(trim))
 			/ static_cast<float>(height_)
 		}
 	};

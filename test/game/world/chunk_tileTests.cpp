@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 04/02/2020
+// Last modified: 04/04/2020
 // 
 
 #include <gtest/gtest.h>
@@ -21,7 +21,7 @@ namespace game
 		// Copying a chunk tile needs to also make a unique copy of unique_data_
 		const auto entity_proto = std::make_unique<jactorio::data::Resource_entity>(jactorio::data::Resource_entity());
 
-		auto* u_data1 = new jactorio::data::Resource_entity_data();
+		auto* u_data1 = new jactorio::data::Resource_entity_data(10);
 
 		auto tile_layer = jactorio::game::Chunk_tile_layer();
 		tile_layer.prototype_data = entity_proto.get();
@@ -40,7 +40,7 @@ namespace game
 
 	TEST(chunk_tile, layer_move) {
 		// Moving unique_data will set the original unique_data to nullptr to avoid deletion
-		auto* u_data = new jactorio::data::Resource_entity_data();
+		auto* u_data = new jactorio::data::Resource_entity_data(10);
 		const auto entity_proto = std::make_unique<jactorio::data::Resource_entity>(jactorio::data::Resource_entity());
 
 		auto tile_layer = jactorio::game::Chunk_tile_layer();

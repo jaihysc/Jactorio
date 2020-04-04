@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/06/2019
-// Last modified: 03/17/2020
+// Last modified: 04/04/2020
 // 
 
 #include <gtest/gtest.h>
@@ -46,6 +46,20 @@ namespace data::prototype
 			EXPECT_FLOAT_EQ(coords.bottom_right.y, 0.25f);
 		}
 		{
+			// 4 % 4 = 0
+			jactorio::data::Sprite sprite{};
+			sprite.sets = 4;
+			sprite.frames = 10;
+
+			auto coords = sprite.get_coords(4, 0);
+			EXPECT_FLOAT_EQ(coords.top_left.x, 0.f);
+			EXPECT_FLOAT_EQ(coords.top_left.y, 0.f);
+
+			EXPECT_FLOAT_EQ(coords.bottom_right.x, 0.1f);
+			EXPECT_FLOAT_EQ(coords.bottom_right.y, 0.25f);
+		}
+
+		{
 			jactorio::data::Sprite sprite{};
 			sprite.sets = 49;
 			sprite.frames = 2;
@@ -71,6 +85,24 @@ namespace data::prototype
 			sprite.trim = 12;
 
 			const auto coords = sprite.get_coords_trimmed(1, 2);
+			EXPECT_FLOAT_EQ(coords.top_left.x, 0.686021505f);
+			EXPECT_FLOAT_EQ(coords.top_left.y, 0.563157894f);
+
+			EXPECT_FLOAT_EQ(coords.bottom_right.x, 0.980645161f);
+			EXPECT_FLOAT_EQ(coords.bottom_right.y, 0.936842105f);
+		}
+
+		{
+			// 3 % 2 = 1 
+			jactorio::data::Sprite sprite{};
+			sprite.sets = 2;
+			sprite.frames = 3;
+
+			sprite.set_width(620);
+			sprite.set_height(190);
+			sprite.trim = 12;
+
+			const auto coords = sprite.get_coords_trimmed(3, 2);
 			EXPECT_FLOAT_EQ(coords.top_left.x, 0.686021505f);
 			EXPECT_FLOAT_EQ(coords.top_left.y, 0.563157894f);
 

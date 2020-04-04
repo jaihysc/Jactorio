@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 04/03/2020
+// Last modified: 04/04/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
@@ -32,12 +32,6 @@ namespace jactorio::data
 	 */
 	class Entity : public Prototype_base, public Renderable
 	{
-		/**
-		 * Item when entity is picked up <br>
-		 * Naming scheme should be <localized name of entity>-item
-		 */
-		Item* item_ = nullptr;
-
 	public:
 		Entity() = default;
 
@@ -49,6 +43,14 @@ namespace jactorio::data
 		Entity& operator=(const Entity& other) = default;
 		Entity& operator=(Entity&& other) noexcept = default;
 
+	private:
+		/**
+		 * Item when entity is picked up <br>
+		 * Naming scheme should be <localized name of entity>-item
+		 */
+		Item* item_ = nullptr;
+
+	public:
 		/// Sprite drawn when placed in the world
 		/// \remark For rotatable entities, this serves as the north sprite if multiple sprites are used
 		PYTHON_PROP_I(Entity, Sprite*, sprite, nullptr)
@@ -102,7 +104,7 @@ namespace jactorio::data
 		// ======================================================================
 		// Renderer events
 
-		Sprite* on_r_get_sprite(void* unique_data) const override {
+		Sprite* on_r_get_sprite(Unique_data_base* unique_data) const override {
 			return this->sprite;
 		}
 
@@ -111,10 +113,21 @@ namespace jactorio::data
 
 		///
 		/// \brief Entity was build in the world
-		virtual void on_build(game::World_data& world_data, std::pair<int, int> world_coords,
+		virtual void on_build(game::World_data& world_data,
+		                      std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
 		                      game::Chunk_tile_layer& tile_layer, uint16_t frame,
 		                      placementOrientation orientation) const {
+			assert(false);  // Not implemented!
 		}
+
+		///
+		/// \brief Returns true if itself can be built at the specified world_coords being its top left
+		/// \return true if can be built
+		virtual bool on_can_build(game::World_data& world_data,
+		                          std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords) {
+			return true;
+		}
+
 
 		///
 		/// \brief Entity was picked up from a built state, called BEFORE the entity has been removed

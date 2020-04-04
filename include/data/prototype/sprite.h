@@ -95,19 +95,32 @@ namespace jactorio::data
 		// ======================================================================
 		// Image extraction
 
+		/*
+		 * Actual set used in method is 'input set modulus by total sets',
+		 * allowing for sets for different sprites to be referenced
+
+		 * e.g:
+		 * With 4 different sprites, total of 10 sets per sprite
+		 * The following set ranges will correspond to the 4 sprites:
+		 * 0  -  9: Sprite 1
+		 * 10 - 19: Sprite 2
+		 * 20 - 29: Sprite 3
+		 * 30 - 39: Sprite 4
+		 */
+		
 		///
-		/// \param set 
+		/// \param mset Will be modulus by total sets
 		/// \param frame 
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::Quad_position get_coords(uint16_t set, uint16_t frame) const;
+		J_NODISCARD core::Quad_position get_coords(uint16_t mset, uint16_t frame) const;
 
 		///
 		/// \brief Same as get_coords, but applies a deduction of trim pixels around the border
 		/// \remark Requires width_ and height_ to be initialized
-		/// \param set 
+		/// \param mset Will be modulus by total sets
 		/// \param frame 
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::Quad_position get_coords_trimmed(uint16_t set, uint16_t frame) const;
+		J_NODISCARD core::Quad_position get_coords_trimmed(uint16_t mset, uint16_t frame) const;
 
 		// ======================================================================
 		// Sprite ptr
