@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 04/04/2020
+// Last modified: 04/05/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
@@ -35,21 +35,28 @@ namespace jactorio::data
 			this->placeable = false;
 		}
 
-		~Resource_entity() override = default;
-
-		Resource_entity(const Resource_entity& other) = default;
-		Resource_entity(Resource_entity&& other) noexcept = default;
-
-		Resource_entity& operator=(const Resource_entity& other) = default;
-		Resource_entity& operator=(Resource_entity&& other) noexcept = default;
-
-
 		Unique_data_base* copy_unique_data(Unique_data_base* ptr) const override {
 			return new Resource_entity_data(*static_cast<Resource_entity_data*>(ptr));
 		}
 
 
 		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override {
+		}
+
+		std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation, game::World_data& world_data,
+		                                                        std::pair<int, int> world_coords) const override {
+			return {0, 0};
+		}
+
+
+		void on_build(game::World_data& world_data,
+		              std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
+		              game::Chunk_tile_layer& tile_layer, uint16_t frame, placementOrientation orientation) const override {
+			assert(false);  // Is not player placeable
+		}
+
+		void on_remove(game::World_data& world_data, std::pair<int, int> world_coords,
+		               game::Chunk_tile_layer& tile_layer) const override {
 		}
 	};
 }

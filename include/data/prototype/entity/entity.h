@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 04/04/2020
+// Last modified: 04/05/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
@@ -30,7 +30,7 @@ namespace jactorio::data
 	/**
 	 * Placeable items in the world
 	 */
-	class Entity : public Prototype_base, public Renderable
+	class Entity : public Prototype_base, public Renderable, public Rotatable
 	{
 	public:
 		Entity() = default;
@@ -116,9 +116,7 @@ namespace jactorio::data
 		virtual void on_build(game::World_data& world_data,
 		                      std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
 		                      game::Chunk_tile_layer& tile_layer, uint16_t frame,
-		                      placementOrientation orientation) const {
-			assert(false);  // Not implemented!
-		}
+		                      placementOrientation orientation) const = 0;
 
 		///
 		/// \brief Returns true if itself can be built at the specified world_coords being its top left
@@ -132,8 +130,7 @@ namespace jactorio::data
 		///
 		/// \brief Entity was picked up from a built state, called BEFORE the entity has been removed
 		virtual void on_remove(game::World_data& world_data, std::pair<int, int> world_coords,
-		                       game::Chunk_tile_layer& tile_layer) const {
-		}
+		                       game::Chunk_tile_layer& tile_layer) const = 0;
 	};
 
 	inline void Entity::post_load_validate() const {

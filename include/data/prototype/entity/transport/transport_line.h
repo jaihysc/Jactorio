@@ -2,8 +2,8 @@
 // transport_line.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 02/10/2020
-// Last modified: 03/30/2020
+// Created on: 03/31/2020
+// Last modified: 04/05/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
@@ -61,7 +61,7 @@ namespace jactorio::data
 
 	///
 	/// \brief Abstract class for all everything which moves items (belts, underground belts, splitters)
-	class Transport_line : public Health_entity, public Rotatable_entity
+	class Transport_line : public Health_entity
 	{
 	protected:
 		Transport_line() = default;

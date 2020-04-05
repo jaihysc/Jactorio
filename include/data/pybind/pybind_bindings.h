@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/09/2019
-// Last modified: 04/03/2020
+// Last modified: 04/05/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
@@ -161,6 +161,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	// Entity
 	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, Prototype_base)
 		PYBIND_PROP(Entity, sprite)
+		PYBIND_PROP_S(Rotatable, spriteE, sprite_e)
+		PYBIND_PROP_S(Rotatable, spriteS, sprite_s)
+		PYBIND_PROP_S(Rotatable, spriteW, sprite_w)
 		PYBIND_PROP(Entity, rotatable)
 		PYBIND_PROP(Entity, placeable)
 		PYBIND_PROP_GET_SET(Entity, item, item)
@@ -185,9 +188,6 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	// Mining drill
 	PYBIND_DATA_CLASS(Mining_drill, MiningDrill, mining_drill, Health_entity)
-		PYBIND_PROP_S(Rotatable_entity, spriteE, sprite_e)
-		PYBIND_PROP_S(Rotatable_entity, spriteS, sprite_s)
-		PYBIND_PROP_S(Rotatable_entity, spriteW, sprite_w)
 		PYBIND_PROP_S(Mining_drill, miningSpeed, mining_speed);
 
 

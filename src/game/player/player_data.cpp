@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/04/2020
+// Last modified: 04/05/2020
 // 
 
 #include "game/player/player_data.h"
@@ -86,7 +86,7 @@ bool jactorio::game::Player_data::mouse_selected_tile_in_range() const {
 	const auto cursor_position = get_mouse_tile_coords();
 
 	// Maximum distance of from the player where tiles can be reached
-	constexpr unsigned int max_reach = 14;
+	constexpr unsigned int max_reach = 34;
 	const unsigned int tile_dist =
 		abs(player_position_x_ - cursor_position.first) +
 		abs(player_position_y_ - cursor_position.second);

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/21/2019
-// Last modified: 04/04/2020
+// Last modified: 04/05/2020
 // 
 
 #include "game/input/mouse_selection.h"
@@ -86,15 +86,15 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 		                                    world_y);
 
 		// Rotatable entities
-		const data::Rotatable_entity* rotatable_entity;
-		if (selected_entity->rotatable &&
-			(rotatable_entity = dynamic_cast<data::Rotatable_entity*>(selected_entity)) != nullptr) {
-			const auto target = rotatable_entity->map_placement_orientation(placement_orientation,
-			                                                                world_data,
-			                                                                {world_x, world_y});
-			tile->get_layer(Chunk_tile::chunkLayer::overlay).prototype_data = selected_entity->sprite;
-			tile->get_layer(Chunk_tile::chunkLayer::overlay).unique_data =
-				new data::Renderable_data(target.first, target.second);
+		if (selected_entity->rotatable) {
+			// Create unique data at tile to indicate set / frame to render
+			const auto target = selected_entity->map_placement_orientation(placement_orientation,
+			                                                               world_data,
+			                                                               {world_x, world_y});
+
+			Chunk_tile_layer& target_layer = tile->get_layer(Chunk_tile::chunkLayer::overlay);
+			target_layer.unique_data = new data::Renderable_data(target.first, target.second);;
+			target_layer.prototype_data = selected_entity->on_r_get_sprite(target_layer.unique_data);
 		}
 
 		last_tile_dimensions_ = {selected_entity->tile_width, selected_entity->tile_height};

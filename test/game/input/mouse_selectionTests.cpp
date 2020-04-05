@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/05/2020
-// Last modified: 04/04/2020
+// Last modified: 04/05/2020
 // 
 
 #include <gtest/gtest.h>
@@ -252,5 +252,52 @@ namespace game
 		                             0, 0, jactorio::data::placementOrientation::up);
 
 		EXPECT_EQ(untouched.prototype_data, &drill);
+	}
+
+	TEST(mouse_selection_overlay, draw_overlay_call_get_sprite) {
+		class Mock_entity final : public jactorio::data::Entity
+		{
+		public:
+			mutable bool r_get_sprite_called = false;
+
+			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation orientation,
+			                                                                    jactorio::game::World_data& world_data,
+			                                                                    std::pair<int, int> world_coords) const override {
+				return {16, 17};
+			}
+
+			void on_r_show_gui(jactorio::game::Player_data& player_data,
+			                   jactorio::game::Chunk_tile_layer* tile_layer) const override {
+			}
+
+
+			void on_build(jactorio::game::World_data& world_data,
+			              std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			              world_coords,
+			              jactorio::game::Chunk_tile_layer& tile_layer, uint16_t frame,
+			              jactorio::data::placementOrientation orientation) const override {
+			}
+
+			void on_remove(jactorio::game::World_data& world_data, std::pair<int, int> world_coords,
+			               jactorio::game::Chunk_tile_layer& tile_layer) const override {
+			}
+
+			// Overriden to give nullptr
+			jactorio::data::Sprite* on_r_get_sprite(jactorio::data::Unique_data_base* unique_data) const override {
+				r_get_sprite_called = true;
+				return nullptr;
+			}
+		};
+
+		MOUSE_SELECTION_TEST_HEADER
+
+		Mock_entity entity{};
+		entity.rotatable = true;
+		entity.placeable = true;
+
+		mouse_selection.draw_overlay(player_data, &entity, 0, 0, jactorio::data::placementOrientation::up);
+
+		// On_r_get_sprite should have been called 
+		EXPECT_TRUE(entity.r_get_sprite_called);
 	}
 }
