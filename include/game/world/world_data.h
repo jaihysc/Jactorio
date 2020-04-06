@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/02/2020
+// Last modified: 04/06/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
@@ -93,23 +93,17 @@ namespace jactorio::game
 		///
 		/// \brief Retrieves a chunk in game world
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* get_chunk(chunk_coord chunk_x, chunk_coord chunk_y);
-
-		///
-		/// \brief Retrieves a read only chunk in game world
-		/// \return nullptr if no chunk exists
-		J_NODISCARD const Chunk* get_chunk_read_only(chunk_coord chunk_x, chunk_coord chunk_y) const;
+		J_NODISCARD Chunk* get_chunk(chunk_coord chunk_x, chunk_coord chunk_y) const;
 
 		///
 		/// Gets the chunk at the specified world coordinate
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* get_chunk_world_coords(world_coord world_x, world_coord world_y);
-
+		J_NODISCARD Chunk* get_chunk_world_coords(world_coord world_x, world_coord world_y) const;
 
 		///
 		/// \brief Gets the tile at the specified world coordinate
 		/// \return nullptr if no tile exists
-		J_NODISCARD Chunk_tile* get_tile_world_coords(world_coord world_x, world_coord world_y);
+		J_NODISCARD Chunk_tile* get_tile_world_coords(world_coord world_x, world_coord world_y) const;
 
 
 		// ==============================================================

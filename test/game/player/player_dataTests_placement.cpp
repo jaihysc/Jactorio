@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/04/2020
-// Last modified: 04/05/2020
+// Last modified: 04/06/2020
 // 
 
 #include <gtest/gtest.h>
@@ -423,7 +423,9 @@ namespace game
 				build_called = true;
 			}
 
-			void on_remove(jactorio::game::World_data& world_data, std::pair<int, int> world_coords,
+			void on_remove(jactorio::game::World_data& world_data,
+			               std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::
+			                         world_coord> world_coords,
 			               jactorio::game::Chunk_tile_layer& tile_layer) const override {
 				remove_called = true;
 			}
@@ -494,38 +496,41 @@ namespace game
 	}
 
 
-	class Mock_entity_can_build final : public jactorio::data::Entity
-	{
-	public:
-		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation orientation,
-		                                                                    jactorio::game::World_data& world_data,
-		                                                                    std::pair<int, int> world_coords) const override {
-			return {0, 0};
-		}
-
-		void on_r_show_gui(jactorio::game::Player_data& player_data, jactorio::game::Chunk_tile_layer* tile_layer) const
-		override {
-		}
-
-		void on_build(jactorio::game::World_data& world_data,
-		              std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord> world_coords,
-		              jactorio::game::Chunk_tile_layer& tile_layer, uint16_t frame,
-		              jactorio::data::placementOrientation orientation) const override {
-		}
-
-		void on_remove(jactorio::game::World_data& world_data, std::pair<int, int> world_coords,
-		               jactorio::game::Chunk_tile_layer& tile_layer) const override {
-		}
-
-		bool on_can_build(jactorio::game::World_data& world_data,
-		                  std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
-		                  world_coords) override {
-			return false;
-		}
-	};
-
-
 	TEST(player_data, try_place_call_on_can_build) {
+		class Mock_entity_can_build final : public jactorio::data::Entity
+		{
+		public:
+			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation orientation,
+			                                                                    jactorio::game::World_data& world_data,
+			                                                                    std::pair<int, int> world_coords) const override {
+				return {0, 0};
+			}
+
+			void on_r_show_gui(jactorio::game::Player_data& player_data, jactorio::game::Chunk_tile_layer* tile_layer) const
+			override {
+			}
+
+			void on_build(jactorio::game::World_data& world_data,
+			              std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			              world_coords,
+			              jactorio::game::Chunk_tile_layer& tile_layer, uint16_t frame,
+			              jactorio::data::placementOrientation orientation) const override {
+			}
+
+			void on_remove(jactorio::game::World_data& world_data,
+			               std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			               world_coords,
+			               jactorio::game::Chunk_tile_layer& tile_layer) const override {
+
+			}
+
+			bool on_can_build(const jactorio::game::World_data& world_data,
+			                  std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			                  world_coords) override {
+				return false;
+			}
+		};
+
 		jactorio::game::Player_data player_data{};
 		jactorio::game::World_data world_data{};
 
@@ -554,5 +559,214 @@ namespace game
 
 		// Not placed because on_can_build returned false
 		EXPECT_EQ(tiles[0].get_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity), nullptr);
+	}
+
+	// Creates the base tile and entity at world coords
+#define SET_ENTITY_COORDS(world_x, world_y, tile_proto, entity_proto)\
+		world_data.get_tile_world_coords(world_x, world_y)->get_layer(jactorio::game::Chunk_tile::chunkLayer::base).prototype_data = tile_proto;\
+		world_data.get_tile_world_coords(world_x, world_y)->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).prototype_data = entity_proto
+
+	TEST(player_data, try_place_call_on_neighbor_update) {
+		// Placing or removing an entity should call on_neighbor_update for the 4 neighbors in all directions
+
+		class Mock_entity final : public jactorio::data::Entity
+		{
+		public:
+			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation orientation,
+			                                                                    jactorio::game::World_data& world_data,
+			                                                                    std::pair<int, int> world_coords) const override {
+				return {0, 0};
+			}
+
+			void on_r_show_gui(jactorio::game::Player_data& player_data, jactorio::game::Chunk_tile_layer* tile_layer) const
+			override {
+			}
+
+			void on_build(jactorio::game::World_data& world_data,
+			              std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			              world_coords,
+			              jactorio::game::Chunk_tile_layer& tile_layer, uint16_t frame,
+			              jactorio::data::placementOrientation orientation) const override {
+			}
+
+
+			void on_remove(jactorio::game::World_data& world_data,
+			               std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			               world_coords,
+			               jactorio::game::Chunk_tile_layer& tile_layer) const override {
+
+			}
+
+			// ======================================================================
+			mutable int on_update_called = 0;
+
+			void on_neighbor_update(const jactorio::game::World_data& world_data,
+			                        std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			                        world_coords, jactorio::data::placementOrientation orientation) const override {
+				on_update_called++;
+			}
+		};
+
+		/*
+		 *     [ ]
+		 * [ ] [x] [ ]
+		 *     [ ]
+		 */
+
+		jactorio::game::Player_data player_data{};
+		jactorio::game::World_data world_data{};
+
+		// Tile
+		auto tile_proto = jactorio::data::Tile();
+		tile_proto.is_water = false;
+
+		// Item
+		jactorio::core::Resource_guard guard(jactorio::data::data_manager::clear_data);
+		auto item = jactorio::data::Item{};
+
+		// Entity
+		auto* entity_proto = new Mock_entity{};
+		entity_proto->set_item(&item);
+		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity, "", entity_proto);
+
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+
+		world_data.get_tile_world_coords(1, 1)
+		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::base).prototype_data = &tile_proto;
+
+		SET_ENTITY_COORDS(1, 0, &tile_proto, entity_proto);
+		SET_ENTITY_COORDS(2, 1, &tile_proto, entity_proto);
+		SET_ENTITY_COORDS(1, 2, &tile_proto, entity_proto);
+		SET_ENTITY_COORDS(0, 1, &tile_proto, entity_proto);
+
+		// ======================================================================
+
+		jactorio::data::item_stack selected_item = {&item, 1};
+		player_data.set_selected_item(selected_item);
+
+		player_data.try_place_entity(world_data, 1, 1, true);
+
+		EXPECT_EQ(entity_proto->on_update_called, 4);
+	}
+
+	TEST(player_data, try_place_call_on_neighbor_update_2x3) {
+		// Placing or removing an entity should call on_neighbor_update for 10 adjacent tiles in clockwise order from top left
+
+		class Mock_entity final : public jactorio::data::Entity
+		{
+		public:
+			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation orientation,
+			                                                                    jactorio::game::World_data& world_data,
+			                                                                    std::pair<int, int> world_coords) const override {
+				return {0, 0};
+			}
+
+			void on_r_show_gui(jactorio::game::Player_data& player_data, jactorio::game::Chunk_tile_layer* tile_layer) const
+			override {
+			}
+
+			void on_build(jactorio::game::World_data& world_data,
+			              std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			              world_coords,
+			              jactorio::game::Chunk_tile_layer& tile_layer, uint16_t frame,
+			              jactorio::data::placementOrientation orientation) const override {
+			}
+
+
+			void on_remove(jactorio::game::World_data& world_data,
+			               std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			               world_coords,
+			               jactorio::game::Chunk_tile_layer& tile_layer) const override {
+			}
+
+			// ======================================================================
+			mutable std::vector<std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>>
+			coords;
+
+			void on_neighbor_update(const jactorio::game::World_data& world_data,
+			                        const std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::
+			                                        world_coord>
+			                        world_coords, jactorio::data::placementOrientation orientation) const override {
+				coords.push_back(world_coords);
+			}
+		};
+
+		/*
+		 *     [1] [2]
+		 * [A] [x] [x] [3]
+		 * [9] [x] [x] [4]
+		 * [8] [x] [x] [5]
+		 *     [7] [6]
+		 */
+
+		jactorio::game::Player_data player_data{};
+		jactorio::game::World_data world_data{};
+
+		// Tile
+		auto tile_proto = jactorio::data::Tile();
+		tile_proto.is_water = false;
+
+		// Item
+		jactorio::core::Resource_guard guard(jactorio::data::data_manager::clear_data);
+		auto item = jactorio::data::Item{};
+
+		// Entity
+		auto* entity_proto = new Mock_entity{};
+		entity_proto->tile_width = 2;
+		entity_proto->tile_height = 3;
+		entity_proto->set_item(&item);
+		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity, "", entity_proto);
+
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+
+		// Set tiles so entity can be placed on it
+		for (int y = 1; y < 4; ++y) {
+			for (int x = 1; x < 3; ++x) {
+				world_data.get_tile_world_coords(x, y)
+				          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::base).prototype_data = &tile_proto;
+			}
+		}
+
+		// Set entity around border
+		for (int x = 1; x <= 2; ++x) {
+			SET_ENTITY_COORDS(x, 0, &tile_proto, entity_proto);
+		}
+		for (int y = 1; y <= 3; ++y) {
+			SET_ENTITY_COORDS(3, y, &tile_proto, entity_proto);
+		}
+		for (int x = 2; x >= 1; --x) {
+			SET_ENTITY_COORDS(x, 4, &tile_proto, entity_proto);
+		}
+		for (int y = 3; y >= 1; --y) {
+			SET_ENTITY_COORDS(0, y, &tile_proto, entity_proto);
+		}
+
+		// ======================================================================
+
+		jactorio::data::item_stack selected_item = {&item, 1};
+		player_data.set_selected_item(selected_item);
+
+		player_data.try_place_entity(world_data, 1, 1, true);
+		ASSERT_EQ(entity_proto->coords.size(), 10);
+
+#define VALIDATE_COORDS(index, x, y)\
+		{\
+		auto pair = std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>{x, y};\
+		EXPECT_EQ(entity_proto->coords[index], pair);\
+		}
+
+		VALIDATE_COORDS(0, 1, 0);
+		VALIDATE_COORDS(1, 2, 0);
+
+		VALIDATE_COORDS(2, 3, 1);
+		VALIDATE_COORDS(3, 3, 2);
+		VALIDATE_COORDS(4, 3, 3);
+
+		VALIDATE_COORDS(5, 2, 4);
+		VALIDATE_COORDS(6, 1, 4);
+
+		VALIDATE_COORDS(7, 0, 3);
+		VALIDATE_COORDS(8, 0, 2);
+		VALIDATE_COORDS(9, 0, 1);
 	}
 }

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 04/05/2020
+// Last modified: 04/06/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
@@ -55,7 +55,8 @@ namespace jactorio::data
 			assert(false);  // Is not player placeable
 		}
 
-		void on_remove(game::World_data& world_data, std::pair<int, int> world_coords,
+		void on_remove(game::World_data& world_data,
+		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
 		               game::Chunk_tile_layer& tile_layer) const override {
 		}
 	};

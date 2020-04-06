@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/02/2020
+// Last modified: 04/06/2020
 // 
 
 #include <gtest/gtest.h>
@@ -99,17 +99,6 @@ namespace game
 		EXPECT_EQ(world_data.get_chunk(0, 0), nullptr);
 		EXPECT_EQ(world_data.get_chunk(5, 1), added_chunk);
 		EXPECT_EQ(world_data.get_chunk(5, 1), chunk);
-	}
-
-	TEST(world_data, world_get_chunk_read_only) {
-		jactorio::game::World_data world_data{};
-
-		const auto chunk = new jactorio::game::Chunk{5, 1, nullptr};
-		const auto* added_chunk = world_data.add_chunk(chunk);
-
-		EXPECT_EQ(world_data.get_chunk_read_only(0, 0), nullptr);
-		EXPECT_EQ(world_data.get_chunk_read_only(5, 1), added_chunk);
-		EXPECT_EQ(world_data.get_chunk_read_only(5, 1), chunk);
 	}
 
 	TEST(world_data, get_tile_world_coords) {

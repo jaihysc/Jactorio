@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 04/05/2020
+// Last modified: 04/06/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
@@ -121,7 +121,7 @@ namespace jactorio::data
 		///
 		/// \brief Returns true if itself can be built at the specified world_coords being its top left
 		/// \return true if can be built
-		virtual bool on_can_build(game::World_data& world_data,
+		virtual bool on_can_build(const game::World_data& world_data,
 		                          std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords) {
 			return true;
 		}
@@ -129,8 +129,19 @@ namespace jactorio::data
 
 		///
 		/// \brief Entity was picked up from a built state, called BEFORE the entity has been removed
-		virtual void on_remove(game::World_data& world_data, std::pair<int, int> world_coords,
+		virtual void on_remove(game::World_data& world_data,
+		                       std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
 		                       game::Chunk_tile_layer& tile_layer) const = 0;
+
+		///
+		/// \brief A neighbor of this prototype in the world was updated
+		/// \param world_data 
+		/// \param world_coords Coordinates of the CURRENT prototype in the world 
+		/// \param orientation Orientation FROM the world prototype which was updated. e.g right = right of updated prototype
+		virtual void on_neighbor_update(const game::World_data& world_data,
+		                                std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
+		                                placementOrientation orientation) const {
+		}
 	};
 
 	inline void Entity::post_load_validate() const {

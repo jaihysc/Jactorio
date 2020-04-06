@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/15/2019
-// Last modified: 04/03/2020
+// Last modified: 04/06/2020
 // 
 
 #include "renderer/rendering/world_renderer.h"
@@ -526,8 +526,8 @@ void jactorio::renderer::world_renderer::prepare_chunk_draw_data(const game::Wor
 			const int chunk_x_offset = chunk_x * 32 + render_offset_x;
 
 			std::lock_guard<std::mutex> guard{world_data.world_data_mutex};
-			const game::Chunk* chunk = world_data.get_chunk_read_only(chunk_start_x + chunk_x,
-			                                                          chunk_start_y + chunk_y);
+			const game::Chunk* chunk = world_data.get_chunk(chunk_start_x + chunk_x,
+			                                                chunk_start_y + chunk_y);
 			// Generate chunk if non existent
 			if (chunk == nullptr) {
 				world_data.queue_chunk_generation(

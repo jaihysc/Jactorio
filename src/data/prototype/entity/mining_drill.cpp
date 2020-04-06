@@ -60,3 +60,8 @@ void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
 	drill_data->set = map_placement_orientation(orientation, world_data, world_coords).first;
 	drill_data->frame = frame;
 }
+
+void jactorio::data::Mining_drill::on_neighbor_update(const game::World_data& world_data,
+	std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
+	placementOrientation orientation) const {
+}

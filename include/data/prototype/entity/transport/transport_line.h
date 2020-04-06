@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/05/2020
+// Last modified: 04/06/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
@@ -82,18 +82,22 @@ namespace jactorio::data
 		///
 		/// \brief Attempts to retrieve transport line data at world coordinates on tile
 		/// \return pointer to data or nullptr if non existent
-		J_NODISCARD static Transport_line_data* get_line_data(game::World_data& world_data, int world_x, int world_y);
+		J_NODISCARD static Transport_line_data* get_line_data(const game::World_data& world_data,
+		                                                      game::World_data::world_coord world_x,
+		                                                      game::World_data::world_coord world_y);
 
 		///
 		/// \brief Attempts to find transport line at world_x, world_y
 		/// \param callback Called for each Chunk_struct_layer found matching Transport_line_data at world_x, world_y
 		static void get_transport_line_struct_layer(game::World_data& world_data,
-		                                            int world_x, int world_y,
+		                                            game::World_data::world_coord world_x, game::World_data::world_coord world_y,
 		                                            const std::function<void(game::Chunk_struct_layer&)>& callback);
 	private:
 		///
 		///	\brief Updates the orientation of current and neighboring transport lines 
-		static void update_neighboring_orientation(game::World_data& world_data, std::pair<int, int> world_coords,
+		static void update_neighboring_orientation(const game::World_data& world_data,
+		                                           std::pair<game::World_data::world_coord, game::World_data::world_coord>
+		                                           world_coords,
 		                                           Transport_line_data* t_center,
 		                                           Transport_line_data* c_right,
 		                                           Transport_line_data* b_center,
@@ -136,7 +140,8 @@ namespace jactorio::data
 		void on_build(game::World_data& world_data, std::pair<int, int> world_coords,
 		              game::Chunk_tile_layer& tile_layer, uint16_t frame, placementOrientation orientation) const override;
 
-		void on_remove(game::World_data& world_data, std::pair<int, int> world_coords,
+		void on_remove(game::World_data& world_data,
+		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
 		               game::Chunk_tile_layer& tile_layer) const override;
 
 		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation,

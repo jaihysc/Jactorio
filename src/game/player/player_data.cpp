@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/05/2020
+// Last modified: 04/06/2020
 // 
 
 #include "game/player/player_data.h"
@@ -173,6 +173,20 @@ void jactorio::game::Player_data::counter_rotate_placement_orientation() {
 	}
 }
 
+void call_on_neighbor_update(const jactorio::game::World_data& world_data,
+                             const jactorio::game::World_data::world_coord world_x,
+                             const jactorio::game::World_data::world_coord world_y,
+                             const jactorio::data::placementOrientation target_orientation) {
+	using namespace jactorio;
+
+	const game::Chunk_tile* tile = world_data.get_tile_world_coords(world_x, world_y);
+	if (tile) {
+		const data::Entity* entity = tile->get_entity_prototype(game::Chunk_tile::chunkLayer::entity);
+		if (entity)
+			entity->on_neighbor_update(world_data, {world_x, world_y}, target_orientation);
+	}
+}
+
 void jactorio::game::Player_data::try_place_entity(World_data& world_data,
                                                    const int world_x, const int world_y,
                                                    const bool can_activate_layer) {
@@ -238,6 +252,41 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 
 	// TODO Frame not yet implemented
 	entity_ptr->on_build(world_data, {world_x, world_y}, selected_layer, 0, placement_orientation);
+
+	// Clockwise from top left
+
+	/*
+	 *     [1] [2]
+	 * [A] [X] [x] [3]
+	 * [9] [x] [x] [4]
+	 * [8] [x] [x] [5]
+	 *     [7] [6]
+	 */
+	for (int x = world_x; x < world_x + entity_ptr->tile_width; ++x) {
+		call_on_neighbor_update(world_data,
+		                        x,
+		                        world_y - 1,
+		                        data::placementOrientation::up);
+	}
+	for (int y = world_y; y < world_y + entity_ptr->tile_height; ++y) {
+		call_on_neighbor_update(world_data,
+		                        world_x + entity_ptr->tile_width,
+		                        y,
+		                        data::placementOrientation::right);
+	}
+	for (int x = world_x + entity_ptr->tile_width - 1; x >= world_x; --x) {
+		call_on_neighbor_update(world_data,
+		                        x,
+		                        world_y + entity_ptr->tile_height,
+		                        data::placementOrientation::down);
+	}
+	for (int y = world_y + entity_ptr->tile_height - 1; y >= world_y; --y) {
+		call_on_neighbor_update(world_data,
+		                        world_x - 1,
+		                        y,
+		                        data::placementOrientation::left);
+	}
+
 }
 
 

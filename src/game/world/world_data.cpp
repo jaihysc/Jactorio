@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/02/2020
+// Last modified: 04/06/2020
 // 
 
 #include "game/world/world_data.h"
@@ -50,30 +50,18 @@ void jactorio::game::World_data::clear_chunk_data() {
 
 // ======================================================================
 
-jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const chunk_coord chunk_x, const chunk_coord chunk_y) {
+jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const chunk_coord chunk_x, const chunk_coord chunk_y) const {
 	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
 	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
-	if (world_chunks_.find(key) == world_chunks_.end())
-		return nullptr;
-
-	return world_chunks_[key];
-}
-
-const jactorio::game::Chunk* jactorio::game::World_data::get_chunk_read_only(chunk_coord chunk_x, chunk_coord chunk_y) const {
-	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
-
-	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
-
-	// From testing, not using exceptions can cut up to 30ms per frame in the render thread
 	if (world_chunks_.find(key) == world_chunks_.end())
 		return nullptr;
 
 	return world_chunks_.at(key);
 }
 
-jactorio::game::Chunk* jactorio::game::World_data::get_chunk_world_coords(world_coord world_x, world_coord world_y) {
+jactorio::game::Chunk* jactorio::game::World_data::get_chunk_world_coords(world_coord world_x, world_coord world_y) const {
 	// See get_tile_world_coords() for documentation on the purpose of if statements
 
 	float chunk_index_x = 0;
@@ -96,7 +84,7 @@ jactorio::game::Chunk* jactorio::game::World_data::get_chunk_world_coords(world_
 
 // ======================================================================
 
-jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(world_coord world_x, world_coord world_y) {
+jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(world_coord world_x, world_coord world_y) const {
 	// The negative chunks start at -1, unlike positive chunks at 0
 	// Thus add 1 to become 0 so the calculations can be performed
 	bool negative_x = false;

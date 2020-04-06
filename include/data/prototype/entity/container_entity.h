@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 04/05/2020
+// Last modified: 04/06/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
@@ -53,7 +53,8 @@ namespace jactorio::data
 		              game::Chunk_tile_layer& tile_layer, uint16_t frame,
 		              placementOrientation orientation) const override;
 
-		void on_remove(game::World_data& world_data, std::pair<int, int> world_coords,
+		void on_remove(game::World_data& world_data,
+		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
 		               game::Chunk_tile_layer& tile_layer) const override {
 		}
 
