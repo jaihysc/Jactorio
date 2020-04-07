@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/02/2020
-// Last modified: 04/02/2020
+// Last modified: 04/06/2020
 // 
 
 #ifndef JACTORIO_GAME_WORLD_DEFERRAL_TIMER_H
@@ -23,10 +23,12 @@ namespace jactorio::game
 	/// \brief Manages deferrals, prototypes inheriting 'Deferred'
 	class Deferral_timer
 	{
+		game_tick_t last_game_tick_ = 0;
+
 		/// \brief vector of callbacks at game tick
 		std::unordered_map<game_tick_t,
 		                   std::vector<
-			                   std::pair<data::Deferred&, data::Unique_data_base*>
+			                   std::pair<std::reference_wrapper<const data::Deferred>, data::Unique_data_base*>
 		                   >> callbacks_;
 
 		using callback_index = decltype(callbacks_.size());
@@ -42,8 +44,16 @@ namespace jactorio::game
 		/// \param deferred Implements virtual function on_defer_time_elapsed
 		/// \param due_game_tick Game tick where the callback will be called
 		/// \return Index of registered callback, use this to remove the callback later
-		callback_index register_deferral(data::Deferred& deferred, data::Unique_data_base* unique_data,
-		                                 game_tick_t due_game_tick);
+		callback_index register_at_tick(const data::Deferred& deferred, data::Unique_data_base* unique_data,
+		                                game_tick_t due_game_tick);
+
+		///
+		/// \brief Registers callback which will be called upon the specified game tick
+		/// \param deferred Implements virtual function on_defer_time_elapsed
+		/// \param elapse_game_tick Callback will be called in game ticks from now
+		/// \return Index of registered callback, use this to remove the callback later
+		callback_index register_from_tick(const data::Deferred& deferred, data::Unique_data_base* unique_data,
+		                                  game_tick_t elapse_game_tick);
 
 		///
 		/// \brief Removes registered callback at game_tick at index

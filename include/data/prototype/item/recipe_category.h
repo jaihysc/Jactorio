@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/14/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_CATEGORY_H
@@ -21,6 +21,8 @@ namespace jactorio::data
 	class Recipe_category final : public Prototype_base
 	{
 	public:
+		PROTOTYPE_CATEGORY(recipe_category);
+
 		Recipe_category() = default;
 
 		// Recipes belonging to this category

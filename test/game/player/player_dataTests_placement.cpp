@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/04/2020
-// Last modified: 04/06/2020
+// Last modified: 04/07/2020
 // 
 
 #include <gtest/gtest.h>
@@ -237,7 +237,7 @@ namespace game
 		auto* entity = new jactorio::data::Container_entity();
 		entity->pickup_time = 1.f;
 		entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity, "chester", entity);
+		jactorio::data::data_manager::data_raw_add("chester", entity);
 
 		// Create world with entity at 0, 0
 		auto* tiles = new jactorio::game::Chunk_tile[1024];
@@ -302,7 +302,7 @@ namespace game
 		auto* entity = new jactorio::data::Resource_entity();
 		entity->pickup_time = 3.f;
 		entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::resource_entity, "diamond", entity);
+		jactorio::data::data_manager::data_raw_add("diamond", entity);
 
 		// Create world with the resource entity at 0, 0
 		auto* tiles = new jactorio::game::Chunk_tile[1024];
@@ -363,8 +363,7 @@ namespace game
 		auto* resource_entity = new jactorio::data::Resource_entity();
 		resource_entity->pickup_time = 3.f;
 		resource_entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::dataCategory::resource_entity, "diamond", resource_entity);
+		jactorio::data::data_manager::data_raw_add("diamond", resource_entity);
 
 
 		tiles[0].set_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::resource, resource_entity);
@@ -379,8 +378,7 @@ namespace game
 		container_entity->pickup_time = 1.f;
 		container_entity->set_item(&item);
 
-		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity, "chester",
-		                                           container_entity);
+		jactorio::data::data_manager::data_raw_add("chester", container_entity);
 
 		tiles[0].set_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity, container_entity);
 
@@ -407,6 +405,8 @@ namespace game
 		class Mock_entity final : public jactorio::data::Entity
 		{
 		public:
+			PROTOTYPE_CATEGORY(test);
+
 			mutable bool build_called = false;
 			mutable bool remove_called = false;
 
@@ -456,8 +456,7 @@ namespace game
 
 		auto* entity = new Mock_entity{};
 		entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity,
-		                                           "", entity);
+		jactorio::data::data_manager::data_raw_add("", entity);
 
 
 		jactorio::data::item_stack selected_item = {&item, 1};
@@ -480,8 +479,7 @@ namespace game
 		auto* entity = new Mock_entity{};
 		entity->pickup_time = 1.f;
 		entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity,
-		                                           "", entity);
+		jactorio::data::data_manager::data_raw_add("", entity);
 
 		// Create world with entity at 0, 0
 		auto* tiles = new jactorio::game::Chunk_tile[1024];
@@ -500,6 +498,8 @@ namespace game
 		class Mock_entity_can_build final : public jactorio::data::Entity
 		{
 		public:
+			PROTOTYPE_CATEGORY(test);
+
 			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation orientation,
 			                                                                    jactorio::game::World_data& world_data,
 			                                                                    std::pair<int, int> world_coords) const override {
@@ -550,7 +550,7 @@ namespace game
 
 		auto* entity = new Mock_entity_can_build{};
 		entity->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity, "", entity);
+		jactorio::data::data_manager::data_raw_add("", entity);
 
 		jactorio::data::item_stack selected_item = {&item, 1};
 		player_data.set_selected_item(selected_item);
@@ -572,6 +572,8 @@ namespace game
 		class Mock_entity final : public jactorio::data::Entity
 		{
 		public:
+			PROTOTYPE_CATEGORY(test);
+
 			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation orientation,
 			                                                                    jactorio::game::World_data& world_data,
 			                                                                    std::pair<int, int> world_coords) const override {
@@ -627,7 +629,7 @@ namespace game
 		// Entity
 		auto* entity_proto = new Mock_entity{};
 		entity_proto->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity, "", entity_proto);
+		jactorio::data::data_manager::data_raw_add("", entity_proto);
 
 		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
 
@@ -655,6 +657,8 @@ namespace game
 		class Mock_entity final : public jactorio::data::Entity
 		{
 		public:
+			PROTOTYPE_CATEGORY(test);
+
 			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation orientation,
 			                                                                    jactorio::game::World_data& world_data,
 			                                                                    std::pair<int, int> world_coords) const override {
@@ -715,7 +719,7 @@ namespace game
 		entity_proto->tile_width = 2;
 		entity_proto->tile_height = 3;
 		entity_proto->set_item(&item);
-		jactorio::data::data_manager::data_raw_add(jactorio::data::dataCategory::container_entity, "", entity_proto);
+		jactorio::data::data_manager::data_raw_add("", entity_proto);
 
 		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
 

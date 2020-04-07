@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/09/2019
-// Last modified: 04/03/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
@@ -91,6 +91,8 @@ namespace jactorio::data
 	};
 
 
+#define PROTOTYPE_CATEGORY(category_) J_NODISCARD jactorio::data::dataCategory category() const override { return jactorio::data::dataCategory::category_; }
+
 	class Prototype_base
 	{
 	public:
@@ -102,19 +104,27 @@ namespace jactorio::data
 		Prototype_base& operator=(const Prototype_base& other) = default;
 		Prototype_base& operator=(Prototype_base&& other) noexcept = default;
 
+	private:
+		dataCategory category_ = dataCategory::none;
+
+	public:
+		///
+		/// \brief Category of this Prototype item
+		J_NODISCARD virtual dataCategory category() const = 0;
+
 		///
 		/// \brief Unique per prototype, unique & auto assigned per new prototype added
 		/// 0 indicates invalid id
 		unsigned int internal_id = 0;
 
+
+		// ======================================================================
+		// Python properties
+	public:
 		///
 		/// \brief Internal name, MUST BE unique per data_category
 		///
 		PYTHON_PROP_REF(Prototype_base, std::string, name);
-
-		///
-		/// \brief Category of this Prototype item
-		PYTHON_PROP_REF_I(Prototype_base, dataCategory, category, dataCategory::none);
 
 		///
 		/// \brief Determines the priority of this prototype used in certain situations

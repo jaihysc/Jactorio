@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/05/2020
-// Last modified: 04/05/2020
+// Last modified: 04/07/2020
 // 
 
 #include <gtest/gtest.h>
@@ -29,8 +29,7 @@ namespace game
 		auto guard = jactorio::core::Resource_guard(jactorio::data::data_manager::clear_data);\
 		auto* cursor_sprite = new jactorio::data::Sprite{};\
 		\
-		jactorio::data::data_manager::data_raw_add(\
-			jactorio::data::dataCategory::sprite, "__core__/cursor-select", cursor_sprite);
+		jactorio::data::data_manager::data_raw_add("__core__/cursor-select", cursor_sprite);
 
 
 	TEST(mouse_selection_overlay, draw_overlay_item_selected_placeable) {
@@ -258,6 +257,8 @@ namespace game
 		class Mock_entity final : public jactorio::data::Entity
 		{
 		public:
+			PROTOTYPE_CATEGORY(test);
+
 			mutable bool r_get_sprite_called = false;
 
 			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation orientation,

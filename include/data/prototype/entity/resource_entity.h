@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 04/06/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
@@ -30,6 +30,8 @@ namespace jactorio::data
 	class Resource_entity final : public Entity
 	{
 	public:
+		PROTOTYPE_CATEGORY(resource_entity);
+
 		Resource_entity() {
 			// Resource entities can never be placed
 			this->placeable = false;

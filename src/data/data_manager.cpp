@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 04/03/2020
+// Last modified: 04/07/2020
 // 
 
 #include "data/data_manager.h"
@@ -33,8 +33,10 @@ void jactorio::data::data_manager::set_directory_prefix(const std::string& name)
 	directory_prefix = name;
 }
 
-void jactorio::data::data_manager::data_raw_add(const dataCategory data_category, const std::string& iname,
+void jactorio::data::data_manager::data_raw_add(const std::string& iname,
                                                 Prototype_base* const prototype, const bool add_directory_prefix) {
+	const dataCategory data_category = prototype->category();
+
 	// Use the following format internal name
 	// Format __dir__/iname
 	std::string formatted_iname;
@@ -67,12 +69,9 @@ void jactorio::data::data_manager::data_raw_add(const dataCategory data_category
 	}
 
 	// Enforce prototype rules...
-	// data_category should be the same as category
 	// No order specified, use internal id as order
 	prototype->name = formatted_iname;
 
-	if (prototype->category != data_category)
-		prototype->category = data_category;
 	if (prototype->order == 0)
 		prototype->order = internal_id_new;
 	if (prototype->get_localized_name().empty())

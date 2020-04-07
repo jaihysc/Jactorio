@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/04/2020
+// Last modified: 04/07/2020
 // 
 
 #include <gtest/gtest.h>
@@ -31,9 +31,7 @@ namespace game
 	// Create the cursor prototype hardcoded when an item is selected
 #define INVENTORY_CURSOR\
 	auto* cursor = new jactorio::data::Item();\
-		jactorio::data::data_manager::data_raw_add(\
-			jactorio::data::dataCategory::item, \
-			jactorio::game::Player_data::inventory_selected_cursor_iname, \
+		jactorio::data::data_manager::data_raw_add(jactorio::game::Player_data::inventory_selected_cursor_iname, \
 			cursor);
 	TEST(player_data, inventory_lclick_select_item_by_reference) {
 		// Left click on a slot picks up items by reference
@@ -624,11 +622,9 @@ namespace game
 
 
 		// Register items
-		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::dataCategory::item, "item-1", item);
+		jactorio::data::data_manager::data_raw_add("item-1", item);
 
-		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::dataCategory::item, "item-product", item_product);
+		jactorio::data::data_manager::data_raw_add("item-product", item_product);
 
 		// Register recipes
 		auto recipe = jactorio::data::Recipe();
@@ -680,36 +676,31 @@ namespace game
 	// 5 sub1 + 10 sub2 -> 2 item1
 #define RECIPE_TEST_RECIPE\
 	auto* item_product = new jactorio::data::Item();\
-	data_manager::data_raw_add(\
-		jactorio::data::dataCategory::item, "item-product", item_product);\
+	data_manager::data_raw_add("item-product", item_product);\
 	\
 	auto* item1 = new jactorio::data::Item();\
-	data_manager::data_raw_add(\
-		jactorio::data::dataCategory::item, "item-1", item1);\
+	data_manager::data_raw_add("item-1", item1);\
+	\
 	auto* item2 = new jactorio::data::Item();\
-	data_manager::data_raw_add(\
-		jactorio::data::dataCategory::item, "item-2", item2);\
+	data_manager::data_raw_add("item-2", item2);\
 	\
 	auto* item_sub1 = new jactorio::data::Item();\
-	data_manager::data_raw_add(\
-		jactorio::data::dataCategory::item, "item-sub-1", item_sub1);\
+	data_manager::data_raw_add("item-sub-1", item_sub1);\
+	\
 	auto* item_sub2 = new jactorio::data::Item();\
-	data_manager::data_raw_add(\
-		jactorio::data::dataCategory::item, "item-sub-2", item_sub2);\
+	data_manager::data_raw_add("item-sub-2", item_sub2);\
 	\
 	auto* final_recipe = new jactorio::data::Recipe();\
 	final_recipe->set_ingredients({{"item-1", 3}, {"item-2", 1}});\
 	final_recipe->set_product({"item-product", 1});\
 	\
-	data_manager::data_raw_add(\
-		jactorio::data::dataCategory::recipe, "item-product-recipe", final_recipe);\
+	data_manager::data_raw_add("item-product-recipe", final_recipe);\
 	\
 	auto* item_recipe = new jactorio::data::Recipe();\
 	item_recipe->set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});\
 	item_recipe->set_product({"item-1", 2});\
 	\
-	data_manager::data_raw_add(\
-		jactorio::data::dataCategory::recipe, "item-1-recipe", item_recipe);
+	data_manager::data_raw_add("item-1-recipe", item_recipe);
 
 	TEST(player_data, recipe_craft_resurse) {
 		// Should recursively craft the product, crafting intermediate products as necessary

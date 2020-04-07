@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/28/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_GROUP_H
@@ -23,6 +23,8 @@ namespace jactorio::data
 	class Recipe_group final : public Prototype_base
 	{
 	public:
+		PROTOTYPE_CATEGORY(recipe_group);
+
 		Recipe_group() = default;
 
 		// Icon displayed in the menu

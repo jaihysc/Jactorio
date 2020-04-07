@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/03/2020
+// Last modified: 04/07/2020
 // 
 
 #include <gtest/gtest.h>
@@ -54,21 +54,21 @@ namespace data::prototype
 		recipe_final->ingredients = {{"intermediate-1", 10}, {"intermediate-2", 5}};
 		recipe_final->set_product({"final", 1});
 
-		data_manager::data_raw_add(jactorio::data::dataCategory::recipe, "r-final", recipe_final);
+		data_manager::data_raw_add("r-final", recipe_final);
 
 		// Intermediate 1 requires raw 1 (12), raw 2 (3) -> produces 1
 		auto* recipe_intermediate1 = new jactorio::data::Recipe();
 		recipe_intermediate1->ingredients = {{"raw-1", 12}, {"raw-2", 3}};
 		recipe_intermediate1->set_product({"intermediate-1", 1});
 
-		data_manager::data_raw_add(jactorio::data::dataCategory::recipe, "r-intermediate1", recipe_intermediate1);
+		data_manager::data_raw_add("r-intermediate1", recipe_intermediate1);
 
 		// Intermediate 2 requires raw 1 (7) -> produces 2
 		auto* recipe_intermediate2 = new jactorio::data::Recipe();
 		recipe_intermediate2->ingredients = {{"raw-1", 7}};
 		recipe_intermediate2->set_product({"intermediate-2", 2});
 
-		data_manager::data_raw_add(jactorio::data::dataCategory::recipe, "r-intermediate2", recipe_intermediate2);
+		data_manager::data_raw_add("r-intermediate2", recipe_intermediate2);
 
 
 		// Get total raw

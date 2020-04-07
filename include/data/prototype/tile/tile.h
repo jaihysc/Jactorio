@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 12/06/2019
-// Last modified: 04/04/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef DATA_PROTOTYPE_TILE_TILE_H
@@ -21,6 +21,8 @@ namespace jactorio::data
 	class Tile : public Prototype_base, public Renderable
 	{
 	public:
+		PROTOTYPE_CATEGORY(tile);
+
 		Tile() = default;
 
 		///

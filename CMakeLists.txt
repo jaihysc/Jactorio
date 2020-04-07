@@ -73,6 +73,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 
 	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
+	${JACTORIO_DIR}/game/logic/item_logistics.cpp
 	${JACTORIO_DIR}/game/logic/placement_controller.cpp
 	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
 	${JACTORIO_DIR}/game/logic/transport_line_structure.cpp
@@ -123,6 +124,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
 	
+	${JACTORIO_TEST_DIR}/data/prototype/entity/mining_drillTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/transport/transport_lineTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
@@ -140,6 +142,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/transport_line_structureTests.cpp

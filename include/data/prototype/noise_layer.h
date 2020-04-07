@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/24/2019
-// Last modified: 03/14/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_NOISE_LAYER_H
@@ -12,9 +12,11 @@
 
 #include "jactorio.h"
 
-#include "data/prototype/prototype_base.h"
-
 #include <vector>
+
+#include "data/prototype/prototype_base.h"
+#include "data/prototype/entity/entity.h"
+#include "data/prototype/entity/resource_entity.h"
 
 namespace jactorio::data
 {
@@ -31,6 +33,22 @@ namespace jactorio::data
 		std::vector<T*> noise_range_tiles_;
 
 	public:
+		// TODO a better category system
+		J_NODISCARD dataCategory category() const override {
+			bool constexpr is_tile = std::is_same<T, jactorio::data::Tile>::value;
+			bool constexpr is_entity = std::is_same<T, jactorio::data::Entity>::value || std::is_same<
+				T, jactorio::data::Resource_entity>::value;
+
+			static_assert(is_tile || is_entity);
+
+			if constexpr (is_tile)
+				return dataCategory::noise_layer_tile;
+			if constexpr (is_entity)
+				return dataCategory::noise_layer_entity;
+
+			return dataCategory::none;
+		};
+
 		Noise_layer()
 			: octave_count(8), frequency(0.25f), persistence(0.5f), normalize_val(false) {
 			set_start_val(-1.f);

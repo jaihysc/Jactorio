@@ -2,8 +2,8 @@
 // transport_lineTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 03/22/2020
-// Last modified: 03/30/2020
+// Created on: 03/31/2020
+// Last modified: 04/06/2020
 // 
 
 #include <gtest/gtest.h>
@@ -61,7 +61,7 @@
 }
 
 
-namespace data
+namespace data::prototype
 {
 	TEST(transport_line, set_orientation) {
 		// When the orientation is set, the member "set" should also be updated

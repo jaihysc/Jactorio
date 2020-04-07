@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/02/2020
-// Last modified: 04/02/2020
+// Last modified: 04/06/2020
 // 
 
 #include <gtest/gtest.h>
@@ -17,12 +17,15 @@ namespace game
 	class Mock_deferred final : public jactorio::data::Deferred
 	{
 	public:
-		bool callback_called = false;
-		jactorio::data::Unique_data_base* data_ptr = nullptr;
+		mutable bool callback_called = false;
+		mutable jactorio::data::Unique_data_base* data_ptr = nullptr;
+		mutable jactorio::game::Deferral_timer* d_timer = nullptr;
 
-		void on_defer_time_elapsed(jactorio::data::Unique_data_base* unique_data) override {
+		void on_defer_time_elapsed(jactorio::game::Deferral_timer& timer,
+		                           jactorio::data::Unique_data_base* unique_data) const override {
 			callback_called = true;
 			data_ptr = unique_data;
+			d_timer = &timer;
 		};
 	};
 
@@ -31,13 +34,13 @@ namespace game
 	};
 
 
-	TEST(deferral_timer, register_deferral) {
+	TEST(deferral_timer, register_at_tick) {
 		jactorio::game::Deferral_timer timer{};
 
 		Mock_deferred deferred{};
 		const auto unique_data = std::make_unique<Mock_unique_data>();
 
-		const auto index = timer.register_deferral(deferred, unique_data.get(), 2);
+		const auto index = timer.register_at_tick(deferred, unique_data.get(), 2);
 		EXPECT_EQ(index, 0);
 
 		timer.deferral_update(0);
@@ -49,13 +52,36 @@ namespace game
 		timer.deferral_update(2);
 		EXPECT_TRUE(deferred.callback_called);
 		EXPECT_EQ(deferred.data_ptr, unique_data.get());
+		EXPECT_EQ(deferred.d_timer, &timer);
+	}
+
+	TEST(deferral_timer, register_from_tick) {
+		jactorio::game::Deferral_timer timer{};
+
+		Mock_deferred deferred{};
+		const auto unique_data = std::make_unique<Mock_unique_data>();
+
+		// Elapse 2 ticks from now
+		const auto index = timer.register_from_tick(deferred, unique_data.get(), 2);
+		EXPECT_EQ(index, 0);
+
+		timer.deferral_update(0);
+		EXPECT_FALSE(deferred.callback_called);
+
+		timer.deferral_update(1);
+		EXPECT_FALSE(deferred.callback_called);
+
+		timer.deferral_update(2);
+		EXPECT_TRUE(deferred.callback_called);
+		EXPECT_EQ(deferred.data_ptr, unique_data.get());
+		EXPECT_EQ(deferred.d_timer, &timer);
 	}
 
 	TEST(deferral_timer, register_deferral_remove_old_callbacks) {
 		jactorio::game::Deferral_timer timer{};
 
 		Mock_deferred deferred{};
-		timer.register_deferral(deferred, nullptr, 2);
+		timer.register_at_tick(deferred, nullptr, 2);
 
 		timer.deferral_update(2);
 		ASSERT_TRUE(deferred.callback_called);
@@ -70,7 +96,7 @@ namespace game
 		jactorio::game::Deferral_timer timer{};
 
 		Mock_deferred deferred{};
-		const auto index = timer.register_deferral(deferred, nullptr, 2);
+		const auto index = timer.register_at_tick(deferred, nullptr, 2);
 
 		timer.remove_deferral(2, index);
 

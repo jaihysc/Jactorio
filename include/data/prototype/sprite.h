@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/24/2019
-// Last modified: 03/28/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
@@ -79,6 +79,8 @@ namespace jactorio::data
 		void load_image_from_file();
 
 	public:
+		PROTOTYPE_CATEGORY(sprite);
+
 		Sprite();
 		explicit Sprite(const std::string& sprite_path);
 		Sprite(const std::string& sprite_path, std::vector<spriteGroup> group);
@@ -107,7 +109,7 @@ namespace jactorio::data
 		 * 20 - 29: Sprite 3
 		 * 30 - 39: Sprite 4
 		 */
-		
+
 		///
 		/// \param mset Will be modulus by total sets
 		/// \param frame 

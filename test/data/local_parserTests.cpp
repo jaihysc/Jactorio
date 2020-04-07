@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/15/2020
-// Last modified: 04/03/2020
+// Last modified: 04/07/2020
 // 
 
 #include <gtest/gtest.h>
@@ -23,12 +23,10 @@ namespace data
 		jactorio::data::data_manager::set_directory_prefix("test");
 
 		const auto prototype = new jactorio::data::Sprite();
-		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::dataCategory::sprite, "test_tile", prototype, true);
+		jactorio::data::data_manager::data_raw_add("test_tile", prototype, true);
 
 		const auto prototype2 = new jactorio::data::Sprite();
-		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::dataCategory::sprite, "test_tile1", prototype2, true);
+		jactorio::data::data_manager::data_raw_add("test_tile1", prototype2, true);
 
 
 		const std::string str =

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/22/2019
-// Last modified: 04/03/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
@@ -93,11 +93,10 @@ namespace jactorio::data
 
 		///
 		/// \brief Adds a prototype
-		/// \param data_category
 		/// \param iname Internal name of prototype
 		/// \param prototype Prototype pointer, do not delete, must be unique for each added
 		/// \param add_directory_prefix Should the directory prefix be appended to the provided iname
-		void data_raw_add(dataCategory data_category, const std::string& iname, Prototype_base* prototype,
+		void data_raw_add(const std::string& iname, Prototype_base* prototype,
 		                  bool add_directory_prefix = false);
 
 

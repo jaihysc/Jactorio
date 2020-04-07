@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 11/09/2019
-// Last modified: 04/05/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
@@ -42,10 +42,10 @@ using data_raw = std::unordered_map<jactorio::data::dataCategory, std::unordered
 // A python object with name _Sprite will be generated to avoid ambiguity
 // To construct sprite, a constructor with the name Sprite(...) is available
 
-#define PYBIND_DATA_CLASS(cpp_class_, py_name_, category_, ...)\
+#define PYBIND_DATA_CLASS(cpp_class_, py_name_, ...)\
 	m.def(#py_name_, [](const std::string& iname = "") {\
 		auto* prototype = new (cpp_class_);\
-		data_manager::data_raw_add((jactorio::data::dataCategory::category_), iname, prototype, true);\
+		data_manager::data_raw_add(iname, prototype, true);\
 		return prototype;\
 	}, py::arg("iname") = "", pybind11::return_value_policy::reference);\
 	py::class_<cpp_class_, __VA_ARGS__>(m, "_" #py_name_)
@@ -109,10 +109,10 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	// Prototype classes
 	py::class_<Prototype_base>(m, "_PrototypeBase")
 		.def("name", &Prototype_base::set_name)
-		PYBIND_PROP(Prototype_base, category)
+		.def("category", &Prototype_base::category)
 		PYBIND_PROP(Prototype_base, order);
 
-	PYBIND_DATA_CLASS(Sprite, Sprite, sprite, Prototype_base)
+	PYBIND_DATA_CLASS(Sprite, Sprite, Prototype_base)
 		PYBIND_PROP(Sprite, group)
 		PYBIND_PROP(Sprite, frames)
 		PYBIND_PROP(Sprite, sets)
@@ -123,15 +123,15 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("Terrain", Sprite::spriteGroup::terrain)
 		.value("Gui", Sprite::spriteGroup::gui);
 
-	PYBIND_DATA_CLASS(Item, Item, item, Prototype_base)
+	PYBIND_DATA_CLASS(Item, Item, Prototype_base)
 		PYBIND_PROP(Item, sprite)
 		PYBIND_PROP_S(Item, stackSize, stack_size);
 
-	PYBIND_DATA_CLASS(Tile, Tile, tile, Prototype_base)
+	PYBIND_DATA_CLASS(Tile, Tile, Prototype_base)
 		PYBIND_PROP_S(Tile, isWater, is_water)
 		PYBIND_PROP_S(Tile, sprite, sprite);
 
-	PYBIND_DATA_CLASS(Noise_layer<Tile>, NoiseLayerTile, noise_layer_tile, Prototype_base)
+	PYBIND_DATA_CLASS(Noise_layer<Tile>, NoiseLayerTile, Prototype_base)
 		// Perlin noise properties
 		PYBIND_PROP_S(Noise_layer<Tile>, octaveCount, octave_count)
 		PYBIND_PROP(Noise_layer<Tile>, frequency)
@@ -144,7 +144,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.def("add", &Noise_layer<Tile>::add)
 		.def("get", &Noise_layer<Tile>::get);
 
-	PYBIND_DATA_CLASS(Noise_layer<Entity>, NoiseLayerEntity, noise_layer_entity, Prototype_base)
+	PYBIND_DATA_CLASS(Noise_layer<Entity>, NoiseLayerEntity, Prototype_base)
 		// Perlin noise properties
 		PYBIND_PROP_S(Noise_layer<Entity>, octaveCount, octave_count)
 		PYBIND_PROP(Noise_layer<Entity>, frequency)
@@ -174,32 +174,32 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	PYBIND_DATA_CLASS_ABSTRACT(Health_entity, HealthEntity, Entity)
 		PYBIND_PROP_S(Health_entity, maxHealth, max_health);
 
-	PYBIND_DATA_CLASS(Container_entity, ContainerEntity, container_entity, Health_entity)
+	PYBIND_DATA_CLASS(Container_entity, ContainerEntity, Health_entity)
 		PYBIND_PROP_S(Container_entity, inventorySize, inventory_size);
 
-	PYBIND_DATA_CLASS(Resource_entity, ResourceEntity, resource_entity, Entity);
+	PYBIND_DATA_CLASS(Resource_entity, ResourceEntity, Entity);
 
 
 	// Belts
 	PYBIND_DATA_CLASS_ABSTRACT(Transport_line, TransportLine, Health_entity)
 		PYBIND_PROP_S(Transport_line, speed, speed_float);
 
-	PYBIND_DATA_CLASS(Transport_belt, TransportBelt, transport_belt, Transport_line);
+	PYBIND_DATA_CLASS(Transport_belt, TransportBelt, Transport_line);
 
 	// Mining drill
-	PYBIND_DATA_CLASS(Mining_drill, MiningDrill, mining_drill, Health_entity)
+	PYBIND_DATA_CLASS(Mining_drill, MiningDrill, Health_entity)
 		PYBIND_PROP_S(Mining_drill, miningSpeed, mining_speed);
 
 
 	// Recipes
-	PYBIND_DATA_CLASS(Recipe_group, RecipeGroup, recipe_group, Prototype_base)
+	PYBIND_DATA_CLASS(Recipe_group, RecipeGroup, Prototype_base)
 		PYBIND_PROP(Recipe_group, sprite)
 		PYBIND_PROP_S(Recipe_group, recipeCategories, recipe_categories);
 
-	PYBIND_DATA_CLASS(Recipe_category, RecipeCategory, recipe_category, Prototype_base)
+	PYBIND_DATA_CLASS(Recipe_category, RecipeCategory, Prototype_base)
 		PYBIND_PROP(Recipe_category, recipes);
 
-	PYBIND_DATA_CLASS(Recipe, Recipe, recipe, Prototype_base)
+	PYBIND_DATA_CLASS(Recipe, Recipe, Prototype_base)
 		PYBIND_PROP_S(Recipe, craftingTime, crafting_time)
 		PYBIND_PROP(Recipe, ingredients)
 		PYBIND_PROP_GET_SET(Recipe, product, product);

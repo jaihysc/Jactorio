@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/04/2020
-// Last modified: 04/05/2020
+// Last modified: 04/06/2020
 // 
 
 #include "data/prototype/entity/mining_drill.h"
@@ -45,8 +45,40 @@ std::pair<uint16_t, uint16_t> jactorio::data::Mining_drill::map_placement_orient
 
 // ======================================================================
 
-void jactorio::data::Mining_drill::on_defer_time_elapsed(Unique_data_base* unique_data) {
+void jactorio::data::Mining_drill::register_mine_callback(game::Deferral_timer& timer, Mining_drill_data* unique_data) const {
+	// TODO
+	timer.register_from_tick(*this, unique_data, 100);
+}
 
+void jactorio::data::Mining_drill::on_defer_time_elapsed(game::Deferral_timer& timer, Unique_data_base* unique_data) const {
+	register_mine_callback(timer, static_cast<Mining_drill_data*>(unique_data));
+}
+
+
+bool jactorio::data::Mining_drill::on_can_build(const game::World_data& world_data,
+                                                std::pair<game::World_data::world_coord, game::World_data::world_coord>
+                                                world_coords) {
+	/*
+	 * [ ] [ ] [ ] [ ] [ ]
+	 * [ ] [X] [x] [x] [ ]
+	 * [ ] [x] [x] [x] [ ]
+	 * [ ] [x] [x] [x] [ ]
+	 * [ ] [ ] [ ] [ ] [ ]
+	 */
+	world_coords.first -= this->mining_radius;
+	world_coords.second -= this->mining_radius;
+
+	for (int y = 0; y < 2 * this->mining_radius + this->tile_height; ++y) {
+		for (int x = 0; x < 2 * this->mining_radius + this->tile_width; ++x) {
+			game::Chunk_tile* tile =
+				world_data.get_tile_world_coords(world_coords.first + x, world_coords.second + y);
+
+			if (tile->get_layer(game::Chunk_tile::chunkLayer::resource).prototype_data != nullptr)
+				return true;
+		}
+	}
+
+	return false;
 }
 
 void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
@@ -59,9 +91,12 @@ void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
 
 	drill_data->set = map_placement_orientation(orientation, world_data, world_coords).first;
 	drill_data->frame = frame;
+
+	register_mine_callback(world_data.deferral_timer, drill_data);
 }
 
 void jactorio::data::Mining_drill::on_neighbor_update(const game::World_data& world_data,
-	std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
-	placementOrientation orientation) const {
+                                                      std::pair<game::World_data::world_coord, game::World_data::world_coord>
+                                                      world_coords,
+                                                      placementOrientation orientation) const {
 }

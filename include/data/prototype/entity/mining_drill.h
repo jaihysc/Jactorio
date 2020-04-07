@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/02/2020
-// Last modified: 04/06/2020
+// Last modified: 04/07/2020
 // 
 
 #ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
@@ -31,11 +31,13 @@ namespace jactorio::data
 		 * 24 - 31: West
 		 */
 	public:
+		PROTOTYPE_CATEGORY(mining_drill);
+
 
 		PYTHON_PROP_REF_I(Mining_drill, double, mining_speed, 1.f);  // Mines 1 resource every 60 game ticks
 
 		/// Number of tiles to extend the mining radius around the entity outside of entity tile width and height	
-		PYTHON_PROP_REF_I(Mining_drill, uint16_t, mining_border, 1);
+		PYTHON_PROP_REF_I(Mining_drill, uint16_t, mining_radius, 1);
 
 		// ======================================================================
 
@@ -48,8 +50,18 @@ namespace jactorio::data
 		                                                                    std::pair<int, int> world_coords) const override;
 
 		// ======================================================================
+	private:
+		///
+		/// \brief Sets up deferred callback for when it has mined a resource 
+		void register_mine_callback(game::Deferral_timer& timer, Mining_drill_data* unique_data) const;
 
-		void on_defer_time_elapsed(Unique_data_base* unique_data) override;
+	public:
+		void on_defer_time_elapsed(game::Deferral_timer& timer, Unique_data_base* unique_data) const override;
+
+		///
+		/// \brief Ensures that the mining radius covers a resource entity
+		bool on_can_build(const game::World_data& world_data,
+		                  std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords) override;
 
 		void on_build(game::World_data& world_data,
 		              std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
