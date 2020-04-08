@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/06/2020
-// Last modified: 04/06/2020
+// Last modified: 04/08/2020
 // 
 
 #include <gtest/gtest.h>
@@ -25,7 +25,7 @@ namespace data::prototype
 		 */
 
 		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0});
 
 		jactorio::data::Mining_drill drill{};
 		drill.tile_width = 4;
@@ -55,7 +55,7 @@ namespace data::prototype
 		 */
 
 		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0});
 
 		jactorio::data::Mining_drill drill{};
 		drill.tile_width = 4;

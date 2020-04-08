@@ -2,8 +2,8 @@
 // transport_line_structureTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 02/29/2020
-// Last modified: 03/28/2020
+// Created on: 03/31/2020
+// Last modified: 04/08/2020
 // 
 
 #include <gtest/gtest.h>
@@ -23,7 +23,7 @@ transport_belt_proto->speed = 0.01f;\
 \
 jactorio::game::World_data world_data{};\
 \
-auto chunk = Chunk(0, 0, nullptr);\
+auto chunk = Chunk(0, 0);\
 auto* logic_chunk = &world_data.logic_add_chunk(&chunk);\
 \
 auto* segment = new jactorio::game::Transport_line_segment(\

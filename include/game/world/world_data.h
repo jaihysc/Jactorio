@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/06/2020
+// Last modified: 04/08/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
@@ -65,14 +65,13 @@ namespace jactorio::game
 		using world_chunks_key = unsigned long long;
 
 		/// world_chunks_key correlate to a chunk
-		std::unordered_map<std::tuple<int, int>, Chunk*,
-		                   core::hash<std::tuple<int, int>>> world_chunks_;
+		std::unordered_map<std::tuple<Chunk::chunk_coord, Chunk::chunk_coord>, Chunk*,
+		                   core::hash<std::tuple<Chunk::chunk_coord, Chunk::chunk_coord>>> world_chunks_;
 
 		mutable std::mutex world_chunks_mutex_{};  // Used by methods when accessing world_chunks_
 
 	public:
 		using world_coord = int32_t;  // World coordinates
-		using chunk_coord = int32_t;  // Chunk coordinates
 
 		mutable std::mutex world_data_mutex{};  // Held by the thread which is currently operating on a chunk
 
@@ -93,7 +92,7 @@ namespace jactorio::game
 		///
 		/// \brief Retrieves a chunk in game world
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* get_chunk(chunk_coord chunk_x, chunk_coord chunk_y) const;
+		J_NODISCARD Chunk* get_chunk(Chunk::chunk_coord chunk_x, Chunk::chunk_coord chunk_y) const;
 
 		///
 		/// Gets the chunk at the specified world coordinate
@@ -161,7 +160,7 @@ namespace jactorio::game
 		///
 		/// \brief Queues a chunk to be generated at specified position
 		/// \remark To be called from render thread only
-		void queue_chunk_generation(chunk_coord chunk_x, chunk_coord chunk_y) const;
+		void queue_chunk_generation(Chunk::chunk_coord chunk_x, Chunk::chunk_coord chunk_y) const;
 
 		///
 		/// \brief Takes first in from chunk generation queue and generates chunk

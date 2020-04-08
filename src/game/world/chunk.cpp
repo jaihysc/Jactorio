@@ -3,25 +3,26 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
+// Last modified: 04/08/2020
 // 
 
-#include <game/world/chunk.h>
+#include "game/world/chunk.h"
 
-jactorio::game::Chunk::Chunk(const int x, const int y, Chunk_tile* tiles) {
-	position_.first = x;
-	position_.second = y;
+jactorio::game::Chunk::Chunk(chunk_coord chunk_x, chunk_coord chunk_y)
+	: position_({chunk_x, chunk_y}) {
 
-	if (tiles == nullptr) {
-		// Allocate and initialize
-		tiles_ = new Chunk_tile[32 * 32];
-		for (int i = 0; i < 32 * 32; ++i) {
-			tiles_[i] = Chunk_tile();
-		}
+	// Allocate and initialize
+	tiles_ = new Chunk_tile[chunk_width * chunk_width];
+	for (int i = 0; i < chunk_width * chunk_width; ++i) {
+		tiles_[i] = Chunk_tile();
 	}
-	else {
-		tiles_ = tiles;
-	}
+}
+
+jactorio::game::Chunk::Chunk(const chunk_coord chunk_x, const chunk_coord chunk_y, Chunk_tile* tiles)
+	: position_({chunk_x, chunk_y}) {
+	assert(tiles != nullptr);
+
+	tiles_ = tiles;
 }
 
 jactorio::game::Chunk::~Chunk() {
@@ -31,38 +32,19 @@ jactorio::game::Chunk::~Chunk() {
 jactorio::game::Chunk::Chunk(const Chunk& other)
 	: position_(other.position_) {
 
-	tiles_ = new Chunk_tile[32 * 32];
-	for (int i = 0; i < 32 * 32; ++i) {
+	tiles_ = new Chunk_tile[chunk_width * chunk_width];
+	for (int i = 0; i < chunk_width * chunk_width; ++i) {
 		tiles_[i] = other.tiles_[i];
 	}
 }
 
 jactorio::game::Chunk::Chunk(Chunk&& other) noexcept
-	: position_(std::move(other.position_)),
-	  tiles_(other.tiles_) {
+	: position_{std::move(other.position_)},
+	  tiles_{other.tiles_} {
+	other.tiles_ = nullptr;
 }
 
-jactorio::game::Chunk& jactorio::game::Chunk::operator=(const Chunk& other) {
-	if (this == &other)
-		return *this;
-	position_ = other.position_;
-
-	tiles_ = new Chunk_tile[32 * 32];
-	for (int i = 0; i < 32 * 32; ++i) {
-		tiles_[i] = other.tiles_[i];
-	}
+jactorio::game::Chunk& jactorio::game::Chunk::operator=(Chunk other) {
+	swap(*this, other);
 	return *this;
-}
-
-jactorio::game::Chunk& jactorio::game::Chunk::operator=(Chunk&& other) noexcept {
-	if (this == &other)
-		return *this;
-	position_ = std::move(other.position_);
-	tiles_ = other.tiles_;
-	return *this;
-}
-
-
-std::pair<int, int> jactorio::game::Chunk::get_position() const {
-	return position_;
 }

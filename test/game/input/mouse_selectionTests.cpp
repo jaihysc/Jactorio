@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/05/2020
-// Last modified: 04/07/2020
+// Last modified: 04/08/2020
 // 
 
 #include <gtest/gtest.h>
@@ -21,7 +21,7 @@ namespace game
 		jactorio::game::Player_data player_data{};\
 		player_data.set_player_world(&world_data);\
 		\
-		world_data.add_chunk(new jactorio::game::Chunk(0, 0, nullptr));\
+		world_data.add_chunk(new jactorio::game::Chunk(0, 0));\
 		jactorio::game::Mouse_selection mouse_selection{};
 
 	// If the test involves the selection cursor, which is loaded in the data_manager

@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/06/2020
+// Last modified: 04/08/2020
 // 
 
 #include "game/world/world_data.h"
@@ -50,7 +50,8 @@ void jactorio::game::World_data::clear_chunk_data() {
 
 // ======================================================================
 
-jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const chunk_coord chunk_x, const chunk_coord chunk_y) const {
+jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const Chunk::chunk_coord chunk_x,
+                                                             const Chunk::chunk_coord chunk_y) const {
 	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
 	const auto key = std::tuple<int, int>{chunk_x, chunk_y};

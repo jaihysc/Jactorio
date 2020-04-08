@@ -2,8 +2,8 @@
 // transport_line_controllerTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
-// Created on: 02/13/2020
-// Last modified: 03/24/2020
+// Created on: 03/31/2020
+// Last modified: 04/08/2020
 // 
 
 #include <gtest/gtest.h>
@@ -67,7 +67,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
@@ -129,7 +129,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
@@ -200,7 +200,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
@@ -298,7 +298,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		/*
@@ -383,7 +383,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		/*
@@ -458,7 +458,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		auto* segment_1 = new Transport_line_segment(
@@ -511,7 +511,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		auto* segment = new Transport_line_segment(
@@ -576,7 +576,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		/*
@@ -633,7 +633,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		auto* right_segment = new Transport_line_segment(
@@ -674,7 +674,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 
 		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
 
@@ -788,7 +788,7 @@ namespace game::logic
 
 		World_data world_data{};
 
-		auto chunk = Chunk(0, 0, nullptr);
+		auto chunk = Chunk(0, 0);
 
 		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
 

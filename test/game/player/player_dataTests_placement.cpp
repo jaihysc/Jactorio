@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/04/2020
-// Last modified: 04/07/2020
+// Last modified: 04/08/2020
 // 
 
 #include <gtest/gtest.h>
@@ -631,7 +631,7 @@ namespace game
 		entity_proto->set_item(&item);
 		jactorio::data::data_manager::data_raw_add("", entity_proto);
 
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0});
 
 		world_data.get_tile_world_coords(1, 1)
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::base).prototype_data = &tile_proto;
@@ -721,7 +721,7 @@ namespace game
 		entity_proto->set_item(&item);
 		jactorio::data::data_manager::data_raw_add("", entity_proto);
 
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0});
 
 		// Set tiles so entity can be placed on it
 		for (int y = 1; y < 4; ++y) {

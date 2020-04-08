@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 02/07/2020
-// Last modified: 04/04/2020
+// Last modified: 04/08/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
@@ -39,13 +39,20 @@ namespace jactorio::game
 			clear();
 		}
 
-
 		Chunk_tile_layer(const Chunk_tile_layer& other);
-		Chunk_tile_layer(Chunk_tile_layer&& other) noexcept = default;
+		Chunk_tile_layer(Chunk_tile_layer&& other) noexcept;
 
-		Chunk_tile_layer& operator=(const Chunk_tile_layer& other);
-		Chunk_tile_layer& operator=(Chunk_tile_layer&& other) noexcept = default;
+		Chunk_tile_layer& operator=(Chunk_tile_layer other) {
+			swap(*this, other);
+			return *this;
+		}
 
+		friend void swap(Chunk_tile_layer& lhs, Chunk_tile_layer& rhs) noexcept {
+			using std::swap;
+			swap(static_cast<Chunk_layer&>(lhs), static_cast<Chunk_layer&>(rhs));
+			swap(lhs.multi_tile_index, rhs.multi_tile_index);
+			swap(lhs.multi_tile_data_, rhs.multi_tile_data_);
+		}
 
 		///
 		/// \brief Resets data on this tile and frees any heap allocated data 
@@ -191,20 +198,12 @@ namespace jactorio::game
 			multi_tile_data_ = nullptr;
 	}
 
-	inline Chunk_tile_layer& Chunk_tile_layer::operator=(const Chunk_tile_layer& other) {
-		if (this == &other)
-			return *this;
-		Chunk_layer::operator =(other);
-		multi_tile_index = other.multi_tile_index;
-
-		if (other.is_multi_tile_top_left())
-			multi_tile_data_ = new Multi_tile_data(*static_cast<Multi_tile_data*>(other.multi_tile_data_));
-		else
-			multi_tile_data_ = nullptr;
-
-		return *this;
+	inline Chunk_tile_layer::Chunk_tile_layer(Chunk_tile_layer&& other) noexcept
+		: Chunk_layer{std::move(other)},
+		  multi_tile_index{other.multi_tile_index},
+		  multi_tile_data_{other.multi_tile_data_} {
+		other.multi_tile_data_ = nullptr;
 	}
-
 
 	inline void Chunk_tile_layer::clear() {
 		delete unique_data;

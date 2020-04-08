@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/06/2020
+// Last modified: 04/08/2020
 // 
 
 #include <gtest/gtest.h>
@@ -34,7 +34,7 @@ namespace game
 		jactorio::game::World_data world_data{};
 
 		// Chunks initialized with empty tiles
-		const auto chunk = new jactorio::game::Chunk{5, 1, nullptr};
+		const auto chunk = new jactorio::game::Chunk{5, 1};
 
 		// Returns pointer to chunk which was added
 		const auto added_chunk = world_data.add_chunk(chunk);
@@ -52,7 +52,7 @@ namespace game
 		jactorio::game::World_data world_data{};
 
 		// Chunks initialized with empty tiles
-		const auto chunk = new jactorio::game::Chunk{-5, -1, nullptr};
+		const auto chunk = new jactorio::game::Chunk{-5, -1};
 
 		// Returns pointer to chunk which was added
 		const auto added_chunk = world_data.add_chunk(chunk);
@@ -72,8 +72,8 @@ namespace game
 		jactorio::game::World_data world_data{};
 
 		// Chunks initialized with empty tiles
-		const auto chunk = new jactorio::game::Chunk{5, 1, nullptr};
-		const auto chunk2 = new jactorio::game::Chunk{5, 1, nullptr};
+		const auto chunk = new jactorio::game::Chunk{5, 1};
+		const auto chunk2 = new jactorio::game::Chunk{5, 1};
 
 		// Adding a chunk to an existing location overwrites it
 		const auto added_chunk = world_data.add_chunk(chunk);
@@ -93,7 +93,7 @@ namespace game
 	TEST(world_data, world_get_chunk) {
 		jactorio::game::World_data world_data{};
 
-		const auto chunk = new jactorio::game::Chunk{5, 1, nullptr};
+		const auto chunk = new jactorio::game::Chunk{5, 1};
 		const auto* added_chunk = world_data.add_chunk(chunk);
 
 		EXPECT_EQ(world_data.get_chunk(0, 0), nullptr);
@@ -144,12 +144,12 @@ namespace game
 		jactorio::game::World_data world_data{};
 
 		{
-			const auto chunk = world_data.add_chunk(new jactorio::game::Chunk(0, 0, nullptr));
+			const auto chunk = world_data.add_chunk(new jactorio::game::Chunk(0, 0));
 			EXPECT_EQ(world_data.get_chunk_world_coords(31, 31), chunk);
 		}
 
 		{
-			const auto chunk = world_data.add_chunk(new jactorio::game::Chunk(-1, 0, nullptr));
+			const auto chunk = world_data.add_chunk(new jactorio::game::Chunk(-1, 0));
 			EXPECT_EQ(world_data.get_chunk_world_coords(-1, 0), chunk);
 		}
 	}
@@ -158,7 +158,7 @@ namespace game
 	TEST(world_data, clear_chunk_data) {
 		jactorio::game::World_data world_data{};
 
-		const auto chunk = new jactorio::game::Chunk{6, 6, nullptr};
+		const auto chunk = new jactorio::game::Chunk{6, 6};
 		const auto* added_chunk = world_data.add_chunk(chunk);
 
 		EXPECT_EQ(world_data.get_chunk(6, 6), added_chunk);
@@ -177,7 +177,7 @@ namespace game
 		jactorio::game::World_data world_data{};
 
 		using namespace jactorio::game;
-		Chunk chunk(0, 0, nullptr);
+		Chunk chunk(0, 0);
 
 		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
 		// Should return reference to newly created and added chunk
@@ -193,7 +193,7 @@ namespace game
 		jactorio::game::World_data world_data{};
 
 		using namespace jactorio::game;
-		Chunk chunk(0, 0, nullptr);
+		Chunk chunk(0, 0);
 
 		world_data.logic_add_chunk(&chunk);
 		world_data.logic_add_chunk(&chunk);  // Attempting to add the same chunk again
@@ -217,7 +217,7 @@ namespace game
 		using namespace jactorio::game;
 
 		World_data world_data{};
-		Chunk chunk(0, 0, nullptr);
+		Chunk chunk(0, 0);
 
 		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
 
@@ -229,7 +229,7 @@ namespace game
 		using namespace jactorio::game;
 
 		World_data world_data{};
-		Chunk chunk(0, 0, nullptr);
+		Chunk chunk(0, 0);
 
 		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
 
@@ -241,7 +241,7 @@ namespace game
 		jactorio::game::World_data world_data{};
 
 		using namespace jactorio::game;
-		Chunk chunk(0, 0, nullptr);
+		Chunk chunk(0, 0);
 
 		world_data.logic_add_chunk(&chunk);
 

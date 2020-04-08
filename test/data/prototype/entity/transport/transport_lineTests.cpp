@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/06/2020
+// Last modified: 04/08/2020
 // 
 
 #include <gtest/gtest.h>
@@ -20,7 +20,7 @@
 #define TRANSPORT_LINE_TEST_HEAD\
 	jactorio::data::Transport_belt line_proto{};\
 	jactorio::game::World_data world_data{};\
-	world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+	world_data.add_chunk(new jactorio::game::Chunk{0, 0});
 
 #define ADD_TRANSPORT_LINE(orientation, x, y)\
 {\
@@ -323,7 +323,7 @@ namespace data::prototype
 	TEST(transport_line, on_build_create_transport_line_segment) {
 		// Should create a transport line segment and add its chunk to logic chunks
 		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{-1, 0, nullptr});
+		world_data.add_chunk(new jactorio::game::Chunk{-1, 0});
 
 		auto& layer = world_data.get_tile_world_coords(-5, 0)
 		                        ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
@@ -446,8 +446,8 @@ namespace data::prototype
 	TEST(transport_line, on_build_connect_transport_line_segments_cross_chunks) {
 		// A transport line pointing to another one will set the target_segment
 		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{-1, 0, nullptr});
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		world_data.add_chunk(new jactorio::game::Chunk{-1, 0});
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0});
 
 		auto proto = jactorio::data::Transport_belt{};
 		{

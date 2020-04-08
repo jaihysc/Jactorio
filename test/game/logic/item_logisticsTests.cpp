@@ -17,7 +17,7 @@ namespace game::logic
 {
 	TEST(item_logistics, can_accept_item) {
 		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0, nullptr});
+		world_data.add_chunk(new jactorio::game::Chunk{0, 0});
 
 		// Empty tile cannot be inserted into
 		EXPECT_FALSE(jactorio::game::item_logistics::can_accept_item(world_data, 2, 4));
