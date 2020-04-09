@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/02/2020
-// Last modified: 04/07/2020
+// Last modified: 04/09/2020
 // 
 
 #ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
@@ -12,11 +12,19 @@
 
 #include "data/prototype/entity/health_entity.h"
 #include "data/prototype/interface/deferred.h"
+#include "game/logic/item_insert_destination.h"
 
 namespace jactorio::data
 {
 	struct Mining_drill_data final : Health_entity_data
 	{
+		explicit Mining_drill_data(Unique_data_base& unique_data,
+		                           const game::Item_insert_destination::insert_func func,
+		                           const placementOrientation orientation)
+			: item_output(unique_data, func, orientation) {
+		}
+
+		game::Item_insert_destination item_output;
 	};
 
 

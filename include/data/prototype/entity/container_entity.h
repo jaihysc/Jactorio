@@ -3,12 +3,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 04/07/2020
+// Last modified: 04/09/2020
 // 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
 #pragma once
+
+#include <array>
 
 #include "health_entity.h"
 
@@ -16,8 +18,8 @@ namespace jactorio::data
 {
 	struct Container_entity_data : Health_entity_data
 	{
-		explicit Container_entity_data(const uint16_t inventory_size) {
-			inventory = new item_stack[inventory_size];
+		explicit Container_entity_data(const uint16_t inventory_size)
+			: inventory(new item_stack[inventory_size]), size(inventory_size) {
 		}
 
 		~Container_entity_data() override {
@@ -29,7 +31,8 @@ namespace jactorio::data
 		Container_entity_data& operator=(const Container_entity_data& other) = delete;
 		Container_entity_data& operator=(Container_entity_data&& other) noexcept = delete;
 
-		item_stack* inventory;
+		item_stack* const inventory;
+		const uint16_t size;
 	};
 
 	/**

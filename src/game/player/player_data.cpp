@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 03/31/2020
-// Last modified: 04/06/2020
+// Last modified: 04/09/2020
 // 
 
 #include "game/player/player_data.h"
@@ -328,12 +328,13 @@ void jactorio::game::Player_data::try_pickup(World_data& world_data,
 		LOG_MESSAGE(debug, "Player picked up entity");
 
 		// Give picked up item to player
-		auto item_stack = data::item_stack(chosen_ptr->get_item(), 1);
-		const bool added_item = inventory_c::add_itemstack_to_inv(inventory_player, inventory_size, item_stack);
+		const auto item_stack = data::item_stack(chosen_ptr->get_item(), 1);
 
-		if (!added_item) {  // Failed to add item, likely because the inventory is full
+		// Failed to add item, likely because the inventory is full
+		if (!inventory_c::can_add_stack(inventory_player, inventory_size, item_stack))
 			return;
-		}
+
+		inventory_c::add_stack(inventory_player, inventory_size, item_stack);
 		inventory_sort();
 
 		pickup_tick_counter_ = 0;
@@ -662,7 +663,8 @@ void jactorio::game::Player_data::recipe_craft_tick(uint16_t ticks) {
 					// If entry is 0, erase it
 					crafting_item_extras_.erase(recipe_item.first);
 
-				inventory_c::add_itemstack_to_inv(inventory_player, inventory_size, i);
+				// TODO what if inventory is full
+				inventory_c::add_stack(inventory_player, inventory_size, i);
 			}
 
 			// Set crafting ticks remaining to the next item

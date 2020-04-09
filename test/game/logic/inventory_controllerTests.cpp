@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/15/2020
+// Last modified: 04/09/2020
 // 
 
 #include <gtest/gtest.h>
@@ -460,8 +460,8 @@ namespace game::logic
 	//
 	//
 	//
-	// add_itemstack_to_inv
-	TEST(inventory_controller, add_itemstack_to_inv_add_to_empty_slot) {
+	// add_stack
+	TEST(inventory_controller, add_stack_add_to_empty_slot) {
 		// Should find the first empty slot and add the item there
 		// Slots, 0, 1 Will be with another item
 		// Should place in slot 2
@@ -481,7 +481,8 @@ namespace game::logic
 		inv[1].second = 21;
 
 		auto add_item = jactorio::data::item_stack(item2.get(), 20);
-		EXPECT_EQ(add_itemstack_to_inv(inv, inv_size, add_item), true);
+		EXPECT_TRUE(can_add_stack(inv, inv_size, add_item));
+		EXPECT_TRUE(add_stack_sub(inv, inv_size, add_item));
 
 		EXPECT_EQ(add_item.second, 0);
 
@@ -496,7 +497,7 @@ namespace game::logic
 		EXPECT_EQ(inv[2].second, 20);
 	}
 
-	TEST(inventory_controller, add_itemstack_to_inv_add_to_existing_slot) {
+	TEST(inventory_controller, add_stack_add_to_existing_slot) {
 		// Should find slot with item of same type, respecting max stack size, add the remaining at the next
 		// available slot which is another item of the same type
 		// 
@@ -525,7 +526,8 @@ namespace game::logic
 		inv[3].second = 20;
 
 		auto add_item = jactorio::data::item_stack(item_we_add_to.get(), 50);
-		EXPECT_EQ(add_itemstack_to_inv(inv, inv_size, add_item), true);
+		EXPECT_TRUE(can_add_stack(inv, inv_size, add_item));
+		EXPECT_TRUE(add_stack_sub(inv, inv_size, add_item));
 
 		EXPECT_EQ(add_item.second, 0);
 
@@ -547,7 +549,7 @@ namespace game::logic
 		EXPECT_EQ(inv[4].second, 0);
 	}
 
-	TEST(inventory_controller, add_itemstack_to_inv_no_available_slots) {
+	TEST(inventory_controller, add_stack_no_available_slots) {
 		// Slots 1 is full, inv size is 1, will return false
 		using namespace jactorio::game::inventory_c;
 
@@ -561,7 +563,8 @@ namespace game::logic
 		inv[0].second = 10;
 
 		auto add_item = jactorio::data::item_stack(item2.get(), 20);
-		EXPECT_EQ(add_itemstack_to_inv(inv, inv_size, add_item), false);
+		EXPECT_FALSE(can_add_stack(inv, inv_size, add_item));
+		EXPECT_FALSE(add_stack_sub(inv, inv_size, add_item));
 
 		EXPECT_EQ(add_item.second, 20);
 

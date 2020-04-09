@@ -71,7 +71,8 @@ namespace jactorio::game
 		mutable std::mutex world_chunks_mutex_{};  // Used by methods when accessing world_chunks_
 
 	public:
-		using world_coord = int32_t;  // World coordinates
+		using world_coord = int32_t;  // Single world coordinates
+		using world_pair = std::pair<world_coord, world_coord>;  // Ordered pair of pocation in the world
 
 		mutable std::mutex world_data_mutex{};  // Held by the thread which is currently operating on a chunk
 

@@ -3,10 +3,13 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 04/04/2020
-// Last modified: 04/06/2020
+// Last modified: 04/09/2020
 // 
 
 #include "data/prototype/entity/mining_drill.h"
+
+#include "data/data_manager.h"
+#include "game/logic/item_logistics.h"
 
 
 jactorio::data::Sprite* jactorio::data::Mining_drill::on_r_get_sprite(Unique_data_base* unique_data) const {
@@ -51,7 +54,14 @@ void jactorio::data::Mining_drill::register_mine_callback(game::Deferral_timer& 
 }
 
 void jactorio::data::Mining_drill::on_defer_time_elapsed(game::Deferral_timer& timer, Unique_data_base* unique_data) const {
-	register_mine_callback(timer, static_cast<Mining_drill_data*>(unique_data));
+	// TODO this is temporary
+	auto* drill_data = static_cast<Mining_drill_data*>(unique_data);
+
+	const std::string iname = "__base__/coal-item";
+	auto* item = data::data_manager::data_raw_get<Item>(dataCategory::item, iname);
+
+	drill_data->item_output.insert({item, 1});
+	register_mine_callback(timer, drill_data);
 }
 
 
@@ -86,7 +96,18 @@ void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
                                             world_coords,
                                             game::Chunk_tile_layer& tile_layer,
                                             const uint16_t frame, const placementOrientation orientation) const {
-	auto* drill_data = new Mining_drill_data();
+	// TODO temporary
+	auto& layer = world_data.get_tile_world_coords(world_coords.first, world_coords.second - 1)
+	                        ->get_layer(game::Chunk_tile::chunkLayer::entity);
+
+	auto* drill_data =
+		new Mining_drill_data(*layer.unique_data,
+		                      game::item_logistics::can_accept_item(world_data,
+		                                                            world_coords.first,
+		                                                            world_coords.second - 1),
+		                      placementOrientation::down
+		);
+
 	tile_layer.unique_data = drill_data;
 
 	drill_data->set = map_placement_orientation(orientation, world_data, world_coords).first;

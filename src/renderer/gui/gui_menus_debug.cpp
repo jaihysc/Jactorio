@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/01/2020
-// Last modified: 04/03/2020
+// Last modified: 04/09/2020
 // 
 
 #include "renderer/gui/gui_menus_debug.h"
@@ -225,7 +225,7 @@ void jactorio::renderer::gui::debug_item_spawner(game::Player_data& player_data)
 
 		if (ImGui::Button(item->get_localized_name().c_str())) {
 			data::item_stack item_stack = {item, give_amount};
-			game::inventory_c::add_itemstack_to_inv(
+			game::inventory_c::add_stack(
 				player_data.inventory_player, game::Player_data::inventory_size, item_stack);
 		}
 		ImGui::PopID();

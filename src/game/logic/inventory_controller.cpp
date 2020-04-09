@@ -3,7 +3,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // 
 // Created on: 01/20/2020
-// Last modified: 03/14/2020
+// Last modified: 04/09/2020
 // 
 
 #include "game/logic/inventory_controller.h"
@@ -170,45 +170,93 @@ bool jactorio::game::inventory_c::move_itemstack_to_index(
 	return false;
 }
 
+// ======================================================================
 // Can be used by non-player inventories 
 
-bool jactorio::game::inventory_c::add_itemstack_to_inv(data::item_stack* target_inv, const uint16_t target_inv_size,
-                                                       data::item_stack& item_stack) {
+bool jactorio::game::inventory_c::can_add_stack(const data::item_stack* target_inv, const uint16_t target_inv_size,
+                                                const data::item_stack& item_stack) {
 	assert(target_inv != nullptr); // Invalid item_stack to add
 
+	// Amount left which needs to be added
+	auto remaining_add = item_stack.second;
+	for (int i = 0; i < target_inv_size; ++i) {
+		const data::item_stack& slot = target_inv[i];
+
+		// Item of same type
+		if (slot.first == item_stack.first) {
+			// Amount that can be added to fill the slot
+			const auto max_add_amount = item_stack.first->stack_size - slot.second;
+			if (max_add_amount < 0)
+				continue;
+
+			assert(max_add_amount >= 0);
+
+			// Attempting to add more than what is available
+			if (max_add_amount >= remaining_add)
+				return true;
+
+			remaining_add -= max_add_amount;
+		}
+			// Empty slot
+		else if (slot.first == nullptr)
+			return true;
+	}
+
+	return false;
+}
+
+decltype(jactorio::data::item_stack::second) jactorio::game::inventory_c::add_stack(
+	data::item_stack* target_inv, const uint16_t target_inv_size, const data::item_stack& item_stack) {
+
+	assert(target_inv != nullptr); // Invalid item_stack to add
+
+	// Amount left which needs to be added
+	auto remaining_add = item_stack.second;
 	for (int i = 0; i < target_inv_size; ++i) {
 		data::item_stack& slot = target_inv[i];
 
 		// Item of same type
 		if (slot.first == item_stack.first) {
 			// Amount that can be added to fill the slot
-			auto max_add_amount = item_stack.first->stack_size - slot.second;
+			const auto max_add_amount = item_stack.first->stack_size - slot.second;
 			if (max_add_amount < 0)
-				max_add_amount = 0;
+				continue;
 
 			assert(max_add_amount >= 0);
 
-			// Attempting to add more than what is available from item_stack
-			if (max_add_amount >= item_stack.second) {
-				slot.second += item_stack.second;
-				item_stack.second = 0;
-				return true;
+			// Attempting to add more than what is available
+			if (max_add_amount >= remaining_add) {
+				slot.second += remaining_add;
+				return 0;
 			}
 
 			slot.second += max_add_amount;
-			item_stack.second -= max_add_amount;
+			remaining_add -= max_add_amount;
 		}
-
-		// Empty slot
-		if (slot.first == nullptr) {
+			// Empty slot
+		else if (slot.first == nullptr) {
 			slot.first = item_stack.first;
-			slot.second = item_stack.second;
+			slot.second = remaining_add;
 
-			item_stack.second = 0;
-			return true;
+			return 0;
 		}
 	}
 
+	return remaining_add;
+}
+
+bool jactorio::game::inventory_c::add_stack_sub(data::item_stack* target_inv, const uint16_t target_inv_size,
+                                                data::item_stack& item_stack) {
+	assert(target_inv != nullptr); // Invalid item_stack to add
+
+	const auto remainder = add_stack(target_inv, target_inv_size, item_stack);
+	if (remainder == 0) {
+		item_stack.second = 0;
+		return true;
+	}
+
+	// Subtract difference between what is in stack and what remains, since that is what was added
+	item_stack.second -= item_stack.second - remainder;
 	return false;
 }
 
