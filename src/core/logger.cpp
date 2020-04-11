@@ -1,17 +1,13 @@
 // 
-// logger.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 04/03/2020
-// 
 
 #include "core/logger.h"
 
-#include <string>
-#include <iostream>
-#include <fstream>
 #include <ctime>
+#include <fstream>
+#include <iostream>
+#include <string>
 
 #include "core/filesystem.h"
 

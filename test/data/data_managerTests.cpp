@@ -1,18 +1,14 @@
 // 
-// data_managerTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 04/07/2020
-// 
 
 #include <gtest/gtest.h>
 
 #include <filesystem>
 
+#include "core/resource_guard.h"
 #include "data/data_manager.h"
 #include "data/prototype/sprite.h"
-#include "core/resource_guard.h"
 
 namespace data
 {

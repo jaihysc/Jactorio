@@ -1,10 +1,6 @@
 // 
-// chunk_tileTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/21/2019
-// Last modified: 04/04/2020
-// 
 
 #include <gtest/gtest.h>
 

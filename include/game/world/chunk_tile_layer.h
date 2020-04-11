@@ -1,10 +1,6 @@
 // 
-// chunk_tile_layer.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 02/07/2020
-// Last modified: 04/08/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H

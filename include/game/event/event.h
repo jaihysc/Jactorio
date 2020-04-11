@@ -1,10 +1,6 @@
 // 
-// event.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/20/2020
-// Last modified: 03/14/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_GAME_EVENT_EVENT_H
 #define JACTORIO_INCLUDE_GAME_EVENT_EVENT_H
@@ -46,7 +42,7 @@ namespace jactorio::game
 		template <typename T>
 		static void subscribe(const event_type event_type, T callback) {
 			event_handlers_[event_type]
-				.push_back((void_ptr)(callback));
+				.push_back(reinterpret_cast<void_ptr>(+callback));
 		}
 
 		/**
@@ -55,7 +51,7 @@ namespace jactorio::game
 		template <typename T>
 		static void subscribe_once(const event_type event_type, T callback) {
 			event_handlers_once_[event_type]
-				.push_back((void_ptr)(callback));
+				.push_back(reinterpret_cast<void_ptr>(+callback));
 		}
 
 		/**
@@ -69,7 +65,7 @@ namespace jactorio::game
 			auto& handlers = event_handlers_[event_type];  // Event handlers of event_type
 			// Find callback in vector and remove
 			for (unsigned int i = 0; i < handlers.size(); ++i) {
-				if (handlers[i] == (void_ptr)(callback)) {
+				if (handlers[i] == reinterpret_cast<void_ptr>(callback)) {
 					handlers.erase(handlers.begin() + i);
 
 					removed = true;
@@ -81,7 +77,7 @@ namespace jactorio::game
 			auto& handlers_once = event_handlers_once_[event_type];
 			// Find callback in vector and remove
 			for (unsigned int i = 0; i < handlers_once.size(); ++i) {
-				if (handlers_once[i] == (void_ptr)(callback)) {
+				if (handlers_once[i] == reinterpret_cast<void_ptr>(callback)) {
 					handlers_once.erase(handlers_once.begin() + i);
 
 					removed = true;

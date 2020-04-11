@@ -1,10 +1,6 @@
 // 
-// item_logistics.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 04/07/2020
-// Last modified: 04/09/2020
-// 
 
 #include "game/logic/item_logistics.h"
 

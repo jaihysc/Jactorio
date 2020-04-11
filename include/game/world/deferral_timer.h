@@ -1,10 +1,6 @@
 // 
-// deferral_timer.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 04/02/2020
-// Last modified: 04/06/2020
-// 
 
 #ifndef JACTORIO_GAME_WORLD_DEFERRAL_TIMER_H
 #define JACTORIO_GAME_WORLD_DEFERRAL_TIMER_H

@@ -1,15 +1,11 @@
 // 
-// vertex_buffer.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
-// 
 
 #include <GL/glew.h>
 
-#include "renderer/opengl/error.h"
 #include "renderer/opengl/vertex_buffer.h"
+#include "renderer/opengl/error.h"
 
 jactorio::renderer::Vertex_buffer::Vertex_buffer(const void* data, uint32_t byte_size, bool static_buffer) {
 	DEBUG_OPENGL_CALL(glGenBuffers(1, &id_));

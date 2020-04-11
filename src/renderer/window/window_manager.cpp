@@ -1,10 +1,6 @@
 // 
-// window_manager.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/14/2020
-// 
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -16,8 +12,8 @@
 #include "core/logger.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-#include "renderer/render_main.h"
 #include "renderer/opengl/error.h"
+#include "renderer/render_main.h"
 #include "renderer/rendering/renderer.h"
 
 std::array<int, 2> window_pos{0, 0};

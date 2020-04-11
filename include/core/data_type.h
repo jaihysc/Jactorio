@@ -1,10 +1,6 @@
 // 
-// data_type.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/12/2020
-// Last modified: 04/02/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_CORE_DATA_TYPE_H
 #define JACTORIO_INCLUDE_CORE_DATA_TYPE_H

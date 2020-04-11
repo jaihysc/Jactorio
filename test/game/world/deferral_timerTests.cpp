@@ -1,10 +1,6 @@
 // 
-// deferral_timerTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 04/02/2020
-// Last modified: 04/06/2020
-// 
 
 #include <gtest/gtest.h>
 
@@ -37,7 +33,7 @@ namespace game
 	TEST(deferral_timer, register_at_tick) {
 		jactorio::game::Deferral_timer timer{};
 
-		Mock_deferred deferred{};
+		const Mock_deferred deferred{};
 		const auto unique_data = std::make_unique<Mock_unique_data>();
 
 		const auto index = timer.register_at_tick(deferred, unique_data.get(), 2);
@@ -58,7 +54,7 @@ namespace game
 	TEST(deferral_timer, register_from_tick) {
 		jactorio::game::Deferral_timer timer{};
 
-		Mock_deferred deferred{};
+		const Mock_deferred deferred{};
 		const auto unique_data = std::make_unique<Mock_unique_data>();
 
 		// Elapse 2 ticks from now
@@ -95,7 +91,7 @@ namespace game
 	TEST(deferral_timer, remove_deferral) {
 		jactorio::game::Deferral_timer timer{};
 
-		Mock_deferred deferred{};
+		const Mock_deferred deferred{};
 		const auto index = timer.register_at_tick(deferred, nullptr, 2);
 
 		timer.remove_deferral(2, index);

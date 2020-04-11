@@ -1,10 +1,6 @@
 // 
-// player_data.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 03/31/2020
-// Last modified: 04/02/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
 #define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
@@ -12,10 +8,10 @@
 
 #include <queue>
 
+#include "data/prototype/interface/rotatable.h"
 #include "data/prototype/item/item.h"
 #include "data/prototype/item/recipe.h"
 #include "game/world/chunk_tile_layer.h"
-#include "data/prototype/interface/rotatable.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game

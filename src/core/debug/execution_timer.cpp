@@ -1,10 +1,6 @@
 // 
-// execution_timer.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/06/2019
-// Last modified: 03/14/2020
-// 
 
 #include "core/debug/execution_timer.h"
 

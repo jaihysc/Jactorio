@@ -1,10 +1,6 @@
 // 
-// mouse_selection.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/21/2019
-// Last modified: 04/05/2020
-// 
 
 #include "game/input/mouse_selection.h"
 
@@ -93,7 +89,7 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 			                                                               {world_x, world_y});
 
 			Chunk_tile_layer& target_layer = tile->get_layer(Chunk_tile::chunkLayer::overlay);
-			target_layer.unique_data = new data::Renderable_data(target.first, target.second);;
+			target_layer.unique_data = new data::Renderable_data(target.first, target.second);
 			target_layer.prototype_data = selected_entity->on_r_get_sprite(target_layer.unique_data);
 		}
 

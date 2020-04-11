@@ -1,10 +1,6 @@
 // 
-// sprite.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/24/2019
-// Last modified: 04/07/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
@@ -89,10 +85,26 @@ namespace jactorio::data
 
 
 		Sprite(const Sprite& other);
-		Sprite(Sprite&& other) noexcept = default;
+		Sprite(Sprite&& other) noexcept;
 
-		Sprite& operator=(const Sprite& other);
-		Sprite& operator=(Sprite&& other) noexcept = default;
+		Sprite& operator=(Sprite other) {
+			swap(*this, other);
+			return *this;
+		}
+
+		friend void swap(Sprite& lhs, Sprite& rhs) noexcept {
+			using std::swap;
+			swap(static_cast<Prototype_base&>(lhs), static_cast<Prototype_base&>(rhs));
+			swap(lhs.group, rhs.group);
+			swap(lhs.frames, rhs.frames);
+			swap(lhs.sets, rhs.sets);
+			swap(lhs.trim, rhs.trim);
+			swap(lhs.width_, rhs.width_);
+			swap(lhs.height_, rhs.height_);
+			swap(lhs.bytes_per_pixel_, rhs.bytes_per_pixel_);
+			swap(lhs.sprite_path_, rhs.sprite_path_);
+			swap(lhs.sprite_buffer_, rhs.sprite_buffer_);
+		}
 
 		// ======================================================================
 		// Image extraction

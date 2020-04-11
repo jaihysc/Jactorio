@@ -1,25 +1,21 @@
 // 
-// world_generator.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/19/2019
-// Last modified: 04/08/2020
-// 
 
 #include "game/world/world_data.h"
 
+#include <algorithm>
+#include <mutex>
 #include <noise/noise.h>
 #include <noise/noiseutils.h>
-#include <algorithm>
 #include <set>
-#include <mutex>
 
 #include "core/logger.h"
-#include "game/world/chunk_tile.h"
 #include "data/data_manager.h"
-#include "data/prototype/noise_layer.h"
 #include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/noise_layer.h"
 #include "data/prototype/tile/tile.h"
+#include "game/world/chunk_tile.h"
 
 // T is value stored in noise_layer at data_category
 template <typename T>

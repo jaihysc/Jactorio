@@ -1,10 +1,6 @@
 // 
-// renderer_exception.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
-// Created on: 03/15/2020
-// Last modified: 03/15/2020
-// 
+// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDERER_EXCEPTION_H
 #define JACTORIO_INCLUDE_RENDERER_RENDERER_EXCEPTION_H

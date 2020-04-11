@@ -1,10 +1,6 @@
 // 
-// prototype_base.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/09/2019
-// Last modified: 04/07/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
@@ -103,6 +99,16 @@ namespace jactorio::data
 		Prototype_base(Prototype_base&& other) noexcept = default;
 		Prototype_base& operator=(const Prototype_base& other) = default;
 		Prototype_base& operator=(Prototype_base&& other) noexcept = default;
+
+		friend void swap(Prototype_base& lhs, Prototype_base& rhs) noexcept {
+			using std::swap;
+			swap(lhs.category_, rhs.category_);
+			swap(lhs.internal_id, rhs.internal_id);
+			swap(lhs.name, rhs.name);
+			swap(lhs.order, rhs.order);
+			swap(lhs.localized_name_, rhs.localized_name_);
+			swap(lhs.localized_description_, rhs.localized_description_);
+		}
 
 	private:
 		dataCategory category_ = dataCategory::none;

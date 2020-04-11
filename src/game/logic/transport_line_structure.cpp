@@ -1,14 +1,10 @@
 // 
-// transport_line_structure.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
-// Created on: 02/29/2020
-// Last modified: 03/28/2020
-// 
+// Created on: 03/31/2020
 
+#include "game/logic/transport_line_structure.h"
 #include "core/data_type.h"
 #include "game/logic/transport_line_controller.h"
-#include "game/logic/transport_line_structure.h"
 
 bool jactorio::game::Transport_line_segment::
 can_insert(const bool left_side, const transport_line_offset& start_offset) {

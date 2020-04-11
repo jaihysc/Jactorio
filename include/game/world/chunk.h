@@ -1,10 +1,6 @@
 // 
-// chunk.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/29/2019
-// Last modified: 04/08/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_H
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_H
@@ -15,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "game/world/chunk_tile.h"
 #include "game/world/chunk_object_layer.h"
+#include "game/world/chunk_tile.h"
 
 namespace jactorio::game
 {

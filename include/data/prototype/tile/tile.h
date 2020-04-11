@@ -1,17 +1,13 @@
 // 
-// tile.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/06/2019
-// Last modified: 04/07/2020
-// 
 
 #ifndef DATA_PROTOTYPE_TILE_TILE_H
 #define DATA_PROTOTYPE_TILE_TILE_H
 
+#include "data/prototype/interface/renderable.h"
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
-#include "data/prototype/interface/renderable.h"
 
 namespace jactorio::data
 {

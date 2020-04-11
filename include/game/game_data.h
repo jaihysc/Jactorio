@@ -1,10 +1,6 @@
 // 
-// game.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
-// Created on: 03/11/2020
-// Last modified: 03/11/2020
-// 
+// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_GAME_DATA_H
 #define JACTORIO_INCLUDE_GAME_GAME_DATA_H
@@ -20,7 +16,7 @@ namespace jactorio::game
 	{
 		Mouse_selection mouse{};
 	};
-	
+
 	///
 	/// \brief Holds all data for the runtime of the game (Wrapped with Pybind)
 	/// Each sub data has its own mutex enabling concurrency

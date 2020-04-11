@@ -1,10 +1,6 @@
 // 
-// data_manager.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 04/07/2020
-// 
 
 #include "data/data_manager.h"
 
@@ -13,8 +9,8 @@
 
 #include "core/filesystem.h"
 #include "core/logger.h"
-#include "data/pybind/pybind_manager.h"
 #include "data/local_parser.h"
+#include "data/pybind/pybind_manager.h"
 
 // Position 0 reserved to indicate error
 constexpr auto internal_id_start = 1;

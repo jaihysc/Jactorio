@@ -1,10 +1,6 @@
 // 
-// render_main.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 04/03/2020
-// 
 
 #include <GL/glew.h>
 
@@ -26,9 +22,9 @@
 #include "renderer/window/window_manager.h"
 
 #include "game/event/event.h"
+#include "game/game_data.h"
 #include "game/input/input_manager.h"
 #include "game/logic_loop.h"
-#include "game/game_data.h"
 
 unsigned short window_x = 0;
 unsigned short window_y = 0;

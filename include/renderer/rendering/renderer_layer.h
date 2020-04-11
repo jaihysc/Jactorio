@@ -1,10 +1,6 @@
 // 
-// renderer_layer.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/12/2020
-// Last modified: 03/14/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
@@ -13,9 +9,9 @@
 #include "jactorio.h"
 
 #include "core/data_type.h"
-#include "renderer/opengl/vertex_buffer.h"
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/vertex_array.h"
+#include "renderer/opengl/vertex_buffer.h"
 
 namespace jactorio::renderer
 {

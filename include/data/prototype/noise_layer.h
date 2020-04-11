@@ -1,10 +1,6 @@
 // 
-// noise_layer.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/24/2019
-// Last modified: 04/07/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_NOISE_LAYER_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_NOISE_LAYER_H
@@ -14,9 +10,9 @@
 
 #include <vector>
 
-#include "data/prototype/prototype_base.h"
 #include "data/prototype/entity/entity.h"
 #include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/prototype_base.h"
 
 namespace jactorio::data
 {
@@ -35,9 +31,9 @@ namespace jactorio::data
 	public:
 		// TODO a better category system
 		J_NODISCARD dataCategory category() const override {
-			bool constexpr is_tile = std::is_same<T, jactorio::data::Tile>::value;
-			bool constexpr is_entity = std::is_same<T, jactorio::data::Entity>::value || std::is_same<
-				T, jactorio::data::Resource_entity>::value;
+			bool constexpr is_tile = std::is_same<T, Tile>::value;
+			bool constexpr is_entity = std::is_same<T, Entity>::value || std::is_same<
+				T, Resource_entity>::value;
 
 			static_assert(is_tile || is_entity);
 

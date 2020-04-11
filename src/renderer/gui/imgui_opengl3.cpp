@@ -1,10 +1,6 @@
 // 
-// imgui_opengl3.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
-// 
 
 #include <imgui/imgui.h>
 
@@ -74,8 +70,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <imgui/imgui.h>
 #include "renderer/gui/imgui_opengl3.h"
+#include <imgui/imgui.h>
 #include <stdio.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1500 // MSVC 2008 or earlier
 #include <stddef.h>     // intptr_t

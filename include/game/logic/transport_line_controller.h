@@ -1,10 +1,6 @@
 // 
-// transport_line_controller.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
-// Created on: 02/13/2020
-// Last modified: 03/12/2020
-// 
+// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
 #define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H

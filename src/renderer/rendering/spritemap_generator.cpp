@@ -1,15 +1,11 @@
 // 
-// spritemap_generator.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 04/03/2020
-// 
 
 #include "renderer/rendering/spritemap_generator.h"
 
-#include <map>
 #include <algorithm>
+#include <map>
 #include <stb/stb_image.h>
 
 #include "core/logger.h"

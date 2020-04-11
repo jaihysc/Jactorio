@@ -1,19 +1,15 @@
 // 
-// execution_timer.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/06/2019
-// Last modified: 03/14/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
 #define JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
 #pragma once
 
 #include <chrono>
-#include <string>
 #include <map>
 #include <mutex>
+#include <string>
 
 #define EXECUTION_PROFILE_SCOPE(timer_variable_name, item_name) \
 	auto (timer_variable_name) = jactorio::core::Execution_timer(item_name)

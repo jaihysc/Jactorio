@@ -1,10 +1,6 @@
 // 
-// placement_controller.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/20/2020
-// Last modified: 04/04/2020
-// 
 
 #include "game/logic/placement_controller.h"
 

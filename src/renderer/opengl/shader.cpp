@@ -1,10 +1,6 @@
 // 
-// shader.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 04/03/2020
-// 
 
 #include <GL/glew.h>
 
@@ -13,8 +9,8 @@
 #include "core/filesystem.h"
 
 #include "renderer/opengl/shader.h"
-#include "renderer/opengl/error.h"
 #include "core/logger.h"
+#include "renderer/opengl/error.h"
 
 unsigned int jactorio::renderer::Shader::compile_shader(
 	const std::string& filepath, const GLenum shader_type) {

@@ -1,13 +1,9 @@
 // 
-// renderer_layer.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/12/2020
-// Last modified: 03/14/2020
-// 
 
-#include <renderer/rendering/renderer_grid.h>
 #include "renderer/rendering/renderer_layer.h"
+#include <renderer/rendering/renderer_grid.h>
 #include "renderer/opengl/vertex_array.h"
 
 // Settings

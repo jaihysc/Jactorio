@@ -1,16 +1,12 @@
 // 
-// input_manager.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/15/2019
-// Last modified: 03/14/2020
-// 
 
 #include "game/input/input_manager.h"
 
+#include <algorithm>
 #include <unordered_map>
 #include <vector>
-#include <algorithm>
 
 #include "core/data_type.h"
 #include "renderer/gui/imgui_manager.h"

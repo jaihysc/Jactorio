@@ -1,10 +1,6 @@
 // 
-// world_renderer.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/15/2019
-// Last modified: 04/06/2020
-// 
 
 #include "renderer/rendering/world_renderer.h"
 

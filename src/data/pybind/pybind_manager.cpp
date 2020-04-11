@@ -1,18 +1,14 @@
 // 
-// pybind_manager.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/09/2019
-// Last modified: 03/14/2020
-// 
 
 #include "data/pybind/pybind_manager.h"
 
-#include <sstream>
 #include <pybind11/embed.h>
+#include <sstream>
 
-#include "core/logger.h"
 #include "core/filesystem.h"
+#include "core/logger.h"
 #include "data/data_exception.h"
 
 namespace py = pybind11;

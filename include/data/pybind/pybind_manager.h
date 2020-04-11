@@ -1,10 +1,6 @@
 // 
-// pybind_manager.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/09/2019
-// Last modified: 03/14/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_MANAGER_H
 #define JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_MANAGER_H

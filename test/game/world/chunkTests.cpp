@@ -1,17 +1,13 @@
 // 
-// chunkTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/09/2019
-// Last modified: 04/08/2020
-// 
 
 #include <gtest/gtest.h>
 
-#include "game/world/chunk.h"
-#include "game/world/logic_chunk.h"
 #include "data/prototype/sprite.h"
 #include "data/prototype/tile/tile.h"
+#include "game/world/chunk.h"
+#include "game/world/logic_chunk.h"
 
 #include <memory>
 

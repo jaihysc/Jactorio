@@ -1,10 +1,6 @@
 // 
-// renderer.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/14/2020
-// 
 
 #include <GL/glew.h>
 
@@ -12,10 +8,10 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "renderer/rendering/renderer_grid.h"
-#include "renderer/rendering/mvp_manager.h"
-#include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/error.h"
+#include "renderer/opengl/shader_manager.h"
+#include "renderer/rendering/mvp_manager.h"
+#include "renderer/rendering/renderer_grid.h"
 
 unsigned short jactorio::renderer::Renderer::window_width_ = 0;
 unsigned short jactorio::renderer::Renderer::window_height_ = 0;

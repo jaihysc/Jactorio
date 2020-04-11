@@ -1,15 +1,11 @@
 // 
-// chunk_tile.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 04/02/2020
-// Last modified: 04/02/2020
-// 
 
 #include "game/world/chunk_tile.h"
 
-#include "data/prototype/tile/tile.h"
 #include "data/prototype/entity/entity.h"
+#include "data/prototype/tile/tile.h"
 
 // ======================================================================
 // Tile

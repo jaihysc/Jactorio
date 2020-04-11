@@ -1,10 +1,6 @@
 // 
-// spriteTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/06/2019
-// Last modified: 04/04/2020
-// 
 
 #include <gtest/gtest.h>
 
@@ -12,6 +8,23 @@
 
 namespace data::prototype
 {
+	TEST(sprite, sprite_copy) {
+		jactorio::data::Sprite first{};
+		auto second = first;
+
+		EXPECT_NE(first.get_sprite_data_ptr(), second.get_sprite_data_ptr());
+	}
+
+	TEST(sprite, sprite_move) {
+		jactorio::data::Sprite first{};
+		first.load_image("test/graphics/test/test_tile.png");
+
+		auto second = std::move(first);
+
+		EXPECT_EQ(first.get_sprite_data_ptr(), nullptr);
+		EXPECT_NE(second.get_sprite_data_ptr(), nullptr);
+	}
+
 	TEST(sprite, load_sprite) {
 		{
 			jactorio::data::Sprite sprite{};

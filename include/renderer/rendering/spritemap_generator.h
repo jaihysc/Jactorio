@@ -1,10 +1,6 @@
 // 
-// spritemap_generator.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/28/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H

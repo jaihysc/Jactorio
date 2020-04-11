@@ -1,10 +1,14 @@
+// 
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// Created on: 10/15/2019
+
 #ifndef JACTORIO_INCLUDE_JACTORIO_H
 #define JACTORIO_INCLUDE_JACTORIO_H
 #pragma once
 
-#include "core/resource_guard.h"
 #include "core/debug/execution_timer.h"
 #include "core/logger.h"
+#include "core/resource_guard.h"
 
 #include <cassert>
 #include <cstdint>

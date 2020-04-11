@@ -1,16 +1,13 @@
 // 
-// sprite.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/06/2019
-// Last modified: 04/04/2020
-// 
 
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "data/prototype/sprite.h"
 
 #include <sstream>
+#include <utility>
 #include <stb/stb_image.h>
 
 #include "core/filesystem.h"
@@ -53,8 +50,8 @@ jactorio::data::Sprite::Sprite(const std::string& sprite_path)
 	load_image(sprite_path);
 }
 
-jactorio::data::Sprite::Sprite(const std::string& sprite_path, const std::vector<spriteGroup> group)
-	: group(group), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
+jactorio::data::Sprite::Sprite(const std::string& sprite_path, std::vector<spriteGroup> group)
+	: group(std::move(group)), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
 	load_image(sprite_path);
 }
 
@@ -73,31 +70,24 @@ jactorio::data::Sprite::Sprite(const Sprite& other)
 
 	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytes_per_pixel_;
 	sprite_buffer_ = static_cast<unsigned char*>(malloc(size * sizeof(*sprite_buffer_)));  // stbi uses malloc
-	for (int i = 0; i < size; ++i) {
+	for (unsigned long long i = 0; i < size; ++i) {
 		sprite_buffer_[i] = other.sprite_buffer_[i];
 	}
 }
 
-jactorio::data::Sprite& jactorio::data::Sprite::operator=(const Sprite& other) {
-	if (this == &other)
-		return *this;
-	Prototype_base::operator =(other);
-	group = other.group;
-	width_ = other.width_;
-	height_ = other.height_;
-	bytes_per_pixel_ = other.bytes_per_pixel_;
-	sprite_path_ = other.sprite_path_;
-	sprite_buffer_ = other.sprite_buffer_;
-
-	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytes_per_pixel_;
-	sprite_buffer_ = static_cast<unsigned char*>(malloc(size * sizeof(*sprite_buffer_)));
-	for (int i = 0; i < size; ++i) {
-		sprite_buffer_[i] = other.sprite_buffer_[i];
-	}
-
-	return *this;
+jactorio::data::Sprite::Sprite(Sprite&& other) noexcept
+	: Prototype_base{std::move(other)},
+	  group{std::move(other.group)},
+	  frames{other.frames},
+	  sets{other.sets},
+	  trim{other.trim},
+	  width_{other.width_},
+	  height_{other.height_},
+	  bytes_per_pixel_{other.bytes_per_pixel_},
+	  sprite_path_{std::move(other.sprite_path_)},
+	  sprite_buffer_{other.sprite_buffer_} {
+	other.sprite_buffer_ = nullptr;
 }
-
 
 jactorio::core::Quad_position jactorio::data::Sprite::get_coords(uint16_t mset, const uint16_t frame) const {
 	mset %= sets;

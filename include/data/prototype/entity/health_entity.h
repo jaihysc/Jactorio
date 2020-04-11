@@ -1,10 +1,6 @@
 // 
-// health_entity.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/20/2020
-// Last modified: 04/04/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_HEALTH_ENTITY_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_HEALTH_ENTITY_H

@@ -1,10 +1,6 @@
 // 
-// item_logisticsTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 04/07/2020
-// Last modified: 04/09/2020
-// 
 
 #include <gtest/gtest.h>
 
@@ -84,14 +80,15 @@ namespace game::logic
 	TEST(item_logistics, insert_item_destination) {
 		// Item_insert_destination with custom insertion function
 		// .insert() should call insertion function, throwing the exception
-		jactorio::game::Item_insert_destination::insert_func func = [](auto& item, auto& unique_data, auto orientation) -> bool {
+		const jactorio::game::Item_insert_destination::insert_func func = [
+			](auto& item, auto& unique_data, auto orientation) -> bool {
 			EXPECT_EQ(orientation, jactorio::data::placementOrientation::up);
 
 			throw std::runtime_error("INSERT_FUNC");
 		};
 
 		jactorio::data::Health_entity_data unique_data{};
-		jactorio::game::Item_insert_destination iid{unique_data, func, jactorio::data::placementOrientation::up};
+		const jactorio::game::Item_insert_destination iid{unique_data, func, jactorio::data::placementOrientation::up};
 
 		jactorio::data::Item item{};
 		try {

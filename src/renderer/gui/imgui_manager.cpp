@@ -1,19 +1,18 @@
 // 
-// imgui_manager.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 04/03/2020
-// 
 
 #include "renderer/gui/imgui_manager.h"
 
-#include <unordered_map>
 #include <cassert>
 #include <imgui/imgui.h>
+#include <unordered_map>
 
 #include "jactorio.h"
 
+#include "data/prototype/entity/entity.h"
+#include "game/event/event.h"
+#include "game/player/player_data.h"
 #include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/gui_menus_debug.h"
@@ -21,9 +20,6 @@
 #include "renderer/gui/imgui_opengl3.h"
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
-#include "game/event/event.h"
-#include "game/player/player_data.h"
-#include "data/prototype/entity/entity.h"
 
 ImGuiWindowFlags release_window_flags = 0;
 

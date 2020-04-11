@@ -1,10 +1,6 @@
 // 
-// world_data.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 03/31/2020
-// Last modified: 04/08/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
 #define JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
@@ -13,11 +9,11 @@
 #include <set>
 #include <unordered_map>
 
-#include "jactorio.h"
 #include "core/data_type.h"
 #include "game/world/chunk.h"
 #include "game/world/deferral_timer.h"
 #include "game/world/logic_chunk.h"
+#include "jactorio.h"
 
 // Manages the game world, the tiles and the entities on it
 // Handles saving and loading the world

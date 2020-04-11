@@ -1,10 +1,6 @@
 // 
-// renderer_gridTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/28/2020
-// 
 
 #include <gtest/gtest.h>
 
@@ -14,7 +10,7 @@ namespace renderer
 {
 	TEST(renderer_grid, gen_render_grid_indices) {
 		unsigned int* grid = nullptr;
-		jactorio::core::Capturing_guard<void()> guard([&]{ delete[] grid; });
+		jactorio::core::Capturing_guard<void()> guard([&] { delete[] grid; });
 
 		grid = jactorio::renderer::renderer_grid::gen_render_grid_indices(121);
 		// Indices generation pattern:

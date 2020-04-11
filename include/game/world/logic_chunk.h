@@ -1,10 +1,6 @@
 // 
-// logic_chunk.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 03/31/2020
-// Last modified: 04/01/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_LOGIC_CHUNK_H
 #define JACTORIO_INCLUDE_GAME_WORLD_LOGIC_CHUNK_H
