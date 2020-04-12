@@ -23,6 +23,7 @@
 #include "data/prototype/item/recipe_group.h"
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/prototype_base.h"
+#include "data/prototype/prototype_type.h"
 #include "data/prototype/sprite.h"
 #include "data/prototype/tile/tile.h"
 
@@ -51,7 +52,7 @@ using data_raw = std::unordered_map<jactorio::data::dataCategory, std::unordered
 	py::class_<cpp_class_, inherits_>(m, "_" #py_name_)
 
 
-#define PYBIND_DATA_INTERFACE(cpp_class_, py_name_)\
+#define PYBIND_TYPE_CLASS(cpp_class_, py_name_)\
 	py::class_<cpp_class_>(m, "_" #py_name_)
 
 // Macros below generates a self returning setter and the actual variable
@@ -91,15 +92,22 @@ using data_raw = std::unordered_map<jactorio::data::dataCategory, std::unordered
 	.def(#py_name, &class_::set_##cpp_name, pybind11::return_value_policy::reference)\
 	.def("get_" #py_name, &class_::get_##cpp_name, pybind11::return_value_policy::reference)
 
+// ======================================================================
 
 PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	using namespace jactorio::data;
 
-	// Interface classes
-	// PYBIND_DATA_INTERFACE(Rotatable_entity, RotatableEntity)
-	// 	PYBIND_PROP_S(Rotatable_entity, spriteE, sprite_e)
-	// 	PYBIND_PROP_S(Rotatable_entity, spriteS, sprite_s)
-	// 	PYBIND_PROP_S(Rotatable_entity, spriteW, sprite_w);
+	// Type 
+	PYBIND_TYPE_CLASS(Tile_4_way, OutputTile4Way)
+		.def(py::init<
+			 jactorio::game::World_data::world_pair,
+			 jactorio::game::World_data::world_pair, 
+			 jactorio::game::World_data::world_pair,
+			 jactorio::game::World_data::world_pair>())
+		.def_readwrite("up", &Tile_4_way::up)
+		.def_readwrite("right", &Tile_4_way::right)
+		.def_readwrite("down", &Tile_4_way::down)
+		.def_readwrite("left", &Tile_4_way::left);
 
 
 	// Prototype classes
@@ -184,7 +192,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	// Mining drill
 	PYBIND_DATA_CLASS(Mining_drill, MiningDrill, Health_entity)
-		PYBIND_PROP_S(Mining_drill, miningSpeed, mining_speed);
+		PYBIND_PROP_S(Mining_drill, miningSpeed, mining_speed)
+		PYBIND_PROP_S(Mining_drill, resourceOutput, resource_output);
 
 
 	// Recipes

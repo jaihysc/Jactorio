@@ -93,15 +93,20 @@ void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
                                             game::Chunk_tile_layer& tile_layer,
                                             const uint16_t frame, const placementOrientation orientation) const {
 	// TODO temporary
-	auto& layer = world_data.get_tile_world_coords(world_coords.first, world_coords.second - 1)
+	game::World_data::world_pair output_coords = this->resource_output.get(orientation);
+	output_coords.first += world_coords.first;
+	output_coords.second += world_coords.second;
+
+	auto& layer = world_data.get_tile_world_coords(output_coords.first,
+	                                               output_coords.second)
 	                        ->get_layer(game::Chunk_tile::chunkLayer::entity);
 
 	auto* drill_data =
 		new Mining_drill_data(*layer.unique_data,
 		                      game::item_logistics::can_accept_item(world_data,
-		                                                            world_coords.first,
-		                                                            world_coords.second - 1),
-		                      placementOrientation::down
+		                                                            output_coords.first,
+		                                                            output_coords.second),
+		                      orientation
 		);
 
 	tile_layer.unique_data = drill_data;

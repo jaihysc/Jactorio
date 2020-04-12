@@ -8,6 +8,7 @@
 
 #include "data/prototype/entity/health_entity.h"
 #include "data/prototype/interface/deferred.h"
+#include "data/prototype/prototype_type.h"
 #include "game/logic/item_insert_destination.h"
 
 namespace jactorio::data
@@ -43,7 +44,11 @@ namespace jactorio::data
 		/// Number of tiles to extend the mining radius around the entity outside of entity tile width and height	
 		PYTHON_PROP_REF_I(Mining_drill, uint16_t, mining_radius, 1);
 
+		PYTHON_PROP(Mining_drill, Tile_4_way, resource_output);
+
+
 		// ======================================================================
+		// Rendering
 
 		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override {
 		}
@@ -54,6 +59,7 @@ namespace jactorio::data
 		                                                                    std::pair<int, int> world_coords) const override;
 
 		// ======================================================================
+		// Logic
 	private:
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource 
