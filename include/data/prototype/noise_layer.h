@@ -16,20 +16,13 @@
 
 namespace jactorio::data
 {
-	/**
-	 * Note!! MOST values will be in range -1, 1. SOME VALUES will be greater/less than -1, 1 <br>
-	 * T is type stored in noise_layer
-	 */
+	///
+	/// \remark MOST values will be in range -1, 1. SOME VALUES will be greater/less than -1, 1
+	/// T is type stored in noise_layer
 	template <typename T>
 	class Noise_layer final : public Prototype_base
 	{
-		// The inclusive value where the noise range begins
-		std::vector<float> noise_range_tile_ranges_;
-		// Size is 1 less than noise_range_tile_ranges
-		std::vector<T*> noise_range_tiles_;
-
 	public:
-		// TODO a better category system
 		J_NODISCARD dataCategory category() const override {
 			bool constexpr is_tile = std::is_same<T, Tile>::value;
 			bool constexpr is_entity = std::is_same<T, Entity>::value || std::is_same<
@@ -45,41 +38,41 @@ namespace jactorio::data
 			return dataCategory::none;
 		};
 
-		Noise_layer()
-			: octave_count(8), frequency(0.25f), persistence(0.5f), normalize_val(false) {
+		Noise_layer() {
 			set_start_val(-1.f);
 		}
 
 		Noise_layer(const float starting_val, const bool normalize_val)
-			: octave_count(8), frequency(0.25f), persistence(0.5f), normalize_val(normalize_val) {
+			: normalize_val(normalize_val) {
 			set_start_val(starting_val);
 		}
 
-		~Noise_layer() override = default;
+		// ======================================================================
 
-		Noise_layer(const Noise_layer& other) = default;
-
-		Noise_layer(Noise_layer&& other) noexcept = default;
-
-		Noise_layer& operator=(const Noise_layer& other) = default;
-
-		Noise_layer& operator=(Noise_layer&& other) noexcept = default;
-
-	public:
 		// Perlin noise properties
 		// See http://libnoise.sourceforge.net/glossary/ for usage of the following parameters
-		PYTHON_PROP_REF(Noise_layer, int, octave_count)
-		PYTHON_PROP_REF(Noise_layer, double, frequency)
-		PYTHON_PROP_REF(Noise_layer, double, persistence)
+		PYTHON_PROP_REF_I(Noise_layer, int, octave_count, 8);
+		PYTHON_PROP_REF_I(Noise_layer, double, frequency, 0.25f);
+		PYTHON_PROP_REF_I(Noise_layer, double, persistence, 0.5f);
 
-	public:
+		// ======================================================================
+
+		/// Affects number of resources generated for Resource entities
+		PYTHON_PROP_REF_I(Noise_layer, double, richness, 1.f);
 
 		/**
 		 * If true, input values outside of the noise_layer range will be brought to the lowest/highest
 		 * If false, input values outside of the noise_layer range returns nullptr
 		 */
-		PYTHON_PROP_REF(Noise_layer, bool, normalize_val)
+		PYTHON_PROP_REF_I(Noise_layer, bool, normalize_val, false);
 
+	private:
+		// The inclusive value where the noise range begins
+		std::vector<float> noise_range_tile_ranges_;
+		// Size is 1 less than noise_range_tile_ranges
+		std::vector<T*> noise_range_tiles_;
+
+	public:
 		/**
 		 * Retrieves the starting value <br>
 		 * Default value is -1
@@ -172,6 +165,11 @@ namespace jactorio::data
 
 
 		void post_load_validate() const override {
+			J_DATA_ASSERT(1 <= octave_count, "A minimum of 1 octaves is required");
+			J_DATA_ASSERT(0 < frequency, "Frequency must be greater than 0");
+			J_DATA_ASSERT(0 < persistence, "Persistence must be greater than 0");
+
+			J_DATA_ASSERT(0 < richness, "Richness must be greater than 0");
 		}
 	};
 }
