@@ -22,6 +22,8 @@ namespace jactorio::data
 		}
 
 		game::Item_insert_destination item_output;
+
+		Item* output_item = nullptr;
 	};
 
 
@@ -66,12 +68,16 @@ namespace jactorio::data
 		void register_mine_callback(game::Deferral_timer& timer, Mining_drill_data* unique_data) const;
 
 	public:
+		///
+		/// \briefs Finds the FIRST output item of the mining drill, beginning from top left
+		J_NODISCARD Item* find_output_item(const game::World_data& world_data, game::World_data::world_pair world_pair) const;
+		
 		void on_defer_time_elapsed(game::Deferral_timer& timer, Unique_data_base* unique_data) const override;
 
 		///
 		/// \brief Ensures that the mining radius covers a resource entity
 		bool on_can_build(const game::World_data& world_data,
-		                  std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords) override;
+		                  std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords) const override;
 
 		void on_build(game::World_data& world_data,
 		              std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,

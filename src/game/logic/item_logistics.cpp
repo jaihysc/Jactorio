@@ -6,6 +6,7 @@
 
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/entity.h"
+#include "data/prototype/entity/transport/transport_line.h"
 #include "data/prototype/item/item.h"
 #include "game/logic/inventory_controller.h"
 
@@ -26,6 +27,92 @@ ITEM_INSERT_FUNCTION(insert_container_entity) {
 }
 
 ITEM_INSERT_FUNCTION(insert_transport_belt) {
+	assert(item_stack.second == 1);  // Can only insert 1 at a time
+
+	auto& line_data = static_cast<data::Transport_line_data&>(unique_data);
+
+	bool use_line_left = false;
+	// Decide whether to add item to left side or right side
+	switch (line_data.line_segment.direction) {
+	case Transport_line_segment::moveDir::up:
+		switch (orientation) {
+		case data::placementOrientation::up:
+			break;
+		case data::placementOrientation::right:
+			use_line_left = true;
+			break;
+		case data::placementOrientation::down:
+			return false;
+		case data::placementOrientation::left:
+			break;
+
+		default:
+			assert(false);
+			break;
+		}
+		break;
+
+	case Transport_line_segment::moveDir::right:
+		switch (orientation) {
+		case data::placementOrientation::up:
+			break;
+		case data::placementOrientation::right:
+			break;
+		case data::placementOrientation::down:
+			use_line_left = true;
+			break;
+		case data::placementOrientation::left:
+			return false;
+
+		default:
+			assert(false);
+			break;
+		}
+		break;
+
+	case Transport_line_segment::moveDir::down:
+		switch (orientation) {
+		case data::placementOrientation::up:
+			return false;
+		case data::placementOrientation::right:
+			break;
+		case data::placementOrientation::down:
+			break;
+		case data::placementOrientation::left:
+			use_line_left = true;
+			break;
+
+		default:
+			assert(false);
+			break;
+		}
+		break;
+
+	case Transport_line_segment::moveDir::left:
+		switch (orientation) {
+		case data::placementOrientation::up:
+			use_line_left = true;
+			break;
+		case data::placementOrientation::right:
+			return false;
+		case data::placementOrientation::down:
+			break;
+		case data::placementOrientation::left:
+			break;
+
+		default:
+			assert(false);
+			break;
+		}
+		break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+	// TODO offset needs to be calculated correctly if segment is not 1 long
+	line_data.line_segment.append_item(use_line_left, 0.5f, item_stack.first);
 	return true;
 }
 

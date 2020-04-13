@@ -117,8 +117,9 @@ namespace jactorio::data
 		///
 		/// \brief Returns true if itself can be built at the specified world_coords being its top left
 		/// \return true if can be built
-		virtual bool on_can_build(const game::World_data& world_data,
-		                          std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords) {
+		J_NODISCARD virtual bool on_can_build(const game::World_data& world_data,
+		                                      std::pair<game::World_data::world_coord, game::World_data::world_coord>
+		                                      world_coords) const {
 			return true;
 		}
 

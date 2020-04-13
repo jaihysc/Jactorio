@@ -33,6 +33,138 @@ namespace game::logic
 		EXPECT_EQ(container_data->inventory[0].second, 2);
 	}
 
+	// Creates a transport line with orientation at (4, 4)
+#define CREATE_TRANSPORT_LINE(orientation_)\
+		jactorio::game::World_data world_data{};\
+		world_data.add_chunk(new jactorio::game::Chunk(0, 0));\
+		\
+		auto* segment = new jactorio::game::Transport_line_segment{\
+			jactorio::game::Transport_line_segment::orientation_,\
+			jactorio::game::Transport_line_segment::terminationType::straight,\
+			2\
+		};\
+		auto line_data = jactorio::data::Transport_line_data{*segment};\
+		world_data.get_tile_world_coords(4, 4)->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).unique_data = segment
+
+#define TRANSPORT_LINE_INSERT(orientation_)\
+			jactorio::data::Item item{};\
+			jactorio::game::item_logistics::insert_transport_belt({&item, 1},\
+																  line_data,\
+																  jactorio::data::orientation_)
+
+	TEST(item_logistics, insert_transport_line_up) {
+		{
+			CREATE_TRANSPORT_LINE(moveDir::up);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::up);
+			EXPECT_EQ(segment->right.size(), 1);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::up);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::right);
+			EXPECT_EQ(segment->left.size(), 1);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::up);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::down);
+			EXPECT_EQ(segment->left.size(), 0);
+			EXPECT_EQ(segment->right.size(), 0);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::up);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::left);
+			EXPECT_EQ(segment->right.size(), 1);
+		}
+	}
+
+	TEST(item_logistics, insert_transport_line_right) {
+		{
+			CREATE_TRANSPORT_LINE(moveDir::right);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::up);
+			EXPECT_EQ(segment->right.size(), 1);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::right);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::right);
+			EXPECT_EQ(segment->right.size(), 1);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::right);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::down);
+			EXPECT_EQ(segment->left.size(), 1);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::right);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::left);
+			EXPECT_EQ(segment->left.size(), 0);
+			EXPECT_EQ(segment->right.size(), 0);
+		}
+	}
+
+	TEST(item_logistics, insert_transport_line_down) {
+		{
+			CREATE_TRANSPORT_LINE(moveDir::down);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::up);
+			EXPECT_EQ(segment->left.size(), 0);
+			EXPECT_EQ(segment->right.size(), 0);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::down);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::right);
+			EXPECT_EQ(segment->right.size(), 1);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::down);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::down);
+			EXPECT_EQ(segment->right.size(), 1);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::down);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::left);
+			EXPECT_EQ(segment->left.size(), 1);
+		}
+	}
+
+	TEST(item_logistics, insert_transport_line_left) {
+		{
+			CREATE_TRANSPORT_LINE(moveDir::left);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::up);
+			EXPECT_EQ(segment->left.size(), 1);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::left);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::right);
+			EXPECT_EQ(segment->left.size(), 0);
+			EXPECT_EQ(segment->right.size(), 0);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::left);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::down);
+			EXPECT_EQ(segment->right.size(), 1);
+		}
+		{
+			CREATE_TRANSPORT_LINE(moveDir::left);
+
+			TRANSPORT_LINE_INSERT(placementOrientation::left);
+			EXPECT_EQ(segment->right.size(), 1);
+		}
+	}
+#undef CREATE_TRANSPORT_LINE
+#undef TRANSPORT_LINE_INSERT
 	// ======================================================================
 
 	TEST(item_logistics, can_accept_item) {

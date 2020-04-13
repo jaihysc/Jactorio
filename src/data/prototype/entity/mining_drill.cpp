@@ -5,6 +5,7 @@
 #include "data/prototype/entity/mining_drill.h"
 
 #include "data/data_manager.h"
+#include "data/prototype/entity/resource_entity.h"
 #include "game/logic/item_logistics.h"
 
 
@@ -49,21 +50,37 @@ void jactorio::data::Mining_drill::register_mine_callback(game::Deferral_timer& 
 	timer.register_from_tick(*this, unique_data, 100);
 }
 
+jactorio::data::Item* jactorio::data::Mining_drill::find_output_item(const game::World_data& world_data,
+                                                                     game::World_data::world_pair world_pair) const {
+	world_pair.first -= this->mining_radius;
+	world_pair.second -= this->mining_radius;
+
+	for (int y = 0; y < 2 * this->mining_radius + this->tile_height; ++y) {
+		for (int x = 0; x < 2 * this->mining_radius + this->tile_width; ++x) {
+			game::Chunk_tile* tile =
+				world_data.get_tile_world_coords(world_pair.first + x, world_pair.second + y);
+
+			game::Chunk_tile_layer& resource = tile->get_layer(game::Chunk_tile::chunkLayer::resource);
+			if (resource.prototype_data != nullptr)
+				return static_cast<const Resource_entity*>(resource.prototype_data)->get_item();
+		}
+	}
+
+	return nullptr;
+}
+
 void jactorio::data::Mining_drill::on_defer_time_elapsed(game::Deferral_timer& timer, Unique_data_base* unique_data) const {
-	// TODO this is temporary
+	// Re-register callback and insert item
 	auto* drill_data = static_cast<Mining_drill_data*>(unique_data);
 
-	const std::string iname = "__base__/coal-item";
-	auto* item = data::data_manager::data_raw_get<Item>(dataCategory::item, iname);
-
-	drill_data->item_output.insert({item, 1});
+	drill_data->item_output.insert({drill_data->output_item, 1});
 	register_mine_callback(timer, drill_data);
 }
 
 
 bool jactorio::data::Mining_drill::on_can_build(const game::World_data& world_data,
                                                 std::pair<game::World_data::world_coord, game::World_data::world_coord>
-                                                world_coords) {
+                                                world_coords) const {
 	/*
 	 * [ ] [ ] [ ] [ ] [ ]
 	 * [ ] [X] [x] [x] [ ]
@@ -108,7 +125,11 @@ void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
 		                                                            output_coords.second),
 		                      orientation
 		);
+	drill_data->output_item = find_output_item(world_data, world_coords);
+	assert(drill_data->output_item != nullptr);  // Should not have been allowed to be placed on no resources
 
+	// ======================================================================
+	
 	tile_layer.unique_data = drill_data;
 
 	drill_data->set = map_placement_orientation(orientation, world_data, world_coords).first;

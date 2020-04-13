@@ -522,7 +522,7 @@ namespace game
 
 			bool on_can_build(const jactorio::game::World_data& world_data,
 			                  std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
-			                  world_coords) override {
+			                  world_coords) const override {
 				return false;
 			}
 		};
