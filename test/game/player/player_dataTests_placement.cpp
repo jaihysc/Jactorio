@@ -598,9 +598,11 @@ namespace game
 			// ======================================================================
 			mutable int on_update_called = 0;
 
-			void on_neighbor_update(const jactorio::game::World_data& world_data,
-			                        std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
-			                        world_coords, jactorio::data::placementOrientation orientation) const override {
+
+			void on_neighbor_update(jactorio::game::World_data& world_data,
+			                        const jactorio::game::World_data::world_pair emit_world_coords,
+			                        jactorio::game::World_data::world_pair receive_world_coords,
+			                        jactorio::data::placementOrientation emit_orientation) const override {
 				on_update_called++;
 			}
 		};
@@ -683,11 +685,13 @@ namespace game
 			mutable std::vector<std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>>
 			coords;
 
-			void on_neighbor_update(const jactorio::game::World_data& world_data,
-			                        const std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::
-			                                        world_coord>
-			                        world_coords, jactorio::data::placementOrientation orientation) const override {
-				coords.push_back(world_coords);
+			void on_neighbor_update(jactorio::game::World_data& world_data,
+			                        const jactorio::game::World_data::world_pair emit_world_coords,
+			                        const jactorio::game::World_data::world_pair receive_world_coords,
+			                        jactorio::data::placementOrientation emit_orientation) const override {
+				EXPECT_EQ(emit_world_coords.first, 1);
+				EXPECT_EQ(emit_world_coords.second, 1);
+				coords.push_back(receive_world_coords);
 			}
 		};
 

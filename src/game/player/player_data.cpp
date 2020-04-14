@@ -169,7 +169,8 @@ void jactorio::game::Player_data::counter_rotate_placement_orientation() {
 	}
 }
 
-void call_on_neighbor_update(const jactorio::game::World_data& world_data,
+void call_on_neighbor_update(jactorio::game::World_data& world_data,
+                             const jactorio::game::World_data::world_pair emit_pair,
                              const jactorio::game::World_data::world_coord world_x,
                              const jactorio::game::World_data::world_coord world_y,
                              const jactorio::data::placementOrientation target_orientation) {
@@ -177,9 +178,14 @@ void call_on_neighbor_update(const jactorio::game::World_data& world_data,
 
 	const game::Chunk_tile* tile = world_data.get_tile_world_coords(world_x, world_y);
 	if (tile) {
-		const data::Entity* entity = tile->get_entity_prototype(game::Chunk_tile::chunkLayer::entity);
+		auto& layer = tile->get_layer(game::Chunk_tile::chunkLayer::entity);
+
+		auto* entity = static_cast<const data::Entity*>(layer.prototype_data);
 		if (entity)
-			entity->on_neighbor_update(world_data, {world_x, world_y}, target_orientation);
+			entity->on_neighbor_update(world_data,
+			                           emit_pair,
+			                           {world_x, world_y},
+			                           target_orientation);
 	}
 }
 
@@ -258,29 +264,34 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 	 * [8] [x] [x] [5]
 	 *     [7] [6]
 	 */
+	const World_data::world_pair emit_coords = {world_x, world_y};
 	for (int x = world_x; x < world_x + entity_ptr->tile_width; ++x) {
 		call_on_neighbor_update(world_data,
+		                        emit_coords,
 		                        x,
 		                        world_y - 1,
-		                        data::placementOrientation::up);
+		                        data::placementOrientation::down);
 	}
 	for (int y = world_y; y < world_y + entity_ptr->tile_height; ++y) {
 		call_on_neighbor_update(world_data,
+		                        emit_coords,
 		                        world_x + entity_ptr->tile_width,
 		                        y,
-		                        data::placementOrientation::right);
+		                        data::placementOrientation::left);
 	}
 	for (int x = world_x + entity_ptr->tile_width - 1; x >= world_x; --x) {
 		call_on_neighbor_update(world_data,
+		                        emit_coords,
 		                        x,
 		                        world_y + entity_ptr->tile_height,
-		                        data::placementOrientation::down);
+		                        data::placementOrientation::up);
 	}
 	for (int y = world_y + entity_ptr->tile_height - 1; y >= world_y; --y) {
 		call_on_neighbor_update(world_data,
+		                        emit_coords,
 		                        world_x - 1,
 		                        y,
-		                        data::placementOrientation::left);
+		                        data::placementOrientation::right);
 	}
 
 }

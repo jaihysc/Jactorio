@@ -73,7 +73,7 @@ void jactorio::data::Mining_drill::on_defer_time_elapsed(game::Deferral_timer& t
 	// Re-register callback and insert item
 	auto* drill_data = static_cast<Mining_drill_data*>(unique_data);
 
-	drill_data->item_output.insert({drill_data->output_item, 1});
+	drill_data->output_tile->insert({drill_data->output_item, 1});
 	register_mine_callback(timer, drill_data);
 }
 
@@ -109,37 +109,50 @@ void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
                                             world_coords,
                                             game::Chunk_tile_layer& tile_layer,
                                             const uint16_t frame, const placementOrientation orientation) const {
-	// TODO temporary
-	game::World_data::world_pair output_coords = this->resource_output.get(orientation);
-	output_coords.first += world_coords.first;
-	output_coords.second += world_coords.second;
 
-	auto& layer = world_data.get_tile_world_coords(output_coords.first,
-	                                               output_coords.second)
-	                        ->get_layer(game::Chunk_tile::chunkLayer::entity);
+	tile_layer.unique_data = new Mining_drill_data();
+	auto* drill_data = static_cast<Mining_drill_data*>(tile_layer.unique_data);
 
-	auto* drill_data =
-		new Mining_drill_data(*layer.unique_data,
-		                      game::item_logistics::can_accept_item(world_data,
-		                                                            output_coords.first,
-		                                                            output_coords.second),
-		                      orientation
-		);
 	drill_data->output_item = find_output_item(world_data, world_coords);
 	assert(drill_data->output_item != nullptr);  // Should not have been allowed to be placed on no resources
-
-	// ======================================================================
-	
-	tile_layer.unique_data = drill_data;
 
 	drill_data->set = map_placement_orientation(orientation, world_data, world_coords).first;
 	drill_data->frame = frame;
 
-	register_mine_callback(world_data.deferral_timer, drill_data);
+	game::World_data::world_pair output_coords = this->resource_output.get(orientation);
+	output_coords.first += world_coords.first;
+	output_coords.second += world_coords.second;
+	on_neighbor_update(world_data, output_coords, world_coords, orientation);
 }
 
-void jactorio::data::Mining_drill::on_neighbor_update(const game::World_data& world_data,
-                                                      std::pair<game::World_data::world_coord, game::World_data::world_coord>
-                                                      world_coords,
-                                                      placementOrientation orientation) const {
+void jactorio::data::Mining_drill::on_neighbor_update(game::World_data& world_data,
+                                                      const game::World_data::world_pair emit_world_coords,
+                                                      const game::World_data::world_pair receive_world_coords,
+                                                      placementOrientation emit_orientation) const {
+	const game::Item_insert_destination::insert_func output_item_func =
+		game::item_logistics::can_accept_item(world_data,
+		                                      emit_world_coords.first,
+		                                      emit_world_coords.second);
+
+	// Do not register callback to mine items if there is no valid entity to output items to
+	if (output_item_func) {
+		Mining_drill_data* drill_data;
+		{
+			auto& self_layer = world_data.get_tile_world_coords(receive_world_coords.first,
+			                                                    receive_world_coords.second)
+			                             ->get_layer(game::Chunk_tile::chunkLayer::entity);
+			// Use the top left tile
+			if (self_layer.is_multi_tile())
+				drill_data = static_cast<Mining_drill_data*>(self_layer.get_multi_tile_top_left()->unique_data);
+			else
+				drill_data = static_cast<Mining_drill_data*>(self_layer.unique_data);
+		}
+
+		auto& output_layer = world_data.get_tile_world_coords(emit_world_coords.first,
+		                                                      emit_world_coords.second)
+		                               ->get_layer(game::Chunk_tile::chunkLayer::entity);
+
+		drill_data->output_tile.emplace(*output_layer.unique_data, output_item_func, emit_orientation);
+		register_mine_callback(world_data.deferral_timer, drill_data);
+	}
 }

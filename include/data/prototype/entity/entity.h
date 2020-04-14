@@ -133,11 +133,12 @@ namespace jactorio::data
 		///
 		/// \brief A neighbor of this prototype in the world was updated
 		/// \param world_data 
-		/// \param world_coords Coordinates of the CURRENT prototype in the world 
-		/// \param orientation Orientation FROM the world prototype which was updated. e.g right = right of updated prototype
-		virtual void on_neighbor_update(const game::World_data& world_data,
-		                                std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
-		                                placementOrientation orientation) const {
+		/// \param emit_world_coords Coordinates of the prototype which is EMITTING the update 
+		/// \param receive_world_coords Layer of the prototype RECEIVING the update 
+		/// \param emit_orientation Orientation to the prototype EMITTING the update 
+		virtual void on_neighbor_update(game::World_data& world_data,
+		                                const game::World_data::world_pair emit_world_coords,
+		                                game::World_data::world_pair receive_world_coords, placementOrientation emit_orientation) const {
 		}
 	};
 

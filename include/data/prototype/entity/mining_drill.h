@@ -6,6 +6,8 @@
 #define JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
 #pragma once
 
+#include <optional>
+
 #include "data/prototype/entity/health_entity.h"
 #include "data/prototype/interface/deferred.h"
 #include "data/prototype/prototype_type.h"
@@ -15,14 +17,7 @@ namespace jactorio::data
 {
 	struct Mining_drill_data final : Health_entity_data
 	{
-		explicit Mining_drill_data(Unique_data_base& unique_data,
-		                           const game::Item_insert_destination::insert_func func,
-		                           const placementOrientation orientation)
-			: item_output(unique_data, func, orientation) {
-		}
-
-		game::Item_insert_destination item_output;
-
+		std::optional<game::Item_insert_destination> output_tile{};
 		Item* output_item = nullptr;
 	};
 
@@ -71,21 +66,23 @@ namespace jactorio::data
 		///
 		/// \briefs Finds the FIRST output item of the mining drill, beginning from top left
 		J_NODISCARD Item* find_output_item(const game::World_data& world_data, game::World_data::world_pair world_pair) const;
-		
+
 		void on_defer_time_elapsed(game::Deferral_timer& timer, Unique_data_base* unique_data) const override;
 
 		///
 		/// \brief Ensures that the mining radius covers a resource entity
-		bool on_can_build(const game::World_data& world_data,
-		                  std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords) const override;
+		J_NODISCARD bool on_can_build(const game::World_data& world_data,
+		                              std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords) const
+		override;
 
 		void on_build(game::World_data& world_data,
 		              std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
 		              game::Chunk_tile_layer& tile_layer, uint16_t frame, placementOrientation orientation) const override;
 
-		void on_neighbor_update(const game::World_data& world_data,
-		                        std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
-		                        placementOrientation orientation) const override;
+		void on_neighbor_update(game::World_data& world_data,
+		                        game::World_data::world_pair emit_world_coords,
+		                        game::World_data::world_pair receive_world_coords,
+		                        placementOrientation emit_orientation) const override;
 
 		void on_remove(game::World_data& world_data,
 		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
