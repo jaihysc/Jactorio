@@ -32,6 +32,7 @@ jactorio::game::Deferral_timer::callback_index jactorio::game::Deferral_timer::r
                                                                                                   unique_data,
                                                                                                   const game_tick_t
                                                                                                   elapse_game_tick) {
+	assert(elapse_game_tick > 0);
 	return register_at_tick(deferred, unique_data, last_game_tick_ + elapse_game_tick);
 }
 

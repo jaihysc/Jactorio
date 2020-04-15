@@ -57,6 +57,12 @@ namespace jactorio::data
 		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
 		               game::Chunk_tile_layer& tile_layer) const override {
 		}
+
+
+		void post_load_validate() const override {
+			// Must convert to at least 1 game tick
+			J_DATA_ASSERT(pickup_time * JC_GAME_HERTZ >= 1, "Pickup time is too small");
+		}
 	};
 }
 

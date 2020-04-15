@@ -80,6 +80,7 @@ namespace data::prototype
 #define MINING_DRILL_RESOURCE\
 		jactorio::data::Item resource_item{};\
 		jactorio::data::Resource_entity resource{};\
+		resource.pickup_time = 1.f;\
 		resource.set_item(&resource_item);
 
 
@@ -119,7 +120,7 @@ namespace data::prototype
 		}
 	}
 
-	TEST(mining_drill, build) {
+	TEST(mining_drill, build_and_extract_resource) {
 		// Mining drill is built with an item output chest
 		MINING_DRILL_TEST_HEAD
 		MINING_DRILL_RESOURCE
@@ -157,6 +158,13 @@ namespace data::prototype
 		data->output_tile->insert({&item, 1});
 
 		EXPECT_EQ(static_cast<jactorio::data::Container_entity_data*>(container_layer.unique_data)->inventory[0].second
+		          ,
+		          1);
+
+		// ======================================================================
+		world_data.deferral_timer.deferral_update(60);  // Takes 60 ticks to mine
+
+		EXPECT_EQ(static_cast<jactorio::data::Container_entity_data*>(container_layer.unique_data)->inventory[1].second
 		          ,
 		          1);
 	}

@@ -154,7 +154,7 @@ void jactorio::data::data_manager::load_data(
 				prototype->post_load_validate();
 			}
 			catch (Data_exception& e) {
-				LOG_MESSAGE_f(error, "Prototype validation failed: `%s`", e.what());
+				LOG_MESSAGE_f(error, "Prototype validation failed: '%s'", e.what());
 				throw;
 			}
 

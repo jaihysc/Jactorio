@@ -30,5 +30,8 @@
 #define BUILD_TYPE "Release"
 #endif
 
+// ======================================================================
+// Constants
+#define JC_GAME_HERTZ 60  // Game updates per second
 
 #endif //JACTORIO_INCLUDE_JACTORIO_H

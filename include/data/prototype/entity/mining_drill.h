@@ -19,6 +19,9 @@ namespace jactorio::data
 	{
 		std::optional<game::Item_insert_destination> output_tile{};
 		Item* output_item = nullptr;
+
+		/// Number of ticks to mine resource
+		uint32_t mining_ticks = 1;
 	};
 
 

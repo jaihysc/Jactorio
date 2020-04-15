@@ -46,8 +46,7 @@ std::pair<uint16_t, uint16_t> jactorio::data::Mining_drill::map_placement_orient
 // ======================================================================
 
 void jactorio::data::Mining_drill::register_mine_callback(game::Deferral_timer& timer, Mining_drill_data* unique_data) const {
-	// TODO
-	timer.register_from_tick(*this, unique_data, 100);
+	timer.register_from_tick(*this, unique_data, unique_data->mining_ticks);
 }
 
 jactorio::data::Item* jactorio::data::Mining_drill::find_output_item(const game::World_data& world_data,
@@ -153,6 +152,9 @@ void jactorio::data::Mining_drill::on_neighbor_update(game::World_data& world_da
 		                               ->get_layer(game::Chunk_tile::chunkLayer::entity);
 
 		drill_data->output_tile.emplace(*output_layer.unique_data, output_item_func, emit_orientation);
+
+		drill_data->mining_ticks = static_cast<double>(JC_GAME_HERTZ) * drill_data->output_item->entity_prototype->pickup_time;
+
 		register_mine_callback(world_data.deferral_timer, drill_data);
 	}
 }
