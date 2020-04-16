@@ -54,8 +54,7 @@ namespace jactorio::data
 		// ======================================================================
 		// Rendering
 
-		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override {
-		}
+		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override;
 
 		Sprite* on_r_get_sprite(Unique_data_base* unique_data) const override;
 		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation,

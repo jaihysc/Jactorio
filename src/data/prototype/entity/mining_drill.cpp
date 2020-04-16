@@ -7,7 +7,14 @@
 #include "data/data_manager.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "game/logic/item_logistics.h"
+#include "renderer/gui/gui_menus.h"
 
+
+void jactorio::data::Mining_drill::on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const {
+	auto* drill_data = static_cast<Mining_drill_data*>(tile_layer->unique_data);
+
+	renderer::gui::mining_drill(player_data, *drill_data);
+}
 
 jactorio::data::Sprite* jactorio::data::Mining_drill::on_r_get_sprite(Unique_data_base* unique_data) const {
 	const auto set = static_cast<Renderable_data*>(unique_data)->set;

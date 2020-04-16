@@ -5,8 +5,8 @@
 #include "renderer/gui/gui_menus.h"
 
 #include <functional>
-#include <imgui/imgui.h>
 #include <sstream>
+#include <imgui/imgui.h>
 
 #include "data/data_manager.h"
 #include "data/prototype/item/recipe_group.h"
@@ -585,18 +585,15 @@ void jactorio::renderer::gui::pickup_progressbar(game::Player_data& player_data)
 
 // ==========================================================================================
 // Entity menus
+const ImGuiWindowFlags entity_menu_flags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 
 void jactorio::renderer::gui::container_entity(game::Player_data& player_data,
                                                data::item_stack* inv, const uint16_t inv_size) {
-	ImGuiWindowFlags flags = 0;
-	flags |= ImGuiWindowFlags_NoResize;
-	flags |= ImGuiWindowFlags_NoCollapse;
-
 	player_inventory_menu(player_data);
 
 	const auto window_size = get_window_size(player_data);
 	setup_next_window_right(window_size);
-	ImGui::Begin("Container", nullptr, window_size, -1, flags);
+	ImGui::Begin("Container", nullptr, window_size, -1, entity_menu_flags);
 
 	draw_slots(10, inv_size, [&](auto i) {
 		if (inv[i].first == nullptr) {
@@ -624,6 +621,23 @@ void jactorio::renderer::gui::container_entity(game::Player_data& player_data,
 					}
 				});
 	});
+
+	ImGui::End();
+}
+
+void jactorio::renderer::gui::mining_drill(game::Player_data& player_data, data::Mining_drill_data& drill_data) {
+	player_inventory_menu(player_data);
+
+	const auto window_size = get_window_size(player_data);
+	setup_next_window_right(window_size);
+
+	ImGui::Begin("Mining drill", nullptr, window_size, -1, entity_menu_flags);
+
+	// 1 - (Ticks left / Ticks to mine)
+	const long double ticks_left = drill_data.deferral_entry.first - player_data.get_player_world().game_tick();
+	const long double mine_ticks = drill_data.mining_ticks;
+
+	ImGui::ProgressBar(1.f - static_cast<float>(ticks_left / mine_ticks));
 
 	ImGui::End();
 }

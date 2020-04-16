@@ -54,7 +54,7 @@ void jactorio::renderer::render_init() {
 	// Init window
 	core::Resource_guard window_manager_guard(&window_manager::terminate);
 	try {
-		if (window_manager::init(640, 490) != 0)
+		if (window_manager::init(840, 490) != 0)
 			return;
 	}
 	catch (data::Data_exception&) {

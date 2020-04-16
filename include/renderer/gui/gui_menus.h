@@ -8,6 +8,7 @@
 
 #include <imgui/imgui.h>
 
+#include "data/prototype/entity/mining_drill.h"
 #include "data/prototype/item/item.h"
 #include "game/player/player_data.h"
 
@@ -32,6 +33,8 @@ namespace jactorio::renderer::gui
 	// ==========================================================================================
 	// Entity menus
 	void container_entity(game::Player_data& player_data, data::item_stack* inv, uint16_t inv_size);
+
+	void mining_drill(game::Player_data& player_data, data::Mining_drill_data& drill_data);
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
