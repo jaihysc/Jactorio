@@ -16,7 +16,7 @@ void jactorio::game::Deferral_timer::deferral_update(const game_tick_t game_tick
 	callbacks_.erase(game_tick);
 }
 
-jactorio::game::Deferral_timer::callback_index jactorio::game::Deferral_timer::register_at_tick(
+jactorio::game::Deferral_timer::deferral_entry jactorio::game::Deferral_timer::register_at_tick(
 	const data::Deferred& deferred, data::Unique_data_base* unique_data,
 	const game_tick_t due_game_tick) {
 	assert(due_game_tick > last_game_tick_);
@@ -24,10 +24,10 @@ jactorio::game::Deferral_timer::callback_index jactorio::game::Deferral_timer::r
 	auto& callbacks = callbacks_[due_game_tick];
 	callbacks.emplace_back(std::ref(deferred), unique_data);
 
-	return callbacks.size() - 1;
+	return {due_game_tick, callbacks.size()};
 }
 
-jactorio::game::Deferral_timer::callback_index jactorio::game::Deferral_timer::register_from_tick(const data::Deferred& deferred,
+jactorio::game::Deferral_timer::deferral_entry jactorio::game::Deferral_timer::register_from_tick(const data::Deferred& deferred,
                                                                                                   data::Unique_data_base*
                                                                                                   unique_data,
                                                                                                   const game_tick_t
@@ -36,14 +36,17 @@ jactorio::game::Deferral_timer::callback_index jactorio::game::Deferral_timer::r
 	return register_at_tick(deferred, unique_data, last_game_tick_ + elapse_game_tick);
 }
 
-void jactorio::game::Deferral_timer::remove_deferral(const game_tick_t due_game_tick, const callback_index index) {
+void jactorio::game::Deferral_timer::remove_deferral(deferral_entry entry) {
+	assert(entry.second != 0);  // Invalid callback index
+
 	// due_game_tick does not exist
-	if (callbacks_.find(due_game_tick) == callbacks_.end())
+	if (callbacks_.find(entry.first) == callbacks_.end())
 		return;
 
-	auto& callbacks = callbacks_[due_game_tick];
+	auto& callbacks = callbacks_[entry.first];
 
-	// Index out of range
-	assert(index < callbacks.size());
-	callbacks.erase(callbacks.begin() + index);
+	// Index is +1 than actual index
+	entry.second -= 1;
+	assert(entry.second <= callbacks.size());  // Index out of range
+	callbacks.erase(callbacks.begin() + entry.second);
 }

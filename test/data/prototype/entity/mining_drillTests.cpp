@@ -120,6 +120,28 @@ namespace data::prototype
 		}
 	}
 
+	void mining_drill_build_chest(jactorio::game::World_data& world_data, jactorio::data::Container_entity& container,
+	                              const int world_x = 4, const int world_y = 2) {
+		// Build chest
+		jactorio::game::Chunk_tile_layer& container_layer =
+			world_data.get_tile_world_coords(world_x, world_y)
+			          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+		container_layer.prototype_data = &container;
+		container_layer.unique_data = new jactorio::data::Container_entity_data(20);
+	}
+
+	void mining_drill_build_drill(jactorio::game::World_data& world_data,
+	                              jactorio::data::Resource_entity& resource,
+	                              jactorio::data::Mining_drill& drill) {
+		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
+		tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
+
+		drill.on_build(world_data, {1, 1},
+		               tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), 0,
+		               jactorio::data::placementOrientation::right);
+	}
+
 	TEST(mining_drill, build_and_extract_resource) {
 		// Mining drill is built with an item output chest
 		MINING_DRILL_TEST_HEAD
@@ -128,26 +150,16 @@ namespace data::prototype
 		drill.resource_output.right = {3, 1};
 		jactorio::data::Container_entity container{};
 
-		// Build chest
-		jactorio::game::Chunk_tile_layer& container_layer =
-			world_data.get_tile_world_coords(4, 2)
-			          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
 
-		container_layer.prototype_data = &container;
-		container_layer.unique_data = new jactorio::data::Container_entity_data(20);
+		mining_drill_build_chest(world_data, container);
 
+		mining_drill_build_drill(world_data, resource, drill);
 
-		// Build drill
-		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
-
-		tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
-
-		drill.on_build(world_data, {1, 1},
-		               tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), 0,
-		               jactorio::data::placementOrientation::right);
 
 		// ======================================================================
 		// Unique data created by on_build()
+		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
+
 		jactorio::game::Chunk_tile_layer& layer = tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
 		auto* data = static_cast<jactorio::data::Mining_drill_data*>(layer.unique_data);
 
@@ -156,6 +168,10 @@ namespace data::prototype
 		// Ensure it inserts into the correct entity
 		jactorio::data::Item item{};
 		data->output_tile->insert({&item, 1});
+
+		jactorio::game::Chunk_tile_layer& container_layer = world_data.get_tile_world_coords(4, 2)
+		                                                              ->get_layer(
+			                                                              jactorio::game::Chunk_tile::chunkLayer::entity);
 
 		EXPECT_EQ(static_cast<jactorio::data::Container_entity_data*>(container_layer.unique_data)->inventory[0].second
 		          ,
@@ -179,29 +195,21 @@ namespace data::prototype
 		jactorio::data::Container_entity container{};
 
 
-		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
-		jactorio::game::Chunk_tile_layer& drill_layer = tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+		mining_drill_build_drill(world_data, resource, drill);
 
-		tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
-		drill.on_build(world_data, {1, 1},
-		               drill_layer, 0,
-		               jactorio::data::placementOrientation::right);
+		mining_drill_build_chest(world_data, container);
 
-		// Build chest
-		jactorio::game::Chunk_tile_layer& container_layer =
-			world_data.get_tile_world_coords(4, 2)
-			          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
-
-		container_layer.prototype_data = &container;
-		container_layer.unique_data = new jactorio::data::Container_entity_data(20);
 		drill.on_neighbor_update(world_data,
 		                         {4, 2}, {1, 1},
 		                         jactorio::data::placementOrientation::right);
 
 		// ======================================================================
 		// Should now insert as it has an entity to output to
-		jactorio::game::Chunk_tile_layer& layer = tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
-		auto* data = static_cast<jactorio::data::Mining_drill_data*>(layer.unique_data);
+		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
+
+		auto* data =
+			static_cast<jactorio::data::Mining_drill_data*>(
+				tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).unique_data);
 
 		ASSERT_TRUE(data->output_tile.has_value());
 
@@ -209,8 +217,108 @@ namespace data::prototype
 		jactorio::data::Item item{};
 		data->output_tile->insert({&item, 1});
 
+		jactorio::game::Chunk_tile_layer& container_layer = world_data.get_tile_world_coords(4, 2)
+		                                                              ->get_layer(
+			                                                              jactorio::game::Chunk_tile::chunkLayer::entity);
+
 		EXPECT_EQ(static_cast<jactorio::data::Container_entity_data*>(container_layer.unique_data)->inventory[0].second
 		          ,
 		          1);
+	}
+
+	TEST(mining_drill, remove_drill) {
+		// When the mining drill is removed, it needs to unregister the defer update
+		// callback to the unique_data which now no longer exists
+		MINING_DRILL_TEST_HEAD
+		MINING_DRILL_RESOURCE
+
+		drill.resource_output.right = {3, 1};
+		jactorio::data::Container_entity container{};
+
+		mining_drill_build_chest(world_data, container);
+		mining_drill_build_drill(world_data, resource, drill);
+
+		// Remove
+		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
+		drill.on_remove(world_data, {1, 1}, tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity));
+
+		tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).clear();  // Deletes drill data
+
+		// Should no longer be valid
+		world_data.deferral_timer.deferral_update(60);
+	}
+
+	TEST(mining_drill, remove_output_entity) {
+		// When the mining drill's output entity is removed, it needs to unregister the defer update
+		MINING_DRILL_TEST_HEAD
+		MINING_DRILL_RESOURCE
+
+		drill.resource_output.right = {3, 1};
+		jactorio::data::Container_entity container{};
+
+		mining_drill_build_chest(world_data, container);
+		mining_drill_build_drill(world_data, resource, drill);
+
+		// Remove chest
+		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(4, 2);
+		tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).clear();  // Remove container 
+
+		// Should only remove the callback once
+		drill.on_neighbor_update(world_data,
+		                         {4, 2}, {1, 1},
+		                         jactorio::data::placementOrientation::right);
+		drill.on_neighbor_update(world_data,
+		                         {4, 2}, {1, 1},
+		                         jactorio::data::placementOrientation::right);
+		drill.on_neighbor_update(world_data,
+		                         {4, 2}, {1, 1},
+		                         jactorio::data::placementOrientation::right);
+
+		// Should no longer be valid
+		world_data.deferral_timer.deferral_update(60);
+	}
+
+	TEST(mining_drill, update_non_output) {
+		// Mining drill should ignore on_neighbor_update from tiles other than the item output tile
+		MINING_DRILL_TEST_HEAD
+		MINING_DRILL_RESOURCE
+
+		drill.resource_output.up = {1, -1};
+		drill.resource_output.right = {3, 1};
+		mining_drill_build_drill(world_data, resource, drill);
+
+		// ======================================================================
+		jactorio::data::Container_entity container{};
+		mining_drill_build_chest(world_data, container, 2, 0);
+		mining_drill_build_chest(world_data, container, 4, 1);
+
+		drill.on_neighbor_update(world_data,
+		                         {2, 0}, {1, 1},
+		                         jactorio::data::placementOrientation::up);
+		drill.on_neighbor_update(world_data,
+		                         {4, 1}, {1, 1},
+		                         jactorio::data::placementOrientation::right);
+
+		world_data.deferral_timer.deferral_update(60);
+
+		// If the on_neighbor_update event was ignored, no items will be added
+		{
+			jactorio::game::Chunk_tile_layer& container_layer =
+				world_data.get_tile_world_coords(2, 0)
+				          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+			EXPECT_EQ(static_cast<jactorio::data::Container_entity_data*>(container_layer.unique_data)->inventory[0].second
+			          ,
+			          0);
+		}
+		{
+			jactorio::game::Chunk_tile_layer& container_layer =
+				world_data.get_tile_world_coords(4, 1)
+				          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+			EXPECT_EQ(static_cast<jactorio::data::Container_entity_data*>(container_layer.unique_data)->inventory[0].second
+			          ,
+			          0);
+		}
 	}
 }

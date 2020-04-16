@@ -18,10 +18,14 @@ namespace jactorio::data
 	struct Mining_drill_data final : Health_entity_data
 	{
 		std::optional<game::Item_insert_destination> output_tile{};
+		game::World_data::world_pair output_tile_coords{};
+
 		Item* output_item = nullptr;
 
 		/// Number of ticks to mine resource
 		uint32_t mining_ticks = 1;
+
+		game::Deferral_timer::deferral_entry deferral_entry{};
 	};
 
 
@@ -64,6 +68,7 @@ namespace jactorio::data
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource 
 		void register_mine_callback(game::Deferral_timer& timer, Mining_drill_data* unique_data) const;
+		static void remove_mine_callback(game::Deferral_timer& timer, game::Deferral_timer::deferral_entry& entry);
 
 	public:
 		///
@@ -89,8 +94,7 @@ namespace jactorio::data
 
 		void on_remove(game::World_data& world_data,
 		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
-		               game::Chunk_tile_layer& tile_layer) const override {
-		}
+		               game::Chunk_tile_layer& tile_layer) const override;
 
 		void post_load_validate() const override {
 			J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");

@@ -37,7 +37,8 @@ namespace game
 		const auto unique_data = std::make_unique<Mock_unique_data>();
 
 		const auto index = timer.register_at_tick(deferred, unique_data.get(), 2);
-		EXPECT_EQ(index, 0);
+		EXPECT_EQ(index.first, 2);
+		EXPECT_EQ(index.second, 1);
 
 		timer.deferral_update(0);
 		EXPECT_FALSE(deferred.callback_called);
@@ -59,7 +60,8 @@ namespace game
 
 		// Elapse 2 ticks from now
 		const auto index = timer.register_from_tick(deferred, unique_data.get(), 2);
-		EXPECT_EQ(index, 0);
+		EXPECT_EQ(index.first, 2);
+		EXPECT_EQ(index.second, 1);
 
 		timer.deferral_update(0);
 		EXPECT_FALSE(deferred.callback_called);
@@ -94,7 +96,7 @@ namespace game
 		const Mock_deferred deferred{};
 		const auto index = timer.register_at_tick(deferred, nullptr, 2);
 
-		timer.remove_deferral(2, index);
+		timer.remove_deferral(index);
 
 		// Callback removed
 		timer.deferral_update(2);
@@ -104,6 +106,6 @@ namespace game
 	TEST(deferral_timer, remove_deferral_non_existent) {
 		jactorio::game::Deferral_timer timer{};
 
-		timer.remove_deferral(2, 999);
+		timer.remove_deferral({32, 999});
 	}
 }

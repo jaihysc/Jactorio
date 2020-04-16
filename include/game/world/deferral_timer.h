@@ -27,9 +27,13 @@ namespace jactorio::game
 			                   std::pair<std::reference_wrapper<const data::Deferred>, data::Unique_data_base*>
 		                   >> callbacks_;
 
+		/// \brief 0 indicates invalid callback
 		using callback_index = decltype(callbacks_.size());
 
 	public:
+		/// \brief Information about the registered deferral for removing
+		using deferral_entry = std::pair<game_tick_t, callback_index>;
+
 		///
 		/// \brief Calls all deferred callbacks for the current game tick
 		/// \param game_tick Current game tick
@@ -40,7 +44,7 @@ namespace jactorio::game
 		/// \param deferred Implements virtual function on_defer_time_elapsed
 		/// \param due_game_tick Game tick where the callback will be called
 		/// \return Index of registered callback, use this to remove the callback later
-		callback_index register_at_tick(const data::Deferred& deferred, data::Unique_data_base* unique_data,
+		deferral_entry register_at_tick(const data::Deferred& deferred, data::Unique_data_base* unique_data,
 		                                game_tick_t due_game_tick);
 
 		///
@@ -48,12 +52,12 @@ namespace jactorio::game
 		/// \param deferred Implements virtual function on_defer_time_elapsed
 		/// \param elapse_game_tick Callback will be called in game ticks from now
 		/// \return Index of registered callback, use this to remove the callback later
-		callback_index register_from_tick(const data::Deferred& deferred, data::Unique_data_base* unique_data,
+		deferral_entry register_from_tick(const data::Deferred& deferred, data::Unique_data_base* unique_data,
 		                                  game_tick_t elapse_game_tick);
 
 		///
 		/// \brief Removes registered callback at game_tick at index
-		void remove_deferral(game_tick_t due_game_tick, callback_index index);
+		void remove_deferral(deferral_entry entry);
 	};
 }
 

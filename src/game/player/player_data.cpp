@@ -189,6 +189,52 @@ void call_on_neighbor_update(jactorio::game::World_data& world_data,
 	}
 }
 
+void update_neighboring_entities(jactorio::game::World_data& world_data,
+								 const jactorio::game::World_data::world_coord world_x,
+								 const jactorio::game::World_data::world_coord world_y,
+                                 const jactorio::data::Entity* entity_ptr) {
+	// Clockwise from top left
+
+	/*
+	 *     [1] [2]
+	 * [A] [X] [x] [3]
+	 * [9] [x] [x] [4]
+	 * [8] [x] [x] [5]
+	 *     [7] [6]
+	 */
+	using namespace jactorio;
+
+	const game::World_data::world_pair emit_coords = {world_x, world_y};
+	for (int x = world_x; x < world_x + entity_ptr->tile_width; ++x) {
+		call_on_neighbor_update(world_data,
+		                        emit_coords,
+		                        x,
+		                        world_y - 1,
+		                        data::placementOrientation::down);
+	}
+	for (int y = world_y; y < world_y + entity_ptr->tile_height; ++y) {
+		call_on_neighbor_update(world_data,
+		                        emit_coords,
+		                        world_x + entity_ptr->tile_width,
+		                        y,
+		                        data::placementOrientation::left);
+	}
+	for (int x = world_x + entity_ptr->tile_width - 1; x >= world_x; --x) {
+		call_on_neighbor_update(world_data,
+		                        emit_coords,
+		                        x,
+		                        world_y + entity_ptr->tile_height,
+		                        data::placementOrientation::up);
+	}
+	for (int y = world_y + entity_ptr->tile_height - 1; y >= world_y; --y) {
+		call_on_neighbor_update(world_data,
+		                        emit_coords,
+		                        world_x - 1,
+		                        y,
+		                        data::placementOrientation::right);
+	}
+}
+
 void jactorio::game::Player_data::try_place_entity(World_data& world_data,
                                                    const int world_x, const int world_y,
                                                    const bool can_activate_layer) {
@@ -254,46 +300,7 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 
 	// TODO Frame not yet implemented
 	entity_ptr->on_build(world_data, {world_x, world_y}, selected_layer, 0, placement_orientation);
-
-	// Clockwise from top left
-
-	/*
-	 *     [1] [2]
-	 * [A] [X] [x] [3]
-	 * [9] [x] [x] [4]
-	 * [8] [x] [x] [5]
-	 *     [7] [6]
-	 */
-	const World_data::world_pair emit_coords = {world_x, world_y};
-	for (int x = world_x; x < world_x + entity_ptr->tile_width; ++x) {
-		call_on_neighbor_update(world_data,
-		                        emit_coords,
-		                        x,
-		                        world_y - 1,
-		                        data::placementOrientation::down);
-	}
-	for (int y = world_y; y < world_y + entity_ptr->tile_height; ++y) {
-		call_on_neighbor_update(world_data,
-		                        emit_coords,
-		                        world_x + entity_ptr->tile_width,
-		                        y,
-		                        data::placementOrientation::left);
-	}
-	for (int x = world_x + entity_ptr->tile_width - 1; x >= world_x; --x) {
-		call_on_neighbor_update(world_data,
-		                        emit_coords,
-		                        x,
-		                        world_y + entity_ptr->tile_height,
-		                        data::placementOrientation::up);
-	}
-	for (int y = world_y + entity_ptr->tile_height - 1; y >= world_y; --y) {
-		call_on_neighbor_update(world_data,
-		                        emit_coords,
-		                        world_x - 1,
-		                        y,
-		                        data::placementOrientation::right);
-	}
-
+	update_neighboring_entities(world_data, world_x, world_y, entity_ptr);
 }
 
 
@@ -366,11 +373,14 @@ void jactorio::game::Player_data::try_pickup(World_data& world_data,
 				activated_layer_ = nullptr;
 
 			// Call events
-			static_cast<const data::Entity*>(layer.prototype_data)->on_remove(
-				world_data, {tile_x, tile_y}, layer);
+			auto* entity = static_cast<const data::Entity*>(layer.prototype_data);
+
+			entity->on_remove(world_data, {tile_x, tile_y}, layer);
 
 			const bool result = placement_c::place_entity_at_coords(world_data, nullptr, tile_x, tile_y);
 			assert(result);  // false indicates failed to remove entity
+
+			update_neighboring_entities(world_data, tile_x, tile_y, entity);
 		}
 	}
 }

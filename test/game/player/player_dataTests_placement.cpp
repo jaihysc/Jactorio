@@ -676,7 +676,7 @@ namespace game
 
 
 			void on_remove(jactorio::game::World_data& world_data,
-			               std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+			               const std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
 			               world_coords,
 			               jactorio::game::Chunk_tile_layer& tile_layer) const override {
 			}
@@ -772,5 +772,10 @@ namespace game
 		VALIDATE_COORDS(7, 0, 3);
 		VALIDATE_COORDS(8, 0, 2);
 		VALIDATE_COORDS(9, 0, 1);
+
+		// ======================================================================
+		
+		player_data.try_pickup(world_data, 1, 1, 9999);
+		ASSERT_EQ(entity_proto->coords.size(), 20);
 	}
 }
