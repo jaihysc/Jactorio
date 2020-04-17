@@ -48,5 +48,7 @@ void jactorio::game::Deferral_timer::remove_deferral(deferral_entry entry) {
 	// Index is +1 than actual index
 	entry.second -= 1;
 	assert(entry.second <= callbacks.size());  // Index out of range
-	callbacks.erase(callbacks.begin() + entry.second);
+
+	// Instead of erasing, make the callback a blank function so that future remove calls do not go out of range
+	callbacks[entry.second].first = blank_callback_;
 }

@@ -100,7 +100,23 @@ namespace game
 
 		// Callback removed
 		timer.deferral_update(2);
-		ASSERT_FALSE(deferred.callback_called);
+		EXPECT_FALSE(deferred.callback_called);
+	}
+
+	TEST(deferral_timer, remove_deferral_multiple) {
+		jactorio::game::Deferral_timer timer{};
+
+		const Mock_deferred deferred{};
+
+		const auto deferral_entry = timer.register_at_tick(deferred, nullptr, 2);
+		const auto deferral_entry_2 = timer.register_at_tick(deferred, nullptr, 2);
+
+		timer.remove_deferral(deferral_entry);
+		timer.remove_deferral(deferral_entry_2);
+
+		// Both deferrals removed
+		timer.deferral_update(2);
+		EXPECT_FALSE(deferred.callback_called);
 	}
 
 	TEST(deferral_timer, remove_deferral_non_existent) {

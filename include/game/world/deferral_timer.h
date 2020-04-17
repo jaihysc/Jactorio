@@ -30,6 +30,19 @@ namespace jactorio::game
 		/// \brief 0 indicates invalid callback
 		using callback_index = decltype(callbacks_.size());
 
+		// ======================================================================
+
+		///
+		/// \brief Used to fill the gap when a callback has been removed
+		class Blank_callback final : public data::Deferred
+		{
+		public:
+			void on_defer_time_elapsed(Deferral_timer&, data::Unique_data_base*) const override {
+			}
+		};
+
+		Blank_callback blank_callback_;
+
 	public:
 		/// \brief Information about the registered deferral for removing
 		using deferral_entry = std::pair<game_tick_t, callback_index>;
