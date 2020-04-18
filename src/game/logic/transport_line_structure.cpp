@@ -42,7 +42,7 @@ can_insert(const bool left_side, const transport_line_offset& start_offset) {
 	return offset <= start_offset;
 }
 
-void jactorio::game::Transport_line_segment::append_item(const bool insert_left, double offset, data::Item* item) {
+void jactorio::game::Transport_line_segment::append_item(const bool insert_left, double offset, const data::Item* item) {
 	std::deque<transport_line_item>& target_queue = insert_left ? this->left : this->right;
 
 	// A minimum distance of transport_line_c::item_spacing is maintained between items (AFTER the initial item)
@@ -55,8 +55,7 @@ void jactorio::game::Transport_line_segment::append_item(const bool insert_left,
 		: r_back_item_distance += transport_line_offset{offset};
 }
 
-void jactorio::game::Transport_line_segment::
-insert_item(const bool insert_left, const double offset, data::Item* item) {
+void jactorio::game::Transport_line_segment::insert_item(const bool insert_left, const double offset, const data::Item* item) {
 	std::deque<transport_line_item>& target_queue = insert_left ? this->left : this->right;
 
 	transport_line_offset target_offset{offset};
@@ -89,4 +88,23 @@ loop_exit:
 	//		target_offset = transport_line_c::item_spacing;
 
 	target_queue.emplace(it, target_offset, item);
+}
+
+bool jactorio::game::Transport_line_segment::try_insert_item(const bool insert_left, const double offset,
+                                                             const data::Item* item) {
+	if (!can_insert(insert_left, dec::decimal_cast<transport_line_decimal_place>(offset)))
+		return false;
+
+	// Reenable transport segment
+	if (insert_left) {
+		if (!is_active_left())
+			l_index = 0;
+	}
+	else {
+		if (!is_active_right())
+			r_index = 0;
+	}
+
+	insert_item(insert_left, offset, item);
+	return true;
 }

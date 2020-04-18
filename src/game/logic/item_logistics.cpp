@@ -112,8 +112,8 @@ ITEM_INSERT_FUNCTION(insert_transport_belt) {
 	}
 
 	// TODO offset needs to be calculated correctly if segment is not 1 long
-	line_data.line_segment.append_item(use_line_left, 0.5f, item_stack.first);
-	return true;
+	constexpr double insertion_offset = 0.5;
+	return line_data.line_segment.try_insert_item(use_line_left, insertion_offset, item_stack.first);
 }
 
 #undef ITEM_INSERT_FUNCTION

@@ -209,6 +209,41 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment.get()->left[3].first.getAsDouble(), 0.3);  // 1.5
 	}
 
+	TEST(transport_line_structure, try_insert_item) {
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+
+		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
+			jactorio::game::Transport_line_segment::moveDir::up,
+			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			5
+		);
+
+		// Offset is ALWAYS from the beginning of the transport line
+		{
+			const bool result = line_segment->try_insert_item(true, 1.2, item_proto.get());
+			ASSERT_TRUE(result);
+			EXPECT_FLOAT_EQ(line_segment.get()->left[0].first.getAsDouble(), 1.2);
+		}
+		{
+			// Too close
+			const bool result = line_segment->try_insert_item(true, 1.3, item_proto.get());
+			ASSERT_FALSE(result);
+		}
+
+
+		// Should also reenable transport line upon insertion if it is disabled
+		line_segment->l_index = 999;
+
+		{
+			const bool result = line_segment->try_insert_item(true, 0.5, item_proto.get());
+			ASSERT_TRUE(result);
+			EXPECT_FLOAT_EQ(line_segment.get()->left[0].first.getAsDouble(), 0.5);
+			EXPECT_FLOAT_EQ(line_segment.get()->left[1].first.getAsDouble(), 0.7);  // 1.2
+		}
+
+		EXPECT_EQ(line_segment->l_index, 0);
+	}
+
 	TEST(transport_line_structure, back_item_distance_left) {
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 

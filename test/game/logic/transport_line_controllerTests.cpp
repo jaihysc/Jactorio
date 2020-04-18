@@ -13,6 +13,12 @@
 
 namespace game::logic
 {
+	// Creates a world, chunk and logic chunk at 0, 0
+#define TRANSPORT_LINE_CONTROLLER_TEST_HEADER\
+		jactorio::game::World_data world_data{};\
+		auto chunk = jactorio::game::Chunk(0, 0);\
+		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
+
 	// For line_logic and line_logic_precision
 	void test_item_positions(jactorio::game::World_data& world_data,
 	                         const jactorio::game::Transport_line_segment* up_segment,
@@ -55,16 +61,12 @@ namespace game::logic
 
 	TEST(transport_line_controller, line_logic) {
 		// Tests that items move as expected (within a chunk)
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 		using namespace jactorio::game;
 
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
-
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new Transport_line_segment(
@@ -90,19 +92,19 @@ namespace game::logic
 		down_segment->target_segment = left_segment;
 		left_segment->target_segment = up_segment;
 		{
-			auto& up = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                      .emplace_back(transport_belt_proto.get(), 0, 0);
 			up.unique_data = up_segment;
 
-			auto& right = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                         .emplace_back(transport_belt_proto.get(), 4, 0);
 			right.unique_data = right_segment;
 
-			auto& down = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& down = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                        .emplace_back(transport_belt_proto.get(), 4, 5);
 			down.unique_data = down_segment;
 
-			auto& left = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& left = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                        .emplace_back(transport_belt_proto.get(), 0, 5);
 			left.unique_data = left_segment;
 		}
@@ -117,16 +119,12 @@ namespace game::logic
 
 	TEST(transport_line_controller, line_logic_precision) {
 		// Tests for data type precision representing the distance between items
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 		using namespace jactorio::game;
 
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
-
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new Transport_line_segment(
@@ -152,19 +150,19 @@ namespace game::logic
 		down_segment->target_segment = left_segment;
 		left_segment->target_segment = up_segment;
 		{
-			auto& up = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                      .emplace_back(transport_belt_proto.get(), 0, 0);
 			up.unique_data = up_segment;
 
-			auto& right = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                         .emplace_back(transport_belt_proto.get(), 4, 0);
 			right.unique_data = right_segment;
 
-			auto& down = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& down = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                        .emplace_back(transport_belt_proto.get(), 4, 5);
 			down.unique_data = down_segment;
 
-			auto& left = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& left = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                        .emplace_back(transport_belt_proto.get(), 0, 5);
 			left.unique_data = left_segment;
 		}
@@ -186,6 +184,7 @@ namespace game::logic
 
 	TEST(transport_line_controller, line_logic_fast) {
 		// Same as line logic, but belts are faster (0.06), which seems to break the current logic at the time of writing
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 		using namespace jactorio::game;
 
 		const auto j_belt_speed = 0.06f;
@@ -193,11 +192,6 @@ namespace game::logic
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = j_belt_speed;  // <---
-
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new Transport_line_segment(
@@ -223,19 +217,19 @@ namespace game::logic
 		down_segment->target_segment = left_segment;
 		left_segment->target_segment = up_segment;
 		{
-			auto& up = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                      .emplace_back(transport_belt_proto.get(), 0, 0);
 			up.unique_data = up_segment;
 
-			auto& right = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                         .emplace_back(transport_belt_proto.get(), 4, 0);
 			right.unique_data = right_segment;
 
-			auto& down = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& down = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                        .emplace_back(transport_belt_proto.get(), 4, 5);
 			down.unique_data = down_segment;
 
-			auto& left = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& left = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                        .emplace_back(transport_belt_proto.get(), 0, 5);
 			left.unique_data = left_segment;
 		}
@@ -286,16 +280,12 @@ namespace game::logic
 	TEST(transport_line_controller, line_logic_right_bend) {
 		// Validates the correct handling of multiple items across transport lines
 		// The spacing between items should be maintained
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 		using namespace jactorio::game;
 
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
-
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		/*
 		 *    --------- RIGHT -------- >
@@ -317,11 +307,11 @@ namespace game::logic
 
 		up_segment->target_segment = right_segment;
 		{
-			auto& up = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                      .emplace_back(transport_belt_proto.get(), 0, 0);
 			up.unique_data = up_segment;
 
-			auto& right = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                         .emplace_back(transport_belt_proto.get(), 3, 0);
 			right.unique_data = right_segment;
 		}
@@ -371,16 +361,12 @@ namespace game::logic
 
 	TEST(transport_line_controller, line_logic_compressed_right_bend) {
 		// Same as line_logic_right_bend, but items are compressed
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 		using namespace jactorio::game;
 
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
-
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		/*
 		 * COMPRESSED
@@ -403,11 +389,11 @@ namespace game::logic
 
 		up_segment->target_segment = right_segment;
 		{
-			auto& up = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                      .emplace_back(transport_belt_proto.get(), 0, 0);
 			up.unique_data = up_segment;
 
-			auto& right = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                         .emplace_back(transport_belt_proto.get(), 3, 0);
 			right.unique_data = right_segment;
 		}
@@ -445,17 +431,13 @@ namespace game::logic
 		/*
 		 * < ------ LEFT (1) ------		< ------ LEFT (2) -------
 		 */
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 
 		using namespace jactorio::game;
 
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
-
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		auto* segment_1 = new Transport_line_segment(
 			Transport_line_segment::moveDir::left,
@@ -468,12 +450,12 @@ namespace game::logic
 
 		segment_2->target_segment = segment_1;
 		{
-			auto& structs = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line);
+			auto& structs = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line);
 
 			auto& seg_1 = structs.emplace_back(transport_belt_proto.get(), 0, 0);
 			seg_1.unique_data = segment_1;
 
-			auto& seg_2 = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& seg_2 = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                         .emplace_back(transport_belt_proto.get(), 3, 0);
 			seg_2.unique_data = segment_2;
 		}
@@ -498,6 +480,7 @@ namespace game::logic
 		// When no target_segment is provided:
 		// First Item will stop at the end of line (Distance is 0)
 		// Trailing items will stop at item_width from the previous item
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 
 		using namespace jactorio::game;
 
@@ -505,17 +488,12 @@ namespace game::logic
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
 
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
-
 		auto* segment = new Transport_line_segment(
 			Transport_line_segment::moveDir::left,
 			Transport_line_segment::terminationType::straight, 10);
 
 		{
-			auto& structs = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line);
+			auto& structs = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line);
 			auto& seg_1 = structs.emplace_back(transport_belt_proto.get(), 0, 0);
 			seg_1.unique_data = segment;
 		}
@@ -564,16 +542,12 @@ namespace game::logic
 
 	TEST(transport_line_controller, line_logic_stop_at_filled_target_segment) {
 		// For the right lane:
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 		using namespace jactorio::game;
 
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.01f;
-
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		/*
 		 *    --------- RIGHT -------- >
@@ -595,11 +569,11 @@ namespace game::logic
 
 		up_segment->target_segment = right_segment;
 		{
-			auto& up = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& up = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                      .emplace_back(transport_belt_proto.get(), 0, 0);
 			up.unique_data = up_segment;
 
-			auto& right = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+			auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 			                         .emplace_back(transport_belt_proto.get(), 3, 0);
 			right.unique_data = right_segment;
 		}
@@ -622,22 +596,18 @@ namespace game::logic
 
 	TEST(transport_line_controller, line_logic_item_spacing) {
 		// A minimum distance of transport_line_c::item_spacing is maintained between items
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 		using namespace jactorio::game;
 
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
-
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-		auto* logic_chunk = &world_data.logic_add_chunk(&chunk);
 
 		auto* right_segment = new Transport_line_segment(
 			Transport_line_segment::moveDir::right,
 			Transport_line_segment::terminationType::bend_right,
 			4);
 
-		auto& right = logic_chunk->get_struct(Logic_chunk::structLayer::transport_line)
+		auto& right = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
 		                         .emplace_back(transport_belt_proto.get(), 3, 0);
 		right.unique_data = right_segment;
 
@@ -662,17 +632,13 @@ namespace game::logic
 		 *                             |  v -    |
 		 */
 		// A first, fill entire lane, if A is not compressed, B moves
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 		using namespace jactorio::game;
 
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.05;
 
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-
-		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* right_segment = new Transport_line_segment(
@@ -776,17 +742,13 @@ namespace game::logic
 		 *  |    -    |
 		 */
 		// B first, fill entire lane, if B is not compressed, A moves
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
 		using namespace jactorio::game;
 
 		const auto item_proto = std::make_unique<jactorio::data::Item>();
 		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
 		transport_belt_proto->speed = 0.05;
 
-		World_data world_data{};
-
-		auto chunk = Chunk(0, 0);
-
-		auto& logic_chunk = world_data.logic_add_chunk(&chunk);
 
 		// Segments (Logic chunk must be created first)
 		auto* left_segment = new Transport_line_segment(
@@ -880,5 +842,82 @@ namespace game::logic
 
 	}
 
-	// TODO if target segment is stopped, the segment pointing to it will also be stopped
+	TEST(transport_line_controller, back_item_distance) {
+		/*
+		 * ^
+		 * |
+		 * |
+		 * 
+		 * ^
+		 * |
+		 * |
+		 */
+		TRANSPORT_LINE_CONTROLLER_TEST_HEADER
+
+		using namespace jactorio::game;
+
+		const auto item_proto = std::make_unique<jactorio::data::Item>();
+		const auto transport_belt_proto = std::make_unique<jactorio::data::Transport_belt>();
+		transport_belt_proto->speed = 0.05;
+
+
+		// Segments (Logic chunk must be created first)
+		auto* up_segment_1 = new Transport_line_segment(Transport_line_segment::moveDir::up,
+		                                                Transport_line_segment::terminationType::straight,
+		                                                1);
+		auto* up_segment_2 = new Transport_line_segment(Transport_line_segment::moveDir::up,
+		                                                Transport_line_segment::terminationType::straight,
+		                                                1);
+
+		up_segment_2->target_segment = up_segment_1;
+
+		{
+			auto& up_1 = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
+			                        .emplace_back(transport_belt_proto.get(), 0, 0);
+			up_1.unique_data = up_segment_1;
+
+			auto& up_2 = logic_chunk.get_struct(Logic_chunk::structLayer::transport_line)
+			                        .emplace_back(transport_belt_proto.get(), 0, 1);
+			up_2.unique_data = up_segment_2;
+		}
+
+
+		up_segment_2->append_item(true, 0.05, item_proto.get());
+		EXPECT_FLOAT_EQ(up_segment_2->l_back_item_distance.getAsDouble(), 0.05);
+
+		transport_line_c::transport_line_logic_update(world_data);
+		EXPECT_FLOAT_EQ(up_segment_2->l_back_item_distance.getAsDouble(), 0);
+
+		// Segment 1
+		transport_line_c::transport_line_logic_update(world_data);
+		EXPECT_FLOAT_EQ(up_segment_2->l_back_item_distance.getAsDouble(), 0);
+
+		EXPECT_FLOAT_EQ(up_segment_1->l_back_item_distance.getAsDouble(), 0.95);  // First segment now
+
+		for (int i = 0; i < 19; ++i) {
+			transport_line_c::transport_line_logic_update(world_data);
+		}
+		EXPECT_FLOAT_EQ(up_segment_1->l_back_item_distance.getAsDouble(), 0);
+
+		// Remains at 0
+		transport_line_c::transport_line_logic_update(world_data);
+		EXPECT_FLOAT_EQ(up_segment_1->l_back_item_distance.getAsDouble(), 0);
+
+
+		// ======================================================================
+		// Fill the first segment up to 4 items
+		up_segment_1->append_item(true, 0, item_proto.get());
+		up_segment_1->append_item(true, 0, item_proto.get());
+		up_segment_1->append_item(true, 0, item_proto.get());
+		EXPECT_FLOAT_EQ(up_segment_1->l_back_item_distance.getAsDouble(), 0.75);
+
+
+		// Will not enter since segment 1 is full
+		up_segment_2->append_item(true, 0.05, item_proto.get());
+		transport_line_c::transport_line_logic_update(world_data);
+		transport_line_c::transport_line_logic_update(world_data);
+		transport_line_c::transport_line_logic_update(world_data);
+		EXPECT_FLOAT_EQ(up_segment_1->l_back_item_distance.getAsDouble(), 0.75);
+		EXPECT_FLOAT_EQ(up_segment_2->l_back_item_distance.getAsDouble(), 0);
+	}
 }
