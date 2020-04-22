@@ -8,15 +8,14 @@
 
 #include <string>
 
-namespace jactorio::data::pybind_manager
+namespace jactorio::data
 {
-	/**
-	 * Evaluates string of python
-	 * @param python_str Python string to interpret
-	 * @param file_name if specified, used to display logging information from python sys.stdout
-	 * @exception Data_exception if error occurred
-	 */
-	int exec(const std::string& python_str, const std::string& file_name = "");
+	///
+	/// \brief Evaluates string of python
+	/// \param python_str Python string to interpret
+	/// \param file_name if specified, used to display logging information from python sys.stdout
+	/// \exception Data_exception if error occurred
+	int py_exec(const std::string& python_str, const std::string& file_name = "");
 
 	///
 	/// \remarks The python interpreter is NOT thread safe, call py_interpreter_init for each thread it needs to be used in

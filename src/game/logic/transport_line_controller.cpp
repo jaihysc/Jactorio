@@ -59,10 +59,10 @@ void apply_termination_deduction_r(const jactorio::game::Transport_line_segment:
 J_NODISCARD bool move_next_item(const jactorio::transport_line_offset& tiles_moved,
                                 std::deque<jactorio::game::transport_line_item>& line_side,
                                 uint16_t& index, const bool has_target_segment) {
-	for (unsigned i = index + 1; i < line_side.size(); ++i) {
+	for (decltype(line_side.size()) i = index + 1; i < line_side.size(); ++i) {
 		auto& i_item_offset = line_side[i].first;
 		if (i_item_offset > dec::decimal_cast<jactorio::transport_line_decimal_place>(
-			jactorio::game::transport_line_c::item_spacing)) {
+			jactorio::game::item_spacing)) {
 
 			// Found a valid item to decrement
 			index = i;
@@ -219,11 +219,11 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 
 		// Items following the first item will leave a gap of item_width
 		if (offset > dec::decimal_cast<jactorio::transport_line_decimal_place>(
-			jactorio::game::transport_line_c::item_spacing))
+			jactorio::game::item_spacing))
 			return;
 
 		// Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
-		offset = jactorio::game::transport_line_c::item_spacing;
+		offset = jactorio::game::item_spacing;
 		if (move_next_item(tiles_moved, line_side, index,
 		                   segment->target_segment != nullptr)) {
 			back_item_distance -= tiles_moved;
@@ -232,7 +232,7 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 
 }
 
-void jactorio::game::transport_line_c::logic_update_move_items(Logic_chunk* l_chunk) {
+void jactorio::game::logic_update_move_items(Logic_chunk* l_chunk) {
 	auto& layers = l_chunk->get_struct(Logic_chunk::structLayer::transport_line);
 
 	// Each object layer holds a transport line segment
@@ -264,7 +264,7 @@ void jactorio::game::transport_line_c::logic_update_move_items(Logic_chunk* l_ch
 	}
 }
 
-void jactorio::game::transport_line_c::logic_update_transition_items(Logic_chunk* l_chunk) {
+void jactorio::game::logic_update_transition_items(Logic_chunk* l_chunk) {
 	auto& layers = l_chunk->get_struct(Logic_chunk::structLayer::transport_line);
 
 	// Each object layer holds a transport line segment
@@ -283,7 +283,7 @@ void jactorio::game::transport_line_c::logic_update_transition_items(Logic_chunk
 	}
 }
 
-void jactorio::game::transport_line_c::transport_line_logic_update(World_data& world_data) {
+void jactorio::game::transport_line_logic_update(World_data& world_data) {
 	// The logic update of transport line items occur in 2 stages:
 	// 		1. Move items on their transport lines
 	//		2. Check if any items have reached the end of their lines, and need to be moved to another one

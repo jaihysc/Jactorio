@@ -10,101 +10,109 @@
 
 namespace renderer
 {
-	TEST(spritemap_generator, create_spritemap) {
-		using namespace jactorio::renderer::renderer_sprites;
-		namespace data_manager = jactorio::data::data_manager;
+	class SpritemapCreationTest : public testing::Test
+	{
+	protected:
+		void TearDown() override {
+			jactorio::data::clear_data();
+			jactorio::renderer::renderer_sprites::clear_spritemaps();
+		}
+	};
 
-		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
-		auto guard2 = jactorio::core::Resource_guard(clear_spritemaps);
-
+	TEST_F(SpritemapCreationTest, CreateSpritemap) {
 		// Sprite data delete by guard
-		data_manager::data_raw_add("sprite1",
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
-		data_manager::data_raw_add("sprite2",
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
+		data_raw_add("sprite1",
+		             new jactorio::data::Sprite("test/graphics/test/test_tile.png",
+		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
+		data_raw_add("sprite2",
+		             new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
+		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
 
-		data_manager::data_raw_add("sprite3",
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
-		data_manager::data_raw_add("sprite4",
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
+		data_raw_add("sprite3",
+		             new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
+		                                        {jactorio::data::Sprite::spriteGroup::gui}));
+		data_raw_add("sprite4",
+		             new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
+		                                        {jactorio::data::Sprite::spriteGroup::gui}));
 
 		// Should filter out to only 2 entries
-		create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
+		jactorio::renderer::renderer_sprites::create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
 
-		const Spritemap_data& data = get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
+		const jactorio::renderer::renderer_sprites::Spritemap_data& data =
+			jactorio::renderer::renderer_sprites::get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
 
 		EXPECT_EQ(data.width, 64);
 		EXPECT_EQ(data.height, 32);
 
 	}
 
-	TEST(spritemap_generator, create_spritemap_category_none) {
+	TEST_F(SpritemapCreationTest, CreateSpritemapCategoryNone) {
 		// If a sprite does not have a group specified (sprite_group::none):
-		// it will be added with every spritemap generated
-
-		using namespace jactorio::renderer::renderer_sprites;
-		namespace data_manager = jactorio::data::data_manager;
-
-		auto guard = jactorio::core::Resource_guard(data_manager::clear_data);
-		auto guard2 = jactorio::core::Resource_guard(clear_spritemaps);
 
 		// Sprite data delete by guard
 		// Terrain
-		data_manager::data_raw_add("sprite1",
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
-		data_manager::data_raw_add("sprite2",
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                                      {jactorio::data::Sprite::spriteGroup::terrain}));
+		data_raw_add("sprite1",
+		             new jactorio::data::Sprite("test/graphics/test/test_tile.png",
+		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
+		data_raw_add("sprite2",
+		             new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
+		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
 
 		// Gui
-		data_manager::data_raw_add("sprite3",
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
-		data_manager::data_raw_add("sprite4",
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                                      {jactorio::data::Sprite::spriteGroup::gui}));
+		data_raw_add("sprite3",
+		             new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
+		                                        {jactorio::data::Sprite::spriteGroup::gui}));
+		data_raw_add("sprite4",
+		             new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
+		                                        {jactorio::data::Sprite::spriteGroup::gui}));
 
 		// None
-		data_manager::data_raw_add("spriteNone",
-		                           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                                      {}));
+		data_raw_add("spriteNone",
+		             new jactorio::data::Sprite("test/graphics/test/test_tile.png",
+		                                        {}));
 
 		// Should filter out to 3 entries, total width of 32 * 3
-		create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
+		jactorio::renderer::renderer_sprites::create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
 
-		const Spritemap_data& data = get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
+		const jactorio::renderer::renderer_sprites::Spritemap_data& data =
+			jactorio::renderer::renderer_sprites::get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
 
 		EXPECT_EQ(data.width, 96);
 		EXPECT_EQ(data.height, 32);
 
 	}
 
-	// Returns true if pixel contains specified color
-	bool get_pixel_color(const unsigned char* img_ptr,
-	                     const unsigned int image_width,
-	                     const unsigned int x, const unsigned int y,
-	                     const unsigned short r, const unsigned short g, const unsigned short b,
-	                     const unsigned short a) {
-		const unsigned int offset = (image_width * y + x) * 4;
 
-		bool valid = true;
+	// ======================================================================
 
-		if (img_ptr[offset + 0] != r ||
-			img_ptr[offset + 1] != g ||
-			img_ptr[offset + 2] != b ||
-			img_ptr[offset + 3] != a)
-			valid = false;
+	/// \brief For testing the actual generation algorithm
+	class SpritemapGeneratorTest : public testing::Test
+	{
+	protected:
+		/// \return true if pixel contains specified color
+		bool get_pixel_color(const unsigned char* img_ptr,
+		                     const unsigned int image_width,
+		                     const unsigned int x,
+		                     const unsigned int y,
+		                     const unsigned short r,
+		                     const unsigned short g,
+		                     const unsigned short b,
+		                     const unsigned short a) {
+			const unsigned int offset = (image_width * y + x) * 4;
 
-		return valid;
-	}
+			bool valid = true;
 
+			if (img_ptr[offset + 0] != r ||
+				img_ptr[offset + 1] != g ||
+				img_ptr[offset + 2] != b ||
+				img_ptr[offset + 3] != a)
+				valid = false;
 
-	TEST(spritemap_generator, gen_spritemap_inverted) {
+			return valid;
+		}
+	};
+
+	TEST_F(SpritemapGeneratorTest, GenSpritemapInverted) {
 		// Provide series of sprites in array
 		// Expect concatenated image and its properties
 
@@ -122,7 +130,7 @@ namespace renderer
 			delete[] prototypes;
 		});
 
-		prototypes = new jactorio::data::Sprite* [4];
+		prototypes = new jactorio::data::Sprite*[4];
 		for (int i = 0; i < 4; ++i) {
 			prototypes[i] = new jactorio::data::Sprite;
 		}
@@ -226,7 +234,7 @@ namespace renderer
 		EXPECT_EQ(img4.bottom_right.y, 0.984375f);
 	}
 
-	TEST(spritemap_generator, gen_spritemap) {
+	TEST_F(SpritemapGeneratorTest, GenSpritemap) {
 		// Images 0 - 2 are 32 x 32 px
 		jactorio::data::Sprite** prototypes = nullptr;
 		jactorio::core::Capturing_guard<void()> guard([&] {
@@ -236,7 +244,7 @@ namespace renderer
 			delete[] prototypes;
 		});
 
-		prototypes = new jactorio::data::Sprite* [2];
+		prototypes = new jactorio::data::Sprite*[2];
 		for (int i = 0; i < 2; ++i) {
 			prototypes[i] = new jactorio::data::Sprite;
 		}

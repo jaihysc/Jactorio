@@ -137,7 +137,7 @@ namespace jactorio::data
 			}
 
 			bool last_value = true;
-			for (unsigned int i = noise_range_tile_ranges_.size() - 1; i > 0; --i) {
+			for (auto i = noise_range_tile_ranges_.size() - 1; i > 0; --i) {
 				// Less than
 				bool less_than = false;
 				if (last_value) {

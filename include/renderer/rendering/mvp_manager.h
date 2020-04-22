@@ -8,9 +8,7 @@
 
 #include <glm/glm.hpp>
 
-#include "jactorio.h"
-
-namespace jactorio::renderer::mvp_manager
+namespace jactorio::renderer
 {
 	// Functions for the Model, View and Projection matrices
 	// VIEW
@@ -34,14 +32,6 @@ namespace jactorio::renderer::mvp_manager
 		unsigned short tiles_x;
 		unsigned short tiles_y;
 	};
-
-	/**
-	 * Recalculates number of tiles X and Y <br>
-	 * Upper left is (0, 0)
-	 */
-	J_DEPRECATED Projection_tile_data projection_calculate_tile_properties(
-		unsigned short tile_width, unsigned short window_width,
-		unsigned short window_height);
 
 	/**
 	 * Converts Projection_tile_data from projection_calculate_tile_properties into a matrix <br>

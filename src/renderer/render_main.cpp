@@ -9,8 +9,7 @@
 #include <thread>
 #include <vector>
 
-#include "core/debug/execution_timer.h"
-#include "core/logger.h"
+#include "jactorio.h"
 #include "core/resource_guard.h"
 
 #include "renderer/gui/imgui_manager.h"
@@ -133,7 +132,7 @@ void jactorio::renderer::render_init() {
 	//
 	game::input_manager::subscribe([]() {
 		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
-			game::game_data->player.get_player_world().clear_chunk_data();
+			// Delete and reinitialize world_data
 		});
 	}, GLFW_KEY_P, GLFW_RELEASE);
 

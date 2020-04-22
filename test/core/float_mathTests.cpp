@@ -8,7 +8,7 @@
 
 namespace core
 {
-	TEST(float_math, f_eq) {
+	TEST(FloatMath, FEq) {
 		// Checks floats are equal within a tolerance
 
 		EXPECT_FALSE(jactorio::core::f_eq(2.f, 2.1f, 0.00005));

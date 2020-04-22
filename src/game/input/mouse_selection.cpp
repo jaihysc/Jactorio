@@ -62,7 +62,7 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 	// Clear last overlay
 	if (!last_tile)
 		return;
-	placement_c::place_sprite_at_coords(
+	place_sprite_at_coords(
 		world_data,
 		Chunk_tile::chunkLayer::overlay,
 		nullptr,
@@ -77,7 +77,7 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 
 	if (selected_entity && selected_entity->placeable) {
 		// Has item selected
-		placement_c::place_sprite_at_coords(world_data, Chunk_tile::chunkLayer::overlay, selected_entity->sprite,
+		place_sprite_at_coords(world_data, Chunk_tile::chunkLayer::overlay, selected_entity->sprite,
 		                                    selected_entity->tile_width, selected_entity->tile_height, world_x,
 		                                    world_y);
 
@@ -101,7 +101,7 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 			tile->get_layer(Chunk_tile::chunkLayer::resource).prototype_data) {
 
 			// Is hovering over entity	
-			const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(
+			const auto* sprite_ptr = data::data_raw_get<data::Sprite>(
 				data::dataCategory::sprite,
 				player_data.mouse_selected_tile_in_range() ? "__core__/cursor-select" : "__core__/cursor-invalid");
 			assert(sprite_ptr != nullptr);

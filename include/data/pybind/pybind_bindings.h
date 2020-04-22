@@ -42,7 +42,7 @@ using data_raw = std::unordered_map<jactorio::data::dataCategory, std::unordered
 #define PYBIND_DATA_CLASS(cpp_class_, py_name_, ...)\
 	m.def(#py_name_, [](const std::string& iname = "") {\
 		auto* prototype = new (cpp_class_);\
-		data_manager::data_raw_add(iname, prototype, true);\
+		data_raw_add(iname, prototype, true);\
 		return prototype;\
 	}, py::arg("iname") = "", pybind11::return_value_policy::reference);\
 	py::class_<cpp_class_, __VA_ARGS__>(m, "_" #py_name_)
@@ -237,7 +237,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("MiningDrill", dataCategory::transport_belt);
 
 	m.def("get", [](const dataCategory category, const std::string& iname) {
-		return data_manager::data_raw_get<Prototype_base>(category, iname);
+		return data_raw_get<Prototype_base>(category, iname);
 	}, pybind11::return_value_policy::reference);
 
 	// ############################################################

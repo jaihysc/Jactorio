@@ -136,7 +136,7 @@ const unsigned char* jactorio::data::Sprite::get_sprite_data_ptr() const {
 }
 
 jactorio::data::Sprite* jactorio::data::Sprite::load_image(const std::string& image_path) {
-	sprite_path_ = core::filesystem::resolve_path("~/data/" + image_path);
+	sprite_path_ = core::resolve_path("~/data/" + image_path);
 	load_image_from_file();
 
 	return this;

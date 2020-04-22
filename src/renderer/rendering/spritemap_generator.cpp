@@ -28,7 +28,7 @@ void jactorio::renderer::renderer_sprites::clear_spritemaps() {
 void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::spriteGroup group,
                                                             const bool invert_sprites) {
 	std::vector<data::Sprite*> sprites =
-		data::data_manager::data_raw_get_all<data::Sprite>(data::dataCategory::sprite);
+		data::data_raw_get_all<data::Sprite>(data::dataCategory::sprite);
 
 	// Filter to group only
 	sprites.erase(
@@ -68,14 +68,14 @@ const jactorio::renderer::Texture* jactorio::renderer::renderer_sprites::get_tex
 
 
 jactorio::renderer::renderer_sprites::Spritemap_data jactorio::renderer::
-renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short count, const bool invert_sprites) {
-	LOG_MESSAGE_f(info, "Generating spritemap with %d tiles...", count);
+renderer_sprites::gen_spritemap(data::Sprite** sprites, const uint64_t count, const bool invert_sprites) {
+	LOG_MESSAGE_f(info, "Generating spritemap with %lld tiles...", count);
 
 	// Calculate spritemap dimensions
 	unsigned int pixels_x = 0;
 	unsigned int pixels_y = 0;
 
-	for (int i = 0; i < count; ++i) {
+	for (uint64_t i = 0; i < count; ++i) {
 		pixels_x += sprites[i]->get_width();
 		if (sprites[i]->get_height() > pixels_y)
 			pixels_y = sprites[i]->get_height();
@@ -90,7 +90,7 @@ renderer_sprites::gen_spritemap(data::Sprite** sprites, const unsigned short cou
 	// Offset the x pixels of each new sprite so they don't overlap each other
 	unsigned int x_offset = 0;
 
-	for (int i = 0; i < count; ++i) {
+	for (uint64_t i = 0; i < count; ++i) {
 		const unsigned char* sprite_data = sprites[i]->get_sprite_data_ptr();
 
 		const unsigned int sprite_width = sprites[i]->get_width();

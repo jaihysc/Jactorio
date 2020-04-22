@@ -25,7 +25,7 @@ bool drop_one_origin_item(jactorio::data::item_stack& origin_item_stack,
 	return false;
 }
 
-bool jactorio::game::inventory_c::move_itemstack_to_index(
+bool jactorio::game::move_itemstack_to_index(
 	data::item_stack* origin_inv, const uint16_t origin_inv_index,
 	data::item_stack* target_inv, const uint16_t target_inv_index, const unsigned short mouse_button) {
 	assert(mouse_button == 0 || mouse_button == 1); // Only left and right click are currently supported
@@ -169,7 +169,7 @@ bool jactorio::game::inventory_c::move_itemstack_to_index(
 // ======================================================================
 // Can be used by non-player inventories 
 
-bool jactorio::game::inventory_c::can_add_stack(const data::item_stack* target_inv, const uint16_t target_inv_size,
+bool jactorio::game::can_add_stack(const data::item_stack* target_inv, const uint16_t target_inv_size,
                                                 const data::item_stack& item_stack) {
 	assert(target_inv != nullptr); // Invalid item_stack to add
 
@@ -201,7 +201,7 @@ bool jactorio::game::inventory_c::can_add_stack(const data::item_stack* target_i
 	return false;
 }
 
-decltype(jactorio::data::item_stack::second) jactorio::game::inventory_c::add_stack(
+decltype(jactorio::data::item_stack::second) jactorio::game::add_stack(
 	data::item_stack* target_inv, const uint16_t target_inv_size, const data::item_stack& item_stack) {
 
 	assert(target_inv != nullptr); // Invalid item_stack to add
@@ -241,7 +241,7 @@ decltype(jactorio::data::item_stack::second) jactorio::game::inventory_c::add_st
 	return remaining_add;
 }
 
-bool jactorio::game::inventory_c::add_stack_sub(data::item_stack* target_inv, const uint16_t target_inv_size,
+bool jactorio::game::add_stack_sub(data::item_stack* target_inv, const uint16_t target_inv_size,
                                                 data::item_stack& item_stack) {
 	assert(target_inv != nullptr); // Invalid item_stack to add
 
@@ -256,7 +256,7 @@ bool jactorio::game::inventory_c::add_stack_sub(data::item_stack* target_inv, co
 	return false;
 }
 
-uint32_t jactorio::game::inventory_c::get_inv_item_count(data::item_stack* inv, const uint16_t inv_size,
+uint32_t jactorio::game::get_inv_item_count(data::item_stack* inv, const uint16_t inv_size,
                                                          const data::Item* item) {
 	uint32_t count = 0;
 	for (int i = 0; i < inv_size; ++i) {
@@ -267,7 +267,7 @@ uint32_t jactorio::game::inventory_c::get_inv_item_count(data::item_stack* inv, 
 }
 
 
-bool jactorio::game::inventory_c::remove_inv_item_s(data::item_stack* inv, const uint16_t inv_size,
+bool jactorio::game::remove_inv_item_s(data::item_stack* inv, const uint16_t inv_size,
                                                     const data::Item* item, const uint32_t remove_amount) {
 	// Not enough to remove
 	if (get_inv_item_count(inv, inv_size, item) < remove_amount)
@@ -277,7 +277,7 @@ bool jactorio::game::inventory_c::remove_inv_item_s(data::item_stack* inv, const
 	return true;
 }
 
-void jactorio::game::inventory_c::remove_inv_item(data::item_stack* inv, const uint16_t inv_size,
+void jactorio::game::remove_inv_item(data::item_stack* inv, const uint16_t inv_size,
                                                   const data::Item* item, uint32_t remove_amount) {
 	for (int i = 0; i < inv_size; ++i) {
 		auto& inv_i = inv[i];

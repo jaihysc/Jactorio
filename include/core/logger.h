@@ -25,9 +25,9 @@
 //
 // Prefer calling LOG_MESSAGE to log a message over log_message()
 #define LOG_MESSAGE(severity, message)\
-if constexpr(static_cast<int>(jactorio::core::logger::logSeverity::severity) >= JACTORIO_LOG_LEVEL) { \
+if constexpr(static_cast<int>(jactorio::core::logSeverity::severity) >= JACTORIO_LOG_LEVEL) { \
 	log_message(\
-	jactorio::core::logger::logSeverity::severity, \
+	jactorio::core::logSeverity::severity, \
 	FILENAME, \
 	__LINE__, \
 	message); \
@@ -35,19 +35,22 @@ if constexpr(static_cast<int>(jactorio::core::logger::logSeverity::severity) >= 
 
 // Allows the message to contain a format, similar to printf
 #define LOG_MESSAGE_f(severity, format, ...)\
-if constexpr(static_cast<int>(jactorio::core::logger::logSeverity::severity) >= JACTORIO_LOG_LEVEL) {    \
-char buffer[1000];\
-snprintf(buffer, sizeof(char) * 1000, format, __VA_ARGS__);\
+if constexpr(static_cast<int>(jactorio::core::logSeverity::severity) >= JACTORIO_LOG_LEVEL) {\
+char buffer[jactorio::core::max_log_msg_length];\
+snprintf(buffer, sizeof(char) * jactorio::core::max_log_msg_length, format, __VA_ARGS__);\
 log_message(\
-	jactorio::core::logger::logSeverity::severity, \
+	jactorio::core::logSeverity::severity, \
 	FILENAME, \
 	__LINE__, \
 	buffer);\
 }
 
 
-namespace jactorio::core::logger
+namespace jactorio::core
 {
+	/// Maximum number of characters in log message
+	constexpr uint16_t max_log_msg_length = 1000;
+	
 	enum class logSeverity
 	{
 		debug = 0,
@@ -58,30 +61,27 @@ namespace jactorio::core::logger
 		none
 	};
 
-	/**
-	 * Relative path supported, call this after setting the executing directory
-	 */
+	///
+	/// \brief Relative path supported, call this after setting the executing directory
 	void open_log_file(const std::string& path);
 	void close_log_file();
 
-	/**
-	 * Logs a message to console <br>
-	 * Format: Timestamp [severity] - [group] message
-	 */
+	///
+	/// \brief Logs a message to console
+	/// Format: Timestamp [severity] - [group] message
 	void log_message(logSeverity severity, const std::string& group,
 	                 int line, const std::string& message);
 
-	/** Generates a log message
-    * Format: Timestamp [severity] - [group] message
-	* @return The logged message as string
-	*/
+	///
+	/// \brief Generates a log message
+    /// Format: Timestamp [severity] - [group] message
+	/// \return The logged message as string
 	std::string gen_log_message(logSeverity severity, const std::string& group,
 	                            int line, const std::string& message);
 
-	/** Logs a message to console
-	* Converts log_severity to a string
-	* @return The log severity as string
-	*/
+	///
+	/// \brief Converts log_severity to a string
+	/// \return The log severity as string
 	std::string log_severity_str(logSeverity severity);
 }
 

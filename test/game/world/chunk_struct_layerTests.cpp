@@ -8,13 +8,11 @@
 
 namespace game
 {
-	TEST(chunk_struct_layer, to_position) {
-		using namespace jactorio::game;
+	TEST(ChunkStructLayer, ToPosition) {
+		EXPECT_FLOAT_EQ(jactorio::game::Chunk_struct_layer::to_position(0, 10), 10.f);
+		EXPECT_FLOAT_EQ(jactorio::game::Chunk_struct_layer::to_position(2, 64), 0.f);
 
-		EXPECT_FLOAT_EQ(Chunk_struct_layer::to_position(0, 10), 10.f);
-		EXPECT_FLOAT_EQ(Chunk_struct_layer::to_position(2, 64), 0.f);
-
-		EXPECT_FLOAT_EQ(Chunk_struct_layer::to_position(-1, -32), 0.f);
-		EXPECT_FLOAT_EQ(Chunk_struct_layer::to_position(-1, -1), 31.f);
+		EXPECT_FLOAT_EQ(jactorio::game::Chunk_struct_layer::to_position(-1, -32), 0.f);
+		EXPECT_FLOAT_EQ(jactorio::game::Chunk_struct_layer::to_position(-1, -1), 31.f);
 	}
 }

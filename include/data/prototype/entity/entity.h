@@ -53,8 +53,8 @@ namespace jactorio::data
 
 
 		// Number of tiles this entity spans
-		PYTHON_PROP_REF_I(Entity, unsigned short, tile_width, 1)
-		PYTHON_PROP_REF_I(Entity, unsigned short, tile_height, 1)
+		PYTHON_PROP_REF_I(Entity, uint8_t, tile_width, 1)
+		PYTHON_PROP_REF_I(Entity, uint8_t, tile_height, 1)
 
 		// Can be rotated by player?
 		PYTHON_PROP_REF_I(Entity, bool, rotatable, false)

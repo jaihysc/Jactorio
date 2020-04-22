@@ -19,10 +19,10 @@
 
 ITEM_INSERT_FUNCTION(insert_container_entity) {
 	auto& container_data = static_cast<data::Container_entity_data&>(unique_data);
-	if (!inventory_c::can_add_stack(container_data.inventory, container_data.size, item_stack))
+	if (!can_add_stack(container_data.inventory, container_data.size, item_stack))
 		return false;
 
-	inventory_c::add_stack(container_data.inventory, container_data.size, item_stack);
+	add_stack(container_data.inventory, container_data.size, item_stack);
 	return true;
 }
 

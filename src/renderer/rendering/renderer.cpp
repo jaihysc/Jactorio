@@ -11,7 +11,6 @@
 #include "renderer/opengl/error.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/mvp_manager.h"
-#include "renderer/rendering/renderer_grid.h"
 
 unsigned short jactorio::renderer::Renderer::window_width_ = 0;
 unsigned short jactorio::renderer::Renderer::window_height_ = 0;
@@ -124,7 +123,5 @@ void jactorio::renderer::Renderer::update_tile_projection_matrix() {
 		}
 	}
 
-	setg_projection_matrix(
-		mvp_manager::to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset)
-	);
+	setg_projection_matrix(to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset));
 }

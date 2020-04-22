@@ -12,9 +12,9 @@
 #include "data/prototype/sprite.h"
 #include "renderer/opengl/texture.h"
 
-// Generates spritemaps on initialization with tile sprites
-// - Concatenate sprite into spritemap
-// - Location of a sprite within spritemap
+/// Generates spritemaps on initialization with tile sprites
+/// - Concatenate sprite into spritemap
+/// - Location of a sprite within spritemap
 namespace jactorio::renderer::renderer_sprites
 {
 	struct Spritemap_data
@@ -36,26 +36,23 @@ namespace jactorio::renderer::renderer_sprites
 	 */
 	void clear_spritemaps();
 
-	/**
-	 * Creates a spritemap and stores it as a renderer::Texture
-	 */
+	///
+	/// \brief Creates a spritemap and stores it as a renderer::Texture
 	void create_spritemap(data::Sprite::spriteGroup group, bool invert_sprites);
 
-	/**
-	 * Retrieves spritemap at specified group
-	 */
+	///
+	/// \brief Retrieves spritemap at specified group
 	const Spritemap_data& get_spritemap(data::Sprite::spriteGroup group);
 	const Texture* get_texture(data::Sprite::spriteGroup group);
 
-	/*!
-	 * Generated spritemap will be purely horizontal, all images concatenated side by side <br>
-	 * Color in non specified areas of the spritemap are undefined <br>
-	 * !!Spritemap pointer must be manually deleted
-	 * @param sprites Pointer array to pointers towards sprite prototypes
-	 * @param count Count of pointer array
-	 * @param invert_sprites Whether or not to vertically invert the sprites on the spritemap. Commonly done for OpenGL
-	 */
-	Spritemap_data gen_spritemap(data::Sprite** sprites, unsigned short count, bool invert_sprites);
+	///
+	/// \brief Generated spritemap will be purely horizontal, all images concatenated side by side <br>
+	/// \remark Color in non specified areas of the spritemap are undefined <br>
+	/// \remark Spritemap_buffer must be manually deleted
+	/// \param sprites Pointer array to pointers towards sprite prototypes
+	/// \param count Count of pointer array
+	/// \param invert_sprites Whether or not to vertically invert the sprites on the spritemap. Commonly done for OpenGL
+	Spritemap_data gen_spritemap(data::Sprite** sprites, uint64_t count, bool invert_sprites);
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H

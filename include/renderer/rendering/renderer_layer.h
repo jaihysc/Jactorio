@@ -143,9 +143,17 @@ namespace jactorio::renderer
 		 */
 		void clear() const;
 
-	private:
+		// ======================================================================
+		// Rendering grid
+
+		///
+		/// \brief Generates indices to draw tiles using the grid from gen_render_grid
+		/// \returns Indices to be feed into Index_buffer
+		static unsigned int* gen_render_grid_indices(uint32_t tile_count);
+
 		// #######################################################################
 		// OpenGL methods | The methods below MUST be called from an openGL context
+	private:
 
 		Vertex_array* vertex_array_ = nullptr;
 

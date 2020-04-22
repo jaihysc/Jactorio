@@ -7,8 +7,6 @@
 #include <future>
 #include <mutex>
 
-#include "game/input/mouse_selection.h"
-
 void jactorio::game::World_data::on_tick_advance() {
 	game_tick_++;
 

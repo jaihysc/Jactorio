@@ -9,11 +9,11 @@
 #include <set>
 #include <unordered_map>
 
+#include "jactorio.h"
 #include "core/data_type.h"
 #include "game/world/chunk.h"
 #include "game/world/deferral_timer.h"
 #include "game/world/logic_chunk.h"
-#include "jactorio.h"
 
 // Manages the game world, the tiles and the entities on it
 // Handles saving and loading the world
@@ -69,6 +69,8 @@ namespace jactorio::game
 	public:
 		using world_coord = int32_t;  // Single world coordinates
 		using world_pair = std::pair<world_coord, world_coord>;  // Ordered pair of pocation in the world
+
+		static constexpr uint8_t chunk_width = 32;
 
 		mutable std::mutex world_data_mutex{};  // Held by the thread which is currently operating on a chunk
 

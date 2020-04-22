@@ -33,22 +33,22 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 
 		// Sprite representing the update point
 		auto* sprite_stop =
-			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-red");
+			data::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-red");
 		auto* sprite_moving =
-			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-green");
+			data::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-green");
 		auto* sprite_left_moving =
-			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-aqua");
+			data::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-aqua");
 		auto* sprite_right_moving =
-			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-pink");
+			data::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/rect-pink");
 
 		auto* sprite_up =
-			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-up");
+			data::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-up");
 		auto* sprite_right =
-			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-right");
+			data::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-right");
 		auto* sprite_down =
-			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-down");
+			data::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-down");
 		auto* sprite_left =
-			data::data_manager::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-left");
+			data::data_raw_get<data::Sprite>(data::dataCategory::sprite, "__core__/arrow-left");
 
 		// Get all update points and add it to the chunk's objects for drawing
 		for (auto& pair : world_data.logic_get_all_chunks()) {
@@ -145,7 +145,7 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	if (ImGui::CollapsingHeader("Rendering")) {
-		glm::vec3* view_translation = mvp_manager::get_view_transform();
+		glm::vec3* view_translation = get_view_transform();
 		ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
 
 		ImGui::Text("Layer count | Tile: %d   Object: %d",
@@ -215,13 +215,13 @@ void jactorio::renderer::gui::debug_item_spawner(game::Player_data& player_data)
 
 	ImGui::Begin("Item spawner");
 
-	auto game_items = data::data_manager::data_raw_get_all<data::Item>(data::dataCategory::item);
+	auto game_items = data::data_raw_get_all<data::Item>(data::dataCategory::item);
 	for (auto& item : game_items) {
 		ImGui::PushID(item->name.c_str());
 
 		if (ImGui::Button(item->get_localized_name().c_str())) {
 			data::item_stack item_stack = {item, give_amount};
-			game::inventory_c::add_stack(
+			game::add_stack(
 				player_data.inventory_player, game::Player_data::inventory_size, item_stack);
 		}
 		ImGui::PopID();
@@ -344,12 +344,12 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 		if (ImGui::Button("Append Item Left"))
 			segment.append_item(true,
 			                    0.2,
-			                    data::data_manager::data_raw_get<data::Item>(data::dataCategory::item, iname));
+			                    data::data_raw_get<data::Item>(data::dataCategory::item, iname));
 
 		if (ImGui::Button("Append Item Right"))
 			segment.append_item(false,
 			                    0.2,
-			                    data::data_manager::data_raw_get<data::Item>(data::dataCategory::item, iname));
+			                    data::data_raw_get<data::Item>(data::dataCategory::item, iname));
 
 
 		// Display items

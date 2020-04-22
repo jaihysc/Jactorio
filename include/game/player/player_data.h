@@ -235,15 +235,32 @@ namespace jactorio::game
 
 
 		// ============================================================================================
-		// TEST only
+#ifdef JACTORIO_BUILD_TEST
+		void clear_player_inventory() {
+			for (auto& i : inventory_player) {
+				i.first = nullptr;
+				i.second = 0;
+			}
+		}
 
-		J_TEST_USE_ONLY void clear_player_inventory();
-		J_TEST_USE_ONLY void reset_inventory_variables();
+		void reset_inventory_variables() {
+			has_item_selected_ = false;
+			select_by_reference_ = false;
+		}
 
-		J_TEST_USE_ONLY std::map<std::string, uint16_t>& get_crafting_item_deductions();
-		J_TEST_USE_ONLY std::map<std::string, uint16_t>& get_crafting_item_extras();
+		std::map<std::string, uint16_t>& get_crafting_item_deductions() {
+			return crafting_item_deductions_;
+		}
 
-		J_TEST_USE_ONLY void set_selected_item(data::item_stack& item);
+		std::map<std::string, uint16_t>& get_crafting_item_extras() {
+			return crafting_item_extras_;
+		}
+
+		void set_selected_item(data::item_stack& item) {
+			has_item_selected_ = true;
+			selected_item_ = item;
+		}
+#endif
 	};
 }
 

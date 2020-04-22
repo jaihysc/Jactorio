@@ -8,14 +8,14 @@
 
 namespace data::prototype
 {
-	TEST(sprite, sprite_copy) {
+	TEST(Sprite, SpriteCopy) {
 		jactorio::data::Sprite first{};
 		auto second = first;
 
 		EXPECT_NE(first.get_sprite_data_ptr(), second.get_sprite_data_ptr());
 	}
 
-	TEST(sprite, sprite_move) {
+	TEST(Sprite, SpriteMove) {
 		jactorio::data::Sprite first{};
 		first.load_image("test/graphics/test/test_tile.png");
 
@@ -25,7 +25,7 @@ namespace data::prototype
 		EXPECT_NE(second.get_sprite_data_ptr(), nullptr);
 	}
 
-	TEST(sprite, load_sprite) {
+	TEST(Sprite, LoadSprite) {
 		{
 			jactorio::data::Sprite sprite{};
 
@@ -45,7 +45,7 @@ namespace data::prototype
 		}
 	}
 
-	TEST(sprite, get_coords) {
+	TEST(Sprite, GetCoords) {
 		{
 			jactorio::data::Sprite sprite{};
 			sprite.sets = 4;
@@ -86,7 +86,7 @@ namespace data::prototype
 		}
 	}
 
-	TEST(sprite, get_coords_trimmed) {
+	TEST(Sprite, GetCoordsTrimmed) {
 		// This requires width_ and height_ to be initialized
 		{
 			jactorio::data::Sprite sprite{};

@@ -9,7 +9,7 @@
 
 namespace data::prototype
 {
-	TEST(noise_layer, get_set_tile_noise_range) {
+	TEST(NoiseLayer, GetSetTileNoiseRange) {
 		{
 			auto noise_layer = jactorio::data::Noise_layer<jactorio::data::Tile>();
 
@@ -62,7 +62,7 @@ namespace data::prototype
 		}
 	}
 
-	TEST(noise_layer, get_set_noise_start_val) {
+	TEST(NoiseLayer, GetSetNoiseStartVal) {
 		auto noise_layer = jactorio::data::Noise_layer<jactorio::data::Tile>();
 
 		// Defaults to -1
@@ -75,7 +75,7 @@ namespace data::prototype
 		EXPECT_EQ(1, noise_layer.get_start_val());
 	}
 
-	TEST(noise_layer, get_noise_range_min_max) {
+	TEST(NoiseLayer, GetNoiseRangeMinMax) {
 		{
 			auto noise_layer = jactorio::data::Noise_layer<jactorio::data::Tile>();
 

@@ -4,13 +4,12 @@
 
 #include <gtest/gtest.h>
 
-
 #include "data/prototype/interface/rotatable.h"
 #include "data/prototype/prototype_type.h"
 
 namespace data
 {
-	TEST(prototype_type, Tile_4_way_construct) {
+	TEST(PrototypeType, Tile4WayConstruct) {
 		const jactorio::data::Tile_4_way tile{
 			{1, 2},
 			{3, 4},
@@ -31,7 +30,7 @@ namespace data
 		EXPECT_EQ(tile.left.second, 8);
 	}
 
-	TEST(prototype_type, Tile_4_way_get) {
+	TEST(PrototypeType, Tile4WayGet) {
 		const jactorio::data::Tile_4_way tile{
 			{1, 2},
 			{3, 4},

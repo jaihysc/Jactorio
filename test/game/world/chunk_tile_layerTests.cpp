@@ -8,7 +8,7 @@
 
 namespace game
 {
-	TEST(chunk_tile_layer, copy_non_multi_tile) {
+	TEST(ChunkTileLayer, CopyNonMultiTile) {
 		// Since the top left tile copy is unknown, it is set as nullptr
 
 		const jactorio::game::Chunk_tile_layer ctl{};
@@ -25,7 +25,7 @@ namespace game
 		}
 	}
 
-	TEST(chunk_tile_layer, copy_multi_tile) {
+	TEST(ChunkTileLayer, CopyMultiTile) {
 		// Since the top left tile copy is unknown, it is set as nullptr
 		jactorio::game::Chunk_tile_layer parent{};
 		parent.multi_tile_index = 0;
@@ -53,7 +53,7 @@ namespace game
 		}
 	}
 
-	TEST(chunk_tile_layer, copy_multi_tile_top_left) {
+	TEST(ChunkTileLayer, CopyMultiTileTopLeft) {
 		jactorio::game::Chunk_tile_layer ctl{};
 		ctl.multi_tile_index = 0;
 		ctl.init_multi_tile_prop(1, 2);
@@ -70,7 +70,7 @@ namespace game
 		}
 	}
 
-	TEST(chunk_tile_layer, is_multi_tile) {
+	TEST(ChunkTileLayer, IsMultiTile) {
 		{
 			jactorio::game::Chunk_tile_layer ctl{};
 			ctl.multi_tile_index = 0;
@@ -91,7 +91,7 @@ namespace game
 		}
 	}
 
-	TEST(chunk_tile_layer, is_multi_tile_top_left) {
+	TEST(ChunkTileLayer, IsMultiTileTopLeft) {
 		{
 			jactorio::game::Chunk_tile_layer ctl{};
 			ctl.multi_tile_index = 0;
@@ -113,7 +113,7 @@ namespace game
 	}
 
 
-	TEST(chunk_tile_layer, get_multi_tile_top_left) {
+	TEST(ChunkTileLayer, GetMultiTileTopLeft) {
 		jactorio::game::Chunk_tile_layer first{};
 		first.init_multi_tile_prop(12, 32);
 
@@ -126,7 +126,7 @@ namespace game
 		EXPECT_EQ(second.get_multi_tile_top_left(), &first);
 	}
 
-	TEST(chunk_tile_layer, set_multi_tile_parent) {
+	TEST(ChunkTileLayer, SetMultiTileParent) {
 		jactorio::game::Chunk_tile_layer first{};
 		jactorio::game::Chunk_tile_layer second{};
 		second.multi_tile_index = 1;
@@ -135,7 +135,7 @@ namespace game
 		EXPECT_EQ(second.get_multi_tile_parent(), &first);
 	}
 
-	TEST(chunk_tile_layer, override_multi_tile_data) {
+	TEST(ChunkTileLayer, OverrideMultiTileData) {
 		// Both should return the same multi tile data
 		jactorio::game::Chunk_tile_layer first{};
 		first.init_multi_tile_prop(12, 32);
@@ -147,7 +147,7 @@ namespace game
 		EXPECT_EQ(data.multi_tile_height, 30);
 	}
 
-	TEST(chunk_tile_layer, get_multi_tile_data) {
+	TEST(ChunkTileLayer, GetMultiTileData) {
 		// Both should return the same multi tile data
 		jactorio::game::Chunk_tile_layer first{};
 		first.init_multi_tile_prop(12, 32);
@@ -165,7 +165,7 @@ namespace game
 	}
 
 
-	TEST(chunk_tile_layer, get_offset_x) {
+	TEST(ChunkTileLayer, GetOffsetX) {
 		jactorio::game::Chunk_tile_layer parent{};
 		parent.init_multi_tile_prop(10, 2);
 
@@ -176,7 +176,7 @@ namespace game
 		EXPECT_EQ(ctl.get_offset_x(), 9);
 	}
 
-	TEST(chunk_tile_layer, get_offset_y) {
+	TEST(ChunkTileLayer, GetOffsetY) {
 		jactorio::game::Chunk_tile_layer parent{};
 		parent.init_multi_tile_prop(5, 2);
 

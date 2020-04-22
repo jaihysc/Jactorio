@@ -66,7 +66,7 @@ namespace jactorio::data
 		///
 		/// \brief Number of tiles traveled by each item on the belt per tick
 		/// \remark For Python API use only
-		PYTHON_PROP_I(Transport_line, float, speed_float, 0.01);
+		PYTHON_PROP_I(Transport_line, double, speed_float, 0.01f);
 
 		/// Number of tiles traveled by each item on the belt per tick
 		transport_line_offset speed;
@@ -158,8 +158,7 @@ namespace jactorio::data
 			J_DATA_ASSERT(speed_float < 0.25, "Transport line speed equal or above maximum of 0.25");
 		}
 
-		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override {
-		}
+		void on_r_show_gui(game::Player_data& /*player_data*/, game::Chunk_tile_layer* /*tile_layer*/) const override {}
 	};
 }
 

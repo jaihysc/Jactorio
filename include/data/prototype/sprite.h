@@ -6,12 +6,10 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
 #pragma once
 
-#include "jactorio.h"
-
 #include <string>
 #include <vector>
 
-
+#include "jactorio.h"
 #include "core/data_type.h"
 #include "data/prototype/prototype_base.h"
 
@@ -160,9 +158,10 @@ namespace jactorio::data
 
 
 		// ======================================================================
-		// Test only
-		J_TEST_USE_ONLY void set_height(const int height) { this->height_ = height; }
-		J_TEST_USE_ONLY void set_width(const int width) { this->width_ = width; }
+#ifdef JACTORIO_BUILD_TEST
+		void set_height(const int height) { this->height_ = height; }
+		void set_width(const int width) { this->width_ = width; }
+#endif
 	};
 }
 

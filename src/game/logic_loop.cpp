@@ -36,9 +36,9 @@ void jactorio::game::init_logic_loop() {
 	game_data = new Game_data();
 
 	// Load prototype data
-	core::Resource_guard data_manager_guard(&data::data_manager::clear_data);
+	core::Resource_guard data_manager_guard(&data::clear_data);
 	try {
-		data::data_manager::load_data(core::filesystem::resolve_path("~/data"));
+		data::load_data(core::resolve_path("~/data"));
 	}
 	catch (data::Data_exception&) {
 		// Prototype loading error
@@ -46,7 +46,7 @@ void jactorio::game::init_logic_loop() {
 	}
 	catch (std::filesystem::filesystem_error&) {
 		// Data folder not found error
-		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::filesystem::resolve_path("~/data").c_str());
+		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::resolve_path("~/data").c_str());
 		return;
 	}
 
@@ -171,7 +171,7 @@ void jactorio::game::init_logic_loop() {
 				// Logistics logic
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-				transport_line_c::transport_line_logic_update(game_data->world);
+				transport_line_logic_update(game_data->world);
 			}
 
 			// ======================================================================

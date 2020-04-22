@@ -8,7 +8,7 @@
 
 namespace renderer
 {
-	TEST(opengl, errorHandling) {
+	TEST(Opengl, ErrorHandling) {
 		jactorio::renderer::opengl_print_errors("RETURN-TYPE TEST-FUNCTION(PARAM1, PARAM2, PARAM3)",
 		                                        "FILE/PATH/GOING/SOMEWHERE", 123);
 		jactorio::renderer::opengl_clear_errors();

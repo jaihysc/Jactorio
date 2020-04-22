@@ -23,7 +23,7 @@ namespace jactorio::data
 		Item* output_item = nullptr;
 
 		/// Number of ticks to mine resource
-		uint32_t mining_ticks = 1;
+		uint16_t mining_ticks = 1;
 
 		game::Deferral_timer::deferral_entry deferral_entry{};
 	};

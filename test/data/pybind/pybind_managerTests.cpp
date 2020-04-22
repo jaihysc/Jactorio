@@ -4,20 +4,28 @@
 
 #include <gtest/gtest.h>
 
-#include "core/resource_guard.h"
 #include "data/data_exception.h"
 #include "data/pybind/pybind_manager.h"
 
 namespace data
 {
-	TEST(pybind_manager, invalid_python_str) {
-		jactorio::core::Resource_guard<void> guard(
-			[]() { jactorio::data::pybind_manager::py_interpreter_terminate(); });
-		jactorio::data::pybind_manager::py_interpreter_init();
+	class PybindManagerTest : public testing::Test
+	{
+	protected:
+		void SetUp() override {
+			jactorio::data::py_interpreter_init();
+		}
 
+		void TearDown() override {
+			jactorio::data::py_interpreter_terminate();
+		}
+	};
+
+
+	TEST_F(PybindManagerTest, InvalidPythonStr) {
 		bool caught = false;
 		try {
-			jactorio::data::pybind_manager::exec("asdf");
+			jactorio::data::py_exec("asdf");
 		}
 		catch (jactorio::data::Data_exception& e) {
 			caught = true;
@@ -28,11 +36,7 @@ namespace data
 		}
 	}
 
-	TEST(pybind_manager, valid_python_str) {
-		jactorio::core::Resource_guard<void> guard(
-			[]() { jactorio::data::pybind_manager::py_interpreter_terminate(); });
-
-		jactorio::data::pybind_manager::py_interpreter_init();
-		EXPECT_EQ(jactorio::data::pybind_manager::exec("print(\"Hello\")"), 0);
+	TEST_F(PybindManagerTest, ValidPythonStr) {
+		EXPECT_EQ(jactorio::data::py_exec("print(\"Hello\")"), 0);
 	}
 }

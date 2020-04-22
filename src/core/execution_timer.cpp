@@ -2,7 +2,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 12/06/2019
 
-#include "core/debug/execution_timer.h"
+#include "core/execution_timer.h"
 
 std::map<std::string, double> jactorio::core::Execution_timer::measured_times =
 	std::map<std::string, double>();

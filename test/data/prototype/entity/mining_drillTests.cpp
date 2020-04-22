@@ -11,7 +11,45 @@
 
 namespace data::prototype
 {
-	TEST(mining_drill, on_can_build) {
+	class MiningDrillTest : public testing::Test
+	{
+	protected:
+		jactorio::game::World_data world_data{};
+
+		void SetUp() override {
+			world_data.add_chunk(new jactorio::game::Chunk{0, 0});
+		}
+
+
+		///
+		/// \brief Creates a chest in the world
+		static void setup_chest(jactorio::game::World_data& world_data,
+											 jactorio::data::Container_entity& container,
+		                                     const int world_x = 4, const int world_y = 2) {
+			jactorio::game::Chunk_tile_layer& container_layer =
+				world_data.get_tile_world_coords(world_x, world_y)
+				          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
+
+			container_layer.prototype_data = &container;
+			container_layer.unique_data = new jactorio::data::Container_entity_data(20);
+		}
+
+		///
+		/// \brief Creates a chest in the world, calling on_build
+		static void setup_drill(jactorio::game::World_data& world_data,
+		                                     jactorio::data::Resource_entity& resource,
+		                                     jactorio::data::Mining_drill& drill) {
+
+			jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
+			tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
+
+			drill.on_build(world_data, {1, 1},
+			               tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), 0,
+			               jactorio::data::placementOrientation::right);
+		}
+	};
+
+	TEST_F(MiningDrillTest, OnCanBuild) {
 		/*
 		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
 		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
@@ -21,9 +59,6 @@ namespace data::prototype
 		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
 		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
 		 */
-
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0});
 
 		jactorio::data::Mining_drill drill{};
 		drill.tile_width = 4;
@@ -41,7 +76,7 @@ namespace data::prototype
 		EXPECT_TRUE(drill.on_can_build(world_data, {2, 2}));
 	}
 
-	TEST(mining_drill, on_can_build_2) {
+	TEST_F(MiningDrillTest, OnCanBuild2) {
 		/*
 		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
 		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
@@ -51,9 +86,6 @@ namespace data::prototype
 		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
 		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
 		 */
-
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0});
 
 		jactorio::data::Mining_drill drill{};
 		drill.tile_width = 4;
@@ -68,10 +100,7 @@ namespace data::prototype
 	}
 
 	// Creates a world and a 3 x 3 radius 1 mining drill
-#define MINING_DRILL_TEST_HEAD\
-		jactorio::game::World_data world_data{};\
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0});\
-		\
+#define MINING_DRILL_DRILL\
 		jactorio::data::Mining_drill drill{};\
 		drill.tile_width = 3;\
 		drill.tile_height = 3;\
@@ -84,8 +113,8 @@ namespace data::prototype
 		resource.set_item(&resource_item);
 
 
-	TEST(mining_drill, find_output_item) {
-		MINING_DRILL_TEST_HEAD
+	TEST_F(MiningDrillTest, FindOutputItem) {
+		MINING_DRILL_DRILL
 		MINING_DRILL_RESOURCE
 
 		EXPECT_EQ(drill.find_output_item(world_data, {2, 2}), nullptr);  // No resources 
@@ -120,40 +149,19 @@ namespace data::prototype
 		}
 	}
 
-	void mining_drill_build_chest(jactorio::game::World_data& world_data, jactorio::data::Container_entity& container,
-	                              const int world_x = 4, const int world_y = 2) {
-		// Build chest
-		jactorio::game::Chunk_tile_layer& container_layer =
-			world_data.get_tile_world_coords(world_x, world_y)
-			          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
 
-		container_layer.prototype_data = &container;
-		container_layer.unique_data = new jactorio::data::Container_entity_data(20);
-	}
-
-	void mining_drill_build_drill(jactorio::game::World_data& world_data,
-	                              jactorio::data::Resource_entity& resource,
-	                              jactorio::data::Mining_drill& drill) {
-		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
-		tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
-
-		drill.on_build(world_data, {1, 1},
-		               tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), 0,
-		               jactorio::data::placementOrientation::right);
-	}
-
-	TEST(mining_drill, build_and_extract_resource) {
+	TEST_F(MiningDrillTest, BuildAndExtractResource) {
 		// Mining drill is built with an item output chest
-		MINING_DRILL_TEST_HEAD
+		MINING_DRILL_DRILL
 		MINING_DRILL_RESOURCE
 
 		drill.resource_output.right = {3, 1};
 		jactorio::data::Container_entity container{};
 
 
-		mining_drill_build_chest(world_data, container);
+		setup_chest(world_data, container);
 
-		mining_drill_build_drill(world_data, resource, drill);
+		setup_drill(world_data, resource, drill);
 
 
 		// ======================================================================
@@ -185,19 +193,19 @@ namespace data::prototype
 		          1);
 	}
 
-	TEST(mining_drill, build_no_output) {
+	TEST_F(MiningDrillTest, BuildNoOutput) {
 		// Mining drill is built without anywhere to output items
 		// Should do nothing until an output is built
-		MINING_DRILL_TEST_HEAD
+		MINING_DRILL_DRILL
 		MINING_DRILL_RESOURCE
 
 		drill.resource_output.right = {3, 1};
 		jactorio::data::Container_entity container{};
 
 
-		mining_drill_build_drill(world_data, resource, drill);
+		setup_drill(world_data, resource, drill);
 
-		mining_drill_build_chest(world_data, container);
+		setup_chest(world_data, container);
 
 		drill.on_neighbor_update(world_data,
 		                         {4, 2}, {1, 1},
@@ -226,17 +234,17 @@ namespace data::prototype
 		          1);
 	}
 
-	TEST(mining_drill, remove_drill) {
+	TEST_F(MiningDrillTest, RemoveDrill) {
 		// When the mining drill is removed, it needs to unregister the defer update
 		// callback to the unique_data which now no longer exists
-		MINING_DRILL_TEST_HEAD
+		MINING_DRILL_DRILL
 		MINING_DRILL_RESOURCE
 
 		drill.resource_output.right = {3, 1};
 		jactorio::data::Container_entity container{};
 
-		mining_drill_build_chest(world_data, container);
-		mining_drill_build_drill(world_data, resource, drill);
+		setup_chest(world_data, container);
+		setup_drill(world_data, resource, drill);
 
 		// Remove
 		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
@@ -248,16 +256,16 @@ namespace data::prototype
 		world_data.deferral_timer.deferral_update(60);
 	}
 
-	TEST(mining_drill, remove_output_entity) {
+	TEST_F(MiningDrillTest, RemoveOutputEntity) {
 		// When the mining drill's output entity is removed, it needs to unregister the defer update
-		MINING_DRILL_TEST_HEAD
+		MINING_DRILL_DRILL
 		MINING_DRILL_RESOURCE
 
 		drill.resource_output.right = {3, 1};
 		jactorio::data::Container_entity container{};
 
-		mining_drill_build_chest(world_data, container);
-		mining_drill_build_drill(world_data, resource, drill);
+		setup_chest(world_data, container);
+		setup_drill(world_data, resource, drill);
 
 		// Remove chest
 		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(4, 2);
@@ -278,19 +286,19 @@ namespace data::prototype
 		world_data.deferral_timer.deferral_update(60);
 	}
 
-	TEST(mining_drill, update_non_output) {
+	TEST_F(MiningDrillTest, UpdateNonOutput) {
 		// Mining drill should ignore on_neighbor_update from tiles other than the item output tile
-		MINING_DRILL_TEST_HEAD
+		MINING_DRILL_DRILL
 		MINING_DRILL_RESOURCE
 
 		drill.resource_output.up = {1, -1};
 		drill.resource_output.right = {3, 1};
-		mining_drill_build_drill(world_data, resource, drill);
+		setup_drill(world_data, resource, drill);
 
 		// ======================================================================
 		jactorio::data::Container_entity container{};
-		mining_drill_build_chest(world_data, container, 2, 0);
-		mining_drill_build_chest(world_data, container, 4, 1);
+		setup_chest(world_data, container, 2, 0);
+		setup_chest(world_data, container, 4, 1);
 
 		drill.on_neighbor_update(world_data,
 		                         {2, 0}, {1, 1},

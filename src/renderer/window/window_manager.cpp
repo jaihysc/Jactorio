@@ -85,14 +85,13 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 	// Set the Jactorio icon for the window
 	{
-		const auto icon =
-			data::Sprite("core/graphics/jactorio.png");
+		const auto icon = data::Sprite("core/graphics/jactorio.png");
 		// Convert the loaded Image into a GLFWImage
 		GLFWimage icons[1];
 		icons[0].pixels = const_cast<unsigned char*>(icon.get_sprite_data_ptr());
 
-		icons[0].width = icon.get_width();
-		icons[0].height = icon.get_height();
+		icons[0].width  = static_cast<int>(icon.get_width());
+		icons[0].height = static_cast<int>(icon.get_height());
 
 		glfwSetWindowIcon(glfw_window, 1, icons);
 	}
@@ -103,7 +102,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 	update_viewport = true;
 
-	glfwSetWindowSizeCallback(glfw_window, [](GLFWwindow* window, int cx, int cy) {
+	glfwSetWindowSizeCallback(glfw_window, [](GLFWwindow* /*window*/, const int cx, const int cy) {
 		// Ignore window minimize (resolution 0 x 0)
 		if (cx > 0 && cy > 0) {
 			// glViewport is critical, changes the size of the rendering area
@@ -116,18 +115,18 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 	// Mouse and keyboard callbacks
 	glfwSetKeyCallback(
-		glfw_window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+		glfw_window, [](GLFWwindow* /*window*/, const int key, int /*scancode*/, const int action, const int mods) {
 			game::input_manager::set_input(key, action, mods);
 		});
 
-	glfwSetMouseButtonCallback(glfw_window, [](GLFWwindow* window, int key, int action, int mods) {
+	glfwSetMouseButtonCallback(glfw_window, [](GLFWwindow* /*window*/, const int key, const int action, const int mods) {
 		game::input_manager::set_input(key, action, mods);
 	});
-	glfwSetScrollCallback(glfw_window, [](GLFWwindow* window, double xoffset, double yoffset) {
+	glfwSetScrollCallback(glfw_window, [](GLFWwindow* /*window*/, double /*xoffset*/, const double yoffset) {
 		// TODO a better zoom
-		get_base_renderer()->tile_projection_matrix_offset += yoffset * 10;
+		get_base_renderer()->tile_projection_matrix_offset += static_cast<float>(yoffset * 10);
 	});
-	glfwSetCursorPosCallback(glfw_window, [](GLFWwindow* window, double xpos, double ypos) {
+	glfwSetCursorPosCallback(glfw_window, [](GLFWwindow* /*window*/, const double xpos, const double ypos) {
 		game::set_cursor_position(xpos, ypos);
 	});
 

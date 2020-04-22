@@ -16,13 +16,13 @@ can_insert(const bool left_side, const transport_line_offset& start_offset) {
 	for (const auto& item : side) {
 		// Item is not compressed with the previous item
 		if (item.first >
-			dec::decimal_cast<transport_line_decimal_place>(transport_line_c::item_spacing)) {
+			dec::decimal_cast<transport_line_decimal_place>(item_spacing)) {
 			//  OFFSET item_spacing               item_spacing   OFFSET + item.first
 			//     | -------------- |   GAP FOR ITEM   | ------------ |
-			if (dec::decimal_cast<transport_line_decimal_place>(transport_line_c::item_spacing) + offset <=
+			if (dec::decimal_cast<transport_line_decimal_place>(item_spacing) + offset <=
 				start_offset &&
 				start_offset <=
-				offset + item.first - dec::decimal_cast<transport_line_decimal_place>(transport_line_c::item_spacing)) {
+				offset + item.first - dec::decimal_cast<transport_line_decimal_place>(item_spacing)) {
 
 				return true;
 			}
@@ -37,7 +37,7 @@ can_insert(const bool left_side, const transport_line_offset& start_offset) {
 
 	// Account for the item width of the last item if not the firs item
 	if (!side.empty())
-		offset += dec::decimal_cast<transport_line_decimal_place>(transport_line_c::item_spacing);
+		offset += dec::decimal_cast<transport_line_decimal_place>(item_spacing);
 
 	return offset <= start_offset;
 }
@@ -45,9 +45,9 @@ can_insert(const bool left_side, const transport_line_offset& start_offset) {
 void jactorio::game::Transport_line_segment::append_item(const bool insert_left, double offset, const data::Item* item) {
 	std::deque<transport_line_item>& target_queue = insert_left ? this->left : this->right;
 
-	// A minimum distance of transport_line_c::item_spacing is maintained between items (AFTER the initial item)
-	if (offset < transport_line_c::item_spacing && !target_queue.empty())
-		offset = transport_line_c::item_spacing;
+	// A minimum distance of item_spacing is maintained between items (AFTER the initial item)
+	if (offset < item_spacing && !target_queue.empty())
+		offset = item_spacing;
 
 	target_queue.emplace_back(offset, item);
 	insert_left
@@ -83,9 +83,9 @@ loop_exit:
 	target_offset -= counter_offset;
 
 
-	// A minimum distance of transport_line_c::item_spacing is maintained between items
-	//	if (target_offset < dec::decimal_cast<transport_line_decimal_place>(transport_line_c::item_spacing) && !target_queue.empty())
-	//		target_offset = transport_line_c::item_spacing;
+	// A minimum distance of item_spacing is maintained between items
+	//	if (target_offset < dec::decimal_cast<transport_line_decimal_place>(item_spacing) && !target_queue.empty())
+	//		target_offset = item_spacing;
 
 	target_queue.emplace(it, target_offset, item);
 }

@@ -32,8 +32,8 @@ jactorio::data::Sprite* jactorio::data::Mining_drill::on_r_get_sprite(Unique_dat
 }
 
 std::pair<uint16_t, uint16_t> jactorio::data::Mining_drill::map_placement_orientation(const placementOrientation orientation,
-                                                                                      game::World_data& world_data,
-                                                                                      std::pair<int, int> world_coords) const {
+                                                                                      game::World_data& /*world_data*/,
+                                                                                      std::pair<int, int> /*world_coords*/) const {
 	switch (orientation) {
 	case placementOrientation::up:
 		return {0, 0};
@@ -177,7 +177,8 @@ void jactorio::data::Mining_drill::on_neighbor_update(game::World_data& world_da
 
 		drill_data->output_tile.emplace(*output_layer.unique_data, output_item_func, emit_orientation);
 
-		drill_data->mining_ticks = static_cast<double>(JC_GAME_HERTZ) * drill_data->output_item->entity_prototype->pickup_time;
+		drill_data->mining_ticks = 
+			static_cast<uint16_t>(static_cast<double>(JC_GAME_HERTZ) * drill_data->output_item->entity_prototype->pickup_time);
 
 		register_mine_callback(world_data.deferral_timer, drill_data);
 	}
@@ -189,7 +190,7 @@ void jactorio::data::Mining_drill::on_neighbor_update(game::World_data& world_da
 
 
 void jactorio::data::Mining_drill::on_remove(game::World_data& world_data,
-                                             std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
+                                             std::pair<game::World_data::world_coord, game::World_data::world_coord> /*world_coords*/,
                                              game::Chunk_tile_layer& tile_layer) const {
 	Unique_data_base* drill_data;
 

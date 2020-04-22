@@ -13,7 +13,8 @@
 
 namespace game
 {
-	TEST(chunk, chunk_set_tile) {
+	TEST(Chunk, ChunkSetTile) {
+	  constexpr auto chunk_width = jactorio::game::World_data::chunk_width;
 		// The tiles pointer is only stored by the Chunk, modifying the original tiles pointer
 		// will modify the tiles of the chunk
 
@@ -37,8 +38,8 @@ namespace game
 		chunk_tile_2.layers[0] = tile_layer_2;
 
 
-		const auto tiles = new jactorio::game::Chunk_tile[32 * 32];
-
+		// Deleted by chunk
+		auto* tiles = new jactorio::game::Chunk_tile[chunk_width * chunk_width];
 		tiles[0] = chunk_tile_1;
 
 		const jactorio::game::Chunk chunk{0, 0, tiles};
@@ -51,7 +52,7 @@ namespace game
 		// Prototype data in the actual application is managed by data_manager
 	}
 
-	TEST(chunk, chunk_copy) {
+	TEST(Chunk, ChunkCopy) {
 		const jactorio::game::Chunk chunk_a{0, 0};
 
 		const auto chunk_copy = chunk_a;
@@ -59,21 +60,21 @@ namespace game
 		EXPECT_NE(chunk_copy.tiles_ptr(), chunk_a.tiles_ptr());
 	}
 
-	TEST(chunk, chunk_move) {
+	TEST(Chunk, ChunkMove) {
 		jactorio::game::Chunk chunk_a{0, 0};
 
 		const auto chunk_move = std::move(chunk_a);
 		EXPECT_EQ(chunk_a.tiles_ptr(), nullptr);
 	}
 
-	TEST(chunk, get_object_layer) {
+	TEST(Chunk, GetObjectLayer) {
 		jactorio::game::Chunk chunk_a{0, 0};
 
 		// Should return the layer specified by the index of the enum objectLayer
 		EXPECT_EQ(&chunk_a.get_object(jactorio::game::Chunk::objectLayer::tree), &chunk_a.objects[0]);
 	}
 
-	TEST(logic_chunk, get_struct_layer) {
+	TEST(LogicChunk, GetStructLayer) {
 		jactorio::game::Chunk chunk_a{0, 0};
 		jactorio::game::Logic_chunk l_chunk(&chunk_a);
 

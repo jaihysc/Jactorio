@@ -6,7 +6,7 @@
 
 #include <future>
 
-#include "core/debug/execution_timer.h"
+#include "jactorio.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/interface/renderable.h"
 #include "data/prototype/tile/tile.h"
@@ -15,6 +15,8 @@
 #include "game/world/world_data.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/mvp_manager.h"
+
+constexpr auto chunk_width = jactorio::game::World_data::chunk_width;
 
 using tile_draw_func = jactorio::core::Quad_position (*)(const jactorio::game::Chunk_tile_layer&);
 using object_draw_func = unsigned int (*)(const jactorio::game::Chunk_object_layer&);
@@ -97,14 +99,14 @@ tile_draw_func tile_get_sprite_id_func[]{
 object_draw_func object_layer_get_sprite_id_func[]{
 	// Trees?!
 	[](const jactorio::game::Chunk_object_layer& layer) {
-		auto* entity = static_cast<const jactorio::data::Entity*>(layer.prototype_data);
+		const auto* entity = static_cast<const jactorio::data::Entity*>(layer.prototype_data);
 		if (entity == nullptr || entity->sprite == nullptr)
 			return 0u;
 		return entity->on_r_get_sprite(layer.unique_data)->internal_id;
 	},
 	// Debug overlay
 	[](const jactorio::game::Chunk_object_layer& layer) {
-		auto* sprite = static_cast<const jactorio::data::Sprite*>(layer.prototype_data);
+		const auto* sprite = static_cast<const jactorio::data::Sprite*>(layer.prototype_data);
 		return sprite->internal_id;
 	},
 };
@@ -122,11 +124,11 @@ void prepare_tile_data(const jactorio::game::World_data&,
 
 
 	// Iterate through and load tiles of a chunk into layer for rendering
-	for (unsigned int tile_y = 0; tile_y < 32; ++tile_y) {
-		const float y = (chunk_y_offset + tile_y) * jactorio::renderer::Renderer::tile_width;
+	for (uint8_t tile_y = 0; tile_y < chunk_width; ++tile_y) {
+		const float y = (chunk_y_offset + tile_y) * static_cast<float>(jactorio::renderer::Renderer::tile_width);
 
-		for (unsigned int tile_x = 0; tile_x < 32; ++tile_x) {
-			const jactorio::game::Chunk_tile& tile = tiles[tile_y * 32 + tile_x];
+		for (uint8_t tile_x = 0; tile_x < chunk_width; ++tile_x) {
+			const jactorio::game::Chunk_tile& tile = tiles[tile_y * chunk_width + tile_x];
 			jactorio::game::Chunk_tile_layer& layer_tile = tile.get_layer(layer_index);
 
 			jactorio::core::Quad_position uv;
@@ -142,18 +144,15 @@ void prepare_tile_data(const jactorio::game::World_data&,
 				// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
 
 				// Total length of the sprite, to be split among the different tiles
-				const auto len_x =
-					(uv.bottom_right.x - uv.top_left.x) / static_cast<float>(mt_data.multi_tile_span);
-				const auto len_y =
-					(uv.bottom_right.y - uv.top_left.y) / static_cast<float>(mt_data.multi_tile_height);
+				const auto len_x = (uv.bottom_right.x - uv.top_left.x) / static_cast<float>(mt_data.multi_tile_span);
+				const auto len_y = (uv.bottom_right.y - uv.top_left.y) / static_cast<float>(mt_data.multi_tile_height);
 
-				const int x_multiplier = layer_tile.get_offset_x();
-				const int y_multiplier = layer_tile.get_offset_y();
+				const double x_multiplier = layer_tile.get_offset_x();
+				const double y_multiplier = layer_tile.get_offset_y();
 
 				// Opengl flips vertically, thus the y multiplier is inverted
 				// bottom right
-				uv.bottom_right.x = uv.bottom_right.x - len_x *
-					static_cast<float>(mt_data.multi_tile_span - x_multiplier - 1);
+				uv.bottom_right.x = uv.bottom_right.x - len_x * static_cast<float>(mt_data.multi_tile_span - x_multiplier - 1);
 				uv.bottom_right.y = uv.bottom_right.y - len_y * y_multiplier;
 
 				// top left
@@ -172,7 +171,7 @@ void prepare_tile_data(const jactorio::game::World_data&,
 				continue;
 
 			// Calculate screen coordinates
-			const float x = (chunk_x_offset + tile_x) * jactorio::renderer::Renderer::tile_width;
+			const float x = (chunk_x_offset + tile_x) * static_cast<float>(jactorio::renderer::Renderer::tile_width);
 
 			layer->push_back(
 				jactorio::renderer::Renderer_layer::Element(
@@ -196,15 +195,15 @@ void prepare_tile_data(const jactorio::game::World_data&,
 }
 
 void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
-                                    const float chunk_y_offset, const float chunk_x_offset,
+                                    const double chunk_y_offset, const double chunk_x_offset,
                                     const jactorio::game::Transport_line_segment* line_segment,
                                     std::deque<jactorio::game::transport_line_item>& line_segment_side,
-                                    float offset_x, float offset_y) {
+                                    double offset_x, double offset_y) {
 	using namespace jactorio::game;
 
 	// Either offset_x or offset_y which will be INCREASED or DECREASED
-	float* target_offset;
-	float multiplier = 1;  // Either 1 or -1 to add or subtract
+	double* target_offset;
+	double multiplier = 1;  // Either 1 or -1 to add or subtract
 
 	switch (line_segment->direction) {
 	case Transport_line_segment::moveDir::up:
@@ -221,6 +220,10 @@ void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
 	case Transport_line_segment::moveDir::left:
 		target_offset = &offset_x;
 		break;
+
+	default:
+		assert(false);  // Missing switch case
+		break;
 	}
 
 	for (const auto& line_item : line_segment_side) {
@@ -229,23 +232,19 @@ void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
 
 		const auto& uv_pos = jactorio::renderer::Renderer::get_spritemap_coords(line_item.second->sprite->internal_id);
 
-		const float top_x = (chunk_x_offset + offset_x)
-			* static_cast<float>(jactorio::renderer::Renderer::tile_width);
-		const float top_y = (chunk_y_offset + offset_y)
-			* static_cast<float>(jactorio::renderer::Renderer::tile_width);
+		const float top_x = static_cast<float>(chunk_x_offset + offset_x) * static_cast<float>(jactorio::renderer::Renderer::tile_width);
+		const float top_y = static_cast<float>(chunk_y_offset + offset_y) * static_cast<float>(jactorio::renderer::Renderer::tile_width);
 
 		layer->push_back(jactorio::renderer::Renderer_layer::Element(
 			{
 				{
 					{top_x, top_y},
 					{
-						static_cast<float>(top_x
-							+ transport_line_c::item_width *
-							static_cast<float>(jactorio::renderer::Renderer::tile_width)),
+						static_cast<float>(top_x + item_width *
+										   static_cast<float>(jactorio::renderer::Renderer::tile_width)),
 
-						static_cast<float>(top_y
-							+ transport_line_c::item_width *
-							static_cast<float>(jactorio::renderer::Renderer::tile_width))
+						static_cast<float>(top_y + item_width *
+										   static_cast<float>(jactorio::renderer::Renderer::tile_width))
 					},
 				},
 				{uv_pos.top_left, uv_pos.bottom_right}
@@ -262,7 +261,7 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
                          const jactorio::game::Chunk* const chunk) {
 
 	// Draw logic chunk contents if it exists
-	auto* logic_chunk = world_data.logic_get_chunk_read_only(chunk);
+	const auto* logic_chunk = world_data.logic_get_chunk_read_only(chunk);
 
 	if (logic_chunk) {
 		const auto& transport_line_layer =
@@ -275,23 +274,23 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			if (!line_segment->item_visible)
 				continue;
 
-			float offset_x = line_layer.position_x;
-			float offset_y = line_layer.position_y;
+			double offset_x = line_layer.position_x;
+			double offset_y = line_layer.position_y;
 
 			// Left
 			// The offsets for straight are always applied to bend left and right
 			switch (line_segment->direction) {
 			case jactorio::game::Transport_line_segment::moveDir::up:
-				offset_x += jactorio::game::transport_line_c::line_up_l_item_offset_x;
+				offset_x += jactorio::game::line_up_l_item_offset_x;
 				break;
 			case jactorio::game::Transport_line_segment::moveDir::right:
-				offset_y += jactorio::game::transport_line_c::line_right_l_item_offset_y;
+				offset_y += jactorio::game::line_right_l_item_offset_y;
 				break;
 			case jactorio::game::Transport_line_segment::moveDir::down:
-				offset_x += jactorio::game::transport_line_c::line_down_l_item_offset_x;
+				offset_x += jactorio::game::line_down_l_item_offset_x;
 				break;
 			case jactorio::game::Transport_line_segment::moveDir::left:
-				offset_y += jactorio::game::transport_line_c::line_left_l_item_offset_y;
+				offset_y += jactorio::game::line_left_l_item_offset_y;
 				break;
 			}
 
@@ -300,16 +299,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			case jactorio::game::Transport_line_segment::terminationType::straight:
 				switch (line_segment->direction) {
 				case jactorio::game::Transport_line_segment::moveDir::up:
-					offset_y -= jactorio::game::transport_line_c::line_left_up_straight_item_offset;
+					offset_y -= jactorio::game::line_left_up_straight_item_offset;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::right:
-					offset_x += jactorio::game::transport_line_c::line_right_down_straight_item_offset;
+					offset_x += jactorio::game::line_right_down_straight_item_offset;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::down:
-					offset_y += jactorio::game::transport_line_c::line_right_down_straight_item_offset;
+					offset_y += jactorio::game::line_right_down_straight_item_offset;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::left:
-					offset_x -= jactorio::game::transport_line_c::line_left_up_straight_item_offset;
+					offset_x -= jactorio::game::line_left_up_straight_item_offset;
 					break;
 				}
 				break;
@@ -317,16 +316,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			case jactorio::game::Transport_line_segment::terminationType::bend_left:
 				switch (line_segment->direction) {
 				case jactorio::game::Transport_line_segment::moveDir::up:
-					offset_y += jactorio::game::transport_line_c::line_up_bl_l_item_offset_y;
+					offset_y += jactorio::game::line_up_bl_l_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::right:
-					offset_x += jactorio::game::transport_line_c::line_right_bl_l_item_offset_x;
+					offset_x += jactorio::game::line_right_bl_l_item_offset_x;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::down:
-					offset_y += jactorio::game::transport_line_c::line_down_bl_l_item_offset_y;
+					offset_y += jactorio::game::line_down_bl_l_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::left:
-					offset_x += jactorio::game::transport_line_c::line_left_bl_l_item_offset_x;
+					offset_x += jactorio::game::line_left_bl_l_item_offset_x;
 					break;
 				}
 				break;
@@ -334,16 +333,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			case jactorio::game::Transport_line_segment::terminationType::bend_right:
 				switch (line_segment->direction) {
 				case jactorio::game::Transport_line_segment::moveDir::up:
-					offset_y += jactorio::game::transport_line_c::line_up_br_l_item_offset_y;
+					offset_y += jactorio::game::line_up_br_l_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::right:
-					offset_x += jactorio::game::transport_line_c::line_right_br_l_item_offset_x;
+					offset_x += jactorio::game::line_right_br_l_item_offset_x;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::down:
-					offset_y += jactorio::game::transport_line_c::line_down_br_l_item_offset_y;
+					offset_y += jactorio::game::line_down_br_l_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::left:
-					offset_x += jactorio::game::transport_line_c::line_left_br_l_item_offset_x;
+					offset_x += jactorio::game::line_left_br_l_item_offset_x;
 					break;
 				}
 				break;
@@ -353,16 +352,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			case jactorio::game::Transport_line_segment::terminationType::left_only:
 				switch (line_segment->direction) {
 				case jactorio::game::Transport_line_segment::moveDir::up:
-					offset_y += jactorio::game::transport_line_c::line_up_single_side_item_offset_y;
+					offset_y += jactorio::game::line_up_single_side_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::right:
-					offset_x += jactorio::game::transport_line_c::line_right_single_side_item_offset_x;
+					offset_x += jactorio::game::line_right_single_side_item_offset_x;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::down:
-					offset_y += jactorio::game::transport_line_c::line_down_single_side_item_offset_y;
+					offset_y += jactorio::game::line_down_single_side_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::left:
-					offset_x += jactorio::game::transport_line_c::line_left_single_side_item_offset_x;
+					offset_x += jactorio::game::line_left_single_side_item_offset_x;
 					break;
 				}
 				break;
@@ -378,16 +377,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			// The offsets for straight are always applied to bend left and right
 			switch (line_segment->direction) {
 			case jactorio::game::Transport_line_segment::moveDir::up:
-				offset_x += jactorio::game::transport_line_c::line_up_r_item_offset_x;
+				offset_x += jactorio::game::line_up_r_item_offset_x;
 				break;
 			case jactorio::game::Transport_line_segment::moveDir::right:
-				offset_y += jactorio::game::transport_line_c::line_right_r_item_offset_y;
+				offset_y += jactorio::game::line_right_r_item_offset_y;
 				break;
 			case jactorio::game::Transport_line_segment::moveDir::down:
-				offset_x += jactorio::game::transport_line_c::line_down_r_item_offset_x;
+				offset_x += jactorio::game::line_down_r_item_offset_x;
 				break;
 			case jactorio::game::Transport_line_segment::moveDir::left:
-				offset_y += jactorio::game::transport_line_c::line_left_r_item_offset_y;
+				offset_y += jactorio::game::line_left_r_item_offset_y;
 				break;
 			}
 
@@ -397,16 +396,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			case jactorio::game::Transport_line_segment::terminationType::straight:
 				switch (line_segment->direction) {
 				case jactorio::game::Transport_line_segment::moveDir::up:
-					offset_y -= jactorio::game::transport_line_c::line_left_up_straight_item_offset;
+					offset_y -= jactorio::game::line_left_up_straight_item_offset;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::right:
-					offset_x += jactorio::game::transport_line_c::line_right_down_straight_item_offset;
+					offset_x += jactorio::game::line_right_down_straight_item_offset;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::down:
-					offset_y += jactorio::game::transport_line_c::line_right_down_straight_item_offset;
+					offset_y += jactorio::game::line_right_down_straight_item_offset;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::left:
-					offset_x -= jactorio::game::transport_line_c::line_left_up_straight_item_offset;
+					offset_x -= jactorio::game::line_left_up_straight_item_offset;
 					break;
 				}
 				break;
@@ -414,16 +413,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			case jactorio::game::Transport_line_segment::terminationType::bend_left:
 				switch (line_segment->direction) {
 				case jactorio::game::Transport_line_segment::moveDir::up:
-					offset_y += jactorio::game::transport_line_c::line_up_bl_r_item_offset_y;
+					offset_y += jactorio::game::line_up_bl_r_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::right:
-					offset_x += jactorio::game::transport_line_c::line_right_bl_r_item_offset_x;
+					offset_x += jactorio::game::line_right_bl_r_item_offset_x;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::down:
-					offset_y += jactorio::game::transport_line_c::line_down_bl_r_item_offset_y;
+					offset_y += jactorio::game::line_down_bl_r_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::left:
-					offset_x += jactorio::game::transport_line_c::line_left_bl_r_item_offset_x;
+					offset_x += jactorio::game::line_left_bl_r_item_offset_x;
 					break;
 				}
 				break;
@@ -431,16 +430,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			case jactorio::game::Transport_line_segment::terminationType::bend_right:
 				switch (line_segment->direction) {
 				case jactorio::game::Transport_line_segment::moveDir::up:
-					offset_y += jactorio::game::transport_line_c::line_up_br_r_item_offset_y;
+					offset_y += jactorio::game::line_up_br_r_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::right:
-					offset_x += jactorio::game::transport_line_c::line_right_br_r_item_offset_x;
+					offset_x += jactorio::game::line_right_br_r_item_offset_x;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::down:
-					offset_y += jactorio::game::transport_line_c::line_down_br_r_item_offset_y;
+					offset_y += jactorio::game::line_down_br_r_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::left:
-					offset_x += jactorio::game::transport_line_c::line_left_br_r_item_offset_x;
+					offset_x += jactorio::game::line_left_br_r_item_offset_x;
 					break;
 				}
 				break;
@@ -450,16 +449,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			case jactorio::game::Transport_line_segment::terminationType::left_only:
 				switch (line_segment->direction) {
 				case jactorio::game::Transport_line_segment::moveDir::up:
-					offset_y += jactorio::game::transport_line_c::line_up_single_side_item_offset_y;
+					offset_y += jactorio::game::line_up_single_side_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::right:
-					offset_x += jactorio::game::transport_line_c::line_right_single_side_item_offset_x;
+					offset_x += jactorio::game::line_right_single_side_item_offset_x;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::down:
-					offset_y += jactorio::game::transport_line_c::line_down_single_side_item_offset_y;
+					offset_y += jactorio::game::line_down_single_side_item_offset_y;
 					break;
 				case jactorio::game::Transport_line_segment::moveDir::left:
-					offset_x += jactorio::game::transport_line_c::line_left_single_side_item_offset_x;
+					offset_x += jactorio::game::line_left_single_side_item_offset_x;
 					break;
 				}
 				break;
@@ -516,10 +515,10 @@ void jactorio::renderer::world_renderer::prepare_chunk_draw_data(const game::Wor
 		prepare_func = &prepare_object_data;
 
 	for (int chunk_y = 0; chunk_y < chunk_amount_y; ++chunk_y) {
-		const int chunk_y_offset = chunk_y * 32 + render_offset_y;
+		const int chunk_y_offset = chunk_y * chunk_width + render_offset_y;
 
 		for (int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
-			const int chunk_x_offset = chunk_x * 32 + render_offset_x;
+			const int chunk_x_offset = chunk_x * chunk_width + render_offset_x;
 
 			std::lock_guard<std::mutex> guard{world_data.world_data_mutex};
 			const game::Chunk* chunk = world_data.get_chunk(chunk_start_x + chunk_x,
@@ -549,7 +548,7 @@ void jactorio::renderer::world_renderer::render_player_position(const game::Worl
                                                                 Renderer* renderer,
                                                                 const float player_x, const float player_y) {
 	// Player movement is in tiles
-	// Every 32 tiles, shift 1 chunk
+	// Every chunk_width tiles, shift 1 chunk
 	// Remaining tiles are offset
 
 	// The top left of the tile at player position will be at the center of the screen
@@ -565,14 +564,14 @@ void jactorio::renderer::world_renderer::render_player_position(const game::Worl
 
 
 	// How many chunks to offset based on player's position
-	auto chunk_start_x = static_cast<int>(position_x / 32);
-	auto chunk_start_y = static_cast<int>(position_y / 32);
+	auto chunk_start_x = static_cast<int>(position_x / chunk_width);
+	auto chunk_start_y = static_cast<int>(position_y / chunk_width);
 
 	// Player has not moved an entire chunk's width yet, offset the tiles
-	// Modulus 32 to make it snap back to 0 after offsetting the entirety of a chunk
+	// Modulus chunk_width to make it snap back to 0 after offsetting the entirety of a chunk
 	// Inverted to move the tiles AWAY from the screen instead of following the screen
-	auto tile_start_x = static_cast<int>(position_x % 32 * -1);
-	auto tile_start_y = static_cast<int>(position_y % 32 * -1);
+	auto tile_start_x = static_cast<int>(position_x % chunk_width * -1);
+	auto tile_start_y = static_cast<int>(position_y % chunk_width * -1);
 
 
 	const auto tile_amount_x = renderer->get_grid_size_x();
@@ -580,11 +579,11 @@ void jactorio::renderer::world_renderer::render_player_position(const game::Worl
 
 
 	// Render the player position in the center of the screen
-	chunk_start_x -= tile_amount_x / 2 / 32;
-	tile_start_x += tile_amount_x / 2 % 32;
+	chunk_start_x -= tile_amount_x / 2 / chunk_width;
+	tile_start_x += tile_amount_x / 2 % chunk_width;
 
-	chunk_start_y -= tile_amount_y / 2 / 32;
-	tile_start_y += tile_amount_y / 2 % 32;
+	chunk_start_y -= tile_amount_y / 2 / chunk_width;
+	tile_start_y += tile_amount_y / 2 % chunk_width;
 
 	{
 		// ##################
@@ -605,17 +604,17 @@ void jactorio::renderer::world_renderer::render_player_position(const game::Worl
 		const auto window_height = Renderer::get_window_height();
 
 		// Divide by 2 first to truncate decimals
-		const auto view_transform = mvp_manager::get_view_transform();
+		const auto& view_transform = get_view_transform();
 		view_transform->x
-			= static_cast<int>(window_width / 2 - (tile_amount_x / 2 * Renderer::tile_width))
+			= static_cast<float>(static_cast<int>(window_width / 2 - (tile_amount_x / 2 * Renderer::tile_width)))
 			+ camera_offset_x;
 
 		view_transform->y
-			= static_cast<int>(window_height / 2 - (tile_amount_y / 2 * Renderer::tile_width))
+			= static_cast<float>(static_cast<int>(window_height / 2 - (tile_amount_y / 2 * Renderer::tile_width)))
 			+ camera_offset_y;
 
 		// Set view matrix
-		mvp_manager::update_view_transform();
+		update_view_transform();
 		// Set projection matrix
 		renderer->update_tile_projection_matrix();
 		update_shader_mvp();
@@ -643,8 +642,8 @@ void jactorio::renderer::world_renderer::render_player_position(const game::Worl
 	chunk_start_y -= 2;
 
 	// Calculate the maximum number of chunks which can be rendered
-	const auto amount_x = (renderer->get_grid_size_x() - window_start_x) / 32 + 1;  // Render 1 extra chunk on the edge
-	const auto amount_y = (renderer->get_grid_size_y() - window_start_y) / 32 + 1;
+	const auto amount_x = (renderer->get_grid_size_x() - window_start_x) / chunk_width + 1;  // Render 1 extra chunk on the edge
+	const auto amount_y = (renderer->get_grid_size_y() - window_start_y) / chunk_width + 1;
 
 
 	auto* layer_1 = &renderer->render_layer;

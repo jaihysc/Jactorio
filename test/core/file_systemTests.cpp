@@ -8,53 +8,58 @@
 
 namespace core
 {
-	TEST(file_system, working_directory_get_set) {
-		// Certain tests require a path to files, store the original executing directory
-		const auto original_path = jactorio::core::filesystem::get_executing_directory() + "/";
+	class FileSystemTest : public testing::Test
+	{
+		std::string original_executing_dir_;
 
+	protected:
+		void SetUp() override {
+			// Certain tests (DataManager) require a path to files, store the original executing directory
+			original_executing_dir_ = jactorio::core::get_executing_directory() + "/";
+		}
+
+		void TearDown() override {
+			// Re- set the original executing directory
+			jactorio::core::set_executing_directory(original_executing_dir_);
+		}
+	};
+
+	TEST_F(FileSystemTest, WorkingDirectoryGetSet) {
 #ifdef WIN32
-		jactorio::core::filesystem::set_executing_directory("C:\\x\\y\\z\\b.exe");
-		EXPECT_EQ(jactorio::core::filesystem::get_executing_directory(), "C:/x/y/z");
+		jactorio::core::set_executing_directory("C:\\x\\y\\z\\b.exe");
+		EXPECT_EQ(jactorio::core::get_executing_directory(), "C:/x/y/z");
 #endif
 
-		jactorio::core::filesystem::set_executing_directory("abcdefghijkl;'");
-		EXPECT_EQ(jactorio::core::filesystem::get_executing_directory(), "");
+		jactorio::core::set_executing_directory("abcdefghijkl;'");
+		EXPECT_EQ(jactorio::core::get_executing_directory(), "");
 
-		jactorio::core::filesystem::set_executing_directory("x/y/z/b.exe");
-		EXPECT_EQ(jactorio::core::filesystem::get_executing_directory(), "x/y/z");
+		jactorio::core::set_executing_directory("x/y/z/b.exe");
+		EXPECT_EQ(jactorio::core::get_executing_directory(), "x/y/z");
 
-		jactorio::core::filesystem::set_executing_directory("x/123456.exe");
-		EXPECT_EQ(jactorio::core::filesystem::get_executing_directory(), "x");
-
-		// Re- set the original executing directory
-		jactorio::core::filesystem::set_executing_directory(original_path);
+		jactorio::core::set_executing_directory("x/123456.exe");
+		EXPECT_EQ(jactorio::core::get_executing_directory(), "x");
 	}
 
-	TEST(file_system, resolve_path) {
+	TEST_F(FileSystemTest, ResolvePath) {
 		// Certain tests require a path to files, store the original executing directory
-		const auto original_path = jactorio::core::filesystem::get_executing_directory() + "/";
+		const auto original_path = jactorio::core::get_executing_directory() + "/";
 
 
-		jactorio::core::filesystem::set_executing_directory("antarctica/coolApplication.exe");
+		jactorio::core::set_executing_directory("antarctica/coolApplication.exe");
 
-		EXPECT_EQ(
-			jactorio::core::filesystem::resolve_path("~/glaciers/glacier1.png"),
-			"antarctica/glaciers/glacier1.png"
-		);
+		EXPECT_EQ(jactorio::core::resolve_path("~/glaciers/glacier1.png"), "antarctica/glaciers/glacier1.png");
 
-		EXPECT_EQ(
-			jactorio::core::filesystem::resolve_path("banana/banana1.png"),
-			"banana/banana1.png"
-		);
+		EXPECT_EQ(jactorio::core::resolve_path("banana/banana1.png"), "banana/banana1.png");
 
 		// Re- set the original executing directory
-		jactorio::core::filesystem::set_executing_directory(original_path);
+		jactorio::core::set_executing_directory(original_path);
 	}
 
-	TEST(file_system, read_file_strInvalidPath) {
-		if (!jactorio::core::filesystem::read_file_as_str("").empty() ||
-			!jactorio::core::filesystem::read_file_as_str("someMysteriousFilePathThatDOESnotEXIST").empty())
+	TEST_F(FileSystemTest, ReadFileStrInvalidPath) {
+		if (!jactorio::core::read_file_as_str("").empty() ||
+			!jactorio::core::read_file_as_str("someMysteriousFilePathThatDOESnotEXIST").empty()) {
 			FAIL();
+		}
 
 		// Test does not check if the read contents are valid, it is assumed to be valid
 	}

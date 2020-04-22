@@ -70,7 +70,7 @@ void parse_eol(const std::string& directory_prefix) {
 	str_s << "__" << directory_prefix << "__/" << l_value;
 
 	bool found = false;
-	for (auto& category : data::data_manager::data_raw) {
+	for (auto& category : data::data_raw) {
 		for (auto& prototype : category) {
 			if (prototype.first == str_s.str()) {
 				found = true;
@@ -90,7 +90,7 @@ loop_exit:
 	line_number++;
 }
 
-void jactorio::data::local_parser::parse(const std::string& file_str, const std::string& directory_prefix) {
+void jactorio::data::local_parse(const std::string& file_str, const std::string& directory_prefix) {
 	line_number = 1;
 	reset_variables();
 
@@ -144,9 +144,9 @@ void jactorio::data::local_parser::parse(const std::string& file_str, const std:
 	parse_eol(directory_prefix);
 }
 
-int jactorio::data::local_parser::parse_s(const std::string& file_str, const std::string& directory_prefix) {
+int jactorio::data::local_parse_s(const std::string& file_str, const std::string& directory_prefix) {
 	try {
-		parse(file_str, directory_prefix);
+		local_parse(file_str, directory_prefix);
 	}
 	catch (Data_exception&) {
 		return 1;

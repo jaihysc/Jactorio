@@ -16,9 +16,9 @@ namespace core
 		return str.substr(i);
 	}
 
-	TEST(logging, createLogMessage) {
+	TEST(Logger, CreateLogMessage) {
 		std::string logged_message = gen_log_message(
-			jactorio::core::logger::logSeverity::error,
+			jactorio::core::logSeverity::error,
 			"Some component, such as Networking",
 			0,
 			"Oh no, something went wrong");
@@ -30,7 +30,7 @@ namespace core
 		          "ERROR    [Some component, such as Networking:0] Oh no, something went wrong\n");
 
 		logged_message = gen_log_message(
-			jactorio::core::logger::logSeverity::info,
+			jactorio::core::logSeverity::info,
 			"Renderer",
 			10,
 			"Just letting you know something");
