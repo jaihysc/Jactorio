@@ -8,7 +8,7 @@
 
 namespace jactorio::game
 {
-	enum class event_type
+	enum class eventType
 	{
 		// TODO world gen events, entity, player are not implemented
 		none = 0,
@@ -49,7 +49,7 @@ namespace jactorio::game
 #define BIT_F(n) (1 << (n))
 
 	// Bitfield of categories
-	enum event_category
+	enum eventCategory
 	{
 		none = 0,
 

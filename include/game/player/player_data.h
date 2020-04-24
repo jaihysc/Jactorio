@@ -151,6 +151,9 @@ namespace jactorio::game
 		/// Excess items which queued recipes will return to the player inventory
 		std::map<std::string, uint16_t> crafting_item_extras_;
 
+		/// Item which is held until there is space in the player inventory to return
+		data::item_stack crafting_held_item_ = {nullptr, 0};
+
 
 		data::item_stack selected_item_;
 
@@ -182,6 +185,10 @@ namespace jactorio::game
 		/// \return nullptr if there is no item selected
 		J_NODISCARD const data::item_stack* get_selected_item() const;
 
+		///
+		/// \brief Deselects the current item and returns it to its slot ONLY if selected by reference
+		/// \return true if successfully deselected
+		bool deselect_selected_item();
 
 		///
 		/// \brief Increments the selected item to the stack size

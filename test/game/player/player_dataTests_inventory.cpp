@@ -12,16 +12,6 @@
 
 namespace game
 {
-	//
-	//
-	//
-	//
-	// PLAYER INVENTORY MENU
-	//
-	//
-	//
-	//
-
 	class PlayerDataInventoryTest : public testing::Test
 	{
 		bool setup_cursor_ = false;
@@ -420,6 +410,27 @@ namespace game
 			EXPECT_EQ(cursor_item, nullptr);
 		}
 
+	}
+
+	TEST_F(PlayerDataInventoryTest, DeselectSelectedItem) {
+		// If player selects item by "unique"
+		// If decremented to 0, deselect the cursor item
+		const auto item  = std::make_unique<jactorio::data::Item>();
+		item->stack_size = 50;
+
+		player_data_.inventory_player[0].first  = item.get();
+		player_data_.inventory_player[0].second = 10;
+
+		player_data_.inventory_click(0, 0, true, player_data_.inventory_player);
+
+		EXPECT_TRUE(player_data_.deselect_selected_item());
+
+		// Returned to where selection cursor was 
+		EXPECT_EQ(player_data_.inventory_player[0].first, item.get());
+		EXPECT_EQ(player_data_.inventory_player[0].second, 10);
+
+		const auto cursor_item = player_data_.get_selected_item();
+		EXPECT_EQ(cursor_item, nullptr);
 	}
 
 	TEST_F(PlayerDataInventoryTest, DecrementSelectedItemReachZeroReference) {

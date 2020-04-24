@@ -11,18 +11,12 @@
 #include <cstdint>
 #include <utility>
 
+#include "data/prototype/placement_orientation.h"
 #include "data/prototype/sprite.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::data
 {
-	enum class placementOrientation
-	{
-		up,
-		right,
-		down,
-		left
-	};
 
 	///
 	/// \brief Entities which can be rotated by the player

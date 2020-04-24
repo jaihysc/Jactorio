@@ -13,9 +13,10 @@ namespace renderer
 	class SpritemapCreationTest : public testing::Test
 	{
 	protected:
+		jactorio::renderer::Renderer_sprites renderer_sprites_{};
+
 		void TearDown() override {
 			jactorio::data::clear_data();
-			jactorio::renderer::renderer_sprites::clear_spritemaps();
 		}
 	};
 
@@ -36,10 +37,10 @@ namespace renderer
 		                                        {jactorio::data::Sprite::spriteGroup::gui}));
 
 		// Should filter out to only 2 entries
-		jactorio::renderer::renderer_sprites::create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
+		renderer_sprites_.create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
 
-		const jactorio::renderer::renderer_sprites::Spritemap_data& data =
-			jactorio::renderer::renderer_sprites::get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
+		const jactorio::renderer::Renderer_sprites::Spritemap_data& data =
+			renderer_sprites_.get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
 
 		EXPECT_EQ(data.width, 64);
 		EXPECT_EQ(data.height, 32);
@@ -72,10 +73,10 @@ namespace renderer
 		                                        {}));
 
 		// Should filter out to 3 entries, total width of 32 * 3
-		jactorio::renderer::renderer_sprites::create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
+		renderer_sprites_.create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
 
-		const jactorio::renderer::renderer_sprites::Spritemap_data& data =
-			jactorio::renderer::renderer_sprites::get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
+		const jactorio::renderer::Renderer_sprites::Spritemap_data& data =
+			renderer_sprites_.get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
 
 		EXPECT_EQ(data.width, 96);
 		EXPECT_EQ(data.height, 32);
@@ -89,6 +90,8 @@ namespace renderer
 	class SpritemapGeneratorTest : public testing::Test
 	{
 	protected:
+		jactorio::renderer::Renderer_sprites renderer_sprites_{};
+
 		/// \return true if pixel contains specified color
 		bool get_pixel_color(const unsigned char* img_ptr,
 		                     const unsigned int image_width,
@@ -147,7 +150,7 @@ namespace renderer
 		prototypes[3]->internal_id = 4;
 		prototypes[3]->load_image("test/graphics/test/test_tile3.png");
 
-		const auto spritemap = jactorio::renderer::renderer_sprites::gen_spritemap(prototypes, 4, true);
+		const auto spritemap = renderer_sprites_.gen_spritemap(prototypes, 4, true);
 		jactorio::core::Capturing_guard<void()> guard_2([&] { delete[] spritemap.sprite_buffer; });
 
 		EXPECT_EQ(spritemap.width, 160);
@@ -255,7 +258,7 @@ namespace renderer
 		prototypes[1]->internal_id = 2;
 		prototypes[1]->load_image("test/graphics/test/test_tile1.png");
 
-		const auto spritemap = jactorio::renderer::renderer_sprites::gen_spritemap(prototypes, 2, false);
+		const auto spritemap = renderer_sprites_.gen_spritemap(prototypes, 2, false);
 		jactorio::core::Capturing_guard<void()> guard_2([&] { delete[] spritemap.sprite_buffer; });
 
 		EXPECT_EQ(spritemap.width, 64);

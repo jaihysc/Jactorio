@@ -182,14 +182,14 @@ void draw_empty_slot() {
 
 ///
 /// \brief The window size is calculated on the size of the player's inventory
-ImVec2 get_window_size(jactorio::game::Player_data& player_data) {
+ImVec2 get_window_size(jactorio::game::Player_data& /*player_data*/) {
 	// 20 is window padding on both sides, 80 for y is to avoid the scrollbar
 	auto window_size = ImVec2(
 		2 * J_GUI_STYLE_WINDOW_PADDING_X,
 		2 * J_GUI_STYLE_WINDOW_PADDING_Y + 80);
 
 	window_size.x += 10 * (inventory_slot_width + inventory_slot_padding) - inventory_slot_padding;
-	window_size.y += static_cast<unsigned int>(player_data.inventory_size / 10) *
+	window_size.y += static_cast<unsigned int>(jactorio::game::Player_data::inventory_size / 10) *
 		(inventory_slot_width + inventory_slot_padding) - inventory_slot_padding;
 
 	return window_size;
@@ -233,7 +233,7 @@ void player_inventory_menu(jactorio::game::Player_data& player_data) {
 
 	ImGui::Begin("Character", nullptr, window_size, -1, window_flags);
 
-	auto& menu_data = jactorio::renderer::imgui_manager::get_menu_data();
+	auto menu_data = jactorio::renderer::imgui_manager::get_menu_data();
 	draw_slots(10, jactorio::game::Player_data::inventory_size, [&](auto index) {
 		const auto& item = player_data.inventory_player[index];
 
@@ -295,7 +295,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 	player_inventory_menu(player_data);
 
 
-	auto& menu_data = imgui_manager::get_menu_data();
+	auto menu_data = imgui_manager::get_menu_data();
 
 	const ImVec2 window_size = get_window_size(player_data);
 	setup_next_window_right(window_size);
@@ -439,7 +439,7 @@ void jactorio::renderer::gui::cursor_window(game::Player_data& player_data) {
 	using namespace jactorio;
 	// Draw the tooltip of what is currently selected
 
-	auto& menu_data = imgui_manager::get_menu_data();
+	const auto menu_data = imgui_manager::get_menu_data();
 
 	// Player has an item selected, draw it on the tooltip
 	const data::item_stack* selected_item;
@@ -485,7 +485,7 @@ void jactorio::renderer::gui::cursor_window(game::Player_data& player_data) {
 }
 
 void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data) {
-	auto& menu_data = imgui_manager::get_menu_data();
+	auto menu_data = imgui_manager::get_menu_data();
 
 	ImGuiWindowFlags flags = 0;
 	flags |= ImGuiWindowFlags_NoBackground;
@@ -495,7 +495,7 @@ void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data) {
 	flags |= ImGuiWindowFlags_NoScrollbar;
 	flags |= ImGuiWindowFlags_NoScrollWithMouse;
 
-	auto& recipe_queue = player_data.get_recipe_queue();
+	const auto& recipe_queue = player_data.get_recipe_queue();
 
 
 	const unsigned int y_slots = (recipe_queue.size() + 10 - 1) / 10;  // Always round up for slot count

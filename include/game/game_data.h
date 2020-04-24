@@ -6,6 +6,8 @@
 #define JACTORIO_INCLUDE_GAME_GAME_DATA_H
 #pragma once
 
+#include "game/event/event.h"
+#include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
@@ -15,6 +17,7 @@ namespace jactorio::game
 	struct Game_input
 	{
 		Mouse_selection mouse{};
+		Key_input key{};
 	};
 
 	///
@@ -23,7 +26,7 @@ namespace jactorio::game
 	struct Game_data
 	{
 		Game_input input{};
-		// Game_event event{};
+		Event_data event{};
 		Player_data player{};
 		World_data world{};
 	};

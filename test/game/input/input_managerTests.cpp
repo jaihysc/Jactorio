@@ -23,108 +23,149 @@ namespace game
 	class InputManagerTest : public testing::Test
 	{
 	protected:
+		jactorio::game::Key_input key_input_;
+		int counter_ = 0;
+
 		void TearDown() override {
-			jactorio::game::input_manager::clear_data();
+			key_input_.clear_data();
 		}
 	};
 
 	TEST_F(InputManagerTest, InputCallbackRegister) {
 		// Key is converted to a scancode
-		const unsigned int callback_id = jactorio::game::input_manager::subscribe(
-			test_input_callback,
-			GLFW_KEY_T, GLFW_PRESS, GLFW_MOD_SHIFT);
+		const unsigned int callback_id =
+			key_input_.subscribe(test_input_callback,
+			                     jactorio::game::inputKey::t,
+			                     jactorio::game::inputAction::key_down,
+			                     jactorio::game::inputMod::shift);
 
 		// callback_id should not be 0
 		EXPECT_NE(callback_id, 0);
 
-		jactorio::game::input_manager::set_input(GLFW_KEY_T, GLFW_PRESS, GLFW_MOD_SHIFT);
-		jactorio::game::input_manager::raise();
+		key_input_.set_input(jactorio::game::inputKey::t,
+		                     jactorio::game::inputAction::key_down,
+		                     jactorio::game::inputMod::shift);
+		key_input_.raise();
 		EXPECT_EQ(test_val, 1);
 	}
 
-	namespace
-	{
-		int counter = 0;
-
-		void test_callback2() {
-			counter++;
-		}
-
-		void test_callback3() {
-			counter++;
-		}
-	}
-
 	TEST_F(InputManagerTest, DispatchInputCallbacks) {
-		counter = 0;
+		key_input_.subscribe([&]() { counter_++; },
+		                     jactorio::game::inputKey::v,
+		                     jactorio::game::inputAction::key_down);
+		key_input_.subscribe([&]() { counter_++; },
+		                     jactorio::game::inputKey::z,
+		                     jactorio::game::inputAction::key_down);
 
-		jactorio::game::input_manager::subscribe(test_callback2, GLFW_KEY_V, GLFW_PRESS);
-		jactorio::game::input_manager::subscribe(test_callback2, GLFW_KEY_Z, GLFW_PRESS);
-		jactorio::game::input_manager::subscribe(test_callback3, GLFW_KEY_X, GLFW_RELEASE, GLFW_MOD_CAPS_LOCK);
+		key_input_.subscribe([&]() { counter_++; },
+		                     jactorio::game::inputKey::x,
+		                     jactorio::game::inputAction::key_up,
+		                     jactorio::game::inputMod::caps_lk);
 
-		jactorio::game::input_manager::set_input(GLFW_KEY_T, GLFW_PRESS, GLFW_MOD_SUPER);
-		jactorio::game::input_manager::raise();
-		EXPECT_EQ(counter, 0);
+		// ======================================================================
+
+		key_input_.set_input(jactorio::game::inputKey::t,
+		                     jactorio::game::inputAction::key_down,
+		                     jactorio::game::inputMod::super);
+		key_input_.raise();  // Nothing called
+		EXPECT_EQ(counter_, 0);
 
 
-		jactorio::game::input_manager::set_input(GLFW_KEY_V, GLFW_PRESS, GLFW_MOD_SHIFT);
-		jactorio::game::input_manager::raise();
-		jactorio::game::input_manager::raise();
-		EXPECT_EQ(counter, 0);
+		key_input_.set_input(jactorio::game::inputKey::v,
+		                     jactorio::game::inputAction::key_down,
+		                     jactorio::game::inputMod::caps_lk);
+		key_input_.raise();
+		key_input_.raise();
+		EXPECT_EQ(counter_, 0);
 
 		// Callback2 called once
-		jactorio::game::input_manager::set_input(GLFW_KEY_V, GLFW_PRESS);
-		jactorio::game::input_manager::raise();
-		EXPECT_EQ(counter, 1);
-		jactorio::game::input_manager::set_input(GLFW_KEY_V, GLFW_RELEASE);
+		key_input_.set_input(jactorio::game::inputKey::v, jactorio::game::inputAction::key_down);
+		key_input_.raise();
+		EXPECT_EQ(counter_, 1);
+		key_input_.set_input(jactorio::game::inputKey::v, jactorio::game::inputAction::key_up);
 
 
-		// The GLFW_RELEASE action is only ever calls callbacks once
-		jactorio::game::input_manager::set_input(GLFW_KEY_X, GLFW_RELEASE, GLFW_MOD_CAPS_LOCK);
-		jactorio::game::input_manager::raise();
-		jactorio::game::input_manager::raise();
-		EXPECT_EQ(counter, 2);
+		// The RELEASE action is only ever calls callbacks once
+		key_input_.set_input(jactorio::game::inputKey::x,
+		                     jactorio::game::inputAction::key_up,
+		                     jactorio::game::inputMod::caps_lk);
+		key_input_.raise();
+		key_input_.raise();
+		EXPECT_EQ(counter_, 2);
 
 
 		// Inputs stack until released
-		jactorio::game::input_manager::set_input(GLFW_KEY_V, GLFW_PRESS);
-		jactorio::game::input_manager::set_input(GLFW_KEY_Z, GLFW_PRESS);
-		jactorio::game::input_manager::raise();
-		EXPECT_EQ(counter, 4);
+		key_input_.set_input(jactorio::game::inputKey::v, jactorio::game::inputAction::key_down);
+		key_input_.set_input(jactorio::game::inputKey::z, jactorio::game::inputAction::key_down);
+		key_input_.raise();
+		EXPECT_EQ(counter_, 4);
 
 	}
 
-	TEST_F(InputManagerTest, input_callback_press_first) {
-		counter = 0;
-		// The action GLFW_PRESS_FIRST will only raise once compared to GLFW_PRESS which repeatedly raises
+	TEST_F(InputManagerTest, InputCallbackPressFirst) {
+		// The action key_down will only raise once compared to key_pressed which repeatedly raises after the initial raise
 
-		jactorio::game::input_manager::subscribe([]() {  // Callback 1
-			counter -= 50;
-		}, GLFW_KEY_V, GLFW_PRESS_FIRST, GLFW_MOD_SUPER);
+		key_input_.subscribe(
+			[&]() {  // Callback 1
+				counter_ -= 50;
+			},
+			jactorio::game::inputKey::v,
+			jactorio::game::inputAction::key_down,
+			jactorio::game::inputMod::super);
 
-		jactorio::game::input_manager::subscribe([]() {  // Callback 2
-			counter += 100;
-		}, GLFW_KEY_V, GLFW_PRESS, GLFW_MOD_SUPER);
+		key_input_.subscribe(
+			[&]() {  // Callback 2
+				counter_ += 100;
+			},
+			jactorio::game::inputKey::v,
+			jactorio::game::inputAction::key_pressed,
+			jactorio::game::inputMod::super);
 
 
-		jactorio::game::input_manager::set_input(GLFW_KEY_V, GLFW_PRESS, GLFW_MOD_SUPER);
-		jactorio::game::input_manager::raise();
-		EXPECT_EQ(counter, 50);  // Callback 1 + 2 called
+		key_input_.set_input(jactorio::game::inputKey::v,
+		                     jactorio::game::inputAction::key_down,
+		                     jactorio::game::inputMod::super);
+		key_input_.raise();
+		EXPECT_EQ(counter_, 50);  // Callback 1 + 2 called
 
-		jactorio::game::input_manager::raise();
-		EXPECT_EQ(counter, 150);  // Callback 2 called
+		key_input_.raise();
+		EXPECT_EQ(counter_, 150);  // Callback 2 called
 
-		jactorio::game::input_manager::raise();
-		EXPECT_EQ(counter, 250);  // Callback 2 called
+		key_input_.raise();
+		EXPECT_EQ(counter_, 250);  // Callback 2 called
+	}
+
+	TEST_F(InputManagerTest, InputCallbackHeld) {
+		// The action key_held applies for both key_pressed and key_released
+		key_input_.subscribe(
+			[&]() {
+				counter_ += 1;
+			},
+			jactorio::game::inputKey::v,
+			jactorio::game::inputAction::key_held);
+
+
+		key_input_.set_input(jactorio::game::inputKey::v,
+		                     jactorio::game::inputAction::key_down);
+		key_input_.raise();
+		EXPECT_EQ(counter_, 1);
+
+		// event emitted will be Key_pressed since this is the second time
+		key_input_.raise();
+		EXPECT_EQ(counter_, 2);
+
+		key_input_.set_input(jactorio::game::inputKey::v,
+		                     jactorio::game::inputAction::key_repeat);
+		key_input_.raise();
+		EXPECT_EQ(counter_, 3);
 	}
 
 	// TEST_F(InputManagerTest, dispatch_input_callbacks_imgui_block) {
 	// 	auto guard = jactorio::core::Resource_guard(&input::clear_data);
 	//
-	// 	counter = 0;
-	// 	input::subscribe(test_callback2, GLFW_KEY_V, GLFW_PRESS);
+	// 	input::subscribe(test_callback2, GLFW_KEY_V, jactorio::game::inputAction::key_pressed);
 	//
-	// 	input::set_input(GLFW_KEY_V, GLFW_PRESS);
+	// 	input::set_input(GLFW_KEY_V, jactorio::game::inputAction::key_pressed);
 	//
 	// 	// Block
 	// 	jactorio::renderer::imgui_manager::input_captured = true;
@@ -137,47 +178,44 @@ namespace game
 	// 	EXPECT_EQ(counter, 1);
 	// }
 
-	namespace
-	{
-		int counter2 = 0;
+	TEST_F(InputManagerTest, RemoveInputCallback) {
+		const unsigned int callback_id =
+			key_input_.subscribe([&]() { counter_++; },
+			                     jactorio::game::inputKey::space,
+			                     jactorio::game::inputAction::key_pressed);
 
-		void test_callback5() {
-			counter2++;
-		}
-	}
+		key_input_.subscribe([&]() { counter_++; },
+		                     jactorio::game::inputKey::space,
+		                     jactorio::game::inputAction::key_pressed);
 
-	TEST_F(InputManagerTest, remove_input_callback) {
-		counter = 0;
+		key_input_.unsubscribe(callback_id,
+		                       jactorio::game::inputKey::space,
+		                       jactorio::game::inputAction::key_pressed);
 
-		const unsigned int callback_id = 
-		  jactorio::game::input_manager::subscribe(test_callback5, GLFW_KEY_SPACE, GLFW_PRESS);
-
-		jactorio::game::input_manager::subscribe(test_callback5, GLFW_KEY_SPACE, GLFW_PRESS);
-
-		jactorio::game::input_manager::unsubscribe(callback_id, GLFW_KEY_SPACE, GLFW_PRESS);
-
-		jactorio::game::input_manager::set_input(GLFW_KEY_SPACE, GLFW_PRESS);
-		jactorio::game::input_manager::raise();
+		key_input_.set_input(jactorio::game::inputKey::space, jactorio::game::inputAction::key_down);
+		key_input_.raise();
 
 		// Only one of the callbacks was erased, therefore it should increment counter2 only once
 		// instead of twice
-		EXPECT_EQ(counter2, 1);
+		EXPECT_EQ(counter_, 1);
 	}
 
-	TEST_F(InputManagerTest, clear_data) {
-		counter2 = 0;
+	TEST_F(InputManagerTest, ClearData) {
+		key_input_.subscribe([&]() { counter_++; },
+		                     jactorio::game::inputKey::space,
+		                     jactorio::game::inputAction::key_pressed);
+		key_input_.subscribe([&]() { counter_++; },
+		                     jactorio::game::inputKey::space,
+		                     jactorio::game::inputAction::key_pressed);
 
-		jactorio::game::input_manager::subscribe(test_callback5, GLFW_KEY_SPACE, GLFW_PRESS);
-		jactorio::game::input_manager::subscribe(test_callback5, GLFW_KEY_SPACE, GLFW_PRESS);
-
-		jactorio::game::input_manager::clear_data();
+		key_input_.clear_data();
 
 		// Should not increment counter2 since all callbacks were cleared
-		jactorio::game::input_manager::set_input(GLFW_KEY_SPACE, GLFW_PRESS);
-		jactorio::game::input_manager::raise();
+		key_input_.set_input(jactorio::game::inputKey::space, jactorio::game::inputAction::key_down);
+		key_input_.raise();
 
 		// Only one of the callbacks was erased, therefore it should increment counter2 only once
 		// instead of twice
-		EXPECT_EQ(counter2, 0);
+		EXPECT_EQ(counter_, 0);
 	}
 }

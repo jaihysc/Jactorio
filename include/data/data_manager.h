@@ -10,7 +10,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/logger.h"
 #include "data/data_category.h"
 #include "data/prototype/prototype_base.h"
 

@@ -525,10 +525,6 @@ void jactorio::game::Player_data::inventory_click(const unsigned short index,
 		selected_item_index_ == index && selected_item_inventory_ == inv) {
 		has_item_selected_ = false;
 
-		// Remove selection cursor from inventory_player
-		inventory_player[selected_item_index_].first = nullptr;
-		inventory_player[selected_item_index_].second = 0;
-
 		// Add referenced item to slot
 		inv[selected_item_index_] = selected_item_;
 		return;
@@ -595,6 +591,16 @@ const jactorio::data::item_stack* jactorio::game::Player_data::get_selected_item
 	return &selected_item_;
 }
 
+bool jactorio::game::Player_data::deselect_selected_item() {
+	if (!has_item_selected_ || !select_by_reference_)
+		return false;
+	
+	// Add referenced item to slot
+	inventory_player[selected_item_index_] = selected_item_;
+	has_item_selected_ = false;
+	return true;
+}
+
 bool jactorio::game::Player_data::increment_selected_item() {
 	assert(has_item_selected_);
 
@@ -634,6 +640,14 @@ uint16_t jactorio::game::Player_data::recipe_group_get_selected() const {
 }
 
 void jactorio::game::Player_data::recipe_craft_tick(uint16_t ticks) {
+	// Attempt to return held item if inventory is full
+	if (crafting_held_item_.second != 0) {
+		const auto extra_items = add_stack(inventory_player, inventory_size, crafting_held_item_);
+		crafting_held_item_.second = extra_items;
+		return;
+	}
+
+	
 	while (ticks != 0 && !crafting_queue_.empty()) {
 		// Ticks available greater than or equal to crafting ticks remaining
 		if (ticks >= crafting_ticks_remaining_) {
@@ -647,15 +661,15 @@ void jactorio::game::Player_data::recipe_craft_tick(uint16_t ticks) {
 			auto* product_item = data::data_raw_get<data::Item>(
 				data::dataCategory::item, recipe_item.first);
 
-			data::item_stack i = {product_item, recipe_item.second};
+			data::item_stack item = {product_item, recipe_item.second};
 
 			// Deduct based on the deductions
 			std::map<std::string, uint16_t>::iterator element;
 			if ((element = crafting_item_deductions_.find(recipe_item.first)) != crafting_item_deductions_.end()) {
 				auto& deduct_amount = element->second;
 
-				if (i.second >= deduct_amount) {
-					i.second -= deduct_amount;
+				if (item.second >= deduct_amount) {
+					item.second -= deduct_amount;
 
 					LOG_MESSAGE_f(debug, "Crafting return deducting %d of '%s'",
 					              deduct_amount, recipe_item.first.c_str());
@@ -664,8 +678,8 @@ void jactorio::game::Player_data::recipe_craft_tick(uint16_t ticks) {
 				}
 					// Deduct amount greater than i.second
 				else {
-					deduct_amount -= i.second;
-					i.second = 0;
+					deduct_amount -= item.second;
+					item.second = 0;
 
 					LOG_MESSAGE_f(debug, "Crafting return deducting %d of '%s', no items returned",
 					              deduct_amount, recipe_item.first.c_str());
@@ -673,17 +687,18 @@ void jactorio::game::Player_data::recipe_craft_tick(uint16_t ticks) {
 			}
 
 			// Still has items to return to player inventory
-			if (i.second != 0) {
+			if (item.second != 0) {
 				// Extra not available in queue anymore since it has been returned to the player
 				auto& queue_extras = crafting_item_extras_[recipe_item.first];
-				if (queue_extras > i.second)
-					queue_extras -= i.second;
+				if (queue_extras > item.second)
+					queue_extras -= item.second;
 				else
 					// If entry is 0, erase it
 					crafting_item_extras_.erase(recipe_item.first);
 
-				// TODO what if inventory is full
-				add_stack(inventory_player, inventory_size, i);
+				const auto extra_items = add_stack(inventory_player, inventory_size, item);
+				if (extra_items != 0)
+					crafting_held_item_ = {item.first, extra_items};
 			}
 
 			// Set crafting ticks remaining to the next item

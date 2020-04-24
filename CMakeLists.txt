@@ -148,9 +148,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
 	${JACTORIO_DIR}/data/local_parser.cpp
-
 	${JACTORIO_DIR}/game/logic_loop.cpp
-	${JACTORIO_DIR}/game/event/event.cpp
 
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp

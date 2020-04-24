@@ -8,6 +8,7 @@
 
 #include <thread>
 #include <vector>
+#include <GLFW/glfw3.h>
 
 #include "jactorio.h"
 #include "core/resource_guard.h"
@@ -20,10 +21,10 @@
 #include "renderer/rendering/world_renderer.h"
 #include "renderer/window/window_manager.h"
 
-#include "game/event/event.h"
 #include "game/game_data.h"
-#include "game/input/input_manager.h"
 #include "game/logic_loop.h"
+#include "game/event/event.h"
+#include "game/input/input_manager.h"
 
 unsigned short window_x = 0;
 unsigned short window_y = 0;
@@ -35,7 +36,7 @@ void jactorio::renderer::set_recalculate_renderer(const unsigned short window_si
 	window_x = window_size_x;
 	window_y = window_size_y;
 
-	game::Event::subscribe_once(game::event_type::renderer_tick, []() {
+	game::game_data->event.subscribe_once(game::eventType::renderer_tick, []() {
 		main_renderer->recalculate_buffers(window_x, window_y);
 	});
 }
@@ -61,16 +62,8 @@ void jactorio::renderer::render_init() {
 	}
 
 
-	GLFWwindow* window = window_manager::get_window();
-
 	core::Resource_guard imgui_manager_guard(&imgui_manager::imgui_terminate);
-	imgui_manager::setup(window);
-
-
-	// Enables transparency in textures
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+	imgui_manager::setup(window_manager::get_window());
 
 	// Shader
 	const Shader shader(
@@ -88,53 +81,26 @@ void jactorio::renderer::render_init() {
 
 
 	// Loading textures
-	core::Resource_guard sprite_map_guard(&renderer_sprites::clear_spritemaps);
-	renderer_sprites::create_spritemap(data::Sprite::spriteGroup::terrain, true);
-	renderer_sprites::create_spritemap(data::Sprite::spriteGroup::gui, false);
+	auto renderer_sprites = Renderer_sprites();
+	renderer_sprites.create_spritemap(data::Sprite::spriteGroup::terrain, true);
+	renderer_sprites.create_spritemap(data::Sprite::spriteGroup::gui, false);
 
 	// Terrain
-	Renderer::set_spritemap_coords(
-		renderer_sprites::get_spritemap(data::Sprite::spriteGroup::terrain).sprite_positions);
-	renderer_sprites::get_texture(data::Sprite::spriteGroup::terrain)->bind(0);
+	Renderer::set_spritemap_coords(renderer_sprites.get_spritemap(data::Sprite::spriteGroup::terrain).sprite_positions);
+	renderer_sprites.get_texture(data::Sprite::spriteGroup::terrain)->bind(0);
 
 	// Gui
-	imgui_manager::setup_character_data();
+	imgui_manager::setup_character_data(renderer_sprites);
 
-	// TODO Temporary keybinds, move this elsewhere
-	game::input_manager::subscribe([]() {
-		glfwSetWindowShouldClose(window_manager::get_window(), GL_TRUE);
 
-	}, GLFW_KEY_ESCAPE, GLFW_RELEASE);
-
-	game::input_manager::subscribe([]() {
-		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
+	// ======================================================================
+	
+	game::game_data->input.key.subscribe([]() {
+		game::game_data->event.subscribe_once(game::eventType::renderer_tick, []() {
 			window_manager::set_fullscreen(!window_manager::is_fullscreen());
 			main_renderer->recalculate_buffers(window_x, window_y);
 		});
-	}, GLFW_KEY_SPACE, GLFW_RELEASE);
-
-	// game::input_manager::subscribe([]() {
-	// 	Renderer::tile_width++;
-	// 	game::Event::subscribe_once(game::event_type::renderer_tick, []() {
-	// 		main_renderer->recalculate_buffers(window_x, window_y);
-	// 	});
-	// 	
-	// }, GLFW_KEY_Z, GLFW_RELEASE);
-	// game::input_manager::subscribe([]() {
-	// 	if (Renderer::tile_width > 1) {
-	// 		Renderer::tile_width--;
-	// 		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
-	// 			main_renderer->recalculate_buffers(window_x, window_y);
-	// 		});
-	// 	}
-	//
-	// }, GLFW_KEY_X, GLFW_RELEASE);
-	//
-	game::input_manager::subscribe([]() {
-		game::Event::subscribe_once(game::event_type::renderer_tick, []() {
-			// Delete and reinitialize world_data
-		});
-	}, GLFW_KEY_P, GLFW_RELEASE);
+	}, game::inputKey::space, game::inputAction::key_down);
 
 	// Main rendering loop
 	{
@@ -155,10 +121,10 @@ void jactorio::renderer::render_init() {
 				EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
 
 				glfwPollEvents();
-				if (glfwWindowShouldClose(window))
+				if (glfwWindowShouldClose(window_manager::get_window()))
 					render_thread_should_exit = true;
 
-				game::Event::raise<game::Renderer_tick_event>(game::event_type::renderer_tick);
+				game::game_data->event.raise<game::Renderer_tick_event>(game::eventType::renderer_tick);
 
 				// ======================================================================
 				// World
@@ -176,7 +142,7 @@ void jactorio::renderer::render_init() {
 				{
 					std::lock_guard<std::mutex> guard{game::game_data->player.mutex};
 
-					imgui_manager::imgui_draw(game::game_data->player);
+					imgui_manager::imgui_draw(game::game_data->player, game::game_data->event);
 				}
 			}
 			// ======================================================================

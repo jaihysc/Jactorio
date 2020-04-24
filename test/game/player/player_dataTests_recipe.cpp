@@ -9,16 +9,6 @@
 
 namespace game
 {
-	//
-	//
-	//
-	//
-	// RECIPE MENU
-	//
-	//
-	//
-	//
-
 	class PlayerDataRecipeTest : public testing::Test
 	{
 		bool setup_cursor_ = false;
@@ -241,5 +231,36 @@ namespace game
 		player_data_.inventory_player[2] = {item_sub2_, 5};
 
 		EXPECT_EQ(player_data_.recipe_can_craft(final_recipe_, 1), false);
+	}
+
+	TEST_F(PlayerDataRecipeTest, RecipeCraftFullInventory) {
+		// If the inventory is full, the item will be held,
+		// preventing any further crafting until a slot in the inventory if freed for the item to be returned
+
+		// Should be able to craft
+		setup_test_recipe();
+		player_data_.inventory_player[0] = {item1_, 3};
+		player_data_.inventory_player[1] = {item2_, 1};
+
+		EXPECT_TRUE(player_data_.recipe_can_craft(final_recipe_, 1));
+		player_data_.recipe_craft_r(final_recipe_);
+
+		// Fill inventory so crafted item cannot be returned
+		jactorio::data::Item filler_item{};
+		for (auto& slot : player_data_.inventory_player) {
+			slot.first = &filler_item;
+			slot.second = 1;
+		}	
+
+		// Will not return item until slot is freed
+		player_data_.recipe_craft_tick(9999);
+		player_data_.recipe_craft_tick(9999);
+		player_data_.recipe_craft_tick(9999);
+
+		player_data_.inventory_player[0] = {nullptr, 0};
+		player_data_.recipe_craft_tick(9999);
+
+		EXPECT_EQ(player_data_.inventory_player[0].first, item_product_);
+		EXPECT_EQ(player_data_.inventory_player[0].second, 1);
 	}
 }

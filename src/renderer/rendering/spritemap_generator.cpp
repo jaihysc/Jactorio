@@ -11,21 +11,16 @@
 #include "core/logger.h"
 #include "data/data_manager.h"
 
-std::map<unsigned int, jactorio::renderer::Texture*> textures;
-std::map<unsigned int, jactorio::renderer::renderer_sprites::Spritemap_data> spritemap_datas;
-
-void jactorio::renderer::renderer_sprites::clear_spritemaps() {
-	for (auto& map : textures) {
+void jactorio::renderer::Renderer_sprites::clear_spritemaps() {
+	for (auto& map : textures_) {
 		delete map.second;
 	}
-	textures.clear();
+	textures_.clear();
 	// The pointer which this contains is already cleared by spritemaps
-	spritemap_datas.clear();
-
-	LOG_MESSAGE(debug, "Spritemap data cleared");
+	spritemap_datas_.clear();
 }
 
-void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::spriteGroup group,
+void jactorio::renderer::Renderer_sprites::create_spritemap(data::Sprite::spriteGroup group,
                                                             const bool invert_sprites) {
 	std::vector<data::Sprite*> sprites =
 		data::data_raw_get_all<data::Sprite>(data::dataCategory::sprite);
@@ -51,24 +46,24 @@ void jactorio::renderer::renderer_sprites::create_spritemap(data::Sprite::sprite
 	const Spritemap_data spritemap_data = gen_spritemap(sprites.data(), sprites.size(), invert_sprites);
 
 	// Texture will delete the sprite* when deleted
-	textures[static_cast<int>(group)] = new Texture(spritemap_data.sprite_buffer, spritemap_data.width, spritemap_data.height);
-	spritemap_datas[static_cast<int>(group)] = (spritemap_data);
+	textures_[static_cast<int>(group)] = new Texture(spritemap_data.sprite_buffer, spritemap_data.width, spritemap_data.height);
+	spritemap_datas_[static_cast<int>(group)] = (spritemap_data);
 }
 
 
-const jactorio::renderer::renderer_sprites::Spritemap_data& jactorio::renderer::renderer_sprites::get_spritemap(
+const jactorio::renderer::Renderer_sprites::Spritemap_data& jactorio::renderer::Renderer_sprites::get_spritemap(
 	data::Sprite::spriteGroup group) {
-	return spritemap_datas[static_cast<int>(group)];
+	return spritemap_datas_[static_cast<int>(group)];
 }
 
-const jactorio::renderer::Texture* jactorio::renderer::renderer_sprites::get_texture(
+const jactorio::renderer::Texture* jactorio::renderer::Renderer_sprites::get_texture(
 	data::Sprite::spriteGroup group) {
-	return textures[static_cast<int>(group)];
+	return textures_[static_cast<int>(group)];
 }
 
 
-jactorio::renderer::renderer_sprites::Spritemap_data jactorio::renderer::
-renderer_sprites::gen_spritemap(data::Sprite** sprites, const uint64_t count, const bool invert_sprites) {
+jactorio::renderer::Renderer_sprites::Spritemap_data
+jactorio::renderer::Renderer_sprites::gen_spritemap(data::Sprite** sprites, const uint64_t count, const bool invert_sprites) const {
 	LOG_MESSAGE_f(info, "Generating spritemap with %lld tiles...", count);
 
 	// Calculate spritemap dimensions

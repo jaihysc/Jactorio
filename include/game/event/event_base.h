@@ -10,7 +10,7 @@
 #include "jactorio.h"
 
 // Fast way to implement pure virtual functions
-#define EVENT_TYPE(type) J_NODISCARD event_type get_event_type() const override { return event_type::type; }
+#define EVENT_TYPE(type) J_NODISCARD eventType get_event_type() const override { return eventType::type; }
 #define EVENT_CATEGORY(category) J_NODISCARD int get_category_flags() const override { return category; }
 
 namespace jactorio::game
@@ -30,10 +30,10 @@ namespace jactorio::game
 
 		bool handled = false;  // Set this to true to prevent this event from being carried further
 
-		J_NODISCARD virtual event_type get_event_type() const = 0;
+		J_NODISCARD virtual eventType get_event_type() const = 0;
 		J_NODISCARD virtual int get_category_flags() const = 0;
 
-		J_NODISCARD bool in_category(const event_category category) const {
+		J_NODISCARD bool in_category(const eventCategory category) const {
 			return get_category_flags() & static_cast<int>(category);
 		}
 	};

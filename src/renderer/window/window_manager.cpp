@@ -9,11 +9,12 @@
 
 #include <array>
 
-#include "core/logger.h"
+#include "jactorio.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-#include "renderer/opengl/error.h"
 #include "renderer/render_main.h"
+#include "renderer/gui/imgui_manager.h"
+#include "renderer/opengl/error.h"
 #include "renderer/rendering/renderer.h"
 
 std::array<int, 2> window_pos{0, 0};
@@ -115,23 +116,33 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 	// Mouse and keyboard callbacks
 	glfwSetKeyCallback(
-		glfw_window, [](GLFWwindow* /*window*/, const int key, int /*scancode*/, const int action, const int mods) {
-			game::input_manager::set_input(key, action, mods);
+		glfw_window, [](GLFWwindow* /*window*/, const int key, int /*scancode*/, const int action, const int mod) {
+			game::Key_input::set_input(
+				game::Key_input::to_input_key(key),
+				game::Key_input::to_input_action(action),
+				game::Key_input::to_input_mod(mod));
 		});
 
-	glfwSetMouseButtonCallback(glfw_window, [](GLFWwindow* /*window*/, const int key, const int action, const int mods) {
-		game::input_manager::set_input(key, action, mods);
+	glfwSetMouseButtonCallback(glfw_window, [](GLFWwindow* /*window*/, const int key, const int action, const int mod) {
+		game::Key_input::set_input(
+			game::Key_input::to_input_key(key),
+			game::Key_input::to_input_action(action),
+			game::Key_input::to_input_mod(mod));
 	});
+
 	glfwSetScrollCallback(glfw_window, [](GLFWwindow* /*window*/, double /*xoffset*/, const double yoffset) {
-		// TODO a better zoom
-		get_base_renderer()->tile_projection_matrix_offset += static_cast<float>(yoffset * 10);
+		if (!imgui_manager::input_captured)
+			get_base_renderer()->tile_projection_matrix_offset += static_cast<float>(yoffset * 10);
 	});
 	glfwSetCursorPosCallback(glfw_window, [](GLFWwindow* /*window*/, const double xpos, const double ypos) {
 		game::set_cursor_position(xpos, ypos);
 	});
 
-	gl_context_active = true;
+	// Enables transparency in textures
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	gl_context_active = true;
 	LOG_MESSAGE_f(info, "OpenGL initialized - OpenGL Version: %s", glGetString(GL_VERSION))
 	return 0;
 }

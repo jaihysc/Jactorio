@@ -6,14 +6,23 @@
 #define JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
 #pragma once
 
-#include <string>
 #include <utility>
 
-
-#include "data/prototype/entity/entity.h"
 #include "jactorio.h"
+#include "data/prototype/placement_orientation.h"
 
-#include "game/player/player_data.h"
+namespace jactorio
+{
+	namespace data
+	{
+		class Entity;
+	}
+
+	namespace game
+	{
+		class Player_data;
+	}
+}
 
 namespace jactorio::game
 {

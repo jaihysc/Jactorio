@@ -26,16 +26,35 @@ namespace jactorio::game
 	public:
 		World_data() = default;
 
-		World_data(const World_data& other) = delete;
-		World_data(World_data&& other) noexcept = delete;
-
-		World_data& operator=(const World_data& other) = delete;
-		World_data& operator=(World_data&& other) noexcept = delete;
-
 		~World_data() {
 			clear_chunk_data();
 		}
 
+		World_data(const World_data& other) = delete;
+
+		World_data(World_data&& other) noexcept
+			: game_tick_{other.game_tick_},
+			  world_chunks_{std::move(other.world_chunks_)},
+			  logic_chunks_{std::move(other.logic_chunks_)},
+			  world_gen_seed_{other.world_gen_seed_},
+			  world_gen_chunks_{std::move(other.world_gen_chunks_)},
+			  deferral_timer{std::move(other.deferral_timer)} {
+		}
+
+		World_data& operator=(World_data other) {
+			swap(*this, other);
+			return *this;
+		}
+
+		friend void swap(World_data& lhs, World_data& rhs) noexcept {
+			using std::swap;
+			swap(lhs.game_tick_, rhs.game_tick_);
+			swap(lhs.world_chunks_, rhs.world_chunks_);
+			swap(lhs.logic_chunks_, rhs.logic_chunks_);
+			swap(lhs.world_gen_seed_, rhs.world_gen_seed_);
+			swap(lhs.world_gen_chunks_, rhs.world_gen_chunks_);
+			swap(lhs.deferral_timer, rhs.deferral_timer);
+		}
 
 		// ======================================================================
 		// World properties

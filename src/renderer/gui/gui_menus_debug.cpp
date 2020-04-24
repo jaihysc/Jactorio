@@ -158,13 +158,18 @@ void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flag
 		ImGui::Text("Cursor position: %f, %f",
 		            game::Mouse_selection::get_cursor_x(),
 		            game::Mouse_selection::get_cursor_y());
+		ImGui::Text("Cursor world position: %d, %d",
+		            player_data.get_mouse_tile_coords().first,
+		            player_data.get_mouse_tile_coords().second);
 
 		ImGui::Text("Player position %f %f",
 		            player_data.get_player_position_x(),
 		            player_data.get_player_position_y());
 
+		ImGui::Text("Game tick: %llu", world_data.game_tick());
 		ImGui::Text("Chunk updates: %llu", world_data.logic_get_all_chunks().size());
 
+		ImGui::Separator();
 
 		int seed = world_data.get_world_generator_seed();
 		ImGui::InputInt("World generator seed", &seed);
