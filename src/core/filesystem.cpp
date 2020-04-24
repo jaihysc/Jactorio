@@ -1,26 +1,22 @@
 // 
-// filesystem.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/14/2020
-// 
-
-#include <string>
-#include <fstream>
-#include <sstream>
 
 #include "core/filesystem.h"
 
-#include "core/logger.h"
+#include <fstream>
+#include <sstream>
+#include <string>
+
+#include "jactorio.h"
 
 std::string executing_directory;
 
-std::string jactorio::core::filesystem::get_executing_directory() {
+std::string jactorio::core::get_executing_directory() {
 	return executing_directory;
 }
 
-void jactorio::core::filesystem::set_executing_directory(const std::string& directory) {
+void jactorio::core::set_executing_directory(const std::string& directory) {
 	std::string path = directory;
 
 	// Convert backwards slashes to forwards if on windows
@@ -33,7 +29,7 @@ void jactorio::core::filesystem::set_executing_directory(const std::string& dire
 
 	{
 		// Get first /
-		int i = path.size();
+		int64_t i = path.size();
 		while (i >= 0 && path[i] != '/')
 			--i;
 
@@ -49,7 +45,7 @@ void jactorio::core::filesystem::set_executing_directory(const std::string& dire
 	executing_directory = path;
 }
 
-std::string jactorio::core::filesystem::resolve_path(const std::string& path) {
+std::string jactorio::core::resolve_path(const std::string& path) {
 	if (!path.empty() && path[0] == '~') {
 		std::string path_copy = path;
 
@@ -62,7 +58,7 @@ std::string jactorio::core::filesystem::resolve_path(const std::string& path) {
 }
 
 
-std::string jactorio::core::filesystem::read_file_as_str(const std::string& path) {
+std::string jactorio::core::read_file_as_str(const std::string& path) {
 	const std::ifstream in(path);
 
 	std::stringstream sstr;

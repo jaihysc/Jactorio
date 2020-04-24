@@ -1,10 +1,6 @@
 // 
-// transport_line.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
-// Created on: 03/21/2020
-// Last modified: 03/30/2020
-// 
+// Created on: 03/31/2020
 
 #include "data/prototype/entity/transport/transport_line.h"
 
@@ -168,8 +164,9 @@ void try_update_transport_segment(jactorio::game::World_data& world_data,
 
 // ======================================================================
 
-jactorio::data::Transport_line_data* jactorio::data::Transport_line::get_line_data(game::World_data& world_data,
-                                                                                   const int world_x, const int world_y) {
+jactorio::data::Transport_line_data* jactorio::data::Transport_line::get_line_data(const game::World_data& world_data,
+                                                                                   const game::World_data::world_coord world_x,
+                                                                                   const game::World_data::world_coord world_y) {
 	auto* tile = world_data.get_tile_world_coords(world_x, world_y);
 	if (!tile)  // No tile exists
 		return nullptr;
@@ -184,7 +181,8 @@ jactorio::data::Transport_line_data* jactorio::data::Transport_line::get_line_da
 }
 
 void jactorio::data::Transport_line::get_transport_line_struct_layer(game::World_data& world_data,
-                                                                     const int world_x, const int world_y,
+                                                                     const game::World_data::world_coord world_x,
+                                                                     const game::World_data::world_coord world_y,
                                                                      const std::function<void(game::Chunk_struct_layer&)>&
                                                                      callback) {
 	Transport_line_data* line_data =
@@ -195,9 +193,8 @@ void jactorio::data::Transport_line::get_transport_line_struct_layer(game::World
 	std::vector<game::Chunk_struct_layer>* transport_structures;
 	try {
 		transport_structures =
-			&world_data.logic_get_all_chunks()
-			           .at(world_data.get_chunk_world_coords(world_x, world_y))
-			           .get_struct(game::Logic_chunk::structLayer::transport_line);
+			&world_data.logic_get_chunk(world_data.get_chunk_world_coords(world_x, world_y))->
+			            get_struct(game::Logic_chunk::structLayer::transport_line);
 
 	}
 	catch (std::out_of_range&) {
@@ -216,8 +213,10 @@ void jactorio::data::Transport_line::get_transport_line_struct_layer(game::World
 
 // ======================================================================
 
-void jactorio::data::Transport_line::update_neighboring_orientation(game::World_data& world_data,
-                                                                    const std::pair<int, int> world_coords,
+void jactorio::data::Transport_line::update_neighboring_orientation(const game::World_data& world_data,
+                                                                    const std::pair<
+	                                                                    game::World_data::world_coord, game::World_data::
+	                                                                    world_coord> world_coords,
                                                                     Transport_line_data* t_center,
                                                                     Transport_line_data* c_right,
                                                                     Transport_line_data* b_center,
@@ -733,7 +732,9 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data, cons
 /// \param world_coords Coords of transport line removed
 /// \param line_data Neighboring line segment
 /// \param target Removed line segment
-void nullptr_target_segment(jactorio::game::World_data& world_data, const std::pair<int32_t, int32_t> world_coords,
+void nullptr_target_segment(jactorio::game::World_data& world_data,
+                            const std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
+                            world_coords,
                             jactorio::data::Transport_line_data* line_data, jactorio::data::Transport_line_data* target) {
 
 	if (line_data && line_data->line_segment.target_segment == &target->line_segment) {
@@ -788,7 +789,9 @@ void nullptr_target_segment(jactorio::game::World_data& world_data, const std::p
 	}
 }
 
-void jactorio::data::Transport_line::on_remove(game::World_data& world_data, const std::pair<int, int> world_coords,
+void jactorio::data::Transport_line::on_remove(game::World_data& world_data,
+                                               const std::pair<game::World_data::world_coord, game::World_data::
+                                                               world_coord> world_coords,
                                                game::Chunk_tile_layer& tile_layer) const {
 	auto* t_center = get_line_data(world_data, world_coords.first, world_coords.second - 1);
 	auto* c_left = get_line_data(world_data, world_coords.first - 1, world_coords.second);
@@ -810,8 +813,7 @@ void jactorio::data::Transport_line::on_remove(game::World_data& world_data, con
 	                       b_center, static_cast<Transport_line_data*>(tile_layer.unique_data));
 
 	game::Logic_chunk& logic_chunk =
-		world_data.logic_get_all_chunks()
-		          .at(world_data.get_chunk_world_coords(world_coords.first, world_coords.second));
+		*world_data.logic_get_chunk(world_data.get_chunk_world_coords(world_coords.first, world_coords.second));
 
 	// Remove transport line segment referenced in Transport_line_data
 	std::vector<game::Chunk_struct_layer>& struct_layer = logic_chunk.get_struct(game::Logic_chunk::structLayer::transport_line);

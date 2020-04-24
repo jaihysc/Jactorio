@@ -1,10 +1,6 @@
 // 
-// renderer_layer.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/12/2020
-// Last modified: 03/14/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
@@ -13,9 +9,9 @@
 #include "jactorio.h"
 
 #include "core/data_type.h"
-#include "renderer/opengl/vertex_buffer.h"
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/vertex_array.h"
+#include "renderer/opengl/vertex_buffer.h"
 
 namespace jactorio::renderer
 {
@@ -147,9 +143,17 @@ namespace jactorio::renderer
 		 */
 		void clear() const;
 
-	private:
+		// ======================================================================
+		// Rendering grid
+
+		///
+		/// \brief Generates indices to draw tiles using the grid from gen_render_grid
+		/// \returns Indices to be feed into Index_buffer
+		static unsigned int* gen_render_grid_indices(uint32_t tile_count);
+
 		// #######################################################################
 		// OpenGL methods | The methods below MUST be called from an openGL context
+	private:
 
 		Vertex_array* vertex_array_ = nullptr;
 

@@ -1,21 +1,15 @@
 // 
-// sprite.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/24/2019
-// Last modified: 03/28/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
 #pragma once
 
-#include "jactorio.h"
-
 #include <string>
 #include <vector>
 
-
+#include "jactorio.h"
 #include "core/data_type.h"
 #include "data/prototype/prototype_base.h"
 
@@ -79,6 +73,8 @@ namespace jactorio::data
 		void load_image_from_file();
 
 	public:
+		PROTOTYPE_CATEGORY(sprite);
+
 		Sprite();
 		explicit Sprite(const std::string& sprite_path);
 		Sprite(const std::string& sprite_path, std::vector<spriteGroup> group);
@@ -87,27 +83,56 @@ namespace jactorio::data
 
 
 		Sprite(const Sprite& other);
-		Sprite(Sprite&& other) noexcept = default;
+		Sprite(Sprite&& other) noexcept;
 
-		Sprite& operator=(const Sprite& other);
-		Sprite& operator=(Sprite&& other) noexcept = default;
+		Sprite& operator=(Sprite other) {
+			swap(*this, other);
+			return *this;
+		}
+
+		friend void swap(Sprite& lhs, Sprite& rhs) noexcept {
+			using std::swap;
+			swap(static_cast<Prototype_base&>(lhs), static_cast<Prototype_base&>(rhs));
+			swap(lhs.group, rhs.group);
+			swap(lhs.frames, rhs.frames);
+			swap(lhs.sets, rhs.sets);
+			swap(lhs.trim, rhs.trim);
+			swap(lhs.width_, rhs.width_);
+			swap(lhs.height_, rhs.height_);
+			swap(lhs.bytes_per_pixel_, rhs.bytes_per_pixel_);
+			swap(lhs.sprite_path_, rhs.sprite_path_);
+			swap(lhs.sprite_buffer_, rhs.sprite_buffer_);
+		}
 
 		// ======================================================================
 		// Image extraction
 
+		/*
+		 * Actual set used in method is 'input set modulus by total sets',
+		 * allowing for sets for different sprites to be referenced
+
+		 * e.g:
+		 * With 4 different sprites, total of 10 sets per sprite
+		 * The following set ranges will correspond to the 4 sprites:
+		 * 0  -  9: Sprite 1
+		 * 10 - 19: Sprite 2
+		 * 20 - 29: Sprite 3
+		 * 30 - 39: Sprite 4
+		 */
+
 		///
-		/// \param set 
+		/// \param mset Will be modulus by total sets
 		/// \param frame 
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::Quad_position get_coords(uint16_t set, uint16_t frame) const;
+		J_NODISCARD core::Quad_position get_coords(uint16_t mset, uint16_t frame) const;
 
 		///
 		/// \brief Same as get_coords, but applies a deduction of trim pixels around the border
 		/// \remark Requires width_ and height_ to be initialized
-		/// \param set 
+		/// \param mset Will be modulus by total sets
 		/// \param frame 
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::Quad_position get_coords_trimmed(uint16_t set, uint16_t frame) const;
+		J_NODISCARD core::Quad_position get_coords_trimmed(uint16_t mset, uint16_t frame) const;
 
 		// ======================================================================
 		// Sprite ptr
@@ -133,9 +158,10 @@ namespace jactorio::data
 
 
 		// ======================================================================
-		// Test only
-		J_TEST_USE_ONLY void set_height(const int height) { this->height_ = height; }
-		J_TEST_USE_ONLY void set_width(const int width) { this->width_ = width; }
+#ifdef JACTORIO_BUILD_TEST
+		void set_height(const int height) { this->height_ = height; }
+		void set_width(const int width) { this->width_ = width; }
+#endif
 	};
 }
 

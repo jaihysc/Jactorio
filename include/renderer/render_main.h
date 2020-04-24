@@ -1,10 +1,6 @@
 // 
-// render_main.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 04/02/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDER_MAIN_H
 #define JACTORIO_INCLUDE_RENDERER_RENDER_MAIN_H

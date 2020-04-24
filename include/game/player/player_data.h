@@ -1,10 +1,6 @@
 // 
-// player_data.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 03/31/2020
-// Last modified: 04/02/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
 #define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
@@ -12,10 +8,10 @@
 
 #include <queue>
 
+#include "data/prototype/interface/rotatable.h"
 #include "data/prototype/item/item.h"
 #include "data/prototype/item/recipe.h"
 #include "game/world/chunk_tile_layer.h"
-#include "data/prototype/interface/rotatable.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game
@@ -155,6 +151,9 @@ namespace jactorio::game
 		/// Excess items which queued recipes will return to the player inventory
 		std::map<std::string, uint16_t> crafting_item_extras_;
 
+		/// Item which is held until there is space in the player inventory to return
+		data::item_stack crafting_held_item_ = {nullptr, 0};
+
 
 		data::item_stack selected_item_;
 
@@ -186,6 +185,10 @@ namespace jactorio::game
 		/// \return nullptr if there is no item selected
 		J_NODISCARD const data::item_stack* get_selected_item() const;
 
+		///
+		/// \brief Deselects the current item and returns it to its slot ONLY if selected by reference
+		/// \return true if successfully deselected
+		bool deselect_selected_item();
 
 		///
 		/// \brief Increments the selected item to the stack size
@@ -239,15 +242,32 @@ namespace jactorio::game
 
 
 		// ============================================================================================
-		// TEST only
+#ifdef JACTORIO_BUILD_TEST
+		void clear_player_inventory() {
+			for (auto& i : inventory_player) {
+				i.first = nullptr;
+				i.second = 0;
+			}
+		}
 
-		J_TEST_USE_ONLY void clear_player_inventory();
-		J_TEST_USE_ONLY void reset_inventory_variables();
+		void reset_inventory_variables() {
+			has_item_selected_ = false;
+			select_by_reference_ = false;
+		}
 
-		J_TEST_USE_ONLY std::map<std::string, uint16_t>& get_crafting_item_deductions();
-		J_TEST_USE_ONLY std::map<std::string, uint16_t>& get_crafting_item_extras();
+		std::map<std::string, uint16_t>& get_crafting_item_deductions() {
+			return crafting_item_deductions_;
+		}
 
-		J_TEST_USE_ONLY void set_selected_item(data::item_stack& item);
+		std::map<std::string, uint16_t>& get_crafting_item_extras() {
+			return crafting_item_extras_;
+		}
+
+		void set_selected_item(data::item_stack& item) {
+			has_item_selected_ = true;
+			selected_item_ = item;
+		}
+#endif
 	};
 }
 

@@ -64,12 +64,59 @@ endif()
 # Add source to this project's executable.
 add_compile_definitions(JACTORIO_BUILD_TEST)  # Disables warning when using test only functions
 
+set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
+
 add_executable (
 	jactorioTest
 	${JACTORIO_SRC_FILES}
 	${ADDITIONAL_BUILD_FILES}
 
-	${JACTORIO_TEST_FILES}
+	${JACTORIO_TEST_DIR}/jactorioTests.cpp
+
+	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
+	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
+	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
+	${JACTORIO_TEST_DIR}/core/float_mathTests.cpp
+	${JACTORIO_TEST_DIR}/core/data_typeTests.cpp
+
+	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
+	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
+
+	${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
+	
+	${JACTORIO_TEST_DIR}/data/prototype/entity/mining_drillTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/entity/transport/transport_lineTests.cpp
+
+	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
+
+	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/deferral_timerTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_struct_layerTests.cpp
+
+	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
+	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp
+	${JACTORIO_TEST_DIR}/game/player/player_dataTests_recipe.cpp
+	${JACTORIO_TEST_DIR}/game/eventTests.cpp
+
+	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/transport_line_structureTests.cpp
+
+	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
+	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_layerTests.cpp
+
+	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
 )
 
 # GTest

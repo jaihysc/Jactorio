@@ -1,10 +1,6 @@
 // 
-// renderable.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
-// Created on: 03/15/2020
-// Last modified: 03/24/2020
-// 
+// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_RENDERABLE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_RENDERABLE_H
@@ -46,7 +42,7 @@ namespace jactorio::data
 	public:
 		///
 		/// \brief Called by the renderer when it wants the sprite associated with this entity
-		J_NODISCARD virtual Sprite* on_r_get_sprite(void* unique_data) const = 0;
+		J_NODISCARD virtual Sprite* on_r_get_sprite(Unique_data_base* unique_data) const = 0;
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data

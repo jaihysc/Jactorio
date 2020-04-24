@@ -1,18 +1,14 @@
 // 
-// pybind_manager.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/09/2019
-// Last modified: 03/14/2020
-// 
 
 #include "data/pybind/pybind_manager.h"
 
-#include <sstream>
 #include <pybind11/embed.h>
+#include <sstream>
 
-#include "core/logger.h"
 #include "core/filesystem.h"
+#include "core/logger.h"
 #include "data/data_exception.h"
 
 namespace py = pybind11;
@@ -25,7 +21,7 @@ py::object py_stderr;
 py::object py_stdout_buffer;
 py::object py_stderr_buffer;
 
-int jactorio::data::pybind_manager::exec(const std::string& python_str, const std::string& file_name) {
+int jactorio::data::py_exec(const std::string& python_str, const std::string& file_name) {
 	try {
 		// Redirect python sys.stdout to c++
 		const auto string_io = py::module::import("io").attr("StringIO");
@@ -67,7 +63,7 @@ int jactorio::data::pybind_manager::exec(const std::string& python_str, const st
 
 }
 
-void jactorio::data::pybind_manager::py_interpreter_init() {
+void jactorio::data::py_interpreter_init() {
 	py::initialize_interpreter();
 
 	// Used to redirect python sys.stdout
@@ -78,8 +74,8 @@ void jactorio::data::pybind_manager::py_interpreter_init() {
 
 		// Include the data_manager::data_folder/ as a python search path to shorten imports
 		std::stringstream s;
-		s << core::filesystem::get_executing_directory() << "/"
-			<< data_manager::data_folder << "/";
+		s << core::get_executing_directory() << "/"
+			<< data_folder << "/";
 		sysm.attr("path").attr("append")(s.str());
 	}
 
@@ -89,7 +85,7 @@ void jactorio::data::pybind_manager::py_interpreter_init() {
 	LOG_MESSAGE(info, "Python interpreter initialized")
 }
 
-void jactorio::data::pybind_manager::py_interpreter_terminate() {
+void jactorio::data::py_interpreter_terminate() {
 	// Redirect python sys.stdout
 	const auto sysm = py::module::import("sys");
 	sysm.attr("stdout") = py_stdout;

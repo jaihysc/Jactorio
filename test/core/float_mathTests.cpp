@@ -1,10 +1,6 @@
 // 
-// float_mathTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
-// Created on: 02/12/2020
-// Last modified: 03/14/2020
-// 
+// Created on: 03/31/2020
 
 #include <gtest/gtest.h>
 
@@ -12,7 +8,7 @@
 
 namespace core
 {
-	TEST(float_math, f_eq) {
+	TEST(FloatMath, FEq) {
 		// Checks floats are equal within a tolerance
 
 		EXPECT_FALSE(jactorio::core::f_eq(2.f, 2.1f, 0.00005));

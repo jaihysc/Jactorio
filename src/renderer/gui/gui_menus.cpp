@@ -1,16 +1,12 @@
 // 
-// gui_menus.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/01/2020
-// Last modified: 04/02/2020
-// 
 
 #include "renderer/gui/gui_menus.h"
 
 #include <functional>
-#include <imgui/imgui.h>
 #include <sstream>
+#include <imgui/imgui.h>
 
 #include "data/data_manager.h"
 #include "data/prototype/item/recipe_group.h"
@@ -44,8 +40,8 @@ void draw_cursor_tooltip(jactorio::game::Player_data& player_data, const char* t
 	using namespace jactorio;
 
 	ImVec2 cursor_pos(
-		game::Mouse_selection::get_cursor_x(),
-		game::Mouse_selection::get_cursor_y() + 10.f
+		static_cast<float>(game::Mouse_selection::get_cursor_x()),
+		static_cast<float>(game::Mouse_selection::get_cursor_y() + 10.f)
 	);
 	// If an item is currently selected, move the tooltip down to not overlap
 	if (player_data.get_selected_item())
@@ -149,9 +145,9 @@ void draw_slot(const jactorio::renderer::imgui_manager::Menu_data& menu_data,
 	ImGui::ImageButton(
 		reinterpret_cast<void*>(menu_data.tex_id),
 		ImVec2(
-			button_size,
+			static_cast<float>(button_size),
 			// I do not know why this happens, but buttons are off by 1 pixel for each scale level 
-			button_size + (scale - 1)),
+			static_cast<float>(button_size + (scale - 1))),
 
 		ImVec2(uv.top_left.x, uv.top_left.y),
 		ImVec2(uv.bottom_right.x, uv.bottom_right.y),
@@ -186,14 +182,14 @@ void draw_empty_slot() {
 
 ///
 /// \brief The window size is calculated on the size of the player's inventory
-ImVec2 get_window_size(jactorio::game::Player_data& player_data) {
+ImVec2 get_window_size(jactorio::game::Player_data& /*player_data*/) {
 	// 20 is window padding on both sides, 80 for y is to avoid the scrollbar
 	auto window_size = ImVec2(
 		2 * J_GUI_STYLE_WINDOW_PADDING_X,
 		2 * J_GUI_STYLE_WINDOW_PADDING_Y + 80);
 
 	window_size.x += 10 * (inventory_slot_width + inventory_slot_padding) - inventory_slot_padding;
-	window_size.y += static_cast<unsigned int>(player_data.inventory_size / 10) *
+	window_size.y += static_cast<unsigned int>(jactorio::game::Player_data::inventory_size / 10) *
 		(inventory_slot_width + inventory_slot_padding) - inventory_slot_padding;
 
 	return window_size;
@@ -204,8 +200,8 @@ ImVec2 get_window_size(jactorio::game::Player_data& player_data) {
 void setup_next_window_left(const ImVec2& window_size) {
 	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
 	// Character window is left of the center
-	const ImVec2 window_center(jactorio::renderer::Renderer::get_window_width() / 2,
-	                           jactorio::renderer::Renderer::get_window_height() / 2);
+	const ImVec2 window_center(static_cast<float>(jactorio::renderer::Renderer::get_window_width()) / 2,
+	                           static_cast<float>(jactorio::renderer::Renderer::get_window_height()) / 2);
 
 	ImGui::SetNextWindowPos(ImVec2(window_center.x - window_size.x,
 	                               window_center.y - window_size.y / 2));
@@ -216,8 +212,8 @@ void setup_next_window_left(const ImVec2& window_size) {
 void setup_next_window_right(const ImVec2& window_size) {
 	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
 	// Character window is left of the center
-	const ImVec2 window_center(jactorio::renderer::Renderer::get_window_width() / 2,
-	                           jactorio::renderer::Renderer::get_window_height() / 2);
+	const ImVec2 window_center(static_cast<float>(jactorio::renderer::Renderer::get_window_width()) / 2,
+	                           static_cast<float>(jactorio::renderer::Renderer::get_window_height()) / 2);
 
 	// Recipe menu
 	ImGui::SetNextWindowPos(ImVec2(window_center.x,
@@ -237,7 +233,7 @@ void player_inventory_menu(jactorio::game::Player_data& player_data) {
 
 	ImGui::Begin("Character", nullptr, window_size, -1, window_flags);
 
-	auto& menu_data = jactorio::renderer::imgui_manager::get_menu_data();
+	auto menu_data = jactorio::renderer::imgui_manager::get_menu_data();
 	draw_slots(10, jactorio::game::Player_data::inventory_size, [&](auto index) {
 		const auto& item = player_data.inventory_player[index];
 
@@ -299,14 +295,14 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 	player_inventory_menu(player_data);
 
 
-	auto& menu_data = imgui_manager::get_menu_data();
+	auto menu_data = imgui_manager::get_menu_data();
 
 	const ImVec2 window_size = get_window_size(player_data);
 	setup_next_window_right(window_size);
 	ImGui::Begin("Recipe", nullptr, window_size, -1, window_flags);
 
 	// Menu groups | A group button is twice the size of a slot
-	auto groups = data::data_manager::data_raw_get_all_sorted<data::Recipe_group>(data::data_category::recipe_group);
+	auto groups = data::data_raw_get_all_sorted<data::Recipe_group>(data::dataCategory::recipe_group);
 	draw_slots(5, groups.size(), [&](const uint16_t index) {
 		const auto& recipe_group = groups[index];
 
@@ -347,8 +343,8 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 		draw_slots(10, recipes.size(), [&](auto index) {
 			data::Recipe* recipe = recipes.at(index);
 
-			const auto product =
-				data::data_manager::data_raw_get<data::Item>(data::data_category::item, recipe->get_product().first);
+			const auto* product =
+				data::data_raw_get<data::Item>(data::dataCategory::item, recipe->get_product().first);
 			assert(product != nullptr);  // Invalid recipe product
 
 			draw_slot(menu_data, 1, index % 10, product->sprite->internal_id, 0);
@@ -383,13 +379,13 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 					for (const auto& ingredient_pair : recipe->ingredients) {
 						ImGui::NewLine();
 						const auto* item =
-							data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+							data::data_raw_get<data::Item>(data::dataCategory::item,
 							                                             ingredient_pair.first);
 
 						draw_slot(menu_data, 1, 0, item->sprite->internal_id, 0);
 
 						// Amount of the current ingredient the player has in inventory
-						const auto player_item_count = game::inventory_c::get_inv_item_count(
+						const auto player_item_count = game::get_inv_item_count(
 							player_data.inventory_player, player_data.inventory_size,
 							item);
 
@@ -423,12 +419,12 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 					ImGui::Separator();
 					ImGui::Text("%s", "Total\nRaw");
 					auto raw_inames = data::Recipe::recipe_get_total_raw(product->name);
-					draw_slots(5, raw_inames.size(), [&](const auto index) {
+					draw_slots(5, raw_inames.size(), [&](const auto slot_index) {
 						const auto* item =
-							data::data_manager::data_raw_get<data::Item>(data::data_category::item,
-							                                             raw_inames[index].first);
-						draw_slot(menu_data, 1, index + 1,
-						          item->sprite->internal_id, raw_inames[index].second);
+							data::data_raw_get<data::Item>(data::dataCategory::item,
+							                                             raw_inames[slot_index].first);
+						draw_slot(menu_data, 1, slot_index + 1,
+						          item->sprite->internal_id, raw_inames[slot_index].second);
 					});
 				});
 		});
@@ -443,7 +439,7 @@ void jactorio::renderer::gui::cursor_window(game::Player_data& player_data) {
 	using namespace jactorio;
 	// Draw the tooltip of what is currently selected
 
-	auto& menu_data = imgui_manager::get_menu_data();
+	const auto menu_data = imgui_manager::get_menu_data();
 
 	// Player has an item selected, draw it on the tooltip
 	const data::item_stack* selected_item;
@@ -453,8 +449,8 @@ void jactorio::renderer::gui::cursor_window(game::Player_data& player_data) {
 
 		// Draw the window at the cursor
 		const ImVec2 cursor_pos(
-			game::Mouse_selection::get_cursor_x(),
-			game::Mouse_selection::get_cursor_y() + 2.f
+			static_cast<float>(game::Mouse_selection::get_cursor_x()),
+			static_cast<float>(game::Mouse_selection::get_cursor_y() + 2.f)
 		);
 		ImGui::SetNextWindowPos(cursor_pos);
 
@@ -489,7 +485,7 @@ void jactorio::renderer::gui::cursor_window(game::Player_data& player_data) {
 }
 
 void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data) {
-	auto& menu_data = imgui_manager::get_menu_data();
+	auto menu_data = imgui_manager::get_menu_data();
 
 	ImGuiWindowFlags flags = 0;
 	flags |= ImGuiWindowFlags_NoBackground;
@@ -499,7 +495,7 @@ void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data) {
 	flags |= ImGuiWindowFlags_NoScrollbar;
 	flags |= ImGuiWindowFlags_NoScrollWithMouse;
 
-	auto& recipe_queue = player_data.get_recipe_queue();
+	const auto& recipe_queue = player_data.get_recipe_queue();
 
 
 	const unsigned int y_slots = (recipe_queue.size() + 10 - 1) / 10;  // Always round up for slot count
@@ -513,12 +509,12 @@ void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data) {
 
 	ImGui::SetNextWindowPos(
 		ImVec2(0,
-		       Renderer::get_window_height() - y_offset
+		       static_cast<float>(Renderer::get_window_height()) - y_offset
 		       - J_GUI_STYLE_WINDOW_PADDING_X));  // Use the x padding to keep it constant on x and y
 	ImGui::SetNextWindowSize(
 		ImVec2(
 			20 + 10 * (inventory_slot_width + inventory_slot_padding) - inventory_slot_padding,
-			max_queue_height));
+			static_cast<float>(max_queue_height)));
 
 	// Window
 	ImGui::Begin("_crafting_queue", nullptr, flags);
@@ -538,7 +534,7 @@ void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data) {
 		}
 
 		const auto* item =
-			data::data_manager::data_raw_get<data::Item>(data::data_category::item,
+			data::data_raw_get<data::Item>(data::dataCategory::item,
 			                                             recipe->get_product().first);
 		draw_slot(menu_data, 1, index % 10,
 		          item->sprite->internal_id, recipe->get_product().second);
@@ -570,8 +566,8 @@ void jactorio::renderer::gui::pickup_progressbar(game::Player_data& player_data)
 	ImGui::SetNextWindowSize(ImVec2(progress_bar_width, progress_bar_height));
 	ImGui::SetNextWindowPos(
 		ImVec2(
-			Renderer::get_window_width() / 2 - (progress_bar_width / 2),  // Center X
-			Renderer::get_window_height() - progress_bar_height));  // TODO account for hotbar when implemented
+			static_cast<float>(Renderer::get_window_width()) / 2 - (progress_bar_width / 2),  // Center X
+			static_cast<float>(Renderer::get_window_height()) - progress_bar_height));  // TODO account for hotbar when implemented
 
 	// Window
 	ImGui::Begin("_entity_pickup_status", nullptr, flags);
@@ -589,18 +585,15 @@ void jactorio::renderer::gui::pickup_progressbar(game::Player_data& player_data)
 
 // ==========================================================================================
 // Entity menus
+const ImGuiWindowFlags entity_menu_flags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 
 void jactorio::renderer::gui::container_entity(game::Player_data& player_data,
                                                data::item_stack* inv, const uint16_t inv_size) {
-	ImGuiWindowFlags flags = 0;
-	flags |= ImGuiWindowFlags_NoResize;
-	flags |= ImGuiWindowFlags_NoCollapse;
-
 	player_inventory_menu(player_data);
 
 	const auto window_size = get_window_size(player_data);
 	setup_next_window_right(window_size);
-	ImGui::Begin("Container", nullptr, window_size, -1, flags);
+	ImGui::Begin("Container", nullptr, window_size, -1, entity_menu_flags);
 
 	draw_slots(10, inv_size, [&](auto i) {
 		if (inv[i].first == nullptr) {
@@ -628,6 +621,23 @@ void jactorio::renderer::gui::container_entity(game::Player_data& player_data,
 					}
 				});
 	});
+
+	ImGui::End();
+}
+
+void jactorio::renderer::gui::mining_drill(game::Player_data& player_data, data::Mining_drill_data& drill_data) {
+	player_inventory_menu(player_data);
+
+	const auto window_size = get_window_size(player_data);
+	setup_next_window_right(window_size);
+
+	ImGui::Begin("Mining drill", nullptr, window_size, -1, entity_menu_flags);
+
+	// 1 - (Ticks left / Ticks to mine)
+	const long double ticks_left = drill_data.deferral_entry.first - player_data.get_player_world().game_tick();
+	const long double mine_ticks = drill_data.mining_ticks;
+
+	ImGui::ProgressBar(1.f - static_cast<float>(ticks_left / mine_ticks));
 
 	ImGui::End();
 }

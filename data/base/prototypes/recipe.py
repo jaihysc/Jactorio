@@ -7,7 +7,7 @@ def addRecipeGroup(name, spritePath):
         ))
     )
 
-g_logistics = addRecipeGroup("recipegroup-logicsics", "base/graphics/item-group/logistics.png")
+g_logistics = addRecipeGroup("recipegroup-logistics", "base/graphics/item-group/logistics.png")
 g_production = addRecipeGroup("recipegroup-production", "base/graphics/item-group/production.png")
 g_intermediate = addRecipeGroup("recipegroup-intermediate", "base/graphics/item-group/intermediate-products.png")
 g_combat = addRecipeGroup("recipegroup-combat", "base/graphics/item-group/military.png")
@@ -33,5 +33,16 @@ g_logistics.recipeCategories(([
                 .ingredients([("__base__/coal-item", 2)])
                 .product(("__base__/transport-belt-basic-item", 2))
                 .craftingTime(0.1),
+        ]))
+]))
+
+g_production.recipeCategories(([
+    # Extraction
+    j.RecipeCategory()
+        .recipes(([
+            j.Recipe()
+                .ingredients([("__base__/coal-item", 1)])
+                .product(("__base__/electric-mining-drill-item", 1))
+                .craftingTime(2),
         ]))
 ]))

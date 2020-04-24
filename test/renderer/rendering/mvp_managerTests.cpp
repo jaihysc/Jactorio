@@ -1,10 +1,6 @@
 // 
-// mvp_managerTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/15/2020
-// 
 
 #include <gtest/gtest.h>
 
@@ -14,9 +10,8 @@
 
 namespace renderer
 {
-	TEST(mvp_manager, view) {
-		glm::vec3* view_transform = jactorio::renderer::mvp_manager::
-			get_view_transform();
+	TEST(MvpManager, View) {
+		glm::vec3* view_transform = jactorio::renderer::get_view_transform();
 
 		EXPECT_EQ(view_transform->x, 0);
 		EXPECT_EQ(view_transform->y, 0);
@@ -24,41 +19,20 @@ namespace renderer
 
 		view_transform->x = 20;
 
-		glm::vec3* view_transform2 = jactorio::renderer::mvp_manager::
-			get_view_transform();
+		glm::vec3* view_transform2 = jactorio::renderer::get_view_transform();
 		EXPECT_EQ(view_transform2->x, 20);
 	}
 
-	TEST(mvp_manager, projection_tile_calculation_and_matrix) {
-		const auto tile_prop = jactorio::renderer::mvp_manager::
-			projection_calculate_tile_properties(
-				10, 1920, 1080);
-
-		EXPECT_EQ(tile_prop.tiles_x, 192);
-		EXPECT_EQ(tile_prop.tiles_y, 108);
-
-		// Matrix
-		// A tile is 16 px, it will lock it to that minimum
-		const auto proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
-			tile_prop.tiles_x, tile_prop.tiles_y, 0);
-
-		EXPECT_EQ(proj_matrix, glm::ortho(
-			          0.f, 192.f,
-			          108.f, 0.f,
-			          -1.f, 1.f)
-		);
-	}
-
-	TEST(mvp_manager, projection_zoom) {
+	TEST(MvpManager, ProjectionZoom) {
 		// X axis is longer
 		{
-			jactorio::renderer::mvp_manager::Projection_tile_data tile_prop{};
+			jactorio::renderer::Projection_tile_data tile_prop{};
 
 			tile_prop.tiles_x = 20;
 			tile_prop.tiles_y = 10;
 
 			// Zoom guarantees a minimum of offset
-			auto proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+			auto proj_matrix = jactorio::renderer::to_proj_matrix(
 				tile_prop.tiles_x, tile_prop.tiles_y, 0);
 
 			EXPECT_EQ(proj_matrix, glm::ortho(
@@ -68,7 +42,7 @@ namespace renderer
 			);
 
 			// Zoom guarantees a minimum of offset
-			proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+			proj_matrix = jactorio::renderer::to_proj_matrix(
 				tile_prop.tiles_x, tile_prop.tiles_y, 2.5);
 
 			// Y is smaller axis
@@ -84,13 +58,13 @@ namespace renderer
 
 		// Y axis is longer
 		{
-			jactorio::renderer::mvp_manager::Projection_tile_data tile_prop{};
+			jactorio::renderer::Projection_tile_data tile_prop{};
 
 			tile_prop.tiles_x = 10;
 			tile_prop.tiles_y = 20;
 
 			// Zoom guarantees a minimum of offset
-			auto proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+			auto proj_matrix = jactorio::renderer::to_proj_matrix(
 				tile_prop.tiles_x, tile_prop.tiles_y, 0);
 
 			EXPECT_EQ(proj_matrix, glm::ortho(
@@ -100,7 +74,7 @@ namespace renderer
 			);
 
 			// Zoom guarantees a minimum of offset
-			proj_matrix = jactorio::renderer::mvp_manager::to_proj_matrix(
+			proj_matrix = jactorio::renderer::to_proj_matrix(
 				tile_prop.tiles_x, tile_prop.tiles_y, 2.5);
 
 			// Scale factor of 2 for Y axis

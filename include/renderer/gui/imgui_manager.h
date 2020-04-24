@@ -1,18 +1,16 @@
 // 
-// imgui_manager.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/12/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
 #define JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
 #pragma once
 
-#include <GLFW/glfw3.h>
-
+#include "game/event/event.h"
 #include "game/player/player_data.h"
+#include "renderer/rendering/spritemap_generator.h"
+
+struct GLFWwindow;
 
 namespace jactorio::renderer::imgui_manager
 {
@@ -32,7 +30,12 @@ namespace jactorio::renderer::imgui_manager
 
 	struct Menu_data
 	{
-		std::unordered_map<unsigned, core::Quad_position> sprite_positions;
+		Menu_data(const std::unordered_map<unsigned, core::Quad_position>& sprite_positions, const unsigned tex_id)
+			: sprite_positions(sprite_positions),
+			  tex_id(tex_id) {
+		}
+
+		const std::unordered_map<unsigned, core::Quad_position>& sprite_positions;
 		unsigned int tex_id = 0;  // Assigned by openGL
 	};
 
@@ -40,8 +43,8 @@ namespace jactorio::renderer::imgui_manager
 	 * Initializes the spritemap for rendering the character menus <br>
 	 * Requires Sprite::sprite_group::gui to be initialized
 	 */
-	void setup_character_data();
-	J_NODISCARD Menu_data& get_menu_data();
+	void setup_character_data(Renderer_sprites& renderer_sprites);
+	J_NODISCARD Menu_data get_menu_data();
 
 	/**
 	 * Begins a self contained drawing loop which displays the specified error message
@@ -50,10 +53,10 @@ namespace jactorio::renderer::imgui_manager
 
 	void setup(GLFWwindow* window);
 
-	void set_window_visibility(guiWindow window, bool visibility);
+	void set_window_visibility(game::Event_data& event, guiWindow window, bool visibility);
 	bool get_window_visibility(guiWindow window);
 
-	void imgui_draw(game::Player_data& player_data);
+	void imgui_draw(game::Player_data& player_data, game::Event_data& event);
 
 	void imgui_terminate();
 }

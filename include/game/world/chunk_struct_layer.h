@@ -1,10 +1,6 @@
 // 
-// chunk_struct_layer.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
-// Created on: 02/22/2020
-// Last modified: 03/24/2020
-// 
+// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_STRUCT_LAYER_H
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_STRUCT_LAYER_H

@@ -1,10 +1,6 @@
 // 
-// mouse_selection.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/21/2019
-// Last modified: 03/27/2020
-// 
 
 #include "game/input/mouse_selection.h"
 
@@ -15,7 +11,6 @@
 #include "game/logic/placement_controller.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
-#include "game/world/chunk_tile_getters.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
 
@@ -67,7 +62,7 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 	// Clear last overlay
 	if (!last_tile)
 		return;
-	placement_c::place_sprite_at_coords(
+	place_sprite_at_coords(
 		world_data,
 		Chunk_tile::chunkLayer::overlay,
 		nullptr,
@@ -82,20 +77,20 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 
 	if (selected_entity && selected_entity->placeable) {
 		// Has item selected
-		placement_c::place_sprite_at_coords(world_data, Chunk_tile::chunkLayer::overlay, selected_entity->sprite,
+		place_sprite_at_coords(world_data, Chunk_tile::chunkLayer::overlay, selected_entity->sprite,
 		                                    selected_entity->tile_width, selected_entity->tile_height, world_x,
 		                                    world_y);
 
 		// Rotatable entities
-		const data::Rotatable_entity* rotatable_entity;
-		if (selected_entity->rotatable &&
-			(rotatable_entity = dynamic_cast<data::Rotatable_entity*>(selected_entity)) != nullptr) {
-			const auto target = rotatable_entity->map_placement_orientation(placement_orientation,
-			                                                                world_data,
-			                                                                {world_x, world_y});
-			tile->get_layer(Chunk_tile::chunkLayer::overlay).prototype_data = selected_entity->sprite;
-			tile->get_layer(Chunk_tile::chunkLayer::overlay).unique_data =
-				new data::Renderable_data(target.first, target.second);
+		if (selected_entity->rotatable) {
+			// Create unique data at tile to indicate set / frame to render
+			const auto target = selected_entity->map_placement_orientation(placement_orientation,
+			                                                               world_data,
+			                                                               {world_x, world_y});
+
+			Chunk_tile_layer& target_layer = tile->get_layer(Chunk_tile::chunkLayer::overlay);
+			target_layer.unique_data = new data::Renderable_data(target.first, target.second);
+			target_layer.prototype_data = selected_entity->on_r_get_sprite(target_layer.unique_data);
 		}
 
 		last_tile_dimensions_ = {selected_entity->tile_width, selected_entity->tile_height};
@@ -106,13 +101,18 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 			tile->get_layer(Chunk_tile::chunkLayer::resource).prototype_data) {
 
 			// Is hovering over entity	
-			const auto sprite_ptr = data::data_manager::data_raw_get<data::Sprite>(
-				data::data_category::sprite,
+			const auto* sprite_ptr = data::data_raw_get<data::Sprite>(
+				data::dataCategory::sprite,
 				player_data.mouse_selected_tile_in_range() ? "__core__/cursor-select" : "__core__/cursor-invalid");
 			assert(sprite_ptr != nullptr);
 
-			chunk_tile_getter::set_sprite_prototype(*tile, Chunk_tile::chunkLayer::overlay, sprite_ptr);
-			tile->get_layer(Chunk_tile::chunkLayer::overlay).multi_tile_span = 1;
+			tile->set_sprite_prototype(Chunk_tile::chunkLayer::overlay, sprite_ptr);
+
+			auto& layer = tile->get_layer(Chunk_tile::chunkLayer::overlay);
+			if (layer.is_multi_tile())
+				layer.get_multi_tile_data().multi_tile_span = 1;
 		}
+
+		last_tile_dimensions_ = {1, 1};
 	}
 }

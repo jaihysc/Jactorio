@@ -1,19 +1,19 @@
 // 
-// imgui_manager.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/28/2020
-// 
 
 #include "renderer/gui/imgui_manager.h"
 
-#include <unordered_map>
 #include <cassert>
+#include <unordered_map>
+#include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
 
 #include "jactorio.h"
 
+#include "data/prototype/entity/entity.h"
+#include "game/event/event.h"
+#include "game/player/player_data.h"
 #include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/gui_menus_debug.h"
@@ -21,23 +21,21 @@
 #include "renderer/gui/imgui_opengl3.h"
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
-#include "game/event/event.h"
-#include "game/player/player_data.h"
-#include "data/prototype/entity/entity.h"
 
 ImGuiWindowFlags release_window_flags = 0;
 
 // Inventory
-jactorio::renderer::imgui_manager::Menu_data menu_data;
 
-void jactorio::renderer::imgui_manager::setup_character_data() {
-	menu_data.sprite_positions =
-		renderer_sprites::get_spritemap(data::Sprite::spriteGroup::gui).sprite_positions;
-	menu_data.tex_id = renderer_sprites::get_texture(data::Sprite::spriteGroup::gui)->get_id();
+const std::unordered_map<unsigned, jactorio::core::Quad_position>* sprite_positions = nullptr;
+unsigned int tex_id = 0;  // Assigned by openGL
+
+void jactorio::renderer::imgui_manager::setup_character_data(Renderer_sprites& renderer_sprites) {
+	sprite_positions = &renderer_sprites.get_spritemap(data::Sprite::spriteGroup::gui).sprite_positions;
+	tex_id = renderer_sprites.get_texture(data::Sprite::spriteGroup::gui)->get_id();
 }
 
-jactorio::renderer::imgui_manager::Menu_data& jactorio::renderer::imgui_manager::get_menu_data() {
-	return menu_data;
+jactorio::renderer::imgui_manager::Menu_data jactorio::renderer::imgui_manager::get_menu_data() {
+	return {*sprite_positions, tex_id};
 }
 
 
@@ -172,7 +170,8 @@ void* windows[]{
 bool window_visibility[sizeof(windows) / sizeof(windows[0])];
 
 
-void jactorio::renderer::imgui_manager::set_window_visibility(const guiWindow window, const bool visibility) {
+void jactorio::renderer::imgui_manager::set_window_visibility(game::Event_data& event,
+															  const guiWindow window, const bool visibility) {
 	const auto index = static_cast<int>(window);
 	assert(index != -1);
 
@@ -180,7 +179,7 @@ void jactorio::renderer::imgui_manager::set_window_visibility(const guiWindow wi
 
 	if (visibility && !old_visibility) {
 		// Window opened
-		game::Event::raise<game::Gui_opened_event>(game::event_type::game_gui_open);
+		event.raise<game::Gui_opened_event>(game::eventType::game_gui_open);
 	}
 
 	old_visibility = visibility;
@@ -216,7 +215,7 @@ void draw_window(jactorio::renderer::imgui_manager::guiWindow gui_window, const 
 	function_ptr(window_flags, params ...);
 }
 
-void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_data) {
+void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_data, game::Event_data& event) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame
@@ -241,7 +240,12 @@ void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_dat
 	// Do not draw character and recipe menu while in an entity menu
 	auto* layer = player_data.get_activated_layer();
 	if (layer != nullptr) {
-		set_window_visibility(guiWindow::character, false);
+		set_window_visibility(event, guiWindow::character, false);
+
+		// Get the top left corner for non top left multi tiles
+		if (layer->is_multi_tile() && !layer->is_multi_tile_top_left()) {
+			layer = layer->get_multi_tile_parent();
+		}
 
 		static_cast<const data::Entity*>(layer->prototype_data)->on_r_show_gui(player_data, layer);
 	}
@@ -264,5 +268,5 @@ void jactorio::renderer::imgui_manager::imgui_terminate() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	LOG_MESSAGE(debug, "Imgui terminated");
+	LOG_MESSAGE(info, "Imgui terminated");
 }

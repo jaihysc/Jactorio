@@ -1,10 +1,6 @@
 // 
-// chunk_tileTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/21/2019
-// Last modified: 03/14/2020
-// 
 
 #include <gtest/gtest.h>
 
@@ -14,61 +10,14 @@
 
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/tile/tile.h"
-#include "game/world/chunk_tile_getters.h"
 
 namespace game
 {
-	/*
-	TEST(chunk_tile, chunk_tile_layer_init) {
-		// Init without tile
-		const jactorio::game::Chunk_tile_layer tile_layer;
-
-		// Should initialize to nullptr by default
-		EXPECT_EQ(tile_layer.get_tile_prototype(), nullptr);
-		EXPECT_EQ(tile_layer.get_entity_prototype(), nullptr);
-		EXPECT_EQ(tile_layer.get_sprite_prototype(), nullptr);
-	}
-	
-	TEST(chunk_tile, chunk_tile_layer_init_tile) {
-		// Init with tile in constructor
-		const auto tile_proto = std::make_unique<jactorio::data::Tile>(jactorio::data::Tile());
-
-		const auto tile_layer = jactorio::game::Chunk_tile_layer(tile_proto.get());
-		EXPECT_EQ(tile_layer.get_tile_prototype(), tile_proto.get());
-	}
-
-	TEST(chunk_tile, chunk_tile_layer_init_tile_setter) {
-		// Init with tile setter
-		const auto tile_proto = std::make_unique<jactorio::data::Tile>(jactorio::data::Tile());
-
-		// Pointers not nullptr
-		{
-			auto tile_layer = jactorio::game::Chunk_tile_layer();
-			
-			tile_layer.set_data(tile_proto.get());
-
-			// The getter only converts the types
-			EXPECT_EQ(tile_layer.get_tile_prototype(), tile_proto.get());
-			EXPECT_EQ(tile_layer.get_entity_prototype(), reinterpret_cast<jactorio::data::Entity*>(tile_proto.get()));
-			EXPECT_EQ(tile_layer.get_sprite_prototype(), reinterpret_cast<jactorio::data::Sprite*>(tile_proto.get()));
-		}
-		// Nullptr
-		{
-			auto tile_layer = jactorio::game::Chunk_tile_layer();
-
-			tile_layer.set_data(nullptr);
-			EXPECT_EQ(tile_layer.get_tile_prototype(), nullptr);
-			EXPECT_EQ(tile_layer.get_entity_prototype(), nullptr);
-			EXPECT_EQ(tile_layer.get_sprite_prototype(), nullptr);
-		}
-	}
-	*/
-
-	TEST(chunk_tile, layer_copy) {
+	TEST(ChunkTile, LayerCopy) {
 		// Copying a chunk tile needs to also make a unique copy of unique_data_
 		const auto entity_proto = std::make_unique<jactorio::data::Resource_entity>(jactorio::data::Resource_entity());
 
-		auto* u_data1 = new jactorio::data::Resource_entity_data();
+		auto* u_data1 = new jactorio::data::Resource_entity_data(10);
 
 		auto tile_layer = jactorio::game::Chunk_tile_layer();
 		tile_layer.prototype_data = entity_proto.get();
@@ -85,9 +34,9 @@ namespace game
 	}
 
 
-	TEST(chunk_tile, layer_move) {
+	TEST(ChunkTile, LayerMove) {
 		// Moving unique_data will set the original unique_data to nullptr to avoid deletion
-		auto* u_data = new jactorio::data::Resource_entity_data();
+		auto* u_data = new jactorio::data::Resource_entity_data(10);
 		const auto entity_proto = std::make_unique<jactorio::data::Resource_entity>(jactorio::data::Resource_entity());
 
 		auto tile_layer = jactorio::game::Chunk_tile_layer();
@@ -104,7 +53,7 @@ namespace game
 	}
 
 
-	TEST(chunk_tile, tile_prototypes_initialization) {
+	TEST(ChunkTile, TilePrototypesInitialization) {
 		auto ct = jactorio::game::Chunk_tile();
 
 		// Should all be nullptr
@@ -113,29 +62,25 @@ namespace game
 		}
 	}
 
-	TEST(chunk_tile, get_set_chunk_layer_props) {
+	TEST(ChunkTile, GetSetChunkLayerProps) {
 		auto ct = jactorio::game::Chunk_tile();
 
 		{
 			auto tile_proto = jactorio::data::Tile();
 
-			jactorio::game::chunk_tile_getter::set_tile_prototype(
-				ct, jactorio::game::Chunk_tile::chunkLayer::base, &tile_proto);
+			ct.set_tile_prototype(jactorio::game::Chunk_tile::chunkLayer::base, &tile_proto);
 
 			EXPECT_EQ(
-				jactorio::game::chunk_tile_getter::get_tile_prototype(
-					ct, jactorio::game::Chunk_tile::chunkLayer::base),
+				ct.get_tile_prototype(jactorio::game::Chunk_tile::chunkLayer::base),
 				&tile_proto);
 		}
 		{
 			auto sprite_proto = jactorio::data::Sprite();
 
-			jactorio::game::chunk_tile_getter::set_sprite_prototype(
-				ct, jactorio::game::Chunk_tile::chunkLayer::overlay, &sprite_proto);
+			ct.set_sprite_prototype(jactorio::game::Chunk_tile::chunkLayer::overlay, &sprite_proto);
 
 			EXPECT_EQ(
-				jactorio::game::chunk_tile_getter::get_sprite_prototype(
-					ct, jactorio::game::Chunk_tile::chunkLayer::overlay),
+				ct.get_sprite_prototype(jactorio::game::Chunk_tile::chunkLayer::overlay),
 				&sprite_proto);
 		}
 	}

@@ -1,12 +1,7 @@
 // 
-// renderer_layer.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/12/2020
-// Last modified: 03/14/2020
-// 
 
-#include <renderer/rendering/renderer_grid.h>
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/opengl/vertex_array.h"
 
@@ -205,6 +200,44 @@ void jactorio::renderer::Renderer_layer::clear() const {
 // OpenGL methods
 constexpr uint64_t g_byte_multiplier = 8 * sizeof(float);  // Multiply by this to convert to bytes
 
+unsigned* jactorio::renderer::Renderer_layer::gen_render_grid_indices(const uint32_t tile_count) {
+	// Indices generation pattern:
+	// top left
+	// top right
+	// bottom right
+	// bottom left
+
+	auto* positions = new unsigned int[static_cast<uint64_t>(tile_count) * 6];
+
+	unsigned int positions_index = 0;
+	unsigned int index_buffer_index = 0; // Index to be saved into positions
+
+	for (uint32_t i = 0; i < tile_count; ++i) {
+		positions[positions_index++] = index_buffer_index;
+		positions[positions_index++] = index_buffer_index + 1;
+		positions[positions_index++] = index_buffer_index + 2;
+
+		positions[positions_index++] = index_buffer_index + 2;
+		positions[positions_index++] = index_buffer_index + 3;
+		positions[positions_index++] = index_buffer_index;
+
+		index_buffer_index += 4;
+
+		// const unsigned int start = x + y * tiles_x;
+		//
+		// positions[index++] = start;
+		// positions[index++] = start + 1;
+		// positions[index++] = start + 1 + tiles_x;
+		//
+		// positions[index++] = start + 1 + tiles_x;
+		// positions[index++] = start + tiles_x;
+		// positions[index++] = start;
+	}
+
+	return positions;
+
+}
+
 void jactorio::renderer::Renderer_layer::g_delete_buffer_s() const {
 	delete vertex_array_;
 	delete vertex_vb_;
@@ -226,7 +259,7 @@ void jactorio::renderer::Renderer_layer::g_init_buffer() {
 	// Index buffer
 	// As of right now there is no point holding onto the index_buffer data pointer after handing it to the GPu
 	// since it is never modified
-	const auto data = renderer_grid::gen_render_grid_indices(e_capacity_);
+	const auto data = gen_render_grid_indices(e_capacity_);
 	index_ib_ = new Index_buffer(data, e_capacity_ * 6);
 	delete[] data;
 
@@ -243,7 +276,7 @@ void jactorio::renderer::Renderer_layer::g_update_data() {
 		uv_vb_->reserve(uv_buffer_.ptr, e_capacity_ * g_byte_multiplier, false);
 
 		// Index buffer
-		const auto data = renderer_grid::gen_render_grid_indices(e_capacity_);
+		const auto data = gen_render_grid_indices(e_capacity_);
 		index_ib_->reserve(data, e_capacity_ * 6);
 		delete[] data;
 

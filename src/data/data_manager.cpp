@@ -1,10 +1,6 @@
 // 
-// data_manager.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/28/2020
-// 
 
 #include "data/data_manager.h"
 
@@ -13,8 +9,8 @@
 
 #include "core/filesystem.h"
 #include "core/logger.h"
-#include "data/pybind/pybind_manager.h"
 #include "data/local_parser.h"
+#include "data/pybind/pybind_manager.h"
 
 // Position 0 reserved to indicate error
 constexpr auto internal_id_start = 1;
@@ -29,12 +25,15 @@ unsigned int internal_id_new = internal_id_start;
  */
 std::string directory_prefix;
 
-void jactorio::data::data_manager::set_directory_prefix(const std::string& name) {
+void jactorio::data::set_directory_prefix(const std::string& name) {
 	directory_prefix = name;
 }
 
-void jactorio::data::data_manager::data_raw_add(const data_category data_category, const std::string& iname,
-                                                Prototype_base* const prototype, const bool add_directory_prefix) {
+void jactorio::data::data_raw_add(const std::string& iname,
+                                  Prototype_base* const prototype,
+                                  const bool add_directory_prefix) {
+	const dataCategory data_category = prototype->category();
+
 	// Use the following format internal name
 	// Format __dir__/iname
 	std::string formatted_iname;
@@ -57,22 +56,21 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 	}
 	else {
 		const auto& category = data_raw[static_cast<uint16_t>(data_category)];
-		auto it = category.find(formatted_iname);
+		auto it              = category.find(formatted_iname);
 		if (it != category.end()) {
-			LOG_MESSAGE_f(warning, "Name \"%s\" type %d overrides previous declaration",
-			              formatted_iname.c_str(), static_cast<int>(data_category));
+			LOG_MESSAGE_f(warning,
+			              "Name \"%s\" type %d overrides previous declaration",
+			              formatted_iname.c_str(),
+			              static_cast<int>(data_category));
 			// Free the previous prototype
 			delete it->second;
 		}
 	}
 
 	// Enforce prototype rules...
-	// data_category should be the same as category
 	// No order specified, use internal id as order
 	prototype->name = formatted_iname;
 
-	if (prototype->category != data_category)
-		prototype->category = data_category;
 	if (prototype->order == 0)
 		prototype->order = internal_id_new;
 	if (prototype->get_localized_name().empty())
@@ -85,15 +83,15 @@ void jactorio::data::data_manager::data_raw_add(const data_category data_categor
 	LOG_MESSAGE_f(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void jactorio::data::data_manager::load_data(
+void jactorio::data::load_data(
 	const std::string& data_folder_path) {
 	// Get all sub-folders in ~/data/
 	// Read data.cfg files within each sub-folder
 	// Load extracted data into loaded_data
 
 	// Terminate the interpreter after loading prototypes
-	auto py_guard = core::Resource_guard(pybind_manager::py_interpreter_terminate);
-	pybind_manager::py_interpreter_init();
+	auto py_guard = core::Resource_guard(py_interpreter_terminate);
+	py_interpreter_init();
 
 
 	for (const auto& entry : std::filesystem::directory_iterator(data_folder_path)) {
@@ -112,7 +110,7 @@ void jactorio::data::data_manager::load_data(
 			std::stringstream py_file_path;
 			py_file_path << current_directory << "/data.py";
 
-			const std::string py_file_contents = core::filesystem::read_file_as_str(py_file_path.str());
+			const std::string py_file_contents = core::read_file_as_str(py_file_path.str());
 			// data.py file does not exist
 			if (py_file_contents.empty()) {
 				LOG_MESSAGE_f(warning, "Directory %s has no or empty data.py file. Ignoring", current_directory.c_str())
@@ -122,7 +120,7 @@ void jactorio::data::data_manager::load_data(
 
 			set_directory_prefix(directory_name);
 			try {
-				pybind_manager::exec(py_file_contents, py_file_path.str());
+				py_exec(py_file_contents, py_file_path.str());
 			}
 			catch (Data_exception& e) {
 				LOG_MESSAGE_f(error, "%s", e.what());
@@ -136,15 +134,17 @@ void jactorio::data::data_manager::load_data(
 			std::stringstream cfg_file_path;
 			// TODO selectable language
 			cfg_file_path << current_directory << "/local/" <<
-				local_parser::language_identifier[static_cast<int>(local_parser::language::en)] << ".cfg";
+				language_identifier[static_cast<int>(language::en)] << ".cfg";
 
-			auto local_contents = core::filesystem::read_file_as_str(cfg_file_path.str());
+			auto local_contents = core::read_file_as_str(cfg_file_path.str());
 			if (local_contents.empty()) {
-				LOG_MESSAGE_f(warning, "Directory %s missing local at %s",
-				              current_directory.c_str(), cfg_file_path.str().c_str())
+				LOG_MESSAGE_f(warning,
+				              "Directory %s missing local at %s",
+				              current_directory.c_str(),
+				              cfg_file_path.str().c_str())
 				continue;
 			}
-			local_parser::parse_s(local_contents, directory_name);
+			local_parse_s(local_contents, directory_name);
 		}
 
 		LOG_MESSAGE_f(info, "Directory %s loaded", current_directory.c_str())
@@ -159,7 +159,7 @@ void jactorio::data::data_manager::load_data(
 				prototype->post_load_validate();
 			}
 			catch (Data_exception& e) {
-				LOG_MESSAGE_f(error, "Prototype validation failed: `%s`", e.what());
+				LOG_MESSAGE_f(error, "Prototype validation failed: '%s'", e.what());
 				throw;
 			}
 
@@ -167,7 +167,7 @@ void jactorio::data::data_manager::load_data(
 	}
 }
 
-void jactorio::data::data_manager::clear_data() {
+void jactorio::data::clear_data() {
 	// Iterate through both unordered maps and delete all pointers
 	for (auto& map : data_raw) {
 		// Category unordered maps

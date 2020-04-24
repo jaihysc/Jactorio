@@ -1,10 +1,6 @@
 // 
-// input_events.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/20/2020
-// Last modified: 03/14/2020
-// 
 
 #ifndef JACTORIO_GAME_EVENT_INPUT_EVENTS_H
 #define JACTORIO_GAME_EVENT_INPUT_EVENTS_H

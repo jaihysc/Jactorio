@@ -1,17 +1,13 @@
 // 
-// transport_line_structure.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
-// Created on: 02/21/2020
-// Last modified: 03/24/2020
-// 
+// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
 #define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
 #pragma once
 
-#include "data/prototype/item/item.h"
 #include "core/data_type.h"
+#include "data/prototype/item/item.h"
 
 #include <deque>
 
@@ -21,7 +17,7 @@ namespace jactorio::game
 	 * Item on a transport line
 	 * Tile distance from next item or end of transport line, pointer to item
 	 */
-	using transport_line_item = std::pair<transport_line_offset, data::Item*>;
+	using transport_line_item = std::pair<transport_line_offset, const data::Item*>;
 
 	///
 	/// \brief Stores a collection of items heading in one direction
@@ -114,6 +110,8 @@ namespace jactorio::game
 		/// Length of this segment in tiles
 		uint8_t segment_length;
 
+		// ======================================================================
+
 		///
 		/// Returns true if an item can be inserted into this transport line
 		/// \param start_offset Item offset from the start of transport line in tiles
@@ -140,14 +138,22 @@ namespace jactorio::game
 		/// \brief Appends item onto the specified side of a belt behind the last item
 		/// \param insert_left True to insert item on left size of belt
 		/// \param offset Number of tiles to offset from previous item or the end of the transport line segment when there are no items
-		void append_item(bool insert_left, double offset, data::Item* item);
+		void append_item(bool insert_left, double offset, const data::Item* item);
 
 		///
 		/// \brief Inserts the item onto the specified belt side at the offset
 		/// from the beginning of the transport line
 		/// \param insert_left True to insert item on left size of belt
 		/// \param offset Distance from beginning of transport line
-		void insert_item(bool insert_left, double offset, data::Item* item);
+		void insert_item(bool insert_left, double offset, const data::Item* item);
+
+		///
+		/// \brief Attempts to insert the item onto the specified belt side at the offset
+		/// from the beginning of the transport line
+		/// \param insert_left True to insert item on left size of belt
+		/// \param offset Distance from beginning of transport line
+		/// \return false if unsuccessful
+		bool try_insert_item(bool insert_left, double offset, const data::Item* item);
 	};
 }
 

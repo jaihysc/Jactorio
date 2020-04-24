@@ -11,20 +11,15 @@ Outlined sections
 
 ```c++
 //
-// some_compiled.h
 // The file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-//
 // Created on: mm/dd/yyyy
-// Last modified: mm/dd/yyyy
-//
 
-#include "quotes/from/after/source/to/forward/declaration.h"  // If applicable
-
-#include "quotes/from/after/source/folder.h"
+#include "quotes/for/forward/declaration.h"  // If applicable
 
 #include <external/std_lib>
 #include <external/library.h>
 
+#include "quotes/for/other/project/files.h"
 
 #define MACRO_IN_UPPER 10
 
@@ -67,7 +62,7 @@ void function_name() {
 
 ### Files
 
-```
+```c++
 some_compiled.h
 some_compiled.cpp
 some_compiledTests.cpp

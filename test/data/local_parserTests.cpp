@@ -1,34 +1,28 @@
 // 
-// local_parserTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/15/2020
-// Last modified: 03/15/2020
-// 
 
 #include <gtest/gtest.h>
 
-#include "data/local_parser.h"
+#include "core/resource_guard.h"
 #include "data/data_exception.h"
 #include "data/data_manager.h"
-#include "core/resource_guard.h"
+#include "data/local_parser.h"
 #include "data/prototype/sprite.h"
 
 namespace data
 {
-	TEST(local_parser, parse) {
-		auto guard = jactorio::core::Resource_guard(jactorio::data::data_manager::clear_data);
+	TEST(LocalParser, Parse) {
+		auto guard = jactorio::core::Resource_guard(jactorio::data::clear_data);
 
 		// Setup prototypes
-		jactorio::data::data_manager::set_directory_prefix("test");
+		jactorio::data::set_directory_prefix("test");
 
-		const auto prototype = new jactorio::data::Sprite();
-		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::data_category::sprite, "test_tile", prototype, true);
+		auto* prototype = new jactorio::data::Sprite();
+		data_raw_add("test_tile", prototype, true);
 
-		const auto prototype2 = new jactorio::data::Sprite();
-		jactorio::data::data_manager::data_raw_add(
-			jactorio::data::data_category::sprite, "test_tile1", prototype2, true);
+		auto* prototype2 = new jactorio::data::Sprite();
+		data_raw_add("test_tile1", prototype2, true);
 
 
 		const std::string str =
@@ -38,7 +32,7 @@ namespace data
 		
 				test_tile1=Test tile 2)";
 
-		jactorio::data::local_parser::parse(str, "test");
+		jactorio::data::local_parse(str, "test");
 
 		// Validate local was set
 		EXPECT_EQ(prototype->get_localized_name(), "Test tile 1");
@@ -47,7 +41,7 @@ namespace data
 
 	void expect_err(const std::string& str) {
 		try {
-			jactorio::data::local_parser::parse(str, "asdf");
+			jactorio::data::local_parse(str, "asdf");
 		}
 		catch (jactorio::data::Data_exception&) {
 			return;
@@ -58,7 +52,7 @@ namespace data
 		FAIL();
 	}
 
-	TEST(local_parser, parse_err) {
+	TEST(LocalParser, ParseErr) {
 		// Illegal character (=)
 		// Missing r val after =
 		// Missing r val

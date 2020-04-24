@@ -1,22 +1,18 @@
 // 
-// texture.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 03/28/2020
-// 
 
 #include <GL/glew.h>
 
-#include "core/logger.h"
-#include "renderer/renderer_exception.h"
 #include "renderer/opengl/texture.h"
+#include "core/logger.h"
 #include "renderer/opengl/error.h"
+#include "renderer/renderer_exception.h"
 
 unsigned int jactorio::renderer::Texture::bound_texture_id_ = 0;
 
 jactorio::renderer::Texture::Texture(unsigned char* buffer, unsigned int width, unsigned int height)
-	: renderer_id_(0), width_(width), height_(height), texture_buffer_(buffer) {
+	: renderer_id_(0), texture_buffer_(buffer), width_(width), height_(height) {
 
 	if (!texture_buffer_) {
 		LOG_MESSAGE(error, "Received empty texture")
@@ -37,7 +33,7 @@ jactorio::renderer::Texture::Texture(unsigned char* buffer, unsigned int width, 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
 	DEBUG_OPENGL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-								   width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_buffer_));
+		width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_buffer_));
 
 	// Rebind the last bound texture
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, bound_texture_id_));

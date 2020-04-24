@@ -1,10 +1,6 @@
 // 
-// prototype_base.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/09/2019
-// Last modified: 03/24/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
@@ -71,7 +67,7 @@ namespace jactorio::data
 
 	// Assertions for post_load_validate
 #define J_DATA_ASSERT(condition, error_msg)\
-	if (!(condition)) { std::string s = this->name; s.append(error_msg); throw jactorio::data::Data_exception(s); }
+	if (!(condition)) { std::string s = "\""; s.append(this->name); s.append("\", " error_msg); throw jactorio::data::Data_exception(s); }
 
 
 	///
@@ -91,6 +87,8 @@ namespace jactorio::data
 	};
 
 
+#define PROTOTYPE_CATEGORY(category_) J_NODISCARD jactorio::data::dataCategory category() const override { return jactorio::data::dataCategory::category_; }
+
 	class Prototype_base
 	{
 	public:
@@ -102,19 +100,37 @@ namespace jactorio::data
 		Prototype_base& operator=(const Prototype_base& other) = default;
 		Prototype_base& operator=(Prototype_base&& other) noexcept = default;
 
+		friend void swap(Prototype_base& lhs, Prototype_base& rhs) noexcept {
+			using std::swap;
+			swap(lhs.category_, rhs.category_);
+			swap(lhs.internal_id, rhs.internal_id);
+			swap(lhs.name, rhs.name);
+			swap(lhs.order, rhs.order);
+			swap(lhs.localized_name_, rhs.localized_name_);
+			swap(lhs.localized_description_, rhs.localized_description_);
+		}
+
+	private:
+		dataCategory category_ = dataCategory::none;
+
+	public:
+		///
+		/// \brief Category of this Prototype item
+		J_NODISCARD virtual dataCategory category() const = 0;
+
 		///
 		/// \brief Unique per prototype, unique & auto assigned per new prototype added
 		/// 0 indicates invalid id
 		unsigned int internal_id = 0;
 
+
+		// ======================================================================
+		// Python properties
+	public:
 		///
 		/// \brief Internal name, MUST BE unique per data_category
 		///
 		PYTHON_PROP_REF(Prototype_base, std::string, name);
-
-		///
-		/// \brief Category of this Prototype item
-		PYTHON_PROP_REF_I(Prototype_base, data_category, category, data_category::none);
 
 		///
 		/// \brief Determines the priority of this prototype used in certain situations

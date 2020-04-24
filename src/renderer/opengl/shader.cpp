@@ -1,10 +1,6 @@
 // 
-// shader.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
-// 
 
 #include <GL/glew.h>
 
@@ -13,14 +9,14 @@
 #include "core/filesystem.h"
 
 #include "renderer/opengl/shader.h"
-#include "renderer/opengl/error.h"
 #include "core/logger.h"
+#include "renderer/opengl/error.h"
 
 unsigned int jactorio::renderer::Shader::compile_shader(
 	const std::string& filepath, const GLenum shader_type) {
 
-	const auto path = core::filesystem::resolve_path(filepath);
-	const std::string source = core::filesystem::read_file_as_str(path);
+	const auto path = core::resolve_path(filepath);
+	const std::string source = core::read_file_as_str(path);
 
 	if (source.empty()) {
 		LOG_MESSAGE_f(error, "Shader compilation received empty string, type %d %s",
@@ -58,7 +54,7 @@ unsigned int jactorio::renderer::Shader::compile_shader(
 		return 0;
 	}
 
-	LOG_MESSAGE_f(debug, "Shader compilation successful, type %d %s",
+	LOG_MESSAGE_f(info, "Shader compilation successful, type %d %s",
 	              shader_type, path.c_str());
 
 	return shader_id;

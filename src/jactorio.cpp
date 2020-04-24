@@ -1,10 +1,6 @@
 ﻿// 
-// jactorio.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 04/02/2020
-// 
 
 #include "jactorio.h"
 
@@ -28,14 +24,17 @@ void initialize_game() {
 	renderer_thread.join();
 }
 
+///
+/// ENTRY POINT
+/// 
 int main(int ac, char* av[]) {
 	using namespace jactorio;
 
-	core::filesystem::set_executing_directory(av[0]);
+	core::set_executing_directory(av[0]);
 
 	// Log file
-	core::Resource_guard log_guard(&core::logger::close_log_file);
-	core::logger::open_log_file("~/log.txt");
+	core::Resource_guard log_guard(&core::close_log_file);
+	core::open_log_file("~/log.txt");
 
 	// Initial startup message
 	LOG_MESSAGE_f(none, "%s | %s build, version: %s\n\n",

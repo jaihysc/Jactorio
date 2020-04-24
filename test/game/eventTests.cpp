@@ -1,10 +1,6 @@
 // 
-// eventTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/31/2019
-// Last modified: 03/15/2020
-// 
 
 #include <gtest/gtest.h>
 
@@ -12,54 +8,57 @@
 
 namespace game
 {
-	int counter = 0;
-	int counter2 = 0;
+	namespace
+	{
+		int counter = 0;
+		int counter2 = 0;
 
-	void reset_counter() {
-		counter = 0;
-		counter2 = 0;
+		void reset_counter() {
+			counter = 0;
+			counter2 = 0;
+		}
+
+
+		void test_callback1(jactorio::game::Logic_tick_event& e) {
+			counter = e.game_tick;
+		}
+
+		void test_callback2(int, int) {
+			counter2++;
+		}
 	}
 
+	class EventTest : public testing::Test
+	{
+	protected:
+		jactorio::game::Event_data event_data_;
+		
+		void TearDown() override {
+			reset_counter();
+		}
+	};
 
-	void test_callback1(jactorio::game::Logic_tick_event& e) {
-		counter = e.game_tick;
-	}
-
-	void test_callback2(int a, int b) {
-		counter2++;
-	}
-
-	TEST(event, subscribe_raise_event) {
-		using namespace jactorio::game;
-
-		reset_counter();
-		Event::clear_all_data();
-
-		Event::subscribe(event_type::logic_tick, test_callback1);
+	TEST_F(EventTest, subscribe_raise_event) {
+		event_data_.subscribe(jactorio::game::eventType::logic_tick, test_callback1);
 		// Event::subscribe(event_type::game_gui_character_open, test_callback2);
 
-		Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
+		event_data_.raise<jactorio::game::Logic_tick_event>(jactorio::game::eventType::logic_tick, 12);
 		EXPECT_EQ(counter, 12);
 	}
 
-	TEST(event, subscribe_once) {
+	TEST_F(EventTest, subscribe_once) {
 		// After handling, it will not run again
-		using namespace jactorio::game;
+		event_data_.subscribe_once(jactorio::game::eventType::logic_tick, test_callback1);
 
-		reset_counter();
-		Event::clear_all_data();
-
-		Event::subscribe_once(event_type::logic_tick, test_callback1);
-
-		Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
+		event_data_.raise<jactorio::game::Logic_tick_event>(jactorio::game::eventType::logic_tick, 12);
 		EXPECT_EQ(counter, 12);
 
 		// This will no longer run since it has been handled once above
-		Event::raise<Logic_tick_event>(event_type::logic_tick, 22);
+		event_data_.raise<jactorio::game::Logic_tick_event>(jactorio::game::eventType::logic_tick, 22);
 		EXPECT_EQ(counter, 12);  // Keeps origin val above
 	}
 
-	// TEST(event, subscribe_raise_event_imgui_bock) {
+	// TEST_F(EventTest, subscribe_raise_event_imgui_bock) {
 	// 	// Imgui sets the bool property input_captured
 	// 	// This takes priority over all events, and if true no events are allowed to be emitted
 	// 	using namespace jactorio::game;
@@ -81,38 +80,31 @@ namespace game
 	// 	EXPECT_EQ(counter, 12);
 	// }
 
-	TEST(event, unsubscribe_event) {
-		using namespace jactorio::game;
+	TEST_F(EventTest, unsubscribe_event) {
+		event_data_.subscribe(jactorio::game::eventType::game_chunk_generated, test_callback1);
 
-		reset_counter();
-		Event::clear_all_data();
-
-		Event::subscribe(event_type::game_chunk_generated, test_callback1);
-
-		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback1), true);
-		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback2), false);  // Does not exist
+		EXPECT_EQ(event_data_.unsubscribe(jactorio::game::eventType::game_chunk_generated, test_callback1), true);
+		EXPECT_EQ(event_data_.unsubscribe(jactorio::game::eventType::game_chunk_generated, test_callback2),
+		          false);  // Does not exist
 
 
 		// One time
-		Event::subscribe_once(event_type::game_chunk_generated, test_callback1);
-		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback1), true);
-		EXPECT_EQ(Event::unsubscribe(event_type::game_chunk_generated, test_callback2), false);  // Does not exist
+		event_data_.subscribe_once(jactorio::game::eventType::game_chunk_generated, test_callback1);
+		EXPECT_EQ(event_data_.unsubscribe(jactorio::game::eventType::game_chunk_generated, test_callback1), true);
+		EXPECT_EQ(event_data_.unsubscribe(jactorio::game::eventType::game_chunk_generated, test_callback2),
+		          false);  // Does not exist
 
 		// Unchanged since unsubscribed
-		Event::raise<Logic_tick_event>(event_type::game_chunk_generated, 1);
+		event_data_.raise<jactorio::game::Logic_tick_event>(jactorio::game::eventType::game_chunk_generated, 1);
 		EXPECT_EQ(counter, 0);
 	}
 
-	TEST(event, clear_all_data) {
-		using namespace jactorio::game;
-
-		reset_counter();
-
-		Event::subscribe(event_type::game_chunk_generated, test_callback1);
-		Event::clear_all_data();
+	TEST_F(EventTest, clear_all_data) {
+		event_data_.subscribe(jactorio::game::eventType::game_chunk_generated, test_callback1);
+		event_data_.clear_all_data();
 
 		// Nothing gets raises since it is cleared
-		Event::raise<Logic_tick_event>(event_type::game_chunk_generated, 1);
+		event_data_.raise<jactorio::game::Logic_tick_event>(jactorio::game::eventType::game_chunk_generated, 1);
 		EXPECT_EQ(counter, 0);
 	}
 }

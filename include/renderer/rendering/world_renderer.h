@@ -1,10 +1,6 @@
 // 
-// world_renderer.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 11/15/2019
-// Last modified: 04/01/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_WORLD_RENDERER_H
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_WORLD_RENDERER_H

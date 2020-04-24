@@ -1,23 +1,28 @@
 // 
-// mouse_selection.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/21/2019
-// Last modified: 03/27/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
 #define JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
 #pragma once
 
 #include <utility>
-#include <string>
 
-
-#include "data/prototype/entity/entity.h"
 #include "jactorio.h"
+#include "data/prototype/placement_orientation.h"
 
-#include "game/player/player_data.h"
+namespace jactorio
+{
+	namespace data
+	{
+		class Entity;
+	}
+
+	namespace game
+	{
+		class Player_data;
+	}
+}
 
 namespace jactorio::game
 {

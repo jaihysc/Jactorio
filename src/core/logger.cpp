@@ -1,17 +1,13 @@
 // 
-// logger.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
-// 
 
 #include "core/logger.h"
 
-#include <string>
-#include <iostream>
-#include <fstream>
 #include <ctime>
+#include <fstream>
+#include <iostream>
+#include <string>
 
 #include "core/filesystem.h"
 
@@ -19,22 +15,31 @@ std::ofstream log_file;
 time_t start_time = clock();
 
 
-void jactorio::core::logger::open_log_file(const std::string& path) {
-	log_file.open(filesystem::resolve_path(path));
+void jactorio::core::open_log_file(const std::string& path) {
+	log_file.open(resolve_path(path));
 }
 
-void jactorio::core::logger::close_log_file() {
+void jactorio::core::close_log_file() {
 	log_file.close();
 }
 
 
-std::string jactorio::core::logger::gen_log_message(const logSeverity severity, const std::string& group,
-                                                    const int line, const std::string& message) {
+constexpr char log_fmt[] = "\033[0m%10.3f %s [%s:%d] %s\n";
+
+std::string jactorio::core::gen_log_message(const logSeverity severity,
+                                            const std::string& group,
+                                            const int line,
+                                            const std::string& message) {
 
 	const float time = static_cast<float>(clock() - start_time) / CLOCKS_PER_SEC;
 
-	char s[10000];
-	snprintf(s, 10000 * sizeof(char), "%10.3f %s [%s:%d] %s\n", time,
+	const uint64_t buf_count = max_log_msg_length + sizeof(log_fmt);
+
+	char s[buf_count];
+	snprintf(s,
+	         buf_count * sizeof(char),
+	         log_fmt,
+	         time,
 	         log_severity_str(severity).c_str(),
 	         group.c_str(),
 	         line,
@@ -43,33 +48,34 @@ std::string jactorio::core::logger::gen_log_message(const logSeverity severity, 
 	return s;
 }
 
-void jactorio::core::logger::log_message(const logSeverity severity,
-                                         const std::string& group,
-                                         const int line, const std::string& message) {
-
+void jactorio::core::log_message(const logSeverity severity,
+                                 const std::string& group,
+                                 const int line,
+                                 const std::string& message) {
 	const auto msg = gen_log_message(severity, group, line, message);
+
 	std::cout << msg;
 	log_file << msg;
 }
 
-std::string jactorio::core::logger::log_severity_str(
-	const logSeverity severity) {
+std::string jactorio::core::log_severity_str(const logSeverity severity) {
 	std::string severity_str;
+
 	switch (severity) {
 	case logSeverity::debug:
-		severity_str = "Debug   ";
+		severity_str = "\033[1;90mDebug   ";  // Gray
 		break;
 	case logSeverity::info:
 		severity_str = "Info    ";
 		break;
 	case logSeverity::warning:
-		severity_str = "Warning ";
+		severity_str = "\033[1;33mWarning ";  // Yellow
 		break;
 	case logSeverity::error:
-		severity_str = "ERROR   ";
+		severity_str = "\033[1;31mERROR   ";  // Red
 		break;
 	case logSeverity::critical:
-		severity_str = "CRITICAL";
+		severity_str = "\033[1;31mCRITICAL";  // Red
 		break;
 	default:
 		severity_str = "        ";

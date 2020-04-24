@@ -1,20 +1,16 @@
 // 
-// shader.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/15/2019
-// Last modified: 03/14/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_SHADER_H
 #define JACTORIO_INCLUDE_RENDERER_OPENGL_SHADER_H
 #pragma once
 
 #include <GL/glew.h>
-#include <vector>
-#include <string>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <string>
+#include <vector>
 
 #include "jactorio.h"
 

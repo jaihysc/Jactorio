@@ -1,10 +1,6 @@
 // 
-// window_manager.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 10/22/2019
-// Last modified: 03/14/2020
-// 
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -13,10 +9,11 @@
 
 #include <array>
 
-#include "core/logger.h"
+#include "jactorio.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 #include "renderer/render_main.h"
+#include "renderer/gui/imgui_manager.h"
 #include "renderer/opengl/error.h"
 #include "renderer/rendering/renderer.h"
 
@@ -89,14 +86,13 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 	// Set the Jactorio icon for the window
 	{
-		const auto icon =
-			data::Sprite("core/graphics/jactorio.png");
+		const auto icon = data::Sprite("core/graphics/jactorio.png");
 		// Convert the loaded Image into a GLFWImage
 		GLFWimage icons[1];
 		icons[0].pixels = const_cast<unsigned char*>(icon.get_sprite_data_ptr());
 
-		icons[0].width = icon.get_width();
-		icons[0].height = icon.get_height();
+		icons[0].width  = static_cast<int>(icon.get_width());
+		icons[0].height = static_cast<int>(icon.get_height());
 
 		glfwSetWindowIcon(glfw_window, 1, icons);
 	}
@@ -107,7 +103,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 	update_viewport = true;
 
-	glfwSetWindowSizeCallback(glfw_window, [](GLFWwindow* window, int cx, int cy) {
+	glfwSetWindowSizeCallback(glfw_window, [](GLFWwindow* /*window*/, const int cx, const int cy) {
 		// Ignore window minimize (resolution 0 x 0)
 		if (cx > 0 && cy > 0) {
 			// glViewport is critical, changes the size of the rendering area
@@ -120,23 +116,33 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 
 	// Mouse and keyboard callbacks
 	glfwSetKeyCallback(
-		glfw_window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-			game::input_manager::set_input(key, action, mods);
+		glfw_window, [](GLFWwindow* /*window*/, const int key, int /*scancode*/, const int action, const int mod) {
+			game::Key_input::set_input(
+				game::Key_input::to_input_key(key),
+				game::Key_input::to_input_action(action),
+				game::Key_input::to_input_mod(mod));
 		});
 
-	glfwSetMouseButtonCallback(glfw_window, [](GLFWwindow* window, int key, int action, int mods) {
-		game::input_manager::set_input(key, action, mods);
+	glfwSetMouseButtonCallback(glfw_window, [](GLFWwindow* /*window*/, const int key, const int action, const int mod) {
+		game::Key_input::set_input(
+			game::Key_input::to_input_key(key),
+			game::Key_input::to_input_action(action),
+			game::Key_input::to_input_mod(mod));
 	});
-	glfwSetScrollCallback(glfw_window, [](GLFWwindow* window, double xoffset, double yoffset) {
-		// TODO a better zoom
-		get_base_renderer()->tile_projection_matrix_offset += yoffset * 10;
+
+	glfwSetScrollCallback(glfw_window, [](GLFWwindow* /*window*/, double /*xoffset*/, const double yoffset) {
+		if (!imgui_manager::input_captured)
+			get_base_renderer()->tile_projection_matrix_offset += static_cast<float>(yoffset * 10);
 	});
-	glfwSetCursorPosCallback(glfw_window, [](GLFWwindow* window, double xpos, double ypos) {
+	glfwSetCursorPosCallback(glfw_window, [](GLFWwindow* /*window*/, const double xpos, const double ypos) {
 		game::set_cursor_position(xpos, ypos);
 	});
 
-	gl_context_active = true;
+	// Enables transparency in textures
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	gl_context_active = true;
 	LOG_MESSAGE_f(info, "OpenGL initialized - OpenGL Version: %s", glGetString(GL_VERSION))
 	return 0;
 }

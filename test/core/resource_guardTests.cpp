@@ -1,10 +1,6 @@
 // 
-// resource_guardTests.cpp
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 12/01/2019
-// Last modified: 03/15/2020
-// 
 
 #include <gtest/gtest.h>
 
@@ -14,30 +10,28 @@ namespace core
 {
 	namespace
 	{
-		int counter = 0;
-
-		void func() {
-			counter = 1;
-		}
+		bool non_capturing_called = false;
+		
 	}
 
-	TEST(resource_guard, call_destructor) {
-		counter = 0;
+	TEST(ResourceGuardTest, CallDestructor) {
 		{
-			auto guard = jactorio::core::Resource_guard<void>(func);
-		}
-
-		EXPECT_EQ(counter, 1);
-	}
-
-	TEST(resource_guard, capturing_call_destructor) {
-		counter = 0;
-		{
-			auto guard = jactorio::core::Capturing_guard<void()>([&] {
-				func();
+			auto guard = jactorio::core::Resource_guard<void>([]() {
+				non_capturing_called = true;
 			});
 		}
 
-		EXPECT_EQ(counter, 1);
+		EXPECT_TRUE(non_capturing_called);
+	}
+
+	TEST(ResourceGuardTest, CapturingCallDestructor) {
+		bool called = false;
+		{
+			auto guard = jactorio::core::Capturing_guard<void()>([&] {
+				called = true;
+			});
+		}
+
+		EXPECT_TRUE(called);
 	}
 }

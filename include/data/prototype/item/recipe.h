@@ -1,10 +1,6 @@
 // 
-// recipe.h
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// 
 // Created on: 01/20/2020
-// Last modified: 03/14/2020
-// 
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_H
@@ -12,9 +8,9 @@
 
 #include <utility>
 
-#include "data/prototype/prototype_base.h"
-#include <vector>
 #include <unordered_map>
+#include <vector>
+#include "data/prototype/prototype_base.h"
 
 namespace jactorio::data
 {
@@ -27,25 +23,10 @@ namespace jactorio::data
 	class Recipe : public Prototype_base
 	{
 	public:
-		/**
-		 * Looks up recipe for item of iname
-		 * @returns nullptr if not found
-		 */
-		static Recipe* get_item_recipe(const std::string& iname);
+		PROTOTYPE_CATEGORY(recipe);
 
-		/**
-		 * Returns raw materials for a recipe <br>
-		 * Assumes all provided names are valid <br>
-		 * A raw material is something which cannot be hand crafted
-		 */
-		static std::vector<recipe_item> recipe_get_total_raw(const std::string& iname);
-
-	private:
-		static std::unordered_map<std::string, Recipe*> item_recipes_;
-		recipe_item product_;
-
-	public:
 		Recipe() = default;
+
 
 		/**
 		 * Seconds to complete recipe
@@ -68,6 +49,24 @@ namespace jactorio::data
 
 
 		void post_load_validate() const override;
+
+	private:
+		static std::unordered_map<std::string, Recipe*> item_recipes_;
+		recipe_item product_;
+
+	public:
+		/**
+		 * Looks up recipe for item of iname
+		 * @returns nullptr if not found
+		 */
+		static Recipe* get_item_recipe(const std::string& iname);
+
+		/**
+		 * Returns raw materials for a recipe <br>
+		 * Assumes all provided names are valid <br>
+		 * A raw material is something which cannot be hand crafted
+		 */
+		static std::vector<recipe_item> recipe_get_total_raw(const std::string& iname);
 	};
 }
 
