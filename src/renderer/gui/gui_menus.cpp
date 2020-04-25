@@ -6,9 +6,10 @@
 
 #include <functional>
 #include <sstream>
-#include <imgui/imgui.h>
 
 #include "data/data_manager.h"
+#include "data/prototype/entity/container_entity.h"
+#include "data/prototype/entity/mining_drill.h"
 #include "data/prototype/item/recipe_group.h"
 
 #include "game/input/mouse_selection.h"
@@ -219,6 +220,7 @@ void setup_next_window_right(const ImVec2& window_size) {
 	ImGui::SetNextWindowPos(ImVec2(window_center.x,
 	                               window_center.y - window_size.y / 2));
 
+	ImGui::SetNextWindowSize(window_size);
 }
 
 ///
@@ -231,7 +233,8 @@ void player_inventory_menu(jactorio::game::Player_data& player_data) {
 	window_flags |= ImGuiWindowFlags_NoCollapse;
 	window_flags |= ImGuiWindowFlags_NoResize;
 
-	ImGui::Begin("Character", nullptr, window_size, -1, window_flags);
+	ImGui::SetNextWindowSize(window_size);
+	ImGui::Begin("Character", nullptr, window_flags);
 
 	auto menu_data = jactorio::renderer::imgui_manager::get_menu_data();
 	draw_slots(10, jactorio::game::Player_data::inventory_size, [&](auto index) {
@@ -290,8 +293,10 @@ void player_inventory_menu(jactorio::game::Player_data& player_data) {
 // ==========================================================================================
 // Player menus (Excluding entity menus)
 
-void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags,
-                                             game::Player_data& player_data) {
+const ImGuiWindowFlags menu_flags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+
+
+void jactorio::renderer::gui::character_menu(game::Player_data& player_data, const data::Unique_data_base*) {
 	player_inventory_menu(player_data);
 
 
@@ -299,7 +304,9 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 
 	const ImVec2 window_size = get_window_size(player_data);
 	setup_next_window_right(window_size);
-	ImGui::Begin("Recipe", nullptr, window_size, -1, window_flags);
+
+	ImGui::SetNextWindowSize(window_size);
+	ImGui::Begin("Recipe", nullptr, menu_flags);
 
 	// Menu groups | A group button is twice the size of a slot
 	auto groups = data::data_raw_get_all_sorted<data::Recipe_group>(data::dataCategory::recipe_group);
@@ -435,7 +442,7 @@ void jactorio::renderer::gui::character_menu(const ImGuiWindowFlags window_flags
 
 }
 
-void jactorio::renderer::gui::cursor_window(game::Player_data& player_data) {
+void jactorio::renderer::gui::cursor_window(game::Player_data& player_data, const data::Unique_data_base*) {
 	using namespace jactorio;
 	// Draw the tooltip of what is currently selected
 
@@ -484,7 +491,7 @@ void jactorio::renderer::gui::cursor_window(game::Player_data& player_data) {
 	}
 }
 
-void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data) {
+void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data, const data::Unique_data_base*) {
 	auto menu_data = imgui_manager::get_menu_data();
 
 	ImGuiWindowFlags flags = 0;
@@ -546,7 +553,7 @@ void jactorio::renderer::gui::crafting_queue(game::Player_data& player_data) {
 
 float last_pickup_fraction = 0.f;
 
-void jactorio::renderer::gui::pickup_progressbar(game::Player_data& player_data) {
+void jactorio::renderer::gui::pickup_progressbar(game::Player_data& player_data, const data::Unique_data_base*) {
 	constexpr float progress_bar_width = 260 * 2;
 	constexpr float progress_bar_height = 13;
 
@@ -585,38 +592,38 @@ void jactorio::renderer::gui::pickup_progressbar(game::Player_data& player_data)
 
 // ==========================================================================================
 // Entity menus
-const ImGuiWindowFlags entity_menu_flags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+void jactorio::renderer::gui::container_entity(game::Player_data& player_data, const data::Unique_data_base* unique_data) {
+	assert(unique_data);
+	const auto& container_data = *static_cast<const data::Container_entity_data*>(unique_data);
 
-void jactorio::renderer::gui::container_entity(game::Player_data& player_data,
-                                               data::item_stack* inv, const uint16_t inv_size) {
 	player_inventory_menu(player_data);
 
 	const auto window_size = get_window_size(player_data);
 	setup_next_window_right(window_size);
-	ImGui::Begin("Container", nullptr, window_size, -1, entity_menu_flags);
+	ImGui::Begin("Container", nullptr, menu_flags);
 
-	draw_slots(10, inv_size, [&](auto i) {
-		if (inv[i].first == nullptr) {
+	draw_slots(10, container_data.size, [&](auto i) {
+		if (container_data.inventory[i].first == nullptr) {
 			draw_empty_slot();
 			if (ImGui::IsItemClicked()) {
-				player_data.inventory_click(i, 0, false, inv);
+				player_data.inventory_click(i, 0, false, container_data.inventory);
 				player_data.inventory_sort();
 			}
 			else if (ImGui::IsItemClicked(1)) {
-				player_data.inventory_click(i, 1, false, inv);
+				player_data.inventory_click(i, 1, false, container_data.inventory);
 				player_data.inventory_sort();
 			}
 		}
 		else
 			draw_slot(
 				imgui_manager::get_menu_data(), 1, i % 10,
-				inv[i].first->sprite->internal_id, inv[i].second, [&]() {
+				container_data.inventory[i].first->sprite->internal_id, container_data.inventory[i].second, [&]() {
 					if (ImGui::IsItemClicked()) {
-						player_data.inventory_click(i, 0, false, inv);
+						player_data.inventory_click(i, 0, false, container_data.inventory);
 						player_data.inventory_sort();
 					}
 					else if (ImGui::IsItemClicked(1)) {
-						player_data.inventory_click(i, 1, false, inv);
+						player_data.inventory_click(i, 1, false, container_data.inventory);
 						player_data.inventory_sort();
 					}
 				});
@@ -625,13 +632,16 @@ void jactorio::renderer::gui::container_entity(game::Player_data& player_data,
 	ImGui::End();
 }
 
-void jactorio::renderer::gui::mining_drill(game::Player_data& player_data, data::Mining_drill_data& drill_data) {
+void jactorio::renderer::gui::mining_drill(game::Player_data& player_data, const data::Unique_data_base* unique_data) {
+	assert(unique_data);
+	const auto& drill_data = *static_cast<const data::Mining_drill_data*>(unique_data);
+
 	player_inventory_menu(player_data);
 
 	const auto window_size = get_window_size(player_data);
 	setup_next_window_right(window_size);
 
-	ImGui::Begin("Mining drill", nullptr, window_size, -1, entity_menu_flags);
+	ImGui::Begin("Mining drill", nullptr, menu_flags);
 
 	// 1 - (Ticks left / Ticks to mine)
 	const long double ticks_left = drill_data.deferral_entry.first - player_data.get_player_world().game_tick();

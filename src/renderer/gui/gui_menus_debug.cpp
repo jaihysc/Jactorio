@@ -4,8 +4,9 @@
 
 #include "renderer/gui/gui_menus_debug.h"
 
-#include <glm/glm.hpp>
 #include <ostream>
+#include <glm/glm.hpp>
+#include <imgui/imgui.h>
 
 #include "jactorio.h"
 
@@ -16,6 +17,7 @@
 #include "game/logic/transport_line_structure.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
+#include "renderer/gui/gui_menus.h"
 #include "renderer/rendering/mvp_manager.h"
 
 bool show_timings_window = false;
@@ -134,11 +136,12 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 		debug_item_spawner(player_data);
 }
 
-void jactorio::renderer::gui::debug_menu_main(const ImGuiWindowFlags window_flags, game::Player_data& player_data) {
+void jactorio::renderer::gui::debug_menu(game::Player_data& player_data, const data::Unique_data_base*) {
 	using namespace jactorio;
 
-	auto main_window_flags = window_flags;
+	ImGuiWindowFlags main_window_flags = 0;
 	main_window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+
 	ImGui::Begin("Debug menu", nullptr, main_window_flags);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",

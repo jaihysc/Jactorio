@@ -26,7 +26,5 @@ void jactorio::data::Container_entity::on_build(game::World_data& world_data, st
 
 void jactorio::data::Container_entity::on_r_show_gui(game::Player_data& player_data,
                                                      game::Chunk_tile_layer* tile_layer) const {
-	renderer::gui::container_entity(player_data,
-	                                static_cast<Container_entity_data*>(tile_layer->unique_data)->inventory,
-	                                inventory_size);
+	renderer::gui::container_entity(player_data, static_cast<Container_entity_data*>(tile_layer->unique_data));
 }

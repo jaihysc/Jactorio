@@ -15,6 +15,7 @@
 #include "game/game_data.h"
 #include "game/logic/transport_line_controller.h"
 #include "renderer/render_main.h"
+#include "renderer/gui/gui_menus.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/window/window_manager.h"
 
@@ -71,65 +72,65 @@ void jactorio::game::init_logic_loop() {
 	}, inputKey::d, inputAction::key_held);
 
 
-	{
-		using namespace renderer::imgui_manager;
-		// Menus
-		game_data->input.key.subscribe([]() {
-			set_window_visibility(game_data->event, guiWindow::debug, !get_window_visibility(guiWindow::debug));
-		}, inputKey::grave, inputAction::key_up);
+	// Menus
+	game_data->input.key.subscribe([]() {
+		renderer::gui::set_visible(renderer::gui::menu::debug_menu, 
+								   !renderer::gui::is_visible(renderer::gui::menu::debug_menu));
+	}, inputKey::grave, inputAction::key_up);
 
-		game_data->input.key.subscribe([]() {
-			// If a layer is already activated, deactivate it, otherwise open the gui menu
-			if (game_data->player.get_activated_layer() != nullptr)
-				game_data->player.set_activated_layer(nullptr);
-			else
-				set_window_visibility(game_data->event, guiWindow::character, !get_window_visibility(guiWindow::character));
-		}, inputKey::tab, inputAction::key_up);
-	}
+	game_data->input.key.subscribe([]() {
+		// If a layer is already activated, deactivate it, otherwise open the gui menu
+		if (game_data->player.get_activated_layer() != nullptr)
+			game_data->player.set_activated_layer(nullptr);
+		else
+			renderer::gui::set_visible(renderer::gui::menu::character_menu, 
+									   !renderer::gui::is_visible(renderer::gui::menu::character_menu));
 
-	{
-		// Rotating orientation	
-		game_data->input.key.subscribe([]() {
-			game_data->player.rotate_placement_orientation();
-		}, inputKey::r, inputAction::key_up);
-		game_data->input.key.subscribe([]() {
-			game_data->player.counter_rotate_placement_orientation();
-		}, inputKey::r, inputAction::key_up, inputMod::shift);
+	}, inputKey::tab, inputAction::key_up);
 
 
-		game_data->input.key.subscribe([]() {
-			game_data->player.deselect_selected_item();
-		}, inputKey::q, inputAction::key_down);
+	// Rotating orientation	
+	game_data->input.key.subscribe([]() {
+		game_data->player.rotate_placement_orientation();
+	}, inputKey::r, inputAction::key_up);
+	game_data->input.key.subscribe([]() {
+		game_data->player.counter_rotate_placement_orientation();
+	}, inputKey::r, inputAction::key_up, inputMod::shift);
 
-		// Place entities
-		game_data->input.key.subscribe([]() {
-			if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
-				return;
 
-			const auto tile_selected = game_data->player.get_mouse_tile_coords();
-			game_data->player.try_place_entity(game_data->world,
-			                                   tile_selected.first, tile_selected.second);
-		}, inputKey::mouse1, inputAction::key_held);
+	game_data->input.key.subscribe([]() {
+		game_data->player.deselect_selected_item();
+	}, inputKey::q, inputAction::key_down);
 
-		game_data->input.key.subscribe([]() {
-			if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
-				return;
+	// Place entities
+	game_data->input.key.subscribe([]() {
+		if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
+			return;
 
-			const auto tile_selected = game_data->player.get_mouse_tile_coords();
-			game_data->player.try_place_entity(game_data->world,
-			                                   tile_selected.first, tile_selected.second, true);
-		}, inputKey::mouse1, inputAction::key_down);
+		const auto tile_selected = game_data->player.get_mouse_tile_coords();
+		game_data->player.try_place_entity(game_data->world,
+		                                   tile_selected.first, tile_selected.second);
+	}, inputKey::mouse1, inputAction::key_held);
 
-		// Remove entities or mine resource
-		game_data->input.key.subscribe([]() {
-			if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
-				return;
+	game_data->input.key.subscribe([]() {
+		if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
+			return;
 
-			const auto tile_selected = game_data->player.get_mouse_tile_coords();
-			game_data->player.try_pickup(game_data->world,
-			                             tile_selected.first, tile_selected.second);
-		}, inputKey::mouse2, inputAction::key_held);
-	}
+		const auto tile_selected = game_data->player.get_mouse_tile_coords();
+		game_data->player.try_place_entity(game_data->world,
+		                                   tile_selected.first, tile_selected.second, true);
+	}, inputKey::mouse1, inputAction::key_down);
+
+	// Remove entities or mine resource
+	game_data->input.key.subscribe([]() {
+		if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
+			return;
+
+		const auto tile_selected = game_data->player.get_mouse_tile_coords();
+		game_data->player.try_pickup(game_data->world,
+		                             tile_selected.first, tile_selected.second);
+	}, inputKey::mouse2, inputAction::key_held);
+
 
 	game_data->input.key.subscribe([]() {
 		glfwSetWindowShouldClose(renderer::window_manager::get_window(), GL_TRUE);

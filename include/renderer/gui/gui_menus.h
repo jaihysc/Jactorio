@@ -6,35 +6,97 @@
 #define JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
 #pragma once
 
-#include <imgui/imgui.h>
+#include "jactorio.h"
 
-#include "data/prototype/entity/mining_drill.h"
-#include "data/prototype/item/item.h"
-#include "game/player/player_data.h"
+namespace jactorio
+{
+	namespace game
+	{
+		struct Player_data;
+	}
+
+	namespace data
+	{
+		struct Unique_data_base;
+	}
+}
+
 
 namespace jactorio::renderer::gui
 {
-	// ==========================================================================================
-	// Player menus
-	void character_menu(ImGuiWindowFlags window_flags, game::Player_data& player_data);
+	/// Function to draw the menu
+	using menu_function = void (*)(game::Player_data& player_data, const data::Unique_data_base* unique_data);
 
-	void cursor_window(game::Player_data& player_data);
+	// ======================================================================
+	// Substitutes name_ below at macro definitions to create an array of guis
 
-	/**
-	 * Draws the crafting queue in the bottom left of the screen
-	 */
-	void crafting_queue(game::Player_data& player_data);
+	// crafting_queue : Draws the crafting queue in the bottom left of the screen
+	// pickup_progressbar : Draws progressbar indicating entity pickup status
 
-	/**
-	 * Draws progressbar indicating entity pickup status
-	 */
-	void pickup_progressbar(game::Player_data& player_data);
+#define J_GUI_WINDOW\
+	J_GUI_WINDOW_SUB(debug_menu)\
+	\
+	J_GUI_WINDOW_SUB(character_menu)\
+	J_GUI_WINDOW_SUB(cursor_window)\
+	J_GUI_WINDOW_SUB(crafting_queue)\
+	J_GUI_WINDOW_SUB(pickup_progressbar)\
+	\
+	J_GUI_WINDOW_SUB(container_entity)\
+	J_GUI_WINDOW_SUB(mining_drill)
 
-	// ==========================================================================================
-	// Entity menus
-	void container_entity(game::Player_data& player_data, data::item_stack* inv, uint16_t inv_size);
+	// ======================================================================
+	// Macro definitions - 3
 
-	void mining_drill(game::Player_data& player_data, data::Mining_drill_data& drill_data);
+	// Function
+#define J_GUI_WINDOW_SUB(name_)\
+	void name_(game::Player_data& player_data, const data::Unique_data_base* unique_data = nullptr);
+
+	J_GUI_WINDOW
+
+	
+	// Enum
+#define J_GUI_WINDOW_SUB(name_)\
+	name_,
+
+	enum class menu
+	{
+		J_GUI_WINDOW
+	};
+
+
+	// Menu array
+#define J_GUI_WINDOW_SUB(name_)\
+	{name_},
+
+	///
+	/// \remark Index with menu
+	struct Menu
+	{
+		Menu(const menu_function draw_ptr) noexcept
+			: draw_ptr(draw_ptr) {
+		}
+
+		menu_function draw_ptr = nullptr;
+		bool visible = false;
+	};
+
+	inline Menu menus[]
+	{
+		J_GUI_WINDOW
+	};
+
+#undef J_GUI_WINDOW
+
+	// ======================================================================
+	// Window visibility handling
+
+	J_NODISCARD inline bool is_visible(menu gui_menu) {
+		return menus[static_cast<int>(gui_menu)].visible;
+	}
+
+	inline void set_visible(menu gui_menu, const bool visibility) {
+		menus[static_cast<int>(gui_menu)].visible = visibility;
+	}
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H

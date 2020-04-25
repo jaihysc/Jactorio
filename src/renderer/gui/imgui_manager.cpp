@@ -22,8 +22,6 @@
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
 
-ImGuiWindowFlags release_window_flags = 0;
-
 // Inventory
 
 const std::unordered_map<unsigned, jactorio::core::Quad_position>* sprite_positions = nullptr;
@@ -51,7 +49,7 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::SetNextWindowPosCenter();
+		ImGui::SetNextWindowPos({0, 0}, 0, {0.5, 0.5});
 
 		const ImGuiWindowFlags flags = 0;
 		ImGui::Begin("Error", nullptr, flags);
@@ -89,9 +87,6 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 
 
 	// Factorio inspired Imgui style
-	release_window_flags |= ImGuiWindowFlags_NoCollapse;
-	release_window_flags |= ImGuiWindowFlags_NoResize;
-
 	auto& style = ImGui::GetStyle();
 	style.WindowRounding = 0.0f;
 	style.ChildRounding = 0.0f;
@@ -155,64 +150,13 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	LOG_MESSAGE(info, "Imgui initialized");
 }
 
-// Pointers to windows are kept in a list defined below
-// A boolean array is generated equal to the number of window pointers
-// It stores whether or not the window is open or closed
-//
-// Use set_window_visibility() to set the visibility of the windows
-#define WINDOW_PTR(function) (reinterpret_cast<void*>(jactorio::renderer::gui::function))
-void* windows[]{
-	WINDOW_PTR(character_menu),
-	WINDOW_PTR(debug_menu_main)
-};
-#undef WINDOW_PTR
+void draw_menu(jactorio::renderer::gui::menu menu, 
+			   jactorio::game::Player_data& player_data, const jactorio::data::Unique_data_base* unique_data = nullptr) {
+	auto& gui_menu = jactorio::renderer::gui::menus[static_cast<int>(menu)];
 
-bool window_visibility[sizeof(windows) / sizeof(windows[0])];
-
-
-void jactorio::renderer::imgui_manager::set_window_visibility(game::Event_data& event,
-															  const guiWindow window, const bool visibility) {
-	const auto index = static_cast<int>(window);
-	assert(index != -1);
-
-	bool& old_visibility = window_visibility[index];
-
-	if (visibility && !old_visibility) {
-		// Window opened
-		event.raise<game::Gui_opened_event>(game::eventType::game_gui_open);
+	if (gui_menu.visible) {
+		gui_menu.draw_ptr(player_data, unique_data);
 	}
-
-	old_visibility = visibility;
-}
-
-bool jactorio::renderer::imgui_manager::get_window_visibility(guiWindow window) {
-	const auto index = static_cast<int>(window);
-	assert(index != -1);
-
-	return window_visibility[index];
-}
-
-// TODO get rid of this vvv, it is unsafe with how it erases types
-/**
- * Draws windows conditionally
- * @param gui_window
- * @param window_flags
- * @param params Parameters to pass to the window function after the window flags
- */
-template <typename ... ArgsT>
-void draw_window(jactorio::renderer::imgui_manager::guiWindow gui_window, const ImGuiWindowFlags window_flags,
-                 ArgsT& ... params) {
-	const int window_index = static_cast<int>(gui_window);
-	assert(window_index != -1);
-
-	// Window is hidden?
-	if (!window_visibility[window_index])
-		return;
-
-	const auto function_ptr = reinterpret_cast<void(*)(ImGuiWindowFlags, ArgsT ...)>
-		(windows[window_index]);
-
-	function_ptr(window_flags, params ...);
 }
 
 void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_data, game::Event_data& event) {
@@ -233,14 +177,14 @@ void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_dat
 	// ImGui::PushFont(font);
 	// ImGui::PopFont();
 
-	draw_window<game::Player_data&>(guiWindow::debug, 0, player_data);
+	draw_menu(gui::menu::debug_menu, player_data);
 	gui::debug_menu_logic(player_data);
 
 	// Draw gui for active entity
 	// Do not draw character and recipe menu while in an entity menu
 	auto* layer = player_data.get_activated_layer();
 	if (layer != nullptr) {
-		set_window_visibility(event, guiWindow::character, false);
+		gui::set_visible(gui::menu::character_menu, false);
 
 		// Get the top left corner for non top left multi tiles
 		if (layer->is_multi_tile() && !layer->is_multi_tile_top_left()) {
@@ -250,12 +194,8 @@ void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_dat
 		static_cast<const data::Entity*>(layer->prototype_data)->on_r_show_gui(player_data, layer);
 	}
 	else {
-		draw_window<game::Player_data&>(guiWindow::character, release_window_flags, player_data);
+		draw_menu(gui::menu::character_menu, player_data);
 	}
-
-	gui::crafting_queue(player_data);
-	gui::cursor_window(player_data);
-	gui::pickup_progressbar(player_data);
 
 	// Render
 	ImGui::Render();

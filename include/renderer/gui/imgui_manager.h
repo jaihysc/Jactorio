@@ -17,16 +17,6 @@ namespace jactorio::renderer::imgui_manager
 	// If true, ImGui has handled the a input event and thus should not be carried to down the layer
 	inline bool input_captured = false;
 
-	/**
-	 * Specifies gui window to draw
-	 */
-	enum class guiWindow
-	{
-		none = -1,
-
-		character = 0,
-		debug
-	};
 
 	struct Menu_data
 	{
@@ -52,9 +42,6 @@ namespace jactorio::renderer::imgui_manager
 	void show_error_prompt(const std::string& err_title, const std::string& err_message);
 
 	void setup(GLFWwindow* window);
-
-	void set_window_visibility(game::Event_data& event, guiWindow window, bool visibility);
-	bool get_window_visibility(guiWindow window);
 
 	void imgui_draw(game::Player_data& player_data, game::Event_data& event);
 
