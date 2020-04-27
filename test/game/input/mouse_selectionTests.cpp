@@ -53,22 +53,22 @@ namespace game
 		entity.placeable = true;
 
 		// Should set item's sprite at overlay layer at world position 0, 0
-		mouse_selection_.draw_overlay(player_data_, &entity, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, &entity, 0, 0, jactorio::data::Orientation::up);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
+			world_data_.get_tile(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data,
 			&entity_sprite
 		);
 
 		// Should clear last overlay at 0,0 Draw new at 1, 0
-		mouse_selection_.draw_overlay(player_data_, &entity, 1, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, &entity, 1, 0, jactorio::data::Orientation::up);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
+			world_data_.get_tile(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data,
 			nullptr
 		);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(1, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
+			world_data_.get_tile(1, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data,
 			&entity_sprite
 		);
@@ -85,9 +85,9 @@ namespace game
 		entity.placeable = false;
 
 		// Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not placeable
-		mouse_selection_.draw_overlay(player_data_, &entity, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, &entity, 0, 0, jactorio::data::Orientation::up);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
+			world_data_.get_tile(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
 			.prototype_data,
 			nullptr);
 	}
@@ -103,13 +103,13 @@ namespace game
 		entity.sprite    = &entity_sprite;
 		entity.placeable = false;
 
-		world_data_.get_tile_world_coords(0, 0)
+		world_data_.get_tile(0, 0)
 		           ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).prototype_data = &entity;
 
 		// Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not placeable
-		mouse_selection_.draw_overlay(player_data_, &entity, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, &entity, 0, 0, jactorio::data::Orientation::up);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
+			world_data_.get_tile(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
 			.prototype_data,
 			cursor_sprite_);
 	}
@@ -119,22 +119,22 @@ namespace game
 		// CLear last and draw nothing new
 
 		// Should set item's sprite at overlay layer at world position 0, 0
-		mouse_selection_.draw_overlay(player_data_, nullptr, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, nullptr, 0, 0, jactorio::data::Orientation::up);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
+			world_data_.get_tile(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data,
 			nullptr
 		);
 
 		// Should clear last overlay at 0,0 Draw new at 1, 0
-		mouse_selection_.draw_overlay(player_data_, nullptr, 1, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, nullptr, 1, 0, jactorio::data::Orientation::up);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
+			world_data_.get_tile(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data,
 			nullptr
 		);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(1, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
+			world_data_.get_tile(1, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 			prototype_data,
 			nullptr
 		);
@@ -152,13 +152,13 @@ namespace game
 		entity.sprite = &entity_sprite;
 
 
-		world_data_.get_tile_world_coords(0, 0)
+		world_data_.get_tile(0, 0)
 		           ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).prototype_data = &entity;
 
 
-		mouse_selection_.draw_overlay(player_data_, nullptr, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, nullptr, 0, 0, jactorio::data::Orientation::up);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
+			world_data_.get_tile(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
 			.prototype_data,
 			cursor_sprite_);
 	}
@@ -175,13 +175,13 @@ namespace game
 		entity.placeable = false;
 
 
-		world_data_.get_tile_world_coords(0, 0)
+		world_data_.get_tile(0, 0)
 		           ->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &entity;
 
 
-		mouse_selection_.draw_overlay(player_data_, nullptr, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, nullptr, 0, 0, jactorio::data::Orientation::up);
 		EXPECT_EQ(
-			world_data_.get_tile_world_coords(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
+			world_data_.get_tile(0, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay)
 			.prototype_data,
 			cursor_sprite_);
 	}
@@ -196,7 +196,7 @@ namespace game
 
 		jactorio::game::Mouse_selection mouse_selection{};
 
-		mouse_selection.draw_overlay(player_data, nullptr, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection.draw_overlay(player_data, nullptr, 0, 0, jactorio::data::Orientation::up);
 	}
 
 	TEST_F(MouseSelectionOverlayTest, DrawOverlay3x3) {
@@ -210,12 +210,12 @@ namespace game
 		jactorio::data::Sprite drill_sprite{};
 		drill.sprite = &drill_sprite;
 
-		mouse_selection_.draw_overlay(player_data_, &drill, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, &drill, 0, 0, jactorio::data::Orientation::up);
 
 		for (int y = 0; y < 3; ++y) {
 			for (int x = 0; x < 3; ++x) {
 				const jactorio::data::Prototype_base* data =
-					world_data_.get_tile_world_coords(x, y)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
+					world_data_.get_tile(x, y)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 					            prototype_data;
 				EXPECT_EQ(data, &drill_sprite);
 			}
@@ -223,12 +223,12 @@ namespace game
 
 
 		// Removing the drawn overlay, no resource or entity data so no cursor is drawn
-		mouse_selection_.draw_overlay(player_data_, nullptr, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, nullptr, 0, 0, jactorio::data::Orientation::up);
 
 		for (int y = 0; y < 3; ++y) {
 			for (int x = 0; x < 3; ++x) {
 				const jactorio::data::Prototype_base* data =
-					world_data_.get_tile_world_coords(x, y)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
+					world_data_.get_tile(x, y)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay).
 					            prototype_data;
 				EXPECT_EQ(data, nullptr);
 			}
@@ -236,12 +236,12 @@ namespace game
 
 
 		// Drawing a cursor should be 1 x 1
-		world_data_.get_tile_world_coords(0, 0) // Create an entity
+		world_data_.get_tile(0, 0) // Create an entity
 		           ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).prototype_data = &drill;
 
 		// Should not touch this
 		jactorio::game::Chunk_tile_layer& untouched =
-			world_data_.get_tile_world_coords(1, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay);
+			world_data_.get_tile(1, 0)->get_layer(jactorio::game::Chunk_tile::chunkLayer::overlay);
 		untouched.prototype_data = &drill;
 
 
@@ -249,7 +249,7 @@ namespace game
 		                              nullptr,
 		                              0,
 		                              0,
-		                              jactorio::data::placementOrientation::up);
+		                              jactorio::data::Orientation::up);
 
 		EXPECT_EQ(untouched.prototype_data, &drill);
 	}
@@ -262,9 +262,9 @@ namespace game
 
 			mutable bool r_get_sprite_called = false;
 
-			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::placementOrientation,
+			J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(jactorio::data::Orientation,
 			                                                                    jactorio::game::World_data&,
-			                                                                    std::pair<int, int>) const override {
+			                                                                    const jactorio::game::World_data::world_pair&) const override {
 				return {16, 17};
 			}
 
@@ -274,14 +274,14 @@ namespace game
 
 
 			void on_build(jactorio::game::World_data&,
-			              std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>,
+			              const jactorio::game::World_data::world_pair&,
 			              jactorio::game::Chunk_tile_layer&,
 			              uint16_t,
-			              jactorio::data::placementOrientation) const override {
+			              jactorio::data::Orientation) const override {
 			}
 
 			void on_remove(jactorio::game::World_data&,
-			               std::pair<int, int>,
+                           const jactorio::game::World_data::world_pair&,
 			               jactorio::game::Chunk_tile_layer&) const override {
 			}
 
@@ -296,7 +296,7 @@ namespace game
 		entity.rotatable = true;
 		entity.placeable = true;
 
-		mouse_selection_.draw_overlay(player_data_, &entity, 0, 0, jactorio::data::placementOrientation::up);
+		mouse_selection_.draw_overlay(player_data_, &entity, 0, 0, jactorio::data::Orientation::up);
 
 		// On_r_get_sprite should have been called 
 		EXPECT_TRUE(entity.r_get_sprite_called);

@@ -15,7 +15,7 @@
 #define ITEM_INSERT_FUNCTION(name_)\
 	bool jactorio::game::item_logistics::name_(const jactorio::data::item_stack& item_stack,\
 											   jactorio::data::Unique_data_base& unique_data,\
-											   const jactorio::data::placementOrientation orientation)
+											   const jactorio::data::Orientation orientation)
 
 ITEM_INSERT_FUNCTION(insert_container_entity) {
 	auto& container_data = static_cast<data::Container_entity_data&>(unique_data);
@@ -34,16 +34,16 @@ ITEM_INSERT_FUNCTION(insert_transport_belt) {
 	bool use_line_left = false;
 	// Decide whether to add item to left side or right side
 	switch (line_data.line_segment.direction) {
-	case Transport_line_segment::moveDir::up:
+	case data::Orientation::up:
 		switch (orientation) {
-		case data::placementOrientation::up:
+		case data::Orientation::up:
 			break;
-		case data::placementOrientation::right:
+		case data::Orientation::right:
 			use_line_left = true;
 			break;
-		case data::placementOrientation::down:
+		case data::Orientation::down:
 			return false;
-		case data::placementOrientation::left:
+		case data::Orientation::left:
 			break;
 
 		default:
@@ -52,16 +52,16 @@ ITEM_INSERT_FUNCTION(insert_transport_belt) {
 		}
 		break;
 
-	case Transport_line_segment::moveDir::right:
+	case data::Orientation::right:
 		switch (orientation) {
-		case data::placementOrientation::up:
+		case data::Orientation::up:
 			break;
-		case data::placementOrientation::right:
+		case data::Orientation::right:
 			break;
-		case data::placementOrientation::down:
+		case data::Orientation::down:
 			use_line_left = true;
 			break;
-		case data::placementOrientation::left:
+		case data::Orientation::left:
 			return false;
 
 		default:
@@ -70,15 +70,15 @@ ITEM_INSERT_FUNCTION(insert_transport_belt) {
 		}
 		break;
 
-	case Transport_line_segment::moveDir::down:
+	case data::Orientation::down:
 		switch (orientation) {
-		case data::placementOrientation::up:
+		case data::Orientation::up:
 			return false;
-		case data::placementOrientation::right:
+		case data::Orientation::right:
 			break;
-		case data::placementOrientation::down:
+		case data::Orientation::down:
 			break;
-		case data::placementOrientation::left:
+		case data::Orientation::left:
 			use_line_left = true;
 			break;
 
@@ -88,16 +88,16 @@ ITEM_INSERT_FUNCTION(insert_transport_belt) {
 		}
 		break;
 
-	case Transport_line_segment::moveDir::left:
+	case data::Orientation::left:
 		switch (orientation) {
-		case data::placementOrientation::up:
+		case data::Orientation::up:
 			use_line_left = true;
 			break;
-		case data::placementOrientation::right:
+		case data::Orientation::right:
 			return false;
-		case data::placementOrientation::down:
+		case data::Orientation::down:
 			break;
-		case data::placementOrientation::left:
+		case data::Orientation::left:
 			break;
 
 		default:
@@ -123,7 +123,7 @@ jactorio::game::Item_insert_destination::insert_func jactorio::game::item_logist
 	const World_data::world_coord world_x, const World_data::world_coord world_y) {
 
 	const data::Entity* entity =
-		world_data.get_tile_world_coords(world_x, world_y)
+		world_data.get_tile(world_x, world_y)
 		          ->get_entity_prototype(Chunk_tile::chunkLayer::entity);
 
 	if (!entity)

@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "jactorio.h"
-#include "data/prototype/placement_orientation.h"
+#include "data/prototype/orientation.h"
 
 namespace jactorio
 {
@@ -50,7 +50,7 @@ namespace jactorio::game
 		///
 		/// \brief Draws selection box over entity & no item selected. | With item selected: draws ghost of entity
 		void draw_overlay(Player_data& player_data, data::Entity* selected_entity, int world_x, int world_y,
-		                  data::placementOrientation
+		                  data::Orientation
 		                  placement_orientation);
 	};
 

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "data/prototype/orientation.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::data
@@ -30,16 +31,16 @@ namespace jactorio::data
 		game::World_data::world_pair down;
 		game::World_data::world_pair left;
 
-		J_NODISCARD const game::World_data::world_pair& get(const placementOrientation orientation) const {
+		J_NODISCARD const game::World_data::world_pair& get(const Orientation orientation) const {
 			switch (orientation) {
 
-			case placementOrientation::up:
+			case Orientation::up:
 				return up;
-			case placementOrientation::right:
+			case Orientation::right:
 				return right;
-			case placementOrientation::down:
+			case Orientation::down:
 				return down;
-			case placementOrientation::left:
+			case Orientation::left:
 				return left;
 
 			default:

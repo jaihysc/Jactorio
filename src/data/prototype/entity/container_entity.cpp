@@ -18,9 +18,11 @@ jactorio::data::Unique_data_base* jactorio::data::Container_entity::copy_unique_
 }
 
 
-void jactorio::data::Container_entity::on_build(game::World_data& world_data, std::pair<int, int> world_coords,
-                                                game::Chunk_tile_layer& tile_layer, uint16_t frame,
-                                                placementOrientation orientation) const {
+void jactorio::data::Container_entity::on_build(game::World_data&,
+												const game::World_data::world_pair&,
+                                                game::Chunk_tile_layer& tile_layer,
+                                                uint16_t,
+                                                Orientation) const {
 	tile_layer.unique_data = new Container_entity_data(inventory_size);
 }
 

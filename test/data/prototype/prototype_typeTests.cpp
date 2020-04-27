@@ -4,8 +4,8 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/interface/rotatable.h"
 #include "data/prototype/prototype_type.h"
+#include "data/prototype/interface/rotatable.h"
 
 namespace data
 {
@@ -38,19 +38,19 @@ namespace data
 			{7, 8}
 		};
 
-		const auto up = tile.get(jactorio::data::placementOrientation::up);
+		const auto up = tile.get(jactorio::data::Orientation::up);
 		EXPECT_EQ(up.first, 1);
 		EXPECT_EQ(up.second, 2);
 
-		const auto right = tile.get(jactorio::data::placementOrientation::right);
+		const auto right = tile.get(jactorio::data::Orientation::right);
 		EXPECT_EQ(right.first, 3);
 		EXPECT_EQ(right.second, 4);
 
-		const auto down = tile.get(jactorio::data::placementOrientation::down);
+		const auto down = tile.get(jactorio::data::Orientation::down);
 		EXPECT_EQ(down.first, 5);
 		EXPECT_EQ(down.second, 6);
 
-		const auto left = tile.get(jactorio::data::placementOrientation::left);
+		const auto left = tile.get(jactorio::data::Orientation::left);
 		EXPECT_EQ(left.first, 7);
 		EXPECT_EQ(left.second, 8);
 	}

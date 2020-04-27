@@ -104,7 +104,7 @@ namespace game
 		// Place an entity at various locations, checking that it does not place on invalid tiles
 		const auto entity = std::make_unique<jactorio::data::Container_entity>();
 
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 		EXPECT_EQ(jactorio::game::place_entity_at_coords(world_data_, entity.get(), 0, 0), true);
 
@@ -121,7 +121,7 @@ namespace game
 		const auto entity = std::make_unique<jactorio::data::Container_entity>();
 
 		// Invalid, placing on a base tile which is water
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 		EXPECT_EQ(jactorio::game::place_entity_at_coords(world_data_, entity.get(), 1, 0), false);
 		EXPECT_EQ(
@@ -137,7 +137,7 @@ namespace game
 		const auto entity = std::make_unique<jactorio::data::Container_entity>();
 
 
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 		// Place entity, taken from the test above (place_entity_1x1_valid)
 		{
@@ -162,7 +162,7 @@ namespace game
 
 	TEST_F(PlacementControllerTest, RemoveEntity1x1Invalid) {
 		// Removing a location with nullptr entity and sprite does nothing, returns false to indicate nothing was removed
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 		// Invalid Removal
 		EXPECT_FALSE(jactorio::game::place_entity_at_coords(world_data_, nullptr, 0, 0));
@@ -182,7 +182,7 @@ namespace game
 		entity->tile_width  = 3;
 		entity->tile_height = 3;
 
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 
 		EXPECT_TRUE(jactorio::game::place_entity_at_coords(world_data_, entity.get(), 5, 5));
@@ -214,7 +214,7 @@ namespace game
 		entity->tile_width  = 3;
 		entity->tile_height = 3;
 
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 
 		EXPECT_FALSE(jactorio::game::place_entity_at_coords(world_data_, entity.get(), 4, 5));
@@ -239,7 +239,7 @@ namespace game
 		entity->tile_width  = 3;
 		entity->tile_height = 3;
 
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 
 		EXPECT_FALSE(jactorio::game::place_entity_at_coords(world_data_, entity.get(), 9, 2));
@@ -274,7 +274,7 @@ namespace game
 		entity->tile_width  = 3;
 		entity->tile_height = 3;
 
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 
 		EXPECT_TRUE(jactorio::game::place_entity_at_coords(world_data_, entity.get(), 5, 5));
@@ -298,7 +298,7 @@ namespace game
 		entity->tile_width  = 3;
 		entity->tile_height = 3;
 
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 
 		EXPECT_TRUE(jactorio::game::place_entity_at_coords(world_data_, entity.get(), 5, 5));
@@ -326,7 +326,7 @@ namespace game
 		entity->tile_width  = 3;
 		entity->tile_height = 4;
 
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 
 		EXPECT_TRUE(jactorio::game::place_entity_at_coords(world_data_, entity.get(), 9, 10));
@@ -368,7 +368,7 @@ namespace game
 		entity->tile_width  = 3;
 		entity->tile_height = 4;
 
-		const auto chunk = world_data_.get_chunk(0, 0);
+		const auto chunk = world_data_.get_chunk_c(0, 0);
 
 
 		EXPECT_TRUE(jactorio::game::place_entity_at_coords(world_data_, entity.get(), 9, 10));
@@ -387,7 +387,7 @@ namespace game
 
 	TEST_F(PlacementControllerTest, PlaceSprite3x3) {
 		const auto sprite = std::make_unique<jactorio::data::Sprite>();
-		const auto chunk  = world_data_.get_chunk(0, 0);
+		const auto chunk  = world_data_.get_chunk_c(0, 0);
 
 
 		place_sprite_at_coords(
@@ -410,7 +410,7 @@ namespace game
 
 	TEST_F(PlacementControllerTest, RemoveSprite3x3) {
 		const auto sprite = std::make_unique<jactorio::data::Sprite>();
-		const auto chunk  = world_data_.get_chunk(0, 0);
+		const auto chunk  = world_data_.get_chunk_c(0, 0);
 
 
 		place_sprite_at_coords(

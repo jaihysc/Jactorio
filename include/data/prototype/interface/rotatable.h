@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <utility>
 
-#include "data/prototype/placement_orientation.h"
+#include "data/prototype/orientation.h"
 #include "data/prototype/sprite.h"
 #include "game/world/world_data.h"
 
@@ -41,9 +41,9 @@ namespace jactorio::data
 		///
 		/// \brief Maps a placementOrientation to a <set, frame>
 		/// Chunk_tile_layer* are the neighbors of the destination Chunk_tile_layer
-		J_NODISCARD virtual std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation,
+		J_NODISCARD virtual std::pair<uint16_t, uint16_t> map_placement_orientation(Orientation orientation,
 		                                                                            game::World_data& world_data,
-		                                                                            std::pair<int, int> world_coords) const = 0;
+		                                                                            const game::World_data::world_pair& world_coords) const = 0;
 	};
 }
 

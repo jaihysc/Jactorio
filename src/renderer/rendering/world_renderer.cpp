@@ -206,18 +206,18 @@ void prepare_transport_segment_data(jactorio::renderer::Renderer_layer* layer,
 	double multiplier = 1;  // Either 1 or -1 to add or subtract
 
 	switch (line_segment->direction) {
-	case Transport_line_segment::moveDir::up:
+	case jactorio::data::Orientation::up:
 		target_offset = &offset_y;
 		break;
-	case Transport_line_segment::moveDir::right:
+	case jactorio::data::Orientation::right:
 		target_offset = &offset_x;
 		multiplier = -1;
 		break;
-	case Transport_line_segment::moveDir::down:
+	case jactorio::data::Orientation::down:
 		target_offset = &offset_y;
 		multiplier = -1;
 		break;
-	case Transport_line_segment::moveDir::left:
+	case jactorio::data::Orientation::left:
 		target_offset = &offset_x;
 		break;
 
@@ -280,87 +280,87 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 			// Left
 			// The offsets for straight are always applied to bend left and right
 			switch (line_segment->direction) {
-			case jactorio::game::Transport_line_segment::moveDir::up:
+			case jactorio::data::Orientation::up:
 				offset_x += jactorio::game::line_up_l_item_offset_x;
 				break;
-			case jactorio::game::Transport_line_segment::moveDir::right:
+			case jactorio::data::Orientation::right:
 				offset_y += jactorio::game::line_right_l_item_offset_y;
 				break;
-			case jactorio::game::Transport_line_segment::moveDir::down:
+			case jactorio::data::Orientation::down:
 				offset_x += jactorio::game::line_down_l_item_offset_x;
 				break;
-			case jactorio::game::Transport_line_segment::moveDir::left:
+			case jactorio::data::Orientation::left:
 				offset_y += jactorio::game::line_left_l_item_offset_y;
 				break;
 			}
 
 			// Left side
 			switch (line_segment->termination_type) {
-			case jactorio::game::Transport_line_segment::terminationType::straight:
+			case jactorio::game::Transport_line_segment::TerminationType::straight:
 				switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::moveDir::up:
+				case jactorio::data::Orientation::up:
 					offset_y -= jactorio::game::line_left_up_straight_item_offset;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::right:
+				case jactorio::data::Orientation::right:
 					offset_x += jactorio::game::line_right_down_straight_item_offset;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::down:
+				case jactorio::data::Orientation::down:
 					offset_y += jactorio::game::line_right_down_straight_item_offset;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::left:
+				case jactorio::data::Orientation::left:
 					offset_x -= jactorio::game::line_left_up_straight_item_offset;
 					break;
 				}
 				break;
 
-			case jactorio::game::Transport_line_segment::terminationType::bend_left:
+			case jactorio::game::Transport_line_segment::TerminationType::bend_left:
 				switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::moveDir::up:
+				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::line_up_bl_l_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::right:
+				case jactorio::data::Orientation::right:
 					offset_x += jactorio::game::line_right_bl_l_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::down:
+				case jactorio::data::Orientation::down:
 					offset_y += jactorio::game::line_down_bl_l_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::left:
+				case jactorio::data::Orientation::left:
 					offset_x += jactorio::game::line_left_bl_l_item_offset_x;
 					break;
 				}
 				break;
 
-			case jactorio::game::Transport_line_segment::terminationType::bend_right:
+			case jactorio::game::Transport_line_segment::TerminationType::bend_right:
 				switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::moveDir::up:
+				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::line_up_br_l_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::right:
+				case jactorio::data::Orientation::right:
 					offset_x += jactorio::game::line_right_br_l_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::down:
+				case jactorio::data::Orientation::down:
 					offset_y += jactorio::game::line_down_br_l_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::left:
+				case jactorio::data::Orientation::left:
 					offset_x += jactorio::game::line_left_br_l_item_offset_x;
 					break;
 				}
 				break;
 
 				// Side insertion
-			case jactorio::game::Transport_line_segment::terminationType::right_only:
-			case jactorio::game::Transport_line_segment::terminationType::left_only:
+			case jactorio::game::Transport_line_segment::TerminationType::right_only:
+			case jactorio::game::Transport_line_segment::TerminationType::left_only:
 				switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::moveDir::up:
+				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::line_up_single_side_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::right:
+				case jactorio::data::Orientation::right:
 					offset_x += jactorio::game::line_right_single_side_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::down:
+				case jactorio::data::Orientation::down:
 					offset_y += jactorio::game::line_down_single_side_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::left:
+				case jactorio::data::Orientation::left:
 					offset_x += jactorio::game::line_left_single_side_item_offset_x;
 					break;
 				}
@@ -376,16 +376,16 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 
 			// The offsets for straight are always applied to bend left and right
 			switch (line_segment->direction) {
-			case jactorio::game::Transport_line_segment::moveDir::up:
+			case jactorio::data::Orientation::up:
 				offset_x += jactorio::game::line_up_r_item_offset_x;
 				break;
-			case jactorio::game::Transport_line_segment::moveDir::right:
+			case jactorio::data::Orientation::right:
 				offset_y += jactorio::game::line_right_r_item_offset_y;
 				break;
-			case jactorio::game::Transport_line_segment::moveDir::down:
+			case jactorio::data::Orientation::down:
 				offset_x += jactorio::game::line_down_r_item_offset_x;
 				break;
-			case jactorio::game::Transport_line_segment::moveDir::left:
+			case jactorio::data::Orientation::left:
 				offset_y += jactorio::game::line_left_r_item_offset_y;
 				break;
 			}
@@ -393,71 +393,71 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
 
 			// Right side
 			switch (line_segment->termination_type) {
-			case jactorio::game::Transport_line_segment::terminationType::straight:
+			case jactorio::game::Transport_line_segment::TerminationType::straight:
 				switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::moveDir::up:
+				case jactorio::data::Orientation::up:
 					offset_y -= jactorio::game::line_left_up_straight_item_offset;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::right:
+				case jactorio::data::Orientation::right:
 					offset_x += jactorio::game::line_right_down_straight_item_offset;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::down:
+				case jactorio::data::Orientation::down:
 					offset_y += jactorio::game::line_right_down_straight_item_offset;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::left:
+				case jactorio::data::Orientation::left:
 					offset_x -= jactorio::game::line_left_up_straight_item_offset;
 					break;
 				}
 				break;
 
-			case jactorio::game::Transport_line_segment::terminationType::bend_left:
+			case jactorio::game::Transport_line_segment::TerminationType::bend_left:
 				switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::moveDir::up:
+				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::line_up_bl_r_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::right:
+				case jactorio::data::Orientation::right:
 					offset_x += jactorio::game::line_right_bl_r_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::down:
+				case jactorio::data::Orientation::down:
 					offset_y += jactorio::game::line_down_bl_r_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::left:
+				case jactorio::data::Orientation::left:
 					offset_x += jactorio::game::line_left_bl_r_item_offset_x;
 					break;
 				}
 				break;
 
-			case jactorio::game::Transport_line_segment::terminationType::bend_right:
+			case jactorio::game::Transport_line_segment::TerminationType::bend_right:
 				switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::moveDir::up:
+				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::line_up_br_r_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::right:
+				case jactorio::data::Orientation::right:
 					offset_x += jactorio::game::line_right_br_r_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::down:
+				case jactorio::data::Orientation::down:
 					offset_y += jactorio::game::line_down_br_r_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::left:
+				case jactorio::data::Orientation::left:
 					offset_x += jactorio::game::line_left_br_r_item_offset_x;
 					break;
 				}
 				break;
 
 				// Side insertion
-			case jactorio::game::Transport_line_segment::terminationType::right_only:
-			case jactorio::game::Transport_line_segment::terminationType::left_only:
+			case jactorio::game::Transport_line_segment::TerminationType::right_only:
+			case jactorio::game::Transport_line_segment::TerminationType::left_only:
 				switch (line_segment->direction) {
-				case jactorio::game::Transport_line_segment::moveDir::up:
+				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::line_up_single_side_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::right:
+				case jactorio::data::Orientation::right:
 					offset_x += jactorio::game::line_right_single_side_item_offset_x;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::down:
+				case jactorio::data::Orientation::down:
 					offset_y += jactorio::game::line_down_single_side_item_offset_y;
 					break;
-				case jactorio::game::Transport_line_segment::moveDir::left:
+				case jactorio::data::Orientation::left:
 					offset_x += jactorio::game::line_left_single_side_item_offset_x;
 					break;
 				}
@@ -521,7 +521,7 @@ void jactorio::renderer::world_renderer::prepare_chunk_draw_data(const game::Wor
 			const int chunk_x_offset = chunk_x * chunk_width + render_offset_x;
 
 			std::lock_guard<std::mutex> guard{world_data.world_data_mutex};
-			const game::Chunk* chunk = world_data.get_chunk(chunk_start_x + chunk_x,
+			const game::Chunk* chunk = world_data.get_chunk_c(chunk_start_x + chunk_x,
 			                                                chunk_start_y + chunk_y);
 			// Generate chunk if non existent
 			if (chunk == nullptr) {

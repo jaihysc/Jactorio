@@ -75,7 +75,7 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 				default:
 					assert(false);  // Missing case label
 
-				case game::Transport_line_segment::moveDir::up:
+				case data::Orientation::up:
 					pos_x = l_struct.position_x;
 					pos_y = l_struct.position_y;
 					segment_len_x = 1;
@@ -83,7 +83,7 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 
 					direction_sprite = sprite_up;
 					break;
-				case game::Transport_line_segment::moveDir::right:
+				case data::Orientation::right:
 					pos_x = l_struct.position_x - line_segment->segment_length + 1;
 					pos_y = l_struct.position_y;
 					segment_len_x = line_segment->segment_length;
@@ -91,7 +91,7 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 
 					direction_sprite = sprite_right;
 					break;
-				case game::Transport_line_segment::moveDir::down:
+				case data::Orientation::down:
 					pos_x = l_struct.position_x;
 					pos_y = l_struct.position_y - line_segment->segment_length + 1;
 					segment_len_x = 1;
@@ -99,7 +99,7 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 
 					direction_sprite = sprite_down;
 					break;
-				case game::Transport_line_segment::moveDir::left:
+				case data::Orientation::left:
 					pos_x = l_struct.position_x;
 					pos_y = l_struct.position_y;
 					segment_len_x = line_segment->segment_length;
@@ -302,19 +302,19 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 		{
 			std::string s;
 			switch (segment.termination_type) {
-			case game::Transport_line_segment::terminationType::straight:
+			case game::Transport_line_segment::TerminationType::straight:
 				s = "Straight";
 				break;
-			case game::Transport_line_segment::terminationType::bend_left:
+			case game::Transport_line_segment::TerminationType::bend_left:
 				s = "Bend left";
 				break;
-			case game::Transport_line_segment::terminationType::bend_right:
+			case game::Transport_line_segment::TerminationType::bend_right:
 				s = "Bend right";
 				break;
-			case game::Transport_line_segment::terminationType::left_only:
+			case game::Transport_line_segment::TerminationType::left_only:
 				s = "Left side";
 				break;
-			case game::Transport_line_segment::terminationType::right_only:
+			case game::Transport_line_segment::TerminationType::right_only:
 				s = "Right side";
 				break;
 			default:
@@ -327,16 +327,16 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 		{
 			std::string s;
 			switch (segment.direction) {
-			case game::Transport_line_segment::moveDir::up:
+			case data::Orientation::up:
 				s = "Up";
 				break;
-			case game::Transport_line_segment::moveDir::right:
+			case data::Orientation::right:
 				s = "Right";
 				break;
-			case game::Transport_line_segment::moveDir::down:
+			case data::Orientation::down:
 				s = "Down";
 				break;
-			case game::Transport_line_segment::moveDir::left:
+			case data::Orientation::left:
 				s = "Left";
 				break;
 			default:

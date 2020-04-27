@@ -33,7 +33,7 @@ double jactorio::game::Mouse_selection::get_cursor_y() {
 
 
 void jactorio::game::Mouse_selection::draw_cursor_overlay(Player_data& player_data) {
-	auto* last_tile = player_data.get_player_world().get_tile_world_coords(last_tile_pos_.first,
+	auto* last_tile = player_data.get_player_world().get_tile(last_tile_pos_.first,
 	                                                                       last_tile_pos_.second);
 	if (last_tile == nullptr)
 		return;
@@ -51,12 +51,12 @@ void jactorio::game::Mouse_selection::draw_cursor_overlay(Player_data& player_da
 
 void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, data::Entity* const selected_entity,
                                                    const int world_x, const int world_y,
-                                                   const data::placementOrientation placement_orientation) {
+                                                   const data::Orientation placement_orientation) {
 	World_data& world_data = player_data.get_player_world();
 
-	auto* last_tile = world_data.get_tile_world_coords(last_tile_pos_.first,
+	auto* last_tile = world_data.get_tile(last_tile_pos_.first,
 	                                                   last_tile_pos_.second);
-	auto* tile = world_data.get_tile_world_coords(world_x, world_y);
+	auto* tile = world_data.get_tile(world_x, world_y);
 
 
 	// Clear last overlay

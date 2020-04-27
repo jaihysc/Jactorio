@@ -43,7 +43,7 @@ void generate_chunk(jactorio::game::World_data& world_data,
 
 
 	// Allocate new tiles if chunk has not been generated yet
-	const auto* chunk = world_data.get_chunk(chunk_x, chunk_y);
+	const auto* chunk = world_data.get_chunk_c(chunk_x, chunk_y);
 	game::Chunk_tile* tiles;
 
 	if (chunk == nullptr)

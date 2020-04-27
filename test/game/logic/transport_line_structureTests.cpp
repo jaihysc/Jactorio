@@ -20,8 +20,8 @@ namespace game
 		jactorio::game::World_data world_data_{};
 
 		jactorio::game::Transport_line_segment* segment_ = 
-			new jactorio::game::Transport_line_segment(jactorio::game::Transport_line_segment::moveDir::left,
-													   jactorio::game::Transport_line_segment::terminationType::straight,
+			new jactorio::game::Transport_line_segment(jactorio::data::Orientation::left,
+													   jactorio::game::Transport_line_segment::TerminationType::straight,
 													   2);
 
 		void SetUp() override {
@@ -132,8 +132,8 @@ namespace game
 
 	TEST_F(TransportLineStructureTest, AppendItem) {
 		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5
 		);
 
@@ -156,8 +156,8 @@ namespace game
 		// whether or not it can be appended
 
 		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5
 		);
 
@@ -175,8 +175,8 @@ namespace game
 		// Insert INSERTS an item at an arbitrary position offset from the beginning of the transport line
 
 		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5
 		);
 
@@ -205,8 +205,8 @@ namespace game
 	TEST_F(TransportLineStructureTest, TryInsertItem) {
 
 		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5
 		);
 
@@ -239,8 +239,8 @@ namespace game
 	TEST_F(TransportLineStructureTest, BackItemDistanceLeft) {
 
 		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5
 		);
 
@@ -270,8 +270,8 @@ namespace game
 	TEST_F(TransportLineStructureTest, BackItemDistanceRight) {
 
 		auto line_segment = std::make_unique<jactorio::game::Transport_line_segment>(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5
 		);
 

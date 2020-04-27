@@ -41,8 +41,8 @@ namespace game
 		EXPECT_EQ(added_chunk->get_position().second, 1);
 
 		// Should not initialize other chunks
-		EXPECT_EQ(world_data_.get_chunk(-1, -1), nullptr);
-		EXPECT_EQ(world_data_.get_chunk(1, 1), nullptr);
+		EXPECT_EQ(world_data_.get_chunk_c(-1, -1), nullptr);
+		EXPECT_EQ(world_data_.get_chunk_c(1, 1), nullptr);
 	}
 
 	TEST_F(WorldDataTest, WorldAddChunkNegative) {
@@ -58,8 +58,8 @@ namespace game
 
 
 		// Should not initialize other chunks
-		EXPECT_EQ(world_data_.get_chunk(-1, -1), nullptr);
-		EXPECT_EQ(world_data_.get_chunk(1, 1), nullptr);
+		EXPECT_EQ(world_data_.get_chunk_c(-1, -1), nullptr);
+		EXPECT_EQ(world_data_.get_chunk_c(1, 1), nullptr);
 	}
 
 
@@ -83,17 +83,18 @@ namespace game
 		EXPECT_EQ(added_chunk2, chunk2);
 	}
 
-	TEST_F(WorldDataTest, WorldGetChunk) {
+	TEST_F(WorldDataTest, WorldGetChunkChunkCoords) {
 		auto* chunk = new jactorio::game::Chunk{5, 1};
 		const auto* added_chunk = world_data_.add_chunk(chunk);
 
-		EXPECT_EQ(world_data_.get_chunk(0, 0), nullptr);
-		EXPECT_EQ(world_data_.get_chunk(5, 1), added_chunk);
-		EXPECT_EQ(world_data_.get_chunk(5, 1), chunk);
+		EXPECT_EQ(world_data_.get_chunk_c(0, 0), nullptr);
+		EXPECT_EQ(world_data_.get_chunk_c(5, 1), added_chunk);
+		EXPECT_EQ(world_data_.get_chunk_c(5, 1), chunk);
 	}
 
 	TEST_F(WorldDataTest, GetTileWorldCoords) {
-	  constexpr auto chunk_width = jactorio::game::World_data::chunk_width;
+		// Tests both overloads int, int and std::pair<int, int>
+		constexpr auto chunk_width = jactorio::game::World_data::chunk_width;
 		const auto chunk_tile = jactorio::game::Chunk_tile();
 
 		// World coords 0, 0 - Chunk 0 0, position 0 0
@@ -102,8 +103,11 @@ namespace game
 			tiles[0] = chunk_tile;
 			world_data_.add_chunk(new jactorio::game::Chunk(0, 0, tiles));
 
-			EXPECT_EQ(world_data_.get_tile_world_coords(0, 0), &tiles[0]);
-			EXPECT_NE(world_data_.get_tile_world_coords(0, 1), &tiles[0]);
+			EXPECT_EQ(world_data_.get_tile(0, 0), &tiles[0]);
+			EXPECT_NE(world_data_.get_tile(0, 1), &tiles[0]);
+
+			EXPECT_EQ(world_data_.get_tile({0, 0}), &tiles[0]);
+			EXPECT_NE(world_data_.get_tile({0, 1}), &tiles[0]);
 		}
 		world_data_.clear_chunk_data();
 
@@ -113,8 +117,11 @@ namespace game
 			tiles[33] = chunk_tile;
 			world_data_.add_chunk(new jactorio::game::Chunk(-1, -1, tiles));
 
-			EXPECT_EQ(world_data_.get_tile_world_coords(-31, -31), &tiles[33]);
-			EXPECT_NE(world_data_.get_tile_world_coords(-31, -32), &tiles[33]);
+			EXPECT_EQ(world_data_.get_tile(-31, -31), &tiles[33]);
+			EXPECT_NE(world_data_.get_tile(-31, -32), &tiles[33]);
+
+			EXPECT_EQ(world_data_.get_tile({-31, -31}), &tiles[33]);
+			EXPECT_NE(world_data_.get_tile({-31, -32}), &tiles[33]);
 		}
 		world_data_.clear_chunk_data();
 
@@ -124,8 +131,11 @@ namespace game
 			tiles[0] = chunk_tile;
 			world_data_.add_chunk(new jactorio::game::Chunk(-1, 0, tiles));
 
-			EXPECT_EQ(world_data_.get_tile_world_coords(-32, 0), &tiles[0]);
-			EXPECT_NE(world_data_.get_tile_world_coords(-31, 0), &tiles[0]);
+			EXPECT_EQ(world_data_.get_tile(-32, 0), &tiles[0]);
+			EXPECT_NE(world_data_.get_tile(-31, 0), &tiles[0]);
+
+			EXPECT_EQ(world_data_.get_tile({-32, 0}), &tiles[0]);
+			EXPECT_NE(world_data_.get_tile({-31, 0}), &tiles[0]);
 		}
 
 	}
@@ -133,12 +143,16 @@ namespace game
 	TEST_F(WorldDataTest, GetChunkWorldCoords) {
 		{
 			const auto* chunk = world_data_.add_chunk(new jactorio::game::Chunk(0, 0));
-			EXPECT_EQ(world_data_.get_chunk_world_coords(31, 31), chunk);
+			EXPECT_EQ(world_data_.get_chunk(31, 31), chunk);
+
+			EXPECT_EQ(world_data_.get_chunk({31, 31}), chunk);
 		}
 
 		{
 			const auto* chunk = world_data_.add_chunk(new jactorio::game::Chunk(-1, 0));
-			EXPECT_EQ(world_data_.get_chunk_world_coords(-1, 0), chunk);
+			EXPECT_EQ(world_data_.get_chunk(-1, 0), chunk);
+
+			EXPECT_EQ(world_data_.get_chunk({-1, 0}), chunk);
 		}
 	}
 
@@ -147,12 +161,12 @@ namespace game
 		auto* chunk = new jactorio::game::Chunk{6, 6};
 		const auto* added_chunk = world_data_.add_chunk(chunk);
 
-		EXPECT_EQ(world_data_.get_chunk(6, 6), added_chunk);
+		EXPECT_EQ(world_data_.get_chunk_c(6, 6), added_chunk);
 
 		world_data_.clear_chunk_data();
 
 		// Chunk no longer exists after it was cleared
-		EXPECT_EQ(world_data_.get_chunk(6, 6), nullptr);
+		EXPECT_EQ(world_data_.get_chunk_c(6, 6), nullptr);
 	}
 
 

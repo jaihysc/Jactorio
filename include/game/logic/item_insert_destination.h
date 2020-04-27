@@ -8,7 +8,6 @@
 
 #include "data/prototype/interface/rotatable.h"
 #include "data/prototype/item/item.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
@@ -23,7 +22,7 @@ namespace jactorio::game
 		///  \return True is successfully inserted
 		using insert_func = bool (*)(const data::item_stack& item_stack,
 		                             data::Unique_data_base& unique_data,
-		                             data::placementOrientation orientation);
+		                             data::Orientation orientation);
 
 
 		///
@@ -31,7 +30,7 @@ namespace jactorio::game
 		/// \param insert_function Obtained from item_logistics::can_accept_item()
 		/// \param orientation Orientation from origin prototype, "the destination is <orientation> of prototype"
 		Item_insert_destination(data::Unique_data_base& unique_data, const insert_func insert_function,
-		                        const data::placementOrientation orientation)
+		                        const data::Orientation orientation)
 			: destination_unique_data_(unique_data),
 			  orientation_(orientation),
 			  insertion_function_(insert_function) {
@@ -42,7 +41,7 @@ namespace jactorio::game
 	private:
 		/// \brief Tile location where item will be inserted
 		data::Unique_data_base& destination_unique_data_;
-		data::placementOrientation orientation_;
+		data::Orientation orientation_;
 
 		/// \brief Function for inserting at destination, from one below
 		insert_func insertion_function_;

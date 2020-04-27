@@ -108,19 +108,30 @@ namespace jactorio::game
 
 
 		///
-		/// \brief Retrieves a chunk in game world
+		/// \brief Retrieves a chunk in game world using chunk coordinates
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* get_chunk(Chunk::chunk_coord chunk_x, Chunk::chunk_coord chunk_y) const;
+		J_NODISCARD Chunk* get_chunk_c(Chunk::chunk_coord chunk_x, Chunk::chunk_coord chunk_y) const;
+
 
 		///
 		/// Gets the chunk at the specified world coordinate
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* get_chunk_world_coords(world_coord world_x, world_coord world_y) const;
+		J_NODISCARD Chunk* get_chunk(world_coord world_x, world_coord world_y) const;
+
+		///
+		/// Gets the chunk at the specified world coordinate
+		/// \return nullptr if no chunk exists
+		J_NODISCARD Chunk* get_chunk(const world_pair& world_pair) const;
 
 		///
 		/// \brief Gets the tile at the specified world coordinate
 		/// \return nullptr if no tile exists
-		J_NODISCARD Chunk_tile* get_tile_world_coords(world_coord world_x, world_coord world_y) const;
+		J_NODISCARD Chunk_tile* get_tile(world_coord world_x, world_coord world_y) const;
+
+		///
+		/// \brief Gets the tile at the specified world coordinate
+		/// \return nullptr if no tile exists
+		J_NODISCARD Chunk_tile* get_tile(const world_pair& world_pair) const;
 
 
 		// ==============================================================

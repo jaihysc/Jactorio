@@ -44,7 +44,7 @@ void jactorio::game::World_data::clear_chunk_data() {
 
 // ======================================================================
 
-jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const Chunk::chunk_coord chunk_x,
+jactorio::game::Chunk* jactorio::game::World_data::get_chunk_c(const Chunk::chunk_coord chunk_x,
                                                              const Chunk::chunk_coord chunk_y) const {
 	std::lock_guard<std::mutex> guard(world_chunks_mutex_);
 
@@ -56,7 +56,7 @@ jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const Chunk::chunk_
 	return world_chunks_.at(key);
 }
 
-jactorio::game::Chunk* jactorio::game::World_data::get_chunk_world_coords(world_coord world_x, world_coord world_y) const {
+jactorio::game::Chunk* jactorio::game::World_data::get_chunk(world_coord world_x, world_coord world_y) const {
 	// See get_tile_world_coords() for documentation on the purpose of if statements
 
 	float chunk_index_x = 0;
@@ -74,12 +74,16 @@ jactorio::game::Chunk* jactorio::game::World_data::get_chunk_world_coords(world_
 	chunk_index_x += static_cast<float>(world_x) / 32;
 	chunk_index_y += static_cast<float>(world_y) / 32;
 
-	return get_chunk(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
+	return get_chunk_c(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
+}
+
+jactorio::game::Chunk* jactorio::game::World_data::get_chunk(const world_pair& world_pair) const {
+	return get_chunk(world_pair.first, world_pair.second);
 }
 
 // ======================================================================
 
-jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(world_coord world_x, world_coord world_y) const {
+jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile(world_coord world_x, world_coord world_y) const {
 	// The negative chunks start at -1, unlike positive chunks at 0
 	// Thus add 1 to become 0 so the calculations can be performed
 	bool negative_x = false;
@@ -103,7 +107,7 @@ jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(wo
 	chunk_index_y += static_cast<float>(world_y) / 32;
 
 
-	auto* chunk = get_chunk(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
+	auto* chunk = get_chunk_c(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
 
 	if (chunk != nullptr) {
 		int tile_index_x = static_cast<int>(world_x) % 32;
@@ -121,6 +125,10 @@ jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile_world_coords(wo
 	}
 
 	return nullptr;
+}
+
+jactorio::game::Chunk_tile* jactorio::game::World_data::get_tile(const world_pair& world_pair) const {
+	return get_tile(world_pair.first, world_pair.second);
 }
 
 // ======================================================================

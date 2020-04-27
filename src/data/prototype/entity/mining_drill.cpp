@@ -31,17 +31,17 @@ jactorio::data::Sprite* jactorio::data::Mining_drill::on_r_get_sprite(Unique_dat
 	return this->sprite_w;
 }
 
-std::pair<uint16_t, uint16_t> jactorio::data::Mining_drill::map_placement_orientation(const placementOrientation orientation,
-                                                                                      game::World_data& /*world_data*/,
-                                                                                      std::pair<int, int> /*world_coords*/) const {
+std::pair<uint16_t, uint16_t> jactorio::data::Mining_drill::map_placement_orientation(const Orientation orientation,
+                                                                                      game::World_data&,
+                                                                                      const game::World_data::world_pair&) const {
 	switch (orientation) {
-	case placementOrientation::up:
+	case Orientation::up:
 		return {0, 0};
-	case placementOrientation::right:
+	case Orientation::right:
 		return {8, 0};
-	case placementOrientation::down:
+	case Orientation::down:
 		return {16, 0};
-	case placementOrientation::left:
+	case Orientation::left:
 		return {24, 0};
 
 	default:
@@ -73,7 +73,7 @@ jactorio::data::Item* jactorio::data::Mining_drill::find_output_item(const game:
 	for (int y = 0; y < 2 * this->mining_radius + this->tile_height; ++y) {
 		for (int x = 0; x < 2 * this->mining_radius + this->tile_width; ++x) {
 			game::Chunk_tile* tile =
-				world_data.get_tile_world_coords(world_pair.first + x, world_pair.second + y);
+				world_data.get_tile(world_pair.first + x, world_pair.second + y);
 
 			game::Chunk_tile_layer& resource = tile->get_layer(game::Chunk_tile::chunkLayer::resource);
 			if (resource.prototype_data != nullptr)
@@ -94,8 +94,8 @@ void jactorio::data::Mining_drill::on_defer_time_elapsed(game::Deferral_timer& t
 
 
 bool jactorio::data::Mining_drill::on_can_build(const game::World_data& world_data,
-                                                std::pair<game::World_data::world_coord, game::World_data::world_coord>
-                                                world_coords) const {
+                                                const game::World_data::world_pair& world_coords) const {
+	auto coords = world_coords;
 	/*
 	 * [ ] [ ] [ ] [ ] [ ]
 	 * [ ] [X] [x] [x] [ ]
@@ -103,13 +103,13 @@ bool jactorio::data::Mining_drill::on_can_build(const game::World_data& world_da
 	 * [ ] [x] [x] [x] [ ]
 	 * [ ] [ ] [ ] [ ] [ ]
 	 */
-	world_coords.first -= this->mining_radius;
-	world_coords.second -= this->mining_radius;
+	coords.first -= this->mining_radius;
+	coords.second -= this->mining_radius;
 
 	for (int y = 0; y < 2 * this->mining_radius + this->tile_height; ++y) {
 		for (int x = 0; x < 2 * this->mining_radius + this->tile_width; ++x) {
 			game::Chunk_tile* tile =
-				world_data.get_tile_world_coords(world_coords.first + x, world_coords.second + y);
+				world_data.get_tile(coords.first + x, coords.second + y);
 
 			if (tile->get_layer(game::Chunk_tile::chunkLayer::resource).prototype_data != nullptr)
 				return true;
@@ -120,10 +120,10 @@ bool jactorio::data::Mining_drill::on_can_build(const game::World_data& world_da
 }
 
 void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
-                                            const std::pair<game::World_data::world_coord, game::World_data::world_coord>
-                                            world_coords,
+                                            const game::World_data::world_pair& world_coords,
                                             game::Chunk_tile_layer& tile_layer,
-                                            const uint16_t frame, const placementOrientation orientation) const {
+                                            const uint16_t frame,
+                                            const Orientation orientation) const {
 
 	tile_layer.unique_data = new Mining_drill_data();
 	auto* drill_data = static_cast<Mining_drill_data*>(tile_layer.unique_data);
@@ -144,12 +144,12 @@ void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
 }
 
 void jactorio::data::Mining_drill::on_neighbor_update(game::World_data& world_data,
-                                                      const game::World_data::world_pair emit_world_coords,
-                                                      const game::World_data::world_pair receive_world_coords,
-                                                      placementOrientation emit_orientation) const {
+                                                      const game::World_data::world_pair& emit_world_coords,
+                                                      const game::World_data::world_pair& receive_world_coords,
+                                                      Orientation emit_orientation) const {
 	Mining_drill_data* drill_data;
 	{
-		auto& self_layer = world_data.get_tile_world_coords(receive_world_coords.first,
+		auto& self_layer = world_data.get_tile(receive_world_coords.first,
 		                                                    receive_world_coords.second)
 		                             ->get_layer(game::Chunk_tile::chunkLayer::entity);
 		// Use the top left tile
@@ -171,7 +171,7 @@ void jactorio::data::Mining_drill::on_neighbor_update(game::World_data& world_da
 	// Do not register callback to mine items if there is no valid entity to output items to
 	if (output_item_func) {
 
-		auto& output_layer = world_data.get_tile_world_coords(emit_world_coords.first,
+		auto& output_layer = world_data.get_tile(emit_world_coords.first,
 		                                                      emit_world_coords.second)
 		                               ->get_layer(game::Chunk_tile::chunkLayer::entity);
 
@@ -190,7 +190,7 @@ void jactorio::data::Mining_drill::on_neighbor_update(game::World_data& world_da
 
 
 void jactorio::data::Mining_drill::on_remove(game::World_data& world_data,
-                                             std::pair<game::World_data::world_coord, game::World_data::world_coord> /*world_coords*/,
+                                             const game::World_data::world_pair /*world_coords*/&,
                                              game::Chunk_tile_layer& tile_layer) const {
 	Unique_data_base* drill_data;
 

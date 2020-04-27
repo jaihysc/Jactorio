@@ -97,7 +97,7 @@ namespace jactorio::game
 		const void* last_tile_ptr_ = nullptr;
 
 	public:
-		data::placementOrientation placement_orientation = data::placementOrientation::up;
+		data::Orientation placement_orientation = data::Orientation::up;
 
 		///
 		/// \brief Rotates placement_orientation clockwise 

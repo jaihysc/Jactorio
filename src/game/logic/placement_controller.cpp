@@ -17,7 +17,7 @@ bool jactorio::game::placement_location_valid(World_data& world_data,
 	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
 		for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
 			const Chunk_tile* tile =
-				world_data.get_tile_world_coords(x + offset_x, y + offset_y);
+				world_data.get_tile(x + offset_x, y + offset_y);
 
 			// If the tile proto does not exist, or base tile prototype is water, NOT VALID placement
 
@@ -42,7 +42,7 @@ bool jactorio::game::place_entity_at_coords(World_data& world_data,
                                             data::Entity* entity,
                                             const int x,
                                             const int y) {
-	const Chunk_tile* tile = world_data.get_tile_world_coords(x, y);
+	const Chunk_tile* tile = world_data.get_tile(x, y);
 	assert(tile != nullptr);
 
 	// entity is nullptr indicates removing an entity
@@ -98,7 +98,7 @@ void jactorio::game::place_sprite_at_coords(World_data& world_data,
                                             const int x,
                                             const int y) {
 
-	const Chunk_tile* tile = world_data.get_tile_world_coords(x, y);
+	const Chunk_tile* tile = world_data.get_tile(x, y);
 	assert(tile != nullptr);
 
 	placement_sprite_layer = layer;
@@ -146,7 +146,7 @@ void jactorio::game::place_at_coords(World_data& world_data,
 	int entity_index = 0;
 
 	// The top left is handled differently
-	Chunk_tile* top_left_tile = world_data.get_tile_world_coords(x, y);
+	Chunk_tile* top_left_tile = world_data.get_tile(x, y);
 	place_func(top_left_tile);
 
 	Chunk_tile_layer& top_left = top_left_tile->get_layer(layer);
@@ -162,7 +162,7 @@ void jactorio::game::place_at_coords(World_data& world_data,
 	int offset_x = 1;
 	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
 		for (; offset_x < tile_width; ++offset_x) {
-			Chunk_tile* tile = world_data.get_tile_world_coords(x + offset_x, y + offset_y);
+			Chunk_tile* tile = world_data.get_tile(x + offset_x, y + offset_y);
 			place_func(tile);
 
 			auto& layer_tile            = tile->get_layer(layer);
@@ -183,7 +183,7 @@ void jactorio::game::remove_at_coords(World_data& world_data,
                                       void (*remove_func)(Chunk_tile*)) {
 	// Find top left corner
 	{
-		const Chunk_tile* tile = world_data.get_tile_world_coords(x, y);
+		const Chunk_tile* tile = world_data.get_tile(x, y);
 		assert(tile != nullptr);  // Attempted to remove a on a non existent tile
 
 		const auto tile_index = tile->get_layer(layer).multi_tile_index;
@@ -195,7 +195,7 @@ void jactorio::game::remove_at_coords(World_data& world_data,
 	// Remove
 	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
 		for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
-			remove_func(world_data.get_tile_world_coords(x + offset_x, y + offset_y));
+			remove_func(world_data.get_tile(x + offset_x, y + offset_y));
 		}
 	}
 }

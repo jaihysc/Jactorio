@@ -8,7 +8,7 @@
 
 namespace jactorio::data
 {
-	enum class placementOrientation
+	enum class Orientation
 	{
 		up,
 		right,

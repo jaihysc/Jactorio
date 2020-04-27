@@ -57,9 +57,9 @@ namespace jactorio::data
 		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override;
 
 		Sprite* on_r_get_sprite(Unique_data_base* unique_data) const override;
-		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation,
+		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(Orientation orientation,
 		                                                                    game::World_data& world_data,
-		                                                                    std::pair<int, int> world_coords) const override;
+		                                                                    const game::World_data::world_pair& world_coords) const override;
 
 		// ======================================================================
 		// Logic
@@ -79,20 +79,22 @@ namespace jactorio::data
 		///
 		/// \brief Ensures that the mining radius covers a resource entity
 		J_NODISCARD bool on_can_build(const game::World_data& world_data,
-		                              std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords) const
+		                              const game::World_data::world_pair& world_coords) const
 		override;
 
 		void on_build(game::World_data& world_data,
-		              std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
-		              game::Chunk_tile_layer& tile_layer, uint16_t frame, placementOrientation orientation) const override;
+		              const game::World_data::world_pair& world_coords,
+		              game::Chunk_tile_layer& tile_layer,
+		              uint16_t frame,
+		              Orientation orientation) const override;
 
 		void on_neighbor_update(game::World_data& world_data,
-		                        game::World_data::world_pair emit_world_coords,
-		                        game::World_data::world_pair receive_world_coords,
-		                        placementOrientation emit_orientation) const override;
+		                        const game::World_data::world_pair& emit_world_coords,
+		                        const game::World_data::world_pair& receive_world_coords,
+		                        Orientation emit_orientation) const override;
 
 		void on_remove(game::World_data& world_data,
-		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
+		               const game::World_data::world_pair& world_coords,
 		               game::Chunk_tile_layer& tile_layer) const override;
 
 		void post_load_validate() const override {

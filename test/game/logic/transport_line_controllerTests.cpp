@@ -76,20 +76,20 @@ namespace game
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5);
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::right,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::right,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			4);
 		auto* down_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::down,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::down,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5);
 		auto* left_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::left,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::left,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			4);
 
 		// What each transport segment empties into
@@ -133,19 +133,19 @@ namespace game
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::up,
+			jactorio::data::Orientation::up,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			5);
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::right,
+			jactorio::data::Orientation::right,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			4);
 		auto* down_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::down,
+			jactorio::data::Orientation::down,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			5);
 		auto* left_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::left,
+			jactorio::data::Orientation::left,
 			jactorio::game::Transport_line_segment::terminationType::bend_right,
 			4);
 
@@ -196,20 +196,20 @@ namespace game
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5);
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::right,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::right,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5);
 		auto* down_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::down,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::down,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5);
 		auto* left_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::left,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::left,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			5);
 
 		// What each transport segment empties into
@@ -294,12 +294,12 @@ namespace game
 		 */
 
 		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			4);
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::right,
-			jactorio::game::Transport_line_segment::terminationType::straight,
+			jactorio::data::Orientation::right,
+			jactorio::game::Transport_line_segment::TerminationType::straight,
 			4);
 
 		up_segment->target_segment = right_segment;
@@ -372,12 +372,12 @@ namespace game
 		 */
 
 		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			4);
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::right,
-			jactorio::game::Transport_line_segment::terminationType::straight,
+			jactorio::data::Orientation::right,
+			jactorio::game::Transport_line_segment::TerminationType::straight,
 			4);
 
 		up_segment->target_segment = right_segment;
@@ -428,12 +428,12 @@ namespace game
 		transport_belt_proto_->speed = 0.01f;
 
 		auto* segment_1 = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::left,
-			jactorio::game::Transport_line_segment::terminationType::straight,
+			jactorio::data::Orientation::left,
+			jactorio::game::Transport_line_segment::TerminationType::straight,
 			4);
 		auto* segment_2 = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::left,
-			jactorio::game::Transport_line_segment::terminationType::straight,
+			jactorio::data::Orientation::left,
+			jactorio::game::Transport_line_segment::TerminationType::straight,
 			4);
 
 		segment_2->target_segment = segment_1;
@@ -472,8 +472,8 @@ namespace game
 		transport_belt_proto_->speed = 0.01f;
 
 		auto* segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::left,
-			jactorio::game::Transport_line_segment::terminationType::straight,
+			jactorio::data::Orientation::left,
+			jactorio::game::Transport_line_segment::TerminationType::straight,
 			10);
 
 		{
@@ -539,12 +539,12 @@ namespace game
 		 */
 
 		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::up,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::up,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			4);
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::right,
-			jactorio::game::Transport_line_segment::terminationType::straight,
+			jactorio::data::Orientation::right,
+			jactorio::game::Transport_line_segment::TerminationType::straight,
 			4);
 
 		up_segment->target_segment = right_segment;
@@ -578,8 +578,8 @@ namespace game
 		// A minimum distance of item_spacing is maintained between items
 
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::right,
-			jactorio::game::Transport_line_segment::terminationType::bend_right,
+			jactorio::data::Orientation::right,
+			jactorio::game::Transport_line_segment::TerminationType::bend_right,
 			4);
 
 		auto& right = logic_chunk_->get_struct(jactorio::game::Logic_chunk::structLayer::transport_line)
@@ -613,12 +613,12 @@ namespace game
 
 		// Segments (Logic chunk must be created first)
 		auto* right_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::right,
-			jactorio::game::Transport_line_segment::terminationType::right_only,
+			jactorio::data::Orientation::right,
+			jactorio::game::Transport_line_segment::TerminationType::right_only,
 			5);
 		auto* down_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::down,
-			jactorio::game::Transport_line_segment::terminationType::straight,
+			jactorio::data::Orientation::down,
+			jactorio::game::Transport_line_segment::TerminationType::straight,
 			10);
 
 		right_segment->target_segment = down_segment;
@@ -719,12 +719,12 @@ namespace game
 
 		// Segments (Logic chunk must be created first)
 		auto* left_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::left,
-			jactorio::game::Transport_line_segment::terminationType::right_only,
+			jactorio::data::Orientation::left,
+			jactorio::game::Transport_line_segment::TerminationType::right_only,
 			5);
 		auto* up_segment = new jactorio::game::Transport_line_segment(
-			jactorio::game::Transport_line_segment::moveDir::down,
-			jactorio::game::Transport_line_segment::terminationType::straight,
+			jactorio::data::Orientation::down,
+			jactorio::game::Transport_line_segment::TerminationType::straight,
 			10);
 
 		left_segment->target_segment = up_segment;
@@ -824,11 +824,11 @@ namespace game
 
 
 		// Segments (Logic chunk must be created first)
-		auto* up_segment_1 = new jactorio::game::Transport_line_segment(jactorio::game::Transport_line_segment::moveDir::up,
-		                                                                jactorio::game::Transport_line_segment::terminationType::straight,
+		auto* up_segment_1 = new jactorio::game::Transport_line_segment(jactorio::data::Orientation::up,
+		                                                                jactorio::game::Transport_line_segment::TerminationType::straight,
 		                                                                1);
-		auto* up_segment_2 = new jactorio::game::Transport_line_segment(jactorio::game::Transport_line_segment::moveDir::up,
-		                                                                jactorio::game::Transport_line_segment::terminationType::straight,
+		auto* up_segment_2 = new jactorio::game::Transport_line_segment(jactorio::data::Orientation::up,
+		                                                                jactorio::game::Transport_line_segment::TerminationType::straight,
 		                                                                1);
 
 		up_segment_2->target_segment = up_segment_1;

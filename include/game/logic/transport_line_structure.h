@@ -6,10 +6,11 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
 #pragma once
 
-#include "core/data_type.h"
-#include "data/prototype/item/item.h"
-
 #include <deque>
+
+#include "core/data_type.h"
+#include "data/prototype/orientation.h"
+#include "data/prototype/item/item.h"
 
 namespace jactorio::game
 {
@@ -23,14 +24,6 @@ namespace jactorio::game
 	/// \brief Stores a collection of items heading in one direction
 	struct Transport_line_segment : data::Unique_data_base
 	{
-		enum class moveDir
-		{
-			up = 0,
-			right,
-			down,
-			left,
-		};
-
 		// When bending, the amounts below are reduced from the distance to the end of the next segment (see diagram below)
 		/*
 		 * === 0.7 ===
@@ -48,7 +41,7 @@ namespace jactorio::game
 		static constexpr double bend_right_l_reduction = 0.3;
 		static constexpr double bend_right_r_reduction = 0.7;
 
-		enum class terminationType
+		enum class TerminationType
 		{
 			straight = 0,
 			// Left length -0.7
@@ -65,12 +58,12 @@ namespace jactorio::game
 		};
 
 
-		Transport_line_segment(const moveDir direction, const terminationType termination_type,
+		Transport_line_segment(const data::Orientation direction, const TerminationType termination_type,
 		                       const uint8_t segment_length)
 			: direction(direction), termination_type(termination_type), segment_length(segment_length) {
 		}
 
-		Transport_line_segment(const moveDir direction, const terminationType termination_type,
+		Transport_line_segment(const data::Orientation direction, const TerminationType termination_type,
 		                       Transport_line_segment* target_segment, const uint8_t segment_length)
 			: direction(direction), target_segment(target_segment),
 			  termination_type(termination_type),
@@ -89,13 +82,13 @@ namespace jactorio::game
 		bool item_visible = true;
 
 		/// Direction items in this segment travel in
-		moveDir direction;
+		data::Orientation direction;
 
 		/// Segment this transport line feeds into
 		Transport_line_segment* target_segment = nullptr;
 
 		/// How the belt terminates (bends left, right, straight) (Single belt side)
-		terminationType termination_type;
+		TerminationType termination_type;
 
 		/// Index to the next item still with space to move
 		uint16_t l_index = 0;

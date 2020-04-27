@@ -27,7 +27,7 @@ namespace data::prototype
 											 jactorio::data::Container_entity& container,
 		                                     const int world_x = 4, const int world_y = 2) {
 			jactorio::game::Chunk_tile_layer& container_layer =
-				world_data.get_tile_world_coords(world_x, world_y)
+				world_data.get_tile(world_x, world_y)
 				          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
 
 			container_layer.prototype_data = &container;
@@ -40,12 +40,12 @@ namespace data::prototype
 		                                     jactorio::data::Resource_entity& resource,
 		                                     jactorio::data::Mining_drill& drill) {
 
-			jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
+			jactorio::game::Chunk_tile* tile = world_data.get_tile(1, 1);
 			tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
 
 			drill.on_build(world_data, {1, 1},
 			               tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), 0,
-			               jactorio::data::placementOrientation::right);
+			               jactorio::data::Orientation::right);
 		}
 	};
 
@@ -70,7 +70,7 @@ namespace data::prototype
 
 		// Has resource tiles
 		jactorio::data::Resource_entity resource{};
-		world_data.get_tile_world_coords(0, 0)
+		world_data.get_tile(0, 0)
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
 
 		EXPECT_TRUE(drill.on_can_build(world_data, {2, 2}));
@@ -93,7 +93,7 @@ namespace data::prototype
 		drill.mining_radius = 2;
 
 		jactorio::data::Resource_entity resource{};
-		world_data.get_tile_world_coords(7, 6)
+		world_data.get_tile(7, 6)
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
 
 		EXPECT_TRUE(drill.on_can_build(world_data, {2, 2}));
@@ -120,20 +120,20 @@ namespace data::prototype
 		EXPECT_EQ(drill.find_output_item(world_data, {2, 2}), nullptr);  // No resources 
 
 
-		world_data.get_tile_world_coords(0, 0)
+		world_data.get_tile(0, 0)
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
 
 		EXPECT_EQ(drill.find_output_item(world_data, {2, 2}), nullptr);  // No resources in range
 
 
-		world_data.get_tile_world_coords(6, 5)
+		world_data.get_tile(6, 5)
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
 
 		EXPECT_EQ(drill.find_output_item(world_data, {2, 2}), nullptr);  // No resources in range
 
 		// ======================================================================
 
-		world_data.get_tile_world_coords(5, 5)
+		world_data.get_tile(5, 5)
 		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
 		EXPECT_EQ(drill.find_output_item(world_data, {2, 2}), &resource_item);
 
@@ -143,7 +143,7 @@ namespace data::prototype
 			jactorio::data::Resource_entity resource2{};
 			resource2.set_item(&item2);
 
-			world_data.get_tile_world_coords(1, 1)
+			world_data.get_tile(1, 1)
 			          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource2;
 			EXPECT_EQ(drill.find_output_item(world_data, {2, 2}), &item2);
 		}
@@ -166,7 +166,7 @@ namespace data::prototype
 
 		// ======================================================================
 		// Unique data created by on_build()
-		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
+		jactorio::game::Chunk_tile* tile = world_data.get_tile(1, 1);
 
 		jactorio::game::Chunk_tile_layer& layer = tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
 		auto* data = static_cast<jactorio::data::Mining_drill_data*>(layer.unique_data);
@@ -177,7 +177,7 @@ namespace data::prototype
 		jactorio::data::Item item{};
 		data->output_tile->insert({&item, 1});
 
-		jactorio::game::Chunk_tile_layer& container_layer = world_data.get_tile_world_coords(4, 2)
+		jactorio::game::Chunk_tile_layer& container_layer = world_data.get_tile(4, 2)
 		                                                              ->get_layer(
 			                                                              jactorio::game::Chunk_tile::chunkLayer::entity);
 
@@ -209,11 +209,11 @@ namespace data::prototype
 
 		drill.on_neighbor_update(world_data,
 		                         {4, 2}, {1, 1},
-		                         jactorio::data::placementOrientation::right);
+		                         jactorio::data::Orientation::right);
 
 		// ======================================================================
 		// Should now insert as it has an entity to output to
-		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
+		jactorio::game::Chunk_tile* tile = world_data.get_tile(1, 1);
 
 		auto* data =
 			static_cast<jactorio::data::Mining_drill_data*>(
@@ -225,7 +225,7 @@ namespace data::prototype
 		jactorio::data::Item item{};
 		data->output_tile->insert({&item, 1});
 
-		jactorio::game::Chunk_tile_layer& container_layer = world_data.get_tile_world_coords(4, 2)
+		jactorio::game::Chunk_tile_layer& container_layer = world_data.get_tile(4, 2)
 		                                                              ->get_layer(
 			                                                              jactorio::game::Chunk_tile::chunkLayer::entity);
 
@@ -247,7 +247,7 @@ namespace data::prototype
 		setup_drill(world_data, resource, drill);
 
 		// Remove
-		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(1, 1);
+		jactorio::game::Chunk_tile* tile = world_data.get_tile(1, 1);
 		drill.on_remove(world_data, {1, 1}, tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity));
 
 		tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).clear();  // Deletes drill data
@@ -268,19 +268,19 @@ namespace data::prototype
 		setup_drill(world_data, resource, drill);
 
 		// Remove chest
-		jactorio::game::Chunk_tile* tile = world_data.get_tile_world_coords(4, 2);
+		jactorio::game::Chunk_tile* tile = world_data.get_tile(4, 2);
 		tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).clear();  // Remove container 
 
 		// Should only remove the callback once
 		drill.on_neighbor_update(world_data,
 		                         {4, 2}, {1, 1},
-		                         jactorio::data::placementOrientation::right);
+		                         jactorio::data::Orientation::right);
 		drill.on_neighbor_update(world_data,
 		                         {4, 2}, {1, 1},
-		                         jactorio::data::placementOrientation::right);
+		                         jactorio::data::Orientation::right);
 		drill.on_neighbor_update(world_data,
 		                         {4, 2}, {1, 1},
-		                         jactorio::data::placementOrientation::right);
+		                         jactorio::data::Orientation::right);
 
 		// Should no longer be valid
 		world_data.deferral_timer.deferral_update(60);
@@ -302,17 +302,17 @@ namespace data::prototype
 
 		drill.on_neighbor_update(world_data,
 		                         {2, 0}, {1, 1},
-		                         jactorio::data::placementOrientation::up);
+		                         jactorio::data::Orientation::up);
 		drill.on_neighbor_update(world_data,
 		                         {4, 1}, {1, 1},
-		                         jactorio::data::placementOrientation::right);
+		                         jactorio::data::Orientation::right);
 
 		world_data.deferral_timer.deferral_update(60);
 
 		// If the on_neighbor_update event was ignored, no items will be added
 		{
 			jactorio::game::Chunk_tile_layer& container_layer =
-				world_data.get_tile_world_coords(2, 0)
+				world_data.get_tile(2, 0)
 				          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
 
 			EXPECT_EQ(static_cast<jactorio::data::Container_entity_data*>(container_layer.unique_data)->inventory[0].second
@@ -321,7 +321,7 @@ namespace data::prototype
 		}
 		{
 			jactorio::game::Chunk_tile_layer& container_layer =
-				world_data.get_tile_world_coords(4, 1)
+				world_data.get_tile(4, 1)
 				          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
 
 			EXPECT_EQ(static_cast<jactorio::data::Container_entity_data*>(container_layer.unique_data)->inventory[0].second

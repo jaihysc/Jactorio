@@ -11,43 +11,43 @@
 #include "game/logic/transport_line_structure.h"
 #include "game/world/world_data.h"
 
-void apply_termination_deduction_l(const jactorio::game::Transport_line_segment::terminationType termination_type,
+void apply_termination_deduction_l(const jactorio::game::Transport_line_segment::TerminationType termination_type,
                                    jactorio::transport_line_offset& offset) {
 	switch (termination_type) {
 		// Feeding into another belt also needs to be deducted to feed at the right offset on the target belt
-	case jactorio::game::Transport_line_segment::terminationType::left_only:
-	case jactorio::game::Transport_line_segment::terminationType::bend_left:
+	case jactorio::game::Transport_line_segment::TerminationType::left_only:
+	case jactorio::game::Transport_line_segment::TerminationType::bend_left:
 		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
 			jactorio::game::Transport_line_segment::bend_left_l_reduction);
 		break;
 
-	case jactorio::game::Transport_line_segment::terminationType::right_only:
-	case jactorio::game::Transport_line_segment::terminationType::bend_right:
+	case jactorio::game::Transport_line_segment::TerminationType::right_only:
+	case jactorio::game::Transport_line_segment::TerminationType::bend_right:
 		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
 			jactorio::game::Transport_line_segment::bend_right_l_reduction);
 		break;
 
-	case jactorio::game::Transport_line_segment::terminationType::straight:
+	case jactorio::game::Transport_line_segment::TerminationType::straight:
 		break;
 	}
 }
 
-void apply_termination_deduction_r(const jactorio::game::Transport_line_segment::terminationType termination_type,
+void apply_termination_deduction_r(const jactorio::game::Transport_line_segment::TerminationType termination_type,
                                    jactorio::transport_line_offset& offset) {
 	switch (termination_type) {
-	case jactorio::game::Transport_line_segment::terminationType::left_only:
-	case jactorio::game::Transport_line_segment::terminationType::bend_left:
+	case jactorio::game::Transport_line_segment::TerminationType::left_only:
+	case jactorio::game::Transport_line_segment::TerminationType::bend_left:
 		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
 			jactorio::game::Transport_line_segment::bend_left_r_reduction);
 		break;
 
-	case jactorio::game::Transport_line_segment::terminationType::right_only:
-	case jactorio::game::Transport_line_segment::terminationType::bend_right:
+	case jactorio::game::Transport_line_segment::TerminationType::right_only:
+	case jactorio::game::Transport_line_segment::TerminationType::bend_right:
 		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
 			jactorio::game::Transport_line_segment::bend_right_r_reduction);
 		break;
 
-	case jactorio::game::Transport_line_segment::terminationType::straight:
+	case jactorio::game::Transport_line_segment::TerminationType::straight:
 		break;
 	}
 }
@@ -150,7 +150,7 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 				break;
 
 				// Side insertion
-			case jactorio::game::Transport_line_segment::terminationType::left_only:
+			case jactorio::game::Transport_line_segment::TerminationType::left_only:
 				if (segment->target_segment->can_insert(true, target_offset)) {
 					segment->target_segment->insert_item(true,
 					                                     target_offset.getAsDouble(),
@@ -159,7 +159,7 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 				}
 
 				break;
-			case jactorio::game::Transport_line_segment::terminationType::right_only:
+			case jactorio::game::Transport_line_segment::TerminationType::right_only:
 				if (segment->target_segment->can_insert(false, target_offset)) {
 					segment->target_segment->insert_item(false,
 					                                     target_offset.getAsDouble(),
@@ -203,8 +203,8 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 		else {
 			switch (segment->termination_type) {
 				// Due to how items feeding onto the sides of transport segments behave, they cannot be disabled unless empty
-			case jactorio::game::Transport_line_segment::terminationType::left_only:
-			case jactorio::game::Transport_line_segment::terminationType::right_only:
+			case jactorio::game::Transport_line_segment::TerminationType::left_only:
+			case jactorio::game::Transport_line_segment::TerminationType::right_only:
 				break;
 
 			default:

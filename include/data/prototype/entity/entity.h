@@ -110,16 +110,16 @@ namespace jactorio::data
 		///
 		/// \brief Entity was build in the world
 		virtual void on_build(game::World_data& world_data,
-		                      std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
-		                      game::Chunk_tile_layer& tile_layer, uint16_t frame,
-		                      placementOrientation orientation) const = 0;
+		                      const game::World_data::world_pair& world_coords,
+		                      game::Chunk_tile_layer& tile_layer,
+		                      uint16_t frame,
+		                      Orientation orientation) const = 0;
 
 		///
 		/// \brief Returns true if itself can be built at the specified world_coords being its top left
 		/// \return true if can be built
 		J_NODISCARD virtual bool on_can_build(const game::World_data& world_data,
-		                                      std::pair<game::World_data::world_coord, game::World_data::world_coord>
-		                                      world_coords) const {
+		                                      const game::World_data::world_pair& world_coords) const {
 			return true;
 		}
 
@@ -127,7 +127,7 @@ namespace jactorio::data
 		///
 		/// \brief Entity was picked up from a built state, called BEFORE the entity has been removed
 		virtual void on_remove(game::World_data& world_data,
-		                       std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
+		                       const game::World_data::world_pair& world_coords,
 		                       game::Chunk_tile_layer& tile_layer) const = 0;
 
 		///
@@ -137,8 +137,9 @@ namespace jactorio::data
 		/// \param receive_world_coords Layer of the prototype RECEIVING the update 
 		/// \param emit_orientation Orientation to the prototype EMITTING the update 
 		virtual void on_neighbor_update(game::World_data& world_data,
-		                                const game::World_data::world_pair emit_world_coords,
-		                                game::World_data::world_pair receive_world_coords, placementOrientation emit_orientation) const {
+		                                const game::World_data::world_pair& emit_world_coords,
+		                                const game::World_data::world_pair& receive_world_coords,
+		                                Orientation emit_orientation) const {
 		}
 	};
 

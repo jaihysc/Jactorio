@@ -22,7 +22,7 @@ namespace jactorio::data
 
 		///
 		/// <Entry direction>_<Exit direction>
-		enum class lineOrientation
+		enum class LineOrientation
 		{
 			// Following the layout of the sprite
 			up_left = 9,
@@ -42,17 +42,53 @@ namespace jactorio::data
 			left_up = 15,
 		};
 
-		lineOrientation orientation = lineOrientation::up;
+		/// The logic chunk line_segment associated
+		game::Transport_line_segment& line_segment;
+
+		LineOrientation orientation = LineOrientation::up;
+
+		// ======================================================================
+		// Methods
 
 		///
 		/// \brief Updates orientation and member set for rendering 
-		void set_orientation(lineOrientation orientation) {
+		void set_orientation(LineOrientation orientation) {
 			this->orientation = orientation;
-			this->set = static_cast<uint16_t>(orientation);
+			this->set         = static_cast<uint16_t>(orientation);
 		}
 
-		/// The logic chunk line_segment associated
-		game::Transport_line_segment& line_segment;
+		// ======================================================================
+		// Static
+
+		///
+		/// \brief Converts lineOrientation to placementOrientation
+		static Orientation to_orientation(const LineOrientation line_orientation) {
+			switch (line_orientation) {
+			case LineOrientation::up:
+			case LineOrientation::right_up:
+			case LineOrientation::left_up:
+				return Orientation::up;
+
+			case LineOrientation::right:
+			case LineOrientation::up_right:
+			case LineOrientation::down_right:
+				return Orientation::right;
+
+			case LineOrientation::down:
+			case LineOrientation::right_down:
+			case LineOrientation::left_down:
+				return Orientation::down;
+
+			case LineOrientation::left:
+			case LineOrientation::up_left:
+			case LineOrientation::down_left:
+				return Orientation::left;
+
+			default:
+				assert(false);  // Missing switch case
+				return Orientation::up;
+			}
+		} 
 	};
 
 	///
@@ -73,7 +109,7 @@ namespace jactorio::data
 
 
 		// ======================================================================
-		// Game events
+		// Data access
 
 		///
 		/// \brief Attempts to retrieve transport line data at world coordinates on tile
@@ -82,35 +118,49 @@ namespace jactorio::data
 		                                                      game::World_data::world_coord world_x,
 		                                                      game::World_data::world_coord world_y);
 
+		static Transport_line_data::LineOrientation get_line_orientation(Orientation orientation,
+		                                                                 Transport_line_data* up,
+		                                                                 Transport_line_data* right,
+		                                                                 Transport_line_data* down,
+		                                                                 Transport_line_data* left);
+
 		///
 		/// \brief Attempts to find transport line at world_x, world_y
 		/// \param callback Called for each Chunk_struct_layer found matching Transport_line_data at world_x, world_y
-		static void get_transport_line_struct_layer(game::World_data& world_data,
-		                                            game::World_data::world_coord world_x, game::World_data::world_coord world_y,
+		static void get_line_struct_layer(game::World_data& world_data,
+		                                            game::World_data::world_coord world_x,
+		                                            game::World_data::world_coord world_y,
 		                                            const std::function<void(game::Chunk_struct_layer&)>& callback);
+		// ======================================================================
+		// Game events
 	private:
 		///
 		///	\brief Updates the orientation of current and neighboring transport lines 
 		static void update_neighboring_orientation(const game::World_data& world_data,
-		                                           std::pair<game::World_data::world_coord, game::World_data::world_coord>
-		                                           world_coords,
+		                                           const game::World_data::world_pair
+		                                           & world_coords,
 		                                           Transport_line_data* t_center,
 		                                           Transport_line_data* c_right,
 		                                           Transport_line_data* b_center,
-		                                           Transport_line_data* c_left, Transport_line_data* center);
+		                                           Transport_line_data* c_left,
+		                                           Transport_line_data* center);
 
 		using update_segment_func = std::function<
 			void(game::World_data& world_data,
-			     int world_x, int world_y,
-			     float world_offset_x, float world_offset_y,
-			     game::Transport_line_segment::terminationType termination_type)>;
+			     int world_x,
+			     int world_y,
+			     float world_offset_x,
+			     float world_offset_y,
+			     game::Transport_line_segment::TerminationType termination_type)>;
 
 		using update_segment_side_only_func = std::function<
 			void(game::World_data& world_data,
-			     int world_x, int world_y,
-			     float world_offset_x, float world_offset_y,
-			     game::Transport_line_segment::moveDir direction,
-			     game::Transport_line_segment::terminationType termination_type)>;
+			     int world_x,
+			     int world_y,
+			     float world_offset_x,
+			     float world_offset_y,
+			     Orientation direction,
+			     game::Transport_line_segment::TerminationType termination_type)>;
 
 		///
 		/// \brief Change the neighboring line segment termination type to a bend depending on Transport_line_data orientation
@@ -119,30 +169,41 @@ namespace jactorio::data
 		/// \param func Called when line orientation is bending for updating provided line segment
 		/// \param side_only_func Called when line orientation is straight for updating provided line segment 
 		static void update_neighboring_transport_segment(game::World_data& world_data,
-		                                                 int32_t world_x, int32_t world_y,
-		                                                 Transport_line_data::lineOrientation line_orientation,
+		                                                 int32_t world_x,
+		                                                 int32_t world_y,
+		                                                 Transport_line_data::LineOrientation line_orientation,
 		                                                 const update_segment_func& func,
 		                                                 const update_segment_side_only_func& side_only_func);
-		///
-		/// \brief Updates the transport segments of world_coords neighbor's neighbors
-		static void update_neighboring_neighbor_transport_segment(game::World_data& world_data,
-		                                                          std::pair<int, int> world_coords,
-		                                                          Transport_line_data* t_center,
-		                                                          Transport_line_data* c_right,
-		                                                          Transport_line_data* c_left,
-		                                                          Transport_line_data* b_center);
-	public:
 
-		void on_build(game::World_data& world_data, std::pair<int, int> world_coords,
-		              game::Chunk_tile_layer& tile_layer, uint16_t frame, placementOrientation orientation) const override;
+		static void update_termination_type(game::World_data& world_data,
+		                                    const game::World_data::world_pair& world_coords,
+		                                    Orientation orientation,
+		                                    Transport_line_data* up,
+		                                    Transport_line_data* right,
+		                                    Transport_line_data* down,
+		                                    Transport_line_data* left,
+		                                    game::Transport_line_segment* line_segment,
+		                                    int32_t& line_segment_world_x, int32_t& line_segment_world_y);
+	public:
+		void on_build(game::World_data& world_data,
+		              const game::World_data::world_pair& world_coords,
+		              game::Chunk_tile_layer& tile_layer,
+		              uint16_t frame,
+		              Orientation orientation) const override;
+
+		void on_neighbor_update(game::World_data& world_data,
+		                        const game::World_data::world_pair& emit_world_coords,
+		                        const game::World_data::world_pair& receive_world_coords,
+		                        Orientation emit_orientation) const override;
 
 		void on_remove(game::World_data& world_data,
-		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
+		               const game::World_data::world_pair& world_coords,
 		               game::Chunk_tile_layer& tile_layer) const override;
 
-		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation,
+		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(Orientation orientation,
 		                                                                    game::World_data& world_data,
-		                                                                    std::pair<int, int> world_coords) const override;
+		                                                                    const game::World_data::world_pair& world_coords)
+		const override;
 
 
 		// ======================================================================
@@ -158,7 +219,8 @@ namespace jactorio::data
 			J_DATA_ASSERT(speed_float < 0.25, "Transport line speed equal or above maximum of 0.25");
 		}
 
-		void on_r_show_gui(game::Player_data& /*player_data*/, game::Chunk_tile_layer* /*tile_layer*/) const override {}
+		void on_r_show_gui(game::Player_data& /*player_data*/, game::Chunk_tile_layer* /*tile_layer*/) const override {
+		}
 	};
 }
 

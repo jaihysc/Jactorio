@@ -21,7 +21,7 @@ namespace jactorio::game
 #define ITEM_INSERT_FUNCTION(name_)\
 	bool name_(const jactorio::data::item_stack& item_stack,\
 			   jactorio::data::Unique_data_base& unique_data,\
-		       const jactorio::data::placementOrientation orientation)
+		       const jactorio::data::Orientation orientation)
 
 		// Item insertion functions, returned by can_accept_item
 		ITEM_INSERT_FUNCTION(insert_container_entity);

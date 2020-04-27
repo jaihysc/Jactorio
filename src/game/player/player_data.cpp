@@ -96,7 +96,7 @@ bool jactorio::game::Player_data::target_tile_valid(World_data* world_data, cons
 	assert(world_data != nullptr);  // Player is not in a world
 
 	const auto* origin_tile =
-		world_data->get_tile_world_coords(
+		world_data->get_tile(
 			static_cast<int>(player_position_x_),
 			static_cast<int>(player_position_y_));
 
@@ -107,7 +107,7 @@ bool jactorio::game::Player_data::target_tile_valid(World_data* world_data, cons
 	if (origin_tile->get_tile_prototype(Chunk_tile::chunkLayer::base)->is_water)
 		return true;
 
-	const Chunk_tile* tile = world_data->get_tile_world_coords(x, y);
+	const Chunk_tile* tile = world_data->get_tile(x, y);
 	// Chunk not generated yet
 	if (tile == nullptr)
 		return false;
@@ -135,17 +135,17 @@ void jactorio::game::Player_data::move_player_y(const float amount) {
 
 void jactorio::game::Player_data::rotate_placement_orientation() {
 	switch (placement_orientation) {
-	case data::placementOrientation::up:
-		placement_orientation = data::placementOrientation::right;
+	case data::Orientation::up:
+		placement_orientation = data::Orientation::right;
 		break;
-	case data::placementOrientation::right:
-		placement_orientation = data::placementOrientation::down;
+	case data::Orientation::right:
+		placement_orientation = data::Orientation::down;
 		break;
-	case data::placementOrientation::down:
-		placement_orientation = data::placementOrientation::left;
+	case data::Orientation::down:
+		placement_orientation = data::Orientation::left;
 		break;
-	case data::placementOrientation::left:
-		placement_orientation = data::placementOrientation::up;
+	case data::Orientation::left:
+		placement_orientation = data::Orientation::up;
 		break;
 	default:
 		assert(false);  // Missing switch case
@@ -154,17 +154,17 @@ void jactorio::game::Player_data::rotate_placement_orientation() {
 
 void jactorio::game::Player_data::counter_rotate_placement_orientation() {
 	switch (placement_orientation) {
-	case data::placementOrientation::up:
-		placement_orientation = data::placementOrientation::left;
+	case data::Orientation::up:
+		placement_orientation = data::Orientation::left;
 		break;
-	case data::placementOrientation::left:
-		placement_orientation = data::placementOrientation::down;
+	case data::Orientation::left:
+		placement_orientation = data::Orientation::down;
 		break;
-	case data::placementOrientation::down:
-		placement_orientation = data::placementOrientation::right;
+	case data::Orientation::down:
+		placement_orientation = data::Orientation::right;
 		break;
-	case data::placementOrientation::right:
-		placement_orientation = data::placementOrientation::up;
+	case data::Orientation::right:
+		placement_orientation = data::Orientation::up;
 		break;
 	default:
 		assert(false);  // Missing switch case
@@ -175,14 +175,14 @@ void call_on_neighbor_update(jactorio::game::World_data& world_data,
                              const jactorio::game::World_data::world_pair emit_pair,
                              const jactorio::game::World_data::world_coord world_x,
                              const jactorio::game::World_data::world_coord world_y,
-                             const jactorio::data::placementOrientation target_orientation) {
+                             const jactorio::data::Orientation target_orientation) {
 	using namespace jactorio;
 
-	const game::Chunk_tile* tile = world_data.get_tile_world_coords(world_x, world_y);
+	const game::Chunk_tile* tile = world_data.get_tile(world_x, world_y);
 	if (tile) {
 		auto& layer = tile->get_layer(game::Chunk_tile::chunkLayer::entity);
 
-		auto* entity = static_cast<const data::Entity*>(layer.prototype_data);
+		const auto* entity = static_cast<const data::Entity*>(layer.prototype_data);
 		if (entity)
 			entity->on_neighbor_update(world_data,
 			                           emit_pair,
@@ -212,35 +212,35 @@ void update_neighboring_entities(jactorio::game::World_data& world_data,
 		                        emit_coords,
 		                        x,
 		                        world_y - 1,
-		                        data::placementOrientation::down);
+		                        data::Orientation::down);
 	}
 	for (int y = world_y; y < world_y + entity_ptr->tile_height; ++y) {
 		call_on_neighbor_update(world_data,
 		                        emit_coords,
 		                        world_x + entity_ptr->tile_width,
 		                        y,
-		                        data::placementOrientation::left);
+		                        data::Orientation::left);
 	}
 	for (int x = world_x + entity_ptr->tile_width - 1; x >= world_x; --x) {
 		call_on_neighbor_update(world_data,
 		                        emit_coords,
 		                        x,
 		                        world_y + entity_ptr->tile_height,
-		                        data::placementOrientation::up);
+		                        data::Orientation::up);
 	}
 	for (int y = world_y + entity_ptr->tile_height - 1; y >= world_y; --y) {
 		call_on_neighbor_update(world_data,
 		                        emit_coords,
 		                        world_x - 1,
 		                        y,
-		                        data::placementOrientation::right);
+		                        data::Orientation::right);
 	}
 }
 
 void jactorio::game::Player_data::try_place_entity(World_data& world_data,
                                                    const int world_x, const int world_y,
                                                    const bool can_activate_layer) {
-	auto* tile = world_data.get_tile_world_coords(world_x, world_y);
+	auto* tile = world_data.get_tile(world_x, world_y);
 	if (tile == nullptr)
 		return;
 
@@ -309,7 +309,7 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 void jactorio::game::Player_data::try_pickup(World_data& world_data,
                                              const int tile_x, const int tile_y,
                                              const uint16_t ticks) {
-	auto* tile = world_data.get_tile_world_coords(tile_x, tile_y);
+	auto* tile = world_data.get_tile(tile_x, tile_y);
 
 	const data::Entity* chosen_ptr;
 	bool is_resource_ptr = true;

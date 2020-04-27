@@ -17,9 +17,8 @@ namespace jactorio::data
 			: resource_amount(resource_amount) {
 		}
 
-		/**
-		 * Amount of product which can still be extracted from this tile
-		 */
+		///
+		/// \brief Amount of product which can still be extracted from this tile
 		uint16_t resource_amount;
 	};
 
@@ -38,24 +37,27 @@ namespace jactorio::data
 		}
 
 
-		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override {
+		void on_r_show_gui(game::Player_data&, game::Chunk_tile_layer*) const override {
 		}
 
-		std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation, game::World_data& world_data,
-		                                                        std::pair<int, int> world_coords) const override {
+		std::pair<uint16_t, uint16_t> map_placement_orientation(Orientation,
+		                                                        game::World_data&,
+		                                                        const game::World_data::world_pair&) const override {
 			return {0, 0};
 		}
 
 
-		void on_build(game::World_data& world_data,
-		              std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
-		              game::Chunk_tile_layer& tile_layer, uint16_t frame, placementOrientation orientation) const override {
+		void on_build(game::World_data&,
+		              const game::World_data::world_pair&,
+		              game::Chunk_tile_layer&,
+		              uint16_t,
+		              Orientation) const override {
 			assert(false);  // Is not player placeable
 		}
 
-		void on_remove(game::World_data& world_data,
-		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
-		               game::Chunk_tile_layer& tile_layer) const override {
+		void on_remove(game::World_data&,
+		               const game::World_data::world_pair&,
+		               game::Chunk_tile_layer&) const override {
 		}
 
 
