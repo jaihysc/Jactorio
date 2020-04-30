@@ -99,10 +99,10 @@ jactorio::data::Transport_line_data* jactorio::data::Transport_line::get_line_da
 }
 
 void jactorio::data::Transport_line::get_line_struct_layer(game::World_data& world_data,
-                                                                     const game::World_data::world_coord world_x,
-                                                                     const game::World_data::world_coord world_y,
-                                                                     const std::function<void(game::Chunk_struct_layer&)>&
-                                                                     callback) {
+                                                           const game::World_data::world_coord world_x,
+                                                           const game::World_data::world_coord world_y,
+                                                           const std::function<void(game::Chunk_struct_layer&)>&
+                                                           callback) {
 	Transport_line_data* line_data =
 		get_line_data(world_data, world_x, world_y);
 	if (!line_data)  // Transport lines does not exist
@@ -182,12 +182,12 @@ void jactorio::data::Transport_line::update_neighboring_orientation(const game::
 			get_line_orientation(Transport_line_data::to_orientation(c_left->orientation), t_left, center, b_left, left));
 }
 
-void jactorio::data::Transport_line::update_neighboring_transport_segment(
+void jactorio::data::Transport_line::update_neighbor_lines(
 	game::World_data& world_data,
 	const int32_t world_x, const int32_t world_y,
 	const Transport_line_data::LineOrientation line_orientation,
-	const update_segment_func& func,
-	const update_segment_side_only_func& side_only_func) {
+	const update_func& func,
+	const update_side_only_func& side_only_func) {
 
 	switch (line_orientation) {
 		// Up
@@ -314,7 +314,7 @@ void try_change_termination_type(jactorio::game::World_data& world_data,
 /// \param origin_connect_orientation Orientation required for origin_segment to connect to neighbor segment
 /// \param target_connect_orientation Orientation required for neighbor segment to connect to origin segment
 void update_line_targets(jactorio::game::World_data& world_data,
-                         jactorio::game::Transport_line_segment* origin_segment,
+                         jactorio::game::Transport_line_segment& origin_segment,
                          const jactorio::data::Orientation orientation, const int32_t neighbor_world_x,
                          const int32_t neighbor_world_y,
                          const jactorio::data::Orientation origin_connect_orientation,
@@ -326,17 +326,22 @@ void update_line_targets(jactorio::game::World_data& world_data,
 	if (neighbor_line_data) {
 		game::Transport_line_segment& neighbor_segment = neighbor_line_data->line_segment;
 
+		// Do not attempt to connect to itself
+		if (&origin_segment == &neighbor_segment)
+			return;
+
 		const bool origin_valid   = orientation == origin_connect_orientation;
 		const bool neighbor_valid = neighbor_segment.direction == target_connect_orientation;
 
-		// Only 1 can be valid at a time
+		// Only 1 can be valid at a time (does not both point to each other)
+		// Either origin feeds into neighbor, or neighbor feeds into origin depending on which one is valid
 		if (origin_valid == neighbor_valid)
 			return;
 
 		if (origin_valid)
-			origin_segment->target_segment = &neighbor_segment;
+			origin_segment.target_segment = &neighbor_segment;
 		else
-			neighbor_segment.target_segment = origin_segment;
+			neighbor_segment.target_segment = &origin_segment;
 	}
 }
 
@@ -344,30 +349,34 @@ void update_line_targets(jactorio::game::World_data& world_data,
 void jactorio::data::Transport_line::update_termination_type(game::World_data& world_data,
                                                              const game::World_data::world_pair& world_coords,
                                                              const Orientation orientation,
-                                                             Transport_line_data* up, Transport_line_data* right,
-                                                             Transport_line_data* down, Transport_line_data* left,
-                                                             game::Transport_line_segment* line_segment,
+                                                             line_data_4_way& line_data,
+                                                             game::Transport_line_segment& line_segment,
                                                              int32_t& line_segment_world_x, int32_t& line_segment_world_y) {
+	auto* up    = line_data[0];
+	auto* right = line_data[1];
+	auto* down  = line_data[2];
+	auto* left  = line_data[3];
+
 	switch (orientation) {
 
 #define TL_DOWNSHIFT\
 	line_segment_world_y--;\
-	line_segment->segment_length++
+	line_segment.length++
 
 	case Orientation::up:
 		if (up) {
 			switch (up->orientation) {
 			case Transport_line_data::LineOrientation::up_left:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::bend_left;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::bend_left;
 				TL_DOWNSHIFT;
 				break;
 			case Transport_line_data::LineOrientation::up_right:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::bend_right;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::bend_right;
 				TL_DOWNSHIFT;
 				break;
 
 			case Transport_line_data::LineOrientation::right:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::right_only;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::right_only;
 				TL_DOWNSHIFT;
 
 				// Check 2 units up and see if there is segment bending left, if so change it to straight
@@ -377,7 +386,7 @@ void jactorio::data::Transport_line::update_termination_type(game::World_data& w
 				                            game::Transport_line_segment::TerminationType::left_only);
 				break;
 			case Transport_line_data::LineOrientation::left:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::left_only;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::left_only;
 				TL_DOWNSHIFT;
 				try_change_termination_type(world_data,
 				                            world_coords.first, world_coords.second - 2,
@@ -393,29 +402,29 @@ void jactorio::data::Transport_line::update_termination_type(game::World_data& w
 #undef TL_DOWNSHIFT
 #define TL_RIGHTSHIFT\
 	line_segment_world_x++;\
-	line_segment->segment_length++
+	line_segment.length++
 
 	case Orientation::right:
 		if (right) {
 			switch (right->orientation) {
 			case Transport_line_data::LineOrientation::right_up:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::bend_left;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::bend_left;
 				TL_RIGHTSHIFT;
 				break;
 			case Transport_line_data::LineOrientation::right_down:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::bend_right;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::bend_right;
 				TL_RIGHTSHIFT;
 				break;
 
 			case Transport_line_data::LineOrientation::down:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::right_only;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::right_only;
 				TL_RIGHTSHIFT;
 				try_change_termination_type(world_data, world_coords.first + 2, world_coords.second,
 				                            game::Transport_line_segment::TerminationType::bend_left,
 				                            game::Transport_line_segment::TerminationType::left_only);
 				break;
 			case Transport_line_data::LineOrientation::up:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::left_only;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::left_only;
 				TL_RIGHTSHIFT;
 				try_change_termination_type(world_data, world_coords.first + 2, world_coords.second,
 				                            game::Transport_line_segment::TerminationType::bend_right,
@@ -430,29 +439,29 @@ void jactorio::data::Transport_line::update_termination_type(game::World_data& w
 #undef TL_RIGHTSHIFT
 #define TL_UPSHIFT\
 	line_segment_world_y++;\
-	line_segment->segment_length++
+	line_segment.length++
 
 	case Orientation::down:
 		if (down) {
 			switch (down->orientation) {
 			case Transport_line_data::LineOrientation::down_right:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::bend_left;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::bend_left;
 				TL_UPSHIFT;
 				break;
 			case Transport_line_data::LineOrientation::down_left:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::bend_right;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::bend_right;
 				TL_UPSHIFT;
 				break;
 
 			case Transport_line_data::LineOrientation::left:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::right_only;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::right_only;
 				TL_UPSHIFT;
 				try_change_termination_type(world_data, world_coords.first, world_coords.second + 2,
 				                            game::Transport_line_segment::TerminationType::bend_left,
 				                            game::Transport_line_segment::TerminationType::left_only);
 				break;
 			case Transport_line_data::LineOrientation::right:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::left_only;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::left_only;
 				TL_UPSHIFT;
 				try_change_termination_type(world_data, world_coords.first, world_coords.second + 2,
 				                            game::Transport_line_segment::TerminationType::bend_right,
@@ -467,22 +476,22 @@ void jactorio::data::Transport_line::update_termination_type(game::World_data& w
 #undef TL_UPSHIFT
 #define TL_LEFTSHIFT\
 	line_segment_world_x--;\
-	line_segment->segment_length++
+	line_segment.length++
 
 	case Orientation::left:
 		if (left) {
 			switch (left->orientation) {
 			case Transport_line_data::LineOrientation::left_down:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::bend_left;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::bend_left;
 				TL_LEFTSHIFT;
 				break;
 			case Transport_line_data::LineOrientation::left_up:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::bend_right;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::bend_right;
 				TL_LEFTSHIFT;
 				break;
 
 			case Transport_line_data::LineOrientation::up:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::right_only;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::right_only;
 				TL_LEFTSHIFT;
 				try_change_termination_type(world_data, world_coords.first - 2, world_coords.second,
 				                            game::Transport_line_segment::TerminationType::bend_left,
@@ -490,7 +499,7 @@ void jactorio::data::Transport_line::update_termination_type(game::World_data& w
 				break;
 
 			case Transport_line_data::LineOrientation::down:
-				line_segment->termination_type = game::Transport_line_segment::TerminationType::left_only;
+				line_segment.termination_type = game::Transport_line_segment::TerminationType::left_only;
 				TL_LEFTSHIFT;
 				try_change_termination_type(world_data, world_coords.first - 2, world_coords.second,
 				                            game::Transport_line_segment::TerminationType::bend_right,
@@ -509,35 +518,95 @@ void jactorio::data::Transport_line::update_termination_type(game::World_data& w
 	}
 }
 
+jactorio::data::Transport_line_data* jactorio::data::Transport_line::group_transport_segment(const Orientation orientation,
+                                                                                             game::Chunk_tile_layer& tile_layer,
+                                                                                             line_data_4_way& line_data) {
+	game::Transport_line_segment* line_segment;
+	int line_segment_index = -1;
+
+	// Ahead
+	// Checks if there is a transport segment ahead in orientation, if so, extend its length and set line_segment to it
+	switch (orientation) {
+	case Orientation::up:
+		line_segment_index = group_transport_segment_ahead(Orientation::up, line_data);
+		break;
+	case Orientation::right:
+		line_segment_index = group_transport_segment_ahead(Orientation::right, line_data);
+		break;
+	case Orientation::down:
+		line_segment_index = group_transport_segment_ahead(Orientation::down, line_data);
+		break;
+	case Orientation::left:
+		line_segment_index = group_transport_segment_ahead(Orientation::left, line_data);
+		break;
+
+	default:
+		assert(false);  // Missing case
+		break;
+	}
+
+
+	// Failed to group, create new segment
+	if (line_segment_index == -1) {
+		line_segment = new game::Transport_line_segment{
+			static_cast<const Orientation>(orientation),
+			game::Transport_line_segment::TerminationType::straight,
+			1
+		};
+
+		line_segment_index = 0;  // 0 since this is the first tile within the new segment 
+	}
+		// Use existing segment which was found
+	else {
+		line_segment = &line_data[static_cast<int>(orientation)]->line_segment;
+	}
+
+	// Create unique data at tile
+	tile_layer.unique_data = new Transport_line_data(*line_segment);
+
+	auto* unique_data               = static_cast<Transport_line_data*>(tile_layer.unique_data);
+	unique_data->line_segment_index = line_segment_index;
+
+	return unique_data;
+}
+
+int jactorio::data::Transport_line::group_transport_segment_ahead(Orientation orientation, line_data_4_way& line_data) {
+	static_assert(static_cast<int>(Orientation::left) == 3);  // Indexing line_data will be out of range 
+
+	const auto i_orientation = static_cast<int>(orientation);
+
+	if (!line_data[i_orientation])
+		return -1;
+	if (line_data[i_orientation]->line_segment.direction != orientation)
+		return -1;
+
+	line_data[i_orientation]->line_segment.length++;
+	return line_data[i_orientation]->line_segment_index + 1;  // Line segment index
+}
+
+
 void jactorio::data::Transport_line::on_build(game::World_data& world_data,
                                               const game::World_data::world_pair& world_coords,
                                               game::Chunk_tile_layer& tile_layer,
                                               const uint16_t frame,
                                               const Orientation orientation) const {
+	auto* up    = get_line_data(world_data, world_coords.first, world_coords.second - 1);
+	auto* right = get_line_data(world_data, world_coords.first + 1, world_coords.second);
+	auto* down  = get_line_data(world_data, world_coords.first, world_coords.second + 1);
+	auto* left  = get_line_data(world_data, world_coords.first - 1, world_coords.second);
+	Transport_line_data* line_data_4[4]{up, right, down, left};
+
 	// ======================================================================
-	auto* t_center = get_line_data(world_data, world_coords.first, world_coords.second - 1);
-	auto* c_right  = get_line_data(world_data, world_coords.first + 1, world_coords.second);
-	auto* c_left   = get_line_data(world_data, world_coords.first - 1, world_coords.second);
-	auto* b_center = get_line_data(world_data, world_coords.first, world_coords.second + 1);
+	// Create data
+	Transport_line_data& line_data             = *group_transport_segment(orientation, tile_layer, line_data_4);
+	game::Transport_line_segment& line_segment = line_data.line_segment;
 
+	const Transport_line_data::LineOrientation line_orientation = get_line_orientation(orientation, up, right, down, left);
 
-	auto* line_segment = new game::Transport_line_segment{
-		static_cast<const Orientation>(orientation),
-		game::Transport_line_segment::TerminationType::straight,
-		1
-	};
+	line_data.set         = static_cast<uint16_t>(line_orientation);
+	line_data.frame       = frame;
+	line_data.orientation = line_orientation;
 
-	// Create transport line data at world_coords
-	Transport_line_data::LineOrientation line_orientation =
-		get_line_orientation(orientation, t_center, c_right, b_center, c_left);
-	{
-		tile_layer.unique_data = new Transport_line_data(*line_segment);
-		auto* data             = static_cast<Transport_line_data*>(tile_layer.unique_data);
-
-		data->set         = static_cast<uint16_t>(line_orientation);
-		data->frame       = frame;
-		data->orientation = line_orientation;
-	}
 
 	// ======================================================================
 	// Update neighbor rendering orientation
@@ -546,24 +615,20 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 	// Take the 4 transport lines neighboring the center as parameters to avoid recalculating them
 	update_neighboring_orientation(
 		world_data, world_coords,
-		t_center, c_right, b_center, c_left,
+		up, right, down, left,
 		static_cast<Transport_line_data*>(tile_layer.unique_data));
 
-	// ======================================================================
 	// Change current line segment termination type to a bend depending on neighbor termination orientation
 	// The location where the line_segment will be added to is adjusted according to the termination type of neighbors 
 	int32_t line_segment_world_x = world_coords.first;
 	int32_t line_segment_world_y = world_coords.second;
 
-	update_termination_type(world_data,
-	                        world_coords,
-	                        orientation,
-	                        t_center, c_right, b_center, c_left,
-	                        line_segment,
+	update_termination_type(world_data, world_coords, orientation,
+							line_data_4, line_segment,
 	                        line_segment_world_x, line_segment_world_y);
 
-	// Add the transport line segment to logic chunk
-	{
+	// Add the transport line segment to logic chunk IF is the first of a segment
+	if (line_data.line_segment_index == 0) {
 		auto* chunk = world_data.get_chunk(line_segment_world_x, line_segment_world_y);
 
 		auto& struct_layer =
@@ -575,27 +640,27 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 			                        game::Chunk_struct_layer::to_position(chunk->get_position().second,
 			                                                              line_segment_world_y));
 
-		struct_layer.unique_data = line_segment;
+		struct_layer.unique_data = &line_segment;
 	}
 
 	// ======================================================================
 	// Set the target_segment to the neighbor it is pointing to, or the neighbor's target segment which is pointing to this
-	if (t_center)
+	if (up)
 		update_line_targets(world_data, line_segment, orientation,
 		                    world_coords.first, world_coords.second - 1,
 		                    Orientation::up,
 		                    Orientation::down);
-	if (c_right)
+	if (right)
 		update_line_targets(world_data, line_segment, orientation,
 		                    world_coords.first + 1, world_coords.second,
 		                    Orientation::right,
 		                    Orientation::left);
-	if (b_center)
+	if (down)
 		update_line_targets(world_data, line_segment, orientation,
 		                    world_coords.first, world_coords.second + 1,
 		                    Orientation::down,
 		                    Orientation::up);
-	if (c_left)
+	if (left)
 		update_line_targets(world_data, line_segment, orientation,
 		                    world_coords.first - 1, world_coords.second,
 		                    Orientation::left,
@@ -603,7 +668,7 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 
 	// ======================================================================
 
-	update_neighboring_transport_segment(
+	update_neighbor_lines(
 		world_data,
 		world_coords.first, world_coords.second,
 		line_orientation,
@@ -620,7 +685,7 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 				auto* line_segment = static_cast<game::Transport_line_segment*>(
 					layer.unique_data);
 
-				line_segment->segment_length++;
+				line_segment->length++;
 				line_segment->termination_type = termination_type;
 
 			});
@@ -638,7 +703,7 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 				layer.position_x += world_offset_x;
 				layer.position_y += world_offset_y;
 
-				line_segment->segment_length++;
+				line_segment->length++;
 				line_segment->termination_type = termination_type;
 
 			});
@@ -659,7 +724,7 @@ void jactorio::data::Transport_line::on_neighbor_update(game::World_data& world_
 
 	// ======================================================================
 
-	const update_segment_func func =
+	const update_func func =
 		[](game::World_data& world_data,
 		   const int world_x, const int world_y,
 		   float /*world_offset_x*/, float /*world_offset_y*/,
@@ -673,7 +738,7 @@ void jactorio::data::Transport_line::on_neighbor_update(game::World_data& world_
 
 	};
 
-	const update_segment_side_only_func side_only_func =
+	const update_side_only_func side_only_func =
 		[](game::World_data& world_data,
 		   const int world_x, const int world_y,
 		   float /*world_offset_x*/, float /*world_offset_y*/,
@@ -691,10 +756,10 @@ void jactorio::data::Transport_line::on_neighbor_update(game::World_data& world_
 
 	};
 
-	update_neighboring_transport_segment(world_data,
-	                                     receive_world_coords.first, receive_world_coords.second,
-	                                     line_data->orientation,
-	                                     func, side_only_func);
+	update_neighbor_lines(world_data,
+	                      receive_world_coords.first, receive_world_coords.second,
+	                      line_data->orientation,
+	                      func, side_only_func);
 }
 
 
@@ -721,7 +786,7 @@ void nullptr_target_segment(jactorio::game::World_data& world_data,
 		case jactorio::game::Transport_line_segment::TerminationType::bend_right:
 		case jactorio::game::Transport_line_segment::TerminationType::right_only:
 		case jactorio::game::Transport_line_segment::TerminationType::left_only:
-			line_segment.segment_length--;
+			line_segment.length--;
 			line_segment.termination_type = jactorio::game::Transport_line_segment::TerminationType::straight;
 
 			// Move the neighboring line segments back if they are not straight

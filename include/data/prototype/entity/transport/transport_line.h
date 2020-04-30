@@ -45,6 +45,10 @@ namespace jactorio::data
 		/// The logic chunk line_segment associated
 		game::Transport_line_segment& line_segment;
 
+		/// The distance to the head of the transport line
+		/// \remark For rendering purposes, the length should never exceed ~2 chunks at most
+		uint8_t line_segment_index = 0;
+
 		LineOrientation orientation = LineOrientation::up;
 
 		// ======================================================================
@@ -56,9 +60,6 @@ namespace jactorio::data
 			this->orientation = orientation;
 			this->set         = static_cast<uint16_t>(orientation);
 		}
-
-		// ======================================================================
-		// Static
 
 		///
 		/// \brief Converts lineOrientation to placementOrientation
@@ -88,8 +89,9 @@ namespace jactorio::data
 				assert(false);  // Missing switch case
 				return Orientation::up;
 			}
-		} 
+		}
 	};
+
 
 	///
 	/// \brief Abstract class for all everything which moves items (belts, underground belts, splitters)
@@ -128,24 +130,26 @@ namespace jactorio::data
 		/// \brief Attempts to find transport line at world_x, world_y
 		/// \param callback Called for each Chunk_struct_layer found matching Transport_line_data at world_x, world_y
 		static void get_line_struct_layer(game::World_data& world_data,
-		                                            game::World_data::world_coord world_x,
-		                                            game::World_data::world_coord world_y,
-		                                            const std::function<void(game::Chunk_struct_layer&)>& callback);
+		                                  game::World_data::world_coord world_x,
+		                                  game::World_data::world_coord world_y,
+		                                  const std::function<void(game::Chunk_struct_layer&)>& callback);
 		// ======================================================================
 		// Game events
 	private:
+		/// Up, right, down, left
+		using line_data_4_way = Transport_line_data*[4];
+
 		///
 		///	\brief Updates the orientation of current and neighboring transport lines 
 		static void update_neighboring_orientation(const game::World_data& world_data,
-		                                           const game::World_data::world_pair
-		                                           & world_coords,
+		                                           const game::World_data::world_pair& world_coords,
 		                                           Transport_line_data* t_center,
 		                                           Transport_line_data* c_right,
 		                                           Transport_line_data* b_center,
 		                                           Transport_line_data* c_left,
 		                                           Transport_line_data* center);
 
-		using update_segment_func = std::function<
+		using update_func = std::function<
 			void(game::World_data& world_data,
 			     int world_x,
 			     int world_y,
@@ -153,7 +157,7 @@ namespace jactorio::data
 			     float world_offset_y,
 			     game::Transport_line_segment::TerminationType termination_type)>;
 
-		using update_segment_side_only_func = std::function<
+		using update_side_only_func = std::function<
 			void(game::World_data& world_data,
 			     int world_x,
 			     int world_y,
@@ -163,27 +167,53 @@ namespace jactorio::data
 			     game::Transport_line_segment::TerminationType termination_type)>;
 
 		///
-		/// \brief Change the neighboring line segment termination type to a bend depending on Transport_line_data orientation
-		/// Since the line_orientations were applied, it is confirmed that segments exist at neighboring locations
+		/// \brief Calls func or side_only_func depending on the line_orientation, provides parameters on how neighboring lines
+		/// should be modified.
 		/// \remark This does not move across logic chunks and may make the position negative
 		/// \param func Called when line orientation is bending for updating provided line segment
 		/// \param side_only_func Called when line orientation is straight for updating provided line segment 
-		static void update_neighboring_transport_segment(game::World_data& world_data,
-		                                                 int32_t world_x,
-		                                                 int32_t world_y,
-		                                                 Transport_line_data::LineOrientation line_orientation,
-		                                                 const update_segment_func& func,
-		                                                 const update_segment_side_only_func& side_only_func);
+		static void update_neighbor_lines(game::World_data& world_data,
+		                                  int32_t world_x,
+		                                  int32_t world_y,
+		                                  Transport_line_data::LineOrientation line_orientation,
+		                                  const update_func& func,
+		                                  const update_side_only_func& side_only_func);
 
 		static void update_termination_type(game::World_data& world_data,
 		                                    const game::World_data::world_pair& world_coords,
 		                                    Orientation orientation,
-		                                    Transport_line_data* up,
-		                                    Transport_line_data* right,
-		                                    Transport_line_data* down,
-		                                    Transport_line_data* left,
-		                                    game::Transport_line_segment* line_segment,
+											line_data_4_way& line_data,
+		                                    game::Transport_line_segment& line_segment,
 		                                    int32_t& line_segment_world_x, int32_t& line_segment_world_y);
+		/*
+		 * Transport line grouping rules:
+		 *
+		 * < < < [1, 2, 3] - Direction [order];
+		 * Line ahead:
+		 *		- Extends length of transport line segment
+		 *
+		 * < < < [3, 2, 1]
+		 * Line behind:
+		 *		- Moves head of transport segment, shift leading item 1 tile back
+		 *		
+		 * < < < [1, 3, 2]
+		 * Line ahead and behind:
+		 *		- Behaves as line ahead
+		 */
+		///
+		/// \brief Groups transport segments
+		/// Sets the transport segment grouped / newly created with in tile_layer and returns it
+		static Transport_line_data* group_transport_segment(Orientation orientation,
+															game::Chunk_tile_layer& tile_layer,
+		                                                    line_data_4_way& line_data);
+
+		///
+		/// \brief Attempts to find and group with a transport ahead in the provided orientation 
+		/// \param orientation
+		/// \param line_data The 4 neighboring transport segments in N,E,S,W order
+		/// \return -1 if failed to group, otherwise line segment index
+		static int group_transport_segment_ahead(Orientation orientation,
+		                                         line_data_4_way& line_data);
 	public:
 		void on_build(game::World_data& world_data,
 		              const game::World_data::world_pair& world_coords,

@@ -79,30 +79,30 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 					pos_x = l_struct.position_x;
 					pos_y = l_struct.position_y;
 					segment_len_x = 1;
-					segment_len_y = line_segment->segment_length;
+					segment_len_y = line_segment->length;
 
 					direction_sprite = sprite_up;
 					break;
 				case data::Orientation::right:
-					pos_x = l_struct.position_x - line_segment->segment_length + 1;
+					pos_x = l_struct.position_x - line_segment->length + 1;
 					pos_y = l_struct.position_y;
-					segment_len_x = line_segment->segment_length;
+					segment_len_x = line_segment->length;
 					segment_len_y = 1;
 
 					direction_sprite = sprite_right;
 					break;
 				case data::Orientation::down:
 					pos_x = l_struct.position_x;
-					pos_y = l_struct.position_y - line_segment->segment_length + 1;
+					pos_y = l_struct.position_y - line_segment->length + 1;
 					segment_len_x = 1;
-					segment_len_y = line_segment->segment_length;
+					segment_len_y = line_segment->length;
 
 					direction_sprite = sprite_down;
 					break;
 				case data::Orientation::left:
 					pos_x = l_struct.position_x;
 					pos_y = l_struct.position_y;
-					segment_len_x = line_segment->segment_length;
+					segment_len_x = line_segment->length;
 					segment_len_y = 1;
 
 					direction_sprite = sprite_left;
@@ -297,7 +297,7 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 			ImGui::Text("Target segment: %s", segment.target_segment ? sstream2.str().c_str() : "NULL");
 		}
 
-		ImGui::Text("Segment length: %d", segment.segment_length);
+		ImGui::Text("Segment length: %d", segment.length);
 
 		{
 			std::string s;

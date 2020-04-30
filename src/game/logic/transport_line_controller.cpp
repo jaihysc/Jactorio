@@ -100,7 +100,7 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 		if (segment->target_segment) {
 			jactorio::transport_line_offset target_offset =
 				dec::decimal_cast<jactorio::transport_line_decimal_place>(
-					static_cast<double>(segment->target_segment->segment_length) - fabs(
+					static_cast<double>(segment->target_segment->length) - fabs(
 						offset.getAsDouble()));  // From start of line
 
 			jactorio::transport_line_offset target_offset_tile;  // From previous item

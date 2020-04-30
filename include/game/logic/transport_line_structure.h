@@ -60,14 +60,14 @@ namespace jactorio::game
 
 		Transport_line_segment(const data::Orientation direction, const TerminationType termination_type,
 		                       const uint8_t segment_length)
-			: direction(direction), termination_type(termination_type), segment_length(segment_length) {
+			: direction(direction), termination_type(termination_type), length(segment_length) {
 		}
 
 		Transport_line_segment(const data::Orientation direction, const TerminationType termination_type,
 		                       Transport_line_segment* target_segment, const uint8_t segment_length)
 			: direction(direction), target_segment(target_segment),
 			  termination_type(termination_type),
-			  segment_length(segment_length) {
+			  length(segment_length) {
 		}
 
 		// Each item's distance (in tiles) to the next item or the end of this transport line segment
@@ -101,7 +101,7 @@ namespace jactorio::game
 
 
 		/// Length of this segment in tiles
-		uint8_t segment_length;
+		uint8_t length;
 
 		// ======================================================================
 
