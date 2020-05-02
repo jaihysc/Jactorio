@@ -20,8 +20,8 @@
 #include "renderer/gui/gui_menus.h"
 #include "renderer/rendering/mvp_manager.h"
 
-bool show_timings_window = false;
-bool show_demo_window = false;
+bool show_timings_window      = false;
+bool show_demo_window         = false;
 bool show_item_spawner_window = false;
 
 // Game
@@ -77,7 +77,7 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 
 				case data::Orientation::up:
 					pos_x = l_struct.position_x;
-					pos_y = l_struct.position_y;
+					pos_y         = l_struct.position_y;
 					segment_len_x = 1;
 					segment_len_y = line_segment->length;
 
@@ -85,7 +85,7 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 					break;
 				case data::Orientation::right:
 					pos_x = l_struct.position_x - line_segment->length + 1;
-					pos_y = l_struct.position_y;
+					pos_y         = l_struct.position_y;
 					segment_len_x = line_segment->length;
 					segment_len_y = 1;
 
@@ -93,7 +93,7 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 					break;
 				case data::Orientation::down:
 					pos_x = l_struct.position_x;
-					pos_y = l_struct.position_y - line_segment->length + 1;
+					pos_y         = l_struct.position_y - line_segment->length + 1;
 					segment_len_x = 1;
 					segment_len_y = line_segment->length;
 
@@ -101,7 +101,7 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 					break;
 				case data::Orientation::left:
 					pos_x = l_struct.position_x;
-					pos_y = l_struct.position_y;
+					pos_y         = l_struct.position_y;
 					segment_len_x = line_segment->length;
 					segment_len_y = 1;
 
@@ -255,7 +255,7 @@ bool use_last_valid_line_segment = false;
 void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& player_data) {
 	ImGui::Begin("Transport Line Info");
 
-	const auto selected_tile = player_data.get_mouse_tile_coords();
+	const auto selected_tile        = player_data.get_mouse_tile_coords();
 	data::Transport_line_data* data = data::Transport_line::get_line_data(player_data.get_player_world(),
 	                                                                      selected_tile.first, selected_tile.second);
 
@@ -265,14 +265,13 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 	ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 	if (data) {
 		last_valid_line_segment = selected_tile;
-		segment_ptr = &data->line_segment;
+		segment_ptr             = &data->line_segment;
 	}
 	else {
 		if (use_last_valid_line_segment) {
-			data::Transport_line_data* data =
-				data::Transport_line::get_line_data(player_data.get_player_world(),
-				                                    last_valid_line_segment.first,
-				                                    last_valid_line_segment.second);
+			data = data::Transport_line::get_line_data(player_data.get_player_world(),
+			                                           last_valid_line_segment.first,
+			                                           last_valid_line_segment.second);
 			if (data)
 				segment_ptr = &data->line_segment;
 		}
@@ -282,6 +281,7 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 		ImGui::Text("Selected tile is not a transport line");
 	}
 	else {
+		assert(data != nullptr);
 		game::Transport_line_segment& segment = *segment_ptr;
 
 		// Show transport line properties
@@ -297,7 +297,7 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 			ImGui::Text("Target segment: %s", segment.target_segment ? sstream2.str().c_str() : "NULL");
 		}
 
-		ImGui::Text("Segment length: %d", segment.length);
+		ImGui::Text("Length, Index: %d %d", segment.length, data->line_segment_index);
 
 		{
 			std::string s;

@@ -129,10 +129,11 @@ namespace jactorio::data
 		///
 		/// \brief Attempts to find transport line at world_x, world_y
 		/// \param callback Called for each Chunk_struct_layer found matching Transport_line_data at world_x, world_y
+		/// \return Logic_chunk if it exists, otherwise nullptr
 		static void get_line_struct_layer(game::World_data& world_data,
 		                                  game::World_data::world_coord world_x,
 		                                  game::World_data::world_coord world_y,
-		                                  const std::function<void(game::Chunk_struct_layer&)>& callback);
+		                                  const std::function<void(game::Chunk_struct_layer&, game::Logic_chunk&)>& callback);
 		// ======================================================================
 		// Game events
 	private:
@@ -182,9 +183,15 @@ namespace jactorio::data
 		static void update_termination_type(game::World_data& world_data,
 		                                    const game::World_data::world_pair& world_coords,
 		                                    Orientation orientation,
-											line_data_4_way& line_data,
+		                                    line_data_4_way& line_data,
 		                                    game::Transport_line_segment& line_segment,
 		                                    int32_t& line_segment_world_x, int32_t& line_segment_world_y);
+
+		///
+		/// \brief Finds line_segment from struct_layers and removes it
+		static void remove_line_segment(game::Transport_line_segment& line_segment,
+										std::vector<game::Chunk_struct_layer>& struct_layers);
+
 		/*
 		 * Transport line grouping rules:
 		 *
@@ -200,20 +207,24 @@ namespace jactorio::data
 		 * Line ahead and behind:
 		 *		- Behaves as line ahead
 		 */
-		///
-		/// \brief Groups transport segments
-		/// Sets the transport segment grouped / newly created with in tile_layer and returns it
-		static Transport_line_data* group_transport_segment(Orientation orientation,
-															game::Chunk_tile_layer& tile_layer,
-		                                                    line_data_4_way& line_data);
+
+		enum class Init_segment_status
+		{
+			new_segment,
+			group_behind,
+			group_ahead
+		};
 
 		///
-		/// \brief Attempts to find and group with a transport ahead in the provided orientation 
-		/// \param orientation
-		/// \param line_data The 4 neighboring transport segments in N,E,S,W order
-		/// \return -1 if failed to group, otherwise line segment index
-		static int group_transport_segment_ahead(Orientation orientation,
-		                                         line_data_4_way& line_data);
+		/// \brief Initializes line data and groups transport segments
+		/// Sets the transport segment grouped / newly created with in tile_layer and returns it
+		/// \return Created data for at tile_layer
+		static std::pair<Transport_line_data*, Init_segment_status> init_transport_segment(game::World_data& world_data,
+		                                                                                   const game::World_data::world_pair&
+		                                                                                   world_coords,
+		                                                                                   Orientation orientation,
+		                                                                                   game::Chunk_tile_layer& tile_layer,
+		                                                                                   line_data_4_way& line_data);
 	public:
 		void on_build(game::World_data& world_data,
 		              const game::World_data::world_pair& world_coords,

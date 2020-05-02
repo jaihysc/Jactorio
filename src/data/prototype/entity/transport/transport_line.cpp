@@ -101,19 +101,21 @@ jactorio::data::Transport_line_data* jactorio::data::Transport_line::get_line_da
 void jactorio::data::Transport_line::get_line_struct_layer(game::World_data& world_data,
                                                            const game::World_data::world_coord world_x,
                                                            const game::World_data::world_coord world_y,
-                                                           const std::function<void(game::Chunk_struct_layer&)>&
+                                                           const std::function<void(game::Chunk_struct_layer&, game::Logic_chunk&)>&
                                                            callback) {
 	Transport_line_data* line_data =
 		get_line_data(world_data, world_x, world_y);
 	if (!line_data)  // Transport lines does not exist
 		return;
 
-	std::vector<game::Chunk_struct_layer>* transport_structures;
+	game::Logic_chunk* logic_chunk;
 	try {
-		transport_structures =
-			&world_data.logic_get_chunk(world_data.get_chunk(world_x, world_y))->
-			            get_struct(game::Logic_chunk::structLayer::transport_line);
+		logic_chunk = world_data.logic_get_chunk(
+			world_data.get_chunk(world_x, world_y)
+		);
 
+		if (!logic_chunk)
+			return;
 	}
 	catch (std::out_of_range&) {
 		// Failed to find key (Logic chunk does not exist)
@@ -123,9 +125,9 @@ void jactorio::data::Transport_line::get_line_struct_layer(game::World_data& wor
 
 	// Search for the transport line in the chunk struct layer where the
 	// unique_data(Transport_line_data) == one referenced by line_data
-	for (auto& layer : *transport_structures) {
+	for (auto& layer : logic_chunk->get_struct(game::Logic_chunk::structLayer::transport_line)) {
 		if (layer.unique_data == &line_data->line_segment)
-			callback(layer);
+			callback(layer, *logic_chunk);
 	}
 }
 
@@ -518,48 +520,98 @@ void jactorio::data::Transport_line::update_termination_type(game::World_data& w
 	}
 }
 
-jactorio::data::Transport_line_data* jactorio::data::Transport_line::group_transport_segment(const Orientation orientation,
-                                                                                             game::Chunk_tile_layer& tile_layer,
-                                                                                             line_data_4_way& line_data) {
+std::pair<jactorio::data::Transport_line_data*, jactorio::data::Transport_line::Init_segment_status>
+jactorio::data::Transport_line::init_transport_segment(game::World_data& world_data,
+                                                       const game::World_data::world_pair&
+                                                       world_coords,
+                                                       const Orientation orientation,
+                                                       game::Chunk_tile_layer& tile_layer,
+                                                       line_data_4_way& line_data) {
+	static_assert(static_cast<int>(Orientation::left) == 3);  // Indexing line_data will be out of range 
+
 	game::Transport_line_segment* line_segment;
-	int line_segment_index = -1;
+	int line_segment_index = 0;
 
-	// Ahead
-	// Checks if there is a transport segment ahead in orientation, if so, extend its length and set line_segment to it
-	switch (orientation) {
-	case Orientation::up:
-		line_segment_index = group_transport_segment_ahead(Orientation::up, line_data);
-		break;
-	case Orientation::right:
-		line_segment_index = group_transport_segment_ahead(Orientation::right, line_data);
-		break;
-	case Orientation::down:
-		line_segment_index = group_transport_segment_ahead(Orientation::down, line_data);
-		break;
-	case Orientation::left:
-		line_segment_index = group_transport_segment_ahead(Orientation::left, line_data);
-		break;
+	Init_segment_status status;
+	const auto index = static_cast<int>(orientation);
 
-	default:
-		assert(false);  // Missing case
-		break;
+	if (!line_data[index] ||
+		line_data[index]->line_segment.direction != orientation) {
+
+		// Failed to group with ahead, try to group with segment behind
+		const int i_index = invert_orientation(index);
+
+		bool create_new_segment = true;
+		if (line_data[i_index] &&
+			line_data[i_index]->line_segment.direction == orientation) {
+
+			// Group behind
+
+			// The transport segment's position is adjusted by init_transport_segment
+			// Move the segment head behind forwards to current position
+
+// Sets cross_l_chunk to true if l_chunk from lambda does not equal origin_l_chunk
+#define TEST_CROSS_LOGIC_CHUNK if (origin_l_chunk != &l_chunk) { cross_l_chunk = true; return; }
+			auto* origin_l_chunk = world_data.logic_get_chunk(world_data.get_chunk(world_coords));
+			bool cross_l_chunk = false;
+
+			switch (orientation) {
+			case Orientation::up:
+				get_line_struct_layer(world_data, world_coords.first, world_coords.second + 1,
+				                      [&](auto& s, auto& l_chunk) { TEST_CROSS_LOGIC_CHUNK --s.position_y; });
+				break;
+			case Orientation::right:
+				get_line_struct_layer(world_data, world_coords.first - 1, world_coords.second,
+				                      [&](auto& s, auto& l_chunk) { TEST_CROSS_LOGIC_CHUNK ++s.position_x; });
+				break;
+			case Orientation::down:
+				get_line_struct_layer(world_data, world_coords.first, world_coords.second - 1,
+				                      [&](auto& s, auto& l_chunk) { TEST_CROSS_LOGIC_CHUNK ++s.position_y; });
+				break;
+			case Orientation::left:
+				get_line_struct_layer(world_data, world_coords.first + 1, world_coords.second,
+				                      [&](auto& s, auto& l_chunk) { TEST_CROSS_LOGIC_CHUNK --s.position_x; });
+				break;
+
+			default:
+				assert(false);  // Missing case
+				break;
+			}
+#undef TEST_CROSS_LOGIC_CHUNK
+
+			// Within the same logic chunk = Can group behind
+			if (!cross_l_chunk) {
+				line_segment = &line_data[static_cast<int>(invert_orientation(orientation))]->line_segment;
+				line_data[i_index]->line_segment.length++;
+
+				status = Init_segment_status::group_behind;
+				create_new_segment = false;
+			}
+		}
+
+		if (create_new_segment) {
+			// FAILED to group behind and ahead
+
+			line_segment = new game::Transport_line_segment{
+				static_cast<const Orientation>(orientation),
+				game::Transport_line_segment::TerminationType::straight,
+				1
+			};
+
+			status = Init_segment_status::new_segment;
+		}
 	}
-
-
-	// Failed to group, create new segment
-	if (line_segment_index == -1) {
-		line_segment = new game::Transport_line_segment{
-			static_cast<const Orientation>(orientation),
-			game::Transport_line_segment::TerminationType::straight,
-			1
-		};
-
-		line_segment_index = 0;  // 0 since this is the first tile within the new segment 
-	}
-		// Use existing segment which was found
+		// Grouped ahead
 	else {
-		line_segment = &line_data[static_cast<int>(orientation)]->line_segment;
+		line_segment = &line_data[index]->line_segment;
+
+		line_data[index]->line_segment.length++;
+		line_segment_index = line_data[index]->line_segment_index + 1; 
+
+		status = Init_segment_status::group_ahead;
 	}
+
+	// ======================================================================
 
 	// Create unique data at tile
 	tile_layer.unique_data = new Transport_line_data(*line_segment);
@@ -567,23 +619,8 @@ jactorio::data::Transport_line_data* jactorio::data::Transport_line::group_trans
 	auto* unique_data               = static_cast<Transport_line_data*>(tile_layer.unique_data);
 	unique_data->line_segment_index = line_segment_index;
 
-	return unique_data;
+	return {unique_data, status};
 }
-
-int jactorio::data::Transport_line::group_transport_segment_ahead(Orientation orientation, line_data_4_way& line_data) {
-	static_assert(static_cast<int>(Orientation::left) == 3);  // Indexing line_data will be out of range 
-
-	const auto i_orientation = static_cast<int>(orientation);
-
-	if (!line_data[i_orientation])
-		return -1;
-	if (line_data[i_orientation]->line_segment.direction != orientation)
-		return -1;
-
-	line_data[i_orientation]->line_segment.length++;
-	return line_data[i_orientation]->line_segment_index + 1;  // Line segment index
-}
-
 
 void jactorio::data::Transport_line::on_build(game::World_data& world_data,
                                               const game::World_data::world_pair& world_coords,
@@ -598,7 +635,10 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 
 	// ======================================================================
 	// Create data
-	Transport_line_data& line_data             = *group_transport_segment(orientation, tile_layer, line_data_4);
+	const auto init_data = init_transport_segment(world_data, world_coords, orientation, tile_layer, line_data_4);
+	const Init_segment_status init_status = init_data.second;
+
+	Transport_line_data& line_data             = *init_data.first;
 	game::Transport_line_segment& line_segment = line_data.line_segment;
 
 	const Transport_line_data::LineOrientation line_orientation = get_line_orientation(orientation, up, right, down, left);
@@ -624,11 +664,54 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 	int32_t line_segment_world_y = world_coords.second;
 
 	update_termination_type(world_data, world_coords, orientation,
-							line_data_4, line_segment,
+	                        line_data_4, line_segment,
 	                        line_segment_world_x, line_segment_world_y);
 
-	// Add the transport line segment to logic chunk IF is the first of a segment
-	if (line_data.line_segment_index == 0) {
+	if (init_status == Init_segment_status::group_behind) {
+		// A line segment behind
+		line_data.line_segment_index = 0;
+
+		uint64_t x_offset = 0;
+		uint64_t y_offset = 0;
+
+		// Should be -1, 0, 1 depending on orientation
+		uint64_t x_change = 0;
+		uint64_t y_change = 0;
+
+		switch (orientation) {
+		case Orientation::up:
+			y_change = 1;
+			break;
+		case Orientation::right:
+			x_change = -1;
+			break;
+		case Orientation::down:
+			y_change = -1;
+			break;
+		case Orientation::left:
+			x_change = 1;
+			break;
+
+		default:
+			assert(false);
+			break;
+		}
+
+		// Adjust the segment index number of all following segments 
+		for (int i = 0; i < line_segment.length; ++i) {
+			auto* i_line_data = get_line_data(world_data,
+			                                  world_coords.first + x_offset,
+			                                  world_coords.second + y_offset);
+			if (!i_line_data)
+				continue;
+			i_line_data->line_segment_index = i;
+
+			x_offset += x_change;
+			y_offset += y_change;
+		}
+	}
+	else if (init_status == Init_segment_status::new_segment) {
+		// Add the transport line segment to logic chunk IF is the first of a NEW segment
 		auto* chunk = world_data.get_chunk(line_segment_world_x, line_segment_world_y);
 
 		auto& struct_layer =
@@ -678,7 +761,7 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 		   const float world_offset_x, const float world_offset_y,
 		   const game::Transport_line_segment::TerminationType termination_type) {
 
-			get_line_struct_layer(world_data, world_x, world_y, [&](auto& layer) {
+			get_line_struct_layer(world_data, world_x, world_y, [&](auto& layer, auto&) {
 				layer.position_x += world_offset_x;
 				layer.position_y += world_offset_y;
 
@@ -695,7 +778,7 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 		      const Orientation direction,
 		      const game::Transport_line_segment::TerminationType termination_type) {
 
-			get_line_struct_layer(world_data, world_x, world_y, [&](auto& layer) {
+			get_line_struct_layer(world_data, world_x, world_y, [&](auto& layer, auto&) {
 				auto* line_segment = static_cast<game::Transport_line_segment*>(layer.unique_data);
 				if (line_segment->direction != direction)
 					return;
@@ -730,7 +813,7 @@ void jactorio::data::Transport_line::on_neighbor_update(game::World_data& world_
 		   float /*world_offset_x*/, float /*world_offset_y*/,
 		   game::Transport_line_segment::TerminationType termination_type) {
 
-		get_line_struct_layer(world_data, world_x, world_y, [&](auto& layer) {
+		get_line_struct_layer(world_data, world_x, world_y, [&](auto& layer, auto&) {
 			auto* line_segment             = static_cast<game::Transport_line_segment*>(layer.unique_data);
 			line_segment->termination_type = termination_type;
 
@@ -745,7 +828,7 @@ void jactorio::data::Transport_line::on_neighbor_update(game::World_data& world_
 		   Orientation direction,
 		   game::Transport_line_segment::TerminationType termination_type) {
 
-		get_line_struct_layer(world_data, world_x, world_y, [&](auto& layer) {
+		get_line_struct_layer(world_data, world_x, world_y, [&](auto& layer, auto&) {
 			auto* line_segment = static_cast<game::Transport_line_segment*>(layer.unique_data);
 			if (line_segment->direction != direction)
 				return;
@@ -793,25 +876,25 @@ void nullptr_target_segment(jactorio::game::World_data& world_data,
 			switch (line_segment.direction) {
 			case jactorio::data::Orientation::up:
 				jactorio::data::Transport_line::get_line_struct_layer(
-					world_data, world_coords.first, world_coords.second + 1, [](auto& layer) {
+					world_data, world_coords.first, world_coords.second + 1, [](auto& layer, auto&) {
 						++layer.position_y;
 					});
 				break;
 			case jactorio::data::Orientation::right:
 				jactorio::data::Transport_line::get_line_struct_layer(
-					world_data, world_coords.first - 1, world_coords.second, [](auto& layer) {
+					world_data, world_coords.first - 1, world_coords.second, [](auto& layer, auto&) {
 						--layer.position_x;
 					});
 				break;
 			case jactorio::data::Orientation::down:
 				jactorio::data::Transport_line::get_line_struct_layer(
-					world_data, world_coords.first, world_coords.second - 1, [](auto& layer) {
+					world_data, world_coords.first, world_coords.second - 1, [](auto& layer, auto&) {
 						--layer.position_y;
 					});
 				break;
 			case jactorio::data::Orientation::left:
 				jactorio::data::Transport_line::get_line_struct_layer(
-					world_data, world_coords.first + 1, world_coords.second, [](auto& layer) {
+					world_data, world_coords.first + 1, world_coords.second, [](auto& layer, auto&) {
 						++layer.position_x;
 					});
 				break;

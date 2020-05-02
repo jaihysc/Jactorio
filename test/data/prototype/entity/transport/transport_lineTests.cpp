@@ -166,7 +166,7 @@ namespace data::prototype
 			                  ->get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
 		}
 
-		J_NODISCARD auto& get_line_segment(const jactorio::game::World_data::world_pair& world_coords) const {
+		J_NODISCARD auto& get_line_data(const jactorio::game::World_data::world_pair& world_coords) const {
 			return *static_cast<const jactorio::data::Transport_line_data*>(
 				world_data_.get_tile(world_coords)->get_layer(
 					jactorio::game::Chunk_tile::chunkLayer::entity).unique_data
@@ -174,25 +174,29 @@ namespace data::prototype
 		}
 
 		auto get_line_segment_index(const jactorio::game::World_data::world_pair& world_coords) const {
-			return get_line_segment(world_coords).line_segment_index;
+			return get_line_data(world_coords).line_segment_index;
 		}
 
 
-		void group_ahead_validate() {
-			ASSERT_EQ(get_transport_lines({0, 0}).size(), 1);
-			EXPECT_EQ(get_line_segment({0, 0}).line_segment.length, 2);
+		///
+		/// \param first Leading segment
+		/// \param second Segment placed behind leading segment
+		void group_ahead_validate(const jactorio::game::World_data::world_pair& first,
+								  const jactorio::game::World_data::world_pair& second) {
+			ASSERT_EQ(get_transport_lines({0, 0}).size(), 1);  // 0, 0 is chunk coordinate
+			EXPECT_EQ(get_line_data(first).line_segment.length, 2);
 
-			EXPECT_EQ(get_line_segment_index({0, 0}), 0);
-			EXPECT_EQ(get_line_segment_index({0, 1}), 1);
+			EXPECT_EQ(get_line_segment_index(first), 0);
+			EXPECT_EQ(get_line_segment_index(second), 1);
 
-			EXPECT_EQ(get_line_segment({0, 0}).line_segment.target_segment, nullptr);
+			EXPECT_EQ(get_line_data(first).line_segment.target_segment, nullptr);
 
 			// Ensure the head is at the correct location
 			jactorio::data::Transport_line::get_line_struct_layer(
 				world_data_,
-				0, 0, [](jactorio::game::Chunk_struct_layer& layer) {
-					EXPECT_EQ(layer.position_x, 0);
-					EXPECT_EQ(layer.position_y, 0);
+				first.first, first.second, [&](jactorio::game::Chunk_struct_layer& layer, auto&) {
+					EXPECT_FLOAT_EQ(layer.position_x, first.first);  // Validation of logic chunk position only valid when within a single chunk
+					EXPECT_FLOAT_EQ(layer.position_y, first.second);
 				});
 		}
 	};
@@ -307,11 +311,11 @@ namespace data::prototype
 		std::vector<jactorio::game::Chunk_struct_layer>& struct_layer =
 			logic_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
 
-		ASSERT_EQ(struct_layer.size(), 3);
-		EXPECT_FLOAT_EQ(struct_layer[2].position_x, 1.f);
-		EXPECT_FLOAT_EQ(struct_layer[2].position_y, 0.f);
+		ASSERT_EQ(struct_layer.size(), 2);
+		EXPECT_FLOAT_EQ(struct_layer[1].position_x, 1.f);
+		EXPECT_FLOAT_EQ(struct_layer[1].position_y, 0.f);
 
-		auto* line_segment = static_cast<jactorio::game::Transport_line_segment*>(struct_layer[2].unique_data);
+		auto* line_segment = static_cast<jactorio::game::Transport_line_segment*>(struct_layer[1].unique_data);
 		EXPECT_EQ(line_segment->termination_type, jactorio::game::Transport_line_segment::TerminationType::bend_right);
 		EXPECT_EQ(line_segment->length, 2);
 	}
@@ -1104,7 +1108,7 @@ namespace data::prototype
 		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::up,
 		                   0, 1);
 
-		group_ahead_validate();
+		group_ahead_validate({0, 0}, {0, 1});
 	}
 
 	TEST_F(TransportLineTest, OnBuildUpGroupBehind) {
@@ -1118,7 +1122,29 @@ namespace data::prototype
 		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::up,
 		                   0, 0);
 
-		group_ahead_validate();
+		group_ahead_validate({0, 0}, {0, 1});
+	}
+
+	TEST_F(TransportLineTest, OnBuildUpGroupBehindCrossChunk) {
+		// Since grouping ahead requires adjustment of a position within the current logic chunk, crossing chunks requires special logic
+		world_data_.add_chunk(new jactorio::game::Chunk{0, -1});
+
+		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::up,
+		                   0, 0);
+		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::up,
+		                   0, -1);
+
+		bool found = false;
+		jactorio::data::Transport_line::get_line_struct_layer(
+			world_data_, 0, -1,
+			[&found](auto& s_layer, auto&) mutable {
+				found = true;
+				auto& data = *static_cast<jactorio::game::Transport_line_segment*>(s_layer.unique_data);
+
+				EXPECT_EQ(data.length, 1);
+			});
+
+		EXPECT_TRUE(found);
 	}
 
 	TEST_F(TransportLineTest, OnBuildRightGroupAhead) {
@@ -1130,11 +1156,19 @@ namespace data::prototype
 		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::right,
 		                   0, 0);
 
-		ASSERT_EQ(get_transport_lines({0, 0}).size(), 1);
-		EXPECT_EQ(get_line_segment({1, 0}).line_segment.length, 2);
+		group_ahead_validate({1, 0}, {0, 0});
+	}
 
-		EXPECT_EQ(get_line_segment_index({0, 0}), 1);
-		EXPECT_EQ(get_line_segment_index({1, 0}), 0);
+	TEST_F(TransportLineTest, OnBuildRightGroupBehind) {
+		/*
+		 * > >
+		 */
+		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::right,
+		                   0, 0);
+		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::right,
+		                   1, 0);
+
+		group_ahead_validate({1, 0}, {0, 0});
 	}
 
 	TEST_F(TransportLineTest, OnBuildDownGroupAhead) {
@@ -1147,11 +1181,20 @@ namespace data::prototype
 		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::down,
 		                   0, 0);
 
-		ASSERT_EQ(get_transport_lines({0, 0}).size(), 1);
-		EXPECT_EQ(get_line_segment({0, 1}).line_segment.length, 2);
+		group_ahead_validate({0, 1}, {0, 0});
+	}
 
-		EXPECT_EQ(get_line_segment_index({0, 0}), 1);
-		EXPECT_EQ(get_line_segment_index({0, 1}), 0);
+	TEST_F(TransportLineTest, OnBuildDownGroupBehind) {
+		/*
+		 * v
+		 * v
+		 */
+		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::down,
+		                   0, 0);
+		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::down,
+		                   0, 1);
+
+		group_ahead_validate({0, 1}, {0, 0});
 	}
 
 	TEST_F(TransportLineTest, OnBuildLeftGroupAhead) {
@@ -1163,11 +1206,19 @@ namespace data::prototype
 		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::left,
 		                   1, 0);
 
-		ASSERT_EQ(get_transport_lines({0, 0}).size(), 1);
-		EXPECT_EQ(get_line_segment({0, 0}).line_segment.length, 2);
+		group_ahead_validate({0, 0}, {1, 0});
+	}
 
-		EXPECT_EQ(get_line_segment_index({0, 0}), 0);
-		EXPECT_EQ(get_line_segment_index({1, 0}), 1);
+	TEST_F(TransportLineTest, OnBuildLeftGroupBehind) {
+		/*
+		 * < <
+		 */
+		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::left,
+		                   1, 0);
+		add_transport_line(jactorio::data::Transport_line_data::LineOrientation::left,
+		                   0, 0);
+
+		group_ahead_validate({0, 0}, {1, 0});
 	}
 
 	// ======================================================================
