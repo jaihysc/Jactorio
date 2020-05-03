@@ -17,4 +17,26 @@ namespace data
 		EXPECT_EQ(invert_orientation(2), 0);
 		EXPECT_EQ(invert_orientation(3), 1);
 	}
+
+	TEST(Orientation, OrientationIncrement) {
+		using namespace jactorio::data;
+
+		int i = 0;
+		orientation_increment<int>(Orientation::up, i, i);
+		EXPECT_EQ(i, -1);
+		
+		int j = 0;
+		int j_y = 0;
+		orientation_increment<int>(Orientation::right, j, j_y);
+		EXPECT_EQ(j, 1);
+
+		int k = 0;
+		int k_y = 0;
+		orientation_increment<int>(Orientation::down, k, k_y);
+		EXPECT_EQ(k_y, 1);
+
+		int l = 0;
+		orientation_increment<int>(Orientation::left, l, l, 2);
+		EXPECT_EQ(l, -2);
+	}
 }

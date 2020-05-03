@@ -28,6 +28,34 @@ namespace jactorio::data
 			invert_orientation(static_cast<int>(orientation))
 		); 
 	}
+
+	///
+	/// \brief Increments or decrements Ty var depending on orientation.
+	/// up--, right++, down++, left--
+	/// \remark Type must implement operator+= and operator-=
+	/// \remark if incrementer type not provided, Typeof x will bw used
+	template <typename TyX, typename TyY, typename TyInc = TyX>
+	void orientation_increment(const Orientation orientation, 
+							   TyX& x, TyY& y, TyInc increment = 1) {
+		switch (orientation) {
+		case Orientation::up:
+			y -= increment;
+			break;
+		case Orientation::right:
+			x += increment;
+			break;
+		case Orientation::down:
+			y += increment;
+			break;
+		case Orientation::left:
+			x -= increment;
+			break;
+
+		default:
+			assert(false);
+			break;
+		}
+	}
 }
 
 #endif // JACTORIO_DATA_PROTOTYPE_PLACEMENT_ORIENTATION_H

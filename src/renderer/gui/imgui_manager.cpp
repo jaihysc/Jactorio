@@ -196,6 +196,8 @@ void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_dat
 	else {
 		draw_menu(gui::menu::character_menu, player_data);
 	}
+	// What the player is holding
+	gui::cursor_window(player_data);
 
 	// Render
 	ImGui::Render();
