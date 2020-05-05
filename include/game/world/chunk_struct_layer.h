@@ -32,6 +32,8 @@ namespace jactorio::game
 		float position_x = 0;
 		float position_y = 0;
 
+		///
+		/// \brief Converts world coordinates to chunk struct layer offsets
 		static double to_position(const int32_t chunk_coordinate, const int32_t world_coordinate) {
 			return fabs(chunk_coordinate * 32 - world_coordinate);
 		}

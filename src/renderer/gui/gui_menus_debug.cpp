@@ -265,7 +265,7 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 	ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 	if (data) {
 		last_valid_line_segment = selected_tile;
-		segment_ptr             = &data->line_segment;
+		segment_ptr             = &data->line_segment.get();
 	}
 	else {
 		if (use_last_valid_line_segment) {
@@ -273,7 +273,7 @@ void jactorio::renderer::gui::debug_transport_line_info(game::Player_data& playe
 			                                           last_valid_line_segment.first,
 			                                           last_valid_line_segment.second);
 			if (data)
-				segment_ptr = &data->line_segment;
+				segment_ptr = &data->line_segment.get();
 		}
 	}
 

@@ -43,7 +43,7 @@ namespace jactorio::data
 		};
 
 		/// The logic chunk line_segment associated
-		game::Transport_line_segment& line_segment;
+		std::reference_wrapper<game::Transport_line_segment> line_segment;
 
 		/// The distance to the head of the transport line
 		/// \remark For rendering purposes, the length should never exceed ~2 chunks at most
@@ -180,17 +180,21 @@ namespace jactorio::data
 		                                  const update_func& func,
 		                                  const update_side_only_func& side_only_func);
 
-		static void update_termination_type(game::World_data& world_data,
-		                                    const game::World_data::world_pair& world_coords,
-		                                    Orientation orientation,
-		                                    line_data_4_way& line_data,
-		                                    game::Transport_line_segment& line_segment,
-		                                    int32_t& line_segment_world_x, int32_t& line_segment_world_y);
+		static void update_segment_head(game::World_data& world_data,
+		                                const game::World_data::world_pair& world_coords,
+		                                line_data_4_way& line_data,
+		                                game::Transport_line_segment& line_segment);
 
 		///
-		/// \brief Finds line_segment from struct_layers and removes it
-		static void remove_line_segment(game::Transport_line_segment& line_segment,
-										std::vector<game::Chunk_struct_layer>& struct_layers);
+		/// \brief Updates the world tiles which references a transport segment, props: line_segment_index, line_segment
+		/// \param world_coords Beginning tile to update
+		/// \param line_segment Beginning segment, traveling inverse Orientation line_segment.length tiles, <br>
+		/// all tiles set to reference this
+		/// \param offset Offsets segment id numbering, world_coords must be also adjusted to the appropriate offset when calling
+		static void update_segment_tiles(const game::World_data& world_data,
+		                                 const game::World_data::world_pair& world_coords,
+		                                 game::Transport_line_segment& line_segment,
+		                                 int offset = 0);
 
 		/*
 		 * Transport line grouping rules:
@@ -208,23 +212,15 @@ namespace jactorio::data
 		 *		- Behaves as line ahead
 		 */
 
-		enum class Init_segment_status
-		{
-			new_segment,
-			group_behind,
-			group_ahead
-		};
-
 		///
 		/// \brief Initializes line data and groups transport segments
 		/// Sets the transport segment grouped / newly created with in tile_layer and returns it
-		/// \return Created data for at tile_layer
-		static std::pair<Transport_line_data*, Init_segment_status> init_transport_segment(game::World_data& world_data,
-		                                                                                   const game::World_data::world_pair&
-		                                                                                   world_coords,
-		                                                                                   Orientation orientation,
-		                                                                                   game::Chunk_tile_layer& tile_layer,
-		                                                                                   line_data_4_way& line_data);
+		/// \return Created data for at tile_layer, was a new transport segment created
+		Transport_line_data* init_transport_segment(game::World_data& world_data,
+		                                            const game::World_data::world_pair& world_coords,
+		                                            Orientation orientation,
+		                                            game::Chunk_tile_layer& tile_layer,
+		                                            line_data_4_way& line_data) const;
 	public:
 		void on_build(game::World_data& world_data,
 		              const game::World_data::world_pair& world_coords,

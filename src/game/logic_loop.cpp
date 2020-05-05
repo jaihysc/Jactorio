@@ -171,6 +171,7 @@ void jactorio::game::init_logic_loop() {
 				// Logistics logic
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
+				// BUG crash sometimes when removing transport line, mutex lock for rendering maybe?
 				transport_line_logic_update(game_data->world);
 			}
 
