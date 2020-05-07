@@ -166,7 +166,7 @@ namespace data::prototype
 		// Grouping
 
 		std::vector<jactorio::game::Chunk_struct_layer>& get_transport_lines(
-			const jactorio::game::World_data::world_pair& chunk_coords) {
+			const jactorio::game::Chunk::chunk_pair& chunk_coords) {
 			return world_data_.logic_get_chunk(world_data_.get_chunk_c(chunk_coords.first, chunk_coords.second))
 			                  ->get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
 		}
@@ -1253,10 +1253,7 @@ namespace data::prototype
 
 		tl_remove_events({1, 0});
 
-		std::vector<jactorio::game::Chunk_struct_layer>& struct_layer =
-			world_data_.logic_get_all_chunks().begin()->second
-			           .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
-
+		const auto& struct_layer = get_transport_lines({0, 0});
 		ASSERT_EQ(struct_layer.size(), 1);
 		EXPECT_EQ(static_cast<jactorio::game::Transport_line_segment*>(struct_layer[0].unique_data)->length, 1);
 	}
@@ -1271,10 +1268,7 @@ namespace data::prototype
 
 		tl_remove_events({1, 0});
 
-		std::vector<jactorio::game::Chunk_struct_layer>& struct_layer =
-			world_data_.logic_get_all_chunks().begin()->second
-			           .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
-
+		const auto& struct_layer = get_transport_lines({0, 0});
 		ASSERT_EQ(struct_layer.size(), 2);
 		EXPECT_EQ(static_cast<jactorio::game::Transport_line_segment*>(struct_layer[0].unique_data)->length, 1);
 	}
@@ -1293,13 +1287,56 @@ namespace data::prototype
 
 		tl_remove_events({1, 0});
 
-		std::vector<jactorio::game::Chunk_struct_layer>& struct_layer =
-			world_data_.logic_get_all_chunks().begin()->second
-			           .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
-
+		const auto& struct_layer = get_transport_lines({0, 0});
 		ASSERT_EQ(struct_layer.size(), 2);
 		EXPECT_EQ(static_cast<jactorio::game::Transport_line_segment*>(struct_layer[0].unique_data)->length, 2);
 		EXPECT_EQ(static_cast<jactorio::game::Transport_line_segment*>(struct_layer[1].unique_data)->length, 1);
+	}
+
+	TEST_F(TransportLineTest, OnRemoveGroupMiddleUpdateTargetSegment) {
+		// The new segment created when removing a group needs to update target segments so point to the newly created segment
+		world_data_.add_chunk(new jactorio::game::Chunk(-1, 0));
+
+		/*
+		 * > > /> >
+		 *   ^ 
+		 */
+		add_transport_line({0, 0}, jactorio::data::Transport_line_data::LineOrientation::right);
+		add_transport_line({1, 0}, jactorio::data::Transport_line_data::LineOrientation::right);
+		add_transport_line({2, 0}, jactorio::data::Transport_line_data::LineOrientation::right);
+
+		add_transport_line({-1, 0}, jactorio::data::Transport_line_data::LineOrientation::right);
+		add_transport_line({0, 1}, jactorio::data::Transport_line_data::LineOrientation::up);
+		
+		tl_remove_events({1, 0});
+
+		const auto& struct_layer = get_transport_lines({0, 0});
+		ASSERT_EQ(struct_layer.size(), 3);
+		EXPECT_EQ(get_line_data({0, 1}).line_segment.get().target_segment,
+		          static_cast<jactorio::game::Transport_line_segment*>(struct_layer[1].unique_data)->target_segment);
+
+
+		const auto& struct_layer_left = get_transport_lines({-1, 0});
+		ASSERT_EQ(struct_layer_left.size(), 1);
+		EXPECT_EQ(get_line_data({-1, 0}).line_segment.get().target_segment,
+		          static_cast<jactorio::game::Transport_line_segment*>(struct_layer[1].unique_data)->target_segment);
+	}
+
+	TEST_F(TransportLineTest, OnRemoveGroupUpdateIndex) {
+		// The segment index must be updated when a formally bend segment becomes straight
+		/*
+		 * />
+		 * ^ 
+		 */
+		add_transport_line({0, 0}, jactorio::data::Transport_line_data::LineOrientation::right);
+		add_transport_line({0, 1}, jactorio::data::Transport_line_data::LineOrientation::up);
+		
+		tl_remove_events({0, 0});
+
+		const auto& struct_layer = get_transport_lines({0, 0});
+		ASSERT_EQ(struct_layer.size(), 1);
+
+		EXPECT_EQ(get_line_data({0, 1}).line_segment_index, 0);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveGroupEnd) {
@@ -1314,10 +1351,7 @@ namespace data::prototype
 
 		tl_remove_events({0, 0});
 
-		std::vector<jactorio::game::Chunk_struct_layer>& struct_layer =
-			world_data_.logic_get_all_chunks().begin()->second
-			           .get_struct(jactorio::game::Logic_chunk::structLayer::transport_line);
-
+		const auto& struct_layer = get_transport_lines({0, 0});
 		ASSERT_EQ(struct_layer.size(), 1);
 		EXPECT_EQ(static_cast<jactorio::game::Transport_line_segment*>(struct_layer[0].unique_data)->length, 1);
 	}

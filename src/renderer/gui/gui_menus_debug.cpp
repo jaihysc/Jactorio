@@ -56,7 +56,7 @@ void jactorio::renderer::gui::debug_menu_logic(game::Player_data& player_data) {
 		for (auto& pair : world_data.logic_get_all_chunks()) {
 			auto& l_chunk = pair.second;
 
-			auto& object_layer = l_chunk.chunk->get_object(game::Chunk::objectLayer::debug_overlay);
+			auto& object_layer = l_chunk.chunk->get_object(game::Chunk::ObjectLayer::debug_overlay);
 			object_layer.clear();
 
 			for (auto& l_struct : l_chunk.get_struct(game::Logic_chunk::structLayer::transport_line)) {

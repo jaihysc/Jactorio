@@ -221,6 +221,15 @@ namespace jactorio::data
 		                                            Orientation orientation,
 		                                            game::Chunk_tile_layer& tile_layer,
 		                                            line_data_4_way& line_data) const;
+
+		///
+		/// \brief Updates neighboring segments after transport line is removed 
+		/// \param world_coords Coords of transport line removed
+		/// \param line_data Neighboring line segment
+		/// \param target Removed line segment
+		static void disconnect_target_segment(game::World_data& world_data,
+		                                      const game::World_data::world_pair& world_coords,
+		                                      Transport_line_data* line_data, Transport_line_data* target);
 	public:
 		void on_build(game::World_data& world_data,
 		              const game::World_data::world_pair& world_coords,

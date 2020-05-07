@@ -648,10 +648,8 @@ jactorio::data::Transport_line_data* jactorio::data::Transport_line::init_transp
 				world_data.logic_add_chunk(chunk)
 				          .get_struct(game::Logic_chunk::structLayer::transport_line)
 				          .emplace_back(this,
-				                        game::Chunk_struct_layer::to_position(chunk->get_position().first,
-				                                                              world_coords.first),
-				                        game::Chunk_struct_layer::to_position(chunk->get_position().second,
-				                                                              world_coords.second));
+				                        game::World_data::to_struct_coord(world_coords.first),
+				                        game::World_data::to_struct_coord(world_coords.second));
 
 			struct_layer.unique_data = line_segment;
 		}
@@ -816,9 +814,7 @@ void jactorio::data::Transport_line::on_neighbor_update(game::World_data& world_
 		get_line_struct_layer(world_data, world_x, world_y, [&](auto& layer, auto&) {
 			auto* line_segment             = static_cast<game::Transport_line_segment*>(layer.unique_data);
 			line_segment->termination_type = termination_type;
-
 		});
-
 	};
 
 	const update_side_only_func side_only_func =
@@ -836,7 +832,6 @@ void jactorio::data::Transport_line::on_neighbor_update(game::World_data& world_
 			line_segment->termination_type = termination_type;
 
 		});
-
 	};
 
 	update_neighbor_lines(world_data,
@@ -849,36 +844,31 @@ void jactorio::data::Transport_line::on_neighbor_update(game::World_data& world_
 // ======================================================================
 // Remove
 
-///
-/// \brief Updated neighboring segments after transport line is removed 
-/// \param world_coords Coords of transport line removed
-/// \param line_data Neighboring line segment
-/// \param target Removed line segment
-void nullptr_target_segment(jactorio::game::World_data& world_data,
-                            const std::pair<jactorio::game::World_data::world_coord, jactorio::game::World_data::world_coord>
-                            world_coords,
-                            jactorio::data::Transport_line_data* line_data, jactorio::data::Transport_line_data* target) {
+void jactorio::data::Transport_line::disconnect_target_segment(game::World_data& world_data,
+                                                               const game::World_data::world_pair& world_coords,
+                                                               Transport_line_data* line_data,
+                                                               Transport_line_data* target) {
 
 	if (line_data && line_data->line_segment.get().target_segment == &target->line_segment.get()) {
-		jactorio::game::Transport_line_segment& line_segment = line_data->line_segment;
-		line_segment.target_segment                          = nullptr;
+		game::Transport_line_segment& line_segment = line_data->line_segment;
+		line_segment.target_segment                = nullptr;
 
-		jactorio::game::World_data::world_pair neighbor_world_coords = world_coords;
+		game::World_data::world_pair neighbor_world_coords = world_coords;
 
 		// If bends / side only, set to straight & decrement length	
 		switch (line_segment.termination_type) {
-		case jactorio::game::Transport_line_segment::TerminationType::bend_left:
-		case jactorio::game::Transport_line_segment::TerminationType::bend_right:
-		case jactorio::game::Transport_line_segment::TerminationType::right_only:
-		case jactorio::game::Transport_line_segment::TerminationType::left_only:
+		case game::Transport_line_segment::TerminationType::bend_left:
+		case game::Transport_line_segment::TerminationType::bend_right:
+		case game::Transport_line_segment::TerminationType::right_only:
+		case game::Transport_line_segment::TerminationType::left_only:
 			line_segment.length--;
-			line_segment.termination_type = jactorio::game::Transport_line_segment::TerminationType::straight;
+			line_segment.termination_type = game::Transport_line_segment::TerminationType::straight;
 
 			// Move the neighboring line segments back if they are not straight
 			orientation_increment(line_segment.direction,
 			                      neighbor_world_coords.first, neighbor_world_coords.second, -1.f);
 
-			jactorio::data::Transport_line::get_line_struct_layer(
+			get_line_struct_layer(
 				world_data,
 				neighbor_world_coords.first, neighbor_world_coords.second,
 				[&](auto& s_layer, auto&) {
@@ -886,6 +876,8 @@ void nullptr_target_segment(jactorio::game::World_data& world_data,
 					                      s_layer.position_x, s_layer.position_y, -1.f);
 				});
 
+			// Renumber from index 0
+			update_segment_tiles(world_data, neighbor_world_coords, line_segment);
 			break;
 
 		default:
@@ -908,81 +900,117 @@ void jactorio::data::Transport_line::on_remove(game::World_data& world_data,
 
 
 	// Set neighboring transport line segments which points to this segment's target_segment to nullptr
-	nullptr_target_segment(world_data, world_coords,
-	                       t_center, static_cast<Transport_line_data*>(tile_layer.unique_data));
-	nullptr_target_segment(world_data, world_coords,
-	                       c_left, static_cast<Transport_line_data*>(tile_layer.unique_data));
-	nullptr_target_segment(world_data, world_coords,
-	                       c_right, static_cast<Transport_line_data*>(tile_layer.unique_data));
-	nullptr_target_segment(world_data, world_coords,
-	                       b_center, static_cast<Transport_line_data*>(tile_layer.unique_data));
+	disconnect_target_segment(world_data, world_coords,
+	                          t_center, static_cast<Transport_line_data*>(tile_layer.unique_data));
+	disconnect_target_segment(world_data, world_coords,
+	                          c_left, static_cast<Transport_line_data*>(tile_layer.unique_data));
+	disconnect_target_segment(world_data, world_coords,
+	                          c_right, static_cast<Transport_line_data*>(tile_layer.unique_data));
+	disconnect_target_segment(world_data, world_coords,
+	                          b_center, static_cast<Transport_line_data*>(tile_layer.unique_data));
 
 	game::Logic_chunk& logic_chunk =
-		*world_data.logic_get_chunk(world_data.get_chunk(world_coords.first, world_coords.second));
+		*world_data.logic_get_chunk(world_coords.first, world_coords.second);
 
 	// o_ = old
 	// n_ = new
 
 	auto& o_line_data    = *static_cast<Transport_line_data*>(tile_layer.unique_data);
-	auto& o_line_segment = o_line_data.line_segment;
+	auto& o_line_segment = o_line_data.line_segment.get();
 
 	auto n_seg_coords = world_coords;
-	orientation_increment(o_line_segment.get().direction,
+	orientation_increment(o_line_segment.direction,
 	                      n_seg_coords.first, n_seg_coords.second, -1);
 
-	// If not head, reduce the length of original segment to index + 1
-	// else if head, delete original segment
-
-	// TODO target segment is incorrect, need to iterate behind and also update their targets
-
-	// Create new segment at behind cords with length of original length - current segmnt index - 1
-	// if not the end of a segment
-	const auto n_seg_length = o_line_segment.get().length - o_line_data.line_segment_index - 1;
+	// Create new segment at behind cords if not the end of a segment
+	const auto n_seg_length = o_line_segment.length - o_line_data.line_segment_index - 1;
 	if (n_seg_length > 0) {
 		game::Chunk_tile_layer& n_tile = world_data.get_tile(n_seg_coords)->get_layer(game::Chunk_tile::chunkLayer::entity);
 
 		// Create new segment
 		static_cast<Transport_line_data*>(n_tile.unique_data)->line_segment =
-			std::ref(*new game::Transport_line_segment(o_line_segment.get().direction,
+			std::ref(*new game::Transport_line_segment(o_line_segment.direction,
 			                                           game::Transport_line_segment::TerminationType::straight,
 			                                           n_seg_length
 				)
 			);
 
 		auto& n_line_data    = *static_cast<Transport_line_data*>(n_tile.unique_data);
-		auto& n_line_segment = n_line_data.line_segment;
+		auto& n_line_segment = n_line_data.line_segment.get();
 
 		// Renumber trailing segments
 		update_segment_tiles(world_data, n_seg_coords, n_line_segment);
 
+		// Update other segments leading into old segment
+		for (auto& t_line : logic_chunk.get_struct(game::Logic_chunk::structLayer::transport_line)) {
+			auto& i_segment_data = *static_cast<game::Transport_line_segment*>(t_line.unique_data);
+
+			bool valid_neighbor = false;  // Neighbor must be BEHIND the segment which was removed
+			switch (o_line_segment.direction) {
+			case Orientation::up:
+				valid_neighbor = t_line.position_y > game::World_data::to_struct_coord(world_coords.second);
+				break;
+			case Orientation::right:
+				valid_neighbor = t_line.position_x < game::World_data::to_struct_coord(world_coords.first);
+				break;
+			case Orientation::down:
+				valid_neighbor = t_line.position_y < game::World_data::to_struct_coord(world_coords.second);
+				break;
+			case Orientation::left:
+				valid_neighbor = t_line.position_x > game::World_data::to_struct_coord(world_coords.first);
+				break;
+
+			default:
+				assert(false);
+			}
+
+			if (valid_neighbor && i_segment_data.target_segment == &o_line_segment) {
+				i_segment_data.target_segment = &n_line_segment;
+			}
+		}
+		// Update segment in neighboring logic chunk leading into old_segment
+		game::Chunk::chunk_pair neighbor_chunk_coords = logic_chunk.chunk->get_position();
+		orientation_increment(o_line_segment.direction,
+		                      neighbor_chunk_coords.first, neighbor_chunk_coords.second, -1);
+
+		auto* neighbor_l_chunk = world_data.logic_get_chunk(neighbor_chunk_coords);
+		if (neighbor_l_chunk) {
+			for (auto& t_line : neighbor_l_chunk->get_struct(game::Logic_chunk::structLayer::transport_line)) {
+				auto* i_segment_data = static_cast<game::Transport_line_segment*>(t_line.unique_data);
+
+				if (i_segment_data->target_segment == &o_line_segment) {
+					i_segment_data->target_segment = &n_line_segment;
+				}
+
+			}
+		}
+
+
 		// All segments are guaranteed to be within the same logic chunk
-		const game::Chunk* chunk = logic_chunk.chunk;
-		auto& struct_layer       =
+		auto& struct_layer =
 			logic_chunk.get_struct(game::Logic_chunk::structLayer::transport_line)
 			           .emplace_back(this,
-			                         game::Chunk_struct_layer::to_position(chunk->get_position().first,
-			                                                               n_seg_coords.first),
-			                         game::Chunk_struct_layer::to_position(chunk->get_position().second,
-			                                                               n_seg_coords.second));
+			                         game::World_data::to_struct_coord(n_seg_coords.first),
+			                         game::World_data::to_struct_coord(n_seg_coords.second));
 
-		// Allocate new segment here, i do not know why yet
-		struct_layer.unique_data = &n_line_segment.get();
+		struct_layer.unique_data = &n_line_segment;
 	}
 
 	// Remove original transport line segment referenced in Transport_line_data if is head of segment
+	// If not head, reduce the length of original segment to index + 1
 	if (o_line_data.line_segment_index == 0 ||
-		(o_line_data.line_segment_index == 1 && o_line_segment.get().termination_type !=  // Head of bending segments start at 1
+		(o_line_data.line_segment_index == 1 && o_line_segment.termination_type !=  // Head of bending segments start at 1
 			game::Transport_line_segment::TerminationType::straight)) {
 
 		std::vector<game::Chunk_struct_layer>& struct_layer = logic_chunk.get_struct(
 			game::Logic_chunk::structLayer::transport_line);
 		struct_layer.erase(
 			std::remove_if(struct_layer.begin(), struct_layer.end(), [&](game::Chunk_struct_layer& s_layer) {
-				return static_cast<game::Transport_line_segment*>(s_layer.unique_data) == &o_line_segment.get();
+				return static_cast<game::Transport_line_segment*>(s_layer.unique_data) == &o_line_segment;
 			}),
 			struct_layer.end());
 	}
 	else {
-		o_line_segment.get().length = o_line_data.line_segment_index;
+		o_line_segment.length = o_line_data.line_segment_index;
 	}
 }

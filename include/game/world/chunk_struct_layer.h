@@ -6,8 +6,6 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_STRUCT_LAYER_H
 #pragma once
 
-#include <cmath>
-
 #include "game/world/chunk_layer.h"
 
 namespace jactorio::game
@@ -17,6 +15,8 @@ namespace jactorio::game
 	class Chunk_struct_layer : public Chunk_layer
 	{
 	public:
+		using struct_coord = float;
+		
 		Chunk_struct_layer() = default;
 
 		explicit Chunk_struct_layer(const data::Prototype_base* proto)
@@ -24,19 +24,13 @@ namespace jactorio::game
 		}
 
 		explicit Chunk_struct_layer(const data::Prototype_base* proto,
-		                            const float position_x, const float position_y)
+		                            const struct_coord position_x, const struct_coord position_y)
 			: Chunk_layer(proto), position_x(position_x), position_y(position_y) {
 		}
 
 		// Distance (tiles) from top left of chunk to top left of object
-		float position_x = 0;
-		float position_y = 0;
-
-		///
-		/// \brief Converts world coordinates to chunk struct layer offsets
-		static double to_position(const int32_t chunk_coordinate, const int32_t world_coordinate) {
-			return fabs(chunk_coordinate * 32 - world_coordinate);
-		}
+		struct_coord position_x = 0;
+		struct_coord position_y = 0;
 	};
 }
 

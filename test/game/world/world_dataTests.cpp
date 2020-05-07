@@ -29,12 +29,28 @@ namespace game
 		EXPECT_EQ(world_data_.game_tick(), 3);
 	}
 
+	TEST_F(WorldDataTest, ToChunkCoords) {
+		EXPECT_EQ(jactorio::game::World_data::to_chunk_coord(-33), -2);
+		EXPECT_EQ(jactorio::game::World_data::to_chunk_coord(-32), -1);
+		EXPECT_EQ(jactorio::game::World_data::to_chunk_coord(-1), -1);
+		EXPECT_EQ(jactorio::game::World_data::to_chunk_coord(31), 0);
+		EXPECT_EQ(jactorio::game::World_data::to_chunk_coord(32), 1);
+	}
+
+	TEST(ChunkStructLayer, ToStructCoords) {
+		EXPECT_FLOAT_EQ(jactorio::game::World_data::to_struct_coord(10), 10.f);
+		EXPECT_FLOAT_EQ(jactorio::game::World_data::to_struct_coord(64), 0.f);
+
+		EXPECT_FLOAT_EQ(jactorio::game::World_data::to_struct_coord(-32), 0.f);
+		EXPECT_FLOAT_EQ(jactorio::game::World_data::to_struct_coord(-1), 31.f);
+	}
+
 	TEST_F(WorldDataTest, WorldAddChunk) {
 		// Chunks initialized with empty tiles
 		auto* chunk = new jactorio::game::Chunk{5, 1};
 
 		// Returns pointer to chunk which was added
-		const auto added_chunk = world_data_.add_chunk(chunk);
+		const auto* added_chunk = world_data_.add_chunk(chunk);
 
 		// Chunk knows its own location
 		EXPECT_EQ(added_chunk->get_position().first, 5);
@@ -195,17 +211,14 @@ namespace game
 		EXPECT_EQ(world_data_.logic_get_all_chunks().size(), 1);
 	}
 
-	// TEST_F(WorldDataTest, logic_remove_chunk) {
-	// 	jactorio::core::Resource_guard guard(&world_data.clear_chunk_data);
-	//
-	// 	using namespace jactorio::game;
-	// 	Chunk chunk(0, 0, nullptr);
-	//
-	// 	auto& logic_chunk = world_data::logic_add_chunk(&chunk);  // Add
-	// 	world_data::logic_remove_chunk(&logic_chunk);  // Remove
-	//
-	// 	EXPECT_EQ(world_data::logic_get_all_chunks().size(), 0);
-	// }
+	TEST_F(WorldDataTest, logic_remove_chunk) {
+		jactorio::game::Chunk chunk(0, 0);
+	
+		auto& logic_chunk = world_data_.logic_add_chunk(&chunk);
+		world_data_.logic_remove_chunk(&logic_chunk);  // Remove
+	
+		EXPECT_EQ(world_data_.logic_get_all_chunks().size(), 0);
+	}
 
 	TEST_F(WorldDataTest, LogicGetChunk) {
 		jactorio::game::Chunk chunk(0, 0);
@@ -221,8 +234,8 @@ namespace game
 
 		auto& logic_chunk = world_data_.logic_add_chunk(&chunk);
 
-		EXPECT_EQ(world_data_.logic_get_chunk_read_only(&chunk), &logic_chunk);
-		EXPECT_EQ(world_data_.logic_get_chunk_read_only(nullptr), nullptr);
+		EXPECT_EQ(world_data_.logic_get_chunk(&chunk), &logic_chunk);
+		EXPECT_EQ(world_data_.logic_get_chunk(nullptr), nullptr);
 	}
 
 	TEST_F(WorldDataTest, LogicClearChunkData) {

@@ -25,10 +25,11 @@ namespace jactorio::game
 	{
 	public:
 		using chunk_coord = int32_t;  // Chunk coordinates
+		using chunk_pair = std::pair<chunk_coord, chunk_coord>;
 		static constexpr uint8_t chunk_width = 32;
 
 	private:
-		std::pair<chunk_coord, chunk_coord> position_;
+		chunk_pair position_;
 		// Pointers to the actual tiles since they are static size of 32x32
 		Chunk_tile* tiles_ = nullptr;
 
@@ -68,18 +69,17 @@ namespace jactorio::game
 		}
 
 		// Objects - Rendered without being fixed to a tile position
-		enum class objectLayer
+		enum class ObjectLayer
 		{
-			tree = 0,
-			debug_overlay,  // data::Sprite
+			debug_overlay = 0,  // data::Sprite
 			count_
 		};
 
-		static constexpr int object_layer_count = static_cast<int>(objectLayer::count_);
+		static constexpr int object_layer_count = static_cast<int>(ObjectLayer::count_);
 
 		std::vector<Chunk_object_layer> objects[object_layer_count];
 
-		std::vector<Chunk_object_layer>& get_object(objectLayer layer) {
+		std::vector<Chunk_object_layer>& get_object(ObjectLayer layer) {
 			return objects[static_cast<int>(layer)];
 		}
 	};

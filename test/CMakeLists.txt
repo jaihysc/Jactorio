@@ -100,7 +100,6 @@ add_executable (
 	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/deferral_timerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/chunk_struct_layerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp

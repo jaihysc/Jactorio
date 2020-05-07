@@ -97,13 +97,6 @@ tile_draw_func tile_get_sprite_id_func[]{
 };
 
 object_draw_func object_layer_get_sprite_id_func[]{
-	// Trees?!
-	[](const jactorio::game::Chunk_object_layer& layer) {
-		const auto* entity = static_cast<const jactorio::data::Entity*>(layer.prototype_data);
-		if (entity == nullptr || entity->sprite == nullptr)
-			return 0u;
-		return entity->on_r_get_sprite(layer.unique_data)->internal_id;
-	},
 	// Debug overlay
 	[](const jactorio::game::Chunk_object_layer& layer) {
 		const auto* sprite = static_cast<const jactorio::data::Sprite*>(layer.prototype_data);
@@ -261,7 +254,7 @@ void prepare_object_data(const jactorio::game::World_data& world_data,
                          const jactorio::game::Chunk* const chunk) {
 
 	// Draw logic chunk contents if it exists
-	const auto* logic_chunk = world_data.logic_get_chunk_read_only(chunk);
+	const auto* logic_chunk = world_data.logic_get_chunk(chunk);
 
 	if (logic_chunk) {
 		const auto& transport_line_layer =

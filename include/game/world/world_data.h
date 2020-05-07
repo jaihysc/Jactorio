@@ -15,8 +15,6 @@
 #include "game/world/deferral_timer.h"
 #include "game/world/logic_chunk.h"
 
-// Manages the game world, the tiles and the entities on it
-// Handles saving and loading the world
 namespace jactorio::game
 {
 	///
@@ -77,7 +75,7 @@ namespace jactorio::game
 		// Each chunk contains 32 x 32 tiles
 		// 
 		// Chunks increment heading right and down
-		using world_chunks_key = unsigned long long;
+		using world_chunks_key = uint64_t;
 
 		/// world_chunks_key correlate to a chunk
 		std::unordered_map<std::tuple<Chunk::chunk_coord, Chunk::chunk_coord>, Chunk*,
@@ -93,6 +91,15 @@ namespace jactorio::game
 
 		mutable std::mutex world_data_mutex{};  // Held by the thread which is currently operating on a chunk
 
+		///
+		/// \brief Converts world coordinate to chunk coordinate
+		static Chunk::chunk_coord to_chunk_coord(world_coord world_coord);
+
+		///
+		/// \brief Converts world coordinate to struct layer coordinate
+		static Chunk_struct_layer::struct_coord to_struct_coord(world_coord world_coord);
+
+		// World access
 
 		///
 		/// \brief Adds a chunk into the game world
@@ -111,6 +118,11 @@ namespace jactorio::game
 		/// \brief Retrieves a chunk in game world using chunk coordinates
 		/// \return nullptr if no chunk exists
 		J_NODISCARD Chunk* get_chunk_c(Chunk::chunk_coord chunk_x, Chunk::chunk_coord chunk_y) const;
+
+		///
+		/// \brief Retrieves a chunk in game world using chunk coordinates
+		/// \return nullptr if no chunk exists
+		J_NODISCARD Chunk* get_chunk_c(const Chunk::chunk_pair& chunk_pair) const;
 
 
 		///
@@ -150,15 +162,15 @@ namespace jactorio::game
 		/// \return Reference to the added chunk
 		Logic_chunk& logic_add_chunk(Chunk* chunk);
 
-		//
-		// Removes a chunk to be considered for logic updates <br>
-		// O(n) time complexity
-		// @param chunk Logic chunk to remove
-		// void logic_remove_chunk(Logic_chunk* chunk);
+		///	
+		/// \brief Removes a chunk to be considered for logic updates <br>
+		/// \param chunk Logic chunk to remove
+		void logic_remove_chunk(Logic_chunk* chunk);
 
 		///
 		/// \brief Returns all the chunks which require logic updates
 		J_NODISCARD std::map<const Chunk*, Logic_chunk>& logic_get_all_chunks();
+
 
 		///
 		/// \brief Gets logic chunk at Chunk*
@@ -166,9 +178,29 @@ namespace jactorio::game
 		J_NODISCARD Logic_chunk* logic_get_chunk(const Chunk* chunk);
 
 		///
-		/// \brief Gets read only logic chunk at Chunk* 
+		/// \brief Gets logic chunk at World coords 
+		/// \return nullptr if Logic_chunk or chunk does not exist
+		J_NODISCARD Logic_chunk* logic_get_chunk(world_coord world_x, world_coord world_y);
+
+		///
+		/// \brief Gets logic chunk at World coords 
+		/// \return nullptr if Logic_chunk or chunk does not exist
+		J_NODISCARD Logic_chunk* logic_get_chunk(const world_pair& world_pair);
+
+
+		///
+		/// \brief Gets const logic chunk at Chunk* 
 		/// \return nullptr if Logic_chunk does not exist
-		J_NODISCARD const Logic_chunk* logic_get_chunk_read_only(const Chunk* chunk) const;
+		J_NODISCARD const Logic_chunk* logic_get_chunk(const Chunk* chunk) const;
+
+		/// \brief Gets const logic chunk at World coords 
+		/// \return nullptr if Logic_chunk or chunk does not exist
+		J_NODISCARD const Logic_chunk* logic_get_chunk(world_coord world_x, world_coord world_y) const;
+
+		///
+		/// \brief Gets const logic chunk at World coords 
+		/// \return nullptr if Logic_chunk or chunk does not exist
+		J_NODISCARD const Logic_chunk* logic_get_chunk(const world_pair& world_pair) const;
 
 
 		// ======================================================================
