@@ -4,6 +4,7 @@
 
 #include "game/world/world_data.h"
 
+#include <cmath>
 #include <future>
 #include <mutex>
 
