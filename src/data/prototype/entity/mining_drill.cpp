@@ -16,19 +16,20 @@ void jactorio::data::Mining_drill::on_r_show_gui(game::Player_data& player_data,
 	renderer::gui::mining_drill(player_data, drill_data);
 }
 
-jactorio::data::Sprite* jactorio::data::Mining_drill::on_r_get_sprite(Unique_data_base* unique_data) const {
+std::pair<jactorio::data::Sprite*, jactorio::data::Renderable_data::frame_t> jactorio::data::Mining_drill::on_r_get_sprite(
+	Unique_data_base* unique_data, const game_tick_t game_tick) const {
 	const auto set = static_cast<Renderable_data*>(unique_data)->set;
 
 	if (set <= 7)
-		return this->sprite;
+		return {this->sprite, game_tick % this->sprite->frames * this->sprite->sets};
 
 	if (set <= 15)
-		return this->sprite_e;
+		return {this->sprite_e, game_tick % this->sprite_e->frames * this->sprite_e->sets};
 
 	if (set <= 23)
-		return this->sprite_s;
+		return {this->sprite_s, game_tick % this->sprite_s->frames * this->sprite_s->sets};
 
-	return this->sprite_w;
+	return {this->sprite_w, game_tick % this->sprite_w->frames * this->sprite_w->sets};
 }
 
 std::pair<uint16_t, uint16_t> jactorio::data::Mining_drill::map_placement_orientation(const Orientation orientation,
@@ -122,17 +123,14 @@ bool jactorio::data::Mining_drill::on_can_build(const game::World_data& world_da
 void jactorio::data::Mining_drill::on_build(game::World_data& world_data,
                                             const game::World_data::world_pair& world_coords,
                                             game::Chunk_tile_layer& tile_layer,
-                                            const uint16_t frame,
                                             const Orientation orientation) const {
-
 	tile_layer.unique_data = new Mining_drill_data();
-	auto* drill_data = static_cast<Mining_drill_data*>(tile_layer.unique_data);
+	auto* drill_data       = static_cast<Mining_drill_data*>(tile_layer.unique_data);
 
 	drill_data->output_item = find_output_item(world_data, world_coords);
 	assert(drill_data->output_item != nullptr);  // Should not have been allowed to be placed on no resources
 
 	drill_data->set = map_placement_orientation(orientation, world_data, world_coords).first;
-	drill_data->frame = frame;
 
 	game::World_data::world_pair output_coords = this->resource_output.get(orientation);
 	output_coords.first += world_coords.first;
@@ -150,7 +148,7 @@ void jactorio::data::Mining_drill::on_neighbor_update(game::World_data& world_da
 	Mining_drill_data* drill_data;
 	{
 		auto& self_layer = world_data.get_tile(receive_world_coords.first,
-		                                                    receive_world_coords.second)
+		                                       receive_world_coords.second)
 		                             ->get_layer(game::Chunk_tile::chunkLayer::entity);
 		// Use the top left tile
 		if (self_layer.is_multi_tile())
@@ -172,12 +170,12 @@ void jactorio::data::Mining_drill::on_neighbor_update(game::World_data& world_da
 	if (output_item_func) {
 
 		auto& output_layer = world_data.get_tile(emit_world_coords.first,
-		                                                      emit_world_coords.second)
+		                                         emit_world_coords.second)
 		                               ->get_layer(game::Chunk_tile::chunkLayer::entity);
 
 		drill_data->output_tile.emplace(*output_layer.unique_data, output_item_func, emit_orientation);
 
-		drill_data->mining_ticks = 
+		drill_data->mining_ticks =
 			static_cast<uint16_t>(static_cast<double>(JC_GAME_HERTZ) * drill_data->output_item->entity_prototype->pickup_time);
 
 		register_mine_callback(world_data.deferral_timer, drill_data);

@@ -6,11 +6,17 @@
 #define JACTORIO_DATA_PROTOTYPE_ENTITY_DEFERRED_ENTITY_H
 #pragma once
 
-#include "data/prototype/prototype_base.h"
-
-namespace jactorio::game
+namespace jactorio
 {
-	class Deferral_timer;
+	namespace data
+	{
+		struct Unique_data_base;
+	}
+
+	namespace game
+	{
+		class Deferral_timer;
+	}
 }
 
 
@@ -20,12 +26,12 @@ namespace jactorio::data
 	class Deferred
 	{
 	public:
-		Deferred() = default;
+		Deferred()          = default;
 		virtual ~Deferred() = default;
 
-		Deferred(const Deferred& other) = default;
-		Deferred(Deferred&& other) noexcept = default;
-		Deferred& operator=(const Deferred& other) = default;
+		Deferred(const Deferred& other)                = default;
+		Deferred(Deferred&& other) noexcept            = default;
+		Deferred& operator=(const Deferred& other)     = default;
 		Deferred& operator=(Deferred&& other) noexcept = default;
 
 		///

@@ -24,23 +24,23 @@ namespace renderer
 		// Sprite data delete by guard
 		data_raw_add("sprite1",
 		             new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
+		                                        {jactorio::data::Sprite::SpriteGroup::terrain}));
 		data_raw_add("sprite2",
 		             new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
+		                                        {jactorio::data::Sprite::SpriteGroup::terrain}));
 
 		data_raw_add("sprite3",
 		             new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                        {jactorio::data::Sprite::spriteGroup::gui}));
+		                                        {jactorio::data::Sprite::SpriteGroup::gui}));
 		data_raw_add("sprite4",
 		             new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                        {jactorio::data::Sprite::spriteGroup::gui}));
+		                                        {jactorio::data::Sprite::SpriteGroup::gui}));
 
 		// Should filter out to only 2 entries
-		renderer_sprites_.create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
+		renderer_sprites_.create_spritemap(jactorio::data::Sprite::SpriteGroup::terrain, false);
 
 		const jactorio::renderer::Renderer_sprites::Spritemap_data& data =
-			renderer_sprites_.get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
+			renderer_sprites_.get_spritemap(jactorio::data::Sprite::SpriteGroup::terrain);
 
 		EXPECT_EQ(data.width, 64);
 		EXPECT_EQ(data.height, 32);
@@ -54,18 +54,18 @@ namespace renderer
 		// Terrain
 		data_raw_add("sprite1",
 		             new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
+		                                        {jactorio::data::Sprite::SpriteGroup::terrain}));
 		data_raw_add("sprite2",
 		             new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
+		                                        {jactorio::data::Sprite::SpriteGroup::terrain}));
 
 		// Gui
 		data_raw_add("sprite3",
 		             new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                        {jactorio::data::Sprite::spriteGroup::gui}));
+		                                        {jactorio::data::Sprite::SpriteGroup::gui}));
 		data_raw_add("sprite4",
 		             new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                        {jactorio::data::Sprite::spriteGroup::gui}));
+		                                        {jactorio::data::Sprite::SpriteGroup::gui}));
 
 		// None
 		data_raw_add("spriteNone",
@@ -73,10 +73,10 @@ namespace renderer
 		                                        {}));
 
 		// Should filter out to 3 entries, total width of 32 * 3
-		renderer_sprites_.create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
+		renderer_sprites_.create_spritemap(jactorio::data::Sprite::SpriteGroup::terrain, false);
 
 		const jactorio::renderer::Renderer_sprites::Spritemap_data& data =
-			renderer_sprites_.get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
+			renderer_sprites_.get_spritemap(jactorio::data::Sprite::SpriteGroup::terrain);
 
 		EXPECT_EQ(data.width, 96);
 		EXPECT_EQ(data.height, 32);

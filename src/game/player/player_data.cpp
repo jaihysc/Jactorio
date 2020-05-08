@@ -300,8 +300,7 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 
 	// Call events
 
-	// TODO Frame not yet implemented
-	entity_ptr->on_build(world_data, {world_x, world_y}, selected_layer, 0, placement_orientation);
+	entity_ptr->on_build(world_data, {world_x, world_y}, selected_layer, placement_orientation);
 	update_neighboring_entities(world_data, world_x, world_y, entity_ptr);
 }
 

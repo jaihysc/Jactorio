@@ -8,9 +8,9 @@
 
 #include <optional>
 
+#include "data/prototype/prototype_type.h"
 #include "data/prototype/entity/health_entity.h"
 #include "data/prototype/interface/deferred.h"
-#include "data/prototype/prototype_type.h"
 #include "game/logic/item_insert_destination.h"
 
 namespace jactorio::data
@@ -56,10 +56,13 @@ namespace jactorio::data
 
 		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override;
 
-		Sprite* on_r_get_sprite(Unique_data_base* unique_data) const override;
+		std::pair<Sprite*, Renderable_data::frame_t> on_r_get_sprite(Unique_data_base* unique_data,
+		                                                             game_tick_t game_tick) const override;
+
 		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(Orientation orientation,
 		                                                                    game::World_data& world_data,
-		                                                                    const game::World_data::world_pair& world_coords) const override;
+		                                                                    const game::World_data::world_pair& world_coords)
+		const override;
 
 		// ======================================================================
 		// Logic
@@ -85,7 +88,6 @@ namespace jactorio::data
 		void on_build(game::World_data& world_data,
 		              const game::World_data::world_pair& world_coords,
 		              game::Chunk_tile_layer& tile_layer,
-		              uint16_t frame,
 		              Orientation orientation) const override;
 
 		void on_neighbor_update(game::World_data& world_data,

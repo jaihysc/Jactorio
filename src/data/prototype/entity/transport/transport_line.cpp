@@ -690,7 +690,6 @@ jactorio::data::Transport_line_data* jactorio::data::Transport_line::init_transp
 void jactorio::data::Transport_line::on_build(game::World_data& world_data,
                                               const game::World_data::world_pair& world_coords,
                                               game::Chunk_tile_layer& tile_layer,
-                                              const uint16_t frame,
                                               const Orientation orientation) const {
 	auto* up    = get_line_data(world_data, world_coords.first, world_coords.second - 1);
 	auto* right = get_line_data(world_data, world_coords.first + 1, world_coords.second);
@@ -706,7 +705,6 @@ void jactorio::data::Transport_line::on_build(game::World_data& world_data,
 	const Transport_line_data::LineOrientation line_orientation = get_line_orientation(orientation, up, right, down, left);
 
 	line_data.set         = static_cast<uint16_t>(line_orientation);
-	line_data.frame       = frame;
 	line_data.orientation = line_orientation;
 
 

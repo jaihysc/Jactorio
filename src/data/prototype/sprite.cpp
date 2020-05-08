@@ -13,7 +13,7 @@
 #include "core/filesystem.h"
 #include "data/data_exception.h"
 
-bool jactorio::data::Sprite::is_in_group(const spriteGroup group) {
+bool jactorio::data::Sprite::is_in_group(const SpriteGroup group) {
 	for (auto& i : this->group) {
 		if (i == group)
 			return true;
@@ -50,7 +50,7 @@ jactorio::data::Sprite::Sprite(const std::string& sprite_path)
 	load_image(sprite_path);
 }
 
-jactorio::data::Sprite::Sprite(const std::string& sprite_path, std::vector<spriteGroup> group)
+jactorio::data::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group)
 	: group(std::move(group)), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
 	load_image(sprite_path);
 }
@@ -69,7 +69,7 @@ jactorio::data::Sprite::Sprite(const Sprite& other)
 	  sprite_buffer_(other.sprite_buffer_) {
 
 	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytes_per_pixel_;
-	sprite_buffer_ = static_cast<unsigned char*>(malloc(size * sizeof(*sprite_buffer_)));  // stbi uses malloc
+	sprite_buffer_  = static_cast<unsigned char*>(malloc(size * sizeof(*sprite_buffer_)));  // stbi uses malloc
 	for (unsigned long long i = 0; i < size; ++i) {
 		sprite_buffer_[i] = other.sprite_buffer_[i];
 	}
@@ -89,43 +89,52 @@ jactorio::data::Sprite::Sprite(Sprite&& other) noexcept
 	other.sprite_buffer_ = nullptr;
 }
 
-jactorio::core::Quad_position jactorio::data::Sprite::get_coords(uint16_t mset, const uint16_t frame) const {
-	mset %= sets;
-	assert(mset < sets);  // Out of range
+void jactorio::data::Sprite::adjust_set_frame(Renderable_data::set_t& set, Renderable_data::frame_t& frame) const {
+	set %= sets;
+	set += frame / frames;
+	frame = frame % frames;
+}
+
+jactorio::core::Quad_position jactorio::data::Sprite::get_coords(Renderable_data::set_t set,
+                                                                 Renderable_data::frame_t frame) const {
+	adjust_set_frame(set, frame);
+
+	assert(set < sets);  // Out of range
 	assert(frame < frames);
 
 	return {
 		{
 			1.f / static_cast<float>(frames) * static_cast<float>(frame),
-			1.f / static_cast<float>(sets) * static_cast<float>(mset)
+			1.f / static_cast<float>(sets) * static_cast<float>(set)
 		},
 		{
 			1.f / static_cast<float>(frames) * static_cast<float>(frame + 1),
-			1.f / static_cast<float>(sets) * static_cast<float>(mset + 1)
+			1.f / static_cast<float>(sets) * static_cast<float>(set + 1)
 		}
 	};
 }
 
-jactorio::core::Quad_position jactorio::data::Sprite::
-get_coords_trimmed(uint16_t mset, const uint16_t frame) const {
-	mset %= sets;
-	assert(mset < sets);  // Out of range
+jactorio::core::Quad_position jactorio::data::Sprite::get_coords_trimmed(Renderable_data::set_t set,
+                                                                         Renderable_data::frame_t frame) const {
+	adjust_set_frame(set, frame);
+
+	assert(set < sets);  // Out of range
 	assert(frame < frames);
 
-	const auto width_base = static_cast<float>(width_) / static_cast<float>(frames);
+	const auto width_base  = static_cast<float>(width_) / static_cast<float>(frames);
 	const auto height_base = static_cast<float>(height_) / static_cast<float>(sets);
 
 	return {
 		{
 			(width_base * static_cast<float>(frame) + static_cast<float>(trim))
 			/ static_cast<float>(width_),
-			(height_base * static_cast<float>(mset) + static_cast<float>(trim))
+			(height_base * static_cast<float>(set) + static_cast<float>(trim))
 			/ static_cast<float>(height_)
 		},
 		{
 			(width_base * static_cast<float>(frame + 1) - static_cast<float>(trim))
 			/ static_cast<float>(width_),
-			(height_base * static_cast<float>(mset + 1) - static_cast<float>(trim))
+			(height_base * static_cast<float>(set + 1) - static_cast<float>(trim))
 			/ static_cast<float>(height_)
 		}
 	};

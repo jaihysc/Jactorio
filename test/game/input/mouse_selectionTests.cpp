@@ -276,7 +276,6 @@ namespace game
 			void on_build(jactorio::game::World_data&,
 			              const jactorio::game::World_data::world_pair&,
 			              jactorio::game::Chunk_tile_layer&,
-			              uint16_t,
 			              jactorio::data::Orientation) const override {
 			}
 
@@ -286,9 +285,10 @@ namespace game
 			}
 
 			// Overriden to give nullptr
-			jactorio::data::Sprite* on_r_get_sprite(jactorio::data::Unique_data_base* /*unique_data*/) const override {
+			std::pair<jactorio::data::Sprite*, jactorio::data::Renderable_data::frame_t>
+			on_r_get_sprite(jactorio::data::Unique_data_base* /*unique_data*/, jactorio::game_tick_t) const override {
 				r_get_sprite_called = true;
-				return nullptr;
+				return {nullptr, 0};
 			}
 		};
 

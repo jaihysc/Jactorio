@@ -20,7 +20,7 @@ void jactorio::renderer::Renderer_sprites::clear_spritemaps() {
 	spritemap_datas_.clear();
 }
 
-void jactorio::renderer::Renderer_sprites::create_spritemap(data::Sprite::spriteGroup group,
+void jactorio::renderer::Renderer_sprites::create_spritemap(data::Sprite::SpriteGroup group,
                                                             const bool invert_sprites) {
 	std::vector<data::Sprite*> sprites =
 		data::data_raw_get_all<data::Sprite>(data::dataCategory::sprite);
@@ -52,12 +52,12 @@ void jactorio::renderer::Renderer_sprites::create_spritemap(data::Sprite::sprite
 
 
 const jactorio::renderer::Renderer_sprites::Spritemap_data& jactorio::renderer::Renderer_sprites::get_spritemap(
-	data::Sprite::spriteGroup group) {
+	data::Sprite::SpriteGroup group) {
 	return spritemap_datas_[static_cast<int>(group)];
 }
 
 const jactorio::renderer::Texture* jactorio::renderer::Renderer_sprites::get_texture(
-	data::Sprite::spriteGroup group) {
+	data::Sprite::SpriteGroup group) {
 	return textures_[static_cast<int>(group)];
 }
 

@@ -53,7 +53,6 @@ namespace jactorio::data
 		void on_build(game::World_data& world_data,
 		              const game::World_data::world_pair& world_coords,
 		              game::Chunk_tile_layer& tile_layer,
-		              uint16_t frame,
 		              Orientation orientation) const override;
 
 		void on_remove(game::World_data&,

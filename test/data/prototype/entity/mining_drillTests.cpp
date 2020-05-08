@@ -44,8 +44,7 @@ namespace data::prototype
 			tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::resource).prototype_data = &resource;
 
 			drill.on_build(world_data, {1, 1},
-			               tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), 0,
-			               jactorio::data::Orientation::right);
+			               tile->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity), jactorio::data::Orientation::right);
 		}
 	};
 

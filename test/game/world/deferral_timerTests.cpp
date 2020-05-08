@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include "data/prototype/prototype_base.h"
 #include "game/world/deferral_timer.h"
 
 #include <memory>
@@ -18,15 +19,15 @@ namespace game
 		class Mock_deferred final : public jactorio::data::Deferred
 		{
 		public:
-			mutable bool callback_called = false;
+			mutable bool callback_called                       = false;
 			mutable jactorio::data::Unique_data_base* data_ptr = nullptr;
-			mutable jactorio::game::Deferral_timer* d_timer = nullptr;
+			mutable jactorio::game::Deferral_timer* d_timer    = nullptr;
 
 			void on_defer_time_elapsed(jactorio::game::Deferral_timer& timer,
 			                           jactorio::data::Unique_data_base* unique_data) const override {
 				callback_called = true;
-				data_ptr = unique_data;
-				d_timer = &timer;
+				data_ptr        = unique_data;
+				d_timer         = &timer;
 			};
 		};
 
@@ -103,7 +104,7 @@ namespace game
 	TEST_F(DeferralTimerTest, remove_deferral_multiple) {
 		const Mock_deferred deferred{};
 
-		const auto deferral_entry = timer_.register_at_tick(deferred, nullptr, 2);
+		const auto deferral_entry   = timer_.register_at_tick(deferred, nullptr, 2);
 		const auto deferral_entry_2 = timer_.register_at_tick(deferred, nullptr, 2);
 
 		timer_.remove_deferral(deferral_entry);

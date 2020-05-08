@@ -50,7 +50,6 @@ namespace jactorio::data
 		void on_build(game::World_data&,
 		              const game::World_data::world_pair&,
 		              game::Chunk_tile_layer&,
-		              uint16_t,
 		              Orientation) const override {
 			assert(false);  // Is not player placeable
 		}

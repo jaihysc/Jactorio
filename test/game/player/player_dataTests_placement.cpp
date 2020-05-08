@@ -47,7 +47,6 @@ namespace game
 			void on_build(jactorio::game::World_data&,
 			              const jactorio::game::World_data::world_pair&,
 			              jactorio::game::Chunk_tile_layer&,
-			              uint16_t,
 			              jactorio::data::Orientation) const override {
 				build_called = true;
 			}
@@ -283,7 +282,6 @@ namespace game
 			entity->on_build(world_data,
 			                 {},
 			                 tiles[0].get_layer(jactorio::game::Chunk_tile::chunkLayer::entity),
-			                 0,
 			                 jactorio::data::Orientation::up);
 		}
 
@@ -485,7 +483,6 @@ namespace game
 			void on_build(jactorio::game::World_data&,
                           const jactorio::game::World_data::world_pair&,
 			              jactorio::game::Chunk_tile_layer&,
-			              uint16_t,
 			              jactorio::data::Orientation) const override {
 			}
 
@@ -550,7 +547,6 @@ namespace game
 			void on_build(jactorio::game::World_data&,
                           const jactorio::game::World_data::world_pair&,
 			              jactorio::game::Chunk_tile_layer&,
-			              uint16_t,
 			              jactorio::data::Orientation) const override {
 			}
 
@@ -631,7 +627,6 @@ namespace game
 			void on_build(jactorio::game::World_data&,
                           const jactorio::game::World_data::world_pair&,
 			              jactorio::game::Chunk_tile_layer&,
-			              uint16_t,
 			              jactorio::data::Orientation) const override {
 			}
 

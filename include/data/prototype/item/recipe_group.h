@@ -27,7 +27,7 @@ namespace jactorio::data
 		Sprite* sprite = nullptr;
 
 		Recipe_group* set_sprite(Sprite* (sprite)) {
-			sprite->group.push_back(Sprite::spriteGroup::gui);
+			sprite->group.push_back(Sprite::SpriteGroup::gui);
 			this->sprite = sprite;
 			return this;
 		}

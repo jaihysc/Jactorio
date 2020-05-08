@@ -68,12 +68,12 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Creates a spritemap and stores it as a renderer::Texture
-		void create_spritemap(data::Sprite::spriteGroup group, bool invert_sprites);
+		void create_spritemap(data::Sprite::SpriteGroup group, bool invert_sprites);
 
 		///
 		/// \brief Retrieves spritemap at specified group
-		const Spritemap_data& get_spritemap(data::Sprite::spriteGroup group);
-		const Texture* get_texture(data::Sprite::spriteGroup group);
+		const Spritemap_data& get_spritemap(data::Sprite::SpriteGroup group);
+		const Texture* get_texture(data::Sprite::SpriteGroup group);
 
 		///
 		/// \brief Generated spritemap will be purely horizontal, all images concatenated side by side <br>

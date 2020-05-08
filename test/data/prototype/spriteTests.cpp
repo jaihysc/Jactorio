@@ -84,6 +84,20 @@ namespace data::prototype
 			EXPECT_FLOAT_EQ(coords.bottom_right.x, 1.f);
 			EXPECT_FLOAT_EQ(coords.bottom_right.y, 0.14285714285714f);
 		}
+
+		// Frames will wrap around
+		{
+			jactorio::data::Sprite sprite{};
+			sprite.sets = 2;
+			sprite.frames = 2;
+
+			auto coords = sprite.get_coords(0, 3);
+			EXPECT_FLOAT_EQ(coords.top_left.x, 0.5f);
+			EXPECT_FLOAT_EQ(coords.top_left.y, 0.5f);
+
+			EXPECT_FLOAT_EQ(coords.bottom_right.x, 1.f);
+			EXPECT_FLOAT_EQ(coords.bottom_right.y, 1.f);
+		}
 	}
 
 	TEST(Sprite, GetCoordsTrimmed) {

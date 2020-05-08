@@ -8,6 +8,7 @@
 #include "data/prototype/tile/tile.h"
 #include "game/world/chunk.h"
 #include "game/world/logic_chunk.h"
+#include "game/world/world_data.h"
 
 #include <memory>
 

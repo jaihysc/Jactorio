@@ -28,8 +28,8 @@ const std::unordered_map<unsigned, jactorio::core::Quad_position>* sprite_positi
 unsigned int tex_id = 0;  // Assigned by openGL
 
 void jactorio::renderer::imgui_manager::setup_character_data(Renderer_sprites& renderer_sprites) {
-	sprite_positions = &renderer_sprites.get_spritemap(data::Sprite::spriteGroup::gui).sprite_positions;
-	tex_id = renderer_sprites.get_texture(data::Sprite::spriteGroup::gui)->get_id();
+	sprite_positions = &renderer_sprites.get_spritemap(data::Sprite::SpriteGroup::gui).sprite_positions;
+	tex_id = renderer_sprites.get_texture(data::Sprite::SpriteGroup::gui)->get_id();
 }
 
 jactorio::renderer::imgui_manager::Menu_data jactorio::renderer::imgui_manager::get_menu_data() {

@@ -3,6 +3,7 @@
 // Created on: 04/02/2020
 
 #include "game/world/deferral_timer.h"
+#include "jactorio.h"
 
 void jactorio::game::Deferral_timer::deferral_update(const game_tick_t game_tick) {
 	last_game_tick_ = game_tick;

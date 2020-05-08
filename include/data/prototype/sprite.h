@@ -12,6 +12,7 @@
 #include "jactorio.h"
 #include "core/data_type.h"
 #include "data/prototype/prototype_base.h"
+#include "data/prototype/interface/renderable.h"
 
 namespace jactorio::data
 {
@@ -20,7 +21,7 @@ namespace jactorio::data
 	class Sprite final : public Prototype_base
 	{
 	public:
-		enum class spriteGroup
+		enum class SpriteGroup
 		{
 			terrain = 0,
 			gui,
@@ -29,7 +30,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Group(s) determines which spritemap(s) this sprite is placed on
-		PYTHON_PROP_REF(Sprite, std::vector<spriteGroup>, group);
+		PYTHON_PROP_REF(Sprite, std::vector<SpriteGroup>, group);
 
 		/*
 		 *     F0 F1 F2 F3 F4
@@ -56,15 +57,15 @@ namespace jactorio::data
 
 		///
 		/// \return true is Sprite is in specified group
-		bool is_in_group(spriteGroup group);
+		bool is_in_group(SpriteGroup group);
 
 	private:
 		// Image properties
-		int width_, height_, bytes_per_pixel_;
+		int width_ = 0, height_ = 0, bytes_per_pixel_ = 0;
 
 		// Path is already resolved
 		std::string sprite_path_;
-		unsigned char* sprite_buffer_;
+		unsigned char* sprite_buffer_ = nullptr;
 
 		///
 		/// \brief Loads image from file
@@ -77,7 +78,7 @@ namespace jactorio::data
 
 		Sprite();
 		explicit Sprite(const std::string& sprite_path);
-		Sprite(const std::string& sprite_path, std::vector<spriteGroup> group);
+		Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group);
 
 		~Sprite() override;
 
@@ -119,20 +120,24 @@ namespace jactorio::data
 		 * 20 - 29: Sprite 3
 		 * 30 - 39: Sprite 4
 		 */
-
+	private:
 		///
-		/// \param mset Will be modulus by total sets
-		/// \param frame 
+		/// \brief Performs the following adjustments to set and frame
+		/// \param set Modulus of total number of sets
+		/// \param frame Modulus of total number of frames, every multiple of frames increases set by 1
+		void adjust_set_frame(Renderable_data::set_t& set, Renderable_data::frame_t& frame) const;
+
+	public:
+		///
+		/// \brief Gets UV coordinates for region within a sprite
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::Quad_position get_coords(uint16_t mset, uint16_t frame) const;
+		J_NODISCARD core::Quad_position get_coords(Renderable_data::set_t set, Renderable_data::frame_t frame) const;
 
 		///
-		/// \brief Same as get_coords, but applies a deduction of trim pixels around the border
+		/// \brief Gets UV coordinates for region within a sprite, applying a deduction of trim pixels around the border
 		/// \remark Requires width_ and height_ to be initialized
-		/// \param mset Will be modulus by total sets
-		/// \param frame 
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::Quad_position get_coords_trimmed(uint16_t mset, uint16_t frame) const;
+		J_NODISCARD core::Quad_position get_coords_trimmed(Renderable_data::set_t set, Renderable_data::frame_t frame) const;
 
 		// ======================================================================
 		// Sprite ptr

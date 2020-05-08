@@ -6,7 +6,7 @@
 #define JACTORIO_GAME_LOGIC_ITEM_INSERT_DESTINATION_H
 #pragma once
 
-#include "data/prototype/interface/rotatable.h"
+#include "data/prototype/orientation.h"
 #include "data/prototype/item/item.h"
 
 namespace jactorio::game

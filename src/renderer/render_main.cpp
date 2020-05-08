@@ -82,12 +82,12 @@ void jactorio::renderer::render_init() {
 
 	// Loading textures
 	auto renderer_sprites = Renderer_sprites();
-	renderer_sprites.create_spritemap(data::Sprite::spriteGroup::terrain, true);
-	renderer_sprites.create_spritemap(data::Sprite::spriteGroup::gui, false);
+	renderer_sprites.create_spritemap(data::Sprite::SpriteGroup::terrain, true);
+	renderer_sprites.create_spritemap(data::Sprite::SpriteGroup::gui, false);
 
 	// Terrain
-	Renderer::set_spritemap_coords(renderer_sprites.get_spritemap(data::Sprite::spriteGroup::terrain).sprite_positions);
-	renderer_sprites.get_texture(data::Sprite::spriteGroup::terrain)->bind(0);
+	Renderer::set_spritemap_coords(renderer_sprites.get_spritemap(data::Sprite::SpriteGroup::terrain).sprite_positions);
+	renderer_sprites.get_texture(data::Sprite::SpriteGroup::terrain)->bind(0);
 
 	// Gui
 	imgui_manager::setup_character_data(renderer_sprites);

@@ -6,9 +6,22 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_RENDERABLE_H
 #pragma once
 
-#include "data/prototype/sprite.h"
-#include "game/player/player_data.h"
-#include "game/world/chunk_tile_layer.h"
+#include "core/data_type.h"
+#include "data/prototype/prototype_base.h"
+
+namespace jactorio
+{
+	namespace game
+	{
+		class Player_data;
+		class Chunk_tile_layer;
+	}
+
+	namespace data
+	{
+		class Sprite;
+	}
+}
 
 namespace jactorio::data
 {
@@ -16,14 +29,16 @@ namespace jactorio::data
 	/// \brief Inherit to allow drawing portions of a sprite
 	struct Renderable_data : Unique_data_base
 	{
+		using set_t = uint16_t;
+		using frame_t = uint16_t;
+
 		Renderable_data() = default;
 
-		Renderable_data(const uint16_t set, const uint16_t frame)
-			: set(set), frame(frame) {
+		Renderable_data(const set_t set)
+			: set(set) {
 		}
 
-		uint16_t set = 0;
-		uint16_t frame = 0;
+		set_t set = 0;
 	};
 
 	///
@@ -31,18 +46,19 @@ namespace jactorio::data
 	class Renderable
 	{
 	protected:
-		Renderable() = default;
+		Renderable()          = default;
 		virtual ~Renderable() = default;
 
-		Renderable(const Renderable& other) = default;
-		Renderable(Renderable&& other) noexcept = default;
-		Renderable& operator=(const Renderable& other) = default;
+		Renderable(const Renderable& other)                = default;
+		Renderable(Renderable&& other) noexcept            = default;
+		Renderable& operator=(const Renderable& other)     = default;
 		Renderable& operator=(Renderable&& other) noexcept = default;
 
 	public:
 		///
-		/// \brief Called by the renderer when it wants the sprite associated with this entity
-		J_NODISCARD virtual Sprite* on_r_get_sprite(Unique_data_base* unique_data) const = 0;
+		/// \brief Called by the renderer when it wants the sprite and frame within the sprite
+		J_NODISCARD virtual std::pair<Sprite*, Renderable_data::frame_t> on_r_get_sprite(Unique_data_base* unique_data,
+		                                                                                 game_tick_t game_tick) const = 0;
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data

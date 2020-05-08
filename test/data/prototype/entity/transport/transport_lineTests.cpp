@@ -123,7 +123,7 @@ namespace data::prototype
 			auto& layer = world_data_.get_tile(world_coords)
 			                         ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity);
 
-			line_proto_.on_build(world_data_, world_coords, layer, 0, orientation);
+			line_proto_.on_build(world_data_, world_coords, layer, orientation);
 
 			// Call on_neighbor_update for the 4 sides
 			dispatch_neighbor_update(world_coords,

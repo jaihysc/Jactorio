@@ -45,7 +45,10 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Renderer
-		Sprite* on_r_get_sprite(Unique_data_base* unique_data) const override { return sprite; }
+		std::pair<Sprite*, Renderable_data::frame_t> on_r_get_sprite(Unique_data_base* unique_data,
+																	 game_tick_t game_tick) const override {
+			return {sprite, 0};
+		}
 
 		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override {
 		}

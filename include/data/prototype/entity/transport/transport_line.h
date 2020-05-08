@@ -234,7 +234,6 @@ namespace jactorio::data
 		void on_build(game::World_data& world_data,
 		              const game::World_data::world_pair& world_coords,
 		              game::Chunk_tile_layer& tile_layer,
-		              uint16_t frame,
 		              Orientation orientation) const override;
 
 		void on_neighbor_update(game::World_data& world_data,
@@ -246,11 +245,17 @@ namespace jactorio::data
 		               const game::World_data::world_pair& world_coords,
 		               game::Chunk_tile_layer& tile_layer) const override;
 
-		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(Orientation orientation,
-		                                                                    game::World_data& world_data,
-		                                                                    const game::World_data::world_pair& world_coords)
+
+		std::pair<uint16_t, uint16_t> map_placement_orientation(Orientation orientation,
+		                                                        game::World_data& world_data,
+		                                                        const game::World_data::world_pair& world_coords)
 		const override;
 
+
+		std::pair<Sprite*, Renderable_data::frame_t> on_r_get_sprite(Unique_data_base* unique_data,
+		                                                             const game_tick_t game_tick) const override {
+			return {this->sprite, game_tick % sprite->frames};
+		};
 
 		// ======================================================================
 		// Data events

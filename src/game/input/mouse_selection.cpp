@@ -34,7 +34,7 @@ double jactorio::game::Mouse_selection::get_cursor_y() {
 
 void jactorio::game::Mouse_selection::draw_cursor_overlay(Player_data& player_data) {
 	auto* last_tile = player_data.get_player_world().get_tile(last_tile_pos_.first,
-	                                                                       last_tile_pos_.second);
+	                                                          last_tile_pos_.second);
 	if (last_tile == nullptr)
 		return;
 
@@ -55,7 +55,7 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 	World_data& world_data = player_data.get_player_world();
 
 	auto* last_tile = world_data.get_tile(last_tile_pos_.first,
-	                                                   last_tile_pos_.second);
+	                                      last_tile_pos_.second);
 	auto* tile = world_data.get_tile(world_x, world_y);
 
 
@@ -78,8 +78,8 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 	if (selected_entity && selected_entity->placeable) {
 		// Has item selected
 		place_sprite_at_coords(world_data, Chunk_tile::chunkLayer::overlay, selected_entity->sprite,
-		                                    selected_entity->tile_width, selected_entity->tile_height, world_x,
-		                                    world_y);
+		                       selected_entity->tile_width, selected_entity->tile_height, world_x,
+		                       world_y);
 
 		// Rotatable entities
 		if (selected_entity->rotatable) {
@@ -89,8 +89,11 @@ void jactorio::game::Mouse_selection::draw_overlay(Player_data& player_data, dat
 			                                                               {world_x, world_y});
 
 			Chunk_tile_layer& target_layer = tile->get_layer(Chunk_tile::chunkLayer::overlay);
-			target_layer.unique_data = new data::Renderable_data(target.first, target.second);
-			target_layer.prototype_data = selected_entity->on_r_get_sprite(target_layer.unique_data);
+
+			target_layer.unique_data    = new data::Renderable_data(target.first);
+			target_layer.prototype_data = selected_entity
+			                              ->on_r_get_sprite(target_layer.unique_data,
+			                                                player_data.get_player_world().game_tick()).first;
 		}
 
 		last_tile_dimensions_ = {selected_entity->tile_width, selected_entity->tile_height};
