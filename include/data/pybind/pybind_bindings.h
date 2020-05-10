@@ -73,20 +73,20 @@
 */
 
 // Python name is he same as the cpp name (commonly single word members)
-#define PYBIND_PROP(class_, name)\
-	.def(#name, &class_::Set_##name, pybind11::return_value_policy::reference)\
-	.def_readwrite("_" #name, &class_::name)
+#define PYBIND_PROP(class_, name_)\
+	.def          (#name_    , &class_::Set_##name_, pybind11::return_value_policy::reference)\
+	.def_readwrite("_" #name_, &class_::name_)
 
 // If the python name is different from the c++ name
-#define PYBIND_PROP_S(class_, py_name, cpp_name, cpp_name_set)\
-	.def(#py_name, &class_::cpp_name_set, pybind11::return_value_policy::reference)\
-	.def_readwrite("_" #py_name, &class_::cpp_name)
+#define PYBIND_PROP_S(class_, py_name_, cpp_name_, cpp_name_set_)\
+	.def          (#py_name_    , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
+	.def_readwrite("_" #py_name_, &class_::cpp_name_)
 
 
 // If the member utilizes a getter and settler
-#define PYBIND_PROP_GET_SET(class_, py_name, cpp_name_set, cpp_name_get)\
-	.def(#py_name, &class_::##cpp_name_set, pybind11::return_value_policy::reference)\
-	.def("get_" #py_name, &class_::##cpp_name_get, pybind11::return_value_policy::reference)
+#define PYBIND_PROP_GET_SET(class_, py_name_, cpp_name_set_, cpp_name_get_)\
+	.def(#py_name_       , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
+	.def("get_" #py_name_, &class_::cpp_name_get_, pybind11::return_value_policy::reference)
 
 // ======================================================================
 
