@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 12/06/2019
 
@@ -13,7 +12,7 @@
 #include "core/filesystem.h"
 #include "data/data_exception.h"
 
-bool jactorio::data::Sprite::is_in_group(const SpriteGroup group) {
+bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) {
 	for (auto& i : this->group) {
 		if (i == group)
 			return true;
@@ -22,82 +21,82 @@ bool jactorio::data::Sprite::is_in_group(const SpriteGroup group) {
 	return false;
 }
 
-void jactorio::data::Sprite::load_image_from_file() {
-	sprite_buffer_ = stbi_load(
-		sprite_path_.c_str(),
+void jactorio::data::Sprite::LoadImageFromFile() {
+	spriteBuffer_ = stbi_load(
+		spritePath_.c_str(),
 		&width_,
 		&height_,
-		&bytes_per_pixel_,
+		&bytesPerPixel_,
 		4  // 4 desired channels for RGBA
 	);
 
-	if (!sprite_buffer_) {
-		LOG_MESSAGE_f(error, "Failed to read sprite at: %s", sprite_path_.c_str());
+	if (!spriteBuffer_) {
+		LOG_MESSAGE_f(error, "Failed to read sprite at: %s", spritePath_.c_str());
 
 		std::ostringstream sstr;
-		sstr << "Failed to read sprite at: " << sprite_path_;
+		sstr << "Failed to read sprite at: " << spritePath_;
 
-		throw Data_exception(sstr.str());
+		throw DataException(sstr.str());
 	}
 }
 
 jactorio::data::Sprite::Sprite()
-	: width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
+	: width_(0), height_(0), bytesPerPixel_(0), spriteBuffer_(nullptr) {
 }
 
 jactorio::data::Sprite::Sprite(const std::string& sprite_path)
-	: width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
-	load_image(sprite_path);
+	: width_(0), height_(0), bytesPerPixel_(0), spriteBuffer_(nullptr) {
+	LoadImage(sprite_path);
 }
 
 jactorio::data::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group)
-	: group(std::move(group)), width_(0), height_(0), bytes_per_pixel_(0), sprite_buffer_(nullptr) {
-	load_image(sprite_path);
+	: group(std::move(group)), width_(0), height_(0), bytesPerPixel_(0), spriteBuffer_(nullptr) {
+	LoadImage(sprite_path);
 }
 
 jactorio::data::Sprite::~Sprite() {
-	stbi_image_free(sprite_buffer_);
+	stbi_image_free(spriteBuffer_);
 }
 
 jactorio::data::Sprite::Sprite(const Sprite& other)
-	: Prototype_base(other),
+	: PrototypeBase(other),
 	  group(other.group),
 	  width_(other.width_),
 	  height_(other.height_),
-	  bytes_per_pixel_(other.bytes_per_pixel_),
-	  sprite_path_(other.sprite_path_),
-	  sprite_buffer_(other.sprite_buffer_) {
+	  bytesPerPixel_(other.bytesPerPixel_),
+	  spritePath_(other.spritePath_),
+	  spriteBuffer_(other.spriteBuffer_) {
 
-	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytes_per_pixel_;
-	sprite_buffer_  = static_cast<unsigned char*>(malloc(size * sizeof(*sprite_buffer_)));  // stbi uses malloc
+	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytesPerPixel_;
+	spriteBuffer_    = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_)));  // stbi uses malloc
 	for (unsigned long long i = 0; i < size; ++i) {
-		sprite_buffer_[i] = other.sprite_buffer_[i];
+		spriteBuffer_[i] = other.spriteBuffer_[i];
 	}
 }
 
 jactorio::data::Sprite::Sprite(Sprite&& other) noexcept
-	: Prototype_base{std::move(other)},
+	: PrototypeBase{std::move(other)},
 	  group{std::move(other.group)},
 	  frames{other.frames},
 	  sets{other.sets},
 	  trim{other.trim},
 	  width_{other.width_},
 	  height_{other.height_},
-	  bytes_per_pixel_{other.bytes_per_pixel_},
-	  sprite_path_{std::move(other.sprite_path_)},
-	  sprite_buffer_{other.sprite_buffer_} {
-	other.sprite_buffer_ = nullptr;
+	  bytesPerPixel_{other.bytesPerPixel_},
+	  spritePath_{std::move(other.spritePath_)},
+	  spriteBuffer_{other.spriteBuffer_} {
+	other.spriteBuffer_ = nullptr;
 }
 
-void jactorio::data::Sprite::adjust_set_frame(Renderable_data::set_t& set, Renderable_data::frame_t& frame) const {
+void jactorio::data::Sprite::AdjustSetFrame(RenderableData::set_t& set, RenderableData::frame_t& frame) const {
 	set %= sets;
 	set += frame / frames;
 	frame = frame % frames;
 }
 
-jactorio::core::Quad_position jactorio::data::Sprite::get_coords(Renderable_data::set_t set,
-                                                                 Renderable_data::frame_t frame) const {
-	adjust_set_frame(set, frame);
+jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(RenderableData::set_t set,
+                                                                RenderableData::frame_t frame) const {
+	AdjustSetFrame(set, frame);
 
 	assert(set < sets);  // Out of range
 	assert(frame < frames);
@@ -114,9 +113,9 @@ jactorio::core::Quad_position jactorio::data::Sprite::get_coords(Renderable_data
 	};
 }
 
-jactorio::core::Quad_position jactorio::data::Sprite::get_coords_trimmed(Renderable_data::set_t set,
-                                                                         Renderable_data::frame_t frame) const {
-	adjust_set_frame(set, frame);
+jactorio::core::QuadPosition jactorio::data::Sprite::GetCoordsTrimmed(RenderableData::set_t set,
+                                                                       RenderableData::frame_t frame) const {
+	AdjustSetFrame(set, frame);
 
 	assert(set < sets);  // Out of range
 	assert(frame < frames);
@@ -140,18 +139,18 @@ jactorio::core::Quad_position jactorio::data::Sprite::get_coords_trimmed(Rendera
 	};
 }
 
-const unsigned char* jactorio::data::Sprite::get_sprite_data_ptr() const {
-	return sprite_buffer_;
+const unsigned char* jactorio::data::Sprite::GetSpritePtr() const {
+	return spriteBuffer_;
 }
 
-jactorio::data::Sprite* jactorio::data::Sprite::load_image(const std::string& image_path) {
-	sprite_path_ = core::resolve_path("~/data/" + image_path);
-	load_image_from_file();
+jactorio::data::Sprite* jactorio::data::Sprite::LoadImage(const std::string& image_path) {
+	spritePath_ = core::ResolvePath("~/data/" + image_path);
+	LoadImageFromFile();
 
 	return this;
 }
 
-void jactorio::data::Sprite::post_load_validate() const {
+void jactorio::data::Sprite::PostLoadValidate() const {
 	J_DATA_ASSERT(frames > 0, "Frames must be at least 1");
 	J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
 }

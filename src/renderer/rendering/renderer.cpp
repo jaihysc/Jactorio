@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -12,20 +11,20 @@
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/mvp_manager.h"
 
-unsigned short jactorio::renderer::Renderer::window_width_ = 0;
-unsigned short jactorio::renderer::Renderer::window_height_ = 0;
+unsigned short jactorio::renderer::Renderer::windowWidth_  = 0;
+unsigned short jactorio::renderer::Renderer::windowHeight_ = 0;
 
-unsigned short jactorio::renderer::Renderer::tile_width = 6;
+unsigned short jactorio::renderer::Renderer::tileWidth = 6;
 
-std::unordered_map<unsigned int, jactorio::core::Quad_position> jactorio::renderer::Renderer::spritemap_coords_{};
+std::unordered_map<unsigned int, jactorio::core::QuadPosition> jactorio::renderer::Renderer::spritemapCoords_{};
 
-void jactorio::renderer::Renderer::set_spritemap_coords(
-	const std::unordered_map<unsigned, core::Quad_position>& spritemap_coords) {
-	spritemap_coords_ = spritemap_coords;
+void jactorio::renderer::Renderer::SetSpritemapCoords(
+	const std::unordered_map<unsigned, core::QuadPosition>& spritemap_coords) {
+	spritemapCoords_ = spritemap_coords;
 }
 
-jactorio::core::Quad_position jactorio::renderer::Renderer::get_spritemap_coords(const unsigned internal_id) {
-	return spritemap_coords_.at(internal_id);
+jactorio::core::QuadPosition jactorio::renderer::Renderer::GetSpritemapCoords(const unsigned internal_id) {
+	return spritemapCoords_.at(internal_id);
 }
 
 
@@ -34,94 +33,94 @@ jactorio::core::Quad_position jactorio::renderer::Renderer::get_spritemap_coords
 jactorio::renderer::Renderer::Renderer() {
 	// Initialize model matrix
 	const glm::mat4 model_matrix = translate(glm::mat4(1.f), glm::vec3(0, 0, 0));
-	setg_model_matrix(model_matrix);
-	update_shader_mvp();
+	SetgModelMatrix(model_matrix);
+	UpdateShaderMvp();
 
 	// Get window size
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
 
-	render_layer.g_init_buffer();
-	render_layer2.g_init_buffer();
+	renderLayer.GInitBuffer();
+	renderLayer2.GInitBuffer();
 
-	recalculate_buffers(m_viewport[2], m_viewport[3]);
+	RecalculateBuffers(m_viewport[2], m_viewport[3]);
 }
 
-void jactorio::renderer::Renderer::recalculate_buffers(const unsigned short window_x,
-                                                       const unsigned short window_y) {
+void jactorio::renderer::Renderer::RecalculateBuffers(const unsigned short window_x,
+                                                      const unsigned short window_y) {
 	// Initialize fields
-	window_width_ = window_x;
-	window_height_ = window_y;
-	update_tile_projection_matrix();
+	windowWidth_  = window_x;
+	windowHeight_ = window_y;
+	UpdateTileProjectionMatrix();
 
 	// Raise the bottom and right by tile_width so the last tile has enough space to render out
-	tile_count_x_ = window_width_ / tile_width + 1;
-	tile_count_y_ = window_height_ / tile_width + 1;
+	tileCountX_ = windowWidth_ / tileWidth + 1;
+	tileCountY_ = windowHeight_ / tileWidth + 1;
 
-	grid_elements_count_ = tile_count_x_ * tile_count_y_;
+	gridElementsCount_ = tileCountX_ * tileCountY_;
 
 
 	// Render layer (More may be reserved as needed by the renderer)
-	render_layer.reserve(grid_elements_count_);
-	render_layer2.reserve(grid_elements_count_);
+	renderLayer.Reserve(gridElementsCount_);
+	renderLayer2.Reserve(gridElementsCount_);
 }
 
 
 // openGL methods
 
-void jactorio::renderer::Renderer::g_draw(const unsigned int element_count) {
+void jactorio::renderer::Renderer::GDraw(const unsigned int element_count) {
 	DEBUG_OPENGL_CALL(
 		// There are 6 indices for each tile
 		glDrawElements(GL_TRIANGLES, element_count * 6, GL_UNSIGNED_INT, nullptr)
 	); // Pointer not needed as buffer is already bound
 }
 
-void jactorio::renderer::Renderer::g_clear() {
+void jactorio::renderer::Renderer::GClear() {
 	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 }
 
 
 // Grid properties
-unsigned short jactorio::renderer::Renderer::get_window_width() {
-	return window_width_;
+unsigned short jactorio::renderer::Renderer::GetWindowWidth() {
+	return windowWidth_;
 }
 
-unsigned short jactorio::renderer::Renderer::get_window_height() {
-	return window_height_;
-}
-
-
-unsigned short jactorio::renderer::Renderer::get_grid_size_x() const {
-	return tile_count_x_;
-}
-
-unsigned short jactorio::renderer::Renderer::get_grid_size_y() const {
-	return tile_count_y_;
+unsigned short jactorio::renderer::Renderer::GetWindowHeight() {
+	return windowHeight_;
 }
 
 
-void jactorio::renderer::Renderer::update_tile_projection_matrix() {
-	const auto max_tile_width = static_cast<float>(tile_width * 2);
+unsigned short jactorio::renderer::Renderer::GetGridSizeX() const {
+	return tileCountX_;
+}
 
-	if (tile_projection_matrix_offset < max_tile_width)
+unsigned short jactorio::renderer::Renderer::GetGridSizeY() const {
+	return tileCountY_;
+}
+
+
+void jactorio::renderer::Renderer::UpdateTileProjectionMatrix() {
+	const auto max_tile_width = static_cast<float>(tileWidth * 2);
+
+	if (tileProjectionMatrixOffset < max_tile_width)
 		// Prevent zooming out too far
-		tile_projection_matrix_offset = max_tile_width;
+		tileProjectionMatrixOffset = max_tile_width;
 	else {
 		// Prevent zooming too far in
 		unsigned short smallest_axis;
-		if (window_width_ > window_height_) {
-			smallest_axis = window_height_;
+		if (windowWidth_ > windowHeight_) {
+			smallest_axis = windowHeight_;
 		}
 		else {
-			smallest_axis = window_width_;
+			smallest_axis = windowWidth_;
 		}
 
 		// Maximum zoom is 30 from center
 		const int max_zoom_offset = 30;
-		if (tile_projection_matrix_offset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
-			tile_projection_matrix_offset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
+		if (tileProjectionMatrixOffset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
+			tileProjectionMatrixOffset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
 		}
 	}
 
-	setg_projection_matrix(to_proj_matrix(window_width_, window_height_, tile_projection_matrix_offset));
+	SetgProjectionMatrix(ToProjMatrix(windowWidth_, windowHeight_, tileProjectionMatrixOffset));
 }

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -10,12 +9,9 @@
 
 namespace jactorio::data
 {
-	class Transport_belt final : public Transport_line
+	class TransportBelt final : public TransportLine
 	{
 		PROTOTYPE_CATEGORY(transport_belt);
-
-		// void on_build(game::Chunk_tile_layer* tile_layer) const override {
-		// }
 	};
 }
 

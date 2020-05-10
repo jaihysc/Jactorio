@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 04/08/2020
 
@@ -13,44 +12,44 @@ namespace jactorio::game
 {
 	///
 	/// \brief Represents a world location where items can be inserted
-	class Item_insert_destination
+	class ItemInsertDestination
 	{
 	public:
 		/// \brief A function for inserting items into a destination
 		/// \param item Item to insert
 		/// \param orientation Orientation from origin object 
 		///  \return True is successfully inserted
-		using insert_func = bool (*)(const data::item_stack& item_stack,
-		                             data::Unique_data_base& unique_data,
-		                             data::Orientation orientation);
+		using InsertFunc = bool (*)(const data::ItemStack& item_stack,
+		                            data::UniqueDataBase& unique_data,
+		                            data::Orientation orientation);
 
 
 		///
 		/// \param unique_data Unique data at tile
 		/// \param insert_function Obtained from item_logistics::can_accept_item()
 		/// \param orientation Orientation from origin prototype, "the destination is <orientation> of prototype"
-		Item_insert_destination(data::Unique_data_base& unique_data, const insert_func insert_function,
-		                        const data::Orientation orientation)
-			: destination_unique_data_(unique_data),
+		ItemInsertDestination(data::UniqueDataBase& unique_data, const InsertFunc insert_function,
+		                      const data::Orientation orientation)
+			: destinationUniqueData_(unique_data),
 			  orientation_(orientation),
-			  insertion_function_(insert_function) {
+			  insertionFunction(insert_function) {
 			assert(insert_function != nullptr);
 		}
 
 
 	private:
 		/// \brief Tile location where item will be inserted
-		data::Unique_data_base& destination_unique_data_;
+		data::UniqueDataBase& destinationUniqueData_;
 		data::Orientation orientation_;
 
 		/// \brief Function for inserting at destination, from one below
-		insert_func insertion_function_;
+		InsertFunc insertionFunction;
 
 	public:
 		///
 		///	 \brief Insert provided item at destination
-		bool insert(const data::item_stack& item_stack) const {
-			return insertion_function_(item_stack, destination_unique_data_, orientation_);
+		bool Insert(const data::ItemStack& item_stack) const {
+			return insertionFunction(item_stack, destinationUniqueData_, orientation_);
 		}
 	};
 }

@@ -1,28 +1,30 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
 #include "game/logic/transport_line_structure.h"
+
+#include <decimal.h>
+
 #include "core/data_type.h"
 #include "game/logic/transport_line_controller.h"
 
-bool jactorio::game::Transport_line_segment::
-can_insert(const bool left_side, const transport_line_offset& start_offset) {
-	std::deque<transport_line_item>& side = left_side ? this->left : this->right;
+bool jactorio::game::TransportLineSegment::
+CanInsert(const bool left_side, const TransportLineOffset& start_offset) {
+	std::deque<TransportLineItem>& side = left_side ? this->left : this->right;
 
 	// Check if start_offset already has an item
-	transport_line_offset offset{0};
+	TransportLineOffset offset{0};
 
 	for (const auto& item : side) {
 		// Item is not compressed with the previous item
 		if (item.first >
-			dec::decimal_cast<transport_line_decimal_place>(item_spacing)) {
+			dec::decimal_cast<kTransportLineDecimalPlace>(kItemSpacing)) {
 			//  OFFSET item_spacing               item_spacing   OFFSET + item.first
 			//     | -------------- |   GAP FOR ITEM   | ------------ |
-			if (dec::decimal_cast<transport_line_decimal_place>(item_spacing) + offset <=
+			if (dec::decimal_cast<kTransportLineDecimalPlace>(kItemSpacing) + offset <=
 				start_offset &&
 				start_offset <=
-				offset + item.first - dec::decimal_cast<transport_line_decimal_place>(item_spacing)) {
+				offset + item.first - dec::decimal_cast<kTransportLineDecimalPlace>(kItemSpacing)) {
 
 				return true;
 			}
@@ -37,31 +39,31 @@ can_insert(const bool left_side, const transport_line_offset& start_offset) {
 
 	// Account for the item width of the last item if not the firs item
 	if (!side.empty())
-		offset += dec::decimal_cast<transport_line_decimal_place>(item_spacing);
+		offset += dec::decimal_cast<kTransportLineDecimalPlace>(kItemSpacing);
 
 	return offset <= start_offset;
 }
 
-void jactorio::game::Transport_line_segment::append_item(const bool insert_left, double offset, const data::Item* item) {
-	std::deque<transport_line_item>& target_queue = insert_left ? this->left : this->right;
+void jactorio::game::TransportLineSegment::AppendItem(const bool insert_left, double offset, const data::Item* item) {
+	std::deque<TransportLineItem>& target_queue = insert_left ? this->left : this->right;
 
 	// A minimum distance of item_spacing is maintained between items (AFTER the initial item)
-	if (offset < item_spacing && !target_queue.empty())
-		offset = item_spacing;
+	if (offset < kItemSpacing && !target_queue.empty())
+		offset = kItemSpacing;
 
 	target_queue.emplace_back(offset, item);
 	insert_left
-		? l_back_item_distance += transport_line_offset{offset}
-		: r_back_item_distance += transport_line_offset{offset};
+		? lBackItemDistance += TransportLineOffset{offset}
+		: rBackItemDistance += TransportLineOffset{offset};
 }
 
-void jactorio::game::Transport_line_segment::insert_item(const bool insert_left, const double offset, const data::Item* item) {
-	std::deque<transport_line_item>& target_queue = insert_left ? this->left : this->right;
+void jactorio::game::TransportLineSegment::InsertItem(const bool insert_left, const double offset, const data::Item* item) {
+	std::deque<TransportLineItem>& target_queue = insert_left ? this->left : this->right;
 
-	transport_line_offset target_offset{offset};
-	transport_line_offset counter_offset;
+	TransportLineOffset target_offset{offset};
+	TransportLineOffset counter_offset;
 
-	std::deque<transport_line_item>::iterator it;
+	std::deque<TransportLineItem>::iterator it;
 	for (auto i = 0u; i < target_queue.size(); ++i) {
 		if (target_offset < target_queue[i].first) {
 			it = target_queue.begin() + i;
@@ -75,8 +77,8 @@ void jactorio::game::Transport_line_segment::insert_item(const bool insert_left,
 	// Failed to find a greater item
 	it = target_queue.end();
 	insert_left
-		? l_back_item_distance = target_offset
-		: r_back_item_distance = target_offset;
+		? lBackItemDistance = target_offset
+		: rBackItemDistance = target_offset;
 
 loop_exit:
 	// Modify target offset relative to previous item
@@ -90,21 +92,21 @@ loop_exit:
 	target_queue.emplace(it, target_offset, item);
 }
 
-bool jactorio::game::Transport_line_segment::try_insert_item(const bool insert_left, const double offset,
-                                                             const data::Item* item) {
-	if (!can_insert(insert_left, dec::decimal_cast<transport_line_decimal_place>(offset)))
+bool jactorio::game::TransportLineSegment::TryInsertItem(const bool insert_left, const double offset,
+                                                         const data::Item* item) {
+	if (!CanInsert(insert_left, dec::decimal_cast<kTransportLineDecimalPlace>(offset)))
 		return false;
 
 	// Reenable transport segment
 	if (insert_left) {
-		if (!is_active_left())
-			l_index = 0;
+		if (!IsActiveLeft())
+			lIndex = 0;
 	}
 	else {
-		if (!is_active_right())
-			r_index = 0;
+		if (!IsActiveRight())
+			rIndex = 0;
 	}
 
-	insert_item(insert_left, offset, item);
+	InsertItem(insert_left, offset, item);
 	return true;
 }

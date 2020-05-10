@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -71,8 +70,8 @@
 #endif
 
 #include "renderer/gui/imgui_opengl3.h"
-#include <imgui/imgui.h>
 #include <stdio.h>
+#include <imgui/imgui.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1500 // MSVC 2008 or earlier
 #include <stddef.h>     // intptr_t
 #else
@@ -124,17 +123,17 @@
 
 // OpenGL Data
 static char g_GlslVersionString[32] = "";
-static GLuint g_FontTexture = 0;
-static GLuint g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
-static int g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;                                // Uniforms location
-static int g_AttribLocationVtxPos = 0, g_AttribLocationVtxUV = 0, g_AttribLocationVtxColor =
+static GLuint g_FontTexture         = 0;
+static GLuint g_ShaderHandle        = 0, g_VertHandle            = 0, g_FragHandle = 0;
+static int g_AttribLocationTex      = 0, g_AttribLocationProjMtx = 0;                                // Uniforms location
+static int g_AttribLocationVtxPos   = 0, g_AttribLocationVtxUV   = 0, g_AttribLocationVtxColor =
 	           0; // Vertex attributes location
 static unsigned int g_VboHandle = 0, g_ElementsHandle = 0;
 
 // Functions
 bool ImGui_ImplOpenGL3_Init(const char* glsl_version) {
 	// Setup back-end capabilities flags
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io            = ImGui::GetIO();
 	io.BackendRendererName = "imgui_impl_opengl3";
 #if IMGUI_IMPL_OPENGL_HAS_DRAW_WITH_BASE_VERTEX
 	io.BackendFlags |=
@@ -190,10 +189,10 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
 	// Setup viewport, orthographic projection matrix
 	// Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
 	glViewport(0, 0, static_cast<GLsizei>(fb_width), static_cast<GLsizei>(fb_height));
-	const float L = draw_data->DisplayPos.x;
-	const float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
-	const float T = draw_data->DisplayPos.y;
-	const float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
+	const float L                      = draw_data->DisplayPos.x;
+	const float R                      = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
+	const float T                      = draw_data->DisplayPos.y;
+	const float B                      = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
 	const float ortho_projection[4][4] =
 	{
 		{2.0f / (R - L), 0.0f, 0.0f, 0.0f},
@@ -232,7 +231,7 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
 // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so.
 void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data) {
 	// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-	const int fb_width = static_cast<int>(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
+	const int fb_width  = static_cast<int>(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
 	const int fb_height = static_cast<int>(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
 	if (fb_width <= 0 || fb_height <= 0)
 		return;
@@ -275,11 +274,11 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data) {
 	glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint*)&last_blend_equation_rgb);
 	GLenum last_blend_equation_alpha;
 	glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint*)&last_blend_equation_alpha);
-	const GLboolean last_enable_blend = glIsEnabled(GL_BLEND);
-	const GLboolean last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
-	const GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
+	const GLboolean last_enable_blend        = glIsEnabled(GL_BLEND);
+	const GLboolean last_enable_cull_face    = glIsEnabled(GL_CULL_FACE);
+	const GLboolean last_enable_depth_test   = glIsEnabled(GL_DEPTH_TEST);
 	const GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
-	bool clip_origin_lower_left = true;
+	bool clip_origin_lower_left              = true;
 #if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
 	GLenum last_clip_origin = 0;
 	glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&last_clip_origin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
@@ -297,7 +296,7 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data) {
 	ImGui_ImplOpenGL3_SetupRenderState(draw_data, fb_width, fb_height, vertex_array_object);
 
 	// Will project scissor/clipping rectangles into framebuffer space
-	const ImVec2 clip_off = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
+	const ImVec2 clip_off   = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
 	const ImVec2 clip_scale = draw_data->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
 
 	// Render command lists
@@ -433,7 +432,7 @@ void ImGui_ImplOpenGL3_DestroyFontsTexture() {
 		ImGuiIO& io = ImGui::GetIO();
 		glDeleteTextures(1, &g_FontTexture);
 		io.Fonts->TexID = nullptr;
-		g_FontTexture = 0;
+		g_FontTexture   = 0;
 	}
 }
 
@@ -585,34 +584,34 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
 		"}\n";
 
 	// Select shaders matching our GLSL versions
-	const GLchar* vertex_shader = nullptr;
+	const GLchar* vertex_shader   = nullptr;
 	const GLchar* fragment_shader = nullptr;
 	if (glsl_version < 130) {
-		vertex_shader = vertex_shader_glsl_120;
+		vertex_shader   = vertex_shader_glsl_120;
 		fragment_shader = fragment_shader_glsl_120;
 	}
 	else if (glsl_version >= 410) {
-		vertex_shader = vertex_shader_glsl_410_core;
+		vertex_shader   = vertex_shader_glsl_410_core;
 		fragment_shader = fragment_shader_glsl_410_core;
 	}
 	else if (glsl_version == 300) {
-		vertex_shader = vertex_shader_glsl_300_es;
+		vertex_shader   = vertex_shader_glsl_300_es;
 		fragment_shader = fragment_shader_glsl_300_es;
 	}
 	else {
-		vertex_shader = vertex_shader_glsl_130;
+		vertex_shader   = vertex_shader_glsl_130;
 		fragment_shader = fragment_shader_glsl_130;
 	}
 
 	// Create shaders
 	const GLchar* vertex_shader_with_version[2] = {g_GlslVersionString, vertex_shader};
-	g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
+	g_VertHandle                                = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(g_VertHandle, 2, vertex_shader_with_version, nullptr);
 	glCompileShader(g_VertHandle);
 	CheckShader(g_VertHandle, "vertex shader");
 
 	const GLchar* fragment_shader_with_version[2] = {g_GlslVersionString, fragment_shader};
-	g_FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
+	g_FragHandle                                  = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(g_FragHandle, 2, fragment_shader_with_version, nullptr);
 	glCompileShader(g_FragHandle);
 	CheckShader(g_FragHandle, "fragment shader");
@@ -623,10 +622,10 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
 	glLinkProgram(g_ShaderHandle);
 	CheckProgram(g_ShaderHandle, "shader program");
 
-	g_AttribLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");
-	g_AttribLocationProjMtx = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
-	g_AttribLocationVtxPos = glGetAttribLocation(g_ShaderHandle, "Position");
-	g_AttribLocationVtxUV = glGetAttribLocation(g_ShaderHandle, "UV");
+	g_AttribLocationTex      = glGetUniformLocation(g_ShaderHandle, "Texture");
+	g_AttribLocationProjMtx  = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
+	g_AttribLocationVtxPos   = glGetAttribLocation(g_ShaderHandle, "Position");
+	g_AttribLocationVtxUV    = glGetAttribLocation(g_ShaderHandle, "UV");
 	g_AttribLocationVtxColor = glGetAttribLocation(g_ShaderHandle, "Color");
 
 	// Create buffers

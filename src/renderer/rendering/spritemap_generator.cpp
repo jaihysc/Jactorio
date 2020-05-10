@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -11,19 +10,19 @@
 #include "core/logger.h"
 #include "data/data_manager.h"
 
-void jactorio::renderer::Renderer_sprites::clear_spritemaps() {
+void jactorio::renderer::RendererSprites::ClearSpritemaps() {
 	for (auto& map : textures_) {
 		delete map.second;
 	}
 	textures_.clear();
 	// The pointer which this contains is already cleared by spritemaps
-	spritemap_datas_.clear();
+	spritemapDatas_.clear();
 }
 
-void jactorio::renderer::Renderer_sprites::create_spritemap(data::Sprite::SpriteGroup group,
-                                                            const bool invert_sprites) {
+void jactorio::renderer::RendererSprites::CreateSpritemap(data::Sprite::SpriteGroup group,
+                                                          const bool invert_sprites) {
 	std::vector<data::Sprite*> sprites =
-		data::data_raw_get_all<data::Sprite>(data::dataCategory::sprite);
+		data::DataRawGetAll<data::Sprite>(data::DataCategory::sprite);
 
 	// Filter to group only
 	sprites.erase(
@@ -38,32 +37,32 @@ void jactorio::renderer::Renderer_sprites::create_spritemap(data::Sprite::Sprite
 				return false;
 			}
 
-			return !ptr->is_in_group(group);
+			return !ptr->IsInGroup(group);
 		}),
 		sprites.end()
 	);
 
-	const Spritemap_data spritemap_data = gen_spritemap(sprites.data(), sprites.size(), invert_sprites);
+	const SpritemapData spritemap_data = GenSpritemap(sprites.data(), sprites.size(), invert_sprites);
 
 	// Texture will delete the sprite* when deleted
-	textures_[static_cast<int>(group)] = new Texture(spritemap_data.sprite_buffer, spritemap_data.width, spritemap_data.height);
-	spritemap_datas_[static_cast<int>(group)] = (spritemap_data);
+	textures_[static_cast<int>(group)] = new Texture(spritemap_data.spriteBuffer, spritemap_data.width, spritemap_data.height);
+	spritemapDatas_[static_cast<int>(group)] = (spritemap_data);
 }
 
 
-const jactorio::renderer::Renderer_sprites::Spritemap_data& jactorio::renderer::Renderer_sprites::get_spritemap(
+const jactorio::renderer::RendererSprites::SpritemapData& jactorio::renderer::RendererSprites::GetSpritemap(
 	data::Sprite::SpriteGroup group) {
-	return spritemap_datas_[static_cast<int>(group)];
+	return spritemapDatas_[static_cast<int>(group)];
 }
 
-const jactorio::renderer::Texture* jactorio::renderer::Renderer_sprites::get_texture(
+const jactorio::renderer::Texture* jactorio::renderer::RendererSprites::GetTexture(
 	data::Sprite::SpriteGroup group) {
 	return textures_[static_cast<int>(group)];
 }
 
 
-jactorio::renderer::Renderer_sprites::Spritemap_data
-jactorio::renderer::Renderer_sprites::gen_spritemap(data::Sprite** sprites, const uint64_t count, const bool invert_sprites) const {
+jactorio::renderer::RendererSprites::SpritemapData jactorio::renderer::RendererSprites::GenSpritemap(
+	data::Sprite** sprites, const uint64_t count, const bool invert_sprites) const {
 	LOG_MESSAGE_f(info, "Generating spritemap with %lld tiles...", count);
 
 	// Calculate spritemap dimensions
@@ -71,25 +70,25 @@ jactorio::renderer::Renderer_sprites::gen_spritemap(data::Sprite** sprites, cons
 	unsigned int pixels_y = 0;
 
 	for (uint64_t i = 0; i < count; ++i) {
-		pixels_x += sprites[i]->get_width();
-		if (sprites[i]->get_height() > pixels_y)
-			pixels_y = sprites[i]->get_height();
+		pixels_x += sprites[i]->GetWidth();
+		if (sprites[i]->GetHeight() > pixels_y)
+			pixels_y = sprites[i]->GetHeight();
 	}
 
 	auto* spritemap_buffer = new unsigned char[
 		static_cast<unsigned long long>(pixels_x) * pixels_y * 4];
 
-	std::unordered_map<unsigned int, core::Quad_position> image_positions;
+	std::unordered_map<unsigned int, core::QuadPosition> image_positions;
 
 
 	// Offset the x pixels of each new sprite so they don't overlap each other
 	unsigned int x_offset = 0;
 
 	for (uint64_t i = 0; i < count; ++i) {
-		const unsigned char* sprite_data = sprites[i]->get_sprite_data_ptr();
+		const unsigned char* sprite_data = sprites[i]->GetSpritePtr();
 
-		const unsigned int sprite_width = sprites[i]->get_width();
-		const unsigned int sprite_height = sprites[i]->get_height();
+		const unsigned int sprite_width  = sprites[i]->GetWidth();
+		const unsigned int sprite_height = sprites[i]->GetHeight();
 
 		// Copy data onto spritemap
 		for (unsigned int y = 0; y < sprite_height; ++y) {
@@ -113,19 +112,19 @@ jactorio::renderer::Renderer_sprites::gen_spritemap(data::Sprite** sprites, cons
 
 		// Keep track of image positions within the spritemap
 		{
-			auto& image_position = image_positions[sprites[i]->internal_id];
+			auto& image_position = image_positions[sprites[i]->internalId];
 
 			// Shrinks the dimensions of the images by this amount on all sides
 			// Used to avoid texture leaking
 			constexpr float coordinate_shrink_amount = 1;
 
-			image_position.top_left =
+			image_position.topLeft =
 				core::Position2{
 					static_cast<float>(x_offset) + coordinate_shrink_amount,
 					coordinate_shrink_amount
 				};
 
-			image_position.bottom_right =
+			image_position.bottomRight =
 				core::Position2{
 					static_cast<float>(x_offset + sprite_width) - coordinate_shrink_amount,
 					static_cast<float>(sprite_height) - coordinate_shrink_amount
@@ -140,20 +139,20 @@ jactorio::renderer::Renderer_sprites::gen_spritemap(data::Sprite** sprites, cons
 	for (auto& image : image_positions) {
 		auto& position = image.second;
 
-		position.top_left.x /= static_cast<float>(pixels_x);
-		position.top_left.y /= static_cast<float>(pixels_y);
+		position.topLeft.x /= static_cast<float>(pixels_x);
+		position.topLeft.y /= static_cast<float>(pixels_y);
 
-		position.bottom_right.x /= static_cast<float>(pixels_x);
-		position.bottom_right.y /= static_cast<float>(pixels_y);
+		position.bottomRight.x /= static_cast<float>(pixels_x);
+		position.bottomRight.y /= static_cast<float>(pixels_y);
 	}
 
 
-	Spritemap_data spritemap_data;
-	spritemap_data.sprite_buffer = spritemap_buffer;
-	spritemap_data.width = pixels_x;
-	spritemap_data.height = pixels_y;
+	SpritemapData spritemap_data;
+	spritemap_data.spriteBuffer = spritemap_buffer;
+	spritemap_data.width        = pixels_x;
+	spritemap_data.height       = pixels_y;
 
-	spritemap_data.sprite_positions = image_positions;
+	spritemap_data.spritePositions = image_positions;
 
 	return spritemap_data;
 }

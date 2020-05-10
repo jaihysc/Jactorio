@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -15,12 +14,11 @@
 namespace jactorio::data
 {
 	// Internal name, amount required
-	using recipe_item = std::pair<std::string, uint16_t>;
+	using RecipeItem = std::pair<std::string, uint16_t>;
 
-	/**
-	 * Defines an in game recipe to craft items
-	 */
-	class Recipe : public Prototype_base
+	///
+	/// \brief Defines an in game recipe to craft items
+	class Recipe final : public PrototypeBase
 	{
 	public:
 		PROTOTYPE_CATEGORY(recipe);
@@ -28,45 +26,41 @@ namespace jactorio::data
 		Recipe() = default;
 
 
-		/**
-		 * Seconds to complete recipe
-		 */
-		PYTHON_PROP_REF_I(Recipe, float, crafting_time, 1);
+		/// \brief Seconds to complete recipe
+		PYTHON_PROP_REF_I(Recipe, float, craftingTime, 1);
 
 
-		PYTHON_PROP_REF(Recipe, std::vector<recipe_item>, ingredients);
+		PYTHON_PROP_REF(Recipe, std::vector<RecipeItem>, ingredients);
 
 		// Product
-		J_NODISCARD recipe_item get_product() const { return this->product_; }
+		J_NODISCARD RecipeItem GetProduct() const { return this->product_; }
 
-		Recipe* set_product(const recipe_item& (product)) {
+		Recipe* SetProduct(const RecipeItem& (product)) {
 			// Save recipe in lookup
-			item_recipes_[product.first] = this;
+			itemRecipes_[product.first] = this;
 
 			this->product_ = product;
 			return this;
 		}
 
 
-		void post_load_validate() const override;
+		void PostLoadValidate() const override;
 
 	private:
-		static std::unordered_map<std::string, Recipe*> item_recipes_;
-		recipe_item product_;
+		static std::unordered_map<std::string, Recipe*> itemRecipes_;
+		RecipeItem product_;
 
 	public:
-		/**
-		 * Looks up recipe for item of iname
-		 * @returns nullptr if not found
-		 */
-		static Recipe* get_item_recipe(const std::string& iname);
+		///
+		/// \brief Looks up recipe for item of iname
+		/// \returns nullptr if not found
+		static Recipe* GetItemRecipe(const std::string& iname);
 
-		/**
-		 * Returns raw materials for a recipe <br>
-		 * Assumes all provided names are valid <br>
-		 * A raw material is something which cannot be hand crafted
-		 */
-		static std::vector<recipe_item> recipe_get_total_raw(const std::string& iname);
+		///
+		/// \brief Returns raw materials for a recipe <br>
+		/// Assumes all provided names are valid <br>
+		/// A raw material is something which cannot be hand crafted
+		static std::vector<RecipeItem> RecipeGetTotalRaw(const std::string& iname);
 	};
 }
 

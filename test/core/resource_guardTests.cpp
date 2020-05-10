@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 12/01/2019
 
@@ -11,12 +10,11 @@ namespace core
 	namespace
 	{
 		bool non_capturing_called = false;
-		
 	}
 
 	TEST(ResourceGuardTest, CallDestructor) {
 		{
-			auto guard = jactorio::core::Resource_guard<void>([]() {
+			auto guard = jactorio::core::ResourceGuard<void>([]() {
 				non_capturing_called = true;
 			});
 		}
@@ -27,7 +25,7 @@ namespace core
 	TEST(ResourceGuardTest, CapturingCallDestructor) {
 		bool called = false;
 		{
-			auto guard = jactorio::core::Capturing_guard<void()>([&] {
+			auto guard = jactorio::core::CapturingGuard<void()>([&] {
 				called = true;
 			});
 		}

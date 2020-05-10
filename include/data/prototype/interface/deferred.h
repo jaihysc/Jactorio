@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 04/02/2020
 
@@ -10,12 +9,12 @@ namespace jactorio
 {
 	namespace data
 	{
-		struct Unique_data_base;
+		struct UniqueDataBase;
 	}
 
 	namespace game
 	{
-		class Deferral_timer;
+		class DeferralTimer;
 	}
 }
 
@@ -38,7 +37,7 @@ namespace jactorio::data
 		/// \brief The callback requested at the specified game tick was reached
 		/// \param timer Deferred timer which dispatched this callback
 		/// \param unique_data Unique data the callback was registered with
-		virtual void on_defer_time_elapsed(game::Deferral_timer& timer, Unique_data_base* unique_data) const = 0;
+		virtual void OnDeferTimeElapsed(game::DeferralTimer& timer, UniqueDataBase* unique_data) const = 0;
 	};
 }
 

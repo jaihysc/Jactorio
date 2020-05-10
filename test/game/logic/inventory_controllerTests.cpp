@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -14,10 +13,10 @@ namespace game
 		// Moving from inventory position 0 to position 3
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		const auto item  = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
 		// Position 3 should have the 50 items + item prototype after moving
 		inv[0].first  = item.get();
@@ -26,7 +25,7 @@ namespace game
 		inv[3].first  = nullptr;
 		inv[3].second = 0;
 
-		const bool result = jactorio::game::move_itemstack_to_index(inv, 0, inv, 3, 0);
+		const bool result = jactorio::game::MoveItemstackToIndex(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, true);
 
 		EXPECT_EQ(inv[0].first, nullptr);
@@ -42,10 +41,10 @@ namespace game
 		// position 3 already has 30 items, adding 10 from position 0 to equal 40.
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		const auto item  = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
 		inv[0].first  = item.get();
 		inv[0].second = 10;
@@ -53,7 +52,7 @@ namespace game
 		inv[3].first  = item.get();
 		inv[3].second = 30;
 
-		const bool result = jactorio::game::move_itemstack_to_index(inv, 0, inv, 3, 0);
+		const bool result = jactorio::game::MoveItemstackToIndex(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, true);
 
 		EXPECT_EQ(inv[0].first, nullptr);
@@ -70,10 +69,10 @@ namespace game
 		// this leaves 10 in the original location (0) and 50 in the target location (3)
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		const auto item  = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
 		inv[0].first  = item.get();
 		inv[0].second = 30;
@@ -81,7 +80,7 @@ namespace game
 		inv[3].first  = item.get();
 		inv[3].second = 30;
 
-		const bool result = jactorio::game::move_itemstack_to_index(inv, 0, inv, 3, 0);
+		const bool result = jactorio::game::MoveItemstackToIndex(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -96,13 +95,13 @@ namespace game
 		// The item stacks are of different items, therefore only swapping positions
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		const auto item  = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
-		const auto item2  = std::make_unique<jactorio::data::Item>();
-		item2->stack_size = 100;
+		const auto item2 = std::make_unique<jactorio::data::Item>();
+		item2->stackSize = 100;
 
 		// Position 3 should have the 50 items + item prototype after moving
 		inv[0].first  = item.get();
@@ -111,7 +110,7 @@ namespace game
 		inv[3].first  = item2.get();
 		inv[3].second = 10;
 
-		const bool result = jactorio::game::move_itemstack_to_index(inv, 0, inv, 3, 0);
+		const bool result = jactorio::game::MoveItemstackToIndex(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item2.get());
@@ -126,10 +125,10 @@ namespace game
 		// The target slot is full, origin slot has something
 		// swap the 2 items
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		const auto item  = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
 		inv[0].first  = item.get();
 		inv[0].second = 18;
@@ -137,7 +136,7 @@ namespace game
 		inv[3].first  = item.get();
 		inv[3].second = 50;
 
-		const bool result = jactorio::game::move_itemstack_to_index(inv, 0, inv, 3, 0);
+		const bool result = jactorio::game::MoveItemstackToIndex(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -152,7 +151,7 @@ namespace game
 		// Moving nothing to nothing results in nothing!
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
 		inv[0].first  = nullptr;
 		inv[0].second = 0;
@@ -160,7 +159,7 @@ namespace game
 		inv[3].first  = nullptr;
 		inv[3].second = 0;
 
-		const bool result = jactorio::game::move_itemstack_to_index(inv, 0, inv, 3, 0);
+		const bool result = jactorio::game::MoveItemstackToIndex(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, true);
 
 		EXPECT_EQ(inv[0].first, nullptr);
@@ -178,10 +177,10 @@ namespace game
 		// Move out only the stack size into the empty slot
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		const auto item  = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
 		inv[0].first  = item.get();
 		inv[0].second = 9000;
@@ -189,7 +188,7 @@ namespace game
 		inv[3].first  = nullptr;
 		inv[3].second = 0;
 
-		const bool result = jactorio::game::move_itemstack_to_index(inv, 0, inv, 3, 0);
+		const bool result = jactorio::game::MoveItemstackToIndex(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -205,10 +204,10 @@ namespace game
 		// Move out only the stack size into the empty origin slot
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		const auto item  = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
 		inv[0].first  = nullptr;
 		inv[0].second = 0;
@@ -216,7 +215,7 @@ namespace game
 		inv[3].first  = item.get();
 		inv[3].second = 9000;
 
-		const bool result = jactorio::game::move_itemstack_to_index(inv, 0, inv, 3, 0);
+		const bool result = jactorio::game::MoveItemstackToIndex(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -232,10 +231,10 @@ namespace game
 		// Move out only 10 to reach the stack size in the target slot
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		const auto item  = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		const auto item = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
 		inv[0].first  = item.get();
 		inv[0].second = 9000;
@@ -243,7 +242,7 @@ namespace game
 		inv[3].first  = item.get();
 		inv[3].second = 40;
 
-		const bool result = jactorio::game::move_itemstack_to_index(inv, 0, inv, 3, 0);
+		const bool result = jactorio::game::MoveItemstackToIndex(inv, 0, inv, 3, 0);
 		EXPECT_EQ(result, false);
 
 		EXPECT_EQ(inv[0].first, item.get());
@@ -262,10 +261,10 @@ namespace game
 		// round down, unless there is only 1, where one is taken
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		auto item        = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		auto item       = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
 		// Case 1, even number
 		{
@@ -275,11 +274,11 @@ namespace game
 			inv[3].first  = item.get();
 			inv[3].second = 40;
 
-			const bool result = jactorio::game::move_itemstack_to_index(inv,
-			                                                            0,
-			                                                            inv,
-			                                                            3,
-			                                                            1);
+			const bool result = jactorio::game::MoveItemstackToIndex(inv,
+			                                                         0,
+			                                                         inv,
+			                                                         3,
+			                                                         1);
 			EXPECT_EQ(result, false);
 
 			EXPECT_EQ(inv[0].first, item.get());
@@ -296,11 +295,11 @@ namespace game
 			inv[3].first  = item.get();
 			inv[3].second = 39;
 
-			const bool result = jactorio::game::move_itemstack_to_index(inv,
-			                                                            0,
-			                                                            inv,
-			                                                            3,
-			                                                            1);
+			const bool result = jactorio::game::MoveItemstackToIndex(inv,
+			                                                         0,
+			                                                         inv,
+			                                                         3,
+			                                                         1);
 			EXPECT_EQ(result, false);
 
 			EXPECT_EQ(inv[0].first, item.get());
@@ -317,11 +316,11 @@ namespace game
 			inv[3].first  = item.get();
 			inv[3].second = 1;
 
-			const bool result = jactorio::game::move_itemstack_to_index(inv,
-			                                                            0,
-			                                                            inv,
-			                                                            3,
-			                                                            1);
+			const bool result = jactorio::game::MoveItemstackToIndex(inv,
+			                                                         0,
+			                                                         inv,
+			                                                         3,
+			                                                         1);
 			EXPECT_EQ(result, false);
 
 			EXPECT_EQ(inv[0].first, item.get());
@@ -338,11 +337,11 @@ namespace game
 			inv[3].first  = item.get();
 			inv[3].second = 110;
 
-			const bool result = jactorio::game::move_itemstack_to_index(inv,
-			                                                            0,
-			                                                            inv,
-			                                                            3,
-			                                                            1);
+			const bool result = jactorio::game::MoveItemstackToIndex(inv,
+			                                                         0,
+			                                                         inv,
+			                                                         3,
+			                                                         1);
 			EXPECT_EQ(result, false);
 
 			EXPECT_EQ(inv[0].first, item.get());
@@ -358,10 +357,10 @@ namespace game
 		// Target inventory is empty, right clicking drops 1 item off
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		auto item        = std::make_unique<jactorio::data::Item>();
-		item->stack_size = 50;
+		auto item       = std::make_unique<jactorio::data::Item>();
+		item->stackSize = 50;
 
 		// Case 1, > 1 item
 		{
@@ -371,11 +370,11 @@ namespace game
 			inv[3].first  = nullptr;
 			inv[3].second = 0;
 
-			const bool result = jactorio::game::move_itemstack_to_index(inv,
-			                                                            0,
-			                                                            inv,
-			                                                            3,
-			                                                            1);
+			const bool result = jactorio::game::MoveItemstackToIndex(inv,
+			                                                         0,
+			                                                         inv,
+			                                                         3,
+			                                                         1);
 			EXPECT_EQ(result, false);
 
 			EXPECT_EQ(inv[0].first, item.get());
@@ -392,11 +391,11 @@ namespace game
 			inv[3].first  = nullptr;
 			inv[3].second = 0;
 
-			const bool result = jactorio::game::move_itemstack_to_index(inv,
-			                                                            0,
-			                                                            inv,
-			                                                            3,
-			                                                            1);
+			const bool result = jactorio::game::MoveItemstackToIndex(inv,
+			                                                         0,
+			                                                         inv,
+			                                                         3,
+			                                                         1);
 			EXPECT_EQ(result, true);
 
 			EXPECT_EQ(inv[0].first, nullptr);
@@ -413,11 +412,11 @@ namespace game
 			inv[3].first  = item.get();
 			inv[3].second = 1;
 
-			const bool result = jactorio::game::move_itemstack_to_index(inv,
-			                                                            0,
-			                                                            inv,
-			                                                            3,
-			                                                            1);
+			const bool result = jactorio::game::MoveItemstackToIndex(inv,
+			                                                         0,
+			                                                         inv,
+			                                                         3,
+			                                                         1);
 			EXPECT_EQ(result, true);
 
 			EXPECT_EQ(inv[0].first, nullptr);
@@ -434,11 +433,11 @@ namespace game
 			inv[3].first  = item.get();
 			inv[3].second = 1;
 
-			const bool result = jactorio::game::move_itemstack_to_index(inv,
-			                                                            0,
-			                                                            inv,
-			                                                            3,
-			                                                            1);
+			const bool result = jactorio::game::MoveItemstackToIndex(inv,
+			                                                         0,
+			                                                         inv,
+			                                                         3,
+			                                                         1);
 			EXPECT_EQ(result, false);
 
 			EXPECT_EQ(inv[0].first, item.get());
@@ -465,7 +464,7 @@ namespace game
 		// Should place in slot 2
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
 		const auto item  = std::make_unique<jactorio::data::Item>();
 		const auto item2 = std::make_unique<jactorio::data::Item>();
@@ -476,9 +475,9 @@ namespace game
 		inv[1].first  = item.get();
 		inv[1].second = 21;
 
-		auto add_item = jactorio::data::item_stack(item2.get(), 20);
-		EXPECT_TRUE(jactorio::game::can_add_stack(inv, inv_size, add_item));
-		EXPECT_TRUE(jactorio::game::add_stack_sub(inv, inv_size, add_item));
+		auto add_item = jactorio::data::ItemStack(item2.get(), 20);
+		EXPECT_TRUE(jactorio::game::CanAddStack(inv, inv_size, add_item));
+		EXPECT_TRUE(jactorio::game::AddStackSub(inv, inv_size, add_item));
 
 		EXPECT_EQ(add_item.second, 0);
 
@@ -501,11 +500,11 @@ namespace game
 		// Should place in slot 1 2 3 | Add amounts: (10, 10, 30)
 
 		constexpr unsigned short inv_size = 10;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
-		const auto another_item    = std::make_unique<jactorio::data::Item>();
-		const auto item_we_add_to  = std::make_unique<jactorio::data::Item>();
-		item_we_add_to->stack_size = 50;
+		const auto another_item   = std::make_unique<jactorio::data::Item>();
+		const auto item_we_add_to = std::make_unique<jactorio::data::Item>();
+		item_we_add_to->stackSize = 50;
 
 		inv[0].first  = another_item.get();
 		inv[0].second = 10;
@@ -519,9 +518,9 @@ namespace game
 		inv[3].first  = item_we_add_to.get();
 		inv[3].second = 20;
 
-		auto add_item = jactorio::data::item_stack(item_we_add_to.get(), 50);
-		EXPECT_TRUE(jactorio::game::can_add_stack(inv, inv_size, add_item));
-		EXPECT_TRUE(jactorio::game::add_stack_sub(inv, inv_size, add_item));
+		auto add_item = jactorio::data::ItemStack(item_we_add_to.get(), 50);
+		EXPECT_TRUE(jactorio::game::CanAddStack(inv, inv_size, add_item));
+		EXPECT_TRUE(jactorio::game::AddStackSub(inv, inv_size, add_item));
 
 		EXPECT_EQ(add_item.second, 0);
 
@@ -546,7 +545,7 @@ namespace game
 	TEST(InventoryController, AddStackNoAvailableSlots) {
 		// Slots 1 is full, inv size is 1, will return false
 		constexpr unsigned short inv_size = 1;
-		jactorio::data::item_stack inv[inv_size];
+		jactorio::data::ItemStack inv[inv_size];
 
 		const auto item  = std::make_unique<jactorio::data::Item>();
 		const auto item2 = std::make_unique<jactorio::data::Item>();
@@ -554,9 +553,9 @@ namespace game
 		inv[0].first  = item.get();
 		inv[0].second = 10;
 
-		auto add_item = jactorio::data::item_stack(item2.get(), 20);
-		EXPECT_FALSE(jactorio::game::can_add_stack(inv, inv_size, add_item));
-		EXPECT_FALSE(jactorio::game::add_stack_sub(inv, inv_size, add_item));
+		auto add_item = jactorio::data::ItemStack(item2.get(), 20);
+		EXPECT_FALSE(jactorio::game::CanAddStack(inv, inv_size, add_item));
+		EXPECT_FALSE(jactorio::game::AddStackSub(inv, inv_size, add_item));
 
 		EXPECT_EQ(add_item.second, 20);
 
@@ -576,7 +575,7 @@ namespace game
 		const auto item  = std::make_unique<jactorio::data::Item>();
 		const auto item2 = std::make_unique<jactorio::data::Item>();
 
-		jactorio::data::item_stack inv[30];
+		jactorio::data::ItemStack inv[30];
 
 		// Count these to a sum of 101
 		inv[0]  = {item.get(), 20};
@@ -592,19 +591,19 @@ namespace game
 		inv[13] = {item2.get(), 200};
 		inv[28] = {item2.get(), 200};
 
-		EXPECT_EQ(jactorio::game::get_inv_item_count(inv, 30, item.get()), 101);
+		EXPECT_EQ(jactorio::game::GetInvItemCount(inv, 30, item.get()), 101);
 	}
 
 	TEST(InventoryController, RemoveInvItemS) {
 		using namespace jactorio;
-		data::item_stack inv[30];
+		data::ItemStack inv[30];
 
 		const auto item = std::make_unique<data::Item>();
 		inv[20]         = {item.get(), 5};
 		inv[23]         = {item.get(), 5};
 
 		EXPECT_EQ(
-			jactorio::game::remove_inv_item_s(inv, 30, item.get(), 10),
+			jactorio::game::RemoveInvItemS(inv, 30, item.get(), 10),
 			true);
 
 		// Inventory should be empty
@@ -615,14 +614,14 @@ namespace game
 	}
 
 	TEST(InventoryController, RemoveInvItemSInvalid) {
-		jactorio::data::item_stack inv[30];
+		jactorio::data::ItemStack inv[30];
 
 		const auto item = std::make_unique<jactorio::data::Item>();
 		inv[20]         = {item.get(), 5};
 
 		// Attempting to remove 10 when only 5 exists
 		EXPECT_EQ(
-			jactorio::game::remove_inv_item_s(inv, 30, item.get(), 10),
+			jactorio::game::RemoveInvItemS(inv, 30, item.get(), 10),
 			false);
 
 		// Inventory unchanged

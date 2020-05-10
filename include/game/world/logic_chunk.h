@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -11,14 +10,13 @@
 
 namespace jactorio::game
 {
-	/**
-	 * Contains additional data for chunks that require logic updates <br>
-	 * To be stored alongside a game::Chunk
-	 */
-	class Logic_chunk
+	///
+	/// \brief Contains additional data for chunks that require logic updates <br>
+	/// To be stored alongside a game::Chunk
+	class LogicChunk
 	{
 	public:
-		explicit Logic_chunk(Chunk* chunk)
+		explicit LogicChunk(Chunk* chunk)
 			: chunk(chunk) {
 			assert(chunk != nullptr);  // Logic chunks should always be associated with a chunk
 		}
@@ -28,21 +26,23 @@ namespace jactorio::game
 
 
 		// Structures - Objects but not rendered with no coordinate attached
-		enum class structLayer
+		enum class StructLayer
 		{
 			transport_line = 0,  // game::Transport_line_segment
 			count_
 		};
 
-		static constexpr int struct_layer_count = static_cast<int>(structLayer::count_);
+		static constexpr int kStructLayerCount = static_cast<int>(StructLayer::count_);
 
-		std::vector<Chunk_struct_layer> structs[struct_layer_count];
+		std::vector<ChunkStructLayer> structs[kStructLayerCount];
 
-		J_NODISCARD std::vector<Chunk_struct_layer>& get_struct(structLayer layer) {
-			return structs[static_cast<int>(layer)];
+		J_NODISCARD std::vector<ChunkStructLayer>& GetStruct(const StructLayer layer) {
+			return const_cast<std::vector<ChunkStructLayer>&>(
+				static_cast<const LogicChunk*>(this)->GetStruct(layer)
+			);
 		}
 
-		J_NODISCARD const std::vector<Chunk_struct_layer>& get_struct_read_only(structLayer layer) const {
+		J_NODISCARD const std::vector<ChunkStructLayer>& GetStruct(StructLayer layer) const {
 			return structs[static_cast<int>(layer)];
 		}
 	};

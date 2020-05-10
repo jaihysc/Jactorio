@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -7,20 +6,20 @@
 #include "renderer/opengl/vertex_array.h"
 #include "renderer/opengl/error.h"
 
-jactorio::renderer::Vertex_array::Vertex_array() {
+jactorio::renderer::VertexArray::VertexArray() {
 	DEBUG_OPENGL_CALL(glGenVertexArrays(1, &id_));
 	DEBUG_OPENGL_CALL(glBindVertexArray(id_));
 }
 
-jactorio::renderer::Vertex_array::~Vertex_array() {
-	unbind();
+jactorio::renderer::VertexArray::~VertexArray() {
+	Unbind();
 	DEBUG_OPENGL_CALL(glDeleteVertexArrays(1, &id_));
 }
 
-void jactorio::renderer::Vertex_array::add_buffer(const Vertex_buffer* vb, const unsigned span,
-                                                  const unsigned int location) const {
-	this->bind();
-	vb->bind();
+void jactorio::renderer::VertexArray::AddBuffer(const VertexBuffer* vb, const unsigned span,
+                                                const unsigned int location) const {
+	this->Bind();
+	vb->Bind();
 
 	// location here is referenced by the shader
 	DEBUG_OPENGL_CALL(glEnableVertexAttribArray(location));
@@ -29,10 +28,10 @@ void jactorio::renderer::Vertex_array::add_buffer(const Vertex_buffer* vb, const
 			static_cast<const void*>(nullptr)));
 }
 
-void jactorio::renderer::Vertex_array::bind() const {
+void jactorio::renderer::VertexArray::Bind() const {
 	DEBUG_OPENGL_CALL(glBindVertexArray(id_));
 }
 
-void jactorio::renderer::Vertex_array::unbind() {
+void jactorio::renderer::VertexArray::Unbind() {
 	DEBUG_OPENGL_CALL(glBindVertexArray(0));
 }

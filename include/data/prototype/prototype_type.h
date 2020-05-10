@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 04/12/2020
 
@@ -15,23 +14,23 @@ namespace jactorio::data
 {
 	///
 	/// \brief Represents an output location for an entity on 4 orientation
-	struct Tile_4_way
+	struct Tile4Way
 	{
-		Tile_4_way() = default;
+		Tile4Way() = default;
 
-		Tile_4_way(game::World_data::world_pair up,
-		           game::World_data::world_pair right,
-		           game::World_data::world_pair down,
-		           game::World_data::world_pair left)
+		Tile4Way(game::WorldData::WorldPair up,
+		         game::WorldData::WorldPair right,
+		         game::WorldData::WorldPair down,
+		         game::WorldData::WorldPair left)
 			: up(std::move(up)), right(std::move(right)), down(std::move(down)), left(std::move(left)) {
 		}
 
-		game::World_data::world_pair up;
-		game::World_data::world_pair right;
-		game::World_data::world_pair down;
-		game::World_data::world_pair left;
+		game::WorldData::WorldPair up;
+		game::WorldData::WorldPair right;
+		game::WorldData::WorldPair down;
+		game::WorldData::WorldPair left;
 
-		J_NODISCARD const game::World_data::world_pair& get(const Orientation orientation) const {
+		J_NODISCARD const game::WorldData::WorldPair& Get(const Orientation orientation) const {
 			switch (orientation) {
 
 			case Orientation::up:

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -11,18 +10,18 @@
 #include "core/data_type.h"
 #include "data/prototype/orientation.h"
 #include "data/prototype/item/item.h"
+#include "game/logic/transport_line_controller.h"
 
 namespace jactorio::game
 {
-	/**
-	 * Item on a transport line
-	 * Tile distance from next item or end of transport line, pointer to item
-	 */
-	using transport_line_item = std::pair<transport_line_offset, const data::Item*>;
+	///
+	/// \brief Item on a transport line
+	/// Tile distance from next item or end of transport line, pointer to item
+	using TransportLineItem = std::pair<TransportLineOffset, const data::Item*>;
 
 	///
 	/// \brief Stores a collection of items heading in one direction
-	struct Transport_line_segment : data::Unique_data_base
+	struct TransportLineSegment : data::UniqueDataBase
 	{
 		// When bending, the amounts below are reduced from the distance to the end of the next segment (see diagram below)
 		/*
@@ -35,11 +34,11 @@ namespace jactorio::game
 		 *     |    |    *
 		 *     |    |    *
 		 */
-		static constexpr double bend_left_l_reduction = 0.7;
-		static constexpr double bend_left_r_reduction = 0.3;
+		static constexpr double kBendLeftLReduction = 0.7;
+		static constexpr double kBendLeftRReduction = 0.3;
 
-		static constexpr double bend_right_l_reduction = 0.3;
-		static constexpr double bend_right_r_reduction = 0.7;
+		static constexpr double kBendRightLReduction = 0.3;
+		static constexpr double kBendRightRReduction = 0.7;
 
 		enum class TerminationType
 		{
@@ -58,15 +57,15 @@ namespace jactorio::game
 		};
 
 
-		Transport_line_segment(const data::Orientation direction, const TerminationType termination_type,
-		                       const uint8_t segment_length)
-			: direction(direction), termination_type(termination_type), length(segment_length) {
+		TransportLineSegment(const data::Orientation direction, const TerminationType termination_type,
+		                     const uint8_t segment_length)
+			: direction(direction), terminationType(termination_type), length(segment_length) {
 		}
 
-		Transport_line_segment(const data::Orientation direction, const TerminationType termination_type,
-		                       Transport_line_segment* target_segment, const uint8_t segment_length)
-			: direction(direction), target_segment(target_segment),
-			  termination_type(termination_type),
+		TransportLineSegment(const data::Orientation direction, const TerminationType termination_type,
+		                     TransportLineSegment* target_segment, const uint8_t segment_length)
+			: direction(direction), targetSegment(target_segment),
+			  terminationType(termination_type),
 			  length(segment_length) {
 		}
 
@@ -75,29 +74,29 @@ namespace jactorio::game
 		// See FFF 176 https://factorio.com/blog/post/fff-176
 
 		/// <distance, spritemap_id for item>
-		std::deque<transport_line_item> left;
-		std::deque<transport_line_item> right;
+		std::deque<TransportLineItem> left;
+		std::deque<TransportLineItem> right;
 
 		/// Are the items on this transport line visible?
-		bool item_visible = true;
+		bool itemVisible = true;
 
 		/// Direction items in this segment travel in
 		data::Orientation direction;
 
 		/// Segment this transport line feeds into
-		Transport_line_segment* target_segment = nullptr;
+		TransportLineSegment* targetSegment = nullptr;
 
 		/// How the belt terminates (bends left, right, straight) (Single belt side)
-		TerminationType termination_type;
+		TerminationType terminationType;
 
 		/// Index to the next item still with space to move
-		uint16_t l_index = 0;
-		uint16_t r_index = 0;
+		uint16_t lIndex = 0;
+		uint16_t rIndex = 0;
 
 		/// Distance to the last item from beginning of transport line
 		/// Avoids having to iterate through and count each time
-		transport_line_offset l_back_item_distance;
-		transport_line_offset r_back_item_distance;
+		TransportLineOffset lBackItemDistance;
+		TransportLineOffset rBackItemDistance;
 
 
 		/// Length of this segment in tiles
@@ -109,19 +108,19 @@ namespace jactorio::game
 		/// Returns true if an item can be inserted into this transport line
 		/// \param start_offset Item offset from the start of transport line in tiles
 		/// \return
-		J_NODISCARD bool can_insert(bool left_side, const transport_line_offset& start_offset);
+		J_NODISCARD bool CanInsert(bool left_side, const TransportLineOffset& start_offset);
 
 
 		///
 		/// \return true if left size is not empty and has a valid index
-		J_NODISCARD bool is_active_left() const {
-			return !(left.empty() || l_index >= left.size());
+		J_NODISCARD bool IsActiveLeft() const {
+			return !(left.empty() || lIndex >= left.size());
 		}
 
 		///
 		/// \return  true if right side is not empty and has a valid index
-		J_NODISCARD bool is_active_right() const {
-			return !(right.empty() || r_index >= right.size());
+		J_NODISCARD bool IsActiveRight() const {
+			return !(right.empty() || rIndex >= right.size());
 		}
 
 
@@ -131,14 +130,14 @@ namespace jactorio::game
 		/// \brief Appends item onto the specified side of a belt behind the last item
 		/// \param insert_left True to insert item on left size of belt
 		/// \param offset Number of tiles to offset from previous item or the end of the transport line segment when there are no items
-		void append_item(bool insert_left, double offset, const data::Item* item);
+		void AppendItem(bool insert_left, double offset, const data::Item* item);
 
 		///
 		/// \brief Inserts the item onto the specified belt side at the offset
 		/// from the beginning of the transport line
 		/// \param insert_left True to insert item on left size of belt
 		/// \param offset Distance from beginning of transport line
-		void insert_item(bool insert_left, double offset, const data::Item* item);
+		void InsertItem(bool insert_left, double offset, const data::Item* item);
 
 		///
 		/// \brief Attempts to insert the item onto the specified belt side at the offset
@@ -146,7 +145,7 @@ namespace jactorio::game
 		/// \param insert_left True to insert item on left size of belt
 		/// \param offset Distance from beginning of transport line
 		/// \return false if unsuccessful
-		bool try_insert_item(bool insert_left, double offset, const data::Item* item);
+		bool TryInsertItem(bool insert_left, double offset, const data::Item* item);
 	};
 }
 

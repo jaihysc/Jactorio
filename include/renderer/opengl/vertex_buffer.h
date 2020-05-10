@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -10,27 +9,26 @@
 
 namespace jactorio::renderer
 {
-	class Vertex_buffer
+	class VertexBuffer
 	{
 	public:
-		Vertex_buffer(const void* data, uint32_t byte_size, bool static_buffer);
-		~Vertex_buffer();
+		VertexBuffer(const void* data, uint32_t byte_size, bool static_buffer);
+		~VertexBuffer();
 
-		Vertex_buffer(const Vertex_buffer& other) = delete;
-		Vertex_buffer(Vertex_buffer&& other) noexcept = delete;
-		Vertex_buffer& operator=(const Vertex_buffer& other) = delete;
-		Vertex_buffer& operator=(Vertex_buffer&& other) noexcept = delete;
+		VertexBuffer(const VertexBuffer& other)                = delete;
+		VertexBuffer(VertexBuffer&& other) noexcept            = delete;
+		VertexBuffer& operator=(const VertexBuffer& other)     = delete;
+		VertexBuffer& operator=(VertexBuffer&& other) noexcept = delete;
 
 
-		void update_data(const void* data, uint32_t offset, uint32_t size) const;
+		void UpdateData(const void* data, uint32_t offset, uint32_t size) const;
 
-		/**
-		 * Creates a new buffer of provided specifications
-		 */
-		void reserve(const void* data, uint32_t byte_size, bool static_buffer) const;
+		///
+		/// \brief Creates a new buffer of provided specifications
+		void Reserve(const void* data, uint32_t byte_size, bool static_buffer) const;
 
-		void bind() const;
-		static void unbind();
+		void Bind() const;
+		static void Unbind();
 
 	private:
 		unsigned int id_ = 0;

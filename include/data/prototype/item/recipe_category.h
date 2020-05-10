@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -6,25 +5,24 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_CATEGORY_H
 #pragma once
 
-#include "data/prototype/item/recipe.h"
 #include "data/prototype/prototype_base.h"
+#include "data/prototype/item/recipe.h"
 
 namespace jactorio::data
 {
-	/**
-	 * A category to sort recipes within a recipe group
-	 */
-	class Recipe_category final : public Prototype_base
+	///
+	/// \brief A category to sort recipes within a recipe group
+	class RecipeCategory final : public PrototypeBase
 	{
 	public:
 		PROTOTYPE_CATEGORY(recipe_category);
 
-		Recipe_category() = default;
+		RecipeCategory() = default;
 
 		// Recipes belonging to this category
-		PYTHON_PROP_REF(Recipe_category, std::vector<Recipe*>, recipes);
+		PYTHON_PROP_REF(RecipeCategory, std::vector<Recipe*>, recipes);
 
-		void post_load_validate() const override {
+		void PostLoadValidate() const override {
 		}
 	};
 }

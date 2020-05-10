@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -13,33 +12,33 @@ namespace jactorio::game
 	///
 	/// \brief Abstract class for Chunk_tile_layer, Chunk_object_layer, Chunk_struct_layer
 	/// \remark Will only delete unique_data, others must be manually deleted
-	class Chunk_layer
+	class ChunkLayer
 	{
 	protected:
-		Chunk_layer() = default;
+		ChunkLayer() = default;
 
 	public:
-		explicit Chunk_layer(const data::Prototype_base* proto)
-			: prototype_data(proto) {
+		explicit ChunkLayer(const data::PrototypeBase* proto)
+			: prototypeData(proto) {
 		}
 
 		// Prototype data must be deleted after chunk data
-		~Chunk_layer() {
-			delete unique_data;
+		~ChunkLayer() {
+			delete uniqueData;
 		}
 
-		Chunk_layer(const Chunk_layer& other);
-		Chunk_layer(Chunk_layer&& other) noexcept;
+		ChunkLayer(const ChunkLayer& other);
+		ChunkLayer(ChunkLayer&& other) noexcept;
 
-		Chunk_layer& operator=(Chunk_layer other) {
+		ChunkLayer& operator=(ChunkLayer other) {
 			swap(*this, other);
 			return *this;
 		}
 
-		friend void swap(Chunk_layer& lhs, Chunk_layer& rhs) noexcept {
+		friend void swap(ChunkLayer& lhs, ChunkLayer& rhs) noexcept {
 			using std::swap;
-			swap(lhs.prototype_data, rhs.prototype_data);
-			swap(lhs.unique_data, rhs.unique_data);
+			swap(lhs.prototypeData, rhs.prototypeData);
+			swap(lhs.uniqueData, rhs.uniqueData);
 		}
 
 		// ======================================================================
@@ -52,28 +51,28 @@ namespace jactorio::game
 		// Entities also possesses a sprite pointer within their prototype
 
 		/// Depending on the layer, this will be either a data::Tile*, data::Entity* or a data::Sprite* <br>
-		const data::Prototype_base* prototype_data = nullptr;
+		const data::PrototypeBase* prototypeData = nullptr;
 
 		/// Data for the prototype which is unique per tile and layer <br>
 		/// When this layer is deleted, unique_data_ will be deleted with delete method in prototype_data_
-		data::Unique_data_base* unique_data = nullptr;
+		data::UniqueDataBase* uniqueData = nullptr;
 	};
 
-	inline Chunk_layer::Chunk_layer(const Chunk_layer& other)
-		: prototype_data(other.prototype_data) {
+	inline ChunkLayer::ChunkLayer(const ChunkLayer& other)
+		: prototypeData(other.prototypeData) {
 
 		// Use prototype defined method for copying unique_data_ if other has data to copy
-		if (other.unique_data != nullptr) {
-			assert(other.prototype_data != nullptr);  // No prototype_data_ available for copying unique_data_
-			unique_data = other.prototype_data->copy_unique_data(other.unique_data);
+		if (other.uniqueData != nullptr) {
+			assert(other.prototypeData != nullptr);  // No prototype_data_ available for copying unique_data_
+			uniqueData = other.prototypeData->CopyUniqueData(other.uniqueData);
 		}
 	}
 
-	inline Chunk_layer::Chunk_layer(Chunk_layer&& other) noexcept
-		: prototype_data(other.prototype_data),
-		  unique_data(other.unique_data) {
+	inline ChunkLayer::ChunkLayer(ChunkLayer&& other) noexcept
+		: prototypeData(other.prototypeData),
+		  uniqueData(other.uniqueData) {
 		// After moving data away, set unique_data to nullptr so it is not deleted
-		other.unique_data = nullptr;
+		other.uniqueData = nullptr;
 	}
 }
 

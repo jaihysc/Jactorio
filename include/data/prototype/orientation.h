@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 04/23/2020
 
@@ -18,15 +17,15 @@ namespace jactorio::data
 		left
 	};
 
-	inline int invert_orientation(const int orientation) {
+	inline int InvertOrientation(const int orientation) {
 		assert(0 <= orientation && orientation <= 3);
-		return (orientation + 2) % 4; 
+		return (orientation + 2) % 4;
 	}
 
-	inline Orientation invert_orientation(Orientation orientation) {
+	inline Orientation InvertOrientation(Orientation orientation) {
 		return static_cast<Orientation>(
-			invert_orientation(static_cast<int>(orientation))
-		); 
+			InvertOrientation(static_cast<int>(orientation))
+		);
 	}
 
 	///
@@ -35,8 +34,8 @@ namespace jactorio::data
 	/// \remark Type must implement operator+= and operator-=
 	/// \remark if incrementer type not provided, Typeof x will bw used
 	template <typename TyX, typename TyY, typename TyInc = TyX>
-	void orientation_increment(const Orientation orientation, 
-							   TyX& x, TyY& y, TyInc increment = 1) {
+	void OrientationIncrement(const Orientation orientation,
+	                          TyX& x, TyY& y, TyInc increment = 1) {
 		switch (orientation) {
 		case Orientation::up:
 			y -= increment;

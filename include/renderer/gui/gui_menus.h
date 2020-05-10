@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/01/2020
 
@@ -12,20 +11,20 @@ namespace jactorio
 {
 	namespace game
 	{
-		struct Player_data;
+		struct PlayerData;
 	}
 
 	namespace data
 	{
-		struct Unique_data_base;
+		struct UniqueDataBase;
 	}
 }
 
 
-namespace jactorio::renderer::gui
+namespace jactorio::renderer
 {
 	/// Function to draw the menu
-	using menu_function = void (*)(game::Player_data& player_data, const data::Unique_data_base* unique_data);
+	using MenuFunction = void (*)(game::PlayerData& player_data, const data::UniqueDataBase* unique_data);
 
 	// ======================================================================
 	// Substitutes name_ below at macro definitions to create an array of guis
@@ -34,31 +33,31 @@ namespace jactorio::renderer::gui
 	// pickup_progressbar : Draws progressbar indicating entity pickup status
 
 #define J_GUI_WINDOW\
-	J_GUI_WINDOW_SUB(debug_menu)\
+	J_GUI_WINDOW_SUB(DebugMenu)\
 	\
-	J_GUI_WINDOW_SUB(character_menu)\
-	J_GUI_WINDOW_SUB(cursor_window)\
-	J_GUI_WINDOW_SUB(crafting_queue)\
-	J_GUI_WINDOW_SUB(pickup_progressbar)\
+	J_GUI_WINDOW_SUB(CharacterMenu)\
+	J_GUI_WINDOW_SUB(CursorWindow)\
+	J_GUI_WINDOW_SUB(CraftingQueue)\
+	J_GUI_WINDOW_SUB(PickupProgressbar)\
 	\
-	J_GUI_WINDOW_SUB(container_entity)\
-	J_GUI_WINDOW_SUB(mining_drill)
+	J_GUI_WINDOW_SUB(ContainerEntity)\
+	J_GUI_WINDOW_SUB(MiningDrill)
 
 	// ======================================================================
 	// Macro definitions - 3
 
 	// Function
 #define J_GUI_WINDOW_SUB(name_)\
-	void name_(game::Player_data& player_data, const data::Unique_data_base* unique_data = nullptr);
+	void name_(game::PlayerData& player_data, const data::UniqueDataBase* unique_data = nullptr);
 
 	J_GUI_WINDOW
 
-	
+
 	// Enum
 #define J_GUI_WINDOW_SUB(name_)\
 	name_,
 
-	enum class menu
+	enum class Menu
 	{
 		J_GUI_WINDOW
 	};
@@ -70,17 +69,17 @@ namespace jactorio::renderer::gui
 
 	///
 	/// \remark Index with menu
-	struct Menu
+	struct GuiMenu
 	{
-		Menu(const menu_function draw_ptr) noexcept
-			: draw_ptr(draw_ptr) {
+		GuiMenu(const MenuFunction draw_ptr) noexcept
+			: drawPtr(draw_ptr) {
 		}
 
-		menu_function draw_ptr = nullptr;
-		bool visible = false;
+		MenuFunction drawPtr = nullptr;
+		bool visible         = false;
 	};
 
-	inline Menu menus[]
+	inline GuiMenu menus[]
 	{
 		J_GUI_WINDOW
 	};
@@ -90,11 +89,11 @@ namespace jactorio::renderer::gui
 	// ======================================================================
 	// Window visibility handling
 
-	J_NODISCARD inline bool is_visible(menu gui_menu) {
+	J_NODISCARD inline bool IsVisible(Menu gui_menu) {
 		return menus[static_cast<int>(gui_menu)].visible;
 	}
 
-	inline void set_visible(menu gui_menu, const bool visibility) {
+	inline void SetVisible(Menu gui_menu, const bool visibility) {
 		menus[static_cast<int>(gui_menu)].visible = visibility;
 	}
 }

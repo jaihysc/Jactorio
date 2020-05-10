@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 04/02/2020
 
@@ -15,23 +14,23 @@
 
 namespace jactorio::data
 {
-	struct Mining_drill_data final : Health_entity_data
+	struct MiningDrillData final : HealthEntityData
 	{
-		std::optional<game::Item_insert_destination> output_tile{};
-		game::World_data::world_pair output_tile_coords{};
+		std::optional<game::ItemInsertDestination> outputTile{};
+		game::WorldData::WorldPair outputTileCoords{};
 
-		Item* output_item = nullptr;
+		Item* outputItem = nullptr;
 
 		/// Number of ticks to mine resource
-		uint16_t mining_ticks = 1;
+		uint16_t miningTicks = 1;
 
-		game::Deferral_timer::deferral_entry deferral_entry{};
+		game::DeferralTimer::DeferralEntry deferralEntry{};
 	};
 
 
 	///
 	/// \brief Drill, Mines resource entities
-	class Mining_drill final : public Health_entity, public Deferred
+	class MiningDrill final : public HealthEntity, public Deferred
 	{
 		/*
 		 * 0  - 7 : North
@@ -43,25 +42,25 @@ namespace jactorio::data
 		PROTOTYPE_CATEGORY(mining_drill);
 
 
-		PYTHON_PROP_REF_I(Mining_drill, double, mining_speed, 1.f);  // Mines 1 resource every 60 game ticks
+		PYTHON_PROP_REF_I(MiningDrill, double, miningSpeed, 1.f);  // Mines 1 resource every 60 game ticks
 
 		/// Number of tiles to extend the mining radius around the entity outside of entity tile width and height	
-		PYTHON_PROP_REF_I(Mining_drill, uint16_t, mining_radius, 1);
+		PYTHON_PROP_REF_I(MiningDrill, uint16_t, miningRadius, 1);
 
-		PYTHON_PROP(Mining_drill, Tile_4_way, resource_output);
+		PYTHON_PROP(MiningDrill, Tile4Way, resourceOutput);
 
 
 		// ======================================================================
 		// Rendering
 
-		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override;
+		void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
 
-		std::pair<Sprite*, Renderable_data::frame_t> on_r_get_sprite(Unique_data_base* unique_data,
-		                                                             game_tick_t game_tick) const override;
+		std::pair<Sprite*, RenderableData::frame_t> OnRGetSprite(UniqueDataBase* unique_data,
+		                                                         GameTickT game_tick) const override;
 
-		J_NODISCARD std::pair<uint16_t, uint16_t> map_placement_orientation(Orientation orientation,
-		                                                                    game::World_data& world_data,
-		                                                                    const game::World_data::world_pair& world_coords)
+		J_NODISCARD std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation orientation,
+		                                                                  game::WorldData& world_data,
+		                                                                  const game::WorldData::WorldPair& world_coords)
 		const override;
 
 		// ======================================================================
@@ -69,41 +68,41 @@ namespace jactorio::data
 	private:
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource 
-		void register_mine_callback(game::Deferral_timer& timer, Mining_drill_data* unique_data) const;
-		static void remove_mine_callback(game::Deferral_timer& timer, game::Deferral_timer::deferral_entry& entry);
+		void RegisterMineCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
+		static void RemoveMineCallback(game::DeferralTimer& timer, game::DeferralTimer::DeferralEntry& entry);
 
 	public:
 		///
 		/// \briefs Finds the FIRST output item of the mining drill, beginning from top left
-		J_NODISCARD Item* find_output_item(const game::World_data& world_data, game::World_data::world_pair world_pair) const;
+		J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, game::WorldData::WorldPair world_pair) const;
 
-		void on_defer_time_elapsed(game::Deferral_timer& timer, Unique_data_base* unique_data) const override;
+		void OnDeferTimeElapsed(game::DeferralTimer& timer, UniqueDataBase* unique_data) const override;
 
 		///
 		/// \brief Ensures that the mining radius covers a resource entity
-		J_NODISCARD bool on_can_build(const game::World_data& world_data,
-		                              const game::World_data::world_pair& world_coords) const
+		J_NODISCARD bool OnCanBuild(const game::WorldData& world_data,
+		                            const game::WorldData::WorldPair& world_coords) const
 		override;
 
-		void on_build(game::World_data& world_data,
-		              const game::World_data::world_pair& world_coords,
-		              game::Chunk_tile_layer& tile_layer,
-		              Orientation orientation) const override;
+		void OnBuild(game::WorldData& world_data,
+		             const game::WorldData::WorldPair& world_coords,
+		             game::ChunkTileLayer& tile_layer,
+		             Orientation orientation) const override;
 
-		void on_neighbor_update(game::World_data& world_data,
-		                        const game::World_data::world_pair& emit_world_coords,
-		                        const game::World_data::world_pair& receive_world_coords,
-		                        Orientation emit_orientation) const override;
+		void OnNeighborUpdate(game::WorldData& world_data,
+		                      const game::WorldData::WorldPair& emit_world_coords,
+		                      const game::WorldData::WorldPair& receive_world_coords,
+		                      Orientation emit_orientation) const override;
 
-		void on_remove(game::World_data& world_data,
-		               const game::World_data::world_pair& world_coords,
-		               game::Chunk_tile_layer& tile_layer) const override;
+		void OnRemove(game::WorldData& world_data,
+		              const game::WorldData::WorldPair& world_coords,
+		              game::ChunkTileLayer& tile_layer) const override;
 
-		void post_load_validate() const override {
+		void PostLoadValidate() const override {
 			J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");
-			J_DATA_ASSERT(sprite_e != nullptr, "East sprite not provided");
-			J_DATA_ASSERT(sprite_s != nullptr, "South sprite not provided");
-			J_DATA_ASSERT(sprite_w != nullptr, "West sprite not provided");
+			J_DATA_ASSERT(spriteE != nullptr, "East sprite not provided");
+			J_DATA_ASSERT(spriteS != nullptr, "South sprite not provided");
+			J_DATA_ASSERT(spriteW != nullptr, "West sprite not provided");
 		}
 	};
 }

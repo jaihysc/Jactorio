@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -12,11 +11,11 @@
 
 std::string executing_directory;
 
-std::string jactorio::core::get_executing_directory() {
+std::string jactorio::core::GetExecutingDirectory() {
 	return executing_directory;
 }
 
-void jactorio::core::set_executing_directory(const std::string& directory) {
+void jactorio::core::SetExecutingDirectory(const std::string& directory) {
 	std::string path = directory;
 
 	// Convert backwards slashes to forwards if on windows
@@ -45,7 +44,7 @@ void jactorio::core::set_executing_directory(const std::string& directory) {
 	executing_directory = path;
 }
 
-std::string jactorio::core::resolve_path(const std::string& path) {
+std::string jactorio::core::ResolvePath(const std::string& path) {
 	if (!path.empty() && path[0] == '~') {
 		std::string path_copy = path;
 
@@ -58,7 +57,7 @@ std::string jactorio::core::resolve_path(const std::string& path) {
 }
 
 
-std::string jactorio::core::read_file_as_str(const std::string& path) {
+std::string jactorio::core::ReadFile(const std::string& path) {
 	const std::ifstream in(path);
 
 	std::stringstream sstr;

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -7,30 +6,30 @@
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/error.h"
 
-jactorio::renderer::Index_buffer::Index_buffer(const unsigned* data, unsigned count) {
+jactorio::renderer::IndexBuffer::IndexBuffer(const unsigned* data, unsigned count) {
 	DEBUG_OPENGL_CALL(glGenBuffers(1, &id_));
-	reserve(data, count);
+	Reserve(data, count);
 }
 
-jactorio::renderer::Index_buffer::~Index_buffer() {
-	unbind();
+jactorio::renderer::IndexBuffer::~IndexBuffer() {
+	Unbind();
 	DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 
-void jactorio::renderer::Index_buffer::reserve(const void* data, uint32_t index_count) {
-	bind();
+void jactorio::renderer::IndexBuffer::Reserve(const void* data, uint32_t index_count) {
+	Bind();
 	DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(GLuint), data, GL_STATIC_DRAW));
 	count_ = index_count;
 }
 
-void jactorio::renderer::Index_buffer::bind() const {
+void jactorio::renderer::IndexBuffer::Bind() const {
 	DEBUG_OPENGL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_));
 }
 
-void jactorio::renderer::Index_buffer::unbind() {
+void jactorio::renderer::IndexBuffer::Unbind() {
 	DEBUG_OPENGL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
 }
 
-unsigned jactorio::renderer::Index_buffer::count() const {
+unsigned jactorio::renderer::IndexBuffer::Count() const {
 	return count_;
 }

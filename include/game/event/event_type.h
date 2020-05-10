@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -8,7 +7,7 @@
 
 namespace jactorio::game
 {
-	enum class eventType
+	enum class EventType
 	{
 		// TODO world gen events, entity, player are not implemented
 		none = 0,
@@ -49,7 +48,7 @@ namespace jactorio::game
 #define BIT_F(n) (1 << (n))
 
 	// Bitfield of categories
-	enum eventCategory
+	enum EventCategory
 	{
 		none = 0,
 

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 11/15/2019
 
@@ -12,80 +11,80 @@
 #include "core/data_type.h"
 #include "game/input/input_key.h"
 
-std::unordered_map<jactorio::game::inputKey,
-                   jactorio::game::Key_input::input_tuple> jactorio::game::Key_input::active_inputs_{};
+std::unordered_map<jactorio::game::InputKey,
+                   jactorio::game::KeyInput::InputTuple> jactorio::game::KeyInput::activeInputs_{};
 
-unsigned jactorio::game::Key_input::subscribe(const input_callback& callback,
-                                              const inputKey key,
-                                              const inputAction action,
-                                              const inputMod mods) {
+unsigned jactorio::game::KeyInput::Subscribe(const InputCallback& callback,
+                                             const InputKey key,
+                                             const InputAction action,
+                                             const InputMod mods) {
 	// Assign an id to the callback
-	callback_ids_[{key, action, mods}].push_back(callback_id_);
+	callbackIds_[{key, action, mods}].push_back(callbackId_);
 
 	// Store callback under id
-	input_callbacks_[callback_id_] = callback;
+	inputCallbacks_[callbackId_] = callback;
 
-	return callback_id_++;
+	return callbackId_++;
 }
 
-void jactorio::game::Key_input::set_input(const inputKey key, inputAction action, const inputMod mods) {
-	assert(action != inputAction::key_held);  // Not valid for setting an input, either pressed or repeat
-	assert(action != inputAction::key_pressed);  // Not valid for setting an input, use key_down
+void jactorio::game::KeyInput::SetInput(const InputKey key, InputAction action, const InputMod mods) {
+	assert(action != InputAction::key_held);  // Not valid for setting an input, either pressed or repeat
+	assert(action != InputAction::key_pressed);  // Not valid for setting an input, use key_down
 
-	active_inputs_[key] = {key, action, mods};
+	activeInputs_[key] = {key, action, mods};
 }
 
-void jactorio::game::Key_input::call_callbacks(const input_tuple& input) {
-	const auto& vector = callback_ids_[input];
+void jactorio::game::KeyInput::CallCallbacks(const InputTuple& input) {
+	const auto& vector = callbackIds_[input];
 	for (unsigned int id : vector) {
-		input_callbacks_[id]();
+		inputCallbacks_[id]();
 	}
 }
 
-void jactorio::game::Key_input::raise() {
+void jactorio::game::KeyInput::Raise() {
 	// if (renderer::imgui_manager::input_captured)
 	// return;
 
 	// active_input is the keys which are held (active)
-	for (auto& active_input : active_inputs_) {
+	for (auto& active_input : activeInputs_) {
 		auto& input = active_input.second;
 
 		switch (std::get<1>(input)) {
-		case inputAction::key_down:
-			std::get<1>(input) = inputAction::key_down;
-			call_callbacks(input);
+		case InputAction::key_down:
+			std::get<1>(input) = InputAction::key_down;
+			CallCallbacks(input);
 
-			std::get<1>(input) = inputAction::key_held;
-			call_callbacks(input);
+			std::get<1>(input) = InputAction::key_held;
+			CallCallbacks(input);
 
 			// key_pressed and key_held events also get called
-			std::get<1>(input) = inputAction::key_pressed;  // Changed to key_pressed
-			call_callbacks(input);
+			std::get<1>(input) = InputAction::key_pressed;  // Changed to key_pressed
+			CallCallbacks(input);
 			break;
 
-		case inputAction::key_pressed:
+		case InputAction::key_pressed:
 			// key_held events get called
-			std::get<1>(input) = inputAction::key_held;
-			call_callbacks(input);
+			std::get<1>(input) = InputAction::key_held;
+			CallCallbacks(input);
 
-			std::get<1>(input) = inputAction::key_pressed;  // Change back to original
-			call_callbacks(input);
+			std::get<1>(input) = InputAction::key_pressed;  // Change back to original
+			CallCallbacks(input);
 			break;
 
-		case inputAction::key_repeat:
+		case InputAction::key_repeat:
 			// key_held events get called
-			std::get<1>(input) = inputAction::key_held;
-			call_callbacks(input);
+			std::get<1>(input) = InputAction::key_held;
+			CallCallbacks(input);
 
-			std::get<1>(input) = inputAction::key_repeat;  // Change back to original
-			call_callbacks(input);
+			std::get<1>(input) = InputAction::key_repeat;  // Change back to original
+			CallCallbacks(input);
 			break;
 
 
 			// Event handlers for key_up will only trigger once
-		case inputAction::key_up:
-			call_callbacks(input);
-			std::get<1>(input) = inputAction::none;
+		case InputAction::key_up:
+			CallCallbacks(input);
+			std::get<1>(input) = InputAction::none;
 			break;
 
 		default:
@@ -94,11 +93,11 @@ void jactorio::game::Key_input::raise() {
 	}
 }
 
-void jactorio::game::Key_input::unsubscribe(const unsigned callback_id,
-                                            const inputKey key,
-                                            const inputAction action,
-                                            const inputMod mods) {
-	auto& id_vector = callback_ids_[{key, action, mods}];
+void jactorio::game::KeyInput::Unsubscribe(const unsigned callback_id,
+                                           const InputKey key,
+                                           const InputAction action,
+                                           const InputMod mods) {
+	auto& id_vector = callbackIds_[{key, action, mods}];
 
 	// Erase the callback id to the callback
 	id_vector.erase(
@@ -106,79 +105,79 @@ void jactorio::game::Key_input::unsubscribe(const unsigned callback_id,
 		id_vector.end());
 
 	// Erase the callback itself
-	input_callbacks_.erase(callback_id);
+	inputCallbacks_.erase(callback_id);
 }
 
-void jactorio::game::Key_input::clear_data() {
-	input_callbacks_.clear();
-	callback_ids_.clear();
+void jactorio::game::KeyInput::ClearData() {
+	inputCallbacks_.clear();
+	callbackIds_.clear();
 }
 
 // ======================================================================
 
-jactorio::game::inputKey jactorio::game::Key_input::to_input_key(const int key) {
+jactorio::game::InputKey jactorio::game::KeyInput::ToInputKey(const int key) {
 	// Mouse
 	if (GLFW_MOUSE_BUTTON_1 <= key && key <= GLFW_MOUSE_BUTTON_8)
-		return static_cast<inputKey>(key - GLFW_MOUSE_BUTTON_1 + static_cast<int>(inputKey::mouse1));
+		return static_cast<InputKey>(key - GLFW_MOUSE_BUTTON_1 + static_cast<int>(InputKey::mouse1));
 
 	// Keyboard
 	if (GLFW_KEY_0 <= key && key <= GLFW_KEY_9)
-		return static_cast<inputKey>(key - GLFW_KEY_0 + static_cast<int>(inputKey::k0));
+		return static_cast<InputKey>(key - GLFW_KEY_0 + static_cast<int>(InputKey::k0));
 
 	if (GLFW_KEY_A <= key && key <= GLFW_KEY_Z)
-		return static_cast<inputKey>(key - GLFW_KEY_A + static_cast<int>(inputKey::a));
+		return static_cast<InputKey>(key - GLFW_KEY_A + static_cast<int>(InputKey::a));
 
 	switch (key) {
 	case GLFW_KEY_GRAVE_ACCENT:
-		return inputKey::grave;
+		return InputKey::grave;
 	case GLFW_KEY_TAB:
-		return inputKey::tab;
+		return InputKey::tab;
 	case GLFW_KEY_ESCAPE:
-		return inputKey::escape;
+		return InputKey::escape;
 	case GLFW_KEY_SPACE:
-		return inputKey::space;
+		return InputKey::space;
 
 	default:
 		break;
 	}
 
 	LOG_MESSAGE_f(warning, "Key id %d is not mapped to an inputKey, this input will be ignored", key);
-	return inputKey::none;
+	return InputKey::none;
 }
 
-jactorio::game::inputAction jactorio::game::Key_input::to_input_action(const int action) {
+jactorio::game::InputAction jactorio::game::KeyInput::ToInputAction(const int action) {
 	switch (action) {
 	case GLFW_PRESS:
-		return inputAction::key_down;
+		return InputAction::key_down;
 	case GLFW_REPEAT:
-		return inputAction::key_repeat;
+		return InputAction::key_repeat;
 	case GLFW_RELEASE:
-		return inputAction::key_up;
+		return InputAction::key_up;
 
 	default:
 		LOG_MESSAGE_f(warning, "Action id %d is not mapped to an inputAction, this input will be ignored", action);
-		return inputAction::none;
+		return InputAction::none;
 	}
 }
 
-jactorio::game::inputMod jactorio::game::Key_input::to_input_mod(const int mod) {
+jactorio::game::InputMod jactorio::game::KeyInput::ToInputMod(const int mod) {
 	switch (mod) {
 	case 0:
-		return inputMod::none;
+		return InputMod::none;
 
 	case GLFW_MOD_ALT:
-		return inputMod::alt;
+		return InputMod::alt;
 	case GLFW_MOD_CAPS_LOCK:
-		return inputMod::caps_lk;
+		return InputMod::caps_lk;
 	case GLFW_MOD_CONTROL:
-		return inputMod::control;
+		return InputMod::control;
 	case GLFW_MOD_SHIFT:
-		return inputMod::shift;
+		return InputMod::shift;
 	case GLFW_MOD_SUPER:
-		return inputMod::super;
+		return InputMod::super;
 
 	default:
 		LOG_MESSAGE_f(warning, "Modifier id %d is not mapped to an inputMod, this input will be ignored", mod);
-		return inputMod::none;
+		return InputMod::none;
 	}
 }

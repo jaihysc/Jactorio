@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -13,37 +12,34 @@
 #include "data/prototype/interface/renderable.h"
 #include "data/prototype/item/item.h"
 #include "game/player/player_data.h"
-#include "game/world/chunk_tile_layer.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::data
 {
-	// Unique per entity placed in the world
-	struct Entity_data : Renderable_data
+	///
+	/// \brief Unique per entity placed in the world
+	struct EntityData : RenderableData
 	{
 	};
 
-	/**
-	 * Placeable items in the world
-	 */
-	class Entity : public Prototype_base, public Renderable, public Rotatable
+	///
+	/// \brief Placeable items in the world
+	class Entity : public PrototypeBase, public Renderable, public Rotatable
 	{
 	public:
 		Entity() = default;
 
 		~Entity() override = default;
 
-		Entity(const Entity& other) = default;
+		Entity(const Entity& other)     = default;
 		Entity(Entity&& other) noexcept = default;
 
-		Entity& operator=(const Entity& other) = default;
+		Entity& operator=(const Entity& other)     = default;
 		Entity& operator=(Entity&& other) noexcept = default;
 
 	private:
-		/**
-		 * Item when entity is picked up <br>
-		 * Naming scheme should be <localized name of entity>-item
-		 */
+
+		/// \brief Item when entity is picked up
 		Item* item_ = nullptr;
 
 	public:
@@ -53,8 +49,8 @@ namespace jactorio::data
 
 
 		// Number of tiles this entity spans
-		PYTHON_PROP_REF_I(Entity, uint8_t, tile_width, 1)
-		PYTHON_PROP_REF_I(Entity, uint8_t, tile_height, 1)
+		PYTHON_PROP_REF_I(Entity, uint8_t, tileWidth, 1)
+		PYTHON_PROP_REF_I(Entity, uint8_t, tileHeight, 1)
 
 		// Can be rotated by player?
 		PYTHON_PROP_REF_I(Entity, bool, rotatable, false)
@@ -62,13 +58,13 @@ namespace jactorio::data
 		PYTHON_PROP_REF_I(Entity, bool, placeable, true)
 
 		// Item
-		J_NODISCARD Item* get_item() const {
+		J_NODISCARD Item* GetItem() const {
 			return item_;
 		}
 
-		Entity* set_item(Item* item) {
-			item->entity_prototype = this;
-			this->item_ = item;
+		Entity* SetItem(Item* item) {
+			item->entityPrototype = this;
+			this->item_            = item;
 
 			return this;
 		}
@@ -76,32 +72,32 @@ namespace jactorio::data
 		/**
 		 * Seconds to pickup entity
 		 */
-		PYTHON_PROP_REF_I(Entity, float, pickup_time, 1);
+		PYTHON_PROP_REF_I(Entity, float, pickupTime, 1);
 
 
-		void post_load_validate() const override;
+		void PostLoadValidate() const override;
 
 		// ======================================================================
 		// Localized names
 
 		// Override the default setter to also set for the item associated with this
-		void set_localized_name(const std::string& localized_name) override {
-			this->localized_name_ = localized_name;
+		void SetLocalizedName(const std::string& localized_name) override {
+			this->localizedName_ = localized_name;
 			if (item_ != nullptr)
-				item_->set_localized_name(localized_name);
+				item_->SetLocalizedName(localized_name);
 		}
 
-		void set_localized_description(const std::string& localized_description) override {
-			this->localized_description_ = localized_description;
+		void SetLocalizedDescription(const std::string& localized_description) override {
+			this->localizedDescription_ = localized_description;
 			if (item_ != nullptr)
-				item_->set_localized_description(localized_description);
+				item_->SetLocalizedDescription(localized_description);
 		}
 
 		// ======================================================================
 		// Renderer events
 
-		std::pair<Sprite*, Renderable_data::frame_t> on_r_get_sprite(Unique_data_base* unique_data,
-																	 game_tick_t game_tick) const override {
+		std::pair<Sprite*, RenderableData::frame_t> OnRGetSprite(UniqueDataBase* unique_data,
+		                                                         GameTickT game_tick) const override {
 			return {this->sprite, 0};
 		}
 
@@ -110,25 +106,25 @@ namespace jactorio::data
 
 		///
 		/// \brief Entity was build in the world
-		virtual void on_build(game::World_data& world_data,
-		                      const game::World_data::world_pair& world_coords,
-		                      game::Chunk_tile_layer& tile_layer,
-		                      Orientation orientation) const = 0;
+		virtual void OnBuild(game::WorldData& world_data,
+		                     const game::WorldData::WorldPair& world_coords,
+		                     game::ChunkTileLayer& tile_layer,
+		                     Orientation orientation) const = 0;
 
 		///
 		/// \brief Returns true if itself can be built at the specified world_coords being its top left
 		/// \return true if can be built
-		J_NODISCARD virtual bool on_can_build(const game::World_data& world_data,
-		                                      const game::World_data::world_pair& world_coords) const {
+		J_NODISCARD virtual bool OnCanBuild(const game::WorldData& world_data,
+		                                    const game::WorldData::WorldPair& world_coords) const {
 			return true;
 		}
 
 
 		///
 		/// \brief Entity was picked up from a built state, called BEFORE the entity has been removed
-		virtual void on_remove(game::World_data& world_data,
-		                       const game::World_data::world_pair& world_coords,
-		                       game::Chunk_tile_layer& tile_layer) const = 0;
+		virtual void OnRemove(game::WorldData& world_data,
+		                      const game::WorldData::WorldPair& world_coords,
+		                      game::ChunkTileLayer& tile_layer) const = 0;
 
 		///
 		/// \brief A neighbor of this prototype in the world was updated
@@ -136,16 +132,16 @@ namespace jactorio::data
 		/// \param emit_world_coords Coordinates of the prototype which is EMITTING the update 
 		/// \param receive_world_coords Layer of the prototype RECEIVING the update 
 		/// \param emit_orientation Orientation to the prototype EMITTING the update 
-		virtual void on_neighbor_update(game::World_data& world_data,
-		                                const game::World_data::world_pair& emit_world_coords,
-		                                const game::World_data::world_pair& receive_world_coords,
-		                                Orientation emit_orientation) const {
+		virtual void OnNeighborUpdate(game::WorldData& world_data,
+		                              const game::WorldData::WorldPair& emit_world_coords,
+		                              const game::WorldData::WorldPair& receive_world_coords,
+		                              Orientation emit_orientation) const {
 		}
 	};
 
-	inline void Entity::post_load_validate() const {
+	inline void Entity::PostLoadValidate() const {
 		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
-		J_DATA_ASSERT(pickup_time >= 0, "Pickup time must be 0 or positive")
+		J_DATA_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive")
 	}
 }
 

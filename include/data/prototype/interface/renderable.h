@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -13,8 +12,8 @@ namespace jactorio
 {
 	namespace game
 	{
-		class Player_data;
-		class Chunk_tile_layer;
+		class PlayerData;
+		class ChunkTileLayer;
 	}
 
 	namespace data
@@ -27,14 +26,14 @@ namespace jactorio::data
 {
 	///
 	/// \brief Inherit to allow drawing portions of a sprite
-	struct Renderable_data : Unique_data_base
+	struct RenderableData : UniqueDataBase
 	{
 		using set_t = uint16_t;
 		using frame_t = uint16_t;
 
-		Renderable_data() = default;
+		RenderableData() = default;
 
-		Renderable_data(const set_t set)
+		RenderableData(const set_t set)
 			: set(set) {
 		}
 
@@ -57,12 +56,12 @@ namespace jactorio::data
 	public:
 		///
 		/// \brief Called by the renderer when it wants the sprite and frame within the sprite
-		J_NODISCARD virtual std::pair<Sprite*, Renderable_data::frame_t> on_r_get_sprite(Unique_data_base* unique_data,
-		                                                                                 game_tick_t game_tick) const = 0;
+		J_NODISCARD virtual std::pair<Sprite*, RenderableData::frame_t> OnRGetSprite(UniqueDataBase* unique_data,
+		                                                                             GameTickT game_tick) const = 0;
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data
-		virtual void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const = 0;
+		virtual void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const = 0;
 	};
 }
 

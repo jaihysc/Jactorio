@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -12,25 +11,25 @@ namespace jactorio::game
 {
 	///
 	/// \brief For a Logic_chunk, stores chunk structures (transport line segments (Not the entities), etc)
-	class Chunk_struct_layer : public Chunk_layer
+	class ChunkStructLayer : public ChunkLayer
 	{
 	public:
-		using struct_coord = float;
-		
-		Chunk_struct_layer() = default;
+		using StructCoord = float;
 
-		explicit Chunk_struct_layer(const data::Prototype_base* proto)
-			: Chunk_layer(proto) {
+		ChunkStructLayer() = default;
+
+		explicit ChunkStructLayer(const data::PrototypeBase* proto)
+			: ChunkLayer(proto) {
 		}
 
-		explicit Chunk_struct_layer(const data::Prototype_base* proto,
-		                            const struct_coord position_x, const struct_coord position_y)
-			: Chunk_layer(proto), position_x(position_x), position_y(position_y) {
+		explicit ChunkStructLayer(const data::PrototypeBase* proto,
+		                          const StructCoord position_x, const StructCoord position_y)
+			: ChunkLayer(proto), positionX(position_x), positionY(position_y) {
 		}
 
 		// Distance (tiles) from top left of chunk to top left of object
-		struct_coord position_x = 0;
-		struct_coord position_y = 0;
+		StructCoord positionX = 0;
+		StructCoord positionY = 0;
 	};
 }
 

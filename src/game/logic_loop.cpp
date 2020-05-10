@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -19,130 +18,130 @@
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/window/window_manager.h"
 
-constexpr float move_speed = 0.8f;
+constexpr float kMoveSpeed = 0.8f;
 
-void jactorio::game::init_logic_loop() {
-	core::Resource_guard<void> loop_termination_guard([]() {
+void jactorio::game::InitLogicLoop() {
+	core::ResourceGuard<void> loop_termination_guard([]() {
 		renderer::render_thread_should_exit = true;
-		logic_thread_should_exit = true;
+		logic_thread_should_exit            = true;
 	});
 
 	// Initialize game data
-	core::Resource_guard<void> game_data_guard([]() { delete game_data; });
-	game_data = new Game_data();
+	core::ResourceGuard<void> game_data_guard([]() { delete game_data; });
+	game_data = new GameData();
 
 	// Load prototype data
-	core::Resource_guard data_manager_guard(&data::clear_data);
+	core::ResourceGuard data_manager_guard(&data::ClearData);
 	try {
-		data::load_data(core::resolve_path("~/data"));
+		data::LoadData(core::ResolvePath("~/data"));
 	}
-	catch (data::Data_exception&) {
+	catch (data::DataException&) {
 		// Prototype loading error
 		return;
 	}
 	catch (std::filesystem::filesystem_error&) {
 		// Data folder not found error
-		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::resolve_path("~/data").c_str());
+		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::ResolvePath("~/data").c_str());
 		return;
 	}
 
 	// ======================================================================
 	// Temporary Startup settings
-	game_data->player.set_player_world(&game_data->world);  // Main world is player's world
+	game_data->player.SetPlayerWorld(&game_data->world);  // Main world is player's world
 
 
 	// ======================================================================
 
 	// Movement controls
-	game_data->input.key.subscribe([]() {
-		game_data->player.move_player_y(move_speed * -1);
-	}, inputKey::w, inputAction::key_held);
+	game_data->input.key.Subscribe([]() {
+		game_data->player.MovePlayerY(kMoveSpeed * -1);
+	}, InputKey::w, InputAction::key_held);
 
 
-	game_data->input.key.subscribe([]() {
-		game_data->player.move_player_y(move_speed);
-	}, inputKey::s, inputAction::key_held);
+	game_data->input.key.Subscribe([]() {
+		game_data->player.MovePlayerY(kMoveSpeed);
+	}, InputKey::s, InputAction::key_held);
 
-	game_data->input.key.subscribe([]() {
-		game_data->player.move_player_x(move_speed * -1);
-	}, inputKey::a, inputAction::key_held);
+	game_data->input.key.Subscribe([]() {
+		game_data->player.MovePlayerX(kMoveSpeed * -1);
+	}, InputKey::a, InputAction::key_held);
 
-	game_data->input.key.subscribe([]() {
-		game_data->player.move_player_x(move_speed);
-	}, inputKey::d, inputAction::key_held);
+	game_data->input.key.Subscribe([]() {
+		game_data->player.MovePlayerX(kMoveSpeed);
+	}, InputKey::d, InputAction::key_held);
 
 
 	// Menus
-	game_data->input.key.subscribe([]() {
-		renderer::gui::set_visible(renderer::gui::menu::debug_menu, 
-								   !renderer::gui::is_visible(renderer::gui::menu::debug_menu));
-	}, inputKey::grave, inputAction::key_up);
+	game_data->input.key.Subscribe([]() {
+		renderer::SetVisible(renderer::Menu::DebugMenu,
+		                     !renderer::IsVisible(renderer::Menu::DebugMenu));
+	}, InputKey::grave, InputAction::key_up);
 
-	game_data->input.key.subscribe([]() {
+	game_data->input.key.Subscribe([]() {
 		// If a layer is already activated, deactivate it, otherwise open the gui menu
-		if (game_data->player.get_activated_layer() != nullptr)
-			game_data->player.set_activated_layer(nullptr);
+		if (game_data->player.GetActivatedLayer() != nullptr)
+			game_data->player.SetActivatedLayer(nullptr);
 		else
-			renderer::gui::set_visible(renderer::gui::menu::character_menu, 
-									   !renderer::gui::is_visible(renderer::gui::menu::character_menu));
+			renderer::SetVisible(renderer::Menu::CharacterMenu,
+			                     !renderer::IsVisible(renderer::Menu::CharacterMenu));
 
-	}, inputKey::tab, inputAction::key_up);
+	}, InputKey::tab, InputAction::key_up);
 
 
 	// Rotating orientation	
-	game_data->input.key.subscribe([]() {
-		game_data->player.rotate_placement_orientation();
-	}, inputKey::r, inputAction::key_up);
-	game_data->input.key.subscribe([]() {
-		game_data->player.counter_rotate_placement_orientation();
-	}, inputKey::r, inputAction::key_up, inputMod::shift);
+	game_data->input.key.Subscribe([]() {
+		game_data->player.RotatePlacementOrientation();
+	}, InputKey::r, InputAction::key_up);
+	game_data->input.key.Subscribe([]() {
+		game_data->player.CounterRotatePlacementOrientation();
+	}, InputKey::r, InputAction::key_up, InputMod::shift);
 
 
-	game_data->input.key.subscribe([]() {
-		game_data->player.deselect_selected_item();
-	}, inputKey::q, inputAction::key_down);
+	game_data->input.key.Subscribe([]() {
+		game_data->player.DeselectSelectedItem();
+	}, InputKey::q, InputAction::key_down);
 
 	// Place entities
-	game_data->input.key.subscribe([]() {
-		if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
+	game_data->input.key.Subscribe([]() {
+		if (renderer::input_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
-		const auto tile_selected = game_data->player.get_mouse_tile_coords();
-		game_data->player.try_place_entity(game_data->world,
-		                                   tile_selected.first, tile_selected.second);
-	}, inputKey::mouse1, inputAction::key_held);
+		const auto tile_selected = game_data->player.GetMouseTileCoords();
+		game_data->player.TryPlaceEntity(game_data->world,
+		                                 tile_selected.first, tile_selected.second);
+	}, InputKey::mouse1, InputAction::key_held);
 
-	game_data->input.key.subscribe([]() {
-		if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
+	game_data->input.key.Subscribe([]() {
+		if (renderer::input_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
-		const auto tile_selected = game_data->player.get_mouse_tile_coords();
-		game_data->player.try_place_entity(game_data->world,
-		                                   tile_selected.first, tile_selected.second, true);
-	}, inputKey::mouse1, inputAction::key_down);
+		const auto tile_selected = game_data->player.GetMouseTileCoords();
+		game_data->player.TryPlaceEntity(game_data->world,
+		                                 tile_selected.first, tile_selected.second, true);
+	}, InputKey::mouse1, InputAction::key_down);
 
 	// Remove entities or mine resource
-	game_data->input.key.subscribe([]() {
-		if (renderer::imgui_manager::input_captured || !game_data->player.mouse_selected_tile_in_range())
+	game_data->input.key.Subscribe([]() {
+		if (renderer::input_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
-		const auto tile_selected = game_data->player.get_mouse_tile_coords();
-		game_data->player.try_pickup(game_data->world,
-		                             tile_selected.first, tile_selected.second);
-	}, inputKey::mouse2, inputAction::key_held);
+		const auto tile_selected = game_data->player.GetMouseTileCoords();
+		game_data->player.TryPickup(game_data->world,
+		                            tile_selected.first, tile_selected.second);
+	}, InputKey::mouse2, InputAction::key_held);
 
 
-	game_data->input.key.subscribe([]() {
-		glfwSetWindowShouldClose(renderer::window_manager::get_window(), GL_TRUE);
+	game_data->input.key.Subscribe([]() {
+		glfwSetWindowShouldClose(renderer::GetWindow(), GL_TRUE);
 
-	}, inputKey::escape, inputAction::key_up);
+	}, InputKey::escape, InputAction::key_up);
 
 
-	game_data->input.key.subscribe([]() {
-		game_data->event.subscribe_once(eventType::renderer_tick, []() {
-			game_data->world = World_data();
+	game_data->input.key.Subscribe([]() {
+		game_data->event.SubscribeOnce(EventType::renderer_tick, []() {
+			game_data->world = WorldData();
 		});
-	}, inputKey::p, inputAction::key_up);
+	}, InputKey::p, InputAction::key_up);
 
 	//
 
@@ -159,20 +158,20 @@ void jactorio::game::init_logic_loop() {
 			// ======================================================================	
 			// World chunks			
 			{
-				std::lock_guard<std::mutex> guard{game_data->world.world_data_mutex};
+				std::lock_guard<std::mutex> guard{game_data->world.worldDataMutex};
 
-				game_data->world.on_tick_advance();
-				game_data->player.mouse_calculate_selected_tile();
+				game_data->world.OnTickAdvance();
+				game_data->player.MouseCalculateSelectedTile();
 
-				game_data->world.gen_chunk();
-				game_data->input.mouse.draw_cursor_overlay(game_data->player);
+				game_data->world.GenChunk();
+				game_data->input.mouse.DrawCursorOverlay(game_data->player);
 
 
 				// Logistics logic
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
 				// BUG crash sometimes when removing transport line, mutex lock for rendering maybe?
-				transport_line_logic_update(game_data->world);
+				TransportLineLogicUpdate(game_data->world);
 			}
 
 			// ======================================================================
@@ -180,12 +179,12 @@ void jactorio::game::init_logic_loop() {
 			{
 				std::lock_guard<std::mutex> guard{game_data->player.mutex};
 
-				game_data->player.recipe_craft_tick();
+				game_data->player.RecipeCraftTick();
 			}
 
 			// Events are responsible for resource locking themselves
-			game_data->event.raise<Logic_tick_event>(eventType::logic_tick, game_data->world.game_tick() % JC_GAME_HERTZ);
-			game_data->input.key.raise();
+			game_data->event.Raise<LogicTickEvent>(EventType::logic_tick, game_data->world.GameTick() % JC_GAME_HERTZ);
+			game_data->input.key.Raise();
 		}
 		// ======================================================================
 		// ======================================================================

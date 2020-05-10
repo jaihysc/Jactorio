@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -22,78 +21,71 @@ namespace jactorio::renderer
 		// #################################################
 		// Sprites
 		// Internal ids to spritemap positions
-		static std::unordered_map<unsigned int, core::Quad_position> spritemap_coords_;
+		static std::unordered_map<unsigned int, core::QuadPosition> spritemapCoords_;
 
 	public:
-		static void set_spritemap_coords(
-			const std::unordered_map<unsigned, core::Quad_position>& spritemap_coords);
+		static void SetSpritemapCoords(
+			const std::unordered_map<unsigned, core::QuadPosition>& spritemap_coords);
 
-		/**
-		 * Use internal id of sprite prototype
-		 */
-		static core::Quad_position get_spritemap_coords(unsigned int internal_id);
+		///
+		/// \param internal_id internal id of sprite prototype
+		static core::QuadPosition GetSpritemapCoords(unsigned int internal_id);
 
 	public:
 		// #################################################
 		// Rendering (Recalculated on window resize)
 
-		/**
-		 * 2 Rendering layers so that one can be drawn to while another is being rendered
-		 * Since objects are of varying lengths, the layer must resize
-		 */
-		mutable Renderer_layer render_layer = Renderer_layer();
-		mutable Renderer_layer render_layer2 = Renderer_layer();
+		// 2 Rendering layers so that one can be drawn to while another is being rendered
+		// Since objects are of varying lengths, the layer must resize
+		mutable RendererLayer renderLayer  = RendererLayer();
+		mutable RendererLayer renderLayer2 = RendererLayer();
 
-		/**
-		 * Using this to change zoom is discouraged <br>
-		 * Use tile_width instead for better performance at high zoom levels
-		 */
-		float tile_projection_matrix_offset = 0;
-		static unsigned short tile_width;
+		///
+		/// \brief Changes zoom 
+		float tileProjectionMatrixOffset = 0;
 
-		/**
-		 * Deletes and regenerates the opengl buffers / arrays used for rendering
-		 * Also regenerates buffer used to update texture_grid_ Vertex_buffer
-		 */
-		void recalculate_buffers(unsigned short window_x, unsigned short window_y);
+		static unsigned short tileWidth;
 
-		/**
-		 * Draws current data to the screen
-		 * @param element_count Count of elements to draw (1 element = 6 indices)
-		 */
-		static void g_draw(unsigned int element_count);
-		static void g_clear();
+		///
+		/// \brief Deletes and regenerates the opengl buffers / arrays used for rendering
+		/// Also regenerates buffer used to update texture_grid_ Vertex_buffer
+		void RecalculateBuffers(unsigned short window_x, unsigned short window_y);
+
+		///
+		/// \brief Draws current data to the screen
+		/// \param element_count Count of elements to draw (1 element = 6 indices)
+		static void GDraw(unsigned int element_count);
+		static void GClear();
 
 
 	private:
 		// #################################################
 		// Window properties
-		static unsigned short window_width_;
-		static unsigned short window_height_;
+		static unsigned short windowWidth_;
+		static unsigned short windowHeight_;
 
 	public:
-		J_NODISCARD static unsigned short get_window_width();
-		J_NODISCARD static unsigned short get_window_height();
+		J_NODISCARD static unsigned short GetWindowWidth();
+		J_NODISCARD static unsigned short GetWindowHeight();
 
 
 	private:
 		// #################################################
 		// Grid properties (rendering, MVP matrices)
 
-		unsigned int grid_vertices_count_ = 0;
-		unsigned int grid_elements_count_ = 0;
+		unsigned int gridVerticesCount_ = 0;
+		unsigned int gridElementsCount_ = 0;
 
-		unsigned short tile_count_x_ = 0;
-		unsigned short tile_count_y_ = 0;
+		unsigned short tileCountX_ = 0;
+		unsigned short tileCountY_ = 0;
 
 	public:
-		J_NODISCARD unsigned short get_grid_size_x() const;
-		J_NODISCARD unsigned short get_grid_size_y() const;
+		J_NODISCARD unsigned short GetGridSizeX() const;
+		J_NODISCARD unsigned short GetGridSizeY() const;
 
-		/**
-		* Updates projection matrix and zoom level
-		*/
-		void update_tile_projection_matrix();
+		///
+		/// \brief Updates projection matrix and zoom level
+		void UpdateTileProjectionMatrix();
 	};
 };
 

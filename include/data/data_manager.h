@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -16,10 +15,10 @@
 namespace jactorio::data
 {
 	// Path of the data folder from the executing directory
-	constexpr char data_folder[] = "data";
+	constexpr char kDataFolder[] = "data";
 
 	// Example: data_raw[static_cast<int>(image)]["grass-1"] -> Prototype_base
-	inline std::unordered_map<std::string, Prototype_base*> data_raw[static_cast<int>(dataCategory::count_)];
+	inline std::unordered_map<std::string, PrototypeBase*> data_raw[static_cast<int>(DataCategory::count_)];
 
 
 	///
@@ -27,7 +26,7 @@ namespace jactorio::data
 	/// \remark Ensure that the casted type is or a parent of the specified category
 	/// \return nullptr if the specified prototype does not exist
 	template <typename T>
-	T* data_raw_get(const dataCategory data_category, const std::string& iname) {
+	T* DataRawGet(const DataCategory data_category, const std::string& iname) {
 		auto* category = &data_raw[static_cast<uint16_t>(data_category)];
 		if (category->find(iname) == category->end()) {
 			LOG_MESSAGE_f(error, "Attempted to access non-existent prototype %s", iname.c_str());
@@ -35,21 +34,21 @@ namespace jactorio::data
 		}
 
 		// Address of prototype item downcasted to T
-		Prototype_base* base = category->at(iname);
+		PrototypeBase* base = category->at(iname);
 		return static_cast<T*>(base);
 	}
 
 	///
 	/// \brief Gets pointers to all data of specified data_type
 	template <typename T>
-	std::vector<T*> data_raw_get_all(const dataCategory type) {
+	std::vector<T*> DataRawGetAll(const DataCategory type) {
 		auto category_items = data_raw[static_cast<uint16_t>(type)];
 
 		std::vector<T*> items;
 		items.reserve(category_items.size());
 
 		for (auto& it : category_items) {
-			Prototype_base* base_ptr = it.second;
+			PrototypeBase* base_ptr = it.second;
 			items.push_back(static_cast<T*>(base_ptr));
 		}
 
@@ -59,13 +58,13 @@ namespace jactorio::data
 	///
 	/// \brief Gets pointers to all data of specified data_type, sorted by Prototype_base.order
 	template <typename T>
-	std::vector<T*> data_raw_get_all_sorted(const dataCategory type) {
-		std::vector<T*> items = data_raw_get_all<T>(type);
+	std::vector<T*> DataRawGetAllSorted(const DataCategory type) {
+		std::vector<T*> items = DataRawGetAll<T>(type);
 
 		// Sort
 		std::sort(items.begin(),
 		          items.end(),
-		          [](Prototype_base* a, Prototype_base* b) {
+		          [](PrototypeBase* a, PrototypeBase* b) {
 			          return a->order < b->order;
 		          });
 		return items;
@@ -74,28 +73,28 @@ namespace jactorio::data
 	///
 	/// \brief Sets the prefix which will be added to all internal names <br>
 	/// Prefix of "base" : "electric-pole" becomes "__base__/electric-pole"
-	void set_directory_prefix(const std::string& name);
+	void SetDirectoryPrefix(const std::string& name);
 
 	///
 	/// \brief Adds a prototype
 	/// \param iname Internal name of prototype
 	/// \param prototype Prototype pointer, do not delete, must be unique for each added
 	/// \param add_directory_prefix Should the directory prefix be appended to the provided iname
-	void data_raw_add(const std::string& iname,
-	                  Prototype_base* prototype,
-	                  bool add_directory_prefix = false);
+	void DataRawAdd(const std::string& iname,
+	                PrototypeBase* prototype,
+	                bool add_directory_prefix = false);
 
 
 	///
 	/// \brief Loads data and their properties from data/ folder,
 	/// \remark In normal usage, data access methods can be used only after calling this
 	/// \param data_folder_path Do not include a / at the end (Valid usage: dc/xy/data)
-	/// \exception Data_exception Prototype validation failed or Pybind error
-	void load_data(const std::string& data_folder_path);
+	/// \exception DataException Prototype validation failed or Pybind error
+	void LoadData(const std::string& data_folder_path);
 
 	///
 	/// \brief Frees all pointer data within data_raw, clears data_raw
-	void clear_data();
+	void ClearData();
 }
 
 #endif //JACTORIO_INCLUDE_DATA_DATA_MANAGER_H

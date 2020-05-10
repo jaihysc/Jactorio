@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -10,30 +9,32 @@
 
 namespace jactorio::game
 {
-	class Logic_tick_event final : public Event_base
+	class LogicTickEvent final : public EventBase
 	{
 	public:
-		explicit Logic_tick_event(const unsigned short tick)
-			: game_tick(tick) {
+		explicit LogicTickEvent(const unsigned short tick)
+			: gameTick(tick) {
 		}
 
-		unsigned short game_tick;
+		///
+		/// 0 - 59
+		unsigned short gameTick;
 
 		EVENT_TYPE(logic_tick)
 		EVENT_CATEGORY(in_game)
 	};
 
-	class Renderer_tick_event final : public Event_base
+	class RendererTickEvent final : public EventBase
 	{
 	public:
-		Renderer_tick_event() = default;
+		RendererTickEvent() = default;
 
 		EVENT_TYPE(renderer_tick)
 		EVENT_CATEGORY(application)
 	};
 
 	// Gui
-	class Gui_opened_event : public Event_base
+	class GuiOpenedEvent : public EventBase
 	{
 	public:
 		EVENT_TYPE(game_gui_open)

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -25,14 +24,14 @@ unsigned int internal_id_new = internal_id_start;
  */
 std::string directory_prefix;
 
-void jactorio::data::set_directory_prefix(const std::string& name) {
+void jactorio::data::SetDirectoryPrefix(const std::string& name) {
 	directory_prefix = name;
 }
 
-void jactorio::data::data_raw_add(const std::string& iname,
-                                  Prototype_base* const prototype,
-                                  const bool add_directory_prefix) {
-	const dataCategory data_category = prototype->category();
+void jactorio::data::DataRawAdd(const std::string& iname,
+                                PrototypeBase* const prototype,
+                                const bool add_directory_prefix) {
+	const DataCategory data_category = prototype->Category();
 
 	// Use the following format internal name
 	// Format __dir__/iname
@@ -73,25 +72,25 @@ void jactorio::data::data_raw_add(const std::string& iname,
 
 	if (prototype->order == 0)
 		prototype->order = internal_id_new;
-	if (prototype->get_localized_name().empty())
-		prototype->set_localized_name(formatted_iname);
+	if (prototype->GetLocalizedName().empty())
+		prototype->SetLocalizedName(formatted_iname);
 
-	prototype->internal_id = internal_id_new++;
+	prototype->internalId = internal_id_new++;
 
 
 	data_raw[static_cast<uint16_t>(data_category)][formatted_iname] = prototype;
 	LOG_MESSAGE_f(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void jactorio::data::load_data(
+void jactorio::data::LoadData(
 	const std::string& data_folder_path) {
 	// Get all sub-folders in ~/data/
 	// Read data.cfg files within each sub-folder
 	// Load extracted data into loaded_data
 
 	// Terminate the interpreter after loading prototypes
-	auto py_guard = core::Resource_guard(py_interpreter_terminate);
-	py_interpreter_init();
+	auto py_guard = core::ResourceGuard(PyInterpreterTerminate);
+	PyInterpreterInit();
 
 
 	for (const auto& entry : std::filesystem::directory_iterator(data_folder_path)) {
@@ -110,7 +109,7 @@ void jactorio::data::load_data(
 			std::stringstream py_file_path;
 			py_file_path << current_directory << "/data.py";
 
-			const std::string py_file_contents = core::read_file_as_str(py_file_path.str());
+			const std::string py_file_contents = core::ReadFile(py_file_path.str());
 			// data.py file does not exist
 			if (py_file_contents.empty()) {
 				LOG_MESSAGE_f(warning, "Directory %s has no or empty data.py file. Ignoring", current_directory.c_str())
@@ -118,11 +117,11 @@ void jactorio::data::load_data(
 			}
 
 
-			set_directory_prefix(directory_name);
+			SetDirectoryPrefix(directory_name);
 			try {
-				py_exec(py_file_contents, py_file_path.str());
+				PyExec(py_file_contents, py_file_path.str());
 			}
-			catch (Data_exception& e) {
+			catch (DataException& e) {
 				LOG_MESSAGE_f(error, "%s", e.what());
 				throw;
 			}
@@ -134,9 +133,9 @@ void jactorio::data::load_data(
 			std::stringstream cfg_file_path;
 			// TODO selectable language
 			cfg_file_path << current_directory << "/local/" <<
-				language_identifier[static_cast<int>(language::en)] << ".cfg";
+				kLanguageIdentifier[static_cast<int>(Language::en)] << ".cfg";
 
-			auto local_contents = core::read_file_as_str(cfg_file_path.str());
+			auto local_contents = core::ReadFile(cfg_file_path.str());
 			if (local_contents.empty()) {
 				LOG_MESSAGE_f(warning,
 				              "Directory %s missing local at %s",
@@ -144,7 +143,7 @@ void jactorio::data::load_data(
 				              cfg_file_path.str().c_str())
 				continue;
 			}
-			local_parse_s(local_contents, directory_name);
+			LocalParseNoThrow(local_contents, directory_name);
 		}
 
 		LOG_MESSAGE_f(info, "Directory %s loaded", current_directory.c_str())
@@ -155,10 +154,10 @@ void jactorio::data::load_data(
 		for (auto& pair : pairs) {
 			try {
 				auto& prototype = pair.second;
-				prototype->post_load();
-				prototype->post_load_validate();
+				prototype->PostLoad();
+				prototype->PostLoadValidate();
 			}
-			catch (Data_exception& e) {
+			catch (DataException& e) {
 				LOG_MESSAGE_f(error, "Prototype validation failed: '%s'", e.what());
 				throw;
 			}
@@ -167,7 +166,7 @@ void jactorio::data::load_data(
 	}
 }
 
-void jactorio::data::clear_data() {
+void jactorio::data::ClearData() {
 	// Iterate through both unordered maps and delete all pointers
 	for (auto& map : data_raw) {
 		// Category unordered maps

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 04/07/2020
 
@@ -12,21 +11,21 @@
 namespace game
 {
 	TEST(ItemLogistics, InsertContainerEntity) {
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk(0, 0));
+		jactorio::game::WorldData world_data{};
+		world_data.AddChunk(new jactorio::game::Chunk(0, 0));
 
 		// Deleted by chunk tile layer
-		auto* container_data = new jactorio::data::Container_entity_data(10);
+		auto* container_data = new jactorio::data::ContainerEntityData(10);
 
-		world_data.get_tile(3, 1)
-		          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).unique_data = container_data;
+		world_data.GetTile(3, 1)
+		          ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData = container_data;
 
 
 		jactorio::data::Item item{};
 		// Orientation is orientation from origin object
-		jactorio::game::item_logistics::insert_container_entity({&item, 2},
-		                                                        *container_data,
-		                                                        jactorio::data::Orientation::down);
+		jactorio::game::item_logistics::InsertContainerEntity({&item, 2},
+		                                                      *container_data,
+		                                                      jactorio::data::Orientation::down);
 
 		// Inserted item
 		EXPECT_EQ(container_data->inventory[0].first, &item);
@@ -37,33 +36,33 @@ namespace game
 
 	class ItemLogisticsTransportLineTest : public testing::Test
 	{
-		jactorio::game::World_data world_data_{};
+		jactorio::game::WorldData world_data_{};
 
 	protected:
-		jactorio::game::Transport_line_segment* segment_ = nullptr;
+		jactorio::game::TransportLineSegment* segment_ = nullptr;
 
 		// Creates a transport line with orientation at (4, 4)
-		jactorio::data::Transport_line_data create_transport_line(const jactorio::data::Orientation orientation) {
-			world_data_.add_chunk(new jactorio::game::Chunk(0, 0));
+		jactorio::data::TransportLineData create_transport_line(const jactorio::data::Orientation orientation) {
+			world_data_.AddChunk(new jactorio::game::Chunk(0, 0));
 
-			segment_ = new jactorio::game::Transport_line_segment{
+			segment_ = new jactorio::game::TransportLineSegment{
 				orientation,
-				jactorio::game::Transport_line_segment::TerminationType::straight,
+				jactorio::game::TransportLineSegment::TerminationType::straight,
 				2
 			};
 
-			world_data_.get_tile(4, 4)
-			          ->get_layer(jactorio::game::Chunk_tile::chunkLayer::entity).unique_data = segment_;
+			world_data_.GetTile(4, 4)
+			           ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData = segment_;
 
-			return jactorio::data::Transport_line_data{*segment_};
+			return jactorio::data::TransportLineData{*segment_};
 		}
 
 		void transport_line_insert(const jactorio::data::Orientation orientation,
-		jactorio::data::Transport_line_data& line_data) const {
+		                           jactorio::data::TransportLineData& line_data) const {
 			jactorio::data::Item item{};
-			jactorio::game::item_logistics::insert_transport_belt({&item, 1},
-			                                                      line_data,
-			                                                      orientation);
+			jactorio::game::item_logistics::InsertTransportBelt({&item, 1},
+			                                                    line_data,
+			                                                    orientation);
 		}
 	};
 
@@ -182,43 +181,43 @@ namespace game
 	// ======================================================================
 
 	TEST(ItemLogistics, CanAcceptItem) {
-		jactorio::game::World_data world_data{};
-		world_data.add_chunk(new jactorio::game::Chunk{0, 0});
+		jactorio::game::WorldData world_data{};
+		world_data.AddChunk(new jactorio::game::Chunk{0, 0});
 
 		// Empty tile cannot be inserted into
 		{
-			auto* ptr = jactorio::game::item_logistics::can_accept_item(world_data, 2, 4);
+			auto* ptr = jactorio::game::item_logistics::CanAcceptItem(world_data, 2, 4);
 			EXPECT_EQ(ptr, nullptr);
 		}
 
 		// Transport belt can be inserted onto
 		{
-			jactorio::data::Transport_belt belt{};
-			world_data.get_tile(2, 4)
-			          ->set_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity, &belt);
+			jactorio::data::TransportBelt belt{};
+			world_data.GetTile(2, 4)
+			          ->SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, &belt);
 
-			auto* ptr = jactorio::game::item_logistics::can_accept_item(world_data, 2, 4);
-			EXPECT_EQ(ptr, &jactorio::game::item_logistics::insert_transport_belt);
+			auto* ptr = jactorio::game::item_logistics::CanAcceptItem(world_data, 2, 4);
+			EXPECT_EQ(ptr, &jactorio::game::item_logistics::InsertTransportBelt);
 		}
 
 		// Mining drill cannot be inserted into 
 		{
-			jactorio::data::Mining_drill drill{};
-			world_data.get_tile(2, 4)
-			          ->set_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity, &drill);
+			jactorio::data::MiningDrill drill{};
+			world_data.GetTile(2, 4)
+			          ->SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, &drill);
 
-			auto* ptr = jactorio::game::item_logistics::can_accept_item(world_data, 2, 4);
+			auto* ptr = jactorio::game::item_logistics::CanAcceptItem(world_data, 2, 4);
 			EXPECT_EQ(ptr, nullptr);
 		}
 
 		// Container can be inserted into
 		{
-			jactorio::data::Container_entity container{};
-			world_data.get_tile(2, 4)
-			          ->set_entity_prototype(jactorio::game::Chunk_tile::chunkLayer::entity, &container);
+			jactorio::data::ContainerEntity container{};
+			world_data.GetTile(2, 4)
+			          ->SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, &container);
 
-			auto* ptr = jactorio::game::item_logistics::can_accept_item(world_data, 2, 4);
-			EXPECT_EQ(ptr, &jactorio::game::item_logistics::insert_container_entity);
+			auto* ptr = jactorio::game::item_logistics::CanAcceptItem(world_data, 2, 4);
+			EXPECT_EQ(ptr, &jactorio::game::item_logistics::InsertContainerEntity);
 		}
 
 	}
@@ -226,19 +225,19 @@ namespace game
 	TEST(ItemLogistics, InsertItemDestination) {
 		// Item_insert_destination with custom insertion function
 		// .insert() should call insertion function, throwing the exception
-		const jactorio::game::Item_insert_destination::insert_func func = [
+		const jactorio::game::ItemInsertDestination::InsertFunc func = [
 			](auto& item, auto& unique_data, auto orientation) -> bool {
 			EXPECT_EQ(orientation, jactorio::data::Orientation::up);
 
 			throw std::runtime_error("INSERT_FUNC");
 		};
 
-		jactorio::data::Health_entity_data unique_data{};
-		const jactorio::game::Item_insert_destination iid{unique_data, func, jactorio::data::Orientation::up};
+		jactorio::data::HealthEntityData unique_data{};
+		const jactorio::game::ItemInsertDestination iid{unique_data, func, jactorio::data::Orientation::up};
 
 		jactorio::data::Item item{};
 		try {
-			iid.insert({&item, 4});
+			iid.Insert({&item, 4});
 			FAIL();  // Did not call insert_func
 		}
 		catch (std::runtime_error& e) {

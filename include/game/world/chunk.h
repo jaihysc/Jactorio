@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/29/2019
 
@@ -24,28 +23,28 @@ namespace jactorio::game
 	class Chunk
 	{
 	public:
-		using chunk_coord = int32_t;  // Chunk coordinates
-		using chunk_pair = std::pair<chunk_coord, chunk_coord>;
-		static constexpr uint8_t chunk_width = 32;
+		using ChunkCoord = int32_t;  // Chunk coordinates
+		using ChunkPair = std::pair<ChunkCoord, ChunkCoord>;
+		static constexpr uint8_t kChunkWidth = 32;
 
 	private:
-		chunk_pair position_;
+		ChunkPair position_;
 		// Pointers to the actual tiles since they are static size of 32x32
-		Chunk_tile* tiles_ = nullptr;
+		ChunkTile* tiles_ = nullptr;
 
 	public:
 		///
 		/// \brief Default initialization of chunk tiles
 		/// \param chunk_x X position of chunk
 		/// \param chunk_y Y position of chunk
-		Chunk(chunk_coord chunk_x, chunk_coord chunk_y);
+		Chunk(ChunkCoord chunk_x, ChunkCoord chunk_y);
 		///
 		/// \param chunk_x X position of chunk
 		/// \param chunk_y Y position of chunk
 		/// \param tiles Array of size 32 * 32 (1024) tiles <br>
 	    ///			Do not delete the provided pointer, it will be automatically
 		///			freed when Chunk is destructed
-		Chunk(chunk_coord chunk_x, chunk_coord chunk_y, Chunk_tile* tiles);
+		Chunk(ChunkCoord chunk_x, ChunkCoord chunk_y, ChunkTile* tiles);
 
 		~Chunk();
 
@@ -62,9 +61,9 @@ namespace jactorio::game
 
 		// Tiles
 
-		J_NODISCARD std::pair<int, int> get_position() const { return position_; }
+		J_NODISCARD std::pair<int, int> GetPosition() const { return position_; }
 
-		J_NODISCARD Chunk_tile* tiles_ptr() const {
+		J_NODISCARD ChunkTile* Tiles() const {
 			return tiles_;
 		}
 
@@ -75,11 +74,11 @@ namespace jactorio::game
 			count_
 		};
 
-		static constexpr int object_layer_count = static_cast<int>(ObjectLayer::count_);
+		static constexpr int kObjectLayerCount = static_cast<int>(ObjectLayer::count_);
 
-		std::vector<Chunk_object_layer> objects[object_layer_count];
+		std::vector<ChunkObjectLayer> objects[kObjectLayerCount];
 
-		std::vector<Chunk_object_layer>& get_object(ObjectLayer layer) {
+		std::vector<ChunkObjectLayer>& GetObject(ObjectLayer layer) {
 			return objects[static_cast<int>(layer)];
 		}
 	};

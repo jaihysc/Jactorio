@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -31,83 +30,83 @@ unsigned short window_y = 0;
 
 jactorio::renderer::Renderer* main_renderer = nullptr;
 
-void jactorio::renderer::set_recalculate_renderer(const unsigned short window_size_x,
-                                                  const unsigned short window_size_y) {
+void jactorio::renderer::SetRecalculateRenderer(const unsigned short window_size_x,
+                                                const unsigned short window_size_y) {
 	window_x = window_size_x;
 	window_y = window_size_y;
 
-	game::game_data->event.subscribe_once(game::eventType::renderer_tick, []() {
-		main_renderer->recalculate_buffers(window_x, window_y);
+	game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
+		main_renderer->RecalculateBuffers(window_x, window_y);
 	});
 }
 
-jactorio::renderer::Renderer* jactorio::renderer::get_base_renderer() {
+jactorio::renderer::Renderer* jactorio::renderer::GetBaseRenderer() {
 	return main_renderer;
 }
 
-void jactorio::renderer::render_init() {
-	core::Resource_guard<void> loop_termination_guard([]() {
-		render_thread_should_exit = true;
+void jactorio::renderer::RenderInit() {
+	core::ResourceGuard<void> loop_termination_guard([]() {
+		render_thread_should_exit      = true;
 		game::logic_thread_should_exit = true;
 	});
 
 	// Init window
-	core::Resource_guard window_manager_guard(&window_manager::terminate);
+	core::ResourceGuard window_manager_guard(&TerminateWindow);
 	try {
-		if (window_manager::init(840, 490) != 0)
+		if (InitWindow(840, 490) != 0)
 			return;
 	}
-	catch (data::Data_exception&) {
+	catch (data::DataException&) {
 		return;
 	}
 
 
-	core::Resource_guard imgui_manager_guard(&imgui_manager::imgui_terminate);
-	imgui_manager::setup(window_manager::get_window());
+	core::ResourceGuard imgui_manager_guard(&ImguiTerminate);
+	Setup(GetWindow());
 
 	// Shader
 	const Shader shader(
-		std::vector<Shader_creation_input>{
+		std::vector<ShaderCreationInput>{
 			{"~/data/core/shaders/vs.vert", GL_VERTEX_SHADER},
 			{"~/data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
 		}
 	);
-	shader.bind();
-	set_mvp_uniform_location(
-		shader.get_uniform_location("u_model_view_projection_matrix"));
+	shader.Bind();
+	SetMvpUniformLocation(
+		shader.GetUniformLocation("u_model_view_projection_matrix"));
 
 	// Texture will be bound to slot 0 above, tell this to shader
-	Shader::set_uniform_1i(shader.get_uniform_location("u_texture"), 0);
+	Shader::SetUniform1I(shader.GetUniformLocation("u_texture"), 0);
 
 
 	// Loading textures
-	auto renderer_sprites = Renderer_sprites();
-	renderer_sprites.create_spritemap(data::Sprite::SpriteGroup::terrain, true);
-	renderer_sprites.create_spritemap(data::Sprite::SpriteGroup::gui, false);
+	auto renderer_sprites = RendererSprites();
+	renderer_sprites.CreateSpritemap(data::Sprite::SpriteGroup::terrain, true);
+	renderer_sprites.CreateSpritemap(data::Sprite::SpriteGroup::gui, false);
 
 	// Terrain
-	Renderer::set_spritemap_coords(renderer_sprites.get_spritemap(data::Sprite::SpriteGroup::terrain).sprite_positions);
-	renderer_sprites.get_texture(data::Sprite::SpriteGroup::terrain)->bind(0);
+	Renderer::SetSpritemapCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);
+	renderer_sprites.GetTexture(data::Sprite::SpriteGroup::terrain)->Bind(0);
 
 	// Gui
-	imgui_manager::setup_character_data(renderer_sprites);
+	SetupCharacterData(renderer_sprites);
 
 
 	// ======================================================================
-	
-	game::game_data->input.key.subscribe([]() {
-		game::game_data->event.subscribe_once(game::eventType::renderer_tick, []() {
-			window_manager::set_fullscreen(!window_manager::is_fullscreen());
-			main_renderer->recalculate_buffers(window_x, window_y);
+
+	game::game_data->input.key.Subscribe([]() {
+		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
+			SetFullscreen(!IsFullscreen());
+			main_renderer->RecalculateBuffers(window_x, window_y);
 		});
-	}, game::inputKey::space, game::inputAction::key_down);
+	}, game::InputKey::space, game::InputAction::key_down);
 
 	// Main rendering loop
 	{
 		LOG_MESSAGE(info, "2 - Runtime stage")
 
 		// From my testing, allocating it on the heap is faster than using the stack
-		core::Resource_guard<void> renderer_guard([]() { delete main_renderer; });
+		core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
 		main_renderer = new Renderer();
 
 
@@ -121,28 +120,28 @@ void jactorio::renderer::render_init() {
 				EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
 
 				glfwPollEvents();
-				if (glfwWindowShouldClose(window_manager::get_window()))
+				if (glfwWindowShouldClose(GetWindow()))
 					render_thread_should_exit = true;
 
-				game::game_data->event.raise<game::Renderer_tick_event>(game::eventType::renderer_tick);
+				game::game_data->event.Raise<game::RendererTickEvent>(game::EventType::renderer_tick);
 
 				// ======================================================================
 				// World
-				Renderer::g_clear();
+				Renderer::GClear();
 
 				// MVP Matrices updated in here
 				// Mutex locks in function call
-				world_renderer::render_player_position(
+				RenderPlayerPosition(
 					game::game_data->world,
 					main_renderer,
-					game::game_data->player.get_player_position_x(), game::game_data->player.get_player_position_y());
+					game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY());
 
 				// ======================================================================
 				// Gui
 				{
 					std::lock_guard<std::mutex> guard{game::game_data->player.mutex};
 
-					imgui_manager::imgui_draw(game::game_data->player, game::game_data->event);
+					ImguiDraw(game::game_data->player, game::game_data->event);
 				}
 			}
 			// ======================================================================
@@ -155,7 +154,7 @@ void jactorio::renderer::render_init() {
 			}
 			std::this_thread::sleep_until(next_frame);
 
-			glfwSwapBuffers(window_manager::get_window());
+			glfwSwapBuffers(GetWindow());
 		}
 	}
 

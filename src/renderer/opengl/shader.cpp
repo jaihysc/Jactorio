@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -12,11 +11,11 @@
 #include "core/logger.h"
 #include "renderer/opengl/error.h"
 
-unsigned int jactorio::renderer::Shader::compile_shader(
+unsigned int jactorio::renderer::Shader::CompileShader(
 	const std::string& filepath, const GLenum shader_type) {
 
-	const auto path = core::resolve_path(filepath);
-	const std::string source = core::read_file_as_str(path);
+	const auto path          = core::ResolvePath(filepath);
+	const std::string source = core::ReadFile(path);
 
 	if (source.empty()) {
 		LOG_MESSAGE_f(error, "Shader compilation received empty string, type %d %s",
@@ -62,14 +61,14 @@ unsigned int jactorio::renderer::Shader::compile_shader(
 
 
 jactorio::renderer::Shader::Shader(
-	const std::vector<Shader_creation_input>& inputs)
+	const std::vector<ShaderCreationInput>& inputs)
 	: id_(0) {
 	DEBUG_OPENGL_CALL(id_ = glCreateProgram());
 
 	std::vector<unsigned int> shader_ids;
 	for (const auto& input : inputs) {
-		const unsigned int shader_id = compile_shader(
-			input.filepath, input.shader_type);
+		const unsigned int shader_id = CompileShader(
+			input.filepath, input.shaderType);
 		DEBUG_OPENGL_CALL(glAttachShader(id_, shader_id));
 		shader_ids.push_back(shader_id);
 	}
@@ -88,16 +87,16 @@ jactorio::renderer::Shader::~Shader() {
 }
 
 
-void jactorio::renderer::Shader::bind() const {
+void jactorio::renderer::Shader::Bind() const {
 	DEBUG_OPENGL_CALL(glUseProgram(id_));
 }
 
-void jactorio::renderer::Shader::unbind() {
+void jactorio::renderer::Shader::Unbind() {
 	DEBUG_OPENGL_CALL(glUseProgram(0));
 }
 
 
-int jactorio::renderer::Shader::get_uniform_location(
+int jactorio::renderer::Shader::GetUniformLocation(
 	const std::string& name) const {
 	DEBUG_OPENGL_CALL(
 		const int location = glGetUniformLocation(id_, name.c_str()));
@@ -112,18 +111,18 @@ int jactorio::renderer::Shader::get_uniform_location(
 }
 
 
-void jactorio::renderer::Shader::set_uniform_1i(const int& location, int v) {
+void jactorio::renderer::Shader::SetUniform1I(const int& location, int v) {
 	DEBUG_OPENGL_CALL(glUniform1i(location, v));
 }
 
-void jactorio::renderer::Shader::set_uniform_4f(
+void jactorio::renderer::Shader::SetUniform4F(
 	const int& location, const float& v0, const float& v1, const float& v2,
 	const float& v3) {
 
 	DEBUG_OPENGL_CALL(glUniform4f(location, v0, v1, v2, v3));
 }
 
-void jactorio::renderer::Shader::set_uniform_mat_4f(
+void jactorio::renderer::Shader::SetUniformMat4F(
 	const int& location, glm::mat4& mat) {
 	DEBUG_OPENGL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, &mat[0][0]));
 }

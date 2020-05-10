@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -11,25 +10,24 @@
 
 namespace jactorio::data
 {
-	/**
-	 * The basic abstract class for items
-	 */
-	class Item_base : public Prototype_base
+	///
+	/// \brief Basic abstract class for items
+	class ItemBase : public PrototypeBase
 	{
 	protected:
-		Item_base() = default;
+		ItemBase() = default;
 
-		explicit Item_base(Sprite* sprite)
+		explicit ItemBase(Sprite* sprite)
 			: sprite(sprite) {
 		}
 
 	public:
-		PYTHON_PROP_I(Item_base, Sprite*, sprite, nullptr);
+		PYTHON_PROP_I(ItemBase, Sprite*, sprite, nullptr);
 
-		void post_load_validate() const override;
+		void PostLoadValidate() const override;
 	};
 
-	inline void Item_base::post_load_validate() const {
+	inline void ItemBase::PostLoadValidate() const {
 		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
 	}
 }

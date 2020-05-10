@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 12/21/2019
 
@@ -15,20 +14,20 @@ namespace game
 {
 	TEST(ChunkTile, LayerCopy) {
 		// Copying a chunk tile needs to also make a unique copy of unique_data_
-		const auto entity_proto = std::make_unique<jactorio::data::Resource_entity>(jactorio::data::Resource_entity());
+		const auto entity_proto = std::make_unique<jactorio::data::ResourceEntity>(jactorio::data::ResourceEntity());
 
-		auto* u_data1 = new jactorio::data::Resource_entity_data(10);
+		auto* u_data1 = new jactorio::data::ResourceEntityData(10);
 
-		auto tile_layer = jactorio::game::Chunk_tile_layer();
-		tile_layer.prototype_data = entity_proto.get();
-		tile_layer.unique_data = u_data1;
+		auto tile_layer          = jactorio::game::ChunkTileLayer();
+		tile_layer.prototypeData = entity_proto.get();
+		tile_layer.uniqueData    = u_data1;
 
 		// Copy layer
 		const auto tile_layer_copy = tile_layer;
 
 		// Data should have been allocated differently
-		EXPECT_NE(tile_layer_copy.unique_data, tile_layer.unique_data);
-		EXPECT_NE(tile_layer_copy.unique_data, nullptr);  // Data should have been copied
+		EXPECT_NE(tile_layer_copy.uniqueData, tile_layer.uniqueData);
+		EXPECT_NE(tile_layer_copy.uniqueData, nullptr);  // Data should have been copied
 
 		// Heap allocated data cleaned up by chunk_tile_layer destructors
 	}
@@ -36,51 +35,51 @@ namespace game
 
 	TEST(ChunkTile, LayerMove) {
 		// Moving unique_data will set the original unique_data to nullptr to avoid deletion
-		auto* u_data = new jactorio::data::Resource_entity_data(10);
-		const auto entity_proto = std::make_unique<jactorio::data::Resource_entity>(jactorio::data::Resource_entity());
+		auto* u_data            = new jactorio::data::ResourceEntityData(10);
+		const auto entity_proto = std::make_unique<jactorio::data::ResourceEntity>(jactorio::data::ResourceEntity());
 
-		auto tile_layer = jactorio::game::Chunk_tile_layer();
-		tile_layer.prototype_data = entity_proto.get();  // Prototype data needed to delete unique data
-		tile_layer.unique_data = u_data;
+		auto tile_layer          = jactorio::game::ChunkTileLayer();
+		tile_layer.prototypeData = entity_proto.get();  // Prototype data needed to delete unique data
+		tile_layer.uniqueData    = u_data;
 
 		// MOVE layer
 		const auto tile_layer_new = std::move(tile_layer);
 
-		EXPECT_EQ(tile_layer_new.unique_data, u_data);
-		EXPECT_EQ(tile_layer.unique_data, nullptr);  // Moved into tile_layer_new, this becomes nullptr
+		EXPECT_EQ(tile_layer_new.uniqueData, u_data);
+		EXPECT_EQ(tile_layer.uniqueData, nullptr);  // Moved into tile_layer_new, this becomes nullptr
 
 		// Heap allocated data cleaned up by chunk_tile_layer destructors
 	}
 
 
 	TEST(ChunkTile, TilePrototypesInitialization) {
-		auto ct = jactorio::game::Chunk_tile();
+		auto ct = jactorio::game::ChunkTile();
 
 		// Should all be nullptr
 		for (auto layer : ct.layers) {
-			EXPECT_EQ(layer.prototype_data, nullptr);
+			EXPECT_EQ(layer.prototypeData, nullptr);
 		}
 	}
 
 	TEST(ChunkTile, GetSetChunkLayerProps) {
-		auto ct = jactorio::game::Chunk_tile();
+		auto ct = jactorio::game::ChunkTile();
 
 		{
 			auto tile_proto = jactorio::data::Tile();
 
-			ct.set_tile_prototype(jactorio::game::Chunk_tile::chunkLayer::base, &tile_proto);
+			ct.SetTilePrototype(jactorio::game::ChunkTile::ChunkLayer::base, &tile_proto);
 
 			EXPECT_EQ(
-				ct.get_tile_prototype(jactorio::game::Chunk_tile::chunkLayer::base),
+				ct.GetTilePrototype(jactorio::game::ChunkTile::ChunkLayer::base),
 				&tile_proto);
 		}
 		{
 			auto sprite_proto = jactorio::data::Sprite();
 
-			ct.set_sprite_prototype(jactorio::game::Chunk_tile::chunkLayer::overlay, &sprite_proto);
+			ct.SetSpritePrototype(jactorio::game::ChunkTile::ChunkLayer::overlay, &sprite_proto);
 
 			EXPECT_EQ(
-				ct.get_sprite_prototype(jactorio::game::Chunk_tile::chunkLayer::overlay),
+				ct.GetSpritePrototype(jactorio::game::ChunkTile::ChunkLayer::overlay),
 				&sprite_proto);
 		}
 	}

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 11/09/2019
 
@@ -15,39 +14,39 @@
 namespace game
 {
 	TEST(Chunk, ChunkSetTile) {
-	  constexpr auto chunk_width = jactorio::game::World_data::chunk_width;
+		constexpr auto chunk_width = jactorio::game::WorldData::kChunkWidth;
 		// The tiles pointer is only stored by the Chunk, modifying the original tiles pointer
 		// will modify the tiles of the chunk
 
 		// Mock data
 		const auto sprite_proto = std::make_unique<jactorio::data::Sprite>(jactorio::data::Sprite());
-		const auto tile_proto = std::make_unique<jactorio::data::Tile>(jactorio::data::Tile());
-		tile_proto->sprite = sprite_proto.get();
+		const auto tile_proto   = std::make_unique<jactorio::data::Tile>(jactorio::data::Tile());
+		tile_proto->sprite      = sprite_proto.get();
 
 
 		// Chunk tile 1
-		auto chunk_tile_1 = jactorio::game::Chunk_tile();
+		auto chunk_tile_1 = jactorio::game::ChunkTile();
 
-		const auto tile_layer_1 = jactorio::game::Chunk_tile_layer(tile_proto.get());
-		chunk_tile_1.layers[0] = tile_layer_1;
+		const auto tile_layer_1 = jactorio::game::ChunkTileLayer(tile_proto.get());
+		chunk_tile_1.layers[0]  = tile_layer_1;
 
 
 		// Chunk tile 2
-		auto chunk_tile_2 = jactorio::game::Chunk_tile();
+		auto chunk_tile_2 = jactorio::game::ChunkTile();
 
-		const jactorio::game::Chunk_tile_layer tile_layer_2{};
+		const jactorio::game::ChunkTileLayer tile_layer_2{};
 		chunk_tile_2.layers[0] = tile_layer_2;
 
 
 		// Deleted by chunk
-		auto* tiles = new jactorio::game::Chunk_tile[chunk_width * chunk_width];
-		tiles[0] = chunk_tile_1;
+		auto* tiles = new jactorio::game::ChunkTile[chunk_width * chunk_width];
+		tiles[0]    = chunk_tile_1;
 
 		const jactorio::game::Chunk chunk{0, 0, tiles};
-		EXPECT_EQ(chunk.tiles_ptr()[0].layers[0].prototype_data, tile_layer_1.prototype_data);
+		EXPECT_EQ(chunk.Tiles()[0].layers[0].prototypeData, tile_layer_1.prototypeData);
 
 		tiles[0] = chunk_tile_2;
-		EXPECT_EQ(chunk.tiles_ptr()[0].layers[0].prototype_data, tile_layer_2.prototype_data);
+		EXPECT_EQ(chunk.Tiles()[0].layers[0].prototypeData, tile_layer_2.prototypeData);
 
 
 		// Prototype data in the actual application is managed by data_manager
@@ -58,28 +57,28 @@ namespace game
 
 		const auto chunk_copy = chunk_a;
 		// Should not copy the pointer for tiles
-		EXPECT_NE(chunk_copy.tiles_ptr(), chunk_a.tiles_ptr());
+		EXPECT_NE(chunk_copy.Tiles(), chunk_a.Tiles());
 	}
 
 	TEST(Chunk, ChunkMove) {
 		jactorio::game::Chunk chunk_a{0, 0};
 
 		const auto chunk_move = std::move(chunk_a);
-		EXPECT_EQ(chunk_a.tiles_ptr(), nullptr);
+		EXPECT_EQ(chunk_a.Tiles(), nullptr);
 	}
 
 	TEST(Chunk, GetObjectLayer) {
 		jactorio::game::Chunk chunk_a{0, 0};
 
 		// Should return the layer specified by the index of the enum objectLayer
-		EXPECT_EQ(&chunk_a.get_object(jactorio::game::Chunk::ObjectLayer::debug_overlay), &chunk_a.objects[0]);
+		EXPECT_EQ(&chunk_a.GetObject(jactorio::game::Chunk::ObjectLayer::debug_overlay), &chunk_a.objects[0]);
 	}
 
 	TEST(LogicChunk, GetStructLayer) {
 		jactorio::game::Chunk chunk_a{0, 0};
-		jactorio::game::Logic_chunk l_chunk(&chunk_a);
+		jactorio::game::LogicChunk l_chunk(&chunk_a);
 
 		// Should return the layer specified by the index of the enum objectLayer
-		EXPECT_EQ(&l_chunk.get_struct(jactorio::game::Logic_chunk::structLayer::transport_line), &l_chunk.structs[0]);
+		EXPECT_EQ(&l_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line), &l_chunk.structs[0]);
 	}
 }

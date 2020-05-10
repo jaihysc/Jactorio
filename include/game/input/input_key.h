@@ -1,25 +1,66 @@
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// Created on: 04/23/2020
+
 #ifndef JACTORIO_GAME_INPUT_INPUT_KEY_H
 #define JACTORIO_GAME_INPUT_INPUT_KEY_H
 #pragma once
 
 namespace jactorio::game
 {
-	enum class inputKey
+	enum class InputKey
 	{
 		none,
 
 		// left, right
-		mouse1, mouse2,
-		
-		k0, k1, k2, k3, k4, k5, k6, k7, k8, k9,
-		a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z,
-		grave, tab, space, escape
+		mouse1,
+		mouse2,
+
+		k0,
+		k1,
+		k2,
+		k3,
+		k4,
+		k5,
+		k6,
+		k7,
+		k8,
+		k9,
+		a,
+		b,
+		c,
+		d,
+		e,
+		f,
+		g,
+		h,
+		i,
+		j,
+		k,
+		l,
+		m,
+		n,
+		o,
+		p,
+		q,
+		r,
+		s,
+		t,
+		u,
+		v,
+		w,
+		x,
+		y,
+		z,
+		grave,
+		tab,
+		space,
+		escape
 	};
 
-	enum class inputAction
+	enum class InputAction
 	{
 		none,
-		
+
 		// First pressed down
 		key_down,
 
@@ -30,16 +71,19 @@ namespace jactorio::game
 
 		/// pressed and repeat
 		key_held,
-		
+
 		// Key lifted
 		key_up
 	};
-	
-	enum class inputMod
+
+	enum class InputMod
 	{
 		none,
-		alt, control, shift,
-		super, caps_lk
+		alt,
+		control,
+		shift,
+		super,
+		caps_lk
 	};
 }
 

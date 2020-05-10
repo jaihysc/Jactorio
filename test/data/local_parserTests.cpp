@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/15/2020
 
@@ -13,16 +12,16 @@
 namespace data
 {
 	TEST(LocalParser, Parse) {
-		auto guard = jactorio::core::Resource_guard(jactorio::data::clear_data);
+		auto guard = jactorio::core::ResourceGuard(jactorio::data::ClearData);
 
 		// Setup prototypes
-		jactorio::data::set_directory_prefix("test");
+		jactorio::data::SetDirectoryPrefix("test");
 
 		auto* prototype = new jactorio::data::Sprite();
-		data_raw_add("test_tile", prototype, true);
+		DataRawAdd("test_tile", prototype, true);
 
 		auto* prototype2 = new jactorio::data::Sprite();
-		data_raw_add("test_tile1", prototype2, true);
+		DataRawAdd("test_tile1", prototype2, true);
 
 
 		const std::string str =
@@ -32,18 +31,18 @@ namespace data
 		
 				test_tile1=Test tile 2)";
 
-		jactorio::data::local_parse(str, "test");
+		jactorio::data::LocalParse(str, "test");
 
 		// Validate local was set
-		EXPECT_EQ(prototype->get_localized_name(), "Test tile 1");
-		EXPECT_EQ(prototype2->get_localized_name(), "Test tile 2");
+		EXPECT_EQ(prototype->GetLocalizedName(), "Test tile 1");
+		EXPECT_EQ(prototype2->GetLocalizedName(), "Test tile 2");
 	}
 
 	void expect_err(const std::string& str) {
 		try {
-			jactorio::data::local_parse(str, "asdf");
+			jactorio::data::LocalParse(str, "asdf");
 		}
-		catch (jactorio::data::Data_exception&) {
+		catch (jactorio::data::DataException&) {
 			return;
 		}
 

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -8,9 +7,9 @@
 
 #include <utility>
 
-#include "data/prototype/item/item_base.h"
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
+#include "data/prototype/item/item_base.h"
 
 namespace jactorio::data
 {
@@ -19,29 +18,30 @@ namespace jactorio::data
 
 namespace jactorio::data
 {
-	class Item final : public Item_base
+	class Item final : public ItemBase
 	{
 	public:
+		using ItemStack = uint16_t;
+		static constexpr ItemStack kDefaultStackSize = 50;
+
 		PROTOTYPE_CATEGORY(item);
 
 		Item()
-			: stack_size(50) {
+			: stackSize(kDefaultStackSize) {
 		}
 
 		explicit Item(Sprite* sprite)
-			: Item_base(sprite), stack_size(50) {
+			: ItemBase(sprite), stackSize(kDefaultStackSize) {
 		}
 
 		/// If this item belongs to an entity - otherwise nullptr
-		Entity* entity_prototype = nullptr;
-		dataCategory entity_prototype_category = dataCategory::none;
+		Entity* entityPrototype              = nullptr;
+		DataCategory entityPrototypeCategory = DataCategory::none;
 
 
-		/**
-		 * Number of items which can be together <br>
-		 * Default to 50
-		 */
-		PYTHON_PROP_REF(Item, unsigned short, stack_size)
+		///
+		/// \brief Number of items which can be together
+		PYTHON_PROP_REF(Item, ItemStack, stackSize)
 	};
 
 
@@ -49,7 +49,7 @@ namespace jactorio::data
 	// Item* and amount in current stack
 	// Left: Item prototype
 	// Right: Item count
-	using item_stack = std::pair<Item*, uint16_t>;
+	using ItemStack = std::pair<Item*, Item::ItemStack>;
 }
 
 #endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H

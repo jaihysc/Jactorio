@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -24,26 +23,26 @@
 
 // Inventory
 
-const std::unordered_map<unsigned, jactorio::core::Quad_position>* sprite_positions = nullptr;
-unsigned int tex_id = 0;  // Assigned by openGL
+const std::unordered_map<unsigned, jactorio::core::QuadPosition>* sprite_positions = nullptr;
+unsigned int tex_id                                                                 = 0;  // Assigned by openGL
 
-void jactorio::renderer::imgui_manager::setup_character_data(Renderer_sprites& renderer_sprites) {
-	sprite_positions = &renderer_sprites.get_spritemap(data::Sprite::SpriteGroup::gui).sprite_positions;
-	tex_id = renderer_sprites.get_texture(data::Sprite::SpriteGroup::gui)->get_id();
+void jactorio::renderer::SetupCharacterData(RendererSprites& renderer_sprites) {
+	sprite_positions = &renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::gui).spritePositions;
+	tex_id           = renderer_sprites.GetTexture(data::Sprite::SpriteGroup::gui)->GetId();
 }
 
-jactorio::renderer::imgui_manager::Menu_data jactorio::renderer::imgui_manager::get_menu_data() {
+jactorio::renderer::MenuData jactorio::renderer::GetMenuData() {
 	return {*sprite_positions, tex_id};
 }
 
 
 // Errors
-void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err_title,
-                                                          const std::string& err_message) {
+void jactorio::renderer::ShowErrorPrompt(const std::string& err_title,
+                                         const std::string& err_message) {
 	bool quit = false;
 
 	while (!quit) {
-		Renderer::g_clear();
+		Renderer::GClear();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -64,13 +63,13 @@ void jactorio::renderer::imgui_manager::show_error_prompt(const std::string& err
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		glfwSwapBuffers(window_manager::get_window());  // Done rendering
+		glfwSwapBuffers(GetWindow());  // Done rendering
 		glfwPollEvents();
 	}
 }
 
 
-void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
+void jactorio::renderer::Setup(GLFWwindow* window) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -78,7 +77,7 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
-	io.IniFilename = nullptr;  // Disables imgui saving
+	io.IniFilename                       = nullptr;  // Disables imgui saving
 	io.ConfigWindowsMoveFromTitleBarOnly = true;  //
 
 	// Setup Platform/Renderer bindings
@@ -87,14 +86,14 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 
 
 	// Factorio inspired Imgui style
-	auto& style = ImGui::GetStyle();
-	style.WindowRounding = 0.0f;
-	style.ChildRounding = 0.0f;
-	style.FrameRounding = 0.0f;
-	style.GrabRounding = 0.0f;
-	style.PopupRounding = 0.0f;
+	auto& style             = ImGui::GetStyle();
+	style.WindowRounding    = 0.0f;
+	style.ChildRounding     = 0.0f;
+	style.FrameRounding     = 0.0f;
+	style.GrabRounding      = 0.0f;
+	style.PopupRounding     = 0.0f;
 	style.ScrollbarRounding = 0.0f;
-	style.TabRounding = 0.0f;
+	style.TabRounding       = 0.0f;
 
 	// Borders
 	style.FrameBorderSize = 0.f;
@@ -150,16 +149,16 @@ void jactorio::renderer::imgui_manager::setup(GLFWwindow* window) {
 	LOG_MESSAGE(info, "Imgui initialized");
 }
 
-void draw_menu(jactorio::renderer::gui::menu menu, 
-			   jactorio::game::Player_data& player_data, const jactorio::data::Unique_data_base* unique_data = nullptr) {
-	auto& gui_menu = jactorio::renderer::gui::menus[static_cast<int>(menu)];
+void DrawMenu(jactorio::renderer::Menu menu,
+              jactorio::game::PlayerData& player_data, const jactorio::data::UniqueDataBase* unique_data = nullptr) {
+	auto& gui_menu = jactorio::renderer::menus[static_cast<int>(menu)];
 
 	if (gui_menu.visible) {
-		gui_menu.draw_ptr(player_data, unique_data);
+		gui_menu.drawPtr(player_data, unique_data);
 	}
 }
 
-void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_data, game::Event_data& event) {
+void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, game::EventData& event) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame
@@ -168,38 +167,38 @@ void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_dat
 	ImGui::NewFrame();
 
 	// Has imgui handled a mouse or keyboard event?
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io    = ImGui::GetIO();
 	input_captured = io.WantCaptureKeyboard || io.WantCaptureMouse;
 
 	// Make the font bigger
-	// auto font = ImGui::GetFont();
+	// auto font = ImGetFont();
 	// font->Scale = 1.f;
-	// ImGui::PushFont(font);
-	// ImGui::PopFont();
+	// ImPushFont(font);
+	// ImPopFont();
 
-	draw_menu(gui::menu::debug_menu, player_data);
-	gui::debug_menu_logic(player_data);
+	DrawMenu(Menu::DebugMenu, player_data);
+	DebugMenuLogic(player_data);
 
 	// Draw gui for active entity
 	// Do not draw character and recipe menu while in an entity menu
-	auto* layer = player_data.get_activated_layer();
+	auto* layer = player_data.GetActivatedLayer();
 	if (layer != nullptr) {
-		gui::set_visible(gui::menu::character_menu, false);
+		SetVisible(Menu::CharacterMenu, false);
 
 		// Get the top left corner for non top left multi tiles
-		if (layer->is_multi_tile() && !layer->is_multi_tile_top_left()) {
-			layer = layer->get_multi_tile_parent();
+		if (layer->IsMultiTile() && !layer->IsMultiTileTopLeft()) {
+			layer = layer->GetMultiTileParent();
 		}
 
-		static_cast<const data::Entity*>(layer->prototype_data)->on_r_show_gui(player_data, layer);
+		static_cast<const data::Entity*>(layer->prototypeData)->OnRShowGui(player_data, layer);
 	}
 	else {
-		draw_menu(gui::menu::character_menu, player_data);
+		DrawMenu(Menu::CharacterMenu, player_data);
 	}
 	// Player gui
-	gui::cursor_window(player_data);
-	gui::crafting_queue(player_data);
-	gui::pickup_progressbar(player_data);
+	CursorWindow(player_data);
+	CraftingQueue(player_data);
+	PickupProgressbar(player_data);
 
 	// Render
 	ImGui::Render();
@@ -207,7 +206,7 @@ void jactorio::renderer::imgui_manager::imgui_draw(game::Player_data& player_dat
 
 }
 
-void jactorio::renderer::imgui_manager::imgui_terminate() {
+void jactorio::renderer::ImguiTerminate() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
