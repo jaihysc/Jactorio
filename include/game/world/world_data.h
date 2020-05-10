@@ -77,14 +77,13 @@ namespace jactorio::game
 		using WorldChunksKey = uint64_t;
 
 		/// world_chunks_key correlate to a chunk
-		std::unordered_map<std::tuple<Chunk::ChunkCoord, Chunk::ChunkCoord>, Chunk*,
+		std::unordered_map<std::tuple<Chunk::ChunkCoord, Chunk::ChunkCoord>,
+		                   Chunk,
 		                   core::hash<std::tuple<Chunk::ChunkCoord, Chunk::ChunkCoord>>> worldChunks_;
-
-		mutable std::mutex worldChunksMutex_{};  // Used by methods when accessing world_chunks_
 
 	public:
 		using WorldCoord = int32_t;  // Single world coordinates
-		using WorldPair = std::pair<WorldCoord, WorldCoord>;  // Ordered pair of pocation in the world
+		using WorldPair = std::pair<WorldCoord, WorldCoord>;  // Ordered pair of location in the world
 
 		static constexpr uint8_t kChunkWidth = 32;
 
@@ -101,12 +100,29 @@ namespace jactorio::game
 		// World access
 
 		///
-		/// \brief Adds a chunk into the game world
-		/// Will overwrite existing chunks if they occupy the same position, the overriden chunk will be deleted
-		/// \remark Do NOT delete the provided chunk pointer, it will be automatically deleted
+		/// \brief Copy adds a chunk into the game world
+		/// Will overwrite existing chunks if they occupy the same position
 		/// \param chunk Chunk to be added to the world
 		/// \return Pointer to added chunk
-		Chunk* AddChunk(Chunk* chunk);
+		Chunk* AddChunk(const Chunk& chunk);
+
+		///
+		/// \brief Adds a chunk into the game world
+		/// Will overwrite existing chunks if they occupy the same position
+		/// \param args Additional arguments to be provided alongside chunk_x chunk_y to Chunk constructor
+		/// \return Pointer to added chunk
+		template <typename ... TChunkArgs>
+		Chunk* EmplaceChunk(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y,
+		                    TChunkArgs ... args) {
+			auto conditional = worldChunks_.emplace(std::piecewise_construct,
+			                                        std::make_tuple(chunk_x, chunk_y),
+			                                        std::make_tuple(chunk_x, chunk_y, args...));
+			return &conditional.first->second;
+		}
+
+		///
+		/// \brief Attempts to delete chunk at chunk_x, chunk_y
+		void DeleteChunk(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y);
 
 		///
 		/// \brief Erases, frees memory from all stored chunk data + its subsequent contents and logic chunks
@@ -116,33 +132,68 @@ namespace jactorio::game
 		///
 		/// \brief Retrieves a chunk in game world using chunk coordinates
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* GetChunkC(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y) const;
+		J_NODISCARD Chunk* GetChunkC(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y);
 
 		///
 		/// \brief Retrieves a chunk in game world using chunk coordinates
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* GetChunkC(const Chunk::ChunkPair& chunk_pair) const;
+		J_NODISCARD const Chunk* GetChunkC(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y) const;
+
+
+		///
+		/// \brief Retrieves a chunk in game world using chunk coordinates
+		/// \return nullptr if no chunk exists
+		J_NODISCARD Chunk* GetChunkC(const Chunk::ChunkPair& chunk_pair);
+
+		///
+		/// \brief Retrieves a chunk in game world using chunk coordinates
+		/// \return nullptr if no chunk exists
+		J_NODISCARD const Chunk* GetChunkC(const Chunk::ChunkPair& chunk_pair) const;
 
 
 		///
 		/// Gets the chunk at the specified world coordinate
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* GetChunk(WorldCoord world_x, WorldCoord world_y) const;
+		J_NODISCARD Chunk* GetChunk(WorldCoord world_x, WorldCoord world_y);
 
 		///
 		/// Gets the chunk at the specified world coordinate
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* GetChunk(const WorldPair& world_pair) const;
+		J_NODISCARD const Chunk* GetChunk(WorldCoord world_x, WorldCoord world_y) const;
+
+
+		///
+		/// Gets the chunk at the specified world coordinate
+		/// \return nullptr if no chunk exists
+		J_NODISCARD Chunk* GetChunk(const WorldPair& world_pair);
+
+		///
+		/// Gets the chunk at the specified world coordinate
+		/// \return nullptr if no chunk exists
+		J_NODISCARD const Chunk* GetChunk(const WorldPair& world_pair) const;
+
+		// ======================================================================
 
 		///
 		/// \brief Gets the tile at the specified world coordinate
 		/// \return nullptr if no tile exists
-		J_NODISCARD ChunkTile* GetTile(WorldCoord world_x, WorldCoord world_y) const;
+		J_NODISCARD ChunkTile* GetTile(WorldCoord world_x, WorldCoord world_y);
 
 		///
 		/// \brief Gets the tile at the specified world coordinate
 		/// \return nullptr if no tile exists
-		J_NODISCARD ChunkTile* GetTile(const WorldPair& world_pair) const;
+		J_NODISCARD const ChunkTile* GetTile(WorldCoord world_x, WorldCoord world_y) const;
+
+
+		///
+		/// \brief Gets the tile at the specified world coordinate
+		/// \return nullptr if no tile exists
+		J_NODISCARD ChunkTile* GetTile(const WorldPair& world_pair);
+
+		///
+		/// \brief Gets the tile at the specified world coordinate
+		/// \return nullptr if no tile exists
+		J_NODISCARD const ChunkTile* GetTile(const WorldPair& world_pair) const;
 
 
 		// ==============================================================
@@ -177,30 +228,30 @@ namespace jactorio::game
 		J_NODISCARD LogicChunk* LogicGetChunk(const Chunk* chunk);
 
 		///
+		/// \brief Gets const logic chunk at Chunk* 
+		/// \return nullptr if Logic_chunk does not exist
+		J_NODISCARD const LogicChunk* LogicGetChunk(const Chunk* chunk) const;
+
+
+		///
 		/// \brief Gets logic chunk at World coords 
 		/// \return nullptr if Logic_chunk or chunk does not exist
 		J_NODISCARD LogicChunk* LogicGetChunk(WorldCoord world_x, WorldCoord world_y);
+
+		/// \brief Gets const logic chunk at World coords 
+		/// \return nullptr if Logic_chunk or chunk does not exist
+		J_NODISCARD const LogicChunk* LogicGetChunk(WorldCoord world_x, WorldCoord world_y) const;
+
 
 		///
 		/// \brief Gets logic chunk at World coords 
 		/// \return nullptr if Logic_chunk or chunk does not exist
 		J_NODISCARD LogicChunk* LogicGetChunk(const WorldPair& world_pair);
 
-
-		///
-		/// \brief Gets const logic chunk at Chunk* 
-		/// \return nullptr if Logic_chunk does not exist
-		J_NODISCARD const LogicChunk* LogicGetChunk(const Chunk* chunk) const;
-
-		/// \brief Gets const logic chunk at World coords 
-		/// \return nullptr if Logic_chunk or chunk does not exist
-		J_NODISCARD const LogicChunk* LogicGetChunk(WorldCoord world_x, WorldCoord world_y) const;
-
 		///
 		/// \brief Gets const logic chunk at World coords 
 		/// \return nullptr if Logic_chunk or chunk does not exist
 		J_NODISCARD const LogicChunk* LogicGetChunk(const WorldPair& world_pair) const;
-
 
 		// ======================================================================
 		// World generation | Links to game/world/world_generator.cpp
@@ -208,7 +259,7 @@ namespace jactorio::game
 		int worldGenSeed_ = 1001;
 
 		/// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
-		mutable std::set<std::tuple<int, int>> worldGenChunks_;
+		mutable std::set<Chunk::ChunkPair> worldGenChunks_;
 		mutable std::mutex worldGenQueueMutex_;
 
 	public:

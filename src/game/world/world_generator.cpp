@@ -86,7 +86,7 @@ void GenerateChunk(jactorio::game::WorldData& world_data,
 
 	// Because the renderer is async, a new chunk is only added at the very end to renderer attempting to render nullptr
 	if (chunk == nullptr)
-		world_data.AddChunk(new game::Chunk{chunk_x, chunk_y, tiles});
+		world_data.EmplaceChunk(chunk_x, chunk_y, tiles);
 }
 
 ///
@@ -136,7 +136,7 @@ void Generate(jactorio::game::WorldData& world_data, const int chunk_x, const in
 
 void jactorio::game::WorldData::QueueChunkGeneration(const Chunk::ChunkCoord chunk_x,
                                                      const Chunk::ChunkCoord chunk_y) const {
-	const auto chunk_key = std::tuple<int, int>{+ chunk_x, chunk_y};
+	const auto chunk_key = std::make_pair(chunk_x, chunk_y);
 
 	// Is the chunk already under generation? If so return
 	if (worldGenChunks_.find(chunk_key) != worldGenChunks_.end())

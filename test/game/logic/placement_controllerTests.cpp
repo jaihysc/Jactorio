@@ -83,7 +83,7 @@ namespace game
 				}
 			}
 
-			world_data.AddChunk(new Chunk(0, 0, chunk_tiles));
+			world_data.EmplaceChunk(0, 0, chunk_tiles);
 		}
 
 	protected:

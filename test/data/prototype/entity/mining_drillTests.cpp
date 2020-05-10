@@ -16,7 +16,7 @@ namespace data::prototype
 		jactorio::game::WorldData worldData_{};
 
 		void SetUp() override {
-			worldData_.AddChunk(new jactorio::game::Chunk{0, 0});
+			worldData_.EmplaceChunk(0, 0);
 		}
 
 

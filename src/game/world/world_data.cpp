@@ -5,7 +5,6 @@
 
 #include <cmath>
 #include <future>
-#include <mutex>
 
 void jactorio::game::WorldData::OnTickAdvance() {
 	gameTick_++;
@@ -30,63 +29,72 @@ jactorio::game::ChunkStructLayer::StructCoord jactorio::game::WorldData::ToStruc
 	return fabs(ToChunkCoord(world_coord) * Chunk::kChunkWidth - world_coord);
 }
 
-jactorio::game::Chunk* jactorio::game::WorldData::AddChunk(Chunk* chunk) {
-	const auto position = chunk->GetPosition();
-	const auto coords   = std::tuple<int, int>{position.first, position.second};
+jactorio::game::Chunk* jactorio::game::WorldData::AddChunk(const Chunk& chunk) {
+	const auto position = chunk.GetPosition();
 
-	std::lock_guard<std::mutex> guard(worldChunksMutex_);
+	auto conditional = worldChunks_.emplace(std::make_tuple(position.first, position.second), chunk);
+	return &conditional.first->second;
+}
 
-	// A chunk already exist at this position?
-	if (worldChunks_.find(coords) != worldChunks_.end()) {
-		delete worldChunks_[coords];
-	}
-
-	worldChunks_[coords] = chunk;
-
-	// Return pointer to allocated chunk
-	return chunk;
+void jactorio::game::WorldData::DeleteChunk(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y) {
+	worldChunks_.erase(std::make_tuple(chunk_x, chunk_y));
 }
 
 void jactorio::game::WorldData::ClearChunkData() {
-	std::lock_guard<std::mutex> guard(worldChunksMutex_);
-
-	// The chunk data itself needs to be deleted
-	for (auto& world_chunk : worldChunks_) {
-		delete world_chunk.second;
-	}
 	worldChunks_.clear();
 	logicChunks_.clear();
 }
 
 // ======================================================================
 
-jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x,
-                                                            const Chunk::ChunkCoord chunk_y) const {
-	std::lock_guard<std::mutex> guard(worldChunksMutex_);
+jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x, const Chunk::ChunkCoord chunk_y) {
+	return const_cast<Chunk*>(static_cast<const WorldData&>(*this).GetChunkC(chunk_x, chunk_y));
+}
 
+const jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x,
+                                                                  const Chunk::ChunkCoord chunk_y) const {
 	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
 	if (worldChunks_.find(key) == worldChunks_.end())
 		return nullptr;
 
-	return worldChunks_.at(key);
+	return &worldChunks_.at(key);
 }
 
-jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkPair& chunk_pair) const {
+
+jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkPair& chunk_pair) {
 	return GetChunkC(chunk_pair.first, chunk_pair.second);
 }
 
-jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldCoord world_x, const WorldCoord world_y) const {
+const jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkPair& chunk_pair) const {
+	return GetChunkC(chunk_pair.first, chunk_pair.second);
+}
+
+
+jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldCoord world_x, const WorldCoord world_y) {
 	return GetChunkC(ToChunkCoord(world_x), ToChunkCoord(world_y));
 }
 
-jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldPair& world_pair) const {
+const jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldCoord world_x, const WorldCoord world_y) const {
+	return GetChunkC(ToChunkCoord(world_x), ToChunkCoord(world_y));
+}
+
+
+jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldPair& world_pair) {
+	return GetChunk(world_pair.first, world_pair.second);
+}
+
+const jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldPair& world_pair) const {
 	return GetChunk(world_pair.first, world_pair.second);
 }
 
 // ======================================================================
 
-jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(WorldCoord world_x, WorldCoord world_y) const {
+jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldCoord world_x, const WorldCoord world_y) {
+	return const_cast<ChunkTile*>(static_cast<const WorldData&>(*this).GetTile(world_x, world_y));
+}
+
+const jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(WorldCoord world_x, WorldCoord world_y) const {
 	// The negative chunks start at -1, unlike positive chunks at 0
 	// Thus add 1 to become 0 so the calculations can be performed
 	bool negative_x = false;
@@ -110,7 +118,7 @@ jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(WorldCoord world_x
 	chunk_index_y += static_cast<float>(world_y) / Chunk::kChunkWidth;
 
 
-	auto* chunk = GetChunkC(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
+	const auto* chunk = GetChunkC(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
 
 	if (chunk != nullptr) {
 		int tile_index_x = static_cast<int>(world_x) % Chunk::kChunkWidth;
@@ -129,9 +137,15 @@ jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(WorldCoord world_x
 	return nullptr;
 }
 
-jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldPair& world_pair) const {
+
+jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldPair& world_pair) {
 	return GetTile(world_pair.first, world_pair.second);
 }
+
+const jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldPair& world_pair) const {
+	return GetTile(world_pair.first, world_pair.second);
+}
+
 
 // ======================================================================
 // Logic chunks
@@ -149,16 +163,10 @@ std::map<const jactorio::game::Chunk*, jactorio::game::LogicChunk>& jactorio::ga
 	return logicChunks_;
 }
 
+// ======================================================================
+
 jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const Chunk* chunk) {
 	return const_cast<LogicChunk*>(static_cast<const WorldData&>(*this).LogicGetChunk(chunk));
-}
-
-jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldCoord world_x, const WorldCoord world_y) {
-	return LogicGetChunk(GetChunk(world_x, world_y));
-}
-
-jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldPair& world_pair) {
-	return LogicGetChunk(world_pair.first, world_pair.second);
 }
 
 const jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const Chunk* chunk) const {
@@ -168,9 +176,19 @@ const jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const
 	return &logicChunks_.at(chunk);
 }
 
+
+jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldCoord world_x, const WorldCoord world_y) {
+	return LogicGetChunk(GetChunk(world_x, world_y));
+}
+
 const jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldCoord world_x,
                                                                            const WorldCoord world_y) const {
 	return LogicGetChunk(GetChunk(world_x, world_y));
+}
+
+
+jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldPair& world_pair) {
+	return LogicGetChunk(world_pair.first, world_pair.second);
 }
 
 const jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldPair& world_pair) const {

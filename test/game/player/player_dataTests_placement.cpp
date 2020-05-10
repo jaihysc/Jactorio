@@ -126,8 +126,7 @@ namespace game
 
 		tiles[1].SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, entity2.get());
 
-		worldData_.AddChunk(
-			new jactorio::game::Chunk(0, 0, tiles));
+		worldData_.EmplaceChunk(0, 0, tiles);
 
 		// Edge cases
 		playerData_.TryPlaceEntity(worldData_, 0, 0);  // Placing with no items selected
@@ -189,7 +188,7 @@ namespace game
 		tiles[0].SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, entity.get());
 
 
-		worldData_.AddChunk(new jactorio::game::Chunk(0, 0, tiles));
+		worldData_.EmplaceChunk(0, 0, tiles);
 
 		// If selected item's entity is placeable, do not set activated_layer
 		jactorio::data::ItemStack selected_item = {&item, 2};
@@ -243,8 +242,7 @@ namespace game
 		tiles[0].SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, entity.get());
 
 
-		worldData_.AddChunk(
-			new jactorio::game::Chunk(0, 0, tiles));
+		worldData_.EmplaceChunk(0, 0, tiles);
 
 		// Entity is non-placeable, therefore when clicking on an entity, it will get activated_layer
 		jactorio::data::ItemStack selected_item = {&item, 2};
@@ -285,7 +283,7 @@ namespace game
 			                jactorio::data::Orientation::up);
 		}
 
-		worldData_.AddChunk(new jactorio::game::Chunk(0, 0, tiles));
+		worldData_.EmplaceChunk(0, 0, tiles);
 
 
 		// 
@@ -330,8 +328,7 @@ namespace game
 
 		// Create world with the resource entity at 0, 0
 		auto* tiles = new jactorio::game::ChunkTile[1024];
-		worldData_.AddChunk(
-			new jactorio::game::Chunk(0, 0, tiles));
+		worldData_.EmplaceChunk(0, 0, tiles);
 
 
 		tiles[0].SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::resource, entity);
@@ -372,8 +369,7 @@ namespace game
 		auto item = jactorio::data::Item();
 		// Create world with the resource entity at 0, 0
 		auto* tiles = new jactorio::game::ChunkTile[1024];
-		worldData_.AddChunk(
-			new jactorio::game::Chunk(0, 0, tiles));
+		worldData_.EmplaceChunk(0, 0, tiles);
 
 
 		// Resource entity
@@ -423,7 +419,7 @@ namespace game
 		auto* tiles = new jactorio::game::ChunkTile[1024];
 		tiles[0].SetTilePrototype(jactorio::game::ChunkTile::ChunkLayer::base, &tile_proto);
 
-		worldData_.AddChunk(new jactorio::game::Chunk{0, 0, tiles});
+		worldData_.AddChunk(jactorio::game::Chunk{0, 0, tiles});
 
 
 		// Create entity
@@ -456,7 +452,7 @@ namespace game
 		auto* tiles = new jactorio::game::ChunkTile[1024];
 		tiles[0].SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, entity);
 
-		worldData_.AddChunk(new jactorio::game::Chunk{0, 0, tiles});
+		worldData_.AddChunk(jactorio::game::Chunk{0, 0, tiles});
 
 
 		playerData_.TryPickup(worldData_, 0, 0, 60);
@@ -507,7 +503,7 @@ namespace game
 		auto* tiles = new jactorio::game::ChunkTile[1024];
 		tiles[0].SetTilePrototype(jactorio::game::ChunkTile::ChunkLayer::base, &tile_proto);
 
-		worldData_.AddChunk(new jactorio::game::Chunk{0, 0, tiles});
+		worldData_.EmplaceChunk(0, 0, tiles);
 
 
 		// Create entity
@@ -589,7 +585,7 @@ namespace game
 		entity_proto->SetItem(&item);
 		jactorio::data::DataRawAdd("", entity_proto);
 
-		worldData_.AddChunk(new jactorio::game::Chunk{0, 0});
+		worldData_.AddChunk(jactorio::game::Chunk{0, 0});
 
 		worldData_.GetTile(1, 1)
 		          ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::base).prototypeData = &tile_proto;
@@ -676,7 +672,7 @@ namespace game
 		entity_proto->SetItem(&item);
 		jactorio::data::DataRawAdd("", entity_proto);
 
-		worldData_.AddChunk(new jactorio::game::Chunk{0, 0});
+		worldData_.AddChunk(jactorio::game::Chunk{0, 0});
 
 		// Set tiles so entity can be placed on it
 		for (int y = 1; y < 4; ++y) {

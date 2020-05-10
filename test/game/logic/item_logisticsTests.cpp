@@ -12,7 +12,7 @@ namespace game
 {
 	TEST(ItemLogistics, InsertContainerEntity) {
 		jactorio::game::WorldData world_data{};
-		world_data.AddChunk(new jactorio::game::Chunk(0, 0));
+		world_data.AddChunk(jactorio::game::Chunk(0, 0));
 
 		// Deleted by chunk tile layer
 		auto* container_data = new jactorio::data::ContainerEntityData(10);
@@ -36,14 +36,14 @@ namespace game
 
 	class ItemLogisticsTransportLineTest : public testing::Test
 	{
-		jactorio::game::WorldData world_data_{};
+		jactorio::game::WorldData worldData_{};
 
 	protected:
 		jactorio::game::TransportLineSegment* segment_ = nullptr;
 
 		// Creates a transport line with orientation at (4, 4)
-		jactorio::data::TransportLineData create_transport_line(const jactorio::data::Orientation orientation) {
-			world_data_.AddChunk(new jactorio::game::Chunk(0, 0));
+		jactorio::data::TransportLineData CreateTransportLine(const jactorio::data::Orientation orientation) {
+			worldData_.AddChunk(jactorio::game::Chunk(0, 0));
 
 			segment_ = new jactorio::game::TransportLineSegment{
 				orientation,
@@ -51,14 +51,14 @@ namespace game
 				2
 			};
 
-			world_data_.GetTile(4, 4)
+			worldData_.GetTile(4, 4)
 			           ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData = segment_;
 
 			return jactorio::data::TransportLineData{*segment_};
 		}
 
-		void transport_line_insert(const jactorio::data::Orientation orientation,
-		                           jactorio::data::TransportLineData& line_data) const {
+		static void TransportLineInsert(const jactorio::data::Orientation orientation,
+		                                  jactorio::data::TransportLineData& line_data) {
 			jactorio::data::Item item{};
 			jactorio::game::item_logistics::InsertTransportBelt({&item, 1},
 			                                                    line_data,
@@ -68,55 +68,55 @@ namespace game
 
 	TEST_F(ItemLogisticsTransportLineTest, InsertTransportLineUp) {
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::up);
+			auto line = CreateTransportLine(jactorio::data::Orientation::up);
 
-			transport_line_insert(jactorio::data::Orientation::up, line);
+			TransportLineInsert(jactorio::data::Orientation::up, line);
 			EXPECT_EQ(segment_->right.size(), 1);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::up);
+			auto line = CreateTransportLine(jactorio::data::Orientation::up);
 
-			transport_line_insert(jactorio::data::Orientation::right, line);
+			TransportLineInsert(jactorio::data::Orientation::right, line);
 			EXPECT_EQ(segment_->left.size(), 1);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::up);
+			auto line = CreateTransportLine(jactorio::data::Orientation::up);
 
-			transport_line_insert(jactorio::data::Orientation::down, line);
+			TransportLineInsert(jactorio::data::Orientation::down, line);
 			EXPECT_EQ(segment_->left.size(), 0);
 			EXPECT_EQ(segment_->right.size(), 0);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::up);
+			auto line = CreateTransportLine(jactorio::data::Orientation::up);
 
-			transport_line_insert(jactorio::data::Orientation::left, line);
+			TransportLineInsert(jactorio::data::Orientation::left, line);
 			EXPECT_EQ(segment_->right.size(), 1);
 		}
 	}
 
 	TEST_F(ItemLogisticsTransportLineTest, InsertTransportLineRight) {
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::right);
+			auto line = CreateTransportLine(jactorio::data::Orientation::right);
 
-			transport_line_insert(jactorio::data::Orientation::up, line);
+			TransportLineInsert(jactorio::data::Orientation::up, line);
 			EXPECT_EQ(segment_->right.size(), 1);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::right);
+			auto line = CreateTransportLine(jactorio::data::Orientation::right);
 
-			transport_line_insert(jactorio::data::Orientation::right, line);
+			TransportLineInsert(jactorio::data::Orientation::right, line);
 			EXPECT_EQ(segment_->right.size(), 1);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::right);
+			auto line = CreateTransportLine(jactorio::data::Orientation::right);
 
-			transport_line_insert(jactorio::data::Orientation::down, line);
+			TransportLineInsert(jactorio::data::Orientation::down, line);
 			EXPECT_EQ(segment_->left.size(), 1);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::right);
+			auto line = CreateTransportLine(jactorio::data::Orientation::right);
 
-			transport_line_insert(jactorio::data::Orientation::left, line);
+			TransportLineInsert(jactorio::data::Orientation::left, line);
 			EXPECT_EQ(segment_->left.size(), 0);
 			EXPECT_EQ(segment_->right.size(), 0);
 		}
@@ -124,56 +124,56 @@ namespace game
 
 	TEST_F(ItemLogisticsTransportLineTest, InsertTransportLineDown) {
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::down);
+			auto line = CreateTransportLine(jactorio::data::Orientation::down);
 
-			transport_line_insert(jactorio::data::Orientation::up, line);
+			TransportLineInsert(jactorio::data::Orientation::up, line);
 			EXPECT_EQ(segment_->left.size(), 0);
 			EXPECT_EQ(segment_->right.size(), 0);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::down);
+			auto line = CreateTransportLine(jactorio::data::Orientation::down);
 
-			transport_line_insert(jactorio::data::Orientation::right, line);
+			TransportLineInsert(jactorio::data::Orientation::right, line);
 			EXPECT_EQ(segment_->right.size(), 1);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::down);
+			auto line = CreateTransportLine(jactorio::data::Orientation::down);
 
-			transport_line_insert(jactorio::data::Orientation::down, line);
+			TransportLineInsert(jactorio::data::Orientation::down, line);
 			EXPECT_EQ(segment_->right.size(), 1);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::down);
+			auto line = CreateTransportLine(jactorio::data::Orientation::down);
 
-			transport_line_insert(jactorio::data::Orientation::left, line);
+			TransportLineInsert(jactorio::data::Orientation::left, line);
 			EXPECT_EQ(segment_->left.size(), 1);
 		}
 	}
 
 	TEST_F(ItemLogisticsTransportLineTest, InsertTransportLineLeft) {
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::left);
+			auto line = CreateTransportLine(jactorio::data::Orientation::left);
 
-			transport_line_insert(jactorio::data::Orientation::up, line);
+			TransportLineInsert(jactorio::data::Orientation::up, line);
 			EXPECT_EQ(segment_->left.size(), 1);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::left);
+			auto line = CreateTransportLine(jactorio::data::Orientation::left);
 
-			transport_line_insert(jactorio::data::Orientation::right, line);
+			TransportLineInsert(jactorio::data::Orientation::right, line);
 			EXPECT_EQ(segment_->left.size(), 0);
 			EXPECT_EQ(segment_->right.size(), 0);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::left);
+			auto line = CreateTransportLine(jactorio::data::Orientation::left);
 
-			transport_line_insert(jactorio::data::Orientation::down, line);
+			TransportLineInsert(jactorio::data::Orientation::down, line);
 			EXPECT_EQ(segment_->right.size(), 1);
 		}
 		{
-			auto line = create_transport_line(jactorio::data::Orientation::left);
+			auto line = CreateTransportLine(jactorio::data::Orientation::left);
 
-			transport_line_insert(jactorio::data::Orientation::left, line);
+			TransportLineInsert(jactorio::data::Orientation::left, line);
 			EXPECT_EQ(segment_->right.size(), 1);
 		}
 	}
@@ -182,7 +182,7 @@ namespace game
 
 	TEST(ItemLogistics, CanAcceptItem) {
 		jactorio::game::WorldData world_data{};
-		world_data.AddChunk(new jactorio::game::Chunk{0, 0});
+		world_data.AddChunk(jactorio::game::Chunk{0, 0});
 
 		// Empty tile cannot be inserted into
 		{

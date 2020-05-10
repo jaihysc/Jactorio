@@ -72,7 +72,7 @@ jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::Wo
 
 	for (int y = 0; y < 2 * this->miningRadius + this->tileHeight; ++y) {
 		for (int x = 0; x < 2 * this->miningRadius + this->tileWidth; ++x) {
-			game::ChunkTile* tile =
+			const game::ChunkTile* tile =
 				world_data.GetTile(world_pair.first + x, world_pair.second + y);
 
 			game::ChunkTileLayer& resource = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
@@ -108,7 +108,7 @@ bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
 
 	for (int y = 0; y < 2 * this->miningRadius + this->tileHeight; ++y) {
 		for (int x = 0; x < 2 * this->miningRadius + this->tileWidth; ++x) {
-			game::ChunkTile* tile =
+			const game::ChunkTile* tile =
 				world_data.GetTile(coords.first + x, coords.second + y);
 
 			if (tile->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData != nullptr)

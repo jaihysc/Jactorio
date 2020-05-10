@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 
+#include "data/prototype/sprite.h"
 #include "game/world/chunk.h"
 #include "game/world/world_data.h"
 
@@ -46,7 +47,7 @@ namespace game
 
 	TEST_F(WorldDataTest, WorldAddChunk) {
 		// Chunks initialized with empty tiles
-		auto* chunk = new jactorio::game::Chunk{5, 1};
+		const auto chunk = jactorio::game::Chunk{5, 1};
 
 		// Returns pointer to chunk which was added
 		const auto* added_chunk = worldData_.AddChunk(chunk);
@@ -62,10 +63,8 @@ namespace game
 
 	TEST_F(WorldDataTest, WorldAddChunkNegative) {
 		// Chunks initialized with empty tiles
-		auto* chunk = new jactorio::game::Chunk{-5, -1};
-
 		// Returns pointer to chunk which was added
-		auto* added_chunk = worldData_.AddChunk(chunk);
+		auto* added_chunk = worldData_.AddChunk(jactorio::game::Chunk{-5, -1});
 
 		// Chunk knows its own location
 		EXPECT_EQ(added_chunk->GetPosition().first, -5);
@@ -78,33 +77,39 @@ namespace game
 	}
 
 
-	TEST_F(WorldDataTest, WorldAddChunkOverride) {
-		// Chunks initialized with empty tiles
-		auto* chunk  = new jactorio::game::Chunk{5, 1};
-		auto* chunk2 = new jactorio::game::Chunk{5, 1};
+	TEST_F(WorldDataTest, WorldOverrideChunk) {
+		// Adding a chunk to an existing location SHOULD NOT overwrite it
+		const auto chunk  = jactorio::game::Chunk{5, 1};
+		const auto chunk2 = jactorio::game::Chunk{5, 1};
 
-		// Adding a chunk to an existing location overwrites it
-		auto* added_chunk  = worldData_.AddChunk(chunk);
-		auto* added_chunk2 = worldData_.AddChunk(chunk2);
+		// Set a sprite at chunk2 so it can be tested
+		jactorio::data::Sprite sprite{};
+		chunk2.Tiles()[0].SetSpritePrototype(jactorio::game::ChunkTile::ChunkLayer::overlay, &sprite);
 
-		// chunk should have been deleted as it was overwritten
-		// No test exists to test if chunk is valid since one cannot determine if pointer is valid
+		worldData_.AddChunk(chunk);
+		worldData_.AddChunk(chunk2);
 
-		// Retrieved chunk should be chunk2
-		EXPECT_NE(added_chunk, added_chunk2);
+		EXPECT_NE(worldData_.GetChunkC(5, 1)->Tiles()[0]
+				  .GetSpritePrototype(jactorio::game::ChunkTile::ChunkLayer::overlay),
+				  &sprite);
+	}
 
-		// Returned pointers are equal
-		EXPECT_EQ(added_chunk, chunk);
-		EXPECT_EQ(added_chunk2, chunk2);
+	TEST_F(WorldDataTest, WorldDeleteChunk) {
+		worldData_.EmplaceChunk(3, 2);
+		worldData_.DeleteChunk(3, 2);
+
+		EXPECT_EQ(worldData_.GetChunkC(3, 2), nullptr);
+
+		// No effect, no chunk
+		worldData_.DeleteChunk(2, 2);
 	}
 
 	TEST_F(WorldDataTest, WorldGetChunkChunkCoords) {
-		auto* chunk             = new jactorio::game::Chunk{5, 1};
-		const auto* added_chunk = worldData_.AddChunk(chunk);
+		const auto* added_chunk = worldData_.EmplaceChunk(5, 1);
 
 		EXPECT_EQ(worldData_.GetChunkC(0, 0), nullptr);
 		EXPECT_EQ(worldData_.GetChunkC(5, 1), added_chunk);
-		EXPECT_EQ(worldData_.GetChunkC(5, 1), chunk);
+		EXPECT_EQ(worldData_.GetChunkC(5, 1), added_chunk);
 	}
 
 	TEST_F(WorldDataTest, GetTileWorldCoords) {
@@ -116,7 +121,7 @@ namespace game
 		{
 			auto* tiles = new jactorio::game::ChunkTile[32 * 32];
 			tiles[0]    = chunk_tile;
-			worldData_.AddChunk(new jactorio::game::Chunk(0, 0, tiles));
+			worldData_.EmplaceChunk(0, 0, tiles);
 
 			EXPECT_EQ(worldData_.GetTile(0, 0), &tiles[0]);
 			EXPECT_NE(worldData_.GetTile(0, 1), &tiles[0]);
@@ -130,7 +135,7 @@ namespace game
 		{
 			auto* tiles = new jactorio::game::ChunkTile[chunk_width * chunk_width];
 			tiles[33]   = chunk_tile;
-			worldData_.AddChunk(new jactorio::game::Chunk(-1, -1, tiles));
+			worldData_.EmplaceChunk(-1, -1, tiles);
 
 			EXPECT_EQ(worldData_.GetTile(-31, -31), &tiles[33]);
 			EXPECT_NE(worldData_.GetTile(-31, -32), &tiles[33]);
@@ -144,7 +149,7 @@ namespace game
 		{
 			auto* tiles = new jactorio::game::ChunkTile[chunk_width * chunk_width];
 			tiles[0]    = chunk_tile;
-			worldData_.AddChunk(new jactorio::game::Chunk(-1, 0, tiles));
+			worldData_.EmplaceChunk(-1, 0, tiles);
 
 			EXPECT_EQ(worldData_.GetTile(-32, 0), &tiles[0]);
 			EXPECT_NE(worldData_.GetTile(-31, 0), &tiles[0]);
@@ -157,14 +162,14 @@ namespace game
 
 	TEST_F(WorldDataTest, GetChunkWorldCoords) {
 		{
-			const auto* chunk = worldData_.AddChunk(new jactorio::game::Chunk(0, 0));
+			const auto* chunk = worldData_.EmplaceChunk(0, 0);
 			EXPECT_EQ(worldData_.GetChunk(31, 31), chunk);
 
 			EXPECT_EQ(worldData_.GetChunk({31, 31}), chunk);
 		}
 
 		{
-			const auto* chunk = worldData_.AddChunk(new jactorio::game::Chunk(-1, 0));
+			const auto* chunk = worldData_.EmplaceChunk(-1, 0);
 			EXPECT_EQ(worldData_.GetChunk(-1, 0), chunk);
 
 			EXPECT_EQ(worldData_.GetChunk({-1, 0}), chunk);
@@ -173,7 +178,7 @@ namespace game
 
 
 	TEST_F(WorldDataTest, ClearChunkData) {
-		auto* chunk             = new jactorio::game::Chunk{6, 6};
+		const auto chunk        = jactorio::game::Chunk{6, 6};
 		const auto* added_chunk = worldData_.AddChunk(chunk);
 
 		EXPECT_EQ(worldData_.GetChunkC(6, 6), added_chunk);

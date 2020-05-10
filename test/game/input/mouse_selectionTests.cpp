@@ -25,7 +25,7 @@ namespace game
 
 		void SetUp() override {
 			playerData_.SetPlayerWorld(&worldData_);
-			worldData_.AddChunk(new jactorio::game::Chunk(0, 0));
+			worldData_.AddChunk(jactorio::game::Chunk(0, 0));
 		}
 
 		void TearDown() override {
@@ -259,7 +259,7 @@ namespace game
 		public:
 			PROTOTYPE_CATEGORY(test);
 
-			mutable bool rGetSpriteCalled_ = false;
+			mutable bool rGetSpriteCalled = false;
 
 			J_NODISCARD std::pair<uint16_t, uint16_t> MapPlacementOrientation(jactorio::data::Orientation,
 			                                                                  jactorio::game::WorldData&,
@@ -287,7 +287,7 @@ namespace game
 			// Overriden to give nullptr
 			std::pair<jactorio::data::Sprite*, jactorio::data::RenderableData::frame_t>
 			OnRGetSprite(jactorio::data::UniqueDataBase* /*unique_data*/, jactorio::GameTickT) const override {
-				rGetSpriteCalled_ = true;
+				rGetSpriteCalled = true;
 				return {nullptr, 0};
 			}
 		};
@@ -299,6 +299,6 @@ namespace game
 		mouseSelection_.DrawOverlay(playerData_, &entity, 0, 0, jactorio::data::Orientation::up);
 
 		// On_r_get_sprite should have been called 
-		EXPECT_TRUE(entity.rGetSpriteCalled_);
+		EXPECT_TRUE(entity.rGetSpriteCalled);
 	}
 }
