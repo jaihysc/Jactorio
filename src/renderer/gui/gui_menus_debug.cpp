@@ -24,106 +24,11 @@ bool show_demo_window         = false;
 bool show_item_spawner_window = false;
 
 // Game
-bool show_transport_line_info = false;
+bool show_transport_line_info     = false;
 
 void jactorio::renderer::DebugMenuLogic(game::PlayerData& player_data) {
-	auto& world_data = player_data.GetPlayerWorld();
-
-	if (show_transport_line_info) {
+	if (show_transport_line_info)
 		DebugTransportLineInfo(player_data);
-
-		// Sprite representing the update point
-		auto* sprite_stop =
-			data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-red");
-		auto* sprite_moving =
-			data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-green");
-		auto* sprite_left_moving =
-			data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-aqua");
-		auto* sprite_right_moving =
-			data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-pink");
-
-		auto* sprite_up =
-			data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-up");
-		auto* sprite_right =
-			data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-right");
-		auto* sprite_down =
-			data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-down");
-		auto* sprite_left =
-			data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-left");
-
-		// Get all update points and add it to the chunk's objects for drawing
-		for (auto& pair : world_data.LogicGetAllChunks()) {
-			auto& l_chunk = pair.second;
-
-			auto& object_layer = l_chunk.chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
-			object_layer.clear();
-
-			for (auto& l_struct : l_chunk.GetStruct(game::LogicChunk::StructLayer::transport_line)) {
-				auto* line_segment = static_cast<game::TransportLineSegment*>(l_struct.uniqueData);
-
-				float pos_x;
-				float pos_y;
-				float segment_len_x;
-				float segment_len_y;
-
-				data::Sprite* direction_sprite;
-				data::Sprite* outline_sprite;
-
-				// Correspond the direction with a sprite representing the direction
-				switch (line_segment->direction) {
-				default:
-					assert(false);  // Missing case label
-
-				case data::Orientation::up:
-					pos_x = l_struct.positionX;
-					pos_y         = l_struct.positionY;
-					segment_len_x = 1;
-					segment_len_y = line_segment->length;
-
-					direction_sprite = sprite_up;
-					break;
-				case data::Orientation::right:
-					pos_x = l_struct.positionX - line_segment->length + 1;
-					pos_y         = l_struct.positionY;
-					segment_len_x = line_segment->length;
-					segment_len_y = 1;
-
-					direction_sprite = sprite_right;
-					break;
-				case data::Orientation::down:
-					pos_x = l_struct.positionX;
-					pos_y         = l_struct.positionY - line_segment->length + 1;
-					segment_len_x = 1;
-					segment_len_y = line_segment->length;
-
-					direction_sprite = sprite_down;
-					break;
-				case data::Orientation::left:
-					pos_x = l_struct.positionX;
-					pos_y         = l_struct.positionY;
-					segment_len_x = line_segment->length;
-					segment_len_y = 1;
-
-					direction_sprite = sprite_left;
-					break;
-				}
-
-
-				// Correspond a color of rectangle
-				if (line_segment->IsActiveLeft() && line_segment->IsActiveRight())
-					outline_sprite = sprite_moving;  // Both moving
-				else if (line_segment->IsActiveLeft())
-					outline_sprite = sprite_left_moving;  // Only left move
-				else if (line_segment->IsActiveRight())
-					outline_sprite = sprite_right_moving;  // Only right moving
-				else
-					outline_sprite = sprite_stop;  // None moving
-
-				object_layer.emplace_back(direction_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
-				object_layer.emplace_back(outline_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
-			}
-		}
-	}
 
 	if (show_demo_window)
 		ImGui::ShowDemoWindow();
@@ -152,6 +57,15 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 
 		ImGui::Text("Layer count | Tile: %d   Object: %d",
 		            game::ChunkTile::kTileLayerCount, game::Chunk::kObjectLayerCount);
+
+		if (ImGui::Button("Clear debug overlays")) {
+			for (auto& pair : player_data.GetPlayerWorld().LogicGetAllChunks()) {
+				auto& l_chunk = pair.second;
+
+				auto& object_layer = l_chunk.chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
+				object_layer.clear();
+			}
+		}
 	}
 
 	if (ImGui::CollapsingHeader("Game")) {
@@ -186,7 +100,9 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 			for (auto& pair : world_data.LogicGetAllChunks()) {
 				auto& l_chunk = pair.second;
 				for (auto& transport_line : l_chunk.GetStruct(game::LogicChunk::StructLayer::transport_line)) {
-					static_cast<game::TransportLineSegment*>(transport_line.uniqueData)->itemVisible = true;
+					auto* segment = static_cast<game::TransportSegment*>(transport_line.uniqueData);
+					segment->left.visible = true;
+					segment->right.visible = true;
 				}
 			}
 		}
@@ -249,7 +165,104 @@ void jactorio::renderer::DebugItemSpawner(game::PlayerData& player_data) {
 }
 
 std::pair<int32_t, int32_t> last_valid_line_segment{};
-bool use_last_valid_line_segment = false;
+bool use_last_valid_line_segment = true;
+bool show_transport_segments = false;
+
+void ShowTransportSegments(jactorio::game::WorldData& world_data) {
+	using namespace jactorio;
+
+	// Sprite representing the update point
+	auto* sprite_stop =
+		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-red");
+	auto* sprite_moving =
+		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-green");
+	auto* sprite_left_moving =
+		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-aqua");
+	auto* sprite_right_moving =
+		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-pink");
+
+	auto* sprite_up =
+		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-up");
+	auto* sprite_right =
+		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-right");
+	auto* sprite_down =
+		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-down");
+	auto* sprite_left =
+		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-left");
+
+	// Get all update points and add it to the chunk's objects for drawing
+	for (auto& pair : world_data.LogicGetAllChunks()) {
+		auto& l_chunk = pair.second;
+
+		auto& object_layer = l_chunk.chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
+		object_layer.clear();
+
+		for (auto& l_struct : l_chunk.GetStruct(game::LogicChunk::StructLayer::transport_line)) {
+			auto* line_segment = static_cast<game::TransportSegment*>(l_struct.uniqueData);
+
+			float pos_x;
+			float pos_y;
+			float segment_len_x;
+			float segment_len_y;
+
+			data::Sprite* direction_sprite;
+			data::Sprite* outline_sprite;
+
+			// Correspond the direction with a sprite representing the direction
+			switch (line_segment->direction) {
+			default:
+				assert(false);  // Missing case label
+
+			case data::Orientation::up:
+				pos_x = l_struct.positionX;
+				pos_y         = l_struct.positionY;
+				segment_len_x = 1;
+				segment_len_y = line_segment->length;
+
+				direction_sprite = sprite_up;
+				break;
+			case data::Orientation::right:
+				pos_x = l_struct.positionX - line_segment->length + 1;
+				pos_y         = l_struct.positionY;
+				segment_len_x = line_segment->length;
+				segment_len_y = 1;
+
+				direction_sprite = sprite_right;
+				break;
+			case data::Orientation::down:
+				pos_x = l_struct.positionX;
+				pos_y         = l_struct.positionY - line_segment->length + 1;
+				segment_len_x = 1;
+				segment_len_y = line_segment->length;
+
+				direction_sprite = sprite_down;
+				break;
+			case data::Orientation::left:
+				pos_x = l_struct.positionX;
+				pos_y         = l_struct.positionY;
+				segment_len_x = line_segment->length;
+				segment_len_y = 1;
+
+				direction_sprite = sprite_left;
+				break;
+			}
+
+
+			// Correspond a color of rectangle
+			if (line_segment->left.IsActive() && line_segment->right.IsActive())
+				outline_sprite = sprite_moving;  // Both moving
+			else if (line_segment->left.IsActive())
+				outline_sprite = sprite_left_moving;  // Only left move
+			else if (line_segment->right.IsActive())
+				outline_sprite = sprite_right_moving;  // Only right moving
+			else
+				outline_sprite = sprite_stop;  // None moving
+
+			object_layer.emplace_back(direction_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
+			object_layer.emplace_back(outline_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
+		}
+	}
+}
 
 void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	ImGui::Begin("Transport Line Info");
@@ -259,9 +272,14 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	                                                                 selected_tile.first, selected_tile.second);
 
 	// Try to use current selected line segment first, otherwise used the last valid if checked
-	game::TransportLineSegment* segment_ptr = nullptr;
+	game::TransportSegment* segment_ptr = nullptr;
 
+	ImGui::Checkbox("Show transport line segments", &show_transport_segments);
 	ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
+
+	if (show_transport_segments)
+		ShowTransportSegments(player_data.GetPlayerWorld());
+
 	if (data) {
 		last_valid_line_segment = selected_tile;
 		segment_ptr             = &data->lineSegment.get();
@@ -281,7 +299,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	}
 	else {
 		assert(data != nullptr);
-		game::TransportLineSegment& segment = *segment_ptr;
+		game::TransportSegment& segment = *segment_ptr;
 
 		// Show transport line properties
 		// Show memory addresses
@@ -296,24 +314,25 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 			ImGui::Text("Target segment: %s", segment.targetSegment ? sstream2.str().c_str() : "NULL");
 		}
 
+		ImGui::Text("Item offset %d", segment.itemOffset);
 		ImGui::Text("Length, Index: %d %d", segment.length, data->lineSegmentIndex);
 
 		{
 			std::string s;
 			switch (segment.terminationType) {
-			case game::TransportLineSegment::TerminationType::straight:
+			case game::TransportSegment::TerminationType::straight:
 				s = "Straight";
 				break;
-			case game::TransportLineSegment::TerminationType::bend_left:
+			case game::TransportSegment::TerminationType::bend_left:
 				s = "Bend left";
 				break;
-			case game::TransportLineSegment::TerminationType::bend_right:
+			case game::TransportSegment::TerminationType::bend_right:
 				s = "Bend right";
 				break;
-			case game::TransportLineSegment::TerminationType::left_only:
+			case game::TransportSegment::TerminationType::left_only:
 				s = "Left side";
 				break;
-			case game::TransportLineSegment::TerminationType::right_only:
+			case game::TransportSegment::TerminationType::right_only:
 				s = "Right side";
 				break;
 			default:
@@ -361,15 +380,15 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 
 		// Display items
 		ImGui::Text("Left ----------");
-		ImGui::Text("Status: %s", segment.IsActiveLeft() ? "Active" : "Stopped");
-		for (auto& item : segment.left) {
+		ImGui::Text("Status: %s", segment.left.IsActive() ? "Active" : "Stopped");
+		for (auto& item : segment.left.lane) {
 			ImGui::Text("%s %5.5f", item.second->name.c_str(), item.first.getAsDouble());
 		}
 
 		ImGui::Separator();
 		ImGui::Text("Right ----------");
-		ImGui::Text("Status: %s", segment.IsActiveRight() ? "Active" : "Stopped");
-		for (auto& item : segment.right) {
+		ImGui::Text("Status: %s", segment.right.IsActive() ? "Active" : "Stopped");
+		for (auto& item : segment.right.lane) {
 			ImGui::Text("%s %5.5f", item.second->name.c_str(), item.first.getAsDouble());
 		}
 

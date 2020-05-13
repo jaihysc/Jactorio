@@ -191,7 +191,7 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 
 void PrepareTransportSegmentData(jactorio::renderer::RendererLayer* layer,
                                  const double chunk_y_offset, const double chunk_x_offset,
-                                 const jactorio::game::TransportLineSegment* line_segment,
+                                 const jactorio::game::TransportSegment* line_segment,
                                  std::deque<jactorio::game::TransportLineItem>& line_segment_side,
                                  double offset_x, double offset_y) {
 	using namespace jactorio::game;
@@ -265,14 +265,17 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 			logic_chunk->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
 
 		for (const auto& line_layer : transport_line_layer) {
-			auto* line_segment = static_cast<jactorio::game::TransportLineSegment*>(line_layer.uniqueData);
+			auto* line_segment = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
+
+			double offset_x;
+			double offset_y;
 
 			// Don't render if items are not marked visible! Wow!
-			if (!line_segment->itemVisible)
-				continue;
+			if (!line_segment->left.visible)
+				goto prepare_right;
 
-			double offset_x = line_layer.positionX;
-			double offset_y = line_layer.positionY;
+			offset_x = line_layer.positionX;
+			offset_y = line_layer.positionY;
 
 			// Left
 			// The offsets for straight are always applied to bend left and right
@@ -293,7 +296,7 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 
 			// Left side
 			switch (line_segment->terminationType) {
-			case jactorio::game::TransportLineSegment::TerminationType::straight:
+			case jactorio::game::TransportSegment::TerminationType::straight:
 				switch (line_segment->direction) {
 				case jactorio::data::Orientation::up:
 					offset_y -= jactorio::game::kLineLeftUpStraightItemOffset;
@@ -310,7 +313,7 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 				}
 				break;
 
-			case jactorio::game::TransportLineSegment::TerminationType::bend_left:
+			case jactorio::game::TransportSegment::TerminationType::bend_left:
 				switch (line_segment->direction) {
 				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::kLineUpBlLItemOffsetY;
@@ -327,7 +330,7 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 				}
 				break;
 
-			case jactorio::game::TransportLineSegment::TerminationType::bend_right:
+			case jactorio::game::TransportSegment::TerminationType::bend_right:
 				switch (line_segment->direction) {
 				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::kLineUpBrLItemOffsetY;
@@ -345,8 +348,8 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 				break;
 
 				// Side insertion
-			case jactorio::game::TransportLineSegment::TerminationType::right_only:
-			case jactorio::game::TransportLineSegment::TerminationType::left_only:
+			case jactorio::game::TransportSegment::TerminationType::right_only:
+			case jactorio::game::TransportSegment::TerminationType::left_only:
 				switch (line_segment->direction) {
 				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::kLineUpSingleSideItemOffsetY;
@@ -365,8 +368,11 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 			}
 			PrepareTransportSegmentData(layer,
 			                            chunk_y_offset, chunk_x_offset,
-			                            line_segment, line_segment->left, offset_x, offset_y);
+			                            line_segment, line_segment->left.lane, offset_x, offset_y);
 
+		prepare_right:
+			if (!line_segment->right.visible)
+				continue;
 			// Right
 			offset_x = line_layer.positionX;
 			offset_y = line_layer.positionY;
@@ -390,7 +396,7 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 
 			// Right side
 			switch (line_segment->terminationType) {
-			case jactorio::game::TransportLineSegment::TerminationType::straight:
+			case jactorio::game::TransportSegment::TerminationType::straight:
 				switch (line_segment->direction) {
 				case jactorio::data::Orientation::up:
 					offset_y -= jactorio::game::kLineLeftUpStraightItemOffset;
@@ -407,7 +413,7 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 				}
 				break;
 
-			case jactorio::game::TransportLineSegment::TerminationType::bend_left:
+			case jactorio::game::TransportSegment::TerminationType::bend_left:
 				switch (line_segment->direction) {
 				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::kLineUpBrRItemOffsetY;
@@ -424,7 +430,7 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 				}
 				break;
 
-			case jactorio::game::TransportLineSegment::TerminationType::bend_right:
+			case jactorio::game::TransportSegment::TerminationType::bend_right:
 				switch (line_segment->direction) {
 				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::kLineUpBrRItemOffsetY;
@@ -442,8 +448,8 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 				break;
 
 				// Side insertion
-			case jactorio::game::TransportLineSegment::TerminationType::right_only:
-			case jactorio::game::TransportLineSegment::TerminationType::left_only:
+			case jactorio::game::TransportSegment::TerminationType::right_only:
+			case jactorio::game::TransportSegment::TerminationType::left_only:
 				switch (line_segment->direction) {
 				case jactorio::data::Orientation::up:
 					offset_y += jactorio::game::kLineUpSingleSideItemOffsetY;
@@ -462,12 +468,12 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 			}
 			PrepareTransportSegmentData(layer,
 			                            chunk_y_offset, chunk_x_offset,
-			                            line_segment, line_segment->right, offset_x, offset_y);
+			                            line_segment, line_segment->right.lane, offset_x, offset_y);
 		}
 	}
 
-	auto& objects = chunk->objects[layer_index];
-	for (auto& object_layer : objects) {
+	const auto& objects = chunk->objects[layer_index];
+	for (const auto& object_layer : objects) {
 		const unsigned int internal_id = object_layer_get_sprite_id_func[layer_index](object_layer);
 
 		// Internal id of 0 indicates no tile

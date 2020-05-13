@@ -32,7 +32,7 @@ namespace jactorio::game
 		                      const data::Orientation orientation)
 			: destinationUniqueData_(unique_data),
 			  orientation_(orientation),
-			  insertionFunction(insert_function) {
+			  insertionFunction_(insert_function) {
 			assert(insert_function != nullptr);
 		}
 
@@ -43,13 +43,13 @@ namespace jactorio::game
 		data::Orientation orientation_;
 
 		/// \brief Function for inserting at destination, from one below
-		InsertFunc insertionFunction;
+		InsertFunc insertionFunction_;
 
 	public:
 		///
 		///	 \brief Insert provided item at destination
 		bool Insert(const data::ItemStack& item_stack) const {
-			return insertionFunction(item_stack, destinationUniqueData_, orientation_);
+			return insertionFunction_(item_stack, destinationUniqueData_, orientation_);
 		}
 	};
 }

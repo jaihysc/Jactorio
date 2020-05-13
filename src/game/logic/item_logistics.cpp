@@ -12,7 +12,7 @@
 // ======================================================================
 
 #define ITEM_INSERT_FUNCTION(name_)\
-	bool jactorio::game::item_logistics::name_(const jactorio::data::ItemStack& item_stack,\
+	bool jactorio::game::name_(const jactorio::data::ItemStack& item_stack,\
 											   jactorio::data::UniqueDataBase& unique_data,\
 											   const jactorio::data::Orientation orientation)
 
@@ -110,14 +110,15 @@ ITEM_INSERT_FUNCTION(InsertTransportBelt) {
 		break;
 	}
 
-	// TODO offset needs to be calculated correctly if segment is not 1 long
 	constexpr double insertion_offset = 0.5;
-	return line_data.lineSegment.get().TryInsertItem(use_line_left, insertion_offset, item_stack.first);
+	return line_data.lineSegment.get().TryInsertItem(use_line_left, 
+													 line_data.lineSegmentIndex + insertion_offset,
+													 item_stack.first);
 }
 
 #undef ITEM_INSERT_FUNCTION
 
-jactorio::game::ItemInsertDestination::InsertFunc jactorio::game::item_logistics::CanAcceptItem(
+jactorio::game::ItemInsertDestination::InsertFunc jactorio::game::CanAcceptItem(
 	const WorldData& world_data,
 	const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
 

@@ -161,9 +161,9 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 		return;
 
 	const game::ItemInsertDestination::InsertFunc output_item_func =
-		game::item_logistics::CanAcceptItem(world_data,
-		                                    emit_world_coords.first,
-		                                    emit_world_coords.second);
+		game::CanAcceptItem(world_data,
+		                    emit_world_coords.first,
+		                    emit_world_coords.second);
 
 	// Do not register callback to mine items if there is no valid entity to output items to
 	if (output_item_func) {

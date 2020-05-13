@@ -14,10 +14,10 @@ namespace game
 {
 	// For line_logic and line_logic_precision
 	void TestItemPositions(jactorio::game::WorldData& world_data,
-	                       const jactorio::game::TransportLineSegment* up_segment,
-	                       const jactorio::game::TransportLineSegment* right_segment,
-	                       const jactorio::game::TransportLineSegment* down_segment,
-	                       const jactorio::game::TransportLineSegment* left_segment) {
+	                       const jactorio::game::TransportSegment* up_segment,
+	                       const jactorio::game::TransportSegment* right_segment,
+	                       const jactorio::game::TransportSegment* down_segment,
+	                       const jactorio::game::TransportSegment* left_segment) {
 		// Moving left at a speed of 0.01f per update, in 250 updates
 		// Should reach end of transport line - Next update will change its direction to up
 
@@ -25,29 +25,29 @@ namespace game
 		for (int i = 0; i < 360; ++i) {
 			TransportLineLogicUpdate(world_data);
 		}
-		ASSERT_FLOAT_EQ(up_segment->right.front().first.getAsDouble(), 0.f);
-		ASSERT_EQ(up_segment->right.size(), 1);
+		ASSERT_FLOAT_EQ(up_segment->right.lane.front().first.getAsDouble(), 0.f);
+		ASSERT_EQ(up_segment->right.lane.size(), 1);
 
 		// End of R | 4 - 2(0.7) / 0.01 = 260 updates
 		for (int i = 0; i < 260; ++i) {
 			TransportLineLogicUpdate(world_data);
 		}
-		ASSERT_FLOAT_EQ(right_segment->right.front().first.getAsDouble(), 0.f);
-		ASSERT_EQ(right_segment->right.size(), 1);
+		ASSERT_FLOAT_EQ(right_segment->right.lane.front().first.getAsDouble(), 0.f);
+		ASSERT_EQ(right_segment->right.lane.size(), 1);
 
 		// End of D
 		for (int i = 0; i < 360; ++i) {
 			TransportLineLogicUpdate(world_data);
 		}
-		ASSERT_FLOAT_EQ(down_segment->right.front().first.getAsDouble(), 0.f);
-		ASSERT_EQ(down_segment->right.size(), 1);
+		ASSERT_FLOAT_EQ(down_segment->right.lane.front().first.getAsDouble(), 0.f);
+		ASSERT_EQ(down_segment->right.lane.size(), 1);
 
 		// End of L 4 - 2(0.7)
 		for (int i = 0; i < 260; ++i) {
 			TransportLineLogicUpdate(world_data);
 		}
-		ASSERT_FLOAT_EQ(left_segment->right.front().first.getAsDouble(), 0.f);
-		ASSERT_EQ(left_segment->right.size(), 1);
+		ASSERT_FLOAT_EQ(left_segment->right.lane.front().first.getAsDouble(), 0.f);
+		ASSERT_EQ(left_segment->right.lane.size(), 1);
 	}
 
 	class TransportLineControllerTest : public testing::Test
@@ -74,21 +74,21 @@ namespace game
 		kTransportBeltProto->speed = 0.01f;
 
 		// Segments (Logic chunk must be created first)
-		auto* up_segment = new jactorio::game::TransportLineSegment(
+		auto* up_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::up,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			5);
-		auto* right_segment = new jactorio::game::TransportLineSegment(
+		auto* right_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::right,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			4);
-		auto* down_segment = new jactorio::game::TransportLineSegment(
+		auto* down_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::down,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			5);
-		auto* left_segment = new jactorio::game::TransportLineSegment(
+		auto* left_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::left,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			4);
 
 		// What each transport segment empties into
@@ -194,21 +194,21 @@ namespace game
 		kTransportBeltProto->speed = j_belt_speed;  // <---
 
 		// Segments (Logic chunk must be created first)
-		auto* up_segment = new jactorio::game::TransportLineSegment(
+		auto* up_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::up,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			5);
-		auto* right_segment = new jactorio::game::TransportLineSegment(
+		auto* right_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::right,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			5);
-		auto* down_segment = new jactorio::game::TransportLineSegment(
+		auto* down_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::down,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			5);
-		auto* left_segment = new jactorio::game::TransportLineSegment(
+		auto* left_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::left,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			5);
 
 		// What each transport segment empties into
@@ -242,23 +242,23 @@ namespace game
 		// 1 update
 		// first item moved to up segment
 		TransportLineLogicUpdate(worldData_);
-		ASSERT_EQ(up_segment->left.size(), 1);
-		ASSERT_EQ(left_segment->left.size(), 2);
+		ASSERT_EQ(up_segment->left.lane.size(), 1);
+		ASSERT_EQ(left_segment->left.lane.size(), 2);
 
-		EXPECT_FLOAT_EQ(up_segment->left[0].first.getAsDouble(), 4.40 - j_belt_speed);
-		EXPECT_FLOAT_EQ(left_segment->left[0].first.getAsDouble(), 0.25 - j_belt_speed);
-		EXPECT_FLOAT_EQ(left_segment->left[1].first.getAsDouble(), 0.25);
+		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 4.40 - j_belt_speed);
+		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.25 - j_belt_speed);
+		EXPECT_FLOAT_EQ(left_segment->left.lane[1].first.getAsDouble(), 0.25);
 
 		// 2 updates | 0.12
 		for (int i = 0; i < 2; ++i) {
 			TransportLineLogicUpdate(worldData_);
 		}
-		ASSERT_EQ(up_segment->left.size(), 1);
-		ASSERT_EQ(left_segment->left.size(), 2);
+		ASSERT_EQ(up_segment->left.lane.size(), 1);
+		ASSERT_EQ(left_segment->left.lane.size(), 2);
 
-		EXPECT_FLOAT_EQ(up_segment->left[0].first.getAsDouble(), 4.40 - (3 * j_belt_speed));
-		EXPECT_FLOAT_EQ(left_segment->left[0].first.getAsDouble(), 0.25 - (3 * j_belt_speed));
-		EXPECT_FLOAT_EQ(left_segment->left[1].first.getAsDouble(), 0.25);
+		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 4.40 - (3 * j_belt_speed));
+		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.25 - (3 * j_belt_speed));
+		EXPECT_FLOAT_EQ(left_segment->left.lane[1].first.getAsDouble(), 0.25);
 
 
 		// 2 updates | Total distance = 4(0.06) = 0.24
@@ -266,14 +266,14 @@ namespace game
 		for (int i = 0; i < 2; ++i) {
 			TransportLineLogicUpdate(worldData_);
 		}
-		ASSERT_EQ(up_segment->left.size(), 2);
-		ASSERT_EQ(left_segment->left.size(), 1);
+		ASSERT_EQ(up_segment->left.lane.size(), 2);
+		ASSERT_EQ(left_segment->left.lane.size(), 1);
 
-		EXPECT_FLOAT_EQ(up_segment->left[0].first.getAsDouble(), 4.40 - (5 * j_belt_speed));
-		EXPECT_FLOAT_EQ(up_segment->left[1].first.getAsDouble(), 0.25);  // Spacing maintained
+		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 4.40 - (5 * j_belt_speed));
+		EXPECT_FLOAT_EQ(up_segment->left.lane[1].first.getAsDouble(), 0.25);  // Spacing maintained
 		// Item 2 was 0.01 -> -0.05
 		// | -0.05 - 0.20 | = 0.25 Maintains distance
-		EXPECT_FLOAT_EQ(left_segment->left[0].first.getAsDouble(), 0.20);
+		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.20);
 	}
 
 
@@ -292,13 +292,13 @@ namespace game
 		 *    |
 		 */
 
-		auto* up_segment = new jactorio::game::TransportLineSegment(
+		auto* up_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::up,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			4);
-		auto* right_segment = new jactorio::game::TransportLineSegment(
+		auto* right_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::right,
-			jactorio::game::TransportLineSegment::TerminationType::straight,
+			jactorio::game::TransportSegment::TerminationType::straight,
 			4);
 
 		up_segment->targetSegment = right_segment;
@@ -323,36 +323,36 @@ namespace game
 		TransportLineLogicUpdate(worldData_);
 
 
-		EXPECT_EQ(up_segment->left.size(), 2);
-		EXPECT_FLOAT_EQ(up_segment->left[0].first.getAsDouble(), 0.99f);
-		EXPECT_FLOAT_EQ(up_segment->left[1].first.getAsDouble(), 1.f);
+		EXPECT_EQ(up_segment->left.lane.size(), 2);
+		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 0.99f);
+		EXPECT_FLOAT_EQ(up_segment->left.lane[1].first.getAsDouble(), 1.f);
 
-		EXPECT_EQ(right_segment->left.size(), 1);
+		EXPECT_EQ(right_segment->left.lane.size(), 1);
 		// Moved forward once 4 - 0.3 - 0.01
-		EXPECT_FLOAT_EQ(right_segment->left[0].first.getAsDouble(), 3.69f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 3.69f);
 
 		// Transfer second item after (1 / 0.01) + 1 update - 1 update (Already moved once above)
 		for (int i = 0; i < 100; ++i) {
 			TransportLineLogicUpdate(worldData_);
 		}
 
-		EXPECT_EQ(up_segment->left.size(), 1);
-		EXPECT_EQ(right_segment->left.size(), 2);
+		EXPECT_EQ(up_segment->left.lane.size(), 1);
+		EXPECT_EQ(right_segment->left.lane.size(), 2);
 		// Spacing of 1 tile between the items is maintained across belts
-		EXPECT_FLOAT_EQ(right_segment->left[0].first.getAsDouble(), 2.69f);
-		EXPECT_FLOAT_EQ(right_segment->left[1].first.getAsDouble(), 1.f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 2.69f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[1].first.getAsDouble(), 1.f);
 
 
 		// Third item
 		for (int i = 0; i < 100; ++i) {
 			TransportLineLogicUpdate(worldData_);
 		}
-		EXPECT_EQ(up_segment->left.size(), 0);
-		EXPECT_EQ(right_segment->left.size(), 3);
+		EXPECT_EQ(up_segment->left.lane.size(), 0);
+		EXPECT_EQ(right_segment->left.lane.size(), 3);
 
-		EXPECT_FLOAT_EQ(right_segment->left[0].first.getAsDouble(), 1.69f);
-		EXPECT_FLOAT_EQ(right_segment->left[1].first.getAsDouble(), 1.f);
-		EXPECT_FLOAT_EQ(right_segment->left[2].first.getAsDouble(), 1.f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 1.69f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[1].first.getAsDouble(), 1.f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[2].first.getAsDouble(), 1.f);
 	}
 
 	TEST_F(TransportLineControllerTest, LineLogicCompressedRightBend) {
@@ -370,13 +370,13 @@ namespace game
 		 *    |
 		 */
 
-		auto* up_segment = new jactorio::game::TransportLineSegment(
+		auto* up_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::up,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			4);
-		auto* right_segment = new jactorio::game::TransportLineSegment(
+		auto* right_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::right,
-			jactorio::game::TransportLineSegment::TerminationType::straight,
+			jactorio::game::TransportSegment::TerminationType::straight,
 			4);
 
 		up_segment->targetSegment = right_segment;
@@ -398,12 +398,12 @@ namespace game
 		TransportLineLogicUpdate(worldData_);
 
 
-		EXPECT_EQ(up_segment->left.size(), 1);
-		EXPECT_FLOAT_EQ(up_segment->left[0].first.getAsDouble(), 0.24f);
+		EXPECT_EQ(up_segment->left.lane.size(), 1);
+		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 0.24f);
 
-		EXPECT_EQ(right_segment->left.size(), 1);
+		EXPECT_EQ(right_segment->left.lane.size(), 1);
 		// Moved forward once 4 - 0.3 - 0.01
-		EXPECT_FLOAT_EQ(right_segment->left[0].first.getAsDouble(), 3.69f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 3.69f);
 
 
 		// Transfer second item after (0.25 / 0.01) + 1 update - 1 update (Already moved once above)
@@ -411,11 +411,11 @@ namespace game
 			TransportLineLogicUpdate(worldData_);
 		}
 
-		EXPECT_EQ(up_segment->left.size(), 0);
-		EXPECT_EQ(right_segment->left.size(), 2);
+		EXPECT_EQ(up_segment->left.lane.size(), 0);
+		EXPECT_EQ(right_segment->left.lane.size(), 2);
 		// Spacing is maintained across belts
-		EXPECT_FLOAT_EQ(right_segment->left[0].first.getAsDouble(), 3.44f);
-		EXPECT_FLOAT_EQ(right_segment->left[1].first.getAsDouble(), 0.25f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 3.44f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[1].first.getAsDouble(), 0.25f);
 	}
 
 	TEST_F(TransportLineControllerTest, LineLogicTransitionStraight) {
@@ -426,13 +426,13 @@ namespace game
 
 		kTransportBeltProto->speed = 0.01f;
 
-		auto* segment_1 = new jactorio::game::TransportLineSegment(
+		auto* segment_1 = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::left,
-			jactorio::game::TransportLineSegment::TerminationType::straight,
+			jactorio::game::TransportSegment::TerminationType::straight,
 			4);
-		auto* segment_2 = new jactorio::game::TransportLineSegment(
+		auto* segment_2 = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::left,
-			jactorio::game::TransportLineSegment::TerminationType::straight,
+			jactorio::game::TransportSegment::TerminationType::straight,
 			4);
 
 		segment_2->targetSegment = segment_1;
@@ -456,11 +456,11 @@ namespace game
 			TransportLineLogicUpdate(worldData_);
 		}
 
-		EXPECT_EQ(segment_2->left.size(), 0);
-		EXPECT_EQ(segment_2->right.size(), 0);
+		EXPECT_EQ(segment_2->left.lane.size(), 0);
+		EXPECT_EQ(segment_2->right.lane.size(), 0);
 		// 3.99 tiles from the end of this transport line
-		EXPECT_FLOAT_EQ(segment_1->left[0].first.getAsDouble(), 3.99);
-		EXPECT_FLOAT_EQ(segment_1->right[0].first.getAsDouble(), 3.99);
+		EXPECT_FLOAT_EQ(segment_1->left.lane[0].first.getAsDouble(), 3.99);
+		EXPECT_FLOAT_EQ(segment_1->right.lane[0].first.getAsDouble(), 3.99);
 	}
 
 	TEST_F(TransportLineControllerTest, LineLogicStopAtEndOfLine) {
@@ -470,9 +470,9 @@ namespace game
 
 		kTransportBeltProto->speed = 0.01f;
 
-		auto* segment = new jactorio::game::TransportLineSegment(
+		auto* segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::left,
-			jactorio::game::TransportLineSegment::TerminationType::straight,
+			jactorio::game::TransportSegment::TerminationType::straight,
 			10);
 
 		{
@@ -490,31 +490,31 @@ namespace game
 			TransportLineLogicUpdate(worldData_);
 		}
 
-		EXPECT_EQ(segment->lIndex, 0);
-		EXPECT_FLOAT_EQ(segment->left[0].first.getAsDouble(), 0);
+		EXPECT_EQ(segment->left.index, 0);
+		EXPECT_FLOAT_EQ(segment->left.lane[0].first.getAsDouble(), 0);
 
 		// On the next update, with no target segment, first item is kept at 0, second item untouched
 		// move index to 2 (was 0) as it has a distance greater than item_width
 		TransportLineLogicUpdate(worldData_);
 
 
-		EXPECT_EQ(segment->lIndex, 2);
-		EXPECT_FLOAT_EQ(segment->left[0].first.getAsDouble(), 0);
-		EXPECT_FLOAT_EQ(segment->left[1].first.getAsDouble(), jactorio::game::kItemSpacing);
-		EXPECT_FLOAT_EQ(segment->left[2].first.getAsDouble(), jactorio::game::kItemSpacing + 0.99f);
+		EXPECT_EQ(segment->left.index, 2);
+		EXPECT_FLOAT_EQ(segment->left.lane[0].first.getAsDouble(), 0);
+		EXPECT_FLOAT_EQ(segment->left.lane[1].first.getAsDouble(), jactorio::game::kItemSpacing);
+		EXPECT_FLOAT_EQ(segment->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing + 0.99f);
 
 		// After 0.2 + 0.99 / 0.01 updates, the Third item will not move in following updates
 		for (int j = 0; j < 99; ++j) {
 			TransportLineLogicUpdate(worldData_);
 		}
-		EXPECT_FLOAT_EQ(segment->left[2].first.getAsDouble(), jactorio::game::kItemSpacing);
+		EXPECT_FLOAT_EQ(segment->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
 
 		// Index set to 3 (indicating the current items should not be moved)
 		// Should not move after further updates
 		TransportLineLogicUpdate(worldData_);
 
-		EXPECT_EQ(segment->lIndex, 3);
-		EXPECT_FLOAT_EQ(segment->left[2].first.getAsDouble(), jactorio::game::kItemSpacing);
+		EXPECT_EQ(segment->left.index, 3);
+		EXPECT_FLOAT_EQ(segment->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
 
 
 		// Updates not do nothing as index is at 3, where no item exists
@@ -537,13 +537,13 @@ namespace game
 		 *    |
 		 */
 
-		auto* up_segment = new jactorio::game::TransportLineSegment(
+		auto* up_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::up,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			4);
-		auto* right_segment = new jactorio::game::TransportLineSegment(
+		auto* right_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::right,
-			jactorio::game::TransportLineSegment::TerminationType::straight,
+			jactorio::game::TransportSegment::TerminationType::straight,
 			4);
 
 		up_segment->targetSegment = right_segment;
@@ -570,15 +570,15 @@ namespace game
 			TransportLineLogicUpdate(worldData_);
 		}
 
-		EXPECT_FLOAT_EQ(up_segment->right.front().first.getAsDouble(), 0);
+		EXPECT_FLOAT_EQ(up_segment->right.lane.front().first.getAsDouble(), 0);
 	}
 
 	TEST_F(TransportLineControllerTest, LineLogicItemSpacing) {
 		// A minimum distance of kItemSpacing is maintained between items
 
-		auto* right_segment = new jactorio::game::TransportLineSegment(
+		auto* right_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::right,
-			jactorio::game::TransportLineSegment::TerminationType::bend_right,
+			jactorio::game::TransportSegment::TerminationType::bend_right,
 			4);
 
 		auto& right = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
@@ -589,8 +589,8 @@ namespace game
 		right_segment->AppendItem(true, 0.f, kItemProto.get());  // Insert behind previous item
 
 		// Check that second item has a minimum distance of kItemSpacing
-		EXPECT_FLOAT_EQ(right_segment->left[0].first.getAsDouble(), 0.f);
-		EXPECT_FLOAT_EQ(right_segment->left[1].first.getAsDouble(), jactorio::game::kItemSpacing);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.f);
+		EXPECT_FLOAT_EQ(right_segment->left.lane[1].first.getAsDouble(), jactorio::game::kItemSpacing);
 	}
 
 	TEST_F(TransportLineControllerTest, LineLogicTransitionSideLeft) {
@@ -611,13 +611,13 @@ namespace game
 
 
 		// Segments (Logic chunk must be created first)
-		auto* right_segment = new jactorio::game::TransportLineSegment(
+		auto* right_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::right,
-			jactorio::game::TransportLineSegment::TerminationType::right_only,
+			jactorio::game::TransportSegment::TerminationType::right_only,
 			5);
-		auto* down_segment = new jactorio::game::TransportLineSegment(
+		auto* down_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::down,
-			jactorio::game::TransportLineSegment::TerminationType::straight,
+			jactorio::game::TransportSegment::TerminationType::straight,
 			10);
 
 		right_segment->targetSegment = down_segment;
@@ -642,18 +642,18 @@ namespace game
 		TransportLineLogicUpdate(worldData_);
 
 		// Since the target belt is empty, both A + B inserts into right lane
-		EXPECT_EQ(right_segment->left.size(), 2);
-		EXPECT_EQ(right_segment->left[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
+		EXPECT_EQ(right_segment->left.lane.size(), 2);
+		EXPECT_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
 
-		EXPECT_EQ(right_segment->right.size(), 2);
-		EXPECT_EQ(right_segment->right[0].first.getAsDouble(), 0.2);
+		EXPECT_EQ(right_segment->right.lane.size(), 2);
+		EXPECT_EQ(right_segment->right.lane[0].first.getAsDouble(), 0.2);
 
 
-		ASSERT_EQ(down_segment->right.size(), 2);
+		ASSERT_EQ(down_segment->right.lane.size(), 2);
 		// 10 - 0.7 - 0.05
-		EXPECT_FLOAT_EQ(down_segment->right[0].first.getAsDouble(), 9.25f);
+		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.25f);
 		// (10 - 0.3 - 0.05) - (10 - 0.7 - 0.05)
-		EXPECT_FLOAT_EQ(down_segment->right[1].first.getAsDouble(), 0.4f);
+		EXPECT_FLOAT_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4f);
 
 
 		// ======================================================================
@@ -661,28 +661,28 @@ namespace game
 		for (int j = 0; j < 4; ++j) {
 			TransportLineLogicUpdate(worldData_);
 		}
-		EXPECT_EQ(right_segment->left[0].first.getAsDouble(), 0.0);
-		EXPECT_EQ(right_segment->right[0].first.getAsDouble(), 0.0);
+		EXPECT_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.0);
+		EXPECT_EQ(right_segment->right.lane[0].first.getAsDouble(), 0.0);
 
-		EXPECT_FLOAT_EQ(down_segment->right[0].first.getAsDouble(), 9.05f);
+		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.05f);
 
 
 		// ======================================================================
 		// Transition items
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_EQ(right_segment->left.size(), 1);
-		EXPECT_EQ(right_segment->left[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
+		EXPECT_EQ(right_segment->left.lane.size(), 1);
+		EXPECT_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
 
 
 		// ======================================================================
 		// Right lane (B) stops, left (A) takes priority
-		EXPECT_EQ(right_segment->right.size(), 2);  // Unmoved
-		EXPECT_EQ(right_segment->right[0].first.getAsDouble(), 0.f);
+		EXPECT_EQ(right_segment->right.lane.size(), 2);  // Unmoved
+		EXPECT_EQ(right_segment->right.lane[0].first.getAsDouble(), 0.f);
 
-		ASSERT_EQ(down_segment->right.size(), 3);
-		EXPECT_FLOAT_EQ(down_segment->right[0].first.getAsDouble(), 9.00f);
-		EXPECT_FLOAT_EQ(down_segment->right[1].first.getAsDouble(), 0.4f);
-		EXPECT_FLOAT_EQ(down_segment->right[2].first.getAsDouble(), 0.25f);
+		ASSERT_EQ(down_segment->right.lane.size(), 3);
+		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.00f);
+		EXPECT_FLOAT_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4f);
+		EXPECT_FLOAT_EQ(down_segment->right.lane[2].first.getAsDouble(), 0.25f);
 
 
 		// ======================================================================
@@ -690,12 +690,12 @@ namespace game
 		for (int j = 0; j < 4 + 13 + 1; ++j) {  // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
 			TransportLineLogicUpdate(worldData_);
 		}
-		EXPECT_EQ(right_segment->left.size(), 0);
-		EXPECT_EQ(right_segment->right.size(), 1);  // Woke and moved
+		EXPECT_EQ(right_segment->left.lane.size(), 0);
+		EXPECT_EQ(right_segment->right.lane.size(), 1);  // Woke and moved
 
-		ASSERT_EQ(down_segment->right.size(), 5);
-		EXPECT_FLOAT_EQ(down_segment->right[0].first.getAsDouble(), 8.10f);
-		EXPECT_FLOAT_EQ(down_segment->right[3].first.getAsDouble(), 0.25f);
+		ASSERT_EQ(down_segment->right.lane.size(), 5);
+		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 8.10f);
+		EXPECT_FLOAT_EQ(down_segment->right.lane[3].first.getAsDouble(), 0.25f);
 
 	}
 
@@ -717,13 +717,13 @@ namespace game
 
 
 		// Segments (Logic chunk must be created first)
-		auto* left_segment = new jactorio::game::TransportLineSegment(
+		auto* left_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::left,
-			jactorio::game::TransportLineSegment::TerminationType::right_only,
+			jactorio::game::TransportSegment::TerminationType::right_only,
 			5);
-		auto* up_segment = new jactorio::game::TransportLineSegment(
+		auto* up_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::down,
-			jactorio::game::TransportLineSegment::TerminationType::straight,
+			jactorio::game::TransportSegment::TerminationType::straight,
 			10);
 
 		left_segment->targetSegment = up_segment;
@@ -751,18 +751,18 @@ namespace game
 		TransportLineLogicUpdate(worldData_);
 
 		// Since the target belt is empty, both A + B inserts into right lane
-		EXPECT_EQ(left_segment->left.size(), 2);
-		EXPECT_EQ(left_segment->left[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
+		EXPECT_EQ(left_segment->left.lane.size(), 2);
+		EXPECT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
 
-		EXPECT_EQ(left_segment->right.size(), 2);
-		EXPECT_EQ(left_segment->right[0].first.getAsDouble(), 0.2);
+		EXPECT_EQ(left_segment->right.lane.size(), 2);
+		EXPECT_EQ(left_segment->right.lane[0].first.getAsDouble(), 0.2);
 
 
-		ASSERT_EQ(up_segment->right.size(), 2);
+		ASSERT_EQ(up_segment->right.lane.size(), 2);
 		// 10 - 0.7 - 0.05
-		EXPECT_FLOAT_EQ(up_segment->right[0].first.getAsDouble(), 9.25f);
+		EXPECT_FLOAT_EQ(up_segment->right.lane[0].first.getAsDouble(), 9.25f);
 		// (10 - 0.3 - 0.05) - (10 - 0.7 - 0.05)
-		EXPECT_FLOAT_EQ(up_segment->right[1].first.getAsDouble(), 0.4f);
+		EXPECT_FLOAT_EQ(up_segment->right.lane[1].first.getAsDouble(), 0.4f);
 
 
 		// ======================================================================
@@ -770,28 +770,28 @@ namespace game
 		for (int j = 0; j < 4; ++j) {
 			TransportLineLogicUpdate(worldData_);
 		}
-		EXPECT_EQ(left_segment->left[0].first.getAsDouble(), 0.0);
-		EXPECT_EQ(left_segment->right[0].first.getAsDouble(), 0.0);
+		EXPECT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.0);
+		EXPECT_EQ(left_segment->right.lane[0].first.getAsDouble(), 0.0);
 
-		EXPECT_FLOAT_EQ(up_segment->right[0].first.getAsDouble(), 9.05f);
+		EXPECT_FLOAT_EQ(up_segment->right.lane[0].first.getAsDouble(), 9.05f);
 
 
 		// ======================================================================
 		// Transition items
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_EQ(left_segment->left.size(), 1);
-		EXPECT_EQ(left_segment->left[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
+		EXPECT_EQ(left_segment->left.lane.size(), 1);
+		EXPECT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.2);  // 0.25 - 0.05
 
 
 		// ======================================================================
 		// Right lane (B) stops, left (A) takes priority
-		EXPECT_EQ(left_segment->right.size(), 2);  // Unmoved
-		EXPECT_EQ(left_segment->right[0].first.getAsDouble(), 0.f);
+		EXPECT_EQ(left_segment->right.lane.size(), 2);  // Unmoved
+		EXPECT_EQ(left_segment->right.lane[0].first.getAsDouble(), 0.f);
 
-		ASSERT_EQ(up_segment->right.size(), 3);
-		EXPECT_FLOAT_EQ(up_segment->right[0].first.getAsDouble(), 9.00f);
-		EXPECT_FLOAT_EQ(up_segment->right[1].first.getAsDouble(), 0.4f);
-		EXPECT_FLOAT_EQ(up_segment->right[2].first.getAsDouble(), 0.25f);
+		ASSERT_EQ(up_segment->right.lane.size(), 3);
+		EXPECT_FLOAT_EQ(up_segment->right.lane[0].first.getAsDouble(), 9.00f);
+		EXPECT_FLOAT_EQ(up_segment->right.lane[1].first.getAsDouble(), 0.4f);
+		EXPECT_FLOAT_EQ(up_segment->right.lane[2].first.getAsDouble(), 0.25f);
 
 
 		// ======================================================================
@@ -799,12 +799,12 @@ namespace game
 		for (int j = 0; j < 4 + 13 + 1; ++j) {  // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
 			TransportLineLogicUpdate(worldData_);
 		}
-		EXPECT_EQ(left_segment->left.size(), 0);
-		EXPECT_EQ(left_segment->right.size(), 1);  // Woke and moved
+		EXPECT_EQ(left_segment->left.lane.size(), 0);
+		EXPECT_EQ(left_segment->right.lane.size(), 1);  // Woke and moved
 
-		ASSERT_EQ(up_segment->right.size(), 5);
-		EXPECT_FLOAT_EQ(up_segment->right[0].first.getAsDouble(), 8.10f);
-		EXPECT_FLOAT_EQ(up_segment->right[3].first.getAsDouble(), 0.25f);
+		ASSERT_EQ(up_segment->right.lane.size(), 5);
+		EXPECT_FLOAT_EQ(up_segment->right.lane[0].first.getAsDouble(), 8.10f);
+		EXPECT_FLOAT_EQ(up_segment->right.lane[3].first.getAsDouble(), 0.25f);
 
 	}
 
@@ -823,11 +823,11 @@ namespace game
 
 
 		// Segments (Logic chunk must be created first)
-		auto* up_segment_1 = new jactorio::game::TransportLineSegment(jactorio::data::Orientation::up,
-		                                                              jactorio::game::TransportLineSegment::TerminationType::straight,
+		auto* up_segment_1 = new jactorio::game::TransportSegment(jactorio::data::Orientation::up,
+		                                                              jactorio::game::TransportSegment::TerminationType::straight,
 		                                                              1);
-		auto* up_segment_2 = new jactorio::game::TransportLineSegment(jactorio::data::Orientation::up,
-		                                                              jactorio::game::TransportLineSegment::TerminationType::straight,
+		auto* up_segment_2 = new jactorio::game::TransportSegment(jactorio::data::Orientation::up,
+		                                                              jactorio::game::TransportSegment::TerminationType::straight,
 		                                                              1);
 
 		up_segment_2->targetSegment = up_segment_1;
@@ -844,25 +844,25 @@ namespace game
 
 
 		up_segment_2->AppendItem(true, 0.05, kItemProto.get());
-		EXPECT_FLOAT_EQ(up_segment_2->lBackItemDistance.getAsDouble(), 0.05);
+		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
 
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_FLOAT_EQ(up_segment_2->lBackItemDistance.getAsDouble(), 0);
+		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
 		// Segment 1
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_FLOAT_EQ(up_segment_2->lBackItemDistance.getAsDouble(), 0);
+		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
-		EXPECT_FLOAT_EQ(up_segment_1->lBackItemDistance.getAsDouble(), 0.95);  // First segment now
+		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.95);  // First segment now
 
 		for (int i = 0; i < 19; ++i) {
 			TransportLineLogicUpdate(worldData_);
 		}
-		EXPECT_FLOAT_EQ(up_segment_1->lBackItemDistance.getAsDouble(), 0);
+		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
 		// Remains at 0
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_FLOAT_EQ(up_segment_1->lBackItemDistance.getAsDouble(), 0);
+		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
 
 		// ======================================================================
@@ -870,7 +870,7 @@ namespace game
 		up_segment_1->AppendItem(true, 0, kItemProto.get());
 		up_segment_1->AppendItem(true, 0, kItemProto.get());
 		up_segment_1->AppendItem(true, 0, kItemProto.get());
-		EXPECT_FLOAT_EQ(up_segment_1->lBackItemDistance.getAsDouble(), 0.75);
+		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
 
 
 		// Will not enter since segment 1 is full
@@ -878,7 +878,7 @@ namespace game
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_FLOAT_EQ(up_segment_1->lBackItemDistance.getAsDouble(), 0.75);
-		EXPECT_FLOAT_EQ(up_segment_2->lBackItemDistance.getAsDouble(), 0);
+		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
+		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 	}
 }

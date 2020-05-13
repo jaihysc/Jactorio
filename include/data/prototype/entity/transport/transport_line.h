@@ -16,7 +16,7 @@ namespace jactorio::data
 {
 	struct TransportLineData : HealthEntityData
 	{
-		explicit TransportLineData(game::TransportLineSegment& line_segment)
+		explicit TransportLineData(game::TransportSegment& line_segment)
 			: lineSegment(line_segment) {
 		}
 
@@ -43,7 +43,7 @@ namespace jactorio::data
 		};
 
 		/// The logic chunk line_segment associated
-		std::reference_wrapper<game::TransportLineSegment> lineSegment;
+		std::reference_wrapper<game::TransportSegment> lineSegment;
 
 		/// The distance to the head of the transport line
 		/// \remark For rendering purposes, the length should never exceed ~2 chunks at most
@@ -156,7 +156,7 @@ namespace jactorio::data
 			     int world_y,
 			     float world_offset_x,
 			     float world_offset_y,
-			     game::TransportLineSegment::TerminationType termination_type)>;
+			     game::TransportSegment::TerminationType termination_type)>;
 
 		using UpdateSideOnlyFunc = std::function<
 			void(game::WorldData& world_data,
@@ -165,7 +165,7 @@ namespace jactorio::data
 			     float world_offset_x,
 			     float world_offset_y,
 			     Orientation direction,
-			     game::TransportLineSegment::TerminationType termination_type)>;
+			     game::TransportSegment::TerminationType termination_type)>;
 
 		///
 		/// \brief Calls func or side_only_func depending on the line_orientation, provides parameters on how neighboring lines
@@ -183,7 +183,7 @@ namespace jactorio::data
 		static void UpdateSegmentHead(game::WorldData& world_data,
 		                              const game::WorldData::WorldPair& world_coords,
 		                              LineData4Way& line_data,
-		                              game::TransportLineSegment& line_segment);
+		                              game::TransportSegment& line_segment);
 
 		///
 		/// \brief Updates the world tiles which references a transport segment, props: line_segment_index, line_segment
@@ -193,7 +193,7 @@ namespace jactorio::data
 		/// \param offset Offsets segment id numbering, world_coords must be also adjusted to the appropriate offset when calling
 		static void UpdateSegmentTiles(const game::WorldData& world_data,
 		                               const game::WorldData::WorldPair& world_coords,
-		                               game::TransportLineSegment& line_segment,
+		                               game::TransportSegment& line_segment,
 		                               int offset = 0);
 
 		/*
