@@ -13,6 +13,8 @@ bool jactorio::game::TransportLane::IsActive() const {
 
 bool jactorio::game::TransportLane::CanInsert(TransportLineOffset start_offset, const ItemOffsetT item_offset) {
 	start_offset += TransportLineOffset(item_offset);
+	assert(start_offset.getAsDouble() >= 0);
+
 	TransportLineOffset offset(0);
 
 	// Check if start_offset already has an item
@@ -56,6 +58,7 @@ void jactorio::game::TransportLane::AppendItem(InsertOffsetT offset, const data:
 
 void jactorio::game::TransportLane::InsertItem(InsertOffsetT offset, const data::Item* item, const ItemOffsetT item_offset) {
 	offset += item_offset;
+	assert(offset >= 0);
 	
 	TransportLineOffset target_offset{offset};
 	TransportLineOffset counter_offset;
@@ -97,8 +100,6 @@ bool jactorio::game::TransportLane::TryInsertItem(const InsertOffsetT offset, co
 
 // ======================================================================
 
-// item_offset is currently unused, replace 0 with itemOffset if needed in the future
-
 bool jactorio::game::TransportSegment::CanInsert(const bool left_side, const TransportLineOffset& start_offset) {
 	return left_side ? left.CanInsert(start_offset, 0) : right.CanInsert(start_offset, 0);
 }
@@ -108,17 +109,32 @@ bool jactorio::game::TransportSegment::IsActive(const bool left_side) const {
 }
 
 void jactorio::game::TransportSegment::AppendItem(const bool left_side, const InsertOffsetT offset, const data::Item* item) {
-	return left_side ? left.AppendItem(offset, item) : right.AppendItem(offset, item);
+	left_side ? left.AppendItem(offset, item) : right.AppendItem(offset, item);
 }
 
 void jactorio::game::TransportSegment::InsertItem(const bool left_side, const InsertOffsetT offset, const data::Item* item) {
-	return left_side ? left.InsertItem(offset, item, 0) : right.InsertItem(offset, item, 0);
+	left_side ? left.InsertItem(offset, item, 0) : right.InsertItem(offset, item, 0);
 }
 
 bool jactorio::game::TransportSegment::TryInsertItem(const bool left_side, const InsertOffsetT offset, const data::Item* item) {
 	return left_side ? left.TryInsertItem(offset, item, 0) : right.TryInsertItem(offset, item, 0);
 }
 
-void jactorio::game::TransportSegment::AdjustInsertionOffset(InsertOffsetT& val) const {
+// With itemOffset applied
+
+bool jactorio::game::TransportSegment::CanInsertAbs(const bool left_side, const TransportLineOffset& start_offset) {
+	return left_side ? left.CanInsert(start_offset, itemOffset) : right.CanInsert(start_offset, itemOffset);
+}
+
+void jactorio::game::TransportSegment::InsertItemAbs(const bool left_side, const InsertOffsetT offset, const data::Item* item) {
+	left_side ? left.InsertItem(offset, item, itemOffset) : right.InsertItem(offset, item, itemOffset);
+}
+
+bool jactorio::game::TransportSegment::TryInsertItemAbs(const bool left_side, const InsertOffsetT offset,
+                                                        const data::Item* item) {
+	return left_side ? left.TryInsertItem(offset, item, itemOffset) : right.TryInsertItem(offset, item, itemOffset);
+}
+
+void jactorio::game::TransportSegment::GetOffsetAbs(InsertOffsetT& val) const {
 	val -= itemOffset;
 }

@@ -147,18 +147,24 @@ namespace jactorio::game
 		/// Length of this segment in tiles
 		SegmentLengthT length;
 
-		// TODO remove this if a use does not come up
-		/// \brief Currently Unused. Offset applied for TransportLineData::lineSegmentIndex
+		/// \brief Offset applied for TransportLineData::lineSegmentIndex
 		///
 		/// When this segment is extended from the head, offset increments 1.
 		/// When the segment is shortened from the head, offset decrements 1.
 		/// No effect when extended or shortened from the tail.
 		/// <br>
-		/// The offset ensures that all entities which stores a segment index at a tile inserts at the correct location
-		/// when the segment is extended or shortened
+		/// The offset ensures that all entities which stores a segment index tile inserts at the same location
+		/// when the segment is extended or shortened, used in methods with a Abs suffix
 		ItemOffsetT itemOffset = 0;
 
+		/// If this segment terminates side only, this is the offset from the beginning of target segment to insert at
+		InsertOffsetT targetInsertOffset = 0;
+
 		// ======================================================================
+
+		J_NODISCARD TransportLane& GetSide(const bool left_side) {
+			return left_side ? left : right;
+		}
 
 		///
 		/// \param start_offset Item offset from the start of transport line in tiles
@@ -187,10 +193,27 @@ namespace jactorio::game
 		/// \return false if unsuccessful
 		bool TryInsertItem(bool left_side, InsertOffsetT offset, const data::Item* item);
 
+		// Item insertion with itemOffset
 
-		J_NODISCARD TransportLane& GetSide(const bool left_side) {
-			return left_side ? left : right;
-		}
+		// Methods with Abs suffix is "absolute"
+		// meaning the same offset from beginning of transport line will reference in the same world location
+		// regardless of variable segment length or head position
+
+		///
+		/// \param start_offset Item offset from the start of transport line in tiles
+		/// \return true if an item can be inserted into this transport line
+		J_NODISCARD bool CanInsertAbs(bool left_side, const TransportLineOffset& start_offset);
+
+		///
+		/// \brief Inserts the item onto the specified belt side at the offset from the beginning of the transport line
+		/// \param offset Distance from beginning of transport line
+		void InsertItemAbs(bool left_side, InsertOffsetT offset, const data::Item* item);
+
+		///
+		/// \brief Attempts to insert the item onto the specified belt side at the offset from the beginning of the transport line
+		/// \param offset Distance from beginning of transport line
+		/// \return false if unsuccessful
+		bool TryInsertItemAbs(bool left_side, InsertOffsetT offset, const data::Item* item);
 
 		///
 		/// \brief Adjusts provided value such that InsertItem(, offset, ) is at the correct location
@@ -200,7 +223,7 @@ namespace jactorio::game
 		/// Thus, an adjustment is applied to all offsets inserting into the segment such that the same offset
 		/// results in the same location regardless of the segment length.
 		/// \param val Distance from beginning of transport segment
-		void AdjustInsertionOffset(InsertOffsetT& val) const;
+		void GetOffsetAbs(InsertOffsetT& val) const;
 	};
 }
 

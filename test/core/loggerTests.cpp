@@ -26,7 +26,7 @@ namespace core
 		// Substring away timestamp to first open square bracket
 
 		EXPECT_EQ(RemoveTimestamp(logged_message),
-		          "ERROR    [Some component, such as Networking:0] Oh no, something went wrong\n");
+		          "ERROR    [Some component, such as Networking:0] Oh no, something went wrong\033[0m\n");
 
 		logged_message = GenLogMessage(
 			jactorio::core::LogSeverity::info,
@@ -35,7 +35,7 @@ namespace core
 			"Just letting you know something");
 
 		EXPECT_EQ(RemoveTimestamp(logged_message),
-		          "Info     [Renderer:10] Just letting you know something\n");
+		          "Info     [Renderer:10] Just letting you know something\033[0m\n");
 
 		LOG_MESSAGE(debug, "hello");
 	}

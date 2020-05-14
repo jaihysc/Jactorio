@@ -102,17 +102,15 @@ namespace game
 		EXPECT_FALSE(result);
 	}
 
-	/*
-	TEST_F(TransportStructureTest, CanInsertOffset) {
+	TEST_F(TransportStructureTest, CanInsertAbs) {
 		// the given offset should be adjusted as TransportSegment::itemOffset is adjusted where 1 = 1 tile
 		segment_->itemOffset = 1;
 		const jactorio::game::TransportLineOffset offset{0.f};
 
 		segment_->AppendItem(true, 0, itemProto_.get());
-		bool result = segment_->CanInsert(true, offset);  // Ok, offset (0) + itemOffset (1) = 1 
+		bool result = segment_->CanInsertAbs(true, offset);  // Ok, offset (0) + itemOffset (1) = 1 
 		EXPECT_TRUE(result);
 	}
-	*/
 
 
 	TEST_F(TransportStructureTest, IsActive) {
@@ -208,8 +206,7 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 0.3);  // 1.5
 	}
 
-	/*
-	TEST_F(TransportStructureTest, InsertItemOffset) {
+	TEST_F(TransportStructureTest, InsertItemAbs) {
 		auto line_segment = std::make_unique<jactorio::game::TransportSegment>(
 			jactorio::data::Orientation::up,
 			jactorio::game::TransportSegment::TerminationType::bend_right,
@@ -219,14 +216,13 @@ namespace game
 
 		// Offset is ALWAYS from the beginning of the transport line + itemOffset
 
-		line_segment->InsertItem(true, 1.2, itemProto_.get());
+		line_segment->InsertItemAbs(true, 1.2, itemProto_.get());
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 3.2);
 
-		line_segment->InsertItem(true, 1.5, itemProto_.get());
+		line_segment->InsertItemAbs(true, 1.5, itemProto_.get());
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 3.2);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.3);  // 1.5
 	}
-	*/
 
 	TEST_F(TransportStructureTest, TryInsertItem) {
 
@@ -324,19 +320,19 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 0.f);
 	}
 
-	TEST_F(TransportStructureTest, AdjustInsertionOffset) {
+	TEST_F(TransportStructureTest, GetOffsetAbs) {
 		{
 			segment_->itemOffset = 0;
 
 			jactorio::game::TransportSegment::InsertOffsetT o = 3;
-			segment_->AdjustInsertionOffset(o);
+			segment_->GetOffsetAbs(o);
 			EXPECT_FLOAT_EQ(o, 3.f);
 		}
 		{
 			segment_->itemOffset = 3;
 
 			jactorio::game::TransportSegment::InsertOffsetT o = 3;
-			segment_->AdjustInsertionOffset(o);
+			segment_->GetOffsetAbs(o);
 			EXPECT_FLOAT_EQ(o, 0.f);
 		}
 
@@ -344,7 +340,7 @@ namespace game
 			segment_->itemOffset = -2;
 
 			jactorio::game::TransportSegment::InsertOffsetT o = 3;
-			segment_->AdjustInsertionOffset(o);
+			segment_->GetOffsetAbs(o);
 			EXPECT_FLOAT_EQ(o, 5.f);
 		}
 	}

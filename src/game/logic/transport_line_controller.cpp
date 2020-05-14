@@ -80,97 +80,82 @@ J_NODISCARD bool MoveNextItem(const jactorio::game::TransportLineOffset& tiles_m
 	return false;
 }
 
-void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio::game::TransportSegment* segment,
-                const bool is_left) {
-	auto& side = segment->GetSide(is_left);
+template <bool IsLeft>
+void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio::game::TransportSegment& segment) {
+	using namespace jactorio;
+	auto& side      = segment.GetSide(IsLeft);
 	uint16_t& index = side.index;
 
-	jactorio::game::TransportLineOffset& offset             = side.lane[index].first;
-	jactorio::game::TransportLineOffset& back_item_distance = side.backItemDistance;
+	game::TransportLineOffset& offset             = side.lane[index].first;
+	game::TransportLineOffset& back_item_distance = side.backItemDistance;
 
 	// Front item if index is 0
 	if (index == 0) {
 		// Front item does not need to be moved
-		if (offset >= dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(0))
+		if (offset >= dec::decimal_cast<game::kTransportLineDecimalPlace>(0))
 			return;
 
-		if (segment->targetSegment) {
-			jactorio::game::TransportLineOffset target_offset =
-				dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
-					static_cast<double>(segment->targetSegment->length) - fabs(
-						offset.getAsDouble()));  // From start of line
+		if (segment.targetSegment) {
+			game::TransportSegment& target_segment = *segment.targetSegment;
+			// Offset to insert at target segment from head 
+			game::TransportLineOffset target_offset;
+			{
+				double length;
+				switch (segment.terminationType) {
+					// Since segments terminating with side only can target the middle of a grouped segment, it uses
+					// its own member for head offset
+				case game::TransportSegment::TerminationType::left_only:
+				case game::TransportSegment::TerminationType::right_only:
+					// |   |   |   |
+					// 3   2   1   0
+					// targetOffset of 0: Length is 1
+					length = segment.targetInsertOffset + 1.f;
+					break;
 
-			jactorio::game::TransportLineOffset target_offset_tile;  // From previous item
-
+				default:
+					length = target_segment.length;
+					break;
+				}
+				target_offset = dec::decimal_cast<game::kTransportLineDecimalPlace>(
+					length - fabs(offset.getAsDouble())
+				);
+			}
 
 			// Account for the termination type of the line segments for the offset from start to insert into
-			if (is_left) {
-				ApplyTerminationDeductionL(segment->terminationType, target_offset);
-				ApplyTerminationDeductionL(segment->targetSegment->terminationType, target_offset);
-
-				// Offset from end of transport line only calculated if line is empty,
-				// otherwise it maintains distance to previous item
-				target_offset_tile = target_offset - segment->targetSegment->left.backItemDistance;
+			if constexpr (IsLeft) {
+				ApplyTerminationDeductionL(segment.terminationType, target_offset);
+				ApplyTerminationDeductionL(target_segment.terminationType, target_offset);
 			}
 			else {
-				ApplyTerminationDeductionR(segment->terminationType, target_offset);
-				ApplyTerminationDeductionR(segment->targetSegment->terminationType, target_offset);
-
-				target_offset_tile = target_offset - segment->targetSegment->right.backItemDistance;
+				ApplyTerminationDeductionR(segment.terminationType, target_offset);
+				ApplyTerminationDeductionR(target_segment.terminationType, target_offset);
 			}
 
-
-			bool added_item = false;
+			bool moved_item;
 			// Decides how the items will be fed into the target segment (if at all)
-			switch (segment->terminationType) {
+			switch (segment.terminationType) {
 			default:
-				{
-					auto& target_segment = *segment->targetSegment;
-					if (target_segment.CanInsert(is_left, target_offset)) {
-						added_item = true;
-
-						// Reenable the segment if it was disabled
-						if (is_left) {
-							if (!target_segment.left.IsActive())
-								target_segment.left.index = target_segment.left.lane.size();
-						}
-						else {
-							if (!target_segment.right.IsActive())
-								target_segment.right.index = target_segment.right.lane.size();
-						}
-
-						segment->targetSegment->AppendItem(
-							is_left,
-							target_offset_tile.getAsDouble(), side.lane[index].second);
-					}
-				}
+				moved_item = target_segment.TryInsertItem(IsLeft,
+				                                          target_offset.getAsDouble(),
+				                                          side.lane[index].second);
 				break;
 
 				// Side insertion
-			case jactorio::game::TransportSegment::TerminationType::left_only:
-				if (segment->targetSegment->CanInsert(true, target_offset)) {
-					segment->targetSegment->InsertItem(true,
-					                                   target_offset.getAsDouble(),
-					                                   side.lane[index].second);
-					added_item = true;
-				}
-
+			case game::TransportSegment::TerminationType::left_only:
+				moved_item = target_segment.left.TryInsertItem(target_offset.getAsDouble(),
+				                                               side.lane[index].second,
+				                                               target_segment.itemOffset);
 				break;
-			case jactorio::game::TransportSegment::TerminationType::right_only:
-				if (segment->targetSegment->CanInsert(false, target_offset)) {
-					segment->targetSegment->InsertItem(false,
-					                                   target_offset.getAsDouble(),
-					                                   side.lane[index].second);
-					added_item = true;
-
-				}
-
+			case game::TransportSegment::TerminationType::right_only:
+				moved_item = target_segment.right.TryInsertItem(target_offset.getAsDouble(),
+				                                                side.lane[index].second,
+				                                                target_segment.itemOffset);
 				break;
 			}
 
 
 			// Handle transition if the item has been added to another transport line
-			if (added_item) {
+			if (moved_item) {
 				side.lane.pop_front();  // Remove item in current segment now moved away
 
 				// Move the next item forwards to preserve spacing & update back_item_distance
@@ -193,15 +178,15 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 		offset = 0;
 		back_item_distance += tiles_moved;
 
-		if (MoveNextItem(tiles_moved, side.lane, index, segment->targetSegment != nullptr)) {
+		if (MoveNextItem(tiles_moved, side.lane, index, segment.targetSegment != nullptr)) {
 			back_item_distance -= tiles_moved;
 		}
 			// Disable transport line since it does not feed anywhere
 		else {
-			switch (segment->terminationType) {
+			switch (segment.terminationType) {
 				// Due to how items feeding onto the sides of transport segments behave, they cannot be disabled unless empty
-			case jactorio::game::TransportSegment::TerminationType::left_only:
-			case jactorio::game::TransportSegment::TerminationType::right_only:
+			case game::TransportSegment::TerminationType::left_only:
+			case game::TransportSegment::TerminationType::right_only:
 				break;
 
 			default:
@@ -215,14 +200,14 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 		// Items behind another item in transport line
 
 		// Items following the first item will leave a gap of item_width
-		if (offset > dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
-			jactorio::game::kItemSpacing))
+		if (offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kItemSpacing))
 			return;
 
 		// Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
-		offset = jactorio::game::kItemSpacing;
+		offset = game::kItemSpacing;
 		if (MoveNextItem(tiles_moved, side.lane, index,
-		                 segment->targetSegment != nullptr)) {
+		                 segment.targetSegment != nullptr)) {
 			back_item_distance -= tiles_moved;
 		}
 	}
@@ -268,15 +253,16 @@ void jactorio::game::LogicUpdateTransitionItems(LogicChunk* l_chunk) {
 	for (auto& object_layer : layers) {
 		const auto* line_proto = static_cast<const data::TransportLine*>(object_layer.prototypeData);
 		auto* line_segment     = static_cast<TransportSegment*>(object_layer.uniqueData);
+		assert(line_segment);
 
 
 		auto tiles_moved = line_proto->speed;
 
 		if (line_segment->left.IsActive())
-			UpdateSide(tiles_moved, line_segment, true);
+			UpdateSide<true>(tiles_moved, *line_segment);
 
 		if (line_segment->right.IsActive())
-			UpdateSide(tiles_moved, line_segment, false);
+			UpdateSide<false>(tiles_moved, *line_segment);
 	}
 }
 

@@ -56,8 +56,8 @@ namespace game
 		jactorio::game::WorldData worldData_{};
 		jactorio::game::LogicChunk* logicChunk_ = nullptr;
 
-		const std::unique_ptr<jactorio::data::Item> kItemProto                   = std::make_unique<jactorio::data::Item>();
-		const std::unique_ptr<jactorio::data::TransportBelt> kTransportBeltProto =
+		const std::unique_ptr<jactorio::data::Item> itemProto_                   = std::make_unique<jactorio::data::Item>();
+		const std::unique_ptr<jactorio::data::TransportBelt> transportBeltProto_ =
 			std::make_unique<jactorio::data::TransportBelt>();
 
 		///
@@ -71,7 +71,7 @@ namespace game
 	TEST_F(TransportLineControllerTest, LineLogic) {
 		// Tests that items move as expected (within a chunk)
 
-		kTransportBeltProto->speed = 0.01f;
+		transportBeltProto_->speed = 0.01f;
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new jactorio::game::TransportSegment(
@@ -98,26 +98,26 @@ namespace game
 		left_segment->targetSegment  = up_segment;
 		{
 			auto& up = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                      .emplace_back(kTransportBeltProto.get(), 0, 0);
+			                      .emplace_back(transportBeltProto_.get(), 0, 0);
 			up.uniqueData = up_segment;
 
 			auto& right = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                         .emplace_back(kTransportBeltProto.get(), 4, 0);
+			                         .emplace_back(transportBeltProto_.get(), 4, 0);
 			right.uniqueData = right_segment;
 
 			auto& down = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                        .emplace_back(kTransportBeltProto.get(), 4, 5);
+			                        .emplace_back(transportBeltProto_.get(), 4, 5);
 			down.uniqueData = down_segment;
 
 			auto& left = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                        .emplace_back(kTransportBeltProto.get(), 0, 5);
+			                        .emplace_back(transportBeltProto_.get(), 0, 5);
 			left.uniqueData = left_segment;
 		}
 
 		// The actual lengths of the transport segments != the indicated length as it turns earlier
 
 		// Insert item
-		left_segment->AppendItem(false, 0.f, kItemProto.get());
+		left_segment->AppendItem(false, 0.f, itemProto_.get());
 
 		TestItemPositions(worldData_, up_segment, right_segment, down_segment, left_segment);
 	}
@@ -191,7 +191,7 @@ namespace game
 		// Same as line logic, but belts are faster (0.06), which seems to break the current logic at the time of writing
 		const auto j_belt_speed = 0.06f;
 
-		kTransportBeltProto->speed = j_belt_speed;  // <---
+		transportBeltProto_->speed = j_belt_speed;  // <---
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment = new jactorio::game::TransportSegment(
@@ -218,26 +218,26 @@ namespace game
 		left_segment->targetSegment  = up_segment;
 		{
 			auto& up = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                      .emplace_back(kTransportBeltProto.get(), 0, 0);
+			                      .emplace_back(transportBeltProto_.get(), 0, 0);
 			up.uniqueData = up_segment;
 
 			auto& right = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                         .emplace_back(kTransportBeltProto.get(), 4, 0);
+			                         .emplace_back(transportBeltProto_.get(), 4, 0);
 			right.uniqueData = right_segment;
 
 			auto& down = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                        .emplace_back(kTransportBeltProto.get(), 4, 5);
+			                        .emplace_back(transportBeltProto_.get(), 4, 5);
 			down.uniqueData = down_segment;
 
 			auto& left = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                        .emplace_back(kTransportBeltProto.get(), 0, 5);
+			                        .emplace_back(transportBeltProto_.get(), 0, 5);
 			left.uniqueData = left_segment;
 		}
 
 		// Logic
-		left_segment->AppendItem(true, 0.f, kItemProto.get());
-		left_segment->AppendItem(true, jactorio::game::kItemSpacing, kItemProto.get());
-		left_segment->AppendItem(true, jactorio::game::kItemSpacing, kItemProto.get());
+		left_segment->AppendItem(true, 0.f, itemProto_.get());
+		left_segment->AppendItem(true, jactorio::game::kItemSpacing, itemProto_.get());
+		left_segment->AppendItem(true, jactorio::game::kItemSpacing, itemProto_.get());
 
 		// 1 update
 		// first item moved to up segment
@@ -281,7 +281,7 @@ namespace game
 		// Validates the correct handling of multiple items across transport lines
 		// The spacing between items should be maintained
 
-		kTransportBeltProto->speed = 0.01f;
+		transportBeltProto_->speed = 0.01f;
 
 		/*
 		 *    --------- RIGHT -------- >
@@ -304,18 +304,18 @@ namespace game
 		up_segment->targetSegment = right_segment;
 		{
 			auto& up = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                      .emplace_back(kTransportBeltProto.get(), 0, 0);
+			                      .emplace_back(transportBeltProto_.get(), 0, 0);
 			up.uniqueData = up_segment;
 
 			auto& right = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                         .emplace_back(kTransportBeltProto.get(), 3, 0);
+			                         .emplace_back(transportBeltProto_.get(), 3, 0);
 			right.uniqueData = right_segment;
 		}
 
 		// Offset is distance from beginning, or previous item
-		up_segment->AppendItem(true, 0.f, kItemProto.get());
-		up_segment->AppendItem(true, 1, kItemProto.get());
-		up_segment->AppendItem(true, 1, kItemProto.get());
+		up_segment->AppendItem(true, 0.f, itemProto_.get());
+		up_segment->AppendItem(true, 1, itemProto_.get());
+		up_segment->AppendItem(true, 1, itemProto_.get());
 		static_assert(jactorio::game::kItemSpacing < 1);  // Tested positions would otherwise be invalid
 
 		// Logic
@@ -358,7 +358,7 @@ namespace game
 	TEST_F(TransportLineControllerTest, LineLogicCompressedRightBend) {
 		// Same as line_logic_right_bend, but items are compressed
 
-		kTransportBeltProto->speed = 0.01f;
+		transportBeltProto_->speed = 0.01f;
 
 		/*
 		 * COMPRESSED
@@ -382,17 +382,17 @@ namespace game
 		up_segment->targetSegment = right_segment;
 		{
 			auto& up = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                      .emplace_back(kTransportBeltProto.get(), 0, 0);
+			                      .emplace_back(transportBeltProto_.get(), 0, 0);
 			up.uniqueData = up_segment;
 
 			auto& right = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                         .emplace_back(kTransportBeltProto.get(), 3, 0);
+			                         .emplace_back(transportBeltProto_.get(), 3, 0);
 			right.uniqueData = right_segment;
 		}
 
 		// Offset is distance from beginning, or previous item
-		up_segment->AppendItem(true, 0.f, kItemProto.get());
-		up_segment->AppendItem(true, jactorio::game::kItemSpacing, kItemProto.get());
+		up_segment->AppendItem(true, 0.f, itemProto_.get());
+		up_segment->AppendItem(true, jactorio::game::kItemSpacing, itemProto_.get());
 
 		// First item
 		TransportLineLogicUpdate(worldData_);
@@ -424,7 +424,7 @@ namespace game
 		 * < ------ LEFT (1) ------		< ------ LEFT (2) -------
 		 */
 
-		kTransportBeltProto->speed = 0.01f;
+		transportBeltProto_->speed = 0.01f;
 
 		auto* segment_1 = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::left,
@@ -439,17 +439,17 @@ namespace game
 		{
 			auto& structs = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
 
-			auto& seg_1      = structs.emplace_back(kTransportBeltProto.get(), 0, 0);
+			auto& seg_1      = structs.emplace_back(transportBeltProto_.get(), 0, 0);
 			seg_1.uniqueData = segment_1;
 
 			auto& seg_2 = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                         .emplace_back(kTransportBeltProto.get(), 3, 0);
+			                         .emplace_back(transportBeltProto_.get(), 3, 0);
 			seg_2.uniqueData = segment_2;
 		}
 
 		// Insert item on left + right side
-		segment_2->AppendItem(true, 0.02f, kItemProto.get());
-		segment_2->AppendItem(false, 0.02f, kItemProto.get());
+		segment_2->AppendItem(true, 0.02f, itemProto_.get());
+		segment_2->AppendItem(false, 0.02f, itemProto_.get());
 
 		// Travel to the next belt in 0.02 / 0.01 + 1 updates
 		for (int i = 0; i < 3; ++i) {
@@ -468,7 +468,7 @@ namespace game
 		// First Item will stop at the end of line (Distance is 0)
 		// Trailing items will stop at item_width from the previous item
 
-		kTransportBeltProto->speed = 0.01f;
+		transportBeltProto_->speed = 0.01f;
 
 		auto* segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::left,
@@ -477,13 +477,13 @@ namespace game
 
 		{
 			auto& structs    = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-			auto& seg_1      = structs.emplace_back(kTransportBeltProto.get(), 0, 0);
+			auto& seg_1      = structs.emplace_back(transportBeltProto_.get(), 0, 0);
 			seg_1.uniqueData = segment;
 		}
 
-		segment->AppendItem(true, 0.5f, kItemProto.get());
-		segment->AppendItem(true, jactorio::game::kItemSpacing, kItemProto.get());
-		segment->AppendItem(true, jactorio::game::kItemSpacing + 1.f, kItemProto.get());
+		segment->AppendItem(true, 0.5f, itemProto_.get());
+		segment->AppendItem(true, jactorio::game::kItemSpacing, itemProto_.get());
+		segment->AppendItem(true, jactorio::game::kItemSpacing + 1.f, itemProto_.get());
 
 		// Will reach distance 0 after 0.5 / 0.01 updates
 		for (int i = 0; i < 50; ++i) {
@@ -526,7 +526,7 @@ namespace game
 	TEST_F(TransportLineControllerTest, LineLogicStopAtFilledTargetSegment) {
 		// For the right lane:
 
-		kTransportBeltProto->speed = 0.01f;
+		transportBeltProto_->speed = 0.01f;
 
 		/*
 		 *    --------- RIGHT -------- >
@@ -549,21 +549,21 @@ namespace game
 		up_segment->targetSegment = right_segment;
 		{
 			auto& up = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                      .emplace_back(kTransportBeltProto.get(), 0, 0);
+			                      .emplace_back(transportBeltProto_.get(), 0, 0);
 			up.uniqueData = up_segment;
 
 			auto& right = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                         .emplace_back(kTransportBeltProto.get(), 3, 0);
+			                         .emplace_back(transportBeltProto_.get(), 3, 0);
 			right.uniqueData = right_segment;
 		}
 
 		// RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / kItemSpacing{0.25} = 13.2
 		for (int i = 0; i < 14; ++i) {
-			right_segment->AppendItem(false, 0.f, kItemProto.get());
+			right_segment->AppendItem(false, 0.f, itemProto_.get());
 		}
 
 		// Items on up line should stop
-		up_segment->AppendItem(false, 0.f, kItemProto.get());
+		up_segment->AppendItem(false, 0.f, itemProto_.get());
 
 		// WIll not move after an arbitrary number of updates
 		for (int i = 0; i < 34; ++i) {
@@ -582,11 +582,11 @@ namespace game
 			4);
 
 		auto& right = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-		                         .emplace_back(kTransportBeltProto.get(), 3, 0);
+		                         .emplace_back(transportBeltProto_.get(), 3, 0);
 		right.uniqueData = right_segment;
 
-		right_segment->AppendItem(true, 0.f, kItemProto.get());
-		right_segment->AppendItem(true, 0.f, kItemProto.get());  // Insert behind previous item
+		right_segment->AppendItem(true, 0.f, itemProto_.get());
+		right_segment->AppendItem(true, 0.f, itemProto_.get());  // Insert behind previous item
 
 		// Check that second item has a minimum distance of kItemSpacing
 		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.f);
@@ -607,7 +607,7 @@ namespace game
 		 */
 		// A first, fill entire lane, if A is not compressed, B moves
 
-		kTransportBeltProto->speed = 0.05;
+		transportBeltProto_->speed = 0.05;
 
 
 		// Segments (Logic chunk must be created first)
@@ -620,22 +620,25 @@ namespace game
 			jactorio::game::TransportSegment::TerminationType::straight,
 			10);
 
-		right_segment->targetSegment = down_segment;
+		right_segment->targetSegment      = down_segment;
+		right_segment->targetInsertOffset = 8;  // 8 + 1 = 9
+
+		down_segment->itemOffset = 1;
 
 		// Right dir belt empties only onto down belt Right side
 		auto& right = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-		                         .emplace_back(kTransportBeltProto.get(), 4, 0);
+		                         .emplace_back(transportBeltProto_.get(), 4, 0);
 		right.uniqueData = right_segment;
 
 
 		auto& down = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-		                        .emplace_back(kTransportBeltProto.get(), 4, 9);
+		                        .emplace_back(transportBeltProto_.get(), 4, 9);
 		down.uniqueData = down_segment;
 
 		// Insert items
 		for (int i = 0; i < 3; ++i) {
-			right_segment->AppendItem(true, 0.f, kItemProto.get());
-			right_segment->AppendItem(false, 0.f, kItemProto.get());
+			right_segment->AppendItem(true, 0.f, itemProto_.get());
+			right_segment->AppendItem(false, 0.f, itemProto_.get());
 		}
 
 		// Logic tests
@@ -713,7 +716,7 @@ namespace game
 		 */
 		// B first, fill entire lane, if B is not compressed, A moves
 
-		kTransportBeltProto->speed = 0.05;
+		transportBeltProto_->speed = 0.05;
 
 
 		// Segments (Logic chunk must be created first)
@@ -724,27 +727,31 @@ namespace game
 		auto* up_segment = new jactorio::game::TransportSegment(
 			jactorio::data::Orientation::down,
 			jactorio::game::TransportSegment::TerminationType::straight,
-			10);
+			20);
 
 		left_segment->targetSegment = up_segment;
+
+		left_segment->targetInsertOffset = -1;  // Will insert into up_segment with offset of 9 absolute
+		up_segment->itemOffset           = 10;
+
 
 		// Right dir belt empties only onto down belt Right side
 		{
 			auto& left = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                        .emplace_back(kTransportBeltProto.get(), 4, 0);
+			                        .emplace_back(transportBeltProto_.get(), 4, 0);
 			left.uniqueData = left_segment;
 
 
 			auto& down = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                        .emplace_back(kTransportBeltProto.get(), 4, 9);
+			                        .emplace_back(transportBeltProto_.get(), 4, 9);
 			down.uniqueData = up_segment;
 		}
 
 
 		// Insert items
 		for (int i = 0; i < 3; ++i) {
-			left_segment->AppendItem(true, 0.f, kItemProto.get());
-			left_segment->AppendItem(false, 0.f, kItemProto.get());
+			left_segment->AppendItem(true, 0.f, itemProto_.get());
+			left_segment->AppendItem(false, 0.f, itemProto_.get());
 		}
 
 		// Logic tests
@@ -819,31 +826,31 @@ namespace game
 		 * |
 		 */
 
-		kTransportBeltProto->speed = 0.05;
+		transportBeltProto_->speed = 0.05;
 
 
 		// Segments (Logic chunk must be created first)
 		auto* up_segment_1 = new jactorio::game::TransportSegment(jactorio::data::Orientation::up,
-		                                                              jactorio::game::TransportSegment::TerminationType::straight,
-		                                                              1);
+		                                                          jactorio::game::TransportSegment::TerminationType::straight,
+		                                                          1);
 		auto* up_segment_2 = new jactorio::game::TransportSegment(jactorio::data::Orientation::up,
-		                                                              jactorio::game::TransportSegment::TerminationType::straight,
-		                                                              1);
+		                                                          jactorio::game::TransportSegment::TerminationType::straight,
+		                                                          1);
 
 		up_segment_2->targetSegment = up_segment_1;
 
 		{
 			auto& up_1 = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                        .emplace_back(kTransportBeltProto.get(), 0, 0);
+			                        .emplace_back(transportBeltProto_.get(), 0, 0);
 			up_1.uniqueData = up_segment_1;
 
 			auto& up_2 = logicChunk_->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line)
-			                        .emplace_back(kTransportBeltProto.get(), 0, 1);
+			                        .emplace_back(transportBeltProto_.get(), 0, 1);
 			up_2.uniqueData = up_segment_2;
 		}
 
 
-		up_segment_2->AppendItem(true, 0.05, kItemProto.get());
+		up_segment_2->AppendItem(true, 0.05, itemProto_.get());
 		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
 
 		TransportLineLogicUpdate(worldData_);
@@ -867,14 +874,14 @@ namespace game
 
 		// ======================================================================
 		// Fill the first segment up to 4 items
-		up_segment_1->AppendItem(true, 0, kItemProto.get());
-		up_segment_1->AppendItem(true, 0, kItemProto.get());
-		up_segment_1->AppendItem(true, 0, kItemProto.get());
+		up_segment_1->AppendItem(true, 0, itemProto_.get());
+		up_segment_1->AppendItem(true, 0, itemProto_.get());
+		up_segment_1->AppendItem(true, 0, itemProto_.get());
 		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
 
 
 		// Will not enter since segment 1 is full
-		up_segment_2->AppendItem(true, 0.05, kItemProto.get());
+		up_segment_2->AppendItem(true, 0.05, itemProto_.get());
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);

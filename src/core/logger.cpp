@@ -23,7 +23,7 @@ void jactorio::core::CloseLogFile() {
 }
 
 
-constexpr char log_fmt[] = "\033[0m%10.3f %s [%s:%d] %s\n";
+constexpr char log_fmt[] = "%10.3f %s [%s:%d] %s\033[0m\n";
 
 std::string jactorio::core::GenLogMessage(const LogSeverity severity,
                                           const std::string& group,

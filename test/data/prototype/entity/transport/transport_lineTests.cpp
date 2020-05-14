@@ -746,6 +746,7 @@ namespace data::prototype
 
 			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
 			EXPECT_EQ(line->length, 2);
+
 			EXPECT_FLOAT_EQ(line_layer.positionX, center_x);
 			EXPECT_FLOAT_EQ(line_layer.positionY, center_y);
 		}
@@ -755,6 +756,7 @@ namespace data::prototype
 
 			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
 			EXPECT_EQ(line->length, 2);
+
 			EXPECT_FLOAT_EQ(line_layer.positionX, center_x);
 			EXPECT_FLOAT_EQ(line_layer.positionY, center_y);
 		}
@@ -777,6 +779,9 @@ namespace data::prototype
 		ValidateBendToSideOnly(worldData_, 1, 1);
 		EXPECT_EQ(GetLineSegmentIndex({0, 1}), 1);
 		EXPECT_EQ(GetLineSegmentIndex({2, 1}), 1);
+
+		EXPECT_EQ(GetLineData({0, 1}).lineSegment.get().targetInsertOffset, 1);
+		EXPECT_EQ(GetLineData({2, 1}).lineSegment.get().targetInsertOffset, 1);
 	}
 
 	TEST_F(TransportLineTest, OnBuildRightChangeBendToSideOnly) {
@@ -793,6 +798,8 @@ namespace data::prototype
 		BuildTransportLine(jactorio::data::Orientation::down, {1, 0});
 
 		ValidateBendToSideOnly(worldData_, 1, 1);
+		EXPECT_EQ(GetLineData({1, 0}).lineSegment.get().targetInsertOffset, 0);
+		EXPECT_EQ(GetLineData({1, 2}).lineSegment.get().targetInsertOffset, 0);
 	}
 
 	TEST_F(TransportLineTest, OnBuildDownChangeBendToSideOnly) {
@@ -808,6 +815,8 @@ namespace data::prototype
 		BuildTransportLine(jactorio::data::Orientation::left, {2, 1});
 
 		ValidateBendToSideOnly(worldData_, 1, 1);
+		EXPECT_EQ(GetLineData({0, 1}).lineSegment.get().targetInsertOffset, 0);
+		EXPECT_EQ(GetLineData({2, 1}).lineSegment.get().targetInsertOffset, 0);
 	}
 
 	TEST_F(TransportLineTest, OnBuildLeftChangeBendToSideOnly) {
@@ -824,21 +833,28 @@ namespace data::prototype
 		BuildTransportLine(jactorio::data::Orientation::up, {1, 2});
 
 		ValidateBendToSideOnly(worldData_, 1, 1);
+		EXPECT_EQ(GetLineData({1, 0}).lineSegment.get().targetInsertOffset, 1);
+		EXPECT_EQ(GetLineData({1, 2}).lineSegment.get().targetInsertOffset, 1);
 	}
 
-
 	TEST_F(TransportLineTest, OnBuildUpUpdateNeighboringSegmentToSideOnly) {
-		/*   
+		/*
+		 *   ^
+		 *   ^
 		 * > ^ < 
 		 */
 		/* Order:
-		 *   
-		 * 1 3 2
+		 *
+		 *   3
+		 *   4
+		 * 1 5 2
 		 */
-		BuildTransportLine(jactorio::data::Orientation::right, {0, 0});
-		BuildTransportLine(jactorio::data::Orientation::left, {2, 0});
+		BuildTransportLine(jactorio::data::Orientation::right, {0, 2});
+		BuildTransportLine(jactorio::data::Orientation::left, {2, 2});
 
 		BuildTransportLine(jactorio::data::Orientation::up, {1, 0});
+		BuildTransportLine(jactorio::data::Orientation::up, {1, 1});
+		BuildTransportLine(jactorio::data::Orientation::up, {1, 2});
 
 
 		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
@@ -850,7 +866,7 @@ namespace data::prototype
 		{
 			jactorio::game::ChunkStructLayer& line_layer = transport_lines[0];
 			EXPECT_FLOAT_EQ(line_layer.positionX, 1);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 0);
+			EXPECT_FLOAT_EQ(line_layer.positionY, 2);
 
 			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
 			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
@@ -858,14 +874,17 @@ namespace data::prototype
 		{
 			jactorio::game::ChunkStructLayer& line_layer = transport_lines[1];
 			EXPECT_FLOAT_EQ(line_layer.positionX, 1);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 0);
+			EXPECT_FLOAT_EQ(line_layer.positionY, 2);
 
 			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
 			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
 		}
 
-		EXPECT_EQ(GetLineSegmentIndex({0, 0}), 1);
-		EXPECT_EQ(GetLineSegmentIndex({2, 0}), 1);
+		EXPECT_EQ(GetLineSegmentIndex({0, 2}), 1);
+		EXPECT_EQ(GetLineSegmentIndex({2, 2}), 1);
+
+		EXPECT_EQ(GetLineData({0, 2}).lineSegment.get().targetInsertOffset, 2);
+		EXPECT_EQ(GetLineData({2, 2}).lineSegment.get().targetInsertOffset, 2);
 	}
 
 	TEST_F(TransportLineTest, OnBuildRightUpdateNeighboringSegmentToSideOnly) {

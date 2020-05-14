@@ -51,9 +51,8 @@ namespace jactorio::data
 
 		LineOrientation orientation = LineOrientation::up;
 
-		// ======================================================================
-		// Methods
-
+		//
+		
 		///
 		/// \brief Updates orientation and member set for rendering 
 		void SetOrientation(LineOrientation orientation) {
@@ -63,33 +62,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Converts lineOrientation to placementOrientation
-		static Orientation ToOrientation(const LineOrientation line_orientation) {
-			switch (line_orientation) {
-			case LineOrientation::up:
-			case LineOrientation::right_up:
-			case LineOrientation::left_up:
-				return Orientation::up;
-
-			case LineOrientation::right:
-			case LineOrientation::up_right:
-			case LineOrientation::down_right:
-				return Orientation::right;
-
-			case LineOrientation::down:
-			case LineOrientation::right_down:
-			case LineOrientation::left_down:
-				return Orientation::down;
-
-			case LineOrientation::left:
-			case LineOrientation::up_left:
-			case LineOrientation::down_left:
-				return Orientation::left;
-
-			default:
-				assert(false);  // Missing switch case
-				return Orientation::up;
-			}
-		}
+		static Orientation ToOrientation(LineOrientation line_orientation);
 	};
 
 
@@ -150,6 +123,7 @@ namespace jactorio::data
 		                                         TransportLineData* c_left,
 		                                         TransportLineData* center);
 
+		// world_x, world_y is the location offset from the original provided as function parameter
 		using UpdateFunc = std::function<
 			void(game::WorldData& world_data,
 			     int world_x,
@@ -185,17 +159,6 @@ namespace jactorio::data
 		                              LineData4Way& line_data,
 		                              game::TransportSegment& line_segment);
 
-		///
-		/// \brief Updates the world tiles which references a transport segment, props: line_segment_index, line_segment
-		/// \param world_coords Beginning tile to update
-		/// \param line_segment Beginning segment, traveling inverse Orientation line_segment.length tiles, <br>
-		/// all tiles set to reference this
-		/// \param offset Offsets segment id numbering, world_coords must be also adjusted to the appropriate offset when calling
-		static void UpdateSegmentTiles(const game::WorldData& world_data,
-		                               const game::WorldData::WorldPair& world_coords,
-		                               game::TransportSegment& line_segment,
-		                               int offset = 0);
-
 		/*
 		 * Transport line grouping rules:
 		 *
@@ -229,7 +192,7 @@ namespace jactorio::data
 		/// \param target Removed line segment
 		static void DisconnectTargetSegment(game::WorldData& world_data,
 		                                    const game::WorldData::WorldPair& world_coords,
-		                                    TransportLineData* line_data, TransportLineData* target);
+		                                    TransportLineData* target, TransportLineData* line_data);
 	public:
 		void OnBuild(game::WorldData& world_data,
 		             const game::WorldData::WorldPair& world_coords,
