@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 11/09/2019
 
@@ -13,11 +12,11 @@ namespace data
 	{
 	protected:
 		void SetUp() override {
-			jactorio::data::py_interpreter_init();
+			jactorio::data::PyInterpreterInit();
 		}
 
 		void TearDown() override {
-			jactorio::data::py_interpreter_terminate();
+			jactorio::data::PyInterpreterTerminate();
 		}
 	};
 
@@ -25,9 +24,9 @@ namespace data
 	TEST_F(PybindManagerTest, InvalidPythonStr) {
 		bool caught = false;
 		try {
-			jactorio::data::py_exec("asdf");
+			jactorio::data::PyExec("asdf");
 		}
-		catch (jactorio::data::Data_exception& e) {
+		catch (jactorio::data::DataException& e) {
 			caught = true;
 		}
 
@@ -37,6 +36,6 @@ namespace data
 	}
 
 	TEST_F(PybindManagerTest, ValidPythonStr) {
-		EXPECT_EQ(jactorio::data::py_exec("print(\"Hello\")"), 0);
+		EXPECT_EQ(jactorio::data::PyExec("print(\"Hello\")"), 0);
 	}
 }

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -14,26 +13,26 @@
 
 namespace jactorio::game
 {
-	struct Game_input
+	struct GameInput
 	{
-		Mouse_selection mouse{};
-		Key_input key{};
+		MouseSelection mouse{};
+		KeyInput key{};
 	};
 
 	///
 	/// \brief Holds all data for the runtime of the game (Wrapped with Pybind)
 	/// Each sub data has its own mutex enabling concurrency
-	struct Game_data
+	struct GameData
 	{
-		Game_input input{};
-		Event_data event{};
-		Player_data player{};
-		World_data world{};
+		GameInput input{};
+		EventData event{};
+		PlayerData player{};
+		WorldData world{};
 	};
 
 	/// This should only be accessed from logic_loop or render_main,
 	/// any other should get references to members to remain testable
-	inline Game_data* game_data;
+	inline GameData* game_data;
 }
 
 #endif //JACTORIO_INCLUDE_GAME_GAME_DATA_H

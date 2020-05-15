@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 11/15/2019
 
@@ -13,40 +12,40 @@
 
 namespace jactorio::game
 {
-	class Key_input
+	class KeyInput
 	{
-		using input_callback = std::function<void()>;
-		using callback_id_t = uint64_t;
+		using InputCallback = std::function<void()>;
+		using CallbackId = uint64_t;
 
-		using input_tuple = std::tuple<inputKey,
-		                               inputAction,
-		                               inputMod>;
+		using InputTuple = std::tuple<InputKey,
+		                              InputAction,
+		                              InputMod>;
 
 		// ======================================================================
 		// Currently set input(s)
-		static std::unordered_map<inputKey, input_tuple> active_inputs_;
+		static std::unordered_map<InputKey, InputTuple> activeInputs_;
 
 	public:
 		///
 		/// \brief Sets the static of an input
 		/// \brief Callbacks for the respective inputs are called when dispatch_input_callbacks() is called
-		static void set_input(inputKey key, inputAction action, inputMod mods = inputMod::none);
+		static void SetInput(InputKey key, InputAction action, InputMod mods = InputMod::none);
 
 	private:
 		// Increments with each new assigned callback, one is probably not having 4 million registered callbacks
 		// so this doesn't need to be decremented
-		callback_id_t callback_id_ = 1;
+		CallbackId callbackId_ = 1;
 
 
 		// tuple format: key, action, mods
 		// id of callbacks registered to the tuple
-		std::unordered_map<input_tuple, std::vector<callback_id_t>,
-		                   core::hash<input_tuple>> callback_ids_{};
+		std::unordered_map<InputTuple, std::vector<CallbackId>,
+		                   core::hash<InputTuple>> callbackIds_{};
 
-		std::unordered_map<callback_id_t, input_callback> input_callbacks_{};
+		std::unordered_map<CallbackId, InputCallback> inputCallbacks_{};
 
 
-		void call_callbacks(const input_tuple& input);
+		void CallCallbacks(const InputTuple& input);
 
 	public:
 		///
@@ -55,36 +54,36 @@ namespace jactorio::game
 		/// \param action Key state
 		/// \param mods Modifier keys which also have to be pressed
 		/// \return id of the registered callback, use it to un-register it - 0 Indicates error
-		unsigned subscribe(const input_callback&, inputKey key, inputAction action, inputMod mods = inputMod::none);
+		unsigned Subscribe(const InputCallback&, InputKey key, InputAction action, InputMod mods = InputMod::none);
 
 
 		///
 		/// \brief Calls registered callbacks based on the input set with set_input(...)
-		void raise();
+		void Raise();
 
 
 		///
 		/// \brief Removes specified callback at callback_id
-		void unsubscribe(unsigned int callback_id, inputKey key, inputAction action, inputMod mods = inputMod::none);
+		void Unsubscribe(unsigned int callback_id, InputKey key, InputAction action, InputMod mods = InputMod::none);
 
 		///
 		/// \brief Deletes all callback data
-		void clear_data();
+		void ClearData();
 
 		// ======================================================================
 		// Conversion from GLFW macros
 
 		///
 		/// \brief Converts GLFW_ to enum
-		static inputKey to_input_key(int key);
+		static InputKey ToInputKey(int key);
 
 		///
 		/// \brief Converts GLFW_ to enum
-		static inputAction to_input_action(int action);
+		static InputAction ToInputAction(int action);
 
 		///
 		/// \brief Converts GLFW_MOD_ to enum
-		static inputMod to_input_mod(int mod);
+		static InputMod ToInputMod(int mod);
 	};
 }
 

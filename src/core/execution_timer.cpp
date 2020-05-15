@@ -1,25 +1,23 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 12/06/2019
 
 #include "core/execution_timer.h"
 
-std::map<std::string, double> jactorio::core::Execution_timer::measured_times =
-	std::map<std::string, double>();
-std::mutex jactorio::core::Execution_timer::measured_times_mutex_ = std::mutex{};
+std::map<std::string, double>
+jactorio::core::ExecutionTimer::measuredTimes = std::map<std::string, double>();
 
-jactorio::core::Execution_timer::Execution_timer(const std::string& name) {
-	timer_name_ = name;
-	start_time_ = std::chrono::high_resolution_clock::now();
+jactorio::core::ExecutionTimer::ExecutionTimer(const std::string& name) {
+	timerName_ = name;
+	startTime_ = std::chrono::high_resolution_clock::now();
 }
 
-jactorio::core::Execution_timer::~Execution_timer() {
-	stop();
+jactorio::core::ExecutionTimer::~ExecutionTimer() {
+	Stop();
 }
 
-void jactorio::core::Execution_timer::stop() const noexcept {
+void jactorio::core::ExecutionTimer::Stop() const noexcept {
 	const long long start =
-		std::chrono::time_point_cast<std::chrono::microseconds>(start_time_)
+		std::chrono::time_point_cast<std::chrono::microseconds>(startTime_)
 		.time_since_epoch().count();
 
 	const auto end_time = std::chrono::high_resolution_clock::now();
@@ -30,9 +28,9 @@ void jactorio::core::Execution_timer::stop() const noexcept {
 	// Microseconds conversion to milliseconds
 	const double milliseconds = (end - start) * 0.001f;
 
-	std::lock_guard guard(measured_times_mutex_);
+	std::lock_guard guard(measuredTimesMutex_);
 	try {
-		measured_times[timer_name_] = milliseconds;
+		measuredTimes[timerName_] = milliseconds;
 	}
 	catch (std::bad_alloc&) {
 	}

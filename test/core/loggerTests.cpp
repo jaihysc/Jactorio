@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -8,7 +7,7 @@
 
 namespace core
 {
-	std::string remove_timestamp(std::string str) {
+	std::string RemoveTimestamp(std::string str) {
 		int i = 0;
 		while (str[i] < 'A' || str[i] > 'Z')
 			i++;
@@ -17,8 +16,8 @@ namespace core
 	}
 
 	TEST(Logger, CreateLogMessage) {
-		std::string logged_message = gen_log_message(
-			jactorio::core::logSeverity::error,
+		std::string logged_message = GenLogMessage(
+			jactorio::core::LogSeverity::error,
 			"Some component, such as Networking",
 			0,
 			"Oh no, something went wrong");
@@ -26,17 +25,17 @@ namespace core
 		// Timestamp not tested
 		// Substring away timestamp to first open square bracket
 
-		EXPECT_EQ(remove_timestamp(logged_message),
-		          "ERROR    [Some component, such as Networking:0] Oh no, something went wrong\n");
+		EXPECT_EQ(RemoveTimestamp(logged_message),
+		          "ERROR    [Some component, such as Networking:0] Oh no, something went wrong\033[0m\n");
 
-		logged_message = gen_log_message(
-			jactorio::core::logSeverity::info,
+		logged_message = GenLogMessage(
+			jactorio::core::LogSeverity::info,
 			"Renderer",
 			10,
 			"Just letting you know something");
 
-		EXPECT_EQ(remove_timestamp(logged_message),
-		          "Info     [Renderer:10] Just letting you know something\n");
+		EXPECT_EQ(RemoveTimestamp(logged_message),
+		          "Info     [Renderer:10] Just letting you know something\033[0m\n");
 
 		LOG_MESSAGE(debug, "hello");
 	}

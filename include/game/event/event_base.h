@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -10,31 +9,31 @@
 #include "jactorio.h"
 
 // Fast way to implement pure virtual functions
-#define EVENT_TYPE(type) J_NODISCARD eventType get_event_type() const override { return eventType::type; }
-#define EVENT_CATEGORY(category) J_NODISCARD int get_category_flags() const override { return category; }
+#define EVENT_TYPE(type) J_NODISCARD EventType GetEventType() const override { return EventType::type; }
+#define EVENT_CATEGORY(category) J_NODISCARD int GetCategoryFlags() const override { return category; }
 
 namespace jactorio::game
 {
-	class Event_base
+	class EventBase
 	{
 	protected:
-		Event_base() = default;
-		virtual ~Event_base() = default;
+		EventBase()          = default;
+		virtual ~EventBase() = default;
 
 	public:
-		Event_base(const Event_base& other) = default;
-		Event_base(Event_base&& other) noexcept = default;
-		Event_base& operator=(const Event_base& other) = default;
-		Event_base& operator=(Event_base&& other) noexcept = default;
+		EventBase(const EventBase& other)                = default;
+		EventBase(EventBase&& other) noexcept            = default;
+		EventBase& operator=(const EventBase& other)     = default;
+		EventBase& operator=(EventBase&& other) noexcept = default;
 
 
 		bool handled = false;  // Set this to true to prevent this event from being carried further
 
-		J_NODISCARD virtual eventType get_event_type() const = 0;
-		J_NODISCARD virtual int get_category_flags() const = 0;
+		J_NODISCARD virtual EventType GetEventType() const = 0;
+		J_NODISCARD virtual int GetCategoryFlags() const = 0;
 
-		J_NODISCARD bool in_category(const eventCategory category) const {
-			return get_category_flags() & static_cast<int>(category);
+		J_NODISCARD bool InCategory(const EventCategory category) const {
+			return GetCategoryFlags() & static_cast<int>(category);
 		}
 	};
 }

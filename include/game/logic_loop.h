@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -8,7 +7,7 @@
 
 namespace jactorio::game
 {
-	void init_logic_loop();
+	void InitLogicLoop();
 
 	inline bool logic_thread_should_exit = false;
 }

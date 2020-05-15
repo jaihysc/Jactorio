@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/12/2020
 
@@ -11,42 +10,41 @@ namespace renderer
 	class RendererLayerTest : public testing::Test
 	{
 	protected:
-		jactorio::renderer::Renderer_layer r_layer_;
-		
+		jactorio::renderer::RendererLayer rLayer_;
 	};
 
 	TEST_F(RendererLayerTest, PushBack) {
 		// Expect buffer to be expanded to accommodate
 		// It will push back at the next place after the highest set
-		r_layer_.reserve(10);
+		rLayer_.Reserve(10);
 
-		r_layer_.set(9,
-		            jactorio::renderer::Renderer_layer::Element(
-			            jactorio::core::Quad_position(
-							{0.0, 0.0},
-							{0.0, 0.0}
+		rLayer_.Set(9,
+		            jactorio::renderer::RendererLayer::Element(
+			            jactorio::core::QuadPosition(
+				            {0.0, 0.0},
+				            {0.0, 0.0}
 			            ),
-		            jactorio::core::Quad_position(
-						{0.0, 0.0},
-						{0.0, 0.0}
+			            jactorio::core::QuadPosition(
+				            {0.0, 0.0},
+				            {0.0, 0.0}
 			            )
 		            )
 		);
 		// Resize
-		r_layer_.push_back(
-			jactorio::renderer::Renderer_layer::Element(
-				jactorio::core::Quad_position(
+		rLayer_.PushBack(
+			jactorio::renderer::RendererLayer::Element(
+				jactorio::core::QuadPosition(
 					{0.11, 0.22},
 					{0.33, 0.44}
 				),
-				jactorio::core::Quad_position(
+				jactorio::core::QuadPosition(
 					{0.1, 0.2},
 					{0.3, 0.4}
 				)
 			)
 		);
 
-		const auto vertex_ptr = r_layer_.get_buf_vertex().ptr;
+		const auto vertex_ptr = rLayer_.GetBufVertex().ptr;
 
 		EXPECT_EQ(vertex_ptr[80], 0.11f);
 		EXPECT_EQ(vertex_ptr[81], 0.22f);
@@ -60,7 +58,7 @@ namespace renderer
 		EXPECT_EQ(vertex_ptr[86], 0.11f);
 		EXPECT_EQ(vertex_ptr[87], 0.44f);
 
-		const auto uv_ptr = r_layer_.get_buf_uv().ptr;
+		const auto uv_ptr = rLayer_.GetBufUv().ptr;
 		EXPECT_EQ(uv_ptr[80], 0.1f);
 		EXPECT_EQ(uv_ptr[81], 0.4f);
 
@@ -82,21 +80,21 @@ namespace renderer
 	TEST_F(RendererLayerTest, SetElement) {
 		// Set element at element position 1
 		// Reading from the buffer, this is index 8 - 15
-		r_layer_.reserve(10);
-		r_layer_.set(1,
-		            jactorio::renderer::Renderer_layer::Element(
-			            jactorio::core::Quad_position(
+		rLayer_.Reserve(10);
+		rLayer_.Set(1,
+		            jactorio::renderer::RendererLayer::Element(
+			            jactorio::core::QuadPosition(
 				            {0.11, 0.22},
 				            {0.33, 0.44}
 			            ),
-			            jactorio::core::Quad_position(
+			            jactorio::core::QuadPosition(
 				            {0.1, 0.2},
 				            {0.3, 0.4}
 			            )
 		            )
 		);
 
-		const auto vertex_ptr = r_layer_.get_buf_vertex().ptr;
+		const auto vertex_ptr = rLayer_.GetBufVertex().ptr;
 
 		EXPECT_EQ(vertex_ptr[8], 0.11f);
 		EXPECT_EQ(vertex_ptr[9], 0.22f);
@@ -110,7 +108,7 @@ namespace renderer
 		EXPECT_EQ(vertex_ptr[14], 0.11f);
 		EXPECT_EQ(vertex_ptr[15], 0.44f);
 
-		const auto uv_ptr = r_layer_.get_buf_uv().ptr;
+		const auto uv_ptr = rLayer_.GetBufUv().ptr;
 		EXPECT_EQ(uv_ptr[8 ], 0.1f);
 		EXPECT_EQ(uv_ptr[9 ], 0.4f);
 
@@ -126,34 +124,34 @@ namespace renderer
 
 	TEST_F(RendererLayerTest, Reserve) {
 		// When reserving, the count should be updated appropriately for the buffers
-		r_layer_.reserve(10);
+		rLayer_.Reserve(10);
 
-		EXPECT_EQ(r_layer_.get_capacity(), 10);
+		EXPECT_EQ(rLayer_.GetCapacity(), 10);
 
-		EXPECT_EQ(r_layer_.get_buf_vertex().count, 10);
-		EXPECT_EQ(r_layer_.get_buf_uv().count, 10);
+		EXPECT_EQ(rLayer_.GetBufVertex().count, 10);
+		EXPECT_EQ(rLayer_.GetBufUv().count, 10);
 	}
 
 	TEST_F(RendererLayerTest, Resize) {
 		// Ensure values still remain in correct places after resizing
-		r_layer_.reserve(10);
-		r_layer_.set(1,
-		            jactorio::renderer::Renderer_layer::Element(
-			            jactorio::core::Quad_position(
+		rLayer_.Reserve(10);
+		rLayer_.Set(1,
+		            jactorio::renderer::RendererLayer::Element(
+			            jactorio::core::QuadPosition(
 				            {0.11, 0.22},
 				            {0.33, 0.44}
 			            ),
-			            jactorio::core::Quad_position(
+			            jactorio::core::QuadPosition(
 				            {0.1, 0.2},
 				            {0.3, 0.4}
 			            )
 		            )
 		);
 
-		r_layer_.resize(5);
+		rLayer_.Resize(5);
 
 		// Ensure values still remain after resizing
-		const auto vertex_ptr = r_layer_.get_buf_vertex().ptr;
+		const auto vertex_ptr = rLayer_.GetBufVertex().ptr;
 		EXPECT_EQ(vertex_ptr[8], 0.11f);
 		EXPECT_EQ(vertex_ptr[9], 0.22f);
 
@@ -179,7 +177,7 @@ namespace renderer
 		EXPECT_EQ(vertex_ptr[15], 0.22f);
 		 */
 
-		const auto uv_ptr = r_layer_.get_buf_uv().ptr;
+		const auto uv_ptr = rLayer_.GetBufUv().ptr;
 		EXPECT_EQ(uv_ptr[8 ], 0.1f);
 		EXPECT_EQ(uv_ptr[9 ], 0.4f);
 
@@ -192,32 +190,32 @@ namespace renderer
 		EXPECT_EQ(uv_ptr[14], 0.1f);
 		EXPECT_EQ(uv_ptr[15], 0.2f);
 
-		EXPECT_EQ(r_layer_.get_capacity(), 5);
-		EXPECT_EQ(r_layer_.get_element_count(), 2);  // It assumes an element exists at position 0 since one was set at 1
+		EXPECT_EQ(rLayer_.GetCapacity(), 5);
+		EXPECT_EQ(rLayer_.GetElementCount(), 2);  // It assumes an element exists at position 0 since one was set at 1
 
-		EXPECT_EQ(r_layer_.get_buf_vertex().count, 5);
-		EXPECT_EQ(r_layer_.get_buf_uv().count, 5);
+		EXPECT_EQ(rLayer_.GetBufVertex().count, 5);
+		EXPECT_EQ(rLayer_.GetBufUv().count, 5);
 	}
 
 	TEST_F(RendererLayerTest, DeleteBuffer) {
 		// When reserving, the count should be updated appropriately for the buffers
-		r_layer_.reserve(10);
-		r_layer_.delete_buffer();
+		rLayer_.Reserve(10);
+		rLayer_.DeleteBuffer();
 
-		EXPECT_EQ(r_layer_.get_capacity(), 0);
+		EXPECT_EQ(rLayer_.GetCapacity(), 0);
 
-		EXPECT_EQ(r_layer_.get_buf_vertex().count, 0);
-		EXPECT_EQ(r_layer_.get_buf_uv().count, 0);
+		EXPECT_EQ(rLayer_.GetBufVertex().count, 0);
+		EXPECT_EQ(rLayer_.GetBufUv().count, 0);
 
-		EXPECT_EQ(r_layer_.get_buf_vertex().ptr, nullptr);
-		EXPECT_EQ(r_layer_.get_buf_uv().ptr, nullptr);
+		EXPECT_EQ(rLayer_.GetBufVertex().ptr, nullptr);
+		EXPECT_EQ(rLayer_.GetBufUv().ptr, nullptr);
 	}
 
 	TEST(RendererLayer, GenRenderGridIndices) {
 		unsigned int* grid = nullptr;
-		jactorio::core::Capturing_guard<void()> guard([&] { delete[] grid; });
+		jactorio::core::CapturingGuard<void()> guard([&] { delete[] grid; });
 
-		grid = jactorio::renderer::Renderer_layer::gen_render_grid_indices(121);
+		grid = jactorio::renderer::RendererLayer::GenRenderGridIndices(121);
 		// Indices generation pattern:
 		// top left
 		// top right

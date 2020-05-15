@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -23,18 +22,18 @@ std::array<int, 2> viewport_size{0, 0};
 bool update_viewport = true;
 
 GLFWwindow* glfw_window = nullptr;
-GLFWmonitor* monitor = nullptr;
+GLFWmonitor* monitor    = nullptr;
 
 bool gl_context_active = false;
 
 
 /// Fullscreen
-bool jactorio::renderer::window_manager::is_fullscreen() {
+bool jactorio::renderer::IsFullscreen() {
 	return glfwGetWindowMonitor(glfw_window) != nullptr;
 }
 
-void jactorio::renderer::window_manager::set_fullscreen(const bool fullscreen) {
-	if (is_fullscreen() == fullscreen)
+void jactorio::renderer::SetFullscreen(const bool fullscreen) {
+	if (IsFullscreen() == fullscreen)
 		return;
 
 	if (fullscreen) {
@@ -60,9 +59,9 @@ void jactorio::renderer::window_manager::set_fullscreen(const bool fullscreen) {
 
 ///
 
-int jactorio::renderer::window_manager::init(const int width, const int height) {
+int jactorio::renderer::InitWindow(const int width, const int height) {
 	// GLFW initialization
-	init_glfw_error_handling();
+	InitGlfwErrorHandling();
 
 	if (!glfwInit()) {
 		LOG_MESSAGE(critical, "glfw initialization failed");
@@ -89,10 +88,10 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		const auto icon = data::Sprite("core/graphics/jactorio.png");
 		// Convert the loaded Image into a GLFWImage
 		GLFWimage icons[1];
-		icons[0].pixels = const_cast<unsigned char*>(icon.get_sprite_data_ptr());
+		icons[0].pixels = const_cast<unsigned char*>(icon.GetSpritePtr());
 
-		icons[0].width  = static_cast<int>(icon.get_width());
-		icons[0].height = static_cast<int>(icon.get_height());
+		icons[0].width  = static_cast<int>(icon.GetWidth());
+		icons[0].height = static_cast<int>(icon.GetHeight());
 
 		glfwSetWindowIcon(glfw_window, 1, icons);
 	}
@@ -108,7 +107,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 		if (cx > 0 && cy > 0) {
 			// glViewport is critical, changes the size of the rendering area
 			glViewport(0, 0, cx, cy);
-			set_recalculate_renderer(cx, cy);
+			SetRecalculateRenderer(cx, cy);
 
 			LOG_MESSAGE_f(debug, "Resolution changed to %dx%d", cx, cy);
 		}
@@ -117,25 +116,25 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 	// Mouse and keyboard callbacks
 	glfwSetKeyCallback(
 		glfw_window, [](GLFWwindow* /*window*/, const int key, int /*scancode*/, const int action, const int mod) {
-			game::Key_input::set_input(
-				game::Key_input::to_input_key(key),
-				game::Key_input::to_input_action(action),
-				game::Key_input::to_input_mod(mod));
+			game::KeyInput::SetInput(
+				game::KeyInput::ToInputKey(key),
+				game::KeyInput::ToInputAction(action),
+				game::KeyInput::ToInputMod(mod));
 		});
 
 	glfwSetMouseButtonCallback(glfw_window, [](GLFWwindow* /*window*/, const int key, const int action, const int mod) {
-		game::Key_input::set_input(
-			game::Key_input::to_input_key(key),
-			game::Key_input::to_input_action(action),
-			game::Key_input::to_input_mod(mod));
+		game::KeyInput::SetInput(
+			game::KeyInput::ToInputKey(key),
+			game::KeyInput::ToInputAction(action),
+			game::KeyInput::ToInputMod(mod));
 	});
 
 	glfwSetScrollCallback(glfw_window, [](GLFWwindow* /*window*/, double /*xoffset*/, const double yoffset) {
-		if (!imgui_manager::input_captured)
-			get_base_renderer()->tile_projection_matrix_offset += static_cast<float>(yoffset * 10);
+		if (!input_captured)
+			GetBaseRenderer()->tileProjectionMatrixOffset += static_cast<float>(yoffset * 10);
 	});
 	glfwSetCursorPosCallback(glfw_window, [](GLFWwindow* /*window*/, const double xpos, const double ypos) {
-		game::set_cursor_position(xpos, ypos);
+		game::SetCursorPosition(xpos, ypos);
 	});
 
 	// Enables transparency in textures
@@ -148,7 +147,7 @@ int jactorio::renderer::window_manager::init(const int width, const int height) 
 }
 
 
-int jactorio::renderer::window_manager::terminate() {
+int jactorio::renderer::TerminateWindow() {
 	glfwDestroyWindow(glfw_window);
 	glfwTerminate();
 
@@ -160,10 +159,10 @@ int jactorio::renderer::window_manager::terminate() {
 
 /// Window
 
-GLFWwindow* jactorio::renderer::window_manager::get_window() {
+GLFWwindow* jactorio::renderer::GetWindow() {
 	return glfw_window;
 }
 
-bool jactorio::renderer::window_manager::context_active() {
+bool jactorio::renderer::WindowContextActive() {
 	return gl_context_active;
 }

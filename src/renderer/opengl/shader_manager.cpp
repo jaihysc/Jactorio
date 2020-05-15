@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -22,7 +21,7 @@ glm::mat4 mvp_matrix;
  * Uniform location for "u_model_view_projection_matrix"
  * Must be set before MVP can be updated
  */
-void jactorio::renderer::set_mvp_uniform_location(const int location) {
+void jactorio::renderer::SetMvpUniformLocation(const int location) {
 	mvp_uniform_location = location;
 
 	LOG_MESSAGE(debug, "MVP uniform location set")
@@ -34,7 +33,7 @@ void jactorio::renderer::set_mvp_uniform_location(const int location) {
 void calculate_mvp_matrix() {
 	if (calculate_matrix) {
 		// Multiply backwards: projection, view, model
-		mvp_matrix = projection * view * model;
+		mvp_matrix       = projection * view * model;
 		calculate_matrix = false;
 	}
 }
@@ -42,27 +41,27 @@ void calculate_mvp_matrix() {
 /*!
  * Sends current mvp matrices to GPU
  */
-void jactorio::renderer::update_shader_mvp() {
+void jactorio::renderer::UpdateShaderMvp() {
 	calculate_mvp_matrix();
-	Shader::set_uniform_mat_4f(mvp_uniform_location, mvp_matrix);
+	Shader::SetUniformMat4F(mvp_uniform_location, mvp_matrix);
 }
 
-const glm::mat4& jactorio::renderer::get_mvp_matrix() {
+const glm::mat4& jactorio::renderer::GetMvpMatrix() {
 	calculate_mvp_matrix();
 	return mvp_matrix;
 }
 
-void jactorio::renderer::setg_model_matrix(const glm::mat4& matrix) {
-	model = matrix;
+void jactorio::renderer::SetgModelMatrix(const glm::mat4& matrix) {
+	model            = matrix;
 	calculate_matrix = true;
 }
 
-void jactorio::renderer::setg_view_matrix(const glm::mat4& matrix) {
-	view = matrix;
+void jactorio::renderer::SetgViewMatrix(const glm::mat4& matrix) {
+	view             = matrix;
 	calculate_matrix = true;
 }
 
-void jactorio::renderer::setg_projection_matrix(const glm::mat4& matrix) {
-	projection = matrix;
+void jactorio::renderer::SetgProjectionMatrix(const glm::mat4& matrix) {
+	projection       = matrix;
 	calculate_matrix = true;
 }

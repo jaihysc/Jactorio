@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/12/2020
 
@@ -6,17 +5,12 @@
 #define JACTORIO_INCLUDE_CORE_DATA_TYPE_H
 #pragma once
 
-#include <decimal.h>
-
 #include <tuple>
 
 // Data types of the various components within Jactorio
 namespace jactorio
 {
-	constexpr int transport_line_decimal_place = 3;
-	using transport_line_offset = dec::decimal<transport_line_decimal_place>;
-
-	using game_tick_t = uint64_t;
+	using GameTickT = uint64_t;
 }
 
 namespace jactorio::core
@@ -95,70 +89,70 @@ namespace jactorio::core
 	};
 
 
-	struct Quad_position
+	struct QuadPosition
 	{
-		Quad_position() = default;
+		QuadPosition() = default;
 
-		Quad_position(const Position2<float> top_left, const Position2<float> bottom_right)
-			: top_left(top_left), bottom_right(bottom_right) {
+		QuadPosition(const Position2<float> top_left, const Position2<float> bottom_right)
+			: topLeft(top_left), bottomRight(bottom_right) {
 		}
 
-		Position2<float> top_left;
-		Position2<float> bottom_right;
+		Position2<float> topLeft;
+		Position2<float> bottomRight;
 
-		Quad_position operator+(const Quad_position& other) const {
-			Quad_position result;
-			result.top_left = this->top_left + other.top_left;
-			result.bottom_right = this->bottom_right + other.bottom_right;
+		QuadPosition operator+(const QuadPosition& other) const {
+			QuadPosition result;
+			result.topLeft     = this->topLeft + other.topLeft;
+			result.bottomRight = this->bottomRight + other.bottomRight;
 
 			return result;
 		}
 
-		void operator+=(const Quad_position& other) {
-			this->top_left += other.top_left;
-			this->bottom_right += other.bottom_right;
+		void operator+=(const QuadPosition& other) {
+			this->topLeft += other.topLeft;
+			this->bottomRight += other.bottomRight;
 		}
 
 
-		Quad_position operator-(const Quad_position& other) const {
-			Quad_position result;
-			result.top_left = this->top_left - other.top_left;
-			result.bottom_right = this->bottom_right - other.bottom_right;
+		QuadPosition operator-(const QuadPosition& other) const {
+			QuadPosition result;
+			result.topLeft     = this->topLeft - other.topLeft;
+			result.bottomRight = this->bottomRight - other.bottomRight;
 
 			return result;
 		}
 
-		void operator-=(const Quad_position& other) {
-			this->top_left -= other.top_left;
-			this->bottom_right -= other.bottom_right;
+		void operator-=(const QuadPosition& other) {
+			this->topLeft -= other.topLeft;
+			this->bottomRight -= other.bottomRight;
 		}
 
 
-		Quad_position operator*(const Quad_position& other) const {
-			Quad_position result;
-			result.top_left = this->top_left * other.top_left;
-			result.bottom_right = this->bottom_right * other.bottom_right;
+		QuadPosition operator*(const QuadPosition& other) const {
+			QuadPosition result;
+			result.topLeft     = this->topLeft * other.topLeft;
+			result.bottomRight = this->bottomRight * other.bottomRight;
 
 			return result;
 		}
 
-		void operator*=(const Quad_position& other) {
-			this->top_left *= other.top_left;
-			this->bottom_right *= other.bottom_right;
+		void operator*=(const QuadPosition& other) {
+			this->topLeft *= other.topLeft;
+			this->bottomRight *= other.bottomRight;
 		}
 
 
-		Quad_position operator/(const Quad_position& other) const {
-			Quad_position result;
-			result.top_left = this->top_left / other.top_left;
-			result.bottom_right = this->bottom_right / other.bottom_right;
+		QuadPosition operator/(const QuadPosition& other) const {
+			QuadPosition result;
+			result.topLeft     = this->topLeft / other.topLeft;
+			result.bottomRight = this->bottomRight / other.bottomRight;
 
 			return result;
 		}
 
-		void operator/=(const Quad_position& other) {
-			this->top_left /= other.top_left;
-			this->bottom_right /= other.bottom_right;
+		void operator/=(const QuadPosition& other) {
+			this->topLeft /= other.topLeft;
+			this->bottomRight /= other.bottomRight;
 		}
 	};
 

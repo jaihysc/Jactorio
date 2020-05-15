@@ -1,11 +1,10 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 11/09/2019
 
 #include "data/pybind/pybind_manager.h"
 
-#include <pybind11/embed.h>
 #include <sstream>
+#include <pybind11/embed.h>
 
 #include "core/filesystem.h"
 #include "core/logger.h"
@@ -21,14 +20,14 @@ py::object py_stderr;
 py::object py_stdout_buffer;
 py::object py_stderr_buffer;
 
-int jactorio::data::py_exec(const std::string& python_str, const std::string& file_name) {
+int jactorio::data::PyExec(const std::string& python_str, const std::string& file_name) {
 	try {
 		// Redirect python sys.stdout to c++
 		const auto string_io = py::module::import("io").attr("StringIO");
-		py_stdout_buffer = string_io();
-		py_stderr_buffer = string_io();
+		py_stdout_buffer     = string_io();
+		py_stderr_buffer     = string_io();
 
-		const auto sys = py::module::import("sys");
+		const auto sys     = py::module::import("sys");
 		sys.attr("stdout") = py_stdout_buffer;
 		sys.attr("stderr") = py_stderr_buffer;
 
@@ -58,12 +57,12 @@ int jactorio::data::py_exec(const std::string& python_str, const std::string& fi
 	catch (py::error_already_set& err) {
 		std::ostringstream oss;
 		oss << file_name << "\n" << err.what();
-		throw Data_exception(oss.str());
+		throw DataException(oss.str());
 	}
 
 }
 
-void jactorio::data::py_interpreter_init() {
+void jactorio::data::PyInterpreterInit() {
 	py::initialize_interpreter();
 
 	// Used to redirect python sys.stdout
@@ -74,8 +73,8 @@ void jactorio::data::py_interpreter_init() {
 
 		// Include the data_manager::data_folder/ as a python search path to shorten imports
 		std::stringstream s;
-		s << core::get_executing_directory() << "/"
-			<< data_folder << "/";
+		s << core::GetExecutingDirectory() << "/"
+			<< kDataFolder << "/";
 		sysm.attr("path").attr("append")(s.str());
 	}
 
@@ -85,9 +84,9 @@ void jactorio::data::py_interpreter_init() {
 	LOG_MESSAGE(info, "Python interpreter initialized")
 }
 
-void jactorio::data::py_interpreter_terminate() {
+void jactorio::data::PyInterpreterTerminate() {
 	// Redirect python sys.stdout
-	const auto sysm = py::module::import("sys");
+	const auto sysm     = py::module::import("sys");
 	sysm.attr("stdout") = py_stdout;
 	sysm.attr("stderr") = py_stderr;
 

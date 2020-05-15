@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/15/2020
 
@@ -43,7 +42,7 @@ void parse_error(const std::string& message) {
 	str_s << "Localization parse failed " << line_number << ":" << char_number << "\n" << message;
 	LOG_MESSAGE_f(error, "%s", str_s.str().c_str());
 
-	throw jactorio::data::Data_exception(str_s.str().c_str());
+	throw jactorio::data::DataException(str_s.str().c_str());
 }
 
 
@@ -74,7 +73,7 @@ void parse_eol(const std::string& directory_prefix) {
 		for (auto& prototype : category) {
 			if (prototype.first == str_s.str()) {
 				found = true;
-				prototype.second->set_localized_name(current_line_buffer);
+				prototype.second->SetLocalizedName(current_line_buffer);
 
 				LOG_MESSAGE_f(debug, "Registered local '%s' '%s'", str_s.str().c_str(), current_line_buffer.c_str());
 				goto loop_exit;
@@ -90,7 +89,7 @@ loop_exit:
 	line_number++;
 }
 
-void jactorio::data::local_parse(const std::string& file_str, const std::string& directory_prefix) {
+void jactorio::data::LocalParse(const std::string& file_str, const std::string& directory_prefix) {
 	line_number = 1;
 	reset_variables();
 
@@ -144,11 +143,11 @@ void jactorio::data::local_parse(const std::string& file_str, const std::string&
 	parse_eol(directory_prefix);
 }
 
-int jactorio::data::local_parse_s(const std::string& file_str, const std::string& directory_prefix) {
+int jactorio::data::LocalParseNoThrow(const std::string& file_str, const std::string& directory_prefix) {
 	try {
-		local_parse(file_str, directory_prefix);
+		LocalParse(file_str, directory_prefix);
 	}
-	catch (Data_exception&) {
+	catch (DataException&) {
 		return 1;
 	}
 

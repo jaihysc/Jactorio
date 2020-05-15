@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -15,13 +14,13 @@
 // Do not directly call this
 // Wrap a function with DEBUG_BREAK_IF_FALSE to automatically call this when an error occurs and pause code execution
 // Gets and prints all errors from opengl
-bool jactorio::renderer::opengl_print_errors(const char* function_name, const char* file, const int line) {
+bool jactorio::renderer::OpenglPrintErrors(const char* function_name, const char* file, const int line) {
 	// Do not log error if there is no opengl context
-	if (!window_manager::context_active())
+	if (!WindowContextActive())
 		return false;
 
 	const unsigned int max_errors = 1000;
-	unsigned int error_count = 0;  // Break after writing 1000 errors, in case this is stuck in a loop
+	unsigned int error_count      = 0;  // Break after writing 1000 errors, in case this is stuck in a loop
 
 	bool found_error = false;
 
@@ -47,12 +46,12 @@ bool jactorio::renderer::opengl_print_errors(const char* function_name, const ch
 // Do not directly call this
 // Wrap a function with DEBUG_BREAK_IF_FALSE to automatically call this when an error occurs and pause code execution
 // Clears all existing opengl errors
-void jactorio::renderer::opengl_clear_errors() {	// Do not log error if there is no opengl context
-	if (!window_manager::context_active())
+void jactorio::renderer::OpenglClearErrors() {	// Do not log error if there is no opengl context
+	if (!WindowContextActive())
 		return;
 
 	const unsigned int max_errors = 1000;
-	unsigned int error_count = 0;  // Break after writing 1000 errors, in case this is stuck in a loop
+	unsigned int error_count      = 0;  // Break after writing 1000 errors, in case this is stuck in a loop
 
 	while (error_count < max_errors && glGetError() != GL_NO_ERROR)
 		error_count++;
@@ -64,11 +63,11 @@ void jactorio::renderer::opengl_clear_errors() {	// Do not log error if there is
 
 
 // GLFW errors
-static void error_callback(const int error, const char* description) {
+static void ErrorCallback(const int error, const char* description) {
 	LOG_MESSAGE_f(error, "GLFW OpenGL: %d - %s", error, description);
 }
 
 // Initializes error handling for GLFW errors
-void jactorio::renderer::init_glfw_error_handling() {
-	glfwSetErrorCallback(error_callback);
+void jactorio::renderer::InitGlfwErrorHandling() {
+	glfwSetErrorCallback(ErrorCallback);
 }

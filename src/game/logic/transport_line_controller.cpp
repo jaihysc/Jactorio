@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -11,43 +10,43 @@
 #include "game/logic/transport_line_structure.h"
 #include "game/world/world_data.h"
 
-void apply_termination_deduction_l(const jactorio::game::Transport_line_segment::terminationType termination_type,
-                                   jactorio::transport_line_offset& offset) {
+void ApplyTerminationDeductionL(const jactorio::game::TransportSegment::TerminationType termination_type,
+                                jactorio::game::TransportLineOffset& offset) {
 	switch (termination_type) {
 		// Feeding into another belt also needs to be deducted to feed at the right offset on the target belt
-	case jactorio::game::Transport_line_segment::terminationType::left_only:
-	case jactorio::game::Transport_line_segment::terminationType::bend_left:
-		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
-			jactorio::game::Transport_line_segment::bend_left_l_reduction);
+	case jactorio::game::TransportSegment::TerminationType::left_only:
+	case jactorio::game::TransportSegment::TerminationType::bend_left:
+		offset -= dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
+			jactorio::game::TransportSegment::kBendLeftLReduction);
 		break;
 
-	case jactorio::game::Transport_line_segment::terminationType::right_only:
-	case jactorio::game::Transport_line_segment::terminationType::bend_right:
-		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
-			jactorio::game::Transport_line_segment::bend_right_l_reduction);
+	case jactorio::game::TransportSegment::TerminationType::right_only:
+	case jactorio::game::TransportSegment::TerminationType::bend_right:
+		offset -= dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
+			jactorio::game::TransportSegment::kBendRightLReduction);
 		break;
 
-	case jactorio::game::Transport_line_segment::terminationType::straight:
+	case jactorio::game::TransportSegment::TerminationType::straight:
 		break;
 	}
 }
 
-void apply_termination_deduction_r(const jactorio::game::Transport_line_segment::terminationType termination_type,
-                                   jactorio::transport_line_offset& offset) {
+void ApplyTerminationDeductionR(const jactorio::game::TransportSegment::TerminationType termination_type,
+                                jactorio::game::TransportLineOffset& offset) {
 	switch (termination_type) {
-	case jactorio::game::Transport_line_segment::terminationType::left_only:
-	case jactorio::game::Transport_line_segment::terminationType::bend_left:
-		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
-			jactorio::game::Transport_line_segment::bend_left_r_reduction);
+	case jactorio::game::TransportSegment::TerminationType::left_only:
+	case jactorio::game::TransportSegment::TerminationType::bend_left:
+		offset -= dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
+			jactorio::game::TransportSegment::kBendLeftRReduction);
 		break;
 
-	case jactorio::game::Transport_line_segment::terminationType::right_only:
-	case jactorio::game::Transport_line_segment::terminationType::bend_right:
-		offset -= dec::decimal_cast<jactorio::transport_line_decimal_place>(
-			jactorio::game::Transport_line_segment::bend_right_r_reduction);
+	case jactorio::game::TransportSegment::TerminationType::right_only:
+	case jactorio::game::TransportSegment::TerminationType::bend_right:
+		offset -= dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
+			jactorio::game::TransportSegment::kBendRightRReduction);
 		break;
 
-	case jactorio::game::Transport_line_segment::terminationType::straight:
+	case jactorio::game::TransportSegment::TerminationType::straight:
 		break;
 	}
 }
@@ -56,13 +55,13 @@ void apply_termination_deduction_r(const jactorio::game::Transport_line_segment:
 /// \brief Sets index to the next item with a distance greater than item_width and decrement it
 /// If there is no item AND has_target_segment == false, index is set as size of transport line
 /// \return true if an item was decremented
-J_NODISCARD bool move_next_item(const jactorio::transport_line_offset& tiles_moved,
-                                std::deque<jactorio::game::transport_line_item>& line_side,
-                                uint16_t& index, const bool has_target_segment) {
+J_NODISCARD bool MoveNextItem(const jactorio::game::TransportLineOffset& tiles_moved,
+                              std::deque<jactorio::game::TransportLineItem>& line_side,
+                              uint16_t& index, const bool has_target_segment) {
 	for (decltype(line_side.size()) i = index + 1; i < line_side.size(); ++i) {
 		auto& i_item_offset = line_side[i].first;
-		if (i_item_offset > dec::decimal_cast<jactorio::transport_line_decimal_place>(
-			jactorio::game::item_spacing)) {
+		if (i_item_offset > dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
+			jactorio::game::kItemSpacing)) {
 
 			// Found a valid item to decrement
 			index = i;
@@ -81,105 +80,88 @@ J_NODISCARD bool move_next_item(const jactorio::transport_line_offset& tiles_mov
 	return false;
 }
 
-void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::game::Transport_line_segment* segment,
-                 const bool is_left) {
-	auto& line_side = is_left ? segment->left : segment->right;
-	uint16_t& index = is_left ? segment->l_index : segment->r_index;
+template <bool IsLeft>
+void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio::game::TransportSegment& segment) {
+	using namespace jactorio;
+	auto& side      = segment.GetSide(IsLeft);
+	uint16_t& index = side.index;
 
-	jactorio::transport_line_offset& offset = line_side[index].first;
-	jactorio::transport_line_offset& back_item_distance = is_left
-		                                                      ? segment->l_back_item_distance
-		                                                      : segment->r_back_item_distance;
+	game::TransportLineOffset& offset             = side.lane[index].first;
+	game::TransportLineOffset& back_item_distance = side.backItemDistance;
 
 	// Front item if index is 0
 	if (index == 0) {
 		// Front item does not need to be moved
-		if (offset >= dec::decimal_cast<jactorio::transport_line_decimal_place>(0))
+		if (offset >= dec::decimal_cast<game::kTransportLineDecimalPlace>(0))
 			return;
 
-		if (segment->target_segment) {
-			jactorio::transport_line_offset target_offset =
-				dec::decimal_cast<jactorio::transport_line_decimal_place>(
-					static_cast<double>(segment->target_segment->segment_length) - fabs(
-						offset.getAsDouble()));  // From start of line
+		if (segment.targetSegment) {
+			game::TransportSegment& target_segment = *segment.targetSegment;
+			// Offset to insert at target segment from head 
+			game::TransportLineOffset target_offset;
+			{
+				double length;
+				switch (segment.terminationType) {
+					// Since segments terminating with side only can target the middle of a grouped segment, it uses
+					// its own member for head offset
+				case game::TransportSegment::TerminationType::left_only:
+				case game::TransportSegment::TerminationType::right_only:
+					// |   |   |   |
+					// 3   2   1   0
+					// targetOffset of 0: Length is 1
+					length = segment.targetInsertOffset + 1.f;
+					break;
 
-			jactorio::transport_line_offset target_offset_tile;  // From previous item
-
+				default:
+					length = target_segment.length;
+					break;
+				}
+				target_offset = dec::decimal_cast<game::kTransportLineDecimalPlace>(
+					length - fabs(offset.getAsDouble())
+				);
+			}
 
 			// Account for the termination type of the line segments for the offset from start to insert into
-			if (is_left) {
-				apply_termination_deduction_l(segment->termination_type, target_offset);
-				apply_termination_deduction_l(segment->target_segment->termination_type, target_offset);
-
-				// Offset from end of transport line only calculated if line is empty,
-				// otherwise it maintains distance to previous item
-				target_offset_tile = target_offset - segment->target_segment->l_back_item_distance;
+			if constexpr (IsLeft) {
+				ApplyTerminationDeductionL(segment.terminationType, target_offset);
+				ApplyTerminationDeductionL(target_segment.terminationType, target_offset);
 			}
 			else {
-				apply_termination_deduction_r(segment->termination_type, target_offset);
-				apply_termination_deduction_r(segment->target_segment->termination_type, target_offset);
-
-				target_offset_tile = target_offset - segment->target_segment->r_back_item_distance;
+				ApplyTerminationDeductionR(segment.terminationType, target_offset);
+				ApplyTerminationDeductionR(target_segment.terminationType, target_offset);
 			}
 
-
-			bool added_item = false;
+			bool moved_item;
 			// Decides how the items will be fed into the target segment (if at all)
-			switch (segment->termination_type) {
+			switch (segment.terminationType) {
 			default:
-				{
-					auto& target_segment = *segment->target_segment;
-					if (target_segment.can_insert(is_left, target_offset)) {
-						added_item = true;
-
-						// Reenable the segment if it was disabled
-						if (is_left) {
-							if (!target_segment.is_active_left())
-								target_segment.l_index = target_segment.left.size();
-						}
-						else {
-							if (!target_segment.is_active_right())
-								target_segment.r_index = target_segment.right.size();
-						}
-
-						segment->target_segment->append_item(
-							is_left,
-							target_offset_tile.getAsDouble(), line_side[index].second);
-					}
-				}
+				moved_item = target_segment.TryInsertItem(IsLeft,
+				                                          target_offset.getAsDouble(),
+				                                          side.lane[index].second);
 				break;
 
 				// Side insertion
-			case jactorio::game::Transport_line_segment::terminationType::left_only:
-				if (segment->target_segment->can_insert(true, target_offset)) {
-					segment->target_segment->insert_item(true,
-					                                     target_offset.getAsDouble(),
-					                                     line_side[index].second);
-					added_item = true;
-				}
-
+			case game::TransportSegment::TerminationType::left_only:
+				moved_item = target_segment.left.TryInsertItem(target_offset.getAsDouble(),
+				                                               side.lane[index].second,
+				                                               target_segment.itemOffset);
 				break;
-			case jactorio::game::Transport_line_segment::terminationType::right_only:
-				if (segment->target_segment->can_insert(false, target_offset)) {
-					segment->target_segment->insert_item(false,
-					                                     target_offset.getAsDouble(),
-					                                     line_side[index].second);
-					added_item = true;
-
-				}
-
+			case game::TransportSegment::TerminationType::right_only:
+				moved_item = target_segment.right.TryInsertItem(target_offset.getAsDouble(),
+				                                                side.lane[index].second,
+				                                                target_segment.itemOffset);
 				break;
 			}
 
 
 			// Handle transition if the item has been added to another transport line
-			if (added_item) {
-				line_side.pop_front();  // Remove item in current segment now moved away
+			if (moved_item) {
+				side.lane.pop_front();  // Remove item in current segment now moved away
 
 				// Move the next item forwards to preserve spacing & update back_item_distance
-				if (!line_side.empty()) {  // This will not work with speeds greater than item_spacing
+				if (!side.lane.empty()) {  // This will not work with speeds greater than item_spacing
 					// Offset is always negative
-					line_side.front().first += offset;
+					side.lane.front().first += offset;
 				}
 				else {
 					// No items left in segment
@@ -196,15 +178,15 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 		offset = 0;
 		back_item_distance += tiles_moved;
 
-		if (move_next_item(tiles_moved, line_side, index, segment->target_segment != nullptr)) {
+		if (MoveNextItem(tiles_moved, side.lane, index, segment.targetSegment != nullptr)) {
 			back_item_distance -= tiles_moved;
 		}
 			// Disable transport line since it does not feed anywhere
 		else {
-			switch (segment->termination_type) {
+			switch (segment.terminationType) {
 				// Due to how items feeding onto the sides of transport segments behave, they cannot be disabled unless empty
-			case jactorio::game::Transport_line_segment::terminationType::left_only:
-			case jactorio::game::Transport_line_segment::terminationType::right_only:
+			case game::TransportSegment::TerminationType::left_only:
+			case game::TransportSegment::TerminationType::right_only:
 				break;
 
 			default:
@@ -218,81 +200,82 @@ void update_side(const jactorio::transport_line_offset& tiles_moved, jactorio::g
 		// Items behind another item in transport line
 
 		// Items following the first item will leave a gap of item_width
-		if (offset > dec::decimal_cast<jactorio::transport_line_decimal_place>(
-			jactorio::game::item_spacing))
+		if (offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kItemSpacing))
 			return;
 
 		// Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
-		offset = jactorio::game::item_spacing;
-		if (move_next_item(tiles_moved, line_side, index,
-		                   segment->target_segment != nullptr)) {
+		offset = game::kItemSpacing;
+		if (MoveNextItem(tiles_moved, side.lane, index,
+		                 segment.targetSegment != nullptr)) {
 			back_item_distance -= tiles_moved;
 		}
 	}
 
 }
 
-void jactorio::game::logic_update_move_items(Logic_chunk* l_chunk) {
-	auto& layers = l_chunk->get_struct(Logic_chunk::structLayer::transport_line);
+void jactorio::game::LogicUpdateMoveItems(LogicChunk* l_chunk) {
+	auto& layers = l_chunk->GetStruct(LogicChunk::StructLayer::transport_line);
 
 	// Each object layer holds a transport line segment
 	for (auto& object_layer : layers) {
-		const auto* line_proto = static_cast<const data::Transport_line*>(object_layer.prototype_data);
-		auto* line_segment = static_cast<Transport_line_segment*>(object_layer.unique_data);
+		const auto* line_proto = static_cast<const data::TransportLine*>(object_layer.prototypeData);
+		auto* line_segment     = static_cast<TransportSegment*>(object_layer.uniqueData);
 
 		// Left
 		{
-			auto& left = line_segment->left;
-			const auto index = line_segment->l_index;
+			auto& left       = line_segment->left;
+			const auto index = line_segment->left.index;
 			// Empty or index indicates nothing should be moved
-			if (line_segment->is_active_left()) {
-				left[index].first -= line_proto->speed;
-				line_segment->l_back_item_distance -= line_proto->speed;
+			if (line_segment->left.IsActive()) {
+				left.lane[index].first -= line_proto->speed;
+				line_segment->left.backItemDistance -= line_proto->speed;
 			}
 		}
 
 		// Right
 		{
-			auto& right = line_segment->right;
-			const auto index = line_segment->r_index;
+			auto& right      = line_segment->right;
+			const auto index = line_segment->right.index;
 			// Empty or index indicates nothing should be moved
-			if (line_segment->is_active_right()) {
-				right[index].first -= line_proto->speed;
-				line_segment->r_back_item_distance -= line_proto->speed;
+			if (line_segment->right.IsActive()) {
+				right.lane[index].first -= line_proto->speed;
+				line_segment->right.backItemDistance -= line_proto->speed;
 			}
 		}
 	}
 }
 
-void jactorio::game::logic_update_transition_items(Logic_chunk* l_chunk) {
-	auto& layers = l_chunk->get_struct(Logic_chunk::structLayer::transport_line);
+void jactorio::game::LogicUpdateTransitionItems(LogicChunk* l_chunk) {
+	auto& layers = l_chunk->GetStruct(LogicChunk::StructLayer::transport_line);
 
 	// Each object layer holds a transport line segment
 	for (auto& object_layer : layers) {
-		const auto* line_proto = static_cast<const data::Transport_line*>(object_layer.prototype_data);
-		auto* line_segment = static_cast<Transport_line_segment*>(object_layer.unique_data);
+		const auto* line_proto = static_cast<const data::TransportLine*>(object_layer.prototypeData);
+		auto* line_segment     = static_cast<TransportSegment*>(object_layer.uniqueData);
+		assert(line_segment);
 
 
 		auto tiles_moved = line_proto->speed;
 
-		if (line_segment->is_active_left())
-			update_side(tiles_moved, line_segment, true);
+		if (line_segment->left.IsActive())
+			UpdateSide<true>(tiles_moved, *line_segment);
 
-		if (line_segment->is_active_right())
-			update_side(tiles_moved, line_segment, false);
+		if (line_segment->right.IsActive())
+			UpdateSide<false>(tiles_moved, *line_segment);
 	}
 }
 
-void jactorio::game::transport_line_logic_update(World_data& world_data) {
+void jactorio::game::TransportLineLogicUpdate(WorldData& world_data) {
 	// The logic update of transport line items occur in 2 stages:
 	// 		1. Move items on their transport lines
 	//		2. Check if any items have reached the end of their lines, and need to be moved to another one
 
-	for (auto& logic_chunk_pair : world_data.logic_get_all_chunks()) {
-		logic_update_move_items(&logic_chunk_pair.second);
+	for (auto& logic_chunk_pair : world_data.LogicGetAllChunks()) {
+		LogicUpdateMoveItems(&logic_chunk_pair.second);
 	}
 
-	for (auto& logic_chunk_pair : world_data.logic_get_all_chunks()) {
-		logic_update_transition_items(&logic_chunk_pair.second);
+	for (auto& logic_chunk_pair : world_data.LogicGetAllChunks()) {
+		LogicUpdateTransitionItems(&logic_chunk_pair.second);
 	}
 }

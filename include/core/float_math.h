@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -12,7 +11,7 @@ namespace jactorio::core
 {
 	// Defines math functions for floating point numbers
 
-	inline bool f_eq(const float a, const float b, const float epsilon) {
+	inline bool FEq(const float a, const float b, const float epsilon) {
 		return fabs(a - b) < epsilon;
 	}
 }

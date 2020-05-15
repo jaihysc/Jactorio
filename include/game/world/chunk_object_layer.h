@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -10,30 +9,29 @@
 
 namespace jactorio::game
 {
-	/**
-	 * Similar to a Chunk_tile_layer, but for objects!
-	 */
-	struct Chunk_object_layer : Chunk_layer
+	///
+	/// \brief Holds items which do not adhere to the tiles for rendering
+	struct ChunkObjectLayer : ChunkLayer
 	{
-		Chunk_object_layer() = default;
+		ChunkObjectLayer() = default;
 
-		explicit Chunk_object_layer(const data::Prototype_base* proto)
-			: Chunk_layer(proto) {
+		explicit ChunkObjectLayer(const data::PrototypeBase* proto)
+			: ChunkLayer(proto) {
 		}
 
-		explicit Chunk_object_layer(const data::Prototype_base* proto,
-		                            const float position_x, const float position_y,
-		                            const float size_x, const float size_y)
-			: Chunk_layer(proto),
-			  position_x(position_x), position_y(position_y), size_x(size_x), size_y(size_y) {
+		explicit ChunkObjectLayer(const data::PrototypeBase* proto,
+		                          const float position_x, const float position_y,
+		                          const float size_x, const float size_y)
+			: ChunkLayer(proto),
+			  positionX(position_x), positionY(position_y), sizeX(size_x), sizeY(size_y) {
 		}
 
 		// Distance (tiles) from top left of chunk to top left of object
-		float position_x = 0;
-		float position_y = 0;
+		float positionX = 0;
+		float positionY = 0;
 
-		float size_x = 0;
-		float size_y = 0;
+		float sizeX = 0;
+		float sizeY = 0;
 	};
 }
 

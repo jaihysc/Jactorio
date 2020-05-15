@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -12,57 +11,58 @@
 
 namespace jactorio::data
 {
-	struct Container_entity_data : Health_entity_data
+	struct ContainerEntityData : HealthEntityData
 	{
-		explicit Container_entity_data(const uint16_t inventory_size)
-			: inventory(new item_stack[inventory_size]), size(inventory_size) {
+		explicit ContainerEntityData(const uint16_t inventory_size)
+			: inventory(new ItemStack[inventory_size]), size(inventory_size) {
 		}
 
-		~Container_entity_data() override {
+		~ContainerEntityData() override {
 			delete[] inventory;
 		}
 
-		Container_entity_data(const Container_entity_data& other) = delete;
-		Container_entity_data(Container_entity_data&& other) noexcept = delete;
-		Container_entity_data& operator=(const Container_entity_data& other) = delete;
-		Container_entity_data& operator=(Container_entity_data&& other) noexcept = delete;
+		ContainerEntityData(const ContainerEntityData& other)                = delete;
+		ContainerEntityData(ContainerEntityData&& other) noexcept            = delete;
+		ContainerEntityData& operator=(const ContainerEntityData& other)     = delete;
+		ContainerEntityData& operator=(ContainerEntityData&& other) noexcept = delete;
 
-		item_stack* const inventory;
+		ItemStack* const inventory;
 		const uint16_t size;
 	};
 
-	/**
-	 * An entity with an inventory, such as a chest
-	 */
-	class Container_entity final : public Health_entity
+	///
+	/// \brief An entity with an inventory, such as a chest
+	class ContainerEntity final : public HealthEntity
 	{
 	public:
 		PROTOTYPE_CATEGORY(container_entity);
 
-		Container_entity()
-			: inventory_size(0) {
+		ContainerEntity()
+			: inventorySize(0) {
 		}
 
-		PYTHON_PROP_REF(Container_entity, uint16_t, inventory_size)
+		PYTHON_PROP_REF(ContainerEntity, uint16_t, inventorySize)
 
 
-		Unique_data_base* copy_unique_data(Unique_data_base* ptr) const override;
+		UniqueDataBase* CopyUniqueData(UniqueDataBase* ptr) const override;
 
 		// Events
 
-		void on_build(game::World_data& world_data, std::pair<int, int> world_coords,
-		              game::Chunk_tile_layer& tile_layer, uint16_t frame,
-		              placementOrientation orientation) const override;
+		void OnBuild(game::WorldData& world_data,
+		             const game::WorldData::WorldPair& world_coords,
+		             game::ChunkTileLayer& tile_layer,
+		             Orientation orientation) const override;
 
-		void on_remove(game::World_data& world_data,
-		               std::pair<game::World_data::world_coord, game::World_data::world_coord> world_coords,
-		               game::Chunk_tile_layer& tile_layer) const override {
+		void OnRemove(game::WorldData&,
+		              const game::WorldData::WorldPair&,
+		              game::ChunkTileLayer&) const override {
 		}
 
-		void on_r_show_gui(game::Player_data& player_data, game::Chunk_tile_layer* tile_layer) const override;
+		void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
 
-		std::pair<uint16_t, uint16_t> map_placement_orientation(placementOrientation orientation, game::World_data& world_data,
-		                                                        std::pair<int, int> world_coords) const override {
+		std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation,
+		                                                      game::WorldData&,
+		                                                      const game::WorldData::WorldPair&) const override {
 			return {0, 0};
 		}
 	};

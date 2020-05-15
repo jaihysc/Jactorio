@@ -83,6 +83,7 @@ add_executable (
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
+	${JACTORIO_TEST_DIR}/data/prototype/orientationTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
@@ -99,7 +100,6 @@ add_executable (
 	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/deferral_timerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/chunk_struct_layerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp

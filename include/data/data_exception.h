@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/11/2020
 
@@ -11,7 +10,7 @@
 namespace jactorio::data
 {
 	// These are raised by prototype classes if an error occurred
-	class Data_exception : public std::runtime_error
+	class DataException : public std::runtime_error
 	{
 		using std::runtime_error::runtime_error;
 	};

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -10,33 +9,31 @@
 
 namespace jactorio::renderer
 {
-	class Index_buffer
+	class IndexBuffer
 	{
 	public:
-		/**
-		 * @param data
-		 * @param count Number of indices
-		 */
-		Index_buffer(const unsigned int* data, unsigned int count);
-		~Index_buffer();
+		///
+		/// \param data
+		/// \param count Number of indices
+		IndexBuffer(const unsigned int* data, unsigned int count);
+		~IndexBuffer();
 
-		Index_buffer(const Index_buffer& other) = delete;
-		Index_buffer(Index_buffer&& other) noexcept = delete;
-		Index_buffer& operator=(const Index_buffer& other) = delete;
-		Index_buffer& operator=(Index_buffer&& other) noexcept = delete;
+		IndexBuffer(const IndexBuffer& other)                = delete;
+		IndexBuffer(IndexBuffer&& other) noexcept            = delete;
+		IndexBuffer& operator=(const IndexBuffer& other)     = delete;
+		IndexBuffer& operator=(IndexBuffer&& other) noexcept = delete;
 
-		/**
-		 * Creates a new buffer of provided specifications
-		 */
-		void reserve(const void* data, uint32_t index_count);
+		///
+		/// \brief Creates a new buffer of provided specifications
+		void Reserve(const void* data, uint32_t index_count);
 
-		void bind() const;
-		static void unbind();
+		void Bind() const;
+		static void Unbind();
 
-		J_NODISCARD unsigned int count() const;
+		J_NODISCARD unsigned int Count() const;
 
 	private:
-		unsigned int id_ = 0;
+		unsigned int id_    = 0;
 		unsigned int count_ = 0;
 	};
 }

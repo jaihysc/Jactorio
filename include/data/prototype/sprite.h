@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 11/24/2019
 
@@ -12,15 +11,16 @@
 #include "jactorio.h"
 #include "core/data_type.h"
 #include "data/prototype/prototype_base.h"
+#include "data/prototype/interface/renderable.h"
 
 namespace jactorio::data
 {
 	///
 	/// Unique data: Renderable_data
-	class Sprite final : public Prototype_base
+	class Sprite final : public PrototypeBase
 	{
 	public:
-		enum class spriteGroup
+		enum class SpriteGroup
 		{
 			terrain = 0,
 			gui,
@@ -29,7 +29,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Group(s) determines which spritemap(s) this sprite is placed on
-		PYTHON_PROP_REF(Sprite, std::vector<spriteGroup>, group);
+		PYTHON_PROP_REF(Sprite, std::vector<SpriteGroup>, group);
 
 		/*
 		 *     F0 F1 F2 F3 F4
@@ -56,28 +56,28 @@ namespace jactorio::data
 
 		///
 		/// \return true is Sprite is in specified group
-		bool is_in_group(spriteGroup group);
+		bool IsInGroup(SpriteGroup group);
 
 	private:
 		// Image properties
-		int width_, height_, bytes_per_pixel_;
+		int width_ = 0, height_ = 0, bytesPerPixel_ = 0;
 
 		// Path is already resolved
-		std::string sprite_path_;
-		unsigned char* sprite_buffer_;
+		std::string spritePath_;
+		unsigned char* spriteBuffer_ = nullptr;
 
 		///
 		/// \brief Loads image from file
 		/// load_image only sets the sprite_path and calls this
-		/// \exception Data_exception Failed to load from file
-		void load_image_from_file();
+		/// \exception DataException Failed to load from file
+		void LoadImageFromFile();
 
 	public:
 		PROTOTYPE_CATEGORY(sprite);
 
 		Sprite();
 		explicit Sprite(const std::string& sprite_path);
-		Sprite(const std::string& sprite_path, std::vector<spriteGroup> group);
+		Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group);
 
 		~Sprite() override;
 
@@ -92,16 +92,16 @@ namespace jactorio::data
 
 		friend void swap(Sprite& lhs, Sprite& rhs) noexcept {
 			using std::swap;
-			swap(static_cast<Prototype_base&>(lhs), static_cast<Prototype_base&>(rhs));
+			swap(static_cast<PrototypeBase&>(lhs), static_cast<PrototypeBase&>(rhs));
 			swap(lhs.group, rhs.group);
 			swap(lhs.frames, rhs.frames);
 			swap(lhs.sets, rhs.sets);
 			swap(lhs.trim, rhs.trim);
 			swap(lhs.width_, rhs.width_);
 			swap(lhs.height_, rhs.height_);
-			swap(lhs.bytes_per_pixel_, rhs.bytes_per_pixel_);
-			swap(lhs.sprite_path_, rhs.sprite_path_);
-			swap(lhs.sprite_buffer_, rhs.sprite_buffer_);
+			swap(lhs.bytesPerPixel_, rhs.bytesPerPixel_);
+			swap(lhs.spritePath_, rhs.spritePath_);
+			swap(lhs.spriteBuffer_, rhs.spriteBuffer_);
 		}
 
 		// ======================================================================
@@ -119,48 +119,52 @@ namespace jactorio::data
 		 * 20 - 29: Sprite 3
 		 * 30 - 39: Sprite 4
 		 */
-
+	private:
 		///
-		/// \param mset Will be modulus by total sets
-		/// \param frame 
+		/// \brief Performs the following adjustments to set and frame
+		/// \param set Modulus of total number of sets
+		/// \param frame Modulus of total number of frames, every multiple of frames increases set by 1
+		void AdjustSetFrame(RenderableData::set_t& set, RenderableData::frame_t& frame) const;
+
+	public:
+		///
+		/// \brief Gets UV coordinates for region within a sprite
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::Quad_position get_coords(uint16_t mset, uint16_t frame) const;
+		J_NODISCARD core::QuadPosition GetCoords(RenderableData::set_t set, RenderableData::frame_t frame) const;
 
 		///
-		/// \brief Same as get_coords, but applies a deduction of trim pixels around the border
+		/// \brief Gets UV coordinates for region within a sprite, applying a deduction of trim pixels around the border
 		/// \remark Requires width_ and height_ to be initialized
-		/// \param mset Will be modulus by total sets
-		/// \param frame 
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::Quad_position get_coords_trimmed(uint16_t mset, uint16_t frame) const;
+		J_NODISCARD core::QuadPosition GetCoordsTrimmed(RenderableData::set_t set, RenderableData::frame_t frame) const;
 
 		// ======================================================================
 		// Sprite ptr
 
-		J_NODISCARD const unsigned char* get_sprite_data_ptr() const;
+		J_NODISCARD const unsigned char* GetSpritePtr() const;
 
 		///
 		/// \brief Gets size of image on X axis
-		J_NODISCARD unsigned int get_width() const { return width_; }
+		J_NODISCARD unsigned int GetWidth() const { return width_; }
 
 		///
 		/// \brief Gets size of image on Y axis
-		J_NODISCARD unsigned int get_height() const { return height_; }
+		J_NODISCARD unsigned int GetHeight() const { return height_; }
 
 
 		///
 		/// \brief Loads a sprite from sprite_path into member sprite
 		/// \remark Do not include ~/data/
-		Sprite* load_image(const std::string& image_path);
+		Sprite* LoadImage(const std::string& image_path);
 
 
-		void post_load_validate() const override;
+		void PostLoadValidate() const override;
 
 
 		// ======================================================================
 #ifdef JACTORIO_BUILD_TEST
-		void set_height(const int height) { this->height_ = height; }
-		void set_width(const int width) { this->width_ = width; }
+		void SetHeight(const int height) { height_ = height; }
+		void SetWidth(const int width) { width_ = width; }
 #endif
 	};
 }

@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/22/2019
 
@@ -13,34 +12,34 @@ namespace renderer
 	class SpritemapCreationTest : public testing::Test
 	{
 	protected:
-		jactorio::renderer::Renderer_sprites renderer_sprites_{};
+		jactorio::renderer::RendererSprites rendererSprites_{};
 
 		void TearDown() override {
-			jactorio::data::clear_data();
+			jactorio::data::ClearData();
 		}
 	};
 
 	TEST_F(SpritemapCreationTest, CreateSpritemap) {
 		// Sprite data delete by guard
-		data_raw_add("sprite1",
-		             new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
-		data_raw_add("sprite2",
-		             new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
+		DataRawAdd("sprite1",
+		           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
+		                                      {jactorio::data::Sprite::SpriteGroup::terrain}));
+		DataRawAdd("sprite2",
+		           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
+		                                      {jactorio::data::Sprite::SpriteGroup::terrain}));
 
-		data_raw_add("sprite3",
-		             new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                        {jactorio::data::Sprite::spriteGroup::gui}));
-		data_raw_add("sprite4",
-		             new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                        {jactorio::data::Sprite::spriteGroup::gui}));
+		DataRawAdd("sprite3",
+		           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
+		                                      {jactorio::data::Sprite::SpriteGroup::gui}));
+		DataRawAdd("sprite4",
+		           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
+		                                      {jactorio::data::Sprite::SpriteGroup::gui}));
 
 		// Should filter out to only 2 entries
-		renderer_sprites_.create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
+		rendererSprites_.CreateSpritemap(jactorio::data::Sprite::SpriteGroup::terrain, false);
 
-		const jactorio::renderer::Renderer_sprites::Spritemap_data& data =
-			renderer_sprites_.get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
+		const jactorio::renderer::RendererSprites::SpritemapData& data =
+			rendererSprites_.GetSpritemap(jactorio::data::Sprite::SpriteGroup::terrain);
 
 		EXPECT_EQ(data.width, 64);
 		EXPECT_EQ(data.height, 32);
@@ -52,31 +51,31 @@ namespace renderer
 
 		// Sprite data delete by guard
 		// Terrain
-		data_raw_add("sprite1",
-		             new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
-		data_raw_add("sprite2",
-		             new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
-		                                        {jactorio::data::Sprite::spriteGroup::terrain}));
+		DataRawAdd("sprite1",
+		           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
+		                                      {jactorio::data::Sprite::SpriteGroup::terrain}));
+		DataRawAdd("sprite2",
+		           new jactorio::data::Sprite("test/graphics/test/test_tile1.png",
+		                                      {jactorio::data::Sprite::SpriteGroup::terrain}));
 
 		// Gui
-		data_raw_add("sprite3",
-		             new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
-		                                        {jactorio::data::Sprite::spriteGroup::gui}));
-		data_raw_add("sprite4",
-		             new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
-		                                        {jactorio::data::Sprite::spriteGroup::gui}));
+		DataRawAdd("sprite3",
+		           new jactorio::data::Sprite("test/graphics/test/test_tile2.png",
+		                                      {jactorio::data::Sprite::SpriteGroup::gui}));
+		DataRawAdd("sprite4",
+		           new jactorio::data::Sprite("test/graphics/test/test_tile3.png",
+		                                      {jactorio::data::Sprite::SpriteGroup::gui}));
 
 		// None
-		data_raw_add("spriteNone",
-		             new jactorio::data::Sprite("test/graphics/test/test_tile.png",
-		                                        {}));
+		DataRawAdd("spriteNone",
+		           new jactorio::data::Sprite("test/graphics/test/test_tile.png",
+		                                      {}));
 
 		// Should filter out to 3 entries, total width of 32 * 3
-		renderer_sprites_.create_spritemap(jactorio::data::Sprite::spriteGroup::terrain, false);
+		rendererSprites_.CreateSpritemap(jactorio::data::Sprite::SpriteGroup::terrain, false);
 
-		const jactorio::renderer::Renderer_sprites::Spritemap_data& data =
-			renderer_sprites_.get_spritemap(jactorio::data::Sprite::spriteGroup::terrain);
+		const jactorio::renderer::RendererSprites::SpritemapData& data =
+			rendererSprites_.GetSpritemap(jactorio::data::Sprite::SpriteGroup::terrain);
 
 		EXPECT_EQ(data.width, 96);
 		EXPECT_EQ(data.height, 32);
@@ -90,7 +89,7 @@ namespace renderer
 	class SpritemapGeneratorTest : public testing::Test
 	{
 	protected:
-		jactorio::renderer::Renderer_sprites renderer_sprites_{};
+		jactorio::renderer::RendererSprites renderer_sprites_{};
 
 		/// \return true if pixel contains specified color
 		bool get_pixel_color(const unsigned char* img_ptr,
@@ -126,7 +125,7 @@ namespace renderer
 		// Image 3 is 64 x 64
 
 		jactorio::data::Sprite** prototypes = nullptr;
-		jactorio::core::Capturing_guard<void()> guard([&] {
+		jactorio::core::CapturingGuard<void()> guard([&] {
 			for (int i = 0; i < 4; ++i) {
 				delete prototypes[i];
 			}
@@ -138,27 +137,27 @@ namespace renderer
 			prototypes[i] = new jactorio::data::Sprite;
 		}
 
-		prototypes[0]->internal_id = 1;
-		prototypes[0]->load_image("test/graphics/test/test_tile.png");
+		prototypes[0]->internalId = 1;
+		prototypes[0]->LoadImage("test/graphics/test/test_tile.png");
 
-		prototypes[1]->internal_id = 2;
-		prototypes[1]->load_image("test/graphics/test/test_tile1.png");
+		prototypes[1]->internalId = 2;
+		prototypes[1]->LoadImage("test/graphics/test/test_tile1.png");
 
-		prototypes[2]->internal_id = 3;
-		prototypes[2]->load_image("test/graphics/test/test_tile2.png");
+		prototypes[2]->internalId = 3;
+		prototypes[2]->LoadImage("test/graphics/test/test_tile2.png");
 
-		prototypes[3]->internal_id = 4;
-		prototypes[3]->load_image("test/graphics/test/test_tile3.png");
+		prototypes[3]->internalId = 4;
+		prototypes[3]->LoadImage("test/graphics/test/test_tile3.png");
 
-		const auto spritemap = renderer_sprites_.gen_spritemap(prototypes, 4, true);
-		jactorio::core::Capturing_guard<void()> guard_2([&] { delete[] spritemap.sprite_buffer; });
+		const auto spritemap = renderer_sprites_.GenSpritemap(prototypes, 4, true);
+		jactorio::core::CapturingGuard<void()> guard_2([&] { delete[] spritemap.spriteBuffer; });
 
 		EXPECT_EQ(spritemap.width, 160);
 		EXPECT_EQ(spritemap.height, 64);
 
 		// Sample spots on the concatenated image
 		// Image 0
-		auto* img_ptr = spritemap.sprite_buffer;
+		auto* img_ptr = spritemap.spriteBuffer;
 
 		EXPECT_EQ(get_pixel_color(img_ptr, 160, 26, 6, 0, 0, 0, 255), true);
 		EXPECT_EQ(get_pixel_color(img_ptr, 160, 5, 26, 0, 105, 162, 255), true);
@@ -184,63 +183,63 @@ namespace renderer
 		// 1.f; 1.f;  // bottom right
 
 		// Validate that the image positions are calculated correctly
-		const auto img1 = spritemap.sprite_positions.at(1);
-		EXPECT_EQ(img1.top_left.x, 0.00625f);
-		EXPECT_EQ(img1.top_left.y, 0.015625f);
+		const auto img1 = spritemap.spritePositions.at(1);
+		EXPECT_EQ(img1.topLeft.x, 0.00625f);
+		EXPECT_EQ(img1.topLeft.y, 0.015625f);
 
-		EXPECT_EQ(img1.bottom_right.x, 0.19375f);
-		EXPECT_EQ(img1.top_left.y, 0.015625f);
+		EXPECT_EQ(img1.bottomRight.x, 0.19375f);
+		EXPECT_EQ(img1.topLeft.y, 0.015625f);
 
-		EXPECT_EQ(img1.top_left.x, 0.00625f);
-		EXPECT_EQ(img1.bottom_right.y, 0.484375f);
+		EXPECT_EQ(img1.topLeft.x, 0.00625f);
+		EXPECT_EQ(img1.bottomRight.y, 0.484375f);
 
-		EXPECT_EQ(img1.bottom_right.x, 0.19375f);
-		EXPECT_EQ(img1.bottom_right.y, 0.484375f);
+		EXPECT_EQ(img1.bottomRight.x, 0.19375f);
+		EXPECT_EQ(img1.bottomRight.y, 0.484375f);
 
-		const auto img2 = spritemap.sprite_positions.at(2);
-		EXPECT_EQ(img2.top_left.x, 0.20625f);
-		EXPECT_EQ(img2.top_left.y, 0.015625f);
+		const auto img2 = spritemap.spritePositions.at(2);
+		EXPECT_EQ(img2.topLeft.x, 0.20625f);
+		EXPECT_EQ(img2.topLeft.y, 0.015625f);
 
-		EXPECT_EQ(img2.bottom_right.x, 0.39375f);
-		EXPECT_EQ(img2.top_left.y, 0.015625f);
+		EXPECT_EQ(img2.bottomRight.x, 0.39375f);
+		EXPECT_EQ(img2.topLeft.y, 0.015625f);
 
-		EXPECT_EQ(img2.top_left.x, 0.20625f);
-		EXPECT_EQ(img2.bottom_right.y, 0.484375f);
+		EXPECT_EQ(img2.topLeft.x, 0.20625f);
+		EXPECT_EQ(img2.bottomRight.y, 0.484375f);
 
-		EXPECT_EQ(img2.bottom_right.x, 0.39375f);
-		EXPECT_EQ(img2.bottom_right.y, 0.484375f);
+		EXPECT_EQ(img2.bottomRight.x, 0.39375f);
+		EXPECT_EQ(img2.bottomRight.y, 0.484375f);
 
-		const auto img3 = spritemap.sprite_positions.at(3);
-		EXPECT_EQ(img3.top_left.x, 0.40625f);
-		EXPECT_EQ(img3.top_left.y, 0.015625f);
+		const auto img3 = spritemap.spritePositions.at(3);
+		EXPECT_EQ(img3.topLeft.x, 0.40625f);
+		EXPECT_EQ(img3.topLeft.y, 0.015625f);
 
-		EXPECT_EQ(img3.bottom_right.x, 0.59375f);
-		EXPECT_EQ(img3.top_left.y, 0.015625f);
+		EXPECT_EQ(img3.bottomRight.x, 0.59375f);
+		EXPECT_EQ(img3.topLeft.y, 0.015625f);
 
-		EXPECT_EQ(img3.top_left.x, 0.40625f);
-		EXPECT_EQ(img3.bottom_right.y, 0.484375f);
+		EXPECT_EQ(img3.topLeft.x, 0.40625f);
+		EXPECT_EQ(img3.bottomRight.y, 0.484375f);
 
-		EXPECT_EQ(img3.bottom_right.x, 0.59375f);
-		EXPECT_EQ(img3.bottom_right.y, 0.484375f);
+		EXPECT_EQ(img3.bottomRight.x, 0.59375f);
+		EXPECT_EQ(img3.bottomRight.y, 0.484375f);
 
-		const auto img4 = spritemap.sprite_positions.at(4);
-		EXPECT_EQ(img4.top_left.x, 0.60625f);
-		EXPECT_EQ(img4.top_left.y, 0.015625f);
+		const auto img4 = spritemap.spritePositions.at(4);
+		EXPECT_EQ(img4.topLeft.x, 0.60625f);
+		EXPECT_EQ(img4.topLeft.y, 0.015625f);
 
-		EXPECT_EQ(img4.bottom_right.x, 0.99375f);
-		EXPECT_EQ(img4.top_left.y, 0.015625f);
+		EXPECT_EQ(img4.bottomRight.x, 0.99375f);
+		EXPECT_EQ(img4.topLeft.y, 0.015625f);
 
-		EXPECT_EQ(img4.top_left.x, 0.60625f);
-		EXPECT_EQ(img4.bottom_right.y, 0.984375f);
+		EXPECT_EQ(img4.topLeft.x, 0.60625f);
+		EXPECT_EQ(img4.bottomRight.y, 0.984375f);
 
-		EXPECT_EQ(img4.bottom_right.x, 0.99375f);
-		EXPECT_EQ(img4.bottom_right.y, 0.984375f);
+		EXPECT_EQ(img4.bottomRight.x, 0.99375f);
+		EXPECT_EQ(img4.bottomRight.y, 0.984375f);
 	}
 
 	TEST_F(SpritemapGeneratorTest, GenSpritemap) {
 		// Images 0 - 2 are 32 x 32 px
 		jactorio::data::Sprite** prototypes = nullptr;
-		jactorio::core::Capturing_guard<void()> guard([&] {
+		jactorio::core::CapturingGuard<void()> guard([&] {
 			for (int i = 0; i < 2; ++i) {
 				delete prototypes[i];
 			}
@@ -252,21 +251,21 @@ namespace renderer
 			prototypes[i] = new jactorio::data::Sprite;
 		}
 
-		prototypes[0]->internal_id = 1;
-		prototypes[0]->load_image("test/graphics/test/test_tile.png");
+		prototypes[0]->internalId = 1;
+		prototypes[0]->LoadImage("test/graphics/test/test_tile.png");
 
-		prototypes[1]->internal_id = 2;
-		prototypes[1]->load_image("test/graphics/test/test_tile1.png");
+		prototypes[1]->internalId = 2;
+		prototypes[1]->LoadImage("test/graphics/test/test_tile1.png");
 
-		const auto spritemap = renderer_sprites_.gen_spritemap(prototypes, 2, false);
-		jactorio::core::Capturing_guard<void()> guard_2([&] { delete[] spritemap.sprite_buffer; });
+		const auto spritemap = renderer_sprites_.GenSpritemap(prototypes, 2, false);
+		jactorio::core::CapturingGuard<void()> guard_2([&] { delete[] spritemap.spriteBuffer; });
 
 		EXPECT_EQ(spritemap.width, 64);
 		EXPECT_EQ(spritemap.height, 32);
 
 		// Sample spots on the concatenated image
 		// Image 0
-		auto* img_ptr = spritemap.sprite_buffer;
+		auto* img_ptr = spritemap.spriteBuffer;
 
 		// Image 1
 		EXPECT_EQ(get_pixel_color(img_ptr, 64, 19, 25, 255, 0, 42, 255), true);

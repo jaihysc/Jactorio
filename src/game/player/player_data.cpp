@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
@@ -18,18 +17,18 @@
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
 
-void jactorio::game::Player_data::mouse_calculate_selected_tile() {
+void jactorio::game::PlayerData::MouseCalculateSelectedTile() {
 	float pixels_from_center_x;
 	float pixels_from_center_y;
 	{
-		const unsigned short window_width = renderer::Renderer::get_window_width();
-		const unsigned short window_height = renderer::Renderer::get_window_height();
-		const auto& matrix = renderer::get_mvp_matrix();
+		const unsigned short window_width  = renderer::Renderer::GetWindowWidth();
+		const unsigned short window_height = renderer::Renderer::GetWindowHeight();
+		const auto& matrix                 = renderer::GetMvpMatrix();
 
 		// Account for MVP matrices
 		// Normalize to -1 | 1 used by the matrix
-		const double norm_x = 2 * (Mouse_selection::get_cursor_x() / window_width) - 1;
-		const double norm_y = 2 * (Mouse_selection::get_cursor_y() / window_height) - 1;
+		const double norm_x = 2 * (MouseSelection::GetCursorX() / window_width) - 1;
+		const double norm_y = 2 * (MouseSelection::GetCursorY() / window_height) - 1;
 
 		// A = C / B
 		const glm::vec4 norm_positions = matrix / glm::vec4(norm_x, norm_y, 1, 1);
@@ -52,13 +51,13 @@ void jactorio::game::Player_data::mouse_calculate_selected_tile() {
 
 		// If player is standing on a partial tile, adjust the center accordingly to the correct location
 		mouse_x_center -=
-			static_cast<float>(renderer::Renderer::tile_width) * 
-			(player_position_x_ - static_cast<float>(static_cast<int>(player_position_x_)));
+			static_cast<float>(renderer::Renderer::tileWidth) *
+			(playerPositionX_ - static_cast<float>(static_cast<int>(playerPositionX_)));
 
 		// This is plus since the y axis is inverted
 		mouse_y_center +=
-			static_cast<float>(renderer::Renderer::tile_width) *
-			(player_position_y_ - static_cast<float>(static_cast<int>(player_position_y_)));
+			static_cast<float>(renderer::Renderer::tileWidth) *
+			(playerPositionY_ - static_cast<float>(static_cast<int>(playerPositionY_)));
 
 
 		pixels_from_center_x = norm_positions.x - mouse_x_center;
@@ -66,11 +65,11 @@ void jactorio::game::Player_data::mouse_calculate_selected_tile() {
 	}
 
 	// Calculate tile position based on current player position
-	float tile_x = static_cast<float>(static_cast<int>(player_position_x_)) +
-		pixels_from_center_x / static_cast<float>(renderer::Renderer::tile_width);
+	float tile_x = static_cast<float>(static_cast<int>(playerPositionX_)) +
+		pixels_from_center_x / static_cast<float>(renderer::Renderer::tileWidth);
 
-	float tile_y = static_cast<float>(static_cast<int>(player_position_y_)) +
-		pixels_from_center_y / static_cast<float>(renderer::Renderer::tile_width);
+	float tile_y = static_cast<float>(static_cast<int>(playerPositionY_)) +
+		pixels_from_center_y / static_cast<float>(renderer::Renderer::tileWidth);
 
 	// Subtract extra tile if negative because no tile exists at -0, -0
 	if (tile_x < 0)
@@ -78,122 +77,122 @@ void jactorio::game::Player_data::mouse_calculate_selected_tile() {
 	if (tile_y < 0)
 		tile_y -= 1.f;
 
-	mouse_selected_tile_ = std::pair<int, int>(tile_x, tile_y);
+	mouseSelectedTile_ = std::pair<int, int>(tile_x, tile_y);
 }
 
-bool jactorio::game::Player_data::mouse_selected_tile_in_range() const {
-	const auto cursor_position = get_mouse_tile_coords();
+bool jactorio::game::PlayerData::MouseSelectedTileInRange() const {
+	const auto cursor_position = GetMouseTileCoords();
 
 	// Maximum distance of from the player where tiles can be reached
 	constexpr unsigned int max_reach = 34;
-	const auto tile_dist =
-		abs(player_position_x_ - cursor_position.first) + abs(player_position_y_ - cursor_position.second);
+	const auto tile_dist             =
+		abs(playerPositionX_ - cursor_position.first) + abs(playerPositionY_ - cursor_position.second);
 
 	return tile_dist <= max_reach;
 }
 
-bool jactorio::game::Player_data::target_tile_valid(World_data* world_data, const int x, const int y) const {
+bool jactorio::game::PlayerData::TargetTileValid(WorldData* world_data, const int x, const int y) const {
 	assert(world_data != nullptr);  // Player is not in a world
 
 	const auto* origin_tile =
-		world_data->get_tile_world_coords(
-			static_cast<int>(player_position_x_),
-			static_cast<int>(player_position_y_));
+		world_data->GetTile(
+			static_cast<int>(playerPositionX_),
+			static_cast<int>(playerPositionY_));
 
 	if (origin_tile == nullptr)
 		return false;
 
 	// If the player is on water, they are allowed to walk on water
-	if (origin_tile->get_tile_prototype(Chunk_tile::chunkLayer::base)->is_water)
+	if (origin_tile->GetTilePrototype(ChunkTile::ChunkLayer::base)->isWater)
 		return true;
 
-	const Chunk_tile* tile = world_data->get_tile_world_coords(x, y);
+	const ChunkTile* tile = world_data->GetTile(x, y);
 	// Chunk not generated yet
 	if (tile == nullptr)
 		return false;
 
-	return !tile->get_tile_prototype(Chunk_tile::chunkLayer::base)->is_water;
+	return !tile->GetTilePrototype(ChunkTile::ChunkLayer::base)->isWater;
 }
 
-void jactorio::game::Player_data::move_player_x(const float amount) {
-	const float target_x = player_position_x_ + amount;
+void jactorio::game::PlayerData::MovePlayerX(const float amount) {
+	const float target_x = playerPositionX_ + amount;
 
-	if (target_tile_valid(player_world_, static_cast<int>(target_x), static_cast<int>(player_position_y_)))
-		player_position_x_ = target_x;
+	if (TargetTileValid(playerWorld_, static_cast<int>(target_x), static_cast<int>(playerPositionY_)))
+		playerPositionX_ = target_x;
 }
 
-void jactorio::game::Player_data::move_player_y(const float amount) {
-	const float target_y = player_position_y_ + amount;
+void jactorio::game::PlayerData::MovePlayerY(const float amount) {
+	const float target_y = playerPositionY_ + amount;
 
-	if (target_tile_valid(player_world_, static_cast<int>(player_position_x_), static_cast<int>(target_y)))
-		player_position_y_ = target_y;
+	if (TargetTileValid(playerWorld_, static_cast<int>(playerPositionX_), static_cast<int>(target_y)))
+		playerPositionY_ = target_y;
 }
 
 
 // ============================================================================================
 // Entity placement / pickup
 
-void jactorio::game::Player_data::rotate_placement_orientation() {
-	switch (placement_orientation) {
-	case data::placementOrientation::up:
-		placement_orientation = data::placementOrientation::right;
+void jactorio::game::PlayerData::RotatePlacementOrientation() {
+	switch (placementOrientation) {
+	case data::Orientation::up:
+		placementOrientation = data::Orientation::right;
 		break;
-	case data::placementOrientation::right:
-		placement_orientation = data::placementOrientation::down;
+	case data::Orientation::right:
+		placementOrientation = data::Orientation::down;
 		break;
-	case data::placementOrientation::down:
-		placement_orientation = data::placementOrientation::left;
+	case data::Orientation::down:
+		placementOrientation = data::Orientation::left;
 		break;
-	case data::placementOrientation::left:
-		placement_orientation = data::placementOrientation::up;
-		break;
-	default:
-		assert(false);  // Missing switch case
-	}
-}
-
-void jactorio::game::Player_data::counter_rotate_placement_orientation() {
-	switch (placement_orientation) {
-	case data::placementOrientation::up:
-		placement_orientation = data::placementOrientation::left;
-		break;
-	case data::placementOrientation::left:
-		placement_orientation = data::placementOrientation::down;
-		break;
-	case data::placementOrientation::down:
-		placement_orientation = data::placementOrientation::right;
-		break;
-	case data::placementOrientation::right:
-		placement_orientation = data::placementOrientation::up;
+	case data::Orientation::left:
+		placementOrientation = data::Orientation::up;
 		break;
 	default:
 		assert(false);  // Missing switch case
 	}
 }
 
-void call_on_neighbor_update(jactorio::game::World_data& world_data,
-                             const jactorio::game::World_data::world_pair emit_pair,
-                             const jactorio::game::World_data::world_coord world_x,
-                             const jactorio::game::World_data::world_coord world_y,
-                             const jactorio::data::placementOrientation target_orientation) {
+void jactorio::game::PlayerData::CounterRotatePlacementOrientation() {
+	switch (placementOrientation) {
+	case data::Orientation::up:
+		placementOrientation = data::Orientation::left;
+		break;
+	case data::Orientation::left:
+		placementOrientation = data::Orientation::down;
+		break;
+	case data::Orientation::down:
+		placementOrientation = data::Orientation::right;
+		break;
+	case data::Orientation::right:
+		placementOrientation = data::Orientation::up;
+		break;
+	default:
+		assert(false);  // Missing switch case
+	}
+}
+
+void call_on_neighbor_update(jactorio::game::WorldData& world_data,
+                             const jactorio::game::WorldData::WorldPair emit_pair,
+                             const jactorio::game::WorldData::WorldCoord world_x,
+                             const jactorio::game::WorldData::WorldCoord world_y,
+                             const jactorio::data::Orientation target_orientation) {
 	using namespace jactorio;
 
-	const game::Chunk_tile* tile = world_data.get_tile_world_coords(world_x, world_y);
+	const game::ChunkTile* tile = world_data.GetTile(world_x, world_y);
 	if (tile) {
-		auto& layer = tile->get_layer(game::Chunk_tile::chunkLayer::entity);
+		auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
-		auto* entity = static_cast<const data::Entity*>(layer.prototype_data);
+		const auto* entity = static_cast<const data::Entity*>(layer.prototypeData);
 		if (entity)
-			entity->on_neighbor_update(world_data,
-			                           emit_pair,
-			                           {world_x, world_y},
-			                           target_orientation);
+			entity->OnNeighborUpdate(world_data,
+			                         emit_pair,
+			                         {world_x, world_y},
+			                         target_orientation);
 	}
 }
 
-void update_neighboring_entities(jactorio::game::World_data& world_data,
-								 const jactorio::game::World_data::world_coord world_x,
-								 const jactorio::game::World_data::world_coord world_y,
+void update_neighboring_entities(jactorio::game::WorldData& world_data,
+                                 const jactorio::game::WorldData::WorldCoord world_x,
+                                 const jactorio::game::WorldData::WorldCoord world_y,
                                  const jactorio::data::Entity* entity_ptr) {
 	// Clockwise from top left
 
@@ -206,47 +205,47 @@ void update_neighboring_entities(jactorio::game::World_data& world_data,
 	 */
 	using namespace jactorio;
 
-	const game::World_data::world_pair emit_coords = {world_x, world_y};
-	for (int x = world_x; x < world_x + entity_ptr->tile_width; ++x) {
+	const game::WorldData::WorldPair emit_coords = {world_x, world_y};
+	for (int x = world_x; x < world_x + entity_ptr->tileWidth; ++x) {
 		call_on_neighbor_update(world_data,
 		                        emit_coords,
 		                        x,
 		                        world_y - 1,
-		                        data::placementOrientation::down);
+		                        data::Orientation::down);
 	}
-	for (int y = world_y; y < world_y + entity_ptr->tile_height; ++y) {
+	for (int y = world_y; y < world_y + entity_ptr->tileHeight; ++y) {
 		call_on_neighbor_update(world_data,
 		                        emit_coords,
-		                        world_x + entity_ptr->tile_width,
+		                        world_x + entity_ptr->tileWidth,
 		                        y,
-		                        data::placementOrientation::left);
+		                        data::Orientation::left);
 	}
-	for (int x = world_x + entity_ptr->tile_width - 1; x >= world_x; --x) {
+	for (int x = world_x + entity_ptr->tileWidth - 1; x >= world_x; --x) {
 		call_on_neighbor_update(world_data,
 		                        emit_coords,
 		                        x,
-		                        world_y + entity_ptr->tile_height,
-		                        data::placementOrientation::up);
+		                        world_y + entity_ptr->tileHeight,
+		                        data::Orientation::up);
 	}
-	for (int y = world_y + entity_ptr->tile_height - 1; y >= world_y; --y) {
+	for (int y = world_y + entity_ptr->tileHeight - 1; y >= world_y; --y) {
 		call_on_neighbor_update(world_data,
 		                        emit_coords,
 		                        world_x - 1,
 		                        y,
-		                        data::placementOrientation::right);
+		                        data::Orientation::right);
 	}
 }
 
-void jactorio::game::Player_data::try_place_entity(World_data& world_data,
-                                                   const int world_x, const int world_y,
-                                                   const bool can_activate_layer) {
-	auto* tile = world_data.get_tile_world_coords(world_x, world_y);
+void jactorio::game::PlayerData::TryPlaceEntity(WorldData& world_data,
+                                                const int world_x, const int world_y,
+                                                const bool can_activate_layer) {
+	auto* tile = world_data.GetTile(world_x, world_y);
 	if (tile == nullptr)
 		return;
 
-	auto& selected_layer = tile->get_layer(Chunk_tile::chunkLayer::entity);
+	auto& selected_layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
 
-	const data::item_stack* item = get_selected_item();
+	const data::ItemStack* item = GetSelectedItem();
 	// Ensure item attempting to place is an entity
 	data::Entity* entity_ptr = nullptr;
 
@@ -255,7 +254,7 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 	if (item == nullptr)
 		activate_selection = true;
 	else {
-		entity_ptr = static_cast<data::Entity*>(item->first->entity_prototype);
+		entity_ptr = static_cast<data::Entity*>(item->first->entityPrototype);
 		if (entity_ptr == nullptr || !entity_ptr->placeable)
 			activate_selection = true;
 	}
@@ -266,14 +265,14 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 			return;
 
 		// Since this is entity layer, everything is guaranteed to be an entity
-		if (selected_layer.prototype_data) {
+		if (selected_layer.prototypeData) {
 			// // If clicking again on the same entity, deactivate
 			// if (activated_layer == &selected_layer)
 			// 	activated_layer = nullptr;
 			// else
 
 			// Clicking on an existing entity will activate it
-			activated_layer_ = &selected_layer;
+			activatedLayer_ = &selected_layer;
 		}
 
 		return;
@@ -282,11 +281,11 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 
 	assert(entity_ptr != nullptr);
 	// Prototypes can perform additional checking on whether the location can be placed on or not
-	if (!entity_ptr->on_can_build(world_data, {world_x, world_y}))
+	if (!entity_ptr->OnCanBuild(world_data, {world_x, world_y}))
 		return;
 
 	// Do not take item away from player unless item was successfully placed
-	if (!place_entity_at_coords(world_data, entity_ptr, world_x, world_y))
+	if (!PlaceEntityAtCoords(world_data, entity_ptr, world_x, world_y))
 		// Failed to place because an entity already exists
 		return;
 
@@ -294,33 +293,32 @@ void jactorio::game::Player_data::try_place_entity(World_data& world_data,
 	// All validations passed, entity has been placed
 
 	// If item stack was used up, sort player inventory to fill gap
-	if (!decrement_selected_item()) {
-		inventory_sort();
+	if (!DecrementSelectedItem()) {
+		InventorySort();
 	}
 
 	// Call events
 
-	// TODO Frame not yet implemented
-	entity_ptr->on_build(world_data, {world_x, world_y}, selected_layer, 0, placement_orientation);
+	entity_ptr->OnBuild(world_data, {world_x, world_y}, selected_layer, placementOrientation);
 	update_neighboring_entities(world_data, world_x, world_y, entity_ptr);
 }
 
 
-void jactorio::game::Player_data::try_pickup(World_data& world_data,
-                                             const int tile_x, const int tile_y,
-                                             const uint16_t ticks) {
-	auto* tile = world_data.get_tile_world_coords(tile_x, tile_y);
+void jactorio::game::PlayerData::TryPickup(WorldData& world_data,
+                                           const int tile_x, const int tile_y,
+                                           const uint16_t ticks) {
+	auto* tile = world_data.GetTile(tile_x, tile_y);
 
 	const data::Entity* chosen_ptr;
 	bool is_resource_ptr = true;
 	{
-		const auto* entity_ptr = tile->get_entity_prototype(Chunk_tile::chunkLayer::entity);
-		const auto* resource_ptr = tile->get_entity_prototype(Chunk_tile::chunkLayer::resource);
+		const auto* entity_ptr   = tile->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
+		const auto* resource_ptr = tile->GetEntityPrototype(ChunkTile::ChunkLayer::resource);
 
 		// Picking up entities takes priority since it is higher on the layer
 		if (entity_ptr != nullptr) {
 			is_resource_ptr = false;
-			chosen_ptr = entity_ptr;
+			chosen_ptr      = entity_ptr;
 		}
 		else if (resource_ptr != nullptr)
 			chosen_ptr = resource_ptr;
@@ -330,56 +328,56 @@ void jactorio::game::Player_data::try_pickup(World_data& world_data,
 	}
 
 	// Selecting a new tile different from the last selected tile will reset the counter
-	if (last_selected_ptr_ != chosen_ptr || last_tile_ptr_ != tile) {
-		pickup_tick_counter_ = 0;
-		pickup_tick_target_ = static_cast<uint16_t>(chosen_ptr->pickup_time * JC_GAME_HERTZ);  // Seconds to ticks
+	if (lastSelectedPtr != chosen_ptr || lastTilePtr != tile) {
+		pickupTickCounter = 0;
+		pickupTickTarget  = static_cast<uint16_t>(chosen_ptr->pickupTime * JC_GAME_HERTZ);  // Seconds to ticks
 	}
 	// Remember the entity + tile which was selected
-	last_selected_ptr_ = chosen_ptr;
-	last_tile_ptr_ = tile;
+	lastSelectedPtr = chosen_ptr;
+	lastTilePtr     = tile;
 
-	pickup_tick_counter_ += ticks;
-	if (pickup_tick_counter_ >= pickup_tick_target_) {
+	pickupTickCounter += ticks;
+	if (pickupTickCounter >= pickupTickTarget) {
 		// Entity picked up
 		LOG_MESSAGE(debug, "Player picked up entity");
 
 		// Give picked up item to player
-		const auto item_stack = data::item_stack(chosen_ptr->get_item(), 1);
+		const auto item_stack = data::ItemStack(chosen_ptr->GetItem(), 1);
 
 		// Failed to add item, likely because the inventory is full
-		if (!can_add_stack(inventory_player, inventory_size, item_stack))
+		if (!CanAddStack(inventoryPlayer, kInventorySize, item_stack))
 			return;
 
-		add_stack(inventory_player, inventory_size, item_stack);
-		inventory_sort();
+		AddStack(inventoryPlayer, kInventorySize, item_stack);
+		InventorySort();
 
-		pickup_tick_counter_ = 0;
+		pickupTickCounter = 0;
 		// Resource entity
 		if (is_resource_ptr) {
-			auto& layer = tile->get_layer(Chunk_tile::chunkLayer::resource);
-			auto* resource_data = static_cast<data::Resource_entity_data*>(layer.unique_data);
+			auto& layer         = tile->GetLayer(ChunkTile::ChunkLayer::resource);
+			auto* resource_data = static_cast<data::ResourceEntityData*>(layer.uniqueData);
 
 			assert(resource_data != nullptr);  // Resource tiles should have valid data
 
 			// Delete resource tile if it is empty after extracting
-			if (--resource_data->resource_amount == 0) {
-				layer.clear();
+			if (--resource_data->resourceAmount == 0) {
+				layer.Clear();
 			}
 		}
 			// Is normal entity
 		else {
-			auto& layer = tile->get_layer(Chunk_tile::chunkLayer::entity);
+			auto& layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
 
 			// Picking up an entity which is set in activated_layer will unset activated_layer
-			if (activated_layer_ == &layer)
-				activated_layer_ = nullptr;
+			if (activatedLayer_ == &layer)
+				activatedLayer_ = nullptr;
 
 			// Call events
-			const auto* entity = static_cast<const data::Entity*>(layer.prototype_data);
+			const auto* entity = static_cast<const data::Entity*>(layer.prototypeData);
 
-			entity->on_remove(world_data, {tile_x, tile_y}, layer);
+			entity->OnRemove(world_data, {tile_x, tile_y}, layer);
 
-			const bool result = place_entity_at_coords(world_data, nullptr, tile_x, tile_y);
+			const bool result = PlaceEntityAtCoords(world_data, nullptr, tile_x, tile_y);
 			assert(result);  // false indicates failed to remove entity
 
 			update_neighboring_entities(world_data, tile_x, tile_y, entity);
@@ -387,28 +385,28 @@ void jactorio::game::Player_data::try_pickup(World_data& world_data,
 	}
 }
 
-float jactorio::game::Player_data::get_pickup_percentage() const {
-	if (last_selected_ptr_ == nullptr)  // Not initialized yet
+float jactorio::game::PlayerData::GetPickupPercentage() const {
+	if (lastSelectedPtr == nullptr)  // Not initialized yet
 		return 0.f;
 
-	return static_cast<float>(pickup_tick_counter_) / static_cast<float>(pickup_tick_target_);
+	return static_cast<float>(pickupTickCounter) / static_cast<float>(pickupTickTarget);
 }
 
 // ============================================================================================
 // Inventory
 
-void jactorio::game::Player_data::inventory_sort() {
+void jactorio::game::PlayerData::InventorySort() {
 	// The inventory must be sorted without moving the selected cursor
 
 	LOG_MESSAGE(debug, "Sorting player inventory");
 
 	// Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
-	std::vector<data::item_stack> inv_temp;
-	inv_temp.reserve(inventory_size);
-	for (const auto& i : inventory_player) {
+	std::vector<data::ItemStack> inv_temp;
+	inv_temp.reserve(kInventorySize);
+	for (const auto& i : inventoryPlayer) {
 		// Skip the cursor
 		if (i.first == nullptr ||
-			i.first->get_localized_name() == inventory_selected_cursor_iname) {
+			i.first->GetLocalizedName() == kInventorySelectedCursorIname) {
 			continue;
 		}
 
@@ -417,9 +415,9 @@ void jactorio::game::Player_data::inventory_sort() {
 
 	// Sort temp inventory (does not contain cursor)
 	std::sort(inv_temp.begin(), inv_temp.end(),
-	          [](const data::item_stack a, const data::item_stack b) {
-		          const auto& a_name = a.first->get_localized_name();
-		          const auto& b_name = b.first->get_localized_name();
+	          [](const data::ItemStack a, const data::ItemStack b) {
+		          const auto& a_name = a.first->GetLocalizedName();
+		          const auto& b_name = b.first->GetLocalizedName();
 
 		          return a_name < b_name;
 	          });
@@ -427,7 +425,7 @@ void jactorio::game::Player_data::inventory_sort() {
 	// Compress item stacks
 	for (int64_t i = inv_temp.size() - 1; i >= 0; --i) {
 		uint16_t buffer_item_count = inv_temp[i].second;
-		const uint16_t stack_size = inv_temp[i].first->stack_size;
+		const uint16_t stack_size  = inv_temp[i].first->stackSize;
 
 		// Find index which the same item type begins
 		auto j = i;
@@ -471,12 +469,12 @@ void jactorio::game::Player_data::inventory_sort() {
 	}
 
 	// Copy back into origin inventory
-	int start = -1;  // The index of the first blank slot post sorting
+	int start                   = -1;  // The index of the first blank slot post sorting
 	unsigned int inv_temp_index = 0;
-	for (auto i = 0; i < inventory_size; ++i) {
+	for (auto i = 0; i < kInventorySize; ++i) {
 		// Skip the cursor
-		if (inventory_player[i].first != nullptr &&
-			inventory_player[i].first->get_localized_name() == inventory_selected_cursor_iname)
+		if (inventoryPlayer[i].first != nullptr &&
+			inventoryPlayer[i].first->GetLocalizedName() == kInventorySelectedCursorIname)
 			continue;
 
 		if (inv_temp_index >= inv_temp.size()) {
@@ -492,7 +490,7 @@ void jactorio::game::Player_data::inventory_sort() {
 			}
 		}
 
-		inventory_player[i] = inv_temp[inv_temp_index++];
+		inventoryPlayer[i] = inv_temp[inv_temp_index++];
 	}
 loop_exit:
 
@@ -500,57 +498,57 @@ loop_exit:
 		return;
 
 	// Copy empty spaces into the remainder of the slots
-	for (auto i = start; i < inventory_size; ++i) {
+	for (auto i = start; i < kInventorySize; ++i) {
 		// Skip the cursor
-		if (inventory_player[i].first != nullptr &&
-			inventory_player[i].first->get_localized_name() == inventory_selected_cursor_iname)
+		if (inventoryPlayer[i].first != nullptr &&
+			inventoryPlayer[i].first->GetLocalizedName() == kInventorySelectedCursorIname)
 			continue;
 
-		inventory_player[i] = {nullptr, 0};
+		inventoryPlayer[i] = {nullptr, 0};
 	}
 }
 
 // LEFT CLICK - Select by reference, the item in the cursor mirrors the inventory item
 // RIGHT CLICK - Select unique, the item in the cursor exists independently of the inventory item
 
-void jactorio::game::Player_data::inventory_click(const unsigned short index,
-                                                  const unsigned short mouse_button,
-                                                  const bool allow_reference_select,
-                                                  data::item_stack* inv) {
-	assert(index < inventory_size);
+void jactorio::game::PlayerData::InventoryClick(const unsigned short index,
+                                                const unsigned short mouse_button,
+                                                const bool allow_reference_select,
+                                                data::ItemStack* inv) {
+	assert(index < kInventorySize);
 	assert(mouse_button == 0 || mouse_button == 1);  // Only left + right click supported
 
 	// Clicking on the same location + inventory, selecting by reference: deselect
-	if (has_item_selected_ && select_by_reference_ &&
-		selected_item_index_ == index && selected_item_inventory_ == inv) {
-		has_item_selected_ = false;
+	if (hasItemSelected_ && selectByReference_ &&
+		selectedItemIndex_ == index && selectedItemInventory_ == inv) {
+		hasItemSelected_ = false;
 
 		// Add referenced item to slot
-		inv[selected_item_index_] = selected_item_;
+		inv[selectedItemIndex_] = selectedItem_;
 		return;
 	}
 
 
 	// Selection mode can only be set upon first item selection
-	if (!has_item_selected_) {
+	if (!hasItemSelected_) {
 		// Clicking empty slot
 		if (inv[index].first == nullptr)
 			return;
 
-		has_item_selected_ = true;
-		selected_item_index_ = index;
-		selected_item_inventory_ = inv;
+		hasItemSelected_       = true;
+		selectedItemIndex_     = index;
+		selectedItemInventory_ = inv;
 
 		// Reference
 		if (allow_reference_select && mouse_button == 0) {
-			assert(inv == inventory_player);  // Select by reference only allowed for player inventory
-			select_by_reference_ = true;
-			selected_item_ = inv[index];
+			assert(inv == inventoryPlayer);  // Select by reference only allowed for player inventory
+			selectByReference_ = true;
+			selectedItem_      = inv[index];
 
 			// Swap icon out for a cursor indicating the current index is selected
-			inventory_player[index].first = data::data_raw_get<data::Item>(
-				data::dataCategory::item, inventory_selected_cursor_iname);
-			inventory_player[index].second = 0;
+			inventoryPlayer[index].first = data::DataRawGet<data::Item>(
+				data::DataCategory::item, kInventorySelectedCursorIname);
+			inventoryPlayer[index].second = 0;
 
 			// Return is necessary when selecting by reference
 			// The item needs to be moved after selecting the next inventory slot
@@ -558,70 +556,70 @@ void jactorio::game::Player_data::inventory_click(const unsigned short index,
 		}
 
 		// Unique
-		select_by_reference_ = false;
+		selectByReference_ = false;
 
 		// Clear the cursor inventory so half can be moved into it
-		selected_item_.first = nullptr;
-		selected_item_.second = 0;
+		selectedItem_.first  = nullptr;
+		selectedItem_.second = 0;
 		// DO NOT return for it to move the item into the new inventory
 	}
 
 	const bool cursor_empty =
-		move_itemstack_to_index(&selected_item_, 0,
-		                                     inv, index,
-		                                     mouse_button);
+		MoveItemstackToIndex(&selectedItem_, 0,
+		                     inv, index,
+		                     mouse_button);
 	// Cursor slot is empty
 	if (cursor_empty) {
-		has_item_selected_ = false;
+		hasItemSelected_ = false;
 
-		if (select_by_reference_) {
+		if (selectByReference_) {
 			// Remove cursor icon
-			assert(selected_item_index_ < inventory_size);
+			assert(selectedItemIndex_ < kInventorySize);
 			// Select by reference is only for inventory_player
-			inventory_player[selected_item_index_].first = nullptr;
-			inventory_player[selected_item_index_].second = 0;
+			inventoryPlayer[selectedItemIndex_].first  = nullptr;
+			inventoryPlayer[selectedItemIndex_].second = 0;
 		}
 	}
 }
 
-const jactorio::data::item_stack* jactorio::game::Player_data::get_selected_item() const {
-	if (!has_item_selected_)
+const jactorio::data::ItemStack* jactorio::game::PlayerData::GetSelectedItem() const {
+	if (!hasItemSelected_)
 		return nullptr;
 
-	return &selected_item_;
+	return &selectedItem_;
 }
 
-bool jactorio::game::Player_data::deselect_selected_item() {
-	if (!has_item_selected_ || !select_by_reference_)
+bool jactorio::game::PlayerData::DeselectSelectedItem() {
+	if (!hasItemSelected_ || !selectByReference_)
 		return false;
-	
+
 	// Add referenced item to slot
-	inventory_player[selected_item_index_] = selected_item_;
-	has_item_selected_ = false;
+	inventoryPlayer[selectedItemIndex_] = selectedItem_;
+	hasItemSelected_                    = false;
 	return true;
 }
 
-bool jactorio::game::Player_data::increment_selected_item() {
-	assert(has_item_selected_);
+bool jactorio::game::PlayerData::IncrementSelectedItem() {
+	assert(hasItemSelected_);
 
 	// DO not increment if it will exceed the stack size
-	if (selected_item_.second < selected_item_.first->stack_size) {
-		selected_item_.second++;
+	if (selectedItem_.second < selectedItem_.first->stackSize) {
+		selectedItem_.second++;
 		return true;
 	}
 
 	return false;
 }
 
-bool jactorio::game::Player_data::decrement_selected_item() {
-	assert(has_item_selected_);
+bool jactorio::game::PlayerData::DecrementSelectedItem() {
+	assert(hasItemSelected_);
 
-	if (--selected_item_.second == 0) {
+	if (--selectedItem_.second == 0) {
 		// Item stack now empty
-		has_item_selected_ = false;
+		hasItemSelected_ = false;
 		// Remove selection cursor
-		inventory_player[selected_item_index_].first = nullptr;
-		inventory_player[selected_item_index_].second = 0;
+		inventoryPlayer[selectedItemIndex_].first  = nullptr;
+		inventoryPlayer[selectedItemIndex_].second = 0;
 
 		return false;
 	}
@@ -631,41 +629,41 @@ bool jactorio::game::Player_data::decrement_selected_item() {
 // ============================================================================================
 // Recipe
 
-void jactorio::game::Player_data::recipe_group_select(const uint16_t index) {
-	selected_recipe_group_ = index;
+void jactorio::game::PlayerData::RecipeGroupSelect(const uint16_t index) {
+	selectedRecipeGroup_ = index;
 }
 
-uint16_t jactorio::game::Player_data::recipe_group_get_selected() const {
-	return selected_recipe_group_;
+uint16_t jactorio::game::PlayerData::RecipeGroupGetSelected() const {
+	return selectedRecipeGroup_;
 }
 
-void jactorio::game::Player_data::recipe_craft_tick(uint16_t ticks) {
+void jactorio::game::PlayerData::RecipeCraftTick(uint16_t ticks) {
 	// Attempt to return held item if inventory is full
-	if (crafting_held_item_.second != 0) {
-		const auto extra_items = add_stack(inventory_player, inventory_size, crafting_held_item_);
-		crafting_held_item_.second = extra_items;
+	if (craftingHeldItem_.second != 0) {
+		const auto extra_items  = AddStack(inventoryPlayer, kInventorySize, craftingHeldItem_);
+		craftingHeldItem_.second = extra_items;
 		return;
 	}
 
-	
-	while (ticks != 0 && !crafting_queue_.empty()) {
-		// Ticks available greater than or equal to crafting ticks remaining
-		if (ticks >= crafting_ticks_remaining_) {
-			ticks -= crafting_ticks_remaining_;
 
-			auto* recipe = crafting_queue_.front();
-			crafting_queue_.pop_front();
+	while (ticks != 0 && !craftingQueue_.empty()) {
+		// Ticks available greater than or equal to crafting ticks remaining
+		if (ticks >= craftingTicksRemaining_) {
+			ticks -= craftingTicksRemaining_;
+
+			auto* recipe = craftingQueue_.front();
+			craftingQueue_.pop_front();
 
 			// Return product
-			data::recipe_item recipe_item = recipe->get_product();
-			auto* product_item = data::data_raw_get<data::Item>(
-				data::dataCategory::item, recipe_item.first);
+			data::RecipeItem recipe_item = recipe->GetProduct();
+			auto* product_item           = data::DataRawGet<data::Item>(
+				data::DataCategory::item, recipe_item.first);
 
-			data::item_stack item = {product_item, recipe_item.second};
+			data::ItemStack item = {product_item, recipe_item.second};
 
 			// Deduct based on the deductions
 			std::map<std::string, uint16_t>::iterator element;
-			if ((element = crafting_item_deductions_.find(recipe_item.first)) != crafting_item_deductions_.end()) {
+			if ((element = craftingItemDeductions_.find(recipe_item.first)) != craftingItemDeductions_.end()) {
 				auto& deduct_amount = element->second;
 
 				if (item.second >= deduct_amount) {
@@ -674,7 +672,7 @@ void jactorio::game::Player_data::recipe_craft_tick(uint16_t ticks) {
 					LOG_MESSAGE_f(debug, "Crafting return deducting %d of '%s'",
 					              deduct_amount, recipe_item.first.c_str());
 
-					crafting_item_deductions_.erase(recipe_item.first);  // Now empty
+					craftingItemDeductions_.erase(recipe_item.first);  // Now empty
 				}
 					// Deduct amount greater than i.second
 				else {
@@ -689,76 +687,76 @@ void jactorio::game::Player_data::recipe_craft_tick(uint16_t ticks) {
 			// Still has items to return to player inventory
 			if (item.second != 0) {
 				// Extra not available in queue anymore since it has been returned to the player
-				auto& queue_extras = crafting_item_extras_[recipe_item.first];
+				auto& queue_extras = craftingItemExtras_[recipe_item.first];
 				if (queue_extras > item.second)
 					queue_extras -= item.second;
 				else
 					// If entry is 0, erase it
-					crafting_item_extras_.erase(recipe_item.first);
+					craftingItemExtras_.erase(recipe_item.first);
 
-				const auto extra_items = add_stack(inventory_player, inventory_size, item);
+				const auto extra_items = AddStack(inventoryPlayer, kInventorySize, item);
 				if (extra_items != 0)
-					crafting_held_item_ = {item.first, extra_items};
+					craftingHeldItem_ = {item.first, extra_items};
 			}
 
 			// Set crafting ticks remaining to the next item
-			if (!crafting_queue_.empty())
-				crafting_ticks_remaining_ = static_cast<uint16_t>(crafting_queue_.front()->crafting_time * JC_GAME_HERTZ);
+			if (!craftingQueue_.empty())
+				craftingTicksRemaining_ = static_cast<uint16_t>(craftingQueue_.front()->craftingTime * JC_GAME_HERTZ);
 		}
 			// Crafting ticks remaining is greater, decrement ticks remaining
 		else {
-			crafting_ticks_remaining_ -= ticks;
+			craftingTicksRemaining_ -= ticks;
 			break;
 		}
 	}
 
 }
 
-void jactorio::game::Player_data::recipe_queue(data::Recipe* recipe) {
+void jactorio::game::PlayerData::RecipeQueue(data::Recipe* recipe) {
 	assert(recipe != nullptr);  // Invalid recipe given
 
-	LOG_MESSAGE_f(debug, "Queuing recipe: '%s'", recipe->get_product().first.c_str());
+	LOG_MESSAGE_f(debug, "Queuing recipe: '%s'", recipe->GetProduct().first.c_str());
 
 	// Remove ingredients
 	for (auto& ingredient : recipe->ingredients) {
-		auto* item = data::data_raw_get<data::Item>(
-			data::dataCategory::item, ingredient.first);
+		auto* item = data::DataRawGet<data::Item>(
+			data::DataCategory::item, ingredient.first);
 
-		remove_inv_item(inventory_player, inventory_size, item, ingredient.second);
+		RemoveInvItem(inventoryPlayer, kInventorySize, item, ingredient.second);
 	}
 
 	// Queue is empty, crafting time for the first item in queue must be set here
-	if (crafting_queue_.empty())
-		crafting_ticks_remaining_ = static_cast<uint16_t>(recipe->crafting_time * JC_GAME_HERTZ);
+	if (craftingQueue_.empty())
+		craftingTicksRemaining_ = static_cast<uint16_t>(recipe->craftingTime * JC_GAME_HERTZ);
 
-	crafting_queue_.push_back(recipe);
+	craftingQueue_.push_back(recipe);
 }
 
-const std::deque<jactorio::data::Recipe*>& jactorio::game::Player_data::get_recipe_queue() const {
-	return crafting_queue_;
+const std::deque<jactorio::data::Recipe*>& jactorio::game::PlayerData::GetRecipeQueue() const {
+	return craftingQueue_;
 }
 
-uint16_t jactorio::game::Player_data::get_crafting_ticks_remaining() const {
-	return crafting_ticks_remaining_;
+uint16_t jactorio::game::PlayerData::GetCraftingTicksRemaining() const {
+	return craftingTicksRemaining_;
 }
 
-void jactorio::game::Player_data::recipe_craft_r(data::Recipe* recipe) {
+void jactorio::game::PlayerData::RecipeCraftR(data::Recipe* recipe) {
 	assert(recipe != nullptr);  // Invalid recipe given
 
 	for (auto& ingredient : recipe->ingredients) {
-		const auto* ingredient_proto = data::data_raw_get<data::Item>(
-			data::dataCategory::item, ingredient.first);
+		const auto* ingredient_proto = data::DataRawGet<data::Item>(
+			data::DataCategory::item, ingredient.first);
 
 		const uint32_t possess_amount =
-			get_inv_item_count(inventory_player, inventory_size, ingredient_proto);
+			GetInvItemCount(inventoryPlayer, kInventorySize, ingredient_proto);
 
 		// Insufficient ingredient amount in player inventory
 		if (possess_amount < ingredient.second) {
 			auto amount_needed = ingredient.second - possess_amount;
 			// If there any items being queued to be returned to the player, do not return and instead
 			// use it to craft
-			auto& queued_available = crafting_item_extras_[ingredient.first];
-			auto& return_deductions = crafting_item_deductions_[ingredient.first];
+			auto& queued_available  = craftingItemExtras_[ingredient.first];
+			auto& return_deductions = craftingItemDeductions_[ingredient.first];
 
 			if (amount_needed < queued_available) {
 				// Available through what is queued
@@ -781,23 +779,23 @@ void jactorio::game::Player_data::recipe_craft_r(data::Recipe* recipe) {
 				return_deductions += amount_needed + queued_available;
 
 
-				auto* ingredient_recipe = data::Recipe::get_item_recipe(ingredient.first);
+				auto* ingredient_recipe = data::Recipe::GetItemRecipe(ingredient.first);
 
 				// Round up to always ensure enough is crafted
-				const unsigned int yield = ingredient_recipe->get_product().second;
-				const auto batches = (amount_needed + yield - 1) / yield;
+				const unsigned int yield = ingredient_recipe->GetProduct().second;
+				const auto batches       = (amount_needed + yield - 1) / yield;
 
 				// Keep track of excess amounts
 				const auto excess = batches * yield - amount_needed;
 				if (excess > 0)
-					crafting_item_extras_[ingredient.first] += excess;
+					craftingItemExtras_[ingredient.first] += excess;
 				else
 					// All available from queue used up, delete entry
-					crafting_item_extras_.erase(ingredient.first);
+					craftingItemExtras_.erase(ingredient.first);
 
 				// Craft sub-recipes recursively until met
 				for (unsigned int i = 0; i < batches; ++i) {
-					recipe_craft_r(ingredient_recipe);
+					RecipeCraftR(ingredient_recipe);
 				}
 			}
 
@@ -805,17 +803,17 @@ void jactorio::game::Player_data::recipe_craft_r(data::Recipe* recipe) {
 	}
 
 	// Ingredients met - Queue crafting recipe
-	recipe_queue(recipe);
+	RecipeQueue(recipe);
 }
 
 
-bool jactorio::game::Player_data::recipe_can_craft_r(std::map<data::Item*, uint32_t>& used_items,
-                                                     const data::Recipe* recipe, const uint16_t batches) {
+bool jactorio::game::PlayerData::RecipeCanCraftR(std::map<data::Item*, uint32_t>& used_items,
+                                                 const data::Recipe* recipe, const uint16_t batches) {
 	assert(recipe != nullptr);  // Invalid recipe given
 
 	for (const auto& ingredient : recipe->ingredients) {
-		auto* ingredient_proto = data::data_raw_get<data::Item>(
-			data::dataCategory::item, ingredient.first);
+		auto* ingredient_proto = data::DataRawGet<data::Item>(
+			data::DataCategory::item, ingredient.first);
 
 		// If item has already been counted, use the map used_items. Otherwise, count from inventory
 		unsigned int possess_amount;
@@ -823,9 +821,9 @@ bool jactorio::game::Player_data::recipe_can_craft_r(std::map<data::Item*, uint3
 			possess_amount = used_items[ingredient_proto];
 		}
 		else {
-			possess_amount = get_inv_item_count(inventory_player,
-			                                                 inventory_size,
-			                                                 ingredient_proto);
+			possess_amount = GetInvItemCount(inventoryPlayer,
+			                                 kInventorySize,
+			                                 ingredient_proto);
 			used_items[ingredient_proto] = possess_amount;
 		}
 
@@ -835,7 +833,7 @@ bool jactorio::game::Player_data::recipe_can_craft_r(std::map<data::Item*, uint3
 			continue;
 		}
 
-		const auto* ingredient_recipe = data::Recipe::get_item_recipe(ingredient.first);
+		const auto* ingredient_recipe = data::Recipe::GetItemRecipe(ingredient.first);
 		// Ingredient cannot be crafted
 		if (ingredient_recipe == nullptr)
 			return false;
@@ -848,13 +846,13 @@ bool jactorio::game::Player_data::recipe_can_craft_r(std::map<data::Item*, uint3
 			used_items[ingredient_proto] = 0;  // Use up amount available + craft to reach desired amount
 
 			const unsigned int x = ingredient.second * batches - possess_amount;
-			const unsigned int y = ingredient_recipe->get_product().second;
+			const unsigned int y = ingredient_recipe->GetProduct().second;
 			// Round up to always ensure enough is crafted
 			ingredient_required_batches = (x + y - 1) / y;
 		}
 
 		// Is able to craft desired amount of ingredient recursively?
-		if (!recipe_can_craft_r(used_items, ingredient_recipe, ingredient_required_batches)) {
+		if (!RecipeCanCraftR(used_items, ingredient_recipe, ingredient_required_batches)) {
 			return false;
 		}
 	}
@@ -863,7 +861,7 @@ bool jactorio::game::Player_data::recipe_can_craft_r(std::map<data::Item*, uint3
 
 }
 
-bool jactorio::game::Player_data::recipe_can_craft(const data::Recipe* recipe, const uint16_t batches) {
+bool jactorio::game::PlayerData::RecipeCanCraft(const data::Recipe* recipe, const uint16_t batches) {
 	std::map<data::Item*, uint32_t> used_items;
-	return recipe_can_craft_r(used_items, recipe, batches);
+	return RecipeCanCraftR(used_items, recipe, batches);
 }

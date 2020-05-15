@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -7,7 +6,7 @@
 #include "core/filesystem.h"
 
 int main(int ac, char* av[]) {
-	jactorio::core::set_executing_directory(av[0]);
+	jactorio::core::SetExecutingDirectory(av[0]);
 
 
 	testing::InitGoogleTest(&ac, av);

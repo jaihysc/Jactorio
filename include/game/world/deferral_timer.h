@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 04/02/2020
 
@@ -17,60 +16,60 @@ namespace jactorio::game
 {
 	///
 	/// \brief Manages deferrals, prototypes inheriting 'Deferred'
-	class Deferral_timer
+	class DeferralTimer
 	{
-		game_tick_t last_game_tick_ = 0;
+		GameTickT lastGameTick_ = 0;
 
 		/// \brief vector of callbacks at game tick
-		std::unordered_map<game_tick_t,
+		std::unordered_map<GameTickT,
 		                   std::vector<
-			                   std::pair<std::reference_wrapper<const data::Deferred>, data::Unique_data_base*>
+			                   std::pair<std::reference_wrapper<const data::Deferred>, data::UniqueDataBase*>
 		                   >> callbacks_;
 
 		/// \brief 0 indicates invalid callback
-		using callback_index = decltype(callbacks_.size());
+		using CallbackIndex = decltype(callbacks_.size());
 
 		// ======================================================================
 
 		///
 		/// \brief Used to fill the gap when a callback has been removed
-		class Blank_callback final : public data::Deferred
+		class BlankCallback final : public data::Deferred
 		{
 		public:
-			void on_defer_time_elapsed(Deferral_timer&, data::Unique_data_base*) const override {
+			void OnDeferTimeElapsed(DeferralTimer&, data::UniqueDataBase*) const override {
 			}
 		};
 
-		Blank_callback blank_callback_;
+		BlankCallback blankCallback_;
 
 	public:
 		/// \brief Information about the registered deferral for removing
-		using deferral_entry = std::pair<game_tick_t, callback_index>;
+		using DeferralEntry = std::pair<GameTickT, CallbackIndex>;
 
 		///
 		/// \brief Calls all deferred callbacks for the current game tick
 		/// \param game_tick Current game tick
-		void deferral_update(game_tick_t game_tick);
+		void DeferralUpdate(GameTickT game_tick);
 
 		///
 		/// \brief Registers callback which will be called upon the specified game tick
 		/// \param deferred Implements virtual function on_defer_time_elapsed
 		/// \param due_game_tick Game tick where the callback will be called
 		/// \return Index of registered callback, use this to remove the callback later
-		deferral_entry register_at_tick(const data::Deferred& deferred, data::Unique_data_base* unique_data,
-		                                game_tick_t due_game_tick);
+		DeferralEntry RegisterAtTick(const data::Deferred& deferred, data::UniqueDataBase* unique_data,
+		                             GameTickT due_game_tick);
 
 		///
 		/// \brief Registers callback which will be called upon the specified game tick
 		/// \param deferred Implements virtual function on_defer_time_elapsed
 		/// \param elapse_game_tick Callback will be called in game ticks from now
 		/// \return Index of registered callback, use this to remove the callback later
-		deferral_entry register_from_tick(const data::Deferred& deferred, data::Unique_data_base* unique_data,
-		                                  game_tick_t elapse_game_tick);
+		DeferralEntry RegisterFromTick(const data::Deferred& deferred, data::UniqueDataBase* unique_data,
+		                               GameTickT elapse_game_tick);
 
 		///
 		/// \brief Removes registered callback at game_tick at index
-		void remove_deferral(deferral_entry entry);
+		void RemoveDeferral(DeferralEntry entry);
 	};
 }
 

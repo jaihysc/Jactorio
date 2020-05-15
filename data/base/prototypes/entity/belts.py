@@ -16,7 +16,7 @@ def addBelt(name, iconSpritePath, worldSpritePath):
                 .trim(16)
                 ))
     .pickupTime(0.1)
-    .speed(0.1)
+    .speed(0.05)
     .rotatable(True)
     )
 addBelt("transport-belt-basic", "base/graphics/icon/transport-belt.png", "base/graphics/entity/transport-belt/transport-belt.png")

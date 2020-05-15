@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 02/07/2020
 
@@ -12,7 +11,7 @@
 
 // RAII style color pop
 #define J_GUI_RAII_STYLE_POP(count) \
-	jactorio::core::Resource_guard<void> imgui_style_guard([]() {ImGui::PopStyleColor(count); })
+	jactorio::core::ResourceGuard<void> imgui_style_guard([]() {ImGui::PopStyleColor(count); })
 
 
 #define J_GUI_COL_NONE                    IM_COL32(0, 0, 0, 0)

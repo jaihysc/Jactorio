@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 01/20/2020
 
@@ -11,24 +10,29 @@
 namespace jactorio::data
 {
 	/// Default health of all Health entities
-	constexpr uint16_t default_health = 1;
+	constexpr uint16_t kDefaultHealth = 1;
 
-	struct Health_entity_data : Entity_data
+	struct HealthEntityData : EntityData
 	{
 		uint16_t health;
 	};
 
-	class Health_entity : public Entity
+	class HealthEntity : public Entity
 	{
 	protected:
-		Health_entity() = default;
+		HealthEntity() = default;
 
 	public:
-		/**
-		 * How many hit points this entity can have before it dies <br>
-		 * 0 max health is invalid
-		 */
-		PYTHON_PROP_REF_I(Health_entity, uint16_t, max_health, default_health);
+		///
+		/// \brief How many hit points this entity can have before it dies
+		/// \remark 0 max health is invalid
+		PYTHON_PROP_REF_I(HealthEntity, uint16_t, maxHealth, kDefaultHealth);
+
+		void PostLoadValidate() const override {
+			Entity::PostLoadValidate();
+
+			J_DATA_ASSERT(maxHealth > 0, "Max health must be greater than 0")
+		}
 	};
 }
 

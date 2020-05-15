@@ -1,4 +1,3 @@
-// 
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
@@ -10,32 +9,31 @@
 
 namespace jactorio::renderer
 {
-	class Vertex_array
+	class VertexArray
 	{
-		unsigned int id_{};
+		unsigned int id_ = 0;
 
 	public:
-		Vertex_array();
-		~Vertex_array();
+		VertexArray();
+		~VertexArray();
 
-		Vertex_array(const Vertex_array& other) = delete;
-		Vertex_array(Vertex_array&& other) noexcept = delete;
-		Vertex_array& operator=(const Vertex_array& other) = delete;
-		Vertex_array& operator=(Vertex_array&& other) noexcept = delete;
+		VertexArray(const VertexArray& other)                = delete;
+		VertexArray(VertexArray&& other) noexcept            = delete;
+		VertexArray& operator=(const VertexArray& other)     = delete;
+		VertexArray& operator=(VertexArray&& other) noexcept = delete;
 
-		/**
-		 * Adds specified buffer to the vertex array <br>
-		 * Vertex_buffer must be deleted manually, it is not managed by the vertex array
-		 * @param vb Vertex buffer to add to vertex array
-		 * @param span Number of floats for one set of coordinates (2 for X and Y)
-		 * @param location Slot in vertex array in which vertex buffer is placed <br>
-		 * This must be managed manually to avoid conflicts
-		 */
-		void add_buffer(const Vertex_buffer* vb, unsigned span,
-		                unsigned location) const;
+		///
+		/// \brief Adds specified buffer to the vertex array
+		/// \remark Vertex_buffer must be deleted manually, it is not managed by the vertex array
+		/// \param vb Vertex buffer to add to vertex array
+		/// \param span Number of floats for one set of coordinates (2 for X and Y)
+		/// \param location Slot in vertex array in which vertex buffer is placed <br>
+		/// This must be managed manually to avoid conflicts
+		void AddBuffer(const VertexBuffer* vb, unsigned span,
+		               unsigned location) const;
 
-		void bind() const;
-		static void unbind();
+		void Bind() const;
+		static void Unbind();
 	};
 }
 
