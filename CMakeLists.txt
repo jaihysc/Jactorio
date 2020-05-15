@@ -1,7 +1,13 @@
-﻿# CMakeList.txt : Top-level CMake project file, do global configuration
-# and include sub-projects here.
+﻿#
+# Targets:
+# jactorioLib  | Lib, all library files used
+# jactorioBase | Lib, all files excluding jactorio.cpp
 #
-cmake_minimum_required(VERSION 3.8)
+# jactorio     | Executable
+# jactorioTest | Google test Executable
+#
+cmake_minimum_required(VERSION 3.9)
+include(CheckIPOSupported)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,190 +16,95 @@ project("jactorio")
 
 option(JACTORIO_BUILD_TESTS "JACTORIO_BUILD_TESTS")
 
+
+
+
+
+function(log_msg message)
+	message(" - ${message}")
+endfunction()
+
+# Shows properties for a subdirectory
+function(jactorio_show_properties)
+	log_msg("Binary directory: ${CMAKE_CURRENT_BINARY_DIR}")
+endfunction()
+
+# Copies from data/ folder to output folder
+function(jactorio_copy_data_files)
+	set(JACTORIO_DATA_FOLDER data)
+
+	log_msg("Copying files to output directory: ${CMAKE_CURRENT_BINARY_DIR}/${JACTORIO_DATA_FOLDER}")
+
+	file(GLOB_RECURSE 
+		DATA_FILES 
+		RELATIVE ${PROJECT_SOURCE_DIR}
+		${PROJECT_SOURCE_DIR}/${JACTORIO_DATA_FOLDER}/*
+	)
+
+	foreach(DATA_FILE ${DATA_FILES})
+		configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${DATA_FILE} COPYONLY)
+	endforeach(DATA_FILE)
+
+	log_msg("DONE Copying files to output directory")
+endfunction()
+
+
+
+
+
+log_msg("Target: ${CMAKE_SYSTEM_NAME}")
+
+
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
+	log_msg("Type: Debug")
+    add_compile_definitions(JACTORIO_DEBUG_BUILD)  # Break on openGL error
+
+ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
+	log_msg("Type: <<< Release >>>")
+	check_ipo_supported(RESULT result)
+
+	if(result)
+		log_msg("IPO: Available")
+		set(JACTORIO_INTERPROCEDURAL_OPTIMIZATION TRUE)
+	else()
+		log_msg("IPO: ~Unavailable")
+	endif()
+ELSE()
+  message(FATAL_ERROR "Unknown build type, specify with -D CMAKE_BUILD_TYPE=")
+ENDIF()
+
+
+
+
+
 # Ensure OpenGL exists
 find_package(OpenGL REQUIRED)
 
 if (OPENGL_FOUND)
-	message("Found OpenGL")
-	message("OpenGL include dir: ${OPENGL_INCLUDE_DIR}")
-	message("OpenGL link libraries: ${OPENGL_gl_LIBRARY}")
+	log_msg("Found OpenGL")
+	log_msg("    OpenGL include dir   : ${OPENGL_INCLUDE_DIR}")
+	log_msg("    OpenGL link libraries: ${OPENGL_gl_LIBRARY}")
 else (OPENGL_FOUND)
 	message(FATAL_ERROR "OpenGL not found")
 endif()
 
-############# Dependencies #############
 
-function(validate_dependency DEPENDENCY_PATH)
-	file(GLOB RESULT ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}/*)
-	list(LENGTH RESULT RES_LEN)
 
-	if((NOT EXISTS ${CMAKE_SOURCE_DIR}/${DEPENDENCY_PATH}) OR (RES_LEN EQUAL 0))
-		message("Installing missing dependency ${DEPENDENCY_PATH}")
 
-		execute_process(COMMAND git submodule update --init --recursive -- ${DEPENDENCY_PATH}
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-	else()
-		message("Found dependency ${DEPENDENCY_PATH}")
-	endif()
-endfunction()
-
-message("========== Resolving dependencies...")
-validate_dependency(lib/glew-cmake)
-validate_dependency(lib/glfw)
-validate_dependency(lib/stb/stb)	# HEADER
-validate_dependency(lib/glm)		# HEADER
-validate_dependency(lib/imgui/imgui)	# NC
-validate_dependency(lib/pybind11)
-validate_dependency(lib/libnoise)
-validate_dependency(lib/SDL-mirror)
-validate_dependency(lib/decimal_for_cpp)
 
 # Dependencies build arguments
 add_compile_definitions(GLEW_STATIC)
 
-# Ones which need to be built
-add_subdirectory("lib/glew-cmake")
-add_subdirectory("lib/glfw")
-add_subdirectory("lib/pybind11")
-add_subdirectory("lib/libnoise")
-add_subdirectory("lib/SDL-mirror")
+add_subdirectory("lib")
 
-set(
-	IMGUI_FILES
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
-)
+# ======================================== Defines
+add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
 
-# Additional files to compile
-set(
-	ADDITIONAL_BUILD_FILES
-	${IMGUI_FILES}
-)
-
-# Platform link libraries
-set(
-	LIBS_COMMON
-
-	glfw libglew_static
-	pybind11::embed
-	libnoise
-	SDL2main
-)
-
-if (WIN32)
-	message("==== Using Windows link targets")
-	set(
-		JACTORIO_LINK_LIBS
-
-		${LIBS_COMMON}
-		glu32.lib opengl32.lib user32.lib gdi32.lib shell32.lib
-	)
-elseif (APPLE)
-	message("==== Using Apple link targets")
-    set(
-		JACTORIO_LINK_LIBS
-
-		${LIBS_COMMON}
-		"-framework OpenGL"
-	)
-elseif (UNIX)
-	message("==== Using UNIX (Not Apple!) link targets")
-    set(
-		JACTORIO_LINK_LIBS
-
-		${LIBS_COMMON}
-		libGLU.so libGL.so
-	)
-endif (WIN32)
-
-
-message("========== Jactorio files")
-
+# ======================================== Options
 add_compile_definitions(JACTORIO_VERSION="0.1.0")
 add_compile_definitions(JACTORIO_LOG_LEVEL=0)
 # 0 - Debug, 1 - Info, 2 - Warning, 3 - Error, 4 - Critical, 5 - None
-add_compile_definitions(JACTORIO_BUILD_TARGET_PLATFORM="${CMAKE_SYSTEM_NAME}")
 
-
-############# Include folders .h
-set(JACTORIO_INCLUDE_FILES
-	${PROJECT_SOURCE_DIR}/include
-	${PROJECT_SOURCE_DIR}/lib/glfw/include
-	${PROJECT_SOURCE_DIR}/lib/glew-cmake/include
-	${PROJECT_SOURCE_DIR}/lib/stb/
-	${PROJECT_SOURCE_DIR}/lib/glm/
-	${PROJECT_SOURCE_DIR}/lib/imgui/
-	${PROJECT_SOURCE_DIR}/lib/pybind11/include
-	${PROJECT_SOURCE_DIR}/lib/libnoise/include
-	${PROJECT_SOURCE_DIR}/lib/SDL-mirror/include
-
-	${PROJECT_SOURCE_DIR}/lib/decimal_for_cpp/include
-
-)
-#------------ Source files .cpp
-set(JACTORIO_DIR ${PROJECT_SOURCE_DIR}/src)
-set(JACTORIO_SRC_FILES
-	${JACTORIO_DIR}/core/logger.cpp
-	${JACTORIO_DIR}/core/filesystem.cpp
-	${JACTORIO_DIR}/core/execution_timer.cpp
-
-	${JACTORIO_DIR}/data/prototype/sprite.cpp
-	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
-	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
-	${JACTORIO_DIR}/data/prototype/entity/mining_drill.cpp
-	${JACTORIO_DIR}/data/prototype/entity/transport/transport_line.cpp
-
-	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
-	${JACTORIO_DIR}/data/data_manager.cpp
-	${JACTORIO_DIR}/data/local_parser.cpp
-	${JACTORIO_DIR}/game/logic_loop.cpp
-
-	${JACTORIO_DIR}/game/input/input_manager.cpp
-	${JACTORIO_DIR}/game/input/mouse_selection.cpp
-
-	${JACTORIO_DIR}/game/player/player_data.cpp
-
-	${JACTORIO_DIR}/game/world/chunk.cpp
-	${JACTORIO_DIR}/game/world/chunk_tile.cpp
-	${JACTORIO_DIR}/game/world/deferral_timer.cpp
-	${JACTORIO_DIR}/game/world/world_data.cpp
-	${JACTORIO_DIR}/game/world/world_generator.cpp
-
-	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
-	${JACTORIO_DIR}/game/logic/item_logistics.cpp
-	${JACTORIO_DIR}/game/logic/placement_controller.cpp
-	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
-	${JACTORIO_DIR}/game/logic/transport_line_structure.cpp
-
-
-	${JACTORIO_DIR}/renderer/render_main.cpp
-
-	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
-	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
-	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
-	${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
-	${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
-
-	${JACTORIO_DIR}/renderer/opengl/error.cpp
-	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
-	${JACTORIO_DIR}/renderer/opengl/shader_manager.cpp
-	${JACTORIO_DIR}/renderer/opengl/shader.cpp
-	${JACTORIO_DIR}/renderer/opengl/texture.cpp
-	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
-	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
-
-	${JACTORIO_DIR}/renderer/rendering/world_renderer.cpp
-	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
-	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
-	${JACTORIO_DIR}/renderer/rendering/renderer_layer.cpp
-	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
-
-	${JACTORIO_DIR}/renderer/window/window_manager.cpp
-)
-
-# Test files are in test/CMakeLists.txt
 
 add_subdirectory("src")
 if (JACTORIO_BUILD_TESTS)
