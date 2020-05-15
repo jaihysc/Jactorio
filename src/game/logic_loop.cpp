@@ -170,7 +170,6 @@ void jactorio::game::InitLogicLoop() {
 				// Logistics logic
 				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-				// BUG crash sometimes when removing transport line, mutex lock for rendering maybe?
 				TransportLineLogicUpdate(game_data->world);
 			}
 
@@ -182,7 +181,9 @@ void jactorio::game::InitLogicLoop() {
 				game_data->player.RecipeCraftTick();
 			}
 
-			// Events are responsible for resource locking themselves
+			// Lock all mutexes for events
+			std::lock_guard<std::mutex> world_guard{game_data->world.worldDataMutex};
+			std::lock_guard<std::mutex> gui_guard{game_data->player.mutex};
 			game_data->event.Raise<LogicTickEvent>(EventType::logic_tick, game_data->world.GameTick() % JC_GAME_HERTZ);
 			game_data->input.key.Raise();
 		}

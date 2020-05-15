@@ -59,34 +59,43 @@ void jactorio::game::TransportLane::AppendItem(InsertOffsetT offset, const data:
 void jactorio::game::TransportLane::InsertItem(InsertOffsetT offset, const data::Item* item, const ItemOffsetT item_offset) {
 	offset += item_offset;
 	assert(offset >= 0);
-	
-	TransportLineOffset target_offset{offset};
-	TransportLineOffset counter_offset;
+
+	TransportLineOffset target_offset{offset};  // Location where item will be inserted
+	TransportLineOffset counter_offset;  // Running tally of offset from beginning
 
 	std::deque<TransportLineItem>::iterator it;
 	for (auto i = 0u; i < lane.size(); ++i) {
-		if (target_offset < lane[i].first) {
+		counter_offset += lane[i].first;
+
+		// Ends at location where item should be inserted
+		// Target: 0.4
+		// 0.3   0.2(0.5)
+		//     ^ Ends here
+		if (counter_offset > target_offset) {
 			it = lane.begin() + i;
 
 			// Modify offset of next item to be relative to what will be the newly inserted item
-			it->first -= target_offset;
+			counter_offset -= lane[i].first;  // Back to distance to previous item
+
+			// Modify insert offset to be relative to previous item, and following item to be relative to newly inserted item
+			target_offset -= counter_offset;
+			lane[i].first -= target_offset;
 			goto loop_exit;
 		}
-		counter_offset += lane[i].first;
 	}
-	// Failed to find a greater item
-	it = lane.end();
-
+	// Failed to find a greater item, insert at back
 	backItemDistance = target_offset;
 
-loop_exit:
-	// Modify target offset relative to previous item
+	it = lane.end();
 	target_offset -= counter_offset;
 
+loop_exit:
+	assert(target_offset.getAsDouble() >= 0);
 	lane.emplace(it, target_offset, item);
 }
 
-bool jactorio::game::TransportLane::TryInsertItem(const InsertOffsetT offset, const data::Item* item, const ItemOffsetT item_offset) {
+bool jactorio::game::TransportLane::TryInsertItem(const InsertOffsetT offset, const data::Item* item,
+                                                  const ItemOffsetT item_offset) {
 	if (!CanInsert(dec::decimal_cast<kTransportLineDecimalPlace>(offset), item_offset))
 		return false;
 

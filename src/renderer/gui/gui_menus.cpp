@@ -289,7 +289,7 @@ void PlayerInventoryMenu(jactorio::game::PlayerData& player_data) {
 // ==========================================================================================
 // Player menus (Excluding entity menus)
 
-const ImGuiWindowFlags menu_flags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+const ImGuiWindowFlags kMenuFlags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 
 
 void jactorio::renderer::CharacterMenu(game::PlayerData& player_data, const data::UniqueDataBase*) {
@@ -302,7 +302,7 @@ void jactorio::renderer::CharacterMenu(game::PlayerData& player_data, const data
 	SetupNextWindowRight(window_size);
 
 	ImGui::SetNextWindowSize(window_size);
-	ImGui::Begin("Recipe", nullptr, menu_flags);
+	ImGui::Begin("Recipe", nullptr, kMenuFlags);
 
 	// Menu groups | A group button is twice the size of a slot
 	auto groups = data::DataRawGetAllSorted<data::RecipeGroup>(data::DataCategory::recipe_group);
@@ -526,15 +526,7 @@ void jactorio::renderer::CraftingQueue(game::PlayerData& player_data, const data
 	ImGui::PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
 
 	DrawSlots(10, recipe_queue.size(), [&](auto index) {
-		data::Recipe* recipe;
-
-		// Because of concurrency, the deque may have resized by the same it is indexed
-		try {
-			recipe = recipe_queue.at(index);
-		}
-		catch (std::out_of_range&) {
-			return;  // Returning from lambda
-		}
+		data::Recipe* recipe = recipe_queue.at(index);
 
 		const auto* item =
 			data::DataRawGet<data::Item>(data::DataCategory::item,
@@ -596,7 +588,7 @@ void jactorio::renderer::ContainerEntity(game::PlayerData& player_data, const da
 
 	const auto window_size = GetWindowSize(player_data);
 	SetupNextWindowRight(window_size);
-	ImGui::Begin("Container", nullptr, menu_flags);
+	ImGui::Begin("Container", nullptr, kMenuFlags);
 
 	DrawSlots(10, container_data.size, [&](auto i) {
 		if (container_data.inventory[i].first == nullptr) {
@@ -637,7 +629,7 @@ void jactorio::renderer::MiningDrill(game::PlayerData& player_data, const data::
 	const auto window_size = GetWindowSize(player_data);
 	SetupNextWindowRight(window_size);
 
-	ImGui::Begin("Mining drill", nullptr, menu_flags);
+	ImGui::Begin("Mining drill", nullptr, kMenuFlags);
 
 	// 1 - (Ticks left / Ticks to mine)
 	const long double ticks_left = drill_data.deferralEntry.first - player_data.GetPlayerWorld().GameTick();

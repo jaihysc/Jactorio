@@ -187,23 +187,30 @@ namespace game
 		// Offset is ALWAYS from the beginning of the transport line
 
 		line_segment->InsertItem(true, 1.2, itemProto_.get());
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);  // < 1.2
 
 		// Should be sorted by items closest to the end of the segment
-		line_segment->InsertItem(true, 1.5, itemProto_.get());
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.3);  // 1.5
+		line_segment->InsertItem(true, 2.5, itemProto_.get());
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);  // 1.2
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 1.3);  // < 2.5
 
 		line_segment->InsertItem(true, 0.5, itemProto_.get());
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.5);
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.5);  // < 0.5
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.7);  // 1.2
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 0.3);  // 1.5
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 1.3);  // 2.5
 
 		line_segment->InsertItem(true, 0.1, itemProto_.get());
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.1);
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.1);  // < 0.1
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.4);  // 0.5
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 0.7);  // 1.2
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 0.3);  // 1.5
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 1.3);  // 2.5
+
+		line_segment->InsertItem(true, 1.8, itemProto_.get());
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.1);  // 0.1
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.4);  // 0.5
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 0.7);  // 1.2
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 0.6);  // < 1.8
+		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[4].first.getAsDouble(), 0.7);  // 2.5
 	}
 
 	TEST_F(TransportStructureTest, InsertItemAbs) {
