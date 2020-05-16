@@ -78,6 +78,7 @@ elseif (UNIX)
 endif (WIN32)
 
 
+set(JACTORIO_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
 # ======================================== Lib HEADER files .h
 set(JACTORIO_LIB_HEADER_FILES
 	${PROJECT_SOURCE_DIR}/lib/glfw/include
@@ -92,17 +93,9 @@ set(JACTORIO_LIB_HEADER_FILES
 	${PROJECT_SOURCE_DIR}/lib/decimal_for_cpp/include
 )
 # ======================================== END HEADER files .h
-# ======================================== Lib files .cpp
-set(JACTORIO_LIB_BUILD_FILES
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
-)
-# ======================================== END Lib files .cpp
 
 add_library(jactorioLib
-	${JACTORIO_LIB_BUILD_FILES}
+	${JACTORIO_LIB_DIR}/null.cpp  # CMake requires at least 1 cpp file
 )
 target_link_libraries(jactorioLib ${JACTORIO_LINK_LIBS})
 target_include_directories(jactorioLib PUBLIC ${JACTORIO_LIB_HEADER_FILES})

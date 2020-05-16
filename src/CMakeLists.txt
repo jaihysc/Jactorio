@@ -80,27 +80,48 @@ set(JACTORIO_SRC_FILES
 )
 # ======================================== END Source files .cpp
 
-# JactorioBase library, avoids dual compilation for tests
-add_library(jactorioBase
-	${JACTORIO_LIB_BUILD_FILES}
+
+
+# ======================================== Lib files .cpp
+set(JACTORIO_LIB_BUILD_FILES
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
+)
+# ======================================== END Lib files .cpp
+
+
+
+
+
+
+# library linked to for tests
+add_library(jactorioBase 
 	${JACTORIO_SRC_FILES}
+	${JACTORIO_LIB_BUILD_FILES}
 )
 target_include_directories(jactorioBase PUBLIC ${JACTORIO_INCLUDE_FILES})
-target_link_libraries     (jactorioBase 
-	jactorioLib
-)
+target_link_libraries     (jactorioBase jactorioLib)
 
 
 
 # Jactorio Executable
-add_executable(jactorio 
-	${JACTORIO_DIR}/jactorio.cpp
-)
-target_link_libraries(jactorio 
-	jactorioBase
-)
-
 IF(JACTORIO_INTERPROCEDURAL_OPTIMIZATION)
+	# Must compile sources separately for IPO
+	add_executable(jactorio 
+		${JACTORIO_DIR}/jactorio.cpp
+		${JACTORIO_SRC_FILES}
+		${JACTORIO_LIB_BUILD_FILES}
+	)
 	set_property(TARGET jactorio PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+
+	target_link_libraries(jactorio jactorioLib)
+	target_include_directories(jactorio PUBLIC ${JACTORIO_INCLUDE_FILES})
+ELSE()
+	add_executable(jactorio 
+		${JACTORIO_DIR}/jactorio.cpp
+	)
+	target_link_libraries(jactorio jactorioBase)
 ENDIF()
 
