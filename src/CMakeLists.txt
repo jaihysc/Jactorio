@@ -48,6 +48,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 
 	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
+	${JACTORIO_DIR}/game/logic/inserter_controller.cpp
 	${JACTORIO_DIR}/game/logic/item_logistics.cpp
 	${JACTORIO_DIR}/game/logic/placement_controller.cpp
 	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
@@ -77,7 +78,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
 
 	${JACTORIO_DIR}/renderer/window/window_manager.cpp
-)
+	${JACTORIO_DIR}/data/prototype/entity/inserter.cpp)
 # ======================================== END Source files .cpp
 
 

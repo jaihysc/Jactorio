@@ -33,6 +33,14 @@ g_logistics.recipeCategories(([
                 .ingredients([("__base__/coal-item", 2)])
                 .product(("__base__/transport-belt-basic-item", 2))
                 .craftingTime(0.1),
+        ])),
+    # Inserters
+    j.RecipeCategory()
+        .recipes(([
+            j.Recipe()
+                .ingredients([("__base__/copper-item", 2)])
+                .product(("__base__/basic-inserter-item", 1))
+                .craftingTime(0.1),
         ]))
 ]))
 

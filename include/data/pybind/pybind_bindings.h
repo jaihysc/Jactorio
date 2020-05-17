@@ -18,6 +18,7 @@
 #include "data/prototype/entity/entity.h"
 #include "data/prototype/entity/health_entity.h"
 #include "data/prototype/entity/mining_drill.h"
+#include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "data/prototype/entity/transport/transport_line.h"
@@ -193,6 +194,10 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(MiningDrill, miningSpeed)
 		PYBIND_PROP(MiningDrill, resourceOutput);
 
+	// Inserter
+	PYBIND_DATA_CLASS(Inserter, Inserter, HealthEntity)
+		PYBIND_PROP_S(Inserter, rotationSpeed, rotationSpeedFloat, Set_rotationSpeedFloat);
+
 
 	// Recipes
 	PYBIND_DATA_CLASS(RecipeGroup, RecipeGroup, PrototypeBase)
@@ -230,7 +235,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("ContainerEntity", DataCategory::container_entity)
 
 		.value("TransportBelt", DataCategory::transport_belt)
-		.value("MiningDrill", DataCategory::transport_belt);
+		.value("MiningDrill", DataCategory::mining_drill)
+		.value("Inserter", DataCategory::inserter);
 
 	m.def("get", [](const DataCategory category, const std::string& iname) {
 		return DataRawGet<PrototypeBase>(category, iname);
