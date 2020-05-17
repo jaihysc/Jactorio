@@ -1,8 +1,8 @@
 #!/bin/sh
 
-if [ -z "$1" ]; then
-    echo "Build type not defined,"
-    echo "See valid build types in README.md"
+if [[ -z "$1" ]] || [[ "$1" != "Debug"  &&  "$1" != "Release" ]]; then
+    echo "Invalid build type"
+    echo "Valid build types: Debug, Release"
     echo "Example usage: sh ./build.sh Debug"
 
     exit 1
