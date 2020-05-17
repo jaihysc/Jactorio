@@ -1,32 +1,37 @@
 # Jactorio
 
+[![Build Status](https://dev.azure.com/jaihysc/Jactorio/_apis/build/status/jaihysc.Jactorio?branchName=master)](https://dev.azure.com/jaihysc/Jactorio/_build/latest?definitionId=1&branchName=master)
+
 My attempt at recreating [Factorio](https://factorio.com), inspired by [Hopson98's recreation of Minecraft](https://github.com/Hopson97/MineCraft-One-Week-Challenge)
 
-Check out a [weekly devlog here](https://github.com/jaihysc/Jactorio/wiki/Devlog)
+Check out a [weekly log here](https://github.com/jaihysc/Jactorio/wiki/Devlog)
 
 ## Work in progress
 
-The game is currently playable with a procedurally generated world to navigate around
+The game is currently playable with a procedurally generated world and transport lines.
 
 ## Building
-
-**Build types:** `Debug, Release`
-
-**Parameters:** `--notest` if you do not want to build the tests
-
----
 
 General requirements:
 
 **NOTE:** Functionality not guaranteed on MacOS
 
 * Compiler supporting c++17 [gcc >= 9, clang >= 9, msvc >= 142]
-  * MacOS - version >= 10.15
+* Python interpreter 3.7.x
 * CMake
-  * Windows - ensure CMake is added to the `Paths` environmental variable
-* Git / Git bash
-  * Windows - Use Git bash
-* Python interpreter installed
+
+Remarks:
+ * Windows - Ensure CMake is added to the `Paths` environmental variable
+ * Windows - Use git bash to run the bash files
+ * MacOS - Version >= 10.15
+ 
+---
+
+**Build types:** `Debug, Release`
+
+**Parameters:** `--notest` if you do not want to build the tests
+
+---
 
 In a bash shell on Mac and Linux / Git bash on Windows, run
 
@@ -49,8 +54,6 @@ sh ./runtests.sh <Build type used to build>
 The test results will be placed in the directory of `runtests.sh`
 
 ## Dependencies
-
-The application utilises Python to load data, this requires a Python interpreter to be installed on the system
 
 The installation of dependencies listed below is automatic
 
