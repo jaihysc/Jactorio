@@ -7,6 +7,8 @@
 
 #include <tuple>
 
+#include "jactorio.h"
+
 // Data types of the various components within Jactorio
 namespace jactorio
 {

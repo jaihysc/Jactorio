@@ -1,0 +1,1 @@
+// CMake add library requires at least 1 .cpp file

@@ -3,23 +3,16 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
-message("")
-message("~~~~~ [ jactorio tests ] ~~~~~")
+log_msg("")
+log_msg("[Jactorio test ]")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR})
-message("Binary directory: " ${CMAKE_CURRENT_BINARY_DIR})
 
-# Copy data folder for certain tests
-message(">> Copying files to output directory")
-file(GLOB_RECURSE DATA_FILES 
-	RELATIVE ${PROJECT_SOURCE_DIR}
-	${PROJECT_SOURCE_DIR}/data/*)
-foreach(DATA_FILE ${DATA_FILES})
-	# message(${DATA_FILE})
-	configure_file(${PROJECT_SOURCE_DIR}/${DATA_FILE} ${DATA_FILE} COPYONLY)
-endforeach(DATA_FILE)
-message(">> DONE Copying files to output directory: " ${CMAKE_CURRENT_BINARY_DIR})
+jactorio_show_properties()
+jactorio_copy_data_files()
+
+
 
 ####################
 # Google Test
@@ -65,14 +58,8 @@ endif()
 add_compile_definitions(JACTORIO_BUILD_TEST)  # Disables warning when using test only functions
 
 set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
-
-add_executable (
-	jactorioTest
-	${JACTORIO_SRC_FILES}
-	${ADDITIONAL_BUILD_FILES}
-
-	${JACTORIO_TEST_DIR}/jactorioTests.cpp
-
+# ======================================== Test files .cpp
+set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
@@ -118,12 +105,13 @@ add_executable (
 
 	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
 )
+# ======================================== END Test files .cpp
 
-# GTest
-target_link_libraries(jactorioTest gtest_main)
-
-
-target_include_directories(jactorioTest PRIVATE ${JACTORIO_INCLUDE_FILES})
-
-# Dependencies libraries
-target_link_libraries(jactorioTest ${JACTORIO_LINK_LIBS})
+# Test executable
+add_executable(jactorioTest 
+	${JACTORIO_TEST_DIR}/jactorioTests.cpp
+	${JACTORIO_TEST_FILES}
+)
+target_link_libraries(jactorioTest 
+	gtest_main jactorioBase
+)
