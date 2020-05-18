@@ -9,9 +9,14 @@
 
 namespace jactorio::game
 {
+	struct UniqueDataStruct
+	{
+		virtual ~UniqueDataStruct() = default;
+	};
+
 	///
 	/// \brief For a Logic_chunk, stores chunk structures (transport line segments (Not the entities), etc)
-	class ChunkStructLayer : public ChunkLayer
+	class ChunkStructLayer : public ChunkLayer<UniqueDataStruct>
 	{
 	public:
 		using StructCoord = float;

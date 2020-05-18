@@ -51,9 +51,6 @@ namespace game
 				2
 			};
 
-			worldData_.GetTile(4, 4)
-			          ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData = segment_;
-
 			return jactorio::data::TransportLineData{*segment_};
 		}
 

@@ -3,6 +3,7 @@
 
 #include "game/logic/inserter_controller.h"
 #include "data/prototype/entity/inserter.h"
+#include "game/logic/inserter_internal.h"
 
 void jactorio::game::InserterLogicUpdate(WorldData& world_data) {
 }

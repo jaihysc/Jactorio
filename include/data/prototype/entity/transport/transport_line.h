@@ -233,6 +233,10 @@ namespace jactorio::data
 			J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");
 		}
 
+		void ValidatedPostLoad() override {
+			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+		}
+
 		void OnRShowGui(game::PlayerData& /*player_data*/, game::ChunkTileLayer* /*tile_layer*/) const override {
 		}
 	};

@@ -65,6 +65,10 @@ namespace jactorio::data
 		                                                      const game::WorldData::WorldPair&) const override {
 			return {0, 0};
 		}
+
+		void ValidatedPostLoad() override {
+			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+		}
 	};
 }
 

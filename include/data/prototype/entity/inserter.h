@@ -52,6 +52,10 @@ namespace jactorio::data
 
 		void OnRemove(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
 		              game::ChunkTileLayer& tile_layer) const override;
+
+		void ValidatedPostLoad() override {
+			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+		}
 	};
 }
 

@@ -20,12 +20,45 @@ namespace jactorio::data
 	class Sprite final : public PrototypeBase
 	{
 	public:
+		PROTOTYPE_CATEGORY(sprite);
+
 		enum class SpriteGroup
 		{
 			terrain = 0,
 			gui,
 			count_
 		};
+
+		Sprite() = default;
+		explicit Sprite(const std::string& sprite_path);
+		Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group);
+
+		~Sprite() override;
+
+		Sprite(const Sprite& other);
+		Sprite(Sprite&& other) noexcept;
+
+		Sprite& operator=(Sprite other) {
+			swap(*this, other);
+			return *this;
+		}
+
+		friend void swap(Sprite& lhs, Sprite& rhs) noexcept {
+			using std::swap;
+			swap(static_cast<PrototypeBase&>(lhs), static_cast<PrototypeBase&>(rhs));
+			swap(lhs.group, rhs.group);
+			swap(lhs.frames, rhs.frames);
+			swap(lhs.sets, rhs.sets);
+			swap(lhs.trim, rhs.trim);
+			swap(lhs.width_, rhs.width_);
+			swap(lhs.height_, rhs.height_);
+			swap(lhs.bytesPerPixel_, rhs.bytesPerPixel_);
+			swap(lhs.spritePath_, rhs.spritePath_);
+			swap(lhs.spriteBuffer_, rhs.spriteBuffer_);
+		}
+
+		// ======================================================================
+		// Sprite (image) properties
 
 		///
 		/// \brief Group(s) determines which spritemap(s) this sprite is placed on
@@ -58,6 +91,10 @@ namespace jactorio::data
 		/// \return true is Sprite is in specified group
 		bool IsInGroup(SpriteGroup group);
 
+		///
+		/// \brief If group is empty, it is set to the group provided
+		void DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group);
+
 	private:
 		// Image properties
 		int width_ = 0, height_ = 0, bytesPerPixel_ = 0;
@@ -72,37 +109,6 @@ namespace jactorio::data
 		/// \exception DataException Failed to load from file
 		void LoadImageFromFile();
 
-	public:
-		PROTOTYPE_CATEGORY(sprite);
-
-		Sprite();
-		explicit Sprite(const std::string& sprite_path);
-		Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group);
-
-		~Sprite() override;
-
-
-		Sprite(const Sprite& other);
-		Sprite(Sprite&& other) noexcept;
-
-		Sprite& operator=(Sprite other) {
-			swap(*this, other);
-			return *this;
-		}
-
-		friend void swap(Sprite& lhs, Sprite& rhs) noexcept {
-			using std::swap;
-			swap(static_cast<PrototypeBase&>(lhs), static_cast<PrototypeBase&>(rhs));
-			swap(lhs.group, rhs.group);
-			swap(lhs.frames, rhs.frames);
-			swap(lhs.sets, rhs.sets);
-			swap(lhs.trim, rhs.trim);
-			swap(lhs.width_, rhs.width_);
-			swap(lhs.height_, rhs.height_);
-			swap(lhs.bytesPerPixel_, rhs.bytesPerPixel_);
-			swap(lhs.spritePath_, rhs.spritePath_);
-			swap(lhs.spriteBuffer_, rhs.spriteBuffer_);
-		}
 
 		// ======================================================================
 		// Image extraction
@@ -119,7 +125,6 @@ namespace jactorio::data
 		 * 20 - 29: Sprite 3
 		 * 30 - 39: Sprite 4
 		 */
-	private:
 		///
 		/// \brief Performs the following adjustments to set and frame
 		/// \param set Modulus of total number of sets

@@ -12,6 +12,51 @@
 #include "core/filesystem.h"
 #include "data/data_exception.h"
 
+jactorio::data::Sprite::Sprite(const std::string& sprite_path) {
+	LoadImage(sprite_path);
+}
+
+jactorio::data::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group)
+	: group(std::move(group)) {
+	LoadImage(sprite_path);
+}
+
+jactorio::data::Sprite::~Sprite() {
+	stbi_image_free(spriteBuffer_);
+}
+
+jactorio::data::Sprite::Sprite(const Sprite& other)
+	: PrototypeBase(other),
+	  group(other.group),
+	  width_(other.width_),
+	  height_(other.height_),
+	  bytesPerPixel_(other.bytesPerPixel_),
+	  spritePath_(other.spritePath_),
+	  spriteBuffer_(other.spriteBuffer_) {
+
+	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytesPerPixel_;
+	spriteBuffer_   = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_)));  // stbi uses malloc
+	for (unsigned long long i = 0; i < size; ++i) {
+		spriteBuffer_[i] = other.spriteBuffer_[i];
+	}
+}
+
+jactorio::data::Sprite::Sprite(Sprite&& other) noexcept
+	: PrototypeBase{std::move(other)},
+	  group{std::move(other.group)},
+	  frames{other.frames},
+	  sets{other.sets},
+	  trim{other.trim},
+	  width_{other.width_},
+	  height_{other.height_},
+	  bytesPerPixel_{other.bytesPerPixel_},
+	  spritePath_{std::move(other.spritePath_)},
+	  spriteBuffer_{other.spriteBuffer_} {
+	other.spriteBuffer_ = nullptr;
+}
+
+// ======================================================================
+
 bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) {
 	for (auto& i : this->group) {
 		if (i == group)
@@ -19,6 +64,18 @@ bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) {
 	}
 
 	return false;
+}
+
+void jactorio::data::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group) {
+	LOG_MESSAGE_f(debug, "Using default sprite group:");
+	for (auto& group : new_group) {
+		LOG_MESSAGE_f(debug, "    %d", static_cast<int>(group));
+	}
+
+	
+	if (group.empty()) {
+		group = new_group;
+	}
 }
 
 void jactorio::data::Sprite::LoadImageFromFile() {
@@ -40,53 +97,6 @@ void jactorio::data::Sprite::LoadImageFromFile() {
 	}
 }
 
-jactorio::data::Sprite::Sprite()
-	: width_(0), height_(0), bytesPerPixel_(0), spriteBuffer_(nullptr) {
-}
-
-jactorio::data::Sprite::Sprite(const std::string& sprite_path)
-	: width_(0), height_(0), bytesPerPixel_(0), spriteBuffer_(nullptr) {
-	LoadImage(sprite_path);
-}
-
-jactorio::data::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group)
-	: group(std::move(group)), width_(0), height_(0), bytesPerPixel_(0), spriteBuffer_(nullptr) {
-	LoadImage(sprite_path);
-}
-
-jactorio::data::Sprite::~Sprite() {
-	stbi_image_free(spriteBuffer_);
-}
-
-jactorio::data::Sprite::Sprite(const Sprite& other)
-	: PrototypeBase(other),
-	  group(other.group),
-	  width_(other.width_),
-	  height_(other.height_),
-	  bytesPerPixel_(other.bytesPerPixel_),
-	  spritePath_(other.spritePath_),
-	  spriteBuffer_(other.spriteBuffer_) {
-
-	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytesPerPixel_;
-	spriteBuffer_    = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_)));  // stbi uses malloc
-	for (unsigned long long i = 0; i < size; ++i) {
-		spriteBuffer_[i] = other.spriteBuffer_[i];
-	}
-}
-
-jactorio::data::Sprite::Sprite(Sprite&& other) noexcept
-	: PrototypeBase{std::move(other)},
-	  group{std::move(other.group)},
-	  frames{other.frames},
-	  sets{other.sets},
-	  trim{other.trim},
-	  width_{other.width_},
-	  height_{other.height_},
-	  bytesPerPixel_{other.bytesPerPixel_},
-	  spritePath_{std::move(other.spritePath_)},
-	  spriteBuffer_{other.spriteBuffer_} {
-	other.spriteBuffer_ = nullptr;
-}
 
 void jactorio::data::Sprite::AdjustSetFrame(RenderableData::set_t& set, RenderableData::frame_t& frame) const {
 	set %= sets;
@@ -95,7 +105,7 @@ void jactorio::data::Sprite::AdjustSetFrame(RenderableData::set_t& set, Renderab
 }
 
 jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(RenderableData::set_t set,
-                                                                RenderableData::frame_t frame) const {
+                                                               RenderableData::frame_t frame) const {
 	AdjustSetFrame(set, frame);
 
 	assert(set < sets);  // Out of range
@@ -114,7 +124,7 @@ jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(RenderableData::s
 }
 
 jactorio::core::QuadPosition jactorio::data::Sprite::GetCoordsTrimmed(RenderableData::set_t set,
-                                                                       RenderableData::frame_t frame) const {
+                                                                      RenderableData::frame_t frame) const {
 	AdjustSetFrame(set, frame);
 
 	assert(set < sets);  // Out of range

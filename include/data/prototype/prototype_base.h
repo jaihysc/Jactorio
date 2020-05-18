@@ -172,7 +172,7 @@ namespace jactorio::data
 		// ======================================================================
 		// Data Events
 		///
-		/// \brief Called after all prototypes are loaded
+		/// \brief Called after all prototypes are loaded prior to validation
 		virtual void PostLoad() {
 		}
 
@@ -180,6 +180,11 @@ namespace jactorio::data
 		/// \brief Validates properties of the prototype are valid
 		/// \exception data::Data_exception If invalid
 		virtual void PostLoadValidate() const = 0;
+
+		///
+		/// \brief Called after the prototype has been validated
+		virtual void ValidatedPostLoad() {
+		}
 	};
 }
 

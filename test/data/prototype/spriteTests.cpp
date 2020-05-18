@@ -24,6 +24,32 @@ namespace data::prototype
 		EXPECT_NE(second.GetSpritePtr(), nullptr);
 	}
 
+	TEST(Sprite, TrySetDefaultSpriteGroup) {
+		{
+			// Item's sprite group should be set to terrain and gui if blank
+			jactorio::data::Sprite sprite{};
+
+			auto& group = sprite.group;
+
+			sprite.DefaultSpriteGroup({
+				jactorio::data::Sprite::SpriteGroup::terrain,
+				jactorio::data::Sprite::SpriteGroup::gui
+			});
+
+			EXPECT_NE(std::find(group.begin(), group.end(), jactorio::data::Sprite::SpriteGroup::terrain), group.end());
+			EXPECT_NE(std::find(group.begin(), group.end(), jactorio::data::Sprite::SpriteGroup::gui), group.end());
+		}
+		{
+			// If not blank, use initialization provided sprite groups
+			jactorio::data::Sprite sprite{};
+
+			auto& group = sprite.group;
+			group.push_back(jactorio::data::Sprite::SpriteGroup::gui);
+
+			EXPECT_EQ(group.size(), 1);
+		}
+	}
+
 	TEST(Sprite, LoadSprite) {
 		{
 			jactorio::data::Sprite sprite{};

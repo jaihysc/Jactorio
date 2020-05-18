@@ -77,7 +77,7 @@ namespace jactorio::game
 
 	///
 	/// \brief Stores a collection of items heading in one direction
-	struct TransportSegment final : data::UniqueDataBase
+	struct TransportSegment final : UniqueDataStruct
 	{
 	private:
 		using SegmentLengthT = uint8_t;

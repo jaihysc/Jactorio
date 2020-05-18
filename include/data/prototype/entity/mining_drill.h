@@ -98,11 +98,19 @@ namespace jactorio::data
 		              const game::WorldData::WorldPair& world_coords,
 		              game::ChunkTileLayer& tile_layer) const override;
 
+
 		void PostLoadValidate() const override {
 			J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");
 			J_DATA_ASSERT(spriteE != nullptr, "East sprite not provided");
 			J_DATA_ASSERT(spriteS != nullptr, "South sprite not provided");
 			J_DATA_ASSERT(spriteW != nullptr, "West sprite not provided");
+		}
+
+		void ValidatedPostLoad() override {
+			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+			spriteE->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+			spriteS->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+			spriteW->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 		}
 	};
 }
