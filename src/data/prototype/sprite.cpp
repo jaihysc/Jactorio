@@ -67,7 +67,7 @@ bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) {
 }
 
 void jactorio::data::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group) {
-	LOG_MESSAGE_f(debug, "Using default sprite group:");
+	LOG_MESSAGE(debug, "Using default sprite group:");
 	for (auto& group : new_group) {
 		LOG_MESSAGE_f(debug, "    %d", static_cast<int>(group));
 	}
