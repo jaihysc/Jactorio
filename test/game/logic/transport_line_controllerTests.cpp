@@ -5,7 +5,7 @@
 
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "game/logic/transport_line_controller.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 
 #include <memory>

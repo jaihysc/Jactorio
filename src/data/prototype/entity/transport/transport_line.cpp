@@ -4,7 +4,7 @@
 #include "data/prototype/entity/transport/transport_line.h"
 
 #include "data/data_manager.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 
 using namespace jactorio;
 

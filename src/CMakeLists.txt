@@ -52,7 +52,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/logic/item_logistics.cpp
 	${JACTORIO_DIR}/game/logic/placement_controller.cpp
 	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
-	${JACTORIO_DIR}/game/logic/transport_line_structure.cpp
+	${JACTORIO_DIR}/game/logic/transport_segment.cpp
 
 
 	${JACTORIO_DIR}/renderer/render_main.cpp

@@ -5,6 +5,7 @@
 #define JACTORIO_GAME_LOGIC_INSERTER_CONTROLLER_H
 #pragma once
 
+#include "core/float_math.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game
@@ -15,6 +16,23 @@ namespace jactorio::game
 	//     Take from far side, place on far side
 	//     Take from anywhere within 1 tile on the transport line
 	//     Put in center of output transport line
+
+	constexpr auto kInserterCenterOffset = 0.5;
+	/// Distance from inserter arm radius to the end of the last tile 
+	constexpr auto kInserterArmTileGap = 0.3;
+
+	///
+	/// \brief Gets the tile distance of the inserter arm to its resting position at 0 or 180 degrees
+	///
+	///   / |
+	///  /  | x
+	/// /   |
+	/// ----------- 0 or 180
+	///
+	/// \param degree Current degree of inserter arm 0 <= degree <= 180
+	/// \param target_distance Tiles to the location which the inserter picks up / drops items
+	/// \return Always positive
+	double GetInserterArmOffset(core::TIntDegree degree, uint8_t target_distance);
 
 	///
 	/// \brief Updates inserter logic for a logic chunk

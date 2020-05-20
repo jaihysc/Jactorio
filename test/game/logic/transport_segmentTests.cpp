@@ -5,12 +5,12 @@
 
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "game/logic/transport_line_controller.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 
 namespace game
 {
-	class TransportStructureTest : public testing::Test
+	class TransportSegmentTest : public testing::Test
 	{
 	protected:
 		std::unique_ptr<jactorio::data::Item> itemProto_                   = std::make_unique<jactorio::data::Item>();
@@ -36,7 +36,7 @@ namespace game
 		}
 	};
 
-	TEST_F(TransportStructureTest, CanInsertFilledTransportLine) {
+	TEST_F(TransportSegmentTest, CanInsertFilledTransportLine) {
 		// THe entire transport line is compressed with items, cannot insert
 
 		// At spacing of 0.25, 4 items per segment
@@ -55,13 +55,13 @@ namespace game
 			dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(1.75)));
 	}
 
-	TEST_F(TransportStructureTest, CanInsertEmptyTransportLine) {
+	TEST_F(TransportSegmentTest, CanInsertEmptyTransportLine) {
 		// THe entire transport line is empty and can thus insert
 		EXPECT_TRUE(
 			segment_->CanInsert(false, dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(1.75)));
 	}
 
-	TEST_F(TransportStructureTest, CanInsertGap) {
+	TEST_F(TransportSegmentTest, CanInsertGap) {
 		// Insert into a gap between 1 and 1.5
 		// Is wide enough for the item (item_width - kItemSpacing) to fit there
 
@@ -84,7 +84,7 @@ namespace game
 			dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(1.25)));
 	}
 
-	TEST_F(TransportStructureTest, CanInsertFirstItem) {
+	TEST_F(TransportSegmentTest, CanInsertFirstItem) {
 		// The first item which is appended ignores an additional offset of kItemSpacing when calculating
 		// whether or not it can be inserted 
 
@@ -102,7 +102,7 @@ namespace game
 		EXPECT_FALSE(result);
 	}
 
-	TEST_F(TransportStructureTest, CanInsertAbs) {
+	TEST_F(TransportSegmentTest, CanInsertAbs) {
 		// the given offset should be adjusted as TransportSegment::itemOffset is adjusted where 1 = 1 tile
 		segment_->itemOffset = 1;
 		const jactorio::game::TransportLineOffset offset{0.f};
@@ -113,7 +113,7 @@ namespace game
 	}
 
 
-	TEST_F(TransportStructureTest, IsActive) {
+	TEST_F(TransportSegmentTest, IsActive) {
 		// Insert into a gap between 1 and 1.5
 		// Is wide enough for the item (item_width - kItemSpacing) to fit there
 
@@ -134,7 +134,7 @@ namespace game
 		EXPECT_FALSE(segment_->right.IsActive());
 	}
 
-	TEST_F(TransportStructureTest, AppendItem) {
+	TEST_F(TransportSegmentTest, AppendItem) {
 		auto line_segment = std::make_unique<jactorio::game::TransportSegment>(
 			jactorio::data::Orientation::up,
 			jactorio::game::TransportSegment::TerminationType::bend_right,
@@ -155,7 +155,7 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 0.5);
 	}
 
-	TEST_F(TransportStructureTest, AppendItemFirstItem) {
+	TEST_F(TransportSegmentTest, AppendItemFirstItem) {
 		// The first item which is appended ignores an additional offset of kItemSpacing when calculating
 		// whether or not it can be appended
 
@@ -175,7 +175,7 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
 	}
 
-	TEST_F(TransportStructureTest, InsertItem) {
+	TEST_F(TransportSegmentTest, InsertItem) {
 		// Insert INSERTS an item at an arbitrary position offset from the beginning of the transport line
 
 		auto line_segment = std::make_unique<jactorio::game::TransportSegment>(
@@ -213,7 +213,7 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[4].first.getAsDouble(), 0.7);  // 2.5
 	}
 
-	TEST_F(TransportStructureTest, InsertItemAbs) {
+	TEST_F(TransportSegmentTest, InsertItemAbs) {
 		auto line_segment = std::make_unique<jactorio::game::TransportSegment>(
 			jactorio::data::Orientation::up,
 			jactorio::game::TransportSegment::TerminationType::bend_right,
@@ -231,7 +231,7 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.3);  // 1.5
 	}
 
-	TEST_F(TransportStructureTest, TryInsertItem) {
+	TEST_F(TransportSegmentTest, TryInsertItem) {
 
 		auto line_segment = std::make_unique<jactorio::game::TransportSegment>(
 			jactorio::data::Orientation::up,
@@ -265,7 +265,7 @@ namespace game
 		EXPECT_EQ(line_segment->left.index, 0);
 	}
 
-	TEST_F(TransportStructureTest, BackItemDistanceLeft) {
+	TEST_F(TransportSegmentTest, BackItemDistanceLeft) {
 
 		auto line_segment = std::make_unique<jactorio::game::TransportSegment>(
 			jactorio::data::Orientation::up,
@@ -296,7 +296,7 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 0.f);
 	}
 
-	TEST_F(TransportStructureTest, BackItemDistanceRight) {
+	TEST_F(TransportSegmentTest, BackItemDistanceRight) {
 
 		auto line_segment = std::make_unique<jactorio::game::TransportSegment>(
 			jactorio::data::Orientation::up,
@@ -327,18 +327,18 @@ namespace game
 		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 0.f);
 	}
 
-	TEST_F(TransportStructureTest, GetOffsetAbs) {
+	TEST_F(TransportSegmentTest, GetOffsetAbs) {
 		{
 			segment_->itemOffset = 0;
 
-			jactorio::game::TransportSegment::InsertOffsetT o = 3;
+			jactorio::game::TransportSegment::BeginOffsetT o = 3;
 			segment_->GetOffsetAbs(o);
 			EXPECT_FLOAT_EQ(o, 3.f);
 		}
 		{
 			segment_->itemOffset = 3;
 
-			jactorio::game::TransportSegment::InsertOffsetT o = 3;
+			jactorio::game::TransportSegment::BeginOffsetT o = 3;
 			segment_->GetOffsetAbs(o);
 			EXPECT_FLOAT_EQ(o, 0.f);
 		}
@@ -346,9 +346,33 @@ namespace game
 		{
 			segment_->itemOffset = -2;
 
-			jactorio::game::TransportSegment::InsertOffsetT o = 3;
+			jactorio::game::TransportSegment::BeginOffsetT o = 3;
 			segment_->GetOffsetAbs(o);
 			EXPECT_FLOAT_EQ(o, 5.f);
 		}
+	}
+
+	TEST_F(TransportSegmentTest, TryPopItem) {
+		EXPECT_EQ(segment_->TryPopItemAbs(true, 0.25), nullptr);
+		EXPECT_EQ(segment_->TryPopItemAbs(false, 0.25), nullptr);
+
+		// Pop off appended item
+		segment_->AppendItem(true, 0.3, itemProto_.get());
+
+		EXPECT_EQ(segment_->TryPopItemAbs(true, 0.4, 0.1), itemProto_.get());
+		ASSERT_TRUE(segment_->left.lane.empty());
+
+		//
+
+		jactorio::data::Item item2{};
+		segment_->AppendItem(true, 0.1, itemProto_.get());
+		segment_->AppendItem(true, 0.8, &item2);  // 0.9
+		segment_->AppendItem(true, 0.9, itemProto_.get());  // 1.8
+
+		EXPECT_EQ(segment_->TryPopItemAbs(true, 0.9, 0.7), &item2);
+		ASSERT_EQ(segment_->left.lane.size(), 2);
+
+		// Should preserve spacing
+		EXPECT_FLOAT_EQ(segment_->left.lane[1].first.getAsDouble(), 1.7);
 	}
 }

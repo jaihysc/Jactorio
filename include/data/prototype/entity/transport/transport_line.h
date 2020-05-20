@@ -10,7 +10,7 @@
 #include "core/data_type.h"
 #include "data/prototype/entity/health_entity.h"
 #include "game/logic/transport_line_controller.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 
 namespace jactorio::data
 {

@@ -95,9 +95,10 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/transport_line_structureTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/transport_segmentTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp

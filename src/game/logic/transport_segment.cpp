@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 
 #include <decimal.h>
 
@@ -47,7 +47,7 @@ bool jactorio::game::TransportLane::CanInsert(TransportLineOffset start_offset, 
 	return offset <= start_offset;
 }
 
-void jactorio::game::TransportLane::AppendItem(InsertOffsetT offset, const data::Item* item) {
+void jactorio::game::TransportLane::AppendItem(BeginOffsetT offset, const data::Item* item) {
 	// A minimum distance of item_spacing is maintained between items (AFTER the initial item)
 	if (offset < kItemSpacing && !lane.empty())
 		offset = kItemSpacing;
@@ -56,7 +56,7 @@ void jactorio::game::TransportLane::AppendItem(InsertOffsetT offset, const data:
 	backItemDistance += TransportLineOffset{offset};
 }
 
-void jactorio::game::TransportLane::InsertItem(InsertOffsetT offset, const data::Item* item, const ItemOffsetT item_offset) {
+void jactorio::game::TransportLane::InsertItem(BeginOffsetT offset, const data::Item* item, const ItemOffsetT item_offset) {
 	offset += item_offset;
 	assert(offset >= 0);
 
@@ -94,7 +94,7 @@ loop_exit:
 	lane.emplace(it, target_offset, item);
 }
 
-bool jactorio::game::TransportLane::TryInsertItem(const InsertOffsetT offset, const data::Item* item,
+bool jactorio::game::TransportLane::TryInsertItem(const BeginOffsetT offset, const data::Item* item,
                                                   const ItemOffsetT item_offset) {
 	if (!CanInsert(dec::decimal_cast<kTransportLineDecimalPlace>(offset), item_offset))
 		return false;
@@ -107,6 +107,39 @@ bool jactorio::game::TransportLane::TryInsertItem(const InsertOffsetT offset, co
 	return true;
 }
 
+const jactorio::data::Item* jactorio::game::TransportLane::TryPopItem(const BeginOffsetT offset, const BeginOffsetT epsilon) {
+
+	const TransportLineOffset target_offset{offset - epsilon};
+	TransportLineOffset offset_counter{0};
+
+	// Iterate past offset - epsilon
+	size_t iteration = 0;
+	for (auto& item_pair : lane) {
+		offset_counter += item_pair.first;
+
+		if (offset_counter >= target_offset) {
+			// Return first item if it is within upper bounds offset + epsilon
+			if (item_pair.first < TransportLineOffset(offset + epsilon)) {
+				// Adjust the next item to preserve spacing
+				if (iteration + 1 < lane.size()) {
+					lane[iteration + 1].first += item_pair.first;
+				}
+
+				const data::Item* item = item_pair.second;
+				lane.erase(lane.begin() + iteration);
+
+				return item;
+			}
+			// Past upper epsilon bound
+			return nullptr;
+		}
+
+		++iteration;
+	}
+	// Failed to meet lower epsilon
+	return nullptr;
+}
+
 // ======================================================================
 
 bool jactorio::game::TransportSegment::CanInsert(const bool left_side, const TransportLineOffset& start_offset) {
@@ -117,15 +150,15 @@ bool jactorio::game::TransportSegment::IsActive(const bool left_side) const {
 	return left_side ? left.IsActive() : right.IsActive();
 }
 
-void jactorio::game::TransportSegment::AppendItem(const bool left_side, const InsertOffsetT offset, const data::Item* item) {
+void jactorio::game::TransportSegment::AppendItem(const bool left_side, const BeginOffsetT offset, const data::Item* item) {
 	left_side ? left.AppendItem(offset, item) : right.AppendItem(offset, item);
 }
 
-void jactorio::game::TransportSegment::InsertItem(const bool left_side, const InsertOffsetT offset, const data::Item* item) {
+void jactorio::game::TransportSegment::InsertItem(const bool left_side, const BeginOffsetT offset, const data::Item* item) {
 	left_side ? left.InsertItem(offset, item, 0) : right.InsertItem(offset, item, 0);
 }
 
-bool jactorio::game::TransportSegment::TryInsertItem(const bool left_side, const InsertOffsetT offset, const data::Item* item) {
+bool jactorio::game::TransportSegment::TryInsertItem(const bool left_side, const BeginOffsetT offset, const data::Item* item) {
 	return left_side ? left.TryInsertItem(offset, item, 0) : right.TryInsertItem(offset, item, 0);
 }
 
@@ -135,15 +168,20 @@ bool jactorio::game::TransportSegment::CanInsertAbs(const bool left_side, const 
 	return left_side ? left.CanInsert(start_offset, itemOffset) : right.CanInsert(start_offset, itemOffset);
 }
 
-void jactorio::game::TransportSegment::InsertItemAbs(const bool left_side, const InsertOffsetT offset, const data::Item* item) {
+void jactorio::game::TransportSegment::InsertItemAbs(const bool left_side, const BeginOffsetT offset, const data::Item* item) {
 	left_side ? left.InsertItem(offset, item, itemOffset) : right.InsertItem(offset, item, itemOffset);
 }
 
-bool jactorio::game::TransportSegment::TryInsertItemAbs(const bool left_side, const InsertOffsetT offset,
+bool jactorio::game::TransportSegment::TryInsertItemAbs(const bool left_side, const BeginOffsetT offset,
                                                         const data::Item* item) {
 	return left_side ? left.TryInsertItem(offset, item, itemOffset) : right.TryInsertItem(offset, item, itemOffset);
 }
 
-void jactorio::game::TransportSegment::GetOffsetAbs(InsertOffsetT& val) const {
+const jactorio::data::Item* jactorio::game::TransportSegment::TryPopItemAbs(const bool left_side,
+                                                                            const BeginOffsetT offset, const BeginOffsetT epsilon) {
+	return left_side ? left.TryPopItem(offset, epsilon) : right.TryPopItem(offset, epsilon);
+}
+
+void jactorio::game::TransportSegment::GetOffsetAbs(BeginOffsetT& val) const {
 	val -= itemOffset;
 }

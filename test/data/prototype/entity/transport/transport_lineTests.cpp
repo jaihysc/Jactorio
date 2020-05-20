@@ -5,7 +5,7 @@
 
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "data/prototype/entity/transport/transport_line.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 
 // ======================================================================
 // Tests for the various bend orientations

@@ -13,7 +13,7 @@
 #include "data/prototype/entity/transport/transport_line.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
 #include "renderer/gui/gui_menus.h"

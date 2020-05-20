@@ -10,7 +10,7 @@
 #include "data/prototype/interface/renderable.h"
 #include "data/prototype/tile/tile.h"
 #include "game/logic/transport_line_controller.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/mvp_manager.h"
