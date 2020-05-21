@@ -24,7 +24,7 @@ bool show_demo_window         = false;
 bool show_item_spawner_window = false;
 
 // Game
-bool show_transport_line_info     = false;
+bool show_transport_line_info = false;
 
 void jactorio::renderer::DebugMenuLogic(game::PlayerData& player_data) {
 	if (show_transport_line_info)
@@ -59,10 +59,9 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		            game::ChunkTile::kTileLayerCount, game::Chunk::kObjectLayerCount);
 
 		if (ImGui::Button("Clear debug overlays")) {
-			for (auto& pair : player_data.GetPlayerWorld().LogicGetAllChunks()) {
-				auto& l_chunk = pair.second;
+			for (auto* chunk : player_data.GetPlayerWorld().LogicGetAllChunks()) {
 
-				auto& object_layer = l_chunk.chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
+				auto& object_layer = chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
 				object_layer.clear();
 			}
 		}
@@ -97,12 +96,11 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		ImGui::Checkbox("Show transport line info", &show_transport_line_info);
 
 		if (ImGui::Button("Make all belt items visible")) {
-			for (auto& pair : world_data.LogicGetAllChunks()) {
-				auto& l_chunk = pair.second;
-				for (auto& transport_line : l_chunk.GetStruct(game::LogicChunk::StructLayer::transport_line)) {
-					auto* segment = static_cast<game::TransportSegment*>(transport_line.uniqueData);
-					segment->left.visible = true;
-					segment->right.visible = true;
+			for (auto* chunk : world_data.LogicGetAllChunks()) {
+				for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
+					auto& segment         = static_cast<data::TransportLineData*>(transport_line->uniqueData)->lineSegment.get();
+					segment.left.visible  = true;
+					segment.right.visible = true;
 				}
 			}
 		}
@@ -166,7 +164,7 @@ void jactorio::renderer::DebugItemSpawner(game::PlayerData& player_data) {
 
 std::pair<int32_t, int32_t> last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
-bool show_transport_segments = false;
+bool show_transport_segments     = false;
 
 void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 	using namespace jactorio;
@@ -191,14 +189,29 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-left");
 
 	// Get all update points and add it to the chunk's objects for drawing
-	for (auto& pair : world_data.LogicGetAllChunks()) {
-		auto& l_chunk = pair.second;
-
-		auto& object_layer = l_chunk.chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
+	for (auto* chunk : world_data.LogicGetAllChunks()) {
+		auto& object_layer = chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
 		object_layer.clear();
 
-		for (auto& l_struct : l_chunk.GetStruct(game::LogicChunk::StructLayer::transport_line)) {
-			auto* line_segment = static_cast<game::TransportSegment*>(l_struct.uniqueData);
+		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
+			auto& layer = chunk->Tiles()[i].GetLayer(game::ChunkTile::ChunkLayer::entity);
+			if (!layer.prototypeData || layer.prototypeData->Category() != data::DataCategory::transport_belt)
+				continue;
+
+			auto& line_data    = *static_cast<data::TransportLineData*>(layer.uniqueData);
+			auto& line_segment = line_data.lineSegment.get();
+
+			// Only draw for the head of segments
+			if (line_segment.terminationType == game::TransportSegment::TerminationType::straight &&
+				line_data.lineSegmentIndex != 0)
+				continue;
+
+			if (line_segment.terminationType != game::TransportSegment::TerminationType::straight &&
+				line_data.lineSegmentIndex != 1)
+				continue;
+
+			const auto position_x = i % game::Chunk::kChunkWidth;
+			const auto position_y = i / game::Chunk::kChunkWidth;
 
 			float pos_x;
 			float pos_y;
@@ -209,51 +222,56 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 			data::Sprite* outline_sprite;
 
 			// Correspond the direction with a sprite representing the direction
-			switch (line_segment->direction) {
+			switch (line_segment.direction) {
 			default:
 				assert(false);  // Missing case label
 
 			case data::Orientation::up:
-				pos_x = l_struct.positionX;
-				pos_y         = l_struct.positionY;
+				pos_x = position_x;
+				pos_y         = position_y;
 				segment_len_x = 1;
-				segment_len_y = line_segment->length;
+				segment_len_y = line_segment.length;
 
 				direction_sprite = sprite_up;
 				break;
 			case data::Orientation::right:
-				pos_x = l_struct.positionX - line_segment->length + 1;
-				pos_y         = l_struct.positionY;
-				segment_len_x = line_segment->length;
+				pos_x = position_x - line_segment.length + 1;
+				pos_y         = position_y;
+				segment_len_x = line_segment.length;
 				segment_len_y = 1;
 
 				direction_sprite = sprite_right;
 				break;
 			case data::Orientation::down:
-				pos_x = l_struct.positionX;
-				pos_y         = l_struct.positionY - line_segment->length + 1;
+				pos_x = position_x;
+				pos_y         = position_y - line_segment.length + 1;
 				segment_len_x = 1;
-				segment_len_y = line_segment->length;
+				segment_len_y = line_segment.length;
 
 				direction_sprite = sprite_down;
 				break;
 			case data::Orientation::left:
-				pos_x = l_struct.positionX;
-				pos_y         = l_struct.positionY;
-				segment_len_x = line_segment->length;
+				pos_x = position_x;
+				pos_y         = position_y;
+				segment_len_x = line_segment.length;
 				segment_len_y = 1;
 
 				direction_sprite = sprite_left;
 				break;
 			}
 
+			// Shift items 1 tile forwards if segment bends
+			if (line_segment.terminationType != game::TransportSegment::TerminationType::straight) {
+				OrientationIncrement(line_segment.direction, pos_x, pos_y);
+			}
+
 
 			// Correspond a color of rectangle
-			if (line_segment->left.IsActive() && line_segment->right.IsActive())
+			if (line_segment.left.IsActive() && line_segment.right.IsActive())
 				outline_sprite = sprite_moving;  // Both moving
-			else if (line_segment->left.IsActive())
+			else if (line_segment.left.IsActive())
 				outline_sprite = sprite_left_moving;  // Only left move
-			else if (line_segment->right.IsActive())
+			else if (line_segment.right.IsActive())
 				outline_sprite = sprite_right_moving;  // Only right moving
 			else
 				outline_sprite = sprite_stop;  // None moving

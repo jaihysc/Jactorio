@@ -12,7 +12,6 @@
 #include "core/data_type.h"
 #include "game/world/chunk.h"
 #include "game/world/deferral_timer.h"
-#include "game/world/logic_chunk.h"
 
 namespace jactorio::game
 {
@@ -92,10 +91,6 @@ namespace jactorio::game
 		///
 		/// \brief Converts world coordinate to chunk coordinate
 		static Chunk::ChunkCoord ToChunkCoord(WorldCoord world_coord);
-
-		///
-		/// \brief Converts world coordinate to struct layer coordinate
-		static ChunkStructLayer::StructCoord ToStructCoord(WorldCoord world_coord);
 
 		// World access
 
@@ -200,7 +195,7 @@ namespace jactorio::game
 		// Logic chunk 
 	private:
 
-		std::map<const Chunk*, LogicChunk> logicChunks_;
+		std::set<Chunk*> logicChunks_;
 
 	public:
 		// Stores chunks which have entities requiring logic updates
@@ -209,49 +204,16 @@ namespace jactorio::game
 		/// \brief Adds a chunk to be considered for logic updates, if the logic chunk already exists at Chunk*,
 		/// a reference to the existing one will be returned
 		/// \param chunk The chunk this logic chunk is associated with
-		/// \return Reference to the added chunk
-		LogicChunk& LogicAddChunk(Chunk* chunk);
+		void LogicAddChunk(Chunk* chunk);
 
 		///	
 		/// \brief Removes a chunk to be considered for logic updates <br>
 		/// \param chunk Logic chunk to remove
-		void LogicRemoveChunk(LogicChunk* chunk);
+		void LogicRemoveChunk(Chunk* chunk);
 
 		///
 		/// \brief Returns all the chunks which require logic updates
-		J_NODISCARD std::map<const Chunk*, LogicChunk>& LogicGetAllChunks();
-
-
-		///
-		/// \brief Gets logic chunk at Chunk*
-		/// \return nullptr if Logic_chunk does not exist
-		J_NODISCARD LogicChunk* LogicGetChunk(const Chunk* chunk);
-
-		///
-		/// \brief Gets const logic chunk at Chunk* 
-		/// \return nullptr if Logic_chunk does not exist
-		J_NODISCARD const LogicChunk* LogicGetChunk(const Chunk* chunk) const;
-
-
-		///
-		/// \brief Gets logic chunk at World coords 
-		/// \return nullptr if Logic_chunk or chunk does not exist
-		J_NODISCARD LogicChunk* LogicGetChunk(WorldCoord world_x, WorldCoord world_y);
-
-		/// \brief Gets const logic chunk at World coords 
-		/// \return nullptr if Logic_chunk or chunk does not exist
-		J_NODISCARD const LogicChunk* LogicGetChunk(WorldCoord world_x, WorldCoord world_y) const;
-
-
-		///
-		/// \brief Gets logic chunk at World coords 
-		/// \return nullptr if Logic_chunk or chunk does not exist
-		J_NODISCARD LogicChunk* LogicGetChunk(const WorldPair& world_pair);
-
-		///
-		/// \brief Gets const logic chunk at World coords 
-		/// \return nullptr if Logic_chunk or chunk does not exist
-		J_NODISCARD const LogicChunk* LogicGetChunk(const WorldPair& world_pair) const;
+		J_NODISCARD std::set<Chunk*>& LogicGetAllChunks();
 
 		// ======================================================================
 		// World generation | Links to game/world/world_generator.cpp

@@ -7,7 +7,6 @@
 
 #include <decimal.h>
 
-#include "game/world/logic_chunk.h"
 #include "game/world/world_data.h"
 
 ///
@@ -103,17 +102,6 @@ namespace jactorio::game
 	constexpr double kLineRightSingleSideItemOffsetX = kLineBaseOffsetLeft - kItemWidth / 2;
 	constexpr double kLineDownSingleSideItemOffsetY  = kLineBaseOffsetLeft - kItemWidth / 2;
 	constexpr double kLineLeftSingleSideItemOffsetX  = kLineBaseOffsetRight - kItemWidth / 2;
-
-	///
-	/// \brief Moves items for transport lines
-	/// \param l_chunk Chunk to update
-	void LogicUpdateMoveItems(LogicChunk* l_chunk);
-
-	///
-	/// \brief Transitions items on transport lines to other lines and modifies whether of not the line is active
-	/// \param l_chunk Chunk to update
-	void LogicUpdateTransitionItems(LogicChunk* l_chunk);
-
 
 	///
 	/// \brief Updates belt logic for a logic chunk

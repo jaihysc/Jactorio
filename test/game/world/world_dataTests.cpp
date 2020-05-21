@@ -37,6 +37,7 @@ namespace game
 		EXPECT_EQ(jactorio::game::WorldData::ToChunkCoord(32), 1);
 	}
 
+	/*
 	TEST(ChunkStructLayer, ToStructCoords) {
 		EXPECT_FLOAT_EQ(jactorio::game::WorldData::ToStructCoord(10), 10.f);
 		EXPECT_FLOAT_EQ(jactorio::game::WorldData::ToStructCoord(64), 0.f);
@@ -44,6 +45,7 @@ namespace game
 		EXPECT_FLOAT_EQ(jactorio::game::WorldData::ToStructCoord(-32), 0.f);
 		EXPECT_FLOAT_EQ(jactorio::game::WorldData::ToStructCoord(-1), 31.f);
 	}
+	*/
 
 	TEST_F(WorldDataTest, WorldAddChunk) {
 		// Chunks initialized with empty tiles
@@ -90,8 +92,8 @@ namespace game
 		worldData_.AddChunk(chunk2);
 
 		EXPECT_NE(worldData_.GetChunkC(5, 1)->Tiles()[0]
-				  .GetSpritePrototype(jactorio::game::ChunkTile::ChunkLayer::overlay),
-				  &sprite);
+		          .GetSpritePrototype(jactorio::game::ChunkTile::ChunkLayer::overlay),
+		          &sprite);
 	}
 
 	TEST_F(WorldDataTest, WorldDeleteChunk) {
@@ -196,13 +198,10 @@ namespace game
 	TEST_F(WorldDataTest, LogicAddChunk) {
 		jactorio::game::Chunk chunk(0, 0);
 
-		auto& logic_chunk = worldData_.LogicAddChunk(&chunk);
+		worldData_.LogicAddChunk(&chunk);
 		// Should return reference to newly created and added chunk
 
 		EXPECT_EQ(worldData_.LogicGetAllChunks().size(), 1);
-
-		// Should be referencing the same logic chunk
-		EXPECT_EQ(&worldData_.LogicGetAllChunks().at(&chunk), &logic_chunk);
 	}
 
 	TEST_F(WorldDataTest, LogicAddChunkNoDuplicate) {
@@ -218,28 +217,10 @@ namespace game
 	TEST_F(WorldDataTest, logic_remove_chunk) {
 		jactorio::game::Chunk chunk(0, 0);
 
-		auto& logic_chunk = worldData_.LogicAddChunk(&chunk);
-		worldData_.LogicRemoveChunk(&logic_chunk);  // Remove
+		worldData_.LogicAddChunk(&chunk);
+		worldData_.LogicRemoveChunk(&chunk);
 
 		EXPECT_EQ(worldData_.LogicGetAllChunks().size(), 0);
-	}
-
-	TEST_F(WorldDataTest, LogicGetChunk) {
-		jactorio::game::Chunk chunk(0, 0);
-
-		auto& logic_chunk = worldData_.LogicAddChunk(&chunk);
-
-		EXPECT_EQ(worldData_.LogicGetChunk(&chunk), &logic_chunk);
-		EXPECT_EQ(worldData_.LogicGetChunk(nullptr), nullptr);
-	}
-
-	TEST_F(WorldDataTest, LogicGetChunkReadOnly) {
-		jactorio::game::Chunk chunk(0, 0);
-
-		auto& logic_chunk = worldData_.LogicAddChunk(&chunk);
-
-		EXPECT_EQ(worldData_.LogicGetChunk(&chunk), &logic_chunk);
-		EXPECT_EQ(worldData_.LogicGetChunk(nullptr), nullptr);
 	}
 
 	TEST_F(WorldDataTest, LogicClearChunkData) {

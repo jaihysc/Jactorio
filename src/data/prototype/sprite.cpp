@@ -98,14 +98,14 @@ void jactorio::data::Sprite::LoadImageFromFile() {
 }
 
 
-void jactorio::data::Sprite::AdjustSetFrame(RenderableData::set_t& set, RenderableData::frame_t& frame) const {
+void jactorio::data::Sprite::AdjustSetFrame(RenderableData::SetT& set, RenderableData::FrameT& frame) const {
 	set %= sets;
 	set += frame / frames;
 	frame = frame % frames;
 }
 
-jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(RenderableData::set_t set,
-                                                               RenderableData::frame_t frame) const {
+jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(RenderableData::SetT set,
+                                                               RenderableData::FrameT frame) const {
 	AdjustSetFrame(set, frame);
 
 	assert(set < sets);  // Out of range
@@ -123,8 +123,8 @@ jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(RenderableData::s
 	};
 }
 
-jactorio::core::QuadPosition jactorio::data::Sprite::GetCoordsTrimmed(RenderableData::set_t set,
-                                                                      RenderableData::frame_t frame) const {
+jactorio::core::QuadPosition jactorio::data::Sprite::GetCoordsTrimmed(RenderableData::SetT set,
+                                                                      RenderableData::FrameT frame) const {
 	AdjustSetFrame(set, frame);
 
 	assert(set < sets);  // Out of range

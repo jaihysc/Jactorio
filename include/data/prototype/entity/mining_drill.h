@@ -55,7 +55,7 @@ namespace jactorio::data
 
 		void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
 
-		std::pair<Sprite*, RenderableData::frame_t> OnRGetSprite(UniqueDataBase* unique_data,
+		std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(UniqueDataBase* unique_data,
 		                                                         GameTickT game_tick) const override;
 
 		J_NODISCARD std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation orientation,

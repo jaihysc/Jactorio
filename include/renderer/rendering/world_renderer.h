@@ -5,7 +5,6 @@
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_WORLD_RENDERER_H
 #pragma once
 
-#include "game/world/logic_chunk.h"
 #include "game/world/world_data.h"
 #include "renderer/rendering/renderer.h"
 
@@ -30,12 +29,6 @@ namespace jactorio::renderer
 	                          int chunk_start_x, int chunk_start_y,
 	                          int chunk_amount_x, int chunk_amount_y,
 	                          RendererLayer* layer);
-
-	///
-	/// Prepares draw data for some of the structures in chunks (transport segments)
-	/// \param l_chunk
-	/// \param layer
-	void PrepareLogicChunkDrawData(game::LogicChunk* l_chunk, RendererLayer* layer);
 
 	///
 	/// Moves the world to match player_position_ <br>

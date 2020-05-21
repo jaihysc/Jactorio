@@ -15,7 +15,7 @@ void jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, game
 	renderer::MiningDrill(player_data, drill_data);
 }
 
-std::pair<jactorio::data::Sprite*, jactorio::data::RenderableData::frame_t> jactorio::data::MiningDrill::OnRGetSprite(
+std::pair<jactorio::data::Sprite*, jactorio::data::RenderableData::FrameT> jactorio::data::MiningDrill::OnRGetSprite(
 	UniqueDataBase* unique_data, const GameTickT game_tick) const {
 	const auto set = static_cast<RenderableData*>(unique_data)->set;
 

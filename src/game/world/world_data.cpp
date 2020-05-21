@@ -25,10 +25,6 @@ jactorio::game::Chunk::ChunkCoord jactorio::game::WorldData::ToChunkCoord(WorldC
 	return chunk_coord;
 }
 
-jactorio::game::ChunkStructLayer::StructCoord jactorio::game::WorldData::ToStructCoord(const WorldCoord world_coord) {
-	return fabs(ToChunkCoord(world_coord) * Chunk::kChunkWidth - world_coord);
-}
-
 jactorio::game::Chunk* jactorio::game::WorldData::AddChunk(const Chunk& chunk) {
 	const auto position = chunk.GetPosition();
 
@@ -149,48 +145,16 @@ const jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldP
 
 // ======================================================================
 // Logic chunks
-jactorio::game::LogicChunk& jactorio::game::WorldData::LogicAddChunk(Chunk* chunk) {
+
+void jactorio::game::WorldData::LogicAddChunk(Chunk* chunk) {
 	assert(chunk != nullptr);
-	const auto& iterator = logicChunks_.emplace(chunk, chunk);
-	return iterator.first->second;
+	logicChunks_.emplace(chunk);
 }
 
-void jactorio::game::WorldData::LogicRemoveChunk(LogicChunk* chunk) {
-	logicChunks_.erase(chunk->chunk);
+void jactorio::game::WorldData::LogicRemoveChunk(Chunk* chunk) {
+	logicChunks_.erase(chunk);
 }
 
-std::map<const jactorio::game::Chunk*, jactorio::game::LogicChunk>& jactorio::game::WorldData::LogicGetAllChunks() {
+std::set<jactorio::game::Chunk*>& jactorio::game::WorldData::LogicGetAllChunks() {
 	return logicChunks_;
-}
-
-// ======================================================================
-
-jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const Chunk* chunk) {
-	return const_cast<LogicChunk*>(static_cast<const WorldData&>(*this).LogicGetChunk(chunk));
-}
-
-const jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const Chunk* chunk) const {
-	if (logicChunks_.find(chunk) == logicChunks_.end())
-		return nullptr;
-
-	return &logicChunks_.at(chunk);
-}
-
-
-jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldCoord world_x, const WorldCoord world_y) {
-	return LogicGetChunk(GetChunk(world_x, world_y));
-}
-
-const jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldCoord world_x,
-                                                                           const WorldCoord world_y) const {
-	return LogicGetChunk(GetChunk(world_x, world_y));
-}
-
-
-jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldPair& world_pair) {
-	return LogicGetChunk(world_pair.first, world_pair.second);
-}
-
-const jactorio::game::LogicChunk* jactorio::game::WorldData::LogicGetChunk(const WorldPair& world_pair) const {
-	return LogicGetChunk(world_pair.first, world_pair.second);
 }

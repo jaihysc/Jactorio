@@ -129,19 +129,19 @@ namespace jactorio::data
 		/// \brief Performs the following adjustments to set and frame
 		/// \param set Modulus of total number of sets
 		/// \param frame Modulus of total number of frames, every multiple of frames increases set by 1
-		void AdjustSetFrame(RenderableData::set_t& set, RenderableData::frame_t& frame) const;
+		void AdjustSetFrame(RenderableData::SetT& set, RenderableData::FrameT& frame) const;
 
 	public:
 		///
 		/// \brief Gets UV coordinates for region within a sprite
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::QuadPosition GetCoords(RenderableData::set_t set, RenderableData::frame_t frame) const;
+		J_NODISCARD core::QuadPosition GetCoords(RenderableData::SetT set, RenderableData::FrameT frame) const;
 
 		///
 		/// \brief Gets UV coordinates for region within a sprite, applying a deduction of trim pixels around the border
 		/// \remark Requires width_ and height_ to be initialized
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::QuadPosition GetCoordsTrimmed(RenderableData::set_t set, RenderableData::frame_t frame) const;
+		J_NODISCARD core::QuadPosition GetCoordsTrimmed(RenderableData::SetT set, RenderableData::FrameT frame) const;
 
 		// ======================================================================
 		// Sprite ptr

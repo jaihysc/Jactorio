@@ -3,7 +3,6 @@
 
 #include "game/logic/inserter_controller.h"
 #include "data/prototype/entity/inserter.h"
-#include "game/logic/inserter_internal.h"
 
 double jactorio::game::GetInserterArmOffset(const core::TIntDegree degree, const uint8_t target_distance) {
 	const auto result = (kInserterCenterOffset + target_distance - kInserterArmTileGap) * core::TanF(degree);

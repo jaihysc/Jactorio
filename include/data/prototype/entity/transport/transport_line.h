@@ -14,11 +14,21 @@
 
 namespace jactorio::data
 {
+	///
+	/// \brief TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
 	struct TransportLineData : HealthEntityData
 	{
 		explicit TransportLineData(game::TransportSegment& line_segment)
 			: lineSegment(line_segment) {
 		}
+
+		~TransportLineData() override {
+			if (lineSegmentIndex == 0)
+				delete &lineSegment.get();
+		}
+
+		TransportLineData(const TransportLineData& other)     = delete;
+		TransportLineData(TransportLineData&& other) noexcept = delete;
 
 		///
 		/// <Entry direction>_<Exit direction>
@@ -52,7 +62,7 @@ namespace jactorio::data
 		LineOrientation orientation = LineOrientation::up;
 
 		//
-		
+
 		///
 		/// \brief Updates orientation and member set for rendering 
 		void SetOrientation(LineOrientation orientation) {
@@ -63,6 +73,9 @@ namespace jactorio::data
 		///
 		/// \brief Converts lineOrientation to placementOrientation
 		static Orientation ToOrientation(LineOrientation line_orientation);
+
+		void OnDrawUniqueData(renderer::RendererLayer& layer,
+		                      float x_offset, float y_offset) override;
 	};
 
 
@@ -100,16 +113,17 @@ namespace jactorio::data
 		                                                             TransportLineData* left);
 
 		///
-		/// \brief Attempts to find transport line at world_x, world_y
-		/// \param callback Called for each Chunk_struct_layer found matching Transport_line_data at world_x, world_y
-		/// \return Logic_chunk if it exists, otherwise nullptr
-		static void GetLineStructLayer(game::WorldData& world_data,
-		                               game::WorldData::WorldCoord world_x,
-		                               game::WorldData::WorldCoord world_y,
-		                               const std::function<void(game::ChunkStructLayer&, game::LogicChunk&)>& callback);
+		/// \brief Gets transport segment at world coords
+		/// \return nullptr if no segment exists
+		static game::TransportSegment* GetTransportSegment(game::WorldData& world_data,
+		                                                   game::WorldData::WorldCoord world_x,
+		                                                   game::WorldData::WorldCoord world_y);
+
 		// ======================================================================
 		// Game events
 	private:
+		void RemoveFromLogicGroup(game::TransportSegment& line_segment, game::Chunk::LogicGroupType& logic_group) const;
+
 		/// Up, right, down, left
 		using LineData4Way = TransportLineData*[4];
 
@@ -215,8 +229,8 @@ namespace jactorio::data
 		const override;
 
 
-		std::pair<Sprite*, RenderableData::frame_t> OnRGetSprite(UniqueDataBase* unique_data,
-		                                                         const GameTickT game_tick) const override {
+		std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(UniqueDataBase* unique_data,
+		                                                        const GameTickT game_tick) const override {
 			return {this->sprite, game_tick % sprite->frames};
 		};
 

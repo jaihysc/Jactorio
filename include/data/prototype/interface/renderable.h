@@ -14,11 +14,18 @@ namespace jactorio
 	{
 		class PlayerData;
 		class ChunkTileLayer;
+
+		class Chunk;
 	}
 
 	namespace data
 	{
 		class Sprite;
+	}
+
+	namespace renderer
+	{
+		class RendererLayer;
 	}
 }
 
@@ -28,16 +35,24 @@ namespace jactorio::data
 	/// \brief Inherit to allow drawing portions of a sprite
 	struct RenderableData : UniqueDataBase
 	{
-		using set_t = uint16_t;
-		using frame_t = uint16_t;
+		using SetT = uint16_t;
+		using FrameT = uint16_t;
 
 		RenderableData() = default;
 
-		RenderableData(const set_t set)
+		RenderableData(const SetT set)
 			: set(set) {
 		}
 
-		set_t set = 0;
+		SetT set = 0;
+
+		///
+		/// \param layer
+		/// \param x_offset Pixels to top left of current tile
+		/// \param y_offset Pixels to top left of current tile
+		virtual void OnDrawUniqueData(renderer::RendererLayer& layer,
+		                              float x_offset, float y_offset) {
+		}
 	};
 
 	///
@@ -56,8 +71,8 @@ namespace jactorio::data
 	public:
 		///
 		/// \brief Called by the renderer when it wants the sprite and frame within the sprite
-		J_NODISCARD virtual std::pair<Sprite*, RenderableData::frame_t> OnRGetSprite(UniqueDataBase* unique_data,
-		                                                                             GameTickT game_tick) const = 0;
+		virtual std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(UniqueDataBase* unique_data,
+		                                                                GameTickT game_tick) const = 0;
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data

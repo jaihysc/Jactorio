@@ -26,13 +26,7 @@ namespace game
 		void SetUp() override {
 			transportBeltProto_->speed = 0.01f;
 
-			auto chunk        = jactorio::game::Chunk(0, 0);
-			auto* logic_chunk = &worldData_.LogicAddChunk(&chunk);
-
-			// Add the transport segment
-			auto& structs    = logic_chunk->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-			auto& seg_1      = structs.emplace_back(transportBeltProto_.get(), 0, 0);
-			seg_1.uniqueData = segment_;
+			auto chunk = jactorio::game::Chunk(0, 0);
 		}
 	};
 

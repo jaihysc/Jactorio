@@ -11,18 +11,32 @@
 
 namespace jactorio::data
 {
-	class Inserter final : public HealthEntity
+	///
+	/// \brief Holds the internal structure for inserters
+	struct InserterData final : HealthEntityData
 	{
+	private:
 		static constexpr auto kInserterRotationDecimals = 3;
-	public:
-		PROTOTYPE_CATEGORY(inserter);
 
+	public:
 		using RotationDegree = dec::decimal<kInserterRotationDecimals>;
+
+		///
+		/// \brief Rotation degree of current inserter, from standard position
+		RotationDegree rotationDegree;
 
 		J_NODISCARD static RotationDegree ToRotationDegree(const double val) {
 			return dec::decimal_cast<kInserterRotationDecimals>(val);
 		}
+	};
 
+	
+	class Inserter final : public HealthEntity
+	{
+	public:
+		PROTOTYPE_CATEGORY(inserter);
+
+		using RotationDegree = InserterData::RotationDegree;
 
 		///
 		/// \brief Degrees to rotate per tick 
@@ -35,7 +49,7 @@ namespace jactorio::data
 
 
 		void PostLoad() override {
-			rotationSpeed = ToRotationDegree(rotationSpeedFloat);
+			rotationSpeed = InserterData::ToRotationDegree(rotationSpeedFloat);
 		}
 
 

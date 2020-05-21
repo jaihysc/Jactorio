@@ -96,7 +96,7 @@ namespace jactorio::data
 		// ======================================================================
 		// Renderer events
 
-		std::pair<Sprite*, RenderableData::frame_t> OnRGetSprite(UniqueDataBase* unique_data,
+		std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(UniqueDataBase* unique_data,
 		                                                         GameTickT game_tick) const override {
 			return {this->sprite, 0};
 		}

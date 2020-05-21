@@ -6,21 +6,36 @@
 #include <future>
 
 #include "jactorio.h"
-#include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/entity/entity.h"
 #include "data/prototype/interface/renderable.h"
 #include "data/prototype/tile/tile.h"
-#include "game/logic/transport_line_controller.h"
-#include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/mvp_manager.h"
 
 constexpr auto kChunkWidth = jactorio::game::WorldData::kChunkWidth;
 
-using TileDrawFunc = jactorio::core::QuadPosition (*)(const jactorio::game::ChunkTileLayer&, jactorio::GameTickT);
+struct TileDrawFuncParams
+{
+	TileDrawFuncParams(const jactorio::game::ChunkTileLayer& tile_layer,
+	                   const jactorio::GameTickT game_tick)
+		: tileLayer(tile_layer),
+		  gameTick(game_tick) {
+	}
+
+	const jactorio::game::ChunkTileLayer& tileLayer;
+	jactorio::GameTickT gameTick;
+};
+
+using TileDrawFuncReturn = std::pair<jactorio::core::QuadPosition, jactorio::data::RenderableData*>;
+using TileDrawFunc = TileDrawFuncReturn (*)(const TileDrawFuncParams&);
+
 using ObjectDrawFunc = unsigned int (*)(const jactorio::game::ChunkObjectLayer&);
 
-const jactorio::core::QuadPosition no_draw{{-1.f, -1.f}, {-1.f, -1.f}};
+const TileDrawFuncReturn no_draw{
+	{{-1.f, -1.f}, {-1.f, -1.f}},
+	nullptr
+};
 
 void ApplyUvOffset(jactorio::core::QuadPosition& uv, const jactorio::core::QuadPosition& uv_offset) {
 	const auto difference = uv.bottomRight - uv.topLeft;
@@ -35,66 +50,69 @@ void ApplyUvOffset(jactorio::core::QuadPosition& uv, const jactorio::core::QuadP
 
 
 /// \brief Functions for drawing each layer, they are accessed by layer_index
+/// \return uv coords, uniqueData to draw, nullptr if no unique data to draw
 /// \remark return top_left.x -1 to skip
-TileDrawFunc tile_get_sprite_id_func[]{
-	[](const jactorio::game::ChunkTileLayer& tile, auto game_tick) {
+constexpr TileDrawFunc tile_draw_func[]{
+	[](const TileDrawFuncParams& params) {
 		// Sprites + tiles are guaranteed not nullptr
-		const auto* t     = static_cast<const jactorio::data::Tile*>(tile.prototypeData);
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(tile.uniqueData);
+		const auto* t     = static_cast<const jactorio::data::Tile*>(params.tileLayer.prototypeData);
+		auto* unique_data = static_cast<jactorio::data::RenderableData*>(params.tileLayer.uniqueData);
 
 
-		auto sprite_frame = t->OnRGetSprite(unique_data, game_tick);
-		auto uv           = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
+		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
+		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 		if (unique_data)
 			ApplyUvOffset(uv, t->sprite->GetCoordsTrimmed(unique_data->set, sprite_frame.second));
 
-		return uv;
+		return TileDrawFuncReturn{uv, nullptr};
 	},
 
-	[](const jactorio::game::ChunkTileLayer& tile, auto game_tick) {
-		const auto* t = static_cast<const jactorio::data::Entity*>(tile.prototypeData);
+	[](const TileDrawFuncParams& params) {
+		const auto* t = static_cast<const jactorio::data::Entity*>(params.tileLayer.prototypeData);
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(tile.uniqueData);
+		auto* unique_data = static_cast<jactorio::data::RenderableData*>(params.tileLayer.uniqueData);
 
-		auto sprite_frame = t->OnRGetSprite(unique_data, game_tick);
-		auto uv           = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
+		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
+		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 
 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
 			ApplyUvOffset(uv, t->sprite->GetCoordsTrimmed(unique_data->set, sprite_frame.second));
 
-		return uv;
+		return TileDrawFuncReturn{uv, nullptr};
 	},
-	[](const jactorio::game::ChunkTileLayer& tile, auto game_tick) {
-		const auto* t = static_cast<const jactorio::data::Entity*>(tile.prototypeData);
+	[](const TileDrawFuncParams& params) {
+		const auto* t = static_cast<const jactorio::data::Entity*>(params.tileLayer.prototypeData);
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(tile.uniqueData);
+		auto* unique_data = static_cast<jactorio::data::RenderableData*>(params.tileLayer.uniqueData);
 
-		auto sprite_frame = t->OnRGetSprite(unique_data, game_tick);
-		auto uv           = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
+		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
+		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 
-		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
+		if (unique_data) {
 			ApplyUvOffset(uv, t->sprite->GetCoordsTrimmed(unique_data->set, sprite_frame.second));
+			return TileDrawFuncReturn{uv, unique_data};
+		}
 
-		return uv;
+		return TileDrawFuncReturn{uv, nullptr};
 	},
 
-	[](const jactorio::game::ChunkTileLayer& tile, auto) {
-		const auto* t = static_cast<const jactorio::data::Sprite*>(tile.prototypeData);
+	[](const TileDrawFuncParams& params) {
+		const auto* t = static_cast<const jactorio::data::Sprite*>(params.tileLayer.prototypeData);
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(tile.uniqueData);
+		auto* unique_data = static_cast<jactorio::data::RenderableData*>(params.tileLayer.uniqueData);
 
 		auto uv = jactorio::renderer::Renderer::GetSpritemapCoords(t->internalId);
 
 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
 			ApplyUvOffset(uv, t->GetCoordsTrimmed(unique_data->set, 0));
 
-		return uv;
+		return TileDrawFuncReturn{uv, nullptr};
 	}
 };
 
@@ -111,7 +129,7 @@ ObjectDrawFunc object_layer_get_sprite_id_func[]{
 // prepare_tile_data or prepare_object_data based on the layer it is rendering
 void PrepareTileData(const jactorio::game::WorldData& world_data,
                      const unsigned layer_index,
-                     jactorio::renderer::RendererLayer* layer,
+                     jactorio::renderer::RendererLayer& layer,
                      const float chunk_y_offset, const float chunk_x_offset,
                      const jactorio::game::Chunk* const chunk) {
 	// Load chunk into buffer
@@ -126,12 +144,16 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 			const jactorio::game::ChunkTile& tile      = tiles[tile_y * kChunkWidth + tile_x];
 			jactorio::game::ChunkTileLayer& layer_tile = tile.GetLayer(layer_index);
 
+			TileDrawFuncReturn draw_func_return;
 			jactorio::core::QuadPosition uv;
 
-			// Not multi tile
 			if (layer_tile.IsMultiTile()) {
 				// Unique data for multi tiles is stored in the top left tile
-				uv = tile_get_sprite_id_func[layer_index](*layer_tile.GetMultiTileTopLeft(), world_data.GameTick());
+				draw_func_return = tile_draw_func[layer_index]({
+					*layer_tile.GetMultiTileTopLeft(),
+					world_data.GameTick()
+				});
+				uv = draw_func_return.first;
 
 				jactorio::game::MultiTileData& mt_data = layer_tile.GetMultiTileData();
 
@@ -154,9 +176,12 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 				uv.topLeft.x = uv.topLeft.x + len_x * x_multiplier;
 				uv.topLeft.y = uv.topLeft.y + len_y * static_cast<float>(mt_data.multiTileHeight - y_multiplier - 1);
 			}
-				// Is multi tile
 			else {
-				uv = tile_get_sprite_id_func[layer_index](tile.GetLayer(layer_index), world_data.GameTick());
+				draw_func_return = tile_draw_func[layer_index]({
+					tile.GetLayer(layer_index),
+					world_data.GameTick()
+				});
+				uv = draw_func_return.first;
 			}
 
 			// ======================================================================
@@ -168,7 +193,7 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 			// Calculate screen coordinates
 			const float x = (chunk_x_offset + tile_x) * static_cast<float>(jactorio::renderer::Renderer::tileWidth);
 
-			layer->PushBack(
+			layer.PushBack(
 				jactorio::renderer::RendererLayer::Element(
 					{
 						{
@@ -185,292 +210,20 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 				)
 			);
 
-		}
-	}
-}
-
-void PrepareTransportSegmentData(jactorio::renderer::RendererLayer* layer,
-                                 const double chunk_y_offset, const double chunk_x_offset,
-                                 const jactorio::game::TransportSegment* line_segment,
-                                 std::deque<jactorio::game::TransportLineItem>& line_segment_side,
-                                 double offset_x, double offset_y) {
-	using namespace jactorio::game;
-
-	// Either offset_x or offset_y which will be INCREASED or DECREASED
-	double* target_offset;
-	double multiplier = 1;  // Either 1 or -1 to add or subtract
-
-	switch (line_segment->direction) {
-	case jactorio::data::Orientation::up:
-		target_offset = &offset_y;
-		break;
-	case jactorio::data::Orientation::right:
-		target_offset = &offset_x;
-		multiplier = -1;
-		break;
-	case jactorio::data::Orientation::down:
-		target_offset = &offset_y;
-		multiplier = -1;
-		break;
-	case jactorio::data::Orientation::left:
-		target_offset = &offset_x;
-		break;
-
-	default:
-		assert(false);  // Missing switch case
-		break;
-	}
-
-	for (const auto& line_item : line_segment_side) {
-		// Move the target offset (up or down depending on multiplier)
-		*target_offset += line_item.first.getAsDouble() * multiplier;
-
-		const auto& uv_pos = jactorio::renderer::Renderer::GetSpritemapCoords(line_item.second->sprite->internalId);
-
-		const float top_x = static_cast<float>(chunk_x_offset + offset_x) * static_cast<float>(
-			jactorio::renderer::Renderer::tileWidth);
-		const float top_y = static_cast<float>(chunk_y_offset + offset_y) * static_cast<float>(
-			jactorio::renderer::Renderer::tileWidth);
-
-		layer->PushBack(jactorio::renderer::RendererLayer::Element(
-			{
-				{
-					{top_x, top_y},
-					{
-						static_cast<float>(top_x + kItemWidth *
-							static_cast<float>(jactorio::renderer::Renderer::tileWidth)),
-
-						static_cast<float>(top_y + kItemWidth *
-							static_cast<float>(jactorio::renderer::Renderer::tileWidth))
-					},
-				},
-				{uv_pos.topLeft, uv_pos.bottomRight}
+			// Has unique data to draw
+			if (draw_func_return.second) {
+				draw_func_return.second->OnDrawUniqueData(layer, x, y);
 			}
-		));
+		}
 	}
 }
 
 
 void PrepareObjectData(const jactorio::game::WorldData& world_data,
                        const unsigned layer_index,
-                       jactorio::renderer::RendererLayer* layer,
+                       jactorio::renderer::RendererLayer& layer,
                        const float chunk_y_offset, const float chunk_x_offset,
                        const jactorio::game::Chunk* const chunk) {
-
-	// Draw logic chunk contents if it exists
-	const auto* logic_chunk = world_data.LogicGetChunk(chunk);
-
-	if (logic_chunk) {
-		const auto& transport_line_layer =
-			logic_chunk->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-
-		for (const auto& line_layer : transport_line_layer) {
-			auto* line_segment = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-
-			double offset_x;
-			double offset_y;
-
-			// Don't render if items are not marked visible! Wow!
-			if (!line_segment->left.visible)
-				goto prepare_right;
-
-			offset_x = line_layer.positionX;
-			offset_y = line_layer.positionY;
-
-			// Left
-			// The offsets for straight are always applied to bend left and right
-			switch (line_segment->direction) {
-			case jactorio::data::Orientation::up:
-				offset_x += jactorio::game::kLineUpLItemOffsetX;
-				break;
-			case jactorio::data::Orientation::right:
-				offset_y += jactorio::game::kLineRightLItemOffsetY;
-				break;
-			case jactorio::data::Orientation::down:
-				offset_x += jactorio::game::kLineDownLItemOffsetX;
-				break;
-			case jactorio::data::Orientation::left:
-				offset_y += jactorio::game::kLineLeftLItemOffsetY;
-				break;
-			}
-
-			// Left side
-			switch (line_segment->terminationType) {
-			case jactorio::game::TransportSegment::TerminationType::straight:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y -= jactorio::game::kLineLeftUpStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightDownStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineRightDownStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x -= jactorio::game::kLineLeftUpStraightItemOffset;
-					break;
-				}
-				break;
-
-			case jactorio::game::TransportSegment::TerminationType::bend_left:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpBlLItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightBlLItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownBlLItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftBlLItemOffsetX;
-					break;
-				}
-				break;
-
-			case jactorio::game::TransportSegment::TerminationType::bend_right:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpBrLItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightBrLItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownBrLItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftBrLItemOffsetX;
-					break;
-				}
-				break;
-
-				// Side insertion
-			case jactorio::game::TransportSegment::TerminationType::right_only:
-			case jactorio::game::TransportSegment::TerminationType::left_only:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpSingleSideItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightSingleSideItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownSingleSideItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftSingleSideItemOffsetX;
-					break;
-				}
-				break;
-			}
-			PrepareTransportSegmentData(layer,
-			                            chunk_y_offset, chunk_x_offset,
-			                            line_segment, line_segment->left.lane, offset_x, offset_y);
-
-		prepare_right:
-			if (!line_segment->right.visible)
-				continue;
-			// Right
-			offset_x = line_layer.positionX;
-			offset_y = line_layer.positionY;
-
-			// The offsets for straight are always applied to bend left and right
-			switch (line_segment->direction) {
-			case jactorio::data::Orientation::up:
-				offset_x += jactorio::game::kLineUpRItemOffsetX;
-				break;
-			case jactorio::data::Orientation::right:
-				offset_y += jactorio::game::kLineRightRItemOffsetY;
-				break;
-			case jactorio::data::Orientation::down:
-				offset_x += jactorio::game::kLineDownRItemOffsetX;
-				break;
-			case jactorio::data::Orientation::left:
-				offset_y += jactorio::game::kLineLeftRItemOffsetY;
-				break;
-			}
-
-
-			// Right side
-			switch (line_segment->terminationType) {
-			case jactorio::game::TransportSegment::TerminationType::straight:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y -= jactorio::game::kLineLeftUpStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightDownStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineRightDownStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x -= jactorio::game::kLineLeftUpStraightItemOffset;
-					break;
-				}
-				break;
-
-			case jactorio::game::TransportSegment::TerminationType::bend_left:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpBrRItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightBlRItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownBlRItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftBlRItemOffsetX;
-					break;
-				}
-				break;
-
-			case jactorio::game::TransportSegment::TerminationType::bend_right:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpBrRItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightBrRItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownBrRItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftBrRItemOffsetX;
-					break;
-				}
-				break;
-
-				// Side insertion
-			case jactorio::game::TransportSegment::TerminationType::right_only:
-			case jactorio::game::TransportSegment::TerminationType::left_only:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpSingleSideItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightSingleSideItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownSingleSideItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftSingleSideItemOffsetX;
-					break;
-				}
-				break;
-			}
-			PrepareTransportSegmentData(layer,
-			                            chunk_y_offset, chunk_x_offset,
-			                            line_segment, line_segment->right.lane, offset_x, offset_y);
-		}
-	}
 
 	const auto& objects = chunk->objects[layer_index];
 	for (const auto& object_layer : objects) {
@@ -482,7 +235,7 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 
 		const auto& uv_pos = jactorio::renderer::Renderer::GetSpritemapCoords(internal_id);
 
-		layer->PushBack(jactorio::renderer::RendererLayer::Element(
+		layer.PushBack(jactorio::renderer::RendererLayer::Element(
 			{
 				{
 					(chunk_x_offset + object_layer.positionX)
@@ -510,7 +263,7 @@ void jactorio::renderer::PrepareChunkDrawData(const game::WorldData& world_data,
                                               const int chunk_start_x, const int chunk_start_y,
                                               const int chunk_amount_x, const int chunk_amount_y,
                                               RendererLayer* layer) {
-	void (*prepare_func)(const game::WorldData&, unsigned, RendererLayer*, float, float, const game::Chunk*);
+	void (*prepare_func)(const game::WorldData&, unsigned, RendererLayer&, float, float, const game::Chunk*);
 
 	if (is_tile_layer)  // Either prepare tiles or objects in chunk
 		prepare_func = &PrepareTileData;
@@ -535,17 +288,12 @@ void jactorio::renderer::PrepareChunkDrawData(const game::WorldData& world_data,
 			}
 
 			prepare_func(world_data,
-			             layer_index, layer,
+			             layer_index, *layer,
 			             static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
 			             chunk);
 		}
 	}
 }
-
-void jactorio::renderer::PrepareLogicChunkDrawData(game::LogicChunk* l_chunk,
-                                                   RendererLayer* layer) {
-}
-
 
 void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
                                               Renderer* renderer,
