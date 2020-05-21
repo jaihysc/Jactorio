@@ -7,6 +7,8 @@
 
 #include <cstdint>
 
+#include "jactorio.h"
+
 namespace jactorio::renderer
 {
 	class VertexBuffer
@@ -20,8 +22,15 @@ namespace jactorio::renderer
 		VertexBuffer& operator=(const VertexBuffer& other)     = delete;
 		VertexBuffer& operator=(VertexBuffer&& other) noexcept = delete;
 
+		///
+		/// \brief Gets pointer to begin modifying buffer data
+		J_NODISCARD void* Map() const;
 
-		void UpdateData(const void* data, uint32_t offset, uint32_t size) const;
+		///
+		/// \brief Call to finish modifying buffer data, provided pointer from Map now invalid
+		void UnMap() const;
+
+		// void UpdateData(const void* data, uint32_t offset, uint32_t size) const;
 
 		///
 		/// \brief Creates a new buffer of provided specifications

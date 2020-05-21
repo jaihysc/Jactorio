@@ -102,7 +102,6 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
-	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_layerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
 )

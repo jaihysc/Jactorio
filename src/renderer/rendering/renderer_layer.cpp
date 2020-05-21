@@ -6,8 +6,7 @@
 
 // Settings
 
-constexpr uint32_t kInitialSize        = 1;  // How many elements to reserve upon construction
-constexpr uint32_t kIncrementOnResize = 300;  // How many more elements to reserve on resize
+constexpr uint32_t kInitialSize = 1;  // How many elements to reserve upon construction
 
 // Construct
 
@@ -16,23 +15,25 @@ jactorio::renderer::RendererLayer::RendererLayer() {
 }
 
 jactorio::renderer::RendererLayer::~RendererLayer() {
-	DeleteBuffersS();
-
 	// OpenGL buffers
 	GDeleteBufferS();
 }
 
 // Set
 
-void jactorio::renderer::RendererLayer::DeleteBuffersS() const {
-	delete[] vertexBuffer_.ptr;
-	delete[] uvBuffer_.ptr;
-}
-
 void jactorio::renderer::RendererLayer::PushBack(const Element& element) {
+	assert(writeEnabled_);
+
+	// Skips data appending operation if buffer needs to resize
+	if (gResizeVertexBuffers_) {
+		++queuedECapacity_;  // Will reserve an additional element for this one that was skipped
+		return;
+	}
+
 	if (nextElementIndex_ >= eCapacity_) {
-		// No more space, resize
-		Resize(eCapacity_ + kIncrementOnResize);
+		// No more space, reserve, will be repopulated on next update
+		Reserve(eCapacity_ + 1);
+		return;
 	}
 
 	// Add
@@ -41,33 +42,6 @@ void jactorio::renderer::RendererLayer::PushBack(const Element& element) {
 	SetBufferUv(buffer_index, element.uv);
 	nextElementIndex_++;
 }
-
-// If assertions enabled: Ensures element_index is in range. Also sets next_element_index_ for push_back to the highest
-#define CHECK_ELEMENT_INDEX\
-	assert(element_index < eCapacity_);\
-	if (element_index >= nextElementIndex_)\
-		nextElementIndex_ = element_index + 1;
-
-void jactorio::renderer::RendererLayer::Set(const uint32_t element_index, const Element element) const {
-	CHECK_ELEMENT_INDEX;
-
-	const auto buffer_index = element_index * 8;
-	SetBufferVertex(buffer_index, element.vertex);
-	SetBufferUv(buffer_index, element.uv);
-}
-
-void jactorio::renderer::RendererLayer::SetVertex(const uint32_t element_index,
-                                                  const core::QuadPosition element) const {
-	CHECK_ELEMENT_INDEX;
-	SetBufferVertex(element_index * 8, element);
-}
-
-void jactorio::renderer::RendererLayer::SetUv(const uint32_t element_index, const core::QuadPosition element) const {
-	CHECK_ELEMENT_INDEX;
-	SetBufferUv(element_index * 8, element);
-}
-
-#undef CHECK_ELEMENT_INDEX
 
 void jactorio::renderer::RendererLayer::SetBufferVertex(const uint32_t buffer_index,
                                                         const core::QuadPosition& element) const {
@@ -129,49 +103,9 @@ const jactorio::renderer::IndexBuffer* jactorio::renderer::RendererLayer::GetBuf
 void jactorio::renderer::RendererLayer::Reserve(const uint32_t count) {
 	assert(count > 0);  // Count must be greater than 0
 
-	DeleteBuffersS();
 	gResizeVertexBuffers_ = true;
-
-	const auto floats = count * 8;  // 4 positions, of X and Y (8 floats in total)
-
-	vertexBuffer_.ptr = new float[floats];
-	uvBuffer_.ptr     = new float[floats];
-
-	eCapacity_ = count;
-}
-
-void jactorio::renderer::RendererLayer::Resize(const uint32_t count) {
-	// 4 step process to copying:
-	// 1. Reserve new buffer
-	// 2. copy existing buffer into new buffer
-	// 3. delete old buffer
-	// 4. hand pointers for new buffer off
-
-	const auto floats       = count * 8;  // 4 positions, of X and Y (8 floats in total)
-	auto* vertex_buffer_new = new float[floats];
-	auto* uv_buffer_new     = new float[floats];
-
-	// End for copying is the smallest element count between old and new size
-	uint32_t end;
-	if (eCapacity_ > count)
-		end = count;
-	else
-		end = eCapacity_;
-
-	end *= 8;  // 8 floats per element
-
-	for (uint32_t i = 0; i < end; ++i) {
-		vertex_buffer_new[i] = vertexBuffer_.ptr[i];
-		uv_buffer_new[i]     = uvBuffer_.ptr[i];
-	}
-
-	DeleteBuffersS();
-	gResizeVertexBuffers_ = true;
-
-	vertexBuffer_.ptr = vertex_buffer_new;
-	uvBuffer_.ptr     = uv_buffer_new;
-
-	eCapacity_ = count;
+	queuedECapacity_      = count;
+	LOG_MESSAGE(debug, "Queuing buffer resize");
 }
 
 uint32_t jactorio::renderer::RendererLayer::GetCapacity() const {
@@ -184,8 +118,6 @@ uint32_t jactorio::renderer::RendererLayer::GetElementCount() const {
 
 void jactorio::renderer::RendererLayer::DeleteBuffer() noexcept {
 	eCapacity_ = 0;
-
-	DeleteBuffersS();
 
 	vertexBuffer_.ptr = nullptr;
 	uvBuffer_.ptr     = nullptr;
@@ -266,25 +198,41 @@ void jactorio::renderer::RendererLayer::GInitBuffer() {
 	gResizeVertexBuffers_ = false;
 }
 
+void jactorio::renderer::RendererLayer::GWriteBegin() {
+	assert(!writeEnabled_);
+
+	vertexBuffer_.ptr = static_cast<float*>(vertexVb_->Map());
+	uvBuffer_.ptr     = static_cast<float*>(uvVb_->Map());
+
+	writeEnabled_ = true;
+}
+
+void jactorio::renderer::RendererLayer::GWriteEnd() {
+	assert(writeEnabled_);
+
+	vertexVb_->UnMap();
+	uvVb_->UnMap();
+
+	writeEnabled_ = false;
+}
+
 void jactorio::renderer::RendererLayer::GUpdateData() {
 	// Only resize if resize is set
-	if (gResizeVertexBuffers_) {
-		gResizeVertexBuffers_ = false;
-
-		vertexVb_->Reserve(vertexBuffer_.ptr, eCapacity_ * kGByteMultiplier, false);
-		uvVb_->Reserve(uvBuffer_.ptr, eCapacity_ * kGByteMultiplier, false);
-
-		// Index buffer
-		const auto* data = GenRenderGridIndices(eCapacity_);
-		indexIb_->Reserve(data, eCapacity_ * 6);
-		delete[] data;
-
+	if (!gResizeVertexBuffers_)
 		return;
-	}
 
-	// Since this is dealing in size, next_element_index_ is not subtracted by 1
-	vertexVb_->UpdateData(vertexBuffer_.ptr, 0, nextElementIndex_ * kGByteMultiplier);
-	uvVb_->UpdateData(uvBuffer_.ptr, 0, nextElementIndex_ * kGByteMultiplier);
+	gResizeVertexBuffers_ = false;
+	eCapacity_ = queuedECapacity_;
+
+	vertexVb_->Reserve(nullptr, eCapacity_ * kGByteMultiplier, false);
+	uvVb_    ->Reserve(nullptr, eCapacity_ * kGByteMultiplier, false);
+
+	// Index buffer
+	const auto* data = GenRenderGridIndices(eCapacity_);
+	indexIb_->Reserve(data, eCapacity_ * 6);
+	delete[] data;
+
+	LOG_MESSAGE_f(debug, "Buffer resized to %d", eCapacity_);
 }
 
 void jactorio::renderer::RendererLayer::GDeleteBuffer() {

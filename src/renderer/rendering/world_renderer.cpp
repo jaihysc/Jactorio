@@ -401,6 +401,8 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 	auto* layer_2 = &renderer->renderLayer2;
 	// !Very important! Remember to clear the layers or else it will keep trying to append into it
 	layer_2->Clear();
+	layer_2->GBufferBind();
+	layer_2->GWriteBegin();
 
 	std::future<void> preparing_thread1;
 	std::future<void> preparing_thread2 =
@@ -417,6 +419,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 		// Prepare 1
 		if (using_buffer1) {
 			layer_1->Clear();
+			layer_1->GWriteBegin();
 			preparing_thread1 =
 				std::async(std::launch::async, PrepareChunkDrawData,
 				           std::ref(world_data), layer_index, true,
@@ -427,6 +430,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 
 			preparing_thread2.wait();
 
+			layer_2->GWriteEnd();
 			renderer->renderLayer2.GUpdateData();
 			renderer->renderLayer2.GBufferBind();
 			Renderer::GDraw(layer_2->GetElementCount());
@@ -434,6 +438,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 			// Prepare 2
 		else {
 			layer_2->Clear();
+			layer_2->GWriteBegin();
 			preparing_thread2 =
 				std::async(std::launch::async, PrepareChunkDrawData,
 				           std::ref(world_data), layer_index, true,
@@ -444,6 +449,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 
 			preparing_thread1.wait();
 
+			layer_1->GWriteEnd();
 			renderer->renderLayer.GUpdateData();
 			renderer->renderLayer.GBufferBind();
 			Renderer::GDraw(layer_1->GetElementCount());
@@ -458,6 +464,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 		// Prepare 1
 		if (using_buffer1) {
 			layer_1->Clear();
+			layer_1->GWriteBegin();
 			preparing_thread1 =
 				std::async(std::launch::async, PrepareChunkDrawData,
 				           std::ref(world_data), layer_index, false,
@@ -468,6 +475,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 
 			preparing_thread2.wait();
 
+			layer_2->GWriteEnd();
 			renderer->renderLayer2.GUpdateData();
 			renderer->renderLayer2.GBufferBind();
 			Renderer::GDraw(layer_2->GetElementCount());
@@ -475,6 +483,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 			// Prepare 2
 		else {
 			layer_2->Clear();
+			layer_2->GWriteBegin();
 			preparing_thread2 =
 				std::async(std::launch::async, PrepareChunkDrawData,
 				           std::ref(world_data), layer_index, false,
@@ -485,6 +494,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 
 			preparing_thread1.wait();
 
+			layer_1->GWriteEnd();
 			renderer->renderLayer.GUpdateData();
 			renderer->renderLayer.GBufferBind();
 			Renderer::GDraw(layer_1->GetElementCount());
@@ -495,12 +505,16 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 	// Wait for the final layer to draw
 	if (using_buffer1) {
 		preparing_thread2.wait();
+
+		layer_2->GWriteEnd();
 		layer_2->GUpdateData();
 		layer_2->GBufferBind();
 		Renderer::GDraw(layer_2->GetElementCount());
 	}
 	else {
 		preparing_thread1.wait();
+
+		layer_1->GWriteEnd();
 		layer_1->GUpdateData();
 		layer_1->GBufferBind();
 		Renderer::GDraw(layer_1->GetElementCount());
