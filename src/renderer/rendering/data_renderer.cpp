@@ -51,7 +51,6 @@ void PrepareTransportSegmentData(jactorio::renderer::RendererLayer& layer,
 	if (line_segment.terminationType != TransportSegment::TerminationType::straight) {
 		OrientationIncrement(line_segment.direction, tile_x, tile_y);
 	}
-	// TODO separate rendering layer for items
 
 	for (const auto& line_item : line_segment_side) {
 		// Move the target offset (up or down depending on multiplier)

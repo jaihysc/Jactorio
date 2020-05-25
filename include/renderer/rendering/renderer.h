@@ -37,8 +37,11 @@ namespace jactorio::renderer
 
 		// 2 Rendering layers so that one can be drawn to while another is being rendered
 		// Since objects are of varying lengths, the layer must resize
-		mutable RendererLayer renderLayer  = RendererLayer();
-		mutable RendererLayer renderLayer2 = RendererLayer();
+
+		// 3rd layer is for rendering items that should be above all layers (e.g transport line items)
+		static constexpr uint8_t kRenderLayerCount = 3;
+
+		RendererLayer renderLayers[kRenderLayerCount];
 
 		///
 		/// \brief Changes zoom 
@@ -47,9 +50,9 @@ namespace jactorio::renderer
 		static unsigned short tileWidth;
 
 		///
-		/// \brief Deletes and regenerates the opengl buffers / arrays used for rendering
-		/// Also regenerates buffer used to update texture_grid_ Vertex_buffer
-		void RecalculateBuffers(unsigned short window_x, unsigned short window_y);
+		/// \brief Resizes opengl buffers used for rendering,
+		/// Must be called from an OpenGL context
+		void GRecalculateBuffers(unsigned short window_x, unsigned short window_y);
 
 		///
 		/// \brief Draws current data to the screen

@@ -130,6 +130,7 @@ ObjectDrawFunc object_layer_get_sprite_id_func[]{
 void PrepareTileData(const jactorio::game::WorldData& world_data,
                      const unsigned layer_index,
                      jactorio::renderer::RendererLayer& layer,
+                     jactorio::renderer::RendererLayer& top_layer,
                      const float chunk_y_offset, const float chunk_x_offset,
                      const jactorio::game::Chunk* const chunk) {
 	// Load chunk into buffer
@@ -212,7 +213,7 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 
 			// Has unique data to draw
 			if (draw_func_return.second) {
-				draw_func_return.second->OnDrawUniqueData(layer, x, y);
+				draw_func_return.second->OnDrawUniqueData(top_layer, x, y);
 			}
 		}
 	}
@@ -257,42 +258,141 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 	}
 }
 
-void jactorio::renderer::PrepareChunkDrawData(const game::WorldData& world_data,
-                                              const int layer_index, const bool is_tile_layer,
-                                              const int render_offset_x, const int render_offset_y,
-                                              const int chunk_start_x, const int chunk_start_y,
-                                              const int chunk_amount_x, const int chunk_amount_y,
-                                              RendererLayer* layer) {
-	void (*prepare_func)(const game::WorldData&, unsigned, RendererLayer&, float, float, const game::Chunk*);
+struct PrepareProperties
+{
+	const jactorio::game::WorldData& worldData;
 
-	if (is_tile_layer)  // Either prepare tiles or objects in chunk
-		prepare_func = &PrepareTileData;
-	else
-		prepare_func = &PrepareObjectData;
 
-	for (int chunk_y = 0; chunk_y < chunk_amount_y; ++chunk_y) {
-		const int chunk_y_offset = chunk_y * kChunkWidth + render_offset_y;
+	/// Tiles from window left to offset rendering
+	const int renderOffsetX;
+	/// Tiles from window top to offset rendering
+	const int renderOffsetY;
 
-		for (int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
-			const int chunk_x_offset = chunk_x * kChunkWidth + render_offset_x;
+	/// Chunk to begin rendering
+	const int chunkStartX;
+	/// Chunk to begin rendering
+	const int chunkStartY;
 
-			std::lock_guard<std::mutex> guard{world_data.worldDataMutex};
-			const game::Chunk* chunk = world_data.GetChunkC(chunk_start_x + chunk_x,
-			                                                chunk_start_y + chunk_y);
+	/// Number of chunks on X axis after chunk_start_x to draw
+	const int chunkAmountX;
+	/// Layer on which vertex and UV draw data will be placed
+	const int chunkAmountY;
+};
+
+///
+/// \brief Draws chunks to the screen
+/// Attempting to draw chunks which do not exist will result in the chunk being queued for generation
+/// \param layer_index Index of layer to render
+template <bool IsTileLayer>
+void PrepareChunkDrawData(const PrepareProperties& props,
+                          const int layer_index,
+                          jactorio::renderer::RendererLayer& layer,
+						  jactorio::renderer::RendererLayer& top_layer) {
+
+	for (int chunk_y = 0; chunk_y < props.chunkAmountY; ++chunk_y) {
+		const int chunk_y_offset = chunk_y * kChunkWidth + props.renderOffsetY;
+
+		for (int chunk_x = 0; chunk_x < props.chunkAmountX; ++chunk_x) {
+			const int chunk_x_offset = chunk_x * kChunkWidth + props.renderOffsetX;
+
+			std::lock_guard<std::mutex> guard{props.worldData.worldDataMutex};
+			const jactorio::game::Chunk* chunk = props.worldData.GetChunkC(props.chunkStartX + chunk_x,
+			                                                               props.chunkStartY + chunk_y);
 			// Generate chunk if non existent
 			if (chunk == nullptr) {
-				world_data.QueueChunkGeneration(
-					chunk_start_x + chunk_x,
-					chunk_start_y + chunk_y);
+				props.worldData.QueueChunkGeneration(
+					props.chunkStartX + chunk_x,
+					props.chunkStartY + chunk_y);
 				continue;
 			}
 
-			prepare_func(world_data,
-			             layer_index, *layer,
-			             static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
-			             chunk);
+			if constexpr (IsTileLayer) {
+				PrepareTileData(props.worldData,
+				                layer_index, 
+								layer, top_layer,
+				                static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
+				                chunk);
+			}
+			else {
+				PrepareObjectData(props.worldData,
+				                  layer_index, layer,
+				                  static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
+				                  chunk);
+			}
+
 		}
 	}
+}
+
+template <uint8_t Amount,
+          typename Function, typename ... Args>
+void DrawLayers(jactorio::renderer::RendererLayer& layer_1,
+                jactorio::renderer::RendererLayer& layer_2,
+                jactorio::renderer::RendererLayer& top_layer,
+                Function* function, const Args& ... args) {
+#define J_LAYER_BEGIN_PREPARE(name_)\
+	(name_).Clear();\
+	(name_).GWriteBegin()
+
+#define J_LAYER_END_PREPARE(name_)\
+	(name_).GWriteEnd();\
+	(name_).GUpdateData();\
+	(name_).GBufferBind();\
+	jactorio::renderer::Renderer::GDraw((name_).GetElementCount())
+
+	// !Very important! Remember to clear the layers or else it will keep trying to append into it
+	J_LAYER_BEGIN_PREPARE(layer_2);
+	J_LAYER_BEGIN_PREPARE(top_layer);
+
+	std::future<void> preparing_thread1;
+	std::future<void> preparing_thread2 = std::async(std::launch::async,
+	                                                 function, args ...,
+	                                                 0,
+	                                                 std::ref(layer_2), std::ref(top_layer));
+
+	// Begin at index 1, since index 0 is handled above
+	for (unsigned int layer_index = 1; layer_index < Amount; ++layer_index) {
+		// Prepare 1
+		if (layer_index % 2 != 0) {
+			J_LAYER_BEGIN_PREPARE(layer_1);
+			preparing_thread1 =
+				std::async(std::launch::async,
+				           function, args ...,
+				           layer_index,
+				           std::ref(layer_1), std::ref(top_layer));
+
+			preparing_thread2.wait();
+
+			J_LAYER_END_PREPARE(layer_2);
+		}
+			// Prepare 2
+		else {
+			J_LAYER_BEGIN_PREPARE(layer_2);
+			preparing_thread2 =
+				std::async(std::launch::async,
+				           function, args ...,
+				           layer_index,
+				           std::ref(layer_2), std::ref(top_layer));
+
+			preparing_thread1.wait();
+
+			J_LAYER_END_PREPARE(layer_1);
+		}
+	}
+
+	// Wait for the final layer to draw
+	if constexpr (Amount % 2 != 0) {
+		preparing_thread2.wait();
+
+		J_LAYER_END_PREPARE(layer_2);
+	}
+	else {
+		preparing_thread1.wait();
+
+		J_LAYER_END_PREPARE(layer_1);
+	}
+
+	J_LAYER_END_PREPARE(top_layer);
 }
 
 void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
@@ -396,127 +496,22 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 	const auto amount_x = (renderer->GetGridSizeX() - window_start_x) / kChunkWidth + 1;  // Render 1 extra chunk on the edge
 	const auto amount_y = (renderer->GetGridSizeY() - window_start_y) / kChunkWidth + 1;
 
+	PrepareProperties props{
+		world_data,
+		window_start_x, window_start_y,
+		chunk_start_x, chunk_start_y,
+		amount_x, amount_y
+	};
 
-	auto* layer_1 = &renderer->renderLayer;
-	auto* layer_2 = &renderer->renderLayer2;
-	// !Very important! Remember to clear the layers or else it will keep trying to append into it
-	layer_2->Clear();
-	layer_2->GBufferBind();
-	layer_2->GWriteBegin();
+	auto& layer_1   = renderer->renderLayers[0];
+	auto& layer_2   = renderer->renderLayers[1];
+	auto& top_layer = renderer->renderLayers[2];
 
-	std::future<void> preparing_thread1;
-	std::future<void> preparing_thread2 =
-		std::async(std::launch::async, PrepareChunkDrawData,
-		           std::ref(world_data), 0, true,
-		           window_start_x, window_start_y,
-		           chunk_start_x, chunk_start_y,
-		           amount_x, amount_y,
-		           layer_2);
+	DrawLayers<game::ChunkTile::kTileLayerCount>(layer_1, layer_2, top_layer,
+	                                             &PrepareChunkDrawData<true>,
+	                                             std::ref(props));
 
-	bool using_buffer1 = true;
-	// Begin at index 1, since index 0 is handled above
-	for (unsigned int layer_index = 1; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
-		// Prepare 1
-		if (using_buffer1) {
-			layer_1->Clear();
-			layer_1->GWriteBegin();
-			preparing_thread1 =
-				std::async(std::launch::async, PrepareChunkDrawData,
-				           std::ref(world_data), layer_index, true,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_1);
-
-			preparing_thread2.wait();
-
-			layer_2->GWriteEnd();
-			renderer->renderLayer2.GUpdateData();
-			renderer->renderLayer2.GBufferBind();
-			Renderer::GDraw(layer_2->GetElementCount());
-		}
-			// Prepare 2
-		else {
-			layer_2->Clear();
-			layer_2->GWriteBegin();
-			preparing_thread2 =
-				std::async(std::launch::async, PrepareChunkDrawData,
-				           std::ref(world_data), layer_index, true,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_2);
-
-			preparing_thread1.wait();
-
-			layer_1->GWriteEnd();
-			renderer->renderLayer.GUpdateData();
-			renderer->renderLayer.GBufferBind();
-			Renderer::GDraw(layer_1->GetElementCount());
-		}
-		using_buffer1 = !using_buffer1;
-	}
-
-	// ==============================================================
-	// Draw object layers
-	for (unsigned int layer_index = 0;
-	     layer_index < game::Chunk::kObjectLayerCount; ++layer_index) {
-		// Prepare 1
-		if (using_buffer1) {
-			layer_1->Clear();
-			layer_1->GWriteBegin();
-			preparing_thread1 =
-				std::async(std::launch::async, PrepareChunkDrawData,
-				           std::ref(world_data), layer_index, false,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_1);
-
-			preparing_thread2.wait();
-
-			layer_2->GWriteEnd();
-			renderer->renderLayer2.GUpdateData();
-			renderer->renderLayer2.GBufferBind();
-			Renderer::GDraw(layer_2->GetElementCount());
-		}
-			// Prepare 2
-		else {
-			layer_2->Clear();
-			layer_2->GWriteBegin();
-			preparing_thread2 =
-				std::async(std::launch::async, PrepareChunkDrawData,
-				           std::ref(world_data), layer_index, false,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_2);
-
-			preparing_thread1.wait();
-
-			layer_1->GWriteEnd();
-			renderer->renderLayer.GUpdateData();
-			renderer->renderLayer.GBufferBind();
-			Renderer::GDraw(layer_1->GetElementCount());
-		}
-		using_buffer1 = !using_buffer1;
-	}
-
-	// Wait for the final layer to draw
-	if (using_buffer1) {
-		preparing_thread2.wait();
-
-		layer_2->GWriteEnd();
-		layer_2->GUpdateData();
-		layer_2->GBufferBind();
-		Renderer::GDraw(layer_2->GetElementCount());
-	}
-	else {
-		preparing_thread1.wait();
-
-		layer_1->GWriteEnd();
-		layer_1->GUpdateData();
-		layer_1->GBufferBind();
-		Renderer::GDraw(layer_1->GetElementCount());
-	}
+	DrawLayers<game::Chunk::kObjectLayerCount>(layer_1, layer_2, top_layer,
+	                                           &PrepareChunkDrawData<false>,
+	                                           std::ref(props));
 }

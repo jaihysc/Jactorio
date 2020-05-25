@@ -12,25 +12,6 @@
 namespace jactorio::renderer
 {
 	///
-	/// \brief Draws chunks to the screen
-	/// Attempting to draw chunks which do not exist will result in the chunk being queued for generation
-	/// \param layer_index Index of layer to render
-	/// \param is_tile_layer Is the provided layer_index for a tile layer? If false is object layer
-	/// \param render_offset_x Tiles from window left to offset rendering
-	/// \param render_offset_y Tiles from window top to offset rendering
-	/// \param chunk_start_x Chunk to begin rendering
-	/// \param chunk_start_y Chunk to begin rendering
-	/// \param chunk_amount_x Number of chunks on X axis after chunk_start_x to draw
-	/// \param chunk_amount_y Number of chunks on Y axis after chunk_start_y to draw
-	/// \param layer Layer on which vertex and UV draw data will be placed
-	void PrepareChunkDrawData(const game::WorldData& world_data,
-	                          int layer_index, bool is_tile_layer,
-	                          int render_offset_x, int render_offset_y,
-	                          int chunk_start_x, int chunk_start_y,
-	                          int chunk_amount_x, int chunk_amount_y,
-	                          RendererLayer* layer);
-
-	///
 	/// Moves the world to match player_position_ <br>
 	/// This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
 	/// \param world_data World to render

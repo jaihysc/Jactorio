@@ -40,14 +40,16 @@ jactorio::renderer::Renderer::Renderer() {
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
 
-	renderLayer.GInitBuffer();
-	renderLayer2.GInitBuffer();
+	LOG_MESSAGE_f(debug, "%d layers used for rendering", kRenderLayerCount);
+	for (auto& render_layer : renderLayers) {
+		render_layer.GInitBuffer();
+	}
 
-	RecalculateBuffers(m_viewport[2], m_viewport[3]);
+	GRecalculateBuffers(m_viewport[2], m_viewport[3]);
 }
 
-void jactorio::renderer::Renderer::RecalculateBuffers(const unsigned short window_x,
-                                                      const unsigned short window_y) {
+void jactorio::renderer::Renderer::GRecalculateBuffers(const unsigned short window_x,
+                                                       const unsigned short window_y) {
 	// Initialize fields
 	windowWidth_  = window_x;
 	windowHeight_ = window_y;
@@ -59,10 +61,11 @@ void jactorio::renderer::Renderer::RecalculateBuffers(const unsigned short windo
 
 	gridElementsCount_ = tileCountX_ * tileCountY_;
 
-
 	// Render layer (More may be reserved as needed by the renderer)
-	renderLayer.Reserve(gridElementsCount_);
-	renderLayer2.Reserve(gridElementsCount_);
+	for (auto& render_layer : renderLayers) {
+		render_layer.Reserve(gridElementsCount_);
+		render_layer.GUpdateData();
+	}
 }
 
 

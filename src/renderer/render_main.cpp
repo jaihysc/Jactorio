@@ -36,7 +36,7 @@ void jactorio::renderer::SetRecalculateRenderer(const unsigned short window_size
 	window_y = window_size_y;
 
 	game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
-		main_renderer->RecalculateBuffers(window_x, window_y);
+		main_renderer->GRecalculateBuffers(window_x, window_y);
 	});
 }
 
@@ -97,7 +97,7 @@ void jactorio::renderer::RenderInit() {
 	game::game_data->input.key.Subscribe([]() {
 		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
 			SetFullscreen(!IsFullscreen());
-			main_renderer->RecalculateBuffers(window_x, window_y);
+			main_renderer->GRecalculateBuffers(window_x, window_y);
 		});
 	}, game::InputKey::space, game::InputAction::key_down);
 
