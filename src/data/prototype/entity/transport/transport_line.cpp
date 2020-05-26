@@ -163,13 +163,14 @@ game::TransportSegment* data::TransportLine::GetTransportSegment(game::WorldData
 	return nullptr;
 }
 
-void data::TransportLine::RemoveFromLogicGroup(game::TransportSegment& line_segment,
-                                               game::Chunk::LogicGroupType& logic_group) const {
-	logic_group.erase(
-		std::remove_if(logic_group.begin(), logic_group.end(), [&](auto* element) {
-			return &static_cast<TransportLineData*>(element->uniqueData)->lineSegment.get() == &line_segment;
-		}),
-		logic_group.end());
+void data::TransportLine::RemoveFromLogic(game::WorldData& world_data,
+                                          const game::WorldData::WorldPair& world_coords, game::TransportSegment& line_segment) {
+	world_data.LogicRemove(
+		game::Chunk::LogicGroup::transport_line,
+		world_coords,
+		[&](auto* t_layer) {
+			return &static_cast<TransportLineData*>(t_layer->uniqueData)->lineSegment.get() == &line_segment;
+		});
 }
 
 
@@ -648,13 +649,9 @@ data::TransportLineData* data::TransportLine::InitTransportSegment(game::WorldDa
 			1
 		};
 
-		// Add the transport line segment to logic chunk IF is the first of a NEW segment
-		{
-			auto& chunk = *world_data.GetChunk(world_coords);
-			world_data.LogicAddChunk(&chunk);
-
-			chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line).push_back(&tile_layer);
-		}
+		world_data.LogicRegister(game::Chunk::LogicGroup::transport_line,
+		                         world_coords,
+		                         game::ChunkTile::ChunkLayer::entity);
 		break;
 
 	case InitSegmentStatus::group_behind:
@@ -688,8 +685,7 @@ data::TransportLineData* data::TransportLine::InitTransportSegment(game::WorldDa
 		// Remove old head from logic group, add new head which is now 1 tile ahead
 		auto& chunk = *world_data.GetChunk(world_coords);
 
-		RemoveFromLogicGroup(*line_segment,
-		                     chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line));
+		RemoveFromLogic(world_data, world_coords, *line_segment);
 		chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line).emplace_back(&tile_layer);
 
 		// Renumber
@@ -1028,8 +1024,7 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 		(o_line_data.lineSegmentIndex == 1 && o_line_segment.terminationType !=  // Head of bending segments start at 1
 			game::TransportSegment::TerminationType::straight)) {
 
-		auto& logic_group = chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
-		RemoveFromLogicGroup(o_line_segment, logic_group);
+		RemoveFromLogic(world_data, world_coords, o_line_segment);
 	}
 	else {
 		o_line_segment.length = o_line_data.lineSegmentIndex;

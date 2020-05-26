@@ -277,11 +277,11 @@ void jactorio::game::TransportLineLogicUpdate(WorldData& world_data) {
 	// 		1. Move items on their transport lines
 	//		2. Check if any items have reached the end of their lines, and need to be moved to another one
 
-	for (const auto& chunk_pair : world_data.LogicGetAllChunks()) {
+	for (const auto& chunk_pair : world_data.LogicGetChunks()) {
 		LogicUpdateMoveItems(*chunk_pair);
 	}
 
-	for (const auto& chunk_pair : world_data.LogicGetAllChunks()) {
+	for (const auto& chunk_pair : world_data.LogicGetChunks()) {
 		LogicUpdateTransitionItems(*chunk_pair);
 	}
 }

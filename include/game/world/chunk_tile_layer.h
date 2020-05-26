@@ -21,7 +21,7 @@ namespace jactorio::game
 	/// \brief A Chunk_tile has many layers
 	/// \remark Commonly instantiated, limit the size of variables
 	/// \remark !! Set the multi tile index before using any multi tile methods
-	class ChunkTileLayer : public ChunkLayer<>
+	class ChunkTileLayer : public ChunkLayer
 	{
 	public:
 		ChunkTileLayer() = default;

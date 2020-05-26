@@ -12,7 +12,6 @@ namespace jactorio::game
 	///
 	/// \brief Abstract class for Chunk_tile_layer, Chunk_object_layer, Chunk_struct_layer
 	/// \remark Will only delete unique_data, others must be manually deleted
-	template <typename TUniqueData = data::UniqueDataBase>
 	class ChunkLayer
 	{
 	protected:
@@ -56,11 +55,10 @@ namespace jactorio::game
 
 		/// Data for the prototype which is unique per tile and layer <br>
 		/// When this layer is deleted, unique_data_ will be deleted with delete method in prototype_data_
-		TUniqueData* uniqueData = nullptr;
+		data::UniqueDataBase* uniqueData = nullptr;
 	};
 
-	template <typename TUniqueData>
-	ChunkLayer<TUniqueData>::ChunkLayer(const ChunkLayer& other)
+	inline ChunkLayer::ChunkLayer(const ChunkLayer& other)
 		: prototypeData(other.prototypeData) {
 
 		// Use prototype defined method for copying unique_data_ if other has data to copy
@@ -70,8 +68,7 @@ namespace jactorio::game
 		}
 	}
 
-	template <typename TUniqueData>
-	ChunkLayer<TUniqueData>::ChunkLayer(ChunkLayer&& other) noexcept
+	inline ChunkLayer::ChunkLayer(ChunkLayer&& other) noexcept
 		: prototypeData(other.prototypeData),
 		  uniqueData(other.uniqueData) {
 		// After moving data away, set unique_data to nullptr so it is not deleted

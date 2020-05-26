@@ -76,6 +76,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
 	
+	${JACTORIO_TEST_DIR}/data/prototype/entity/inserterTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/mining_drillTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/transport/transport_lineTests.cpp
 

@@ -11,7 +11,7 @@ namespace jactorio::game
 {
 	///
 	/// \brief Holds items which do not adhere to the tiles for rendering
-	struct ChunkObjectLayer : ChunkLayer<>
+	struct ChunkObjectLayer : ChunkLayer
 	{
 		ChunkObjectLayer() = default;
 

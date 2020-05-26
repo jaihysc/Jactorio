@@ -194,6 +194,60 @@ namespace game
 
 	// Logic chunks
 
+	TEST_F(WorldDataTest, LogicRegister) {
+		worldData_.EmplaceChunk(1, 0);  // 32, 0 is chunk coords 1, 0
+		worldData_.LogicRegister(jactorio::game::Chunk::LogicGroup::inserter,
+		                         {32, 0},
+		                         jactorio::game::ChunkTile::ChunkLayer::entity);
+
+		// Added chunk
+		ASSERT_EQ(worldData_.LogicGetChunks().size(), 1);
+
+		EXPECT_NE(worldData_.LogicGetChunks().find(worldData_.GetChunkC({1, 0})),
+		          worldData_.LogicGetChunks().end());
+
+
+		// Registering again will not duplicate logic chunk
+		worldData_.LogicRegister(jactorio::game::Chunk::LogicGroup::inserter,
+		                         {42, 0},
+		                         jactorio::game::ChunkTile::ChunkLayer::entity);
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+	}
+
+	TEST_F(WorldDataTest, LogicRemove) {
+		worldData_.EmplaceChunk(1, 0);
+		worldData_.LogicRegister(jactorio::game::Chunk::LogicGroup::inserter,
+		                         {32, 0},
+		                         jactorio::game::ChunkTile::ChunkLayer::entity);
+
+		// Registering again will not duplicate logic chunk
+		worldData_.LogicRegister(jactorio::game::Chunk::LogicGroup::inserter,
+		                         {42, 0},
+		                         jactorio::game::ChunkTile::ChunkLayer::entity);
+
+
+		// Removed 1, another one remains
+		worldData_.LogicRemove(jactorio::game::Chunk::LogicGroup::inserter,
+		                       {32, 0},
+		                       jactorio::game::ChunkTile::ChunkLayer::entity);
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+
+		// Chunk now empty, remove from logic chunks
+		worldData_.LogicRemove(jactorio::game::Chunk::LogicGroup::inserter,
+		                       {42, 0},
+		                       jactorio::game::ChunkTile::ChunkLayer::entity);
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+	}
+
+	TEST_F(WorldDataTest, LogicRemoveNonExistent) {
+		worldData_.EmplaceChunk(1, 0);
+
+		// Removed 1, another one remains
+		worldData_.LogicRemove(jactorio::game::Chunk::LogicGroup::inserter,
+		                       {32, 0},
+		                       jactorio::game::ChunkTile::ChunkLayer::entity);
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+	}
 
 	TEST_F(WorldDataTest, LogicAddChunk) {
 		jactorio::game::Chunk chunk(0, 0);
@@ -201,7 +255,7 @@ namespace game
 		worldData_.LogicAddChunk(&chunk);
 		// Should return reference to newly created and added chunk
 
-		EXPECT_EQ(worldData_.LogicGetAllChunks().size(), 1);
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
 
 	TEST_F(WorldDataTest, LogicAddChunkNoDuplicate) {
@@ -211,16 +265,7 @@ namespace game
 		worldData_.LogicAddChunk(&chunk);
 		worldData_.LogicAddChunk(&chunk);  // Attempting to add the same chunk again
 
-		EXPECT_EQ(worldData_.LogicGetAllChunks().size(), 1);
-	}
-
-	TEST_F(WorldDataTest, logic_remove_chunk) {
-		jactorio::game::Chunk chunk(0, 0);
-
-		worldData_.LogicAddChunk(&chunk);
-		worldData_.LogicRemoveChunk(&chunk);
-
-		EXPECT_EQ(worldData_.LogicGetAllChunks().size(), 0);
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
 
 	TEST_F(WorldDataTest, LogicClearChunkData) {
@@ -232,6 +277,6 @@ namespace game
 		worldData_.ClearChunkData();
 
 		// Vector reference should now be empty
-		EXPECT_EQ(worldData_.LogicGetAllChunks().size(), 0);
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
 	}
 }

@@ -86,7 +86,7 @@ namespace jactorio::game
 			);
 		}
 
-		const ObjectLayerType& GetObject(ObjectLayer layer) const {
+		J_NODISCARD const ObjectLayerType& GetObject(ObjectLayer layer) const {
 			return objects[static_cast<int>(layer)];
 		}
 
@@ -96,6 +96,7 @@ namespace jactorio::game
 		enum class LogicGroup
 		{
 			transport_line = 0,
+			inserter,
 			count_
 		};
 

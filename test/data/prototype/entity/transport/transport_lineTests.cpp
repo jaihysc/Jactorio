@@ -244,7 +244,7 @@ namespace data::prototype
 		// ======================================================================
 
 		// Added current chunk as a logic chunk
-		ASSERT_EQ(worldData_.LogicGetAllChunks().size(), 1);
+		ASSERT_EQ(worldData_.LogicGetChunks().size(), 1);
 
 		auto& tile_layers = GetTransportLines({-1, 0});
 
@@ -358,7 +358,6 @@ namespace data::prototype
 		// The on_remove event should update the orientations of the neighboring belts to if the current transport
 		// line is not there
 
-		worldData_.LogicAddChunk(worldData_.GetChunk(0, 0));
 		/*
 		 *  v
 		 *  >

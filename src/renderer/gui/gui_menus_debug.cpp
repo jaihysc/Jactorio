@@ -59,7 +59,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		            game::ChunkTile::kTileLayerCount, game::Chunk::kObjectLayerCount);
 
 		if (ImGui::Button("Clear debug overlays")) {
-			for (auto* chunk : player_data.GetPlayerWorld().LogicGetAllChunks()) {
+			for (auto* chunk : player_data.GetPlayerWorld().LogicGetChunks()) {
 
 				auto& object_layer = chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
 				object_layer.clear();
@@ -82,7 +82,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		            player_data.GetPlayerPositionY());
 
 		ImGui::Text("Game tick: %llu", world_data.GameTick());
-		ImGui::Text("Chunk updates: %llu", world_data.LogicGetAllChunks().size());
+		ImGui::Text("Chunk updates: %llu", world_data.LogicGetChunks().size());
 
 		ImGui::Separator();
 
@@ -96,7 +96,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		ImGui::Checkbox("Show transport line info", &show_transport_line_info);
 
 		if (ImGui::Button("Make all belt items visible")) {
-			for (auto* chunk : world_data.LogicGetAllChunks()) {
+			for (auto* chunk : world_data.LogicGetChunks()) {
 				for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
 					auto& segment         = static_cast<data::TransportLineData*>(transport_line->uniqueData)->lineSegment.get();
 					segment.left.visible  = true;
@@ -189,7 +189,7 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-left");
 
 	// Get all update points and add it to the chunk's objects for drawing
-	for (auto* chunk : world_data.LogicGetAllChunks()) {
+	for (auto* chunk : world_data.LogicGetChunks()) {
 		auto& object_layer = chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
 		object_layer.clear();
 

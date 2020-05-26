@@ -201,19 +201,29 @@ namespace jactorio::game
 		// Stores chunks which have entities requiring logic updates
 
 		///
+		/// \brief Adds a layer at coordinates to be considered for logic updates
+		void LogicRegister(Chunk::LogicGroup group, const WorldPair& world_pair, ChunkTile::ChunkLayer layer);
+
+		///
+		/// \brief Removes a layer at coordinates to be considered for logic updates
+		/// w/ custom comparison func to remove
+		void LogicRemove(Chunk::LogicGroup group, const WorldPair& world_pair,
+		                 const std::function<bool(ChunkTileLayer*)>& pred);
+
+		///
+		/// \brief Removes a layer at coordinates to be considered for logic updates
+		void LogicRemove(Chunk::LogicGroup group, const WorldPair& world_pair, ChunkTile::ChunkLayer layer);
+
+
+		///
 		/// \brief Adds a chunk to be considered for logic updates, if the logic chunk already exists at Chunk*,
 		/// a reference to the existing one will be returned
 		/// \param chunk The chunk this logic chunk is associated with
 		void LogicAddChunk(Chunk* chunk);
 
-		///	
-		/// \brief Removes a chunk to be considered for logic updates <br>
-		/// \param chunk Logic chunk to remove
-		void LogicRemoveChunk(Chunk* chunk);
-
 		///
 		/// \brief Returns all the chunks which require logic updates
-		J_NODISCARD std::set<Chunk*>& LogicGetAllChunks();
+		J_NODISCARD std::set<Chunk*>& LogicGetChunks();
 
 		// ======================================================================
 		// World generation | Links to game/world/world_generator.cpp

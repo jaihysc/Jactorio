@@ -122,7 +122,8 @@ namespace jactorio::data
 		// ======================================================================
 		// Game events
 	private:
-		void RemoveFromLogicGroup(game::TransportSegment& line_segment, game::Chunk::LogicGroupType& logic_group) const;
+		static void RemoveFromLogic(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
+		                            game::TransportSegment& line_segment);
 
 		/// Up, right, down, left
 		using LineData4Way = TransportLineData*[4];

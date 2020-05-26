@@ -146,15 +146,54 @@ const jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldP
 // ======================================================================
 // Logic chunks
 
+void jactorio::game::WorldData::LogicRegister(const Chunk::LogicGroup group, const WorldPair& world_pair,
+                                              const ChunkTile::ChunkLayer layer) {
+	assert(group != Chunk::LogicGroup::count_);
+	assert(layer != ChunkTile::ChunkLayer::count_);
+
+	auto* chunk = GetChunk(world_pair);
+	assert(chunk);
+
+	logicChunks_.emplace(chunk);
+
+	auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
+	chunk->GetLogicGroup(group)
+	     .push_back(tile_layer);
+}
+
+void jactorio::game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldPair& world_pair,
+                                            const std::function<bool(ChunkTileLayer*)>& pred) {
+	auto* chunk = GetChunk(world_pair);
+	assert(chunk);
+
+	auto& logic_group = chunk->GetLogicGroup(group);
+
+	logic_group.erase(
+		std::remove_if(logic_group.begin(), logic_group.end(), pred),
+		logic_group.end());
+
+	// Remove from logic chunks if now empty
+	if (logic_group.empty())
+		logicChunks_.erase(chunk);
+}
+
+void jactorio::game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldPair& world_pair,
+                                            const ChunkTile::ChunkLayer layer) {
+	auto* chunk = GetChunk(world_pair);
+	assert(chunk);
+
+	auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
+
+	LogicRemove(group, world_pair, [&](ChunkTileLayer* t_layer) {
+		return t_layer == tile_layer;
+	});
+}
+
 void jactorio::game::WorldData::LogicAddChunk(Chunk* chunk) {
 	assert(chunk != nullptr);
 	logicChunks_.emplace(chunk);
 }
 
-void jactorio::game::WorldData::LogicRemoveChunk(Chunk* chunk) {
-	logicChunks_.erase(chunk);
-}
-
-std::set<jactorio::game::Chunk*>& jactorio::game::WorldData::LogicGetAllChunks() {
+std::set<jactorio::game::Chunk*>& jactorio::game::WorldData::LogicGetChunks() {
 	return logicChunks_;
 }
