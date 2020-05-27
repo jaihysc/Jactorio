@@ -9,7 +9,7 @@
 /**
  * Attempts to drop one item from origin item stack to target itme stack
  */
-bool drop_one_origin_item(jactorio::data::ItemStack& origin_item_stack,
+bool DropOneOriginItem(jactorio::data::ItemStack& origin_item_stack,
                           jactorio::data::ItemStack& target_item_stack) {
 	target_item_stack.first = origin_item_stack.first;
 	target_item_stack.second++;
@@ -77,7 +77,7 @@ bool jactorio::game::MoveItemstackToIndex(
 
 		// Drop 1 to target on right click
 		if (mouse_button == 1 && target_item_stack.second < target_item_stack.first->stackSize) {
-			return drop_one_origin_item(origin_item_stack, target_item_stack);
+			return DropOneOriginItem(origin_item_stack, target_item_stack);
 		}
 
 		return false;
@@ -106,7 +106,7 @@ bool jactorio::game::MoveItemstackToIndex(
 
 			// Drop 1 on right click
 			if (mouse_button == 1) {
-				return drop_one_origin_item(origin_item_stack, target_item_stack);
+				return DropOneOriginItem(origin_item_stack, target_item_stack);
 			}
 		}
 		// Target item exceeding item stack limit
@@ -255,7 +255,7 @@ bool jactorio::game::AddStackSub(data::ItemStack* target_inv, const uint16_t tar
 	return false;
 }
 
-uint32_t jactorio::game::GetInvItemCount(data::ItemStack* inv, const uint16_t inv_size,
+uint32_t jactorio::game::GetInvItemCount(const data::ItemStack* inv, const uint16_t inv_size,
                                          const data::Item* item) {
 	uint32_t count = 0;
 	for (int i = 0; i < inv_size; ++i) {
@@ -265,19 +265,35 @@ uint32_t jactorio::game::GetInvItemCount(data::ItemStack* inv, const uint16_t in
 	return count;
 }
 
+jactorio::data::Item* jactorio::game::GetFirstItem(const data::ItemStack* inv, const uint16_t inv_size) {
+	assert(inv != nullptr);
 
-bool jactorio::game::RemoveInvItemS(data::ItemStack* inv, const uint16_t inv_size,
-                                    const data::Item* item, const uint32_t remove_amount) {
+	for (int i = 0; i < inv_size; ++i) {
+		if (inv[i].first != nullptr) {
+			assert(inv[i].second != 0);
+			return inv[i].first;
+		}
+	}
+	return nullptr;
+}
+
+
+bool jactorio::game::RemoveInvItem(data::ItemStack* inv, const uint16_t inv_size,
+                                   const data::Item* item, const uint32_t remove_amount) {
+	assert(inv != nullptr);
+
 	// Not enough to remove
 	if (GetInvItemCount(inv, inv_size, item) < remove_amount)
 		return false;
 
-	RemoveInvItem(inv, inv_size, item, remove_amount);
+	DeleteInvItem(inv, inv_size, item, remove_amount);
 	return true;
 }
 
-void jactorio::game::RemoveInvItem(data::ItemStack* inv, const uint16_t inv_size,
+void jactorio::game::DeleteInvItem(data::ItemStack* inv, const uint16_t inv_size,
                                    const data::Item* item, uint32_t remove_amount) {
+	assert(inv != nullptr);
+
 	for (int i = 0; i < inv_size; ++i) {
 		auto& inv_i = inv[i];
 		if (inv_i.first == item) {

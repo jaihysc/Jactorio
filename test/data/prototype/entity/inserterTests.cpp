@@ -30,5 +30,7 @@ namespace data::prototype
 		auto& layer = worldData_.GetTile({0, 0})->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
 
 		ASSERT_TRUE(layer.uniqueData);
+
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
 }

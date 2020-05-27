@@ -6,17 +6,22 @@
 #pragma once
 
 #include <optional>
+#include <utility>
 
 #include "data/prototype/prototype_type.h"
 #include "data/prototype/entity/health_entity.h"
 #include "data/prototype/interface/deferred.h"
-#include "game/logic/item_insert_destination.h"
+#include "game/logic/item_logistics.h"
 
 namespace jactorio::data
 {
 	struct MiningDrillData final : HealthEntityData
 	{
-		std::optional<game::ItemInsertDestination> outputTile{};
+		explicit MiningDrillData(game::ItemDropOff output_tile)
+			: outputTile(std::move(output_tile)) {
+		}
+
+		game::ItemDropOff outputTile;
 		game::WorldData::WorldPair outputTileCoords{};
 
 		Item* outputItem = nullptr;

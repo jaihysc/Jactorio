@@ -722,7 +722,7 @@ void jactorio::game::PlayerData::RecipeQueue(data::Recipe* recipe) {
 		auto* item = data::DataRawGet<data::Item>(
 			data::DataCategory::item, ingredient.first);
 
-		RemoveInvItem(inventoryPlayer, kInventorySize, item, ingredient.second);
+		DeleteInvItem(inventoryPlayer, kInventorySize, item, ingredient.second);
 	}
 
 	// Queue is empty, crafting time for the first item in queue must be set here

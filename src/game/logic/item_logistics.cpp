@@ -7,16 +7,45 @@
 #include "data/prototype/entity/entity.h"
 #include "data/prototype/entity/transport/transport_line.h"
 #include "data/prototype/item/item.h"
+#include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"
 
-// ======================================================================
+bool jactorio::game::ItemDropOff::Initialize(const WorldData& world_data,
+                                             data::UniqueDataBase& target_unique_data,
+                                             const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
+	const data::Entity* entity =
+		world_data.GetTile(world_x, world_y)
+		          ->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
 
-#define ITEM_INSERT_FUNCTION(name_)\
-	bool jactorio::game::name_(const jactorio::data::ItemStack& item_stack,\
-											   jactorio::data::UniqueDataBase& unique_data,\
-											   const jactorio::data::Orientation orientation)
+	if (!entity)
+		return false;
 
-ITEM_INSERT_FUNCTION(InsertContainerEntity) {
+	switch (entity->Category()) {
+	case data::DataCategory::container_entity:
+		dropFunc_ = &ItemDropOff::InsertContainerEntity;
+		break;
+
+	case data::DataCategory::transport_belt:
+		dropFunc_ = &ItemDropOff::InsertTransportBelt;
+		break;
+
+	default:
+		return false;
+	}
+
+	targetUniqueData_ = &target_unique_data;
+	return true;
+}
+
+bool jactorio::game::ItemDropOff::Initialize(const WorldData& world_data,
+                                             data::UniqueDataBase& target_unique_data, const WorldData::WorldPair& world_coord) {
+	return Initialize(world_data,
+	                  target_unique_data,
+	                  world_coord.first, world_coord.second);
+}
+
+bool jactorio::game::ItemDropOff::InsertContainerEntity(const data::ItemStack& item_stack, data::UniqueDataBase& unique_data,
+                                                        data::Orientation) const {
 	auto& container_data = static_cast<data::ContainerEntityData&>(unique_data);
 	if (!CanAddStack(container_data.inventory, container_data.size, item_stack))
 		return false;
@@ -25,7 +54,8 @@ ITEM_INSERT_FUNCTION(InsertContainerEntity) {
 	return true;
 }
 
-ITEM_INSERT_FUNCTION(InsertTransportBelt) {
+bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::ItemStack& item_stack, data::UniqueDataBase& unique_data,
+                                                      const data::Orientation orientation) const {
 	assert(item_stack.second == 1);  // Can only insert 1 at a time
 
 	auto& line_data = static_cast<data::TransportLineData&>(unique_data);
@@ -111,31 +141,127 @@ ITEM_INSERT_FUNCTION(InsertTransportBelt) {
 	}
 
 	constexpr double insertion_offset = 0.5;
-	return line_data.lineSegment.get().TryInsertItem(use_line_left, 
-													 line_data.lineSegmentIndex + insertion_offset,
-													 item_stack.first);
+	return line_data.lineSegment.get().TryInsertItem(use_line_left,
+	                                                 line_data.lineSegmentIndex + insertion_offset,
+	                                                 item_stack.first);
 }
 
-#undef ITEM_INSERT_FUNCTION
+// ======================================================================
 
-jactorio::game::ItemInsertDestination::InsertFunc jactorio::game::CanAcceptItem(
-	const WorldData& world_data,
-	const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
-
+bool jactorio::game::InserterPickup::Initialize(const WorldData& world_data,
+                                                data::UniqueDataBase& target_unique_data,
+                                                WorldData::WorldCoord world_x, WorldData::WorldCoord world_y) {
 	const data::Entity* entity =
 		world_data.GetTile(world_x, world_y)
 		          ->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
 
 	if (!entity)
-		return nullptr;
+		return false;
 
 	switch (entity->Category()) {
 	case data::DataCategory::container_entity:
-		return &InsertContainerEntity;
+		pickupFunc_ = &InserterPickup::PickupContainerEntity;
+		break;
+
 	case data::DataCategory::transport_belt:
-		return &InsertTransportBelt;
+		pickupFunc_ = &InserterPickup::PickupTransportBelt;
+		break;
 
 	default:
-		return nullptr;
+		return false;
 	}
+
+	targetUniqueData_ = &target_unique_data;
+	return true;
+}
+
+bool jactorio::game::InserterPickup::Initialize(const WorldData& world_data,
+                                                data::UniqueDataBase& target_unique_data,
+                                                const WorldData::WorldPair& world_coord) {
+	return Initialize(world_data, target_unique_data, world_coord.first, world_coord.second);
+}
+
+bool jactorio::game::InserterPickup::PickupContainerEntity(const data::Inserter::RotationDegree& degree,
+                                                           const data::ItemStack::second_type amount,
+                                                           data::UniqueDataBase& unique_data,
+                                                           data::Orientation) const {
+	if (degree != data::InserterData::ToRotationDegree(kMaxInserterDegree))
+		return false;
+
+	auto& container = static_cast<data::ContainerEntityData&>(unique_data);
+
+	return RemoveInvItem(container.inventory, container.size,
+	                     GetFirstItem(container.inventory, container.size),
+	                     amount);
+}
+
+bool jactorio::game::InserterPickup::PickupTransportBelt(const data::Inserter::RotationDegree& degree,
+                                                         const data::ItemStack::second_type amount,
+                                                         data::UniqueDataBase& unique_data,
+                                                         const data::Orientation orientation) const {
+	if (amount != 1)
+		LOG_MESSAGE_f(warning, "Inserters will only pick up 1 item at the moment, provided amount: %d", amount);
+
+	auto& line_data = static_cast<data::TransportLineData&>(unique_data);
+
+	bool use_line_left = false;
+	switch (line_data.lineSegment.get().direction) {
+	case data::Orientation::up:
+		switch (orientation) {
+		case data::Orientation::down:
+		case data::Orientation::left:
+			use_line_left = true;
+			break;
+
+		default:
+			break;
+		}
+		break;
+
+	case data::Orientation::right:
+		switch (orientation) {
+		case data::Orientation::up:
+		case data::Orientation::left:
+			use_line_left = true;
+			break;
+
+		default:
+			break;
+		}
+		break;
+
+	case data::Orientation::down:
+		switch (orientation) {
+		case data::Orientation::up:
+		case data::Orientation::right:
+			use_line_left = true;
+			break;
+
+		default:
+			break;
+		}
+		break;
+
+	case data::Orientation::left:
+		switch (orientation) {
+		case data::Orientation::right:
+		case data::Orientation::down:
+			use_line_left = true;
+			break;
+
+		default:
+			break;
+		}
+		break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+	return line_data.lineSegment.get()
+	                .TryPopItemAbs(use_line_left,
+	                               line_data.lineSegmentIndex +
+	                               GetInserterArmOffset(degree.getAsInteger(), 1)  // TODO different target distances
+	                );
 }

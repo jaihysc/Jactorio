@@ -88,7 +88,7 @@ void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::DeferralTimer& timer,
 	// Re-register callback and insert item
 	auto* drill_data = static_cast<MiningDrillData*>(unique_data);
 
-	drill_data->outputTile->Insert({drill_data->outputItem, 1});
+	drill_data->outputTile.DropOff({drill_data->outputItem, 1});
 	RegisterMineCallback(timer, drill_data);
 }
 
@@ -123,18 +123,18 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
                                           const game::WorldData::WorldPair& world_coords,
                                           game::ChunkTileLayer& tile_layer,
                                           const Orientation orientation) const {
-	tile_layer.uniqueData = new MiningDrillData();
-	auto* drill_data      = static_cast<MiningDrillData*>(tile_layer.uniqueData);
-
-	drill_data->outputItem = FindOutputItem(world_data, world_coords);
-	assert(drill_data->outputItem != nullptr);  // Should not have been allowed to be placed on no resources
-
-	drill_data->set = MapPlacementOrientation(orientation, world_data, world_coords).first;
-
 	game::WorldData::WorldPair output_coords = this->resourceOutput.Get(orientation);
 	output_coords.first += world_coords.first;
 	output_coords.second += world_coords.second;
 
+	tile_layer.uniqueData = new MiningDrillData(game::ItemDropOff(orientation));
+
+	auto* drill_data = static_cast<MiningDrillData*>(tile_layer.uniqueData);
+
+	drill_data->outputItem = FindOutputItem(world_data, world_coords);
+	assert(drill_data->outputItem != nullptr);  // Should not have been allowed to be placed on no resources
+
+	drill_data->set              = MapPlacementOrientation(orientation, world_data, world_coords).first;
 	drill_data->outputTileCoords = output_coords;
 
 	OnNeighborUpdate(world_data, output_coords, world_coords, orientation);
@@ -160,20 +160,15 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 	if (emit_world_coords != drill_data->outputTileCoords)
 		return;
 
-	const game::ItemInsertDestination::InsertFunc output_item_func =
-		game::CanAcceptItem(world_data,
-		                    emit_world_coords.first,
-		                    emit_world_coords.second);
+	auto& output_layer = world_data.GetTile(emit_world_coords)
+	                               ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+
+	const bool initialized =
+		drill_data->outputTile.Initialize(world_data,
+		                                  *output_layer.uniqueData, emit_world_coords);
 
 	// Do not register callback to mine items if there is no valid entity to output items to
-	if (output_item_func) {
-
-		auto& output_layer = world_data.GetTile(emit_world_coords.first,
-		                                        emit_world_coords.second)
-		                               ->GetLayer(game::ChunkTile::ChunkLayer::entity);
-
-		drill_data->outputTile.emplace(*output_layer.uniqueData, output_item_func, emit_orientation);
-
+	if (initialized) {
 		drill_data->miningTicks =
 			static_cast<uint16_t>(static_cast<double>(JC_GAME_HERTZ) * drill_data->outputItem->entityPrototype->pickupTime);
 

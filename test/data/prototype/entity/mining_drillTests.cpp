@@ -169,11 +169,9 @@ namespace data::prototype
 		jactorio::game::ChunkTileLayer& layer = tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
 		auto* data                            = static_cast<jactorio::data::MiningDrillData*>(layer.uniqueData);
 
-		ASSERT_TRUE(data->outputTile.has_value());
-
 		// Ensure it inserts into the correct entity
 		jactorio::data::Item item{};
-		data->outputTile->Insert({&item, 1});
+		data->outputTile.DropOff({&item, 1});
 
 		jactorio::game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 2)
 		                                                            ->GetLayer(
@@ -217,11 +215,9 @@ namespace data::prototype
 			static_cast<jactorio::data::MiningDrillData*>(
 				tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData);
 
-		ASSERT_TRUE(data->outputTile.has_value());
-
 		// Ensure it inserts into the correct entity
 		jactorio::data::Item item{};
-		data->outputTile->Insert({&item, 1});
+		data->outputTile.DropOff({&item, 1});
 
 		jactorio::game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 2)
 		                                                            ->GetLayer(

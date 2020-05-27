@@ -21,6 +21,9 @@ namespace jactorio::game
 	/// Distance from inserter arm radius to the end of the last tile 
 	constexpr auto kInserterArmTileGap = 0.3;
 
+	constexpr auto kMinInserterDegree = 0;
+	constexpr auto kMaxInserterDegree = 180;
+
 	///
 	/// \brief Gets the tile distance of the inserter arm to its resting position at 0 or 180 degrees
 	///
