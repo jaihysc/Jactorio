@@ -158,7 +158,7 @@ namespace game
 		EXPECT_EQ(playerData_.GetSelectedItem()->second, 1);  // 1 less item 
 
 		// The on_build() method should get called, creating unique data on the tile which holds the inventory
-		EXPECT_NE(tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData, nullptr);
+		EXPECT_NE(tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetUniqueData(), nullptr);
 
 
 		// Do not place at 1, 0 
@@ -314,7 +314,7 @@ namespace game
 		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 1);
 
 		// Unique data for layer should have been deleted
-		EXPECT_EQ(tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData, nullptr);
+		EXPECT_EQ(tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetUniqueData(), nullptr);
 	}
 
 	TEST_F(PlayerDataPlacementTest, TryPickupResource) {
@@ -334,8 +334,8 @@ namespace game
 		tiles[0].SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::resource, entity);
 
 		// Holds the resources available at the tile, should be decremented when extracted
-		auto* resource_data = new jactorio::data::ResourceEntityData(2);
-		tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::resource).uniqueData = resource_data;
+		auto* resource_data = tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::resource)
+		                              .MakeUniqueData<jactorio::data::ResourceEntityData>(2);
 
 
 		//
@@ -382,8 +382,8 @@ namespace game
 		tiles[0].SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::resource, resource_entity);
 
 		// Holds the resources available at the tile, should be decremented when extracted
-		auto* resource_data = new jactorio::data::ResourceEntityData(2);
-		tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::resource).uniqueData = resource_data;
+		auto* resource_data = tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::resource)
+		                              .MakeUniqueData<jactorio::data::ResourceEntityData>(2);
 
 
 		// Other entity (e.g Container_entity)

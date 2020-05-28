@@ -355,7 +355,7 @@ void jactorio::game::PlayerData::TryPickup(WorldData& world_data,
 		// Resource entity
 		if (is_resource_ptr) {
 			auto& layer         = tile->GetLayer(ChunkTile::ChunkLayer::resource);
-			auto* resource_data = static_cast<data::ResourceEntityData*>(layer.uniqueData);
+			auto* resource_data = layer.GetUniqueData<data::ResourceEntityData>();
 
 			assert(resource_data != nullptr);  // Resource tiles should have valid data
 

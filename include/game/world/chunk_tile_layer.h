@@ -200,8 +200,8 @@ namespace jactorio::game
 	}
 
 	inline void ChunkTileLayer::Clear() {
-		delete uniqueData;
-		uniqueData    = nullptr;
+		delete uniqueData_;
+		uniqueData_    = nullptr;
 		prototypeData = nullptr;
 
 		if (IsMultiTileTopLeft())

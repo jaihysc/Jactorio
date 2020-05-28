@@ -98,7 +98,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		if (ImGui::Button("Make all belt items visible")) {
 			for (auto* chunk : world_data.LogicGetChunks()) {
 				for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
-					auto& segment         = static_cast<data::TransportLineData*>(transport_line->uniqueData)->lineSegment.get();
+					auto& segment         = *transport_line->GetUniqueData<data::TransportLineData>()->lineSegment;
 					segment.left.visible  = true;
 					segment.right.visible = true;
 				}
@@ -198,8 +198,8 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 			if (!layer.prototypeData || layer.prototypeData->Category() != data::DataCategory::transport_belt)
 				continue;
 
-			auto& line_data    = *static_cast<data::TransportLineData*>(layer.uniqueData);
-			auto& line_segment = line_data.lineSegment.get();
+			auto& line_data    = *static_cast<data::TransportLineData*>(layer.GetUniqueData());
+			auto& line_segment = *line_data.lineSegment;
 
 			// Only draw for the head of segments
 			if (line_segment.terminationType == game::TransportSegment::TerminationType::straight &&
@@ -300,7 +300,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 
 	if (data) {
 		last_valid_line_segment = selected_tile;
-		segment_ptr             = &data->lineSegment.get();
+		segment_ptr             = data->lineSegment.get();
 	}
 	else {
 		if (use_last_valid_line_segment) {
@@ -308,7 +308,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 			                                        last_valid_line_segment.first,
 			                                        last_valid_line_segment.second);
 			if (data)
-				segment_ptr = &data->lineSegment.get();
+				segment_ptr = data->lineSegment.get();
 		}
 	}
 

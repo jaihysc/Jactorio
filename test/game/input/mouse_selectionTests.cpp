@@ -286,7 +286,7 @@ namespace game
 
 			// Overriden to give nullptr
 			std::pair<jactorio::data::Sprite*, jactorio::data::RenderableData::FrameT>
-			OnRGetSprite(jactorio::data::UniqueDataBase* /*unique_data*/, jactorio::GameTickT) const override {
+			OnRGetSprite(const jactorio::data::UniqueDataBase* /*unique_data*/, jactorio::GameTickT) const override {
 				rGetSpriteCalled = true;
 				return {nullptr, 0};
 			}

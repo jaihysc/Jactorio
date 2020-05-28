@@ -129,7 +129,7 @@ void Generate(jactorio::game::WorldData& world_data, const int chunk_x, const in
 			layer.prototypeData = new_tile;
 
 			// For resource amount, multiply by arbitrary number to scale noise val (0 - 1) to a reasonable number
-			layer.uniqueData = new data::ResourceEntityData(static_cast<uint16_t>(val * 7823 * richness));
+			layer.MakeUniqueData<data::ResourceEntityData>(static_cast<uint16_t>(val * 7823 * richness));
 		});
 }
 

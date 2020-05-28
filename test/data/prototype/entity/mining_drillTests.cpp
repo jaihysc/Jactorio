@@ -30,7 +30,7 @@ namespace data::prototype
 				          ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
 
 			container_layer.prototypeData = &container;
-			container_layer.uniqueData    = new jactorio::data::ContainerEntityData(20);
+			container_layer.MakeUniqueData<jactorio::data::ContainerEntityData>(20);
 		}
 
 		///
@@ -167,7 +167,7 @@ namespace data::prototype
 		jactorio::game::ChunkTile* tile = worldData_.GetTile(1, 1);
 
 		jactorio::game::ChunkTileLayer& layer = tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
-		auto* data                            = static_cast<jactorio::data::MiningDrillData*>(layer.uniqueData);
+		auto* data                            = layer.GetUniqueData<jactorio::data::MiningDrillData>();
 
 		// Ensure it inserts into the correct entity
 		jactorio::data::Item item{};
@@ -177,14 +177,14 @@ namespace data::prototype
 		                                                            ->GetLayer(
 			                                                            jactorio::game::ChunkTile::ChunkLayer::entity);
 
-		EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.uniqueData)->inventory[0].second
+		EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.GetUniqueData())->inventory[0].second
 		          ,
 		          1);
 
 		// ======================================================================
 		worldData_.deferralTimer.DeferralUpdate(60);  // Takes 60 ticks to mine
 
-		EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.uniqueData)->inventory[1].second
+		EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.GetUniqueData())->inventory[1].second
 		          ,
 		          1);
 	}
@@ -213,7 +213,7 @@ namespace data::prototype
 
 		auto* data =
 			static_cast<jactorio::data::MiningDrillData*>(
-				tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData);
+				tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetUniqueData());
 
 		// Ensure it inserts into the correct entity
 		jactorio::data::Item item{};
@@ -223,7 +223,7 @@ namespace data::prototype
 		                                                            ->GetLayer(
 			                                                            jactorio::game::ChunkTile::ChunkLayer::entity);
 
-		EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.uniqueData)->inventory[0].second
+		EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.GetUniqueData())->inventory[0].second
 		          ,
 		          1);
 	}
@@ -309,7 +309,7 @@ namespace data::prototype
 				worldData_.GetTile(2, 0)
 				          ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
 
-			EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.uniqueData)->inventory[0].second
+			EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.GetUniqueData())->inventory[0].second
 			          ,
 			          0);
 		}
@@ -318,7 +318,7 @@ namespace data::prototype
 				worldData_.GetTile(4, 1)
 				          ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
 
-			EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.uniqueData)->inventory[0].second
+			EXPECT_EQ(static_cast<jactorio::data::ContainerEntityData*>(container_layer.GetUniqueData())->inventory[0].second
 			          ,
 			          0);
 		}

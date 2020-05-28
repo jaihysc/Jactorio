@@ -3,21 +3,21 @@
 
 #include <gtest/gtest.h>
 
+#include <memory>
+
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 
-#include <memory>
-
-namespace game
+namespace jactorio::game
 {
 	// For line_logic and line_logic_precision
-	void TestItemPositions(jactorio::game::WorldData& world_data,
-	                       const jactorio::game::TransportSegment* up_segment,
-	                       const jactorio::game::TransportSegment* right_segment,
-	                       const jactorio::game::TransportSegment* down_segment,
-	                       const jactorio::game::TransportSegment* left_segment) {
+	void TestItemPositions(WorldData& world_data,
+	                       const TransportSegment* up_segment,
+	                       const TransportSegment* right_segment,
+	                       const TransportSegment* down_segment,
+	                       const TransportSegment* left_segment) {
 		// Moving left at a speed of 0.01f per update, in 250 updates
 		// Should reach end of transport line - Next update will change its direction to up
 
@@ -53,12 +53,12 @@ namespace game
 	class TransportLineControllerTest : public testing::Test
 	{
 	protected:
-		jactorio::game::WorldData worldData_{};
-		jactorio::game::Chunk* chunk_ = nullptr;
+		WorldData worldData_{};
+		Chunk* chunk_ = nullptr;
 
-		const std::unique_ptr<jactorio::data::Item> itemProto_                   = std::make_unique<jactorio::data::Item>();
-		const std::unique_ptr<jactorio::data::TransportBelt> transportBeltProto_ =
-			std::make_unique<jactorio::data::TransportBelt>();
+		const std::unique_ptr<data::Item> itemProto_                   = std::make_unique<data::Item>();
+		const std::unique_ptr<data::TransportBelt> transportBeltProto_ =
+			std::make_unique<data::TransportBelt>();
 
 		///
 		/// \brief Creates a world, chunk and logic chunk at 0, 0
@@ -69,18 +69,18 @@ namespace game
 
 		///
 		/// \brief Creates tile UniqueData for TransportSegment
-		void RegisterSegment(const jactorio::game::Chunk::ChunkPair& world_coords,
-		                     jactorio::game::TransportSegment& segment) {
+		void RegisterSegment(const Chunk::ChunkPair& world_coords,
+		                     const std::shared_ptr<TransportSegment>& segment) {
 			auto* tile = worldData_.GetTile(world_coords);
 			assert(tile);
 
-			auto& layer         = tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			auto& layer         = tile->GetLayer(ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = transportBeltProto_.get();
-			layer.uniqueData    = new jactorio::data::TransportLineData(segment);
 
+			layer.MakeUniqueData<data::TransportLineData>(segment);
 
-			chunk_->GetLogicGroup(jactorio::game::Chunk::LogicGroup::transport_line)
-			      .emplace_back(&tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
+			chunk_->GetLogicGroup(Chunk::LogicGroup::transport_line)
+			      .emplace_back(&tile->GetLayer(ChunkTile::ChunkLayer::entity));
 		}
 	};
 
@@ -90,40 +90,42 @@ namespace game
 		transportBeltProto_->speed = 0.01f;
 
 		// Segments (Logic chunk must be created first)
-		auto* up_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::up,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		const auto up_segment = std::make_shared<TransportSegment>(
+			data::Orientation::up,
+			TransportSegment::TerminationType::bend_right,
 			5);
-		auto* right_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::right,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		const auto right_segment = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::bend_right,
 			4);
-		auto* down_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::down,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		const auto down_segment = std::make_shared<TransportSegment>(
+			data::Orientation::down,
+			TransportSegment::TerminationType::bend_right,
 			5);
-		auto* left_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::left,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		auto left_segment = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::bend_right,
 			4);
 
 		// What each transport segment empties into
-		up_segment->targetSegment    = right_segment;
-		right_segment->targetSegment = down_segment;
-		down_segment->targetSegment  = left_segment;
-		left_segment->targetSegment  = up_segment;
+		up_segment->targetSegment    = right_segment.get();
+		right_segment->targetSegment = down_segment.get();
+		down_segment->targetSegment  = left_segment.get();
+		left_segment->targetSegment  = up_segment.get();
 
-		RegisterSegment({0, 0}, *up_segment);
-		RegisterSegment({4, 0}, *right_segment);
-		RegisterSegment({4, 5}, *down_segment);
-		RegisterSegment({0, 5}, *left_segment);
+		RegisterSegment({0, 0}, up_segment);
+		RegisterSegment({4, 0}, right_segment);
+		RegisterSegment({4, 5}, down_segment);
+		RegisterSegment({0, 5}, left_segment);
 
 		// The actual lengths of the transport segments != the indicated length as it turns earlier
 
 		// Insert item
 		left_segment->AppendItem(false, 0.f, itemProto_.get());
 
-		TestItemPositions(worldData_, up_segment, right_segment, down_segment, left_segment);
+		TestItemPositions(worldData_,
+		                  up_segment.get(), right_segment.get(),
+		                  down_segment.get(), left_segment.get());
 	}
 
 	/*
@@ -198,38 +200,38 @@ namespace game
 		transportBeltProto_->speed = j_belt_speed;  // <---
 
 		// Segments (Logic chunk must be created first)
-		auto* up_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::up,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		auto up_segment = std::make_shared<TransportSegment>(
+			data::Orientation::up,
+			TransportSegment::TerminationType::bend_right,
 			5);
-		auto* right_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::right,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		const auto right_segment = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::bend_right,
 			5);
-		auto* down_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::down,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		const auto down_segment = std::make_shared<TransportSegment>(
+			data::Orientation::down,
+			TransportSegment::TerminationType::bend_right,
 			5);
-		auto* left_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::left,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		auto left_segment = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::bend_right,
 			5);
 
 		// What each transport segment empties into
-		up_segment->targetSegment    = right_segment;
-		right_segment->targetSegment = down_segment;
-		down_segment->targetSegment  = left_segment;
-		left_segment->targetSegment  = up_segment;
+		up_segment->targetSegment    = right_segment.get();
+		right_segment->targetSegment = down_segment.get();
+		down_segment->targetSegment  = left_segment.get();
+		left_segment->targetSegment  = up_segment.get();
 
-		RegisterSegment({0, 0}, *up_segment);
-		RegisterSegment({4, 0}, *right_segment);
-		RegisterSegment({4, 5}, *down_segment);
-		RegisterSegment({0, 5}, *left_segment);
+		RegisterSegment({0, 0}, up_segment);
+		RegisterSegment({4, 0}, right_segment);
+		RegisterSegment({4, 5}, down_segment);
+		RegisterSegment({0, 5}, left_segment);
 
 		// Logic
 		left_segment->AppendItem(true, 0.f, itemProto_.get());
-		left_segment->AppendItem(true, jactorio::game::kItemSpacing, itemProto_.get());
-		left_segment->AppendItem(true, jactorio::game::kItemSpacing, itemProto_.get());
+		left_segment->AppendItem(true, kItemSpacing, itemProto_.get());
+		left_segment->AppendItem(true, kItemSpacing, itemProto_.get());
 
 		// 1 update
 		// first item moved to up segment
@@ -284,25 +286,25 @@ namespace game
 		 *    |
 		 */
 
-		auto* up_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::up,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		auto up_segment = std::make_shared<TransportSegment>(
+			data::Orientation::up,
+			TransportSegment::TerminationType::bend_right,
 			4);
-		auto* right_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::right,
-			jactorio::game::TransportSegment::TerminationType::straight,
+		auto right_segment = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::straight,
 			4);
 
-		up_segment->targetSegment = right_segment;
+		up_segment->targetSegment = right_segment.get();
 
-		RegisterSegment({0, 0}, *up_segment);
-		RegisterSegment({3, 0}, *right_segment);
+		RegisterSegment({0, 0}, up_segment);
+		RegisterSegment({3, 0}, right_segment);
 
 		// Offset is distance from beginning, or previous item
 		up_segment->AppendItem(true, 0.f, itemProto_.get());
 		up_segment->AppendItem(true, 1, itemProto_.get());
 		up_segment->AppendItem(true, 1, itemProto_.get());
-		static_assert(jactorio::game::kItemSpacing < 1);  // Tested positions would otherwise be invalid
+		static_assert(kItemSpacing < 1);  // Tested positions would otherwise be invalid
 
 		// Logic
 		// Should transfer the first item
@@ -356,23 +358,23 @@ namespace game
 		 *    |
 		 */
 
-		auto* up_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::up,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		auto up_segment = std::make_shared<TransportSegment>(
+			data::Orientation::up,
+			TransportSegment::TerminationType::bend_right,
 			4);
-		auto* right_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::right,
-			jactorio::game::TransportSegment::TerminationType::straight,
+		auto right_segment = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::straight,
 			4);
 
-		up_segment->targetSegment = right_segment;
+		up_segment->targetSegment = right_segment.get();
 
-		RegisterSegment({0, 0}, *up_segment);
-		RegisterSegment({3, 0}, *right_segment);
+		RegisterSegment({0, 0}, up_segment);
+		RegisterSegment({3, 0}, right_segment);
 
 		// Offset is distance from beginning, or previous item
 		up_segment->AppendItem(true, 0.f, itemProto_.get());
-		up_segment->AppendItem(true, jactorio::game::kItemSpacing, itemProto_.get());
+		up_segment->AppendItem(true, kItemSpacing, itemProto_.get());
 
 		// First item
 		TransportLineLogicUpdate(worldData_);
@@ -406,19 +408,19 @@ namespace game
 
 		transportBeltProto_->speed = 0.01f;
 
-		auto* segment_1 = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::left,
-			jactorio::game::TransportSegment::TerminationType::straight,
+		auto segment_1 = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::straight,
 			4);
-		auto* segment_2 = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::left,
-			jactorio::game::TransportSegment::TerminationType::straight,
+		auto segment_2 = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::straight,
 			4);
 
-		segment_2->targetSegment = segment_1;
+		segment_2->targetSegment = segment_1.get();
 
-		RegisterSegment({0, 0}, *segment_1);
-		RegisterSegment({3, 0}, *segment_2);
+		RegisterSegment({0, 0}, segment_1);
+		RegisterSegment({3, 0}, segment_2);
 
 		// Insert item on left + right side
 		segment_2->AppendItem(true, 0.02f, itemProto_.get());
@@ -443,16 +445,16 @@ namespace game
 
 		transportBeltProto_->speed = 0.01f;
 
-		auto* segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::left,
-			jactorio::game::TransportSegment::TerminationType::straight,
+		auto segment = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::straight,
 			10);
 
-		RegisterSegment({0, 0}, *segment);
+		RegisterSegment({0, 0}, segment);
 
 		segment->AppendItem(true, 0.5f, itemProto_.get());
-		segment->AppendItem(true, jactorio::game::kItemSpacing, itemProto_.get());
-		segment->AppendItem(true, jactorio::game::kItemSpacing + 1.f, itemProto_.get());
+		segment->AppendItem(true, kItemSpacing, itemProto_.get());
+		segment->AppendItem(true, kItemSpacing + 1.f, itemProto_.get());
 
 		// Will reach distance 0 after 0.5 / 0.01 updates
 		for (int i = 0; i < 50; ++i) {
@@ -506,19 +508,19 @@ namespace game
 		 *    |
 		 */
 
-		auto* up_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::up,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		auto up_segment = std::make_shared<TransportSegment>(
+			data::Orientation::up,
+			TransportSegment::TerminationType::bend_right,
 			4);
-		auto* right_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::right,
-			jactorio::game::TransportSegment::TerminationType::straight,
+		auto right_segment = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::straight,
 			4);
 
-		up_segment->targetSegment = right_segment;
+		up_segment->targetSegment = right_segment.get();
 
-		RegisterSegment({0, 0}, *up_segment);
-		RegisterSegment({3, 0}, *right_segment);
+		RegisterSegment({0, 0}, up_segment);
+		RegisterSegment({3, 0}, right_segment);
 
 		// RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / kItemSpacing{0.25} = 13.2
 		for (int i = 0; i < 14; ++i) {
@@ -539,12 +541,12 @@ namespace game
 	TEST_F(TransportLineControllerTest, LineLogicItemSpacing) {
 		// A minimum distance of kItemSpacing is maintained between items
 
-		auto* right_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::right,
-			jactorio::game::TransportSegment::TerminationType::bend_right,
+		auto right_segment = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::bend_right,
 			4);
 
-		RegisterSegment({0, 0}, *right_segment);
+		RegisterSegment({0, 0}, right_segment);
 
 		right_segment->AppendItem(true, 0.f, itemProto_.get());
 		right_segment->AppendItem(true, 0.f, itemProto_.get());  // Insert behind previous item
@@ -572,22 +574,22 @@ namespace game
 
 
 		// Segments (Logic chunk must be created first)
-		auto* right_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::right,
-			jactorio::game::TransportSegment::TerminationType::right_only,
+		auto right_segment = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::right_only,
 			5);
-		auto* down_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::down,
-			jactorio::game::TransportSegment::TerminationType::straight,
+		auto down_segment = std::make_shared<TransportSegment>(
+			data::Orientation::down,
+			TransportSegment::TerminationType::straight,
 			10);
 
-		right_segment->targetSegment      = down_segment;
+		right_segment->targetSegment      = down_segment.get();
 		right_segment->targetInsertOffset = 8;  // 8 + 1 = 9
 
 		down_segment->itemOffset = 1;
 
-		RegisterSegment({4, 0}, *right_segment);
-		RegisterSegment({4, 9}, *down_segment);
+		RegisterSegment({4, 0}, right_segment);
+		RegisterSegment({4, 9}, down_segment);
 
 		// Insert items
 		for (int i = 0; i < 3; ++i) {
@@ -674,22 +676,22 @@ namespace game
 
 
 		// Segments (Logic chunk must be created first)
-		auto* left_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::left,
-			jactorio::game::TransportSegment::TerminationType::right_only,
+		auto left_segment = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::right_only,
 			5);
-		auto* down_segment = new jactorio::game::TransportSegment(
-			jactorio::data::Orientation::down,
-			jactorio::game::TransportSegment::TerminationType::straight,
+		auto down_segment = std::make_shared<TransportSegment>(
+			data::Orientation::down,
+			TransportSegment::TerminationType::straight,
 			20);
 
-		left_segment->targetSegment = down_segment;
+		left_segment->targetSegment = down_segment.get();
 
 		left_segment->targetInsertOffset = -1;  // Will insert into up_segment with offset of 9 absolute
 		down_segment->itemOffset         = 10;
 
-		RegisterSegment({4, 0}, *left_segment);
-		RegisterSegment({4, 9}, *down_segment);
+		RegisterSegment({4, 0}, left_segment);
+		RegisterSegment({4, 9}, down_segment);
 
 
 		// Insert items
@@ -774,17 +776,17 @@ namespace game
 
 
 		// Segments (Logic chunk must be created first)
-		auto* up_segment_1 = new jactorio::game::TransportSegment(jactorio::data::Orientation::up,
-		                                                          jactorio::game::TransportSegment::TerminationType::straight,
-		                                                          1);
-		auto* up_segment_2 = new jactorio::game::TransportSegment(jactorio::data::Orientation::up,
-		                                                          jactorio::game::TransportSegment::TerminationType::straight,
-		                                                          1);
+		auto up_segment_1 = std::make_shared<TransportSegment>(data::Orientation::up,
+		                                                       TransportSegment::TerminationType::straight,
+		                                                       1);
+		auto up_segment_2 = std::make_shared<TransportSegment>(data::Orientation::up,
+		                                                       TransportSegment::TerminationType::straight,
+		                                                       1);
 
-		up_segment_2->targetSegment = up_segment_1;
+		up_segment_2->targetSegment = up_segment_1.get();
 
-		RegisterSegment({0, 0}, *up_segment_1);
-		RegisterSegment({0, 1}, *up_segment_2);
+		RegisterSegment({0, 0}, up_segment_1);
+		RegisterSegment({0, 1}, up_segment_2);
 
 		up_segment_2->AppendItem(true, 0.05, itemProto_.get());
 		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);

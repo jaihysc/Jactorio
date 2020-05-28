@@ -21,10 +21,10 @@ void jactorio::data::ContainerEntity::OnBuild(game::WorldData&,
                                               const game::WorldData::WorldPair&,
                                               game::ChunkTileLayer& tile_layer,
                                               Orientation) const {
-	tile_layer.uniqueData = new ContainerEntityData(inventorySize);
+	tile_layer.MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 
 void jactorio::data::ContainerEntity::OnRShowGui(game::PlayerData& player_data,
                                                  game::ChunkTileLayer* tile_layer) const {
-	renderer::ContainerEntity(player_data, static_cast<ContainerEntityData*>(tile_layer->uniqueData));
+	renderer::ContainerEntity(player_data, tile_layer->GetUniqueData<ContainerEntityData>());
 }

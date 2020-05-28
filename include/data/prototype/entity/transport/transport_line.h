@@ -6,6 +6,8 @@
 #pragma once
 
 #include <functional>
+#include <memory>
+#include <utility>
 
 #include "core/data_type.h"
 #include "data/prototype/entity/health_entity.h"
@@ -18,13 +20,8 @@ namespace jactorio::data
 	/// \brief TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
 	struct TransportLineData : HealthEntityData
 	{
-		explicit TransportLineData(game::TransportSegment& line_segment)
-			: lineSegment(line_segment) {
-		}
-
-		~TransportLineData() override {
-			if (lineSegmentIndex == 0)
-				delete &lineSegment.get();
+		explicit TransportLineData(std::shared_ptr<game::TransportSegment> line_segment)
+			: lineSegment(std::move(line_segment)) {
 		}
 
 		TransportLineData(const TransportLineData& other)     = delete;
@@ -53,7 +50,7 @@ namespace jactorio::data
 		};
 
 		/// The logic chunk line_segment associated
-		std::reference_wrapper<game::TransportSegment> lineSegment;
+		std::shared_ptr<game::TransportSegment> lineSegment;
 
 		/// The distance to the head of the transport line
 		/// \remark For rendering purposes, the length should never exceed ~2 chunks at most
@@ -75,7 +72,7 @@ namespace jactorio::data
 		static Orientation ToOrientation(LineOrientation line_orientation);
 
 		void OnDrawUniqueData(renderer::RendererLayer& layer,
-		                      float x_offset, float y_offset) override;
+		                      float x_offset, float y_offset) const override;
 	};
 
 
@@ -115,9 +112,9 @@ namespace jactorio::data
 		///
 		/// \brief Gets transport segment at world coords
 		/// \return nullptr if no segment exists
-		static game::TransportSegment* GetTransportSegment(game::WorldData& world_data,
-		                                                   game::WorldData::WorldCoord world_x,
-		                                                   game::WorldData::WorldCoord world_y);
+		static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
+		                                                                    game::WorldData::WorldCoord world_x,
+		                                                                    game::WorldData::WorldCoord world_y);
 
 		// ======================================================================
 		// Game events
@@ -143,16 +140,12 @@ namespace jactorio::data
 			void(game::WorldData& world_data,
 			     int world_x,
 			     int world_y,
-			     float world_offset_x,
-			     float world_offset_y,
 			     game::TransportSegment::TerminationType termination_type)>;
 
 		using UpdateSideOnlyFunc = std::function<
 			void(game::WorldData& world_data,
 			     int world_x,
 			     int world_y,
-			     float world_offset_x,
-			     float world_offset_y,
 			     Orientation direction,
 			     game::TransportSegment::TerminationType termination_type)>;
 
@@ -172,7 +165,7 @@ namespace jactorio::data
 		static void UpdateSegmentHead(game::WorldData& world_data,
 		                              const game::WorldData::WorldPair& world_coords,
 		                              LineData4Way& line_data,
-		                              game::TransportSegment& line_segment);
+		                              const std::shared_ptr<game::TransportSegment>& line_segment);
 
 		/*
 		 * Transport line grouping rules:
@@ -230,7 +223,7 @@ namespace jactorio::data
 		const override;
 
 
-		std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(UniqueDataBase* unique_data,
+		std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
 		                                                        const GameTickT game_tick) const override {
 			return {this->sprite, game_tick % sprite->frames};
 		};

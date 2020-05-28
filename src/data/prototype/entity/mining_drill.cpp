@@ -10,14 +10,14 @@
 
 
 void jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const {
-	auto* drill_data = static_cast<MiningDrillData*>(tile_layer->uniqueData);
+	auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
 
 	renderer::MiningDrill(player_data, drill_data);
 }
 
 std::pair<jactorio::data::Sprite*, jactorio::data::RenderableData::FrameT> jactorio::data::MiningDrill::OnRGetSprite(
-	UniqueDataBase* unique_data, const GameTickT game_tick) const {
-	const auto set = static_cast<RenderableData*>(unique_data)->set;
+	const UniqueDataBase* unique_data, const GameTickT game_tick) const {
+	const auto set = static_cast<const RenderableData*>(unique_data)->set;
 
 	if (set <= 7)
 		return {this->sprite, game_tick % this->sprite->frames * this->sprite->sets};
@@ -127,9 +127,7 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 	output_coords.first += world_coords.first;
 	output_coords.second += world_coords.second;
 
-	tile_layer.uniqueData = new MiningDrillData(game::ItemDropOff(orientation));
-
-	auto* drill_data = static_cast<MiningDrillData*>(tile_layer.uniqueData);
+	auto* drill_data = tile_layer.MakeUniqueData<MiningDrillData>(game::ItemDropOff(orientation));
 
 	drill_data->outputItem = FindOutputItem(world_data, world_coords);
 	assert(drill_data->outputItem != nullptr);  // Should not have been allowed to be placed on no resources
@@ -151,9 +149,9 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 		// Use the top left tile
 		if (self_layer.IsMultiTile())
-			drill_data = static_cast<MiningDrillData*>(self_layer.GetMultiTileTopLeft()->uniqueData);
+			drill_data = static_cast<MiningDrillData*>(self_layer.GetMultiTileTopLeft()->GetUniqueData());
 		else
-			drill_data = static_cast<MiningDrillData*>(self_layer.uniqueData);
+			drill_data = static_cast<MiningDrillData*>(self_layer.GetUniqueData());
 	}
 
 	// Ignore updates from non output tiles 
@@ -165,7 +163,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 
 	const bool initialized =
 		drill_data->outputTile.Initialize(world_data,
-		                                  *output_layer.uniqueData, emit_world_coords);
+		                                  *output_layer.GetUniqueData(), emit_world_coords);
 
 	// Do not register callback to mine items if there is no valid entity to output items to
 	if (initialized) {
@@ -187,9 +185,9 @@ void jactorio::data::MiningDrill::OnRemove(game::WorldData& world_data,
 	UniqueDataBase* drill_data;
 
 	if (tile_layer.IsMultiTile())
-		drill_data = tile_layer.GetMultiTileTopLeft()->uniqueData;
+		drill_data = tile_layer.GetMultiTileTopLeft()->GetUniqueData();
 	else
-		drill_data = tile_layer.uniqueData;
+		drill_data = tile_layer.GetUniqueData();
 
 	RemoveMineCallback(world_data.deferralTimer, static_cast<MiningDrillData*>(drill_data)->deferralEntry);
 }

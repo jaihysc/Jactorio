@@ -16,7 +16,7 @@ std::pair<uint16_t, uint16_t> data::Inserter::MapPlacementOrientation(Orientatio
 
 void data::Inserter::OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
                              game::ChunkTileLayer& tile_layer, Orientation orientation) const {
-    tile_layer.uniqueData = new InserterData();
+    tile_layer.MakeUniqueData<InserterData>();
     world_data.LogicRegister(game::Chunk::LogicGroup::inserter, world_coords, game::ChunkTile::ChunkLayer::entity);
 }
 

@@ -51,7 +51,7 @@ namespace jactorio::data
 		/// \param x_offset Pixels to top left of current tile
 		/// \param y_offset Pixels to top left of current tile
 		virtual void OnDrawUniqueData(renderer::RendererLayer& layer,
-		                              float x_offset, float y_offset) {
+		                              float x_offset, float y_offset) const {
 		}
 	};
 
@@ -71,7 +71,7 @@ namespace jactorio::data
 	public:
 		///
 		/// \brief Called by the renderer when it wants the sprite and frame within the sprite
-		virtual std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(UniqueDataBase* unique_data,
+		virtual std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
 		                                                                GameTickT game_tick) const = 0;
 
 		///

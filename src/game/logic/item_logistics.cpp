@@ -62,7 +62,7 @@ bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::ItemStack& ite
 
 	bool use_line_left = false;
 	// Decide whether to add item to left side or right side
-	switch (line_data.lineSegment.get().direction) {
+	switch (line_data.lineSegment->direction) {
 	case data::Orientation::up:
 		switch (orientation) {
 		case data::Orientation::up:
@@ -141,9 +141,9 @@ bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::ItemStack& ite
 	}
 
 	constexpr double insertion_offset = 0.5;
-	return line_data.lineSegment.get().TryInsertItem(use_line_left,
-	                                                 line_data.lineSegmentIndex + insertion_offset,
-	                                                 item_stack.first);
+	return line_data.lineSegment->TryInsertItem(use_line_left,
+	                                            line_data.lineSegmentIndex + insertion_offset,
+	                                            item_stack.first);
 }
 
 // ======================================================================
@@ -205,7 +205,7 @@ bool jactorio::game::InserterPickup::PickupTransportBelt(const data::Inserter::R
 	auto& line_data = static_cast<data::TransportLineData&>(unique_data);
 
 	bool use_line_left = false;
-	switch (line_data.lineSegment.get().direction) {
+	switch (line_data.lineSegment->direction) {
 	case data::Orientation::up:
 		switch (orientation) {
 		case data::Orientation::down:
@@ -259,9 +259,9 @@ bool jactorio::game::InserterPickup::PickupTransportBelt(const data::Inserter::R
 		break;
 	}
 
-	return line_data.lineSegment.get()
-	                .TryPopItemAbs(use_line_left,
+	return line_data.lineSegment->
+	                 TryPopItemAbs(use_line_left,
 	                               line_data.lineSegmentIndex +
 	                               GetInserterArmOffset(degree.getAsInteger(), 1)  // TODO different target distances
-	                );
+	                 );
 }

@@ -224,7 +224,7 @@ void LogicUpdateMoveItems(const jactorio::game::Chunk& l_chunk) {
 	// Each object layer holds a transport line segment
 	for (const auto& tile_layer : layers) {
 		const auto& line_proto = *static_cast<const data::TransportLine*>(tile_layer->prototypeData);
-		auto& line_segment     = static_cast<const data::TransportLineData*>(tile_layer->uniqueData)->lineSegment.get();
+		auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
 
 		// Left
 		{
@@ -260,7 +260,7 @@ void LogicUpdateTransitionItems(const jactorio::game::Chunk& l_chunk) {
 	// Each object layer holds a transport line segment
 	for (const auto& tile_layer : layers) {
 		const auto* line_proto = static_cast<const data::TransportLine*>(tile_layer->prototypeData);
-		auto& line_segment     = static_cast<const data::TransportLineData*>(tile_layer->uniqueData)->lineSegment.get();
+		auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
 
 		auto tiles_moved = line_proto->speed;
 

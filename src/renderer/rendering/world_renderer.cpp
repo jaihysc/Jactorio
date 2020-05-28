@@ -27,7 +27,7 @@ struct TileDrawFuncParams
 	jactorio::GameTickT gameTick;
 };
 
-using TileDrawFuncReturn = std::pair<jactorio::core::QuadPosition, jactorio::data::RenderableData*>;
+using TileDrawFuncReturn = std::pair<jactorio::core::QuadPosition, const jactorio::data::RenderableData*>;
 using TileDrawFunc = TileDrawFuncReturn (*)(const TileDrawFuncParams&);
 
 using ObjectDrawFunc = unsigned int (*)(const jactorio::game::ChunkObjectLayer&);
@@ -56,7 +56,7 @@ constexpr TileDrawFunc tile_draw_func[]{
 	[](const TileDrawFuncParams& params) {
 		// Sprites + tiles are guaranteed not nullptr
 		const auto* t     = static_cast<const jactorio::data::Tile*>(params.tileLayer.prototypeData);
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(params.tileLayer.uniqueData);
+		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
 
 
 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
@@ -72,7 +72,7 @@ constexpr TileDrawFunc tile_draw_func[]{
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(params.tileLayer.uniqueData);
+		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
 
 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
 		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
@@ -87,7 +87,7 @@ constexpr TileDrawFunc tile_draw_func[]{
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(params.tileLayer.uniqueData);
+		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
 
 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
 		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
@@ -105,7 +105,7 @@ constexpr TileDrawFunc tile_draw_func[]{
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(params.tileLayer.uniqueData);
+		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
 
 		auto uv = jactorio::renderer::Renderer::GetSpritemapCoords(t->internalId);
 

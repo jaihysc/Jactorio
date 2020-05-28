@@ -1,23 +1,26 @@
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+// Created on: 05/25/2020
+
 #include <gtest/gtest.h>
 
 #include "data/prototype/entity/inserter.h"
 
-namespace data::prototype
+namespace jactorio::data
 {
 	class InserterTest : public testing::Test
 	{
 	protected:
-		jactorio::game::WorldData worldData_{};
+		game::WorldData worldData_{};
 
-		jactorio::data::Inserter inserterProto_{};
-		
+		Inserter inserterProto_{};
+
 		void SetUp() override {
 			worldData_.EmplaceChunk(0, 0);
 		}
 
-		void BuildInserter(const jactorio::game::WorldData::WorldPair& coords,
-		                   const jactorio::data::Orientation orientation) {
-			auto& layer = worldData_.GetTile(coords)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		void BuildInserter(const game::WorldData::WorldPair& coords,
+		                   const Orientation orientation) {
+			auto& layer = worldData_.GetTile(coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 			layer.prototypeData = &inserterProto_;
 			inserterProto_.OnBuild(worldData_, coords, layer, orientation);
@@ -25,11 +28,11 @@ namespace data::prototype
 	};
 
 	TEST_F(InserterTest, OnBuildCreateData) {
-		BuildInserter({0, 0}, jactorio::data::Orientation::right);
-		
-		auto& layer = worldData_.GetTile({0, 0})->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		BuildInserter({0, 0}, Orientation::right);
 
-		ASSERT_TRUE(layer.uniqueData);
+		auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::ChunkTile::ChunkLayer::entity);
+
+		ASSERT_TRUE(layer.GetUniqueData());
 
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
