@@ -3,7 +3,10 @@
 
 #include <gtest/gtest.h>
 
+#include "jactorioTests.h"
+
 #include "data/prototype/entity/container_entity.h"
+#include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/mining_drill.h"
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "game/logic/inserter_controller.h"
@@ -21,37 +24,44 @@ namespace jactorio::game
 		}
 	};
 
-#define ITEM_LOGISTICS_SETUP_CHEST\
-	jactorio::data::ContainerEntity container{};\
-	auto& layer = worldData_.GetTile(2, 4)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);\
-	layer.prototypeData = &container;\
-	layer.MakeUniqueData<jactorio::data::ContainerEntityData>(10);
-
-	TEST_F(ItemLogisticsTest, DropOffDropItem) {
-		ITEM_LOGISTICS_SETUP_CHEST
+	TEST_F(ItemLogisticsTest, Uninitialize) {
+		data::ContainerEntity container_entity{};
+		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
 
 		ItemDropOff drop_off{data::Orientation::up};
-		ASSERT_TRUE(drop_off.Initialize(worldData_, *layer.GetUniqueData(), 2, 4));
+		ASSERT_TRUE(drop_off.Initialize(worldData_, *container_layer.GetUniqueData(), 2, 4));
+		drop_off.Uninitialize();
+
+		EXPECT_FALSE(drop_off.IsInitialized());
+	}
+
+	TEST_F(ItemLogisticsTest, DropOffDropItem) {
+		data::ContainerEntity container_entity{};
+		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+
+		ItemDropOff drop_off{data::Orientation::up};
+		ASSERT_TRUE(drop_off.Initialize(worldData_, *container_layer.GetUniqueData(), 2, 4));
 
 		data::Item item{};
 		drop_off.DropOff({&item, 10});
 
 		EXPECT_EQ(
-			static_cast<jactorio::data::ContainerEntityData*>(layer.GetUniqueData())->inventory[0].second,
+			container_layer.GetUniqueData<data::ContainerEntityData>()->inventory[0].second,
 			10);
 	}
 
 	TEST_F(ItemLogisticsTest, InserterPickupItem) {
-		ITEM_LOGISTICS_SETUP_CHEST
+		data::ContainerEntity container_entity{};
+		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
 
 		InserterPickup pickup{data::Orientation::up};
-		ASSERT_TRUE(pickup.Initialize(worldData_, *layer.GetUniqueData(), 2, 4));
+		ASSERT_TRUE(pickup.Initialize(worldData_, *container_layer.GetUniqueData(), 2, 4));
 
 		data::Item item{};
-		auto* inv = static_cast<data::ContainerEntityData*>(layer.GetUniqueData())->inventory;
+		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
-		pickup.Pickup(data::InserterData::ToRotationDegree(180.f), 2);
+		pickup.Pickup(data::ToRotationDegree(180.f), 2);
 
 		EXPECT_EQ(inv[0].second, 8);
 	}
@@ -103,6 +113,7 @@ namespace jactorio::game
 
 		// Empty tile cannot be inserted into
 		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_FALSE(this->IsInitialized());
 
 
 		// Transport belt can be inserted onto
@@ -111,6 +122,7 @@ namespace jactorio::game
 		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &belt);
 
 		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());
 
 
 		// Mining drill cannot be inserted into 
@@ -119,6 +131,7 @@ namespace jactorio::game
 		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &drill);
 
 		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());  // Still initialized from transport belt
 
 
 		// Container can be inserted into
@@ -127,6 +140,7 @@ namespace jactorio::game
 		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &container);
 
 		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());
 	}
 
 	// ======================================================================
@@ -319,7 +333,7 @@ namespace jactorio::game
 
 		void PickupLine(const data::Orientation orientation,
 		                data::TransportLineData& line_data) const {
-			PickupTransportBelt(data::InserterData::ToRotationDegree(kMaxInserterDegree),
+			PickupTransportBelt(data::ToRotationDegree(kMaxInserterDegree),
 			                    1,
 			                    line_data,
 			                    orientation);
@@ -327,23 +341,22 @@ namespace jactorio::game
 	};
 
 	TEST_F(InserterPickupTest, PickupContainerEntity) {
-		worldData_.EmplaceChunk(0, 0);
-
-		ITEM_LOGISTICS_SETUP_CHEST
+		data::ContainerEntity container_entity{};
+		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
 
 		data::Item item{};
-		auto* inv = static_cast<data::ContainerEntityData*>(layer.GetUniqueData())->inventory;
+		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
 
-		PickupContainerEntity(data::InserterData::ToRotationDegree(179),
-		                      1, *layer.GetUniqueData(),
+		PickupContainerEntity(data::ToRotationDegree(179),
+		                      1, *container_layer.GetUniqueData(),
 		                      data::Orientation::up);
 
 		EXPECT_EQ(inv[0].second, 10);  // No items picked up, not 180 degrees
 
-		PickupContainerEntity(data::InserterData::ToRotationDegree(180),
-		                      2, *layer.GetUniqueData(),
+		PickupContainerEntity(data::ToRotationDegree(180),
+		                      2, *container_layer.GetUniqueData(),
 		                      data::Orientation::up);
 		EXPECT_EQ(inv[0].second, 8);  // 2 items picked up
 	}

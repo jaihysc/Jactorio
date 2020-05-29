@@ -8,7 +8,7 @@
 #include <deque>
 
 #include "core/data_type.h"
-#include "data/prototype/orientation.h"
+#include "data/prototype/type.h"
 #include "data/prototype/item/item.h"
 #include "game/logic/transport_line_controller.h"
 

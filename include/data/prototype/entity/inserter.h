@@ -1,5 +1,5 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/17/2020
+// Created on: 05/25/2020
 
 #ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H
 #define JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H
@@ -7,7 +7,10 @@
 
 #include <decimal.h>
 
+#include "data/prototype/type.h"
 #include "data/prototype/entity/health_entity.h"
+#include "game/logic/inserter_controller.h"
+#include "game/logic/item_logistics.h"
 
 namespace jactorio::data
 {
@@ -15,28 +18,35 @@ namespace jactorio::data
 	/// \brief Holds the internal structure for inserters
 	struct InserterData final : HealthEntityData
 	{
-	private:
-		static constexpr auto kInserterRotationDecimals = 3;
-
-	public:
-		using RotationDegree = dec::decimal<kInserterRotationDecimals>;
-
-		///
-		/// \brief Rotation degree of current inserter, from standard position
-		RotationDegree rotationDegree;
-
-		J_NODISCARD static RotationDegree ToRotationDegree(const double val) {
-			return dec::decimal_cast<kInserterRotationDecimals>(val);
+		explicit InserterData(const Orientation orientation)
+			: orientation(orientation), dropoff(orientation), pickup(orientation) {
 		}
+
+		enum class Status
+		{
+			to_dropoff,
+			to_pickup,
+			idle
+		};
+
+		// Orientation points towards dropoff
+		Orientation orientation;
+
+		/// Rotation degree of current inserter, 0 is dropoff, 180 is pickup 
+		RotationDegree rotationDegree = ToRotationDegree(game::kMaxInserterDegree);
+
+		/// Current inserter status
+		Status status = Status::idle;
+
+		game::ItemDropOff dropoff;
+		game::InserterPickup pickup;
 	};
 
-	
+
 	class Inserter final : public HealthEntity
 	{
 	public:
 		PROTOTYPE_CATEGORY(inserter);
-
-		using RotationDegree = InserterData::RotationDegree;
 
 		///
 		/// \brief Degrees to rotate per tick 
@@ -49,7 +59,7 @@ namespace jactorio::data
 
 
 		void PostLoad() override {
-			rotationSpeed = InserterData::ToRotationDegree(rotationSpeedFloat);
+			rotationSpeed = ToRotationDegree(rotationSpeedFloat);
 		}
 
 
@@ -63,6 +73,11 @@ namespace jactorio::data
 
 		void OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
 		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
+
+		void OnNeighborUpdate(game::WorldData& world_data,
+		                      const game::WorldData::WorldPair& emit_world_coords,
+		                      const game::WorldData::WorldPair& receive_world_coords,
+		                      Orientation emit_orientation) const override;
 
 		void OnRemove(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
 		              game::ChunkTileLayer& tile_layer) const override;

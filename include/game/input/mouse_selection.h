@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "jactorio.h"
-#include "data/prototype/orientation.h"
+#include "data/prototype/type.h"
 
 namespace jactorio
 {

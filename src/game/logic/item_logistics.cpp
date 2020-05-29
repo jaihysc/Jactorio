@@ -181,11 +181,11 @@ bool jactorio::game::InserterPickup::Initialize(const WorldData& world_data,
 	return Initialize(world_data, target_unique_data, world_coord.first, world_coord.second);
 }
 
-bool jactorio::game::InserterPickup::PickupContainerEntity(const data::Inserter::RotationDegree& degree,
+bool jactorio::game::InserterPickup::PickupContainerEntity(const data::RotationDegree& degree,
                                                            const data::ItemStack::second_type amount,
                                                            data::UniqueDataBase& unique_data,
                                                            data::Orientation) const {
-	if (degree != data::InserterData::ToRotationDegree(kMaxInserterDegree))
+	if (degree != data::ToRotationDegree(kMaxInserterDegree))
 		return false;
 
 	auto& container = static_cast<data::ContainerEntityData&>(unique_data);
@@ -195,7 +195,7 @@ bool jactorio::game::InserterPickup::PickupContainerEntity(const data::Inserter:
 	                     amount);
 }
 
-bool jactorio::game::InserterPickup::PickupTransportBelt(const data::Inserter::RotationDegree& degree,
+bool jactorio::game::InserterPickup::PickupTransportBelt(const data::RotationDegree& degree,
                                                          const data::ItemStack::second_type amount,
                                                          data::UniqueDataBase& unique_data,
                                                          const data::Orientation orientation) const {

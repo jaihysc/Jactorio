@@ -5,8 +5,7 @@
 #define JACTORIO_GAME_LOGIC_ITEM_LOGISTICS_H
 #pragma once
 
-#include "data/prototype/orientation.h"
-#include "data/prototype/entity/inserter.h"
+#include "data/prototype/type.h"
 #include "data/prototype/item/item.h"
 #include "game/world/world_data.h"
 
@@ -35,6 +34,14 @@ namespace jactorio::game
 
 		virtual bool Initialize(const WorldData& world_data,
 		                        data::UniqueDataBase& target_unique_data, const WorldData::WorldPair& world_coord) = 0;
+
+		virtual void Uninitialize() {
+			targetUniqueData_ = nullptr;
+		}
+
+		J_NODISCARD virtual bool IsInitialized() {
+			return targetUniqueData_ != nullptr;
+		}
 
 	protected:
 		/// \brief Tile location where item will be inserted
@@ -101,7 +108,7 @@ namespace jactorio::game
 
 		///
 		///	 \brief Insert provided item at destination
-		bool Pickup(const data::Inserter::RotationDegree& degree,
+		bool Pickup(const data::RotationDegree& degree,
 		            const data::ItemStack::second_type amount) const {
 			assert(targetUniqueData_);
 			return (this->*pickupFunc_)(degree, amount, *targetUniqueData_, orientation_);
@@ -110,12 +117,12 @@ namespace jactorio::game
 	protected:
 		///
 		/// \brief Picks up items when at 180 deg
-		virtual bool PickupContainerEntity(const data::Inserter::RotationDegree& degree,
+		virtual bool PickupContainerEntity(const data::RotationDegree& degree,
 		                                   data::ItemStack::second_type amount,
 		                                   data::UniqueDataBase& unique_data,
 		                                   data::Orientation orientation) const;
 
-		virtual bool PickupTransportBelt(const data::Inserter::RotationDegree& degree,
+		virtual bool PickupTransportBelt(const data::RotationDegree& degree,
 		                                 data::ItemStack::second_type amount,
 		                                 data::UniqueDataBase& unique_data,
 		                                 data::Orientation orientation) const;

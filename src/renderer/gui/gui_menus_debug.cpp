@@ -10,6 +10,7 @@
 #include "jactorio.h"
 
 #include "data/data_manager.h"
+#include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/transport/transport_line.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
@@ -25,10 +26,14 @@ bool show_item_spawner_window = false;
 
 // Game
 bool show_transport_line_info = false;
+bool show_inserter_info       = false;
 
 void jactorio::renderer::DebugMenuLogic(game::PlayerData& player_data) {
 	if (show_transport_line_info)
 		DebugTransportLineInfo(player_data);
+
+	if (show_inserter_info)
+		DebugInserterInfo(player_data);
 
 	if (show_demo_window)
 		ImGui::ShowDemoWindow();
@@ -94,16 +99,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		ImGui::Checkbox("Item spawner", &show_item_spawner_window);
 
 		ImGui::Checkbox("Show transport line info", &show_transport_line_info);
-
-		if (ImGui::Button("Make all belt items visible")) {
-			for (auto* chunk : world_data.LogicGetChunks()) {
-				for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
-					auto& segment         = *transport_line->GetUniqueData<data::TransportLineData>()->lineSegment;
-					segment.left.visible  = true;
-					segment.right.visible = true;
-				}
-			}
-		}
+		ImGui::Checkbox("Show inserter info", &show_inserter_info);
 	}
 
 	ImGui::Separator();
@@ -292,6 +288,17 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	// Try to use current selected line segment first, otherwise used the last valid if checked
 	game::TransportSegment* segment_ptr = nullptr;
 
+
+	if (ImGui::Button("Make all belt items visible")) {
+		for (auto* chunk : player_data.GetPlayerWorld().LogicGetChunks()) {
+			for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
+				auto& segment         = *transport_line->GetUniqueData<data::TransportLineData>()->lineSegment;
+				segment.left.visible  = true;
+				segment.right.visible = true;
+			}
+		}
+	}
+
 	ImGui::Checkbox("Show transport line segments", &show_transport_segments);
 	ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
@@ -361,28 +368,8 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 
 			ImGui::Text("Termination Type: %s", s.c_str());
 		}
-		{
-			std::string s;
-			switch (segment.direction) {
-			case data::Orientation::up:
-				s = "Up";
-				break;
-			case data::Orientation::right:
-				s = "Right";
-				break;
-			case data::Orientation::down:
-				s = "Down";
-				break;
-			case data::Orientation::left:
-				s = "Left";
-				break;
-			default:
-				assert(false);  // Missing switch case
-				break;
-			}
 
-			ImGui::Text("Direction: %s", s.c_str());
-		}
+		ImGui::Text("Direction: %s", OrientationToStr(segment.direction));
 
 		// Appending item
 		const std::string iname = "__base__/wooden-chest-item";
@@ -414,4 +401,37 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	}
 
 	ImGui::End();
+}
+
+void jactorio::renderer::DebugInserterInfo(game::PlayerData& player_data) {
+	core::ResourceGuard<void> guard{[]() { ImGui::End(); }};
+	ImGui::Begin("Inserter info");
+
+	const auto selected_tile = player_data.GetMouseTileCoords();
+	auto& layer              = player_data.GetPlayerWorld().GetTile(selected_tile)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+	if (!layer.prototypeData || layer.prototypeData->Category() != data::DataCategory::inserter) {
+		ImGui::Text("No inserter at selected tile");
+		return;
+	}
+
+	auto& inserter_data = *layer.GetUniqueData<data::InserterData>();
+
+	ImGui::Text("Orientation %s", OrientationToStr(inserter_data.orientation));
+
+	ImGui::Text("Degree: %f", inserter_data.rotationDegree.getAsDouble());
+
+	switch (inserter_data.status) {
+	case data::InserterData::Status::to_dropoff:
+		ImGui::Text("Status: To dropoff");
+		break;
+	case data::InserterData::Status::to_pickup:
+		ImGui::Text("Status: To pickup");
+		break;
+	case data::InserterData::Status::idle:
+		ImGui::Text("Status: Idle");
+		break;
+	}
+
+	ImGui::Text("Pickup  %s", inserter_data.pickup.IsInitialized() ? "true" : "false");
+	ImGui::Text("Dropoff %s", inserter_data.dropoff.IsInitialized() ? "true" : "false");
 }

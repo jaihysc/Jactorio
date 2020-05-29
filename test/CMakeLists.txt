@@ -70,7 +70,6 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
-	${JACTORIO_TEST_DIR}/data/prototype/orientationTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
@@ -115,4 +114,8 @@ add_executable(jactorioTest
 )
 target_link_libraries(jactorioTest 
 	gtest_main jactorioBase
+)
+target_include_directories(jactorioTest
+	PUBLIC
+	${JACTORIO_TEST_DIR}
 )
