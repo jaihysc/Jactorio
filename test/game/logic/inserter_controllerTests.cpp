@@ -26,12 +26,14 @@ namespace jactorio::game
 
 		///
 		/// \param orientation Orientation to drop off
-		void BuildInserter(const WorldData::WorldPair& coords,
+		ChunkTileLayer& BuildInserter(const WorldData::WorldPair& coords,
 		                   const data::Orientation orientation) {
 			auto& layer = worldData_.GetTile(coords)->GetLayer(ChunkTile::ChunkLayer::entity);
 
 			layer.prototypeData = &inserterProto_;
 			inserterProto_.OnBuild(worldData_, coords, layer, orientation);
+
+			return layer;
 		}
 
 		///
@@ -63,21 +65,22 @@ namespace jactorio::game
 		EXPECT_FLOAT_EQ(jactorio::game::GetInserterArmOffset(160, 1), 0.436764281);
 	}
 
-	/*
 	TEST_F(InserterControllerTest, RotateToDropoff) {
 		inserterProto_.rotationSpeed = 2.1;
 
-		BuildInserter({1, 2}, data::Orientation::left);
 		auto* dropoff = BuildChest({0, 2}, data::Orientation::left);  // Dropoff
-		auto* pickup = BuildChest({2, 2}, data::Orientation::right);  // Pickup
+		auto* pickup  = BuildChest({2, 2}, data::Orientation::right);  // Pickup
+		auto& inserter_layer = BuildInserter({1, 2}, data::Orientation::left);
 
 		// Pickup item
 		InserterLogicUpdate(worldData_);
+		EXPECT_EQ(pickup->inventory[0].second, 9);
 
 		// Reach 0 degrees after 86 updates
 		worldData_.deferralTimer.DeferralUpdate(86);
-		EXPECT_EQ(dropoff->inventory[0].second, 1);
-		EXPECT_EQ(pickup->inventory[0].second, 9);
+		EXPECT_EQ(dropoff->inventory[0].second, 11);
+
+		auto* inserter_data = inserter_layer.GetUniqueData<data::InserterData>();
+		EXPECT_EQ(inserter_data->status, data::InserterData::Status::dropoff);
 	}
-	*/
 }

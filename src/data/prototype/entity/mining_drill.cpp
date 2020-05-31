@@ -56,15 +56,6 @@ void jactorio::data::MiningDrill::RegisterMineCallback(game::DeferralTimer& time
 	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, unique_data->miningTicks);
 }
 
-void jactorio::data::MiningDrill::RemoveMineCallback(game::DeferralTimer& timer,
-                                                     game::DeferralTimer::DeferralEntry& entry) {
-	if (entry.second == 0)
-		return;
-
-	timer.RemoveDeferral(entry);
-	entry.second = 0;
-}
-
 jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::WorldData& world_data,
                                                                   game::WorldData::WorldPair world_pair) const {
 	world_pair.first -= this->miningRadius;
@@ -141,7 +132,7 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
                                                    const game::WorldData::WorldPair& emit_world_coords,
                                                    const game::WorldData::WorldPair& receive_world_coords,
-                                                   Orientation emit_orientation) const {
+                                                   Orientation) const {
 	MiningDrillData* drill_data;
 	{
 		auto& self_layer = world_data.GetTile(receive_world_coords.first,
@@ -172,15 +163,15 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 
 		RegisterMineCallback(world_data.deferralTimer, drill_data);
 	}
+	else {
 		// Un-register callback if one is registered
-	else if (drill_data->deferralEntry.second != 0) {
-		RemoveMineCallback(world_data.deferralTimer, drill_data->deferralEntry);
+		world_data.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
 	}
 }
 
 
 void jactorio::data::MiningDrill::OnRemove(game::WorldData& world_data,
-                                           const game::WorldData::WorldPair /*world_coords*/&,
+                                           const game::WorldData::WorldPair&,
                                            game::ChunkTileLayer& tile_layer) const {
 	UniqueDataBase* drill_data;
 
@@ -189,5 +180,5 @@ void jactorio::data::MiningDrill::OnRemove(game::WorldData& world_data,
 	else
 		drill_data = tile_layer.GetUniqueData();
 
-	RemoveMineCallback(world_data.deferralTimer, static_cast<MiningDrillData*>(drill_data)->deferralEntry);
+	world_data.deferralTimer.RemoveDeferralEntry(static_cast<MiningDrillData*>(drill_data)->deferralEntry);
 }

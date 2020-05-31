@@ -74,7 +74,6 @@ namespace jactorio::data
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource 
 		void RegisterMineCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
-		static void RemoveMineCallback(game::DeferralTimer& timer, game::DeferralTimer::DeferralEntry& entry);
 
 	public:
 		///

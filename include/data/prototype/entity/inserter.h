@@ -9,6 +9,7 @@
 
 #include "data/prototype/type.h"
 #include "data/prototype/entity/health_entity.h"
+#include "data/prototype/interface/deferred.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
 
@@ -24,9 +25,8 @@ namespace jactorio::data
 
 		enum class Status
 		{
-			to_dropoff,
-			to_pickup,
-			idle
+			dropoff,
+			pickup
 		};
 
 		// Orientation points towards dropoff
@@ -36,14 +36,17 @@ namespace jactorio::data
 		RotationDegree rotationDegree = ToRotationDegree(game::kMaxInserterDegree);
 
 		/// Current inserter status
-		Status status = Status::idle;
+		Status status = Status::pickup;
+
+		/// Current item held by inserter
+		ItemStack heldItem;
 
 		game::ItemDropOff dropoff;
 		game::InserterPickup pickup;
 	};
 
 
-	class Inserter final : public HealthEntity
+	class Inserter final : public HealthEntity, public Deferred
 	{
 	public:
 		PROTOTYPE_CATEGORY(inserter);
@@ -70,6 +73,8 @@ namespace jactorio::data
 		                                                      game::WorldData& world_data,
 		                                                      const game::WorldData::WorldPair& world_coords) const override;
 
+
+		void OnDeferTimeElapsed(game::DeferralTimer& timer, UniqueDataBase* unique_data) const override;
 
 		void OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
 		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;

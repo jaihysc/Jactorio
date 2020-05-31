@@ -109,23 +109,31 @@ namespace jactorio::game
 		///
 		///	 \brief Insert provided item at destination
 		bool Pickup(const data::RotationDegree& degree,
-		            const data::ItemStack::second_type amount) const {
+		            const data::ItemStack::second_type amount,
+		            data::ItemStack& out_item_stack) const {
 			assert(targetUniqueData_);
-			return (this->*pickupFunc_)(degree, amount, *targetUniqueData_, orientation_);
+			return (this->*pickupFunc_)(degree, amount, *targetUniqueData_, orientation_, out_item_stack);
 		}
 
 	protected:
 		///
 		/// \brief Picks up items when at 180 deg
+		/// \param unique_data Unique data of container to be picked up from 
+		/// \param out_item_stack Item which was picked up
 		virtual bool PickupContainerEntity(const data::RotationDegree& degree,
 		                                   data::ItemStack::second_type amount,
 		                                   data::UniqueDataBase& unique_data,
-		                                   data::Orientation orientation) const;
+		                                   data::Orientation orientation,
+		                                   data::ItemStack& out_item_stack) const;
 
+		///
+		/// \param unique_data Unique data of transport belt to be picked up from 
+		/// \param out_item_stack Item which was picked up
 		virtual bool PickupTransportBelt(const data::RotationDegree& degree,
 		                                 data::ItemStack::second_type amount,
 		                                 data::UniqueDataBase& unique_data,
-		                                 data::Orientation orientation) const;
+		                                 data::Orientation orientation,
+		                                 data::ItemStack& out_item_stack) const;
 
 		using PickupFunc = decltype(&InserterPickup::PickupContainerEntity);
 

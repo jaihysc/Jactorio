@@ -61,7 +61,8 @@ namespace jactorio::game
 		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
-		pickup.Pickup(data::ToRotationDegree(180.f), 2);
+		data::ItemStack out_item_stack;
+		pickup.Pickup(data::ToRotationDegree(180.f), 2, out_item_stack);
 
 		EXPECT_EQ(inv[0].second, 8);
 	}
@@ -333,32 +334,46 @@ namespace jactorio::game
 
 		void PickupLine(const data::Orientation orientation,
 		                data::TransportLineData& line_data) const {
+			constexpr int pickup_amount = 1;
+
+			data::ItemStack out_item_stack;
 			PickupTransportBelt(data::ToRotationDegree(kMaxInserterDegree),
-			                    1,
+			                    pickup_amount,
 			                    line_data,
-			                    orientation);
+			                    orientation,
+			                    out_item_stack);
+
+			EXPECT_NE(out_item_stack.first, nullptr);
+			EXPECT_EQ(out_item_stack.second, pickup_amount);
 		}
 	};
 
 	TEST_F(InserterPickupTest, PickupContainerEntity) {
 		data::ContainerEntity container_entity{};
 		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+		auto& container_data  = *container_layer.GetUniqueData();
 
 		data::Item item{};
 		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
+		data::ItemStack out_item_stack;
 
 		PickupContainerEntity(data::ToRotationDegree(179),
-		                      1, *container_layer.GetUniqueData(),
-		                      data::Orientation::up);
+		                      1, container_data,
+		                      data::Orientation::up,
+		                      out_item_stack);
 
 		EXPECT_EQ(inv[0].second, 10);  // No items picked up, not 180 degrees
 
 		PickupContainerEntity(data::ToRotationDegree(180),
-		                      2, *container_layer.GetUniqueData(),
-		                      data::Orientation::up);
+		                      2, container_data,
+		                      data::Orientation::up,
+		                      out_item_stack);
 		EXPECT_EQ(inv[0].second, 8);  // 2 items picked up
+
+		EXPECT_NE(out_item_stack.first, nullptr);
+		EXPECT_EQ(out_item_stack.second, 2);
 	}
 
 	TEST_F(InserterPickupTest, PickupContainerTransportLineUp) {

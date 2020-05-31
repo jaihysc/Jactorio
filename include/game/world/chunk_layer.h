@@ -41,6 +41,15 @@ namespace jactorio::game
 			swap(lhs.uniqueData_, rhs.uniqueData_);
 		}
 
+		// Prototype access
+
+		///
+		/// \tparam T Return type which prototypeData is cast to
+		template <typename T = data::PrototypeBase>
+		J_NODISCARD const T* GetPrototypeData() {
+			return static_cast<const T*>(prototypeData);
+		}
+
 		// Unique data access
 
 		///

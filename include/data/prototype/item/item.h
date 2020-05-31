@@ -56,7 +56,7 @@ namespace jactorio::data
 	// Item* and amount in current stack
 	// Left: Item prototype
 	// Right: Item count
-	using ItemStack = std::pair<Item*, Item::ItemStack>;
+	using ItemStack = std::pair<const Item*, Item::ItemStack>;
 }
 
 #endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H

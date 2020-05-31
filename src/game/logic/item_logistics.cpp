@@ -184,22 +184,29 @@ bool jactorio::game::InserterPickup::Initialize(const WorldData& world_data,
 bool jactorio::game::InserterPickup::PickupContainerEntity(const data::RotationDegree& degree,
                                                            const data::ItemStack::second_type amount,
                                                            data::UniqueDataBase& unique_data,
-                                                           data::Orientation) const {
+                                                           data::Orientation,
+                                                           data::ItemStack& out_item_stack) const {
 	if (degree != data::ToRotationDegree(kMaxInserterDegree))
 		return false;
 
 	auto& container = static_cast<data::ContainerEntityData&>(unique_data);
 
+
+	const auto* target_item = GetFirstItem(container.inventory, container.size);
+
+	out_item_stack = data::ItemStack{target_item, amount};
+
 	return RemoveInvItem(container.inventory, container.size,
-	                     GetFirstItem(container.inventory, container.size),
+	                     target_item,
 	                     amount);
 }
 
 bool jactorio::game::InserterPickup::PickupTransportBelt(const data::RotationDegree& degree,
                                                          const data::ItemStack::second_type amount,
                                                          data::UniqueDataBase& unique_data,
-                                                         const data::Orientation orientation) const {
-	if (amount != 1)
+                                                         const data::Orientation orientation,
+                                                         data::ItemStack& out_item_stack) const {
+	if (amount != 1) // TODO
 		LOG_MESSAGE_f(warning, "Inserters will only pick up 1 item at the moment, provided amount: %d", amount);
 
 	auto& line_data = static_cast<data::TransportLineData&>(unique_data);
@@ -259,9 +266,12 @@ bool jactorio::game::InserterPickup::PickupTransportBelt(const data::RotationDeg
 		break;
 	}
 
-	return line_data.lineSegment->
-	                 TryPopItemAbs(use_line_left,
-	                               line_data.lineSegmentIndex +
-	                               GetInserterArmOffset(degree.getAsInteger(), 1)  // TODO different target distances
-	                 );
+	const auto pickup_offset =
+		line_data.lineSegmentIndex +
+		GetInserterArmOffset(degree.getAsInteger(), 1);  // TODO different target distances
+
+	const auto* item = line_data.lineSegment->TryPopItemAbs(use_line_left, pickup_offset);
+
+	out_item_stack = data::ItemStack{item, amount};
+	return item == nullptr;
 }

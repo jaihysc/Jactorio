@@ -421,14 +421,11 @@ void jactorio::renderer::DebugInserterInfo(game::PlayerData& player_data) {
 	ImGui::Text("Degree: %f", inserter_data.rotationDegree.getAsDouble());
 
 	switch (inserter_data.status) {
-	case data::InserterData::Status::to_dropoff:
-		ImGui::Text("Status: To dropoff");
+	case data::InserterData::Status::dropoff:
+		ImGui::Text("Status: Dropoff");
 		break;
-	case data::InserterData::Status::to_pickup:
-		ImGui::Text("Status: To pickup");
-		break;
-	case data::InserterData::Status::idle:
-		ImGui::Text("Status: Idle");
+	case data::InserterData::Status::pickup:
+		ImGui::Text("Status: Pickup");
 		break;
 	}
 

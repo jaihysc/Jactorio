@@ -14,6 +14,11 @@ std::pair<uint16_t, uint16_t> data::Inserter::MapPlacementOrientation(Orientatio
 	return {0, 0};
 }
 
+void data::Inserter::OnDeferTimeElapsed(game::DeferralTimer& timer, UniqueDataBase* unique_data) const {
+	auto* inserter_data = static_cast<InserterData*>(unique_data);
+	inserter_data->dropoff.DropOff(inserter_data->heldItem);
+}
+
 void data::Inserter::OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
                              game::ChunkTileLayer& tile_layer, Orientation orientation) const {
 	tile_layer.MakeUniqueData<InserterData>(orientation);
@@ -75,5 +80,6 @@ void data::Inserter::OnNeighborUpdate(game::WorldData& world_data,
 
 void data::Inserter::OnRemove(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
                               game::ChunkTileLayer& tile_layer) const {
-
+	world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords, 
+						   game::ChunkTile::ChunkLayer::entity);
 }

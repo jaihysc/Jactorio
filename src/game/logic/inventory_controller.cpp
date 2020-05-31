@@ -265,7 +265,7 @@ uint32_t jactorio::game::GetInvItemCount(const data::ItemStack* inv, const uint1
 	return count;
 }
 
-jactorio::data::Item* jactorio::game::GetFirstItem(const data::ItemStack* inv, const uint16_t inv_size) {
+const jactorio::data::Item* jactorio::game::GetFirstItem(const data::ItemStack* inv, const uint16_t inv_size) {
 	assert(inv != nullptr);
 
 	for (int i = 0; i < inv_size; ++i) {

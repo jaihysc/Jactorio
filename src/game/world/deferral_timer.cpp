@@ -52,3 +52,11 @@ void jactorio::game::DeferralTimer::RemoveDeferral(DeferralEntry entry) {
 	// Instead of erasing, make the callback a blank function so that future remove calls do not go out of range
 	due_tick_callback[entry.second].first = blankCallback_;
 }
+
+void jactorio::game::DeferralTimer::RemoveDeferralEntry(DeferralEntry& entry) {
+	if (entry.second == 0)
+		return;
+	
+	RemoveDeferral(entry);
+	entry.second = 0;
+}

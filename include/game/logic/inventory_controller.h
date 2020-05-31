@@ -47,7 +47,7 @@ namespace jactorio::game
 	///
 	/// \brief Gets the first item within the inventory
 	/// \return nullptr if no items were found
-	data::Item* GetFirstItem(const data::ItemStack* inv, uint16_t inv_size);
+	const data::Item* GetFirstItem(const data::ItemStack* inv, uint16_t inv_size);
 
 
 	/// 
