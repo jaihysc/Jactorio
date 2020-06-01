@@ -33,6 +33,7 @@ validate_dependency(libnoise)
 validate_dependency(SDL-mirror)
 validate_dependency(decimal_for_cpp)
 validate_dependency(StackWalker)
+validate_dependency(backward-cpp)
 
 
 # Ones which need to be built
@@ -74,7 +75,7 @@ elseif (UNIX)
 		JACTORIO_LINK_LIBS
 
 		${LIBS_COMMON}
-		libGLU.so libGL.so
+		libGLU.so libGL.so dw
 	)
 endif (WIN32)
 
@@ -92,6 +93,7 @@ set(JACTORIO_LIB_HEADER_FILES
 	${PROJECT_SOURCE_DIR}/lib/SDL-mirror/include
 	${PROJECT_SOURCE_DIR}/lib/decimal_for_cpp/include
 	${PROJECT_SOURCE_DIR}/lib/StackWalker/Main
+	${PROJECT_SOURCE_DIR}/lib/backward-cpp
 )
 # ======================================== END HEADER files .h
 

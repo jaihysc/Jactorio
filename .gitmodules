@@ -28,3 +28,6 @@
 [submodule "lib/StackWalker"]
 	path = lib/StackWalker
 	url = https://github.com/JochenKalmbach/StackWalker.git
+[submodule "lib/backward-cpp"]
+	path = lib/backward-cpp
+	url = https://github.com/bombela/backward-cpp.git

@@ -67,16 +67,18 @@ LONG WINAPI TopLevelExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo) {
 	return EXCEPTION_CONTINUE_SEARCH;
 }
 
-#else
-
-class JactorioStackWalker {
-public:
-  explicit JactorioStackWalker(FILE* file) {}
-  void ShowCallstack() {}
-};
-
 #endif
 
+
+// ======================================================================
+// Linux
+
+#ifdef __linux__
+
+#define BACKWARD_HAS_DW 1
+#include <backward.hpp>
+
+#endif
 
 ///
 /// \param file Will be closed on function return
@@ -87,14 +89,38 @@ void PrintStackTrace(FILE* file) {
 
 	// Print stacktrace
 	if constexpr (std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Windows") {
+#ifdef _MSC_VER
+
 		JactorioStackWalker sw{file};
 		sw.ShowCallstack();
+
+#endif
 	}
 	else if constexpr (std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Darwin") {
 		// TODO stacktrace on OSX?
 	}
 	else if constexpr (std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Linux") {
+#ifdef __linux__
 
+		using namespace backward;
+		StackTrace st;
+
+		st.load_here(99);  // Limit the number of trace depth
+		// st.skip_n_firsts(3);  // Skip some backward internal function from the trace
+
+		// To console
+		Printer p;
+		p.snippet = true;
+		p.object = true;
+		p.address = true;
+		p.color_mode = ColorMode::automatic;
+		p.print(st, stderr);
+
+		// To log file
+		p.color_mode = ColorMode::never;
+		p.print(st, file);
+
+#endif
 	}
 
 	CRASH_LOG_MESSAGE("\n\nPlease report this with the current log at %s\n", kCrashContactInfo);

@@ -1,8 +1,8 @@
 #!/bin/sh
 
-if [[ -z "$1" ]] || [[ "$1" != "Debug"  &&  "$1" != "Release" ]]; then
+if [[ -z "$1" ]] || [[ "$1" != "Debug"  &&  "$1" != "Release" &&  "$1" != "RelWithDebInfo" ]]; then
     echo "Invalid build type"
-    echo "Valid build types: Debug, Release"
+    echo "Valid build types: Debug, Release, RelWithDebInfo"
     echo "Example usage: sh ./build.sh Debug"
 
     exit 1
