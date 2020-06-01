@@ -21,6 +21,7 @@ set(JACTORIO_INCLUDE_FILES
 # ======================================== END Header files .h
 # ======================================== Source files .cpp
 set(JACTORIO_SRC_FILES
+	${JACTORIO_DIR}/core/crash_handler.cpp
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/filesystem.cpp
 	${JACTORIO_DIR}/core/execution_timer.cpp
@@ -91,6 +92,13 @@ set(JACTORIO_LIB_BUILD_FILES
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
 )
+
+IF (CMAKE_SYSTEM_NAME MATCHES Windows)
+	set(JACTORIO_LIB_BUILD_FILES
+		${JACTORIO_LIB_BUILD_FILES}
+		${PROJECT_SOURCE_DIR}/lib/StackWalker/Main/StackWalker/StackWalker.cpp
+	)
+ENDIF()
 # ======================================== END Lib files .cpp
 
 

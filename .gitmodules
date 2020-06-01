@@ -25,3 +25,6 @@
 [submodule "lib/decimal_for_cpp"]
 	path = lib/decimal_for_cpp
 	url = https://github.com/vpiotr/decimal_for_cpp.git
+[submodule "lib/StackWalker"]
+	path = lib/StackWalker
+	url = https://github.com/JochenKalmbach/StackWalker.git

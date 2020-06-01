@@ -3,11 +3,13 @@
 
 #include <gtest/gtest.h>
 
+#include "core/crash_handler.h"
 #include "core/filesystem.h"
 
 int main(int ac, char* av[]) {
 	jactorio::core::SetExecutingDirectory(av[0]);
 
+	jactorio::core::RegisterCrashHandler();
 
 	testing::InitGoogleTest(&ac, av);
 	RUN_ALL_TESTS();

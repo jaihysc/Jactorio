@@ -59,7 +59,7 @@ IF(CMAKE_BUILD_TYPE MATCHES Debug)
 	log_msg("Type: Debug")
     add_compile_definitions(JACTORIO_DEBUG_BUILD)  # Break on openGL error
 
-ELSEIF(CMAKE_BUILD_TYPE MATCHES Release)
+ELSEIF(CMAKE_BUILD_TYPE MATCHES Release OR CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
 	log_msg("Type: <<< Release >>>")
 	check_ipo_supported(RESULT result)
 

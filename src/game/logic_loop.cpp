@@ -34,7 +34,7 @@ void jactorio::game::InitLogicLoop() {
 	// Load prototype data
 	core::ResourceGuard data_manager_guard(&data::ClearData);
 	try {
-		data::LoadData(core::ResolvePath("~/data"));
+		data::LoadData(core::ResolvePath("data"));
 	}
 	catch (data::DataException&) {
 		// Prototype loading error
@@ -42,7 +42,7 @@ void jactorio::game::InitLogicLoop() {
 	}
 	catch (std::filesystem::filesystem_error&) {
 		// Data folder not found error
-		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::ResolvePath("~/data").c_str());
+		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::ResolvePath("data").c_str());
 		return;
 	}
 

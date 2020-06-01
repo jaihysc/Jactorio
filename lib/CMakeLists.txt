@@ -32,6 +32,7 @@ validate_dependency(pybind11)
 validate_dependency(libnoise)
 validate_dependency(SDL-mirror)
 validate_dependency(decimal_for_cpp)
+validate_dependency(StackWalker)
 
 
 # Ones which need to be built
@@ -89,8 +90,8 @@ set(JACTORIO_LIB_HEADER_FILES
 	${PROJECT_SOURCE_DIR}/lib/pybind11/include
 	${PROJECT_SOURCE_DIR}/lib/libnoise/include
 	${PROJECT_SOURCE_DIR}/lib/SDL-mirror/include
-
 	${PROJECT_SOURCE_DIR}/lib/decimal_for_cpp/include
+	${PROJECT_SOURCE_DIR}/lib/StackWalker/Main
 )
 # ======================================== END HEADER files .h
 

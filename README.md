@@ -27,7 +27,7 @@ Remarks:
  
 ---
 
-**Build types:** `Debug, Release`
+**Build types:** `Debug, Release, RelWithDebInfo`
 
 **Parameters:** `--notest` if you do not want to build the tests
 

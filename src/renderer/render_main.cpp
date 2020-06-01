@@ -67,8 +67,8 @@ void jactorio::renderer::RenderInit() {
 	// Shader
 	const Shader shader(
 		std::vector<ShaderCreationInput>{
-			{"~/data/core/shaders/vs.vert", GL_VERTEX_SHADER},
-			{"~/data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
+			{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
+			{"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
 		}
 	);
 	shader.Bind();
