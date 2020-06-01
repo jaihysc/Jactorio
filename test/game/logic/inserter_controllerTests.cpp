@@ -52,7 +52,9 @@ namespace jactorio::game
 				auto& neighbor_layer       = worldData_.GetTile({1, 2})->GetLayer(ChunkTile::ChunkLayer::entity);
 				const auto* neighbor_proto =
 					static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData);
-				neighbor_proto->OnNeighborUpdate(worldData_, coords, {1, 2}, orientation);
+
+				if (neighbor_proto)
+					neighbor_proto->OnNeighborUpdate(worldData_, coords, {1, 2}, orientation);
 			}
 
 			unique_data->inventory[0] = {&containerItemProto_, 10};
