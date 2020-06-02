@@ -19,8 +19,16 @@ void jactorio::renderer::RendererSprites::ClearSpritemaps() {
 	spritemapDatas_.clear();
 }
 
-void jactorio::renderer::RendererSprites::CreateSpritemap(data::Sprite::SpriteGroup group,
-                                                          const bool invert_sprites) {
+void jactorio::renderer::RendererSprites::GInitializeSpritemap(data::Sprite::SpriteGroup group, const bool invert_sprites) {
+	const auto spritemap_data = CreateSpritemap(group, invert_sprites);
+
+	textures_[static_cast<int>(group)] = new Texture(spritemap_data.spriteBuffer, spritemap_data.width, spritemap_data.height);
+	spritemapDatas_[static_cast<int>(group)] = spritemap_data;
+}
+
+jactorio::renderer::RendererSprites::SpritemapData jactorio::renderer::RendererSprites::CreateSpritemap(
+	data::Sprite::SpriteGroup group,
+	const bool invert_sprites) const {
 	std::vector<data::Sprite*> sprites =
 		data::DataRawGetAll<data::Sprite>(data::DataCategory::sprite);
 
@@ -42,11 +50,7 @@ void jactorio::renderer::RendererSprites::CreateSpritemap(data::Sprite::SpriteGr
 		sprites.end()
 	);
 
-	const SpritemapData spritemap_data = GenSpritemap(sprites.data(), sprites.size(), invert_sprites);
-
-	// Texture will delete the sprite* when deleted
-	textures_[static_cast<int>(group)] = new Texture(spritemap_data.spriteBuffer, spritemap_data.width, spritemap_data.height);
-	spritemapDatas_[static_cast<int>(group)] = (spritemap_data);
+	return GenSpritemap(sprites.data(), sprites.size(), invert_sprites);
 }
 
 
@@ -75,8 +79,12 @@ jactorio::renderer::RendererSprites::SpritemapData jactorio::renderer::RendererS
 			pixels_y = sprites[i]->GetHeight();
 	}
 
-	auto* spritemap_buffer = new unsigned char[
-		static_cast<unsigned long long>(pixels_x) * pixels_y * 4];
+	const auto spritemap_buffer_size = static_cast<unsigned long long>(pixels_x) * pixels_y * 4;
+
+	std::shared_ptr<Texture::SpriteBufferT> spritemap_buffer(
+		new Texture::SpriteBufferT[spritemap_buffer_size],
+		[](const Texture::SpriteBufferT* p) { delete [] p; }
+	);
 
 	std::unordered_map<unsigned int, core::QuadPosition> image_positions;
 
@@ -104,7 +112,7 @@ jactorio::renderer::RendererSprites::SpritemapData jactorio::renderer::RendererS
 						sprite_index = (sprite_width * y + x) * 4 + color_offset;
 					}
 
-					spritemap_buffer[(pixels_x * y + x + x_offset) * 4 + color_offset]
+					spritemap_buffer.get()[(pixels_x * y + x + x_offset) * 4 + color_offset]
 						= sprite_data[sprite_index];
 				}
 			}
@@ -148,7 +156,7 @@ jactorio::renderer::RendererSprites::SpritemapData jactorio::renderer::RendererS
 
 
 	SpritemapData spritemap_data;
-	spritemap_data.spriteBuffer = spritemap_buffer;
+	spritemap_data.spriteBuffer = std::move(spritemap_buffer);
 	spritemap_data.width        = pixels_x;
 	spritemap_data.height       = pixels_y;
 

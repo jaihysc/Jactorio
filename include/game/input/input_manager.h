@@ -6,6 +6,7 @@
 #pragma once
 
 #include <functional>
+#include <unordered_map>
 
 #include "core/data_type.h"
 #include "game/input/input_key.h"

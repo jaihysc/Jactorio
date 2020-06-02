@@ -3,6 +3,8 @@
 
 #include <GL/glew.h>
 
+#include <utility>
+
 #include "renderer/opengl/texture.h"
 #include "core/logger.h"
 #include "renderer/renderer_exception.h"
@@ -10,8 +12,9 @@
 
 unsigned int jactorio::renderer::Texture::boundTextureId_ = 0;
 
-jactorio::renderer::Texture::Texture(unsigned char* buffer, unsigned int width, unsigned int height)
-	: rendererId_(0), textureBuffer_(buffer), width_(width), height_(height) {
+jactorio::renderer::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer,
+                                     const unsigned int width, const unsigned int height)
+	: rendererId_(0), textureBuffer_(std::move(buffer)), width_(width), height_(height) {
 
 	if (!textureBuffer_) {
 		LOG_MESSAGE(error, "Received empty texture")
@@ -32,7 +35,7 @@ jactorio::renderer::Texture::Texture(unsigned char* buffer, unsigned int width, 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
 	DEBUG_OPENGL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-		width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureBuffer_));
+		width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureBuffer_.get()));
 
 	// Rebind the last bound texture
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, boundTextureId_));
@@ -40,7 +43,6 @@ jactorio::renderer::Texture::Texture(unsigned char* buffer, unsigned int width, 
 
 jactorio::renderer::Texture::~Texture() {
 	DEBUG_OPENGL_CALL(glDeleteTextures(1, &rendererId_));
-	delete[] textureBuffer_;
 }
 
 void jactorio::renderer::Texture::Bind(const unsigned int slot) const {
