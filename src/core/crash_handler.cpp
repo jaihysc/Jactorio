@@ -71,11 +71,10 @@ LONG WINAPI TopLevelExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo) {
 
 
 // ======================================================================
-// Linux
+// OSx / Linux
 
-#ifdef __linux__
+#if defined(__linux__) || defined (__APPLE__)
 
-#define BACKWARD_HAS_DW 1
 #include <backward.hpp>
 
 #endif
@@ -96,11 +95,9 @@ void PrintStackTrace(FILE* file) {
 
 #endif
 	}
-	else if constexpr (std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Darwin") {
-		// TODO stacktrace on OSX?
-	}
-	else if constexpr (std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Linux") {
-#ifdef __linux__
+	else if constexpr (std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Darwin" ||
+						std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Linux") {
+#if defined(__linux__) || defined (__APPLE__)
 
 		using namespace backward;
 		StackTrace st;

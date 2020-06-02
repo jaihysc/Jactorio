@@ -106,21 +106,22 @@ ENDIF()
 
 
 
-
-# library linked to for tests
-add_library(jactorioBase 
-	${JACTORIO_SRC_FILES}
-	${JACTORIO_LIB_BUILD_FILES}
-)
-target_include_directories(jactorioBase PUBLIC ${JACTORIO_INCLUDE_FILES})
-target_link_libraries     (jactorioBase jactorioLib)
+if(JACTORIO_BUILD_TESTS)
+    # library linked to for tests
+    add_library(jactorioBase
+        ${JACTORIO_SRC_FILES}
+        ${JACTORIO_LIB_BUILD_FILES}
+    )
+    target_include_directories(jactorioBase PUBLIC ${JACTORIO_INCLUDE_FILES})
+    target_link_libraries     (jactorioBase jactorioLib)
+endif()
 
 
 
 # Jactorio Executable
-IF(JACTORIO_INTERPROCEDURAL_OPTIMIZATION)
-	# Must compile sources separately for IPO
-	add_executable(jactorio 
+IF(JACTORIO_INTERPROCEDURAL_OPTIMIZATION OR NOT JACTORIO_BUILD_TESTS)
+	# Must compile sources separately for IPO or when tests are not built
+	add_executable(jactorio
 		${JACTORIO_DIR}/jactorio.cpp
 		${JACTORIO_SRC_FILES}
 		${JACTORIO_LIB_BUILD_FILES}
@@ -130,7 +131,7 @@ IF(JACTORIO_INTERPROCEDURAL_OPTIMIZATION)
 	target_link_libraries(jactorio jactorioLib)
 	target_include_directories(jactorio PUBLIC ${JACTORIO_INCLUDE_FILES})
 ELSE()
-	add_executable(jactorio 
+	add_executable(jactorio
 		${JACTORIO_DIR}/jactorio.cpp
 	)
 	target_link_libraries(jactorio jactorioBase)
