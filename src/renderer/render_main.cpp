@@ -81,8 +81,8 @@ void jactorio::renderer::RenderInit() {
 
 	// Loading textures
 	auto renderer_sprites = RendererSprites();
-	renderer_sprites.CreateSpritemap(data::Sprite::SpriteGroup::terrain, true);
-	renderer_sprites.CreateSpritemap(data::Sprite::SpriteGroup::gui, false);
+	renderer_sprites.GInitializeSpritemap(data::Sprite::SpriteGroup::terrain, true);
+	renderer_sprites.GInitializeSpritemap(data::Sprite::SpriteGroup::gui, false);
 
 	// Terrain
 	Renderer::SetSpritemapCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);

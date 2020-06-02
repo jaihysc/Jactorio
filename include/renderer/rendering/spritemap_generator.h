@@ -5,6 +5,7 @@
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 
 #include "core/data_type.h"
@@ -23,9 +24,10 @@ namespace jactorio::renderer
 		struct SpritemapData
 		{
 			// For the loaded sprite
-			unsigned char* spriteBuffer = nullptr;
-			unsigned int width          = 0;
-			unsigned int height         = 0;
+			std::shared_ptr<Texture::SpriteBufferT> spriteBuffer;
+
+			unsigned int width  = 0;
+			unsigned int height = 0;
 
 			// Image positions retrieved via the path originally given to create the spritemap
 			// 0 - 1 positions of the sprite within the spritemap
@@ -67,7 +69,12 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Creates a spritemap and stores it as a renderer::Texture
-		void CreateSpritemap(data::Sprite::SpriteGroup group, bool invert_sprites);
+		/// \remark Requires OpenGL context
+		void GInitializeSpritemap(data::Sprite::SpriteGroup group, bool invert_sprites);
+
+		///
+		/// \brief Creates a spritemap
+		J_NODISCARD SpritemapData CreateSpritemap(data::Sprite::SpriteGroup group, bool invert_sprites) const;
 
 		///
 		/// \brief Retrieves spritemap at specified group
@@ -77,7 +84,6 @@ namespace jactorio::renderer
 		///
 		/// \brief Generated spritemap will be purely horizontal, all images concatenated side by side <br>
 		/// \remark Color in non specified areas of the spritemap are undefined <br>
-		/// \remark Spritemap_buffer must be manually deleted
 		/// \param sprites Pointer array to pointers towards sprite prototypes
 		/// \param count Count of pointer array
 		/// \param invert_sprites Whether or not to vertically invert the sprites on the spritemap. Commonly done for OpenGL

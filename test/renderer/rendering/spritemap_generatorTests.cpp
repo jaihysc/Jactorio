@@ -36,10 +36,7 @@ namespace renderer
 		                                      {jactorio::data::Sprite::SpriteGroup::gui}));
 
 		// Should filter out to only 2 entries
-		rendererSprites_.CreateSpritemap(jactorio::data::Sprite::SpriteGroup::terrain, false);
-
-		const jactorio::renderer::RendererSprites::SpritemapData& data =
-			rendererSprites_.GetSpritemap(jactorio::data::Sprite::SpriteGroup::terrain);
+		const auto data = rendererSprites_.CreateSpritemap(jactorio::data::Sprite::SpriteGroup::terrain, false);
 
 		EXPECT_EQ(data.width, 64);
 		EXPECT_EQ(data.height, 32);
@@ -72,10 +69,7 @@ namespace renderer
 		                                      {}));
 
 		// Should filter out to 3 entries, total width of 32 * 3
-		rendererSprites_.CreateSpritemap(jactorio::data::Sprite::SpriteGroup::terrain, false);
-
-		const jactorio::renderer::RendererSprites::SpritemapData& data =
-			rendererSprites_.GetSpritemap(jactorio::data::Sprite::SpriteGroup::terrain);
+		const auto data = rendererSprites_.CreateSpritemap(jactorio::data::Sprite::SpriteGroup::terrain, false);
 
 		EXPECT_EQ(data.width, 96);
 		EXPECT_EQ(data.height, 32);
@@ -89,17 +83,17 @@ namespace renderer
 	class SpritemapGeneratorTest : public testing::Test
 	{
 	protected:
-		jactorio::renderer::RendererSprites renderer_sprites_{};
+		jactorio::renderer::RendererSprites rendererSprites_{};
 
 		/// \return true if pixel contains specified color
-		bool get_pixel_color(const unsigned char* img_ptr,
-		                     const unsigned int image_width,
-		                     const unsigned int x,
-		                     const unsigned int y,
-		                     const unsigned short r,
-		                     const unsigned short g,
-		                     const unsigned short b,
-		                     const unsigned short a) {
+		static bool GetPixelColor(const unsigned char* img_ptr,
+		                          const unsigned int image_width,
+		                          const unsigned int x,
+		                          const unsigned int y,
+		                          const unsigned short r,
+		                          const unsigned short g,
+		                          const unsigned short b,
+		                          const unsigned short a) {
 			const unsigned int offset = (image_width * y + x) * 4;
 
 			bool valid = true;
@@ -149,30 +143,29 @@ namespace renderer
 		prototypes[3]->internalId = 4;
 		prototypes[3]->LoadImage("test/graphics/test/test_tile3.png");
 
-		const auto spritemap = renderer_sprites_.GenSpritemap(prototypes, 4, true);
-		jactorio::core::CapturingGuard<void()> guard_2([&] { delete[] spritemap.spriteBuffer; });
+		const auto spritemap = rendererSprites_.GenSpritemap(prototypes, 4, true);
 
 		EXPECT_EQ(spritemap.width, 160);
 		EXPECT_EQ(spritemap.height, 64);
 
 		// Sample spots on the concatenated image
 		// Image 0
-		auto* img_ptr = spritemap.spriteBuffer;
+		auto* img_ptr = spritemap.spriteBuffer.get();
 
-		EXPECT_EQ(get_pixel_color(img_ptr, 160, 26, 6, 0, 0, 0, 255), true);
-		EXPECT_EQ(get_pixel_color(img_ptr, 160, 5, 26, 0, 105, 162, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 160, 26, 6, 0, 0, 0, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 160, 5, 26, 0, 105, 162, 255), true);
 
 		// Image 1
-		EXPECT_EQ(get_pixel_color(img_ptr, 160, 47, 26, 83, 83, 83, 255), true);
-		EXPECT_EQ(get_pixel_color(img_ptr, 160, 50, 9, 255, 255, 255, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 160, 47, 26, 83, 83, 83, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 160, 50, 9, 255, 255, 255, 255), true);
 
 		// Image 2
-		EXPECT_EQ(get_pixel_color(img_ptr, 160, 83, 5, 255, 0, 0, 255), true);
-		EXPECT_EQ(get_pixel_color(img_ptr, 160, 71, 18, 255, 255, 255, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 160, 83, 5, 255, 0, 0, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 160, 71, 18, 255, 255, 255, 255), true);
 
 		// Image 3
-		EXPECT_EQ(get_pixel_color(img_ptr, 160, 125, 53, 77, 57, 76, 255), true);
-		EXPECT_EQ(get_pixel_color(img_ptr, 160, 142, 22, 42, 15, 136, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 160, 125, 53, 77, 57, 76, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 160, 142, 22, 42, 15, 136, 255), true);
 
 		// Empty area is undefined
 
@@ -257,23 +250,22 @@ namespace renderer
 		prototypes[1]->internalId = 2;
 		prototypes[1]->LoadImage("test/graphics/test/test_tile1.png");
 
-		const auto spritemap = renderer_sprites_.GenSpritemap(prototypes, 2, false);
-		jactorio::core::CapturingGuard<void()> guard_2([&] { delete[] spritemap.spriteBuffer; });
+		const auto spritemap = rendererSprites_.GenSpritemap(prototypes, 2, false);
 
 		EXPECT_EQ(spritemap.width, 64);
 		EXPECT_EQ(spritemap.height, 32);
 
 		// Sample spots on the concatenated image
 		// Image 0
-		auto* img_ptr = spritemap.spriteBuffer;
+		auto* img_ptr = spritemap.spriteBuffer.get();
 
 		// Image 1
-		EXPECT_EQ(get_pixel_color(img_ptr, 64, 19, 25, 255, 0, 42, 255), true);
-		EXPECT_EQ(get_pixel_color(img_ptr, 64, 25, 7, 8, 252, 199, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 64, 19, 25, 255, 0, 42, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 64, 25, 7, 8, 252, 199, 255), true);
 
 		// Image 2
-		EXPECT_EQ(get_pixel_color(img_ptr, 64, 32 + 23, 11, 149, 149, 149, 255), true);
-		EXPECT_EQ(get_pixel_color(img_ptr, 64, 32 + 26, 16, 255, 255, 255, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 64, 32 + 23, 11, 149, 149, 149, 255), true);
+		EXPECT_EQ(GetPixelColor(img_ptr, 64, 32 + 26, 16, 255, 255, 255, 255), true);
 
 		// Empty area is undefined
 	}

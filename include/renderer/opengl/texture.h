@@ -7,6 +7,8 @@
 
 #include "jactorio.h"
 
+#include <memory>
+
 namespace jactorio::renderer
 {
 	///
@@ -15,11 +17,13 @@ namespace jactorio::renderer
 	class Texture
 	{
 	public:
+		using SpriteBufferT = unsigned char;
+
 		///
 		/// \param buffer new allocated buffer, will be deleted when texture is deleted (assumed to be RGBA)
 		/// \param width Width of buffer image
 		/// \param height Height of buffer image
-		Texture(unsigned char* buffer, unsigned int width, unsigned height);
+		Texture(std::shared_ptr<SpriteBufferT> buffer, unsigned int width, unsigned height);
 		~Texture();
 
 		Texture(const Texture& other)                = delete;
@@ -43,7 +47,7 @@ namespace jactorio::renderer
 		unsigned int rendererId_;
 
 		// Image properties
-		unsigned char* textureBuffer_;
+		std::shared_ptr<SpriteBufferT> textureBuffer_;
 		unsigned int width_, height_;
 	};
 }
