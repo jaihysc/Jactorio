@@ -39,10 +39,9 @@ namespace jactorio::data
 		///
 		/// \brief Maps a placementOrientation to a <set, frame>
 		/// Chunk_tile_layer* are the neighbors of the destination Chunk_tile_layer
-		virtual std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation orientation,
-		                                                              game::WorldData& world_data,
-		                                                              const game::WorldData::WorldPair&
-		                                                              world_coords) const = 0;
+		virtual Sprite::SetT MapPlacementOrientation(Orientation orientation,
+		                                             game::WorldData& world_data,
+		                                             const game::WorldData::WorldPair& world_coords) const = 0;
 	};
 }
 

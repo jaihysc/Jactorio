@@ -5,8 +5,6 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
 #pragma once
 
-#include <array>
-
 #include "health_entity.h"
 
 namespace jactorio::data
@@ -60,10 +58,10 @@ namespace jactorio::data
 
 		void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
 
-		std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation,
-		                                                      game::WorldData&,
-		                                                      const game::WorldData::WorldPair&) const override {
-			return {0, 0};
+		Sprite::SetT MapPlacementOrientation(Orientation,
+		                                     game::WorldData&,
+		                                     const game::WorldData::WorldPair&) const override {
+			return 0;
 		}
 
 		void ValidatedPostLoad() override {

@@ -7,6 +7,7 @@
 
 #include "core/data_type.h"
 #include "data/prototype/prototype_base.h"
+#include "data/prototype/sprite.h"
 
 namespace jactorio
 {
@@ -16,11 +17,6 @@ namespace jactorio
 		class ChunkTileLayer;
 
 		class Chunk;
-	}
-
-	namespace data
-	{
-		class Sprite;
 	}
 
 	namespace renderer
@@ -35,16 +31,13 @@ namespace jactorio::data
 	/// \brief Inherit to allow drawing portions of a sprite
 	struct RenderableData : UniqueDataBase
 	{
-		using SetT = uint16_t;
-		using FrameT = uint16_t;
-
 		RenderableData() = default;
 
-		RenderableData(const SetT set)
+		RenderableData(const Sprite::SetT set)
 			: set(set) {
 		}
 
-		SetT set = 0;
+		Sprite::SetT set = 0;
 
 		///
 		/// \param layer
@@ -71,8 +64,8 @@ namespace jactorio::data
 	public:
 		///
 		/// \brief Called by the renderer when it wants the sprite and frame within the sprite
-		virtual std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
-		                                                                GameTickT game_tick) const = 0;
+		virtual std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
+		                                                        GameTickT game_tick) const = 0;
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data

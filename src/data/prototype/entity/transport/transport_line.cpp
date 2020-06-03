@@ -57,17 +57,16 @@ void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer,
 
 //
 
-std::pair<uint16_t, uint16_t> data::TransportLine::MapPlacementOrientation(
-	const Orientation orientation,
-	game::WorldData& world_data,
-	const game::WorldData::WorldPair& world_coords) const {
+data::Sprite::SetT data::TransportLine::MapPlacementOrientation(const Orientation orientation,
+                                                                game::WorldData& world_data,
+                                                                const game::WorldData::WorldPair& world_coords) const {
 
 	auto* t_center = GetLineData(world_data, world_coords.first, world_coords.second - 1);
 	auto* c_left   = GetLineData(world_data, world_coords.first - 1, world_coords.second);
 	auto* c_right  = GetLineData(world_data, world_coords.first + 1, world_coords.second);
 	auto* b_center = GetLineData(world_data, world_coords.first, world_coords.second + 1);
 
-	return {static_cast<uint16_t>(GetLineOrientation(orientation, t_center, c_right, b_center, c_left)), 0};
+	return static_cast<uint16_t>(GetLineOrientation(orientation, t_center, c_right, b_center, c_left));
 }
 
 // ======================================================================

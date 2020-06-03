@@ -4,14 +4,15 @@ import jactorioData as j
 def addInserter(name, worldSprite, itemSprite, rotationSpeed):
     (j.Inserter(name)
         .pickupTime(0.1)
-        .rotatable(True)
         .rotationSpeed(rotationSpeed)
+
+        .rotatable(True)
 
         .sprite((j.Sprite()
                  .load(worldSprite)
-                 .frames(4)
-                 .sets(1)
-                 .trim(2)
+                 .sets(4)
+                 .frames(1)
+                 .invertSetFrame(True)
                  ))
 
         .item((j.Item(name + "-item")

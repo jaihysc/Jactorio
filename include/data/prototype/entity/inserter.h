@@ -68,9 +68,9 @@ namespace jactorio::data
 		// ======================================================================
 		void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
 
-		std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation orientation,
-		                                                      game::WorldData& world_data,
-		                                                      const game::WorldData::WorldPair& world_coords) const override;
+		Sprite::SetT MapPlacementOrientation(Orientation orientation,
+		                                     game::WorldData& world_data,
+		                                     const game::WorldData::WorldPair& world_coords) const override;
 
 
 		void OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,

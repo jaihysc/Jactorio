@@ -83,13 +83,13 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, data::
 		// Rotatable entities
 		if (selected_entity->rotatable) {
 			// Create unique data at tile to indicate set / frame to render
-			const auto target = selected_entity->MapPlacementOrientation(placement_orientation,
+			const auto set = selected_entity->MapPlacementOrientation(placement_orientation,
 			                                                             world_data,
 			                                                             {world_x, world_y});
 
 			ChunkTileLayer& target_layer = tile->GetLayer(ChunkTile::ChunkLayer::overlay);
 
-			target_layer.MakeUniqueData<data::RenderableData>(target.first);
+			target_layer.MakeUniqueData<data::RenderableData>(set);
 			target_layer.prototypeData = selected_entity
 			                             ->OnRGetSprite(target_layer.GetUniqueData(),
 			                                            player_data.GetPlayerWorld().GameTick()).first;

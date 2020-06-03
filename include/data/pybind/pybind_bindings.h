@@ -118,6 +118,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(Sprite, frames)
 		PYBIND_PROP(Sprite, sets)
 		PYBIND_PROP(Sprite, trim)
+		PYBIND_PROP(Sprite, invertSetFrame)
 		.def("load", &Sprite::LoadImage);
 
 	py::enum_<Sprite::SpriteGroup>(m, "spriteGroup")

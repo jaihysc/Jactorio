@@ -6,6 +6,7 @@
 #include "data/prototype/sprite.h"
 
 #include <sstream>
+#include <type_traits>
 #include <utility>
 #include <stb/stb_image.h>
 
@@ -72,7 +73,7 @@ void jactorio::data::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& 
 		LOG_MESSAGE_f(debug, "    %d", static_cast<int>(group));
 	}
 
-	
+
 	if (group.empty()) {
 		group = new_group;
 	}
@@ -98,40 +99,35 @@ void jactorio::data::Sprite::LoadImageFromFile() {
 }
 
 
-void jactorio::data::Sprite::AdjustSetFrame(RenderableData::SetT& set, RenderableData::FrameT& frame) const {
+void jactorio::data::Sprite::AdjustSetFrame(SetT& set, FrameT& frame) const {
 	set %= sets;
 	set += frame / frames;
 	frame = frame % frames;
 }
 
-jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(RenderableData::SetT set,
-                                                               RenderableData::FrameT frame) const {
-	AdjustSetFrame(set, frame);
+jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(SetT set,
+                                                               FrameT frame) const {
+	float width_base  = static_cast<float>(width_) / static_cast<float>(frames);
+	float height_base = static_cast<float>(height_) / static_cast<float>(sets);
 
-	assert(set < sets);  // Out of range
-	assert(frame < frames);
+	// If inverted:
+	// Set   = X axis
+	// Frame = Y axis
+	if (invertSetFrame) {
+		width_base  = static_cast<float>(width_) / static_cast<float>(sets);
+		height_base = static_cast<float>(height_) / static_cast<float>(frames);
 
-	return {
-		{
-			1.f / static_cast<float>(frames) * static_cast<float>(frame),
-			1.f / static_cast<float>(sets) * static_cast<float>(set)
-		},
-		{
-			1.f / static_cast<float>(frames) * static_cast<float>(frame + 1),
-			1.f / static_cast<float>(sets) * static_cast<float>(set + 1)
-		}
-	};
-}
+		AdjustSetFrame(frame, set);
 
-jactorio::core::QuadPosition jactorio::data::Sprite::GetCoordsTrimmed(RenderableData::SetT set,
-                                                                      RenderableData::FrameT frame) const {
-	AdjustSetFrame(set, frame);
+		assert(set < frames);  // Out of range
+		assert(frame < sets);
+	}
+	else {
+		AdjustSetFrame(set, frame);
 
-	assert(set < sets);  // Out of range
-	assert(frame < frames);
-
-	const auto width_base  = static_cast<float>(width_) / static_cast<float>(frames);
-	const auto height_base = static_cast<float>(height_) / static_cast<float>(sets);
+		assert(set < sets);  // Out of range
+		assert(frame < frames);
+	}
 
 	return {
 		{

@@ -8,31 +8,33 @@ using namespace jactorio;
 void data::Inserter::OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const {
 }
 
-std::pair<uint16_t, uint16_t> data::Inserter::MapPlacementOrientation(const Orientation orientation,
-                                                                      game::WorldData& world_data,
-                                                                      const game::WorldData::WorldPair& world_coords) const {
+data::Sprite::SetT data::Inserter::MapPlacementOrientation(const Orientation orientation,
+                                                           game::WorldData&,
+                                                           const game::WorldData::WorldPair&) const {
 	switch (orientation) {
 
 	case Orientation::up:
-		return {0, 0};
+		return 0;
 	case Orientation::right:
-		return {0, 1};
+		return 1;
 	case Orientation::down:
-		return {0, 2};
+		return 2;
 	case Orientation::left:
-		return {0, 3};
+		return 3;
 
 	default: ;
 		assert(false);
 		break;
 	}
 
-	return {0, 0};
+	return 0;
 }
 
 void data::Inserter::OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
                              game::ChunkTileLayer& tile_layer, Orientation orientation) const {
-	tile_layer.MakeUniqueData<InserterData>(orientation);
+	auto* inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
+	inserter_data->set = MapPlacementOrientation(orientation, world_data, world_coords);
+
 
 	// Dropoff side
 	{

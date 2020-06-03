@@ -11,7 +11,6 @@
 #include "jactorio.h"
 #include "core/data_type.h"
 #include "data/prototype/prototype_base.h"
-#include "data/prototype/interface/renderable.h"
 
 namespace jactorio::data
 {
@@ -60,6 +59,10 @@ namespace jactorio::data
 		// ======================================================================
 		// Sprite (image) properties
 
+		using SetT = uint16_t;
+		using FrameT = uint16_t;
+		using TrimT = uint16_t;
+
 		///
 		/// \brief Group(s) determines which spritemap(s) this sprite is placed on
 		PYTHON_PROP_REF(Sprite, std::vector<SpriteGroup>, group);
@@ -76,15 +79,21 @@ namespace jactorio::data
 		 */
 
 		///
+		/// \brief If true : X = Set, Y = Frame,
+		///			  false: Y = Set, X = Frame
+		PYTHON_PROP_REF_I(Sprite, bool, invertSetFrame, false);
+
+		///
 		/// \brief Animation frames, X axis, indexed by 0 based index, 1 if single
-		PYTHON_PROP_REF_I(Sprite, uint16_t, frames, 1);
+		PYTHON_PROP_REF_I(Sprite, FrameT, frames, 1);
 		///
 		/// \brief Y axis, indexed by 0 based index, 1 if single
-		PYTHON_PROP_REF_I(Sprite, uint16_t, sets, 1);
+		PYTHON_PROP_REF_I(Sprite, SetT, sets, 1);
+
 
 		///
 		/// \brief Pixels to remove from the border when get_coords() is called
-		PYTHON_PROP_REF_I(Sprite, uint16_t, trim, 0);
+		PYTHON_PROP_REF_I(Sprite, TrimT, trim, 0);
 
 
 		///
@@ -129,19 +138,14 @@ namespace jactorio::data
 		/// \brief Performs the following adjustments to set and frame
 		/// \param set Modulus of total number of sets
 		/// \param frame Modulus of total number of frames, every multiple of frames increases set by 1
-		void AdjustSetFrame(RenderableData::SetT& set, RenderableData::FrameT& frame) const;
+		void AdjustSetFrame(SetT& set, FrameT& frame) const;
 
 	public:
-		///
-		/// \brief Gets UV coordinates for region within a sprite
-		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::QuadPosition GetCoords(RenderableData::SetT set, RenderableData::FrameT frame) const;
-
 		///
 		/// \brief Gets UV coordinates for region within a sprite, applying a deduction of trim pixels around the border
 		/// \remark Requires width_ and height_ to be initialized
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::QuadPosition GetCoordsTrimmed(RenderableData::SetT set, RenderableData::FrameT frame) const;
+		J_NODISCARD core::QuadPosition GetCoords(SetT set, FrameT frame) const;
 
 		// ======================================================================
 		// Sprite ptr

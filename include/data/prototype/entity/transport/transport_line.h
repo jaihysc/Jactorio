@@ -217,14 +217,14 @@ namespace jactorio::data
 		              game::ChunkTileLayer& tile_layer) const override;
 
 
-		std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation orientation,
-		                                                      game::WorldData& world_data,
-		                                                      const game::WorldData::WorldPair& world_coords)
+		Sprite::SetT MapPlacementOrientation(Orientation orientation,
+		                                     game::WorldData& world_data,
+		                                     const game::WorldData::WorldPair& world_coords)
 		const override;
 
 
-		std::pair<Sprite*, RenderableData::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
-		                                                        const GameTickT game_tick) const override {
+		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
+		                                                const GameTickT game_tick) const override {
 			return {this->sprite, game_tick % sprite->frames};
 		};
 

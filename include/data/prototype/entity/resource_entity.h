@@ -39,10 +39,10 @@ namespace jactorio::data
 		void OnRShowGui(game::PlayerData&, game::ChunkTileLayer*) const override {
 		}
 
-		std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation,
-		                                                      game::WorldData&,
-		                                                      const game::WorldData::WorldPair&) const override {
-			return {0, 0};
+		Sprite::SetT MapPlacementOrientation(Orientation,
+		                                     game::WorldData&,
+		                                     const game::WorldData::WorldPair&) const override {
+			return 0;
 		}
 
 

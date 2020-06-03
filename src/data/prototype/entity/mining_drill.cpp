@@ -15,7 +15,7 @@ void jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, game
 	renderer::MiningDrill(player_data, drill_data);
 }
 
-std::pair<jactorio::data::Sprite*, jactorio::data::RenderableData::FrameT> jactorio::data::MiningDrill::OnRGetSprite(
+std::pair<jactorio::data::Sprite*, jactorio::data::Sprite::FrameT> jactorio::data::MiningDrill::OnRGetSprite(
 	const UniqueDataBase* unique_data, const GameTickT game_tick) const {
 	const auto set = static_cast<const RenderableData*>(unique_data)->set;
 
@@ -31,22 +31,22 @@ std::pair<jactorio::data::Sprite*, jactorio::data::RenderableData::FrameT> jacto
 	return {this->spriteW, game_tick % this->spriteW->frames * this->spriteW->sets};
 }
 
-std::pair<uint16_t, uint16_t> jactorio::data::MiningDrill::MapPlacementOrientation(const Orientation orientation,
-                                                                                   game::WorldData&,
-                                                                                   const game::WorldData::WorldPair&) const {
+jactorio::data::Sprite::SetT jactorio::data::MiningDrill::MapPlacementOrientation(const Orientation orientation,
+                                                                                  game::WorldData&,
+                                                                                  const game::WorldData::WorldPair&) const {
 	switch (orientation) {
 	case Orientation::up:
-		return {0, 0};
+		return 0;
 	case Orientation::right:
-		return {8, 0};
+		return 8;
 	case Orientation::down:
-		return {16, 0};
+		return 16;
 	case Orientation::left:
-		return {24, 0};
+		return 24;
 
 	default:
 		assert(false);  // Missing switch case
-		return {0, 0};
+		return 0;
 	}
 }
 
@@ -123,7 +123,7 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 	drill_data->outputItem = FindOutputItem(world_data, world_coords);
 	assert(drill_data->outputItem != nullptr);  // Should not have been allowed to be placed on no resources
 
-	drill_data->set              = MapPlacementOrientation(orientation, world_data, world_coords).first;
+	drill_data->set              = MapPlacementOrientation(orientation, world_data, world_coords);
 	drill_data->outputTileCoords = output_coords;
 
 	OnNeighborUpdate(world_data, output_coords, world_coords, orientation);

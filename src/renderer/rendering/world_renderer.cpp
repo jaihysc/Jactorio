@@ -62,7 +62,7 @@ constexpr TileDrawFunc tile_draw_func[]{
 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
 		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 		if (unique_data)
-			ApplyUvOffset(uv, t->sprite->GetCoordsTrimmed(unique_data->set, sprite_frame.second));
+			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
 
 		return TileDrawFuncReturn{uv, nullptr};
 	},
@@ -78,7 +78,7 @@ constexpr TileDrawFunc tile_draw_func[]{
 		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 
 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
-			ApplyUvOffset(uv, t->sprite->GetCoordsTrimmed(unique_data->set, sprite_frame.second));
+			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
 
 		return TileDrawFuncReturn{uv, nullptr};
 	},
@@ -93,7 +93,7 @@ constexpr TileDrawFunc tile_draw_func[]{
 		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 
 		if (unique_data) {
-			ApplyUvOffset(uv, t->sprite->GetCoordsTrimmed(unique_data->set, sprite_frame.second));
+			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
 			return TileDrawFuncReturn{uv, unique_data};
 		}
 
@@ -110,7 +110,7 @@ constexpr TileDrawFunc tile_draw_func[]{
 		auto uv = jactorio::renderer::Renderer::GetSpritemapCoords(t->internalId);
 
 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
-			ApplyUvOffset(uv, t->GetCoordsTrimmed(unique_data->set, 0));
+			ApplyUvOffset(uv, t->GetCoords(unique_data->set, 0));
 
 		return TileDrawFuncReturn{uv, nullptr};
 	}
