@@ -12,30 +12,34 @@ double jactorio::game::GetInserterArmOffset(const core::TIntDegree degree, const
 	return fabs(result);
 }
 
-void InserterUpdate(jactorio::game::DeferralTimer& deferral_timer,
-                    const jactorio::data::Inserter& inserter_proto, jactorio::data::InserterData& inserter_data) {
+void InserterUpdate(const jactorio::data::Inserter& inserter_proto, jactorio::data::InserterData& inserter_data) {
 	using namespace jactorio::game;
 	using namespace jactorio;
 
 	switch (inserter_data.status) {
 
 	case data::InserterData::Status::dropoff:
+		inserter_data.rotationDegree -= inserter_proto.rotationSpeed;
+		if (inserter_data.rotationDegree <= data::ToRotationDegree(kMinInserterDegree)) {
+			inserter_data.rotationDegree = 0;  // Prevents underflow if the inserter sits idle for a long time
+
+			if (inserter_data.dropoff.DropOff(inserter_data.heldItem)) {
+				inserter_data.status = data::InserterData::Status::pickup;
+			}
+		}
+
 		return;
+
 	case data::InserterData::Status::pickup:
+		// Rotate the inserter
+		inserter_data.rotationDegree += inserter_proto.rotationSpeed;
+		if (inserter_data.rotationDegree > data::ToRotationDegree(kMaxInserterDegree))
+			inserter_data.rotationDegree = kMaxInserterDegree;
+
+
 		if (inserter_data.pickup.Pickup(inserter_data.rotationDegree, 1,
 		                                inserter_data.heldItem)) {
-			// Picked up item
-			auto elapse_tick = static_cast<double>(kMaxInserterDegree - kMinInserterDegree);
-			elapse_tick /= inserter_proto.rotationSpeed.getAsDouble();
-
-			// Always round up for ticks to reach dropoff
-			double fraction;
-			if (modf(elapse_tick, &fraction) != 0) {
-				elapse_tick++;
-			}
-
 			inserter_data.status = data::InserterData::Status::dropoff;
-			deferral_timer.RegisterFromTick(inserter_proto, &inserter_data, static_cast<GameTickT>(elapse_tick));
 		}
 		return;
 
@@ -53,8 +57,7 @@ void jactorio::game::InserterLogicUpdate(WorldData& world_data) {
 			const auto* proto_data = tile_layer->GetPrototypeData<data::Inserter>();
 			assert(proto_data);
 
-			InserterUpdate(world_data.deferralTimer,
-			               *proto_data, *inserter_data);
+			InserterUpdate(*proto_data, *inserter_data);
 		}
 	}
 }

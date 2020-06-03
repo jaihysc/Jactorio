@@ -165,6 +165,8 @@ void jactorio::data::LoadData(
 				throw;
 			}
 			prototype.ValidatedPostLoad();
+
+			LOG_MESSAGE_f(debug, "Validating prototype %d %s Success\n", prototype.internalId, prototype.name.c_str());
 		}
 	}
 }

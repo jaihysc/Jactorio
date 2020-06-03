@@ -23,16 +23,11 @@ namespace jactorio::data
 
 		game::ChunkTileLayer& BuildInserter(const game::WorldData::WorldPair& coords,
 		                                    const Orientation orientation) {
-			auto& layer = worldData_.GetTile(coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
-
-			layer.prototypeData = &inserterProto_;
-			inserterProto_.OnBuild(worldData_, coords, layer, orientation);
-
-			return layer;
+			return TestSetupInserter(worldData_, coords, inserterProto_, orientation);
 		}
 	};
 
-	TEST_F(InserterTest, OnBuildCreateData) {
+	TEST_F(InserterTest, OnBuildCreateDataInvalid) {
 		BuildInserter({1, 1}, Orientation::right);
 
 		auto& layer = worldData_.GetTile({1, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity);
@@ -41,7 +36,8 @@ namespace jactorio::data
 
 		EXPECT_FLOAT_EQ(inserter_data->rotationDegree.getAsDouble(), 180.f);
 
-		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+		// Does not have both pickup + dropoff, not added
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
 	}
 
 	TEST_F(InserterTest, FindPickupDropoffOnBuild) {
@@ -68,13 +64,19 @@ namespace jactorio::data
 		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
 		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
 
+
 		TestSetupContainer(worldData_, {1, 1}, container_entity);
 		inserterProto_.OnNeighborUpdate(worldData_, {1, 1}, {2, 1}, Orientation::left);
+
 		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+
 
 		TestSetupContainer(worldData_, {3, 1}, container_entity);
 		inserterProto_.OnNeighborUpdate(worldData_, {3, 1}, {2, 1}, Orientation::right);
+
 		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);  // Added since both are now valid
 	}
 
 	TEST_F(InserterTest, RemovePickupDropoff) {
@@ -85,16 +87,26 @@ namespace jactorio::data
 		TestSetupContainer(worldData_, {3, 1}, container_entity);
 
 		auto& layer = BuildInserter({2, 1}, Orientation::left);
-
 		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
 		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
+
+
+		TestSetupContainer(worldData_, {1, 1}, container_entity);
+		inserterProto_.OnNeighborUpdate(worldData_, {1, 1}, {2, 1}, Orientation::left);
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+
 
 		// Removed chest
 		
 		worldData_.GetTile({3, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();
 		inserterProto_.OnNeighborUpdate(worldData_, {3, 1}, {2, 1}, Orientation::right);
 
+		worldData_.GetTile({1, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();
+		inserterProto_.OnNeighborUpdate(worldData_, {1, 1}, {2, 1}, Orientation::left);
+
 		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
 		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
+
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
 	}
 }

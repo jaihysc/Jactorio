@@ -6,6 +6,7 @@
 #pragma once
 
 #include "data/prototype/entity/container_entity.h"
+#include "data/prototype/entity/inserter.h"
 #include "game/world/world_data.h"
 
 ///
@@ -20,6 +21,22 @@ inline jactorio::game::ChunkTileLayer& TestSetupContainer(jactorio::game::WorldD
 	container_layer.MakeUniqueData<jactorio::data::ContainerEntityData>(10);
 
 	return container_layer;
+}
+
+///
+/// \brief Creates an inserter at coordinates
+inline jactorio::game::ChunkTileLayer& TestSetupInserter(jactorio::game::WorldData& world_data,
+                                                         const jactorio::game::WorldData::WorldPair& world_coords,
+                                                         const jactorio::data::Inserter& inserter_proto,
+                                                         const jactorio::data::Orientation orientation) {
+	using namespace jactorio;
+
+	auto& layer = world_data.GetTile(world_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+
+	layer.prototypeData = &inserter_proto;
+	inserter_proto.OnBuild(world_data, world_coords, layer, orientation);
+
+	return layer;
 }
 
 
