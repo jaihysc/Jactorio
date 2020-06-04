@@ -273,5 +273,5 @@ bool jactorio::game::InserterPickup::PickupTransportBelt(const data::RotationDeg
 	const auto* item = line_data.lineSegment->TryPopItemAbs(use_line_left, pickup_offset);
 
 	out_item_stack = data::ItemStack{item, amount};
-	return item == nullptr;
+	return item != nullptr;
 }

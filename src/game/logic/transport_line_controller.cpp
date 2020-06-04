@@ -71,11 +71,15 @@ J_NODISCARD bool MoveNextItem(const jactorio::game::TransportLineOffset& tiles_m
 	}
 
 	// Failed to find another item
+	index = 0;
+	
+	/*
 	// set to 1 past the index of the last item (stop the transport line permanently) if there is no target segment
 	if (!has_target_segment)
 		index = line_side.size();
 	else
 		index = 0;
+	*/
 
 	return false;
 }
@@ -181,6 +185,7 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 		if (MoveNextItem(tiles_moved, side.lane, index, segment.targetSegment != nullptr)) {
 			back_item_distance -= tiles_moved;
 		}
+		/*
 			// Disable transport line since it does not feed anywhere
 		else {
 			switch (segment.terminationType) {
@@ -194,6 +199,7 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 				break;
 			}
 		}
+		*/
 	}
 	else {
 		// ================================================

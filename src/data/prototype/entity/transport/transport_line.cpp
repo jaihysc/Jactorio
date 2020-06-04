@@ -800,6 +800,10 @@ void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
 
 	// ======================================================================
 
+	// Reset segment lane item index to 0, since the head items MAY now have somewhere to go
+	line_data->lineSegment.get()->left.index = 0;
+	line_data->lineSegment.get()->right.index = 0;
+
 	const UpdateFunc func =
 		[](game::WorldData& world_data,
 		   const int world_x, const int world_y,

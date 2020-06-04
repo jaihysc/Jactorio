@@ -480,15 +480,15 @@ namespace jactorio::game
 		}
 		EXPECT_FLOAT_EQ(segment->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
 
-		// Index set to 3 (indicating the current items should not be moved)
-		// Should not move after further updates
 		TransportLineLogicUpdate(worldData_);
 
-		EXPECT_EQ(segment->left.index, 3);
+		// Index set to 0, checking if a valid target exists to move items forward
+		EXPECT_EQ(segment->left.index, 0);
+
 		EXPECT_FLOAT_EQ(segment->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
 
 
-		// Updates not do nothing as index is at 3, where no item exists
+		// Updates do nothing since all items are compressed
 		for (int k = 0; k < 50; ++k) {
 			TransportLineLogicUpdate(worldData_);
 		}
@@ -759,6 +759,48 @@ namespace jactorio::game
 		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 8.10f);
 		EXPECT_FLOAT_EQ(down_segment->right.lane[3].first.getAsDouble(), 0.25f);
 
+	}
+
+	TEST_F(TransportLineControllerTest, LineLogicNewSegmentAddedAhead) {
+		//     2      1
+		// < ----- < -----
+		
+		transportBeltProto_->speed = 0.04f;
+
+		// Segments (Logic chunk must be created first)
+		auto left_segment = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::straight,
+			2);
+
+		RegisterSegment({2, 1}, left_segment);
+
+		// One item stopped, one still moving
+		left_segment->AppendItem(true, 0, itemProto_.get());
+		TransportLineLogicUpdate(worldData_);
+		EXPECT_EQ(left_segment.get()->left.index, 0);
+
+		left_segment->AppendItem(true, 2, itemProto_.get());
+		TransportLineLogicUpdate(worldData_);
+		EXPECT_EQ(left_segment.get()->left.index, 1);
+
+
+		// ======================================================================
+		auto left_segment_2 = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::straight,
+			1);
+
+		left_segment->targetSegment = left_segment_2.get();
+
+		RegisterSegment({1, 1}, left_segment_2);
+
+		// Update neighboring segments as a new segment was placed
+		transportBeltProto_->OnNeighborUpdate(worldData_, 
+											  {1, 1}, {2, 1},
+											  data::Orientation::right);
+
+		EXPECT_EQ(left_segment.get()->left.index, 0);
 	}
 
 	TEST_F(TransportLineControllerTest, BackItemDistance) {

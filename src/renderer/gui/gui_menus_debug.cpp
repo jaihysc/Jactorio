@@ -408,7 +408,12 @@ void jactorio::renderer::DebugInserterInfo(game::PlayerData& player_data) {
 	ImGui::Begin("Inserter info");
 
 	const auto selected_tile = player_data.GetMouseTileCoords();
-	auto& layer              = player_data.GetPlayerWorld().GetTile(selected_tile)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+
+	auto* tile = player_data.GetPlayerWorld().GetTile(selected_tile);
+	if (!tile)
+		return;
+
+	auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
 	if (!layer.prototypeData || layer.prototypeData->Category() != data::DataCategory::inserter) {
 		ImGui::Text("No inserter at selected tile");
 		return;

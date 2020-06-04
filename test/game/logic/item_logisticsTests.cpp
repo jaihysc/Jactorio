@@ -337,12 +337,14 @@ namespace jactorio::game
 			constexpr int pickup_amount = 1;
 
 			data::ItemStack out_item_stack;
-			PickupTransportBelt(data::ToRotationDegree(kMaxInserterDegree),
+			bool result = PickupTransportBelt(data::ToRotationDegree(kMaxInserterDegree),
 			                    pickup_amount,
 			                    line_data,
 			                    orientation,
 			                    out_item_stack);
 
+			EXPECT_TRUE(result);
+			
 			EXPECT_NE(out_item_stack.first, nullptr);
 			EXPECT_EQ(out_item_stack.second, pickup_amount);
 		}
