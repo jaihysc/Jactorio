@@ -56,6 +56,10 @@ namespace jactorio::data
 		PYTHON_PROP_I(Inserter, double, rotationSpeedFloat, 0.1f);
 
 		///
+		/// \brief Maximum distance to an item on a transport belt the inserter can pick up
+		PYTHON_PROP_I(Inserter, double, armLength, 1.64f);
+
+		///
 		/// \brief Degrees to rotate per tick 
 		PYTHON_PROP_REF(Inserter, RotationDegree, rotationSpeed);
 

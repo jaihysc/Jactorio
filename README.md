@@ -8,23 +8,27 @@ Check out a [weekly log here](https://github.com/jaihysc/Jactorio/wiki/Devlog)
 
 ## Work in progress
 
-The game is currently playable with a procedurally generated world and transport lines.
+- [x] World Generation
+- [x] Transport lines
+- [x] Drills
+- [x] Inserters
+- [ ] Smelting / Furnaces
+- [ ] Assembly Machines
 
 ## Building
 
-General requirements:
-
-**NOTE:** Functionality not guaranteed on MacOS
+Requirements:
 
 * Compiler supporting c++17 [gcc >= 9, clang >= 9, msvc >= 142]
-* Python interpreter 3.7.x
+* Python interpreter 3.x.x
 * CMake
 
 Remarks:
- * Windows - Ensure CMake is added to the `Paths` environmental variable
- * Windows - Use git bash to run the bash files
- * MacOS - Version >= 10.15
- 
+
+* Windows - Ensure CMake is added to the `Paths` environmental variable
+* Windows - Use git bash to run the bash files
+* MacOS - Version >= 10.15
+
 ---
 
 **Build types:** `Debug, Release, RelWithDebInfo`
@@ -33,7 +37,7 @@ Remarks:
 
 ---
 
-In a bash shell on Mac and Linux / Git bash on Windows, run
+In a bash shell on Windows, Mac and Linux:
 
 ```bash
 git clone https://github.com/jaihysc/Jactorio.git
@@ -45,7 +49,7 @@ Executable will be placed in `out/<Build type>/src/`
 
 ## Running tests
 
-After following the build steps above **without** `--notest`, run the following in a shell or Git bash
+After following the build steps above **without** `--notest`
 
 ```bash
 sh ./runtests.sh <Build type used to build>
@@ -68,4 +72,3 @@ The installation of dependencies listed below is automatic
 * [SDL2](https://github.com/spurious/SDL-mirror)
 * [StackWalker](https://github.com/JochenKalmbach/StackWalker)
 * [stb](https://github.com/nothings/stb)
-

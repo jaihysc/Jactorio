@@ -8,6 +8,7 @@
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
 #include "game/logic/inserter_controller.h"
+#include "data/prototype/entity/transport/transport_belt.h"
 
 namespace jactorio::game
 {
@@ -26,16 +27,9 @@ namespace jactorio::game
 			worldData_.LogicAddChunk(chunk);
 		}
 
-		///
-		/// \param orientation Orientation to drop off
 		ChunkTileLayer& BuildInserter(const WorldData::WorldPair& coords,
-		                   const data::Orientation orientation) {
-			auto& layer = worldData_.GetTile(coords)->GetLayer(ChunkTile::ChunkLayer::entity);
-
-			layer.prototypeData = &inserterProto_;
-			inserterProto_.OnBuild(worldData_, coords, layer, orientation);
-
-			return layer;
+		                              const data::Orientation orientation) {
+			return TestSetupInserter(worldData_, coords, inserterProto_, orientation);
 		}
 
 		///
@@ -68,13 +62,13 @@ namespace jactorio::game
 
 	TEST_F(InserterControllerTest, RotateToDropoffAndBack) {
 		inserterProto_.rotationSpeed = 2.1;
-		const int updates_to_target = 86;
+		const int updates_to_target  = 86;
 
 		auto* dropoff = BuildChest({0, 2}, data::Orientation::left);  // Dropoff
 		auto* pickup  = BuildChest({2, 2}, data::Orientation::right);  // Pickup
 
 		auto& inserter_layer = BuildInserter({1, 2}, data::Orientation::left);
-		auto* inserter_data = inserter_layer.GetUniqueData<data::InserterData>();
+		auto* inserter_data  = inserter_layer.GetUniqueData<data::InserterData>();
 
 		// Pickup item
 		InserterLogicUpdate(worldData_);
@@ -95,6 +89,65 @@ namespace jactorio::game
 			InserterLogicUpdate(worldData_);
 		}
 		EXPECT_EQ(pickup->inventory[0].second, 8);
+		EXPECT_EQ(inserter_data->status, data::InserterData::Status::dropoff);
+	}
+
+	TEST_F(InserterControllerTest, PickupTransportSegment) {
+		inserterProto_.rotationSpeed = 2.1;
+
+		// Setup transport segment
+		data::Item item{};
+		data::TransportBelt segment_proto{};
+
+		auto dropoff = std::make_shared<TransportSegment>(data::Orientation::left,
+														  TransportSegment::TerminationType::straight,
+														  2);
+		TestRegisterTransportSegment(worldData_, {1, 0}, dropoff, segment_proto);
+
+
+		//
+		auto pickup = std::make_shared<TransportSegment>(data::Orientation::left,
+														  TransportSegment::TerminationType::straight,
+														  2);
+		TestRegisterTransportSegment(worldData_, {1, 2}, pickup, segment_proto);
+		
+		for (int i = 0; i < 1000; ++i) {
+			pickup->AppendItem(false, 0, &item);
+		}
+
+
+		auto& inserter_layer = BuildInserter({1, 1}, data::Orientation::up);
+		auto* inserter_data  = inserter_layer.GetUniqueData<data::InserterData>();
+
+		// Logic chunk will be unregistered if setup was invalid
+		ASSERT_EQ(worldData_.LogicGetChunks().size(), 1);
+
+
+		// Will not pickup unless over 90 degrees
+		inserterProto_.armLength = 100;
+
+		inserter_data->rotationDegree = 87.9;
+		inserter_data->status = data::InserterData::Status::pickup;
+
+		InserterLogicUpdate(worldData_);
+		ASSERT_EQ(inserter_data->status, data::InserterData::Status::pickup);
+
+
+		// Pickup when within arm length
+		inserterProto_.armLength = 1.5028;
+
+		for (int i = 0; i < 24; ++i) {
+			InserterLogicUpdate(worldData_);
+
+			if (inserter_data->status != data::InserterData::Status::pickup) {
+				printf("Failed on iteration %d\n", i);
+				ASSERT_EQ(inserter_data->status, data::InserterData::Status::pickup);
+				FAIL();
+			}
+		}
+
+
+		InserterLogicUpdate(worldData_);
 		EXPECT_EQ(inserter_data->status, data::InserterData::Status::dropoff);
 	}
 }

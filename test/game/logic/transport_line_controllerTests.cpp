@@ -5,6 +5,8 @@
 
 #include <memory>
 
+
+#include "jactorioTests.h"
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_segment.h"
@@ -71,16 +73,7 @@ namespace jactorio::game
 		/// \brief Creates tile UniqueData for TransportSegment
 		void RegisterSegment(const Chunk::ChunkPair& world_coords,
 		                     const std::shared_ptr<TransportSegment>& segment) {
-			auto* tile = worldData_.GetTile(world_coords);
-			assert(tile);
-
-			auto& layer         = tile->GetLayer(ChunkTile::ChunkLayer::entity);
-			layer.prototypeData = transportBeltProto_.get();
-
-			layer.MakeUniqueData<data::TransportLineData>(segment);
-
-			chunk_->GetLogicGroup(Chunk::LogicGroup::transport_line)
-			      .emplace_back(&tile->GetLayer(ChunkTile::ChunkLayer::entity));
+			TestRegisterTransportSegment(worldData_, world_coords, segment, *transportBeltProto_.get());
 		}
 	};
 

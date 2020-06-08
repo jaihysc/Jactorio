@@ -1,5 +1,5 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/17/2020
+// Created on: 05/25/2020
 
 #ifndef JACTORIO_GAME_LOGIC_INSERTER_CONTROLLER_H
 #define JACTORIO_GAME_LOGIC_INSERTER_CONTROLLER_H
@@ -36,6 +36,20 @@ namespace jactorio::game
 	/// \param target_distance Tiles to the location which the inserter picks up / drops items
 	/// \return Always positive
 	double GetInserterArmOffset(core::TIntDegree degree, uint8_t target_distance);
+
+	///
+	/// \brief Gets the tile length of the inserter arm 
+	///
+	///   / |
+	/// x/  |
+	/// /   |
+	/// ----------- 0 or 180
+	///
+	/// \param degree Current degree of inserter arm 0 <= degree <= 180
+	/// \param target_distance Tiles to the location which the inserter picks up / drops items
+	/// \return Always positive
+	double GetInserterArmLength(core::TIntDegree degree, uint8_t target_distance);
+
 
 	///
 	/// \brief Updates inserter logic for a logic chunk

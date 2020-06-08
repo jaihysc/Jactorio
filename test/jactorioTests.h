@@ -7,6 +7,7 @@
 
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
+#include "data/prototype/entity/transport/transport_line.h"
 #include "game/world/world_data.h"
 
 ///
@@ -39,5 +40,24 @@ inline jactorio::game::ChunkTileLayer& TestSetupInserter(jactorio::game::WorldDa
 	return layer;
 }
 
+///
+/// \brief Registers and creates tile UniqueData for TransportSegment
+inline void TestRegisterTransportSegment(jactorio::game::WorldData& world_data,
+							const jactorio::game::Chunk::ChunkPair& world_coords,
+                            const std::shared_ptr<jactorio::game::TransportSegment>& segment,
+							const jactorio::data::TransportLine& prototype) {
+	auto* tile = world_data.GetTile(world_coords);
+	assert(tile);
+	auto* chunk = world_data.GetChunk(world_coords);
+	assert(chunk);
+
+	auto& layer         = tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+	layer.prototypeData = &prototype;
+
+	layer.MakeUniqueData<jactorio::data::TransportLineData>(segment);
+
+	chunk->GetLogicGroup(jactorio::game::Chunk::LogicGroup::transport_line)
+	      .emplace_back(&tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
+}
 
 #endif // JACTORIO_TEST_JACTORIOTESTS_H

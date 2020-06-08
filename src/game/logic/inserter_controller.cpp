@@ -12,6 +12,12 @@ double jactorio::game::GetInserterArmOffset(const core::TIntDegree degree, const
 	return fabs(result);
 }
 
+double jactorio::game::GetInserterArmLength(const core::TIntDegree degree, const uint8_t target_distance) {
+	const auto result = (kInserterCenterOffset + target_distance - kInserterArmTileGap) / core::CosF(degree);
+	return fabs(result);
+}
+
+
 void InserterUpdate(const jactorio::data::Inserter& inserter_proto, jactorio::data::InserterData& inserter_data) {
 	using namespace jactorio::game;
 	using namespace jactorio;
@@ -37,9 +43,15 @@ void InserterUpdate(const jactorio::data::Inserter& inserter_proto, jactorio::da
 			inserter_data.rotationDegree = kMaxInserterDegree;
 
 
-		if (inserter_data.pickup.Pickup(inserter_data.rotationDegree, 1,
-		                                inserter_data.heldItem)) {
-			inserter_data.status = data::InserterData::Status::dropoff;
+		if (inserter_data.rotationDegree > data::ToRotationDegree(90.f)) {  // Cos 90 is invalid
+			const auto required_arm_length =
+				GetInserterArmLength(inserter_data.rotationDegree.getAsInteger(), 1);   // TODO configurable distance
+
+			if (required_arm_length <= inserter_proto.armLength &&
+				inserter_data.pickup.Pickup(inserter_data.rotationDegree, 1, inserter_data.heldItem)) {
+
+				inserter_data.status = data::InserterData::Status::dropoff;
+			}
 		}
 		return;
 

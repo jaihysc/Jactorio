@@ -197,7 +197,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 	// Inserter
 	PYBIND_DATA_CLASS(Inserter, Inserter, HealthEntity)
-		PYBIND_PROP_S(Inserter, rotationSpeed, rotationSpeedFloat, Set_rotationSpeedFloat);
+		PYBIND_PROP_S(Inserter, rotationSpeed, rotationSpeedFloat, Set_rotationSpeedFloat)
+		PYBIND_PROP(Inserter, armLength);
 
 
 	// Recipes
