@@ -7,8 +7,8 @@
 
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
-#include "game/logic/inserter_controller.h"
 #include "data/prototype/entity/transport/transport_belt.h"
+#include "game/logic/inserter_controller.h"
 
 namespace jactorio::game
 {
@@ -57,7 +57,23 @@ namespace jactorio::game
 	};
 
 	TEST_F(InserterControllerTest, GetInserterArmOffset) {
-		EXPECT_FLOAT_EQ(jactorio::game::GetInserterArmOffset(160, 1), 0.436764281);
+		EXPECT_FLOAT_EQ(GetInserterArmOffset(20, 1), 0.063235718);
+		EXPECT_FLOAT_EQ(GetInserterArmOffset(160, 1), 0.936764281);
+
+		EXPECT_FLOAT_EQ(GetInserterArmOffset(160, 2), 1.300734515);
+
+		EXPECT_FLOAT_EQ(GetInserterArmOffset(180, 1), 0.5);
+		EXPECT_FLOAT_EQ(GetInserterArmOffset(180, 2), 0.5);
+	}
+
+	TEST_F(InserterControllerTest, GetInserterArmLength) {
+		EXPECT_FLOAT_EQ(GetInserterArmLength(20, 1), -1.277013327);
+		EXPECT_FLOAT_EQ(GetInserterArmLength(160, 1), 1.277013327);
+
+		EXPECT_FLOAT_EQ(GetInserterArmLength(160, 2), 2.341191099);
+
+		EXPECT_FLOAT_EQ(GetInserterArmLength(180, 1), 1.2);
+		EXPECT_FLOAT_EQ(GetInserterArmLength(180, 2), 2.2);
 	}
 
 	TEST_F(InserterControllerTest, RotateToDropoffAndBack) {
@@ -94,23 +110,24 @@ namespace jactorio::game
 
 	TEST_F(InserterControllerTest, PickupTransportSegment) {
 		inserterProto_.rotationSpeed = 2.1;
+		inserterProto_.tileReach     = 1;
 
 		// Setup transport segment
 		data::Item item{};
 		data::TransportBelt segment_proto{};
 
 		auto dropoff = std::make_shared<TransportSegment>(data::Orientation::left,
-														  TransportSegment::TerminationType::straight,
-														  2);
+		                                                  TransportSegment::TerminationType::straight,
+		                                                  2);
 		TestRegisterTransportSegment(worldData_, {1, 0}, dropoff, segment_proto);
 
 
 		//
 		auto pickup = std::make_shared<TransportSegment>(data::Orientation::left,
-														  TransportSegment::TerminationType::straight,
-														  2);
+		                                                 TransportSegment::TerminationType::straight,
+		                                                 2);
 		TestRegisterTransportSegment(worldData_, {1, 2}, pickup, segment_proto);
-		
+
 		for (int i = 0; i < 1000; ++i) {
 			pickup->AppendItem(false, 0, &item);
 		}
@@ -124,19 +141,15 @@ namespace jactorio::game
 
 
 		// Will not pickup unless over 90 degrees
-		inserterProto_.armLength = 100;
-
 		inserter_data->rotationDegree = 87.9;
-		inserter_data->status = data::InserterData::Status::pickup;
+		inserter_data->status         = data::InserterData::Status::pickup;
 
 		InserterLogicUpdate(worldData_);
 		ASSERT_EQ(inserter_data->status, data::InserterData::Status::pickup);
 
 
 		// Pickup when within arm length
-		inserterProto_.armLength = 1.5028;
-
-		for (int i = 0; i < 24; ++i) {
+		for (int i = 0; i < 42; ++i) {
 			InserterLogicUpdate(worldData_);
 
 			if (inserter_data->status != data::InserterData::Status::pickup) {

@@ -62,7 +62,7 @@ namespace jactorio::game
 		inv[0]    = {&item, 10};
 
 		data::ItemStack out_item_stack;
-		pickup.Pickup(data::ToRotationDegree(180.f), 2, out_item_stack);
+		pickup.Pickup(1, data::ToRotationDegree(180.f), 2, out_item_stack);
 
 		EXPECT_EQ(inv[0].second, 8);
 	}
@@ -325,8 +325,8 @@ namespace jactorio::game
 			);
 
 			segment_ = segment.get();
-			segment_->InsertItem(false, 0, &item);
-			segment_->InsertItem(true, 0, &item);
+			segment_->InsertItem(false, 0.5, &item);
+			segment_->InsertItem(true, 0.5, &item);
 
 			return data::TransportLineData{segment};
 		}
@@ -337,14 +337,14 @@ namespace jactorio::game
 			constexpr int pickup_amount = 1;
 
 			data::ItemStack out_item_stack;
-			bool result = PickupTransportBelt(data::ToRotationDegree(kMaxInserterDegree),
-			                    pickup_amount,
-			                    line_data,
-			                    orientation,
-			                    out_item_stack);
+			const bool result = PickupTransportBelt(1, data::ToRotationDegree(kMaxInserterDegree),
+			                                        pickup_amount,
+			                                        line_data,
+			                                        orientation,
+			                                        out_item_stack);
 
 			EXPECT_TRUE(result);
-			
+
 			EXPECT_NE(out_item_stack.first, nullptr);
 			EXPECT_EQ(out_item_stack.second, pickup_amount);
 		}
@@ -361,14 +361,14 @@ namespace jactorio::game
 
 		data::ItemStack out_item_stack;
 
-		PickupContainerEntity(data::ToRotationDegree(179),
+		PickupContainerEntity(1, data::ToRotationDegree(179),
 		                      1, container_data,
 		                      data::Orientation::up,
 		                      out_item_stack);
 
 		EXPECT_EQ(inv[0].second, 10);  // No items picked up, not 180 degrees
 
-		PickupContainerEntity(data::ToRotationDegree(180),
+		PickupContainerEntity(1, data::ToRotationDegree(180),
 		                      2, container_data,
 		                      data::Orientation::up,
 		                      out_item_stack);
@@ -383,8 +383,12 @@ namespace jactorio::game
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
+			segment_->right.index = 10;
+
+			// Should set index to 0 since a item was removed
 			PickupLine(data::Orientation::up, line);
 			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(segment_->right.index, 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);

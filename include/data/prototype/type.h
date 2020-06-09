@@ -11,6 +11,10 @@
 
 namespace jactorio::data
 {
+	using ProtoFloatT = double;
+	using ProtoIntT = int32_t;
+	using ProtoUintT = uint32_t;
+
 	// Common types used by prototypes, includes no jactorio files
 
 	constexpr auto kInserterRotationDecimals = 3;

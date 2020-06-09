@@ -220,6 +220,10 @@ namespace game
 		                         {32, 0},
 		                         jactorio::game::ChunkTile::ChunkLayer::entity);
 
+		worldData_.LogicRegister(jactorio::game::Chunk::LogicGroup::transport_line,
+		                         {33, 0},
+		                         jactorio::game::ChunkTile::ChunkLayer::entity);
+
 		// Registering again will not duplicate logic chunk
 		worldData_.LogicRegister(jactorio::game::Chunk::LogicGroup::inserter,
 		                         {42, 0},
@@ -232,9 +236,17 @@ namespace game
 		                       jactorio::game::ChunkTile::ChunkLayer::entity);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
-		// Chunk now empty, remove from logic chunks
+
+		// Inserter group empty, but transport line group is not, DO NOT remove from logic chunks
 		worldData_.LogicRemove(jactorio::game::Chunk::LogicGroup::inserter,
 		                       {42, 0},
+		                       jactorio::game::ChunkTile::ChunkLayer::entity);
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+
+
+		// All groups empty, remove logic chunk
+		worldData_.LogicRemove(jactorio::game::Chunk::LogicGroup::transport_line,
+		                       {33, 0},
 		                       jactorio::game::ChunkTile::ChunkLayer::entity);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
 	}

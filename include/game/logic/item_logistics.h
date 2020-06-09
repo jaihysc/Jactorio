@@ -108,11 +108,12 @@ namespace jactorio::game
 
 		///
 		///	 \brief Insert provided item at destination
-		bool Pickup(const data::RotationDegree& degree,
+		bool Pickup(const data::ProtoUintT inserter_tile_reach,
+		            const data::RotationDegree& degree,
 		            const data::ItemStack::second_type amount,
 		            data::ItemStack& out_item_stack) const {
 			assert(targetUniqueData_);
-			return (this->*pickupFunc_)(degree, amount, *targetUniqueData_, orientation_, out_item_stack);
+			return (this->*pickupFunc_)(inserter_tile_reach, degree, amount, *targetUniqueData_, orientation_, out_item_stack);
 		}
 
 	protected:
@@ -120,16 +121,19 @@ namespace jactorio::game
 		/// \brief Picks up items when at 180 deg
 		/// \param unique_data Unique data of container to be picked up from 
 		/// \param out_item_stack Item which was picked up
-		virtual bool PickupContainerEntity(const data::RotationDegree& degree,
+		virtual bool PickupContainerEntity(data::ProtoUintT inserter_tile_reach,
+		                                   const data::RotationDegree& degree,
 		                                   data::ItemStack::second_type amount,
 		                                   data::UniqueDataBase& unique_data,
 		                                   data::Orientation orientation,
 		                                   data::ItemStack& out_item_stack) const;
 
 		///
+		/// \remark Will only pickup 1 from transport lines regardless of amount
 		/// \param unique_data Unique data of transport belt to be picked up from 
 		/// \param out_item_stack Item which was picked up
-		virtual bool PickupTransportBelt(const data::RotationDegree& degree,
+		virtual bool PickupTransportBelt(data::ProtoUintT inserter_tile_reach,
+		                                 const data::RotationDegree& degree,
 		                                 data::ItemStack::second_type amount,
 		                                 data::UniqueDataBase& unique_data,
 		                                 data::Orientation orientation,

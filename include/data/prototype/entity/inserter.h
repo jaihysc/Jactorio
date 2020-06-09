@@ -53,15 +53,15 @@ namespace jactorio::data
 		///
 		/// \brief Degrees to rotate per tick 
 		/// \remark For Python API use only
-		PYTHON_PROP_I(Inserter, double, rotationSpeedFloat, 0.1f);
+		PYTHON_PROP_I(Inserter, ProtoFloatT, rotationSpeedFloat, 0.1f);
 
 		///
-		/// \brief Maximum distance to an item on a transport belt the inserter can pick up
-		PYTHON_PROP_I(Inserter, double, armLength, 1.64f);
+		/// \brief Tile distance which the inserter can reach
+		PYTHON_PROP_I(Inserter, ProtoUintT, tileReach, 1);
 
 		///
 		/// \brief Degrees to rotate per tick 
-		PYTHON_PROP_REF(Inserter, RotationDegree, rotationSpeed);
+		RotationDegree rotationSpeed;
 
 
 		void PostLoad() override {
@@ -87,6 +87,11 @@ namespace jactorio::data
 
 		void OnRemove(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
 		              game::ChunkTileLayer& tile_layer) const override;
+
+
+		void PostLoadValidate() const override {
+			J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
+		}
 
 		void ValidatedPostLoad() override {
 			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});

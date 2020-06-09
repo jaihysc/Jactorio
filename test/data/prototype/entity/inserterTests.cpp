@@ -79,6 +79,35 @@ namespace jactorio::data
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);  // Added since both are now valid
 	}
 
+	TEST_F(InserterTest, FindPickupDropoffFar) {
+		// Finding pickup and dropoff tiles when tileReach > 1
+
+		inserterProto_.tileReach = 2;
+		
+		const ContainerEntity container_entity{};
+
+		auto& layer = BuildInserter({2, 2}, Orientation::up);
+
+		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
+		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
+
+
+		// Dropoff
+		TestSetupContainer(worldData_, {2, 0}, container_entity);
+		inserterProto_.OnNeighborUpdate(worldData_, {2, 0}, {2, 2}, Orientation::left);
+
+		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+
+
+		// Pickup
+		TestSetupContainer(worldData_, {2, 4}, container_entity);
+		inserterProto_.OnNeighborUpdate(worldData_, {2, 4}, {2, 2}, Orientation::right);
+
+		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);  // Added since both are now valid
+	}
+
 	TEST_F(InserterTest, RemovePickupDropoff) {
 		// Finding pickup and dropoff tiles
 

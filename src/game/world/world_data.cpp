@@ -173,8 +173,12 @@ void jactorio::game::WorldData::LogicRemove(const Chunk::LogicGroup group, const
 		logic_group.end());
 
 	// Remove from logic chunks if now empty
-	if (logic_group.empty())
-		logicChunks_.erase(chunk);
+	for (auto& group : chunk->logicGroups) {
+		if (!group.empty())
+			return;
+	}
+
+	logicChunks_.erase(chunk);
 }
 
 void jactorio::game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldPair& world_pair,

@@ -13,7 +13,7 @@ namespace jactorio::game
 	// Inserter behavior
 	//
 	// Transport lines:
-	//     Take from far side, place on far side
+	//     Take from near side, place on near side
 	//     Take from anywhere within 1 tile on the transport line
 	//     Put in center of output transport line
 
@@ -34,7 +34,6 @@ namespace jactorio::game
 	///
 	/// \param degree Current degree of inserter arm 0 <= degree <= 180
 	/// \param target_distance Tiles to the location which the inserter picks up / drops items
-	/// \return Always positive
 	double GetInserterArmOffset(core::TIntDegree degree, uint8_t target_distance);
 
 	///
@@ -47,7 +46,6 @@ namespace jactorio::game
 	///
 	/// \param degree Current degree of inserter arm 0 <= degree <= 180
 	/// \param target_distance Tiles to the location which the inserter picks up / drops items
-	/// \return Always positive
 	double GetInserterArmLength(core::TIntDegree degree, uint8_t target_distance);
 
 

@@ -181,7 +181,8 @@ bool jactorio::game::InserterPickup::Initialize(const WorldData& world_data,
 	return Initialize(world_data, target_unique_data, world_coord.first, world_coord.second);
 }
 
-bool jactorio::game::InserterPickup::PickupContainerEntity(const data::RotationDegree& degree,
+bool jactorio::game::InserterPickup::PickupContainerEntity(data::ProtoUintT,
+                                                           const data::RotationDegree& degree,
                                                            const data::ItemStack::second_type amount,
                                                            data::UniqueDataBase& unique_data,
                                                            data::Orientation,
@@ -201,14 +202,12 @@ bool jactorio::game::InserterPickup::PickupContainerEntity(const data::RotationD
 	                     amount);
 }
 
-bool jactorio::game::InserterPickup::PickupTransportBelt(const data::RotationDegree& degree,
-                                                         const data::ItemStack::second_type amount,
+bool jactorio::game::InserterPickup::PickupTransportBelt(const data::ProtoUintT inserter_tile_reach,
+                                                         const data::RotationDegree& degree,
+                                                         const data::ItemStack::second_type,
                                                          data::UniqueDataBase& unique_data,
                                                          const data::Orientation orientation,
                                                          data::ItemStack& out_item_stack) const {
-	if (amount != 1) // TODO
-		LOG_MESSAGE_f(warning, "Inserters will only pick up 1 item at the moment, provided amount: %d", amount);
-
 	auto& line_data = static_cast<data::TransportLineData&>(unique_data);
 
 	bool use_line_left = false;
@@ -268,10 +267,16 @@ bool jactorio::game::InserterPickup::PickupTransportBelt(const data::RotationDeg
 
 	const auto pickup_offset =
 		line_data.lineSegmentIndex +
-		GetInserterArmOffset(degree.getAsInteger(), 1);  // TODO different target distances
+		GetInserterArmOffset(degree.getAsInteger(), inserter_tile_reach);
 
 	const auto* item = line_data.lineSegment->TryPopItemAbs(use_line_left, pickup_offset);
 
-	out_item_stack = data::ItemStack{item, amount};
-	return item != nullptr;
+	if (item != nullptr) {
+		line_data.lineSegment->GetSide(use_line_left).index = 0;
+
+		out_item_stack = data::ItemStack{item, 1};
+
+		return true;
+	}
+	return false;
 }

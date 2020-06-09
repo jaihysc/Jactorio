@@ -39,14 +39,14 @@ void data::Inserter::OnBuild(game::WorldData& world_data, const game::WorldData:
 	// Dropoff side
 	{
 		auto emit_coords = world_coords;
-		OrientationIncrement(orientation, emit_coords.first, emit_coords.second);
+		OrientationIncrement(orientation, emit_coords.first, emit_coords.second, this->tileReach);
 
 		OnNeighborUpdate(world_data, emit_coords, world_coords, orientation);
 	}
 	// Pickup side
 	{
 		auto emit_coords = world_coords;
-		OrientationIncrement(orientation, emit_coords.first, emit_coords.second, -1);
+		OrientationIncrement(orientation, emit_coords.first, emit_coords.second, this->tileReach * -1);
 
 		OnNeighborUpdate(world_data, emit_coords, world_coords, orientation);
 	}
@@ -65,10 +65,10 @@ void data::Inserter::OnNeighborUpdate(game::WorldData& world_data,
 	//
 
 	auto pickup_coords = receive_world_coords;
-	OrientationIncrement(inserter_data.orientation, pickup_coords.first, pickup_coords.second, -1);
+	OrientationIncrement(inserter_data.orientation, pickup_coords.first, pickup_coords.second, this->tileReach * -1);
 
 	auto dropoff_coords = receive_world_coords;
-	OrientationIncrement(inserter_data.orientation, dropoff_coords.first, dropoff_coords.second);
+	OrientationIncrement(inserter_data.orientation, dropoff_coords.first, dropoff_coords.second, this->tileReach);
 
 	// Neighbor was removed, Uninitialize removed item handler
 	if (!target_data) {
