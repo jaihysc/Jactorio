@@ -24,7 +24,8 @@ void jactorio::data::ContainerEntity::OnBuild(game::WorldData&,
 	tile_layer.MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 
-void jactorio::data::ContainerEntity::OnRShowGui(game::PlayerData& player_data,
+bool jactorio::data::ContainerEntity::OnRShowGui(game::PlayerData& player_data,
                                                  game::ChunkTileLayer* tile_layer) const {
 	renderer::ContainerEntity(player_data, tile_layer->GetUniqueData<ContainerEntityData>());
+	return true;
 }

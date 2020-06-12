@@ -7,7 +7,6 @@
 
 #include "jactorio.h"
 
-#include <cstdint>
 #include <utility>
 
 #include "data/prototype/sprite.h"
@@ -18,23 +17,23 @@ namespace jactorio::data
 {
 	///
 	/// \brief Entities which can be rotated by the player
-	class Rotatable
+	class IRotatable
 	{
 	protected:
-		Rotatable()          = default;
-		virtual ~Rotatable() = default;
+		IRotatable()          = default;
+		virtual ~IRotatable() = default;
 
-		Rotatable(const Rotatable& other)                = default;
-		Rotatable(Rotatable&& other) noexcept            = default;
-		Rotatable& operator=(const Rotatable& other)     = default;
-		Rotatable& operator=(Rotatable&& other) noexcept = default;
+		IRotatable(const IRotatable& other)                = default;
+		IRotatable(IRotatable&& other) noexcept            = default;
+		IRotatable& operator=(const IRotatable& other)     = default;
+		IRotatable& operator=(IRotatable&& other) noexcept = default;
 
 
 	public:
 		// The single sprite from entity serves as north
-		PYTHON_PROP_I(Rotatable, Sprite*, spriteE, nullptr);
-		PYTHON_PROP_I(Rotatable, Sprite*, spriteS, nullptr);
-		PYTHON_PROP_I(Rotatable, Sprite*, spriteW, nullptr);
+		PYTHON_PROP_I(IRotatable, Sprite*, spriteE, nullptr);
+		PYTHON_PROP_I(IRotatable, Sprite*, spriteS, nullptr);
+		PYTHON_PROP_I(IRotatable, Sprite*, spriteW, nullptr);
 
 		///
 		/// \brief Maps a placementOrientation to a <set, frame>

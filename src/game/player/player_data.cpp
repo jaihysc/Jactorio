@@ -9,6 +9,7 @@
 
 #include "data/data_manager.h"
 #include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/interface/update_listener.h"
 #include "data/prototype/tile/tile.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
@@ -170,11 +171,11 @@ void jactorio::game::PlayerData::CounterRotatePlacementOrientation() {
 	}
 }
 
-void call_on_neighbor_update(jactorio::game::WorldData& world_data,
-                             const jactorio::game::WorldData::WorldPair emit_pair,
-                             const jactorio::game::WorldData::WorldCoord world_x,
-                             const jactorio::game::WorldData::WorldCoord world_y,
-                             const jactorio::data::Orientation target_orientation) {
+void CallOnNeighborUpdate(jactorio::game::WorldData& world_data,
+                          const jactorio::game::WorldData::WorldPair emit_pair,
+                          const jactorio::game::WorldData::WorldCoord world_x,
+                          const jactorio::game::WorldData::WorldCoord world_y,
+                          const jactorio::data::Orientation target_orientation) {
 	using namespace jactorio;
 
 	const game::ChunkTile* tile = world_data.GetTile(world_x, world_y);
@@ -190,10 +191,10 @@ void call_on_neighbor_update(jactorio::game::WorldData& world_data,
 	}
 }
 
-void update_neighboring_entities(jactorio::game::WorldData& world_data,
-                                 const jactorio::game::WorldData::WorldCoord world_x,
-                                 const jactorio::game::WorldData::WorldCoord world_y,
-                                 const jactorio::data::Entity* entity_ptr) {
+void UpdateNeighboringEntities(jactorio::game::WorldData& world_data,
+                               const jactorio::game::WorldData::WorldCoord world_x,
+                               const jactorio::game::WorldData::WorldCoord world_y,
+                               const jactorio::data::Entity* entity_ptr) {
 	// Clockwise from top left
 
 	/*
@@ -207,32 +208,32 @@ void update_neighboring_entities(jactorio::game::WorldData& world_data,
 
 	const game::WorldData::WorldPair emit_coords = {world_x, world_y};
 	for (int x = world_x; x < world_x + entity_ptr->tileWidth; ++x) {
-		call_on_neighbor_update(world_data,
-		                        emit_coords,
-		                        x,
-		                        world_y - 1,
-		                        data::Orientation::down);
+		CallOnNeighborUpdate(world_data,
+		                     emit_coords,
+		                     x,
+		                     world_y - 1,
+		                     data::Orientation::down);
 	}
 	for (int y = world_y; y < world_y + entity_ptr->tileHeight; ++y) {
-		call_on_neighbor_update(world_data,
-		                        emit_coords,
-		                        world_x + entity_ptr->tileWidth,
-		                        y,
-		                        data::Orientation::left);
+		CallOnNeighborUpdate(world_data,
+		                     emit_coords,
+		                     world_x + entity_ptr->tileWidth,
+		                     y,
+		                     data::Orientation::left);
 	}
 	for (int x = world_x + entity_ptr->tileWidth - 1; x >= world_x; --x) {
-		call_on_neighbor_update(world_data,
-		                        emit_coords,
-		                        x,
-		                        world_y + entity_ptr->tileHeight,
-		                        data::Orientation::up);
+		CallOnNeighborUpdate(world_data,
+		                     emit_coords,
+		                     x,
+		                     world_y + entity_ptr->tileHeight,
+		                     data::Orientation::up);
 	}
 	for (int y = world_y + entity_ptr->tileHeight - 1; y >= world_y; --y) {
-		call_on_neighbor_update(world_data,
-		                        emit_coords,
-		                        world_x - 1,
-		                        y,
-		                        data::Orientation::right);
+		CallOnNeighborUpdate(world_data,
+		                     emit_coords,
+		                     world_x - 1,
+		                     y,
+		                     data::Orientation::right);
 	}
 }
 
@@ -300,7 +301,8 @@ void jactorio::game::PlayerData::TryPlaceEntity(WorldData& world_data,
 	// Call events
 
 	entity_ptr->OnBuild(world_data, {world_x, world_y}, selected_layer, placementOrientation);
-	update_neighboring_entities(world_data, world_x, world_y, entity_ptr);
+	UpdateNeighboringEntities(world_data, world_x, world_y, entity_ptr);
+	world_data.updateDispatcher.Dispatch(world_x, world_y, data::UpdateType::place);
 }
 
 
@@ -380,7 +382,8 @@ void jactorio::game::PlayerData::TryPickup(WorldData& world_data,
 			const bool result = PlaceEntityAtCoords(world_data, nullptr, tile_x, tile_y);
 			assert(result);  // false indicates failed to remove entity
 
-			update_neighboring_entities(world_data, tile_x, tile_y, entity);
+			UpdateNeighboringEntities(world_data, tile_x, tile_y, entity);
+			world_data.updateDispatcher.Dispatch(tile_x, tile_y, data::UpdateType::remove);
 		}
 	}
 }
@@ -640,7 +643,7 @@ uint16_t jactorio::game::PlayerData::RecipeGroupGetSelected() const {
 void jactorio::game::PlayerData::RecipeCraftTick(uint16_t ticks) {
 	// Attempt to return held item if inventory is full
 	if (craftingHeldItem_.second != 0) {
-		const auto extra_items  = AddStack(inventoryPlayer, kInventorySize, craftingHeldItem_);
+		const auto extra_items   = AddStack(inventoryPlayer, kInventorySize, craftingHeldItem_);
 		craftingHeldItem_.second = extra_items;
 		return;
 	}

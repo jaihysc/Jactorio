@@ -24,7 +24,7 @@ namespace jactorio::data
 
 	///
 	/// \brief Placeable items in the world
-	class Entity : public PrototypeBase, public Renderable, public Rotatable
+	class Entity : public PrototypeBase, public IRenderable, public IRotatable
 	{
 	public:
 		Entity() = default;
@@ -64,7 +64,7 @@ namespace jactorio::data
 
 		Entity* SetItem(Item* item) {
 			item->entityPrototype = this;
-			this->item_            = item;
+			this->item_           = item;
 
 			return this;
 		}
@@ -97,8 +97,12 @@ namespace jactorio::data
 		// Renderer events
 
 		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
-		                                                        GameTickT game_tick) const override {
+		                                                GameTickT game_tick) const override {
 			return {this->sprite, 0};
+		}
+
+		bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override {
+			return false;
 		}
 
 		// ======================================================================
@@ -129,12 +133,12 @@ namespace jactorio::data
 		///
 		/// \brief A neighbor of this prototype in the world was updated
 		/// \param world_data 
-		/// \param emit_world_coords Coordinates of the prototype which is EMITTING the update 
-		/// \param receive_world_coords Layer of the prototype RECEIVING the update 
+		/// \param emit_coords Coordinates of the prototype which is EMITTING the update 
+		/// \param receive_coords Layer of the prototype RECEIVING the update 
 		/// \param emit_orientation Orientation to the prototype EMITTING the update 
 		virtual void OnNeighborUpdate(game::WorldData& world_data,
-		                              const game::WorldData::WorldPair& emit_world_coords,
-		                              const game::WorldData::WorldPair& receive_world_coords,
+		                              const game::WorldData::WorldPair& emit_coords,
+		                              const game::WorldData::WorldPair& receive_coords,
 		                              Orientation emit_orientation) const {
 		}
 	};

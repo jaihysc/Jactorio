@@ -268,11 +268,6 @@ namespace jactorio::game
 				return 16;
 			}
 
-			void OnRShowGui(PlayerData&,
-			                ChunkTileLayer*) const override {
-			}
-
-
 			void OnBuild(WorldData&,
 			             const WorldData::WorldPair&,
 			             ChunkTileLayer&,

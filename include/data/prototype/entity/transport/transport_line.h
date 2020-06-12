@@ -245,8 +245,6 @@ namespace jactorio::data
 			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 		}
 
-		void OnRShowGui(game::PlayerData& /*player_data*/, game::ChunkTileLayer* /*tile_layer*/) const override {
-		}
 	};
 }
 

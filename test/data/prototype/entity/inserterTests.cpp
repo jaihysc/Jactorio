@@ -30,7 +30,7 @@ namespace jactorio::data
 	TEST_F(InserterTest, OnBuildCreateDataInvalid) {
 		BuildInserter({1, 1}, Orientation::right);
 
-		auto& layer = worldData_.GetTile({1, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		auto& layer         = worldData_.GetTile({1, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity);
 		auto* inserter_data = layer.GetUniqueData<InserterData>();
 		ASSERT_TRUE(inserter_data);
 
@@ -66,14 +66,14 @@ namespace jactorio::data
 
 
 		TestSetupContainer(worldData_, {1, 1}, container_entity);
-		inserterProto_.OnNeighborUpdate(worldData_, {1, 1}, {2, 1}, Orientation::left);
+		worldData_.updateDispatcher.Dispatch({1, 1}, UpdateType::place);
 
 		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
 
 
 		TestSetupContainer(worldData_, {3, 1}, container_entity);
-		inserterProto_.OnNeighborUpdate(worldData_, {3, 1}, {2, 1}, Orientation::right);
+		worldData_.updateDispatcher.Dispatch({3, 1}, UpdateType::place);
 
 		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);  // Added since both are now valid
@@ -83,7 +83,7 @@ namespace jactorio::data
 		// Finding pickup and dropoff tiles when tileReach > 1
 
 		inserterProto_.tileReach = 2;
-		
+
 		const ContainerEntity container_entity{};
 
 		auto& layer = BuildInserter({2, 2}, Orientation::up);
@@ -94,7 +94,7 @@ namespace jactorio::data
 
 		// Dropoff
 		TestSetupContainer(worldData_, {2, 0}, container_entity);
-		inserterProto_.OnNeighborUpdate(worldData_, {2, 0}, {2, 2}, Orientation::left);
+		worldData_.updateDispatcher.Dispatch({2, 0}, UpdateType::place);
 
 		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
@@ -102,7 +102,7 @@ namespace jactorio::data
 
 		// Pickup
 		TestSetupContainer(worldData_, {2, 4}, container_entity);
-		inserterProto_.OnNeighborUpdate(worldData_, {2, 4}, {2, 2}, Orientation::right);
+		worldData_.updateDispatcher.Dispatch({2, 4}, UpdateType::place);
 
 		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);  // Added since both are now valid
@@ -121,17 +121,17 @@ namespace jactorio::data
 
 
 		TestSetupContainer(worldData_, {1, 1}, container_entity);
-		inserterProto_.OnNeighborUpdate(worldData_, {1, 1}, {2, 1}, Orientation::left);
+		worldData_.updateDispatcher.Dispatch({1, 1}, UpdateType::place);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
 
 		// Removed chest
-		
+
 		worldData_.GetTile({3, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();
-		inserterProto_.OnNeighborUpdate(worldData_, {3, 1}, {2, 1}, Orientation::right);
+		worldData_.updateDispatcher.Dispatch({3, 1}, UpdateType::place);
 
 		worldData_.GetTile({1, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();
-		inserterProto_.OnNeighborUpdate(worldData_, {1, 1}, {2, 1}, Orientation::left);
+		worldData_.updateDispatcher.Dispatch({1, 1}, UpdateType::place);
 
 		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
 		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());

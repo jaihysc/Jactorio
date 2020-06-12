@@ -29,13 +29,13 @@ namespace jactorio::data
 		/// Number of ticks to mine resource
 		uint16_t miningTicks = 1;
 
-		game::DeferralTimer::DeferralEntry deferralEntry{};
+		game::WorldData::DeferralTimer::DeferralEntry deferralEntry{};
 	};
 
 
 	///
 	/// \brief Drill, Mines resource entities
-	class MiningDrill final : public HealthEntity, public Deferred
+	class MiningDrill final : public HealthEntity, public IDeferred
 	{
 		/*
 		 * 0  - 7 : North
@@ -58,7 +58,7 @@ namespace jactorio::data
 		// ======================================================================
 		// Rendering
 
-		void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
+		bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
 
 		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
 		                                                GameTickT game_tick) const override;
@@ -73,14 +73,14 @@ namespace jactorio::data
 	private:
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource 
-		void RegisterMineCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
+		void RegisterMineCallback(game::WorldData::DeferralTimer& timer, MiningDrillData* unique_data) const;
 
 	public:
 		///
 		/// \briefs Finds the FIRST output item of the mining drill, beginning from top left
 		J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, game::WorldData::WorldPair world_pair) const;
 
-		void OnDeferTimeElapsed(game::DeferralTimer& timer, UniqueDataBase* unique_data) const override;
+		void OnDeferTimeElapsed(game::WorldData& world_data, UniqueDataBase* unique_data) const override;
 
 		///
 		/// \brief Ensures that the mining radius covers a resource entity

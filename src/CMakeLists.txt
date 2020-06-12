@@ -45,7 +45,6 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
-	${JACTORIO_DIR}/game/world/deferral_timer.cpp
 	${JACTORIO_DIR}/game/world/world_data.cpp
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 

@@ -165,9 +165,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	// Entity
 	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, PrototypeBase)
 		PYBIND_PROP(Entity, sprite)
-		PYBIND_PROP(Rotatable, spriteE)
-		PYBIND_PROP(Rotatable, spriteS)
-		PYBIND_PROP(Rotatable, spriteW)
+		PYBIND_PROP(IRotatable, spriteE)
+		PYBIND_PROP(IRotatable, spriteS)
+		PYBIND_PROP(IRotatable, spriteW)
 		PYBIND_PROP(Entity, rotatable)
 		PYBIND_PROP(Entity, placeable)
 		PYBIND_PROP_GET_SET(Entity, item, SetItem, GetItem)

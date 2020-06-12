@@ -35,10 +35,6 @@ namespace jactorio::data
 			return new ResourceEntityData(*static_cast<ResourceEntityData*>(ptr));
 		}
 
-
-		void OnRShowGui(game::PlayerData&, game::ChunkTileLayer*) const override {
-		}
-
 		Sprite::SetT MapPlacementOrientation(Orientation,
 		                                     game::WorldData&,
 		                                     const game::WorldData::WorldPair&) const override {

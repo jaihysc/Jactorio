@@ -3,17 +3,21 @@
 
 #include "game/world/world_data.h"
 
-#include <cmath>
 #include <future>
 
-void jactorio::game::WorldData::OnTickAdvance() {
+#include "data/prototype/interface/deferred.h"
+#include "data/prototype/interface/update_listener.h"
+
+using namespace jactorio;
+
+void game::WorldData::OnTickAdvance() {
 	gameTick_++;
 
 	// Dispatch deferred callbacks
 	deferralTimer.DeferralUpdate(gameTick_);
 }
 
-jactorio::game::Chunk::ChunkCoord jactorio::game::WorldData::ToChunkCoord(WorldCoord world_coord) {
+game::Chunk::ChunkCoord game::WorldData::ToChunkCoord(WorldCoord world_coord) {
 	Chunk::ChunkCoord chunk_coord = 0;
 
 	if (world_coord < 0) {
@@ -25,30 +29,30 @@ jactorio::game::Chunk::ChunkCoord jactorio::game::WorldData::ToChunkCoord(WorldC
 	return chunk_coord;
 }
 
-jactorio::game::Chunk* jactorio::game::WorldData::AddChunk(const Chunk& chunk) {
+game::Chunk* game::WorldData::AddChunk(const Chunk& chunk) {
 	const auto position = chunk.GetPosition();
 
 	auto conditional = worldChunks_.emplace(std::make_tuple(position.first, position.second), chunk);
 	return &conditional.first->second;
 }
 
-void jactorio::game::WorldData::DeleteChunk(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y) {
+void game::WorldData::DeleteChunk(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y) {
 	worldChunks_.erase(std::make_tuple(chunk_x, chunk_y));
 }
 
-void jactorio::game::WorldData::ClearChunkData() {
+void game::WorldData::ClearChunkData() {
 	worldChunks_.clear();
 	logicChunks_.clear();
 }
 
 // ======================================================================
 
-jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x, const Chunk::ChunkCoord chunk_y) {
+game::Chunk* game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x, const Chunk::ChunkCoord chunk_y) {
 	return const_cast<Chunk*>(static_cast<const WorldData&>(*this).GetChunkC(chunk_x, chunk_y));
 }
 
-const jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x,
-                                                                  const Chunk::ChunkCoord chunk_y) const {
+const game::Chunk* game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x,
+                                              const Chunk::ChunkCoord chunk_y) const {
 	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
 	if (worldChunks_.find(key) == worldChunks_.end())
@@ -58,39 +62,39 @@ const jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::C
 }
 
 
-jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkPair& chunk_pair) {
+game::Chunk* game::WorldData::GetChunkC(const Chunk::ChunkPair& chunk_pair) {
 	return GetChunkC(chunk_pair.first, chunk_pair.second);
 }
 
-const jactorio::game::Chunk* jactorio::game::WorldData::GetChunkC(const Chunk::ChunkPair& chunk_pair) const {
+const game::Chunk* game::WorldData::GetChunkC(const Chunk::ChunkPair& chunk_pair) const {
 	return GetChunkC(chunk_pair.first, chunk_pair.second);
 }
 
 
-jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldCoord world_x, const WorldCoord world_y) {
+game::Chunk* game::WorldData::GetChunk(const WorldCoord world_x, const WorldCoord world_y) {
 	return GetChunkC(ToChunkCoord(world_x), ToChunkCoord(world_y));
 }
 
-const jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldCoord world_x, const WorldCoord world_y) const {
+const game::Chunk* game::WorldData::GetChunk(const WorldCoord world_x, const WorldCoord world_y) const {
 	return GetChunkC(ToChunkCoord(world_x), ToChunkCoord(world_y));
 }
 
 
-jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldPair& world_pair) {
+game::Chunk* game::WorldData::GetChunk(const WorldPair& world_pair) {
 	return GetChunk(world_pair.first, world_pair.second);
 }
 
-const jactorio::game::Chunk* jactorio::game::WorldData::GetChunk(const WorldPair& world_pair) const {
+const game::Chunk* game::WorldData::GetChunk(const WorldPair& world_pair) const {
 	return GetChunk(world_pair.first, world_pair.second);
 }
 
 // ======================================================================
 
-jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldCoord world_x, const WorldCoord world_y) {
+game::ChunkTile* game::WorldData::GetTile(const WorldCoord world_x, const WorldCoord world_y) {
 	return const_cast<ChunkTile*>(static_cast<const WorldData&>(*this).GetTile(world_x, world_y));
 }
 
-const jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(WorldCoord world_x, WorldCoord world_y) const {
+const game::ChunkTile* game::WorldData::GetTile(WorldCoord world_x, WorldCoord world_y) const {
 	// The negative chunks start at -1, unlike positive chunks at 0
 	// Thus add 1 to become 0 so the calculations can be performed
 	bool negative_x = false;
@@ -134,11 +138,11 @@ const jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(WorldCoord w
 }
 
 
-jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldPair& world_pair) {
+game::ChunkTile* game::WorldData::GetTile(const WorldPair& world_pair) {
 	return GetTile(world_pair.first, world_pair.second);
 }
 
-const jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldPair& world_pair) const {
+const game::ChunkTile* game::WorldData::GetTile(const WorldPair& world_pair) const {
 	return GetTile(world_pair.first, world_pair.second);
 }
 
@@ -146,8 +150,8 @@ const jactorio::game::ChunkTile* jactorio::game::WorldData::GetTile(const WorldP
 // ======================================================================
 // Logic chunks
 
-void jactorio::game::WorldData::LogicRegister(const Chunk::LogicGroup group, const WorldPair& world_pair,
-                                              const ChunkTile::ChunkLayer layer) {
+void game::WorldData::LogicRegister(const Chunk::LogicGroup group, const WorldPair& world_pair,
+                                    const ChunkTile::ChunkLayer layer) {
 	assert(group != Chunk::LogicGroup::count_);
 	assert(layer != ChunkTile::ChunkLayer::count_);
 
@@ -161,8 +165,8 @@ void jactorio::game::WorldData::LogicRegister(const Chunk::LogicGroup group, con
 	     .push_back(tile_layer);
 }
 
-void jactorio::game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldPair& world_pair,
-                                            const std::function<bool(ChunkTileLayer*)>& pred) {
+void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldPair& world_pair,
+                                  const std::function<bool(ChunkTileLayer*)>& pred) {
 	auto* chunk = GetChunk(world_pair);
 	assert(chunk);
 
@@ -173,16 +177,16 @@ void jactorio::game::WorldData::LogicRemove(const Chunk::LogicGroup group, const
 		logic_group.end());
 
 	// Remove from logic chunks if now empty
-	for (auto& group : chunk->logicGroups) {
-		if (!group.empty())
+	for (auto& i_group : chunk->logicGroups) {
+		if (!i_group.empty())
 			return;
 	}
 
 	logicChunks_.erase(chunk);
 }
 
-void jactorio::game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldPair& world_pair,
-                                            const ChunkTile::ChunkLayer layer) {
+void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldPair& world_pair,
+                                  const ChunkTile::ChunkLayer layer) {
 	auto* chunk = GetChunk(world_pair);
 	assert(chunk);
 
@@ -193,11 +197,128 @@ void jactorio::game::WorldData::LogicRemove(const Chunk::LogicGroup group, const
 	});
 }
 
-void jactorio::game::WorldData::LogicAddChunk(Chunk* chunk) {
+void game::WorldData::LogicAddChunk(Chunk* chunk) {
 	assert(chunk != nullptr);
 	logicChunks_.emplace(chunk);
 }
 
-std::set<jactorio::game::Chunk*>& jactorio::game::WorldData::LogicGetChunks() {
+std::set<game::Chunk*>& game::WorldData::LogicGetChunks() {
 	return logicChunks_;
+}
+
+
+// ======================================================================
+
+
+///
+/// \brief Used to fill the gap when a callback has been removed
+class BlankCallback final : public data::IDeferred
+{
+public:
+	void OnDeferTimeElapsed(game::WorldData&, data::UniqueDataBase*) const override {
+	}
+} blank_callback;
+
+
+void game::WorldData::DeferralTimer::DeferralUpdate(const GameTickT game_tick) {
+	lastGameTick_ = game_tick;
+
+	// Call callbacks
+	for (auto& pair : callbacks_[game_tick]) {
+		pair.first.get().OnDeferTimeElapsed(worldData_, pair.second);
+	}
+
+	// Remove used callbacks
+	callbacks_.erase(game_tick);
+}
+
+game::WorldData::DeferralTimer::DeferralEntry game::WorldData::DeferralTimer::RegisterAtTick(const data::IDeferred& deferred,
+                                                                                             data::UniqueDataBase* unique_data,
+                                                                                             const GameTickT due_game_tick) {
+	assert(due_game_tick > lastGameTick_);
+
+	auto& due_tick_callback = callbacks_[due_game_tick];
+	due_tick_callback.emplace_back(std::ref(deferred), unique_data);
+
+	return {due_game_tick, due_tick_callback.size()};
+}
+
+game::WorldData::DeferralTimer::DeferralEntry game::WorldData::DeferralTimer::RegisterFromTick(const data::IDeferred& deferred,
+                                                                                               data::UniqueDataBase* unique_data,
+                                                                                               const GameTickT elapse_game_tick) {
+
+	assert(elapse_game_tick > 0);
+	return RegisterAtTick(deferred, unique_data, lastGameTick_ + elapse_game_tick);
+}
+
+void game::WorldData::DeferralTimer::RemoveDeferral(DeferralEntry entry) {
+	assert(entry.second != 0);  // Invalid callback index
+
+	// due_game_tick does not exist
+	if (callbacks_.find(entry.first) == callbacks_.end())
+		return;
+
+	auto& due_tick_callback = callbacks_[entry.first];
+
+	// Index is +1 than actual index
+	entry.second -= 1;
+	assert(entry.second <= due_tick_callback.size());  // Index out of range
+
+	// Instead of erasing, make the callback a blank function so that future remove calls do not go out of range
+	due_tick_callback[entry.second].first = blank_callback;
+}
+
+void game::WorldData::DeferralTimer::RemoveDeferralEntry(DeferralEntry& entry) {
+	if (entry.second == 0)
+		return;
+
+	RemoveDeferral(entry);
+	entry.second = 0;
+}
+
+
+// ======================================================================
+
+
+game::WorldData::UpdateDispatcher::ListenerEntry game::WorldData::UpdateDispatcher::Register(
+	WorldCoord current_world_x, WorldCoord current_world_y,
+	WorldCoord target_world_x, WorldCoord target_world_y, const data::IUpdateListener& proto_listener) {
+
+	return Register({current_world_x, current_world_y},
+	                {target_world_x, target_world_y}, proto_listener);
+}
+
+game::WorldData::UpdateDispatcher::ListenerEntry game::WorldData::UpdateDispatcher::Register(
+	const WorldPair& current_coords, const WorldPair& target_coords, const data::IUpdateListener& proto_listener) {
+
+	auto& collection = container_[target_coords];
+	collection.emplace_back(std::make_pair(current_coords, &proto_listener));
+
+	return {current_coords, target_coords};
+}
+
+bool game::WorldData::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
+	auto& collection = container_[entry.second];
+
+	for (decltype(collection.size()) i = 0; i < collection.size(); ++i) {
+		auto& element = collection[i];
+
+		if (element.first == entry.first) {
+			collection.erase(collection.begin() + i);
+		}
+	}
+
+	return false;
+}
+
+void game::WorldData::UpdateDispatcher::Dispatch(WorldCoord world_x, WorldCoord world_y, const data::UpdateType type) {
+	Dispatch({world_x, world_y}, type);
+}
+
+void game::WorldData::UpdateDispatcher::Dispatch(const WorldPair& world_pair, const data::UpdateType type) {
+	auto& collection = container_[world_pair];
+
+	for (auto& pair : collection) {
+		pair.second->OnTileUpdate(worldData_, world_pair, pair.first, type);
+	}
 }

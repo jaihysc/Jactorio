@@ -9,10 +9,11 @@
 #include "renderer/gui/gui_menus.h"
 
 
-void jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const {
+bool jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const {
 	auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
 
 	renderer::MiningDrill(player_data, drill_data);
+	return true;
 }
 
 std::pair<jactorio::data::Sprite*, jactorio::data::Sprite::FrameT> jactorio::data::MiningDrill::OnRGetSprite(
@@ -52,7 +53,7 @@ jactorio::data::Sprite::SetT jactorio::data::MiningDrill::MapPlacementOrientatio
 
 // ======================================================================
 
-void jactorio::data::MiningDrill::RegisterMineCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const {
+void jactorio::data::MiningDrill::RegisterMineCallback(game::WorldData::DeferralTimer& timer, MiningDrillData* unique_data) const {
 	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, unique_data->miningTicks);
 }
 
@@ -75,12 +76,12 @@ jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::Wo
 	return nullptr;
 }
 
-void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::DeferralTimer& timer, UniqueDataBase* unique_data) const {
+void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData& world_data, UniqueDataBase* unique_data) const {
 	// Re-register callback and insert item
 	auto* drill_data = static_cast<MiningDrillData*>(unique_data);
 
 	drill_data->outputTile.DropOff({drill_data->outputItem, 1});
-	RegisterMineCallback(timer, drill_data);
+	RegisterMineCallback(world_data.deferralTimer, drill_data);
 }
 
 

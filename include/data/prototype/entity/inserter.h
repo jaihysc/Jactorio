@@ -9,6 +9,7 @@
 
 #include "data/prototype/type.h"
 #include "data/prototype/entity/health_entity.h"
+#include "data/prototype/interface/update_listener.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
 
@@ -45,7 +46,7 @@ namespace jactorio::data
 	};
 
 
-	class Inserter final : public HealthEntity
+	class Inserter final : public HealthEntity, public IUpdateListener
 	{
 	public:
 		PROTOTYPE_CATEGORY(inserter);
@@ -70,7 +71,6 @@ namespace jactorio::data
 
 
 		// ======================================================================
-		void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
 
 		Sprite::SetT MapPlacementOrientation(Orientation orientation,
 		                                     game::WorldData& world_data,
@@ -80,10 +80,10 @@ namespace jactorio::data
 		void OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
 		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
 
-		void OnNeighborUpdate(game::WorldData& world_data,
-		                      const game::WorldData::WorldPair& emit_world_coords,
-		                      const game::WorldData::WorldPair& receive_world_coords,
-		                      Orientation emit_orientation) const override;
+
+		void OnTileUpdate(game::WorldData& world_data,
+		                  const game::WorldData::WorldPair& emit_coords,
+		                  const game::WorldData::WorldPair& receive_coords, UpdateType type) const override;
 
 		void OnRemove(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
 		              game::ChunkTileLayer& tile_layer) const override;

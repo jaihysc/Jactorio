@@ -181,20 +181,30 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, game::EventDat
 
 	// Draw gui for active entity
 	// Do not draw character and recipe menu while in an entity menu
+
+	bool drew_gui = false;
+	
 	auto* layer = player_data.GetActivatedLayer();
 	if (layer != nullptr) {
-		SetVisible(Menu::CharacterMenu, false);
 
 		// Get the top left corner for non top left multi tiles
 		if (layer->IsMultiTile() && !layer->IsMultiTileTopLeft()) {
 			layer = layer->GetMultiTileParent();
 		}
 
-		static_cast<const data::Entity*>(layer->prototypeData)->OnRShowGui(player_data, layer);
+		drew_gui = static_cast<const data::Entity*>(layer->prototypeData)->OnRShowGui(player_data, layer);
+		if (drew_gui) {
+			SetVisible(Menu::CharacterMenu, false);
+		}
+		else {
+			player_data.SetActivatedLayer(nullptr);
+		}
 	}
-	else {
+
+	if (!drew_gui) {
 		DrawMenu(Menu::CharacterMenu, player_data);
 	}
+
 	// Player gui
 	CursorWindow(player_data);
 	CraftingQueue(player_data);

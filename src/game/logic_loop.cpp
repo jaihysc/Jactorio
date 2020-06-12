@@ -137,13 +137,6 @@ void jactorio::game::InitLogicLoop() {
 
 	}, InputKey::escape, InputAction::key_up);
 
-
-	game_data->input.key.Subscribe([]() {
-		game_data->event.SubscribeOnce(EventType::renderer_tick, []() {
-			game_data->world = WorldData();
-		});
-	}, InputKey::p, InputAction::key_up);
-
 	//
 
 	// Runtime

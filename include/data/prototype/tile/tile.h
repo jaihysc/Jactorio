@@ -13,7 +13,7 @@ namespace jactorio::data
 	///
 	/// \brief Tiles which are auto-placed by the world generator <br>
 	/// Configure how the world generator places these tiles with a Noise_layer
-	class Tile final : public PrototypeBase, public Renderable
+	class Tile final : public PrototypeBase, public IRenderable
 	{
 	public:
 		PROTOTYPE_CATEGORY(tile);
@@ -49,7 +49,8 @@ namespace jactorio::data
 			return {sprite, 0};
 		}
 
-		void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override {
+		bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override {
+			return false;
 		}
 
 		// ======================================================================

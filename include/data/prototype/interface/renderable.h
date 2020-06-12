@@ -50,16 +50,16 @@ namespace jactorio::data
 
 	///
 	/// \brief Enables usage by renderer
-	class Renderable
+	class IRenderable
 	{
 	protected:
-		Renderable()          = default;
-		virtual ~Renderable() = default;
+		IRenderable()          = default;
+		virtual ~IRenderable() = default;
 
-		Renderable(const Renderable& other)                = default;
-		Renderable(Renderable&& other) noexcept            = default;
-		Renderable& operator=(const Renderable& other)     = default;
-		Renderable& operator=(Renderable&& other) noexcept = default;
+		IRenderable(const IRenderable& other)                = default;
+		IRenderable(IRenderable&& other) noexcept            = default;
+		IRenderable& operator=(const IRenderable& other)     = default;
+		IRenderable& operator=(IRenderable&& other) noexcept = default;
 
 	public:
 		///
@@ -69,7 +69,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data
-		virtual void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const = 0;
+		virtual bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const = 0;
 	};
 }
 
