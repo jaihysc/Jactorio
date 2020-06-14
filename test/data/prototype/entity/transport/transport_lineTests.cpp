@@ -214,6 +214,8 @@ namespace jactorio::data
 		                         const game::WorldData::WorldPair& second) {
 			GroupingValidate(first, second);
 			EXPECT_EQ(GetLineData(first).lineSegment->itemOffset, 1);
+
+			EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 		}
 	};
 
@@ -1140,6 +1142,8 @@ namespace jactorio::data
 		const auto& tile_layers = GetTransportLines({0, 0});
 		ASSERT_EQ(tile_layers.size(), 1);
 		EXPECT_EQ(GetSegment(tile_layers[0]).length, 1);
+
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveGroupBeginBend) {
@@ -1155,6 +1159,8 @@ namespace jactorio::data
 		const auto& tile_layers = GetTransportLines({0, 0});
 		ASSERT_EQ(tile_layers.size(), 2);
 		EXPECT_EQ(GetSegment(tile_layers[0]).length, 1);
+
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveGroupMiddle) {
@@ -1178,6 +1184,8 @@ namespace jactorio::data
 		auto& behind_segment = GetSegment(tile_layers[1]);
 		EXPECT_EQ(behind_segment.length, 1);
 		EXPECT_EQ(behind_segment.itemOffset, 0);  // Built 3 ahead: +3, remove at index 2: -2-1 = 0 
+
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveGroupMiddleUpdateTargetSegment) {

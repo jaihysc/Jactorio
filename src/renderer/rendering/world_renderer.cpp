@@ -425,8 +425,9 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 	auto tile_start_y = static_cast<int>(position_y % kChunkWidth * -1);
 
 
-	const auto tile_amount_x = renderer->GetGridSizeX();
-	const auto tile_amount_y = renderer->GetGridSizeY();
+	const auto matrix = glm::vec4(1, -1, 1, 1) / GetMvpMatrix();
+	const auto tile_amount_x = static_cast<int>(matrix.x / static_cast<double>(Renderer::tileWidth) * 2) + 2;
+	const auto tile_amount_y = static_cast<int>(matrix.y / static_cast<double>(Renderer::tileWidth) * 2) + 2;
 
 
 	// Render the player position in the center of the screen
@@ -493,8 +494,8 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 	chunk_start_y -= 2;
 
 	// Calculate the maximum number of chunks which can be rendered
-	const auto amount_x = (renderer->GetGridSizeX() - window_start_x) / kChunkWidth + 1;  // Render 1 extra chunk on the edge
-	const auto amount_y = (renderer->GetGridSizeY() - window_start_y) / kChunkWidth + 1;
+	const int amount_x = (tile_amount_x - window_start_x) / kChunkWidth + 1;  // Render 1 extra chunk on the edge
+	const int amount_y = (tile_amount_y - window_start_y) / kChunkWidth + 1;
 
 	PrepareProperties props{
 		world_data,

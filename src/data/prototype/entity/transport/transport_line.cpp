@@ -664,10 +664,10 @@ data::TransportLineData* data::TransportLine::InitTransportSegment(game::WorldDa
 	// Line data is not initialized yet inside switch
 	if (status == InitSegmentStatus::group_behind) {
 		// Remove old head from logic group, add new head which is now 1 tile ahead
-		auto& chunk = *world_data.GetChunk(world_coords);
-
 		RemoveFromLogic(world_data, world_coords, *line_segment);
-		chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line).emplace_back(&tile_layer);
+		world_data.LogicRegister(game::Chunk::LogicGroup::transport_line,
+		                         world_coords,
+		                         game::ChunkTile::ChunkLayer::entity);
 
 		// Renumber
 		UpdateSegmentTiles(world_data, world_coords, line_segment);

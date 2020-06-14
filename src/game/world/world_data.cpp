@@ -187,9 +187,6 @@ void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldPair
 
 void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldPair& world_pair,
                                   const ChunkTile::ChunkLayer layer) {
-	auto* chunk = GetChunk(world_pair);
-	assert(chunk);
-
 	auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
 
 	LogicRemove(group, world_pair, [&](ChunkTileLayer* t_layer) {
