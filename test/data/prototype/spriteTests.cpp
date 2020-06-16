@@ -78,7 +78,7 @@ namespace jactorio::data
 			sprite.sets   = 4;
 			sprite.frames = 10;
 
-			auto coords = sprite.GetCoords(0, 0);
+			auto coords = sprite.GetCoords(3, 0);
 			EXPECT_FLOAT_EQ(coords.topLeft.x, 0.f);
 			EXPECT_FLOAT_EQ(coords.topLeft.y, 0.f);
 
@@ -86,14 +86,14 @@ namespace jactorio::data
 			EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.25f);
 		}
 		{
-			// 4 % 4 = 0
+			// 7 % 4 = 3
 			Sprite sprite{};
 			sprite.SetWidth(1);
 			sprite.SetHeight(1);
 			sprite.sets   = 4;
 			sprite.frames = 10;
 
-			auto coords = sprite.GetCoords(4, 0);
+			auto coords = sprite.GetCoords(7, 0);
 			EXPECT_FLOAT_EQ(coords.topLeft.x, 0.f);
 			EXPECT_FLOAT_EQ(coords.topLeft.y, 0.f);
 
@@ -108,7 +108,7 @@ namespace jactorio::data
 			sprite.sets   = 49;
 			sprite.frames = 2;
 
-			auto coords = sprite.GetCoords(6, 1);
+			auto coords = sprite.GetCoords(42, 1);
 			EXPECT_FLOAT_EQ(coords.topLeft.x, 0.5f);
 			EXPECT_FLOAT_EQ(coords.topLeft.y, 0.1224489795918f);
 
@@ -126,10 +126,10 @@ namespace jactorio::data
 
 			auto coords = sprite.GetCoords(0, 3);
 			EXPECT_FLOAT_EQ(coords.topLeft.x, 0.5f);
-			EXPECT_FLOAT_EQ(coords.topLeft.y, 0.5f);
+			EXPECT_FLOAT_EQ(coords.topLeft.y, 0.f);
 
 			EXPECT_FLOAT_EQ(coords.bottomRight.x, 1.f);
-			EXPECT_FLOAT_EQ(coords.bottomRight.y, 1.f);
+			EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.5f);
 		}
 	}
 
@@ -144,7 +144,7 @@ namespace jactorio::data
 			sprite.SetHeight(190);
 			sprite.trim = 12;
 
-			const auto coords = sprite.GetCoords(1, 2);
+			const auto coords = sprite.GetCoords(0, 2);
 			EXPECT_FLOAT_EQ(coords.topLeft.x, 0.686021505f);
 			EXPECT_FLOAT_EQ(coords.topLeft.y, 0.563157894f);
 
@@ -153,7 +153,7 @@ namespace jactorio::data
 		}
 
 		{
-			// 3 % 2 = 1 
+			// 4 % 2 = 0 
 			Sprite sprite{};
 			sprite.sets   = 2;
 			sprite.frames = 3;
@@ -162,7 +162,7 @@ namespace jactorio::data
 			sprite.SetHeight(190);
 			sprite.trim = 12;
 
-			const auto coords = sprite.GetCoords(3, 2);
+			const auto coords = sprite.GetCoords(4, 2);
 			EXPECT_FLOAT_EQ(coords.topLeft.x, 0.686021505f);
 			EXPECT_FLOAT_EQ(coords.topLeft.y, 0.563157894f);
 

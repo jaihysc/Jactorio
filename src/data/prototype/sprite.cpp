@@ -99,12 +99,6 @@ void jactorio::data::Sprite::LoadImageFromFile() {
 }
 
 
-void jactorio::data::Sprite::AdjustSetFrame(SetT& set, FrameT& frame) const {
-	set %= sets;
-	set += frame / frames;
-	frame = frame % frames;
-}
-
 jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(SetT set,
                                                                FrameT frame) const {
 	float width_base  = static_cast<float>(width_) / static_cast<float>(frames);
@@ -117,13 +111,13 @@ jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(SetT set,
 		width_base  = static_cast<float>(width_) / static_cast<float>(sets);
 		height_base = static_cast<float>(height_) / static_cast<float>(frames);
 
-		AdjustSetFrame(frame, set);
+		AdjustSetFrame<false>(frame, set);
 
 		assert(set < frames);  // Out of range
 		assert(frame < sets);
 	}
 	else {
-		AdjustSetFrame(set, frame);
+		AdjustSetFrame<true>(set, frame);
 
 		assert(set < sets);  // Out of range
 		assert(frame < frames);

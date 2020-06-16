@@ -134,15 +134,27 @@ namespace jactorio::data
 		 * 20 - 29: Sprite 3
 		 * 30 - 39: Sprite 4
 		 */
+
 		///
 		/// \brief Performs the following adjustments to set and frame
+		/// \tparam InvertSet set is flipped horizontally if true
 		/// \param set Modulus of total number of sets
 		/// \param frame Modulus of total number of frames, every multiple of frames increases set by 1
-		void AdjustSetFrame(SetT& set, FrameT& frame) const;
+		template <bool InvertSet>
+		void AdjustSetFrame(SetT& set, FrameT& frame) const {
+			set %= sets;
+			set += frame / frames;
+			frame = frame % frames;
+
+			if constexpr (InvertSet) {
+				// Single opengl flips images horizontally, select sets mirrored
+				set = sets - set - 1;
+			}
+		}
 
 	public:
 		///
-		/// \brief Gets UV coordinates for region within a sprite, applying a deduction of trim pixels around the border
+		/// \brief Gets OpenGl UV coordinates for region within a sprite, applying a deduction of trim pixels around the border
 		/// \remark Requires width_ and height_ to be initialized
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
 		J_NODISCARD core::QuadPosition GetCoords(SetT set, FrameT frame) const;

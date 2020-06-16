@@ -32,21 +32,21 @@ namespace jactorio::data
 		enum class LineOrientation
 		{
 			// Following the layout of the sprite
-			up_left = 9,
-			up = 17,
-			up_right = 11,
+			up_left = 10,
+			up = 2,
+			up_right = 8,
 
-			right_up = 13,
-			right = 19,
-			right_down = 8,
+			right_up = 6,
+			right = 0,
+			right_down = 11,
 
-			down_right = 14,
-			down = 16,
-			down_left = 12,
+			down_right = 5,
+			down = 3,
+			down_left = 7,
 
-			left_down = 10,
-			left = 18,
-			left_up = 15,
+			left_down = 9,
+			left = 1,
+			left_up = 4,
 		};
 
 		/// The logic chunk line_segment associated
