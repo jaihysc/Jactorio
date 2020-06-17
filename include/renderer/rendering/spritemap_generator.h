@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include "core/data_type.h"
 #include "data/prototype/sprite.h"
@@ -21,6 +22,8 @@ namespace jactorio::renderer
 	class RendererSprites
 	{
 	public:
+		using SpritemapDimension = uint64_t;
+
 		struct SpritemapData
 		{
 			// For the loaded sprite
@@ -82,12 +85,74 @@ namespace jactorio::renderer
 		const Texture* GetTexture(data::Sprite::SpriteGroup group);
 
 		///
-		/// \brief Generated spritemap will be purely horizontal, all images concatenated side by side <br>
-		/// \remark Color in non specified areas of the spritemap are undefined <br>
-		/// \param sprites Pointer array to pointers towards sprite prototypes
-		/// \param count Count of pointer array
+		/// \brief Generates spritemap
+		/// \remark Color in non specified areas of the spritemap are undefined
+		/// \param sprites Collection of pointers towards sprite prototypes
 		/// \param invert_sprites Whether or not to vertically invert the sprites on the spritemap. Commonly done for OpenGL
-		SpritemapData GenSpritemap(data::Sprite** sprites, uint64_t count, bool invert_sprites) const;
+		J_NODISCARD SpritemapData GenSpritemap(const std::vector<data::Sprite*>& sprites,
+		                                       bool invert_sprites) const;
+	private:
+		/// Additional border to each sprite, use to avoid black lines
+		static constexpr int sprite_border = 1;
+
+		///
+		/// \brief Holds a sprite and its neighbors on the spritemap
+		struct GeneratorNode
+		{
+			explicit GeneratorNode(const data::Sprite* sprite)
+				: sprite(sprite) {
+			}
+
+			const data::Sprite* sprite;
+
+			GeneratorNode* above = nullptr;
+			GeneratorNode* right = nullptr;
+		};
+
+		///
+		/// \brief Gets sprite width with adjustments
+		static data::Sprite::SpriteDimension GetSpriteWidth(const data::Sprite* sprite);
+		///
+		/// \brief Gets sprite height with adjustments
+		static data::Sprite::SpriteDimension GetSpriteHeight(const data::Sprite* sprite);
+
+
+		static void SortInputSprites(std::vector<data::Sprite*>& sprites);
+
+		///
+		/// \brief Recursively creates linked GeneratorNodes of sprites
+		/// 
+		/// Will erase from sprites as each sprite is used
+		static void GenerateSpritemapNodes(std::vector<data::Sprite*>& sprites,
+		                                   std::vector<GeneratorNode*>& node_buffer,
+		                                   GeneratorNode& parent_node,
+		                                   SpritemapDimension max_width, SpritemapDimension max_height);
+
+
+		///
+		/// \brief Calculates width of spritemap with adjustments
+		/// \param base_node node above parent node
+		static SpritemapDimension GetSpritemapWidth(GeneratorNode& base_node);
+
+
+		///
+		/// \brief Copies pixel at sprite_x, sprite_y to spritemap buffer
+		static void SetSpritemapPixel(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
+		                              SpritemapDimension spritemap_width,
+		                              bool invert_sprites,
+		                              SpritemapDimension spritemap_x_offset, SpritemapDimension spritemap_y_offset,
+		                              const unsigned char* sprite_data,
+		                              data::Sprite::SpriteDimension sprite_width,
+		                              data::Sprite::SpriteDimension sprite_height,
+		                              unsigned pixel_x, unsigned pixel_y);
+		///
+		/// \brief Recursively outputs GeneratorNodes into provided sprite buffer 
+		static void GenerateSpritemapOutput(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
+		                                    SpritemapDimension spritemap_width,
+		                                    GeneratorNode& base_node,
+		                                    bool invert_sprites,
+		                                    std::unordered_map<unsigned int, core::QuadPosition>& image_positions,
+		                                    SpritemapDimension x_offset, SpritemapDimension y_offset);
 	};
 }
 

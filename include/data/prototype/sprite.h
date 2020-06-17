@@ -19,6 +19,8 @@ namespace jactorio::data
 	class Sprite final : public PrototypeBase
 	{
 	public:
+		using SpriteDimension = uint32_t;
+		
 		PROTOTYPE_CATEGORY(sprite);
 
 		enum class SpriteGroup
@@ -166,11 +168,11 @@ namespace jactorio::data
 
 		///
 		/// \brief Gets size of image on X axis
-		J_NODISCARD unsigned int GetWidth() const { return width_; }
+		J_NODISCARD SpriteDimension GetWidth() const { return width_; }
 
 		///
 		/// \brief Gets size of image on Y axis
-		J_NODISCARD unsigned int GetHeight() const { return height_; }
+		J_NODISCARD SpriteDimension GetHeight() const { return height_; }
 
 
 		///
