@@ -46,9 +46,11 @@ namespace core
 
 		jactorio::core::SetExecutingDirectory("antarctica/coolApplication.exe");
 
-		EXPECT_EQ(jactorio::core::ResolvePath("~/glaciers/glacier1.png"), "antarctica/glaciers/glacier1.png");
+		EXPECT_EQ(jactorio::core::ResolvePath(""), "antarctica/");
 
-		EXPECT_EQ(jactorio::core::ResolvePath("banana/banana1.png"), "banana/banana1.png");
+		EXPECT_EQ(jactorio::core::ResolvePath("glaciers/glacier1.png"), "antarctica/glaciers/glacier1.png");
+
+		EXPECT_EQ(jactorio::core::ResolvePath("banana/banana1.png"), "antarctica/banana/banana1.png");
 
 		// Re- set the original executing directory
 		jactorio::core::SetExecutingDirectory(original_path);

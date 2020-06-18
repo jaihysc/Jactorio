@@ -67,14 +67,12 @@ namespace jactorio::renderer
 		Buffer<float> vertexBuffer_;
 		Buffer<float> uvBuffer_;
 
-		///
-		/// \brief Simplified version of delete_buffers, will only delete - nothing else
-		void DeleteBuffersS() const;
-
 		/// Buffer index to insert the next element on push_back
 		mutable uint32_t nextElementIndex_ = 0;
 
-		
+		/// Element capacity which will be requested on the next GUpdateData
+		uint32_t queuedECapacity_ = 0;
+
 		/// Current *element* capacity of VERTEX buffers <br>
 		/// for index buffer size, multiply by 6, <br>
 		/// for raw size of float array, multiply by 8 <br>
@@ -83,14 +81,13 @@ namespace jactorio::renderer
 	public:
 		// Set
 
+		// Ensure GWriteBegin() has been called first before attempting to write into buffers
+
 		///
 		/// \brief Appends element to layer, after the highest element index where values were assigned<br>
 		/// Resizes if static_layer_ is false
 		void PushBack(const Element& element);
 
-		void Set(uint32_t element_index, Element element) const;  // Both vertex and uv
-		void SetVertex(uint32_t element_index, core::QuadPosition element) const;
-		void SetUv(uint32_t element_index, core::QuadPosition element) const;
 	private:
 		// Sets the positions within the buffer, but will not increment next_element_index_;
 		void SetBufferVertex(uint32_t buffer_index, const core::QuadPosition& element) const;
@@ -106,12 +103,9 @@ namespace jactorio::renderer
 		// Resize
 
 		///
-		/// \brief Allocates memory to hold element count, deletes existing elements
+		/// \brief Indicates to allocates memory to hold element count, deletes existing elements,
+		/// performed when GUpdateData is called
 		void Reserve(uint32_t count);
-
-		///
-		/// \brief Calls reserve, then copies over existing elements
-		void Resize(uint32_t count);
 
 		///
 		/// \brief Returns current element capacity of buffers
@@ -143,6 +137,8 @@ namespace jactorio::renderer
 		// OpenGL methods | The methods below MUST be called from an openGL context
 	private:
 
+		bool writeEnabled_ = false;
+
 		VertexArray* vertexArray_ = nullptr;
 
 		VertexBuffer* vertexVb_ = nullptr;
@@ -160,6 +156,17 @@ namespace jactorio::renderer
 		/// \brief Initializes vertex buffers for rendering vertex and uv buffers + index buffer
 		/// \remark Should only be called once
 		void GInitBuffer();
+
+
+		// Ensure GWriteBegin() has been called first before attempting to write into buffers
+
+		///
+		/// \brief Begins writing data to buffers
+		void GWriteBegin();
+		///
+		/// \brief Ends writing data to buffers
+		void GWriteEnd();
+
 
 		///
 		/// \brief Updates vertex buffers based on the current data in the vertex and uv buffer <br>

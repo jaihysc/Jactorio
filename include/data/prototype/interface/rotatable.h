@@ -7,42 +7,40 @@
 
 #include "jactorio.h"
 
-#include <cstdint>
 #include <utility>
 
-#include "data/prototype/orientation.h"
 #include "data/prototype/sprite.h"
+#include "data/prototype/type.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::data
 {
 	///
 	/// \brief Entities which can be rotated by the player
-	class Rotatable
+	class IRotatable
 	{
 	protected:
-		Rotatable()          = default;
-		virtual ~Rotatable() = default;
+		IRotatable()          = default;
+		virtual ~IRotatable() = default;
 
-		Rotatable(const Rotatable& other)                = default;
-		Rotatable(Rotatable&& other) noexcept            = default;
-		Rotatable& operator=(const Rotatable& other)     = default;
-		Rotatable& operator=(Rotatable&& other) noexcept = default;
+		IRotatable(const IRotatable& other)                = default;
+		IRotatable(IRotatable&& other) noexcept            = default;
+		IRotatable& operator=(const IRotatable& other)     = default;
+		IRotatable& operator=(IRotatable&& other) noexcept = default;
 
 
 	public:
 		// The single sprite from entity serves as north
-		PYTHON_PROP_I(Rotatable, Sprite*, spriteE, nullptr);
-		PYTHON_PROP_I(Rotatable, Sprite*, spriteS, nullptr);
-		PYTHON_PROP_I(Rotatable, Sprite*, spriteW, nullptr);
+		PYTHON_PROP_I(IRotatable, Sprite*, spriteE, nullptr);
+		PYTHON_PROP_I(IRotatable, Sprite*, spriteS, nullptr);
+		PYTHON_PROP_I(IRotatable, Sprite*, spriteW, nullptr);
 
 		///
 		/// \brief Maps a placementOrientation to a <set, frame>
 		/// Chunk_tile_layer* are the neighbors of the destination Chunk_tile_layer
-		J_NODISCARD virtual std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation orientation,
-		                                                                          game::WorldData& world_data,
-		                                                                          const game::WorldData::WorldPair&
-		                                                                          world_coords) const = 0;
+		virtual Sprite::SetT MapPlacementOrientation(Orientation orientation,
+		                                             game::WorldData& world_data,
+		                                             const game::WorldData::WorldPair& world_coords) const = 0;
 	};
 }
 

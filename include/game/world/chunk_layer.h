@@ -24,7 +24,7 @@ namespace jactorio::game
 
 		// Prototype data must be deleted after chunk data
 		~ChunkLayer() {
-			delete uniqueData;
+			delete uniqueData_;
 		}
 
 		ChunkLayer(const ChunkLayer& other);
@@ -38,7 +38,45 @@ namespace jactorio::game
 		friend void swap(ChunkLayer& lhs, ChunkLayer& rhs) noexcept {
 			using std::swap;
 			swap(lhs.prototypeData, rhs.prototypeData);
-			swap(lhs.uniqueData, rhs.uniqueData);
+			swap(lhs.uniqueData_, rhs.uniqueData_);
+		}
+
+		// Prototype access
+
+		///
+		/// \tparam T Return type which prototypeData is cast to
+		template <typename T = data::PrototypeBase>
+		J_NODISCARD const T* GetPrototypeData() {
+			return static_cast<const T*>(prototypeData);
+		}
+
+		// Unique data access
+
+		///
+		/// \brief Heap allocates unique data
+		/// \return Created unique data
+		template <typename TData, typename ... Args>
+		TData* MakeUniqueData(Args&& ... args) {
+			assert(!uniqueData_);  // Trying to create already created uniqueData
+			
+			uniqueData_ = new TData(std::forward<Args>(args) ...);
+			return static_cast<TData*>(uniqueData_);
+		}
+
+		///
+		/// \brief Retrieves unique data
+		/// \tparam T Return type which uniqueData is cast to
+		template <typename T = data::UniqueDataBase>
+		J_NODISCARD T* GetUniqueData() {
+			return static_cast<T*>(uniqueData_);
+		}
+
+		///
+		/// \brief Retrieves unique data
+		/// \tparam T Return type which uniqueData is cast to
+		template <typename T = data::UniqueDataBase>
+		J_NODISCARD const T* GetUniqueData() const {
+			return static_cast<const T*>(uniqueData_);
 		}
 
 		// ======================================================================
@@ -53,26 +91,27 @@ namespace jactorio::game
 		/// Depending on the layer, this will be either a data::Tile*, data::Entity* or a data::Sprite* <br>
 		const data::PrototypeBase* prototypeData = nullptr;
 
+	protected:
 		/// Data for the prototype which is unique per tile and layer <br>
 		/// When this layer is deleted, unique_data_ will be deleted with delete method in prototype_data_
-		data::UniqueDataBase* uniqueData = nullptr;
+		data::UniqueDataBase* uniqueData_ = nullptr;
 	};
 
 	inline ChunkLayer::ChunkLayer(const ChunkLayer& other)
 		: prototypeData(other.prototypeData) {
 
 		// Use prototype defined method for copying unique_data_ if other has data to copy
-		if (other.uniqueData != nullptr) {
+		if (other.uniqueData_ != nullptr) {
 			assert(other.prototypeData != nullptr);  // No prototype_data_ available for copying unique_data_
-			uniqueData = other.prototypeData->CopyUniqueData(other.uniqueData);
+			uniqueData_ = other.prototypeData->CopyUniqueData(other.uniqueData_);
 		}
 	}
 
 	inline ChunkLayer::ChunkLayer(ChunkLayer&& other) noexcept
 		: prototypeData(other.prototypeData),
-		  uniqueData(other.uniqueData) {
+		  uniqueData_(other.uniqueData_) {
 		// After moving data away, set unique_data to nullptr so it is not deleted
-		other.uniqueData = nullptr;
+		other.uniqueData_ = nullptr;
 	}
 }
 

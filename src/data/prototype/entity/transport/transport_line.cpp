@@ -3,8 +3,11 @@
 
 #include "data/prototype/entity/transport/transport_line.h"
 
+#include <cmath>
+
 #include "data/data_manager.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
+#include "renderer/rendering/data_renderer.h"
 
 using namespace jactorio;
 
@@ -36,19 +39,34 @@ data::Orientation data::TransportLineData::ToOrientation(const LineOrientation l
 	}
 }
 
+void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer,
+                                               const float x_offset, const float y_offset) const {
+	// Only draw for the head of segments
+	if (lineSegment->terminationType == game::TransportSegment::TerminationType::straight &&
+		lineSegmentIndex != 0)
+		return;
+
+	if (lineSegment->terminationType != game::TransportSegment::TerminationType::straight &&
+		lineSegmentIndex != 1)
+		return;
+
+	DrawTransportSegmentItems(layer,
+	                          x_offset, y_offset,
+	                          *this->lineSegment);
+}
+
 //
 
-std::pair<uint16_t, uint16_t> data::TransportLine::MapPlacementOrientation(
-	const Orientation orientation,
-	game::WorldData& world_data,
-	const game::WorldData::WorldPair& world_coords) const {
+data::Sprite::SetT data::TransportLine::MapPlacementOrientation(const Orientation orientation,
+                                                                game::WorldData& world_data,
+                                                                const game::WorldData::WorldPair& world_coords) const {
 
 	auto* t_center = GetLineData(world_data, world_coords.first, world_coords.second - 1);
 	auto* c_left   = GetLineData(world_data, world_coords.first - 1, world_coords.second);
 	auto* c_right  = GetLineData(world_data, world_coords.first + 1, world_coords.second);
 	auto* b_center = GetLineData(world_data, world_coords.first, world_coords.second + 1);
 
-	return {static_cast<uint16_t>(GetLineOrientation(orientation, t_center, c_right, b_center, c_left)), 0};
+	return static_cast<uint16_t>(GetLineOrientation(orientation, t_center, c_right, b_center, c_left));
 }
 
 // ======================================================================
@@ -125,42 +143,35 @@ data::TransportLineData* data::TransportLine::GetLineData(const game::WorldData&
 		layer.prototypeData))
 		return nullptr;
 
-	return static_cast<TransportLineData*>(layer.uniqueData);
+	return layer.GetUniqueData<TransportLineData>();
 }
 
-void data::TransportLine::GetLineStructLayer(game::WorldData& world_data,
-                                             const game::WorldData::WorldCoord world_x,
-                                             const game::WorldData::WorldCoord world_y,
-                                             const std::function<void(game::ChunkStructLayer&, game::LogicChunk&)
-                                             >&
-                                             callback) {
-	TransportLineData* line_data =
-		GetLineData(world_data, world_x, world_y);
-	if (!line_data)  // Transport lines does not exist
-		return;
+std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegment(game::WorldData& world_data,
+                                                                                  const game::WorldData::WorldCoord world_x,
+                                                                                  const game::WorldData::WorldCoord world_y) {
+	auto* tile = world_data.GetTile(world_x, world_y);
+	if (tile) {
+		auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		if (!layer.prototypeData || layer.prototypeData->Category() != DataCategory::transport_belt)
+			return nullptr;
 
-	game::LogicChunk* logic_chunk;
-	try {
-		logic_chunk = world_data.LogicGetChunk(
-			world_data.GetChunk(world_x, world_y)
-		);
-
-		if (!logic_chunk)
-			return;
-	}
-	catch (std::out_of_range&) {
-		// Failed to find key (Logic chunk does not exist)
-		return;
+		auto* unique_data = layer.GetUniqueData<TransportLineData>();
+		return &unique_data->lineSegment;
 	}
 
-
-	// Search for the transport line in the chunk struct layer where the
-	// unique_data(Transport_line_data) == one referenced by line_data
-	for (auto& layer : logic_chunk->GetStruct(game::LogicChunk::StructLayer::transport_line)) {
-		if (layer.uniqueData == &line_data->lineSegment.get())
-			callback(layer, *logic_chunk);
-	}
+	return nullptr;
 }
+
+void data::TransportLine::RemoveFromLogic(game::WorldData& world_data,
+                                          const game::WorldData::WorldPair& world_coords, game::TransportSegment& line_segment) {
+	world_data.LogicRemove(
+		game::Chunk::LogicGroup::transport_line,
+		world_coords,
+		[&](auto* t_layer) {
+			return static_cast<TransportLineData*>(t_layer->GetUniqueData())->lineSegment.get() == &line_segment;
+		});
+}
+
 
 //
 //
@@ -242,89 +253,73 @@ void data::TransportLine::UpdateNeighborLines(
 		// Up
 	case TransportLineData::LineOrientation::up_left:
 		func(world_data, world_x, world_y + 1,
-		     0, -1,
 		     game::TransportSegment::TerminationType::bend_left);
 		break;
 	case TransportLineData::LineOrientation::up_right:
 		func(world_data, world_x, world_y + 1,
-		     0, -1,
 		     game::TransportSegment::TerminationType::bend_right);
 		break;
 
 		// Right
 	case TransportLineData::LineOrientation::right_up:
 		func(world_data, world_x - 1, world_y,
-		     1, 0,
 		     game::TransportSegment::TerminationType::bend_left);
 		break;
 	case TransportLineData::LineOrientation::right_down:
 		func(world_data, world_x - 1, world_y,
-		     1, 0,
 		     game::TransportSegment::TerminationType::bend_right);
 		break;
 
 		// Down
 	case TransportLineData::LineOrientation::down_right:
 		func(world_data, world_x, world_y - 1,
-		     0, 1,
 		     game::TransportSegment::TerminationType::bend_left);
 		break;
 	case TransportLineData::LineOrientation::down_left:
 		func(world_data, world_x, world_y - 1,
-		     0, 1,
 		     game::TransportSegment::TerminationType::bend_right);
 		break;
 
 		// Left
 	case TransportLineData::LineOrientation::left_down:
 		func(world_data, world_x + 1, world_y,
-		     -1, 0,
 		     game::TransportSegment::TerminationType::bend_left);
 		break;
 	case TransportLineData::LineOrientation::left_up:
 		func(world_data, world_x + 1, world_y,
-		     -1, 0,
 		     game::TransportSegment::TerminationType::bend_right);
 		break;
 
 		// Straight (Check for transport lines on both sides to make side only)
 	case TransportLineData::LineOrientation::up:
 		side_only_func(world_data, world_x - 1, world_y,
-		               1, 0,
 		               Orientation::right,
 		               game::TransportSegment::TerminationType::left_only);
 		side_only_func(world_data, world_x + 1, world_y,
-		               -1, 0,
 		               Orientation::left,
 		               game::TransportSegment::TerminationType::right_only);
 		break;
 	case TransportLineData::LineOrientation::right:
 		side_only_func(world_data, world_x, world_y - 1,
-		               0, 1,
 		               Orientation::down,
 		               game::TransportSegment::TerminationType::left_only);
 		side_only_func(world_data, world_x, world_y + 1,
-		               0, -1,
 		               Orientation::up,
 		               game::TransportSegment::TerminationType::right_only);
 		break;
 	case TransportLineData::LineOrientation::down:
 		side_only_func(world_data, world_x - 1, world_y,
-		               1, 0,
 		               Orientation::right,
 		               game::TransportSegment::TerminationType::right_only);
 		side_only_func(world_data, world_x + 1, world_y,
-		               -1, 0,
 		               Orientation::left,
 		               game::TransportSegment::TerminationType::left_only);
 		break;
 	case TransportLineData::LineOrientation::left:
 		side_only_func(world_data, world_x, world_y - 1,
-		               0, 1,
 		               Orientation::down,
 		               game::TransportSegment::TerminationType::right_only);
 		side_only_func(world_data, world_x, world_y + 1,
-		               0, -1,
 		               Orientation::up,
 		               game::TransportSegment::TerminationType::left_only);
 		break;
@@ -351,8 +346,8 @@ void TryChangeTerminationType(const game::WorldData& world_data,
 
 	data::TransportLineData* line_data = data::TransportLine::GetLineData(world_data, world_x, world_y);
 	if (line_data) {
-		if (line_data->lineSegment.get().terminationType == Required) {
-			line_data->lineSegment.get().terminationType = New;
+		if (line_data->lineSegment->terminationType == Required) {
+			line_data->lineSegment->terminationType = New;
 		}
 	}
 }
@@ -365,7 +360,7 @@ void TryChangeTerminationType(const game::WorldData& world_data,
 /// \param offset Offsets segment id numbering, world_coords must be also adjusted to the appropriate offset when calling
 void UpdateSegmentTiles(const game::WorldData& world_data,
                         const game::WorldData::WorldPair& world_coords,
-                        game::TransportSegment& line_segment,
+                        const std::shared_ptr<game::TransportSegment>& line_segment,
                         const int offset = 0) {
 	uint64_t x_offset = 0;
 	uint64_t y_offset = 0;
@@ -373,17 +368,17 @@ void UpdateSegmentTiles(const game::WorldData& world_data,
 	// Should be -1, 0, 1 depending on orientation
 	uint64_t x_change = 0;
 	uint64_t y_change = 0;
-	OrientationIncrement(line_segment.direction, x_change, y_change, -1);
+	OrientationIncrement(line_segment->direction, x_change, y_change, -1);
 
 	// Adjust the segment index number of all following segments 
-	for (int i = offset; i < line_segment.length; ++i) {
+	for (int i = offset; i < line_segment->length; ++i) {
 		auto* i_line_data = data::TransportLine::GetLineData(world_data,
 		                                                     world_coords.first + x_offset,
 		                                                     world_coords.second + y_offset);
 		if (!i_line_data)
 			continue;
 		i_line_data->lineSegmentIndex = i;
-		i_line_data->lineSegment      = std::ref(line_segment);
+		i_line_data->lineSegment      = line_segment;
 
 		x_offset += x_change;
 		y_offset += y_change;
@@ -402,12 +397,12 @@ void UpdateLineTargets(game::WorldData& world_data,
                        const int32_t neighbor_world_x, const int32_t neighbor_world_y) {
 	using namespace jactorio;
 
-	auto& origin_segment = origin_data.lineSegment.get();
+	auto& origin_segment = *origin_data.lineSegment;
 
 	data::TransportLineData* neighbor_data =
 		data::TransportLine::GetLineData(world_data, neighbor_world_x, neighbor_world_y);
 	if (neighbor_data) {
-		game::TransportSegment& neighbor_segment = neighbor_data->lineSegment;
+		game::TransportSegment& neighbor_segment = *neighbor_data->lineSegment;
 
 		// Do not attempt to connect to itself
 		if (&origin_segment == &neighbor_segment)
@@ -446,9 +441,7 @@ template <data::Orientation Orientation,
 void UpdateSegmentProps(data::TransportLineData* line_data,
                         game::WorldData& world_data,
                         const game::WorldData::WorldPair& world_coords,
-                        game::TransportSegment& line_segment,
-                        game::ChunkStructLayer::StructCoord& x,
-                        game::ChunkStructLayer::StructCoord& y) {
+                        const std::shared_ptr<game::TransportSegment>& line_segment) {
 	using namespace jactorio;
 
 	if (!line_data)
@@ -456,15 +449,15 @@ void UpdateSegmentProps(data::TransportLineData* line_data,
 
 	switch (line_data->orientation) {
 	case BendLeft:
-		line_segment.terminationType = game::TransportSegment::TerminationType::bend_left;
+		line_segment->terminationType = game::TransportSegment::TerminationType::bend_left;
 		goto shift_segment;
 
 	case BendRight:
-		line_segment.terminationType = game::TransportSegment::TerminationType::bend_right;
+		line_segment->terminationType = game::TransportSegment::TerminationType::bend_right;
 		goto shift_segment;
 
 	case LeftOnly:
-		line_segment.terminationType = game::TransportSegment::TerminationType::left_only;
+		line_segment->terminationType = game::TransportSegment::TerminationType::left_only;
 
 #define LEFT_ONLY_CHANGE_TERMINATION_TYPE\
 			TryChangeTerminationType<game::TransportSegment::TerminationType::bend_right,\
@@ -491,7 +484,7 @@ void UpdateSegmentProps(data::TransportLineData* line_data,
 		goto shift_segment;
 
 	case RightOnly:
-		line_segment.terminationType = game::TransportSegment::TerminationType::right_only;
+		line_segment->terminationType = game::TransportSegment::TerminationType::right_only;
 
 #define RIGHT_ONLY_CHANGE_TERMINATION_TYPE\
 			TryChangeTerminationType<game::TransportSegment::TerminationType::bend_left,\
@@ -519,19 +512,7 @@ void UpdateSegmentProps(data::TransportLineData* line_data,
 
 
 	shift_segment:
-		if constexpr (Orientation == data::Orientation::up) {
-			--y;
-		}
-		else if constexpr (Orientation == data::Orientation::right) {
-			++x;
-		}
-		else if constexpr (Orientation == data::Orientation::down) {
-			++y;
-		}
-		else if constexpr (Orientation == data::Orientation::left) {
-			--x;
-		}
-		line_segment.length++;
+		line_segment->length++;
 		UpdateSegmentTiles(world_data, world_coords, line_segment, 1);
 		break;
 
@@ -543,19 +524,8 @@ void UpdateSegmentProps(data::TransportLineData* line_data,
 void data::TransportLine::UpdateSegmentHead(game::WorldData& world_data,
                                             const game::WorldData::WorldPair& world_coords,
                                             LineData4Way& line_data,
-                                            game::TransportSegment& line_segment) {
-	float* segment_sl_x = nullptr;  // _sl_ = Struct layer
-	float* segment_sl_y = nullptr;
-	GetLineStructLayer(world_data,
-	                   world_coords.first, world_coords.second,
-	                   [&](auto& s_layer, auto&) {
-		                   segment_sl_x = &s_layer.positionX;
-		                   segment_sl_y = &s_layer.positionY;
-	                   });
-	assert(segment_sl_x != nullptr);
-	assert(segment_sl_y != nullptr);
-
-	switch (line_segment.direction) {
+                                            const std::shared_ptr<game::TransportSegment>& line_segment) {
+	switch (line_segment->direction) {
 
 	case Orientation::up:
 		UpdateSegmentProps<Orientation::up,
@@ -563,8 +533,7 @@ void data::TransportLine::UpdateSegmentHead(game::WorldData& world_data,
 		                   TransportLineData::LineOrientation::up_right,
 		                   TransportLineData::LineOrientation::right,
 		                   TransportLineData::LineOrientation::left>(line_data[0],
-		                                                             world_data, world_coords, line_segment,
-		                                                             *segment_sl_x, *segment_sl_y);
+		                                                             world_data, world_coords, line_segment);
 		break;
 	case Orientation::right:
 		UpdateSegmentProps<Orientation::right,
@@ -572,8 +541,7 @@ void data::TransportLine::UpdateSegmentHead(game::WorldData& world_data,
 		                   TransportLineData::LineOrientation::right_down,
 		                   TransportLineData::LineOrientation::down,
 		                   TransportLineData::LineOrientation::up>(line_data[1],
-		                                                           world_data, world_coords, line_segment,
-		                                                           *segment_sl_x, *segment_sl_y);
+		                                                           world_data, world_coords, line_segment);
 		break;
 	case Orientation::down:
 		UpdateSegmentProps<Orientation::down,
@@ -581,8 +549,7 @@ void data::TransportLine::UpdateSegmentHead(game::WorldData& world_data,
 		                   TransportLineData::LineOrientation::down_left,
 		                   TransportLineData::LineOrientation::left,
 		                   TransportLineData::LineOrientation::right>(line_data[2],
-		                                                              world_data, world_coords, line_segment,
-		                                                              *segment_sl_x, *segment_sl_y);
+		                                                              world_data, world_coords, line_segment);
 		break;
 	case Orientation::left:
 		UpdateSegmentProps<Orientation::left,
@@ -590,8 +557,7 @@ void data::TransportLine::UpdateSegmentHead(game::WorldData& world_data,
 		                   TransportLineData::LineOrientation::left_up,
 		                   TransportLineData::LineOrientation::up,
 		                   TransportLineData::LineOrientation::down>(line_data[3],
-		                                                             world_data, world_coords, line_segment,
-		                                                             *segment_sl_x, *segment_sl_y);
+		                                                             world_data, world_coords, line_segment);
 		break;
 
 	default:
@@ -608,9 +574,9 @@ data::TransportLineData* data::TransportLine::InitTransportSegment(game::WorldDa
 
 	static_assert(static_cast<int>(Orientation::left) == 3);  // Indexing line_data will be out of range 
 
-	auto* origin_l_chunk = world_data.LogicGetChunk(world_data.GetChunk(world_coords));  // May be nullptr
+	auto& origin_chunk = *world_data.GetChunk(world_coords);
 
-	game::TransportSegment* line_segment;
+	std::shared_ptr<game::TransportSegment> line_segment;
 	int line_segment_index = 0;
 
 	enum class InitSegmentStatus
@@ -623,13 +589,13 @@ data::TransportLineData* data::TransportLine::InitTransportSegment(game::WorldDa
 	const int i_index = InvertOrientation(index);
 
 	if (!line_data[index] ||
-		line_data[index]->lineSegment.get().direction != orientation) {
+		line_data[index]->lineSegment->direction != orientation) {
 
 		status = InitSegmentStatus::new_segment;  // If failed to group with ahead, this is chosen
 
 		// Failed to group with ahead, try to group with segment behind
 		if (line_data[i_index] &&
-			line_data[i_index]->lineSegment.get().direction == orientation) {
+			line_data[i_index]->lineSegment->direction == orientation) {
 			// Group behind
 
 			game::WorldData::WorldPair behind_coords = world_coords;
@@ -637,17 +603,10 @@ data::TransportLineData* data::TransportLine::InitTransportSegment(game::WorldDa
 
 			// Within the same logic chunk = Can group behind
 			status = InitSegmentStatus::group_behind;
-			GetLineStructLayer(world_data,
-			                   behind_coords.first, behind_coords.second,
-			                   [&](auto& s, auto& l_chunk) {
-				                   // Different memory addresses = different logic chunks
-				                   if (origin_l_chunk != &l_chunk) {
-					                   status = InitSegmentStatus::new_segment;
-					                   return;
-				                   }
-				                   OrientationIncrement(orientation,
-				                                        s.positionX, s.positionY);
-			                   });
+			if (&origin_chunk != world_data.GetChunk(behind_coords)) {
+				// Different memory addresses = different logic chunks
+				status = InitSegmentStatus::new_segment;
+			}
 		}
 	}
 	else {
@@ -657,57 +616,39 @@ data::TransportLineData* data::TransportLine::InitTransportSegment(game::WorldDa
 		OrientationIncrement(orientation, ahead_coords.first, ahead_coords.second, 1);
 
 		status = InitSegmentStatus::group_ahead;
-		GetLineStructLayer(world_data,
-		                   ahead_coords.first, ahead_coords.second,
-		                   [&](auto&, auto& l_chunk) {
-			                   // Different memory addresses = different logic chunks
-			                   if (origin_l_chunk != &l_chunk) {
-				                   status = InitSegmentStatus::new_segment;
-			                   }
-		                   });
-
+		if (&origin_chunk != world_data.GetChunk(ahead_coords)) {
+			// Different memory addresses = different logic chunks
+			status = InitSegmentStatus::new_segment;
+		}
 	}
 
 	// ======================================================================
 
 	switch (status) {
 	case InitSegmentStatus::new_segment:
-		line_segment = new game::TransportSegment{
+		line_segment = std::make_shared<game::TransportSegment>(
 			orientation,
 			game::TransportSegment::TerminationType::straight,
 			1
-		};
+		);
 
-		// Add the transport line segment to logic chunk IF is the first of a NEW segment
-		{
-			auto* chunk = world_data.GetChunk(world_coords);
-
-			auto& struct_layer =
-				world_data.LogicAddChunk(chunk)
-				          .GetStruct(game::LogicChunk::StructLayer::transport_line)
-				          .emplace_back(this,
-				                        game::WorldData::ToStructCoord(world_coords.first),
-				                        game::WorldData::ToStructCoord(world_coords.second));
-
-			struct_layer.uniqueData = line_segment;
-		}
+		world_data.LogicRegister(game::Chunk::LogicGroup::transport_line,
+		                         world_coords,
+		                         game::ChunkTile::ChunkLayer::entity);
 		break;
 
 	case InitSegmentStatus::group_behind:
 		// The transport segment's position is adjusted by init_transport_segment
 		// Move the segment head behind forwards to current position
-		line_segment = &line_data[static_cast<int>(InvertOrientation(orientation))]->lineSegment.get();
-		{
-			auto& neighbor_segment = line_data[i_index]->lineSegment.get();
-			neighbor_segment.length++;
-			neighbor_segment.itemOffset++;
-		}
+		line_segment = line_data[i_index]->lineSegment;
+		line_segment->length++;
+		line_segment->itemOffset++;
 		break;
 
 	case InitSegmentStatus::group_ahead:
-		line_segment = &line_data[index]->lineSegment.get();
+		line_segment = line_data[index]->lineSegment;
 
-		line_data[index]->lineSegment.get().length++;
+		line_data[index]->lineSegment->length++;
 		line_segment_index = line_data[index]->lineSegmentIndex + 1;
 		break;
 
@@ -717,14 +658,20 @@ data::TransportLineData* data::TransportLine::InitTransportSegment(game::WorldDa
 	}
 
 	// Create unique data at tile
-	tile_layer.uniqueData = new TransportLineData(*line_segment);
-
-	auto* unique_data             = static_cast<TransportLineData*>(tile_layer.uniqueData);
+	auto* unique_data             = tile_layer.MakeUniqueData<TransportLineData>(line_segment);
 	unique_data->lineSegmentIndex = line_segment_index;
 
 	// Line data is not initialized yet inside switch
-	if (status == InitSegmentStatus::group_behind)
-		UpdateSegmentTiles(world_data, world_coords, *line_segment);
+	if (status == InitSegmentStatus::group_behind) {
+		// Remove old head from logic group, add new head which is now 1 tile ahead
+		RemoveFromLogic(world_data, world_coords, *line_segment);
+		world_data.LogicRegister(game::Chunk::LogicGroup::transport_line,
+		                         world_coords,
+		                         game::ChunkTile::ChunkLayer::entity);
+
+		// Renumber
+		UpdateSegmentTiles(world_data, world_coords, line_segment);
+	}
 
 	return unique_data;
 }
@@ -741,8 +688,8 @@ void data::TransportLine::OnBuild(game::WorldData& world_data,
 
 	// ======================================================================
 	// Create data
-	TransportLineData& line_data         = *InitTransportSegment(world_data, world_coords, orientation, tile_layer, line_data_4);
-	game::TransportSegment& line_segment = line_data.lineSegment;
+	TransportLineData& line_data = *InitTransportSegment(world_data, world_coords, orientation, tile_layer, line_data_4);
+	const std::shared_ptr<game::TransportSegment>& line_segment = line_data.lineSegment;
 
 	const TransportLineData::LineOrientation line_orientation = GetLineOrientation(orientation, up, right, down, left);
 
@@ -758,7 +705,7 @@ void data::TransportLine::OnBuild(game::WorldData& world_data,
 	UpdateNeighboringOrientation(
 		world_data, world_coords,
 		up, right, down, left,
-		static_cast<TransportLineData*>(tile_layer.uniqueData));
+		static_cast<TransportLineData*>(tile_layer.GetUniqueData()));
 
 	// Change current line segment termination type to a bend depending on neighbor termination orientation
 	UpdateSegmentHead(world_data, world_coords, line_data_4, line_segment);
@@ -771,40 +718,30 @@ void data::TransportLine::OnBuild(game::WorldData& world_data,
 
 		[](game::WorldData& world_data,
 		   const int world_x, const int world_y,
-		   const float world_offset_x, const float world_offset_y,
 		   const game::TransportSegment::TerminationType termination_type) {
 
-			GetLineStructLayer(world_data, world_x, world_y, [&](auto& layer, auto&) {
-				layer.positionX += world_offset_x;
-				layer.positionY += world_offset_y;
+			auto* line_segment = GetTransportSegment(world_data, world_x, world_y);
+			if (line_segment) {
+				line_segment->get()->length++;
+				line_segment->get()->terminationType = termination_type;
 
-				auto& line_segment = *static_cast<game::TransportSegment*>(
-					layer.uniqueData);
-
-				line_segment.length++;
-				line_segment.terminationType = termination_type;
-
-				UpdateSegmentTiles(world_data, {world_x, world_y}, line_segment, 1);
-			});
+				UpdateSegmentTiles(world_data, {world_x, world_y}, *line_segment, 1);
+			}
 		}, [](game::WorldData& world_data,
 		      const int world_x, const int world_y,
-		      const float world_offset_x, const float world_offset_y,
 		      const Orientation direction,
 		      const game::TransportSegment::TerminationType termination_type) {
 
-			GetLineStructLayer(world_data, world_x, world_y, [&](auto& layer, auto&) {
-				auto& line_segment = *static_cast<game::TransportSegment*>(layer.uniqueData);
-				if (line_segment.direction != direction)
+			auto* line_segment = GetTransportSegment(world_data, world_x, world_y);
+			if (line_segment) {
+				if (line_segment->get()->direction != direction)
 					return;
 
-				layer.positionX += world_offset_x;
-				layer.positionY += world_offset_y;
+				line_segment->get()->length++;
+				line_segment->get()->terminationType = termination_type;
 
-				line_segment.length++;
-				line_segment.terminationType = termination_type;
-
-				UpdateSegmentTiles(world_data, {world_x, world_y}, line_segment, 1);
-			});
+				UpdateSegmentTiles(world_data, {world_x, world_y}, *line_segment, 1);
+			}
 		});
 
 	// ======================================================================
@@ -863,33 +800,34 @@ void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
 
 	// ======================================================================
 
+	// Reset segment lane item index to 0, since the head items MAY now have somewhere to go
+	line_data->lineSegment.get()->left.index = 0;
+	line_data->lineSegment.get()->right.index = 0;
+
 	const UpdateFunc func =
 		[](game::WorldData& world_data,
 		   const int world_x, const int world_y,
-		   float /*world_offset_x*/, float /*world_offset_y*/,
-		   game::TransportSegment::TerminationType termination_type) {
+		   const game::TransportSegment::TerminationType termination_type) {
 
-		GetLineStructLayer(world_data, world_x, world_y, [&](auto& layer, auto&) {
-			auto* line_segment            = static_cast<game::TransportSegment*>(layer.uniqueData);
-			line_segment->terminationType = termination_type;
-		});
+		auto* line_segment = GetTransportSegment(world_data, world_x, world_y);
+		if (line_segment) {
+			line_segment->get()->terminationType = termination_type;
+		}
 	};
 
 	const UpdateSideOnlyFunc side_only_func =
 		[](game::WorldData& world_data,
 		   const int world_x, const int world_y,
-		   float /*world_offset_x*/, float /*world_offset_y*/,
-		   Orientation direction,
-		   game::TransportSegment::TerminationType termination_type) {
+		   const Orientation direction,
+		   const game::TransportSegment::TerminationType termination_type) {
 
-		GetLineStructLayer(world_data, world_x, world_y, [&](auto& layer, auto&) {
-			auto* line_segment = static_cast<game::TransportSegment*>(layer.uniqueData);
-			if (line_segment->direction != direction)
+		auto* line_segment = GetTransportSegment(world_data, world_x, world_y);
+		if (line_segment) {
+			if (line_segment->get()->direction != direction)
 				return;
 
-			line_segment->terminationType = termination_type;
-
-		});
+			line_segment->get()->terminationType = termination_type;
+		}
 	};
 
 	UpdateNeighborLines(world_data,
@@ -922,32 +860,26 @@ void data::TransportLine::DisconnectTargetSegment(game::WorldData& world_data,
                                                   TransportLineData* target,
                                                   TransportLineData* line_data) {
 
-	if (line_data && line_data->lineSegment.get().targetSegment == &target->lineSegment.get()) {
-		game::TransportSegment& line_segment = line_data->lineSegment;
-		line_segment.targetSegment           = nullptr;
+	if (line_data &&
+		line_data->lineSegment->targetSegment == target->lineSegment.get()) {
+
+		const std::shared_ptr<game::TransportSegment>& line_segment = line_data->lineSegment;
+		line_segment->targetSegment                                 = nullptr;
 
 		game::WorldData::WorldPair neighbor_world_coords = world_coords;
 
 		// If bends / side only, set to straight & decrement length	
-		switch (line_segment.terminationType) {
+		switch (line_segment->terminationType) {
 		case game::TransportSegment::TerminationType::bend_left:
 		case game::TransportSegment::TerminationType::bend_right:
 		case game::TransportSegment::TerminationType::right_only:
 		case game::TransportSegment::TerminationType::left_only:
-			line_segment.length--;
-			line_segment.terminationType = game::TransportSegment::TerminationType::straight;
+			line_segment->length--;
+			line_segment->terminationType = game::TransportSegment::TerminationType::straight;
 
 			// Move the neighboring line segments back if they are not straight
-			OrientationIncrement(line_segment.direction,
+			OrientationIncrement(line_segment->direction,
 			                     neighbor_world_coords.first, neighbor_world_coords.second, -1.f);
-
-			GetLineStructLayer(
-				world_data,
-				neighbor_world_coords.first, neighbor_world_coords.second,
-				[&](auto& s_layer, auto&) {
-					OrientationIncrement(line_segment.direction,
-					                     s_layer.positionX, s_layer.positionY, -1.f);
-				});
 
 			// Renumber from index 0
 			UpdateSegmentTiles(world_data, neighbor_world_coords, line_segment);
@@ -958,6 +890,10 @@ void data::TransportLine::DisconnectTargetSegment(game::WorldData& world_data,
 			break;
 		}
 	}
+}
+
+double ToChunkOffset(const game::WorldData::WorldCoord world_coord) {
+	return fabs(game::WorldData::ToChunkCoord(world_coord) * game::Chunk::kChunkWidth - world_coord);
 }
 
 void data::TransportLine::OnRemove(game::WorldData& world_data,
@@ -971,7 +907,7 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 	UpdateNeighboringOrientation(world_data, world_coords,
 	                             t_center, c_right, b_center, c_left, nullptr);
 
-	auto* line_data = static_cast<TransportLineData*>(tile_layer.uniqueData);
+	auto* line_data = static_cast<TransportLineData*>(tile_layer.GetUniqueData());
 
 	// Set neighboring transport line segments which points to this segment's target_segment to nullptr
 	DisconnectTargetSegment(world_data, world_coords, line_data, t_center);
@@ -979,80 +915,88 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 	DisconnectTargetSegment(world_data, world_coords, line_data, c_right);
 	DisconnectTargetSegment(world_data, world_coords, line_data, b_center);
 
-	game::LogicChunk& logic_chunk =
-		*world_data.LogicGetChunk(world_coords.first, world_coords.second);
+	game::Chunk& chunk = *world_data.GetChunk(world_coords);
 
 	// o_ = old
 	// n_ = new
 
-	auto& o_line_data    = *static_cast<TransportLineData*>(tile_layer.uniqueData);
-	auto& o_line_segment = o_line_data.lineSegment.get();
+	auto& o_line_data                                             = *static_cast<TransportLineData*>(tile_layer.GetUniqueData());
+	const std::shared_ptr<game::TransportSegment>& o_line_segment = o_line_data.lineSegment;
 
 	auto n_seg_coords = world_coords;
-	OrientationIncrement(o_line_segment.direction,
+
+	OrientationIncrement(o_line_segment->direction,
 	                     n_seg_coords.first, n_seg_coords.second, -1);
 
 	// Create new segment at behind cords if not the end of a segment
-	const auto n_seg_length = o_line_segment.length - o_line_data.lineSegmentIndex - 1;
+	const auto n_seg_length = o_line_segment->length - o_line_data.lineSegmentIndex - 1;
 	if (n_seg_length > 0) {
-		// Create new segment, given to be owned by a ChunkStructLayer
-		// All segments are guaranteed to be within the same logic chunk
-		auto* n_segment =
-			new game::TransportSegment(o_line_segment.direction,
-			                           game::TransportSegment::TerminationType::straight,
-			                           n_seg_length);
-		n_segment->itemOffset = o_line_segment.itemOffset - o_line_data.lineSegmentIndex - 1;
-		{
-			auto& struct_layer =
-				logic_chunk.GetStruct(game::LogicChunk::StructLayer::transport_line)
-				           .emplace_back(this,
-				                         game::WorldData::ToStructCoord(n_seg_coords.first),
-				                         game::WorldData::ToStructCoord(n_seg_coords.second));
-			struct_layer.uniqueData = n_segment; // <- Managed by struct layer
-		}
+		// Create new segment
+		const auto n_segment = std::make_shared<game::TransportSegment>(o_line_segment->direction,
+		                                                                game::TransportSegment::TerminationType::straight,
+		                                                                n_seg_length);
+		n_segment->itemOffset = o_line_segment->itemOffset - o_line_data.lineSegmentIndex - 1;
+
+
+		// Add to be considered for logic updates
+		chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line).emplace_back(
+			&world_data.GetTile(n_seg_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity)
+		);
+
+		// ======================================================================
 
 		// Update trailing segments to use new segment and renumber
-		UpdateSegmentTiles(world_data, n_seg_coords, *n_segment);
+		UpdateSegmentTiles(world_data, n_seg_coords, n_segment);
 
 		// Update other segments leading into old segment
-		for (auto& t_line : logic_chunk.GetStruct(game::LogicChunk::StructLayer::transport_line)) {
-			auto& i_segment_data = *static_cast<game::TransportSegment*>(t_line.uniqueData);
+		// TODO improve this algorithm for updating target segments
+		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
+			auto& layer = chunk.Tiles()[i].GetLayer(game::ChunkTile::ChunkLayer::entity);
+			if (!layer.prototypeData || layer.prototypeData->Category() != DataCategory::transport_belt)
+				continue;
 
-			bool valid_neighbor = false;  // Neighbor must be BEHIND the segment which was removed
-			switch (o_line_segment.direction) {
+			const auto& line_segment = layer.GetUniqueData<TransportLineData>()->lineSegment.get();
+
+
+			const auto position_x = i % game::Chunk::kChunkWidth;
+			const auto position_y = i / game::Chunk::kChunkWidth;
+			bool valid_neighbor   = false;  // Neighbor must be BEHIND the segment which was removed
+			switch (o_line_segment->direction) {
 			case Orientation::up:
-				valid_neighbor = t_line.positionY > game::WorldData::ToStructCoord(world_coords.second);
+				valid_neighbor = position_y > ToChunkOffset(world_coords.second);
 				break;
 			case Orientation::right:
-				valid_neighbor = t_line.positionX < game::WorldData::ToStructCoord(world_coords.first);
+				valid_neighbor = position_x < ToChunkOffset(world_coords.first);
 				break;
 			case Orientation::down:
-				valid_neighbor = t_line.positionY < game::WorldData::ToStructCoord(world_coords.second);
+				valid_neighbor = position_y < ToChunkOffset(world_coords.second);
 				break;
 			case Orientation::left:
-				valid_neighbor = t_line.positionX > game::WorldData::ToStructCoord(world_coords.first);
+				valid_neighbor = position_x > ToChunkOffset(world_coords.first);
 				break;
 
 			default:
 				assert(false);
 			}
 
-			if (valid_neighbor && i_segment_data.targetSegment == &o_line_segment) {
-				i_segment_data.targetSegment = n_segment;
+			if (valid_neighbor && line_segment->targetSegment == o_line_segment.get()) {
+				line_segment->targetSegment = n_segment.get();
 			}
 		}
+
+
 		// Update segment in neighboring logic chunk leading into old_segment
-		game::Chunk::ChunkPair neighbor_chunk_coords = logic_chunk.chunk->GetPosition();
-		OrientationIncrement(o_line_segment.direction,
+		game::Chunk::ChunkPair neighbor_chunk_coords = chunk.GetPosition();
+		OrientationIncrement(o_line_segment->direction,
 		                     neighbor_chunk_coords.first, neighbor_chunk_coords.second, -1);
 
-		auto* neighbor_l_chunk = world_data.LogicGetChunk(neighbor_chunk_coords);
+		auto* neighbor_l_chunk = world_data.GetChunkC(neighbor_chunk_coords);
 		if (neighbor_l_chunk) {
-			for (auto& t_line : neighbor_l_chunk->GetStruct(game::LogicChunk::StructLayer::transport_line)) {
-				auto* i_segment_data = static_cast<game::TransportSegment*>(t_line.uniqueData);
+			for (auto& t_line : neighbor_l_chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
+				const auto& i_segment = t_line->GetUniqueData<TransportLineData>()->lineSegment;
 
-				if (i_segment_data->targetSegment == &o_line_segment) {
-					i_segment_data->targetSegment = n_segment;
+				if (i_segment->targetSegment == o_line_segment.get()) {
+					i_segment->targetSegment = n_segment.get();
 				}
 			}
 		}
@@ -1061,18 +1005,12 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 	// Remove original transport line segment referenced in Transport_line_data if is head of segment
 	// If not head, reduce the length of original segment to index + 1
 	if (o_line_data.lineSegmentIndex == 0 ||
-		(o_line_data.lineSegmentIndex == 1 && o_line_segment.terminationType !=  // Head of bending segments start at 1
+		(o_line_data.lineSegmentIndex == 1 && o_line_segment->terminationType !=  // Head of bending segments start at 1
 			game::TransportSegment::TerminationType::straight)) {
 
-		std::vector<game::ChunkStructLayer>& struct_layer = logic_chunk.GetStruct(
-			game::LogicChunk::StructLayer::transport_line);
-		struct_layer.erase(
-			std::remove_if(struct_layer.begin(), struct_layer.end(), [&](game::ChunkStructLayer& s_layer) {
-				return static_cast<game::TransportSegment*>(s_layer.uniqueData) == &o_line_segment;
-			}),
-			struct_layer.end());
+		RemoveFromLogic(world_data, world_coords, *o_line_segment);
 	}
 	else {
-		o_line_segment.length = o_line_data.lineSegmentIndex;
+		o_line_segment->length = o_line_data.lineSegmentIndex;
 	}
 }

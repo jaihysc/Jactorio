@@ -1,10 +1,10 @@
 ﻿// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 10/15/2019
 
-#include "jactorio.h"
-
 #include <thread>
 
+#include "jactorio.h"
+#include "core/crash_handler.h"
 #include "core/filesystem.h"
 #include "game/logic_loop.h"
 #include "renderer/render_main.h"
@@ -32,7 +32,9 @@ int main(int ac, char* av[]) {
 
 	// Log file
 	core::ResourceGuard log_guard(&core::CloseLogFile);
-	core::OpenLogFile("~/log.txt");
+	core::OpenLogFile();
+
+	core::RegisterCrashHandler();
 
 	// Initial startup message
 	LOG_MESSAGE_f(none, "%s | %s build, version: %s\n\n",

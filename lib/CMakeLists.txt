@@ -32,6 +32,8 @@ validate_dependency(pybind11)
 validate_dependency(libnoise)
 validate_dependency(SDL-mirror)
 validate_dependency(decimal_for_cpp)
+validate_dependency(StackWalker)
+validate_dependency(backward-cpp)
 
 
 # Ones which need to be built
@@ -40,6 +42,14 @@ add_subdirectory("glfw")
 add_subdirectory("pybind11")
 add_subdirectory("libnoise")
 add_subdirectory("SDL-mirror")
+
+
+
+set(JACTORIO_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
+add_library(jactorioLib
+		${JACTORIO_LIB_DIR}/null.cpp  # CMake requires at least 1 cpp file
+)
+
 
 # Platform link libraries
 set(
@@ -75,10 +85,20 @@ elseif (UNIX)
 		${LIBS_COMMON}
 		libGLU.so libGL.so
 	)
+
+	# For backward-cpp
+	find_library(LIBDW_DEV dw)
+	if(LIBDW_DEV)
+		set(
+			JACTORIO_LINK_LIBS
+			${JACTORIO_LINK_LIBS}
+			dw
+		)
+		target_compile_definitions(jactorioLib PUBLIC BACKWARD_HAS_DW=1)
+	endif()
 endif (WIN32)
 
 
-set(JACTORIO_LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
 # ======================================== Lib HEADER files .h
 set(JACTORIO_LIB_HEADER_FILES
 	${PROJECT_SOURCE_DIR}/lib/glfw/include
@@ -89,14 +109,12 @@ set(JACTORIO_LIB_HEADER_FILES
 	${PROJECT_SOURCE_DIR}/lib/pybind11/include
 	${PROJECT_SOURCE_DIR}/lib/libnoise/include
 	${PROJECT_SOURCE_DIR}/lib/SDL-mirror/include
-
 	${PROJECT_SOURCE_DIR}/lib/decimal_for_cpp/include
+	${PROJECT_SOURCE_DIR}/lib/StackWalker/Main
+	${PROJECT_SOURCE_DIR}/lib/backward-cpp
 )
 # ======================================== END HEADER files .h
 
-add_library(jactorioLib
-	${JACTORIO_LIB_DIR}/null.cpp  # CMake requires at least 1 cpp file
-)
 target_link_libraries(jactorioLib ${JACTORIO_LINK_LIBS})
 target_include_directories(jactorioLib PUBLIC ${JACTORIO_LIB_HEADER_FILES})
 

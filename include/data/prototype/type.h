@@ -1,14 +1,33 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 04/23/2020
+// Created on: 05/29/2020
 
-#ifndef JACTORIO_DATA_PROTOTYPE_PLACEMENT_ORIENTATION_H
-#define JACTORIO_DATA_PROTOTYPE_PLACEMENT_ORIENTATION_H
+#ifndef JACTORIO_DATA_PROTOTYPE_TYPE_H
+#define JACTORIO_DATA_PROTOTYPE_TYPE_H
 #pragma once
+
+#include <decimal.h>
 
 #include "jactorio.h"
 
 namespace jactorio::data
 {
+	using ProtoFloatT = double;
+	using ProtoIntT = int32_t;
+	using ProtoUintT = uint32_t;
+
+	// Common types used by prototypes, includes no jactorio files
+
+	constexpr auto kInserterRotationDecimals = 3;
+
+	// Defines types for prototype classes
+	using RotationDegree = dec::decimal<kInserterRotationDecimals>;
+
+	J_NODISCARD inline RotationDegree ToRotationDegree(const double val) {
+		return dec::decimal_cast<kInserterRotationDecimals>(val);
+	}
+
+	//
+
 	enum class Orientation
 	{
 		up = 0,
@@ -55,6 +74,25 @@ namespace jactorio::data
 			break;
 		}
 	}
+
+	inline const char* OrientationToStr(const Orientation orientation) {
+		switch (orientation) {
+		case Orientation::up:
+			return "Up";
+		case Orientation::right:
+			return "Right";
+		case Orientation::down:
+			return "Down";
+		case Orientation::left:
+			return "Left";
+
+		default:
+			assert(false);  // Missing switch case
+			break;
+		}
+
+		return "";
+	}
 }
 
-#endif // JACTORIO_DATA_PROTOTYPE_PLACEMENT_ORIENTATION_H
+#endif // JACTORIO_DATA_PROTOTYPE_TYPE_H

@@ -7,7 +7,7 @@
 
 #include "game/logic/transport_line_controller.h"
 
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 
 void ApplyTerminationDeductionL(const jactorio::game::TransportSegment::TerminationType termination_type,
@@ -71,11 +71,15 @@ J_NODISCARD bool MoveNextItem(const jactorio::game::TransportLineOffset& tiles_m
 	}
 
 	// Failed to find another item
+	index = 0;
+	
+	/*
 	// set to 1 past the index of the last item (stop the transport line permanently) if there is no target segment
 	if (!has_target_segment)
 		index = line_side.size();
 	else
 		index = 0;
+	*/
 
 	return false;
 }
@@ -181,6 +185,7 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 		if (MoveNextItem(tiles_moved, side.lane, index, segment.targetSegment != nullptr)) {
 			back_item_distance -= tiles_moved;
 		}
+		/*
 			// Disable transport line since it does not feed anywhere
 		else {
 			switch (segment.terminationType) {
@@ -194,6 +199,7 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 				break;
 			}
 		}
+		*/
 	}
 	else {
 		// ================================================
@@ -214,55 +220,61 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 
 }
 
-void jactorio::game::LogicUpdateMoveItems(LogicChunk* l_chunk) {
-	auto& layers = l_chunk->GetStruct(LogicChunk::StructLayer::transport_line);
+///
+/// \brief Moves items for transport lines
+/// \param l_chunk Chunk to update
+void LogicUpdateMoveItems(const jactorio::game::Chunk& l_chunk) {
+	using namespace jactorio;
+	const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
 
 	// Each object layer holds a transport line segment
-	for (auto& object_layer : layers) {
-		const auto* line_proto = static_cast<const data::TransportLine*>(object_layer.prototypeData);
-		auto* line_segment     = static_cast<TransportSegment*>(object_layer.uniqueData);
+	for (const auto& tile_layer : layers) {
+		const auto& line_proto = *static_cast<const data::TransportLine*>(tile_layer->prototypeData);
+		auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
 
 		// Left
 		{
-			auto& left       = line_segment->left;
-			const auto index = line_segment->left.index;
+			auto& left       = line_segment.left;
+			const auto index = line_segment.left.index;
 			// Empty or index indicates nothing should be moved
-			if (line_segment->left.IsActive()) {
-				left.lane[index].first -= line_proto->speed;
-				line_segment->left.backItemDistance -= line_proto->speed;
+			if (line_segment.left.IsActive()) {
+				left.lane[index].first -= line_proto.speed;
+				line_segment.left.backItemDistance -= line_proto.speed;
 			}
 		}
 
 		// Right
 		{
-			auto& right      = line_segment->right;
-			const auto index = line_segment->right.index;
+			auto& right      = line_segment.right;
+			const auto index = line_segment.right.index;
 			// Empty or index indicates nothing should be moved
-			if (line_segment->right.IsActive()) {
-				right.lane[index].first -= line_proto->speed;
-				line_segment->right.backItemDistance -= line_proto->speed;
+			if (line_segment.right.IsActive()) {
+				right.lane[index].first -= line_proto.speed;
+				line_segment.right.backItemDistance -= line_proto.speed;
 			}
 		}
 	}
 }
 
-void jactorio::game::LogicUpdateTransitionItems(LogicChunk* l_chunk) {
-	auto& layers = l_chunk->GetStruct(LogicChunk::StructLayer::transport_line);
+///
+/// \brief Transitions items on transport lines to other lines and modifies whether of not the line is active
+/// \param l_chunk Chunk to update
+void LogicUpdateTransitionItems(const jactorio::game::Chunk& l_chunk) {
+	using namespace jactorio;
+	const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
 
 	// Each object layer holds a transport line segment
-	for (auto& object_layer : layers) {
-		const auto* line_proto = static_cast<const data::TransportLine*>(object_layer.prototypeData);
-		auto* line_segment     = static_cast<TransportSegment*>(object_layer.uniqueData);
-		assert(line_segment);
-
+	for (const auto& tile_layer : layers) {
+		const auto* line_proto = static_cast<const data::TransportLine*>(tile_layer->prototypeData);
+		auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
 
 		auto tiles_moved = line_proto->speed;
 
-		if (line_segment->left.IsActive())
-			UpdateSide<true>(tiles_moved, *line_segment);
+		if (line_segment.left.IsActive())
+			UpdateSide<true>(tiles_moved, line_segment);
 
-		if (line_segment->right.IsActive())
-			UpdateSide<false>(tiles_moved, *line_segment);
+		if (line_segment.right.IsActive())
+			UpdateSide<false>(tiles_moved, line_segment);
 	}
 }
 
@@ -271,11 +283,11 @@ void jactorio::game::TransportLineLogicUpdate(WorldData& world_data) {
 	// 		1. Move items on their transport lines
 	//		2. Check if any items have reached the end of their lines, and need to be moved to another one
 
-	for (auto& logic_chunk_pair : world_data.LogicGetAllChunks()) {
-		LogicUpdateMoveItems(&logic_chunk_pair.second);
+	for (const auto& chunk_pair : world_data.LogicGetChunks()) {
+		LogicUpdateMoveItems(*chunk_pair);
 	}
 
-	for (auto& logic_chunk_pair : world_data.LogicGetAllChunks()) {
-		LogicUpdateTransitionItems(&logic_chunk_pair.second);
+	for (const auto& chunk_pair : world_data.LogicGetChunks()) {
+		LogicUpdateTransitionItems(*chunk_pair);
 	}
 }

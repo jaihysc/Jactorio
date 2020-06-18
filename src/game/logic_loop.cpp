@@ -11,6 +11,7 @@
 #include "jactorio.h"
 #include "core/filesystem.h"
 #include "data/data_manager.h"
+#include "data/prototype/entity/inserter.h"
 #include "game/game_data.h"
 #include "game/logic/transport_line_controller.h"
 #include "renderer/render_main.h"
@@ -33,7 +34,7 @@ void jactorio::game::InitLogicLoop() {
 	// Load prototype data
 	core::ResourceGuard data_manager_guard(&data::ClearData);
 	try {
-		data::LoadData(core::ResolvePath("~/data"));
+		data::LoadData(core::ResolvePath("data"));
 	}
 	catch (data::DataException&) {
 		// Prototype loading error
@@ -41,7 +42,7 @@ void jactorio::game::InitLogicLoop() {
 	}
 	catch (std::filesystem::filesystem_error&) {
 		// Data folder not found error
-		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::ResolvePath("~/data").c_str());
+		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::ResolvePath("data").c_str());
 		return;
 	}
 
@@ -136,13 +137,6 @@ void jactorio::game::InitLogicLoop() {
 
 	}, InputKey::escape, InputAction::key_up);
 
-
-	game_data->input.key.Subscribe([]() {
-		game_data->event.SubscribeOnce(EventType::renderer_tick, []() {
-			game_data->world = WorldData();
-		});
-	}, InputKey::p, InputAction::key_up);
-
 	//
 
 	// Runtime
@@ -168,9 +162,16 @@ void jactorio::game::InitLogicLoop() {
 
 
 				// Logistics logic
-				EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
+				{
+					EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-				TransportLineLogicUpdate(game_data->world);
+					TransportLineLogicUpdate(game_data->world);
+				}
+				{
+					EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");
+
+					InserterLogicUpdate(game_data->world);
+				}
 			}
 
 			// ======================================================================

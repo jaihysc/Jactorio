@@ -18,6 +18,8 @@ namespace jactorio::data
 
 namespace jactorio::data
 {
+	///
+	/// Creating a item prototype may omit sprite group, it is automatically defaulted to both gui and terrain
 	class Item final : public ItemBase
 	{
 	public:
@@ -42,6 +44,11 @@ namespace jactorio::data
 		///
 		/// \brief Number of items which can be together
 		PYTHON_PROP_REF(Item, ItemStack, stackSize)
+
+
+		void ValidatedPostLoad() override {
+			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
+		}
 	};
 
 
@@ -49,7 +56,7 @@ namespace jactorio::data
 	// Item* and amount in current stack
 	// Left: Item prototype
 	// Right: Item count
-	using ItemStack = std::pair<Item*, Item::ItemStack>;
+	using ItemStack = std::pair<const Item*, Item::ItemStack>;
 }
 
 #endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H

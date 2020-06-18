@@ -6,21 +6,36 @@
 #include <future>
 
 #include "jactorio.h"
-#include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/entity/entity.h"
 #include "data/prototype/interface/renderable.h"
 #include "data/prototype/tile/tile.h"
-#include "game/logic/transport_line_controller.h"
-#include "game/logic/transport_line_structure.h"
 #include "game/world/world_data.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/mvp_manager.h"
 
 constexpr auto kChunkWidth = jactorio::game::WorldData::kChunkWidth;
 
-using TileDrawFunc = jactorio::core::QuadPosition (*)(const jactorio::game::ChunkTileLayer&, jactorio::GameTickT);
+struct TileDrawFuncParams
+{
+	TileDrawFuncParams(const jactorio::game::ChunkTileLayer& tile_layer,
+	                   const jactorio::GameTickT game_tick)
+		: tileLayer(tile_layer),
+		  gameTick(game_tick) {
+	}
+
+	const jactorio::game::ChunkTileLayer& tileLayer;
+	jactorio::GameTickT gameTick;
+};
+
+using TileDrawFuncReturn = std::pair<jactorio::core::QuadPosition, const jactorio::data::RenderableData*>;
+using TileDrawFunc = TileDrawFuncReturn (*)(const TileDrawFuncParams&);
+
 using ObjectDrawFunc = unsigned int (*)(const jactorio::game::ChunkObjectLayer&);
 
-const jactorio::core::QuadPosition no_draw{{-1.f, -1.f}, {-1.f, -1.f}};
+const TileDrawFuncReturn no_draw{
+	{{-1.f, -1.f}, {-1.f, -1.f}},
+	nullptr
+};
 
 void ApplyUvOffset(jactorio::core::QuadPosition& uv, const jactorio::core::QuadPosition& uv_offset) {
 	const auto difference = uv.bottomRight - uv.topLeft;
@@ -35,66 +50,69 @@ void ApplyUvOffset(jactorio::core::QuadPosition& uv, const jactorio::core::QuadP
 
 
 /// \brief Functions for drawing each layer, they are accessed by layer_index
+/// \return uv coords, uniqueData to draw, nullptr if no unique data to draw
 /// \remark return top_left.x -1 to skip
-TileDrawFunc tile_get_sprite_id_func[]{
-	[](const jactorio::game::ChunkTileLayer& tile, auto game_tick) {
+constexpr TileDrawFunc tile_draw_func[]{
+	[](const TileDrawFuncParams& params) {
 		// Sprites + tiles are guaranteed not nullptr
-		const auto* t     = static_cast<const jactorio::data::Tile*>(tile.prototypeData);
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(tile.uniqueData);
+		const auto* t     = static_cast<const jactorio::data::Tile*>(params.tileLayer.prototypeData);
+		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
 
 
-		auto sprite_frame = t->OnRGetSprite(unique_data, game_tick);
-		auto uv           = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
+		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
+		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 		if (unique_data)
-			ApplyUvOffset(uv, t->sprite->GetCoordsTrimmed(unique_data->set, sprite_frame.second));
+			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
 
-		return uv;
+		return TileDrawFuncReturn{uv, nullptr};
 	},
 
-	[](const jactorio::game::ChunkTileLayer& tile, auto game_tick) {
-		const auto* t = static_cast<const jactorio::data::Entity*>(tile.prototypeData);
+	[](const TileDrawFuncParams& params) {
+		const auto* t = static_cast<const jactorio::data::Entity*>(params.tileLayer.prototypeData);
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(tile.uniqueData);
+		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
 
-		auto sprite_frame = t->OnRGetSprite(unique_data, game_tick);
-		auto uv           = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
+		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
+		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 
 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
-			ApplyUvOffset(uv, t->sprite->GetCoordsTrimmed(unique_data->set, sprite_frame.second));
+			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
 
-		return uv;
+		return TileDrawFuncReturn{uv, nullptr};
 	},
-	[](const jactorio::game::ChunkTileLayer& tile, auto game_tick) {
-		const auto* t = static_cast<const jactorio::data::Entity*>(tile.prototypeData);
+	[](const TileDrawFuncParams& params) {
+		const auto* t = static_cast<const jactorio::data::Entity*>(params.tileLayer.prototypeData);
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(tile.uniqueData);
+		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
 
-		auto sprite_frame = t->OnRGetSprite(unique_data, game_tick);
-		auto uv           = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
+		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
+		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 
-		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
-			ApplyUvOffset(uv, t->sprite->GetCoordsTrimmed(unique_data->set, sprite_frame.second));
+		if (unique_data) {
+			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
+			return TileDrawFuncReturn{uv, unique_data};
+		}
 
-		return uv;
+		return TileDrawFuncReturn{uv, nullptr};
 	},
 
-	[](const jactorio::game::ChunkTileLayer& tile, auto) {
-		const auto* t = static_cast<const jactorio::data::Sprite*>(tile.prototypeData);
+	[](const TileDrawFuncParams& params) {
+		const auto* t = static_cast<const jactorio::data::Sprite*>(params.tileLayer.prototypeData);
 		if (t == nullptr)
 			return no_draw;
 
-		auto* unique_data = static_cast<jactorio::data::RenderableData*>(tile.uniqueData);
+		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
 
 		auto uv = jactorio::renderer::Renderer::GetSpritemapCoords(t->internalId);
 
 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
-			ApplyUvOffset(uv, t->GetCoordsTrimmed(unique_data->set, 0));
+			ApplyUvOffset(uv, t->GetCoords(unique_data->set, 0));
 
-		return uv;
+		return TileDrawFuncReturn{uv, nullptr};
 	}
 };
 
@@ -111,7 +129,8 @@ ObjectDrawFunc object_layer_get_sprite_id_func[]{
 // prepare_tile_data or prepare_object_data based on the layer it is rendering
 void PrepareTileData(const jactorio::game::WorldData& world_data,
                      const unsigned layer_index,
-                     jactorio::renderer::RendererLayer* layer,
+                     jactorio::renderer::RendererLayer& layer,
+                     jactorio::renderer::RendererLayer& top_layer,
                      const float chunk_y_offset, const float chunk_x_offset,
                      const jactorio::game::Chunk* const chunk) {
 	// Load chunk into buffer
@@ -126,12 +145,16 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 			const jactorio::game::ChunkTile& tile      = tiles[tile_y * kChunkWidth + tile_x];
 			jactorio::game::ChunkTileLayer& layer_tile = tile.GetLayer(layer_index);
 
+			TileDrawFuncReturn draw_func_return;
 			jactorio::core::QuadPosition uv;
 
-			// Not multi tile
 			if (layer_tile.IsMultiTile()) {
 				// Unique data for multi tiles is stored in the top left tile
-				uv = tile_get_sprite_id_func[layer_index](*layer_tile.GetMultiTileTopLeft(), world_data.GameTick());
+				draw_func_return = tile_draw_func[layer_index]({
+					*layer_tile.GetMultiTileTopLeft(),
+					world_data.GameTick()
+				});
+				uv = draw_func_return.first;
 
 				jactorio::game::MultiTileData& mt_data = layer_tile.GetMultiTileData();
 
@@ -154,9 +177,12 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 				uv.topLeft.x = uv.topLeft.x + len_x * x_multiplier;
 				uv.topLeft.y = uv.topLeft.y + len_y * static_cast<float>(mt_data.multiTileHeight - y_multiplier - 1);
 			}
-				// Is multi tile
 			else {
-				uv = tile_get_sprite_id_func[layer_index](tile.GetLayer(layer_index), world_data.GameTick());
+				draw_func_return = tile_draw_func[layer_index]({
+					tile.GetLayer(layer_index),
+					world_data.GameTick()
+				});
+				uv = draw_func_return.first;
 			}
 
 			// ======================================================================
@@ -168,7 +194,7 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 			// Calculate screen coordinates
 			const float x = (chunk_x_offset + tile_x) * static_cast<float>(jactorio::renderer::Renderer::tileWidth);
 
-			layer->PushBack(
+			layer.PushBack(
 				jactorio::renderer::RendererLayer::Element(
 					{
 						{
@@ -185,292 +211,20 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 				)
 			);
 
-		}
-	}
-}
-
-void PrepareTransportSegmentData(jactorio::renderer::RendererLayer* layer,
-                                 const double chunk_y_offset, const double chunk_x_offset,
-                                 const jactorio::game::TransportSegment* line_segment,
-                                 std::deque<jactorio::game::TransportLineItem>& line_segment_side,
-                                 double offset_x, double offset_y) {
-	using namespace jactorio::game;
-
-	// Either offset_x or offset_y which will be INCREASED or DECREASED
-	double* target_offset;
-	double multiplier = 1;  // Either 1 or -1 to add or subtract
-
-	switch (line_segment->direction) {
-	case jactorio::data::Orientation::up:
-		target_offset = &offset_y;
-		break;
-	case jactorio::data::Orientation::right:
-		target_offset = &offset_x;
-		multiplier = -1;
-		break;
-	case jactorio::data::Orientation::down:
-		target_offset = &offset_y;
-		multiplier = -1;
-		break;
-	case jactorio::data::Orientation::left:
-		target_offset = &offset_x;
-		break;
-
-	default:
-		assert(false);  // Missing switch case
-		break;
-	}
-
-	for (const auto& line_item : line_segment_side) {
-		// Move the target offset (up or down depending on multiplier)
-		*target_offset += line_item.first.getAsDouble() * multiplier;
-
-		const auto& uv_pos = jactorio::renderer::Renderer::GetSpritemapCoords(line_item.second->sprite->internalId);
-
-		const float top_x = static_cast<float>(chunk_x_offset + offset_x) * static_cast<float>(
-			jactorio::renderer::Renderer::tileWidth);
-		const float top_y = static_cast<float>(chunk_y_offset + offset_y) * static_cast<float>(
-			jactorio::renderer::Renderer::tileWidth);
-
-		layer->PushBack(jactorio::renderer::RendererLayer::Element(
-			{
-				{
-					{top_x, top_y},
-					{
-						static_cast<float>(top_x + kItemWidth *
-							static_cast<float>(jactorio::renderer::Renderer::tileWidth)),
-
-						static_cast<float>(top_y + kItemWidth *
-							static_cast<float>(jactorio::renderer::Renderer::tileWidth))
-					},
-				},
-				{uv_pos.topLeft, uv_pos.bottomRight}
+			// Has unique data to draw
+			if (draw_func_return.second) {
+				draw_func_return.second->OnDrawUniqueData(top_layer, x, y);
 			}
-		));
+		}
 	}
 }
 
 
 void PrepareObjectData(const jactorio::game::WorldData& world_data,
                        const unsigned layer_index,
-                       jactorio::renderer::RendererLayer* layer,
+                       jactorio::renderer::RendererLayer& layer,
                        const float chunk_y_offset, const float chunk_x_offset,
                        const jactorio::game::Chunk* const chunk) {
-
-	// Draw logic chunk contents if it exists
-	const auto* logic_chunk = world_data.LogicGetChunk(chunk);
-
-	if (logic_chunk) {
-		const auto& transport_line_layer =
-			logic_chunk->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-
-		for (const auto& line_layer : transport_line_layer) {
-			auto* line_segment = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-
-			double offset_x;
-			double offset_y;
-
-			// Don't render if items are not marked visible! Wow!
-			if (!line_segment->left.visible)
-				goto prepare_right;
-
-			offset_x = line_layer.positionX;
-			offset_y = line_layer.positionY;
-
-			// Left
-			// The offsets for straight are always applied to bend left and right
-			switch (line_segment->direction) {
-			case jactorio::data::Orientation::up:
-				offset_x += jactorio::game::kLineUpLItemOffsetX;
-				break;
-			case jactorio::data::Orientation::right:
-				offset_y += jactorio::game::kLineRightLItemOffsetY;
-				break;
-			case jactorio::data::Orientation::down:
-				offset_x += jactorio::game::kLineDownLItemOffsetX;
-				break;
-			case jactorio::data::Orientation::left:
-				offset_y += jactorio::game::kLineLeftLItemOffsetY;
-				break;
-			}
-
-			// Left side
-			switch (line_segment->terminationType) {
-			case jactorio::game::TransportSegment::TerminationType::straight:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y -= jactorio::game::kLineLeftUpStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightDownStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineRightDownStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x -= jactorio::game::kLineLeftUpStraightItemOffset;
-					break;
-				}
-				break;
-
-			case jactorio::game::TransportSegment::TerminationType::bend_left:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpBlLItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightBlLItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownBlLItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftBlLItemOffsetX;
-					break;
-				}
-				break;
-
-			case jactorio::game::TransportSegment::TerminationType::bend_right:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpBrLItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightBrLItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownBrLItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftBrLItemOffsetX;
-					break;
-				}
-				break;
-
-				// Side insertion
-			case jactorio::game::TransportSegment::TerminationType::right_only:
-			case jactorio::game::TransportSegment::TerminationType::left_only:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpSingleSideItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightSingleSideItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownSingleSideItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftSingleSideItemOffsetX;
-					break;
-				}
-				break;
-			}
-			PrepareTransportSegmentData(layer,
-			                            chunk_y_offset, chunk_x_offset,
-			                            line_segment, line_segment->left.lane, offset_x, offset_y);
-
-		prepare_right:
-			if (!line_segment->right.visible)
-				continue;
-			// Right
-			offset_x = line_layer.positionX;
-			offset_y = line_layer.positionY;
-
-			// The offsets for straight are always applied to bend left and right
-			switch (line_segment->direction) {
-			case jactorio::data::Orientation::up:
-				offset_x += jactorio::game::kLineUpRItemOffsetX;
-				break;
-			case jactorio::data::Orientation::right:
-				offset_y += jactorio::game::kLineRightRItemOffsetY;
-				break;
-			case jactorio::data::Orientation::down:
-				offset_x += jactorio::game::kLineDownRItemOffsetX;
-				break;
-			case jactorio::data::Orientation::left:
-				offset_y += jactorio::game::kLineLeftRItemOffsetY;
-				break;
-			}
-
-
-			// Right side
-			switch (line_segment->terminationType) {
-			case jactorio::game::TransportSegment::TerminationType::straight:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y -= jactorio::game::kLineLeftUpStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightDownStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineRightDownStraightItemOffset;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x -= jactorio::game::kLineLeftUpStraightItemOffset;
-					break;
-				}
-				break;
-
-			case jactorio::game::TransportSegment::TerminationType::bend_left:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpBrRItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightBlRItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownBlRItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftBlRItemOffsetX;
-					break;
-				}
-				break;
-
-			case jactorio::game::TransportSegment::TerminationType::bend_right:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpBrRItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightBrRItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownBrRItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftBrRItemOffsetX;
-					break;
-				}
-				break;
-
-				// Side insertion
-			case jactorio::game::TransportSegment::TerminationType::right_only:
-			case jactorio::game::TransportSegment::TerminationType::left_only:
-				switch (line_segment->direction) {
-				case jactorio::data::Orientation::up:
-					offset_y += jactorio::game::kLineUpSingleSideItemOffsetY;
-					break;
-				case jactorio::data::Orientation::right:
-					offset_x += jactorio::game::kLineRightSingleSideItemOffsetX;
-					break;
-				case jactorio::data::Orientation::down:
-					offset_y += jactorio::game::kLineDownSingleSideItemOffsetY;
-					break;
-				case jactorio::data::Orientation::left:
-					offset_x += jactorio::game::kLineLeftSingleSideItemOffsetX;
-					break;
-				}
-				break;
-			}
-			PrepareTransportSegmentData(layer,
-			                            chunk_y_offset, chunk_x_offset,
-			                            line_segment, line_segment->right.lane, offset_x, offset_y);
-		}
-	}
 
 	const auto& objects = chunk->objects[layer_index];
 	for (const auto& object_layer : objects) {
@@ -482,7 +236,7 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 
 		const auto& uv_pos = jactorio::renderer::Renderer::GetSpritemapCoords(internal_id);
 
-		layer->PushBack(jactorio::renderer::RendererLayer::Element(
+		layer.PushBack(jactorio::renderer::RendererLayer::Element(
 			{
 				{
 					(chunk_x_offset + object_layer.positionX)
@@ -504,48 +258,142 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 	}
 }
 
-void jactorio::renderer::PrepareChunkDrawData(const game::WorldData& world_data,
-                                              const int layer_index, const bool is_tile_layer,
-                                              const int render_offset_x, const int render_offset_y,
-                                              const int chunk_start_x, const int chunk_start_y,
-                                              const int chunk_amount_x, const int chunk_amount_y,
-                                              RendererLayer* layer) {
-	void (*prepare_func)(const game::WorldData&, unsigned, RendererLayer*, float, float, const game::Chunk*);
+struct PrepareProperties
+{
+	const jactorio::game::WorldData& worldData;
 
-	if (is_tile_layer)  // Either prepare tiles or objects in chunk
-		prepare_func = &PrepareTileData;
-	else
-		prepare_func = &PrepareObjectData;
 
-	for (int chunk_y = 0; chunk_y < chunk_amount_y; ++chunk_y) {
-		const int chunk_y_offset = chunk_y * kChunkWidth + render_offset_y;
+	/// Tiles from window left to offset rendering
+	const int renderOffsetX;
+	/// Tiles from window top to offset rendering
+	const int renderOffsetY;
 
-		for (int chunk_x = 0; chunk_x < chunk_amount_x; ++chunk_x) {
-			const int chunk_x_offset = chunk_x * kChunkWidth + render_offset_x;
+	/// Chunk to begin rendering
+	const int chunkStartX;
+	/// Chunk to begin rendering
+	const int chunkStartY;
 
-			std::lock_guard<std::mutex> guard{world_data.worldDataMutex};
-			const game::Chunk* chunk = world_data.GetChunkC(chunk_start_x + chunk_x,
-			                                                chunk_start_y + chunk_y);
+	/// Number of chunks on X axis after chunk_start_x to draw
+	const int chunkAmountX;
+	/// Layer on which vertex and UV draw data will be placed
+	const int chunkAmountY;
+};
+
+///
+/// \brief Draws chunks to the screen
+/// Attempting to draw chunks which do not exist will result in the chunk being queued for generation
+/// \param layer_index Index of layer to render
+template <bool IsTileLayer>
+void PrepareChunkDrawData(const PrepareProperties& props,
+                          const int layer_index,
+                          jactorio::renderer::RendererLayer& layer,
+						  jactorio::renderer::RendererLayer& top_layer) {
+
+	for (int chunk_y = 0; chunk_y < props.chunkAmountY; ++chunk_y) {
+		const int chunk_y_offset = chunk_y * kChunkWidth + props.renderOffsetY;
+
+		for (int chunk_x = 0; chunk_x < props.chunkAmountX; ++chunk_x) {
+			const int chunk_x_offset = chunk_x * kChunkWidth + props.renderOffsetX;
+
+			std::lock_guard<std::mutex> guard{props.worldData.worldDataMutex};
+			const jactorio::game::Chunk* chunk = props.worldData.GetChunkC(props.chunkStartX + chunk_x,
+			                                                               props.chunkStartY + chunk_y);
 			// Generate chunk if non existent
 			if (chunk == nullptr) {
-				world_data.QueueChunkGeneration(
-					chunk_start_x + chunk_x,
-					chunk_start_y + chunk_y);
+				props.worldData.QueueChunkGeneration(
+					props.chunkStartX + chunk_x,
+					props.chunkStartY + chunk_y);
 				continue;
 			}
 
-			prepare_func(world_data,
-			             layer_index, layer,
-			             static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
-			             chunk);
+			if constexpr (IsTileLayer) {
+				PrepareTileData(props.worldData,
+				                layer_index, 
+								layer, top_layer,
+				                static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
+				                chunk);
+			}
+			else {
+				PrepareObjectData(props.worldData,
+				                  layer_index, layer,
+				                  static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
+				                  chunk);
+			}
+
 		}
 	}
 }
 
-void jactorio::renderer::PrepareLogicChunkDrawData(game::LogicChunk* l_chunk,
-                                                   RendererLayer* layer) {
-}
+template <uint8_t Amount,
+          typename Function, typename ... Args>
+void DrawLayers(jactorio::renderer::RendererLayer& layer_1,
+                jactorio::renderer::RendererLayer& layer_2,
+                jactorio::renderer::RendererLayer& top_layer,
+                Function* function, const Args& ... args) {
+#define J_LAYER_BEGIN_PREPARE(name_)\
+	(name_).Clear();\
+	(name_).GWriteBegin()
 
+#define J_LAYER_END_PREPARE(name_)\
+	(name_).GWriteEnd();\
+	(name_).GUpdateData();\
+	(name_).GBufferBind();\
+	jactorio::renderer::Renderer::GDraw((name_).GetElementCount())
+
+	// !Very important! Remember to clear the layers or else it will keep trying to append into it
+	J_LAYER_BEGIN_PREPARE(layer_2);
+	J_LAYER_BEGIN_PREPARE(top_layer);
+
+	std::future<void> preparing_thread1;
+	std::future<void> preparing_thread2 = std::async(std::launch::async,
+	                                                 function, args ...,
+	                                                 0,
+	                                                 std::ref(layer_2), std::ref(top_layer));
+
+	// Begin at index 1, since index 0 is handled above
+	for (unsigned int layer_index = 1; layer_index < Amount; ++layer_index) {
+		// Prepare 1
+		if (layer_index % 2 != 0) {
+			J_LAYER_BEGIN_PREPARE(layer_1);
+			preparing_thread1 =
+				std::async(std::launch::async,
+				           function, args ...,
+				           layer_index,
+				           std::ref(layer_1), std::ref(top_layer));
+
+			preparing_thread2.wait();
+
+			J_LAYER_END_PREPARE(layer_2);
+		}
+			// Prepare 2
+		else {
+			J_LAYER_BEGIN_PREPARE(layer_2);
+			preparing_thread2 =
+				std::async(std::launch::async,
+				           function, args ...,
+				           layer_index,
+				           std::ref(layer_2), std::ref(top_layer));
+
+			preparing_thread1.wait();
+
+			J_LAYER_END_PREPARE(layer_1);
+		}
+	}
+
+	// Wait for the final layer to draw
+	if constexpr (Amount % 2 != 0) {
+		preparing_thread2.wait();
+
+		J_LAYER_END_PREPARE(layer_2);
+	}
+	else {
+		preparing_thread1.wait();
+
+		J_LAYER_END_PREPARE(layer_1);
+	}
+
+	J_LAYER_END_PREPARE(top_layer);
+}
 
 void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
                                               Renderer* renderer,
@@ -577,8 +425,9 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 	auto tile_start_y = static_cast<int>(position_y % kChunkWidth * -1);
 
 
-	const auto tile_amount_x = renderer->GetGridSizeX();
-	const auto tile_amount_y = renderer->GetGridSizeY();
+	const auto matrix = glm::vec4(1, -1, 1, 1) / GetMvpMatrix();
+	const auto tile_amount_x = static_cast<int>(matrix.x / static_cast<double>(Renderer::tileWidth) * 2) + 2;
+	const auto tile_amount_y = static_cast<int>(matrix.y / static_cast<double>(Renderer::tileWidth) * 2) + 2;
 
 
 	// Render the player position in the center of the screen
@@ -645,116 +494,25 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 	chunk_start_y -= 2;
 
 	// Calculate the maximum number of chunks which can be rendered
-	const auto amount_x = (renderer->GetGridSizeX() - window_start_x) / kChunkWidth + 1;  // Render 1 extra chunk on the edge
-	const auto amount_y = (renderer->GetGridSizeY() - window_start_y) / kChunkWidth + 1;
+	const int amount_x = (tile_amount_x - window_start_x) / kChunkWidth + 1;  // Render 1 extra chunk on the edge
+	const int amount_y = (tile_amount_y - window_start_y) / kChunkWidth + 1;
 
+	PrepareProperties props{
+		world_data,
+		window_start_x, window_start_y,
+		chunk_start_x, chunk_start_y,
+		amount_x, amount_y
+	};
 
-	auto* layer_1 = &renderer->renderLayer;
-	auto* layer_2 = &renderer->renderLayer2;
-	// !Very important! Remember to clear the layers or else it will keep trying to append into it
-	layer_2->Clear();
+	auto& layer_1   = renderer->renderLayers[0];
+	auto& layer_2   = renderer->renderLayers[1];
+	auto& top_layer = renderer->renderLayers[2];
 
-	std::future<void> preparing_thread1;
-	std::future<void> preparing_thread2 =
-		std::async(std::launch::async, PrepareChunkDrawData,
-		           std::ref(world_data), 0, true,
-		           window_start_x, window_start_y,
-		           chunk_start_x, chunk_start_y,
-		           amount_x, amount_y,
-		           layer_2);
+	DrawLayers<game::ChunkTile::kTileLayerCount>(layer_1, layer_2, top_layer,
+	                                             &PrepareChunkDrawData<true>,
+	                                             std::ref(props));
 
-	bool using_buffer1 = true;
-	// Begin at index 1, since index 0 is handled above
-	for (unsigned int layer_index = 1; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
-		// Prepare 1
-		if (using_buffer1) {
-			layer_1->Clear();
-			preparing_thread1 =
-				std::async(std::launch::async, PrepareChunkDrawData,
-				           std::ref(world_data), layer_index, true,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_1);
-
-			preparing_thread2.wait();
-
-			renderer->renderLayer2.GUpdateData();
-			renderer->renderLayer2.GBufferBind();
-			Renderer::GDraw(layer_2->GetElementCount());
-		}
-			// Prepare 2
-		else {
-			layer_2->Clear();
-			preparing_thread2 =
-				std::async(std::launch::async, PrepareChunkDrawData,
-				           std::ref(world_data), layer_index, true,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_2);
-
-			preparing_thread1.wait();
-
-			renderer->renderLayer.GUpdateData();
-			renderer->renderLayer.GBufferBind();
-			Renderer::GDraw(layer_1->GetElementCount());
-		}
-		using_buffer1 = !using_buffer1;
-	}
-
-	// ==============================================================
-	// Draw object layers
-	for (unsigned int layer_index = 0;
-	     layer_index < game::Chunk::kObjectLayerCount; ++layer_index) {
-		// Prepare 1
-		if (using_buffer1) {
-			layer_1->Clear();
-			preparing_thread1 =
-				std::async(std::launch::async, PrepareChunkDrawData,
-				           std::ref(world_data), layer_index, false,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_1);
-
-			preparing_thread2.wait();
-
-			renderer->renderLayer2.GUpdateData();
-			renderer->renderLayer2.GBufferBind();
-			Renderer::GDraw(layer_2->GetElementCount());
-		}
-			// Prepare 2
-		else {
-			layer_2->Clear();
-			preparing_thread2 =
-				std::async(std::launch::async, PrepareChunkDrawData,
-				           std::ref(world_data), layer_index, false,
-				           window_start_x, window_start_y,
-				           chunk_start_x, chunk_start_y,
-				           amount_x, amount_y,
-				           layer_2);
-
-			preparing_thread1.wait();
-
-			renderer->renderLayer.GUpdateData();
-			renderer->renderLayer.GBufferBind();
-			Renderer::GDraw(layer_1->GetElementCount());
-		}
-		using_buffer1 = !using_buffer1;
-	}
-
-	// Wait for the final layer to draw
-	if (using_buffer1) {
-		preparing_thread2.wait();
-		layer_2->GUpdateData();
-		layer_2->GBufferBind();
-		Renderer::GDraw(layer_2->GetElementCount());
-	}
-	else {
-		preparing_thread1.wait();
-		layer_1->GUpdateData();
-		layer_1->GBufferBind();
-		Renderer::GDraw(layer_1->GetElementCount());
-	}
+	DrawLayers<game::Chunk::kObjectLayerCount>(layer_1, layer_2, top_layer,
+	                                           &PrepareChunkDrawData<false>,
+	                                           std::ref(props));
 }

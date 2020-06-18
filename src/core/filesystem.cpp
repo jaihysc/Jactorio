@@ -45,15 +45,13 @@ void jactorio::core::SetExecutingDirectory(const std::string& directory) {
 }
 
 std::string jactorio::core::ResolvePath(const std::string& path) {
-	if (!path.empty() && path[0] == '~') {
-		std::string path_copy = path;
+	// Catch old usages of ResolvePath
+	// if (!path.empty()) {
+	// 	assert(path[0] != '~');
+	// }
 
-		std::stringstream sstr;
-		sstr << executing_directory << path_copy.erase(0, 1);
-		return sstr.str();
-	}
-
-	return path;
+	std::string str = executing_directory;
+	return str.append("/").append(path);
 }
 
 

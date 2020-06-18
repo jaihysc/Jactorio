@@ -47,6 +47,8 @@ LogMessage(\
 
 namespace jactorio::core
 {
+	constexpr char kLogFileName[] = "log.txt";
+	
 	/// Maximum number of characters in log message
 	constexpr uint16_t kMaxLogMsgLength = 1000;
 
@@ -62,7 +64,7 @@ namespace jactorio::core
 
 	///
 	/// \brief Relative path supported, call this after setting the executing directory
-	void OpenLogFile(const std::string& path);
+	void OpenLogFile();
 	void CloseLogFile();
 
 	///
@@ -72,16 +74,14 @@ namespace jactorio::core
 	                int line, const std::string& message);
 
 	///
-	/// \brief Generates a log message
-    /// Format: Timestamp [severity] - [group] message
-	/// \return The logged message as string
-	std::string GenLogMessage(LogSeverity severity, const std::string& group,
-	                          int line, const std::string& message);
-
-	///
 	/// \brief Converts log_severity to a string
 	/// \return The log severity as string
 	std::string LogSeverityStr(LogSeverity severity);
+
+	///
+	/// \brief Converts log_severity to a string with color
+	/// \return The log severity as string
+	std::string LogSeverityStrColored(LogSeverity severity);
 }
 
 #endif //JACTORIO_INCLUDE_CORE_LOGGER_H

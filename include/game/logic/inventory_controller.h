@@ -40,22 +40,26 @@ namespace jactorio::game
 	                 data::ItemStack& item_stack);
 
 	/// 
-	/// Gets count of items matching item in inv of inv_size
+	/// \brief Gets count of items matching item in inv of inv_size
 	/// \return Item count with internal id iid
-	uint32_t GetInvItemCount(data::ItemStack* inv, uint16_t inv_size, const data::Item* item);
+	uint32_t GetInvItemCount(const data::ItemStack* inv, uint16_t inv_size, const data::Item* item);
+
+	///
+	/// \brief Gets the first item within the inventory
+	/// \return nullptr if no items were found
+	const data::Item* GetFirstItem(const data::ItemStack* inv, uint16_t inv_size);
 
 
 	/// 
-	/// Removes remove_amount of specified item from inventory inv <br>
+	/// \brief Removes remove_amount of specified item from inventory inv 
 	/// \return false if there is insufficient items to remove remove_amount
-	bool RemoveInvItemS(data::ItemStack* inv, uint16_t inv_size,
-	                    const data::Item* item, uint32_t remove_amount);
+	bool RemoveInvItem(data::ItemStack* inv, uint16_t inv_size,
+	                   const data::Item* item, uint32_t remove_amount);
 
 	/// 
-	/// Removes remove_amount of specified item from inventory inv <br>
-	/// Sets inv[i].first to nullptr
-	/// \remark DOES NOT check that there is sufficient items to remove, use remove_inv_item_s() if checking is needed
-	void RemoveInvItem(data::ItemStack* inv, uint16_t inv_size,
+	/// \brief Removes remove_amount of specified item from inventory inv 
+	/// \remark DOES NOT check that there is sufficient items to remove, use RemoveInvItem() if checking is needed
+	void DeleteInvItem(data::ItemStack* inv, uint16_t inv_size,
 	                   const data::Item* item, uint32_t remove_amount);
 }
 

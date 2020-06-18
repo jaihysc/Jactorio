@@ -19,6 +19,8 @@ namespace jactorio::renderer
 	void DebugItemSpawner(game::PlayerData& player_data);
 
 	void DebugTransportLineInfo(game::PlayerData& player_data);
+
+	void DebugInserterInfo(game::PlayerData& player_data);
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_DEBUG_H

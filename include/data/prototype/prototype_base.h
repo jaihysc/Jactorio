@@ -16,19 +16,21 @@ namespace jactorio::data
 {
 	// Creates a setters for python API primarily, to chain initialization
 
+	// Parameter value has suffix a_b_c_d to ensure uniqueness
+
 	// Setter passed by reference
 #define PYTHON_PROP_REF(class_, type, var_name) \
 	type var_name; \
-	class_* Set_##var_name(const type& (var_name)) {\
-		this->var_name = var_name;\
+	class_* Set_##var_name(const type& (parameter_value_a_b_c_d)) {\
+		this->var_name = parameter_value_a_b_c_d;\
 		return this;\
 	}
 
 	// Setter passed by reference with initializer
 #define PYTHON_PROP_REF_I(class_, type, var_name, initializer) \
 	type var_name = initializer; \
-	class_* Set_##var_name(const type& (var_name)) {\
-		this->var_name = var_name;\
+	class_* Set_##var_name(const type& (parameter_value_a_b_c_d)) {\
+		this->var_name = parameter_value_a_b_c_d;\
 		return this;\
 	}
 
@@ -36,16 +38,16 @@ namespace jactorio::data
 	// Setter passed by value
 #define PYTHON_PROP(class_, type, var_name) \
 	type var_name; \
-	class_* Set_##var_name(type (var_name)) {\
-		this->var_name = var_name;\
+	class_* Set_##var_name(type (parameter_value_a_b_c_d)) {\
+		this->var_name = parameter_value_a_b_c_d;\
 		return this;\
 	}
 
 	// Setter passed by value with initializer
 #define PYTHON_PROP_I(class_, type, var_name, initializer) \
 	type var_name = initializer; \
-	class_* Set_##var_name(type (var_name)) {\
-		this->var_name = var_name;\
+	class_* Set_##var_name(type (parameter_value_a_b_c_d)) {\
+		this->var_name = parameter_value_a_b_c_d;\
 		return this;\
 	}
 
@@ -115,7 +117,7 @@ namespace jactorio::data
 	public:
 		///
 		/// \brief Category of this Prototype item
-		J_NODISCARD virtual DataCategory Category() const = 0;
+		virtual DataCategory Category() const = 0;
 
 		///
 		/// \brief Unique per prototype, unique & auto assigned per new prototype added
@@ -170,7 +172,7 @@ namespace jactorio::data
 		// ======================================================================
 		// Data Events
 		///
-		/// \brief Called after all prototypes are loaded
+		/// \brief Called after all prototypes are loaded prior to validation
 		virtual void PostLoad() {
 		}
 
@@ -178,6 +180,11 @@ namespace jactorio::data
 		/// \brief Validates properties of the prototype are valid
 		/// \exception data::Data_exception If invalid
 		virtual void PostLoadValidate() const = 0;
+
+		///
+		/// \brief Called after the prototype has been validated
+		virtual void ValidatedPostLoad() {
+		}
 	};
 }
 

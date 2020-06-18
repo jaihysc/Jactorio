@@ -18,6 +18,7 @@
 #include "data/prototype/entity/entity.h"
 #include "data/prototype/entity/health_entity.h"
 #include "data/prototype/entity/mining_drill.h"
+#include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "data/prototype/entity/transport/transport_line.h"
@@ -117,6 +118,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(Sprite, frames)
 		PYBIND_PROP(Sprite, sets)
 		PYBIND_PROP(Sprite, trim)
+		PYBIND_PROP(Sprite, invertSetFrame)
 		.def("load", &Sprite::LoadImage);
 
 	py::enum_<Sprite::SpriteGroup>(m, "spriteGroup")
@@ -163,9 +165,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	// Entity
 	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, PrototypeBase)
 		PYBIND_PROP(Entity, sprite)
-		PYBIND_PROP(Rotatable, spriteE)
-		PYBIND_PROP(Rotatable, spriteS)
-		PYBIND_PROP(Rotatable, spriteW)
+		PYBIND_PROP(IRotatable, spriteE)
+		PYBIND_PROP(IRotatable, spriteS)
+		PYBIND_PROP(IRotatable, spriteW)
 		PYBIND_PROP(Entity, rotatable)
 		PYBIND_PROP(Entity, placeable)
 		PYBIND_PROP_GET_SET(Entity, item, SetItem, GetItem)
@@ -192,6 +194,11 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	PYBIND_DATA_CLASS(MiningDrill, MiningDrill, HealthEntity)
 		PYBIND_PROP(MiningDrill, miningSpeed)
 		PYBIND_PROP(MiningDrill, resourceOutput);
+
+	// Inserter
+	PYBIND_DATA_CLASS(Inserter, Inserter, HealthEntity)
+		PYBIND_PROP_S(Inserter, rotationSpeed, rotationSpeedFloat, Set_rotationSpeedFloat)
+		PYBIND_PROP(Inserter, tileReach);
 
 
 	// Recipes
@@ -230,7 +237,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("ContainerEntity", DataCategory::container_entity)
 
 		.value("TransportBelt", DataCategory::transport_belt)
-		.value("MiningDrill", DataCategory::transport_belt);
+		.value("MiningDrill", DataCategory::mining_drill)
+		.value("Inserter", DataCategory::inserter);
 
 	m.def("get", [](const DataCategory category, const std::string& iname) {
 		return DataRawGet<PrototypeBase>(category, iname);

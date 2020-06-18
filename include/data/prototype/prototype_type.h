@@ -7,7 +7,7 @@
 
 #include <utility>
 
-#include "data/prototype/orientation.h"
+#include "data/prototype/type.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::data

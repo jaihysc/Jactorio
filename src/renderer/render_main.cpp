@@ -36,7 +36,7 @@ void jactorio::renderer::SetRecalculateRenderer(const unsigned short window_size
 	window_y = window_size_y;
 
 	game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
-		main_renderer->RecalculateBuffers(window_x, window_y);
+		main_renderer->GRecalculateBuffers(window_x, window_y);
 	});
 }
 
@@ -67,8 +67,8 @@ void jactorio::renderer::RenderInit() {
 	// Shader
 	const Shader shader(
 		std::vector<ShaderCreationInput>{
-			{"~/data/core/shaders/vs.vert", GL_VERTEX_SHADER},
-			{"~/data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
+			{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
+			{"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}
 		}
 	);
 	shader.Bind();
@@ -81,8 +81,8 @@ void jactorio::renderer::RenderInit() {
 
 	// Loading textures
 	auto renderer_sprites = RendererSprites();
-	renderer_sprites.CreateSpritemap(data::Sprite::SpriteGroup::terrain, true);
-	renderer_sprites.CreateSpritemap(data::Sprite::SpriteGroup::gui, false);
+	renderer_sprites.GInitializeSpritemap(data::Sprite::SpriteGroup::terrain, true);
+	renderer_sprites.GInitializeSpritemap(data::Sprite::SpriteGroup::gui, false);
 
 	// Terrain
 	Renderer::SetSpritemapCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);
@@ -97,7 +97,7 @@ void jactorio::renderer::RenderInit() {
 	game::game_data->input.key.Subscribe([]() {
 		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
 			SetFullscreen(!IsFullscreen());
-			main_renderer->RecalculateBuffers(window_x, window_y);
+			main_renderer->GRecalculateBuffers(window_x, window_y);
 		});
 	}, game::InputKey::space, game::InputAction::key_down);
 

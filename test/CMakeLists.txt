@@ -8,6 +8,7 @@ log_msg("[Jactorio test ]")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_CURRENT_BINARY_DIR})
 
 jactorio_show_properties()
 jactorio_copy_data_files()
@@ -61,7 +62,6 @@ set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 # ======================================== Test files .cpp
 set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
-	${JACTORIO_TEST_DIR}/core/loggerTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
 	${JACTORIO_TEST_DIR}/core/float_mathTests.cpp
 	${JACTORIO_TEST_DIR}/core/data_typeTests.cpp
@@ -70,12 +70,12 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
-	${JACTORIO_TEST_DIR}/data/prototype/orientationTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
 	
+	${JACTORIO_TEST_DIR}/data/prototype/entity/inserterTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/mining_drillTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/transport/transport_lineTests.cpp
 
@@ -85,7 +85,6 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/deferral_timerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
@@ -95,13 +94,13 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/transport_line_structureTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/transport_segmentTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/rendering/mvp_managerTests.cpp
 	${JACTORIO_TEST_DIR}/renderer/rendering/spritemap_generatorTests.cpp
-	${JACTORIO_TEST_DIR}/renderer/rendering/renderer_layerTests.cpp
 
 	${JACTORIO_TEST_DIR}/renderer/openglTests.cpp
 )
@@ -114,4 +113,8 @@ add_executable(jactorioTest
 )
 target_link_libraries(jactorioTest 
 	gtest_main jactorioBase
+)
+target_include_directories(jactorioTest
+	PUBLIC
+	${JACTORIO_TEST_DIR}
 )

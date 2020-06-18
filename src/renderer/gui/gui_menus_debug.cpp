@@ -10,10 +10,11 @@
 #include "jactorio.h"
 
 #include "data/data_manager.h"
+#include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/transport/transport_line.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
 #include "renderer/gui/gui_menus.h"
@@ -24,11 +25,15 @@ bool show_demo_window         = false;
 bool show_item_spawner_window = false;
 
 // Game
-bool show_transport_line_info     = false;
+bool show_transport_line_info = false;
+bool show_inserter_info       = false;
 
 void jactorio::renderer::DebugMenuLogic(game::PlayerData& player_data) {
 	if (show_transport_line_info)
 		DebugTransportLineInfo(player_data);
+
+	if (show_inserter_info)
+		DebugInserterInfo(player_data);
 
 	if (show_demo_window)
 		ImGui::ShowDemoWindow();
@@ -59,10 +64,9 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		            game::ChunkTile::kTileLayerCount, game::Chunk::kObjectLayerCount);
 
 		if (ImGui::Button("Clear debug overlays")) {
-			for (auto& pair : player_data.GetPlayerWorld().LogicGetAllChunks()) {
-				auto& l_chunk = pair.second;
+			for (auto* chunk : player_data.GetPlayerWorld().LogicGetChunks()) {
 
-				auto& object_layer = l_chunk.chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
+				auto& object_layer = chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
 				object_layer.clear();
 			}
 		}
@@ -83,7 +87,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		            player_data.GetPlayerPositionY());
 
 		ImGui::Text("Game tick: %llu", world_data.GameTick());
-		ImGui::Text("Chunk updates: %llu", world_data.LogicGetAllChunks().size());
+		ImGui::Text("Chunk updates: %llu", world_data.LogicGetChunks().size());
 
 		ImGui::Separator();
 
@@ -95,17 +99,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		ImGui::Checkbox("Item spawner", &show_item_spawner_window);
 
 		ImGui::Checkbox("Show transport line info", &show_transport_line_info);
-
-		if (ImGui::Button("Make all belt items visible")) {
-			for (auto& pair : world_data.LogicGetAllChunks()) {
-				auto& l_chunk = pair.second;
-				for (auto& transport_line : l_chunk.GetStruct(game::LogicChunk::StructLayer::transport_line)) {
-					auto* segment = static_cast<game::TransportSegment*>(transport_line.uniqueData);
-					segment->left.visible = true;
-					segment->right.visible = true;
-				}
-			}
-		}
+		ImGui::Checkbox("Show inserter info", &show_inserter_info);
 	}
 
 	ImGui::Separator();
@@ -166,7 +160,7 @@ void jactorio::renderer::DebugItemSpawner(game::PlayerData& player_data) {
 
 std::pair<int32_t, int32_t> last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
-bool show_transport_segments = false;
+bool show_transport_segments     = false;
 
 void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 	using namespace jactorio;
@@ -191,14 +185,29 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-left");
 
 	// Get all update points and add it to the chunk's objects for drawing
-	for (auto& pair : world_data.LogicGetAllChunks()) {
-		auto& l_chunk = pair.second;
-
-		auto& object_layer = l_chunk.chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
+	for (auto* chunk : world_data.LogicGetChunks()) {
+		auto& object_layer = chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
 		object_layer.clear();
 
-		for (auto& l_struct : l_chunk.GetStruct(game::LogicChunk::StructLayer::transport_line)) {
-			auto* line_segment = static_cast<game::TransportSegment*>(l_struct.uniqueData);
+		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
+			auto& layer = chunk->Tiles()[i].GetLayer(game::ChunkTile::ChunkLayer::entity);
+			if (!layer.prototypeData || layer.prototypeData->Category() != data::DataCategory::transport_belt)
+				continue;
+
+			auto& line_data    = *static_cast<data::TransportLineData*>(layer.GetUniqueData());
+			auto& line_segment = *line_data.lineSegment;
+
+			// Only draw for the head of segments
+			if (line_segment.terminationType == game::TransportSegment::TerminationType::straight &&
+				line_data.lineSegmentIndex != 0)
+				continue;
+
+			if (line_segment.terminationType != game::TransportSegment::TerminationType::straight &&
+				line_data.lineSegmentIndex != 1)
+				continue;
+
+			const auto position_x = i % game::Chunk::kChunkWidth;
+			const auto position_y = i / game::Chunk::kChunkWidth;
 
 			float pos_x;
 			float pos_y;
@@ -209,51 +218,56 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 			data::Sprite* outline_sprite;
 
 			// Correspond the direction with a sprite representing the direction
-			switch (line_segment->direction) {
+			switch (line_segment.direction) {
 			default:
 				assert(false);  // Missing case label
 
 			case data::Orientation::up:
-				pos_x = l_struct.positionX;
-				pos_y         = l_struct.positionY;
+				pos_x = position_x;
+				pos_y         = position_y;
 				segment_len_x = 1;
-				segment_len_y = line_segment->length;
+				segment_len_y = line_segment.length;
 
 				direction_sprite = sprite_up;
 				break;
 			case data::Orientation::right:
-				pos_x = l_struct.positionX - line_segment->length + 1;
-				pos_y         = l_struct.positionY;
-				segment_len_x = line_segment->length;
+				pos_x = position_x - line_segment.length + 1;
+				pos_y         = position_y;
+				segment_len_x = line_segment.length;
 				segment_len_y = 1;
 
 				direction_sprite = sprite_right;
 				break;
 			case data::Orientation::down:
-				pos_x = l_struct.positionX;
-				pos_y         = l_struct.positionY - line_segment->length + 1;
+				pos_x = position_x;
+				pos_y         = position_y - line_segment.length + 1;
 				segment_len_x = 1;
-				segment_len_y = line_segment->length;
+				segment_len_y = line_segment.length;
 
 				direction_sprite = sprite_down;
 				break;
 			case data::Orientation::left:
-				pos_x = l_struct.positionX;
-				pos_y         = l_struct.positionY;
-				segment_len_x = line_segment->length;
+				pos_x = position_x;
+				pos_y         = position_y;
+				segment_len_x = line_segment.length;
 				segment_len_y = 1;
 
 				direction_sprite = sprite_left;
 				break;
 			}
 
+			// Shift items 1 tile forwards if segment bends
+			if (line_segment.terminationType != game::TransportSegment::TerminationType::straight) {
+				OrientationIncrement(line_segment.direction, pos_x, pos_y);
+			}
+
 
 			// Correspond a color of rectangle
-			if (line_segment->left.IsActive() && line_segment->right.IsActive())
+			if (line_segment.left.IsActive() && line_segment.right.IsActive())
 				outline_sprite = sprite_moving;  // Both moving
-			else if (line_segment->left.IsActive())
+			else if (line_segment.left.IsActive())
 				outline_sprite = sprite_left_moving;  // Only left move
-			else if (line_segment->right.IsActive())
+			else if (line_segment.right.IsActive())
 				outline_sprite = sprite_right_moving;  // Only right moving
 			else
 				outline_sprite = sprite_stop;  // None moving
@@ -274,6 +288,17 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	// Try to use current selected line segment first, otherwise used the last valid if checked
 	game::TransportSegment* segment_ptr = nullptr;
 
+
+	if (ImGui::Button("Make all belt items visible")) {
+		for (auto* chunk : player_data.GetPlayerWorld().LogicGetChunks()) {
+			for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
+				auto& segment         = *transport_line->GetUniqueData<data::TransportLineData>()->lineSegment;
+				segment.left.visible  = true;
+				segment.right.visible = true;
+			}
+		}
+	}
+
 	ImGui::Checkbox("Show transport line segments", &show_transport_segments);
 	ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
@@ -282,7 +307,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 
 	if (data) {
 		last_valid_line_segment = selected_tile;
-		segment_ptr             = &data->lineSegment.get();
+		segment_ptr             = data->lineSegment.get();
 	}
 	else {
 		if (use_last_valid_line_segment) {
@@ -290,7 +315,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 			                                        last_valid_line_segment.first,
 			                                        last_valid_line_segment.second);
 			if (data)
-				segment_ptr = &data->lineSegment.get();
+				segment_ptr = data->lineSegment.get();
 		}
 	}
 
@@ -343,28 +368,8 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 
 			ImGui::Text("Termination Type: %s", s.c_str());
 		}
-		{
-			std::string s;
-			switch (segment.direction) {
-			case data::Orientation::up:
-				s = "Up";
-				break;
-			case data::Orientation::right:
-				s = "Right";
-				break;
-			case data::Orientation::down:
-				s = "Down";
-				break;
-			case data::Orientation::left:
-				s = "Left";
-				break;
-			default:
-				assert(false);  // Missing switch case
-				break;
-			}
 
-			ImGui::Text("Direction: %s", s.c_str());
-		}
+		ImGui::Text("Direction: %s", OrientationToStr(segment.direction));
 
 		// Appending item
 		const std::string iname = "__base__/wooden-chest-item";
@@ -396,4 +401,39 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	}
 
 	ImGui::End();
+}
+
+void jactorio::renderer::DebugInserterInfo(game::PlayerData& player_data) {
+	core::ResourceGuard<void> guard{[]() { ImGui::End(); }};
+	ImGui::Begin("Inserter info");
+
+	const auto selected_tile = player_data.GetMouseTileCoords();
+
+	auto* tile = player_data.GetPlayerWorld().GetTile(selected_tile);
+	if (!tile)
+		return;
+
+	auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
+	if (!layer.prototypeData || layer.prototypeData->Category() != data::DataCategory::inserter) {
+		ImGui::Text("No inserter at selected tile");
+		return;
+	}
+
+	auto& inserter_data = *layer.GetUniqueData<data::InserterData>();
+
+	ImGui::Text("Orientation %s", OrientationToStr(inserter_data.orientation));
+
+	ImGui::Text("Degree: %f", inserter_data.rotationDegree.getAsDouble());
+
+	switch (inserter_data.status) {
+	case data::InserterData::Status::dropoff:
+		ImGui::Text("Status: Dropoff");
+		break;
+	case data::InserterData::Status::pickup:
+		ImGui::Text("Status: Pickup");
+		break;
+	}
+
+	ImGui::Text("Pickup  %s", inserter_data.pickup.IsInitialized() ? "true" : "false");
+	ImGui::Text("Dropoff %s", inserter_data.dropoff.IsInitialized() ? "true" : "false");
 }

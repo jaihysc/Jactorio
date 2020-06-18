@@ -125,6 +125,14 @@ namespace game
 		EXPECT_EQ(second.GetMultiTileTopLeft(), &first);
 	}
 
+	/*
+	TEST(ChunkTileLayer, GetMultiTileTopLeftNonMultitile) {
+		jactorio::game::ChunkTileLayer first{};
+
+		EXPECT_EQ(first.GetMultiTileTopLeft(), &first);
+	}
+	*/
+
 	TEST(ChunkTileLayer, SetMultiTileParent) {
 		jactorio::game::ChunkTileLayer first{};
 		jactorio::game::ChunkTileLayer second{};

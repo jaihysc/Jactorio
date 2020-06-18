@@ -5,12 +5,12 @@
 
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "data/prototype/entity/transport/transport_line.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 
 // ======================================================================
 // Tests for the various bend orientations
 
-namespace data::prototype
+namespace jactorio::data
 {
 	/*
 	// General tests
@@ -24,160 +24,174 @@ namespace data::prototype
 	class TransportLineTest : public testing::Test
 	{
 	protected:
-		jactorio::game::WorldData worldData_{};
-		jactorio::data::TransportBelt lineProto_{};
+		game::WorldData worldData_{};
+		TransportBelt lineProto_{};
 
 		void SetUp() override {
-			worldData_.AddChunk(jactorio::game::Chunk{0, 0});
+			worldData_.AddChunk(game::Chunk{0, 0});
 		}
 
 		// ======================================================================
 
+		static game::TransportSegment& GetSegment(game::ChunkTileLayer* tile_layer) {
+			return *tile_layer->GetUniqueData<TransportLineData>()->lineSegment;
+		}
+
+
 		///
 		/// \brief Sets the prototype pointer for a transport line at tile
 		void BuildTransportLine(
-			const jactorio::data::Orientation orientation,
+			const Orientation orientation,
 			const std::pair<uint32_t, uint32_t> world_coords) {
 
 			auto& layer = worldData_.GetTile(world_coords.first, world_coords.second)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents(world_coords, orientation);
 		}
 
 		///
 		/// \brief Creates new Transport line segment alongside data at tile
-		void AddTransportLine(const jactorio::data::TransportLineData::LineOrientation orientation,
-		                      const jactorio::game::WorldData::WorldCoord x,
-		                      const jactorio::game::WorldData::WorldCoord y) {
-			auto& layer         = worldData_.GetTile(x, y)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		void AddTransportLine(const TransportLineData::LineOrientation orientation,
+		                      const game::WorldData::WorldCoord x,
+		                      const game::WorldData::WorldCoord y) {
+			auto& layer         = worldData_.GetTile(x, y)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
 
-			auto segment = jactorio::game::TransportSegment{
-				jactorio::data::Orientation::left,
-				jactorio::game::TransportSegment::TerminationType::straight,
-				1
-			};
-			auto* data = new jactorio::data::TransportLineData(segment);
-			data->SetOrientation(orientation);
-
-			layer.uniqueData = data;
-
-			TlBuildEvents({x, y}, jactorio::data::TransportLineData::ToOrientation(orientation));
+			TlBuildEvents({x, y}, TransportLineData::ToOrientation(orientation));
 		}
 
-		void AddTransportLine(const jactorio::game::WorldData::WorldPair& world_coords,
-		                      const jactorio::data::TransportLineData::LineOrientation orientation) {
+		void AddTransportLine(const game::WorldData::WorldPair& world_coords,
+		                      const TransportLineData::LineOrientation orientation) {
 			AddTransportLine(orientation, world_coords.first, world_coords.second);
 		}
 
 		/// Creates a transport line with the provided orientation above/right/below/left of 1, 1
-		void AddTopTransportLine(const jactorio::data::TransportLineData::LineOrientation orientation) {
+		void AddTopTransportLine(const TransportLineData::LineOrientation orientation) {
 			AddTransportLine(orientation, 1, 0);
 		}
 
-		void AddRightTransportLine(const jactorio::data::TransportLineData::LineOrientation orientation) {
+		void AddRightTransportLine(const TransportLineData::LineOrientation orientation) {
 			AddTransportLine(orientation, 2, 1);
 		}
 
-		void AddBottomTransportLine(const jactorio::data::TransportLineData::LineOrientation orientation) {
+		void AddBottomTransportLine(const TransportLineData::LineOrientation orientation) {
 			AddTransportLine(orientation, 1, 2);
 		}
 
-		void AddLeftTransportLine(const jactorio::data::TransportLineData::LineOrientation orientation) {
+		void AddLeftTransportLine(const TransportLineData::LineOrientation orientation) {
 			AddTransportLine(orientation, 0, 1);
 		}
 
 		///
 		/// \brief Validates that a tile at coords 1,1 with the placement orientation produces the expected line orientation
-		void ValidateResultOrientation(const jactorio::data::Orientation placement_orientation,
-		                               jactorio::data::TransportLineData::LineOrientation expected_line_orientation) {
-			const auto pair = std::pair<uint16_t, uint16_t>{static_cast<uint16_t>(expected_line_orientation), 0};
-			EXPECT_EQ(lineProto_.MapPlacementOrientation(placement_orientation, worldData_, {1, 1}), pair);
+		void ValidateResultOrientation(const Orientation placement_orientation,
+		                               const TransportLineData::LineOrientation expected_line_orientation) {
+			EXPECT_EQ(lineProto_.MapPlacementOrientation(placement_orientation, worldData_, {1, 1}),
+					  static_cast<data::Sprite::SetT>(expected_line_orientation));
 		}
 
 		// ======================================================================
 	private:
-		void DispatchNeighborUpdate(const jactorio::game::WorldData::WorldPair& emit_coords,
-		                            const jactorio::game::WorldData::WorldPair& receive_coords,
-		                            const jactorio::data::Orientation emit_orientation) {
+		void DispatchNeighborUpdate(const game::WorldData::WorldPair& emit_coords,
+		                            const game::WorldData::WorldPair& receive_coords,
+		                            const Orientation emit_orientation) {
 
 			auto* tile = worldData_.GetTile(receive_coords);
 			if (!tile)
 				return;
 
-			auto& layer = tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			if (!layer.prototypeData)
 				return;
 
-			static_cast<const jactorio::data::Entity*>(layer.prototypeData)
+			static_cast<const Entity*>(layer.prototypeData)
 				->OnNeighborUpdate(worldData_, emit_coords, receive_coords, emit_orientation);
 		}
 
 	protected:
 		///
 		/// \brief Dispatches the appropriate events for when a transport line is built
-		void TlBuildEvents(const jactorio::game::WorldData::WorldPair& world_coords,
-		                   const jactorio::data::Orientation orientation) {
+		void TlBuildEvents(const game::WorldData::WorldPair& world_coords,
+		                   const Orientation orientation) {
 			auto& layer = worldData_.GetTile(world_coords)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 			lineProto_.OnBuild(worldData_, world_coords, layer, orientation);
 
 			// Call on_neighbor_update for the 4 sides
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first, world_coords.second - 1}, jactorio::data::Orientation::up);
+			                       {world_coords.first, world_coords.second - 1}, Orientation::up);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first + 1, world_coords.second}, jactorio::data::Orientation::right);
+			                       {world_coords.first + 1, world_coords.second}, Orientation::right);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first, world_coords.second + 1}, jactorio::data::Orientation::down);
+			                       {world_coords.first, world_coords.second + 1}, Orientation::down);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first - 1, world_coords.second}, jactorio::data::Orientation::left);
+			                       {world_coords.first - 1, world_coords.second}, Orientation::left);
 		}
 
 		///
 		/// \brief Dispatches the appropriate events AFTER a transport line is removed 
-		void TlRemoveEvents(const jactorio::game::WorldData::WorldPair& world_coords) {
+		void TlRemoveEvents(const game::WorldData::WorldPair& world_coords) {
 
 			auto& layer = worldData_.GetTile(world_coords)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 			lineProto_.OnRemove(worldData_, world_coords, layer);
 
 			// Call on_neighbor_update for the 4 sides
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first, world_coords.second - 1}, jactorio::data::Orientation::up);
+			                       {world_coords.first, world_coords.second - 1}, Orientation::up);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first + 1, world_coords.second}, jactorio::data::Orientation::right);
+			                       {world_coords.first + 1, world_coords.second}, Orientation::right);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first, world_coords.second + 1}, jactorio::data::Orientation::down);
+			                       {world_coords.first, world_coords.second + 1}, Orientation::down);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first - 1, world_coords.second}, jactorio::data::Orientation::left);
+			                       {world_coords.first - 1, world_coords.second}, Orientation::left);
 		}
 
+		// Bend
+
+		void ValidateBendToSideOnly() {
+			game::Chunk& chunk = *worldData_.GetChunkC(0, 0);
+			auto& tile_layers  = chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
+
+			ASSERT_EQ(tile_layers.size(), 3);
+
+			{
+				auto& line_segment = GetSegment(tile_layers[1]);
+				EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+				EXPECT_EQ(line_segment.length, 2);
+			}
+			{
+				auto& line_segment = GetSegment(tile_layers[2]);
+				EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+				EXPECT_EQ(line_segment.length, 2);
+			}
+		}
 
 		// Grouping
 
-		std::vector<jactorio::game::ChunkStructLayer>& GetTransportLines(
-			const jactorio::game::Chunk::ChunkPair& chunk_coords) {
-			return worldData_.LogicGetChunk(worldData_.GetChunkC(chunk_coords.first, chunk_coords.second))
-			                 ->GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		std::vector<game::ChunkTileLayer*>& GetTransportLines(
+			const game::Chunk::ChunkPair& chunk_coords) {
+			return worldData_.GetChunkC(chunk_coords.first, chunk_coords.second)
+			                 ->GetLogicGroup(game::Chunk::LogicGroup::transport_line);
 		}
 
-		J_NODISCARD auto& GetLineData(const jactorio::game::WorldData::WorldPair& world_coords) const {
-			return *static_cast<const jactorio::data::TransportLineData*>(
+		J_NODISCARD auto& GetLineData(const game::WorldData::WorldPair& world_coords) const {
+			return *static_cast<const TransportLineData*>(
 				worldData_.GetTile(world_coords)->GetLayer(
-					jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData
+					game::ChunkTile::ChunkLayer::entity).GetUniqueData()
 			);
 		}
 
-		auto GetLineSegmentIndex(const jactorio::game::WorldData::WorldPair& world_coords) const {
+		auto GetLineSegmentIndex(const game::WorldData::WorldPair& world_coords) const {
 			return GetLineData(world_coords).lineSegmentIndex;
 		}
 
@@ -185,30 +199,23 @@ namespace data::prototype
 		///
 		/// \param first Leading segment
 		/// \param second Segment placed behind leading segment
-		void GroupingValidate(const jactorio::game::WorldData::WorldPair& first,
-		                      const jactorio::game::WorldData::WorldPair& second) {
+		void GroupingValidate(const game::WorldData::WorldPair& first,
+		                      const game::WorldData::WorldPair& second) {
 			ASSERT_EQ(GetTransportLines({0, 0}).size(), 1);  // 0, 0 is chunk coordinate
-			EXPECT_EQ(GetLineData(first).lineSegment.get().length, 2);
+			EXPECT_EQ(GetLineData(first).lineSegment->length, 2);
 
 			EXPECT_EQ(GetLineSegmentIndex(first), 0);
 			EXPECT_EQ(GetLineSegmentIndex(second), 1);
 
-			EXPECT_EQ(GetLineData(first).lineSegment.get().targetSegment, nullptr);
-
-			// Ensure the head is at the correct location
-			jactorio::data::TransportLine::GetLineStructLayer(
-				worldData_,
-				first.first, first.second, [&](jactorio::game::ChunkStructLayer& layer, auto&) {
-					EXPECT_FLOAT_EQ(layer.positionX,
-					                first.first);  // Validation of logic chunk position only valid when within a single chunk
-					EXPECT_FLOAT_EQ(layer.positionY, first.second);
-				});
+			EXPECT_EQ(GetLineData(first).lineSegment->targetSegment, nullptr);
 		}
 
-		void GroupBehindValidate(const jactorio::game::WorldData::WorldPair& first,
-		                        const jactorio::game::WorldData::WorldPair& second) {
+		void GroupBehindValidate(const game::WorldData::WorldPair& first,
+		                         const game::WorldData::WorldPair& second) {
 			GroupingValidate(first, second);
-			EXPECT_EQ(GetLineData(first).lineSegment.get().itemOffset, 1);
+			EXPECT_EQ(GetLineData(first).lineSegment->itemOffset, 1);
+
+			EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 		}
 	};
 
@@ -218,51 +225,39 @@ namespace data::prototype
 
 	TEST_F(TransportLineTest, OnBuildCreateTransportLineSegment) {
 		// Should create a transport line segment and add its chunk to logic chunks
-		worldData_.AddChunk(jactorio::game::Chunk{-1, 0});
+		worldData_.AddChunk(game::Chunk{-1, 0});
 
 		auto& layer = worldData_.GetTile(-5, 0)
-		                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 		layer.prototypeData = &lineProto_;
 
-		TlBuildEvents({-5, 0}, jactorio::data::Orientation::right);
+		TlBuildEvents({-5, 0}, Orientation::right);
 
 		// ======================================================================
 
 		// Added current chunk as a logic chunk
-		ASSERT_EQ(worldData_.LogicGetAllChunks().size(), 1);
+		ASSERT_EQ(worldData_.LogicGetChunks().size(), 1);
 
-		auto& logic_chunk = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(-1, 0));
-		EXPECT_EQ(logic_chunk.chunk, worldData_.GetChunkC(-1, 0));
-
-
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		auto& tile_layers = GetTransportLines({-1, 0});
 
 		// Should have created a transport line structure
-		ASSERT_EQ(transport_lines.size(), 1);
-		ASSERT_TRUE(dynamic_cast<jactorio::game::TransportSegment*>(transport_lines.front().uniqueData));
+		ASSERT_EQ(tile_layers.size(), 1);
+		ASSERT_TRUE(dynamic_cast<jactorio::data::TransportLineData*>(tile_layers.front()->GetUniqueData()));
 
-		auto* line_data = dynamic_cast<jactorio::game::TransportSegment*>(transport_lines.front().uniqueData);
-		EXPECT_EQ(line_data->direction, jactorio::data::Orientation::right);
-		EXPECT_EQ(line_data->terminationType, jactorio::game::TransportSegment::TerminationType::straight);
-		EXPECT_EQ(line_data->length, 1);
-
-		// Position_x / position_y is the distance from the top left of the chunk
-		EXPECT_EQ(transport_lines.front().positionX, 27);
-		EXPECT_EQ(transport_lines.front().positionY, 0);
+		auto& line_segment = GetSegment(tile_layers[0]);
+		EXPECT_EQ(line_segment.direction, jactorio::data::Orientation::right);
+		EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::straight);
+		EXPECT_EQ(line_segment.length, 1);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveDeleteTransportLineSegment) {
 		// Removing a transport line needs to delete the transport line segment associated with it
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::left);
-
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::left);
 
 		TlRemoveEvents({0, 0});
 
 		// Transport line structure count should be 0 as it was removed
-		jactorio::game::LogicChunk& logic_chunk = worldData_.LogicGetAllChunks().begin()->second;
-
-		EXPECT_EQ(logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line).size(), 0);
+		EXPECT_TRUE(worldData_.GetChunkC({0, 0})->GetLogicGroup(jactorio::game::Chunk::LogicGroup::transport_line).empty());
 	}
 
 	// ======================================================================
@@ -280,24 +275,19 @@ namespace data::prototype
 		 * 4 3 2
 		 *   1
 		 */
-		AddTransportLine({1, 1}, jactorio::data::TransportLineData::LineOrientation::up);
+		AddTransportLine({1, 1}, TransportLineData::LineOrientation::up);
 
-		AddTransportLine({2, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::right);
+		AddTransportLine({2, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		jactorio::game::LogicChunk& logic_chunk                     = worldData_.LogicGetAllChunks().begin()->second;
-		std::vector<jactorio::game::ChunkStructLayer>& struct_layer =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		ASSERT_EQ(tile_layers.size(), 2);
 
-		ASSERT_EQ(struct_layer.size(), 2);
-		EXPECT_FLOAT_EQ(struct_layer[0].positionX, 1.f);
-		EXPECT_FLOAT_EQ(struct_layer[0].positionY, 0.f);
-
-		auto* line_segment = static_cast<jactorio::game::TransportSegment*>(struct_layer[0].uniqueData);
-		EXPECT_EQ(line_segment->terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
-		EXPECT_EQ(line_segment->length, 2);
+		auto& line_segment = GetSegment(tile_layers[0]);
+		EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+		EXPECT_EQ(line_segment.length, 2);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveNeighborBend) {
@@ -308,27 +298,22 @@ namespace data::prototype
 		 * /> > > 
 		 *    ^ 
 		 */
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({2, 0}, jactorio::data::TransportLineData::LineOrientation::right);
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({2, 0}, TransportLineData::LineOrientation::right);
 
-		AddTransportLine({1, 1}, jactorio::data::TransportLineData::LineOrientation::up);
+		AddTransportLine({1, 1}, TransportLineData::LineOrientation::up);
 
 
 		TlRemoveEvents({0, 0});
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		jactorio::game::LogicChunk& logic_chunk                     = worldData_.LogicGetAllChunks().begin()->second;
-		std::vector<jactorio::game::ChunkStructLayer>& struct_layer =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		ASSERT_EQ(tile_layers.size(), 2);
 
-		ASSERT_EQ(struct_layer.size(), 2);
-		EXPECT_FLOAT_EQ(struct_layer[1].positionX, 1.f);
-		EXPECT_FLOAT_EQ(struct_layer[1].positionY, 0.f);
-
-		auto* line_segment = static_cast<jactorio::game::TransportSegment*>(struct_layer[1].uniqueData);
-		EXPECT_EQ(line_segment->terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
-		EXPECT_EQ(line_segment->length, 2);
+		auto& line_segment = GetSegment(tile_layers[1]);
+		EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+		EXPECT_EQ(line_segment.length, 2);
 	}
 
 	TEST_F(TransportLineTest, OnBuildUpdateNeighboringLines) {
@@ -337,25 +322,25 @@ namespace data::prototype
 		 * >
 		 * ^
 		 */
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::right);
+		AddTopTransportLine(TransportLineData::LineOrientation::right);
 
 		auto& layer = worldData_.GetTile(1, 1)
-		                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 
-		auto proto          = jactorio::data::TransportBelt{};
+		auto proto          = TransportBelt{};
 		layer.prototypeData = &proto;
 
 
 		// Should update line above, turn right to a up-right
-		TlBuildEvents({1, 1}, jactorio::data::Orientation::up);
+		TlBuildEvents({1, 1}, Orientation::up);
 
 		{
 			auto& result_layer = worldData_.GetTile(1, 0)
-			                               ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                               ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 			EXPECT_EQ(
-				static_cast<jactorio::data::TransportLineData*>(result_layer.uniqueData)->orientation,
+				static_cast<jactorio::data::TransportLineData*>(result_layer.GetUniqueData())->orientation,
 				jactorio::data::TransportLineData::LineOrientation::up_right
 			);
 		}
@@ -365,18 +350,17 @@ namespace data::prototype
 		// The on_remove event should update the orientations of the neighboring belts to if the current transport
 		// line is not there
 
-		worldData_.LogicAddChunk(worldData_.GetChunk(0, 0));
 		/*
 		 *  v
 		 *  >
 		 *  ^
 		 */
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::down);
-		AddBottomTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		AddTransportLine(jactorio::data::TransportLineData::LineOrientation::right, 1, 1);  // Between the 2 above and below
+		AddTopTransportLine(TransportLineData::LineOrientation::down);
+		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		AddTransportLine(TransportLineData::LineOrientation::right, 1, 1);  // Between the 2 above and below
 
 		auto& layer = worldData_.GetTile(1, 2)
-		                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 		layer.prototypeData = &lineProto_;
 
 
@@ -385,10 +369,10 @@ namespace data::prototype
 
 		{
 			auto& result_layer = worldData_.GetTile(1, 1)
-			                               ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                               ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 			EXPECT_EQ(
-				static_cast<jactorio::data::TransportLineData*>(result_layer.uniqueData)->orientation,
+				static_cast<jactorio::data::TransportLineData*>(result_layer.GetUniqueData())->orientation,
 				jactorio::data::TransportLineData::LineOrientation::down_right
 			);
 		}
@@ -403,65 +387,50 @@ namespace data::prototype
 
 
 		auto& down_layer = worldData_.GetTile(0, 0)
-		                             ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 		down_layer.prototypeData = &lineProto_;
-		TlBuildEvents({0, 0}, jactorio::data::Orientation::down);
+		TlBuildEvents({0, 0}, Orientation::down);
 
 		auto& left_layer = worldData_.GetTile(1, 0)
-		                             ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 		left_layer.prototypeData = &lineProto_;
-		TlBuildEvents({1, 0}, jactorio::data::Orientation::left);
+		TlBuildEvents({1, 0}, Orientation::left);
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		ASSERT_EQ(tile_layers.size(), 2);
 
-		ASSERT_EQ(transport_lines.size(), 2);
-
-		jactorio::game::ChunkStructLayer& line_layer = transport_lines[1];
-
-		auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-		EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::bend_left);
+		auto& segment = GetSegment(tile_layers[1]);
+		EXPECT_EQ(segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_left);
 
 		// Should have lengthened segment and moved x 1 left
-		EXPECT_EQ(line->length, 2);
-		EXPECT_FLOAT_EQ(line_layer.positionX, 0.f);
-		EXPECT_FLOAT_EQ(line_layer.positionY, 0.f);
-
-		EXPECT_EQ(static_cast<jactorio::data::TransportLineData*>(left_layer.uniqueData)->lineSegmentIndex, 1);
+		EXPECT_EQ(segment.length, 2);
+		EXPECT_EQ(static_cast<jactorio::data::TransportLineData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
 	}
 
 	TEST_F(TransportLineTest, OnBuildBendingTransportLineSegmentLeading) {
 		// Change the transport_line_segment termination type in accordance with orientation when placed ahead of existing line 
 
 		auto& left_layer = worldData_.GetTile(1, 0)
-		                             ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 		left_layer.prototypeData = &lineProto_;
-		TlBuildEvents({1, 0}, jactorio::data::Orientation::left);
+		TlBuildEvents({1, 0}, Orientation::left);
 
 		auto& down_layer = worldData_.GetTile(0, 0)
-		                             ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 		down_layer.prototypeData = &lineProto_;
-		TlBuildEvents({0, 0}, jactorio::data::Orientation::down);
+		TlBuildEvents({0, 0}, Orientation::down);
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		ASSERT_EQ(tile_layers.size(), 2);
 
-		ASSERT_EQ(transport_lines.size(), 2);
-
-		jactorio::game::ChunkStructLayer& line_layer = transport_lines[0];
-		auto* line                                   = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-		EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::bend_left);
+		auto& segment = GetSegment(tile_layers[0]);
+		EXPECT_EQ(segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_left);
 
 		// Should have lengthened segment and moved x 1 left
-		EXPECT_EQ(line->length, 2);
-		EXPECT_FLOAT_EQ(line_layer.positionX, 0.f);
-		EXPECT_FLOAT_EQ(line_layer.positionY, 0.f);
-
-		EXPECT_EQ(static_cast<jactorio::data::TransportLineData*>(left_layer.uniqueData)->lineSegmentIndex, 1);
+		EXPECT_EQ(segment.length, 2);
+		EXPECT_EQ(static_cast<jactorio::data::TransportLineData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
 	}
 
 
@@ -473,42 +442,38 @@ namespace data::prototype
 		 * v
 		 * >
 		 */
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::down);
-		AddTransportLine({0, 1}, jactorio::data::TransportLineData::LineOrientation::right);
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::down);
+		AddTransportLine({0, 1}, TransportLineData::LineOrientation::right);
 
 
 		TlRemoveEvents({0, 1});
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		jactorio::game::LogicChunk& logic_chunk                     = worldData_.LogicGetAllChunks().begin()->second;
-		std::vector<jactorio::game::ChunkStructLayer>& struct_layer =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		ASSERT_EQ(tile_layers.size(), 1);
 
-		ASSERT_EQ(struct_layer.size(), 1);
-		EXPECT_FLOAT_EQ(struct_layer[0].positionX, 0.f);
-		EXPECT_FLOAT_EQ(struct_layer[0].positionY, 0.f);
-
-		auto* line_segment = static_cast<jactorio::game::TransportSegment*>(struct_layer[0].uniqueData);
-		EXPECT_EQ(line_segment->terminationType, jactorio::game::TransportSegment::TerminationType::straight);
-		EXPECT_EQ(line_segment->length, 1);
+		auto& segment = GetSegment(tile_layers[0]);
+		EXPECT_EQ(segment.terminationType, jactorio::game::TransportSegment::TerminationType::straight);
+		EXPECT_EQ(segment.length, 1);
 	}
 
 	TEST_F(TransportLineTest, SetOrientation) {
 		// When the orientation is set, the member "set" should also be updated
 
 		// Arbitrary segment is fine since no logic updates are performed
-		auto segment = jactorio::game::TransportSegment{
-			jactorio::data::Orientation::left,
-			jactorio::game::TransportSegment::TerminationType::straight,
+		const auto segment = std::make_shared<game::TransportSegment>(
+			Orientation::left,
+			game::TransportSegment::TerminationType::straight,
 			1
-		};
+		);
 
-		jactorio::data::TransportLineData line_data{segment};
+		TransportLineData line_data{segment};
+		line_data.lineSegmentIndex = 1;  // Prevents it from attempting to delete line segment
 
-		line_data.SetOrientation(jactorio::data::TransportLineData::LineOrientation::down);
+		line_data.SetOrientation(TransportLineData::LineOrientation::down);
 		EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::data::TransportLineData::LineOrientation::down));
 
-		line_data.SetOrientation(jactorio::data::TransportLineData::LineOrientation::left_down);
+		line_data.SetOrientation(TransportLineData::LineOrientation::left_down);
 		EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::data::TransportLineData::LineOrientation::left_down));
 	}
 
@@ -517,18 +482,18 @@ namespace data::prototype
 		/*
 		 * > ^
 		 */
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::right);
-		ValidateResultOrientation(jactorio::data::Orientation::up,
-		                          jactorio::data::TransportLineData::LineOrientation::right_up);
+		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+		ValidateResultOrientation(Orientation::up,
+		                          TransportLineData::LineOrientation::right_up);
 	}
 
 	TEST_F(TransportLineTest, OrientationUp2) {
 		/*
 		 *   ^ <
 		 */
-		AddRightTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		ValidateResultOrientation(jactorio::data::Orientation::up,
-		                          jactorio::data::TransportLineData::LineOrientation::left_up);
+		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		ValidateResultOrientation(Orientation::up,
+		                          TransportLineData::LineOrientation::left_up);
 	}
 
 	TEST_F(TransportLineTest, OrientationUp3) {
@@ -537,10 +502,10 @@ namespace data::prototype
 		 */
 		// Top and bottom points to one line, line should be straight
 
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::right);
-		AddRightTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		ValidateResultOrientation(jactorio::data::Orientation::up,
-		                          jactorio::data::TransportLineData::LineOrientation::up);
+		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		ValidateResultOrientation(Orientation::up,
+		                          TransportLineData::LineOrientation::up);
 	}
 
 	TEST_F(TransportLineTest, OrientationUp4) {
@@ -548,10 +513,10 @@ namespace data::prototype
 		 * > ^ 
 		 *   >
 		 */
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::right);
-		AddBottomTransportLine(jactorio::data::TransportLineData::LineOrientation::right_down);
-		ValidateResultOrientation(jactorio::data::Orientation::up,
-		                          jactorio::data::TransportLineData::LineOrientation::right_up);
+		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+		AddBottomTransportLine(TransportLineData::LineOrientation::right_down);
+		ValidateResultOrientation(Orientation::up,
+		                          TransportLineData::LineOrientation::right_up);
 	}
 
 	TEST_F(TransportLineTest, OrientationUp5) {
@@ -559,10 +524,10 @@ namespace data::prototype
 		 * > ^ 
 		 *   ^
 		 */
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::right);
-		AddBottomTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		ValidateResultOrientation(jactorio::data::Orientation::up,
-		                          jactorio::data::TransportLineData::LineOrientation::up);
+		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		ValidateResultOrientation(Orientation::up,
+		                          TransportLineData::LineOrientation::up);
 	}
 
 	TEST_F(TransportLineTest, OrientationUp6) {
@@ -570,10 +535,10 @@ namespace data::prototype
 		 * < ^ <
 		 */
 
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		AddRightTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		ValidateResultOrientation(jactorio::data::Orientation::up,
-		                          jactorio::data::TransportLineData::LineOrientation::left_up);
+		AddLeftTransportLine(TransportLineData::LineOrientation::left);
+		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		ValidateResultOrientation(Orientation::up,
+		                          TransportLineData::LineOrientation::left_up);
 	}
 
 	// ===
@@ -583,9 +548,9 @@ namespace data::prototype
 		 *  v
 		 *  >
 		 */
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::down);
-		ValidateResultOrientation(jactorio::data::Orientation::right,
-		                          jactorio::data::TransportLineData::LineOrientation::down_right);
+		AddTopTransportLine(TransportLineData::LineOrientation::down);
+		ValidateResultOrientation(Orientation::right,
+		                          TransportLineData::LineOrientation::down_right);
 	}
 
 	TEST_F(TransportLineTest, OrientationRight2) {
@@ -593,18 +558,18 @@ namespace data::prototype
 		 * >
 		 * ^
 		 */
-		AddBottomTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		ValidateResultOrientation(jactorio::data::Orientation::right,
-		                          jactorio::data::TransportLineData::LineOrientation::up_right);
+		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		ValidateResultOrientation(Orientation::right,
+		                          TransportLineData::LineOrientation::up_right);
 	}
 
 	TEST_F(TransportLineTest, OrientationRight3) {
 		// Top and bottom points to one line, line should be straight
 
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::down);
-		AddBottomTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		ValidateResultOrientation(jactorio::data::Orientation::right,
-		                          jactorio::data::TransportLineData::LineOrientation::right);
+		AddTopTransportLine(TransportLineData::LineOrientation::down);
+		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		ValidateResultOrientation(Orientation::right,
+		                          TransportLineData::LineOrientation::right);
 	}
 
 	TEST_F(TransportLineTest, OrientationRight4) {
@@ -612,10 +577,10 @@ namespace data::prototype
 		 *   v
 		 * ^ >
 		 */
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::down);
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::up);  // Does not point to center
-		ValidateResultOrientation(jactorio::data::Orientation::right,
-		                          jactorio::data::TransportLineData::LineOrientation::down_right);
+		AddTopTransportLine(TransportLineData::LineOrientation::down);
+		AddLeftTransportLine(TransportLineData::LineOrientation::up);  // Does not point to center
+		ValidateResultOrientation(Orientation::right,
+		                          TransportLineData::LineOrientation::down_right);
 	}
 
 	TEST_F(TransportLineTest, OrientationRight5) {
@@ -623,11 +588,11 @@ namespace data::prototype
 		 *   v
 		 * > >
 		 */
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::down);
+		AddTopTransportLine(TransportLineData::LineOrientation::down);
 		AddLeftTransportLine(
-			jactorio::data::TransportLineData::LineOrientation::right);  // Points at center, center now straight 
-		ValidateResultOrientation(jactorio::data::Orientation::right,
-		                          jactorio::data::TransportLineData::LineOrientation::right);
+			TransportLineData::LineOrientation::right);  // Points at center, center now straight 
+		ValidateResultOrientation(Orientation::right,
+		                          TransportLineData::LineOrientation::right);
 	}
 
 	TEST_F(TransportLineTest, OrientationRight6) {
@@ -636,132 +601,101 @@ namespace data::prototype
 		 * >
 		 * ^
 		 */
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		AddBottomTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		ValidateResultOrientation(jactorio::data::Orientation::right,
-		                          jactorio::data::TransportLineData::LineOrientation::up_right);
+		AddTopTransportLine(TransportLineData::LineOrientation::up);
+		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		ValidateResultOrientation(Orientation::right,
+		                          TransportLineData::LineOrientation::up_right);
 	}
 
 	// ===
 
 	TEST_F(TransportLineTest, OrientationDown1) {
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::right);
-		ValidateResultOrientation(jactorio::data::Orientation::down,
-		                          jactorio::data::TransportLineData::LineOrientation::right_down);
+		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+		ValidateResultOrientation(Orientation::down,
+		                          TransportLineData::LineOrientation::right_down);
 	}
 
 	TEST_F(TransportLineTest, OrientationDown2) {
-		AddRightTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		ValidateResultOrientation(jactorio::data::Orientation::down,
-		                          jactorio::data::TransportLineData::LineOrientation::left_down);
+		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		ValidateResultOrientation(Orientation::down,
+		                          TransportLineData::LineOrientation::left_down);
 	}
 
 	TEST_F(TransportLineTest, OrientationDown3) {
 		// Top and bottom points to one line, line should be straight
 
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::right);
-		AddRightTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		ValidateResultOrientation(jactorio::data::Orientation::down,
-		                          jactorio::data::TransportLineData::LineOrientation::down);
+		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		ValidateResultOrientation(Orientation::down,
+		                          TransportLineData::LineOrientation::down);
 	}
 
 	TEST_F(TransportLineTest, OrientationDown4) {
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::right);
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		ValidateResultOrientation(jactorio::data::Orientation::down,
-		                          jactorio::data::TransportLineData::LineOrientation::right_down);
+		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+		AddTopTransportLine(TransportLineData::LineOrientation::left);
+		ValidateResultOrientation(Orientation::down,
+		                          TransportLineData::LineOrientation::right_down);
 	}
 
 	TEST_F(TransportLineTest, OrientationDown5) {
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::right);
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::right_down);
-		ValidateResultOrientation(jactorio::data::Orientation::down,
-		                          jactorio::data::TransportLineData::LineOrientation::down);
+		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+		AddTopTransportLine(TransportLineData::LineOrientation::right_down);
+		ValidateResultOrientation(Orientation::down,
+		                          TransportLineData::LineOrientation::down);
 	}
 
 	TEST_F(TransportLineTest, OrientationDown6) {
-		AddLeftTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		AddRightTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		ValidateResultOrientation(jactorio::data::Orientation::down,
-		                          jactorio::data::TransportLineData::LineOrientation::left_down);
+		AddLeftTransportLine(TransportLineData::LineOrientation::left);
+		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		ValidateResultOrientation(Orientation::down,
+		                          TransportLineData::LineOrientation::left_down);
 	}
 
 	// ===
 
 	TEST_F(TransportLineTest, OrientationLeft1) {
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::down);
-		ValidateResultOrientation(jactorio::data::Orientation::left,
-		                          jactorio::data::TransportLineData::LineOrientation::down_left);
+		AddTopTransportLine(TransportLineData::LineOrientation::down);
+		ValidateResultOrientation(Orientation::left,
+		                          TransportLineData::LineOrientation::down_left);
 	}
 
 	TEST_F(TransportLineTest, OrientationLeft2) {
-		AddBottomTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		ValidateResultOrientation(jactorio::data::Orientation::left,
-		                          jactorio::data::TransportLineData::LineOrientation::up_left);
+		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		ValidateResultOrientation(Orientation::left,
+		                          TransportLineData::LineOrientation::up_left);
 	}
 
 	TEST_F(TransportLineTest, OrientationLeft3) {
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::down);
-		AddBottomTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		ValidateResultOrientation(jactorio::data::Orientation::left,
-		                          jactorio::data::TransportLineData::LineOrientation::left);
+		AddTopTransportLine(TransportLineData::LineOrientation::down);
+		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		ValidateResultOrientation(Orientation::left,
+		                          TransportLineData::LineOrientation::left);
 	}
 
 	TEST_F(TransportLineTest, OrientationLeft4) {
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::down);
-		AddRightTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		ValidateResultOrientation(jactorio::data::Orientation::left,
-		                          jactorio::data::TransportLineData::LineOrientation::down_left);
+		AddTopTransportLine(TransportLineData::LineOrientation::down);
+		AddRightTransportLine(TransportLineData::LineOrientation::up);
+		ValidateResultOrientation(Orientation::left,
+		                          TransportLineData::LineOrientation::down_left);
 	}
 
 	TEST_F(TransportLineTest, OrientationLeft5) {
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::down);
-		AddRightTransportLine(jactorio::data::TransportLineData::LineOrientation::left);
-		ValidateResultOrientation(jactorio::data::Orientation::left,
-		                          jactorio::data::TransportLineData::LineOrientation::left);
+		AddTopTransportLine(TransportLineData::LineOrientation::down);
+		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		ValidateResultOrientation(Orientation::left,
+		                          TransportLineData::LineOrientation::left);
 	}
 
 	TEST_F(TransportLineTest, OrientationLeft6) {
-		AddTopTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		AddBottomTransportLine(jactorio::data::TransportLineData::LineOrientation::up);
-		ValidateResultOrientation(jactorio::data::Orientation::left,
-		                          jactorio::data::TransportLineData::LineOrientation::up_left);
+		AddTopTransportLine(TransportLineData::LineOrientation::up);
+		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		ValidateResultOrientation(Orientation::left,
+		                          TransportLineData::LineOrientation::up_left);
 	}
 
 
 	// ======================================================================
 	// Side only
-
-	void ValidateBendToSideOnly(jactorio::game::WorldData& world_data,
-	                            const int32_t center_x, const int32_t center_y) {
-		auto& logic_chunk     = world_data.LogicGetAllChunks().at(world_data.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-
-		ASSERT_EQ(transport_lines.size(), 3);
-
-		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[1];
-			auto* line                                   = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
-			EXPECT_EQ(line->length, 2);
-
-			EXPECT_FLOAT_EQ(line_layer.positionX, center_x);
-			EXPECT_FLOAT_EQ(line_layer.positionY, center_y);
-		}
-		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[2];
-			auto* line                                   = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
-			EXPECT_EQ(line->length, 2);
-
-			EXPECT_FLOAT_EQ(line_layer.positionX, center_x);
-			EXPECT_FLOAT_EQ(line_layer.positionY, center_y);
-		}
-
-	}
 
 	// Change bend to side only as initially, it forms a bend without the line on top / bottom
 	TEST_F(TransportLineTest, OnBuildUpChangeBendToSideOnly) {
@@ -770,18 +704,18 @@ namespace data::prototype
 		 *   ^
 		 * > ^ < 
 		 */
-		BuildTransportLine(jactorio::data::Orientation::up, {1, 0});
-		BuildTransportLine(jactorio::data::Orientation::up, {1, 1});
+		BuildTransportLine(Orientation::up, {1, 0});
+		BuildTransportLine(Orientation::up, {1, 1});
 
-		BuildTransportLine(jactorio::data::Orientation::left, {2, 1});
-		BuildTransportLine(jactorio::data::Orientation::right, {0, 1});
+		BuildTransportLine(Orientation::left, {2, 1});
+		BuildTransportLine(Orientation::right, {0, 1});
 
-		ValidateBendToSideOnly(worldData_, 1, 1);
+		ValidateBendToSideOnly();
 		EXPECT_EQ(GetLineSegmentIndex({0, 1}), 1);
 		EXPECT_EQ(GetLineSegmentIndex({2, 1}), 1);
 
-		EXPECT_EQ(GetLineData({0, 1}).lineSegment.get().targetInsertOffset, 1);
-		EXPECT_EQ(GetLineData({2, 1}).lineSegment.get().targetInsertOffset, 1);
+		EXPECT_EQ(GetLineData({0, 1}).lineSegment->targetInsertOffset, 1);
+		EXPECT_EQ(GetLineData({2, 1}).lineSegment->targetInsertOffset, 1);
 	}
 
 	TEST_F(TransportLineTest, OnBuildRightChangeBendToSideOnly) {
@@ -791,15 +725,15 @@ namespace data::prototype
 		 *   > > 
 		 *   ^
 		 */
-		BuildTransportLine(jactorio::data::Orientation::right, {1, 1});
-		BuildTransportLine(jactorio::data::Orientation::right, {2, 1});
+		BuildTransportLine(Orientation::right, {1, 1});
+		BuildTransportLine(Orientation::right, {2, 1});
 
-		BuildTransportLine(jactorio::data::Orientation::up, {1, 2});
-		BuildTransportLine(jactorio::data::Orientation::down, {1, 0});
+		BuildTransportLine(Orientation::up, {1, 2});
+		BuildTransportLine(Orientation::down, {1, 0});
 
-		ValidateBendToSideOnly(worldData_, 1, 1);
-		EXPECT_EQ(GetLineData({1, 0}).lineSegment.get().targetInsertOffset, 0);
-		EXPECT_EQ(GetLineData({1, 2}).lineSegment.get().targetInsertOffset, 0);
+		ValidateBendToSideOnly();
+		EXPECT_EQ(GetLineData({1, 0}).lineSegment->targetInsertOffset, 0);
+		EXPECT_EQ(GetLineData({1, 2}).lineSegment->targetInsertOffset, 0);
 	}
 
 	TEST_F(TransportLineTest, OnBuildDownChangeBendToSideOnly) {
@@ -808,15 +742,15 @@ namespace data::prototype
 		 * > v < 
 		 *   v 
 		 */
-		BuildTransportLine(jactorio::data::Orientation::down, {1, 1});
-		BuildTransportLine(jactorio::data::Orientation::down, {1, 2});
+		BuildTransportLine(Orientation::down, {1, 1});
+		BuildTransportLine(Orientation::down, {1, 2});
 
-		BuildTransportLine(jactorio::data::Orientation::right, {0, 1});
-		BuildTransportLine(jactorio::data::Orientation::left, {2, 1});
+		BuildTransportLine(Orientation::right, {0, 1});
+		BuildTransportLine(Orientation::left, {2, 1});
 
-		ValidateBendToSideOnly(worldData_, 1, 1);
-		EXPECT_EQ(GetLineData({0, 1}).lineSegment.get().targetInsertOffset, 0);
-		EXPECT_EQ(GetLineData({2, 1}).lineSegment.get().targetInsertOffset, 0);
+		ValidateBendToSideOnly();
+		EXPECT_EQ(GetLineData({0, 1}).lineSegment->targetInsertOffset, 0);
+		EXPECT_EQ(GetLineData({2, 1}).lineSegment->targetInsertOffset, 0);
 	}
 
 	TEST_F(TransportLineTest, OnBuildLeftChangeBendToSideOnly) {
@@ -826,15 +760,15 @@ namespace data::prototype
 		 * < < 
 		 *   ^
 		 */
-		BuildTransportLine(jactorio::data::Orientation::left, {0, 1});
-		BuildTransportLine(jactorio::data::Orientation::left, {1, 1});
+		BuildTransportLine(Orientation::left, {0, 1});
+		BuildTransportLine(Orientation::left, {1, 1});
 
-		BuildTransportLine(jactorio::data::Orientation::down, {1, 0});
-		BuildTransportLine(jactorio::data::Orientation::up, {1, 2});
+		BuildTransportLine(Orientation::down, {1, 0});
+		BuildTransportLine(Orientation::up, {1, 2});
 
-		ValidateBendToSideOnly(worldData_, 1, 1);
-		EXPECT_EQ(GetLineData({1, 0}).lineSegment.get().targetInsertOffset, 1);
-		EXPECT_EQ(GetLineData({1, 2}).lineSegment.get().targetInsertOffset, 1);
+		ValidateBendToSideOnly();
+		EXPECT_EQ(GetLineData({1, 0}).lineSegment->targetInsertOffset, 1);
+		EXPECT_EQ(GetLineData({1, 2}).lineSegment->targetInsertOffset, 1);
 	}
 
 	TEST_F(TransportLineTest, OnBuildUpUpdateNeighboringSegmentToSideOnly) {
@@ -849,42 +783,31 @@ namespace data::prototype
 		 *   4
 		 * 1 5 2
 		 */
-		BuildTransportLine(jactorio::data::Orientation::right, {0, 2});
-		BuildTransportLine(jactorio::data::Orientation::left, {2, 2});
+		BuildTransportLine(Orientation::right, {0, 2});
+		BuildTransportLine(Orientation::left, {2, 2});
 
-		BuildTransportLine(jactorio::data::Orientation::up, {1, 0});
-		BuildTransportLine(jactorio::data::Orientation::up, {1, 1});
-		BuildTransportLine(jactorio::data::Orientation::up, {1, 2});
+		BuildTransportLine(Orientation::up, {1, 0});
+		BuildTransportLine(Orientation::up, {1, 1});
+		BuildTransportLine(Orientation::up, {1, 2});
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-
-		ASSERT_EQ(transport_lines.size(), 3);
+		ASSERT_EQ(tile_layers.size(), 3);
 
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[0];
-			EXPECT_FLOAT_EQ(line_layer.positionX, 1);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 2);
-
-			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+			auto& line_segment = GetSegment(tile_layers[0]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
 		}
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[1];
-			EXPECT_FLOAT_EQ(line_layer.positionX, 1);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 2);
-
-			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+			auto& line_segment = GetSegment(tile_layers[1]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
 		}
 
 		EXPECT_EQ(GetLineSegmentIndex({0, 2}), 1);
 		EXPECT_EQ(GetLineSegmentIndex({2, 2}), 1);
 
-		EXPECT_EQ(GetLineData({0, 2}).lineSegment.get().targetInsertOffset, 2);
-		EXPECT_EQ(GetLineData({2, 2}).lineSegment.get().targetInsertOffset, 2);
+		EXPECT_EQ(GetLineData({0, 2}).lineSegment->targetInsertOffset, 2);
+		EXPECT_EQ(GetLineData({2, 2}).lineSegment->targetInsertOffset, 2);
 	}
 
 	TEST_F(TransportLineTest, OnBuildRightUpdateNeighboringSegmentToSideOnly) {
@@ -899,33 +822,22 @@ namespace data::prototype
 		 *  3 
 		 *  1
 		 */
-		BuildTransportLine(jactorio::data::Orientation::up, {1, 2});
-		BuildTransportLine(jactorio::data::Orientation::down, {1, 0});
+		BuildTransportLine(Orientation::up, {1, 2});
+		BuildTransportLine(Orientation::down, {1, 0});
 
-		BuildTransportLine(jactorio::data::Orientation::right, {1, 1});
+		BuildTransportLine(Orientation::right, {1, 1});
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-
-		ASSERT_EQ(transport_lines.size(), 3);
+		ASSERT_EQ(tile_layers.size(), 3);
 
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[0];
-			EXPECT_FLOAT_EQ(line_layer.positionX, 1);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 1);
-
-			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+			auto& line_segment = GetSegment(tile_layers[0]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
 		}
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[1];
-			EXPECT_FLOAT_EQ(line_layer.positionX, 1);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 1);
-
-			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+			auto& line_segment = GetSegment(tile_layers[1]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
 		}
 
 		EXPECT_EQ(GetLineSegmentIndex({1, 2}), 1);
@@ -941,33 +853,22 @@ namespace data::prototype
 		 *   
 		 * 1 3 2 
 		 */
-		BuildTransportLine(jactorio::data::Orientation::right, {0, 0});
-		BuildTransportLine(jactorio::data::Orientation::left, {2, 0});
+		BuildTransportLine(Orientation::right, {0, 0});
+		BuildTransportLine(Orientation::left, {2, 0});
 
-		BuildTransportLine(jactorio::data::Orientation::down, {1, 0});
+		BuildTransportLine(Orientation::down, {1, 0});
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-
-		ASSERT_EQ(transport_lines.size(), 3);
+		ASSERT_EQ(tile_layers.size(), 3);
 
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[0];
-			EXPECT_FLOAT_EQ(line_layer.positionX, 1);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 0);
-
-			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+			auto& line_segment = GetSegment(tile_layers[0]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
 		}
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[1];
-			EXPECT_FLOAT_EQ(line_layer.positionX, 1);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 0);
-
-			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+			auto& line_segment = GetSegment(tile_layers[1]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
 		}
 
 		EXPECT_EQ(GetLineSegmentIndex({0, 0}), 1);
@@ -986,33 +887,22 @@ namespace data::prototype
 		 *   3 
 		 *   2
 		 */
-		BuildTransportLine(jactorio::data::Orientation::down, {0, 0});
-		BuildTransportLine(jactorio::data::Orientation::up, {0, 2});
+		BuildTransportLine(Orientation::down, {0, 0});
+		BuildTransportLine(Orientation::up, {0, 2});
 
-		BuildTransportLine(jactorio::data::Orientation::left, {0, 1});
+		BuildTransportLine(Orientation::left, {0, 1});
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-
-		ASSERT_EQ(transport_lines.size(), 3);
+		ASSERT_EQ(tile_layers.size(), 3);
 
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[0];
-			EXPECT_FLOAT_EQ(line_layer.positionX, 0);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 1);
-
-			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+			auto& line_segment = GetSegment(tile_layers[0]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
 		}
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[1];
-			EXPECT_FLOAT_EQ(line_layer.positionX, 0);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 1);
-
-			auto* line = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+			auto& line_segment = GetSegment(tile_layers[1]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
 		}
 
 		EXPECT_EQ(GetLineSegmentIndex({0, 0}), 1);
@@ -1025,22 +915,17 @@ namespace data::prototype
 
 	TEST_F(TransportLineTest, OnRemoveSetNeighborTargetSegment) {
 		// After removing a transport line, anything that points to it as a target_segment needs to be set to NULL
-		BuildTransportLine(jactorio::data::Orientation::left, {0, 0});
-		BuildTransportLine(jactorio::data::Orientation::up, {0, 1});
+		BuildTransportLine(Orientation::left, {0, 0});
+		BuildTransportLine(Orientation::up, {0, 1});
 
 
 		TlRemoveEvents({0, 0});
 
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		jactorio::game::LogicChunk& logic_chunk                     = worldData_.LogicGetAllChunks().begin()->second;
-		std::vector<jactorio::game::ChunkStructLayer>& struct_layer =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-
-		ASSERT_EQ(struct_layer.size(), 1);
+		ASSERT_EQ(tile_layers.size(), 1);
 		// Set back to nullptr
-		EXPECT_EQ(
-			static_cast<jactorio::game::TransportSegment*>(struct_layer[0].uniqueData)->targetSegment,
-			nullptr);
+		EXPECT_EQ(GetSegment(tile_layers[0]).targetSegment, nullptr);
 	}
 
 	TEST_F(TransportLineTest, OnBuildConnectTransportLineSegmentsLeading) {
@@ -1052,25 +937,23 @@ namespace data::prototype
 
 		{
 			auto& layer = worldData_.GetTile(0, 0)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({0, 0}, jactorio::data::Orientation::up);
+			TlBuildEvents({0, 0}, Orientation::up);
 		}
 		{
 			// Second transport line should connect to first
 			auto& layer = worldData_.GetTile(1, 0)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({1, 0}, jactorio::data::Orientation::left);
+			TlBuildEvents({1, 0}, Orientation::left);
 		}
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		ASSERT_EQ(transport_lines.size(), 2);
-		auto* line = static_cast<jactorio::game::TransportSegment*>(transport_lines[1].uniqueData);
-		EXPECT_EQ(line->targetSegment, transport_lines[0].uniqueData);
+		ASSERT_EQ(tile_layers.size(), 2);
+		auto& line_segment = GetSegment(tile_layers[1]);
+		EXPECT_EQ(line_segment.targetSegment, &GetSegment(tile_layers[0]));
 	}
 
 	TEST_F(TransportLineTest, OnBuildConnectTransportLineSegmentsTrailing) {
@@ -1084,24 +967,22 @@ namespace data::prototype
 
 		{
 			auto& layer = worldData_.GetTile(1, 0)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({1, 0}, jactorio::data::Orientation::left);
+			TlBuildEvents({1, 0}, Orientation::left);
 		}
 		{
 			auto& layer = worldData_.GetTile(0, 0)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({0, 0}, jactorio::data::Orientation::up);
+			TlBuildEvents({0, 0}, Orientation::up);
 		}
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		ASSERT_EQ(transport_lines.size(), 2);
-		auto* line = static_cast<jactorio::game::TransportSegment*>(transport_lines[0].uniqueData);
-		EXPECT_EQ(line->targetSegment, transport_lines[1].uniqueData);
+		ASSERT_EQ(tile_layers.size(), 2);
+		auto& line_segment = GetSegment(tile_layers[0]);
+		EXPECT_EQ(line_segment.targetSegment, &GetSegment(tile_layers[1]));
 	}
 
 	TEST_F(TransportLineTest, OnBuildNoConnectTransportLineSegments) {
@@ -1112,28 +993,23 @@ namespace data::prototype
 
 		{
 			auto& layer = worldData_.GetTile(0, 0)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({0, 0}, jactorio::data::Orientation::down);
+			TlBuildEvents({0, 0}, Orientation::down);
 		}
 		{
 			auto& layer = worldData_.GetTile(0, 1)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({0, 1}, jactorio::data::Orientation::up);
+			TlBuildEvents({0, 1}, Orientation::up);
 		}
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
+		auto& tile_layers = GetTransportLines({0, 0});
 
-		ASSERT_EQ(transport_lines.size(), 2);
+		ASSERT_EQ(tile_layers.size(), 2);
 
-		auto* line = static_cast<jactorio::game::TransportSegment*>(transport_lines[0].uniqueData);
-		EXPECT_EQ(line->targetSegment, nullptr);
-
-		auto* line_b = static_cast<jactorio::game::TransportSegment*>(transport_lines[1].uniqueData);
-		EXPECT_EQ(line_b->targetSegment, nullptr);
+		EXPECT_EQ(GetSegment(tile_layers[0]).targetSegment, nullptr);
+		EXPECT_EQ(GetSegment(tile_layers[1]).targetSegment, nullptr);
 	}
 
 	// ======================================================================
@@ -1145,8 +1021,8 @@ namespace data::prototype
 		 * ^
 		 * ^
 		 */
-		BuildTransportLine(jactorio::data::Orientation::up, {0, 0});
-		BuildTransportLine(jactorio::data::Orientation::up, {0, 1});
+		BuildTransportLine(Orientation::up, {0, 0});
+		BuildTransportLine(Orientation::up, {0, 1});
 
 		GroupingValidate({0, 0}, {0, 1});
 	}
@@ -1157,58 +1033,44 @@ namespace data::prototype
 		 * ^
 		 * ^
 		 */
-		BuildTransportLine(jactorio::data::Orientation::up, {0, 1});
-		BuildTransportLine(jactorio::data::Orientation::up, {0, 0});
+		BuildTransportLine(Orientation::up, {0, 1});
+		BuildTransportLine(Orientation::up, {0, 0});
 
 		GroupBehindValidate({0, 0}, {0, 1});
 	}
 
 	TEST_F(TransportLineTest, OnBuildUpGroupAheadCrossChunk) {
 		// Since grouping ahead requires adjustment of a position within the current logic chunk, crossing chunks requires special logic
-		worldData_.AddChunk(jactorio::game::Chunk{0, -1});
+		worldData_.AddChunk(game::Chunk{0, -1});
 
-		BuildTransportLine(jactorio::data::Orientation::up, {0, -1});
-		BuildTransportLine(jactorio::data::Orientation::up, {0, 0});
+		BuildTransportLine(Orientation::up, {0, -1});
+		BuildTransportLine(Orientation::up, {0, 0});
 
-		bool found = false;
-		jactorio::data::TransportLine::GetLineStructLayer(
-			worldData_, 0, 0,
-			[&found](auto& s_layer, auto&) mutable {
-				found      = true;
-				auto& data = *static_cast<jactorio::game::TransportSegment*>(s_layer.uniqueData);
+		auto* segment = TransportLine::GetTransportSegment(worldData_, 0, 0);
+		ASSERT_TRUE(segment);
 
-				EXPECT_EQ(data.length, 1);
-			});
-
-		EXPECT_TRUE(found);
+		EXPECT_EQ(segment->get()->length, 1);
 	}
 
 	TEST_F(TransportLineTest, OnBuildUpGroupBehindCrossChunk) {
 		// Since grouping ahead requires adjustment of a position within the current logic chunk, crossing chunks requires special logic
-		worldData_.AddChunk(jactorio::game::Chunk{0, -1});
+		worldData_.AddChunk(game::Chunk{0, -1});
 
-		BuildTransportLine(jactorio::data::Orientation::up, {0, 0});
-		BuildTransportLine(jactorio::data::Orientation::up, {0, -1});
+		BuildTransportLine(Orientation::up, {0, 0});
+		BuildTransportLine(Orientation::up, {0, -1});
 
-		bool found = false;
-		jactorio::data::TransportLine::GetLineStructLayer(
-			worldData_, 0, -1,
-			[&found](auto& s_layer, auto&) mutable {
-				found      = true;
-				auto& data = *static_cast<jactorio::game::TransportSegment*>(s_layer.uniqueData);
+		auto* segment = TransportLine::GetTransportSegment(worldData_, 0, -1);
+		ASSERT_TRUE(segment);
 
-				EXPECT_EQ(data.length, 1);
-			});
-
-		EXPECT_TRUE(found);
+		EXPECT_EQ(segment->get()->length, 1);
 	}
 
 	TEST_F(TransportLineTest, OnBuildRightGroupAhead) {
 		/*
 		 * > >
 		 */
-		BuildTransportLine(jactorio::data::Orientation::right, {1, 0});
-		BuildTransportLine(jactorio::data::Orientation::right, {0, 0});
+		BuildTransportLine(Orientation::right, {1, 0});
+		BuildTransportLine(Orientation::right, {0, 0});
 
 		GroupingValidate({1, 0}, {0, 0});
 	}
@@ -1217,8 +1079,8 @@ namespace data::prototype
 		/*
 		 * > >
 		 */
-		BuildTransportLine(jactorio::data::Orientation::right, {0, 0});
-		BuildTransportLine(jactorio::data::Orientation::right, {1, 0});
+		BuildTransportLine(Orientation::right, {0, 0});
+		BuildTransportLine(Orientation::right, {1, 0});
 
 		GroupBehindValidate({1, 0}, {0, 0});
 	}
@@ -1228,8 +1090,8 @@ namespace data::prototype
 		 * v
 		 * v
 		 */
-		BuildTransportLine(jactorio::data::Orientation::down, {0, 1});
-		BuildTransportLine(jactorio::data::Orientation::down, {0, 0});
+		BuildTransportLine(Orientation::down, {0, 1});
+		BuildTransportLine(Orientation::down, {0, 0});
 
 		GroupingValidate({0, 1}, {0, 0});
 	}
@@ -1239,8 +1101,8 @@ namespace data::prototype
 		 * v
 		 * v
 		 */
-		BuildTransportLine(jactorio::data::Orientation::down, {0, 0});
-		BuildTransportLine(jactorio::data::Orientation::down, {0, 1});
+		BuildTransportLine(Orientation::down, {0, 0});
+		BuildTransportLine(Orientation::down, {0, 1});
 
 		GroupBehindValidate({0, 1}, {0, 0});
 	}
@@ -1249,8 +1111,8 @@ namespace data::prototype
 		/*
 		 * < <
 		 */
-		BuildTransportLine(jactorio::data::Orientation::left, {0, 0});
-		BuildTransportLine(jactorio::data::Orientation::left, {1, 0});
+		BuildTransportLine(Orientation::left, {0, 0});
+		BuildTransportLine(Orientation::left, {1, 0});
 
 		GroupingValidate({0, 0}, {1, 0});
 	}
@@ -1259,8 +1121,8 @@ namespace data::prototype
 		/*
 		 * < <
 		 */
-		BuildTransportLine(jactorio::data::Orientation::left, {1, 0});
-		BuildTransportLine(jactorio::data::Orientation::left, {0, 0});
+		BuildTransportLine(Orientation::left, {1, 0});
+		BuildTransportLine(Orientation::left, {0, 0});
 
 		GroupBehindValidate({0, 0}, {1, 0});
 	}
@@ -1272,29 +1134,33 @@ namespace data::prototype
 		/*
 		 * > >  
 		 */
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, jactorio::data::TransportLineData::LineOrientation::right);
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
 
 		TlRemoveEvents({1, 0});
 
-		const auto& struct_layer = GetTransportLines({0, 0});
-		ASSERT_EQ(struct_layer.size(), 1);
-		EXPECT_EQ(static_cast<jactorio::game::TransportSegment*>(struct_layer[0].uniqueData)->length, 1);
+		const auto& tile_layers = GetTransportLines({0, 0});
+		ASSERT_EQ(tile_layers.size(), 1);
+		EXPECT_EQ(GetSegment(tile_layers[0]).length, 1);
+
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveGroupBeginBend) {
 		/*
 		 * > > v
 		 */
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({2, 0}, jactorio::data::TransportLineData::LineOrientation::down);
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({2, 0}, TransportLineData::LineOrientation::down);
 
 		TlRemoveEvents({1, 0});
 
-		const auto& struct_layer = GetTransportLines({0, 0});
-		ASSERT_EQ(struct_layer.size(), 2);
-		EXPECT_EQ(static_cast<jactorio::game::TransportSegment*>(struct_layer[0].uniqueData)->length, 1);
+		const auto& tile_layers = GetTransportLines({0, 0});
+		ASSERT_EQ(tile_layers.size(), 2);
+		EXPECT_EQ(GetSegment(tile_layers[0]).length, 1);
+
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveGroupMiddle) {
@@ -1304,49 +1170,51 @@ namespace data::prototype
 		/*
 		 * > /> > >
 		 */
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({2, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({3, 0}, jactorio::data::TransportLineData::LineOrientation::right);
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({2, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({3, 0}, TransportLineData::LineOrientation::right);
 
 		TlRemoveEvents({1, 0});
 
-		const auto& struct_layer = GetTransportLines({0, 0});
-		ASSERT_EQ(struct_layer.size(), 2);
-		EXPECT_EQ(static_cast<jactorio::game::TransportSegment*>(struct_layer[0].uniqueData)->length, 2);
+		const auto& tile_layers = GetTransportLines({0, 0});
+		ASSERT_EQ(tile_layers.size(), 2);
+		EXPECT_EQ(GetSegment(tile_layers[0]).length, 2);
 
-		auto* behind_segment = static_cast<jactorio::game::TransportSegment*>(struct_layer[1].uniqueData);
-		EXPECT_EQ(behind_segment->length, 1);
-		EXPECT_EQ(behind_segment->itemOffset, 0);  // Built 3 ahead: +3, remove at index 2: -2-1 = 0 
+		auto& behind_segment = GetSegment(tile_layers[1]);
+		EXPECT_EQ(behind_segment.length, 1);
+		EXPECT_EQ(behind_segment.itemOffset, 0);  // Built 3 ahead: +3, remove at index 2: -2-1 = 0 
+
+		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveGroupMiddleUpdateTargetSegment) {
 		// The new segment created when removing a group needs to update target segments so point to the newly created segment
-		worldData_.AddChunk(jactorio::game::Chunk(-1, 0));
+		worldData_.AddChunk(game::Chunk(-1, 0));
 
 		/*
 		 * > > /> >
 		 *   ^ 
 		 */
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({2, 0}, jactorio::data::TransportLineData::LineOrientation::right);
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({2, 0}, TransportLineData::LineOrientation::right);
 
-		AddTransportLine({-1, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({0, 1}, jactorio::data::TransportLineData::LineOrientation::up);
+		AddTransportLine({-1, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({0, 1}, TransportLineData::LineOrientation::up);
 
 		TlRemoveEvents({1, 0});
 
-		const auto& struct_layer = GetTransportLines({0, 0});
-		ASSERT_EQ(struct_layer.size(), 3);
-		EXPECT_EQ(GetLineData({0, 1}).lineSegment.get().targetSegment,
-		          static_cast<jactorio::game::TransportSegment*>(struct_layer[1].uniqueData)->targetSegment);
+		const auto& tile_layers = GetTransportLines({0, 0});
+		ASSERT_EQ(tile_layers.size(), 3);
+		EXPECT_EQ(GetLineData({0, 1}).lineSegment->targetSegment,
+		          GetSegment(tile_layers[1]).targetSegment);
 
 
-		const auto& struct_layer_left = GetTransportLines({-1, 0});
-		ASSERT_EQ(struct_layer_left.size(), 1);
-		EXPECT_EQ(GetLineData({-1, 0}).lineSegment.get().targetSegment,
-		          static_cast<jactorio::game::TransportSegment*>(struct_layer[1].uniqueData)->targetSegment);
+		const auto& tile_layers_left = GetTransportLines({-1, 0});
+		ASSERT_EQ(tile_layers_left.size(), 1);
+		EXPECT_EQ(GetLineData({-1, 0}).lineSegment->targetSegment,
+		          GetSegment(tile_layers[1]).targetSegment);
 	}
 
 	TEST_F(TransportLineTest, OnRemoveGroupUpdateIndex) {
@@ -1355,8 +1223,8 @@ namespace data::prototype
 		 * />
 		 * ^ 
 		 */
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({0, 1}, jactorio::data::TransportLineData::LineOrientation::up);
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({0, 1}, TransportLineData::LineOrientation::up);
 
 		TlRemoveEvents({0, 0});
 
@@ -1373,14 +1241,14 @@ namespace data::prototype
 		/*
 		 * > >  
 		 */
-		AddTransportLine({0, 0}, jactorio::data::TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, jactorio::data::TransportLineData::LineOrientation::right);
+		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
+		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
 
 		TlRemoveEvents({0, 0});
 
-		const auto& struct_layer = GetTransportLines({0, 0});
-		ASSERT_EQ(struct_layer.size(), 1);
-		EXPECT_EQ(static_cast<jactorio::game::TransportSegment*>(struct_layer[0].uniqueData)->length, 1);
+		const auto& tile_layers = GetTransportLines({0, 0});
+		ASSERT_EQ(tile_layers.size(), 1);
+		EXPECT_EQ(GetSegment(tile_layers[0]).length, 1);
 	}
 
 	// ======================================================================
@@ -1396,77 +1264,58 @@ namespace data::prototype
 
 		{
 			auto& layer = worldData_.GetTile(0, 0)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({0, 0}, jactorio::data::Orientation::right);
+			TlBuildEvents({0, 0}, Orientation::right);
 		}
 		{
 			auto& layer = worldData_.GetTile(1, 0)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({1, 0}, jactorio::data::Orientation::down);
+			TlBuildEvents({1, 0}, Orientation::down);
 		}
 		{
 			auto& layer = worldData_.GetTile(1, 1)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({1, 1}, jactorio::data::Orientation::left);
+			TlBuildEvents({1, 1}, Orientation::left);
 		}
 		{
 			auto& layer = worldData_.GetTile(0, 1)
-			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
-			TlBuildEvents({0, 1}, jactorio::data::Orientation::up);
+			TlBuildEvents({0, 1}, Orientation::up);
 		}
 
 
-		auto& logic_chunk     = worldData_.LogicGetAllChunks().at(worldData_.GetChunkC(0, 0));
-		auto& transport_lines =
-			logic_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line);
-
-		ASSERT_EQ(transport_lines.size(), 4);
+		auto& tile_layers = GetTransportLines({0, 0});
+		ASSERT_EQ(tile_layers.size(), 4);
 
 		// Right
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[0];
-			auto* line                                   = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
-
-			EXPECT_EQ(line->length, 2);
-			EXPECT_FLOAT_EQ(line_layer.positionX, 1.f);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 0.f);
+			auto& line_segment = GetSegment(tile_layers[0]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+			EXPECT_EQ(line_segment.length, 2);
 		}
 		// Down
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[1];
-			auto* line                                   = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
-
-			EXPECT_EQ(line->length, 2);
-			EXPECT_FLOAT_EQ(line_layer.positionX, 1.f);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 1.f);
+			auto& line_segment = GetSegment(tile_layers[1]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+			EXPECT_EQ(line_segment.length, 2);
 		}
 
 		// Left
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[2];
-			auto* line                                   = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
-
-			EXPECT_EQ(line->length, 2);
-			EXPECT_FLOAT_EQ(line_layer.positionX, 0.f);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 1.f);
+			auto& line_segment = GetSegment(tile_layers[2]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+			EXPECT_EQ(line_segment.length, 2);
 		}
 
 		// Up
 		{
-			jactorio::game::ChunkStructLayer& line_layer = transport_lines[3];
-			auto* line                                   = static_cast<jactorio::game::TransportSegment*>(line_layer.uniqueData);
-			EXPECT_EQ(line->terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
-
-			EXPECT_EQ(line->length, 2);
-			EXPECT_FLOAT_EQ(line_layer.positionX, 0.f);
-			EXPECT_FLOAT_EQ(line_layer.positionY, 0.f);
+			auto& line_segment = GetSegment(tile_layers[3]);
+			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+			EXPECT_EQ(line_segment.length, 2);
 		}
 	}
 }

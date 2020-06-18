@@ -14,7 +14,7 @@ namespace jactorio
 
 	namespace game
 	{
-		class DeferralTimer;
+		class WorldData;
 	}
 }
 
@@ -22,22 +22,22 @@ namespace jactorio
 namespace jactorio::data
 {
 	/// \brief Has actions which completes at a later game tick
-	class Deferred
+	class IDeferred
 	{
 	public:
-		Deferred()          = default;
-		virtual ~Deferred() = default;
+		IDeferred()          = default;
+		virtual ~IDeferred() = default;
 
-		Deferred(const Deferred& other)                = default;
-		Deferred(Deferred&& other) noexcept            = default;
-		Deferred& operator=(const Deferred& other)     = default;
-		Deferred& operator=(Deferred&& other) noexcept = default;
+		IDeferred(const IDeferred& other)                = default;
+		IDeferred(IDeferred&& other) noexcept            = default;
+		IDeferred& operator=(const IDeferred& other)     = default;
+		IDeferred& operator=(IDeferred&& other) noexcept = default;
 
 		///
 		/// \brief The callback requested at the specified game tick was reached
-		/// \param timer Deferred timer which dispatched this callback
+		/// \param world_data world data containing deferred timer which dispatched this callback
 		/// \param unique_data Unique data the callback was registered with
-		virtual void OnDeferTimeElapsed(game::DeferralTimer& timer, UniqueDataBase* unique_data) const = 0;
+		virtual void OnDeferTimeElapsed(game::WorldData& world_data, UniqueDataBase* unique_data) const = 0;
 	};
 }
 

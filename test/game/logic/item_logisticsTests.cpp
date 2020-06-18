@@ -3,29 +3,166 @@
 
 #include <gtest/gtest.h>
 
+#include "jactorioTests.h"
+
 #include "data/prototype/entity/container_entity.h"
+#include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/mining_drill.h"
 #include "data/prototype/entity/transport/transport_belt.h"
+#include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
 
-namespace game
+namespace jactorio::game
 {
-	TEST(ItemLogistics, InsertContainerEntity) {
-		jactorio::game::WorldData world_data{};
-		world_data.AddChunk(jactorio::game::Chunk(0, 0));
+	class ItemLogisticsTest : public testing::Test
+	{
+	protected:
+		WorldData worldData_{};
 
-		// Deleted by chunk tile layer
-		auto* container_data = new jactorio::data::ContainerEntityData(10);
+		void SetUp() override {
+			worldData_.EmplaceChunk(0, 0);
+		}
+	};
 
-		world_data.GetTile(3, 1)
-		          ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData = container_data;
+	TEST_F(ItemLogisticsTest, Uninitialize) {
+		data::ContainerEntity container_entity{};
+		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+
+		ItemDropOff drop_off{data::Orientation::up};
+		ASSERT_TRUE(drop_off.Initialize(worldData_, *container_layer.GetUniqueData(), 2, 4));
+		drop_off.Uninitialize();
+
+		EXPECT_FALSE(drop_off.IsInitialized());
+	}
+
+	TEST_F(ItemLogisticsTest, DropOffDropItem) {
+		data::ContainerEntity container_entity{};
+		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+
+		ItemDropOff drop_off{data::Orientation::up};
+		ASSERT_TRUE(drop_off.Initialize(worldData_, *container_layer.GetUniqueData(), 2, 4));
+
+		data::Item item{};
+		drop_off.DropOff({&item, 10});
+
+		EXPECT_EQ(
+			container_layer.GetUniqueData<data::ContainerEntityData>()->inventory[0].second,
+			10);
+	}
+
+	TEST_F(ItemLogisticsTest, InserterPickupItem) {
+		data::ContainerEntity container_entity{};
+		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+
+		InserterPickup pickup{data::Orientation::up};
+		ASSERT_TRUE(pickup.Initialize(worldData_, *container_layer.GetUniqueData(), 2, 4));
+
+		data::Item item{};
+		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
+		inv[0]    = {&item, 10};
+
+		data::ItemStack out_item_stack;
+		pickup.Pickup(1, data::ToRotationDegree(180.f), 2, out_item_stack);
+
+		EXPECT_EQ(inv[0].second, 8);
+	}
+
+	// ======================================================================
+
+	///
+	/// Inherits ItemDropOff to gain access to insertion methods
+	class ItemDropOffTest : public testing::Test, public ItemDropOff
+	{
+	public:
+		explicit ItemDropOffTest()
+			: ItemDropOff(data::Orientation::up) {
+		}
+
+		void TransportLineInsert(const data::Orientation orientation,
+		                         data::TransportLineData& line_data) const {
+			data::Item item{};
+			InsertTransportBelt({&item, 1},
+			                    line_data,
+			                    orientation);
+		}
+
+	protected:
+		WorldData worldData_{};
+		TransportSegment* segment_ = nullptr;
+
+		// Creates a transport line with orientation at (4, 4)
+		data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
+			worldData_.AddChunk(Chunk(0, 0));
+
+			const auto segment = std::make_shared<TransportSegment>(
+				orientation,
+				TransportSegment::TerminationType::straight,
+				2
+			);
+			segment_ = segment.get();
+
+			return data::TransportLineData{segment};
+		}
+	};
+
+	TEST_F(ItemDropOffTest, GetInsertFunc) {
+		worldData_.EmplaceChunk(0, 0);
+
+		// For passing into ItemDropOff::Initialize
+		data::HealthEntityData mock_unique_data{};
 
 
-		jactorio::data::Item item{};
+		// Empty tile cannot be inserted into
+		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_FALSE(this->IsInitialized());
+
+
+		// Transport belt can be inserted onto
+		data::TransportBelt belt{};
+		worldData_.GetTile(2, 4)
+		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &belt);
+
+		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());
+
+
+		// Mining drill cannot be inserted into 
+		data::MiningDrill drill{};
+		worldData_.GetTile(2, 4)
+		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &drill);
+
+		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());  // Still initialized from transport belt
+
+
+		// Container can be inserted into
+		data::ContainerEntity container{};
+		worldData_.GetTile(2, 4)
+		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &container);
+
+		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());
+	}
+
+	// ======================================================================
+
+	TEST_F(ItemDropOffTest, InsertContainerEntity) {
+		WorldData world_data{};
+		world_data.AddChunk(Chunk(0, 0));
+
+		auto& layer = world_data.GetTile(3, 1)
+		                        ->GetLayer(ChunkTile::ChunkLayer::entity);
+
+		layer.MakeUniqueData<data::ContainerEntityData>(10);
+
+		auto* container_data = layer.GetUniqueData<data::ContainerEntityData>();
+
+
+		data::Item item{};
 		// Orientation is orientation from origin object
-		jactorio::game::InsertContainerEntity({&item, 2},
-		                                      *container_data,
-		                                      jactorio::data::Orientation::down);
+		InsertContainerEntity({&item, 2},
+		                      *container_data,
+		                      data::Orientation::down);
 
 		// Inserted item
 		EXPECT_EQ(container_data->inventory[0].first, &item);
@@ -34,225 +171,323 @@ namespace game
 
 	// ======================================================================
 
-	class ItemLogisticsTransportLineTest : public testing::Test
-	{
-		jactorio::game::WorldData worldData_{};
 
-	protected:
-		jactorio::game::TransportSegment* segment_ = nullptr;
-
-		// Creates a transport line with orientation at (4, 4)
-		jactorio::data::TransportLineData CreateTransportLine(const jactorio::data::Orientation orientation) {
-			worldData_.AddChunk(jactorio::game::Chunk(0, 0));
-
-			segment_ = new jactorio::game::TransportSegment{
-				orientation,
-				jactorio::game::TransportSegment::TerminationType::straight,
-				2
-			};
-
-			worldData_.GetTile(4, 4)
-			          ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).uniqueData = segment_;
-
-			return jactorio::data::TransportLineData{*segment_};
-		}
-
-		static void TransportLineInsert(const jactorio::data::Orientation orientation,
-		                                jactorio::data::TransportLineData& line_data) {
-			jactorio::data::Item item{};
-			jactorio::game::InsertTransportBelt({&item, 1},
-			                                    line_data,
-			                                    orientation);
-		}
-	};
-
-	TEST_F(ItemLogisticsTransportLineTest, InsertOffset) {
-		auto line_proto             = CreateTransportLine(jactorio::data::Orientation::up);
+	TEST_F(ItemDropOffTest, InsertOffset) {
+		auto line_proto             = CreateTransportLine(data::Orientation::up);
 		line_proto.lineSegmentIndex = 1;
 		segment_->itemOffset        = 10;  // Arbitrary itemOffset
 
-		TransportLineInsert(jactorio::data::Orientation::up, line_proto);
+		TransportLineInsert(data::Orientation::up, line_proto);
 		ASSERT_EQ(segment_->right.lane.size(), 1);
 		EXPECT_FLOAT_EQ(segment_->right.lane[0].first.getAsDouble(), 1.5f);
 	}
 
-	TEST_F(ItemLogisticsTransportLineTest, InsertTransportLineUp) {
+	TEST_F(ItemDropOffTest, InsertTransportLineUp) {
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::up);
+			auto line = CreateTransportLine(data::Orientation::up);
 
-			TransportLineInsert(jactorio::data::Orientation::up, line);
+			TransportLineInsert(data::Orientation::up, line);
 			EXPECT_EQ(segment_->right.lane.size(), 1);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::up);
+			auto line = CreateTransportLine(data::Orientation::up);
 
-			TransportLineInsert(jactorio::data::Orientation::right, line);
+			TransportLineInsert(data::Orientation::right, line);
 			EXPECT_EQ(segment_->left.lane.size(), 1);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::up);
+			auto line = CreateTransportLine(data::Orientation::up);
 
-			TransportLineInsert(jactorio::data::Orientation::down, line);
+			TransportLineInsert(data::Orientation::down, line);
 			EXPECT_EQ(segment_->left.lane.size(), 0);
 			EXPECT_EQ(segment_->right.lane.size(), 0);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::up);
+			auto line = CreateTransportLine(data::Orientation::up);
 
-			TransportLineInsert(jactorio::data::Orientation::left, line);
+			TransportLineInsert(data::Orientation::left, line);
 			EXPECT_EQ(segment_->right.lane.size(), 1);
 		}
 	}
 
-	TEST_F(ItemLogisticsTransportLineTest, InsertTransportLineRight) {
+	TEST_F(ItemDropOffTest, InsertTransportLineRight) {
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::right);
+			auto line = CreateTransportLine(data::Orientation::right);
 
-			TransportLineInsert(jactorio::data::Orientation::up, line);
+			TransportLineInsert(data::Orientation::up, line);
 			EXPECT_EQ(segment_->right.lane.size(), 1);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::right);
+			auto line = CreateTransportLine(data::Orientation::right);
 
-			TransportLineInsert(jactorio::data::Orientation::right, line);
+			TransportLineInsert(data::Orientation::right, line);
 			EXPECT_EQ(segment_->right.lane.size(), 1);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::right);
+			auto line = CreateTransportLine(data::Orientation::right);
 
-			TransportLineInsert(jactorio::data::Orientation::down, line);
+			TransportLineInsert(data::Orientation::down, line);
 			EXPECT_EQ(segment_->left.lane.size(), 1);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::right);
+			auto line = CreateTransportLine(data::Orientation::right);
 
-			TransportLineInsert(jactorio::data::Orientation::left, line);
+			TransportLineInsert(data::Orientation::left, line);
 			EXPECT_EQ(segment_->left.lane.size(), 0);
 			EXPECT_EQ(segment_->right.lane.size(), 0);
 		}
 	}
 
-	TEST_F(ItemLogisticsTransportLineTest, InsertTransportLineDown) {
+	TEST_F(ItemDropOffTest, InsertTransportLineDown) {
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::down);
+			auto line = CreateTransportLine(data::Orientation::down);
 
-			TransportLineInsert(jactorio::data::Orientation::up, line);
+			TransportLineInsert(data::Orientation::up, line);
 			EXPECT_EQ(segment_->left.lane.size(), 0);
 			EXPECT_EQ(segment_->right.lane.size(), 0);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::down);
+			auto line = CreateTransportLine(data::Orientation::down);
 
-			TransportLineInsert(jactorio::data::Orientation::right, line);
+			TransportLineInsert(data::Orientation::right, line);
 			EXPECT_EQ(segment_->right.lane.size(), 1);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::down);
+			auto line = CreateTransportLine(data::Orientation::down);
 
-			TransportLineInsert(jactorio::data::Orientation::down, line);
+			TransportLineInsert(data::Orientation::down, line);
 			EXPECT_EQ(segment_->right.lane.size(), 1);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::down);
+			auto line = CreateTransportLine(data::Orientation::down);
 
-			TransportLineInsert(jactorio::data::Orientation::left, line);
+			TransportLineInsert(data::Orientation::left, line);
 			EXPECT_EQ(segment_->left.lane.size(), 1);
 		}
 	}
 
-	TEST_F(ItemLogisticsTransportLineTest, InsertTransportLineLeft) {
+	TEST_F(ItemDropOffTest, InsertTransportLineLeft) {
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::left);
+			auto line = CreateTransportLine(data::Orientation::left);
 
-			TransportLineInsert(jactorio::data::Orientation::up, line);
+			TransportLineInsert(data::Orientation::up, line);
 			EXPECT_EQ(segment_->left.lane.size(), 1);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::left);
+			auto line = CreateTransportLine(data::Orientation::left);
 
-			TransportLineInsert(jactorio::data::Orientation::right, line);
+			TransportLineInsert(data::Orientation::right, line);
 			EXPECT_EQ(segment_->left.lane.size(), 0);
 			EXPECT_EQ(segment_->right.lane.size(), 0);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::left);
+			auto line = CreateTransportLine(data::Orientation::left);
 
-			TransportLineInsert(jactorio::data::Orientation::down, line);
+			TransportLineInsert(data::Orientation::down, line);
 			EXPECT_EQ(segment_->right.lane.size(), 1);
 		}
 		{
-			auto line = CreateTransportLine(jactorio::data::Orientation::left);
+			auto line = CreateTransportLine(data::Orientation::left);
 
-			TransportLineInsert(jactorio::data::Orientation::left, line);
+			TransportLineInsert(data::Orientation::left, line);
 			EXPECT_EQ(segment_->right.lane.size(), 1);
 		}
 	}
 
 	// ======================================================================
 
-	TEST(ItemLogistics, CanAcceptItem) {
-		jactorio::game::WorldData world_data{};
-		world_data.AddChunk(jactorio::game::Chunk{0, 0});
-
-		// Empty tile cannot be inserted into
-		{
-			auto* ptr = jactorio::game::CanAcceptItem(world_data, 2, 4);
-			EXPECT_EQ(ptr, nullptr);
+	class InserterPickupTest : public testing::Test, public InserterPickup
+	{
+	public:
+		explicit InserterPickupTest()
+			: InserterPickup(data::Orientation::up) {
 		}
 
-		// Transport belt can be inserted onto
-		{
-			jactorio::data::TransportBelt belt{};
-			world_data.GetTile(2, 4)
-			          ->SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, &belt);
-
-			auto* ptr = jactorio::game::CanAcceptItem(world_data, 2, 4);
-			EXPECT_EQ(ptr, &jactorio::game::InsertTransportBelt);
+		void SetUp() override {
+			worldData_.EmplaceChunk(0, 0);
 		}
 
-		// Mining drill cannot be inserted into 
-		{
-			jactorio::data::MiningDrill drill{};
-			world_data.GetTile(2, 4)
-			          ->SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, &drill);
+	protected:
+		WorldData worldData_{};
 
-			auto* ptr = jactorio::game::CanAcceptItem(world_data, 2, 4);
-			EXPECT_EQ(ptr, nullptr);
+		data::Inserter inserterProto_{};
+		TransportSegment* segment_ = nullptr;
+
+
+		// Creates a transport line 1 item on each side
+		data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
+			data::Item item{};  // Item is not used for tests
+
+			const auto segment = std::make_shared<TransportSegment>(
+				orientation,
+				TransportSegment::TerminationType::straight,
+				2
+			);
+
+			segment_ = segment.get();
+			segment_->InsertItem(false, 0.5, &item);
+			segment_->InsertItem(true, 0.5, &item);
+
+			return data::TransportLineData{segment};
 		}
 
-		// Container can be inserted into
-		{
-			jactorio::data::ContainerEntity container{};
-			world_data.GetTile(2, 4)
-			          ->SetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity, &container);
 
-			auto* ptr = jactorio::game::CanAcceptItem(world_data, 2, 4);
-			EXPECT_EQ(ptr, &jactorio::game::InsertContainerEntity);
+		void PickupLine(const data::Orientation orientation,
+		                data::TransportLineData& line_data) const {
+			constexpr int pickup_amount = 1;
+
+			data::ItemStack out_item_stack;
+			const bool result = PickupTransportBelt(1, data::ToRotationDegree(kMaxInserterDegree),
+			                                        pickup_amount,
+			                                        line_data,
+			                                        orientation,
+			                                        out_item_stack);
+
+			EXPECT_TRUE(result);
+
+			EXPECT_NE(out_item_stack.first, nullptr);
+			EXPECT_EQ(out_item_stack.second, pickup_amount);
 		}
+	};
 
+	TEST_F(InserterPickupTest, PickupContainerEntity) {
+		data::ContainerEntity container_entity{};
+		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+		auto& container_data  = *container_layer.GetUniqueData();
+
+		data::Item item{};
+		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
+		inv[0]    = {&item, 10};
+
+		data::ItemStack out_item_stack;
+
+		PickupContainerEntity(1, data::ToRotationDegree(179),
+		                      1, container_data,
+		                      data::Orientation::up,
+		                      out_item_stack);
+
+		EXPECT_EQ(inv[0].second, 10);  // No items picked up, not 180 degrees
+
+		PickupContainerEntity(1, data::ToRotationDegree(180),
+		                      2, container_data,
+		                      data::Orientation::up,
+		                      out_item_stack);
+		EXPECT_EQ(inv[0].second, 8);  // 2 items picked up
+
+		EXPECT_NE(out_item_stack.first, nullptr);
+		EXPECT_EQ(out_item_stack.second, 2);
 	}
 
-	TEST(ItemLogistics, InsertItemDestination) {
-		// Item_insert_destination with custom insertion function
-		// .insert() should call insertion function, throwing the exception
-		const jactorio::game::ItemInsertDestination::InsertFunc func = [
-			](auto& item, auto& unique_data, auto orientation) -> bool {
-			EXPECT_EQ(orientation, jactorio::data::Orientation::up);
+	TEST_F(InserterPickupTest, PickupContainerTransportLineUp) {
+		// Line is above inserter
+		{
+			auto line = CreateTransportLine(data::Orientation::up);
 
-			throw std::runtime_error("INSERT_FUNC");
-		};
+			segment_->right.index = 10;
 
-		jactorio::data::HealthEntityData unique_data{};
-		const jactorio::game::ItemInsertDestination iid{unique_data, func, jactorio::data::Orientation::up};
-
-		jactorio::data::Item item{};
-		try {
-			iid.Insert({&item, 4});
-			FAIL();  // Did not call insert_func
+			// Should set index to 0 since a item was removed
+			PickupLine(data::Orientation::up, line);
+			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(segment_->right.index, 0);
 		}
-		catch (std::runtime_error& e) {
-			const int result = strcmp(e.what(), "INSERT_FUNC");
-			EXPECT_EQ(result, 0);  // Ensure exception is one I threw	
+		{
+			auto line = CreateTransportLine(data::Orientation::up);
+
+			PickupLine(data::Orientation::right, line);
+			EXPECT_EQ(segment_->right.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::up);
+
+			PickupLine(data::Orientation::down, line);
+			EXPECT_EQ(segment_->left.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::up);
+
+			PickupLine(data::Orientation::left, line);
+			EXPECT_EQ(segment_->left.lane.size(), 0);
+		}
+	}
+
+	TEST_F(InserterPickupTest, PickupContainerTransportLineRight) {
+		{
+			auto line = CreateTransportLine(data::Orientation::right);
+
+			PickupLine(data::Orientation::up, line);
+			EXPECT_EQ(segment_->left.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::right);
+
+			PickupLine(data::Orientation::right, line);
+			EXPECT_EQ(segment_->right.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::right);
+
+			PickupLine(data::Orientation::down, line);
+			EXPECT_EQ(segment_->right.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::right);
+
+			PickupLine(data::Orientation::left, line);
+			EXPECT_EQ(segment_->left.lane.size(), 0);
+		}
+	}
+
+	TEST_F(InserterPickupTest, PickupContainerTransportLineDown) {
+		{
+			auto line = CreateTransportLine(data::Orientation::down);
+
+			PickupLine(data::Orientation::up, line);
+			EXPECT_EQ(segment_->left.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::down);
+
+			PickupLine(data::Orientation::right, line);
+			EXPECT_EQ(segment_->left.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::down);
+
+			PickupLine(data::Orientation::down, line);
+			EXPECT_EQ(segment_->right.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::down);
+
+			PickupLine(data::Orientation::left, line);
+			EXPECT_EQ(segment_->right.lane.size(), 0);
+		}
+	}
+
+	TEST_F(InserterPickupTest, PickupContainerTransportLineLeft) {
+		{
+			auto line = CreateTransportLine(data::Orientation::left);
+
+			PickupLine(data::Orientation::up, line);
+			EXPECT_EQ(segment_->right.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::left);
+
+			PickupLine(data::Orientation::right, line);
+			EXPECT_EQ(segment_->left.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::left);
+
+			PickupLine(data::Orientation::down, line);
+			EXPECT_EQ(segment_->left.lane.size(), 0);
+		}
+		{
+			auto line = CreateTransportLine(data::Orientation::left);
+
+			PickupLine(data::Orientation::left, line);
+			EXPECT_EQ(segment_->right.lane.size(), 0);
 		}
 	}
 }

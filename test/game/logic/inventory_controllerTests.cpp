@@ -594,6 +594,21 @@ namespace game
 		EXPECT_EQ(jactorio::game::GetInvItemCount(inv, 30, item.get()), 101);
 	}
 
+	TEST(InventoryController, GetFirstItem) {
+		const auto item  = std::make_unique<jactorio::data::Item>();
+		const auto item2 = std::make_unique<jactorio::data::Item>();
+
+		constexpr auto inv_size = 10;
+
+		jactorio::data::ItemStack inv[inv_size];
+		EXPECT_EQ(jactorio::game::GetFirstItem(inv, inv_size), nullptr);  // No items
+
+		inv[3] = {item2.get(), 32};
+		inv[4] = {item.get(), 2};
+
+		EXPECT_EQ(jactorio::game::GetFirstItem(inv, inv_size), item2.get());
+	}
+
 	TEST(InventoryController, RemoveInvItemS) {
 		using namespace jactorio;
 		data::ItemStack inv[30];
@@ -603,7 +618,7 @@ namespace game
 		inv[23]         = {item.get(), 5};
 
 		EXPECT_EQ(
-			jactorio::game::RemoveInvItemS(inv, 30, item.get(), 10),
+			jactorio::game::RemoveInvItem(inv, 30, item.get(), 10),
 			true);
 
 		// Inventory should be empty
@@ -621,7 +636,7 @@ namespace game
 
 		// Attempting to remove 10 when only 5 exists
 		EXPECT_EQ(
-			jactorio::game::RemoveInvItemS(inv, 30, item.get(), 10),
+			jactorio::game::RemoveInvItem(inv, 30, item.get(), 10),
 			false);
 
 		// Inventory unchanged

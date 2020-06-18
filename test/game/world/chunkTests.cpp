@@ -6,7 +6,6 @@
 #include "data/prototype/sprite.h"
 #include "data/prototype/tile/tile.h"
 #include "game/world/chunk.h"
-#include "game/world/logic_chunk.h"
 #include "game/world/world_data.h"
 
 #include <memory>
@@ -74,11 +73,10 @@ namespace game
 		EXPECT_EQ(&chunk_a.GetObject(jactorio::game::Chunk::ObjectLayer::debug_overlay), &chunk_a.objects[0]);
 	}
 
-	TEST(LogicChunk, GetStructLayer) {
-		jactorio::game::Chunk chunk_a{0, 0};
-		jactorio::game::LogicChunk l_chunk(&chunk_a);
+	TEST(Chunk, GetLogicGroup) {
+		jactorio::game::Chunk chunk{0, 0};
 
 		// Should return the layer specified by the index of the enum objectLayer
-		EXPECT_EQ(&l_chunk.GetStruct(jactorio::game::LogicChunk::StructLayer::transport_line), &l_chunk.structs[0]);
+		EXPECT_EQ(&chunk.GetLogicGroup(jactorio::game::Chunk::LogicGroup::transport_line), &chunk.logicGroups[0]);
 	}
 }

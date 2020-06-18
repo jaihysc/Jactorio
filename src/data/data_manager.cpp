@@ -135,14 +135,15 @@ void jactorio::data::LoadData(
 			cfg_file_path << current_directory << "/local/" <<
 				kLanguageIdentifier[static_cast<int>(Language::en)] << ".cfg";
 
-			auto local_contents = core::ReadFile(cfg_file_path.str());
-			if (local_contents.empty()) {
+			if (!std::filesystem::exists(cfg_file_path.str())) {
 				LOG_MESSAGE_f(warning,
 				              "Directory %s missing local at %s",
 				              current_directory.c_str(),
 				              cfg_file_path.str().c_str())
 				continue;
 			}
+
+			auto local_contents = core::ReadFile(cfg_file_path.str());
 			LocalParseNoThrow(local_contents, directory_name);
 		}
 
@@ -150,18 +151,22 @@ void jactorio::data::LoadData(
 	}
 
 	LOG_MESSAGE(info, "Validating loaded prototypes")
-	for (auto& pairs : data_raw) {
-		for (auto& pair : pairs) {
+	for (auto& prototype_categories : data_raw) {
+		for (auto& pair : prototype_categories) {
+			auto& prototype = *pair.second;
+			LOG_MESSAGE_f(debug, "Validating prototype %d %s", prototype.internalId, prototype.name.c_str());
+
+			prototype.PostLoad();
 			try {
-				auto& prototype = pair.second;
-				prototype->PostLoad();
-				prototype->PostLoadValidate();
+				prototype.PostLoadValidate();
 			}
 			catch (DataException& e) {
 				LOG_MESSAGE_f(error, "Prototype validation failed: '%s'", e.what());
 				throw;
 			}
+			prototype.ValidatedPostLoad();
 
+			LOG_MESSAGE_f(debug, "Validating prototype %d %s Success\n", prototype.internalId, prototype.name.c_str());
 		}
 	}
 }

@@ -6,44 +6,51 @@
 #pragma once
 
 #include <functional>
+#include <memory>
+#include <utility>
 
 #include "core/data_type.h"
 #include "data/prototype/entity/health_entity.h"
 #include "game/logic/transport_line_controller.h"
-#include "game/logic/transport_line_structure.h"
+#include "game/logic/transport_segment.h"
 
 namespace jactorio::data
 {
+	///
+	/// \brief TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
 	struct TransportLineData : HealthEntityData
 	{
-		explicit TransportLineData(game::TransportSegment& line_segment)
-			: lineSegment(line_segment) {
+		explicit TransportLineData(std::shared_ptr<game::TransportSegment> line_segment)
+			: lineSegment(std::move(line_segment)) {
 		}
+
+		TransportLineData(const TransportLineData& other)     = delete;
+		TransportLineData(TransportLineData&& other) noexcept = delete;
 
 		///
 		/// <Entry direction>_<Exit direction>
 		enum class LineOrientation
 		{
 			// Following the layout of the sprite
-			up_left = 9,
-			up = 17,
-			up_right = 11,
+			up_left = 10,
+			up = 2,
+			up_right = 8,
 
-			right_up = 13,
-			right = 19,
-			right_down = 8,
+			right_up = 6,
+			right = 0,
+			right_down = 11,
 
-			down_right = 14,
-			down = 16,
-			down_left = 12,
+			down_right = 5,
+			down = 3,
+			down_left = 7,
 
-			left_down = 10,
-			left = 18,
-			left_up = 15,
+			left_down = 9,
+			left = 1,
+			left_up = 4,
 		};
 
 		/// The logic chunk line_segment associated
-		std::reference_wrapper<game::TransportSegment> lineSegment;
+		std::shared_ptr<game::TransportSegment> lineSegment;
 
 		/// The distance to the head of the transport line
 		/// \remark For rendering purposes, the length should never exceed ~2 chunks at most
@@ -52,7 +59,7 @@ namespace jactorio::data
 		LineOrientation orientation = LineOrientation::up;
 
 		//
-		
+
 		///
 		/// \brief Updates orientation and member set for rendering 
 		void SetOrientation(LineOrientation orientation) {
@@ -63,6 +70,9 @@ namespace jactorio::data
 		///
 		/// \brief Converts lineOrientation to placementOrientation
 		static Orientation ToOrientation(LineOrientation line_orientation);
+
+		void OnDrawUniqueData(renderer::RendererLayer& layer,
+		                      float x_offset, float y_offset) const override;
 	};
 
 
@@ -100,16 +110,18 @@ namespace jactorio::data
 		                                                             TransportLineData* left);
 
 		///
-		/// \brief Attempts to find transport line at world_x, world_y
-		/// \param callback Called for each Chunk_struct_layer found matching Transport_line_data at world_x, world_y
-		/// \return Logic_chunk if it exists, otherwise nullptr
-		static void GetLineStructLayer(game::WorldData& world_data,
-		                               game::WorldData::WorldCoord world_x,
-		                               game::WorldData::WorldCoord world_y,
-		                               const std::function<void(game::ChunkStructLayer&, game::LogicChunk&)>& callback);
+		/// \brief Gets transport segment at world coords
+		/// \return nullptr if no segment exists
+		static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
+		                                                                    game::WorldData::WorldCoord world_x,
+		                                                                    game::WorldData::WorldCoord world_y);
+
 		// ======================================================================
 		// Game events
 	private:
+		static void RemoveFromLogic(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
+		                            game::TransportSegment& line_segment);
+
 		/// Up, right, down, left
 		using LineData4Way = TransportLineData*[4];
 
@@ -128,16 +140,12 @@ namespace jactorio::data
 			void(game::WorldData& world_data,
 			     int world_x,
 			     int world_y,
-			     float world_offset_x,
-			     float world_offset_y,
 			     game::TransportSegment::TerminationType termination_type)>;
 
 		using UpdateSideOnlyFunc = std::function<
 			void(game::WorldData& world_data,
 			     int world_x,
 			     int world_y,
-			     float world_offset_x,
-			     float world_offset_y,
 			     Orientation direction,
 			     game::TransportSegment::TerminationType termination_type)>;
 
@@ -157,7 +165,7 @@ namespace jactorio::data
 		static void UpdateSegmentHead(game::WorldData& world_data,
 		                              const game::WorldData::WorldPair& world_coords,
 		                              LineData4Way& line_data,
-		                              game::TransportSegment& line_segment);
+		                              const std::shared_ptr<game::TransportSegment>& line_segment);
 
 		/*
 		 * Transport line grouping rules:
@@ -209,14 +217,14 @@ namespace jactorio::data
 		              game::ChunkTileLayer& tile_layer) const override;
 
 
-		std::pair<uint16_t, uint16_t> MapPlacementOrientation(Orientation orientation,
-		                                                      game::WorldData& world_data,
-		                                                      const game::WorldData::WorldPair& world_coords)
+		Sprite::SetT MapPlacementOrientation(Orientation orientation,
+		                                     game::WorldData& world_data,
+		                                     const game::WorldData::WorldPair& world_coords)
 		const override;
 
 
-		std::pair<Sprite*, RenderableData::frame_t> OnRGetSprite(UniqueDataBase* unique_data,
-		                                                         const GameTickT game_tick) const override {
+		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
+		                                                const GameTickT game_tick) const override {
 			return {this->sprite, game_tick % sprite->frames};
 		};
 
@@ -233,8 +241,10 @@ namespace jactorio::data
 			J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");
 		}
 
-		void OnRShowGui(game::PlayerData& /*player_data*/, game::ChunkTileLayer* /*tile_layer*/) const override {
+		void ValidatedPostLoad() override {
+			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 		}
+
 	};
 }
 

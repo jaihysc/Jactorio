@@ -26,6 +26,7 @@ namespace jactorio::data
 
 		transport_belt,
 		mining_drill,
+		inserter,
 
 		recipe,
 		recipe_category,

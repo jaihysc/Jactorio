@@ -8,6 +8,7 @@ log_msg("[   Jactorio   ]")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_CURRENT_BINARY_DIR})
 
 jactorio_show_properties()
 jactorio_copy_data_files()
@@ -21,6 +22,7 @@ set(JACTORIO_INCLUDE_FILES
 # ======================================== END Header files .h
 # ======================================== Source files .cpp
 set(JACTORIO_SRC_FILES
+	${JACTORIO_DIR}/core/crash_handler.cpp
 	${JACTORIO_DIR}/core/logger.cpp
 	${JACTORIO_DIR}/core/filesystem.cpp
 	${JACTORIO_DIR}/core/execution_timer.cpp
@@ -43,15 +45,15 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
-	${JACTORIO_DIR}/game/world/deferral_timer.cpp
 	${JACTORIO_DIR}/game/world/world_data.cpp
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 
 	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
+	${JACTORIO_DIR}/game/logic/inserter_controller.cpp
 	${JACTORIO_DIR}/game/logic/item_logistics.cpp
 	${JACTORIO_DIR}/game/logic/placement_controller.cpp
 	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
-	${JACTORIO_DIR}/game/logic/transport_line_structure.cpp
+	${JACTORIO_DIR}/game/logic/transport_segment.cpp
 
 
 	${JACTORIO_DIR}/renderer/render_main.cpp
@@ -70,6 +72,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
 
+	${JACTORIO_DIR}/renderer/rendering/data_renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/world_renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
@@ -77,7 +80,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
 
 	${JACTORIO_DIR}/renderer/window/window_manager.cpp
-)
+	${JACTORIO_DIR}/data/prototype/entity/inserter.cpp)
 # ======================================== END Source files .cpp
 
 
@@ -89,27 +92,35 @@ set(JACTORIO_LIB_BUILD_FILES
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
 	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
 )
+
+IF (CMAKE_SYSTEM_NAME MATCHES Windows)
+	set(JACTORIO_LIB_BUILD_FILES
+		${JACTORIO_LIB_BUILD_FILES}
+		${PROJECT_SOURCE_DIR}/lib/StackWalker/Main/StackWalker/StackWalker.cpp
+	)
+ENDIF()
 # ======================================== END Lib files .cpp
 
 
 
 
 
-
-# library linked to for tests
-add_library(jactorioBase 
-	${JACTORIO_SRC_FILES}
-	${JACTORIO_LIB_BUILD_FILES}
-)
-target_include_directories(jactorioBase PUBLIC ${JACTORIO_INCLUDE_FILES})
-target_link_libraries     (jactorioBase jactorioLib)
+if(JACTORIO_BUILD_TESTS)
+    # library linked to for tests
+    add_library(jactorioBase
+        ${JACTORIO_SRC_FILES}
+        ${JACTORIO_LIB_BUILD_FILES}
+    )
+    target_include_directories(jactorioBase PUBLIC ${JACTORIO_INCLUDE_FILES})
+    target_link_libraries     (jactorioBase jactorioLib)
+endif()
 
 
 
 # Jactorio Executable
-IF(JACTORIO_INTERPROCEDURAL_OPTIMIZATION)
-	# Must compile sources separately for IPO
-	add_executable(jactorio 
+IF(JACTORIO_INTERPROCEDURAL_OPTIMIZATION OR NOT JACTORIO_BUILD_TESTS)
+	# Must compile sources separately for IPO or when tests are not built
+	add_executable(jactorio
 		${JACTORIO_DIR}/jactorio.cpp
 		${JACTORIO_SRC_FILES}
 		${JACTORIO_LIB_BUILD_FILES}
@@ -119,7 +130,7 @@ IF(JACTORIO_INTERPROCEDURAL_OPTIMIZATION)
 	target_link_libraries(jactorio jactorioLib)
 	target_include_directories(jactorio PUBLIC ${JACTORIO_INCLUDE_FILES})
 ELSE()
-	add_executable(jactorio 
+	add_executable(jactorio
 		${JACTORIO_DIR}/jactorio.cpp
 	)
 	target_link_libraries(jactorio jactorioBase)

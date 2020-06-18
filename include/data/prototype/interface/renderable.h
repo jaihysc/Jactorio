@@ -7,6 +7,7 @@
 
 #include "core/data_type.h"
 #include "data/prototype/prototype_base.h"
+#include "data/prototype/sprite.h"
 
 namespace jactorio
 {
@@ -14,11 +15,13 @@ namespace jactorio
 	{
 		class PlayerData;
 		class ChunkTileLayer;
+
+		class Chunk;
 	}
 
-	namespace data
+	namespace renderer
 	{
-		class Sprite;
+		class RendererLayer;
 	}
 }
 
@@ -28,40 +31,45 @@ namespace jactorio::data
 	/// \brief Inherit to allow drawing portions of a sprite
 	struct RenderableData : UniqueDataBase
 	{
-		using set_t = uint16_t;
-		using frame_t = uint16_t;
-
 		RenderableData() = default;
 
-		RenderableData(const set_t set)
+		RenderableData(const Sprite::SetT set)
 			: set(set) {
 		}
 
-		set_t set = 0;
+		Sprite::SetT set = 0;
+
+		///
+		/// \param layer
+		/// \param x_offset Pixels to top left of current tile
+		/// \param y_offset Pixels to top left of current tile
+		virtual void OnDrawUniqueData(renderer::RendererLayer& layer,
+		                              float x_offset, float y_offset) const {
+		}
 	};
 
 	///
 	/// \brief Enables usage by renderer
-	class Renderable
+	class IRenderable
 	{
 	protected:
-		Renderable()          = default;
-		virtual ~Renderable() = default;
+		IRenderable()          = default;
+		virtual ~IRenderable() = default;
 
-		Renderable(const Renderable& other)                = default;
-		Renderable(Renderable&& other) noexcept            = default;
-		Renderable& operator=(const Renderable& other)     = default;
-		Renderable& operator=(Renderable&& other) noexcept = default;
+		IRenderable(const IRenderable& other)                = default;
+		IRenderable(IRenderable&& other) noexcept            = default;
+		IRenderable& operator=(const IRenderable& other)     = default;
+		IRenderable& operator=(IRenderable&& other) noexcept = default;
 
 	public:
 		///
 		/// \brief Called by the renderer when it wants the sprite and frame within the sprite
-		J_NODISCARD virtual std::pair<Sprite*, RenderableData::frame_t> OnRGetSprite(UniqueDataBase* unique_data,
-		                                                                             GameTickT game_tick) const = 0;
+		virtual std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
+		                                                        GameTickT game_tick) const = 0;
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data
-		virtual void OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const = 0;
+		virtual bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const = 0;
 	};
 }
 
