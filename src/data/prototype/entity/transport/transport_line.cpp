@@ -722,6 +722,8 @@ void data::TransportLine::OnBuild(game::WorldData& world_data,
 
 			auto* line_segment = GetTransportSegment(world_data, world_x, world_y);
 			if (line_segment) {
+				line_segment->get()->itemOffset++;
+				
 				line_segment->get()->length++;
 				line_segment->get()->terminationType = termination_type;
 
@@ -801,8 +803,8 @@ void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
 	// ======================================================================
 
 	// Reset segment lane item index to 0, since the head items MAY now have somewhere to go
-	line_data->lineSegment.get()->left.index = 0;
-	line_data->lineSegment.get()->right.index = 0;
+	line_data->lineSegment->left.index = 0;
+	line_data->lineSegment->right.index = 0;
 
 	const UpdateFunc func =
 		[](game::WorldData& world_data,
@@ -874,6 +876,7 @@ void data::TransportLine::DisconnectTargetSegment(game::WorldData& world_data,
 		case game::TransportSegment::TerminationType::bend_right:
 		case game::TransportSegment::TerminationType::right_only:
 		case game::TransportSegment::TerminationType::left_only:
+			line_segment->itemOffset--;
 			line_segment->length--;
 			line_segment->terminationType = game::TransportSegment::TerminationType::straight;
 
