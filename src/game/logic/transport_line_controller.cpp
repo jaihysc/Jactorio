@@ -113,12 +113,12 @@ J_NODISCARD bool MoveNextItem(const game::TransportLineOffset& tiles_moved,
                               uint16_t& index, const bool has_target_segment) {
 	for (size_t i = static_cast<size_t>(index) + 1; i < line_side.size(); ++i) {
 		auto& i_item_offset = line_side[i].first;
-		if (i_item_offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kItemSpacing)) {
-
+		if (i_item_offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(game::kItemSpacing)) {
 			// Found a valid item to decrement
-			index = i;
+			if (!has_target_segment)
+				index = i;  // Always check every item from index 0 if there is a target segment as the previous item may have moved
 			i_item_offset -= tiles_moved;
+
 			return true;
 		}
 	}

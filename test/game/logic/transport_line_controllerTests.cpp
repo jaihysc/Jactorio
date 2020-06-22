@@ -25,7 +25,7 @@ namespace jactorio::game
 		WorldData worldData_{};
 		Chunk* chunk_ = nullptr;
 
-		const std::unique_ptr<data::Item> itemProto_                   = std::make_unique<data::Item>();
+		data::Item itemProto_{};
 		const std::unique_ptr<data::TransportBelt> transportBeltProto_ =
 			std::make_unique<data::TransportBelt>();
 
@@ -80,9 +80,9 @@ namespace jactorio::game
 		RegisterSegment({0, 5}, left_segment);
 
 		// Logic
-		left_segment->AppendItem(true, 0.f, itemProto_.get());
-		left_segment->AppendItem(true, kItemSpacing, itemProto_.get());
-		left_segment->AppendItem(true, kItemSpacing, itemProto_.get());
+		left_segment->AppendItem(true, 0.f, &itemProto_);
+		left_segment->AppendItem(true, kItemSpacing, &itemProto_);
+		left_segment->AppendItem(true, kItemSpacing, &itemProto_);
 
 		// 1 update
 		// first item moved to up segment
@@ -152,9 +152,9 @@ namespace jactorio::game
 		RegisterSegment({3, 0}, right_segment);
 
 		// Offset is distance from beginning, or previous item
-		up_segment->AppendItem(true, 0.f, itemProto_.get());
-		up_segment->AppendItem(true, 1, itemProto_.get());
-		up_segment->AppendItem(true, 1, itemProto_.get());
+		up_segment->AppendItem(true, 0.f, &itemProto_);
+		up_segment->AppendItem(true, 1, &itemProto_);
+		up_segment->AppendItem(true, 1, &itemProto_);
 		static_assert(kItemSpacing < 1);  // Tested positions would otherwise be invalid
 
 		// Logic
@@ -224,8 +224,8 @@ namespace jactorio::game
 		RegisterSegment({3, 0}, right_segment);
 
 		// Offset is distance from beginning, or previous item
-		up_segment->AppendItem(true, 0.f, itemProto_.get());
-		up_segment->AppendItem(true, kItemSpacing, itemProto_.get());
+		up_segment->AppendItem(true, 0.f, &itemProto_);
+		up_segment->AppendItem(true, kItemSpacing, &itemProto_);
 
 		// First item
 		TransportLineLogicUpdate(worldData_);
@@ -265,9 +265,9 @@ namespace jactorio::game
 
 		RegisterSegment({0, 0}, segment);
 
-		segment->AppendItem(true, 0.5f, itemProto_.get());
-		segment->AppendItem(true, kItemSpacing, itemProto_.get());
-		segment->AppendItem(true, kItemSpacing + 1.f, itemProto_.get());
+		segment->AppendItem(true, 0.5f, &itemProto_);
+		segment->AppendItem(true, kItemSpacing, &itemProto_);
+		segment->AppendItem(true, kItemSpacing + 1.f, &itemProto_);
 
 		// Will reach distance 0 after 0.5 / 0.01 updates
 		for (int i = 0; i < 50; ++i) {
@@ -337,11 +337,11 @@ namespace jactorio::game
 
 		// RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / kItemSpacing{0.25} = 13.2
 		for (int i = 0; i < 14; ++i) {
-			right_segment->AppendItem(false, 0.f, itemProto_.get());
+			right_segment->AppendItem(false, 0.f, &itemProto_);
 		}
 
 		// Items on up line should stop
-		up_segment->AppendItem(false, 0.f, itemProto_.get());
+		up_segment->AppendItem(false, 0.f, &itemProto_);
 
 		// WIll not move after an arbitrary number of updates
 		for (int i = 0; i < 34; ++i) {
@@ -366,11 +366,11 @@ namespace jactorio::game
 		RegisterSegment({2, 1}, left_segment);
 
 		// One item stopped, one still moving
-		left_segment->AppendItem(true, 0, itemProto_.get());
+		left_segment->AppendItem(true, 0, &itemProto_);
 		TransportLineLogicUpdate(worldData_);
 		EXPECT_EQ(left_segment.get()->left.index, 0);
 
-		left_segment->AppendItem(true, 2, itemProto_.get());
+		left_segment->AppendItem(true, 2, &itemProto_);
 		TransportLineLogicUpdate(worldData_);
 		EXPECT_EQ(left_segment.get()->left.index, 1);
 
@@ -393,6 +393,47 @@ namespace jactorio::game
 		EXPECT_EQ(left_segment.get()->left.index, 0);
 	}
 
+	TEST_F(TransportLineControllerTest, LineLogicTargetTemporarilyBlocked) {
+		// If the target segment is temporarily blocked, it will move into it at the next opportunity
+
+		//     1      2
+		// < ----- < -----
+		
+		transportBeltProto_->speed = 0.04f;
+
+		const auto left_segment = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::straight,
+			1);
+		RegisterSegment({1, 1}, left_segment);
+
+
+		auto left_segment_2 = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::straight,
+			1);
+		left_segment_2->targetSegment = left_segment.get();
+		RegisterSegment({2, 1}, left_segment_2);
+
+
+		// ======================================================================
+
+
+		left_segment->AppendItem(true, 1 - kItemSpacing + 0.01, &itemProto_);
+
+		left_segment_2->AppendItem(true, 0, &itemProto_);
+		left_segment_2->AppendItem(true, 0.5, &itemProto_);
+		left_segment_2->AppendItem(true, 2, &itemProto_);
+
+		TransportLineLogicUpdate(worldData_);
+
+		ASSERT_EQ(left_segment->left.lane.size(), 1);
+
+		TransportLineLogicUpdate(worldData_);
+
+		ASSERT_EQ(left_segment->left.lane.size(), 2);
+	}
+
 
 	// ======================================================================
 	// Line properties
@@ -407,8 +448,8 @@ namespace jactorio::game
 
 		RegisterSegment({0, 0}, right_segment);
 
-		right_segment->AppendItem(true, 0.f, itemProto_.get());
-		right_segment->AppendItem(true, 0.f, itemProto_.get());  // Insert behind previous item
+		right_segment->AppendItem(true, 0.f, &itemProto_);
+		right_segment->AppendItem(true, 0.f, &itemProto_);  // Insert behind previous item
 
 		// Check that second item has a minimum distance of kItemSpacing
 		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.f);
@@ -442,7 +483,7 @@ namespace jactorio::game
 		RegisterSegment({0, 0}, up_segment_1);
 		RegisterSegment({0, 1}, up_segment_2);
 
-		up_segment_2->AppendItem(true, 0.05, itemProto_.get());
+		up_segment_2->AppendItem(true, 0.05, &itemProto_);
 		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
 
 		TransportLineLogicUpdate(worldData_);
@@ -466,14 +507,14 @@ namespace jactorio::game
 
 		// ======================================================================
 		// Fill the first segment up to 4 items
-		up_segment_1->AppendItem(true, 0, itemProto_.get());
-		up_segment_1->AppendItem(true, 0, itemProto_.get());
-		up_segment_1->AppendItem(true, 0, itemProto_.get());
+		up_segment_1->AppendItem(true, 0, &itemProto_);
+		up_segment_1->AppendItem(true, 0, &itemProto_);
+		up_segment_1->AppendItem(true, 0, &itemProto_);
 		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
 
 
 		// Will not enter since segment 1 is full
-		up_segment_2->AppendItem(true, 0.05, itemProto_.get());
+		up_segment_2->AppendItem(true, 0.05, &itemProto_);
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);
@@ -486,7 +527,7 @@ namespace jactorio::game
 	// Item transition
 	
 
-	TEST_F(TransportLineControllerTest, LineLogicTransitionStraight) {
+	TEST_F(TransportLineControllerTest, TransitionStraight) {
 		// Transferring from a straight segment traveling left to another one traveling left
 		/*
 		 * < ------ LEFT (1) ------		< ------ LEFT (2) -------
@@ -509,8 +550,8 @@ namespace jactorio::game
 		RegisterSegment({3, 0}, segment_2);
 
 		// Insert item on left + right side
-		segment_2->AppendItem(true, 0.02f, itemProto_.get());
-		segment_2->AppendItem(false, 0.02f, itemProto_.get());
+		segment_2->AppendItem(true, 0.02f, &itemProto_);
+		segment_2->AppendItem(false, 0.02f, &itemProto_);
 
 		// Travel to the next belt in 0.02 / 0.01 + 1 updates
 		for (int i = 0; i < 3; ++i) {
@@ -524,7 +565,7 @@ namespace jactorio::game
 		EXPECT_FLOAT_EQ(segment_1->right.lane[0].first.getAsDouble(), 3.99);
 	}
 
-	TEST_F(TransportLineControllerTest, LineLogicTransitionSideLeft) {
+	TEST_F(TransportLineControllerTest, TransitionSideLeft) {
 		// Belt feeding into only one side of another belt
 		/*
 		 *                           Right     Left
@@ -561,8 +602,8 @@ namespace jactorio::game
 
 		// Insert items
 		for (int i = 0; i < 3; ++i) {
-			right_segment->AppendItem(true, 0.f, itemProto_.get());
-			right_segment->AppendItem(false, 0.f, itemProto_.get());
+			right_segment->AppendItem(true, 0.f, &itemProto_);
+			right_segment->AppendItem(false, 0.f, &itemProto_);
 		}
 
 		// Logic tests
@@ -626,7 +667,7 @@ namespace jactorio::game
 
 	}
 
-	TEST_F(TransportLineControllerTest, LineLogicTransitionSideRight) {
+	TEST_F(TransportLineControllerTest, TransitionSideRight) {
 		// Belt feeding into only one side of another belt moving updards
 		/*
 		 * Left     Right
@@ -664,8 +705,8 @@ namespace jactorio::game
 
 		// Insert items
 		for (int i = 0; i < 3; ++i) {
-			left_segment->AppendItem(true, 0.f, itemProto_.get());
-			left_segment->AppendItem(false, 0.f, itemProto_.get());
+			left_segment->AppendItem(true, 0.f, &itemProto_);
+			left_segment->AppendItem(false, 0.f, &itemProto_);
 		}
 
 		// Logic tests
@@ -729,7 +770,7 @@ namespace jactorio::game
 
 	}
 
-	TEST_F(TransportLineControllerTest, SideOnlyTransitionToBending) {
+	TEST_F(TransportLineControllerTest, TransitionSideOnlyToBending) {
 		//     v
 		// < < <
 		//     ^
@@ -759,7 +800,7 @@ namespace jactorio::game
 		// Left lane
 
 
-		down_segment->AppendItem(true, 0, itemProto_.get());
+		down_segment->AppendItem(true, 0, &itemProto_);
 		
 		TransportLineLogicUpdate(worldData_);
 		
@@ -774,7 +815,7 @@ namespace jactorio::game
 		
 		left_segment->right.lane.clear();
 
-		down_segment->AppendItem(false, 0, itemProto_.get());
+		down_segment->AppendItem(false, 0, &itemProto_);
 		
 		TransportLineLogicUpdate(worldData_);
 		
@@ -799,7 +840,7 @@ namespace jactorio::game
 		// Left lane
 
 
-		up_segment->AppendItem(true, 0, itemProto_.get());
+		up_segment->AppendItem(true, 0, &itemProto_);
 		
 		TransportLineLogicUpdate(worldData_);
 		
@@ -813,7 +854,7 @@ namespace jactorio::game
 		
 		left_segment->left.lane.clear();
 
-		up_segment->AppendItem(false, 0, itemProto_.get());
+		up_segment->AppendItem(false, 0, &itemProto_);
 		
 		TransportLineLogicUpdate(worldData_);
 		
@@ -822,7 +863,7 @@ namespace jactorio::game
 		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7f + 0.7f) + 2.f - 0.06f);
 	}
 
-	TEST_F(TransportLineControllerTest, BendingTransitionToSideOnly) {
+	TEST_F(TransportLineControllerTest, TransitionBendingToSideOnly) {
 		// > v
 		//   v
 		// < < <
@@ -850,7 +891,7 @@ namespace jactorio::game
 		// ======================================================================
 		// Left
 
-		right_segment->AppendItem(true, 0, itemProto_.get());
+		right_segment->AppendItem(true, 0, &itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
 		
@@ -860,7 +901,7 @@ namespace jactorio::game
 
 		// Right
 		
-		right_segment->AppendItem(false, 0, itemProto_.get());
+		right_segment->AppendItem(false, 0, &itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
 		
