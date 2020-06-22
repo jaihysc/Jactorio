@@ -98,6 +98,30 @@ namespace jactorio::game
 	constexpr double kLineDownSingleSideItemOffsetY  = kLineBaseOffsetLeft - kItemWidth / 2;
 	constexpr double kLineLeftSingleSideItemOffsetX  = kLineBaseOffsetRight - kItemWidth / 2;
 
+
+	// When bending, the amounts below are reduced from the distance to the end of the next segment (see diagram below)
+	//
+	// === 0.7 ===
+	// =0.3=
+	//     ------------------------->
+	//     ^         *
+	//     |    -------------------->
+	//     |    ^    *
+	//     |    |    *
+	//     |    |    *
+	// 
+	constexpr double kBendLeftLReduction = 0.7f;
+	constexpr double kBendLeftRReduction = 0.3f;
+
+	constexpr double kBendRightLReduction = 0.3f;
+	constexpr double kBendRightRReduction = 0.7f;
+
+	constexpr double kTargetSideOnlyReduction = 0.7f;
+
+
+	// ======================================================================
+
+
 	///
 	/// \brief Updates belt logic for a logic chunk
 	void TransportLineLogicUpdate(WorldData& world_data);

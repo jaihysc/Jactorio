@@ -12,6 +12,8 @@
 
 using namespace jactorio;
 
+// Side only deductions are applied differently whether the segment is a target, or the being the source to a target
+
 void ApplyTerminationDeductionL(const game::TransportSegment::TerminationType termination_type,
                                 game::TransportLineOffset& offset) {
 	switch (termination_type) {
@@ -19,13 +21,13 @@ void ApplyTerminationDeductionL(const game::TransportSegment::TerminationType te
 	case game::TransportSegment::TerminationType::left_only:
 	case game::TransportSegment::TerminationType::bend_left:
 		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::TransportSegment::kBendLeftLReduction);
+			game::kBendLeftLReduction);
 		break;
 
 	case game::TransportSegment::TerminationType::right_only:
 	case game::TransportSegment::TerminationType::bend_right:
 		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::TransportSegment::kBendRightLReduction);
+			game::kBendRightLReduction);
 		break;
 
 	case game::TransportSegment::TerminationType::straight:
@@ -33,19 +35,68 @@ void ApplyTerminationDeductionL(const game::TransportSegment::TerminationType te
 	}
 }
 
+void ApplyTargetTerminationDeductionL(const game::TransportSegment::TerminationType termination_type,
+                                game::TransportLineOffset& offset) {
+	switch (termination_type) {
+	case game::TransportSegment::TerminationType::bend_left:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendLeftLReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::bend_right:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendRightLReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::left_only:
+	case game::TransportSegment::TerminationType::right_only:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kTargetSideOnlyReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::straight:
+		break;
+	}
+}
+
+
 void ApplyTerminationDeductionR(const game::TransportSegment::TerminationType termination_type,
                                 game::TransportLineOffset& offset) {
 	switch (termination_type) {
 	case game::TransportSegment::TerminationType::left_only:
 	case game::TransportSegment::TerminationType::bend_left:
 		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::TransportSegment::kBendLeftRReduction);
+			game::kBendLeftRReduction);
 		break;
 
 	case game::TransportSegment::TerminationType::right_only:
 	case game::TransportSegment::TerminationType::bend_right:
 		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::TransportSegment::kBendRightRReduction);
+			game::kBendRightRReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::straight:
+		break;
+	}
+}
+
+void ApplyTargetTerminationDeductionR(const game::TransportSegment::TerminationType termination_type,
+                                game::TransportLineOffset& offset) {
+	switch (termination_type) {
+	case game::TransportSegment::TerminationType::bend_left:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendLeftRReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::bend_right:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendRightRReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::left_only:
+	case game::TransportSegment::TerminationType::right_only:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kTargetSideOnlyReduction);
 		break;
 
 	case game::TransportSegment::TerminationType::straight:
@@ -60,7 +111,7 @@ void ApplyTerminationDeductionR(const game::TransportSegment::TerminationType te
 J_NODISCARD bool MoveNextItem(const game::TransportLineOffset& tiles_moved,
                               std::deque<game::TransportLineItem>& line_side,
                               uint16_t& index, const bool has_target_segment) {
-	for (decltype(line_side.size()) i = index + 1; i < line_side.size(); ++i) {
+	for (size_t i = static_cast<size_t>(index) + 1; i < line_side.size(); ++i) {
 		auto& i_item_offset = line_side[i].first;
 		if (i_item_offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(
 			game::kItemSpacing)) {
@@ -133,9 +184,9 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 
 				// Transition into right lane
 				if (segment.terminationType == game::TransportSegment::TerminationType::right_only)
-					ApplyTerminationDeductionR(target_segment.terminationType, target_offset);
+					ApplyTargetTerminationDeductionR(target_segment.terminationType, target_offset);
 				else 
-					ApplyTerminationDeductionL(target_segment.terminationType, target_offset);
+					ApplyTargetTerminationDeductionL(target_segment.terminationType, target_offset);
 			}
 			else {
 				ApplyTerminationDeductionR(segment.terminationType, target_offset);
@@ -143,9 +194,9 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 
 				// Transition into left lane
 				if (segment.terminationType == game::TransportSegment::TerminationType::left_only)
-					ApplyTerminationDeductionL(target_segment.terminationType, target_offset);
+					ApplyTargetTerminationDeductionL(target_segment.terminationType, target_offset);
 				else 
-					ApplyTerminationDeductionR(target_segment.terminationType, target_offset);
+					ApplyTargetTerminationDeductionR(target_segment.terminationType, target_offset);
 			}
 
 			bool moved_item;

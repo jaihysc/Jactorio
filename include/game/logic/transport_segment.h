@@ -76,31 +76,10 @@ namespace jactorio::game
 		using IntOffsetT = TransportLane::IntOffsetT;
 		using FloatOffsetT = TransportLane::FloatOffsetT;
 
-		// When bending, the amounts below are reduced from the distance to the end of the next segment (see diagram below)
-		/*
-		 * === 0.7 ===
-		 * =0.3=
-		 *     ------------------------->
-		 *     ^         *
-		 *     |    -------------------->
-		 *     |    ^    *
-		 *     |    |    *
-		 *     |    |    *
-		 */
-		static constexpr double kBendLeftLReduction = 0.7;
-		static constexpr double kBendLeftRReduction = 0.3;
-
-		static constexpr double kBendRightLReduction = 0.3;
-		static constexpr double kBendRightRReduction = 0.7;
-
 		enum class TerminationType
 		{
 			straight = 0,
-			// Left length -0.7
-			// Right length -0.3
 			bend_left,
-			// Left length -0.3
-			// Right length -0.7
 			bend_right,
 
 			// Left + Right lane -> Left lane

@@ -729,10 +729,10 @@ namespace jactorio::game
 
 	}
 
-	TEST_F(TransportLineControllerTest, SideOnlyBendingTermination) {
-		//   v
+	TEST_F(TransportLineControllerTest, SideOnlyTransitionToBending) {
+		//     v
 		// < < <
-		//   ^
+		//     ^
 
 		transportBeltProto_->speed = 0.06;
 		
@@ -765,8 +765,8 @@ namespace jactorio::game
 		
 		ASSERT_EQ(left_segment->right.lane.size(), 1);
 		
-		// (line offset) + itemOffset - belt speed
-		EXPECT_FLOAT_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3f + 1.f + 0.7f) + 1.f - 0.06f);
+		// (line offset) - belt speed
+		EXPECT_FLOAT_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3f + 0.7f) + 2.f - 0.06f);
 
 		
 		// Right lane
@@ -780,7 +780,7 @@ namespace jactorio::game
 		
 		ASSERT_EQ(left_segment->right.lane.size(), 1);
 		
-		EXPECT_FLOAT_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3f + 1.f + 0.3f) + 1.f - 0.06f);
+		EXPECT_FLOAT_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3f + 0.3f) + 2.f - 0.06f);
 
 
 		// ======================================================================
@@ -805,8 +805,7 @@ namespace jactorio::game
 		
 		ASSERT_EQ(left_segment->left.lane.size(), 1);
 		
-		// (line offset) + itemOffset - belt speed
-		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7f + 1.f + 0.3f) + 1.f - 0.06f);
+		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7f + 0.3f) + 2.f - 0.06f);
 
 		
 		// Right lane
@@ -820,8 +819,52 @@ namespace jactorio::game
 		
 		ASSERT_EQ(left_segment->left.lane.size(), 1);
 		
-		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7f + 1.f + 0.7f) + 1.f - 0.06f);
+		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7f + 0.7f) + 2.f - 0.06f);
+	}
+
+	TEST_F(TransportLineControllerTest, BendingTransitionToSideOnly) {
+		// > v
+		//   v
+		// < < <
+
+		transportBeltProto_->speed = 0.06;
+		
+		auto down_segment = std::make_shared<TransportSegment>(
+			data::Orientation::down,
+			TransportSegment::TerminationType::right_only,
+			3);
+
+		RegisterSegment({3, 2}, down_segment);
 
 
+		auto right_segment = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::bend_right,
+			2);
+
+		right_segment->targetSegment = down_segment.get();
+
+		RegisterSegment({2, 1}, right_segment);
+
+
+		// ======================================================================
+		// Left
+
+		right_segment->AppendItem(true, 0, itemProto_.get());
+
+		TransportLineLogicUpdate(worldData_);
+		
+		ASSERT_EQ(down_segment->left.lane.size(), 1);
+		EXPECT_FLOAT_EQ(down_segment->left.lane[0].first.getAsDouble(), (0.3 + 1.f + 0.7) - 0.06f);
+
+
+		// Right
+		
+		right_segment->AppendItem(false, 0, itemProto_.get());
+
+		TransportLineLogicUpdate(worldData_);
+		
+		ASSERT_EQ(down_segment->right.lane.size(), 1);
+		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), (0.3f + 1.f + 0.3f) - 0.06f);
 	}
 }
