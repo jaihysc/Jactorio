@@ -135,33 +135,6 @@ namespace jactorio::data
 		                                         TransportLineData* c_left,
 		                                         TransportLineData* center);
 
-		// world_x, world_y is the location offset from the original provided as function parameter
-		using UpdateFunc = std::function<
-			void(game::WorldData& world_data,
-			     int world_x,
-			     int world_y,
-			     game::TransportSegment::TerminationType termination_type)>;
-
-		using UpdateSideOnlyFunc = std::function<
-			void(game::WorldData& world_data,
-			     int world_x,
-			     int world_y,
-			     Orientation direction,
-			     game::TransportSegment::TerminationType termination_type)>;
-
-		///
-		/// \brief Calls func or side_only_func depending on the line_orientation, provides parameters on how neighboring lines
-		/// should be modified.
-		/// \remark This does not move across logic chunks and may make the position negative
-		/// \param func Called when line orientation is bending for updating provided line segment
-		/// \param side_only_func Called when line orientation is straight for updating provided line segment 
-		static void UpdateNeighborLines(game::WorldData& world_data,
-		                                int32_t world_x,
-		                                int32_t world_y,
-		                                TransportLineData::LineOrientation line_orientation,
-		                                const UpdateFunc& func,
-		                                const UpdateSideOnlyFunc& side_only_func);
-
 		static void UpdateSegmentHead(game::WorldData& world_data,
 		                              const game::WorldData::WorldPair& world_coords,
 		                              LineData4Way& line_data,

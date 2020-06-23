@@ -716,6 +716,10 @@ namespace jactorio::data
 
 		EXPECT_EQ(GetLineData({0, 1}).lineSegment->targetInsertOffset, 1);
 		EXPECT_EQ(GetLineData({2, 1}).lineSegment->targetInsertOffset, 1);
+
+		// Incremented 1 forwards	
+		EXPECT_EQ(GetLineData({0, 1}).lineSegment->itemOffset, 1);
+		EXPECT_EQ(GetLineData({2, 1}).lineSegment->itemOffset, 1);
 	}
 
 	TEST_F(TransportLineTest, OnBuildRightChangeBendToSideOnly) {
@@ -865,10 +869,12 @@ namespace jactorio::data
 		{
 			auto& line_segment = GetSegment(tile_layers[0]);
 			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+			EXPECT_EQ(line_segment.itemOffset, 1);  // Incremented 1 when turned side only
 		}
 		{
 			auto& line_segment = GetSegment(tile_layers[1]);
 			EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+			EXPECT_EQ(line_segment.itemOffset, 1);
 		}
 
 		EXPECT_EQ(GetLineSegmentIndex({0, 0}), 1);
