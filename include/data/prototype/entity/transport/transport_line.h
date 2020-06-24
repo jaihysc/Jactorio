@@ -5,7 +5,6 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
 #pragma once
 
-#include <functional>
 #include <memory>
 #include <utility>
 
@@ -118,63 +117,7 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Game events
-	private:
-		static void RemoveFromLogic(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
-		                            game::TransportSegment& line_segment);
 
-		/// Up, right, down, left
-		using LineData4Way = TransportLineData*[4];
-
-		///
-		///	\brief Updates the orientation of current and neighboring transport lines 
-		static void UpdateNeighboringOrientation(const game::WorldData& world_data,
-		                                         const game::WorldData::WorldPair& world_coords,
-		                                         TransportLineData* t_center,
-		                                         TransportLineData* c_right,
-		                                         TransportLineData* b_center,
-		                                         TransportLineData* c_left,
-		                                         TransportLineData* center);
-
-		static void UpdateSegmentHead(game::WorldData& world_data,
-		                              const game::WorldData::WorldPair& world_coords,
-		                              LineData4Way& line_data,
-		                              const std::shared_ptr<game::TransportSegment>& line_segment);
-
-		/*
-		 * Transport line grouping rules:
-		 *
-		 * < < < [1, 2, 3] - Direction [order];
-		 * Line ahead:
-		 *		- Extends length of transport line segment
-		 *
-		 * < < < [3, 2, 1]
-		 * Line behind:
-		 *		- Moves head of transport segment, shift leading item 1 tile back
-		 *		
-		 * < < < [1, 3, 2]
-		 * Line ahead and behind:
-		 *		- Behaves as line ahead
-		 */
-
-		///
-		/// \brief Initializes line data and groups transport segments
-		/// Sets the transport segment grouped / newly created with in tile_layer and returns it
-		/// \return Created data for at tile_layer, was a new transport segment created
-		TransportLineData* InitTransportSegment(game::WorldData& world_data,
-		                                        const game::WorldData::WorldPair& world_coords,
-		                                        Orientation orientation,
-		                                        game::ChunkTileLayer& tile_layer,
-		                                        LineData4Way& line_data) const;
-
-		///
-		/// \brief Updates neighboring segments after transport line is removed 
-		/// \param world_coords Coords of transport line removed
-		/// \param line_data Neighboring line segment
-		/// \param target Removed line segment
-		static void DisconnectTargetSegment(game::WorldData& world_data,
-		                                    const game::WorldData::WorldPair& world_coords,
-		                                    TransportLineData* target, TransportLineData* line_data);
-	public:
 		void OnBuild(game::WorldData& world_data,
 		             const game::WorldData::WorldPair& world_coords,
 		             game::ChunkTileLayer& tile_layer,

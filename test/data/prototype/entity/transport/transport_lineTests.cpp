@@ -158,19 +158,22 @@ namespace jactorio::data
 
 		// Bend
 
-		void ValidateBendToSideOnly() {
+		///
+		/// \param l_index index for left only segment in logic group
+		/// \param r_index index for right only segment in logic group
+		void ValidateBendToSideOnly(const size_t l_index = 2, const size_t r_index = 1) {
 			game::Chunk& chunk = *worldData_.GetChunkC(0, 0);
-			auto& tile_layers  = chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
+			auto& logic_group  = chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
 
-			ASSERT_EQ(tile_layers.size(), 3);
+			ASSERT_EQ(logic_group.size(), 3);
 
 			{
-				auto& line_segment = GetSegment(tile_layers[1]);
+				auto& line_segment = GetSegment(logic_group[r_index]);
 				EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
 				EXPECT_EQ(line_segment.length, 2);
 			}
 			{
-				auto& line_segment = GetSegment(tile_layers[2]);
+				auto& line_segment = GetSegment(logic_group[l_index]);
 				EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
 				EXPECT_EQ(line_segment.length, 2);
 			}
@@ -729,15 +732,19 @@ namespace jactorio::data
 		 *   > > 
 		 *   ^
 		 */
-		BuildTransportLine({1, 1}, Orientation::right);
-		BuildTransportLine({2, 1}, Orientation::right);
-
 		BuildTransportLine({1, 2}, Orientation::up);
 		BuildTransportLine({1, 0}, Orientation::down);
 
-		ValidateBendToSideOnly();
+		BuildTransportLine({1, 1}, Orientation::right);
+		BuildTransportLine({2, 1}, Orientation::right);
+
+
+		ValidateBendToSideOnly(1, 0);
 		EXPECT_EQ(GetLineData({1, 0}).lineSegment->targetInsertOffset, 0);
 		EXPECT_EQ(GetLineData({1, 2}).lineSegment->targetInsertOffset, 0);
+
+		EXPECT_EQ(GetLineData({1, 0}).lineSegment->itemOffset, 1);
+		EXPECT_EQ(GetLineData({1, 2}).lineSegment->itemOffset, 1);
 	}
 
 	TEST_F(TransportLineTest, OnBuildDownChangeBendToSideOnly) {
