@@ -323,14 +323,14 @@ namespace jactorio::game
 		{
 			segment_->itemOffset = 0;
 
-			TransportSegment::BeginOffsetT o = 3;
+			TransportSegment::FloatOffsetT o = 3;
 			segment_->GetOffsetAbs(o);
 			EXPECT_FLOAT_EQ(o, 3.f);
 		}
 		{
 			segment_->itemOffset = 3;
 
-			TransportSegment::BeginOffsetT o = 3;
+			TransportSegment::FloatOffsetT o = 3;
 			segment_->GetOffsetAbs(o);
 			EXPECT_FLOAT_EQ(o, 0.f);
 		}
@@ -338,7 +338,7 @@ namespace jactorio::game
 		{
 			segment_->itemOffset = -2;
 
-			TransportSegment::BeginOffsetT o = 3;
+			TransportSegment::IntOffsetT o = 3;
 			segment_->GetOffsetAbs(o);
 			EXPECT_FLOAT_EQ(o, 5.f);
 		}

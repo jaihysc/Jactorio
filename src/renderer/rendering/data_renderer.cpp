@@ -230,7 +230,7 @@ prepare_right:
 	case game::TransportSegment::TerminationType::bend_left:
 		switch (line_segment.direction) {
 		case data::Orientation::up:
-			tile_y_offset += game::kLineUpBrRItemOffsetY;
+			tile_y_offset += game::kLineUpBlRItemOffsetY;
 			break;
 		case data::Orientation::right:
 			tile_x_offset += game::kLineRightBlRItemOffsetX;

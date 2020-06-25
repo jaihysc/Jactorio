@@ -10,43 +10,96 @@
 #include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 
-void ApplyTerminationDeductionL(const jactorio::game::TransportSegment::TerminationType termination_type,
-                                jactorio::game::TransportLineOffset& offset) {
+using namespace jactorio;
+
+// Side only deductions are applied differently whether the segment is a target, or the being the source to a target
+
+void ApplyTerminationDeductionL(const game::TransportSegment::TerminationType termination_type,
+                                game::TransportLineOffset& offset) {
 	switch (termination_type) {
 		// Feeding into another belt also needs to be deducted to feed at the right offset on the target belt
-	case jactorio::game::TransportSegment::TerminationType::left_only:
-	case jactorio::game::TransportSegment::TerminationType::bend_left:
-		offset -= dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
-			jactorio::game::TransportSegment::kBendLeftLReduction);
+	case game::TransportSegment::TerminationType::left_only:
+	case game::TransportSegment::TerminationType::bend_left:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendLeftLReduction);
 		break;
 
-	case jactorio::game::TransportSegment::TerminationType::right_only:
-	case jactorio::game::TransportSegment::TerminationType::bend_right:
-		offset -= dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
-			jactorio::game::TransportSegment::kBendRightLReduction);
+	case game::TransportSegment::TerminationType::right_only:
+	case game::TransportSegment::TerminationType::bend_right:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendRightLReduction);
 		break;
 
-	case jactorio::game::TransportSegment::TerminationType::straight:
+	case game::TransportSegment::TerminationType::straight:
 		break;
 	}
 }
 
-void ApplyTerminationDeductionR(const jactorio::game::TransportSegment::TerminationType termination_type,
-                                jactorio::game::TransportLineOffset& offset) {
+void ApplyTargetTerminationDeductionL(const game::TransportSegment::TerminationType termination_type,
+                                game::TransportLineOffset& offset) {
 	switch (termination_type) {
-	case jactorio::game::TransportSegment::TerminationType::left_only:
-	case jactorio::game::TransportSegment::TerminationType::bend_left:
-		offset -= dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
-			jactorio::game::TransportSegment::kBendLeftRReduction);
+	case game::TransportSegment::TerminationType::bend_left:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendLeftLReduction);
 		break;
 
-	case jactorio::game::TransportSegment::TerminationType::right_only:
-	case jactorio::game::TransportSegment::TerminationType::bend_right:
-		offset -= dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
-			jactorio::game::TransportSegment::kBendRightRReduction);
+	case game::TransportSegment::TerminationType::bend_right:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendRightLReduction);
 		break;
 
-	case jactorio::game::TransportSegment::TerminationType::straight:
+	case game::TransportSegment::TerminationType::left_only:
+	case game::TransportSegment::TerminationType::right_only:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kTargetSideOnlyReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::straight:
+		break;
+	}
+}
+
+
+void ApplyTerminationDeductionR(const game::TransportSegment::TerminationType termination_type,
+                                game::TransportLineOffset& offset) {
+	switch (termination_type) {
+	case game::TransportSegment::TerminationType::left_only:
+	case game::TransportSegment::TerminationType::bend_left:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendLeftRReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::right_only:
+	case game::TransportSegment::TerminationType::bend_right:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendRightRReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::straight:
+		break;
+	}
+}
+
+void ApplyTargetTerminationDeductionR(const game::TransportSegment::TerminationType termination_type,
+                                game::TransportLineOffset& offset) {
+	switch (termination_type) {
+	case game::TransportSegment::TerminationType::bend_left:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendLeftRReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::bend_right:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kBendRightRReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::left_only:
+	case game::TransportSegment::TerminationType::right_only:
+		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
+			game::kTargetSideOnlyReduction);
+		break;
+
+	case game::TransportSegment::TerminationType::straight:
 		break;
 	}
 }
@@ -55,24 +108,24 @@ void ApplyTerminationDeductionR(const jactorio::game::TransportSegment::Terminat
 /// \brief Sets index to the next item with a distance greater than item_width and decrement it
 /// If there is no item AND has_target_segment == false, index is set as size of transport line
 /// \return true if an item was decremented
-J_NODISCARD bool MoveNextItem(const jactorio::game::TransportLineOffset& tiles_moved,
-                              std::deque<jactorio::game::TransportLineItem>& line_side,
+J_NODISCARD bool MoveNextItem(const game::TransportLineOffset& tiles_moved,
+                              std::deque<game::TransportLineItem>& line_side,
                               uint16_t& index, const bool has_target_segment) {
-	for (decltype(line_side.size()) i = index + 1; i < line_side.size(); ++i) {
+	for (size_t i = static_cast<size_t>(index) + 1; i < line_side.size(); ++i) {
 		auto& i_item_offset = line_side[i].first;
-		if (i_item_offset > dec::decimal_cast<jactorio::game::kTransportLineDecimalPlace>(
-			jactorio::game::kItemSpacing)) {
-
+		if (i_item_offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(game::kItemSpacing)) {
 			// Found a valid item to decrement
-			index = i;
+			if (!has_target_segment)
+				index = i;  // Always check every item from index 0 if there is a target segment as the previous item may have moved
 			i_item_offset -= tiles_moved;
+
 			return true;
 		}
 	}
 
 	// Failed to find another item
 	index = 0;
-	
+
 	/*
 	// set to 1 past the index of the last item (stop the transport line permanently) if there is no target segment
 	if (!has_target_segment)
@@ -85,7 +138,7 @@ J_NODISCARD bool MoveNextItem(const jactorio::game::TransportLineOffset& tiles_m
 }
 
 template <bool IsLeft>
-void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio::game::TransportSegment& segment) {
+void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSegment& segment) {
 	using namespace jactorio;
 	auto& side      = segment.GetSide(IsLeft);
 	uint16_t& index = side.index;
@@ -113,7 +166,7 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 					// |   |   |   |
 					// 3   2   1   0
 					// targetOffset of 0: Length is 1
-					length = segment.targetInsertOffset + 1.f;
+					length = static_cast<double>(1) + segment.targetInsertOffset;
 					break;
 
 				default:
@@ -128,11 +181,22 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 			// Account for the termination type of the line segments for the offset from start to insert into
 			if constexpr (IsLeft) {
 				ApplyTerminationDeductionL(segment.terminationType, target_offset);
-				ApplyTerminationDeductionL(target_segment.terminationType, target_offset);
+
+				// Transition into right lane
+				if (segment.terminationType == game::TransportSegment::TerminationType::right_only)
+					ApplyTargetTerminationDeductionR(target_segment.terminationType, target_offset);
+				else 
+					ApplyTargetTerminationDeductionL(target_segment.terminationType, target_offset);
 			}
 			else {
 				ApplyTerminationDeductionR(segment.terminationType, target_offset);
-				ApplyTerminationDeductionR(target_segment.terminationType, target_offset);
+
+
+				// Transition into left lane
+				if (segment.terminationType == game::TransportSegment::TerminationType::left_only)
+					ApplyTargetTerminationDeductionL(target_segment.terminationType, target_offset);
+				else 
+					ApplyTargetTerminationDeductionR(target_segment.terminationType, target_offset);
 			}
 
 			bool moved_item;
@@ -223,8 +287,7 @@ void UpdateSide(const jactorio::game::TransportLineOffset& tiles_moved, jactorio
 ///
 /// \brief Moves items for transport lines
 /// \param l_chunk Chunk to update
-void LogicUpdateMoveItems(const jactorio::game::Chunk& l_chunk) {
-	using namespace jactorio;
+void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 	const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
 
 	// Each object layer holds a transport line segment
@@ -259,8 +322,7 @@ void LogicUpdateMoveItems(const jactorio::game::Chunk& l_chunk) {
 ///
 /// \brief Transitions items on transport lines to other lines and modifies whether of not the line is active
 /// \param l_chunk Chunk to update
-void LogicUpdateTransitionItems(const jactorio::game::Chunk& l_chunk) {
-	using namespace jactorio;
+void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
 	const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
 
 	// Each object layer holds a transport line segment
@@ -278,7 +340,7 @@ void LogicUpdateTransitionItems(const jactorio::game::Chunk& l_chunk) {
 	}
 }
 
-void jactorio::game::TransportLineLogicUpdate(WorldData& world_data) {
+void game::TransportLineLogicUpdate(WorldData& world_data) {
 	// The logic update of transport line items occur in 2 stages:
 	// 		1. Move items on their transport lines
 	//		2. Check if any items have reached the end of their lines, and need to be moved to another one

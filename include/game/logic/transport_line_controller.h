@@ -16,6 +16,8 @@ namespace jactorio::game
 	constexpr int kTransportLineDecimalPlace = 3;
 	using TransportLineOffset = dec::decimal<kTransportLineDecimalPlace>;
 
+	// For storing line offsets during transitions, items are treated as having no width
+
 	/* Placement of items on transport line (Expressed as decimal percentages of a tile)
 	 * | R Padding 0.0
 	 * |
@@ -34,13 +36,6 @@ namespace jactorio::game
 	 * With an item_width of 0.4f:
 	 * A right item will occupy the entire space from 0.1 to 0.5
 	 * A left item will occupy the entire space from 0.5 to 0.9
-	 */
-
-	/*
-	 * Item wakeup:
-	 *
-	 * After a transport line lane stops, it cannot wake up by itself, another transport line or lane must call the member update_wakeup
-	 * in transport_line_structure
 	 */
 
 	/// Width of one item on a belt (in tiles)
@@ -102,6 +97,30 @@ namespace jactorio::game
 	constexpr double kLineRightSingleSideItemOffsetX = kLineBaseOffsetLeft - kItemWidth / 2;
 	constexpr double kLineDownSingleSideItemOffsetY  = kLineBaseOffsetLeft - kItemWidth / 2;
 	constexpr double kLineLeftSingleSideItemOffsetX  = kLineBaseOffsetRight - kItemWidth / 2;
+
+
+	// When bending, the amounts below are reduced from the distance to the end of the next segment (see diagram below)
+	//
+	// === 0.7 ===
+	// =0.3=
+	//     ------------------------->
+	//     ^         *
+	//     |    -------------------->
+	//     |    ^    *
+	//     |    |    *
+	//     |    |    *
+	// 
+	constexpr double kBendLeftLReduction = 0.7f;
+	constexpr double kBendLeftRReduction = 0.3f;
+
+	constexpr double kBendRightLReduction = 0.3f;
+	constexpr double kBendRightRReduction = 0.7f;
+
+	constexpr double kTargetSideOnlyReduction = 0.7f;
+
+
+	// ======================================================================
+
 
 	///
 	/// \brief Updates belt logic for a logic chunk

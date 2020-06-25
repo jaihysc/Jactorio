@@ -26,8 +26,8 @@ namespace jactorio::game
 	/// \brief One side of a transport line
 	struct TransportLane
 	{
-		using ItemOffsetT = int16_t;
-		using BeginOffsetT = double;
+		using IntOffsetT = int16_t;
+		using FloatOffsetT = double;
 
 		///
 		/// \return true if left size is not empty and has a valid index
@@ -36,18 +36,18 @@ namespace jactorio::game
 		///
 		/// \param start_offset Item offset from the start of transport line in tiles
 		/// \return true if an item can be inserted into this transport line
-		J_NODISCARD bool CanInsert(TransportLineOffset start_offset, ItemOffsetT item_offset);
+		J_NODISCARD bool CanInsert(TransportLineOffset start_offset, IntOffsetT item_offset);
 
 		// Item insertion 
 		// See TransportSegment for function documentation
 
-		void AppendItem(BeginOffsetT offset, const data::Item* item);
+		void AppendItem(FloatOffsetT offset, const data::Item* item);
 
-		void InsertItem(BeginOffsetT offset, const data::Item* item, ItemOffsetT item_offset);
+		void InsertItem(FloatOffsetT offset, const data::Item* item, IntOffsetT item_offset);
 
-		bool TryInsertItem(BeginOffsetT offset, const data::Item* item, ItemOffsetT item_offset);
+		bool TryInsertItem(FloatOffsetT offset, const data::Item* item, IntOffsetT item_offset);
 
-		const data::Item* TryPopItem(BeginOffsetT offset, BeginOffsetT epsilon = kItemWidth / 2);
+		const data::Item* TryPopItem(FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 
 		// ======================================================================
 
@@ -71,36 +71,15 @@ namespace jactorio::game
 	{
 	private:
 		using SegmentLengthT = uint8_t;
-		using ItemOffsetT = TransportLane::ItemOffsetT;
 
 	public:
-		using BeginOffsetT = TransportLane::BeginOffsetT;
-
-		// When bending, the amounts below are reduced from the distance to the end of the next segment (see diagram below)
-		/*
-		 * === 0.7 ===
-		 * =0.3=
-		 *     ------------------------->
-		 *     ^         *
-		 *     |    -------------------->
-		 *     |    ^    *
-		 *     |    |    *
-		 *     |    |    *
-		 */
-		static constexpr double kBendLeftLReduction = 0.7;
-		static constexpr double kBendLeftRReduction = 0.3;
-
-		static constexpr double kBendRightLReduction = 0.3;
-		static constexpr double kBendRightRReduction = 0.7;
+		using IntOffsetT = TransportLane::IntOffsetT;
+		using FloatOffsetT = TransportLane::FloatOffsetT;
 
 		enum class TerminationType
 		{
 			straight = 0,
-			// Left length -0.7
-			// Right length -0.3
 			bend_left,
-			// Left length -0.3
-			// Right length -0.7
 			bend_right,
 
 			// Left + Right lane -> Left lane
@@ -145,10 +124,10 @@ namespace jactorio::game
 		/// <br>
 		/// The offset ensures that all entities which stores a segment index tile inserts at the same location
 		/// when the segment is extended or shortened, used in methods with a Abs suffix
-		ItemOffsetT itemOffset = 0;
+		IntOffsetT itemOffset = 0;
 
 		/// If this segment terminates side only, this is the offset from the beginning of target segment to insert at
-		BeginOffsetT targetInsertOffset = 0;
+		IntOffsetT targetInsertOffset = 0;
 
 		// ======================================================================
 
@@ -170,18 +149,18 @@ namespace jactorio::game
 		///
 		/// \brief Appends item onto the specified side of a belt behind the last item
 		/// \param offset Number of tiles to offset from previous item or the end of the transport line segment when there are no items
-		void AppendItem(bool left_side, BeginOffsetT offset, const data::Item* item);
+		void AppendItem(bool left_side, FloatOffsetT offset, const data::Item* item);
 
 		///
 		/// \brief Inserts the item onto the specified belt side at the offset from the beginning of the transport line
 		/// \param offset Distance from beginning of transport line
-		void InsertItem(bool left_side, BeginOffsetT offset, const data::Item* item);
+		void InsertItem(bool left_side, FloatOffsetT offset, const data::Item* item);
 
 		///
 		/// \brief Attempts to insert the item onto the specified belt side at the offset from the beginning of the transport line
 		/// \param offset Distance from beginning of transport line
 		/// \return false if unsuccessful
-		bool TryInsertItem(bool left_side, BeginOffsetT offset, const data::Item* item);
+		bool TryInsertItem(bool left_side, FloatOffsetT offset, const data::Item* item);
 
 
 		// Item insertion with itemOffset
@@ -192,14 +171,14 @@ namespace jactorio::game
 
 		J_NODISCARD bool CanInsertAbs(bool left_side, const TransportLineOffset& start_offset);
 
-		void InsertItemAbs(bool left_side, BeginOffsetT offset, const data::Item* item);
+		void InsertItemAbs(bool left_side, FloatOffsetT offset, const data::Item* item);
 
-		bool TryInsertItemAbs(bool left_side, BeginOffsetT offset, const data::Item* item);
+		bool TryInsertItemAbs(bool left_side, FloatOffsetT offset, const data::Item* item);
 
 		///
 		/// \brief Finds item at offset within epsilon inclusive
 		/// \return nullptr if no items were found
-		const data::Item* TryPopItemAbs(bool left_side, BeginOffsetT offset, BeginOffsetT epsilon = kItemWidth / 2);
+		const data::Item* TryPopItemAbs(bool left_side, FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 
 		///
 		/// \brief Adjusts provided value such that InsertItem(, offset, ) is at the correct location
@@ -209,7 +188,8 @@ namespace jactorio::game
 		/// Thus, an adjustment is applied to all offsets inserting into the segment such that the same offset
 		/// results in the same location regardless of the segment length.
 		/// \param val Distance from beginning of transport segment
-		void GetOffsetAbs(BeginOffsetT& val) const;
+		void GetOffsetAbs(IntOffsetT& val) const;
+		void GetOffsetAbs(FloatOffsetT& val) const;
 	};
 }
 

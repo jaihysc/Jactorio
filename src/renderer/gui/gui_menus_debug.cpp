@@ -340,7 +340,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 		}
 
 		ImGui::Text("Item offset %d", segment.itemOffset);
-		ImGui::Text("Target insertion offset %f", segment.targetInsertOffset);
+		ImGui::Text("Target insertion offset %d", segment.targetInsertOffset);
 		ImGui::Text("Length, Index: %d %d", segment.length, data->lineSegmentIndex);
 
 		{
