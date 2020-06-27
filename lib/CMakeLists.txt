@@ -24,10 +24,9 @@ endfunction()
 
 log_msg("Resolving dependencies...")
 validate_dependency(glew-cmake)
-validate_dependency(glfw)
 validate_dependency(stb/stb)	# HEADER
 validate_dependency(glm)		# HEADER
-validate_dependency(imgui/imgui)	# NC
+validate_dependency(imgui)	# NC
 validate_dependency(pybind11)
 validate_dependency(libnoise)
 validate_dependency(SDL-mirror)
@@ -38,7 +37,6 @@ validate_dependency(backward-cpp)
 
 # Ones which need to be built
 add_subdirectory("glew-cmake")
-add_subdirectory("glfw")
 add_subdirectory("pybind11")
 add_subdirectory("libnoise")
 add_subdirectory("SDL-mirror")
@@ -55,10 +53,11 @@ add_library(jactorioLib
 set(
 	LIBS_COMMON
 
-	glfw libglew_static
+	libglew_static
 	pybind11::embed
 	libnoise
 	SDL2main
+	SDL2-static
 )
 
 if (WIN32)
@@ -101,7 +100,6 @@ endif (WIN32)
 
 # ======================================== Lib HEADER files .h
 set(JACTORIO_LIB_HEADER_FILES
-	${PROJECT_SOURCE_DIR}/lib/glfw/include
 	${PROJECT_SOURCE_DIR}/lib/glew-cmake/include
 	${PROJECT_SOURCE_DIR}/lib/stb/
 	${PROJECT_SOURCE_DIR}/lib/glm/

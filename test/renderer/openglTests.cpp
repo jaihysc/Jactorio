@@ -11,8 +11,6 @@ namespace renderer
 		jactorio::renderer::OpenglPrintErrors("RETURN-TYPE TEST-FUNCTION(PARAM1, PARAM2, PARAM3)",
 		                                      "FILE/PATH/GOING/SOMEWHERE", 123);
 		jactorio::renderer::OpenglClearErrors();
-
-		jactorio::renderer::InitGlfwErrorHandling();
 		SUCCEED();
 	}
 }

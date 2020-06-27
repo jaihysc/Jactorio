@@ -64,7 +64,6 @@ The installation of dependencies listed below is automatic
 * [backward-cpp](https://github.com/bombela/backward-cpp)
 * [decimal_for_cpp](https://github.com/vpiotr/decimal_for_cpp)
 * [GLEW](http://glew.sourceforge.net/)
-* [GLFW](https://www.glfw.org/)
 * [glm](https://github.com/g-truc/glm)
 * [imgui](https://github.com/ocornut/imgui)
 * [libnoise](https://github.com/jaihysc/libnoise)

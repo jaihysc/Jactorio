@@ -6,7 +6,6 @@
 #include <chrono>
 #include <filesystem>
 #include <thread>
-#include <GLFW/glfw3.h>
 
 #include "jactorio.h"
 #include "core/filesystem.h"
@@ -46,6 +45,9 @@ void jactorio::game::InitLogicLoop() {
 		return;
 	}
 
+	LOG_MESSAGE(info, "Prototype loading complete");
+	prototype_loading_complete = true;
+
 	// ======================================================================
 	// Temporary Startup settings
 	game_data->player.SetPlayerWorld(&game_data->world);  // Main world is player's world
@@ -54,88 +56,83 @@ void jactorio::game::InitLogicLoop() {
 	// ======================================================================
 
 	// Movement controls
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		game_data->player.MovePlayerY(kMoveSpeed * -1);
-	}, InputKey::w, InputAction::key_held);
+	}, SDLK_w, InputAction::key_held);
 
 
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		game_data->player.MovePlayerY(kMoveSpeed);
-	}, InputKey::s, InputAction::key_held);
+	}, SDLK_s, InputAction::key_held);
 
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		game_data->player.MovePlayerX(kMoveSpeed * -1);
-	}, InputKey::a, InputAction::key_held);
+	}, SDLK_a, InputAction::key_held);
 
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		game_data->player.MovePlayerX(kMoveSpeed);
-	}, InputKey::d, InputAction::key_held);
+	}, SDLK_d, InputAction::key_held);
 
 
 	// Menus
-	game_data->input.key.Subscribe([]() {
-		renderer::SetVisible(renderer::Menu::DebugMenu,
-		                     !renderer::IsVisible(renderer::Menu::DebugMenu));
-	}, InputKey::grave, InputAction::key_up);
+	game_data->input.key.Register([]() {
+		SetVisible(renderer::Menu::DebugMenu,
+		           !IsVisible(renderer::Menu::DebugMenu));
+	}, SDLK_BACKQUOTE, InputAction::key_up);
 
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		// If a layer is already activated, deactivate it, otherwise open the gui menu
 		if (game_data->player.GetActivatedLayer() != nullptr)
 			game_data->player.SetActivatedLayer(nullptr);
 		else
-			renderer::SetVisible(renderer::Menu::CharacterMenu,
-			                     !renderer::IsVisible(renderer::Menu::CharacterMenu));
+			SetVisible(renderer::Menu::CharacterMenu,
+			           !IsVisible(renderer::Menu::CharacterMenu));
 
-	}, InputKey::tab, InputAction::key_up);
+	}, SDLK_TAB, InputAction::key_up);
 
 
 	// Rotating orientation	
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		game_data->player.RotatePlacementOrientation();
-	}, InputKey::r, InputAction::key_up);
-	game_data->input.key.Subscribe([]() {
+	}, SDLK_r, InputAction::key_up);
+	game_data->input.key.Register([]() {
 		game_data->player.CounterRotatePlacementOrientation();
-	}, InputKey::r, InputAction::key_up, InputMod::shift);
+	}, SDLK_r, InputAction::key_up, KMOD_LSHIFT);
 
 
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		game_data->player.DeselectSelectedItem();
-	}, InputKey::q, InputAction::key_down);
+	}, SDLK_q, InputAction::key_down);
 
 	// Place entities
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		if (renderer::input_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
 		game_data->player.TryPlaceEntity(game_data->world,
 		                                 tile_selected.first, tile_selected.second);
-	}, InputKey::mouse1, InputAction::key_held);
+	}, MouseInput::left, InputAction::key_held);
 
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		if (renderer::input_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
 		game_data->player.TryPlaceEntity(game_data->world,
 		                                 tile_selected.first, tile_selected.second, true);
-	}, InputKey::mouse1, InputAction::key_down);
+	}, MouseInput::left, InputAction::key_down);
 
 	// Remove entities or mine resource
-	game_data->input.key.Subscribe([]() {
+	game_data->input.key.Register([]() {
 		if (renderer::input_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
 		game_data->player.TryPickup(game_data->world,
 		                            tile_selected.first, tile_selected.second);
-	}, InputKey::mouse2, InputAction::key_held);
+	}, MouseInput::right, InputAction::key_held);
 
-
-	game_data->input.key.Subscribe([]() {
-		glfwSetWindowShouldClose(renderer::GetWindow(), GL_TRUE);
-
-	}, InputKey::escape, InputAction::key_up);
 
 	//
 

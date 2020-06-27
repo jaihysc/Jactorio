@@ -4,9 +4,11 @@
 #include "renderer/gui/imgui_manager.h"
 
 #include <cassert>
+#include <imgui.h>
+#include <SDL.h>
 #include <unordered_map>
-#include <GLFW/glfw3.h>
-#include <imgui/imgui.h>
+#include <examples/imgui_impl_opengl3.h>
+#include <examples/imgui_impl_sdl.h>
 
 #include "jactorio.h"
 
@@ -16,15 +18,13 @@
 #include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/gui_menus_debug.h"
-#include "renderer/gui/imgui_glfw.h"
-#include "renderer/gui/imgui_opengl3.h"
 #include "renderer/rendering/renderer.h"
 #include "renderer/window/window_manager.h"
 
 // Inventory
 
 const std::unordered_map<unsigned, jactorio::core::QuadPosition>* sprite_positions = nullptr;
-unsigned int tex_id                                                                 = 0;  // Assigned by openGL
+unsigned int tex_id                                                                = 0;  // Assigned by openGL
 
 void jactorio::renderer::SetupCharacterData(RendererSprites& renderer_sprites) {
 	sprite_positions = &renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::gui).spritePositions;
@@ -41,11 +41,12 @@ void jactorio::renderer::ShowErrorPrompt(const std::string& err_title,
                                          const std::string& err_message) {
 	bool quit = false;
 
+	SDL_Event e;
 	while (!quit) {
 		Renderer::GClear();
 
 		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
+		ImGui_ImplSDL2_NewFrame(GetWindow());
 		ImGui::NewFrame();
 
 		ImGui::SetNextWindowPos({0, 0}, 0, {0.5, 0.5});
@@ -60,16 +61,19 @@ void jactorio::renderer::ShowErrorPrompt(const std::string& err_title,
 
 		ImGui::End();
 
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		if (e.type == SDL_QUIT)
+			quit = true;
 
-		glfwSwapBuffers(GetWindow());  // Done rendering
-		glfwPollEvents();
+		// Render
+
+		ImGui::Render();
+		SDL_GL_SwapWindow(GetWindow());
+		SDL_PollEvent(&e);
 	}
 }
 
 
-void jactorio::renderer::Setup(GLFWwindow* window) {
+void jactorio::renderer::Setup(SDL_Window* window) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -81,9 +85,8 @@ void jactorio::renderer::Setup(GLFWwindow* window) {
 	io.ConfigWindowsMoveFromTitleBarOnly = true;  //
 
 	// Setup Platform/Renderer bindings
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
-
+	ImGui_ImplSDL2_InitForOpenGL(window, GetContext());
 
 	// Factorio inspired Imgui style
 	auto& style             = ImGui::GetStyle();
@@ -163,7 +166,7 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, game::EventDat
 
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
+	ImGui_ImplSDL2_NewFrame(GetWindow());
 	ImGui::NewFrame();
 
 	// Has imgui handled a mouse or keyboard event?
@@ -183,7 +186,7 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, game::EventDat
 	// Do not draw character and recipe menu while in an entity menu
 
 	bool drew_gui = false;
-	
+
 	auto* layer = player_data.GetActivatedLayer();
 	if (layer != nullptr) {
 
@@ -218,7 +221,7 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, game::EventDat
 
 void jactorio::renderer::ImguiTerminate() {
 	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 
 	LOG_MESSAGE(info, "Imgui terminated");

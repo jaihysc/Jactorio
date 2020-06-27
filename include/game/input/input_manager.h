@@ -6,31 +6,66 @@
 #pragma once
 
 #include <functional>
+#include <SDL_keyboard.h>
 #include <unordered_map>
 
 #include "core/data_type.h"
-#include "game/input/input_key.h"
 
 namespace jactorio::game
 {
+	enum class InputAction
+	{
+		none,
+
+		// First pressed down
+		key_down,
+
+		// While pressed down, before repeat
+		key_pressed,
+		// Press down enough to repeat
+		key_repeat,
+
+		// pressed and repeat
+		key_held,
+
+		// Key lifted
+		key_up
+	};
+
+	enum class MouseInput
+	{
+		left,
+		middle,
+		right,
+		x1,
+		x2
+	};
+
 	class KeyInput
 	{
 		using InputCallback = std::function<void()>;
 		using CallbackId = uint64_t;
 
-		using InputTuple = std::tuple<InputKey,
-		                              InputAction,
-		                              InputMod>;
+		/// Positive = SDL_KeyCode
+		/// Negative = MouseInput * -1
+		using IntKeyMouseCodePair = int;
+
+		using InputKeyData = std::tuple<IntKeyMouseCodePair, InputAction, SDL_Keymod>;
+
 
 		// ======================================================================
-		// Currently set input(s)
-		static std::unordered_map<InputKey, InputTuple> activeInputs_;
+
+		static std::unordered_map<IntKeyMouseCodePair, InputKeyData> activeInputs_;
 
 	public:
 		///
 		/// \brief Sets the static of an input
-		/// \brief Callbacks for the respective inputs are called when dispatch_input_callbacks() is called
-		static void SetInput(InputKey key, InputAction action, InputMod mods = InputMod::none);
+		/// Callbacks for the respective inputs are called when dispatch_input_callbacks() is called
+		static void SetInput(SDL_KeyCode keycode, InputAction action, SDL_Keymod mod = KMOD_NONE);
+		static void SetInput(MouseInput mouse, InputAction action, SDL_Keymod mod = KMOD_NONE);
+
+
+		// ======================================================================
 
 	private:
 		// Increments with each new assigned callback, one is probably not having 4 million registered callbacks
@@ -40,22 +75,24 @@ namespace jactorio::game
 
 		// tuple format: key, action, mods
 		// id of callbacks registered to the tuple
-		std::unordered_map<InputTuple, std::vector<CallbackId>,
-		                   core::hash<InputTuple>> callbackIds_{};
+		std::unordered_map<InputKeyData, std::vector<CallbackId>,
+		                   core::hash<InputKeyData>> callbackIds_{};
 
 		std::unordered_map<CallbackId, InputCallback> inputCallbacks_{};
 
 
-		void CallCallbacks(const InputTuple& input);
+		void CallCallbacks(const InputKeyData& input);
 
 	public:
 		///
-		/// Registers an input callback which will be called when the specified input is activated
-		/// \param key Target key
-		/// \param action Key state
-		/// \param mods Modifier keys which also have to be pressed
-		/// \return id of the registered callback, use it to un-register it - 0 Indicates error
-		unsigned Subscribe(const InputCallback&, InputKey key, InputAction action, InputMod mods = InputMod::none);
+		/// \brief Registers a keyboard input callback which will be called when the specified input is activated
+		/// \return id of the registered callback, 0 Indicates error
+		CallbackId Register(const InputCallback& callback, SDL_KeyCode key, InputAction action, SDL_Keymod mods = KMOD_NONE);
+
+		///
+		/// \brief Registers a mouse input callback which will be called when the specified input is activated
+		/// \return id of the registered callback, 0 Indicates error
+		CallbackId Register(const InputCallback& callback, MouseInput button, InputAction action, SDL_Keymod mods = KMOD_NONE);
 
 
 		///
@@ -65,26 +102,14 @@ namespace jactorio::game
 
 		///
 		/// \brief Removes specified callback at callback_id
-		void Unsubscribe(unsigned int callback_id, InputKey key, InputAction action, InputMod mods = InputMod::none);
+		void Unsubscribe(unsigned int callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods = KMOD_NONE);
 
 		///
 		/// \brief Deletes all callback data
 		void ClearData();
 
-		// ======================================================================
-		// Conversion from GLFW macros
-
 		///
-		/// \brief Converts GLFW_ to enum
-		static InputKey ToInputKey(int key);
-
-		///
-		/// \brief Converts GLFW_ to enum
-		static InputAction ToInputAction(int action);
-
-		///
-		/// \brief Converts GLFW_MOD_ to enum
-		static InputMod ToInputMod(int mod);
+		static InputAction ToInputAction(int action, bool repeat);
 	};
 }
 

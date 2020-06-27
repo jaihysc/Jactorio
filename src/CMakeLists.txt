@@ -59,8 +59,6 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/render_main.cpp
 
 	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
-	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
-	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
 	${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
 	${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
 
@@ -87,10 +85,12 @@ set(JACTORIO_SRC_FILES
 
 # ======================================== Lib files .cpp
 set(JACTORIO_LIB_BUILD_FILES
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui_demo.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui_draw.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui_widgets.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/examples/imgui_impl_opengl3.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/examples/imgui_impl_sdl.cpp
 )
 
 IF (CMAKE_SYSTEM_NAME MATCHES Windows)

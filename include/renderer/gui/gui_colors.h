@@ -5,7 +5,7 @@
 #define JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H
 #pragma once
 
-#include "imgui/imgui.h"
+#include <imgui.h>
 
 // Defines macros for the color scheme used in Jactorio
 

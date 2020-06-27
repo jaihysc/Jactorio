@@ -34,8 +34,6 @@ namespace jactorio::renderer
 	bool OpenglPrintErrors(const char* function_name, const char* file,
 	                       int line);
 	void OpenglClearErrors();
-
-	void InitGlfwErrorHandling();
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H

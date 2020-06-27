@@ -9,7 +9,7 @@
 #include "game/player/player_data.h"
 #include "renderer/rendering/spritemap_generator.h"
 
-struct GLFWwindow;
+struct SDL_Window;
 
 namespace jactorio::renderer
 {
@@ -38,7 +38,7 @@ namespace jactorio::renderer
 	/// \brief Begins a self contained drawing loop which displays the specified error message
 	void ShowErrorPrompt(const std::string& err_title, const std::string& err_message);
 
-	void Setup(GLFWwindow* window);
+	void Setup(SDL_Window* window);
 
 	void ImguiDraw(game::PlayerData& player_data, game::EventData& event);
 

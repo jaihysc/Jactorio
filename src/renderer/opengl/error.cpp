@@ -2,7 +2,6 @@
 // Created on: 10/15/2019
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 #include <sstream>
 
@@ -61,13 +60,3 @@ void jactorio::renderer::OpenglClearErrors() {	// Do not log error if there is n
 	}
 }
 
-
-// GLFW errors
-static void ErrorCallback(const int error, const char* description) {
-	LOG_MESSAGE_f(error, "GLFW OpenGL: %d - %s", error, description);
-}
-
-// Initializes error handling for GLFW errors
-void jactorio::renderer::InitGlfwErrorHandling() {
-	glfwSetErrorCallback(ErrorCallback);
-}

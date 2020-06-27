@@ -5,9 +5,9 @@
 
 #include "renderer/render_main.h"
 
+#include <SDL.h>
 #include <thread>
 #include <vector>
-#include <GLFW/glfw3.h>
 
 #include "jactorio.h"
 #include "core/resource_guard.h"
@@ -25,13 +25,15 @@
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 
+using namespace jactorio;
+
 unsigned short window_x = 0;
 unsigned short window_y = 0;
 
-jactorio::renderer::Renderer* main_renderer = nullptr;
+renderer::Renderer* main_renderer = nullptr;
 
-void jactorio::renderer::SetRecalculateRenderer(const unsigned short window_size_x,
-                                                const unsigned short window_size_y) {
+void renderer::SetRecalculateRenderer(const unsigned short window_size_x,
+                                      const unsigned short window_size_y) {
 	window_x = window_size_x;
 	window_y = window_size_y;
 
@@ -40,11 +42,71 @@ void jactorio::renderer::SetRecalculateRenderer(const unsigned short window_size
 	});
 }
 
-jactorio::renderer::Renderer* jactorio::renderer::GetBaseRenderer() {
+renderer::Renderer* renderer::GetBaseRenderer() {
 	return main_renderer;
 }
 
-void jactorio::renderer::RenderInit() {
+
+void RenderingLoop() {
+	LOG_MESSAGE(info, "2 - Runtime stage")
+
+	// From my testing, allocating it on the heap is faster than using the stack
+	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
+	main_renderer = new renderer::Renderer();
+
+
+	auto next_frame = std::chrono::steady_clock::now();  // For zeroing the time
+
+	SDL_Event e;
+
+	while (!renderer::render_thread_should_exit) {
+		EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
+
+		// ======================================================================
+		// RENDER LOOP ======================================================================
+		{
+			EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
+
+			game::game_data->event.Raise<game::RendererTickEvent>(game::EventType::renderer_tick);
+
+			// ======================================================================
+			// World
+			renderer::Renderer::GClear();
+
+			// MVP Matrices updated in here
+			// Mutex locks in function call
+			RenderPlayerPosition(
+				game::game_data->world,
+				main_renderer,
+				game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY());
+
+			// ======================================================================
+			// Gui
+			{
+				std::lock_guard<std::mutex> guard{game::game_data->player.mutex};
+
+				renderer::ImguiDraw(game::game_data->player, game::game_data->event);
+			}
+		}
+		// ======================================================================
+		// ======================================================================
+
+		// Sleep until the next fixed update interval
+		auto time_end = std::chrono::steady_clock::now();
+		while (time_end > next_frame) {
+			next_frame += std::chrono::nanoseconds(16666666);
+		}
+		std::this_thread::sleep_until(next_frame);
+
+		SDL_GL_SwapWindow(renderer::GetWindow());
+
+		while (SDL_PollEvent(&e)) {
+			renderer::HandleSdlEvent(e);
+		}
+	}
+}
+
+void renderer::RenderInit() {
 	core::ResourceGuard<void> loop_termination_guard([]() {
 		render_thread_should_exit      = true;
 		game::logic_thread_should_exit = true;
@@ -79,6 +141,16 @@ void jactorio::renderer::RenderInit() {
 	Shader::SetUniform1I(shader.GetUniformLocation("u_texture"), 0);
 
 
+	// ======================================================================
+	// Accessing game data 
+
+	// Since game data will be now accessed, wait until prototype loading is complete
+	LOG_MESSAGE(debug, "Waiting for prototype loading to complete");
+	while (!game::prototype_loading_complete)
+		;
+	LOG_MESSAGE(debug, "Continuing renderer initialization");
+
+
 	// Loading textures
 	auto renderer_sprites = RendererSprites();
 	renderer_sprites.GInitializeSpritemap(data::Sprite::SpriteGroup::terrain, true);
@@ -94,69 +166,14 @@ void jactorio::renderer::RenderInit() {
 
 	// ======================================================================
 
-	game::game_data->input.key.Subscribe([]() {
+	game::game_data->input.key.Register([]() {
 		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
 			SetFullscreen(!IsFullscreen());
 			main_renderer->GRecalculateBuffers(window_x, window_y);
 		});
-	}, game::InputKey::space, game::InputAction::key_down);
+	}, SDLK_KP_SPACE, game::InputAction::key_down);
 
-	// Main rendering loop
-	{
-		LOG_MESSAGE(info, "2 - Runtime stage")
-
-		// From my testing, allocating it on the heap is faster than using the stack
-		core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
-		main_renderer = new Renderer();
-
-
-		auto next_frame = std::chrono::steady_clock::now();  // For zeroing the time
-		while (!render_thread_should_exit) {
-			EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
-
-			// ======================================================================
-			// RENDER LOOP ======================================================================
-			{
-				EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
-
-				glfwPollEvents();
-				if (glfwWindowShouldClose(GetWindow()))
-					render_thread_should_exit = true;
-
-				game::game_data->event.Raise<game::RendererTickEvent>(game::EventType::renderer_tick);
-
-				// ======================================================================
-				// World
-				Renderer::GClear();
-
-				// MVP Matrices updated in here
-				// Mutex locks in function call
-				RenderPlayerPosition(
-					game::game_data->world,
-					main_renderer,
-					game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY());
-
-				// ======================================================================
-				// Gui
-				{
-					std::lock_guard<std::mutex> guard{game::game_data->player.mutex};
-
-					ImguiDraw(game::game_data->player, game::game_data->event);
-				}
-			}
-			// ======================================================================
-			// ======================================================================
-
-			// Sleep until the next fixed update interval
-			auto time_end = std::chrono::steady_clock::now();
-			while (time_end > next_frame) {
-				next_frame += std::chrono::nanoseconds(16666666);
-			}
-			std::this_thread::sleep_until(next_frame);
-
-			glfwSwapBuffers(GetWindow());
-		}
-	}
+	RenderingLoop();
 
 	LOG_MESSAGE(info, "Renderer thread exited");
 }
