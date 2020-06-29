@@ -10,8 +10,11 @@
 // Defines macros for the color scheme used in Jactorio
 
 // RAII style color pop
-#define J_GUI_RAII_STYLE_POP(count) \
+#define J_GUI_RAII_STYLE_COLOR_POP(count) \
 	jactorio::core::ResourceGuard<void> imgui_style_guard([]() {ImGui::PopStyleColor(count); })
+
+#define J_GUI_RAII_STYLE_VAR_POP(count) \
+	jactorio::core::ResourceGuard<void> imgui_style_guard([]() {ImGui::PopStyleVar(count); })
 
 
 #define J_GUI_COL_NONE                    IM_COL32(0, 0, 0, 0)
@@ -80,5 +83,8 @@
 // Title bar
 #define J_GUI_STYLE_FRAME_PADDING_X 10
 #define J_GUI_STYLE_FRAME_PADDING_Y 10
+
+#define J_GUI_VAR_ITEM_SPACING_X 8
+#define J_GUI_VAR_ITEM_SPACING_Y 4
 
 #endif //JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H

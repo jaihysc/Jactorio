@@ -149,6 +149,8 @@ void jactorio::renderer::Setup(SDL_Window* window) {
 	// Popup
 	ImGui::PushStyleColor(ImGuiCol_PopupBg, J_GUI_COL_POPUP_BG);
 
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {J_GUI_VAR_ITEM_SPACING_X, J_GUI_VAR_ITEM_SPACING_Y});
+
 	LOG_MESSAGE(info, "Imgui initialized");
 }
 

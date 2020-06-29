@@ -245,15 +245,18 @@ void jactorio::renderer::HandleSdlEvent(const SDL_Event& sdl_event) {
 	case SDL_KEYUP:
 	case SDL_KEYDOWN:
 		{
-			auto keysym = sdl_event.key.keysym;
-			// Ignore caps, num scroll for raising inputs
-			if (keysym.mod == KMOD_NUM || keysym.mod == KMOD_CAPS) {
-				keysym.mod = KMOD_NONE;
-			}
+			// Remove num and caps modifiers, they will not be considered modifiers
+			int i_keymod = static_cast<int>(SDL_GetModState());
+			i_keymod |= KMOD_NUM;
+			i_keymod |= KMOD_CAPS;
+			i_keymod -= static_cast<int>(KMOD_NUM);
+			i_keymod -= static_cast<int>(KMOD_CAPS);
 
-			game::KeyInput::SetInput(static_cast<SDL_KeyCode>(keysym.sym),
+			const auto keymod = static_cast<SDL_Keymod>(i_keymod);
+			
+			game::KeyInput::SetInput(static_cast<SDL_KeyCode>(sdl_event.key.keysym.sym),
 			                         game::KeyInput::ToInputAction(sdl_event.key.type, sdl_event.key.repeat),
-			                         static_cast<SDL_Keymod>(keysym.mod));
+			                         keymod);
 		}
 		break;
 
