@@ -138,7 +138,7 @@ namespace jactorio::game
 	private:
 		uint16_t selectedRecipeGroup_ = 0;
 
-		std::deque<data::Recipe*> craftingQueue_;
+		std::deque<const data::Recipe*> craftingQueue_;
 		uint16_t craftingTicksRemaining_ = 0;
 
 		/// Items to be deducted away during crafting and not returned to the player inventory
@@ -211,11 +211,11 @@ namespace jactorio::game
 
 		///
 		/// \brief Queues a recipe to be crafted, this is displayed by the gui is the lower right corner
-		void RecipeQueue(data::Recipe* recipe);
+		void RecipeQueue(const data::Recipe& recipe);
 
 		///
 		/// \brief Returns const reference to recipe queue for rendering in gui
-		J_NODISCARD const std::deque<data::Recipe*>& GetRecipeQueue() const;
+		J_NODISCARD const std::deque<const data::Recipe*>& GetRecipeQueue() const;
 		J_NODISCARD uint16_t GetCraftingTicksRemaining() const;
 
 	private:
@@ -224,18 +224,18 @@ namespace jactorio::game
 		/// \param used_items Tracks amount of an item that has already been used,
 		/// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the inventory
 		bool RecipeCanCraftR(std::map<data::Item*, uint32_t>& used_items,
-		                     const data::Recipe* recipe, uint16_t batches);
+		                     const data::Recipe& recipe, uint16_t batches) const;
 	public:
 		///
 		/// \brief Recursively depth first crafts the recipe
 		/// !! This WILL NOT check that the given recipe is valid or required ingredients are present and assumes it is!!
-		void RecipeCraftR(data::Recipe* recipe);
+		void RecipeCraftR(const data::Recipe& recipe);
 
 		///
 		/// \brief Recursively steps through a recipe and subrecipies to determine if it is craftable
 		/// \param recipe
 		/// \param batches How many runs of the recipe
-		bool RecipeCanCraft(const data::Recipe* recipe, uint16_t batches);
+		bool RecipeCanCraft(const data::Recipe& recipe, uint16_t batches) const;
 
 
 		// ============================================================================================

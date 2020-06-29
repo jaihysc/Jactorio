@@ -715,13 +715,11 @@ void jactorio::game::PlayerData::RecipeCraftTick(uint16_t ticks) {
 
 }
 
-void jactorio::game::PlayerData::RecipeQueue(data::Recipe* recipe) {
-	assert(recipe != nullptr);  // Invalid recipe given
-
-	LOG_MESSAGE_f(debug, "Queuing recipe: '%s'", recipe->GetProduct().first.c_str());
+void jactorio::game::PlayerData::RecipeQueue(const data::Recipe& recipe) {
+	LOG_MESSAGE_f(debug, "Queuing recipe: '%s'", recipe.GetProduct().first.c_str());
 
 	// Remove ingredients
-	for (auto& ingredient : recipe->ingredients) {
+	for (const auto& ingredient : recipe.ingredients) {
 		auto* item = data::DataRawGet<data::Item>(
 			data::DataCategory::item, ingredient.first);
 
@@ -730,12 +728,12 @@ void jactorio::game::PlayerData::RecipeQueue(data::Recipe* recipe) {
 
 	// Queue is empty, crafting time for the first item in queue must be set here
 	if (craftingQueue_.empty())
-		craftingTicksRemaining_ = static_cast<uint16_t>(recipe->craftingTime * JC_GAME_HERTZ);
+		craftingTicksRemaining_ = static_cast<uint16_t>(recipe.craftingTime * JC_GAME_HERTZ);
 
-	craftingQueue_.push_back(recipe);
+	craftingQueue_.push_back(&recipe);
 }
 
-const std::deque<jactorio::data::Recipe*>& jactorio::game::PlayerData::GetRecipeQueue() const {
+const std::deque<const jactorio::data::Recipe*>& jactorio::game::PlayerData::GetRecipeQueue() const {
 	return craftingQueue_;
 }
 
@@ -743,10 +741,8 @@ uint16_t jactorio::game::PlayerData::GetCraftingTicksRemaining() const {
 	return craftingTicksRemaining_;
 }
 
-void jactorio::game::PlayerData::RecipeCraftR(data::Recipe* recipe) {
-	assert(recipe != nullptr);  // Invalid recipe given
-
-	for (auto& ingredient : recipe->ingredients) {
+void jactorio::game::PlayerData::RecipeCraftR(const data::Recipe& recipe) {
+	for (const auto& ingredient : recipe.ingredients) {
 		const auto* ingredient_proto = data::DataRawGet<data::Item>(
 			data::DataCategory::item, ingredient.first);
 
@@ -798,7 +794,8 @@ void jactorio::game::PlayerData::RecipeCraftR(data::Recipe* recipe) {
 
 				// Craft sub-recipes recursively until met
 				for (unsigned int i = 0; i < batches; ++i) {
-					RecipeCraftR(ingredient_recipe);
+					assert(ingredient_recipe);
+					RecipeCraftR(*ingredient_recipe);
 				}
 			}
 
@@ -811,10 +808,8 @@ void jactorio::game::PlayerData::RecipeCraftR(data::Recipe* recipe) {
 
 
 bool jactorio::game::PlayerData::RecipeCanCraftR(std::map<data::Item*, uint32_t>& used_items,
-                                                 const data::Recipe* recipe, const uint16_t batches) {
-	assert(recipe != nullptr);  // Invalid recipe given
-
-	for (const auto& ingredient : recipe->ingredients) {
+                                                 const data::Recipe& recipe, const uint16_t batches) const {
+	for (const auto& ingredient : recipe.ingredients) {
 		auto* ingredient_proto = data::DataRawGet<data::Item>(
 			data::DataCategory::item, ingredient.first);
 
@@ -855,7 +850,8 @@ bool jactorio::game::PlayerData::RecipeCanCraftR(std::map<data::Item*, uint32_t>
 		}
 
 		// Is able to craft desired amount of ingredient recursively?
-		if (!RecipeCanCraftR(used_items, ingredient_recipe, ingredient_required_batches)) {
+		assert(ingredient_recipe);
+		if (!RecipeCanCraftR(used_items, *ingredient_recipe, ingredient_required_batches)) {
 			return false;
 		}
 	}
@@ -864,7 +860,7 @@ bool jactorio::game::PlayerData::RecipeCanCraftR(std::map<data::Item*, uint32_t>
 
 }
 
-bool jactorio::game::PlayerData::RecipeCanCraft(const data::Recipe* recipe, const uint16_t batches) {
+bool jactorio::game::PlayerData::RecipeCanCraft(const data::Recipe& recipe, const uint16_t batches) const {
 	std::map<data::Item*, uint32_t> used_items;
 	return RecipeCanCraftR(used_items, recipe, batches);
 }

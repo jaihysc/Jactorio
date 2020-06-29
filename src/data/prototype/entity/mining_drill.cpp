@@ -27,8 +27,14 @@ jactorio::data::Sprite::FrameT GetMiningDrillFrame(const jactorio::GameTickT gam
 }
 
 std::pair<jactorio::data::Sprite*, jactorio::data::Sprite::FrameT> jactorio::data::MiningDrill::OnRGetSprite(
-	const UniqueDataBase* unique_data, const GameTickT game_tick) const {
-	const auto set = static_cast<const RenderableData*>(unique_data)->set;
+	const UniqueDataBase* unique_data, GameTickT game_tick) const {
+	const auto& drill_data = *static_cast<const MiningDrillData*>(unique_data);
+
+	const auto set = drill_data.set;
+
+	// Drill is inactive
+	if (drill_data.deferralEntry.second == 0)
+		game_tick = 0;
 
 	if (set <= 7)
 		return {this->sprite, GetMiningDrillFrame(game_tick, this->sprite->frames * this->spriteE->sets)};

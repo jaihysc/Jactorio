@@ -26,6 +26,8 @@ constexpr int kInventorySlotImagePadding = 2;
 constexpr int kInventoryItemCountXOffset = 0;
 constexpr int kInventoryItemCountYOffset = 0;
 
+using namespace jactorio;
+
 ///
 /// \brief Pad the ingredients: text with trailing whitespace to reach the length of the title
 ///
@@ -46,7 +48,7 @@ void AddVerticalSpace(float y) {
 /// \param title Title of the tooltip
 /// \param description
 /// \param draw_func Code to run while drawing the tooltip
-void DrawCursorTooltip(jactorio::game::PlayerData& player_data, const char* title, const char* description,
+void DrawCursorTooltip(game::PlayerData& player_data, const char* title, const char* description,
                        const std::function<void()>& draw_func) {
 	using namespace jactorio;
 
@@ -91,12 +93,12 @@ void DrawCursorTooltip(jactorio::game::PlayerData& player_data, const char* titl
 /// Call within a ImGui window
 /// \param slot_span Slots before wrapping onto new line
 /// \param slot_count Number of slots to draw
-/// \param draw_func Draws slot (index, bool for DrawItemSlot pin)
-/// \param print_newline Will print a newline upon finishing drawing all slots
+/// \param draw_func Draws slot (index, bool button_hovered)
+/// \param ending_vertical_space If < 0 use default, >= 0 use amount provided of vertical space upon finishing drawing all slots
 void DrawSlots(const uint8_t slot_span, const uint16_t slot_count,
                const uint8_t scale,
                const std::function<void(uint16_t, bool&)>& draw_func,
-               const bool print_newline = true) {
+               const float ending_vertical_space = -1.f) {
 	J_GUI_RAII_STYLE_VAR_POP(1);
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0, 0});
 
@@ -105,14 +107,14 @@ void DrawSlots(const uint8_t slot_span, const uint16_t slot_count,
 
 	uint16_t index = 0;
 
-	bool item_hovered_pin = false;
+	bool button_hovered = false;
 
 	while (index < slot_count) {
 		const uint16_t x = index % slot_span;
 		ImGui::SameLine(J_GUI_STYLE_WINDOW_PADDING_X + x * scale * (kInventorySlotWidth + kInventorySlotPadding));
 
 		ImGui::PushID(index);  // Uniquely identifies the button
-		draw_func(index, item_hovered_pin);
+		draw_func(index, button_hovered);
 		ImGui::PopID();
 
 		if (x == slot_span - 1) {
@@ -123,8 +125,13 @@ void DrawSlots(const uint8_t slot_span, const uint16_t slot_count,
 		++index;
 	}
 
-	if (!printed_newline && print_newline) {
-		AddVerticalSpace(static_cast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
+	if (!printed_newline) {
+		if (ending_vertical_space < 0) {
+			AddVerticalSpace(static_cast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
+		}
+		else {
+			AddVerticalSpace(ending_vertical_space);
+		}
 	}
 }
 
@@ -133,13 +140,13 @@ void DrawSlots(const uint8_t slot_span, const uint16_t slot_count,
 /// \param scale 
 /// \param sprite_iid Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
 /// \param item_count Number to display on the item, 0 to hide
-/// \param pin_hovered_item Used to ensure hover status is only applied to one item slot out of a set
+/// \param button_hovered Used to ensure hover status is only applied to one item slot out of a set
 /// \param button_events Handle events from the button 
-void DrawItemSlot(const jactorio::renderer::MenuData& menu_data,
+void DrawItemSlot(const renderer::MenuData& menu_data,
                   const uint8_t scale,
                   const uint32_t sprite_iid,
                   const uint16_t item_count,
-                  bool& pin_hovered_item,
+                  bool& button_hovered,
                   const std::function<void()>& button_events = []() {
                   }) {
 	const float original_x_offset = ImGui::GetCursorPosX();
@@ -167,9 +174,9 @@ void DrawItemSlot(const jactorio::renderer::MenuData& menu_data,
 
 		button_events();
 
-		if (!pin_hovered_item) {
+		if (!button_hovered) {
 			if ((backing_button_hover = ImGui::IsItemHovered()) == true)
-				pin_hovered_item = true;
+				button_hovered = true;
 		}
 	}
 
@@ -234,29 +241,33 @@ void DrawItemSlot(const jactorio::renderer::MenuData& menu_data,
 
 ///
 /// \brief The window size is calculated on the size of the player's inventory
-ImVec2 GetWindowSize(jactorio::game::PlayerData& /*player_data*/) {
+ImVec2 GetWindowSize() {
 	// 20 is window padding on both sides, 80 for y is to avoid the scrollbar
 	auto window_size = ImVec2(
 		2 * J_GUI_STYLE_WINDOW_PADDING_X,
 		2 * J_GUI_STYLE_WINDOW_PADDING_Y + 80);
 
 	window_size.x += 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
-	window_size.y += static_cast<unsigned int>(jactorio::game::PlayerData::kInventorySize / 10) *
+	window_size.y += static_cast<unsigned int>(game::PlayerData::kInventorySize / 10) *
 		(kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
 
 	return window_size;
 }
 
 ///
-/// The next window drawn will be on the left center of the screen
+/// \brief The next window drawn will be on the left center of the screen
 void SetupNextWindowLeft(const ImVec2& window_size) {
 	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
 	// Character window is left of the center
-	const ImVec2 window_center(static_cast<float>(jactorio::renderer::Renderer::GetWindowWidth()) / 2,
-	                           static_cast<float>(jactorio::renderer::Renderer::GetWindowHeight()) / 2);
+	const ImVec2 window_center(static_cast<float>(renderer::Renderer::GetWindowWidth()) / 2,
+	                           static_cast<float>(renderer::Renderer::GetWindowHeight()) / 2);
 
 	ImGui::SetNextWindowPos(ImVec2(window_center.x - window_size.x,
 	                               window_center.y - window_size.y / 2));
+}
+
+void SetupNextWindowLeft() {
+	SetupNextWindowLeft(GetWindowSize());
 }
 
 ///
@@ -264,8 +275,8 @@ void SetupNextWindowLeft(const ImVec2& window_size) {
 void SetupNextWindowRight(const ImVec2& window_size) {
 	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
 	// Character window is left of the center
-	const ImVec2 window_center(static_cast<float>(jactorio::renderer::Renderer::GetWindowWidth()) / 2,
-	                           static_cast<float>(jactorio::renderer::Renderer::GetWindowHeight()) / 2);
+	const ImVec2 window_center(static_cast<float>(renderer::Renderer::GetWindowWidth()) / 2,
+	                           static_cast<float>(renderer::Renderer::GetWindowHeight()) / 2);
 
 	// Recipe menu
 	ImGui::SetNextWindowPos(ImVec2(window_center.x,
@@ -274,22 +285,30 @@ void SetupNextWindowRight(const ImVec2& window_size) {
 	ImGui::SetNextWindowSize(window_size);
 }
 
+void SetupNextWindowRight() {
+	SetupNextWindowRight(GetWindowSize());
+}
+
+// ==========================================================================================
+// Player menus (Excluding entity menus)
+
+const ImGuiWindowFlags kMenuFlags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+
 ///
 /// \brief Draws the player's inventory menu
-void PlayerInventoryMenu(jactorio::game::PlayerData& player_data) {
-	const ImVec2 window_size = GetWindowSize(player_data);
-	SetupNextWindowLeft(window_size);
-
+void PlayerInventoryMenu(game::PlayerData& player_data) {
 	ImGuiWindowFlags window_flags = 0;
 	window_flags |= ImGuiWindowFlags_NoCollapse;
 	window_flags |= ImGuiWindowFlags_NoResize;
 
+	const ImVec2 window_size = GetWindowSize();
 	ImGui::SetNextWindowSize(window_size);
+
 	ImGui::Begin("Character", nullptr, window_flags);
 
-	auto menu_data = jactorio::renderer::GetMenuData();
+	auto menu_data = renderer::GetMenuData();
 
-	DrawSlots(10, jactorio::game::PlayerData::kInventorySize, 1, [&](auto index, auto& pin) {
+	DrawSlots(10, game::PlayerData::kInventorySize, 1, [&](auto index, auto& button_hovered) {
 		const auto& item = player_data.inventoryPlayer[index];
 
 		// Draw blank slot if item doe snot exist at inventory slot
@@ -299,7 +318,7 @@ void PlayerInventoryMenu(jactorio::game::PlayerData& player_data) {
 			menu_data,
 			1, sprite_id,
 			item.second,
-			pin,
+			button_hovered,
 			[&]() {
 				if (ImGui::IsItemClicked()) {
 					player_data.InventoryClick(
@@ -331,35 +350,31 @@ void PlayerInventoryMenu(jactorio::game::PlayerData& player_data) {
 	ImGui::End();
 }
 
-// ==========================================================================================
-// Player menus (Excluding entity menus)
+void RecipeMenu(game::PlayerData& player_data,
+                const std::function<
+	                void(const renderer::MenuData& menu_data,
+	                     const data::Recipe& recipe, const data::Item& product,
+	                     bool& button_hovered)
+                >& item_slot_draw) {
 
-const ImGuiWindowFlags kMenuFlags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+	const auto menu_data = renderer::GetMenuData();
 
-
-void jactorio::renderer::CharacterMenu(game::PlayerData& player_data, const data::UniqueDataBase*) {
-	PlayerInventoryMenu(player_data);
-
-
-	auto menu_data = GetMenuData();
-
-	const ImVec2 window_size = GetWindowSize(player_data);
-	SetupNextWindowRight(window_size);
-
+	const ImVec2 window_size = GetWindowSize();
 	ImGui::SetNextWindowSize(window_size);
+
 	ImGui::Begin("Recipe", nullptr, kMenuFlags);
 
 	// Menu groups | A group button is twice the size of a slot
 	auto groups = data::DataRawGetAllSorted<data::RecipeGroup>(data::DataCategory::recipe_group);
 
-	DrawSlots(5, groups.size(), 2, [&](const uint16_t index, auto& pin) {
+	DrawSlots(5, groups.size(), 2, [&](const uint16_t index, auto& button_hovered) {
 		const auto& recipe_group = groups[index];
 
 		// Different color for currently selected recipe group
 		if (index == player_data.RecipeGroupGetSelected())
 			ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
 
-		DrawItemSlot(menu_data, 2, recipe_group->sprite->internalId, 0, pin, [&]() {
+		DrawItemSlot(menu_data, 2, recipe_group->sprite->internalId, 0, button_hovered, [&]() {
 			if (index == player_data.RecipeGroupGetSelected())
 				ImGui::PopStyleColor();
 
@@ -388,125 +403,133 @@ void jactorio::renderer::CharacterMenu(game::PlayerData& player_data, const data
 	// Menu recipes
 	const auto& selected_group = groups[player_data.RecipeGroupGetSelected()];
 
-	bool pinned = false;
+	bool button_hovered = false;
 	for (auto& recipe_category : selected_group->recipeCategories) {
 		const auto& recipes = recipe_category->recipes;
 
 		DrawSlots(10, recipes.size(), 1, [&](auto index, auto&) {
-			data::Recipe* recipe = recipes.at(index);
+			const data::Recipe* recipe = recipes.at(index);
 
 			const auto* product =
 				data::DataRawGet<data::Item>(data::DataCategory::item, recipe->GetProduct().first);
 			assert(product != nullptr);  // Invalid recipe product
 
-			DrawItemSlot(menu_data, 1, product->sprite->internalId, 0, pinned, [&]() {
-				if (ImGui::IsItemClicked()) {
-					LOG_MESSAGE_f(debug, "Recipe click at index %d in category", index);
-					if (player_data.RecipeCanCraft(recipe, 1)) {
-						player_data.RecipeCraftR(recipe);
-						player_data.InventorySort();
-					}
-				}
-
-				// Draw item tooltip
-				if (!ImGui::IsItemHovered() || pinned)
-					return;
-
-				std::stringstream title_ss;
-				// Show the product yield in the title
-				title_ss << product->GetLocalizedName().c_str() << " (" << recipe->GetProduct().second << ")";
-
-				std::stringstream description_ss;
-				description_ss << "Ingredients:";
-				FitTitle(description_ss, title_ss.str().size());
-
-				DrawCursorTooltip(
-					player_data,
-					title_ss.str().c_str(),
-					description_ss.str().c_str(),
-					[&]() {
-						// ingredients
-						for (const auto& ingredient_pair : recipe->ingredients) {
-							const auto* item =
-								data::DataRawGet<data::Item>(data::DataCategory::item,
-								                             ingredient_pair.first);
-
-							DrawItemSlot(menu_data, 1, item->sprite->internalId, 0, pinned);
-
-							// Amount of the current ingredient the player has in inventory
-
-							const auto player_item_count = game::GetInvItemCount(
-								player_data.inventoryPlayer, player_data.kInventorySize,
-								item);
-
-							ImGui::SameLine(kInventorySlotWidth * 1.5);
-
-							// Does not have ingredient
-							if (player_item_count < ingredient_pair.second) {
-								const bool can_be_recurse_crafted = player_data.RecipeCanCraft(recipe, 1);
-								if (can_be_recurse_crafted) {
-									// Ingredient can be crafted recursively
-									ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_WARNING);
-								}
-								else {
-									// Ingredient cannot be crafted
-									ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
-								}
-
-								ImGui::Text("%d/%d x %s", player_item_count, ingredient_pair.second,
-								            item->GetLocalizedName().c_str());
-								ImGui::PopStyleColor();
-							}
-								// Has enough
-							else {
-								ImGui::Text("%d x %s", ingredient_pair.second,
-								            item->GetLocalizedName().c_str());
-							}
-
-							AddVerticalSpace(8);
-						}
-						ImGui::Text("%.1f seconds", recipe->craftingTime);
-
-						// Total raw
-						ImGui::Separator();
-
-						ImGui::Text("%s", "Total Raw");
-						AddVerticalSpace(8);
-
-						auto raw_inames = data::Recipe::RecipeGetTotalRaw(product->name);
-
-						DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto&) {
-							const auto* item =
-								data::DataRawGet<data::Item>(data::DataCategory::item, raw_inames[slot_index].first);
-
-							const auto item_count_required = raw_inames[slot_index].second;
-
-							// const auto player_item_count = 
-							// 	game::GetInvItemCount(player_data.inventoryPlayer, player_data.kInventorySize, item);
-							//
-							//
-							// J_GUI_RAII_STYLE_COLOR_POP(1);
-							// if (player_item_count < item_count_required) {
-							// 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
-							// }
-							// else
-							// 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
-
-							DrawItemSlot(menu_data, 1, item->sprite->internalId, item_count_required, pinned);
-						}, false);
-
-					});
-			});
-
+			item_slot_draw(menu_data, *recipe, *product, button_hovered);
 		});
-
 	}
 
 	ImGui::End();
-
 }
 
-void jactorio::renderer::CursorWindow(game::PlayerData& player_data, const data::UniqueDataBase*) {
+// ======================================================================
+
+void renderer::CharacterMenu(game::PlayerData& player_data, const data::UniqueDataBase*) {
+	SetupNextWindowLeft();
+	PlayerInventoryMenu(player_data);
+
+	SetupNextWindowRight();
+	RecipeMenu(player_data, [&](auto& menu_data, auto& recipe, auto& product, auto& button_hovered) {
+		DrawItemSlot(menu_data, 1, product.sprite->internalId, 0, button_hovered, [&]() {
+			if (ImGui::IsItemClicked()) {
+				if (player_data.RecipeCanCraft(recipe, 1)) {
+					player_data.RecipeCraftR(recipe);
+					player_data.InventorySort();
+				}
+			}
+
+			// Draw item tooltip
+			if (!ImGui::IsItemHovered() || button_hovered)
+				return;
+
+			std::stringstream title_ss;
+			// Show the product yield in the title
+			title_ss << product.GetLocalizedName().c_str() << " (" << recipe.GetProduct().second << ")";
+
+			std::stringstream description_ss;
+			description_ss << "Ingredients:";
+			FitTitle(description_ss, title_ss.str().size());
+
+			DrawCursorTooltip(
+				player_data,
+				title_ss.str().c_str(),
+				description_ss.str().c_str(),
+				[&]() {
+					// ingredients
+					for (const auto& ingredient_pair : recipe.ingredients) {
+						const auto* item =
+							data::DataRawGet<data::Item>(data::DataCategory::item,
+							                             ingredient_pair.first);
+
+						DrawItemSlot(menu_data, 1, item->sprite->internalId, 0, button_hovered);
+
+						// Amount of the current ingredient the player has in inventory
+
+						const auto player_item_count = game::GetInvItemCount(
+							player_data.inventoryPlayer, game::PlayerData::kInventorySize,
+							item);
+
+						ImGui::SameLine(kInventorySlotWidth * 1.5);
+
+						// Does not have ingredient
+						if (player_item_count < ingredient_pair.second) {
+							const bool can_be_recurse_crafted = player_data.RecipeCanCraft(recipe, 1);
+							if (can_be_recurse_crafted) {
+								// Ingredient can be crafted recursively
+								ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_WARNING);
+							}
+							else {
+								// Ingredient cannot be crafted
+								ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
+							}
+
+							ImGui::Text("%d/%d x %s", player_item_count, ingredient_pair.second,
+							            item->GetLocalizedName().c_str());
+							ImGui::PopStyleColor();
+						}
+							// Has enough
+						else {
+							ImGui::Text("%d x %s", ingredient_pair.second,
+							            item->GetLocalizedName().c_str());
+						}
+
+						AddVerticalSpace(8);
+					}
+					ImGui::Text("%.1f seconds", recipe.craftingTime);
+
+					// Total raw
+					ImGui::Separator();
+
+					ImGui::Text("%s", "Total Raw:");
+					AddVerticalSpace(8);
+
+					auto raw_inames = data::Recipe::RecipeGetTotalRaw(product.name);
+
+					DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto&) {
+						const auto* item =
+							data::DataRawGet<data::Item>(data::DataCategory::item, raw_inames[slot_index].first);
+
+						const auto item_count_required = raw_inames[slot_index].second;
+
+						// const auto player_item_count = 
+						// 	game::GetInvItemCount(player_data.inventoryPlayer, player_data.kInventorySize, item);
+						//
+						//
+						// J_GUI_RAII_STYLE_COLOR_POP(1);
+						// if (player_item_count < item_count_required) {
+						// 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
+						// }
+						// else
+						// 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
+
+						DrawItemSlot(menu_data, 1, item->sprite->internalId, item_count_required, button_hovered);
+					}, 0);
+
+				});
+		});
+	});
+}
+
+void renderer::CursorWindow(game::PlayerData& player_data, const data::UniqueDataBase*) {
 	using namespace jactorio;
 	// Draw the tooltip of what is currently selected
 
@@ -555,7 +578,7 @@ void jactorio::renderer::CursorWindow(game::PlayerData& player_data, const data:
 	}
 }
 
-void jactorio::renderer::CraftingQueue(game::PlayerData& player_data, const data::UniqueDataBase*) {
+void renderer::CraftingQueue(game::PlayerData& player_data, const data::UniqueDataBase*) {
 	auto menu_data = GetMenuData();
 
 	ImGuiWindowFlags flags = 0;
@@ -593,15 +616,15 @@ void jactorio::renderer::CraftingQueue(game::PlayerData& player_data, const data
 	ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
 	ImGui::PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
 
-	DrawSlots(10, recipe_queue.size(), 1, [&](auto index, auto& pin) {
-		data::Recipe* recipe = recipe_queue.at(index);
+	DrawSlots(10, recipe_queue.size(), 1, [&](auto index, auto& button_hovered) {
+		const data::Recipe* recipe = recipe_queue.at(index);
 
 		const auto* item =
 			data::DataRawGet<data::Item>(data::DataCategory::item,
 			                             recipe->GetProduct().first);
 		DrawItemSlot(menu_data, 1,
 		             item->sprite->internalId, recipe->GetProduct().second,
-		             pin);
+		             button_hovered);
 	});
 
 	ImGui::PopStyleColor(2);
@@ -610,7 +633,7 @@ void jactorio::renderer::CraftingQueue(game::PlayerData& player_data, const data
 
 float last_pickup_fraction = 0.f;
 
-void jactorio::renderer::PickupProgressbar(game::PlayerData& player_data, const data::UniqueDataBase*) {
+void renderer::PickupProgressbar(game::PlayerData& player_data, const data::UniqueDataBase*) {
 	constexpr float progress_bar_width  = 260 * 2;
 	constexpr float progress_bar_height = 13;
 
@@ -649,24 +672,24 @@ void jactorio::renderer::PickupProgressbar(game::PlayerData& player_data, const 
 
 // ==========================================================================================
 // Entity menus
-void jactorio::renderer::ContainerEntity(game::PlayerData& player_data, const data::UniqueDataBase* unique_data) {
+void renderer::ContainerEntity(game::PlayerData& player_data, const data::UniqueDataBase* unique_data) {
 	assert(unique_data);
 	const auto& container_data = *static_cast<const data::ContainerEntityData*>(unique_data);
 
+	SetupNextWindowLeft();
 	PlayerInventoryMenu(player_data);
 
-	const auto window_size = GetWindowSize(player_data);
-	SetupNextWindowRight(window_size);
+	SetupNextWindowRight();
 	ImGui::Begin("Container", nullptr, kMenuFlags);
 
-	DrawSlots(10, container_data.size, 1, [&](auto i, auto& pin) {
+	DrawSlots(10, container_data.size, 1, [&](auto i, auto& button_hovered) {
 		const auto sprite_id = container_data.inventory[i].first != nullptr
 			                       ? container_data.inventory[i].first->sprite->internalId
 			                       : 0;
 
 		DrawItemSlot(
 			GetMenuData(), 1,
-			sprite_id, container_data.inventory[i].second, pin, [&]() {
+			sprite_id, container_data.inventory[i].second, button_hovered, [&]() {
 				if (ImGui::IsItemClicked()) {
 					player_data.InventoryClick(i, 0, false, container_data.inventory);
 					player_data.InventorySort();
@@ -681,15 +704,14 @@ void jactorio::renderer::ContainerEntity(game::PlayerData& player_data, const da
 	ImGui::End();
 }
 
-void jactorio::renderer::MiningDrill(game::PlayerData& player_data, const data::UniqueDataBase* unique_data) {
+void renderer::MiningDrill(game::PlayerData& player_data, const data::UniqueDataBase* unique_data) {
 	assert(unique_data);
 	const auto& drill_data = *static_cast<const data::MiningDrillData*>(unique_data);
 
+	SetupNextWindowLeft();
 	PlayerInventoryMenu(player_data);
 
-	const auto window_size = GetWindowSize(player_data);
-	SetupNextWindowRight(window_size);
-
+	SetupNextWindowRight();
 	ImGui::Begin("Mining drill", nullptr, kMenuFlags);
 
 	// 1 - (Ticks left / Ticks to mine)
@@ -697,7 +719,10 @@ void jactorio::renderer::MiningDrill(game::PlayerData& player_data, const data::
 	                                                                                          .GetPlayerWorld().GameTick();
 	const long double mine_ticks = drill_data.miningTicks;
 
-	ImGui::ProgressBar(1.f - static_cast<float>(ticks_left / mine_ticks));
+	if (drill_data.deferralEntry.second == 0)
+		ImGui::ProgressBar(0.f);  // Drill has not started
+	else 
+		ImGui::ProgressBar(1.f - static_cast<float>(ticks_left / mine_ticks));
 
 	ImGui::End();
 }
