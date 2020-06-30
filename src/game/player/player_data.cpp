@@ -330,16 +330,16 @@ void jactorio::game::PlayerData::TryPickup(WorldData& world_data,
 	}
 
 	// Selecting a new tile different from the last selected tile will reset the counter
-	if (lastSelectedPtr != chosen_ptr || lastTilePtr != tile) {
-		pickupTickCounter = 0;
-		pickupTickTarget  = static_cast<uint16_t>(chosen_ptr->pickupTime * JC_GAME_HERTZ);  // Seconds to ticks
+	if (lastSelectedPtr_ != chosen_ptr || lastTilePtr_ != tile) {
+		pickupTickCounter_ = 0;
+		pickupTickTarget_  = static_cast<uint16_t>(chosen_ptr->pickupTime * JC_GAME_HERTZ);  // Seconds to ticks
 	}
 	// Remember the entity + tile which was selected
-	lastSelectedPtr = chosen_ptr;
-	lastTilePtr     = tile;
+	lastSelectedPtr_ = chosen_ptr;
+	lastTilePtr_     = tile;
 
-	pickupTickCounter += ticks;
-	if (pickupTickCounter >= pickupTickTarget) {
+	pickupTickCounter_ += ticks;
+	if (pickupTickCounter_ >= pickupTickTarget_) {
 		// Entity picked up
 		LOG_MESSAGE(debug, "Player picked up entity");
 
@@ -353,7 +353,7 @@ void jactorio::game::PlayerData::TryPickup(WorldData& world_data,
 		AddStack(inventoryPlayer, kInventorySize, item_stack);
 		InventorySort();
 
-		pickupTickCounter = 0;
+		pickupTickCounter_ = 0;
 		// Resource entity
 		if (is_resource_ptr) {
 			auto& layer         = tile->GetLayer(ChunkTile::ChunkLayer::resource);
@@ -389,10 +389,10 @@ void jactorio::game::PlayerData::TryPickup(WorldData& world_data,
 }
 
 float jactorio::game::PlayerData::GetPickupPercentage() const {
-	if (lastSelectedPtr == nullptr)  // Not initialized yet
+	if (lastSelectedPtr_ == nullptr)  // Not initialized yet
 		return 0.f;
 
-	return static_cast<float>(pickupTickCounter) / static_cast<float>(pickupTickTarget);
+	return static_cast<float>(pickupTickCounter_) / static_cast<float>(pickupTickTarget_);
 }
 
 // ============================================================================================
@@ -514,7 +514,8 @@ loop_exit:
 // LEFT CLICK - Select by reference, the item in the cursor mirrors the inventory item
 // RIGHT CLICK - Select unique, the item in the cursor exists independently of the inventory item
 
-void jactorio::game::PlayerData::InventoryClick(const unsigned short index,
+void jactorio::game::PlayerData::InventoryClick(const data::DataManager& data_manager,
+                                                const unsigned short index,
                                                 const unsigned short mouse_button,
                                                 const bool allow_reference_select,
                                                 data::ItemStack* inv) {
@@ -549,8 +550,8 @@ void jactorio::game::PlayerData::InventoryClick(const unsigned short index,
 			selectedItem_      = inv[index];
 
 			// Swap icon out for a cursor indicating the current index is selected
-			inventoryPlayer[index].first = data::DataRawGet<data::Item>(
-				data::DataCategory::item, kInventorySelectedCursorIname);
+			inventoryPlayer[index].first = data_manager.DataRawGet<data::Item>(data::DataCategory::item,
+			                                                                   kInventorySelectedCursorIname);
 			inventoryPlayer[index].second = 0;
 
 			// Return is necessary when selecting by reference
@@ -640,7 +641,7 @@ uint16_t jactorio::game::PlayerData::RecipeGroupGetSelected() const {
 	return selectedRecipeGroup_;
 }
 
-void jactorio::game::PlayerData::RecipeCraftTick(uint16_t ticks) {
+void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_manager, uint16_t ticks) {
 	// Attempt to return held item if inventory is full
 	if (craftingHeldItem_.second != 0) {
 		const auto extra_items   = AddStack(inventoryPlayer, kInventorySize, craftingHeldItem_);
@@ -654,13 +655,12 @@ void jactorio::game::PlayerData::RecipeCraftTick(uint16_t ticks) {
 		if (ticks >= craftingTicksRemaining_) {
 			ticks -= craftingTicksRemaining_;
 
-			auto* recipe = craftingQueue_.front();
+			const auto* recipe = craftingQueue_.front();
 			craftingQueue_.pop_front();
 
 			// Return product
 			data::RecipeItem recipe_item = recipe->GetProduct();
-			auto* product_item           = data::DataRawGet<data::Item>(
-				data::DataCategory::item, recipe_item.first);
+			const auto* product_item     = data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe_item.first);
 
 			data::ItemStack item = {product_item, recipe_item.second};
 
@@ -715,13 +715,12 @@ void jactorio::game::PlayerData::RecipeCraftTick(uint16_t ticks) {
 
 }
 
-void jactorio::game::PlayerData::RecipeQueue(const data::Recipe& recipe) {
+void jactorio::game::PlayerData::RecipeQueue(const data::DataManager& data_manager, const data::Recipe& recipe) {
 	LOG_MESSAGE_f(debug, "Queuing recipe: '%s'", recipe.GetProduct().first.c_str());
 
 	// Remove ingredients
 	for (const auto& ingredient : recipe.ingredients) {
-		auto* item = data::DataRawGet<data::Item>(
-			data::DataCategory::item, ingredient.first);
+		const auto* item = data_manager.DataRawGet<data::Item>(data::DataCategory::item, ingredient.first);
 
 		DeleteInvItem(inventoryPlayer, kInventorySize, item, ingredient.second);
 	}
@@ -741,9 +740,9 @@ uint16_t jactorio::game::PlayerData::GetCraftingTicksRemaining() const {
 	return craftingTicksRemaining_;
 }
 
-void jactorio::game::PlayerData::RecipeCraftR(const data::Recipe& recipe) {
+void jactorio::game::PlayerData::RecipeCraftR(const data::DataManager& data_manager, const data::Recipe& recipe) {
 	for (const auto& ingredient : recipe.ingredients) {
-		const auto* ingredient_proto = data::DataRawGet<data::Item>(
+		const auto* ingredient_proto = data_manager.DataRawGet<data::Item>(
 			data::DataCategory::item, ingredient.first);
 
 		const uint32_t possess_amount =
@@ -795,7 +794,7 @@ void jactorio::game::PlayerData::RecipeCraftR(const data::Recipe& recipe) {
 				// Craft sub-recipes recursively until met
 				for (unsigned int i = 0; i < batches; ++i) {
 					assert(ingredient_recipe);
-					RecipeCraftR(*ingredient_recipe);
+					RecipeCraftR(data_manager, *ingredient_recipe);
 				}
 			}
 
@@ -803,14 +802,15 @@ void jactorio::game::PlayerData::RecipeCraftR(const data::Recipe& recipe) {
 	}
 
 	// Ingredients met - Queue crafting recipe
-	RecipeQueue(recipe);
+	RecipeQueue(data_manager, recipe);
 }
 
 
-bool jactorio::game::PlayerData::RecipeCanCraftR(std::map<data::Item*, uint32_t>& used_items,
+bool jactorio::game::PlayerData::RecipeCanCraftR(const data::DataManager& data_manager,
+                                                 std::map<const data::Item*, uint32_t>& used_items,
                                                  const data::Recipe& recipe, const uint16_t batches) const {
 	for (const auto& ingredient : recipe.ingredients) {
-		auto* ingredient_proto = data::DataRawGet<data::Item>(
+		const auto* ingredient_proto = data_manager.DataRawGet<data::Item>(
 			data::DataCategory::item, ingredient.first);
 
 		// If item has already been counted, use the map used_items. Otherwise, count from inventory
@@ -851,7 +851,7 @@ bool jactorio::game::PlayerData::RecipeCanCraftR(std::map<data::Item*, uint32_t>
 
 		// Is able to craft desired amount of ingredient recursively?
 		assert(ingredient_recipe);
-		if (!RecipeCanCraftR(used_items, *ingredient_recipe, ingredient_required_batches)) {
+		if (!RecipeCanCraftR(data_manager, used_items, *ingredient_recipe, ingredient_required_batches)) {
 			return false;
 		}
 	}
@@ -860,7 +860,8 @@ bool jactorio::game::PlayerData::RecipeCanCraftR(std::map<data::Item*, uint32_t>
 
 }
 
-bool jactorio::game::PlayerData::RecipeCanCraft(const data::Recipe& recipe, const uint16_t batches) const {
-	std::map<data::Item*, uint32_t> used_items;
-	return RecipeCanCraftR(used_items, recipe, batches);
+bool jactorio::game::PlayerData::RecipeCanCraft(const data::DataManager& data_manager, const data::Recipe& recipe,
+                                                const uint16_t batches) const {
+	std::map<const data::Item*, uint32_t> used_items;
+	return RecipeCanCraftR(data_manager, used_items, recipe, batches);
 }

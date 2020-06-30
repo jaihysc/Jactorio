@@ -17,8 +17,8 @@
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/entity.h"
 #include "data/prototype/entity/health_entity.h"
-#include "data/prototype/entity/mining_drill.h"
 #include "data/prototype/entity/inserter.h"
+#include "data/prototype/entity/mining_drill.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/entity/transport/transport_belt.h"
 #include "data/prototype/entity/transport/transport_line.h"
@@ -39,7 +39,10 @@
 #define PYBIND_DATA_CLASS(cpp_class_, py_name_, ...)\
 	m.def(#py_name_, [](const std::string& iname = "") {\
 		auto* prototype = new (cpp_class_);\
-		DataRawAdd(iname, prototype, true);\
+		\
+		assert(active_data_manager);\
+		active_data_manager->DataRawAdd(iname, prototype, true);\
+		\
 		return prototype;\
 	}, py::arg("iname") = "", pybind11::return_value_policy::reference);\
 	py::class_<cpp_class_, __VA_ARGS__>(m, "_" #py_name_)
@@ -229,19 +232,18 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("RecipeCategory", DataCategory::recipe_category)
 		.value("RecipeGroup", DataCategory::recipe_group)
 
-		// .value("Entity", dataCategory::entity)
 		.value("ResourceEntity", DataCategory::resource_entity)
 		.value("EnemyEntity", DataCategory::enemy_entity)
 
-		// .value("HealthEntity", dataCategory::health_entity)
 		.value("ContainerEntity", DataCategory::container_entity)
-
 		.value("TransportBelt", DataCategory::transport_belt)
 		.value("MiningDrill", DataCategory::mining_drill)
 		.value("Inserter", DataCategory::inserter);
 
 	m.def("get", [](const DataCategory category, const std::string& iname) {
-		return DataRawGet<PrototypeBase>(category, iname);
+		assert(active_data_manager);
+
+		return active_data_manager->DataRawGet<PrototypeBase>(category, iname);
 	}, pybind11::return_value_policy::reference);
 
 	// ############################################################

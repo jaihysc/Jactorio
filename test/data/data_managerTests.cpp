@@ -8,17 +8,15 @@
 #include "data/data_manager.h"
 #include "data/prototype/sprite.h"
 
-namespace data
+namespace jactorio::data
 {
 	class DataManagerTest : public testing::Test
 	{
 	protected:
-		void TearDown() override {
-			jactorio::data::ClearData();
-		}
+		DataManager dataManager_{};
 
 		/// \brief Returns true if element exists in vector
-		static bool Contains(const std::vector<jactorio::data::Sprite*>& vector, const std::string& key) {
+		static bool Contains(const std::vector<Sprite*>& vector, const std::string& key) {
 			for (const auto& i : vector) {
 				if (i->name == key) {
 					return true;
@@ -30,13 +28,13 @@ namespace data
 	};
 
 	TEST_F(DataManagerTest, DataRawAdd) {
-		jactorio::data::SetDirectoryPrefix("test");
+		dataManager_.SetDirectoryPrefix("test");
 
-		DataRawAdd("raw-fish", new jactorio::data::Sprite{}, true);
+		dataManager_.DataRawAdd("raw-fish", new Sprite{}, true);
 
 		const auto* proto =
-			jactorio::data::DataRawGet<jactorio::data::Sprite>(
-				jactorio::data::DataCategory::sprite,
+			dataManager_.DataRawGet<Sprite>(
+				DataCategory::sprite,
 				"__test__/raw-fish");
 
 
@@ -53,84 +51,79 @@ namespace data
 	}
 
 	TEST_F(DataManagerTest, DataRawAddNoDirectoryPrefix) {
-		jactorio::data::SetDirectoryPrefix("this_should_not_exist");
+		dataManager_.SetDirectoryPrefix("this_should_not_exist");
 
-		auto* prototype = new jactorio::data::Sprite{};
-		DataRawAdd("raw-fish", prototype, false);
+		auto* prototype = new Sprite{};
+		dataManager_.DataRawAdd("raw-fish", prototype, false);
 
 		// Prefix __this_should_not_exist/ should not be added
 		{
 			const auto* proto =
-				jactorio::data::DataRawGet<jactorio::data::PrototypeBase>(
-					jactorio::data::DataCategory::sprite,
+				dataManager_.DataRawGet<PrototypeBase>(
+					DataCategory::sprite,
 					"__this_should_not_exist__/raw-fish");
 			EXPECT_EQ(proto, nullptr);
 		}
 		{
 			const auto* proto =
-				jactorio::data::DataRawGet<jactorio::data::PrototypeBase>(
-					jactorio::data::DataCategory::sprite,
+				dataManager_.DataRawGet<PrototypeBase>(
+					DataCategory::sprite,
 					"raw-fish");
 			EXPECT_EQ(proto, prototype);
 		}
 	}
 
 	TEST_F(DataManagerTest, DataRawAddIncrementId) {
-		DataRawAdd("raw-fish0", new jactorio::data::Sprite{});
-		DataRawAdd("raw-fish1", new jactorio::data::Sprite{});
-		DataRawAdd("raw-fish2", new jactorio::data::Sprite{});
-		DataRawAdd("raw-fish3", new jactorio::data::Sprite{});
+		dataManager_.DataRawAdd("raw-fish0", new Sprite{});
+		dataManager_.DataRawAdd("raw-fish1", new Sprite{});
+		dataManager_.DataRawAdd("raw-fish2", new Sprite{});
+		dataManager_.DataRawAdd("raw-fish3", new Sprite{});
 
 		const auto* proto =
-			jactorio::data::DataRawGet<jactorio::data::Sprite>(
-				jactorio::data::DataCategory::sprite,
+			dataManager_.DataRawGet<Sprite>(
+				DataCategory::sprite,
 				"raw-fish3");
 
 		EXPECT_EQ(proto->name, "raw-fish3");
-		EXPECT_EQ(proto->Category(), jactorio::data::DataCategory::sprite);
+		EXPECT_EQ(proto->Category(), DataCategory::sprite);
 		EXPECT_EQ(proto->internalId, 4);
 	}
 
 	TEST_F(DataManagerTest, DataRawOverride) {
-		jactorio::data::SetDirectoryPrefix("test");
+		dataManager_.SetDirectoryPrefix("test");
 
 		// Normal name
 		{
-			auto* prototype = new jactorio::data::Sprite{};
-			DataRawAdd("small-electric-pole", prototype, true);
+			auto* prototype = new Sprite{};
+			dataManager_.DataRawAdd("small-electric-pole", prototype, true);
 
 			// Override
-			auto* prototype2 = new jactorio::data::Sprite{};
-			DataRawAdd("small-electric-pole", prototype2, true);
+			auto* prototype2 = new Sprite{};
+			dataManager_.DataRawAdd("small-electric-pole", prototype2, true);
 
 			// Get
-			const auto proto = jactorio::data::DataRawGet<jactorio::data::Sprite>(
-				jactorio::data::DataCategory::sprite,
-				"__test__/small-electric-pole");
+			const auto* proto = dataManager_.DataRawGet<Sprite>(DataCategory::sprite, "__test__/small-electric-pole");
 
 			EXPECT_EQ(proto, prototype2);
 		}
 
-		jactorio::data::ClearData();
+		dataManager_.ClearData();
 		// Empty name - Overriding is disabled for empty names, this is for destructor data_raw add
 		// Instead, it will assign an auto generated name
 		{
-			auto* prototype = new jactorio::data::Sprite{};
-			DataRawAdd("", prototype, true);
+			auto* prototype = new Sprite{};
+			dataManager_.DataRawAdd("", prototype, true);
 
 			// No Override
-			auto* prototype2 = new jactorio::data::Sprite{};
-			DataRawAdd("", prototype2, true);
+			auto* prototype2 = new Sprite{};
+			dataManager_.DataRawAdd("", prototype2, true);
 
 			// Get
-			const auto sprite_protos =
-				jactorio::data::DataRawGetAll<jactorio::data::Sprite>(jactorio::data::DataCategory::sprite);
+			const auto sprite_protos = dataManager_.DataRawGetAll<Sprite>(DataCategory::sprite);
 			EXPECT_EQ(sprite_protos.size(), 2);
 
 
-			const auto proto = jactorio::data::DataRawGet<jactorio::data::Sprite>(
-				jactorio::data::DataCategory::sprite,
-				"");
+			const auto* proto = dataManager_.DataRawGet<Sprite>(DataCategory::sprite, "");
 
 			// The empty name will be automatically assigned to something else
 			EXPECT_EQ(proto, nullptr);
@@ -140,15 +133,13 @@ namespace data
 
 
 	TEST_F(DataManagerTest, LoadData) {
-		jactorio::data::SetDirectoryPrefix("asdf");
+		active_data_manager = &dataManager_;
+		dataManager_.SetDirectoryPrefix("asdf");
 
 		// Load_data should set the directory prefix based on the subfolder
-		jactorio::data::LoadData("data");
+		dataManager_.LoadData("data");
 
-		const auto proto =
-			jactorio::data::DataRawGet<jactorio::data::Sprite>(
-				jactorio::data::DataCategory::sprite,
-				"__test__/test_tile");
+		const auto* proto = dataManager_.DataRawGet<Sprite>(DataCategory::sprite, "__test__/test_tile");
 
 		if (proto == nullptr) {
 			FAIL();
@@ -162,11 +153,11 @@ namespace data
 
 	TEST_F(DataManagerTest, LoadDataInvalidPath) {
 		// Loading an invalid path will throw filesystem exception
-		jactorio::data::SetDirectoryPrefix("asdf");
+		dataManager_.SetDirectoryPrefix("asdf");
 
 		// Load_data should set the directory prefix based on the subfolder
 		try {
-			jactorio::data::LoadData("yeet");
+			dataManager_.LoadData("yeet");
 			FAIL();
 		}
 		catch (std::filesystem::filesystem_error&) {
@@ -176,21 +167,19 @@ namespace data
 
 	TEST_F(DataManagerTest, DataRawGetInvalid) {
 		// Should return a nullptr if the item is non-existent
-		const auto ptr =
-			jactorio::data::DataRawGet<jactorio::data::PrototypeBase>(jactorio::data::DataCategory::sprite,
-			                                                          "asdfjsadhfkjdsafhs");
+		const auto* ptr =
+			dataManager_.DataRawGet<PrototypeBase>(DataCategory::sprite, "asdfjsadhfkjdsafhs");
 
 		EXPECT_EQ(ptr, nullptr);
 	}
 
 
 	TEST_F(DataManagerTest, GetAllDataOfType) {
-		DataRawAdd("test_tile1", new jactorio::data::Sprite{});
-		DataRawAdd("test_tile2", new jactorio::data::Sprite{});
+		dataManager_.DataRawAdd("test_tile1", new Sprite{});
+		dataManager_.DataRawAdd("test_tile2", new Sprite{});
 
-		const std::vector<jactorio::data::Sprite*> paths = jactorio::data::DataRawGetAll<jactorio::
-			data::Sprite>(
-			jactorio::data::DataCategory::sprite);
+		const std::vector<Sprite*> paths = dataManager_.DataRawGetAll<Sprite>(
+			DataCategory::sprite);
 
 		EXPECT_EQ(Contains(paths, "test_tile1"), true);
 		EXPECT_EQ(Contains(paths, "test_tile2"), true);
@@ -200,14 +189,14 @@ namespace data
 
 	TEST_F(DataManagerTest, GetAllSorted) {
 		// Retrieved vector should have prototypes sorted in order of addition, first one being added is first in vector
-		DataRawAdd("test_tile1", new jactorio::data::Sprite{});
-		DataRawAdd("test_tile2", new jactorio::data::Sprite{});
-		DataRawAdd("test_tile3", new jactorio::data::Sprite{});
-		DataRawAdd("test_tile4", new jactorio::data::Sprite{});
+		dataManager_.DataRawAdd("test_tile1", new Sprite{});
+		dataManager_.DataRawAdd("test_tile2", new Sprite{});
+		dataManager_.DataRawAdd("test_tile3", new Sprite{});
+		dataManager_.DataRawAdd("test_tile4", new Sprite{});
 
 		// Get
-		const std::vector<jactorio::data::Sprite*> protos =
-			jactorio::data::DataRawGetAllSorted<jactorio::data::Sprite>(jactorio::data::DataCategory::sprite);
+		const std::vector<Sprite*> protos =
+			dataManager_.DataRawGetAllSorted<Sprite>(DataCategory::sprite);
 
 		EXPECT_EQ(protos[0]->name, "test_tile1");
 		EXPECT_EQ(protos[1]->name, "test_tile2");
@@ -216,22 +205,17 @@ namespace data
 	}
 
 	TEST_F(DataManagerTest, ClearData) {
-		DataRawAdd("small-electric-pole", new jactorio::data::Sprite{});
+		dataManager_.DataRawAdd("small-electric-pole", new Sprite{});
 
-		jactorio::data::ClearData();
+		dataManager_.ClearData();
 
 		// Get
-		auto* data =
-			jactorio::data::DataRawGet<jactorio::data::Sprite>(
-				jactorio::data::DataCategory::sprite,
-				"small-electric-pole");
+		auto* data = dataManager_.DataRawGet<Sprite>(DataCategory::sprite, "small-electric-pole");
 
 		EXPECT_EQ(data, nullptr);
 
 		// Get all
-		const std::vector<jactorio::data::Sprite*> data_all =
-			jactorio::data::DataRawGetAll<jactorio::data::Sprite>(
-				jactorio::data::DataCategory::sprite);
+		const std::vector<Sprite*> data_all = dataManager_.DataRawGetAll<Sprite>(DataCategory::sprite);
 
 		EXPECT_EQ(data_all.size(), 0);
 	}

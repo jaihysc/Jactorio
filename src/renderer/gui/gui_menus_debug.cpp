@@ -3,9 +3,9 @@
 
 #include "renderer/gui/gui_menus_debug.h"
 
+#include <imgui.h>
 #include <ostream>
 #include <glm/glm.hpp>
-#include <imgui.h>
 
 #include "jactorio.h"
 
@@ -20,6 +20,8 @@
 #include "renderer/gui/gui_menus.h"
 #include "renderer/rendering/mvp_manager.h"
 
+using namespace jactorio;
+
 bool show_timings_window      = false;
 bool show_demo_window         = false;
 bool show_item_spawner_window = false;
@@ -28,9 +30,9 @@ bool show_item_spawner_window = false;
 bool show_transport_line_info = false;
 bool show_inserter_info       = false;
 
-void jactorio::renderer::DebugMenuLogic(game::PlayerData& player_data) {
+void renderer::DebugMenuLogic(game::PlayerData& player_data, const data::DataManager& data_manager) {
 	if (show_transport_line_info)
-		DebugTransportLineInfo(player_data);
+		DebugTransportLineInfo(player_data, data_manager);
 
 	if (show_inserter_info)
 		DebugInserterInfo(player_data);
@@ -42,10 +44,11 @@ void jactorio::renderer::DebugMenuLogic(game::PlayerData& player_data) {
 		DebugTimings();
 
 	if (show_item_spawner_window)
-		DebugItemSpawner(player_data);
+		DebugItemSpawner(player_data, data_manager);
 }
 
-void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::UniqueDataBase*) {
+void renderer::DebugMenu(game::PlayerData& player_data, const data::DataManager& data_manager,
+                         const data::UniqueDataBase*) {
 	using namespace jactorio;
 
 	ImGuiWindowFlags main_window_flags = 0;
@@ -113,7 +116,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 	ImGui::End();
 }
 
-void jactorio::renderer::DebugTimings() {
+void renderer::DebugTimings() {
 	using namespace core;
 
 	ImGui::Begin("Timings");
@@ -127,12 +130,12 @@ void jactorio::renderer::DebugTimings() {
 
 int give_amount = 100;
 
-void jactorio::renderer::DebugItemSpawner(game::PlayerData& player_data) {
+void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::DataManager& data_manager) {
 	using namespace core;
 
 	ImGui::Begin("Item spawner");
 
-	auto game_items = data::DataRawGetAll<data::Item>(data::DataCategory::item);
+	auto game_items = data_manager.DataRawGetAll<data::Item>(data::DataCategory::item);
 	for (auto& item : game_items) {
 		ImGui::PushID(item->name.c_str());
 
@@ -162,27 +165,27 @@ std::pair<int32_t, int32_t> last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
 bool show_transport_segments     = false;
 
-void ShowTransportSegments(jactorio::game::WorldData& world_data) {
+void ShowTransportSegments(game::WorldData& world_data, const data::DataManager& data_manager) {
 	using namespace jactorio;
 
 	// Sprite representing the update point
-	auto* sprite_stop =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-red");
-	auto* sprite_moving =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-green");
-	auto* sprite_left_moving =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-aqua");
-	auto* sprite_right_moving =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-pink");
+	const auto* sprite_stop =
+		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-red");
+	const auto* sprite_moving =
+		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-green");
+	const auto* sprite_left_moving =
+		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-aqua");
+	const auto* sprite_right_moving =
+		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-pink");
 
-	auto* sprite_up =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-up");
-	auto* sprite_right =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-right");
-	auto* sprite_down =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-down");
-	auto* sprite_left =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-left");
+	const auto* sprite_up =
+		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-up");
+	const auto* sprite_right =
+		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-right");
+	const auto* sprite_down =
+		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-down");
+	const auto* sprite_left =
+		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-left");
 
 	// Get all update points and add it to the chunk's objects for drawing
 	for (auto* chunk : world_data.LogicGetChunks()) {
@@ -214,8 +217,8 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 			float segment_len_x;
 			float segment_len_y;
 
-			data::Sprite* direction_sprite;
-			data::Sprite* outline_sprite;
+			const data::Sprite* direction_sprite;
+			const data::Sprite* outline_sprite;
 
 			// Correspond the direction with a sprite representing the direction
 			switch (line_segment.direction) {
@@ -278,7 +281,7 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 	}
 }
 
-void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
+void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data::DataManager& data_manager) {
 	ImGui::Begin("Transport Line Info");
 
 	const auto selected_tile      = player_data.GetMouseTileCoords();
@@ -303,7 +306,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
 	if (show_transport_segments)
-		ShowTransportSegments(player_data.GetPlayerWorld());
+		ShowTransportSegments(player_data.GetPlayerWorld(), data_manager);
 
 	if (data) {
 		last_valid_line_segment = selected_tile;
@@ -376,12 +379,12 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 		if (ImGui::Button("Append Item Left"))
 			segment.AppendItem(true,
 			                   0.2,
-			                   data::DataRawGet<data::Item>(data::DataCategory::item, iname));
+			                   data_manager.DataRawGet<data::Item>(data::DataCategory::item, iname));
 
 		if (ImGui::Button("Append Item Right"))
 			segment.AppendItem(false,
 			                   0.2,
-			                   data::DataRawGet<data::Item>(data::DataCategory::item, iname));
+			                   data_manager.DataRawGet<data::Item>(data::DataCategory::item, iname));
 
 
 		// Display items
@@ -403,7 +406,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	ImGui::End();
 }
 
-void jactorio::renderer::DebugInserterInfo(game::PlayerData& player_data) {
+void renderer::DebugInserterInfo(game::PlayerData& player_data) {
 	core::ResourceGuard<void> guard{[]() { ImGui::End(); }};
 	ImGui::Begin("Inserter info");
 

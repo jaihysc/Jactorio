@@ -14,6 +14,8 @@
 
 namespace jactorio::data
 {
+	class DataManager;
+	
 	// Creates a setters for python API primarily, to chain initialization
 
 	// Parameter value has suffix a_b_c_d to ensure uniqueness
@@ -179,7 +181,7 @@ namespace jactorio::data
 		///
 		/// \brief Validates properties of the prototype are valid
 		/// \exception data::Data_exception If invalid
-		virtual void PostLoadValidate() const = 0;
+		virtual void PostLoadValidate(const DataManager&) const = 0;
 
 		///
 		/// \brief Called after the prototype has been validated

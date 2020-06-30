@@ -19,6 +19,8 @@ namespace jactorio::game
 		PlayerData playerData_{};
 		MouseSelection mouseSelection_{};
 
+		data::DataManager dataManager_{};
+
 		// Call setup_mouse_cursor before using
 		data::Sprite* cursorSprite_ = nullptr;
 
@@ -28,18 +30,12 @@ namespace jactorio::game
 			worldData_.AddChunk(Chunk(0, 0));
 		}
 
-		void TearDown() override {
-			if (setupCursor_) {
-				data::ClearData();
-			}
-		}
-
 		///
 		/// \brief If the test involves the selection cursor, which is loaded in the data_manager
 		void SetupMouseCursor() {
 			setupCursor_  = true;
 			cursorSprite_ = new data::Sprite{};
-			DataRawAdd("__core__/cursor-select", cursorSprite_);
+			dataManager_.DataRawAdd("__core__/cursor-select", cursorSprite_);
 		}
 	};
 
@@ -52,7 +48,7 @@ namespace jactorio::game
 		entity.placeable = true;
 
 		// Should set item's sprite at overlay layer at world position 0, 0
-		mouseSelection_.DrawOverlay(playerData_, &entity, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay).
 			prototypeData,
@@ -60,7 +56,7 @@ namespace jactorio::game
 		);
 
 		// Should clear last overlay at 0,0 Draw new at 1, 0
-		mouseSelection_.DrawOverlay(playerData_, &entity, 1, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 1, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay).
 			prototypeData,
@@ -84,7 +80,7 @@ namespace jactorio::game
 		entity.placeable = false;
 
 		// Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not placeable
-		mouseSelection_.DrawOverlay(playerData_, &entity, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay)
 			.prototypeData,
@@ -106,7 +102,7 @@ namespace jactorio::game
 		          ->GetLayer(ChunkTile::ChunkLayer::entity).prototypeData = &entity;
 
 		// Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not placeable
-		mouseSelection_.DrawOverlay(playerData_, &entity, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay)
 			.prototypeData,
@@ -118,7 +114,7 @@ namespace jactorio::game
 		// CLear last and draw nothing new
 
 		// Should set item's sprite at overlay layer at world position 0, 0
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay).
 			prototypeData,
@@ -126,7 +122,7 @@ namespace jactorio::game
 		);
 
 		// Should clear last overlay at 0,0 Draw new at 1, 0
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 1, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 1, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay).
 			prototypeData,
@@ -155,7 +151,7 @@ namespace jactorio::game
 		          ->GetLayer(ChunkTile::ChunkLayer::entity).prototypeData = &entity;
 
 
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay)
 			.prototypeData,
@@ -178,7 +174,7 @@ namespace jactorio::game
 		          ->GetLayer(ChunkTile::ChunkLayer::resource).prototypeData = &entity;
 
 
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay)
 			.prototypeData,
@@ -195,7 +191,7 @@ namespace jactorio::game
 
 		MouseSelection mouse_selection{};
 
-		mouse_selection.DrawOverlay(player_data, nullptr, 0, 0, data::Orientation::up);
+		mouse_selection.DrawOverlay(player_data, dataManager_, nullptr, 0, 0, data::Orientation::up);
 	}
 
 	TEST_F(MouseSelectionOverlayTest, DrawOverlay3x3) {
@@ -209,7 +205,7 @@ namespace jactorio::game
 		data::Sprite drill_sprite{};
 		drill.sprite = &drill_sprite;
 
-		mouseSelection_.DrawOverlay(playerData_, &drill, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &drill, 0, 0, data::Orientation::up);
 
 		for (int y = 0; y < 3; ++y) {
 			for (int x = 0; x < 3; ++x) {
@@ -222,7 +218,7 @@ namespace jactorio::game
 
 
 		// Removing the drawn overlay, no resource or entity data so no cursor is drawn
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 
 		for (int y = 0; y < 3; ++y) {
 			for (int x = 0; x < 3; ++x) {
@@ -244,11 +240,7 @@ namespace jactorio::game
 		untouched.prototypeData = &drill;
 
 
-		mouseSelection_.DrawOverlay(playerData_,
-		                            nullptr,
-		                            0,
-		                            0,
-		                            data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 
 		EXPECT_EQ(untouched.prototypeData, &drill);
 	}
@@ -291,7 +283,7 @@ namespace jactorio::game
 		entity.rotatable = true;
 		entity.placeable = true;
 
-		mouseSelection_.DrawOverlay(playerData_, &entity, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 0, 0, data::Orientation::up);
 
 		// On_r_get_sprite should have been called 
 		EXPECT_TRUE(entity.rGetSpriteCalled);

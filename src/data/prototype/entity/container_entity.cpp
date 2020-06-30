@@ -25,7 +25,7 @@ void jactorio::data::ContainerEntity::OnBuild(game::WorldData&,
 }
 
 bool jactorio::data::ContainerEntity::OnRShowGui(game::PlayerData& player_data,
-                                                 game::ChunkTileLayer* tile_layer) const {
-	renderer::ContainerEntity(player_data, tile_layer->GetUniqueData<ContainerEntityData>());
+                                                 const DataManager& data_manager, game::ChunkTileLayer* tile_layer) const {
+	renderer::ContainerEntity(player_data, data_manager, tile_layer->GetUniqueData<ContainerEntityData>());
 	return true;
 }

@@ -86,13 +86,13 @@ namespace jactorio::game
 	private:
 		ChunkTileLayer* activatedLayer_ = nullptr;
 
-		uint16_t pickupTickCounter = 0;
-		uint16_t pickupTickTarget  = 0;
+		uint16_t pickupTickCounter_ = 0;
+		uint16_t pickupTickTarget_  = 0;
 
 		// Do not reference this, this only tracks whether or not a different entity or another tile
 		// is selected by comparing pointers
-		const void* lastSelectedPtr = nullptr;
-		const void* lastTilePtr     = nullptr;
+		const void* lastSelectedPtr_ = nullptr;
+		const void* lastTilePtr_     = nullptr;
 
 	public:
 		data::Orientation placementOrientation = data::Orientation::up;
@@ -174,7 +174,8 @@ namespace jactorio::game
 		/// \param index The player inventory index
 		/// \param mouse_button Mouse button pressed; 0 - Left, 1 - Right
 		/// \param allow_reference_select If true, left clicking will select the item by reference
-		void InventoryClick(unsigned short index, unsigned short mouse_button, bool allow_reference_select,
+		void InventoryClick(const data::DataManager& data_manager,
+		                    unsigned short index, unsigned short mouse_button, bool allow_reference_select,
 		                    data::ItemStack* inv);
 
 		///
@@ -207,11 +208,11 @@ namespace jactorio::game
 		///
 		/// \brief Call every tick to count down the crafting time for the currently queued item (60 ticks = 1 second)
 
-		void RecipeCraftTick(uint16_t ticks = 1);
+		void RecipeCraftTick(const data::DataManager& data_manager, uint16_t ticks = 1);
 
 		///
 		/// \brief Queues a recipe to be crafted, this is displayed by the gui is the lower right corner
-		void RecipeQueue(const data::Recipe& recipe);
+		void RecipeQueue(const data::DataManager& data_manager, const data::Recipe& recipe);
 
 		///
 		/// \brief Returns const reference to recipe queue for rendering in gui
@@ -223,19 +224,21 @@ namespace jactorio::game
 		/// \brief The actual recursive function for recipe_craft_r
 		/// \param used_items Tracks amount of an item that has already been used,
 		/// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the inventory
-		bool RecipeCanCraftR(std::map<data::Item*, uint32_t>& used_items,
+		bool RecipeCanCraftR(const data::DataManager& data_manager,
+		                     std::map<const data::Item*, uint32_t>& used_items,
 		                     const data::Recipe& recipe, uint16_t batches) const;
 	public:
 		///
 		/// \brief Recursively depth first crafts the recipe
 		/// !! This WILL NOT check that the given recipe is valid or required ingredients are present and assumes it is!!
-		void RecipeCraftR(const data::Recipe& recipe);
+		void RecipeCraftR(const data::DataManager& data_manager, const data::Recipe& recipe);
 
 		///
 		/// \brief Recursively steps through a recipe and subrecipies to determine if it is craftable
 		/// \param recipe
 		/// \param batches How many runs of the recipe
-		bool RecipeCanCraft(const data::Recipe& recipe, uint16_t batches) const;
+		J_NODISCARD bool RecipeCanCraft(const data::DataManager& data_manager, const data::Recipe& recipe,
+		                                uint16_t batches) const;
 
 
 		// ============================================================================================

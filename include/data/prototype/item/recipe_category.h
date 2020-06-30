@@ -22,7 +22,7 @@ namespace jactorio::data
 		// Recipes belonging to this category
 		PYTHON_PROP_REF(RecipeCategory, std::vector<Recipe*>, recipes);
 
-		void PostLoadValidate() const override {
+		void PostLoadValidate(const DataManager&) const override {
 		}
 	};
 }

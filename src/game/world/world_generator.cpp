@@ -18,20 +18,22 @@
 
 constexpr auto kChunkWidth = jactorio::game::WorldData::kChunkWidth;
 
+using namespace jactorio;
+
 // T is value stored in noise_layer at data_category
 template <typename T>
-void GenerateChunk(jactorio::game::WorldData& world_data,
+void GenerateChunk(game::WorldData& world_data,
+                   const data::DataManager& data_manager,
                    const int chunk_x, const int chunk_y,
-                   const jactorio::data::DataCategory data_category,
-                   void (*func)(jactorio::game::ChunkTile&, void*, float, double)) {
+                   const data::DataCategory data_category,
+                   void (*func)(game::ChunkTile&, void*, float, double)) {
 	using namespace jactorio;
 
 	// The Y axis for libnoise is inverted. It causes no issues as of right now. I am leaving this here
 	// In case something happens in the future
 
 	// Get all TILE noise layers for building terrain
-	std::vector<data::NoiseLayer<T>*> noise_layers =
-		data::DataRawGetAll<data::NoiseLayer<T>>(data_category);
+	auto noise_layers = data_manager.DataRawGetAll<data::NoiseLayer<T>>(data_category);
 
 	// Sort Noise layers, the one with the highest order takes priority if tiles overlap
 	std::sort(noise_layers.begin(), noise_layers.end(),
@@ -51,7 +53,7 @@ void GenerateChunk(jactorio::game::WorldData& world_data,
 		tiles = chunk->Tiles();
 
 	int seed_offset = 0;  // Incremented every time a noise layer generates to keep terrain unique
-	for (auto& noise_layer : noise_layers) {
+	for (const auto& noise_layer : noise_layers) {
 		module::Perlin base_terrain_noise_module;
 		base_terrain_noise_module.SetSeed(world_data.GetWorldGeneratorSeed() + seed_offset++);
 
@@ -90,16 +92,18 @@ void GenerateChunk(jactorio::game::WorldData& world_data,
 }
 
 ///
-/// Generates a chunk and adds it to the world when done <br>
+/// \brief Generates a chunk and adds it to the world when done <br>
 /// Call this with a std::thread to to this in async
-void Generate(jactorio::game::WorldData& world_data, const int chunk_x, const int chunk_y) {
+void Generate(game::WorldData& world_data, const data::DataManager& data_manager,
+              const int chunk_x, const int chunk_y) {
 	using namespace jactorio;
 
 	LOG_MESSAGE_f(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
 
 	// Base
 	GenerateChunk<data::Tile>(
-		world_data, chunk_x, chunk_y,
+		world_data, data_manager,
+		chunk_x, chunk_y,
 		data::DataCategory::noise_layer_tile,
 		[](game::ChunkTile& target, void* tile, float, double) {
 			assert(tile != nullptr);  // Base tile should never generate nullptr
@@ -111,7 +115,8 @@ void Generate(jactorio::game::WorldData& world_data, const int chunk_x, const in
 
 	// Resources
 	GenerateChunk<data::ResourceEntity>(
-		world_data, chunk_x, chunk_y,
+		world_data, data_manager,
+		chunk_x, chunk_y,
 		data::DataCategory::noise_layer_entity,
 		[](game::ChunkTile& target, void* tile, const float val, const double richness) {
 			if (tile == nullptr)  // Do not override existing tiles with nullptr
@@ -134,8 +139,8 @@ void Generate(jactorio::game::WorldData& world_data, const int chunk_x, const in
 }
 
 
-void jactorio::game::WorldData::QueueChunkGeneration(const Chunk::ChunkCoord chunk_x,
-                                                     const Chunk::ChunkCoord chunk_y) const {
+void game::WorldData::QueueChunkGeneration(const Chunk::ChunkCoord chunk_x,
+                                           const Chunk::ChunkCoord chunk_y) const {
 	const auto chunk_key = std::make_pair(chunk_x, chunk_y);
 
 	// Is the chunk already under generation? If so return
@@ -147,13 +152,13 @@ void jactorio::game::WorldData::QueueChunkGeneration(const Chunk::ChunkCoord chu
 	worldGenChunks_.insert(std::pair{chunk_x, chunk_y});
 }
 
-void jactorio::game::WorldData::GenChunk(uint8_t amount) {
+void game::WorldData::GenChunk(const data::DataManager& data_manager, uint8_t amount) {
 	assert(amount > 0);
 
 	// Generate a chunk
 	// Find the first chunk which has yet been generated, ->second is true indicates it NEEDS generation
 	for (const auto& coords : worldGenChunks_) {
-		Generate(*this, std::get<0>(coords), std::get<1>(coords));
+		Generate(*this, data_manager, std::get<0>(coords), std::get<1>(coords));
 
 		// Mark the chunk as done generating
 		worldGenChunks_.erase(coords);

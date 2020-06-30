@@ -15,6 +15,7 @@ namespace jactorio
 	namespace data
 	{
 		class Entity;
+		class DataManager;
 	}
 
 	namespace game
@@ -44,11 +45,12 @@ namespace jactorio::game
 	public:
 		///
 		/// \brief Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the cursor
-		void DrawCursorOverlay(PlayerData& player_data);
+		void DrawCursorOverlay(PlayerData& player_data, const data::DataManager& data_manager);
 
 		///
 		/// \brief Draws selection box over entity & no item selected. | With item selected: draws ghost of entity
-		void DrawOverlay(PlayerData& player_data, data::Entity* selected_entity, int world_x, int world_y,
+		void DrawOverlay(PlayerData& player_data, const data::DataManager& data_manager,
+						 data::Entity* selected_entity, int world_x, int world_y,
 		                 data::Orientation
 		                 placement_orientation);
 	};

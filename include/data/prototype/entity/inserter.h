@@ -89,7 +89,7 @@ namespace jactorio::data
 		              game::ChunkTileLayer& tile_layer) const override;
 
 
-		void PostLoadValidate() const override {
+		void PostLoadValidate(const DataManager&) const override {
 			J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
 		}
 

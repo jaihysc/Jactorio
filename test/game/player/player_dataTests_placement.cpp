@@ -19,10 +19,7 @@ namespace jactorio::game
 		PlayerData playerData_{};
 		WorldData worldData_{};
 
-		void TearDown() override {
-			data::ClearData();
-		}
-
+		data::DataManager dataManager_{};
 
 		// Creates the base tile and entity at world coords
 		void SetEntityCoords(const int world_x,
@@ -232,7 +229,7 @@ namespace jactorio::game
 		auto* entity       = new data::ContainerEntity();
 		entity->pickupTime = 1.f;
 		entity->SetItem(&item);
-		DataRawAdd("chester", entity);
+		dataManager_.DataRawAdd("chester", entity);
 
 		// Create world with entity at 0, 0
 		auto* tiles = new ChunkTile[1024];
@@ -290,7 +287,7 @@ namespace jactorio::game
 		auto* entity       = new data::ResourceEntity();
 		entity->pickupTime = 3.f;
 		entity->SetItem(&item);
-		DataRawAdd("diamond", entity);
+		dataManager_.DataRawAdd("diamond", entity);
 
 		// Create world with the resource entity at 0, 0
 		auto* tiles = new ChunkTile[1024];
@@ -342,7 +339,7 @@ namespace jactorio::game
 		auto* resource_entity       = new data::ResourceEntity();
 		resource_entity->pickupTime = 3.f;
 		resource_entity->SetItem(&item);
-		DataRawAdd("diamond", resource_entity);
+		dataManager_.DataRawAdd("diamond", resource_entity);
 
 
 		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::resource, resource_entity);
@@ -357,7 +354,7 @@ namespace jactorio::game
 		container_entity->pickupTime = 1.f;
 		container_entity->SetItem(&item);
 
-		DataRawAdd("chester", container_entity);
+		dataManager_.DataRawAdd("chester", container_entity);
 
 		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::entity, container_entity);
 
@@ -417,8 +414,8 @@ namespace jactorio::game
 			                  const WorldData::WorldPair& emit_coords,
 			                  const WorldData::WorldPair& receive_coords,
 			                  const data::UpdateType type) const override {
-				emit    = emit_coords;
-				receive = receive_coords;
+				emit       = emit_coords;
+				receive    = receive_coords;
 				this->type = type;
 			}
 		};

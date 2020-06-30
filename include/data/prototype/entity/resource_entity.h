@@ -55,7 +55,7 @@ namespace jactorio::data
 		}
 
 
-		void PostLoadValidate() const override {
+		void PostLoadValidate(const DataManager&) const override {
 			// Must convert to at least 1 game tick
 			J_DATA_ASSERT(pickupTime * JC_GAME_HERTZ >= 1, "Pickup time is too small");
 		}

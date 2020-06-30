@@ -47,6 +47,7 @@ namespace jactorio::data
 		PROTOTYPE_CATEGORY(mining_drill);
 
 
+		// TODO miningSpeed unimplemented
 		PYTHON_PROP_REF_I(MiningDrill, double, miningSpeed, 1.f);  // Mines 1 resource every 60 game ticks
 
 		/// Number of tiles to extend the mining radius around the entity outside of entity tile width and height	
@@ -58,7 +59,8 @@ namespace jactorio::data
 		// ======================================================================
 		// Rendering
 
-		bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
+		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
+						game::ChunkTileLayer* tile_layer) const override;
 
 		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
 		                                                GameTickT game_tick) const override;
@@ -103,7 +105,7 @@ namespace jactorio::data
 		              game::ChunkTileLayer& tile_layer) const override;
 
 
-		void PostLoadValidate() const override {
+		void PostLoadValidate(const DataManager&) const override {
 			J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");
 			J_DATA_ASSERT(spriteE != nullptr, "East sprite not provided");
 			J_DATA_ASSERT(spriteS != nullptr, "South sprite not provided");

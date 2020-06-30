@@ -155,15 +155,16 @@ void jactorio::renderer::Setup(SDL_Window* window) {
 }
 
 void DrawMenu(jactorio::renderer::Menu menu,
-              jactorio::game::PlayerData& player_data, const jactorio::data::UniqueDataBase* unique_data = nullptr) {
+              jactorio::game::PlayerData& player_data, const jactorio::data::DataManager& data_manager,
+              const jactorio::data::UniqueDataBase* unique_data = nullptr) {
 	auto& gui_menu = jactorio::renderer::menus[static_cast<int>(menu)];
 
 	if (gui_menu.visible) {
-		gui_menu.drawPtr(player_data, unique_data);
+		gui_menu.drawPtr(player_data, data_manager, unique_data);
 	}
 }
 
-void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, game::EventData& event) {
+void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::DataManager& data_manager, game::EventData& event) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame
@@ -181,8 +182,8 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, game::EventDat
 	// ImPushFont(font);
 	// ImPopFont();
 
-	DrawMenu(Menu::DebugMenu, player_data);
-	DebugMenuLogic(player_data);
+	DrawMenu(Menu::DebugMenu, player_data, data_manager);
+	DebugMenuLogic(player_data, data_manager);
 
 	// Draw gui for active entity
 	// Do not draw character and recipe menu while in an entity menu
@@ -197,7 +198,7 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, game::EventDat
 			layer = layer->GetMultiTileParent();
 		}
 
-		drew_gui = static_cast<const data::Entity*>(layer->prototypeData)->OnRShowGui(player_data, layer);
+		drew_gui = static_cast<const data::Entity*>(layer->prototypeData)->OnRShowGui(player_data, data_manager, layer);
 		if (drew_gui) {
 			SetVisible(Menu::CharacterMenu, false);
 		}
@@ -207,13 +208,13 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, game::EventDat
 	}
 
 	if (!drew_gui) {
-		DrawMenu(Menu::CharacterMenu, player_data);
+		DrawMenu(Menu::CharacterMenu, player_data, data_manager);
 	}
 
 	// Player gui
-	CursorWindow(player_data);
-	CraftingQueue(player_data);
-	PickupProgressbar(player_data);
+	CursorWindow(player_data, data_manager);
+	CraftingQueue(player_data, data_manager);
+	PickupProgressbar(player_data, data_manager);
 
 	// Render
 	ImGui::Render();

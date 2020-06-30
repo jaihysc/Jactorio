@@ -75,7 +75,7 @@ namespace jactorio::data
 		PYTHON_PROP_REF_I(Entity, float, pickupTime, 1);
 
 
-		void PostLoadValidate() const override;
+		void PostLoadValidate(const DataManager& data_manager) const override;
 
 		// ======================================================================
 		// Localized names
@@ -101,7 +101,7 @@ namespace jactorio::data
 			return {this->sprite, 0};
 		}
 
-		bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override {
+		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager, game::ChunkTileLayer* tile_layer) const override {
 			return false;
 		}
 
@@ -143,7 +143,7 @@ namespace jactorio::data
 		}
 	};
 
-	inline void Entity::PostLoadValidate() const {
+	inline void Entity::PostLoadValidate(const DataManager& data_manager) const {
 		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
 		J_DATA_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive")
 	}

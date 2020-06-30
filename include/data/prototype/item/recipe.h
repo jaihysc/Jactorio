@@ -9,6 +9,8 @@
 
 #include <unordered_map>
 #include <vector>
+
+#include "data/data_manager.h"
 #include "data/prototype/prototype_base.h"
 
 namespace jactorio::data
@@ -44,7 +46,7 @@ namespace jactorio::data
 		}
 
 
-		void PostLoadValidate() const override;
+		void PostLoadValidate(const DataManager&) const override;
 
 	private:
 		static std::unordered_map<std::string, Recipe*> itemRecipes_;

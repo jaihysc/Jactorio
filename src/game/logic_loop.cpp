@@ -28,12 +28,11 @@ void jactorio::game::InitLogicLoop() {
 
 	// Initialize game data
 	core::ResourceGuard<void> game_data_guard([]() { delete game_data; });
-	game_data = new GameData();
+	game_data                 = new GameData();
+	data::active_data_manager = &game_data->prototype;
 
-	// Load prototype data
-	core::ResourceGuard data_manager_guard(&data::ClearData);
 	try {
-		data::LoadData(core::ResolvePath("data"));
+		game_data->prototype.LoadData(core::ResolvePath("data"));
 	}
 	catch (data::DataException&) {
 		// Prototype loading error
@@ -154,8 +153,8 @@ void jactorio::game::InitLogicLoop() {
 				game_data->world.OnTickAdvance();
 				game_data->player.MouseCalculateSelectedTile();
 
-				game_data->world.GenChunk();
-				game_data->input.mouse.DrawCursorOverlay(game_data->player);
+				game_data->world.GenChunk(game_data->prototype);
+				game_data->input.mouse.DrawCursorOverlay(game_data->player, game_data->prototype);
 
 
 				// Logistics logic
@@ -176,7 +175,7 @@ void jactorio::game::InitLogicLoop() {
 			{
 				std::lock_guard<std::mutex> guard{game_data->player.mutex};
 
-				game_data->player.RecipeCraftTick();
+				game_data->player.RecipeCraftTick(game_data->prototype);
 			}
 
 			// Lock all mutexes for events

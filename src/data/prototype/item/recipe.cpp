@@ -5,6 +5,9 @@
 
 #include <mutex>
 
+#include "data/data_manager.h"
+#include "data/prototype/item/item.h"
+
 std::unordered_map<std::string, jactorio::data::Recipe*> jactorio::data::Recipe::itemRecipes_{};
 std::mutex mutex;
 
@@ -18,14 +21,13 @@ jactorio::data::Recipe* jactorio::data::Recipe::GetItemRecipe(const std::string&
 	return itemRecipes_[iname];
 }
 
-/**
- * Recursively resolves raw materials
- */
-void resolve_raw_recipe(std::unordered_map<std::string, uint16_t>& materials_raw,
-                        jactorio::data::Recipe* recipe, const uint16_t amount) {
+///
+/// \brief Recursively resolves raw materials
+void ResolveRawRecipe(std::unordered_map<std::string, uint16_t>& materials_raw,
+                      const jactorio::data::Recipe* recipe, const uint16_t amount) {
 	using namespace jactorio;
 
-	for (auto& recipe_ingredient : recipe->ingredients) {
+	for (const auto& recipe_ingredient : recipe->ingredients) {
 		auto* ingredient_recipe = data::Recipe::GetItemRecipe(recipe_ingredient.first);
 
 		// No recipe means this is a raw material
@@ -40,7 +42,7 @@ void resolve_raw_recipe(std::unordered_map<std::string, uint16_t>& materials_raw
 		// e.g: 5 required, recipe in batches of 2 = 6
 		unsigned int x = recipe_ingredient.second * amount, y = ingredient_recipe->GetProduct().second, q;
 		q              = (x + y - 1) / y;
-		resolve_raw_recipe(materials_raw, ingredient_recipe, q);
+		ResolveRawRecipe(materials_raw, ingredient_recipe, q);
 	}
 
 }
@@ -49,8 +51,8 @@ std::vector<jactorio::data::RecipeItem> jactorio::data::Recipe::RecipeGetTotalRa
 	// Key is ptr instead of std::string for some added speed
 	std::unordered_map<std::string, uint16_t> map_raw;
 
-	const auto recipe = GetItemRecipe(iname);
-	resolve_raw_recipe(map_raw, recipe, 1);
+	const auto* recipe = GetItemRecipe(iname);
+	ResolveRawRecipe(map_raw, recipe, 1);
 
 	// Transform map into vector
 	std::vector<RecipeItem> v;
@@ -61,9 +63,9 @@ std::vector<jactorio::data::RecipeItem> jactorio::data::Recipe::RecipeGetTotalRa
 	return v;
 }
 
-void jactorio::data::Recipe::PostLoadValidate() const {
+void jactorio::data::Recipe::PostLoadValidate(const DataManager& data_manager) const {
 	J_DATA_ASSERT(!ingredients.empty(), "No ingredients specified for recipe")
-	for (auto& ingredient : ingredients) {
+	for (const auto& ingredient : ingredients) {
 		J_DATA_ASSERT(!ingredient.first.empty(), "Empty ingredient internal name specifier");
 		J_DATA_ASSERT(ingredient.second > 0, "Ingredient required amount minimum is 1");
 	}

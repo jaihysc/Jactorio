@@ -11,26 +11,17 @@
 #include "data/local_parser.h"
 #include "data/pybind/pybind_manager.h"
 
-// Position 0 reserved to indicate error
-constexpr auto internal_id_start = 1;
-
-/**
- * Internal id which will be assigned to the next prototype added
- */
-unsigned int internal_id_new = internal_id_start;
-
-/**
- * Appended to the beginning of each new prototype
- */
-std::string directory_prefix;
-
-void jactorio::data::SetDirectoryPrefix(const std::string& name) {
-	directory_prefix = name;
+jactorio::data::DataManager::~DataManager() {
+	ClearData();
 }
 
-void jactorio::data::DataRawAdd(const std::string& iname,
-                                PrototypeBase* const prototype,
-                                const bool add_directory_prefix) {
+void jactorio::data::DataManager::SetDirectoryPrefix(const std::string& name) {
+	directoryPrefix_ = name;
+}
+
+void jactorio::data::DataManager::DataRawAdd(const std::string& iname,
+                                             PrototypeBase* const prototype,
+                                             const bool add_directory_prefix) {
 	const DataCategory data_category = prototype->Category();
 
 	// Use the following format internal name
@@ -39,7 +30,7 @@ void jactorio::data::DataRawAdd(const std::string& iname,
 	{
 		std::ostringstream sstr;
 		if (add_directory_prefix)
-			sstr << "__" << directory_prefix << "__/";
+			sstr << "__" << directoryPrefix_ << "__/";
 
 		sstr << iname;
 		formatted_iname = sstr.str();
@@ -50,11 +41,11 @@ void jactorio::data::DataRawAdd(const std::string& iname,
 	if (iname.empty()) {
 		// Generate a internal name based on the id
 		std::ostringstream sstr;
-		sstr << "@" << internal_id_new;
+		sstr << "@" << internalIdNew_;
 		formatted_iname = sstr.str();
 	}
 	else {
-		const auto& category = data_raw[static_cast<uint16_t>(data_category)];
+		const auto& category = dataRaw[static_cast<uint16_t>(data_category)];
 		auto it              = category.find(formatted_iname);
 		if (it != category.end()) {
 			LOG_MESSAGE_f(warning,
@@ -71,18 +62,18 @@ void jactorio::data::DataRawAdd(const std::string& iname,
 	prototype->name = formatted_iname;
 
 	if (prototype->order == 0)
-		prototype->order = internal_id_new;
+		prototype->order = internalIdNew_;
 	if (prototype->GetLocalizedName().empty())
 		prototype->SetLocalizedName(formatted_iname);
 
-	prototype->internalId = internal_id_new++;
+	prototype->internalId = internalIdNew_++;
 
 
-	data_raw[static_cast<uint16_t>(data_category)][formatted_iname] = prototype;
+	dataRaw[static_cast<uint16_t>(data_category)][formatted_iname] = prototype;
 	LOG_MESSAGE_f(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void jactorio::data::LoadData(
+void jactorio::data::DataManager::LoadData(
 	const std::string& data_folder_path) {
 	// Get all sub-folders in ~/data/
 	// Read data.cfg files within each sub-folder
@@ -144,21 +135,21 @@ void jactorio::data::LoadData(
 			}
 
 			auto local_contents = core::ReadFile(cfg_file_path.str());
-			LocalParseNoThrow(local_contents, directory_name);
+			LocalParseNoThrow(*this, local_contents, directory_name);
 		}
 
 		LOG_MESSAGE_f(info, "Directory %s loaded", current_directory.c_str())
 	}
 
 	LOG_MESSAGE(info, "Validating loaded prototypes")
-	for (auto& prototype_categories : data_raw) {
+	for (auto& prototype_categories : dataRaw) {
 		for (auto& pair : prototype_categories) {
 			auto& prototype = *pair.second;
 			LOG_MESSAGE_f(debug, "Validating prototype %d %s", prototype.internalId, prototype.name.c_str());
 
 			prototype.PostLoad();
 			try {
-				prototype.PostLoadValidate();
+				prototype.PostLoadValidate(*this);
 			}
 			catch (DataException& e) {
 				LOG_MESSAGE_f(error, "Prototype validation failed: '%s'", e.what());
@@ -171,9 +162,9 @@ void jactorio::data::LoadData(
 	}
 }
 
-void jactorio::data::ClearData() {
+void jactorio::data::DataManager::ClearData() {
 	// Iterate through both unordered maps and delete all pointers
-	for (auto& map : data_raw) {
+	for (auto& map : dataRaw) {
 		// Category unordered maps
 		for (auto& category_pair : map) {
 			delete category_pair.second;
@@ -181,5 +172,5 @@ void jactorio::data::ClearData() {
 		map.clear();
 	}
 
-	internal_id_new = internal_id_start;
+	internalIdNew_ = internal_id_start;
 }

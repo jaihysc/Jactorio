@@ -56,7 +56,7 @@ namespace jactorio::data
 		              game::ChunkTileLayer&) const override {
 		}
 
-		bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
+		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager, game::ChunkTileLayer* tile_layer) const override;
 
 		Sprite::SetT MapPlacementOrientation(Orientation,
 		                                     game::WorldData&,

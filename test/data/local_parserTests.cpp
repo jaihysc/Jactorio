@@ -3,25 +3,28 @@
 
 #include <gtest/gtest.h>
 
-#include "core/resource_guard.h"
 #include "data/data_exception.h"
 #include "data/data_manager.h"
 #include "data/local_parser.h"
 #include "data/prototype/sprite.h"
 
-namespace data
+namespace jactorio::data
 {
-	TEST(LocalParser, Parse) {
-		auto guard = jactorio::core::ResourceGuard(jactorio::data::ClearData);
+	class LocalParserTest : public testing::Test
+	{
+	protected:
+		DataManager dataManager_;
+	};
 
+	TEST_F(LocalParserTest, Parse) {
 		// Setup prototypes
-		jactorio::data::SetDirectoryPrefix("test");
+		dataManager_.SetDirectoryPrefix("test");
 
-		auto* prototype = new jactorio::data::Sprite();
-		DataRawAdd("test_tile", prototype, true);
+		auto* prototype = new Sprite();
+		dataManager_.DataRawAdd("test_tile", prototype, true);
 
-		auto* prototype2 = new jactorio::data::Sprite();
-		DataRawAdd("test_tile1", prototype2, true);
+		auto* prototype2 = new Sprite();
+		dataManager_.DataRawAdd("test_tile1", prototype2, true);
 
 
 		const std::string str =
@@ -31,18 +34,18 @@ namespace data
 		
 				test_tile1=Test tile 2)";
 
-		jactorio::data::LocalParse(str, "test");
+		LocalParse(dataManager_, str, "test");
 
 		// Validate local was set
 		EXPECT_EQ(prototype->GetLocalizedName(), "Test tile 1");
 		EXPECT_EQ(prototype2->GetLocalizedName(), "Test tile 2");
 	}
 
-	void expect_err(const std::string& str) {
+	void ExpectErr(DataManager& data_manager, const std::string& str) {
 		try {
-			jactorio::data::LocalParse(str, "asdf");
+			LocalParse(data_manager, str, "asdf");
 		}
-		catch (jactorio::data::DataException&) {
+		catch (DataException&) {
 			return;
 		}
 
@@ -51,15 +54,15 @@ namespace data
 		FAIL();
 	}
 
-	TEST(LocalParser, ParseErr) {
+	TEST_F(LocalParserTest, ParseErr) {
 		// Illegal character (=)
 		// Missing r val after =
 		// Missing r val
 		// Missing l val
 
-		expect_err("graphics/g1=g1 graphics/r1=r1");
-		expect_err("audio/s5=");
-		expect_err("graphics/g2 g2");
-		expect_err("    =r2");
+		ExpectErr(dataManager_, "graphics/g1=g1 graphics/r1=r1");
+		ExpectErr(dataManager_, "audio/s5=");
+		ExpectErr(dataManager_, "graphics/g2 g2");
+		ExpectErr(dataManager_, "    =r2");
 	}
 }

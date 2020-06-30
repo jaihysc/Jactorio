@@ -100,7 +100,7 @@ namespace jactorio::data
 
 		///
 		/// \return true is Sprite is in specified group
-		bool IsInGroup(SpriteGroup group);
+		bool IsInGroup(SpriteGroup group) const;
 
 		///
 		/// \brief If group is empty, it is set to the group provided
@@ -181,7 +181,7 @@ namespace jactorio::data
 		Sprite* LoadImage(const std::string& image_path);
 
 
-		void PostLoadValidate() const override;
+		void PostLoadValidate(const DataManager& data_manager) const override;
 
 
 		// ======================================================================

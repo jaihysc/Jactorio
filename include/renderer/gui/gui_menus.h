@@ -7,6 +7,8 @@
 
 #include "jactorio.h"
 
+#include "data/data_manager.h"
+
 namespace jactorio
 {
 	namespace game
@@ -24,7 +26,8 @@ namespace jactorio
 namespace jactorio::renderer
 {
 	/// Function to draw the menu
-	using MenuFunction = void (*)(game::PlayerData& player_data, const data::UniqueDataBase* unique_data);
+	using MenuFunction = void (*)(game::PlayerData& player_data, const data::DataManager& data_manager,
+								  const data::UniqueDataBase* unique_data);
 
 	// ======================================================================
 	// Substitutes name_ below at macro definitions to create an array of guis
@@ -48,7 +51,8 @@ namespace jactorio::renderer
 
 	// Function
 #define J_GUI_WINDOW_SUB(name_)\
-	void name_(game::PlayerData& player_data, const data::UniqueDataBase* unique_data = nullptr);
+	void name_(game::PlayerData& player_data, const data::DataManager& data_manager,\
+			   const data::UniqueDataBase* unique_data = nullptr);
 
 	J_GUI_WINDOW
 

@@ -58,7 +58,7 @@ jactorio::data::Sprite::Sprite(Sprite&& other) noexcept
 
 // ======================================================================
 
-bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) {
+bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) const {
 	for (auto& i : this->group) {
 		if (i == group)
 			return true;
@@ -150,7 +150,7 @@ jactorio::data::Sprite* jactorio::data::Sprite::LoadImage(const std::string& ima
 	return this;
 }
 
-void jactorio::data::Sprite::PostLoadValidate() const {
+void jactorio::data::Sprite::PostLoadValidate(const DataManager&) const {
 	J_DATA_ASSERT(frames > 0, "Frames must be at least 1");
 	J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
 }

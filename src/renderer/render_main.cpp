@@ -85,7 +85,7 @@ void RenderingLoop() {
 			{
 				std::lock_guard<std::mutex> guard{game::game_data->player.mutex};
 
-				renderer::ImguiDraw(game::game_data->player, game::game_data->event);
+				renderer::ImguiDraw(game::game_data->player, game::game_data->prototype, game::game_data->event);
 			}
 		}
 		// ======================================================================
@@ -153,8 +153,8 @@ void renderer::RenderInit() {
 
 	// Loading textures
 	auto renderer_sprites = RendererSprites();
-	renderer_sprites.GInitializeSpritemap(data::Sprite::SpriteGroup::terrain, true);
-	renderer_sprites.GInitializeSpritemap(data::Sprite::SpriteGroup::gui, false);
+	renderer_sprites.GInitializeSpritemap(game::game_data->prototype, data::Sprite::SpriteGroup::terrain, true);
+	renderer_sprites.GInitializeSpritemap(game::game_data->prototype, data::Sprite::SpriteGroup::gui, false);
 
 	// Terrain
 	Renderer::SetSpritemapCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);

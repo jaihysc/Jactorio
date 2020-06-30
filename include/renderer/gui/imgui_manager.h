@@ -5,6 +5,7 @@
 #define JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
 #pragma once
 
+#include "data/data_manager.h"
 #include "game/event/event.h"
 #include "game/player/player_data.h"
 #include "renderer/rendering/spritemap_generator.h"
@@ -40,7 +41,7 @@ namespace jactorio::renderer
 
 	void Setup(SDL_Window* window);
 
-	void ImguiDraw(game::PlayerData& player_data, game::EventData& event);
+	void ImguiDraw(game::PlayerData& player_data, const data::DataManager& data_manager, game::EventData& event);
 
 	void ImguiTerminate();
 }

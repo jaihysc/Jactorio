@@ -234,7 +234,7 @@ namespace jactorio::game
 		/// \brief Takes first in from chunk generation queue and generates chunk
 		/// Call once per logic loop tick to generate one chunk only, this keeps performance constant
 		/// when generating large amounts of chunks
-		void GenChunk(uint8_t amount = 1);
+		void GenChunk(const data::DataManager& data_manager, uint8_t amount = 1);
 
 
 		// ======================================================================

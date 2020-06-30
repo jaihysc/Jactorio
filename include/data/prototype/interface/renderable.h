@@ -11,6 +11,11 @@
 
 namespace jactorio
 {
+	namespace data
+	{
+		class DataManager;
+	}
+
 	namespace game
 	{
 		class PlayerData;
@@ -69,7 +74,8 @@ namespace jactorio::data
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data
-		virtual bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const = 0;
+		virtual bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
+								game::ChunkTileLayer* tile_layer) const = 0;
 	};
 }
 

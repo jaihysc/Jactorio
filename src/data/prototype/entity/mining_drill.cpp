@@ -11,10 +11,11 @@
 #include "renderer/gui/gui_menus.h"
 
 
-bool jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const {
+bool jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
+											 game::ChunkTileLayer* tile_layer) const {
 	auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
 
-	renderer::MiningDrill(player_data, drill_data);
+	renderer::MiningDrill(player_data, data_manager, drill_data);
 	return true;
 }
 

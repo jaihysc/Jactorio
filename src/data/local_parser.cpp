@@ -25,7 +25,7 @@ bool in_r_val = false;  // Right of equals sign
 /**
  * Call this when entering a new line to reset variables and buffers
  */
-void reset_variables() {
+void ResetVariables() {
 	char_number = 0;
 
 	in_l_val = false;
@@ -37,7 +37,7 @@ void reset_variables() {
  * Logs parsing error message and throws
  * @exception Data_exception Thrown when this function is called
  */
-void parse_error(const std::string& message) {
+void ParseError(const std::string& message) {
 	std::stringstream str_s;
 	str_s << "Localization parse failed " << line_number << ":" << char_number << "\n" << message;
 	LOG_MESSAGE_f(error, "%s", str_s.str().c_str());
@@ -49,14 +49,14 @@ void parse_error(const std::string& message) {
 /**
  * Helper for parse, handles end of line actions
  */
-void parse_eol(const std::string& directory_prefix) {
+void ParseEol(jactorio::data::DataManager& data_manager, const std::string& directory_prefix) {
 	using namespace jactorio;
 
 	// R val was not specified or empty
 	if (in_l_val && !in_r_val)
-		parse_error("expected '=' to switch to r-value, got newline");
+		ParseError("expected '=' to switch to r-value, got newline");
 	else if (in_r_val && current_line_buffer.empty())
-		parse_error("expected r-value, got newline");
+		ParseError("expected r-value, got newline");
 
 	// Have not entered l value yet
 	if (!in_l_val)
@@ -69,7 +69,7 @@ void parse_eol(const std::string& directory_prefix) {
 	str_s << "__" << directory_prefix << "__/" << l_value;
 
 	bool found = false;
-	for (auto& category : data::data_raw) {
+	for (auto& category : data_manager.dataRaw) {
 		for (auto& prototype : category) {
 			if (prototype.first == str_s.str()) {
 				found = true;
@@ -85,13 +85,13 @@ loop_exit:
 		LOG_MESSAGE_f(warning, "Local option '%s' missing matching prototype internal name", str_s.str().c_str());
 	}
 
-	reset_variables();
+	ResetVariables();
 	line_number++;
 }
 
-void jactorio::data::LocalParse(const std::string& file_str, const std::string& directory_prefix) {
+void jactorio::data::LocalParse(DataManager& data_manager, const std::string& file_str, const std::string& directory_prefix) {
 	line_number = 1;
-	reset_variables();
+	ResetVariables();
 
 	for (char c : file_str) {
 		char_number++;
@@ -106,7 +106,7 @@ void jactorio::data::LocalParse(const std::string& file_str, const std::string& 
 
 		// End of a line
 		if (c == '\n') {
-			parse_eol(directory_prefix);
+			ParseEol(data_manager, directory_prefix);
 			continue;
 		}
 
@@ -117,7 +117,7 @@ void jactorio::data::LocalParse(const std::string& file_str, const std::string& 
 
 			// Already in R-val, encountered =
 		else if (in_r_val) {
-			parse_error("attempted to switch to r-value with '=' when already in r-value");
+			ParseError("attempted to switch to r-value with '=' when already in r-value");
 		}
 			// Is (=), exit data and switch to second data field upon reaching =
 		else if (in_l_val) {
@@ -131,7 +131,7 @@ void jactorio::data::LocalParse(const std::string& file_str, const std::string& 
 		}
 			// (=) without first defining a l value
 		else {
-			parse_error("attempted to switch to r-value with '=' without defining a l value");
+			ParseError("attempted to switch to r-value with '=' without defining a l value");
 		}
 
 
@@ -140,12 +140,13 @@ void jactorio::data::LocalParse(const std::string& file_str, const std::string& 
 			current_line_buffer.push_back(c);
 	}
 
-	parse_eol(directory_prefix);
+	ParseEol(data_manager, directory_prefix);
 }
 
-int jactorio::data::LocalParseNoThrow(const std::string& file_str, const std::string& directory_prefix) {
+int jactorio::data::LocalParseNoThrow(DataManager& data_manager, const std::string& file_str,
+                                      const std::string& directory_prefix) {
 	try {
-		LocalParse(file_str, directory_prefix);
+		LocalParse(data_manager, file_str, directory_prefix);
 	}
 	catch (DataException&) {
 		return 1;

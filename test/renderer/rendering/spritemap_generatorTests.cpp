@@ -16,30 +16,27 @@ namespace jactorio::renderer
 	{
 	protected:
 		RendererSprites rendererSprites_{};
-
-		void TearDown() override {
-			data::ClearData();
-		}
+		data::DataManager dataManager_{};
 	};
 
 	TEST_F(SpritemapCreationTest, CreateSpritemap) {
 		// Sprite data delete by guard
-		DataRawAdd("sprite1",
-		           new data::Sprite("test/graphics/test/test_tile.png",
-		                            {data::Sprite::SpriteGroup::terrain}));
-		DataRawAdd("sprite2",
-		           new data::Sprite("test/graphics/test/test_tile1.png",
-		                            {data::Sprite::SpriteGroup::terrain}));
+		dataManager_.DataRawAdd("sprite1",
+		                        new data::Sprite("test/graphics/test/test_tile.png",
+		                                         {data::Sprite::SpriteGroup::terrain}));
+		dataManager_.DataRawAdd("sprite2",
+		                        new data::Sprite("test/graphics/test/test_tile1.png",
+		                                         {data::Sprite::SpriteGroup::terrain}));
 
-		DataRawAdd("sprite3",
-		           new data::Sprite("test/graphics/test/test_tile2.png",
-		                            {data::Sprite::SpriteGroup::gui}));
-		DataRawAdd("sprite4",
-		           new data::Sprite("test/graphics/test/test_tile3.png",
-		                            {data::Sprite::SpriteGroup::gui}));
+		dataManager_.DataRawAdd("sprite3",
+		                        new data::Sprite("test/graphics/test/test_tile2.png",
+		                                         {data::Sprite::SpriteGroup::gui}));
+		dataManager_.DataRawAdd("sprite4",
+		                        new data::Sprite("test/graphics/test/test_tile3.png",
+		                                         {data::Sprite::SpriteGroup::gui}));
 
 		// Should filter out to only 2 entries
-		const auto data = rendererSprites_.CreateSpritemap(data::Sprite::SpriteGroup::terrain, false);
+		const auto data = rendererSprites_.CreateSpritemap(dataManager_, data::Sprite::SpriteGroup::terrain, false);
 
 		EXPECT_EQ(data.width, 68);  // 64 + 2(2)
 		EXPECT_EQ(data.height, 34); // 32 + 2
@@ -51,28 +48,28 @@ namespace jactorio::renderer
 
 		// Sprite data delete by guard
 		// Terrain
-		DataRawAdd("sprite1",
-		           new data::Sprite("test/graphics/test/test_tile.png",
-		                            {data::Sprite::SpriteGroup::terrain}));
-		DataRawAdd("sprite2",
-		           new data::Sprite("test/graphics/test/test_tile1.png",
-		                            {data::Sprite::SpriteGroup::terrain}));
+		dataManager_.DataRawAdd("sprite1",
+		                        new data::Sprite("test/graphics/test/test_tile.png",
+		                                         {data::Sprite::SpriteGroup::terrain}));
+		dataManager_.DataRawAdd("sprite2",
+		                        new data::Sprite("test/graphics/test/test_tile1.png",
+		                                         {data::Sprite::SpriteGroup::terrain}));
 
 		// Gui
-		DataRawAdd("sprite3",
-		           new data::Sprite("test/graphics/test/test_tile2.png",
-		                            {data::Sprite::SpriteGroup::gui}));
-		DataRawAdd("sprite4",
-		           new data::Sprite("test/graphics/test/test_tile3.png",
-		                            {data::Sprite::SpriteGroup::gui}));
+		dataManager_.DataRawAdd("sprite3",
+		                        new data::Sprite("test/graphics/test/test_tile2.png",
+		                                         {data::Sprite::SpriteGroup::gui}));
+		dataManager_.DataRawAdd("sprite4",
+		                        new data::Sprite("test/graphics/test/test_tile3.png",
+		                                         {data::Sprite::SpriteGroup::gui}));
 
 		// None
-		DataRawAdd("spriteNone",
-		           new data::Sprite("test/graphics/test/test_tile.png",
-		                            {}));
+		dataManager_.DataRawAdd("spriteNone",
+		                        new data::Sprite("test/graphics/test/test_tile.png",
+		                                         {}));
 
 		// Should filter out to 3 entries, total width of 32 * 3
-		const auto data = rendererSprites_.CreateSpritemap(data::Sprite::SpriteGroup::terrain, false);
+		const auto data = rendererSprites_.CreateSpritemap(dataManager_, data::Sprite::SpriteGroup::terrain, false);
 
 		EXPECT_EQ(data.width, 102);  // 96 + 3(2)
 		EXPECT_EQ(data.height, 34);  // 32 + 2
@@ -119,14 +116,14 @@ namespace jactorio::renderer
 			}
 		}
 
-		std::vector<data::Sprite*> prototypes_;
+		std::vector<const data::Sprite*> prototypes_;
 
 		void AddSprite(const std::string& image_path) {
-			prototypes_.push_back(new data::Sprite);
+			auto* sprite = new data::Sprite;
+			sprite->internalId = nextId_;
+			sprite->LoadImage(image_path);
 
-			prototypes_[nextId_]->internalId = nextId_;
-			prototypes_[nextId_]->LoadImage(image_path);
-
+			prototypes_.push_back(sprite);
 			nextId_++;
 		}
 

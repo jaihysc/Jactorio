@@ -24,6 +24,7 @@ namespace jactorio::game
 	/// Each sub data has its own mutex enabling concurrency
 	struct GameData
 	{
+		data::DataManager prototype{};
 		GameInput input{};
 		EventData event{};
 		PlayerData player{};

@@ -7,30 +7,25 @@
 #include "data/prototype/entity/container_entity.h"
 #include "game/player/player_data.h"
 
-namespace game
+namespace jactorio::game
 {
 	class PlayerDataInventoryTest : public testing::Test
 	{
 		bool setupCursor_ = false;
 
 	protected:
-		jactorio::game::PlayerData playerData_{};
+		PlayerData playerData_{};
+		data::DataManager dataManager_{};
 
-		jactorio::data::Item* cursor_ = nullptr;
-
-		void TearDown() override {
-			if (setupCursor_) {
-				jactorio::data::ClearData();
-			}
-		}
+		data::Item* cursor_ = nullptr;
 
 		///
 		/// \brief Creates the cursor prototype which is hardcoded when an item is selected
 		void SetupInventoryCursor() {
 			setupCursor_ = true;
-			cursor_      = new jactorio::data::Item();
+			cursor_      = new data::Item();
 
-			DataRawAdd(jactorio::game::PlayerData::kInventorySelectedCursorIname, cursor_);
+			dataManager_.DataRawAdd(PlayerData::kInventorySelectedCursorIname, cursor_);
 		}
 	};
 
@@ -40,14 +35,14 @@ namespace game
 		// The cursor holds the item
 		SetupInventoryCursor();
 
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 
 
 		// Position 3 should have the 50 items + item prototype after moving
 		playerData_.inventoryPlayer[0].first  = item.get();
 		playerData_.inventoryPlayer[0].second = 50;
 
-		playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);
+		playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);
 
 		EXPECT_EQ(playerData_.inventoryPlayer[0].first, cursor_);
 		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 0);
@@ -62,7 +57,7 @@ namespace game
 		// Left / right clicking again on the same slot deselects the item
 		SetupInventoryCursor();
 
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 
 		// Left click
 		{
@@ -70,8 +65,8 @@ namespace game
 			playerData_.inventoryPlayer[0].first  = item.get();
 			playerData_.inventoryPlayer[0].second = 50;
 
-			playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);  // Select
-			playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);  // Deselect
+			playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);  // Select
+			playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);  // Deselect
 
 
 			EXPECT_EQ(playerData_.inventoryPlayer[0].first, item.get());
@@ -87,8 +82,8 @@ namespace game
 			playerData_.inventoryPlayer[0].first  = item.get();
 			playerData_.inventoryPlayer[0].second = 50;
 
-			playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);  // Select
-			playerData_.InventoryClick(0, 1, true, playerData_.inventoryPlayer);  // Deselect
+			playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);  // Select
+			playerData_.InventoryClick(dataManager_, 0, 1, true, playerData_.inventoryPlayer);  // Deselect
 
 
 			EXPECT_EQ(playerData_.inventoryPlayer[0].first, item.get());
@@ -104,7 +99,7 @@ namespace game
 		// Left / right clicking again on the same slot in another inventory however will not deselect the item
 		SetupInventoryCursor();
 
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 
 		playerData_.ClearPlayerInventory();
 		// Left click into another inventory
@@ -113,11 +108,11 @@ namespace game
 			playerData_.inventoryPlayer[0].first  = item.get();
 			playerData_.inventoryPlayer[0].second = 50;
 
-			playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);  // Select
+			playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);  // Select
 
 			// Deselect into inv_2
-			jactorio::data::ItemStack inv_2[10];
-			playerData_.InventoryClick(0, 0, true, inv_2);  // Deselect
+			data::ItemStack inv_2[10];
+			playerData_.InventoryClick(dataManager_, 0, 0, true, inv_2);  // Deselect
 
 			EXPECT_EQ(inv_2[0].first, item.get());
 			EXPECT_EQ(inv_2[0].second, 50);
@@ -135,11 +130,11 @@ namespace game
 			playerData_.inventoryPlayer[0].first  = item.get();
 			playerData_.inventoryPlayer[0].second = 50;
 
-			playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);  // Select
+			playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);  // Select
 
 			// Deselect into inv_2
-			jactorio::data::ItemStack inv_2[10];
-			playerData_.InventoryClick(0, 1, true, inv_2);  // Will NOT Deselect since in another inventory
+			data::ItemStack inv_2[10];
+			playerData_.InventoryClick(dataManager_, 0, 1, true, inv_2);  // Will NOT Deselect since in another inventory
 
 			EXPECT_EQ(inv_2[0].first, item.get());
 			EXPECT_EQ(inv_2[0].second, 1);
@@ -162,7 +157,7 @@ namespace game
 		// Create the cursor prototype
 		SetupInventoryCursor();
 
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 
 		// Left click
 		{
@@ -170,8 +165,8 @@ namespace game
 			playerData_.inventoryPlayer[0].first  = item.get();
 			playerData_.inventoryPlayer[0].second = 50;
 
-			playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);  // Select item
-			playerData_.InventoryClick(3, 0, true, playerData_.inventoryPlayer);  // Drop item off
+			playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);  // Select item
+			playerData_.InventoryClick(dataManager_, 3, 0, true, playerData_.inventoryPlayer);  // Drop item off
 
 
 			EXPECT_EQ(playerData_.inventoryPlayer[0].first, nullptr);
@@ -188,13 +183,13 @@ namespace game
 
 	TEST_F(PlayerDataInventoryTest, InventoryRclickSelectItemByUnique) {
 		// Right click on a slot creates a new inventory slot in the cursor and places half from the inventory into it
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 
 
 		playerData_.inventoryPlayer[0].first  = item.get();
 		playerData_.inventoryPlayer[0].second = 40;
 
-		playerData_.InventoryClick(0, 1, true, playerData_.inventoryPlayer);  // Pick up half
+		playerData_.InventoryClick(dataManager_, 0, 1, true, playerData_.inventoryPlayer);  // Pick up half
 
 		playerData_.inventoryPlayer[0].first  = item.get();
 		playerData_.inventoryPlayer[0].second = 20;
@@ -207,14 +202,14 @@ namespace game
 	TEST_F(PlayerDataInventoryTest, InventoryDropSingleUniqueItem) {
 		// Right click on item to pick up half into cursor
 		// Right click on empty slot to drop 1 off from the cursor
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 
 		// Drop one on another location
 		{
 			playerData_.inventoryPlayer[0].first  = item.get();
 			playerData_.inventoryPlayer[0].second = 10;
 
-			playerData_.InventoryClick(0, 1, true, playerData_.inventoryPlayer);  // Pick up half
+			playerData_.InventoryClick(dataManager_, 0, 1, true, playerData_.inventoryPlayer);  // Pick up half
 
 			EXPECT_EQ(playerData_.inventoryPlayer[0].first, item.get());
 			EXPECT_EQ(playerData_.inventoryPlayer[0].second, 5);
@@ -224,7 +219,7 @@ namespace game
 			EXPECT_EQ(cursor_item->second, 5);
 
 
-			playerData_.InventoryClick(3, 1, true, playerData_.inventoryPlayer);  // Drop 1 at index 3
+			playerData_.InventoryClick(dataManager_, 3, 1, true, playerData_.inventoryPlayer);  // Drop 1 at index 3
 
 			// Should remain unchanged
 			EXPECT_EQ(playerData_.inventoryPlayer[0].first, item.get());
@@ -247,9 +242,9 @@ namespace game
 			playerData_.inventoryPlayer[0].first  = item.get();
 			playerData_.inventoryPlayer[0].second = 10;
 
-			playerData_.InventoryClick(0, 1, true, playerData_.inventoryPlayer);  // Pick up half
+			playerData_.InventoryClick(dataManager_, 0, 1, true, playerData_.inventoryPlayer);  // Pick up half
 			playerData_.
-				InventoryClick(0, 1, true, playerData_.inventoryPlayer);  // Drop 1 one the stack it picked up from
+				InventoryClick(dataManager_, 0, 1, true, playerData_.inventoryPlayer);  // Drop 1 one the stack it picked up from
 
 			// Loses 1
 			const auto* cursor_item = playerData_.GetSelectedItem();
@@ -265,14 +260,14 @@ namespace game
 	TEST_F(PlayerDataInventoryTest, InventoryDropStackUniqueItem) {
 		// Right click on item to pick up half into cursor
 		// Left click on empty slot to drop entire stack off from the cursor
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 
 
 		playerData_.inventoryPlayer[0].first  = item.get();
 		playerData_.inventoryPlayer[0].second = 10;
 
 
-		playerData_.InventoryClick(0, 1, true, playerData_.inventoryPlayer);  // Pick up half
+		playerData_.InventoryClick(dataManager_, 0, 1, true, playerData_.inventoryPlayer);  // Pick up half
 
 		EXPECT_EQ(playerData_.inventoryPlayer[0].first, item.get());
 		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 5);
@@ -282,7 +277,7 @@ namespace game
 		EXPECT_EQ(cursor_item->second, 5);
 
 
-		playerData_.InventoryClick(3, 0, true, playerData_.inventoryPlayer);  // Drop stack at index 3
+		playerData_.InventoryClick(dataManager_, 3, 0, true, playerData_.inventoryPlayer);  // Drop stack at index 3
 
 		// Should remain unchanged
 		EXPECT_EQ(playerData_.inventoryPlayer[0].first, item.get());
@@ -303,7 +298,7 @@ namespace game
 		playerData_.inventoryPlayer[0].first  = nullptr;
 		playerData_.inventoryPlayer[0].second = 0;
 
-		playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);
+		playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);
 
 		EXPECT_EQ(playerData_.inventoryPlayer[0].first, nullptr);
 		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 0);
@@ -317,7 +312,7 @@ namespace game
 	TEST_F(PlayerDataInventoryTest, IncrementSelectedItem) {
 		// If player selects item by "unique" or "reference",
 		// It should function the same as it only modifies the cursor item stack
-		const auto item                       = std::make_unique<jactorio::data::Item>();
+		const auto item                       = std::make_unique<data::Item>();
 		item->stackSize                       = 50;
 		playerData_.inventoryPlayer[0].first  = item.get();
 		playerData_.inventoryPlayer[0].second = 10;
@@ -325,7 +320,7 @@ namespace game
 		// Pickup
 		{
 			// Pick up 5 of item, now selected
-			playerData_.InventoryClick(0, 1, true, playerData_.inventoryPlayer);
+			playerData_.InventoryClick(dataManager_, 0, 1, true, playerData_.inventoryPlayer);
 
 			// Check if item was incremented
 			EXPECT_EQ(playerData_.IncrementSelectedItem(), true);
@@ -340,7 +335,7 @@ namespace game
 
 		// Drop item down at inv slot 1
 		{
-			playerData_.InventoryClick(1, 0, true, playerData_.inventoryPlayer);
+			playerData_.InventoryClick(dataManager_, 1, 0, true, playerData_.inventoryPlayer);
 
 			// Inv now empty, contents in inv slot 1
 			EXPECT_EQ(playerData_.inventoryPlayer[1].first, item.get());
@@ -354,13 +349,13 @@ namespace game
 
 	TEST_F(PlayerDataInventoryTest, IncrementSelectedItemExceedItemStack) {
 		// Attempting to increment an item exceeding item stack returns false and fails the increment
-		const auto item                       = std::make_unique<jactorio::data::Item>();
+		const auto item                       = std::make_unique<data::Item>();
 		item->stackSize                       = 50;
 		playerData_.inventoryPlayer[0].first  = item.get();
 		playerData_.inventoryPlayer[0].second = 50;
 
 		// Pickup
-		playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);
+		playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);
 
 		// Failed to add item: Item stack already full
 		EXPECT_EQ(playerData_.IncrementSelectedItem(), false);
@@ -374,7 +369,7 @@ namespace game
 	TEST_F(PlayerDataInventoryTest, DecrementSelectedItemUnique) {
 		// If player selects item by "unique"
 		// If decremented to 0, deselect the cursor item
-		const auto item                       = std::make_unique<jactorio::data::Item>();
+		const auto item                       = std::make_unique<data::Item>();
 		item->stackSize                       = 50;
 		playerData_.inventoryPlayer[0].first  = item.get();
 		playerData_.inventoryPlayer[0].second = 10;
@@ -382,7 +377,7 @@ namespace game
 		// Pickup
 		{
 			// Pick up 5 of item, now selected
-			playerData_.InventoryClick(0, 1, true, playerData_.inventoryPlayer);
+			playerData_.InventoryClick(dataManager_, 0, 1, true, playerData_.inventoryPlayer);
 
 			// Check if item was incremented
 			EXPECT_EQ(playerData_.DecrementSelectedItem(), true);
@@ -397,7 +392,7 @@ namespace game
 
 		// Drop item down at inv slot 1
 		{
-			playerData_.InventoryClick(1, 0, true, playerData_.inventoryPlayer);
+			playerData_.InventoryClick(dataManager_, 1, 0, true, playerData_.inventoryPlayer);
 
 			// Inv now empty, contents in inv slot 1
 			EXPECT_EQ(playerData_.inventoryPlayer[1].first, item.get());
@@ -412,13 +407,13 @@ namespace game
 	TEST_F(PlayerDataInventoryTest, DeselectSelectedItem) {
 		// If player selects item by "unique"
 		// If decremented to 0, deselect the cursor item
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
 
 		playerData_.inventoryPlayer[0].first  = item.get();
 		playerData_.inventoryPlayer[0].second = 10;
 
-		playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);
+		playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);
 
 		EXPECT_TRUE(playerData_.DeselectSelectedItem());
 
@@ -436,13 +431,13 @@ namespace game
 		// If the selected item is empty after decrementing, return false
 		SetupInventoryCursor();
 
-		const auto item                       = std::make_unique<jactorio::data::Item>();
+		const auto item                       = std::make_unique<data::Item>();
 		item->stackSize                       = 50;
 		playerData_.inventoryPlayer[0].first  = item.get();
 		playerData_.inventoryPlayer[0].second = 1;
 
 		// Pickup
-		playerData_.InventoryClick(0, 0, true, playerData_.inventoryPlayer);
+		playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);
 
 		EXPECT_EQ(playerData_.DecrementSelectedItem(), false);
 
@@ -456,10 +451,10 @@ namespace game
 	}
 
 	TEST_F(PlayerDataInventoryTest, PlayerInventorySort) {
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
 
-		const auto item2 = std::make_unique<jactorio::data::Item>();
+		const auto item2 = std::make_unique<data::Item>();
 		item2->stackSize = 10;
 
 		// Item 1
@@ -521,7 +516,7 @@ namespace game
 		EXPECT_EQ(playerData_.inventoryPlayer[10].second, 0);
 
 		// There should have been no new cursors created anywhere
-		for (int i = 0; i < jactorio::game::PlayerData::kInventorySize; ++i) {
+		for (int i = 0; i < PlayerData::kInventorySize; ++i) {
 			if (i == 10)
 				continue;
 			EXPECT_NE(playerData_.inventoryPlayer[i].first, cursor_);
@@ -530,7 +525,7 @@ namespace game
 
 	TEST_F(PlayerDataInventoryTest, PlayerInventorySortFull) {
 		// Sorting the inventory when it is full should also work
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
 
 		for (auto& i : playerData_.inventoryPlayer) {
@@ -550,7 +545,7 @@ namespace game
 
 	TEST_F(PlayerDataInventoryTest, PlayerInventorySortItemExcedingStack) {
 		// If there is an item which exceeds its stack size, do not attempt to stack into it
-		const auto item = std::make_unique<jactorio::data::Item>();
+		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
 
 		playerData_.inventoryPlayer[10].first  = item.get();

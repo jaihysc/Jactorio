@@ -91,7 +91,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Returns maximum noise value accepted
-		float GetMaxNoiseVal() {
+		J_NODISCARD float GetMaxNoiseVal() const {
 			// Last item will have highest value
 			return noiseRangeTileRanges_[noiseRangeTileRanges_.size() - 1];
 		}
@@ -117,7 +117,7 @@ namespace jactorio::data
 		/// \brief Fetches the tile at the current range <br>
 		/// normalize_if_val_out_of_range is false, Nullptr if out of range <br>
 		/// normalize_if_val_out_of_range is true, Min/max value tile if out of range
-		T* Get(float val) {
+		J_NODISCARD T* Get(float val) const {
 			if (normalize) {
 				// Normalize out of range of max-min within noise_layer
 				const float start_val = GetStartVal();
@@ -157,8 +157,8 @@ namespace jactorio::data
 		}
 
 
-		void PostLoadValidate() const override {
-			J_DATA_ASSERT(1 <= octaveCount, "A minimum of 1 octaves is required");
+		void PostLoadValidate(const DataManager&) const override {
+			J_DATA_ASSERT(1 <= octaveCount, "A mnimum of 1 octaves is required");
 			J_DATA_ASSERT(0 < frequency, "Frequency must be greater than 0");
 			J_DATA_ASSERT(0 < persistence, "Persistence must be greater than 0");
 
