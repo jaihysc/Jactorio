@@ -672,7 +672,7 @@ void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_m
 				if (item.second >= deduct_amount) {
 					item.second -= deduct_amount;
 
-					LOG_MESSAGE_f(debug, "Crafting return deducting %d of '%s'",
+					LOG_MESSAGE_F(debug, "Crafting return deducting %d of '%s'",
 					              deduct_amount, recipe_item.first.c_str());
 
 					craftingItemDeductions_.erase(recipe_item.first);  // Now empty
@@ -682,7 +682,7 @@ void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_m
 					deduct_amount -= item.second;
 					item.second = 0;
 
-					LOG_MESSAGE_f(debug, "Crafting return deducting %d of '%s', no items returned",
+					LOG_MESSAGE_F(debug, "Crafting return deducting %d of '%s', no items returned",
 					              deduct_amount, recipe_item.first.c_str());
 				}
 			}
@@ -716,7 +716,7 @@ void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_m
 }
 
 void jactorio::game::PlayerData::RecipeQueue(const data::DataManager& data_manager, const data::Recipe& recipe) {
-	LOG_MESSAGE_f(debug, "Queuing recipe: '%s'", recipe.GetProduct().first.c_str());
+	LOG_MESSAGE_F(debug, "Queuing recipe: '%s'", recipe.GetProduct().first.c_str());
 
 	// Remove ingredients
 	for (const auto& ingredient : recipe.ingredients) {
@@ -761,7 +761,7 @@ void jactorio::game::PlayerData::RecipeCraftR(const data::DataManager& data_mana
 				queued_available -= possess_amount;
 				return_deductions += possess_amount;  // Not available anymore, so deduct it after crafting
 
-				LOG_MESSAGE_f(debug, "Increasing crafting deductions of '%s' by %d",
+				LOG_MESSAGE_F(debug, "Increasing crafting deductions of '%s' by %d",
 				              ingredient.first.c_str(), possess_amount);
 			}
 			else {
@@ -772,7 +772,7 @@ void jactorio::game::PlayerData::RecipeCraftR(const data::DataManager& data_mana
 
 				// amount_needed: Deduct from returning to player inventory as it is used for crafting
 				// queued_available: Queued available items not available anymore, so deduct it after crafting
-				LOG_MESSAGE_f(debug, "Increasing crafting deductions of '%s' by %d",
+				LOG_MESSAGE_F(debug, "Increasing crafting deductions of '%s' by %d",
 				              ingredient.first.c_str(), amount_needed + queued_available);
 				return_deductions += amount_needed + queued_available;
 

@@ -45,10 +45,10 @@ int jactorio::data::PyExec(const std::string& python_str, const std::string& fil
 		py_stderr_buffer.release();
 
 		if (!std_out.empty()) {
-			LOG_MESSAGE_f(info, "Python: %s %s", file_name.c_str(), std_out.c_str())
+			LOG_MESSAGE_F(info, "Python: %s %s", file_name.c_str(), std_out.c_str());
 		}
 		if (!std_err.empty()) {
-			LOG_MESSAGE_f(error, "Python: %s - %s", file_name.c_str(), std_err.c_str())
+			LOG_MESSAGE_F(error, "Python: %s - %s", file_name.c_str(), std_err.c_str());
 		}
 
 		return 0;
@@ -80,7 +80,7 @@ void jactorio::data::PyInterpreterInit() {
 	py_stdout = sysm.attr("stdout");
 	py_stderr = sysm.attr("stderr");
 
-	LOG_MESSAGE(info, "Python interpreter initialized")
+	LOG_MESSAGE(info, "Python interpreter initialized");
 }
 
 void jactorio::data::PyInterpreterTerminate() {
@@ -97,5 +97,5 @@ void jactorio::data::PyInterpreterTerminate() {
 	// Remove all py::objects before deleting the interpreter
 	py::finalize_interpreter();
 
-	LOG_MESSAGE(info, "Python interpreter terminated")
+	LOG_MESSAGE(info, "Python interpreter terminated");
 }

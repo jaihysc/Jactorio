@@ -27,8 +27,8 @@ namespace jactorio::data
 		void PostLoadValidate(const DataManager&) const override;
 	};
 
-	inline void ItemBase::PostLoadValidate(const DataManager& data_manager) const {
-		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
+	inline void ItemBase::PostLoadValidate(const DataManager&) const {
+		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
 	}
 }
 

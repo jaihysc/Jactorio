@@ -12,15 +12,11 @@
 #include "data/data_category.h"
 #include "data/data_exception.h"
 
-namespace jactorio::data
-{
-	class DataManager;
-	
-	// Creates a setters for python API primarily, to chain initialization
+// Creates a setters for python API primarily, to chain initialization
 
-	// Parameter value has suffix a_b_c_d to ensure uniqueness
+// Parameter value has suffix a_b_c_d to ensure uniqueness
 
-	// Setter passed by reference
+// Setter passed by reference
 #define PYTHON_PROP_REF(class_, type, var_name) \
 	type var_name; \
 	class_* Set_##var_name(const type& (parameter_value_a_b_c_d)) {\
@@ -28,7 +24,7 @@ namespace jactorio::data
 		return this;\
 	}
 
-	// Setter passed by reference with initializer
+// Setter passed by reference with initializer
 #define PYTHON_PROP_REF_I(class_, type, var_name, initializer) \
 	type var_name = initializer; \
 	class_* Set_##var_name(const type& (parameter_value_a_b_c_d)) {\
@@ -37,7 +33,7 @@ namespace jactorio::data
 	}
 
 
-	// Setter passed by value
+// Setter passed by value
 #define PYTHON_PROP(class_, type, var_name) \
 	type var_name; \
 	class_* Set_##var_name(type (parameter_value_a_b_c_d)) {\
@@ -45,7 +41,7 @@ namespace jactorio::data
 		return this;\
 	}
 
-	// Setter passed by value with initializer
+// Setter passed by value with initializer
 #define PYTHON_PROP_I(class_, type, var_name, initializer) \
 	type var_name = initializer; \
 	class_* Set_##var_name(type (parameter_value_a_b_c_d)) {\
@@ -53,25 +49,46 @@ namespace jactorio::data
 		return this;\
 	}
 
-	/*
-		The following is an example:
+/*
+	The following is an example:
 
-		PYTHON_PROP_REF(Prototype_base, unsigned int, internal_id)
+	PYTHON_PROP_REF(Prototype_base, unsigned int, internal_id)
 
-		vvv
+	vvv
 
-		unsigned int internal_id = 0;
+	unsigned int internal_id = 0;
 
-		Prototype_base* set_internal_id(const unsigned int& internal_id) {
-			this->internal_id = internal_id;
-			return this;
+	Prototype_base* set_internal_id(const unsigned int& internal_id) {
+		this->internal_id = internal_id;
+		return this;
+	}
+*/
+
+// Assertions for post_load_validate
+#define J_DATA_ASSERT(condition, format)\
+	jactorio::data::DataAssert(condition, "\"%s\", " format, this->name.c_str())
+
+#define J_DATA_ASSERT_F(condition, format, ...)\
+	jactorio::data::DataAssert(condition, "\"%s\", " format, this->name.c_str(), __VA_ARGS__)
+
+
+
+namespace jactorio::data
+{
+	class DataManager;
+
+	///
+	/// \brief Creates a formatted log message if log level permits
+	template <typename ... Args, typename = std::common_type<Args ...>>
+	void DataAssert(const bool condition, const char* format, Args&& ... args) {
+		constexpr int max_msg_length = 1000;
+		
+		if (!(condition)) {
+			char buffer[max_msg_length + 1];
+			snprintf(buffer, max_msg_length, format, args ...);
+			throw DataException(buffer);
 		}
-	*/
-
-	// Assertions for post_load_validate
-#define J_DATA_ASSERT(condition, error_msg)\
-	if (!(condition)) { std::string s = "\""; s.append(this->name); s.append("\", " error_msg); throw jactorio::data::DataException(s); }
-
+	}
 
 	///
 	/// \brief Abstract base class for all unique data

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <string>
+#include <type_traits>
 
 // Damn Windows has to use backslashes for paths
 // Cuts away paths, keeps only the filename
@@ -23,26 +24,12 @@
 // Logging macros
 //
 // Prefer calling LOG_MESSAGE to log a message over log_message()
-#define LOG_MESSAGE(severity, message)\
-if constexpr(static_cast<int>(jactorio::core::LogSeverity::severity) >= JACTORIO_LOG_LEVEL) { \
-	LogMessage(\
-	jactorio::core::LogSeverity::severity, \
-	FILENAME, \
-	__LINE__, \
-	message); \
-}
+#define LOG_MESSAGE(severity, format)\
+	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity>(format)
 
 // Allows the message to contain a format, similar to printf
-#define LOG_MESSAGE_f(severity, format, ...)\
-if constexpr(static_cast<int>(jactorio::core::LogSeverity::severity) >= JACTORIO_LOG_LEVEL) {\
-char buffer[jactorio::core::kMaxLogMsgLength];\
-snprintf(buffer, sizeof(char) * jactorio::core::kMaxLogMsgLength, format, __VA_ARGS__);\
-LogMessage(\
-	jactorio::core::LogSeverity::severity, \
-	FILENAME, \
-	__LINE__, \
-	buffer);\
-}
+#define LOG_MESSAGE_F(severity, format, ...)\
+	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity>(format, __VA_ARGS__)
 
 
 namespace jactorio::core
@@ -58,9 +45,9 @@ namespace jactorio::core
 		info,
 		warning,
 		error,
-		critical,
-		none
+		critical
 	};
+
 
 	///
 	/// \brief Relative path supported, call this after setting the executing directory
@@ -82,6 +69,18 @@ namespace jactorio::core
 	/// \brief Converts log_severity to a string with color
 	/// \return The log severity as string
 	std::string LogSeverityStrColored(LogSeverity severity);
+
+
+	///
+	/// \brief Creates a formatted log message if log level permits
+	template <LogSeverity Severity, typename ... Args, typename = std::common_type<Args ...>>
+	void MakeLogMessage(const char* format, Args&& ... args) {
+		if constexpr (static_cast<int>(Severity) >= JACTORIO_LOG_LEVEL) {
+			char buffer[kMaxLogMsgLength + 1];
+			snprintf(buffer, kMaxLogMsgLength, format, args ...);
+			LogMessage(Severity, FILENAME, __LINE__, buffer);
+		}
+	}
 }
 
 #endif //JACTORIO_INCLUDE_CORE_LOGGER_H

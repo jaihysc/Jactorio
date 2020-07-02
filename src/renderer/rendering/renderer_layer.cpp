@@ -232,7 +232,7 @@ void jactorio::renderer::RendererLayer::GUpdateData() {
 	indexIb_->Reserve(data, eCapacity_ * 6);
 	delete[] data;
 
-	LOG_MESSAGE_f(debug, "Buffer resized to %d", eCapacity_);
+	LOG_MESSAGE_F(debug, "Buffer resized to %d", eCapacity_);
 }
 
 void jactorio::renderer::RendererLayer::GDeleteBuffer() {

@@ -39,7 +39,7 @@ void jactorio::core::SetExecutingDirectory(const std::string& directory) {
 		path.erase(i, path.size() - i);
 	}
 
-	LOG_MESSAGE_f(info, "Set executing directory: %s", path.c_str());
+	LOG_MESSAGE_F(info, "Set executing directory: %s", path.c_str());
 
 	executing_directory = path;
 }

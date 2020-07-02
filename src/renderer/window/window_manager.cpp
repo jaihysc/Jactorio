@@ -63,7 +63,7 @@ void jactorio::renderer::SetFullscreen(const bool desired_fullscreen) {
 ///
 
 int jactorio::renderer::InitWindow(const int width, const int height) {
-	LOG_MESSAGE(info, "Using SDL2 for window creation")
+	LOG_MESSAGE(info, "Using SDL2 for window creation");
 
 	// ======================================================================
 	// Initialize SDL
@@ -142,7 +142,7 @@ int jactorio::renderer::InitWindow(const int width, const int height) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	gl_context_active = true;
-	LOG_MESSAGE_f(info, "OpenGL initialized - OpenGL Version: %s", glGetString(GL_VERSION))
+	LOG_MESSAGE_F(info, "OpenGL initialized - OpenGL Version: %s", glGetString(GL_VERSION));
 	return 0;
 
 
@@ -203,7 +203,7 @@ void HandleWindowEvent(const SDL_Event& sdl_event) {
 				glViewport(0, 0, x, y);
 				jactorio::renderer::SetRecalculateRenderer(x, y);
 
-				LOG_MESSAGE_f(debug, "Resolution changed to %dx%d", x, y);
+				LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", x, y);
 			}
 		}
 		break;
@@ -225,7 +225,7 @@ void HandleWindowEvent(const SDL_Event& sdl_event) {
 		break;
 
 	default:
-		LOG_MESSAGE_f(warning, "Window %d got unknown sdl_event %d",
+		LOG_MESSAGE_F(warning, "Window %d got unknown sdl_event %d",
 		              sdl_event.window.windowID, sdl_event.window.event);
 		break;
 	}

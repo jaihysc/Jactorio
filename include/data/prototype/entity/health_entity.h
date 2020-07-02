@@ -31,7 +31,7 @@ namespace jactorio::data
 		void PostLoadValidate(const DataManager& data_manager) const override {
 			Entity::PostLoadValidate(data_manager);
 
-			J_DATA_ASSERT(maxHealth > 0, "Max health must be greater than 0")
+			J_DATA_ASSERT(maxHealth > 0, "Max health must be greater than 0");
 		}
 	};
 }

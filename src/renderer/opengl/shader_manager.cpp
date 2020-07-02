@@ -24,7 +24,7 @@ glm::mat4 mvp_matrix;
 void jactorio::renderer::SetMvpUniformLocation(const int location) {
 	mvp_uniform_location = location;
 
-	LOG_MESSAGE(debug, "MVP uniform location set")
+	LOG_MESSAGE(debug, "MVP uniform location set");
 }
 
 /**

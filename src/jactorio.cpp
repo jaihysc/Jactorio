@@ -37,11 +37,11 @@ int main(int ac, char* av[]) {
 	core::RegisterCrashHandler();
 
 	// Initial startup message
-	LOG_MESSAGE_f(none, "%s | %s build, version: %s\n\n",
-	              JACTORIO_BUILD_TARGET_PLATFORM, BUILD_TYPE, JACTORIO_VERSION)
+	LOG_MESSAGE_F(info, "%s | %s build, version: %s\n\n",
+	              JACTORIO_BUILD_TARGET_PLATFORM, BUILD_TYPE, JACTORIO_VERSION);
 
 	InitializeGame();
 
-	LOG_MESSAGE(none, "goodbye!");
+	LOG_MESSAGE(info, "goodbye!");
 	return 0;
 }

@@ -51,7 +51,7 @@ namespace jactorio::data
 		T* DataRawGet(const DataCategory data_category, const std::string& iname) const {
 			auto* category = &dataRaw[static_cast<uint16_t>(data_category)];
 			if (category->find(iname) == category->end()) {
-				LOG_MESSAGE_f(error, "Attempted to access non-existent prototype %s", iname.c_str());
+				LOG_MESSAGE_F(error, "Attempted to access non-existent prototype %s", iname.c_str());
 				return nullptr;
 			}
 

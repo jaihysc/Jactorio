@@ -43,10 +43,10 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::CreateSprite
 			// Return false to NOT remove
 			// Category of none is never removed
 			if (ptr->group.empty()) {
-				LOG_MESSAGE_f(warning,
+				LOG_MESSAGE_F(warning,
 				              "Sprite prototype '%s' does not have a category, and will be added to all sprite groups."
 				              " Consider giving it a category",
-				              ptr->name.c_str())
+				              ptr->name.c_str());
 				return false;
 			}
 
@@ -77,7 +77,7 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap
 	const std::vector<const data::Sprite*>& sprites,
 	const bool invert_sprites) const {
 
-	LOG_MESSAGE_f(info, "Generating spritemap with %lld sprites, %s",
+	LOG_MESSAGE_F(info, "Generating spritemap with %lld sprites, %s",
 	              sprites.size(),
 	              invert_sprites ? "Inverted" : "Upright");
 

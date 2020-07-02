@@ -28,7 +28,7 @@ bool jactorio::renderer::OpenglPrintErrors(const char* function_name, const char
 		std::stringstream err_ss;
 		err_ss << std::hex << error;
 
-		LOG_MESSAGE_f(error, "OpenGL: 0x%s, function %s in file %s at line %d",
+		LOG_MESSAGE_F(error, "OpenGL: 0x%s, function %s in file %s at line %d",
 		              err_ss.str().c_str(), function_name, file, line);
 
 		found_error = true;
@@ -36,7 +36,7 @@ bool jactorio::renderer::OpenglPrintErrors(const char* function_name, const char
 	}
 
 	if (error_count >= max_errors) {
-		LOG_MESSAGE_f(error, "OpenGL: Errors cut, exceeded maximum %d errors", max_errors);
+		LOG_MESSAGE_F(error, "OpenGL: Errors cut, exceeded maximum %d errors", max_errors);
 	}
 
 	return found_error;
@@ -56,7 +56,7 @@ void jactorio::renderer::OpenglClearErrors() {	// Do not log error if there is n
 		error_count++;
 
 	if (error_count >= max_errors) {
-		LOG_MESSAGE_f(error, "OpenGL: Errors cut, exceeded maximum %d clear errors", max_errors);
+		LOG_MESSAGE_F(error, "OpenGL: Errors cut, exceeded maximum %d clear errors", max_errors);
 	}
 }
 

@@ -98,7 +98,7 @@ void Generate(game::WorldData& world_data, const data::DataManager& data_manager
               const int chunk_x, const int chunk_y) {
 	using namespace jactorio;
 
-	LOG_MESSAGE_f(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
+	LOG_MESSAGE_F(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
 
 	// Base
 	GenerateChunk<data::Tile>(

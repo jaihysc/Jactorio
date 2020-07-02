@@ -144,8 +144,8 @@ namespace jactorio::data
 	};
 
 	inline void Entity::PostLoadValidate(const DataManager& data_manager) const {
-		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
-		J_DATA_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive")
+		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
+		J_DATA_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive");
 	}
 }
 

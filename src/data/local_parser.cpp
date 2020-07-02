@@ -40,7 +40,7 @@ void ResetVariables() {
 void ParseError(const std::string& message) {
 	std::stringstream str_s;
 	str_s << "Localization parse failed " << line_number << ":" << char_number << "\n" << message;
-	LOG_MESSAGE_f(error, "%s", str_s.str().c_str());
+	LOG_MESSAGE_F(error, "%s", str_s.str().c_str());
 
 	throw jactorio::data::DataException(str_s.str().c_str());
 }
@@ -75,14 +75,14 @@ void ParseEol(jactorio::data::DataManager& data_manager, const std::string& dire
 				found = true;
 				prototype.second->SetLocalizedName(current_line_buffer);
 
-				LOG_MESSAGE_f(debug, "Registered local '%s' '%s'", str_s.str().c_str(), current_line_buffer.c_str());
+				LOG_MESSAGE_F(debug, "Registered local '%s' '%s'", str_s.str().c_str(), current_line_buffer.c_str());
 				goto loop_exit;
 			}
 		}
 	}
 loop_exit:
 	if (!found) {
-		LOG_MESSAGE_f(warning, "Local option '%s' missing matching prototype internal name", str_s.str().c_str());
+		LOG_MESSAGE_F(warning, "Local option '%s' missing matching prototype internal name", str_s.str().c_str());
 	}
 
 	ResetVariables();

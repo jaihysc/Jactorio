@@ -48,7 +48,7 @@ renderer::Renderer* renderer::GetBaseRenderer() {
 
 
 void RenderingLoop() {
-	LOG_MESSAGE(info, "2 - Runtime stage")
+	LOG_MESSAGE(info, "2 - Runtime stage");
 
 	// From my testing, allocating it on the heap is faster than using the stack
 	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });

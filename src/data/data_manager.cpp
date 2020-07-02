@@ -48,7 +48,7 @@ void jactorio::data::DataManager::DataRawAdd(const std::string& iname,
 		const auto& category = dataRaw[static_cast<uint16_t>(data_category)];
 		auto it              = category.find(formatted_iname);
 		if (it != category.end()) {
-			LOG_MESSAGE_f(warning,
+			LOG_MESSAGE_F(warning,
 			              "Name \"%s\" type %d overrides previous declaration",
 			              formatted_iname.c_str(),
 			              static_cast<int>(data_category));
@@ -70,7 +70,7 @@ void jactorio::data::DataManager::DataRawAdd(const std::string& iname,
 
 
 	dataRaw[static_cast<uint16_t>(data_category)][formatted_iname] = prototype;
-	LOG_MESSAGE_f(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
+	LOG_MESSAGE_F(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
 void jactorio::data::DataManager::LoadData(
@@ -103,7 +103,7 @@ void jactorio::data::DataManager::LoadData(
 			const std::string py_file_contents = core::ReadFile(py_file_path.str());
 			// data.py file does not exist
 			if (py_file_contents.empty()) {
-				LOG_MESSAGE_f(warning, "Directory %s has no or empty data.py file. Ignoring", current_directory.c_str())
+				LOG_MESSAGE_F(warning, "Directory %s has no or empty data.py file. Ignoring", current_directory.c_str());
 				continue;
 			}
 
@@ -113,7 +113,7 @@ void jactorio::data::DataManager::LoadData(
 				PyExec(py_file_contents, py_file_path.str());
 			}
 			catch (DataException& e) {
-				LOG_MESSAGE_f(error, "%s", e.what());
+				LOG_MESSAGE_F(error, "%s", e.what());
 				throw;
 			}
 		}
@@ -127,10 +127,10 @@ void jactorio::data::DataManager::LoadData(
 				kLanguageIdentifier[static_cast<int>(Language::en)] << ".cfg";
 
 			if (!std::filesystem::exists(cfg_file_path.str())) {
-				LOG_MESSAGE_f(warning,
+				LOG_MESSAGE_F(warning,
 				              "Directory %s missing local at %s",
 				              current_directory.c_str(),
-				              cfg_file_path.str().c_str())
+				              cfg_file_path.str().c_str());
 				continue;
 			}
 
@@ -138,34 +138,33 @@ void jactorio::data::DataManager::LoadData(
 			LocalParseNoThrow(*this, local_contents, directory_name);
 		}
 
-		LOG_MESSAGE_f(info, "Directory %s loaded", current_directory.c_str())
+		LOG_MESSAGE_F(info, "Directory %s loaded", current_directory.c_str());
 	}
 
-	LOG_MESSAGE(info, "Validating loaded prototypes")
+	LOG_MESSAGE(info, "Validating loaded prototypes");
 	for (auto& prototype_categories : dataRaw) {
 		for (auto& pair : prototype_categories) {
 			auto& prototype = *pair.second;
-			LOG_MESSAGE_f(debug, "Validating prototype %d %s", prototype.internalId, prototype.name.c_str());
+			LOG_MESSAGE_F(debug, "Validating prototype %d %s", prototype.internalId, prototype.name.c_str());
 
 			prototype.PostLoad();
 			try {
 				prototype.PostLoadValidate(*this);
 			}
 			catch (DataException& e) {
-				LOG_MESSAGE_f(error, "Prototype validation failed: '%s'", e.what());
+				LOG_MESSAGE_F(error, "Prototype validation failed: '%s'", e.what());
 				throw;
 			}
 			prototype.ValidatedPostLoad();
 
-			LOG_MESSAGE_f(debug, "Validating prototype %d %s Success\n", prototype.internalId, prototype.name.c_str());
+			LOG_MESSAGE_F(debug, "Validating prototype %d %s Success\n", prototype.internalId, prototype.name.c_str());
 		}
 	}
 }
 
 bool jactorio::data::DataManager::PrototypeExists(const std::string& iname) const {
 	for (const auto& map : dataRaw) {
-		for (const auto& category_pair : map) {
-			if (category_pair.first == iname)
+		if (map.find(iname) != map.end()) {
 				return true;
 		}
 	}

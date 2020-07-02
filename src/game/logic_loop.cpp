@@ -40,7 +40,7 @@ void jactorio::game::InitLogicLoop() {
 	}
 	catch (std::filesystem::filesystem_error&) {
 		// Data folder not found error
-		LOG_MESSAGE_f(error, "data/ folder not found at %s", core::ResolvePath("data").c_str());
+		LOG_MESSAGE_F(error, "data/ folder not found at %s", core::ResolvePath("data").c_str());
 		return;
 	}
 
