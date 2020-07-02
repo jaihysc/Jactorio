@@ -3,7 +3,7 @@
 
 #include "data/prototype/entity/assembly_machine.h"
 
-jactorio::data::Sprite::SetT jactorio::data::AssemblyMachine::MapPlacementOrientation(
+jactorio::data::Sprite::SetT jactorio::data::AssemblyMachine::OnRGetSet(
 	Orientation orientation,
 	game::WorldData& world_data,
 	const game::WorldData::WorldPair& world_coords) const {

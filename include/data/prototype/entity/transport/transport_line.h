@@ -133,16 +133,12 @@ namespace jactorio::data
 		              game::ChunkTileLayer& tile_layer) const override;
 
 
-		Sprite::SetT MapPlacementOrientation(Orientation orientation,
-		                                     game::WorldData& world_data,
-		                                     const game::WorldData::WorldPair& world_coords)
-		const override;
-
+		Sprite::SetT OnRGetSet(Orientation orientation,
+		                       game::WorldData& world_data,
+		                       const game::WorldData::WorldPair& world_coords) const override;
 
 		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
-		                                                const GameTickT game_tick) const override {
-			return {this->sprite, game_tick % sprite->frames};
-		};
+		                                                GameTickT game_tick) const override;;
 
 		// ======================================================================
 		// Data events
@@ -160,7 +156,6 @@ namespace jactorio::data
 		void ValidatedPostLoad() override {
 			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 		}
-
 	};
 }
 

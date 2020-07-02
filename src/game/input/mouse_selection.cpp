@@ -86,7 +86,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 		// Rotatable entities
 		if (selected_entity->rotatable) {
 			// Create unique data at tile to indicate set / frame to render
-			const auto set = selected_entity->MapPlacementOrientation(placement_orientation,
+			const auto set = selected_entity->OnRGetSet(placement_orientation,
 			                                                          world_data,
 			                                                          {world_x, world_y});
 

@@ -253,10 +253,9 @@ namespace jactorio::game
 
 			mutable bool rGetSpriteCalled = false;
 
-			J_NODISCARD data::Sprite::SetT MapPlacementOrientation(data::Orientation,
-			                                                       WorldData&,
-			                                                       const WorldData::WorldPair&)
-			const override {
+			J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
+			                                         WorldData&,
+			                                         const WorldData::WorldPair&) const override {
 				return 16;
 			}
 

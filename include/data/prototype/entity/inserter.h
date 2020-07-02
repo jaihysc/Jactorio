@@ -1,5 +1,5 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/25/2020
+// Created on: 06/18/2020
 
 #ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H
 #define JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H
@@ -72,9 +72,9 @@ namespace jactorio::data
 
 		// ======================================================================
 
-		Sprite::SetT MapPlacementOrientation(Orientation orientation,
-		                                     game::WorldData& world_data,
-		                                     const game::WorldData::WorldPair& world_coords) const override;
+		Sprite::SetT OnRGetSet(Orientation orientation,
+		                       game::WorldData& world_data,
+		                       const game::WorldData::WorldPair& world_coords) const override;
 
 
 		void OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,

@@ -384,9 +384,9 @@ namespace jactorio::game
 			mutable bool removeCalled = false;
 
 
-			J_NODISCARD data::Sprite::SetT MapPlacementOrientation(data::Orientation,
-			                                                       WorldData&,
-			                                                       const WorldData::WorldPair&) const override {
+			J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
+			                                         WorldData&,
+			                                         const WorldData::WorldPair&) const override {
 				return 0;
 			}
 
@@ -480,9 +480,9 @@ namespace jactorio::game
 		public:
 			PROTOTYPE_CATEGORY(test);
 
-			J_NODISCARD data::Sprite::SetT MapPlacementOrientation(data::Orientation,
-			                                                       WorldData&,
-			                                                       const WorldData::WorldPair&)
+			J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
+			                                         WorldData&,
+			                                         const WorldData::WorldPair&)
 			const override {
 				return 0;
 			}
@@ -536,10 +536,9 @@ namespace jactorio::game
 		public:
 			PROTOTYPE_CATEGORY(test);
 
-			J_NODISCARD data::Sprite::SetT MapPlacementOrientation(data::Orientation,
-			                                                       WorldData&,
-			                                                       const WorldData::WorldPair&)
-			const override {
+			J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
+			                                         WorldData&,
+			                                         const WorldData::WorldPair&) const override {
 				return 0;
 			}
 
