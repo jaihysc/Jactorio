@@ -14,6 +14,7 @@
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/prototype_type.h"
 #include "data/prototype/sprite.h"
+#include "data/prototype/entity/assembly_machine.h"
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/entity.h"
 #include "data/prototype/entity/health_entity.h"
@@ -191,7 +192,12 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	PYBIND_DATA_CLASS_ABSTRACT(TransportLine, TransportLine, HealthEntity)
 		PYBIND_PROP_S(TransportLine, speed, speedFloat, Set_speedFloat);
 
+	//
 	PYBIND_DATA_CLASS(TransportBelt, TransportBelt, TransportLine);
+
+	// Assembly machine
+	PYBIND_DATA_CLASS(AssemblyMachine, AssemblyMachine, HealthEntity)
+		PYBIND_PROP(AssemblyMachine, assemblySpeed);
 
 	// Mining drill
 	PYBIND_DATA_CLASS(MiningDrill, MiningDrill, HealthEntity)
@@ -236,6 +242,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("EnemyEntity", DataCategory::enemy_entity)
 
 		.value("ContainerEntity", DataCategory::container_entity)
+		.value("AssemblyMachine", DataCategory::assembly_machine)
 		.value("TransportBelt", DataCategory::transport_belt)
 		.value("MiningDrill", DataCategory::mining_drill)
 		.value("Inserter", DataCategory::inserter);

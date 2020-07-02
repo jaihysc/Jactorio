@@ -29,6 +29,7 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/data/prototype/sprite.cpp
 	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
+	${JACTORIO_DIR}/data/prototype/entity/assembly_machine.cpp
 	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
 	${JACTORIO_DIR}/data/prototype/entity/mining_drill.cpp
 	${JACTORIO_DIR}/data/prototype/entity/transport/transport_line.cpp

@@ -116,6 +116,11 @@ namespace jactorio::data
 		/// \exception DataException Prototype validation failed or Pybind error
 		void LoadData(const std::string& data_folder_path);
 
+
+		///
+		/// \brief Searches through all categories to check if prototype exists, perfer DataRawGet() == nullptr if category is known
+		J_NODISCARD bool PrototypeExists(const std::string& iname) const;
+
 		///
 		/// \brief Frees all pointer data within data_raw, clears data_raw
 		void ClearData();

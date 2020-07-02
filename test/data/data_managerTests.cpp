@@ -204,6 +204,14 @@ namespace jactorio::data
 		EXPECT_EQ(protos[3]->name, "test_tile4");
 	}
 
+	TEST_F(DataManagerTest, PrototypeExists) {
+		EXPECT_FALSE(dataManager_.PrototypeExists("bunny"));
+		
+		dataManager_.DataRawAdd("aqua", new Sprite{});
+		EXPECT_FALSE(dataManager_.PrototypeExists("bunny"));
+		EXPECT_TRUE(dataManager_.PrototypeExists("aqua"));
+	}
+
 	TEST_F(DataManagerTest, ClearData) {
 		dataManager_.DataRawAdd("small-electric-pole", new Sprite{});
 

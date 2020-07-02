@@ -162,6 +162,16 @@ void jactorio::data::DataManager::LoadData(
 	}
 }
 
+bool jactorio::data::DataManager::PrototypeExists(const std::string& iname) const {
+	for (const auto& map : dataRaw) {
+		for (const auto& category_pair : map) {
+			if (category_pair.first == iname)
+				return true;
+		}
+	}
+	return false;
+}
+
 void jactorio::data::DataManager::ClearData() {
 	// Iterate through both unordered maps and delete all pointers
 	for (auto& map : dataRaw) {

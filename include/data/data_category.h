@@ -24,6 +24,7 @@ namespace jactorio::data
 		health_entity,
 		container_entity,
 
+		assembly_machine,
 		transport_belt,
 		mining_drill,
 		inserter,

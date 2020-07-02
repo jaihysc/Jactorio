@@ -66,10 +66,19 @@ std::vector<jactorio::data::RecipeItem> jactorio::data::Recipe::RecipeGetTotalRa
 void jactorio::data::Recipe::PostLoadValidate(const DataManager& data_manager) const {
 	J_DATA_ASSERT(!ingredients.empty(), "No ingredients specified for recipe")
 	for (const auto& ingredient : ingredients) {
+		if (!data_manager.DataRawGet<Item>(DataCategory::item, ingredient.first)) {
+			LOG_MESSAGE_f(error, "Internal name: %s", ingredient.first.c_str());
+			J_DATA_ASSERT(false, "Ingredient does not exist, see details above");
+		}
+
 		J_DATA_ASSERT(!ingredient.first.empty(), "Empty ingredient internal name specifier");
 		J_DATA_ASSERT(ingredient.second > 0, "Ingredient required amount minimum is 1");
 	}
 
+	if (!data_manager.DataRawGet<Item>(DataCategory::item, product_.first)) {
+		LOG_MESSAGE_f(error, "Product name: %s", product_.first.c_str());
+		J_DATA_ASSERT(false, "Product does not exist, see details above");
+	}
 	J_DATA_ASSERT(!product_.first.empty(), "No product specified for recipe");
 	J_DATA_ASSERT(product_.second > 0, "Product yield amount minimum is 1");
 }
