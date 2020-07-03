@@ -202,12 +202,14 @@ namespace jactorio::game
 		// ============================================================================================
 		// Recipe
 
+		/// Current text in recipe search menu
+		std::string recipeSearchText;
+
 		void RecipeGroupSelect(uint16_t index);
 		J_NODISCARD uint16_t RecipeGroupGetSelected() const;
 
 		///
 		/// \brief Call every tick to count down the crafting time for the currently queued item (60 ticks = 1 second)
-
 		void RecipeCraftTick(const data::DataManager& data_manager, uint16_t ticks = 1);
 
 		///

@@ -160,7 +160,7 @@ void DrawMenu(jactorio::renderer::Menu menu,
 	auto& gui_menu = jactorio::renderer::menus[static_cast<int>(menu)];
 
 	if (gui_menu.visible) {
-		gui_menu.drawPtr(player_data, data_manager, unique_data);
+		gui_menu.drawPtr(player_data, data_manager, nullptr, unique_data);
 	}
 }
 

@@ -9,8 +9,11 @@
 #include <thread>
 #include <vector>
 
+#include <examples/imgui_impl_opengl3.h>
+
 #include "jactorio.h"
 #include "core/resource_guard.h"
+#include "examples/imgui_impl_sdl.h"
 
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/opengl/shader.h"
@@ -101,6 +104,7 @@ void RenderingLoop() {
 		SDL_GL_SwapWindow(renderer::GetWindow());
 
 		while (SDL_PollEvent(&e)) {
+			ImGui_ImplSDL2_ProcessEvent(&e);
 			renderer::HandleSdlEvent(e);
 		}
 	}

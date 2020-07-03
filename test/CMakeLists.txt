@@ -64,6 +64,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
 	${JACTORIO_TEST_DIR}/core/float_mathTests.cpp
+	${JACTORIO_TEST_DIR}/core/utilityTests.cpp
 	${JACTORIO_TEST_DIR}/core/data_typeTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/data_managerTests.cpp

@@ -6,6 +6,8 @@
 #include <functional>
 #include <sstream>
 
+#include "core/utility.h"
+
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/mining_drill.h"
 #include "data/prototype/item/recipe_group.h"
@@ -38,9 +40,13 @@ void FitTitle(std::stringstream& description_ss, const uint16_t target_len) {
 
 ///
 /// \brief Adds additional vertical space
+template <bool AddNewLine = true>
 void AddVerticalSpace(const float y) {
 	ImGui::Dummy({0, y});
-	ImGui::NewLine();
+
+	if constexpr (AddNewLine) {
+		ImGui::NewLine();
+	}
 }
 
 ///
@@ -236,6 +242,18 @@ void DrawItemSlot(const renderer::MenuData& menu_data,
 	}
 }
 
+///
+/// \brief Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
+void DrawTitleBar(const std::string& title, const std::function<void()>& draw_func = []() {
+                  }) {
+	AddVerticalSpace<false>(J_GUI_STYLE_FRAME_PADDING_Y);
+
+	ImGui::Text("%s", title.c_str());
+	draw_func();
+
+	AddVerticalSpace<true>(J_GUI_STYLE_TITLEBAR_PADDING_Y - J_GUI_VAR_ITEM_SPACING_Y);
+}
+
 // ======================================================================
 // Window positioning
 
@@ -292,19 +310,16 @@ void SetupNextWindowRight() {
 // ==========================================================================================
 // Player menus (Excluding entity menus)
 
-const ImGuiWindowFlags kMenuFlags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+const ImGuiWindowFlags kMenuFlags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
 
 ///
 /// \brief Draws the player's inventory menu
 void PlayerInventoryMenu(game::PlayerData& player_data, const data::DataManager& data_manager) {
-	ImGuiWindowFlags window_flags = 0;
-	window_flags |= ImGuiWindowFlags_NoCollapse;
-	window_flags |= ImGuiWindowFlags_NoResize;
-
 	const ImVec2 window_size = GetWindowSize();
 	ImGui::SetNextWindowSize(window_size);
 
-	ImGui::Begin("Character", nullptr, window_flags);
+	ImGui::Begin("_character", nullptr, kMenuFlags);
+	DrawTitleBar("Character");
 
 	auto menu_data = renderer::GetMenuData();
 
@@ -360,7 +375,37 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 	const ImVec2 window_size = GetWindowSize();
 	ImGui::SetNextWindowSize(window_size);
 
-	ImGui::Begin("Recipe", nullptr, kMenuFlags);
+	J_GUI_RAII_END();
+	ImGui::Begin("_recipe", nullptr, kMenuFlags);
+
+	// Title with search bar
+	DrawTitleBar("Recipe", [&]() {
+		ImGui::SameLine();
+		// Shift above to center title text in middle of search bar
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - J_GUI_STYLE_TITLEBAR_PADDING_Y / 2);
+
+		J_GUI_RAII_STYLE_VAR_POP(1);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+		                    {J_GUI_STYLE_WINDOW_PADDING_X, J_GUI_STYLE_TITLEBAR_PADDING_Y / 2});
+
+		// Search text
+		// Make temporary buffer, copy std::string contents into, pass to imgui input, copy result back into std::string
+		const size_t search_buf_size = 100;
+
+		char buf[search_buf_size + 1];
+
+		const auto end = std::min(player_data.recipeSearchText.size(), search_buf_size);
+		for (size_t i = 0; i < end; ++i) {
+			buf[i] = player_data.recipeSearchText[i];
+		}
+		buf[end] = '\0';
+
+		ImGui::InputText("", buf, search_buf_size);
+		player_data.recipeSearchText = buf;
+
+		// Continue title bar calculations from where the label text was
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - J_GUI_STYLE_TITLEBAR_PADDING_Y / 2);
+	});
 
 	// Menu groups | A group button is twice the size of a slot
 	auto groups = data_manager.DataRawGetAllSorted<data::RecipeGroup>(data::DataCategory::recipe_group);
@@ -368,6 +413,20 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 	DrawSlots(5, groups.size(), 2, [&](const uint16_t index, auto& button_hovered) {
 		const auto& recipe_group = groups[index];
 
+		// Only draw item categories matching searched product name 
+		for (auto& recipe_category : recipe_group->recipeCategories) {
+			for (auto& recipe : recipe_category->recipes) {
+				const auto& product_name =
+					data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe->product.first)->GetLocalizedName();
+
+				if (core::StrToLower(product_name).find(core::StrToLower(player_data.recipeSearchText)) != std::string::npos) {
+					goto loop_exit;
+				}
+			}
+		}
+		return;
+
+	loop_exit:
 		// Different color for currently selected recipe group
 		if (index == player_data.RecipeGroupGetSelected())
 			ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
@@ -412,16 +471,20 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 				data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe->product.first);
 			assert(product != nullptr);  // Invalid recipe product
 
+			// Do not draw item slot if it does not match search text
+			if (core::StrToLower(product->GetLocalizedName())
+				.find(core::StrToLower(player_data.recipeSearchText)) == std::string::npos)
+				return;
+
 			item_slot_draw(menu_data, *recipe, *product, button_hovered);
 		});
 	}
-
-	ImGui::End();
 }
 
 // ======================================================================
 
-void renderer::CharacterMenu(game::PlayerData& player_data, const data::DataManager& data_manager, const data::UniqueDataBase*) {
+void renderer::CharacterMenu(game::PlayerData& player_data, const data::DataManager& data_manager,
+                             const data::PrototypeBase*, const data::UniqueDataBase*) {
 	SetupNextWindowLeft();
 	PlayerInventoryMenu(player_data, data_manager);
 
@@ -527,7 +590,8 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::DataMana
 	});
 }
 
-void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManager&, const data::UniqueDataBase*) {
+void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManager&,
+                            const data::PrototypeBase*, const data::UniqueDataBase*) {
 	using namespace jactorio;
 	// Draw the tooltip of what is currently selected
 
@@ -554,7 +618,7 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 		flags |= ImGuiWindowFlags_NoResize;
 
 		ImGui::SetNextWindowFocus();
-		ImGui::Begin("Selected-item", nullptr, flags);
+		ImGui::Begin("_selected_item", nullptr, flags);
 
 		const auto& positions = menu_data.spritePositions.at(selected_item->first->sprite->internalId);
 
@@ -576,7 +640,8 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 	}
 }
 
-void renderer::CraftingQueue(game::PlayerData& player_data, const data::DataManager& data_manager, const data::UniqueDataBase*) {
+void renderer::CraftingQueue(game::PlayerData& player_data, const data::DataManager& data_manager,
+                             const data::PrototypeBase*, const data::UniqueDataBase*) {
 	auto menu_data = GetMenuData();
 
 	ImGuiWindowFlags flags = 0;
@@ -631,7 +696,8 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::DataMana
 
 float last_pickup_fraction = 0.f;
 
-void renderer::PickupProgressbar(game::PlayerData& player_data, const data::DataManager&, const data::UniqueDataBase*) {
+void renderer::PickupProgressbar(game::PlayerData& player_data, const data::DataManager&,
+                                 const data::PrototypeBase*, const data::UniqueDataBase*) {
 	constexpr float progress_bar_width  = 260 * 2;
 	constexpr float progress_bar_height = 13;
 
@@ -671,7 +737,8 @@ void renderer::PickupProgressbar(game::PlayerData& player_data, const data::Data
 // ==========================================================================================
 // Entity menus
 void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataManager& data_manager,
-                               const data::UniqueDataBase* unique_data) {
+                               const data::PrototypeBase* prototype, const data::UniqueDataBase* unique_data) {
+	assert(prototype);
 	assert(unique_data);
 	const auto& container_data = *static_cast<const data::ContainerEntityData*>(unique_data);
 
@@ -679,7 +746,8 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataMa
 	PlayerInventoryMenu(player_data, data_manager);
 
 	SetupNextWindowRight();
-	ImGui::Begin("Container", nullptr, kMenuFlags);
+	ImGui::Begin("_container", nullptr, kMenuFlags);
+	DrawTitleBar(prototype->GetLocalizedName());
 
 	DrawSlots(10, container_data.size, 1, [&](auto i, auto& button_hovered) {
 		const auto sprite_id = container_data.inventory[i].first != nullptr
@@ -704,7 +772,8 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataMa
 }
 
 void renderer::MiningDrill(game::PlayerData& player_data, const data::DataManager& data_manager,
-                           const data::UniqueDataBase* unique_data) {
+                           const data::PrototypeBase* prototype, const data::UniqueDataBase* unique_data) {
+	assert(prototype);
 	assert(unique_data);
 	const auto& drill_data = *static_cast<const data::MiningDrillData*>(unique_data);
 
@@ -712,7 +781,8 @@ void renderer::MiningDrill(game::PlayerData& player_data, const data::DataManage
 	PlayerInventoryMenu(player_data, data_manager);
 
 	SetupNextWindowRight();
-	ImGui::Begin("Mining drill", nullptr, kMenuFlags);
+	ImGui::Begin("_mining_drill", nullptr, kMenuFlags);
+	DrawTitleBar(prototype->GetLocalizedName());
 
 	// 1 - (Ticks left / Ticks to mine)
 	const long double ticks_left = static_cast<long double>(drill_data.deferralEntry.first) - player_data

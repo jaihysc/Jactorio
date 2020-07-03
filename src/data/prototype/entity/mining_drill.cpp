@@ -15,7 +15,7 @@ bool jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, cons
                                              game::ChunkTileLayer* tile_layer) const {
 	auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
 
-	renderer::MiningDrill(player_data, data_manager, drill_data);
+	renderer::MiningDrill(player_data, data_manager, this, drill_data);
 	return true;
 }
 

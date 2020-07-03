@@ -47,8 +47,8 @@ void renderer::DebugMenuLogic(game::PlayerData& player_data, const data::DataMan
 		DebugItemSpawner(player_data, data_manager);
 }
 
-void renderer::DebugMenu(game::PlayerData& player_data, const data::DataManager& data_manager,
-                         const data::UniqueDataBase*) {
+void renderer::DebugMenu(game::PlayerData& player_data, const data::DataManager&,
+                         const data::PrototypeBase*, const data::UniqueDataBase*) {
 	using namespace jactorio;
 
 	ImGuiWindowFlags main_window_flags = 0;
