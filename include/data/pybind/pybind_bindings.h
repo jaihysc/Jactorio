@@ -221,7 +221,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	PYBIND_DATA_CLASS(Recipe, Recipe, PrototypeBase)
 		PYBIND_PROP(Recipe, craftingTime)
 		PYBIND_PROP(Recipe, ingredients)
-		PYBIND_PROP_GET_SET(Recipe, product, SetProduct, GetProduct);
+		PYBIND_PROP(Recipe, product);
 
 	// ############################################################
 	// Data_raw + get/set

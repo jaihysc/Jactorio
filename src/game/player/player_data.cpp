@@ -659,7 +659,7 @@ void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_m
 			craftingQueue_.pop_front();
 
 			// Return product
-			data::RecipeItem recipe_item = recipe->GetProduct();
+			data::RecipeItem recipe_item = recipe->product;
 			const auto* product_item     = data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe_item.first);
 
 			data::ItemStack item = {product_item, recipe_item.second};
@@ -716,7 +716,7 @@ void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_m
 }
 
 void jactorio::game::PlayerData::RecipeQueue(const data::DataManager& data_manager, const data::Recipe& recipe) {
-	LOG_MESSAGE_F(debug, "Queuing recipe: '%s'", recipe.GetProduct().first.c_str());
+	LOG_MESSAGE_F(debug, "Queuing recipe: '%s'", recipe.product.first.c_str());
 
 	// Remove ingredients
 	for (const auto& ingredient : recipe.ingredients) {
@@ -777,10 +777,10 @@ void jactorio::game::PlayerData::RecipeCraftR(const data::DataManager& data_mana
 				return_deductions += amount_needed + queued_available;
 
 
-				auto* ingredient_recipe = data::Recipe::GetItemRecipe(ingredient.first);
+				auto* ingredient_recipe = data::Recipe::GetItemRecipe(data_manager, ingredient.first);
 
 				// Round up to always ensure enough is crafted
-				const unsigned int yield = ingredient_recipe->GetProduct().second;
+				const unsigned int yield = ingredient_recipe->product.second;
 				const auto batches       = (amount_needed + yield - 1) / yield;
 
 				// Keep track of excess amounts
@@ -831,7 +831,7 @@ bool jactorio::game::PlayerData::RecipeCanCraftR(const data::DataManager& data_m
 			continue;
 		}
 
-		const auto* ingredient_recipe = data::Recipe::GetItemRecipe(ingredient.first);
+		const auto* ingredient_recipe = data::Recipe::GetItemRecipe(data_manager, ingredient.first);
 		// Ingredient cannot be crafted
 		if (ingredient_recipe == nullptr)
 			return false;
@@ -844,7 +844,7 @@ bool jactorio::game::PlayerData::RecipeCanCraftR(const data::DataManager& data_m
 			used_items[ingredient_proto] = 0;  // Use up amount available + craft to reach desired amount
 
 			const unsigned int x = ingredient.second * batches - possess_amount;
-			const unsigned int y = ingredient_recipe->GetProduct().second;
+			const unsigned int y = ingredient_recipe->product.second;
 			// Round up to always ensure enough is crafted
 			ingredient_required_batches = (x + y - 1) / y;
 		}

@@ -55,13 +55,13 @@ namespace jactorio::game
 
 			finalRecipe_ = new data::Recipe();
 			finalRecipe_->Set_ingredients({{"item-1", 3}, {"item-2", 1}});
-			finalRecipe_->SetProduct({"item-product", 1});
+			finalRecipe_->product = {"item-product", 1};
 
 			dataManager_.DataRawAdd("item-product-recipe", finalRecipe_);
 
 			itemRecipe_ = new data::Recipe();
 			itemRecipe_->Set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});
-			itemRecipe_->SetProduct({"item-1", 2});
+			itemRecipe_->product = {"item-1", 2};
 
 			dataManager_.DataRawAdd("item-1-recipe", itemRecipe_);
 		}
@@ -92,7 +92,7 @@ namespace jactorio::game
 		// Register recipes
 		auto recipe = data::Recipe();
 		recipe.Set_ingredients({{"item-1", 2}});
-		recipe.SetProduct({"item-product", 1});
+		recipe.product = {"item-product", 1};
 		recipe.Set_craftingTime(1);
 
 		// 10 of item in player inventory

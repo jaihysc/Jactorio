@@ -25,44 +25,26 @@ namespace jactorio::data
 	public:
 		PROTOTYPE_CATEGORY(recipe);
 
-		Recipe() = default;
-
-
 		/// \brief Seconds to complete recipe
 		PYTHON_PROP_REF_I(Recipe, float, craftingTime, 1);
 
-
 		PYTHON_PROP_REF(Recipe, std::vector<RecipeItem>, ingredients);
+		PYTHON_PROP_REF(Recipe, RecipeItem, product);
 
-		// Product
-		J_NODISCARD RecipeItem GetProduct() const { return this->product_; }
-
-		Recipe* SetProduct(const RecipeItem& (product)) {
-			// Save recipe in lookup
-			itemRecipes_[product.first] = this;
-
-			this->product_ = product;
-			return this;
-		}
-
-
+		// ======================================================================
+		
 		void PostLoadValidate(const DataManager&) const override;
 
-	private:
-		static std::unordered_map<std::string, Recipe*> itemRecipes_;
-		RecipeItem product_;
-
-	public:
 		///
 		/// \brief Looks up recipe for item of iname
 		/// \returns nullptr if not found
-		static Recipe* GetItemRecipe(const std::string& iname);
+		static const Recipe* GetItemRecipe(const DataManager& data_manager, const std::string& iname);
 
 		///
 		/// \brief Returns raw materials for a recipe <br>
 		/// Assumes all provided names are valid <br>
 		/// A raw material is something which cannot be hand crafted
-		static std::vector<RecipeItem> RecipeGetTotalRaw(const std::string& iname);
+		static std::vector<RecipeItem> RecipeGetTotalRaw(const DataManager& data_manager, const std::string& iname);
 	};
 }
 

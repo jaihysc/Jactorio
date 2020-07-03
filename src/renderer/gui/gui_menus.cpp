@@ -409,7 +409,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 			const data::Recipe* recipe = recipes.at(index);
 
 			const auto* product =
-				data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe->GetProduct().first);
+				data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe->product.first);
 			assert(product != nullptr);  // Invalid recipe product
 
 			item_slot_draw(menu_data, *recipe, *product, button_hovered);
@@ -441,7 +441,7 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::DataMana
 
 			std::stringstream title_ss;
 			// Show the product yield in the title
-			title_ss << product.GetLocalizedName().c_str() << " (" << recipe.GetProduct().second << ")";
+			title_ss << product.GetLocalizedName().c_str() << " (" << recipe.product.second << ")";
 
 			std::stringstream description_ss;
 			description_ss << "Ingredients:";
@@ -500,7 +500,7 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::DataMana
 					ImGui::Text("%s", "Total Raw:");
 					AddVerticalSpace(8);
 
-					auto raw_inames = data::Recipe::RecipeGetTotalRaw(product.name);
+					auto raw_inames = data::Recipe::RecipeGetTotalRaw(data_manager, product.name);
 
 					DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto&) {
 						const auto* item =
@@ -619,9 +619,9 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::DataMana
 
 		const auto* item =
 			data_manager.DataRawGet<data::Item>(data::DataCategory::item,
-			                                    recipe->GetProduct().first);
+			                                    recipe->product.first);
 		DrawItemSlot(menu_data, 1,
-		             item->sprite->internalId, recipe->GetProduct().second,
+		             item->sprite->internalId, recipe->product.second,
 		             button_hovered);
 	});
 
