@@ -1,13 +1,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/29/2020
+// Created on: 06/18/2020
 
 #ifndef JACTORIO_TEST_JACTORIOTESTS_H
 #define JACTORIO_TEST_JACTORIOTESTS_H
 #pragma once
 
+#include "data/prototype/entity/assembly_machine.h"
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_line.h"
 #include "game/world/world_data.h"
 
 ///
@@ -43,9 +44,9 @@ inline jactorio::game::ChunkTileLayer& TestSetupInserter(jactorio::game::WorldDa
 ///
 /// \brief Registers and creates tile UniqueData for TransportSegment
 inline void TestRegisterTransportSegment(jactorio::game::WorldData& world_data,
-							const jactorio::game::Chunk::ChunkPair& world_coords,
-                            const std::shared_ptr<jactorio::game::TransportSegment>& segment,
-							const jactorio::data::TransportLine& prototype) {
+                                         const jactorio::game::Chunk::ChunkPair& world_coords,
+                                         const std::shared_ptr<jactorio::game::TransportSegment>& segment,
+                                         const jactorio::data::TransportLine& prototype) {
 	auto* tile = world_data.GetTile(world_coords);
 	assert(tile);
 	auto* chunk = world_data.GetChunk(world_coords);
@@ -57,7 +58,21 @@ inline void TestRegisterTransportSegment(jactorio::game::WorldData& world_data,
 	layer.MakeUniqueData<jactorio::data::TransportLineData>(segment);
 
 	chunk->GetLogicGroup(jactorio::game::Chunk::LogicGroup::transport_line)
-	      .emplace_back(&tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
+	     .emplace_back(&tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
+}
+
+///
+/// \brief Creates an assembly machine at coordinates
+inline jactorio::game::ChunkTileLayer TestSetupAssemblyMachine(jactorio::game::WorldData& world_data,
+                                                               const jactorio::game::WorldData::WorldPair& world_coords,
+                                                               const jactorio::data::AssemblyMachine& assembly_proto) {
+	auto& layer = world_data.GetTile(world_coords)
+	                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+
+	layer.prototypeData = &assembly_proto;
+	layer.MakeUniqueData<jactorio::data::AssemblyMachineData>();
+
+	return layer;
 }
 
 #endif // JACTORIO_TEST_JACTORIOTESTS_H

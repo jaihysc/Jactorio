@@ -10,6 +10,12 @@
 
 namespace jactorio::data
 {
+	struct AssemblyMachineData final : HealthEntityData
+	{
+		/// Currently selected recipe for assembling
+		Recipe* recipe = nullptr;
+	};
+
 	class AssemblyMachine final : public HealthEntity
 	{
 	public:
@@ -22,6 +28,12 @@ namespace jactorio::data
 
 		Sprite::SetT OnRGetSet(Orientation orientation, game::WorldData& world_data,
 		                       const game::WorldData::WorldPair& world_coords) const override;
+
+		SpritemapFrame OnRGetSprite(const UniqueDataBase* unique_data, GameTickT game_tick) const override;
+
+
+		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
+		                game::ChunkTileLayer* tile_layer) const override;
 
 		void OnBuild(game::WorldData& world_data,
 		             const game::WorldData::WorldPair& world_coords,

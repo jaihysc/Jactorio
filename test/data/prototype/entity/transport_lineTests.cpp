@@ -3,8 +3,8 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/entity/transport/transport_belt.h"
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_belt.h"
+#include "data/prototype/entity/transport_line.h"
 #include "game/logic/transport_segment.h"
 
 // ======================================================================

@@ -71,6 +71,8 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
+	${JACTORIO_TEST_DIR}/data/prototype/interface/renderableTests.cpp
+
 	${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
@@ -79,7 +81,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/prototype/entity/assembly_machineTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/inserterTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/mining_drillTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/entity/transport/transport_lineTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/entity/transport_lineTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp

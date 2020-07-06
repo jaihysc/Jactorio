@@ -3,8 +3,6 @@
 
 #include "data/prototype/entity/mining_drill.h"
 
-#include <cmath>
-
 #include "data/data_manager.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "game/logic/item_logistics.h"
@@ -19,14 +17,6 @@ bool jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, cons
 	return true;
 }
 
-jactorio::data::Sprite::FrameT GetMiningDrillFrame(const jactorio::GameTickT game_tick, const uint16_t total_frames) {
-	// Double for reversed animation, take 2 frames away such that the last and first frame is not repeated
-
-	int32_t val = game_tick % (static_cast<uint64_t>(total_frames) * 2 - 2);
-	val -= total_frames - 1;  // Negative side has all frames, positive side has 1 less without final frame
-	return abs(val);
-}
-
 std::pair<jactorio::data::Sprite*, jactorio::data::Sprite::FrameT> jactorio::data::MiningDrill::OnRGetSprite(
 	const UniqueDataBase* unique_data, GameTickT game_tick) const {
 	const auto& drill_data = *static_cast<const MiningDrillData*>(unique_data);
@@ -38,15 +28,15 @@ std::pair<jactorio::data::Sprite*, jactorio::data::Sprite::FrameT> jactorio::dat
 		game_tick = 0;
 
 	if (set <= 7)
-		return {this->sprite, GetMiningDrillFrame(game_tick, this->sprite->frames * this->spriteE->sets)};
+		return IRenderable::AllOfSpriteReversing(*sprite, game_tick);
 
 	if (set <= 15)
-		return {this->spriteE, GetMiningDrillFrame(game_tick, this->spriteE->frames * this->spriteE->sets)};
+		return IRenderable::AllOfSpriteReversing(*spriteE, game_tick);
 
 	if (set <= 23)
-		return {this->spriteS, GetMiningDrillFrame(game_tick, this->spriteS->frames * this->spriteS->sets)};
+		return IRenderable::AllOfSpriteReversing(*spriteS, game_tick);
 
-	return {this->spriteW, GetMiningDrillFrame(game_tick, this->spriteW->frames * this->spriteW->sets)};
+	return IRenderable::AllOfSpriteReversing(*spriteW, game_tick);
 }
 
 jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSet(const Orientation orientation,

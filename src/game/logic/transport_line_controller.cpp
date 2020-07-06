@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_line.h"
 
 #include <cmath>
 

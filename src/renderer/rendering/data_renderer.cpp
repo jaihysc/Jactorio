@@ -5,7 +5,7 @@
 
 #include "jactorio.h"
 #include "data/prototype/type.h"
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_line.h"
 #include "game/logic/transport_line_controller.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"

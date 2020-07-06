@@ -11,7 +11,7 @@
 
 #include "data/data_manager.h"
 #include "data/prototype/entity/inserter.h"
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_line.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/transport_segment.h"

@@ -5,7 +5,7 @@
 
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/entity.h"
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_line.h"
 #include "data/prototype/item/item.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"

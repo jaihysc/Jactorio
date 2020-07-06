@@ -8,7 +8,7 @@
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/mining_drill.h"
-#include "data/prototype/entity/transport/transport_belt.h"
+#include "data/prototype/entity/transport_belt.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
 

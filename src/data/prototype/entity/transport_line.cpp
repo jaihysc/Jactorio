@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 // Created on: 03/31/2020
 
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_line.h"
 
 #include <cmath>
 
@@ -71,7 +71,7 @@ data::Sprite::SetT data::TransportLine::OnRGetSet(const Orientation orientation,
 
 std::pair<data::Sprite*, data::Sprite::FrameT> data::TransportLine::OnRGetSprite(const UniqueDataBase*,
                                                                                  const GameTickT game_tick) const {
-	return {this->sprite, game_tick % sprite->frames};
+	return AllOfSet(*sprite, game_tick);
 }
 
 //

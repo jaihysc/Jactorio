@@ -32,7 +32,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/data/prototype/entity/assembly_machine.cpp
 	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
 	${JACTORIO_DIR}/data/prototype/entity/mining_drill.cpp
-	${JACTORIO_DIR}/data/prototype/entity/transport/transport_line.cpp
+	${JACTORIO_DIR}/data/prototype/entity/transport_line.cpp
 
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 	${JACTORIO_DIR}/data/data_manager.cpp
