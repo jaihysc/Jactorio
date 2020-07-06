@@ -3,6 +3,8 @@
 
 #include "data/prototype/entity/assembly_machine.h"
 
+#include "renderer/gui/gui_menus.h"
+
 jactorio::data::Sprite::SetT jactorio::data::AssemblyMachine::OnRGetSet(
 	Orientation,
 	game::WorldData&,
@@ -19,6 +21,7 @@ jactorio::data::IRenderable::SpritemapFrame jactorio::data::AssemblyMachine::OnR
 
 bool jactorio::data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
                                                  game::ChunkTileLayer* tile_layer) const {
+	renderer::AssemblyMachine(player_data, data_manager, this, tile_layer->GetUniqueData());
 	return true;
 }
 

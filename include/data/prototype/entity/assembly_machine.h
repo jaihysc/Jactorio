@@ -13,7 +13,10 @@ namespace jactorio::data
 	struct AssemblyMachineData final : HealthEntityData
 	{
 		/// Currently selected recipe for assembling
-		Recipe* recipe = nullptr;
+		const Recipe* recipe = nullptr;
+
+		/// Recipe selected by the player to change on next logic update
+		mutable const Recipe* changeRecipe = nullptr;
 	};
 
 	class AssemblyMachine final : public HealthEntity

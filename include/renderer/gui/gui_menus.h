@@ -44,7 +44,8 @@ namespace jactorio::renderer
 	J_GUI_WINDOW_SUB(PickupProgressbar)\
 	\
 	J_GUI_WINDOW_SUB(ContainerEntity)\
-	J_GUI_WINDOW_SUB(MiningDrill)
+	J_GUI_WINDOW_SUB(MiningDrill)\
+	J_GUI_WINDOW_SUB(AssemblyMachine)
 
 	// ======================================================================
 	// Macro definitions - 3

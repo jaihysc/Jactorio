@@ -8,6 +8,7 @@
 
 #include "core/utility.h"
 
+#include "data/prototype/entity/assembly_machine.h"
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/mining_drill.h"
 #include "data/prototype/item/recipe_group.h"
@@ -273,38 +274,60 @@ ImVec2 GetWindowSize() {
 }
 
 ///
+/// \brief Gets the center window position
+ImVec2 GetWindowCenter() {
+	return {
+		static_cast<float>(renderer::Renderer::GetWindowWidth()) / 2,
+		static_cast<float>(renderer::Renderer::GetWindowHeight()) / 2
+	};
+}
+
+///
 /// \brief The next window drawn will be on the left center of the screen
 void SetupNextWindowLeft(const ImVec2& window_size) {
 	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
 	// Character window is left of the center
-	const ImVec2 window_center(static_cast<float>(renderer::Renderer::GetWindowWidth()) / 2,
-	                           static_cast<float>(renderer::Renderer::GetWindowHeight()) / 2);
+	auto window_center = GetWindowCenter();
+	window_center.x -= window_size.x;
+	window_center.y -= window_size.y / 2;
 
-	ImGui::SetNextWindowPos(ImVec2(window_center.x - window_size.x,
-	                               window_center.y - window_size.y / 2));
+	ImGui::SetNextWindowPos(window_center);
+	ImGui::SetNextWindowSize(window_size);
 }
 
 void SetupNextWindowLeft() {
 	SetupNextWindowLeft(GetWindowSize());
 }
 
+
 ///
 /// The next window drawn will be on the left center of the screen
 void SetupNextWindowRight(const ImVec2& window_size) {
 	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
 	// Character window is left of the center
-	const ImVec2 window_center(static_cast<float>(renderer::Renderer::GetWindowWidth()) / 2,
-	                           static_cast<float>(renderer::Renderer::GetWindowHeight()) / 2);
+	auto window_center = GetWindowCenter();
+	window_center.y -= window_size.y / 2;
 
-	// Recipe menu
-	ImGui::SetNextWindowPos(ImVec2(window_center.x,
-	                               window_center.y - window_size.y / 2));
-
+	ImGui::SetNextWindowPos(window_center);
 	ImGui::SetNextWindowSize(window_size);
 }
 
 void SetupNextWindowRight() {
 	SetupNextWindowRight(GetWindowSize());
+}
+
+
+void SetupNextWindowCenter(const ImVec2& window_size) {
+	auto window_center = GetWindowCenter();
+	window_center.x -= window_size.x / 2;
+	window_center.y -= window_size.y / 2;
+
+	ImGui::SetNextWindowPos(window_center);
+	ImGui::SetNextWindowSize(window_size);
+}
+
+void SetupNextWindowCenter() {
+	SetupNextWindowCenter(GetWindowSize());
 }
 
 // ==========================================================================================
@@ -363,10 +386,9 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::DataManager&
 	ImGui::End();
 }
 
-void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_manager,
+void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_manager, const std::string& title,
                 const std::function<
-	                void(const renderer::MenuData& menu_data,
-	                     const data::Recipe& recipe, const data::Item& product,
+	                void(const data::Recipe& recipe, const data::Item& product,
 	                     bool& button_hovered)
                 >& item_slot_draw) {
 
@@ -379,7 +401,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 	ImGui::Begin("_recipe", nullptr, kMenuFlags);
 
 	// Title with search bar
-	DrawTitleBar("Recipe", [&]() {
+	DrawTitleBar(title, [&]() {
 		ImGui::SameLine();
 		// Shift above to center title text in middle of search bar
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - J_GUI_STYLE_TITLEBAR_PADDING_Y / 2);
@@ -476,9 +498,101 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 				.find(core::StrToLower(player_data.recipeSearchText)) == std::string::npos)
 				return;
 
-			item_slot_draw(menu_data, *recipe, *product, button_hovered);
+			DrawItemSlot(menu_data, 1, product->sprite->internalId, 0, button_hovered, [&]() {
+				item_slot_draw(*recipe, *product, button_hovered);
+			});
 		});
 	}
+}
+
+///
+/// \brief Draws preview tooltip for a recipe
+/// \tparam IsPlayerCrafting Shows items possessed by the player and opportunities for intermediate crafting
+template <bool IsPlayerCrafting>
+void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& data_manager,
+                        const data::Recipe& recipe, const data::Item& product) {
+	auto menu_data = renderer::GetMenuData();
+
+	std::stringstream title_ss;
+	// Show the product yield in the title
+	title_ss << product.GetLocalizedName().c_str() << " (" << recipe.product.second << ")";
+
+	std::stringstream description_ss;
+	description_ss << "Ingredients:";
+	FitTitle(description_ss, title_ss.str().size());
+
+	bool hovered = false;  // Not needed since the tooltip is always drawn under the cursor
+	DrawCursorTooltip(
+		player_data, data_manager,
+		title_ss.str().c_str(),
+		description_ss.str().c_str(),
+		[&]() {
+			// Ingredients
+			for (const auto& ingredient_pair : recipe.ingredients) {
+				const auto* item = data_manager.DataRawGet<data::Item>(data::DataCategory::item,
+				                                                       ingredient_pair.first);
+
+				DrawItemSlot(menu_data, 1, item->sprite->internalId, 0, hovered);
+
+				// Amount of the current ingredient the player has in inventory
+				const auto player_item_count = game::GetInvItemCount(player_data.inventoryPlayer,
+				                                                     game::PlayerData::kInventorySize,
+				                                                     item);
+
+				ImGui::SameLine(kInventorySlotWidth * 1.5);
+
+				// Does not have ingredient
+				if (IsPlayerCrafting && player_item_count < ingredient_pair.second) {
+					const bool can_be_recurse_crafted = player_data.RecipeCanCraft(data_manager, recipe, 1);
+
+					J_GUI_RAII_STYLE_COLOR_POP(1);
+					if (can_be_recurse_crafted)
+						ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_WARNING);
+					else
+						ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
+
+					ImGui::Text("%d/%d x %s", player_item_count, ingredient_pair.second,
+					            item->GetLocalizedName().c_str());
+				}
+					// Has enough
+				else {
+					ImGui::Text("%d x %s", ingredient_pair.second,
+					            item->GetLocalizedName().c_str());
+				}
+
+				AddVerticalSpace(8);
+			}
+			ImGui::Text("%.1f seconds", recipe.craftingTime);
+
+			// Total raw items
+			ImGui::Separator();
+
+			ImGui::Text("%s", "Total Raw:");
+			AddVerticalSpace(8);
+
+			auto raw_inames = data::Recipe::RecipeGetTotalRaw(data_manager, product.name);
+
+			DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto&) {
+				const auto* item =
+					data_manager.DataRawGet<data::Item>(data::DataCategory::item, raw_inames[slot_index].first);
+
+				const auto item_count_required = raw_inames[slot_index].second;
+
+				// const auto player_item_count = 
+				// 	game::GetInvItemCount(player_data.inventoryPlayer, player_data.kInventorySize, item);
+				//
+				//
+				// J_GUI_RAII_STYLE_COLOR_POP(1);
+				// if (player_item_count < item_count_required) {
+				// 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
+				// }
+				// else
+				// 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
+
+				DrawItemSlot(menu_data, 1, item->sprite->internalId, item_count_required, hovered);
+			}, 0);
+
+		});
 }
 
 // ======================================================================
@@ -489,105 +603,18 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::DataMana
 	PlayerInventoryMenu(player_data, data_manager);
 
 	SetupNextWindowRight();
-	RecipeMenu(player_data, data_manager, [&](auto& menu_data, auto& recipe, auto& product, auto& button_hovered) {
-		DrawItemSlot(menu_data, 1, product.sprite->internalId, 0, button_hovered, [&]() {
-			if (ImGui::IsItemClicked()) {
-				if (player_data.RecipeCanCraft(data_manager, recipe, 1)) {
-					player_data.RecipeCraftR(data_manager, recipe);
-					player_data.InventorySort();
-				}
-			}
+	RecipeMenu(player_data, data_manager, "Recipe",
+	           [&](auto& recipe, auto& product, auto& button_hovered) {
+		           if (ImGui::IsItemClicked()) {
+			           if (player_data.RecipeCanCraft(data_manager, recipe, 1)) {
+				           player_data.RecipeCraftR(data_manager, recipe);
+				           player_data.InventorySort();
+			           }
+		           }
 
-			// Draw item tooltip
-			if (!ImGui::IsItemHovered() || button_hovered)
-				return;
-
-			std::stringstream title_ss;
-			// Show the product yield in the title
-			title_ss << product.GetLocalizedName().c_str() << " (" << recipe.product.second << ")";
-
-			std::stringstream description_ss;
-			description_ss << "Ingredients:";
-			FitTitle(description_ss, title_ss.str().size());
-
-			DrawCursorTooltip(
-				player_data, data_manager,
-				title_ss.str().c_str(),
-				description_ss.str().c_str(),
-				[&]() {
-					// ingredients
-					for (const auto& ingredient_pair : recipe.ingredients) {
-						const auto* item =
-							data_manager.DataRawGet<data::Item>(data::DataCategory::item,
-							                                    ingredient_pair.first);
-
-						DrawItemSlot(menu_data, 1, item->sprite->internalId, 0, button_hovered);
-
-						// Amount of the current ingredient the player has in inventory
-
-						const auto player_item_count = game::GetInvItemCount(
-							player_data.inventoryPlayer, game::PlayerData::kInventorySize,
-							item);
-
-						ImGui::SameLine(kInventorySlotWidth * 1.5);
-
-						// Does not have ingredient
-						if (player_item_count < ingredient_pair.second) {
-							const bool can_be_recurse_crafted = player_data.RecipeCanCraft(data_manager, recipe, 1);
-							if (can_be_recurse_crafted) {
-								// Ingredient can be crafted recursively
-								ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_WARNING);
-							}
-							else {
-								// Ingredient cannot be crafted
-								ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
-							}
-
-							ImGui::Text("%d/%d x %s", player_item_count, ingredient_pair.second,
-							            item->GetLocalizedName().c_str());
-							ImGui::PopStyleColor();
-						}
-							// Has enough
-						else {
-							ImGui::Text("%d x %s", ingredient_pair.second,
-							            item->GetLocalizedName().c_str());
-						}
-
-						AddVerticalSpace(8);
-					}
-					ImGui::Text("%.1f seconds", recipe.craftingTime);
-
-					// Total raw
-					ImGui::Separator();
-
-					ImGui::Text("%s", "Total Raw:");
-					AddVerticalSpace(8);
-
-					auto raw_inames = data::Recipe::RecipeGetTotalRaw(data_manager, product.name);
-
-					DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto&) {
-						const auto* item =
-							data_manager.DataRawGet<data::Item>(data::DataCategory::item, raw_inames[slot_index].first);
-
-						const auto item_count_required = raw_inames[slot_index].second;
-
-						// const auto player_item_count = 
-						// 	game::GetInvItemCount(player_data.inventoryPlayer, player_data.kInventorySize, item);
-						//
-						//
-						// J_GUI_RAII_STYLE_COLOR_POP(1);
-						// if (player_item_count < item_count_required) {
-						// 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
-						// }
-						// else
-						// 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
-
-						DrawItemSlot(menu_data, 1, item->sprite->internalId, item_count_required, button_hovered);
-					}, 0);
-
-				});
-		});
-	});
+		           if (ImGui::IsItemHovered() && !button_hovered)
+			           RecipeHoverTooltip<true>(player_data, data_manager, recipe, product);
+	           });
 }
 
 void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManager&,
@@ -781,7 +808,10 @@ void renderer::MiningDrill(game::PlayerData& player_data, const data::DataManage
 	PlayerInventoryMenu(player_data, data_manager);
 
 	SetupNextWindowRight();
+
+	J_GUI_RAII_END();
 	ImGui::Begin("_mining_drill", nullptr, kMenuFlags);
+
 	DrawTitleBar(prototype->GetLocalizedName());
 
 	// 1 - (Ticks left / Ticks to mine)
@@ -793,6 +823,48 @@ void renderer::MiningDrill(game::PlayerData& player_data, const data::DataManage
 		ImGui::ProgressBar(0.f);  // Drill has not started
 	else
 		ImGui::ProgressBar(1.f - static_cast<float>(ticks_left / mine_ticks));
+}
 
-	ImGui::End();
+void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataManager& data_manager,
+                               const data::PrototypeBase* prototype, const data::UniqueDataBase* unique_data) {
+	assert(prototype);
+	assert(unique_data);
+
+	const auto& machine_data = *static_cast<const data::AssemblyMachineData*>(unique_data);
+
+	if (machine_data.recipe) {
+		// Has recipe selected
+		SetupNextWindowLeft();
+		PlayerInventoryMenu(player_data, data_manager);
+
+		SetupNextWindowRight();
+
+		J_GUI_RAII_END();
+		ImGui::Begin("_assembly_machine", nullptr, kMenuFlags);
+
+		DrawTitleBar(prototype->GetLocalizedName());
+
+
+		// TODO ingredients \n recipe \n progressbar
+		ImGui::ProgressBar(0.f);
+
+		if (ImGui::Button("Change recipe")) {
+			machine_data.changeRecipe = nullptr;
+		}
+	}
+	else {
+		// Only draw recipe menu if no recipe is selected for assembling
+		SetupNextWindowCenter();
+		RecipeMenu(player_data, data_manager, prototype->GetLocalizedName(),
+		           [&](auto& recipe, auto& product, auto& button_hovered) {
+
+			           if (ImGui::IsItemClicked()) {
+						   machine_data.changeRecipe = &recipe;
+			           }
+
+			           if (ImGui::IsItemHovered() && !button_hovered)
+				           RecipeHoverTooltip<false>(player_data, data_manager, recipe, product);
+		           });
+	}
+
 }
