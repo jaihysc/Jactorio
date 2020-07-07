@@ -39,7 +39,7 @@ namespace jactorio::data
 		Status status = Status::pickup;
 
 		/// Current item held by inserter
-		ItemStack heldItem;
+		Item::Stack heldItem;
 
 		game::ItemDropOff dropoff;
 		game::InserterPickup pickup;

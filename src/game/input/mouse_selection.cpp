@@ -39,7 +39,7 @@ void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, 
 
 
 	const auto cursor_position = player_data.GetMouseTileCoords();
-	const data::ItemStack* ptr;
+	const data::Item::Stack* ptr;
 	if ((ptr = player_data.GetSelectedItem()) != nullptr)
 		DrawOverlay(player_data, data_manager,
 		            static_cast<data::Entity*>(ptr->first->entityPrototype),

@@ -111,7 +111,7 @@ namespace jactorio::game
 			playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);  // Select
 
 			// Deselect into inv_2
-			data::ItemStack inv_2[10];
+			data::Item::Inventory inv_2{10};
 			playerData_.InventoryClick(dataManager_, 0, 0, true, inv_2);  // Deselect
 
 			EXPECT_EQ(inv_2[0].first, item.get());
@@ -133,7 +133,7 @@ namespace jactorio::game
 			playerData_.InventoryClick(dataManager_, 0, 0, true, playerData_.inventoryPlayer);  // Select
 
 			// Deselect into inv_2
-			data::ItemStack inv_2[10];
+			data::Item::Inventory inv_2{10};
 			playerData_.InventoryClick(dataManager_, 0, 1, true, inv_2);  // Will NOT Deselect since in another inventory
 
 			EXPECT_EQ(inv_2[0].first, item.get());
@@ -516,7 +516,7 @@ namespace jactorio::game
 		EXPECT_EQ(playerData_.inventoryPlayer[10].second, 0);
 
 		// There should have been no new cursors created anywhere
-		for (int i = 0; i < PlayerData::kInventorySize; ++i) {
+		for (int i = 0; i < playerData_.inventoryPlayer.size(); ++i) {
 			if (i == 10)
 				continue;
 			EXPECT_NE(playerData_.inventoryPlayer[i].first, cursor_);

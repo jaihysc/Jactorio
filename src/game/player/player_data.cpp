@@ -246,7 +246,7 @@ void jactorio::game::PlayerData::TryPlaceEntity(WorldData& world_data,
 
 	auto& selected_layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
 
-	const data::ItemStack* item = GetSelectedItem();
+	const auto* item = GetSelectedItem();
 	// Ensure item attempting to place is an entity
 	data::Entity* entity_ptr = nullptr;
 
@@ -344,13 +344,13 @@ void jactorio::game::PlayerData::TryPickup(WorldData& world_data,
 		LOG_MESSAGE(debug, "Player picked up entity");
 
 		// Give picked up item to player
-		const auto item_stack = data::ItemStack(chosen_ptr->GetItem(), 1);
+		const auto item_stack = data::Item::Stack(chosen_ptr->GetItem(), 1);
 
 		// Failed to add item, likely because the inventory is full
-		if (!CanAddStack(inventoryPlayer, kInventorySize, item_stack))
+		if (!CanAddStack(inventoryPlayer, item_stack))
 			return;
 
-		AddStack(inventoryPlayer, kInventorySize, item_stack);
+		AddStack(inventoryPlayer, item_stack);
 		InventorySort();
 
 		pickupTickCounter_ = 0;
@@ -404,8 +404,8 @@ void jactorio::game::PlayerData::InventorySort() {
 	LOG_MESSAGE(debug, "Sorting player inventory");
 
 	// Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
-	std::vector<data::ItemStack> inv_temp;
-	inv_temp.reserve(kInventorySize);
+	std::vector<data::Item::Stack> inv_temp;
+	inv_temp.reserve(inventoryPlayer.size());
 	for (const auto& i : inventoryPlayer) {
 		// Skip the cursor
 		if (i.first == nullptr ||
@@ -418,7 +418,7 @@ void jactorio::game::PlayerData::InventorySort() {
 
 	// Sort temp inventory (does not contain cursor)
 	std::sort(inv_temp.begin(), inv_temp.end(),
-	          [](const data::ItemStack a, const data::ItemStack b) {
+	          [](const data::Item::Stack a, const data::Item::Stack b) {
 		          const auto& a_name = a.first->GetLocalizedName();
 		          const auto& b_name = b.first->GetLocalizedName();
 
@@ -474,7 +474,7 @@ void jactorio::game::PlayerData::InventorySort() {
 	// Copy back into origin inventory
 	int start                   = -1;  // The index of the first blank slot post sorting
 	unsigned int inv_temp_index = 0;
-	for (auto i = 0; i < kInventorySize; ++i) {
+	for (auto i = 0; i < inventoryPlayer.size(); ++i) {
 		// Skip the cursor
 		if (inventoryPlayer[i].first != nullptr &&
 			inventoryPlayer[i].first->GetLocalizedName() == kInventorySelectedCursorIname)
@@ -501,7 +501,7 @@ loop_exit:
 		return;
 
 	// Copy empty spaces into the remainder of the slots
-	for (auto i = start; i < kInventorySize; ++i) {
+	for (auto i = start; i < inventoryPlayer.size(); ++i) {
 		// Skip the cursor
 		if (inventoryPlayer[i].first != nullptr &&
 			inventoryPlayer[i].first->GetLocalizedName() == kInventorySelectedCursorIname)
@@ -518,13 +518,13 @@ void jactorio::game::PlayerData::InventoryClick(const data::DataManager& data_ma
                                                 const unsigned short index,
                                                 const unsigned short mouse_button,
                                                 const bool allow_reference_select,
-                                                data::ItemStack* inv) {
-	assert(index < kInventorySize);
+                                                data::Item::Inventory& inv) {
+	assert(index < inventoryPlayer.size());
 	assert(mouse_button == 0 || mouse_button == 1);  // Only left + right click supported
 
 	// Clicking on the same location + inventory, selecting by reference: deselect
 	if (hasItemSelected_ && selectByReference_ &&
-		selectedItemIndex_ == index && selectedItemInventory_ == inv) {
+		selectedItemIndex_ == index && selectedItemInventory_ == &inv) {
 		hasItemSelected_ = false;
 
 		// Add referenced item to slot
@@ -541,7 +541,7 @@ void jactorio::game::PlayerData::InventoryClick(const data::DataManager& data_ma
 
 		hasItemSelected_       = true;
 		selectedItemIndex_     = index;
-		selectedItemInventory_ = inv;
+		selectedItemInventory_ = &inv;
 
 		// Reference
 		if (allow_reference_select && mouse_button == 0) {
@@ -569,8 +569,8 @@ void jactorio::game::PlayerData::InventoryClick(const data::DataManager& data_ma
 	}
 
 	const bool cursor_empty =
-		MoveItemstackToIndex(&selectedItem_, 0,
-		                     inv, index,
+		MoveItemstackToIndex(selectedItem_,
+		                     inv[index],
 		                     mouse_button);
 	// Cursor slot is empty
 	if (cursor_empty) {
@@ -578,7 +578,7 @@ void jactorio::game::PlayerData::InventoryClick(const data::DataManager& data_ma
 
 		if (selectByReference_) {
 			// Remove cursor icon
-			assert(selectedItemIndex_ < kInventorySize);
+			assert(selectedItemIndex_ < inventoryPlayer.size());
 			// Select by reference is only for inventory_player
 			inventoryPlayer[selectedItemIndex_].first  = nullptr;
 			inventoryPlayer[selectedItemIndex_].second = 0;
@@ -586,7 +586,7 @@ void jactorio::game::PlayerData::InventoryClick(const data::DataManager& data_ma
 	}
 }
 
-const jactorio::data::ItemStack* jactorio::game::PlayerData::GetSelectedItem() const {
+const jactorio::data::Item::Stack* jactorio::game::PlayerData::GetSelectedItem() const {
 	if (!hasItemSelected_)
 		return nullptr;
 
@@ -644,7 +644,7 @@ uint16_t jactorio::game::PlayerData::RecipeGroupGetSelected() const {
 void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_manager, uint16_t ticks) {
 	// Attempt to return held item if inventory is full
 	if (craftingHeldItem_.second != 0) {
-		const auto extra_items   = AddStack(inventoryPlayer, kInventorySize, craftingHeldItem_);
+		const auto extra_items   = AddStack(inventoryPlayer, craftingHeldItem_);
 		craftingHeldItem_.second = extra_items;
 		return;
 	}
@@ -662,7 +662,7 @@ void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_m
 			data::RecipeItem recipe_item = recipe->product;
 			const auto* product_item     = data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe_item.first);
 
-			data::ItemStack item = {product_item, recipe_item.second};
+			data::Item::Stack item = {product_item, recipe_item.second};
 
 			// Deduct based on the deductions
 			std::map<std::string, uint16_t>::iterator element;
@@ -697,7 +697,7 @@ void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_m
 					// If entry is 0, erase it
 					craftingItemExtras_.erase(recipe_item.first);
 
-				const auto extra_items = AddStack(inventoryPlayer, kInventorySize, item);
+				const auto extra_items = AddStack(inventoryPlayer, item);
 				if (extra_items != 0)
 					craftingHeldItem_ = {item.first, extra_items};
 			}
@@ -722,7 +722,7 @@ void jactorio::game::PlayerData::RecipeQueue(const data::DataManager& data_manag
 	for (const auto& ingredient : recipe.ingredients) {
 		const auto* item = data_manager.DataRawGet<data::Item>(data::DataCategory::item, ingredient.first);
 
-		DeleteInvItem(inventoryPlayer, kInventorySize, item, ingredient.second);
+		DeleteInvItem(inventoryPlayer, item, ingredient.second);
 	}
 
 	// Queue is empty, crafting time for the first item in queue must be set here
@@ -746,7 +746,7 @@ void jactorio::game::PlayerData::RecipeCraftR(const data::DataManager& data_mana
 			data::DataCategory::item, ingredient.first);
 
 		const uint32_t possess_amount =
-			GetInvItemCount(inventoryPlayer, kInventorySize, ingredient_proto);
+			GetInvItemCount(inventoryPlayer, ingredient_proto);
 
 		// Insufficient ingredient amount in player inventory
 		if (possess_amount < ingredient.second) {
@@ -819,9 +819,7 @@ bool jactorio::game::PlayerData::RecipeCanCraftR(const data::DataManager& data_m
 			possess_amount = used_items[ingredient_proto];
 		}
 		else {
-			possess_amount = GetInvItemCount(inventoryPlayer,
-			                                 kInventorySize,
-			                                 ingredient_proto);
+			possess_amount               = GetInvItemCount(inventoryPlayer, ingredient_proto);
 			used_items[ingredient_proto] = possess_amount;
 		}
 

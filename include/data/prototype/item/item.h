@@ -23,9 +23,14 @@ namespace jactorio::data
 	class Item final : public ItemBase
 	{
 	public:
-		using ItemStack = uint16_t;
-		static constexpr ItemStack kDefaultStackSize = 50;
+		using StackCount = uint16_t;
+		using Stack = std::pair<const Item*, StackCount>;
+		using Inventory = std::vector<Stack>;
 
+	private:
+		static constexpr StackCount kDefaultStackSize = 50;
+
+	public:
 		PROTOTYPE_CATEGORY(item);
 
 		Item()
@@ -43,20 +48,13 @@ namespace jactorio::data
 
 		///
 		/// \brief Number of items which can be together
-		PYTHON_PROP_REF(Item, ItemStack, stackSize)
+		PYTHON_PROP_REF(Item, StackCount, stackSize)
 
 
 		void ValidatedPostLoad() override {
 			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
 		}
 	};
-
-
-	// Makes arrays holding items more clear than just unsigned int
-	// Item* and amount in current stack
-	// Left: Item prototype
-	// Right: Item count
-	using ItemStack = std::pair<const Item*, Item::ItemStack>;
 }
 
 #endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H

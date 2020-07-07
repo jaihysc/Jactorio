@@ -94,7 +94,7 @@ namespace jactorio::game
 		// Edge cases
 		playerData_.TryPlaceEntity(worldData_, 0, 0);  // Placing with no items selected
 
-		data::ItemStack selected_item = {&item_no_entity, 2};
+		data::Item::Stack selected_item = {&item_no_entity, 2};
 		playerData_.SetSelectedItem(selected_item);
 
 		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::entity, entity.get());
@@ -154,7 +154,7 @@ namespace jactorio::game
 		worldData_.EmplaceChunk(0, 0, tiles);
 
 		// If selected item's entity is placeable, do not set activated_layer
-		data::ItemStack selected_item = {&item, 2};
+		data::Item::Stack selected_item = {&item, 2};
 		playerData_.SetSelectedItem(selected_item);
 
 		playerData_.TryPlaceEntity(worldData_, 0, 0, true);
@@ -208,7 +208,7 @@ namespace jactorio::game
 		worldData_.EmplaceChunk(0, 0, tiles);
 
 		// Entity is non-placeable, therefore when clicking on an entity, it will get activated_layer
-		data::ItemStack selected_item = {&item, 2};
+		data::Item::Stack selected_item = {&item, 2};
 		playerData_.SetSelectedItem(selected_item);
 
 		// Set
@@ -434,7 +434,7 @@ namespace jactorio::game
 		entity.SetItem(&item);
 
 
-		data::ItemStack selected_item = {&item, 1};
+		data::Item::Stack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
 		// Update listeners should be dispatched
@@ -519,7 +519,7 @@ namespace jactorio::game
 
 		auto item = data::Item{};
 
-		data::ItemStack selected_item = {&item, 1};
+		data::Item::Stack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
 		playerData_.TryPlaceEntity(worldData_, 0, 0, true);
@@ -616,7 +616,7 @@ namespace jactorio::game
 
 		// ======================================================================
 
-		data::ItemStack selected_item = {&item, 1};
+		data::Item::Stack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
 		playerData_.TryPlaceEntity(worldData_, 1, 1, true);

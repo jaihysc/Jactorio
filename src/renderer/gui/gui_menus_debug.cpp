@@ -12,11 +12,14 @@
 #include "data/data_manager.h"
 #include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/transport_line.h"
+
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/transport_segment.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
+
+#include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/rendering/mvp_manager.h"
 
@@ -129,25 +132,14 @@ void renderer::DebugTimings() {
 }
 
 int give_amount = 100;
+int new_inv_size = game::PlayerData::kDefaultInventorySize;
 
 void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::DataManager& data_manager) {
 	using namespace core;
 
 	ImGui::Begin("Item spawner");
+	J_GUI_RAII_END();
 
-	auto game_items = data_manager.DataRawGetAll<data::Item>(data::DataCategory::item);
-	for (auto& item : game_items) {
-		ImGui::PushID(item->name.c_str());
-
-		if (ImGui::Button(item->GetLocalizedName().c_str())) {
-			data::ItemStack item_stack = {item, give_amount};
-			game::AddStack(
-				player_data.inventoryPlayer, game::PlayerData::kInventorySize, item_stack);
-		}
-		ImGui::PopID();
-	}
-
-	ImGui::Separator();
 	ImGui::InputInt("Give amount", &give_amount);
 	if (give_amount <= 0)
 		give_amount = 1;
@@ -158,7 +150,28 @@ void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::DataM
 		}
 	}
 
-	ImGui::End();
+	ImGui::InputInt("Inventory size", &new_inv_size);
+	if (new_inv_size < 0)
+		new_inv_size = 0;
+
+	if (new_inv_size != player_data.inventoryPlayer.size()) {
+		player_data.inventoryPlayer.resize(new_inv_size);
+	}
+
+
+	ImGui::Separator();
+
+
+	auto game_items = data_manager.DataRawGetAll<data::Item>(data::DataCategory::item);
+	for (auto& item : game_items) {
+		ImGui::PushID(item->name.c_str());
+
+		if (ImGui::Button(item->GetLocalizedName().c_str())) {
+			data::Item::Stack item_stack = {item, give_amount};
+			game::AddStack(player_data.inventoryPlayer, item_stack);
+		}
+		ImGui::PopID();
+	}
 }
 
 std::pair<int32_t, int32_t> last_valid_line_segment{};

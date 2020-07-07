@@ -149,15 +149,15 @@ namespace jactorio::game
 		std::map<std::string, uint16_t> craftingItemExtras_;
 
 		/// Item which is held until there is space in the player inventory to return
-		data::ItemStack craftingHeldItem_ = {nullptr, 0};
+		data::Item::Stack craftingHeldItem_ = {nullptr, 0};
 
 
-		data::ItemStack selectedItem_;
+		data::Item::Stack selectedItem_;
 
-		bool hasItemSelected_                   = false;
-		unsigned short selectedItemIndex_       = 0;
-		data::ItemStack* selectedItemInventory_ = nullptr;
-		bool selectByReference_                 = false;
+		bool hasItemSelected_                         = false;
+		unsigned short selectedItemIndex_             = 0;
+		data::Item::Inventory* selectedItemInventory_ = nullptr;
+		bool selectByReference_                       = false;
 
 	public:
 		static constexpr char kInventorySelectedCursorIname[] = "__core__/inventory-selected-cursor";
@@ -166,8 +166,8 @@ namespace jactorio::game
 		/// Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying stack size
 		void InventorySort();
 
-		static constexpr unsigned short kInventorySize = 80;
-		data::ItemStack inventoryPlayer[kInventorySize];  // Holds the internal id of items
+		static constexpr unsigned short kDefaultInventorySize = 80;
+		data::Item::Inventory inventoryPlayer{kDefaultInventorySize};
 
 		///
 		/// \brief Interacts with the player inventory at index
@@ -176,12 +176,12 @@ namespace jactorio::game
 		/// \param allow_reference_select If true, left clicking will select the item by reference
 		void InventoryClick(const data::DataManager& data_manager,
 		                    unsigned short index, unsigned short mouse_button, bool allow_reference_select,
-		                    data::ItemStack* inv);
+		                    data::Item::Inventory& inv);
 
 		///
 		/// \brief Gets the currently item player is currently holding on the cursor
 		/// \return nullptr if there is no item selected
-		J_NODISCARD const data::ItemStack* GetSelectedItem() const;
+		J_NODISCARD const data::Item::Stack* GetSelectedItem() const;
 
 		///
 		/// \brief Deselects the current item and returns it to its slot ONLY if selected by reference
@@ -265,7 +265,7 @@ namespace jactorio::game
 			return craftingItemExtras_;
 		}
 
-		void SetSelectedItem(data::ItemStack& item) {
+		void SetSelectedItem(data::Item::Stack& item) {
 			hasItemSelected_ = true;
 			selectedItem_ = item;
 		}

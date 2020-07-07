@@ -267,7 +267,7 @@ ImVec2 GetWindowSize() {
 		2 * J_GUI_STYLE_WINDOW_PADDING_Y + 80);
 
 	window_size.x += 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
-	window_size.y += static_cast<unsigned int>(game::PlayerData::kInventorySize / 10) *
+	window_size.y += static_cast<unsigned int>(game::PlayerData::kDefaultInventorySize / 10) *
 		(kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
 
 	return window_size;
@@ -346,7 +346,7 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::DataManager&
 
 	auto menu_data = renderer::GetMenuData();
 
-	DrawSlots(10, game::PlayerData::kInventorySize, 1, [&](auto index, auto& button_hovered) {
+	DrawSlots(10, player_data.inventoryPlayer.size(), 1, [&](auto index, auto& button_hovered) {
 		const auto& item = player_data.inventoryPlayer[index];
 
 		// Draw blank slot if item doe snot exist at inventory slot
@@ -535,9 +535,7 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 				DrawItemSlot(menu_data, 1, item->sprite->internalId, 0, hovered);
 
 				// Amount of the current ingredient the player has in inventory
-				const auto player_item_count = game::GetInvItemCount(player_data.inventoryPlayer,
-				                                                     game::PlayerData::kInventorySize,
-				                                                     item);
+				const auto player_item_count = game::GetInvItemCount(player_data.inventoryPlayer, item);
 
 				ImGui::SameLine(kInventorySlotWidth * 1.5);
 
@@ -625,7 +623,7 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 	const auto menu_data = GetMenuData();
 
 	// Player has an item selected, draw it on the tooltip
-	const data::ItemStack* selected_item;
+	const data::Item::Stack* selected_item;
 	if ((selected_item = player_data.GetSelectedItem()) != nullptr) {
 		ImGui::PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
 		ImGui::PushStyleColor(ImGuiCol_PopupBg, J_GUI_COL_NONE);
@@ -767,7 +765,7 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataMa
                                const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
 	assert(prototype);
 	assert(unique_data);
-	const auto& container_data = *static_cast<const data::ContainerEntityData*>(unique_data);
+	auto& container_data = *static_cast<data::ContainerEntityData*>(unique_data);
 
 	SetupNextWindowLeft();
 	PlayerInventoryMenu(player_data, data_manager);
@@ -776,7 +774,7 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataMa
 	ImGui::Begin("_container", nullptr, kMenuFlags);
 	DrawTitleBar(prototype->GetLocalizedName());
 
-	DrawSlots(10, container_data.size, 1, [&](auto i, auto& button_hovered) {
+	DrawSlots(10, container_data.inventory.size(), 1, [&](auto i, auto& button_hovered) {
 		const auto sprite_id = container_data.inventory[i].first != nullptr
 			                       ? container_data.inventory[i].first->sprite->internalId
 			                       : 0;
@@ -815,8 +813,8 @@ void renderer::MiningDrill(game::PlayerData& player_data, const data::DataManage
 	DrawTitleBar(prototype->GetLocalizedName());
 
 	// 1 - (Ticks left / Ticks to mine)
-	const long double ticks_left = static_cast<long double>(drill_data.deferralEntry.first) - player_data
-	                                                                                          .GetPlayerWorld().GameTick();
+	const long double ticks_left = static_cast<long double>(drill_data.deferralEntry.first) -
+		player_data.GetPlayerWorld().GameTick();
 	const long double mine_ticks = drill_data.miningTicks;
 
 	if (drill_data.deferralEntry.second == 0)
@@ -830,13 +828,13 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 	assert(prototype);
 	assert(unique_data);
 
-	auto& world_data = player_data.GetPlayerWorld();
+	auto& world_data          = player_data.GetPlayerWorld();
 	const auto& machine_proto = *static_cast<const data::AssemblyMachine*>(prototype);
-	auto& machine_data = *static_cast<data::AssemblyMachineData*>(unique_data);
+	auto& machine_data        = *static_cast<data::AssemblyMachineData*>(unique_data);
 
 	// Will be modifying AssemblyMachineData::recipe
 	std::lock_guard<std::mutex> world_data_guard{world_data.worldDataMutex};
-	
+
 	if (machine_data.HasRecipe()) {
 		SetupNextWindowLeft();
 		PlayerInventoryMenu(player_data, data_manager);
@@ -864,8 +862,8 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 		           [&](auto& recipe, auto& product, auto& button_hovered) {
 
 			           if (ImGui::IsItemClicked()) {
-						   // TODO
-						   machine_data.ChangeRecipe(world_data, machine_proto, &recipe);
+				           // TODO
+				           machine_data.ChangeRecipe(world_data, machine_proto, &recipe);
 			           }
 
 			           if (ImGui::IsItemHovered() && !button_hovered)

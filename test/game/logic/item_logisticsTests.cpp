@@ -58,10 +58,10 @@ namespace jactorio::game
 		ASSERT_TRUE(pickup.Initialize(worldData_, *container_layer.GetUniqueData(), 2, 4));
 
 		data::Item item{};
-		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
+		auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
-		data::ItemStack out_item_stack;
+		data::Item::Stack out_item_stack;
 		pickup.Pickup(1, data::ToRotationDegree(180.f), 2, out_item_stack);
 
 		EXPECT_EQ(inv[0].second, 8);
@@ -336,7 +336,7 @@ namespace jactorio::game
 		                data::TransportLineData& line_data) const {
 			constexpr int pickup_amount = 1;
 
-			data::ItemStack out_item_stack;
+			data::Item::Stack out_item_stack;
 			const bool result = PickupTransportBelt(1, data::ToRotationDegree(kMaxInserterDegree),
 			                                        pickup_amount,
 			                                        line_data,
@@ -356,10 +356,10 @@ namespace jactorio::game
 		auto& container_data  = *container_layer.GetUniqueData();
 
 		data::Item item{};
-		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
+		auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
-		data::ItemStack out_item_stack;
+		data::Item::Stack out_item_stack;
 
 		PickupContainerEntity(1, data::ToRotationDegree(179),
 		                      1, container_data,

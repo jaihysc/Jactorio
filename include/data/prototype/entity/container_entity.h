@@ -11,21 +11,11 @@ namespace jactorio::data
 {
 	struct ContainerEntityData : HealthEntityData
 	{
-		explicit ContainerEntityData(const uint16_t inventory_size)
-			: inventory(new ItemStack[inventory_size]), size(inventory_size) {
+		explicit ContainerEntityData(const uint16_t inventory_size) {
+			inventory.resize(inventory_size);
 		}
 
-		~ContainerEntityData() override {
-			delete[] inventory;
-		}
-
-		ContainerEntityData(const ContainerEntityData& other)                = delete;
-		ContainerEntityData(ContainerEntityData&& other) noexcept            = delete;
-		ContainerEntityData& operator=(const ContainerEntityData& other)     = delete;
-		ContainerEntityData& operator=(ContainerEntityData&& other) noexcept = delete;
-
-		ItemStack* const inventory;
-		const uint16_t size;
+		Item::Inventory inventory;
 	};
 
 	///
@@ -41,8 +31,6 @@ namespace jactorio::data
 
 		PYTHON_PROP_REF(ContainerEntity, uint16_t, inventorySize)
 
-
-		UniqueDataBase* CopyUniqueData(UniqueDataBase* ptr) const override;
 
 		// Events
 
