@@ -71,6 +71,15 @@ namespace jactorio::data
 		EXPECT_TRUE(VectorGetVal(v, "raw-2", 30));
 	}
 
+	TEST_F(RecipeTest, GetCraftingTime) {
+		Recipe recipe{};
+		recipe.craftingTime = 1.5;
+
+		EXPECT_EQ(recipe.GetCraftingTime(), 90);
+
+		EXPECT_EQ(recipe.GetCraftingTime(1.f/2), 45);
+	}
+
 	TEST_F(RecipeTest, PostLoadValidate) {
 		const auto recipe = Recipe();
 

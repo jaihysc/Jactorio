@@ -63,7 +63,7 @@ inline void TestRegisterTransportSegment(jactorio::game::WorldData& world_data,
 
 ///
 /// \brief Creates an assembly machine at coordinates
-inline jactorio::game::ChunkTileLayer TestSetupAssemblyMachine(jactorio::game::WorldData& world_data,
+inline jactorio::game::ChunkTileLayer& TestSetupAssemblyMachine(jactorio::game::WorldData& world_data,
                                                                const jactorio::game::WorldData::WorldPair& world_coords,
                                                                const jactorio::data::AssemblyMachine& assembly_proto) {
 	auto& layer = world_data.GetTile(world_coords)

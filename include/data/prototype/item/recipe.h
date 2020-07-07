@@ -10,8 +10,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "data/data_manager.h"
+#include "core/data_type.h"
 #include "data/prototype/prototype_base.h"
+#include "data/prototype/type.h"
 
 namespace jactorio::data
 {
@@ -26,14 +27,18 @@ namespace jactorio::data
 		PROTOTYPE_CATEGORY(recipe);
 
 		/// \brief Seconds to complete recipe
-		PYTHON_PROP_REF_I(Recipe, float, craftingTime, 1);
+		PYTHON_PROP_REF_I(Recipe, ProtoFloatT, craftingTime, 1);
 
 		PYTHON_PROP_REF(Recipe, std::vector<RecipeItem>, ingredients);
 		PYTHON_PROP_REF(Recipe, RecipeItem, product);
 
 		// ======================================================================
-		
+
 		void PostLoadValidate(const DataManager&) const override;
+
+		///
+		/// \brief Gets number of logic ticks necessary to craft recipe
+		J_NODISCARD GameTickT GetCraftingTime(double multiplier = 1.f) const;
 
 		///
 		/// \brief Looks up recipe for item of iname

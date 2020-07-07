@@ -28,15 +28,15 @@ std::pair<jactorio::data::Sprite*, jactorio::data::Sprite::FrameT> jactorio::dat
 		game_tick = 0;
 
 	if (set <= 7)
-		return IRenderable::AllOfSpriteReversing(*sprite, game_tick);
+		return AllOfSpriteReversing(*sprite, game_tick);
 
 	if (set <= 15)
-		return IRenderable::AllOfSpriteReversing(*spriteE, game_tick);
+		return AllOfSpriteReversing(*spriteE, game_tick);
 
 	if (set <= 23)
-		return IRenderable::AllOfSpriteReversing(*spriteS, game_tick);
+		return AllOfSpriteReversing(*spriteS, game_tick);
 
-	return IRenderable::AllOfSpriteReversing(*spriteW, game_tick);
+	return AllOfSpriteReversing(*spriteW, game_tick);
 }
 
 jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSet(const Orientation orientation,
@@ -142,17 +142,10 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
                                                    const game::WorldData::WorldPair& emit_world_coords,
                                                    const game::WorldData::WorldPair& receive_world_coords,
                                                    Orientation) const {
-	MiningDrillData* drill_data;
-	{
-		auto& self_layer = world_data.GetTile(receive_world_coords.first,
-		                                      receive_world_coords.second)
-		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
-		// Use the top left tile
-		if (self_layer.IsMultiTile())
-			drill_data = static_cast<MiningDrillData*>(self_layer.GetMultiTileTopLeft()->GetUniqueData());
-		else
-			drill_data = static_cast<MiningDrillData*>(self_layer.GetUniqueData());
-	}
+	auto* self_layer = world_data.GetTile(receive_world_coords)
+	                             ->GetLayer(game::ChunkTile::ChunkLayer::entity).GetMultiTileTopLeft();
+
+	auto* drill_data = static_cast<MiningDrillData*>(self_layer->GetUniqueData());
 
 	// Ignore updates from non output tiles 
 	if (emit_world_coords != drill_data->outputTileCoords)
@@ -168,7 +161,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 	// Do not register callback to mine items if there is no valid entity to output items to
 	if (initialized) {
 		drill_data->miningTicks =
-			static_cast<uint16_t>(static_cast<double>(JC_GAME_HERTZ) * drill_data->outputItem->entityPrototype->pickupTime);
+			static_cast<uint16_t>(static_cast<double>(kGameHertz) * drill_data->outputItem->entityPrototype->pickupTime);
 
 		RegisterMineCallback(world_data.deferralTimer, drill_data);
 	}

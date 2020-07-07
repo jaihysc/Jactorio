@@ -13,6 +13,7 @@
 namespace jactorio
 {
 	using GameTickT = uint64_t;
+	constexpr int kGameHertz = 60;  // 60 updates per second
 }
 
 namespace jactorio::core

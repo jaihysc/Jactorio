@@ -27,7 +27,7 @@ namespace jactorio::renderer
 {
 	/// Function to draw the menu
 	using MenuFunction = void (*)(game::PlayerData& player_data, const data::DataManager& data_manager,
-								  const data::PrototypeBase* prototype, const data::UniqueDataBase* unique_data);
+								  const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data);
 
 	// ======================================================================
 	// Substitutes name_ below at macro definitions to create an array of guis
@@ -53,7 +53,7 @@ namespace jactorio::renderer
 	// Function
 #define J_GUI_WINDOW_SUB(name_)\
 	void name_(game::PlayerData& player_data, const data::DataManager& data_manager,\
-			   const data::PrototypeBase* prototype = nullptr, const data::UniqueDataBase* unique_data = nullptr);
+			   const data::PrototypeBase* prototype = nullptr, data::UniqueDataBase* unique_data = nullptr);
 
 	J_GUI_WINDOW
 

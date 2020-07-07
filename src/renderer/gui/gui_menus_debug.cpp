@@ -48,7 +48,7 @@ void renderer::DebugMenuLogic(game::PlayerData& player_data, const data::DataMan
 }
 
 void renderer::DebugMenu(game::PlayerData& player_data, const data::DataManager&,
-                         const data::PrototypeBase*, const data::UniqueDataBase*) {
+                         const data::PrototypeBase*, data::UniqueDataBase*) {
 	using namespace jactorio;
 
 	ImGuiWindowFlags main_window_flags = 0;

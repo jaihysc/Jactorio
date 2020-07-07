@@ -7,6 +7,8 @@
 
 #include "data/prototype/entity/entity.h"
 
+#include "core/data_type.h"
+
 namespace jactorio::data
 {
 	// Unique per resource entity placed
@@ -57,7 +59,7 @@ namespace jactorio::data
 
 		void PostLoadValidate(const DataManager&) const override {
 			// Must convert to at least 1 game tick
-			J_DATA_ASSERT(pickupTime * JC_GAME_HERTZ >= 1, "Pickup time is too small");
+			J_DATA_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
 		}
 	};
 }

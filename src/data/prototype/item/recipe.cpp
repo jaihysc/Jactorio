@@ -5,6 +5,8 @@
 
 #include <mutex>
 
+#include "core/data_type.h"
+
 #include "data/data_manager.h"
 #include "data/prototype/item/item.h"
 
@@ -79,4 +81,8 @@ void jactorio::data::Recipe::PostLoadValidate(const DataManager& data_manager) c
 					product.first.c_str());
 	J_DATA_ASSERT(!product.first.empty(), "No product specified for recipe");
 	J_DATA_ASSERT(product.second > 0, "Product yield amount minimum is 1");
+}
+
+jactorio::GameTickT jactorio::data::Recipe::GetCraftingTime(const double multiplier) const {
+	return craftingTime * multiplier * kGameHertz;
 }

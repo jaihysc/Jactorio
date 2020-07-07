@@ -25,11 +25,11 @@
 //
 // Prefer calling LOG_MESSAGE to log a message over log_message()
 #define LOG_MESSAGE(severity, format)\
-	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity>(format)
+	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity>(format, FILENAME, __LINE__)
 
 // Allows the message to contain a format, similar to printf
 #define LOG_MESSAGE_F(severity, format, ...)\
-	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity>(format, __VA_ARGS__)
+	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity>(format, FILENAME, __LINE__, __VA_ARGS__)
 
 
 namespace jactorio::core
@@ -74,11 +74,12 @@ namespace jactorio::core
 	///
 	/// \brief Creates a formatted log message if log level permits
 	template <LogSeverity Severity, typename ... Args, typename = std::common_type<Args ...>>
-	void MakeLogMessage(const char* format, Args&& ... args) {
+	void MakeLogMessage(const char* format, const char* file, const int line,
+						Args&& ... args) {
 		if constexpr (static_cast<int>(Severity) >= JACTORIO_LOG_LEVEL) {
 			char buffer[kMaxLogMsgLength + 1];
 			snprintf(buffer, kMaxLogMsgLength, format, args ...);
-			LogMessage(Severity, FILENAME, __LINE__, buffer);
+			LogMessage(Severity, file, line, buffer);
 		}
 	}
 }

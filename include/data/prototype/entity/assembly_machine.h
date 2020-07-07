@@ -7,19 +7,33 @@
 
 #include "data/prototype/type.h"
 #include "data/prototype/entity/health_entity.h"
+#include "data/prototype/interface/deferred.h"
+#include "game/world/world_data.h"
 
 namespace jactorio::data
 {
+	class AssemblyMachine;
+	
 	struct AssemblyMachineData final : HealthEntityData
 	{
-		/// Currently selected recipe for assembling
-		const Recipe* recipe = nullptr;
+		/// Callback called when recipe is finished crafting
+		game::WorldData::DeferralTimer::DeferralEntry deferralEntry;
+		
+		J_NODISCARD bool HasRecipe() const { return recipe_ != nullptr; }
+		J_NODISCARD const Recipe* GetRecipe() const { return recipe_; }
 
-		/// Recipe selected by the player to change on next logic update
-		mutable const Recipe* changeRecipe = nullptr;
+		///
+		/// \brief Changes recipe to provided recipe, nullptr for no recipe
+		void ChangeRecipe(game::WorldData& world_data, const AssemblyMachine& assembly_proto,
+						  const Recipe* new_recipe);
+
+	private:
+		/// Currently selected recipe for assembling
+		const Recipe* recipe_ = nullptr;
 	};
 
-	class AssemblyMachine final : public HealthEntity
+
+	class AssemblyMachine final : public HealthEntity, public IDeferred
 	{
 	public:
 		PROTOTYPE_CATEGORY(assembly_machine);
@@ -37,6 +51,9 @@ namespace jactorio::data
 
 		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
 		                game::ChunkTileLayer* tile_layer) const override;
+
+
+		void OnDeferTimeElapsed(game::WorldData& world_data, UniqueDataBase* unique_data) const override;
 
 		void OnBuild(game::WorldData& world_data,
 		             const game::WorldData::WorldPair& world_coords,

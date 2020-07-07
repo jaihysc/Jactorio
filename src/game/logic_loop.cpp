@@ -181,7 +181,7 @@ void jactorio::game::InitLogicLoop() {
 			// Lock all mutexes for events
 			std::lock_guard<std::mutex> world_guard{game_data->world.worldDataMutex};
 			std::lock_guard<std::mutex> gui_guard{game_data->player.mutex};
-			game_data->event.Raise<LogicTickEvent>(EventType::logic_tick, game_data->world.GameTick() % JC_GAME_HERTZ);
+			game_data->event.Raise<LogicTickEvent>(EventType::logic_tick, game_data->world.GameTick() % kGameHertz);
 			game_data->input.key.Raise();
 		}
 		// ======================================================================

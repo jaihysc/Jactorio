@@ -598,7 +598,7 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 // ======================================================================
 
 void renderer::CharacterMenu(game::PlayerData& player_data, const data::DataManager& data_manager,
-                             const data::PrototypeBase*, const data::UniqueDataBase*) {
+                             const data::PrototypeBase*, data::UniqueDataBase*) {
 	SetupNextWindowLeft();
 	PlayerInventoryMenu(player_data, data_manager);
 
@@ -618,7 +618,7 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::DataMana
 }
 
 void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManager&,
-                            const data::PrototypeBase*, const data::UniqueDataBase*) {
+                            const data::PrototypeBase*, data::UniqueDataBase*) {
 	using namespace jactorio;
 	// Draw the tooltip of what is currently selected
 
@@ -668,7 +668,7 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 }
 
 void renderer::CraftingQueue(game::PlayerData& player_data, const data::DataManager& data_manager,
-                             const data::PrototypeBase*, const data::UniqueDataBase*) {
+                             const data::PrototypeBase*, data::UniqueDataBase*) {
 	auto menu_data = GetMenuData();
 
 	ImGuiWindowFlags flags = 0;
@@ -724,7 +724,7 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::DataMana
 float last_pickup_fraction = 0.f;
 
 void renderer::PickupProgressbar(game::PlayerData& player_data, const data::DataManager&,
-                                 const data::PrototypeBase*, const data::UniqueDataBase*) {
+                                 const data::PrototypeBase*, data::UniqueDataBase*) {
 	constexpr float progress_bar_width  = 260 * 2;
 	constexpr float progress_bar_height = 13;
 
@@ -764,7 +764,7 @@ void renderer::PickupProgressbar(game::PlayerData& player_data, const data::Data
 // ==========================================================================================
 // Entity menus
 void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataManager& data_manager,
-                               const data::PrototypeBase* prototype, const data::UniqueDataBase* unique_data) {
+                               const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
 	assert(prototype);
 	assert(unique_data);
 	const auto& container_data = *static_cast<const data::ContainerEntityData*>(unique_data);
@@ -799,7 +799,7 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataMa
 }
 
 void renderer::MiningDrill(game::PlayerData& player_data, const data::DataManager& data_manager,
-                           const data::PrototypeBase* prototype, const data::UniqueDataBase* unique_data) {
+                           const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
 	assert(prototype);
 	assert(unique_data);
 	const auto& drill_data = *static_cast<const data::MiningDrillData*>(unique_data);
@@ -826,14 +826,18 @@ void renderer::MiningDrill(game::PlayerData& player_data, const data::DataManage
 }
 
 void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataManager& data_manager,
-                               const data::PrototypeBase* prototype, const data::UniqueDataBase* unique_data) {
+                               const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
 	assert(prototype);
 	assert(unique_data);
 
-	const auto& machine_data = *static_cast<const data::AssemblyMachineData*>(unique_data);
+	auto& world_data = player_data.GetPlayerWorld();
+	const auto& machine_proto = *static_cast<const data::AssemblyMachine*>(prototype);
+	auto& machine_data = *static_cast<data::AssemblyMachineData*>(unique_data);
 
-	if (machine_data.recipe) {
-		// Has recipe selected
+	// Will be modifying AssemblyMachineData::recipe
+	std::lock_guard<std::mutex> world_data_guard{world_data.worldDataMutex};
+	
+	if (machine_data.HasRecipe()) {
 		SetupNextWindowLeft();
 		PlayerInventoryMenu(player_data, data_manager);
 
@@ -849,7 +853,8 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 		ImGui::ProgressBar(0.f);
 
 		if (ImGui::Button("Change recipe")) {
-			machine_data.changeRecipe = nullptr;
+			// TODO
+			machine_data.ChangeRecipe(world_data, machine_proto, nullptr);
 		}
 	}
 	else {
@@ -859,7 +864,8 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 		           [&](auto& recipe, auto& product, auto& button_hovered) {
 
 			           if (ImGui::IsItemClicked()) {
-						   machine_data.changeRecipe = &recipe;
+						   // TODO
+						   machine_data.ChangeRecipe(world_data, machine_proto, &recipe);
 			           }
 
 			           if (ImGui::IsItemHovered() && !button_hovered)

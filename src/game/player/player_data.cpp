@@ -332,7 +332,7 @@ void jactorio::game::PlayerData::TryPickup(WorldData& world_data,
 	// Selecting a new tile different from the last selected tile will reset the counter
 	if (lastSelectedPtr_ != chosen_ptr || lastTilePtr_ != tile) {
 		pickupTickCounter_ = 0;
-		pickupTickTarget_  = static_cast<uint16_t>(chosen_ptr->pickupTime * JC_GAME_HERTZ);  // Seconds to ticks
+		pickupTickTarget_  = static_cast<uint16_t>(chosen_ptr->pickupTime * kGameHertz);  // Seconds to ticks
 	}
 	// Remember the entity + tile which was selected
 	lastSelectedPtr_ = chosen_ptr;
@@ -704,7 +704,7 @@ void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_m
 
 			// Set crafting ticks remaining to the next item
 			if (!craftingQueue_.empty())
-				craftingTicksRemaining_ = static_cast<uint16_t>(craftingQueue_.front()->craftingTime * JC_GAME_HERTZ);
+				craftingTicksRemaining_ = static_cast<uint16_t>(craftingQueue_.front()->craftingTime * kGameHertz);
 		}
 			// Crafting ticks remaining is greater, decrement ticks remaining
 		else {
@@ -727,7 +727,7 @@ void jactorio::game::PlayerData::RecipeQueue(const data::DataManager& data_manag
 
 	// Queue is empty, crafting time for the first item in queue must be set here
 	if (craftingQueue_.empty())
-		craftingTicksRemaining_ = static_cast<uint16_t>(recipe.craftingTime * JC_GAME_HERTZ);
+		craftingTicksRemaining_ = static_cast<uint16_t>(recipe.craftingTime * kGameHertz);
 
 	craftingQueue_.push_back(&recipe);
 }

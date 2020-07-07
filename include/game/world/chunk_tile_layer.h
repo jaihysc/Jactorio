@@ -142,10 +142,10 @@ namespace jactorio::game
 			return static_cast<ChunkTileLayer*>(multiTileData_);
 		}
 
+		///
+		/// \brief Gets top left layer if is multi tile, otherwise itself if not a multi tile
 		J_NODISCARD ChunkTileLayer* GetMultiTileTopLeft() {
-			assert(IsMultiTile());
-
-			if (IsMultiTileTopLeft())
+			if (!IsMultiTile() || IsMultiTileTopLeft())
 				return this;
 			return static_cast<ChunkTileLayer*>(multiTileData_);
 		}

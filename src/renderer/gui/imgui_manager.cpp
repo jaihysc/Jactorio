@@ -156,7 +156,7 @@ void jactorio::renderer::Setup(SDL_Window* window) {
 
 void DrawMenu(jactorio::renderer::Menu menu,
               jactorio::game::PlayerData& player_data, const jactorio::data::DataManager& data_manager,
-              const jactorio::data::UniqueDataBase* unique_data = nullptr) {
+              jactorio::data::UniqueDataBase* unique_data = nullptr) {
 	auto& gui_menu = jactorio::renderer::menus[static_cast<int>(menu)];
 
 	if (gui_menu.visible) {
@@ -192,12 +192,7 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::Da
 
 	auto* layer = player_data.GetActivatedLayer();
 	if (layer != nullptr) {
-
-		// Get the top left corner for non top left multi tiles
-		if (layer->IsMultiTile() && !layer->IsMultiTileTopLeft()) {
-			layer = layer->GetMultiTileParent();
-		}
-
+		layer = layer->GetMultiTileTopLeft();
 		drew_gui = static_cast<const data::Entity*>(layer->prototypeData)->OnRShowGui(player_data, data_manager, layer);
 		if (drew_gui) {
 			SetVisible(Menu::CharacterMenu, false);
