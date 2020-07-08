@@ -16,8 +16,14 @@ namespace jactorio::data
 	
 	struct AssemblyMachineData final : HealthEntityData
 	{
+		// Holds input / output items for assembling
+		
+		Item::Inventory ingredients;
+		Item::Stack product;
+		
 		/// Callback called when recipe is finished crafting
 		game::WorldData::DeferralTimer::DeferralEntry deferralEntry;
+
 		
 		J_NODISCARD bool HasRecipe() const { return recipe_ != nullptr; }
 		J_NODISCARD const Recipe* GetRecipe() const { return recipe_; }

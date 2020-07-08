@@ -15,6 +15,7 @@ void data::AssemblyMachineData::ChangeRecipe(game::WorldData& world_data,
 			assembly_proto,
 			this,
 			new_recipe->GetCraftingTime(1.f / assembly_proto.assemblySpeed));
+		ingredients.resize(new_recipe->ingredients.size());
 	}
 	else {
 		// Remove recipe

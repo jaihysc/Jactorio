@@ -41,12 +41,14 @@ namespace jactorio::data
 
 		Recipe recipe{};
 		recipe.craftingTime = 1.f;
+		recipe.ingredients = {{"@1", 1}, {"@2", 1}, {"@3", 1}};
 
 		// Recipe crafted in 60 ticks
 		worldData_.deferralTimer.DeferralUpdate(900);
 		data.ChangeRecipe(worldData_, proto_, &recipe);
 
 		EXPECT_EQ(data.deferralEntry.first, 960);
+		EXPECT_EQ(data.ingredients.size(), 3);
 	}
 
 	TEST_F(AssemblyMachineTest, ChangeRecipeRemoveRecipe) {

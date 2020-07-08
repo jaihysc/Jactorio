@@ -18,37 +18,11 @@
 #include "game/player/player_data.h"
 
 #include "renderer/gui/gui_colors.h"
+#include "renderer/gui/gui_layout.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/rendering/renderer.h"
 
-constexpr int kInventorySlotWidth        = 36;
-constexpr int kInventorySlotPadding      = 3;
-constexpr int kInventorySlotImagePadding = 2;
-
-constexpr int kInventoryItemCountXOffset = 0;
-constexpr int kInventoryItemCountYOffset = 0;
-
 using namespace jactorio;
-
-///
-/// \brief Pad the ingredients: text with trailing whitespace to reach the length of the title
-///
-/// In order to auto resize to fit the title's text since the title is not accounted
-void FitTitle(std::stringstream& description_ss, const uint16_t target_len) {
-	while (description_ss.str().size() < target_len)
-		description_ss << " ";
-}
-
-///
-/// \brief Adds additional vertical space
-template <bool AddNewLine = true>
-void AddVerticalSpace(const float y) {
-	ImGui::Dummy({0, y});
-
-	if constexpr (AddNewLine) {
-		ImGui::NewLine();
-	}
-}
 
 ///
 /// \param title Title of the tooltip
@@ -65,7 +39,7 @@ void DrawCursorTooltip(game::PlayerData& player_data, const data::DataManager&, 
 	);
 	// If an item is currently selected, move the tooltip down to not overlap
 	if (player_data.GetSelectedItem())
-		cursor_pos.y += kInventorySlotWidth;
+		cursor_pos.y += renderer::kInventorySlotWidth;
 
 	ImGui::SetNextWindowPos(cursor_pos);
 
@@ -95,240 +69,6 @@ void DrawCursorTooltip(game::PlayerData& player_data, const data::DataManager&, 
 	ImGui::SetWindowFocus(title);
 }
 
-///
-/// \brief Auto positions slots based on provided specifications, draws using provided callback <br>
-/// Call within a ImGui window
-/// \param slot_span Slots before wrapping onto new line
-/// \param slot_count Number of slots to draw
-/// \param draw_func Draws slot (index, bool button_hovered)
-/// \param ending_vertical_space If < 0 use default, >= 0 use amount provided of vertical space upon finishing drawing all slots
-void DrawSlots(const uint8_t slot_span, const uint16_t slot_count,
-               const uint8_t scale,
-               const std::function<void(uint16_t, bool&)>& draw_func,
-               const float ending_vertical_space = -1.f) {
-	J_GUI_RAII_STYLE_VAR_POP(1);
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0, 0});
-
-	// If all the slots are drawn without a newline, add one
-	bool printed_newline = false;
-
-	uint16_t index = 0;
-
-	bool button_hovered = false;
-
-	while (index < slot_count) {
-		const uint16_t x = index % slot_span;
-		ImGui::SameLine(J_GUI_STYLE_WINDOW_PADDING_X + x * scale * (kInventorySlotWidth + kInventorySlotPadding));
-
-		ImGui::PushID(index);  // Uniquely identifies the button
-		draw_func(index, button_hovered);
-		ImGui::PopID();
-
-		if (x == slot_span - 1) {
-			printed_newline = true;
-			AddVerticalSpace(static_cast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
-		}
-
-		++index;
-	}
-
-	if (!printed_newline) {
-		if (ending_vertical_space < 0) {
-			AddVerticalSpace(static_cast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
-		}
-		else {
-			AddVerticalSpace(ending_vertical_space);
-		}
-	}
-}
-
-///
-/// \brief Positions item slots based on provided specifications
-/// \param scale 
-/// \param sprite_iid Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
-/// \param item_count Number to display on the item, 0 to hide
-/// \param button_hovered Used to ensure hover status is only applied to one item slot out of a set
-/// \param button_events Handle events from the button 
-void DrawItemSlot(const renderer::MenuData& menu_data,
-                  const uint8_t scale,
-                  const uint32_t sprite_iid,
-                  const uint16_t item_count,
-                  bool& button_hovered,
-                  const std::function<void()>& button_events = []() {
-                  }) {
-	const float original_x_offset = ImGui::GetCursorPosX();
-	const float original_y_offset = ImGui::GetCursorPosY();
-
-	const float x_offset = original_x_offset - kInventorySlotPadding;
-	const float y_offset = original_y_offset - kInventorySlotPadding;
-
-	bool backing_button_hover = false;
-	// Backing button, detects clicks
-	{
-		J_GUI_RAII_STYLE_COLOR_POP(3);
-		ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, J_GUI_COL_NONE);
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, J_GUI_COL_NONE);
-
-		ImGui::SetCursorPos({x_offset, y_offset});
-
-		ImGui::ImageButton(
-			nullptr,
-			ImVec2(0, 0),
-			ImVec2(-1, -1), ImVec2(-1, -1),
-			(kInventorySlotWidth / 2 + kInventorySlotPadding) * scale
-		);
-
-		button_events();
-
-		if (!button_hovered) {
-			if ((backing_button_hover = ImGui::IsItemHovered()) == true)
-				button_hovered = true;
-		}
-	}
-
-	// Visible button, lower width such that a border is visible between slots
-	{
-		// Give visible button hover style if back is hovered
-		if (backing_button_hover) {
-			ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
-		}
-
-
-		// Center in backing button
-		ImGui::SetCursorPos({x_offset + kInventorySlotPadding, y_offset + kInventorySlotPadding});
-
-		if (sprite_iid == 0) {
-			// Blank button
-			ImGui::ImageButton(
-				nullptr,
-				ImVec2(0, 0),
-				ImVec2(-1, -1),
-				ImVec2(-1, -1),
-				(kInventorySlotWidth / 2 * scale) + ((scale - 1) * kInventorySlotImagePadding)
-			);
-		}
-		else {
-			const unsigned int button_size =
-				scale * kInventorySlotWidth
-				+ (scale - 1) * kInventorySlotPadding  // To align with other scales, account for the padding between slots
-				- 2 * kInventorySlotImagePadding;
-
-			const auto& uv = menu_data.spritePositions.at(sprite_iid);
-			ImGui::ImageButton(
-				reinterpret_cast<void*>(menu_data.texId),
-				ImVec2(
-					static_cast<float>(button_size),
-					static_cast<float>(button_size)
-				),
-				ImVec2(uv.topLeft.x, uv.topLeft.y),
-				ImVec2(uv.bottomRight.x, uv.bottomRight.y),
-				kInventorySlotImagePadding
-			);
-		}
-
-
-		if (backing_button_hover)
-			ImGui::PopStyleColor();
-
-		// Total items count
-		if (item_count != 0) {
-			ImGui::SetCursorPos({x_offset + kInventoryItemCountXOffset, y_offset + kInventoryItemCountYOffset});
-			ImGui::Text("%d", item_count);
-		}
-
-		// Set cursor position for next iteration 
-		ImGui::SetCursorPos({original_x_offset, original_y_offset});
-		ImGui::Dummy({0, 0});
-	}
-}
-
-///
-/// \brief Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
-void DrawTitleBar(const std::string& title, const std::function<void()>& draw_func = []() {
-                  }) {
-	AddVerticalSpace<false>(J_GUI_STYLE_FRAME_PADDING_Y);
-
-	ImGui::Text("%s", title.c_str());
-	draw_func();
-
-	AddVerticalSpace<true>(J_GUI_STYLE_TITLEBAR_PADDING_Y - J_GUI_VAR_ITEM_SPACING_Y);
-}
-
-// ======================================================================
-// Window positioning
-
-///
-/// \brief The window size is calculated on the size of the player's inventory
-ImVec2 GetWindowSize() {
-	// 20 is window padding on both sides, 80 for y is to avoid the scrollbar
-	auto window_size = ImVec2(
-		2 * J_GUI_STYLE_WINDOW_PADDING_X,
-		2 * J_GUI_STYLE_WINDOW_PADDING_Y + 80);
-
-	window_size.x += 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
-	window_size.y += static_cast<unsigned int>(game::PlayerData::kDefaultInventorySize / 10) *
-		(kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
-
-	return window_size;
-}
-
-///
-/// \brief Gets the center window position
-ImVec2 GetWindowCenter() {
-	return {
-		static_cast<float>(renderer::Renderer::GetWindowWidth()) / 2,
-		static_cast<float>(renderer::Renderer::GetWindowHeight()) / 2
-	};
-}
-
-///
-/// \brief The next window drawn will be on the left center of the screen
-void SetupNextWindowLeft(const ImVec2& window_size) {
-	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
-	// Character window is left of the center
-	auto window_center = GetWindowCenter();
-	window_center.x -= window_size.x;
-	window_center.y -= window_size.y / 2;
-
-	ImGui::SetNextWindowPos(window_center);
-	ImGui::SetNextWindowSize(window_size);
-}
-
-void SetupNextWindowLeft() {
-	SetupNextWindowLeft(GetWindowSize());
-}
-
-
-///
-/// The next window drawn will be on the left center of the screen
-void SetupNextWindowRight(const ImVec2& window_size) {
-	// Uses pixel coordinates, top left is 0, 0, bottom right x, x
-	// Character window is left of the center
-	auto window_center = GetWindowCenter();
-	window_center.y -= window_size.y / 2;
-
-	ImGui::SetNextWindowPos(window_center);
-	ImGui::SetNextWindowSize(window_size);
-}
-
-void SetupNextWindowRight() {
-	SetupNextWindowRight(GetWindowSize());
-}
-
-
-void SetupNextWindowCenter(const ImVec2& window_size) {
-	auto window_center = GetWindowCenter();
-	window_center.x -= window_size.x / 2;
-	window_center.y -= window_size.y / 2;
-
-	ImGui::SetNextWindowPos(window_center);
-	ImGui::SetNextWindowSize(window_size);
-}
-
-void SetupNextWindowCenter() {
-	SetupNextWindowCenter(GetWindowSize());
-}
 
 // ==========================================================================================
 // Player menus (Excluding entity menus)
@@ -338,15 +78,16 @@ const ImGuiWindowFlags kMenuFlags = 0 | ImGuiWindowFlags_NoResize | ImGuiWindowF
 ///
 /// \brief Draws the player's inventory menu
 void PlayerInventoryMenu(game::PlayerData& player_data, const data::DataManager& data_manager) {
-	const ImVec2 window_size = GetWindowSize();
+	const ImVec2 window_size = renderer::GetWindowSize();
 	ImGui::SetNextWindowSize(window_size);
 
 	ImGui::Begin("_character", nullptr, kMenuFlags);
-	DrawTitleBar("Character");
+	renderer::DrawTitleBar("Character");
 
 	auto menu_data = renderer::GetMenuData();
 
-	DrawSlots(10, player_data.inventoryPlayer.size(), 1, [&](auto index, auto& button_hovered) {
+	renderer::RemoveItemSlotTopPadding();
+	renderer::DrawSlots(10, player_data.inventoryPlayer.size(), 1, [&](auto index, auto& button_hovered) {
 		const auto& item = player_data.inventoryPlayer[index];
 
 		// Draw blank slot if item doe snot exist at inventory slot
@@ -394,14 +135,14 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 
 	const auto menu_data = renderer::GetMenuData();
 
-	const ImVec2 window_size = GetWindowSize();
+	const ImVec2 window_size = renderer::GetWindowSize();
 	ImGui::SetNextWindowSize(window_size);
 
 	J_GUI_RAII_END();
 	ImGui::Begin("_recipe", nullptr, kMenuFlags);
 
 	// Title with search bar
-	DrawTitleBar(title, [&]() {
+	renderer::DrawTitleBar(title, [&]() {
 		ImGui::SameLine();
 		// Shift above to center title text in middle of search bar
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - J_GUI_STYLE_TITLEBAR_PADDING_Y / 2);
@@ -432,7 +173,8 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 	// Menu groups | A group button is twice the size of a slot
 	auto groups = data_manager.DataRawGetAllSorted<data::RecipeGroup>(data::DataCategory::recipe_group);
 
-	DrawSlots(5, groups.size(), 2, [&](const uint16_t index, auto& button_hovered) {
+	renderer::RemoveItemSlotTopPadding();
+	renderer::DrawSlots(5, groups.size(), 2, [&](const uint16_t index, auto& button_hovered) {
 		const auto& recipe_group = groups[index];
 
 		// Only draw item categories matching searched product name 
@@ -454,9 +196,6 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 			ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
 
 		DrawItemSlot(menu_data, 2, recipe_group->sprite->internalId, 0, button_hovered, [&]() {
-			if (index == player_data.RecipeGroupGetSelected())
-				ImGui::PopStyleColor();
-
 			// Recipe group click
 			if (ImGui::IsItemClicked())
 				player_data.RecipeGroupSelect(index);
@@ -464,7 +203,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 			// Item tooltip
 			std::stringstream description_ss;
 			description_ss << recipe_group->GetLocalizedDescription().c_str();
-			FitTitle(description_ss, recipe_group->GetLocalizedName().size());
+			renderer::FitTitle(description_ss, recipe_group->GetLocalizedName().size());
 
 			if (ImGui::IsItemHovered()) {
 				DrawCursorTooltip(
@@ -477,6 +216,8 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 			}
 		});
 
+		if (index == player_data.RecipeGroupGetSelected())
+			ImGui::PopStyleColor();
 	});
 
 	// Menu recipes
@@ -486,7 +227,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 	for (const auto& recipe_category : selected_group->recipeCategories) {
 		const auto& recipes = recipe_category->recipes;
 
-		DrawSlots(10, recipes.size(), 1, [&](auto index, auto&) {
+		renderer::DrawSlots(10, recipes.size(), 1, [&](auto index, auto&) {
 			const data::Recipe* recipe = recipes.at(index);
 
 			const auto* product =
@@ -519,7 +260,7 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 
 	std::stringstream description_ss;
 	description_ss << "Ingredients:";
-	FitTitle(description_ss, title_ss.str().size());
+	renderer::FitTitle(description_ss, title_ss.str().size());
 
 	bool hovered = false;  // Not needed since the tooltip is always drawn under the cursor
 	DrawCursorTooltip(
@@ -537,7 +278,7 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 				// Amount of the current ingredient the player has in inventory
 				const auto player_item_count = game::GetInvItemCount(player_data.inventoryPlayer, item);
 
-				ImGui::SameLine(kInventorySlotWidth * 1.5);
+				ImGui::SameLine(renderer::kInventorySlotWidth * 1.5);
 
 				// Does not have ingredient
 				if (IsPlayerCrafting && player_item_count < ingredient_pair.second) {
@@ -557,8 +298,6 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 					ImGui::Text("%d x %s", ingredient_pair.second,
 					            item->GetLocalizedName().c_str());
 				}
-
-				AddVerticalSpace(8);
 			}
 			ImGui::Text("%.1f seconds", recipe.craftingTime);
 
@@ -566,11 +305,10 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 			ImGui::Separator();
 
 			ImGui::Text("%s", "Total Raw:");
-			AddVerticalSpace(8);
 
 			auto raw_inames = data::Recipe::RecipeGetTotalRaw(data_manager, product.name);
 
-			DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto&) {
+			renderer::DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto&) {
 				const auto* item =
 					data_manager.DataRawGet<data::Item>(data::DataCategory::item, raw_inames[slot_index].first);
 
@@ -832,11 +570,15 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 	const auto& machine_proto = *static_cast<const data::AssemblyMachine*>(prototype);
 	auto& machine_data        = *static_cast<data::AssemblyMachineData*>(unique_data);
 
+	auto menu_data = GetMenuData();
+
 	// Will be modifying AssemblyMachineData::recipe
 	std::lock_guard<std::mutex> world_data_guard{world_data.worldDataMutex};
 
 	if (machine_data.HasRecipe()) {
-		SetupNextWindowLeft();
+		const auto window_size = GetWindowSize();
+		SetupNextWindowLeft(window_size);
+
 		PlayerInventoryMenu(player_data, data_manager);
 
 		SetupNextWindowRight();
@@ -848,12 +590,52 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 
 
 		// TODO ingredients \n recipe \n progressbar
-		ImGui::ProgressBar(0.f);
 
-		if (ImGui::Button("Change recipe")) {
-			// TODO
-			machine_data.ChangeRecipe(world_data, machine_proto, nullptr);
-		}
+		bool button_hovered = false;
+
+		// Ingredients 
+		RemoveItemSlotTopPadding();
+		DrawSlots(10, machine_data.ingredients.size() + 1, 1, [&](auto index, bool&) {
+			// Recipe change button
+			if (index == machine_data.ingredients.size()) {
+				DrawItemSlot(menu_data, 1, 0, 0, button_hovered, [&]() {
+					if (ImGui::IsItemClicked()) {
+						machine_data.ChangeRecipe(world_data, machine_proto, nullptr);
+					}
+				});
+				return;
+			}
+
+			auto& stack = machine_data.ingredients[index];
+
+			uint32_t sprite_id = 0;
+			if (stack.second)
+				sprite_id = stack.first->sprite->internalId;
+
+			DrawItemSlot(menu_data, 1, sprite_id, 0, button_hovered, []() {
+				if (ImGui::IsItemClicked()) {
+
+				}
+			});
+		});
+
+		// Progress
+		ImGui::ProgressBar(0.f, {window_size.x - 2 * kInventorySlotWidth, 0});
+
+		ImGui::SameLine();
+
+		// Product
+		DrawSlots(10, 1, 1, [&](auto, bool&) {
+			uint32_t sprite_id = 0;
+			if (machine_data.product.second)
+				sprite_id = machine_data.product.first->sprite->internalId;
+
+			DrawItemSlot(menu_data, 1, sprite_id, 0, button_hovered, []() {
+				if (ImGui::IsItemClicked()) {
+
+				}
+			});
+		});
 	}
 	else {
 		// Only draw recipe menu if no recipe is selected for assembling

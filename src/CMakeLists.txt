@@ -60,6 +60,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/render_main.cpp
 
 	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
+	${JACTORIO_DIR}/renderer/gui/gui_layout.cpp
 	${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
 	${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
 
