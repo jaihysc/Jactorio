@@ -9,16 +9,59 @@
 
 // Defines macros for the color scheme used in Jactorio
 
-#define J_GUI_RAII_END() \
-	jactorio::core::ResourceGuard<void> imgui_guard([]() {ImGui::End(); })
+namespace jactorio::renderer
+{
+	class ImGuard
+	{
+		bool windowBegun_ = false;
+		uint8_t styleColorPushed_ = 0;
+		uint8_t styleVarPushed_ = 0;
 
-// RAII style color pop
-#define J_GUI_RAII_STYLE_COLOR_POP(count) \
-	jactorio::core::ResourceGuard<void> imgui_style_guard([]() {ImGui::PopStyleColor(count); })
+	public:
+		ImGuard() = default;
 
-#define J_GUI_RAII_STYLE_VAR_POP(count) \
-	jactorio::core::ResourceGuard<void> imgui_style_guard([]() {ImGui::PopStyleVar(count); })
+		~ImGuard() {
+			ImGui::PopStyleColor(styleColorPushed_);
+			ImGui::PopStyleVar(styleVarPushed_);
+			if (windowBegun_)
+				ImGui::End();
+		}
 
+		ImGuard(const ImGuard& other) = delete;
+		ImGuard(ImGuard&& other) noexcept = delete;
+
+
+		template <typename ... Args>
+		void Begin(Args&& ... args) {
+			ImGui::Begin(std::forward<Args>(args) ...);
+			windowBegun_ = true;
+		}
+
+		
+		// Style color
+		void PushStyleColor(const ImGuiCol idx, const ImU32 col) {
+			ImGui::PushStyleColor(idx, col);
+			styleColorPushed_++;
+		}
+
+		void PushStyleColor(const ImGuiCol idx, const ImVec4& col) {
+			ImGui::PushStyleColor(idx, col);
+			styleColorPushed_++;
+		}
+
+		// Style var
+		void PushStyleVar(const ImGuiStyleVar idx, const float val) {
+			ImGui::PushStyleVar(idx, val);
+			styleVarPushed_++;
+		}
+
+		void PushStyleVar(const ImGuiStyleVar idx, const ImVec2& val) {
+			ImGui::PushStyleVar(idx, val);
+			styleVarPushed_++;
+		}
+	};
+	
+}
 
 #define J_GUI_COL_NONE                    IM_COL32(0, 0, 0, 0)
 

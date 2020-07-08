@@ -57,7 +57,8 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::DataManager&
 	ImGuiWindowFlags main_window_flags = 0;
 	main_window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
-	ImGui::Begin("Debug menu", nullptr, main_window_flags);
+	ImGuard guard{};
+	guard.Begin("Debug menu", nullptr, main_window_flags);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -114,21 +115,18 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::DataManager&
 	ImGui::Checkbox("Timings", &show_timings_window);
 	ImGui::SameLine();
 	ImGui::Checkbox("Demo Window", &show_demo_window);
-
-
-	ImGui::End();
 }
 
 void renderer::DebugTimings() {
 	using namespace core;
 
-	ImGui::Begin("Timings");
+	ImGuard guard{};
+	guard.Begin("Timings");
 	ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	for (auto& time : ExecutionTimer::measuredTimes) {
 		ImGui::Text("%fms (%.1f/s) %s", time.second, 1000 / time.second, time.first.c_str());
 	}
-	ImGui::End();
 }
 
 int give_amount = 100;
@@ -137,8 +135,8 @@ int new_inv_size = game::PlayerData::kDefaultInventorySize;
 void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::DataManager& data_manager) {
 	using namespace core;
 
-	ImGui::Begin("Item spawner");
-	J_GUI_RAII_END();
+	ImGuard guard{};
+	guard.Begin("Item spawner");
 
 	ImGui::InputInt("Give amount", &give_amount);
 	if (give_amount <= 0)
@@ -295,7 +293,8 @@ void ShowTransportSegments(game::WorldData& world_data, const data::DataManager&
 }
 
 void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data::DataManager& data_manager) {
-	ImGui::Begin("Transport Line Info");
+	ImGuard guard{};
+	guard.Begin("Transport Line Info");
 
 	const auto selected_tile      = player_data.GetMouseTileCoords();
 	data::TransportLineData* data = data::TransportLine::GetLineData(player_data.GetPlayerWorld(),
@@ -415,13 +414,11 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 		}
 
 	}
-
-	ImGui::End();
 }
 
 void renderer::DebugInserterInfo(game::PlayerData& player_data) {
-	core::ResourceGuard<void> guard{[]() { ImGui::End(); }};
-	ImGui::Begin("Inserter info");
+	ImGuard guard{};
+	guard.Begin("Inserter info");
 
 	const auto selected_tile = player_data.GetMouseTileCoords();
 

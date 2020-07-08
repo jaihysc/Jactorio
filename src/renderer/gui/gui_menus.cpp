@@ -52,18 +52,21 @@ void DrawCursorTooltip(game::PlayerData& player_data, const data::DataManager&, 
 	flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
 	// Draw tooltip
-	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, J_GUI_COL_TOOLTIP_TITLE_BG);
-	ImGui::PushStyleColor(ImGuiCol_TitleBg, J_GUI_COL_TOOLTIP_TITLE_BG);
-	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TOOLTIP_TITLE_TEXT);
+	renderer::ImGuard guard{};
 
-	ImGui::Begin(title, nullptr, flags);
-	ImGui::PopStyleColor();  // Pop the black text
+	guard.PushStyleColor(ImGuiCol_TitleBgActive, J_GUI_COL_TOOLTIP_TITLE_BG);
+	guard.PushStyleColor(ImGuiCol_TitleBg, J_GUI_COL_TOOLTIP_TITLE_BG);
+
+	{
+		renderer::ImGuard title_text_guard{};
+		title_text_guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_TOOLTIP_TITLE_TEXT);
+
+		guard.Begin(title, nullptr, flags);
+	}
+
 	ImGui::Text("%s", description);
 
 	draw_func();
-	ImGui::End();
-
-	ImGui::PopStyleColor(2);
 
 	// This window is always in front
 	ImGui::SetWindowFocus(title);
@@ -81,7 +84,9 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::DataManager&
 	const ImVec2 window_size = renderer::GetWindowSize();
 	ImGui::SetNextWindowSize(window_size);
 
-	ImGui::Begin("_character", nullptr, kMenuFlags);
+	renderer::ImGuard guard{};
+	guard.Begin("_character", nullptr, kMenuFlags);
+
 	renderer::DrawTitleBar("Character");
 
 	auto menu_data = renderer::GetMenuData();
@@ -115,16 +120,15 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::DataManager&
 						item.first->GetLocalizedName().c_str(),
 						"sample description",
 						[&]() {
-							ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_NONE);
+							renderer::ImGuard tooltip_guard{};
+
+							tooltip_guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_NONE);
 							ImGui::TextUnformatted(item.first->GetLocalizedName().c_str());
-							ImGui::PopStyleColor();
 						}
 					);
 				}
 			});
 	});
-
-	ImGui::End();
 }
 
 void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_manager, const std::string& title,
@@ -138,8 +142,8 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 	const ImVec2 window_size = renderer::GetWindowSize();
 	ImGui::SetNextWindowSize(window_size);
 
-	J_GUI_RAII_END();
-	ImGui::Begin("_recipe", nullptr, kMenuFlags);
+	renderer::ImGuard guard{};
+	guard.Begin("_recipe", nullptr, kMenuFlags);
 
 	// Title with search bar
 	renderer::DrawTitleBar(title, [&]() {
@@ -147,8 +151,8 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 		// Shift above to center title text in middle of search bar
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - J_GUI_STYLE_TITLEBAR_PADDING_Y / 2);
 
-		J_GUI_RAII_STYLE_VAR_POP(1);
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+		renderer::ImGuard title_guard{};
+		title_guard.PushStyleVar(ImGuiStyleVar_FramePadding,
 		                    {J_GUI_STYLE_WINDOW_PADDING_X, J_GUI_STYLE_TITLEBAR_PADDING_Y / 2});
 
 		// Search text
@@ -192,8 +196,9 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 
 	loop_exit:
 		// Different color for currently selected recipe group
+		renderer::ImGuard recipe_group_guard{};
 		if (index == player_data.RecipeGroupGetSelected())
-			ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
+			recipe_group_guard.PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
 
 		DrawItemSlot(menu_data, 2, recipe_group->sprite->internalId, 0, button_hovered, [&]() {
 			// Recipe group click
@@ -215,9 +220,6 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 				);
 			}
 		});
-
-		if (index == player_data.RecipeGroupGetSelected())
-			ImGui::PopStyleColor();
 	});
 
 	// Menu recipes
@@ -284,11 +286,11 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 				if (IsPlayerCrafting && player_item_count < ingredient_pair.second) {
 					const bool can_be_recurse_crafted = player_data.RecipeCanCraft(data_manager, recipe, 1);
 
-					J_GUI_RAII_STYLE_COLOR_POP(1);
+					renderer::ImGuard guard{};
 					if (can_be_recurse_crafted)
-						ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_WARNING);
+						guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_WARNING);
 					else
-						ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
+						guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
 
 					ImGui::Text("%d/%d x %s", player_item_count, ingredient_pair.second,
 					            item->GetLocalizedName().c_str());
@@ -363,8 +365,9 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 	// Player has an item selected, draw it on the tooltip
 	const data::Item::Stack* selected_item;
 	if ((selected_item = player_data.GetSelectedItem()) != nullptr) {
-		ImGui::PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
-		ImGui::PushStyleColor(ImGuiCol_PopupBg, J_GUI_COL_NONE);
+		ImGuard guard{};
+		guard.PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
+		guard.PushStyleColor(ImGuiCol_PopupBg, J_GUI_COL_NONE);
 
 		// Draw the window at the cursor
 		const ImVec2 cursor_pos(
@@ -380,8 +383,10 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 		flags |= ImGuiWindowFlags_NoMove;
 		flags |= ImGuiWindowFlags_NoResize;
 
+		// ======================================================================
+
 		ImGui::SetNextWindowFocus();
-		ImGui::Begin("_selected_item", nullptr, flags);
+		guard.Begin("_selected_item", nullptr, flags);
 
 		const auto& positions = menu_data.spritePositions.at(selected_item->first->sprite->internalId);
 
@@ -396,10 +401,6 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 
 		ImGui::SameLine(10.f);
 		ImGui::Text("%d", selected_item->second);
-
-		ImGui::End();
-		ImGui::PopStyleColor(2);
-
 	}
 }
 
@@ -437,10 +438,11 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::DataMana
 			static_cast<float>(max_queue_height)));
 
 	// Window
-	ImGui::Begin("_crafting_queue", nullptr, flags);
+	ImGuard guard{};
+	guard.Begin("_crafting_queue", nullptr, flags);
 
-	ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
-	ImGui::PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
+	guard.PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
+	guard.PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
 
 	DrawSlots(10, recipe_queue.size(), 1, [&](auto index, auto& button_hovered) {
 		const data::Recipe* recipe = recipe_queue.at(index);
@@ -452,9 +454,6 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::DataMana
 		             item->sprite->internalId, recipe->product.second,
 		             button_hovered);
 	});
-
-	ImGui::PopStyleColor(2);
-	ImGui::End();
 }
 
 float last_pickup_fraction = 0.f;
@@ -484,17 +483,14 @@ void renderer::PickupProgressbar(game::PlayerData& player_data, const data::Data
 			static_cast<float>(Renderer::GetWindowHeight()) - progress_bar_height));  // TODO account for hotbar when implemented
 
 	// Window
-	ImGui::Begin("_entity_pickup_status", nullptr, flags);
+	ImGuard guard{};
+	guard.Begin("_entity_pickup_status", nullptr, flags);
 
-	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_NONE);
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, J_GUI_COL_PROGRESS_BG);
-	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, J_GUI_COL_PROGRESS);
+	guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_NONE);
+	guard.PushStyleColor(ImGuiCol_FrameBg, J_GUI_COL_PROGRESS_BG);
+	guard.PushStyleColor(ImGuiCol_PlotHistogram, J_GUI_COL_PROGRESS);
 
 	ImGui::ProgressBar(pickup_fraction, ImVec2(progress_bar_width, progress_bar_height));
-
-	ImGui::PopStyleColor(3);
-
-	ImGui::End();
 }
 
 // ==========================================================================================
@@ -509,7 +505,10 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataMa
 	PlayerInventoryMenu(player_data, data_manager);
 
 	SetupNextWindowRight();
-	ImGui::Begin("_container", nullptr, kMenuFlags);
+
+	ImGuard guard{};
+	guard.Begin("_container", nullptr, kMenuFlags);
+
 	DrawTitleBar(prototype->GetLocalizedName());
 
 	DrawSlots(10, container_data.inventory.size(), 1, [&](auto i, auto& button_hovered) {
@@ -530,8 +529,6 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataMa
 				}
 			});
 	});
-
-	ImGui::End();
 }
 
 void renderer::MiningDrill(game::PlayerData& player_data, const data::DataManager& data_manager,
@@ -545,8 +542,8 @@ void renderer::MiningDrill(game::PlayerData& player_data, const data::DataManage
 
 	SetupNextWindowRight();
 
-	J_GUI_RAII_END();
-	ImGui::Begin("_mining_drill", nullptr, kMenuFlags);
+	ImGuard guard{};
+	guard.Begin("_mining_drill", nullptr, kMenuFlags);
 
 	DrawTitleBar(prototype->GetLocalizedName());
 
@@ -583,8 +580,8 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 
 		SetupNextWindowRight();
 
-		J_GUI_RAII_END();
-		ImGui::Begin("_assembly_machine", nullptr, kMenuFlags);
+		ImGuard guard{};
+		guard.Begin("_assembly_machine", nullptr, kMenuFlags);
 
 		DrawTitleBar(prototype->GetLocalizedName());
 

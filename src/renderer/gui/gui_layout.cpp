@@ -68,10 +68,10 @@ void renderer::DrawItemSlot(const MenuData& menu_data, const uint8_t scale, cons
 	bool backing_button_hover = false;
 	// Backing button, detects clicks
 	{
-		J_GUI_RAII_STYLE_COLOR_POP(3);
-		ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, J_GUI_COL_NONE);
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, J_GUI_COL_NONE);
+		ImGuard guard;
+		guard.PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
+		guard.PushStyleColor(ImGuiCol_ButtonHovered, J_GUI_COL_NONE);
+		guard.PushStyleColor(ImGuiCol_ButtonActive, J_GUI_COL_NONE);
 
 		ImGui::SetCursorPos({x_offset, y_offset});
 
