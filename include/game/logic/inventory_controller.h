@@ -9,6 +9,10 @@
 
 namespace jactorio::game
 {
+	///
+	/// \return true if origin stack matches the filter of target stack and can thus be inserted into it
+	bool StackMatchesFilter(const data::Item::Stack& origin_stack,
+	                        const data::Item::Stack& target_stack);
 	/// 
 	/// \brief Moves itemstack origin to target  
 	/// When stacking items, the stack prioritizes the target inventory

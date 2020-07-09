@@ -9,6 +9,15 @@
 
 namespace jactorio::game
 {
+	TEST(InventoryController, StackMatchesFilter) {
+		data::Item item_1{};
+		data::Item item_2{};
+
+		EXPECT_FALSE(StackMatchesFilter({&item_1, 1}, {nullptr, 0, &item_2}));
+		EXPECT_TRUE(StackMatchesFilter({nullptr, 1}, {nullptr, 0, &item_2}));
+		EXPECT_TRUE(StackMatchesFilter({&item_1, 1}, {nullptr, 0, nullptr}));
+	}
+
 	TEST(InventoryController, MoveStackToEmptySlot) {
 		// Moving from inventory position 0 to position 3
 

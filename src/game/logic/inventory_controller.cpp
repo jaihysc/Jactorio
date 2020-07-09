@@ -57,12 +57,9 @@ bool DropOneOriginItem(data::Item::Stack& origin_item_stack,
 	return false;
 }
 
-///
-/// \return true if origin stack matches the filter of target stack and can thus be inserted into it
-bool StackMatchesFilter(const data::Item::Stack& origin_stack,
-                        const data::Item::Stack& target_stack) {
-	// Origin stack must match target stack if filter is set
-	return target_stack.filter == nullptr || origin_stack.item == target_stack.filter;
+bool game::StackMatchesFilter(const data::Item::Stack& origin_stack, const data::Item::Stack& target_stack) {
+	// Origin stack must match target stack if filter is set and origin stack has an item
+	return origin_stack.item == nullptr || target_stack.filter == nullptr || origin_stack.item == target_stack.filter;
 }
 
 bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
