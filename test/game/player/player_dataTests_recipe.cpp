@@ -103,10 +103,10 @@ namespace jactorio::game
 		playerData_.RecipeQueue(dataManager_, recipe);
 
 		// Used up 2 * 2 (4) items
-		EXPECT_EQ(playerData_.inventoryPlayer[0].first, item);
-		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 6);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].item, item);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 6);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[1].first, nullptr);
+		EXPECT_EQ(playerData_.inventoryPlayer[1].item, nullptr);
 
 
 		//
@@ -115,12 +115,12 @@ namespace jactorio::game
 		// Output items should be in slot index 1 after 60 ticks (1 second) for each item
 		playerData_.RecipeCraftTick(dataManager_, 30);  // Not done yet
 
-		EXPECT_EQ(playerData_.inventoryPlayer[1].first, nullptr);
+		EXPECT_EQ(playerData_.inventoryPlayer[1].item, nullptr);
 
 		playerData_.RecipeCraftTick(dataManager_, 90);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[1].first, item_product);
-		EXPECT_EQ(playerData_.inventoryPlayer[1].second, 2);
+		EXPECT_EQ(playerData_.inventoryPlayer[1].item, item_product);
+		EXPECT_EQ(playerData_.inventoryPlayer[1].count, 2);
 	}
 
 
@@ -137,11 +137,11 @@ namespace jactorio::game
 
 		playerData_.RecipeCraftTick(dataManager_, 9999);  // Should be enough ticks to finish crafting
 
-		EXPECT_EQ(playerData_.inventoryPlayer[0].first, item1_);  // 1 extra item 1 from crafting
-		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 1);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].item, item1_);  // 1 extra item 1 from crafting
+		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 1);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[1].first, itemProduct_);
-		EXPECT_EQ(playerData_.inventoryPlayer[1].second, 1);
+		EXPECT_EQ(playerData_.inventoryPlayer[1].item, itemProduct_);
+		EXPECT_EQ(playerData_.inventoryPlayer[1].count, 1);
 
 		EXPECT_EQ(playerData_.GetCraftingItemDeductions().size(), 0);
 		EXPECT_EQ(playerData_.GetCraftingItemExtras().size(), 0);
@@ -165,15 +165,15 @@ namespace jactorio::game
 
 		playerData_.RecipeCraftTick(dataManager_, 9999);  // Should be enough ticks to finish crafting
 
-		EXPECT_EQ(playerData_.inventoryPlayer[0].first, itemProduct_);
-		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 4);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].item, itemProduct_);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 4);
 
 		EXPECT_EQ(playerData_.GetCraftingItemDeductions().size(), 0);
 		EXPECT_EQ(playerData_.GetCraftingItemExtras().size(), 0);
 
 		// Ensure there were no excess items
 		for (int i = 1; i < playerData_.inventoryPlayer.size(); ++i) {
-			EXPECT_EQ(playerData_.inventoryPlayer[i].first, nullptr);
+			EXPECT_EQ(playerData_.inventoryPlayer[i].item, nullptr);
 		}
 	}
 
@@ -242,8 +242,8 @@ namespace jactorio::game
 		// Fill inventory so crafted item cannot be returned
 		data::Item filler_item{};
 		for (auto& slot : playerData_.inventoryPlayer) {
-			slot.first  = &filler_item;
-			slot.second = 1;
+			slot.item  = &filler_item;
+			slot.count = 1;
 		}
 
 		// Will not return item until slot is freed
@@ -254,7 +254,7 @@ namespace jactorio::game
 		playerData_.inventoryPlayer[0] = {nullptr, 0};
 		playerData_.RecipeCraftTick(dataManager_, 9999);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[0].first, itemProduct_);
-		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 1);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].item, itemProduct_);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 1);
 	}
 }

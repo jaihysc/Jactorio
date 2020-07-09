@@ -88,14 +88,14 @@ namespace jactorio::game
 
 		// Pickup item
 		InserterLogicUpdate(worldData_);
-		EXPECT_EQ(pickup->inventory[0].second, 9);
+		EXPECT_EQ(pickup->inventory[0].count, 9);
 		EXPECT_EQ(inserter_data->status, data::InserterData::Status::dropoff);
 
 		// Reach 0 degrees after 86 updates
 		for (int i = 0; i < updates_to_target; ++i) {
 			InserterLogicUpdate(worldData_);
 		}
-		EXPECT_EQ(dropoff->inventory[0].second, 11);
+		EXPECT_EQ(dropoff->inventory[0].count, 11);
 		EXPECT_EQ(inserter_data->status, data::InserterData::Status::pickup);
 		EXPECT_FLOAT_EQ(inserter_data->rotationDegree.getAsDouble(), 0);
 
@@ -104,7 +104,7 @@ namespace jactorio::game
 		for (int i = 0; i < updates_to_target; ++i) {
 			InserterLogicUpdate(worldData_);
 		}
-		EXPECT_EQ(pickup->inventory[0].second, 8);
+		EXPECT_EQ(pickup->inventory[0].count, 8);
 		EXPECT_EQ(inserter_data->status, data::InserterData::Status::dropoff);
 	}
 

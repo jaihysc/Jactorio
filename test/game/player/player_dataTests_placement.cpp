@@ -118,7 +118,7 @@ namespace jactorio::game
 		EXPECT_EQ(
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			entity.get());
-		EXPECT_EQ(playerData_.GetSelectedItem()->second, 1);  // 1 less item 
+		EXPECT_EQ(playerData_.GetSelectedItemStack()->count, 1);  // 1 less item 
 
 		// The on_build() method should get called, creating unique data on the tile which holds the inventory
 		EXPECT_NE(tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetUniqueData(), nullptr);
@@ -273,8 +273,8 @@ namespace jactorio::game
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			nullptr);  // Picked up, item given to inventory
 
-		EXPECT_EQ(playerData_.inventoryPlayer[0].first, &item);
-		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 1);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].item, &item);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 1);
 
 		// Unique data for layer should have been deleted
 		EXPECT_EQ(tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetUniqueData(), nullptr);
@@ -310,8 +310,8 @@ namespace jactorio::game
 
 		EXPECT_EQ(resource_data->resourceAmount, 1);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[0].first, &item);  // Gave 1 resource to player
-		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 1);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].item, &item);  // Gave 1 resource to player
+		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 1);
 
 
 		// All resources extracted from resource entity, should now become nullptr
@@ -324,8 +324,8 @@ namespace jactorio::game
 
 		// Resource_data should be deleted
 
-		EXPECT_EQ(playerData_.inventoryPlayer[0].first, &item);
-		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 2);  // Player has 2 of resource
+		EXPECT_EQ(playerData_.inventoryPlayer[0].item, &item);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 2);  // Player has 2 of resource
 	}
 
 	TEST_F(PlayerDataPlacementTest, TryPickupLayered) {

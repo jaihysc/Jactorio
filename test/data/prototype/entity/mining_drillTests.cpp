@@ -177,13 +177,13 @@ namespace jactorio::data
 		                                                  ->GetLayer(
 			                                                  game::ChunkTile::ChunkLayer::entity);
 
-		EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[0].second,
+		EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[0].count,
 		          1);
 
 		// ======================================================================
 		worldData_.deferralTimer.DeferralUpdate(60);  // Takes 60 ticks to mine
 
-		EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[1].second,
+		EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[1].count,
 		          1);
 	}
 
@@ -221,7 +221,7 @@ namespace jactorio::data
 		                                                  ->GetLayer(
 			                                                  game::ChunkTile::ChunkLayer::entity);
 
-		EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[0].second,
+		EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[0].count,
 		          1);
 	}
 
@@ -306,7 +306,7 @@ namespace jactorio::data
 				worldData_.GetTile(2, 0)
 				          ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
-			EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[0].second,
+			EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[0].count,
 			          0);
 		}
 		{
@@ -314,7 +314,7 @@ namespace jactorio::data
 				worldData_.GetTile(4, 1)
 				          ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
-			EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[0].second,
+			EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[0].count,
 			          0);
 		}
 	}

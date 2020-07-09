@@ -26,9 +26,14 @@ using namespace jactorio;
 /// Disabled in release builds
 void InventoryVerify(const data::Item::Inventory& inv) {
 	for (const auto& stack : inv) {
-		if (stack.first == nullptr || stack.second == 0) {
-			assert(stack.first == nullptr);
-			assert(stack.second == 0);
+		if (stack.item == nullptr || stack.count == 0) {
+			// Inventory selection cursor exempt from having 0 for count
+			if (stack.item && stack.item->name == data::Item::kInventorySelectedCursor) {
+				continue;
+			}
+
+			assert(stack.item == nullptr);
+			assert(stack.count == 0);
 		}
 	}
 }
@@ -39,17 +44,25 @@ void InventoryVerify(const data::Item::Inventory& inv) {
 /// \brief Attempts to drop one item from origin item stack to target itme stack
 bool DropOneOriginItem(data::Item::Stack& origin_item_stack,
                        data::Item::Stack& target_item_stack) {
-	target_item_stack.first = origin_item_stack.first;
-	target_item_stack.second++;
+	target_item_stack.item = origin_item_stack.item;
+	target_item_stack.count++;
 
 	// Empty?
-	origin_item_stack.second--;
-	if (origin_item_stack.second == 0) {
-		origin_item_stack.first = nullptr;
+	origin_item_stack.count--;
+	if (origin_item_stack.count == 0) {
+		origin_item_stack.item = nullptr;
 		return true;
 	}
 
 	return false;
+}
+
+///
+/// \return true if origin stack matches the filter of target stack and can thus be inserted into it
+bool StackMatchesFilter(const data::Item::Stack& origin_stack,
+                        const data::Item::Stack& target_stack) {
+	// Origin stack must match target stack if filter is set
+	return target_stack.filter == nullptr || origin_stack.item == target_stack.filter;
 }
 
 bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
@@ -58,50 +71,53 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 	assert(mouse_button == 0 || mouse_button == 1); // Only left and right click are currently supported
 
 	// Moving nothing to nothing
-	if (origin_stack.first == nullptr && target_stack.first == nullptr)
+	if (origin_stack.item == nullptr && target_stack.item == nullptr)
 		return true;
 
-	// Items are of the same type
-	if (origin_stack.first == target_stack.first) {
-		assert(origin_stack.first != nullptr); // Invalid itemstack
-		assert(target_stack.first != nullptr); // Invalid itemstack
-		assert(origin_stack.second != 0);      // Invalid itemstack
-		assert(target_stack.second != 0);      // Invalid itemstack
+	if (!StackMatchesFilter(origin_stack, target_stack))
+		return false;
 
-		assert(origin_stack.first->stackSize > 0);      // Invalid itemstack stacksize
-		assert(target_stack.first->stackSize > 0);      // Invalid itemstack stacksize
+	// Items are of the same type
+	if (origin_stack.item == target_stack.item) {
+		assert(origin_stack.item != nullptr); // Invalid itemstack
+		assert(target_stack.item != nullptr); // Invalid itemstack
+		assert(origin_stack.count != 0);      // Invalid itemstack
+		assert(target_stack.count != 0);      // Invalid itemstack
+
+		assert(origin_stack.item->stackSize > 0);      // Invalid itemstack stacksize
+		assert(target_stack.item->stackSize > 0);      // Invalid itemstack stacksize
 
 		if (mouse_button == 0) {
 			// Not exceeding max stack size
-			if (origin_stack.second + target_stack.second <= origin_stack.first->stackSize) {
+			if (origin_stack.count + target_stack.count <= origin_stack.item->stackSize) {
 				// Move the item
-				target_stack.second += origin_stack.second;
+				target_stack.count += origin_stack.count;
 
 				// Remove the item from the original location
-				origin_stack.first  = nullptr;
-				origin_stack.second = 0;
+				origin_stack.item  = nullptr;
+				origin_stack.count = 0;
 
 				return true;
 			}
 
 			// Swap places if same type, and target is full
-			if (target_stack.second == target_stack.first->stackSize) {
+			if (target_stack.count == target_stack.item->stackSize) {
 				std::swap(target_stack, origin_stack);
 				return false;
 			}
 
 			// Addition of both stacks exceeding max stack size
 			// Move origin to reach the max stack size in the target
-			const unsigned short move_amount = origin_stack.first->stackSize - target_stack.second;
-			origin_stack.second -= move_amount;
-			target_stack.second += move_amount;
+			const unsigned short move_amount = origin_stack.item->stackSize - target_stack.count;
+			origin_stack.count -= move_amount;
+			target_stack.count += move_amount;
 
 			return false;
 		}
 
 
 		// Drop 1 to target on right click
-		if (mouse_button == 1 && target_stack.second < target_stack.first->stackSize) {
+		if (mouse_button == 1 && target_stack.count < target_stack.item->stackSize) {
 			return DropOneOriginItem(origin_stack, target_stack);
 		}
 
@@ -113,19 +129,19 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 	// Items exceeding item stacks
 	{
 		// It is guaranteed that only one will be a nullptr;
-		assert(!(origin_stack.first == nullptr && target_stack.first == nullptr));
+		assert(!(origin_stack.item == nullptr && target_stack.item == nullptr));
 
 		// Origin item exceeding item stack limit
-		if (target_stack.first == nullptr) {
-			assert(origin_stack.first->stackSize > 0);      // Invalid itemstack stacksize
+		if (target_stack.item == nullptr) {
+			assert(origin_stack.item->stackSize > 0);      // Invalid itemstack stacksize
 
-			if (origin_stack.second > origin_stack.first->stackSize) {
-				const unsigned short stack_size = origin_stack.first->stackSize;
+			if (origin_stack.count > origin_stack.item->stackSize) {
+				const unsigned short stack_size = origin_stack.item->stackSize;
 
-				origin_stack.second -= stack_size;
-				target_stack.second = stack_size;
+				origin_stack.count -= stack_size;
+				target_stack.count = stack_size;
 
-				target_stack.first = origin_stack.first;
+				target_stack.item = origin_stack.item;
 				return false;
 			}
 
@@ -135,16 +151,16 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 			}
 		}
 		// Target item exceeding item stack limit
-		if (origin_stack.first == nullptr) {
-			assert(target_stack.first->stackSize > 0);      // Invalid itemstack stacksize
+		if (origin_stack.item == nullptr) {
+			assert(target_stack.item->stackSize > 0);      // Invalid itemstack stacksize
 
-			if (target_stack.second > target_stack.first->stackSize) {
-				const unsigned short stack_size = target_stack.first->stackSize;
+			if (target_stack.count > target_stack.item->stackSize) {
+				const unsigned short stack_size = target_stack.item->stackSize;
 
-				target_stack.second -= stack_size;
-				origin_stack.second = stack_size;
+				target_stack.count -= stack_size;
+				origin_stack.count = stack_size;
 
-				origin_stack.first = target_stack.first;
+				origin_stack.item = target_stack.item;
 				return false;
 			}
 
@@ -153,24 +169,24 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 				unsigned short amount;
 
 				// Never exceed the stack size
-				if (target_stack.second > target_stack.first->stackSize * 2) {
-					amount = target_stack.first->stackSize;
+				if (target_stack.count > target_stack.item->stackSize * 2) {
+					amount = target_stack.item->stackSize;
 				}
 					// Take 1 if there is only 1 remaining
-				else if (target_stack.second == 1) {
+				else if (target_stack.count == 1) {
 					amount = 1;
 				}
 				else {
-					amount = target_stack.second / 2;
+					amount = target_stack.count / 2;
 				}
 
-				origin_stack.first  = target_stack.first;
-				origin_stack.second = amount;
+				origin_stack.item  = target_stack.item;
+				origin_stack.count = amount;
 
 				// Empty?
-				target_stack.second -= amount;
-				if (target_stack.second == 0)
-					target_stack.first = nullptr;
+				target_stack.count -= amount;
+				if (target_stack.count == 0)
+					target_stack.item = nullptr;
 
 				return false;
 			}
@@ -182,8 +198,8 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 	std::swap(target_stack, origin_stack);
 
 	// Origin item stack is now empty?
-	if (origin_stack.second == 0) {
-		assert(origin_stack.first == nullptr); // Having no item count must also mean there is no itemstack
+	if (origin_stack.count == 0) {
+		assert(origin_stack.item == nullptr); // Having no item count must also mean there is no itemstack
 		return true;
 	}
 
@@ -193,17 +209,22 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 // ======================================================================
 // Can be used by non-player inventories 
 
-bool game::CanAddStack(const data::Item::Inventory& inv,
-                       const data::Item::Stack& item_stack) {
+std::pair<bool, size_t> game::CanAddStack(const data::Item::Inventory& inv,
+                                          const data::Item::Stack& item_stack) {
 	J_INVENTORY_VERIFY(inv, guard);
-	
+
 	// Amount left which needs to be added
-	auto remaining_add = item_stack.second;
-	for (const auto& slot : inv) {
+	auto remaining_add = item_stack.count;
+	for (size_t i = 0; i < inv.size(); ++i) {
+		const auto& slot = inv[i];
+
+		if (!StackMatchesFilter(item_stack, slot))
+			continue;
+
 		// Item of same type
-		if (slot.first == item_stack.first) {
+		if (slot.item == item_stack.item) {
 			// Amount that can be added to fill the slot
-			const auto max_add_amount = item_stack.first->stackSize - slot.second;
+			const auto max_add_amount = item_stack.item->stackSize - slot.count;
 			if (max_add_amount < 0)
 				continue;
 
@@ -211,16 +232,16 @@ bool game::CanAddStack(const data::Item::Inventory& inv,
 
 			// Attempting to add more than what is available
 			if (max_add_amount >= remaining_add)
-				return true;
+				return {true, i};
 
 			remaining_add -= max_add_amount;
 		}
 			// Empty slot
-		else if (slot.first == nullptr)
-			return true;
+		else if (slot.item == nullptr)
+			return {true, i};
 	}
 
-	return false;
+	return {false, 0};
 }
 
 data::Item::StackCount game::AddStack(data::Item::Inventory& inv,
@@ -228,12 +249,15 @@ data::Item::StackCount game::AddStack(data::Item::Inventory& inv,
 	J_INVENTORY_VERIFY(inv, guard);
 
 	// Amount left which needs to be added
-	auto remaining_add = item_stack.second;
+	auto remaining_add = item_stack.count;
 	for (auto& slot : inv) {
+		if (!StackMatchesFilter(item_stack, slot))
+			continue;
+
 		// Item of same type
-		if (slot.first == item_stack.first) {
+		if (slot.item == item_stack.item) {
 			// Amount that can be added to fill the slot
-			const auto max_add_amount = item_stack.first->stackSize - slot.second;
+			const auto max_add_amount = item_stack.item->stackSize - slot.count;
 			if (max_add_amount < 0)
 				continue;
 
@@ -241,17 +265,17 @@ data::Item::StackCount game::AddStack(data::Item::Inventory& inv,
 
 			// Attempting to add more than what is available
 			if (max_add_amount >= remaining_add) {
-				slot.second += remaining_add;
+				slot.count += remaining_add;
 				return 0;
 			}
 
-			slot.second += max_add_amount;
+			slot.count += max_add_amount;
 			remaining_add -= max_add_amount;
 		}
 			// Empty slot
-		else if (slot.first == nullptr) {
-			slot.first  = item_stack.first;
-			slot.second = remaining_add;
+		else if (slot.item == nullptr) {
+			slot.item  = item_stack.item;
+			slot.count = remaining_add;
 
 			return 0;
 		}
@@ -266,12 +290,12 @@ bool game::AddStackSub(data::Item::Inventory& inv,
 
 	const auto remainder = AddStack(inv, item_stack);
 	if (remainder == 0) {
-		item_stack.second = 0;
+		item_stack.count = 0;
 		return true;
 	}
 
 	// Subtract difference between what is in stack and what remains, since that is what was added
-	item_stack.second -= item_stack.second - remainder;
+	item_stack.count -= item_stack.count - remainder;
 	return false;
 }
 
@@ -281,8 +305,8 @@ uint32_t game::GetInvItemCount(const data::Item::Inventory& inv,
 
 	uint32_t count = 0;
 	for (const auto& i : inv) {
-		if (i.first == item)
-			count += i.second;
+		if (i.item == item)
+			count += i.count;
 	}
 	return count;
 }
@@ -291,9 +315,9 @@ const data::Item* game::GetFirstItem(const data::Item::Inventory& inv) {
 	J_INVENTORY_VERIFY(inv, guard);
 
 	for (const auto& i : inv) {
-		if (i.first != nullptr) {
-			assert(i.second != 0);
-			return i.first;
+		if (i.item != nullptr) {
+			assert(i.count != 0);
+			return i.item;
 		}
 	}
 	return nullptr;
@@ -317,16 +341,16 @@ void game::DeleteInvItem(data::Item::Inventory& inv,
 	J_INVENTORY_VERIFY(inv, guard);
 
 	for (auto& inv_i : inv) {
-		if (inv_i.first == item) {
+		if (inv_i.item == item) {
 			// Enough to remove and move on
-			if (remove_amount > inv_i.second) {
-				remove_amount -= inv_i.second;
+			if (remove_amount > inv_i.count) {
+				remove_amount -= inv_i.count;
 				inv_i = {nullptr, 0};
 			}
 				// Not enough to remove and move on
 			else {
-				inv_i.second -= remove_amount;
-				if (inv_i.second == 0) {
+				inv_i.count -= remove_amount;
+				if (inv_i.count == 0) {
 					inv_i = {nullptr, 0};
 				}
 

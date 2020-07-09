@@ -110,7 +110,7 @@ namespace jactorio::game
 		///	 \brief Insert provided item at destination
 		bool Pickup(const data::ProtoUintT inserter_tile_reach,
 		            const data::RotationDegree& degree,
-		            const data::Item::Stack::second_type amount,
+		            const data::Item::StackCount amount,
 		            data::Item::Stack& out_item_stack) const {
 			assert(targetUniqueData_);
 			return (this->*pickupFunc_)(inserter_tile_reach, degree, amount, *targetUniqueData_, orientation_, out_item_stack);
@@ -123,7 +123,7 @@ namespace jactorio::game
 		/// \param out_item_stack Item which was picked up
 		virtual bool PickupContainerEntity(data::ProtoUintT inserter_tile_reach,
 		                                   const data::RotationDegree& degree,
-		                                   data::Item::Stack::second_type amount,
+		                                   data::Item::StackCount amount,
 		                                   data::UniqueDataBase& unique_data,
 		                                   data::Orientation orientation,
 		                                   data::Item::Stack& out_item_stack) const;
@@ -134,7 +134,7 @@ namespace jactorio::game
 		/// \param out_item_stack Item which was picked up
 		virtual bool PickupTransportBelt(data::ProtoUintT inserter_tile_reach,
 		                                 const data::RotationDegree& degree,
-		                                 data::Item::Stack::second_type amount,
+		                                 data::Item::StackCount amount,
 		                                 data::UniqueDataBase& unique_data,
 		                                 data::Orientation orientation,
 		                                 data::Item::Stack& out_item_stack) const;

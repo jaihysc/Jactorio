@@ -59,30 +59,30 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::DataManager&
 
 	renderer::RemoveItemSlotTopPadding();
 	renderer::DrawSlots(10, player_data.inventoryPlayer.size(), 1, [&](auto index, auto& button_hovered) {
-		const auto& item = player_data.inventoryPlayer[index];
+		const auto& stack = player_data.inventoryPlayer[index];
 
 		// Draw blank slot if item doe snot exist at inventory slot
-		auto sprite_id = item.first != nullptr ? item.first->sprite->internalId : 0;
+		auto sprite_id = stack.item != nullptr ? stack.item->sprite->internalId : 0;
 
 		DrawItemSlot(
 			menu_data,
 			1, sprite_id,
-			item.second,
+			stack.count,
 			button_hovered,
 			[&]() {
 				ImplementInventoryIsItemClicked(player_data, data_manager, player_data.inventoryPlayer, index);
 
 				// Only draw tooltip + item count if item count is not 0
-				if (ImGui::IsItemHovered() && item.second != 0) {
+				if (ImGui::IsItemHovered() && stack.count != 0) {
 					renderer::DrawCursorTooltip(
 						player_data, data_manager,
-						item.first->GetLocalizedName().c_str(),
+						stack.item->GetLocalizedName().c_str(),
 						"sample description",
 						[&]() {
 							renderer::ImGuard tooltip_guard{};
 
 							tooltip_guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_NONE);
-							ImGui::TextUnformatted(item.first->GetLocalizedName().c_str());
+							ImGui::TextUnformatted(stack.item->GetLocalizedName().c_str());
 						}
 					);
 				}
@@ -322,8 +322,9 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 	const auto menu_data = GetMenuData();
 
 	// Player has an item selected, draw it on the tooltip
-	const data::Item::Stack* selected_item;
-	if ((selected_item = player_data.GetSelectedItem()) != nullptr) {
+	const auto* selected_stack = player_data.GetSelectedItemStack();
+
+	if (selected_stack) {
 		ImGuard guard{};
 		guard.PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
 		guard.PushStyleColor(ImGuiCol_PopupBg, J_GUI_COL_NONE);
@@ -347,7 +348,7 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 		ImGui::SetNextWindowFocus();
 		guard.Begin("_selected_item", nullptr, flags);
 
-		const auto& positions = menu_data.spritePositions.at(selected_item->first->sprite->internalId);
+		const auto& positions = menu_data.spritePositions.at(selected_stack->item->sprite->internalId);
 
 		ImGui::SameLine(10.f);
 		ImGui::Image(
@@ -359,7 +360,7 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::DataManag
 		);
 
 		ImGui::SameLine(10.f);
-		ImGui::Text("%d", selected_item->second);
+		ImGui::Text("%d", selected_stack->count);
 	}
 }
 
@@ -471,13 +472,13 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataMa
 	DrawTitleBar(prototype->GetLocalizedName());
 
 	DrawSlots(10, container_data.inventory.size(), 1, [&](auto index, auto& button_hovered) {
-		const auto sprite_id = container_data.inventory[index].first != nullptr
-			                       ? container_data.inventory[index].first->sprite->internalId
+		const auto sprite_id = container_data.inventory[index].item != nullptr
+			                       ? container_data.inventory[index].item->sprite->internalId
 			                       : 0;
 
 		DrawItemSlot(
 			GetMenuData(), 1,
-			sprite_id, container_data.inventory[index].second, button_hovered, [&]() {
+			sprite_id, container_data.inventory[index].count, button_hovered, [&]() {
 				ImplementInventoryIsItemClicked(player_data, data_manager, container_data.inventory, index);
 			});
 	});
@@ -553,7 +554,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 
 				DrawItemSlot(menu_data, 1, reset_icon->sprite->internalId, 0, button_hovered, [&]() {
 					if (ImGui::IsItemClicked()) {
-						machine_data.ChangeRecipe(world_data, machine_proto, nullptr);
+						machine_data.ChangeRecipe(world_data, data_manager, machine_proto, nullptr);
 					}
 				});
 				return;
@@ -568,9 +569,8 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 			// Amount of item possessed
 
 			DrawItemSlot(menu_data, 1,
-			             ingredient_item->sprite->internalId, machine_data.ingredientInv[index].second,
+			             ingredient_item->sprite->internalId, machine_data.ingredientInv[index].count,
 			             button_hovered, [&]() {
-				             // TODO, filter to only allowed items
 				             ImplementInventoryIsItemClicked(player_data, data_manager, machine_data.ingredientInv, index);
 			             });
 		});
@@ -594,7 +594,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 
 			assert(product_item != nullptr);
 			DrawItemSlot(menu_data, 1,
-			             product_item->sprite->internalId, machine_data.productInv[0].second,
+			             product_item->sprite->internalId, machine_data.productInv[0].count,
 			             button_hovered, [&]() {
 				             ImplementInventoryIsItemClicked(player_data, data_manager, machine_data.productInv, 0);
 			             });
@@ -607,7 +607,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 		           [&](auto& recipe, auto& product, auto& button_hovered) {
 
 			           if (ImGui::IsItemClicked()) {
-				           machine_data.ChangeRecipe(world_data, machine_proto, &recipe);
+				           machine_data.ChangeRecipe(world_data, data_manager, machine_proto, &recipe);
 			           }
 
 			           if (ImGui::IsItemHovered() && !button_hovered)

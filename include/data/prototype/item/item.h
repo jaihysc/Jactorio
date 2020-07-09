@@ -5,8 +5,6 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H
 #pragma once
 
-#include <utility>
-
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
 #include "data/prototype/item/item_base.h"
@@ -24,8 +22,17 @@ namespace jactorio::data
 	{
 	public:
 		using StackCount = uint16_t;
-		using Stack = std::pair<const Item*, StackCount>;
+		struct Stack;
 		using Inventory = std::vector<Stack>;
+
+		struct Stack
+		{
+			const Item* item = nullptr;
+			StackCount count = 0;
+
+			/// data::Item which this->item is restricted to
+			const Item* filter = nullptr;
+		};
 
 		// Hard coded item inames
 		static constexpr char kInventorySelectedCursor[] = "__core__/inventory-selected-cursor";

@@ -12,8 +12,8 @@ namespace jactorio::game
 	/// 
 	/// \brief Moves itemstack origin to target  
 	/// When stacking items, the stack prioritizes the target inventory
-	/// \remarks This should be only used by the player, machines should use add_itemstack_to_inv instead
-	/// \return true if origin_inv is empty after the move
+	/// \remarks This should be only used by the player, machines should use AddStack instead
+	/// \return true if origin_stack is empty after the move
 	bool MoveItemstackToIndex(data::Item::Stack& origin_stack,
 	                          data::Item::Stack& target_stack,
 	                          unsigned short mouse_button);
@@ -23,8 +23,9 @@ namespace jactorio::game
 
 	///
 	/// \brief Returns whether or not item stack can be added to the target_inv 
-	bool CanAddStack(const data::Item::Inventory& inv,
-	                 const data::Item::Stack& item_stack);
+	/// \return success, first index which can be added at
+	std::pair<bool, size_t> CanAddStack(const data::Item::Inventory& inv,
+	                                    const data::Item::Stack& item_stack);
 
 	///
 	/// \brief Attempts to add item_stack to target_inv

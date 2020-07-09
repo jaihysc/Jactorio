@@ -46,7 +46,7 @@ namespace jactorio::game
 		drop_off.DropOff({&item, 10});
 
 		EXPECT_EQ(
-			container_layer.GetUniqueData<data::ContainerEntityData>()->inventory[0].second,
+			container_layer.GetUniqueData<data::ContainerEntityData>()->inventory[0].count,
 			10);
 	}
 
@@ -64,7 +64,7 @@ namespace jactorio::game
 		data::Item::Stack out_item_stack;
 		pickup.Pickup(1, data::ToRotationDegree(180.f), 2, out_item_stack);
 
-		EXPECT_EQ(inv[0].second, 8);
+		EXPECT_EQ(inv[0].count, 8);
 	}
 
 	// ======================================================================
@@ -165,8 +165,8 @@ namespace jactorio::game
 		                      data::Orientation::down);
 
 		// Inserted item
-		EXPECT_EQ(container_data->inventory[0].first, &item);
-		EXPECT_EQ(container_data->inventory[0].second, 2);
+		EXPECT_EQ(container_data->inventory[0].item, &item);
+		EXPECT_EQ(container_data->inventory[0].count, 2);
 	}
 
 	// ======================================================================
@@ -345,8 +345,8 @@ namespace jactorio::game
 
 			EXPECT_TRUE(result);
 
-			EXPECT_NE(out_item_stack.first, nullptr);
-			EXPECT_EQ(out_item_stack.second, pickup_amount);
+			EXPECT_NE(out_item_stack.item, nullptr);
+			EXPECT_EQ(out_item_stack.count, pickup_amount);
 		}
 	};
 
@@ -366,16 +366,16 @@ namespace jactorio::game
 		                      data::Orientation::up,
 		                      out_item_stack);
 
-		EXPECT_EQ(inv[0].second, 10);  // No items picked up, not 180 degrees
+		EXPECT_EQ(inv[0].count, 10);  // No items picked up, not 180 degrees
 
 		PickupContainerEntity(1, data::ToRotationDegree(180),
 		                      2, container_data,
 		                      data::Orientation::up,
 		                      out_item_stack);
-		EXPECT_EQ(inv[0].second, 8);  // 2 items picked up
+		EXPECT_EQ(inv[0].count, 8);  // 2 items picked up
 
-		EXPECT_NE(out_item_stack.first, nullptr);
-		EXPECT_EQ(out_item_stack.second, 2);
+		EXPECT_NE(out_item_stack.item, nullptr);
+		EXPECT_EQ(out_item_stack.count, 2);
 	}
 
 	TEST_F(InserterPickupTest, PickupContainerTransportLineUp) {

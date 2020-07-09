@@ -47,7 +47,7 @@ bool jactorio::game::ItemDropOff::Initialize(const WorldData& world_data,
 bool jactorio::game::ItemDropOff::InsertContainerEntity(const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
                                                         data::Orientation) const {
 	auto& container_data = static_cast<data::ContainerEntityData&>(unique_data);
-	if (!CanAddStack(container_data.inventory, item_stack))
+	if (!CanAddStack(container_data.inventory, item_stack).first)
 		return false;
 
 	AddStack(container_data.inventory, item_stack);
@@ -56,7 +56,7 @@ bool jactorio::game::ItemDropOff::InsertContainerEntity(const data::Item::Stack&
 
 bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
                                                       const data::Orientation orientation) const {
-	assert(item_stack.second == 1);  // Can only insert 1 at a time
+	assert(item_stack.count == 1);  // Can only insert 1 at a time
 
 	auto& line_data = static_cast<data::TransportLineData&>(unique_data);
 
@@ -143,7 +143,7 @@ bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::Item::Stack& i
 	constexpr double insertion_offset = 0.5;
 	return line_data.lineSegment->TryInsertItem(use_line_left,
 	                                            line_data.lineSegmentIndex + insertion_offset,
-	                                            item_stack.first);
+	                                            item_stack.item);
 }
 
 // ======================================================================
@@ -183,7 +183,7 @@ bool jactorio::game::InserterPickup::Initialize(const WorldData& world_data,
 
 bool jactorio::game::InserterPickup::PickupContainerEntity(data::ProtoUintT,
                                                            const data::RotationDegree& degree,
-                                                           const data::Item::Stack::second_type amount,
+                                                           const data::Item::StackCount amount,
                                                            data::UniqueDataBase& unique_data,
                                                            data::Orientation,
                                                            data::Item::Stack& out_item_stack) const {
@@ -202,7 +202,7 @@ bool jactorio::game::InserterPickup::PickupContainerEntity(data::ProtoUintT,
 
 bool jactorio::game::InserterPickup::PickupTransportBelt(const data::ProtoUintT inserter_tile_reach,
                                                          const data::RotationDegree& degree,
-                                                         const data::Item::Stack::second_type,
+                                                         const data::Item::StackCount,
                                                          data::UniqueDataBase& unique_data,
                                                          const data::Orientation orientation,
                                                          data::Item::Stack& out_item_stack) const {

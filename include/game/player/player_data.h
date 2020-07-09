@@ -187,7 +187,7 @@ namespace jactorio::game
 		///
 		/// \brief Gets the currently item player is currently holding on the cursor
 		/// \return nullptr if there is no item selected
-		J_NODISCARD const data::Item::Stack* GetSelectedItem() const;
+		J_NODISCARD const data::Item::Stack* GetSelectedItemStack() const;
 
 		///
 		/// \brief Deselects the current item and returns it to its slot ONLY if selected by reference
@@ -253,8 +253,8 @@ namespace jactorio::game
 #ifdef JACTORIO_BUILD_TEST
 		void ClearPlayerInventory() {
 			for (auto& i : inventoryPlayer) {
-				i.first = nullptr;
-				i.second = 0;
+				i.item = nullptr;
+				i.count = 0;
 			}
 		}
 
@@ -271,7 +271,7 @@ namespace jactorio::game
 			return craftingItemExtras_;
 		}
 
-		void SetSelectedItem(data::Item::Stack& item) {
+		void SetSelectedItem(const data::Item::Stack& item) {
 			hasItemSelected_ = true;
 			selectedItem_ = item;
 		}

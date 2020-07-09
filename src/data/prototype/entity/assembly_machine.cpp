@@ -7,7 +7,7 @@
 
 using namespace jactorio;
 
-void data::AssemblyMachineData::ChangeRecipe(game::WorldData& world_data,
+void data::AssemblyMachineData::ChangeRecipe(game::WorldData& world_data, const DataManager& data_manager,
                                              const AssemblyMachine& assembly_proto,
                                              const Recipe* new_recipe) {
 	if (new_recipe) {
@@ -15,12 +15,22 @@ void data::AssemblyMachineData::ChangeRecipe(game::WorldData& world_data,
 			assembly_proto,
 			this,
 			new_recipe->GetCraftingTime(1.f / assembly_proto.assemblySpeed));
+
 		ingredientInv.resize(new_recipe->ingredients.size());
 		productInv.resize(1);
+
+		// Set filters
+		for (size_t i = 0; i < ingredientInv.size(); ++i) {
+			ingredientInv[i].filter = data_manager.DataRawGet<Item>(DataCategory::item, new_recipe->ingredients[i].first);
+		}
+		productInv[0].filter = data_manager.DataRawGet<Item>(DataCategory::item, new_recipe->product.first);
 	}
 	else {
 		// Remove recipe
 		world_data.deferralTimer.RemoveDeferralEntry(deferralEntry);
+
+		ingredientInv.resize(0);
+		productInv.resize(0);
 	}
 
 	recipe_ = new_recipe;

@@ -30,8 +30,8 @@ namespace jactorio::data
 
 		///
 		/// \brief Changes recipe to provided recipe, nullptr for no recipe
-		void ChangeRecipe(game::WorldData& world_data, const AssemblyMachine& assembly_proto,
-						  const Recipe* new_recipe);
+		void ChangeRecipe(game::WorldData& world_data, const DataManager& data_manager,
+						  const AssemblyMachine& assembly_proto, const Recipe* new_recipe);
 
 	private:
 		/// Currently selected recipe for assembling

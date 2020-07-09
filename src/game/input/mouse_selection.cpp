@@ -39,10 +39,11 @@ void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, 
 
 
 	const auto cursor_position = player_data.GetMouseTileCoords();
-	const data::Item::Stack* ptr;
-	if ((ptr = player_data.GetSelectedItem()) != nullptr)
+	const auto* stack          = player_data.GetSelectedItemStack();
+
+	if (stack)
 		DrawOverlay(player_data, data_manager,
-		            static_cast<data::Entity*>(ptr->first->entityPrototype),
+		            static_cast<data::Entity*>(stack->item->entityPrototype),
 		            cursor_position.first, cursor_position.second, player_data.placementOrientation);
 	else
 		DrawOverlay(player_data, data_manager,
@@ -87,8 +88,8 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 		if (selected_entity->rotatable) {
 			// Create unique data at tile to indicate set / frame to render
 			const auto set = selected_entity->OnRGetSet(placement_orientation,
-			                                                          world_data,
-			                                                          {world_x, world_y});
+			                                            world_data,
+			                                            {world_x, world_y});
 
 			ChunkTileLayer& target_layer = tile->GetLayer(ChunkTile::ChunkLayer::overlay);
 

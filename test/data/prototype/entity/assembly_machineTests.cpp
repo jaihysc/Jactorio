@@ -4,6 +4,8 @@
 #include <gtest/gtest.h>
 
 #include "jactorioTests.h"
+
+#include "data/data_manager.h"
 #include "data/prototype/entity/assembly_machine.h"
 
 namespace jactorio::data
@@ -12,6 +14,8 @@ namespace jactorio::data
 	{
 	protected:
 		game::WorldData worldData_;
+		DataManager dataManager_;
+
 		AssemblyMachine proto_;
 
 		void SetUp() override {
@@ -29,7 +33,7 @@ namespace jactorio::data
 		// Has recipe
 		Recipe recipe{};
 
-		data.ChangeRecipe(worldData_, proto_, &recipe);
+		data.ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
 		EXPECT_TRUE(data.HasRecipe());
 		EXPECT_EQ(data.GetRecipe(), &recipe);
 	}
@@ -41,28 +45,50 @@ namespace jactorio::data
 
 		Recipe recipe{};
 		recipe.craftingTime = 1.f;
-		recipe.ingredients = {{"@1", 1}, {"@2", 1}, {"@3", 1}};
+		recipe.ingredients  = {{"@1", 1}, {"@2", 1}};
+		recipe.product      = {"@3", 1};
+
+		auto item_1            = std::make_unique<Item>();
+		const auto* item_1_ptr = item_1.get();
+
+		auto item_2            = std::make_unique<Item>();
+		const auto* item_2_ptr = item_2.get();
+
+		auto item_3            = std::make_unique<Item>();
+		const auto* item_3_ptr = item_3.get();
+
+		dataManager_.DataRawAdd("@1", item_1.release());
+		dataManager_.DataRawAdd("@2", item_2.release());
+		dataManager_.DataRawAdd("@3", item_3.release());
 
 		// Recipe crafted in 60 ticks
 		worldData_.deferralTimer.DeferralUpdate(900);
-		data.ChangeRecipe(worldData_, proto_, &recipe);
+		data.ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
 
 		EXPECT_EQ(data.deferralEntry.first, 960);
-		EXPECT_EQ(data.ingredientInv.size(), 3);
-		EXPECT_EQ(data.productInv.size(), 1);
+
+		ASSERT_EQ(data.ingredientInv.size(), 2);
+		ASSERT_EQ(data.productInv.size(), 1);
+
+		EXPECT_EQ(data.ingredientInv[0].filter, item_1_ptr);
+		EXPECT_EQ(data.ingredientInv[1].filter, item_2_ptr);
+		EXPECT_EQ(data.productInv[0].filter, item_3_ptr);
 	}
 
 	TEST_F(AssemblyMachineTest, ChangeRecipeRemoveRecipe) {
 		AssemblyMachineData data{};
 
 		Recipe recipe{};
-		data.ChangeRecipe(worldData_, proto_, &recipe);
+		data.ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
 
 		EXPECT_NE(data.deferralEntry.second, 0);
 
 		// Remove recipe
-		data.ChangeRecipe(worldData_, proto_, nullptr);
+		data.ChangeRecipe(worldData_, dataManager_, proto_, nullptr);
 		EXPECT_EQ(data.deferralEntry.second, 0);
+
+		EXPECT_EQ(data.ingredientInv.size(), 0);
+		EXPECT_EQ(data.productInv.size(), 0);
 	}
 
 	TEST_F(AssemblyMachineTest, AssemblySpeed) {
@@ -74,7 +100,7 @@ namespace jactorio::data
 		Recipe recipe{};
 		recipe.craftingTime = 1.f;
 
-		data.ChangeRecipe(worldData_, proto_, &recipe);
+		data.ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
 		EXPECT_EQ(data.deferralEntry.first, 30);
 	}
 
@@ -98,7 +124,7 @@ namespace jactorio::data
 		auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
 
 		Recipe recipe{};
-		assembly_data->ChangeRecipe(worldData_, proto_, &recipe);
+		assembly_data->ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
 
 		assembly_proto->OnRemove(worldData_, {0, 0}, layer);
 		EXPECT_EQ(assembly_data->deferralEntry.second, 0);
