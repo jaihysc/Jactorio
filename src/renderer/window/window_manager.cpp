@@ -265,7 +265,7 @@ void jactorio::renderer::HandleSdlEvent(const SDL_Event& sdl_event) {
 		game::SetCursorPosition(sdl_event.motion.x, sdl_event.motion.y);
 		break;
 	case SDL_MOUSEWHEEL:
-		if (!input_captured)
+		if (!input_mouse_captured)
 			GetBaseRenderer()->tileProjectionMatrixOffset += static_cast<float>(sdl_event.wheel.y * 10);
 		break;
 	case SDL_MOUSEBUTTONUP:

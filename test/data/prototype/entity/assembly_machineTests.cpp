@@ -48,7 +48,8 @@ namespace jactorio::data
 		data.ChangeRecipe(worldData_, proto_, &recipe);
 
 		EXPECT_EQ(data.deferralEntry.first, 960);
-		EXPECT_EQ(data.ingredients.size(), 3);
+		EXPECT_EQ(data.ingredientInv.size(), 3);
+		EXPECT_EQ(data.productInv.size(), 1);
 	}
 
 	TEST_F(AssemblyMachineTest, ChangeRecipeRemoveRecipe) {

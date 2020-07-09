@@ -15,7 +15,8 @@ struct SDL_Window;
 namespace jactorio::renderer
 {
 	// If true, ImGui has handled the a input event and thus should not be carried to down the layer
-	inline bool input_captured = false;
+	inline bool input_mouse_captured    = false;
+	inline bool input_keyboard_captured = false;
 
 
 	struct MenuData

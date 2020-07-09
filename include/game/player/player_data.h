@@ -160,18 +160,24 @@ namespace jactorio::game
 		bool selectByReference_                       = false;
 
 	public:
-		static constexpr char kInventorySelectedCursorIname[] = "__core__/inventory-selected-cursor";
-
 		///
-		/// Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying stack size
-		void InventorySort();
+		/// \brief High level method for inventory actions, prefer over calls to InventoryClick and others
+		void HandleInventoryActions(const data::DataManager& data_manager,
+		                            data::Item::Inventory& inv, size_t index,
+									bool half_select);
+
+		// ======================================================================
 
 		static constexpr unsigned short kDefaultInventorySize = 80;
 		data::Item::Inventory inventoryPlayer{kDefaultInventorySize};
 
 		///
-		/// \brief Interacts with the player inventory at index
-		/// \param index The player inventory index
+		/// \brief Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying stack size
+		void InventorySort(data::Item::Inventory& inv) const;
+
+		///
+		/// \brief Interacts with the inventory at index
+		/// \param index The inventory index
 		/// \param mouse_button Mouse button pressed; 0 - Left, 1 - Right
 		/// \param allow_reference_select If true, left clicking will select the item by reference
 		void InventoryClick(const data::DataManager& data_manager,

@@ -3,10 +3,54 @@
 
 #include "renderer/gui/gui_layout.h"
 
+#include "game/input/mouse_selection.h"
 #include "renderer/gui/gui_colors.h"
 #include "renderer/rendering/renderer.h"
 
 using namespace jactorio;
+
+void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::DataManager&, const char* title,
+                                 const char* description, const std::function<void()>& draw_func) {
+	using namespace jactorio;
+
+	ImVec2 cursor_pos(
+		static_cast<float>(game::MouseSelection::GetCursorX()),
+		static_cast<float>(game::MouseSelection::GetCursorY() + 10.f)
+	);
+	// If an item is currently selected, move the tooltip down to not overlap
+	if (player_data.GetSelectedItem())
+		cursor_pos.y += renderer::kInventorySlotWidth;
+
+	ImGui::SetNextWindowPos(cursor_pos);
+
+
+	ImGuiWindowFlags flags = 0;
+	flags |= ImGuiWindowFlags_NoCollapse;
+	flags |= ImGuiWindowFlags_NoResize;
+	flags |= ImGuiWindowFlags_NoInputs;
+	flags |= ImGuiWindowFlags_NoScrollbar;
+	flags |= ImGuiWindowFlags_AlwaysAutoResize;
+
+	// Draw tooltip
+	renderer::ImGuard guard{};
+
+	guard.PushStyleColor(ImGuiCol_TitleBgActive, J_GUI_COL_TOOLTIP_TITLE_BG);
+	guard.PushStyleColor(ImGuiCol_TitleBg, J_GUI_COL_TOOLTIP_TITLE_BG);
+
+	{
+		renderer::ImGuard title_text_guard{};
+		title_text_guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_TOOLTIP_TITLE_TEXT);
+
+		guard.Begin(title, nullptr, flags);
+	}
+
+	ImGui::Text("%s", description);
+
+	draw_func();
+
+	// This window is always in front
+	ImGui::SetWindowFocus(title);
+}
 
 void renderer::FitTitle(std::stringstream& description_ss, const uint16_t target_len) {
 	while (description_ss.str().size() < target_len)

@@ -18,8 +18,8 @@ namespace jactorio::data
 	{
 		// Holds input / output items for assembling
 		
-		Item::Inventory ingredients;
-		Item::Stack product;
+		Item::Inventory ingredientInv;
+		Item::Inventory productInv;
 		
 		/// Callback called when recipe is finished crafting
 		game::WorldData::DeferralTimer::DeferralEntry deferralEntry;

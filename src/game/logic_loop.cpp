@@ -105,7 +105,7 @@ void jactorio::game::InitLogicLoop() {
 
 	// Place entities
 	game_data->input.key.Register([]() {
-		if (renderer::input_captured || !game_data->player.MouseSelectedTileInRange())
+		if (renderer::input_mouse_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
@@ -114,7 +114,7 @@ void jactorio::game::InitLogicLoop() {
 	}, MouseInput::left, InputAction::key_held);
 
 	game_data->input.key.Register([]() {
-		if (renderer::input_captured || !game_data->player.MouseSelectedTileInRange())
+		if (renderer::input_mouse_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
@@ -124,7 +124,7 @@ void jactorio::game::InitLogicLoop() {
 
 	// Remove entities or mine resource
 	game_data->input.key.Register([]() {
-		if (renderer::input_captured || !game_data->player.MouseSelectedTileInRange())
+		if (renderer::input_mouse_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();

@@ -24,6 +24,15 @@ namespace jactorio::renderer
 	// ======================================================================
 
 	///
+	/// \param title Title of the tooltip
+	/// \param description
+	/// \param draw_func Code to run while drawing the tooltip
+	void DrawCursorTooltip(game::PlayerData& player_data, const data::DataManager&, const char* title,
+	                       const char* description,
+	                       const std::function<void()>& draw_func);
+
+
+	///
 	/// \brief Pad the ingredients: text with trailing whitespace to reach the length of the title
 	///
 	/// In order to auto resize to fit the title's text since the title is not accounted

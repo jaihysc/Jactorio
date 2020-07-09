@@ -27,6 +27,10 @@ namespace jactorio::data
 		using Stack = std::pair<const Item*, StackCount>;
 		using Inventory = std::vector<Stack>;
 
+		// Hard coded item inames
+		static constexpr char kInventorySelectedCursor[] = "__core__/inventory-selected-cursor";
+		static constexpr char kResetIname[]              = "__core__/reset";
+
 	private:
 		static constexpr StackCount kDefaultStackSize = 50;
 

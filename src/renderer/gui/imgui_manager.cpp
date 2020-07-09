@@ -174,7 +174,8 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::Da
 
 	// Has imgui handled a mouse or keyboard event?
 	ImGuiIO& io    = ImGui::GetIO();
-	input_captured = io.WantCaptureKeyboard || io.WantCaptureMouse;
+	input_mouse_captured = io.WantCaptureMouse;
+	input_keyboard_captured = io.WantCaptureKeyboard;
 
 	// Make the font bigger
 	// auto font = ImGetFont();

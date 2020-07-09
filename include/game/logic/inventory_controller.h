@@ -23,7 +23,7 @@ namespace jactorio::game
 
 	///
 	/// \brief Returns whether or not item stack can be added to the target_inv 
-	bool CanAddStack(const data::Item::Inventory& target_inv,
+	bool CanAddStack(const data::Item::Inventory& inv,
 	                 const data::Item::Stack& item_stack);
 
 	///

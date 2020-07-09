@@ -295,7 +295,7 @@ void jactorio::game::PlayerData::TryPlaceEntity(WorldData& world_data,
 
 	// If item stack was used up, sort player inventory to fill gap
 	if (!DecrementSelectedItem()) {
-		InventorySort();
+		InventorySort(inventoryPlayer);
 	}
 
 	// Call events
@@ -351,7 +351,7 @@ void jactorio::game::PlayerData::TryPickup(WorldData& world_data,
 			return;
 
 		AddStack(inventoryPlayer, item_stack);
-		InventorySort();
+		InventorySort(inventoryPlayer);
 
 		pickupTickCounter_ = 0;
 		// Resource entity
@@ -398,18 +398,26 @@ float jactorio::game::PlayerData::GetPickupPercentage() const {
 // ============================================================================================
 // Inventory
 
-void jactorio::game::PlayerData::InventorySort() {
-	// The inventory must be sorted without moving the selected cursor
+void jactorio::game::PlayerData::HandleInventoryActions(const data::DataManager& data_manager,
+                                                        data::Item::Inventory& inv, const size_t index,
+                                                        const bool half_select) {
+	const bool is_player_inv = &inv == &inventoryPlayer;
 
-	LOG_MESSAGE(debug, "Sorting player inventory");
+
+	InventoryClick(data_manager, index, half_select ? 1 : 0, is_player_inv, inv);
+	InventorySort(inventoryPlayer);
+}
+
+void jactorio::game::PlayerData::InventorySort(data::Item::Inventory& inv) const {
+	// The inventory must be sorted without moving the selected cursor
 
 	// Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
 	std::vector<data::Item::Stack> inv_temp;
-	inv_temp.reserve(inventoryPlayer.size());
-	for (const auto& i : inventoryPlayer) {
+	inv_temp.reserve(inv.size());
+	for (const auto& i : inv) {
 		// Skip the cursor
 		if (i.first == nullptr ||
-			i.first->GetLocalizedName() == kInventorySelectedCursorIname) {
+			i.first->GetLocalizedName() == data::Item::kInventorySelectedCursor) {
 			continue;
 		}
 
@@ -472,12 +480,12 @@ void jactorio::game::PlayerData::InventorySort() {
 	}
 
 	// Copy back into origin inventory
-	int start                   = -1;  // The index of the first blank slot post sorting
+	int64_t start               = -1;  // The index of the first blank slot post sorting
 	unsigned int inv_temp_index = 0;
-	for (auto i = 0; i < inventoryPlayer.size(); ++i) {
+	for (size_t i = 0; i < inv.size(); ++i) {
 		// Skip the cursor
-		if (inventoryPlayer[i].first != nullptr &&
-			inventoryPlayer[i].first->GetLocalizedName() == kInventorySelectedCursorIname)
+		if (inv[i].first != nullptr &&
+			inv[i].first->GetLocalizedName() == data::Item::kInventorySelectedCursor)
 			continue;
 
 		if (inv_temp_index >= inv_temp.size()) {
@@ -493,7 +501,7 @@ void jactorio::game::PlayerData::InventorySort() {
 			}
 		}
 
-		inventoryPlayer[i] = inv_temp[inv_temp_index++];
+		inv[i] = inv_temp[inv_temp_index++];
 	}
 loop_exit:
 
@@ -501,13 +509,13 @@ loop_exit:
 		return;
 
 	// Copy empty spaces into the remainder of the slots
-	for (auto i = start; i < inventoryPlayer.size(); ++i) {
+	for (auto i = start; i < inv.size(); ++i) {
 		// Skip the cursor
-		if (inventoryPlayer[i].first != nullptr &&
-			inventoryPlayer[i].first->GetLocalizedName() == kInventorySelectedCursorIname)
+		if (inv[i].first != nullptr &&
+			inv[i].first->GetLocalizedName() == data::Item::kInventorySelectedCursor)
 			continue;
 
-		inventoryPlayer[i] = {nullptr, 0};
+		inv[i] = {nullptr, 0};
 	}
 }
 
@@ -551,7 +559,7 @@ void jactorio::game::PlayerData::InventoryClick(const data::DataManager& data_ma
 
 			// Swap icon out for a cursor indicating the current index is selected
 			inventoryPlayer[index].first = data_manager.DataRawGet<data::Item>(data::DataCategory::item,
-			                                                                   kInventorySelectedCursorIname);
+			                                                                   data::Item::kInventorySelectedCursor);
 			inventoryPlayer[index].second = 0;
 
 			// Return is necessary when selecting by reference

@@ -26,10 +26,14 @@ addSprite("rect-yellow", "core/graphics/rect-yellow.png")
 addSprite("rect-grey", "core/graphics/rect-grey.png")
 
 
-# Inventory selection cursor
-(j.Item("inventory-selected-cursor")
-    .sprite((j.Sprite()
-        .load("core/graphics/hand.png")
-        .group([j.spriteGroup.Gui])
-    ))
-)
+# Hard coded items shown in the inventory
+def addItem(name, path):
+    (j.Item(name)
+        .sprite(j.Sprite()
+            .load(path)
+            .group([j.spriteGroup.Gui])
+            )
+    )
+
+addItem("inventory-selected-cursor", "core/graphics/hand.png")
+addItem("reset", "core/graphics/reset.png")

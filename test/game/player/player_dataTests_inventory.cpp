@@ -25,7 +25,7 @@ namespace jactorio::game
 			setupCursor_ = true;
 			cursor_      = new data::Item();
 
-			dataManager_.DataRawAdd(PlayerData::kInventorySelectedCursorIname, cursor_);
+			dataManager_.DataRawAdd(data::Item::kInventorySelectedCursor, cursor_);
 		}
 	};
 
@@ -487,7 +487,7 @@ namespace jactorio::game
 		// Sorted inventory should be as follows
 		// Item(count)
 		// 1(50), 1(50), 1(10), 2(10), 2(1)
-		playerData_.InventorySort();
+		playerData_.InventorySort(playerData_.inventoryPlayer);
 
 		EXPECT_EQ(playerData_.inventoryPlayer[0].first, item.get());
 		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 50);
@@ -510,7 +510,7 @@ namespace jactorio::game
 		playerData_.inventoryPlayer[10].second = 0;
 
 
-		playerData_.InventorySort();
+		playerData_.InventorySort(playerData_.inventoryPlayer);
 
 		EXPECT_EQ(playerData_.inventoryPlayer[10].first, cursor_);
 		EXPECT_EQ(playerData_.inventoryPlayer[10].second, 0);
@@ -533,7 +533,7 @@ namespace jactorio::game
 			i.second = 50;
 		}
 
-		playerData_.InventorySort();
+		playerData_.InventorySort(playerData_.inventoryPlayer);
 
 
 		// There should have been no new cursors created anywhere
@@ -557,7 +557,7 @@ namespace jactorio::game
 		playerData_.inventoryPlayer[12].first  = item.get();
 		playerData_.inventoryPlayer[12].second = 10;
 
-		playerData_.InventorySort();
+		playerData_.InventorySort(playerData_.inventoryPlayer);
 
 		EXPECT_EQ(playerData_.inventoryPlayer[0].first, item.get());
 		EXPECT_EQ(playerData_.inventoryPlayer[0].second, 100);

@@ -6,7 +6,34 @@
 #include <cassert>
 #include <utility>
 
+#include "jactorio.h"
+
 using namespace jactorio;
+
+#ifdef JACTORIO_DEBUG_BUILD
+
+#define J_INVENTORY_VERIFY(inventory__, guard__)\
+	InventoryVerify(inventory__);\
+	core::CapturingGuard<void()> guard__([&]() { InventoryVerify(inventory__); })
+#else
+
+#define J_INVENTORY_VERIFY(inventory__, guard__)
+
+#endif
+
+///
+/// \brief Validates that the contents of the inventory are valid
+/// Disabled in release builds
+void InventoryVerify(const data::Item::Inventory& inv) {
+	for (const auto& stack : inv) {
+		if (stack.first == nullptr || stack.second == 0) {
+			assert(stack.first == nullptr);
+			assert(stack.second == 0);
+		}
+	}
+}
+
+// ======================================================================
 
 ///
 /// \brief Attempts to drop one item from origin item stack to target itme stack
@@ -166,11 +193,13 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 // ======================================================================
 // Can be used by non-player inventories 
 
-bool game::CanAddStack(const data::Item::Inventory& target_inv,
+bool game::CanAddStack(const data::Item::Inventory& inv,
                        const data::Item::Stack& item_stack) {
+	J_INVENTORY_VERIFY(inv, guard);
+	
 	// Amount left which needs to be added
 	auto remaining_add = item_stack.second;
-	for (const auto& slot : target_inv) {
+	for (const auto& slot : inv) {
 		// Item of same type
 		if (slot.first == item_stack.first) {
 			// Amount that can be added to fill the slot
@@ -196,6 +225,8 @@ bool game::CanAddStack(const data::Item::Inventory& target_inv,
 
 data::Item::StackCount game::AddStack(data::Item::Inventory& inv,
                                       const data::Item::Stack& item_stack) {
+	J_INVENTORY_VERIFY(inv, guard);
+
 	// Amount left which needs to be added
 	auto remaining_add = item_stack.second;
 	for (auto& slot : inv) {
@@ -231,6 +262,8 @@ data::Item::StackCount game::AddStack(data::Item::Inventory& inv,
 
 bool game::AddStackSub(data::Item::Inventory& inv,
                        data::Item::Stack& item_stack) {
+	J_INVENTORY_VERIFY(inv, guard);
+
 	const auto remainder = AddStack(inv, item_stack);
 	if (remainder == 0) {
 		item_stack.second = 0;
@@ -244,6 +277,8 @@ bool game::AddStackSub(data::Item::Inventory& inv,
 
 uint32_t game::GetInvItemCount(const data::Item::Inventory& inv,
                                const data::Item* item) {
+	J_INVENTORY_VERIFY(inv, guard);
+
 	uint32_t count = 0;
 	for (const auto& i : inv) {
 		if (i.first == item)
@@ -253,6 +288,8 @@ uint32_t game::GetInvItemCount(const data::Item::Inventory& inv,
 }
 
 const data::Item* game::GetFirstItem(const data::Item::Inventory& inv) {
+	J_INVENTORY_VERIFY(inv, guard);
+
 	for (const auto& i : inv) {
 		if (i.first != nullptr) {
 			assert(i.second != 0);
@@ -265,6 +302,8 @@ const data::Item* game::GetFirstItem(const data::Item::Inventory& inv) {
 
 bool game::RemoveInvItem(data::Item::Inventory& inv,
                          const data::Item* item, const uint32_t remove_amount) {
+	J_INVENTORY_VERIFY(inv, guard);
+
 	// Not enough to remove
 	if (GetInvItemCount(inv, item) < remove_amount)
 		return false;
@@ -275,18 +314,21 @@ bool game::RemoveInvItem(data::Item::Inventory& inv,
 
 void game::DeleteInvItem(data::Item::Inventory& inv,
                          const data::Item* item, uint32_t remove_amount) {
+	J_INVENTORY_VERIFY(inv, guard);
+
 	for (auto& inv_i : inv) {
 		if (inv_i.first == item) {
 			// Enough to remove and move on
 			if (remove_amount > inv_i.second) {
 				remove_amount -= inv_i.second;
-				inv_i.first = nullptr;
+				inv_i = {nullptr, 0};
 			}
 				// Not enough to remove and move on
 			else {
 				inv_i.second -= remove_amount;
-				if (inv_i.second == 0)
-					inv_i.first = nullptr;
+				if (inv_i.second == 0) {
+					inv_i = {nullptr, 0};
+				}
 
 				return;
 			}

@@ -25,53 +25,19 @@
 using namespace jactorio;
 
 ///
-/// \param title Title of the tooltip
-/// \param description
-/// \param draw_func Code to run while drawing the tooltip
-void DrawCursorTooltip(game::PlayerData& player_data, const data::DataManager&, const char* title,
-                       const char* description,
-                       const std::function<void()>& draw_func) {
-	using namespace jactorio;
-
-	ImVec2 cursor_pos(
-		static_cast<float>(game::MouseSelection::GetCursorX()),
-		static_cast<float>(game::MouseSelection::GetCursorY() + 10.f)
-	);
-	// If an item is currently selected, move the tooltip down to not overlap
-	if (player_data.GetSelectedItem())
-		cursor_pos.y += renderer::kInventorySlotWidth;
-
-	ImGui::SetNextWindowPos(cursor_pos);
-
-
-	ImGuiWindowFlags flags = 0;
-	flags |= ImGuiWindowFlags_NoCollapse;
-	flags |= ImGuiWindowFlags_NoResize;
-	flags |= ImGuiWindowFlags_NoInputs;
-	flags |= ImGuiWindowFlags_NoScrollbar;
-	flags |= ImGuiWindowFlags_AlwaysAutoResize;
-
-	// Draw tooltip
-	renderer::ImGuard guard{};
-
-	guard.PushStyleColor(ImGuiCol_TitleBgActive, J_GUI_COL_TOOLTIP_TITLE_BG);
-	guard.PushStyleColor(ImGuiCol_TitleBg, J_GUI_COL_TOOLTIP_TITLE_BG);
-
-	{
-		renderer::ImGuard title_text_guard{};
-		title_text_guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_TOOLTIP_TITLE_TEXT);
-
-		guard.Begin(title, nullptr, flags);
+/// \brief Implements ImGui::IsItemClicked() for left and right mouse buttons
+template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
+void ImplementInventoryIsItemClicked(game::PlayerData& player_data,
+                                     const data::DataManager& data_manager,
+                                     data::Item::Inventory& inv, const size_t index) {
+	if (ImGui::IsItemClicked()) {
+		player_data.HandleInventoryActions(data_manager, inv, index, HalfSelectOnLeft);
+	}
+	else if (ImGui::IsItemClicked(1)) {
+		player_data.HandleInventoryActions(data_manager, inv, index, HalfSelectOnRight);
 	}
 
-	ImGui::Text("%s", description);
-
-	draw_func();
-
-	// This window is always in front
-	ImGui::SetWindowFocus(title);
 }
-
 
 // ==========================================================================================
 // Player menus (Excluding entity menus)
@@ -104,18 +70,11 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::DataManager&
 			item.second,
 			button_hovered,
 			[&]() {
-				if (ImGui::IsItemClicked()) {
-					player_data.InventoryClick(data_manager, index, 0, true, player_data.inventoryPlayer);
-					player_data.InventorySort();
-				}
-				else if (ImGui::IsItemClicked(1)) {
-					player_data.InventoryClick(data_manager, index, 1, true, player_data.inventoryPlayer);
-					player_data.InventorySort();
-				}
+				ImplementInventoryIsItemClicked(player_data, data_manager, player_data.inventoryPlayer, index);
 
 				// Only draw tooltip + item count if item count is not 0
 				if (ImGui::IsItemHovered() && item.second != 0) {
-					DrawCursorTooltip(
+					renderer::DrawCursorTooltip(
 						player_data, data_manager,
 						item.first->GetLocalizedName().c_str(),
 						"sample description",
@@ -153,7 +112,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 
 		renderer::ImGuard title_guard{};
 		title_guard.PushStyleVar(ImGuiStyleVar_FramePadding,
-		                    {J_GUI_STYLE_WINDOW_PADDING_X, J_GUI_STYLE_TITLEBAR_PADDING_Y / 2});
+		                         {J_GUI_STYLE_WINDOW_PADDING_X, J_GUI_STYLE_TITLEBAR_PADDING_Y / 2});
 
 		// Search text
 		// Make temporary buffer, copy std::string contents into, pass to imgui input, copy result back into std::string
@@ -211,7 +170,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 			renderer::FitTitle(description_ss, recipe_group->GetLocalizedName().size());
 
 			if (ImGui::IsItemHovered()) {
-				DrawCursorTooltip(
+				renderer::DrawCursorTooltip(
 					player_data, data_manager,
 					recipe_group->GetLocalizedName().c_str(),
 					description_ss.str().c_str(),
@@ -265,7 +224,7 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 	renderer::FitTitle(description_ss, title_ss.str().size());
 
 	bool hovered = false;  // Not needed since the tooltip is always drawn under the cursor
-	DrawCursorTooltip(
+	renderer::DrawCursorTooltip(
 		player_data, data_manager,
 		title_ss.str().c_str(),
 		description_ss.str().c_str(),
@@ -346,7 +305,7 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::DataMana
 		           if (ImGui::IsItemClicked()) {
 			           if (player_data.RecipeCanCraft(data_manager, recipe, 1)) {
 				           player_data.RecipeCraftR(data_manager, recipe);
-				           player_data.InventorySort();
+				           player_data.InventorySort(player_data.inventoryPlayer);
 			           }
 		           }
 
@@ -511,22 +470,15 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::DataMa
 
 	DrawTitleBar(prototype->GetLocalizedName());
 
-	DrawSlots(10, container_data.inventory.size(), 1, [&](auto i, auto& button_hovered) {
-		const auto sprite_id = container_data.inventory[i].first != nullptr
-			                       ? container_data.inventory[i].first->sprite->internalId
+	DrawSlots(10, container_data.inventory.size(), 1, [&](auto index, auto& button_hovered) {
+		const auto sprite_id = container_data.inventory[index].first != nullptr
+			                       ? container_data.inventory[index].first->sprite->internalId
 			                       : 0;
 
 		DrawItemSlot(
 			GetMenuData(), 1,
-			sprite_id, container_data.inventory[i].second, button_hovered, [&]() {
-				if (ImGui::IsItemClicked()) {
-					player_data.InventoryClick(data_manager, i, 0, false, container_data.inventory);
-					player_data.InventorySort();
-				}
-				else if (ImGui::IsItemClicked(1)) {
-					player_data.InventoryClick(data_manager, i, 1, false, container_data.inventory);
-					player_data.InventorySort();
-				}
+			sprite_id, container_data.inventory[index].second, button_hovered, [&]() {
+				ImplementInventoryIsItemClicked(player_data, data_manager, container_data.inventory, index);
 			});
 	});
 }
@@ -574,8 +526,8 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 
 	if (machine_data.HasRecipe()) {
 		const auto window_size = GetWindowSize();
-		SetupNextWindowLeft(window_size);
 
+		SetupNextWindowLeft(window_size);
 		PlayerInventoryMenu(player_data, data_manager);
 
 		SetupNextWindowRight();
@@ -587,15 +539,19 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 
 
 		// TODO ingredients \n recipe \n progressbar
+		// TODO tooltip hints
 
 		bool button_hovered = false;
 
 		// Ingredients 
 		RemoveItemSlotTopPadding();
-		DrawSlots(10, machine_data.ingredients.size() + 1, 1, [&](auto index, bool&) {
+		DrawSlots(10, machine_data.ingredientInv.size() + 1, 1, [&](auto index, bool&) {
 			// Recipe change button
-			if (index == machine_data.ingredients.size()) {
-				DrawItemSlot(menu_data, 1, 0, 0, button_hovered, [&]() {
+			if (index == machine_data.ingredientInv.size()) {
+				auto* reset_icon = data_manager.DataRawGet<data::Item>(data::DataCategory::item, data::Item::kResetIname);
+				assert(reset_icon != nullptr);
+
+				DrawItemSlot(menu_data, 1, reset_icon->sprite->internalId, 0, button_hovered, [&]() {
 					if (ImGui::IsItemClicked()) {
 						machine_data.ChangeRecipe(world_data, machine_proto, nullptr);
 					}
@@ -603,35 +559,45 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 				return;
 			}
 
-			auto& stack = machine_data.ingredients[index];
+			// Item which is required
+			auto* ingredient_item =
+				data_manager.DataRawGet<data::Item>(data::DataCategory::item,
+				                                    machine_data.GetRecipe()->ingredients[index].first);
+			assert(ingredient_item != nullptr);
 
-			uint32_t sprite_id = 0;
-			if (stack.second)
-				sprite_id = stack.first->sprite->internalId;
+			// Amount of item possessed
 
-			DrawItemSlot(menu_data, 1, sprite_id, 0, button_hovered, []() {
-				if (ImGui::IsItemClicked()) {
-
-				}
-			});
+			DrawItemSlot(menu_data, 1,
+			             ingredient_item->sprite->internalId, machine_data.ingredientInv[index].second,
+			             button_hovered, [&]() {
+				             // TODO, filter to only allowed items
+				             ImplementInventoryIsItemClicked(player_data, data_manager, machine_data.ingredientInv, index);
+			             });
 		});
 
+		// User may have clicked the reset button, and a recipe no longer exists
+		if (!machine_data.HasRecipe())
+			return;
+
 		// Progress
+		const auto original_cursor_y = ImGui::GetCursorPosY();
+		ImGui::SetCursorPosY(original_cursor_y + J_GUI_STYLE_TITLEBAR_PADDING_Y / 2);
 		ImGui::ProgressBar(0.f, {window_size.x - 2 * kInventorySlotWidth, 0});
 
 		ImGui::SameLine();
+		ImGui::SetCursorPosY(original_cursor_y);
 
 		// Product
 		DrawSlots(10, 1, 1, [&](auto, bool&) {
-			uint32_t sprite_id = 0;
-			if (machine_data.product.second)
-				sprite_id = machine_data.product.first->sprite->internalId;
+			auto* product_item =
+				data_manager.DataRawGet<data::Item>(data::DataCategory::item, machine_data.GetRecipe()->product.first);
 
-			DrawItemSlot(menu_data, 1, sprite_id, 0, button_hovered, []() {
-				if (ImGui::IsItemClicked()) {
-
-				}
-			});
+			assert(product_item != nullptr);
+			DrawItemSlot(menu_data, 1,
+			             product_item->sprite->internalId, machine_data.productInv[0].second,
+			             button_hovered, [&]() {
+				             ImplementInventoryIsItemClicked(player_data, data_manager, machine_data.productInv, 0);
+			             });
 		});
 	}
 	else {
@@ -641,7 +607,6 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 		           [&](auto& recipe, auto& product, auto& button_hovered) {
 
 			           if (ImGui::IsItemClicked()) {
-				           // TODO
 				           machine_data.ChangeRecipe(world_data, machine_proto, &recipe);
 			           }
 
