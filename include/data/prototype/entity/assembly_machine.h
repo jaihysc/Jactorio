@@ -16,8 +16,6 @@ namespace jactorio::data
 	
 	struct AssemblyMachineData final : HealthEntityData
 	{
-		// Holds input / output items for assembling
-		
 		Item::Inventory ingredientInv;
 		Item::Inventory productInv;
 		
@@ -31,7 +29,12 @@ namespace jactorio::data
 		///
 		/// \brief Changes recipe to provided recipe, nullptr for no recipe
 		void ChangeRecipe(game::LogicData& logic_data, const PrototypeManager& data_manager,
-		                  const AssemblyMachine& assembly_proto, const Recipe* new_recipe);
+		                  const Recipe* new_recipe);
+
+		///
+		/// \brief Checks if necessary ingredients are present to begin crafting
+		/// \return true if recipe crafting has begun
+		J_NODISCARD bool CanBeginCrafting() const;
 
 	private:
 		/// Currently selected recipe for assembling
@@ -59,6 +62,14 @@ namespace jactorio::data
 		                game::ChunkTileLayer* tile_layer) const override;
 
 
+		// ======================================================================
+
+		///
+		/// \brief Begins crafting if ingredients are met
+		/// \return true if crafting has begun
+		bool TryBeginCrafting(game::LogicData& logic_data,
+							  AssemblyMachineData& data) const;
+		
 		void OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data, UniqueDataBase* unique_data) const override;
 
 		void OnBuild(game::WorldData& world_data,

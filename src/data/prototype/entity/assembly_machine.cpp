@@ -8,14 +8,8 @@
 using namespace jactorio;
 
 void data::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data, const PrototypeManager& data_manager,
-                                             const AssemblyMachine& assembly_proto,
                                              const Recipe* new_recipe) {
 	if (new_recipe) {
-		deferralEntry = logic_data.deferralTimer.RegisterFromTick(
-			assembly_proto,
-			this,
-			new_recipe->GetCraftingTime(1.f / assembly_proto.assemblySpeed));
-
 		ingredientInv.resize(new_recipe->ingredients.size());
 		productInv.resize(1);
 
@@ -36,6 +30,25 @@ void data::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data, const 
 	recipe_ = new_recipe;
 }
 
+bool data::AssemblyMachineData::CanBeginCrafting() const {
+	if (!recipe_)
+		return false;
+
+	for (size_t i = 0; i < recipe_->ingredients.size(); ++i) {
+		const auto& i_possessed = ingredientInv[i];
+		const auto& i_required = recipe_->ingredients[i];
+
+		// No item, Wrong item or not enough of item
+		if (!i_possessed.item ||
+			i_possessed.item->name != i_required.first ||
+			i_possessed.count < i_required.second) {
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 // ======================================================================
 
 data::Sprite::SetT data::AssemblyMachine::OnRGetSet(
@@ -46,7 +59,12 @@ data::Sprite::SetT data::AssemblyMachine::OnRGetSet(
 }
 
 data::IRenderable::SpritemapFrame data::AssemblyMachine::OnRGetSprite(
-	const UniqueDataBase*, const GameTickT game_tick) const {
+	const UniqueDataBase* unique_data, GameTickT game_tick) const {
+
+	const auto* machine_data = static_cast<const AssemblyMachineData*>(unique_data);
+
+	if (machine_data->deferralEntry.second == 0)
+		game_tick = 0;
 
 	return AllOfSprite(*sprite, game_tick, 1.f / 6);
 }
@@ -59,6 +77,20 @@ bool data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const Prot
 }
 
 // ======================================================================
+
+bool data::AssemblyMachine::TryBeginCrafting(game::LogicData& logic_data,
+											 AssemblyMachineData& data) const {
+	if (!data.CanBeginCrafting())
+		return false;
+
+	data.deferralEntry = logic_data.deferralTimer.RegisterFromTick(
+		*this,
+		&data,
+		data.GetRecipe()->GetCraftingTime(1.f / this->assemblySpeed));
+
+	return true;
+}
+
 
 void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,
 											   UniqueDataBase* unique_data) const {
