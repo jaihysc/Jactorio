@@ -25,6 +25,8 @@ namespace jactorio::data
 	{
 	protected:
 		game::WorldData worldData_{};
+		game::LogicData logicData_{};
+		
 		TransportBelt lineProto_{};
 
 		void SetUp() override {
@@ -106,7 +108,7 @@ namespace jactorio::data
 				return;
 
 			static_cast<const Entity*>(layer.prototypeData)
-				->OnNeighborUpdate(worldData_, emit_coords, receive_coords, emit_orientation);
+				->OnNeighborUpdate(worldData_, logicData_, emit_coords, receive_coords, emit_orientation);
 		}
 
 	protected:
@@ -117,7 +119,7 @@ namespace jactorio::data
 			auto& layer = worldData_.GetTile(world_coords)
 			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
-			lineProto_.OnBuild(worldData_, world_coords, layer, orientation);
+			lineProto_.OnBuild(worldData_, logicData_, world_coords, layer, orientation);
 
 			// Call on_neighbor_update for the 4 sides
 			DispatchNeighborUpdate(world_coords,
@@ -140,7 +142,7 @@ namespace jactorio::data
 			auto& layer = worldData_.GetTile(world_coords)
 			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
-			lineProto_.OnRemove(worldData_, world_coords, layer);
+			lineProto_.OnRemove(worldData_, logicData_, world_coords, layer);
 
 			// Call on_neighbor_update for the 4 sides
 			DispatchNeighborUpdate(world_coords,

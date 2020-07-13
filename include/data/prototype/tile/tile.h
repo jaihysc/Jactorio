@@ -49,16 +49,16 @@ namespace jactorio::data
 			return {sprite, 0};
 		}
 
-		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager, game::ChunkTileLayer* tile_layer) const override {
+		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager, game::ChunkTileLayer* tile_layer) const override {
 			return false;
 		}
 
 		// ======================================================================
 		// Data
-		void PostLoadValidate(const DataManager& data_manager) const override;
+		void PostLoadValidate(const PrototypeManager& data_manager) const override;
 	};
 
-	inline void Tile::PostLoadValidate(const DataManager&) const {
+	inline void Tile::PostLoadValidate(const PrototypeManager&) const {
 		J_DATA_ASSERT(sprite != nullptr, "Sprite was not provided");
 	}
 }

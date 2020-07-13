@@ -77,19 +77,19 @@ namespace jactorio::data
 		                       const game::WorldData::WorldPair& world_coords) const override;
 
 
-		void OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
-		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
+		void OnBuild(game::WorldData& world_data, game::LogicData& logic_data,
+		             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
 
 
 		void OnTileUpdate(game::WorldData& world_data,
 		                  const game::WorldData::WorldPair& emit_coords,
 		                  const game::WorldData::WorldPair& receive_coords, UpdateType type) const override;
 
-		void OnRemove(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
-		              game::ChunkTileLayer& tile_layer) const override;
+		void OnRemove(game::WorldData& world_data, game::LogicData& logic_data,
+		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 
-		void PostLoadValidate(const DataManager&) const override {
+		void PostLoadValidate(const PrototypeManager&) const override {
 			J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
 		}
 

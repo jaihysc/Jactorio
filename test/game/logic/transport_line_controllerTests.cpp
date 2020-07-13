@@ -23,6 +23,8 @@ namespace jactorio::game
 	{
 	protected:
 		WorldData worldData_{};
+		LogicData logicData_{};
+		
 		Chunk* chunk_ = nullptr;
 
 		data::Item itemProto_{};
@@ -386,9 +388,10 @@ namespace jactorio::game
 		RegisterSegment({1, 1}, left_segment_2);
 
 		// Update neighboring segments as a new segment was placed
-		transportBeltProto_->OnNeighborUpdate(worldData_, 
-											  {1, 1}, {2, 1},
-											  data::Orientation::right);
+		transportBeltProto_->OnNeighborUpdate(worldData_,
+		                                      logicData_,
+											  {1, 1},
+		                                      {2, 1}, data::Orientation::right);
 
 		EXPECT_EQ(left_segment.get()->left.index, 0);
 	}

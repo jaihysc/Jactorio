@@ -38,20 +38,6 @@ namespace jactorio::game
 		WorldData(WorldData&& other)      = delete;
 
 		// ======================================================================
-		// World properties
-	private:
-		GameTickT gameTick_ = 0;
-
-	public:
-		/// \brief Called by the logic loop every update
-		void OnTickAdvance();
-
-		///
-		/// \brief Number of logic updates since the world was created
-		J_NODISCARD GameTickT GameTick() const { return gameTick_; }
-
-
-		// ======================================================================
 		// World chunk
 	private:
 		// The world is make up of chunks
@@ -234,68 +220,8 @@ namespace jactorio::game
 		/// \brief Takes first in from chunk generation queue and generates chunk
 		/// Call once per logic loop tick to generate one chunk only, this keeps performance constant
 		/// when generating large amounts of chunks
-		void GenChunk(const data::DataManager& data_manager, uint8_t amount = 1);
+		void GenChunk(const data::PrototypeManager& data_manager, uint8_t amount = 1);
 
-
-		// ======================================================================
-
-		///
-		/// \brief Manages deferrals, prototypes inheriting 'Deferred'
-		class DeferralTimer
-		{
-			/// \brief vector of callbacks at game tick
-			std::unordered_map<GameTickT,
-			                   std::vector<
-				                   std::pair<std::reference_wrapper<const data::IDeferred>, data::UniqueDataBase*>
-			                   >> callbacks_;
-
-			/// \brief 0 indicates invalid callback
-			using CallbackIndex = decltype(callbacks_.size());
-
-		public:
-			explicit DeferralTimer(WorldData& world_data)
-				: worldData_(world_data) {
-			}
-
-			/// \brief Information about the registered deferral for removing
-			///
-			/// .second value of 0 indicates invalid callback
-			using DeferralEntry = std::pair<GameTickT, CallbackIndex>;
-
-			///
-			/// \brief Calls all deferred callbacks for the current game tick
-			/// \param game_tick Current game tick
-			void DeferralUpdate(GameTickT game_tick);
-
-			///
-			/// \brief Registers callback which will be called upon reaching the specified game tick
-			/// \param deferred Implements virtual function on_defer_time_elapsed
-			/// \param due_game_tick Game tick where the callback will be called
-			/// \return Index of registered callback, use this to remove the callback later
-			DeferralEntry RegisterAtTick(const data::IDeferred& deferred, data::UniqueDataBase* unique_data,
-			                             GameTickT due_game_tick);
-
-			///
-			/// \brief Registers callback which will be called after the specified game ticks pass
-			/// \param deferred Implements virtual function on_defer_time_elapsed
-			/// \param elapse_game_tick Callback will be called in game ticks from now
-			/// \return Index of registered callback, use this to remove the callback later
-			DeferralEntry RegisterFromTick(const data::IDeferred& deferred, data::UniqueDataBase* unique_data,
-			                               GameTickT elapse_game_tick);
-
-			///
-			/// \brief Removes registered callback at game_tick at index
-			void RemoveDeferral(DeferralEntry entry);
-
-			///
-			/// \brief Removes registered callback and sets entry index to 0
-			void RemoveDeferralEntry(DeferralEntry& entry);
-
-		private:
-			GameTickT lastGameTick_ = 0;
-			WorldData& worldData_;
-
-		} deferralTimer{*this};
 
 		// ======================================================================
 

@@ -35,16 +35,16 @@ namespace jactorio::data
 		// Events
 
 		void OnBuild(game::WorldData& world_data,
+		             game::LogicData& logic_data,
 		             const game::WorldData::WorldPair& world_coords,
-		             game::ChunkTileLayer& tile_layer,
-		             Orientation orientation) const override;
+		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
 
 		void OnRemove(game::WorldData&,
-		              const game::WorldData::WorldPair&,
-		              game::ChunkTileLayer&) const override {
+		              game::LogicData&,
+		              const game::WorldData::WorldPair&, game::ChunkTileLayer&) const override {
 		}
 
-		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
+		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
 		                game::ChunkTileLayer* tile_layer) const override;
 
 		Sprite::SetT OnRGetSet(Orientation,

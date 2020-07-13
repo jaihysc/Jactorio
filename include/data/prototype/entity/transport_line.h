@@ -119,18 +119,18 @@ namespace jactorio::data
 		// Game events
 
 		void OnBuild(game::WorldData& world_data,
+		             game::LogicData& logic_data,
 		             const game::WorldData::WorldPair& world_coords,
-		             game::ChunkTileLayer& tile_layer,
-		             Orientation orientation) const override;
+		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
 
 		void OnNeighborUpdate(game::WorldData& world_data,
+		                      game::LogicData& logic_data,
 		                      const game::WorldData::WorldPair& emit_world_coords,
-		                      const game::WorldData::WorldPair& receive_world_coords,
-		                      Orientation emit_orientation) const override;
+		                      const game::WorldData::WorldPair& receive_world_coords, Orientation emit_orientation) const override;
 
 		void OnRemove(game::WorldData& world_data,
-		              const game::WorldData::WorldPair& world_coords,
-		              game::ChunkTileLayer& tile_layer) const override;
+		              game::LogicData& logic_data,
+		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 
 		Sprite::SetT OnRGetSet(Orientation orientation,
@@ -147,7 +147,7 @@ namespace jactorio::data
 			speed = game::TransportLineOffset(speedFloat);
 		}
 
-		void PostLoadValidate(const DataManager& data_manager) const override {
+		void PostLoadValidate(const PrototypeManager& data_manager) const override {
 			J_DATA_ASSERT(speedFloat >= 0.001, "Transport line speed below minimum 0.001");
 			// Cannot exceed item_width because of limitations in the logic
 			J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");

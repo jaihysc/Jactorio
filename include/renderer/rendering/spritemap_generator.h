@@ -73,12 +73,12 @@ namespace jactorio::renderer
 		///
 		/// \brief Creates a spritemap and stores it as a renderer::Texture
 		/// \remark Requires OpenGL context
-		void GInitializeSpritemap(const data::DataManager& data_manager,
+		void GInitializeSpritemap(const data::PrototypeManager& data_manager,
 		                          data::Sprite::SpriteGroup group, bool invert_sprites);
 
 		///
 		/// \brief Creates a spritemap
-		J_NODISCARD SpritemapData CreateSpritemap(const data::DataManager& data_manager,
+		J_NODISCARD SpritemapData CreateSpritemap(const data::PrototypeManager& data_manager,
 		                                          data::Sprite::SpriteGroup group, bool invert_sprites) const;
 
 		///

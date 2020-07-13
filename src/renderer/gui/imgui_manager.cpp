@@ -155,7 +155,7 @@ void jactorio::renderer::Setup(SDL_Window* window) {
 }
 
 void DrawMenu(jactorio::renderer::Menu menu,
-              jactorio::game::PlayerData& player_data, const jactorio::data::DataManager& data_manager,
+              jactorio::game::PlayerData& player_data, const jactorio::data::PrototypeManager& data_manager,
               jactorio::data::UniqueDataBase* unique_data = nullptr) {
 	auto& gui_menu = jactorio::renderer::menus[static_cast<int>(menu)];
 
@@ -164,7 +164,7 @@ void DrawMenu(jactorio::renderer::Menu menu,
 	}
 }
 
-void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::DataManager& data_manager, game::EventData& event) {
+void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::PrototypeManager& data_manager, game::EventData& event) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame

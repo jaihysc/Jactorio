@@ -16,17 +16,20 @@ namespace jactorio::game
 
 	protected:
 		WorldData worldData_{};
+		LogicData logicData_{};
+
 		PlayerData playerData_{};
 		MouseSelection mouseSelection_{};
 
-		data::DataManager dataManager_{};
+		data::PrototypeManager dataManager_{};
 
 		// Call setup_mouse_cursor before using
 		data::Sprite* cursorSprite_ = nullptr;
 
 
 		void SetUp() override {
-			playerData_.SetPlayerWorld(&worldData_);
+			playerData_.SetPlayerWorldData(worldData_);
+			playerData_.SetPlayerLogicData(logicData_);
 			worldData_.AddChunk(Chunk(0, 0));
 		}
 
@@ -187,7 +190,7 @@ namespace jactorio::game
 
 		WorldData world_data{};
 		PlayerData player_data{};
-		player_data.SetPlayerWorld(&world_data);
+		player_data.SetPlayerWorldData(world_data);
 
 		MouseSelection mouse_selection{};
 
@@ -260,14 +263,14 @@ namespace jactorio::game
 		}
 
 		void OnBuild(WorldData&,
+		             LogicData&,
 		             const WorldData::WorldPair&,
-		             ChunkTileLayer&,
-		             data::Orientation) const override {
+		             ChunkTileLayer&, data::Orientation) const override {
 		}
 
 		void OnRemove(WorldData&,
-		              const WorldData::WorldPair&,
-		              ChunkTileLayer&) const override {
+		              LogicData&,
+		              const WorldData::WorldPair&, ChunkTileLayer&) const override {
 		}
 
 		std::pair<data::Sprite*, data::Sprite::FrameT>

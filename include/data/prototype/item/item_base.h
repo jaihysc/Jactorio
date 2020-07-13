@@ -24,10 +24,10 @@ namespace jactorio::data
 	public:
 		PYTHON_PROP_I(ItemBase, Sprite*, sprite, nullptr);
 
-		void PostLoadValidate(const DataManager&) const override;
+		void PostLoadValidate(const PrototypeManager&) const override;
 	};
 
-	inline void ItemBase::PostLoadValidate(const DataManager&) const {
+	inline void ItemBase::PostLoadValidate(const PrototypeManager&) const {
 		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
 	}
 }

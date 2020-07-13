@@ -14,6 +14,7 @@ namespace jactorio::data
 	{
 	protected:
 		game::WorldData worldData_{};
+			game::LogicData logicData_{};
 
 		Inserter inserterProto_{};
 
@@ -23,7 +24,7 @@ namespace jactorio::data
 
 		game::ChunkTileLayer& BuildInserter(const game::WorldData::WorldPair& coords,
 		                                    const Orientation orientation) {
-			return TestSetupInserter(worldData_, coords, inserterProto_, orientation);
+			return TestSetupInserter(worldData_, logicData_, coords, inserterProto_, orientation);
 		}
 	};
 

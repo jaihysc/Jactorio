@@ -6,14 +6,14 @@
 #include "renderer/gui/gui_menus.h"
 
 void jactorio::data::ContainerEntity::OnBuild(game::WorldData&,
+                                              game::LogicData&,
                                               const game::WorldData::WorldPair&,
-                                              game::ChunkTileLayer& tile_layer,
-                                              Orientation) const {
+                                              game::ChunkTileLayer& tile_layer, Orientation) const {
 	tile_layer.MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 
 bool jactorio::data::ContainerEntity::OnRShowGui(game::PlayerData& player_data,
-                                                 const DataManager& data_manager, game::ChunkTileLayer* tile_layer) const {
+                                                 const PrototypeManager& data_manager, game::ChunkTileLayer* tile_layer) const {
 	renderer::ContainerEntity(player_data, data_manager, 
 							  this, tile_layer->GetUniqueData<ContainerEntityData>());
 	return true;

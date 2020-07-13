@@ -22,7 +22,7 @@ namespace jactorio::data
 		Item::Inventory productInv;
 		
 		/// Callback called when recipe is finished crafting
-		game::WorldData::DeferralTimer::DeferralEntry deferralEntry;
+		game::LogicData::DeferralTimer::DeferralEntry deferralEntry;
 
 		
 		J_NODISCARD bool HasRecipe() const { return recipe_ != nullptr; }
@@ -30,8 +30,8 @@ namespace jactorio::data
 
 		///
 		/// \brief Changes recipe to provided recipe, nullptr for no recipe
-		void ChangeRecipe(game::WorldData& world_data, const DataManager& data_manager,
-						  const AssemblyMachine& assembly_proto, const Recipe* new_recipe);
+		void ChangeRecipe(game::LogicData& logic_data, const PrototypeManager& data_manager,
+		                  const AssemblyMachine& assembly_proto, const Recipe* new_recipe);
 
 	private:
 		/// Currently selected recipe for assembling
@@ -55,21 +55,21 @@ namespace jactorio::data
 		SpritemapFrame OnRGetSprite(const UniqueDataBase* unique_data, GameTickT game_tick) const override;
 
 
-		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
+		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
 		                game::ChunkTileLayer* tile_layer) const override;
 
 
-		void OnDeferTimeElapsed(game::WorldData& world_data, UniqueDataBase* unique_data) const override;
+		void OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data, UniqueDataBase* unique_data) const override;
 
 		void OnBuild(game::WorldData& world_data,
-		             const game::WorldData::WorldPair& world_coords,
-		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
+		             game::LogicData& logic_data,
+		             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
 
 		void OnRemove(game::WorldData& world_data,
-		              const game::WorldData::WorldPair& world_coords,
-		              game::ChunkTileLayer& tile_layer) const override;
+		              game::LogicData& logic_data,
+		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
-		void PostLoadValidate(const DataManager&) const override {
+		void PostLoadValidate(const PrototypeManager&) const override {
 			J_DATA_ASSERT(assemblySpeed > 0.f, "Assembly speed cannot be 0");
 		}
 	};

@@ -13,7 +13,7 @@ namespace jactorio::data
 	class LocalParserTest : public testing::Test
 	{
 	protected:
-		DataManager dataManager_;
+		PrototypeManager dataManager_;
 	};
 
 	TEST_F(LocalParserTest, Parse) {
@@ -41,7 +41,7 @@ namespace jactorio::data
 		EXPECT_EQ(prototype2->GetLocalizedName(), "Test tile 2");
 	}
 
-	void ExpectErr(DataManager& data_manager, const std::string& str) {
+	void ExpectErr(PrototypeManager& data_manager, const std::string& str) {
 		try {
 			LocalParse(data_manager, str, "asdf");
 		}

@@ -181,7 +181,7 @@ namespace jactorio::data
 		Sprite* LoadImage(const std::string& image_path);
 
 
-		void PostLoadValidate(const DataManager& data_manager) const override;
+		void PostLoadValidate(const PrototypeManager& data_manager) const override;
 
 
 		// ======================================================================

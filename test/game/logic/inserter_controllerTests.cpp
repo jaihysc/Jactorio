@@ -16,6 +16,7 @@ namespace jactorio::game
 	{
 	protected:
 		WorldData worldData_{};
+		LogicData logicData_{};
 
 		data::Inserter inserterProto_{};
 
@@ -29,7 +30,7 @@ namespace jactorio::game
 
 		ChunkTileLayer& BuildInserter(const WorldData::WorldPair& coords,
 		                              const data::Orientation orientation) {
-			return TestSetupInserter(worldData_, coords, inserterProto_, orientation);
+			return TestSetupInserter(worldData_, logicData_, coords, inserterProto_, orientation);
 		}
 
 		///
@@ -47,7 +48,8 @@ namespace jactorio::game
 					static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData);
 
 				if (neighbor_proto)
-					neighbor_proto->OnNeighborUpdate(worldData_, coords, {1, 2}, orientation);
+					neighbor_proto->OnNeighborUpdate(worldData_, logicData_,
+													 coords, {1, 2}, orientation);
 			}
 
 			unique_data->inventory[0] = {&containerItemProto_, 10};

@@ -42,7 +42,7 @@ namespace jactorio::renderer
 
 	void Setup(SDL_Window* window);
 
-	void ImguiDraw(game::PlayerData& player_data, const data::DataManager& data_manager, game::EventData& event);
+	void ImguiDraw(game::PlayerData& player_data, const data::PrototypeManager& data_manager, game::EventData& event);
 
 	void ImguiTerminate();
 }

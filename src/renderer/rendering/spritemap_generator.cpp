@@ -21,7 +21,7 @@ void renderer::RendererSprites::ClearSpritemaps() {
 	spritemapDatas_.clear();
 }
 
-void renderer::RendererSprites::GInitializeSpritemap(const data::DataManager& data_manager,
+void renderer::RendererSprites::GInitializeSpritemap(const data::PrototypeManager& data_manager,
                                                      data::Sprite::SpriteGroup group, const bool invert_sprites) {
 	const auto spritemap_data = CreateSpritemap(data_manager, group, invert_sprites);
 
@@ -31,7 +31,7 @@ void renderer::RendererSprites::GInitializeSpritemap(const data::DataManager& da
 }
 
 renderer::RendererSprites::SpritemapData renderer::RendererSprites::CreateSpritemap(
-	const data::DataManager& data_manager,
+	const data::PrototypeManager& data_manager,
 	data::Sprite::SpriteGroup group,
 	const bool invert_sprites) const {
 

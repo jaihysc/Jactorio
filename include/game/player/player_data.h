@@ -15,6 +15,8 @@
 
 namespace jactorio::game
 {
+	class LogicData;
+
 	///
 	/// \brief Stores information & functions regarding a player (Duplicated for multiple players)
 	class PlayerData
@@ -51,17 +53,24 @@ namespace jactorio::game
 		float playerPositionY_ = 0;
 
 		/// The world the player is currently in
-		WorldData* playerWorld_ = nullptr;
+		WorldData* playerWorldData_ = nullptr;
+		LogicData* playerLogicData_ = nullptr;
 
 		///
 		/// \brief Returns true if the tile can be walked on
 		bool TargetTileValid(WorldData* world_data, int x, int y) const;
 
 	public:
-		void SetPlayerWorld(WorldData* world_data) { playerWorld_ = world_data; }
-		J_NODISCARD WorldData& GetPlayerWorld() const {
-			assert(playerWorld_ != nullptr);  // Player is not in a world!
-			return *playerWorld_;
+		void SetPlayerWorldData(WorldData& world_data) { playerWorldData_ = &world_data; }
+		J_NODISCARD WorldData& GetPlayerWorldData() const {
+			assert(playerWorldData_ != nullptr);  // Player is not in a world!
+			return *playerWorldData_;
+		}
+
+		void SetPlayerLogicData(LogicData& logic_data) { playerLogicData_ = &logic_data; }
+		J_NODISCARD LogicData& GetPlayerLogicData() const {
+			assert(playerLogicData_);  // Player is not associated with logic data!
+			return *playerLogicData_;
 		}
 
 
@@ -119,14 +128,19 @@ namespace jactorio::game
 		/// \brief Will place an entity at the location or if an entity does not already exist
 		/// \remark Call when the key for placing entities is pressed
 		/// \param can_activate_layer will be set activated_layer to the clicked entity's layer if true
-		void TryPlaceEntity(WorldData& world_data, int world_x, int world_y,
+		void TryPlaceEntity(WorldData& world_data,
+		                    LogicData& logic_data,
+		                    WorldData::WorldCoord world_x, WorldData::WorldCoord world_y,
 		                    bool can_activate_layer = false);
 
 		///
 		/// \brief This will either pickup an entity, or mine resources from a resource tile
 		/// Call when the key for picking up entities is pressed
 		/// If resource + entity exists on one tile, picking up entity takes priority
-		void TryPickup(WorldData& world_data, int tile_x, int tile_y, uint16_t ticks = 1);
+		void TryPickup(WorldData& world_data,
+		               LogicData& logic_data,
+		               WorldData::WorldCoord tile_x, WorldData::WorldCoord tile_y,
+		               uint16_t ticks = 1);
 
 		///
 		/// \return progress of entity pickup or resource extraction as a fraction between 0 - 1
@@ -162,9 +176,9 @@ namespace jactorio::game
 	public:
 		///
 		/// \brief High level method for inventory actions, prefer over calls to InventoryClick and others
-		void HandleInventoryActions(const data::DataManager& data_manager,
+		void HandleInventoryActions(const data::PrototypeManager& data_manager,
 		                            data::Item::Inventory& inv, size_t index,
-									bool half_select);
+		                            bool half_select);
 
 		// ======================================================================
 
@@ -180,7 +194,7 @@ namespace jactorio::game
 		/// \param index The inventory index
 		/// \param mouse_button Mouse button pressed; 0 - Left, 1 - Right
 		/// \param allow_reference_select If true, left clicking will select the item by reference
-		void InventoryClick(const data::DataManager& data_manager,
+		void InventoryClick(const data::PrototypeManager& data_manager,
 		                    unsigned short index, unsigned short mouse_button, bool allow_reference_select,
 		                    data::Item::Inventory& inv);
 
@@ -216,11 +230,11 @@ namespace jactorio::game
 
 		///
 		/// \brief Call every tick to count down the crafting time for the currently queued item (60 ticks = 1 second)
-		void RecipeCraftTick(const data::DataManager& data_manager, uint16_t ticks = 1);
+		void RecipeCraftTick(const data::PrototypeManager& data_manager, uint16_t ticks = 1);
 
 		///
 		/// \brief Queues a recipe to be crafted, this is displayed by the gui is the lower right corner
-		void RecipeQueue(const data::DataManager& data_manager, const data::Recipe& recipe);
+		void RecipeQueue(const data::PrototypeManager& data_manager, const data::Recipe& recipe);
 
 		///
 		/// \brief Returns const reference to recipe queue for rendering in gui
@@ -232,20 +246,20 @@ namespace jactorio::game
 		/// \brief The actual recursive function for recipe_craft_r
 		/// \param used_items Tracks amount of an item that has already been used,
 		/// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the inventory
-		bool RecipeCanCraftR(const data::DataManager& data_manager,
+		bool RecipeCanCraftR(const data::PrototypeManager& data_manager,
 		                     std::map<const data::Item*, uint32_t>& used_items,
 		                     const data::Recipe& recipe, uint16_t batches) const;
 	public:
 		///
 		/// \brief Recursively depth first crafts the recipe
 		/// !! This WILL NOT check that the given recipe is valid or required ingredients are present and assumes it is!!
-		void RecipeCraftR(const data::DataManager& data_manager, const data::Recipe& recipe);
+		void RecipeCraftR(const data::PrototypeManager& data_manager, const data::Recipe& recipe);
 
 		///
 		/// \brief Recursively steps through a recipe and subrecipies to determine if it is craftable
 		/// \param recipe
 		/// \param batches How many runs of the recipe
-		J_NODISCARD bool RecipeCanCraft(const data::DataManager& data_manager, const data::Recipe& recipe,
+		J_NODISCARD bool RecipeCanCraft(const data::PrototypeManager& data_manager, const data::Recipe& recipe,
 		                                uint16_t batches) const;
 
 

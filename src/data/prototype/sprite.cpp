@@ -150,7 +150,7 @@ jactorio::data::Sprite* jactorio::data::Sprite::LoadImage(const std::string& ima
 	return this;
 }
 
-void jactorio::data::Sprite::PostLoadValidate(const DataManager&) const {
+void jactorio::data::Sprite::PostLoadValidate(const PrototypeManager&) const {
 	J_DATA_ASSERT(frames > 0, "Frames must be at least 1");
 	J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
 }

@@ -15,6 +15,7 @@ namespace jactorio
 	namespace game
 	{
 		class WorldData;
+		class LogicData;
 	}
 }
 
@@ -37,7 +38,8 @@ namespace jactorio::data
 		/// \brief The callback requested at the specified game tick was reached
 		/// \param world_data world data containing deferred timer which dispatched this callback
 		/// \param unique_data Unique data the callback was registered with
-		virtual void OnDeferTimeElapsed(game::WorldData& world_data, UniqueDataBase* unique_data) const = 0;
+		virtual void OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,
+										UniqueDataBase* unique_data) const = 0;
 	};
 }
 

@@ -23,7 +23,7 @@ using namespace jactorio;
 // T is value stored in noise_layer at data_category
 template <typename T>
 void GenerateChunk(game::WorldData& world_data,
-                   const data::DataManager& data_manager,
+                   const data::PrototypeManager& data_manager,
                    const int chunk_x, const int chunk_y,
                    const data::DataCategory data_category,
                    void (*func)(game::ChunkTile&, void*, float, double)) {
@@ -94,7 +94,7 @@ void GenerateChunk(game::WorldData& world_data,
 ///
 /// \brief Generates a chunk and adds it to the world when done <br>
 /// Call this with a std::thread to to this in async
-void Generate(game::WorldData& world_data, const data::DataManager& data_manager,
+void Generate(game::WorldData& world_data, const data::PrototypeManager& data_manager,
               const int chunk_x, const int chunk_y) {
 	using namespace jactorio;
 
@@ -152,7 +152,7 @@ void game::WorldData::QueueChunkGeneration(const Chunk::ChunkCoord chunk_x,
 	worldGenChunks_.insert(std::pair{chunk_x, chunk_y});
 }
 
-void game::WorldData::GenChunk(const data::DataManager& data_manager, uint8_t amount) {
+void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8_t amount) {
 	assert(amount > 0);
 
 	// Generate a chunk

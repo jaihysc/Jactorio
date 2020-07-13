@@ -28,7 +28,7 @@ namespace jactorio::data
 		/// \remark 0 max health is invalid
 		PYTHON_PROP_REF_I(HealthEntity, uint16_t, maxHealth, kDefaultHealth);
 
-		void PostLoadValidate(const DataManager& data_manager) const override {
+		void PostLoadValidate(const PrototypeManager& data_manager) const override {
 			Entity::PostLoadValidate(data_manager);
 
 			J_DATA_ASSERT(maxHealth > 0, "Max health must be greater than 0");

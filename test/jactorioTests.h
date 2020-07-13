@@ -28,6 +28,7 @@ inline jactorio::game::ChunkTileLayer& TestSetupContainer(jactorio::game::WorldD
 ///
 /// \brief Creates an inserter at coordinates
 inline jactorio::game::ChunkTileLayer& TestSetupInserter(jactorio::game::WorldData& world_data,
+                                                         jactorio::game::LogicData& logic_data,
                                                          const jactorio::game::WorldData::WorldPair& world_coords,
                                                          const jactorio::data::Inserter& inserter_proto,
                                                          const jactorio::data::Orientation orientation) {
@@ -36,7 +37,7 @@ inline jactorio::game::ChunkTileLayer& TestSetupInserter(jactorio::game::WorldDa
 	auto& layer = world_data.GetTile(world_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 	layer.prototypeData = &inserter_proto;
-	inserter_proto.OnBuild(world_data, world_coords, layer, orientation);
+	inserter_proto.OnBuild(world_data, logic_data, world_coords, layer, orientation);
 
 	return layer;
 }
@@ -64,8 +65,8 @@ inline void TestRegisterTransportSegment(jactorio::game::WorldData& world_data,
 ///
 /// \brief Creates an assembly machine at coordinates
 inline jactorio::game::ChunkTileLayer& TestSetupAssemblyMachine(jactorio::game::WorldData& world_data,
-                                                               const jactorio::game::WorldData::WorldPair& world_coords,
-                                                               const jactorio::data::AssemblyMachine& assembly_proto) {
+                                                                const jactorio::game::WorldData::WorldPair& world_coords,
+                                                                const jactorio::data::AssemblyMachine& assembly_proto) {
 	auto& layer = world_data.GetTile(world_coords)
 	                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
 

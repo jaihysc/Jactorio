@@ -5,17 +5,9 @@
 
 #include <future>
 
-#include "data/prototype/interface/deferred.h"
 #include "data/prototype/interface/update_listener.h"
 
 using namespace jactorio;
-
-void game::WorldData::OnTickAdvance() {
-	gameTick_++;
-
-	// Dispatch deferred callbacks
-	deferralTimer.DeferralUpdate(gameTick_);
-}
 
 game::Chunk::ChunkCoord game::WorldData::ToChunkCoord(WorldCoord world_coord) {
 	Chunk::ChunkCoord chunk_coord = 0;
@@ -201,76 +193,6 @@ void game::WorldData::LogicAddChunk(Chunk* chunk) {
 
 std::set<game::Chunk*>& game::WorldData::LogicGetChunks() {
 	return logicChunks_;
-}
-
-
-// ======================================================================
-
-
-///
-/// \brief Used to fill the gap when a callback has been removed
-class BlankCallback final : public data::IDeferred
-{
-public:
-	void OnDeferTimeElapsed(game::WorldData&, data::UniqueDataBase*) const override {
-	}
-} blank_callback;
-
-
-void game::WorldData::DeferralTimer::DeferralUpdate(const GameTickT game_tick) {
-	lastGameTick_ = game_tick;
-
-	// Call callbacks
-	for (auto& pair : callbacks_[game_tick]) {
-		pair.first.get().OnDeferTimeElapsed(worldData_, pair.second);
-	}
-
-	// Remove used callbacks
-	callbacks_.erase(game_tick);
-}
-
-game::WorldData::DeferralTimer::DeferralEntry game::WorldData::DeferralTimer::RegisterAtTick(const data::IDeferred& deferred,
-                                                                                             data::UniqueDataBase* unique_data,
-                                                                                             const GameTickT due_game_tick) {
-	assert(due_game_tick > lastGameTick_);
-
-	auto& due_tick_callback = callbacks_[due_game_tick];
-	due_tick_callback.emplace_back(std::ref(deferred), unique_data);
-
-	return {due_game_tick, due_tick_callback.size()};
-}
-
-game::WorldData::DeferralTimer::DeferralEntry game::WorldData::DeferralTimer::RegisterFromTick(const data::IDeferred& deferred,
-                                                                                               data::UniqueDataBase* unique_data,
-                                                                                               const GameTickT elapse_game_tick) {
-
-	assert(elapse_game_tick > 0);
-	return RegisterAtTick(deferred, unique_data, lastGameTick_ + elapse_game_tick);
-}
-
-void game::WorldData::DeferralTimer::RemoveDeferral(DeferralEntry entry) {
-	assert(entry.second != 0);  // Invalid callback index
-
-	// due_game_tick does not exist
-	if (callbacks_.find(entry.first) == callbacks_.end())
-		return;
-
-	auto& due_tick_callback = callbacks_[entry.first];
-
-	// Index is +1 than actual index
-	entry.second -= 1;
-	assert(entry.second <= due_tick_callback.size());  // Index out of range
-
-	// Instead of erasing, make the callback a blank function so that future remove calls do not go out of range
-	due_tick_callback[entry.second].first = blank_callback;
-}
-
-void game::WorldData::DeferralTimer::RemoveDeferralEntry(DeferralEntry& entry) {
-	if (entry.second == 0)
-		return;
-
-	RemoveDeferral(entry);
-	entry.second = 0;
 }
 
 

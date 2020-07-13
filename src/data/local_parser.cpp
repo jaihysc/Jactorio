@@ -48,7 +48,7 @@ struct ParserData
 
 ///
 /// \brief Helper for parse, handles end of line actions
-void ParseEol(jactorio::data::DataManager& data_manager, ParserData& parser_data, const std::string& directory_prefix) {
+void ParseEol(jactorio::data::PrototypeManager& data_manager, ParserData& parser_data, const std::string& directory_prefix) {
 	using namespace jactorio;
 
 	// R val was not specified or empty
@@ -88,7 +88,7 @@ loop_exit:
 	parser_data.lineNumber++;
 }
 
-void jactorio::data::LocalParse(DataManager& data_manager, const std::string& file_str, const std::string& directory_prefix) {
+void jactorio::data::LocalParse(PrototypeManager& data_manager, const std::string& file_str, const std::string& directory_prefix) {
 	ParserData parser_data{};
 
 	for (char c : file_str) {
@@ -141,7 +141,7 @@ void jactorio::data::LocalParse(DataManager& data_manager, const std::string& fi
 	ParseEol(data_manager, parser_data, directory_prefix);
 }
 
-int jactorio::data::LocalParseNoThrow(DataManager& data_manager, const std::string& file_str,
+int jactorio::data::LocalParseNoThrow(PrototypeManager& data_manager, const std::string& file_str,
                                       const std::string& directory_prefix) {
 	try {
 		LocalParse(data_manager, file_str, directory_prefix);

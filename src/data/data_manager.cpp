@@ -11,15 +11,15 @@
 #include "data/local_parser.h"
 #include "data/pybind/pybind_manager.h"
 
-jactorio::data::DataManager::~DataManager() {
+jactorio::data::PrototypeManager::~PrototypeManager() {
 	ClearData();
 }
 
-void jactorio::data::DataManager::SetDirectoryPrefix(const std::string& name) {
+void jactorio::data::PrototypeManager::SetDirectoryPrefix(const std::string& name) {
 	directoryPrefix_ = name;
 }
 
-void jactorio::data::DataManager::DataRawAdd(const std::string& iname,
+void jactorio::data::PrototypeManager::DataRawAdd(const std::string& iname,
                                              PrototypeBase* const prototype,
                                              const bool add_directory_prefix) {
 	const DataCategory data_category = prototype->Category();
@@ -73,7 +73,7 @@ void jactorio::data::DataManager::DataRawAdd(const std::string& iname,
 	LOG_MESSAGE_F(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void jactorio::data::DataManager::LoadData(
+void jactorio::data::PrototypeManager::LoadData(
 	const std::string& data_folder_path) {
 	// Get all sub-folders in ~/data/
 	// Read data.cfg files within each sub-folder
@@ -162,7 +162,7 @@ void jactorio::data::DataManager::LoadData(
 	}
 }
 
-bool jactorio::data::DataManager::PrototypeExists(const std::string& iname) const {
+bool jactorio::data::PrototypeManager::PrototypeExists(const std::string& iname) const {
 	for (const auto& map : dataRaw) {
 		if (map.find(iname) != map.end()) {
 				return true;
@@ -171,7 +171,7 @@ bool jactorio::data::DataManager::PrototypeExists(const std::string& iname) cons
 	return false;
 }
 
-void jactorio::data::DataManager::ClearData() {
+void jactorio::data::PrototypeManager::ClearData() {
 	// Iterate through both unordered maps and delete all pointers
 	for (auto& map : dataRaw) {
 		// Category unordered maps

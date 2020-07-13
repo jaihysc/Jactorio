@@ -775,9 +775,9 @@ data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
 }
 
 void data::TransportLine::OnBuild(game::WorldData& world_data,
+                                  game::LogicData& logic_data,
                                   const game::WorldData::WorldPair& world_coords,
-                                  game::ChunkTileLayer& tile_layer,
-                                  const Orientation orientation) const {
+                                  game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
 	auto* up    = GetLineData(world_data, world_coords.first, world_coords.second - 1);
 	auto* right = GetLineData(world_data, world_coords.first + 1, world_coords.second);
 	auto* down  = GetLineData(world_data, world_coords.first, world_coords.second + 1);
@@ -857,9 +857,9 @@ void data::TransportLine::OnBuild(game::WorldData& world_data,
 // ======================================================================
 // Neighbor update
 void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
+                                           game::LogicData& logic_data,
                                            const game::WorldData::WorldPair& /*emit_world_coords*/,
-                                           const game::WorldData::WorldPair& receive_world_coords,
-                                           Orientation /*emit_orientation*/) const {
+                                           const game::WorldData::WorldPair& receive_world_coords, Orientation /*emit_orientation*/) const {
 	// Run stuff here that on_build and on_remove both calls
 
 	auto* line_data = GetLineData(world_data, receive_world_coords.first, receive_world_coords.second);
@@ -943,8 +943,8 @@ double ToChunkOffset(const game::WorldData::WorldCoord world_coord) {
 }
 
 void data::TransportLine::OnRemove(game::WorldData& world_data,
-                                   const game::WorldData::WorldPair& world_coords,
-                                   game::ChunkTileLayer& tile_layer) const {
+                                   game::LogicData& logic_data,
+                                   const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const {
 	auto* up    = GetLineData(world_data, world_coords.first, world_coords.second - 1);
 	auto* right = GetLineData(world_data, world_coords.first + 1, world_coords.second);
 	auto* down  = GetLineData(world_data, world_coords.first, world_coords.second + 1);

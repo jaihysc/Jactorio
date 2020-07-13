@@ -13,7 +13,7 @@ namespace jactorio::data
 	class DataManagerTest : public testing::Test
 	{
 	protected:
-		DataManager dataManager_{};
+		PrototypeManager dataManager_{};
 
 		/// \brief Returns true if element exists in vector
 		static bool Contains(const std::vector<Sprite*>& vector, const std::string& key) {

@@ -7,11 +7,11 @@
 
 using namespace jactorio;
 
-void data::AssemblyMachineData::ChangeRecipe(game::WorldData& world_data, const DataManager& data_manager,
+void data::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data, const PrototypeManager& data_manager,
                                              const AssemblyMachine& assembly_proto,
                                              const Recipe* new_recipe) {
 	if (new_recipe) {
-		deferralEntry = world_data.deferralTimer.RegisterFromTick(
+		deferralEntry = logic_data.deferralTimer.RegisterFromTick(
 			assembly_proto,
 			this,
 			new_recipe->GetCraftingTime(1.f / assembly_proto.assemblySpeed));
@@ -27,7 +27,7 @@ void data::AssemblyMachineData::ChangeRecipe(game::WorldData& world_data, const 
 	}
 	else {
 		// Remove recipe
-		world_data.deferralTimer.RemoveDeferralEntry(deferralEntry);
+		logic_data.deferralTimer.RemoveDeferralEntry(deferralEntry);
 
 		ingredientInv.resize(0);
 		productInv.resize(0);
@@ -52,7 +52,7 @@ data::IRenderable::SpritemapFrame data::AssemblyMachine::OnRGetSprite(
 }
 
 
-bool data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
+bool data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
                                        game::ChunkTileLayer* tile_layer) const {
 	renderer::AssemblyMachine(player_data, data_manager, this, tile_layer->GetUniqueData());
 	return true;
@@ -60,23 +60,25 @@ bool data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const Data
 
 // ======================================================================
 
-void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData& world_data, UniqueDataBase* unique_data) const {
+void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,
+											   UniqueDataBase* unique_data) const {
 	LOG_MESSAGE(debug, "Ding!");
 }
 
 void data::AssemblyMachine::OnBuild(game::WorldData& world_data,
+                                    game::LogicData& logic_data,
                                     const game::WorldData::WorldPair& world_coords,
-                                    game::ChunkTileLayer& tile_layer,
-                                    const Orientation orientation) const {
+                                    game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
 	auto* data = tile_layer.MakeUniqueData<AssemblyMachineData>();
 
 	data->set = OnRGetSet(orientation, world_data, world_coords);
 }
 
 void data::AssemblyMachine::OnRemove(game::WorldData& world_data,
+                                     game::LogicData& logic_data,
                                      const game::WorldData::WorldPair& world_coords,
-                                     game::ChunkTileLayer& tile_layer) const {
+									 game::ChunkTileLayer& tile_layer) const {
 	auto& machine_data = *tile_layer.GetMultiTileTopLeft()->GetUniqueData<AssemblyMachineData>();
 
-	world_data.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
+	logic_data.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
 }

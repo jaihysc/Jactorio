@@ -27,8 +27,9 @@ data::Sprite::SetT data::Inserter::OnRGetSet(const Orientation orientation,
 	return 0;
 }
 
-void data::Inserter::OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
-                             game::ChunkTileLayer& tile_layer, Orientation orientation) const {
+void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
+                             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer,
+                             Orientation orientation) const {
 	auto* inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
 	inserter_data->set  = OnRGetSet(orientation, world_data, world_coords);
 
@@ -53,7 +54,7 @@ void data::Inserter::OnBuild(game::WorldData& world_data, const game::WorldData:
 
 void data::Inserter::OnTileUpdate(game::WorldData& world_data,
                                   const game::WorldData::WorldPair& emit_coords,
-                                  const game::WorldData::WorldPair& receive_coords, UpdateType type) const {
+                                  const game::WorldData::WorldPair& receive_coords, UpdateType) const {
 	auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 	auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
 
@@ -100,8 +101,8 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 	}
 }
 
-void data::Inserter::OnRemove(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
-                              game::ChunkTileLayer& tile_layer) const {
+void data::Inserter::OnRemove(game::WorldData& world_data, game::LogicData&,
+                              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const {
 	world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords,
 	                       game::ChunkTile::ChunkLayer::entity);
 

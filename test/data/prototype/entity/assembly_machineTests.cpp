@@ -14,7 +14,9 @@ namespace jactorio::data
 	{
 	protected:
 		game::WorldData worldData_;
-		DataManager dataManager_;
+		game::LogicData logicData_;
+
+		PrototypeManager dataManager_;
 
 		AssemblyMachine proto_;
 
@@ -33,7 +35,7 @@ namespace jactorio::data
 		// Has recipe
 		Recipe recipe{};
 
-		data.ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
+		data.ChangeRecipe(logicData_, dataManager_, proto_, &recipe);
 		EXPECT_TRUE(data.HasRecipe());
 		EXPECT_EQ(data.GetRecipe(), &recipe);
 	}
@@ -62,8 +64,8 @@ namespace jactorio::data
 		dataManager_.DataRawAdd("@3", item_3.release());
 
 		// Recipe crafted in 60 ticks
-		worldData_.deferralTimer.DeferralUpdate(900);
-		data.ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
+		logicData_.deferralTimer.DeferralUpdate(worldData_, 900);
+		data.ChangeRecipe(logicData_, dataManager_, proto_, &recipe);
 
 		EXPECT_EQ(data.deferralEntry.first, 960);
 
@@ -79,12 +81,12 @@ namespace jactorio::data
 		AssemblyMachineData data{};
 
 		Recipe recipe{};
-		data.ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
+		data.ChangeRecipe(logicData_, dataManager_, proto_, &recipe);
 
 		EXPECT_NE(data.deferralEntry.second, 0);
 
 		// Remove recipe
-		data.ChangeRecipe(worldData_, dataManager_, proto_, nullptr);
+		data.ChangeRecipe(logicData_, dataManager_, proto_, nullptr);
 		EXPECT_EQ(data.deferralEntry.second, 0);
 
 		EXPECT_EQ(data.ingredientInv.size(), 0);
@@ -100,7 +102,7 @@ namespace jactorio::data
 		Recipe recipe{};
 		recipe.craftingTime = 1.f;
 
-		data.ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
+		data.ChangeRecipe(logicData_, dataManager_, proto_, &recipe);
 		EXPECT_EQ(data.deferralEntry.first, 30);
 	}
 
@@ -109,24 +111,24 @@ namespace jactorio::data
 		auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 		proto_.OnBuild(worldData_,
+		               logicData_,
 		               {0, 0},
-		               layer,
-		               Orientation::up);
+		               layer, Orientation::up);
 
 		EXPECT_NE(layer.GetUniqueData(), nullptr);
 	}
 
 	TEST_F(AssemblyMachineTest, OnRemoveRemoveDeferralEntry) {
 		auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::ChunkTile::ChunkLayer::entity);
-		proto_.OnBuild(worldData_, {0, 0}, layer, Orientation::up);
+		proto_.OnBuild(worldData_, logicData_, {0, 0}, layer, Orientation::up);
 
 		const auto* assembly_proto = layer.GetPrototypeData<AssemblyMachine>();
 		auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
 
 		Recipe recipe{};
-		assembly_data->ChangeRecipe(worldData_, dataManager_, proto_, &recipe);
+		assembly_data->ChangeRecipe(logicData_, dataManager_, proto_, &recipe);
 
-		assembly_proto->OnRemove(worldData_, {0, 0}, layer);
+		assembly_proto->OnRemove(worldData_, logicData_, {0, 0}, layer);
 		EXPECT_EQ(assembly_data->deferralEntry.second, 0);
 	}
 }

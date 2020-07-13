@@ -11,6 +11,7 @@
 
 #include "data/prototype/interface/renderable.h"
 #include "data/prototype/item/item.h"
+#include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
 
@@ -75,7 +76,7 @@ namespace jactorio::data
 		PYTHON_PROP_REF_I(Entity, float, pickupTime, 1);
 
 
-		void PostLoadValidate(const DataManager& data_manager) const override;
+		void PostLoadValidate(const PrototypeManager& data_manager) const override;
 
 		// ======================================================================
 		// Localized names
@@ -101,7 +102,7 @@ namespace jactorio::data
 			return {this->sprite, 0};
 		}
 
-		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager, game::ChunkTileLayer* tile_layer) const override {
+		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager, game::ChunkTileLayer* tile_layer) const override {
 			return false;
 		}
 
@@ -111,9 +112,9 @@ namespace jactorio::data
 		///
 		/// \brief Entity was build in the world
 		virtual void OnBuild(game::WorldData& world_data,
+		                     game::LogicData& logic_data,
 		                     const game::WorldData::WorldPair& world_coords,
-		                     game::ChunkTileLayer& tile_layer,
-		                     Orientation orientation) const = 0;
+		                     game::ChunkTileLayer& tile_layer, Orientation orientation) const = 0;
 
 		///
 		/// \brief Returns true if itself can be built at the specified world_coords being its top left
@@ -127,8 +128,9 @@ namespace jactorio::data
 		///
 		/// \brief Entity was picked up from a built state, called BEFORE the entity has been removed
 		virtual void OnRemove(game::WorldData& world_data,
+		                      game::LogicData& logic_data,
 		                      const game::WorldData::WorldPair& world_coords,
-		                      game::ChunkTileLayer& tile_layer) const = 0;
+							  game::ChunkTileLayer& tile_layer) const = 0;
 
 		///
 		/// \brief A neighbor of this prototype in the world was updated
@@ -137,13 +139,13 @@ namespace jactorio::data
 		/// \param receive_coords Layer of the prototype RECEIVING the update 
 		/// \param emit_orientation Orientation to the prototype EMITTING the update 
 		virtual void OnNeighborUpdate(game::WorldData& world_data,
+		                              game::LogicData& logic_data,
 		                              const game::WorldData::WorldPair& emit_coords,
-		                              const game::WorldData::WorldPair& receive_coords,
-		                              Orientation emit_orientation) const {
+		                              const game::WorldData::WorldPair& receive_coords, Orientation emit_orientation) const {
 		}
 	};
 
-	inline void Entity::PostLoadValidate(const DataManager& data_manager) const {
+	inline void Entity::PostLoadValidate(const PrototypeManager& data_manager) const {
 		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
 		J_DATA_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive");
 	}

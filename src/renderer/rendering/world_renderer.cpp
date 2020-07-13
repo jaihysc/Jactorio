@@ -13,31 +13,33 @@
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/mvp_manager.h"
 
-constexpr auto kChunkWidth = jactorio::game::WorldData::kChunkWidth;
+using namespace jactorio;
+
+constexpr auto kChunkWidth = game::WorldData::kChunkWidth;
 
 struct TileDrawFuncParams
 {
-	TileDrawFuncParams(const jactorio::game::ChunkTileLayer& tile_layer,
-	                   const jactorio::GameTickT game_tick)
+	TileDrawFuncParams(const game::ChunkTileLayer& tile_layer,
+	                   const GameTickT game_tick)
 		: tileLayer(tile_layer),
 		  gameTick(game_tick) {
 	}
 
-	const jactorio::game::ChunkTileLayer& tileLayer;
-	jactorio::GameTickT gameTick;
+	const game::ChunkTileLayer& tileLayer;
+	GameTickT gameTick;
 };
 
-using TileDrawFuncReturn = std::pair<jactorio::core::QuadPosition, const jactorio::data::RenderableData*>;
+using TileDrawFuncReturn = std::pair<core::QuadPosition, const data::RenderableData*>;
 using TileDrawFunc = TileDrawFuncReturn (*)(const TileDrawFuncParams&);
 
-using ObjectDrawFunc = unsigned int (*)(const jactorio::game::ChunkObjectLayer&);
+using ObjectDrawFunc = unsigned int (*)(const game::ChunkObjectLayer&);
 
 const TileDrawFuncReturn no_draw{
 	{{-1.f, -1.f}, {-1.f, -1.f}},
 	nullptr
 };
 
-void ApplyUvOffset(jactorio::core::QuadPosition& uv, const jactorio::core::QuadPosition& uv_offset) {
+void ApplyUvOffset(core::QuadPosition& uv, const core::QuadPosition& uv_offset) {
 	const auto difference = uv.bottomRight - uv.topLeft;
 
 	assert(difference.x >= 0);
@@ -55,12 +57,12 @@ void ApplyUvOffset(jactorio::core::QuadPosition& uv, const jactorio::core::QuadP
 constexpr TileDrawFunc tile_draw_func[]{
 	[](const TileDrawFuncParams& params) {
 		// Sprites + tiles are guaranteed not nullptr
-		const auto* t     = static_cast<const jactorio::data::Tile*>(params.tileLayer.prototypeData);
-		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
+		const auto* t           = static_cast<const data::Tile*>(params.tileLayer.prototypeData);
+		const auto* unique_data = params.tileLayer.GetUniqueData<data::RenderableData>();
 
 
 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
-		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
+		auto uv                 = renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 		if (unique_data)
 			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
 
@@ -68,14 +70,14 @@ constexpr TileDrawFunc tile_draw_func[]{
 	},
 
 	[](const TileDrawFuncParams& params) {
-		const auto* t = static_cast<const jactorio::data::Entity*>(params.tileLayer.prototypeData);
+		const auto* t = static_cast<const data::Entity*>(params.tileLayer.prototypeData);
 		if (t == nullptr)
 			return no_draw;
 
-		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
+		const auto* unique_data = params.tileLayer.GetUniqueData<data::RenderableData>();
 
 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
-		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
+		auto uv                 = renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 
 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
 			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
@@ -83,14 +85,14 @@ constexpr TileDrawFunc tile_draw_func[]{
 		return TileDrawFuncReturn{uv, nullptr};
 	},
 	[](const TileDrawFuncParams& params) {
-		const auto* t = static_cast<const jactorio::data::Entity*>(params.tileLayer.prototypeData);
+		const auto* t = static_cast<const data::Entity*>(params.tileLayer.prototypeData);
 		if (t == nullptr)
 			return no_draw;
 
-		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
+		const auto* unique_data = params.tileLayer.GetUniqueData<data::RenderableData>();
 
 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
-		auto uv                 = jactorio::renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
+		auto uv                 = renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
 
 		if (unique_data) {
 			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
@@ -101,13 +103,13 @@ constexpr TileDrawFunc tile_draw_func[]{
 	},
 
 	[](const TileDrawFuncParams& params) {
-		const auto* t = static_cast<const jactorio::data::Sprite*>(params.tileLayer.prototypeData);
+		const auto* t = static_cast<const data::Sprite*>(params.tileLayer.prototypeData);
 		if (t == nullptr)
 			return no_draw;
 
-		const auto* unique_data = params.tileLayer.GetUniqueData<jactorio::data::RenderableData>();
+		const auto* unique_data = params.tileLayer.GetUniqueData<data::RenderableData>();
 
-		auto uv = jactorio::renderer::Renderer::GetSpritemapCoords(t->internalId);
+		auto uv = renderer::Renderer::GetSpritemapCoords(t->internalId);
 
 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
 			ApplyUvOffset(uv, t->GetCoords(unique_data->set, 0));
@@ -118,8 +120,8 @@ constexpr TileDrawFunc tile_draw_func[]{
 
 ObjectDrawFunc object_layer_get_sprite_id_func[]{
 	// Debug overlay
-	[](const jactorio::game::ChunkObjectLayer& layer) {
-		const auto* sprite = static_cast<const jactorio::data::Sprite*>(layer.prototypeData);
+	[](const game::ChunkObjectLayer& layer) {
+		const auto* sprite = static_cast<const data::Sprite*>(layer.prototypeData);
 		return sprite->internalId;
 	},
 };
@@ -127,36 +129,37 @@ ObjectDrawFunc object_layer_get_sprite_id_func[]{
 
 // prepare_chunk_draw_data will select either
 // prepare_tile_data or prepare_object_data based on the layer it is rendering
-void PrepareTileData(const jactorio::game::WorldData& world_data,
+void PrepareTileData(GameTickT game_tick,
+                     const game::WorldData& world_data,
                      const unsigned layer_index,
-                     jactorio::renderer::RendererLayer& layer,
-                     jactorio::renderer::RendererLayer& top_layer,
+                     renderer::RendererLayer& layer,
+                     renderer::RendererLayer& top_layer,
                      const float chunk_y_offset, const float chunk_x_offset,
-                     const jactorio::game::Chunk* const chunk) {
+                     const game::Chunk* const chunk) {
 	// Load chunk into buffer
-	jactorio::game::ChunkTile* tiles = chunk->Tiles();
+	game::ChunkTile* tiles = chunk->Tiles();
 
 
 	// Iterate through and load tiles of a chunk into layer for rendering
 	for (uint8_t tile_y = 0; tile_y < kChunkWidth; ++tile_y) {
-		const float y = (chunk_y_offset + tile_y) * static_cast<float>(jactorio::renderer::Renderer::tileWidth);
+		const float y = (chunk_y_offset + tile_y) * static_cast<float>(renderer::Renderer::tileWidth);
 
 		for (uint8_t tile_x = 0; tile_x < kChunkWidth; ++tile_x) {
-			const jactorio::game::ChunkTile& tile      = tiles[tile_y * kChunkWidth + tile_x];
-			jactorio::game::ChunkTileLayer& layer_tile = tile.GetLayer(layer_index);
+			const game::ChunkTile& tile      = tiles[tile_y * kChunkWidth + tile_x];
+			game::ChunkTileLayer& layer_tile = tile.GetLayer(layer_index);
 
 			TileDrawFuncReturn draw_func_return;
-			jactorio::core::QuadPosition uv;
+			core::QuadPosition uv;
 
 			if (layer_tile.IsMultiTile()) {
 				// Unique data for multi tiles is stored in the top left tile
-				draw_func_return = tile_draw_func[layer_index]({
-					*layer_tile.GetMultiTileTopLeft(),
-					world_data.GameTick()
-				});
+				draw_func_return = tile_draw_func[layer_index](
+					{
+						*layer_tile.GetMultiTileTopLeft(), game_tick
+					});
 				uv = draw_func_return.first;
 
-				jactorio::game::MultiTileData& mt_data = layer_tile.GetMultiTileData();
+				game::MultiTileData& mt_data = layer_tile.GetMultiTileData();
 
 				// Calculate the correct UV coordinates for multi-tile entities
 				// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
@@ -178,10 +181,11 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 				uv.topLeft.y = uv.topLeft.y + len_y * static_cast<float>(mt_data.multiTileHeight - y_multiplier - 1);
 			}
 			else {
-				draw_func_return = tile_draw_func[layer_index]({
-					tile.GetLayer(layer_index),
-					world_data.GameTick()
-				});
+				draw_func_return = tile_draw_func[layer_index](
+					{
+						tile.GetLayer(layer_index),
+						game_tick
+					});
 				uv = draw_func_return.first;
 			}
 
@@ -192,10 +196,10 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 				continue;
 
 			// Calculate screen coordinates
-			const float x = (chunk_x_offset + tile_x) * static_cast<float>(jactorio::renderer::Renderer::tileWidth);
+			const float x = (chunk_x_offset + tile_x) * static_cast<float>(renderer::Renderer::tileWidth);
 
 			layer.PushBack(
-				jactorio::renderer::RendererLayer::Element(
+				renderer::RendererLayer::Element(
 					{
 						{
 							x,
@@ -203,8 +207,8 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 						},
 						// One tile right and down
 						{
-							x + static_cast<float>(jactorio::renderer::Renderer::tileWidth),
-							y + static_cast<float>(jactorio::renderer::Renderer::tileWidth)
+							x + static_cast<float>(renderer::Renderer::tileWidth),
+							y + static_cast<float>(renderer::Renderer::tileWidth)
 						}
 					},
 					{uv.topLeft, uv.bottomRight}
@@ -220,11 +224,11 @@ void PrepareTileData(const jactorio::game::WorldData& world_data,
 }
 
 
-void PrepareObjectData(const jactorio::game::WorldData& world_data,
+void PrepareObjectData(const game::WorldData& world_data,
                        const unsigned layer_index,
-                       jactorio::renderer::RendererLayer& layer,
+                       renderer::RendererLayer& layer,
                        const float chunk_y_offset, const float chunk_x_offset,
-                       const jactorio::game::Chunk* const chunk) {
+                       const game::Chunk* const chunk) {
 
 	const auto& objects = chunk->objects[layer_index];
 	for (const auto& object_layer : objects) {
@@ -234,23 +238,23 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 		if (internal_id == 0)
 			continue;
 
-		const auto& uv_pos = jactorio::renderer::Renderer::GetSpritemapCoords(internal_id);
+		const auto& uv_pos = renderer::Renderer::GetSpritemapCoords(internal_id);
 
-		layer.PushBack(jactorio::renderer::RendererLayer::Element(
+		layer.PushBack(renderer::RendererLayer::Element(
 			{
 				{
 					(chunk_x_offset + object_layer.positionX)
-					* static_cast<float>(jactorio::renderer::Renderer::tileWidth),
+					* static_cast<float>(renderer::Renderer::tileWidth),
 
 					(chunk_y_offset + object_layer.positionY)
-					* static_cast<float>(jactorio::renderer::Renderer::tileWidth)
+					* static_cast<float>(renderer::Renderer::tileWidth)
 				},
 				{
 					(chunk_x_offset + object_layer.positionX + object_layer.sizeX)
-					* static_cast<float>(jactorio::renderer::Renderer::tileWidth),
+					* static_cast<float>(renderer::Renderer::tileWidth),
 
 					(chunk_y_offset + object_layer.positionY + object_layer.sizeY)
-					* static_cast<float>(jactorio::renderer::Renderer::tileWidth)
+					* static_cast<float>(renderer::Renderer::tileWidth)
 				}
 			},
 			{uv_pos.topLeft, uv_pos.bottomRight}
@@ -260,7 +264,8 @@ void PrepareObjectData(const jactorio::game::WorldData& world_data,
 
 struct PrepareProperties
 {
-	const jactorio::game::WorldData& worldData;
+	GameTickT gameTick;
+	const game::WorldData& worldData;
 
 
 	/// Tiles from window left to offset rendering
@@ -286,8 +291,8 @@ struct PrepareProperties
 template <bool IsTileLayer>
 void PrepareChunkDrawData(const PrepareProperties& props,
                           const int layer_index,
-                          jactorio::renderer::RendererLayer& layer,
-						  jactorio::renderer::RendererLayer& top_layer) {
+                          renderer::RendererLayer& layer,
+                          renderer::RendererLayer& top_layer) {
 
 	for (int chunk_y = 0; chunk_y < props.chunkAmountY; ++chunk_y) {
 		const int chunk_y_offset = chunk_y * kChunkWidth + props.renderOffsetY;
@@ -296,8 +301,8 @@ void PrepareChunkDrawData(const PrepareProperties& props,
 			const int chunk_x_offset = chunk_x * kChunkWidth + props.renderOffsetX;
 
 			std::lock_guard<std::mutex> guard{props.worldData.worldDataMutex};
-			const jactorio::game::Chunk* chunk = props.worldData.GetChunkC(props.chunkStartX + chunk_x,
-			                                                               props.chunkStartY + chunk_y);
+			const game::Chunk* chunk = props.worldData.GetChunkC(props.chunkStartX + chunk_x,
+			                                                     props.chunkStartY + chunk_y);
 			// Generate chunk if non existent
 			if (chunk == nullptr) {
 				props.worldData.QueueChunkGeneration(
@@ -307,9 +312,10 @@ void PrepareChunkDrawData(const PrepareProperties& props,
 			}
 
 			if constexpr (IsTileLayer) {
-				PrepareTileData(props.worldData,
-				                layer_index, 
-								layer, top_layer,
+				PrepareTileData(props.gameTick,
+				                props.worldData,
+				                layer_index,
+				                layer, top_layer,
 				                static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
 				                chunk);
 			}
@@ -326,9 +332,9 @@ void PrepareChunkDrawData(const PrepareProperties& props,
 
 template <uint8_t Amount,
           typename Function, typename ... Args>
-void DrawLayers(jactorio::renderer::RendererLayer& layer_1,
-                jactorio::renderer::RendererLayer& layer_2,
-                jactorio::renderer::RendererLayer& top_layer,
+void DrawLayers(renderer::RendererLayer& layer_1,
+                renderer::RendererLayer& layer_2,
+                renderer::RendererLayer& top_layer,
                 Function* function, const Args& ... args) {
 #define J_LAYER_BEGIN_PREPARE(name_)\
 	(name_).Clear();\
@@ -395,9 +401,10 @@ void DrawLayers(jactorio::renderer::RendererLayer& layer_1,
 	J_LAYER_END_PREPARE(top_layer);
 }
 
-void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
-                                              Renderer* renderer,
-                                              const float player_x, const float player_y) {
+void renderer::RenderPlayerPosition(GameTickT game_tick,
+                                    const game::WorldData& world_data,
+                                    Renderer* renderer,
+                                    const float player_x, const float player_y) {
 	// Player movement is in tiles
 	// Every chunk_width tiles, shift 1 chunk
 	// Remaining tiles are offset
@@ -425,7 +432,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 	auto tile_start_y = static_cast<int>(position_y % kChunkWidth * -1);
 
 
-	const auto matrix = glm::vec4(1, -1, 1, 1) / GetMvpMatrix();
+	const auto matrix        = glm::vec4(1, -1, 1, 1) / GetMvpMatrix();
 	const auto tile_amount_x = static_cast<int>(matrix.x / static_cast<double>(Renderer::tileWidth) * 2) + 2;
 	const auto tile_amount_y = static_cast<int>(matrix.y / static_cast<double>(Renderer::tileWidth) * 2) + 2;
 
@@ -498,6 +505,7 @@ void jactorio::renderer::RenderPlayerPosition(const game::WorldData& world_data,
 	const int amount_y = (tile_amount_y - window_start_y) / kChunkWidth + 1;
 
 	PrepareProperties props{
+		game_tick,
 		world_data,
 		window_start_x, window_start_y,
 		chunk_start_x, chunk_start_y,

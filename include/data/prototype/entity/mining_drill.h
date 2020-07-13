@@ -29,7 +29,7 @@ namespace jactorio::data
 		/// Number of ticks to mine resource
 		uint16_t miningTicks = 1;
 
-		game::WorldData::DeferralTimer::DeferralEntry deferralEntry{};
+		game::LogicData::DeferralTimer::DeferralEntry deferralEntry{};
 	};
 
 
@@ -59,7 +59,7 @@ namespace jactorio::data
 		// ======================================================================
 		// Rendering
 
-		bool OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
+		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
 		                game::ChunkTileLayer* tile_layer) const override;
 
 		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
@@ -75,14 +75,14 @@ namespace jactorio::data
 	private:
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource 
-		void RegisterMineCallback(game::WorldData::DeferralTimer& timer, MiningDrillData* unique_data) const;
+		void RegisterMineCallback(game::LogicData::DeferralTimer& timer, MiningDrillData* unique_data) const;
 
 	public:
 		///
 		/// \briefs Finds the FIRST output item of the mining drill, beginning from top left
 		J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, game::WorldData::WorldPair world_pair) const;
 
-		void OnDeferTimeElapsed(game::WorldData& world_data, UniqueDataBase* unique_data) const override;
+		void OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data, UniqueDataBase* unique_data) const override;
 
 		///
 		/// \brief Ensures that the mining radius covers a resource entity
@@ -91,21 +91,21 @@ namespace jactorio::data
 		override;
 
 		void OnBuild(game::WorldData& world_data,
+		             game::LogicData& logic_data,
 		             const game::WorldData::WorldPair& world_coords,
-		             game::ChunkTileLayer& tile_layer,
-		             Orientation orientation) const override;
+		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
 
 		void OnNeighborUpdate(game::WorldData& world_data,
+		                      game::LogicData& logic_data,
 		                      const game::WorldData::WorldPair& emit_world_coords,
-		                      const game::WorldData::WorldPair& receive_world_coords,
-		                      Orientation emit_orientation) const override;
+		                      const game::WorldData::WorldPair& receive_world_coords, Orientation emit_orientation) const override;
 
 		void OnRemove(game::WorldData& world_data,
-		              const game::WorldData::WorldPair& world_coords,
-		              game::ChunkTileLayer& tile_layer) const override;
+		              game::LogicData& logic_data,
+		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 
-		void PostLoadValidate(const DataManager&) const override {
+		void PostLoadValidate(const PrototypeManager&) const override {
 			J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");
 			J_DATA_ASSERT(spriteE != nullptr, "East sprite not provided");
 			J_DATA_ASSERT(spriteS != nullptr, "South sprite not provided");

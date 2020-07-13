@@ -49,6 +49,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/world/world_data.cpp
 	${JACTORIO_DIR}/game/world/world_generator.cpp
 
+	${JACTORIO_DIR}/game/logic/logic_data.cpp
 	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
 	${JACTORIO_DIR}/game/logic/inserter_controller.cpp
 	${JACTORIO_DIR}/game/logic/item_logistics.cpp

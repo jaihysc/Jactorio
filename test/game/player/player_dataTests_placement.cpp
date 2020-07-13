@@ -17,9 +17,10 @@ namespace jactorio::game
 	{
 	protected:
 		PlayerData playerData_{};
+		LogicData logicData_{};
 		WorldData worldData_{};
 
-		data::DataManager dataManager_{};
+		data::PrototypeManager dataManager_{};
 
 		// Creates the base tile and entity at world coords
 		void SetEntityCoords(const int world_x,
@@ -92,14 +93,14 @@ namespace jactorio::game
 		worldData_.EmplaceChunk(0, 0, tiles);
 
 		// Edge cases
-		playerData_.TryPlaceEntity(worldData_, 0, 0);  // Placing with no items selected
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);  // Placing with no items selected
 
 		data::Item::Stack selected_item = {&item_no_entity, 2};
 		playerData_.SetSelectedItem(selected_item);
 
 		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::entity, entity.get());
 
-		playerData_.TryPlaceEntity(worldData_, 0, 0);  // Item holds no reference to an entity
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);  // Item holds no reference to an entity
 		EXPECT_EQ(
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			entity.get());  // Should not delete item at this location
@@ -113,7 +114,7 @@ namespace jactorio::game
 
 		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::entity, nullptr);
 
-		playerData_.TryPlaceEntity(worldData_, 0, 0);  // Place on empty tile 0, 0
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);  // Place on empty tile 0, 0
 
 		EXPECT_EQ(
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
@@ -125,7 +126,7 @@ namespace jactorio::game
 
 
 		// Do not place at 1, 0 
-		playerData_.TryPlaceEntity(worldData_, 1, 0);  // A tile already exists on 1, 0 - Should not override it
+		playerData_.TryPlaceEntity(worldData_, logicData_, 1, 0);  // A tile already exists on 1, 0 - Should not override it
 		EXPECT_EQ(
 			tiles[1].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			entity2.get());
@@ -157,7 +158,7 @@ namespace jactorio::game
 		data::Item::Stack selected_item = {&item, 2};
 		playerData_.SetSelectedItem(selected_item);
 
-		playerData_.TryPlaceEntity(worldData_, 0, 0, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
 		EXPECT_EQ(playerData_.GetActivatedLayer(), nullptr);
 
 		// Clicking on an entity with no placeable items selected will set activated_layer
@@ -165,15 +166,15 @@ namespace jactorio::game
 		playerData_.SetSelectedItem(selected_item);
 
 		// However! If mouse_release is not true, do not set activated_layer
-		playerData_.TryPlaceEntity(worldData_, 0, 0);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);
 		EXPECT_EQ(playerData_.GetActivatedLayer(), nullptr);
 
-		playerData_.TryPlaceEntity(worldData_, 0, 0, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
 		EXPECT_EQ(playerData_.GetActivatedLayer(),
 		          &tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
 
 		// Clicking again will NOT unset
-		playerData_.TryPlaceEntity(worldData_, 0, 0, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
 		EXPECT_EQ(playerData_.GetActivatedLayer(),
 		          &tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
 
@@ -212,12 +213,12 @@ namespace jactorio::game
 		playerData_.SetSelectedItem(selected_item);
 
 		// Set
-		playerData_.TryPlaceEntity(worldData_, 0, 0, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
 		EXPECT_EQ(playerData_.GetActivatedLayer(),
 		          &tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
 
 		// Picking up entity will unset
-		playerData_.TryPickup(worldData_, 0, 0, 1000);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 1000);
 		EXPECT_EQ(playerData_.GetActivatedLayer(), nullptr);
 
 	}
@@ -240,10 +241,9 @@ namespace jactorio::game
 		// Create unique data by calling build event for prototype with layer
 		{
 			WorldData world_data{};
-			entity->OnBuild(world_data,
+			entity->OnBuild(world_data, logicData_,
 			                {},
-			                tiles[0].GetLayer(ChunkTile::ChunkLayer::entity),
-			                data::Orientation::up);
+			                tiles[0].GetLayer(ChunkTile::ChunkLayer::entity), data::Orientation::up);
 		}
 
 		worldData_.EmplaceChunk(0, 0, tiles);
@@ -251,24 +251,24 @@ namespace jactorio::game
 
 		// 
 		EXPECT_EQ(playerData_.GetPickupPercentage(), 0.f);  // Defaults to 0
-		playerData_.TryPickup(worldData_, 0, 2, 990);  // Will not attempt to pickup non entity tiles
+		playerData_.TryPickup(worldData_, logicData_, 0, 2, 990);  // Will not attempt to pickup non entity tiles
 
 
 		// Test pickup
-		playerData_.TryPickup(worldData_, 0, 0, 30);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 30);
 		EXPECT_EQ(playerData_.GetPickupPercentage(), 0.5f);  // 50% picked up 30 ticks out of 60
 		EXPECT_EQ(
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			entity);  // Not picked up yet - 10 more ticks needed to reach 1 second
 
 
-		playerData_.TryPickup(worldData_, 1, 0, 30);  // Selecting different tile will reset pickup counter
+		playerData_.TryPickup(worldData_, logicData_, 1, 0, 30);  // Selecting different tile will reset pickup counter
 		EXPECT_EQ(
 			tiles[1].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			entity);  // Not picked up yet - 50 more to 1 second since counter reset
 
-		playerData_.TryPickup(worldData_, 0, 0, 50);
-		playerData_.TryPickup(worldData_, 0, 0, 10);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 50);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 10);
 		EXPECT_EQ(
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			nullptr);  // Picked up, item given to inventory
@@ -302,7 +302,7 @@ namespace jactorio::game
 
 
 		//
-		playerData_.TryPickup(worldData_, 0, 0, 180);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 180);
 		// Resource entity should only become nullptr after all the resources are extracted
 		EXPECT_EQ(
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::resource),
@@ -315,9 +315,9 @@ namespace jactorio::game
 
 
 		// All resources extracted from resource entity, should now become nullptr
-		playerData_.TryPickup(worldData_, 0, 0, 60);
-		playerData_.TryPickup(worldData_, 0, 0, 60);
-		playerData_.TryPickup(worldData_, 0, 0, 60);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
 		EXPECT_EQ(
 			tiles[1].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::resource),
 			nullptr);  // Picked up, item given to inventory
@@ -359,18 +359,18 @@ namespace jactorio::game
 		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::entity, container_entity);
 
 		//
-		playerData_.TryPickup(worldData_, 0, 0, 60);  // Container entity takes priority
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);  // Container entity takes priority
 		EXPECT_EQ(
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			nullptr);  // Picked up, item given to inventory
 
 
 		// Now that container entity is picked up, resource entity is next
-		playerData_.TryPickup(worldData_, 0, 0, 60);
-		playerData_.TryPickup(worldData_, 0, 0, 60);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
 		EXPECT_EQ(resource_data->resourceAmount, 2);  // Not picked up, still 60 more ticks required
 
-		playerData_.TryPickup(worldData_, 0, 0, 60);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
 		EXPECT_EQ(resource_data->resourceAmount, 1);  // Picked up
 	}
 
@@ -397,19 +397,19 @@ namespace jactorio::game
 		}
 
 		void OnBuild(WorldData&,
+		             LogicData&,
 		             const WorldData::WorldPair&,
-		             ChunkTileLayer&,
-		             data::Orientation) const override {
+		             ChunkTileLayer&, data::Orientation) const override {
 			buildCalled = true;
 		}
 
 		void OnRemove(WorldData&,
-		              const WorldData::WorldPair&,
-		              ChunkTileLayer&) const override {
+		              LogicData&,
+		              const WorldData::WorldPair&, ChunkTileLayer&) const override {
 			removeCalled = true;
 		}
 
-		
+
 		J_NODISCARD bool OnCanBuild(const WorldData&,
 		                            const WorldData::WorldPair&) const override {
 			return onCanBuildReturn;
@@ -417,9 +417,9 @@ namespace jactorio::game
 
 
 		void OnNeighborUpdate(WorldData&,
+		                      LogicData&,
 		                      const WorldData::WorldPair& emit_world_coords,
-		                      const WorldData::WorldPair& receive_world_coords,
-		                      data::Orientation) const override {
+		                      const WorldData::WorldPair& receive_world_coords, data::Orientation) const override {
 			EXPECT_EQ(emit_world_coords.first, 1);
 			EXPECT_EQ(emit_world_coords.second, 1);
 			coords.push_back(receive_world_coords);
@@ -469,7 +469,7 @@ namespace jactorio::game
 		mock_listener.emit    = {1, 2};
 		mock_listener.receive = {3, 4};
 
-		playerData_.TryPlaceEntity(worldData_, 0, 0, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
 
 		EXPECT_TRUE(entity.buildCalled);
 		EXPECT_EQ(mock_listener.emit.first, 0);
@@ -487,7 +487,7 @@ namespace jactorio::game
 		mock_listener.emit    = {1, 2};
 		mock_listener.receive = {3, 4};
 
-		playerData_.TryPickup(worldData_, 0, 0, 60);
+		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
 		EXPECT_TRUE(entity.removeCalled);
 		EXPECT_EQ(mock_listener.emit.first, 0);
 		EXPECT_EQ(mock_listener.emit.second, 0);
@@ -511,7 +511,7 @@ namespace jactorio::game
 		// Create entity
 		auto item = data::Item{};
 
-		auto entity = MockEntityPlacement{};
+		auto entity             = MockEntityPlacement{};
 		entity.onCanBuildReturn = false;
 		entity.SetItem(&item);
 
@@ -519,7 +519,7 @@ namespace jactorio::game
 		data::Item::Stack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
-		playerData_.TryPlaceEntity(worldData_, 0, 0, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
 
 		// Not placed because onCanBuild returned false
 		EXPECT_EQ(tile->GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity), nullptr);
@@ -579,7 +579,7 @@ namespace jactorio::game
 		data::Item::Stack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
-		playerData_.TryPlaceEntity(worldData_, 1, 1, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 1, 1, true);
 		ASSERT_EQ(entity_proto.coords.size(), 10);
 
 #define VALIDATE_COORDS(index, x, y)\
@@ -604,7 +604,7 @@ namespace jactorio::game
 
 		// ======================================================================
 
-		playerData_.TryPickup(worldData_, 1, 1, 9999);
+		playerData_.TryPickup(worldData_, logicData_, 1, 1, 9999);
 		ASSERT_EQ(entity_proto.coords.size(), 20);
 	}
 }

@@ -34,7 +34,7 @@ namespace jactorio::data
 
 		// ======================================================================
 
-		void PostLoadValidate(const DataManager&) const override;
+		void PostLoadValidate(const PrototypeManager&) const override;
 
 		///
 		/// \brief Gets number of logic ticks necessary to craft recipe
@@ -43,13 +43,13 @@ namespace jactorio::data
 		///
 		/// \brief Looks up recipe for item of iname
 		/// \returns nullptr if not found
-		static const Recipe* GetItemRecipe(const DataManager& data_manager, const std::string& iname);
+		static const Recipe* GetItemRecipe(const PrototypeManager& data_manager, const std::string& iname);
 
 		///
 		/// \brief Returns raw materials for a recipe <br>
 		/// Assumes all provided names are valid <br>
 		/// A raw material is something which cannot be hand crafted
-		static std::vector<RecipeItem> RecipeGetTotalRaw(const DataManager& data_manager, const std::string& iname);
+		static std::vector<RecipeItem> RecipeGetTotalRaw(const PrototypeManager& data_manager, const std::string& iname);
 	};
 }
 

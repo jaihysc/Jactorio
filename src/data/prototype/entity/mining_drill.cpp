@@ -9,7 +9,7 @@
 #include "renderer/gui/gui_menus.h"
 
 
-bool jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, const DataManager& data_manager,
+bool jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
                                              game::ChunkTileLayer* tile_layer) const {
 	auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
 
@@ -60,7 +60,7 @@ jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSet(const Orient
 
 // ======================================================================
 
-void jactorio::data::MiningDrill::RegisterMineCallback(game::WorldData::DeferralTimer& timer,
+void jactorio::data::MiningDrill::RegisterMineCallback(game::LogicData::DeferralTimer& timer,
                                                        MiningDrillData* unique_data) const {
 	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, unique_data->miningTicks);
 }
@@ -84,12 +84,13 @@ jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::Wo
 	return nullptr;
 }
 
-void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData& world_data, UniqueDataBase* unique_data) const {
+void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData& world_data,
+                                                     game::LogicData& logic_data, UniqueDataBase* unique_data) const {
 	// Re-register callback and insert item
 	auto* drill_data = static_cast<MiningDrillData*>(unique_data);
 
 	drill_data->outputTile.DropOff({drill_data->outputItem, 1});
-	RegisterMineCallback(world_data.deferralTimer, drill_data);
+	RegisterMineCallback(logic_data.deferralTimer, drill_data);
 }
 
 
@@ -120,9 +121,9 @@ bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
 }
 
 void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
+                                          jactorio::game::LogicData& logic_data,
                                           const game::WorldData::WorldPair& world_coords,
-                                          game::ChunkTileLayer& tile_layer,
-                                          const Orientation orientation) const {
+                                          game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
 	game::WorldData::WorldPair output_coords = this->resourceOutput.Get(orientation);
 	output_coords.first += world_coords.first;
 	output_coords.second += world_coords.second;
@@ -135,13 +136,13 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 	drill_data->set              = OnRGetSet(orientation, world_data, world_coords);
 	drill_data->outputTileCoords = output_coords;
 
-	OnNeighborUpdate(world_data, output_coords, world_coords, orientation);
+	OnNeighborUpdate(world_data, logic_data, output_coords, world_coords, orientation);
 }
 
 void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
+                                                   game::LogicData& logic_data,
                                                    const game::WorldData::WorldPair& emit_world_coords,
-                                                   const game::WorldData::WorldPair& receive_world_coords,
-                                                   Orientation) const {
+                                                   const game::WorldData::WorldPair& receive_world_coords, Orientation) const {
 	auto* self_layer = world_data.GetTile(receive_world_coords)
 	                             ->GetLayer(game::ChunkTile::ChunkLayer::entity).GetMultiTileTopLeft();
 
@@ -163,18 +164,18 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 		drill_data->miningTicks =
 			static_cast<uint16_t>(static_cast<double>(kGameHertz) * drill_data->outputItem->entityPrototype->pickupTime);
 
-		RegisterMineCallback(world_data.deferralTimer, drill_data);
+		RegisterMineCallback(logic_data.deferralTimer, drill_data);
 	}
 	else {
 		// Un-register callback if one is registered
-		world_data.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
+		logic_data.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
 	}
 }
 
 
 void jactorio::data::MiningDrill::OnRemove(game::WorldData& world_data,
-                                           const game::WorldData::WorldPair&,
-                                           game::ChunkTileLayer& tile_layer) const {
+                                           jactorio::game::LogicData& logic_data,
+                                           const game::WorldData::WorldPair&, game::ChunkTileLayer& tile_layer) const {
 	UniqueDataBase* drill_data;
 
 	if (tile_layer.IsMultiTile())
@@ -182,5 +183,5 @@ void jactorio::data::MiningDrill::OnRemove(game::WorldData& world_data,
 	else
 		drill_data = tile_layer.GetUniqueData();
 
-	world_data.deferralTimer.RemoveDeferralEntry(static_cast<MiningDrillData*>(drill_data)->deferralEntry);
+	logic_data.deferralTimer.RemoveDeferralEntry(static_cast<MiningDrillData*>(drill_data)->deferralEntry);
 }

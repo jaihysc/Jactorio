@@ -16,7 +16,7 @@ namespace jactorio::renderer
 	{
 	protected:
 		RendererSprites rendererSprites_{};
-		data::DataManager dataManager_{};
+		data::PrototypeManager dataManager_{};
 	};
 
 	TEST_F(SpritemapCreationTest, CreateSpritemap) {

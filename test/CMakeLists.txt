@@ -96,6 +96,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_recipe.cpp
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp
 
+	${JACTORIO_TEST_DIR}/game/logic/logic_dataTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp

@@ -9,7 +9,7 @@
 
 using namespace jactorio;
 
-void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::DataManager&, const char* title,
+void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::PrototypeManager&, const char* title,
                                  const char* description, const std::function<void()>& draw_func) {
 	using namespace jactorio;
 

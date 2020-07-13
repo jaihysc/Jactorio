@@ -31,8 +31,8 @@ double jactorio::game::MouseSelection::GetCursorY() {
 }
 
 
-void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, const data::DataManager& data_manager) {
-	auto* last_tile = player_data.GetPlayerWorld().GetTile(lastTilePos_.first,
+void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager) {
+	auto* last_tile = player_data.GetPlayerWorldData().GetTile(lastTilePos_.first,
 	                                                       lastTilePos_.second);
 	if (last_tile == nullptr)
 		return;
@@ -51,11 +51,11 @@ void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, 
 		            cursor_position.first, cursor_position.second, player_data.placementOrientation);
 }
 
-void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::DataManager& data_manager,
+void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
                                                  data::Entity* const selected_entity,
                                                  const int world_x, const int world_y,
                                                  const data::Orientation placement_orientation) {
-	WorldData& world_data = player_data.GetPlayerWorld();
+	WorldData& world_data = player_data.GetPlayerWorldData();
 
 	auto* last_tile = world_data.GetTile(lastTilePos_.first,
 	                                     lastTilePos_.second);
@@ -96,7 +96,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 			target_layer.MakeUniqueData<data::RenderableData>(set);
 			target_layer.prototypeData = selected_entity
 			                             ->OnRGetSprite(target_layer.GetUniqueData(),
-			                                            player_data.GetPlayerWorld().GameTick()).first;
+			                                            player_data.GetPlayerLogicData().GameTick()).first;
 		}
 
 		lastTileDimensions_ = {selected_entity->tileWidth, selected_entity->tileHeight};

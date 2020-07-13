@@ -15,7 +15,7 @@ namespace jactorio::game
 
 	protected:
 		PlayerData playerData_{};
-		data::DataManager dataManager_{};
+		data::PrototypeManager dataManager_{};
 
 		data::Item* cursor_ = nullptr;
 

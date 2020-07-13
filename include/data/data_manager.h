@@ -16,14 +16,14 @@ namespace jactorio::data
 {
 	///
 	/// \brief Manages prototype data
-	class DataManager
+	class PrototypeManager
 	{
 	public:
-		DataManager() = default;
-		~DataManager();
+		PrototypeManager() = default;
+		~PrototypeManager();
 
-		DataManager(const DataManager& other)     = delete;
-		DataManager(DataManager&& other) noexcept = delete;
+		PrototypeManager(const PrototypeManager& other)     = delete;
+		PrototypeManager(PrototypeManager&& other) noexcept = delete;
 
 	private:
 		/// Position 0 reserved to indicate error
@@ -138,7 +138,7 @@ namespace jactorio::data
 
 
 	/// For pybind callbacks to append into the data manager at the pointer 
-	inline DataManager* active_data_manager = nullptr;
+	inline PrototypeManager* active_data_manager = nullptr;
 }
 
 #endif //JACTORIO_INCLUDE_DATA_DATA_MANAGER_H

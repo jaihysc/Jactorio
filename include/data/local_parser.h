@@ -38,14 +38,14 @@ namespace jactorio::data
 	/// \brief Parses a .cfg file, will throw exceptions on error
 	/// \param file_str File contents
 	/// \param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
-	void LocalParse(DataManager& data_manager, const std::string& file_str, const std::string& directory_prefix);
+	void LocalParse(PrototypeManager& data_manager, const std::string& file_str, const std::string& directory_prefix);
 
 	///
 	/// \brief Parses a .cfg file, does not throw
 	/// \param file_str File contents
 	/// \param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
 	/// \return non-zero if error occurred
-	int LocalParseNoThrow(DataManager& data_manager, const std::string& file_str, const std::string& directory_prefix);
+	int LocalParseNoThrow(PrototypeManager& data_manager, const std::string& file_str, const std::string& directory_prefix);
 }
 
 #endif //JACTORIO_INCLUDE_DATA_LOCAL_PARSER_H

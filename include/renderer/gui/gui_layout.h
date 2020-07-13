@@ -27,7 +27,7 @@ namespace jactorio::renderer
 	/// \param title Title of the tooltip
 	/// \param description
 	/// \param draw_func Code to run while drawing the tooltip
-	void DrawCursorTooltip(game::PlayerData& player_data, const data::DataManager&, const char* title,
+	void DrawCursorTooltip(game::PlayerData& player_data, const data::PrototypeManager&, const char* title,
 	                       const char* description,
 	                       const std::function<void()>& draw_func);
 

@@ -49,7 +49,8 @@ void jactorio::game::InitLogicLoop() {
 
 	// ======================================================================
 	// Temporary Startup settings
-	game_data->player.SetPlayerWorld(&game_data->world);  // Main world is player's world
+	game_data->player.SetPlayerWorldData(game_data->world);  // Main world is player's world
+	game_data->player.SetPlayerLogicData(game_data->logic);  // Should be same for every player 
 
 
 	// ======================================================================
@@ -109,7 +110,7 @@ void jactorio::game::InitLogicLoop() {
 			return;
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
-		game_data->player.TryPlaceEntity(game_data->world,
+		game_data->player.TryPlaceEntity(game_data->world, game_data->logic,
 		                                 tile_selected.first, tile_selected.second);
 	}, MouseInput::left, InputAction::key_held);
 
@@ -118,7 +119,7 @@ void jactorio::game::InitLogicLoop() {
 			return;
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
-		game_data->player.TryPlaceEntity(game_data->world,
+		game_data->player.TryPlaceEntity(game_data->world, game_data->logic,
 		                                 tile_selected.first, tile_selected.second, true);
 	}, MouseInput::left, InputAction::key_down);
 
@@ -128,7 +129,7 @@ void jactorio::game::InitLogicLoop() {
 			return;
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
-		game_data->player.TryPickup(game_data->world,
+		game_data->player.TryPickup(game_data->world, game_data->logic,
 		                            tile_selected.first, tile_selected.second);
 	}, MouseInput::right, InputAction::key_held);
 
@@ -150,7 +151,9 @@ void jactorio::game::InitLogicLoop() {
 			{
 				std::lock_guard<std::mutex> guard{game_data->world.worldDataMutex};
 
-				game_data->world.OnTickAdvance();
+				game_data->logic.GameTickAdvance();
+				game_data->logic.deferralTimer.DeferralUpdate(game_data->world, game_data->logic.GameTick());
+
 				game_data->player.MouseCalculateSelectedTile();
 
 				game_data->world.GenChunk(game_data->prototype);
@@ -181,7 +184,7 @@ void jactorio::game::InitLogicLoop() {
 			// Lock all mutexes for events
 			std::lock_guard<std::mutex> world_guard{game_data->world.worldDataMutex};
 			std::lock_guard<std::mutex> gui_guard{game_data->player.mutex};
-			game_data->event.Raise<LogicTickEvent>(EventType::logic_tick, game_data->world.GameTick() % kGameHertz);
+			game_data->event.Raise<LogicTickEvent>(EventType::logic_tick, game_data->logic.GameTick() % kGameHertz);
 			game_data->input.key.Raise();
 		}
 		// ======================================================================

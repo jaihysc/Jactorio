@@ -45,19 +45,19 @@ namespace jactorio::data
 
 
 		void OnBuild(game::WorldData&,
+		             game::LogicData&,
 		             const game::WorldData::WorldPair&,
-		             game::ChunkTileLayer&,
-		             Orientation) const override {
+		             game::ChunkTileLayer&, Orientation) const override {
 			assert(false);  // Is not player placeable
 		}
 
 		void OnRemove(game::WorldData&,
-		              const game::WorldData::WorldPair&,
-		              game::ChunkTileLayer&) const override {
+		              game::LogicData&,
+		              const game::WorldData::WorldPair&, game::ChunkTileLayer&) const override {
 		}
 
 
-		void PostLoadValidate(const DataManager&) const override {
+		void PostLoadValidate(const PrototypeManager&) const override {
 			// Must convert to at least 1 game tick
 			J_DATA_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
 		}

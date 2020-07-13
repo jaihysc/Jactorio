@@ -12,7 +12,7 @@ namespace jactorio::game
 	{
 	protected:
 		PlayerData playerData_{};
-		data::DataManager dataManager_{};
+		data::PrototypeManager dataManager_{};
 
 		data::Item* itemProduct_ = nullptr;
 		data::Item* item1_       = nullptr;

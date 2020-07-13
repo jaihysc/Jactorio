@@ -12,7 +12,7 @@
 
 ///
 /// \brief Recursively resolves raw materials
-void ResolveRawRecipe(const jactorio::data::DataManager& data_manager,
+void ResolveRawRecipe(const jactorio::data::PrototypeManager& data_manager,
 					  std::unordered_map<std::string, uint16_t>& materials_raw,
                       const jactorio::data::Recipe* recipe, const uint16_t amount) {
 	using namespace jactorio;
@@ -37,7 +37,7 @@ void ResolveRawRecipe(const jactorio::data::DataManager& data_manager,
 
 }
 
-const jactorio::data::Recipe* jactorio::data::Recipe::GetItemRecipe(const DataManager& data_manager, const std::string& iname) {
+const jactorio::data::Recipe* jactorio::data::Recipe::GetItemRecipe(const PrototypeManager& data_manager, const std::string& iname) {
 	const auto recipes = data_manager.DataRawGetAll<const Recipe>(DataCategory::recipe);
 
 	for (const auto& recipe : recipes) {
@@ -48,7 +48,7 @@ const jactorio::data::Recipe* jactorio::data::Recipe::GetItemRecipe(const DataMa
 	return nullptr;
 }
 
-std::vector<jactorio::data::RecipeItem> jactorio::data::Recipe::RecipeGetTotalRaw(const DataManager& data_manager,
+std::vector<jactorio::data::RecipeItem> jactorio::data::Recipe::RecipeGetTotalRaw(const PrototypeManager& data_manager,
 																				  const std::string& iname) {
 	// Key is ptr instead of std::string for some added speed
 	std::unordered_map<std::string, uint16_t> map_raw;
@@ -65,7 +65,7 @@ std::vector<jactorio::data::RecipeItem> jactorio::data::Recipe::RecipeGetTotalRa
 	return v;
 }
 
-void jactorio::data::Recipe::PostLoadValidate(const DataManager& data_manager) const {
+void jactorio::data::Recipe::PostLoadValidate(const PrototypeManager& data_manager) const {
 	J_DATA_ASSERT(!ingredients.empty(), "No ingredients specified for recipe");
 	for (const auto& ingredient : ingredients) {
 		J_DATA_ASSERT(!ingredient.first.empty(), "Empty ingredient internal name specifier");

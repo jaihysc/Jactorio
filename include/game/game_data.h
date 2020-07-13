@@ -8,6 +8,7 @@
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
+#include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
 
@@ -24,11 +25,15 @@ namespace jactorio::game
 	/// Each sub data has its own mutex enabling concurrency
 	struct GameData
 	{
-		data::DataManager prototype{};
+		data::PrototypeManager prototype{};
+
 		GameInput input{};
 		EventData event{};
+
 		PlayerData player{};
+
 		WorldData world{};
+		LogicData logic{};
 	};
 
 	/// This should only be accessed from logic_loop or render_main,

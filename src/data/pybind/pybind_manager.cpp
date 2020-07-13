@@ -73,7 +73,7 @@ void jactorio::data::PyInterpreterInit() {
 
 		// Include the data_manager::data_folder/ as a python search path to shorten imports
 		std::stringstream s;
-		s << core::GetExecutingDirectory() << "/" << DataManager::kDataFolder << "/";
+		s << core::GetExecutingDirectory() << "/" << PrototypeManager::kDataFolder << "/";
 		sysm.attr("path").attr("append")(s.str());
 	}
 

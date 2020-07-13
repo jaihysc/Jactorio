@@ -23,7 +23,7 @@ namespace jactorio::data
 			return {nullptr, 0};
 		}
 
-		bool OnRShowGui(game::PlayerData&, const DataManager&, game::ChunkTileLayer*) const override {
+		bool OnRShowGui(game::PlayerData&, const PrototypeManager&, game::ChunkTileLayer*) const override {
 			return true;
 		}
 	};

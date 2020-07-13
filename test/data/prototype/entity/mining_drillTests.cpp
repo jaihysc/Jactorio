@@ -14,6 +14,7 @@ namespace jactorio::data
 	{
 	protected:
 		game::WorldData worldData_{};
+		game::LogicData logicData_{};
 
 		void SetUp() override {
 			worldData_.EmplaceChunk(0, 0);
@@ -36,14 +37,15 @@ namespace jactorio::data
 		///
 		/// \brief Creates a chest in the world, calling on_build
 		static void SetupDrill(game::WorldData& world_data,
+		                       game::LogicData& logic_data,
 		                       ResourceEntity& resource,
 		                       MiningDrill& drill) {
 
 			game::ChunkTile* tile                                               = world_data.GetTile(1, 1);
 			tile->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData = &resource;
 
-			drill.OnBuild(world_data, {1, 1},
-			              tile->GetLayer(game::ChunkTile::ChunkLayer::entity), Orientation::right);
+			drill.OnBuild(world_data, logic_data,
+			              {1, 1}, tile->GetLayer(game::ChunkTile::ChunkLayer::entity), Orientation::right);
 		}
 	};
 
@@ -159,7 +161,7 @@ namespace jactorio::data
 
 		SetupChest(worldData_, container);
 
-		SetupDrill(worldData_, resource, drill);
+		SetupDrill(worldData_, logicData_, resource, drill);
 
 
 		// ======================================================================
@@ -181,7 +183,7 @@ namespace jactorio::data
 		          1);
 
 		// ======================================================================
-		worldData_.deferralTimer.DeferralUpdate(60);  // Takes 60 ticks to mine
+		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);  // Takes 60 ticks to mine
 
 		EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[1].count,
 		          1);
@@ -197,13 +199,13 @@ namespace jactorio::data
 		ContainerEntity container{};
 
 
-		SetupDrill(worldData_, resource, drill);
+		SetupDrill(worldData_, logicData_, resource, drill);
 
 		SetupChest(worldData_, container);
 
-		drill.OnNeighborUpdate(worldData_,
-		                       {4, 2}, {1, 1},
-		                       Orientation::right);
+		drill.OnNeighborUpdate(worldData_, logicData_,
+		                       {4, 2},
+		                       {1, 1}, Orientation::right);
 
 		// ======================================================================
 		// Should now insert as it has an entity to output to
@@ -235,16 +237,17 @@ namespace jactorio::data
 		ContainerEntity container{};
 
 		SetupChest(worldData_, container);
-		SetupDrill(worldData_, resource, drill);
+		SetupDrill(worldData_, logicData_, resource, drill);
 
 		// Remove
 		game::ChunkTile* tile = worldData_.GetTile(1, 1);
-		drill.OnRemove(worldData_, {1, 1}, tile->GetLayer(game::ChunkTile::ChunkLayer::entity));
+		drill.OnRemove(worldData_, logicData_,
+		               {1, 1}, tile->GetLayer(game::ChunkTile::ChunkLayer::entity));
 
 		tile->GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();  // Deletes drill data
 
 		// Should no longer be valid
-		worldData_.deferralTimer.DeferralUpdate(60);
+		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
 	}
 
 	TEST_F(MiningDrillTest, RemoveOutputEntity) {
@@ -256,25 +259,25 @@ namespace jactorio::data
 		ContainerEntity container{};
 
 		SetupChest(worldData_, container);
-		SetupDrill(worldData_, resource, drill);
+		SetupDrill(worldData_, logicData_, resource, drill);
 
 		// Remove chest
 		game::ChunkTile* tile = worldData_.GetTile(4, 2);
 		tile->GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();  // Remove container 
 
 		// Should only remove the callback once
-		drill.OnNeighborUpdate(worldData_,
-		                       {4, 2}, {1, 1},
-		                       Orientation::right);
-		drill.OnNeighborUpdate(worldData_,
-		                       {4, 2}, {1, 1},
-		                       Orientation::right);
-		drill.OnNeighborUpdate(worldData_,
-		                       {4, 2}, {1, 1},
-		                       Orientation::right);
+		drill.OnNeighborUpdate(worldData_, logicData_,
+		                       {4, 2},
+		                       {1, 1}, Orientation::right);
+		drill.OnNeighborUpdate(worldData_, logicData_,
+		                       {4, 2},
+		                       {1, 1}, Orientation::right);
+		drill.OnNeighborUpdate(worldData_, logicData_,
+		                       {4, 2},
+		                       {1, 1}, Orientation::right);
 
 		// Should no longer be valid
-		worldData_.deferralTimer.DeferralUpdate(60);
+		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
 	}
 
 	TEST_F(MiningDrillTest, UpdateNonOutput) {
@@ -284,21 +287,21 @@ namespace jactorio::data
 
 		drill.resourceOutput.up    = {1, -1};
 		drill.resourceOutput.right = {3, 1};
-		SetupDrill(worldData_, resource, drill);
+		SetupDrill(worldData_, logicData_, resource, drill);
 
 		// ======================================================================
 		ContainerEntity container{};
 		SetupChest(worldData_, container, 2, 0);
 		SetupChest(worldData_, container, 4, 1);
 
-		drill.OnNeighborUpdate(worldData_,
-		                       {2, 0}, {1, 1},
-		                       Orientation::up);
-		drill.OnNeighborUpdate(worldData_,
-		                       {4, 1}, {1, 1},
-		                       Orientation::right);
+		drill.OnNeighborUpdate(worldData_, logicData_,
+		                       {2, 0},
+		                       {1, 1}, Orientation::up);
+		drill.OnNeighborUpdate(worldData_, logicData_,
+		                       {4, 1},
+		                       {1, 1}, Orientation::right);
 
-		worldData_.deferralTimer.DeferralUpdate(60);
+		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
 
 		// If the on_neighbor_update event was ignored, no items will be added
 		{

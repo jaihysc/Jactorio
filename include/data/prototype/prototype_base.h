@@ -75,7 +75,7 @@
 
 namespace jactorio::data
 {
-	class DataManager;
+	class PrototypeManager;
 
 	///
 	/// \brief Creates a formatted log message if log level permits
@@ -197,7 +197,7 @@ namespace jactorio::data
 		///
 		/// \brief Validates properties of the prototype are valid
 		/// \exception data::Data_exception If invalid
-		virtual void PostLoadValidate(const DataManager&) const = 0;
+		virtual void PostLoadValidate(const PrototypeManager&) const = 0;
 
 		///
 		/// \brief Called after the prototype has been validated

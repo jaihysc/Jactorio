@@ -11,7 +11,7 @@ namespace jactorio::data
 	class RecipeTest : public testing::Test
 	{
 	protected:
-		DataManager dataManager_{};
+		PrototypeManager dataManager_{};
 	};
 
 	TEST_F(RecipeTest, GetItemRecipe) {

@@ -79,6 +79,7 @@ void RenderingLoop() {
 			// MVP Matrices updated in here
 			// Mutex locks in function call
 			RenderPlayerPosition(
+				game::game_data->logic.GameTick(),
 				game::game_data->world,
 				main_renderer,
 				game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY());
