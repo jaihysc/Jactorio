@@ -558,8 +558,7 @@ void jactorio::game::PlayerData::InventoryClick(const data::DataManager& data_ma
 			selectedItem_      = inv[index];
 
 			// Swap icon out for a cursor indicating the current index is selected
-			inventoryPlayer[index].item = data_manager.DataRawGet<data::Item>(data::DataCategory::item,
-			                                                                  data::Item::kInventorySelectedCursor);
+			inventoryPlayer[index].item = data_manager.DataRawGet<data::Item>(data::Item::kInventorySelectedCursor);
 			inventoryPlayer[index].count = 0;
 
 			// Return is necessary when selecting by reference
@@ -668,7 +667,7 @@ void jactorio::game::PlayerData::RecipeCraftTick(const data::DataManager& data_m
 
 			// Return product
 			data::RecipeItem recipe_item = recipe->product;
-			const auto* product_item     = data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe_item.first);
+			const auto* product_item     = data_manager.DataRawGet<data::Item>(recipe_item.first);
 
 			data::Item::Stack item = {product_item, recipe_item.second};
 
@@ -728,7 +727,7 @@ void jactorio::game::PlayerData::RecipeQueue(const data::DataManager& data_manag
 
 	// Remove ingredients
 	for (const auto& ingredient : recipe.ingredients) {
-		const auto* item = data_manager.DataRawGet<data::Item>(data::DataCategory::item, ingredient.first);
+		const auto* item = data_manager.DataRawGet<data::Item>(ingredient.first);
 
 		DeleteInvItem(inventoryPlayer, item, ingredient.second);
 	}
@@ -751,7 +750,7 @@ uint16_t jactorio::game::PlayerData::GetCraftingTicksRemaining() const {
 void jactorio::game::PlayerData::RecipeCraftR(const data::DataManager& data_manager, const data::Recipe& recipe) {
 	for (const auto& ingredient : recipe.ingredients) {
 		const auto* ingredient_proto = data_manager.DataRawGet<data::Item>(
-			data::DataCategory::item, ingredient.first);
+			ingredient.first);
 
 		const uint32_t possess_amount =
 			GetInvItemCount(inventoryPlayer, ingredient_proto);
@@ -819,7 +818,7 @@ bool jactorio::game::PlayerData::RecipeCanCraftR(const data::DataManager& data_m
                                                  const data::Recipe& recipe, const uint16_t batches) const {
 	for (const auto& ingredient : recipe.ingredients) {
 		const auto* ingredient_proto = data_manager.DataRawGet<data::Item>(
-			data::DataCategory::item, ingredient.first);
+			ingredient.first);
 
 		// If item has already been counted, use the map used_items. Otherwise, count from inventory
 		unsigned int possess_amount;

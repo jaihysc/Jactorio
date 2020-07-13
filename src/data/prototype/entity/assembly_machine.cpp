@@ -21,9 +21,9 @@ void data::AssemblyMachineData::ChangeRecipe(game::WorldData& world_data, const 
 
 		// Set filters
 		for (size_t i = 0; i < ingredientInv.size(); ++i) {
-			ingredientInv[i].filter = data_manager.DataRawGet<Item>(DataCategory::item, new_recipe->ingredients[i].first);
+			ingredientInv[i].filter = data_manager.DataRawGet<Item>(new_recipe->ingredients[i].first);
 		}
-		productInv[0].filter = data_manager.DataRawGet<Item>(DataCategory::item, new_recipe->product.first);
+		productInv[0].filter = data_manager.DataRawGet<Item>(new_recipe->product.first);
 	}
 	else {
 		// Remove recipe

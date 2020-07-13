@@ -144,7 +144,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 		for (auto& recipe_category : recipe_group->recipeCategories) {
 			for (auto& recipe : recipe_category->recipes) {
 				const auto& product_name =
-					data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe->product.first)->GetLocalizedName();
+					data_manager.DataRawGet<data::Item>(recipe->product.first)->GetLocalizedName();
 
 				if (core::StrToLower(product_name).find(core::StrToLower(player_data.recipeSearchText)) != std::string::npos) {
 					goto loop_exit;
@@ -192,7 +192,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::DataManager& data_man
 			const data::Recipe* recipe = recipes.at(index);
 
 			const auto* product =
-				data_manager.DataRawGet<data::Item>(data::DataCategory::item, recipe->product.first);
+				data_manager.DataRawGet<data::Item>(recipe->product.first);
 			assert(product != nullptr);  // Invalid recipe product
 
 			// Do not draw item slot if it does not match search text
@@ -231,8 +231,7 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 		[&]() {
 			// Ingredients
 			for (const auto& ingredient_pair : recipe.ingredients) {
-				const auto* item = data_manager.DataRawGet<data::Item>(data::DataCategory::item,
-				                                                       ingredient_pair.first);
+				const auto* item = data_manager.DataRawGet<data::Item>(ingredient_pair.first);
 
 				DrawItemSlot(menu_data, 1, item->sprite->internalId, 0, hovered);
 
@@ -271,7 +270,7 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::DataManager& 
 
 			renderer::DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto&) {
 				const auto* item =
-					data_manager.DataRawGet<data::Item>(data::DataCategory::item, raw_inames[slot_index].first);
+					data_manager.DataRawGet<data::Item>(raw_inames[slot_index].first);
 
 				const auto item_count_required = raw_inames[slot_index].second;
 
@@ -408,8 +407,7 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::DataMana
 		const data::Recipe* recipe = recipe_queue.at(index);
 
 		const auto* item =
-			data_manager.DataRawGet<data::Item>(data::DataCategory::item,
-			                                    recipe->product.first);
+			data_manager.DataRawGet<data::Item>(recipe->product.first);
 		DrawItemSlot(menu_data, 1,
 		             item->sprite->internalId, recipe->product.second,
 		             button_hovered);
@@ -549,7 +547,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 		DrawSlots(10, machine_data.ingredientInv.size() + 1, 1, [&](auto index, bool&) {
 			// Recipe change button
 			if (index == machine_data.ingredientInv.size()) {
-				auto* reset_icon = data_manager.DataRawGet<data::Item>(data::DataCategory::item, data::Item::kResetIname);
+				auto* reset_icon = data_manager.DataRawGet<data::Item>(data::Item::kResetIname);
 				assert(reset_icon != nullptr);
 
 				DrawItemSlot(menu_data, 1, reset_icon->sprite->internalId, 0, button_hovered, [&]() {
@@ -562,8 +560,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 
 			// Item which is required
 			auto* ingredient_item =
-				data_manager.DataRawGet<data::Item>(data::DataCategory::item,
-				                                    machine_data.GetRecipe()->ingredients[index].first);
+				data_manager.DataRawGet<data::Item>(machine_data.GetRecipe()->ingredients[index].first);
 			assert(ingredient_item != nullptr);
 
 			// Amount of item possessed
@@ -590,7 +587,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::DataMa
 		// Product
 		DrawSlots(10, 1, 1, [&](auto, bool&) {
 			auto* product_item =
-				data_manager.DataRawGet<data::Item>(data::DataCategory::item, machine_data.GetRecipe()->product.first);
+				data_manager.DataRawGet<data::Item>(machine_data.GetRecipe()->product.first);
 
 			assert(product_item != nullptr);
 			DrawItemSlot(menu_data, 1,

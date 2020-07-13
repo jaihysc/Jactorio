@@ -44,21 +44,31 @@ namespace jactorio::data
 
 
 		///
-		/// \brief Gets prototype at specified category and name, is casted to T for convenience <br>
-		/// \remark Ensure that the casted type is or a parent of the specified category
+		/// \brief Gets prototype at specified name, cast to T
+		/// \return nullptr if the specified prototype does not exist
+		template <typename T>
+		T* DataRawGet(const std::string& iname) const {
+			static_assert(T::category != DataCategory::none);
+
+			return DataRawGet<T>(T::category, iname);
+		}
+
+		///
+		/// \brief Gets prototype at specified category and name, cast to T
 		/// \return nullptr if the specified prototype does not exist
 		template <typename T>
 		T* DataRawGet(const DataCategory data_category, const std::string& iname) const {
+
 			auto* category = &dataRaw[static_cast<uint16_t>(data_category)];
 			if (category->find(iname) == category->end()) {
 				LOG_MESSAGE_F(error, "Attempted to access non-existent prototype %s", iname.c_str());
 				return nullptr;
 			}
-
-			// Address of prototype item downcasted to T
+		
 			PrototypeBase* base = category->at(iname);
 			return static_cast<T*>(base);
 		}
+
 
 		///
 		/// \brief Gets pointers to all data of specified data_type

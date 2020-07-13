@@ -245,38 +245,39 @@ namespace jactorio::game
 		EXPECT_EQ(untouched.prototypeData, &drill);
 	}
 
+
+	class MockEntity final : public data::Entity
+	{
+	public:
+		PROTOTYPE_CATEGORY(test);
+
+		mutable bool rGetSpriteCalled = false;
+
+		J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
+		                                         WorldData&,
+		                                         const WorldData::WorldPair&) const override {
+			return 16;
+		}
+
+		void OnBuild(WorldData&,
+		             const WorldData::WorldPair&,
+		             ChunkTileLayer&,
+		             data::Orientation) const override {
+		}
+
+		void OnRemove(WorldData&,
+		              const WorldData::WorldPair&,
+		              ChunkTileLayer&) const override {
+		}
+
+		std::pair<data::Sprite*, data::Sprite::FrameT>
+		OnRGetSprite(const data::UniqueDataBase* /*unique_data*/, GameTickT) const override {
+			rGetSpriteCalled = true;
+			return {nullptr, 0};
+		}
+	};
+
 	TEST_F(MouseSelectionOverlayTest, DrawOverlayCallGetSprite) {
-		class MockEntity final : public data::Entity
-		{
-		public:
-			PROTOTYPE_CATEGORY(test);
-
-			mutable bool rGetSpriteCalled = false;
-
-			J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
-			                                         WorldData&,
-			                                         const WorldData::WorldPair&) const override {
-				return 16;
-			}
-
-			void OnBuild(WorldData&,
-			             const WorldData::WorldPair&,
-			             ChunkTileLayer&,
-			             data::Orientation) const override {
-			}
-
-			void OnRemove(WorldData&,
-			              const WorldData::WorldPair&,
-			              ChunkTileLayer&) const override {
-			}
-
-			// Overriden to give nullptr
-			std::pair<data::Sprite*, data::Sprite::FrameT>
-			OnRGetSprite(const data::UniqueDataBase* /*unique_data*/, GameTickT) const override {
-				rGetSpriteCalled = true;
-				return {nullptr, 0};
-			}
-		};
 
 		MockEntity entity{};
 		entity.rotatable = true;

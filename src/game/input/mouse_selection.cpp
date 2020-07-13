@@ -108,8 +108,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 
 			// Is hovering over entity	
 			const auto* sprite_ptr =
-				data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite,
-				                                      player_data.MouseSelectedTileInRange()
+				data_manager.DataRawGet<data::Sprite>(player_data.MouseSelectedTileInRange()
 					                                      ? "__core__/cursor-select"
 					                                      : "__core__/cursor-invalid");
 			assert(sprite_ptr != nullptr);

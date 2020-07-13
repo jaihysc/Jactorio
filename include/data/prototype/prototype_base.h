@@ -107,7 +107,9 @@ namespace jactorio::data
 	};
 
 
-#define PROTOTYPE_CATEGORY(category_) J_NODISCARD jactorio::data::DataCategory Category() const override { return jactorio::data::DataCategory::category_; }
+#define PROTOTYPE_CATEGORY(category__) \
+	static constexpr jactorio::data::DataCategory category = jactorio::data::DataCategory::category__;\
+	J_NODISCARD jactorio::data::DataCategory Category() const override { return jactorio::data::DataCategory::category__; }
 
 	class PrototypeBase
 	{
@@ -122,7 +124,7 @@ namespace jactorio::data
 
 		friend void swap(PrototypeBase& lhs, PrototypeBase& rhs) noexcept {
 			using std::swap;
-			swap(lhs.category_, rhs.category_);
+			swap(lhs.category, rhs.category);
 			swap(lhs.internalId, rhs.internalId);
 			swap(lhs.name, rhs.name);
 			swap(lhs.order, rhs.order);
@@ -130,10 +132,8 @@ namespace jactorio::data
 			swap(lhs.localizedDescription_, rhs.localizedDescription_);
 		}
 
-	private:
-		DataCategory category_ = DataCategory::none;
-
 	public:
+		DataCategory category = DataCategory::none;
 		///
 		/// \brief Category of this Prototype item
 		virtual DataCategory Category() const = 0;
@@ -146,7 +146,6 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Python properties
-	public:
 		///
 		/// \brief Internal name, MUST BE unique per data_category
 		///

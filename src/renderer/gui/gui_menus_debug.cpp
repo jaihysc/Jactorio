@@ -181,22 +181,22 @@ void ShowTransportSegments(game::WorldData& world_data, const data::DataManager&
 
 	// Sprite representing the update point
 	const auto* sprite_stop =
-		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-red");
+		data_manager.DataRawGet<data::Sprite>("__core__/rect-red");
 	const auto* sprite_moving =
-		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-green");
+		data_manager.DataRawGet<data::Sprite>("__core__/rect-green");
 	const auto* sprite_left_moving =
-		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-aqua");
+		data_manager.DataRawGet<data::Sprite>("__core__/rect-aqua");
 	const auto* sprite_right_moving =
-		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-pink");
+		data_manager.DataRawGet<data::Sprite>("__core__/rect-pink");
 
 	const auto* sprite_up =
-		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-up");
+		data_manager.DataRawGet<data::Sprite>("__core__/arrow-up");
 	const auto* sprite_right =
-		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-right");
+		data_manager.DataRawGet<data::Sprite>("__core__/arrow-right");
 	const auto* sprite_down =
-		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-down");
+		data_manager.DataRawGet<data::Sprite>("__core__/arrow-down");
 	const auto* sprite_left =
-		data_manager.DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-left");
+		data_manager.DataRawGet<data::Sprite>("__core__/arrow-left");
 
 	// Get all update points and add it to the chunk's objects for drawing
 	for (auto* chunk : world_data.LogicGetChunks()) {
@@ -391,12 +391,12 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 		if (ImGui::Button("Append Item Left"))
 			segment.AppendItem(true,
 			                   0.2,
-			                   data_manager.DataRawGet<data::Item>(data::DataCategory::item, iname));
+			                   data_manager.DataRawGet<data::Item>(iname));
 
 		if (ImGui::Button("Append Item Right"))
 			segment.AppendItem(false,
 			                   0.2,
-			                   data_manager.DataRawGet<data::Item>(data::DataCategory::item, iname));
+			                   data_manager.DataRawGet<data::Item>(iname));
 
 
 		// Display items

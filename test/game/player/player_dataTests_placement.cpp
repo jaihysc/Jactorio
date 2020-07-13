@@ -374,35 +374,59 @@ namespace jactorio::game
 		EXPECT_EQ(resource_data->resourceAmount, 1);  // Picked up
 	}
 
+
+	// ======================================================================
+
+
+	class MockEntityPlacement final : public data::Entity
+	{
+	public:
+		PROTOTYPE_CATEGORY(test);
+
+		mutable bool buildCalled  = false;
+		mutable bool removeCalled = false;
+
+		mutable bool onCanBuildReturn = true;
+
+		mutable std::vector<std::pair<WorldData::WorldCoord, WorldData::WorldCoord>> coords;
+
+		J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
+		                                         WorldData&,
+		                                         const WorldData::WorldPair&) const override {
+			return 0;
+		}
+
+		void OnBuild(WorldData&,
+		             const WorldData::WorldPair&,
+		             ChunkTileLayer&,
+		             data::Orientation) const override {
+			buildCalled = true;
+		}
+
+		void OnRemove(WorldData&,
+		              const WorldData::WorldPair&,
+		              ChunkTileLayer&) const override {
+			removeCalled = true;
+		}
+
+		
+		J_NODISCARD bool OnCanBuild(const WorldData&,
+		                            const WorldData::WorldPair&) const override {
+			return onCanBuildReturn;
+		}
+
+
+		void OnNeighborUpdate(WorldData&,
+		                      const WorldData::WorldPair& emit_world_coords,
+		                      const WorldData::WorldPair& receive_world_coords,
+		                      data::Orientation) const override {
+			EXPECT_EQ(emit_world_coords.first, 1);
+			EXPECT_EQ(emit_world_coords.second, 1);
+			coords.push_back(receive_world_coords);
+		}
+	};
+
 	TEST_F(PlayerDataPlacementTest, PlacePickupCallPickupRemoveEvents) {
-		class MockEntity final : public data::Entity
-		{
-		public:
-			PROTOTYPE_CATEGORY(test);
-
-			mutable bool buildCalled  = false;
-			mutable bool removeCalled = false;
-
-
-			J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
-			                                         WorldData&,
-			                                         const WorldData::WorldPair&) const override {
-				return 0;
-			}
-
-			void OnBuild(WorldData&,
-			             const WorldData::WorldPair&,
-			             ChunkTileLayer&,
-			             data::Orientation) const override {
-				buildCalled = true;
-			}
-
-			void OnRemove(WorldData&,
-			              const WorldData::WorldPair&,
-			              ChunkTileLayer&) const override {
-				removeCalled = true;
-			}
-		};
 		class MockUpdateListener : public data::IUpdateListener
 		{
 		public:
@@ -430,7 +454,7 @@ namespace jactorio::game
 
 		// Create entity
 		auto item   = data::Item{};
-		auto entity = MockEntity{};
+		auto entity = MockEntityPlacement{};
 		entity.SetItem(&item);
 
 
@@ -475,37 +499,6 @@ namespace jactorio::game
 	}
 
 	TEST_F(PlayerDataPlacementTest, TryPlaceCallOnCanBuild) {
-		class MockEntityCanBuild final : public data::Entity
-		{
-		public:
-			PROTOTYPE_CATEGORY(test);
-
-			J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
-			                                         WorldData&,
-			                                         const WorldData::WorldPair&)
-			const override {
-				return 0;
-			}
-
-			void OnBuild(WorldData&,
-			             const WorldData::WorldPair&,
-			             ChunkTileLayer&,
-			             data::Orientation) const override {
-			}
-
-			void OnRemove(WorldData&,
-			              const WorldData::WorldPair&,
-			              ChunkTileLayer&) const override {
-			}
-
-			// ======================================================================
-
-			J_NODISCARD bool OnCanBuild(const WorldData&,
-			                            const WorldData::WorldPair&) const override {
-				return false;
-			}
-		};
-
 		// The world tile must have a tile prototype
 		auto tile_proto    = data::Tile();
 		tile_proto.isWater = false;
@@ -516,57 +509,24 @@ namespace jactorio::game
 
 
 		// Create entity
-
 		auto item = data::Item{};
+
+		auto entity = MockEntityPlacement{};
+		entity.onCanBuildReturn = false;
+		entity.SetItem(&item);
+
 
 		data::Item::Stack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
 		playerData_.TryPlaceEntity(worldData_, 0, 0, true);
 
-		// Not placed because on_can_build returned false
+		// Not placed because onCanBuild returned false
 		EXPECT_EQ(tile->GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity), nullptr);
 	}
 
 	TEST_F(PlayerDataPlacementTest, TryPlaceCallOnNeighborUpdate) {
 		// Placing or removing an entity should call on_neighbor_update for 10 adjacent tiles in clockwise order from top left
-
-		class MockEntity final : public data::Entity
-		{
-		public:
-			PROTOTYPE_CATEGORY(test);
-
-			J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
-			                                         WorldData&,
-			                                         const WorldData::WorldPair&) const override {
-				return 0;
-			}
-
-			void OnBuild(WorldData&,
-			             const WorldData::WorldPair&,
-			             ChunkTileLayer&,
-			             data::Orientation) const override {
-			}
-
-
-			void OnRemove(WorldData&,
-			              const WorldData::WorldPair&,
-			              ChunkTileLayer&) const override {
-			}
-
-			// ======================================================================
-			mutable std::vector<std::pair<WorldData::WorldCoord, WorldData::WorldCoord>>
-			coords;
-
-			void OnNeighborUpdate(WorldData&,
-			                      const WorldData::WorldPair& emit_world_coords,
-			                      const WorldData::WorldPair& receive_world_coords,
-			                      data::Orientation) const override {
-				EXPECT_EQ(emit_world_coords.first, 1);
-				EXPECT_EQ(emit_world_coords.second, 1);
-				coords.push_back(receive_world_coords);
-			}
-		};
 
 		/*
 		 *     [1] [2]
@@ -585,7 +545,7 @@ namespace jactorio::game
 		auto item = data::Item{};
 
 		// Entity
-		auto entity_proto       = MockEntity{};
+		auto entity_proto       = MockEntityPlacement{};
 		entity_proto.tileWidth  = 2;
 		entity_proto.tileHeight = 3;
 		entity_proto.SetItem(&item);

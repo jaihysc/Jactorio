@@ -32,10 +32,7 @@ namespace jactorio::data
 
 		dataManager_.DataRawAdd("raw-fish", new Sprite{}, true);
 
-		const auto* proto =
-			dataManager_.DataRawGet<Sprite>(
-				DataCategory::sprite,
-				"__test__/raw-fish");
+		const auto* proto = dataManager_.DataRawGet<Sprite>("__test__/raw-fish");
 
 
 		// data_manager should populate certain fields, see Prototype_base.h
@@ -79,10 +76,7 @@ namespace jactorio::data
 		dataManager_.DataRawAdd("raw-fish2", new Sprite{});
 		dataManager_.DataRawAdd("raw-fish3", new Sprite{});
 
-		const auto* proto =
-			dataManager_.DataRawGet<Sprite>(
-				DataCategory::sprite,
-				"raw-fish3");
+		const auto* proto = dataManager_.DataRawGet<Sprite>("raw-fish3");
 
 		EXPECT_EQ(proto->name, "raw-fish3");
 		EXPECT_EQ(proto->Category(), DataCategory::sprite);
@@ -102,7 +96,7 @@ namespace jactorio::data
 			dataManager_.DataRawAdd("small-electric-pole", prototype2, true);
 
 			// Get
-			const auto* proto = dataManager_.DataRawGet<Sprite>(DataCategory::sprite, "__test__/small-electric-pole");
+			const auto* proto = dataManager_.DataRawGet<Sprite>("__test__/small-electric-pole");
 
 			EXPECT_EQ(proto, prototype2);
 		}
@@ -123,7 +117,7 @@ namespace jactorio::data
 			EXPECT_EQ(sprite_protos.size(), 2);
 
 
-			const auto* proto = dataManager_.DataRawGet<Sprite>(DataCategory::sprite, "");
+			const auto* proto = dataManager_.DataRawGet<Sprite>("");
 
 			// The empty name will be automatically assigned to something else
 			EXPECT_EQ(proto, nullptr);
@@ -139,7 +133,7 @@ namespace jactorio::data
 		// Load_data should set the directory prefix based on the subfolder
 		dataManager_.LoadData("data");
 
-		const auto* proto = dataManager_.DataRawGet<Sprite>(DataCategory::sprite, "__test__/test_tile");
+		const auto* proto = dataManager_.DataRawGet<Sprite>("__test__/test_tile");
 
 		if (proto == nullptr) {
 			FAIL();
@@ -218,7 +212,7 @@ namespace jactorio::data
 		dataManager_.ClearData();
 
 		// Get
-		auto* data = dataManager_.DataRawGet<Sprite>(DataCategory::sprite, "small-electric-pole");
+		auto* data = dataManager_.DataRawGet<Sprite>("small-electric-pole");
 
 		EXPECT_EQ(data, nullptr);
 
