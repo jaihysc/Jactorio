@@ -17,7 +17,10 @@ void data::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data, const 
 		for (size_t i = 0; i < ingredientInv.size(); ++i) {
 			ingredientInv[i].filter = data_manager.DataRawGet<Item>(new_recipe->ingredients[i].first);
 		}
-		productInv[0].filter = data_manager.DataRawGet<Item>(new_recipe->product.first);
+
+		const auto* product = data_manager.DataRawGet<Item>(new_recipe->product.first);
+		assert(product);
+		productInv[0].filter = product;
 	}
 	else {
 		// Remove recipe
@@ -36,7 +39,7 @@ bool data::AssemblyMachineData::CanBeginCrafting() const {
 
 	for (size_t i = 0; i < recipe_->ingredients.size(); ++i) {
 		const auto& i_possessed = ingredientInv[i];
-		const auto& i_required = recipe_->ingredients[i];
+		const auto& i_required  = recipe_->ingredients[i];
 
 		// No item, Wrong item or not enough of item
 		if (!i_possessed.item ||
@@ -45,8 +48,25 @@ bool data::AssemblyMachineData::CanBeginCrafting() const {
 			return false;
 		}
 	}
-	
+
 	return true;
+}
+
+void data::AssemblyMachineData::CraftRemoveIngredients() {
+	// Deduct ingredients
+	for (size_t i = 0; i < recipe_->ingredients.size(); ++i) {
+		ingredientInv[i].count -= recipe_->ingredients[i].second;
+
+		if (ingredientInv[i].count == 0)
+			ingredientInv[i].item = nullptr;
+	}
+}
+
+void data::AssemblyMachineData::CraftAddProduct() {
+	// Add product
+	assert(productInv[0].filter);
+	productInv[0].item = productInv[0].filter;
+	productInv[0].count += recipe_->product.second;
 }
 
 // ======================================================================
@@ -79,8 +99,8 @@ bool data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const Prot
 // ======================================================================
 
 bool data::AssemblyMachine::TryBeginCrafting(game::LogicData& logic_data,
-											 AssemblyMachineData& data) const {
-	if (!data.CanBeginCrafting())
+                                             AssemblyMachineData& data) const {
+	if (!data.CanBeginCrafting() || data.deferralEntry.second != 0)
 		return false;
 
 	data.deferralEntry = logic_data.deferralTimer.RegisterFromTick(
@@ -88,13 +108,19 @@ bool data::AssemblyMachine::TryBeginCrafting(game::LogicData& logic_data,
 		&data,
 		data.GetRecipe()->GetCraftingTime(1.f / this->assemblySpeed));
 
+	data.CraftRemoveIngredients();
 	return true;
 }
 
 
-void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,
-											   UniqueDataBase* unique_data) const {
-	LOG_MESSAGE(debug, "Ding!");
+void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData&, game::LogicData& logic_data,
+                                               UniqueDataBase* unique_data) const {
+	auto* machine_data = static_cast<AssemblyMachineData*>(unique_data);
+
+	machine_data->CraftAddProduct();
+
+	machine_data->deferralEntry.second = 0;
+	TryBeginCrafting(logic_data, *machine_data);
 }
 
 void data::AssemblyMachine::OnBuild(game::WorldData& world_data,
@@ -109,7 +135,7 @@ void data::AssemblyMachine::OnBuild(game::WorldData& world_data,
 void data::AssemblyMachine::OnRemove(game::WorldData& world_data,
                                      game::LogicData& logic_data,
                                      const game::WorldData::WorldPair& world_coords,
-									 game::ChunkTileLayer& tile_layer) const {
+                                     game::ChunkTileLayer& tile_layer) const {
 	auto& machine_data = *tile_layer.GetMultiTileTopLeft()->GetUniqueData<AssemblyMachineData>();
 
 	logic_data.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);

@@ -12,17 +12,17 @@
 
 namespace jactorio::data
 {
-	class AssemblyMachine;
-	
+	class CraftAddProduct;
+
 	struct AssemblyMachineData final : HealthEntityData
 	{
 		Item::Inventory ingredientInv;
 		Item::Inventory productInv;
-		
+
 		/// Callback called when recipe is finished crafting
 		game::LogicData::DeferralTimer::DeferralEntry deferralEntry;
 
-		
+
 		J_NODISCARD bool HasRecipe() const { return recipe_ != nullptr; }
 		J_NODISCARD const Recipe* GetRecipe() const { return recipe_; }
 
@@ -35,6 +35,14 @@ namespace jactorio::data
 		/// \brief Checks if necessary ingredients are present to begin crafting
 		/// \return true if recipe crafting has begun
 		J_NODISCARD bool CanBeginCrafting() const;
+
+		///
+		/// \brief Deducts items from ingredient inventory equal to amount specified by recipe
+		void CraftRemoveIngredients();
+
+		///
+		/// \brief Outputs recipe product to product inventory
+		void CraftAddProduct();
 
 	private:
 		/// Currently selected recipe for assembling
@@ -68,13 +76,15 @@ namespace jactorio::data
 		/// \brief Begins crafting if ingredients are met
 		/// \return true if crafting has begun
 		bool TryBeginCrafting(game::LogicData& logic_data,
-							  AssemblyMachineData& data) const;
-		
-		void OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data, UniqueDataBase* unique_data) const override;
+		                      AssemblyMachineData& data) const;
+
+		void OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,
+		                        UniqueDataBase* unique_data) const override;
 
 		void OnBuild(game::WorldData& world_data,
 		             game::LogicData& logic_data,
-		             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
+		             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer,
+		             Orientation orientation) const override;
 
 		void OnRemove(game::WorldData& world_data,
 		              game::LogicData& logic_data,

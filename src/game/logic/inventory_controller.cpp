@@ -191,8 +191,23 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 		}
 	}
 
-	// Swapping 2 items of different types
-	std::swap(target_stack, origin_stack);
+	// Swapping into another stack
+	// 1. O -> T: Match target stack's filter filters
+	// 2. T -> O: Match origin stack's filter filters
+	// 3. O <> T: Match origin && target stack's filter filters
+	if ((target_stack.item == nullptr && StackMatchesFilter(origin_stack, target_stack)) ||
+		(origin_stack.item == nullptr && StackMatchesFilter(target_stack, origin_stack)) ||
+		origin_stack.filter == target_stack.filter) {
+
+		const auto* item = origin_stack.item;
+		const auto count = origin_stack.count;
+
+		origin_stack.item = target_stack.item;
+		origin_stack.count = target_stack.count;
+
+		target_stack.item = item;
+		target_stack.count = count;
+	}
 
 	// Origin item stack is now empty?
 	if (origin_stack.count == 0) {

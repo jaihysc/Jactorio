@@ -99,7 +99,7 @@ namespace jactorio::game
 		EXPECT_EQ(inv[3].count, 50);
 	}
 
-	TEST(InventoryController, MoveStackDifferentItemStacks) {
+	TEST(InventoryController, SwapItemStacks) {
 		// Moving from inventory position 0 to position 3
 		// The item stacks are of different items, therefore only swapping positions
 
@@ -119,14 +119,69 @@ namespace jactorio::game
 		inv[3].item  = item2.get();
 		inv[3].count = 10;
 
-		const bool result = MoveItemstackToIndex(inv[0], inv[3], 0);
-		EXPECT_EQ(result, false);
+		EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
 
 		EXPECT_EQ(inv[0].item, item2.get());
 		EXPECT_EQ(inv[0].count, 10);
 
 		EXPECT_EQ(inv[3].item, item.get());
 		EXPECT_EQ(inv[3].count, 50);
+	}
+
+	TEST(InventoryController, SwapItemStacksFilterd) {
+		// Moving from inventory position 0 to position 3
+		// slot 0 is filtered, therefore no swap occurs
+
+		constexpr unsigned short inv_size = 10;
+		data::Item::Stack inv[inv_size];
+
+		const auto item  = std::make_unique<data::Item>();
+		const auto item2 = std::make_unique<data::Item>();
+
+		inv[0].item   = item.get();
+		inv[0].count  = 2;
+		inv[0].filter = item.get();
+
+		inv[3].item  = item2.get();
+		inv[3].count = 10;
+
+		EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
+
+		// 0 <> 3: No swap, filters do not match item
+		EXPECT_EQ(inv[0].item, item.get());
+		EXPECT_EQ(inv[0].count, 2);
+		EXPECT_EQ(inv[0].filter, item.get());
+
+		EXPECT_EQ(inv[3].item, item2.get());
+		EXPECT_EQ(inv[3].count, 10);
+		EXPECT_EQ(inv[3].filter, nullptr);
+
+
+		// 0 -> 3: Ok, 3 is empty
+		inv[3].item  = nullptr;
+		inv[3].count = 0;
+
+		EXPECT_TRUE(MoveItemstackToIndex(inv[0], inv[3], 0));
+
+		EXPECT_EQ(inv[0].item, nullptr);
+		EXPECT_EQ(inv[0].count, 0);
+		EXPECT_EQ(inv[0].filter, item.get());
+
+		EXPECT_EQ(inv[3].item, item.get());
+		EXPECT_EQ(inv[3].count, 2);
+		EXPECT_EQ(inv[3].filter, nullptr);
+
+
+		// 3 -> 0: Ok, 0 is empty
+		EXPECT_FALSE(MoveItemstackToIndex(inv[0], inv[3], 0));
+
+		EXPECT_EQ(inv[0].item, item.get());
+		EXPECT_EQ(inv[0].count, 2);
+		EXPECT_EQ(inv[0].filter, item.get());
+
+		EXPECT_EQ(inv[3].item, nullptr);
+		EXPECT_EQ(inv[3].count, 0);
+		EXPECT_EQ(inv[3].filter, nullptr);
 	}
 
 	TEST(InventoryController, MoveStackFullTargetSlot) {
@@ -558,13 +613,13 @@ namespace jactorio::game
 
 	TEST(InventoryController, AddStackFiltered) {
 		// Item must match filter, otherwise it cannot be at the slot with the filter
-		
+
 		data::Item filtered_item{};
 		data::Item not_filtered_item{};
 
 		// Slot 0 is filtered
 		data::Item::Inventory inv{2};
-		inv[0].filter =  &filtered_item;
+		inv[0].filter = &filtered_item;
 
 
 		// Cannot insert into slot 0
