@@ -118,9 +118,8 @@ void jactorio::game::InitLogicLoop() {
 		if (renderer::input_mouse_captured || !game_data->player.MouseSelectedTileInRange())
 			return;
 
-		const auto tile_selected = game_data->player.GetMouseTileCoords();
-		game_data->player.TryPlaceEntity(game_data->world, game_data->logic,
-		                                 tile_selected.first, tile_selected.second, true);
+		game_data->player.TryActivateLayer(game_data->world, game_data->player.GetMouseTileCoords());
+
 	}, MouseInput::left, InputAction::key_down);
 
 	// Remove entities or mine resource

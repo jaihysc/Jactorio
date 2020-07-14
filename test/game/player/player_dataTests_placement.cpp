@@ -93,14 +93,13 @@ namespace jactorio::game
 		worldData_.EmplaceChunk(0, 0, tiles);
 
 		// Edge cases
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);  // Placing with no items selected
+		EXPECT_FALSE(playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0));  // Placing with no items selected
 
-		data::Item::Stack selected_item = {&item_no_entity, 2};
-		playerData_.SetSelectedItem(selected_item);
+		playerData_.SetSelectedItem({&item_no_entity, 2});
 
 		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::entity, entity.get());
 
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);  // Item holds no reference to an entity
+		EXPECT_FALSE(playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0));  // Item holds no reference to an entity
 		EXPECT_EQ(
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			entity.get());  // Should not delete item at this location
@@ -109,12 +108,11 @@ namespace jactorio::game
 		// Placement tests
 
 		// Place at 0, 0
-		selected_item = {&item, 2};
-		playerData_.SetSelectedItem(selected_item);
+		playerData_.SetSelectedItem({&item, 2});
 
 		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::entity, nullptr);
 
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);  // Place on empty tile 0, 0
+		EXPECT_TRUE(playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0));  // Place on empty tile 0, 0
 
 		EXPECT_EQ(
 			tiles[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
@@ -126,13 +124,14 @@ namespace jactorio::game
 
 
 		// Do not place at 1, 0 
-		playerData_.TryPlaceEntity(worldData_, logicData_, 1, 0);  // A tile already exists on 1, 0 - Should not override it
+		EXPECT_FALSE(
+			playerData_.TryPlaceEntity(worldData_, logicData_, 1, 0));  // A tile already exists on 1, 0 - Should not override it
 		EXPECT_EQ(
 			tiles[1].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
 			entity2.get());
 	}
 
-	TEST_F(PlayerDataPlacementTest, TryPlaceEntityActivateLayer) {
+	TEST_F(PlayerDataPlacementTest, TryActivateLayer) {
 		// Create entity
 		auto item           = data::Item();
 		auto item_no_entity = data::Item();  // Does not hold an entity reference
@@ -146,43 +145,41 @@ namespace jactorio::game
 		tile_proto.isWater = false;
 
 		// Create world with entity at 0, 0
-		auto* tiles = new ChunkTile[1024];
-		tiles[0].SetTilePrototype(ChunkTile::ChunkLayer::base, &tile_proto);
+		worldData_.EmplaceChunk(0, 0);
+		auto* tile = worldData_.GetTile(0, 0);
 
-		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::entity, entity.get());
+		tile->SetTilePrototype(ChunkTile::ChunkLayer::base, &tile_proto);
 
+		// No entity, do not activate layer 
+		EXPECT_FALSE(playerData_.TryActivateLayer(worldData_, {0, 0}));
 
-		worldData_.EmplaceChunk(0, 0, tiles);
 
 		// If selected item's entity is placeable, do not set activated_layer
-		data::Item::Stack selected_item = {&item, 2};
-		playerData_.SetSelectedItem(selected_item);
+		tile->SetEntityPrototype(ChunkTile::ChunkLayer::entity, entity.get());
 
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
+		playerData_.SetSelectedItem({&item, 2});
+
+		EXPECT_FALSE(playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0));
 		EXPECT_EQ(playerData_.GetActivatedLayer(), nullptr);
+
 
 		// Clicking on an entity with no placeable items selected will set activated_layer
-		selected_item = {&item_no_entity, 2};
-		playerData_.SetSelectedItem(selected_item);
+		playerData_.SetSelectedItem({&item_no_entity, 2});
 
-		// However! If mouse_release is not true, do not set activated_layer
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);
-		EXPECT_EQ(playerData_.GetActivatedLayer(), nullptr);
-
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
+		EXPECT_TRUE(playerData_.TryActivateLayer(worldData_, {0, 0}));
 		EXPECT_EQ(playerData_.GetActivatedLayer(),
-		          &tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
+		          &tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
+
 
 		// Clicking again will NOT unset
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
+		EXPECT_TRUE(playerData_.TryActivateLayer(worldData_, {0, 0}));
 		EXPECT_EQ(playerData_.GetActivatedLayer(),
-		          &tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
+		          &tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
 
 
 		// Activated layer can be set to nullptr to unactivate layers
 		playerData_.SetActivatedLayer(nullptr);
 		EXPECT_EQ(playerData_.GetActivatedLayer(), nullptr);
-
 	}
 
 	TEST_F(PlayerDataPlacementTest, TryPickupEntityDeactivateLayer) {
@@ -191,8 +188,9 @@ namespace jactorio::game
 		// Create entity
 		auto item = data::Item();
 
-		auto entity       = std::make_unique<data::ContainerEntity>();
-		entity->placeable = false;
+		auto entity        = std::make_unique<data::ContainerEntity>();
+		entity->tileWidth  = 3;
+		entity->tileHeight = 4;
 		entity->SetItem(&item);
 
 
@@ -200,30 +198,39 @@ namespace jactorio::game
 		tile_proto.isWater = false;
 
 		// Create world with entity at 0, 0
-		auto* tiles = new ChunkTile[1024];
-		tiles[0].SetTilePrototype(ChunkTile::ChunkLayer::base, &tile_proto);
-
-		tiles[0].SetEntityPrototype(ChunkTile::ChunkLayer::entity, entity.get());
+		worldData_.EmplaceChunk(0, 0);
 
 
-		worldData_.EmplaceChunk(0, 0, tiles);
+		for (int y = 0; y < entity->tileHeight; ++y) {
+			for (int x = 0; x < entity->tileWidth; ++x) {
+				auto* tile = worldData_.GetTile(x, y);
+				tile->SetTilePrototype(ChunkTile::ChunkLayer::base, &tile_proto);
+			}
+		}
+
+
+		// Place entity
+		playerData_.SetSelectedItem({&item, 2});
+
+		EXPECT_TRUE(playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0));
+
 
 		// Entity is non-placeable, therefore when clicking on an entity, it will get activated_layer
-		data::Item::Stack selected_item = {&item, 2};
-		playerData_.SetSelectedItem(selected_item);
+		playerData_.DecrementSelectedItem();
+		auto* tile = worldData_.GetTile(0, 0);
 
-		// Set
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
+		EXPECT_TRUE(playerData_.TryActivateLayer(worldData_, {2, 3}));
 		EXPECT_EQ(playerData_.GetActivatedLayer(),
-		          &tiles[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
+		          &tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity));
+
 
 		// Picking up entity will unset
-		playerData_.TryPickup(worldData_, logicData_, 0, 0, 1000);
+		playerData_.TryPickup(worldData_, logicData_, 0, 1, 1000);
 		EXPECT_EQ(playerData_.GetActivatedLayer(), nullptr);
 
 	}
 
-	TEST_F(PlayerDataPlacementTest, try_pickup_entity) {
+	TEST_F(PlayerDataPlacementTest, TryPickupEntity) {
 		// Create entity
 		auto item = data::Item();
 
@@ -469,7 +476,7 @@ namespace jactorio::game
 		mock_listener.emit    = {1, 2};
 		mock_listener.receive = {3, 4};
 
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);
 
 		EXPECT_TRUE(entity.buildCalled);
 		EXPECT_EQ(mock_listener.emit.first, 0);
@@ -519,7 +526,7 @@ namespace jactorio::game
 		data::Item::Stack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
-		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);
 
 		// Not placed because onCanBuild returned false
 		EXPECT_EQ(tile->GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity), nullptr);
@@ -579,7 +586,7 @@ namespace jactorio::game
 		data::Item::Stack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
-		playerData_.TryPlaceEntity(worldData_, logicData_, 1, 1, true);
+		playerData_.TryPlaceEntity(worldData_, logicData_, 1, 1);
 		ASSERT_EQ(entity_proto.coords.size(), 10);
 
 #define VALIDATE_COORDS(index, x, y)\

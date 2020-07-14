@@ -126,12 +126,16 @@ namespace jactorio::game
 
 		///
 		/// \brief Will place an entity at the location or if an entity does not already exist
-		/// \remark Call when the key for placing entities is pressed
-		/// \param can_activate_layer will be set activated_layer to the clicked entity's layer if true
-		void TryPlaceEntity(WorldData& world_data,
+		/// \return true if entity was placed
+		bool TryPlaceEntity(WorldData& world_data,
 		                    LogicData& logic_data,
-		                    WorldData::WorldCoord world_x, WorldData::WorldCoord world_y,
-		                    bool can_activate_layer = false);
+		                    WorldData::WorldCoord world_x, WorldData::WorldCoord world_y);
+
+		///
+		/// \brief Attempts to activate the layer at world coordinates
+		/// \return true if layer was activated
+		bool TryActivateLayer(WorldData& world_data,
+							  const WorldData::WorldPair& world_pair);
 
 		///
 		/// \brief This will either pickup an entity, or mine resources from a resource tile

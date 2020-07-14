@@ -241,59 +241,34 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 	}
 }
 
-void game::PlayerData::TryPlaceEntity(WorldData& world_data,
+bool game::PlayerData::TryPlaceEntity(WorldData& world_data,
                                       LogicData& logic_data,
-                                      const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y,
-                                      const bool can_activate_layer) {
+                                      const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
 	auto* tile = world_data.GetTile(world_x, world_y);
 	if (tile == nullptr)
-		return;
-
-	auto& selected_layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
+		return false;
 
 	const auto* stack = GetSelectedItemStack();
-	// Ensure item attempting to place is an entity
-	data::Entity* entity_ptr = nullptr;
 
-	bool activate_selection = false;
 	// No selected item or selected item is not placeable and clicked on a entity
 	if (stack == nullptr)
-		activate_selection = true;
-	else {
-		entity_ptr = static_cast<data::Entity*>(stack->item->entityPrototype);
-		if (entity_ptr == nullptr || !entity_ptr->placeable)
-			activate_selection = true;
-	}
+		return false;
 
-	// Activate the clicked entity / prototype. For example: show the gui
-	if (activate_selection) {
-		if (!can_activate_layer)
-			return;
-
-		// Since this is entity layer, everything is guaranteed to be an entity
-		if (selected_layer.prototypeData) {
-			// // If clicking again on the same entity, deactivate
-			// if (activated_layer == &selected_layer)
-			// 	activated_layer = nullptr;
-			// else
-
-			// Clicking on an existing entity will activate it
-			activatedLayer_ = &selected_layer;
-		}
-
-		return;
-	}
+	// Does not have item, or placeable item
+	auto* entity_ptr = static_cast<data::Entity*>(stack->item->entityPrototype);
+	if (entity_ptr == nullptr || !entity_ptr->placeable)
+		return false;
 
 
 	assert(entity_ptr != nullptr);
 	// Prototypes can perform additional checking on whether the location can be placed on or not
 	if (!entity_ptr->OnCanBuild(world_data, {world_x, world_y}))
-		return;
+		return false;
 
 	// Do not take item away from player unless item was successfully placed
 	if (!PlaceEntityAtCoords(world_data, entity_ptr, world_x, world_y))
 		// Failed to place because an entity already exists
-		return;
+		return false;
 
 
 	// All validations passed, entity has been placed
@@ -305,10 +280,47 @@ void game::PlayerData::TryPlaceEntity(WorldData& world_data,
 
 	// Call events
 
+	auto& selected_layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
+
 	entity_ptr->OnBuild(world_data, logic_data,
 	                    {world_x, world_y}, selected_layer, placementOrientation);
 	UpdateNeighboringEntities(world_data, logic_data, world_x, world_y, entity_ptr);
 	world_data.updateDispatcher.Dispatch(world_x, world_y, data::UpdateType::place);
+
+	return true;
+}
+
+bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldData::WorldPair& world_pair) {
+	auto* tile = world_data.GetTile(world_pair);
+	if (tile == nullptr)
+		return false;
+
+	const auto* stack = GetSelectedItemStack();
+
+	// Can activate if: No selected item OR selected item is not placeable 
+	if (stack != nullptr) {
+		// Ensure item attempting to place is an entity
+		auto* entity_ptr = static_cast<data::Entity*>(stack->item->entityPrototype);
+
+		if (entity_ptr != nullptr && entity_ptr->placeable)
+			return false;
+	}
+
+	// Activate the clicked entity / prototype. For example: show the gui
+	// Since this is entity layer, everything is guaranteed to be an entity
+
+	auto& selected_layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
+	if (!selected_layer.prototypeData)
+		return false;
+
+	// // If clicking again on the same entity, deactivate
+	// if (activated_layer == &selected_layer)
+	// 	activated_layer = nullptr;
+	// else
+
+	// Clicking on an existing entity will activate it
+	activatedLayer_ = selected_layer.GetMultiTileTopLeft();
+	return true;
 }
 
 
@@ -378,7 +390,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 			auto& layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
 
 			// Picking up an entity which is set in activated_layer will unset activated_layer
-			if (activatedLayer_ == &layer)
+			if (activatedLayer_ == layer.GetMultiTileTopLeft())
 				activatedLayer_ = nullptr;
 
 			// Call events
