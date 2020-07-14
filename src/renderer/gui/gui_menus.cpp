@@ -628,7 +628,10 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 				button_hovered, [&]() {
 
 					ImplementInventoryIsItemClicked(
-						player_data, data_manager, machine_data.productInv, 0);
+						player_data, data_manager, machine_data.productInv, 0,
+						[&]() {
+							machine_proto.TryBeginCrafting(logic_data, machine_data);
+						});
 
 					if (ImGui::IsItemHovered() && !button_hovered) {
 						const auto* recipe = data::Recipe::GetItemRecipe(data_manager,

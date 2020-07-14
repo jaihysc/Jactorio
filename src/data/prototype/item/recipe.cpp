@@ -76,11 +76,14 @@ void jactorio::data::Recipe::PostLoadValidate(const PrototypeManager& data_manag
 		J_DATA_ASSERT(ingredient.second > 0, "Ingredient required amount minimum is 1");
 	}
 
-	J_DATA_ASSERT_F(data_manager.DataRawGet<Item>(product.first),
-					"Ingredient %s does not exist",
-					product.first.c_str());
 	J_DATA_ASSERT(!product.first.empty(), "No product specified for recipe");
+
+	const auto* item_product = data_manager.DataRawGet<Item>(product.first);
+	J_DATA_ASSERT_F(item_product != nullptr, "Product %s does not exist", product.first.c_str());
+
 	J_DATA_ASSERT(product.second > 0, "Product yield amount minimum is 1");
+	J_DATA_ASSERT_F(product.second <= item_product->stackSize, 
+					"Product yield %d may not exceed product stack size %d", product.second, item_product->stackSize);
 }
 
 jactorio::GameTickT jactorio::data::Recipe::GetCraftingTime(const double multiplier) const {

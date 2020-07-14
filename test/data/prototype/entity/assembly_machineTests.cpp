@@ -134,6 +134,20 @@ namespace jactorio::data
 		EXPECT_TRUE(data_.CanBeginCrafting());
 	}
 
+	TEST_F(AssemblyMachineTest, CanBeginCraftingStackLimit) {
+		SetupRecipe();
+		itemProduct_->stackSize = 50;
+		recipe_.product.second  = 2;  // 2 per crafting
+
+		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		SetupMachineCraftingInv();
+		data_.productInv[0] = {itemProduct_, 49, itemProduct_};
+
+
+		// Cannot craft, next craft will exceed stack
+		EXPECT_FALSE(data_.CanBeginCrafting());
+	}
+
 	TEST_F(AssemblyMachineTest, CraftDeductIngredients) {
 		SetupRecipe();
 		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);

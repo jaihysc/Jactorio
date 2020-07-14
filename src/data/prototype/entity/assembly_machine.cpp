@@ -37,6 +37,11 @@ bool data::AssemblyMachineData::CanBeginCrafting() const {
 	if (!recipe_)
 		return false;
 
+	// Cannot craft if it will exceed stacksize
+	if (productInv[0].item != nullptr &&
+		productInv[0].count + recipe_->product.second > productInv[0].item->stackSize)
+		return false;
+
 	for (size_t i = 0; i < recipe_->ingredients.size(); ++i) {
 		const auto& i_possessed = ingredientInv[i];
 		const auto& i_required  = recipe_->ingredients[i];
