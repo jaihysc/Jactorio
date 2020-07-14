@@ -84,6 +84,10 @@ namespace jactorio::game
 		                                 data::UniqueDataBase& unique_data,
 		                                 data::Orientation orientation) const;
 
+		virtual bool InsertAssemblyMachine(const data::Item::Stack& item_stack,
+		                                   data::UniqueDataBase& unique_data,
+		                                   data::Orientation orientation) const;
+
 		using DropOffFunc = decltype(&ItemDropOff::InsertContainerEntity);
 
 		/// \brief Chosen function for inserting at destination

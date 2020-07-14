@@ -106,41 +106,51 @@ namespace jactorio::game
 	};
 
 	TEST_F(ItemDropOffTest, GetInsertFunc) {
+		auto set_prototype = [&](data::Entity& entity_proto) {
+			worldData_.GetTile(2, 4)
+			          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &entity_proto);
+		};
+
 		worldData_.EmplaceChunk(0, 0);
 
 		// For passing into ItemDropOff::Initialize
 		data::HealthEntityData mock_unique_data{};
 
 
-		// Empty tile cannot be inserted into
+		// No: Empty tile cannot be inserted into
 		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
 		EXPECT_FALSE(this->IsInitialized());
 
 
-		// Transport belt can be inserted onto
+		// Ok: Transport belt can be inserted onto
 		data::TransportBelt belt{};
-		worldData_.GetTile(2, 4)
-		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &belt);
+		set_prototype(belt);
 
 		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
 		EXPECT_TRUE(this->IsInitialized());
 
 
-		// Mining drill cannot be inserted into 
+		// No: Mining drill 
 		data::MiningDrill drill{};
-		worldData_.GetTile(2, 4)
-		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &drill);
+		set_prototype(drill);
 
 		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
 		EXPECT_TRUE(this->IsInitialized());  // Still initialized from transport belt
 
 
-		// Container can be inserted into
+		// Ok: Container
 		data::ContainerEntity container{};
-		worldData_.GetTile(2, 4)
-		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &container);
+		set_prototype(container);
 
 		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());
+
+
+		// Ok: Assembly machine
+		data::AssemblyMachine assembly_machine{};
+		TestSetupAssemblyMachine(worldData_, {2, 4}, assembly_machine);
+
+		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {3, 5}));
 		EXPECT_TRUE(this->IsInitialized());
 	}
 
@@ -168,9 +178,6 @@ namespace jactorio::game
 		EXPECT_EQ(container_data->inventory[0].item, &item);
 		EXPECT_EQ(container_data->inventory[0].count, 2);
 	}
-
-	// ======================================================================
-
 
 	TEST_F(ItemDropOffTest, InsertOffset) {
 		auto line_proto             = CreateTransportLine(data::Orientation::up);
@@ -292,6 +299,23 @@ namespace jactorio::game
 			TransportLineInsert(data::Orientation::left, line);
 			EXPECT_EQ(segment_->right.lane.size(), 1);
 		}
+	}
+
+	TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
+		data::AssemblyMachineData asm_data{};
+
+		data::Item item_1{};
+		data::Item item_2{};
+
+		asm_data.ingredientInv.resize(2);
+		asm_data.ingredientInv[0] = {nullptr, 0, &item_1};
+		asm_data.ingredientInv[1] = {nullptr, 0, &item_2};
+
+		// Orientation doesn't matter
+		InsertAssemblyMachine({&item_1, 10}, asm_data, data::Orientation::up);
+
+		EXPECT_EQ(asm_data.ingredientInv[0].item, &item_1);
+		EXPECT_EQ(asm_data.ingredientInv[0].count, 10);
 	}
 
 	// ======================================================================

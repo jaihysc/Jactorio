@@ -193,7 +193,7 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::Pr
 
 	auto* layer = player_data.GetActivatedLayer();
 	if (layer != nullptr) {
-		layer = layer->GetMultiTileTopLeft();
+		layer = &layer->GetMultiTileTopLeft();
 		drew_gui = static_cast<const data::Entity*>(layer->prototypeData)->OnRShowGui(player_data, data_manager, layer);
 		if (drew_gui) {
 			SetVisible(Menu::CharacterMenu, false);

@@ -155,7 +155,7 @@ void PrepareTileData(GameTickT game_tick,
 				// Unique data for multi tiles is stored in the top left tile
 				draw_func_return = tile_draw_func[layer_index](
 					{
-						*layer_tile.GetMultiTileTopLeft(), game_tick
+						layer_tile.GetMultiTileTopLeft(), game_tick
 					});
 				uv = draw_func_return.first;
 

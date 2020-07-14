@@ -144,10 +144,13 @@ namespace jactorio::game
 
 		///
 		/// \brief Gets top left layer if is multi tile, otherwise itself if not a multi tile
-		J_NODISCARD ChunkTileLayer* GetMultiTileTopLeft() {
+		J_NODISCARD ChunkTileLayer& GetMultiTileTopLeft() {
 			if (!IsMultiTile() || IsMultiTileTopLeft())
-				return this;
-			return static_cast<ChunkTileLayer*>(multiTileData_);
+				return *this;
+
+			auto* val = static_cast<ChunkTileLayer*>(multiTileData_);
+			assert(val);
+			return *val;
 		}
 
 		// ======================================================================
@@ -164,6 +167,17 @@ namespace jactorio::game
 		}
 
 		// ======================================================================
+
+		///
+		/// \brief Adjusts provided x, y to coordinates of top left tile
+		template <typename Tx, typename Ty>
+		void AdjustToTopLeft(Tx& x, Ty& y) {
+			if (!IsMultiTile())
+				return;
+			
+			x -= GetOffsetX();
+			y -= GetOffsetY();
+		}
 
 		/// \return Number of tiles from top left on X axis
 		J_NODISCARD uint8_t GetOffsetX() const {

@@ -66,6 +66,7 @@ namespace jactorio::data
 		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
 
 
+		// Dropoff
 		TestSetupContainer(worldData_, {1, 1}, container_entity);
 		worldData_.updateDispatcher.Dispatch({1, 1}, UpdateType::place);
 
@@ -73,6 +74,7 @@ namespace jactorio::data
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
 
 
+		// Pickup
 		TestSetupContainer(worldData_, {3, 1}, container_entity);
 		worldData_.updateDispatcher.Dispatch({3, 1}, UpdateType::place);
 
@@ -94,7 +96,9 @@ namespace jactorio::data
 
 
 		// Dropoff
-		TestSetupContainer(worldData_, {2, 0}, container_entity);
+		AssemblyMachine asm_machine{};
+		
+		TestSetupAssemblyMachine(worldData_, {1, 0}, asm_machine);
 		worldData_.updateDispatcher.Dispatch({2, 0}, UpdateType::place);
 
 		EXPECT_TRUE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());

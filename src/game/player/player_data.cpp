@@ -319,7 +319,7 @@ bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldData::
 	// else
 
 	// Clicking on an existing entity will activate it
-	activatedLayer_ = selected_layer.GetMultiTileTopLeft();
+	activatedLayer_ = &selected_layer.GetMultiTileTopLeft();
 	return true;
 }
 
@@ -390,7 +390,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 			auto& layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
 
 			// Picking up an entity which is set in activated_layer will unset activated_layer
-			if (activatedLayer_ == layer.GetMultiTileTopLeft())
+			if (activatedLayer_ == &layer.GetMultiTileTopLeft())
 				activatedLayer_ = nullptr;
 
 			// Call events

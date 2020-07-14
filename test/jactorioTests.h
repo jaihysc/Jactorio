@@ -9,6 +9,7 @@
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/transport_line.h"
+#include "game/logic/placement_controller.h"
 #include "game/world/world_data.h"
 
 ///
@@ -63,17 +64,31 @@ inline void TestRegisterTransportSegment(jactorio::game::WorldData& world_data,
 }
 
 ///
-/// \brief Creates an assembly machine at coordinates
+/// \brief Creates a 2x2 multi tile assembly machine at coordinates
+/// \return top left layer
 inline jactorio::game::ChunkTileLayer& TestSetupAssemblyMachine(jactorio::game::WorldData& world_data,
                                                                 const jactorio::game::WorldData::WorldPair& world_coords,
                                                                 const jactorio::data::AssemblyMachine& assembly_proto) {
-	auto& layer = world_data.GetTile(world_coords)
-	                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+	auto& origin_layer = world_data.GetTile(world_coords)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+	origin_layer.InitMultiTileProp(2, 2);
 
-	layer.prototypeData = &assembly_proto;
-	layer.MakeUniqueData<jactorio::data::AssemblyMachineData>();
+	for (int y = 0; y < 2; ++y) {
+		for (int x = 0; x < 2; ++x) {
+			if (x == 0 && y == 0)
+				continue;
 
-	return layer;
+			auto& layer = world_data.GetTile(world_coords.first + x, world_coords.second + y)
+			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
+
+			layer.prototypeData  = &assembly_proto;
+			layer.multiTileIndex = y * 2 + x;
+			layer.SetMultiTileParent(&origin_layer);
+		}
+	}
+
+	origin_layer.MakeUniqueData<jactorio::data::AssemblyMachineData>();
+
+	return origin_layer;
 }
 
 #endif // JACTORIO_TEST_JACTORIOTESTS_H

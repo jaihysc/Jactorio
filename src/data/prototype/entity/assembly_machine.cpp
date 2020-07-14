@@ -141,7 +141,7 @@ void data::AssemblyMachine::OnRemove(game::WorldData& world_data,
                                      game::LogicData& logic_data,
                                      const game::WorldData::WorldPair& world_coords,
                                      game::ChunkTileLayer& tile_layer) const {
-	auto& machine_data = *tile_layer.GetMultiTileTopLeft()->GetUniqueData<AssemblyMachineData>();
+	auto& machine_data = *tile_layer.GetMultiTileTopLeft().GetUniqueData<AssemblyMachineData>();
 
 	logic_data.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
 }

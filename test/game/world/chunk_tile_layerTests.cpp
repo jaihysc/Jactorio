@@ -114,7 +114,7 @@ namespace jactorio::game
 
 	TEST(ChunkTileLayer, GetMultiTileTopLeft) {
 		ChunkTileLayer first{};
-		EXPECT_EQ(first.GetMultiTileTopLeft(), &first);  // Returns self if not multi tile
+		EXPECT_EQ(&first.GetMultiTileTopLeft(), &first);  // Returns self if not multi tile
 
 		first.InitMultiTileProp(12, 32);
 
@@ -123,8 +123,8 @@ namespace jactorio::game
 		second.SetMultiTileParent(&first);
 
 
-		EXPECT_EQ(first.GetMultiTileTopLeft(), &first);
-		EXPECT_EQ(second.GetMultiTileTopLeft(), &first);
+		EXPECT_EQ(&first.GetMultiTileTopLeft(), &first);
+		EXPECT_EQ(&second.GetMultiTileTopLeft(), &first);
 	}
 
 	/*
@@ -173,6 +173,32 @@ namespace jactorio::game
 		EXPECT_NE(&data_1, nullptr);
 	}
 
+	TEST(ChunkTileLayer, AdjustToTopleft) {
+		ChunkTileLayer parent{};
+		parent.InitMultiTileProp(3, 2);
+
+		ChunkTileLayer ctl{};
+		ctl.multiTileIndex = 5;
+		ctl.SetMultiTileParent(&parent);
+
+		int x = 0;
+		int y = 0;
+		ctl.AdjustToTopLeft(x, y);
+
+		EXPECT_EQ(x, -2);
+		EXPECT_EQ(y, -1);
+	}
+
+	TEST(ChunkTileLayer, AdjustToTopleftNonMultiTile) {
+		ChunkTileLayer ctl{};
+
+		int x = 0;
+		int y = 0;
+		ctl.AdjustToTopLeft(x, y);
+
+		EXPECT_EQ(x, 0);
+		EXPECT_EQ(y, 0);
+	}
 
 	TEST(ChunkTileLayer, GetOffsetX) {
 		ChunkTileLayer parent{};

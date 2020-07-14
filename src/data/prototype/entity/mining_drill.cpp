@@ -143,10 +143,10 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
                                                    game::LogicData& logic_data,
                                                    const game::WorldData::WorldPair& emit_world_coords,
                                                    const game::WorldData::WorldPair& receive_world_coords, Orientation) const {
-	auto* self_layer = world_data.GetTile(receive_world_coords)
+	auto& self_layer = world_data.GetTile(receive_world_coords)
 	                             ->GetLayer(game::ChunkTile::ChunkLayer::entity).GetMultiTileTopLeft();
 
-	auto* drill_data = static_cast<MiningDrillData*>(self_layer->GetUniqueData());
+	auto* drill_data = static_cast<MiningDrillData*>(self_layer.GetUniqueData());
 
 	// Ignore updates from non output tiles 
 	if (emit_world_coords != drill_data->outputTileCoords)
@@ -179,7 +179,7 @@ void jactorio::data::MiningDrill::OnRemove(game::WorldData& world_data,
 	UniqueDataBase* drill_data;
 
 	if (tile_layer.IsMultiTile())
-		drill_data = tile_layer.GetMultiTileTopLeft()->GetUniqueData();
+		drill_data = tile_layer.GetMultiTileTopLeft().GetUniqueData();
 	else
 		drill_data = tile_layer.GetUniqueData();
 

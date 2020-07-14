@@ -3,16 +3,20 @@
 
 #include "game/logic/placement_controller.h"
 
+#include <functional>
+
 #include "jactorio.h"
 
 #include "data/prototype/tile/tile.h"
 #include "game/world/world_data.h"
 
-bool jactorio::game::PlacementLocationValid(WorldData& world_data,
-                                            const uint8_t tile_width,
-                                            const uint8_t tile_height,
-                                            const int x,
-                                            const int y) {
+using namespace jactorio;
+
+bool game::PlacementLocationValid(WorldData& world_data,
+                                  const uint8_t tile_width,
+                                  const uint8_t tile_height,
+                                  const WorldData::WorldCoord x,
+                                  const WorldData::WorldCoord y) {
 	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
 		for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
 			const ChunkTile* tile =
@@ -32,15 +36,78 @@ bool jactorio::game::PlacementLocationValid(WorldData& world_data,
 	return true;
 }
 
-
 // ======================================================================
 // Entity placement
 
-jactorio::data::Entity* placement_entity;  // This is for the lambda of the place function
-bool jactorio::game::PlaceEntityAtCoords(WorldData& world_data,
-                                         data::Entity* entity,
-                                         const int x,
-                                         const int y) {
+void PlaceAtCoords(game::WorldData& world_data,
+                   const game::ChunkTile::ChunkLayer layer,
+                   const uint8_t tile_width,
+                   const uint8_t tile_height,
+                   const game::WorldData::WorldCoord x,
+                   const game::WorldData::WorldCoord y,
+                   const std::function<void(game::ChunkTile*)>& place_func) {
+	// Place --- The places tiles are known to be valid
+	int entity_index = 0;
+
+	// The top left is handled differently
+	auto* top_left_tile = world_data.GetTile(x, y);
+	place_func(top_left_tile);
+
+	auto& top_left          = top_left_tile->GetLayer(layer);
+	top_left.multiTileIndex = entity_index++;
+
+	if (tile_width == 1 && tile_height == 1)
+		return;
+
+	// Multi tile
+
+	top_left.InitMultiTileProp(tile_width, tile_height);
+
+	int offset_x = 1;
+	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
+		for (; offset_x < tile_width; ++offset_x) {
+			auto* tile = world_data.GetTile(x + offset_x, y + offset_y);
+			place_func(tile);
+
+			auto& layer_tile          = tile->GetLayer(layer);
+			layer_tile.multiTileIndex = entity_index++;
+
+			layer_tile.SetMultiTileParent(&top_left);
+		}
+		offset_x = 0;
+	}
+}
+
+void RemoveAtCoords(game::WorldData& world_data,
+                    const game::ChunkTile::ChunkLayer layer,
+                    const uint8_t tile_width,
+                    const uint8_t tile_height,
+                    game::WorldData::WorldCoord x,
+                    game::WorldData::WorldCoord y,
+                    void (*remove_func)(game::ChunkTile*)) {
+	// Find top left corner
+	{
+		const auto* tile = world_data.GetTile(x, y);
+		assert(tile != nullptr);  // Attempted to remove a on a non existent tile
+
+		const auto tile_index = tile->GetLayer(layer).multiTileIndex;
+
+		y -= static_cast<int>(tile_index / tile_width);
+		x -= tile_index % tile_width;
+	}
+
+	// Remove
+	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
+		for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
+			remove_func(world_data.GetTile(x + offset_x, y + offset_y));
+		}
+	}
+}
+
+bool game::PlaceEntityAtCoords(WorldData& world_data,
+                               const data::Entity* entity,
+                               const WorldData::WorldCoord x,
+                               const WorldData::WorldCoord y) {
 	const ChunkTile* tile = world_data.GetTile(x, y);
 	assert(tile != nullptr);
 
@@ -56,8 +123,7 @@ bool jactorio::game::PlaceEntityAtCoords(WorldData& world_data,
 			ChunkTile::ChunkLayer::entity,
 			t_entity->tileWidth,
 			t_entity->tileHeight,
-			x,
-			y,
+			x, y,
 			[](ChunkTile* chunk_tile) {
 				chunk_tile->GetLayer(ChunkTile::ChunkLayer::entity).Clear();
 			});
@@ -69,38 +135,35 @@ bool jactorio::game::PlaceEntityAtCoords(WorldData& world_data,
 	if (!PlacementLocationValid(world_data, entity->tileWidth, entity->tileHeight, x, y))
 		return false;
 
-	placement_entity = entity;
 	PlaceAtCoords(
 		world_data,
 		ChunkTile::ChunkLayer::entity,
-		entity->tileWidth,
-		entity->tileHeight,
-		x,
-		y,
-		[](ChunkTile* chunk_tile) {
-			chunk_tile->SetEntityPrototype(ChunkTile::ChunkLayer::entity, placement_entity);
+		entity->tileWidth, entity->tileHeight,
+		x, y,
+		[&](ChunkTile* chunk_tile) {
+			chunk_tile->SetEntityPrototype(ChunkTile::ChunkLayer::entity, entity);
 		});
 
 	return true;
 }
 
+bool game::PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity, const WorldData::WorldPair& world_pair) {
+	return PlaceEntityAtCoords(world_data, entity, world_pair.first, world_pair.second);
+}
+
 
 // Sprite placement
-jactorio::data::Sprite* placement_sprite;
-jactorio::game::ChunkTile::ChunkLayer placement_sprite_layer;
 
-void jactorio::game::PlaceSpriteAtCoords(WorldData& world_data,
-                                         const ChunkTile::ChunkLayer layer,
-                                         data::Sprite* sprite,
-                                         const uint8_t tile_width,
-                                         const uint8_t tile_height,
-                                         const int x,
-                                         const int y) {
+void game::PlaceSpriteAtCoords(WorldData& world_data,
+                               const ChunkTile::ChunkLayer layer,
+                               const data::Sprite* sprite,
+                               const uint8_t tile_width,
+                               const uint8_t tile_height,
+                               const WorldData::WorldCoord x,
+                               const WorldData::WorldCoord y) {
 
 	const ChunkTile* tile = world_data.GetTile(x, y);
 	assert(tile != nullptr);
-
-	placement_sprite_layer = layer;
 
 	// nullptr indicates removing an entity
 	if (sprite == nullptr) {
@@ -119,82 +182,21 @@ void jactorio::game::PlaceSpriteAtCoords(WorldData& world_data,
 
 	// Place
 	assert(sprite != nullptr);
-	placement_sprite = sprite;
 	PlaceAtCoords(
 		world_data,
 		layer,
 		tile_width,
 		tile_height,
-		x,
-		y,
-		[](ChunkTile* chunk_tile) {
-			chunk_tile->SetSpritePrototype(ChunkTile::ChunkLayer::overlay, placement_sprite);
+		x, y,
+		[&](ChunkTile* chunk_tile) {
+			chunk_tile->SetSpritePrototype(ChunkTile::ChunkLayer::overlay, sprite);
 		});
 }
 
-
-// Lower level functions
-void jactorio::game::PlaceAtCoords(WorldData& world_data,
-                                   const ChunkTile::ChunkLayer layer,
-                                   const uint8_t tile_width,
-                                   const uint8_t tile_height,
-                                   const int x,
-                                   const int y,
-                                   void (*place_func)(ChunkTile*)) {
-	// Place --- The places tiles are known to be valid
-	int entity_index = 0;
-
-	// The top left is handled differently
-	ChunkTile* top_left_tile = world_data.GetTile(x, y);
-	place_func(top_left_tile);
-
-	ChunkTileLayer& top_left = top_left_tile->GetLayer(layer);
-	top_left.multiTileIndex  = entity_index++;
-
-	if (tile_width == 1 && tile_height == 1)
-		return;
-
-	// Multi tile
-
-	top_left.InitMultiTileProp(tile_width, tile_height);
-
-	int offset_x = 1;
-	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
-		for (; offset_x < tile_width; ++offset_x) {
-			ChunkTile* tile = world_data.GetTile(x + offset_x, y + offset_y);
-			place_func(tile);
-
-			auto& layer_tile          = tile->GetLayer(layer);
-			layer_tile.multiTileIndex = entity_index++;
-
-			layer_tile.SetMultiTileParent(&top_left);
-		}
-		offset_x = 0;
-	}
-}
-
-void jactorio::game::RemoveAtCoords(WorldData& world_data,
-                                    const ChunkTile::ChunkLayer layer,
-                                    const uint8_t tile_width,
-                                    const uint8_t tile_height,
-                                    int x,
-                                    int y,
-                                    void (*remove_func)(ChunkTile*)) {
-	// Find top left corner
-	{
-		const ChunkTile* tile = world_data.GetTile(x, y);
-		assert(tile != nullptr);  // Attempted to remove a on a non existent tile
-
-		const auto tile_index = tile->GetLayer(layer).multiTileIndex;
-
-		y -= static_cast<int>(tile_index / tile_width);
-		x -= tile_index % tile_width;
-	}
-
-	// Remove
-	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
-		for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
-			remove_func(world_data.GetTile(x + offset_x, y + offset_y));
-		}
-	}
+void game::PlaceSpriteAtCoords(WorldData& world_data,
+                               const ChunkTile::ChunkLayer layer,
+                               const data::Sprite* sprite,
+                               const uint8_t tile_width, const uint8_t tile_height,
+                               const WorldData::WorldPair& world_pair) {
+	PlaceSpriteAtCoords(world_data, layer, sprite, tile_width, tile_height, world_pair.first, world_pair.second);
 }

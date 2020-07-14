@@ -12,7 +12,7 @@
 #include "data/prototype/tile/tile.h"
 #include "game/world/world_data.h"
 
-namespace game
+namespace jactorio::game
 {
 	// NOTE
 	// !Checking if the selected tile is too far from the player is not done in these tests!
@@ -22,12 +22,12 @@ namespace game
 	class PlacementControllerTest : public testing::Test
 	{
 	public:
-		static constexpr auto kChunkWidth = jactorio::game::WorldData::kChunkWidth;
+		static constexpr auto kChunkWidth = WorldData::kChunkWidth;
 
 	private:
-		static void GenerateTestWorld(jactorio::game::WorldData& world_data,
-		                              jactorio::data::Tile* water_tile,
-		                              jactorio::data::Tile* land_tile) {
+		static void GenerateTestWorld(WorldData& world_data,
+		                              data::Tile* water_tile,
+		                              data::Tile* land_tile) {
 			// Generates a quarter chunk on which to test entity placement (16 x 16)
 			// Following indices begin at 0:
 			// Row of water: [1, 4, 8]
@@ -57,7 +57,6 @@ namespace game
 			land_tile->isWater  = false;
 
 
-			using namespace jactorio::game;
 			// Create chunk
 			auto* chunk_tiles = new ChunkTile[kChunkWidth * kChunkWidth];
 			for (int y = 0; y < kChunkWidth; ++y) {
@@ -87,10 +86,10 @@ namespace game
 		}
 
 	protected:
-		std::unique_ptr<jactorio::data::Tile> waterTile_ = std::make_unique<jactorio::data::Tile>();
-		std::unique_ptr<jactorio::data::Tile> landTile_  = std::make_unique<jactorio::data::Tile>();
+		std::unique_ptr<data::Tile> waterTile_ = std::make_unique<data::Tile>();
+		std::unique_ptr<data::Tile> landTile_  = std::make_unique<data::Tile>();
 
-		jactorio::game::WorldData worldData_{};
+		WorldData worldData_{};
 
 		void SetUp() override {
 			GenerateTestWorld(worldData_, waterTile_.get(), landTile_.get());
@@ -101,7 +100,7 @@ namespace game
 
 	TEST_F(PlacementControllerTest, PlaceEntity1x1Valid) {
 		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity = std::make_unique<data::ContainerEntity>();
 
 		const auto chunk = worldData_.GetChunkC(0, 0);
 
@@ -117,7 +116,7 @@ namespace game
 
 	TEST_F(PlacementControllerTest, PlaceEntity1x1Invalid) {
 		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity = std::make_unique<data::ContainerEntity>();
 
 		// Invalid, placing on a base tile which is water
 		const auto chunk = worldData_.GetChunkC(0, 0);
@@ -133,7 +132,7 @@ namespace game
 	TEST_F(PlacementControllerTest, RemoveEntity1x1Valid) {
 		// An existing tile location should have its entity and layer sprite pointer set to nullptr
 		// To remove, pass a nullptr as entity
-		const auto entity = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity = std::make_unique<data::ContainerEntity>();
 
 
 		const auto chunk = worldData_.GetChunkC(0, 0);
@@ -177,7 +176,7 @@ namespace game
 		// For entities spanning > 1 tiles, the given location is the top left of the entity
 
 		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity  = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity  = std::make_unique<data::ContainerEntity>();
 		entity->tileWidth  = 3;
 		entity->tileHeight = 3;
 
@@ -209,7 +208,7 @@ namespace game
 		// For entities spanning > 1 tiles, the given location is the top left of the entity
 
 		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity  = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity  = std::make_unique<data::ContainerEntity>();
 		entity->tileWidth  = 3;
 		entity->tileHeight = 3;
 
@@ -234,7 +233,7 @@ namespace game
 		// For entities spanning > 1 tiles, the given location is the top left of the entity
 
 		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity  = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity  = std::make_unique<data::ContainerEntity>();
 		entity->tileWidth  = 3;
 		entity->tileHeight = 3;
 
@@ -257,7 +256,7 @@ namespace game
 
 	TEST_F(PlacementControllerTest, PlaceEntity3x3Invalid3) {
 		// When the placed entity overlaps another entity, the placement is also invalid
-		const auto entity  = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity  = std::make_unique<data::ContainerEntity>();
 		entity->tileWidth  = 3;
 		entity->tileHeight = 3;
 
@@ -269,7 +268,7 @@ namespace game
 
 	TEST_F(PlacementControllerTest, RemoveEntity3x3Valid1) {
 		// When removing an entity, specifying anywhere will remove the entire entity
-		const auto entity  = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity  = std::make_unique<data::ContainerEntity>();
 		entity->tileWidth  = 3;
 		entity->tileHeight = 3;
 
@@ -293,7 +292,7 @@ namespace game
 
 	TEST_F(PlacementControllerTest, RemoveEntity3x3Valid2) {
 		// When removing an entity, specifying anywhere will remove the entire entity
-		const auto entity  = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity  = std::make_unique<data::ContainerEntity>();
 		entity->tileWidth  = 3;
 		entity->tileHeight = 3;
 
@@ -321,7 +320,7 @@ namespace game
 		// Ensure that irregular shaped multi-tiles fully remove
 
 		// For entities spanning > 1 tiles, the given location is the top left of the entity
-		const auto entity  = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity  = std::make_unique<data::ContainerEntity>();
 		entity->tileWidth  = 3;
 		entity->tileHeight = 4;
 
@@ -363,7 +362,7 @@ namespace game
 
 	TEST_F(PlacementControllerTest, RemoveEntity3x4Valid) {
 		// Ensure that irregular shaped multi-tiles fully remove
-		const auto entity  = std::make_unique<jactorio::data::ContainerEntity>();
+		const auto entity  = std::make_unique<data::ContainerEntity>();
 		entity->tileWidth  = 3;
 		entity->tileHeight = 4;
 
@@ -385,13 +384,13 @@ namespace game
 
 
 	TEST_F(PlacementControllerTest, PlaceSprite3x3) {
-		const auto sprite = std::make_unique<jactorio::data::Sprite>();
+		const auto sprite = std::make_unique<data::Sprite>();
 		const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
 		PlaceSpriteAtCoords(
 			worldData_,
-			jactorio::game::ChunkTile::ChunkLayer::overlay,
+			ChunkTile::ChunkLayer::overlay,
 			sprite.get(),
 			3, 3,
 			9, 10);
@@ -408,20 +407,20 @@ namespace game
 	}
 
 	TEST_F(PlacementControllerTest, RemoveSprite3x3) {
-		const auto sprite = std::make_unique<jactorio::data::Sprite>();
+		const auto sprite = std::make_unique<data::Sprite>();
 		const auto chunk  = worldData_.GetChunkC(0, 0);
 
 
 		PlaceSpriteAtCoords(
 			worldData_,
-			jactorio::game::ChunkTile::ChunkLayer::overlay,
+			ChunkTile::ChunkLayer::overlay,
 			sprite.get(),
 			3, 3,
 			9, 10);
 
 		PlaceSpriteAtCoords(
 			worldData_,
-			jactorio::game::ChunkTile::ChunkLayer::overlay,
+			ChunkTile::ChunkLayer::overlay,
 			nullptr,
 			3, 3,
 			9, 10);
@@ -431,8 +430,8 @@ namespace game
 			for (int x = 9; x < 9 + 3; ++x) {
 				const auto index = y * kChunkWidth + x;
 
-				jactorio::game::ChunkTileLayer& tile =
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay);
+				ChunkTileLayer& tile =
+					chunk->Tiles()[index].GetLayer(ChunkTile::ChunkLayer::overlay);
 
 				EXPECT_EQ(tile.prototypeData, nullptr);
 				EXPECT_EQ(tile.multiTileIndex, 0);

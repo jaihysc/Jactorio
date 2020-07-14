@@ -77,8 +77,11 @@ namespace jactorio::data
 		                       const game::WorldData::WorldPair& world_coords) const override;
 
 
+		///
+		/// \param orientation Points towards dropoff
 		void OnBuild(game::WorldData& world_data, game::LogicData& logic_data,
-		             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
+		             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer,
+					 Orientation orientation) const override;
 
 
 		void OnTileUpdate(game::WorldData& world_data,
