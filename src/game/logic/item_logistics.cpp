@@ -221,31 +221,29 @@ bool game::InserterPickup::Initialize(const WorldData& world_data,
 	return Initialize(world_data, target_unique_data, world_coord.first, world_coord.second);
 }
 
-bool game::InserterPickup::PickupContainerEntity(data::ProtoUintT,
-                                                 const data::RotationDegree& degree,
-                                                 const data::Item::StackCount amount,
-                                                 data::UniqueDataBase& unique_data,
-                                                 data::Orientation,
-                                                 data::Item::Stack& out_item_stack) const {
+game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(LogicData&,
+                                                                               data::ProtoUintT,
+                                                                               const data::RotationDegree& degree,
+                                                                               const data::Item::StackCount amount,
+                                                                               data::UniqueDataBase& unique_data,
+                                                                               data::Orientation) const {
 	if (!IsAtMaxDegree(degree))
-		return false;
+		return {false, {}};
 
 	auto& container = static_cast<data::ContainerEntityData&>(unique_data);
 
 
 	const auto* target_item = GetFirstItem(container.inventory);
 
-	out_item_stack = data::Item::Stack{target_item, amount};
-
-	return RemoveInvItem(container.inventory, target_item, amount);
+	return {RemoveInvItem(container.inventory, target_item, amount), {target_item, amount}};
 }
 
-bool game::InserterPickup::PickupTransportBelt(const data::ProtoUintT inserter_tile_reach,
-                                               const data::RotationDegree& degree,
-                                               const data::Item::StackCount,
-                                               data::UniqueDataBase& unique_data,
-                                               const data::Orientation orientation,
-                                               data::Item::Stack& out_item_stack) const {
+game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(LogicData&,
+                                                                             const data::ProtoUintT inserter_tile_reach,
+                                                                             const data::RotationDegree& degree,
+                                                                             const data::Item::StackCount,
+                                                                             data::UniqueDataBase& unique_data,
+                                                                             const data::Orientation orientation) const {
 	auto& line_data = static_cast<data::TransportLineData&>(unique_data);
 
 	bool use_line_left = false;
@@ -312,22 +310,41 @@ bool game::InserterPickup::PickupTransportBelt(const data::ProtoUintT inserter_t
 	if (item != nullptr) {
 		line_data.lineSegment->GetSide(use_line_left).index = 0;
 
-		out_item_stack = data::Item::Stack{item, 1};
-
-		return true;
+		return {true, {item, 1}};
 	}
-	return false;
+	return {false, {}};
 }
 
-bool game::InserterPickup::PickupAssemblyMachine(data::ProtoUintT inserter_tile_reach,
-                                                 const data::RotationDegree& degree,
-                                                 data::Item::StackCount amount, data::UniqueDataBase& unique_data,
-                                                 data::Orientation orientation,
-                                                 data::Item::Stack& out_item_stack) const {
-	if (!IsAtMaxDegree(degree))
-		return false;
+game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(LogicData& logic_data,
+                                                                               data::ProtoUintT,
+                                                                               const data::RotationDegree& degree,
+                                                                               const data::Item::StackCount amount,
+                                                                               data::UniqueDataBase& unique_data,
+                                                                               data::Orientation) const {
+	assert(amount > 0);
 
-	return false;
+	if (!IsAtMaxDegree(degree))
+		return {false, {}};
+
+
+	auto& machine_data = static_cast<data::AssemblyMachineData&>(unique_data);
+
+	if (!machine_data.HasRecipe())
+		return {false, {}};
+
+	auto& product_stack = machine_data.productInv[0];
+
+	// Not enough to pick up
+	if (product_stack.count < amount)
+		return {false, {}};
+
+	product_stack.count -= amount;
+
+	const auto* asm_machine = static_cast<const data::AssemblyMachine*>(targetProtoData_);
+	assert(asm_machine);
+	asm_machine->TryBeginCrafting(logic_data, machine_data);
+
+	return {true, {product_stack.item, amount}};
 }
 
 bool game::InserterPickup::IsAtMaxDegree(const data::RotationDegree& degree) {

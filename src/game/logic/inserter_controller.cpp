@@ -50,10 +50,12 @@ void InserterUpdate(game::LogicData& logic_data,
 		if (inserter_data.rotationDegree > data::ToRotationDegree(kMaxInserterDegree)) {
 			inserter_data.rotationDegree = kMaxInserterDegree;
 
-			if (inserter_data.pickup.Pickup(inserter_proto.tileReach,
-			                                inserter_data.rotationDegree,
-			                                1,
-			                                inserter_data.heldItem)) {
+			const auto result = inserter_data.pickup.Pickup(logic_data,
+															inserter_proto.tileReach,
+			                                                inserter_data.rotationDegree,
+			                                                1);
+			if (result.first) {
+				inserter_data.heldItem = result.second;
 
 				inserter_data.status = data::InserterData::Status::dropoff;
 			}
