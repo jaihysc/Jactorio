@@ -168,7 +168,7 @@ void jactorio::game::InitLogicLoop() {
 				{
 					EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");
 
-					InserterLogicUpdate(game_data->world);
+					InserterLogicUpdate(game_data->world, game_data->logic);
 				}
 			}
 

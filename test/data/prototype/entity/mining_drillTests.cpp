@@ -1,11 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 04/06/2020
 
 #include <gtest/gtest.h>
 
+#include "data/prototype/entity/mining_drill.h"
+
+#include "jactorioTests.h"
 
 #include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/mining_drill.h"
 #include "data/prototype/entity/resource_entity.h"
 
 namespace jactorio::data
@@ -35,7 +36,7 @@ namespace jactorio::data
 		}
 
 		///
-		/// \brief Creates a chest in the world, calling on_build
+		/// \brief Creates a drill in the world, calling on_build
 		static void SetupDrill(game::WorldData& world_data,
 		                       game::LogicData& logic_data,
 		                       ResourceEntity& resource,
@@ -173,7 +174,7 @@ namespace jactorio::data
 
 		// Ensure it inserts into the correct entity
 		Item item{};
-		data->outputTile.DropOff({&item, 1});
+		data->outputTile.DropOff(logicData_, {&item, 1});
 
 		game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 2)
 		                                                  ->GetLayer(
@@ -187,6 +188,23 @@ namespace jactorio::data
 
 		EXPECT_EQ(container_layer.GetUniqueData<jactorio::data::ContainerEntityData>()->inventory[1].count,
 		          1);
+	}
+
+	TEST_F(MiningDrillTest, BuildMultiTileOutput) {
+		MINING_DRILL_DRILL
+		MINING_DRILL_RESOURCE
+
+		drill.resourceOutput.right = {3, 1};
+
+		AssemblyMachine asm_machine{};
+		TestSetupAssemblyMachine(worldData_, {4, 1}, asm_machine);
+
+		SetupDrill(worldData_, logicData_, resource, drill);
+
+		auto* data = worldData_.GetTile(1, 1)
+		                       ->GetLayer(game::ChunkTile::ChunkLayer::entity).GetUniqueData<MiningDrillData>();
+
+		EXPECT_TRUE(data->outputTile.IsInitialized());
 	}
 
 	TEST_F(MiningDrillTest, BuildNoOutput) {
@@ -217,7 +235,7 @@ namespace jactorio::data
 
 		// Ensure it inserts into the correct entity
 		Item item{};
-		data->outputTile.DropOff({&item, 1});
+		data->outputTile.DropOff(logicData_, {&item, 1});
 
 		game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 2)
 		                                                  ->GetLayer(

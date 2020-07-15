@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 04/04/2020
 
 #include "data/prototype/entity/mining_drill.h"
 
@@ -84,12 +83,12 @@ jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::Wo
 	return nullptr;
 }
 
-void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData& world_data,
+void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData&,
                                                      game::LogicData& logic_data, UniqueDataBase* unique_data) const {
 	// Re-register callback and insert item
 	auto* drill_data = static_cast<MiningDrillData*>(unique_data);
 
-	drill_data->outputTile.DropOff({drill_data->outputItem, 1});
+	drill_data->outputTile.DropOff(logic_data, {drill_data->outputItem, 1});
 	RegisterMineCallback(logic_data.deferralTimer, drill_data);
 }
 
@@ -153,7 +152,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 		return;
 
 	auto& output_layer = world_data.GetTile(emit_world_coords)
-	                               ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+	                               ->GetLayer(game::ChunkTile::ChunkLayer::entity).GetMultiTileTopLeft();
 
 	const bool initialized =
 		drill_data->outputTile.Initialize(world_data,
@@ -173,8 +172,8 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 }
 
 
-void jactorio::data::MiningDrill::OnRemove(game::WorldData& world_data,
-                                           jactorio::game::LogicData& logic_data,
+void jactorio::data::MiningDrill::OnRemove(game::WorldData&,
+                                           game::LogicData& logic_data,
                                            const game::WorldData::WorldPair&, game::ChunkTileLayer& tile_layer) const {
 	UniqueDataBase* drill_data;
 

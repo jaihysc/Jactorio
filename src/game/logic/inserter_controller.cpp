@@ -1,11 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/25/2020
 
 #include "game/logic/inserter_controller.h"
 
 #include "data/prototype/entity/inserter.h"
 
-double jactorio::game::GetInserterArmOffset(const core::TIntDegree degree, const uint8_t target_distance) {
+using namespace jactorio;
+
+double game::GetInserterArmOffset(const core::TIntDegree degree, const uint8_t target_distance) {
 	auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
 	result *= core::TanF(degree);
 	result *= -1;
@@ -14,7 +15,7 @@ double jactorio::game::GetInserterArmOffset(const core::TIntDegree degree, const
 	return result;
 }
 
-double jactorio::game::GetInserterArmLength(const core::TIntDegree degree, const uint8_t target_distance) {
+double game::GetInserterArmLength(const core::TIntDegree degree, const uint8_t target_distance) {
 	auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
 	result /= core::CosF(degree);
 	result *= -1;
@@ -23,8 +24,9 @@ double jactorio::game::GetInserterArmLength(const core::TIntDegree degree, const
 }
 
 
-void InserterUpdate(const jactorio::data::Inserter& inserter_proto, jactorio::data::InserterData& inserter_data) {
-	using namespace jactorio::game;
+void InserterUpdate(game::LogicData& logic_data,
+                    const data::Inserter& inserter_proto, data::InserterData& inserter_data) {
+	using namespace game;
 	using namespace jactorio;
 
 	switch (inserter_data.status) {
@@ -34,7 +36,7 @@ void InserterUpdate(const jactorio::data::Inserter& inserter_proto, jactorio::da
 		if (inserter_data.rotationDegree <= data::ToRotationDegree(kMinInserterDegree)) {
 			inserter_data.rotationDegree = 0;  // Prevents underflow if the inserter sits idle for a long time
 
-			if (inserter_data.dropoff.DropOff(inserter_data.heldItem)) {
+			if (inserter_data.dropoff.DropOff(logic_data, inserter_data.heldItem)) {
 				inserter_data.status = data::InserterData::Status::pickup;
 			}
 		}
@@ -49,9 +51,9 @@ void InserterUpdate(const jactorio::data::Inserter& inserter_proto, jactorio::da
 			inserter_data.rotationDegree = kMaxInserterDegree;
 
 			if (inserter_data.pickup.Pickup(inserter_proto.tileReach,
-											inserter_data.rotationDegree,
-											1,
-											inserter_data.heldItem)) {
+			                                inserter_data.rotationDegree,
+			                                1,
+			                                inserter_data.heldItem)) {
 
 				inserter_data.status = data::InserterData::Status::dropoff;
 			}
@@ -64,7 +66,7 @@ void InserterUpdate(const jactorio::data::Inserter& inserter_proto, jactorio::da
 	}
 }
 
-void jactorio::game::InserterLogicUpdate(WorldData& world_data) {
+void game::InserterLogicUpdate(WorldData& world_data, LogicData& logic_data) {
 	for (auto* chunk : world_data.LogicGetChunks()) {
 		for (auto* tile_layer : chunk->GetLogicGroup(Chunk::LogicGroup::inserter)) {
 			auto* inserter_data = tile_layer->GetUniqueData<data::InserterData>();
@@ -73,7 +75,7 @@ void jactorio::game::InserterLogicUpdate(WorldData& world_data) {
 			const auto* proto_data = tile_layer->GetPrototypeData<data::Inserter>();
 			assert(proto_data);
 
-			InserterUpdate(*proto_data, *inserter_data);
+			InserterUpdate(logic_data, *proto_data, *inserter_data);
 		}
 	}
 }

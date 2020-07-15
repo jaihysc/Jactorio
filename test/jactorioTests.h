@@ -5,6 +5,7 @@
 #define JACTORIO_TEST_JACTORIOTESTS_H
 #pragma once
 
+#include "data/data_manager.h"
 #include "data/prototype/entity/assembly_machine.h"
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
@@ -89,6 +90,41 @@ inline jactorio::game::ChunkTileLayer& TestSetupAssemblyMachine(jactorio::game::
 	origin_layer.MakeUniqueData<jactorio::data::AssemblyMachineData>();
 
 	return origin_layer;
+}
+
+
+struct TestSetupRecipeReturn
+{
+	jactorio::data::Recipe recipe{};
+	jactorio::data::Item* item1       = nullptr;
+	jactorio::data::Item* item2       = nullptr;
+	jactorio::data::Item* itemProduct = nullptr;
+};
+
+///
+/// \brief Sets up and registers a recipe
+/// 1a + 1b = 1c
+J_NODISCARD inline auto TestSetupRecipe(jactorio::data::PrototypeManager& proto_manager) {
+	TestSetupRecipeReturn rt{};
+
+	rt.recipe.craftingTime = 1.f;
+	rt.recipe.ingredients  = {{"@1", 1}, {"@2", 1}};
+	rt.recipe.product      = {"@3", 1};
+
+	auto i_1 = std::make_unique<jactorio::data::Item>();
+	rt.item1 = i_1.get();
+
+	auto i_2 = std::make_unique<jactorio::data::Item>();
+	rt.item2 = i_2.get();
+
+	auto item_3    = std::make_unique<jactorio::data::Item>();
+	rt.itemProduct = item_3.get();
+
+	proto_manager.DataRawAdd("@1", i_1.release());
+	proto_manager.DataRawAdd("@2", i_2.release());
+	proto_manager.DataRawAdd("@3", item_3.release());
+
+	return rt;
 }
 
 #endif // JACTORIO_TEST_JACTORIOTESTS_H

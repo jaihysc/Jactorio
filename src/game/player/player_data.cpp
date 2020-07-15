@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #include "game/player/player_data.h"
 
@@ -175,13 +174,10 @@ void game::PlayerData::CounterRotatePlacementOrientation() {
 
 void CallOnNeighborUpdate(game::WorldData& world_data,
                           game::LogicData& logic_data,
-                          const game::WorldData::WorldPair emit_pair,
-                          const game::WorldData::WorldCoord world_x,
-                          const game::WorldData::WorldCoord world_y,
+                          const game::WorldData::WorldCoord emit_x, const game::WorldData::WorldCoord emit_y,
+                          const game::WorldData::WorldCoord receive_x, const game::WorldData::WorldCoord receive_y,
                           const data::Orientation target_orientation) {
-	using namespace jactorio;
-
-	const game::ChunkTile* tile = world_data.GetTile(world_x, world_y);
+	const game::ChunkTile* tile = world_data.GetTile(receive_x, receive_y);
 	if (tile) {
 		auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
@@ -189,11 +185,14 @@ void CallOnNeighborUpdate(game::WorldData& world_data,
 		if (entity)
 			entity->OnNeighborUpdate(world_data,
 			                         logic_data,
-			                         emit_pair,
-			                         {world_x, world_y}, target_orientation);
+			                         {emit_x, emit_y},
+			                         {receive_x, receive_y}, target_orientation);
 	}
 }
 
+///
+/// \param world_x Top left tile x
+/// \param world_y Top left tile y
 void UpdateNeighboringEntities(game::WorldData& world_data,
                                game::LogicData& logic_data,
                                const game::WorldData::WorldCoord world_x,
@@ -208,35 +207,37 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 	 * [8] [x] [x] [5]
 	 *     [7] [6]
 	 */
-	using namespace jactorio;
 
-	const game::WorldData::WorldPair emit_coords = {world_x, world_y};
+	// x and y are receive coordinates
 	for (int x = world_x; x < world_x + entity_ptr->tileWidth; ++x) {
+		const auto y = world_y - 1;
+
 		CallOnNeighborUpdate(world_data, logic_data,
-		                     emit_coords,
-		                     x,
-		                     world_y - 1,
+		                     x, y + 1,
+		                     x, y,
 		                     data::Orientation::down);
 	}
 	for (int y = world_y; y < world_y + entity_ptr->tileHeight; ++y) {
+		const auto x = world_x + entity_ptr->tileWidth;
+
 		CallOnNeighborUpdate(world_data, logic_data,
-		                     emit_coords,
-		                     world_x + entity_ptr->tileWidth,
-		                     y,
+		                     x - 1, y,
+		                     x, y,
 		                     data::Orientation::left);
 	}
 	for (int x = world_x + entity_ptr->tileWidth - 1; x >= world_x; --x) {
+		const auto y = world_y + entity_ptr->tileHeight;
+
 		CallOnNeighborUpdate(world_data, logic_data,
-		                     emit_coords,
-		                     x,
-		                     world_y + entity_ptr->tileHeight,
+		                     x, y - 1,
+		                     x, y,
 		                     data::Orientation::up);
 	}
 	for (int y = world_y + entity_ptr->tileHeight - 1; y >= world_y; --y) {
+		const auto x = world_x - 1;
 		CallOnNeighborUpdate(world_data, logic_data,
-		                     emit_coords,
-		                     world_x - 1,
-		                     y,
+		                     x + 1, y,
+		                     x, y,
 		                     data::Orientation::right);
 	}
 }
@@ -389,6 +390,12 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 		else {
 			auto& layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
 
+			// User may have hovered on another tile other than the top left
+			auto tl_tile_x = tile_x;
+			auto tl_tile_y = tile_y;
+			layer.AdjustToTopLeft(tl_tile_x, tl_tile_y);
+
+
 			// Picking up an entity which is set in activated_layer will unset activated_layer
 			if (activatedLayer_ == &layer.GetMultiTileTopLeft())
 				activatedLayer_ = nullptr;
@@ -401,7 +408,8 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 			const bool result = PlaceEntityAtCoords(world_data, nullptr, tile_x, tile_y);
 			assert(result);  // false indicates failed to remove entity
 
-			UpdateNeighboringEntities(world_data, logic_data, tile_x, tile_y, entity);
+			UpdateNeighboringEntities(world_data, logic_data, tl_tile_x, tl_tile_y, entity);
+
 			world_data.updateDispatcher.Dispatch(tile_x, tile_y, data::UpdateType::remove);
 		}
 	}

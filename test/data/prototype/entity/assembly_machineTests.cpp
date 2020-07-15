@@ -27,22 +27,12 @@ namespace jactorio::data
 		Item* itemProduct_ = nullptr;
 
 		void SetupRecipe() {
-			recipe_.craftingTime = 1.f;
-			recipe_.ingredients  = {{"@1", 1}, {"@2", 1}};
-			recipe_.product      = {"@3", 1};
+			const auto recipe_data = TestSetupRecipe(dataManager_);
 
-			auto i_1 = std::make_unique<Item>();
-			item1_   = i_1.get();
-
-			auto i_2 = std::make_unique<Item>();
-			item2_   = i_2.get();
-
-			auto item_3  = std::make_unique<Item>();
-			itemProduct_ = item_3.get();
-
-			dataManager_.DataRawAdd("@1", i_1.release());
-			dataManager_.DataRawAdd("@2", i_2.release());
-			dataManager_.DataRawAdd("@3", item_3.release());
+			recipe_      = recipe_data.recipe;
+			item1_       = recipe_data.item1;
+			item2_       = recipe_data.item2;
+			itemProduct_ = recipe_data.itemProduct;
 		}
 
 		///

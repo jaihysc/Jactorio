@@ -6,7 +6,9 @@
 #pragma once
 
 #include "data/prototype/type.h"
+#include "data/prototype/entity/assembly_machine.h"
 #include "data/prototype/item/item.h"
+#include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game
@@ -44,8 +46,9 @@ namespace jactorio::game
 		}
 
 	protected:
-		/// \brief Tile location where item will be inserted
 		data::UniqueDataBase* targetUniqueData_ = nullptr;
+		const data::PrototypeBase* targetProtoData_ = nullptr;
+
 		data::Orientation orientation_;
 	};
 
@@ -68,23 +71,26 @@ namespace jactorio::game
 
 		///
 		///	 \brief Insert provided item at destination
-		bool DropOff(const data::Item::Stack& item_stack) const {
+		bool DropOff(LogicData& logic_data, const data::Item::Stack& item_stack) const {
 			assert(targetUniqueData_);
-			return (this->*dropFunc_)(item_stack, *targetUniqueData_, orientation_);
+			return (this->*dropFunc_)(logic_data, item_stack, *targetUniqueData_, orientation_);
 		}
 
 	protected:
 		// Dropoff functions
 
-		virtual bool InsertContainerEntity(const data::Item::Stack& item_stack,
+		virtual bool InsertContainerEntity(LogicData& logic_data,
+		                                   const data::Item::Stack& item_stack,
 		                                   data::UniqueDataBase& unique_data,
 		                                   data::Orientation orientation) const;
 
-		virtual bool InsertTransportBelt(const data::Item::Stack& item_stack,
+		virtual bool InsertTransportBelt(LogicData& logic_data,
+		                                 const data::Item::Stack& item_stack,
 		                                 data::UniqueDataBase& unique_data,
 		                                 data::Orientation orientation) const;
 
-		virtual bool InsertAssemblyMachine(const data::Item::Stack& item_stack,
+		virtual bool InsertAssemblyMachine(LogicData& logic_data,
+		                                   const data::Item::Stack& item_stack,
 		                                   data::UniqueDataBase& unique_data,
 		                                   data::Orientation orientation) const;
 
@@ -122,7 +128,7 @@ namespace jactorio::game
 
 	protected:
 		///
-		/// \brief Picks up items when at 180 deg
+		/// \remark Picks up items when at max deg
 		/// \param unique_data Unique data of container to be picked up from 
 		/// \param out_item_stack Item which was picked up
 		virtual bool PickupContainerEntity(data::ProtoUintT inserter_tile_reach,
@@ -142,6 +148,21 @@ namespace jactorio::game
 		                                 data::UniqueDataBase& unique_data,
 		                                 data::Orientation orientation,
 		                                 data::Item::Stack& out_item_stack) const;
+
+		///
+		/// \remark Picks up items when at max deg
+		/// \param unique_data Unique data of transport belt to be picked up from 
+		/// \param out_item_stack Item which was picked up
+		virtual bool PickupAssemblyMachine(data::ProtoUintT inserter_tile_reach,
+		                                   const data::RotationDegree& degree,
+		                                   data::Item::StackCount amount,
+		                                   data::UniqueDataBase& unique_data,
+		                                   data::Orientation orientation,
+		                                   data::Item::Stack& out_item_stack) const;
+
+		///
+		/// \returns true if at maximum inserter degree
+		static bool IsAtMaxDegree(const data::RotationDegree& degree);
 
 		using PickupFunc = decltype(&InserterPickup::PickupContainerEntity);
 

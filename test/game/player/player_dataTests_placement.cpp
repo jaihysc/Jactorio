@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 04/24/2020
 
 #include <gtest/gtest.h>
 
@@ -395,7 +394,8 @@ namespace jactorio::game
 
 		mutable bool onCanBuildReturn = true;
 
-		mutable std::vector<std::pair<WorldData::WorldCoord, WorldData::WorldCoord>> coords;
+		mutable std::vector<std::pair<WorldData::WorldCoord, WorldData::WorldCoord>> emitCoords;
+		mutable std::vector<std::pair<WorldData::WorldCoord, WorldData::WorldCoord>> receiveCoords;
 
 		J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
 		                                         WorldData&,
@@ -427,9 +427,8 @@ namespace jactorio::game
 		                      LogicData&,
 		                      const WorldData::WorldPair& emit_world_coords,
 		                      const WorldData::WorldPair& receive_world_coords, data::Orientation) const override {
-			EXPECT_EQ(emit_world_coords.first, 1);
-			EXPECT_EQ(emit_world_coords.second, 1);
-			coords.push_back(receive_world_coords);
+			emitCoords.push_back(emit_world_coords);
+			receiveCoords.push_back(receive_world_coords);
 		}
 	};
 
@@ -532,32 +531,26 @@ namespace jactorio::game
 		EXPECT_EQ(tile->GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity), nullptr);
 	}
 
-	TEST_F(PlayerDataPlacementTest, TryPlaceCallOnNeighborUpdate) {
+	TEST_F(PlayerDataPlacementTest, TryPlaceTryRemoveCallOnNeighborUpdate) {
 		// Placing or removing an entity should call on_neighbor_update for 10 adjacent tiles in clockwise order from top left
 
-		/*
-		 *     [1] [2]
-		 * [A] [x] [x] [3]
-		 * [9] [x] [x] [4]
-		 * [8] [x] [x] [5]
-		 *     [7] [6]
-		 */
+		//     [1] [2]
+		// [A] [x] [x] [3]
+		// [9] [x] [x] [4]
+		// [8] [x] [x] [5]
+		//     [7] [6]
 
-		// Tile
 		auto tile_proto    = data::Tile();
 		tile_proto.isWater = false;
 
-		// Item
-
 		auto item = data::Item{};
 
-		// Entity
 		auto entity_proto       = MockEntityPlacement{};
 		entity_proto.tileWidth  = 2;
 		entity_proto.tileHeight = 3;
 		entity_proto.SetItem(&item);
 
-		worldData_.AddChunk(Chunk{0, 0});
+		worldData_.EmplaceChunk(0, 0);
 
 		// Set tiles so entity can be placed on it
 		for (int y = 1; y < 4; ++y) {
@@ -582,36 +575,55 @@ namespace jactorio::game
 		}
 
 		// ======================================================================
+		// Place
 
 		data::Item::Stack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
 		playerData_.TryPlaceEntity(worldData_, logicData_, 1, 1);
-		ASSERT_EQ(entity_proto.coords.size(), 10);
+		ASSERT_EQ(entity_proto.emitCoords.size(), 10);
+		ASSERT_EQ(entity_proto.receiveCoords.size(), 10);
 
-#define VALIDATE_COORDS(index, x, y)\
-		{\
-		auto pair = std::pair<jactorio::game::WorldData::WorldCoord, jactorio::game::WorldData::WorldCoord>{x, y};\
-		EXPECT_EQ(entity_proto.coords[index], pair);\
-		}
 
-		VALIDATE_COORDS(0, 1, 0);
-		VALIDATE_COORDS(1, 2, 0);
+		auto validate_coords = [&](const size_t index,
+		                           const WorldData::WorldPair& emit_coords, const WorldData::WorldPair& receive_coords) {
+			EXPECT_EQ(entity_proto.emitCoords[index], emit_coords);
+			EXPECT_EQ(entity_proto.receiveCoords[index], receive_coords);
+		};
 
-		VALIDATE_COORDS(2, 3, 1);
-		VALIDATE_COORDS(3, 3, 2);
-		VALIDATE_COORDS(4, 3, 3);
+		validate_coords(0, {1, 1}, {1, 0});
+		validate_coords(1, {2, 1}, {2, 0});
 
-		VALIDATE_COORDS(5, 2, 4);
-		VALIDATE_COORDS(6, 1, 4);
+		validate_coords(2, {2, 1}, {3, 1});
+		validate_coords(3, {2, 2}, {3, 2});
+		validate_coords(4, {2, 3}, {3, 3});
 
-		VALIDATE_COORDS(7, 0, 3);
-		VALIDATE_COORDS(8, 0, 2);
-		VALIDATE_COORDS(9, 0, 1);
+		validate_coords(5, {2, 3}, {2, 4});
+		validate_coords(6, {1, 3}, {1, 4});
+
+		validate_coords(7, {1, 3}, {0, 3});
+		validate_coords(8, {1, 2}, {0, 2});
+		validate_coords(9, {1, 1}, {0, 1});
 
 		// ======================================================================
+		// Remove
 
-		playerData_.TryPickup(worldData_, logicData_, 1, 1, 9999);
-		ASSERT_EQ(entity_proto.coords.size(), 20);
+		playerData_.TryPickup(worldData_, logicData_, 2, 3, 9999);  // Bottom right corner
+		EXPECT_EQ(entity_proto.emitCoords.size(), 20);
+		EXPECT_EQ(entity_proto.receiveCoords.size(), 20);
+
+		validate_coords(10, {1, 1}, {1, 0});
+		validate_coords(11, {2, 1}, {2, 0});
+
+		validate_coords(12, {2, 1}, {3, 1});
+		validate_coords(13, {2, 2}, {3, 2});
+		validate_coords(14, {2, 3}, {3, 3});
+
+		validate_coords(15, {2, 3}, {2, 4});
+		validate_coords(16, {1, 3}, {1, 4});
+
+		validate_coords(17, {1, 3}, {0, 3});
+		validate_coords(18, {1, 2}, {0, 2});
+		validate_coords(19, {1, 1}, {0, 1});
 	}
 }

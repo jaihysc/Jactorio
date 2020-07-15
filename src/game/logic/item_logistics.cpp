@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 04/07/2020
 
 #include "game/logic/item_logistics.h"
 
@@ -40,7 +39,9 @@ bool game::ItemDropOff::Initialize(const WorldData& world_data,
 		return false;
 	}
 
+	targetProtoData_  = entity;
 	targetUniqueData_ = &target_unique_data;
+
 	return true;
 }
 
@@ -51,7 +52,8 @@ bool game::ItemDropOff::Initialize(const WorldData& world_data,
 	                  world_coord.first, world_coord.second);
 }
 
-bool game::ItemDropOff::InsertContainerEntity(const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
+bool game::ItemDropOff::InsertContainerEntity(LogicData&,
+                                              const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
                                               data::Orientation) const {
 	auto& container_data = static_cast<data::ContainerEntityData&>(unique_data);
 	if (!CanAddStack(container_data.inventory, item_stack).first)
@@ -61,7 +63,8 @@ bool game::ItemDropOff::InsertContainerEntity(const data::Item::Stack& item_stac
 	return true;
 }
 
-bool game::ItemDropOff::InsertTransportBelt(const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
+bool game::ItemDropOff::InsertTransportBelt(LogicData&,
+                                            const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
                                             const data::Orientation orientation) const {
 	assert(item_stack.count == 1);  // Can only insert 1 at a time
 
@@ -153,14 +156,24 @@ bool game::ItemDropOff::InsertTransportBelt(const data::Item::Stack& item_stack,
 	                                            item_stack.item);
 }
 
-bool game::ItemDropOff::InsertAssemblyMachine(const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
+bool game::ItemDropOff::InsertAssemblyMachine(LogicData& logic_data,
+                                              const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
                                               data::Orientation) const {
+	assert(item_stack.item);
+	assert(item_stack.count > 0);
+
 	auto& machine_data = static_cast<data::AssemblyMachineData&>(unique_data);
 
 	for (auto& slot : machine_data.ingredientInv) {
 		if (slot.filter == item_stack.item) {
+			if (slot.count + item_stack.count > item_stack.item->stackSize)
+				continue;
+
 			slot.item = item_stack.item;
 			slot.count += item_stack.count;
+
+			assert(targetProtoData_);
+			static_cast<const data::AssemblyMachine*>(targetProtoData_)->TryBeginCrafting(logic_data, machine_data);
 			return true;
 		}
 	}
@@ -188,11 +201,17 @@ bool game::InserterPickup::Initialize(const WorldData& world_data,
 		pickupFunc_ = &InserterPickup::PickupTransportBelt;
 		break;
 
+	case data::DataCategory::assembly_machine:
+		pickupFunc_ = &InserterPickup::PickupAssemblyMachine;
+		break;
+
 	default:
 		return false;
 	}
 
+	targetProtoData_  = entity;
 	targetUniqueData_ = &target_unique_data;
+
 	return true;
 }
 
@@ -208,7 +227,7 @@ bool game::InserterPickup::PickupContainerEntity(data::ProtoUintT,
                                                  data::UniqueDataBase& unique_data,
                                                  data::Orientation,
                                                  data::Item::Stack& out_item_stack) const {
-	if (degree != data::ToRotationDegree(kMaxInserterDegree))
+	if (!IsAtMaxDegree(degree))
 		return false;
 
 	auto& container = static_cast<data::ContainerEntityData&>(unique_data);
@@ -298,4 +317,19 @@ bool game::InserterPickup::PickupTransportBelt(const data::ProtoUintT inserter_t
 		return true;
 	}
 	return false;
+}
+
+bool game::InserterPickup::PickupAssemblyMachine(data::ProtoUintT inserter_tile_reach,
+                                                 const data::RotationDegree& degree,
+                                                 data::Item::StackCount amount, data::UniqueDataBase& unique_data,
+                                                 data::Orientation orientation,
+                                                 data::Item::Stack& out_item_stack) const {
+	if (!IsAtMaxDegree(degree))
+		return false;
+
+	return false;
+}
+
+bool game::InserterPickup::IsAtMaxDegree(const data::RotationDegree& degree) {
+	return degree == data::ToRotationDegree(kMaxInserterDegree);
 }

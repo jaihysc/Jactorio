@@ -6,6 +6,7 @@
 #pragma once
 
 #include "core/float_math.h"
+#include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game
@@ -51,7 +52,7 @@ namespace jactorio::game
 
 	///
 	/// \brief Updates inserter logic for a logic chunk
-	void InserterLogicUpdate(WorldData& world_data);
+	void InserterLogicUpdate(WorldData& world_data, LogicData& logic_data);
 }
 
 #endif // JACTORIO_GAME_LOGIC_INSERTER_CONTROLLER_H
