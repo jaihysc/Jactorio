@@ -27,7 +27,6 @@ double game::GetInserterArmLength(const core::TIntDegree degree, const uint8_t t
 void InserterUpdate(game::LogicData& logic_data,
                     const data::Inserter& inserter_proto, data::InserterData& inserter_data) {
 	using namespace game;
-	using namespace jactorio;
 
 	switch (inserter_data.status) {
 

@@ -246,7 +246,7 @@ namespace jactorio::game
 
 	private:
 		///
-		/// \brief The actual recursive function for recipe_craft_r
+		/// \brief The actual recursive function for RecipeCraftR
 		/// \param used_items Tracks amount of an item that has already been used,
 		/// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the inventory
 		bool RecipeCanCraftR(const data::PrototypeManager& data_manager,

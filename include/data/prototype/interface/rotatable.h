@@ -36,7 +36,6 @@ namespace jactorio::data
 
 		///
 		/// \brief Maps a placementOrientation to a <set, frame>
-		/// Chunk_tile_layer* are the neighbors of the destination Chunk_tile_layer
 		virtual Sprite::SetT OnRGetSet(Orientation orientation,
 		                               game::WorldData& world_data,
 		                               const game::WorldData::WorldPair& world_coords) const = 0;

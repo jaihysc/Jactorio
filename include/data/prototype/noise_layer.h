@@ -114,8 +114,8 @@ namespace jactorio::data
 
 		///
 		/// \brief Fetches the tile at the current range <br>
-		/// normalize_if_val_out_of_range is false, Nullptr if out of range <br>
-		/// normalize_if_val_out_of_range is true, Min/max value tile if out of range
+		/// normalize is false, Nullptr if out of range
+		/// normalize is true, Min/max value tile if out of range
 		J_NODISCARD T* Get(float val) const {
 			if (normalize) {
 				// Normalize out of range of max-min within noise_layer

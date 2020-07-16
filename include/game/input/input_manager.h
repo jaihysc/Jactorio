@@ -58,8 +58,8 @@ namespace jactorio::game
 
 	public:
 		///
-		/// \brief Sets the static of an input
-		/// Callbacks for the respective inputs are called when dispatch_input_callbacks() is called
+		/// \brief Sets the state of an input
+		/// Callbacks for the respective inputs are called when CallCallbacks() is called
 		static void SetInput(SDL_KeyCode keycode, InputAction action, SDL_Keymod mod = KMOD_NONE);
 		static void SetInput(MouseInput mouse, InputAction action, SDL_Keymod mod = KMOD_NONE);
 

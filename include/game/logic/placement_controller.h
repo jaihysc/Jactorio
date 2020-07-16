@@ -30,7 +30,6 @@ namespace jactorio::game
 	/// \brief Places / removes entities at world coordinates
 	/// \remark Pass nullptr for entity to remove
 	/// \return true if placed / removed successfully
-	/// Chunk_tile_layer.clear() for the entity layer is called on removal 
 	bool PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity,
 	                         WorldData::WorldCoord x, WorldData::WorldCoord y);
 
