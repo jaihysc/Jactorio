@@ -6,101 +6,85 @@
 
 namespace jactorio::game
 {
-	namespace
+	// Raising the event automatically increments counter
+	class MockEvent final : public EventBase
 	{
-		int counter  = 0;
-		int counter2 = 0;
-
-		void ResetCounter() {
-			counter  = 0;
-			counter2 = 0;
+	public:
+		explicit MockEvent(const int increment, int& counter) {
+			counter += increment;
 		}
 
-
-		void TestCallback1(LogicTickEvent& e) {
-			counter = e.gameTick;
-		}
-
-		void TestCallback2(int, int) {
-			counter2++;
-		}
-	}
+		EVENT_TYPE(logic_tick)
+		EVENT_CATEGORY(in_game)
+	};
 
 	class EventTest : public testing::Test
 	{
 	protected:
 		EventData eventData_;
-
-		void TearDown() override {
-			ResetCounter();
-		}
 	};
 
 	TEST_F(EventTest, SubscribeRaiseEvent) {
-		eventData_.Subscribe(EventType::logic_tick, TestCallback1);
-		// Event::subscribe(event_type::game_gui_character_open, test_callback2);
+		int counter = 0;
 
-		eventData_.Raise<LogicTickEvent>(EventType::logic_tick, 12);
+		eventData_.Subscribe(EventType::logic_tick, [](MockEvent&) {});
+
+		eventData_.Raise<MockEvent>(EventType::logic_tick, 12, counter);
 		EXPECT_EQ(counter, 12);
+
+		eventData_.Raise<MockEvent>(EventType::logic_tick, 12, counter);
+		EXPECT_EQ(counter, 24);
 	}
 
 	TEST_F(EventTest, SubscribeOnce) {
 		// After handling, it will not run again
-		eventData_.SubscribeOnce(EventType::logic_tick, TestCallback1);
 
-		eventData_.Raise<LogicTickEvent>(EventType::logic_tick, 12);
+		int counter = 0;
+
+		eventData_.SubscribeOnce(EventType::logic_tick, [](MockEvent&) {});
+
+		eventData_.Raise<MockEvent>(EventType::logic_tick, 12, counter);
 		EXPECT_EQ(counter, 12);
 
 		// This will no longer run since it has been handled once above
-		eventData_.Raise<LogicTickEvent>(EventType::logic_tick, 22);
+		eventData_.Raise<MockEvent>(EventType::logic_tick, 12, counter);
 		EXPECT_EQ(counter, 12);  // Keeps origin val above
 	}
 
-	// TEST_F(EventTest, subscribe_raise_event_imgui_bock) {
-	// 	// Imgui sets the bool property input_captured
-	// 	// This takes priority over all events, and if true no events are allowed to be emitted
-	// 	using namespace jactorio::game;
-	//
-	// 	reset_counter();
-	// 	Event::clear_all_data();
-	//
-	// 	Event::subscribe(event_type::logic_tick, test_callback1);
-	// 	// Event::subscribe(event_type::game_gui_character_open, test_callback2);
-	//
-	// 	// Event blocked
-	// 	jactorio::renderer::imgui_manager::input_captured = true;
-	// 	Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
-	// 	EXPECT_EQ(counter, 0);
-	//
-	// 	// Unblocked
-	// 	jactorio::renderer::imgui_manager::input_captured = false;
-	// 	Event::raise<Logic_tick_event>(event_type::logic_tick, 12);
-	// 	EXPECT_EQ(counter, 12);
-	// }
-
 	TEST_F(EventTest, UnsubscribeEvent) {
-		eventData_.Subscribe(EventType::game_chunk_generated, TestCallback1);
-
-		EXPECT_TRUE(eventData_.Unsubscribe(jactorio::game::EventType::game_chunk_generated, TestCallback1));
-		EXPECT_FALSE(eventData_.Unsubscribe(jactorio::game::EventType::game_chunk_generated, TestCallback2));  // Does not exist
-
-
+		
+		int counter   = 0;
+		
+		auto callback = [](MockEvent&) {
+		};
+		
+		auto callback2 = [](MockEvent&) {
+		};
+		
+		
+		eventData_.Subscribe(EventType::game_chunk_generated, callback);
+		
+		EXPECT_TRUE(eventData_.Unsubscribe(EventType::game_chunk_generated, callback));
+		EXPECT_FALSE(eventData_.Unsubscribe(EventType::game_chunk_generated, callback2));  // Does not exist
+		
+		
 		// One time
-		eventData_.SubscribeOnce(EventType::game_chunk_generated, TestCallback1);
-		EXPECT_TRUE(eventData_.Unsubscribe(jactorio::game::EventType::game_chunk_generated, TestCallback1));
-		EXPECT_FALSE(eventData_.Unsubscribe(jactorio::game::EventType::game_chunk_generated, TestCallback2));  // Does not exist
-
-		// Unchanged since unsubscribed
-		eventData_.Raise<LogicTickEvent>(EventType::game_chunk_generated, 1);
+		eventData_.SubscribeOnce(EventType::game_chunk_generated, callback);
+		EXPECT_TRUE(eventData_.Unsubscribe(EventType::game_chunk_generated, callback));
+		EXPECT_FALSE(eventData_.Unsubscribe(EventType::game_chunk_generated, callback2));  // Does not exist
+		
+		// counter unchanged since all callbacks unsubscribed
+		eventData_.Raise<MockEvent>(EventType::game_chunk_generated, 1, counter);
 		EXPECT_EQ(counter, 0);
 	}
 
 	TEST_F(EventTest, ClearAllData) {
-		eventData_.Subscribe(EventType::game_chunk_generated, TestCallback1);
+		int counter = 0;
+		eventData_.Subscribe(EventType::game_chunk_generated, [](MockEvent&) { });
 		eventData_.ClearAllData();
-
+		
 		// Nothing gets raises since it is cleared
-		eventData_.Raise<LogicTickEvent>(EventType::game_chunk_generated, 1);
+		eventData_.Raise<MockEvent>(EventType::game_chunk_generated, 1, counter);
 		EXPECT_EQ(counter, 0);
 	}
 }

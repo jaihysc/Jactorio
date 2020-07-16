@@ -196,7 +196,7 @@ namespace jactorio::game
 		J_NODISCARD std::set<Chunk*>& LogicGetChunks();
 
 		// ======================================================================
-		// World generation | Links to game/world/world_generator.cpp
+		// World generation
 	private:
 		int worldGenSeed_ = 1001;
 

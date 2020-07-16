@@ -102,53 +102,53 @@ void jactorio::renderer::Setup(SDL_Window* window) {
 
 	// Padding
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
-	                    ImVec2(J_GUI_STYLE_WINDOW_PADDING_X, J_GUI_STYLE_WINDOW_PADDING_Y));
+	                    ImVec2(kGuiStyleWindowPaddingX, kGuiStyleWindowPaddingY));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-	                    ImVec2(J_GUI_STYLE_FRAME_PADDING_X, J_GUI_STYLE_FRAME_PADDING_Y));
+	                    ImVec2(kGuiStyleFramePaddingX, kGuiStyleFramePaddingY));
 
 	// Window colors
-	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
+	ImGui::PushStyleColor(ImGuiCol_Text, kGuiColText);
 
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, J_GUI_COL_WINDOW_BG);
-	ImGui::PushStyleColor(ImGuiCol_TitleBg, J_GUI_COL_TITLE_BG);
-	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, J_GUI_COL_TITLE_BG_ACTIVE);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, kGuiColWindowBg);
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, kGuiColTitleBg);
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, kGuiColTitleBgActive);
 
 	// Inventory boxes
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, J_GUI_COL_FRAME_BG);
-	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, J_GUI_COL_FRAME_BG_HOVER);
-	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, J_GUI_COL_FRAME_BG_ACTIVE);
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, kGuiColFrameBg);
+	ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, kGuiColFrameBgHover);
+	ImGui::PushStyleColor(ImGuiCol_FrameBgActive, kGuiColFrameBgActive);
 
 	// Buttons
-	ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON);
-	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, J_GUI_COL_BUTTON_HOVER);
-	ImGui::PushStyleColor(ImGuiCol_ButtonActive, J_GUI_COL_BUTTON_ACTIVE);
+	ImGui::PushStyleColor(ImGuiCol_Button, kGuiColButton);
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, kGuiColButtonHover);
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, kGuiColButtonActive);
 
-	ImGui::PushStyleColor(ImGuiCol_CheckMark, J_GUI_COL_CHECKMARK);
+	ImGui::PushStyleColor(ImGuiCol_CheckMark, kGuiColCheckmark);
 
 	// The large horizontal row button like
-	ImGui::PushStyleColor(ImGuiCol_Header, J_GUI_COL_HEADER);
-	ImGui::PushStyleColor(ImGuiCol_HeaderHovered, J_GUI_COL_HEADER_HOVER);
-	ImGui::PushStyleColor(ImGuiCol_HeaderActive, J_GUI_COL_HEADER_ACTIVE);
+	ImGui::PushStyleColor(ImGuiCol_Header, kGuiColHeader);
+	ImGui::PushStyleColor(ImGuiCol_HeaderHovered, kGuiColHeaderHover);
+	ImGui::PushStyleColor(ImGuiCol_HeaderActive, kGuiColHeaderActive);
 
 	// Menu tabs
-	ImGui::PushStyleColor(ImGuiCol_Tab, J_GUI_COL_TAB);
-	ImGui::PushStyleColor(ImGuiCol_TabHovered, J_GUI_COL_TAB_HOVER);
-	ImGui::PushStyleColor(ImGuiCol_TabActive, J_GUI_COL_TAB_ACTIVE);
+	ImGui::PushStyleColor(ImGuiCol_Tab, kGuiColTab);
+	ImGui::PushStyleColor(ImGuiCol_TabHovered, kGuiColTabHover);
+	ImGui::PushStyleColor(ImGuiCol_TabActive, kGuiColTabActive);
 
 	// Resize tab
-	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, J_GUI_COL_RESIZE_GRIP);
-	ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, J_GUI_COL_RESIZE_GRIP_HOVER);
-	ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, J_GUI_COL_RESIZE_GRIP_ACTIVE);
+	ImGui::PushStyleColor(ImGuiCol_ResizeGrip, kGuiColResizeGrip);
+	ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, kGuiColResizeGripHover);
+	ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, kGuiColResizeGripActive);
 
 	// Separators
-	ImGui::PushStyleColor(ImGuiCol_Separator, J_GUI_COL_SEPARATOR);
-	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, J_GUI_COL_SEPARATOR_HOVER);
-	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, J_GUI_COL_SEPARATOR_ACTIVE);
+	ImGui::PushStyleColor(ImGuiCol_Separator, kGuiColSeparator);
+	ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, kGuiColSeparatorHover);
+	ImGui::PushStyleColor(ImGuiCol_SeparatorActive, kGuiColSeparatorActive);
 
 	// Popup
-	ImGui::PushStyleColor(ImGuiCol_PopupBg, J_GUI_COL_POPUP_BG);
+	ImGui::PushStyleColor(ImGuiCol_PopupBg, kGuiColPopupBg);
 
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {J_GUI_VAR_ITEM_SPACING_X, J_GUI_VAR_ITEM_SPACING_Y});
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {kGuiStyleItemSpacingX, kGuiStyleItemSpacingY});
 
 	LOG_MESSAGE(info, "Imgui initialized");
 }

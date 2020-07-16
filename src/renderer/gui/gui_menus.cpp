@@ -93,7 +93,7 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::PrototypeMan
 						[&]() {
 							renderer::ImGuard tooltip_guard{};
 
-							tooltip_guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_NONE);
+							tooltip_guard.PushStyleColor(ImGuiCol_Text, renderer::kGuiColNone);
 							ImGui::TextUnformatted(stack.item->GetLocalizedName().c_str());
 						}
 					);
@@ -119,11 +119,11 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 	renderer::DrawTitleBar(title, [&]() {
 		ImGui::SameLine();
 		// Shift above to center title text in middle of search bar
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - J_GUI_STYLE_TITLEBAR_PADDING_Y / 2);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - static_cast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
 
 		renderer::ImGuard title_guard{};
 		title_guard.PushStyleVar(ImGuiStyleVar_FramePadding,
-		                         {J_GUI_STYLE_WINDOW_PADDING_X, J_GUI_STYLE_TITLEBAR_PADDING_Y / 2});
+		                         {renderer::kGuiStyleWindowPaddingX, static_cast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2});
 
 		// Search text
 		// Make temporary buffer, copy std::string contents into, pass to imgui input, copy result back into std::string
@@ -141,7 +141,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 		player_data.recipeSearchText = buf;
 
 		// Continue title bar calculations from where the label text was
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - J_GUI_STYLE_TITLEBAR_PADDING_Y / 2);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - static_cast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
 	});
 
 	// Menu groups | A group button is twice the size of a slot
@@ -168,7 +168,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 		// Different color for currently selected recipe group
 		renderer::ImGuard recipe_group_guard{};
 		if (index == player_data.RecipeGroupGetSelected())
-			recipe_group_guard.PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
+			recipe_group_guard.PushStyleColor(ImGuiCol_Button, renderer::kGuiColButtonHover);
 
 		DrawItemSlot(menu_data, 2, recipe_group->sprite->internalId, 0, button_hovered, [&]() {
 			// Recipe group click
@@ -260,9 +260,9 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::PrototypeMana
 
 					renderer::ImGuard guard{};
 					if (can_be_recurse_crafted)
-						guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_WARNING);
+						guard.PushStyleColor(ImGuiCol_Text, renderer::kGuiColTextWarning);
 					else
-						guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT_ERROR);
+						guard.PushStyleColor(ImGuiCol_Text, renderer::kGuiColTextError);
 
 					ImGui::Text("%d/%d x %s", player_item_count, ingredient_pair.second,
 					            item->GetLocalizedName().c_str());
@@ -339,8 +339,8 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::Prototype
 
 	if (selected_stack) {
 		ImGuard guard{};
-		guard.PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
-		guard.PushStyleColor(ImGuiCol_PopupBg, J_GUI_COL_NONE);
+		guard.PushStyleColor(ImGuiCol_Border, kGuiColNone);
+		guard.PushStyleColor(ImGuiCol_PopupBg, kGuiColNone);
 
 		// Draw the window at the cursor
 		const ImVec2 cursor_pos(
@@ -404,7 +404,7 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 	ImGui::SetNextWindowPos(
 		ImVec2(0,
 		       static_cast<float>(Renderer::GetWindowHeight()) - y_offset
-		       - J_GUI_STYLE_WINDOW_PADDING_X));  // Use the x padding to keep it constant on x and y
+		       - kGuiStyleWindowPaddingX));  // Use the x padding to keep it constant on x and y
 	ImGui::SetNextWindowSize(
 		ImVec2(
 			20 + 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding,
@@ -414,8 +414,8 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 	ImGuard guard{};
 	guard.Begin("_crafting_queue", nullptr, flags);
 
-	guard.PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
-	guard.PushStyleColor(ImGuiCol_Border, J_GUI_COL_NONE);
+	guard.PushStyleColor(ImGuiCol_Button, kGuiColNone);
+	guard.PushStyleColor(ImGuiCol_Border, kGuiColNone);
 
 	DrawSlots(10, recipe_queue.size(), 1, [&](auto index, auto& button_hovered) {
 		const data::Recipe* recipe = recipe_queue.at(index);
@@ -458,9 +458,9 @@ void renderer::PickupProgressbar(game::PlayerData& player_data, const data::Prot
 	ImGuard guard{};
 	guard.Begin("_entity_pickup_status", nullptr, flags);
 
-	guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_NONE);
-	guard.PushStyleColor(ImGuiCol_FrameBg, J_GUI_COL_PROGRESS_BG);
-	guard.PushStyleColor(ImGuiCol_PlotHistogram, J_GUI_COL_PROGRESS);
+	guard.PushStyleColor(ImGuiCol_Text, kGuiColNone);
+	guard.PushStyleColor(ImGuiCol_FrameBg, kGuiColProgressBg);
+	guard.PushStyleColor(ImGuiCol_PlotHistogram, kGuiColProgress);
 
 	ImGui::ProgressBar(pickup_fraction, ImVec2(progress_bar_width, progress_bar_height));
 }
@@ -601,7 +601,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 
 		// Progress
 		const auto original_cursor_y = ImGui::GetCursorPosY();
-		ImGui::SetCursorPosY(original_cursor_y + J_GUI_STYLE_TITLEBAR_PADDING_Y / 2);
+		ImGui::SetCursorPosY(original_cursor_y + static_cast<float>(kGuiStyleTitlebarPaddingY) / 2);
 
 		const auto progress =
 			GetProgressBarFraction(

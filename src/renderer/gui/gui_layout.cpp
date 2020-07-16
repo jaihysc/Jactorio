@@ -33,12 +33,12 @@ void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::Prot
 	// Draw tooltip
 	renderer::ImGuard guard{};
 
-	guard.PushStyleColor(ImGuiCol_TitleBgActive, J_GUI_COL_TOOLTIP_TITLE_BG);
-	guard.PushStyleColor(ImGuiCol_TitleBg, J_GUI_COL_TOOLTIP_TITLE_BG);
+	guard.PushStyleColor(ImGuiCol_TitleBgActive, kGuiColTooltipTitleBg);
+	guard.PushStyleColor(ImGuiCol_TitleBg, kGuiColTooltipTitleBg);
 
 	{
 		renderer::ImGuard title_text_guard{};
-		title_text_guard.PushStyleColor(ImGuiCol_Text, J_GUI_COL_TOOLTIP_TITLE_TEXT);
+		title_text_guard.PushStyleColor(ImGuiCol_Text, kGuiColTooltipTitleText);
 
 		guard.Begin(title, nullptr, flags);
 	}
@@ -112,9 +112,9 @@ void renderer::DrawItemSlot(const MenuData& menu_data, const uint8_t scale, cons
 	// Backing button, detects clicks
 	{
 		ImGuard guard;
-		guard.PushStyleColor(ImGuiCol_Button, J_GUI_COL_NONE);
-		guard.PushStyleColor(ImGuiCol_ButtonHovered, J_GUI_COL_NONE);
-		guard.PushStyleColor(ImGuiCol_ButtonActive, J_GUI_COL_NONE);
+		guard.PushStyleColor(ImGuiCol_Button, kGuiColNone);
+		guard.PushStyleColor(ImGuiCol_ButtonHovered, kGuiColNone);
+		guard.PushStyleColor(ImGuiCol_ButtonActive, kGuiColNone);
 
 		ImGui::SetCursorPos({x_offset, y_offset});
 
@@ -137,7 +137,7 @@ void renderer::DrawItemSlot(const MenuData& menu_data, const uint8_t scale, cons
 	{
 		// Give visible button hover style if back is hovered
 		if (backing_button_hover) {
-			ImGui::PushStyleColor(ImGuiCol_Button, J_GUI_COL_BUTTON_HOVER);
+			ImGui::PushStyleColor(ImGuiCol_Button, kGuiColButtonHover);
 		}
 
 
@@ -186,12 +186,12 @@ void renderer::DrawItemSlot(const MenuData& menu_data, const uint8_t scale, cons
 }
 
 void renderer::DrawTitleBar(const std::string& title, const std::function<void()>& draw_func) {
-	AddVerticalSpaceAbsolute(J_GUI_STYLE_FRAME_PADDING_Y);
+	AddVerticalSpaceAbsolute(kGuiStyleFramePaddingY);
 
 	ImGui::Text("%s", title.c_str());
 	draw_func();
 
-	AddVerticalSpaceAbsolute(J_GUI_STYLE_TITLEBAR_PADDING_Y - J_GUI_VAR_ITEM_SPACING_Y);
+	AddVerticalSpaceAbsolute(kGuiStyleTitlebarPaddingY - kGuiStyleItemSpacingY);
 }
 
 // ======================================================================
@@ -210,8 +210,8 @@ void renderer::AddVerticalSpaceAbsolute(const float y) {
 ImVec2 renderer::GetWindowSize() {
 	// 20 is window padding on both sides, 80 for y is to avoid the scrollbar
 	auto window_size = ImVec2(
-		2 * J_GUI_STYLE_WINDOW_PADDING_X,
-		2 * J_GUI_STYLE_WINDOW_PADDING_Y + 80);
+		2 * kGuiStyleWindowPaddingX,
+		2 * kGuiStyleWindowPaddingY + 80);
 
 	window_size.x += 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
 	window_size.y += static_cast<unsigned int>(game::PlayerData::kDefaultInventorySize / 10) *
