@@ -35,6 +35,8 @@ Remarks:
 
 **Parameters:** `--notest` if you do not want to build the tests
 
+Executable will be placed in `out/<Build type>/src/`
+
 ---
 
 In a bash shell on Windows, Mac and Linux:
@@ -45,17 +47,19 @@ cd Jactorio
 sh ./build.sh <See build types above> --notest
 ```
 
-Executable will be placed in `out/<Build type>/src/`
-
 ## Running tests
+
+**Test parameters:** `--leakcheck` to perform a leak check, skipping some false positive tests
+
+The test results will be placed in the directory of `runtests.sh`
+
+---
 
 After following the build steps above **without** `--notest`
 
 ```bash
 sh ./runtests.sh <Build type used to build>
 ```
-
-The test results will be placed in the directory of `runtests.sh`
 
 ## Dependencies
 
