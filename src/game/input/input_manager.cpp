@@ -1,23 +1,46 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 11/15/2019
 
 #include "game/input/input_manager.h"
 
+#include <SDL.h>
 #include <unordered_map>
 #include <vector>
-#include <GLFW/glfw3.h>
 
 #include "jactorio.h"
 #include "core/data_type.h"
-#include "game/input/input_key.h"
 
-std::unordered_map<jactorio::game::InputKey,
-                   jactorio::game::KeyInput::InputTuple> jactorio::game::KeyInput::activeInputs_{};
+using namespace jactorio;
 
-unsigned jactorio::game::KeyInput::Subscribe(const InputCallback& callback,
-                                             const InputKey key,
-                                             const InputAction action,
-                                             const InputMod mods) {
+std::unordered_map<game::KeyInput::IntKeyMouseCodePair,
+                   game::KeyInput::InputKeyData> game::KeyInput::activeInputs_{};
+
+void game::KeyInput::SetInput(SDL_KeyCode keycode, InputAction action, SDL_Keymod mod) {
+	assert(action != InputAction::key_held);  // Not valid for setting an input, either pressed or repeat
+	assert(action != InputAction::key_pressed);  // Not valid for setting an input, use key_down
+
+	activeInputs_[keycode] = InputKeyData{keycode, action, mod};
+}
+
+void game::KeyInput::SetInput(MouseInput mouse, InputAction action, SDL_Keymod mod) {
+	assert(action != InputAction::key_held);  // Not valid for setting an input, either pressed or repeat
+	assert(action != InputAction::key_pressed);  // Not valid for setting an input, use key_down
+
+	auto mouse_code           = static_cast<IntKeyMouseCodePair>(mouse) * -1;
+	activeInputs_[mouse_code] = InputKeyData{mouse_code, action, mod};
+}
+
+// ======================================================================
+
+void game::KeyInput::CallCallbacks(const InputKeyData& input) {
+	const auto& vector = callbackIds_[input];
+	for (unsigned int id : vector) {
+		inputCallbacks_[id]();
+	}
+}
+
+game::KeyInput::CallbackId game::KeyInput::Register(const InputCallback& callback,
+                                                    SDL_KeyCode key, InputAction action, SDL_Keymod mods) {
+	// Keyboard
 	// Assign an id to the callback
 	callbackIds_[{key, action, mods}].push_back(callbackId_);
 
@@ -27,21 +50,19 @@ unsigned jactorio::game::KeyInput::Subscribe(const InputCallback& callback,
 	return callbackId_++;
 }
 
-void jactorio::game::KeyInput::SetInput(const InputKey key, InputAction action, const InputMod mods) {
-	assert(action != InputAction::key_held);  // Not valid for setting an input, either pressed or repeat
-	assert(action != InputAction::key_pressed);  // Not valid for setting an input, use key_down
+game::KeyInput::CallbackId game::KeyInput::Register(const InputCallback& callback,
+                                                    MouseInput button, InputAction action, SDL_Keymod mods) {
+	// Mouse
+	// Assign an id to the callback
+	callbackIds_[{static_cast<IntKeyMouseCodePair>(button) * -1, action, mods}].push_back(callbackId_);
 
-	activeInputs_[key] = {key, action, mods};
+	// Store callback under id
+	inputCallbacks_[callbackId_] = callback;
+
+	return callbackId_++;
 }
 
-void jactorio::game::KeyInput::CallCallbacks(const InputTuple& input) {
-	const auto& vector = callbackIds_[input];
-	for (unsigned int id : vector) {
-		inputCallbacks_[id]();
-	}
-}
-
-void jactorio::game::KeyInput::Raise() {
+void game::KeyInput::Raise() {
 	// if (renderer::imgui_manager::input_captured)
 	// return;
 
@@ -93,10 +114,7 @@ void jactorio::game::KeyInput::Raise() {
 	}
 }
 
-void jactorio::game::KeyInput::Unsubscribe(const unsigned callback_id,
-                                           const InputKey key,
-                                           const InputAction action,
-                                           const InputMod mods) {
+void game::KeyInput::Unsubscribe(const unsigned callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods) {
 	auto& id_vector = callbackIds_[{key, action, mods}];
 
 	// Erase the callback id to the callback
@@ -108,76 +126,25 @@ void jactorio::game::KeyInput::Unsubscribe(const unsigned callback_id,
 	inputCallbacks_.erase(callback_id);
 }
 
-void jactorio::game::KeyInput::ClearData() {
+void game::KeyInput::ClearData() {
 	inputCallbacks_.clear();
 	callbackIds_.clear();
 }
 
-// ======================================================================
-
-jactorio::game::InputKey jactorio::game::KeyInput::ToInputKey(const int key) {
-	// Mouse
-	if (GLFW_MOUSE_BUTTON_1 <= key && key <= GLFW_MOUSE_BUTTON_8)
-		return static_cast<InputKey>(key - GLFW_MOUSE_BUTTON_1 + static_cast<int>(InputKey::mouse1));
-
-	// Keyboard
-	if (GLFW_KEY_0 <= key && key <= GLFW_KEY_9)
-		return static_cast<InputKey>(key - GLFW_KEY_0 + static_cast<int>(InputKey::k0));
-
-	if (GLFW_KEY_A <= key && key <= GLFW_KEY_Z)
-		return static_cast<InputKey>(key - GLFW_KEY_A + static_cast<int>(InputKey::a));
-
-	switch (key) {
-	case GLFW_KEY_GRAVE_ACCENT:
-		return InputKey::grave;
-	case GLFW_KEY_TAB:
-		return InputKey::tab;
-	case GLFW_KEY_ESCAPE:
-		return InputKey::escape;
-	case GLFW_KEY_SPACE:
-		return InputKey::space;
-
-	default:
-		break;
-	}
-
-	LOG_MESSAGE_f(warning, "Key id %d is not mapped to an inputKey, this input will be ignored", key);
-	return InputKey::none;
-}
-
-jactorio::game::InputAction jactorio::game::KeyInput::ToInputAction(const int action) {
+game::InputAction game::KeyInput::ToInputAction(const int action, const bool repeat) {
 	switch (action) {
-	case GLFW_PRESS:
+	case SDL_KEYDOWN:
+		if (repeat)
+			return InputAction::key_repeat;
 		return InputAction::key_down;
-	case GLFW_REPEAT:
-		return InputAction::key_repeat;
-	case GLFW_RELEASE:
+
+	case SDL_KEYUP:
 		return InputAction::key_up;
 
 	default:
-		LOG_MESSAGE_f(warning, "Action id %d is not mapped to an inputAction, this input will be ignored", action);
-		return InputAction::none;
+		assert(false);
+		break;
 	}
-}
 
-jactorio::game::InputMod jactorio::game::KeyInput::ToInputMod(const int mod) {
-	switch (mod) {
-	case 0:
-		return InputMod::none;
-
-	case GLFW_MOD_ALT:
-		return InputMod::alt;
-	case GLFW_MOD_CAPS_LOCK:
-		return InputMod::caps_lk;
-	case GLFW_MOD_CONTROL:
-		return InputMod::control;
-	case GLFW_MOD_SHIFT:
-		return InputMod::shift;
-	case GLFW_MOD_SUPER:
-		return InputMod::super;
-
-	default:
-		LOG_MESSAGE_f(warning, "Modifier id %d is not mapped to an inputMod, this input will be ignored", mod);
-		return InputMod::none;
-	}
+	return InputAction::none;
 }

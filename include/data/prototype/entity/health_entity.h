@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/20/2020
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_HEALTH_ENTITY_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_HEALTH_ENTITY_H
@@ -28,10 +27,10 @@ namespace jactorio::data
 		/// \remark 0 max health is invalid
 		PYTHON_PROP_REF_I(HealthEntity, uint16_t, maxHealth, kDefaultHealth);
 
-		void PostLoadValidate() const override {
-			Entity::PostLoadValidate();
+		void PostLoadValidate(const PrototypeManager& data_manager) const override {
+			Entity::PostLoadValidate(data_manager);
 
-			J_DATA_ASSERT(maxHealth > 0, "Max health must be greater than 0")
+			J_DATA_ASSERT(maxHealth > 0, "Max health must be greater than 0");
 		}
 	};
 }

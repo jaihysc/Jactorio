@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
 #include <GL/glew.h>
 
@@ -17,7 +16,7 @@ jactorio::renderer::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer,
 	: rendererId_(0), textureBuffer_(std::move(buffer)), width_(width), height_(height) {
 
 	if (!textureBuffer_) {
-		LOG_MESSAGE(error, "Received empty texture")
+		LOG_MESSAGE(error, "Received empty texture");
 		return;
 	}
 
@@ -50,7 +49,7 @@ void jactorio::renderer::Texture::Bind(const unsigned int slot) const {
 	int texture_units;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
 	if (slot >= static_cast<unsigned int>(texture_units)) {
-		LOG_MESSAGE_f(error,
+		LOG_MESSAGE_F(error,
 		              "Texture slot out of bounds, attempting to bind at index %d", slot);
 		throw RendererException("Texture slot out of bounds");
 	}

@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #include "renderer/opengl/shader_manager.h"
 
@@ -24,7 +23,7 @@ glm::mat4 mvp_matrix;
 void jactorio::renderer::SetMvpUniformLocation(const int location) {
 	mvp_uniform_location = location;
 
-	LOG_MESSAGE(debug, "MVP uniform location set")
+	LOG_MESSAGE(debug, "MVP uniform location set");
 }
 
 /**

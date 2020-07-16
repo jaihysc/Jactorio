@@ -1,13 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #ifndef JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
 #define JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
 #pragma once
 
-#include "jactorio.h"
+#include <SDL.h>
 
-// https://stackoverflow.com/questions/47402766/switching-between-windowed-and-full-screen-in-opengl-glfw-3-2
+#include "jactorio.h"
 
 namespace jactorio::renderer
 {
@@ -27,11 +26,14 @@ namespace jactorio::renderer
 
 
 	J_NODISCARD bool IsFullscreen();
-	void SetFullscreen(bool fullscreen);
+	void SetFullscreen(bool desired_fullscreen);
 
 
-	GLFWwindow* GetWindow();
+	SDL_Window* GetWindow();
+	SDL_GLContext GetContext();
 	bool WindowContextActive();
+
+	void HandleSdlEvent(const SDL_Event& sdl_event);
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H

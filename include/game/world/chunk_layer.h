@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_LAYER_H
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_LAYER_H
@@ -58,7 +57,7 @@ namespace jactorio::game
 		template <typename TData, typename ... Args>
 		TData* MakeUniqueData(Args&& ... args) {
 			assert(!uniqueData_);  // Trying to create already created uniqueData
-			
+
 			uniqueData_ = new TData(std::forward<Args>(args) ...);
 			return static_cast<TData*>(uniqueData_);
 		}

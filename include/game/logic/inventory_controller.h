@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/20/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_LOGIC_INVENTORY_CONTROLLER_H
 #define JACTORIO_INCLUDE_GAME_LOGIC_INVENTORY_CONTROLLER_H
@@ -9,13 +8,17 @@
 
 namespace jactorio::game
 {
+	///
+	/// \return true if origin stack matches the filter of target stack and can thus be inserted into it
+	bool StackMatchesFilter(const data::Item::Stack& origin_stack,
+	                        const data::Item::Stack& target_stack);
 	/// 
-	/// Moves itemstack from index in origin to target inventory index <br>
-	/// When stacking items, the stack prioritizes the target inventory <br>
-	/// \remarks This should be only used by the player, machines should use add_itemstack_to_inv instead
-	/// \return true if origin_inv is empty after the move
-	bool MoveItemstackToIndex(data::ItemStack* origin_inv, uint16_t origin_inv_index,
-	                          data::ItemStack* target_inv, uint16_t target_inv_index,
+	/// \brief Moves itemstack origin to target  
+	/// When stacking items, the stack prioritizes the target inventory
+	/// \remarks This should be only used by the player, machines should use AddStack instead
+	/// \return true if origin_stack is empty after the move
+	bool MoveItemstackToIndex(data::Item::Stack& origin_stack,
+	                          data::Item::Stack& target_stack,
 	                          unsigned short mouse_button);
 
 	// ======================================================================
@@ -23,43 +26,44 @@ namespace jactorio::game
 
 	///
 	/// \brief Returns whether or not item stack can be added to the target_inv 
-	bool CanAddStack(const data::ItemStack* target_inv, uint16_t target_inv_size,
-	                 const data::ItemStack& item_stack);
+	/// \return success, first index which can be added at
+	std::pair<bool, size_t> CanAddStack(const data::Item::Inventory& inv,
+	                                    const data::Item::Stack& item_stack);
 
 	///
 	/// \brief Attempts to add item_stack to target_inv
 	/// \return Number of items which were NOT added 
-	decltype(data::ItemStack::second) AddStack(data::ItemStack* target_inv, uint16_t target_inv_size,
-	                                           const data::ItemStack& item_stack);
+	data::Item::StackCount AddStack(data::Item::Inventory& inv,
+	                                const data::Item::Stack& item_stack);
 
 	///
 	/// \brief Attempts to add the specified item stack to the target_inv and subtracts item_stack 
 	/// \details Add to the inventory left to right, top to bottom | Fill slots of same type if it encounters them
 	/// \return false if failed, amount left in item_stack.second is remaining amount
-	bool AddStackSub(data::ItemStack* target_inv, uint16_t target_inv_size,
-	                 data::ItemStack& item_stack);
+	bool AddStackSub(data::Item::Inventory& inv,
+	                 data::Item::Stack& item_stack);
 
 	/// 
 	/// \brief Gets count of items matching item in inv of inv_size
 	/// \return Item count with internal id iid
-	uint32_t GetInvItemCount(const data::ItemStack* inv, uint16_t inv_size, const data::Item* item);
+	uint32_t GetInvItemCount(const data::Item::Inventory& inv, const data::Item* item);
 
 	///
 	/// \brief Gets the first item within the inventory
 	/// \return nullptr if no items were found
-	const data::Item* GetFirstItem(const data::ItemStack* inv, uint16_t inv_size);
+	const data::Item* GetFirstItem(const data::Item::Inventory& inv);
 
 
 	/// 
 	/// \brief Removes remove_amount of specified item from inventory inv 
 	/// \return false if there is insufficient items to remove remove_amount
-	bool RemoveInvItem(data::ItemStack* inv, uint16_t inv_size,
+	bool RemoveInvItem(data::Item::Inventory& inv,
 	                   const data::Item* item, uint32_t remove_amount);
 
 	/// 
 	/// \brief Removes remove_amount of specified item from inventory inv 
 	/// \remark DOES NOT check that there is sufficient items to remove, use RemoveInvItem() if checking is needed
-	void DeleteInvItem(data::ItemStack* inv, uint16_t inv_size,
+	void DeleteInvItem(data::Item::Inventory& inv,
 	                   const data::Item* item, uint32_t remove_amount);
 }
 

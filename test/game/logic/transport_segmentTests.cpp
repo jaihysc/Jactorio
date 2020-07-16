@@ -1,9 +1,8 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/25/2020
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/entity/transport/transport_belt.h"
+#include "data/prototype/entity/transport_belt.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"

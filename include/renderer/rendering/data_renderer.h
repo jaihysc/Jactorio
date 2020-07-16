@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/25/2020
 
 #ifndef JACTORIO_RENDERER_RENDERING_DATA_RENDERER_H
 #define JACTORIO_RENDERER_RENDERING_DATA_RENDERER_H

@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_BASE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_BASE_H
@@ -24,11 +23,11 @@ namespace jactorio::data
 	public:
 		PYTHON_PROP_I(ItemBase, Sprite*, sprite, nullptr);
 
-		void PostLoadValidate() const override;
+		void PostLoadValidate(const PrototypeManager&) const override;
 	};
 
-	inline void ItemBase::PostLoadValidate() const {
-		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified")
+	inline void ItemBase::PostLoadValidate(const PrototypeManager&) const {
+		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
 	}
 }
 

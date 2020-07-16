@@ -1,13 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/25/2020
 
 #include "data/prototype/entity/inserter.h"
 
 using namespace jactorio;
 
-data::Sprite::SetT data::Inserter::MapPlacementOrientation(const Orientation orientation,
-                                                           game::WorldData&,
-                                                           const game::WorldData::WorldPair&) const {
+data::Sprite::SetT data::Inserter::OnRGetSet(const Orientation orientation,
+                                             game::WorldData&,
+                                             const game::WorldData::WorldPair&) const {
 	switch (orientation) {
 
 	case Orientation::up:
@@ -27,10 +26,11 @@ data::Sprite::SetT data::Inserter::MapPlacementOrientation(const Orientation ori
 	return 0;
 }
 
-void data::Inserter::OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
-                             game::ChunkTileLayer& tile_layer, Orientation orientation) const {
+void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
+                             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer,
+                             Orientation orientation) const {
 	auto* inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
-	inserter_data->set  = MapPlacementOrientation(orientation, world_data, world_coords);
+	inserter_data->set  = OnRGetSet(orientation, world_data, world_coords);
 
 
 	// Dropoff side
@@ -51,13 +51,13 @@ void data::Inserter::OnBuild(game::WorldData& world_data, const game::WorldData:
 	}
 }
 
-void data::Inserter::OnTileUpdate(game::WorldData& world_data, 
-								  const game::WorldData::WorldPair& emit_coords,
-                                  const game::WorldData::WorldPair& receive_coords, UpdateType type) const {
+void data::Inserter::OnTileUpdate(game::WorldData& world_data,
+                                  const game::WorldData::WorldPair& emit_coords,
+                                  const game::WorldData::WorldPair& receive_coords, UpdateType) const {
 	auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 	auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
 
-	auto& target_layer = world_data.GetTile(emit_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+	auto& target_layer = world_data.GetTile(emit_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity).GetMultiTileTopLeft();
 	auto* target_data  = target_layer.GetUniqueData();
 
 	//
@@ -100,8 +100,8 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 	}
 }
 
-void data::Inserter::OnRemove(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
-                              game::ChunkTileLayer& tile_layer) const {
+void data::Inserter::OnRemove(game::WorldData& world_data, game::LogicData&,
+                              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const {
 	world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords,
 	                       game::ChunkTile::ChunkLayer::entity);
 
@@ -111,7 +111,7 @@ void data::Inserter::OnRemove(game::WorldData& world_data, const game::WorldData
 	{
 		auto emit_coords = world_coords;
 		OrientationIncrement(inserter_data->orientation,
-							 emit_coords.first, emit_coords.second, this->tileReach);
+		                     emit_coords.first, emit_coords.second, this->tileReach);
 
 		world_data.updateDispatcher.Unregister({world_coords, emit_coords});
 	}
@@ -119,7 +119,7 @@ void data::Inserter::OnRemove(game::WorldData& world_data, const game::WorldData
 	{
 		auto emit_coords = world_coords;
 		OrientationIncrement(inserter_data->orientation,
-							 emit_coords.first, emit_coords.second, this->tileReach * -1);
+		                     emit_coords.first, emit_coords.second, this->tileReach * -1);
 
 		world_data.updateDispatcher.Unregister({world_coords, emit_coords});
 	}

@@ -1,7 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_line.h"
 
 #include <cmath>
 
@@ -36,7 +35,7 @@ void ApplyTerminationDeductionL(const game::TransportSegment::TerminationType te
 }
 
 void ApplyTargetTerminationDeductionL(const game::TransportSegment::TerminationType termination_type,
-                                game::TransportLineOffset& offset) {
+                                      game::TransportLineOffset& offset) {
 	switch (termination_type) {
 	case game::TransportSegment::TerminationType::bend_left:
 		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
@@ -81,7 +80,7 @@ void ApplyTerminationDeductionR(const game::TransportSegment::TerminationType te
 }
 
 void ApplyTargetTerminationDeductionR(const game::TransportSegment::TerminationType termination_type,
-                                game::TransportLineOffset& offset) {
+                                      game::TransportLineOffset& offset) {
 	switch (termination_type) {
 	case game::TransportSegment::TerminationType::bend_left:
 		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
@@ -116,7 +115,8 @@ J_NODISCARD bool MoveNextItem(const game::TransportLineOffset& tiles_moved,
 		if (i_item_offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(game::kItemSpacing)) {
 			// Found a valid item to decrement
 			if (!has_target_segment)
-				index = i;  // Always check every item from index 0 if there is a target segment as the previous item may have moved
+				index =
+					i;  // Always check every item from index 0 if there is a target segment as the previous item may have moved
 			i_item_offset -= tiles_moved;
 
 			return true;
@@ -185,7 +185,7 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 				// Transition into right lane
 				if (segment.terminationType == game::TransportSegment::TerminationType::right_only)
 					ApplyTargetTerminationDeductionR(target_segment.terminationType, target_offset);
-				else 
+				else
 					ApplyTargetTerminationDeductionL(target_segment.terminationType, target_offset);
 			}
 			else {
@@ -195,7 +195,7 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 				// Transition into left lane
 				if (segment.terminationType == game::TransportSegment::TerminationType::left_only)
 					ApplyTargetTerminationDeductionL(target_segment.terminationType, target_offset);
-				else 
+				else
 					ApplyTargetTerminationDeductionR(target_segment.terminationType, target_offset);
 			}
 

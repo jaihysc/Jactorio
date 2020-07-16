@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 12/06/2019
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -58,7 +57,7 @@ jactorio::data::Sprite::Sprite(Sprite&& other) noexcept
 
 // ======================================================================
 
-bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) {
+bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) const {
 	for (auto& i : this->group) {
 		if (i == group)
 			return true;
@@ -70,7 +69,7 @@ bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) {
 void jactorio::data::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group) {
 	LOG_MESSAGE(debug, "Using default sprite group:");
 	for (auto& group : new_group) {
-		LOG_MESSAGE_f(debug, "    %d", static_cast<int>(group));
+		LOG_MESSAGE_F(debug, "    %d", static_cast<int>(group));
 	}
 
 
@@ -89,7 +88,7 @@ void jactorio::data::Sprite::LoadImageFromFile() {
 	);
 
 	if (!spriteBuffer_) {
-		LOG_MESSAGE_f(error, "Failed to read sprite at: %s", spritePath_.c_str());
+		LOG_MESSAGE_F(error, "Failed to read sprite at: %s", spritePath_.c_str());
 
 		std::ostringstream sstr;
 		sstr << "Failed to read sprite at: " << spritePath_;
@@ -150,7 +149,7 @@ jactorio::data::Sprite* jactorio::data::Sprite::LoadImage(const std::string& ima
 	return this;
 }
 
-void jactorio::data::Sprite::PostLoadValidate() const {
+void jactorio::data::Sprite::PostLoadValidate(const PrototypeManager&) const {
 	J_DATA_ASSERT(frames > 0, "Frames must be at least 1");
 	J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
 }

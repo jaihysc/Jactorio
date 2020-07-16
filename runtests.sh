@@ -8,10 +8,18 @@ if [[ -z "$1" ]] || [[ "$1" != "Debug"  &&  "$1" != "Release" &&  "$1" != "RelWi
     exit 1
 fi
 
+gtestExecutor=""
+gtestFilter="*"
+
+if [[ "$2" == "--leakcheck" ]]; then
+    gtestExecutor="valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose"
+    gtestFilter="*:-PybindManagerTest.*:DataManagerTest.LoadData*"
+    echo "Using $gtestExecutor for leak check"
+fi
 
 cd "$(dirname "$0")" || exit 2
 
 cd out/"$1"/test/ || exit 2
-./jactorioTest --gtest_output="xml:../../../TEST-gtest_results.xml" || exit 2
+$gtestExecutor ./jactorioTest --gtest_filter="$gtestFilter" --gtest_output="xml:../../../TEST-gtest_results.xml" || exit 2
 
 exit 0

@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_SPRITEMAP_GENERATOR_H
@@ -73,11 +72,13 @@ namespace jactorio::renderer
 		///
 		/// \brief Creates a spritemap and stores it as a renderer::Texture
 		/// \remark Requires OpenGL context
-		void GInitializeSpritemap(data::Sprite::SpriteGroup group, bool invert_sprites);
+		void GInitializeSpritemap(const data::PrototypeManager& data_manager,
+		                          data::Sprite::SpriteGroup group, bool invert_sprites);
 
 		///
 		/// \brief Creates a spritemap
-		J_NODISCARD SpritemapData CreateSpritemap(data::Sprite::SpriteGroup group, bool invert_sprites) const;
+		J_NODISCARD SpritemapData CreateSpritemap(const data::PrototypeManager& data_manager,
+		                                          data::Sprite::SpriteGroup group, bool invert_sprites) const;
 
 		///
 		/// \brief Retrieves spritemap at specified group
@@ -89,7 +90,7 @@ namespace jactorio::renderer
 		/// \remark Color in non specified areas of the spritemap are undefined
 		/// \param sprites Collection of pointers towards sprite prototypes
 		/// \param invert_sprites Whether or not to vertically invert the sprites on the spritemap. Commonly done for OpenGL
-		J_NODISCARD SpritemapData GenSpritemap(const std::vector<data::Sprite*>& sprites,
+		J_NODISCARD SpritemapData GenSpritemap(const std::vector<const data::Sprite*>& sprites,
 		                                       bool invert_sprites) const;
 	private:
 		/// Additional border to each sprite, use to avoid black lines
@@ -117,13 +118,13 @@ namespace jactorio::renderer
 		static data::Sprite::SpriteDimension GetSpriteHeight(const data::Sprite* sprite);
 
 
-		static void SortInputSprites(std::vector<data::Sprite*>& sprites);
+		static void SortInputSprites(std::vector<const data::Sprite*>& sprites);
 
 		///
 		/// \brief Recursively creates linked GeneratorNodes of sprites
 		/// 
 		/// Will erase from sprites as each sprite is used
-		static void GenerateSpritemapNodes(std::vector<data::Sprite*>& sprites,
+		static void GenerateSpritemapNodes(std::vector<const data::Sprite*>& sprites,
 		                                   std::vector<GeneratorNode*>& node_buffer,
 		                                   GeneratorNode& parent_node,
 		                                   SpritemapDimension max_width, SpritemapDimension max_height);

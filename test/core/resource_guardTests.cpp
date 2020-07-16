@@ -1,11 +1,10 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 12/01/2019
 
 #include <gtest/gtest.h>
 
 #include "core/resource_guard.h"
 
-namespace core
+namespace jactorio::core
 {
 	namespace
 	{
@@ -14,7 +13,7 @@ namespace core
 
 	TEST(ResourceGuardTest, CallDestructor) {
 		{
-			auto guard = jactorio::core::ResourceGuard<void>([]() {
+			auto guard = ResourceGuard<void>([]() {
 				non_capturing_called = true;
 			});
 		}
@@ -25,7 +24,7 @@ namespace core
 	TEST(ResourceGuardTest, CapturingCallDestructor) {
 		bool called = false;
 		{
-			auto guard = jactorio::core::CapturingGuard<void()>([&] {
+			auto guard = CapturingGuard<void()>([&] {
 				called = true;
 			});
 		}

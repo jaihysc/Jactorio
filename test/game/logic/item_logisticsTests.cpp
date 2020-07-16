@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 04/07/2020
 
 #include <gtest/gtest.h>
 
@@ -8,7 +7,7 @@
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/mining_drill.h"
-#include "data/prototype/entity/transport/transport_belt.h"
+#include "data/prototype/entity/transport_belt.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
 
@@ -18,6 +17,7 @@ namespace jactorio::game
 	{
 	protected:
 		WorldData worldData_{};
+		LogicData logicData_{};
 
 		void SetUp() override {
 			worldData_.EmplaceChunk(0, 0);
@@ -43,10 +43,10 @@ namespace jactorio::game
 		ASSERT_TRUE(drop_off.Initialize(worldData_, *container_layer.GetUniqueData(), 2, 4));
 
 		data::Item item{};
-		drop_off.DropOff({&item, 10});
+		drop_off.DropOff(logicData_, {&item, 10});
 
 		EXPECT_EQ(
-			container_layer.GetUniqueData<data::ContainerEntityData>()->inventory[0].second,
+			container_layer.GetUniqueData<data::ContainerEntityData>()->inventory[0].count,
 			10);
 	}
 
@@ -58,13 +58,12 @@ namespace jactorio::game
 		ASSERT_TRUE(pickup.Initialize(worldData_, *container_layer.GetUniqueData(), 2, 4));
 
 		data::Item item{};
-		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
+		auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
-		data::ItemStack out_item_stack;
-		pickup.Pickup(1, data::ToRotationDegree(180.f), 2, out_item_stack);
+		pickup.Pickup(logicData_, 1, data::ToRotationDegree(180.f), 2);
 
-		EXPECT_EQ(inv[0].second, 8);
+		EXPECT_EQ(inv[0].count, 8);
 	}
 
 	// ======================================================================
@@ -78,16 +77,10 @@ namespace jactorio::game
 			: ItemDropOff(data::Orientation::up) {
 		}
 
-		void TransportLineInsert(const data::Orientation orientation,
-		                         data::TransportLineData& line_data) const {
-			data::Item item{};
-			InsertTransportBelt({&item, 1},
-			                    line_data,
-			                    orientation);
-		}
-
 	protected:
 		WorldData worldData_{};
+		LogicData logicData_{};
+
 		TransportSegment* segment_ = nullptr;
 
 		// Creates a transport line with orientation at (4, 4)
@@ -103,45 +96,64 @@ namespace jactorio::game
 
 			return data::TransportLineData{segment};
 		}
+
+		void TransportLineInsert(const data::Orientation orientation,
+		                         data::TransportLineData& line_data) {
+			data::Item item{};
+			InsertTransportBelt(logicData_, {&item, 1},
+			                    line_data,
+			                    orientation);
+		}
 	};
 
 	TEST_F(ItemDropOffTest, GetInsertFunc) {
+		auto set_prototype = [&](data::Entity& entity_proto) {
+			worldData_.GetTile(2, 4)
+			          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &entity_proto);
+		};
+
 		worldData_.EmplaceChunk(0, 0);
 
 		// For passing into ItemDropOff::Initialize
 		data::HealthEntityData mock_unique_data{};
 
 
-		// Empty tile cannot be inserted into
+		// No: Empty tile cannot be inserted into
 		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
 		EXPECT_FALSE(this->IsInitialized());
 
 
-		// Transport belt can be inserted onto
+		// Ok: Transport belt can be inserted onto
 		data::TransportBelt belt{};
-		worldData_.GetTile(2, 4)
-		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &belt);
+		set_prototype(belt);
 
 		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
 		EXPECT_TRUE(this->IsInitialized());
 
 
-		// Mining drill cannot be inserted into 
+		// No: Mining drill 
 		data::MiningDrill drill{};
-		worldData_.GetTile(2, 4)
-		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &drill);
+		set_prototype(drill);
 
 		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
 		EXPECT_TRUE(this->IsInitialized());  // Still initialized from transport belt
 
 
-		// Container can be inserted into
+		// Ok: Container
 		data::ContainerEntity container{};
-		worldData_.GetTile(2, 4)
-		          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &container);
+		set_prototype(container);
 
 		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
 		EXPECT_TRUE(this->IsInitialized());
+
+
+		// Ok: Assembly machine
+		data::AssemblyMachine assembly_machine{};
+		TestSetupAssemblyMachine(worldData_, {2, 4}, assembly_machine);
+
+		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {3, 5}));
+		EXPECT_TRUE(this->IsInitialized());
+		EXPECT_EQ(this->targetProtoData_, &assembly_machine);
 	}
 
 	// ======================================================================
@@ -160,17 +172,14 @@ namespace jactorio::game
 
 		data::Item item{};
 		// Orientation is orientation from origin object
-		InsertContainerEntity({&item, 2},
+		InsertContainerEntity(logicData_, {&item, 2},
 		                      *container_data,
 		                      data::Orientation::down);
 
 		// Inserted item
-		EXPECT_EQ(container_data->inventory[0].first, &item);
-		EXPECT_EQ(container_data->inventory[0].second, 2);
+		EXPECT_EQ(container_data->inventory[0].item, &item);
+		EXPECT_EQ(container_data->inventory[0].count, 2);
 	}
-
-	// ======================================================================
-
 
 	TEST_F(ItemDropOffTest, InsertOffset) {
 		auto line_proto             = CreateTransportLine(data::Orientation::up);
@@ -294,6 +303,47 @@ namespace jactorio::game
 		}
 	}
 
+	TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
+		data::PrototypeManager prototype_manager{};
+
+		auto recipe_pack = TestSetupRecipe(prototype_manager);
+
+		data::AssemblyMachineData asm_data{};
+		asm_data.ChangeRecipe(logicData_, prototype_manager, &recipe_pack.recipe);
+
+		asm_data.ingredientInv[0] = {recipe_pack.item1, 5, recipe_pack.item1};
+		asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
+
+
+		// Needs prototype data to register crafting callback
+		data::AssemblyMachine assembly_machine{};
+		targetProtoData_ = &assembly_machine;
+
+		// Orientation doesn't matter
+		EXPECT_TRUE(InsertAssemblyMachine(logicData_, {recipe_pack.item2, 10}, asm_data, data::Orientation::up));
+
+		EXPECT_EQ(asm_data.ingredientInv[1].item, recipe_pack.item2);
+		EXPECT_EQ(asm_data.ingredientInv[1].count, 9);  // 1 used to begin crafting
+
+		// Registered to start crafting
+		EXPECT_NE(asm_data.deferralEntry.second, 0);
+	}
+
+	TEST_F(ItemDropOffTest, InsertAssemblyMachineExceedStack) {
+		// Inserters will not insert into assembly machines if it will exceed the current item's stack limit
+
+		data::PrototypeManager prototype_manager{};
+		auto recipe_pack = TestSetupRecipe(prototype_manager);
+
+		data::AssemblyMachineData asm_data{};
+		asm_data.ingredientInv.resize(2);
+		asm_data.ingredientInv[0] = {recipe_pack.item1, 49, recipe_pack.item1};
+		asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
+
+		// 49 + 2 > 50
+		EXPECT_FALSE(InsertAssemblyMachine(logicData_, {recipe_pack.item1, 2}, asm_data, data::Orientation::up));
+	}
+
 	// ======================================================================
 
 	class InserterPickupTest : public testing::Test, public InserterPickup
@@ -309,6 +359,7 @@ namespace jactorio::game
 
 	protected:
 		WorldData worldData_{};
+		LogicData logicData_{};
 
 		data::Inserter inserterProto_{};
 		TransportSegment* segment_ = nullptr;
@@ -333,22 +384,71 @@ namespace jactorio::game
 
 
 		void PickupLine(const data::Orientation orientation,
-		                data::TransportLineData& line_data) const {
+		                data::TransportLineData& line_data) {
 			constexpr int pickup_amount = 1;
 
-			data::ItemStack out_item_stack;
-			const bool result = PickupTransportBelt(1, data::ToRotationDegree(kMaxInserterDegree),
+			const auto result = PickupTransportBelt(logicData_,
+			                                        1, data::ToRotationDegree(kMaxInserterDegree),
 			                                        pickup_amount,
 			                                        line_data,
-			                                        orientation,
-			                                        out_item_stack);
+			                                        orientation);
 
-			EXPECT_TRUE(result);
+			EXPECT_TRUE(result.first);
 
-			EXPECT_NE(out_item_stack.first, nullptr);
-			EXPECT_EQ(out_item_stack.second, pickup_amount);
+			EXPECT_NE(result.second.item, nullptr);
+			EXPECT_EQ(result.second.count, pickup_amount);
 		}
 	};
+
+	TEST_F(InserterPickupTest, GetPickupFunc) {
+		auto set_prototype = [&](data::Entity& entity_proto) {
+			worldData_.GetTile(2, 4)
+			          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &entity_proto);
+		};
+
+		worldData_.EmplaceChunk(0, 0);
+
+		// For passing into ItemPickup::Initialize
+		data::HealthEntityData mock_unique_data{};
+
+
+		// No: Empty tile cannot be picked up from
+		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_FALSE(this->IsInitialized());
+
+
+		// Ok: Transport belt can be picked up from
+		data::TransportBelt belt{};
+		set_prototype(belt);
+
+		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());
+
+
+		// No: Mining drill 
+		data::MiningDrill drill{};
+		set_prototype(drill);
+
+		EXPECT_FALSE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());  // Still initialized from transport belt
+
+
+		// Ok: Container
+		data::ContainerEntity container{};
+		set_prototype(container);
+
+		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {2, 4}));
+		EXPECT_TRUE(this->IsInitialized());
+
+
+		// Ok: Assembly machine
+		data::AssemblyMachine assembly_machine{};
+		TestSetupAssemblyMachine(worldData_, {2, 4}, assembly_machine);
+
+		EXPECT_TRUE(this->Initialize(worldData_, mock_unique_data, {3, 5}));
+		EXPECT_TRUE(this->IsInitialized());
+		EXPECT_EQ(this->targetProtoData_, &assembly_machine);
+	}
 
 	TEST_F(InserterPickupTest, PickupContainerEntity) {
 		data::ContainerEntity container_entity{};
@@ -356,29 +456,27 @@ namespace jactorio::game
 		auto& container_data  = *container_layer.GetUniqueData();
 
 		data::Item item{};
-		auto* inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
+		auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
-		data::ItemStack out_item_stack;
-
-		PickupContainerEntity(1, data::ToRotationDegree(179),
+		PickupContainerEntity(logicData_,
+		                      1, data::ToRotationDegree(179),
 		                      1, container_data,
-		                      data::Orientation::up,
-		                      out_item_stack);
+		                      data::Orientation::up);
 
-		EXPECT_EQ(inv[0].second, 10);  // No items picked up, not 180 degrees
+		EXPECT_EQ(inv[0].count, 10);  // No items picked up, not 180 degrees
 
-		PickupContainerEntity(1, data::ToRotationDegree(180),
-		                      2, container_data,
-		                      data::Orientation::up,
-		                      out_item_stack);
-		EXPECT_EQ(inv[0].second, 8);  // 2 items picked up
+		auto result = PickupContainerEntity(logicData_,
+		                                    1, data::ToRotationDegree(180),
+		                                    2, container_data,
+		                                    data::Orientation::up);
+		EXPECT_EQ(inv[0].count, 8);  // 2 items picked up
 
-		EXPECT_NE(out_item_stack.first, nullptr);
-		EXPECT_EQ(out_item_stack.second, 2);
+		EXPECT_NE(result.second.item, nullptr);
+		EXPECT_EQ(result.second.count, 2);
 	}
 
-	TEST_F(InserterPickupTest, PickupContainerTransportLineUp) {
+	TEST_F(InserterPickupTest, PickupTransportLineUp) {
 		// Line is above inserter
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
@@ -410,7 +508,7 @@ namespace jactorio::game
 		}
 	}
 
-	TEST_F(InserterPickupTest, PickupContainerTransportLineRight) {
+	TEST_F(InserterPickupTest, PickupTransportLineRight) {
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
@@ -437,7 +535,7 @@ namespace jactorio::game
 		}
 	}
 
-	TEST_F(InserterPickupTest, PickupContainerTransportLineDown) {
+	TEST_F(InserterPickupTest, PickupTransportLineDown) {
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
@@ -464,7 +562,7 @@ namespace jactorio::game
 		}
 	}
 
-	TEST_F(InserterPickupTest, PickupContainerTransportLineLeft) {
+	TEST_F(InserterPickupTest, PickupTransportLineLeft) {
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
@@ -489,5 +587,57 @@ namespace jactorio::game
 			PickupLine(data::Orientation::left, line);
 			EXPECT_EQ(segment_->right.lane.size(), 0);
 		}
+	}
+
+	TEST_F(InserterPickupTest, PickupAssemblyMachine) {
+		data::PrototypeManager prototype_manager{};
+
+		data::AssemblyMachine asm_machine{};
+		auto& layer = TestSetupAssemblyMachine(worldData_, {0, 0}, asm_machine);
+		auto* data  = layer.GetUniqueData<data::AssemblyMachineData>();
+
+		// Does nothing as there is no recipe yet
+		PickupAssemblyMachine(logicData_,
+		                      2, data::ToRotationDegree(kMaxInserterDegree),
+		                      2,
+		                      *data, data::Orientation::up
+		);
+
+		// ======================================================================
+
+		auto recipe_pack = TestSetupRecipe(prototype_manager);
+
+
+		data->ChangeRecipe(logicData_, prototype_manager, &recipe_pack.recipe);
+
+		// No items in product inventory
+		EXPECT_FALSE(
+			PickupAssemblyMachine(logicData_,
+				2, data::ToRotationDegree(kMaxInserterDegree),
+				2,
+				*data, data::Orientation::up).first);
+
+
+		// Has items in product inventory
+		data->ingredientInv[0] = {recipe_pack.item1, 1};
+		data->ingredientInv[1] = {recipe_pack.item2, 1};
+
+		data->productInv[0] = {recipe_pack.itemProduct, 10, recipe_pack.itemProduct};
+
+		targetProtoData_ = &asm_machine;
+		auto result      = PickupAssemblyMachine(logicData_,
+		                                         2, data::ToRotationDegree(kMaxInserterDegree),
+		                                         2,
+		                                         *data, data::Orientation::up
+		);
+
+		EXPECT_TRUE(result.first);
+		EXPECT_EQ(result.second.item, recipe_pack.itemProduct);
+		EXPECT_EQ(result.second.count, 2);
+
+		EXPECT_EQ(data->productInv[0].count, 8);
+
+		// Begin crafting since ingredients are met
+		EXPECT_NE(data->deferralEntry.second, 0);
 	}
 }

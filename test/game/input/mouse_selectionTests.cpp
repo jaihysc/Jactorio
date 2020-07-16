@@ -1,9 +1,8 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/05/2020
 
 #include <gtest/gtest.h>
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/mining_drill.h"
 #include "game/input/mouse_selection.h"
@@ -16,22 +15,21 @@ namespace jactorio::game
 
 	protected:
 		WorldData worldData_{};
+		LogicData logicData_{};
+
 		PlayerData playerData_{};
 		MouseSelection mouseSelection_{};
+
+		data::PrototypeManager dataManager_{};
 
 		// Call setup_mouse_cursor before using
 		data::Sprite* cursorSprite_ = nullptr;
 
 
 		void SetUp() override {
-			playerData_.SetPlayerWorld(&worldData_);
+			playerData_.SetPlayerWorldData(worldData_);
+			playerData_.SetPlayerLogicData(logicData_);
 			worldData_.AddChunk(Chunk(0, 0));
-		}
-
-		void TearDown() override {
-			if (setupCursor_) {
-				data::ClearData();
-			}
 		}
 
 		///
@@ -39,7 +37,7 @@ namespace jactorio::game
 		void SetupMouseCursor() {
 			setupCursor_  = true;
 			cursorSprite_ = new data::Sprite{};
-			DataRawAdd("__core__/cursor-select", cursorSprite_);
+			dataManager_.DataRawAdd("__core__/cursor-select", cursorSprite_);
 		}
 	};
 
@@ -52,7 +50,7 @@ namespace jactorio::game
 		entity.placeable = true;
 
 		// Should set item's sprite at overlay layer at world position 0, 0
-		mouseSelection_.DrawOverlay(playerData_, &entity, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay).
 			prototypeData,
@@ -60,7 +58,7 @@ namespace jactorio::game
 		);
 
 		// Should clear last overlay at 0,0 Draw new at 1, 0
-		mouseSelection_.DrawOverlay(playerData_, &entity, 1, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 1, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay).
 			prototypeData,
@@ -84,7 +82,7 @@ namespace jactorio::game
 		entity.placeable = false;
 
 		// Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not placeable
-		mouseSelection_.DrawOverlay(playerData_, &entity, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay)
 			.prototypeData,
@@ -106,7 +104,7 @@ namespace jactorio::game
 		          ->GetLayer(ChunkTile::ChunkLayer::entity).prototypeData = &entity;
 
 		// Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not placeable
-		mouseSelection_.DrawOverlay(playerData_, &entity, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay)
 			.prototypeData,
@@ -118,7 +116,7 @@ namespace jactorio::game
 		// CLear last and draw nothing new
 
 		// Should set item's sprite at overlay layer at world position 0, 0
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay).
 			prototypeData,
@@ -126,7 +124,7 @@ namespace jactorio::game
 		);
 
 		// Should clear last overlay at 0,0 Draw new at 1, 0
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 1, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 1, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay).
 			prototypeData,
@@ -155,7 +153,7 @@ namespace jactorio::game
 		          ->GetLayer(ChunkTile::ChunkLayer::entity).prototypeData = &entity;
 
 
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay)
 			.prototypeData,
@@ -178,7 +176,7 @@ namespace jactorio::game
 		          ->GetLayer(ChunkTile::ChunkLayer::resource).prototypeData = &entity;
 
 
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 		EXPECT_EQ(
 			worldData_.GetTile(0, 0)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::overlay)
 			.prototypeData,
@@ -191,11 +189,11 @@ namespace jactorio::game
 
 		WorldData world_data{};
 		PlayerData player_data{};
-		player_data.SetPlayerWorld(&world_data);
+		player_data.SetPlayerWorldData(world_data);
 
 		MouseSelection mouse_selection{};
 
-		mouse_selection.DrawOverlay(player_data, nullptr, 0, 0, data::Orientation::up);
+		mouse_selection.DrawOverlay(player_data, dataManager_, nullptr, 0, 0, data::Orientation::up);
 	}
 
 	TEST_F(MouseSelectionOverlayTest, DrawOverlay3x3) {
@@ -209,7 +207,7 @@ namespace jactorio::game
 		data::Sprite drill_sprite{};
 		drill.sprite = &drill_sprite;
 
-		mouseSelection_.DrawOverlay(playerData_, &drill, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &drill, 0, 0, data::Orientation::up);
 
 		for (int y = 0; y < 3; ++y) {
 			for (int x = 0; x < 3; ++x) {
@@ -222,7 +220,7 @@ namespace jactorio::game
 
 
 		// Removing the drawn overlay, no resource or entity data so no cursor is drawn
-		mouseSelection_.DrawOverlay(playerData_, nullptr, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 
 		for (int y = 0; y < 3; ++y) {
 			for (int x = 0; x < 3; ++x) {
@@ -244,54 +242,50 @@ namespace jactorio::game
 		untouched.prototypeData = &drill;
 
 
-		mouseSelection_.DrawOverlay(playerData_,
-		                            nullptr,
-		                            0,
-		                            0,
-		                            data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, nullptr, 0, 0, data::Orientation::up);
 
 		EXPECT_EQ(untouched.prototypeData, &drill);
 	}
 
+
+	class MockEntity final : public data::Entity
+	{
+	public:
+		PROTOTYPE_CATEGORY(test);
+
+		mutable bool rGetSpriteCalled = false;
+
+		J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
+		                                         WorldData&,
+		                                         const WorldData::WorldPair&) const override {
+			return 16;
+		}
+
+		void OnBuild(WorldData&,
+		             LogicData&,
+		             const WorldData::WorldPair&,
+		             ChunkTileLayer&, data::Orientation) const override {
+		}
+
+		void OnRemove(WorldData&,
+		              LogicData&,
+		              const WorldData::WorldPair&, ChunkTileLayer&) const override {
+		}
+
+		std::pair<data::Sprite*, data::Sprite::FrameT>
+		OnRGetSprite(const data::UniqueDataBase* /*unique_data*/, GameTickT) const override {
+			rGetSpriteCalled = true;
+			return {nullptr, 0};
+		}
+	};
+
 	TEST_F(MouseSelectionOverlayTest, DrawOverlayCallGetSprite) {
-		class MockEntity final : public data::Entity
-		{
-		public:
-			PROTOTYPE_CATEGORY(test);
-
-			mutable bool rGetSpriteCalled = false;
-
-			J_NODISCARD data::Sprite::SetT MapPlacementOrientation(data::Orientation,
-			                                                       WorldData&,
-			                                                       const WorldData::WorldPair&)
-			const override {
-				return 16;
-			}
-
-			void OnBuild(WorldData&,
-			             const WorldData::WorldPair&,
-			             ChunkTileLayer&,
-			             data::Orientation) const override {
-			}
-
-			void OnRemove(WorldData&,
-			              const WorldData::WorldPair&,
-			              ChunkTileLayer&) const override {
-			}
-
-			// Overriden to give nullptr
-			std::pair<data::Sprite*, data::Sprite::FrameT>
-			OnRGetSprite(const data::UniqueDataBase* /*unique_data*/, GameTickT) const override {
-				rGetSpriteCalled = true;
-				return {nullptr, 0};
-			}
-		};
 
 		MockEntity entity{};
 		entity.rotatable = true;
 		entity.placeable = true;
 
-		mouseSelection_.DrawOverlay(playerData_, &entity, 0, 0, data::Orientation::up);
+		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 0, 0, data::Orientation::up);
 
 		// On_r_get_sprite should have been called 
 		EXPECT_TRUE(entity.rGetSpriteCalled);

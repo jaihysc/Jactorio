@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 11/24/2019
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_SPRITE_H
@@ -20,7 +19,7 @@ namespace jactorio::data
 	{
 	public:
 		using SpriteDimension = uint32_t;
-		
+
 		PROTOTYPE_CATEGORY(sprite);
 
 		enum class SpriteGroup
@@ -100,7 +99,7 @@ namespace jactorio::data
 
 		///
 		/// \return true is Sprite is in specified group
-		bool IsInGroup(SpriteGroup group);
+		bool IsInGroup(SpriteGroup group) const;
 
 		///
 		/// \brief If group is empty, it is set to the group provided
@@ -181,7 +180,7 @@ namespace jactorio::data
 		Sprite* LoadImage(const std::string& image_path);
 
 
-		void PostLoadValidate() const override;
+		void PostLoadValidate(const PrototypeManager& data_manager) const override;
 
 
 		// ======================================================================

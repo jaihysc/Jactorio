@@ -23,74 +23,79 @@ set(JACTORIO_INCLUDE_FILES
 # ======================================== Source files .cpp
 set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/core/crash_handler.cpp
-	${JACTORIO_DIR}/core/logger.cpp
-	${JACTORIO_DIR}/core/filesystem.cpp
 	${JACTORIO_DIR}/core/execution_timer.cpp
+	${JACTORIO_DIR}/core/filesystem.cpp
+	${JACTORIO_DIR}/core/logger.cpp
 
-	${JACTORIO_DIR}/data/prototype/sprite.cpp
-	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
-	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
-	${JACTORIO_DIR}/data/prototype/entity/mining_drill.cpp
-	${JACTORIO_DIR}/data/prototype/entity/transport/transport_line.cpp
 
-	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
-	${JACTORIO_DIR}/data/data_manager.cpp
 	${JACTORIO_DIR}/data/local_parser.cpp
-	${JACTORIO_DIR}/game/logic_loop.cpp
+	${JACTORIO_DIR}/data/prototype_manager.cpp
+
+	${JACTORIO_DIR}/data/prototype/entity/assembly_machine.cpp
+	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
+	${JACTORIO_DIR}/data/prototype/entity/inserter.cpp
+	${JACTORIO_DIR}/data/prototype/entity/mining_drill.cpp
+	${JACTORIO_DIR}/data/prototype/entity/transport_line.cpp
+	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
+	${JACTORIO_DIR}/data/prototype/sprite.cpp
+	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
+
 
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
+
+	${JACTORIO_DIR}/game/logic/inserter_controller.cpp
+	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
+	${JACTORIO_DIR}/game/logic/item_logistics.cpp
+	${JACTORIO_DIR}/game/logic/logic_data.cpp
+	${JACTORIO_DIR}/game/logic/placement_controller.cpp
+	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
+	${JACTORIO_DIR}/game/logic/transport_segment.cpp
+	${JACTORIO_DIR}/game/logic_loop.cpp
 
 	${JACTORIO_DIR}/game/player/player_data.cpp
 
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
 	${JACTORIO_DIR}/game/world/world_data.cpp
-	${JACTORIO_DIR}/game/world/world_generator.cpp
-
-	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
-	${JACTORIO_DIR}/game/logic/inserter_controller.cpp
-	${JACTORIO_DIR}/game/logic/item_logistics.cpp
-	${JACTORIO_DIR}/game/logic/placement_controller.cpp
-	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
-	${JACTORIO_DIR}/game/logic/transport_segment.cpp
 
 
-	${JACTORIO_DIR}/renderer/render_main.cpp
-
-	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
-	${JACTORIO_DIR}/renderer/gui/imgui_glfw.cpp
-	${JACTORIO_DIR}/renderer/gui/imgui_opengl3.cpp
+	${JACTORIO_DIR}/renderer/gui/gui_layout.cpp
 	${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
 	${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
+	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
 
 	${JACTORIO_DIR}/renderer/opengl/error.cpp
 	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
-	${JACTORIO_DIR}/renderer/opengl/shader_manager.cpp
 	${JACTORIO_DIR}/renderer/opengl/shader.cpp
+	${JACTORIO_DIR}/renderer/opengl/shader_manager.cpp
 	${JACTORIO_DIR}/renderer/opengl/texture.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
 
+	${JACTORIO_DIR}/renderer/render_loop.cpp
+
 	${JACTORIO_DIR}/renderer/rendering/data_renderer.cpp
-	${JACTORIO_DIR}/renderer/rendering/world_renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_layer.cpp
 	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
+	${JACTORIO_DIR}/renderer/rendering/world_renderer.cpp
 
 	${JACTORIO_DIR}/renderer/window/window_manager.cpp
-	${JACTORIO_DIR}/data/prototype/entity/inserter.cpp)
+)
 # ======================================== END Source files .cpp
 
 
 
 # ======================================== Lib files .cpp
 set(JACTORIO_LIB_BUILD_FILES
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_demo.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_draw.cpp
-	${PROJECT_SOURCE_DIR}/lib/imgui/imgui/imgui_widgets.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui_demo.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui_draw.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/imgui_widgets.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/examples/imgui_impl_opengl3.cpp
+	${PROJECT_SOURCE_DIR}/lib/imgui/examples/imgui_impl_sdl.cpp
 )
 
 IF (CMAKE_SYSTEM_NAME MATCHES Windows)

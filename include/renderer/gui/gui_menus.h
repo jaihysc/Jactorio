@@ -1,11 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/01/2020
 
 #ifndef JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
 #define JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
 #pragma once
 
 #include "jactorio.h"
+
+#include "data/prototype_manager.h"
 
 namespace jactorio
 {
@@ -24,7 +25,8 @@ namespace jactorio
 namespace jactorio::renderer
 {
 	/// Function to draw the menu
-	using MenuFunction = void (*)(game::PlayerData& player_data, const data::UniqueDataBase* unique_data);
+	using MenuFunction = void (*)(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
+	                              const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data);
 
 	// ======================================================================
 	// Substitutes name_ below at macro definitions to create an array of guis
@@ -41,14 +43,16 @@ namespace jactorio::renderer
 	J_GUI_WINDOW_SUB(PickupProgressbar)\
 	\
 	J_GUI_WINDOW_SUB(ContainerEntity)\
-	J_GUI_WINDOW_SUB(MiningDrill)
+	J_GUI_WINDOW_SUB(MiningDrill)\
+	J_GUI_WINDOW_SUB(AssemblyMachine)
 
 	// ======================================================================
 	// Macro definitions - 3
 
 	// Function
 #define J_GUI_WINDOW_SUB(name_)\
-	void name_(game::PlayerData& player_data, const data::UniqueDataBase* unique_data = nullptr);
+	void name_(game::PlayerData& player_data, const data::PrototypeManager& data_manager,\
+			   const data::PrototypeBase* prototype = nullptr, data::UniqueDataBase* unique_data = nullptr);
 
 	J_GUI_WINDOW
 

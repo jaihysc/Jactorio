@@ -1,11 +1,10 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 12/21/2019
 
 #include "game/input/mouse_selection.h"
 
 #include "jactorio.h"
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/entity.h"
 #include "game/logic/placement_controller.h"
 #include "game/player/player_data.h"
@@ -31,27 +30,31 @@ double jactorio::game::MouseSelection::GetCursorY() {
 }
 
 
-void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data) {
-	auto* last_tile = player_data.GetPlayerWorld().GetTile(lastTilePos_.first,
-	                                                       lastTilePos_.second);
+void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager) {
+	auto* last_tile = player_data.GetPlayerWorldData().GetTile(lastTilePos_.first,
+	                                                           lastTilePos_.second);
 	if (last_tile == nullptr)
 		return;
 
 
 	const auto cursor_position = player_data.GetMouseTileCoords();
-	const data::ItemStack* ptr;
-	if ((ptr = player_data.GetSelectedItem()) != nullptr)
-		DrawOverlay(player_data, static_cast<data::Entity*>(ptr->first->entityPrototype),
+	const auto* stack          = player_data.GetSelectedItemStack();
+
+	if (stack)
+		DrawOverlay(player_data, data_manager,
+		            static_cast<data::Entity*>(stack->item->entityPrototype),
 		            cursor_position.first, cursor_position.second, player_data.placementOrientation);
 	else
-		DrawOverlay(player_data, nullptr,
+		DrawOverlay(player_data, data_manager,
+		            nullptr,
 		            cursor_position.first, cursor_position.second, player_data.placementOrientation);
 }
 
-void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, data::Entity* const selected_entity,
+void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
+                                                 data::Entity* const selected_entity,
                                                  const int world_x, const int world_y,
                                                  const data::Orientation placement_orientation) {
-	WorldData& world_data = player_data.GetPlayerWorld();
+	WorldData& world_data = player_data.GetPlayerWorldData();
 
 	auto* last_tile = world_data.GetTile(lastTilePos_.first,
 	                                     lastTilePos_.second);
@@ -83,16 +86,16 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, data::
 		// Rotatable entities
 		if (selected_entity->rotatable) {
 			// Create unique data at tile to indicate set / frame to render
-			const auto set = selected_entity->MapPlacementOrientation(placement_orientation,
-			                                                             world_data,
-			                                                             {world_x, world_y});
+			const auto set = selected_entity->OnRGetSet(placement_orientation,
+			                                            world_data,
+			                                            {world_x, world_y});
 
 			ChunkTileLayer& target_layer = tile->GetLayer(ChunkTile::ChunkLayer::overlay);
 
 			target_layer.MakeUniqueData<data::RenderableData>(set);
 			target_layer.prototypeData = selected_entity
 			                             ->OnRGetSprite(target_layer.GetUniqueData(),
-			                                            player_data.GetPlayerWorld().GameTick()).first;
+			                                            player_data.GetPlayerLogicData().GameTick()).first;
 		}
 
 		lastTileDimensions_ = {selected_entity->tileWidth, selected_entity->tileHeight};
@@ -103,9 +106,10 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, data::
 			tile->GetLayer(ChunkTile::ChunkLayer::resource).prototypeData) {
 
 			// Is hovering over entity	
-			const auto* sprite_ptr = data::DataRawGet<data::Sprite>(
-				data::DataCategory::sprite,
-				player_data.MouseSelectedTileInRange() ? "__core__/cursor-select" : "__core__/cursor-invalid");
+			const auto* sprite_ptr =
+				data_manager.DataRawGet<data::Sprite>(player_data.MouseSelectedTileInRange()
+					                                      ? "__core__/cursor-select"
+					                                      : "__core__/cursor-invalid");
 			assert(sprite_ptr != nullptr);
 
 			tile->SetSpritePrototype(ChunkTile::ChunkLayer::overlay, sprite_ptr);

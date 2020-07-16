@@ -12,8 +12,8 @@ Check out a [weekly log here](https://github.com/jaihysc/Jactorio/wiki/Devlog)
 - [x] Transport lines
 - [x] Drills
 - [x] Inserters
+- [x] Assembly Machines
 - [ ] Smelting / Furnaces
-- [ ] Assembly Machines
 
 ## Building
 
@@ -35,6 +35,8 @@ Remarks:
 
 **Parameters:** `--notest` if you do not want to build the tests
 
+Executable will be placed in `out/<Build type>/src/`
+
 ---
 
 In a bash shell on Windows, Mac and Linux:
@@ -45,17 +47,19 @@ cd Jactorio
 sh ./build.sh <See build types above> --notest
 ```
 
-Executable will be placed in `out/<Build type>/src/`
-
 ## Running tests
+
+**Test parameters:** `--leakcheck` to perform a leak check, skipping some false positive tests
+
+The test results will be placed in the directory of `runtests.sh`
+
+---
 
 After following the build steps above **without** `--notest`
 
 ```bash
 sh ./runtests.sh <Build type used to build>
 ```
-
-The test results will be placed in the directory of `runtests.sh`
 
 ## Dependencies
 
@@ -64,7 +68,6 @@ The installation of dependencies listed below is automatic
 * [backward-cpp](https://github.com/bombela/backward-cpp)
 * [decimal_for_cpp](https://github.com/vpiotr/decimal_for_cpp)
 * [GLEW](http://glew.sourceforge.net/)
-* [GLFW](https://www.glfw.org/)
 * [glm](https://github.com/g-truc/glm)
 * [imgui](https://github.com/ocornut/imgui)
 * [libnoise](https://github.com/jaihysc/libnoise)

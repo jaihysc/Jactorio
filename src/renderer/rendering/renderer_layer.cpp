@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/12/2020
 
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/opengl/vertex_array.h"
@@ -222,17 +221,17 @@ void jactorio::renderer::RendererLayer::GUpdateData() {
 		return;
 
 	gResizeVertexBuffers_ = false;
-	eCapacity_ = queuedECapacity_;
+	eCapacity_            = queuedECapacity_;
 
 	vertexVb_->Reserve(nullptr, eCapacity_ * kGByteMultiplier, false);
-	uvVb_    ->Reserve(nullptr, eCapacity_ * kGByteMultiplier, false);
+	uvVb_->Reserve(nullptr, eCapacity_ * kGByteMultiplier, false);
 
 	// Index buffer
 	const auto* data = GenRenderGridIndices(eCapacity_);
 	indexIb_->Reserve(data, eCapacity_ * 6);
 	delete[] data;
 
-	LOG_MESSAGE_f(debug, "Buffer resized to %d", eCapacity_);
+	LOG_MESSAGE_F(debug, "Buffer resized to %d", eCapacity_);
 }
 
 void jactorio::renderer::RendererLayer::GDeleteBuffer() {

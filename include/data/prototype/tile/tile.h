@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 12/06/2019
 
 #ifndef DATA_PROTOTYPE_TILE_TILE_H
 #define DATA_PROTOTYPE_TILE_TILE_H
@@ -49,16 +48,17 @@ namespace jactorio::data
 			return {sprite, 0};
 		}
 
-		bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override {
+		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
+		                game::ChunkTileLayer* tile_layer) const override {
 			return false;
 		}
 
 		// ======================================================================
 		// Data
-		void PostLoadValidate() const override;
+		void PostLoadValidate(const PrototypeManager& data_manager) const override;
 	};
 
-	inline void Tile::PostLoadValidate() const {
+	inline void Tile::PostLoadValidate(const PrototypeManager&) const {
 		J_DATA_ASSERT(sprite != nullptr, "Sprite was not provided");
 	}
 }

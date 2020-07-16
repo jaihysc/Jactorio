@@ -1,5 +1,4 @@
 ﻿// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
 #include <thread>
 
@@ -7,7 +6,7 @@
 #include "core/crash_handler.h"
 #include "core/filesystem.h"
 #include "game/logic_loop.h"
-#include "renderer/render_main.h"
+#include "renderer/render_loop.h"
 
 void InitializeGame() {
 	using namespace jactorio;
@@ -37,11 +36,11 @@ int main(int ac, char* av[]) {
 	core::RegisterCrashHandler();
 
 	// Initial startup message
-	LOG_MESSAGE_f(none, "%s | %s build, version: %s\n\n",
-	              JACTORIO_BUILD_TARGET_PLATFORM, BUILD_TYPE, JACTORIO_VERSION)
+	LOG_MESSAGE_F(info, "%s | %s build, version: %s\n\n",
+	              JACTORIO_BUILD_TARGET_PLATFORM, BUILD_TYPE, JACTORIO_VERSION);
 
 	InitializeGame();
 
-	LOG_MESSAGE(none, "goodbye!");
+	LOG_MESSAGE(info, "goodbye!");
 	return 0;
 }

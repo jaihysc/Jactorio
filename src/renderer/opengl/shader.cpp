@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
 #include <GL/glew.h>
 
@@ -18,8 +17,8 @@ unsigned int jactorio::renderer::Shader::CompileShader(
 	const std::string source = core::ReadFile(path);
 
 	if (source.empty()) {
-		LOG_MESSAGE_f(error, "Shader compilation received empty string, type %d %s",
-		              shader_type, path.c_str())
+		LOG_MESSAGE_F(error, "Shader compilation received empty string, type %d %s",
+		              shader_type, path.c_str());
 		return 0;
 	}
 
@@ -45,7 +44,7 @@ unsigned int jactorio::renderer::Shader::CompileShader(
 
 		DEBUG_OPENGL_CALL(glDeleteShader(shader_id));
 
-		LOG_MESSAGE_f(error, "Shader compilation failed, type %d %s\n%s",
+		LOG_MESSAGE_F(error, "Shader compilation failed, type %d %s\n%s",
 		              shader_type, path.c_str(), message);
 
 		delete[] message;
@@ -53,7 +52,7 @@ unsigned int jactorio::renderer::Shader::CompileShader(
 		return 0;
 	}
 
-	LOG_MESSAGE_f(info, "Shader compilation successful, type %d %s",
+	LOG_MESSAGE_F(info, "Shader compilation successful, type %d %s",
 	              shader_type, path.c_str());
 
 	return shader_id;
@@ -102,8 +101,8 @@ int jactorio::renderer::Shader::GetUniformLocation(
 		const int location = glGetUniformLocation(id_, name.c_str()));
 
 	if (location == -1) {
-		LOG_MESSAGE_f(error, "Attempted to get location of uniform \"%s\" which does not exist",
-		              name.c_str())
+		LOG_MESSAGE_F(error, "Attempted to get location of uniform \"%s\" which does not exist",
+		              name.c_str());
 	}
 
 

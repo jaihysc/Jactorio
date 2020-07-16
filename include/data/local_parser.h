@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/15/2020
 
 #ifndef JACTORIO_INCLUDE_DATA_LOCAL_PARSER_H
 #define JACTORIO_INCLUDE_DATA_LOCAL_PARSER_H
@@ -7,6 +6,8 @@
 
 #include <string>
 #include <unordered_map>
+
+#include "data/prototype_manager.h"
 
 namespace jactorio::data
 {
@@ -36,14 +37,14 @@ namespace jactorio::data
 	/// \brief Parses a .cfg file, will throw exceptions on error
 	/// \param file_str File contents
 	/// \param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
-	void LocalParse(const std::string& file_str, const std::string& directory_prefix);
+	void LocalParse(PrototypeManager& data_manager, const std::string& file_str, const std::string& directory_prefix);
 
 	///
 	/// \brief Parses a .cfg file, does not throw
 	/// \param file_str File contents
 	/// \param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
 	/// \return non-zero if error occurred
-	int LocalParseNoThrow(const std::string& file_str, const std::string& directory_prefix);
+	int LocalParseNoThrow(PrototypeManager& data_manager, const std::string& file_str, const std::string& directory_prefix);
 }
 
 #endif //JACTORIO_INCLUDE_DATA_LOCAL_PARSER_H

@@ -54,5 +54,21 @@ g_production.recipeCategories(([
             .ingredients([("__base__/coal-item", 1)])
             .product(("__base__/electric-mining-drill-item", 1))
             .craftingTime(2),
-    ]))
+    ])),
+    # Assembly Machines
+    j.RecipeCategory()
+    .recipes([
+        j.Recipe()
+            .ingredients([("__base__/copper-item", 2)])
+            .product(("__base__/assembly-machine-1-item", 1))
+            .craftingTime(0.1),
+        j.Recipe()
+            .ingredients([("__base__/copper-item", 2)])
+            .product(("__base__/assembly-machine-2-item", 1))
+            .craftingTime(0.1),
+        j.Recipe()
+            .ingredients([("__base__/copper-item", 2)])
+            .product(("__base__/assembly-machine-3-item", 1))
+            .craftingTime(0.1),
+    ])
 ]))

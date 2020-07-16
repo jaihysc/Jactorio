@@ -1,24 +1,28 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/01/2020
 
 #include "renderer/gui/gui_menus_debug.h"
 
+#include <imgui.h>
 #include <ostream>
 #include <glm/glm.hpp>
-#include <imgui/imgui.h>
 
 #include "jactorio.h"
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/inserter.h"
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_line.h"
+
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/transport_segment.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
+
+#include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/rendering/mvp_manager.h"
+
+using namespace jactorio;
 
 bool show_timings_window      = false;
 bool show_demo_window         = false;
@@ -28,9 +32,9 @@ bool show_item_spawner_window = false;
 bool show_transport_line_info = false;
 bool show_inserter_info       = false;
 
-void jactorio::renderer::DebugMenuLogic(game::PlayerData& player_data) {
+void renderer::DebugMenuLogic(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
 	if (show_transport_line_info)
-		DebugTransportLineInfo(player_data);
+		DebugTransportLineInfo(player_data, data_manager);
 
 	if (show_inserter_info)
 		DebugInserterInfo(player_data);
@@ -42,16 +46,18 @@ void jactorio::renderer::DebugMenuLogic(game::PlayerData& player_data) {
 		DebugTimings();
 
 	if (show_item_spawner_window)
-		DebugItemSpawner(player_data);
+		DebugItemSpawner(player_data, data_manager);
 }
 
-void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::UniqueDataBase*) {
+void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeManager&,
+                         const data::PrototypeBase*, data::UniqueDataBase*) {
 	using namespace jactorio;
 
 	ImGuiWindowFlags main_window_flags = 0;
 	main_window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
-	ImGui::Begin("Debug menu", nullptr, main_window_flags);
+	ImGuard guard{};
+	guard.Begin("Debug menu", nullptr, main_window_flags);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -64,7 +70,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		            game::ChunkTile::kTileLayerCount, game::Chunk::kObjectLayerCount);
 
 		if (ImGui::Button("Clear debug overlays")) {
-			for (auto* chunk : player_data.GetPlayerWorld().LogicGetChunks()) {
+			for (auto* chunk : player_data.GetPlayerWorldData().LogicGetChunks()) {
 
 				auto& object_layer = chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
 				object_layer.clear();
@@ -73,7 +79,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 	}
 
 	if (ImGui::CollapsingHeader("Game")) {
-		auto& world_data = player_data.GetPlayerWorld();
+		auto& world_data = player_data.GetPlayerWorldData();
 
 		ImGui::Text("Cursor position: %f, %f",
 		            game::MouseSelection::GetCursorX(),
@@ -86,7 +92,7 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 		            player_data.GetPlayerPositionX(),
 		            player_data.GetPlayerPositionY());
 
-		ImGui::Text("Game tick: %llu", world_data.GameTick());
+		ImGui::Text("Game tick: %llu", player_data.GetPlayerLogicData().GameTick());
 		ImGui::Text("Chunk updates: %llu", world_data.LogicGetChunks().size());
 
 		ImGui::Separator();
@@ -108,43 +114,29 @@ void jactorio::renderer::DebugMenu(game::PlayerData& player_data, const data::Un
 	ImGui::Checkbox("Timings", &show_timings_window);
 	ImGui::SameLine();
 	ImGui::Checkbox("Demo Window", &show_demo_window);
-
-
-	ImGui::End();
 }
 
-void jactorio::renderer::DebugTimings() {
+void renderer::DebugTimings() {
 	using namespace core;
 
-	ImGui::Begin("Timings");
+	ImGuard guard{};
+	guard.Begin("Timings");
 	ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	for (auto& time : ExecutionTimer::measuredTimes) {
 		ImGui::Text("%fms (%.1f/s) %s", time.second, 1000 / time.second, time.first.c_str());
 	}
-	ImGui::End();
 }
 
-int give_amount = 100;
+int give_amount  = 100;
+int new_inv_size = game::PlayerData::kDefaultInventorySize;
 
-void jactorio::renderer::DebugItemSpawner(game::PlayerData& player_data) {
+void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
 	using namespace core;
 
-	ImGui::Begin("Item spawner");
+	ImGuard guard{};
+	guard.Begin("Item spawner");
 
-	auto game_items = data::DataRawGetAll<data::Item>(data::DataCategory::item);
-	for (auto& item : game_items) {
-		ImGui::PushID(item->name.c_str());
-
-		if (ImGui::Button(item->GetLocalizedName().c_str())) {
-			data::ItemStack item_stack = {item, give_amount};
-			game::AddStack(
-				player_data.inventoryPlayer, game::PlayerData::kInventorySize, item_stack);
-		}
-		ImGui::PopID();
-	}
-
-	ImGui::Separator();
 	ImGui::InputInt("Give amount", &give_amount);
 	if (give_amount <= 0)
 		give_amount = 1;
@@ -155,34 +147,55 @@ void jactorio::renderer::DebugItemSpawner(game::PlayerData& player_data) {
 		}
 	}
 
-	ImGui::End();
+	ImGui::InputInt("Inventory size", &new_inv_size);
+	if (new_inv_size < 0)
+		new_inv_size = 0;
+
+	if (new_inv_size != player_data.inventoryPlayer.size()) {
+		player_data.inventoryPlayer.resize(new_inv_size);
+	}
+
+
+	ImGui::Separator();
+
+
+	auto game_items = data_manager.DataRawGetAll<data::Item>(data::DataCategory::item);
+	for (auto& item : game_items) {
+		ImGui::PushID(item->name.c_str());
+
+		if (ImGui::Button(item->GetLocalizedName().c_str())) {
+			data::Item::Stack item_stack = {item, static_cast<data::Item::StackCount>(give_amount)};
+			game::AddStack(player_data.inventoryPlayer, item_stack);
+		}
+		ImGui::PopID();
+	}
 }
 
 std::pair<int32_t, int32_t> last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
 bool show_transport_segments     = false;
 
-void ShowTransportSegments(jactorio::game::WorldData& world_data) {
+void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeManager& data_manager) {
 	using namespace jactorio;
 
 	// Sprite representing the update point
-	auto* sprite_stop =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-red");
-	auto* sprite_moving =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-green");
-	auto* sprite_left_moving =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-aqua");
-	auto* sprite_right_moving =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/rect-pink");
+	const auto* sprite_stop =
+		data_manager.DataRawGet<data::Sprite>("__core__/rect-red");
+	const auto* sprite_moving =
+		data_manager.DataRawGet<data::Sprite>("__core__/rect-green");
+	const auto* sprite_left_moving =
+		data_manager.DataRawGet<data::Sprite>("__core__/rect-aqua");
+	const auto* sprite_right_moving =
+		data_manager.DataRawGet<data::Sprite>("__core__/rect-pink");
 
-	auto* sprite_up =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-up");
-	auto* sprite_right =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-right");
-	auto* sprite_down =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-down");
-	auto* sprite_left =
-		data::DataRawGet<data::Sprite>(data::DataCategory::sprite, "__core__/arrow-left");
+	const auto* sprite_up =
+		data_manager.DataRawGet<data::Sprite>("__core__/arrow-up");
+	const auto* sprite_right =
+		data_manager.DataRawGet<data::Sprite>("__core__/arrow-right");
+	const auto* sprite_down =
+		data_manager.DataRawGet<data::Sprite>("__core__/arrow-down");
+	const auto* sprite_left =
+		data_manager.DataRawGet<data::Sprite>("__core__/arrow-left");
 
 	// Get all update points and add it to the chunk's objects for drawing
 	for (auto* chunk : world_data.LogicGetChunks()) {
@@ -214,8 +227,8 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 			float segment_len_x;
 			float segment_len_y;
 
-			data::Sprite* direction_sprite;
-			data::Sprite* outline_sprite;
+			const data::Sprite* direction_sprite;
+			const data::Sprite* outline_sprite;
 
 			// Correspond the direction with a sprite representing the direction
 			switch (line_segment.direction) {
@@ -278,11 +291,12 @@ void ShowTransportSegments(jactorio::game::WorldData& world_data) {
 	}
 }
 
-void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
-	ImGui::Begin("Transport Line Info");
+void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
+	ImGuard guard{};
+	guard.Begin("Transport Line Info");
 
 	const auto selected_tile      = player_data.GetMouseTileCoords();
-	data::TransportLineData* data = data::TransportLine::GetLineData(player_data.GetPlayerWorld(),
+	data::TransportLineData* data = data::TransportLine::GetLineData(player_data.GetPlayerWorldData(),
 	                                                                 selected_tile.first, selected_tile.second);
 
 	// Try to use current selected line segment first, otherwise used the last valid if checked
@@ -290,7 +304,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 
 
 	if (ImGui::Button("Make all belt items visible")) {
-		for (auto* chunk : player_data.GetPlayerWorld().LogicGetChunks()) {
+		for (auto* chunk : player_data.GetPlayerWorldData().LogicGetChunks()) {
 			for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
 				auto& segment         = *transport_line->GetUniqueData<data::TransportLineData>()->lineSegment;
 				segment.left.visible  = true;
@@ -303,7 +317,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
 	if (show_transport_segments)
-		ShowTransportSegments(player_data.GetPlayerWorld());
+		ShowTransportSegments(player_data.GetPlayerWorldData(), data_manager);
 
 	if (data) {
 		last_valid_line_segment = selected_tile;
@@ -311,7 +325,7 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 	}
 	else {
 		if (use_last_valid_line_segment) {
-			data = data::TransportLine::GetLineData(player_data.GetPlayerWorld(),
+			data = data::TransportLine::GetLineData(player_data.GetPlayerWorldData(),
 			                                        last_valid_line_segment.first,
 			                                        last_valid_line_segment.second);
 			if (data)
@@ -376,12 +390,12 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 		if (ImGui::Button("Append Item Left"))
 			segment.AppendItem(true,
 			                   0.2,
-			                   data::DataRawGet<data::Item>(data::DataCategory::item, iname));
+			                   data_manager.DataRawGet<data::Item>(iname));
 
 		if (ImGui::Button("Append Item Right"))
 			segment.AppendItem(false,
 			                   0.2,
-			                   data::DataRawGet<data::Item>(data::DataCategory::item, iname));
+			                   data_manager.DataRawGet<data::Item>(iname));
 
 
 		// Display items
@@ -399,17 +413,15 @@ void jactorio::renderer::DebugTransportLineInfo(game::PlayerData& player_data) {
 		}
 
 	}
-
-	ImGui::End();
 }
 
-void jactorio::renderer::DebugInserterInfo(game::PlayerData& player_data) {
-	core::ResourceGuard<void> guard{[]() { ImGui::End(); }};
-	ImGui::Begin("Inserter info");
+void renderer::DebugInserterInfo(game::PlayerData& player_data) {
+	ImGuard guard{};
+	guard.Begin("Inserter info");
 
 	const auto selected_tile = player_data.GetMouseTileCoords();
 
-	auto* tile = player_data.GetPlayerWorld().GetTile(selected_tile);
+	auto* tile = player_data.GetPlayerWorldData().GetTile(selected_tile);
 	if (!tile)
 		return;
 

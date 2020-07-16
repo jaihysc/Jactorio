@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #include "core/filesystem.h"
 
@@ -39,7 +38,7 @@ void jactorio::core::SetExecutingDirectory(const std::string& directory) {
 		path.erase(i, path.size() - i);
 	}
 
-	LOG_MESSAGE_f(info, "Set executing directory: %s", path.c_str());
+	LOG_MESSAGE_F(info, "Set executing directory: %s", path.c_str());
 
 	executing_directory = path;
 }

@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #include "game/logic/transport_segment.h"
 
@@ -178,7 +177,8 @@ bool jactorio::game::TransportSegment::TryInsertItemAbs(const bool left_side, co
 }
 
 const jactorio::data::Item* jactorio::game::TransportSegment::TryPopItemAbs(const bool left_side,
-                                                                            const FloatOffsetT offset, const FloatOffsetT epsilon) {
+                                                                            const FloatOffsetT offset,
+                                                                            const FloatOffsetT epsilon) {
 	return left_side ? left.TryPopItem(offset, epsilon) : right.TryPopItem(offset, epsilon);
 }
 

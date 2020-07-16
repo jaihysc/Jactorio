@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 11/09/2019
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
@@ -12,64 +11,80 @@
 #include "data/data_category.h"
 #include "data/data_exception.h"
 
-namespace jactorio::data
-{
-	// Creates a setters for python API primarily, to chain initialization
+// Creates a setters for python API primarily, to chain initialization
 
-	// Parameter value has suffix a_b_c_d to ensure uniqueness
-
-	// Setter passed by reference
+// Setter passed by reference
 #define PYTHON_PROP_REF(class_, type, var_name) \
 	type var_name; \
-	class_* Set_##var_name(const type& (parameter_value_a_b_c_d)) {\
-		this->var_name = parameter_value_a_b_c_d;\
+	class_* Set_##var_name(const type& (parameter_value__)) {\
+		this->var_name = parameter_value__;\
 		return this;\
 	}
 
-	// Setter passed by reference with initializer
+// Setter passed by reference with initializer
 #define PYTHON_PROP_REF_I(class_, type, var_name, initializer) \
 	type var_name = initializer; \
-	class_* Set_##var_name(const type& (parameter_value_a_b_c_d)) {\
-		this->var_name = parameter_value_a_b_c_d;\
+	class_* Set_##var_name(const type& (parameter_value__)) {\
+		this->var_name = parameter_value__;\
 		return this;\
 	}
 
 
-	// Setter passed by value
+// Setter passed by value
 #define PYTHON_PROP(class_, type, var_name) \
 	type var_name; \
-	class_* Set_##var_name(type (parameter_value_a_b_c_d)) {\
-		this->var_name = parameter_value_a_b_c_d;\
+	class_* Set_##var_name(type (parameter_value__)) {\
+		this->var_name = parameter_value__;\
 		return this;\
 	}
 
-	// Setter passed by value with initializer
+// Setter passed by value with initializer
 #define PYTHON_PROP_I(class_, type, var_name, initializer) \
 	type var_name = initializer; \
-	class_* Set_##var_name(type (parameter_value_a_b_c_d)) {\
-		this->var_name = parameter_value_a_b_c_d;\
+	class_* Set_##var_name(type (parameter_value__)) {\
+		this->var_name = parameter_value__;\
 		return this;\
 	}
 
-	/*
-		The following is an example:
+/*
+	The following is an example:
 
-		PYTHON_PROP_REF(Prototype_base, unsigned int, internal_id)
+	PYTHON_PROP_REF(Prototype_base, unsigned int, internal_id)
 
-		vvv
+	vvv
 
-		unsigned int internal_id = 0;
+	unsigned int internal_id = 0;
 
-		Prototype_base* set_internal_id(const unsigned int& internal_id) {
-			this->internal_id = internal_id;
-			return this;
+	Prototype_base* set_internal_id(const unsigned int& internal_id) {
+		this->internal_id = internal_id;
+		return this;
+	}
+*/
+
+// Assertions for post_load_validate
+#define J_DATA_ASSERT(condition, format)\
+	jactorio::data::DataAssert(condition, "\"%s\", " format, this->name.c_str())
+
+#define J_DATA_ASSERT_F(condition, format, ...)\
+	jactorio::data::DataAssert(condition, "\"%s\", " format, this->name.c_str(), __VA_ARGS__)
+
+
+namespace jactorio::data
+{
+	class PrototypeManager;
+
+	///
+	/// \brief Creates a formatted log message if log level permits
+	template <typename ... Args, typename = std::common_type<Args ...>>
+	void DataAssert(const bool condition, const char* format, Args&& ... args) {
+		constexpr int max_msg_length = 1000;
+
+		if (!(condition)) {
+			char buffer[max_msg_length + 1];
+			snprintf(buffer, max_msg_length, format, args ...);
+			throw DataException(buffer);
 		}
-	*/
-
-	// Assertions for post_load_validate
-#define J_DATA_ASSERT(condition, error_msg)\
-	if (!(condition)) { std::string s = "\""; s.append(this->name); s.append("\", " error_msg); throw jactorio::data::DataException(s); }
-
+	}
 
 	///
 	/// \brief Abstract base class for all unique data
@@ -88,7 +103,9 @@ namespace jactorio::data
 	};
 
 
-#define PROTOTYPE_CATEGORY(category_) J_NODISCARD jactorio::data::DataCategory Category() const override { return jactorio::data::DataCategory::category_; }
+#define PROTOTYPE_CATEGORY(category__) \
+	static constexpr jactorio::data::DataCategory category = jactorio::data::DataCategory::category__;\
+	J_NODISCARD jactorio::data::DataCategory Category() const override { return jactorio::data::DataCategory::category__; }
 
 	class PrototypeBase
 	{
@@ -103,7 +120,7 @@ namespace jactorio::data
 
 		friend void swap(PrototypeBase& lhs, PrototypeBase& rhs) noexcept {
 			using std::swap;
-			swap(lhs.category_, rhs.category_);
+			swap(lhs.category, rhs.category);
 			swap(lhs.internalId, rhs.internalId);
 			swap(lhs.name, rhs.name);
 			swap(lhs.order, rhs.order);
@@ -111,10 +128,8 @@ namespace jactorio::data
 			swap(lhs.localizedDescription_, rhs.localizedDescription_);
 		}
 
-	private:
-		DataCategory category_ = DataCategory::none;
-
 	public:
+		DataCategory category = DataCategory::none;
 		///
 		/// \brief Category of this Prototype item
 		virtual DataCategory Category() const = 0;
@@ -127,7 +142,6 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Python properties
-	public:
 		///
 		/// \brief Internal name, MUST BE unique per data_category
 		///
@@ -179,7 +193,7 @@ namespace jactorio::data
 		///
 		/// \brief Validates properties of the prototype are valid
 		/// \exception data::Data_exception If invalid
-		virtual void PostLoadValidate() const = 0;
+		virtual void PostLoadValidate(const PrototypeManager&) const = 0;
 
 		///
 		/// \brief Called after the prototype has been validated

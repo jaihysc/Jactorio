@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #include "renderer/rendering/spritemap_generator.h"
 
@@ -8,7 +7,7 @@
 #include <stb/stb_image.h>
 
 #include "core/logger.h"
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 
 using namespace jactorio;
 
@@ -21,29 +20,32 @@ void renderer::RendererSprites::ClearSpritemaps() {
 	spritemapDatas_.clear();
 }
 
-void renderer::RendererSprites::GInitializeSpritemap(data::Sprite::SpriteGroup group, const bool invert_sprites) {
-	const auto spritemap_data = CreateSpritemap(group, invert_sprites);
+void renderer::RendererSprites::GInitializeSpritemap(const data::PrototypeManager& data_manager,
+                                                     data::Sprite::SpriteGroup group, const bool invert_sprites) {
+	const auto spritemap_data = CreateSpritemap(data_manager, group, invert_sprites);
 
-	textures_[static_cast<int>(group)] = new Texture(spritemap_data.spriteBuffer, spritemap_data.width, spritemap_data.height);
+	textures_[static_cast<int>(group)] = new Texture(spritemap_data.spriteBuffer,
+	                                                 spritemap_data.width, spritemap_data.height);
 	spritemapDatas_[static_cast<int>(group)] = spritemap_data;
 }
 
 renderer::RendererSprites::SpritemapData renderer::RendererSprites::CreateSpritemap(
+	const data::PrototypeManager& data_manager,
 	data::Sprite::SpriteGroup group,
 	const bool invert_sprites) const {
-	std::vector<data::Sprite*> sprites =
-		data::DataRawGetAll<data::Sprite>(data::DataCategory::sprite);
+
+	auto sprites = data_manager.DataRawGetAll<const data::Sprite>(data::DataCategory::sprite);
 
 	// Filter to group only
 	sprites.erase(
-		std::remove_if(sprites.begin(), sprites.end(), [group](data::Sprite* ptr) {
+		std::remove_if(sprites.begin(), sprites.end(), [group](auto* ptr) {
 			// Return false to NOT remove
 			// Category of none is never removed
 			if (ptr->group.empty()) {
-				LOG_MESSAGE_f(warning,
+				LOG_MESSAGE_F(warning,
 				              "Sprite prototype '%s' does not have a category, and will be added to all sprite groups."
 				              " Consider giving it a category",
-				              ptr->name.c_str())
+				              ptr->name.c_str());
 				return false;
 			}
 
@@ -71,10 +73,10 @@ const renderer::Texture* renderer::RendererSprites::GetTexture(
 // Spritemap generation functions
 
 renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap(
-	const std::vector<data::Sprite*>& sprites,
+	const std::vector<const data::Sprite*>& sprites,
 	const bool invert_sprites) const {
 
-	LOG_MESSAGE_f(info, "Generating spritemap with %lld sprites, %s",
+	LOG_MESSAGE_F(info, "Generating spritemap with %lld sprites, %s",
 	              sprites.size(),
 	              invert_sprites ? "Inverted" : "Upright");
 
@@ -170,8 +172,8 @@ data::Sprite::SpriteDimension renderer::RendererSprites::GetSpriteHeight(const d
 	return sprite->GetHeight() + 2 * sprite_border;
 }
 
-void renderer::RendererSprites::SortInputSprites(std::vector<data::Sprite*>& sprites) {
-	std::sort(sprites.begin(), sprites.end(), [](data::Sprite* first, data::Sprite* second) {
+void renderer::RendererSprites::SortInputSprites(std::vector<const data::Sprite*>& sprites) {
+	std::sort(sprites.begin(), sprites.end(), [](auto* first, auto* second) {
 		const auto first_h  = GetSpriteHeight(first);
 		const auto second_h = GetSpriteHeight(second);
 
@@ -183,7 +185,7 @@ void renderer::RendererSprites::SortInputSprites(std::vector<data::Sprite*>& spr
 	});
 }
 
-void renderer::RendererSprites::GenerateSpritemapNodes(std::vector<data::Sprite*>& sprites,
+void renderer::RendererSprites::GenerateSpritemapNodes(std::vector<const data::Sprite*>& sprites,
                                                        std::vector<GeneratorNode*>& node_buffer,
                                                        GeneratorNode& parent_node,
                                                        SpritemapDimension max_width, const SpritemapDimension max_height) {

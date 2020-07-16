@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
 #define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
@@ -15,6 +14,8 @@
 
 namespace jactorio::game
 {
+	class LogicData;
+
 	///
 	/// \brief Stores information & functions regarding a player (Duplicated for multiple players)
 	class PlayerData
@@ -51,17 +52,24 @@ namespace jactorio::game
 		float playerPositionY_ = 0;
 
 		/// The world the player is currently in
-		WorldData* playerWorld_ = nullptr;
+		WorldData* playerWorldData_ = nullptr;
+		LogicData* playerLogicData_ = nullptr;
 
 		///
 		/// \brief Returns true if the tile can be walked on
 		bool TargetTileValid(WorldData* world_data, int x, int y) const;
 
 	public:
-		void SetPlayerWorld(WorldData* world_data) { playerWorld_ = world_data; }
-		J_NODISCARD WorldData& GetPlayerWorld() const {
-			assert(playerWorld_ != nullptr);  // Player is not in a world!
-			return *playerWorld_;
+		void SetPlayerWorldData(WorldData& world_data) { playerWorldData_ = &world_data; }
+		J_NODISCARD WorldData& GetPlayerWorldData() const {
+			assert(playerWorldData_ != nullptr);  // Player is not in a world!
+			return *playerWorldData_;
+		}
+
+		void SetPlayerLogicData(LogicData& logic_data) { playerLogicData_ = &logic_data; }
+		J_NODISCARD LogicData& GetPlayerLogicData() const {
+			assert(playerLogicData_);  // Player is not associated with logic data!
+			return *playerLogicData_;
 		}
 
 
@@ -86,13 +94,13 @@ namespace jactorio::game
 	private:
 		ChunkTileLayer* activatedLayer_ = nullptr;
 
-		uint16_t pickupTickCounter = 0;
-		uint16_t pickupTickTarget  = 0;
+		uint16_t pickupTickCounter_ = 0;
+		uint16_t pickupTickTarget_  = 0;
 
 		// Do not reference this, this only tracks whether or not a different entity or another tile
 		// is selected by comparing pointers
-		const void* lastSelectedPtr = nullptr;
-		const void* lastTilePtr     = nullptr;
+		const void* lastSelectedPtr_ = nullptr;
+		const void* lastTilePtr_     = nullptr;
 
 	public:
 		data::Orientation placementOrientation = data::Orientation::up;
@@ -117,16 +125,25 @@ namespace jactorio::game
 
 		///
 		/// \brief Will place an entity at the location or if an entity does not already exist
-		/// \remark Call when the key for placing entities is pressed
-		/// \param can_activate_layer will be set activated_layer to the clicked entity's layer if true
-		void TryPlaceEntity(WorldData& world_data, int world_x, int world_y,
-		                    bool can_activate_layer = false);
+		/// \return true if entity was placed
+		bool TryPlaceEntity(WorldData& world_data,
+		                    LogicData& logic_data,
+		                    WorldData::WorldCoord world_x, WorldData::WorldCoord world_y);
+
+		///
+		/// \brief Attempts to activate the layer at world coordinates
+		/// \return true if layer was activated
+		bool TryActivateLayer(WorldData& world_data,
+		                      const WorldData::WorldPair& world_pair);
 
 		///
 		/// \brief This will either pickup an entity, or mine resources from a resource tile
 		/// Call when the key for picking up entities is pressed
 		/// If resource + entity exists on one tile, picking up entity takes priority
-		void TryPickup(WorldData& world_data, int tile_x, int tile_y, uint16_t ticks = 1);
+		void TryPickup(WorldData& world_data,
+		               LogicData& logic_data,
+		               WorldData::WorldCoord tile_x, WorldData::WorldCoord tile_y,
+		               uint16_t ticks = 1);
 
 		///
 		/// \return progress of entity pickup or resource extraction as a fraction between 0 - 1
@@ -138,7 +155,7 @@ namespace jactorio::game
 	private:
 		uint16_t selectedRecipeGroup_ = 0;
 
-		std::deque<data::Recipe*> craftingQueue_;
+		std::deque<const data::Recipe*> craftingQueue_;
 		uint16_t craftingTicksRemaining_ = 0;
 
 		/// Items to be deducted away during crafting and not returned to the player inventory
@@ -149,38 +166,45 @@ namespace jactorio::game
 		std::map<std::string, uint16_t> craftingItemExtras_;
 
 		/// Item which is held until there is space in the player inventory to return
-		data::ItemStack craftingHeldItem_ = {nullptr, 0};
+		data::Item::Stack craftingHeldItem_ = {nullptr, 0};
 
 
-		data::ItemStack selectedItem_;
+		data::Item::Stack selectedItem_;
 
-		bool hasItemSelected_                   = false;
-		unsigned short selectedItemIndex_       = 0;
-		data::ItemStack* selectedItemInventory_ = nullptr;
-		bool selectByReference_                 = false;
+		bool hasItemSelected_                         = false;
+		unsigned short selectedItemIndex_             = 0;
+		data::Item::Inventory* selectedItemInventory_ = nullptr;
+		bool selectByReference_                       = false;
 
 	public:
-		static constexpr char kInventorySelectedCursorIname[] = "__core__/inventory-selected-cursor";
+		///
+		/// \brief High level method for inventory actions, prefer over calls to InventoryClick and others
+		void HandleInventoryActions(const data::PrototypeManager& data_manager,
+		                            data::Item::Inventory& inv, size_t index,
+		                            bool half_select);
+
+		// ======================================================================
+
+		static constexpr unsigned short kDefaultInventorySize = 80;
+		data::Item::Inventory inventoryPlayer{kDefaultInventorySize};
 
 		///
-		/// Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying stack size
-		void InventorySort();
-
-		static constexpr unsigned short kInventorySize = 80;
-		data::ItemStack inventoryPlayer[kInventorySize];  // Holds the internal id of items
+		/// \brief Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying stack size
+		void InventorySort(data::Item::Inventory& inv) const;
 
 		///
-		/// \brief Interacts with the player inventory at index
-		/// \param index The player inventory index
+		/// \brief Interacts with the inventory at index
+		/// \param index The inventory index
 		/// \param mouse_button Mouse button pressed; 0 - Left, 1 - Right
 		/// \param allow_reference_select If true, left clicking will select the item by reference
-		void InventoryClick(unsigned short index, unsigned short mouse_button, bool allow_reference_select,
-		                    data::ItemStack* inv);
+		void InventoryClick(const data::PrototypeManager& data_manager,
+		                    unsigned short index, unsigned short mouse_button, bool allow_reference_select,
+		                    data::Item::Inventory& inv);
 
 		///
 		/// \brief Gets the currently item player is currently holding on the cursor
 		/// \return nullptr if there is no item selected
-		J_NODISCARD const data::ItemStack* GetSelectedItem() const;
+		J_NODISCARD const data::Item::Stack* GetSelectedItemStack() const;
 
 		///
 		/// \brief Deselects the current item and returns it to its slot ONLY if selected by reference
@@ -201,49 +225,53 @@ namespace jactorio::game
 		// ============================================================================================
 		// Recipe
 
+		/// Current text in recipe search menu
+		std::string recipeSearchText;
+
 		void RecipeGroupSelect(uint16_t index);
 		J_NODISCARD uint16_t RecipeGroupGetSelected() const;
 
 		///
 		/// \brief Call every tick to count down the crafting time for the currently queued item (60 ticks = 1 second)
-
-		void RecipeCraftTick(uint16_t ticks = 1);
+		void RecipeCraftTick(const data::PrototypeManager& data_manager, uint16_t ticks = 1);
 
 		///
 		/// \brief Queues a recipe to be crafted, this is displayed by the gui is the lower right corner
-		void RecipeQueue(data::Recipe* recipe);
+		void RecipeQueue(const data::PrototypeManager& data_manager, const data::Recipe& recipe);
 
 		///
 		/// \brief Returns const reference to recipe queue for rendering in gui
-		J_NODISCARD const std::deque<data::Recipe*>& GetRecipeQueue() const;
+		J_NODISCARD const std::deque<const data::Recipe*>& GetRecipeQueue() const;
 		J_NODISCARD uint16_t GetCraftingTicksRemaining() const;
 
 	private:
 		///
-		/// \brief The actual recursive function for recipe_craft_r
+		/// \brief The actual recursive function for RecipeCraftR
 		/// \param used_items Tracks amount of an item that has already been used,
 		/// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the inventory
-		bool RecipeCanCraftR(std::map<data::Item*, uint32_t>& used_items,
-		                     const data::Recipe* recipe, uint16_t batches);
+		bool RecipeCanCraftR(const data::PrototypeManager& data_manager,
+		                     std::map<const data::Item*, uint32_t>& used_items,
+		                     const data::Recipe& recipe, uint16_t batches) const;
 	public:
 		///
 		/// \brief Recursively depth first crafts the recipe
 		/// !! This WILL NOT check that the given recipe is valid or required ingredients are present and assumes it is!!
-		void RecipeCraftR(data::Recipe* recipe);
+		void RecipeCraftR(const data::PrototypeManager& data_manager, const data::Recipe& recipe);
 
 		///
 		/// \brief Recursively steps through a recipe and subrecipies to determine if it is craftable
 		/// \param recipe
 		/// \param batches How many runs of the recipe
-		bool RecipeCanCraft(const data::Recipe* recipe, uint16_t batches);
+		J_NODISCARD bool RecipeCanCraft(const data::PrototypeManager& data_manager, const data::Recipe& recipe,
+		                                uint16_t batches) const;
 
 
 		// ============================================================================================
 #ifdef JACTORIO_BUILD_TEST
 		void ClearPlayerInventory() {
 			for (auto& i : inventoryPlayer) {
-				i.first = nullptr;
-				i.second = 0;
+				i.item = nullptr;
+				i.count = 0;
 			}
 		}
 
@@ -260,7 +288,7 @@ namespace jactorio::game
 			return craftingItemExtras_;
 		}
 
-		void SetSelectedItem(data::ItemStack& item) {
+		void SetSelectedItem(const data::Item::Stack& item) {
 			hasItemSelected_ = true;
 			selectedItem_ = item;
 		}

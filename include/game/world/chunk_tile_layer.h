@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 02/07/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
@@ -142,12 +141,15 @@ namespace jactorio::game
 			return static_cast<ChunkTileLayer*>(multiTileData_);
 		}
 
-		J_NODISCARD ChunkTileLayer* GetMultiTileTopLeft() {
-			assert(IsMultiTile());
+		///
+		/// \brief Gets top left layer if is multi tile, otherwise itself if not a multi tile
+		J_NODISCARD ChunkTileLayer& GetMultiTileTopLeft() {
+			if (!IsMultiTile() || IsMultiTileTopLeft())
+				return *this;
 
-			if (IsMultiTileTopLeft())
-				return this;
-			return static_cast<ChunkTileLayer*>(multiTileData_);
+			auto* val = static_cast<ChunkTileLayer*>(multiTileData_);
+			assert(val);
+			return *val;
 		}
 
 		// ======================================================================
@@ -164,6 +166,17 @@ namespace jactorio::game
 		}
 
 		// ======================================================================
+
+		///
+		/// \brief Adjusts provided x, y to coordinates of top left tile
+		template <typename Tx, typename Ty>
+		void AdjustToTopLeft(Tx& x, Ty& y) {
+			if (!IsMultiTile())
+				return;
+
+			x -= GetOffsetX();
+			y -= GetOffsetY();
+		}
 
 		/// \return Number of tiles from top left on X axis
 		J_NODISCARD uint8_t GetOffsetX() const {
@@ -201,7 +214,7 @@ namespace jactorio::game
 
 	inline void ChunkTileLayer::Clear() {
 		delete uniqueData_;
-		uniqueData_    = nullptr;
+		uniqueData_   = nullptr;
 		prototypeData = nullptr;
 
 		if (IsMultiTileTopLeft())

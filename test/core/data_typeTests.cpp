@@ -1,17 +1,16 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #include <gtest/gtest.h>
 
 #include "core/data_type.h"
 
-namespace core
+namespace jactorio::core
 {
 	class QuadPositionTest : public testing::Test
 	{
 	protected:
-		jactorio::core::QuadPosition q1_{{3, 3}, {3, 3}};
-		jactorio::core::QuadPosition q2_{{3, 2}, {1, 0}};
+		QuadPosition q1_{{3, 3}, {3, 3}};
+		QuadPosition q2_{{3, 2}, {1, 0}};
 	};
 
 

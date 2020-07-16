@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #include <GL/glew.h>
 
@@ -40,7 +39,7 @@ jactorio::renderer::Renderer::Renderer() {
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
 
-	LOG_MESSAGE_f(debug, "%d layers used for rendering", kRenderLayerCount);
+	LOG_MESSAGE_F(debug, "%d layers used for rendering", kRenderLayerCount);
 	for (auto& render_layer : renderLayers) {
 		render_layer.GInitBuffer();
 	}

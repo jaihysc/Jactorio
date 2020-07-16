@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/20/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_EVENT_EVENT_H
 #define JACTORIO_INCLUDE_GAME_EVENT_EVENT_H
@@ -16,15 +15,16 @@ namespace jactorio::game
 	/// \brief Used for dispatching and listening to events
 	class EventData
 	{
-		using CallbackFunc = void(*)();
+		using CallbackFunc = void(*)(EventBase&);
 
 		std::unordered_map<EventType, std::vector<CallbackFunc>> eventHandlers_{};
-		// Handlers will only run once, and will need to be registered again with subscribe_once()
+		// Handlers will only run once, and will need to be registered again with subscribeOnce()
 		std::unordered_map<EventType, std::vector<CallbackFunc>> eventHandlersOnce_{};
 
 	public:
 		///
 		/// \brief Subscribes a callback to an event
+		/// \param callback Should accept single parameter EventBase by reference
 		template <typename T>
 		void Subscribe(const EventType event_type, T callback) {
 			eventHandlers_[event_type]
@@ -33,6 +33,7 @@ namespace jactorio::game
 
 		///
 		/// \brief Subscribes a callback to an event which will only run once
+		/// \param callback Should accept single parameter EventBase by reference
 		template <typename T>
 		void SubscribeOnce(const EventType event_type, T callback) {
 			eventHandlersOnce_[event_type]
@@ -49,7 +50,7 @@ namespace jactorio::game
 			auto& handlers = eventHandlers_[event_type];  // Event handlers of event_type
 			// Find callback in vector and remove
 			for (unsigned int i = 0; i < handlers.size(); ++i) {
-				if (handlers[i] == reinterpret_cast<CallbackFunc>(callback)) {
+				if (handlers[i] == reinterpret_cast<CallbackFunc>(+callback)) {
 					handlers.erase(handlers.begin() + i);
 
 					removed = true;
@@ -61,7 +62,7 @@ namespace jactorio::game
 			auto& handlers_once = eventHandlersOnce_[event_type];
 			// Find callback in vector and remove
 			for (unsigned int i = 0; i < handlers_once.size(); ++i) {
-				if (handlers_once[i] == reinterpret_cast<CallbackFunc>(callback)) {
+				if (handlers_once[i] == reinterpret_cast<CallbackFunc>(+callback)) {
 					handlers_once.erase(handlers_once.begin() + i);
 
 					removed = true;
@@ -73,30 +74,25 @@ namespace jactorio::game
 		}
 
 		///
-		/// \brief Raises event of event_type, forwards args to constructor of event class T,
-		/// \brief Constructed event is provided by reference to all callbacks
-		template <typename T, typename ... ArgsT>
-		void Raise(const EventType event_type, const ArgsT& ... args) {
-			// Imgui sets the bool property input_captured
-			// This takes priority over all events, and if true no events are allowed to be emitted
-			// TODO ability to set if event runs when input is captured by imgui
-			// TODO Send events backwards through layers
+		/// \brief Raises event of EventType, forwards args to constructor of TEvent inheriting EventBase,
+		/// Constructed event is provided by reference to all callbacks
+		template <typename TEvent, typename ... Args>
+		void Raise(const EventType event_type, Args&& ... args) {
+
 			for (auto& callback : eventHandlers_[event_type]) {
 				// Cast function pointer parameter to T
-				auto fun_ptr = reinterpret_cast<void(*)(T&)>(callback);
+				auto fun_ptr = reinterpret_cast<void(*)(TEvent&)>(callback);
 
-				// Construct T, pass to function ptr
-				T event = T(args...);
+				// Construct EventBase, pass to function ptr
+				TEvent event = TEvent(std::forward<Args>(args)...);
 				fun_ptr(event);
 			}
 
 			// Single time events
 			for (auto& callback : eventHandlersOnce_[event_type]) {
-				// Cast function pointer parameter to T
-				auto fun_ptr = reinterpret_cast<void(*)(T&)>(callback);
+				auto fun_ptr = reinterpret_cast<void(*)(TEvent&)>(callback);
 
-				// Construct T, pass to function ptr
-				T event = T(args...);
+				TEvent event = TEvent(std::forward<Args>(args)...);
 				fun_ptr(event);
 			}
 			eventHandlersOnce_[event_type].clear();
@@ -104,7 +100,7 @@ namespace jactorio::game
 
 
 		///
-		/// \brief Erases all data held in event_handlers_
+		/// \brief Erases all data held 
 		void ClearAllData() {
 			// All callbacks registered to event
 			for (auto& vector : eventHandlers_) {

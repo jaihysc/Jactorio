@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_CORE_FLOAT_MATH_H
 #define JACTORIO_INCLUDE_CORE_FLOAT_MATH_H
@@ -19,7 +18,7 @@ namespace jactorio::core
 		return fabs(a - b) < epsilon;
 	}
 
-	
+
 	// If necessary in the future, swap these to another implementation
 	using TDegree = float;
 

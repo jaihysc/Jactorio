@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/20/2020
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_CATEGORY_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_CATEGORY_H
@@ -22,7 +21,7 @@ namespace jactorio::data
 		// Recipes belonging to this category
 		PYTHON_PROP_REF(RecipeCategory, std::vector<Recipe*>, recipes);
 
-		void PostLoadValidate() const override {
+		void PostLoadValidate(const PrototypeManager&) const override {
 		}
 	};
 }

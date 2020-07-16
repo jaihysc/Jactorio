@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/12/2020
 
 #ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H

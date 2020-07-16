@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 12/06/2019
 
 #ifndef JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
 #define JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
@@ -49,7 +48,6 @@ namespace jactorio::core
 		// Name of item being timed, used for tracking timers
 		std::string timerName_;
 		std::chrono::time_point<std::chrono::high_resolution_clock> startTime_;
-
 	};
 }
 

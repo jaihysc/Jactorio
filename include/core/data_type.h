@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/12/2020
 
 #ifndef JACTORIO_INCLUDE_CORE_DATA_TYPE_H
 #define JACTORIO_INCLUDE_CORE_DATA_TYPE_H
@@ -13,6 +12,7 @@
 namespace jactorio
 {
 	using GameTickT = uint64_t;
+	constexpr int kGameHertz = 60;  // 60 updates per second
 }
 
 namespace jactorio::core

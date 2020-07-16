@@ -1,15 +1,9 @@
 [submodule "lib/glew-cmake"]
 	path = lib/glew-cmake
 	url = https://github.com/Perlmint/glew-cmake.git
-[submodule "lib/imgui/imgui"]
-	path = lib/imgui/imgui
-	url = https://github.com/ocornut/imgui.git
 [submodule "lib/glm"]
 	path = lib/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "lib/glfw"]
-	path = lib/glfw
-	url = https://github.com/glfw/glfw.git
 [submodule "lib/stb/stb"]
 	path = lib/stb/stb
 	url = https://github.com/nothings/stb.git
@@ -31,3 +25,6 @@
 [submodule "lib/backward-cpp"]
 	path = lib/backward-cpp
 	url = https://github.com/bombela/backward-cpp.git
+[submodule "lib/imgui"]
+	path = lib/imgui
+	url = https://github.com/ocornut/imgui.git

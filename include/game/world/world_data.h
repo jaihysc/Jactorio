@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
 #define JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
@@ -16,7 +15,7 @@
 namespace jactorio::data
 {
 	enum class UpdateType;
-	
+
 	class IDeferred;
 	class IUpdateListener;
 }
@@ -36,20 +35,6 @@ namespace jactorio::game
 
 		WorldData(const WorldData& other) = delete;
 		WorldData(WorldData&& other)      = delete;
-
-		// ======================================================================
-		// World properties
-	private:
-		GameTickT gameTick_ = 0;
-
-	public:
-		/// \brief Called by the logic loop every update
-		void OnTickAdvance();
-
-		///
-		/// \brief Number of logic updates since the world was created
-		J_NODISCARD GameTickT GameTick() const { return gameTick_; }
-
 
 		// ======================================================================
 		// World chunk
@@ -211,7 +196,7 @@ namespace jactorio::game
 		J_NODISCARD std::set<Chunk*>& LogicGetChunks();
 
 		// ======================================================================
-		// World generation | Links to game/world/world_generator.cpp
+		// World generation
 	private:
 		int worldGenSeed_ = 1001;
 
@@ -234,68 +219,8 @@ namespace jactorio::game
 		/// \brief Takes first in from chunk generation queue and generates chunk
 		/// Call once per logic loop tick to generate one chunk only, this keeps performance constant
 		/// when generating large amounts of chunks
-		void GenChunk(uint8_t amount = 1);
+		void GenChunk(const data::PrototypeManager& data_manager, uint8_t amount = 1);
 
-
-		// ======================================================================
-
-		///
-		/// \brief Manages deferrals, prototypes inheriting 'Deferred'
-		class DeferralTimer
-		{
-			/// \brief vector of callbacks at game tick
-			std::unordered_map<GameTickT,
-			                   std::vector<
-				                   std::pair<std::reference_wrapper<const data::IDeferred>, data::UniqueDataBase*>
-			                   >> callbacks_;
-
-			/// \brief 0 indicates invalid callback
-			using CallbackIndex = decltype(callbacks_.size());
-
-		public:
-			explicit DeferralTimer(WorldData& world_data)
-				: worldData_(world_data) {
-			}
-
-			/// \brief Information about the registered deferral for removing
-			///
-			/// .second value of 0 indicates invalid callback
-			using DeferralEntry = std::pair<GameTickT, CallbackIndex>;
-
-			///
-			/// \brief Calls all deferred callbacks for the current game tick
-			/// \param game_tick Current game tick
-			void DeferralUpdate(GameTickT game_tick);
-
-			///
-			/// \brief Registers callback which will be called upon reaching the specified game tick
-			/// \param deferred Implements virtual function on_defer_time_elapsed
-			/// \param due_game_tick Game tick where the callback will be called
-			/// \return Index of registered callback, use this to remove the callback later
-			DeferralEntry RegisterAtTick(const data::IDeferred& deferred, data::UniqueDataBase* unique_data,
-			                             GameTickT due_game_tick);
-
-			///
-			/// \brief Registers callback which will be called after the specified game ticks pass
-			/// \param deferred Implements virtual function on_defer_time_elapsed
-			/// \param elapse_game_tick Callback will be called in game ticks from now
-			/// \return Index of registered callback, use this to remove the callback later
-			DeferralEntry RegisterFromTick(const data::IDeferred& deferred, data::UniqueDataBase* unique_data,
-			                               GameTickT elapse_game_tick);
-
-			///
-			/// \brief Removes registered callback at game_tick at index
-			void RemoveDeferral(DeferralEntry entry);
-
-			///
-			/// \brief Removes registered callback and sets entry index to 0
-			void RemoveDeferralEntry(DeferralEntry& entry);
-
-		private:
-			GameTickT lastGameTick_ = 0;
-			WorldData& worldData_;
-
-		} deferralTimer{*this};
 
 		// ======================================================================
 
@@ -322,13 +247,13 @@ namespace jactorio::game
 			///
 			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
 			ListenerEntry Register(WorldCoord current_world_x, WorldCoord current_world_y,
-								   WorldCoord target_world_x, WorldCoord target_world_y,
-								   const data::IUpdateListener& proto_listener);
+			                       WorldCoord target_world_x, WorldCoord target_world_y,
+			                       const data::IUpdateListener& proto_listener);
 
 			///
 			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
 			ListenerEntry Register(const WorldPair& current_coords, const WorldPair& target_coords,
-								   const data::IUpdateListener& proto_listener);
+			                       const data::IUpdateListener& proto_listener);
 
 			///
 			/// \brief Unregisters entry
@@ -340,7 +265,6 @@ namespace jactorio::game
 
 		private:
 			WorldData& worldData_;
-
 		} updateDispatcher{*this};
 	};
 }

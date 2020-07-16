@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/20/2020
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
@@ -11,21 +10,11 @@ namespace jactorio::data
 {
 	struct ContainerEntityData : HealthEntityData
 	{
-		explicit ContainerEntityData(const uint16_t inventory_size)
-			: inventory(new ItemStack[inventory_size]), size(inventory_size) {
+		explicit ContainerEntityData(const uint16_t inventory_size) {
+			inventory.resize(inventory_size);
 		}
 
-		~ContainerEntityData() override {
-			delete[] inventory;
-		}
-
-		ContainerEntityData(const ContainerEntityData& other)                = delete;
-		ContainerEntityData(ContainerEntityData&& other) noexcept            = delete;
-		ContainerEntityData& operator=(const ContainerEntityData& other)     = delete;
-		ContainerEntityData& operator=(ContainerEntityData&& other) noexcept = delete;
-
-		ItemStack* const inventory;
-		const uint16_t size;
+		Item::Inventory inventory;
 	};
 
 	///
@@ -42,25 +31,24 @@ namespace jactorio::data
 		PYTHON_PROP_REF(ContainerEntity, uint16_t, inventorySize)
 
 
-		UniqueDataBase* CopyUniqueData(UniqueDataBase* ptr) const override;
-
 		// Events
 
 		void OnBuild(game::WorldData& world_data,
+		             game::LogicData& logic_data,
 		             const game::WorldData::WorldPair& world_coords,
-		             game::ChunkTileLayer& tile_layer,
-		             Orientation orientation) const override;
+		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
 
 		void OnRemove(game::WorldData&,
-		              const game::WorldData::WorldPair&,
-		              game::ChunkTileLayer&) const override {
+		              game::LogicData&,
+		              const game::WorldData::WorldPair&, game::ChunkTileLayer&) const override {
 		}
 
-		bool OnRShowGui(game::PlayerData& player_data, game::ChunkTileLayer* tile_layer) const override;
+		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
+		                game::ChunkTileLayer* tile_layer) const override;
 
-		Sprite::SetT MapPlacementOrientation(Orientation,
-		                                     game::WorldData&,
-		                                     const game::WorldData::WorldPair&) const override {
+		Sprite::SetT OnRGetSet(Orientation,
+		                       game::WorldData&,
+		                       const game::WorldData::WorldPair&) const override {
 			return 0;
 		}
 

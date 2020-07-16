@@ -1,18 +1,20 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 04/07/2020
 
 #include "game/logic/item_logistics.h"
 
+#include "data/prototype/entity/assembly_machine.h"
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/entity.h"
-#include "data/prototype/entity/transport/transport_line.h"
+#include "data/prototype/entity/transport_line.h"
 #include "data/prototype/item/item.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"
 
-bool jactorio::game::ItemDropOff::Initialize(const WorldData& world_data,
-                                             data::UniqueDataBase& target_unique_data,
-                                             const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
+using namespace jactorio;
+
+bool game::ItemDropOff::Initialize(const WorldData& world_data,
+                                   data::UniqueDataBase& target_unique_data,
+                                   const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
 	const data::Entity* entity =
 		world_data.GetTile(world_x, world_y)
 		          ->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
@@ -29,34 +31,42 @@ bool jactorio::game::ItemDropOff::Initialize(const WorldData& world_data,
 		dropFunc_ = &ItemDropOff::InsertTransportBelt;
 		break;
 
+	case data::DataCategory::assembly_machine:
+		dropFunc_ = &ItemDropOff::InsertAssemblyMachine;
+		break;
+
 	default:
 		return false;
 	}
 
+	targetProtoData_  = entity;
 	targetUniqueData_ = &target_unique_data;
+
 	return true;
 }
 
-bool jactorio::game::ItemDropOff::Initialize(const WorldData& world_data,
-                                             data::UniqueDataBase& target_unique_data, const WorldData::WorldPair& world_coord) {
+bool game::ItemDropOff::Initialize(const WorldData& world_data,
+                                   data::UniqueDataBase& target_unique_data, const WorldData::WorldPair& world_coord) {
 	return Initialize(world_data,
 	                  target_unique_data,
 	                  world_coord.first, world_coord.second);
 }
 
-bool jactorio::game::ItemDropOff::InsertContainerEntity(const data::ItemStack& item_stack, data::UniqueDataBase& unique_data,
-                                                        data::Orientation) const {
+bool game::ItemDropOff::InsertContainerEntity(LogicData&,
+                                              const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
+                                              data::Orientation) const {
 	auto& container_data = static_cast<data::ContainerEntityData&>(unique_data);
-	if (!CanAddStack(container_data.inventory, container_data.size, item_stack))
+	if (!CanAddStack(container_data.inventory, item_stack).first)
 		return false;
 
-	AddStack(container_data.inventory, container_data.size, item_stack);
+	AddStack(container_data.inventory, item_stack);
 	return true;
 }
 
-bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::ItemStack& item_stack, data::UniqueDataBase& unique_data,
-                                                      const data::Orientation orientation) const {
-	assert(item_stack.second == 1);  // Can only insert 1 at a time
+bool game::ItemDropOff::InsertTransportBelt(LogicData&,
+                                            const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
+                                            const data::Orientation orientation) const {
+	assert(item_stack.count == 1);  // Can only insert 1 at a time
 
 	auto& line_data = static_cast<data::TransportLineData&>(unique_data);
 
@@ -84,7 +94,6 @@ bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::ItemStack& ite
 	case data::Orientation::right:
 		switch (orientation) {
 		case data::Orientation::up:
-			break;
 		case data::Orientation::right:
 			break;
 		case data::Orientation::down:
@@ -104,7 +113,6 @@ bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::ItemStack& ite
 		case data::Orientation::up:
 			return false;
 		case data::Orientation::right:
-			break;
 		case data::Orientation::down:
 			break;
 		case data::Orientation::left:
@@ -125,7 +133,6 @@ bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::ItemStack& ite
 		case data::Orientation::right:
 			return false;
 		case data::Orientation::down:
-			break;
 		case data::Orientation::left:
 			break;
 
@@ -143,14 +150,38 @@ bool jactorio::game::ItemDropOff::InsertTransportBelt(const data::ItemStack& ite
 	constexpr double insertion_offset = 0.5;
 	return line_data.lineSegment->TryInsertItem(use_line_left,
 	                                            line_data.lineSegmentIndex + insertion_offset,
-	                                            item_stack.first);
+	                                            item_stack.item);
+}
+
+bool game::ItemDropOff::InsertAssemblyMachine(LogicData& logic_data,
+                                              const data::Item::Stack& item_stack, data::UniqueDataBase& unique_data,
+                                              data::Orientation) const {
+	assert(item_stack.item);
+	assert(item_stack.count > 0);
+
+	auto& machine_data = static_cast<data::AssemblyMachineData&>(unique_data);
+
+	for (auto& slot : machine_data.ingredientInv) {
+		if (slot.filter == item_stack.item) {
+			if (slot.count + item_stack.count > item_stack.item->stackSize)
+				continue;
+
+			slot.item = item_stack.item;
+			slot.count += item_stack.count;
+
+			assert(targetProtoData_);
+			static_cast<const data::AssemblyMachine*>(targetProtoData_)->TryBeginCrafting(logic_data, machine_data);
+			return true;
+		}
+	}
+	return false;
 }
 
 // ======================================================================
 
-bool jactorio::game::InserterPickup::Initialize(const WorldData& world_data,
-                                                data::UniqueDataBase& target_unique_data,
-                                                WorldData::WorldCoord world_x, WorldData::WorldCoord world_y) {
+bool game::InserterPickup::Initialize(const WorldData& world_data,
+                                      data::UniqueDataBase& target_unique_data,
+                                      const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
 	const data::Entity* entity =
 		world_data.GetTile(world_x, world_y)
 		          ->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
@@ -167,47 +198,49 @@ bool jactorio::game::InserterPickup::Initialize(const WorldData& world_data,
 		pickupFunc_ = &InserterPickup::PickupTransportBelt;
 		break;
 
+	case data::DataCategory::assembly_machine:
+		pickupFunc_ = &InserterPickup::PickupAssemblyMachine;
+		break;
+
 	default:
 		return false;
 	}
 
+	targetProtoData_  = entity;
 	targetUniqueData_ = &target_unique_data;
+
 	return true;
 }
 
-bool jactorio::game::InserterPickup::Initialize(const WorldData& world_data,
-                                                data::UniqueDataBase& target_unique_data,
-                                                const WorldData::WorldPair& world_coord) {
+bool game::InserterPickup::Initialize(const WorldData& world_data,
+                                      data::UniqueDataBase& target_unique_data,
+                                      const WorldData::WorldPair& world_coord) {
 	return Initialize(world_data, target_unique_data, world_coord.first, world_coord.second);
 }
 
-bool jactorio::game::InserterPickup::PickupContainerEntity(data::ProtoUintT,
-                                                           const data::RotationDegree& degree,
-                                                           const data::ItemStack::second_type amount,
-                                                           data::UniqueDataBase& unique_data,
-                                                           data::Orientation,
-                                                           data::ItemStack& out_item_stack) const {
-	if (degree != data::ToRotationDegree(kMaxInserterDegree))
-		return false;
+game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(LogicData&,
+                                                                               data::ProtoUintT,
+                                                                               const data::RotationDegree& degree,
+                                                                               const data::Item::StackCount amount,
+                                                                               data::UniqueDataBase& unique_data,
+                                                                               data::Orientation) const {
+	if (!IsAtMaxDegree(degree))
+		return {false, {}};
 
 	auto& container = static_cast<data::ContainerEntityData&>(unique_data);
 
 
-	const auto* target_item = GetFirstItem(container.inventory, container.size);
+	const auto* target_item = GetFirstItem(container.inventory);
 
-	out_item_stack = data::ItemStack{target_item, amount};
-
-	return RemoveInvItem(container.inventory, container.size,
-	                     target_item,
-	                     amount);
+	return {RemoveInvItem(container.inventory, target_item, amount), {target_item, amount}};
 }
 
-bool jactorio::game::InserterPickup::PickupTransportBelt(const data::ProtoUintT inserter_tile_reach,
-                                                         const data::RotationDegree& degree,
-                                                         const data::ItemStack::second_type,
-                                                         data::UniqueDataBase& unique_data,
-                                                         const data::Orientation orientation,
-                                                         data::ItemStack& out_item_stack) const {
+game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(LogicData&,
+                                                                             const data::ProtoUintT inserter_tile_reach,
+                                                                             const data::RotationDegree& degree,
+                                                                             const data::Item::StackCount,
+                                                                             data::UniqueDataBase& unique_data,
+                                                                             const data::Orientation orientation) const {
 	auto& line_data = static_cast<data::TransportLineData&>(unique_data);
 
 	bool use_line_left = false;
@@ -274,9 +307,43 @@ bool jactorio::game::InserterPickup::PickupTransportBelt(const data::ProtoUintT 
 	if (item != nullptr) {
 		line_data.lineSegment->GetSide(use_line_left).index = 0;
 
-		out_item_stack = data::ItemStack{item, 1};
-
-		return true;
+		return {true, {item, 1}};
 	}
-	return false;
+	return {false, {}};
+}
+
+game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(LogicData& logic_data,
+                                                                               data::ProtoUintT,
+                                                                               const data::RotationDegree& degree,
+                                                                               const data::Item::StackCount amount,
+                                                                               data::UniqueDataBase& unique_data,
+                                                                               data::Orientation) const {
+	assert(amount > 0);
+
+	if (!IsAtMaxDegree(degree))
+		return {false, {}};
+
+
+	auto& machine_data = static_cast<data::AssemblyMachineData&>(unique_data);
+
+	if (!machine_data.HasRecipe())
+		return {false, {}};
+
+	auto& product_stack = machine_data.productInv[0];
+
+	// Not enough to pick up
+	if (product_stack.count < amount)
+		return {false, {}};
+
+	product_stack.count -= amount;
+
+	const auto* asm_machine = static_cast<const data::AssemblyMachine*>(targetProtoData_);
+	assert(asm_machine);
+	asm_machine->TryBeginCrafting(logic_data, machine_data);
+
+	return {true, {product_stack.item, amount}};
+}
+
+bool game::InserterPickup::IsAtMaxDegree(const data::RotationDegree& degree) {
+	return degree == data::ToRotationDegree(kMaxInserterDegree);
 }

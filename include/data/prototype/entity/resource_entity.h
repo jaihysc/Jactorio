@@ -1,11 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 02/07/2020
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
 #pragma once
 
 #include "data/prototype/entity/entity.h"
+
+#include "core/data_type.h"
 
 namespace jactorio::data
 {
@@ -35,29 +36,29 @@ namespace jactorio::data
 			return new ResourceEntityData(*static_cast<ResourceEntityData*>(ptr));
 		}
 
-		Sprite::SetT MapPlacementOrientation(Orientation,
-		                                     game::WorldData&,
-		                                     const game::WorldData::WorldPair&) const override {
+		Sprite::SetT OnRGetSet(Orientation,
+		                       game::WorldData&,
+		                       const game::WorldData::WorldPair&) const override {
 			return 0;
 		}
 
 
 		void OnBuild(game::WorldData&,
+		             game::LogicData&,
 		             const game::WorldData::WorldPair&,
-		             game::ChunkTileLayer&,
-		             Orientation) const override {
+		             game::ChunkTileLayer&, Orientation) const override {
 			assert(false);  // Is not player placeable
 		}
 
 		void OnRemove(game::WorldData&,
-		              const game::WorldData::WorldPair&,
-		              game::ChunkTileLayer&) const override {
+		              game::LogicData&,
+		              const game::WorldData::WorldPair&, game::ChunkTileLayer&) const override {
 		}
 
 
-		void PostLoadValidate() const override {
+		void PostLoadValidate(const PrototypeManager&) const override {
 			// Must convert to at least 1 game tick
-			J_DATA_ASSERT(pickupTime * JC_GAME_HERTZ >= 1, "Pickup time is too small");
+			J_DATA_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
 		}
 	};
 }

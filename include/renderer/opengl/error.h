@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
 #ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H
 #define JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H
@@ -34,8 +33,6 @@ namespace jactorio::renderer
 	bool OpenglPrintErrors(const char* function_name, const char* file,
 	                       int line);
 	void OpenglClearErrors();
-
-	void InitGlfwErrorHandling();
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H

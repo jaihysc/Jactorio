@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/25/2020
 
 #ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H
 #define JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H
@@ -39,7 +38,7 @@ namespace jactorio::data
 		Status status = Status::pickup;
 
 		/// Current item held by inserter
-		ItemStack heldItem;
+		Item::Stack heldItem;
 
 		game::ItemDropOff dropoff;
 		game::InserterPickup pickup;
@@ -72,24 +71,27 @@ namespace jactorio::data
 
 		// ======================================================================
 
-		Sprite::SetT MapPlacementOrientation(Orientation orientation,
-		                                     game::WorldData& world_data,
-		                                     const game::WorldData::WorldPair& world_coords) const override;
+		Sprite::SetT OnRGetSet(Orientation orientation,
+		                       game::WorldData& world_data,
+		                       const game::WorldData::WorldPair& world_coords) const override;
 
 
-		void OnBuild(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
-		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
+		///
+		/// \param orientation Points towards dropoff
+		void OnBuild(game::WorldData& world_data, game::LogicData& logic_data,
+		             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer,
+		             Orientation orientation) const override;
 
 
 		void OnTileUpdate(game::WorldData& world_data,
 		                  const game::WorldData::WorldPair& emit_coords,
 		                  const game::WorldData::WorldPair& receive_coords, UpdateType type) const override;
 
-		void OnRemove(game::WorldData& world_data, const game::WorldData::WorldPair& world_coords,
-		              game::ChunkTileLayer& tile_layer) const override;
+		void OnRemove(game::WorldData& world_data, game::LogicData& logic_data,
+		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 
-		void PostLoadValidate() const override {
+		void PostLoadValidate(const PrototypeManager&) const override {
 			J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
 		}
 
