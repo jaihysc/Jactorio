@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/20/2020
 
 #include "game/logic/inventory_controller.h"
 
@@ -202,10 +201,10 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 		const auto* item = origin_stack.item;
 		const auto count = origin_stack.count;
 
-		origin_stack.item = target_stack.item;
+		origin_stack.item  = target_stack.item;
 		origin_stack.count = target_stack.count;
 
-		target_stack.item = item;
+		target_stack.item  = item;
 		target_stack.count = count;
 	}
 

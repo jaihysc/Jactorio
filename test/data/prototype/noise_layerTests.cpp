@@ -1,19 +1,18 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 12/06/2019
 
 #include <gtest/gtest.h>
 
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/tile/tile.h"
 
-namespace data::prototype
+namespace jactorio::data
 {
 	TEST(NoiseLayer, GetSetTileNoiseRange) {
 		{
-			auto noise_layer = jactorio::data::NoiseLayer<jactorio::data::Tile>();
+			auto noise_layer = jactorio::data::NoiseLayer<Tile>();
 
-			auto tile_proto  = jactorio::data::Tile();
-			auto tile_proto2 = jactorio::data::Tile();
+			auto tile_proto  = Tile();
+			auto tile_proto2 = Tile();
 
 			// Setup tile ranges
 			// 0 inclusive
@@ -35,10 +34,10 @@ namespace data::prototype
 			EXPECT_EQ(noise_layer.Get(1.5), &tile_proto2);
 		}
 		{
-			auto noise_layer = jactorio::data::NoiseLayer<jactorio::data::Tile>(-1, true);
+			auto noise_layer = jactorio::data::NoiseLayer<Tile>(-1, true);
 
-			auto tile_proto  = jactorio::data::Tile();
-			auto tile_proto2 = jactorio::data::Tile();
+			auto tile_proto  = Tile();
+			auto tile_proto2 = Tile();
 
 			// Setup tile ranges
 			// 0 inclusive
@@ -62,7 +61,7 @@ namespace data::prototype
 	}
 
 	TEST(NoiseLayer, GetSetNoiseStartVal) {
-		auto noise_layer = jactorio::data::NoiseLayer<jactorio::data::Tile>();
+		auto noise_layer = jactorio::data::NoiseLayer<Tile>();
 
 		// Defaults to -1
 		EXPECT_EQ(noise_layer.GetStartVal(), -1);
@@ -76,10 +75,10 @@ namespace data::prototype
 
 	TEST(NoiseLayer, GetNoiseRangeMinMax) {
 		{
-			auto noise_layer = jactorio::data::NoiseLayer<jactorio::data::Tile>();
+			auto noise_layer = jactorio::data::NoiseLayer<Tile>();
 
-			auto tile_proto  = jactorio::data::Tile();
-			auto tile_proto2 = jactorio::data::Tile();
+			auto tile_proto  = Tile();
+			auto tile_proto2 = Tile();
 
 			noise_layer.SetStartVal(0);
 			noise_layer.Add(1, &tile_proto);
@@ -89,7 +88,7 @@ namespace data::prototype
 			EXPECT_EQ(noise_layer.GetMaxNoiseVal(), 1.5f);
 		}
 		{
-			auto noise_layer = jactorio::data::NoiseLayer<jactorio::data::Tile>();
+			auto noise_layer = jactorio::data::NoiseLayer<Tile>();
 
 			// Defaults to -1
 			EXPECT_EQ(noise_layer.GetStartVal(), -1.f);

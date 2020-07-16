@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
 #ifndef JACTORIO_INCLUDE_CORE_LOGGER_H
 #define JACTORIO_INCLUDE_CORE_LOGGER_H
@@ -35,7 +34,7 @@
 namespace jactorio::core
 {
 	constexpr char kLogFileName[] = "log.txt";
-	
+
 	/// Maximum number of characters in log message
 	constexpr uint16_t kMaxLogMsgLength = 1000;
 
@@ -75,7 +74,7 @@ namespace jactorio::core
 	/// \brief Creates a formatted log message if log level permits
 	template <LogSeverity Severity, typename ... Args, typename = std::common_type<Args ...>>
 	void MakeLogMessage(const char* format, const char* file, const int line,
-						Args&& ... args) {
+	                    Args&& ... args) {
 		if constexpr (static_cast<int>(Severity) >= JACTORIO_LOG_LEVEL) {
 			char buffer[kMaxLogMsgLength + 1];
 			snprintf(buffer, kMaxLogMsgLength, format, args ...);

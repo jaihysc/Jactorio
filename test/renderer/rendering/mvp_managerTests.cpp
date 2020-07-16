@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #include <gtest/gtest.h>
 
@@ -7,10 +6,10 @@
 
 #include "renderer/rendering/mvp_manager.h"
 
-namespace renderer
+namespace jactorio::renderer
 {
 	TEST(MvpManager, View) {
-		glm::vec3* view_transform = jactorio::renderer::GetViewTransform();
+		glm::vec3* view_transform = GetViewTransform();
 
 		EXPECT_EQ(view_transform->x, 0);
 		EXPECT_EQ(view_transform->y, 0);
@@ -18,7 +17,7 @@ namespace renderer
 
 		view_transform->x = 20;
 
-		glm::vec3* view_transform2 = jactorio::renderer::GetViewTransform();
+		glm::vec3* view_transform2 = GetViewTransform();
 		EXPECT_EQ(view_transform2->x, 20);
 	}
 
@@ -29,7 +28,7 @@ namespace renderer
 			const int tiles_y = 10;
 
 			// Zoom guarantees a minimum of offset
-			auto proj_matrix = jactorio::renderer::ToProjMatrix(
+			auto proj_matrix = ToProjMatrix(
 				tiles_x, tiles_y, 0);
 
 			EXPECT_EQ(proj_matrix, glm::ortho(
@@ -39,7 +38,7 @@ namespace renderer
 			);
 
 			// Zoom guarantees a minimum of offset
-			proj_matrix = jactorio::renderer::ToProjMatrix(
+			proj_matrix = ToProjMatrix(
 				tiles_x, tiles_y, 2.5);
 
 			// Y is smaller axis
@@ -59,7 +58,7 @@ namespace renderer
 			const int tiles_y = 20;
 
 			// Zoom guarantees a minimum of offset
-			auto proj_matrix = jactorio::renderer::ToProjMatrix(
+			auto proj_matrix = ToProjMatrix(
 				tiles_x, tiles_y, 0);
 
 			EXPECT_EQ(proj_matrix, glm::ortho(
@@ -69,7 +68,7 @@ namespace renderer
 			);
 
 			// Zoom guarantees a minimum of offset
-			proj_matrix = jactorio::renderer::ToProjMatrix(
+			proj_matrix = ToProjMatrix(
 				tiles_x, tiles_y, 2.5);
 
 			// Scale factor of 2 for Y axis

@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
 #include <GL/glew.h>
 
@@ -59,4 +58,3 @@ void jactorio::renderer::OpenglClearErrors() {	// Do not log error if there is n
 		LOG_MESSAGE_F(error, "OpenGL: Errors cut, exceeded maximum %d clear errors", max_errors);
 	}
 }
-

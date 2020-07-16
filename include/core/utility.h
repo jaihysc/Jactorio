@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 07/03/2020
 
 #ifndef JACTORIO_CORE_UTILITY_H
 #define JACTORIO_CORE_UTILITY_H

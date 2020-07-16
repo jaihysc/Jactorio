@@ -1,9 +1,8 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/05/2020
 
 #include <gtest/gtest.h>
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/mining_drill.h"
 #include "game/input/mouse_selection.h"

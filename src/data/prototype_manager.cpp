@@ -1,7 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 
 #include <filesystem>
 #include <sstream>
@@ -20,8 +19,8 @@ void jactorio::data::PrototypeManager::SetDirectoryPrefix(const std::string& nam
 }
 
 void jactorio::data::PrototypeManager::DataRawAdd(const std::string& iname,
-                                             PrototypeBase* const prototype,
-                                             const bool add_directory_prefix) {
+                                                  PrototypeBase* const prototype,
+                                                  const bool add_directory_prefix) {
 	const DataCategory data_category = prototype->Category();
 
 	// Use the following format internal name
@@ -165,7 +164,7 @@ void jactorio::data::PrototypeManager::LoadData(
 bool jactorio::data::PrototypeManager::PrototypeExists(const std::string& iname) const {
 	for (const auto& map : dataRaw) {
 		if (map.find(iname) != map.end()) {
-				return true;
+			return true;
 		}
 	}
 	return false;

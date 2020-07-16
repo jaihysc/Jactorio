@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #include <gtest/gtest.h>
 
@@ -26,7 +25,7 @@ namespace jactorio::data
 	protected:
 		game::WorldData worldData_{};
 		game::LogicData logicData_{};
-		
+
 		TransportBelt lineProto_{};
 
 		void SetUp() override {
@@ -90,7 +89,7 @@ namespace jactorio::data
 		void ValidateResultOrientation(const Orientation placement_orientation,
 		                               const TransportLineData::LineOrientation expected_line_orientation) {
 			EXPECT_EQ(lineProto_.OnRGetSet(placement_orientation, worldData_, {1, 1}),
-					  static_cast<data::Sprite::SetT>(expected_line_orientation));
+			          static_cast<data::Sprite::SetT>(expected_line_orientation));
 		}
 
 		// ======================================================================
@@ -1251,7 +1250,7 @@ namespace jactorio::data
 
 
 		// Remove
-		
+
 
 		TlRemoveEvents({0, 0});
 

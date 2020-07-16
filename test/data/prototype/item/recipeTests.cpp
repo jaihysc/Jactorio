@@ -1,9 +1,8 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #include <gtest/gtest.h>
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/item/recipe.h"
 
 namespace jactorio::data
@@ -18,7 +17,7 @@ namespace jactorio::data
 		// Allows for fast lookup of item recipes instead of searching through an entire unordered_map
 		EXPECT_EQ(jactorio::data::Recipe::GetItemRecipe(dataManager_, "non-existent-item"), nullptr);
 
-		auto* laptop_recipe = new Recipe();
+		auto* laptop_recipe    = new Recipe();
 		laptop_recipe->product = {"Laptop", 1};
 		dataManager_.DataRawAdd("", laptop_recipe, false);
 

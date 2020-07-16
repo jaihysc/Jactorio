@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 06/01/2020
 
 #include "core/crash_handler.h"
 
@@ -96,7 +95,7 @@ void PrintStackTrace(FILE* file) {
 #endif
 	}
 	else if constexpr (std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Darwin" ||
-						std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Linux") {
+		std::string_view(JACTORIO_BUILD_TARGET_PLATFORM) == "Linux") {
 #if defined(__linux__) || defined (__APPLE__)
 
 		using namespace backward;

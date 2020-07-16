@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #include "renderer/gui/imgui_manager.h"
 
@@ -164,7 +163,8 @@ void DrawMenu(jactorio::renderer::Menu menu,
 	}
 }
 
-void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::PrototypeManager& data_manager, game::EventData& event) {
+void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
+                                   game::EventData& event) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame
@@ -173,8 +173,8 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::Pr
 	ImGui::NewFrame();
 
 	// Has imgui handled a mouse or keyboard event?
-	ImGuiIO& io    = ImGui::GetIO();
-	input_mouse_captured = io.WantCaptureMouse;
+	ImGuiIO& io             = ImGui::GetIO();
+	input_mouse_captured    = io.WantCaptureMouse;
 	input_keyboard_captured = io.WantCaptureKeyboard;
 
 	// Make the font bigger
@@ -193,7 +193,7 @@ void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::Pr
 
 	auto* layer = player_data.GetActivatedLayer();
 	if (layer != nullptr) {
-		layer = &layer->GetMultiTileTopLeft();
+		layer    = &layer->GetMultiTileTopLeft();
 		drew_gui = static_cast<const data::Entity*>(layer->prototypeData)->OnRShowGui(player_data, data_manager, layer);
 		if (drew_gui) {
 			SetVisible(Menu::CharacterMenu, false);

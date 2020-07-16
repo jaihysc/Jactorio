@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/20/2020
 
 #include "renderer/rendering/data_renderer.h"
 

@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #include "data/prototype/item/recipe.h"
 
@@ -7,13 +6,13 @@
 
 #include "core/data_type.h"
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/item/item.h"
 
 ///
 /// \brief Recursively resolves raw materials
 void ResolveRawRecipe(const jactorio::data::PrototypeManager& data_manager,
-					  std::unordered_map<std::string, uint16_t>& materials_raw,
+                      std::unordered_map<std::string, uint16_t>& materials_raw,
                       const jactorio::data::Recipe* recipe, const uint16_t amount) {
 	using namespace jactorio;
 
@@ -37,7 +36,8 @@ void ResolveRawRecipe(const jactorio::data::PrototypeManager& data_manager,
 
 }
 
-const jactorio::data::Recipe* jactorio::data::Recipe::GetItemRecipe(const PrototypeManager& data_manager, const std::string& iname) {
+const jactorio::data::Recipe* jactorio::data::Recipe::GetItemRecipe(const PrototypeManager& data_manager,
+                                                                    const std::string& iname) {
 	const auto recipes = data_manager.DataRawGetAll<const Recipe>(DataCategory::recipe);
 
 	for (const auto& recipe : recipes) {
@@ -49,7 +49,7 @@ const jactorio::data::Recipe* jactorio::data::Recipe::GetItemRecipe(const Protot
 }
 
 std::vector<jactorio::data::RecipeItem> jactorio::data::Recipe::RecipeGetTotalRaw(const PrototypeManager& data_manager,
-																				  const std::string& iname) {
+                                                                                  const std::string& iname) {
 	// Key is ptr instead of std::string for some added speed
 	std::unordered_map<std::string, uint16_t> map_raw;
 
@@ -70,8 +70,8 @@ void jactorio::data::Recipe::PostLoadValidate(const PrototypeManager& data_manag
 	for (const auto& ingredient : ingredients) {
 		J_DATA_ASSERT(!ingredient.first.empty(), "Empty ingredient internal name specifier");
 		J_DATA_ASSERT_F(data_manager.DataRawGet<Item>(ingredient.first),
-						"Ingredient %s does not exist",
-						ingredient.first.c_str());
+		                "Ingredient %s does not exist",
+		                ingredient.first.c_str());
 
 		J_DATA_ASSERT(ingredient.second > 0, "Ingredient required amount minimum is 1");
 	}
@@ -82,8 +82,8 @@ void jactorio::data::Recipe::PostLoadValidate(const PrototypeManager& data_manag
 	J_DATA_ASSERT_F(item_product != nullptr, "Product %s does not exist", product.first.c_str());
 
 	J_DATA_ASSERT(product.second > 0, "Product yield amount minimum is 1");
-	J_DATA_ASSERT_F(product.second <= item_product->stackSize, 
-					"Product yield %d may not exceed product stack size %d", product.second, item_product->stackSize);
+	J_DATA_ASSERT_F(product.second <= item_product->stackSize,
+	                "Product yield %d may not exceed product stack size %d", product.second, item_product->stackSize);
 }
 
 jactorio::GameTickT jactorio::data::Recipe::GetCraftingTime(const double multiplier) const {

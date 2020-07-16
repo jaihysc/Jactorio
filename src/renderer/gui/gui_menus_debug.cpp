@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/01/2020
 
 #include "renderer/gui/gui_menus_debug.h"
 
@@ -9,7 +8,7 @@
 
 #include "jactorio.h"
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/transport_line.h"
 
@@ -129,7 +128,7 @@ void renderer::DebugTimings() {
 	}
 }
 
-int give_amount = 100;
+int give_amount  = 100;
 int new_inv_size = game::PlayerData::kDefaultInventorySize;
 
 void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {

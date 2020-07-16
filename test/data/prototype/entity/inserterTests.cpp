@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 05/25/2020
 
 #include <gtest/gtest.h>
 
@@ -14,7 +13,7 @@ namespace jactorio::data
 	{
 	protected:
 		game::WorldData worldData_{};
-			game::LogicData logicData_{};
+		game::LogicData logicData_{};
 
 		Inserter inserterProto_{};
 
@@ -97,7 +96,7 @@ namespace jactorio::data
 
 		// Dropoff
 		AssemblyMachine asm_machine{};
-		
+
 		TestSetupAssemblyMachine(worldData_, {1, 0}, asm_machine);
 		worldData_.updateDispatcher.Dispatch({2, 0}, UpdateType::place);
 

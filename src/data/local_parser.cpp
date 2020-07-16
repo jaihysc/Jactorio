@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/15/2020
 
 #include "data/local_parser.h"
 
@@ -8,7 +7,7 @@
 #include "jactorio.h"
 
 #include "data/data_exception.h"
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 
 struct ParserData
 {
@@ -88,7 +87,8 @@ loop_exit:
 	parser_data.lineNumber++;
 }
 
-void jactorio::data::LocalParse(PrototypeManager& data_manager, const std::string& file_str, const std::string& directory_prefix) {
+void jactorio::data::LocalParse(PrototypeManager& data_manager, const std::string& file_str,
+                                const std::string& directory_prefix) {
 	ParserData parser_data{};
 
 	for (char c : file_str) {

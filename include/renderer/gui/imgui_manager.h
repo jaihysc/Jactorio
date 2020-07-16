@@ -1,11 +1,9 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #ifndef JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
 #define JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
 #pragma once
 
-#include "data/data_manager.h"
 #include "game/event/event.h"
 #include "game/player/player_data.h"
 #include "renderer/rendering/spritemap_generator.h"

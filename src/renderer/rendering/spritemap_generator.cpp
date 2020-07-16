@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #include "renderer/rendering/spritemap_generator.h"
 
@@ -8,7 +7,7 @@
 #include <stb/stb_image.h>
 
 #include "core/logger.h"
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 
 using namespace jactorio;
 
@@ -25,8 +24,8 @@ void renderer::RendererSprites::GInitializeSpritemap(const data::PrototypeManage
                                                      data::Sprite::SpriteGroup group, const bool invert_sprites) {
 	const auto spritemap_data = CreateSpritemap(data_manager, group, invert_sprites);
 
-	textures_[static_cast<int>(group)] = new Texture(spritemap_data.spriteBuffer, 
-													 spritemap_data.width, spritemap_data.height);
+	textures_[static_cast<int>(group)] = new Texture(spritemap_data.spriteBuffer,
+	                                                 spritemap_data.width, spritemap_data.height);
 	spritemapDatas_[static_cast<int>(group)] = spritemap_data;
 }
 

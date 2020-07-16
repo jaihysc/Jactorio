@@ -1,17 +1,27 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 06/18/2020
 
 #ifndef JACTORIO_TEST_JACTORIOTESTS_H
 #define JACTORIO_TEST_JACTORIOTESTS_H
 #pragma once
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/assembly_machine.h"
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/transport_line.h"
 #include "game/logic/placement_controller.h"
 #include "game/world/world_data.h"
+
+///
+/// \brief Makes and registers prototype with prototype manager
+template <typename TPrototype>
+TPrototype* MakeRegisterPrototype(jactorio::data::PrototypeManager& prototype_manager, const std::string& iname = "") {
+	auto unique = std::make_unique<TPrototype>();
+	auto ptr    = unique.get();
+	prototype_manager.DataRawAdd(iname, unique.release());
+
+	return ptr;
+}
 
 ///
 /// \brief Creates a container of size 10 at coordinates

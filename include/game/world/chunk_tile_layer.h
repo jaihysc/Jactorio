@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 02/07/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
@@ -174,7 +173,7 @@ namespace jactorio::game
 		void AdjustToTopLeft(Tx& x, Ty& y) {
 			if (!IsMultiTile())
 				return;
-			
+
 			x -= GetOffsetX();
 			y -= GetOffsetY();
 		}
@@ -215,7 +214,7 @@ namespace jactorio::game
 
 	inline void ChunkTileLayer::Clear() {
 		delete uniqueData_;
-		uniqueData_    = nullptr;
+		uniqueData_   = nullptr;
 		prototypeData = nullptr;
 
 		if (IsMultiTileTopLeft())

@@ -1,19 +1,15 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
-#include <GL/glew.h>
+#include "renderer/render_loop.h"
 
-#include "renderer/render_main.h"
+#include <chrono>
+#include <thread>
 
 #include <SDL.h>
-#include <thread>
-#include <vector>
-
-#include <examples/imgui_impl_opengl3.h>
+#include <examples/imgui_impl_sdl.h>
 
 #include "jactorio.h"
 #include "core/resource_guard.h"
-#include "examples/imgui_impl_sdl.h"
 
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/opengl/shader.h"
@@ -139,8 +135,7 @@ void renderer::RenderInit() {
 		}
 	);
 	shader.Bind();
-	SetMvpUniformLocation(
-		shader.GetUniformLocation("u_model_view_projection_matrix"));
+	SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
 
 	// Texture will be bound to slot 0 above, tell this to shader
 	Shader::SetUniform1I(shader.GetUniformLocation("u_texture"), 0);
@@ -151,8 +146,7 @@ void renderer::RenderInit() {
 
 	// Since game data will be now accessed, wait until prototype loading is complete
 	LOG_MESSAGE(debug, "Waiting for prototype loading to complete");
-	while (!game::prototype_loading_complete)
-		;
+	while (!game::prototype_loading_complete);
 	LOG_MESSAGE(debug, "Continuing renderer initialization");
 
 
@@ -176,7 +170,7 @@ void renderer::RenderInit() {
 			SetFullscreen(!IsFullscreen());
 			main_renderer->GRecalculateBuffers(window_x, window_y);
 		});
-	}, SDLK_KP_SPACE, game::InputAction::key_down);
+	}, SDLK_SPACE, game::InputAction::key_down);
 
 	RenderingLoop();
 

@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
 #include "game/logic_loop.h"
 
@@ -9,18 +8,90 @@
 
 #include "jactorio.h"
 #include "core/filesystem.h"
-#include "data/data_manager.h"
+
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/inserter.h"
+
 #include "game/game_data.h"
 #include "game/logic/transport_line_controller.h"
-#include "renderer/render_main.h"
+
+#include "renderer/render_loop.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/window/window_manager.h"
 
+using namespace jactorio;
+
 constexpr float kMoveSpeed = 0.8f;
 
-void jactorio::game::InitLogicLoop() {
+void LogicLoop() {
+	auto& game_data = *game::game_data;
+
+	// Runtime
+	auto next_frame = std::chrono::steady_clock::now();
+	while (!game::logic_thread_should_exit) {
+		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
+
+		// ======================================================================
+		// LOGIC LOOP ======================================================================
+		{
+			EXECUTION_PROFILE_SCOPE(logic_update_timer, "Logic update");
+
+			// ======================================================================	
+			// World chunks			
+			{
+				std::lock_guard<std::mutex> guard{game_data.world.worldDataMutex};
+
+				game_data.logic.GameTickAdvance();
+				game_data.logic.deferralTimer.DeferralUpdate(game_data.world, game_data.logic.GameTick());
+
+				game_data.player.MouseCalculateSelectedTile();
+
+				game_data.world.GenChunk(game_data.prototype);
+				game_data.input.mouse.DrawCursorOverlay(game_data.player, game_data.prototype);
+
+
+				// Logistics logic
+				{
+					EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
+
+					game::TransportLineLogicUpdate(game_data.world);
+				}
+				{
+					EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");
+
+					game::InserterLogicUpdate(game_data.world, game_data.logic);
+				}
+			}
+
+			// ======================================================================
+			// Player logic
+			{
+				std::lock_guard<std::mutex> guard{game_data.player.mutex};
+
+				game_data.player.RecipeCraftTick(game_data.prototype);
+			}
+
+			// Lock all mutexes for events
+			std::lock_guard<std::mutex> world_guard{game_data.world.worldDataMutex};
+			std::lock_guard<std::mutex> gui_guard{game_data.player.mutex};
+			game_data.event.Raise<game::LogicTickEvent>(game::EventType::logic_tick, game_data.logic.GameTick() % kGameHertz);
+			game_data.input.key.Raise();
+		}
+		// ======================================================================
+		// ======================================================================
+
+		auto time_end = std::chrono::steady_clock::now();
+		while (time_end > next_frame) {
+			next_frame += std::chrono::nanoseconds(16666666);
+		}
+		std::this_thread::sleep_until(next_frame);
+	}
+
+}
+
+
+void game::InitLogicLoop() {
 	core::ResourceGuard<void> loop_termination_guard([]() {
 		renderer::render_thread_should_exit = true;
 		logic_thread_should_exit            = true;
@@ -133,68 +204,8 @@ void jactorio::game::InitLogicLoop() {
 	}, MouseInput::right, InputAction::key_held);
 
 
-	//
+	LogicLoop();
 
-	// Runtime
-	auto next_frame = std::chrono::steady_clock::now();
-	while (!logic_thread_should_exit) {
-		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
-
-		// ======================================================================
-		// LOGIC LOOP ======================================================================
-		{
-			EXECUTION_PROFILE_SCOPE(logic_update_timer, "Logic update");
-
-			// ======================================================================	
-			// World chunks			
-			{
-				std::lock_guard<std::mutex> guard{game_data->world.worldDataMutex};
-
-				game_data->logic.GameTickAdvance();
-				game_data->logic.deferralTimer.DeferralUpdate(game_data->world, game_data->logic.GameTick());
-
-				game_data->player.MouseCalculateSelectedTile();
-
-				game_data->world.GenChunk(game_data->prototype);
-				game_data->input.mouse.DrawCursorOverlay(game_data->player, game_data->prototype);
-
-
-				// Logistics logic
-				{
-					EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
-
-					TransportLineLogicUpdate(game_data->world);
-				}
-				{
-					EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");
-
-					InserterLogicUpdate(game_data->world, game_data->logic);
-				}
-			}
-
-			// ======================================================================
-			// Player logic
-			{
-				std::lock_guard<std::mutex> guard{game_data->player.mutex};
-
-				game_data->player.RecipeCraftTick(game_data->prototype);
-			}
-
-			// Lock all mutexes for events
-			std::lock_guard<std::mutex> world_guard{game_data->world.worldDataMutex};
-			std::lock_guard<std::mutex> gui_guard{game_data->player.mutex};
-			game_data->event.Raise<LogicTickEvent>(EventType::logic_tick, game_data->logic.GameTick() % kGameHertz);
-			game_data->input.key.Raise();
-		}
-		// ======================================================================
-		// ======================================================================
-
-		auto time_end = std::chrono::steady_clock::now();
-		while (time_end > next_frame) {
-			next_frame += std::chrono::nanoseconds(16666666);
-		}
-		std::this_thread::sleep_until(next_frame);
-	}
 
 	LOG_MESSAGE(info, "Logic thread exited");
 }

@@ -1,11 +1,10 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #include "data/prototype/entity/transport_line.h"
 
 #include <cmath>
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "game/logic/transport_segment.h"
 #include "renderer/rendering/data_renderer.h"
 
@@ -859,7 +858,8 @@ void data::TransportLine::OnBuild(game::WorldData& world_data,
 void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
                                            game::LogicData& logic_data,
                                            const game::WorldData::WorldPair& /*emit_world_coords*/,
-                                           const game::WorldData::WorldPair& receive_world_coords, Orientation /*emit_orientation*/) const {
+                                           const game::WorldData::WorldPair& receive_world_coords,
+                                           Orientation /*emit_orientation*/) const {
 	// Run stuff here that on_build and on_remove both calls
 
 	auto* line_data = GetLineData(world_data, receive_world_coords.first, receive_world_coords.second);

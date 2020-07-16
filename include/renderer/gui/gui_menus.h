@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/01/2020
 
 #ifndef JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
 #define JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
@@ -7,7 +6,7 @@
 
 #include "jactorio.h"
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 
 namespace jactorio
 {
@@ -27,7 +26,7 @@ namespace jactorio::renderer
 {
 	/// Function to draw the menu
 	using MenuFunction = void (*)(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-								  const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data);
+	                              const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data);
 
 	// ======================================================================
 	// Substitutes name_ below at macro definitions to create an array of guis

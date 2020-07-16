@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 01/20/2020
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
@@ -102,7 +101,8 @@ namespace jactorio::data
 			return {this->sprite, 0};
 		}
 
-		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager, game::ChunkTileLayer* tile_layer) const override {
+		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
+		                game::ChunkTileLayer* tile_layer) const override {
 			return false;
 		}
 
@@ -130,7 +130,7 @@ namespace jactorio::data
 		virtual void OnRemove(game::WorldData& world_data,
 		                      game::LogicData& logic_data,
 		                      const game::WorldData::WorldPair& world_coords,
-							  game::ChunkTileLayer& tile_layer) const = 0;
+		                      game::ChunkTileLayer& tile_layer) const = 0;
 
 		///
 		/// \brief A neighbor of this prototype in the world was updated

@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 06/30/2020
 
 #ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_ASSEMBLY_MACHINE_H
 #define JACTORIO_DATA_PROTOTYPE_ENTITY_ASSEMBLY_MACHINE_H

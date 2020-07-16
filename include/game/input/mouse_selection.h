@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 12/21/2019
 
 #ifndef JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
 #define JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
@@ -50,7 +49,7 @@ namespace jactorio::game
 		///
 		/// \brief Draws selection box over entity & no item selected. | With item selected: draws ghost of entity
 		void DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
-						 data::Entity* selected_entity, int world_x, int world_y,
+		                 data::Entity* selected_entity, int world_x, int world_y,
 		                 data::Orientation
 		                 placement_orientation);
 	};

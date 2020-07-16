@@ -12,8 +12,8 @@ Check out a [weekly log here](https://github.com/jaihysc/Jactorio/wiki/Devlog)
 - [x] Transport lines
 - [x] Drills
 - [x] Inserters
+- [x] Assembly Machines
 - [ ] Smelting / Furnaces
-- [ ] Assembly Machines
 
 ## Building
 

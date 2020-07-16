@@ -6,7 +6,7 @@
 #include <cassert>
 #include <map>
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/interface/update_listener.h"
 #include "data/prototype/tile/tile.h"

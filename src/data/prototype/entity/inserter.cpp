@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 06/18/2020
 
 #include "data/prototype/entity/inserter.h"
 

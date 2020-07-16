@@ -94,7 +94,6 @@ bool game::ItemDropOff::InsertTransportBelt(LogicData&,
 	case data::Orientation::right:
 		switch (orientation) {
 		case data::Orientation::up:
-			break;
 		case data::Orientation::right:
 			break;
 		case data::Orientation::down:
@@ -114,7 +113,6 @@ bool game::ItemDropOff::InsertTransportBelt(LogicData&,
 		case data::Orientation::up:
 			return false;
 		case data::Orientation::right:
-			break;
 		case data::Orientation::down:
 			break;
 		case data::Orientation::left:
@@ -135,7 +133,6 @@ bool game::ItemDropOff::InsertTransportBelt(LogicData&,
 		case data::Orientation::right:
 			return false;
 		case data::Orientation::down:
-			break;
 		case data::Orientation::left:
 			break;
 

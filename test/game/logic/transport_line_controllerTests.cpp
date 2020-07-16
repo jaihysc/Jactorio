@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #include <gtest/gtest.h>
 
@@ -24,7 +23,7 @@ namespace jactorio::game
 	protected:
 		WorldData worldData_{};
 		LogicData logicData_{};
-		
+
 		Chunk* chunk_ = nullptr;
 
 		data::Item itemProto_{};
@@ -356,7 +355,7 @@ namespace jactorio::game
 	TEST_F(TransportLineControllerTest, LineLogicNewSegmentAddedAhead) {
 		//     2      1
 		// < ----- < -----
-		
+
 		transportBeltProto_->speed = 0.04f;
 
 		// Segments (Logic chunk must be created first)
@@ -390,7 +389,7 @@ namespace jactorio::game
 		// Update neighboring segments as a new segment was placed
 		transportBeltProto_->OnNeighborUpdate(worldData_,
 		                                      logicData_,
-											  {1, 1},
+		                                      {1, 1},
 		                                      {2, 1}, data::Orientation::right);
 
 		EXPECT_EQ(left_segment.get()->left.index, 0);
@@ -401,7 +400,7 @@ namespace jactorio::game
 
 		//     1      2
 		// < ----- < -----
-		
+
 		transportBeltProto_->speed = 0.04f;
 
 		const auto left_segment = std::make_shared<TransportSegment>(
@@ -528,7 +527,7 @@ namespace jactorio::game
 
 	// ======================================================================
 	// Item transition
-	
+
 
 	TEST_F(TransportLineControllerTest, TransitionStraight) {
 		// Transferring from a straight segment traveling left to another one traveling left
@@ -779,7 +778,7 @@ namespace jactorio::game
 		//     ^
 
 		transportBeltProto_->speed = 0.06;
-		
+
 		auto left_segment = std::make_shared<TransportSegment>(
 			data::Orientation::left,
 			TransportSegment::TerminationType::bend_right,
@@ -794,7 +793,7 @@ namespace jactorio::game
 			TransportSegment::TerminationType::right_only,
 			1);
 
-		down_segment->targetSegment = left_segment.get();
+		down_segment->targetSegment      = left_segment.get();
 		down_segment->targetInsertOffset = 2;
 
 		RegisterSegment({3, 1}, down_segment);
@@ -804,26 +803,26 @@ namespace jactorio::game
 
 
 		down_segment->AppendItem(true, 0, &itemProto_);
-		
+
 		TransportLineLogicUpdate(worldData_);
-		
+
 		ASSERT_EQ(left_segment->right.lane.size(), 1);
-		
+
 		// (line offset) - belt speed
 		EXPECT_FLOAT_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3f + 0.7f) + 2.f - 0.06f);
 
-		
+
 		// Right lane
 
-		
+
 		left_segment->right.lane.clear();
 
 		down_segment->AppendItem(false, 0, &itemProto_);
-		
+
 		TransportLineLogicUpdate(worldData_);
-		
+
 		ASSERT_EQ(left_segment->right.lane.size(), 1);
-		
+
 		EXPECT_FLOAT_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3f + 0.3f) + 2.f - 0.06f);
 
 
@@ -834,7 +833,7 @@ namespace jactorio::game
 			TransportSegment::TerminationType::left_only,
 			1);
 
-		up_segment->targetSegment = left_segment.get();
+		up_segment->targetSegment      = left_segment.get();
 		up_segment->targetInsertOffset = 2;
 
 		RegisterSegment({3, 3}, up_segment);
@@ -844,25 +843,25 @@ namespace jactorio::game
 
 
 		up_segment->AppendItem(true, 0, &itemProto_);
-		
+
 		TransportLineLogicUpdate(worldData_);
-		
+
 		ASSERT_EQ(left_segment->left.lane.size(), 1);
-		
+
 		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7f + 0.3f) + 2.f - 0.06f);
 
-		
+
 		// Right lane
 
-		
+
 		left_segment->left.lane.clear();
 
 		up_segment->AppendItem(false, 0, &itemProto_);
-		
+
 		TransportLineLogicUpdate(worldData_);
-		
+
 		ASSERT_EQ(left_segment->left.lane.size(), 1);
-		
+
 		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7f + 0.7f) + 2.f - 0.06f);
 	}
 
@@ -872,7 +871,7 @@ namespace jactorio::game
 		// < < <
 
 		transportBeltProto_->speed = 0.06;
-		
+
 		auto down_segment = std::make_shared<TransportSegment>(
 			data::Orientation::down,
 			TransportSegment::TerminationType::right_only,
@@ -897,17 +896,17 @@ namespace jactorio::game
 		right_segment->AppendItem(true, 0, &itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
-		
+
 		ASSERT_EQ(down_segment->left.lane.size(), 1);
 		EXPECT_FLOAT_EQ(down_segment->left.lane[0].first.getAsDouble(), (0.3 + 1.f + 0.7) - 0.06f);
 
 
 		// Right
-		
+
 		right_segment->AppendItem(false, 0, &itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
-		
+
 		ASSERT_EQ(down_segment->right.lane.size(), 1);
 		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), (0.3f + 1.f + 0.3f) - 0.06f);
 	}

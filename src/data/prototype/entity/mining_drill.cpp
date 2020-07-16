@@ -2,7 +2,7 @@
 
 #include "data/prototype/entity/mining_drill.h"
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "game/logic/item_logistics.h"
 #include "renderer/gui/gui_menus.h"

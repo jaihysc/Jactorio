@@ -1,11 +1,10 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
 #include <gtest/gtest.h>
 
 #include "core/filesystem.h"
 
-namespace core
+namespace jactorio::core
 {
 	class FileSystemTest : public testing::Test
 	{
@@ -14,37 +13,37 @@ namespace core
 	protected:
 		void SetUp() override {
 			// Certain tests (DataManager) require a path to files, store the original executing directory
-			originalExecutingDir_ = jactorio::core::GetExecutingDirectory() + "/";
+			originalExecutingDir_ = GetExecutingDirectory() + "/";
 		}
 
 		void TearDown() override {
 			// Re- set the original executing directory
-			jactorio::core::SetExecutingDirectory(originalExecutingDir_);
+			SetExecutingDirectory(originalExecutingDir_);
 		}
 	};
 
 	TEST_F(FileSystemTest, WorkingDirectoryGetSet) {
 #ifdef WIN32
-		jactorio::core::SetExecutingDirectory("C:\\x\\y\\z\\b.exe");
+		SetExecutingDirectory("C:\\x\\y\\z\\b.exe");
 		EXPECT_EQ(jactorio::core::GetExecutingDirectory(), "C:/x/y/z");
 #endif
 
-		jactorio::core::SetExecutingDirectory("abcdefghijkl;'");
+		SetExecutingDirectory("abcdefghijkl;'");
 		EXPECT_EQ(jactorio::core::GetExecutingDirectory(), "");
 
-		jactorio::core::SetExecutingDirectory("x/y/z/b.exe");
+		SetExecutingDirectory("x/y/z/b.exe");
 		EXPECT_EQ(jactorio::core::GetExecutingDirectory(), "x/y/z");
 
-		jactorio::core::SetExecutingDirectory("x/123456.exe");
+		SetExecutingDirectory("x/123456.exe");
 		EXPECT_EQ(jactorio::core::GetExecutingDirectory(), "x");
 	}
 
 	TEST_F(FileSystemTest, ResolvePath) {
 		// Certain tests require a path to files, store the original executing directory
-		const auto original_path = jactorio::core::GetExecutingDirectory() + "/";
+		const auto original_path = GetExecutingDirectory() + "/";
 
 
-		jactorio::core::SetExecutingDirectory("antarctica/coolApplication.exe");
+		SetExecutingDirectory("antarctica/coolApplication.exe");
 
 		EXPECT_EQ(jactorio::core::ResolvePath(""), "antarctica/");
 
@@ -53,12 +52,12 @@ namespace core
 		EXPECT_EQ(jactorio::core::ResolvePath("banana/banana1.png"), "antarctica/banana/banana1.png");
 
 		// Re- set the original executing directory
-		jactorio::core::SetExecutingDirectory(original_path);
+		SetExecutingDirectory(original_path);
 	}
 
 	TEST_F(FileSystemTest, ReadFileStrInvalidPath) {
-		if (!jactorio::core::ReadFile("").empty() ||
-			!jactorio::core::ReadFile("someMysteriousFilePathThatDOESnotEXIST").empty()) {
+		if (!ReadFile("").empty() ||
+			!ReadFile("someMysteriousFilePathThatDOESnotEXIST").empty()) {
 			FAIL();
 		}
 

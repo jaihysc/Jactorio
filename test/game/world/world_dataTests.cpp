@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #include <gtest/gtest.h>
 
@@ -332,7 +331,7 @@ namespace jactorio::game
 		                                        5, 6, mock_);
 
 		dispatcher_.Register(4, 7,
-		                    5, 6, mock_);
+		                     5, 6, mock_);
 
 		dispatcher_.Unregister(entry);
 

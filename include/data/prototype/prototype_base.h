@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 11/09/2019
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
@@ -14,21 +13,19 @@
 
 // Creates a setters for python API primarily, to chain initialization
 
-// Parameter value has suffix a_b_c_d to ensure uniqueness
-
 // Setter passed by reference
 #define PYTHON_PROP_REF(class_, type, var_name) \
 	type var_name; \
-	class_* Set_##var_name(const type& (parameter_value_a_b_c_d)) {\
-		this->var_name = parameter_value_a_b_c_d;\
+	class_* Set_##var_name(const type& (parameter_value__)) {\
+		this->var_name = parameter_value__;\
 		return this;\
 	}
 
 // Setter passed by reference with initializer
 #define PYTHON_PROP_REF_I(class_, type, var_name, initializer) \
 	type var_name = initializer; \
-	class_* Set_##var_name(const type& (parameter_value_a_b_c_d)) {\
-		this->var_name = parameter_value_a_b_c_d;\
+	class_* Set_##var_name(const type& (parameter_value__)) {\
+		this->var_name = parameter_value__;\
 		return this;\
 	}
 
@@ -36,16 +33,16 @@
 // Setter passed by value
 #define PYTHON_PROP(class_, type, var_name) \
 	type var_name; \
-	class_* Set_##var_name(type (parameter_value_a_b_c_d)) {\
-		this->var_name = parameter_value_a_b_c_d;\
+	class_* Set_##var_name(type (parameter_value__)) {\
+		this->var_name = parameter_value__;\
 		return this;\
 	}
 
 // Setter passed by value with initializer
 #define PYTHON_PROP_I(class_, type, var_name, initializer) \
 	type var_name = initializer; \
-	class_* Set_##var_name(type (parameter_value_a_b_c_d)) {\
-		this->var_name = parameter_value_a_b_c_d;\
+	class_* Set_##var_name(type (parameter_value__)) {\
+		this->var_name = parameter_value__;\
 		return this;\
 	}
 
@@ -72,7 +69,6 @@
 	jactorio::data::DataAssert(condition, "\"%s\", " format, this->name.c_str(), __VA_ARGS__)
 
 
-
 namespace jactorio::data
 {
 	class PrototypeManager;
@@ -82,7 +78,7 @@ namespace jactorio::data
 	template <typename ... Args, typename = std::common_type<Args ...>>
 	void DataAssert(const bool condition, const char* format, Args&& ... args) {
 		constexpr int max_msg_length = 1000;
-		
+
 		if (!(condition)) {
 			char buffer[max_msg_length + 1];
 			snprintf(buffer, max_msg_length, format, args ...);

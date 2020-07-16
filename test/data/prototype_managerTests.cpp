@@ -1,11 +1,10 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #include <gtest/gtest.h>
 
 #include <filesystem>
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/sprite.h"
 
 namespace jactorio::data
@@ -200,7 +199,7 @@ namespace jactorio::data
 
 	TEST_F(DataManagerTest, PrototypeExists) {
 		EXPECT_FALSE(dataManager_.PrototypeExists("bunny"));
-		
+
 		dataManager_.DataRawAdd("aqua", new Sprite{});
 		EXPECT_FALSE(dataManager_.PrototypeExists("bunny"));
 		EXPECT_TRUE(dataManager_.PrototypeExists("aqua"));

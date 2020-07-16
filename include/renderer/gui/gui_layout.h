@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 07/08/2020
 
 #ifndef JACTORIO_RENDERER_GUI_GUI_LAYOUT_H
 #define JACTORIO_RENDERER_GUI_GUI_LAYOUT_H

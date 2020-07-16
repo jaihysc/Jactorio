@@ -1,10 +1,10 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_GAME_DATA_H
 #define JACTORIO_INCLUDE_GAME_GAME_DATA_H
 #pragma once
 
+#include "data/prototype_manager.h"
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"

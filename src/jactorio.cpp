@@ -1,5 +1,4 @@
 ﻿// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/15/2019
 
 #include <thread>
 
@@ -7,7 +6,7 @@
 #include "core/crash_handler.h"
 #include "core/filesystem.h"
 #include "game/logic_loop.h"
-#include "renderer/render_main.h"
+#include "renderer/render_loop.h"
 
 void InitializeGame() {
 	using namespace jactorio;

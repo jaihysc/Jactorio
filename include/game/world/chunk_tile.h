@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 12/21/2019
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H

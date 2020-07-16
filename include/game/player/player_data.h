@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
 #define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
@@ -135,7 +134,7 @@ namespace jactorio::game
 		/// \brief Attempts to activate the layer at world coordinates
 		/// \return true if layer was activated
 		bool TryActivateLayer(WorldData& world_data,
-							  const WorldData::WorldPair& world_pair);
+		                      const WorldData::WorldPair& world_pair);
 
 		///
 		/// \brief This will either pickup an entity, or mine resources from a resource tile

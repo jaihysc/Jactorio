@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 02/07/2020
 
 #ifndef JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H
 #define JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H
@@ -13,9 +12,9 @@ namespace jactorio::renderer
 {
 	class ImGuard
 	{
-		bool windowBegun_ = false;
+		bool windowBegun_         = false;
 		uint8_t styleColorPushed_ = 0;
-		uint8_t styleVarPushed_ = 0;
+		uint8_t styleVarPushed_   = 0;
 
 	public:
 		ImGuard() = default;
@@ -27,7 +26,7 @@ namespace jactorio::renderer
 				ImGui::End();
 		}
 
-		ImGuard(const ImGuard& other) = delete;
+		ImGuard(const ImGuard& other)     = delete;
 		ImGuard(ImGuard&& other) noexcept = delete;
 
 
@@ -37,7 +36,7 @@ namespace jactorio::renderer
 			windowBegun_ = true;
 		}
 
-		
+
 		// Style color
 		void PushStyleColor(const ImGuiCol idx, const ImU32 col) {
 			ImGui::PushStyleColor(idx, col);
@@ -60,7 +59,6 @@ namespace jactorio::renderer
 			styleVarPushed_++;
 		}
 	};
-	
 }
 
 #define J_GUI_COL_NONE                    IM_COL32(0, 0, 0, 0)

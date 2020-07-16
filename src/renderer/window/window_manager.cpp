@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #include <GL/glew.h>
 
@@ -11,7 +10,7 @@
 #include "jactorio.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-#include "renderer/render_main.h"
+#include "renderer/render_loop.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/rendering/renderer.h"
 
@@ -46,11 +45,11 @@ void jactorio::renderer::SetFullscreen(const bool desired_fullscreen) {
 
 		// get resolution of monitor
 		// switch to full screen
-		SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN);
+		SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
 	else {
 		// Exit fullscreen
-		SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN);
+		SDL_SetWindowFullscreen(sdl_window, 0);
 
 		// restore last window size and position
 		SDL_SetWindowPosition(sdl_window, window_pos[0], window_pos[1]);
@@ -253,7 +252,7 @@ void jactorio::renderer::HandleSdlEvent(const SDL_Event& sdl_event) {
 			i_keymod -= static_cast<int>(KMOD_CAPS);
 
 			const auto keymod = static_cast<SDL_Keymod>(i_keymod);
-			
+
 			game::KeyInput::SetInput(static_cast<SDL_KeyCode>(sdl_event.key.keysym.sym),
 			                         game::KeyInput::ToInputAction(sdl_event.key.type, sdl_event.key.repeat),
 			                         keymod);

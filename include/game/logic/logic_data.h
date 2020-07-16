@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 07/13/2020
 
 #ifndef JACTORIO_GAME_LOGIC_LOGIC_DATA_H
 #define JACTORIO_GAME_LOGIC_LOGIC_DATA_H
@@ -96,7 +95,6 @@ namespace jactorio::game
 				void OnDeferTimeElapsed(WorldData&, LogicData&, data::UniqueDataBase*) const override {
 				}
 			} blankCallback_;
-
 		} deferralTimer{*this};
 	};
 }

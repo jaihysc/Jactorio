@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
 #define JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
@@ -16,7 +15,7 @@
 namespace jactorio::data
 {
 	enum class UpdateType;
-	
+
 	class IDeferred;
 	class IUpdateListener;
 }
@@ -248,13 +247,13 @@ namespace jactorio::game
 			///
 			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
 			ListenerEntry Register(WorldCoord current_world_x, WorldCoord current_world_y,
-								   WorldCoord target_world_x, WorldCoord target_world_y,
-								   const data::IUpdateListener& proto_listener);
+			                       WorldCoord target_world_x, WorldCoord target_world_y,
+			                       const data::IUpdateListener& proto_listener);
 
 			///
 			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
 			ListenerEntry Register(const WorldPair& current_coords, const WorldPair& target_coords,
-								   const data::IUpdateListener& proto_listener);
+			                       const data::IUpdateListener& proto_listener);
 
 			///
 			/// \brief Unregisters entry
@@ -266,7 +265,6 @@ namespace jactorio::game
 
 		private:
 			WorldData& worldData_;
-
 		} updateDispatcher{*this};
 	};
 }

@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 10/22/2019
 
 #ifndef JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
 #define JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
@@ -64,7 +63,7 @@ namespace jactorio::data
 				LOG_MESSAGE_F(error, "Attempted to access non-existent prototype %s", iname.c_str());
 				return nullptr;
 			}
-		
+
 			PrototypeBase* base = category->at(iname);
 			return static_cast<T*>(base);
 		}

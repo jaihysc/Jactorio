@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 03/31/2020
 
 #ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
@@ -126,7 +125,8 @@ namespace jactorio::data
 		void OnNeighborUpdate(game::WorldData& world_data,
 		                      game::LogicData& logic_data,
 		                      const game::WorldData::WorldPair& emit_world_coords,
-		                      const game::WorldData::WorldPair& receive_world_coords, Orientation emit_orientation) const override;
+		                      const game::WorldData::WorldPair& receive_world_coords,
+		                      Orientation emit_orientation) const override;
 
 		void OnRemove(game::WorldData& world_data,
 		              game::LogicData& logic_data,

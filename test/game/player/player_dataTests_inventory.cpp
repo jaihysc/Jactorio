@@ -1,9 +1,8 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 04/24/2020
 
 #include <gtest/gtest.h>
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/entity/container_entity.h"
 #include "game/player/player_data.h"
 
@@ -315,7 +314,7 @@ namespace jactorio::game
 
 		// Slot 0 is filtered
 		data::Item::Inventory inv{10};
-		inv[0].filter =  &filtered_item;
+		inv[0].filter = &filtered_item;
 
 		// Has item not matching filter
 		playerData_.SetSelectedItem({&not_filtered_item, 10});
@@ -333,8 +332,8 @@ namespace jactorio::game
 	TEST_F(PlayerDataInventoryTest, IncrementSelectedItem) {
 		// If player selects item by "unique" or "reference",
 		// It should function the same as it only modifies the cursor item stack
-		const auto item                       = std::make_unique<data::Item>();
-		item->stackSize                       = 50;
+		const auto item                      = std::make_unique<data::Item>();
+		item->stackSize                      = 50;
 		playerData_.inventoryPlayer[0].item  = item.get();
 		playerData_.inventoryPlayer[0].count = 10;
 
@@ -370,8 +369,8 @@ namespace jactorio::game
 
 	TEST_F(PlayerDataInventoryTest, IncrementSelectedItemExceedItemStack) {
 		// Attempting to increment an item exceeding item stack returns false and fails the increment
-		const auto item                       = std::make_unique<data::Item>();
-		item->stackSize                       = 50;
+		const auto item                      = std::make_unique<data::Item>();
+		item->stackSize                      = 50;
 		playerData_.inventoryPlayer[0].item  = item.get();
 		playerData_.inventoryPlayer[0].count = 50;
 
@@ -390,8 +389,8 @@ namespace jactorio::game
 	TEST_F(PlayerDataInventoryTest, DecrementSelectedItemUnique) {
 		// If player selects item by "unique"
 		// If decremented to 0, deselect the cursor item
-		const auto item                       = std::make_unique<data::Item>();
-		item->stackSize                       = 50;
+		const auto item                      = std::make_unique<data::Item>();
+		item->stackSize                      = 50;
 		playerData_.inventoryPlayer[0].item  = item.get();
 		playerData_.inventoryPlayer[0].count = 10;
 
@@ -452,8 +451,8 @@ namespace jactorio::game
 		// If the selected item is empty after decrementing, return false
 		SetupInventoryCursor();
 
-		const auto item                       = std::make_unique<data::Item>();
-		item->stackSize                       = 50;
+		const auto item                      = std::make_unique<data::Item>();
+		item->stackSize                      = 50;
 		playerData_.inventoryPlayer[0].item  = item.get();
 		playerData_.inventoryPlayer[0].count = 1;
 

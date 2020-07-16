@@ -1,5 +1,4 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
-// Created on: 11/09/2019
 
 #ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
 #define JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
@@ -9,7 +8,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
-#include "data/data_manager.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/prototype_type.h"

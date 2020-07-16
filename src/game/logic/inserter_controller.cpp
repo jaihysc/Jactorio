@@ -51,7 +51,7 @@ void InserterUpdate(game::LogicData& logic_data,
 			inserter_data.rotationDegree = kMaxInserterDegree;
 
 			const auto result = inserter_data.pickup.Pickup(logic_data,
-															inserter_proto.tileReach,
+			                                                inserter_proto.tileReach,
 			                                                inserter_data.rotationDegree,
 			                                                1);
 			if (result.first) {
