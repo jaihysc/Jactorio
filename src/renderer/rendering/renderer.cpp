@@ -39,213 +39,86 @@ renderer::Renderer::Renderer() {
 	GlResizeBuffers(m_viewport[2], m_viewport[3]);
 }
 
+// ======================================================================
 
-// vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-std::unordered_map<unsigned int, core::QuadPosition> renderer::Renderer::spritemapCoords_{};
-
-void renderer::Renderer::SetSpritemapCoords(
-	const std::unordered_map<unsigned, core::QuadPosition>& spritemap_coords) {
-	spritemapCoords_ = spritemap_coords;
+void renderer::Renderer::GlClear() {
+	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 }
 
-core::QuadPosition renderer::Renderer::GetSpritemapCoords(const unsigned internal_id) {
-	return spritemapCoords_.at(internal_id);
+void renderer::Renderer::GlResizeBuffers(const unsigned int window_x,
+                                         const unsigned int window_y) {
+	// Initialize fields
+	windowWidth_  = window_x;
+	windowHeight_ = window_y;
+	GlUpdateTileProjectionMatrix();
+
+	// Raise the bottom and right by tile_width so the last tile has enough space to render out
+	tileCountX_ = windowWidth_ / tileWidth + 1;
+	tileCountY_ = windowHeight_ / tileWidth + 1;
+
+	gridElementsCount_ = tileCountX_ * tileCountY_;
+
+	// Render layer (More may be reserved as needed by the renderer)
+	for (auto& render_layer : renderLayers_) {
+		render_layer.Reserve(gridElementsCount_);
+		render_layer.GUpdateData();
+	}
 }
 
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+void renderer::Renderer::GlSetDrawThreads(const size_t threads) {
+	drawThreads_ = threads;
 
-// constexpr auto kChunkWidth = game::WorldData::kChunkWidth;
-//
-// struct TileDrawFuncParams
-// {
-// 	TileDrawFuncParams(const game::ChunkTileLayer& tile_layer,
-// 	                   const GameTickT game_tick)
-// 		: tileLayer(tile_layer),
-// 		  gameTick(game_tick) {
-// 	}
-//
-// 	const game::ChunkTileLayer& tileLayer;
-// 	GameTickT gameTick;
-// };
-//
-// using TileDrawFuncReturn = std::pair<core::QuadPosition, const data::RenderableData*>;
-// using TileDrawFunc = TileDrawFuncReturn (*)(const TileDrawFuncParams&);
-//
-// using ObjectDrawFunc = unsigned int (*)(const game::ChunkObjectLayer&);
-//
-// const TileDrawFuncReturn no_draw{
-// 	{{-1.f, -1.f}, {-1.f, -1.f}},
-// 	nullptr
-// };
-//
-// void ApplyUvOffset(core::QuadPosition& uv, const core::QuadPosition& uv_offset) {
-// 	const auto difference = uv.bottomRight - uv.topLeft;
-//
-// 	assert(difference.x >= 0);
-// 	assert(difference.y >= 0);
-//
-// 	// Calculate bottom first since it needs the unmodified top_left
-// 	uv.bottomRight = uv.topLeft + difference * uv_offset.bottomRight;
-// 	uv.topLeft += difference * uv_offset.topLeft;
-// }
-//
-//
-// /// \brief Functions for drawing each layer, they are accessed by layer_index
-// /// \return uv coords, uniqueData to draw, nullptr if no unique data to draw
-// /// \remark return top_left.x -1 to skip
-// constexpr TileDrawFunc tile_draw_func[]{
-// 	[](const TileDrawFuncParams& params) {
-// 		// Sprites + tiles are guaranteed not nullptr
-// 		const auto* t           = static_cast<const data::Tile*>(params.tileLayer.prototypeData);
-// 		const auto* unique_data = params.tileLayer.GetUniqueData<data::RenderableData>();
-//
-//
-// 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
-// 		auto uv                 = renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
-// 		if (unique_data)
-// 			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
-//
-// 		return TileDrawFuncReturn{uv, nullptr};
-// 	},
-//
-// 	[](const TileDrawFuncParams& params) {
-// 		const auto* t = static_cast<const data::Entity*>(params.tileLayer.prototypeData);
-// 		if (t == nullptr)
-// 			return no_draw;
-//
-// 		const auto* unique_data = params.tileLayer.GetUniqueData<data::RenderableData>();
-//
-// 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
-// 		auto uv                 = renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
-//
-// 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
-// 			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
-//
-// 		return TileDrawFuncReturn{uv, nullptr};
-// 	},
-// 	[](const TileDrawFuncParams& params) {
-// 		const auto* t = static_cast<const data::Entity*>(params.tileLayer.prototypeData);
-// 		if (t == nullptr)
-// 			return no_draw;
-//
-// 		const auto* unique_data = params.tileLayer.GetUniqueData<data::RenderableData>();
-//
-// 		const auto sprite_frame = t->OnRGetSprite(unique_data, params.gameTick);
-// 		auto uv                 = renderer::Renderer::GetSpritemapCoords(sprite_frame.first->internalId);
-//
-// 		if (unique_data) {
-// 			ApplyUvOffset(uv, t->sprite->GetCoords(unique_data->set, sprite_frame.second));
-// 			return TileDrawFuncReturn{uv, unique_data};
-// 		}
-//
-// 		return TileDrawFuncReturn{uv, nullptr};
-// 	},
-//
-// 	[](const TileDrawFuncParams& params) {
-// 		const auto* t = static_cast<const data::Sprite*>(params.tileLayer.prototypeData);
-// 		if (t == nullptr)
-// 			return no_draw;
-//
-// 		const auto* unique_data = params.tileLayer.GetUniqueData<data::RenderableData>();
-//
-// 		auto uv = renderer::Renderer::GetSpritemapCoords(t->internalId);
-//
-// 		if (unique_data)  // Unique data may not be initialized by the time this is drawn due to concurrency
-// 			ApplyUvOffset(uv, t->GetCoords(unique_data->set, 0));
-//
-// 		return TileDrawFuncReturn{uv, nullptr};
-// 	}
-// };
-//
-// ObjectDrawFunc object_layer_get_sprite_id_func[]{
-// 	// Debug overlay
-// 	[](const game::ChunkObjectLayer& layer) {
-// 		const auto* sprite = static_cast<const data::Sprite*>(layer.prototypeData);
-// 		return sprite->internalId;
-// 	},
-// };
+	chunkDrawThreads_.resize(drawThreads_);
+	renderLayers_.resize(drawThreads_);
 
-// template <uint8_t Amount,
-//           typename Function, typename ... Args>
-// void DrawLayers(renderer::RendererLayer& layer_1,
-//                 renderer::RendererLayer& layer_2,
-//                 renderer::RendererLayer& top_layer,
-//                 Function* function, const Args& ... args) {
-// #define J_LAYER_BEGIN_PREPARE(name_)\
-// 	(name_).Clear();\
-// 	(name_).GWriteBegin()
-//
-// #define J_LAYER_END_PREPARE(name_)\
-// 	(name_).GWriteEnd();\
-// 	(name_).GUpdateData();\
-// 	(name_).GBufferBind();\
-// 	jactorio::renderer::Renderer::GlDraw((name_).GetElementCount())
-//
-// 	// !Very important! Remember to clear the layers or else it will keep trying to append into it
-// 	J_LAYER_BEGIN_PREPARE(layer_2);
-// 	J_LAYER_BEGIN_PREPARE(top_layer);
-//
-// 	std::future<void> preparing_thread1;
-// 	std::future<void> preparing_thread2 = std::async(std::launch::async,
-// 	                                                 function, args ...,
-// 	                                                 0,
-// 	                                                 std::ref(layer_2), std::ref(top_layer));
-//
-// 	// Begin at index 1, since index 0 is handled above
-// 	for (unsigned int layer_index = 1; layer_index < Amount; ++layer_index) {
-// 		// Prepare 1
-// 		if (layer_index % 2 != 0) {
-// 			J_LAYER_BEGIN_PREPARE(layer_1);
-// 			preparing_thread1 =
-// 				std::async(std::launch::async,
-// 				           function, args ...,
-// 				           layer_index,
-// 				           std::ref(layer_1), std::ref(top_layer));
-//
-// 			preparing_thread2.wait();
-//
-// 			J_LAYER_END_PREPARE(layer_2);
-// 		}
-// 			// Prepare 2
-// 		else {
-// 			J_LAYER_BEGIN_PREPARE(layer_2);
-// 			preparing_thread2 =
-// 				std::async(std::launch::async,
-// 				           function, args ...,
-// 				           layer_index,
-// 				           std::ref(layer_2), std::ref(top_layer));
-//
-// 			preparing_thread1.wait();
-//
-// 			J_LAYER_END_PREPARE(layer_1);
-// 		}
-// 	}
-//
-// 	// Wait for the final layer to draw
-// 	if constexpr (Amount % 2 != 0) {
-// 		preparing_thread2.wait();
-//
-// 		J_LAYER_END_PREPARE(layer_2);
-// 	}
-// 	else {
-// 		preparing_thread1.wait();
-//
-// 		J_LAYER_END_PREPARE(layer_1);
-// 	}
-//
-// 	J_LAYER_END_PREPARE(top_layer);
-// }
+	for (auto& render_layer : renderLayers_) {
+		render_layer.GInitBuffer();
+	}
+	GlResizeBuffers(windowWidth_, windowHeight_);
+}
+
+void renderer::Renderer::GlDraw(const unsigned int element_count) {
+	DEBUG_OPENGL_CALL(
+		// There are 6 indices for each tile
+		glDrawElements(GL_TRIANGLES, element_count * 6, GL_UNSIGNED_INT, nullptr)
+	); // Pointer not needed as buffer is already bound
+}
+
+void renderer::Renderer::GlUpdateTileProjectionMatrix() {
+	const auto max_tile_width = static_cast<float>(tileWidth * 2);
+
+	if (tileProjectionMatrixOffset < max_tile_width)
+		// Prevent zooming out too far
+		tileProjectionMatrixOffset = max_tile_width;
+	else {
+		// Prevent zooming too far in
+		unsigned int smallest_axis;
+		if (windowWidth_ > windowHeight_) {
+			smallest_axis = windowHeight_;
+		}
+		else {
+			smallest_axis = windowWidth_;
+		}
+
+		// Maximum zoom is 30 from center
+		const int max_zoom_offset = 30;
+		if (tileProjectionMatrixOffset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
+			tileProjectionMatrixOffset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
+		}
+	}
+
+	SetgProjectionMatrix(ToProjMatrix(windowWidth_, windowHeight_, tileProjectionMatrixOffset));
+}
+
+// ======================================================================
+
 
 void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
                                               const game::WorldData& world_data,
                                               const float player_x, const float player_y) {
+	assert(spritemapCoords_);
+
 	EXECUTION_PROFILE_SCOPE(profiler, "World draw");
-
-	CalculateViewMatrix(player_x, player_y);
-
-	// Moves the world to match player_position_
-	// This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
 
 	// Player movement is in tiles
 	// Every chunk_width tiles, shift 1 chunk
@@ -259,77 +132,67 @@ void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
 	// Right and bottom varies depending on tile size
 
 	// Player position with decimal removed
+	const auto position_x = static_cast<int>(player_x);
+	const auto position_y = static_cast<int>(player_y);
+
+	const auto tile_offset = GetTileDrawOffset(position_x, position_y);
+
+	const auto chunk_start  = GetChunkDrawStart(position_x, position_y);
+	const auto chunk_amount = GetChunkDrawAmount(position_x, position_y);
+
+	CalculateViewMatrix(player_x, player_y);
+
+	// TODO use set number of threads only
+	if (drawThreads_ != static_cast<size_t>(8))
+		GlSetDrawThreads(8);
 
 
-	// How many chunks to offset based on player's position
-	// auto chunk_start_x = static_cast<int>(position_x / game::WorldData::kChunkWidth);
-	// auto chunk_start_y = static_cast<int>(position_y / game::WorldData::kChunkWidth);
+	// TODO overlay layer removed
+	for (int layer_index = 0; layer_index < static_cast<int>(game::ChunkTile::ChunkLayer::count_) - 1; ++layer_index) {
 
-	// Player has not moved an entire chunk's width yet, offset the tiles
-	// Modulus chunk_width to make it snap back to 0 after offsetting the entirety of a chunk
-	// Inverted to move the tiles AWAY from the screen instead of following the screen
-	// auto tile_start_x = static_cast<int>(position_x % game::WorldData::kChunkWidth * -1);
-	// auto tile_start_y = static_cast<int>(position_y % game::WorldData::kChunkWidth * -1);
+		int started_threads = 0;  // Also is index for vector holding futures
 
+		for (int y = 0; y < chunk_amount.y; ++y) {
+			const auto chunk_y = chunk_start.y + y;
 
-	// const auto matrix        = glm::vec4(1, -1, 1, 1) / GetMvpMatrix();
-	// const auto tile_amount_x = static_cast<int>(matrix.x / static_cast<double>(Renderer::tileWidth) * 2) + 2;
-	// const auto tile_amount_y = static_cast<int>(matrix.y / static_cast<double>(Renderer::tileWidth) * 2) + 2;
+			auto& render_layer = renderLayers_[started_threads];
 
+			render_layer.Clear();
+			render_layer.GWriteBegin();
 
-	// Render the player position in the center of the screen
-	// chunk_start_x -= tile_amount_x / 2 / game::WorldData::kChunkWidth;
-	// tile_start_x += tile_amount_x / 2 % game::WorldData::kChunkWidth;
+			core::Position2<int> row_start = {chunk_start.x, chunk_y};
 
-	// chunk_start_y -= tile_amount_y / 2 / game::WorldData::kChunkWidth;
-	// tile_start_y += tile_amount_y / 2 % game::WorldData::kChunkWidth;
+			// Problem somewhere in here vvvv
+			chunkDrawThreads_[started_threads] =
+				std::async(std::launch::async, &Renderer::DrawChunkRow, this,
+				           std::ref(render_layer), std::ref(world_data),
+				           row_start, chunk_amount.x, layer_index,
+				           tile_offset.x, y * game::Chunk::kChunkWidth + tile_offset.y,
+				           game_tick
+				);
 
+			++started_threads;
+		}
 
-	// // Rendering layers utilizes the following pattern looped
-	// // Prepare 1 - ASYNC
-	// // Wait 2
-	// // Update 2
-	// // Draw 2
-	// // -------------------
-	// // Prepare 2 - ASYNC
-	// // Wait 1
-	// // Update 1
-	// // Draw 1
+		// assert(static_cast<size_t>(started_threads) == drawThreads_);
 
-	// -64 to hide the 2 extra chunk around the outside screen
-	// const auto window_start_x = tile_start_x - 64;
-	// const auto window_start_y = tile_start_y - 64;
+		// Wait for each thread finish sequentially
+		for (int i = 0; i < started_threads; ++i) {
+			chunkDrawThreads_[i].wait();
+			auto& render_layer = renderLayers_[i];
 
-	// Match the tile offset with start offset
-	// chunk_start_x -= 2;
-	// chunk_start_y -= 2;
+			render_layer.GWriteEnd();
+			render_layer.GUpdateData();
+			render_layer.GBufferBind();
+			GlDraw(render_layer.GetElementCount());
 
-	// Calculate the maximum number of chunks which can be rendered
-	// const int amount_x = (tile_amount_x - window_start_x) / game::WorldData::kChunkWidth + 1;  // Render 1 extra chunk on the edge
-	// const int amount_y = (tile_amount_y - window_start_y) / game::WorldData::kChunkWidth + 1;
+			// TODO Thread 1 can be sent off again
+		}
 
-	// PrepareProperties props{
-	// 	game_tick,
-	// 	world_data,
-	// 	window_start_x, window_start_y,
-	// 	chunk_start_x, chunk_start_y,
-	// 	amount_x, amount_y
-	// };
-	//
-	// auto& layer_1   = renderLayers_[0];
-	// auto& layer_2   = renderLayers_[1];
-	// auto& top_layer = renderLayers_[2];
-	//
-	// DrawLayers<game::ChunkTile::kTileLayerCount>(layer_1, layer_2, top_layer,
-	//                                              &PrepareChunkData,
-	//                                              std::ref(props));
-	//
-	// DrawLayers<game::Chunk::kObjectLayerCount>(layer_1, layer_2, top_layer,
-	//                                            &PrepareChunkData,
-	//                                            std::ref(props));
+	}
 }
 
-void renderer::Renderer::CalculateViewMatrix(const float player_x, const float player_y) {
+void renderer::Renderer::CalculateViewMatrix(const float player_x, const float player_y) noexcept {
 	const auto position_x = static_cast<int>(player_x);
 	const auto position_y = static_cast<int>(player_y);
 
@@ -340,214 +203,205 @@ void renderer::Renderer::CalculateViewMatrix(const float player_x, const float p
 	const float camera_offset_x = (player_x - position_x) * static_cast<float>(tileWidth) * -1;
 	const float camera_offset_y = (player_y - position_y) * static_cast<float>(tileWidth) * -1;
 
-	// Remaining pixel distance not covered by tiles and chunks are covered by the view matrix
-	// to center pixel (For centering specification, see top of function)
-	const auto window_width  = GetWindowWidth();
-	const auto window_height = GetWindowHeight();
-
+	// Remaining pixel distance not covered by tiles and chunks are covered by the view matrix to center
 	const auto tile_amount = GetTileDrawAmount();
+
 	// Divide by 2 first to truncate decimals
 	const auto& view_transform = GetViewTransform();
 	view_transform->x
-		= static_cast<float>(static_cast<int>(window_width / 2 - (tile_amount.x / 2 * tileWidth)))
+		= static_cast<float>(static_cast<int>(GetWindowWidth() / 2 - (tile_amount.x / 2 * tileWidth)))
 		+ camera_offset_x;
 
 	view_transform->y
-		= static_cast<float>(static_cast<int>(window_height / 2 - (tile_amount.y / 2 * tileWidth)))
+		= static_cast<float>(static_cast<int>(GetWindowHeight() / 2 - (tile_amount.y / 2 * tileWidth)))
 		+ camera_offset_y;
 
-	// Set view matrix
 	UpdateViewTransform();
-	// Set projection matrix
 	GlUpdateTileProjectionMatrix();
 	UpdateShaderMvp();
 }
 
-// ======================================================================
-
 core::Position2<int> renderer::Renderer::GetTileDrawAmount() noexcept {
-	const auto matrix = glm::vec4(1, -1, 1, 1) / GetMvpMatrix();
-
+	const auto matrix        = glm::vec4(1, -1, 1, 1) / GetMvpMatrix();
 	const auto tile_amount_x = static_cast<int>(matrix.x / static_cast<double>(tileWidth) * 2) + 2;
 	const auto tile_amount_y = static_cast<int>(matrix.y / static_cast<double>(tileWidth) * 2) + 2;
 
 	return {tile_amount_x, tile_amount_y};
 }
 
-core::Position2<int> renderer::Renderer::GetChunkDrawStart(const int position_x, const int position_y) noexcept {
-
-	// How many chunks to offset based on player's position
-	auto chunk_start_x = static_cast<int>(position_x / game::WorldData::kChunkWidth);
-	auto chunk_start_y = static_cast<int>(position_y / game::WorldData::kChunkWidth);
+core::Position2<int> renderer::Renderer::GetTileDrawOffset(const int position_x, const int position_y) noexcept {
+	// Player has not moved an entire chunk's width yet, offset the tiles
+	// Modulus chunk_width to make it snap back to 0 after offsetting the entirety of a chunk
+	// Inverted to move the tiles AWAY from the screen instead of following the screen
+	auto tile_start_x = static_cast<int>(position_x % game::Chunk::kChunkWidth * -1);
+	auto tile_start_y = static_cast<int>(position_y % game::Chunk::kChunkWidth * -1);
 
 	const auto tile_amount = GetTileDrawAmount();
 
-	// Render the player position in the center of the screen
-	chunk_start_x -= tile_amount.x / 2 / game::WorldData::kChunkWidth;
-	chunk_start_y -= tile_amount.y / 2 / game::WorldData::kChunkWidth;
+	// Center player position on screen 
+	tile_start_x += tile_amount.x / 2 % game::Chunk::kChunkWidth;
+	tile_start_y += tile_amount.y / 2 % game::Chunk::kChunkWidth;
+
+	// Extra chunk must be hid for the top and left sides to hide black background
+	tile_start_x -= (kPaddingChunks + 1) * game::Chunk::kChunkWidth;
+	tile_start_y -= (kPaddingChunks + 1) * game::Chunk::kChunkWidth;
+
+	return {tile_start_x, tile_start_y};
+}
+
+core::Position2<int> renderer::Renderer::GetChunkDrawStart(const int position_x, const int position_y) noexcept {
+	auto chunk_start_x = static_cast<int>(position_x / game::Chunk::kChunkWidth);
+	auto chunk_start_y = static_cast<int>(position_y / game::Chunk::kChunkWidth);
+
+	const auto tile_amount = GetTileDrawAmount();
+
+	// Center player position on screen 
+	chunk_start_x -= tile_amount.x / 2 / game::Chunk::kChunkWidth;
+	chunk_start_y -= tile_amount.y / 2 / game::Chunk::kChunkWidth;
 
 	// Match the tile offset with start offset
-	chunk_start_x -= 2;
-	chunk_start_y -= 2;
+	chunk_start_x -= kPaddingChunks + 1;
+	chunk_start_y -= kPaddingChunks + 1;
 
 	return {chunk_start_x, chunk_start_y};
 }
 
 core::Position2<int> renderer::Renderer::GetChunkDrawAmount(const int position_x, const int position_y) noexcept {
-	// Player has not moved an entire chunk's width yet, offset the tiles
-	// Modulus chunk_width to make it snap back to 0 after offsetting the entirety of a chunk
-	// Inverted to move the tiles AWAY from the screen instead of following the screen
-	auto tile_start_x = static_cast<int>(position_x % game::WorldData::kChunkWidth * -1);
-	auto tile_start_y = static_cast<int>(position_y % game::WorldData::kChunkWidth * -1);
-
+	const auto tile_offset = GetTileDrawOffset(position_x, position_y);
 	const auto tile_amount = GetTileDrawAmount();
 
-	// Render the player position in the center of the screen
-	tile_start_x += tile_amount.x / 2 % game::WorldData::kChunkWidth;
-	tile_start_y += tile_amount.y / 2 % game::WorldData::kChunkWidth;
+	int chunk_amount_x = (tile_amount.x - tile_offset.x) / game::Chunk::kChunkWidth;
+	int chunk_amount_y = (tile_amount.y - tile_offset.y) / game::Chunk::kChunkWidth;
 
-	// -64 to hide the 2 extra chunk around the outside screen
-	const auto window_start_x = tile_start_x - 64;
-	const auto window_start_y = tile_start_y - 64;
+	chunk_amount_x += kPaddingChunks;
+	chunk_amount_y += kPaddingChunks;
 
-	// Calculate the maximum number of chunks which can be rendered
-	const int amount_x = (tile_amount.x - window_start_x) / game::WorldData::kChunkWidth + 1;  // Render 1 extra chunk on the edge
-	const int amount_y = (tile_amount.y - window_start_y) / game::WorldData::kChunkWidth + 1;
-
-	return {amount_x, amount_y};
+	return {chunk_amount_x, chunk_amount_y};
 }
 
-void renderer::Renderer::ChunkDrawUnit() {
+// ======================================================================
+
+void renderer::Renderer::DrawChunkRow(RendererLayer& render_layer, const game::WorldData& world_data,
+                                      const core::Position2<int> row_start, const int chunk_span, const int layer_index,
+                                      const int render_tile_offset_x, const int render_pixel_offset_y,
+                                      const GameTickT game_tick) const {
+
+	for (int x = 0; x < chunk_span; ++x) {
+		const auto chunk_x = x + row_start.x;
+
+		const auto* chunk = world_data.GetChunkC(chunk_x, row_start.y);
+
+		// Queue chunk for generation if it does not exist
+		if (!chunk) {
+			world_data.QueueChunkGeneration(chunk_x, row_start.y);
+			continue;
+		}
+
+		DrawChunk(render_layer, *chunk,
+		          {
+			          x * game::Chunk::kChunkWidth + render_tile_offset_x,
+			          render_pixel_offset_y
+		          },
+		          layer_index, game_tick);
+	}
 }
 
-// void renderer::Renderer::PrepareChunkData(const PrepareProperties& props,
-//                                           const int layer_index, RendererLayer& layer,
-//                                           RendererLayer& top_layer) {
-// 	for (int chunk_y = 0; chunk_y < props.chunkAmountY; ++chunk_y) {
-// 		const int chunk_y_offset = chunk_y * kChunkWidth + props.renderOffsetY;
-//
-// 		for (int chunk_x = 0; chunk_x < props.chunkAmountX; ++chunk_x) {
-// 			const int chunk_x_offset = chunk_x * kChunkWidth + props.renderOffsetX;
-//
-// 			const game::Chunk* chunk = props.worldData.GetChunkC(props.chunkStartX + chunk_x,
-// 			                                                     props.chunkStartY + chunk_y);
-// 			// Generate chunk if non existent
-// 			if (chunk == nullptr) {
-// 				props.worldData.QueueChunkGeneration(
-// 					props.chunkStartX + chunk_x,
-// 					props.chunkStartY + chunk_y);
-// 				continue;
-// 			}
-//
-// 			if (props.isTileLayer) {
-// 				PrepareTileData(props.gameTick,
-// 				                layer_index,
-// 				                layer, top_layer,
-// 				                static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
-// 				                chunk);
-// 			}
-// 			else {
-// 				PrepareObjectData(layer_index, layer,
-// 				                  static_cast<float>(chunk_y_offset), static_cast<float>(chunk_x_offset),
-// 				                  chunk);
-// 			}
-//
-// 		}
-// 	}
-// }
-//
-// void renderer::Renderer::PrepareTileData(const GameTickT game_tick,
-//                                          const unsigned layer_index, RendererLayer& layer,
-//                                          RendererLayer& top_layer,
-//                                          const float chunk_y_offset, const float chunk_x_offset,
-//                                          const game::Chunk* const chunk) {
-// 	// Load chunk into buffer
-// 	game::ChunkTile* tiles = chunk->Tiles();
-//
-//
-// 	// Iterate through and load tiles of a chunk into layer for rendering
-// 	for (uint8_t tile_y = 0; tile_y < kChunkWidth; ++tile_y) {
-// 		const float y = (chunk_y_offset + tile_y) * static_cast<float>(tileWidth);
-//
-// 		for (uint8_t tile_x = 0; tile_x < kChunkWidth; ++tile_x) {
-// 			const game::ChunkTile& tile      = tiles[tile_y * kChunkWidth + tile_x];
-// 			game::ChunkTileLayer& layer_tile = tile.GetLayer(layer_index);
-//
-// 			TileDrawFuncReturn draw_func_return;
-// 			core::QuadPosition uv;
-//
-// 			if (layer_tile.IsMultiTile()) {
-// 				// Unique data for multi tiles is stored in the top left tile
-// 				draw_func_return = tile_draw_func[layer_index](
-// 					{
-// 						layer_tile.GetMultiTileTopLeft(), game_tick
-// 					});
-// 				uv = draw_func_return.first;
-//
-// 				game::MultiTileData& mt_data = layer_tile.GetMultiTileData();
-//
-// 				// Calculate the correct UV coordinates for multi-tile entities
-// 				// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
-//
-// 				// Total length of the sprite, to be split among the different tiles
-// 				const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / static_cast<float>(mt_data.multiTileSpan);
-// 				const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / static_cast<float>(mt_data.multiTileHeight);
-//
-// 				const double x_multiplier = layer_tile.GetOffsetX();
-// 				const double y_multiplier = layer_tile.GetOffsetY();
-//
-// 				// Opengl flips vertically, thus the y multiplier is inverted
-// 				// bottom right
-// 				uv.bottomRight.x = uv.bottomRight.x - len_x * static_cast<float>(mt_data.multiTileSpan - x_multiplier - 1);
-// 				uv.bottomRight.y = uv.bottomRight.y - len_y * y_multiplier;
-//
-// 				// top left
-// 				uv.topLeft.x = uv.topLeft.x + len_x * x_multiplier;
-// 				uv.topLeft.y = uv.topLeft.y + len_y * static_cast<float>(mt_data.multiTileHeight - y_multiplier - 1);
-// 			}
-// 			else {
-// 				draw_func_return = tile_draw_func[layer_index](
-// 					{
-// 						tile.GetLayer(layer_index),
-// 						game_tick
-// 					});
-// 				uv = draw_func_return.first;
-// 			}
-//
-// 			// ======================================================================
-//
-// 			// uv top left.x = -1.f means draw no tile
-// 			if (uv.topLeft.x == -1.f)
-// 				continue;
-//
-// 			// Calculate screen coordinates
-// 			const float x = (chunk_x_offset + tile_x) * static_cast<float>(renderer::Renderer::tileWidth);
-//
-// 			layer.PushBack(
-// 				renderer::RendererLayer::Element(
-// 					{
-// 						{
-// 							x,
-// 							y
-// 						},
-// 						// One tile right and down
-// 						{
-// 							x + static_cast<float>(renderer::Renderer::tileWidth),
-// 							y + static_cast<float>(renderer::Renderer::tileWidth)
-// 						}
-// 					},
-// 					{uv.topLeft, uv.bottomRight}
-// 				)
-// 			);
-//
-// 			// Has unique data to draw
-// 			if (draw_func_return.second) {
-// 				draw_func_return.second->OnDrawUniqueData(top_layer, x, y);
-// 			}
-// 		}
-// 	}
-// }
-//
+void renderer::Renderer::DrawChunk(RendererLayer& renderer_layer, const game::Chunk& chunk,
+                                   const core::Position2<int> render_pixel_offset, const int layer_index,
+                                   const GameTickT game_tick) const {
+	// Load chunk into buffer
+	game::ChunkTile* tiles = chunk.Tiles();
+
+
+	// Iterate through and load tiles of a chunk into layer for rendering
+	for (uint8_t tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
+		const auto pixel_y = static_cast<float>(render_pixel_offset.y + tile_y) * static_cast<float>(tileWidth);
+
+		for (uint8_t tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
+			auto& tile       = tiles[tile_y * game::Chunk::kChunkWidth + tile_x];
+			auto& tile_layer = tile.GetLayer(layer_index);
+
+
+			const auto* proto = tile_layer.GetPrototypeData<data::IPrototypeRenderable>();
+			if (!proto)  // Layer not initialized
+				continue;
+
+			const auto* unique_data = tile_layer.GetMultiTileTopLeft().GetUniqueData<data::PrototypeRenderableData>();
+
+			// Unique data can be nullptr for certain layers
+			const auto sprite_frame = proto->OnRGetSprite(unique_data, game_tick);
+			auto uv                 = spritemapCoords_->at(sprite_frame.first->internalId);
+
+			if (unique_data)
+				ApplySpriteUvAdjustment(uv, sprite_frame.first->GetCoords(unique_data->set, sprite_frame.second));
+
+			if (tile_layer.IsMultiTile())
+				ApplyMultiTileUvAdjustment(uv, tile_layer);
+
+
+			// ======================================================================
+
+			const auto pixel_x = static_cast<float>(render_pixel_offset.x + tile_x) * static_cast<float>(tileWidth);
+
+			// TODO Performance heavy vvv
+			renderer_layer.PushBack(
+				RendererLayer::Element(
+					{  // top left of tile, 1 tile over and down
+						{pixel_x, pixel_y},
+						{pixel_x + static_cast<float>(tileWidth), pixel_y + static_cast<float>(tileWidth)}
+					},
+					{
+						uv.topLeft,
+						uv.bottomRight
+					}
+				)
+			);
+
+			// // Has unique data to draw
+			// if (draw_func_return.second) {
+			// 	draw_func_return.second->OnDrawUniqueData(top_layer, x, y);
+			// }
+
+		}
+	}
+}
+
+
+void renderer::Renderer::ApplySpriteUvAdjustment(core::QuadPosition& uv, const core::QuadPosition& uv_offset) {
+	const auto difference = uv.bottomRight - uv.topLeft;
+
+	assert(difference.x >= 0);
+	assert(difference.y >= 0);
+
+	// Calculate bottom first since it needs the unmodified top_left
+	uv.bottomRight = uv.topLeft + difference * uv_offset.bottomRight;
+	uv.topLeft += difference * uv_offset.topLeft;
+}
+
+void renderer::Renderer::ApplyMultiTileUvAdjustment(core::QuadPosition& uv, const game::ChunkTileLayer& tile_layer) {
+	game::MultiTileData& mt_data = tile_layer.GetMultiTileData();
+
+	// Calculate the correct UV coordinates for multi-tile entities
+	// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
+
+	// Total length of the sprite, to be split among the different tiles
+	const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / static_cast<float>(mt_data.multiTileSpan);
+	const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / static_cast<float>(mt_data.multiTileHeight);
+
+	const double x_multiplier = tile_layer.GetOffsetX();
+	const double y_multiplier = tile_layer.GetOffsetY();
+
+	// Opengl flips vertically, thus the y multiplier is inverted
+	// bottom right
+	uv.bottomRight.x = uv.bottomRight.x - len_x * static_cast<float>(mt_data.multiTileSpan - x_multiplier - 1);
+	uv.bottomRight.y = uv.bottomRight.y - len_y * y_multiplier;
+
+	// top left
+	uv.topLeft.x = uv.topLeft.x + len_x * x_multiplier;
+	uv.topLeft.y = uv.topLeft.y + len_y * static_cast<float>(mt_data.multiTileHeight - y_multiplier - 1);
+}
+
+
 // void renderer::Renderer::PrepareObjectData(const unsigned layer_index, RendererLayer& layer,
 //                                            const float chunk_y_offset, const float chunk_x_offset,
 //                                            const game::Chunk* const chunk) {
@@ -583,65 +437,3 @@ void renderer::Renderer::ChunkDrawUnit() {
 // 		));
 // 	}
 // }
-
-
-// ======================================================================
-// openGL methods
-
-void renderer::Renderer::GlDraw(const unsigned int element_count) {
-	DEBUG_OPENGL_CALL(
-		// There are 6 indices for each tile
-		glDrawElements(GL_TRIANGLES, element_count * 6, GL_UNSIGNED_INT, nullptr)
-	); // Pointer not needed as buffer is already bound
-}
-
-void renderer::Renderer::GlClear() {
-	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
-}
-
-
-void renderer::Renderer::GlResizeBuffers(const unsigned int window_x,
-                                         const unsigned int window_y) {
-	// Initialize fields
-	windowWidth_  = window_x;
-	windowHeight_ = window_y;
-	GlUpdateTileProjectionMatrix();
-
-	// Raise the bottom and right by tile_width so the last tile has enough space to render out
-	tileCountX_ = windowWidth_ / tileWidth + 1;
-	tileCountY_ = windowHeight_ / tileWidth + 1;
-
-	gridElementsCount_ = tileCountX_ * tileCountY_;
-
-	// Render layer (More may be reserved as needed by the renderer)
-	for (auto& render_layer : renderLayers_) {
-		render_layer.Reserve(gridElementsCount_);
-		render_layer.GUpdateData();
-	}
-}
-
-void renderer::Renderer::GlUpdateTileProjectionMatrix() {
-	const auto max_tile_width = static_cast<float>(tileWidth * 2);
-
-	if (tileProjectionMatrixOffset < max_tile_width)
-		// Prevent zooming out too far
-		tileProjectionMatrixOffset = max_tile_width;
-	else {
-		// Prevent zooming too far in
-		unsigned int smallest_axis;
-		if (windowWidth_ > windowHeight_) {
-			smallest_axis = windowHeight_;
-		}
-		else {
-			smallest_axis = windowWidth_;
-		}
-
-		// Maximum zoom is 30 from center
-		const int max_zoom_offset = 30;
-		if (tileProjectionMatrixOffset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
-			tileProjectionMatrixOffset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
-		}
-	}
-
-	SetgProjectionMatrix(ToProjMatrix(windowWidth_, windowHeight_, tileProjectionMatrixOffset));
-}

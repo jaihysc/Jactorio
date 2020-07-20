@@ -92,7 +92,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 
 			ChunkTileLayer& target_layer = tile->GetLayer(ChunkTile::ChunkLayer::overlay);
 
-			target_layer.MakeUniqueData<data::RenderableData>(set);
+			target_layer.MakeUniqueData<data::PrototypeRenderableData>(set);
 			target_layer.prototypeData = selected_entity
 			                             ->OnRGetSprite(target_layer.GetUniqueData(),
 			                                            player_data.GetPlayerLogicData().GameTick()).first;

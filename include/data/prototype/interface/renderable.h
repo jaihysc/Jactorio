@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "core/data_type.h"
-#include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
 
 namespace jactorio
@@ -35,14 +34,17 @@ namespace jactorio::data
 {
 	///
 	/// \brief Inherit to allow drawing portions of a sprite
-	struct RenderableData : UniqueDataBase
+	struct IRenderableData
 	{
-		RenderableData() = default;
+	protected:
+		IRenderableData()          = default;
+		virtual ~IRenderableData() = default;
 
-		RenderableData(const Sprite::SetT set)
+		explicit IRenderableData(const Sprite::SetT set)
 			: set(set) {
 		}
 
+	public:
 		Sprite::SetT set = 0;
 
 		///
@@ -55,7 +57,7 @@ namespace jactorio::data
 	};
 
 	///
-	/// \brief Enables usage by renderer
+	/// \brief For inheriting by IPrototypeRenderable, thus enabling usage by renderer
 	class IRenderable
 	{
 	protected:

@@ -8,7 +8,7 @@
 
 #include "jactorio.h"
 
-#include "data/prototype/interface/renderable.h"
+#include "data/prototype/interface/prototype_renderable.h"
 #include "data/prototype/item/item.h"
 #include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
@@ -18,13 +18,13 @@ namespace jactorio::data
 {
 	///
 	/// \brief Unique per entity placed in the world
-	struct EntityData : RenderableData
+	struct EntityData : PrototypeRenderableData
 	{
 	};
 
 	///
 	/// \brief Placeable items in the world
-	class Entity : public PrototypeBase, public IRenderable, public IRotatable
+	class Entity : public IPrototypeRenderable, public IRotatable
 	{
 	public:
 		Entity() = default;

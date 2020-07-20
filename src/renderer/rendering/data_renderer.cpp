@@ -51,31 +51,32 @@ void PrepareTransportSegmentData(jactorio::renderer::RendererLayer& layer,
 		OrientationIncrement(line_segment.direction, tile_x, tile_y);
 	}
 
-	for (const auto& line_item : line_segment_side) {
-		// Move the target offset (up or down depending on multiplier)
-		*target_offset += line_item.first.getAsDouble() * multiplier;
-
-		const auto& uv_pos = jactorio::renderer::Renderer::GetSpritemapCoords(line_item.second->sprite->internalId);
-
-		// In pixels
-		layer.PushBack(jactorio::renderer::RendererLayer::Element(
-			{
-				{
-					{
-						x_offset + tile_x * static_cast<float>(jactorio::renderer::Renderer::tileWidth),
-						y_offset + tile_y * static_cast<float>(jactorio::renderer::Renderer::tileWidth)
-					},
-					{
-						x_offset +
-						static_cast<float>(tile_x + kItemWidth) * static_cast<float>(jactorio::renderer::Renderer::tileWidth),
-						y_offset +
-						static_cast<float>(tile_y + kItemWidth) * static_cast<float>(jactorio::renderer::Renderer::tileWidth)
-					},
-				},
-				{uv_pos.topLeft, uv_pos.bottomRight}
-			}
-		));
-	}
+	// for (const auto& line_item : line_segment_side) {
+	// 	// Move the target offset (up or down depending on multiplier)
+	// 	*target_offset += line_item.first.getAsDouble() * multiplier;
+	//
+	// 	// TODO pass spritemap coords
+	// 	const auto& uv_pos = jactorio::renderer::Renderer::GetSpritemapCoords(line_item.second->sprite->internalId);
+	//
+	// 	// In pixels
+	// 	layer.PushBack(jactorio::renderer::RendererLayer::Element(
+	// 		{
+	// 			{
+	// 				{
+	// 					x_offset + tile_x * static_cast<float>(jactorio::renderer::Renderer::tileWidth),
+	// 					y_offset + tile_y * static_cast<float>(jactorio::renderer::Renderer::tileWidth)
+	// 				},
+	// 				{
+	// 					x_offset +
+	// 					static_cast<float>(tile_x + kItemWidth) * static_cast<float>(jactorio::renderer::Renderer::tileWidth),
+	// 					y_offset +
+	// 					static_cast<float>(tile_y + kItemWidth) * static_cast<float>(jactorio::renderer::Renderer::tileWidth)
+	// 				},
+	// 			},
+	// 			{uv_pos.topLeft, uv_pos.bottomRight}
+	// 		}
+	// 	));
+	// }
 }
 
 void jactorio::renderer::DrawTransportSegmentItems(RendererLayer& layer,

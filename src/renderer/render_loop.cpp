@@ -48,11 +48,6 @@ renderer::Renderer* renderer::GetBaseRenderer() {
 void RenderingLoop(const renderer::DisplayWindow& display_window) {
 	LOG_MESSAGE(info, "2 - Runtime stage");
 
-	// From my testing, allocating it on the heap is faster than using the stack
-	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
-	main_renderer = new renderer::Renderer();
-
-
 	auto next_frame = std::chrono::steady_clock::now();  // For zeroing the time
 
 	SDL_Event e;
@@ -156,8 +151,14 @@ void renderer::RenderInit() {
 	renderer_sprites.GInitializeSpritemap(game::game_data->prototype, data::Sprite::SpriteGroup::terrain, true);
 	renderer_sprites.GInitializeSpritemap(game::game_data->prototype, data::Sprite::SpriteGroup::gui, false);
 
+
+	// From my testing, allocating it on the heap is faster than using the stack
+	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
+	main_renderer = new Renderer();
+
+
 	// Terrain
-	Renderer::SetSpritemapCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);
+	main_renderer->SetSpritemapCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);
 	renderer_sprites.GetTexture(data::Sprite::SpriteGroup::terrain)->Bind(0);
 
 	// Gui

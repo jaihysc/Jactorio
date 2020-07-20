@@ -4,8 +4,11 @@
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_H
 #pragma once
 
+#include <future>
 #include <glm/glm.hpp>
 
+
+#include "game/world/chunk_tile_layer.h"
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/rendering/spritemap_generator.h"
 
@@ -27,20 +30,46 @@ namespace jactorio::renderer
 		// ======================================================================
 		// Properties
 
-		static void SetSpritemapCoords(const std::unordered_map<unsigned, core::QuadPosition>& spritemap_coords);
-
-		///
-		/// \param internal_id internal id of sprite prototype
-		static core::QuadPosition GetSpritemapCoords(unsigned int internal_id);
 
 		J_NODISCARD static unsigned int GetWindowWidth() { return windowWidth_; }
 		J_NODISCARD static unsigned int GetWindowHeight() { return windowHeight_; }
 
 		// ======================================================================
+		// OpenGL calls
+
+		static void GlClear();
+		///
+		/// \brief Resizes rendering buffers to new window size 
+		void GlResizeBuffers(unsigned int window_x, unsigned int window_y);
+
+
+		J_NODISCARD size_t GetDrawThreads() const noexcept { return drawThreads_; }
+		void GlSetDrawThreads(size_t threads);
+
+	private:
+		///
+		/// \brief Draws current data to the screen
+		/// \param element_count Count of elements to draw (1 element = 6 indices)
+		static void GlDraw(unsigned int element_count);
+
+		///
+		/// \brief Updates projection matrix and zoom level
+		void GlUpdateTileProjectionMatrix();
+
+
+		// ======================================================================
 		// Rendering (Recalculated on window resize)
+	public:
 
 		/// Changes zoom 
 		float tileProjectionMatrixOffset = 0;
+
+
+		///
+		/// \brief Renderer will lookup uv coords at the provided spritemap_coords
+		void SetSpritemapCoords(const std::unordered_map<unsigned, core::QuadPosition>& spritemap_coords) {
+			spritemapCoords_ = &spritemap_coords;
+		}
 
 		///
 		/// \param world_data World to render
@@ -68,54 +97,59 @@ namespace jactorio::renderer
 		// 960 pixels from left
 		// 540 pixels form top
 		// Right and bottom varies depending on tile size
-		void CalculateViewMatrix(float player_x, float player_y);
+		void CalculateViewMatrix(float player_x, float player_y) noexcept;
 
+
+		/// Extra chunks drawn around the border
+		/// Hides the camera moving
+		static constexpr int kPaddingChunks = 1;
 
 		///
 		/// \brief Number of tiles to draw to fill window dimensions
 		J_NODISCARD core::Position2<int> GetTileDrawAmount() noexcept;
 
 		///
+		/// \brief All tiles drawn will have its position added to tile offset
+		J_NODISCARD core::Position2<int> GetTileDrawOffset(int position_x, int position_y) noexcept;
+
+		///
 		/// \brief Top left chunk coordinates to begin drawing
 		J_NODISCARD core::Position2<int> GetChunkDrawStart(int position_x, int position_y) noexcept;
+
 		///
 		/// \brief Number of chunks to draw to fill window dimensions
 		J_NODISCARD core::Position2<int> GetChunkDrawAmount(int position_x, int position_y) noexcept;
 
 
 		// Each chunk draw unit gets a renderer layer
+		size_t drawThreads_ = 0;
+
+		std::vector<std::future<void>> chunkDrawThreads_;
 		std::vector<RendererLayer> renderLayers_;
-		
-		///
-		/// \brief Draws chunks to screen
-		/// Create multiple units in threads to draw multiple chunks at once
-		void ChunkDrawUnit();
-
-
-		// ======================================================================
-		// Gl methods must be called from an OpenGL context!
-	public:
-		static void GlClear();
 
 		///
-		/// \brief Resizes opengl buffers used for rendering,
-		void GlResizeBuffers(unsigned int window_x, unsigned int window_y);
+		/// \param row_start Chunk coordinate where the row of chunks starts
+		/// \param chunk_span Number of chunks spanned
+		/// \param layer_index Index to ChunkTileLayer 
+		/// \param render_tile_offset_x Offset drawn tiles on screen by this tile amount
+		/// \param render_pixel_offset_y Offset drawn tiles on screen by this pixel amount
+		void DrawChunkRow(RendererLayer& render_layer, const game::WorldData& world_data,
+		                  core::Position2<int> row_start, int chunk_span, int layer_index,
+		                  int render_tile_offset_x, int render_pixel_offset_y,
+		                  GameTickT game_tick) const;
 
-	private:
-		///
-		/// \brief Draws current data to the screen
-		/// \param element_count Count of elements to draw (1 element = 6 indices)
-		static void GlDraw(unsigned int element_count);
+		void DrawChunk(RendererLayer& render_layer, const game::Chunk& chunk,
+		               core::Position2<int> render_pixel_offset, int layer_index,
+		               GameTickT game_tick) const;
 
-		///
-		/// \brief Updates projection matrix and zoom level
-		void GlUpdateTileProjectionMatrix();
+		static void ApplySpriteUvAdjustment(core::QuadPosition& uv, const core::QuadPosition& uv_offset);
+		static void ApplyMultiTileUvAdjustment(core::QuadPosition& uv, const game::ChunkTileLayer& tile_layer);
 
 
 		// ======================================================================
 
-		// Internal ids to spritemap positions
-		static std::unordered_map<unsigned int, core::QuadPosition> spritemapCoords_;
+		/// Internal ids to spritemap positions
+		const std::unordered_map<unsigned int, core::QuadPosition>* spritemapCoords_;
 
 		static unsigned int windowWidth_;
 		static unsigned int windowHeight_;
