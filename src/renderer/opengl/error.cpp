@@ -7,16 +7,11 @@
 #include "jactorio.h"
 
 #include "renderer/opengl/error.h"
-#include "renderer/window/window_manager.h"
 
 // Do not directly call this
 // Wrap a function with DEBUG_BREAK_IF_FALSE to automatically call this when an error occurs and pause code execution
 // Gets and prints all errors from opengl
 bool jactorio::renderer::OpenglPrintErrors(const char* function_name, const char* file, const int line) {
-	// Do not log error if there is no opengl context
-	if (!WindowContextActive())
-		return false;
-
 	const unsigned int max_errors = 1000;
 	unsigned int error_count      = 0;  // Break after writing 1000 errors, in case this is stuck in a loop
 
@@ -45,9 +40,6 @@ bool jactorio::renderer::OpenglPrintErrors(const char* function_name, const char
 // Wrap a function with DEBUG_BREAK_IF_FALSE to automatically call this when an error occurs and pause code execution
 // Clears all existing opengl errors
 void jactorio::renderer::OpenglClearErrors() {	// Do not log error if there is no opengl context
-	if (!WindowContextActive())
-		return;
-
 	const unsigned int max_errors = 1000;
 	unsigned int error_count      = 0;  // Break after writing 1000 errors, in case this is stuck in a loop
 

@@ -73,6 +73,7 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
 
+	${JACTORIO_DIR}/renderer/display_window.cpp
 	${JACTORIO_DIR}/renderer/render_loop.cpp
 
 	${JACTORIO_DIR}/renderer/rendering/data_renderer.cpp
@@ -81,8 +82,6 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/rendering/renderer_layer.cpp
 	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
 	${JACTORIO_DIR}/renderer/rendering/world_renderer.cpp
-
-	${JACTORIO_DIR}/renderer/window/window_manager.cpp
 )
 # ======================================== END Source files .cpp
 

@@ -18,7 +18,7 @@
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/gui_menus_debug.h"
 #include "renderer/rendering/renderer.h"
-#include "renderer/window/window_manager.h"
+#include "renderer/display_window.h"
 
 // Inventory
 
@@ -35,44 +35,7 @@ jactorio::renderer::MenuData jactorio::renderer::GetMenuData() {
 }
 
 
-// Errors
-void jactorio::renderer::ShowErrorPrompt(const std::string& err_title,
-                                         const std::string& err_message) {
-	bool quit = false;
-
-	SDL_Event e;
-	while (!quit) {
-		Renderer::GClear();
-
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplSDL2_NewFrame(GetWindow());
-		ImGui::NewFrame();
-
-		ImGui::SetNextWindowPos({0, 0}, 0, {0.5, 0.5});
-
-		const ImGuiWindowFlags flags = 0;
-		ImGui::Begin("Error", nullptr, flags);
-
-		ImGui::TextWrapped("%s", err_title.c_str());
-		ImGui::TextWrapped("%s", err_message.c_str());
-		ImGui::NewLine();
-		quit = ImGui::Button("Close");
-
-		ImGui::End();
-
-		if (e.type == SDL_QUIT)
-			quit = true;
-
-		// Render
-
-		ImGui::Render();
-		SDL_GL_SwapWindow(GetWindow());
-		SDL_PollEvent(&e);
-	}
-}
-
-
-void jactorio::renderer::Setup(SDL_Window* window) {
+void jactorio::renderer::Setup(const DisplayWindow& display_window) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -85,7 +48,7 @@ void jactorio::renderer::Setup(SDL_Window* window) {
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplOpenGL3_Init();
-	ImGui_ImplSDL2_InitForOpenGL(window, GetContext());
+	ImGui_ImplSDL2_InitForOpenGL(display_window.GetWindow(), display_window.GetContext());
 
 	// Factorio inspired Imgui style
 	auto& style             = ImGui::GetStyle();
@@ -163,13 +126,14 @@ void DrawMenu(jactorio::renderer::Menu menu,
 	}
 }
 
-void jactorio::renderer::ImguiDraw(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
+void jactorio::renderer::ImguiDraw(const DisplayWindow& display_window,
+								   game::PlayerData& player_data, const data::PrototypeManager& data_manager,
                                    game::EventData& event) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplSDL2_NewFrame(GetWindow());
+	ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
 	ImGui::NewFrame();
 
 	// Has imgui handled a mouse or keyboard event?

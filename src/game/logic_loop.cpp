@@ -18,7 +18,6 @@
 #include "renderer/render_loop.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/imgui_manager.h"
-#include "renderer/window/window_manager.h"
 
 using namespace jactorio;
 

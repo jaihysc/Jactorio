@@ -11,13 +11,13 @@
 #include "jactorio.h"
 #include "core/resource_guard.h"
 
+#include "renderer/display_window.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/spritemap_generator.h"
 #include "renderer/rendering/world_renderer.h"
-#include "renderer/window/window_manager.h"
 
 #include "game/game_data.h"
 #include "game/logic_loop.h"
@@ -46,7 +46,7 @@ renderer::Renderer* renderer::GetBaseRenderer() {
 }
 
 
-void RenderingLoop() {
+void RenderingLoop(const renderer::DisplayWindow& display_window) {
 	LOG_MESSAGE(info, "2 - Runtime stage");
 
 	// From my testing, allocating it on the heap is faster than using the stack
@@ -85,7 +85,7 @@ void RenderingLoop() {
 			{
 				std::lock_guard<std::mutex> guard{game::game_data->player.mutex};
 
-				renderer::ImguiDraw(game::game_data->player, game::game_data->prototype, game::game_data->event);
+				ImguiDraw(display_window, game::game_data->player, game::game_data->prototype, game::game_data->event);
 			}
 		}
 		// ======================================================================
@@ -98,11 +98,11 @@ void RenderingLoop() {
 		}
 		std::this_thread::sleep_until(next_frame);
 
-		SDL_GL_SwapWindow(renderer::GetWindow());
+		SDL_GL_SwapWindow(display_window.GetWindow());
 
 		while (SDL_PollEvent(&e)) {
 			ImGui_ImplSDL2_ProcessEvent(&e);
-			renderer::HandleSdlEvent(e);
+			display_window.HandleSdlEvent(e);
 		}
 	}
 }
@@ -114,9 +114,9 @@ void renderer::RenderInit() {
 	});
 
 	// Init window
-	core::ResourceGuard window_manager_guard(&TerminateWindow);
+	DisplayWindow display_window{};
 	try {
-		if (InitWindow(840, 490) != 0)
+		if (display_window.Init(840, 490) != 0)
 			return;
 	}
 	catch (data::DataException&) {
@@ -125,7 +125,7 @@ void renderer::RenderInit() {
 
 
 	core::ResourceGuard imgui_manager_guard(&ImguiTerminate);
-	Setup(GetWindow());
+	Setup(display_window);
 
 	// Shader
 	const Shader shader(
@@ -167,12 +167,12 @@ void renderer::RenderInit() {
 
 	game::game_data->input.key.Register([]() {
 		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
-			SetFullscreen(!IsFullscreen());
-			main_renderer->GRecalculateBuffers(window_x, window_y);
+			// display_window.SetFullscreen(!display_window.IsFullscreen());
+			// main_renderer->GRecalculateBuffers(window_x, window_y);
 		});
 	}, SDLK_SPACE, game::InputAction::key_down);
 
-	RenderingLoop();
+	RenderingLoop(display_window);
 
 	LOG_MESSAGE(info, "Renderer thread exited");
 }
