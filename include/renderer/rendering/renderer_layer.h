@@ -56,10 +56,11 @@ namespace jactorio::renderer
 		~RendererLayer();
 
 		// Copying is disallowed because this needs to interact with openGL and the large size of buffers
-		RendererLayer(const RendererLayer& other)                = delete;
-		RendererLayer(RendererLayer&& other) noexcept            = delete;
-		RendererLayer& operator=(const RendererLayer& other)     = delete;
-		RendererLayer& operator=(RendererLayer&& other) noexcept = delete;
+
+		RendererLayer(const RendererLayer& other) = delete;
+		RendererLayer(RendererLayer&& other) noexcept = default;
+		RendererLayer& operator=(const RendererLayer& other) = delete;
+		RendererLayer& operator=(RendererLayer&& other) noexcept = default;
 
 	private:
 		// Buffers

@@ -81,7 +81,6 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_layer.cpp
 	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
-	${JACTORIO_DIR}/renderer/rendering/world_renderer.cpp
 )
 # ======================================== END Source files .cpp
 

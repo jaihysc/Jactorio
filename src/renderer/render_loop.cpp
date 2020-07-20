@@ -17,7 +17,6 @@
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/spritemap_generator.h"
-#include "renderer/rendering/world_renderer.h"
 
 #include "game/game_data.h"
 #include "game/logic_loop.h"
@@ -26,18 +25,18 @@
 
 using namespace jactorio;
 
-unsigned short window_x = 0;
-unsigned short window_y = 0;
+unsigned int window_x = 0;
+unsigned int window_y = 0;
 
 renderer::Renderer* main_renderer = nullptr;
 
-void renderer::SetRecalculateRenderer(const unsigned short window_size_x,
-                                      const unsigned short window_size_y) {
+void renderer::ChangeWindowSize(const unsigned int window_size_x,
+                                const unsigned int window_size_y) {
 	window_x = window_size_x;
 	window_y = window_size_y;
 
 	game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
-		main_renderer->GRecalculateBuffers(window_x, window_y);
+		main_renderer->GlResizeBuffers(window_x, window_y);
 	});
 }
 
@@ -70,15 +69,17 @@ void RenderingLoop(const renderer::DisplayWindow& display_window) {
 
 			// ======================================================================
 			// World
-			renderer::Renderer::GClear();
+			{
+				renderer::Renderer::GlClear();
+				std::lock_guard<std::mutex> guard{game::game_data->world.worldDataMutex};
 
-			// MVP Matrices updated in here
-			// Mutex locks in function call
-			RenderPlayerPosition(
-				game::game_data->logic.GameTick(),
-				game::game_data->world,
-				main_renderer,
-				game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY());
+				// MVP Matrices updated in here
+				main_renderer->RenderPlayerPosition(
+					game::game_data->logic.GameTick(),
+					game::game_data->world,
+					game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY()
+				);
+			}
 
 			// ======================================================================
 			// Gui

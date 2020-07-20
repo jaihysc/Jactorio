@@ -9,85 +9,122 @@
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/rendering/spritemap_generator.h"
 
+namespace jactorio::game
+{
+	class WorldData;
+	class Chunk;
+}
+
 namespace jactorio::renderer
 {
 	class Renderer
 	{
 	public:
+		static constexpr unsigned int tileWidth = 6;
+
 		Renderer();
 
-	private:
-		// #################################################
-		// Sprites
-		// Internal ids to spritemap positions
-		static std::unordered_map<unsigned int, core::QuadPosition> spritemapCoords_;
+		// ======================================================================
+		// Properties
 
-	public:
-		static void SetSpritemapCoords(
-			const std::unordered_map<unsigned, core::QuadPosition>& spritemap_coords);
+		static void SetSpritemapCoords(const std::unordered_map<unsigned, core::QuadPosition>& spritemap_coords);
 
 		///
 		/// \param internal_id internal id of sprite prototype
 		static core::QuadPosition GetSpritemapCoords(unsigned int internal_id);
 
-	public:
-		// #################################################
+		J_NODISCARD static unsigned int GetWindowWidth() { return windowWidth_; }
+		J_NODISCARD static unsigned int GetWindowHeight() { return windowHeight_; }
+
+		// ======================================================================
 		// Rendering (Recalculated on window resize)
 
-		// 2 Rendering layers so that one can be drawn to while another is being rendered
-		// Since objects are of varying lengths, the layer must resize
-
-		// 3rd layer is for rendering items that should be above all layers (e.g transport line items)
-		static constexpr uint8_t kRenderLayerCount = 3;
-
-		RendererLayer renderLayers[kRenderLayerCount];
-
-		///
-		/// \brief Changes zoom 
+		/// Changes zoom 
 		float tileProjectionMatrixOffset = 0;
 
-		static unsigned short tileWidth;
+		///
+		/// \param world_data World to render
+		/// \param player_x X Position of the player in tiles
+		/// \param player_y Y Position of the player in tiles
+		void RenderPlayerPosition(GameTickT game_tick,
+		                          const game::WorldData& world_data,
+		                          float player_x, float player_y);
+
+
+		// ======================================================================
+		// Rendering internals
+	private:
+
+		// Center the world at position 
+		// This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
+
+		// Player movement is in tiles
+		// Every chunk_width tiles, shift 1 chunk
+		// Remaining tiles are offset
+
+		// The top left of the tile at player position will be at the center of the screen
+
+		// On a 1920 x 1080 screen:
+		// 960 pixels from left
+		// 540 pixels form top
+		// Right and bottom varies depending on tile size
+		void CalculateViewMatrix(float player_x, float player_y);
+
+
+		///
+		/// \brief Number of tiles to draw to fill window dimensions
+		J_NODISCARD core::Position2<int> GetTileDrawAmount() noexcept;
+
+		///
+		/// \brief Top left chunk coordinates to begin drawing
+		J_NODISCARD core::Position2<int> GetChunkDrawStart(int position_x, int position_y) noexcept;
+		///
+		/// \brief Number of chunks to draw to fill window dimensions
+		J_NODISCARD core::Position2<int> GetChunkDrawAmount(int position_x, int position_y) noexcept;
+
+
+		// Each chunk draw unit gets a renderer layer
+		std::vector<RendererLayer> renderLayers_;
+		
+		///
+		/// \brief Draws chunks to screen
+		/// Create multiple units in threads to draw multiple chunks at once
+		void ChunkDrawUnit();
+
+
+		// ======================================================================
+		// Gl methods must be called from an OpenGL context!
+	public:
+		static void GlClear();
 
 		///
 		/// \brief Resizes opengl buffers used for rendering,
-		/// Must be called from an OpenGL context
-		void GRecalculateBuffers(unsigned short window_x, unsigned short window_y);
+		void GlResizeBuffers(unsigned int window_x, unsigned int window_y);
 
+	private:
 		///
 		/// \brief Draws current data to the screen
 		/// \param element_count Count of elements to draw (1 element = 6 indices)
-		static void GDraw(unsigned int element_count);
-		static void GClear();
-
-
-	private:
-		// #################################################
-		// Window properties
-		static unsigned short windowWidth_;
-		static unsigned short windowHeight_;
-
-	public:
-		J_NODISCARD static unsigned short GetWindowWidth();
-		J_NODISCARD static unsigned short GetWindowHeight();
-
-
-	private:
-		// #################################################
-		// Grid properties (rendering, MVP matrices)
-
-		unsigned int gridVerticesCount_ = 0;
-		unsigned int gridElementsCount_ = 0;
-
-		unsigned short tileCountX_ = 0;
-		unsigned short tileCountY_ = 0;
-
-	public:
-		J_NODISCARD unsigned short GetGridSizeX() const;
-		J_NODISCARD unsigned short GetGridSizeY() const;
+		static void GlDraw(unsigned int element_count);
 
 		///
 		/// \brief Updates projection matrix and zoom level
-		void UpdateTileProjectionMatrix();
+		void GlUpdateTileProjectionMatrix();
+
+
+		// ======================================================================
+
+		// Internal ids to spritemap positions
+		static std::unordered_map<unsigned int, core::QuadPosition> spritemapCoords_;
+
+		static unsigned int windowWidth_;
+		static unsigned int windowHeight_;
+
+
+		unsigned int gridElementsCount_ = 0;
+
+		unsigned int tileCountX_ = 0;
+		unsigned int tileCountY_ = 0;
 	};
 };
 

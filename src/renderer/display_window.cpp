@@ -182,7 +182,7 @@ void HandleWindowEvent(const SDL_Event& sdl_event) {
 			if (x > 0 && y > 0) {
 				// glViewport is critical, changes the size of the rendering area
 				glViewport(0, 0, x, y);
-				renderer::SetRecalculateRenderer(x, y);
+				renderer::ChangeWindowSize(x, y);
 
 				LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", x, y);
 			}
