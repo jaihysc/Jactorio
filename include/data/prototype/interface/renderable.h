@@ -18,7 +18,7 @@ namespace jactorio
 
 	namespace game
 	{
-		struct PlayerData;
+		class PlayerData;
 		class ChunkTileLayer;
 
 		class Chunk;
@@ -48,11 +48,10 @@ namespace jactorio::data
 		Sprite::SetT set = 0;
 
 		///
-		/// \param layer
-		/// \param x_offset Pixels to top left of current tile
-		/// \param y_offset Pixels to top left of current tile
-		virtual void OnDrawUniqueData(renderer::RendererLayer& layer,
-		                              float x_offset, float y_offset) const {
+		/// \param pixel_offset_x Pixels to top left of current tile
+		/// \param pixel_offset_y Pixels to top left of current tile
+		virtual void OnDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+		                              float pixel_offset_x, float pixel_offset_y) const {
 		}
 	};
 

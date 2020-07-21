@@ -31,11 +31,6 @@ renderer::Renderer::Renderer() {
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
 
-	// TODO must be changeable
-	for (auto& render_layer : renderLayers_) {
-		render_layer.GInitBuffer();
-	}
-
 	GlResizeBuffers(m_viewport[2], m_viewport[3]);
 }
 
@@ -47,6 +42,9 @@ void renderer::Renderer::GlClear() {
 
 void renderer::Renderer::GlResizeBuffers(const unsigned int window_x,
                                          const unsigned int window_y) {
+	// glViewport is critical, changes the size of the rendering area
+	glViewport(0, 0, window_x, window_y);
+
 	// Initialize fields
 	windowWidth_  = window_x;
 	windowHeight_ = window_y;
@@ -61,23 +59,24 @@ void renderer::Renderer::GlResizeBuffers(const unsigned int window_x,
 	// Render layer (More may be reserved as needed by the renderer)
 	for (auto& render_layer : renderLayers_) {
 		render_layer.Reserve(gridElementsCount_);
-		render_layer.GUpdateData();
+		render_layer.GlHandleBufferResize();
 	}
 }
 
 void renderer::Renderer::GlSetDrawThreads(const size_t threads) {
+	assert(threads > 0);
 	drawThreads_ = threads;
 
 	chunkDrawThreads_.resize(drawThreads_);
-	renderLayers_.resize(drawThreads_);
+	renderLayers_.resize(drawThreads_ * 2);
 
 	for (auto& render_layer : renderLayers_) {
-		render_layer.GInitBuffer();
+		render_layer.GlInitBuffers();
 	}
 	GlResizeBuffers(windowWidth_, windowHeight_);
 }
 
-void renderer::Renderer::GlDraw(const unsigned int element_count) {
+void renderer::Renderer::GlDraw(const unsigned int element_count) noexcept {
 	DEBUG_OPENGL_CALL(
 		// There are 6 indices for each tile
 		glDrawElements(GL_TRIANGLES, element_count * 6, GL_UNSIGNED_INT, nullptr)
@@ -117,6 +116,7 @@ void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
                                               const game::WorldData& world_data,
                                               const float player_x, const float player_y) {
 	assert(spritemapCoords_);
+	assert(drawThreads_ > 0);
 
 	EXECUTION_PROFILE_SCOPE(profiler, "World draw");
 
@@ -142,53 +142,72 @@ void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
 
 	CalculateViewMatrix(player_x, player_y);
 
-	// TODO use set number of threads only
-	if (drawThreads_ != static_cast<size_t>(8))
-		GlSetDrawThreads(8);
+	int started_threads = 0;  // Also is index for vector holding futures
 
 
-	// TODO overlay layer removed
-	for (int layer_index = 0; layer_index < static_cast<int>(game::ChunkTile::ChunkLayer::count_) - 1; ++layer_index) {
+	auto begin_prepare_data = [](RendererLayer& r_layer) {
+		r_layer.Clear();
+		r_layer.GlWriteBegin();
+	};
 
-		int started_threads = 0;  // Also is index for vector holding futures
+	auto end_prepare_data = [](RendererLayer& r_layer) {
+		r_layer.GlWriteEnd();
+		r_layer.GlBindBuffers();
+		GlDraw(r_layer.GetElementCount());
+	};
 
+	for (int layer_index = 0; layer_index < static_cast<int>(game::ChunkTile::ChunkLayer::count_); ++layer_index) {
 		for (int y = 0; y < chunk_amount.y; ++y) {
+
+			// Wait for started threads to finish before starting new ones
+			if (static_cast<size_t>(started_threads) == drawThreads_) {
+				for (int i = 0; i < started_threads; ++i) {
+					chunkDrawThreads_[i].wait();
+					auto& r_layer_tile   = renderLayers_[i];
+					auto& r_layer_unique = renderLayers_[i + drawThreads_];
+
+					end_prepare_data(r_layer_tile);
+					end_prepare_data(r_layer_unique);
+				}
+				started_threads = 0;
+			}
+
+
 			const auto chunk_y = chunk_start.y + y;
 
-			auto& render_layer = renderLayers_[started_threads];
+			auto& r_layer_tile   = renderLayers_[started_threads];
+			auto& r_layer_unique = renderLayers_[started_threads + drawThreads_];
 
-			render_layer.Clear();
-			render_layer.GWriteBegin();
+			begin_prepare_data(r_layer_tile);
+			begin_prepare_data(r_layer_unique);
 
 			core::Position2<int> row_start = {chunk_start.x, chunk_y};
 
-			// Problem somewhere in here vvvv
 			chunkDrawThreads_[started_threads] =
-				std::async(std::launch::async, &Renderer::DrawChunkRow, this,
-				           std::ref(render_layer), std::ref(world_data),
+				std::async(std::launch::async, &Renderer::PrepareChunkRow, this,
+				           std::ref(r_layer_tile), std::ref(r_layer_unique),
+				           std::ref(world_data),
 				           row_start, chunk_amount.x, layer_index,
 				           tile_offset.x, y * game::Chunk::kChunkWidth + tile_offset.y,
 				           game_tick
 				);
 
 			++started_threads;
+
 		}
+	}
 
-		// assert(static_cast<size_t>(started_threads) == drawThreads_);
+	// Wait for started threads to end, process buffer resize requests
+	for (int i = 0; i < started_threads; ++i) {
+		chunkDrawThreads_[i].wait();
+		auto& r_layer_tile   = renderLayers_[i];
+		auto& r_layer_unique = renderLayers_[i + drawThreads_];
 
-		// Wait for each thread finish sequentially
-		for (int i = 0; i < started_threads; ++i) {
-			chunkDrawThreads_[i].wait();
-			auto& render_layer = renderLayers_[i];
+		end_prepare_data(r_layer_tile);
+		end_prepare_data(r_layer_unique);
 
-			render_layer.GWriteEnd();
-			render_layer.GUpdateData();
-			render_layer.GBufferBind();
-			GlDraw(render_layer.GetElementCount());
-
-			// TODO Thread 1 can be sent off again
-		}
-
+		r_layer_tile.GlHandleBufferResize();
+		r_layer_unique.GlHandleBufferResize();
 	}
 }
 
@@ -281,10 +300,11 @@ core::Position2<int> renderer::Renderer::GetChunkDrawAmount(const int position_x
 
 // ======================================================================
 
-void renderer::Renderer::DrawChunkRow(RendererLayer& render_layer, const game::WorldData& world_data,
-                                      const core::Position2<int> row_start, const int chunk_span, const int layer_index,
-                                      const int render_tile_offset_x, const int render_pixel_offset_y,
-                                      const GameTickT game_tick) const {
+void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer_tile, RendererLayer& r_layer_unique,
+                                         const game::WorldData& world_data,
+                                         const core::Position2<int> row_start, const int chunk_span, const int layer_index,
+                                         const int render_tile_offset_x, const int render_pixel_offset_y,
+                                         const GameTickT game_tick) const noexcept {
 
 	for (int x = 0; x < chunk_span; ++x) {
 		const auto chunk_x = x + row_start.x;
@@ -297,18 +317,21 @@ void renderer::Renderer::DrawChunkRow(RendererLayer& render_layer, const game::W
 			continue;
 		}
 
-		DrawChunk(render_layer, *chunk,
-		          {
-			          x * game::Chunk::kChunkWidth + render_tile_offset_x,
-			          render_pixel_offset_y
-		          },
-		          layer_index, game_tick);
+		PrepareChunk(r_layer_tile, r_layer_unique,
+		             *chunk,
+		             {
+			             x * game::Chunk::kChunkWidth + render_tile_offset_x,
+			             render_pixel_offset_y
+		             },
+		             layer_index,
+		             game_tick);
 	}
 }
 
-void renderer::Renderer::DrawChunk(RendererLayer& renderer_layer, const game::Chunk& chunk,
-                                   const core::Position2<int> render_pixel_offset, const int layer_index,
-                                   const GameTickT game_tick) const {
+void renderer::Renderer::PrepareChunk(RendererLayer& r_layer_tile, RendererLayer& r_layer_unique,
+                                      const game::Chunk& chunk,
+                                      const core::Position2<int> render_pixel_offset, const int layer_index,
+                                      const GameTickT game_tick) const noexcept {
 	// Load chunk into buffer
 	game::ChunkTile* tiles = chunk.Tiles();
 
@@ -318,6 +341,8 @@ void renderer::Renderer::DrawChunk(RendererLayer& renderer_layer, const game::Ch
 		const auto pixel_y = static_cast<float>(render_pixel_offset.y + tile_y) * static_cast<float>(tileWidth);
 
 		for (uint8_t tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
+			const auto pixel_x = static_cast<float>(render_pixel_offset.x + tile_x) * static_cast<float>(tileWidth);
+
 			auto& tile       = tiles[tile_y * game::Chunk::kChunkWidth + tile_x];
 			auto& tile_layer = tile.GetLayer(layer_index);
 
@@ -332,19 +357,16 @@ void renderer::Renderer::DrawChunk(RendererLayer& renderer_layer, const game::Ch
 			const auto sprite_frame = proto->OnRGetSprite(unique_data, game_tick);
 			auto uv                 = spritemapCoords_->at(sprite_frame.first->internalId);
 
-			if (unique_data)
+			if (unique_data) {
 				ApplySpriteUvAdjustment(uv, sprite_frame.first->GetCoords(unique_data->set, sprite_frame.second));
+				unique_data->OnDrawUniqueData(r_layer_unique, *spritemapCoords_, pixel_x, pixel_y);
+			}
 
 			if (tile_layer.IsMultiTile())
 				ApplyMultiTileUvAdjustment(uv, tile_layer);
 
 
-			// ======================================================================
-
-			const auto pixel_x = static_cast<float>(render_pixel_offset.x + tile_x) * static_cast<float>(tileWidth);
-
-			// TODO Performance heavy vvv
-			renderer_layer.PushBack(
+			r_layer_tile.PushBack(
 				RendererLayer::Element(
 					{  // top left of tile, 1 tile over and down
 						{pixel_x, pixel_y},
@@ -357,17 +379,12 @@ void renderer::Renderer::DrawChunk(RendererLayer& renderer_layer, const game::Ch
 				)
 			);
 
-			// // Has unique data to draw
-			// if (draw_func_return.second) {
-			// 	draw_func_return.second->OnDrawUniqueData(top_layer, x, y);
-			// }
-
 		}
 	}
 }
 
 
-void renderer::Renderer::ApplySpriteUvAdjustment(core::QuadPosition& uv, const core::QuadPosition& uv_offset) {
+void renderer::Renderer::ApplySpriteUvAdjustment(core::QuadPosition& uv, const core::QuadPosition& uv_offset) noexcept {
 	const auto difference = uv.bottomRight - uv.topLeft;
 
 	assert(difference.x >= 0);
@@ -378,7 +395,7 @@ void renderer::Renderer::ApplySpriteUvAdjustment(core::QuadPosition& uv, const c
 	uv.topLeft += difference * uv_offset.topLeft;
 }
 
-void renderer::Renderer::ApplyMultiTileUvAdjustment(core::QuadPosition& uv, const game::ChunkTileLayer& tile_layer) {
+void renderer::Renderer::ApplyMultiTileUvAdjustment(core::QuadPosition& uv, const game::ChunkTileLayer& tile_layer) noexcept {
 	game::MultiTileData& mt_data = tile_layer.GetMultiTileData();
 
 	// Calculate the correct UV coordinates for multi-tile entities

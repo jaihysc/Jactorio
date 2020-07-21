@@ -9,7 +9,7 @@
 
 namespace jactorio::renderer
 {
-	void DrawTransportSegmentItems(RendererLayer& layer,
+	void DrawTransportSegmentItems(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
 	                               float x_offset, float y_offset,
 	                               game::TransportSegment& line_segment);
 }

@@ -61,15 +61,16 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	auto* tile = world_data.GetTile(world_x, world_y);
 
 
+	// TODO reimplement
 	// Clear last overlay
 	if (!last_tile)
 		return;
-	PlaceSpriteAtCoords(
-		world_data,
-		ChunkTile::ChunkLayer::overlay,
-		nullptr,
-		lastTileDimensions_.first, lastTileDimensions_.second,
-		lastTilePos_.first, lastTilePos_.second);
+	// PlaceSpriteAtCoords(
+	// 	world_data,
+	// 	ChunkTile::ChunkLayer::overlay,
+	// 	nullptr,
+	// 	lastTileDimensions_.first, lastTileDimensions_.second,
+	// 	lastTilePos_.first, lastTilePos_.second);
 
 
 	// Draw new overlay
@@ -79,9 +80,9 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 
 	if (selected_entity && selected_entity->placeable) {
 		// Has item selected
-		PlaceSpriteAtCoords(world_data, ChunkTile::ChunkLayer::overlay, selected_entity->sprite,
-		                    selected_entity->tileWidth, selected_entity->tileHeight, world_x,
-		                    world_y);
+		// PlaceSpriteAtCoords(world_data, ChunkTile::ChunkLayer::overlay, selected_entity->sprite,
+		//                     selected_entity->tileWidth, selected_entity->tileHeight, world_x,
+		//                     world_y);
 
 		// Rotatable entities
 		if (selected_entity->rotatable) {
@@ -90,12 +91,12 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 			                                            world_data,
 			                                            {world_x, world_y});
 
-			ChunkTileLayer& target_layer = tile->GetLayer(ChunkTile::ChunkLayer::overlay);
-
-			target_layer.MakeUniqueData<data::PrototypeRenderableData>(set);
-			target_layer.prototypeData = selected_entity
-			                             ->OnRGetSprite(target_layer.GetUniqueData(),
-			                                            player_data.GetPlayerLogicData().GameTick()).first;
+			// ChunkTileLayer& target_layer = tile->GetLayer(ChunkTile::ChunkLayer::overlay);
+			//
+			// target_layer.MakeUniqueData<data::PrototypeRenderableData>(set);
+			// target_layer.prototypeData = selected_entity
+			//                              ->OnRGetSprite(target_layer.GetUniqueData(),
+			//                                             player_data.GetPlayerLogicData().GameTick()).first;
 		}
 
 		lastTileDimensions_ = {selected_entity->tileWidth, selected_entity->tileHeight};
@@ -112,11 +113,11 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 					                                      : "__core__/cursor-invalid");
 			assert(sprite_ptr != nullptr);
 
-			tile->SetSpritePrototype(ChunkTile::ChunkLayer::overlay, sprite_ptr);
-
-			auto& layer = tile->GetLayer(ChunkTile::ChunkLayer::overlay);
-			if (layer.IsMultiTile())
-				layer.GetMultiTileData().multiTileSpan = 1;
+			// tile->SetSpritePrototype(ChunkTile::ChunkLayer::overlay, sprite_ptr);
+			//
+			// auto& layer = tile->GetLayer(ChunkTile::ChunkLayer::overlay);
+			// if (layer.IsMultiTile())
+			// 	layer.GetMultiTileData().multiTileSpan = 1;
 		}
 
 		lastTileDimensions_ = {1, 1};

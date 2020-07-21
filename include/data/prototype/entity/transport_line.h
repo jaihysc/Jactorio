@@ -11,6 +11,7 @@
 #include "data/prototype/entity/health_entity.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_segment.h"
+#include "renderer/rendering/renderer.h"
 
 namespace jactorio::data
 {
@@ -69,7 +70,7 @@ namespace jactorio::data
 		/// \brief Converts lineOrientation to placementOrientation
 		static Orientation ToOrientation(LineOrientation line_orientation);
 
-		void OnDrawUniqueData(renderer::RendererLayer& layer,
+		void OnDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
 		                      float x_offset, float y_offset) const override;
 	};
 

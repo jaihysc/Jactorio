@@ -17,7 +17,7 @@ bool game::ItemDropOff::Initialize(const WorldData& world_data,
                                    const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
 	const data::Entity* entity =
 		world_data.GetTile(world_x, world_y)
-		          ->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
+		          ->GetEntityPrototype();
 
 	if (!entity)
 		return false;
@@ -184,7 +184,7 @@ bool game::InserterPickup::Initialize(const WorldData& world_data,
                                       const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
 	const data::Entity* entity =
 		world_data.GetTile(world_x, world_y)
-		          ->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
+		          ->GetEntityPrototype();
 
 	if (!entity)
 		return false;

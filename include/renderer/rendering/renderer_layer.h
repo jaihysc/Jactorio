@@ -16,11 +16,9 @@ namespace jactorio::renderer
 	///
 	/// \brief Generates and maintains the buffers of a rendering layer
 	/// Currently 2 buffers are used: Vertex and UV
-	/// \remark Methods with G prefix must be called from an OpenGl context
+	/// \remark Methods with Gl prefix must be called from an OpenGl context
 	class RendererLayer
 	{
-		// This is essentially a std::vector with most methods removed for SPEED and additional openGL calls
-		// Each records their begin and end point within the large buffer
 	public:
 		struct Element
 		{
@@ -50,12 +48,11 @@ namespace jactorio::renderer
 			uint32_t count = 0;
 		};
 
-	public:
 		explicit RendererLayer();
 
 		~RendererLayer();
 
-		// Copying is disallowed because this needs to interact with openGL and the large size of buffers
+		// Copying is disallowed because this needs to interact with openGL
 
 		RendererLayer(const RendererLayer& other) = delete;
 		RendererLayer(RendererLayer&& other) noexcept = default;
@@ -81,11 +78,10 @@ namespace jactorio::renderer
 	public:
 		// Set
 
-		// Ensure GWriteBegin() has been called first before attempting to write into buffers
-
 		///
 		/// \brief Appends element to layer, after the highest element index where values were assigned<br>
 		/// Resizes if static_layer_ is false
+		/// \remark Ensure GlWriteBegin() has been called first before attempting to write into buffers
 		void PushBack(const Element& element);
 
 	private:
@@ -103,22 +99,21 @@ namespace jactorio::renderer
 		// Resize
 
 		///
-		/// \brief Indicates to allocates memory to hold element count, deletes existing elements,
-		/// performed when GUpdateData is called
-		void Reserve(uint32_t count);
-
-		///
 		/// \brief Returns current element capacity of buffers
-		J_NODISCARD uint32_t GetCapacity() const;
+		J_NODISCARD uint32_t GetCapacity() const noexcept {
+			return eCapacity_;
+		}
 
 		///
 		/// \brief Returns count of elements in buffers
-		J_NODISCARD uint32_t GetElementCount() const;
+		J_NODISCARD uint32_t GetElementCount() const {
+			return nextElementIndex_;
+		}
+
 
 		///
-		/// \brief Deallocates vertex and uv buffers, clearing any stored data
-		void DeleteBuffer() noexcept;
-
+		/// \brief Queues allocation to hold element count
+		void Reserve(uint32_t count);
 
 		///
 		/// \brief Sets next_element_index_ to 0, does not guarantee that underlying buffers will be zeroed, merely that
@@ -133,7 +128,8 @@ namespace jactorio::renderer
 		/// \returns Indices to be feed into Index_buffer
 		static unsigned int* GenRenderGridIndices(uint32_t tile_count);
 
-		// #######################################################################
+
+		// ======================================================================
 		// OpenGL methods | The methods below MUST be called from an openGL context
 	private:
 
@@ -148,38 +144,35 @@ namespace jactorio::renderer
 		bool gResizeVertexBuffers_ = false;
 
 		///
-		/// \brief Only deletes heap vertex buffers, does not set pointers to nullptr or vertex_buffers_generated_ to false
-		void GDeleteBufferS() const;
+		/// \brief Only deletes heap vertex buffers, does not set pointers to nullptr
+		void GlFreeBuffers() const;
 
 	public:
 		///
 		/// \brief Initializes vertex buffers for rendering vertex and uv buffers + index buffer
 		/// \remark Should only be called once
-		void GInitBuffer();
+		void GlInitBuffers();
 
-
-		// Ensure GWriteBegin() has been called first before attempting to write into buffers
 
 		///
 		/// \brief Begins writing data to buffers
-		void GWriteBegin();
+		void GlWriteBegin();
 		///
 		/// \brief Ends writing data to buffers
-		void GWriteEnd();
+		void GlWriteEnd();
 
 
 		///
-		/// \brief Updates vertex buffers based on the current data in the vertex and uv buffer <br>
-		/// Will only upload elements from 0 to next_element_index_ - 1
-		void GUpdateData();
+		/// \brief If a buffer resize was requested, resizes the buffers
+		void GlHandleBufferResize();
 
 		///
 		/// \brief Deletes vertex and index buffers
-		void GDeleteBuffer();
+		void GlDeleteBuffers();
 
 		///
 		/// \brief Binds the vertex buffers, call this prior to drawing
-		void GBufferBind() const;
+		void GlBindBuffers() const;
 	};
 }
 

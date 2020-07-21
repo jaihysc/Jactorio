@@ -38,7 +38,7 @@ data::Orientation data::TransportLineData::ToOrientation(const LineOrientation l
 	}
 }
 
-void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer,
+void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
                                                const float x_offset, const float y_offset) const {
 	// Only draw for the head of segments
 	if (lineSegment->terminationType == game::TransportSegment::TerminationType::straight &&
@@ -49,7 +49,7 @@ void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer,
 		lineSegmentIndex != 1)
 		return;
 
-	DrawTransportSegmentItems(layer,
+	DrawTransportSegmentItems(layer, uv_coords,
 	                          x_offset, y_offset,
 	                          *this->lineSegment);
 }

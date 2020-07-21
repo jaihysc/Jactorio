@@ -7,7 +7,7 @@
 #include <future>
 #include <glm/glm.hpp>
 
-
+#include "core/data_type.h"
 #include "game/world/chunk_tile_layer.h"
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/rendering/spritemap_generator.h"
@@ -44,13 +44,15 @@ namespace jactorio::renderer
 
 
 		J_NODISCARD size_t GetDrawThreads() const noexcept { return drawThreads_; }
+		///
+		/// \brief Each thread draws a row of chunks, if thread count > chunk rows, the extra threads do nothing
 		void GlSetDrawThreads(size_t threads);
 
 	private:
 		///
 		/// \brief Draws current data to the screen
 		/// \param element_count Count of elements to draw (1 element = 6 indices)
-		static void GlDraw(unsigned int element_count);
+		static void GlDraw(unsigned int element_count) noexcept;
 
 		///
 		/// \brief Updates projection matrix and zoom level
@@ -67,7 +69,7 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Renderer will lookup uv coords at the provided spritemap_coords
-		void SetSpritemapCoords(const std::unordered_map<unsigned, core::QuadPosition>& spritemap_coords) {
+		void SetSpriteUvCoords(SpriteUvCoordsT& spritemap_coords) noexcept {
 			spritemapCoords_ = &spritemap_coords;
 		}
 
@@ -125,6 +127,8 @@ namespace jactorio::renderer
 		size_t drawThreads_ = 0;
 
 		std::vector<std::future<void>> chunkDrawThreads_;
+
+		/// Each thread gets 2 layers for rendering tiles + unique data
 		std::vector<RendererLayer> renderLayers_;
 
 		///
@@ -133,17 +137,19 @@ namespace jactorio::renderer
 		/// \param layer_index Index to ChunkTileLayer 
 		/// \param render_tile_offset_x Offset drawn tiles on screen by this tile amount
 		/// \param render_pixel_offset_y Offset drawn tiles on screen by this pixel amount
-		void DrawChunkRow(RendererLayer& render_layer, const game::WorldData& world_data,
-		                  core::Position2<int> row_start, int chunk_span, int layer_index,
-		                  int render_tile_offset_x, int render_pixel_offset_y,
-		                  GameTickT game_tick) const;
+		void PrepareChunkRow(RendererLayer& r_layer_tile, RendererLayer& r_layer_unique,
+							 const game::WorldData& world_data,
+		                     core::Position2<int> row_start, int chunk_span, int layer_index,
+		                     int render_tile_offset_x, int render_pixel_offset_y,
+		                     GameTickT game_tick) const noexcept;
 
-		void DrawChunk(RendererLayer& render_layer, const game::Chunk& chunk,
-		               core::Position2<int> render_pixel_offset, int layer_index,
-		               GameTickT game_tick) const;
+		void PrepareChunk(RendererLayer& r_layer_tile, RendererLayer& r_layer_unique,
+		                  const game::Chunk& chunk,
+		                  core::Position2<int> render_pixel_offset, int layer_index,
+		                  GameTickT game_tick) const noexcept;
 
-		static void ApplySpriteUvAdjustment(core::QuadPosition& uv, const core::QuadPosition& uv_offset);
-		static void ApplyMultiTileUvAdjustment(core::QuadPosition& uv, const game::ChunkTileLayer& tile_layer);
+		static void ApplySpriteUvAdjustment(core::QuadPosition& uv, const core::QuadPosition& uv_offset) noexcept;
+		static void ApplyMultiTileUvAdjustment(core::QuadPosition& uv, const game::ChunkTileLayer& tile_layer) noexcept;
 
 
 		// ======================================================================

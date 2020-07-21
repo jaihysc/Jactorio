@@ -5,13 +5,23 @@
 #pragma once
 
 #include <tuple>
+#include <unordered_map>
 
 #include "jactorio.h"
 
-// Data types of the various components within Jactorio
+namespace jactorio::core
+{
+	class QuadPosition;
+}
+
 namespace jactorio
 {
+	// Data types of the various components within Jactorio
+	// Defined here to solve circular includes
+
 	using GameTickT = uint64_t;
+	using SpriteUvCoordsT = const std::unordered_map<unsigned, core::QuadPosition>;
+
 	constexpr int kGameHertz = 60;  // 60 updates per second
 }
 

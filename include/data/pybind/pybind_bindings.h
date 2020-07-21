@@ -9,7 +9,6 @@
 #include <pybind11/stl_bind.h>
 
 #include "data/prototype_manager.h"
-#include "data/prototype/noise_layer.h"
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/prototype_type.h"
 #include "data/prototype/sprite.h"
@@ -25,6 +24,7 @@
 #include "data/prototype/item/item.h"
 #include "data/prototype/item/recipe_category.h"
 #include "data/prototype/item/recipe_group.h"
+#include "data/prototype/tile/noise_layer.h"
 #include "data/prototype/tile/tile.h"
 
 // All the bindings in bindings/ defined for pybind

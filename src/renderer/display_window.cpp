@@ -175,18 +175,7 @@ void HandleWindowEvent(const SDL_Event& sdl_event) {
 	switch (sdl_event.window.event) {
 	case SDL_WINDOWEVENT_RESIZED:
 	case SDL_WINDOWEVENT_SIZE_CHANGED:
-		{
-			// Ignore window minimize (resolution 0 x 0)
-			const auto x = sdl_event.window.data1;
-			const auto y = sdl_event.window.data2;
-			if (x > 0 && y > 0) {
-				// glViewport is critical, changes the size of the rendering area
-				glViewport(0, 0, x, y);
-				renderer::ChangeWindowSize(x, y);
-
-				LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", x, y);
-			}
-		}
+		renderer::ChangeWindowSize(sdl_event.window.data1, sdl_event.window.data2);
 		break;
 
 	case SDL_WINDOWEVENT_SHOWN:

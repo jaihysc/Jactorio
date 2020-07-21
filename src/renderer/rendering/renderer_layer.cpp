@@ -14,8 +14,7 @@ jactorio::renderer::RendererLayer::RendererLayer() {
 }
 
 jactorio::renderer::RendererLayer::~RendererLayer() {
-	// OpenGL buffers
-	GDeleteBufferS();
+	GlFreeBuffers();
 }
 
 // Set
@@ -107,26 +106,11 @@ void jactorio::renderer::RendererLayer::Reserve(const uint32_t count) {
 	LOG_MESSAGE(debug, "Queuing buffer resize");
 }
 
-uint32_t jactorio::renderer::RendererLayer::GetCapacity() const {
-	return eCapacity_;
-}
-
-uint32_t jactorio::renderer::RendererLayer::GetElementCount() const {
-	return nextElementIndex_;
-}
-
-void jactorio::renderer::RendererLayer::DeleteBuffer() noexcept {
-	eCapacity_ = 0;
-
-	vertexBuffer_.ptr = nullptr;
-	uvBuffer_.ptr     = nullptr;
-}
-
 void jactorio::renderer::RendererLayer::Clear() const {
 	nextElementIndex_ = 0;
 }
 
-// #######################################################################
+// ======================================================================
 // OpenGL methods
 constexpr uint64_t kGByteMultiplier = 8 * sizeof(float);  // Multiply by this to convert to bytes
 
@@ -152,30 +136,20 @@ unsigned* jactorio::renderer::RendererLayer::GenRenderGridIndices(const uint32_t
 		positions[positions_index++] = index_buffer_index;
 
 		index_buffer_index += 4;
-
-		// const unsigned int start = x + y * tiles_x;
-		//
-		// positions[index++] = start;
-		// positions[index++] = start + 1;
-		// positions[index++] = start + 1 + tiles_x;
-		//
-		// positions[index++] = start + 1 + tiles_x;
-		// positions[index++] = start + tiles_x;
-		// positions[index++] = start;
 	}
 
 	return positions;
 
 }
 
-void jactorio::renderer::RendererLayer::GDeleteBufferS() const {
+void jactorio::renderer::RendererLayer::GlFreeBuffers() const {
 	delete vertexArray_;
 	delete vertexVb_;
 	delete uvVb_;
 	delete indexIb_;
 }
 
-void jactorio::renderer::RendererLayer::GInitBuffer() {
+void jactorio::renderer::RendererLayer::GlInitBuffers() {
 	vertexVb_ = new VertexBuffer(vertexBuffer_.ptr, eCapacity_ * kGByteMultiplier, false);
 	uvVb_     = new VertexBuffer(uvBuffer_.ptr, eCapacity_ * kGByteMultiplier, false);
 
@@ -197,7 +171,7 @@ void jactorio::renderer::RendererLayer::GInitBuffer() {
 	gResizeVertexBuffers_ = false;
 }
 
-void jactorio::renderer::RendererLayer::GWriteBegin() {
+void jactorio::renderer::RendererLayer::GlWriteBegin() {
 	assert(!writeEnabled_);
 
 	vertexBuffer_.ptr = static_cast<float*>(vertexVb_->Map());
@@ -206,7 +180,7 @@ void jactorio::renderer::RendererLayer::GWriteBegin() {
 	writeEnabled_ = true;
 }
 
-void jactorio::renderer::RendererLayer::GWriteEnd() {
+void jactorio::renderer::RendererLayer::GlWriteEnd() {
 	assert(writeEnabled_);
 
 	vertexVb_->UnMap();
@@ -215,7 +189,7 @@ void jactorio::renderer::RendererLayer::GWriteEnd() {
 	writeEnabled_ = false;
 }
 
-void jactorio::renderer::RendererLayer::GUpdateData() {
+void jactorio::renderer::RendererLayer::GlHandleBufferResize() {
 	// Only resize if resize is set
 	if (!gResizeVertexBuffers_)
 		return;
@@ -234,8 +208,8 @@ void jactorio::renderer::RendererLayer::GUpdateData() {
 	LOG_MESSAGE_F(debug, "Buffer resized to %d", eCapacity_);
 }
 
-void jactorio::renderer::RendererLayer::GDeleteBuffer() {
-	GDeleteBufferS();
+void jactorio::renderer::RendererLayer::GlDeleteBuffers() {
+	GlFreeBuffers();
 
 	vertexArray_ = nullptr;
 	vertexVb_    = nullptr;
@@ -243,7 +217,7 @@ void jactorio::renderer::RendererLayer::GDeleteBuffer() {
 	indexIb_     = nullptr;
 }
 
-void jactorio::renderer::RendererLayer::GBufferBind() const {
+void jactorio::renderer::RendererLayer::GlBindBuffers() const {
 	vertexArray_->Bind();
 	vertexVb_->Bind();
 	uvVb_->Bind();

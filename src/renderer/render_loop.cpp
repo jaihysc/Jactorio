@@ -32,12 +32,22 @@ renderer::Renderer* main_renderer = nullptr;
 
 void renderer::ChangeWindowSize(const unsigned int window_size_x,
                                 const unsigned int window_size_y) {
+	// Ignore minimize
+	if (window_size_x == 0 && window_size_y == 0)
+		return;
+	
+	// Same size
+	if (window_x == window_size_x && window_y == window_size_y)
+		return;
+	
 	window_x = window_size_x;
 	window_y = window_size_y;
 
 	game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
 		main_renderer->GlResizeBuffers(window_x, window_y);
 	});
+
+	LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", window_size_x, window_size_y);
 }
 
 renderer::Renderer* renderer::GetBaseRenderer() {
@@ -156,9 +166,10 @@ void renderer::RenderInit() {
 	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
 	main_renderer = new Renderer();
 
+	main_renderer->GlSetDrawThreads(8);
 
 	// Terrain
-	main_renderer->SetSpritemapCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);
+	main_renderer->SetSpriteUvCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);
 	renderer_sprites.GetTexture(data::Sprite::SpriteGroup::terrain)->Bind(0);
 
 	// Gui

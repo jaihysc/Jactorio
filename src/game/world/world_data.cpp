@@ -10,9 +10,9 @@
 #include <noise/noiseutils.h>
 
 #include "data/prototype_manager.h"
-#include "data/prototype/noise_layer.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/interface/update_listener.h"
+#include "data/prototype/tile/noise_layer.h"
 #include "data/prototype/tile/tile.h"
 #include "game/world/chunk_tile.h"
 
@@ -292,7 +292,7 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 			// Add the tile prototype to the Chunk_tile
 			auto* new_tile = static_cast<data::Tile*>(tile);
 
-			target.SetTilePrototype(game::ChunkTile::ChunkLayer::base, new_tile);
+			target.SetTilePrototype(new_tile);
 		});
 
 	// Resources
@@ -305,7 +305,7 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 				return;
 
 			// Do not place resource on water
-			const auto* base_layer = target.GetTilePrototype(game::ChunkTile::ChunkLayer::base);
+			const auto* base_layer = target.GetTilePrototype();
 			if (base_layer != nullptr && base_layer->isWater)
 				return;
 

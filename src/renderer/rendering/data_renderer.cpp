@@ -6,38 +6,39 @@
 #include "data/prototype/type.h"
 #include "data/prototype/entity/transport_line.h"
 #include "game/logic/transport_line_controller.h"
-#include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
+
+using namespace jactorio;
 
 ///
 /// \param tile_x Tile offset (for distance after each item)
 /// \param tile_y Tile offset
 /// \param x_offset Pixel offset (for aligning the sprite on screen)
 /// \param y_offset Pixel offset
-void PrepareTransportSegmentData(jactorio::renderer::RendererLayer& layer,
-                                 const jactorio::game::TransportSegment& line_segment,
-                                 std::deque<jactorio::game::TransportLineItem>& line_segment_side,
+void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+                                 const game::TransportSegment& line_segment,
+                                 std::deque<game::TransportLineItem>& line_segment_side,
                                  float tile_x, float tile_y,
                                  const float x_offset, const float y_offset) {
-	using namespace jactorio::game;
+	using namespace game;
 
 	// Either offset_x or offset_y which will be INCREASED or DECREASED
 	float* target_offset;
 	double multiplier = 1;  // Either 1 or -1 to add or subtract
 
 	switch (line_segment.direction) {
-	case jactorio::data::Orientation::up:
+	case data::Orientation::up:
 		target_offset = &tile_y;
 		break;
-	case jactorio::data::Orientation::right:
+	case data::Orientation::right:
 		target_offset = &tile_x;
 		multiplier = -1;
 		break;
-	case jactorio::data::Orientation::down:
+	case data::Orientation::down:
 		target_offset = &tile_y;
 		multiplier = -1;
 		break;
-	case jactorio::data::Orientation::left:
+	case data::Orientation::left:
 		target_offset = &tile_x;
 		break;
 
@@ -51,37 +52,36 @@ void PrepareTransportSegmentData(jactorio::renderer::RendererLayer& layer,
 		OrientationIncrement(line_segment.direction, tile_x, tile_y);
 	}
 
-	// for (const auto& line_item : line_segment_side) {
-	// 	// Move the target offset (up or down depending on multiplier)
-	// 	*target_offset += line_item.first.getAsDouble() * multiplier;
-	//
-	// 	// TODO pass spritemap coords
-	// 	const auto& uv_pos = jactorio::renderer::Renderer::GetSpritemapCoords(line_item.second->sprite->internalId);
-	//
-	// 	// In pixels
-	// 	layer.PushBack(jactorio::renderer::RendererLayer::Element(
-	// 		{
-	// 			{
-	// 				{
-	// 					x_offset + tile_x * static_cast<float>(jactorio::renderer::Renderer::tileWidth),
-	// 					y_offset + tile_y * static_cast<float>(jactorio::renderer::Renderer::tileWidth)
-	// 				},
-	// 				{
-	// 					x_offset +
-	// 					static_cast<float>(tile_x + kItemWidth) * static_cast<float>(jactorio::renderer::Renderer::tileWidth),
-	// 					y_offset +
-	// 					static_cast<float>(tile_y + kItemWidth) * static_cast<float>(jactorio::renderer::Renderer::tileWidth)
-	// 				},
-	// 			},
-	// 			{uv_pos.topLeft, uv_pos.bottomRight}
-	// 		}
-	// 	));
-	// }
+	for (const auto& line_item : line_segment_side) {
+		// Move the target offset (up or down depending on multiplier)
+		*target_offset += line_item.first.getAsDouble() * multiplier;
+
+		const auto& uv_pos = uv_coords.at(line_item.second->sprite->internalId);
+
+		// In pixels
+		layer.PushBack(renderer::RendererLayer::Element(
+			{
+				{
+					{
+						x_offset + tile_x * static_cast<float>(renderer::Renderer::tileWidth),
+						y_offset + tile_y * static_cast<float>(renderer::Renderer::tileWidth)
+					},
+					{
+						x_offset +
+						static_cast<float>(tile_x + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
+						y_offset +
+						static_cast<float>(tile_y + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth)
+					},
+				},
+				{uv_pos.topLeft, uv_pos.bottomRight}
+			}
+		));
+	}
 }
 
-void jactorio::renderer::DrawTransportSegmentItems(RendererLayer& layer,
-                                                   const float x_offset, const float y_offset,
-                                                   game::TransportSegment& line_segment) {
+void renderer::DrawTransportSegmentItems(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+                                         const float x_offset, const float y_offset,
+                                         game::TransportSegment& line_segment) {
 	float tile_x_offset = 0;
 	float tile_y_offset = 0;
 
@@ -178,7 +178,7 @@ void jactorio::renderer::DrawTransportSegmentItems(RendererLayer& layer,
 		}
 		break;
 	}
-	PrepareTransportSegmentData(layer,
+	PrepareTransportSegmentData(layer, uv_coords,
 	                            line_segment, line_segment.left.lane,
 	                            tile_x_offset, tile_y_offset,
 	                            x_offset, y_offset);
@@ -280,7 +280,7 @@ prepare_right:
 		}
 		break;
 	}
-	PrepareTransportSegmentData(layer,
+	PrepareTransportSegmentData(layer, uv_coords,
 	                            line_segment, line_segment.right.lane,
 	                            tile_x_offset, tile_y_offset,
 	                            x_offset, y_offset);
