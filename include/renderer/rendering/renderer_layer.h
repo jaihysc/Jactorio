@@ -20,6 +20,15 @@ namespace jactorio::renderer
 	/// \remark Methods with Gl prefix must be called from an OpenGl context
 	class RendererLayer
 	{
+		/// How many elements to reserve upon construction
+		static constexpr uint32_t kInitialSize = 500;
+
+		/// When resizing, the amount requested is multiplied by this, reducing future allocations
+		static constexpr double kResizeECapacityMultiplier = 1.25;
+
+		static constexpr int kIndicesPerElement = 8;
+		static constexpr int kBytesPerElement   = kIndicesPerElement * sizeof(float);
+
 	public:
 		struct Element
 		{
@@ -33,71 +42,23 @@ namespace jactorio::renderer
 			core::QuadPosition uv;
 		};
 
-		template <typename T>
-		struct Buffer
-		{
-			Buffer() = default;
-
-			Buffer(T* ptr, const uint32_t span, const uint32_t count)
-				: ptr(ptr), span(span), count(count) {
-			}
-
-			T* ptr = nullptr;
-
-			// These are only set when called with get_buf_#()
-			uint32_t span  = 0;
-			uint32_t count = 0;
-		};
-
 		explicit RendererLayer();
-
 		~RendererLayer();
 
 		// Copying is disallowed because this needs to interact with openGL
 
-		RendererLayer(const RendererLayer& other) = delete;
-		RendererLayer(RendererLayer&& other) noexcept = default;
-		RendererLayer& operator=(const RendererLayer& other) = delete;
+		RendererLayer(const RendererLayer& other)                = delete;
+		RendererLayer(RendererLayer&& other) noexcept            = default;
+		RendererLayer& operator=(const RendererLayer& other)     = delete;
 		RendererLayer& operator=(RendererLayer&& other) noexcept = default;
 
-	private:
-		// Buffers
-		Buffer<float> vertexBuffer_;
-		Buffer<float> uvBuffer_;
-
-		/// Buffer index to insert the next element on push_back
-		uint32_t nextElementIndex_ = 0;
-
-		/// Element capacity which will be requested on the next GUpdateData
-		uint32_t queuedECapacity_ = 0;
-
-		/// Current *element* capacity of VERTEX buffers <br>
-		/// for index buffer size, multiply by 6, <br>
-		/// for raw size of float array, multiply by 8 <br>
-		uint32_t eCapacity_ = 0;
-
-	public:
-		// Set
+		// ======================================================================
 
 		///
 		/// \brief Appends element to layer, after the highest element index where values were assigned<br>
 		/// Resizes if static_layer_ is false
 		/// \remark Ensure GlWriteBegin() has been called first before attempting to write into buffers
 		void PushBack(const Element& element);
-
-	private:
-		// Sets the positions within the buffer, but will not increment next_element_index_;
-		void SetBufferVertex(uint32_t buffer_index, const core::QuadPosition& element) const;
-		void SetBufferUv(uint32_t buffer_index, const core::QuadPosition& element) const;
-
-	public:
-		// Get buffers
-
-		J_NODISCARD Buffer<float> GetBufVertex();
-		J_NODISCARD Buffer<float> GetBufUv();
-		J_NODISCARD const IndexBuffer* GetBufIndex() const;
-
-		// Resize
 
 		///
 		/// \brief Returns current element capacity of buffers
@@ -111,7 +72,6 @@ namespace jactorio::renderer
 			return nextElementIndex_;
 		}
 
-
 		///
 		/// \brief Queues allocation to hold element count
 		void Reserve(uint32_t count);
@@ -123,38 +83,7 @@ namespace jactorio::renderer
 		void Clear();
 
 		// ======================================================================
-		// Rendering grid
 
-		///
-		/// \brief Generates indices to draw tiles using the grid from gen_render_grid
-		/// \returns Indices to be feed into Index_buffer
-		static unsigned int* GenRenderGridIndices(uint32_t tile_count);
-
-
-		// ======================================================================
-		// OpenGL methods | The methods below MUST be called from an openGL context
-	private:
-
-		bool writeEnabled_ = false;
-
-		VertexArray* vertexArray_ = nullptr;
-
-		VertexBuffer* vertexVb_ = nullptr;
-		VertexBuffer* uvVb_     = nullptr;
-		IndexBuffer* indexIb_   = nullptr;
-
-		bool gResizeVertexBuffers_ = false;
-
-		///
-		/// \brief Initializes vertex buffers for rendering vertex and uv buffers + index buffer
-		/// \remark Should only be called once
-		void GlInitBuffers();
-
-		///
-		/// \brief Only deletes heap vertex buffers, does not set pointers to nullptr
-		void GlFreeBuffers() const;
-
-	public:
 		///
 		/// \brief Begins writing data to buffers
 		void GlWriteBegin();
@@ -174,6 +103,50 @@ namespace jactorio::renderer
 		///
 		/// \brief Binds the vertex buffers, call this prior to drawing
 		void GlBindBuffers() const;
+
+	private:
+		// Sets the positions within the buffer, but will not increment next_element_index_;
+		void SetBufferVertex(uint32_t buffer_index, const core::QuadPosition& element) const;
+		void SetBufferUv(uint32_t buffer_index, const core::QuadPosition& element) const;
+
+		///
+		/// \brief Generates indices to draw tiles using the grid from gen_render_grid
+		/// \returns Indices to be feed into Index_buffer
+		static unsigned int* GenRenderGridIndices(uint32_t tile_count);
+
+
+		///
+		/// \brief Initializes vertex buffers for rendering vertex and uv buffers + index buffer
+		/// \remark Should only be called once
+		void GlInitBuffers();
+
+		///
+		/// \brief Only deletes heap vertex buffers, does not set pointers to nullptr
+		void GlFreeBuffers() const;
+
+		// ======================================================================
+
+
+		/// Buffer index to insert the next element on push_back
+		uint32_t nextElementIndex_ = 0;
+
+		/// Element capacity which will be requested on the next GUpdateData
+		uint32_t queuedECapacity_ = 0;
+
+		/// Current *element* capacity of VERTEX buffers
+		/// for index buffer size, multiply by 6,
+		uint32_t eCapacity_ = 0;
+
+		bool writeEnabled_         = false;
+		bool gResizeVertexBuffers_ = false;
+
+		float* vertexBuffer_ = nullptr;
+		float* uvBuffer_     = nullptr;
+
+		VertexArray* vertexArray_ = nullptr;
+		VertexBuffer* vertexVb_   = nullptr;
+		VertexBuffer* uvVb_       = nullptr;
+		IndexBuffer* indexIb_     = nullptr;
 	};
 }
 
