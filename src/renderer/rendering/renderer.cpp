@@ -31,7 +31,7 @@ renderer::Renderer::Renderer() {
 	GLint m_viewport[4];
 	glGetIntegerv(GL_VIEWPORT, m_viewport);
 
-	GlResizeBuffers(m_viewport[2], m_viewport[3]);
+	GlResizeWindow(m_viewport[2], m_viewport[3]);
 }
 
 // ======================================================================
@@ -40,8 +40,8 @@ void renderer::Renderer::GlClear() {
 	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 }
 
-void renderer::Renderer::GlResizeBuffers(const unsigned int window_x,
-                                         const unsigned int window_y) {
+void renderer::Renderer::GlResizeWindow(const unsigned int window_x,
+                                        const unsigned int window_y) {
 	// glViewport is critical, changes the size of the rendering area
 	glViewport(0, 0, window_x, window_y);
 
@@ -49,18 +49,6 @@ void renderer::Renderer::GlResizeBuffers(const unsigned int window_x,
 	windowWidth_  = window_x;
 	windowHeight_ = window_y;
 	GlUpdateTileProjectionMatrix();
-
-	// Raise the bottom and right by tile_width so the last tile has enough space to render out
-	tileCountX_ = windowWidth_ / tileWidth + 1;
-	tileCountY_ = windowHeight_ / tileWidth + 1;
-
-	gridElementsCount_ = tileCountX_ * tileCountY_;
-
-	// Render layer (More may be reserved as needed by the renderer)
-	for (auto& render_layer : renderLayers_) {
-		render_layer.Reserve(gridElementsCount_);
-		render_layer.GlHandleBufferResize();
-	}
 }
 
 void renderer::Renderer::GlSetDrawThreads(const size_t threads) {
@@ -68,13 +56,11 @@ void renderer::Renderer::GlSetDrawThreads(const size_t threads) {
 	drawThreads_ = threads;
 
 	chunkDrawThreads_.resize(drawThreads_);
-	renderLayers_.resize(drawThreads_ * 2);
 
-	for (auto& render_layer : renderLayers_) {
-		render_layer.GlInitBuffers();
-	}
-	GlResizeBuffers(windowWidth_, windowHeight_);
+	renderLayers_.clear();  // Opengl probably stores some internal memory addresses, so each layer must be recreated
+	renderLayers_.resize(drawThreads_ * 2);
 }
+
 
 void renderer::Renderer::GlDraw(const unsigned int element_count) noexcept {
 	DEBUG_OPENGL_CALL(
@@ -153,22 +139,28 @@ void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
 	auto end_prepare_data = [](RendererLayer& r_layer) {
 		r_layer.GlWriteEnd();
 		r_layer.GlBindBuffers();
+		r_layer.GlHandleBufferResize();
 		GlDraw(r_layer.GetElementCount());
 	};
+
+	auto await_thread_completion = [&]() {
+		for (int i = 0; i < started_threads; ++i) {
+			chunkDrawThreads_[i].wait();
+			auto& r_layer_tile   = renderLayers_[i];
+			auto& r_layer_unique = renderLayers_[i + drawThreads_];
+
+			end_prepare_data(r_layer_tile);
+			end_prepare_data(r_layer_unique);
+		}
+	};
+
 
 	for (int layer_index = 0; layer_index < static_cast<int>(game::ChunkTile::ChunkLayer::count_); ++layer_index) {
 		for (int y = 0; y < chunk_amount.y; ++y) {
 
 			// Wait for started threads to finish before starting new ones
 			if (static_cast<size_t>(started_threads) == drawThreads_) {
-				for (int i = 0; i < started_threads; ++i) {
-					chunkDrawThreads_[i].wait();
-					auto& r_layer_tile   = renderLayers_[i];
-					auto& r_layer_unique = renderLayers_[i + drawThreads_];
-
-					end_prepare_data(r_layer_tile);
-					end_prepare_data(r_layer_unique);
-				}
+				await_thread_completion();
 				started_threads = 0;
 			}
 
@@ -197,18 +189,7 @@ void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
 		}
 	}
 
-	// Wait for started threads to end, process buffer resize requests
-	for (int i = 0; i < started_threads; ++i) {
-		chunkDrawThreads_[i].wait();
-		auto& r_layer_tile   = renderLayers_[i];
-		auto& r_layer_unique = renderLayers_[i + drawThreads_];
-
-		end_prepare_data(r_layer_tile);
-		end_prepare_data(r_layer_unique);
-
-		r_layer_tile.GlHandleBufferResize();
-		r_layer_unique.GlHandleBufferResize();
-	}
+	await_thread_completion();
 }
 
 void renderer::Renderer::CalculateViewMatrix(const float player_x, const float player_y) noexcept {

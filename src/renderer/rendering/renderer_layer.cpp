@@ -10,7 +10,9 @@ constexpr uint32_t kInitialSize = 1;  // How many elements to reserve upon const
 // Construct
 
 jactorio::renderer::RendererLayer::RendererLayer() {
+	GlInitBuffers();
 	Reserve(kInitialSize);
+	GlHandleBufferResize();
 }
 
 jactorio::renderer::RendererLayer::~RendererLayer() {
@@ -106,7 +108,7 @@ void jactorio::renderer::RendererLayer::Reserve(const uint32_t count) {
 	LOG_MESSAGE(debug, "Queuing buffer resize");
 }
 
-void jactorio::renderer::RendererLayer::Clear() const {
+void jactorio::renderer::RendererLayer::Clear() {
 	nextElementIndex_ = 0;
 }
 
@@ -142,14 +144,10 @@ unsigned* jactorio::renderer::RendererLayer::GenRenderGridIndices(const uint32_t
 
 }
 
-void jactorio::renderer::RendererLayer::GlFreeBuffers() const {
-	delete vertexArray_;
-	delete vertexVb_;
-	delete uvVb_;
-	delete indexIb_;
-}
-
 void jactorio::renderer::RendererLayer::GlInitBuffers() {
+	assert(vertexVb_ == nullptr);
+	assert(uvVb_ == nullptr);
+	
 	vertexVb_ = new VertexBuffer(vertexBuffer_.ptr, eCapacity_ * kGByteMultiplier, false);
 	uvVb_     = new VertexBuffer(uvBuffer_.ptr, eCapacity_ * kGByteMultiplier, false);
 
@@ -171,8 +169,16 @@ void jactorio::renderer::RendererLayer::GlInitBuffers() {
 	gResizeVertexBuffers_ = false;
 }
 
+void jactorio::renderer::RendererLayer::GlFreeBuffers() const {
+	delete vertexArray_;
+	delete vertexVb_;
+	delete uvVb_;
+	delete indexIb_;
+}
+
 void jactorio::renderer::RendererLayer::GlWriteBegin() {
 	assert(!writeEnabled_);
+	assert(eCapacity_ > 0);  // Mapping fails unless capacity is at least 1
 
 	vertexBuffer_.ptr = static_cast<float*>(vertexVb_->Map());
 	uvBuffer_.ptr     = static_cast<float*>(uvVb_->Map());

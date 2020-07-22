@@ -40,12 +40,10 @@ namespace jactorio::renderer
 		static void GlClear();
 		///
 		/// \brief Resizes rendering buffers to new window size 
-		void GlResizeBuffers(unsigned int window_x, unsigned int window_y);
+		void GlResizeWindow(unsigned int window_x, unsigned int window_y);
 
 
 		J_NODISCARD size_t GetDrawThreads() const noexcept { return drawThreads_; }
-		///
-		/// \brief Each thread draws a row of chunks, if thread count > chunk rows, the extra threads do nothing
 		void GlSetDrawThreads(size_t threads);
 
 	private:
@@ -159,12 +157,6 @@ namespace jactorio::renderer
 
 		static unsigned int windowWidth_;
 		static unsigned int windowHeight_;
-
-
-		unsigned int gridElementsCount_ = 0;
-
-		unsigned int tileCountX_ = 0;
-		unsigned int tileCountY_ = 0;
 	};
 };
 

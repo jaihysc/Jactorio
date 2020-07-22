@@ -16,6 +16,7 @@ namespace jactorio::renderer
 	///
 	/// \brief Generates and maintains the buffers of a rendering layer
 	/// Currently 2 buffers are used: Vertex and UV
+	/// \remark Can only be created and destructed in an Opengl Context
 	/// \remark Methods with Gl prefix must be called from an OpenGl context
 	class RendererLayer
 	{
@@ -65,7 +66,7 @@ namespace jactorio::renderer
 		Buffer<float> uvBuffer_;
 
 		/// Buffer index to insert the next element on push_back
-		mutable uint32_t nextElementIndex_ = 0;
+		uint32_t nextElementIndex_ = 0;
 
 		/// Element capacity which will be requested on the next GUpdateData
 		uint32_t queuedECapacity_ = 0;
@@ -116,9 +117,10 @@ namespace jactorio::renderer
 		void Reserve(uint32_t count);
 
 		///
-		/// \brief Sets next_element_index_ to 0, does not guarantee that underlying buffers will be zeroed, merely that
+		/// \brief Signal to begin overriding old existing data in buffers 
+		/// \remark Does not guarantee that underlying buffers will be zeroed, merely that
 		/// the data will not by uploaded with glBufferSubData
-		void Clear() const;
+		void Clear();
 
 		// ======================================================================
 		// Rendering grid
@@ -144,16 +146,15 @@ namespace jactorio::renderer
 		bool gResizeVertexBuffers_ = false;
 
 		///
-		/// \brief Only deletes heap vertex buffers, does not set pointers to nullptr
-		void GlFreeBuffers() const;
-
-	public:
-		///
 		/// \brief Initializes vertex buffers for rendering vertex and uv buffers + index buffer
 		/// \remark Should only be called once
 		void GlInitBuffers();
 
+		///
+		/// \brief Only deletes heap vertex buffers, does not set pointers to nullptr
+		void GlFreeBuffers() const;
 
+	public:
 		///
 		/// \brief Begins writing data to buffers
 		void GlWriteBegin();
