@@ -58,6 +58,7 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 
 		const auto& uv_pos = uv_coords.at(line_item.second->sprite->internalId);
 
+		constexpr float pixel_z = 0.1f;
 		// In pixels
 		layer.PushBack(renderer::RendererLayer::Element(
 			{
@@ -65,14 +66,14 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 					{
 						x_offset + tile_x * static_cast<float>(renderer::Renderer::tileWidth),
 						y_offset + tile_y * static_cast<float>(renderer::Renderer::tileWidth),
-						0
+						pixel_z
 					},
 					{
 						x_offset +
 						static_cast<float>(tile_x + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
 						y_offset +
 						static_cast<float>(tile_y + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
-						0
+						pixel_z
 					},
 				},
 				{uv_pos.topLeft, uv_pos.bottomRight}

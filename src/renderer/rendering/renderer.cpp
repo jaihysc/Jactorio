@@ -36,6 +36,16 @@ renderer::Renderer::Renderer() {
 
 // ======================================================================
 
+void renderer::Renderer::GlSetup() {
+	// Enables transparency in textures
+	DEBUG_OPENGL_CALL(glEnable(GL_BLEND));
+	DEBUG_OPENGL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+	// Depth buffer
+	DEBUG_OPENGL_CALL(glEnable(GL_DEPTH_TEST));
+	DEBUG_OPENGL_CALL(glDepthFunc(GL_LEQUAL));
+}
+
 void renderer::Renderer::GlClear() {
 	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT));
 }
@@ -121,41 +131,39 @@ void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
 	auto await_thread_completion = [&]() {
 		for (int i = 0; i < started_threads; ++i) {
 			chunkDrawThreads_[i].wait();
-			auto& r_layer_tile   = renderLayers_[i];
+			auto& r_layer_tile = renderLayers_[i];
 
 			end_prepare_data(r_layer_tile);
 		}
 	};
 
 
-	for (int layer_index = 0; layer_index < static_cast<int>(game::ChunkTile::ChunkLayer::count_); ++layer_index) {
-		for (int y = 0; y < chunk_amount.y; ++y) {
+	for (int y = 0; y < chunk_amount.y; ++y) {
 
-			// Wait for started threads to finish before starting new ones
-			if (static_cast<size_t>(started_threads) == drawThreads_) {
-				await_thread_completion();
-				started_threads = 0;
-			}
-
-
-			const auto chunk_y = chunk_start.y + y;
-
-			auto& r_layer_tile   = renderLayers_[started_threads];
-			begin_prepare_data(r_layer_tile);
-
-			core::Position2<int> row_start = {chunk_start.x, chunk_y};
-
-			chunkDrawThreads_[started_threads] =
-				std::async(std::launch::async, &Renderer::PrepareChunkRow, this,
-				           std::ref(r_layer_tile), std::ref(world_data),
-				           row_start, chunk_amount.x, layer_index,
-				           tile_offset.x, y * game::Chunk::kChunkWidth + tile_offset.y,
-				           game_tick
-				);
-
-			++started_threads;
-
+		// Wait for started threads to finish before starting new ones
+		if (static_cast<size_t>(started_threads) == drawThreads_) {
+			await_thread_completion();
+			started_threads = 0;
 		}
+
+
+		const auto chunk_y = chunk_start.y + y;
+
+		auto& r_layer_tile = renderLayers_[started_threads];
+		begin_prepare_data(r_layer_tile);
+
+		core::Position2<int> row_start = {chunk_start.x, chunk_y};
+
+		chunkDrawThreads_[started_threads] =
+			std::async(std::launch::async, &Renderer::PrepareChunkRow, this,
+			           std::ref(r_layer_tile), std::ref(world_data),
+			           row_start, chunk_amount.x,
+			           tile_offset.x, y * game::Chunk::kChunkWidth + tile_offset.y,
+			           game_tick
+			);
+
+		++started_threads;
+
 	}
 
 	await_thread_completion();
@@ -249,7 +257,7 @@ core::Position2<int> renderer::Renderer::GetChunkDrawAmount(const int position_x
 }
 
 void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data,
-                                         const core::Position2<int> row_start, const int chunk_span, const int layer_index,
+                                         const core::Position2<int> row_start, const int chunk_span,
                                          const int render_tile_offset_x, const int render_pixel_offset_y,
                                          const GameTickT game_tick) const noexcept {
 
@@ -269,13 +277,12 @@ void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer, const game::Wor
 			             x * game::Chunk::kChunkWidth + render_tile_offset_x,
 			             render_pixel_offset_y
 		             },
-		             layer_index,
 		             game_tick);
 	}
 }
 
 void renderer::Renderer::PrepareChunk(RendererLayer& r_layer, const game::Chunk& chunk,
-                                      const core::Position2<int> render_pixel_offset, const int layer_index,
+                                      const core::Position2<int> render_pixel_offset,
                                       const GameTickT game_tick) const noexcept {
 	// Load chunk into buffer
 	game::ChunkTile* tiles = chunk.Tiles();
@@ -288,50 +295,62 @@ void renderer::Renderer::PrepareChunk(RendererLayer& r_layer, const game::Chunk&
 		for (uint8_t tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
 			const auto pixel_x = static_cast<float>(render_pixel_offset.x + tile_x) * static_cast<float>(tileWidth);
 
-			auto& tile       = tiles[tile_y * game::Chunk::kChunkWidth + tile_x];
-			auto& tile_layer = tile.GetLayer(layer_index);
-
-
-			const auto* proto = tile_layer.GetPrototypeData<data::IPrototypeRenderable>();
-			if (!proto)  // Layer not initialized
-				continue;
-
-			const auto* unique_data = tile_layer.GetMultiTileTopLeft().GetUniqueData<data::PrototypeRenderableData>();
-
-			// Unique data can be nullptr for certain layers
-			const auto sprite_frame = proto->OnRGetSprite(unique_data, game_tick);
-			auto uv                 = spritemapCoords_->at(sprite_frame.first->internalId);
-
-			if (unique_data) {
-				ApplySpriteUvAdjustment(uv, sprite_frame.first->GetCoords(unique_data->set, sprite_frame.second));
-				unique_data->OnDrawUniqueData(r_layer, *spritemapCoords_, pixel_x, pixel_y);
-			}
-
-			if (tile_layer.IsMultiTile())
-				ApplyMultiTileUvAdjustment(uv, tile_layer);
-
-			constexpr float pixel_z = -1.f;
-
-			r_layer.PushBack(
-				RendererLayer::Element(
-					{  // top left of tile, 1 tile over and down
-						{pixel_x, pixel_y, pixel_z},
-						{pixel_x + static_cast<float>(tileWidth), pixel_y + static_cast<float>(tileWidth), pixel_z}
-					},
-					{
-						uv.topLeft,
-						uv.bottomRight
-					}
-				)
+			PrepareTileLayer(r_layer, tiles,
+			                 {tile_x, tile_y}, {pixel_x, pixel_y},
+			                 game_tick
 			);
-
 		}
+	}
+}
+
+void renderer::Renderer::PrepareTileLayer(RendererLayer& r_layer, game::ChunkTile* tiles,
+                                          const core::Position2<uint8_t>& tile_pos, const core::Position2<float>& pixel,
+                                          const GameTickT game_tick) const noexcept {
+	for (int layer_index = 0; layer_index < static_cast<int>(game::ChunkTile::ChunkLayer::count_); ++layer_index) {
+
+		auto& tile       = tiles[tile_pos.y * game::Chunk::kChunkWidth + tile_pos.x];
+		auto& tile_layer = tile.GetLayer(layer_index);
+
+
+		const auto* proto = tile_layer.GetPrototypeData<data::IPrototypeRenderable>();
+		if (!proto)  // Layer not initialized
+			continue;
+
+		const auto* unique_data = tile_layer.GetMultiTileTopLeft().GetUniqueData<data::PrototypeRenderableData>();
+
+		// Unique data can be nullptr for certain layers
+		const auto sprite_frame = proto->OnRGetSprite(unique_data, game_tick);
+		auto uv                 = spritemapCoords_->at(sprite_frame.first->internalId);
+
+		if (unique_data) {
+			ApplySpriteUvAdjustment(uv, sprite_frame.first->GetCoords(unique_data->set, sprite_frame.second));
+			unique_data->OnDrawUniqueData(r_layer, *spritemapCoords_, pixel.x, pixel.y);
+		}
+
+		if (tile_layer.IsMultiTile())
+			ApplyMultiTileUvAdjustment(uv, tile_layer);
+
+		const float pixel_z = 0.f + static_cast<float>(0.01 * layer_index);
+
+		r_layer.PushBack(
+			RendererLayer::Element(
+				{  // top left of tile, 1 tile over and down
+					{pixel.x, pixel.y, pixel_z},
+					{pixel.x + static_cast<float>(tileWidth), pixel.y + static_cast<float>(tileWidth), pixel_z}
+				},
+				{
+					uv.topLeft,
+					uv.bottomRight
+				}
+			)
+		);
+
 	}
 }
 
 
 void renderer::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv,
-												 const UvPositionT& uv_offset) noexcept {
+                                                 const UvPositionT& uv_offset) noexcept {
 	const auto diff_x = uv.bottomRight.x - uv.topLeft.x;
 	const auto diff_y = uv.bottomRight.y - uv.topLeft.y;
 
@@ -347,7 +366,7 @@ void renderer::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv,
 }
 
 void renderer::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv,
-													const game::ChunkTileLayer& tile_layer) noexcept {
+                                                    const game::ChunkTileLayer& tile_layer) noexcept {
 	game::MultiTileData& mt_data = tile_layer.GetMultiTileData();
 
 	// Calculate the correct UV coordinates for multi-tile entities

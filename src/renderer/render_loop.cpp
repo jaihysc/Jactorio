@@ -166,6 +166,7 @@ void renderer::RenderInit() {
 	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
 	main_renderer = new Renderer();
 
+	Renderer::GlSetup();
 	main_renderer->GlSetDrawThreads(8);
 
 	// Terrain

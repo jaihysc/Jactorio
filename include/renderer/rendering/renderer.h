@@ -16,6 +16,7 @@ namespace jactorio::game
 {
 	class WorldData;
 	class Chunk;
+	class ChunkTile;
 }
 
 namespace jactorio::renderer
@@ -24,6 +25,9 @@ namespace jactorio::renderer
 	{
 	public:
 		static constexpr unsigned int tileWidth = 6;
+
+		static constexpr double kDepthBufferNearMax = 1.f;
+		static constexpr double kDepthBufferFarMax  = -1.f;
 
 		Renderer();
 
@@ -37,7 +41,12 @@ namespace jactorio::renderer
 		// ======================================================================
 		// OpenGL calls
 
+		///
+		/// \brief Sets up OpenGl settings, only need to call once on program start
+		static void GlSetup();
+
 		static void GlClear();
+
 		///
 		/// \brief Resizes rendering buffers to new window size 
 		void GlResizeWindow(unsigned int window_x, unsigned int window_y);
@@ -120,23 +129,27 @@ namespace jactorio::renderer
 		///
 		/// \param row_start Chunk coordinate where the row of chunks starts
 		/// \param chunk_span Number of chunks spanned
-		/// \param layer_index Index to ChunkTileLayer 
 		/// \param render_tile_offset_x Offset drawn tiles on screen by this tile amount
 		/// \param render_pixel_offset_y Offset drawn tiles on screen by this pixel amount
 		void PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data,
-		                     core::Position2<int> row_start, int chunk_span, int layer_index,
+		                     core::Position2<int> row_start, int chunk_span,
 		                     int render_tile_offset_x, int render_pixel_offset_y,
 		                     GameTickT game_tick) const noexcept;
 
 		void PrepareChunk(RendererLayer& r_layer, const game::Chunk& chunk,
-		                  core::Position2<int> render_pixel_offset, int layer_index,
+		                  core::Position2<int> render_pixel_offset,
 		                  GameTickT game_tick) const noexcept;
 
+		void PrepareTileLayer(RendererLayer& r_layer,  game::ChunkTile* tiles,
+							  const core::Position2<uint8_t>& tile_pos, const core::Position2<float>& pixel,
+							  GameTickT game_tick) const noexcept;
+
+
 		static void ApplySpriteUvAdjustment(UvPositionT& uv,
-											const UvPositionT& uv_offset) noexcept;
+		                                    const UvPositionT& uv_offset) noexcept;
 
 		static void ApplyMultiTileUvAdjustment(UvPositionT& uv,
-											   const game::ChunkTileLayer& tile_layer) noexcept;
+		                                       const game::ChunkTileLayer& tile_layer) noexcept;
 
 
 		///
