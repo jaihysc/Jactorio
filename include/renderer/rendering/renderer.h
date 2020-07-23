@@ -69,6 +69,19 @@ namespace jactorio::renderer
 		}
 
 		///
+		/// \brief Faster non range checked get into spritemapCoords_
+		/// \remark Ensure key always exists
+		J_NODISCARD const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(const SpriteUvCoordsT::key_type key) const noexcept {
+			try {
+				return const_cast<SpriteUvCoordsT&>(*spritemapCoords_)[key];
+			}
+			catch (std::exception&) {
+				assert(false);  // Should not throw
+				return {{0.f, 0.f}, {0.f, 0.f}};
+			}
+		}
+
+		///
 		/// \param world_data World to render
 		/// \param player_x X Position of the player in tiles
 		/// \param player_y Y Position of the player in tiles
@@ -140,9 +153,12 @@ namespace jactorio::renderer
 		                  core::Position2<int> render_pixel_offset,
 		                  GameTickT game_tick) const noexcept;
 
-		void PrepareTileLayer(RendererLayer& r_layer,  game::ChunkTile* tiles,
-							  const core::Position2<uint8_t>& tile_pos, const core::Position2<float>& pixel,
-							  GameTickT game_tick) const noexcept;
+		void PrepareTileLayers(RendererLayer& r_layer, game::ChunkTile* tiles,
+		                       const core::Position2<uint8_t>& tile_pos, const core::Position2<float>& pixel_pos,
+		                       GameTickT game_tick) const noexcept;
+
+		void PrepareOverlayLayers(RendererLayer& r_layer, const game::Chunk& chunk,
+		                          core::Position2<int> render_pixel_offset) const;
 
 
 		static void ApplySpriteUvAdjustment(UvPositionT& uv,
@@ -150,7 +166,6 @@ namespace jactorio::renderer
 
 		static void ApplyMultiTileUvAdjustment(UvPositionT& uv,
 		                                       const game::ChunkTileLayer& tile_layer) noexcept;
-
 
 		///
 		/// \brief Draws current data to the screen

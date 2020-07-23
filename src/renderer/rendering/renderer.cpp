@@ -295,18 +295,20 @@ void renderer::Renderer::PrepareChunk(RendererLayer& r_layer, const game::Chunk&
 		for (uint8_t tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
 			const auto pixel_x = static_cast<float>(render_pixel_offset.x + tile_x) * static_cast<float>(tileWidth);
 
-			PrepareTileLayer(r_layer, tiles,
-			                 {tile_x, tile_y}, {pixel_x, pixel_y},
-			                 game_tick
+			PrepareTileLayers(r_layer, tiles,
+			                  {tile_x, tile_y}, {pixel_x, pixel_y},
+			                  game_tick
 			);
 		}
 	}
+
+	PrepareOverlayLayers(r_layer, chunk, render_pixel_offset);
 }
 
-void renderer::Renderer::PrepareTileLayer(RendererLayer& r_layer, game::ChunkTile* tiles,
-                                          const core::Position2<uint8_t>& tile_pos, const core::Position2<float>& pixel,
-                                          const GameTickT game_tick) const noexcept {
-	for (int layer_index = 0; layer_index < static_cast<int>(game::ChunkTile::ChunkLayer::count_); ++layer_index) {
+void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, game::ChunkTile* tiles,
+                                           const core::Position2<uint8_t>& tile_pos, const core::Position2<float>& pixel_pos,
+                                           const GameTickT game_tick) const noexcept {
+	for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
 
 		auto& tile       = tiles[tile_pos.y * game::Chunk::kChunkWidth + tile_pos.x];
 		auto& tile_layer = tile.GetLayer(layer_index);
@@ -320,11 +322,11 @@ void renderer::Renderer::PrepareTileLayer(RendererLayer& r_layer, game::ChunkTil
 
 		// Unique data can be nullptr for certain layers
 		const auto sprite_frame = proto->OnRGetSprite(unique_data, game_tick);
-		auto uv                 = spritemapCoords_->at(sprite_frame.first->internalId);
+		auto uv                 = GetSpriteUvCoords(sprite_frame.first->internalId);
 
 		if (unique_data) {
 			ApplySpriteUvAdjustment(uv, sprite_frame.first->GetCoords(unique_data->set, sprite_frame.second));
-			unique_data->OnDrawUniqueData(r_layer, *spritemapCoords_, pixel.x, pixel.y);
+			unique_data->OnDrawUniqueData(r_layer, *spritemapCoords_, pixel_pos.x, pixel_pos.y);
 		}
 
 		if (tile_layer.IsMultiTile())
@@ -335,8 +337,8 @@ void renderer::Renderer::PrepareTileLayer(RendererLayer& r_layer, game::ChunkTil
 		r_layer.PushBack(
 			RendererLayer::Element(
 				{  // top left of tile, 1 tile over and down
-					{pixel.x, pixel.y, pixel_z},
-					{pixel.x + static_cast<float>(tileWidth), pixel.y + static_cast<float>(tileWidth), pixel_z}
+					{pixel_pos.x, pixel_pos.y, pixel_z},
+					{pixel_pos.x + static_cast<float>(tileWidth), pixel_pos.y + static_cast<float>(tileWidth), pixel_z}
 				},
 				{
 					uv.topLeft,
@@ -348,6 +350,42 @@ void renderer::Renderer::PrepareTileLayer(RendererLayer& r_layer, game::ChunkTil
 	}
 }
 
+void renderer::Renderer::PrepareOverlayLayers(RendererLayer& r_layer, const game::Chunk& chunk,
+                                              const core::Position2<int> render_pixel_offset) const {
+
+	for (int layer_index = 0; layer_index < game::kOverlayLayerCount; ++layer_index) {
+		const auto& overlay_container = chunk.overlays[layer_index];
+
+		for (const auto& overlay : overlay_container) {
+			const auto& uv_pos = GetSpriteUvCoords(overlay.sprite->internalId);
+
+			r_layer.PushBack(RendererLayer::Element(
+				{
+					{
+						(render_pixel_offset.x + overlay.position.x)
+						* static_cast<float>(tileWidth),
+
+						(render_pixel_offset.y + overlay.position.y)
+						* static_cast<float>(tileWidth),
+
+						overlay.position.z
+					},
+					{
+						(render_pixel_offset.x + overlay.position.x + overlay.size.x)
+						* static_cast<float>(tileWidth),
+
+						(render_pixel_offset.y + overlay.position.y + overlay.size.y)
+						* static_cast<float>(tileWidth),
+
+						overlay.position.z
+					}
+				},
+				{uv_pos.topLeft, uv_pos.bottomRight}
+			));
+		}
+
+	}
+}
 
 void renderer::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv,
                                                  const UvPositionT& uv_offset) noexcept {
@@ -389,42 +427,6 @@ void renderer::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv,
 	uv.topLeft.y = uv.topLeft.y + len_y * static_cast<float>(mt_data.multiTileHeight - y_multiplier - 1);
 }
 
-
-// void renderer::Renderer::PrepareObjectData(const unsigned layer_index, RendererLayer& layer,
-//                                            const float chunk_y_offset, const float chunk_x_offset,
-//                                            const game::Chunk* const chunk) {
-//
-// 	const auto& objects = chunk->objects[layer_index];
-// 	for (const auto& object_layer : objects) {
-// 		const unsigned int internal_id = object_layer_get_sprite_id_func[layer_index](object_layer);
-//
-// 		// Internal id of 0 indicates no tile
-// 		if (internal_id == 0)
-// 			continue;
-//
-// 		const auto& uv_pos = GetSpritemapCoords(internal_id);
-//
-// 		layer.PushBack(RendererLayer::Element(
-// 			{
-// 				{
-// 					(chunk_x_offset + object_layer.positionX)
-// 					* static_cast<float>(tileWidth),
-//
-// 					(chunk_y_offset + object_layer.positionY)
-// 					* static_cast<float>(tileWidth)
-// 				},
-// 				{
-// 					(chunk_x_offset + object_layer.positionX + object_layer.sizeX)
-// 					* static_cast<float>(tileWidth),
-//
-// 					(chunk_y_offset + object_layer.positionY + object_layer.sizeY)
-// 					* static_cast<float>(tileWidth)
-// 				}
-// 			},
-// 			{uv_pos.topLeft, uv_pos.bottomRight}
-// 		));
-// 	}
-// }
 
 void renderer::Renderer::GlDraw(const uint64_t index_count) noexcept {
 	DEBUG_OPENGL_CALL(

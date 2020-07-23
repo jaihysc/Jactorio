@@ -33,6 +33,10 @@ namespace jactorio::core
 			: Position1<TVal>(), y(0) {
 		}
 
+		Position2(const Position1<TVal>& x, TVal y)
+			: Position1<TVal>(x), y(y) {
+		}
+
 		Position2(TVal x, TVal y)
 			: Position1<TVal>(x), y(y) {
 		}
@@ -47,6 +51,10 @@ namespace jactorio::core
 
 		Position3()
 			: Position2<TVal>(), z(0) {
+		}
+
+		Position3(const Position2<TVal>& xy, TVal z)
+			: Position2<TVal>(xy), z(z) {
 		}
 
 		Position3(TVal x, TVal y, TVal z)
