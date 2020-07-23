@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "jactorio.h"
+#include "core/coordinate_tuple.h"
 #include "core/data_type.h"
 #include "data/prototype/prototype_base.h"
 
@@ -158,7 +159,7 @@ namespace jactorio::data
 		/// \brief Gets OpenGl UV coordinates for region within a sprite, applying a deduction of trim pixels around the border
 		/// \remark Requires width_ and height_ to be initialized
 		/// \return UV coordinates for set, frame within sprite (0, 0) is top left
-		J_NODISCARD core::QuadPosition GetCoords(SetT set, FrameT frame) const;
+		J_NODISCARD UvPositionT GetCoords(SetT set, FrameT frame) const;
 
 		// ======================================================================
 		// Sprite ptr

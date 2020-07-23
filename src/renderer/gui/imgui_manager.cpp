@@ -14,28 +14,30 @@
 #include "data/prototype/entity/entity.h"
 #include "game/event/event.h"
 #include "game/player/player_data.h"
+#include "renderer/display_window.h"
 #include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/gui_menus_debug.h"
 #include "renderer/rendering/renderer.h"
-#include "renderer/display_window.h"
 
 // Inventory
 
-const std::unordered_map<unsigned, jactorio::core::QuadPosition>* sprite_positions = nullptr;
-unsigned int tex_id                                                                = 0;  // Assigned by openGL
+using namespace jactorio;
 
-void jactorio::renderer::SetupCharacterData(RendererSprites& renderer_sprites) {
+const SpriteUvCoordsT* sprite_positions = nullptr;
+unsigned int tex_id = 0;  // Assigned by openGL
+
+void renderer::SetupCharacterData(RendererSprites& renderer_sprites) {
 	sprite_positions = &renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::gui).spritePositions;
 	tex_id           = renderer_sprites.GetTexture(data::Sprite::SpriteGroup::gui)->GetId();
 }
 
-jactorio::renderer::MenuData jactorio::renderer::GetMenuData() {
+renderer::MenuData renderer::GetMenuData() {
 	return {*sprite_positions, tex_id};
 }
 
 
-void jactorio::renderer::Setup(const DisplayWindow& display_window) {
+void renderer::Setup(const DisplayWindow& display_window) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -116,19 +118,19 @@ void jactorio::renderer::Setup(const DisplayWindow& display_window) {
 	LOG_MESSAGE(info, "Imgui initialized");
 }
 
-void DrawMenu(jactorio::renderer::Menu menu,
-              jactorio::game::PlayerData& player_data, const jactorio::data::PrototypeManager& data_manager,
-              jactorio::data::UniqueDataBase* unique_data = nullptr) {
-	auto& gui_menu = jactorio::renderer::menus[static_cast<int>(menu)];
+void DrawMenu(renderer::Menu menu,
+              game::PlayerData& player_data, const data::PrototypeManager& data_manager,
+              data::UniqueDataBase* unique_data = nullptr) {
+	auto& gui_menu = renderer::menus[static_cast<int>(menu)];
 
 	if (gui_menu.visible) {
 		gui_menu.drawPtr(player_data, data_manager, nullptr, unique_data);
 	}
 }
 
-void jactorio::renderer::ImguiDraw(const DisplayWindow& display_window,
-								   game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                                   game::EventData& event) {
+void renderer::ImguiDraw(const DisplayWindow& display_window,
+                         game::PlayerData& player_data, const data::PrototypeManager& data_manager,
+                         game::EventData& event) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame
@@ -182,7 +184,7 @@ void jactorio::renderer::ImguiDraw(const DisplayWindow& display_window,
 
 }
 
-void jactorio::renderer::ImguiTerminate() {
+void renderer::ImguiTerminate() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();

@@ -4,8 +4,11 @@
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
 #pragma once
 
+#include <memory>
+
 #include "jactorio.h"
 
+#include "core/coordinate_tuple.h"
 #include "core/data_type.h"
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/vertex_array.h"
@@ -26,20 +29,36 @@ namespace jactorio::renderer
 		/// When resizing, the amount requested is multiplied by this, reducing future allocations
 		static constexpr double kResizeECapacityMultiplier = 1.25;
 
-		static constexpr int kIndicesPerElement = 8;
-		static constexpr int kBytesPerElement   = kIndicesPerElement * sizeof(float);
+		/// Vertex buffer
+		static constexpr int kVbIndicesPerCoordinate = 3;
+
+		static constexpr int kVbIndicesPerElement = kVbIndicesPerCoordinate * 4;
+		static constexpr int kVbBytesPerElement   = kVbIndicesPerElement * sizeof(float);
+
+		/// Uv buffer
+		static constexpr int kUvIndicesPerCoordinate = 3;
+
+		/// Index buffer
+		static constexpr int kInIndicesPerElement = 6;
+
+
+		// Opengl seems to require the same spans
+		static_assert(kVbIndicesPerCoordinate == kUvIndicesPerCoordinate);
 
 	public:
+		using VertexPositionT = core::QuadPosition<core::Position3<float>>;
+
 		struct Element
 		{
 			Element() = default;
 
-			Element(const core::QuadPosition vertex, const core::QuadPosition uv)
+			Element(const VertexPositionT& vertex,
+					const UvPositionT& uv)
 				: vertex(vertex), uv(uv) {
 			}
 
-			core::QuadPosition vertex;
-			core::QuadPosition uv;
+			VertexPositionT vertex;
+			UvPositionT uv;
 		};
 
 		explicit RendererLayer();
@@ -62,19 +81,21 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Returns current element capacity of buffers
-		J_NODISCARD uint32_t GetCapacity() const noexcept {
-			return eCapacity_;
-		}
+		J_NODISCARD uint32_t GetCapacity() const noexcept;
 
 		///
-		/// \brief Returns count of elements in buffers
-		J_NODISCARD uint32_t GetElementCount() const {
-			return nextElementIndex_;
-		}
+		/// \brief Returns count of elements' index in buffers
+		J_NODISCARD uint64_t GetIndicesCount() const;
 
 		///
 		/// \brief Queues allocation to hold element count
+		/// \remark Performs reserves upon calling GlHandleBufferResize
 		void Reserve(uint32_t count);
+
+		///
+		/// \brief Queues resizing the buffer down to the initial size on upon construction
+		/// \remark Performs reserves upon calling GlHandleBufferResize
+		void ResizeDefault();
 
 		///
 		/// \brief Signal to begin overriding old existing data in buffers 
@@ -105,14 +126,15 @@ namespace jactorio::renderer
 		void GlBindBuffers() const;
 
 	private:
-		// Sets the positions within the buffer, but will not increment next_element_index_;
-		void SetBufferVertex(uint32_t buffer_index, const core::QuadPosition& element) const;
-		void SetBufferUv(uint32_t buffer_index, const core::QuadPosition& element) const;
+		///
+		/// \remark Only element.topLeft.z is used, element.topRight.z is discarded
+		void SetBufferVertex(uint32_t buffer_index, const VertexPositionT& element) const;
+		void SetBufferUv(uint32_t buffer_index, const UvPositionT& element) const;
 
 		///
 		/// \brief Generates indices to draw tiles using the grid from gen_render_grid
 		/// \returns Indices to be feed into Index_buffer
-		static unsigned int* GenRenderGridIndices(uint32_t tile_count);
+		static std::unique_ptr<unsigned int[]> GenRenderGridIndices(uint32_t tile_count);
 
 
 		///

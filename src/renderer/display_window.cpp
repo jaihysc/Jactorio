@@ -11,6 +11,7 @@
 #include "game/input/mouse_selection.h"
 #include "renderer/render_loop.h"
 #include "renderer/gui/imgui_manager.h"
+#include "renderer/opengl/error.h"
 #include "renderer/rendering/renderer.h"
 
 using namespace jactorio;
@@ -120,8 +121,12 @@ int renderer::DisplayWindow::Init(const int width, const int height) {
 	}
 
 	// Enables transparency in textures
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	DEBUG_OPENGL_CALL(glEnable(GL_BLEND));
+	DEBUG_OPENGL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+	// Depth buffer
+	DEBUG_OPENGL_CALL(glEnable(GL_DEPTH_TEST));
+	DEBUG_OPENGL_CALL(glDepthFunc(GL_LEQUAL));  
 
 	glContextActive_ = true;
 	LOG_MESSAGE_F(info, "OpenGL initialized - OpenGL Version: %s", glGetString(GL_VERSION));

@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <map>
-#include <stb/stb_image.h>
 
 #include "core/logger.h"
 #include "data/prototype_manager.h"
@@ -133,7 +132,7 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap
 		[](const Texture::SpriteBufferT* p) { delete [] p; }
 	);
 
-	std::unordered_map<unsigned int, core::QuadPosition> image_positions;
+	SpriteUvCoordsT image_positions;
 
 	GenerateSpritemapOutput(spritemap_buffer, spritemap_x,
 	                        *node_buffer[0], invert_sprites,
@@ -307,7 +306,7 @@ void renderer::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture:
                                                         const SpritemapDimension spritemap_width,
                                                         GeneratorNode& base_node,
                                                         const bool invert_sprites,
-                                                        std::unordered_map<unsigned int, core::QuadPosition>& image_positions,
+														SpriteUvCoordsT& image_positions,
                                                         SpritemapDimension x_offset, const SpritemapDimension y_offset) {
 	auto adjusted_x_offset = x_offset;
 	auto adjusted_y_offset = y_offset;

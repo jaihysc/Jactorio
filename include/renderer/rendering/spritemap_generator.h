@@ -35,7 +35,7 @@ namespace jactorio::renderer
 			// 0 - 1 positions of the sprite within the spritemap
 			// Upper left is 0, 0 - bottom right is 1, 1
 			// std::string is internal name of prototype
-			std::unordered_map<unsigned int, core::QuadPosition> spritePositions;
+			SpriteUvCoordsT spritePositions;
 		};
 
 		// ======================================================================
@@ -152,7 +152,7 @@ namespace jactorio::renderer
 		                                    SpritemapDimension spritemap_width,
 		                                    GeneratorNode& base_node,
 		                                    bool invert_sprites,
-		                                    std::unordered_map<unsigned int, core::QuadPosition>& image_positions,
+											SpriteUvCoordsT& image_positions,
 		                                    SpritemapDimension x_offset, SpritemapDimension y_offset);
 	};
 }

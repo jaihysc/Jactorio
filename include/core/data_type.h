@@ -11,7 +11,11 @@
 
 namespace jactorio::core
 {
-	class QuadPosition;
+	template <typename TVal>
+	struct Position2;
+	
+	template <typename TPosition>
+	struct QuadPosition;
 }
 
 namespace jactorio
@@ -20,7 +24,9 @@ namespace jactorio
 	// Defined here to solve circular includes
 
 	using GameTickT = uint64_t;
-	using SpriteUvCoordsT = const std::unordered_map<unsigned, core::QuadPosition>;
+
+	using UvPositionT = core::QuadPosition<core::Position2<float>>;
+	using SpriteUvCoordsT = std::unordered_map<unsigned int, UvPositionT>;
 
 	constexpr int kGameHertz = 60;  // 60 updates per second
 }
@@ -29,145 +35,6 @@ namespace jactorio::core
 {
 	// Defines standard data pairs for use across this application
 	// This is used for better naming compared to std::pair's .first and .second
-
-	template <typename T>
-	struct Position2
-	{
-		Position2()
-			: x(0), y(0) {
-		}
-
-		Position2(T x, T y)
-			: x(x), y(y) {
-		}
-
-		T x;
-		T y;
-
-		Position2 operator+(const Position2& other) const {
-			Position2 result;
-			result.x = this->x + other.x;
-			result.y = this->y + other.y;
-
-			return result;
-		}
-
-		void operator+=(const Position2& other) {
-			this->x += other.x;
-			this->y += other.y;
-		}
-
-
-		Position2 operator-(const Position2& other) const {
-			Position2 result;
-			result.x = this->x - other.x;
-			result.y = this->y - other.y;
-
-			return result;
-		}
-
-		void operator-=(const Position2& other) {
-			this->x -= other.x;
-			this->y -= other.y;
-		}
-
-
-		Position2 operator*(const Position2& other) const {
-			Position2 result;
-			result.x = this->x * other.x;
-			result.y = this->y * other.y;
-
-			return result;
-		}
-
-		void operator*=(const Position2& other) {
-			this->x *= other.x;
-			this->y *= other.y;
-		}
-
-
-		Position2 operator/(const Position2& other) const {
-			Position2 result;
-			result.x = this->x / other.x;
-			result.y = this->y / other.y;
-
-			return result;
-		}
-
-		void operator/=(const Position2& other) {
-			this->x /= other.x;
-			this->y /= other.y;
-		}
-	};
-
-
-	struct QuadPosition
-	{
-		QuadPosition() = default;
-
-		QuadPosition(const Position2<float> top_left, const Position2<float> bottom_right)
-			: topLeft(top_left), bottomRight(bottom_right) {
-		}
-
-		Position2<float> topLeft;
-		Position2<float> bottomRight;
-
-		QuadPosition operator+(const QuadPosition& other) const {
-			QuadPosition result;
-			result.topLeft     = this->topLeft + other.topLeft;
-			result.bottomRight = this->bottomRight + other.bottomRight;
-
-			return result;
-		}
-
-		void operator+=(const QuadPosition& other) {
-			this->topLeft += other.topLeft;
-			this->bottomRight += other.bottomRight;
-		}
-
-
-		QuadPosition operator-(const QuadPosition& other) const {
-			QuadPosition result;
-			result.topLeft     = this->topLeft - other.topLeft;
-			result.bottomRight = this->bottomRight - other.bottomRight;
-
-			return result;
-		}
-
-		void operator-=(const QuadPosition& other) {
-			this->topLeft -= other.topLeft;
-			this->bottomRight -= other.bottomRight;
-		}
-
-
-		QuadPosition operator*(const QuadPosition& other) const {
-			QuadPosition result;
-			result.topLeft     = this->topLeft * other.topLeft;
-			result.bottomRight = this->bottomRight * other.bottomRight;
-
-			return result;
-		}
-
-		void operator*=(const QuadPosition& other) {
-			this->topLeft *= other.topLeft;
-			this->bottomRight *= other.bottomRight;
-		}
-
-
-		QuadPosition operator/(const QuadPosition& other) const {
-			QuadPosition result;
-			result.topLeft     = this->topLeft / other.topLeft;
-			result.bottomRight = this->bottomRight / other.bottomRight;
-
-			return result;
-		}
-
-		void operator/=(const QuadPosition& other) {
-			this->topLeft /= other.topLeft;
-			this->bottomRight /= other.bottomRight;
-		}
-	};
-
 
 	// =================================================
 	// Defines hash functions for tuples as keys in std::unordered_map

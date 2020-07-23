@@ -37,18 +37,22 @@ renderer::Renderer::Renderer() {
 // ======================================================================
 
 void renderer::Renderer::GlClear() {
-	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+	DEBUG_OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT));
 }
 
 void renderer::Renderer::GlResizeWindow(const unsigned int window_x,
                                         const unsigned int window_y) {
 	// glViewport is critical, changes the size of the rendering area
-	glViewport(0, 0, window_x, window_y);
+	DEBUG_OPENGL_CALL(glViewport(0, 0, window_x, window_y));
 
 	// Initialize fields
 	windowWidth_  = window_x;
 	windowHeight_ = window_y;
 	GlUpdateTileProjectionMatrix();
+
+	for (auto& render_layer : renderLayers_) {
+		render_layer.ResizeDefault();
+	}
 }
 
 void renderer::Renderer::GlSetDrawThreads(const size_t threads) {
@@ -58,42 +62,12 @@ void renderer::Renderer::GlSetDrawThreads(const size_t threads) {
 	chunkDrawThreads_.resize(drawThreads_);
 
 	renderLayers_.clear();  // Opengl probably stores some internal memory addresses, so each layer must be recreated
-	renderLayers_.resize(drawThreads_ * 2);
+	renderLayers_.resize(drawThreads_);
+
+	assert(chunkDrawThreads_.size() == drawThreads_);
+	assert(renderLayers_.size() == drawThreads_);
 }
 
-
-void renderer::Renderer::GlDraw(const unsigned int element_count) noexcept {
-	DEBUG_OPENGL_CALL(
-		// There are 6 indices for each tile
-		glDrawElements(GL_TRIANGLES, element_count * 6, GL_UNSIGNED_INT, nullptr)
-	); // Pointer not needed as buffer is already bound
-}
-
-void renderer::Renderer::GlUpdateTileProjectionMatrix() {
-	const auto max_tile_width = static_cast<float>(tileWidth * 2);
-
-	if (tileProjectionMatrixOffset < max_tile_width)
-		// Prevent zooming out too far
-		tileProjectionMatrixOffset = max_tile_width;
-	else {
-		// Prevent zooming too far in
-		unsigned int smallest_axis;
-		if (windowWidth_ > windowHeight_) {
-			smallest_axis = windowHeight_;
-		}
-		else {
-			smallest_axis = windowWidth_;
-		}
-
-		// Maximum zoom is 30 from center
-		const int max_zoom_offset = 30;
-		if (tileProjectionMatrixOffset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
-			tileProjectionMatrixOffset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
-		}
-	}
-
-	SetgProjectionMatrix(ToProjMatrix(windowWidth_, windowHeight_, tileProjectionMatrixOffset));
-}
 
 // ======================================================================
 
@@ -103,6 +77,7 @@ void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
                                               const float player_x, const float player_y) {
 	assert(spritemapCoords_);
 	assert(drawThreads_ > 0);
+	assert(renderLayers_.size() == drawThreads_);
 
 	EXECUTION_PROFILE_SCOPE(profiler, "World draw");
 
@@ -140,17 +115,15 @@ void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
 		r_layer.GlWriteEnd();
 		r_layer.GlBindBuffers();
 		r_layer.GlHandleBufferResize();
-		GlDraw(r_layer.GetElementCount());
+		GlDraw(r_layer.GetIndicesCount());
 	};
 
 	auto await_thread_completion = [&]() {
 		for (int i = 0; i < started_threads; ++i) {
 			chunkDrawThreads_[i].wait();
 			auto& r_layer_tile   = renderLayers_[i];
-			auto& r_layer_unique = renderLayers_[i + drawThreads_];
 
 			end_prepare_data(r_layer_tile);
-			end_prepare_data(r_layer_unique);
 		}
 	};
 
@@ -168,17 +141,13 @@ void renderer::Renderer::RenderPlayerPosition(const GameTickT game_tick,
 			const auto chunk_y = chunk_start.y + y;
 
 			auto& r_layer_tile   = renderLayers_[started_threads];
-			auto& r_layer_unique = renderLayers_[started_threads + drawThreads_];
-
 			begin_prepare_data(r_layer_tile);
-			begin_prepare_data(r_layer_unique);
 
 			core::Position2<int> row_start = {chunk_start.x, chunk_y};
 
 			chunkDrawThreads_[started_threads] =
 				std::async(std::launch::async, &Renderer::PrepareChunkRow, this,
-				           std::ref(r_layer_tile), std::ref(r_layer_unique),
-				           std::ref(world_data),
+				           std::ref(r_layer_tile), std::ref(world_data),
 				           row_start, chunk_amount.x, layer_index,
 				           tile_offset.x, y * game::Chunk::kChunkWidth + tile_offset.y,
 				           game_tick
@@ -279,10 +248,7 @@ core::Position2<int> renderer::Renderer::GetChunkDrawAmount(const int position_x
 	return {chunk_amount_x, chunk_amount_y};
 }
 
-// ======================================================================
-
-void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer_tile, RendererLayer& r_layer_unique,
-                                         const game::WorldData& world_data,
+void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data,
                                          const core::Position2<int> row_start, const int chunk_span, const int layer_index,
                                          const int render_tile_offset_x, const int render_pixel_offset_y,
                                          const GameTickT game_tick) const noexcept {
@@ -298,8 +264,7 @@ void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer_tile, RendererLa
 			continue;
 		}
 
-		PrepareChunk(r_layer_tile, r_layer_unique,
-		             *chunk,
+		PrepareChunk(r_layer, *chunk,
 		             {
 			             x * game::Chunk::kChunkWidth + render_tile_offset_x,
 			             render_pixel_offset_y
@@ -309,8 +274,7 @@ void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer_tile, RendererLa
 	}
 }
 
-void renderer::Renderer::PrepareChunk(RendererLayer& r_layer_tile, RendererLayer& r_layer_unique,
-                                      const game::Chunk& chunk,
+void renderer::Renderer::PrepareChunk(RendererLayer& r_layer, const game::Chunk& chunk,
                                       const core::Position2<int> render_pixel_offset, const int layer_index,
                                       const GameTickT game_tick) const noexcept {
 	// Load chunk into buffer
@@ -340,18 +304,19 @@ void renderer::Renderer::PrepareChunk(RendererLayer& r_layer_tile, RendererLayer
 
 			if (unique_data) {
 				ApplySpriteUvAdjustment(uv, sprite_frame.first->GetCoords(unique_data->set, sprite_frame.second));
-				unique_data->OnDrawUniqueData(r_layer_unique, *spritemapCoords_, pixel_x, pixel_y);
+				unique_data->OnDrawUniqueData(r_layer, *spritemapCoords_, pixel_x, pixel_y);
 			}
 
 			if (tile_layer.IsMultiTile())
 				ApplyMultiTileUvAdjustment(uv, tile_layer);
 
+			constexpr float pixel_z = -1.f;
 
-			r_layer_tile.PushBack(
+			r_layer.PushBack(
 				RendererLayer::Element(
 					{  // top left of tile, 1 tile over and down
-						{pixel_x, pixel_y},
-						{pixel_x + static_cast<float>(tileWidth), pixel_y + static_cast<float>(tileWidth)}
+						{pixel_x, pixel_y, pixel_z},
+						{pixel_x + static_cast<float>(tileWidth), pixel_y + static_cast<float>(tileWidth), pixel_z}
 					},
 					{
 						uv.topLeft,
@@ -365,18 +330,24 @@ void renderer::Renderer::PrepareChunk(RendererLayer& r_layer_tile, RendererLayer
 }
 
 
-void renderer::Renderer::ApplySpriteUvAdjustment(core::QuadPosition& uv, const core::QuadPosition& uv_offset) noexcept {
-	const auto difference = uv.bottomRight - uv.topLeft;
+void renderer::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv,
+												 const UvPositionT& uv_offset) noexcept {
+	const auto diff_x = uv.bottomRight.x - uv.topLeft.x;
+	const auto diff_y = uv.bottomRight.y - uv.topLeft.y;
 
-	assert(difference.x >= 0);
-	assert(difference.y >= 0);
+	assert(diff_x >= 0);
+	assert(diff_y >= 0);
 
 	// Calculate bottom first since it needs the unmodified top_left
-	uv.bottomRight = uv.topLeft + difference * uv_offset.bottomRight;
-	uv.topLeft += difference * uv_offset.topLeft;
+	uv.bottomRight.x = uv.topLeft.x + diff_x * uv_offset.bottomRight.x;
+	uv.bottomRight.y = uv.topLeft.y + diff_y * uv_offset.bottomRight.y;
+
+	uv.topLeft.x += diff_x * uv_offset.topLeft.x;
+	uv.topLeft.y += diff_y * uv_offset.topLeft.y;
 }
 
-void renderer::Renderer::ApplyMultiTileUvAdjustment(core::QuadPosition& uv, const game::ChunkTileLayer& tile_layer) noexcept {
+void renderer::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv,
+													const game::ChunkTileLayer& tile_layer) noexcept {
 	game::MultiTileData& mt_data = tile_layer.GetMultiTileData();
 
 	// Calculate the correct UV coordinates for multi-tile entities
@@ -435,3 +406,35 @@ void renderer::Renderer::ApplyMultiTileUvAdjustment(core::QuadPosition& uv, cons
 // 		));
 // 	}
 // }
+
+void renderer::Renderer::GlDraw(const uint64_t index_count) noexcept {
+	DEBUG_OPENGL_CALL(
+		glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr)
+	); // Pointer not needed as buffer is already bound
+}
+
+void renderer::Renderer::GlUpdateTileProjectionMatrix() {
+	const auto max_tile_width = static_cast<float>(tileWidth * 2);
+
+	if (tileProjectionMatrixOffset < max_tile_width)
+		// Prevent zooming out too far
+		tileProjectionMatrixOffset = max_tile_width;
+	else {
+		// Prevent zooming too far in
+		unsigned int smallest_axis;
+		if (windowWidth_ > windowHeight_) {
+			smallest_axis = windowHeight_;
+		}
+		else {
+			smallest_axis = windowWidth_;
+		}
+
+		// Maximum zoom is 30 from center
+		const int max_zoom_offset = 30;
+		if (tileProjectionMatrixOffset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
+			tileProjectionMatrixOffset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
+		}
+	}
+
+	SetgProjectionMatrix(ToProjMatrix(windowWidth_, windowHeight_, tileProjectionMatrixOffset));
+}

@@ -20,12 +20,13 @@ namespace jactorio::renderer
 
 	struct MenuData
 	{
-		MenuData(const std::unordered_map<unsigned, core::QuadPosition>& sprite_positions, const unsigned tex_id)
+		MenuData(const SpriteUvCoordsT& sprite_positions,
+				 const unsigned tex_id)
 			: spritePositions(sprite_positions),
 			  texId(tex_id) {
 		}
 
-		const std::unordered_map<unsigned, core::QuadPosition>& spritePositions;
+		const SpriteUvCoordsT& spritePositions;
 		unsigned int texId = 0;  // Assigned by openGL
 	};
 

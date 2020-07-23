@@ -46,20 +46,8 @@ namespace jactorio::renderer
 		J_NODISCARD size_t GetDrawThreads() const noexcept { return drawThreads_; }
 		void GlSetDrawThreads(size_t threads);
 
-	private:
-		///
-		/// \brief Draws current data to the screen
-		/// \param element_count Count of elements to draw (1 element = 6 indices)
-		static void GlDraw(unsigned int element_count) noexcept;
-
-		///
-		/// \brief Updates projection matrix and zoom level
-		void GlUpdateTileProjectionMatrix();
-
-
 		// ======================================================================
 		// Rendering (Recalculated on window resize)
-	public:
 
 		/// Changes zoom 
 		float tileProjectionMatrixOffset = 0;
@@ -67,7 +55,7 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Renderer will lookup uv coords at the provided spritemap_coords
-		void SetSpriteUvCoords(SpriteUvCoordsT& spritemap_coords) noexcept {
+		void SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept {
 			spritemapCoords_ = &spritemap_coords;
 		}
 
@@ -135,25 +123,35 @@ namespace jactorio::renderer
 		/// \param layer_index Index to ChunkTileLayer 
 		/// \param render_tile_offset_x Offset drawn tiles on screen by this tile amount
 		/// \param render_pixel_offset_y Offset drawn tiles on screen by this pixel amount
-		void PrepareChunkRow(RendererLayer& r_layer_tile, RendererLayer& r_layer_unique,
-							 const game::WorldData& world_data,
+		void PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data,
 		                     core::Position2<int> row_start, int chunk_span, int layer_index,
 		                     int render_tile_offset_x, int render_pixel_offset_y,
 		                     GameTickT game_tick) const noexcept;
 
-		void PrepareChunk(RendererLayer& r_layer_tile, RendererLayer& r_layer_unique,
-		                  const game::Chunk& chunk,
+		void PrepareChunk(RendererLayer& r_layer, const game::Chunk& chunk,
 		                  core::Position2<int> render_pixel_offset, int layer_index,
 		                  GameTickT game_tick) const noexcept;
 
-		static void ApplySpriteUvAdjustment(core::QuadPosition& uv, const core::QuadPosition& uv_offset) noexcept;
-		static void ApplyMultiTileUvAdjustment(core::QuadPosition& uv, const game::ChunkTileLayer& tile_layer) noexcept;
+		static void ApplySpriteUvAdjustment(UvPositionT& uv,
+											const UvPositionT& uv_offset) noexcept;
 
+		static void ApplyMultiTileUvAdjustment(UvPositionT& uv,
+											   const game::ChunkTileLayer& tile_layer) noexcept;
+
+
+		///
+		/// \brief Draws current data to the screen
+		/// \param index_count Count of indices to draw
+		static void GlDraw(uint64_t index_count) noexcept;
+
+		///
+		/// \brief Updates projection matrix and zoom level
+		void GlUpdateTileProjectionMatrix();
 
 		// ======================================================================
 
 		/// Internal ids to spritemap positions
-		const std::unordered_map<unsigned int, core::QuadPosition>* spritemapCoords_;
+		const SpriteUvCoordsT* spritemapCoords_;
 
 		static unsigned int windowWidth_;
 		static unsigned int windowHeight_;

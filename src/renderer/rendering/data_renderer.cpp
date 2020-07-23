@@ -64,13 +64,15 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 				{
 					{
 						x_offset + tile_x * static_cast<float>(renderer::Renderer::tileWidth),
-						y_offset + tile_y * static_cast<float>(renderer::Renderer::tileWidth)
+						y_offset + tile_y * static_cast<float>(renderer::Renderer::tileWidth),
+						0
 					},
 					{
 						x_offset +
 						static_cast<float>(tile_x + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
 						y_offset +
-						static_cast<float>(tile_y + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth)
+						static_cast<float>(tile_y + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
+						0
 					},
 				},
 				{uv_pos.topLeft, uv_pos.bottomRight}
