@@ -30,6 +30,19 @@ game::Chunk::ChunkCoord game::WorldData::ToChunkCoord(WorldCoord world_coord) {
 	return chunk_coord;
 }
 
+float game::WorldData::ToOverlayCoord(const WorldCoord world_coord) {
+	WorldCoord val;
+
+	if (world_coord < 0) {
+		val = ((world_coord + 1) % kChunkWidth) + kChunkWidth - 1;
+	}
+	else {
+		val = world_coord % kChunkWidth;
+	}
+
+	return static_cast<float>(val);
+}
+
 game::Chunk* game::WorldData::AddChunk(const Chunk& chunk) {
 	const auto position = chunk.GetPosition();
 

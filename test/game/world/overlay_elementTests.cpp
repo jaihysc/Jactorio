@@ -41,4 +41,19 @@ namespace jactorio::game
 		EXPECT_FLOAT_EQ(o3.size.x, 2);
 		EXPECT_FLOAT_EQ(o3.size.y, 3);
 	}
+
+	TEST(OverlayElement, GetSetZPosition) {
+		data::Sprite sprite{};
+		OverlayElement oe = {sprite, {0.5, 1, 0.f}, {2, 3}};
+
+		EXPECT_FLOAT_EQ(oe.position.z, 0);
+
+		oe.SetZPosition(12);
+		EXPECT_FLOAT_EQ(oe.position.z, 12);
+		
+		oe.SetZPosition(OverlayLayer::general);
+		EXPECT_FLOAT_EQ(oe.position.z, 0.4);
+
+		EXPECT_FLOAT_EQ(oe.ToZPosition(OverlayLayer::general), 0.4);
+	}
 }

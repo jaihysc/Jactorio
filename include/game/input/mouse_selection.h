@@ -4,10 +4,12 @@
 #define JACTORIO_INCLUDE_GAME_INPUT_MOUSE_SELECTION_H
 #pragma once
 
+#include <cstdint>
 #include <utility>
 
 #include "jactorio.h"
 #include "data/prototype/type.h"
+#include "game/world/chunk.h"
 
 namespace jactorio
 {
@@ -29,19 +31,15 @@ namespace jactorio::game
 	/// \brief Handles mouse input and selection
 	class MouseSelection
 	{
+		static constexpr OverlayLayer kCursorOverlayLayer = OverlayLayer::general;
+		
 	public:
 		J_NODISCARD static double GetCursorX();
 		J_NODISCARD static double GetCursorY();
 
 		// ======================================================================
 		// Client only mouse selection (affects only rendering) For Player mouse selection, see player_data
-	private:
-		/// The last tile cannot be stored as a pointer as it can be deleted if the world was regenerated
-		std::pair<int, int> lastTilePos_{0, 0};
-		/// Dimensions of last tile(s), e.g 3 x 4 for a multi tile
-		std::pair<int, int> lastTileDimensions_{1, 1};
 
-	public:
 		///
 		/// \brief Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the cursor
 		void DrawCursorOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager);
@@ -49,9 +47,12 @@ namespace jactorio::game
 		///
 		/// \brief Draws selection box over entity & no item selected. | With item selected: draws ghost of entity
 		void DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
-		                 data::Entity* selected_entity, int world_x, int world_y,
+		                 const data::Entity* selected_entity, int world_x, int world_y,
 		                 data::Orientation
 		                 placement_orientation);
+	private:
+		Chunk::ChunkPair lastChunkPos_  = {0, 0};
+		size_t lastOverlayElementIndex_ = UINT64_MAX;
 	};
 
 	///

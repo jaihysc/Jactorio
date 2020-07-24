@@ -24,6 +24,18 @@ namespace jactorio::game
 		EXPECT_EQ(WorldData::ToChunkCoord(32), 1);
 	}
 
+	TEST_F(WorldDataTest, ToOverlayCoords) {
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(0), 0);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(31), 31);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(32), 0);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(63), 31);
+
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-1), 31);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-32), 0);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-33), 31);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-65), 31);
+	}
+
 	TEST_F(WorldDataTest, WorldAddChunk) {
 		// Chunks initialized with empty tiles
 		const auto chunk = Chunk{5, 1};

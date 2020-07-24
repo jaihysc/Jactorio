@@ -5,11 +5,7 @@
 #pragma once
 
 #include "core/coordinate_tuple.h"
-
-namespace jactorio::data
-{
-	class Sprite;
-}
+#include "data/prototype/sprite.h"
 
 namespace jactorio::game
 {
@@ -77,6 +73,8 @@ namespace jactorio::game
 		// ======================================================================
 
 		const data::Sprite* sprite;
+
+		data::Sprite::SetT spriteSet = 0;
 
 		/// Distance (tiles) from top left of chunk to top left of sprite + z value
 		core::Position3<PositionT> position;

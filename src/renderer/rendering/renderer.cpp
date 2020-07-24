@@ -357,7 +357,9 @@ void renderer::Renderer::PrepareOverlayLayers(RendererLayer& r_layer, const game
 		const auto& overlay_container = chunk.overlays[layer_index];
 
 		for (const auto& overlay : overlay_container) {
-			const auto& uv_pos = GetSpriteUvCoords(overlay.sprite->internalId);
+			auto uv = GetSpriteUvCoords(overlay.sprite->internalId);
+
+			ApplySpriteUvAdjustment(uv, overlay.sprite->GetCoords(overlay.spriteSet, 0));
 
 			r_layer.PushBack(RendererLayer::Element(
 				{
@@ -380,8 +382,9 @@ void renderer::Renderer::PrepareOverlayLayers(RendererLayer& r_layer, const game
 						overlay.position.z
 					}
 				},
-				{uv_pos.topLeft, uv_pos.bottomRight}
+				{uv.topLeft, uv.bottomRight}
 			));
+
 		}
 
 	}
