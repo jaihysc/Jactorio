@@ -4,13 +4,13 @@
 #define JACTORIO_DATA_PROTOTYPE_INTERFACE_ROTATABLE_H
 #pragma once
 
-#include "jactorio.h"
-
-#include <utility>
-
 #include "data/prototype/sprite.h"
 #include "data/prototype/type.h"
-#include "game/world/world_data.h"
+
+namespace jactorio::game
+{
+	class WorldData;
+}
 
 namespace jactorio::data
 {
@@ -38,7 +38,7 @@ namespace jactorio::data
 		/// \brief Maps a placementOrientation to a <set, frame>
 		virtual Sprite::SetT OnRGetSet(Orientation orientation,
 		                               game::WorldData& world_data,
-		                               const game::WorldData::WorldPair& world_coords) const = 0;
+		                               const WorldCoord& world_coords) const = 0;
 	};
 }
 

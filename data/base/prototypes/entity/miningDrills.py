@@ -34,10 +34,12 @@ def createDrill(name, icon, spriteN, spriteE, spriteS, spriteW):
         #     [ ] [ ] [ ]
         #         <D>
         .resourceOutput(j._OutputTile4Way(
-            (1, -1),
-            (3, 1),
-            (1, 3),
-            (-1, 1)
+            (
+                (1, -1),
+                (3, 1),
+                (1, 3),
+                (-1, 1)
+            )
         ))
      )
 

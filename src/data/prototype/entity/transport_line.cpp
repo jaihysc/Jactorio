@@ -58,12 +58,12 @@ void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer, c
 
 data::Sprite::SetT data::TransportLine::OnRGetSet(const Orientation orientation,
                                                   game::WorldData& world_data,
-                                                  const game::WorldData::WorldPair& world_coords) const {
+                                                  const WorldCoord& world_coords) const {
 
-	auto* t_center = GetLineData(world_data, world_coords.first, world_coords.second - 1);
-	auto* c_left   = GetLineData(world_data, world_coords.first - 1, world_coords.second);
-	auto* c_right  = GetLineData(world_data, world_coords.first + 1, world_coords.second);
-	auto* b_center = GetLineData(world_data, world_coords.first, world_coords.second + 1);
+	auto* t_center = GetLineData(world_data, world_coords.x, world_coords.y - 1);
+	auto* c_left   = GetLineData(world_data, world_coords.x - 1, world_coords.y);
+	auto* c_right  = GetLineData(world_data, world_coords.x + 1, world_coords.y);
+	auto* b_center = GetLineData(world_data, world_coords.x, world_coords.y + 1);
 
 	return static_cast<uint16_t>(GetLineOrientation(orientation, t_center, c_right, b_center, c_left));
 }
@@ -145,8 +145,8 @@ data::TransportLineData::LineOrientation data::TransportLine::GetLineOrientation
 #undef NEIGHBOR_VALID
 
 data::TransportLineData* data::TransportLine::GetLineData(const game::WorldData& world_data,
-                                                          const game::WorldData::WorldCoord world_x,
-                                                          const game::WorldData::WorldCoord world_y) {
+                                                          const WorldCoordAxis world_x,
+                                                          const WorldCoordAxis world_y) {
 	const auto* tile = world_data.GetTile(world_x, world_y);
 	if (!tile)  // No tile exists
 		return nullptr;
@@ -161,8 +161,8 @@ data::TransportLineData* data::TransportLine::GetLineData(const game::WorldData&
 }
 
 std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegment(game::WorldData& world_data,
-                                                                                  const game::WorldData::WorldCoord world_x,
-                                                                                  const game::WorldData::WorldCoord world_y) {
+                                                                                  const WorldCoordAxis world_x,
+                                                                                  const WorldCoordAxis world_y) {
 	auto* tile = world_data.GetTile(world_x, world_y);
 	if (tile) {
 		auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
@@ -177,7 +177,7 @@ std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegmen
 }
 
 void RemoveFromLogic(game::WorldData& world_data,
-                     const game::WorldData::WorldPair& world_coords, game::TransportSegment& line_segment) {
+                     const WorldCoord& world_coords, game::TransportSegment& line_segment) {
 	world_data.LogicRemove(
 		game::Chunk::LogicGroup::transport_line,
 		world_coords,
@@ -232,7 +232,7 @@ void ShiftSegmentHead(game::TransportSegment& line_segment) {
 /// all tiles set to reference this
 /// \param offset Offsets segment id numbering, world_coords must be also adjusted to the appropriate offset when calling
 void UpdateSegmentTiles(const game::WorldData& world_data,
-                        const game::WorldData::WorldPair& world_coords,
+                        const WorldCoord& world_coords,
                         const std::shared_ptr<game::TransportSegment>& line_segment,
                         const int offset = 0) {
 	uint64_t x_offset = 0;
@@ -246,8 +246,8 @@ void UpdateSegmentTiles(const game::WorldData& world_data,
 	// Adjust the segment index number of all following segments 
 	for (int i = offset; i < line_segment->length; ++i) {
 		auto* i_line_data = data::TransportLine::GetLineData(world_data,
-		                                                     world_coords.first + x_offset,
-		                                                     world_coords.second + y_offset);
+		                                                     world_coords.x + x_offset,
+		                                                     world_coords.y + y_offset);
 		if (!i_line_data)
 			continue;
 		i_line_data->lineSegmentIndex = i;
@@ -261,7 +261,7 @@ void UpdateSegmentTiles(const game::WorldData& world_data,
 ///
 ///	\brief Updates the orientation of current and neighboring transport lines 
 void UpdateNeighborOrientation(const game::WorldData& world_data,
-                               const game::WorldData::WorldPair& world_coords,
+                               const WorldCoord& world_coords,
                                LineData4Way line_data_4,
                                data::TransportLineData* center) {
 	// Building a belt will update all neighboring belts (X), which thus requires tiles (*)
@@ -278,16 +278,16 @@ void UpdateNeighborOrientation(const game::WorldData& world_data,
 	 *     |*|        Bottom
 	 *     ---
 	 */
-	auto* top    = data::TransportLine::GetLineData(world_data, world_coords.first, world_coords.second - 2);
-	auto* right  = data::TransportLine::GetLineData(world_data, world_coords.first + 2, world_coords.second);
-	auto* bottom = data::TransportLine::GetLineData(world_data, world_coords.first, world_coords.second + 2);
-	auto* left   = data::TransportLine::GetLineData(world_data, world_coords.first - 2, world_coords.second);
+	auto* top    = data::TransportLine::GetLineData(world_data, world_coords.x, world_coords.y - 2);
+	auto* right  = data::TransportLine::GetLineData(world_data, world_coords.x + 2, world_coords.y);
+	auto* bottom = data::TransportLine::GetLineData(world_data, world_coords.x, world_coords.y + 2);
+	auto* left   = data::TransportLine::GetLineData(world_data, world_coords.x - 2, world_coords.y);
 
-	auto* t_left  = data::TransportLine::GetLineData(world_data, world_coords.first - 1, world_coords.second - 1);
-	auto* t_right = data::TransportLine::GetLineData(world_data, world_coords.first + 1, world_coords.second - 1);
+	auto* t_left  = data::TransportLine::GetLineData(world_data, world_coords.x - 1, world_coords.y - 1);
+	auto* t_right = data::TransportLine::GetLineData(world_data, world_coords.x + 1, world_coords.y - 1);
 
-	auto* b_left  = data::TransportLine::GetLineData(world_data, world_coords.first - 1, world_coords.second + 1);
-	auto* b_right = data::TransportLine::GetLineData(world_data, world_coords.first + 1, world_coords.second + 1);
+	auto* b_left  = data::TransportLine::GetLineData(world_data, world_coords.x - 1, world_coords.y + 1);
+	auto* b_right = data::TransportLine::GetLineData(world_data, world_coords.x + 1, world_coords.y + 1);
 
 	// Top neighbor
 	if (line_data_4[0])
@@ -325,8 +325,8 @@ void UpdateNeighborOrientation(const game::WorldData& world_data,
 /// \remark This does not move across logic chunks and may make the position negative
 template <bool IsNeighborUpdate>
 void UpdateNeighborTermination(game::WorldData& world_data,
-                               const game::WorldData::WorldCoord world_x,
-                               const game::WorldData::WorldCoord world_y,
+                               const WorldCoordAxis world_x,
+                               const WorldCoordAxis world_y,
                                const data::TransportLineData::LineOrientation line_orientation) {
 
 	auto bend_update = [](game::WorldData& world_data,
@@ -517,7 +517,7 @@ template <data::Orientation Orientation,
           data::TransportLineData::LineOrientation RightOnly>
 void UpdateSegmentProps(data::TransportLineData* line_data,
                         game::WorldData& world_data,
-                        const game::WorldData::WorldPair& world_coords,
+                        const WorldCoord& world_coords,
                         const std::shared_ptr<game::TransportSegment>& line_segment) {
 	using namespace jactorio;
 
@@ -543,19 +543,19 @@ void UpdateSegmentProps(data::TransportLineData* line_data,
 
 		if constexpr (Orientation == data::Orientation::up) {
 			LEFT_ONLY_CHANGE_TERMINATION_TYPE
-				world_data, world_coords.first, world_coords.second - 2);
+				world_data, world_coords.x, world_coords.y - 2);
 		}
 		else if constexpr (Orientation == data::Orientation::right) {
 			LEFT_ONLY_CHANGE_TERMINATION_TYPE
-				world_data, world_coords.first + 2, world_coords.second);
+				world_data, world_coords.x + 2, world_coords.y);
 		}
 		else if constexpr (Orientation == data::Orientation::down) {
 			LEFT_ONLY_CHANGE_TERMINATION_TYPE
-				world_data, world_coords.first, world_coords.second + 2);
+				world_data, world_coords.x, world_coords.y + 2);
 		}
 		else if constexpr (Orientation == data::Orientation::left) {
 			LEFT_ONLY_CHANGE_TERMINATION_TYPE
-				world_data, world_coords.first - 2, world_coords.second);
+				world_data, world_coords.x - 2, world_coords.y);
 		}
 
 #undef LEFT_ONLY_CHANGE_TERMINATION_TYPE
@@ -571,19 +571,19 @@ void UpdateSegmentProps(data::TransportLineData* line_data,
 		// Check 2 units up and see if there is segment bending left, if so change it to straight
 		if constexpr (Orientation == data::Orientation::up) {
 			RIGHT_ONLY_CHANGE_TERMINATION_TYPE
-				world_data, world_coords.first, world_coords.second - 2);
+				world_data, world_coords.x, world_coords.y - 2);
 		}
 		else if constexpr (Orientation == data::Orientation::right) {
 			RIGHT_ONLY_CHANGE_TERMINATION_TYPE
-				world_data, world_coords.first + 2, world_coords.second);
+				world_data, world_coords.x + 2, world_coords.y);
 		}
 		else if constexpr (Orientation == data::Orientation::down) {
 			RIGHT_ONLY_CHANGE_TERMINATION_TYPE
-				world_data, world_coords.first, world_coords.second + 2);
+				world_data, world_coords.x, world_coords.y + 2);
 		}
 		else if constexpr (Orientation == data::Orientation::left) {
 			RIGHT_ONLY_CHANGE_TERMINATION_TYPE
-				world_data, world_coords.first - 2, world_coords.second);
+				world_data, world_coords.x - 2, world_coords.y);
 		}
 
 #undef RIGHT_ONLY_CHANGE_TERMINATION_TYPE
@@ -602,7 +602,7 @@ void UpdateSegmentProps(data::TransportLineData* line_data,
 ///
 /// \brief Change current line segment termination type to a bend depending on neighbor termination orientation
 void UpdateTermination(game::WorldData& world_data,
-                       const game::WorldData::WorldPair& world_coords,
+                       const WorldCoord& world_coords,
                        LineData4Way& line_data,
                        const std::shared_ptr<game::TransportSegment>& line_segment) {
 	switch (line_segment->direction) {
@@ -650,7 +650,7 @@ void UpdateTermination(game::WorldData& world_data,
 /// Sets the transport segment grouped / newly created with in tile_layer and returns it
 /// \return Created data for at tile_layer, was a new transport segment created
 data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
-                                              const game::WorldData::WorldPair& world_coords,
+                                              const WorldCoord& world_coords,
                                               const data::Orientation orientation,
                                               game::ChunkTileLayer& tile_layer,
                                               LineData4Way& line_data) {
@@ -672,7 +672,7 @@ data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
 
 	static_assert(static_cast<int>(data::Orientation::left) == 3);  // Indexing line_data will be out of range 
 
-	auto& origin_chunk = *world_data.GetChunk(world_coords);
+	auto& origin_chunk = *world_data.GetChunkW(world_coords);
 
 	std::shared_ptr<game::TransportSegment> line_segment;
 	int line_segment_index = 0;
@@ -696,12 +696,12 @@ data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
 			line_data[i_index]->lineSegment->direction == orientation) {
 			// Group behind
 
-			game::WorldData::WorldPair behind_coords = world_coords;
-			OrientationIncrement(orientation, behind_coords.first, behind_coords.second, -1);
+			WorldCoord behind_coords = world_coords;
+			OrientationIncrement(orientation, behind_coords.x, behind_coords.y, -1);
 
 			// Within the same logic chunk = Can group behind
 			status = InitSegmentStatus::group_behind;
-			if (&origin_chunk != world_data.GetChunk(behind_coords)) {
+			if (&origin_chunk != world_data.GetChunkW(behind_coords)) {
 				// Different memory addresses = different logic chunks
 				status = InitSegmentStatus::new_segment;
 			}
@@ -710,11 +710,11 @@ data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
 	else {
 		// Group ahead
 
-		game::WorldData::WorldPair ahead_coords = world_coords;
-		OrientationIncrement(orientation, ahead_coords.first, ahead_coords.second, 1);
+		WorldCoord ahead_coords = world_coords;
+		OrientationIncrement(orientation, ahead_coords.x, ahead_coords.y, 1);
 
 		status = InitSegmentStatus::group_ahead;
-		if (&origin_chunk != world_data.GetChunk(ahead_coords)) {
+		if (&origin_chunk != world_data.GetChunkW(ahead_coords)) {
 			// Different memory addresses = different logic chunks
 			status = InitSegmentStatus::new_segment;
 		}
@@ -775,12 +775,12 @@ data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
 
 void data::TransportLine::OnBuild(game::WorldData& world_data,
                                   game::LogicData& logic_data,
-                                  const game::WorldData::WorldPair& world_coords,
+                                  const WorldCoord& world_coords,
                                   game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
-	auto* up    = GetLineData(world_data, world_coords.first, world_coords.second - 1);
-	auto* right = GetLineData(world_data, world_coords.first + 1, world_coords.second);
-	auto* down  = GetLineData(world_data, world_coords.first, world_coords.second + 1);
-	auto* left  = GetLineData(world_data, world_coords.first - 1, world_coords.second);
+	auto* up    = GetLineData(world_data, world_coords.x, world_coords.y - 1);
+	auto* right = GetLineData(world_data, world_coords.x + 1, world_coords.y);
+	auto* down  = GetLineData(world_data, world_coords.x, world_coords.y + 1);
+	auto* left  = GetLineData(world_data, world_coords.x - 1, world_coords.y);
 	TransportLineData* line_data_4[4]{up, right, down, left};
 
 	// ======================================================================
@@ -808,7 +808,7 @@ void data::TransportLine::OnBuild(game::WorldData& world_data,
 
 	// Updates the termination type and length of neighboring lines
 	UpdateNeighborTermination<false>(world_data,
-	                                 world_coords.first, world_coords.second,
+	                                 world_coords.x, world_coords.y,
 	                                 line_orientation);
 
 	// ======================================================================
@@ -817,23 +817,23 @@ void data::TransportLine::OnBuild(game::WorldData& world_data,
 		UpdateLineTargets<Orientation::up, Orientation::down>(
 			world_data, line_data,
 			orientation,
-			world_coords.first, world_coords.second - 1);
+			world_coords.x, world_coords.y - 1);
 	if (right)
 		UpdateLineTargets<Orientation::right, Orientation::left>(
 			world_data, line_data,
 			orientation,
-			world_coords.first + 1, world_coords.second);
+			world_coords.x + 1, world_coords.y);
 	if (down)
 		UpdateLineTargets<Orientation::down, Orientation::up>(
 			world_data, line_data,
 			orientation,
-			world_coords.first, world_coords.second + 1
+			world_coords.x, world_coords.y + 1
 		);
 	if (left)
 		UpdateLineTargets<Orientation::left, Orientation::right>(
 			world_data, line_data,
 			orientation,
-			world_coords.first - 1, world_coords.second
+			world_coords.x - 1, world_coords.y
 		);
 }
 
@@ -857,12 +857,12 @@ void data::TransportLine::OnBuild(game::WorldData& world_data,
 // Neighbor update
 void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
                                            game::LogicData& logic_data,
-                                           const game::WorldData::WorldPair& /*emit_world_coords*/,
-                                           const game::WorldData::WorldPair& receive_world_coords,
+                                           const WorldCoord& /*emit_world_coords*/,
+                                           const WorldCoord& receive_world_coords,
                                            Orientation /*emit_orientation*/) const {
 	// Run stuff here that on_build and on_remove both calls
 
-	auto* line_data = GetLineData(world_data, receive_world_coords.first, receive_world_coords.second);
+	auto* line_data = GetLineData(world_data, receive_world_coords.x, receive_world_coords.y);
 	if (!line_data)  // Transport line does not exist here
 		return;
 
@@ -873,7 +873,7 @@ void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
 	line_data->lineSegment->right.index = 0;
 
 	UpdateNeighborTermination<true>(world_data,
-	                                receive_world_coords.first, receive_world_coords.second,
+	                                receive_world_coords.x, receive_world_coords.y,
 	                                line_data->orientation);
 }
 
@@ -902,7 +902,7 @@ void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
 /// \param line_data Neighboring line segment
 /// \param target Removed line segment
 void DisconnectTargetSegment(game::WorldData& world_data,
-                             const game::WorldData::WorldPair& world_coords,
+                             const WorldCoord& world_coords,
                              data::TransportLineData* target,
                              data::TransportLineData* line_data) {
 
@@ -912,7 +912,7 @@ void DisconnectTargetSegment(game::WorldData& world_data,
 		const std::shared_ptr<game::TransportSegment>& line_segment = line_data->lineSegment;
 		line_segment->targetSegment                                 = nullptr;
 
-		game::WorldData::WorldPair neighbor_world_coords = world_coords;
+		WorldCoord neighbor_world_coords = world_coords;
 
 		// If bends / side only, set to straight & decrement length	
 		switch (line_segment->terminationType) {
@@ -925,7 +925,7 @@ void DisconnectTargetSegment(game::WorldData& world_data,
 
 			// Move the neighboring line segments back if they are not straight
 			OrientationIncrement(line_segment->direction,
-			                     neighbor_world_coords.first, neighbor_world_coords.second, -1.f);
+			                     neighbor_world_coords.x, neighbor_world_coords.y, -1.f);
 
 			// Renumber from index 0
 			UpdateSegmentTiles(world_data, neighbor_world_coords, line_segment);
@@ -938,17 +938,17 @@ void DisconnectTargetSegment(game::WorldData& world_data,
 	}
 }
 
-double ToChunkOffset(const game::WorldData::WorldCoord world_coord) {
+double ToChunkOffset(const WorldCoordAxis world_coord) {
 	return fabs(game::WorldData::ToChunkCoord(world_coord) * game::Chunk::kChunkWidth - world_coord);
 }
 
 void data::TransportLine::OnRemove(game::WorldData& world_data,
                                    game::LogicData& logic_data,
-                                   const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const {
-	auto* up    = GetLineData(world_data, world_coords.first, world_coords.second - 1);
-	auto* right = GetLineData(world_data, world_coords.first + 1, world_coords.second);
-	auto* down  = GetLineData(world_data, world_coords.first, world_coords.second + 1);
-	auto* left  = GetLineData(world_data, world_coords.first - 1, world_coords.second);
+                                   const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const {
+	auto* up    = GetLineData(world_data, world_coords.x, world_coords.y - 1);
+	auto* right = GetLineData(world_data, world_coords.x + 1, world_coords.y);
+	auto* down  = GetLineData(world_data, world_coords.x, world_coords.y + 1);
+	auto* left  = GetLineData(world_data, world_coords.x - 1, world_coords.y);
 	TransportLineData* line_data_4[4]{up, right, down, left};
 
 	UpdateNeighborOrientation(world_data, world_coords, line_data_4, nullptr);
@@ -961,7 +961,7 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 	DisconnectTargetSegment(world_data, world_coords, line_data, down);
 	DisconnectTargetSegment(world_data, world_coords, line_data, left);
 
-	auto& chunk = *world_data.GetChunk(world_coords);
+	auto& chunk = *world_data.GetChunkW(world_coords);
 
 	// o_ = old
 	// n_ = new
@@ -972,7 +972,7 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 	auto n_seg_coords = world_coords;
 
 	OrientationIncrement(o_line_segment->direction,
-	                     n_seg_coords.first, n_seg_coords.second, -1);
+	                     n_seg_coords.x, n_seg_coords.y, -1);
 
 	// Create new segment at behind cords if not the end of a segment
 	const auto n_seg_length = o_line_segment->length - o_line_data.lineSegmentIndex - 1;
@@ -1009,16 +1009,16 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 			bool valid_neighbor   = false;  // Neighbor must be BEHIND the segment which was removed
 			switch (o_line_segment->direction) {
 			case Orientation::up:
-				valid_neighbor = position_y > ToChunkOffset(world_coords.second);
+				valid_neighbor = position_y > ToChunkOffset(world_coords.y);
 				break;
 			case Orientation::right:
-				valid_neighbor = position_x < ToChunkOffset(world_coords.first);
+				valid_neighbor = position_x < ToChunkOffset(world_coords.x);
 				break;
 			case Orientation::down:
-				valid_neighbor = position_y < ToChunkOffset(world_coords.second);
+				valid_neighbor = position_y < ToChunkOffset(world_coords.y);
 				break;
 			case Orientation::left:
-				valid_neighbor = position_x > ToChunkOffset(world_coords.first);
+				valid_neighbor = position_x > ToChunkOffset(world_coords.x);
 				break;
 
 			default:

@@ -181,7 +181,7 @@ void game::InitLogicLoop() {
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
 		game_data->player.TryPlaceEntity(game_data->world, game_data->logic,
-		                                 tile_selected.first, tile_selected.second);
+		                                 tile_selected.x, tile_selected.y);
 	}, MouseInput::left, InputAction::key_held);
 
 	game_data->input.key.Register([]() {
@@ -199,7 +199,7 @@ void game::InitLogicLoop() {
 
 		const auto tile_selected = game_data->player.GetMouseTileCoords();
 		game_data->player.TryPickup(game_data->world, game_data->logic,
-		                            tile_selected.first, tile_selected.second);
+		                            tile_selected.x, tile_selected.y);
 	}, MouseInput::right, InputAction::key_held);
 
 

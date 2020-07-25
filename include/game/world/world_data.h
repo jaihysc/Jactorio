@@ -51,20 +51,17 @@ namespace jactorio::game
 		                   core::hash<std::tuple<Chunk::ChunkCoord, Chunk::ChunkCoord>>> worldChunks_;
 
 	public:
-		using WorldCoord = int32_t;  // Single world coordinates
-		using WorldPair = std::pair<WorldCoord, WorldCoord>;  // Ordered pair of location in the world
-
 		static constexpr uint8_t kChunkWidth = 32;
 
 		mutable std::mutex worldDataMutex{};  // Held by the thread which is currently operating on a chunk
 
 		///
 		/// \brief Converts world coordinate to chunk coordinate
-		static Chunk::ChunkCoord ToChunkCoord(WorldCoord world_coord);
+		static Chunk::ChunkCoord ToChunkCoord(WorldCoordAxis world_coord);
 
 		///
 		/// \brief Converts world coordinate to overlay element coordinates
-		static float ToOverlayCoord(WorldCoord world_coord);  // TODO type alias
+		static float ToOverlayCoord(WorldCoordAxis world_coord);  // TODO type alias
 
 
 		// World access
@@ -124,46 +121,46 @@ namespace jactorio::game
 		///
 		/// Gets the chunk at the specified world coordinate
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* GetChunk(WorldCoord world_x, WorldCoord world_y);
+		J_NODISCARD Chunk* GetChunkW(WorldCoordAxis world_x, WorldCoordAxis world_y);
 
 		///
 		/// Gets the chunk at the specified world coordinate
 		/// \return nullptr if no chunk exists
-		J_NODISCARD const Chunk* GetChunk(WorldCoord world_x, WorldCoord world_y) const;
+		J_NODISCARD const Chunk* GetChunkW(WorldCoordAxis world_x, WorldCoordAxis world_y) const;
 
 
 		///
 		/// Gets the chunk at the specified world coordinate
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* GetChunk(const WorldPair& world_pair);
+		J_NODISCARD Chunk* GetChunkW(const WorldCoord& world_pair);
 
 		///
 		/// Gets the chunk at the specified world coordinate
 		/// \return nullptr if no chunk exists
-		J_NODISCARD const Chunk* GetChunk(const WorldPair& world_pair) const;
+		J_NODISCARD const Chunk* GetChunkW(const WorldCoord& world_pair) const;
 
 		// ======================================================================
 
 		///
 		/// \brief Gets the tile at the specified world coordinate
 		/// \return nullptr if no tile exists
-		J_NODISCARD ChunkTile* GetTile(WorldCoord world_x, WorldCoord world_y);
+		J_NODISCARD ChunkTile* GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y);
 
 		///
 		/// \brief Gets the tile at the specified world coordinate
 		/// \return nullptr if no tile exists
-		J_NODISCARD const ChunkTile* GetTile(WorldCoord world_x, WorldCoord world_y) const;
+		J_NODISCARD const ChunkTile* GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y) const;
 
 
 		///
 		/// \brief Gets the tile at the specified world coordinate
 		/// \return nullptr if no tile exists
-		J_NODISCARD ChunkTile* GetTile(const WorldPair& world_pair);
+		J_NODISCARD ChunkTile* GetTile(const WorldCoord& world_pair);
 
 		///
 		/// \brief Gets the tile at the specified world coordinate
 		/// \return nullptr if no tile exists
-		J_NODISCARD const ChunkTile* GetTile(const WorldPair& world_pair) const;
+		J_NODISCARD const ChunkTile* GetTile(const WorldCoord& world_pair) const;
 
 
 		// ==============================================================
@@ -177,17 +174,17 @@ namespace jactorio::game
 
 		///
 		/// \brief Adds a layer at coordinates to be considered for logic updates
-		void LogicRegister(Chunk::LogicGroup group, const WorldPair& world_pair, ChunkTile::ChunkLayer layer);
+		void LogicRegister(Chunk::LogicGroup group, const WorldCoord& world_pair, ChunkTile::ChunkLayer layer);
 
 		///
 		/// \brief Removes a layer at coordinates to be considered for logic updates
 		/// w/ custom comparison func to remove
-		void LogicRemove(Chunk::LogicGroup group, const WorldPair& world_pair,
+		void LogicRemove(Chunk::LogicGroup group, const WorldCoord& world_pair,
 		                 const std::function<bool(ChunkTileLayer*)>& pred);
 
 		///
 		/// \brief Removes a layer at coordinates to be considered for logic updates
-		void LogicRemove(Chunk::LogicGroup group, const WorldPair& world_pair, ChunkTile::ChunkLayer layer);
+		void LogicRemove(Chunk::LogicGroup group, const WorldCoord& world_pair, ChunkTile::ChunkLayer layer);
 
 
 		///
@@ -234,16 +231,16 @@ namespace jactorio::game
 		class UpdateDispatcher
 		{
 			using CallbackT = const data::IUpdateListener*;
-			using CollectionT = std::vector<std::pair<WorldPair, CallbackT>>;
+			using CollectionT = std::vector<std::pair<WorldCoord, CallbackT>>;
 
-			using ContainerKeyT = std::tuple<WorldCoord, WorldCoord>;
+			using ContainerKeyT = std::tuple<WorldCoordAxis, WorldCoordAxis>;
 			using ContainerT = std::unordered_map<ContainerKeyT, CollectionT, core::hash<ContainerKeyT>>;
 
 			ContainerT container_;
 
 		public:
 			/// Current world coord, Registered world coord 
-			using ListenerEntry = std::pair<WorldPair, WorldPair>;
+			using ListenerEntry = std::pair<WorldCoord, WorldCoord>;
 
 			explicit UpdateDispatcher(WorldData& world_data)
 				: worldData_(world_data) {
@@ -251,13 +248,13 @@ namespace jactorio::game
 
 			///
 			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
-			ListenerEntry Register(WorldCoord current_world_x, WorldCoord current_world_y,
-			                       WorldCoord target_world_x, WorldCoord target_world_y,
+			ListenerEntry Register(WorldCoordAxis current_world_x, WorldCoordAxis current_world_y,
+			                       WorldCoordAxis target_world_x, WorldCoordAxis target_world_y,
 			                       const data::IUpdateListener& proto_listener);
 
 			///
 			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
-			ListenerEntry Register(const WorldPair& current_coords, const WorldPair& target_coords,
+			ListenerEntry Register(const WorldCoord& current_coords, const WorldCoord& target_coords,
 			                       const data::IUpdateListener& proto_listener);
 
 			///
@@ -265,8 +262,8 @@ namespace jactorio::game
 			/// \return true if succeeded, false if failed
 			bool Unregister(const ListenerEntry& entry);
 
-			void Dispatch(WorldCoord world_x, WorldCoord world_y, data::UpdateType type);
-			void Dispatch(const WorldPair& world_pair, data::UpdateType type);
+			void Dispatch(WorldCoordAxis world_x, WorldCoordAxis world_y, data::UpdateType type);
+			void Dispatch(const WorldCoord& world_pair, data::UpdateType type);
 
 		private:
 			WorldData& worldData_;

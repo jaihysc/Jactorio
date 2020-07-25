@@ -392,39 +392,39 @@ namespace jactorio::game
 
 		mutable bool onCanBuildReturn = true;
 
-		mutable std::vector<std::pair<WorldData::WorldCoord, WorldData::WorldCoord>> emitCoords;
-		mutable std::vector<std::pair<WorldData::WorldCoord, WorldData::WorldCoord>> receiveCoords;
+		mutable std::vector<WorldCoord> emitCoords;
+		mutable std::vector<WorldCoord> receiveCoords;
 
 		J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
 		                                         WorldData&,
-		                                         const WorldData::WorldPair&) const override {
+		                                         const WorldCoord&) const override {
 			return 0;
 		}
 
 		void OnBuild(WorldData&,
 		             LogicData&,
-		             const WorldData::WorldPair&,
+		             const WorldCoord&,
 		             ChunkTileLayer&, data::Orientation) const override {
 			buildCalled = true;
 		}
 
 		void OnRemove(WorldData&,
 		              LogicData&,
-		              const WorldData::WorldPair&, ChunkTileLayer&) const override {
+		              const WorldCoord&, ChunkTileLayer&) const override {
 			removeCalled = true;
 		}
 
 
 		J_NODISCARD bool OnCanBuild(const WorldData&,
-		                            const WorldData::WorldPair&) const override {
+		                            const WorldCoord&) const override {
 			return onCanBuildReturn;
 		}
 
 
 		void OnNeighborUpdate(WorldData&,
 		                      LogicData&,
-		                      const WorldData::WorldPair& emit_world_coords,
-		                      const WorldData::WorldPair& receive_world_coords, data::Orientation) const override {
+		                      const WorldCoord& emit_world_coords,
+		                      const WorldCoord& receive_world_coords, data::Orientation) const override {
 			emitCoords.push_back(emit_world_coords);
 			receiveCoords.push_back(receive_world_coords);
 		}
@@ -434,13 +434,13 @@ namespace jactorio::game
 		class MockUpdateListener : public data::IUpdateListener
 		{
 		public:
-			mutable WorldData::WorldPair emit;
-			mutable WorldData::WorldPair receive;
+			mutable WorldCoord emit;
+			mutable WorldCoord receive;
 			mutable data::UpdateType type = data::UpdateType::remove;
 
 			void OnTileUpdate(WorldData&,
-			                  const WorldData::WorldPair& emit_coords,
-			                  const WorldData::WorldPair& receive_coords,
+			                  const WorldCoord& emit_coords,
+			                  const WorldCoord& receive_coords,
 			                  const data::UpdateType type) const override {
 				emit       = emit_coords;
 				receive    = receive_coords;
@@ -476,11 +476,11 @@ namespace jactorio::game
 		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);
 
 		EXPECT_TRUE(entity.buildCalled);
-		EXPECT_EQ(mock_listener.emit.first, 0);
-		EXPECT_EQ(mock_listener.emit.second, 0);
+		EXPECT_EQ(mock_listener.emit.x, 0);
+		EXPECT_EQ(mock_listener.emit.y, 0);
 
-		EXPECT_EQ(mock_listener.receive.first, 3);
-		EXPECT_EQ(mock_listener.receive.second, 4);
+		EXPECT_EQ(mock_listener.receive.x, 3);
+		EXPECT_EQ(mock_listener.receive.y, 4);
 
 		EXPECT_EQ(mock_listener.type, data::UpdateType::place);
 
@@ -493,11 +493,11 @@ namespace jactorio::game
 
 		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
 		EXPECT_TRUE(entity.removeCalled);
-		EXPECT_EQ(mock_listener.emit.first, 0);
-		EXPECT_EQ(mock_listener.emit.second, 0);
+		EXPECT_EQ(mock_listener.emit.x, 0);
+		EXPECT_EQ(mock_listener.emit.y, 0);
 
-		EXPECT_EQ(mock_listener.receive.first, 3);
-		EXPECT_EQ(mock_listener.receive.second, 4);
+		EXPECT_EQ(mock_listener.receive.x, 3);
+		EXPECT_EQ(mock_listener.receive.y, 4);
 
 		EXPECT_EQ(mock_listener.type, data::UpdateType::remove);
 	}
@@ -584,7 +584,7 @@ namespace jactorio::game
 
 
 		auto validate_coords = [&](const size_t index,
-		                           const WorldData::WorldPair& emit_coords, const WorldData::WorldPair& receive_coords) {
+		                           const WorldCoord& emit_coords, const WorldCoord& receive_coords) {
 			EXPECT_EQ(entity_proto.emitCoords[index], emit_coords);
 			EXPECT_EQ(entity_proto.receiveCoords[index], receive_coords);
 		};

@@ -5,8 +5,6 @@
 #pragma once
 
 #include "data/prototype/entity/entity.h"
-#include "game/world/chunk_tile.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
@@ -22,7 +20,7 @@ namespace jactorio::game
 	/// \return true if a entity with the specified dimensions can be placed at x, y
 	bool PlacementLocationValid(WorldData& world_data,
 	                            uint8_t tile_width, uint8_t tile_height,
-	                            WorldData::WorldCoord x, WorldData::WorldCoord y);
+	                            WorldCoordAxis x, WorldCoordAxis y);
 
 	// ======================================================================
 
@@ -31,10 +29,10 @@ namespace jactorio::game
 	/// \remark Pass nullptr for entity to remove
 	/// \return true if placed / removed successfully
 	bool PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity,
-	                         WorldData::WorldCoord x, WorldData::WorldCoord y);
+	                         WorldCoordAxis x, WorldCoordAxis y);
 
 	bool PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity,
-	                         const WorldData::WorldPair& world_pair);
+	                         const WorldCoord& world_pair);
 }
 
 #endif //JACTORIO_INCLUDE_GAME_LOGIC_PLACEMENT_CONTROLLER_H

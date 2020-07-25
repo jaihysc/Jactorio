@@ -14,7 +14,7 @@ using namespace jactorio;
 
 bool game::ItemDropOff::Initialize(const WorldData& world_data,
                                    data::UniqueDataBase& target_unique_data,
-                                   const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
+                                   const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
 	const data::Entity* entity =
 		world_data.GetTile(world_x, world_y)
 		          ->GetEntityPrototype();
@@ -46,10 +46,10 @@ bool game::ItemDropOff::Initialize(const WorldData& world_data,
 }
 
 bool game::ItemDropOff::Initialize(const WorldData& world_data,
-                                   data::UniqueDataBase& target_unique_data, const WorldData::WorldPair& world_coord) {
+                                   data::UniqueDataBase& target_unique_data, const WorldCoord& world_coord) {
 	return Initialize(world_data,
 	                  target_unique_data,
-	                  world_coord.first, world_coord.second);
+	                  world_coord.x, world_coord.y);
 }
 
 bool game::ItemDropOff::InsertContainerEntity(LogicData&,
@@ -181,7 +181,7 @@ bool game::ItemDropOff::InsertAssemblyMachine(LogicData& logic_data,
 
 bool game::InserterPickup::Initialize(const WorldData& world_data,
                                       data::UniqueDataBase& target_unique_data,
-                                      const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
+                                      const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
 	const data::Entity* entity =
 		world_data.GetTile(world_x, world_y)
 		          ->GetEntityPrototype();
@@ -214,8 +214,8 @@ bool game::InserterPickup::Initialize(const WorldData& world_data,
 
 bool game::InserterPickup::Initialize(const WorldData& world_data,
                                       data::UniqueDataBase& target_unique_data,
-                                      const WorldData::WorldPair& world_coord) {
-	return Initialize(world_data, target_unique_data, world_coord.first, world_coord.second);
+                                      const WorldCoord& world_coord) {
+	return Initialize(world_data, target_unique_data, world_coord.x, world_coord.y);
 }
 
 game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(LogicData&,

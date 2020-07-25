@@ -100,10 +100,12 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	// Type 
 	PYBIND_TYPE_CLASS(Tile4Way, OutputTile4Way)
 		.def(py::init<
-			jactorio::game::WorldData::WorldPair,
-			jactorio::game::WorldData::WorldPair,
-			jactorio::game::WorldData::WorldPair,
-			jactorio::game::WorldData::WorldPair>())
+			std::tuple<
+				std::pair<jactorio::WorldCoordAxis, jactorio::WorldCoordAxis>,
+				std::pair<jactorio::WorldCoordAxis, jactorio::WorldCoordAxis>,
+				std::pair<jactorio::WorldCoordAxis, jactorio::WorldCoordAxis>,
+				std::pair<jactorio::WorldCoordAxis, jactorio::WorldCoordAxis>
+			>>())
 		.def_readwrite("up", &Tile4Way::up)
 		.def_readwrite("right", &Tile4Way::right)
 		.def_readwrite("down", &Tile4Way::down)

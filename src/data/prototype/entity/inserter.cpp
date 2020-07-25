@@ -6,7 +6,7 @@ using namespace jactorio;
 
 data::Sprite::SetT data::Inserter::OnRGetSet(const Orientation orientation,
                                              game::WorldData&,
-                                             const game::WorldData::WorldPair&) const {
+                                             const WorldCoord&) const {
 	switch (orientation) {
 
 	case Orientation::up:
@@ -27,7 +27,7 @@ data::Sprite::SetT data::Inserter::OnRGetSet(const Orientation orientation,
 }
 
 void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
-                             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer,
+                             const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer,
                              Orientation orientation) const {
 	auto* inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
 	inserter_data->set  = OnRGetSet(orientation, world_data, world_coords);
@@ -36,7 +36,7 @@ void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
 	// Dropoff side
 	{
 		auto emit_coords = world_coords;
-		OrientationIncrement(orientation, emit_coords.first, emit_coords.second, this->tileReach);
+		OrientationIncrement(orientation, emit_coords.x, emit_coords.y, this->tileReach);
 
 		world_data.updateDispatcher.Register(world_coords, emit_coords, *this);
 		world_data.updateDispatcher.Dispatch(emit_coords, UpdateType::place);
@@ -44,7 +44,7 @@ void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
 	// Pickup side
 	{
 		auto emit_coords = world_coords;
-		OrientationIncrement(orientation, emit_coords.first, emit_coords.second, this->tileReach * -1);
+		OrientationIncrement(orientation, emit_coords.x, emit_coords.y, this->tileReach * -1);
 
 		world_data.updateDispatcher.Register(world_coords, emit_coords, *this);
 		world_data.updateDispatcher.Dispatch(emit_coords, UpdateType::place);
@@ -52,8 +52,8 @@ void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
 }
 
 void data::Inserter::OnTileUpdate(game::WorldData& world_data,
-                                  const game::WorldData::WorldPair& emit_coords,
-                                  const game::WorldData::WorldPair& receive_coords, UpdateType) const {
+                                  const WorldCoord& emit_coords,
+                                  const WorldCoord& receive_coords, UpdateType) const {
 	auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 	auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
 
@@ -63,10 +63,10 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 	//
 
 	auto pickup_coords = receive_coords;
-	OrientationIncrement(inserter_data.orientation, pickup_coords.first, pickup_coords.second, this->tileReach * -1);
+	OrientationIncrement(inserter_data.orientation, pickup_coords.x, pickup_coords.y, this->tileReach * -1);
 
 	auto dropoff_coords = receive_coords;
-	OrientationIncrement(inserter_data.orientation, dropoff_coords.first, dropoff_coords.second, this->tileReach);
+	OrientationIncrement(inserter_data.orientation, dropoff_coords.x, dropoff_coords.y, this->tileReach);
 
 	// Neighbor was removed, Uninitialize removed item handler
 	if (!target_data) {
@@ -101,7 +101,7 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 }
 
 void data::Inserter::OnRemove(game::WorldData& world_data, game::LogicData&,
-                              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const {
+                              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const {
 	world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords,
 	                       game::ChunkTile::ChunkLayer::entity);
 
@@ -111,7 +111,7 @@ void data::Inserter::OnRemove(game::WorldData& world_data, game::LogicData&,
 	{
 		auto emit_coords = world_coords;
 		OrientationIncrement(inserter_data->orientation,
-		                     emit_coords.first, emit_coords.second, this->tileReach);
+		                     emit_coords.x, emit_coords.y, this->tileReach);
 
 		world_data.updateDispatcher.Unregister({world_coords, emit_coords});
 	}
@@ -119,7 +119,7 @@ void data::Inserter::OnRemove(game::WorldData& world_data, game::LogicData&,
 	{
 		auto emit_coords = world_coords;
 		OrientationIncrement(inserter_data->orientation,
-		                     emit_coords.first, emit_coords.second, this->tileReach * -1);
+		                     emit_coords.x, emit_coords.y, this->tileReach * -1);
 
 		world_data.updateDispatcher.Unregister({world_coords, emit_coords});
 	}

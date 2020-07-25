@@ -8,6 +8,7 @@
 #include "data/prototype/entity/entity.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
+#include "game/world/world_data.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
 
@@ -32,15 +33,15 @@ double jactorio::game::MouseSelection::GetCursorY() {
 void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager) {
 	const auto cursor_position = player_data.GetMouseTileCoords();
 	const auto* stack          = player_data.GetSelectedItemStack();
-	
+
 	if (stack)
 		DrawOverlay(player_data, data_manager,
 		            static_cast<data::Entity*>(stack->item->entityPrototype),
-		            cursor_position.first, cursor_position.second, player_data.placementOrientation);
+		            cursor_position.x, cursor_position.y, player_data.placementOrientation);
 	else
 		DrawOverlay(player_data, data_manager,
 		            nullptr,
-		            cursor_position.first, cursor_position.second, player_data.placementOrientation);
+		            cursor_position.x, cursor_position.y, player_data.placementOrientation);
 }
 
 void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
@@ -53,7 +54,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	if (lastOverlayElementIndex_ != UINT64_MAX) {
 		auto* last_chunk = world_data.GetChunkC(lastChunkPos_);
 		assert(last_chunk);
-		
+
 		auto& overlay_layer = last_chunk->GetOverlay(kCursorOverlayLayer);
 		overlay_layer.erase(overlay_layer.begin() + lastOverlayElementIndex_);
 
@@ -61,7 +62,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	}
 
 	// Draw new overlay
-	auto* chunk = world_data.GetChunk(world_x, world_y);
+	auto* chunk = world_data.GetChunkW(world_x, world_y);
 	if (!chunk)
 		return;
 
@@ -74,13 +75,13 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	// Saves such that can be found and removed in the future
 	auto save_overlay_info = [&]() {
 		lastOverlayElementIndex_ = overlay_layer.size() - 1;
-		lastChunkPos_ = {WorldData::ToChunkCoord(world_x), WorldData::ToChunkCoord(world_y)};  // TODO
+		lastChunkPos_            = {WorldData::ToChunkCoord(world_x), WorldData::ToChunkCoord(world_y)};  // TODO
 	};
 
 
 	if (selected_entity && selected_entity->placeable) {
 		// Has item selected
-		 // TODO separate virtual function for get sprite only
+		// TODO separate virtual function for get sprite only
 		OverlayElement element{
 			*selected_entity->sprite, // OnRGetSprite(nullptr, player_data.GetPlayerLogicData().GameTick()).first, 
 

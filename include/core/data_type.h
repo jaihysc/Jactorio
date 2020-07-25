@@ -7,8 +7,6 @@
 #include <tuple>
 #include <unordered_map>
 
-#include "jactorio.h"
-
 namespace jactorio::core
 {
 	template <typename TVal>
@@ -24,11 +22,16 @@ namespace jactorio
 	// Defined here to solve circular includes
 
 	using GameTickT = uint64_t;
-
-	using UvPositionT = core::QuadPosition<core::Position2<float>>;
-	using SpriteUvCoordsT = std::unordered_map<unsigned int, UvPositionT>;
-
 	constexpr int kGameHertz = 60;  // 60 updates per second
+
+
+	using WorldCoordAxis = int;
+	using WorldCoord = core::Position2<WorldCoordAxis>;
+
+	
+	using UvPositionT = core::QuadPosition<core::Position2<float>>;
+	/// Internal id of sprite to uv coordinates
+	using SpriteUvCoordsT = std::unordered_map<unsigned int, UvPositionT>;
 }
 
 namespace jactorio::core

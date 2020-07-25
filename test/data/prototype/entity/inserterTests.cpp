@@ -21,7 +21,7 @@ namespace jactorio::data
 			worldData_.EmplaceChunk(0, 0);
 		}
 
-		game::ChunkTileLayer& BuildInserter(const game::WorldData::WorldPair& coords,
+		game::ChunkTileLayer& BuildInserter(const WorldCoord& coords,
 		                                    const Orientation orientation) {
 			return TestSetupInserter(worldData_, logicData_, coords, inserterProto_, orientation);
 		}

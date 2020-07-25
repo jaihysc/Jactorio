@@ -4,10 +4,9 @@
 #define JACTORIO_DATA_PROTOTYPE_PROTOTYPE_TYPE_H
 #pragma once
 
-#include <utility>
-
+#include "core/coordinate_tuple.h"
+#include "core/data_type.h"
 #include "data/prototype/type.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::data
 {
@@ -17,19 +16,32 @@ namespace jactorio::data
 	{
 		Tile4Way() = default;
 
-		Tile4Way(game::WorldData::WorldPair up,
-		         game::WorldData::WorldPair right,
-		         game::WorldData::WorldPair down,
-		         game::WorldData::WorldPair left)
-			: up(std::move(up)), right(std::move(right)), down(std::move(down)), left(std::move(left)) {
+		Tile4Way(const WorldCoord& up,
+		         const WorldCoord& right,
+		         const WorldCoord& down,
+		         const WorldCoord& left)
+			: up(up), right(right), down(down), left(left) {
 		}
 
-		game::WorldData::WorldPair up;
-		game::WorldData::WorldPair right;
-		game::WorldData::WorldPair down;
-		game::WorldData::WorldPair left;
+		explicit Tile4Way(std::tuple<
+			std::pair<WorldCoordAxis, WorldCoordAxis>,
+			std::pair<WorldCoordAxis, WorldCoordAxis>,
+			std::pair<WorldCoordAxis, WorldCoordAxis>,
+			std::pair<WorldCoordAxis, WorldCoordAxis>
+		> t)
+			: up({std::get<0>(t).first, std::get<0>(t).second}),
+			  right({std::get<1>(t).first, std::get<1>(t).second}),
+			  down({std::get<2>(t).first, std::get<2>(t).second}),
+			  left({std::get<3>(t).first, std::get<3>(t).second}) {
+		}
 
-		J_NODISCARD const game::WorldData::WorldPair& Get(const Orientation orientation) const {
+
+		WorldCoord up;
+		WorldCoord right;
+		WorldCoord down;
+		WorldCoord left;
+
+		J_NODISCARD const WorldCoord& Get(const Orientation orientation) const {
 			switch (orientation) {
 
 			case Orientation::up:

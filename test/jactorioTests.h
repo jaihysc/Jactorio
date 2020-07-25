@@ -4,12 +4,12 @@
 #define JACTORIO_TEST_JACTORIOTESTS_H
 #pragma once
 
+#include "core/data_type.h"
 #include "data/prototype_manager.h"
 #include "data/prototype/entity/assembly_machine.h"
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/inserter.h"
 #include "data/prototype/entity/transport_line.h"
-#include "game/logic/placement_controller.h"
 #include "game/world/world_data.h"
 
 ///
@@ -26,7 +26,7 @@ TPrototype* MakeRegisterPrototype(jactorio::data::PrototypeManager& prototype_ma
 ///
 /// \brief Creates a container of size 10 at coordinates
 inline jactorio::game::ChunkTileLayer& TestSetupContainer(jactorio::game::WorldData& world_data,
-                                                          const jactorio::game::WorldData::WorldPair& world_coords,
+                                                          const jactorio::WorldCoord& world_coords,
                                                           const jactorio::data::ContainerEntity& container_entity) {
 	auto& container_layer = world_data.GetTile(world_coords)
 	                                  ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
@@ -41,7 +41,7 @@ inline jactorio::game::ChunkTileLayer& TestSetupContainer(jactorio::game::WorldD
 /// \brief Creates an inserter at coordinates
 inline jactorio::game::ChunkTileLayer& TestSetupInserter(jactorio::game::WorldData& world_data,
                                                          jactorio::game::LogicData& logic_data,
-                                                         const jactorio::game::WorldData::WorldPair& world_coords,
+                                                         const jactorio::WorldCoord& world_coords,
                                                          const jactorio::data::Inserter& inserter_proto,
                                                          const jactorio::data::Orientation orientation) {
 	using namespace jactorio;
@@ -57,12 +57,12 @@ inline jactorio::game::ChunkTileLayer& TestSetupInserter(jactorio::game::WorldDa
 ///
 /// \brief Registers and creates tile UniqueData for TransportSegment
 inline void TestRegisterTransportSegment(jactorio::game::WorldData& world_data,
-                                         const jactorio::game::Chunk::ChunkPair& world_coords,
+                                         const jactorio::WorldCoord& world_coords,
                                          const std::shared_ptr<jactorio::game::TransportSegment>& segment,
                                          const jactorio::data::TransportLine& prototype) {
 	auto* tile = world_data.GetTile(world_coords);
 	assert(tile);
-	auto* chunk = world_data.GetChunk(world_coords);
+	auto* chunk = world_data.GetChunkW(world_coords);
 	assert(chunk);
 
 	auto& layer         = tile->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
@@ -78,7 +78,7 @@ inline void TestRegisterTransportSegment(jactorio::game::WorldData& world_data,
 /// \brief Creates a 2x2 multi tile assembly machine at coordinates
 /// \return top left layer
 inline jactorio::game::ChunkTileLayer& TestSetupAssemblyMachine(jactorio::game::WorldData& world_data,
-                                                                const jactorio::game::WorldData::WorldPair& world_coords,
+                                                                const jactorio::WorldCoord& world_coords,
                                                                 const jactorio::data::AssemblyMachine& assembly_proto) {
 	auto& origin_layer = world_data.GetTile(world_coords)->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
 	origin_layer.InitMultiTileProp(2, 2);
@@ -88,7 +88,7 @@ inline jactorio::game::ChunkTileLayer& TestSetupAssemblyMachine(jactorio::game::
 			if (x == 0 && y == 0)
 				continue;
 
-			auto& layer = world_data.GetTile(world_coords.first + x, world_coords.second + y)
+			auto& layer = world_data.GetTile(world_coords.x + x, world_coords.y + y)
 			                        ->GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity);
 
 			layer.prototypeData  = &assembly_proto;

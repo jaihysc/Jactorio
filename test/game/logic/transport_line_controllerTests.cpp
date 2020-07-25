@@ -39,7 +39,7 @@ namespace jactorio::game
 
 		///
 		/// \brief Creates tile UniqueData for TransportSegment
-		void RegisterSegment(const Chunk::ChunkPair& world_coords,
+		void RegisterSegment(const WorldCoord& world_coords,
 		                     const std::shared_ptr<TransportSegment>& segment) {
 			TestRegisterTransportSegment(worldData_, world_coords, segment, *transportBeltProto_);
 		}

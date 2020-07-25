@@ -153,16 +153,16 @@ namespace jactorio::game
 	TEST_F(WorldDataTest, GetChunkWorldCoords) {
 		{
 			const auto* chunk = worldData_.EmplaceChunk(0, 0);
-			EXPECT_EQ(worldData_.GetChunk(31, 31), chunk);
+			EXPECT_EQ(worldData_.GetChunkW(31, 31), chunk);
 
-			EXPECT_EQ(worldData_.GetChunk({31, 31}), chunk);
+			EXPECT_EQ(worldData_.GetChunkW({31, 31}), chunk);
 		}
 
 		{
 			const auto* chunk = worldData_.EmplaceChunk(-1, 0);
-			EXPECT_EQ(worldData_.GetChunk(-1, 0), chunk);
+			EXPECT_EQ(worldData_.GetChunkW(-1, 0), chunk);
 
-			EXPECT_EQ(worldData_.GetChunk({-1, 0}), chunk);
+			EXPECT_EQ(worldData_.GetChunkW({-1, 0}), chunk);
 		}
 	}
 
@@ -291,15 +291,15 @@ namespace jactorio::game
 		class MockUpdateListener final : public data::IUpdateListener
 		{
 		public:
-			mutable WorldData::WorldPair emit;
-			mutable WorldData::WorldPair receive;
+			mutable WorldCoord emit;
+			mutable WorldCoord receive;
 			mutable int calls = 0;
 
 			mutable data::UpdateType type = data::UpdateType::remove;
 
 			void OnTileUpdate(WorldData&,
-			                  const WorldData::WorldPair& emit_coords,
-			                  const WorldData::WorldPair& receive_coords,
+			                  const WorldCoord& emit_coords,
+			                  const WorldCoord& receive_coords,
 			                  const data::UpdateType type) const override {
 				emit    = emit_coords;
 				receive = receive_coords;
@@ -320,20 +320,20 @@ namespace jactorio::game
 		                     5, 6, mock_);
 
 		dispatcher_.Dispatch(3, 7, data::UpdateType::place);
-		EXPECT_EQ(mock_.emit.first, 0);
-		EXPECT_EQ(mock_.emit.second, 0);
+		EXPECT_EQ(mock_.emit.x, 0);
+		EXPECT_EQ(mock_.emit.y, 0);
 
-		EXPECT_EQ(mock_.receive.first, 0);
-		EXPECT_EQ(mock_.receive.second, 0);
+		EXPECT_EQ(mock_.receive.x, 0);
+		EXPECT_EQ(mock_.receive.y, 0);
 
 
 		dispatcher_.Dispatch(5, 6, data::UpdateType::remove);
 
-		EXPECT_EQ(mock_.emit.first, 5);
-		EXPECT_EQ(mock_.emit.second, 6);
+		EXPECT_EQ(mock_.emit.x, 5);
+		EXPECT_EQ(mock_.emit.y, 6);
 
-		EXPECT_EQ(mock_.receive.first, 2);
-		EXPECT_EQ(mock_.receive.second, 3);
+		EXPECT_EQ(mock_.receive.x, 2);
+		EXPECT_EQ(mock_.receive.y, 3);
 
 		EXPECT_EQ(mock_.type, data::UpdateType::remove);
 	}
@@ -349,11 +349,11 @@ namespace jactorio::game
 
 		// 1 registered, 1 unregistered
 		dispatcher_.Dispatch(5, 6, data::UpdateType::place);
-		EXPECT_EQ(mock_.emit.first, 5);
-		EXPECT_EQ(mock_.emit.second, 6);
+		EXPECT_EQ(mock_.emit.x, 5);
+		EXPECT_EQ(mock_.emit.y, 6);
 
-		EXPECT_EQ(mock_.receive.first, 4);
-		EXPECT_EQ(mock_.receive.second, 7);
+		EXPECT_EQ(mock_.receive.x, 4);
+		EXPECT_EQ(mock_.receive.y, 7);
 		EXPECT_EQ(mock_.calls, 1);
 	}
 }

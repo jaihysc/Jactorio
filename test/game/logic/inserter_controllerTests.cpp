@@ -27,7 +27,7 @@ namespace jactorio::game
 			worldData_.LogicAddChunk(chunk);
 		}
 
-		ChunkTileLayer& BuildInserter(const WorldData::WorldPair& coords,
+		ChunkTileLayer& BuildInserter(const WorldCoord& coords,
 		                              const data::Orientation orientation) {
 			return TestSetupInserter(worldData_, logicData_, coords, inserterProto_, orientation);
 		}
@@ -35,7 +35,7 @@ namespace jactorio::game
 		///
 		/// \brief Creates chest with 10 items, emits OnNeighborUpdate for 1, 2
 		/// \param orientation Orientation to chest from inserter
-		data::ContainerEntityData* BuildChest(const WorldData::WorldPair& coords,
+		data::ContainerEntityData* BuildChest(const WorldCoord& coords,
 		                                      const data::Orientation orientation) {
 			auto& layer = TestSetupContainer(worldData_, coords, containerProto_);
 
