@@ -3,6 +3,11 @@
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/opengl/vertex_array.h"
 
+#include <glm/gtx/rotate_vector.hpp>
+
+#include "game/player/player_data.h"
+#include "renderer/gui/gui_menus.h"
+
 using namespace jactorio;
 
 renderer::RendererLayer::RendererLayer() {
@@ -17,26 +22,27 @@ renderer::RendererLayer::~RendererLayer() {
 
 // ======================================================================
 
-void renderer::RendererLayer::PushBack(const Element& element) {
-	assert(writeEnabled_);
-
-	// Skips data appending operation if buffer needs to resize
-	if (gResizeVertexBuffers_) {
-		++queuedECapacity_;  // Will reserve an additional element for this one that was skipped
+void renderer::RendererLayer::PushBack(const Element& element, const VertexPositionT::PositionT::ValueT z) {
+	if (!PrePushBackChecks())
 		return;
-	}
 
-	if (nextElementIndex_ >= eCapacity_) {
-		// No more space, reserve, will be repopulated on next update
-		Reserve(eCapacity_ + 1);
-		return;
-	}
-
-	// Add
 	const auto buffer_index = nextElementIndex_ * kVbIndicesPerElement;
-	SetBufferVertex(buffer_index, element.vertex);
-	SetBufferUv(buffer_index, element.uv);
 	nextElementIndex_++;
+
+	SetBufferVertex(buffer_index, element.vertex, z);
+	SetBufferUv(buffer_index, element.uv);
+}
+
+void renderer::RendererLayer::PushBack(const Element& element, const VertexPositionT::PositionT::ValueT z,
+                                       const float rotate_deg) {
+	if (!PrePushBackChecks())
+		return;
+
+	const auto buffer_index = nextElementIndex_ * kVbIndicesPerElement;
+	nextElementIndex_++;
+
+	SetBufferVertex(buffer_index, element.vertex, z, rotate_deg);  // <-- Handles rotations
+	SetBufferUv(buffer_index, element.uv);
 }
 
 uint32_t renderer::RendererLayer::GetCapacity() const noexcept {
@@ -118,45 +124,117 @@ void renderer::RendererLayer::GlBindBuffers() const {
 
 // ======================================================================
 
-void renderer::RendererLayer::SetBufferVertex(const uint32_t buffer_index,
-                                              const VertexPositionT& element) const {
-	assert(element.topLeft.z == element.bottomRight.z);
-	
+bool renderer::RendererLayer::PrePushBackChecks() {
+	assert(writeEnabled_);
+
+	// Skips data appending operation if buffer needs to resize
+	if (gResizeVertexBuffers_) {
+		++queuedECapacity_;  // Will reserve an additional element for this one that was skipped
+		return false;
+	}
+
+	if (nextElementIndex_ >= eCapacity_) {
+		// No more space, reserve, will be repopulated on next update
+		Reserve(eCapacity_ + 1);
+		return false;
+	}
+
+	return true;
+}
+
+void renderer::RendererLayer::SetBufferVertex(const uint32_t buffer_index, const VertexPositionT& v_pos,
+                                              const VertexPositionT::PositionT::ValueT z) const {
 	// Populate in following order: topL, topR, bottomR, bottomL (X Y)
 
-	vertexBuffer_[buffer_index + 0] = element.topLeft.x;
-	vertexBuffer_[buffer_index + 1] = element.topLeft.y;
-	vertexBuffer_[buffer_index + 2] = element.topLeft.z;
+	vertexBuffer_[buffer_index + 0] = v_pos.topLeft.x;
+	vertexBuffer_[buffer_index + 1] = v_pos.topLeft.y;
+	vertexBuffer_[buffer_index + 2] = z;
 
-	vertexBuffer_[buffer_index + 3] = element.bottomRight.x;
-	vertexBuffer_[buffer_index + 4] = element.topLeft.y;
-	vertexBuffer_[buffer_index + 5] = element.topLeft.z;
+	vertexBuffer_[buffer_index + 3] = v_pos.bottomRight.x;
+	vertexBuffer_[buffer_index + 4] = v_pos.topLeft.y;
+	vertexBuffer_[buffer_index + 5] = z;
 
-	vertexBuffer_[buffer_index + 6] = element.bottomRight.x;
-	vertexBuffer_[buffer_index + 7] = element.bottomRight.y;
-	vertexBuffer_[buffer_index + 8] = element.topLeft.z;
+	vertexBuffer_[buffer_index + 6] = v_pos.bottomRight.x;
+	vertexBuffer_[buffer_index + 7] = v_pos.bottomRight.y;
+	vertexBuffer_[buffer_index + 8] = z;
 
-	vertexBuffer_[buffer_index + 9]  = element.topLeft.x;
-	vertexBuffer_[buffer_index + 10] = element.bottomRight.y;
-	vertexBuffer_[buffer_index + 11] = element.topLeft.z;
+	vertexBuffer_[buffer_index + 9]  = v_pos.topLeft.x;
+	vertexBuffer_[buffer_index + 10] = v_pos.bottomRight.y;
+	vertexBuffer_[buffer_index + 11] = z;
+}
+
+void renderer::RendererLayer::SetBufferVertex(const uint32_t buffer_index, const VertexPositionT& v_pos,
+                                              const VertexPositionT::PositionT::ValueT z, const float rotate_deg) const {
+	// Center origin (0, 0) on sprite
+
+	const auto x_offset = (v_pos.bottomRight.x - v_pos.topLeft.x) / 2;
+	assert(x_offset > 0);
+
+	const auto y_offset = (v_pos.bottomRight.y - v_pos.topLeft.y) / 2;
+	assert(y_offset > 0);
+
+	glm::vec2 tl(-x_offset, -y_offset);
+	glm::vec2 tr(x_offset, -y_offset);
+	glm::vec2 bl(-x_offset, y_offset);
+	glm::vec2 br(x_offset, y_offset);
+
+	// Rotate
+	// Since they are rotated, they can't be drawn using only top left and bottom right
+	const float rotate_rad = glm::radians(rotate_deg);
+
+	tl = rotate(tl, rotate_rad);
+	tr = rotate(tr, rotate_rad);
+	bl = rotate(bl, rotate_rad);
+	br = rotate(br, rotate_rad);
+
+	// Move to position
+	tl.x += x_offset + v_pos.topLeft.x;
+	tl.y += y_offset + v_pos.topLeft.y;
+
+	tr.x += v_pos.bottomRight.x - x_offset;
+	tr.y += y_offset + v_pos.topLeft.y;
+
+	bl.x += x_offset + v_pos.topLeft.x;
+	bl.y += v_pos.bottomRight.y - y_offset;
+
+	br.x += v_pos.bottomRight.x - x_offset;
+	br.y += v_pos.bottomRight.y - y_offset;
+
+	// Populate in following order: topL, topR, bottomR, bottomL (X Y)
+
+	vertexBuffer_[buffer_index + 0] = tl.x;
+	vertexBuffer_[buffer_index + 1] = tl.y;
+	vertexBuffer_[buffer_index + 2] = z;
+
+	vertexBuffer_[buffer_index + 3] = tr.x;
+	vertexBuffer_[buffer_index + 4] = tr.y;
+	vertexBuffer_[buffer_index + 5] = z;
+
+	vertexBuffer_[buffer_index + 6] = br.x;
+	vertexBuffer_[buffer_index + 7] = br.y;
+	vertexBuffer_[buffer_index + 8] = z;
+
+	vertexBuffer_[buffer_index + 9]  = bl.x;
+	vertexBuffer_[buffer_index + 10] = bl.y;
+	vertexBuffer_[buffer_index + 11] = z;
 }
 
 void renderer::RendererLayer::SetBufferUv(const uint32_t buffer_index,
-                                          const UvPositionT& element) const {
+                                          const UvPositionT& u_pos) const {
 	// Populate in following order: bottomL, bottomR, topR, topL (X Y) (NOT THE SAME AS ABOVE!!)
 
 	// UV
-	uvBuffer_[buffer_index + 0] = element.topLeft.x;
-	uvBuffer_[buffer_index + 1] = element.bottomRight.y;
+	uvBuffer_[buffer_index + 0] = u_pos.topLeft.x;
+	uvBuffer_[buffer_index + 1] = u_pos.bottomRight.y;
 
-	uvBuffer_[buffer_index + 3] = element.bottomRight.x;
-	uvBuffer_[buffer_index + 4] = element.bottomRight.y;
+	uvBuffer_[buffer_index + 3] = u_pos.bottomRight.x;
+	uvBuffer_[buffer_index + 4] = u_pos.bottomRight.y;
 
-	uvBuffer_[buffer_index + 6] = element.bottomRight.x;
-	uvBuffer_[buffer_index + 7] = element.topLeft.y;
+	uvBuffer_[buffer_index + 6] = u_pos.bottomRight.x;
+	uvBuffer_[buffer_index + 7] = u_pos.topLeft.y;
 
-	uvBuffer_[buffer_index + 9] = element.topLeft.x;
-	uvBuffer_[buffer_index + 10] = element.topLeft.y;
+	uvBuffer_[buffer_index + 9]  = u_pos.topLeft.x;
+	uvBuffer_[buffer_index + 10] = u_pos.topLeft.y;
 }
 
 std::unique_ptr<unsigned int[]> renderer::RendererLayer::GenRenderGridIndices(const uint32_t tile_count) {

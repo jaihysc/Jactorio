@@ -70,7 +70,7 @@ namespace jactorio::core
 	{
 		static_assert(std::is_base_of<Position1<typename TPosition::ValueT>, TPosition>::value);
 
-		using ValueT = TPosition;
+		using PositionT = TPosition;
 
 		QuadPosition() = default;
 

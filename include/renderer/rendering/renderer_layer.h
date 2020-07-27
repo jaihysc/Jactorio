@@ -46,14 +46,14 @@ namespace jactorio::renderer
 		static_assert(kVbIndicesPerCoordinate == kUvIndicesPerCoordinate);
 
 	public:
-		using VertexPositionT = core::QuadPosition<core::Position3<float>>;
+		using VertexPositionT = core::QuadPosition<core::Position2<float>>;
 
 		struct Element
 		{
 			Element() = default;
 
 			Element(const VertexPositionT& vertex,
-					const UvPositionT& uv)
+			        const UvPositionT& uv)
 				: vertex(vertex), uv(uv) {
 			}
 
@@ -74,10 +74,10 @@ namespace jactorio::renderer
 		// ======================================================================
 
 		///
-		/// \brief Appends element to layer, after the highest element index where values were assigned<br>
-		/// Resizes if static_layer_ is false
+		/// \brief Appends element to layer, after the highest element index where values were assigned
 		/// \remark Ensure GlWriteBegin() has been called first before attempting to write into buffers
-		void PushBack(const Element& element);
+		void PushBack(const Element& element, VertexPositionT::PositionT::ValueT z);
+		void PushBack(const Element& element, VertexPositionT::PositionT::ValueT z, float rotate_deg);
 
 		///
 		/// \brief Returns current element capacity of buffers
@@ -127,9 +127,15 @@ namespace jactorio::renderer
 
 	private:
 		///
-		/// \remark Only element.topLeft.z is used, element.topRight.z is discarded
-		void SetBufferVertex(uint32_t buffer_index, const VertexPositionT& element) const;
-		void SetBufferUv(uint32_t buffer_index, const UvPositionT& element) const;
+		/// \brief Handles detection of buffer resizing
+		/// \return true if ok to push back into buffers, false if not
+		bool PrePushBackChecks();
+
+		void SetBufferVertex(uint32_t buffer_index, const VertexPositionT& v_pos, VertexPositionT::PositionT::ValueT z) const;
+		void SetBufferVertex(uint32_t buffer_index, const VertexPositionT& v_pos, VertexPositionT::PositionT::ValueT z,
+		                     float rotate_deg) const;
+
+		void SetBufferUv(uint32_t buffer_index, const UvPositionT& u_pos) const;
 
 		///
 		/// \brief Generates indices to draw tiles using the grid from gen_render_grid

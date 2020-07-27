@@ -60,25 +60,24 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 
 		constexpr float pixel_z = 0.1f;
 		// In pixels
-		layer.PushBack(renderer::RendererLayer::Element(
+		layer.PushBack(
 			{
 				{
 					{
 						x_offset + tile_x * static_cast<float>(renderer::Renderer::tileWidth),
 						y_offset + tile_y * static_cast<float>(renderer::Renderer::tileWidth),
-						pixel_z
 					},
 					{
 						x_offset +
 						static_cast<float>(tile_x + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
 						y_offset +
 						static_cast<float>(tile_y + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
-						pixel_z
 					},
 				},
 				{uv_pos.topLeft, uv_pos.bottomRight}
 			}
-		));
+			,
+			pixel_z);
 	}
 }
 

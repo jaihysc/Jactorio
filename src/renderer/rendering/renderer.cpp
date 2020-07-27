@@ -335,16 +335,16 @@ void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, game::ChunkTi
 		const float pixel_z = 0.f + static_cast<float>(0.01 * layer_index);
 
 		r_layer.PushBack(
-			RendererLayer::Element(
+			{
 				{  // top left of tile, 1 tile over and down
-					{pixel_pos.x, pixel_pos.y, pixel_z},
-					{pixel_pos.x + static_cast<float>(tileWidth), pixel_pos.y + static_cast<float>(tileWidth), pixel_z}
+					{pixel_pos.x, pixel_pos.y},
+					{pixel_pos.x + static_cast<float>(tileWidth), pixel_pos.y + static_cast<float>(tileWidth)}
 				},
 				{
 					uv.topLeft,
 					uv.bottomRight
 				}
-			)
+			}, pixel_z
 		);
 
 	}
@@ -361,33 +361,34 @@ void renderer::Renderer::PrepareOverlayLayers(RendererLayer& r_layer, const game
 
 			ApplySpriteUvAdjustment(uv, overlay.sprite->GetCoords(overlay.spriteSet, 0));
 
-			r_layer.PushBack(RendererLayer::Element(
+			r_layer.PushBack(
 				{
 					{
-						(render_pixel_offset.x + overlay.position.x)
-						* static_cast<float>(tileWidth),
 
-						(render_pixel_offset.y + overlay.position.y)
-						* static_cast<float>(tileWidth),
+						{
+							(render_pixel_offset.x + overlay.position.x)
+							* static_cast<float>(tileWidth),
 
-						overlay.position.z
+							(render_pixel_offset.y + overlay.position.y)
+							* static_cast<float>(tileWidth)
+						},
+						{
+							(render_pixel_offset.x + overlay.position.x + overlay.size.x)
+							* static_cast<float>(tileWidth),
+
+							(render_pixel_offset.y + overlay.position.y + overlay.size.y)
+							* static_cast<float>(tileWidth)
+						}
 					},
 					{
-						(render_pixel_offset.x + overlay.position.x + overlay.size.x)
-						* static_cast<float>(tileWidth),
-
-						(render_pixel_offset.y + overlay.position.y + overlay.size.y)
-						* static_cast<float>(tileWidth),
-
-						overlay.position.z
+						uv.topLeft,
+						uv.bottomRight
 					}
-				},
-				{uv.topLeft, uv.bottomRight}
-			));
-
+				}, overlay.position.z);
 		}
 
 	}
+
 }
 
 void renderer::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv,
