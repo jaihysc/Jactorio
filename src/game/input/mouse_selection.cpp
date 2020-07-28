@@ -74,7 +74,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	// Saves such that can be found and removed in the future
 	auto save_overlay_info = [&]() {
 		lastOverlayElementIndex_ = overlay_layer.size() - 1;
-		lastChunkPos_            = {WorldData::ToChunkCoord(world_x), WorldData::ToChunkCoord(world_y)};  // TODO
+		lastChunkPos_            = {WorldData::ToChunkCoord(world_x), WorldData::ToChunkCoord(world_y)};
 	};
 
 

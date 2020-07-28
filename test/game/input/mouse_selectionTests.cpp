@@ -174,11 +174,19 @@ namespace jactorio::game
 	public:
 		PROTOTYPE_CATEGORY(test);
 
-		mutable bool rGetSpriteCalled = false;
+		mutable bool getSpriteCalled    = false;
+		mutable bool getSpriteSetCalled = false;
+
+
+		J_NODISCARD data::Sprite* OnRGetSprite(data::Sprite::SetT) const override {
+			getSpriteCalled = true;
+			return nullptr;
+		}
 
 		J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation,
 		                                               WorldData&,
 		                                               const WorldData::WorldPair&) const override {
+			getSpriteSetCalled = true;
 			return 16;
 		}
 
@@ -194,7 +202,6 @@ namespace jactorio::game
 		}
 	};
 
-	/*  // TODO reimplement
 	TEST_F(MouseSelectionOverlayTest, DrawOverlayCallGetSprite) {
 
 		MockEntity entity{};
@@ -203,8 +210,7 @@ namespace jactorio::game
 
 		mouseSelection_.DrawOverlay(playerData_, dataManager_, &entity, 0, 0, data::Orientation::up);
 
-		// On_r_get_sprite should have been called 
-		EXPECT_TRUE(entity.rGetSpriteCalled);
+		EXPECT_TRUE(entity.getSpriteCalled);
+		EXPECT_TRUE(entity.getSpriteSetCalled);
 	}
-	*/
 }
