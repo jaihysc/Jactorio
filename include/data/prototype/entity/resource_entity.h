@@ -36,13 +36,6 @@ namespace jactorio::data
 			return new ResourceEntityData(*static_cast<ResourceEntityData*>(ptr));
 		}
 
-		Sprite::SetT OnRGetSet(Orientation,
-		                       game::WorldData&,
-		                       const game::WorldData::WorldPair&) const override {
-			return 0;
-		}
-
-
 		void OnBuild(game::WorldData&,
 		             game::LogicData&,
 		             const game::WorldData::WorldPair&,

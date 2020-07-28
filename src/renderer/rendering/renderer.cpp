@@ -321,12 +321,23 @@ void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, game::ChunkTi
 		const auto* unique_data = tile_layer.GetMultiTileTopLeft().GetUniqueData<data::PrototypeRenderableData>();
 
 		// Unique data can be nullptr for certain layers
-		const auto sprite_frame = proto->OnRGetSprite(unique_data, game_tick);
-		auto uv                 = GetSpriteUvCoords(sprite_frame.first->internalId);
+
+		SpriteUvCoordsT::mapped_type uv;
 
 		if (unique_data) {
-			ApplySpriteUvAdjustment(uv, sprite_frame.first->GetCoords(unique_data->set, sprite_frame.second));
+			const auto* sprite = proto->OnRGetSprite(unique_data->set);
+			uv                 = GetSpriteUvCoords(sprite->internalId);
+
+			// Handles rendering portions of sprite
+			const auto sprite_frame = proto->OnRGetSpriteFrame(*unique_data, game_tick);
+			ApplySpriteUvAdjustment(uv, sprite->GetCoords(unique_data->set, sprite_frame));
+
+			// Custom draw function
 			unique_data->OnDrawUniqueData(r_layer, *spritemapCoords_, pixel_pos.x, pixel_pos.y);
+		}
+		else {
+			const auto* sprite = proto->OnRGetSprite(0);
+			uv                 = GetSpriteUvCoords(sprite->internalId);
 		}
 
 		if (tile_layer.IsMultiTile())

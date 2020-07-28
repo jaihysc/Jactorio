@@ -6,8 +6,6 @@
 
 #include "jactorio.h"
 
-#include <utility>
-
 #include "data/prototype/sprite.h"
 #include "data/prototype/type.h"
 #include "game/world/world_data.h"
@@ -33,12 +31,6 @@ namespace jactorio::data
 		PYTHON_PROP_I(IRotatable, Sprite*, spriteE, nullptr);
 		PYTHON_PROP_I(IRotatable, Sprite*, spriteS, nullptr);
 		PYTHON_PROP_I(IRotatable, Sprite*, spriteW, nullptr);
-
-		///
-		/// \brief Maps a placementOrientation to a <set, frame>
-		virtual Sprite::SetT OnRGetSet(Orientation orientation,
-		                               game::WorldData& world_data,
-		                               const game::WorldData::WorldPair& world_coords) const = 0;
 	};
 }
 
