@@ -31,7 +31,7 @@ jactorio::data::Sprite* jactorio::data::MiningDrill::OnRGetSprite(const Sprite::
 
 jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
 																		  game::WorldData&,
-                                                                          const game::WorldData::WorldPair&) const {
+                                                                          const WorldCoord&) const {
 	switch (orientation) {
 	case Orientation::up:
 		return 0;
@@ -62,14 +62,14 @@ jactorio::data::Sprite::FrameT jactorio::data::MiningDrill::OnRGetSpriteFrame(co
 // ======================================================================
 
 jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::WorldData& world_data,
-                                                                  game::WorldData::WorldPair world_pair) const {
-	world_pair.first -= this->miningRadius;
-	world_pair.second -= this->miningRadius;
+                                                                  WorldCoord world_pair) const {
+	world_pair.x -= this->miningRadius;
+	world_pair.y -= this->miningRadius;
 
 	for (int y = 0; y < 2 * this->miningRadius + this->tileHeight; ++y) {
 		for (int x = 0; x < 2 * this->miningRadius + this->tileWidth; ++x) {
 			const game::ChunkTile* tile =
-				world_data.GetTile(world_pair.first + x, world_pair.second + y);
+				world_data.GetTile(world_pair.x + x, world_pair.y + y);
 
 			game::ChunkTileLayer& resource = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
 			if (resource.prototypeData != nullptr)
@@ -91,7 +91,7 @@ void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData&,
 
 
 bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
-                                             const game::WorldData::WorldPair& world_coords) const {
+                                             const WorldCoord& world_coords) const {
 	auto coords = world_coords;
 	/*
 	 * [ ] [ ] [ ] [ ] [ ]
@@ -100,13 +100,13 @@ bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
 	 * [ ] [x] [x] [x] [ ]
 	 * [ ] [ ] [ ] [ ] [ ]
 	 */
-	coords.first -= this->miningRadius;
-	coords.second -= this->miningRadius;
+	coords.x -= this->miningRadius;
+	coords.y -= this->miningRadius;
 
 	for (int y = 0; y < 2 * this->miningRadius + this->tileHeight; ++y) {
 		for (int x = 0; x < 2 * this->miningRadius + this->tileWidth; ++x) {
 			const game::ChunkTile* tile =
-				world_data.GetTile(coords.first + x, coords.second + y);
+				world_data.GetTile(coords.x + x, coords.y + y);
 
 			if (tile->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData != nullptr)
 				return true;
@@ -118,11 +118,11 @@ bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
 
 void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
                                           jactorio::game::LogicData& logic_data,
-                                          const game::WorldData::WorldPair& world_coords,
+                                          const WorldCoord& world_coords,
                                           game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
-	game::WorldData::WorldPair output_coords = this->resourceOutput.Get(orientation);
-	output_coords.first += world_coords.first;
-	output_coords.second += world_coords.second;
+	WorldCoord output_coords = this->resourceOutput.Get(orientation);
+	output_coords.x += world_coords.x;
+	output_coords.y += world_coords.y;
 
 	auto* drill_data = tile_layer.MakeUniqueData<MiningDrillData>(game::ItemDropOff(orientation));
 
@@ -137,8 +137,8 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 
 void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
                                                    game::LogicData& logic_data,
-                                                   const game::WorldData::WorldPair& emit_world_coords,
-                                                   const game::WorldData::WorldPair& receive_world_coords, Orientation) const {
+                                                   const WorldCoord& emit_world_coords,
+                                                   const WorldCoord& receive_world_coords, Orientation) const {
 	auto& self_layer = world_data.GetTile(receive_world_coords)
 	                             ->GetLayer(game::ChunkTile::ChunkLayer::entity).GetMultiTileTopLeft();
 
@@ -171,7 +171,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 
 void jactorio::data::MiningDrill::OnRemove(game::WorldData&,
                                            game::LogicData& logic_data,
-                                           const game::WorldData::WorldPair&, game::ChunkTileLayer& tile_layer) const {
+                                           const WorldCoord&, game::ChunkTileLayer& tile_layer) const {
 	UniqueDataBase* drill_data;
 
 	if (tile_layer.IsMultiTile())

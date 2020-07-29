@@ -6,6 +6,7 @@
 #include "data/prototype/entity/container_entity.h"
 #include "data/prototype/entity/mining_drill.h"
 #include "game/input/mouse_selection.h"
+#include "game/player/player_data.h"
 
 namespace jactorio::game
 {
@@ -185,20 +186,20 @@ namespace jactorio::game
 
 		J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation,
 		                                               WorldData&,
-		                                               const WorldData::WorldPair&) const override {
+		                                               const WorldCoord&) const override {
 			getSpriteSetCalled = true;
 			return 16;
 		}
 
 		void OnBuild(WorldData&,
 		             LogicData&,
-		             const WorldData::WorldPair&,
+		             const WorldCoord&,
 		             ChunkTileLayer&, data::Orientation) const override {
 		}
 
 		void OnRemove(WorldData&,
 		              LogicData&,
-		              const WorldData::WorldPair&, ChunkTileLayer&) const override {
+		              const WorldCoord&, ChunkTileLayer&) const override {
 		}
 	};
 

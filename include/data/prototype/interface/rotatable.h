@@ -4,11 +4,13 @@
 #define JACTORIO_DATA_PROTOTYPE_INTERFACE_ROTATABLE_H
 #pragma once
 
-#include "jactorio.h"
-
 #include "data/prototype/sprite.h"
 #include "data/prototype/type.h"
-#include "game/world/world_data.h"
+
+namespace jactorio::game
+{
+	class WorldData;
+}
 
 namespace jactorio::data
 {

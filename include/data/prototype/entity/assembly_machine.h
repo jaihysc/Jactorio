@@ -7,7 +7,7 @@
 #include "data/prototype/type.h"
 #include "data/prototype/entity/health_entity.h"
 #include "data/prototype/interface/deferred.h"
-#include "game/world/world_data.h"
+#include "data/prototype/item/recipe.h"
 
 namespace jactorio::data
 {
@@ -78,12 +78,12 @@ namespace jactorio::data
 
 		void OnBuild(game::WorldData& world_data,
 		             game::LogicData& logic_data,
-		             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer,
+		             const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer,
 		             Orientation orientation) const override;
 
 		void OnRemove(game::WorldData& world_data,
 		              game::LogicData& logic_data,
-		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
+		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 		void PostLoadValidate(const PrototypeManager&) const override {
 			J_DATA_ASSERT(assemblySpeed > 0.f, "Assembly speed cannot be 0");

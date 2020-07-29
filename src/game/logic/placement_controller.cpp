@@ -14,8 +14,8 @@ using namespace jactorio;
 bool game::PlacementLocationValid(WorldData& world_data,
                                   const uint8_t tile_width,
                                   const uint8_t tile_height,
-                                  const WorldData::WorldCoord x,
-                                  const WorldData::WorldCoord y) {
+                                  const WorldCoordAxis x,
+                                  const WorldCoordAxis y) {
 	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
 		for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
 			const ChunkTile* tile =
@@ -42,8 +42,8 @@ void PlaceAtCoords(game::WorldData& world_data,
                    const game::ChunkTile::ChunkLayer layer,
                    const uint8_t tile_width,
                    const uint8_t tile_height,
-                   const game::WorldData::WorldCoord x,
-                   const game::WorldData::WorldCoord y,
+                   const WorldCoordAxis x,
+                   const WorldCoordAxis y,
                    const std::function<void(game::ChunkTile*)>& place_func) {
 	// Place --- The places tiles are known to be valid
 	int entity_index = 0;
@@ -81,8 +81,8 @@ void RemoveAtCoords(game::WorldData& world_data,
                     const game::ChunkTile::ChunkLayer layer,
                     const uint8_t tile_width,
                     const uint8_t tile_height,
-                    game::WorldData::WorldCoord x,
-                    game::WorldData::WorldCoord y,
+                    WorldCoordAxis x,
+                    WorldCoordAxis y,
                     void (*remove_func)(game::ChunkTile*)) {
 	// Find top left corner
 	{
@@ -105,8 +105,8 @@ void RemoveAtCoords(game::WorldData& world_data,
 
 bool game::PlaceEntityAtCoords(WorldData& world_data,
                                const data::Entity* entity,
-                               const WorldData::WorldCoord x,
-                               const WorldData::WorldCoord y) {
+                               const WorldCoordAxis x,
+                               const WorldCoordAxis y) {
 	const ChunkTile* tile = world_data.GetTile(x, y);
 	assert(tile != nullptr);
 
@@ -146,6 +146,6 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
 	return true;
 }
 
-bool game::PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity, const WorldData::WorldPair& world_pair) {
-	return PlaceEntityAtCoords(world_data, entity, world_pair.first, world_pair.second);
+bool game::PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity, const WorldCoord& world_pair) {
+	return PlaceEntityAtCoords(world_data, entity, world_pair.x, world_pair.y);
 }

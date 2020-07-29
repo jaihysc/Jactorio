@@ -5,7 +5,6 @@
 #pragma once
 
 #include <optional>
-#include <utility>
 
 #include "data/prototype/prototype_type.h"
 #include "data/prototype/entity/health_entity.h"
@@ -21,7 +20,7 @@ namespace jactorio::data
 		}
 
 		game::ItemDropOff outputTile;
-		game::WorldData::WorldPair outputTileCoords{};
+		WorldCoord outputTileCoords{};
 
 		Item* outputItem = nullptr;
 
@@ -65,7 +64,7 @@ namespace jactorio::data
 		J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT set) const override;
 
 		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
-		                                         const game::WorldData::WorldPair& world_coords) const override;
+		                                         const WorldCoord& world_coords) const override;
 
 		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const override;
 
@@ -73,7 +72,7 @@ namespace jactorio::data
 		// Logic
 		///
 		/// \briefs Finds the FIRST output item of the mining drill, beginning from top left
-		J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, game::WorldData::WorldPair world_pair) const;
+		J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, WorldCoord world_pair) const;
 
 		void OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,
 		                        UniqueDataBase* unique_data) const override;
@@ -81,23 +80,23 @@ namespace jactorio::data
 		///
 		/// \brief Ensures that the mining radius covers a resource entity
 		J_NODISCARD bool OnCanBuild(const game::WorldData& world_data,
-		                            const game::WorldData::WorldPair& world_coords) const
+		                            const WorldCoord& world_coords) const
 		override;
 
 		void OnBuild(game::WorldData& world_data,
 		             game::LogicData& logic_data,
-		             const game::WorldData::WorldPair& world_coords,
+		             const WorldCoord& world_coords,
 		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
 
 		void OnNeighborUpdate(game::WorldData& world_data,
 		                      game::LogicData& logic_data,
-		                      const game::WorldData::WorldPair& emit_world_coords,
-		                      const game::WorldData::WorldPair& receive_world_coords,
+		                      const WorldCoord& emit_world_coords,
+		                      const WorldCoord& receive_world_coords,
 		                      Orientation emit_orientation) const override;
 
 		void OnRemove(game::WorldData& world_data,
 		              game::LogicData& logic_data,
-		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
+		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 
 		void PostLoadValidate(const PrototypeManager&) const override {

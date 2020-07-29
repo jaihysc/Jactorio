@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "jactorio.h"
 #include "core/data_type.h"
 #include "data/prototype/interface/deferred.h"
 

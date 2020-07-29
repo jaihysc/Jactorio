@@ -4,6 +4,8 @@
 #define JACTORIO_CORE_COORDINATE_TUPLE_H
 #pragma once
 
+#include <tuple>
+
 namespace jactorio::core
 {
 	template <typename TVal>
@@ -22,6 +24,15 @@ namespace jactorio::core
 		}
 
 		TVal x;
+
+
+		friend bool operator==(const Position1& lhs, const Position1& rhs) {
+			return lhs.x == rhs.x;
+		}
+
+		friend bool operator!=(const Position1& lhs, const Position1& rhs) {
+			return !(lhs == rhs);
+		}
 	};
 
 	template <typename TVal>
@@ -42,6 +53,16 @@ namespace jactorio::core
 		}
 
 		TVal y;
+
+
+		friend bool operator==(const Position2& lhs, const Position2& rhs) {
+			return std::tie(static_cast<const Position1<TVal>&>(lhs), lhs.y)
+				== std::tie(static_cast<const Position1<TVal>&>(rhs), rhs.y);
+		}
+
+		friend bool operator!=(const Position2& lhs, const Position2& rhs) {
+			return !(lhs == rhs);
+		}
 	};
 
 	template <typename TVal>
@@ -62,6 +83,16 @@ namespace jactorio::core
 		}
 
 		TVal z;
+
+
+		friend bool operator==(const Position3& lhs, const Position3& rhs) {
+			return std::tie(static_cast<const Position2<TVal>&>(lhs), lhs.z)
+				== std::tie(static_cast<const Position2<TVal>&>(rhs), rhs.z);
+		}
+
+		friend bool operator!=(const Position3& lhs, const Position3& rhs) {
+			return !(lhs == rhs);
+		}
 	};
 
 

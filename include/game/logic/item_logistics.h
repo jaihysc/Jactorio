@@ -31,10 +31,10 @@ namespace jactorio::game
 		/// \return false if failed
 		virtual bool Initialize(const WorldData& world_data,
 		                        data::UniqueDataBase& target_unique_data,
-		                        WorldData::WorldCoord world_x, WorldData::WorldCoord world_y) = 0;
+		                        WorldCoordAxis world_x, WorldCoordAxis world_y) = 0;
 
 		virtual bool Initialize(const WorldData& world_data,
-		                        data::UniqueDataBase& target_unique_data, const WorldData::WorldPair& world_coord) = 0;
+		                        data::UniqueDataBase& target_unique_data, const WorldCoord& world_coord) = 0;
 
 		virtual void Uninitialize() {
 			targetUniqueData_ = nullptr;
@@ -63,10 +63,10 @@ namespace jactorio::game
 
 		bool Initialize(const WorldData& world_data,
 		                data::UniqueDataBase& target_unique_data,
-		                WorldData::WorldCoord world_x, WorldData::WorldCoord world_y) override;
+		                WorldCoordAxis world_x, WorldCoordAxis world_y) override;
 
 		bool Initialize(const WorldData& world_data,
-		                data::UniqueDataBase& target_unique_data, const WorldData::WorldPair& world_coord) override;
+		                data::UniqueDataBase& target_unique_data, const WorldCoord& world_coord) override;
 
 		///
 		///	 \brief Insert provided item at destination
@@ -113,10 +113,10 @@ namespace jactorio::game
 
 		bool Initialize(const WorldData& world_data,
 		                data::UniqueDataBase& target_unique_data,
-		                WorldData::WorldCoord world_x, WorldData::WorldCoord world_y) override;
+		                WorldCoordAxis world_x, WorldCoordAxis world_y) override;
 
 		bool Initialize(const WorldData& world_data,
-		                data::UniqueDataBase& target_unique_data, const WorldData::WorldPair& world_coord) override;
+		                data::UniqueDataBase& target_unique_data, const WorldCoord& world_coord) override;
 
 		///
 		///	 \brief Insert provided item at destination

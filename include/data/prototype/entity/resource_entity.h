@@ -38,14 +38,14 @@ namespace jactorio::data
 
 		void OnBuild(game::WorldData&,
 		             game::LogicData&,
-		             const game::WorldData::WorldPair&,
+		             const WorldCoord&,
 		             game::ChunkTileLayer&, Orientation) const override {
 			assert(false);  // Is not player placeable
 		}
 
 		void OnRemove(game::WorldData&,
 		              game::LogicData&,
-		              const game::WorldData::WorldPair&, game::ChunkTileLayer&) const override {
+		              const WorldCoord&, game::ChunkTileLayer&) const override {
 		}
 
 

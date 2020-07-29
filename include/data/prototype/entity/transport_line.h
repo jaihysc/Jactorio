@@ -5,7 +5,6 @@
 #pragma once
 
 #include <memory>
-#include <utility>
 
 #include "core/data_type.h"
 #include "data/prototype/entity/health_entity.h"
@@ -99,8 +98,8 @@ namespace jactorio::data
 		/// \brief Attempts to retrieve transport line data at world coordinates on tile
 		/// \return pointer to data or nullptr if non existent
 		J_NODISCARD static TransportLineData* GetLineData(const game::WorldData& world_data,
-		                                                  game::WorldData::WorldCoord world_x,
-		                                                  game::WorldData::WorldCoord world_y);
+		                                                  WorldCoordAxis world_x,
+		                                                  WorldCoordAxis world_y);
 
 		static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
 		                                                             TransportLineData* up,
@@ -112,31 +111,31 @@ namespace jactorio::data
 		/// \brief Gets transport segment at world coords
 		/// \return nullptr if no segment exists
 		static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
-		                                                                    game::WorldData::WorldCoord world_x,
-		                                                                    game::WorldData::WorldCoord world_y);
+		                                                                    WorldCoordAxis world_x,
+		                                                                    WorldCoordAxis world_y);
 
 		// ======================================================================
 		// Game events
 
 		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
-		                                         const game::WorldData::WorldPair& world_coords) const override;
+		                                         const WorldCoord& world_coords) const override;
 
 		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const override;
 
 		void OnBuild(game::WorldData& world_data,
 		             game::LogicData& logic_data,
-		             const game::WorldData::WorldPair& world_coords,
+		             const WorldCoord& world_coords,
 		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
 
 		void OnNeighborUpdate(game::WorldData& world_data,
 		                      game::LogicData& logic_data,
-		                      const game::WorldData::WorldPair& emit_world_coords,
-		                      const game::WorldData::WorldPair& receive_world_coords,
+		                      const WorldCoord& emit_world_coords,
+		                      const WorldCoord& receive_world_coords,
 		                      Orientation emit_orientation) const override;
 
 		void OnRemove(game::WorldData& world_data,
 		              game::LogicData& logic_data,
-		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
+		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 
 		// ======================================================================

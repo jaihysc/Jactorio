@@ -23,9 +23,9 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 	float pixels_from_center_x;
 	float pixels_from_center_y;
 	{
-		const unsigned short window_width  = renderer::Renderer::GetWindowWidth();
-		const unsigned short window_height = renderer::Renderer::GetWindowHeight();
-		const auto& matrix                 = renderer::GetMvpMatrix();
+		const auto window_width  = renderer::Renderer::GetWindowWidth();
+		const auto window_height = renderer::Renderer::GetWindowHeight();
+		const auto& matrix       = renderer::GetMvpMatrix();
 
 		// Account for MVP matrices
 		// Normalize to -1 | 1 used by the matrix
@@ -79,7 +79,7 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 	if (tile_y < 0)
 		tile_y -= 1.f;
 
-	mouseSelectedTile_ = std::pair<int, int>(tile_x, tile_y);
+	mouseSelectedTile_ = {static_cast<WorldCoordAxis>(tile_x), static_cast<WorldCoordAxis>(tile_y)};
 }
 
 bool game::PlayerData::MouseSelectedTileInRange() const {
@@ -88,7 +88,7 @@ bool game::PlayerData::MouseSelectedTileInRange() const {
 	// Maximum distance of from the player where tiles can be reached
 	constexpr unsigned int max_reach = 34;
 	const auto tile_dist             =
-		abs(playerPositionX_ - cursor_position.first) + abs(playerPositionY_ - cursor_position.second);
+		abs(playerPositionX_ - cursor_position.x) + abs(playerPositionY_ - cursor_position.y);
 
 	return tile_dist <= max_reach;
 }
@@ -174,8 +174,8 @@ void game::PlayerData::CounterRotatePlacementOrientation() {
 
 void CallOnNeighborUpdate(game::WorldData& world_data,
                           game::LogicData& logic_data,
-                          const game::WorldData::WorldCoord emit_x, const game::WorldData::WorldCoord emit_y,
-                          const game::WorldData::WorldCoord receive_x, const game::WorldData::WorldCoord receive_y,
+                          const WorldCoordAxis emit_x, const WorldCoordAxis emit_y,
+                          const WorldCoordAxis receive_x, const WorldCoordAxis receive_y,
                           const data::Orientation target_orientation) {
 	const game::ChunkTile* tile = world_data.GetTile(receive_x, receive_y);
 	if (tile) {
@@ -195,8 +195,8 @@ void CallOnNeighborUpdate(game::WorldData& world_data,
 /// \param world_y Top left tile y
 void UpdateNeighboringEntities(game::WorldData& world_data,
                                game::LogicData& logic_data,
-                               const game::WorldData::WorldCoord world_x,
-                               const game::WorldData::WorldCoord world_y,
+                               const WorldCoordAxis world_x,
+                               const WorldCoordAxis world_y,
                                const data::Entity* entity_ptr) {
 	// Clockwise from top left
 
@@ -244,7 +244,7 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 
 bool game::PlayerData::TryPlaceEntity(WorldData& world_data,
                                       LogicData& logic_data,
-                                      const WorldData::WorldCoord world_x, const WorldData::WorldCoord world_y) {
+                                      const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
 	auto* tile = world_data.GetTile(world_x, world_y);
 	if (tile == nullptr)
 		return false;
@@ -291,7 +291,7 @@ bool game::PlayerData::TryPlaceEntity(WorldData& world_data,
 	return true;
 }
 
-bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldData::WorldPair& world_pair) {
+bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldCoord& world_pair) {
 	auto* tile = world_data.GetTile(world_pair);
 	if (tile == nullptr)
 		return false;
@@ -327,7 +327,7 @@ bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldData::
 
 void game::PlayerData::TryPickup(WorldData& world_data,
                                  LogicData& logic_data,
-                                 WorldData::WorldCoord tile_x, WorldData::WorldCoord tile_y,
+                                 WorldCoordAxis tile_x, WorldCoordAxis tile_y,
                                  const uint16_t ticks) {
 	auto* tile = world_data.GetTile(tile_x, tile_y);
 

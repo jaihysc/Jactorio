@@ -42,10 +42,10 @@ namespace jactorio::data
 		///
 		/// \brief Sets the prototype pointer for a transport line at tile
 		void BuildTransportLine(
-			const std::pair<uint32_t, uint32_t> world_coords,
+			const WorldCoord world_coords,
 			const Orientation orientation) {
 
-			auto& layer = worldData_.GetTile(world_coords.first, world_coords.second)
+			auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)
 			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents(world_coords, orientation);
@@ -54,17 +54,17 @@ namespace jactorio::data
 		///
 		/// \brief Creates new Transport line segment alongside data at tile
 		void AddTransportLine(const TransportLineData::LineOrientation orientation,
-		                      const game::WorldData::WorldCoord x,
-		                      const game::WorldData::WorldCoord y) {
+		                      const WorldCoordAxis x,
+		                      const WorldCoordAxis y) {
 			auto& layer         = worldData_.GetTile(x, y)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 			layer.prototypeData = &lineProto_;
 
 			TlBuildEvents({x, y}, TransportLineData::ToOrientation(orientation));
 		}
 
-		void AddTransportLine(const game::WorldData::WorldPair& world_coords,
+		void AddTransportLine(const WorldCoord& world_coords,
 		                      const TransportLineData::LineOrientation orientation) {
-			AddTransportLine(orientation, world_coords.first, world_coords.second);
+			AddTransportLine(orientation, world_coords.x, world_coords.y);
 		}
 
 		/// Creates a transport line with the provided orientation above/right/below/left of 1, 1
@@ -94,8 +94,8 @@ namespace jactorio::data
 
 		// ======================================================================
 	private:
-		void DispatchNeighborUpdate(const game::WorldData::WorldPair& emit_coords,
-		                            const game::WorldData::WorldPair& receive_coords,
+		void DispatchNeighborUpdate(const WorldCoord& emit_coords,
+		                            const WorldCoord& receive_coords,
 		                            const Orientation emit_orientation) {
 
 			auto* tile = worldData_.GetTile(receive_coords);
@@ -113,7 +113,7 @@ namespace jactorio::data
 	protected:
 		///
 		/// \brief Dispatches the appropriate events for when a transport line is built
-		void TlBuildEvents(const game::WorldData::WorldPair& world_coords,
+		void TlBuildEvents(const WorldCoord& world_coords,
 		                   const Orientation orientation) {
 			auto& layer = worldData_.GetTile(world_coords)
 			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
@@ -122,21 +122,21 @@ namespace jactorio::data
 
 			// Call on_neighbor_update for the 4 sides
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first, world_coords.second - 1}, Orientation::up);
+			                       {world_coords.x, world_coords.y - 1}, Orientation::up);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first + 1, world_coords.second}, Orientation::right);
+			                       {world_coords.x + 1, world_coords.y}, Orientation::right);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first, world_coords.second + 1}, Orientation::down);
+			                       {world_coords.x, world_coords.y + 1}, Orientation::down);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first - 1, world_coords.second}, Orientation::left);
+			                       {world_coords.x - 1, world_coords.y}, Orientation::left);
 		}
 
 		///
 		/// \brief Dispatches the appropriate events AFTER a transport line is removed 
-		void TlRemoveEvents(const game::WorldData::WorldPair& world_coords) {
+		void TlRemoveEvents(const WorldCoord& world_coords) {
 
 			auto& layer = worldData_.GetTile(world_coords)
 			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
@@ -145,16 +145,16 @@ namespace jactorio::data
 
 			// Call on_neighbor_update for the 4 sides
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first, world_coords.second - 1}, Orientation::up);
+			                       {world_coords.x, world_coords.y - 1}, Orientation::up);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first + 1, world_coords.second}, Orientation::right);
+			                       {world_coords.x + 1, world_coords.y}, Orientation::right);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first, world_coords.second + 1}, Orientation::down);
+			                       {world_coords.x, world_coords.y + 1}, Orientation::down);
 
 			DispatchNeighborUpdate(world_coords,
-			                       {world_coords.first - 1, world_coords.second}, Orientation::left);
+			                       {world_coords.x - 1, world_coords.y}, Orientation::left);
 		}
 
 		// Bend
@@ -183,19 +183,19 @@ namespace jactorio::data
 		// Grouping
 
 		std::vector<game::ChunkTileLayer*>& GetTransportLines(
-			const game::Chunk::ChunkPair& chunk_coords) {
-			return worldData_.GetChunkC(chunk_coords.first, chunk_coords.second)
+			const ChunkCoord& chunk_coords) {
+			return worldData_.GetChunkC(chunk_coords.x, chunk_coords.y)
 			                 ->GetLogicGroup(game::Chunk::LogicGroup::transport_line);
 		}
 
-		J_NODISCARD auto& GetLineData(const game::WorldData::WorldPair& world_coords) const {
+		J_NODISCARD auto& GetLineData(const WorldCoord& world_coords) const {
 			return *static_cast<const TransportLineData*>(
 				worldData_.GetTile(world_coords)->GetLayer(
 					game::ChunkTile::ChunkLayer::entity).GetUniqueData()
 			);
 		}
 
-		auto GetLineSegmentIndex(const game::WorldData::WorldPair& world_coords) const {
+		auto GetLineSegmentIndex(const WorldCoord& world_coords) const {
 			return GetLineData(world_coords).lineSegmentIndex;
 		}
 
@@ -203,8 +203,8 @@ namespace jactorio::data
 		///
 		/// \param first Leading segment
 		/// \param second Segment placed behind leading segment
-		void GroupingValidate(const game::WorldData::WorldPair& first,
-		                      const game::WorldData::WorldPair& second) {
+		void GroupingValidate(const WorldCoord& first,
+		                      const WorldCoord& second) {
 			ASSERT_EQ(GetTransportLines({0, 0}).size(), 1);  // 0, 0 is chunk coordinate
 			EXPECT_EQ(GetLineData(first).lineSegment->length, 2);
 
@@ -214,8 +214,8 @@ namespace jactorio::data
 			EXPECT_EQ(GetLineData(first).lineSegment->targetSegment, nullptr);
 		}
 
-		void GroupBehindValidate(const game::WorldData::WorldPair& first,
-		                         const game::WorldData::WorldPair& second) {
+		void GroupBehindValidate(const WorldCoord& first,
+		                         const WorldCoord& second) {
 			GroupingValidate(first, second);
 			EXPECT_EQ(GetLineData(first).lineSegment->itemOffset, 1);
 

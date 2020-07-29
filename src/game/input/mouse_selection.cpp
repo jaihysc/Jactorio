@@ -8,6 +8,7 @@
 #include "data/prototype/entity/entity.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
+#include "game/world/world_data.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
 
@@ -36,11 +37,11 @@ void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, 
 	if (stack)
 		DrawOverlay(player_data, data_manager,
 		            static_cast<data::Entity*>(stack->item->entityPrototype),
-		            cursor_position.first, cursor_position.second, player_data.placementOrientation);
+		            cursor_position.x, cursor_position.y, player_data.placementOrientation);
 	else
 		DrawOverlay(player_data, data_manager,
 		            nullptr,
-		            cursor_position.first, cursor_position.second, player_data.placementOrientation);
+		            cursor_position.x, cursor_position.y, player_data.placementOrientation);
 }
 
 void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
@@ -61,7 +62,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	}
 
 	// Draw new overlay
-	auto* chunk = world_data.GetChunk(world_x, world_y);
+	auto* chunk = world_data.GetChunkW(world_x, world_y);
 	if (!chunk)
 		return;
 
@@ -81,8 +82,8 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	if (selected_entity && selected_entity->placeable) {
 		// Has item selected
 		const auto set = selected_entity->OnRGetSpriteSet(placement_orientation,
-														  world_data,
-														  {world_x, world_y});
+		                                                  world_data,
+		                                                  {world_x, world_y});
 
 		OverlayElement element{
 			*selected_entity->OnRGetSprite(set),

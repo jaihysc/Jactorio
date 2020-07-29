@@ -2,17 +2,21 @@ import jactorioData as j
 
 def addTile(noiseLayer, endRange, name, spritePath, isWater = False):
     tile = (j.Tile(name)
-                .sprite((j.Sprite()
-                    .load(spritePath)
-                    .group([j.spriteGroup.Terrain])
-                ))
+                .sprite(
+                    j.Sprite()
+                        .load(spritePath)
+                        .group([j.spriteGroup.Terrain])
+                )
                 .isWater(isWater)
     )
     
     noiseLayer.add(endRange, tile)
 
 # Create NoiseLayer
-baseTerrain = j.NoiseLayerTile("base-terrain").startVal(-1).normalize(True)
+baseTerrain = (j.NoiseLayerTile("base-terrain")
+                .startVal(-1)
+                .normalize(True)
+)
 
 addTile(baseTerrain, -0.5, "deep-water-1", "base/graphics/tiles/deep-water.png", True)
 addTile(baseTerrain, -0.25, "water-1", "base/graphics/tiles/water.png", True)
@@ -24,21 +28,22 @@ addTile(baseTerrain, 1, "dirt-1", "base/graphics/tiles/dirt.png")
 ##########################################################
 # Resources
 
-def addResourceEntity(
-    noiseLayer, endRange, name, tileSpritePath, itemSpritePath):
+def addResourceEntity(noiseLayer, endRange, name, tileSpritePath, itemSpritePath):
     # Item for resource
     product = (j.Item(name + "-item")
-        .sprite((j.Sprite()
-                    .load(itemSpritePath)
-                    .group([j.spriteGroup.Terrain, j.spriteGroup.Gui])
-                ))
+        .sprite(
+            j.Sprite()
+                .load(itemSpritePath)
+                .group([j.spriteGroup.Terrain, j.spriteGroup.Gui])
+        )
     )
 
     resourceTile = (j.ResourceEntity()
-                        .sprite((j.Sprite()
-                            .load(tileSpritePath)
-                            .group([j.spriteGroup.Terrain])
-                        ))
+                        .sprite(
+                            j.Sprite()
+                                .load(tileSpritePath)
+                                .group([j.spriteGroup.Terrain])
+                        )
                         .item(product)
     )
     # Add resource tile to NoiseLayer
@@ -49,9 +54,7 @@ def addResourceEntity(
 coalLayer = (j.NoiseLayerEntity("coal-layer")
                 .startVal(0.8)
                 .normalize(False)
-
                 .richness(0.7)
-                
                 .octaveCount(2)
                 .frequency(0.3)
                 .persistence(0.6)
@@ -62,9 +65,7 @@ addResourceEntity(coalLayer, 2, "coal", "base/graphics/resource/coal/coal-ore.pn
 copperLayer = (j.NoiseLayerEntity("copper-layer")
                 .startVal(1)
                 .normalize(False)
-
                 .richness(0.4)
-
                 .octaveCount(2)
                 .frequency(0.5)
                 .persistence(0.7)

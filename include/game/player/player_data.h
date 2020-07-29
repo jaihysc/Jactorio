@@ -10,7 +10,6 @@
 #include "data/prototype/item/item.h"
 #include "data/prototype/item/recipe.h"
 #include "game/world/chunk_tile_layer.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
@@ -28,7 +27,7 @@ namespace jactorio::game
 		// ======================================================================
 		// Player specific mouse selection
 
-		std::pair<int, int> mouseSelectedTile_;
+		WorldCoord mouseSelectedTile_;
 
 	public:
 		///
@@ -38,7 +37,7 @@ namespace jactorio::game
 
 		///
 		/// Gets the world X, Y of the tile the mouse is hovered over, computed by calculate_selected_tile(x, y)
-		J_NODISCARD std::pair<int, int> GetMouseTileCoords() const { return mouseSelectedTile_; }
+		J_NODISCARD WorldCoord GetMouseTileCoords() const { return mouseSelectedTile_; }
 
 		///
 		/// \return true if selected tile is within placement range
@@ -128,13 +127,13 @@ namespace jactorio::game
 		/// \return true if entity was placed
 		bool TryPlaceEntity(WorldData& world_data,
 		                    LogicData& logic_data,
-		                    WorldData::WorldCoord world_x, WorldData::WorldCoord world_y);
+		                    WorldCoordAxis world_x, WorldCoordAxis world_y);
 
 		///
 		/// \brief Attempts to activate the layer at world coordinates
 		/// \return true if layer was activated
 		bool TryActivateLayer(WorldData& world_data,
-		                      const WorldData::WorldPair& world_pair);
+		                      const WorldCoord& world_pair);
 
 		///
 		/// \brief This will either pickup an entity, or mine resources from a resource tile
@@ -142,7 +141,7 @@ namespace jactorio::game
 		/// If resource + entity exists on one tile, picking up entity takes priority
 		void TryPickup(WorldData& world_data,
 		               LogicData& logic_data,
-		               WorldData::WorldCoord tile_x, WorldData::WorldCoord tile_y,
+		               WorldCoordAxis tile_x, WorldCoordAxis tile_y,
 		               uint16_t ticks = 1);
 
 		///

@@ -2,6 +2,7 @@
 
 #include "data/prototype/entity/assembly_machine.h"
 
+#include "game/world/world_data.h"
 #include "renderer/gui/gui_menus.h"
 
 using namespace jactorio;
@@ -120,14 +121,14 @@ void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData&, game::LogicData
 
 void data::AssemblyMachine::OnBuild(game::WorldData& world_data,
                                     game::LogicData& logic_data,
-                                    const game::WorldData::WorldPair& world_coords,
+                                    const WorldCoord& world_coords,
                                     game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
 	tile_layer.MakeUniqueData<AssemblyMachineData>();
 }
 
 void data::AssemblyMachine::OnRemove(game::WorldData& world_data,
                                      game::LogicData& logic_data,
-                                     const game::WorldData::WorldPair& world_coords,
+                                     const WorldCoord& world_coords,
                                      game::ChunkTileLayer& tile_layer) const {
 	auto& machine_data = *tile_layer.GetMultiTileTopLeft().GetUniqueData<AssemblyMachineData>();
 

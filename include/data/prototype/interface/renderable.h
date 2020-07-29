@@ -78,7 +78,7 @@ namespace jactorio::data
 		/// \brief Maps a placementOrientation to a <set, frame>
 		J_NODISCARD virtual Sprite::SetT OnRGetSpriteSet(Orientation orientation,
 		                                                 game::WorldData& world_data,
-		                                                 const game::WorldData::WorldPair& world_coords) const = 0;
+		                                                 const WorldCoord& world_coords) const = 0;
 
 		///
 		/// \brief Gets frame for sprite corresponding to provided game tick 

@@ -2,7 +2,7 @@
 
 #include "game/world/chunk.h"
 
-jactorio::game::Chunk::Chunk(ChunkCoord chunk_x, ChunkCoord chunk_y)
+jactorio::game::Chunk::Chunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y)
 	: position_({chunk_x, chunk_y}) {
 
 	// Allocate and initialize
@@ -12,7 +12,7 @@ jactorio::game::Chunk::Chunk(ChunkCoord chunk_x, ChunkCoord chunk_y)
 	}
 }
 
-jactorio::game::Chunk::Chunk(const ChunkCoord chunk_x, const ChunkCoord chunk_y, ChunkTile* tiles)
+jactorio::game::Chunk::Chunk(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y, ChunkTile* tiles)
 	: position_({chunk_x, chunk_y}) {
 	assert(tiles != nullptr);
 

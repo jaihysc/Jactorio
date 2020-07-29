@@ -16,7 +16,6 @@
 #include "game/logic/inventory_controller.h"
 #include "game/logic/transport_segment.h"
 #include "game/player/player_data.h"
-#include "game/world/chunk_tile.h"
 
 #include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
@@ -84,8 +83,8 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeMan
 		            game::MouseSelection::GetCursorX(),
 		            game::MouseSelection::GetCursorY());
 		ImGui::Text("Cursor world position: %d, %d",
-		            player_data.GetMouseTileCoords().first,
-		            player_data.GetMouseTileCoords().second);
+		            player_data.GetMouseTileCoords().x,
+		            player_data.GetMouseTileCoords().y);
 
 		ImGui::Text("Player position %f %f",
 		            player_data.GetPlayerPositionX(),
@@ -170,7 +169,7 @@ void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::Proto
 	}
 }
 
-std::pair<int32_t, int32_t> last_valid_line_segment{};
+WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
 bool show_transport_segments     = false;
 
@@ -300,7 +299,7 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 
 	const auto selected_tile      = player_data.GetMouseTileCoords();
 	data::TransportLineData* data = data::TransportLine::GetLineData(player_data.GetPlayerWorldData(),
-	                                                                 selected_tile.first, selected_tile.second);
+	                                                                 selected_tile.x, selected_tile.y);
 
 	// Try to use current selected line segment first, otherwise used the last valid if checked
 	game::TransportSegment* segment_ptr = nullptr;
@@ -329,8 +328,8 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 	else {
 		if (use_last_valid_line_segment) {
 			data = data::TransportLine::GetLineData(player_data.GetPlayerWorldData(),
-			                                        last_valid_line_segment.first,
-			                                        last_valid_line_segment.second);
+			                                        last_valid_line_segment.x,
+			                                        last_valid_line_segment.y);
 			if (data)
 				segment_ptr = data->lineSegment.get();
 		}
@@ -436,7 +435,7 @@ void renderer::DebugInserterInfo(game::PlayerData& player_data) {
 
 	auto& inserter_data = *layer.GetUniqueData<data::InserterData>();
 
-	ImGui::Text("Orientation %s", OrientationToStr(inserter_data.orientation));
+	ImGui::Text("Orientation %s", data::OrientationToStr(inserter_data.orientation));
 
 	ImGui::Text("Degree: %f", inserter_data.rotationDegree.getAsDouble());
 

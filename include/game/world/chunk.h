@@ -25,8 +25,6 @@ namespace jactorio::game
 		using OverlayContainer = std::vector<OverlayElement>;
 		using LogicGroupType = std::vector<ChunkTileLayer*>;
 
-		using ChunkCoord = int32_t;  // Chunk coordinates
-		using ChunkPair = std::pair<ChunkCoord, ChunkCoord>;
 
 		static constexpr uint8_t kChunkWidth = 32;
 		static constexpr uint16_t kChunkArea = static_cast<uint16_t>(kChunkWidth) * kChunkWidth;
@@ -36,7 +34,7 @@ namespace jactorio::game
 		/// \brief Default initialization of chunk tiles
 		/// \param chunk_x X position of chunk
 		/// \param chunk_y Y position of chunk
-		Chunk(ChunkCoord chunk_x, ChunkCoord chunk_y);
+		Chunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
 
 		///
 		/// \param chunk_x X position of chunk
@@ -44,7 +42,7 @@ namespace jactorio::game
 		/// \param tiles Array of size 32 * 32 (1024) tiles <br>
 	    ///			Do not delete the provided pointer, it will be automatically
 		///			freed when Chunk is destructed
-		Chunk(ChunkCoord chunk_x, ChunkCoord chunk_y, ChunkTile* tiles);
+		Chunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y, ChunkTile* tiles);
 
 		~Chunk();
 
@@ -61,7 +59,7 @@ namespace jactorio::game
 
 		// ======================================================================
 
-		J_NODISCARD std::pair<int, int> GetPosition() const { return position_; }
+		J_NODISCARD ChunkCoord GetPosition() const { return position_; }
 
 		J_NODISCARD ChunkTile* Tiles() const {
 			return tiles_;
@@ -107,7 +105,7 @@ namespace jactorio::game
 		}
 
 	private:
-		ChunkPair position_;
+		ChunkCoord position_;
 		/// Pointers to the actual tiles since they are static size of 32x32
 		ChunkTile* tiles_ = nullptr;
 	};

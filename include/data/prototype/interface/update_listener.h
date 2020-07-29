@@ -4,7 +4,12 @@
 #define JACTORIO_DATA_PROTOTYPE_INTERFACE_UPDATE_LISTENER_H
 #pragma once
 
-#include "game/world/world_data.h"
+#include "core/data_type.h"
+
+namespace jactorio::game
+{
+	class WorldData;
+}
 
 namespace jactorio::data
 {
@@ -20,8 +25,8 @@ namespace jactorio::data
 		virtual ~IUpdateListener() = default;
 
 		virtual void OnTileUpdate(game::WorldData& world_data,
-		                          const game::WorldData::WorldPair& emit_coords,
-		                          const game::WorldData::WorldPair& receive_coords,
+		                          const WorldCoord& emit_coords,
+		                          const WorldCoord& receive_coords,
 		                          UpdateType type) const = 0;
 	};
 }

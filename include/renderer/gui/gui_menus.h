@@ -12,7 +12,7 @@ namespace jactorio
 {
 	namespace game
 	{
-		struct PlayerData;
+		class PlayerData;
 	}
 
 	namespace data
@@ -58,6 +58,7 @@ namespace jactorio::renderer
 
 
 	// Enum
+#undef J_GUI_WINDOW_SUB
 #define J_GUI_WINDOW_SUB(name_)\
 	name_,
 
@@ -68,6 +69,7 @@ namespace jactorio::renderer
 
 
 	// Menu array
+#undef J_GUI_WINDOW_SUB
 #define J_GUI_WINDOW_SUB(name_)\
 	{name_},
 

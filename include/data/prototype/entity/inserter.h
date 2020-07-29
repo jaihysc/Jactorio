@@ -72,21 +72,21 @@ namespace jactorio::data
 		// ======================================================================
 
 		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
-		                                         const game::WorldData::WorldPair& world_coords) const override;
+		                                         const WorldCoord& world_coords) const override;
 
 		///
 		/// \param orientation Points towards dropoff
 		void OnBuild(game::WorldData& world_data, game::LogicData& logic_data,
-		             const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer,
+		             const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer,
 		             Orientation orientation) const override;
 
 
 		void OnTileUpdate(game::WorldData& world_data,
-		                  const game::WorldData::WorldPair& emit_coords,
-		                  const game::WorldData::WorldPair& receive_coords, UpdateType type) const override;
+		                  const WorldCoord& emit_coords,
+		                  const WorldCoord& receive_coords, UpdateType type) const override;
 
 		void OnRemove(game::WorldData& world_data, game::LogicData& logic_data,
-		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
+		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 
 		void PostLoadValidate(const PrototypeManager&) const override {

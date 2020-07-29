@@ -32,7 +32,7 @@ def addItem(name, path):
         .sprite(j.Sprite()
             .load(path)
             .group([j.spriteGroup.Gui])
-            )
+        )
     )
 
 addItem("inventory-selected-cursor", "core/graphics/hand.png")
