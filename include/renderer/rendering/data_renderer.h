@@ -4,14 +4,19 @@
 #define JACTORIO_RENDERER_RENDERING_DATA_RENDERER_H
 #pragma once
 
+#include "data/prototype/entity/inserter.h"
 #include "data/prototype/interface/renderable.h"
 #include "game/logic/transport_segment.h"
 
 namespace jactorio::renderer
 {
 	void DrawTransportSegmentItems(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-	                               float x_offset, float y_offset,
+	                               const core::Position2<float>& pixel_offset,
 	                               game::TransportSegment& line_segment);
+
+	void DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+	                     const core::Position2<float>& pixel_offset,
+	                     const data::Inserter& inserter_proto, const data::InserterData& inserter_data);
 }
 
 #endif // JACTORIO_RENDERER_RENDERING_DATA_RENDERER_H

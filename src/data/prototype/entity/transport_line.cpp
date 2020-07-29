@@ -38,22 +38,6 @@ data::Orientation data::TransportLineData::ToOrientation(const LineOrientation l
 	}
 }
 
-void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-                                               const float x_offset, const float y_offset) const {
-	// Only draw for the head of segments
-	if (lineSegment->terminationType == game::TransportSegment::TerminationType::straight &&
-		lineSegmentIndex != 0)
-		return;
-
-	if (lineSegment->terminationType != game::TransportSegment::TerminationType::straight &&
-		lineSegmentIndex != 1)
-		return;
-
-	DrawTransportSegmentItems(layer, uv_coords,
-	                          x_offset, y_offset,
-	                          *this->lineSegment);
-}
-
 //
 //
 //
@@ -155,6 +139,25 @@ std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegmen
 	}
 
 	return nullptr;
+}
+
+void data::TransportLine::OnRDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+                                            const core::Position2<float>& pixel_offset,
+                                            const UniqueDataBase* unique_data) const {
+	auto& line_data = *static_cast<const TransportLineData*>(unique_data);
+
+	// Only draw for the head of segments
+	if (line_data.lineSegment->terminationType == game::TransportSegment::TerminationType::straight &&
+		line_data.lineSegmentIndex != 0)
+		return;
+
+	if (line_data.lineSegment->terminationType != game::TransportSegment::TerminationType::straight &&
+		line_data.lineSegmentIndex != 1)
+		return;
+
+	DrawTransportSegmentItems(layer, uv_coords,
+	                          pixel_offset,
+	                          *line_data.lineSegment);
 }
 
 data::Sprite::SetT data::TransportLine::OnRGetSpriteSet(const Orientation orientation, game::WorldData& world_data,

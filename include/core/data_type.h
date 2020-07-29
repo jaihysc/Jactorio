@@ -25,11 +25,14 @@ namespace jactorio
 	constexpr int kGameHertz = 60;  // 60 updates per second
 
 
-	using WorldCoordAxis = int;
+	using WorldCoordAxis = int32_t;
 	using WorldCoord = core::Position2<WorldCoordAxis>;
 
 	using ChunkCoordAxis = int32_t;
 	using ChunkCoord = core::Position2<ChunkCoordAxis>;
+
+	/// Offset from top left of chunk
+	using OverlayOffsetAxis = float;
 
 	
 	using UvPositionT = core::QuadPosition<core::Position2<float>>;

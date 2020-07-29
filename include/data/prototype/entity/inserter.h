@@ -50,6 +50,11 @@ namespace jactorio::data
 	public:
 		PROTOTYPE_CATEGORY(inserter);
 
+		/// Part closer to the base
+		PYTHON_PROP_I(Inserter, Sprite*, armSprite, nullptr);
+		/// The hand holding the item
+		PYTHON_PROP_I(Inserter, Sprite*, handSprite, nullptr);
+
 		///
 		/// \brief Degrees to rotate per tick 
 		/// \remark For Python API use only
@@ -71,6 +76,10 @@ namespace jactorio::data
 
 		// ======================================================================
 
+		void OnRDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+		                      const core::Position2<float>& pixel_offset,
+		                      const UniqueDataBase* unique_data) const override;
+
 		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
 		                                         const WorldCoord& world_coords) const override;
 
@@ -91,6 +100,8 @@ namespace jactorio::data
 
 		void PostLoadValidate(const PrototypeManager&) const override {
 			J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
+			J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
+			J_DATA_ASSERT(handSprite != nullptr, "Hand sprite not provided");
 		}
 
 		void ValidatedPostLoad() override {

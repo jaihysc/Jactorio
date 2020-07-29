@@ -72,14 +72,19 @@ namespace jactorio::renderer
 		///
 		/// \brief Faster non range checked get into spritemapCoords_
 		/// \remark Ensure key always exists
-		J_NODISCARD const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(const SpriteUvCoordsT::key_type key) const noexcept {
+		J_NODISCARD static const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(const SpriteUvCoordsT& map,
+		                                                                         const SpriteUvCoordsT::key_type key) noexcept {
 			try {
-				return const_cast<SpriteUvCoordsT&>(*spritemapCoords_)[key];
+				return const_cast<SpriteUvCoordsT&>(map)[key];
 			}
 			catch (std::exception&) {
 				assert(false);  // Should not throw
 				std::terminate();
 			}
+		}
+
+		J_NODISCARD const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(const SpriteUvCoordsT::key_type key) const noexcept {
+			return GetSpriteUvCoords(*spritemapCoords_, key);
 		}
 
 		///

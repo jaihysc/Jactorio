@@ -1,7 +1,9 @@
 import jactorioData as j
 
 
-def addInserter(name, worldSprite, itemSprite, rotationSpeed, tileReach):
+def addInserter(name, itemSprite,
+                worldSprite, handSprite, armSprite,
+                rotationSpeed, tileReach):
     (j.Inserter(name)
         .pickupTime(0.1)
         .rotationSpeed(rotationSpeed)
@@ -17,6 +19,14 @@ def addInserter(name, worldSprite, itemSprite, rotationSpeed, tileReach):
                 .frames(1)
                 .invertSetFrame(True)
         )
+        .handSprite(
+            j.Sprite()
+                .load(handSprite)
+        )
+        .armSprite(
+            j.Sprite()
+                .load(armSprite)
+        )
 
         .item(
             j.Item(name + "-item")
@@ -29,19 +39,22 @@ def addInserter(name, worldSprite, itemSprite, rotationSpeed, tileReach):
 
 
 addInserter("basic-inserter",
-            "base/graphics/entity/inserter/inserter-platform.png",
             "base/graphics/icon/inserter.png",
-            14.4,
-            1)
+            worldSprite="base/graphics/entity/inserter/inserter-platform.png",
+            handSprite="base/graphics/entity/inserter/inserter-hand-open.png",
+            armSprite="base/graphics/entity/inserter/inserter-hand-base.png",
+            rotationSpeed=14.4, tileReach=1)
 
 addInserter("fast-inserter",
-            "base/graphics/entity/fast-inserter/fast-inserter-platform.png",
             "base/graphics/icon/fast-inserter.png",
-            20.8,
-            1)
+            worldSprite="base/graphics/entity/fast-inserter/fast-inserter-platform.png",
+            handSprite="base/graphics/entity/fast-inserter/fast-inserter-hand-open.png",
+            armSprite="base/graphics/entity/fast-inserter/fast-inserter-hand-base.png",
+            rotationSpeed=20.8, tileReach=1)
 
 addInserter("long-handed-inserter",
-            "base/graphics/entity/long-handed-inserter/long-handed-inserter-platform.png",
             "base/graphics/icon/long-handed-inserter.png",
-            18.8,
-            2)
+            worldSprite="base/graphics/entity/long-handed-inserter/long-handed-inserter-platform.png",
+            handSprite="base/graphics/entity/long-handed-inserter/long-handed-inserter-hand-open.png",
+            armSprite="base/graphics/entity/long-handed-inserter/long-handed-inserter-hand-base.png",
+            rotationSpeed=18.8, tileReach=2)

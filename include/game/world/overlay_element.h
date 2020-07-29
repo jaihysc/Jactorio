@@ -31,9 +31,6 @@ namespace jactorio::game
 		static constexpr float kZPosMultiplier = 0.01f;
 
 	public:
-		/// Offset from top left of chunk
-		using OffsetT = float;
-
 		/*
 		OverlayElement(const data::Sprite& sprite,
 		               const core::Position2<PositionT>& position,
@@ -43,21 +40,21 @@ namespace jactorio::game
 		*/
 
 		OverlayElement(const data::Sprite& sprite,
-		               const core::Position2<OffsetT>& position,
-		               const core::Position2<OffsetT>& size,
+		               const core::Position2<OverlayOffsetAxis>& position,
+		               const core::Position2<OverlayOffsetAxis>& size,
 		               const OverlayLayer layer)
-			: OverlayElement(sprite, core::Position3<OffsetT>{position, ToZPosition(layer)}, size) {
+			: OverlayElement(sprite, core::Position3<OverlayOffsetAxis>{position, ToZPosition(layer)}, size) {
 		}
 
 		OverlayElement(const data::Sprite& sprite,
-		               const core::Position3<OffsetT>& position,
-		               const core::Position2<OffsetT>& size)
+		               const core::Position3<OverlayOffsetAxis>& position,
+		               const core::Position2<OverlayOffsetAxis>& size)
 			: sprite(&sprite), position(position), size(size) {
 		}
 
 		// ======================================================================
 
-		void SetZPosition(const OffsetT z_pos) {
+		void SetZPosition(const OverlayOffsetAxis z_pos) {
 			position.z = z_pos;
 		}
 
@@ -66,7 +63,7 @@ namespace jactorio::game
 			SetZPosition(ToZPosition(layer));
 		}
 
-		J_NODISCARD static OffsetT ToZPosition(const OverlayLayer layer) noexcept {
+		J_NODISCARD static OverlayOffsetAxis ToZPosition(const OverlayLayer layer) noexcept {
 			return kDefaultZPos + kZPosMultiplier * static_cast<float>(layer);
 		}
 
@@ -77,10 +74,10 @@ namespace jactorio::game
 		data::Sprite::SetT spriteSet = 0;
 
 		/// Distance (tiles) from top left of chunk to top left of sprite + z value
-		core::Position3<OffsetT> position;
+		core::Position3<OverlayOffsetAxis> position;
 
 		/// Distance (tiles) the sprite spans
-		core::Position2<OffsetT> size;
+		core::Position2<OverlayOffsetAxis> size;
 	};
 }
 

@@ -10,16 +10,16 @@
 
 using namespace jactorio;
 
+constexpr float kPixelZ = 0.1f;
+
 ///
 /// \param tile_x Tile offset (for distance after each item)
 /// \param tile_y Tile offset
-/// \param x_offset Pixel offset (for aligning the sprite on screen)
-/// \param y_offset Pixel offset
 void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
                                  const game::TransportSegment& line_segment,
                                  std::deque<game::TransportLineItem>& line_segment_side,
                                  float tile_x, float tile_y,
-                                 const float x_offset, const float y_offset) {
+                                 const core::Position2<OverlayOffsetAxis>& pixel_offset) {
 	using namespace game;
 
 	// Either offset_x or offset_y which will be INCREASED or DECREASED
@@ -56,21 +56,21 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 		// Move the target offset (up or down depending on multiplier)
 		*target_offset += line_item.first.getAsDouble() * multiplier;
 
-		const auto& uv_pos = uv_coords.at(line_item.second->sprite->internalId);
+		const auto& uv_pos = renderer::Renderer::GetSpriteUvCoords(uv_coords, line_item.second->sprite->internalId);
 
-		constexpr float pixel_z = 0.1f;
+		constexpr float pixel_z = kPixelZ;
 		// In pixels
 		layer.PushBack(
 			{
 				{
 					{
-						x_offset + tile_x * static_cast<float>(renderer::Renderer::tileWidth),
-						y_offset + tile_y * static_cast<float>(renderer::Renderer::tileWidth),
+						pixel_offset.x + tile_x * static_cast<float>(renderer::Renderer::tileWidth),
+						pixel_offset.y + tile_y * static_cast<float>(renderer::Renderer::tileWidth),
 					},
 					{
-						x_offset +
+						pixel_offset.x +
 						static_cast<float>(tile_x + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
-						y_offset +
+						pixel_offset.y +
 						static_cast<float>(tile_y + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
 					},
 				},
@@ -82,7 +82,7 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 }
 
 void renderer::DrawTransportSegmentItems(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-                                         const float x_offset, const float y_offset,
+                                         const core::Position2<OverlayOffsetAxis>& pixel_offset,
                                          game::TransportSegment& line_segment) {
 	float tile_x_offset = 0;
 	float tile_y_offset = 0;
@@ -183,7 +183,7 @@ void renderer::DrawTransportSegmentItems(RendererLayer& layer, const SpriteUvCoo
 	PrepareTransportSegmentData(layer, uv_coords,
 	                            line_segment, line_segment.left.lane,
 	                            tile_x_offset, tile_y_offset,
-	                            x_offset, y_offset);
+	                            pixel_offset);
 
 prepare_right:
 	if (!line_segment.right.visible)
@@ -285,5 +285,38 @@ prepare_right:
 	PrepareTransportSegmentData(layer, uv_coords,
 	                            line_segment, line_segment.right.lane,
 	                            tile_x_offset, tile_y_offset,
-	                            x_offset, y_offset);
+	                            pixel_offset);
+}
+
+// ======================================================================
+
+void renderer::DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+                               const core::Position2<OverlayOffsetAxis>& pixel_offset, const data::Inserter& inserter_proto,
+                               const data::InserterData& inserter_data) {
+	const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_proto.handSprite->internalId);
+
+	constexpr int arm_width        = 2;
+	constexpr int arm_pixel_offset = (Renderer::tileWidth - arm_width) / 2;
+
+	// Ensures arm is always facing pickup / dropoff
+	const float rotation_offset = static_cast<float>(inserter_data.orientation) * 90;
+
+	layer.PushBack(
+		{
+			{  // Cover tile
+				{
+					pixel_offset.x + arm_pixel_offset,
+					pixel_offset.y + arm_pixel_offset
+				},
+				{
+					pixel_offset.x + Renderer::tileWidth - arm_pixel_offset,
+					pixel_offset.y + Renderer::tileWidth - arm_pixel_offset
+				}
+			},
+			{
+				uv.topLeft,
+				uv.bottomRight
+			}
+		}, kPixelZ, static_cast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset)
+	);
 }
