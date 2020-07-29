@@ -10,19 +10,22 @@ def addInserter(name, worldSprite, itemSprite, rotationSpeed, tileReach):
 
         .tileReach(tileReach)
 
-        .sprite((j.Sprite()
-                 .load(worldSprite)
-                 .sets(4)
-                 .frames(1)
-                 .invertSetFrame(True)
-                 ))
+        .sprite(
+            j.Sprite()
+                .load(worldSprite)
+                .sets(4)
+                .frames(1)
+                .invertSetFrame(True)
+        )
 
-        .item((j.Item(name + "-item")
-               .sprite((j.Sprite()
+        .item(
+            j.Item(name + "-item")
+                .sprite(
+                    j.Sprite()
                         .load(itemSprite)
-                        ))
-               ))
-     )
+                )
+        )
+    )
 
 
 addInserter("basic-inserter",

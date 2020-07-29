@@ -2,22 +2,27 @@ import jactorioData as j
 
 def addAssemblyMachine(name, iconSpritePath, worldSpritePath):
     (j.AssemblyMachine(name)
-        .item((j.Item(name + "-item")
-                .sprite(j.Sprite().load(iconSpritePath))
-               ))
-        .sprite((j.Sprite()
-                 .load(worldSpritePath)
-                 .frames(8)
-                 .sets(4)
-                 .trim(2)
-                 ))
-     .tileWidth(3)
-     .tileHeight(3)
-     
-     .pickupTime(0.1)
-     .assemblySpeed(1)
-     .rotatable(True)
-     )
+        .item(
+            j.Item(name + "-item")
+                .sprite(
+                    j.Sprite()
+                        .load(iconSpritePath)
+                )
+        )
+        .sprite(
+            j.Sprite()
+                .load(worldSpritePath)
+                .frames(8)
+                .sets(4)
+                .trim(2)
+        )
+        .tileWidth(3)
+        .tileHeight(3)
+        
+        .pickupTime(0.1)
+        .assemblySpeed(1)
+        .rotatable(True)
+    )
 
 
 addAssemblyMachine("assembly-machine-1",

@@ -13,10 +13,17 @@ def addContainer(name, invSize, health, worldSprite, itemSprite):
 
         .pickupTime(0.1)
 
-        .sprite(j.Sprite().load(worldSprite))
-        .item(j.Item(name + "-item")
-              .sprite(j.Sprite().load(itemSprite))
-              )
+        .sprite(
+            j.Sprite()
+                .load(worldSprite)
+        )
+        .item(
+            j.Item(name + "-item")
+                .sprite(
+                    j.Sprite()
+                        .load(itemSprite)
+                )
+        )
      )
 
 
