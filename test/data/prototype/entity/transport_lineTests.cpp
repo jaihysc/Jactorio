@@ -183,8 +183,8 @@ namespace jactorio::data
 		// Grouping
 
 		std::vector<game::ChunkTileLayer*>& GetTransportLines(
-			const game::Chunk::ChunkPair& chunk_coords) {
-			return worldData_.GetChunkC(chunk_coords.first, chunk_coords.second)
+			const ChunkCoord& chunk_coords) {
+			return worldData_.GetChunkC(chunk_coords.x, chunk_coords.y)
 			                 ->GetLogicGroup(game::Chunk::LogicGroup::transport_line);
 		}
 

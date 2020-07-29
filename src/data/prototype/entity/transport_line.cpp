@@ -1028,9 +1028,9 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 
 
 		// Update segment in neighboring logic chunk leading into old_segment
-		game::Chunk::ChunkPair neighbor_chunk_coords = chunk.GetPosition();
+		ChunkCoord neighbor_chunk_coords = chunk.GetPosition();
 		OrientationIncrement(o_line_segment->direction,
-		                     neighbor_chunk_coords.first, neighbor_chunk_coords.second, -1);
+		                     neighbor_chunk_coords.x, neighbor_chunk_coords.y, -1);
 
 		auto* neighbor_l_chunk = world_data.GetChunkC(neighbor_chunk_coords);
 		if (neighbor_l_chunk) {

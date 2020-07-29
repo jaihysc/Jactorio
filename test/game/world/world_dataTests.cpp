@@ -44,8 +44,8 @@ namespace jactorio::game
 		const auto* added_chunk = worldData_.AddChunk(chunk);
 
 		// Chunk knows its own location
-		EXPECT_EQ(added_chunk->GetPosition().first, 5);
-		EXPECT_EQ(added_chunk->GetPosition().second, 1);
+		EXPECT_EQ(added_chunk->GetPosition().x, 5);
+		EXPECT_EQ(added_chunk->GetPosition().y, 1);
 
 		// Should not initialize other chunks
 		EXPECT_EQ(worldData_.GetChunkC(-1, -1), nullptr);
@@ -58,8 +58,8 @@ namespace jactorio::game
 		auto* added_chunk = worldData_.AddChunk(Chunk{-5, -1});
 
 		// Chunk knows its own location
-		EXPECT_EQ(added_chunk->GetPosition().first, -5);
-		EXPECT_EQ(added_chunk->GetPosition().second, -1);
+		EXPECT_EQ(added_chunk->GetPosition().x, -5);
+		EXPECT_EQ(added_chunk->GetPosition().y, -1);
 
 
 		// Should not initialize other chunks

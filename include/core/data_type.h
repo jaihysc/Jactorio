@@ -28,6 +28,9 @@ namespace jactorio
 	using WorldCoordAxis = int;
 	using WorldCoord = core::Position2<WorldCoordAxis>;
 
+	using ChunkCoordAxis = int32_t;
+	using ChunkCoord = core::Position2<ChunkCoordAxis>;
+
 	
 	using UvPositionT = core::QuadPosition<core::Position2<float>>;
 	/// Internal id of sprite to uv coordinates

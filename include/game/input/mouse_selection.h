@@ -51,7 +51,7 @@ namespace jactorio::game
 		                 data::Orientation
 		                 placement_orientation);
 	private:
-		Chunk::ChunkPair lastChunkPos_  = {0, 0};
+		ChunkCoord lastChunkPos_  = {0, 0};
 		size_t lastOverlayElementIndex_ = UINT64_MAX;
 	};
 

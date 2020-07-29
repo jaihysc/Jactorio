@@ -18,8 +18,8 @@
 
 using namespace jactorio;
 
-game::Chunk::ChunkCoord game::WorldData::ToChunkCoord(WorldCoordAxis world_coord) {
-	Chunk::ChunkCoord chunk_coord = 0;
+ChunkCoordAxis game::WorldData::ToChunkCoord(WorldCoordAxis world_coord) {
+	ChunkCoordAxis chunk_coord = 0;
 
 	if (world_coord < 0) {
 		chunk_coord -= 1;
@@ -46,11 +46,11 @@ game::OverlayElement::OffsetT game::WorldData::ToOverlayCoord(const WorldCoordAx
 game::Chunk* game::WorldData::AddChunk(const Chunk& chunk) {
 	const auto position = chunk.GetPosition();
 
-	auto conditional = worldChunks_.emplace(std::make_tuple(position.first, position.second), chunk);
+	auto conditional = worldChunks_.emplace(std::make_tuple(position.x, position.y), chunk);
 	return &conditional.first->second;
 }
 
-void game::WorldData::DeleteChunk(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y) {
+void game::WorldData::DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) {
 	worldChunks_.erase(std::make_tuple(chunk_x, chunk_y));
 }
 
@@ -61,12 +61,12 @@ void game::WorldData::ClearChunkData() {
 
 // ======================================================================
 
-game::Chunk* game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x, const Chunk::ChunkCoord chunk_y) {
+game::Chunk* game::WorldData::GetChunkC(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) {
 	return const_cast<Chunk*>(static_cast<const WorldData&>(*this).GetChunkC(chunk_x, chunk_y));
 }
 
-const game::Chunk* game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x,
-                                              const Chunk::ChunkCoord chunk_y) const {
+const game::Chunk* game::WorldData::GetChunkC(const ChunkCoordAxis chunk_x,
+                                              const ChunkCoordAxis chunk_y) const {
 	const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
 	if (worldChunks_.find(key) == worldChunks_.end())
@@ -76,12 +76,12 @@ const game::Chunk* game::WorldData::GetChunkC(const Chunk::ChunkCoord chunk_x,
 }
 
 
-game::Chunk* game::WorldData::GetChunkC(const Chunk::ChunkPair& chunk_pair) {
-	return GetChunkC(chunk_pair.first, chunk_pair.second);
+game::Chunk* game::WorldData::GetChunkC(const ChunkCoord& chunk_pair) {
+	return GetChunkC(chunk_pair.x, chunk_pair.y);
 }
 
-const game::Chunk* game::WorldData::GetChunkC(const Chunk::ChunkPair& chunk_pair) const {
-	return GetChunkC(chunk_pair.first, chunk_pair.second);
+const game::Chunk* game::WorldData::GetChunkC(const ChunkCoord& chunk_pair) const {
+	return GetChunkC(chunk_pair.x, chunk_pair.y);
 }
 
 
@@ -334,8 +334,8 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 }
 
 
-void game::WorldData::QueueChunkGeneration(const Chunk::ChunkCoord chunk_x,
-                                           const Chunk::ChunkCoord chunk_y) const {
+void game::WorldData::QueueChunkGeneration(const ChunkCoordAxis chunk_x,
+                                           const ChunkCoordAxis chunk_y) const {
 	const auto chunk_key = std::make_pair(chunk_x, chunk_y);
 
 	// Is the chunk already under generation? If so return

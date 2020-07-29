@@ -46,9 +46,9 @@ namespace jactorio::game
 		using WorldChunksKey = uint64_t;
 
 		/// world_chunks_key correlate to a chunk
-		std::unordered_map<std::tuple<Chunk::ChunkCoord, Chunk::ChunkCoord>,
+		std::unordered_map<std::tuple<ChunkCoordAxis, ChunkCoordAxis>,
 		                   Chunk,
-		                   core::hash<std::tuple<Chunk::ChunkCoord, Chunk::ChunkCoord>>> worldChunks_;
+		                   core::hash<std::tuple<ChunkCoordAxis, ChunkCoordAxis>>> worldChunks_;
 
 	public:
 		static constexpr uint8_t kChunkWidth = 32;
@@ -57,7 +57,7 @@ namespace jactorio::game
 
 		///
 		/// \brief Converts world coordinate to chunk coordinate
-		static Chunk::ChunkCoord ToChunkCoord(WorldCoordAxis world_coord);
+		static ChunkCoordAxis ToChunkCoord(WorldCoordAxis world_coord);
 
 		///
 		/// \brief Converts world coordinate to overlay element coordinates
@@ -79,7 +79,7 @@ namespace jactorio::game
 		/// \param args Additional arguments to be provided alongside chunk_x chunk_y to Chunk constructor
 		/// \return Pointer to added chunk
 		template <typename ... TChunkArgs>
-		Chunk* EmplaceChunk(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y,
+		Chunk* EmplaceChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y,
 		                    TChunkArgs ... args) {
 			auto conditional = worldChunks_.emplace(std::piecewise_construct,
 			                                        std::make_tuple(chunk_x, chunk_y),
@@ -89,7 +89,7 @@ namespace jactorio::game
 
 		///
 		/// \brief Attempts to delete chunk at chunk_x, chunk_y
-		void DeleteChunk(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y);
+		void DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
 
 		///
 		/// \brief Erases, frees memory from all stored chunk data + its subsequent contents and logic chunks
@@ -99,23 +99,23 @@ namespace jactorio::game
 		///
 		/// \brief Retrieves a chunk in game world using chunk coordinates
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* GetChunkC(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y);
+		J_NODISCARD Chunk* GetChunkC(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
 
 		///
 		/// \brief Retrieves a chunk in game world using chunk coordinates
 		/// \return nullptr if no chunk exists
-		J_NODISCARD const Chunk* GetChunkC(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y) const;
+		J_NODISCARD const Chunk* GetChunkC(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) const;
 
 
 		///
 		/// \brief Retrieves a chunk in game world using chunk coordinates
 		/// \return nullptr if no chunk exists
-		J_NODISCARD Chunk* GetChunkC(const Chunk::ChunkPair& chunk_pair);
+		J_NODISCARD Chunk* GetChunkC(const ChunkCoord& chunk_pair);
 
 		///
 		/// \brief Retrieves a chunk in game world using chunk coordinates
 		/// \return nullptr if no chunk exists
-		J_NODISCARD const Chunk* GetChunkC(const Chunk::ChunkPair& chunk_pair) const;
+		J_NODISCARD const Chunk* GetChunkC(const ChunkCoord& chunk_pair) const;
 
 
 		///
@@ -203,7 +203,7 @@ namespace jactorio::game
 		int worldGenSeed_ = 1001;
 
 		/// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
-		mutable std::set<Chunk::ChunkPair> worldGenChunks_;
+		mutable std::set<std::pair<ChunkCoordAxis, ChunkCoordAxis>> worldGenChunks_;
 		mutable std::mutex worldGenQueueMutex_;
 
 	public:
@@ -215,7 +215,7 @@ namespace jactorio::game
 		///
 		/// \brief Queues a chunk to be generated at specified position
 		/// \remark To be called from render thread only
-		void QueueChunkGeneration(Chunk::ChunkCoord chunk_x, Chunk::ChunkCoord chunk_y) const;
+		void QueueChunkGeneration(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) const;
 
 		///
 		/// \brief Takes first in from chunk generation queue and generates chunk
