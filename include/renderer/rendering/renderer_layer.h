@@ -76,8 +76,8 @@ namespace jactorio::renderer
 		///
 		/// \brief Appends element to layer, after the highest element index where values were assigned
 		/// \remark Ensure GlWriteBegin() has been called first before attempting to write into buffers
-		void PushBack(const Element& element, VertexPositionT::PositionT::ValueT z);
-		void PushBack(const Element& element, VertexPositionT::PositionT::ValueT z, float rotate_deg);
+		void PushBack(const Element& element, VertexPositionT::PositionT::ValueT z) noexcept;
+		void PushBack(const Element& element, VertexPositionT::PositionT::ValueT z, float rotate_deg) noexcept;
 
 		///
 		/// \brief Returns current element capacity of buffers
@@ -85,32 +85,32 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Returns count of elements' index in buffers
-		J_NODISCARD uint64_t GetIndicesCount() const;
+		J_NODISCARD uint64_t GetIndicesCount() const noexcept;
 
 		///
 		/// \brief Queues allocation to hold element count
 		/// \remark Performs reserves upon calling GlHandleBufferResize
-		void Reserve(uint32_t count);
+		void Reserve(uint32_t count) noexcept;
 
 		///
 		/// \brief Queues resizing the buffer down to the initial size on upon construction
 		/// \remark Performs reserves upon calling GlHandleBufferResize
-		void ResizeDefault();
+		void ResizeDefault() noexcept;
 
 		///
 		/// \brief Signal to begin overriding old existing data in buffers 
 		/// \remark Does not guarantee that underlying buffers will be zeroed, merely that
 		/// the data will not by uploaded with glBufferSubData
-		void Clear();
+		void Clear() noexcept;
 
 		// ======================================================================
 
 		///
 		/// \brief Begins writing data to buffers
-		void GlWriteBegin();
+		void GlWriteBegin() noexcept;
 		///
 		/// \brief Ends writing data to buffers
-		void GlWriteEnd();
+		void GlWriteEnd() noexcept;
 
 
 		///
@@ -119,23 +119,23 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Deletes vertex and index buffers
-		void GlDeleteBuffers();
+		void GlDeleteBuffers() noexcept;
 
 		///
 		/// \brief Binds the vertex buffers, call this prior to drawing
-		void GlBindBuffers() const;
+		void GlBindBuffers() const noexcept;
 
 	private:
 		///
 		/// \brief Handles detection of buffer resizing
 		/// \return true if ok to push back into buffers, false if not
-		bool PrePushBackChecks();
+		bool PrePushBackChecks() noexcept;
 
-		void SetBufferVertex(uint32_t buffer_index, const VertexPositionT& v_pos, VertexPositionT::PositionT::ValueT z) const;
+		void SetBufferVertex(uint32_t buffer_index, const VertexPositionT& v_pos, VertexPositionT::PositionT::ValueT z) const noexcept;
 		void SetBufferVertex(uint32_t buffer_index, const VertexPositionT& v_pos, VertexPositionT::PositionT::ValueT z,
-		                     float rotate_deg) const;
+		                     float rotate_deg) const noexcept;
 
-		void SetBufferUv(uint32_t buffer_index, const UvPositionT& u_pos) const;
+		void SetBufferUv(uint32_t buffer_index, const UvPositionT& u_pos) const noexcept;
 
 		///
 		/// \brief Generates indices to draw tiles using the grid from gen_render_grid
@@ -150,7 +150,7 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Only deletes heap vertex buffers, does not set pointers to nullptr
-		void GlFreeBuffers() const;
+		void GlFreeBuffers() const noexcept;
 
 		// ======================================================================
 

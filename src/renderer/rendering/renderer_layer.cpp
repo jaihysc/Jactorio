@@ -22,7 +22,7 @@ renderer::RendererLayer::~RendererLayer() {
 
 // ======================================================================
 
-void renderer::RendererLayer::PushBack(const Element& element, const VertexPositionT::PositionT::ValueT z) {
+void renderer::RendererLayer::PushBack(const Element& element, const VertexPositionT::PositionT::ValueT z) noexcept {
 	if (!PrePushBackChecks())
 		return;
 
@@ -34,7 +34,7 @@ void renderer::RendererLayer::PushBack(const Element& element, const VertexPosit
 }
 
 void renderer::RendererLayer::PushBack(const Element& element, const VertexPositionT::PositionT::ValueT z,
-                                       const float rotate_deg) {
+                                       const float rotate_deg) noexcept {
 	if (!PrePushBackChecks())
 		return;
 
@@ -49,11 +49,11 @@ uint32_t renderer::RendererLayer::GetCapacity() const noexcept {
 	return eCapacity_;
 }
 
-uint64_t renderer::RendererLayer::GetIndicesCount() const {
+uint64_t renderer::RendererLayer::GetIndicesCount() const noexcept {
 	return static_cast<uint64_t>(nextElementIndex_) * kInIndicesPerElement;
 }
 
-void renderer::RendererLayer::Reserve(const uint32_t count) {
+void renderer::RendererLayer::Reserve(const uint32_t count) noexcept {
 	assert(count > 0);  // Count must be greater than 0
 
 	gResizeVertexBuffers_ = true;
@@ -61,15 +61,15 @@ void renderer::RendererLayer::Reserve(const uint32_t count) {
 	LOG_MESSAGE(debug, "Queuing buffer resize");
 }
 
-void renderer::RendererLayer::ResizeDefault() {
+void renderer::RendererLayer::ResizeDefault() noexcept {
 	Reserve(kInitialSize);
 }
 
-void renderer::RendererLayer::Clear() {
+void renderer::RendererLayer::Clear() noexcept {
 	nextElementIndex_ = 0;
 }
 
-void renderer::RendererLayer::GlWriteBegin() {
+void renderer::RendererLayer::GlWriteBegin() noexcept {
 	assert(!writeEnabled_);
 	assert(eCapacity_ > 0);  // Mapping fails unless capacity is at least 1
 
@@ -79,7 +79,7 @@ void renderer::RendererLayer::GlWriteBegin() {
 	writeEnabled_ = true;
 }
 
-void renderer::RendererLayer::GlWriteEnd() {
+void renderer::RendererLayer::GlWriteEnd() noexcept {
 	assert(writeEnabled_);
 
 	vertexVb_->UnMap();
@@ -106,7 +106,7 @@ void renderer::RendererLayer::GlHandleBufferResize() {
 	LOG_MESSAGE_F(debug, "Buffer resized to %d", eCapacity_);
 }
 
-void renderer::RendererLayer::GlDeleteBuffers() {
+void renderer::RendererLayer::GlDeleteBuffers() noexcept {
 	GlFreeBuffers();
 
 	vertexArray_ = nullptr;
@@ -115,7 +115,7 @@ void renderer::RendererLayer::GlDeleteBuffers() {
 	indexIb_     = nullptr;
 }
 
-void renderer::RendererLayer::GlBindBuffers() const {
+void renderer::RendererLayer::GlBindBuffers() const noexcept {
 	vertexArray_->Bind();
 	vertexVb_->Bind();
 	uvVb_->Bind();
@@ -124,7 +124,7 @@ void renderer::RendererLayer::GlBindBuffers() const {
 
 // ======================================================================
 
-bool renderer::RendererLayer::PrePushBackChecks() {
+bool renderer::RendererLayer::PrePushBackChecks() noexcept {
 	assert(writeEnabled_);
 
 	// Skips data appending operation if buffer needs to resize
@@ -143,7 +143,7 @@ bool renderer::RendererLayer::PrePushBackChecks() {
 }
 
 void renderer::RendererLayer::SetBufferVertex(const uint32_t buffer_index, const VertexPositionT& v_pos,
-                                              const VertexPositionT::PositionT::ValueT z) const {
+                                              const VertexPositionT::PositionT::ValueT z) const noexcept {
 	// Populate in following order: topL, topR, bottomR, bottomL (X Y)
 
 	vertexBuffer_[buffer_index + 0] = v_pos.topLeft.x;
@@ -164,7 +164,7 @@ void renderer::RendererLayer::SetBufferVertex(const uint32_t buffer_index, const
 }
 
 void renderer::RendererLayer::SetBufferVertex(const uint32_t buffer_index, const VertexPositionT& v_pos,
-                                              const VertexPositionT::PositionT::ValueT z, const float rotate_deg) const {
+                                              const VertexPositionT::PositionT::ValueT z, const float rotate_deg) const noexcept {
 	// Center origin (0, 0) on sprite
 
 	const auto x_offset = (v_pos.bottomRight.x - v_pos.topLeft.x) / 2;
@@ -220,7 +220,7 @@ void renderer::RendererLayer::SetBufferVertex(const uint32_t buffer_index, const
 }
 
 void renderer::RendererLayer::SetBufferUv(const uint32_t buffer_index,
-                                          const UvPositionT& u_pos) const {
+                                          const UvPositionT& u_pos) const noexcept {
 	// Populate in following order: bottomL, bottomR, topR, topL (X Y) (NOT THE SAME AS ABOVE!!)
 
 	// UV
@@ -291,7 +291,7 @@ void renderer::RendererLayer::GlInitBuffers() {
 	gResizeVertexBuffers_ = false;
 }
 
-void renderer::RendererLayer::GlFreeBuffers() const {
+void renderer::RendererLayer::GlFreeBuffers() const noexcept {
 	delete vertexArray_;
 	delete vertexVb_;
 	delete uvVb_;

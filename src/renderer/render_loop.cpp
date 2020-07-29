@@ -79,7 +79,7 @@ void RenderingLoop(const renderer::DisplayWindow& display_window) {
 				std::lock_guard<std::mutex> guard{game::game_data->world.worldDataMutex};
 
 				// MVP Matrices updated in here
-				main_renderer->RenderPlayerPosition(
+				main_renderer->GlRenderPlayerPosition(
 					game::game_data->logic.GameTick(),
 					game::game_data->world,
 					game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY()
