@@ -5,14 +5,14 @@
 
 #include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
-#include "data/prototype/interface/renderable.h"
+#include "data/prototype/interface/prototype_renderable.h"
 
 namespace jactorio::data
 {
 	///
 	/// \brief Tiles which are auto-placed by the world generator <br>
 	/// Configure how the world generator places these tiles with a Noise_layer
-	class Tile final : public PrototypeBase, public IRenderable
+	class Tile final : public IPrototypeRenderable
 	{
 	public:
 		PROTOTYPE_CATEGORY(tile);
@@ -43,9 +43,18 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Renderer
-		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
-		                                                GameTickT game_tick) const override {
-			return {sprite, 0};
+
+		J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT set) const override {
+			return sprite;
+		}
+
+		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const override {
+			return 0;
+		}
+
+		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
+		                                         const game::WorldData::WorldPair& world_coords) const override {
+			return 0;
 		}
 
 		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,

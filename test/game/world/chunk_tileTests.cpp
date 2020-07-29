@@ -62,23 +62,12 @@ namespace jactorio::game
 	TEST(ChunkTile, GetSetChunkLayerProps) {
 		auto ct = ChunkTile();
 
-		{
-			auto tile_proto = data::Tile();
+		auto tile_proto = data::Tile();
 
-			ct.SetTilePrototype(ChunkTile::ChunkLayer::base, &tile_proto);
+		ct.SetTilePrototype(&tile_proto);
 
-			EXPECT_EQ(
-				ct.GetTilePrototype(ChunkTile::ChunkLayer::base),
-				&tile_proto);
-		}
-		{
-			auto sprite_proto = data::Sprite();
-
-			ct.SetSpritePrototype(ChunkTile::ChunkLayer::overlay, &sprite_proto);
-
-			EXPECT_EQ(
-				ct.GetSpritePrototype(ChunkTile::ChunkLayer::overlay),
-				&sprite_proto);
-		}
+		EXPECT_EQ(
+			ct.GetTilePrototype(),
+			&tile_proto);
 	}
 }

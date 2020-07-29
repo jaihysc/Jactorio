@@ -62,6 +62,11 @@ namespace jactorio::game
 		/// \brief Converts world coordinate to chunk coordinate
 		static Chunk::ChunkCoord ToChunkCoord(WorldCoord world_coord);
 
+		///
+		/// \brief Converts world coordinate to overlay element coordinates
+		static float ToOverlayCoord(WorldCoord world_coord);  // TODO type alias
+
+
 		// World access
 
 		///

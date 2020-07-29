@@ -66,13 +66,12 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeMan
 		glm::vec3* view_translation = GetViewTransform();
 		ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
 
-		ImGui::Text("Layer count | Tile: %d   Object: %d",
-		            game::ChunkTile::kTileLayerCount, game::Chunk::kObjectLayerCount);
+		ImGui::Text("Layer count | Tile: %d", game::ChunkTile::kTileLayerCount);
 
 		if (ImGui::Button("Clear debug overlays")) {
 			for (auto* chunk : player_data.GetPlayerWorldData().LogicGetChunks()) {
 
-				auto& object_layer = chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
+				auto& object_layer = chunk->GetOverlay(game::OverlayLayer::general);
 				object_layer.clear();
 			}
 		}
@@ -199,7 +198,7 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 
 	// Get all update points and add it to the chunk's objects for drawing
 	for (auto* chunk : world_data.LogicGetChunks()) {
-		auto& object_layer = chunk->GetObject(game::Chunk::ObjectLayer::debug_overlay);
+		auto& object_layer = chunk->GetOverlay(game::OverlayLayer::general);
 		object_layer.clear();
 
 		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
@@ -285,8 +284,12 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 			else
 				outline_sprite = sprite_stop;  // None moving
 
-			object_layer.emplace_back(direction_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
-			object_layer.emplace_back(outline_sprite, pos_x, pos_y, segment_len_x, segment_len_y);
+			object_layer.emplace_back(
+				game::OverlayElement{*direction_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, game::OverlayLayer::general}
+			);
+			object_layer.emplace_back(
+				game::OverlayElement{*outline_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, game::OverlayLayer::general}
+			);
 		}
 	}
 }

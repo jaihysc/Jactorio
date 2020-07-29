@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/noise_layer.h"
+#include "data/prototype/tile/noise_layer.h"
 #include "data/prototype/tile/tile.h"
 
 namespace jactorio::data

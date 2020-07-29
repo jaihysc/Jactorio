@@ -105,7 +105,7 @@ bool game::PlayerData::TargetTileValid(WorldData* world_data, const int x, const
 		return false;
 
 	// If the player is on water, they are allowed to walk on water
-	if (origin_tile->GetTilePrototype(ChunkTile::ChunkLayer::base)->isWater)
+	if (origin_tile->GetTilePrototype()->isWater)
 		return true;
 
 	const ChunkTile* tile = world_data->GetTile(x, y);
@@ -113,7 +113,7 @@ bool game::PlayerData::TargetTileValid(WorldData* world_data, const int x, const
 	if (tile == nullptr)
 		return false;
 
-	return !tile->GetTilePrototype(ChunkTile::ChunkLayer::base)->isWater;
+	return !tile->GetTilePrototype()->isWater;
 }
 
 void game::PlayerData::MovePlayerX(const float amount) {
@@ -334,7 +334,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 	const data::Entity* chosen_ptr;
 	bool is_resource_ptr = true;
 	{
-		const auto* entity_ptr   = tile->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
+		const auto* entity_ptr   = tile->GetEntityPrototype();
 		const auto* resource_ptr = tile->GetEntityPrototype(ChunkTile::ChunkLayer::resource);
 
 		// Picking up entities takes priority since it is higher on the layer

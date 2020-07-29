@@ -4,9 +4,9 @@
 
 using namespace jactorio;
 
-data::Sprite::SetT data::Inserter::OnRGetSet(const Orientation orientation,
-                                             game::WorldData&,
-                                             const game::WorldData::WorldPair&) const {
+data::Sprite::SetT data::Inserter::OnRGetSpriteSet(const Orientation orientation,
+												   game::WorldData&,
+                                                   const game::WorldData::WorldPair&) const {
 	switch (orientation) {
 
 	case Orientation::up:
@@ -30,7 +30,7 @@ void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
                              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer,
                              Orientation orientation) const {
 	auto* inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
-	inserter_data->set  = OnRGetSet(orientation, world_data, world_coords);
+	inserter_data->set  = OnRGetSpriteSet(orientation, world_data, world_coords);
 
 
 	// Dropoff side

@@ -4,6 +4,7 @@
 
 #include "data/prototype/sprite.h"
 #include "data/prototype/interface/update_listener.h"
+#include "data/prototype/tile/tile.h"
 #include "game/world/chunk.h"
 #include "game/world/world_data.h"
 
@@ -16,11 +17,23 @@ namespace jactorio::game
 	};
 
 	TEST_F(WorldDataTest, ToChunkCoords) {
-		EXPECT_EQ(jactorio::game::WorldData::ToChunkCoord(-33), -2);
-		EXPECT_EQ(jactorio::game::WorldData::ToChunkCoord(-32), -1);
-		EXPECT_EQ(jactorio::game::WorldData::ToChunkCoord(-1), -1);
-		EXPECT_EQ(jactorio::game::WorldData::ToChunkCoord(31), 0);
-		EXPECT_EQ(jactorio::game::WorldData::ToChunkCoord(32), 1);
+		EXPECT_EQ(WorldData::ToChunkCoord(-33), -2);
+		EXPECT_EQ(WorldData::ToChunkCoord(-32), -1);
+		EXPECT_EQ(WorldData::ToChunkCoord(-1), -1);
+		EXPECT_EQ(WorldData::ToChunkCoord(31), 0);
+		EXPECT_EQ(WorldData::ToChunkCoord(32), 1);
+	}
+
+	TEST_F(WorldDataTest, ToOverlayCoords) {
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(0), 0);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(31), 31);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(32), 0);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(63), 31);
+
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-1), 31);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-32), 0);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-33), 31);
+		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-65), 31);
 	}
 
 	TEST_F(WorldDataTest, WorldAddChunk) {
@@ -61,15 +74,14 @@ namespace jactorio::game
 		const auto chunk2 = Chunk{5, 1};
 
 		// Set a sprite at chunk2 so it can be tested
-		data::Sprite sprite{};
-		chunk2.Tiles()[0].SetSpritePrototype(ChunkTile::ChunkLayer::overlay, &sprite);
+		data::Tile tile{};
+		chunk2.Tiles()[0].SetTilePrototype(&tile);
 
 		worldData_.AddChunk(chunk);
 		worldData_.AddChunk(chunk2);
 
 		EXPECT_NE(worldData_.GetChunkC(5, 1)->Tiles()[0]
-		          .GetSpritePrototype(jactorio::game::ChunkTile::ChunkLayer::overlay),
-		          &sprite);
+		          .GetTilePrototype(), &tile);
 	}
 
 	TEST_F(WorldDataTest, WorldDeleteChunk) {

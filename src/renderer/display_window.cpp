@@ -2,9 +2,8 @@
 
 #include <GL/glew.h>
 
-#include "renderer/window/window_manager.h"
+#include "renderer/display_window.h"
 
-#include <array>
 #include <SDL.h>
 
 #include "jactorio.h"
@@ -12,62 +11,47 @@
 #include "game/input/mouse_selection.h"
 #include "renderer/render_loop.h"
 #include "renderer/gui/imgui_manager.h"
+#include "renderer/opengl/error.h"
 #include "renderer/rendering/renderer.h"
 
-std::array<int, 2> window_pos{0, 0};
-std::array<int, 2> window_size{0, 0};
-std::array<int, 2> viewport_size{0, 0};
-bool update_viewport = true;
-
-SDL_Window* sdl_window = nullptr;
-SDL_GLContext sdl_gl_context;
-
-int display_count  = 0;
-int active_display = 0;
-
-bool gl_context_active = false;
-
+using namespace jactorio;
 
 /// Fullscreen
-bool jactorio::renderer::IsFullscreen() {
+bool renderer::DisplayWindow::IsFullscreen() const {
 	constexpr Uint32 fullscreen_flag = SDL_WINDOW_FULLSCREEN;
-	return SDL_GetWindowFlags(sdl_window) & fullscreen_flag;
+	return SDL_GetWindowFlags(sdlWindow_) & fullscreen_flag;
 }
 
-void jactorio::renderer::SetFullscreen(const bool desired_fullscreen) {
+void renderer::DisplayWindow::SetFullscreen(const bool desired_fullscreen) {
 	if (IsFullscreen() == desired_fullscreen)
 		return;
 
 	if (desired_fullscreen) {
 		// backup window position and window size
-		SDL_GetWindowPosition(sdl_window, &window_pos[0], &window_pos[1]);
-		SDL_GetWindowSize(sdl_window, &window_size[0], &window_size[1]);
+		SDL_GetWindowPosition(sdlWindow_, &windowPos_[0], &windowPos_[1]);
+		SDL_GetWindowSize(sdlWindow_, &windowSize_[0], &windowSize_[1]);
 
 		// get resolution of monitor
 		// switch to full screen
-		SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		SDL_SetWindowFullscreen(sdlWindow_, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
 	else {
 		// Exit fullscreen
-		SDL_SetWindowFullscreen(sdl_window, 0);
+		SDL_SetWindowFullscreen(sdlWindow_, 0);
 
 		// restore last window size and position
-		SDL_SetWindowPosition(sdl_window, window_pos[0], window_pos[1]);
-		SDL_SetWindowSize(sdl_window, window_size[0], window_size[1]);
+		SDL_SetWindowPosition(sdlWindow_, windowPos_[0], windowPos_[1]);
+		SDL_SetWindowSize(sdlWindow_, windowSize_[0], windowSize_[1]);
 	}
-
-	update_viewport = true;
 }
 
 ///
 
-int jactorio::renderer::InitWindow(const int width, const int height) {
+int renderer::DisplayWindow::Init(const int width, const int height) {
 	LOG_MESSAGE(info, "Using SDL2 for window creation");
 
 	// ======================================================================
 	// Initialize SDL
-
-	// InitGlfwErrorHandling();
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 		LOG_MESSAGE(critical, "SDL initialization failed");
@@ -76,7 +60,7 @@ int jactorio::renderer::InitWindow(const int width, const int height) {
 
 	// Window initialization
 
-	sdl_window = SDL_CreateWindow(
+	sdlWindow_ = SDL_CreateWindow(
 		"Jactorio " JACTORIO_VERSION,      // window title
 		SDL_WINDOWPOS_UNDEFINED,           // initial x position
 		SDL_WINDOWPOS_UNDEFINED,           // initial y position
@@ -84,21 +68,16 @@ int jactorio::renderer::InitWindow(const int width, const int height) {
 		height,                            // height, in pixels
 		SDL_WINDOW_OPENGL                  // flags - see below
 	);
-	if (!sdl_window) {
+	if (!sdlWindow_) {
 		SDL_Quit();
 		LOG_MESSAGE(critical, "Error initializing window");
 		goto sdl_error;
 	}
 
-	SDL_SetWindowResizable(sdl_window, SDL_TRUE);
+	SDL_SetWindowResizable(sdlWindow_, SDL_TRUE);
 
-	// Multi monitor information
-	display_count = SDL_GetNumVideoDisplays();
-
-	SDL_GetWindowPosition(sdl_window, &window_pos[0], &window_pos[1]);
-	SDL_GetWindowSize(sdl_window, &window_size[0], &window_size[1]);
-
-	update_viewport = true;
+	SDL_GetWindowPosition(sdlWindow_, &windowPos_[0], &windowPos_[1]);
+	SDL_GetWindowSize(sdlWindow_, &windowSize_[0], &windowSize_[1]);
 
 	// Set the Jactorio icon for the window
 	{
@@ -114,13 +93,12 @@ int jactorio::renderer::InitWindow(const int width, const int height) {
 
 		// See https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom#Remarks
 
-		SDL_SetWindowIcon(sdl_window, surface);
+		SDL_SetWindowIcon(sdlWindow_, surface);
 		SDL_FreeSurface(surface);
 	}
 
-	// Enables transparency in textures
-	sdl_gl_context = SDL_GL_CreateContext(sdl_window);
-	if (sdl_gl_context == nullptr) {
+	sdlGlContext_ = SDL_GL_CreateContext(sdlWindow_);
+	if (sdlGlContext_ == nullptr) {
 		LOG_MESSAGE(critical, "Failed to create OpenGL Context");
 		goto sdl_error;
 	}
@@ -130,17 +108,19 @@ int jactorio::renderer::InitWindow(const int width, const int height) {
 
 	if (glewInit() != GLEW_OK) {
 		LOG_MESSAGE(critical, "GLEW initialization failed");
-		goto glew_error;
+		goto gl_error;
 	}
-
 
 	// ======================================================================
 	// Opengl Setup
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// Always Vsync
+	if (SDL_GL_SetSwapInterval(1) == -1) {
+		LOG_MESSAGE_F(critical, "Failed to set gl swap interval: %s", SDL_GetError());
+		goto gl_error;
+	}
 
-	gl_context_active = true;
+	glContextActive_ = true;
 	LOG_MESSAGE_F(info, "OpenGL initialized - OpenGL Version: %s", glGetString(GL_VERSION));
 	return 0;
 
@@ -148,25 +128,24 @@ int jactorio::renderer::InitWindow(const int width, const int height) {
 	// Error handling
 
 sdl_error:
-	if (sdl_window)
-		SDL_DestroyWindow(sdl_window);
+	if (sdlWindow_)
+		SDL_DestroyWindow(sdlWindow_);
 	SDL_Quit();
 	return 2;
 
-glew_error:
-	SDL_GL_DeleteContext(sdl_gl_context);
-	SDL_DestroyWindow(sdl_window);
+gl_error:
+	SDL_GL_DeleteContext(sdlGlContext_);
+	SDL_DestroyWindow(sdlWindow_);
 	SDL_Quit();
 	return 3;
 }
 
-
-int jactorio::renderer::TerminateWindow() {
-	SDL_GL_DeleteContext(sdl_gl_context);
-	SDL_DestroyWindow(sdl_window);
+int renderer::DisplayWindow::Terminate() {
+	SDL_GL_DeleteContext(sdlGlContext_);
+	SDL_DestroyWindow(sdlWindow_);
 	SDL_Quit();
 
-	gl_context_active = false;
+	glContextActive_ = false;
 
 	LOG_MESSAGE(info, "SDL, OpenGL terminated");
 	return 0;
@@ -174,16 +153,16 @@ int jactorio::renderer::TerminateWindow() {
 
 /// Window
 
-SDL_Window* jactorio::renderer::GetWindow() {
-	return sdl_window;
+SDL_Window* renderer::DisplayWindow::GetWindow() const {
+	return sdlWindow_;
 }
 
-SDL_GLContext jactorio::renderer::GetContext() {
-	return sdl_gl_context;
+SDL_GLContext renderer::DisplayWindow::GetContext() const {
+	return sdlGlContext_;
 }
 
-bool jactorio::renderer::WindowContextActive() {
-	return gl_context_active;
+bool renderer::DisplayWindow::WindowContextActive() const {
+	return glContextActive_;
 }
 
 // ======================================================================
@@ -193,18 +172,7 @@ void HandleWindowEvent(const SDL_Event& sdl_event) {
 	switch (sdl_event.window.event) {
 	case SDL_WINDOWEVENT_RESIZED:
 	case SDL_WINDOWEVENT_SIZE_CHANGED:
-		{
-			// Ignore window minimize (resolution 0 x 0)
-			const auto x = sdl_event.window.data1;
-			const auto y = sdl_event.window.data2;
-			if (x > 0 && y > 0) {
-				// glViewport is critical, changes the size of the rendering area
-				glViewport(0, 0, x, y);
-				jactorio::renderer::SetRecalculateRenderer(x, y);
-
-				LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", x, y);
-			}
-		}
+		renderer::ChangeWindowSize(sdl_event.window.data1, sdl_event.window.data2);
 		break;
 
 	case SDL_WINDOWEVENT_SHOWN:
@@ -230,7 +198,7 @@ void HandleWindowEvent(const SDL_Event& sdl_event) {
 	}
 }
 
-void jactorio::renderer::HandleSdlEvent(const SDL_Event& sdl_event) {
+void renderer::DisplayWindow::HandleSdlEvent(const SDL_Event& sdl_event) const {
 	switch (sdl_event.type) {
 	case SDL_WINDOWEVENT:
 		HandleWindowEvent(sdl_event);

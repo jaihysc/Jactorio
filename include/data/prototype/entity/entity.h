@@ -8,7 +8,7 @@
 
 #include "jactorio.h"
 
-#include "data/prototype/interface/renderable.h"
+#include "data/prototype/interface/prototype_renderable.h"
 #include "data/prototype/item/item.h"
 #include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
@@ -18,13 +18,13 @@ namespace jactorio::data
 {
 	///
 	/// \brief Unique per entity placed in the world
-	struct EntityData : RenderableData
+	struct EntityData : PrototypeRenderableData
 	{
 	};
 
 	///
 	/// \brief Placeable items in the world
-	class Entity : public PrototypeBase, public IRenderable, public IRotatable
+	class Entity : public IPrototypeRenderable, public IRotatable
 	{
 	public:
 		Entity() = default;
@@ -96,9 +96,19 @@ namespace jactorio::data
 		// ======================================================================
 		// Renderer events
 
-		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
-		                                                GameTickT game_tick) const override {
-			return {this->sprite, 0};
+
+		J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT set) const override {
+			return sprite;
+		}
+
+		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
+		                                         const game::WorldData::WorldPair& world_coords) const override {
+			return 0;
+		}
+
+		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+		                                             GameTickT game_tick) const override {
+			return 0;
 		}
 
 		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,

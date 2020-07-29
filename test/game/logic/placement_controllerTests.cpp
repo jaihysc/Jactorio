@@ -77,7 +77,7 @@ namespace jactorio::game
 						tile_ptr = water_tile;
 					}
 
-					chunk_tiles[y * kChunkWidth + x].SetTilePrototype(ChunkTile::ChunkLayer::base, tile_ptr);
+					chunk_tiles[y * kChunkWidth + x].SetTilePrototype(tile_ptr);
 				}
 			}
 
@@ -107,7 +107,7 @@ namespace jactorio::game
 
 		// Set entity and sprite layer
 		EXPECT_EQ(
-			chunk->Tiles()[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+			chunk->Tiles()[0].GetEntityPrototype(),
 			entity.get());
 
 		EXPECT_FALSE(chunk->Tiles()[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).IsMultiTile());
@@ -122,7 +122,7 @@ namespace jactorio::game
 
 		EXPECT_EQ(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 1, 0), false);
 		EXPECT_EQ(
-			chunk->Tiles()[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+			chunk->Tiles()[0].GetEntityPrototype(),
 			nullptr);
 
 	}
@@ -144,7 +144,7 @@ namespace jactorio::game
 
 			// Set entity and sprite layer
 			EXPECT_EQ(
-				chunk->Tiles()[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+				chunk->Tiles()[0].GetEntityPrototype(),
 				entity.get());
 		}
 
@@ -153,7 +153,7 @@ namespace jactorio::game
 
 		// Should all be nullptr after being removed
 		EXPECT_EQ(
-			chunk->Tiles()[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+			chunk->Tiles()[0].GetEntityPrototype(),
 			nullptr);
 	}
 
@@ -166,7 +166,7 @@ namespace jactorio::game
 
 		// Should all remain nullptr
 		EXPECT_EQ(
-			chunk->Tiles()[0].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+			chunk->Tiles()[0].GetEntityPrototype(),
 			nullptr);
 	}
 
@@ -190,7 +190,7 @@ namespace jactorio::game
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * kChunkWidth + x;
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+					chunk->Tiles()[index].GetEntityPrototype(),
 					entity.get());
 
 				// Should count up according to the rules specified in entity_index
@@ -221,7 +221,7 @@ namespace jactorio::game
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * kChunkWidth + x;
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+					chunk->Tiles()[index].GetEntityPrototype(),
 					nullptr);
 			}
 		}
@@ -246,7 +246,7 @@ namespace jactorio::game
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * kChunkWidth + x;
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+					chunk->Tiles()[index].GetEntityPrototype(),
 					nullptr);
 			}
 		}
@@ -281,7 +281,7 @@ namespace jactorio::game
 		for (int y = 5; y < 5 + 3; ++y) {
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+				EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(),
 				          nullptr);
 
 				// Entity index is undefined since no entity exists now
@@ -304,7 +304,7 @@ namespace jactorio::game
 		for (int y = 5; y < 5 + 3; ++y) {
 			for (int x = 5; x < 5 + 3; ++x) {
 				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+				EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(),
 				          nullptr);
 
 				// Entity index is undefined since no entity exists now
@@ -334,7 +334,7 @@ namespace jactorio::game
 			for (int x = 9; x < 9 + 3; ++x) {
 				const auto index = y * kChunkWidth + x;
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+					chunk->Tiles()[index].GetEntityPrototype(),
 					entity.get());
 
 				// Should count up according to the rules specified in entity_index
@@ -375,67 +375,9 @@ namespace jactorio::game
 		for (int y = 10; y < 10 + 4; ++y) {
 			for (int x = 9; x < 9 + 3; ++x) {
 				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(jactorio::game::ChunkTile::ChunkLayer::entity),
+				EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(),
 				          nullptr);
 			}
 		}
-	}
-
-
-	TEST_F(PlacementControllerTest, PlaceSprite3x3) {
-		const auto sprite = std::make_unique<data::Sprite>();
-		const auto* chunk = worldData_.GetChunkC(0, 0);
-
-
-		PlaceSpriteAtCoords(
-			worldData_,
-			ChunkTile::ChunkLayer::overlay,
-			sprite.get(),
-			3, 3,
-			9, 10);
-
-		// Expect entity and sprite layer to be set, as well as entity_index
-		for (int y = 10; y < 10 + 3; ++y) {
-			for (int x = 9; x < 9 + 3; ++x) {
-				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(chunk->Tiles()[index].GetSpritePrototype(jactorio::game::ChunkTile::ChunkLayer::overlay),
-				          sprite.get());
-			}
-		}
-
-	}
-
-	TEST_F(PlacementControllerTest, RemoveSprite3x3) {
-		const auto sprite = std::make_unique<data::Sprite>();
-		const auto chunk  = worldData_.GetChunkC(0, 0);
-
-
-		PlaceSpriteAtCoords(
-			worldData_,
-			ChunkTile::ChunkLayer::overlay,
-			sprite.get(),
-			3, 3,
-			9, 10);
-
-		PlaceSpriteAtCoords(
-			worldData_,
-			ChunkTile::ChunkLayer::overlay,
-			nullptr,
-			3, 3,
-			9, 10);
-
-		// Expect entity and sprite layer to be set, as well as entity_index
-		for (int y = 10; y < 10 + 3; ++y) {
-			for (int x = 9; x < 9 + 3; ++x) {
-				const auto index = y * kChunkWidth + x;
-
-				ChunkTileLayer& tile =
-					chunk->Tiles()[index].GetLayer(ChunkTile::ChunkLayer::overlay);
-
-				EXPECT_EQ(tile.prototypeData, nullptr);
-				EXPECT_EQ(tile.multiTileIndex, 0);
-			}
-		}
-
 	}
 }

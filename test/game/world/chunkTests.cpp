@@ -69,7 +69,7 @@ namespace jactorio::game
 		Chunk chunk_a{0, 0};
 
 		// Should return the layer specified by the index of the enum objectLayer
-		EXPECT_EQ(&chunk_a.GetObject(Chunk::ObjectLayer::debug_overlay), &chunk_a.objects[0]);
+		EXPECT_EQ(&chunk_a.GetOverlay(OverlayLayer::general), &chunk_a.overlays[0]);
 	}
 
 	TEST(Chunk, GetLogicGroup) {

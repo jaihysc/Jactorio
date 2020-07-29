@@ -4,90 +4,185 @@
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_H
 #pragma once
 
+#include <exception>
+#include <future>
 #include <glm/glm.hpp>
 
+#include "core/data_type.h"
+#include "game/world/chunk_tile_layer.h"
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/rendering/spritemap_generator.h"
+
+namespace jactorio::game
+{
+	class WorldData;
+	class Chunk;
+	class ChunkTile;
+}
 
 namespace jactorio::renderer
 {
 	class Renderer
 	{
 	public:
+		static constexpr unsigned int tileWidth = 6;
+
+		static constexpr double kDepthBufferNearMax = 1.f;
+		static constexpr double kDepthBufferFarMax  = -1.f;
+
 		Renderer();
 
-	private:
-		// #################################################
-		// Sprites
-		// Internal ids to spritemap positions
-		static std::unordered_map<unsigned int, core::QuadPosition> spritemapCoords_;
+		// ======================================================================
+		// Properties
 
-	public:
-		static void SetSpritemapCoords(
-			const std::unordered_map<unsigned, core::QuadPosition>& spritemap_coords);
+
+		J_NODISCARD static unsigned int GetWindowWidth() noexcept { return windowWidth_; }
+		J_NODISCARD static unsigned int GetWindowHeight() noexcept { return windowHeight_; }
+
+		// ======================================================================
+		// OpenGL calls
 
 		///
-		/// \param internal_id internal id of sprite prototype
-		static core::QuadPosition GetSpritemapCoords(unsigned int internal_id);
+		/// \brief Sets up OpenGl settings, only need to call once on program start
+		static void GlSetup() noexcept;
 
-	public:
-		// #################################################
+		static void GlClear() noexcept;
+
+		///
+		/// \brief Resizes rendering buffers to new window size 
+		void GlResizeWindow(unsigned int window_x, unsigned int window_y) noexcept;
+
+
+		J_NODISCARD size_t GetDrawThreads() const noexcept { return drawThreads_; }
+		void GlSetDrawThreads(size_t threads);
+
+		// ======================================================================
 		// Rendering (Recalculated on window resize)
 
-		// 2 Rendering layers so that one can be drawn to while another is being rendered
-		// Since objects are of varying lengths, the layer must resize
-
-		// 3rd layer is for rendering items that should be above all layers (e.g transport line items)
-		static constexpr uint8_t kRenderLayerCount = 3;
-
-		RendererLayer renderLayers[kRenderLayerCount];
-
-		///
-		/// \brief Changes zoom 
+		/// Changes zoom 
 		float tileProjectionMatrixOffset = 0;
 
-		static unsigned short tileWidth;
 
 		///
-		/// \brief Resizes opengl buffers used for rendering,
-		/// Must be called from an OpenGL context
-		void GRecalculateBuffers(unsigned short window_x, unsigned short window_y);
+		/// \brief Renderer will lookup uv coords at the provided spritemap_coords
+		void SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept {
+			spritemapCoords_ = &spritemap_coords;
+		}
+
+		///
+		/// \brief Faster non range checked get into spritemapCoords_
+		/// \remark Ensure key always exists
+		J_NODISCARD const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(const SpriteUvCoordsT::key_type key) const noexcept {
+			try {
+				return const_cast<SpriteUvCoordsT&>(*spritemapCoords_)[key];
+			}
+			catch (std::exception&) {
+				assert(false);  // Should not throw
+				std::terminate();
+			}
+		}
+
+		///
+		/// \param world_data World to render
+		/// \param player_x X Position of the player in tiles
+		/// \param player_y Y Position of the player in tiles
+		void GlRenderPlayerPosition(GameTickT game_tick,
+		                            const game::WorldData& world_data,
+		                            float player_x, float player_y);
+
+
+		// ======================================================================
+		// Rendering internals
+	private:
+
+		// Center the world at position 
+		// This is achieved by offsetting the rendered chunks, for decimal numbers, the view matrix is used
+
+		// Player movement is in tiles
+		// Every chunk_width tiles, shift 1 chunk
+		// Remaining tiles are offset
+
+		// The top left of the tile at player position will be at the center of the screen
+
+		// On a 1920 x 1080 screen:
+		// 960 pixels from left
+		// 540 pixels form top
+		// Right and bottom varies depending on tile size
+		void CalculateViewMatrix(float player_x, float player_y) noexcept;
+
+
+		/// Extra chunks drawn around the border
+		/// Hides the camera moving
+		static constexpr int kPaddingChunks = 1;
+
+		///
+		/// \brief Number of tiles to draw to fill window dimensions
+		J_NODISCARD core::Position2<int> GetTileDrawAmount() noexcept;
+
+		///
+		/// \brief All tiles drawn will have its position added to tile offset
+		J_NODISCARD core::Position2<int> GetTileDrawOffset(int position_x, int position_y) noexcept;
+
+		///
+		/// \brief Top left chunk coordinates to begin drawing
+		J_NODISCARD core::Position2<int> GetChunkDrawStart(int position_x, int position_y) noexcept;
+
+		///
+		/// \brief Number of chunks to draw to fill window dimensions
+		J_NODISCARD core::Position2<int> GetChunkDrawAmount(int position_x, int position_y) noexcept;
+
+
+		// Each chunk draw unit gets a renderer layer
+		size_t drawThreads_ = 0;
+
+		std::vector<std::future<void>> chunkDrawThreads_;
+
+		/// Each thread gets 2 layers for rendering tiles + unique data
+		std::vector<RendererLayer> renderLayers_;
+
+		///
+		/// \param row_start Chunk coordinate where the row of chunks starts
+		/// \param chunk_span Number of chunks spanned
+		/// \param render_tile_offset Offset drawn tiles on screen by this tile amount
+		void PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data,
+		                     core::Position2<int> row_start, int chunk_span,
+		                     core::Position2<int> render_tile_offset,
+		                     GameTickT game_tick) const noexcept;
+
+		void PrepareChunk(RendererLayer& r_layer, const game::Chunk& chunk,
+		                  core::Position2<int> render_tile_offset,
+		                  GameTickT game_tick) const noexcept;
+
+		void PrepareTileLayers(RendererLayer& r_layer, game::ChunkTile& tile,
+		                       const core::Position2<float>& pixel_pos,
+		                       GameTickT game_tick) const noexcept;
+
+		void PrepareOverlayLayers(RendererLayer& r_layer, const game::Chunk& chunk,
+		                          core::Position2<int> render_tile_offset) const;
+
+
+		static void ApplySpriteUvAdjustment(UvPositionT& uv,
+		                                    const UvPositionT& uv_offset) noexcept;
+
+		static void ApplyMultiTileUvAdjustment(UvPositionT& uv,
+		                                       const game::ChunkTileLayer& tile_layer) noexcept;
 
 		///
 		/// \brief Draws current data to the screen
-		/// \param element_count Count of elements to draw (1 element = 6 indices)
-		static void GDraw(unsigned int element_count);
-		static void GClear();
-
-
-	private:
-		// #################################################
-		// Window properties
-		static unsigned short windowWidth_;
-		static unsigned short windowHeight_;
-
-	public:
-		J_NODISCARD static unsigned short GetWindowWidth();
-		J_NODISCARD static unsigned short GetWindowHeight();
-
-
-	private:
-		// #################################################
-		// Grid properties (rendering, MVP matrices)
-
-		unsigned int gridVerticesCount_ = 0;
-		unsigned int gridElementsCount_ = 0;
-
-		unsigned short tileCountX_ = 0;
-		unsigned short tileCountY_ = 0;
-
-	public:
-		J_NODISCARD unsigned short GetGridSizeX() const;
-		J_NODISCARD unsigned short GetGridSizeY() const;
+		/// \param index_count Count of indices to draw
+		static void GlDraw(uint64_t index_count) noexcept;
 
 		///
 		/// \brief Updates projection matrix and zoom level
-		void UpdateTileProjectionMatrix();
+		void GlUpdateTileProjectionMatrix() noexcept;
+
+		// ======================================================================
+
+		/// Internal ids to spritemap positions
+		const SpriteUvCoordsT* spritemapCoords_;
+
+		static unsigned int windowWidth_;
+		static unsigned int windowHeight_;
 	};
 };
 

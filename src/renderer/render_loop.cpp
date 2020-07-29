@@ -11,13 +11,12 @@
 #include "jactorio.h"
 #include "core/resource_guard.h"
 
+#include "renderer/display_window.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/opengl/shader.h"
 #include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/spritemap_generator.h"
-#include "renderer/rendering/world_renderer.h"
-#include "renderer/window/window_manager.h"
 
 #include "game/game_data.h"
 #include "game/logic_loop.h"
@@ -26,19 +25,29 @@
 
 using namespace jactorio;
 
-unsigned short window_x = 0;
-unsigned short window_y = 0;
+unsigned int window_x = 0;
+unsigned int window_y = 0;
 
 renderer::Renderer* main_renderer = nullptr;
 
-void renderer::SetRecalculateRenderer(const unsigned short window_size_x,
-                                      const unsigned short window_size_y) {
+void renderer::ChangeWindowSize(const unsigned int window_size_x,
+                                const unsigned int window_size_y) {
+	// Ignore minimize
+	if (window_size_x == 0 && window_size_y == 0)
+		return;
+	
+	// Same size
+	if (window_x == window_size_x && window_y == window_size_y)
+		return;
+	
 	window_x = window_size_x;
 	window_y = window_size_y;
 
 	game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
-		main_renderer->GRecalculateBuffers(window_x, window_y);
+		main_renderer->GlResizeWindow(window_x, window_y);
 	});
+
+	LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", window_size_x, window_size_y);
 }
 
 renderer::Renderer* renderer::GetBaseRenderer() {
@@ -46,13 +55,8 @@ renderer::Renderer* renderer::GetBaseRenderer() {
 }
 
 
-void RenderingLoop() {
+void RenderingLoop(const renderer::DisplayWindow& display_window) {
 	LOG_MESSAGE(info, "2 - Runtime stage");
-
-	// From my testing, allocating it on the heap is faster than using the stack
-	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
-	main_renderer = new renderer::Renderer();
-
 
 	auto next_frame = std::chrono::steady_clock::now();  // For zeroing the time
 
@@ -70,22 +74,24 @@ void RenderingLoop() {
 
 			// ======================================================================
 			// World
-			renderer::Renderer::GClear();
+			{
+				renderer::Renderer::GlClear();
+				std::lock_guard<std::mutex> guard{game::game_data->world.worldDataMutex};
 
-			// MVP Matrices updated in here
-			// Mutex locks in function call
-			RenderPlayerPosition(
-				game::game_data->logic.GameTick(),
-				game::game_data->world,
-				main_renderer,
-				game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY());
+				// MVP Matrices updated in here
+				main_renderer->GlRenderPlayerPosition(
+					game::game_data->logic.GameTick(),
+					game::game_data->world,
+					game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY()
+				);
+			}
 
 			// ======================================================================
 			// Gui
 			{
 				std::lock_guard<std::mutex> guard{game::game_data->player.mutex};
 
-				renderer::ImguiDraw(game::game_data->player, game::game_data->prototype, game::game_data->event);
+				ImguiDraw(display_window, game::game_data->player, game::game_data->prototype, game::game_data->event);
 			}
 		}
 		// ======================================================================
@@ -98,11 +104,11 @@ void RenderingLoop() {
 		}
 		std::this_thread::sleep_until(next_frame);
 
-		SDL_GL_SwapWindow(renderer::GetWindow());
+		SDL_GL_SwapWindow(display_window.GetWindow());
 
 		while (SDL_PollEvent(&e)) {
 			ImGui_ImplSDL2_ProcessEvent(&e);
-			renderer::HandleSdlEvent(e);
+			display_window.HandleSdlEvent(e);
 		}
 	}
 }
@@ -114,9 +120,9 @@ void renderer::RenderInit() {
 	});
 
 	// Init window
-	core::ResourceGuard window_manager_guard(&TerminateWindow);
+	DisplayWindow display_window{};
 	try {
-		if (InitWindow(840, 490) != 0)
+		if (display_window.Init(840, 490) != 0)
 			return;
 	}
 	catch (data::DataException&) {
@@ -125,7 +131,7 @@ void renderer::RenderInit() {
 
 
 	core::ResourceGuard imgui_manager_guard(&ImguiTerminate);
-	Setup(GetWindow());
+	Setup(display_window);
 
 	// Shader
 	const Shader shader(
@@ -155,8 +161,16 @@ void renderer::RenderInit() {
 	renderer_sprites.GInitializeSpritemap(game::game_data->prototype, data::Sprite::SpriteGroup::terrain, true);
 	renderer_sprites.GInitializeSpritemap(game::game_data->prototype, data::Sprite::SpriteGroup::gui, false);
 
+
+	// From my testing, allocating it on the heap is faster than using the stack
+	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
+	main_renderer = new Renderer();
+
+	Renderer::GlSetup();
+	main_renderer->GlSetDrawThreads(8);
+
 	// Terrain
-	Renderer::SetSpritemapCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);
+	main_renderer->SetSpriteUvCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);
 	renderer_sprites.GetTexture(data::Sprite::SpriteGroup::terrain)->Bind(0);
 
 	// Gui
@@ -167,12 +181,12 @@ void renderer::RenderInit() {
 
 	game::game_data->input.key.Register([]() {
 		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
-			SetFullscreen(!IsFullscreen());
-			main_renderer->GRecalculateBuffers(window_x, window_y);
+			// display_window.SetFullscreen(!display_window.IsFullscreen());
+			// main_renderer->GRecalculateBuffers(window_x, window_y);
 		});
 	}, SDLK_SPACE, game::InputAction::key_down);
 
-	RenderingLoop();
+	RenderingLoop(display_window);
 
 	LOG_MESSAGE(info, "Renderer thread exited");
 }

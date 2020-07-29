@@ -12,20 +12,22 @@
 #include "core/filesystem.h"
 #include "data/data_exception.h"
 
-jactorio::data::Sprite::Sprite(const std::string& sprite_path) {
+using namespace jactorio;
+
+data::Sprite::Sprite(const std::string& sprite_path) {
 	LoadImage(sprite_path);
 }
 
-jactorio::data::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group)
+data::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group)
 	: group(std::move(group)) {
 	LoadImage(sprite_path);
 }
 
-jactorio::data::Sprite::~Sprite() {
+data::Sprite::~Sprite() {
 	stbi_image_free(spriteBuffer_);
 }
 
-jactorio::data::Sprite::Sprite(const Sprite& other)
+data::Sprite::Sprite(const Sprite& other)
 	: PrototypeBase(other),
 	  group(other.group),
 	  width_(other.width_),
@@ -41,7 +43,7 @@ jactorio::data::Sprite::Sprite(const Sprite& other)
 	}
 }
 
-jactorio::data::Sprite::Sprite(Sprite&& other) noexcept
+data::Sprite::Sprite(Sprite&& other) noexcept
 	: PrototypeBase{std::move(other)},
 	  group{std::move(other.group)},
 	  frames{other.frames},
@@ -57,8 +59,8 @@ jactorio::data::Sprite::Sprite(Sprite&& other) noexcept
 
 // ======================================================================
 
-bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) const {
-	for (auto& i : this->group) {
+bool data::Sprite::IsInGroup(const SpriteGroup group) const {
+	for (const auto& i : this->group) {
 		if (i == group)
 			return true;
 	}
@@ -66,9 +68,9 @@ bool jactorio::data::Sprite::IsInGroup(const SpriteGroup group) const {
 	return false;
 }
 
-void jactorio::data::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group) {
+void data::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group) {
 	LOG_MESSAGE(debug, "Using default sprite group:");
-	for (auto& group : new_group) {
+	for (const auto& group : new_group) {
 		LOG_MESSAGE_F(debug, "    %d", static_cast<int>(group));
 	}
 
@@ -78,7 +80,7 @@ void jactorio::data::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& 
 	}
 }
 
-void jactorio::data::Sprite::LoadImageFromFile() {
+void data::Sprite::LoadImageFromFile() {
 	spriteBuffer_ = stbi_load(
 		spritePath_.c_str(),
 		&width_,
@@ -98,8 +100,7 @@ void jactorio::data::Sprite::LoadImageFromFile() {
 }
 
 
-jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(SetT set,
-                                                               FrameT frame) const {
+UvPositionT data::Sprite::GetCoords(SetT set, FrameT frame) const {
 	float width_base  = static_cast<float>(width_) / static_cast<float>(frames);
 	float height_base = static_cast<float>(height_) / static_cast<float>(sets);
 
@@ -138,18 +139,18 @@ jactorio::core::QuadPosition jactorio::data::Sprite::GetCoords(SetT set,
 	};
 }
 
-const unsigned char* jactorio::data::Sprite::GetSpritePtr() const {
+const unsigned char* data::Sprite::GetSpritePtr() const {
 	return spriteBuffer_;
 }
 
-jactorio::data::Sprite* jactorio::data::Sprite::LoadImage(const std::string& image_path) {
+data::Sprite* data::Sprite::LoadImage(const std::string& image_path) {
 	spritePath_ = core::ResolvePath("data/" + image_path);
 	LoadImageFromFile();
 
 	return this;
 }
 
-void jactorio::data::Sprite::PostLoadValidate(const PrototypeManager&) const {
+void data::Sprite::PostLoadValidate(const PrototypeManager&) const {
 	J_DATA_ASSERT(frames > 0, "Frames must be at least 1");
 	J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
 }

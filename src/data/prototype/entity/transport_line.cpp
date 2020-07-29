@@ -38,7 +38,7 @@ data::Orientation data::TransportLineData::ToOrientation(const LineOrientation l
 	}
 }
 
-void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer,
+void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
                                                const float x_offset, const float y_offset) const {
 	// Only draw for the head of segments
 	if (lineSegment->terminationType == game::TransportSegment::TerminationType::straight &&
@@ -49,28 +49,9 @@ void data::TransportLineData::OnDrawUniqueData(renderer::RendererLayer& layer,
 		lineSegmentIndex != 1)
 		return;
 
-	DrawTransportSegmentItems(layer,
+	DrawTransportSegmentItems(layer, uv_coords,
 	                          x_offset, y_offset,
 	                          *this->lineSegment);
-}
-
-//
-
-data::Sprite::SetT data::TransportLine::OnRGetSet(const Orientation orientation,
-                                                  game::WorldData& world_data,
-                                                  const game::WorldData::WorldPair& world_coords) const {
-
-	auto* t_center = GetLineData(world_data, world_coords.first, world_coords.second - 1);
-	auto* c_left   = GetLineData(world_data, world_coords.first - 1, world_coords.second);
-	auto* c_right  = GetLineData(world_data, world_coords.first + 1, world_coords.second);
-	auto* b_center = GetLineData(world_data, world_coords.first, world_coords.second + 1);
-
-	return static_cast<uint16_t>(GetLineOrientation(orientation, t_center, c_right, b_center, c_left));
-}
-
-std::pair<data::Sprite*, data::Sprite::FrameT> data::TransportLine::OnRGetSprite(const UniqueDataBase*,
-                                                                                 const GameTickT game_tick) const {
-	return AllOfSet(*sprite, game_tick);
 }
 
 //
@@ -175,6 +156,21 @@ std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegmen
 
 	return nullptr;
 }
+
+data::Sprite::SetT data::TransportLine::OnRGetSpriteSet(const Orientation orientation, game::WorldData& world_data,
+                                                        const game::WorldData::WorldPair& world_coords) const {
+	auto* t_center = GetLineData(world_data, world_coords.first, world_coords.second - 1);
+	auto* c_left   = GetLineData(world_data, world_coords.first - 1, world_coords.second);
+	auto* c_right  = GetLineData(world_data, world_coords.first + 1, world_coords.second);
+	auto* b_center = GetLineData(world_data, world_coords.first, world_coords.second + 1);
+
+	return static_cast<uint16_t>(GetLineOrientation(orientation, t_center, c_right, b_center, c_left));
+}
+
+data::Sprite::FrameT data::TransportLine::OnRGetSpriteFrame(const UniqueDataBase& unique_data, const GameTickT game_tick) const {
+	return AllOfSet(*sprite, game_tick);
+}
+
 
 void RemoveFromLogic(game::WorldData& world_data,
                      const game::WorldData::WorldPair& world_coords, game::TransportSegment& line_segment) {

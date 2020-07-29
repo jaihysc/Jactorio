@@ -61,22 +61,16 @@ namespace jactorio::data
 		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
 		                game::ChunkTileLayer* tile_layer) const override;
 
-		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
-		                                                GameTickT game_tick) const override;
 
-		J_NODISCARD Sprite::SetT OnRGetSet(Orientation orientation,
-		                                   game::WorldData& world_data,
-		                                   const game::WorldData::WorldPair& world_coords)
-		const override;
+		J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT set) const override;
+
+		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
+		                                         const game::WorldData::WorldPair& world_coords) const override;
+
+		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const override;
 
 		// ======================================================================
 		// Logic
-	private:
-		///
-		/// \brief Sets up deferred callback for when it has mined a resource 
-		void RegisterMineCallback(game::LogicData::DeferralTimer& timer, MiningDrillData* unique_data) const;
-
-	public:
 		///
 		/// \briefs Finds the FIRST output item of the mining drill, beginning from top left
 		J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, game::WorldData::WorldPair world_pair) const;
@@ -119,6 +113,11 @@ namespace jactorio::data
 			spriteS->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 			spriteW->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 		}
+
+	private:
+		///
+		/// \brief Sets up deferred callback for when it has mined a resource 
+		void RegisterMineCallback(game::LogicData::DeferralTimer& timer, MiningDrillData* unique_data) const;
 	};
 }
 

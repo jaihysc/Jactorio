@@ -31,7 +31,6 @@ namespace jactorio::game
 			base = 0,
 			resource,
 			entity,
-			overlay,  // Cursor highlights, inserter arrows, etc
 			count_
 		};
 
@@ -46,8 +45,8 @@ namespace jactorio::game
 			return layers[layer_index];
 		}
 
-		static unsigned short GetLayerIndex(ChunkLayer category) {
-			return static_cast<unsigned short>(category);
+		static unsigned int GetLayerIndex(ChunkLayer category) {
+			return static_cast<unsigned int>(category);
 		}
 
 
@@ -55,20 +54,15 @@ namespace jactorio::game
 		// Methods below are type checked to avoid getting / setting the wrong data
 
 		// chunk_layer::base only
-		J_NODISCARD const data::Tile* GetTilePrototype(ChunkLayer category) const;
-		void SetTilePrototype(ChunkLayer category, const data::Tile* tile_prototype) const;
+		J_NODISCARD const data::Tile* GetTilePrototype(ChunkLayer category = ChunkLayer::base) const;
+		void SetTilePrototype(const data::Tile* tile_prototype, ChunkLayer category = ChunkLayer::base) const;
 
 
 		// chunk_layer::resource, chunk_layer::entity only
-		J_NODISCARD const data::Entity* GetEntityPrototype(ChunkLayer category) const;
-		void SetEntityPrototype(ChunkLayer category, const data::Entity* tile_prototype) const;
+		J_NODISCARD const data::Entity* GetEntityPrototype(ChunkLayer category = ChunkLayer::entity) const;
+		void SetEntityPrototype(const data::Entity* tile_prototype, ChunkLayer category = ChunkLayer::entity) const;
 
 
-		// chunk_layer::overlay only
-		J_NODISCARD const data::Sprite* GetSpritePrototype(ChunkLayer category) const;
-		void SetSpritePrototype(ChunkLayer category, const data::Sprite* tile_prototype) const;
-
-	public:
 		// ============================================================================================
 		// Minimize the variables below vvvv
 

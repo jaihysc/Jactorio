@@ -61,7 +61,6 @@ add_compile_definitions(JACTORIO_BUILD_TEST)  # Disables warning when using test
 set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 # ======================================== Test files .cpp
 set(JACTORIO_TEST_FILES
-	${JACTORIO_TEST_DIR}/core/data_typeTests.cpp
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/float_mathTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
@@ -104,6 +103,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
 
 

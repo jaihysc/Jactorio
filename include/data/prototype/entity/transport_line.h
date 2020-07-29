@@ -11,6 +11,7 @@
 #include "data/prototype/entity/health_entity.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_segment.h"
+#include "renderer/rendering/renderer.h"
 
 namespace jactorio::data
 {
@@ -69,7 +70,7 @@ namespace jactorio::data
 		/// \brief Converts lineOrientation to placementOrientation
 		static Orientation ToOrientation(LineOrientation line_orientation);
 
-		void OnDrawUniqueData(renderer::RendererLayer& layer,
+		void OnDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
 		                      float x_offset, float y_offset) const override;
 	};
 
@@ -117,6 +118,11 @@ namespace jactorio::data
 		// ======================================================================
 		// Game events
 
+		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
+		                                         const game::WorldData::WorldPair& world_coords) const override;
+
+		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const override;
+
 		void OnBuild(game::WorldData& world_data,
 		             game::LogicData& logic_data,
 		             const game::WorldData::WorldPair& world_coords,
@@ -132,13 +138,6 @@ namespace jactorio::data
 		              game::LogicData& logic_data,
 		              const game::WorldData::WorldPair& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
-
-		Sprite::SetT OnRGetSet(Orientation orientation,
-		                       game::WorldData& world_data,
-		                       const game::WorldData::WorldPair& world_coords) const override;
-
-		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
-		                                                GameTickT game_tick) const override;;
 
 		// ======================================================================
 		// Data events

@@ -7,8 +7,9 @@
 #include <cmath>
 
 #include "core/data_type.h"
-#include "data/prototype/prototype_base.h"
 #include "data/prototype/sprite.h"
+#include "data/prototype/type.h"
+#include "game/world/world_data.h"
 
 namespace jactorio
 {
@@ -19,9 +20,8 @@ namespace jactorio
 
 	namespace game
 	{
-		struct PlayerData;
+		class PlayerData;
 		class ChunkTileLayer;
-
 		class Chunk;
 	}
 
@@ -35,27 +35,29 @@ namespace jactorio::data
 {
 	///
 	/// \brief Inherit to allow drawing portions of a sprite
-	struct RenderableData : UniqueDataBase
+	struct IRenderableData
 	{
-		RenderableData() = default;
+	protected:
+		IRenderableData()          = default;
+		virtual ~IRenderableData() = default;
 
-		RenderableData(const Sprite::SetT set)
+		explicit IRenderableData(const Sprite::SetT set)
 			: set(set) {
 		}
 
+	public:
 		Sprite::SetT set = 0;
 
 		///
-		/// \param layer
-		/// \param x_offset Pixels to top left of current tile
-		/// \param y_offset Pixels to top left of current tile
-		virtual void OnDrawUniqueData(renderer::RendererLayer& layer,
-		                              float x_offset, float y_offset) const {
+		/// \param pixel_offset_x Pixels to top left of current tile
+		/// \param pixel_offset_y Pixels to top left of current tile
+		virtual void OnDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+		                              float pixel_offset_x, float pixel_offset_y) const {
 		}
 	};
 
 	///
-	/// \brief Enables usage by renderer
+	/// \brief For inheriting by IPrototypeRenderable, thus enabling usage by renderer
 	class IRenderable
 	{
 	protected:
@@ -68,37 +70,46 @@ namespace jactorio::data
 		IRenderable& operator=(IRenderable&& other) noexcept = default;
 
 	public:
-		using SpritemapFrame = std::pair<Sprite*, Sprite::FrameT>;
+		///
+		/// \brief Gets a sprite corresponding to the provided set 
+		J_NODISCARD virtual Sprite* OnRGetSprite(Sprite::SetT set) const = 0;
 
 		///
-		/// \brief Called by the renderer when it wants the sprite and frame within the sprite
-		virtual SpritemapFrame OnRGetSprite(const UniqueDataBase* unique_data,
-		                                    GameTickT game_tick) const = 0;
+		/// \brief Maps a placementOrientation to a <set, frame>
+		J_NODISCARD virtual Sprite::SetT OnRGetSpriteSet(Orientation orientation,
+		                                                 game::WorldData& world_data,
+		                                                 const game::WorldData::WorldPair& world_coords) const = 0;
+
+		///
+		/// \brief Gets frame for sprite corresponding to provided game tick 
+		J_NODISCARD virtual Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+		                                                     GameTickT game_tick) const = 0;
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data
 		virtual bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
 		                        game::ChunkTileLayer* tile_layer) const = 0;
 
-		// ======================================================================
-		// Functions for OnRGetSprite
 
 	protected:
+		// ======================================================================
+		// Methods for OnRGetSpriteFrame
+
 		using AnimationSpeed = double;
 
 		///
 		/// \brief Every set / frame of a sprite is part of the same animation
-		static SpritemapFrame AllOfSprite(Sprite& sprite,
+		static Sprite::FrameT AllOfSprite(Sprite& sprite,
 		                                  const GameTickT game_tick,
 		                                  const AnimationSpeed speed = 1) {
 			assert(speed > 0);
 
-			return {&sprite, static_cast<GameTickT>(speed * game_tick) % (static_cast<uint64_t>(sprite.frames) * sprite.sets)};
+			return static_cast<GameTickT>(speed * game_tick) % (static_cast<uint64_t>(sprite.frames) * sprite.sets);
 		}
 
 		///
 		/// \brief Every set / frame of a sprite is part of the same animation, plays forwards then backwards
-		static SpritemapFrame AllOfSpriteReversing(Sprite& sprite,
+		static Sprite::FrameT AllOfSpriteReversing(Sprite& sprite,
 		                                           const GameTickT game_tick,
 		                                           const AnimationSpeed speed = 1) {
 			assert(speed > 0);
@@ -119,16 +130,16 @@ namespace jactorio::data
 			const auto val = (v_l % v_r) - frames + 1;
 			assert(val < frames);
 
-			return {&sprite, abs(val)};
+			return abs(val);
 		}
 
 		///
 		/// \brief Every frame of a set
-		static SpritemapFrame AllOfSet(Sprite& sprite,
+		static Sprite::FrameT AllOfSet(Sprite& sprite,
 		                               const GameTickT game_tick,
 		                               const AnimationSpeed speed = 1) {
 			assert(speed > 0);
-			return {&sprite, static_cast<GameTickT>(speed * game_tick) % sprite.frames};
+			return static_cast<GameTickT>(speed * game_tick) % sprite.frames;
 		}
 	};
 }

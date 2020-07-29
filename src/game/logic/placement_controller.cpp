@@ -23,8 +23,8 @@ bool game::PlacementLocationValid(WorldData& world_data,
 
 			// If the tile proto does not exist, or base tile prototype is water, NOT VALID placement
 
-			const auto* tile_proto   = tile->GetTilePrototype(ChunkTile::ChunkLayer::base);
-			const auto* entity_proto = tile->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
+			const auto* tile_proto   = tile->GetTilePrototype();
+			const auto* entity_proto = tile->GetEntityPrototype();
 
 			if (entity_proto != nullptr || tile_proto == nullptr || tile_proto->isWater) {
 				return false;
@@ -112,7 +112,7 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
 
 	// entity is nullptr indicates removing an entity
 	if (entity == nullptr) {
-		const data::Entity* t_entity = tile->GetEntityPrototype(ChunkTile::ChunkLayer::entity);
+		const data::Entity* t_entity = tile->GetEntityPrototype();
 
 		if (t_entity == nullptr)  // Already removed
 			return false;
@@ -140,7 +140,7 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
 		entity->tileWidth, entity->tileHeight,
 		x, y,
 		[&](ChunkTile* chunk_tile) {
-			chunk_tile->SetEntityPrototype(ChunkTile::ChunkLayer::entity, entity);
+			chunk_tile->SetEntityPrototype(entity);
 		});
 
 	return true;
@@ -148,54 +148,4 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
 
 bool game::PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity, const WorldData::WorldPair& world_pair) {
 	return PlaceEntityAtCoords(world_data, entity, world_pair.first, world_pair.second);
-}
-
-
-// Sprite placement
-
-void game::PlaceSpriteAtCoords(WorldData& world_data,
-                               const ChunkTile::ChunkLayer layer,
-                               const data::Sprite* sprite,
-                               const uint8_t tile_width,
-                               const uint8_t tile_height,
-                               const WorldData::WorldCoord x,
-                               const WorldData::WorldCoord y) {
-
-	const ChunkTile* tile = world_data.GetTile(x, y);
-	assert(tile != nullptr);
-
-	// nullptr indicates removing an entity
-	if (sprite == nullptr) {
-		RemoveAtCoords(
-			world_data,
-			layer,
-			tile_width,
-			tile_height,
-			x,
-			y,
-			[](ChunkTile* chunk_tile) {
-				chunk_tile->GetLayer(ChunkTile::ChunkLayer::overlay).Clear();
-			});
-		return;
-	}
-
-	// Place
-	assert(sprite != nullptr);
-	PlaceAtCoords(
-		world_data,
-		layer,
-		tile_width,
-		tile_height,
-		x, y,
-		[&](ChunkTile* chunk_tile) {
-			chunk_tile->SetSpritePrototype(ChunkTile::ChunkLayer::overlay, sprite);
-		});
-}
-
-void game::PlaceSpriteAtCoords(WorldData& world_data,
-                               const ChunkTile::ChunkLayer layer,
-                               const data::Sprite* sprite,
-                               const uint8_t tile_width, const uint8_t tile_height,
-                               const WorldData::WorldPair& world_pair) {
-	PlaceSpriteAtCoords(world_data, layer, sprite, tile_width, tile_height, world_pair.first, world_pair.second);
 }

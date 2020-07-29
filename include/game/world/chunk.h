@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "game/world/chunk_object_layer.h"
 #include "game/world/chunk_tile.h"
+#include "game/world/overlay_element.h"
 
 namespace jactorio::game
 {
@@ -22,7 +22,7 @@ namespace jactorio::game
 	class Chunk
 	{
 	public:
-		using ObjectLayerType = std::vector<ChunkObjectLayer>;
+		using OverlayContainer = std::vector<OverlayElement>;
 		using LogicGroupType = std::vector<ChunkTileLayer*>;
 
 		using ChunkCoord = int32_t;  // Chunk coordinates
@@ -59,36 +59,28 @@ namespace jactorio::game
 			swap(lhs.tiles_, rhs.tiles_);
 		}
 
+		// ======================================================================
 
 		J_NODISCARD std::pair<int, int> GetPosition() const { return position_; }
 
-		// ======================================================================
-		// Tiles
 		J_NODISCARD ChunkTile* Tiles() const {
 			return tiles_;
 		}
 
 		// ======================================================================
-		// Objects - Rendered without being fixed to a tile position
-		enum class ObjectLayer
-		{
-			debug_overlay = 0,  // data::Sprite
-			count_
-		};
+		// Overlays - Rendered without being fixed to a tile position
 
-		static constexpr int kObjectLayerCount = static_cast<int>(ObjectLayer::count_);
-		ObjectLayerType objects[kObjectLayerCount];
+		OverlayContainer overlays[kOverlayLayerCount];
 
-		ObjectLayerType& GetObject(const ObjectLayer layer) {
-			return const_cast<ObjectLayerType&>(
-				static_cast<const Chunk*>(this)->GetObject(layer)
+		OverlayContainer& GetOverlay(const OverlayLayer layer) {
+			return const_cast<OverlayContainer&>(
+				static_cast<const Chunk*>(this)->GetOverlay(layer)
 			);
 		}
 
-		J_NODISCARD const ObjectLayerType& GetObject(ObjectLayer layer) const {
-			return objects[static_cast<int>(layer)];
+		J_NODISCARD const OverlayContainer& GetOverlay(OverlayLayer layer) const {
+			return overlays[static_cast<int>(layer)];
 		}
-
 
 		// ======================================================================
 		// Items requiring logic updates

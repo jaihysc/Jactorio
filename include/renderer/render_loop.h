@@ -8,7 +8,7 @@
 
 namespace jactorio::renderer
 {
-	void SetRecalculateRenderer(unsigned short window_size_x, unsigned short window_size_y);
+	void ChangeWindowSize(unsigned int window_size_x, unsigned int window_size_y);
 
 	///
 	/// \brief Gives pointer to base renderer rendering the map for changing the zoom level or any operation

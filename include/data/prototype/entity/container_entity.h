@@ -46,12 +46,6 @@ namespace jactorio::data
 		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
 		                game::ChunkTileLayer* tile_layer) const override;
 
-		Sprite::SetT OnRGetSet(Orientation,
-		                       game::WorldData&,
-		                       const game::WorldData::WorldPair&) const override {
-			return 0;
-		}
-
 		void ValidatedPostLoad() override {
 			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 		}

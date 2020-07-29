@@ -109,7 +109,7 @@ namespace jactorio::game
 	TEST_F(ItemDropOffTest, GetInsertFunc) {
 		auto set_prototype = [&](data::Entity& entity_proto) {
 			worldData_.GetTile(2, 4)
-			          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &entity_proto);
+			          ->SetEntityPrototype(&entity_proto);
 		};
 
 		worldData_.EmplaceChunk(0, 0);
@@ -403,7 +403,7 @@ namespace jactorio::game
 	TEST_F(InserterPickupTest, GetPickupFunc) {
 		auto set_prototype = [&](data::Entity& entity_proto) {
 			worldData_.GetTile(2, 4)
-			          ->SetEntityPrototype(ChunkTile::ChunkLayer::entity, &entity_proto);
+			          ->SetEntityPrototype(&entity_proto);
 		};
 
 		worldData_.EmplaceChunk(0, 0);

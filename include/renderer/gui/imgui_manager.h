@@ -8,10 +8,11 @@
 #include "game/player/player_data.h"
 #include "renderer/rendering/spritemap_generator.h"
 
-struct SDL_Window;
-
 namespace jactorio::renderer
 {
+	class DisplayWindow;
+
+	
 	// If true, ImGui has handled the a input event and thus should not be carried to down the layer
 	inline bool input_mouse_captured    = false;
 	inline bool input_keyboard_captured = false;
@@ -19,12 +20,13 @@ namespace jactorio::renderer
 
 	struct MenuData
 	{
-		MenuData(const std::unordered_map<unsigned, core::QuadPosition>& sprite_positions, const unsigned tex_id)
+		MenuData(const SpriteUvCoordsT& sprite_positions,
+				 const unsigned tex_id)
 			: spritePositions(sprite_positions),
 			  texId(tex_id) {
 		}
 
-		const std::unordered_map<unsigned, core::QuadPosition>& spritePositions;
+		const SpriteUvCoordsT& spritePositions;
 		unsigned int texId = 0;  // Assigned by openGL
 	};
 
@@ -34,13 +36,10 @@ namespace jactorio::renderer
 	void SetupCharacterData(RendererSprites& renderer_sprites);
 	J_NODISCARD MenuData GetMenuData();
 
-	///
-	/// \brief Begins a self contained drawing loop which displays the specified error message
-	void ShowErrorPrompt(const std::string& err_title, const std::string& err_message);
+	void Setup(const DisplayWindow& display_window);
 
-	void Setup(SDL_Window* window);
-
-	void ImguiDraw(game::PlayerData& player_data, const data::PrototypeManager& data_manager, game::EventData& event);
+	void ImguiDraw(const DisplayWindow& display_window,
+				   game::PlayerData& player_data, const data::PrototypeManager& data_manager, game::EventData& event);
 
 	void ImguiTerminate();
 }
