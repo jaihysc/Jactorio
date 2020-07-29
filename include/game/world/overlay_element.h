@@ -25,14 +25,14 @@ namespace jactorio::game
 	/// \brief Holds items which do not adhere to the tiles for rendering
 	class OverlayElement
 	{
-		using PositionT = float;
-
 		/// z position of first layer
 		static constexpr float kDefaultZPos = 0.4f;
 		/// Every layer above increases its z position by this amount
 		static constexpr float kZPosMultiplier = 0.01f;
 
 	public:
+		/// Offset from top left of chunk
+		using OffsetT = float;
 
 		/*
 		OverlayElement(const data::Sprite& sprite,
@@ -43,21 +43,21 @@ namespace jactorio::game
 		*/
 
 		OverlayElement(const data::Sprite& sprite,
-		               const core::Position2<PositionT>& position,
-		               const core::Position2<PositionT>& size,
+		               const core::Position2<OffsetT>& position,
+		               const core::Position2<OffsetT>& size,
 		               const OverlayLayer layer)
-			: OverlayElement(sprite, core::Position3<PositionT>{position, ToZPosition(layer)}, size) {
+			: OverlayElement(sprite, core::Position3<OffsetT>{position, ToZPosition(layer)}, size) {
 		}
 
 		OverlayElement(const data::Sprite& sprite,
-		               const core::Position3<PositionT>& position,
-		               const core::Position2<PositionT>& size)
+		               const core::Position3<OffsetT>& position,
+		               const core::Position2<OffsetT>& size)
 			: sprite(&sprite), position(position), size(size) {
 		}
 
 		// ======================================================================
 
-		void SetZPosition(const PositionT z_pos) {
+		void SetZPosition(const OffsetT z_pos) {
 			position.z = z_pos;
 		}
 
@@ -66,7 +66,7 @@ namespace jactorio::game
 			SetZPosition(ToZPosition(layer));
 		}
 
-		J_NODISCARD static PositionT ToZPosition(const OverlayLayer layer) noexcept {
+		J_NODISCARD static OffsetT ToZPosition(const OverlayLayer layer) noexcept {
 			return kDefaultZPos + kZPosMultiplier * static_cast<float>(layer);
 		}
 
@@ -77,10 +77,10 @@ namespace jactorio::game
 		data::Sprite::SetT spriteSet = 0;
 
 		/// Distance (tiles) from top left of chunk to top left of sprite + z value
-		core::Position3<PositionT> position;
+		core::Position3<OffsetT> position;
 
 		/// Distance (tiles) the sprite spans
-		core::Position2<PositionT> size;
+		core::Position2<OffsetT> size;
 	};
 }
 

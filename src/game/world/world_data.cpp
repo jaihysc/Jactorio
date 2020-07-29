@@ -30,7 +30,7 @@ game::Chunk::ChunkCoord game::WorldData::ToChunkCoord(WorldCoordAxis world_coord
 	return chunk_coord;
 }
 
-float game::WorldData::ToOverlayCoord(const WorldCoordAxis world_coord) {
+game::OverlayElement::OffsetT game::WorldData::ToOverlayCoord(const WorldCoordAxis world_coord) {
 	WorldCoordAxis val;
 
 	if (world_coord < 0) {
