@@ -16,31 +16,22 @@ bool jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, cons
 	return true;
 }
 
-std::pair<jactorio::data::Sprite*, jactorio::data::Sprite::FrameT> jactorio::data::MiningDrill::OnRGetSprite(
-	const UniqueDataBase* unique_data, GameTickT game_tick) const {
-	const auto& drill_data = *static_cast<const MiningDrillData*>(unique_data);
-
-	const auto set = drill_data.set;
-
-	// Drill is inactive
-	if (drill_data.deferralEntry.second == 0)
-		game_tick = 0;
-
+jactorio::data::Sprite* jactorio::data::MiningDrill::OnRGetSprite(const Sprite::SetT set) const {
 	if (set <= 7)
-		return AllOfSpriteReversing(*sprite, game_tick);
+		return sprite;
 
 	if (set <= 15)
-		return AllOfSpriteReversing(*spriteE, game_tick);
+		return spriteE;
 
 	if (set <= 23)
-		return AllOfSpriteReversing(*spriteS, game_tick);
+		return spriteS;
 
-	return AllOfSpriteReversing(*spriteW, game_tick);
+	return spriteW;
 }
 
-jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSet(const Orientation orientation,
-                                                                    game::WorldData&,
-                                                                    const WorldCoord&) const {
+jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
+																		  game::WorldData&,
+                                                                          const WorldCoord&) const {
 	switch (orientation) {
 	case Orientation::up:
 		return 0;
@@ -57,12 +48,18 @@ jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSet(const Orient
 	}
 }
 
-// ======================================================================
+jactorio::data::Sprite::FrameT jactorio::data::MiningDrill::OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                                              GameTickT game_tick) const {
+	const auto& drill_data = static_cast<const MiningDrillData&>(unique_data);
 
-void jactorio::data::MiningDrill::RegisterMineCallback(game::LogicData::DeferralTimer& timer,
-                                                       MiningDrillData* unique_data) const {
-	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, unique_data->miningTicks);
+	// Drill is inactive
+	if (drill_data.deferralEntry.second == 0)
+		game_tick = 0;
+
+	return AllOfSpriteReversing(*sprite, game_tick);
 }
+
+// ======================================================================
 
 jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::WorldData& world_data,
                                                                   WorldCoord world_pair) const {
@@ -132,7 +129,7 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 	drill_data->outputItem = FindOutputItem(world_data, world_coords);
 	assert(drill_data->outputItem != nullptr);  // Should not have been allowed to be placed on no resources
 
-	drill_data->set              = OnRGetSet(orientation, world_data, world_coords);
+	drill_data->set              = OnRGetSpriteSet(orientation, world_data, world_coords);
 	drill_data->outputTileCoords = output_coords;
 
 	OnNeighborUpdate(world_data, logic_data, output_coords, world_coords, orientation);
@@ -183,4 +180,11 @@ void jactorio::data::MiningDrill::OnRemove(game::WorldData&,
 		drill_data = tile_layer.GetUniqueData();
 
 	logic_data.deferralTimer.RemoveDeferralEntry(static_cast<MiningDrillData*>(drill_data)->deferralEntry);
+}
+
+// ======================================================================
+
+void jactorio::data::MiningDrill::RegisterMineCallback(game::LogicData::DeferralTimer& timer,
+                                                       MiningDrillData* unique_data) const {
+	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, unique_data->miningTicks);
 }

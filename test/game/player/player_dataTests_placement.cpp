@@ -395,9 +395,9 @@ namespace jactorio::game
 		mutable std::vector<WorldCoord> emitCoords;
 		mutable std::vector<WorldCoord> receiveCoords;
 
-		J_NODISCARD data::Sprite::SetT OnRGetSet(data::Orientation,
-		                                         WorldData&,
-		                                         const WorldCoord&) const override {
+		J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation,
+		                                               WorldData&,
+		                                               const WorldCoord&) const override {
 			return 0;
 		}
 

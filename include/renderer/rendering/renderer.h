@@ -4,6 +4,7 @@
 #define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_H
 #pragma once
 
+#include <exception>
 #include <future>
 #include <glm/glm.hpp>
 
@@ -35,21 +36,21 @@ namespace jactorio::renderer
 		// Properties
 
 
-		J_NODISCARD static unsigned int GetWindowWidth() { return windowWidth_; }
-		J_NODISCARD static unsigned int GetWindowHeight() { return windowHeight_; }
+		J_NODISCARD static unsigned int GetWindowWidth() noexcept { return windowWidth_; }
+		J_NODISCARD static unsigned int GetWindowHeight() noexcept { return windowHeight_; }
 
 		// ======================================================================
 		// OpenGL calls
 
 		///
 		/// \brief Sets up OpenGl settings, only need to call once on program start
-		static void GlSetup();
+		static void GlSetup() noexcept;
 
-		static void GlClear();
+		static void GlClear() noexcept;
 
 		///
 		/// \brief Resizes rendering buffers to new window size 
-		void GlResizeWindow(unsigned int window_x, unsigned int window_y);
+		void GlResizeWindow(unsigned int window_x, unsigned int window_y) noexcept;
 
 
 		J_NODISCARD size_t GetDrawThreads() const noexcept { return drawThreads_; }
@@ -77,7 +78,7 @@ namespace jactorio::renderer
 			}
 			catch (std::exception&) {
 				assert(false);  // Should not throw
-				return {{0.f, 0.f}, {0.f, 0.f}};
+				std::terminate();
 			}
 		}
 
@@ -85,9 +86,9 @@ namespace jactorio::renderer
 		/// \param world_data World to render
 		/// \param player_x X Position of the player in tiles
 		/// \param player_y Y Position of the player in tiles
-		void RenderPlayerPosition(GameTickT game_tick,
-		                          const game::WorldData& world_data,
-		                          float player_x, float player_y);
+		void GlRenderPlayerPosition(GameTickT game_tick,
+		                            const game::WorldData& world_data,
+		                            float player_x, float player_y);
 
 
 		// ======================================================================
@@ -142,23 +143,22 @@ namespace jactorio::renderer
 		///
 		/// \param row_start Chunk coordinate where the row of chunks starts
 		/// \param chunk_span Number of chunks spanned
-		/// \param render_tile_offset_x Offset drawn tiles on screen by this tile amount
-		/// \param render_pixel_offset_y Offset drawn tiles on screen by this pixel amount
+		/// \param render_tile_offset Offset drawn tiles on screen by this tile amount
 		void PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data,
 		                     core::Position2<int> row_start, int chunk_span,
-		                     int render_tile_offset_x, int render_pixel_offset_y,
+		                     core::Position2<int> render_tile_offset,
 		                     GameTickT game_tick) const noexcept;
 
 		void PrepareChunk(RendererLayer& r_layer, const game::Chunk& chunk,
-		                  core::Position2<int> render_pixel_offset,
+		                  core::Position2<int> render_tile_offset,
 		                  GameTickT game_tick) const noexcept;
 
-		void PrepareTileLayers(RendererLayer& r_layer, game::ChunkTile* tiles,
-		                       const core::Position2<uint8_t>& tile_pos, const core::Position2<float>& pixel_pos,
+		void PrepareTileLayers(RendererLayer& r_layer, game::ChunkTile& tile,
+		                       const core::Position2<float>& pixel_pos,
 		                       GameTickT game_tick) const noexcept;
 
 		void PrepareOverlayLayers(RendererLayer& r_layer, const game::Chunk& chunk,
-		                          core::Position2<int> render_pixel_offset) const;
+		                          core::Position2<int> render_tile_offset) const;
 
 
 		static void ApplySpriteUvAdjustment(UvPositionT& uv,
@@ -174,7 +174,7 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Updates projection matrix and zoom level
-		void GlUpdateTileProjectionMatrix();
+		void GlUpdateTileProjectionMatrix() noexcept;
 
 		// ======================================================================
 

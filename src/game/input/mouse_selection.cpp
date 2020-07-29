@@ -75,26 +75,24 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	// Saves such that can be found and removed in the future
 	auto save_overlay_info = [&]() {
 		lastOverlayElementIndex_ = overlay_layer.size() - 1;
-		lastChunkPos_            = {WorldData::ToChunkCoord(world_x), WorldData::ToChunkCoord(world_y)};  // TODO
+		lastChunkPos_            = {WorldData::ToChunkCoord(world_x), WorldData::ToChunkCoord(world_y)};
 	};
 
 
 	if (selected_entity && selected_entity->placeable) {
 		// Has item selected
-		// TODO separate virtual function for get sprite only
-		OverlayElement element{
-			*selected_entity->sprite, // OnRGetSprite(nullptr, player_data.GetPlayerLogicData().GameTick()).first, 
+		const auto set = selected_entity->OnRGetSpriteSet(placement_orientation,
+		                                                  world_data,
+		                                                  {world_x, world_y});
 
+		OverlayElement element{
+			*selected_entity->OnRGetSprite(set),
 			{WorldData::ToOverlayCoord(world_x), WorldData::ToOverlayCoord(world_y)},
 			{static_cast<float>(selected_entity->tileWidth), static_cast<float>(selected_entity->tileHeight)},
 			kCursorOverlayLayer
 		};
 
-		// Rotatable entities
-		if (selected_entity->rotatable) {
-			//  indicate set to render
-			element.spriteSet = selected_entity->OnRGetSet(placement_orientation, world_data, {world_x, world_y});
-		}
+		element.spriteSet = set;
 
 		overlay_layer.push_back(element);
 		save_overlay_info();

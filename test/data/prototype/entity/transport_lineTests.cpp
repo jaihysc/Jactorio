@@ -88,7 +88,7 @@ namespace jactorio::data
 		/// \brief Validates that a tile at coords 1,1 with the placement orientation produces the expected line orientation
 		void ValidateResultOrientation(const Orientation placement_orientation,
 		                               const TransportLineData::LineOrientation expected_line_orientation) {
-			EXPECT_EQ(lineProto_.OnRGetSet(placement_orientation, worldData_, {1, 1}),
+			EXPECT_EQ(lineProto_.OnRGetSpriteSet(placement_orientation, worldData_, {1, 1}),
 			          static_cast<data::Sprite::SetT>(expected_line_orientation));
 		}
 

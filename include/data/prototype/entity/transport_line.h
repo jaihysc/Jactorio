@@ -117,6 +117,11 @@ namespace jactorio::data
 		// ======================================================================
 		// Game events
 
+		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
+		                                         const WorldCoord& world_coords) const override;
+
+		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const override;
+
 		void OnBuild(game::WorldData& world_data,
 		             game::LogicData& logic_data,
 		             const WorldCoord& world_coords,
@@ -132,13 +137,6 @@ namespace jactorio::data
 		              game::LogicData& logic_data,
 		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
-
-		Sprite::SetT OnRGetSet(Orientation orientation,
-		                       game::WorldData& world_data,
-		                       const WorldCoord& world_coords) const override;
-
-		std::pair<Sprite*, Sprite::FrameT> OnRGetSprite(const UniqueDataBase* unique_data,
-		                                                GameTickT game_tick) const override;;
 
 		// ======================================================================
 		// Data events

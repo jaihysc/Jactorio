@@ -76,24 +76,15 @@ void data::AssemblyMachineData::CraftAddProduct() {
 
 // ======================================================================
 
-data::Sprite::SetT data::AssemblyMachine::OnRGetSet(
-	Orientation,
-	game::WorldData&,
-	const WorldCoord&) const {
-	return 0;
-}
+data::Sprite::FrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+															  GameTickT game_tick) const {
+	const auto& machine_data = static_cast<const AssemblyMachineData&>(unique_data);
 
-data::IRenderable::SpritemapFrame data::AssemblyMachine::OnRGetSprite(
-	const UniqueDataBase* unique_data, GameTickT game_tick) const {
-
-	const auto* machine_data = static_cast<const AssemblyMachineData*>(unique_data);
-
-	if (machine_data->deferralEntry.second == 0)
+	if (machine_data.deferralEntry.second == 0)
 		game_tick = 0;
 
 	return AllOfSprite(*sprite, game_tick, 1.f / 6);
 }
-
 
 bool data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
                                        game::ChunkTileLayer* tile_layer) const {
@@ -132,9 +123,7 @@ void data::AssemblyMachine::OnBuild(game::WorldData& world_data,
                                     game::LogicData& logic_data,
                                     const WorldCoord& world_coords,
                                     game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
-	auto* data = tile_layer.MakeUniqueData<AssemblyMachineData>();
-
-	data->set = OnRGetSet(orientation, world_data, world_coords);
+	tile_layer.MakeUniqueData<AssemblyMachineData>();
 }
 
 void data::AssemblyMachine::OnRemove(game::WorldData& world_data,

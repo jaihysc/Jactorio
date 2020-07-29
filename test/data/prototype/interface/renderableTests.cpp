@@ -18,8 +18,17 @@ namespace jactorio::data
 
 
 	public:
-		SpritemapFrame OnRGetSprite(const UniqueDataBase*, GameTickT) const override {
-			return {nullptr, 0};
+		J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT) const override {
+			return nullptr;
+		}
+
+		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation, game::WorldData&,
+		                                         const WorldCoord&) const override {
+			return 0;
+		}
+
+		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase&, GameTickT) const override {
+			return 0;
 		}
 
 		bool OnRShowGui(game::PlayerData&, const PrototypeManager&, game::ChunkTileLayer*) const override {
@@ -28,50 +37,50 @@ namespace jactorio::data
 	};
 
 	TEST_F(IRenderableTest, AllOfSprite) {
-		EXPECT_EQ(AllOfSprite(sprite_, 0).second, 0);
-		EXPECT_EQ(AllOfSprite(sprite_, 59).second, 59);
-		EXPECT_EQ(AllOfSprite(sprite_, 60).second, 0);
+		EXPECT_EQ(AllOfSprite(sprite_, 0), 0);
+		EXPECT_EQ(AllOfSprite(sprite_, 59), 59);
+		EXPECT_EQ(AllOfSprite(sprite_, 60), 0);
 
 
 		// Half speed
-		EXPECT_EQ(AllOfSprite(sprite_, 0, 1.f/2).second, 0);
-		EXPECT_EQ(AllOfSprite(sprite_, 1, 1.f/2).second, 0);
-		EXPECT_EQ(AllOfSprite(sprite_, 60, 1.f/2).second, 30);
-		EXPECT_EQ(AllOfSprite(sprite_, 61, 1.f/2).second, 30);
+		EXPECT_EQ(AllOfSprite(sprite_, 0, 1.f/2), 0);
+		EXPECT_EQ(AllOfSprite(sprite_, 1, 1.f/2), 0);
+		EXPECT_EQ(AllOfSprite(sprite_, 60, 1.f/2), 30);
+		EXPECT_EQ(AllOfSprite(sprite_, 61, 1.f/2), 30);
 	}
 
 	TEST_F(IRenderableTest, AllOfSpriteReversible) {
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 0).second, 0);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 0), 0);
 
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 58).second, 58);
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 59).second, 59);
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 60).second, 58);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 58), 58);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 59), 59);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 60), 58);
 
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 118).second, 0);
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 119).second, 1);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 118), 0);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 119), 1);
 
 
 		// Half speed
 		// Frames are not always distributed equally at speed < 1 < because of floating point truncation
 
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 0, 1.f/2).second, 0);
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 1, 1.f/2).second, 1);
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 60, 1.f/2).second, 30);
-		EXPECT_EQ(AllOfSpriteReversing(sprite_, 61, 1.f/2).second, 31);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 0, 1.f/2), 0);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 1, 1.f/2), 1);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 60, 1.f/2), 30);
+		EXPECT_EQ(AllOfSpriteReversing(sprite_, 61, 1.f/2), 31);
 	}
 
 	TEST_F(IRenderableTest, AllOfSet) {
-		EXPECT_EQ(AllOfSet(sprite_, 0).second, 0);
-		EXPECT_EQ(AllOfSet(sprite_, 11).second, 11);
-		EXPECT_EQ(AllOfSet(sprite_, 12).second, 0);
-		EXPECT_EQ(AllOfSet(sprite_, 13).second, 1);
+		EXPECT_EQ(AllOfSet(sprite_, 0), 0);
+		EXPECT_EQ(AllOfSet(sprite_, 11), 11);
+		EXPECT_EQ(AllOfSet(sprite_, 12), 0);
+		EXPECT_EQ(AllOfSet(sprite_, 13), 1);
 
 		// Half speed
-		EXPECT_EQ(AllOfSet(sprite_, 0, 1.f/2).second, 0);
-		EXPECT_EQ(AllOfSet(sprite_, 10, 1.f/2).second, 5);
-		EXPECT_EQ(AllOfSet(sprite_, 11, 1.f/2).second, 5);
-		EXPECT_EQ(AllOfSet(sprite_, 22, 1.f/2).second, 11);
-		EXPECT_EQ(AllOfSet(sprite_, 23, 1.f/2).second, 11);
-		EXPECT_EQ(AllOfSet(sprite_, 24, 1.f/2).second, 0);
+		EXPECT_EQ(AllOfSet(sprite_, 0, 1.f/2), 0);
+		EXPECT_EQ(AllOfSet(sprite_, 10, 1.f/2), 5);
+		EXPECT_EQ(AllOfSet(sprite_, 11, 1.f/2), 5);
+		EXPECT_EQ(AllOfSet(sprite_, 22, 1.f/2), 11);
+		EXPECT_EQ(AllOfSet(sprite_, 23, 1.f/2), 11);
+		EXPECT_EQ(AllOfSet(sprite_, 24, 1.f/2), 0);
 	}
 }
