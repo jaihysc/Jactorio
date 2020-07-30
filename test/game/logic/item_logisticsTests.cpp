@@ -100,9 +100,9 @@ namespace jactorio::game
 		void TransportLineInsert(const data::Orientation orientation,
 		                         data::TransportLineData& line_data) {
 			data::Item item{};
-			InsertTransportBelt(logicData_, {&item, 1},
-			                    line_data,
-			                    orientation);
+			InsertTransportBelt({logicData_, {&item, 1}, line_data, orientation});
+
+			EXPECT_TRUE(CanInsertTransportBelt({logicData_, {}, line_data, data::Orientation::up}));
 		}
 	};
 
@@ -172,9 +172,10 @@ namespace jactorio::game
 
 		data::Item item{};
 		// Orientation is orientation from origin object
-		InsertContainerEntity(logicData_, {&item, 2},
-		                      *container_data,
-		                      data::Orientation::down);
+		EXPECT_TRUE(
+			InsertContainerEntity({logicData_, {&item, 2}, *container_data, data::Orientation::down})
+		);
+		EXPECT_TRUE(CanInsertContainerEntity({logicData_, {}, *container_data, data::Orientation::up}));
 
 		// Inserted item
 		EXPECT_EQ(container_data->inventory[0].item, &item);
@@ -320,7 +321,7 @@ namespace jactorio::game
 		targetProtoData_ = &assembly_machine;
 
 		// Orientation doesn't matter
-		EXPECT_TRUE(InsertAssemblyMachine(logicData_, {recipe_pack.item2, 10}, asm_data, data::Orientation::up));
+		EXPECT_TRUE(InsertAssemblyMachine({logicData_, {recipe_pack.item2, 10}, asm_data, data::Orientation::up}));
 
 		EXPECT_EQ(asm_data.ingredientInv[1].item, recipe_pack.item2);
 		EXPECT_EQ(asm_data.ingredientInv[1].count, 9);  // 1 used to begin crafting
@@ -341,7 +342,29 @@ namespace jactorio::game
 		asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
 
 		// 49 + 2 > 50
-		EXPECT_FALSE(InsertAssemblyMachine(logicData_, {recipe_pack.item1, 2}, asm_data, data::Orientation::up));
+		EXPECT_FALSE(InsertAssemblyMachine({logicData_, {recipe_pack.item1, 2}, asm_data, data::Orientation::up}));
+	}
+
+	TEST_F(ItemDropOffTest, CanInsertAssemblyMachine) {
+		data::AssemblyMachineData asm_data{};
+
+		data::Item item{};
+
+		// No recipe
+		EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
+
+
+		// Has recipe, wrong item
+		data::PrototypeManager prototype_manager{};
+
+		auto recipe_pack = TestSetupRecipe(prototype_manager);
+		asm_data.ChangeRecipe(logicData_, prototype_manager, &recipe_pack.recipe);
+
+		EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
+
+
+		// Has recipe, correct item
+		EXPECT_TRUE(CanInsertAssemblyMachine({logicData_, {recipe_pack.item1, 2000}, asm_data, data::Orientation::down}));
 	}
 
 	// ======================================================================
@@ -364,10 +387,11 @@ namespace jactorio::game
 		data::Inserter inserterProto_{};
 		TransportSegment* segment_ = nullptr;
 
+		/// Item which will be on transport segments from CreateTransportLine
+		data::Item lineItem_{};
 
 		// Creates a transport line 1 item on each side
 		data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
-			data::Item item{};  // Item is not used for tests
 
 			const auto segment = std::make_shared<TransportSegment>(
 				orientation,
@@ -376,8 +400,8 @@ namespace jactorio::game
 			);
 
 			segment_ = segment.get();
-			segment_->InsertItem(false, 0.5, &item);
-			segment_->InsertItem(true, 0.5, &item);
+			segment_->InsertItem(false, 0.5, &lineItem_);
+			segment_->InsertItem(true, 0.5, &lineItem_);
 
 			return data::TransportLineData{segment};
 		}
@@ -387,11 +411,13 @@ namespace jactorio::game
 		                data::TransportLineData& line_data) {
 			constexpr int pickup_amount = 1;
 
-			const auto result = PickupTransportBelt(logicData_,
-			                                        1, data::ToRotationDegree(kMaxInserterDegree),
-			                                        pickup_amount,
-			                                        line_data,
-			                                        orientation);
+			const auto result = PickupTransportBelt({
+				logicData_,
+				1, data::ToRotationDegree(kMaxInserterDegree),
+				pickup_amount,
+				line_data,
+				orientation
+			});
 
 			EXPECT_TRUE(result.first);
 
@@ -459,20 +485,28 @@ namespace jactorio::game
 		auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
-		PickupContainerEntity(logicData_,
-		                      1, data::ToRotationDegree(179),
-		                      1, container_data,
-		                      data::Orientation::up);
 
+		PickupContainerEntity({
+			logicData_,
+			1, data::ToRotationDegree(179),
+			1, container_data,
+			data::Orientation::up
+		});
 		EXPECT_EQ(inv[0].count, 10);  // No items picked up, not 180 degrees
 
-		auto result = PickupContainerEntity(logicData_,
-		                                    1, data::ToRotationDegree(180),
-		                                    2, container_data,
-		                                    data::Orientation::up);
-		EXPECT_EQ(inv[0].count, 8);  // 2 items picked up
 
-		EXPECT_NE(result.second.item, nullptr);
+		PickupParams args = {
+			logicData_,
+			1, data::ToRotationDegree(180),
+			2, container_data,
+			data::Orientation::up
+		};
+
+		EXPECT_EQ(GetPickupContainerEntity(args), &item);
+
+		auto result = PickupContainerEntity(args);
+		EXPECT_EQ(inv[0].count, 8);  // At 180 degrees, 2 items picked up
+		EXPECT_EQ(result.second.item, &item);
 		EXPECT_EQ(result.second.count, 2);
 	}
 
@@ -490,6 +524,15 @@ namespace jactorio::game
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
+
+			EXPECT_EQ(
+				GetPickupTransportBelt({
+					logicData_,
+					1, data::ToRotationDegree(180),
+					1, line, data::Orientation::right
+					}),
+				&lineItem_
+			);
 
 			PickupLine(data::Orientation::right, line);
 			EXPECT_EQ(segment_->right.lane.size(), 0);
@@ -597,10 +640,12 @@ namespace jactorio::game
 		auto* data  = layer.GetUniqueData<data::AssemblyMachineData>();
 
 		// Does nothing as there is no recipe yet
-		PickupAssemblyMachine(logicData_,
-		                      2, data::ToRotationDegree(kMaxInserterDegree),
-		                      2,
-		                      *data, data::Orientation::up
+		PickupAssemblyMachine({
+				logicData_,
+				2, data::ToRotationDegree(kMaxInserterDegree),
+				2,
+				*data, data::Orientation::up
+			}
 		);
 
 		// ======================================================================
@@ -612,10 +657,12 @@ namespace jactorio::game
 
 		// No items in product inventory
 		EXPECT_FALSE(
-			PickupAssemblyMachine(logicData_,
+			PickupAssemblyMachine({logicData_,
 				2, data::ToRotationDegree(kMaxInserterDegree),
 				2,
-				*data, data::Orientation::up).first);
+				*data, data::Orientation::up
+				}).first
+		);
 
 
 		// Has items in product inventory
@@ -625,11 +672,16 @@ namespace jactorio::game
 		data->productInv[0] = {recipe_pack.itemProduct, 10, recipe_pack.itemProduct};
 
 		targetProtoData_ = &asm_machine;
-		auto result      = PickupAssemblyMachine(logicData_,
-		                                         2, data::ToRotationDegree(kMaxInserterDegree),
-		                                         2,
-		                                         *data, data::Orientation::up
-		);
+
+		PickupParams args{
+			logicData_,
+			2, data::ToRotationDegree(kMaxInserterDegree),
+			2,
+			*data, data::Orientation::up
+		};
+
+		EXPECT_EQ(GetPickupAssemblyMachine(args), recipe_pack.itemProduct);
+		auto result = PickupAssemblyMachine(args);
 
 		EXPECT_TRUE(result.first);
 		EXPECT_EQ(result.second.item, recipe_pack.itemProduct);

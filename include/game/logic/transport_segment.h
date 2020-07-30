@@ -46,6 +46,8 @@ namespace jactorio::game
 
 		bool TryInsertItem(FloatOffsetT offset, const data::Item* item, IntOffsetT item_offset);
 
+		J_NODISCARD std::pair<size_t, TransportLineItem> GetItem(FloatOffsetT offset,
+		                                                         FloatOffsetT epsilon = kItemWidth / 2) const;
 		const data::Item* TryPopItem(FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 
 		// ======================================================================
@@ -175,7 +177,14 @@ namespace jactorio::game
 		bool TryInsertItemAbs(bool left_side, FloatOffsetT offset, const data::Item* item);
 
 		///
-		/// \brief Finds item at offset within epsilon inclusive
+		/// \brief Finds item at offset within epsilon inclusive, <deque index, TransportLineItem>
+		/// \return .second.second is nullptr if no items were found
+		J_NODISCARD std::pair<size_t, TransportLineItem> GetItemAbs(bool left_side,
+		                                                            FloatOffsetT offset,
+		                                                            FloatOffsetT epsilon = kItemWidth / 2) const;
+
+		///
+		/// \brief Finds and removes item at offset within epsilon inclusive
 		/// \return nullptr if no items were found
 		const data::Item* TryPopItemAbs(bool left_side, FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 

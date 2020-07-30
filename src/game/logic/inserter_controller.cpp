@@ -28,6 +28,8 @@ void InserterUpdate(game::LogicData& logic_data,
                     const data::Inserter& inserter_proto, data::InserterData& inserter_data) {
 	using namespace game;
 
+	assert(inserter_proto.rotationSpeed.getAsDouble() != 0);
+
 	switch (inserter_data.status) {
 
 	case data::InserterData::Status::dropoff:
@@ -49,10 +51,22 @@ void InserterUpdate(game::LogicData& logic_data,
 		if (inserter_data.rotationDegree > data::ToRotationDegree(kMaxInserterDegree)) {
 			inserter_data.rotationDegree = kMaxInserterDegree;
 
+			constexpr int pickup_amount = 1;
+
+			const auto* to_be_picked_item =
+				inserter_data.pickup.GetPickup(logic_data,
+				                               inserter_proto.tileReach,
+				                               inserter_data.rotationDegree);
+
+			// Do not pick up item if it cannot be dropped off
+			if (!inserter_data.dropoff.CanDropOff(logic_data, to_be_picked_item))
+				return;
+
+
 			const auto result = inserter_data.pickup.Pickup(logic_data,
 			                                                inserter_proto.tileReach,
 			                                                inserter_data.rotationDegree,
-			                                                1);
+			                                                pickup_amount);
 			if (result.first) {
 				inserter_data.heldItem = result.second;
 

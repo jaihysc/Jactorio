@@ -164,4 +164,26 @@ namespace jactorio::game
 		InserterLogicUpdate(worldData_, logicData_);
 		EXPECT_EQ(inserter_data->status, data::InserterData::Status::dropoff);
 	}
+
+	TEST_F(InserterControllerTest, PickupIfCanDropOff) {
+		// Inserter will not pick up items that it can never drop off
+
+		// Cannot drop into assembly machine since it has no recipe
+		const data::AssemblyMachine asm_machine{};
+		auto& dropoff = TestSetupAssemblyMachine(worldData_, {0, 1}, asm_machine);
+
+		auto* pickup = BuildChest({3, 2}, data::Orientation::right);
+
+
+		inserterProto_.rotationSpeed = 2.1f;
+		auto& inserter_layer         = BuildInserter({2, 2}, data::Orientation::left);
+		auto* inserter_data          = inserter_layer.GetUniqueData<data::InserterData>();
+
+
+		// 
+		InserterLogicUpdate(worldData_, logicData_);
+
+		EXPECT_EQ(inserter_data->status, data::InserterData::Status::pickup);
+		EXPECT_EQ(pickup->inventory[0].count, 10);
+	}
 }

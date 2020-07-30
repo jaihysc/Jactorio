@@ -293,30 +293,60 @@ prepare_right:
 void renderer::DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
                                const core::Position2<OverlayOffsetAxis>& pixel_offset, const data::Inserter& inserter_proto,
                                const data::InserterData& inserter_data) {
-	const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_proto.handSprite->internalId);
+	{
+		const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_proto.handSprite->internalId);
 
-	constexpr int arm_width        = 2;
-	constexpr int arm_pixel_offset = (Renderer::tileWidth - arm_width) / 2;
+		constexpr float arm_width     = 0.5f;
+		constexpr float arm_pixel_offset = (Renderer::tileWidth - arm_width * Renderer::tileWidth) / 2;
 
-	// Ensures arm is always facing pickup / dropoff
-	const float rotation_offset = static_cast<float>(inserter_data.orientation) * 90;
+		// Ensures arm is always facing pickup / dropoff
+		const float rotation_offset = static_cast<float>(inserter_data.orientation) * 90;
 
-	layer.PushBack(
-		{
-			{  // Cover tile
-				{
-					pixel_offset.x + arm_pixel_offset,
-					pixel_offset.y + arm_pixel_offset
+		// Hand
+		layer.PushBack(
+			{
+				{  // Cover tile
+					{
+						pixel_offset.x + arm_pixel_offset,
+						pixel_offset.y + arm_pixel_offset
+					},
+					{
+						pixel_offset.x + Renderer::tileWidth - arm_pixel_offset,
+						pixel_offset.y + Renderer::tileWidth - arm_pixel_offset
+					}
 				},
 				{
-					pixel_offset.x + Renderer::tileWidth - arm_pixel_offset,
-					pixel_offset.y + Renderer::tileWidth - arm_pixel_offset
+					uv.topLeft,
+					uv.bottomRight
 				}
-			},
+			}, kPixelZ, static_cast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset)
+		);
+	}
+
+	
+	// Held item
+	if (inserter_data.status == data::InserterData::Status::dropoff) {
+		constexpr float held_item_pixel_offset = (Renderer::tileWidth - Renderer::tileWidth * game::kItemWidth) / 2;
+
+		const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_data.heldItem.item->sprite->internalId);
+
+		layer.PushBack(
 			{
-				uv.topLeft,
-				uv.bottomRight
-			}
-		}, kPixelZ, static_cast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset)
-	);
+				{
+					{
+						pixel_offset.x + held_item_pixel_offset,
+						pixel_offset.y + held_item_pixel_offset
+					},
+					{
+						pixel_offset.x + Renderer::tileWidth - held_item_pixel_offset,
+						pixel_offset.y + Renderer::tileWidth - held_item_pixel_offset
+					}
+				},
+				{
+					uv.topLeft,
+					uv.bottomRight
+				}
+			}, kPixelZ
+		);
+	}
 }
