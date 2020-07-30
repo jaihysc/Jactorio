@@ -172,11 +172,15 @@ void game::WorldData::LogicRegister(const Chunk::LogicGroup group, const WorldCo
 	auto* chunk = GetChunkW(world_pair);
 	assert(chunk);
 
-	logicChunks_.emplace(chunk);
-
 	auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
-	chunk->GetLogicGroup(group)
-	     .push_back(tile_layer);
+	auto& logic_group = chunk->GetLogicGroup(group);
+
+	// Already added to logic group at tile layer 
+	if (std::find(logic_group.begin(), logic_group.end(), tile_layer) != logic_group.end())
+		return;
+
+	logicChunks_.emplace(chunk);
+	chunk->GetLogicGroup(group).push_back(tile_layer);
 }
 
 void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldCoord& world_pair,

@@ -200,6 +200,14 @@ namespace jactorio::game
 		                         {42, 0},
 		                         ChunkTile::ChunkLayer::entity);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+
+		
+		// Registering same position does nothing
+		worldData_.LogicRegister(Chunk::LogicGroup::inserter,
+		                         {42, 0},
+		                         ChunkTile::ChunkLayer::entity);
+		EXPECT_EQ((*worldData_.LogicGetChunks().begin())
+				  ->GetLogicGroup(Chunk::LogicGroup::inserter).size(), 2);
 	}
 
 	TEST_F(WorldDataTest, LogicRemove) {
