@@ -4,6 +4,7 @@
 #define JACTORIO_INCLUDE_CORE_DATA_TYPE_H
 #pragma once
 
+#include <cstdint>
 #include <tuple>
 #include <unordered_map>
 
