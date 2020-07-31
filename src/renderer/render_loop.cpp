@@ -35,11 +35,11 @@ void renderer::ChangeWindowSize(const unsigned int window_size_x,
 	// Ignore minimize
 	if (window_size_x == 0 && window_size_y == 0)
 		return;
-	
+
 	// Same size
 	if (window_x == window_size_x && window_y == window_size_y)
 		return;
-	
+
 	window_x = window_size_x;
 	window_y = window_size_y;
 
@@ -55,7 +55,7 @@ renderer::Renderer* renderer::GetBaseRenderer() {
 }
 
 
-void RenderingLoop(const renderer::DisplayWindow& display_window) {
+void RenderingLoop(renderer::DisplayWindow& display_window) {
 	LOG_MESSAGE(info, "2 - Runtime stage");
 
 	auto next_frame = std::chrono::steady_clock::now();  // For zeroing the time
@@ -70,7 +70,10 @@ void RenderingLoop(const renderer::DisplayWindow& display_window) {
 		{
 			EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
 
-			game::game_data->event.Raise<game::RendererTickEvent>(game::EventType::renderer_tick);
+			game::game_data->event.Raise<game::RendererTickEvent>(
+				game::EventType::renderer_tick,
+				game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)}
+			);
 
 			// ======================================================================
 			// World
@@ -180,9 +183,12 @@ void renderer::RenderInit() {
 	// ======================================================================
 
 	game::game_data->input.key.Register([]() {
-		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
-			// display_window.SetFullscreen(!display_window.IsFullscreen());
-			// main_renderer->GRecalculateBuffers(window_x, window_y);
+		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, [](game::EventBase& e) {
+			auto& render_e = static_cast<game::RendererTickEvent&>(e);
+			auto& window = render_e.windows[0].get();
+
+			window.SetFullscreen(!window.IsFullscreen());
+			main_renderer->GlResizeWindow(window_x, window_y);
 		});
 	}, SDLK_SPACE, game::InputAction::key_down);
 

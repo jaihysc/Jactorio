@@ -4,7 +4,11 @@
 #define JACTORIO_INCLUDE_GAME_EVENT_GAME_EVENTS_H
 #pragma once
 
-#include "event_base.h"
+#include <functional>
+#include <vector>
+
+#include "game/event/event_base.h"
+#include "renderer/display_window.h"
 
 namespace jactorio::game
 {
@@ -26,7 +30,13 @@ namespace jactorio::game
 	class RendererTickEvent final : public EventBase
 	{
 	public:
-		RendererTickEvent() = default;
+		using DisplayWindowContainerT = std::vector<std::reference_wrapper<renderer::DisplayWindow>>;
+
+		explicit RendererTickEvent(const DisplayWindowContainerT& window)
+			: windows(window) {
+		}
+
+		const DisplayWindowContainerT& windows;
 
 		EVENT_TYPE(renderer_tick)
 		EVENT_CATEGORY(application)
