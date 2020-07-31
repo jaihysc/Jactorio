@@ -69,11 +69,14 @@ void jactorio::data::Recipe::PostLoadValidate(const PrototypeManager& data_manag
 	J_DATA_ASSERT(!ingredients.empty(), "No ingredients specified for recipe");
 	for (const auto& ingredient : ingredients) {
 		J_DATA_ASSERT(!ingredient.first.empty(), "Empty ingredient internal name specifier");
-		J_DATA_ASSERT_F(data_manager.DataRawGet<Item>(ingredient.first),
-		                "Ingredient %s does not exist",
-		                ingredient.first.c_str());
+
+		const auto* ingredient_item = data_manager.DataRawGet<Item>(ingredient.first);
+		J_DATA_ASSERT_F(ingredient_item, "Ingredient %s does not exist", ingredient.first.c_str());
 
 		J_DATA_ASSERT(ingredient.second > 0, "Ingredient required amount minimum is 1");
+		J_DATA_ASSERT_F(ingredient.second <= ingredient_item->stackSize,
+		                "Ingredient required amount %d exceeds max stack size of ingredient %d",
+						ingredient.second, ingredient_item->stackSize);
 	}
 
 	J_DATA_ASSERT(!product.first.empty(), "No product specified for recipe");

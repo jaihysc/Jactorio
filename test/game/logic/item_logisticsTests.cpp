@@ -354,17 +354,30 @@ namespace jactorio::game
 		EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
 
 
-		// Has recipe, wrong item
 		data::PrototypeManager prototype_manager{};
 
 		auto recipe_pack = TestSetupRecipe(prototype_manager);
 		asm_data.ChangeRecipe(logicData_, prototype_manager, &recipe_pack.recipe);
 
+		// Has recipe, wrong item
 		EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
 
-
 		// Has recipe, correct item
-		EXPECT_TRUE(CanInsertAssemblyMachine({logicData_, {recipe_pack.item1, 2000}, asm_data, data::Orientation::down}));
+		DropOffParams args{logicData_, {recipe_pack.item1, 2000}, asm_data, data::Orientation::down};
+		EXPECT_TRUE(CanInsertAssemblyMachine(args));
+
+		// Exceeds the max percentage that a slot can be filled
+		asm_data.ingredientInv[0].count = 2;
+		EXPECT_FALSE(CanInsertAssemblyMachine(args));
+
+		// Exceeds max stack size
+		recipe_pack.item1->stackSize    = 50;
+		asm_data.ingredientInv[0].count = 50;
+		EXPECT_FALSE(CanInsertAssemblyMachine(args));
+
+		// Under the max percentage that a slot can be filled
+		asm_data.ingredientInv[0].count = 1;
+		EXPECT_TRUE(CanInsertAssemblyMachine(args));
 	}
 
 	// ======================================================================

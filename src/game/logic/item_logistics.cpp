@@ -163,13 +163,26 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
 bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& args) const {
 	auto& machine_data = static_cast<data::AssemblyMachineData&>(args.uniqueData);
 
+	constexpr int max_ingredient_sets = 2;  // Will allow filling to (ingredient count for crafting) * 2
+	static_assert(max_ingredient_sets >= 1);
+
 	// No recipe
-	if (machine_data.GetRecipe() == nullptr)
+	const auto* recipe = machine_data.GetRecipe();
+	if (recipe == nullptr)
 		return false;
 
-	for (auto& slot : machine_data.ingredientInv) {
-		if (slot.filter == args.itemStack.item)
+	for (size_t i = 0; i < machine_data.ingredientInv.size(); ++i) {
+		auto& slot = machine_data.ingredientInv[i];
+
+		if (slot.filter == args.itemStack.item) {
+
+			// Must be less than: max sets(multiples) of ingredient OR maximum stack size
+			const auto max_count = max_ingredient_sets * recipe->ingredients[i].second;
+			if (slot.count >= max_count || slot.count >= slot.filter->stackSize)
+				return false;
+
 			return true;
+		}
 	}
 
 	return false;
