@@ -403,7 +403,7 @@ namespace jactorio::game
 		/// Item which will be on transport segments from CreateTransportLine
 		data::Item lineItem_{};
 
-		// Creates a transport line 1 item on each side
+		/// \brief Creates a transport line with  1 item on each side, access segment_
 		data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
 
 			const auto segment = std::make_shared<TransportSegment>(
@@ -420,6 +420,7 @@ namespace jactorio::game
 		}
 
 
+		/// \param orientation Orientation to line being picked up from
 		void PickupLine(const data::Orientation orientation,
 		                data::TransportLineData& line_data) {
 			constexpr int pickup_amount = 1;
@@ -644,6 +645,19 @@ namespace jactorio::game
 			EXPECT_EQ(segment_->right.lane.size(), 0);
 		}
 	}
+
+	TEST_F(InserterPickupTest, PickupTransportLineAlternativeSide) {
+		// If the preferred lane is available, inserter will attempt to pick up from other lane
+		auto line = CreateTransportLine(data::Orientation::up);
+
+		PickupLine(data::Orientation::up, line);
+		EXPECT_EQ(segment_->right.lane.size(), 0);
+
+		// Use alternative side
+		PickupLine(data::Orientation::up, line);
+		EXPECT_EQ(segment_->left.lane.size(), 0);
+	}
+
 
 	TEST_F(InserterPickupTest, PickupAssemblyMachine) {
 		data::PrototypeManager prototype_manager{};

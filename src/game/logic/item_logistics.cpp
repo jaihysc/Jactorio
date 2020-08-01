@@ -294,6 +294,11 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
 
 	const auto* item = line_data.lineSegment->TryPopItemAbs(use_line_left, pickup_offset);
 
+	// Try picking up from other lane if preferred lane fails
+	if (item == nullptr)
+		item = line_data.lineSegment->TryPopItemAbs(!use_line_left, pickup_offset);
+
+
 	if (item != nullptr) {
 		line_data.lineSegment->GetSide(use_line_left).index = 0;
 
