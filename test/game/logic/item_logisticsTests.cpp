@@ -539,15 +539,6 @@ namespace jactorio::game
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
-			EXPECT_EQ(
-				GetPickupTransportBelt({
-					logicData_,
-					1, data::ToRotationDegree(180),
-					1, line, data::Orientation::right
-					}),
-				&lineItem_
-			);
-
 			PickupLine(data::Orientation::right, line);
 			EXPECT_EQ(segment_->right.lane.size(), 0);
 		}
@@ -691,10 +682,27 @@ namespace jactorio::game
 		// If the preferred lane is available, inserter will attempt to pick up from other lane
 		auto line = CreateTransportLine(data::Orientation::up);
 
+		EXPECT_EQ(
+			GetPickupTransportBelt({
+				logicData_,
+				1, data::ToRotationDegree(180),
+				1, line, data::Orientation::up
+				}),
+			&lineItem_
+		);
+
 		PickupLine(data::Orientation::up, line);
 		EXPECT_EQ(segment_->right.lane.size(), 0);
 
 		// Use alternative side
+		EXPECT_EQ(
+			GetPickupTransportBelt({
+				logicData_,
+				1, data::ToRotationDegree(180),
+				1, line, data::Orientation::up
+				}),
+			&lineItem_
+		);
 		PickupLine(data::Orientation::up, line);
 		EXPECT_EQ(segment_->left.lane.size(), 0);
 	}

@@ -275,6 +275,15 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(c
 }
 
 
+void GetAdjustedLineOffset(const bool use_line_left, 
+						   game::TransportLineOffset& pickup_offset,
+						   const data::TransportLineData& line_data) {
+	game::TransportSegment::ApplyTerminationDeduction(use_line_left,
+	                                            line_data.lineSegment->terminationType,
+	                                            game::TransportSegment::TerminationType::straight,
+	                                            pickup_offset);
+}
+
 game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBelt(const PickupParams& args) const {
 	auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
 
@@ -282,7 +291,22 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 	const bool use_line_left = props.first;
 	const auto pickup_offset = props.second;
 
-	return line_data.lineSegment->GetItem(use_line_left, pickup_offset.getAsDouble()).second.second;
+	const data::Item* item;
+
+	auto get_item = [&](const bool left_lane) {
+		auto adjusted_pickup_offset = pickup_offset;
+
+		GetAdjustedLineOffset(left_lane, adjusted_pickup_offset, line_data);
+		item = line_data.lineSegment->GetItem(left_lane, adjusted_pickup_offset.getAsDouble()).second.second;
+	};
+
+
+	get_item(use_line_left);
+	if (item == nullptr) {  // Try picking up from other lane if preferred lane fails
+		get_item(!use_line_left);
+	}
+
+	return item;
 }
 
 
@@ -297,11 +321,8 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
 
 	auto try_pickup_item = [&](const bool left_lane) {
 		auto adjusted_pickup_offset = pickup_offset;
-		TransportSegment::ApplyTerminationDeduction(left_lane,
-		                                            line_data.lineSegment->terminationType,
-		                                            TransportSegment::TerminationType::straight,
-		                                            adjusted_pickup_offset);
 
+		GetAdjustedLineOffset(left_lane, adjusted_pickup_offset, line_data);
 		item = line_data.lineSegment->TryPopItem(left_lane, adjusted_pickup_offset.getAsDouble());
 	};
 
