@@ -81,9 +81,9 @@ namespace jactorio::game
 		RegisterSegment({0, 5}, left_segment);
 
 		// Logic
-		left_segment->AppendItem(true, 0.f, &itemProto_);
-		left_segment->AppendItem(true, kItemSpacing, &itemProto_);
-		left_segment->AppendItem(true, kItemSpacing, &itemProto_);
+		left_segment->AppendItem(true, 0.f, itemProto_);
+		left_segment->AppendItem(true, kItemSpacing, itemProto_);
+		left_segment->AppendItem(true, kItemSpacing, itemProto_);
 
 		// 1 update
 		// first item moved to up segment
@@ -153,9 +153,9 @@ namespace jactorio::game
 		RegisterSegment({3, 0}, right_segment);
 
 		// Offset is distance from beginning, or previous item
-		up_segment->AppendItem(true, 0.f, &itemProto_);
-		up_segment->AppendItem(true, 1, &itemProto_);
-		up_segment->AppendItem(true, 1, &itemProto_);
+		up_segment->AppendItem(true, 0.f, itemProto_);
+		up_segment->AppendItem(true, 1, itemProto_);
+		up_segment->AppendItem(true, 1, itemProto_);
 		static_assert(kItemSpacing < 1);  // Tested positions would otherwise be invalid
 
 		// Logic
@@ -225,8 +225,8 @@ namespace jactorio::game
 		RegisterSegment({3, 0}, right_segment);
 
 		// Offset is distance from beginning, or previous item
-		up_segment->AppendItem(true, 0.f, &itemProto_);
-		up_segment->AppendItem(true, kItemSpacing, &itemProto_);
+		up_segment->AppendItem(true, 0.f, itemProto_);
+		up_segment->AppendItem(true, kItemSpacing, itemProto_);
 
 		// First item
 		TransportLineLogicUpdate(worldData_);
@@ -266,9 +266,9 @@ namespace jactorio::game
 
 		RegisterSegment({0, 0}, segment);
 
-		segment->AppendItem(true, 0.5f, &itemProto_);
-		segment->AppendItem(true, kItemSpacing, &itemProto_);
-		segment->AppendItem(true, kItemSpacing + 1.f, &itemProto_);
+		segment->AppendItem(true, 0.5f, itemProto_);
+		segment->AppendItem(true, kItemSpacing, itemProto_);
+		segment->AppendItem(true, kItemSpacing + 1.f, itemProto_);
 
 		// Will reach distance 0 after 0.5 / 0.01 updates
 		for (int i = 0; i < 50; ++i) {
@@ -338,11 +338,11 @@ namespace jactorio::game
 
 		// RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / kItemSpacing{0.25} = 13.2
 		for (int i = 0; i < 14; ++i) {
-			right_segment->AppendItem(false, 0.f, &itemProto_);
+			right_segment->AppendItem(false, 0.f, itemProto_);
 		}
 
 		// Items on up line should stop
-		up_segment->AppendItem(false, 0.f, &itemProto_);
+		up_segment->AppendItem(false, 0.f, itemProto_);
 
 		// WIll not move after an arbitrary number of updates
 		for (int i = 0; i < 34; ++i) {
@@ -367,11 +367,11 @@ namespace jactorio::game
 		RegisterSegment({2, 1}, left_segment);
 
 		// One item stopped, one still moving
-		left_segment->AppendItem(true, 0, &itemProto_);
+		left_segment->AppendItem(true, 0, itemProto_);
 		TransportLineLogicUpdate(worldData_);
 		EXPECT_EQ(left_segment.get()->left.index, 0);
 
-		left_segment->AppendItem(true, 2, &itemProto_);
+		left_segment->AppendItem(true, 2, itemProto_);
 		TransportLineLogicUpdate(worldData_);
 		EXPECT_EQ(left_segment.get()->left.index, 1);
 
@@ -421,11 +421,11 @@ namespace jactorio::game
 		// ======================================================================
 
 
-		left_segment->AppendItem(true, 1 - kItemSpacing + 0.01, &itemProto_);
+		left_segment->AppendItem(true, 1 - kItemSpacing + 0.01, itemProto_);
 
-		left_segment_2->AppendItem(true, 0, &itemProto_);
-		left_segment_2->AppendItem(true, 0.5, &itemProto_);
-		left_segment_2->AppendItem(true, 2, &itemProto_);
+		left_segment_2->AppendItem(true, 0, itemProto_);
+		left_segment_2->AppendItem(true, 0.5, itemProto_);
+		left_segment_2->AppendItem(true, 2, itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
 
@@ -450,8 +450,8 @@ namespace jactorio::game
 
 		RegisterSegment({0, 0}, right_segment);
 
-		right_segment->AppendItem(true, 0.f, &itemProto_);
-		right_segment->AppendItem(true, 0.f, &itemProto_);  // Insert behind previous item
+		right_segment->AppendItem(true, 0.f, itemProto_);
+		right_segment->AppendItem(true, 0.f, itemProto_);  // Insert behind previous item
 
 		// Check that second item has a minimum distance of kItemSpacing
 		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.f);
@@ -485,7 +485,7 @@ namespace jactorio::game
 		RegisterSegment({0, 0}, up_segment_1);
 		RegisterSegment({0, 1}, up_segment_2);
 
-		up_segment_2->AppendItem(true, 0.05, &itemProto_);
+		up_segment_2->AppendItem(true, 0.05, itemProto_);
 		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
 
 		TransportLineLogicUpdate(worldData_);
@@ -509,14 +509,14 @@ namespace jactorio::game
 
 		// ======================================================================
 		// Fill the first segment up to 4 items
-		up_segment_1->AppendItem(true, 0, &itemProto_);
-		up_segment_1->AppendItem(true, 0, &itemProto_);
-		up_segment_1->AppendItem(true, 0, &itemProto_);
+		up_segment_1->AppendItem(true, 0, itemProto_);
+		up_segment_1->AppendItem(true, 0, itemProto_);
+		up_segment_1->AppendItem(true, 0, itemProto_);
 		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
 
 
 		// Will not enter since segment 1 is full
-		up_segment_2->AppendItem(true, 0.05, &itemProto_);
+		up_segment_2->AppendItem(true, 0.05, itemProto_);
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);
@@ -552,8 +552,8 @@ namespace jactorio::game
 		RegisterSegment({3, 0}, segment_2);
 
 		// Insert item on left + right side
-		segment_2->AppendItem(true, 0.02f, &itemProto_);
-		segment_2->AppendItem(false, 0.02f, &itemProto_);
+		segment_2->AppendItem(true, 0.02f, itemProto_);
+		segment_2->AppendItem(false, 0.02f, itemProto_);
 
 		// Travel to the next belt in 0.02 / 0.01 + 1 updates
 		for (int i = 0; i < 3; ++i) {
@@ -604,8 +604,8 @@ namespace jactorio::game
 
 		// Insert items
 		for (int i = 0; i < 3; ++i) {
-			right_segment->AppendItem(true, 0.f, &itemProto_);
-			right_segment->AppendItem(false, 0.f, &itemProto_);
+			right_segment->AppendItem(true, 0.f, itemProto_);
+			right_segment->AppendItem(false, 0.f, itemProto_);
 		}
 
 		// Logic tests
@@ -707,8 +707,8 @@ namespace jactorio::game
 
 		// Insert items
 		for (int i = 0; i < 3; ++i) {
-			left_segment->AppendItem(true, 0.f, &itemProto_);
-			left_segment->AppendItem(false, 0.f, &itemProto_);
+			left_segment->AppendItem(true, 0.f, itemProto_);
+			left_segment->AppendItem(false, 0.f, itemProto_);
 		}
 
 		// Logic tests
@@ -802,7 +802,7 @@ namespace jactorio::game
 		// Left lane
 
 
-		down_segment->AppendItem(true, 0, &itemProto_);
+		down_segment->AppendItem(true, 0, itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
 
@@ -817,7 +817,7 @@ namespace jactorio::game
 
 		left_segment->right.lane.clear();
 
-		down_segment->AppendItem(false, 0, &itemProto_);
+		down_segment->AppendItem(false, 0, itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
 
@@ -842,7 +842,7 @@ namespace jactorio::game
 		// Left lane
 
 
-		up_segment->AppendItem(true, 0, &itemProto_);
+		up_segment->AppendItem(true, 0, itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
 
@@ -856,7 +856,7 @@ namespace jactorio::game
 
 		left_segment->left.lane.clear();
 
-		up_segment->AppendItem(false, 0, &itemProto_);
+		up_segment->AppendItem(false, 0, itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
 
@@ -893,7 +893,7 @@ namespace jactorio::game
 		// ======================================================================
 		// Left
 
-		right_segment->AppendItem(true, 0, &itemProto_);
+		right_segment->AppendItem(true, 0, itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
 
@@ -903,7 +903,7 @@ namespace jactorio::game
 
 		// Right
 
-		right_segment->AppendItem(false, 0, &itemProto_);
+		right_segment->AppendItem(false, 0, itemProto_);
 
 		TransportLineLogicUpdate(worldData_);
 

@@ -413,8 +413,8 @@ namespace jactorio::game
 			);
 
 			segment_ = segment.get();
-			segment_->InsertItem(false, 0.5, &lineItem_);
-			segment_->InsertItem(true, 0.5, &lineItem_);
+			segment_->InsertItem(false, 0.5, lineItem_);
+			segment_->InsertItem(true, 0.5, lineItem_);
 
 			return data::TransportLineData{segment};
 		}
@@ -644,6 +644,47 @@ namespace jactorio::game
 			PickupLine(data::Orientation::left, line);
 			EXPECT_EQ(segment_->right.lane.size(), 0);
 		}
+	}
+
+	TEST_F(InserterPickupTest, PickupTransportLineNonStraight) {
+		//
+		// ^
+		// | <--
+
+		const auto right = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::straight,
+			2
+		);
+
+		const auto up = std::make_shared<TransportSegment>(
+			data::Orientation::up,
+			TransportSegment::TerminationType::bend_right,
+			2
+		);
+
+		const auto left = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::bend_right,
+			2
+		);
+
+		left->targetSegment = up.get();
+		up->targetSegment = right.get();
+
+		data::TransportLineData line{left};
+		line.lineSegmentIndex = 1;
+
+
+		data::Item item;
+
+		left->AppendItem(true, 0.5 + 0.7, item);
+		PickupLine(data::Orientation::up, line);
+		EXPECT_EQ(left->left.lane.size(), 0);
+
+		left->AppendItem(false, 0.5 + 0.3, item);
+		PickupLine(data::Orientation::up, line);
+		EXPECT_EQ(left->right.lane.size(), 0);
 	}
 
 	TEST_F(InserterPickupTest, PickupTransportLineAlternativeSide) {

@@ -9,6 +9,7 @@
 #include "data/prototype/item/item.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"
+#include "game/logic/transport_line_controller.h"
 
 using namespace jactorio;
 
@@ -157,7 +158,7 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
 	constexpr double insertion_offset = 0.5;
 	return line_data.lineSegment->TryInsertItem(use_line_left,
 	                                            line_data.lineSegmentIndex + insertion_offset,
-	                                            args.itemStack.item);
+	                                            *args.itemStack.item);
 }
 
 bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& args) const {
@@ -281,7 +282,7 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 	const bool use_line_left = props.first;
 	const auto pickup_offset = props.second;
 
-	return line_data.lineSegment->GetItemAbs(use_line_left, pickup_offset).second.second;
+	return line_data.lineSegment->GetItem(use_line_left, pickup_offset.getAsDouble()).second.second;
 }
 
 
@@ -292,12 +293,23 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
 	const bool use_line_left = props.first;
 	const auto pickup_offset = props.second;
 
-	const auto* item = line_data.lineSegment->TryPopItemAbs(use_line_left, pickup_offset);
+	const data::Item* item;
 
-	// Try picking up from other lane if preferred lane fails
-	if (item == nullptr)
-		item = line_data.lineSegment->TryPopItemAbs(!use_line_left, pickup_offset);
+	auto try_pickup_item = [&](const bool left_lane) {
+		auto adjusted_pickup_offset = pickup_offset;
+		TransportSegment::ApplyTerminationDeduction(left_lane,
+		                                            line_data.lineSegment->terminationType,
+		                                            TransportSegment::TerminationType::straight,
+		                                            adjusted_pickup_offset);
 
+		item = line_data.lineSegment->TryPopItem(left_lane, adjusted_pickup_offset.getAsDouble());
+	};
+
+
+	try_pickup_item(use_line_left);
+	if (item == nullptr) {  // Try picking up from other lane if preferred lane fails
+		try_pickup_item(!use_line_left);
+	}
 
 	if (item != nullptr) {
 		line_data.lineSegment->GetSide(use_line_left).index = 0;
@@ -352,7 +364,7 @@ bool game::InserterPickup::IsAtMaxDegree(const data::RotationDegree& degree) {
 	return degree == data::ToRotationDegree(kMaxInserterDegree);
 }
 
-std::pair<bool, double> game::InserterPickup::GetBeltPickupProps(const PickupParams& args) {
+std::pair<bool, game::TransportLineOffset> game::InserterPickup::GetBeltPickupProps(const PickupParams& args) {
 	auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
 
 	bool use_line_left = false;
@@ -410,8 +422,10 @@ std::pair<bool, double> game::InserterPickup::GetBeltPickupProps(const PickupPar
 		break;
 	}
 
-	auto pickup_offset = line_data.lineSegmentIndex +
-		GetInserterArmOffset(args.degree.getAsInteger(), args.inserterTileReach);
+	auto pickup_offset = TransportLineOffset(
+		line_data.lineSegmentIndex +
+		GetInserterArmOffset(args.degree.getAsInteger(), args.inserterTileReach)
+	);
 
 	return {use_line_left, pickup_offset};
 }

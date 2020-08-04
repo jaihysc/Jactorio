@@ -70,7 +70,7 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeMan
 		if (ImGui::Button("Clear debug overlays")) {
 			for (auto* chunk : player_data.GetPlayerWorldData().LogicGetChunks()) {
 
-				auto& object_layer = chunk->GetOverlay(game::OverlayLayer::general);
+				auto& object_layer = chunk->GetOverlay(game::OverlayLayer::debug);
 				object_layer.clear();
 			}
 		}
@@ -176,6 +176,8 @@ bool show_transport_segments     = false;
 void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeManager& data_manager) {
 	using namespace jactorio;
 
+	constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
+
 	// Sprite representing the update point
 	const auto* sprite_stop =
 		data_manager.DataRawGet<data::Sprite>("__core__/rect-red");
@@ -197,7 +199,7 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 
 	// Get all update points and add it to the chunk's objects for drawing
 	for (auto* chunk : world_data.LogicGetChunks()) {
-		auto& object_layer = chunk->GetOverlay(game::OverlayLayer::general);
+		auto& object_layer = chunk->GetOverlay(draw_overlay_layer);
 		object_layer.clear();
 
 		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
@@ -284,10 +286,10 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 				outline_sprite = sprite_stop;  // None moving
 
 			object_layer.emplace_back(
-				game::OverlayElement{*direction_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, game::OverlayLayer::general}
+				game::OverlayElement{*direction_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, draw_overlay_layer}
 			);
 			object_layer.emplace_back(
-				game::OverlayElement{*outline_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, game::OverlayLayer::general}
+				game::OverlayElement{*outline_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, draw_overlay_layer}
 			);
 		}
 	}
@@ -392,12 +394,12 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 		if (ImGui::Button("Append Item Left"))
 			segment.AppendItem(true,
 			                   0.2,
-			                   data_manager.DataRawGet<data::Item>(iname));
+			                   *data_manager.DataRawGet<data::Item>(iname));
 
 		if (ImGui::Button("Append Item Right"))
 			segment.AppendItem(false,
 			                   0.2,
-			                   data_manager.DataRawGet<data::Item>(iname));
+			                   *data_manager.DataRawGet<data::Item>(iname));
 
 
 		// Display items

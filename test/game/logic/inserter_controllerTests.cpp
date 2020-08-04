@@ -135,7 +135,7 @@ namespace jactorio::game
 		TestRegisterTransportSegment(worldData_, {1, 2}, pickup, segment_proto);
 
 		for (int i = 0; i < 1000; ++i) {
-			pickup->AppendItem(false, 0, &item);
+			pickup->AppendItem(false, 0, item);
 		}
 
 

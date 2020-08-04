@@ -196,7 +196,7 @@ namespace jactorio::game
 		GetPickupFunc getPickupFunc_ = nullptr;
 
 	private:
-		static std::pair<bool, double> GetBeltPickupProps(const PickupParams& args);
+		static std::pair<bool, TransportLineOffset> GetBeltPickupProps(const PickupParams& args);
 	};
 }
 
