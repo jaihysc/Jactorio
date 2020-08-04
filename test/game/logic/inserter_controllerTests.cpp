@@ -33,25 +33,30 @@ namespace jactorio::game
 		}
 
 		///
-		/// \brief Creates chest with 10 items, emits OnNeighborUpdate for 1, 2
+		/// \brief Creates chest with, emits OnNeighborUpdate
 		/// \param orientation Orientation to chest from inserter
+		/// \param stack_count Amount of items chest starts with
 		data::ContainerEntityData* BuildChest(const WorldCoord& coords,
-		                                      const data::Orientation orientation) {
+		                                      const data::Orientation orientation,
+		                                      const data::Item::StackCount stack_count,
+		                                      const WorldCoord& neighbor_update_coord = {1, 2}) {
 			auto& layer = TestSetupContainer(worldData_, coords, containerProto_);
 
 			auto* unique_data = layer.GetUniqueData<data::ContainerEntityData>();
 
+			// Emit neighbor update
 			{
-				auto& neighbor_layer       = worldData_.GetTile({1, 2})->GetLayer(ChunkTile::ChunkLayer::entity);
+				auto& neighbor_layer       = worldData_.GetTile(neighbor_update_coord)->GetLayer(ChunkTile::ChunkLayer::entity);
 				const auto* neighbor_proto =
 					static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData);
 
 				if (neighbor_proto)
 					neighbor_proto->OnNeighborUpdate(worldData_, logicData_,
-					                                 coords, {1, 2}, orientation);
+					                                 coords, neighbor_update_coord, orientation);
 			}
 
-			unique_data->inventory[0] = {&containerItemProto_, 10};
+			if (stack_count != 0)
+				unique_data->inventory[0] = {&containerItemProto_, stack_count};
 
 			return unique_data;
 		}
@@ -81,8 +86,8 @@ namespace jactorio::game
 		inserterProto_.rotationSpeed = 2.1;
 		const int updates_to_target  = 86;
 
-		auto* dropoff = BuildChest({0, 2}, data::Orientation::left);  // Dropoff
-		auto* pickup  = BuildChest({2, 2}, data::Orientation::right);  // Pickup
+		auto* dropoff = BuildChest({0, 2}, data::Orientation::left, 10);
+		auto* pickup  = BuildChest({2, 2}, data::Orientation::right, 10);
 
 		auto& inserter_layer = BuildInserter({1, 2}, data::Orientation::left);
 		auto* inserter_data  = inserter_layer.GetUniqueData<data::InserterData>();
@@ -170,9 +175,9 @@ namespace jactorio::game
 
 		// Cannot drop into assembly machine since it has no recipe
 		const data::AssemblyMachine asm_machine{};
-		auto& dropoff = TestSetupAssemblyMachine(worldData_, {0, 1}, asm_machine);
+		TestSetupAssemblyMachine(worldData_, {0, 1}, asm_machine);
 
-		auto* pickup = BuildChest({3, 2}, data::Orientation::right);
+		auto* pickup = BuildChest({3, 2}, data::Orientation::right, 10);
 
 
 		inserterProto_.rotationSpeed = 2.1f;
@@ -185,5 +190,32 @@ namespace jactorio::game
 
 		EXPECT_EQ(inserter_data->status, data::InserterData::Status::pickup);
 		EXPECT_EQ(pickup->inventory[0].count, 10);
+	}
+
+	TEST_F(InserterControllerTest, PickupDroppedoffItem) {
+		// Can pickup an item dropped off by another inserter on the same game tick
+
+		inserterProto_.rotationSpeed = 180.f;
+
+		auto* left_chest  = BuildChest({0, 2}, data::Orientation::up, 1);
+		auto* mid_chest   = BuildChest({2, 2}, data::Orientation::up, 0);
+		auto* right_chest = BuildChest({4, 2}, data::Orientation::up, 0);
+
+		// Order which inserters are updated should not matter
+		BuildInserter({3, 2}, data::Orientation::right);
+		BuildInserter({1, 2}, data::Orientation::right);
+
+
+		// Pickup
+		InserterLogicUpdate(worldData_, logicData_);
+		EXPECT_EQ(left_chest->inventory[0].count, 0);
+
+		// Dropoff, picked up by inserter2
+		InserterLogicUpdate(worldData_, logicData_);
+		EXPECT_EQ(mid_chest->inventory[0].count, 0);
+
+		// Dropoff by inserter2
+		InserterLogicUpdate(worldData_, logicData_);
+		EXPECT_EQ(right_chest->inventory[0].count, 1);
 	}
 }
