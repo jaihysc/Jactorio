@@ -104,7 +104,7 @@ void ProcessInserterPickup(const PickupQueue& pickup_queue, game::LogicData& log
 
 		// Do not pick up item if it cannot be dropped off
 		if (!inserter_data.dropoff.CanDropOff(logic_data, to_be_picked_item))
-			return;
+			continue;
 
 
 		const auto result = inserter_data.pickup.Pickup(logic_data,
