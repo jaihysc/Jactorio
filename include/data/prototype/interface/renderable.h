@@ -47,13 +47,6 @@ namespace jactorio::data
 
 	public:
 		Sprite::SetT set = 0;
-
-		///
-		/// \param pixel_offset_x Pixels to top left of current tile
-		/// \param pixel_offset_y Pixels to top left of current tile
-		virtual void OnDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-		                              float pixel_offset_x, float pixel_offset_y) const {
-		}
 	};
 
 	///
@@ -90,6 +83,12 @@ namespace jactorio::data
 		virtual bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
 		                        game::ChunkTileLayer* tile_layer) const = 0;
 
+		///
+		/// \param pixel_offset Pixels to top left of current tile
+		virtual void OnRDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+		                               const core::Position2<float>& pixel_offset,
+		                               const UniqueDataBase* unique_data) const {
+		}
 
 	protected:
 		// ======================================================================

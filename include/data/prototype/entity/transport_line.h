@@ -68,9 +68,6 @@ namespace jactorio::data
 		///
 		/// \brief Converts lineOrientation to placementOrientation
 		static Orientation ToOrientation(LineOrientation line_orientation);
-
-		void OnDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-		                      float x_offset, float y_offset) const override;
 	};
 
 
@@ -116,6 +113,10 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Game events
+
+		void OnRDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+		                       const core::Position2<float>& pixel_offset,
+		                       const UniqueDataBase* unique_data) const override;
 
 		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
 		                                         const WorldCoord& world_coords) const override;

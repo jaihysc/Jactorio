@@ -81,28 +81,29 @@ namespace jactorio::game
 		WorldData worldData_{};
 		LogicData logicData_{};
 
-		TransportSegment* segment_ = nullptr;
-
-		// Creates a transport line with orientation at (4, 4)
-		data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
+		/// \brief Creates a transport line with orientation
+		data::TransportLineData CreateTransportLine(const data::Orientation orientation,
+		                                            const TransportSegment::TerminationType ttype =
+			                                            TransportSegment::TerminationType::straight) {
 			worldData_.AddChunk(Chunk(0, 0));
 
 			const auto segment = std::make_shared<TransportSegment>(
 				orientation,
-				TransportSegment::TerminationType::straight,
+				ttype,
 				2
 			);
-			segment_ = segment.get();
 
 			return data::TransportLineData{segment};
 		}
 
+		///
+		/// \param orientation Inserter orientation to dropoff
 		void TransportLineInsert(const data::Orientation orientation,
 		                         data::TransportLineData& line_data) {
 			data::Item item{};
-			InsertTransportBelt(logicData_, {&item, 1},
-			                    line_data,
-			                    orientation);
+			InsertTransportBelt({logicData_, {&item, 1}, line_data, orientation});
+
+			EXPECT_TRUE(CanInsertTransportBelt({logicData_, {}, line_data, data::Orientation::up}));
 		}
 	};
 
@@ -172,9 +173,10 @@ namespace jactorio::game
 
 		data::Item item{};
 		// Orientation is orientation from origin object
-		InsertContainerEntity(logicData_, {&item, 2},
-		                      *container_data,
-		                      data::Orientation::down);
+		EXPECT_TRUE(
+			InsertContainerEntity({logicData_, {&item, 2}, *container_data, data::Orientation::down})
+		);
+		EXPECT_TRUE(CanInsertContainerEntity({logicData_, {}, *container_data, data::Orientation::up}));
 
 		// Inserted item
 		EXPECT_EQ(container_data->inventory[0].item, &item);
@@ -182,13 +184,13 @@ namespace jactorio::game
 	}
 
 	TEST_F(ItemDropOffTest, InsertOffset) {
-		auto line_proto             = CreateTransportLine(data::Orientation::up);
-		line_proto.lineSegmentIndex = 1;
-		segment_->itemOffset        = 10;  // Arbitrary itemOffset
+		auto line_data             = CreateTransportLine(data::Orientation::up);
+		line_data.lineSegmentIndex = 1;
+		line_data.lineSegment->itemOffset        = 10;  // Arbitrary itemOffset
 
-		TransportLineInsert(data::Orientation::up, line_proto);
-		ASSERT_EQ(segment_->right.lane.size(), 1);
-		EXPECT_FLOAT_EQ(segment_->right.lane[0].first.getAsDouble(), 1.5f);
+		TransportLineInsert(data::Orientation::up, line_data);
+		ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
+		EXPECT_FLOAT_EQ(line_data.lineSegment->right.lane[0].first.getAsDouble(), 1.5f);
 	}
 
 	TEST_F(ItemDropOffTest, InsertTransportLineUp) {
@@ -196,26 +198,26 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(segment_->left.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 	}
 
@@ -224,26 +226,26 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(segment_->left.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 	}
 
@@ -252,26 +254,26 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(segment_->left.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
 		}
 	}
 
@@ -280,27 +282,49 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(segment_->left.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
+	}
+
+	TEST_F(ItemDropOffTest, DropoffTransportLineNonStraight) {
+		// -->
+		// ^
+		// | <--
+
+		auto right = CreateTransportLine(data::Orientation::right, TransportSegment::TerminationType::straight);
+		auto up    = CreateTransportLine(data::Orientation::up, TransportSegment::TerminationType::bend_right);
+		auto left  = CreateTransportLine(data::Orientation::left, TransportSegment::TerminationType::bend_right);
+
+		left.lineSegment->targetSegment = up.lineSegment.get();
+		up.lineSegment->targetSegment   = right.lineSegment.get();
+
+		left.lineSegmentIndex = 1;
+
+
+		data::Item item;
+
+		TransportLineInsert(data::Orientation::up, left);
+		ASSERT_EQ(left.lineSegment->left.lane.size(), 1);
+		EXPECT_FLOAT_EQ(left.lineSegment->left.lane[0].first.getAsDouble(), 0.5 + 0.7);
 	}
 
 	TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
@@ -320,7 +344,7 @@ namespace jactorio::game
 		targetProtoData_ = &assembly_machine;
 
 		// Orientation doesn't matter
-		EXPECT_TRUE(InsertAssemblyMachine(logicData_, {recipe_pack.item2, 10}, asm_data, data::Orientation::up));
+		EXPECT_TRUE(InsertAssemblyMachine({logicData_, {recipe_pack.item2, 10}, asm_data, data::Orientation::up}));
 
 		EXPECT_EQ(asm_data.ingredientInv[1].item, recipe_pack.item2);
 		EXPECT_EQ(asm_data.ingredientInv[1].count, 9);  // 1 used to begin crafting
@@ -341,7 +365,43 @@ namespace jactorio::game
 		asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
 
 		// 49 + 2 > 50
-		EXPECT_FALSE(InsertAssemblyMachine(logicData_, {recipe_pack.item1, 2}, asm_data, data::Orientation::up));
+		EXPECT_FALSE(InsertAssemblyMachine({logicData_, {recipe_pack.item1, 2}, asm_data, data::Orientation::up}));
+	}
+
+	TEST_F(ItemDropOffTest, CanInsertAssemblyMachine) {
+		data::AssemblyMachineData asm_data{};
+
+		data::Item item{};
+
+		// No recipe
+		EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
+
+
+		data::PrototypeManager prototype_manager{};
+
+		auto recipe_pack = TestSetupRecipe(prototype_manager);
+		asm_data.ChangeRecipe(logicData_, prototype_manager, &recipe_pack.recipe);
+
+		// Has recipe, wrong item
+		EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
+
+		// Has recipe, correct item
+		DropOffParams args{logicData_, {recipe_pack.item1, 2000}, asm_data, data::Orientation::down};
+		EXPECT_TRUE(CanInsertAssemblyMachine(args));
+
+		// Exceeds the max ingredient count multiple that a slot can be filled
+		asm_data.ingredientInv[0].count = 2;
+		EXPECT_FALSE(CanInsertAssemblyMachine(args));
+
+		// Exceeds max stack size
+		recipe_pack.recipe.ingredients[0].second = 50;  // Requires 50, can only hold 50
+		recipe_pack.item1->stackSize    = 50;
+		asm_data.ingredientInv[0].count = 50;
+		EXPECT_FALSE(CanInsertAssemblyMachine(args));
+
+		// Under the max ingredient count multiple that a slot can be filled
+		asm_data.ingredientInv[0].count = 1;
+		EXPECT_TRUE(CanInsertAssemblyMachine(args));
 	}
 
 	// ======================================================================
@@ -362,12 +422,12 @@ namespace jactorio::game
 		LogicData logicData_{};
 
 		data::Inserter inserterProto_{};
-		TransportSegment* segment_ = nullptr;
 
+		/// Item which will be on transport segments from CreateTransportLine
+		data::Item lineItem_{};
 
-		// Creates a transport line 1 item on each side
+		/// \brief Creates a transport line with  1 item on each side
 		data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
-			data::Item item{};  // Item is not used for tests
 
 			const auto segment = std::make_shared<TransportSegment>(
 				orientation,
@@ -375,23 +435,25 @@ namespace jactorio::game
 				2
 			);
 
-			segment_ = segment.get();
-			segment_->InsertItem(false, 0.5, &item);
-			segment_->InsertItem(true, 0.5, &item);
+			segment->InsertItem(false, 0.5, lineItem_);
+			segment->InsertItem(true, 0.5, lineItem_);
 
 			return data::TransportLineData{segment};
 		}
 
 
+		/// \param orientation Orientation to line being picked up from
 		void PickupLine(const data::Orientation orientation,
 		                data::TransportLineData& line_data) {
 			constexpr int pickup_amount = 1;
 
-			const auto result = PickupTransportBelt(logicData_,
-			                                        1, data::ToRotationDegree(kMaxInserterDegree),
-			                                        pickup_amount,
-			                                        line_data,
-			                                        orientation);
+			const auto result = PickupTransportBelt({
+				logicData_,
+				1, data::ToRotationDegree(kMaxInserterDegree),
+				pickup_amount,
+				line_data,
+				orientation
+			});
 
 			EXPECT_TRUE(result.first);
 
@@ -459,20 +521,28 @@ namespace jactorio::game
 		auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
-		PickupContainerEntity(logicData_,
-		                      1, data::ToRotationDegree(179),
-		                      1, container_data,
-		                      data::Orientation::up);
 
+		PickupContainerEntity({
+			logicData_,
+			1, data::ToRotationDegree(179),
+			1, container_data,
+			data::Orientation::up
+		});
 		EXPECT_EQ(inv[0].count, 10);  // No items picked up, not 180 degrees
 
-		auto result = PickupContainerEntity(logicData_,
-		                                    1, data::ToRotationDegree(180),
-		                                    2, container_data,
-		                                    data::Orientation::up);
-		EXPECT_EQ(inv[0].count, 8);  // 2 items picked up
 
-		EXPECT_NE(result.second.item, nullptr);
+		PickupParams args = {
+			logicData_,
+			1, data::ToRotationDegree(180),
+			2, container_data,
+			data::Orientation::up
+		};
+
+		EXPECT_EQ(GetPickupContainerEntity(args), &item);
+
+		auto result = PickupContainerEntity(args);
+		EXPECT_EQ(inv[0].count, 8);  // At 180 degrees, 2 items picked up
+		EXPECT_EQ(result.second.item, &item);
 		EXPECT_EQ(result.second.count, 2);
 	}
 
@@ -481,30 +551,26 @@ namespace jactorio::game
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
-			segment_->right.index = 10;
-
-			// Should set index to 0 since a item was removed
 			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
-			EXPECT_EQ(segment_->right.index, 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 	}
 
@@ -513,25 +579,25 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 	}
 
@@ -540,25 +606,25 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 	}
 
@@ -567,27 +633,107 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 	}
+
+	TEST_F(InserterPickupTest, PickupTransportLineNonStraight) {
+		// -->
+		// ^
+		// | <--
+
+		const auto right = std::make_shared<TransportSegment>(
+			data::Orientation::right,
+			TransportSegment::TerminationType::straight,
+			2
+		);
+
+		const auto up = std::make_shared<TransportSegment>(
+			data::Orientation::up,
+			TransportSegment::TerminationType::bend_right,
+			2
+		);
+
+		const auto left = std::make_shared<TransportSegment>(
+			data::Orientation::left,
+			TransportSegment::TerminationType::bend_right,
+			2
+		);
+
+		left->targetSegment = up.get();
+		up->targetSegment   = right.get();
+
+		data::TransportLineData line{left};
+		line.lineSegmentIndex = 1;
+
+
+		data::Item item;
+
+		left->AppendItem(true, 0.5 + 0.7, item);
+		PickupLine(data::Orientation::up, line);
+		EXPECT_EQ(left->left.lane.size(), 0);
+
+		left->AppendItem(false, 0.5 + 0.3, item);
+		PickupLine(data::Orientation::up, line);
+		EXPECT_EQ(left->right.lane.size(), 0);
+	}
+
+	TEST_F(InserterPickupTest, PickupTransportLineAlternativeSide) {
+		// If the preferred lane is available, inserter will attempt to pick up from other lane
+		auto line = CreateTransportLine(data::Orientation::up);
+
+		EXPECT_EQ(
+			GetPickupTransportBelt({
+				logicData_,
+				1, data::ToRotationDegree(180),
+				1, line, data::Orientation::up
+				}),
+			&lineItem_
+		);
+
+		// Should set index to 0 since a item was removed
+		line.lineSegment->right.index = 10;
+
+		PickupLine(data::Orientation::up, line);
+		EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+		EXPECT_EQ(line.lineSegment->right.index, 0);
+
+
+		// Use alternative side
+		EXPECT_EQ(
+			GetPickupTransportBelt({
+				logicData_,
+				1, data::ToRotationDegree(180),
+				1, line, data::Orientation::up
+				}),
+			&lineItem_
+		);
+
+		line.lineSegment->left.index = 10;
+
+		PickupLine(data::Orientation::up, line);
+		EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+		EXPECT_EQ(line.lineSegment->left.index, 0);
+	}
+
 
 	TEST_F(InserterPickupTest, PickupAssemblyMachine) {
 		data::PrototypeManager prototype_manager{};
@@ -597,10 +743,12 @@ namespace jactorio::game
 		auto* data  = layer.GetUniqueData<data::AssemblyMachineData>();
 
 		// Does nothing as there is no recipe yet
-		PickupAssemblyMachine(logicData_,
-		                      2, data::ToRotationDegree(kMaxInserterDegree),
-		                      2,
-		                      *data, data::Orientation::up
+		PickupAssemblyMachine({
+				logicData_,
+				2, data::ToRotationDegree(kMaxInserterDegree),
+				2,
+				*data, data::Orientation::up
+			}
 		);
 
 		// ======================================================================
@@ -612,10 +760,12 @@ namespace jactorio::game
 
 		// No items in product inventory
 		EXPECT_FALSE(
-			PickupAssemblyMachine(logicData_,
+			PickupAssemblyMachine({logicData_,
 				2, data::ToRotationDegree(kMaxInserterDegree),
 				2,
-				*data, data::Orientation::up).first);
+				*data, data::Orientation::up
+				}).first
+		);
 
 
 		// Has items in product inventory
@@ -625,11 +775,16 @@ namespace jactorio::game
 		data->productInv[0] = {recipe_pack.itemProduct, 10, recipe_pack.itemProduct};
 
 		targetProtoData_ = &asm_machine;
-		auto result      = PickupAssemblyMachine(logicData_,
-		                                         2, data::ToRotationDegree(kMaxInserterDegree),
-		                                         2,
-		                                         *data, data::Orientation::up
-		);
+
+		PickupParams args{
+			logicData_,
+			2, data::ToRotationDegree(kMaxInserterDegree),
+			2,
+			*data, data::Orientation::up
+		};
+
+		EXPECT_EQ(GetPickupAssemblyMachine(args), recipe_pack.itemProduct);
+		auto result = PickupAssemblyMachine(args);
 
 		EXPECT_TRUE(result.first);
 		EXPECT_EQ(result.second.item, recipe_pack.itemProduct);

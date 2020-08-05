@@ -1,107 +1,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "data/prototype/entity/transport_line.h"
+#include "game/logic/transport_line_controller.h"
 
 #include <cmath>
 
-#include "game/logic/transport_line_controller.h"
-
+#include "data/prototype/entity/transport_line.h"
 #include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 
 using namespace jactorio;
-
-// Side only deductions are applied differently whether the segment is a target, or the being the source to a target
-
-void ApplyTerminationDeductionL(const game::TransportSegment::TerminationType termination_type,
-                                game::TransportLineOffset& offset) {
-	switch (termination_type) {
-		// Feeding into another belt also needs to be deducted to feed at the right offset on the target belt
-	case game::TransportSegment::TerminationType::left_only:
-	case game::TransportSegment::TerminationType::bend_left:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kBendLeftLReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::right_only:
-	case game::TransportSegment::TerminationType::bend_right:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kBendRightLReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::straight:
-		break;
-	}
-}
-
-void ApplyTargetTerminationDeductionL(const game::TransportSegment::TerminationType termination_type,
-                                      game::TransportLineOffset& offset) {
-	switch (termination_type) {
-	case game::TransportSegment::TerminationType::bend_left:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kBendLeftLReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::bend_right:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kBendRightLReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::left_only:
-	case game::TransportSegment::TerminationType::right_only:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kTargetSideOnlyReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::straight:
-		break;
-	}
-}
-
-
-void ApplyTerminationDeductionR(const game::TransportSegment::TerminationType termination_type,
-                                game::TransportLineOffset& offset) {
-	switch (termination_type) {
-	case game::TransportSegment::TerminationType::left_only:
-	case game::TransportSegment::TerminationType::bend_left:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kBendLeftRReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::right_only:
-	case game::TransportSegment::TerminationType::bend_right:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kBendRightRReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::straight:
-		break;
-	}
-}
-
-void ApplyTargetTerminationDeductionR(const game::TransportSegment::TerminationType termination_type,
-                                      game::TransportLineOffset& offset) {
-	switch (termination_type) {
-	case game::TransportSegment::TerminationType::bend_left:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kBendLeftRReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::bend_right:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kBendRightRReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::left_only:
-	case game::TransportSegment::TerminationType::right_only:
-		offset -= dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kTargetSideOnlyReduction);
-		break;
-
-	case game::TransportSegment::TerminationType::straight:
-		break;
-	}
-}
 
 ///
 /// \brief Sets index to the next item with a distance greater than item_width and decrement it
@@ -178,26 +85,9 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 				);
 			}
 
-			// Account for the termination type of the line segments for the offset from start to insert into
-			if constexpr (IsLeft) {
-				ApplyTerminationDeductionL(segment.terminationType, target_offset);
-
-				// Transition into right lane
-				if (segment.terminationType == game::TransportSegment::TerminationType::right_only)
-					ApplyTargetTerminationDeductionR(target_segment.terminationType, target_offset);
-				else
-					ApplyTargetTerminationDeductionL(target_segment.terminationType, target_offset);
-			}
-			else {
-				ApplyTerminationDeductionR(segment.terminationType, target_offset);
-
-
-				// Transition into left lane
-				if (segment.terminationType == game::TransportSegment::TerminationType::left_only)
-					ApplyTargetTerminationDeductionL(target_segment.terminationType, target_offset);
-				else
-					ApplyTargetTerminationDeductionR(target_segment.terminationType, target_offset);
-			}
+			game::TransportSegment::ApplyTerminationDeduction<IsLeft>(segment.terminationType,
+			                                                          target_segment.terminationType,
+			                                                          target_offset);
 
 			bool moved_item;
 			// Decides how the items will be fed into the target segment (if at all)
@@ -205,18 +95,18 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 			default:
 				moved_item = target_segment.TryInsertItem(IsLeft,
 				                                          target_offset.getAsDouble(),
-				                                          side.lane[index].second);
+				                                          *side.lane[index].second);
 				break;
 
 				// Side insertion
 			case game::TransportSegment::TerminationType::left_only:
 				moved_item = target_segment.left.TryInsertItem(target_offset.getAsDouble(),
-				                                               side.lane[index].second,
+				                                               *side.lane[index].second,
 				                                               target_segment.itemOffset);
 				break;
 			case game::TransportSegment::TerminationType::right_only:
 				moved_item = target_segment.right.TryInsertItem(target_offset.getAsDouble(),
-				                                                side.lane[index].second,
+				                                                *side.lane[index].second,
 				                                                target_segment.itemOffset);
 				break;
 			}

@@ -2,10 +2,19 @@
 
 #include "data/prototype/entity/inserter.h"
 
+#include "renderer/rendering/data_renderer.h"
+
 using namespace jactorio;
 
+void data::Inserter::OnRDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
+                                       const core::Position2<float>& pixel_offset,
+                                       const UniqueDataBase* unique_data) const {
+	DrawInserterArm(layer, uv_coords, pixel_offset,
+	                *this, *static_cast<const InserterData*>(unique_data));
+}
+
 data::Sprite::SetT data::Inserter::OnRGetSpriteSet(const Orientation orientation,
-												   game::WorldData&,
+                                                   game::WorldData&,
                                                    const WorldCoord&) const {
 	switch (orientation) {
 

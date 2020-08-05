@@ -40,12 +40,14 @@ namespace jactorio::game
 		// Item insertion 
 		// See TransportSegment for function documentation
 
-		void AppendItem(FloatOffsetT offset, const data::Item* item);
+		void AppendItem(FloatOffsetT offset, const data::Item& item);
 
-		void InsertItem(FloatOffsetT offset, const data::Item* item, IntOffsetT item_offset);
+		void InsertItem(FloatOffsetT offset, const data::Item& item, IntOffsetT item_offset);
 
-		bool TryInsertItem(FloatOffsetT offset, const data::Item* item, IntOffsetT item_offset);
+		bool TryInsertItem(FloatOffsetT offset, const data::Item& item, IntOffsetT item_offset);
 
+		J_NODISCARD std::pair<size_t, TransportLineItem> GetItem(FloatOffsetT offset,
+		                                                         FloatOffsetT epsilon = kItemWidth / 2) const;
 		const data::Item* TryPopItem(FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 
 		// ======================================================================
@@ -143,23 +145,53 @@ namespace jactorio::game
 		/// \return true if left size is not empty and has a valid index
 		J_NODISCARD bool IsActive(bool left_side) const;
 
+		///
+		/// \brief Deducts tile length offset to get offset based on lane length
+		/// \param target_segment_ttype If deducting termination of current segment's target is unnecessary, use straight
+		///
+		/// Since the length of segments is the tile length, it must be deducted to get the lane length to accurately insert,
+		/// remove and any other operation on segments
+		static void ApplyTerminationDeduction(bool is_left,
+		                                      TerminationType segment_ttype, TerminationType target_segment_ttype,
+		                                      TransportLineOffset& offset);
+		template <bool IsLeftLane>
+		static void ApplyTerminationDeduction(TerminationType segment_ttype, TerminationType target_segment_ttype,
+		                                      TransportLineOffset& offset);
+
+		static void ApplyLeftTerminationDeduction(TerminationType segment_ttype, TerminationType target_segment_ttype,
+		                                          TransportLineOffset& offset);
+		static void ApplyRightTerminationDeduction(TerminationType segment_ttype, TerminationType target_segment_ttype,
+		                                           TransportLineOffset& offset);
+
 		// Item insertion 
 
 		///
 		/// \brief Appends item onto the specified side of a belt behind the last item
 		/// \param offset Number of tiles to offset from previous item or the end of the transport line segment when there are no items
-		void AppendItem(bool left_side, FloatOffsetT offset, const data::Item* item);
+		void AppendItem(bool left_side, FloatOffsetT offset, const data::Item& item);
 
 		///
 		/// \brief Inserts the item onto the specified belt side at the offset from the beginning of the transport line
 		/// \param offset Distance from beginning of transport line
-		void InsertItem(bool left_side, FloatOffsetT offset, const data::Item* item);
+		void InsertItem(bool left_side, FloatOffsetT offset, const data::Item& item);
 
 		///
 		/// \brief Attempts to insert the item onto the specified belt side at the offset from the beginning of the transport line
 		/// \param offset Distance from beginning of transport line
 		/// \return false if unsuccessful
-		bool TryInsertItem(bool left_side, FloatOffsetT offset, const data::Item* item);
+		bool TryInsertItem(bool left_side, FloatOffsetT offset, const data::Item& item);
+
+		///
+		/// \brief Finds item at offset within epsilon upper and lower bounds inclusive, <deque index, TransportLineItem>
+		/// \return .second.second is nullptr if no items were found
+		J_NODISCARD std::pair<size_t, TransportLineItem> GetItem(bool left_side,
+		                                                         FloatOffsetT offset,
+		                                                         FloatOffsetT epsilon = kItemWidth / 2) const;
+
+		///
+		/// \brief Finds and removes item at offset within epsilon inclusive
+		/// \return nullptr if no items were found
+		const data::Item* TryPopItem(bool left_side, FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 
 
 		// Item insertion with itemOffset
@@ -170,14 +202,10 @@ namespace jactorio::game
 
 		J_NODISCARD bool CanInsertAbs(bool left_side, const TransportLineOffset& start_offset);
 
-		void InsertItemAbs(bool left_side, FloatOffsetT offset, const data::Item* item);
+		void InsertItemAbs(bool left_side, FloatOffsetT offset, const data::Item& item);
 
-		bool TryInsertItemAbs(bool left_side, FloatOffsetT offset, const data::Item* item);
+		bool TryInsertItemAbs(bool left_side, FloatOffsetT offset, const data::Item& item);
 
-		///
-		/// \brief Finds item at offset within epsilon inclusive
-		/// \return nullptr if no items were found
-		const data::Item* TryPopItemAbs(bool left_side, FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 
 		///
 		/// \brief Adjusts provided value such that InsertItem(, offset, ) is at the correct location
@@ -190,6 +218,17 @@ namespace jactorio::game
 		void GetOffsetAbs(IntOffsetT& val) const;
 		void GetOffsetAbs(FloatOffsetT& val) const;
 	};
+
+	template <bool IsLeftLane>
+	void TransportSegment::ApplyTerminationDeduction(const TerminationType segment_ttype, const TerminationType target_segment_ttype,
+	                                                 TransportLineOffset& offset) {
+		if constexpr (IsLeftLane) {
+			ApplyLeftTerminationDeduction(segment_ttype, target_segment_ttype, offset);
+		}
+		else {
+			ApplyRightTerminationDeduction(segment_ttype, target_segment_ttype, offset);
+		}
+	}
 }
 
 

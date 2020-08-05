@@ -61,7 +61,7 @@ namespace jactorio::game
 
 		///
 		/// \brief Converts world coordinate to overlay element coordinates
-		static OverlayElement::OffsetT ToOverlayCoord(WorldCoordAxis world_coord);
+		static OverlayOffsetAxis ToOverlayCoord(WorldCoordAxis world_coord);
 
 
 		// World access

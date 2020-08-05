@@ -336,7 +336,7 @@ void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, game::ChunkTi
 			ApplySpriteUvAdjustment(uv, sprite->GetCoords(unique_data->set, sprite_frame));
 
 			// Custom draw function
-			unique_data->OnDrawUniqueData(r_layer, *spritemapCoords_, pixel_pos.x, pixel_pos.y);
+			proto->OnRDrawUniqueData(r_layer, *spritemapCoords_, {pixel_pos.x, pixel_pos.y}, unique_data);
 		}
 		else {
 			const auto* sprite = proto->OnRGetSprite(0);

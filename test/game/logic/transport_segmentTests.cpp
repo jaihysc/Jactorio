@@ -31,15 +31,15 @@ namespace jactorio::game
 		// THe entire transport line is compressed with items, cannot insert
 
 		// At spacing of 0.25, 4 items per segment
-		segment_->AppendItem(true, 0.f, itemProto_.get());
-		segment_->AppendItem(true, kItemSpacing, itemProto_.get());
-		segment_->AppendItem(true, kItemSpacing, itemProto_.get());
-		segment_->AppendItem(true, kItemSpacing, itemProto_.get());
+		segment_->AppendItem(true, 0.f, *itemProto_);
+		segment_->AppendItem(true, kItemSpacing, *itemProto_);
+		segment_->AppendItem(true, kItemSpacing, *itemProto_);
+		segment_->AppendItem(true, kItemSpacing, *itemProto_);
 
-		segment_->AppendItem(true, kItemSpacing, itemProto_.get());
-		segment_->AppendItem(true, kItemSpacing, itemProto_.get());
-		segment_->AppendItem(true, kItemSpacing, itemProto_.get());
-		segment_->AppendItem(true, kItemSpacing, itemProto_.get());
+		segment_->AppendItem(true, kItemSpacing, *itemProto_);
+		segment_->AppendItem(true, kItemSpacing, *itemProto_);
+		segment_->AppendItem(true, kItemSpacing, *itemProto_);
+		segment_->AppendItem(true, kItemSpacing, *itemProto_);
 
 		// Location 1.75 tiles from beginning of transport line is filled
 		EXPECT_FALSE(segment_->CanInsert(true,
@@ -56,10 +56,10 @@ namespace jactorio::game
 		// Insert into a gap between 1 and 1.5
 		// Is wide enough for the item (item_width - kItemSpacing) to fit there
 
-		segment_->AppendItem(false, 0.f, itemProto_.get());
-		segment_->AppendItem(false, 1.f, itemProto_.get());
+		segment_->AppendItem(false, 0.f, *itemProto_);
+		segment_->AppendItem(false, 1.f, *itemProto_);
 		// Items can be inserted in this 0.5 gap
-		segment_->AppendItem(false, 0.5f, itemProto_.get());
+		segment_->AppendItem(false, 0.5f, *itemProto_);
 
 
 		// Overlaps with the item at 1 by 0.01
@@ -84,11 +84,11 @@ namespace jactorio::game
 		bool result = segment_->CanInsert(true, offset);  // Ok, Offset can be 0, is first item
 		EXPECT_TRUE(result);
 
-		segment_->AppendItem(true, 0, itemProto_.get());
+		segment_->AppendItem(true, 0, *itemProto_);
 		result = segment_->CanInsert(true, offset);  // Not ok, offset changed to kItemSpacing
 		EXPECT_FALSE(result);
 
-		segment_->AppendItem(true, 0, itemProto_.get());
+		segment_->AppendItem(true, 0, *itemProto_);
 		result = segment_->CanInsert(true, offset);  // Not ok, offset changed to kItemSpacing
 		EXPECT_FALSE(result);
 	}
@@ -98,7 +98,7 @@ namespace jactorio::game
 		segment_->itemOffset = 1;
 		const TransportLineOffset offset{0.f};
 
-		segment_->AppendItem(true, 0, itemProto_.get());
+		segment_->AppendItem(true, 0, *itemProto_);
 		const bool result = segment_->CanInsertAbs(true, offset);  // Ok, offset (0) + itemOffset (1) = 1 
 		EXPECT_TRUE(result);
 	}
@@ -111,8 +111,8 @@ namespace jactorio::game
 		EXPECT_FALSE(segment_->left.IsActive());
 		EXPECT_FALSE(segment_->right.IsActive());
 
-		segment_->AppendItem(false, 0.f, itemProto_.get());
-		segment_->AppendItem(true, 0.f, itemProto_.get());
+		segment_->AppendItem(false, 0.f, *itemProto_);
+		segment_->AppendItem(true, 0.f, *itemProto_);
 
 		// Has items, now active
 		EXPECT_TRUE(segment_->left.IsActive());
@@ -133,16 +133,16 @@ namespace jactorio::game
 		);
 
 		// Offset is from the beginning of the transport line OR the previous item if it exists
-		line_segment->AppendItem(true, 1.3, itemProto_.get());
+		line_segment->AppendItem(true, 1.3, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.3);
 
-		line_segment->AppendItem(true, 1.2, itemProto_.get());
+		line_segment->AppendItem(true, 1.2, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 1.2);
 
-		line_segment->AppendItem(true, 1.5, itemProto_.get());
+		line_segment->AppendItem(true, 1.5, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 1.5);
 
-		line_segment->AppendItem(true, 0.5, itemProto_.get());
+		line_segment->AppendItem(true, 0.5, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 0.5);
 	}
 
@@ -156,13 +156,13 @@ namespace jactorio::game
 			5
 		);
 
-		line_segment->AppendItem(true, 0, itemProto_.get());  // Ok, Offset can be 0, is first item
+		line_segment->AppendItem(true, 0, *itemProto_);  // Ok, Offset can be 0, is first item
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0);
 
-		line_segment->AppendItem(true, 0, itemProto_.get());  // Not ok, offset changed to kItemSpacing
+		line_segment->AppendItem(true, 0, *itemProto_);  // Not ok, offset changed to kItemSpacing
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), jactorio::game::kItemSpacing);
 
-		line_segment->AppendItem(true, 0, itemProto_.get());  // Not ok, offset changed to kItemSpacing
+		line_segment->AppendItem(true, 0, *itemProto_);  // Not ok, offset changed to kItemSpacing
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
 	}
 
@@ -177,26 +177,26 @@ namespace jactorio::game
 
 		// Offset is ALWAYS from the beginning of the transport line
 
-		line_segment->InsertItem(true, 1.2, itemProto_.get());
+		line_segment->InsertItem(true, 1.2, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);  // < 1.2
 
 		// Should be sorted by items closest to the end of the segment
-		line_segment->InsertItem(true, 2.5, itemProto_.get());
+		line_segment->InsertItem(true, 2.5, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);  // 1.2
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 1.3);  // < 2.5
 
-		line_segment->InsertItem(true, 0.5, itemProto_.get());
+		line_segment->InsertItem(true, 0.5, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.5);  // < 0.5
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.7);  // 1.2
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 1.3);  // 2.5
 
-		line_segment->InsertItem(true, 0.1, itemProto_.get());
+		line_segment->InsertItem(true, 0.1, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.1);  // < 0.1
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.4);  // 0.5
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 0.7);  // 1.2
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 1.3);  // 2.5
 
-		line_segment->InsertItem(true, 1.8, itemProto_.get());
+		line_segment->InsertItem(true, 1.8, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.1);  // 0.1
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.4);  // 0.5
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 0.7);  // 1.2
@@ -214,10 +214,10 @@ namespace jactorio::game
 
 		// Offset is ALWAYS from the beginning of the transport line + itemOffset
 
-		line_segment->InsertItemAbs(true, 1.2, itemProto_.get());
+		line_segment->InsertItemAbs(true, 1.2, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 3.2);
 
-		line_segment->InsertItemAbs(true, 1.5, itemProto_.get());
+		line_segment->InsertItemAbs(true, 1.5, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 3.2);
 		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.3);  // 1.5
 	}
@@ -232,13 +232,13 @@ namespace jactorio::game
 
 		// Offset is ALWAYS from the beginning of the transport line
 		{
-			const bool result = line_segment->TryInsertItem(true, 1.2, itemProto_.get());
+			const bool result = line_segment->TryInsertItem(true, 1.2, *itemProto_);
 			ASSERT_TRUE(result);
 			EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);
 		}
 		{
 			// Too close
-			const bool result = line_segment->TryInsertItem(true, 1.3, itemProto_.get());
+			const bool result = line_segment->TryInsertItem(true, 1.3, *itemProto_);
 			ASSERT_FALSE(result);
 		}
 
@@ -247,7 +247,7 @@ namespace jactorio::game
 		line_segment->left.index = 999;
 
 		{
-			const bool result = line_segment->TryInsertItem(true, 0.5, itemProto_.get());
+			const bool result = line_segment->TryInsertItem(true, 0.5, *itemProto_);
 			ASSERT_TRUE(result);
 			EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.5);
 			EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.7);  // 1.2
@@ -268,20 +268,20 @@ namespace jactorio::game
 
 
 		// Appending
-		line_segment->AppendItem(true, 1.2, itemProto_.get());
+		line_segment->AppendItem(true, 1.2, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 1.2f);
 
-		line_segment->AppendItem(true, 3, itemProto_.get());
+		line_segment->AppendItem(true, 3, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 4.2f);
 
-		line_segment->AppendItem(true, 1.8, itemProto_.get());
+		line_segment->AppendItem(true, 1.8, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 6.f);
 
 		// Inserting (Starting at 6.f)
-		line_segment->InsertItem(true, 7, itemProto_.get());
+		line_segment->InsertItem(true, 7, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 7.f);
 
-		line_segment->InsertItem(true, 2, itemProto_.get());
+		line_segment->InsertItem(true, 2, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 7.f);  // Unchanged
 
 		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 0.f);
@@ -299,20 +299,20 @@ namespace jactorio::game
 
 
 		// Appending
-		line_segment->AppendItem(false, 1.2, itemProto_.get());
+		line_segment->AppendItem(false, 1.2, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 1.2f);
 
-		line_segment->AppendItem(false, 3, itemProto_.get());
+		line_segment->AppendItem(false, 3, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 4.2f);
 
-		line_segment->AppendItem(false, 1.8, itemProto_.get());
+		line_segment->AppendItem(false, 1.8, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 6.f);
 
 		// Inserting (Starting at 6.f)
-		line_segment->InsertItem(false, 7, itemProto_.get());
+		line_segment->InsertItem(false, 7, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 7.f);
 
-		line_segment->InsertItem(false, 2, itemProto_.get());
+		line_segment->InsertItem(false, 2, *itemProto_);
 		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 7.f);  // Unchanged
 
 		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 0.f);
@@ -343,24 +343,39 @@ namespace jactorio::game
 		}
 	}
 
+	TEST_F(TransportSegmentTest, GetItem) {
+		auto get_item = [&]() {  // true is an item is found
+			// Valid range is 1.3 and 1.7 inclusive
+			return segment_->GetItem(true, 1.5).second.second != nullptr;
+		};
+		
+		segment_->AppendItem(true, 0.5, *itemProto_);
+		segment_->AppendItem(true, 0.5, *itemProto_);   // 1.00
+		segment_->AppendItem(true, 0.29, *itemProto_);  // 1.29
+		EXPECT_FALSE(get_item());
+
+		segment_->AppendItem(true, 0.42, *itemProto_);  // 1.71
+		EXPECT_FALSE(get_item());
+	}
+
 	TEST_F(TransportSegmentTest, TryPopItem) {
-		EXPECT_EQ(segment_->TryPopItemAbs(true, 0.25), nullptr);
-		EXPECT_EQ(segment_->TryPopItemAbs(false, 0.25), nullptr);
+		EXPECT_EQ(segment_->TryPopItem(true, 0.25), nullptr);
+		EXPECT_EQ(segment_->TryPopItem(false, 0.25), nullptr);
 
 		// Pop off appended item
-		segment_->AppendItem(true, 0.3, itemProto_.get());
+		segment_->AppendItem(true, 0.3, *itemProto_);
 
-		EXPECT_EQ(segment_->TryPopItemAbs(true, 0.4, 0.1), itemProto_.get());
+		EXPECT_EQ(segment_->TryPopItem(true, 0.4, 0.1), itemProto_.get());
 		ASSERT_TRUE(segment_->left.lane.empty());
 
 		//
 
 		data::Item item2{};
-		segment_->AppendItem(true, 0.1, itemProto_.get());
-		segment_->AppendItem(true, 0.8, &item2);  // 0.9
-		segment_->AppendItem(true, 0.9, itemProto_.get());  // 1.8
+		segment_->AppendItem(true, 0.1, *itemProto_);
+		segment_->AppendItem(true, 0.8, item2);  // 0.9
+		segment_->AppendItem(true, 0.9, *itemProto_);  // 1.8
 
-		EXPECT_EQ(segment_->TryPopItemAbs(true, 0.9, 0.7), &item2);
+		EXPECT_EQ(segment_->TryPopItem(true, 0.9, 0.7), &item2);
 		ASSERT_EQ(segment_->left.lane.size(), 2);
 
 		// Should preserve spacing
