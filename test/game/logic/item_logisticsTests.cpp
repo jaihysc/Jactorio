@@ -81,22 +81,23 @@ namespace jactorio::game
 		WorldData worldData_{};
 		LogicData logicData_{};
 
-		TransportSegment* segment_ = nullptr;
-
-		// Creates a transport line with orientation at (4, 4)
-		data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
+		/// \brief Creates a transport line with orientation
+		data::TransportLineData CreateTransportLine(const data::Orientation orientation,
+		                                            const TransportSegment::TerminationType ttype =
+			                                            TransportSegment::TerminationType::straight) {
 			worldData_.AddChunk(Chunk(0, 0));
 
 			const auto segment = std::make_shared<TransportSegment>(
 				orientation,
-				TransportSegment::TerminationType::straight,
+				ttype,
 				2
 			);
-			segment_ = segment.get();
 
 			return data::TransportLineData{segment};
 		}
 
+		///
+		/// \param orientation Inserter orientation to dropoff
 		void TransportLineInsert(const data::Orientation orientation,
 		                         data::TransportLineData& line_data) {
 			data::Item item{};
@@ -183,13 +184,13 @@ namespace jactorio::game
 	}
 
 	TEST_F(ItemDropOffTest, InsertOffset) {
-		auto line_proto             = CreateTransportLine(data::Orientation::up);
-		line_proto.lineSegmentIndex = 1;
-		segment_->itemOffset        = 10;  // Arbitrary itemOffset
+		auto line_data             = CreateTransportLine(data::Orientation::up);
+		line_data.lineSegmentIndex = 1;
+		line_data.lineSegment->itemOffset        = 10;  // Arbitrary itemOffset
 
-		TransportLineInsert(data::Orientation::up, line_proto);
-		ASSERT_EQ(segment_->right.lane.size(), 1);
-		EXPECT_FLOAT_EQ(segment_->right.lane[0].first.getAsDouble(), 1.5f);
+		TransportLineInsert(data::Orientation::up, line_data);
+		ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
+		EXPECT_FLOAT_EQ(line_data.lineSegment->right.lane[0].first.getAsDouble(), 1.5f);
 	}
 
 	TEST_F(ItemDropOffTest, InsertTransportLineUp) {
@@ -197,26 +198,26 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(segment_->left.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 	}
 
@@ -225,26 +226,26 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(segment_->left.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 	}
 
@@ -253,26 +254,26 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(segment_->left.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
 		}
 	}
 
@@ -281,27 +282,49 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(segment_->left.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(segment_->right.lane.size(), 1);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
 		}
+	}
+
+	TEST_F(ItemDropOffTest, DropoffTransportLineNonStraight) {
+		// -->
+		// ^
+		// | <--
+
+		auto right = CreateTransportLine(data::Orientation::right, TransportSegment::TerminationType::straight);
+		auto up    = CreateTransportLine(data::Orientation::up, TransportSegment::TerminationType::bend_right);
+		auto left  = CreateTransportLine(data::Orientation::left, TransportSegment::TerminationType::bend_right);
+
+		left.lineSegment->targetSegment = up.lineSegment.get();
+		up.lineSegment->targetSegment   = right.lineSegment.get();
+
+		left.lineSegmentIndex = 1;
+
+
+		data::Item item;
+
+		TransportLineInsert(data::Orientation::up, left);
+		ASSERT_EQ(left.lineSegment->left.lane.size(), 1);
+		EXPECT_FLOAT_EQ(left.lineSegment->left.lane[0].first.getAsDouble(), 0.5 + 0.7);
 	}
 
 	TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
@@ -398,12 +421,11 @@ namespace jactorio::game
 		LogicData logicData_{};
 
 		data::Inserter inserterProto_{};
-		TransportSegment* segment_ = nullptr;
 
 		/// Item which will be on transport segments from CreateTransportLine
 		data::Item lineItem_{};
 
-		/// \brief Creates a transport line with  1 item on each side, access segment_
+		/// \brief Creates a transport line with  1 item on each side
 		data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
 
 			const auto segment = std::make_shared<TransportSegment>(
@@ -412,9 +434,8 @@ namespace jactorio::game
 				2
 			);
 
-			segment_ = segment.get();
-			segment_->InsertItem(false, 0.5, lineItem_);
-			segment_->InsertItem(true, 0.5, lineItem_);
+			segment->InsertItem(false, 0.5, lineItem_);
+			segment->InsertItem(true, 0.5, lineItem_);
 
 			return data::TransportLineData{segment};
 		}
@@ -529,30 +550,30 @@ namespace jactorio::game
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
-			segment_->right.index = 10;
+			line.lineSegment->right.index = 10;
 
 			// Should set index to 0 since a item was removed
 			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
-			EXPECT_EQ(segment_->right.index, 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.index, 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
 			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 	}
 
@@ -561,25 +582,25 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::right);
 
 			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 	}
 
@@ -588,25 +609,25 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::down);
 
 			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 	}
 
@@ -615,30 +636,30 @@ namespace jactorio::game
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(segment_->left.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::left);
 
 			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(segment_->right.lane.size(), 0);
+			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 		}
 	}
 
 	TEST_F(InserterPickupTest, PickupTransportLineNonStraight) {
-		//
+		// -->
 		// ^
 		// | <--
 
@@ -661,7 +682,7 @@ namespace jactorio::game
 		);
 
 		left->targetSegment = up.get();
-		up->targetSegment = right.get();
+		up->targetSegment   = right.get();
 
 		data::TransportLineData line{left};
 		line.lineSegmentIndex = 1;
@@ -692,7 +713,7 @@ namespace jactorio::game
 		);
 
 		PickupLine(data::Orientation::up, line);
-		EXPECT_EQ(segment_->right.lane.size(), 0);
+		EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
 
 		// Use alternative side
 		EXPECT_EQ(
@@ -704,7 +725,7 @@ namespace jactorio::game
 			&lineItem_
 		);
 		PickupLine(data::Orientation::up, line);
-		EXPECT_EQ(segment_->left.lane.size(), 0);
+		EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
 	}
 
 

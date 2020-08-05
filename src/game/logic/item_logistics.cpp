@@ -69,6 +69,15 @@ bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& args) const {
 	return true;
 }
 
+void GetAdjustedLineOffset(const bool use_line_left, 
+						   game::TransportLineOffset& pickup_offset,
+						   const data::TransportLineData& line_data) {
+	game::TransportSegment::ApplyTerminationDeduction(use_line_left,
+	                                            line_data.lineSegment->terminationType,
+	                                            game::TransportSegment::TerminationType::straight,
+	                                            pickup_offset);
+}
+
 bool game::ItemDropOff::CanInsertTransportBelt(const DropOffParams&) const {
 	return true;
 }
@@ -155,9 +164,12 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
 		break;
 	}
 
-	constexpr double insertion_offset = 0.5;
+	constexpr double insertion_offset_base = 0.5;
+	auto offset = TransportLineOffset(line_data.lineSegmentIndex + insertion_offset_base);
+
+	GetAdjustedLineOffset(use_line_left, offset, line_data);
 	return line_data.lineSegment->TryInsertItem(use_line_left,
-	                                            line_data.lineSegmentIndex + insertion_offset,
+	                                            offset.getAsDouble(),
 	                                            *args.itemStack.item);
 }
 
@@ -274,15 +286,6 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(c
 	return {RemoveInvItem(container.inventory, target_item, args.amount), {target_item, args.amount}};
 }
 
-
-void GetAdjustedLineOffset(const bool use_line_left, 
-						   game::TransportLineOffset& pickup_offset,
-						   const data::TransportLineData& line_data) {
-	game::TransportSegment::ApplyTerminationDeduction(use_line_left,
-	                                            line_data.lineSegment->terminationType,
-	                                            game::TransportSegment::TerminationType::straight,
-	                                            pickup_offset);
-}
 
 game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBelt(const PickupParams& args) const {
 	auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
