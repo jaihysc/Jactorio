@@ -316,9 +316,9 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(const PickupParams& args) const {
 	auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
 
-	const auto props         = GetBeltPickupProps(args);
-	const bool use_line_left = props.first;
-	const auto pickup_offset = props.second;
+	const auto props          = GetBeltPickupProps(args);
+	bool use_line_left        = props.first;
+	const auto& pickup_offset = props.second;
 
 	const data::Item* item;
 
@@ -331,8 +331,12 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
 
 
 	try_pickup_item(use_line_left);
-	if (item == nullptr) {  // Try picking up from other lane if preferred lane fails
-		try_pickup_item(!use_line_left);
+	if (item == nullptr) {  
+		// Try picking up from other lane if preferred lane fails
+		// use_line_left itself must be inverted so the handling after an item was picked up utilizes the correct lane
+		use_line_left = !use_line_left;
+
+		try_pickup_item(use_line_left);
 	}
 
 	if (item != nullptr) {

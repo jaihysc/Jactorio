@@ -550,12 +550,8 @@ namespace jactorio::game
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
 
-			line.lineSegment->right.index = 10;
-
-			// Should set index to 0 since a item was removed
 			PickupLine(data::Orientation::up, line);
 			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-			EXPECT_EQ(line.lineSegment->right.index, 0);
 		}
 		{
 			auto line = CreateTransportLine(data::Orientation::up);
@@ -712,8 +708,13 @@ namespace jactorio::game
 			&lineItem_
 		);
 
+		// Should set index to 0 since a item was removed
+		line.lineSegment->right.index = 10;
+
 		PickupLine(data::Orientation::up, line);
 		EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+		EXPECT_EQ(line.lineSegment->right.index, 0);
+
 
 		// Use alternative side
 		EXPECT_EQ(
@@ -724,8 +725,12 @@ namespace jactorio::game
 				}),
 			&lineItem_
 		);
+
+		line.lineSegment->left.index = 10;
+
 		PickupLine(data::Orientation::up, line);
 		EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+		EXPECT_EQ(line.lineSegment->left.index, 0);
 	}
 
 

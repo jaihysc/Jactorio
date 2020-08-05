@@ -389,6 +389,8 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 
 		ImGui::Text("Direction: %s", OrientationToStr(segment.direction));
 
+		ImGui::Text("Item update index: %d %d", segment.left.index, segment.right.index);
+
 		// Appending item
 		const std::string iname = "__base__/wooden-chest-item";
 		if (ImGui::Button("Append Item Left"))
