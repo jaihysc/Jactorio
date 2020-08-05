@@ -24,7 +24,7 @@ namespace jactorio::data
 
 		Item* outputItem = nullptr;
 
-		/// Number of ticks to mine resource
+		/// Base number of ticks to mine resource with no modifiers applied (mining speed, boosts, ...)
 		uint16_t miningTicks = 1;
 
 		game::LogicData::DeferralTimer::DeferralEntry deferralEntry{};
@@ -44,9 +44,8 @@ namespace jactorio::data
 	public:
 		PROTOTYPE_CATEGORY(mining_drill);
 
-
-		// TODO miningSpeed unimplemented
-		PYTHON_PROP_REF_I(MiningDrill, double, miningSpeed, 1.f);  // Mines 1 resource every 60 game ticks
+		/// Mining ticks divided by this
+		PYTHON_PROP_REF_I(MiningDrill, double, miningSpeed, 1.f);
 
 		/// Number of tiles to extend the mining radius around the entity outside of entity tile width and height	
 		PYTHON_PROP_REF_I(MiningDrill, uint16_t, miningRadius, 1);

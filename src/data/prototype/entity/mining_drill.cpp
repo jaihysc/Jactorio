@@ -186,5 +186,8 @@ void jactorio::data::MiningDrill::OnRemove(game::WorldData&,
 
 void jactorio::data::MiningDrill::RegisterMineCallback(game::LogicData::DeferralTimer& timer,
                                                        MiningDrillData* unique_data) const {
-	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, unique_data->miningTicks);
+	const auto mine_ticks = static_cast<GameTickT>(unique_data->miningTicks / miningSpeed);
+	assert(mine_ticks > 0);
+	
+	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, mine_ticks);
 }
