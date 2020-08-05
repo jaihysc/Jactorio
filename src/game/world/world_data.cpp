@@ -229,7 +229,8 @@ void GenerateChunk(game::WorldData& world_data,
                    const data::PrototypeManager& data_manager,
                    const int chunk_x, const int chunk_y,
                    const data::DataCategory data_category,
-                   void (*func)(game::ChunkTile&, void*, float, double)) {
+                   void (*func)(game::ChunkTile& target_tile, void* prototype,
+								const data::NoiseLayer<T>& noise_layer, float noise_val)) {
 	using namespace jactorio;
 
 	// The Y axis for libnoise is inverted. It causes no issues as of right now. I am leaving this here
@@ -256,7 +257,7 @@ void GenerateChunk(game::WorldData& world_data,
 	game::ChunkTile* tiles = chunk->Tiles();
 
 	int seed_offset = 0;  // Incremented every time a noise layer generates to keep terrain unique
-	for (const auto& noise_layer : noise_layers) {
+	for (const auto* noise_layer : noise_layers) {
 		module::Perlin base_terrain_noise_module;
 		base_terrain_noise_module.SetSeed(world_data.GetWorldGeneratorSeed() + seed_offset++);
 
@@ -283,7 +284,7 @@ void GenerateChunk(game::WorldData& world_data,
 				float noise_val = base_terrain_height_map.GetValue(x, y);
 				auto* new_tile  = noise_layer->Get(noise_val);
 
-				func(tiles[y * game::Chunk::kChunkWidth + x], new_tile, noise_val, noise_layer->richness);
+				func(tiles[y * game::Chunk::kChunkWidth + x], new_tile, *noise_layer, noise_val);
 			}
 		}
 
@@ -304,7 +305,7 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 		world_data, data_manager,
 		chunk_x, chunk_y,
 		data::DataCategory::noise_layer_tile,
-		[](game::ChunkTile& target, void* tile, float, double) {
+		[](game::ChunkTile& target, void* tile, const auto&, float) {
 			assert(tile != nullptr);  // Base tile should never generate nullptr
 			// Add the tile prototype to the Chunk_tile
 			auto* new_tile = static_cast<data::Tile*>(tile);
@@ -317,23 +318,33 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 		world_data, data_manager,
 		chunk_x, chunk_y,
 		data::DataCategory::noise_layer_entity,
-		[](game::ChunkTile& target, void* tile, const float val, const double richness) {
-			if (tile == nullptr)  // Do not override existing tiles with nullptr
+		[](game::ChunkTile& target, void* tile, const auto& noise_layer, float noise_val) {
+			if (tile == nullptr)  // Do not override existing tiles
 				return;
 
-			// Do not place resource on water
+			// Do not place resources on water since they cannot be mined by entities
 			const auto* base_layer = target.GetTilePrototype();
 			if (base_layer != nullptr && base_layer->isWater)
 				return;
 
-			// Add the tile prototype to the Chunk_tile
+
+			// For resource amount, scale noise value up by richness 
+			const auto noise_range = noise_layer.GetValNoiseRange(noise_val);
+			const auto noise_min = noise_range.first;
+			const auto noise_max = noise_range.second;
+			auto resource_amount =  static_cast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
+
+			if (resource_amount <= 0)
+				resource_amount = 1;
+
+			// Place new tile
 			auto* new_tile = static_cast<data::ResourceEntity*>(tile);
 
 			auto& layer         = target.GetLayer(game::ChunkTile::ChunkLayer::resource);
 			layer.prototypeData = new_tile;
 
-			// For resource amount, multiply by arbitrary number to scale noise val (0 - 1) to a reasonable number
-			layer.MakeUniqueData<data::ResourceEntityData>(static_cast<uint16_t>(val * 7823 * richness));
+			assert(resource_amount > 0);
+			layer.MakeUniqueData<data::ResourceEntityData>(resource_amount);
 		});
 }
 

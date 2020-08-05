@@ -16,7 +16,7 @@ namespace jactorio::data
 
 			// Setup tile ranges
 			// 0 inclusive
-			noise_layer.SetStartVal(0);
+			noise_layer.SetStartNoise(0);
 			// 1 inclusive if at the end
 			noise_layer.Add(1, &tile_proto);
 			noise_layer.Add(1.5, &tile_proto2);
@@ -41,7 +41,7 @@ namespace jactorio::data
 
 			// Setup tile ranges
 			// 0 inclusive
-			noise_layer.SetStartVal(0);
+			noise_layer.SetStartNoise(0);
 			// 1 inclusive if at the end
 			noise_layer.Add(1, &tile_proto);
 			noise_layer.Add(1.5, &tile_proto2);
@@ -64,35 +64,53 @@ namespace jactorio::data
 		auto noise_layer = jactorio::data::NoiseLayer<Tile>();
 
 		// Defaults to -1
-		EXPECT_EQ(noise_layer.GetStartVal(), -1);
+		EXPECT_EQ(noise_layer.GetStartNoise(), -1);
 
-		noise_layer.SetStartVal(0);
-		EXPECT_EQ(0, noise_layer.GetStartVal());
+		noise_layer.SetStartNoise(0);
+		EXPECT_EQ(0, noise_layer.GetStartNoise());
 
-		noise_layer.SetStartVal(1);
-		EXPECT_EQ(1, noise_layer.GetStartVal());
+		noise_layer.SetStartNoise(1);
+		EXPECT_EQ(1, noise_layer.GetStartNoise());
 	}
 
-	TEST(NoiseLayer, GetNoiseRangeMinMax) {
+	TEST(NoiseLayer, GetNoiseRangeStartEnd) {
 		{
 			auto noise_layer = jactorio::data::NoiseLayer<Tile>();
 
 			auto tile_proto  = Tile();
 			auto tile_proto2 = Tile();
 
-			noise_layer.SetStartVal(0);
+			noise_layer.SetStartNoise(0);
 			noise_layer.Add(1, &tile_proto);
 			noise_layer.Add(1.5, &tile_proto2);
 
-			EXPECT_EQ(noise_layer.GetStartVal(), 0.f);
-			EXPECT_EQ(noise_layer.GetMaxNoiseVal(), 1.5f);
+			EXPECT_EQ(noise_layer.GetStartNoise(), 0.f);
+			EXPECT_EQ(noise_layer.GetEndNoise(), 1.5f);
 		}
 		{
 			auto noise_layer = jactorio::data::NoiseLayer<Tile>();
 
 			// Defaults to -1
-			EXPECT_EQ(noise_layer.GetStartVal(), -1.f);
-			EXPECT_EQ(noise_layer.GetMaxNoiseVal(), -1.f);
+			EXPECT_EQ(noise_layer.GetStartNoise(), -1.f);
+			EXPECT_EQ(noise_layer.GetEndNoise(), -1.f);
 		}
+	}
+
+	TEST(NoiseLayer, GetValNoiseRange) {
+		auto noise_layer      = jactorio::data::NoiseLayer<Tile>();
+		noise_layer.normalize = false;
+
+		auto tile_proto  = Tile();
+		auto tile_proto2 = Tile();
+
+		noise_layer.SetStartNoise(0);
+		noise_layer.Add(1, &tile_proto);
+		noise_layer.Add(1.5, &tile_proto2);
+
+		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(0.1).first, 0);
+		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(0.1).second, 1);
+
+		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(1.1).first, 1);
+		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(1.1).second, 1.5);
 	}
 }
