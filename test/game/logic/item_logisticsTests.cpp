@@ -389,16 +389,17 @@ namespace jactorio::game
 		DropOffParams args{logicData_, {recipe_pack.item1, 2000}, asm_data, data::Orientation::down};
 		EXPECT_TRUE(CanInsertAssemblyMachine(args));
 
-		// Exceeds the max percentage that a slot can be filled
+		// Exceeds the max ingredient count multiple that a slot can be filled
 		asm_data.ingredientInv[0].count = 2;
 		EXPECT_FALSE(CanInsertAssemblyMachine(args));
 
 		// Exceeds max stack size
+		recipe_pack.recipe.ingredients[0].second = 50;  // Requires 50, can only hold 50
 		recipe_pack.item1->stackSize    = 50;
 		asm_data.ingredientInv[0].count = 50;
 		EXPECT_FALSE(CanInsertAssemblyMachine(args));
 
-		// Under the max percentage that a slot can be filled
+		// Under the max ingredient count multiple that a slot can be filled
 		asm_data.ingredientInv[0].count = 1;
 		EXPECT_TRUE(CanInsertAssemblyMachine(args));
 	}
