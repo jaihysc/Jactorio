@@ -531,9 +531,6 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 
 	auto menu_data = GetMenuData();
 
-	// Will be modifying AssemblyMachineData::recipe
-	std::lock_guard<std::mutex> world_data_guard{world_data.worldDataMutex};
-
 	if (machine_data.HasRecipe()) {
 		const auto window_size = GetWindowSize();
 

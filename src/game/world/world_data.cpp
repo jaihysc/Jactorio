@@ -425,3 +425,7 @@ void game::WorldData::UpdateDispatcher::Dispatch(const WorldCoord& world_pair, c
 		pair.second->OnTileUpdate(worldData_, world_pair, pair.first, type);
 	}
 }
+
+game::WorldData::UpdateDispatcher::DebugInfo game::WorldData::UpdateDispatcher::GetDebugInfo() const noexcept {
+	return {container_};
+}

@@ -238,6 +238,8 @@ namespace jactorio::game
 
 			ContainerT container_;
 
+			struct DebugInfo;
+
 		public:
 			/// Current world coord, Registered world coord 
 			using ListenerEntry = std::pair<WorldCoord, WorldCoord>;
@@ -265,8 +267,16 @@ namespace jactorio::game
 			void Dispatch(WorldCoordAxis world_x, WorldCoordAxis world_y, data::UpdateType type);
 			void Dispatch(const WorldCoord& world_pair, data::UpdateType type);
 
+			J_NODISCARD DebugInfo GetDebugInfo() const noexcept;
+
 		private:
 			WorldData& worldData_;
+
+			struct DebugInfo
+			{
+				const ContainerT& storedEntries;
+			};
+
 		} updateDispatcher{*this};
 	};
 }

@@ -41,13 +41,18 @@ namespace jactorio::game
 
 		private:
 			/// \brief vector of callbacks at game tick
+			using CallbackContainerT =
 			std::unordered_map<GameTickT,
 			                   std::vector<
 				                   std::pair<std::reference_wrapper<const data::IDeferred>, data::UniqueDataBase*>
-			                   >> callbacks_;
+			                   >>;
+
+			CallbackContainerT callbacks_;
 
 			/// \brief 0 indicates invalid callback
 			using CallbackIndex = decltype(callbacks_.size());
+
+			struct DebugInfo;
 
 		public:
 			/// \brief Information about the registered deferral for removing
@@ -84,6 +89,9 @@ namespace jactorio::game
 			/// \brief Removes registered callback and sets entry index to 0
 			void RemoveDeferralEntry(DeferralEntry& entry);
 
+
+			J_NODISCARD DebugInfo GetDebugInfo() const;
+
 		private:
 			GameTickT lastGameTick_ = 0;
 			LogicData& logicData_;
@@ -96,6 +104,11 @@ namespace jactorio::game
 				void OnDeferTimeElapsed(WorldData&, LogicData&, data::UniqueDataBase*) const override {
 				}
 			} blankCallback_;
+
+			struct DebugInfo
+			{
+				const CallbackContainerT& callbacks;
+			};
 		} deferralTimer{*this};
 	};
 }

@@ -61,3 +61,7 @@ void game::LogicData::DeferralTimer::RemoveDeferralEntry(DeferralEntry& entry) {
 	RemoveDeferral(entry);
 	entry.second = 0;
 }
+
+game::LogicData::DeferralTimer::DebugInfo game::LogicData::DeferralTimer::GetDebugInfo() const {
+	return {callbacks_};
+}
