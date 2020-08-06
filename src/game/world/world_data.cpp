@@ -403,11 +403,15 @@ bool game::WorldData::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
 	const auto world_tuple = std::make_tuple(entry.second.x, entry.second.y);
 	auto& collection       = container_[world_tuple];
 
-	for (decltype(collection.size()) i = 0; i < collection.size(); ++i) {
+    // Collection may be erased, thus its size cannot be checked during the for loop
+    auto collection_size = collection.size();
+
+	for (decltype(collection.size()) i = 0; i < collection_size; ++i) {
 		auto& element = collection[i];
 
 		if (element.first == entry.first) {
 			collection.erase(collection.begin() + i);
+			collection_size = collection.size();  // Collection shrunk, thus max size must be updated
 
 			if (collection.empty())
 				container_.erase(world_tuple);
