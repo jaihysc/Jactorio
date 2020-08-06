@@ -172,7 +172,7 @@ void game::WorldData::LogicRegister(const Chunk::LogicGroup group, const WorldCo
 	auto* chunk = GetChunkW(world_pair);
 	assert(chunk);
 
-	auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
+	auto* tile_layer  = &GetTile(world_pair)->GetLayer(layer);
 	auto& logic_group = chunk->GetLogicGroup(group);
 
 	// Already added to logic group at tile layer 
@@ -230,7 +230,7 @@ void GenerateChunk(game::WorldData& world_data,
                    const int chunk_x, const int chunk_y,
                    const data::DataCategory data_category,
                    void (*func)(game::ChunkTile& target_tile, void* prototype,
-								const data::NoiseLayer<T>& noise_layer, float noise_val)) {
+                                const data::NoiseLayer<T>& noise_layer, float noise_val)) {
 	using namespace jactorio;
 
 	// The Y axis for libnoise is inverted. It causes no issues as of right now. I am leaving this here
@@ -330,9 +330,9 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 
 			// For resource amount, scale noise value up by richness 
 			const auto noise_range = noise_layer.GetValNoiseRange(noise_val);
-			const auto noise_min = noise_range.first;
-			const auto noise_max = noise_range.second;
-			auto resource_amount =  static_cast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
+			const auto noise_min   = noise_range.first;
+			const auto noise_max   = noise_range.second;
+			auto resource_amount   = static_cast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
 
 			if (resource_amount <= 0)
 				resource_amount = 1;
@@ -400,13 +400,17 @@ game::WorldData::UpdateDispatcher::ListenerEntry game::WorldData::UpdateDispatch
 }
 
 bool game::WorldData::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
-	auto& collection = container_[std::make_tuple(entry.second.x, entry.second.y)];
+	const auto world_tuple = std::make_tuple(entry.second.x, entry.second.y);
+	auto& collection       = container_[world_tuple];
 
 	for (decltype(collection.size()) i = 0; i < collection.size(); ++i) {
 		auto& element = collection[i];
 
 		if (element.first == entry.first) {
 			collection.erase(collection.begin() + i);
+
+			if (collection.empty())
+				container_.erase(world_tuple);
 		}
 	}
 
@@ -419,7 +423,13 @@ void game::WorldData::UpdateDispatcher::Dispatch(const WorldCoordAxis world_x, c
 }
 
 void game::WorldData::UpdateDispatcher::Dispatch(const WorldCoord& world_pair, const data::UpdateType type) {
-	auto& collection = container_[std::make_tuple(world_pair.x, world_pair.y)];
+	// Must be tuple to index into container_ since it uses a hash function only usable with tuples
+	const auto world_tuple = std::make_tuple(world_pair.x, world_pair.y);
+
+	if (container_.find(world_tuple) == container_.end())
+		return;
+
+	auto& collection = container_[world_tuple];
 
 	for (auto& pair : collection) {
 		pair.second->OnTileUpdate(worldData_, world_pair, pair.first, type);

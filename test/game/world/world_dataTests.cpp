@@ -201,13 +201,13 @@ namespace jactorio::game
 		                         ChunkTile::ChunkLayer::entity);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
-		
+
 		// Registering same position does nothing
 		worldData_.LogicRegister(Chunk::LogicGroup::inserter,
 		                         {42, 0},
 		                         ChunkTile::ChunkLayer::entity);
 		EXPECT_EQ((*worldData_.LogicGetChunks().begin())
-				  ->GetLogicGroup(Chunk::LogicGroup::inserter).size(), 2);
+		          ->GetLogicGroup(Chunk::LogicGroup::inserter).size(), 2);
 	}
 
 	TEST_F(WorldDataTest, LogicRemove) {
@@ -363,5 +363,20 @@ namespace jactorio::game
 		EXPECT_EQ(mock_.receive.x, 4);
 		EXPECT_EQ(mock_.receive.y, 7);
 		EXPECT_EQ(mock_.calls, 1);
+	}
+
+	TEST_F(UpdateDispatcherTest, RegisterNonExistent) {
+		dispatcher_.Dispatch(3, 7, data::UpdateType::place);
+		dispatcher_.Dispatch(5, 6, data::UpdateType::remove);
+
+		EXPECT_EQ(dispatcher_.GetDebugInfo().storedEntries.size(), 0);
+	}
+
+	TEST_F(UpdateDispatcherTest, UnregisterEmptyErase) {
+		const auto entry = dispatcher_.Register(2, 3,
+		                                        5, 6, mock_);
+		dispatcher_.Unregister(entry);
+
+		EXPECT_EQ(dispatcher_.GetDebugInfo().storedEntries.size(), 0);
 	}
 }
