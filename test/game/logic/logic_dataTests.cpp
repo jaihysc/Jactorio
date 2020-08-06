@@ -106,9 +106,7 @@ namespace jactorio::game
 		ASSERT_TRUE(deferred_.callbackCalled);
 
 		// Callback at 2 has been removed since it update was called for game tick 2
-		deferred_.callbackCalled = false;  // Reset
-		timer_.DeferralUpdate(worldData_, 2);
-		EXPECT_FALSE(deferred_.callbackCalled);
+		EXPECT_TRUE(timer_.GetDebugInfo().callbacks.empty());
 	}
 
 	TEST_F(DeferralTimerTest, RemoveDeferral) {

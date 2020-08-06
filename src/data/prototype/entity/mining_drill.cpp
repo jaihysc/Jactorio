@@ -30,7 +30,7 @@ jactorio::data::Sprite* jactorio::data::MiningDrill::OnRGetSprite(const Sprite::
 }
 
 jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
-																		  game::WorldData&,
+                                                                          game::WorldData&,
                                                                           const WorldCoord&) const {
 	switch (orientation) {
 	case Orientation::up:
@@ -85,8 +85,12 @@ void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData&,
 	// Re-register callback and insert item
 	auto* drill_data = static_cast<MiningDrillData*>(unique_data);
 
-	drill_data->outputTile.DropOff(logic_data, {drill_data->outputItem, 1});
-	RegisterMineCallback(logic_data.deferralTimer, drill_data);
+	const bool outputted_item = drill_data->outputTile.DropOff(logic_data, {drill_data->outputItem, 1});
+
+	if (outputted_item)
+		RegisterMineCallback(logic_data.deferralTimer, drill_data);
+	else
+		RegisterOutputCallback(logic_data.deferralTimer, drill_data);
 }
 
 
@@ -188,6 +192,14 @@ void jactorio::data::MiningDrill::RegisterMineCallback(game::LogicData::Deferral
                                                        MiningDrillData* unique_data) const {
 	const auto mine_ticks = static_cast<GameTickT>(unique_data->miningTicks / miningSpeed);
 	assert(mine_ticks > 0);
-	
+
 	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, mine_ticks);
+}
+
+void jactorio::data::MiningDrill::RegisterOutputCallback(game::LogicData::DeferralTimer& timer,
+                                                         MiningDrillData* unique_data) const {
+	constexpr int output_retry_ticks = 1;
+	static_assert(output_retry_ticks > 0);
+
+	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, output_retry_ticks);
 }

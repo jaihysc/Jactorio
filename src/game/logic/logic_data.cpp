@@ -7,6 +7,11 @@
 using namespace jactorio;
 
 void game::LogicData::DeferralTimer::DeferralUpdate(WorldData& world_data, const GameTickT game_tick) {
+	if (game_tick > 0)
+		assert(game_tick > lastGameTick_); // assertion would fail on game tick 0, since lastGameTick would be 0
+	else
+		assert(game_tick >= lastGameTick_); 
+
 	lastGameTick_ = game_tick;
 
 	// Call callbacks

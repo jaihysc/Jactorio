@@ -116,6 +116,10 @@ namespace jactorio::data
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource 
 		void RegisterMineCallback(game::LogicData::DeferralTimer& timer, MiningDrillData* unique_data) const;
+
+		///
+		/// \brief Sets up deferred callback for when it has mined a resource, but failed to output
+		void RegisterOutputCallback(game::LogicData::DeferralTimer& timer, MiningDrillData* unique_data) const;
 	};
 }
 
