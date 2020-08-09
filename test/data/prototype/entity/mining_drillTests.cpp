@@ -128,9 +128,21 @@ namespace jactorio::data
 
 
 		TestSetupContainer(worldData_, {4, 2}, container);
-		auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
+		auto& tile = TestSetupDrill(worldData_, logicData_,
+		                            {1, 1},
+		                            resource_, drillProto_, 100);
 
 		auto* data = tile.GetLayer(game::ChunkTile::ChunkLayer::entity).GetUniqueData<MiningDrillData>();
+
+		EXPECT_EQ(data->resourceCoord.x, 0);
+		EXPECT_EQ(data->resourceCoord.y, 0);
+		EXPECT_EQ(data->resourceOffset, 6);
+
+		// ======================================================================
+		// Resource taken from ground
+		auto& resource_layer = tile.GetLayer(game::ChunkTile::ChunkLayer::resource);
+
+		EXPECT_EQ(resource_layer.GetUniqueData<ResourceEntityData>()->resourceAmount, 99);
 
 		// ======================================================================
 		// Ensure it inserts into the correct entity
@@ -148,6 +160,47 @@ namespace jactorio::data
 		logicData_.deferralTimer.DeferralUpdate(worldData_, 30);  // Takes 60 ticks to mine / 2 (since mining speed is 2)
 
 		EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[1].count, 1);
+
+		// Another resource taken for next output
+		EXPECT_EQ(resource_layer.GetUniqueData<ResourceEntityData>()->resourceAmount, 98);
+	}
+
+	TEST_F(MiningDrillTest, ExtractRemoveResourceEntity) {
+		drillProto_.resourceOutput.right = {3, 1};
+		ContainerEntity container{};
+
+
+		TestSetupContainer(worldData_, {4, 2}, container);
+
+		// Second resource must be set up prior to the drill, since it will remove the first existing resource and
+		// search for a second one
+		auto& tile3 = TestSetupResource(worldData_, {4, 4}, resource_, 1);
+		auto& tile2 = TestSetupResource(worldData_, {3, 4}, resource_, 1);
+		auto& tile  = TestSetupDrill(worldData_, logicData_,
+		                             {1, 1},
+		                             resource_, drillProto_, 1);
+
+
+		auto& resource_layer  = tile.GetLayer(game::ChunkTile::ChunkLayer::resource);
+		auto& resource_layer2 = tile2.GetLayer(game::ChunkTile::ChunkLayer::resource);
+		auto& resource_layer3 = tile3.GetLayer(game::ChunkTile::ChunkLayer::resource);
+
+		// ======================================================================
+
+		resource_layer2.Clear();  // Resource 2 was mined by an external source
+		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
+		EXPECT_EQ(resource_layer.prototypeData, nullptr);
+		EXPECT_EQ(resource_layer.GetUniqueData(), nullptr);
+
+		// Found another resource (resource3)
+		logicData_.deferralTimer.DeferralUpdate(worldData_, 120);
+		EXPECT_EQ(resource_layer3.prototypeData, nullptr);
+		EXPECT_EQ(resource_layer3.GetUniqueData(), nullptr);
+
+		EXPECT_TRUE(logicData_.deferralTimer.GetDebugInfo().callbacks.empty());
+		auto* drill_data = tile.GetLayer(game::ChunkTile::ChunkLayer::entity).GetUniqueData<MiningDrillData>();
+
+		EXPECT_FALSE(drill_data->deferralEntry.Valid());
 	}
 
 	TEST_F(MiningDrillTest, ExtractResourceOutputBlocked) {

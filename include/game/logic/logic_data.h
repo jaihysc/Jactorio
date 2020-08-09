@@ -34,12 +34,6 @@ namespace jactorio::game
 		/// \brief Manages deferrals, prototypes inheriting 'Deferred'
 		class DeferralTimer
 		{
-		public:
-			explicit DeferralTimer(LogicData& logic_data)
-				: logicData_(logic_data) {
-			}
-
-		private:
 			/// \brief vector of callbacks at game tick
 			using CallbackContainerT =
 			std::unordered_map<GameTickT,
@@ -56,9 +50,23 @@ namespace jactorio::game
 
 		public:
 			/// \brief Information about the registered deferral for removing
-			///
-			/// .second value of 0 indicates invalid callback
-			using DeferralEntry = std::pair<GameTickT, CallbackIndex>;
+			struct DeferralEntry
+			{
+				GameTickT first;
+				CallbackIndex second;
+
+				J_NODISCARD bool Valid() const {
+					return second != 0;
+				}
+
+				void Invalidate() {
+					second = 0;
+				}
+			};
+
+			explicit DeferralTimer(LogicData& logic_data)
+				: logicData_(logic_data) {
+			}
 
 			///
 			/// \brief Calls all deferred callbacks for the current game tick

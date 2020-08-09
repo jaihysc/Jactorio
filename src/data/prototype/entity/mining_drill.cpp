@@ -2,6 +2,8 @@
 
 #include "data/prototype/entity/mining_drill.h"
 
+#include <tuple>
+
 #include "data/prototype_manager.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "game/logic/item_logistics.h"
@@ -80,17 +82,24 @@ jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::Wo
 	return nullptr;
 }
 
-void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData&,
-                                                     game::LogicData& logic_data, UniqueDataBase* unique_data) const {
-	// Re-register callback and insert item
+void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,
+                                                     UniqueDataBase* unique_data) const {
+	// Re-register callback and insert item, remove item from ground for next elapse
 	auto* drill_data = static_cast<MiningDrillData*>(unique_data);
 
 	const bool outputted_item = drill_data->outputTile.DropOff(logic_data, {drill_data->outputItem, 1});
 
-	if (outputted_item)
-		RegisterMineCallback(logic_data.deferralTimer, drill_data);
-	else
+	if (outputted_item) {
+		if (DeductResource(world_data, *drill_data)) {
+			RegisterMineCallback(logic_data.deferralTimer, drill_data);
+		}
+		else {
+			drill_data->deferralEntry.Invalidate();
+		}
+	}
+	else {
 		RegisterOutputCallback(logic_data.deferralTimer, drill_data);
+	}
 }
 
 
@@ -121,7 +130,7 @@ bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
 }
 
 void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
-                                          jactorio::game::LogicData& logic_data,
+                                          game::LogicData& logic_data,
                                           const WorldCoord& world_coords,
                                           game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
 	WorldCoord output_coords = this->resourceOutput.Get(orientation);
@@ -129,8 +138,14 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 	output_coords.y += world_coords.y;
 
 	auto* drill_data = tile_layer.MakeUniqueData<MiningDrillData>(game::ItemDropOff(orientation));
+	assert(drill_data);
 
-	drill_data->outputItem = FindOutputItem(world_data, world_coords);
+
+	drill_data->resourceCoord.x = world_coords.x - this->miningRadius;
+	drill_data->resourceCoord.y = world_coords.y - this->miningRadius;
+
+	const bool success = SetupResourceDeduction(world_data, *drill_data);
+	assert(success);
 	assert(drill_data->outputItem != nullptr);  // Should not have been allowed to be placed on no resources
 
 	drill_data->set              = OnRGetSpriteSet(orientation, world_data, world_coords);
@@ -147,6 +162,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 	                             ->GetLayer(game::ChunkTile::ChunkLayer::entity).GetMultiTileTopLeft();
 
 	auto* drill_data = static_cast<MiningDrillData*>(self_layer.GetUniqueData());
+	assert(drill_data);
 
 	// Ignore updates from non output tiles 
 	if (emit_world_coords != drill_data->outputTileCoords)
@@ -164,6 +180,8 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 		drill_data->miningTicks =
 			static_cast<uint16_t>(static_cast<double>(kGameHertz) * drill_data->outputItem->entityPrototype->pickupTime);
 
+		const bool success = DeductResource(world_data, *drill_data);
+		assert(success);
 		RegisterMineCallback(logic_data.deferralTimer, drill_data);
 	}
 	else {
@@ -187,6 +205,76 @@ void jactorio::data::MiningDrill::OnRemove(game::WorldData&,
 }
 
 // ======================================================================
+
+int jactorio::data::MiningDrill::GetMiningAreaX() const {
+	return 2 * this->miningRadius + this->tileWidth;
+}
+
+int jactorio::data::MiningDrill::GetMiningAreaY() const {
+	return 2 * this->miningRadius + this->tileHeight;
+}
+
+bool jactorio::data::MiningDrill::SetupResourceDeduction(const game::WorldData& world_data,
+                                                         MiningDrillData& drill_data) const {
+	const auto x_span = GetMiningAreaX();
+	const auto y_span = GetMiningAreaY();
+
+	for (int y = 0; y < y_span; ++y) {
+		for (int x = 0; x < x_span; ++x) {
+			const auto* tile = world_data.GetTile(drill_data.resourceCoord.x + x,
+			                                      drill_data.resourceCoord.y + y);
+
+			auto& resource_layer = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
+
+			if (resource_layer.prototypeData != nullptr) {
+				drill_data.outputItem     = static_cast<const ResourceEntity*>(resource_layer.prototypeData)->GetItem();
+				drill_data.resourceOffset = y * x_span + x;
+				return true;
+			}
+
+		}
+	}
+
+	return false;
+}
+
+bool jactorio::data::MiningDrill::DeductResource(game::WorldData& world_data, MiningDrillData& drill_data,
+                                                 const ResourceEntityData::ResourceCount amount) const {
+
+	auto get_resource_layer = [this](game::WorldData& world_data, const MiningDrillData& drill_data) {
+		auto* resource_tile =
+			world_data.GetTile(drill_data.resourceCoord.x + drill_data.resourceOffset % GetMiningAreaX(),
+			                   drill_data.resourceCoord.y + drill_data.resourceOffset / GetMiningAreaX());
+		assert(resource_tile != nullptr);
+
+		auto& resource_layer = resource_tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
+
+		return std::make_tuple(&resource_layer, resource_layer.GetUniqueData<ResourceEntityData>());
+	};
+
+
+	auto [resource_layer, resource_data] = get_resource_layer(world_data, drill_data);
+
+	if (resource_data == nullptr) {
+		if (!SetupResourceDeduction(world_data, drill_data))
+			return false;  // Drill has no resources left to mine
+
+		std::tie(resource_layer, resource_data) = get_resource_layer(world_data, drill_data);
+	}
+
+	assert(resource_data != nullptr);
+	assert(resource_layer != nullptr);
+
+	assert(resource_data->resourceAmount >= amount);
+	resource_data->resourceAmount -= amount;
+
+
+	if (resource_data->resourceAmount == 0) {
+		resource_layer->Clear();
+	}
+
+	return true;
+}
 
 void jactorio::data::MiningDrill::RegisterMineCallback(game::LogicData::DeferralTimer& timer,
                                                        MiningDrillData* unique_data) const {

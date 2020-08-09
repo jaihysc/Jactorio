@@ -66,6 +66,7 @@ namespace jactorio::game
 		const auto index = timer_.RegisterAtTick(deferred_, unique_data.get(), 2);
 		EXPECT_EQ(index.first, 2);
 		EXPECT_EQ(index.second, 1);
+		EXPECT_TRUE(index.Valid());
 
 		timer_.DeferralUpdate(worldData_, 0);
 		EXPECT_FALSE(deferred_.callbackCalled);
@@ -86,6 +87,7 @@ namespace jactorio::game
 		const auto index = timer_.RegisterFromTick(deferred_, unique_data.get(), 2);
 		EXPECT_EQ(index.first, 2);
 		EXPECT_EQ(index.second, 1);
+		EXPECT_TRUE(index.Valid());
 
 		timer_.DeferralUpdate(worldData_, 0);
 		EXPECT_FALSE(deferred_.callbackCalled);
@@ -143,6 +145,7 @@ namespace jactorio::game
 			timer_.RemoveDeferralEntry(entry);
 
 			EXPECT_EQ(entry.second, 0);
+			EXPECT_FALSE(entry.Valid());
 
 			timer_.DeferralUpdate(worldData_, 1);
 			EXPECT_FALSE(deferred.callbackCalled);

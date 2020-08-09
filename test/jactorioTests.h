@@ -107,18 +107,35 @@ namespace jactorio
 		return origin_layer;
 	}
 
+	inline game::ChunkTile& TestSetupResource(game::WorldData& world_data,
+	                                          const WorldCoord& world_coord,
+	                                          data::ResourceEntity& resource,
+	                                          const data::ResourceEntityData::ResourceCount resource_amount) {
+
+		game::ChunkTile* tile = world_data.GetTile(world_coord);
+		assert(tile);
+
+		auto& resource_layer         = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
+		resource_layer.prototypeData = &resource;
+		resource_layer.MakeUniqueData<data::ResourceEntityData>(resource_amount);
+
+		return *tile;
+	}
+
 	///
 	/// \brief Creates a drill in the world, calling OnBuild
 	inline game::ChunkTile& TestSetupDrill(game::WorldData& world_data,
 	                                       game::LogicData& logic_data,
 	                                       const WorldCoord& world_coord,
 	                                       data::ResourceEntity& resource,
-	                                       data::MiningDrill& drill) {
-
+	                                       data::MiningDrill& drill,
+	                                       const data::ResourceEntityData::ResourceCount resource_amount = 100) {
 		game::ChunkTile* tile = world_data.GetTile(world_coord);
+		assert(tile);
 
 		// Resource needed for OnBuild
-		tile->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData = &resource;
+		TestSetupResource(world_data, world_coord, resource, resource_amount);
+
 		drill.OnBuild(world_data, logic_data,
 		              world_coord, tile->GetLayer(game::ChunkTile::ChunkLayer::entity),
 		              data::Orientation::right);
