@@ -55,7 +55,7 @@ jactorio::data::Sprite::FrameT jactorio::data::MiningDrill::OnRGetSpriteFrame(co
 	const auto& drill_data = static_cast<const MiningDrillData&>(unique_data);
 
 	// Drill is inactive
-	if (drill_data.deferralEntry.second == 0)
+	if (!drill_data.deferralEntry.Valid())
 		game_tick = 0;
 
 	return AllOfSpriteReversing(*sprite, game_tick);

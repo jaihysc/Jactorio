@@ -61,7 +61,7 @@ namespace jactorio::data
 
 	TEST_F(AssemblyMachineTest, ChangeRecipeSelectRecipe) {
 
-		EXPECT_EQ(data_.deferralEntry.second, 0);
+		EXPECT_EQ(data_.deferralEntry.callbackIndex, 0);
 
 		SetupRecipe();
 
@@ -69,7 +69,7 @@ namespace jactorio::data
 		logicData_.deferralTimer.DeferralUpdate(worldData_, 900);
 		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
 
-		EXPECT_EQ(data_.deferralEntry.first, 0);
+		EXPECT_EQ(data_.deferralEntry.dueTick, 0);
 
 		ASSERT_EQ(data_.ingredientInv.size(), 2);
 		ASSERT_EQ(data_.productInv.size(), 1);
@@ -81,7 +81,7 @@ namespace jactorio::data
 		// crafting
 		SetupMachineCraftingInv();
 		EXPECT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
-		EXPECT_EQ(data_.deferralEntry.first, 960);
+		EXPECT_EQ(data_.deferralEntry.dueTick, 960);
 	}
 
 	TEST_F(AssemblyMachineTest, ChangeRecipeRemoveRecipe) {
@@ -92,11 +92,11 @@ namespace jactorio::data
 		SetupMachineCraftingInv();
 		ASSERT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
 
-		ASSERT_NE(data_.deferralEntry.second, 0);
+		ASSERT_NE(data_.deferralEntry.callbackIndex, 0);
 
 		// Remove recipe
 		data_.ChangeRecipe(logicData_, dataManager_, nullptr);
-		EXPECT_EQ(data_.deferralEntry.second, 0);
+		EXPECT_EQ(data_.deferralEntry.callbackIndex, 0);
 
 		EXPECT_EQ(data_.ingredientInv.size(), 0);
 		EXPECT_EQ(data_.productInv.size(), 0);
@@ -192,7 +192,7 @@ namespace jactorio::data
 		SetupMachineCraftingInv();
 		ASSERT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
 
-		EXPECT_EQ(data_.deferralEntry.first, 30);
+		EXPECT_EQ(data_.deferralEntry.dueTick, 30);
 	}
 
 	TEST_F(AssemblyMachineTest, Build) {
@@ -218,7 +218,7 @@ namespace jactorio::data
 		assembly_data->ChangeRecipe(logicData_, dataManager_, &recipe_);
 
 		assembly_proto->OnRemove(worldData_, logicData_, {0, 0}, layer);
-		EXPECT_EQ(assembly_data->deferralEntry.second, 0);
+		EXPECT_EQ(assembly_data->deferralEntry.callbackIndex, 0);
 	}
 
 	TEST_F(AssemblyMachineTest, TryBeginCrafting) {
@@ -233,7 +233,7 @@ namespace jactorio::data
 		EXPECT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
 
 		// Already has deferral
-		EXPECT_NE(data_.deferralEntry.second, 0);
+		EXPECT_NE(data_.deferralEntry.callbackIndex, 0);
 		EXPECT_FALSE(proto_.TryBeginCrafting(logicData_, data_));
 	}
 
@@ -270,6 +270,6 @@ namespace jactorio::data
 
 
 		// No more crafting
-		EXPECT_EQ(data_.deferralEntry.second, 0);
+		EXPECT_EQ(data_.deferralEntry.callbackIndex, 0);
 	}
 }

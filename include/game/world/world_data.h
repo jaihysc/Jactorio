@@ -231,9 +231,17 @@ namespace jactorio::game
 		class UpdateDispatcher
 		{
 			using CallbackT = const data::IUpdateListener*;
-			using CollectionT = std::vector<std::pair<WorldCoord, CallbackT>>;
+
+			struct CollectionElement
+			{
+				WorldCoord receiver;
+				CallbackT callback;
+			};
+
+			using CollectionT = std::vector<CollectionElement>;
 
 			using ContainerKeyT = std::tuple<WorldCoordAxis, WorldCoordAxis>;
+			/// Emitting tile -> list of (Receiving tile + callback)
 			using ContainerT = std::unordered_map<ContainerKeyT, CollectionT, core::hash<ContainerKeyT>>;
 
 			ContainerT container_;
@@ -241,8 +249,13 @@ namespace jactorio::game
 			struct DebugInfo;
 
 		public:
-			/// Current world coord, Registered world coord 
-			using ListenerEntry = std::pair<WorldCoord, WorldCoord>;
+			struct ListenerEntry
+			{
+				/// Current
+				WorldCoord receiver;
+				/// Registered
+				WorldCoord emitter;
+			};
 
 			explicit UpdateDispatcher(WorldData& world_data)
 				: worldData_(world_data) {

@@ -394,13 +394,13 @@ game::WorldData::UpdateDispatcher::ListenerEntry game::WorldData::UpdateDispatch
 	const WorldCoord& current_coords, const WorldCoord& target_coords, const data::IUpdateListener& proto_listener) {
 
 	auto& collection = container_[std::make_tuple(target_coords.x, target_coords.y)];
-	collection.emplace_back(std::make_pair(current_coords, &proto_listener));
+	collection.emplace_back(CollectionElement{current_coords, &proto_listener});
 
 	return {current_coords, target_coords};
 }
 
 bool game::WorldData::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
-	const auto world_tuple = std::make_tuple(entry.second.x, entry.second.y);
+	const auto world_tuple = std::make_tuple(entry.emitter.x, entry.emitter.y);
 	auto& collection       = container_[world_tuple];
 
     // Collection may be erased, thus its size cannot be checked during the for loop
@@ -409,7 +409,7 @@ bool game::WorldData::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
 	for (decltype(collection.size()) i = 0; i < collection_size; ++i) {
 		auto& element = collection[i];
 
-		if (element.first == entry.first) {
+		if (element.receiver == entry.receiver) {
 			collection.erase(collection.begin() + i);
 			collection_size = collection.size();  // Collection shrunk, thus max size must be updated
 
@@ -435,8 +435,8 @@ void game::WorldData::UpdateDispatcher::Dispatch(const WorldCoord& world_pair, c
 
 	auto& collection = container_[world_tuple];
 
-	for (auto& pair : collection) {
-		pair.second->OnTileUpdate(worldData_, world_pair, pair.first, type);
+	for (auto& entry : collection) {
+		entry.callback->OnTileUpdate(worldData_, world_pair, entry.receiver, type);
 	}
 }
 

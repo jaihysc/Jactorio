@@ -44,10 +44,10 @@ void ImplementInventoryIsItemClicked(game::PlayerData& player_data,
 
 float GetProgressBarFraction(const GameTickT game_tick,
                              const game::LogicData::DeferralTimer::DeferralEntry& entry, const float total_ticks) {
-	if (entry.second == 0)
-		return 0.f; // Drill has not started
+	if (!entry.Valid())
+		return 0.f;
 
-	const auto ticks_left = static_cast<long double>(entry.first) - game_tick;
+	const auto ticks_left = static_cast<long double>(entry.dueTick) - game_tick;
 	return 1.f - static_cast<float>(ticks_left / total_ticks);
 }
 

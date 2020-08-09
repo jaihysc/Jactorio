@@ -491,8 +491,8 @@ void renderer::DebugWorldInfo(const game::PlayerData& player_data) {
 
 			for (const auto& callback : entry.second) {
 				std::ostringstream sstream;
-				sstream << callback.second;  // Get pointer address
-				ImGui::Text("%d %d %s", callback.first.x, callback.first.y, sstream.str().c_str());
+				sstream << callback.callback;  // Get pointer address
+				ImGui::Text("%d %d %s", callback.receiver.x, callback.receiver.y, sstream.str().c_str());
 			}
 		}
 
@@ -558,7 +558,7 @@ void renderer::DebugLogicInfo(const game::LogicData& logic_data) {
 
 			for (const auto& callback : callback_tick.second) {
 				std::ostringstream sstream;
-				sstream << callback.second;  // Get pointer address
+				sstream << callback.uniqueData;  // Get pointer address
 				ImGui::Text("%s", sstream.str().c_str());
 			}
 		}
