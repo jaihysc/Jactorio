@@ -167,18 +167,16 @@ namespace jactorio::data
 
 	TEST_F(MiningDrillTest, ExtractRemoveResourceEntity) {
 		drillProto_.resourceOutput.right = {3, 1};
-		ContainerEntity container{};
+		const ContainerEntity container{};
 
 
 		TestSetupContainer(worldData_, {4, 2}, container);
 
-		// Second resource must be set up prior to the drill, since it will remove the first existing resource and
-		// search for a second one
-		auto& tile3 = TestSetupResource(worldData_, {4, 4}, resource_, 1);
-		auto& tile2 = TestSetupResource(worldData_, {3, 4}, resource_, 1);
 		auto& tile  = TestSetupDrill(worldData_, logicData_,
 		                             {1, 1},
 		                             resource_, drillProto_, 1);
+		auto& tile2 = TestSetupResource(worldData_, {3, 4}, resource_, 1);
+		auto& tile3 = TestSetupResource(worldData_, {4, 4}, resource_, 1);
 
 
 		auto& resource_layer  = tile.GetLayer(game::ChunkTile::ChunkLayer::resource);
