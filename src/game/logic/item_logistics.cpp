@@ -452,7 +452,7 @@ std::pair<bool, game::TransportLineOffset> game::InserterPickup::GetBeltPickupPr
 
 	auto pickup_offset = TransportLineOffset(
 		line_data.lineSegmentIndex +
-		GetInserterArmOffset(args.degree.getAsInteger(), args.inserterTileReach)
+		GetInserterArmOffset(core::SafeCast<core::TIntDegree>(args.degree.getAsInteger()), args.inserterTileReach)
 	);
 
 	return {use_line_left, pickup_offset};

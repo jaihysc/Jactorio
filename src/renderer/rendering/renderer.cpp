@@ -436,8 +436,8 @@ void renderer::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv,
 	const double y_multiplier = tile_layer.GetOffsetY();
 
 	// Opengl flips vertically, thus the y multiplier is inverted
-	uv.bottomRight.x = uv.topLeft.x + len_x * (x_multiplier + 1);
-	uv.bottomRight.y = uv.bottomRight.y - len_y * y_multiplier;
+	uv.bottomRight.x = uv.topLeft.x + core::LossCast<UvPositionT::PositionT::ValueT>(len_x * (x_multiplier + 1));
+	uv.bottomRight.y = uv.bottomRight.y - core::LossCast<UvPositionT::PositionT::ValueT>(len_y * y_multiplier);
 
 	uv.topLeft.x = uv.bottomRight.x - len_x;
 	uv.topLeft.y = uv.bottomRight.y - len_y;
@@ -446,7 +446,7 @@ void renderer::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv,
 
 void renderer::Renderer::GlDraw(const uint64_t index_count) noexcept {
 	DEBUG_OPENGL_CALL(
-		glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr)
+		glDrawElements(GL_TRIANGLES, core::SafeCast<GLsizei>(index_count), GL_UNSIGNED_INT, nullptr)
 	); // Pointer not needed as buffer is already bound
 }
 

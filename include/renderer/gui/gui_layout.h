@@ -35,7 +35,7 @@ namespace jactorio::renderer
 	/// \brief Pad the ingredients: text with trailing whitespace to reach the length of the title
 	///
 	/// In order to auto resize to fit the title's text since the title is not accounted
-	void FitTitle(std::stringstream& description_ss, uint16_t target_len);
+	void FitTitle(std::stringstream& description_ss, std::size_t target_len);
 
 	///
 	/// \brief Call before the first call to DrawSlots() to remove additional vertical padding 
@@ -48,9 +48,9 @@ namespace jactorio::renderer
 	/// \param slot_count Number of slots to draw
 	/// \param draw_func Draws slot (index, bool button_hovered)
 	/// \param ending_vertical_space If < 0 use default, >= 0 use amount provided of vertical space upon finishing drawing all slots
-	void DrawSlots(uint8_t slot_span, uint16_t slot_count,
+	void DrawSlots(uint8_t slot_span, std::size_t slot_count,
 	               uint8_t scale,
-	               const std::function<void(uint16_t, bool&)>& draw_func,
+	               const std::function<void(std::size_t, bool&)>& draw_func,
 	               float ending_vertical_space = -1.f);
 
 	///

@@ -231,10 +231,10 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 			const auto position_x = i % game::Chunk::kChunkWidth;
 			const auto position_y = i / game::Chunk::kChunkWidth;
 
-			float pos_x;
-			float pos_y;
-			float segment_len_x;
-			float segment_len_y;
+			int pos_x;
+			int pos_y;
+			int segment_len_x;
+			int segment_len_y;
 
 			const data::Sprite* direction_sprite;
 			const data::Sprite* outline_sprite;
@@ -295,10 +295,19 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 				outline_sprite = sprite_stop;  // None moving
 
 			object_layer.emplace_back(
-				game::OverlayElement{*direction_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, draw_overlay_layer}
+				game::OverlayElement{
+					*direction_sprite,
+					{core::LossCast<float>(pos_x), core::LossCast<float>(pos_y)},
+					{core::LossCast<float>(segment_len_x), core::LossCast<float>(segment_len_y)},
+					draw_overlay_layer
+				}
 			);
 			object_layer.emplace_back(
-				game::OverlayElement{*outline_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, draw_overlay_layer}
+				game::OverlayElement{*outline_sprite,
+					{core::LossCast<float>(pos_x), core::LossCast<float>(pos_y)},
+					{core::LossCast<float>(segment_len_x), core::LossCast<float>(segment_len_y)},
+					draw_overlay_layer
+				}
 			);
 		}
 	}

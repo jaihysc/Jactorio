@@ -1,16 +1,54 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_CORE_FLOAT_MATH_H
-#define JACTORIO_INCLUDE_CORE_FLOAT_MATH_H
+#ifndef JACTORIO_INCLUDE_CORE_MATH_H
+#define JACTORIO_INCLUDE_CORE_MATH_H
 #pragma once
 
 #include <cmath>
+#include <type_traits>
 
 #include "jactorio.h"
 
 namespace jactorio::core
 {
-	// Defines math functions for floating point numbers
+	// ======================================================================
+	// Conversions
+
+	///
+	/// \brief Performs cast, data may be lost
+	template <class TTarget, class TOriginal>
+	constexpr TTarget LossCast(TOriginal val) noexcept {
+		static_assert(std::is_arithmetic<TTarget>::value, "Target type should be an arithmetic type");
+		static_assert(std::is_arithmetic<TOriginal>::value, "Original type should be an arithmetic type");
+
+	    const auto cast_val = static_cast<TTarget>(val);
+		return cast_val;
+	}
+
+	///
+	/// \brief Performs cast ensuring no data is lost
+	/// \remark Same behavior as static cast if assertions are disabled
+	template <class TTargetInt, class TOriginalInt>
+	constexpr TTargetInt SafeCast(TOriginalInt val,
+							   std::enable_if_t<std::is_integral<TOriginalInt>::value, int> = 0) noexcept {
+
+		static_assert(std::is_integral<TOriginalInt>::value, "Original type should be an integral type");
+		static_assert(std::is_integral<TTargetInt>::value, "Target type should be an integral type");
+
+	    constexpr bool is_different_signedness = (std::is_signed<TTargetInt>::value != std::is_signed<TOriginalInt>::value);
+	    
+	    const auto cast_val = LossCast<TTargetInt>(val);
+	    
+	    if (static_cast<TOriginalInt>(cast_val) != val
+			|| (is_different_signedness && ((cast_val < TTargetInt{}) != (val < TOriginalInt{})))) {
+			assert(false);
+	    }
+	    
+	    return cast_val;
+	}
+
+	// ======================================================================
+	// Math functions for floating point numbers
 
 	constexpr double kPi = 3.141592653589793238462643383279502884;
 
@@ -269,4 +307,4 @@ namespace jactorio::core
 	}
 }
 
-#endif //JACTORIO_INCLUDE_CORE_FLOAT_MATH_H
+#endif //JACTORIO_INCLUDE_CORE_MATH_H

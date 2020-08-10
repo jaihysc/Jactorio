@@ -33,7 +33,7 @@ void game::KeyInput::SetInput(MouseInput mouse, InputAction action, SDL_Keymod m
 
 void game::KeyInput::CallCallbacks(const InputKeyData& input) {
 	const auto& vector = callbackIds_[input];
-	for (unsigned int id : vector) {
+	for (auto id : vector) {
 		inputCallbacks_[id]();
 	}
 }

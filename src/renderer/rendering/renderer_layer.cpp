@@ -5,8 +5,8 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
+#include "core/math.h"
 #include "game/player/player_data.h"
-#include "renderer/gui/gui_menus.h"
 
 using namespace jactorio;
 
@@ -94,7 +94,7 @@ void renderer::RendererLayer::GlHandleBufferResize() {
 		return;
 
 	gResizeVertexBuffers_ = false;
-	eCapacity_            = queuedECapacity_ * kResizeECapacityMultiplier;
+	eCapacity_            = core::LossCast<decltype(eCapacity_)>(queuedECapacity_ * kResizeECapacityMultiplier);
 
 	vertexVb_->Reserve(nullptr, eCapacity_ * kVbBytesPerElement, false);
 	uvVb_->Reserve(nullptr, eCapacity_ * kVbBytesPerElement, false);

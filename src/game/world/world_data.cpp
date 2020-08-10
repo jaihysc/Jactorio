@@ -9,6 +9,7 @@
 #include <noise/noise.h>
 #include <noise/noiseutils.h>
 
+#include "core/math.h"
 #include "data/prototype_manager.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/interface/update_listener.h"
@@ -26,7 +27,7 @@ ChunkCoordAxis game::WorldData::ToChunkCoord(WorldCoordAxis world_coord) {
 		world_coord += 1;
 	}
 
-	chunk_coord += static_cast<float>(world_coord) / Chunk::kChunkWidth;
+	chunk_coord += static_cast<ChunkCoordAxis>(static_cast<float>(world_coord) / Chunk::kChunkWidth);
 	return chunk_coord;
 }
 

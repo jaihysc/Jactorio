@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "core/data_type.h"
+#include "core/math.h"
 #include "data/prototype/sprite.h"
 #include "data/prototype/type.h"
 #include "game/world/world_data.h"
@@ -129,7 +130,7 @@ namespace jactorio::data
 			const auto val = (v_l % v_r) - frames + 1;
 			assert(val < frames);
 
-			return abs(val);
+			return core::SafeCast<Sprite::FrameT>(abs(val));
 		}
 
 		///

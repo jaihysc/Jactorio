@@ -392,8 +392,8 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 	const auto& recipe_queue = player_data.GetRecipeQueue();
 
 
-	const unsigned int y_slots = (recipe_queue.size() + 10 - 1) / 10;  // Always round up for slot count
-	auto y_offset              = y_slots * (kInventorySlotWidth + kInventorySlotPadding);
+	const auto y_slots = (recipe_queue.size() + 10 - 1) / 10;  // Always round up for slot count
+	auto y_offset      = y_slots * (kInventorySlotWidth + kInventorySlotPadding);
 
 	const unsigned int max_queue_height = Renderer::GetWindowHeight() / 2; // Pixels
 
@@ -604,7 +604,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 			GetProgressBarFraction(
 				player_data.GetPlayerLogicData().GameTick(),
 				machine_data.deferralEntry,
-				machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed)
+				core::LossCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed))
 			);
 
 		ImGui::ProgressBar(progress, {window_size.x - 2 * kInventorySlotWidth, 0});

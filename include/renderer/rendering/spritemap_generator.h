@@ -21,15 +21,15 @@ namespace jactorio::renderer
 	class RendererSprites
 	{
 	public:
-		using SpritemapDimension = uint64_t;
+		using SpritemapDimensionT = uint64_t;
 
 		struct SpritemapData
 		{
 			// For the loaded sprite
 			std::shared_ptr<Texture::SpriteBufferT> spriteBuffer;
 
-			unsigned int width  = 0;
-			unsigned int height = 0;
+			SpritemapDimensionT width  = 0;
+			SpritemapDimensionT height = 0;
 
 			// Image positions retrieved via the path originally given to create the spritemap
 			// 0 - 1 positions of the sprite within the spritemap
@@ -127,21 +127,21 @@ namespace jactorio::renderer
 		static void GenerateSpritemapNodes(std::vector<const data::Sprite*>& sprites,
 		                                   std::vector<GeneratorNode*>& node_buffer,
 		                                   GeneratorNode& parent_node,
-		                                   SpritemapDimension max_width, SpritemapDimension max_height);
+		                                   SpritemapDimensionT max_width, SpritemapDimensionT max_height);
 
 
 		///
 		/// \brief Calculates width of spritemap with adjustments
 		/// \param base_node node above parent node
-		static SpritemapDimension GetSpritemapWidth(GeneratorNode& base_node);
+		static SpritemapDimensionT GetSpritemapWidth(GeneratorNode& base_node);
 
 
 		///
 		/// \brief Copies pixel at sprite_x, sprite_y to spritemap buffer
 		static void SetSpritemapPixel(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
-		                              SpritemapDimension spritemap_width,
+		                              SpritemapDimensionT spritemap_width,
 		                              bool invert_sprites,
-		                              SpritemapDimension spritemap_x_offset, SpritemapDimension spritemap_y_offset,
+		                              SpritemapDimensionT spritemap_x_offset, SpritemapDimensionT spritemap_y_offset,
 		                              const unsigned char* sprite_data,
 		                              data::Sprite::SpriteDimension sprite_width,
 		                              data::Sprite::SpriteDimension sprite_height,
@@ -149,11 +149,11 @@ namespace jactorio::renderer
 		///
 		/// \brief Recursively outputs GeneratorNodes into provided sprite buffer 
 		static void GenerateSpritemapOutput(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
-		                                    SpritemapDimension spritemap_width,
+		                                    SpritemapDimensionT spritemap_width,
 		                                    GeneratorNode& base_node,
 		                                    bool invert_sprites,
 											SpriteUvCoordsT& image_positions,
-		                                    SpritemapDimension x_offset, SpritemapDimension y_offset);
+		                                    SpritemapDimensionT x_offset, SpritemapDimensionT y_offset);
 	};
 }
 

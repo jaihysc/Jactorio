@@ -2,6 +2,8 @@
 
 #include "renderer/gui/gui_layout.h"
 
+
+#include "core/math.h"
 #include "game/input/mouse_selection.h"
 #include "renderer/gui/gui_colors.h"
 #include "renderer/rendering/renderer.h"
@@ -18,7 +20,7 @@ void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::Prot
 	);
 	// If an item is currently selected, move the tooltip down to not overlap
 	if (player_data.GetSelectedItemStack())
-		cursor_pos.y += renderer::kInventorySlotWidth;
+		cursor_pos.y += kInventorySlotWidth;
 
 	ImGui::SetNextWindowPos(cursor_pos);
 
@@ -31,13 +33,13 @@ void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::Prot
 	flags |= ImGuiWindowFlags_AlwaysAutoResize;
 
 	// Draw tooltip
-	renderer::ImGuard guard{};
+	ImGuard guard{};
 
 	guard.PushStyleColor(ImGuiCol_TitleBgActive, kGuiColTooltipTitleBg);
 	guard.PushStyleColor(ImGuiCol_TitleBg, kGuiColTooltipTitleBg);
 
 	{
-		renderer::ImGuard title_text_guard{};
+		ImGuard title_text_guard{};
 		title_text_guard.PushStyleColor(ImGuiCol_Text, kGuiColTooltipTitleText);
 
 		guard.Begin(title, nullptr, flags);
@@ -51,7 +53,7 @@ void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::Prot
 	ImGui::SetWindowFocus(title);
 }
 
-void renderer::FitTitle(std::stringstream& description_ss, const uint16_t target_len) {
+void renderer::FitTitle(std::stringstream& description_ss, const std::size_t target_len) {
 	while (description_ss.str().size() < target_len)
 		description_ss << " ";
 }
@@ -60,9 +62,9 @@ void renderer::RemoveItemSlotTopPadding() {
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - kInventorySlotPadding);
 }
 
-void renderer::DrawSlots(const uint8_t slot_span, const uint16_t slot_count, const uint8_t scale,
-                         const std::function<void(uint16_t, bool&)>& draw_func, const float ending_vertical_space) {
-	uint16_t index      = 0;
+void renderer::DrawSlots(const uint8_t slot_span, const std::size_t slot_count, const uint8_t scale,
+                         const std::function<void(std::size_t, bool&)>& draw_func, const float ending_vertical_space) {
+	std::size_t index   = 0;
 	bool button_hovered = false;
 
 	const auto original_cursor_x = ImGui::GetCursorPosX();
@@ -75,7 +77,7 @@ void renderer::DrawSlots(const uint8_t slot_span, const uint16_t slot_count, con
 		const uint16_t x = index % slot_span;
 		ImGui::SameLine(x_offset + x * scale * (kInventorySlotWidth + kInventorySlotPadding));
 
-		ImGui::PushID(index);  // Uniquely identifies the button
+		ImGui::PushID(core::SafeCast<int>(index));  // Uniquely identifies the button
 
 		ImGui::SetCursorPosY(y_offset);
 		draw_func(index, button_hovered);
@@ -222,8 +224,8 @@ ImVec2 renderer::GetWindowSize() {
 
 ImVec2 renderer::GetWindowCenter() {
 	return {
-		static_cast<float>(renderer::Renderer::GetWindowWidth()) / 2,
-		static_cast<float>(renderer::Renderer::GetWindowHeight()) / 2
+		static_cast<float>(Renderer::GetWindowWidth()) / 2,
+		static_cast<float>(Renderer::GetWindowHeight()) / 2
 	};
 }
 

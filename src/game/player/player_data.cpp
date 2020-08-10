@@ -6,6 +6,7 @@
 #include <cassert>
 #include <map>
 
+#include "core/math.h"
 #include "data/prototype_manager.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/interface/update_listener.h"
@@ -431,7 +432,8 @@ void game::PlayerData::HandleInventoryActions(const data::PrototypeManager& data
 	const bool is_player_inv = &inv == &inventoryPlayer;
 
 
-	InventoryClick(data_manager, index, half_select ? 1 : 0, is_player_inv, inv);
+	InventoryClick(data_manager, 
+				   core::SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
 	InventorySort(inventoryPlayer);
 }
 
@@ -536,7 +538,7 @@ loop_exit:
 		return;
 
 	// Copy empty spaces into the remainder of the slots
-	for (auto i = start; i < inv.size(); ++i) {
+	for (auto i = core::SafeCast<std::size_t>(start); i < inv.size(); ++i) {
 		// Skip the cursor
 		if (inv[i].item != nullptr &&
 			inv[i].item->GetLocalizedName() == data::Item::kInventorySelectedCursor)
@@ -550,8 +552,8 @@ loop_exit:
 // RIGHT CLICK - Select unique, the item in the cursor exists independently of the inventory item
 
 void game::PlayerData::InventoryClick(const data::PrototypeManager& data_manager,
-                                      const unsigned short index,
-                                      const unsigned short mouse_button,
+                                      const uint16_t index,
+                                      const uint16_t mouse_button,
                                       const bool allow_reference_select,
                                       data::Item::Inventory& inv) {
 	assert(index < inventoryPlayer.size());
@@ -811,7 +813,7 @@ void game::PlayerData::RecipeCraftR(const data::PrototypeManager& data_manager, 
 				return_deductions += amount_needed + queued_available;
 
 
-				auto* ingredient_recipe = data::Recipe::GetItemRecipe(data_manager, ingredient.first);
+				const auto* ingredient_recipe = data::Recipe::GetItemRecipe(data_manager, ingredient.first);
 
 				// Round up to always ensure enough is crafted
 				const unsigned int yield = ingredient_recipe->product.second;
