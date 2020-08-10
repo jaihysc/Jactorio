@@ -185,7 +185,7 @@ namespace jactorio::game
 	// }
 
 	TEST_F(InputManagerTest, RemoveInputCallback) {
-		const unsigned int callback_id =
+		const auto callback_id =
 			keyInput_.Register([&]() { counter_++; },
 			                   SDLK_SPACE,
 			                   InputAction::key_pressed);

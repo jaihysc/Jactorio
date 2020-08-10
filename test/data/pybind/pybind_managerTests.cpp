@@ -25,7 +25,7 @@ namespace jactorio::data
 		try {
 			PyExec("asdf");
 		}
-		catch (DataException& e) {
+		catch (DataException&) {
 			caught = true;
 		}
 

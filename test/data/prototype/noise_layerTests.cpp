@@ -24,14 +24,14 @@ namespace jactorio::data
 
 			// Fetch tile based on range
 			// Out of range returns nullptr
-			EXPECT_EQ(noise_layer.Get(-1), nullptr);
-			EXPECT_EQ(noise_layer.Get(1.6), nullptr);
+			EXPECT_EQ(noise_layer.Get(-1.f), nullptr);
+			EXPECT_EQ(noise_layer.Get(1.6f), nullptr);
 
-			EXPECT_EQ(noise_layer.Get(0), &tile_proto);
-			EXPECT_EQ(noise_layer.Get(0.9), &tile_proto);
+			EXPECT_EQ(noise_layer.Get(0.f), &tile_proto);
+			EXPECT_EQ(noise_layer.Get(0.9f), &tile_proto);
 
-			EXPECT_EQ(noise_layer.Get(1), &tile_proto2);
-			EXPECT_EQ(noise_layer.Get(1.5), &tile_proto2);
+			EXPECT_EQ(noise_layer.Get(1.f), &tile_proto2);
+			EXPECT_EQ(noise_layer.Get(1.5f), &tile_proto2);
 		}
 		{
 			auto noise_layer = jactorio::data::NoiseLayer<Tile>(-1, true);
@@ -43,20 +43,20 @@ namespace jactorio::data
 			// 0 inclusive
 			noise_layer.SetStartNoise(0);
 			// 1 inclusive if at the end
-			noise_layer.Add(1, &tile_proto);
-			noise_layer.Add(1.5, &tile_proto2);
+			noise_layer.Add(1.f, &tile_proto);
+			noise_layer.Add(1.5f, &tile_proto2);
 
 
 			// Fetch tile based on range
 			// With normalize out of range values to min/max
-			EXPECT_EQ(noise_layer.Get(-1), &tile_proto);
-			EXPECT_EQ(noise_layer.Get(1.6), &tile_proto2);
+			EXPECT_EQ(noise_layer.Get(-1.f), &tile_proto);
+			EXPECT_EQ(noise_layer.Get(1.6f), &tile_proto2);
 
-			EXPECT_EQ(noise_layer.Get(0), &tile_proto);
-			EXPECT_EQ(noise_layer.Get(0.9), &tile_proto);
+			EXPECT_EQ(noise_layer.Get(0.f), &tile_proto);
+			EXPECT_EQ(noise_layer.Get(0.9f), &tile_proto);
 
-			EXPECT_EQ(noise_layer.Get(1), &tile_proto2);
-			EXPECT_EQ(noise_layer.Get(1.5), &tile_proto2);
+			EXPECT_EQ(noise_layer.Get(1.f), &tile_proto2);
+			EXPECT_EQ(noise_layer.Get(1.5f), &tile_proto2);
 		}
 	}
 
@@ -103,14 +103,14 @@ namespace jactorio::data
 		auto tile_proto  = Tile();
 		auto tile_proto2 = Tile();
 
-		noise_layer.SetStartNoise(0);
-		noise_layer.Add(1, &tile_proto);
-		noise_layer.Add(1.5, &tile_proto2);
+		noise_layer.SetStartNoise(0.f);
+		noise_layer.Add(1.f, &tile_proto);
+		noise_layer.Add(1.5f, &tile_proto2);
 
-		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(0.1).first, 0);
-		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(0.1).second, 1);
+		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(0.1f).first, 0);
+		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(0.1f).second, 1);
 
-		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(1.1).first, 1);
-		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(1.1).second, 1.5);
+		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(1.1f).first, 1);
+		EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(1.1f).second, 1.5);
 	}
 }

@@ -604,7 +604,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 			GetProgressBarFraction(
 				player_data.GetPlayerLogicData().GameTick(),
 				machine_data.deferralEntry,
-				core::LossCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed))
+				core::LossyCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed))
 			);
 
 		ImGui::ProgressBar(progress, {window_size.x - 2 * kInventorySlotWidth, 0});

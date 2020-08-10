@@ -64,13 +64,13 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 			{
 				{
 					{
-						core::LossCast<float>(pixel_offset.x + tile_x * static_cast<float>(renderer::Renderer::tileWidth)),
-						core::LossCast<float>(pixel_offset.y + tile_y * static_cast<float>(renderer::Renderer::tileWidth)),
+						core::LossyCast<float>(pixel_offset.x + tile_x * static_cast<float>(renderer::Renderer::tileWidth)),
+						core::LossyCast<float>(pixel_offset.y + tile_y * static_cast<float>(renderer::Renderer::tileWidth)),
 					},
 					{
-						core::LossCast<float>(pixel_offset.x +
+						core::LossyCast<float>(pixel_offset.x +
 							static_cast<float>(tile_x + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth)),
-						core::LossCast<float>(pixel_offset.y +
+						core::LossyCast<float>(pixel_offset.y +
 							static_cast<float>(tile_y + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth)),
 					},
 				},

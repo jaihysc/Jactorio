@@ -297,15 +297,15 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 			object_layer.emplace_back(
 				game::OverlayElement{
 					*direction_sprite,
-					{core::LossCast<float>(pos_x), core::LossCast<float>(pos_y)},
-					{core::LossCast<float>(segment_len_x), core::LossCast<float>(segment_len_y)},
+					{core::LossyCast<float>(pos_x), core::LossyCast<float>(pos_y)},
+					{core::LossyCast<float>(segment_len_x), core::LossyCast<float>(segment_len_y)},
 					draw_overlay_layer
 				}
 			);
 			object_layer.emplace_back(
 				game::OverlayElement{*outline_sprite,
-					{core::LossCast<float>(pos_x), core::LossCast<float>(pos_y)},
-					{core::LossCast<float>(segment_len_x), core::LossCast<float>(segment_len_y)},
+					{core::LossyCast<float>(pos_x), core::LossyCast<float>(pos_y)},
+					{core::LossyCast<float>(segment_len_x), core::LossyCast<float>(segment_len_y)},
 					draw_overlay_layer
 				}
 			);

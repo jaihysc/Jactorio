@@ -436,8 +436,8 @@ void renderer::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv,
 	const double y_multiplier = tile_layer.GetOffsetY();
 
 	// Opengl flips vertically, thus the y multiplier is inverted
-	uv.bottomRight.x = uv.topLeft.x + core::LossCast<UvPositionT::PositionT::ValueT>(len_x * (x_multiplier + 1));
-	uv.bottomRight.y = uv.bottomRight.y - core::LossCast<UvPositionT::PositionT::ValueT>(len_y * y_multiplier);
+	uv.bottomRight.x = uv.topLeft.x + core::LossyCast<UvPositionT::PositionT::ValueT>(len_x * (x_multiplier + 1));
+	uv.bottomRight.y = uv.bottomRight.y - core::LossyCast<UvPositionT::PositionT::ValueT>(len_y * y_multiplier);
 
 	uv.topLeft.x = uv.bottomRight.x - len_x;
 	uv.topLeft.y = uv.bottomRight.y - len_y;

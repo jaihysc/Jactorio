@@ -860,7 +860,7 @@ bool game::PlayerData::RecipeCanCraftR(const data::PrototypeManager& data_manage
 		}
 
 		// Ingredient met, subtract from used_items, check others
-		if (possess_amount >= ingredient.second * batches) {
+		if (possess_amount >= core::SafeCast<unsigned>(ingredient.second * batches)) {
 			used_items[ingredient_proto] -= ingredient.second * batches;
 			continue;
 		}

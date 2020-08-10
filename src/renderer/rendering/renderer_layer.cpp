@@ -94,7 +94,7 @@ void renderer::RendererLayer::GlHandleBufferResize() {
 		return;
 
 	gResizeVertexBuffers_ = false;
-	eCapacity_            = core::LossCast<decltype(eCapacity_)>(queuedECapacity_ * kResizeECapacityMultiplier);
+	eCapacity_            = core::LossyCast<decltype(eCapacity_)>(queuedECapacity_ * kResizeECapacityMultiplier);
 
 	vertexVb_->Reserve(nullptr, eCapacity_ * kVbBytesPerElement, false);
 	uvVb_->Reserve(nullptr, eCapacity_ * kVbBytesPerElement, false);

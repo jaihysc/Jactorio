@@ -114,7 +114,7 @@ void game::KeyInput::Raise() {
 	}
 }
 
-void game::KeyInput::Unsubscribe(const unsigned callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods) {
+void game::KeyInput::Unsubscribe(const CallbackId callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods) {
 	auto& id_vector = callbackIds_[{key, action, mods}];
 
 	// Erase the callback id to the callback

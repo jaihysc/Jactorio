@@ -34,7 +34,7 @@ namespace jactorio::data
 		auto* inserter_data = layer.GetUniqueData<InserterData>();
 		ASSERT_TRUE(inserter_data);
 
-		EXPECT_FLOAT_EQ(inserter_data->rotationDegree.getAsDouble(), 180.f);
+		EXPECT_DOUBLE_EQ(inserter_data->rotationDegree.getAsDouble(), 180.);
 
 		// Does not have both pickup + dropoff, not added
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
