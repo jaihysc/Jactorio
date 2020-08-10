@@ -80,7 +80,7 @@ data::Sprite::FrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBa
 															  GameTickT game_tick) const {
 	const auto& machine_data = static_cast<const AssemblyMachineData&>(unique_data);
 
-	if (machine_data.deferralEntry.second == 0)
+	if (!machine_data.deferralEntry.Valid())
 		game_tick = 0;
 
 	return AllOfSprite(*sprite, game_tick, 1.f / 6);
@@ -96,7 +96,7 @@ bool data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const Prot
 
 bool data::AssemblyMachine::TryBeginCrafting(game::LogicData& logic_data,
                                              AssemblyMachineData& data) const {
-	if (!data.CanBeginCrafting() || data.deferralEntry.second != 0)
+	if (!data.CanBeginCrafting() || data.deferralEntry.Valid())
 		return false;
 
 	data.deferralEntry = logic_data.deferralTimer.RegisterFromTick(
@@ -115,7 +115,7 @@ void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData&, game::LogicData
 
 	machine_data->CraftAddProduct();
 
-	machine_data->deferralEntry.second = 0;
+	machine_data->deferralEntry.Invalidate();
 	TryBeginCrafting(logic_data, *machine_data);
 }
 

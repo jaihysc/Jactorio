@@ -172,7 +172,7 @@ void game::WorldData::LogicRegister(const Chunk::LogicGroup group, const WorldCo
 	auto* chunk = GetChunkW(world_pair);
 	assert(chunk);
 
-	auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
+	auto* tile_layer  = &GetTile(world_pair)->GetLayer(layer);
 	auto& logic_group = chunk->GetLogicGroup(group);
 
 	// Already added to logic group at tile layer 
@@ -229,7 +229,8 @@ void GenerateChunk(game::WorldData& world_data,
                    const data::PrototypeManager& data_manager,
                    const int chunk_x, const int chunk_y,
                    const data::DataCategory data_category,
-                   void (*func)(game::ChunkTile&, void*, float, double)) {
+                   void (*func)(game::ChunkTile& target_tile, void* prototype,
+                                const data::NoiseLayer<T>& noise_layer, float noise_val)) {
 	using namespace jactorio;
 
 	// The Y axis for libnoise is inverted. It causes no issues as of right now. I am leaving this here
@@ -256,7 +257,7 @@ void GenerateChunk(game::WorldData& world_data,
 	game::ChunkTile* tiles = chunk->Tiles();
 
 	int seed_offset = 0;  // Incremented every time a noise layer generates to keep terrain unique
-	for (const auto& noise_layer : noise_layers) {
+	for (const auto* noise_layer : noise_layers) {
 		module::Perlin base_terrain_noise_module;
 		base_terrain_noise_module.SetSeed(world_data.GetWorldGeneratorSeed() + seed_offset++);
 
@@ -283,7 +284,7 @@ void GenerateChunk(game::WorldData& world_data,
 				float noise_val = base_terrain_height_map.GetValue(x, y);
 				auto* new_tile  = noise_layer->Get(noise_val);
 
-				func(tiles[y * game::Chunk::kChunkWidth + x], new_tile, noise_val, noise_layer->richness);
+				func(tiles[y * game::Chunk::kChunkWidth + x], new_tile, *noise_layer, noise_val);
 			}
 		}
 
@@ -304,7 +305,7 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 		world_data, data_manager,
 		chunk_x, chunk_y,
 		data::DataCategory::noise_layer_tile,
-		[](game::ChunkTile& target, void* tile, float, double) {
+		[](game::ChunkTile& target, void* tile, const auto&, float) {
 			assert(tile != nullptr);  // Base tile should never generate nullptr
 			// Add the tile prototype to the Chunk_tile
 			auto* new_tile = static_cast<data::Tile*>(tile);
@@ -317,23 +318,33 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 		world_data, data_manager,
 		chunk_x, chunk_y,
 		data::DataCategory::noise_layer_entity,
-		[](game::ChunkTile& target, void* tile, const float val, const double richness) {
-			if (tile == nullptr)  // Do not override existing tiles with nullptr
+		[](game::ChunkTile& target, void* tile, const auto& noise_layer, float noise_val) {
+			if (tile == nullptr)  // Do not override existing tiles
 				return;
 
-			// Do not place resource on water
+			// Do not place resources on water since they cannot be mined by entities
 			const auto* base_layer = target.GetTilePrototype();
 			if (base_layer != nullptr && base_layer->isWater)
 				return;
 
-			// Add the tile prototype to the Chunk_tile
+
+			// For resource amount, scale noise value up by richness 
+			const auto noise_range = noise_layer.GetValNoiseRange(noise_val);
+			const auto noise_min   = noise_range.first;
+			const auto noise_max   = noise_range.second;
+			auto resource_amount   = static_cast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
+
+			if (resource_amount <= 0)
+				resource_amount = 1;
+
+			// Place new tile
 			auto* new_tile = static_cast<data::ResourceEntity*>(tile);
 
 			auto& layer         = target.GetLayer(game::ChunkTile::ChunkLayer::resource);
 			layer.prototypeData = new_tile;
 
-			// For resource amount, multiply by arbitrary number to scale noise val (0 - 1) to a reasonable number
-			layer.MakeUniqueData<data::ResourceEntityData>(static_cast<uint16_t>(val * 7823 * richness));
+			assert(resource_amount > 0);
+			layer.MakeUniqueData<data::ResourceEntityData>(resource_amount);
 		});
 }
 
@@ -383,19 +394,27 @@ game::WorldData::UpdateDispatcher::ListenerEntry game::WorldData::UpdateDispatch
 	const WorldCoord& current_coords, const WorldCoord& target_coords, const data::IUpdateListener& proto_listener) {
 
 	auto& collection = container_[std::make_tuple(target_coords.x, target_coords.y)];
-	collection.emplace_back(std::make_pair(current_coords, &proto_listener));
+	collection.emplace_back(CollectionElement{current_coords, &proto_listener});
 
 	return {current_coords, target_coords};
 }
 
 bool game::WorldData::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
-	auto& collection = container_[std::make_tuple(entry.second.x, entry.second.y)];
+	const auto world_tuple = std::make_tuple(entry.emitter.x, entry.emitter.y);
+	auto& collection       = container_[world_tuple];
 
-	for (decltype(collection.size()) i = 0; i < collection.size(); ++i) {
+    // Collection may be erased, thus its size cannot be checked during the for loop
+    auto collection_size = collection.size();
+
+	for (decltype(collection.size()) i = 0; i < collection_size; ++i) {
 		auto& element = collection[i];
 
-		if (element.first == entry.first) {
+		if (element.receiver == entry.receiver) {
 			collection.erase(collection.begin() + i);
+			collection_size = collection.size();  // Collection shrunk, thus max size must be updated
+
+			if (collection.empty())
+				container_.erase(world_tuple);
 		}
 	}
 
@@ -408,9 +427,19 @@ void game::WorldData::UpdateDispatcher::Dispatch(const WorldCoordAxis world_x, c
 }
 
 void game::WorldData::UpdateDispatcher::Dispatch(const WorldCoord& world_pair, const data::UpdateType type) {
-	auto& collection = container_[std::make_tuple(world_pair.x, world_pair.y)];
+	// Must be tuple to index into container_ since it uses a hash function only usable with tuples
+	const auto world_tuple = std::make_tuple(world_pair.x, world_pair.y);
 
-	for (auto& pair : collection) {
-		pair.second->OnTileUpdate(worldData_, world_pair, pair.first, type);
+	if (container_.find(world_tuple) == container_.end())
+		return;
+
+	auto& collection = container_[world_tuple];
+
+	for (auto& entry : collection) {
+		entry.callback->OnTileUpdate(worldData_, world_pair, entry.receiver, type);
 	}
+}
+
+game::WorldData::UpdateDispatcher::DebugInfo game::WorldData::UpdateDispatcher::GetDebugInfo() const noexcept {
+	return {container_};
 }

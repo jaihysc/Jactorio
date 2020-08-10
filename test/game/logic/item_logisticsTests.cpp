@@ -350,7 +350,7 @@ namespace jactorio::game
 		EXPECT_EQ(asm_data.ingredientInv[1].count, 9);  // 1 used to begin crafting
 
 		// Registered to start crafting
-		EXPECT_NE(asm_data.deferralEntry.second, 0);
+		EXPECT_NE(asm_data.deferralEntry.callbackIndex, 0);
 	}
 
 	TEST_F(ItemDropOffTest, InsertAssemblyMachineExceedStack) {
@@ -793,6 +793,6 @@ namespace jactorio::game
 		EXPECT_EQ(data->productInv[0].count, 8);
 
 		// Begin crafting since ingredients are met
-		EXPECT_NE(data->deferralEntry.second, 0);
+		EXPECT_NE(data->deferralEntry.callbackIndex, 0);
 	}
 }

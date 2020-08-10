@@ -64,8 +64,9 @@ namespace jactorio::game
 		const auto unique_data = std::make_unique<MockUniqueData>();
 
 		const auto index = timer_.RegisterAtTick(deferred_, unique_data.get(), 2);
-		EXPECT_EQ(index.first, 2);
-		EXPECT_EQ(index.second, 1);
+		EXPECT_EQ(index.dueTick, 2);
+		EXPECT_EQ(index.callbackIndex, 1);
+		EXPECT_TRUE(index.Valid());
 
 		timer_.DeferralUpdate(worldData_, 0);
 		EXPECT_FALSE(deferred_.callbackCalled);
@@ -84,8 +85,9 @@ namespace jactorio::game
 
 		// Elapse 2 ticks from now
 		const auto index = timer_.RegisterFromTick(deferred_, unique_data.get(), 2);
-		EXPECT_EQ(index.first, 2);
-		EXPECT_EQ(index.second, 1);
+		EXPECT_EQ(index.dueTick, 2);
+		EXPECT_EQ(index.callbackIndex, 1);
+		EXPECT_TRUE(index.Valid());
 
 		timer_.DeferralUpdate(worldData_, 0);
 		EXPECT_FALSE(deferred_.callbackCalled);
@@ -106,9 +108,7 @@ namespace jactorio::game
 		ASSERT_TRUE(deferred_.callbackCalled);
 
 		// Callback at 2 has been removed since it update was called for game tick 2
-		deferred_.callbackCalled = false;  // Reset
-		timer_.DeferralUpdate(worldData_, 2);
-		EXPECT_FALSE(deferred_.callbackCalled);
+		EXPECT_TRUE(timer_.GetDebugInfo().callbacks.empty());
 	}
 
 	TEST_F(DeferralTimerTest, RemoveDeferral) {
@@ -144,7 +144,8 @@ namespace jactorio::game
 
 			timer_.RemoveDeferralEntry(entry);
 
-			EXPECT_EQ(entry.second, 0);
+			EXPECT_EQ(entry.callbackIndex, 0);
+			EXPECT_FALSE(entry.Valid());
 
 			timer_.DeferralUpdate(worldData_, 1);
 			EXPECT_FALSE(deferred.callbackCalled);

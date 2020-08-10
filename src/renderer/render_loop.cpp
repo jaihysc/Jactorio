@@ -75,27 +75,20 @@ void RenderingLoop(renderer::DisplayWindow& display_window) {
 				game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)}
 			);
 
-			// ======================================================================
-			// World
-			{
-				renderer::Renderer::GlClear();
-				std::lock_guard<std::mutex> guard{game::game_data->world.worldDataMutex};
+			renderer::Renderer::GlClear();
+			std::lock_guard<std::mutex> guard{game::game_data->world.worldDataMutex};
 
-				// MVP Matrices updated in here
-				main_renderer->GlRenderPlayerPosition(
-					game::game_data->logic.GameTick(),
-					game::game_data->world,
-					game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY()
-				);
-			}
+			// MVP Matrices updated in here
+			main_renderer->GlRenderPlayerPosition(
+				game::game_data->logic.GameTick(),
+				game::game_data->world,
+				game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY()
+			);
 
-			// ======================================================================
-			// Gui
-			{
-				std::lock_guard<std::mutex> guard{game::game_data->player.mutex};
+				
+			std::lock_guard<std::mutex> gui_guard{game::game_data->player.mutex};
 
-				ImguiDraw(display_window, game::game_data->player, game::game_data->prototype, game::game_data->event);
-			}
+			ImguiDraw(display_window, game::game_data->player, game::game_data->prototype, game::game_data->event);
 		}
 		// ======================================================================
 		// ======================================================================

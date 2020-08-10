@@ -31,6 +31,8 @@ bool show_item_spawner_window = false;
 bool show_transport_line_info = false;
 bool show_inserter_info       = false;
 
+bool show_world_info = false;
+
 void renderer::DebugMenuLogic(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
 	if (show_transport_line_info)
 		DebugTransportLineInfo(player_data, data_manager);
@@ -46,6 +48,11 @@ void renderer::DebugMenuLogic(game::PlayerData& player_data, const data::Prototy
 
 	if (show_item_spawner_window)
 		DebugItemSpawner(player_data, data_manager);
+
+	if (show_world_info) {
+		DebugWorldInfo(player_data);
+		DebugLogicInfo(player_data.GetPlayerLogicData());
+	}
 }
 
 void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeManager&,
@@ -104,6 +111,8 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeMan
 
 		ImGui::Checkbox("Show transport line info", &show_transport_line_info);
 		ImGui::Checkbox("Show inserter info", &show_inserter_info);
+
+		ImGui::Checkbox("World info", &show_world_info);
 	}
 
 	ImGui::Separator();
@@ -454,4 +463,106 @@ void renderer::DebugInserterInfo(game::PlayerData& player_data) {
 
 	ImGui::Text("Pickup  %s", inserter_data.pickup.IsInitialized() ? "true" : "false");
 	ImGui::Text("Dropoff %s", inserter_data.dropoff.IsInitialized() ? "true" : "false");
+}
+
+void renderer::DebugWorldInfo(const game::PlayerData& player_data) {
+	ImGuard guard{};
+	guard.Begin("World info");
+
+	auto& world_data = player_data.GetPlayerWorldData();
+
+	const auto dispatcher_info = world_data.updateDispatcher.GetDebugInfo();
+	ImGui::Text("Update dispatchers: %lld", dispatcher_info.storedEntries.size());
+
+	// Format of data displayed
+	ImGui::Text("Registered coordinate > Listener coordinate | Listener prototype");
+
+	size_t id = 0;
+	for (const auto& entry : dispatcher_info.storedEntries) {
+
+		const auto world_x = std::get<0>(entry.first);
+		const auto world_y = std::get<1>(entry.first);
+
+		if (ImGui::TreeNode(reinterpret_cast<void*>(id),
+		                    "%d %d | %lld",
+		                    world_x, world_y, entry.second.size())) {
+
+			core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+
+			for (const auto& callback : entry.second) {
+				std::ostringstream sstream;
+				sstream << callback.callback;  // Get pointer address
+				ImGui::Text("%d %d %s", callback.receiver.x, callback.receiver.y, sstream.str().c_str());
+			}
+		}
+
+		++id;
+	}
+
+	// ======================================================================
+
+	/*
+	constexpr int chunk_radius = 3;  // Chunk radius around the player to display information for
+	ImGui::Text("Radius of %d around the player", chunk_radius);
+
+
+	const auto start_chunk_x = game::WorldData::ToChunkCoord(player_data.GetPlayerPositionX());
+	const auto start_chunk_y = game::WorldData::ToChunkCoord(player_data.GetPlayerPositionY());
+
+	for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
+		for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {
+			auto* chunk = world_data.GetChunkC(chunk_x, chunk_y);
+
+			if (chunk == nullptr)
+				continue;
+
+			// Unique id to identify tree node
+			const auto* node_id = reinterpret_cast<void*>(static_cast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
+
+			const bool is_player_chunk = chunk_x == start_chunk_x && chunk_y == start_chunk_y;
+
+			if (ImGui::TreeNode(node_id, "%s %d %d",
+			                    is_player_chunk ? ">" : " ", chunk_x, chunk_y)) {
+				core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+			}
+
+		}
+	}
+	*/
+}
+
+void renderer::DebugLogicInfo(const game::LogicData& logic_data) {
+	ImGuard guard;
+	guard.Begin("Logic info");
+
+	const auto timer_info = logic_data.deferralTimer.GetDebugInfo();
+
+	ImGui::Text("Deferral timers: %llu", timer_info.callbacks.size());
+	ImGui::Text("Current game tick: %llu", logic_data.GameTick());
+
+	// Format of data displayed
+	ImGui::Text("Due game tick > Registered prototype");
+
+	size_t id = 0;
+	for (const auto& callback_tick : timer_info.callbacks) {
+
+		const auto due_tick = callback_tick.first;
+
+		assert(due_tick >= logic_data.GameTick());
+		const auto time_to_due = due_tick - logic_data.GameTick();
+
+		if (ImGui::TreeNode(reinterpret_cast<void*>(id),
+		                    "%lld (T- %lld) | %lld",
+		                    due_tick, time_to_due, callback_tick.second.size())) {
+			core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+
+			for (const auto& callback : callback_tick.second) {
+				std::ostringstream sstream;
+				sstream << callback.uniqueData;  // Get pointer address
+				ImGui::Text("%s", sstream.str().c_str());
+			}
+		}
+
+		++id;
+	}
 }

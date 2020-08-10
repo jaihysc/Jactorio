@@ -20,6 +20,10 @@ namespace jactorio::renderer
 	void DebugTransportLineInfo(game::PlayerData& player_data, const data::PrototypeManager& data_manager);
 
 	void DebugInserterInfo(game::PlayerData& player_data);
+
+	void DebugWorldInfo(const game::PlayerData& player_data);
+
+	void DebugLogicInfo(const game::LogicData& logic_data);
 }
 
 #endif //JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_DEBUG_H

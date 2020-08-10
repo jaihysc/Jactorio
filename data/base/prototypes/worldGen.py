@@ -14,7 +14,7 @@ def addTile(noiseLayer, endRange, name, spritePath, isWater = False):
 
 # Create NoiseLayer
 baseTerrain = (j.NoiseLayerTile("base-terrain")
-                .startVal(-1)
+                .startNoise(-1)
                 .normalize(True)
 )
 
@@ -52,9 +52,9 @@ def addResourceEntity(noiseLayer, endRange, name, tileSpritePath, itemSpritePath
 
 # Only use the tips of the noise to ensure that the resources is in one big patch
 coalLayer = (j.NoiseLayerEntity("coal-layer")
-                .startVal(0.8)
+                .startNoise(0.8)
                 .normalize(False)
-                .richness(0.7)
+                .richness(1000)
                 .octaveCount(2)
                 .frequency(0.3)
                 .persistence(0.6)
@@ -63,9 +63,9 @@ addResourceEntity(coalLayer, 2, "coal", "base/graphics/resource/coal/coal-ore.pn
 
 
 copperLayer = (j.NoiseLayerEntity("copper-layer")
-                .startVal(1)
+                .startNoise(1)
                 .normalize(False)
-                .richness(0.4)
+                .richness(400)
                 .octaveCount(2)
                 .frequency(0.5)
                 .persistence(0.7)

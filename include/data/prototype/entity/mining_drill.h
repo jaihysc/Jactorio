@@ -8,6 +8,7 @@
 
 #include "data/prototype/prototype_type.h"
 #include "data/prototype/entity/health_entity.h"
+#include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/interface/deferred.h"
 #include "game/logic/item_logistics.h"
 
@@ -24,7 +25,14 @@ namespace jactorio::data
 
 		Item* outputItem = nullptr;
 
-		/// Number of ticks to mine resource
+
+		/// Top left mining area coordinate
+		WorldCoord resourceCoord{};
+		/// Resource to mine offset to the right wrapping down (wrap on miningRadius)
+		uint16_t resourceOffset = 0;
+
+
+		/// Base number of ticks to mine resource with no modifiers applied (mining speed, boosts, ...)
 		uint16_t miningTicks = 1;
 
 		game::LogicData::DeferralTimer::DeferralEntry deferralEntry{};
@@ -44,9 +52,8 @@ namespace jactorio::data
 	public:
 		PROTOTYPE_CATEGORY(mining_drill);
 
-
-		// TODO miningSpeed unimplemented
-		PYTHON_PROP_REF_I(MiningDrill, double, miningSpeed, 1.f);  // Mines 1 resource every 60 game ticks
+		/// Mining ticks divided by this
+		PYTHON_PROP_REF_I(MiningDrill, double, miningSpeed, 1.f);
 
 		/// Number of tiles to extend the mining radius around the entity outside of entity tile width and height	
 		PYTHON_PROP_REF_I(MiningDrill, uint16_t, miningRadius, 1);
@@ -114,9 +121,29 @@ namespace jactorio::data
 		}
 
 	private:
+
+		J_NODISCARD int GetMiningAreaX() const;
+		J_NODISCARD int GetMiningAreaY() const;
+
+		///
+		/// \brief Sets up drill data such that resources can be deducted from the ground
+		/// \return true if a resource was found, otherwise false
+		bool SetupResourceDeduction(const game::WorldData& world_data,
+		                            MiningDrillData& drill_data) const;
+
+		///
+		/// \brief Removes resource using resourceCoord + resourceOffset in drill_data, searches for another resource if depleted
+		/// \return true if successful
+		bool DeductResource(game::WorldData& world_data, MiningDrillData& drill_data,
+		                    ResourceEntityData::ResourceCount amount = 1) const;
+
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource 
 		void RegisterMineCallback(game::LogicData::DeferralTimer& timer, MiningDrillData* unique_data) const;
+
+		///
+		/// \brief Sets up deferred callback for when it has mined a resource, but failed to output
+		void RegisterOutputCallback(game::LogicData::DeferralTimer& timer, MiningDrillData* unique_data) const;
 	};
 }
 

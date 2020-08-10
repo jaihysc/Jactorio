@@ -147,8 +147,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(NoiseLayer<Tile>, normalize)
 		PYBIND_PROP(NoiseLayer<Tile>, richness)
 
-		.def("getStartVal", &NoiseLayer<Tile>::GetStartVal)
-		.def("startVal", &NoiseLayer<Tile>::SetStartVal)
+		.def("getStartNoise", &NoiseLayer<Tile>::GetStartNoise)
+		.def("startNoise", &NoiseLayer<Tile>::SetStartNoise)
 		.def("add", &NoiseLayer<Tile>::Add)
 		.def("get", &NoiseLayer<Tile>::Get);
 
@@ -161,8 +161,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		PYBIND_PROP(NoiseLayer<Entity>, normalize)
 		PYBIND_PROP(NoiseLayer<Entity>, richness)
 
-		.def("getStartVal", &NoiseLayer<Entity>::GetStartVal)
-		.def("startVal", &NoiseLayer<Entity>::SetStartVal)
+		.def("getStartNoise", &NoiseLayer<Entity>::GetStartNoise)
+		.def("startNoise", &NoiseLayer<Entity>::SetStartNoise)
 		.def("add", &NoiseLayer<Entity>::Add)
 		.def("get", &NoiseLayer<Entity>::Get);
 

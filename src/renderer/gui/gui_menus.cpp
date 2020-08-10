@@ -44,10 +44,10 @@ void ImplementInventoryIsItemClicked(game::PlayerData& player_data,
 
 float GetProgressBarFraction(const GameTickT game_tick,
                              const game::LogicData::DeferralTimer::DeferralEntry& entry, const float total_ticks) {
-	if (entry.second == 0)
-		return 0.f; // Drill has not started
+	if (!entry.Valid())
+		return 0.f;
 
-	const auto ticks_left = static_cast<long double>(entry.first) - game_tick;
+	const auto ticks_left = static_cast<long double>(entry.dueTick) - game_tick;
 	return 1.f - static_cast<float>(ticks_left / total_ticks);
 }
 
@@ -530,9 +530,6 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 	auto& machine_data        = *static_cast<data::AssemblyMachineData*>(unique_data);
 
 	auto menu_data = GetMenuData();
-
-	// Will be modifying AssemblyMachineData::recipe
-	std::lock_guard<std::mutex> world_data_guard{world_data.worldDataMutex};
 
 	if (machine_data.HasRecipe()) {
 		const auto window_size = GetWindowSize();

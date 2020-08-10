@@ -34,26 +34,38 @@ namespace jactorio::game
 		/// \brief Manages deferrals, prototypes inheriting 'Deferred'
 		class DeferralTimer
 		{
-		public:
-			explicit DeferralTimer(LogicData& logic_data)
-				: logicData_(logic_data) {
-			}
-
-		private:
-			/// \brief vector of callbacks at game tick
-			std::unordered_map<GameTickT,
-			                   std::vector<
-				                   std::pair<std::reference_wrapper<const data::IDeferred>, data::UniqueDataBase*>
-			                   >> callbacks_;
+			struct CallbackContainerEntry
+			{
+				std::reference_wrapper<const data::IDeferred> prototype;
+				data::UniqueDataBase* uniqueData;
+			};
+			
+			using CallbackContainerT = std::unordered_map<GameTickT, std::vector<CallbackContainerEntry>>;
 
 			/// \brief 0 indicates invalid callback
-			using CallbackIndex = decltype(callbacks_.size());
+			using CallbackIndex = CallbackContainerT::size_type;
+
+			struct DebugInfo;
 
 		public:
 			/// \brief Information about the registered deferral for removing
-			///
-			/// .second value of 0 indicates invalid callback
-			using DeferralEntry = std::pair<GameTickT, CallbackIndex>;
+			struct DeferralEntry
+			{
+				GameTickT dueTick;
+				CallbackIndex callbackIndex;
+
+				J_NODISCARD bool Valid() const {
+					return callbackIndex != 0;
+				}
+
+				void Invalidate() {
+					callbackIndex = 0;
+				}
+			};
+
+			explicit DeferralTimer(LogicData& logic_data)
+				: logicData_(logic_data) {
+			}
 
 			///
 			/// \brief Calls all deferred callbacks for the current game tick
@@ -84,7 +96,12 @@ namespace jactorio::game
 			/// \brief Removes registered callback and sets entry index to 0
 			void RemoveDeferralEntry(DeferralEntry& entry);
 
+
+			J_NODISCARD DebugInfo GetDebugInfo() const;
+
 		private:
+			CallbackContainerT callbacks_;
+
 			GameTickT lastGameTick_ = 0;
 			LogicData& logicData_;
 
@@ -96,6 +113,11 @@ namespace jactorio::game
 				void OnDeferTimeElapsed(WorldData&, LogicData&, data::UniqueDataBase*) const override {
 				}
 			} blankCallback_;
+
+			struct DebugInfo
+			{
+				const CallbackContainerT& callbacks;
+			};
 		} deferralTimer{*this};
 	};
 }

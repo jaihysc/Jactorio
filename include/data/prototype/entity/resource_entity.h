@@ -11,15 +11,21 @@
 namespace jactorio::data
 {
 	// Unique per resource entity placed
-	struct ResourceEntityData : EntityData
+	struct ResourceEntityData final : EntityData
 	{
-		explicit ResourceEntityData(const uint16_t resource_amount)
+		using ResourceCount = uint32_t;
+
+		/// Resource entity should never have 0 resources, when it does it is treated as infinite
+		static constexpr ResourceCount kInfiniteResource = 0;
+
+
+		explicit ResourceEntityData(const ResourceCount resource_amount)
 			: resourceAmount(resource_amount) {
 		}
 
 		///
 		/// \brief Amount of product which can still be extracted from this tile
-		uint16_t resourceAmount;
+		ResourceCount resourceAmount;
 	};
 
 	class ResourceEntity final : public Entity
