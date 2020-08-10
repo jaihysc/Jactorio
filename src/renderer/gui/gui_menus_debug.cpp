@@ -171,7 +171,7 @@ void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::Proto
 		ImGui::PushID(item->name.c_str());
 
 		if (ImGui::Button(item->GetLocalizedName().c_str())) {
-			data::Item::Stack item_stack = {item, static_cast<data::Item::StackCount>(give_amount)};
+			data::Item::Stack item_stack = {item, core::SafeCast<data::Item::StackCount>(give_amount)};
 			game::AddStack(player_data.inventoryPlayer, item_stack);
 		}
 		ImGui::PopID();
@@ -526,7 +526,7 @@ void renderer::DebugWorldInfo(const game::PlayerData& player_data) {
 				continue;
 
 			// Unique id to identify tree node
-			const auto* node_id = reinterpret_cast<void*>(static_cast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
+			const auto* node_id = reinterpret_cast<void*>(core::LossyCast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
 
 			const bool is_player_chunk = chunk_x == start_chunk_x && chunk_y == start_chunk_y;
 

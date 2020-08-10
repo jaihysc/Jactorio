@@ -17,7 +17,10 @@ namespace jactorio::core
 	///
 	/// \brief Performs cast, data may be lost
 	template <class TTarget, class TOriginal>
-	constexpr TTarget LossyCast(TOriginal val) noexcept {
+	constexpr TTarget LossyCast(TOriginal val,
+								std::enable_if_t<
+									std::is_integral<TOriginal>::value || std::is_floating_point<TOriginal>::value, int
+								> = 0) noexcept {
 		static_assert(std::is_arithmetic<TTarget>::value, "Target type should be an arithmetic type");
 		static_assert(std::is_arithmetic<TOriginal>::value, "Original type should be an arithmetic type");
 
@@ -30,7 +33,7 @@ namespace jactorio::core
 	/// \remark Same behavior as static cast if assertions are disabled
 	template <class TTargetInt, class TOriginalInt>
 	constexpr TTargetInt SafeCast(TOriginalInt val,
-	                              std::enable_if_t<std::is_integral<TOriginalInt>::value, int>  = 0) noexcept {
+	                              std::enable_if_t<std::is_integral<TOriginalInt>::value, int> = 0) noexcept {
 
 		static_assert(std::is_integral<TOriginalInt>::value, "Original type should be an integral type");
 		static_assert(std::is_integral<TTargetInt>::value, "Target type should be an integral type");
@@ -39,7 +42,7 @@ namespace jactorio::core
 
 		const auto cast_val = LossyCast<TTargetInt>(val);
 
-		if (static_cast<TOriginalInt>(cast_val) != val
+		if (core::LossyCast<TOriginalInt>(cast_val) != val
 			|| (is_different_signedness && ((cast_val < TTargetInt{}) != (val < TOriginalInt{})))) {
 			assert(false);
 		}

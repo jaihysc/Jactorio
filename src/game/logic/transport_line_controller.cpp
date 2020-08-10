@@ -17,7 +17,7 @@ using namespace jactorio;
 J_NODISCARD bool MoveNextItem(const game::TransportLineOffset& tiles_moved,
                               std::deque<game::TransportLineItem>& line_side,
                               uint16_t& index, const bool has_target_segment) {
-	for (size_t i = static_cast<size_t>(index) + 1; i < line_side.size(); ++i) {
+	for (size_t i = core::SafeCast<size_t>(index) + 1; i < line_side.size(); ++i) {
 		auto& i_item_offset = line_side[i].first;
 		if (i_item_offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(game::kItemSpacing)) {
 			// Found a valid item to decrement
@@ -74,7 +74,7 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 					// |   |   |   |
 					// 3   2   1   0
 					// targetOffset of 0: Length is 1
-					length = static_cast<double>(1) + segment.targetInsertOffset;
+					length = core::LossyCast<double>(1) + segment.targetInsertOffset;
 					break;
 
 				default:

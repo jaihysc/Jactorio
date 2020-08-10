@@ -50,7 +50,7 @@ uint32_t renderer::RendererLayer::GetCapacity() const noexcept {
 }
 
 uint64_t renderer::RendererLayer::GetIndicesCount() const noexcept {
-	return static_cast<uint64_t>(nextElementIndex_) * kInIndicesPerElement;
+	return core::SafeCast<uint64_t>(nextElementIndex_) * kInIndicesPerElement;
 }
 
 void renderer::RendererLayer::Reserve(const uint32_t count) noexcept {
@@ -245,7 +245,7 @@ std::unique_ptr<unsigned int[]> renderer::RendererLayer::GenRenderGridIndices(co
 	// bottom left
 
 	std::unique_ptr<unsigned int[]> positions(
-		new unsigned int[static_cast<uint64_t>(tile_count) * kInIndicesPerElement]
+		new unsigned int[core::SafeCast<uint64_t>(tile_count) * kInIndicesPerElement]
 	);
 
 	unsigned int positions_index    = 0;

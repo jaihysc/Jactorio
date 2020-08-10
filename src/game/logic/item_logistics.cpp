@@ -191,10 +191,7 @@ bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& args) cons
 
 			// Must be less than: max sets(multiples) of ingredient OR maximum stack size
 			const auto max_count = max_ingredient_sets * recipe->ingredients[i].second;
-			if (slot.count >= max_count || slot.count >= slot.filter->stackSize)
-				return false;
-
-			return true;
+			return !(slot.count >= max_count || slot.count >= slot.filter->stackSize);
 		}
 	}
 

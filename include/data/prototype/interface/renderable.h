@@ -104,7 +104,7 @@ namespace jactorio::data
 		                                  const AnimationSpeed speed = 1) {
 			assert(speed > 0);
 
-			return static_cast<GameTickT>(speed * game_tick) % (static_cast<uint64_t>(sprite.frames) * sprite.sets);
+			return core::LossyCast<GameTickT>(speed * game_tick) % (static_cast<uint64_t>(sprite.frames) * sprite.sets);
 		}
 
 		///
@@ -119,13 +119,13 @@ namespace jactorio::data
 
 			// Graph this function to make it easier to understand
 
-			const auto frames = static_cast<uint16_t>(sprite.frames) * sprite.sets;
+			const auto frames = core::SafeCast<uint16_t>(sprite.frames) * sprite.sets;
 
 			// Shift the peak (which is at x = 0) such that when x = 0, y = 0
 			const auto adjusted_x = game_tick - (1.f / speed) * (frames - 1);
 
-			const auto v_l = static_cast<int64_t>(speed * abs(adjusted_x));
-			const auto v_r = static_cast<int64_t>(frames) * 2 - 2;
+			const auto v_l = core::LossyCast<int64_t>(speed * abs(adjusted_x));
+			const auto v_r = core::SafeCast<int64_t>(frames) * 2 - 2;
 
 			const auto val = (v_l % v_r) - frames + 1;
 			assert(val < frames);
@@ -139,7 +139,7 @@ namespace jactorio::data
 		                               const GameTickT game_tick,
 		                               const AnimationSpeed speed = 1) {
 			assert(speed > 0);
-			return static_cast<GameTickT>(speed * game_tick) % sprite.frames;
+			return core::LossyCast<GameTickT>(speed * game_tick) % sprite.frames;
 		}
 	};
 }

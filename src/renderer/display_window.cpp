@@ -7,11 +7,11 @@
 #include <SDL.h>
 
 #include "jactorio.h"
+#include "core/math.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 #include "renderer/render_loop.h"
 #include "renderer/gui/imgui_manager.h"
-#include "renderer/opengl/error.h"
 #include "renderer/rendering/renderer.h"
 
 using namespace jactorio;
@@ -233,7 +233,7 @@ void renderer::DisplayWindow::HandleSdlEvent(const SDL_Event& sdl_event) const {
 		break;
 	case SDL_MOUSEWHEEL:
 		if (!input_mouse_captured)
-			GetBaseRenderer()->tileProjectionMatrixOffset += static_cast<float>(sdl_event.wheel.y * 10);
+			GetBaseRenderer()->tileProjectionMatrixOffset += core::LossyCast<float>(sdl_event.wheel.y * 10);
 		break;
 	case SDL_MOUSEBUTTONUP:
 	case SDL_MOUSEBUTTONDOWN:

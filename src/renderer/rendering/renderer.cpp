@@ -108,8 +108,8 @@ void renderer::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 	// Right and bottom varies depending on tile size
 
 	// Player position with decimal removed
-	const auto position_x = static_cast<int>(player_x);
-	const auto position_y = static_cast<int>(player_y);
+	const auto position_x = core::LossyCast<int>(player_x);
+	const auto position_y = core::LossyCast<int>(player_y);
 
 	const auto tile_offset = GetTileDrawOffset(position_x, position_y);
 
@@ -146,7 +146,7 @@ void renderer::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 	for (int y = 0; y < chunk_amount.y; ++y) {
 
 		// Wait for started threads to finish before starting new ones
-		if (static_cast<size_t>(started_threads) == drawThreads_) {
+		if (core::SafeCast<size_t>(started_threads) == drawThreads_) {
 			await_thread_completion();
 			started_threads = 0;
 		}
@@ -176,15 +176,15 @@ void renderer::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 }
 
 void renderer::Renderer::CalculateViewMatrix(const float player_x, const float player_y) noexcept {
-	const auto position_x = static_cast<int>(player_x);
-	const auto position_y = static_cast<int>(player_y);
+	const auto position_x = core::LossyCast<int>(player_x);
+	const auto position_y = core::LossyCast<int>(player_y);
 
 	// Negative moves window right and down
 
 	// Decimal is used to shift the camera
 	// Invert the movement to give the illusion of moving in the correct direction
-	const float camera_offset_x = (player_x - position_x) * static_cast<float>(tileWidth) * -1;
-	const float camera_offset_y = (player_y - position_y) * static_cast<float>(tileWidth) * -1;
+	const float camera_offset_x = (player_x - position_x) * core::LossyCast<float>(tileWidth) * -1;
+	const float camera_offset_y = (player_y - position_y) * core::LossyCast<float>(tileWidth) * -1;
 
 	// Remaining pixel distance not covered by tiles and chunks are covered by the view matrix to center
 	const auto tile_amount = GetTileDrawAmount();
@@ -192,11 +192,11 @@ void renderer::Renderer::CalculateViewMatrix(const float player_x, const float p
 	// Divide by 2 first to truncate decimals
 	const auto& view_transform = GetViewTransform();
 	view_transform->x
-		= static_cast<float>(static_cast<int>(GetWindowWidth() / 2 - (tile_amount.x / 2 * tileWidth)))
+		= core::LossyCast<float>(GetWindowWidth() / 2 - (tile_amount.x / 2 * tileWidth))
 		+ camera_offset_x;
 
 	view_transform->y
-		= static_cast<float>(static_cast<int>(GetWindowHeight() / 2 - (tile_amount.y / 2 * tileWidth)))
+		= core::LossyCast<float>(GetWindowHeight() / 2 - (tile_amount.y / 2 * tileWidth))
 		+ camera_offset_y;
 
 	UpdateViewTransform();
@@ -206,8 +206,8 @@ void renderer::Renderer::CalculateViewMatrix(const float player_x, const float p
 
 core::Position2<int> renderer::Renderer::GetTileDrawAmount() noexcept {
 	const auto matrix        = glm::vec4(1, -1, 1, 1) / GetMvpMatrix();
-	const auto tile_amount_x = static_cast<int>(matrix.x / static_cast<double>(tileWidth) * 2) + 2;
-	const auto tile_amount_y = static_cast<int>(matrix.y / static_cast<double>(tileWidth) * 2) + 2;
+	const auto tile_amount_x = core::LossyCast<int>(matrix.x / core::LossyCast<double>(tileWidth) * 2) + 2;
+	const auto tile_amount_y = core::LossyCast<int>(matrix.y / core::LossyCast<double>(tileWidth) * 2) + 2;
 
 	return {tile_amount_x, tile_amount_y};
 }
@@ -216,8 +216,8 @@ core::Position2<int> renderer::Renderer::GetTileDrawOffset(const int position_x,
 	// Player has not moved an entire chunk's width yet, offset the tiles
 	// Modulus chunk_width to make it snap back to 0 after offsetting the entirety of a chunk
 	// Inverted to move the tiles AWAY from the screen instead of following the screen
-	auto tile_start_x = static_cast<int>(position_x % game::Chunk::kChunkWidth * -1);
-	auto tile_start_y = static_cast<int>(position_y % game::Chunk::kChunkWidth * -1);
+	auto tile_start_x = position_x % game::Chunk::kChunkWidth * -1;
+	auto tile_start_y = position_y % game::Chunk::kChunkWidth * -1;
 
 	const auto tile_amount = GetTileDrawAmount();
 
@@ -233,8 +233,8 @@ core::Position2<int> renderer::Renderer::GetTileDrawOffset(const int position_x,
 }
 
 core::Position2<int> renderer::Renderer::GetChunkDrawStart(const int position_x, const int position_y) noexcept {
-	auto chunk_start_x = static_cast<int>(position_x / game::Chunk::kChunkWidth);
-	auto chunk_start_y = static_cast<int>(position_y / game::Chunk::kChunkWidth);
+	auto chunk_start_x = position_x / game::Chunk::kChunkWidth;
+	auto chunk_start_y = position_y / game::Chunk::kChunkWidth;
 
 	const auto tile_amount = GetTileDrawAmount();
 
@@ -296,10 +296,10 @@ void renderer::Renderer::PrepareChunk(RendererLayer& r_layer, const game::Chunk&
 
 	// Iterate through and load tiles of a chunk into layer for rendering
 	for (uint8_t tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
-		const auto pixel_y = static_cast<float>(render_tile_offset.y + tile_y) * static_cast<float>(tileWidth);
+		const auto pixel_y = core::LossyCast<float>(render_tile_offset.y + tile_y) * core::LossyCast<float>(tileWidth);
 
 		for (uint8_t tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
-			const auto pixel_x = static_cast<float>(render_tile_offset.x + tile_x) * static_cast<float>(tileWidth);
+			const auto pixel_x = core::LossyCast<float>(render_tile_offset.x + tile_x) * core::LossyCast<float>(tileWidth);
 
 			PrepareTileLayers(r_layer, tiles[tile_y * game::Chunk::kChunkWidth + tile_x],
 			                  {pixel_x, pixel_y}, game_tick
@@ -346,13 +346,13 @@ void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, game::ChunkTi
 		if (tile_layer.IsMultiTile())
 			ApplyMultiTileUvAdjustment(uv, tile_layer);
 
-		const float pixel_z = 0.f + static_cast<float>(0.01 * layer_index);
+		const float pixel_z = 0.f + core::LossyCast<float>(0.01 * layer_index);
 
 		r_layer.PushBack(
 			{
 				{  // top left of tile, 1 tile over and down
 					{pixel_pos.x, pixel_pos.y},
-					{pixel_pos.x + static_cast<float>(tileWidth), pixel_pos.y + static_cast<float>(tileWidth)}
+					{pixel_pos.x + core::LossyCast<float>(tileWidth), pixel_pos.y + core::LossyCast<float>(tileWidth)}
 				},
 				{
 					uv.topLeft,
@@ -381,17 +381,17 @@ void renderer::Renderer::PrepareOverlayLayers(RendererLayer& r_layer, const game
 
 						{
 							(render_tile_offset.x + overlay.position.x)
-							* static_cast<float>(tileWidth),
+							* core::LossyCast<float>(tileWidth),
 
 							(render_tile_offset.y + overlay.position.y)
-							* static_cast<float>(tileWidth)
+							* core::LossyCast<float>(tileWidth)
 						},
 						{
 							(render_tile_offset.x + overlay.position.x + overlay.size.x)
-							* static_cast<float>(tileWidth),
+							* core::LossyCast<float>(tileWidth),
 
 							(render_tile_offset.y + overlay.position.y + overlay.size.y)
-							* static_cast<float>(tileWidth)
+							* core::LossyCast<float>(tileWidth)
 						}
 					},
 					{
@@ -429,8 +429,8 @@ void renderer::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv,
 	// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
 
 	// Total length of the sprite, to be split among the different tiles
-	const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / static_cast<float>(mt_data.multiTileSpan);
-	const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / static_cast<float>(mt_data.multiTileHeight);
+	const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / core::LossyCast<float>(mt_data.multiTileSpan);
+	const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / core::LossyCast<float>(mt_data.multiTileHeight);
 
 	const double x_multiplier = tile_layer.GetOffsetX();
 	const double y_multiplier = tile_layer.GetOffsetY();
@@ -451,7 +451,7 @@ void renderer::Renderer::GlDraw(const uint64_t index_count) noexcept {
 }
 
 void renderer::Renderer::GlUpdateTileProjectionMatrix() noexcept {
-	const auto max_tile_width = static_cast<float>(tileWidth * 2);
+	const auto max_tile_width = core::LossyCast<float>(tileWidth * 2);
 
 	if (tileProjectionMatrixOffset < max_tile_width)
 		// Prevent zooming out too far
@@ -468,8 +468,8 @@ void renderer::Renderer::GlUpdateTileProjectionMatrix() noexcept {
 
 		// Maximum zoom is 30 from center
 		const int max_zoom_offset = 30;
-		if (tileProjectionMatrixOffset > static_cast<float>(smallest_axis) / 2 - max_zoom_offset) {
-			tileProjectionMatrixOffset = static_cast<float>(smallest_axis) / 2 - max_zoom_offset;
+		if (tileProjectionMatrixOffset > core::LossyCast<float>(smallest_axis) / 2 - max_zoom_offset) {
+			tileProjectionMatrixOffset = core::LossyCast<float>(smallest_axis) / 2 - max_zoom_offset;
 		}
 	}
 

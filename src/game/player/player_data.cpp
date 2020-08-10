@@ -42,8 +42,8 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 		{
 			// Calculate the center tile on screen
 			// Calculate number of pixels from center
-			const double win_center_norm_x = 2 * (static_cast<double>(window_width) / 2 / window_width) - 1;
-			const double win_center_norm_y = 2 * (static_cast<double>(window_height) / 2 / window_height) - 1;
+			const double win_center_norm_x = 2 * (core::LossyCast<double>(window_width) / 2 / window_width) - 1;
+			const double win_center_norm_y = 2 * (core::LossyCast<double>(window_height) / 2 / window_height) - 1;
 
 			const glm::vec4 win_center_norm_positions =
 				matrix / glm::vec4(win_center_norm_x, win_center_norm_y, 1, 1);
@@ -54,13 +54,13 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 
 		// If player is standing on a partial tile, adjust the center accordingly to the correct location
 		mouse_x_center -=
-			static_cast<float>(renderer::Renderer::tileWidth) *
-			(playerPositionX_ - static_cast<float>(static_cast<int>(playerPositionX_)));
+			core::LossyCast<float>(renderer::Renderer::tileWidth) *
+			(playerPositionX_ - core::LossyCast<float>(core::LossyCast<int>(playerPositionX_)));
 
 		// This is plus since the y axis is inverted
 		mouse_y_center +=
-			static_cast<float>(renderer::Renderer::tileWidth) *
-			(playerPositionY_ - static_cast<float>(static_cast<int>(playerPositionY_)));
+			core::LossyCast<float>(renderer::Renderer::tileWidth) *
+			(playerPositionY_ - core::LossyCast<float>(core::LossyCast<int>(playerPositionY_)));
 
 
 		pixels_from_center_x = norm_positions.x - mouse_x_center;
@@ -68,11 +68,11 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 	}
 
 	// Calculate tile position based on current player position
-	float tile_x = static_cast<float>(static_cast<int>(playerPositionX_)) +
-		pixels_from_center_x / static_cast<float>(renderer::Renderer::tileWidth);
+	float tile_x = core::LossyCast<float>(core::LossyCast<int>(playerPositionX_)) +
+		pixels_from_center_x / core::LossyCast<float>(renderer::Renderer::tileWidth);
 
-	float tile_y = static_cast<float>(static_cast<int>(playerPositionY_)) +
-		pixels_from_center_y / static_cast<float>(renderer::Renderer::tileWidth);
+	float tile_y = core::LossyCast<float>(core::LossyCast<int>(playerPositionY_)) +
+		pixels_from_center_y / core::LossyCast<float>(renderer::Renderer::tileWidth);
 
 	// Subtract extra tile if negative because no tile exists at -0, -0
 	if (tile_x < 0)
@@ -80,7 +80,7 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 	if (tile_y < 0)
 		tile_y -= 1.f;
 
-	mouseSelectedTile_ = {static_cast<WorldCoordAxis>(tile_x), static_cast<WorldCoordAxis>(tile_y)};
+	mouseSelectedTile_ = {core::LossyCast<WorldCoordAxis>(tile_x), core::LossyCast<WorldCoordAxis>(tile_y)};
 }
 
 bool game::PlayerData::MouseSelectedTileInRange() const {
@@ -99,8 +99,8 @@ bool game::PlayerData::TargetTileValid(WorldData* world_data, const int x, const
 
 	const auto* origin_tile =
 		world_data->GetTile(
-			static_cast<int>(playerPositionX_),
-			static_cast<int>(playerPositionY_));
+			core::LossyCast<int>(playerPositionX_),
+			core::LossyCast<int>(playerPositionY_));
 
 	if (origin_tile == nullptr)
 		return false;
@@ -120,14 +120,14 @@ bool game::PlayerData::TargetTileValid(WorldData* world_data, const int x, const
 void game::PlayerData::MovePlayerX(const float amount) {
 	const float target_x = playerPositionX_ + amount;
 
-	if (TargetTileValid(playerWorldData_, static_cast<int>(target_x), static_cast<int>(playerPositionY_)))
+	if (TargetTileValid(playerWorldData_, core::LossyCast<int>(target_x), core::LossyCast<int>(playerPositionY_)))
 		playerPositionX_ = target_x;
 }
 
 void game::PlayerData::MovePlayerY(const float amount) {
 	const float target_y = playerPositionY_ + amount;
 
-	if (TargetTileValid(playerWorldData_, static_cast<int>(playerPositionX_), static_cast<int>(target_y)))
+	if (TargetTileValid(playerWorldData_, core::LossyCast<int>(playerPositionX_), core::LossyCast<int>(target_y)))
 		playerPositionY_ = target_y;
 }
 
@@ -353,7 +353,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 	// Selecting a new tile different from the last selected tile will reset the counter
 	if (lastSelectedPtr_ != chosen_ptr || lastTilePtr_ != tile) {
 		pickupTickCounter_ = 0;
-		pickupTickTarget_  = static_cast<uint16_t>(chosen_ptr->pickupTime * kGameHertz);  // Seconds to ticks
+		pickupTickTarget_  = core::LossyCast<uint16_t>(chosen_ptr->pickupTime * kGameHertz);  // Seconds to ticks
 	}
 	// Remember the entity + tile which was selected
 	lastSelectedPtr_ = chosen_ptr;
@@ -420,7 +420,7 @@ float game::PlayerData::GetPickupPercentage() const {
 	if (lastSelectedPtr_ == nullptr)  // Not initialized yet
 		return 0.f;
 
-	return static_cast<float>(pickupTickCounter_) / static_cast<float>(pickupTickTarget_);
+	return core::LossyCast<float>(pickupTickCounter_) / core::LossyCast<float>(pickupTickTarget_);
 }
 
 // ============================================================================================
@@ -740,7 +740,7 @@ void game::PlayerData::RecipeCraftTick(const data::PrototypeManager& data_manage
 
 			// Set crafting ticks remaining to the next item
 			if (!craftingQueue_.empty())
-				craftingTicksRemaining_ = static_cast<uint16_t>(craftingQueue_.front()->craftingTime * kGameHertz);
+				craftingTicksRemaining_ = core::LossyCast<uint16_t>(craftingQueue_.front()->craftingTime * kGameHertz);
 		}
 			// Crafting ticks remaining is greater, decrement ticks remaining
 		else {
@@ -763,7 +763,7 @@ void game::PlayerData::RecipeQueue(const data::PrototypeManager& data_manager, c
 
 	// Queue is empty, crafting time for the first item in queue must be set here
 	if (craftingQueue_.empty())
-		craftingTicksRemaining_ = static_cast<uint16_t>(recipe.craftingTime * kGameHertz);
+		craftingTicksRemaining_ = core::LossyCast<uint16_t>(recipe.craftingTime * kGameHertz);
 
 	craftingQueue_.push_back(&recipe);
 }

@@ -5,7 +5,7 @@
 #include <mutex>
 
 #include "core/data_type.h"
-
+#include "core/math.h"
 #include "data/prototype_manager.h"
 #include "data/prototype/item/item.h"
 
@@ -92,5 +92,5 @@ void data::Recipe::PostLoadValidate(const PrototypeManager& data_manager) const 
 }
 
 GameTickT data::Recipe::GetCraftingTime(const double multiplier) const {
-	return static_cast<GameTickT>(craftingTime * multiplier * kGameHertz);
+	return core::LossyCast<GameTickT>(craftingTime * multiplier * kGameHertz);
 }

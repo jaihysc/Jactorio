@@ -47,8 +47,8 @@ float GetProgressBarFraction(const GameTickT game_tick,
 	if (!entry.Valid())
 		return 0.f;
 
-	const auto ticks_left = static_cast<long double>(entry.dueTick) - game_tick;
-	return 1.f - static_cast<float>(ticks_left / total_ticks);
+	const auto ticks_left = core::LossyCast<long double>(entry.dueTick) - game_tick;
+	return 1.f - core::LossyCast<float>(ticks_left / total_ticks);
 }
 
 // ==========================================================================================
@@ -119,11 +119,11 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 	renderer::DrawTitleBar(title, [&]() {
 		ImGui::SameLine();
 		// Shift above to center title text in middle of search bar
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - static_cast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::LossyCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
 
 		renderer::ImGuard title_guard{};
 		title_guard.PushStyleVar(ImGuiStyleVar_FramePadding,
-		                         {renderer::kGuiStyleWindowPaddingX, static_cast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2});
+		                         {renderer::kGuiStyleWindowPaddingX, core::LossyCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2});
 
 		// Search text
 		// Make temporary buffer, copy std::string contents into, pass to imgui input, copy result back into std::string
@@ -141,7 +141,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 		player_data.recipeSearchText = buf;
 
 		// Continue title bar calculations from where the label text was
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - static_cast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::LossyCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
 	});
 
 	// Menu groups | A group button is twice the size of a slot
@@ -344,8 +344,8 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::Prototype
 
 		// Draw the window at the cursor
 		const ImVec2 cursor_pos(
-			static_cast<float>(game::MouseSelection::GetCursorX()),
-			static_cast<float>(game::MouseSelection::GetCursorY() + 2.f)
+			core::LossyCast<float>(game::MouseSelection::GetCursorX()),
+			core::LossyCast<float>(game::MouseSelection::GetCursorY() + 2.f)
 		);
 		ImGui::SetNextWindowPos(cursor_pos);
 
@@ -403,12 +403,12 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 
 	ImGui::SetNextWindowPos(
 		ImVec2(0,
-		       static_cast<float>(Renderer::GetWindowHeight()) - y_offset
+		       core::LossyCast<float>(Renderer::GetWindowHeight()) - y_offset
 		       - kGuiStyleWindowPaddingX));  // Use the x padding to keep it constant on x and y
 	ImGui::SetNextWindowSize(
 		ImVec2(
 			20 + 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding,
-			static_cast<float>(max_queue_height)));
+			core::LossyCast<float>(max_queue_height)));
 
 	// Window
 	ImGuard guard{};
@@ -451,8 +451,8 @@ void renderer::PickupProgressbar(game::PlayerData& player_data, const data::Prot
 	ImGui::SetNextWindowSize(ImVec2(progress_bar_width, progress_bar_height));
 	ImGui::SetNextWindowPos(
 		ImVec2(
-			static_cast<float>(Renderer::GetWindowWidth()) / 2 - (progress_bar_width / 2),  // Center X
-			static_cast<float>(Renderer::GetWindowHeight()) - progress_bar_height));  // TODO account for hotbar when implemented
+			core::LossyCast<float>(Renderer::GetWindowWidth()) / 2 - (progress_bar_width / 2),  // Center X
+			core::LossyCast<float>(Renderer::GetWindowHeight()) - progress_bar_height));  // TODO account for hotbar when implemented
 
 	// Window
 	ImGuard guard{};
@@ -598,7 +598,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 
 		// Progress
 		const auto original_cursor_y = ImGui::GetCursorPosY();
-		ImGui::SetCursorPosY(original_cursor_y + static_cast<float>(kGuiStyleTitlebarPaddingY) / 2);
+		ImGui::SetCursorPosY(original_cursor_y + core::LossyCast<float>(kGuiStyleTitlebarPaddingY) / 2);
 
 		const auto progress =
 			GetProgressBarFraction(

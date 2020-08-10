@@ -6,6 +6,7 @@
 #include <map>
 
 #include "core/logger.h"
+#include "core/math.h"
 #include "data/prototype_manager.h"
 
 using namespace jactorio;
@@ -125,7 +126,7 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap
 	// Convert nodes into image output
 
 
-	const auto spritemap_buffer_size = static_cast<uint64_t>(spritemap_x) * spritemap_y * 4;
+	const auto spritemap_buffer_size = core::SafeCast<uint64_t>(spritemap_x) * spritemap_y * 4;
 
 	std::shared_ptr<Texture::SpriteBufferT> spritemap_buffer(
 		new Texture::SpriteBufferT[spritemap_buffer_size],
@@ -144,11 +145,11 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap
 	for (auto& image : image_positions) {
 		auto& position = image.second;
 
-		position.topLeft.x /= static_cast<float>(spritemap_x);
-		position.topLeft.y /= static_cast<float>(spritemap_y);
+		position.topLeft.x /= core::LossyCast<float>(spritemap_x);
+		position.topLeft.y /= core::LossyCast<float>(spritemap_y);
 
-		position.bottomRight.x /= static_cast<float>(spritemap_x);
-		position.bottomRight.y /= static_cast<float>(spritemap_y);
+		position.bottomRight.x /= core::LossyCast<float>(spritemap_x);
+		position.bottomRight.y /= core::LossyCast<float>(spritemap_y);
 	}
 
 
@@ -259,9 +260,9 @@ uint64_t GetSpriteIndex(const bool invert_sprites,
                         const data::Sprite::SpriteDimension sprite_x,
                         const data::Sprite::SpriteDimension sprite_y, const uint8_t color_offset) {
 	if (invert_sprites)
-		return (static_cast<uint64_t>(sprite_width) * (sprite_height - 1 - sprite_y) + sprite_x) * 4 + color_offset;
+		return (core::SafeCast<uint64_t>(sprite_width) * (sprite_height - 1 - sprite_y) + sprite_x) * 4 + color_offset;
 
-	return (static_cast<uint64_t>(sprite_width) * sprite_y + sprite_x) * 4 + color_offset;
+	return (core::SafeCast<uint64_t>(sprite_width) * sprite_y + sprite_x) * 4 + color_offset;
 }
 
 uint64_t GetBufferIndex(const renderer::RendererSprites::SpritemapDimensionT spritemap_width,
@@ -380,14 +381,14 @@ void renderer::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture:
 
 			image_position.topLeft =
 				core::Position2{
-					static_cast<float>(adjusted_x_offset),
-					static_cast<float>(adjusted_y_offset)
+					core::LossyCast<float>(adjusted_x_offset),
+					core::LossyCast<float>(adjusted_y_offset)
 				};
 
 			image_position.bottomRight =
 				core::Position2{
-					static_cast<float>(adjusted_x_offset + sprite_width),
-					static_cast<float>(adjusted_y_offset + sprite_height)
+					core::LossyCast<float>(adjusted_x_offset + sprite_width),
+					core::LossyCast<float>(adjusted_y_offset + sprite_height)
 				};
 		}
 

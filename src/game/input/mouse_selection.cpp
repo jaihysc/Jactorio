@@ -88,7 +88,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 		OverlayElement element{
 			*selected_entity->OnRGetSprite(set),
 			{WorldData::ToOverlayCoord(world_x), WorldData::ToOverlayCoord(world_y)},
-			{static_cast<float>(selected_entity->tileWidth), static_cast<float>(selected_entity->tileHeight)},
+			{core::LossyCast<float>(selected_entity->tileWidth), core::LossyCast<float>(selected_entity->tileHeight)},
 			kCursorOverlayLayer
 		};
 

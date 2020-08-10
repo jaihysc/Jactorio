@@ -53,7 +53,7 @@ void jactorio::renderer::Texture::Bind(const unsigned int slot) const {
 	// Ensure there is sufficient slots to bind the texture
 	int texture_units;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
-	if (slot >= static_cast<unsigned int>(texture_units)) {
+	if (slot >= core::SafeCast<unsigned int>(texture_units)) {
 		LOG_MESSAGE_F(error,
 		              "Texture slot out of bounds, attempting to bind at index %d", slot);
 		throw RendererException("Texture slot out of bounds");

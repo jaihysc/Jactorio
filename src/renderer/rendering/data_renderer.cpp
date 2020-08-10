@@ -64,14 +64,14 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 			{
 				{
 					{
-						core::LossyCast<float>(pixel_offset.x + tile_x * static_cast<float>(renderer::Renderer::tileWidth)),
-						core::LossyCast<float>(pixel_offset.y + tile_y * static_cast<float>(renderer::Renderer::tileWidth)),
+						core::LossyCast<float>(pixel_offset.x + tile_x * core::LossyCast<float>(renderer::Renderer::tileWidth)),
+						core::LossyCast<float>(pixel_offset.y + tile_y * core::LossyCast<float>(renderer::Renderer::tileWidth)),
 					},
 					{
 						core::LossyCast<float>(pixel_offset.x +
-							static_cast<float>(tile_x + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth)),
+							core::LossyCast<float>(tile_x + kItemWidth) * core::LossyCast<float>(renderer::Renderer::tileWidth)),
 						core::LossyCast<float>(pixel_offset.y +
-							static_cast<float>(tile_y + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth)),
+							core::LossyCast<float>(tile_y + kItemWidth) * core::LossyCast<float>(renderer::Renderer::tileWidth)),
 					},
 				},
 				{uv_pos.topLeft, uv_pos.bottomRight}
@@ -319,7 +319,7 @@ void renderer::DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_c
 					uv.topLeft,
 					uv.bottomRight
 				}
-			}, kPixelZ, static_cast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset)
+			}, kPixelZ, core::LossyCast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset)
 		);
 	}
 
@@ -327,7 +327,7 @@ void renderer::DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_c
 	// Held item
 	if (inserter_data.status == data::InserterData::Status::dropoff) {
 		constexpr auto held_item_pixel_offset = 
-			static_cast<float>((Renderer::tileWidth - Renderer::tileWidth * game::kItemWidth) / 2);
+			core::LossyCast<float>((Renderer::tileWidth - Renderer::tileWidth * game::kItemWidth) / 2);
 
 		const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_data.heldItem.item->sprite->internalId);
 

@@ -15,8 +15,8 @@ void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::Prot
 	using namespace jactorio;
 
 	ImVec2 cursor_pos(
-		static_cast<float>(game::MouseSelection::GetCursorX()),
-		static_cast<float>(game::MouseSelection::GetCursorY() + 10.f)
+		core::LossyCast<float>(game::MouseSelection::GetCursorX()),
+		core::LossyCast<float>(game::MouseSelection::GetCursorY() + 10.f)
 	);
 	// If an item is currently selected, move the tooltip down to not overlap
 	if (player_data.GetSelectedItemStack())
@@ -85,7 +85,7 @@ void renderer::DrawSlots(const uint8_t slot_span, const std::size_t slot_count, 
 		ImGui::PopID();
 
 		if (x == slot_span - 1) {
-			y_offset += static_cast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding);
+			y_offset += core::LossyCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding);
 		}
 
 		++index;
@@ -96,7 +96,7 @@ void renderer::DrawSlots(const uint8_t slot_span, const std::size_t slot_count, 
 		ImGui::SetCursorPosY(y_offset);
 
 		if (ending_vertical_space < 0)
-			AddVerticalSpaceAbsolute(static_cast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
+			AddVerticalSpaceAbsolute(core::LossyCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
 		else
 			AddVerticalSpaceAbsolute(ending_vertical_space);
 	}
@@ -166,8 +166,8 @@ void renderer::DrawItemSlot(const MenuData& menu_data, const uint8_t scale, cons
 			ImGui::ImageButton(
 				reinterpret_cast<void*>(menu_data.texId),
 				ImVec2(
-					static_cast<float>(button_size),
-					static_cast<float>(button_size)
+					core::LossyCast<float>(button_size),
+					core::LossyCast<float>(button_size)
 				),
 				ImVec2(uv.topLeft.x, uv.topLeft.y),
 				ImVec2(uv.bottomRight.x, uv.bottomRight.y),
@@ -216,7 +216,7 @@ ImVec2 renderer::GetWindowSize() {
 		2 * kGuiStyleWindowPaddingY + 80);
 
 	window_size.x += 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
-	window_size.y += static_cast<unsigned int>(game::PlayerData::kDefaultInventorySize / 10) *
+	window_size.y += core::SafeCast<unsigned int>(game::PlayerData::kDefaultInventorySize / 10) *
 		(kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
 
 	return window_size;
@@ -224,8 +224,8 @@ ImVec2 renderer::GetWindowSize() {
 
 ImVec2 renderer::GetWindowCenter() {
 	return {
-		static_cast<float>(Renderer::GetWindowWidth()) / 2,
-		static_cast<float>(Renderer::GetWindowHeight()) / 2
+		core::LossyCast<float>(Renderer::GetWindowWidth()) / 2,
+		core::LossyCast<float>(Renderer::GetWindowHeight()) / 2
 	};
 }
 

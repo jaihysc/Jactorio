@@ -25,7 +25,7 @@ namespace jactorio::data
 
 #define KEY_DEF( identifier, name )  identifier
 
-	/// Supported languages, for the identifier string, use: language_identifier[static_cast<int>(language)]
+	/// Supported languages, for the identifier string, use: language_identifier[core::LossyCast<int>(language)]
 	enum class Language { KEYS_DEF };
 #undef KEY_DEF
 
