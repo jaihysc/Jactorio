@@ -178,7 +178,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 	// Do not register callback to mine items if there is no valid entity to output items to
 	if (initialized) {
 		drill_data->miningTicks =
-			core::LossyCast<uint16_t>(core::LossyCast<double>(kGameHertz) * drill_data->outputItem->entityPrototype->pickupTime);
+			core::LossyCast<uint16_t>(core::SafeCast<double>(kGameHertz) * drill_data->outputItem->entityPrototype->pickupTime);
 
 		const bool success = DeductResource(world_data, *drill_data);
 		assert(success);

@@ -44,7 +44,8 @@ void LogicLoop() {
 				game_data.logic.GameTickAdvance();
 				game_data.logic.deferralTimer.DeferralUpdate(game_data.world, game_data.logic.GameTick());
 
-				game_data.player.MouseCalculateSelectedTile();
+				// Retrieved mvp matrix may be invalid on startup
+				game_data.player.MouseCalculateSelectedTile(renderer::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
 
 				game_data.world.GenChunk(game_data.prototype);
 				game_data.input.mouse.DrawCursorOverlay(game_data.player, game_data.prototype);

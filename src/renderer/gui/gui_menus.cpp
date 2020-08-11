@@ -47,7 +47,7 @@ float GetProgressBarFraction(const GameTickT game_tick,
 	if (!entry.Valid())
 		return 0.f;
 
-	const auto ticks_left = core::LossyCast<long double>(entry.dueTick) - game_tick;
+	const auto ticks_left = core::SafeCast<long double>(entry.dueTick) - game_tick;
 	return 1.f - core::LossyCast<float>(ticks_left / total_ticks);
 }
 
@@ -119,11 +119,14 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 	renderer::DrawTitleBar(title, [&]() {
 		ImGui::SameLine();
 		// Shift above to center title text in middle of search bar
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::LossyCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::SafeCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
 
 		renderer::ImGuard title_guard{};
 		title_guard.PushStyleVar(ImGuiStyleVar_FramePadding,
-		                         {renderer::kGuiStyleWindowPaddingX, core::LossyCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2});
+		                         {
+			                         renderer::kGuiStyleWindowPaddingX,
+			                         core::SafeCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2
+		                         });
 
 		// Search text
 		// Make temporary buffer, copy std::string contents into, pass to imgui input, copy result back into std::string
@@ -141,7 +144,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 		player_data.recipeSearchText = buf;
 
 		// Continue title bar calculations from where the label text was
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::LossyCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::SafeCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
 	});
 
 	// Menu groups | A group button is twice the size of a slot
@@ -403,12 +406,12 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 
 	ImGui::SetNextWindowPos(
 		ImVec2(0,
-		       core::LossyCast<float>(Renderer::GetWindowHeight()) - y_offset
+		       core::SafeCast<float>(Renderer::GetWindowHeight()) - y_offset
 		       - kGuiStyleWindowPaddingX));  // Use the x padding to keep it constant on x and y
 	ImGui::SetNextWindowSize(
 		ImVec2(
 			20 + 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding,
-			core::LossyCast<float>(max_queue_height)));
+			core::SafeCast<float>(max_queue_height)));
 
 	// Window
 	ImGuard guard{};
@@ -451,8 +454,8 @@ void renderer::PickupProgressbar(game::PlayerData& player_data, const data::Prot
 	ImGui::SetNextWindowSize(ImVec2(progress_bar_width, progress_bar_height));
 	ImGui::SetNextWindowPos(
 		ImVec2(
-			core::LossyCast<float>(Renderer::GetWindowWidth()) / 2 - (progress_bar_width / 2),  // Center X
-			core::LossyCast<float>(Renderer::GetWindowHeight()) - progress_bar_height));  // TODO account for hotbar when implemented
+			core::SafeCast<float>(Renderer::GetWindowWidth()) / 2 - (progress_bar_width / 2),  // Center X
+			core::SafeCast<float>(Renderer::GetWindowHeight()) - progress_bar_height));  // TODO account for hotbar when implemented
 
 	// Window
 	ImGuard guard{};
@@ -523,7 +526,6 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 	assert(prototype);
 	assert(unique_data);
 
-	auto& world_data = player_data.GetPlayerWorldData();
 	auto& logic_data = player_data.GetPlayerLogicData();
 
 	const auto& machine_proto = *static_cast<const data::AssemblyMachine*>(prototype);
@@ -598,13 +600,13 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 
 		// Progress
 		const auto original_cursor_y = ImGui::GetCursorPosY();
-		ImGui::SetCursorPosY(original_cursor_y + core::LossyCast<float>(kGuiStyleTitlebarPaddingY) / 2);
+		ImGui::SetCursorPosY(original_cursor_y + core::SafeCast<float>(kGuiStyleTitlebarPaddingY) / 2);
 
 		const auto progress =
 			GetProgressBarFraction(
 				player_data.GetPlayerLogicData().GameTick(),
 				machine_data.deferralEntry,
-				core::LossyCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed))
+				core::SafeCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed))
 			);
 
 		ImGui::ProgressBar(progress, {window_size.x - 2 * kInventorySlotWidth, 0});

@@ -19,7 +19,6 @@
 
 #include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
-#include "renderer/rendering/mvp_manager.h"
 
 using namespace jactorio;
 
@@ -69,8 +68,8 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeMan
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	if (ImGui::CollapsingHeader("Rendering")) {
-		glm::vec3* view_translation = GetViewTransform();
-		ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
+		// glm::vec3* view_translation = GetViewTransform();
+		// ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
 
 		ImGui::Text("Layer count | Tile: %d", game::ChunkTile::kTileLayerCount);
 
@@ -297,15 +296,15 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 			object_layer.emplace_back(
 				game::OverlayElement{
 					*direction_sprite,
-					{core::LossyCast<float>(pos_x), core::LossyCast<float>(pos_y)},
-					{core::LossyCast<float>(segment_len_x), core::LossyCast<float>(segment_len_y)},
+					{core::SafeCast<float>(pos_x), core::SafeCast<float>(pos_y)},
+					{core::SafeCast<float>(segment_len_x), core::SafeCast<float>(segment_len_y)},
 					draw_overlay_layer
 				}
 			);
 			object_layer.emplace_back(
 				game::OverlayElement{*outline_sprite,
-					{core::LossyCast<float>(pos_x), core::LossyCast<float>(pos_y)},
-					{core::LossyCast<float>(segment_len_x), core::LossyCast<float>(segment_len_y)},
+					{core::SafeCast<float>(pos_x), core::SafeCast<float>(pos_y)},
+					{core::SafeCast<float>(segment_len_x), core::SafeCast<float>(segment_len_y)},
 					draw_overlay_layer
 				}
 			);

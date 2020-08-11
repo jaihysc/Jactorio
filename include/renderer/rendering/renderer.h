@@ -10,6 +10,7 @@
 
 #include "core/data_type.h"
 #include "game/world/chunk_tile_layer.h"
+#include "renderer/opengl/mvp_manager.h"
 #include "renderer/rendering/renderer_layer.h"
 #include "renderer/rendering/spritemap_generator.h"
 
@@ -59,6 +60,9 @@ namespace jactorio::renderer
 		// ======================================================================
 		// Rendering (Recalculated on window resize)
 
+		J_NODISCARD const MvpManager& GetMvpManager() const { return mvpManager_; }
+		J_NODISCARD MvpManager& GetMvpManager() { return mvpManager_; }
+
 		/// Changes zoom 
 		float tileProjectionMatrixOffset = 0;
 
@@ -73,15 +77,7 @@ namespace jactorio::renderer
 		/// \brief Faster non range checked get into spritemapCoords_
 		/// \remark Ensure key always exists
 		J_NODISCARD static const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(const SpriteUvCoordsT& map,
-		                                                                         const SpriteUvCoordsT::key_type key) noexcept {
-			try {
-				return const_cast<SpriteUvCoordsT&>(map)[key];
-			}
-			catch (std::exception&) {
-				assert(false);  // Should not throw
-				std::terminate();
-			}
-		}
+		                                                                         SpriteUvCoordsT::key_type key) noexcept;
 
 		J_NODISCARD const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(const SpriteUvCoordsT::key_type key) const noexcept {
 			return GetSpriteUvCoords(*spritemapCoords_, key);
@@ -122,19 +118,19 @@ namespace jactorio::renderer
 
 		///
 		/// \brief Number of tiles to draw to fill window dimensions
-		J_NODISCARD core::Position2<int> GetTileDrawAmount() noexcept;
+		J_NODISCARD core::Position2<int> GetTileDrawAmount() const noexcept;
 
 		///
 		/// \brief All tiles drawn will have its position added to tile offset
-		J_NODISCARD core::Position2<int> GetTileDrawOffset(int position_x, int position_y) noexcept;
+		J_NODISCARD core::Position2<int> GetTileDrawOffset(int position_x, int position_y) const noexcept;
 
 		///
 		/// \brief Top left chunk coordinates to begin drawing
-		J_NODISCARD core::Position2<int> GetChunkDrawStart(int position_x, int position_y) noexcept;
+		J_NODISCARD core::Position2<int> GetChunkDrawStart(int position_x, int position_y) const noexcept;
 
 		///
 		/// \brief Number of chunks to draw to fill window dimensions
-		J_NODISCARD core::Position2<int> GetChunkDrawAmount(int position_x, int position_y) noexcept;
+		J_NODISCARD core::Position2<int> GetChunkDrawAmount(int position_x, int position_y) const noexcept;
 
 
 		// Each chunk draw unit gets a renderer layer
@@ -182,6 +178,8 @@ namespace jactorio::renderer
 		void GlUpdateTileProjectionMatrix() noexcept;
 
 		// ======================================================================
+
+		MvpManager mvpManager_;
 
 		/// Internal ids to spritemap positions
 		const SpriteUvCoordsT* spritemapCoords_;

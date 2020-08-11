@@ -102,15 +102,15 @@ void data::Sprite::LoadImageFromFile() {
 
 
 UvPositionT data::Sprite::GetCoords(SetT set, FrameT frame) const {
-	float width_base  = core::LossyCast<float>(width_) / core::LossyCast<float>(frames);
-	float height_base = core::LossyCast<float>(height_) / core::LossyCast<float>(sets);
+	float width_base  = core::SafeCast<float>(width_) / core::SafeCast<float>(frames);
+	float height_base = core::SafeCast<float>(height_) / core::SafeCast<float>(sets);
 
 	// If inverted:
 	// Set   = X axis
 	// Frame = Y axis
 	if (invertSetFrame) {
-		width_base  = core::LossyCast<float>(width_) / core::LossyCast<float>(sets);
-		height_base = core::LossyCast<float>(height_) / core::LossyCast<float>(frames);
+		width_base  = core::SafeCast<float>(width_) / core::SafeCast<float>(sets);
+		height_base = core::SafeCast<float>(height_) / core::SafeCast<float>(frames);
 
 		AdjustSetFrame<false>(frame, set);
 
@@ -126,16 +126,16 @@ UvPositionT data::Sprite::GetCoords(SetT set, FrameT frame) const {
 
 	return {
 		{
-			(width_base * core::LossyCast<float>(frame) + core::LossyCast<float>(trim))
-			/ core::LossyCast<float>(width_),
-			(height_base * core::LossyCast<float>(set) + core::LossyCast<float>(trim))
-			/ core::LossyCast<float>(height_)
+			(width_base * core::SafeCast<float>(frame) + core::SafeCast<float>(trim))
+			/ core::SafeCast<float>(width_),
+			(height_base * core::SafeCast<float>(set) + core::SafeCast<float>(trim))
+			/ core::SafeCast<float>(height_)
 		},
 		{
-			(width_base * core::LossyCast<float>(frame + 1) - core::LossyCast<float>(trim))
-			/ core::LossyCast<float>(width_),
-			(height_base * core::LossyCast<float>(set + 1) - core::LossyCast<float>(trim))
-			/ core::LossyCast<float>(height_)
+			(width_base * core::SafeCast<float>(frame + 1) - core::SafeCast<float>(trim))
+			/ core::SafeCast<float>(width_),
+			(height_base * core::SafeCast<float>(set + 1) - core::SafeCast<float>(trim))
+			/ core::SafeCast<float>(height_)
 		}
 	};
 }

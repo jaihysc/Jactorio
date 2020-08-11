@@ -233,7 +233,7 @@ void renderer::DisplayWindow::HandleSdlEvent(const SDL_Event& sdl_event) const {
 		break;
 	case SDL_MOUSEWHEEL:
 		if (!input_mouse_captured)
-			GetBaseRenderer()->tileProjectionMatrixOffset += core::LossyCast<float>(sdl_event.wheel.y * 10);
+			GetBaseRenderer()->tileProjectionMatrixOffset += core::SafeCast<float>(sdl_event.wheel.y * 10);
 		break;
 	case SDL_MOUSEBUTTONUP:
 	case SDL_MOUSEBUTTONDOWN:

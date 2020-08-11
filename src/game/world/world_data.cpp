@@ -41,7 +41,7 @@ OverlayOffsetAxis game::WorldData::ToOverlayCoord(const WorldCoordAxis world_coo
 		val = world_coord % kChunkWidth;
 	}
 
-	return core::LossyCast<float>(val);
+	return core::SafeCast<OverlayOffsetAxis>(val);
 }
 
 game::Chunk* game::WorldData::AddChunk(const Chunk& chunk) {
@@ -129,8 +129,8 @@ const game::ChunkTile* game::WorldData::GetTile(WorldCoordAxis world_x, WorldCoo
 		world_y += 1;
 	}
 
-	chunk_index_x += core::LossyCast<float>(world_x) / Chunk::kChunkWidth;
-	chunk_index_y += core::LossyCast<float>(world_y) / Chunk::kChunkWidth;
+	chunk_index_x += core::SafeCast<float>(world_x) / Chunk::kChunkWidth;
+	chunk_index_y += core::SafeCast<float>(world_y) / Chunk::kChunkWidth;
 
 
 	const auto* chunk = GetChunkC(core::LossyCast<int>(chunk_index_x), core::LossyCast<int>(chunk_index_y));

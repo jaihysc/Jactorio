@@ -4,7 +4,6 @@
 
 #include "jactorio.h"
 #include "data/prototype/type.h"
-#include "data/prototype/entity/transport_line.h"
 #include "game/logic/transport_line_controller.h"
 #include "renderer/rendering/renderer.h"
 
@@ -44,6 +43,7 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 
 	default:
 		assert(false);  // Missing switch case
+		target_offset = &tile_y;
 		break;
 	}
 
@@ -64,14 +64,14 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 			{
 				{
 					{
-						core::LossyCast<float>(pixel_offset.x + tile_x * core::LossyCast<float>(renderer::Renderer::tileWidth)),
-						core::LossyCast<float>(pixel_offset.y + tile_y * core::LossyCast<float>(renderer::Renderer::tileWidth)),
+						core::LossyCast<float>(pixel_offset.x + tile_x * core::SafeCast<float>(renderer::Renderer::tileWidth)),
+						core::LossyCast<float>(pixel_offset.y + tile_y * core::SafeCast<float>(renderer::Renderer::tileWidth)),
 					},
 					{
 						core::LossyCast<float>(pixel_offset.x +
-							core::LossyCast<float>(tile_x + kItemWidth) * core::LossyCast<float>(renderer::Renderer::tileWidth)),
+							core::LossyCast<float>(tile_x + kItemWidth) * core::SafeCast<float>(renderer::Renderer::tileWidth)),
 						core::LossyCast<float>(pixel_offset.y +
-							core::LossyCast<float>(tile_y + kItemWidth) * core::LossyCast<float>(renderer::Renderer::tileWidth)),
+							core::LossyCast<float>(tile_y + kItemWidth) * core::SafeCast<float>(renderer::Renderer::tileWidth)),
 					},
 				},
 				{uv_pos.topLeft, uv_pos.bottomRight}

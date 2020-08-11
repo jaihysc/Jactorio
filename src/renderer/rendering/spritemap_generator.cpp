@@ -145,11 +145,11 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap
 	for (auto& image : image_positions) {
 		auto& position = image.second;
 
-		position.topLeft.x /= core::LossyCast<float>(spritemap_x);
-		position.topLeft.y /= core::LossyCast<float>(spritemap_y);
+		position.topLeft.x /= core::SafeCast<float>(spritemap_x);
+		position.topLeft.y /= core::SafeCast<float>(spritemap_y);
 
-		position.bottomRight.x /= core::LossyCast<float>(spritemap_x);
-		position.bottomRight.y /= core::LossyCast<float>(spritemap_y);
+		position.bottomRight.x /= core::SafeCast<float>(spritemap_x);
+		position.bottomRight.y /= core::SafeCast<float>(spritemap_y);
 	}
 
 
@@ -381,14 +381,14 @@ void renderer::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture:
 
 			image_position.topLeft =
 				core::Position2{
-					core::LossyCast<float>(adjusted_x_offset),
-					core::LossyCast<float>(adjusted_y_offset)
+					core::SafeCast<float>(adjusted_x_offset),
+					core::SafeCast<float>(adjusted_y_offset)
 				};
 
 			image_position.bottomRight =
 				core::Position2{
-					core::LossyCast<float>(adjusted_x_offset + sprite_width),
-					core::LossyCast<float>(adjusted_y_offset + sprite_height)
+					core::SafeCast<float>(adjusted_x_offset + sprite_width),
+					core::SafeCast<float>(adjusted_y_offset + sprite_height)
 				};
 		}
 

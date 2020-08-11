@@ -74,7 +74,7 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 					// |   |   |   |
 					// 3   2   1   0
 					// targetOffset of 0: Length is 1
-					length = core::LossyCast<double>(1) + segment.targetInsertOffset;
+					length = core::SafeCast<double>(1) + segment.targetInsertOffset;
 					break;
 
 				default:

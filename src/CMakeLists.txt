@@ -67,8 +67,8 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/renderer/opengl/error.cpp
 	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
+	${JACTORIO_DIR}/renderer/opengl/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/opengl/shader.cpp
-	${JACTORIO_DIR}/renderer/opengl/shader_manager.cpp
 	${JACTORIO_DIR}/renderer/opengl/texture.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
 	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
@@ -77,7 +77,6 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/renderer/render_loop.cpp
 
 	${JACTORIO_DIR}/renderer/rendering/data_renderer.cpp
-	${JACTORIO_DIR}/renderer/rendering/mvp_manager.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
 	${JACTORIO_DIR}/renderer/rendering/renderer_layer.cpp
 	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp

@@ -15,18 +15,19 @@
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"
 #include "game/world/world_data.h"
-#include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
 
 using namespace jactorio;
 
-void game::PlayerData::MouseCalculateSelectedTile() {
+void game::PlayerData::MouseCalculateSelectedTile(const glm::mat4& mvp_matrix) {
+	const auto truncated_player_pos_x = core::SafeCast<float>(core::LossyCast<int>(playerPositionX_));
+	const auto truncated_player_pos_y = core::SafeCast<float>(core::LossyCast<int>(playerPositionY_));
+
 	float pixels_from_center_x;
 	float pixels_from_center_y;
 	{
 		const auto window_width  = renderer::Renderer::GetWindowWidth();
 		const auto window_height = renderer::Renderer::GetWindowHeight();
-		const auto& matrix       = renderer::GetMvpMatrix();
 
 		// Account for MVP matrices
 		// Normalize to -1 | 1 used by the matrix
@@ -34,7 +35,7 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 		const double norm_y = 2 * (MouseSelection::GetCursorY() / window_height) - 1;
 
 		// A = C / B
-		const glm::vec4 norm_positions = matrix / glm::vec4(norm_x, norm_y, 1, 1);
+		const glm::vec4 norm_positions = mvp_matrix / glm::vec4(norm_x, norm_y, 1, 1);
 
 
 		float mouse_x_center;
@@ -42,11 +43,11 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 		{
 			// Calculate the center tile on screen
 			// Calculate number of pixels from center
-			const double win_center_norm_x = 2 * (core::LossyCast<double>(window_width) / 2 / window_width) - 1;
-			const double win_center_norm_y = 2 * (core::LossyCast<double>(window_height) / 2 / window_height) - 1;
+			const double win_center_norm_x = 2 * (core::SafeCast<double>(window_width) / 2 / window_width) - 1;
+			const double win_center_norm_y = 2 * (core::SafeCast<double>(window_height) / 2 / window_height) - 1;
 
 			const glm::vec4 win_center_norm_positions =
-				matrix / glm::vec4(win_center_norm_x, win_center_norm_y, 1, 1);
+				mvp_matrix / glm::vec4(win_center_norm_x, win_center_norm_y, 1, 1);
 
 			mouse_x_center = win_center_norm_positions.x;
 			mouse_y_center = win_center_norm_positions.y;
@@ -54,13 +55,11 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 
 		// If player is standing on a partial tile, adjust the center accordingly to the correct location
 		mouse_x_center -=
-			core::LossyCast<float>(renderer::Renderer::tileWidth) *
-			(playerPositionX_ - core::LossyCast<float>(core::LossyCast<int>(playerPositionX_)));
+			core::SafeCast<float>(renderer::Renderer::tileWidth) * (playerPositionX_ - truncated_player_pos_x);
 
 		// This is plus since the y axis is inverted
 		mouse_y_center +=
-			core::LossyCast<float>(renderer::Renderer::tileWidth) *
-			(playerPositionY_ - core::LossyCast<float>(core::LossyCast<int>(playerPositionY_)));
+			core::SafeCast<float>(renderer::Renderer::tileWidth) * (playerPositionY_ - truncated_player_pos_y);
 
 
 		pixels_from_center_x = norm_positions.x - mouse_x_center;
@@ -68,11 +67,9 @@ void game::PlayerData::MouseCalculateSelectedTile() {
 	}
 
 	// Calculate tile position based on current player position
-	float tile_x = core::LossyCast<float>(core::LossyCast<int>(playerPositionX_)) +
-		pixels_from_center_x / core::LossyCast<float>(renderer::Renderer::tileWidth);
+	float tile_x = truncated_player_pos_x + pixels_from_center_x / core::LossyCast<float>(renderer::Renderer::tileWidth);
 
-	float tile_y = core::LossyCast<float>(core::LossyCast<int>(playerPositionY_)) +
-		pixels_from_center_y / core::LossyCast<float>(renderer::Renderer::tileWidth);
+	float tile_y = truncated_player_pos_y + pixels_from_center_y / core::LossyCast<float>(renderer::Renderer::tileWidth);
 
 	// Subtract extra tile if negative because no tile exists at -0, -0
 	if (tile_x < 0)
@@ -420,7 +417,7 @@ float game::PlayerData::GetPickupPercentage() const {
 	if (lastSelectedPtr_ == nullptr)  // Not initialized yet
 		return 0.f;
 
-	return core::LossyCast<float>(pickupTickCounter_) / core::LossyCast<float>(pickupTickTarget_);
+	return core::SafeCast<float>(pickupTickCounter_) / core::SafeCast<float>(pickupTickTarget_);
 }
 
 // ============================================================================================

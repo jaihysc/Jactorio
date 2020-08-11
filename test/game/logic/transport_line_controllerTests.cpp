@@ -454,7 +454,7 @@ namespace jactorio::game
 		right_segment->AppendItem(true, 0.f, itemProto_);  // Insert behind previous item
 
 		// Check that second item has a minimum distance of kItemSpacing
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.f);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.);
 		EXPECT_DOUBLE_EQ(right_segment->left.lane[1].first.getAsDouble(), kItemSpacing);
 	}
 

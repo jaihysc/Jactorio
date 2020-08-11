@@ -85,7 +85,7 @@ void renderer::DrawSlots(const uint8_t slot_span, const std::size_t slot_count, 
 		ImGui::PopID();
 
 		if (x == slot_span - 1) {
-			y_offset += core::LossyCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding);
+			y_offset += core::SafeCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding);
 		}
 
 		++index;
@@ -96,7 +96,7 @@ void renderer::DrawSlots(const uint8_t slot_span, const std::size_t slot_count, 
 		ImGui::SetCursorPosY(y_offset);
 
 		if (ending_vertical_space < 0)
-			AddVerticalSpaceAbsolute(core::LossyCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
+			AddVerticalSpaceAbsolute(core::SafeCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
 		else
 			AddVerticalSpaceAbsolute(ending_vertical_space);
 	}
@@ -166,8 +166,8 @@ void renderer::DrawItemSlot(const MenuData& menu_data, const uint8_t scale, cons
 			ImGui::ImageButton(
 				reinterpret_cast<void*>(menu_data.texId),
 				ImVec2(
-					core::LossyCast<float>(button_size),
-					core::LossyCast<float>(button_size)
+					core::SafeCast<float>(button_size),
+					core::SafeCast<float>(button_size)
 				),
 				ImVec2(uv.topLeft.x, uv.topLeft.y),
 				ImVec2(uv.bottomRight.x, uv.bottomRight.y),
@@ -224,8 +224,8 @@ ImVec2 renderer::GetWindowSize() {
 
 ImVec2 renderer::GetWindowCenter() {
 	return {
-		core::LossyCast<float>(Renderer::GetWindowWidth()) / 2,
-		core::LossyCast<float>(Renderer::GetWindowHeight()) / 2
+		core::SafeCast<float>(Renderer::GetWindowWidth()) / 2,
+		core::SafeCast<float>(Renderer::GetWindowHeight()) / 2
 	};
 }
 

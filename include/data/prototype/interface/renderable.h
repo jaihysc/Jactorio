@@ -104,7 +104,10 @@ namespace jactorio::data
 		                                  const AnimationSpeed speed = 1) {
 			assert(speed > 0);
 
-			return core::LossyCast<GameTickT>(speed * game_tick) % (static_cast<uint64_t>(sprite.frames) * sprite.sets);
+			const auto frame = 
+				core::LossyCast<GameTickT>(speed * game_tick) % (core::SafeCast<uint64_t>(sprite.frames) * sprite.sets);
+
+			return core::SafeCast<Sprite::FrameT>(frame);
 		}
 
 		///
@@ -139,7 +142,8 @@ namespace jactorio::data
 		                               const GameTickT game_tick,
 		                               const AnimationSpeed speed = 1) {
 			assert(speed > 0);
-			return core::LossyCast<GameTickT>(speed * game_tick) % sprite.frames;
+			const auto frame = core::LossyCast<GameTickT>(speed * game_tick) % sprite.frames;
+			return core::SafeCast<Sprite::FrameT>(frame);
 		}
 	};
 }

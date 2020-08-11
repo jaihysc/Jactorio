@@ -4,14 +4,12 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_LOOP_H
 #pragma once
 
-#include <atomic>
-
 namespace jactorio::game
 {
 	void InitLogicLoop();
 
-	inline bool logic_thread_should_exit                = false;
-	inline std::atomic<bool> prototype_loading_complete = false;
+	inline bool logic_thread_should_exit   = false;
+	inline volatile bool prototype_loading_complete = false;
 }
 
 #endif //JACTORIO_INCLUDE_GAME_LOGIC_LOOP_H
