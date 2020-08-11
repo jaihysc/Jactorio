@@ -5,6 +5,7 @@
 #pragma once
 
 #include <queue>
+#include <glm/glm.hpp>
 
 #include "data/prototype/interface/rotatable.h"
 #include "data/prototype/item/item.h"
@@ -33,7 +34,7 @@ namespace jactorio::game
 		///
 		/// \brief Call on game tick to calculate the coordinates of mouse selected tile
 		/// Cached in mouse_selected_tile_
-		void MouseCalculateSelectedTile();
+		void MouseCalculateSelectedTile(const glm::mat4& mvp_matrix);
 
 		///
 		/// Gets the world X, Y of the tile the mouse is hovered over, computed by calculate_selected_tile(x, y)
@@ -197,7 +198,7 @@ namespace jactorio::game
 		/// \param mouse_button Mouse button pressed; 0 - Left, 1 - Right
 		/// \param allow_reference_select If true, left clicking will select the item by reference
 		void InventoryClick(const data::PrototypeManager& data_manager,
-		                    unsigned short index, unsigned short mouse_button, bool allow_reference_select,
+		                    uint16_t index, uint16_t mouse_button, bool allow_reference_select,
 		                    data::Item::Inventory& inv);
 
 		///

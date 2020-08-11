@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include "jactorioTests.h"
+
 #include "data/prototype/entity/transport_belt.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_segment.h"
@@ -134,16 +136,16 @@ namespace jactorio::game
 
 		// Offset is from the beginning of the transport line OR the previous item if it exists
 		line_segment->AppendItem(true, 1.3, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.3);
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.3);
 
 		line_segment->AppendItem(true, 1.2, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 1.2);
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 1.2);
 
 		line_segment->AppendItem(true, 1.5, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 1.5);
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 1.5);
 
 		line_segment->AppendItem(true, 0.5, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 0.5);
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 0.5);
 	}
 
 	TEST_F(TransportSegmentTest, AppendItemFirstItem) {
@@ -157,13 +159,13 @@ namespace jactorio::game
 		);
 
 		line_segment->AppendItem(true, 0, *itemProto_);  // Ok, Offset can be 0, is first item
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0);
 
 		line_segment->AppendItem(true, 0, *itemProto_);  // Not ok, offset changed to kItemSpacing
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), jactorio::game::kItemSpacing);
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), jactorio::game::kItemSpacing);
 
 		line_segment->AppendItem(true, 0, *itemProto_);  // Not ok, offset changed to kItemSpacing
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
 	}
 
 	TEST_F(TransportSegmentTest, InsertItem) {
@@ -178,30 +180,30 @@ namespace jactorio::game
 		// Offset is ALWAYS from the beginning of the transport line
 
 		line_segment->InsertItem(true, 1.2, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);  // < 1.2
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);  // < 1.2
 
 		// Should be sorted by items closest to the end of the segment
 		line_segment->InsertItem(true, 2.5, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);  // 1.2
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 1.3);  // < 2.5
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);  // 1.2
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 1.3);  // < 2.5
 
 		line_segment->InsertItem(true, 0.5, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.5);  // < 0.5
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.7);  // 1.2
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 1.3);  // 2.5
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.5);  // < 0.5
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.7);  // 1.2
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 1.3);  // 2.5
 
 		line_segment->InsertItem(true, 0.1, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.1);  // < 0.1
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.4);  // 0.5
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 0.7);  // 1.2
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 1.3);  // 2.5
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.1);  // < 0.1
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.4);  // 0.5
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 0.7);  // 1.2
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 1.3);  // 2.5
 
 		line_segment->InsertItem(true, 1.8, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.1);  // 0.1
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.4);  // 0.5
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 0.7);  // 1.2
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 0.6);  // < 1.8
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[4].first.getAsDouble(), 0.7);  // 2.5
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.1);  // 0.1
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.4);  // 0.5
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].first.getAsDouble(), 0.7);  // 1.2
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[3].first.getAsDouble(), 0.6);  // < 1.8
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[4].first.getAsDouble(), 0.7);  // 2.5
 	}
 
 	TEST_F(TransportSegmentTest, InsertItemAbs) {
@@ -215,11 +217,11 @@ namespace jactorio::game
 		// Offset is ALWAYS from the beginning of the transport line + itemOffset
 
 		line_segment->InsertItemAbs(true, 1.2, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 3.2);
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 3.2);
 
 		line_segment->InsertItemAbs(true, 1.5, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 3.2);
-		EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.3);  // 1.5
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 3.2);
+		EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.3);  // 1.5
 	}
 
 	TEST_F(TransportSegmentTest, TryInsertItem) {
@@ -234,7 +236,7 @@ namespace jactorio::game
 		{
 			const bool result = line_segment->TryInsertItem(true, 1.2, *itemProto_);
 			ASSERT_TRUE(result);
-			EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);
+			EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 1.2);
 		}
 		{
 			// Too close
@@ -249,8 +251,8 @@ namespace jactorio::game
 		{
 			const bool result = line_segment->TryInsertItem(true, 0.5, *itemProto_);
 			ASSERT_TRUE(result);
-			EXPECT_FLOAT_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.5);
-			EXPECT_FLOAT_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.7);  // 1.2
+			EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].first.getAsDouble(), 0.5);
+			EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].first.getAsDouble(), 0.7);  // 1.2
 		}
 
 		EXPECT_EQ(line_segment->left.index, 0);
@@ -264,27 +266,27 @@ namespace jactorio::game
 			5
 		);
 
-		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 0.f);
+		EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 0);
 
 
 		// Appending
 		line_segment->AppendItem(true, 1.2, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 1.2f);
+		EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 1.2);
 
 		line_segment->AppendItem(true, 3, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 4.2f);
+		EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 4.2);
 
 		line_segment->AppendItem(true, 1.8, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 6.f);
+		EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 6);
 
 		// Inserting (Starting at 6.f)
 		line_segment->InsertItem(true, 7, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 7.f);
+		EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 7);
 
 		line_segment->InsertItem(true, 2, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 7.f);  // Unchanged
+		EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 7);  // Unchanged
 
-		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 0.f);
+		EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 0);
 	}
 
 	TEST_F(TransportSegmentTest, BackItemDistanceRight) {
@@ -295,27 +297,27 @@ namespace jactorio::game
 			5
 		);
 
-		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 0.f);
+		EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 0.f);
 
 
 		// Appending
 		line_segment->AppendItem(false, 1.2, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 1.2f);
+		EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 1.2);
 
 		line_segment->AppendItem(false, 3, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 4.2f);
+		EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 4.2);
 
 		line_segment->AppendItem(false, 1.8, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 6.f);
+		EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 6);
 
 		// Inserting (Starting at 6.f)
 		line_segment->InsertItem(false, 7, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 7.f);
+		EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 7);
 
 		line_segment->InsertItem(false, 2, *itemProto_);
-		EXPECT_FLOAT_EQ(line_segment->right.backItemDistance.getAsDouble(), 7.f);  // Unchanged
+		EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 7);  // Unchanged
 
-		EXPECT_FLOAT_EQ(line_segment->left.backItemDistance.getAsDouble(), 0.f);
+		EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 0);
 	}
 
 	TEST_F(TransportSegmentTest, GetOffsetAbs) {
@@ -324,14 +326,14 @@ namespace jactorio::game
 
 			TransportSegment::FloatOffsetT o = 3;
 			segment_->GetOffsetAbs(o);
-			EXPECT_FLOAT_EQ(o, 3.f);
+			EXPECT_DOUBLE_EQ(o, 3.);
 		}
 		{
 			segment_->itemOffset = 3;
 
 			TransportSegment::FloatOffsetT o = 3;
 			segment_->GetOffsetAbs(o);
-			EXPECT_FLOAT_EQ(o, 0.f);
+			EXPECT_DOUBLE_EQ(o, 0.);
 		}
 
 		{
@@ -339,7 +341,7 @@ namespace jactorio::game
 
 			TransportSegment::IntOffsetT o = 3;
 			segment_->GetOffsetAbs(o);
-			EXPECT_FLOAT_EQ(o, 5.f);
+			EXPECT_DOUBLE_EQ(o, 5.);
 		}
 	}
 
@@ -379,6 +381,6 @@ namespace jactorio::game
 		ASSERT_EQ(segment_->left.lane.size(), 2);
 
 		// Should preserve spacing
-		EXPECT_FLOAT_EQ(segment_->left.lane[1].first.getAsDouble(), 1.7);
+		EXPECT_DOUBLE_EQ(segment_->left.lane[1].first.getAsDouble(), 1.7);
 	}
 }

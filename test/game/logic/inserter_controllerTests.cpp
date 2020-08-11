@@ -63,23 +63,23 @@ namespace jactorio::game
 	};
 
 	TEST_F(InserterControllerTest, GetInserterArmOffset) {
-		EXPECT_FLOAT_EQ(GetInserterArmOffset(20, 1), 0.063235718);
-		EXPECT_FLOAT_EQ(GetInserterArmOffset(160, 1), 0.936764281);
+		EXPECT_NEAR(GetInserterArmOffset(20, 1), 0.063235718, kFloatingAbsErr);
+		EXPECT_NEAR(GetInserterArmOffset(160, 1), 0.936764281, kFloatingAbsErr);
 
-		EXPECT_FLOAT_EQ(GetInserterArmOffset(160, 2), 1.300734515);
+		EXPECT_NEAR(GetInserterArmOffset(160, 2), 1.300734515, kFloatingAbsErr);
 
-		EXPECT_FLOAT_EQ(GetInserterArmOffset(180, 1), 0.5);
-		EXPECT_FLOAT_EQ(GetInserterArmOffset(180, 2), 0.5);
+		EXPECT_NEAR(GetInserterArmOffset(180, 1), 0.5, kFloatingAbsErr);
+		EXPECT_NEAR(GetInserterArmOffset(180, 2), 0.5, kFloatingAbsErr);
 	}
 
 	TEST_F(InserterControllerTest, GetInserterArmLength) {
-		EXPECT_FLOAT_EQ(GetInserterArmLength(20, 1), -1.277013327);
-		EXPECT_FLOAT_EQ(GetInserterArmLength(160, 1), 1.277013327);
+		EXPECT_NEAR(GetInserterArmLength(20, 1), -1.277013327, kFloatingAbsErr);
+		EXPECT_NEAR(GetInserterArmLength(160, 1), 1.277013327, kFloatingAbsErr);
 
-		EXPECT_FLOAT_EQ(GetInserterArmLength(160, 2), 2.341191099);
+		EXPECT_NEAR(GetInserterArmLength(160, 2), 2.341191099, kFloatingAbsErr);
 
-		EXPECT_FLOAT_EQ(GetInserterArmLength(180, 1), 1.2);
-		EXPECT_FLOAT_EQ(GetInserterArmLength(180, 2), 2.2);
+		EXPECT_NEAR(GetInserterArmLength(180, 1), 1.2, kFloatingAbsErr);
+		EXPECT_NEAR(GetInserterArmLength(180, 2), 2.2, kFloatingAbsErr);
 	}
 
 	TEST_F(InserterControllerTest, RotateToDropoffAndBack) {
@@ -103,7 +103,7 @@ namespace jactorio::game
 		}
 		EXPECT_EQ(dropoff->inventory[0].count, 11);
 		EXPECT_EQ(inserter_data->status, data::InserterData::Status::pickup);
-		EXPECT_FLOAT_EQ(inserter_data->rotationDegree.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(inserter_data->rotationDegree.getAsDouble(), 0);
 
 
 		// Return to pickup location after 86 updates, pick up item, set status to dropoff

@@ -6,6 +6,7 @@
 #include <map>
 
 #include "core/logger.h"
+#include "core/math.h"
 #include "data/prototype_manager.h"
 
 using namespace jactorio;
@@ -89,8 +90,8 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap
 
 	// ======================================================================
 
-	SpritemapDimension spritemap_x;
-	SpritemapDimension spritemap_y;
+	SpritemapDimensionT spritemap_x;
+	SpritemapDimensionT spritemap_y;
 
 	std::vector<GeneratorNode*> node_buffer;
 	core::CapturingGuard<void()> guard([&]() {
@@ -105,7 +106,7 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap
 
 
 		// Generate "nodes" of each sprite and its neighbors
-		constexpr SpritemapDimension max_width = 99999;
+		constexpr SpritemapDimensionT max_width = 99999;
 
 		// sorted_sprites is empty after generating nodes
 		spritemap_y = GetSpriteHeight(sorted_sprites[0]);
@@ -125,7 +126,7 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap
 	// Convert nodes into image output
 
 
-	const auto spritemap_buffer_size = static_cast<uint64_t>(spritemap_x) * spritemap_y * 4;
+	const auto spritemap_buffer_size = core::SafeCast<uint64_t>(spritemap_x) * spritemap_y * 4;
 
 	std::shared_ptr<Texture::SpriteBufferT> spritemap_buffer(
 		new Texture::SpriteBufferT[spritemap_buffer_size],
@@ -144,11 +145,11 @@ renderer::RendererSprites::SpritemapData renderer::RendererSprites::GenSpritemap
 	for (auto& image : image_positions) {
 		auto& position = image.second;
 
-		position.topLeft.x /= static_cast<float>(spritemap_x);
-		position.topLeft.y /= static_cast<float>(spritemap_y);
+		position.topLeft.x /= core::SafeCast<float>(spritemap_x);
+		position.topLeft.y /= core::SafeCast<float>(spritemap_y);
 
-		position.bottomRight.x /= static_cast<float>(spritemap_x);
-		position.bottomRight.y /= static_cast<float>(spritemap_y);
+		position.bottomRight.x /= core::SafeCast<float>(spritemap_x);
+		position.bottomRight.y /= core::SafeCast<float>(spritemap_y);
 	}
 
 
@@ -187,7 +188,7 @@ void renderer::RendererSprites::SortInputSprites(std::vector<const data::Sprite*
 void renderer::RendererSprites::GenerateSpritemapNodes(std::vector<const data::Sprite*>& sprites,
                                                        std::vector<GeneratorNode*>& node_buffer,
                                                        GeneratorNode& parent_node,
-                                                       SpritemapDimension max_width, const SpritemapDimension max_height) {
+                                                       SpritemapDimensionT max_width, const SpritemapDimensionT max_height) {
 	GeneratorNode* current_node = &parent_node;
 
 	while (!sprites.empty()) {
@@ -234,9 +235,9 @@ void renderer::RendererSprites::GenerateSpritemapNodes(std::vector<const data::S
 	}
 }
 
-renderer::RendererSprites::SpritemapDimension renderer::RendererSprites::GetSpritemapWidth(GeneratorNode& base_node) {
+renderer::RendererSprites::SpritemapDimensionT renderer::RendererSprites::GetSpritemapWidth(GeneratorNode& base_node) {
 	// Added to width of each sprite
-	SpritemapDimension width    = 0;
+	SpritemapDimensionT width    = 0;
 	GeneratorNode* current_node = &base_node;
 
 	while (true) {
@@ -259,14 +260,14 @@ uint64_t GetSpriteIndex(const bool invert_sprites,
                         const data::Sprite::SpriteDimension sprite_x,
                         const data::Sprite::SpriteDimension sprite_y, const uint8_t color_offset) {
 	if (invert_sprites)
-		return (static_cast<uint64_t>(sprite_width) * (sprite_height - 1 - sprite_y) + sprite_x) * 4 + color_offset;
+		return (core::SafeCast<uint64_t>(sprite_width) * (sprite_height - 1 - sprite_y) + sprite_x) * 4 + color_offset;
 
-	return (static_cast<uint64_t>(sprite_width) * sprite_y + sprite_x) * 4 + color_offset;
+	return (core::SafeCast<uint64_t>(sprite_width) * sprite_y + sprite_x) * 4 + color_offset;
 }
 
-uint64_t GetBufferIndex(const renderer::RendererSprites::SpritemapDimension spritemap_width,
-                        const renderer::RendererSprites::SpritemapDimension spritemap_x_offset,
-                        const renderer::RendererSprites::SpritemapDimension spritemap_y_offset,
+uint64_t GetBufferIndex(const renderer::RendererSprites::SpritemapDimensionT spritemap_width,
+                        const renderer::RendererSprites::SpritemapDimensionT spritemap_x_offset,
+                        const renderer::RendererSprites::SpritemapDimensionT spritemap_y_offset,
                         const data::Sprite::SpriteDimension pixel_x,
                         const data::Sprite::SpriteDimension pixel_y,
                         const uint8_t color_offset) {
@@ -277,10 +278,10 @@ uint64_t GetBufferIndex(const renderer::RendererSprites::SpritemapDimension spri
 }
 
 void renderer::RendererSprites::SetSpritemapPixel(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
-                                                  const SpritemapDimension spritemap_width,
+                                                  const SpritemapDimensionT spritemap_width,
                                                   const bool invert_sprites,
-                                                  const SpritemapDimension spritemap_x_offset,
-                                                  const SpritemapDimension spritemap_y_offset,
+                                                  const SpritemapDimensionT spritemap_x_offset,
+                                                  const SpritemapDimensionT spritemap_y_offset,
                                                   const unsigned char* sprite_data,
                                                   const data::Sprite::SpriteDimension sprite_width,
                                                   const data::Sprite::SpriteDimension sprite_height,
@@ -303,11 +304,11 @@ void renderer::RendererSprites::SetSpritemapPixel(std::shared_ptr<Texture::Sprit
 }
 
 void renderer::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
-                                                        const SpritemapDimension spritemap_width,
+                                                        const SpritemapDimensionT spritemap_width,
                                                         GeneratorNode& base_node,
                                                         const bool invert_sprites,
 														SpriteUvCoordsT& image_positions,
-                                                        SpritemapDimension x_offset, const SpritemapDimension y_offset) {
+                                                        SpritemapDimensionT x_offset, const SpritemapDimensionT y_offset) {
 	auto adjusted_x_offset = x_offset;
 	auto adjusted_y_offset = y_offset;
 
@@ -380,14 +381,14 @@ void renderer::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture:
 
 			image_position.topLeft =
 				core::Position2{
-					static_cast<float>(adjusted_x_offset),
-					static_cast<float>(adjusted_y_offset)
+					core::SafeCast<float>(adjusted_x_offset),
+					core::SafeCast<float>(adjusted_y_offset)
 				};
 
 			image_position.bottomRight =
 				core::Position2{
-					static_cast<float>(adjusted_x_offset + sprite_width),
-					static_cast<float>(adjusted_y_offset + sprite_height)
+					core::SafeCast<float>(adjusted_x_offset + sprite_width),
+					core::SafeCast<float>(adjusted_y_offset + sprite_height)
 				};
 		}
 

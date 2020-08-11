@@ -190,7 +190,7 @@ namespace jactorio::game
 
 		TransportLineInsert(data::Orientation::up, line_data);
 		ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
-		EXPECT_FLOAT_EQ(line_data.lineSegment->right.lane[0].first.getAsDouble(), 1.5f);
+		EXPECT_DOUBLE_EQ(line_data.lineSegment->right.lane[0].first.getAsDouble(), 1.5f);
 	}
 
 	TEST_F(ItemDropOffTest, InsertTransportLineUp) {
@@ -324,7 +324,7 @@ namespace jactorio::game
 
 		TransportLineInsert(data::Orientation::up, left);
 		ASSERT_EQ(left.lineSegment->left.lane.size(), 1);
-		EXPECT_FLOAT_EQ(left.lineSegment->left.lane[0].first.getAsDouble(), 0.5 + 0.7);
+		EXPECT_DOUBLE_EQ(left.lineSegment->left.lane[0].first.getAsDouble(), 0.5 + 0.7);
 	}
 
 	TEST_F(ItemDropOffTest, InsertAssemblyMachine) {

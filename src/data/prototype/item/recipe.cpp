@@ -5,15 +5,17 @@
 #include <mutex>
 
 #include "core/data_type.h"
-
+#include "core/math.h"
 #include "data/prototype_manager.h"
 #include "data/prototype/item/item.h"
 
+using namespace jactorio;
+
 ///
 /// \brief Recursively resolves raw materials
-void ResolveRawRecipe(const jactorio::data::PrototypeManager& data_manager,
+void ResolveRawRecipe(const data::PrototypeManager& data_manager,
                       std::unordered_map<std::string, uint16_t>& materials_raw,
-                      const jactorio::data::Recipe* recipe, const uint16_t amount) {
+                      const data::Recipe* recipe, const uint16_t amount) {
 	using namespace jactorio;
 
 	for (const auto& recipe_ingredient : recipe->ingredients) {
@@ -36,8 +38,8 @@ void ResolveRawRecipe(const jactorio::data::PrototypeManager& data_manager,
 
 }
 
-const jactorio::data::Recipe* jactorio::data::Recipe::GetItemRecipe(const PrototypeManager& data_manager,
-                                                                    const std::string& iname) {
+const data::Recipe* data::Recipe::GetItemRecipe(const PrototypeManager& data_manager,
+                                                const std::string& iname) {
 	const auto recipes = data_manager.DataRawGetAll<const Recipe>(DataCategory::recipe);
 
 	for (const auto& recipe : recipes) {
@@ -48,8 +50,8 @@ const jactorio::data::Recipe* jactorio::data::Recipe::GetItemRecipe(const Protot
 	return nullptr;
 }
 
-std::vector<jactorio::data::RecipeItem> jactorio::data::Recipe::RecipeGetTotalRaw(const PrototypeManager& data_manager,
-                                                                                  const std::string& iname) {
+std::vector<data::RecipeItem> data::Recipe::RecipeGetTotalRaw(const PrototypeManager& data_manager,
+                                                              const std::string& iname) {
 	// Key is ptr instead of std::string for some added speed
 	std::unordered_map<std::string, uint16_t> map_raw;
 
@@ -65,7 +67,7 @@ std::vector<jactorio::data::RecipeItem> jactorio::data::Recipe::RecipeGetTotalRa
 	return v;
 }
 
-void jactorio::data::Recipe::PostLoadValidate(const PrototypeManager& data_manager) const {
+void data::Recipe::PostLoadValidate(const PrototypeManager& data_manager) const {
 	J_DATA_ASSERT(!ingredients.empty(), "No ingredients specified for recipe");
 	for (const auto& ingredient : ingredients) {
 		J_DATA_ASSERT(!ingredient.first.empty(), "Empty ingredient internal name specifier");
@@ -76,7 +78,7 @@ void jactorio::data::Recipe::PostLoadValidate(const PrototypeManager& data_manag
 		J_DATA_ASSERT(ingredient.second > 0, "Ingredient required amount minimum is 1");
 		J_DATA_ASSERT_F(ingredient.second <= ingredient_item->stackSize,
 		                "Ingredient required amount %d exceeds max stack size of ingredient %d",
-						ingredient.second, ingredient_item->stackSize);
+		                ingredient.second, ingredient_item->stackSize);
 	}
 
 	J_DATA_ASSERT(!product.first.empty(), "No product specified for recipe");
@@ -89,6 +91,6 @@ void jactorio::data::Recipe::PostLoadValidate(const PrototypeManager& data_manag
 	                "Product yield %d may not exceed product stack size %d", product.second, item_product->stackSize);
 }
 
-jactorio::GameTickT jactorio::data::Recipe::GetCraftingTime(const double multiplier) const {
-	return craftingTime * multiplier * kGameHertz;
+GameTickT data::Recipe::GetCraftingTime(const double multiplier) const {
+	return core::LossyCast<GameTickT>(craftingTime * multiplier * kGameHertz);
 }

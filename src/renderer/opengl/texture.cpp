@@ -6,13 +6,14 @@
 
 #include "renderer/opengl/texture.h"
 #include "core/logger.h"
+#include "core/math.h"
 #include "renderer/renderer_exception.h"
 #include "renderer/opengl/error.h"
 
 unsigned int jactorio::renderer::Texture::boundTextureId_ = 0;
 
 jactorio::renderer::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer,
-                                     const unsigned int width, const unsigned int height)
+                                     const DimensionT width, const DimensionT height)
 	: rendererId_(0), textureBuffer_(std::move(buffer)), width_(width), height_(height) {
 
 	if (!textureBuffer_) {
@@ -33,8 +34,12 @@ jactorio::renderer::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer,
 	DEBUG_OPENGL_CALL(
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-	DEBUG_OPENGL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-		width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureBuffer_.get()));
+	DEBUG_OPENGL_CALL(
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+					 core::SafeCast<GLsizei>(width), core::SafeCast<GLsizei>(height),
+					 0, GL_RGBA, GL_UNSIGNED_BYTE, textureBuffer_.get()
+		)
+	);
 
 	// Rebind the last bound texture
 	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, boundTextureId_));
@@ -48,7 +53,7 @@ void jactorio::renderer::Texture::Bind(const unsigned int slot) const {
 	// Ensure there is sufficient slots to bind the texture
 	int texture_units;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
-	if (slot >= static_cast<unsigned int>(texture_units)) {
+	if (slot >= core::SafeCast<unsigned int>(texture_units)) {
 		LOG_MESSAGE_F(error,
 		              "Texture slot out of bounds, attempting to bind at index %d", slot);
 		throw RendererException("Texture slot out of bounds");

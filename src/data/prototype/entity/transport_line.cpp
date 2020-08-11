@@ -234,12 +234,14 @@ void UpdateSegmentTiles(const game::WorldData& world_data,
                         const WorldCoord& world_coords,
                         const std::shared_ptr<game::TransportSegment>& line_segment,
                         const int offset = 0) {
-	uint64_t x_offset = 0;
-	uint64_t y_offset = 0;
+	using OffsetT = ChunkCoordAxis;
+
+	OffsetT x_offset = 0;
+	OffsetT y_offset = 0;
 
 	// Should be -1, 0, 1 depending on orientation
-	uint64_t x_change = 0;
-	uint64_t y_change = 0;
+	OffsetT x_change = 0;
+	OffsetT y_change = 0;
 	OrientationIncrement(line_segment->direction, x_change, y_change, -1);
 
 	// Adjust the segment index number of all following segments 

@@ -24,36 +24,36 @@ namespace jactorio::game
 
 		OverlayElement o2 = {sprite, {0.5, 1}, {2, 3}, OverlayLayer::general};
 
-		EXPECT_FLOAT_EQ(o2.position.x, 0.5);
-		EXPECT_FLOAT_EQ(o2.position.y, 1);
-		EXPECT_FLOAT_EQ(o2.position.z, 0.4);
+		EXPECT_FLOAT_EQ(o2.position.x, 0.5f);
+		EXPECT_FLOAT_EQ(o2.position.y, 1.f);
+		EXPECT_FLOAT_EQ(o2.position.z, 0.4f);
 
-		EXPECT_FLOAT_EQ(o2.size.x, 2);
-		EXPECT_FLOAT_EQ(o2.size.y, 3);
+		EXPECT_FLOAT_EQ(o2.size.x, 2.f);
+		EXPECT_FLOAT_EQ(o2.size.y, 3.f);
 
 
-		OverlayElement o3 = {sprite, {0.5, 1, 5000.123}, {2, 3}};
+		OverlayElement o3 = {sprite, {0.5f, 1.f, 5000.123f}, {2.f, 3.f}};
 
-		EXPECT_FLOAT_EQ(o3.position.x, 0.5);
-		EXPECT_FLOAT_EQ(o3.position.y, 1);
-		EXPECT_FLOAT_EQ(o3.position.z, 5000.123);
+		EXPECT_FLOAT_EQ(o3.position.x, 0.5f);
+		EXPECT_FLOAT_EQ(o3.position.y, 1.f);
+		EXPECT_FLOAT_EQ(o3.position.z, 5000.123f);
 
-		EXPECT_FLOAT_EQ(o3.size.x, 2);
-		EXPECT_FLOAT_EQ(o3.size.y, 3);
+		EXPECT_FLOAT_EQ(o3.size.x, 2.f);
+		EXPECT_FLOAT_EQ(o3.size.y, 3.f);
 	}
 
 	TEST(OverlayElement, GetSetZPosition) {
 		data::Sprite sprite{};
 		OverlayElement oe = {sprite, {0.5, 1, 0.f}, {2, 3}};
 
-		EXPECT_FLOAT_EQ(oe.position.z, 0);
+		EXPECT_FLOAT_EQ(oe.position.z, 0.f);
 
 		oe.SetZPosition(12);
-		EXPECT_FLOAT_EQ(oe.position.z, 12);
+		EXPECT_FLOAT_EQ(oe.position.z, 12.f);
 		
 		oe.SetZPosition(OverlayLayer::general);
-		EXPECT_FLOAT_EQ(oe.position.z, 0.4);
+		EXPECT_FLOAT_EQ(oe.position.z, 0.4f);
 
-		EXPECT_FLOAT_EQ(oe.ToZPosition(OverlayLayer::general), 0.4);
+		EXPECT_FLOAT_EQ(oe.ToZPosition(OverlayLayer::general), 0.4f);
 	}
 }

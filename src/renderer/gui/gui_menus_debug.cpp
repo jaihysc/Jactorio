@@ -19,7 +19,6 @@
 
 #include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
-#include "renderer/rendering/mvp_manager.h"
 
 using namespace jactorio;
 
@@ -69,8 +68,8 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeMan
 	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	if (ImGui::CollapsingHeader("Rendering")) {
-		glm::vec3* view_translation = GetViewTransform();
-		ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
+		// glm::vec3* view_translation = GetViewTransform();
+		// ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
 
 		ImGui::Text("Layer count | Tile: %d", game::ChunkTile::kTileLayerCount);
 
@@ -171,7 +170,7 @@ void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::Proto
 		ImGui::PushID(item->name.c_str());
 
 		if (ImGui::Button(item->GetLocalizedName().c_str())) {
-			data::Item::Stack item_stack = {item, static_cast<data::Item::StackCount>(give_amount)};
+			data::Item::Stack item_stack = {item, core::SafeCast<data::Item::StackCount>(give_amount)};
 			game::AddStack(player_data.inventoryPlayer, item_stack);
 		}
 		ImGui::PopID();
@@ -231,10 +230,10 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 			const auto position_x = i % game::Chunk::kChunkWidth;
 			const auto position_y = i / game::Chunk::kChunkWidth;
 
-			float pos_x;
-			float pos_y;
-			float segment_len_x;
-			float segment_len_y;
+			int pos_x;
+			int pos_y;
+			int segment_len_x;
+			int segment_len_y;
 
 			const data::Sprite* direction_sprite;
 			const data::Sprite* outline_sprite;
@@ -295,10 +294,19 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 				outline_sprite = sprite_stop;  // None moving
 
 			object_layer.emplace_back(
-				game::OverlayElement{*direction_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, draw_overlay_layer}
+				game::OverlayElement{
+					*direction_sprite,
+					{core::SafeCast<float>(pos_x), core::SafeCast<float>(pos_y)},
+					{core::SafeCast<float>(segment_len_x), core::SafeCast<float>(segment_len_y)},
+					draw_overlay_layer
+				}
 			);
 			object_layer.emplace_back(
-				game::OverlayElement{*outline_sprite, {pos_x, pos_y}, {segment_len_x, segment_len_y}, draw_overlay_layer}
+				game::OverlayElement{*outline_sprite,
+					{core::SafeCast<float>(pos_x), core::SafeCast<float>(pos_y)},
+					{core::SafeCast<float>(segment_len_x), core::SafeCast<float>(segment_len_y)},
+					draw_overlay_layer
+				}
 			);
 		}
 	}
@@ -517,7 +525,7 @@ void renderer::DebugWorldInfo(const game::PlayerData& player_data) {
 				continue;
 
 			// Unique id to identify tree node
-			const auto* node_id = reinterpret_cast<void*>(static_cast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
+			const auto* node_id = reinterpret_cast<void*>(core::LossyCast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
 
 			const bool is_player_chunk = chunk_x == start_chunk_x && chunk_y == start_chunk_y;
 

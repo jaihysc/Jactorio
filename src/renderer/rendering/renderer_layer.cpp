@@ -5,8 +5,8 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
+#include "core/math.h"
 #include "game/player/player_data.h"
-#include "renderer/gui/gui_menus.h"
 
 using namespace jactorio;
 
@@ -50,7 +50,7 @@ uint32_t renderer::RendererLayer::GetCapacity() const noexcept {
 }
 
 uint64_t renderer::RendererLayer::GetIndicesCount() const noexcept {
-	return static_cast<uint64_t>(nextElementIndex_) * kInIndicesPerElement;
+	return core::SafeCast<uint64_t>(nextElementIndex_) * kInIndicesPerElement;
 }
 
 void renderer::RendererLayer::Reserve(const uint32_t count) noexcept {
@@ -94,7 +94,7 @@ void renderer::RendererLayer::GlHandleBufferResize() {
 		return;
 
 	gResizeVertexBuffers_ = false;
-	eCapacity_            = queuedECapacity_ * kResizeECapacityMultiplier;
+	eCapacity_            = core::LossyCast<decltype(eCapacity_)>(queuedECapacity_ * kResizeECapacityMultiplier);
 
 	vertexVb_->Reserve(nullptr, eCapacity_ * kVbBytesPerElement, false);
 	uvVb_->Reserve(nullptr, eCapacity_ * kVbBytesPerElement, false);
@@ -245,7 +245,7 @@ std::unique_ptr<unsigned int[]> renderer::RendererLayer::GenRenderGridIndices(co
 	// bottom left
 
 	std::unique_ptr<unsigned int[]> positions(
-		new unsigned int[static_cast<uint64_t>(tile_count) * kInIndicesPerElement]
+		new unsigned int[core::SafeCast<uint64_t>(tile_count) * kInIndicesPerElement]
 	);
 
 	unsigned int positions_index    = 0;

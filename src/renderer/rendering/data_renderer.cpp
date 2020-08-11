@@ -4,7 +4,6 @@
 
 #include "jactorio.h"
 #include "data/prototype/type.h"
-#include "data/prototype/entity/transport_line.h"
 #include "game/logic/transport_line_controller.h"
 #include "renderer/rendering/renderer.h"
 
@@ -18,12 +17,12 @@ constexpr float kPixelZ = 0.1f;
 void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
                                  const game::TransportSegment& line_segment,
                                  std::deque<game::TransportLineItem>& line_segment_side,
-                                 float tile_x, float tile_y,
+                                 double tile_x, double tile_y,
                                  const core::Position2<OverlayOffsetAxis>& pixel_offset) {
 	using namespace game;
 
 	// Either offset_x or offset_y which will be INCREASED or DECREASED
-	float* target_offset;
+	double* target_offset;
 	double multiplier = 1;  // Either 1 or -1 to add or subtract
 
 	switch (line_segment.direction) {
@@ -44,6 +43,7 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 
 	default:
 		assert(false);  // Missing switch case
+		target_offset = &tile_y;
 		break;
 	}
 
@@ -64,14 +64,14 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 			{
 				{
 					{
-						pixel_offset.x + tile_x * static_cast<float>(renderer::Renderer::tileWidth),
-						pixel_offset.y + tile_y * static_cast<float>(renderer::Renderer::tileWidth),
+						core::LossyCast<float>(pixel_offset.x + tile_x * core::SafeCast<float>(renderer::Renderer::tileWidth)),
+						core::LossyCast<float>(pixel_offset.y + tile_y * core::SafeCast<float>(renderer::Renderer::tileWidth)),
 					},
 					{
-						pixel_offset.x +
-						static_cast<float>(tile_x + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
-						pixel_offset.y +
-						static_cast<float>(tile_y + kItemWidth) * static_cast<float>(renderer::Renderer::tileWidth),
+						core::LossyCast<float>(pixel_offset.x +
+							core::LossyCast<float>(tile_x + kItemWidth) * core::SafeCast<float>(renderer::Renderer::tileWidth)),
+						core::LossyCast<float>(pixel_offset.y +
+							core::LossyCast<float>(tile_y + kItemWidth) * core::SafeCast<float>(renderer::Renderer::tileWidth)),
 					},
 				},
 				{uv_pos.topLeft, uv_pos.bottomRight}
@@ -84,8 +84,8 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 void renderer::DrawTransportSegmentItems(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
                                          const core::Position2<OverlayOffsetAxis>& pixel_offset,
                                          game::TransportSegment& line_segment) {
-	float tile_x_offset = 0;
-	float tile_y_offset = 0;
+	double tile_x_offset = 0;
+	double tile_y_offset = 0;
 
 	// Don't render if items are not marked visible! Wow!
 	if (!line_segment.left.visible)
@@ -296,7 +296,7 @@ void renderer::DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_c
 	{
 		const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_proto.handSprite->internalId);
 
-		constexpr float arm_width     = 0.5f;
+		constexpr float arm_width        = 0.5f;
 		constexpr float arm_pixel_offset = (Renderer::tileWidth - arm_width * Renderer::tileWidth) / 2;
 
 		// Ensures arm is always facing pickup / dropoff
@@ -319,14 +319,15 @@ void renderer::DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_c
 					uv.topLeft,
 					uv.bottomRight
 				}
-			}, kPixelZ, static_cast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset)
+			}, kPixelZ, core::LossyCast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset)
 		);
 	}
 
-	
+
 	// Held item
 	if (inserter_data.status == data::InserterData::Status::dropoff) {
-		constexpr float held_item_pixel_offset = (Renderer::tileWidth - Renderer::tileWidth * game::kItemWidth) / 2;
+		constexpr auto held_item_pixel_offset = 
+			core::LossyCast<float>((Renderer::tileWidth - Renderer::tileWidth * game::kItemWidth) / 2);
 
 		const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_data.heldItem.item->sprite->internalId);
 

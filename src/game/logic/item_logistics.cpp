@@ -191,10 +191,7 @@ bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& args) cons
 
 			// Must be less than: max sets(multiples) of ingredient OR maximum stack size
 			const auto max_count = max_ingredient_sets * recipe->ingredients[i].second;
-			if (slot.count >= max_count || slot.count >= slot.filter->stackSize)
-				return false;
-
-			return true;
+			return !(slot.count >= max_count || slot.count >= slot.filter->stackSize);
 		}
 	}
 
@@ -452,7 +449,7 @@ std::pair<bool, game::TransportLineOffset> game::InserterPickup::GetBeltPickupPr
 
 	auto pickup_offset = TransportLineOffset(
 		line_data.lineSegmentIndex +
-		GetInserterArmOffset(args.degree.getAsInteger(), args.inserterTileReach)
+		GetInserterArmOffset(core::SafeCast<core::TIntDegree>(args.degree.getAsInteger()), args.inserterTileReach)
 	);
 
 	return {use_line_left, pickup_offset};

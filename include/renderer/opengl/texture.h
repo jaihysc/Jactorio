@@ -15,6 +15,7 @@ namespace jactorio::renderer
 	/// This will delete the sprite* when the texture is deleted
 	class Texture
 	{
+		using DimensionT = uint64_t;
 	public:
 		using SpriteBufferT = unsigned char;
 
@@ -22,7 +23,7 @@ namespace jactorio::renderer
 		/// \param buffer new allocated buffer, will be deleted when texture is deleted (assumed to be RGBA)
 		/// \param width Width of buffer image
 		/// \param height Height of buffer image
-		Texture(std::shared_ptr<SpriteBufferT> buffer, unsigned int width, unsigned height);
+		Texture(std::shared_ptr<SpriteBufferT> buffer, DimensionT width, DimensionT height);
 		~Texture();
 
 		Texture(const Texture& other)                = delete;
@@ -36,8 +37,8 @@ namespace jactorio::renderer
 
 		static void Unbind();
 
-		J_NODISCARD int Width() const { return width_; }
-		J_NODISCARD int Height() const { return height_; }
+		J_NODISCARD DimensionT Width() const { return width_; }
+		J_NODISCARD DimensionT Height() const { return height_; }
 
 		J_NODISCARD unsigned int GetId() const { return rendererId_; }
 
@@ -47,7 +48,7 @@ namespace jactorio::renderer
 
 		// Image properties
 		std::shared_ptr<SpriteBufferT> textureBuffer_;
-		unsigned int width_, height_;
+		DimensionT width_, height_;
 	};
 }
 

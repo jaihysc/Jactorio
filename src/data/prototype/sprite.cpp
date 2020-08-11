@@ -10,6 +10,7 @@
 #include <stb/stb_image.h>
 
 #include "core/filesystem.h"
+#include "core/math.h"
 #include "data/data_exception.h"
 
 using namespace jactorio;
@@ -36,9 +37,9 @@ data::Sprite::Sprite(const Sprite& other)
 	  spritePath_(other.spritePath_),
 	  spriteBuffer_(other.spriteBuffer_) {
 
-	const auto size = static_cast<unsigned long long>(other.width_) * other.height_ * other.bytesPerPixel_;
+	const auto size = core::SafeCast<std::size_t>(other.width_) * other.height_ * other.bytesPerPixel_;
 	spriteBuffer_   = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_)));  // stbi uses malloc
-	for (unsigned long long i = 0; i < size; ++i) {
+	for (std::size_t i = 0; i < size; ++i) {
 		spriteBuffer_[i] = other.spriteBuffer_[i];
 	}
 }
@@ -101,15 +102,15 @@ void data::Sprite::LoadImageFromFile() {
 
 
 UvPositionT data::Sprite::GetCoords(SetT set, FrameT frame) const {
-	float width_base  = static_cast<float>(width_) / static_cast<float>(frames);
-	float height_base = static_cast<float>(height_) / static_cast<float>(sets);
+	float width_base  = core::SafeCast<float>(width_) / core::SafeCast<float>(frames);
+	float height_base = core::SafeCast<float>(height_) / core::SafeCast<float>(sets);
 
 	// If inverted:
 	// Set   = X axis
 	// Frame = Y axis
 	if (invertSetFrame) {
-		width_base  = static_cast<float>(width_) / static_cast<float>(sets);
-		height_base = static_cast<float>(height_) / static_cast<float>(frames);
+		width_base  = core::SafeCast<float>(width_) / core::SafeCast<float>(sets);
+		height_base = core::SafeCast<float>(height_) / core::SafeCast<float>(frames);
 
 		AdjustSetFrame<false>(frame, set);
 
@@ -125,16 +126,16 @@ UvPositionT data::Sprite::GetCoords(SetT set, FrameT frame) const {
 
 	return {
 		{
-			(width_base * static_cast<float>(frame) + static_cast<float>(trim))
-			/ static_cast<float>(width_),
-			(height_base * static_cast<float>(set) + static_cast<float>(trim))
-			/ static_cast<float>(height_)
+			(width_base * core::SafeCast<float>(frame) + core::SafeCast<float>(trim))
+			/ core::SafeCast<float>(width_),
+			(height_base * core::SafeCast<float>(set) + core::SafeCast<float>(trim))
+			/ core::SafeCast<float>(height_)
 		},
 		{
-			(width_base * static_cast<float>(frame + 1) - static_cast<float>(trim))
-			/ static_cast<float>(width_),
-			(height_base * static_cast<float>(set + 1) - static_cast<float>(trim))
-			/ static_cast<float>(height_)
+			(width_base * core::SafeCast<float>(frame + 1) - core::SafeCast<float>(trim))
+			/ core::SafeCast<float>(width_),
+			(height_base * core::SafeCast<float>(set + 1) - core::SafeCast<float>(trim))
+			/ core::SafeCast<float>(height_)
 		}
 	};
 }

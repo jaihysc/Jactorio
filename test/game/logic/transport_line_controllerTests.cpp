@@ -47,7 +47,7 @@ namespace jactorio::game
 
 	TEST_F(TransportLineControllerTest, LineLogic) {
 		// Same as line logic, but belts are faster (0.06), which seems to break the current logic at the time of writing
-		const auto j_belt_speed = 0.06f;
+		const auto j_belt_speed = 0.06;
 
 		transportBeltProto_->speed = j_belt_speed;  // <---
 
@@ -91,9 +91,9 @@ namespace jactorio::game
 		ASSERT_EQ(up_segment->left.lane.size(), 1);
 		ASSERT_EQ(left_segment->left.lane.size(), 2);
 
-		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 4.40 - j_belt_speed);
-		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.25 - j_belt_speed);
-		EXPECT_FLOAT_EQ(left_segment->left.lane[1].first.getAsDouble(), 0.25);
+		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].first.getAsDouble(), 4.40 - j_belt_speed);
+		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.25 - j_belt_speed);
+		EXPECT_DOUBLE_EQ(left_segment->left.lane[1].first.getAsDouble(), 0.25);
 
 		// 2 updates | 0.12
 		for (int i = 0; i < 2; ++i) {
@@ -102,9 +102,9 @@ namespace jactorio::game
 		ASSERT_EQ(up_segment->left.lane.size(), 1);
 		ASSERT_EQ(left_segment->left.lane.size(), 2);
 
-		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 4.40 - (3 * j_belt_speed));
-		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.25 - (3 * j_belt_speed));
-		EXPECT_FLOAT_EQ(left_segment->left.lane[1].first.getAsDouble(), 0.25);
+		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].first.getAsDouble(), 4.40 - (3 * j_belt_speed));
+		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.25 - (3 * j_belt_speed));
+		EXPECT_DOUBLE_EQ(left_segment->left.lane[1].first.getAsDouble(), 0.25);
 
 
 		// 2 updates | Total distance = 4(0.06) = 0.24
@@ -115,11 +115,11 @@ namespace jactorio::game
 		ASSERT_EQ(up_segment->left.lane.size(), 2);
 		ASSERT_EQ(left_segment->left.lane.size(), 1);
 
-		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 4.40 - (5 * j_belt_speed));
-		EXPECT_FLOAT_EQ(up_segment->left.lane[1].first.getAsDouble(), 0.25);  // Spacing maintained
+		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].first.getAsDouble(), 4.40 - (5 * j_belt_speed));
+		EXPECT_DOUBLE_EQ(up_segment->left.lane[1].first.getAsDouble(), 0.25);  // Spacing maintained
 		// Item 2 was 0.01 -> -0.05
 		// | -0.05 - 0.20 | = 0.25 Maintains distance
-		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.20);
+		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.20);
 	}
 
 
@@ -164,12 +164,12 @@ namespace jactorio::game
 
 
 		EXPECT_EQ(up_segment->left.lane.size(), 2);
-		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 0.99f);
-		EXPECT_FLOAT_EQ(up_segment->left.lane[1].first.getAsDouble(), 1.f);
+		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].first.getAsDouble(), 0.99);
+		EXPECT_DOUBLE_EQ(up_segment->left.lane[1].first.getAsDouble(), 1.);
 
 		EXPECT_EQ(right_segment->left.lane.size(), 1);
 		// Moved forward once 4 - 0.3 - 0.01
-		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 3.69f);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].first.getAsDouble(), 3.69);
 
 		// Transfer second item after (1 / 0.01) + 1 update - 1 update (Already moved once above)
 		for (int i = 0; i < 100; ++i) {
@@ -179,8 +179,8 @@ namespace jactorio::game
 		EXPECT_EQ(up_segment->left.lane.size(), 1);
 		EXPECT_EQ(right_segment->left.lane.size(), 2);
 		// Spacing of 1 tile between the items is maintained across belts
-		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 2.69f);
-		EXPECT_FLOAT_EQ(right_segment->left.lane[1].first.getAsDouble(), 1.f);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].first.getAsDouble(), 2.69);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[1].first.getAsDouble(), 1);
 
 
 		// Third item
@@ -190,9 +190,9 @@ namespace jactorio::game
 		EXPECT_EQ(up_segment->left.lane.size(), 0);
 		EXPECT_EQ(right_segment->left.lane.size(), 3);
 
-		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 1.69f);
-		EXPECT_FLOAT_EQ(right_segment->left.lane[1].first.getAsDouble(), 1.f);
-		EXPECT_FLOAT_EQ(right_segment->left.lane[2].first.getAsDouble(), 1.f);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].first.getAsDouble(), 1.69);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[1].first.getAsDouble(), 1);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[2].first.getAsDouble(), 1);
 	}
 
 	TEST_F(TransportLineControllerTest, LineLogicCompressedRightBend) {
@@ -233,11 +233,11 @@ namespace jactorio::game
 
 
 		EXPECT_EQ(up_segment->left.lane.size(), 1);
-		EXPECT_FLOAT_EQ(up_segment->left.lane[0].first.getAsDouble(), 0.24f);
+		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].first.getAsDouble(), 0.24);
 
 		EXPECT_EQ(right_segment->left.lane.size(), 1);
 		// Moved forward once 4 - 0.3 - 0.01
-		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 3.69f);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].first.getAsDouble(), 3.69);
 
 
 		// Transfer second item after (0.25 / 0.01) + 1 update - 1 update (Already moved once above)
@@ -248,8 +248,8 @@ namespace jactorio::game
 		EXPECT_EQ(up_segment->left.lane.size(), 0);
 		EXPECT_EQ(right_segment->left.lane.size(), 2);
 		// Spacing is maintained across belts
-		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 3.44f);
-		EXPECT_FLOAT_EQ(right_segment->left.lane[1].first.getAsDouble(), 0.25f);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].first.getAsDouble(), 3.44);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[1].first.getAsDouble(), 0.25);
 	}
 
 	TEST_F(TransportLineControllerTest, LineLogicStopAtEndOfLine) {
@@ -276,7 +276,7 @@ namespace jactorio::game
 		}
 
 		EXPECT_EQ(segment->left.index, 0);
-		EXPECT_FLOAT_EQ(segment->left.lane[0].first.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(segment->left.lane[0].first.getAsDouble(), 0);
 
 		// On the next update, with no target segment, first item is kept at 0, second item untouched
 		// move index to 2 (was 0) as it has a distance greater than item_width
@@ -284,22 +284,22 @@ namespace jactorio::game
 
 
 		EXPECT_EQ(segment->left.index, 2);
-		EXPECT_FLOAT_EQ(segment->left.lane[0].first.getAsDouble(), 0);
-		EXPECT_FLOAT_EQ(segment->left.lane[1].first.getAsDouble(), jactorio::game::kItemSpacing);
-		EXPECT_FLOAT_EQ(segment->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing + 0.99f);
+		EXPECT_DOUBLE_EQ(segment->left.lane[0].first.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(segment->left.lane[1].first.getAsDouble(), kItemSpacing);
+		EXPECT_DOUBLE_EQ(segment->left.lane[2].first.getAsDouble(), kItemSpacing + 0.99);
 
 		// After 0.2 + 0.99 / 0.01 updates, the Third item will not move in following updates
 		for (int j = 0; j < 99; ++j) {
 			TransportLineLogicUpdate(worldData_);
 		}
-		EXPECT_FLOAT_EQ(segment->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
+		EXPECT_DOUBLE_EQ(segment->left.lane[2].first.getAsDouble(), kItemSpacing);
 
 		TransportLineLogicUpdate(worldData_);
 
 		// Index set to 0, checking if a valid target exists to move items forward
 		EXPECT_EQ(segment->left.index, 0);
 
-		EXPECT_FLOAT_EQ(segment->left.lane[2].first.getAsDouble(), jactorio::game::kItemSpacing);
+		EXPECT_DOUBLE_EQ(segment->left.lane[2].first.getAsDouble(), kItemSpacing);
 
 
 		// Updates do nothing since all items are compressed
@@ -349,7 +349,7 @@ namespace jactorio::game
 			TransportLineLogicUpdate(worldData_);
 		}
 
-		EXPECT_FLOAT_EQ(up_segment->right.lane.front().first.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(up_segment->right.lane.front().first.getAsDouble(), 0);
 	}
 
 	TEST_F(TransportLineControllerTest, LineLogicNewSegmentAddedAhead) {
@@ -454,8 +454,8 @@ namespace jactorio::game
 		right_segment->AppendItem(true, 0.f, itemProto_);  // Insert behind previous item
 
 		// Check that second item has a minimum distance of kItemSpacing
-		EXPECT_FLOAT_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.f);
-		EXPECT_FLOAT_EQ(right_segment->left.lane[1].first.getAsDouble(), jactorio::game::kItemSpacing);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.);
+		EXPECT_DOUBLE_EQ(right_segment->left.lane[1].first.getAsDouble(), kItemSpacing);
 	}
 
 	TEST_F(TransportLineControllerTest, BackItemDistance) {
@@ -486,25 +486,25 @@ namespace jactorio::game
 		RegisterSegment({0, 1}, up_segment_2);
 
 		up_segment_2->AppendItem(true, 0.05, itemProto_);
-		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
+		EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
 
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
 		// Segment 1
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
-		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.95);  // First segment now
+		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.95);  // First segment now
 
 		for (int i = 0; i < 19; ++i) {
 			TransportLineLogicUpdate(worldData_);
 		}
-		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
 		// Remains at 0
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
 
 		// ======================================================================
@@ -512,7 +512,7 @@ namespace jactorio::game
 		up_segment_1->AppendItem(true, 0, itemProto_);
 		up_segment_1->AppendItem(true, 0, itemProto_);
 		up_segment_1->AppendItem(true, 0, itemProto_);
-		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
+		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
 
 
 		// Will not enter since segment 1 is full
@@ -520,8 +520,8 @@ namespace jactorio::game
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);
 		TransportLineLogicUpdate(worldData_);
-		EXPECT_FLOAT_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
-		EXPECT_FLOAT_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
+		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
+		EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 	}
 
 
@@ -563,8 +563,8 @@ namespace jactorio::game
 		EXPECT_EQ(segment_2->left.lane.size(), 0);
 		EXPECT_EQ(segment_2->right.lane.size(), 0);
 		// 3.99 tiles from the end of this transport line
-		EXPECT_FLOAT_EQ(segment_1->left.lane[0].first.getAsDouble(), 3.99);
-		EXPECT_FLOAT_EQ(segment_1->right.lane[0].first.getAsDouble(), 3.99);
+		EXPECT_DOUBLE_EQ(segment_1->left.lane[0].first.getAsDouble(), 3.99);
+		EXPECT_DOUBLE_EQ(segment_1->right.lane[0].first.getAsDouble(), 3.99);
 	}
 
 	TEST_F(TransportLineControllerTest, TransitionSideLeft) {
@@ -621,9 +621,9 @@ namespace jactorio::game
 
 		ASSERT_EQ(down_segment->right.lane.size(), 2);
 		// 10 - 0.7 - 0.05
-		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.25f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.25);
 		// (10 - 0.3 - 0.05) - (10 - 0.7 - 0.05)
-		EXPECT_FLOAT_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4);
 
 
 		// ======================================================================
@@ -634,7 +634,7 @@ namespace jactorio::game
 		EXPECT_EQ(right_segment->left.lane[0].first.getAsDouble(), 0.0);
 		EXPECT_EQ(right_segment->right.lane[0].first.getAsDouble(), 0.0);
 
-		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.05f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.05);
 
 
 		// ======================================================================
@@ -650,9 +650,9 @@ namespace jactorio::game
 		EXPECT_EQ(right_segment->right.lane[0].first.getAsDouble(), 0.f);
 
 		ASSERT_EQ(down_segment->right.lane.size(), 3);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.00f);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4f);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[2].first.getAsDouble(), 0.25f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.00);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[2].first.getAsDouble(), 0.25);
 
 
 		// ======================================================================
@@ -664,8 +664,8 @@ namespace jactorio::game
 		EXPECT_EQ(right_segment->right.lane.size(), 1);  // Woke and moved
 
 		ASSERT_EQ(down_segment->right.lane.size(), 5);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 8.10f);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[3].first.getAsDouble(), 0.25f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].first.getAsDouble(), 8.10);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[3].first.getAsDouble(), 0.25);
 
 	}
 
@@ -724,9 +724,9 @@ namespace jactorio::game
 
 		ASSERT_EQ(down_segment->right.lane.size(), 2);
 		// 10 - 0.7 - 0.05
-		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.25f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.25);
 		// (10 - 0.3 - 0.05) - (10 - 0.7 - 0.05)
-		EXPECT_FLOAT_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4);
 
 
 		// ======================================================================
@@ -737,7 +737,7 @@ namespace jactorio::game
 		EXPECT_EQ(left_segment->left.lane[0].first.getAsDouble(), 0.0);
 		EXPECT_EQ(left_segment->right.lane[0].first.getAsDouble(), 0.0);
 
-		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.05f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.05);
 
 
 		// ======================================================================
@@ -753,9 +753,9 @@ namespace jactorio::game
 		EXPECT_EQ(left_segment->right.lane[0].first.getAsDouble(), 0.f);
 
 		ASSERT_EQ(down_segment->right.lane.size(), 3);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.00f);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4f);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[2].first.getAsDouble(), 0.25f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].first.getAsDouble(), 9.00);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[1].first.getAsDouble(), 0.4);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[2].first.getAsDouble(), 0.25);
 
 
 		// ======================================================================
@@ -767,8 +767,8 @@ namespace jactorio::game
 		EXPECT_EQ(left_segment->right.lane.size(), 1);  // Woke and moved
 
 		ASSERT_EQ(down_segment->right.lane.size(), 5);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), 8.10f);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[3].first.getAsDouble(), 0.25f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].first.getAsDouble(), 8.10);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[3].first.getAsDouble(), 0.25);
 
 	}
 
@@ -809,7 +809,7 @@ namespace jactorio::game
 		ASSERT_EQ(left_segment->right.lane.size(), 1);
 
 		// (line offset) - belt speed
-		EXPECT_FLOAT_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3f + 0.7f) + 2.f - 0.06f);
+		EXPECT_DOUBLE_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3 + 0.7) + 2. - 0.06);
 
 
 		// Right lane
@@ -823,7 +823,7 @@ namespace jactorio::game
 
 		ASSERT_EQ(left_segment->right.lane.size(), 1);
 
-		EXPECT_FLOAT_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3f + 0.3f) + 2.f - 0.06f);
+		EXPECT_DOUBLE_EQ(left_segment->right.lane[0].first.getAsDouble(), (0.3 + 0.3) + 2. - 0.06);
 
 
 		// ======================================================================
@@ -848,7 +848,7 @@ namespace jactorio::game
 
 		ASSERT_EQ(left_segment->left.lane.size(), 1);
 
-		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7f + 0.3f) + 2.f - 0.06f);
+		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7 + 0.3) + 2. - 0.06);
 
 
 		// Right lane
@@ -862,7 +862,7 @@ namespace jactorio::game
 
 		ASSERT_EQ(left_segment->left.lane.size(), 1);
 
-		EXPECT_FLOAT_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7f + 0.7f) + 2.f - 0.06f);
+		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].first.getAsDouble(), (0.7 + 0.7) + 2. - 0.06);
 	}
 
 	TEST_F(TransportLineControllerTest, TransitionBendingToSideOnly) {
@@ -898,7 +898,7 @@ namespace jactorio::game
 		TransportLineLogicUpdate(worldData_);
 
 		ASSERT_EQ(down_segment->left.lane.size(), 1);
-		EXPECT_FLOAT_EQ(down_segment->left.lane[0].first.getAsDouble(), (0.3 + 1.f + 0.7) - 0.06f);
+		EXPECT_DOUBLE_EQ(down_segment->left.lane[0].first.getAsDouble(), (0.3 + 1. + 0.7) - 0.06);
 
 
 		// Right
@@ -908,6 +908,6 @@ namespace jactorio::game
 		TransportLineLogicUpdate(worldData_);
 
 		ASSERT_EQ(down_segment->right.lane.size(), 1);
-		EXPECT_FLOAT_EQ(down_segment->right.lane[0].first.getAsDouble(), (0.3f + 1.f + 0.3f) - 0.06f);
+		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].first.getAsDouble(), (0.3 + 1. + 0.3) - 0.06);
 	}
 }

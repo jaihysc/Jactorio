@@ -5,6 +5,7 @@
 #pragma once
 
 #include <decimal.h>
+#include <type_traits>
 
 #include "jactorio.h"
 
@@ -54,18 +55,21 @@ namespace jactorio::data
 	template <typename TyX, typename TyY, typename TyInc = TyX>
 	void OrientationIncrement(const Orientation orientation,
 	                          TyX& x, TyY& y, TyInc increment = 1) {
+		static_assert(std::is_same<TyX, TyY>::value);
+		static_assert(std::is_signed<TyX>::value);
+		
 		switch (orientation) {
 		case Orientation::up:
-			y -= increment;
+			y -= static_cast<TyX>(increment);
 			break;
 		case Orientation::right:
-			x += increment;
+			x += static_cast<TyX>(increment);
 			break;
 		case Orientation::down:
-			y += increment;
+			y += static_cast<TyX>(increment);
 			break;
 		case Orientation::left:
-			x -= increment;
+			x -= static_cast<TyX>(increment);
 			break;
 
 		default:

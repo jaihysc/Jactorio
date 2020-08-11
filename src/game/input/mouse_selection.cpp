@@ -9,7 +9,6 @@
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world_data.h"
-#include "renderer/opengl/shader_manager.h"
 #include "renderer/rendering/renderer.h"
 
 double x_position = 0.f;
@@ -88,7 +87,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 		OverlayElement element{
 			*selected_entity->OnRGetSprite(set),
 			{WorldData::ToOverlayCoord(world_x), WorldData::ToOverlayCoord(world_y)},
-			{static_cast<float>(selected_entity->tileWidth), static_cast<float>(selected_entity->tileHeight)},
+			{core::SafeCast<float>(selected_entity->tileWidth), core::SafeCast<float>(selected_entity->tileHeight)},
 			kCursorOverlayLayer
 		};
 

@@ -14,7 +14,6 @@
 #include "renderer/display_window.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/opengl/shader.h"
-#include "renderer/opengl/shader_manager.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/rendering/spritemap_generator.h"
 
@@ -85,7 +84,7 @@ void RenderingLoop(renderer::DisplayWindow& display_window) {
 				game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY()
 			);
 
-				
+
 			std::lock_guard<std::mutex> gui_guard{game::game_data->player.mutex};
 
 			ImguiDraw(display_window, game::game_data->player, game::game_data->prototype, game::game_data->event);
@@ -130,6 +129,10 @@ void renderer::RenderInit() {
 	Setup(display_window);
 
 	// Shader
+	// From my testing, allocating it on the heap is faster than using the stack
+	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
+	main_renderer = new Renderer();
+
 	const Shader shader(
 		std::vector<ShaderCreationInput>{
 			{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
@@ -137,7 +140,7 @@ void renderer::RenderInit() {
 		}
 	);
 	shader.Bind();
-	SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
+	main_renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
 
 	// Texture will be bound to slot 0 above, tell this to shader
 	Shader::SetUniform1I(shader.GetUniformLocation("u_texture"), 0);
@@ -158,10 +161,6 @@ void renderer::RenderInit() {
 	renderer_sprites.GInitializeSpritemap(game::game_data->prototype, data::Sprite::SpriteGroup::gui, false);
 
 
-	// From my testing, allocating it on the heap is faster than using the stack
-	core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
-	main_renderer = new Renderer();
-
 	Renderer::GlSetup();
 	main_renderer->GlSetDrawThreads(8);
 
@@ -178,7 +177,7 @@ void renderer::RenderInit() {
 	game::game_data->input.key.Register([]() {
 		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, [](game::EventBase& e) {
 			auto& render_e = static_cast<game::RendererTickEvent&>(e);
-			auto& window = render_e.windows[0].get();
+			auto& window   = render_e.windows[0].get();
 
 			window.SetFullscreen(!window.IsFullscreen());
 			main_renderer->GlResizeWindow(window_x, window_y);

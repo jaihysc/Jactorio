@@ -4,7 +4,7 @@
 #define JACTORIO_GAME_LOGIC_INSERTER_CONTROLLER_H
 #pragma once
 
-#include "core/float_math.h"
+#include "core/math.h"
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 

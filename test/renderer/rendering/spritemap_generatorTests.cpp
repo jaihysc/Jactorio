@@ -119,7 +119,7 @@ namespace jactorio::renderer
 
 		void AddSprite(const std::string& image_path) {
 			auto* sprite       = new data::Sprite;
-			sprite->internalId = nextId_;
+			sprite->internalId = static_cast<unsigned>(nextId_);
 			sprite->LoadImage(image_path);
 
 			prototypes_.push_back(sprite);

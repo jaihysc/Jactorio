@@ -9,6 +9,7 @@
 #include <noise/noise.h>
 #include <noise/noiseutils.h>
 
+#include "core/math.h"
 #include "data/prototype_manager.h"
 #include "data/prototype/entity/resource_entity.h"
 #include "data/prototype/interface/update_listener.h"
@@ -26,7 +27,7 @@ ChunkCoordAxis game::WorldData::ToChunkCoord(WorldCoordAxis world_coord) {
 		world_coord += 1;
 	}
 
-	chunk_coord += static_cast<float>(world_coord) / Chunk::kChunkWidth;
+	chunk_coord += core::LossyCast<ChunkCoordAxis>(core::LossyCast<float>(world_coord) / Chunk::kChunkWidth);
 	return chunk_coord;
 }
 
@@ -40,7 +41,7 @@ OverlayOffsetAxis game::WorldData::ToOverlayCoord(const WorldCoordAxis world_coo
 		val = world_coord % kChunkWidth;
 	}
 
-	return static_cast<float>(val);
+	return core::SafeCast<OverlayOffsetAxis>(val);
 }
 
 game::Chunk* game::WorldData::AddChunk(const Chunk& chunk) {
@@ -128,15 +129,15 @@ const game::ChunkTile* game::WorldData::GetTile(WorldCoordAxis world_x, WorldCoo
 		world_y += 1;
 	}
 
-	chunk_index_x += static_cast<float>(world_x) / Chunk::kChunkWidth;
-	chunk_index_y += static_cast<float>(world_y) / Chunk::kChunkWidth;
+	chunk_index_x += core::SafeCast<float>(world_x) / Chunk::kChunkWidth;
+	chunk_index_y += core::SafeCast<float>(world_y) / Chunk::kChunkWidth;
 
 
-	const auto* chunk = GetChunkC(static_cast<int>(chunk_index_x), static_cast<int>(chunk_index_y));
+	const auto* chunk = GetChunkC(core::LossyCast<int>(chunk_index_x), core::LossyCast<int>(chunk_index_y));
 
 	if (chunk != nullptr) {
-		int tile_index_x = static_cast<int>(world_x) % Chunk::kChunkWidth;
-		int tile_index_y = static_cast<int>(world_y) % Chunk::kChunkWidth;
+		auto tile_index_x = world_x % Chunk::kChunkWidth;
+		auto tile_index_y = world_y % Chunk::kChunkWidth;
 
 		if (negative_x) {
 			tile_index_x = Chunk::kChunkWidth - 1 - tile_index_x * -1;
@@ -332,7 +333,7 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 			const auto noise_range = noise_layer.GetValNoiseRange(noise_val);
 			const auto noise_min   = noise_range.first;
 			const auto noise_max   = noise_range.second;
-			auto resource_amount   = static_cast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
+			auto resource_amount   = core::LossyCast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
 
 			if (resource_amount <= 0)
 				resource_amount = 1;

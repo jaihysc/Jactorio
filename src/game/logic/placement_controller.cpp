@@ -91,7 +91,7 @@ void RemoveAtCoords(game::WorldData& world_data,
 
 		const auto tile_index = tile->GetLayer(layer).multiTileIndex;
 
-		y -= static_cast<int>(tile_index / tile_width);
+		y -= core::SafeCast<WorldCoordAxis>(tile_index / tile_width);
 		x -= tile_index % tile_width;
 	}
 

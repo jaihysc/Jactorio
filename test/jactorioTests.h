@@ -16,6 +16,9 @@
 
 namespace jactorio
 {
+	// It is difficult to compute enough decimal points by hand for EXPECT_DOUBLE_EQ, thus EXPECT_NEAR is used
+	constexpr double kFloatingAbsErr = 0.000000001;
+
 	///
 	/// \brief Makes and registers prototype with prototype manager
 	template <typename TPrototype>
