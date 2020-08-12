@@ -51,18 +51,18 @@ namespace jactorio::data
 		PROTOTYPE_CATEGORY(inserter);
 
 		/// Part closer to the base
-		PYTHON_PROP_I(Inserter, Sprite*, armSprite, nullptr);
+		PYTHON_PROP_I(Sprite*, armSprite, nullptr);
 		/// The hand holding the item
-		PYTHON_PROP_I(Inserter, Sprite*, handSprite, nullptr);
+		PYTHON_PROP_I(Sprite*, handSprite, nullptr);
 
 		///
 		/// \brief Degrees to rotate per tick 
 		/// \remark For Python API use only
-		PYTHON_PROP_I(Inserter, ProtoFloatT, rotationSpeedFloat, 0.1f);
+		PYTHON_PROP_I(ProtoFloatT, rotationSpeedFloat, 0.1f);
 
 		///
 		/// \brief Tile distance which the inserter can reach
-		PYTHON_PROP_I(Inserter, ProtoUintT, tileReach, 1);
+		PYTHON_PROP_I(ProtoUintT, tileReach, 1);
 
 		///
 		/// \brief Degrees to rotate per tick 
@@ -77,8 +77,8 @@ namespace jactorio::data
 		// ======================================================================
 
 		void OnRDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-		                      const core::Position2<float>& pixel_offset,
-		                      const UniqueDataBase* unique_data) const override;
+		                       const core::Position2<float>& pixel_offset,
+		                       const UniqueDataBase* unique_data) const override;
 
 		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
 		                                         const WorldCoord& world_coords) const override;

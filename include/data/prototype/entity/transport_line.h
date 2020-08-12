@@ -82,7 +82,7 @@ namespace jactorio::data
 		///
 		/// \brief Number of tiles traveled by each item on the belt per tick
 		/// \remark For Python API use only
-		PYTHON_PROP_I(TransportLine, double, speedFloat, 0.01f);
+		PYTHON_PROP_I(double, speedFloat, 0.01f);
 
 		/// Number of tiles traveled by each item on the belt per tick
 		game::TransportLineOffset speed;

@@ -28,7 +28,7 @@ namespace jactorio::data
 			: inventorySize(0) {
 		}
 
-		PYTHON_PROP_REF(ContainerEntity, uint16_t, inventorySize)
+		PYTHON_PROP_REF(uint16_t, inventorySize);
 
 
 		// Events

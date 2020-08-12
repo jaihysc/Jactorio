@@ -17,6 +17,9 @@ namespace jactorio::data
 	/// \brief Manages prototype data
 	class PrototypeManager
 	{
+		/// Position 0 reserved to indicate error
+		static constexpr auto kInternalIdStart = 1;
+
 	public:
 		PrototypeManager() = default;
 		~PrototypeManager();
@@ -24,17 +27,6 @@ namespace jactorio::data
 		PrototypeManager(const PrototypeManager& other)     = delete;
 		PrototypeManager(PrototypeManager&& other) noexcept = delete;
 
-	private:
-		/// Position 0 reserved to indicate error
-		static constexpr auto internal_id_start = 1;
-
-		/// Internal id which will be assigned to the next prototype added
-		unsigned int internalIdNew_ = internal_id_start;
-
-		/// Appended to the beginning of each new prototype
-		std::string directoryPrefix_;
-
-	public:
 		/// Path of the data folder from the executing directory
 		static constexpr char kDataFolder[] = "data";
 
@@ -133,6 +125,15 @@ namespace jactorio::data
 		///
 		/// \brief Frees all pointer data within data_raw, clears data_raw
 		void ClearData();
+
+	private:
+
+		/// Internal id which will be assigned to the next prototype added
+		unsigned int internalIdNew_ = kInternalIdStart;
+
+		/// Appended to the beginning of each new prototype
+		std::string directoryPrefix_;
+
 	};
 
 

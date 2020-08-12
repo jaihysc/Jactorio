@@ -21,7 +21,7 @@ namespace jactorio::data
 		}
 
 	public:
-		PYTHON_PROP_I(ItemBase, Sprite*, sprite, nullptr);
+		PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
 		void PostLoadValidate(const PrototypeManager&) const override;
 	};

@@ -35,10 +35,10 @@ namespace jactorio::data
 		// ======================================================================
 
 		/// If true, resources will not spawn on this and player cannot navigate onto it
-		PYTHON_PROP_REF_I(Tile, bool, isWater, false)
+		PYTHON_PROP_REF_I(bool, isWater, false);
 
 		/// Separately managed by data_manager
-		PYTHON_PROP_I(Tile, Sprite*, sprite, nullptr)
+		PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
 
 		// ======================================================================

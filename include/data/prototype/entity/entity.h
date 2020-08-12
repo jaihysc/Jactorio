@@ -4,8 +4,6 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
 #pragma once
 
-#include <utility>
-
 #include "jactorio.h"
 
 #include "data/prototype/type.h"
@@ -37,25 +35,20 @@ namespace jactorio::data
 		Entity& operator=(const Entity& other)     = default;
 		Entity& operator=(Entity&& other) noexcept = default;
 
-	private:
 
-		/// \brief Item when entity is picked up
-		Item* item_ = nullptr;
-
-	public:
 		/// Sprite drawn when placed in the world
 		/// \remark For rotatable entities, this serves as the north sprite if multiple sprites are used
-		PYTHON_PROP_I(Entity, Sprite*, sprite, nullptr)
+		PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
 
 		// Number of tiles this entity spans
-		PYTHON_PROP_REF_I(Entity, uint8_t, tileWidth, 1)
-		PYTHON_PROP_REF_I(Entity, uint8_t, tileHeight, 1)
+		PYTHON_PROP_REF_I(ProtoUintT, tileWidth, 1);
+		PYTHON_PROP_REF_I(ProtoUintT, tileHeight, 1);
 
 		// Can be rotated by player?
-		PYTHON_PROP_REF_I(Entity, bool, rotatable, false)
+		PYTHON_PROP_REF_I(bool, rotatable, false);
 		// Can be placed by player?
-		PYTHON_PROP_REF_I(Entity, bool, placeable, true)
+		PYTHON_PROP_REF_I(bool, placeable, true);
 
 		// Item
 		J_NODISCARD Item* GetItem() const {
@@ -69,10 +62,8 @@ namespace jactorio::data
 			return this;
 		}
 
-		/**
-		 * Seconds to pickup entity
-		 */
-		PYTHON_PROP_REF_I(Entity, float, pickupTime, 1);
+		/// Seconds to pickup entity
+		PYTHON_PROP_REF_I(float, pickupTime, 1);
 
 
 		void PostLoadValidate(const PrototypeManager& data_manager) const override;
@@ -153,6 +144,10 @@ namespace jactorio::data
 		                              const WorldCoord& emit_coords,
 		                              const WorldCoord& receive_coords, Orientation emit_orientation) const {
 		}
+
+	private:
+		/// Item when entity is picked up
+		Item* item_ = nullptr;
 	};
 
 	inline void Entity::PostLoadValidate(const PrototypeManager& data_manager) const {

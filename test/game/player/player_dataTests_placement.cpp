@@ -202,8 +202,8 @@ namespace jactorio::game
 		worldData_.EmplaceChunk(0, 0);
 
 
-		for (int y = 0; y < entity->tileHeight; ++y) {
-			for (int x = 0; x < entity->tileWidth; ++x) {
+		for (uint32_t y = 0; y < entity->tileHeight; ++y) {
+			for (uint32_t x = 0; x < entity->tileWidth; ++x) {
 				auto* tile = worldData_.GetTile(x, y);
 				tile->SetTilePrototype(&tile_proto);
 			}

@@ -53,16 +53,16 @@ namespace jactorio::data
 		// Perlin noise properties
 
 		// See http://libnoise.sourceforge.net/glossary/ for usage of the following parameters
-		PYTHON_PROP_REF_I(NoiseLayer, ProtoIntT, octaveCount, 8);
-		PYTHON_PROP_REF_I(NoiseLayer, ProtoFloatT, frequency, 0.25f);
-		PYTHON_PROP_REF_I(NoiseLayer, ProtoFloatT, persistence, 0.5f);
+		PYTHON_PROP_REF_I(ProtoIntT, octaveCount, 8);
+		PYTHON_PROP_REF_I(ProtoFloatT, frequency, 0.25f);
+		PYTHON_PROP_REF_I(ProtoFloatT, persistence, 0.5f);
 
 		/// Affects number of resources generated for Resource entities
-		PYTHON_PROP_REF_I(NoiseLayer, ProtoFloatT, richness, 100.f);
+		PYTHON_PROP_REF_I(ProtoFloatT, richness, 100.f);
 
 		/// If true, input values outside of the noise_layer range will be brought to the lowest/highest
 		/// If false, input values outside of the noise_layer range returns nullptr
-		PYTHON_PROP_REF_I(NoiseLayer, bool, normalize, false);
+		PYTHON_PROP_REF_I(bool, normalize, false);
 
 		// ======================================================================
 		// Noise value

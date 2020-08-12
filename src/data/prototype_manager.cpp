@@ -180,5 +180,5 @@ void jactorio::data::PrototypeManager::ClearData() {
 		map.clear();
 	}
 
-	internalIdNew_ = internal_id_start;
+	internalIdNew_ = kInternalIdStart;
 }

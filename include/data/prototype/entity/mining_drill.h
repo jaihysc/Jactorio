@@ -53,12 +53,12 @@ namespace jactorio::data
 		PROTOTYPE_CATEGORY(mining_drill);
 
 		/// Mining ticks divided by this
-		PYTHON_PROP_REF_I(MiningDrill, double, miningSpeed, 1.f);
+		PYTHON_PROP_REF_I(double, miningSpeed, 1.f);
 
 		/// Number of tiles to extend the mining radius around the entity outside of entity tile width and height	
-		PYTHON_PROP_REF_I(MiningDrill, uint16_t, miningRadius, 1);
+		PYTHON_PROP_REF_I(uint16_t, miningRadius, 1);
 
-		PYTHON_PROP(MiningDrill, Tile4Way, resourceOutput);
+		PYTHON_PROP(Tile4Way, resourceOutput);
 
 
 		// ======================================================================

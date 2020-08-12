@@ -4,6 +4,9 @@
 #define JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
 #pragma once
 
+#include <algorithm>
+#include <vector>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
@@ -36,9 +39,38 @@
 // A python object with name _Sprite will be generated to avoid ambiguity
 // To construct sprite, a constructor with the name Sprite(...) is available
 
+
+///
+/// \brief Call from python context, stores traceback in prototype
+inline void ExtractPythonTraceback(jactorio::data::PrototypeBase& prototype) {
+	py::exec(
+		"import sys as _sys \n"
+		"_stack_frame = _sys._getframe() \n"
+	);
+
+	std::vector<std::string> stack_frames{};
+	
+	while (py::eval("_stack_frame != None").cast<bool>()) {
+		stack_frames.push_back(static_cast<py::str>(py::eval("_stack_frame")));
+
+		py::exec("_stack_frame = _stack_frame.f_back");
+	}
+
+	// Reverse as most recent call is last
+	std::reverse(stack_frames.begin(), stack_frames.end());
+
+	for (auto& stack_frame : stack_frames) {
+		prototype.pythonTraceback.append(stack_frame);
+		prototype.pythonTraceback.append("\n");
+	}
+	prototype.pythonTraceback.pop_back();  // Remove final newline
+}
+
 #define PYBIND_DATA_CLASS(cpp_class_, py_name_, ...)\
 	m.def(#py_name_, [](const std::string& iname = "") {\
 		auto* prototype = new (cpp_class_);\
+		\
+		ExtractPythonTraceback(*prototype);\
 		\
 		assert(active_data_manager);\
 		active_data_manager->DataRawAdd(iname, prototype, true);\

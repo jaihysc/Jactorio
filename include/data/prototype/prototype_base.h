@@ -8,65 +8,53 @@
 
 #include "jactorio.h"
 
+#include "core/utility.h"
 #include "data/data_category.h"
 #include "data/data_exception.h"
 
 // Creates a setters for python API primarily, to chain initialization
 
 // Setter passed by reference
-#define PYTHON_PROP_REF(class_, type, var_name) \
-	type var_name; \
-	class_* Set_##var_name(const type& (parameter_value__)) {\
-		this->var_name = parameter_value__;\
+#define PYTHON_PROP_REF(type__, var_name__) \
+	type__ var_name__; \
+	auto Set_##var_name__(const type__& (parameter_value__)) {\
+		this->var_name__ = parameter_value__;\
 		return this;\
-	}
+	} static_assert(true)
 
 // Setter passed by reference with initializer
-#define PYTHON_PROP_REF_I(class_, type, var_name, initializer) \
-	type var_name = initializer; \
-	class_* Set_##var_name(const type& (parameter_value__)) {\
-		this->var_name = parameter_value__;\
+#define PYTHON_PROP_REF_I(type__, var_name__, initializer) \
+	type__ var_name__ = initializer; \
+	auto Set_##var_name__(const type__& (parameter_value__)) {\
+		this->var_name__ = parameter_value__;\
 		return this;\
-	}
+	} static_assert(true)
 
 
 // Setter passed by value
-#define PYTHON_PROP(class_, type, var_name) \
-	type var_name; \
-	class_* Set_##var_name(type (parameter_value__)) {\
-		this->var_name = parameter_value__;\
+#define PYTHON_PROP(type__, var_name__) \
+	type__ var_name__; \
+	auto Set_##var_name__(type__ (parameter_value__)) {\
+		this->var_name__ = parameter_value__;\
 		return this;\
-	}
+	} static_assert(true)
 
 // Setter passed by value with initializer
-#define PYTHON_PROP_I(class_, type, var_name, initializer) \
-	type var_name = initializer; \
-	class_* Set_##var_name(type (parameter_value__)) {\
-		this->var_name = parameter_value__;\
+#define PYTHON_PROP_I(type__, var_name__, initializer) \
+	type__ var_name__ = initializer; \
+	auto Set_##var_name__(type__ (parameter_value__)) {\
+		this->var_name__ = parameter_value__;\
 		return this;\
-	}
-
-/*
-	The following is an example:
-
-	PYTHON_PROP_REF(Prototype_base, unsigned int, internal_id)
-
-	vvv
-
-	unsigned int internal_id = 0;
-
-	Prototype_base* set_internal_id(const unsigned int& internal_id) {
-		this->internal_id = internal_id;
-		return this;
-	}
-*/
+	} static_assert(true)
 
 // Assertions for post_load_validate
 #define J_DATA_ASSERT(condition, format)\
-	jactorio::data::DataAssert(condition, "\"%s\", " format, this->name.c_str())
+	jactorio::data::DataAssert(condition, "\"%s\", " format "\nTraceback (most recent call last):\n%s",\
+		this->name.c_str(), this->pythonTraceback.c_str())
 
 #define J_DATA_ASSERT_F(condition, format, ...)\
-	jactorio::data::DataAssert(condition, "\"%s\", " format, this->name.c_str(), __VA_ARGS__)
+	jactorio::data::DataAssert(condition, "\"%s\", " format "\nTraceback (most recent call last):\n%s",\
+		this->name.c_str(), __VA_ARGS__, this->pythonTraceback.c_str())
 
 
 namespace jactorio::data
@@ -105,7 +93,10 @@ namespace jactorio::data
 
 #define PROTOTYPE_CATEGORY(category__) \
 	static constexpr jactorio::data::DataCategory category = jactorio::data::DataCategory::category__;\
-	J_NODISCARD jactorio::data::DataCategory Category() const override { return jactorio::data::DataCategory::category__; }
+	J_NODISCARD jactorio::data::DataCategory Category() const override { return jactorio::data::DataCategory::category__; }\
+	static_assert(true)
+
+	using PrototypeIdT = uint32_t;
 
 	class PrototypeBase
 	{
@@ -128,7 +119,8 @@ namespace jactorio::data
 			swap(lhs.localizedDescription_, rhs.localizedDescription_);
 		}
 
-	public:
+		// ======================================================================
+
 		DataCategory category = DataCategory::none;
 		///
 		/// \brief Category of this Prototype item
@@ -137,31 +129,26 @@ namespace jactorio::data
 		///
 		/// \brief Unique per prototype, unique & auto assigned per new prototype added
 		/// 0 indicates invalid id
-		unsigned int internalId = 0;
+		uint32_t internalId = 0;
+
+		/// To location prototype was constructed
+		std::string pythonTraceback;
 
 
-		// ======================================================================
-		// Python properties
 		///
 		/// \brief Internal name, MUST BE unique per data_category
-		///
-		PYTHON_PROP_REF(PrototypeBase, std::string, name);
+		PYTHON_PROP_REF(std::string, name);
 
 		///
 		/// \brief Determines the priority of this prototype used in certain situations
-		/// see documentation within inheritors <br>
-		/// Automatically assigned incrementally alongside internal_id if not defined <br>
-		/// 0 indicates invalid id
-		PYTHON_PROP_REF_I(PrototypeBase, unsigned int, order, 0);
+		/// Automatically assigned incrementally alongside internalId if 0 
+		/// \remark 0 indicates invalid id
+		PYTHON_PROP_REF_I(unsigned int, order, 0);
 
 
 		// ======================================================================
 		// Localized names
-	protected:
-		std::string localizedName_;
-		std::string localizedDescription_;
 
-	public:
 		J_NODISCARD const std::string& GetLocalizedName() const { return localizedName_; }
 		virtual void SetLocalizedName(const std::string& localized_name) { this->localizedName_ = localized_name; }
 
@@ -199,6 +186,10 @@ namespace jactorio::data
 		/// \brief Called after the prototype has been validated
 		virtual void ValidatedPostLoad() {
 		}
+
+	protected:
+		std::string localizedName_;
+		std::string localizedDescription_;
 	};
 }
 

@@ -8,16 +8,16 @@
 
 namespace jactorio::data
 {
-	/// Default health of all Health entities
-	constexpr uint16_t kDefaultHealth = 1;
-
 	struct HealthEntityData : EntityData
 	{
-		uint16_t health;
+		uint16_t health = 0;
 	};
 
 	class HealthEntity : public Entity
 	{
+		/// Default health of all Health entities
+		static constexpr uint16_t kDefaultHealth = 1;
+
 	protected:
 		HealthEntity() = default;
 
@@ -25,7 +25,7 @@ namespace jactorio::data
 		///
 		/// \brief How many hit points this entity can have before it dies
 		/// \remark 0 max health is invalid
-		PYTHON_PROP_REF_I(HealthEntity, uint16_t, maxHealth, kDefaultHealth);
+		PYTHON_PROP_REF_I(uint16_t, maxHealth, kDefaultHealth);
 
 		void PostLoadValidate(const PrototypeManager& data_manager) const override {
 			Entity::PostLoadValidate(data_manager);

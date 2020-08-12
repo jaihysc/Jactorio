@@ -37,10 +37,7 @@ namespace jactorio::data
 		static constexpr char kInventorySelectedCursor[] = "__core__/inventory-selected-cursor";
 		static constexpr char kResetIname[]              = "__core__/reset";
 
-	private:
-		static constexpr StackCount kDefaultStackSize = 50;
 
-	public:
 		PROTOTYPE_CATEGORY(item);
 
 		Item()
@@ -58,12 +55,15 @@ namespace jactorio::data
 
 		///
 		/// \brief Number of items which can be together
-		PYTHON_PROP_REF(Item, StackCount, stackSize)
+		PYTHON_PROP_REF(StackCount, stackSize);
 
 
 		void ValidatedPostLoad() override {
 			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
 		}
+
+	private:
+		static constexpr StackCount kDefaultStackSize = 50;
 	};
 }
 

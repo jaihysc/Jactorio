@@ -55,7 +55,7 @@ namespace jactorio::data
 		PROTOTYPE_CATEGORY(assembly_machine);
 
 		/// Original crafting time / assemblySpeed = new crafting time
-		PYTHON_PROP_REF_I(AssemblyMachine, ProtoFloatT, assemblySpeed, 1.f);
+		PYTHON_PROP_REF_I(ProtoFloatT, assemblySpeed, 1.f);
 
 		// ======================================================================
 

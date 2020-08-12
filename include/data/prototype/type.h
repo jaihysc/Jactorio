@@ -57,7 +57,7 @@ namespace jactorio::data
 	                          TyX& x, TyY& y, TyInc increment = 1) {
 		static_assert(std::is_same<TyX, TyY>::value);
 		static_assert(std::is_signed<TyX>::value);
-		
+
 		switch (orientation) {
 		case Orientation::up:
 			y -= static_cast<TyX>(increment);

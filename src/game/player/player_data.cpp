@@ -207,7 +207,7 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 	 */
 
 	// x and y are receive coordinates
-	for (int x = world_x; x < world_x + entity_ptr->tileWidth; ++x) {
+	for (uint32_t x = world_x; x < world_x + entity_ptr->tileWidth; ++x) {
 		const auto y = world_y - 1;
 
 		CallOnNeighborUpdate(world_data, logic_data,
@@ -215,7 +215,7 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 		                     x, y,
 		                     data::Orientation::down);
 	}
-	for (int y = world_y; y < world_y + entity_ptr->tileHeight; ++y) {
+	for (uint32_t y = world_y; y < world_y + entity_ptr->tileHeight; ++y) {
 		const auto x = world_x + entity_ptr->tileWidth;
 
 		CallOnNeighborUpdate(world_data, logic_data,
@@ -223,7 +223,7 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 		                     x, y,
 		                     data::Orientation::left);
 	}
-	for (int x = world_x + entity_ptr->tileWidth - 1; x >= world_x; --x) {
+	for (int32_t x = world_x + entity_ptr->tileWidth - 1; x >= world_x; --x) {
 		const auto y = world_y + entity_ptr->tileHeight;
 
 		CallOnNeighborUpdate(world_data, logic_data,
@@ -231,7 +231,7 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 		                     x, y,
 		                     data::Orientation::up);
 	}
-	for (int y = world_y + entity_ptr->tileHeight - 1; y >= world_y; --y) {
+	for (int32_t y = world_y + entity_ptr->tileHeight - 1; y >= world_y; --y) {
 		const auto x = world_x - 1;
 		CallOnNeighborUpdate(world_data, logic_data,
 		                     x + 1, y,
