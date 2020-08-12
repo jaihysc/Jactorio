@@ -66,26 +66,24 @@ inline void ExtractPythonTraceback(jactorio::data::PrototypeBase& prototype) {
 	prototype.pythonTraceback.pop_back();  // Remove final newline
 }
 
-#define PYBIND_DATA_CLASS(cpp_class_, py_name_, ...)\
-	m.def(#py_name_, [](const std::string& iname = "") {\
-		auto* prototype = new (cpp_class_);\
-		\
-		ExtractPythonTraceback(*prototype);\
-		\
+#define PYBIND_DATA_CLASS(cpp_class__, py_name__, ...)\
+	m.def(#py_name__, [](const std::string& iname = "") {\
 		assert(active_data_manager);\
-		active_data_manager->DataRawAdd(iname, prototype, true);\
+		auto& prototype = active_data_manager->AddProto<cpp_class__>(iname);\
 		\
-		return prototype;\
+		ExtractPythonTraceback(prototype);\
+		\
+		return &prototype;\
 	}, py::arg("iname") = "", pybind11::return_value_policy::reference);\
-	py::class_<cpp_class_, __VA_ARGS__>(m, "_" #py_name_)
+	py::class_<cpp_class__, __VA_ARGS__>(m, "_" #py_name__)
 
 // Does not define a function for creating the class
-#define PYBIND_DATA_CLASS_ABSTRACT(cpp_class_, py_name_, inherits_)\
-	py::class_<cpp_class_, inherits_>(m, "_" #py_name_)
+#define PYBIND_DATA_CLASS_ABSTRACT(cpp_class__, py_name__, inherits_)\
+	py::class_<cpp_class__, inherits_>(m, "_" #py_name__)
 
 
-#define PYBIND_TYPE_CLASS(cpp_class_, py_name_)\
-	py::class_<cpp_class_>(m, "_" #py_name_)
+#define PYBIND_TYPE_CLASS(cpp_class__, py_name__)\
+	py::class_<cpp_class__>(m, "_" #py_name__)
 
 // Macros below generates a self returning setter and the actual variable
 // For standard class members, a setter exists: set_NAME_OF_MEMBER
@@ -114,15 +112,15 @@ inline void ExtractPythonTraceback(jactorio::data::PrototypeBase& prototype) {
 	.def_readwrite("_" #name_, &class_::name_)
 
 // If the python name is different from the c++ name
-#define PYBIND_PROP_S(class_, py_name_, cpp_name_, cpp_name_set_)\
-	.def          (#py_name_    , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
-	.def_readwrite("_" #py_name_, &class_::cpp_name_)
+#define PYBIND_PROP_S(class_, py_name__, cpp_name_, cpp_name_set_)\
+	.def          (#py_name__    , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
+	.def_readwrite("_" #py_name__, &class_::cpp_name_)
 
 
 // If the member utilizes a getter and settler
-#define PYBIND_PROP_GET_SET(class_, py_name_, cpp_name_set_, cpp_name_get_)\
-	.def(#py_name_       , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
-	.def("get_" #py_name_, &class_::cpp_name_get_, pybind11::return_value_policy::reference)
+#define PYBIND_PROP_GET_SET(class_, py_name__, cpp_name_set_, cpp_name_get_)\
+	.def(#py_name__       , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
+	.def("get_" #py_name__, &class_::cpp_name_get_, pybind11::return_value_policy::reference)
 
 // ======================================================================
 

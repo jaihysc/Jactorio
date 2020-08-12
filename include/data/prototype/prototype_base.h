@@ -65,7 +65,7 @@ namespace jactorio::data
 	/// \brief Creates a formatted log message if log level permits
 	template <typename ... Args, typename = std::common_type<Args ...>>
 	void DataAssert(const bool condition, const char* format, Args&& ... args) {
-		constexpr int max_msg_length = 1000;
+		constexpr int max_msg_length = 3000;
 
 		if (!(condition)) {
 			char buffer[max_msg_length + 1];

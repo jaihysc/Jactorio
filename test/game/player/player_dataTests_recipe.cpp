@@ -37,32 +37,21 @@ namespace jactorio::game
 			 */
 			// 3 item1 + 1 item2 -> 1 product
 			// 5 sub1 + 10 sub2 -> 2 item1
-			itemProduct_ = new data::Item();
-			dataManager_.DataRawAdd("item-product", itemProduct_);
+			itemProduct_ = &dataManager_.AddProto<data::Item>("item-product");
 
-			item1_ = new data::Item();
-			dataManager_.DataRawAdd("item-1", item1_);
+			item1_ = &dataManager_.AddProto<data::Item>("item-1");
+			item2_ = &dataManager_.AddProto<data::Item>("item-2");
 
-			item2_ = new data::Item();
-			dataManager_.DataRawAdd("item-2", item2_);
+			itemSub1_ = &dataManager_.AddProto<data::Item>("item-sub-1");
+			itemSub2_ = &dataManager_.AddProto<data::Item>("item-sub-2");
 
-			itemSub1_ = new data::Item();
-			dataManager_.DataRawAdd("item-sub-1", itemSub1_);
-
-			itemSub2_ = new data::Item();
-			dataManager_.DataRawAdd("item-sub-2", itemSub2_);
-
-			finalRecipe_ = new data::Recipe();
+			finalRecipe_ = &dataManager_.AddProto<data::Recipe>("item-product-recipe");
 			finalRecipe_->Set_ingredients({{"item-1", 3}, {"item-2", 1}});
 			finalRecipe_->product = {"item-product", 1};
 
-			dataManager_.DataRawAdd("item-product-recipe", finalRecipe_);
-
-			itemRecipe_ = new data::Recipe();
+			itemRecipe_ = &dataManager_.AddProto<data::Recipe>("item-1-recipe");
 			itemRecipe_->Set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});
 			itemRecipe_->product = {"item-1", 2};
-
-			dataManager_.DataRawAdd("item-1-recipe", itemRecipe_);
 		}
 	};
 
@@ -79,14 +68,9 @@ namespace jactorio::game
 		// Queueing 2 recipes will remove the ingredients from the player inventory, but will not return any products
 		// since recipe_craft_tick() is not called
 
-		auto* item         = new data::Item();
-		auto* item_product = new data::Item();
-
-
 		// Register items
-		dataManager_.DataRawAdd("item-1", item);
-
-		dataManager_.DataRawAdd("item-product", item_product);
+		auto& item = dataManager_.AddProto<data::Item>("item-1");
+		auto& item_product = dataManager_.AddProto<data::Item>("item-product");
 
 		// Register recipes
 		auto recipe = data::Recipe();
@@ -95,14 +79,14 @@ namespace jactorio::game
 		recipe.Set_craftingTime(1);
 
 		// 10 of item in player inventory
-		playerData_.inventoryPlayer[0] = {item, 10};
+		playerData_.inventoryPlayer[0] = {&item, 10};
 
 		// Queue 2 crafts
 		playerData_.RecipeQueue(dataManager_, recipe);
 		playerData_.RecipeQueue(dataManager_, recipe);
 
 		// Used up 2 * 2 (4) items
-		EXPECT_EQ(playerData_.inventoryPlayer[0].item, item);
+		EXPECT_EQ(playerData_.inventoryPlayer[0].item, &item);
 		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 6);
 
 		EXPECT_EQ(playerData_.inventoryPlayer[1].item, nullptr);
@@ -118,7 +102,7 @@ namespace jactorio::game
 
 		playerData_.RecipeCraftTick(dataManager_, 90);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[1].item, item_product);
+		EXPECT_EQ(playerData_.inventoryPlayer[1].item, &item_product);
 		EXPECT_EQ(playerData_.inventoryPlayer[1].count, 2);
 	}
 
@@ -171,7 +155,7 @@ namespace jactorio::game
 		EXPECT_EQ(playerData_.GetCraftingItemExtras().size(), 0);
 
 		// Ensure there were no excess items
-		for (int i = 1; i < playerData_.inventoryPlayer.size(); ++i) {
+		for (std::size_t i = 1; i < playerData_.inventoryPlayer.size(); ++i) {
 			EXPECT_EQ(playerData_.inventoryPlayer[i].item, nullptr);
 		}
 	}

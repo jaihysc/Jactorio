@@ -43,8 +43,7 @@ namespace jactorio::game
 		/// \brief If the test involves the selection cursor, which is loaded in the data_manager
 		void SetupMouseCursor() {
 			setupCursor_  = true;
-			cursorSprite_ = new data::Sprite{};
-			dataManager_.DataRawAdd("__core__/cursor-select", cursorSprite_);
+			cursorSprite_ = &dataManager_.AddProto<data::Sprite>("__core__/cursor-select");
 		}
 	};
 

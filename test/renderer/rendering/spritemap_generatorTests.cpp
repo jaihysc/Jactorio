@@ -20,19 +20,19 @@ namespace jactorio::renderer
 
 	TEST_F(SpritemapCreationTest, CreateSpritemap) {
 		// Sprite data delete by guard
-		dataManager_.DataRawAdd("sprite1",
-		                        new data::Sprite("test/graphics/test/test_tile.png",
-		                                         {data::Sprite::SpriteGroup::terrain}));
-		dataManager_.DataRawAdd("sprite2",
-		                        new data::Sprite("test/graphics/test/test_tile1.png",
-		                                         {data::Sprite::SpriteGroup::terrain}));
+		dataManager_.AddProto<data::Sprite>("sprite1",
+		                                    data::Sprite("test/graphics/test/test_tile.png",
+		                                                 {data::Sprite::SpriteGroup::terrain}));
+		dataManager_.AddProto<data::Sprite>("sprite2",
+		                                    data::Sprite("test/graphics/test/test_tile1.png",
+		                                                 {data::Sprite::SpriteGroup::terrain}));
 
-		dataManager_.DataRawAdd("sprite3",
-		                        new data::Sprite("test/graphics/test/test_tile2.png",
-		                                         {data::Sprite::SpriteGroup::gui}));
-		dataManager_.DataRawAdd("sprite4",
-		                        new data::Sprite("test/graphics/test/test_tile3.png",
-		                                         {data::Sprite::SpriteGroup::gui}));
+		dataManager_.AddProto<data::Sprite>("sprite3",
+		                                    data::Sprite("test/graphics/test/test_tile2.png",
+		                                                 {data::Sprite::SpriteGroup::gui}));
+		dataManager_.AddProto<data::Sprite>("sprite4",
+		                                    data::Sprite("test/graphics/test/test_tile3.png",
+		                                                 {data::Sprite::SpriteGroup::gui}));
 
 		// Should filter out to only 2 entries
 		const auto data = rendererSprites_.CreateSpritemap(dataManager_, data::Sprite::SpriteGroup::terrain, false);
@@ -47,25 +47,25 @@ namespace jactorio::renderer
 
 		// Sprite data delete by guard
 		// Terrain
-		dataManager_.DataRawAdd("sprite1",
-		                        new data::Sprite("test/graphics/test/test_tile.png",
-		                                         {data::Sprite::SpriteGroup::terrain}));
-		dataManager_.DataRawAdd("sprite2",
-		                        new data::Sprite("test/graphics/test/test_tile1.png",
-		                                         {data::Sprite::SpriteGroup::terrain}));
+		dataManager_.AddProto<data::Sprite>("sprite1",
+		                                    data::Sprite("test/graphics/test/test_tile.png",
+		                                                 {data::Sprite::SpriteGroup::terrain}));
+		dataManager_.AddProto<data::Sprite>("sprite2",
+		                                    data::Sprite("test/graphics/test/test_tile1.png",
+		                                                 {data::Sprite::SpriteGroup::terrain}));
 
 		// Gui
-		dataManager_.DataRawAdd("sprite3",
-		                        new data::Sprite("test/graphics/test/test_tile2.png",
-		                                         {data::Sprite::SpriteGroup::gui}));
-		dataManager_.DataRawAdd("sprite4",
-		                        new data::Sprite("test/graphics/test/test_tile3.png",
-		                                         {data::Sprite::SpriteGroup::gui}));
+		dataManager_.AddProto<data::Sprite>("sprite3",
+		                                    data::Sprite("test/graphics/test/test_tile2.png",
+		                                                 {data::Sprite::SpriteGroup::gui}));
+		dataManager_.AddProto<data::Sprite>("sprite4",
+		                                    data::Sprite("test/graphics/test/test_tile3.png",
+		                                                 {data::Sprite::SpriteGroup::gui}));
 
 		// None
-		dataManager_.DataRawAdd("spriteNone",
-		                        new data::Sprite("test/graphics/test/test_tile.png",
-		                                         {}));
+		dataManager_.AddProto<data::Sprite>("spriteNone",
+		                                    data::Sprite("test/graphics/test/test_tile.png",
+		                                                 {}));
 
 		// Should filter out to 3 entries, total width of 32 * 3
 		const auto data = rendererSprites_.CreateSpritemap(dataManager_, data::Sprite::SpriteGroup::terrain, false);

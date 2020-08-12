@@ -235,9 +235,9 @@ namespace jactorio::game
 		// Create entity
 		auto item = data::Item();
 
-		auto* entity       = MakeRegisterPrototype<data::ContainerEntity>(dataManager_);
-		entity->pickupTime = 1.f;
-		entity->SetItem(&item);
+		auto& entity      = dataManager_.AddProto<data::ContainerEntity>();
+		entity.pickupTime = 1.f;
+		entity.SetItem(&item);
 
 		// Create world with entity at 0, 0
 		worldData_.EmplaceChunk(0, 0);
@@ -245,15 +245,15 @@ namespace jactorio::game
 		auto& tile  = *worldData_.GetTile(0, 0);
 		auto& tile2 = *worldData_.GetTile(1, 0);
 
-		tile.SetEntityPrototype(entity);
-		tile2.SetEntityPrototype(entity);
+		tile.SetEntityPrototype(&entity);
+		tile2.SetEntityPrototype(&entity);
 
 		// Create unique data by calling build event for prototype with layer
 		{
 			WorldData world_data{};
-			entity->OnBuild(world_data, logicData_,
-			                {},
-			                tile.GetLayer(ChunkTile::ChunkLayer::entity), data::Orientation::up);
+			entity.OnBuild(world_data, logicData_,
+			               {},
+			               tile.GetLayer(ChunkTile::ChunkLayer::entity), data::Orientation::up);
 		}
 
 
@@ -267,13 +267,13 @@ namespace jactorio::game
 		EXPECT_EQ(playerData_.GetPickupPercentage(), 0.5f);  // 50% picked up 30 ticks out of 60
 		EXPECT_EQ(
 			tile.GetEntityPrototype(),
-			entity);  // Not picked up yet - 10 more ticks needed to reach 1 second
+			&entity);  // Not picked up yet - 10 more ticks needed to reach 1 second
 
 
 		playerData_.TryPickup(worldData_, logicData_, 1, 0, 30);  // Selecting different tile will reset pickup counter
 		EXPECT_EQ(
 			tile2.GetEntityPrototype(),
-			entity);  // Not picked up yet - 50 more to 1 second since counter reset
+			&entity);  // Not picked up yet - 50 more to 1 second since counter reset
 
 		playerData_.TryPickup(worldData_, logicData_, 0, 0, 50);
 		playerData_.TryPickup(worldData_, logicData_, 0, 0, 10);
@@ -292,9 +292,9 @@ namespace jactorio::game
 		// Create resource entity
 		auto item = data::Item();
 
-		auto* entity       = MakeRegisterPrototype<data::ResourceEntity>(dataManager_);
-		entity->pickupTime = 3.f;
-		entity->SetItem(&item);
+		auto& entity      = dataManager_.AddProto<data::ResourceEntity>();
+		entity.pickupTime = 3.f;
+		entity.SetItem(&item);
 
 		// Create world with the resource entity at 0, 0
 		worldData_.EmplaceChunk(0, 0);
@@ -302,7 +302,7 @@ namespace jactorio::game
 		auto& tile  = *worldData_.GetTile(0, 0);
 		auto& tile2 = *worldData_.GetTile(1, 0);
 
-		tile.SetEntityPrototype(entity, ChunkTile::ChunkLayer::resource);
+		tile.SetEntityPrototype(&entity, ChunkTile::ChunkLayer::resource);
 
 		// Holds the resources available at the tile, should be decremented when extracted
 		auto* resource_data = tile.GetLayer(ChunkTile::ChunkLayer::resource)
@@ -314,7 +314,7 @@ namespace jactorio::game
 		// Resource entity should only become nullptr after all the resources are extracted
 		EXPECT_EQ(
 			tile.GetEntityPrototype(ChunkTile::ChunkLayer::resource),
-			entity);
+			&entity);
 
 		EXPECT_EQ(resource_data->resourceAmount, 1);
 
@@ -344,12 +344,12 @@ namespace jactorio::game
 
 
 		// Resource entity
-		auto* resource_entity       = MakeRegisterPrototype<data::ResourceEntity>(dataManager_);
-		resource_entity->pickupTime = 3.f;
-		resource_entity->SetItem(&item);
+		auto& resource_entity      = dataManager_.AddProto<data::ResourceEntity>();
+		resource_entity.pickupTime = 3.f;
+		resource_entity.SetItem(&item);
 
 
-		tile.SetEntityPrototype(resource_entity, ChunkTile::ChunkLayer::resource);
+		tile.SetEntityPrototype(&resource_entity, ChunkTile::ChunkLayer::resource);
 
 		// Holds the resources available at the tile, should be decremented when extracted
 		auto* resource_data = tile.GetLayer(ChunkTile::ChunkLayer::resource)
@@ -357,12 +357,12 @@ namespace jactorio::game
 
 
 		// Other entity (e.g Container_entity)
-		auto* container_entity       = MakeRegisterPrototype<data::ContainerEntity>(dataManager_);
-		container_entity->pickupTime = 1.f;
-		container_entity->SetItem(&item);
+		auto& container_entity      = dataManager_.AddProto<data::ContainerEntity>();
+		container_entity.pickupTime = 1.f;
+		container_entity.SetItem(&item);
 
 
-		tile.SetEntityPrototype(container_entity);
+		tile.SetEntityPrototype(&container_entity);
 
 		//
 		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);  // Container entity takes priority

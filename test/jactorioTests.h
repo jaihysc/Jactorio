@@ -20,17 +20,6 @@ namespace jactorio
 	constexpr double kFloatingAbsErr = 0.000000001;
 
 	///
-	/// \brief Makes and registers prototype with prototype manager
-	template <typename TPrototype>
-	TPrototype* MakeRegisterPrototype(data::PrototypeManager& prototype_manager, const std::string& iname = "") {
-		auto unique = std::make_unique<TPrototype>();
-		auto ptr    = unique.get();
-		prototype_manager.DataRawAdd(iname, unique.release());
-
-		return ptr;
-	}
-
-	///
 	/// \brief Creates a container of size 10 at coordinates
 	inline game::ChunkTileLayer& TestSetupContainer(game::WorldData& world_data,
 	                                                const WorldCoord& world_coords,
@@ -165,18 +154,9 @@ namespace jactorio
 		rt.recipe.ingredients  = {{"@1", 1}, {"@2", 1}};
 		rt.recipe.product      = {"@3", 1};
 
-		auto i_1 = std::make_unique<data::Item>();
-		rt.item1 = i_1.get();
-
-		auto i_2 = std::make_unique<data::Item>();
-		rt.item2 = i_2.get();
-
-		auto item_3    = std::make_unique<data::Item>();
-		rt.itemProduct = item_3.get();
-
-		proto_manager.DataRawAdd("@1", i_1.release());
-		proto_manager.DataRawAdd("@2", i_2.release());
-		proto_manager.DataRawAdd("@3", item_3.release());
+		rt.item1 = &proto_manager.AddProto<data::Item>("@1");
+		rt.item2 = &proto_manager.AddProto<data::Item>("@2");
+		rt.itemProduct = &proto_manager.AddProto<data::Item>("@3");
 
 		return rt;
 	}

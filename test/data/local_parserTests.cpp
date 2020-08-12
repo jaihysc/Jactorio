@@ -19,12 +19,8 @@ namespace jactorio::data
 		// Setup prototypes
 		dataManager_.SetDirectoryPrefix("test");
 
-		auto* prototype = new Sprite();
-		dataManager_.DataRawAdd("test_tile", prototype, true);
-
-		auto* prototype2 = new Sprite();
-		dataManager_.DataRawAdd("test_tile1", prototype2, true);
-
+		auto& prototype = dataManager_.AddProto<Sprite>("test_tile");
+		auto& prototype2 = dataManager_.AddProto<Sprite>("test_tile1");
 
 		const std::string str =
 			R"(test_tile=Test tile 1
@@ -36,8 +32,8 @@ namespace jactorio::data
 		LocalParse(dataManager_, str, "test");
 
 		// Validate local was set
-		EXPECT_EQ(prototype->GetLocalizedName(), "Test tile 1");
-		EXPECT_EQ(prototype2->GetLocalizedName(), "Test tile 2");
+		EXPECT_EQ(prototype.GetLocalizedName(), "Test tile 1");
+		EXPECT_EQ(prototype2.GetLocalizedName(), "Test tile 2");
 	}
 
 	void ExpectErr(PrototypeManager& data_manager, const std::string& str) {
