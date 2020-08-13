@@ -187,24 +187,8 @@ void data::PrototypeManager::GenerateRelocationTable() {
 	}
 }
 
-
-void data::PrototypeManager::GenerateSerializationTable() {
-	serializationTable_.clear();
-	for (auto& map : dataRaw_) {
-		for (auto& [iname, pointer] : map) {
-			assert(pointer != nullptr);
-			serializationTable_[pointer] = pointer->internalId - 1;  // Internal id starts at 1
-		}
-	}
-}
-
-data::PrototypeIdT data::PrototypeManager::SerializationTableGet(const PrototypeBase& prototype) const noexcept {
-	return serializationTable_.at(&prototype);
-}
-
 data::PrototypeManager::DebugInfo data::PrototypeManager::GetDebugInfo() const {
 	return {
 		relocationTable_,
-		serializationTable_
 	};
 }

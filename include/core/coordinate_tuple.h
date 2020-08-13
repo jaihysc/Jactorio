@@ -6,6 +6,10 @@
 
 #include <tuple>
 
+#include "data/cereal/serialize.h"
+
+#include <cereal/types/base_class.hpp>
+
 namespace jactorio::core
 {
 	template <typename TVal>
@@ -25,6 +29,10 @@ namespace jactorio::core
 
 		TVal x;
 
+
+		CEREAL_SERIALIZE(archive) {
+			archive(x);
+		}
 
 		friend bool operator==(const Position1& lhs, const Position1& rhs) {
 			return lhs.x == rhs.x;
@@ -55,6 +63,10 @@ namespace jactorio::core
 		TVal y;
 
 
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<Position1<TVal>>(this), y);
+		}
+
 		friend bool operator==(const Position2& lhs, const Position2& rhs) {
 			return std::tie(static_cast<const Position1<TVal>&>(lhs), lhs.y)
 				== std::tie(static_cast<const Position1<TVal>&>(rhs), rhs.y);
@@ -84,6 +96,10 @@ namespace jactorio::core
 
 		TVal z;
 
+		
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<Position2<TVal>>(this), z);
+		}
 
 		friend bool operator==(const Position3& lhs, const Position3& rhs) {
 			return std::tie(static_cast<const Position2<TVal>&>(lhs), lhs.z)

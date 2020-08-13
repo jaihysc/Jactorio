@@ -19,6 +19,12 @@
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/imgui_manager.h"
 
+
+
+
+#include <cereal/archives/portable_binary.hpp>
+#include <fstream>
+
 using namespace jactorio;
 
 constexpr float kMoveSpeed = 0.8f;
@@ -202,6 +208,13 @@ void game::InitLogicLoop() {
 		game_data->player.TryPickup(game_data->world, game_data->logic,
 		                            tile_selected.x, tile_selected.y);
 	}, MouseInput::right, InputAction::key_held);
+
+
+	game_data->input.key.Register([]() {
+		std::ofstream out_cereal_stream("savegame.bin", std::ios_base::binary);
+		cereal::PortableBinaryOutputArchive output_archive(out_cereal_stream);
+		output_archive(game_data->world);
+	}, SDLK_l, InputAction::key_up);
 
 
 	LogicLoop();

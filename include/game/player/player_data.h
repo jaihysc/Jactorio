@@ -78,12 +78,12 @@ namespace jactorio::game
 		J_NODISCARD float GetPlayerPositionY() const { return playerPositionY_; }
 
 		///
-		/// If the tile at the specified amount is valid, the player will be moved to that tile
+		/// \brief If the tile at the specified amount is valid, the player will be moved to that tile
 		/// \param amount
 		void MovePlayerX(float amount);
 
 		///
-		/// If the tile at the specified amount is valid, the player will be moved to that tile
+		/// \brief If the tile at the specified amount is valid, the player will be moved to that tile
 		/// \param amount
 		void MovePlayerY(float amount);
 

@@ -86,7 +86,8 @@ bool game::PlayerData::MouseSelectedTileInRange() const {
 	// Maximum distance of from the player where tiles can be reached
 	constexpr unsigned int max_reach = 34;
 	const auto tile_dist             =
-		abs(playerPositionX_ - cursor_position.x) + abs(playerPositionY_ - cursor_position.y);
+		abs(playerPositionX_ - core::SafeCast<float>(cursor_position.x)) +
+		abs(playerPositionY_ - core::SafeCast<float>(cursor_position.y));
 
 	return tile_dist <= max_reach;
 }
@@ -148,6 +149,7 @@ void game::PlayerData::RotatePlacementOrientation() {
 		break;
 	default:
 		assert(false);  // Missing switch case
+		placementOrientation = data::Orientation::up;
 	}
 }
 
@@ -167,35 +169,34 @@ void game::PlayerData::CounterRotatePlacementOrientation() {
 		break;
 	default:
 		assert(false);  // Missing switch case
+		placementOrientation = data::Orientation::up;
 	}
 }
 
-void CallOnNeighborUpdate(game::WorldData& world_data,
-                          game::LogicData& logic_data,
-                          const WorldCoordAxis emit_x, const WorldCoordAxis emit_y,
-                          const WorldCoordAxis receive_x, const WorldCoordAxis receive_y,
-                          const data::Orientation target_orientation) {
-	const game::ChunkTile* tile = world_data.GetTile(receive_x, receive_y);
-	if (tile) {
-		auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
-
-		const auto* entity = static_cast<const data::Entity*>(layer.prototypeData);
-		if (entity)
-			entity->OnNeighborUpdate(world_data,
-			                         logic_data,
-			                         {emit_x, emit_y},
-			                         {receive_x, receive_y}, target_orientation);
-	}
-}
 
 ///
-/// \param world_x Top left tile x
-/// \param world_y Top left tile y
+/// \param world_coord Top left tile x, y
 void UpdateNeighboringEntities(game::WorldData& world_data,
                                game::LogicData& logic_data,
-                               const WorldCoordAxis world_x,
-                               const WorldCoordAxis world_y,
+                               const WorldCoord& world_coord,
                                const data::Entity* entity_ptr) {
+
+	auto call_on_neighbor_update = [&](const WorldCoordAxis emit_x, const WorldCoordAxis emit_y,
+	                                   const WorldCoordAxis receive_x, const WorldCoordAxis receive_y,
+	                                   const data::Orientation target_orientation) {
+		const game::ChunkTile* tile = world_data.GetTile(receive_x, receive_y);
+		if (tile) {
+			auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
+
+			const auto* entity = static_cast<const data::Entity*>(layer.prototypeData);
+			if (entity)
+				entity->OnNeighborUpdate(world_data,
+				                         logic_data,
+				                         {emit_x, emit_y},
+				                         {receive_x, receive_y}, target_orientation);
+		}
+	};
+
 	// Clockwise from top left
 
 	/*
@@ -207,36 +208,37 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 	 */
 
 	// x and y are receive coordinates
-	for (uint32_t x = world_x; x < world_x + entity_ptr->tileWidth; ++x) {
-		const auto y = world_y - 1;
+	for (data::ProtoUintT i = 0; i < entity_ptr->tileWidth; ++i) {
+		const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(i);
+		const auto y = world_coord.y - 1;
 
-		CallOnNeighborUpdate(world_data, logic_data,
-		                     x, y + 1,
-		                     x, y,
-		                     data::Orientation::down);
+		call_on_neighbor_update(x, y + 1,
+		                        x, y,
+		                        data::Orientation::down);
 	}
-	for (uint32_t y = world_y; y < world_y + entity_ptr->tileHeight; ++y) {
-		const auto x = world_x + entity_ptr->tileWidth;
+	for (data::ProtoUintT i = 0; i < entity_ptr->tileHeight; ++i) {
+		const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth);
+		const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(i);
 
-		CallOnNeighborUpdate(world_data, logic_data,
-		                     x - 1, y,
-		                     x, y,
-		                     data::Orientation::left);
+		call_on_neighbor_update(x - 1, y,
+		                        x, y,
+		                        data::Orientation::left);
 	}
-	for (int32_t x = world_x + entity_ptr->tileWidth - 1; x >= world_x; --x) {
-		const auto y = world_y + entity_ptr->tileHeight;
+	for (data::ProtoUintT i = 1; i <= entity_ptr->tileWidth; ++i) {
+		const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth) - core::SafeCast<WorldCoordAxis>(i);
+		const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight);
 
-		CallOnNeighborUpdate(world_data, logic_data,
-		                     x, y - 1,
-		                     x, y,
-		                     data::Orientation::up);
+		call_on_neighbor_update(x, y - 1,
+		                        x, y,
+		                        data::Orientation::up);
 	}
-	for (int32_t y = world_y + entity_ptr->tileHeight - 1; y >= world_y; --y) {
-		const auto x = world_x - 1;
-		CallOnNeighborUpdate(world_data, logic_data,
-		                     x + 1, y,
-		                     x, y,
-		                     data::Orientation::right);
+	for (data::ProtoUintT i = 1; i <= entity_ptr->tileHeight; ++i) {
+		const auto x = world_coord.x - 1;
+		const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight) - core::SafeCast<WorldCoordAxis>(i);
+
+		call_on_neighbor_update(x + 1, y,
+		                        x, y,
+		                        data::Orientation::right);
 	}
 }
 
@@ -283,8 +285,8 @@ bool game::PlayerData::TryPlaceEntity(WorldData& world_data,
 
 	entity_ptr->OnBuild(world_data, logic_data,
 	                    {world_x, world_y}, selected_layer, placementOrientation);
-	UpdateNeighboringEntities(world_data, logic_data, world_x, world_y, entity_ptr);
-	world_data.updateDispatcher.Dispatch(world_x, world_y, data::UpdateType::place);
+	UpdateNeighboringEntities(world_data, logic_data, {world_x, world_y}, entity_ptr);
+	world_data.updateDispatcher.Dispatch(world_data, world_x, world_y, data::UpdateType::place);
 
 	return true;
 }
@@ -406,9 +408,9 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 			const bool result = PlaceEntityAtCoords(world_data, nullptr, tile_x, tile_y);
 			assert(result);  // false indicates failed to remove entity
 
-			UpdateNeighboringEntities(world_data, logic_data, tl_tile_x, tl_tile_y, entity);
+			UpdateNeighboringEntities(world_data, logic_data, {tl_tile_x, tl_tile_y}, entity);
 
-			world_data.updateDispatcher.Dispatch(tile_x, tile_y, data::UpdateType::remove);
+			world_data.updateDispatcher.Dispatch(world_data, tile_x, tile_y, data::UpdateType::remove);
 		}
 	}
 }
@@ -429,8 +431,8 @@ void game::PlayerData::HandleInventoryActions(const data::PrototypeManager& data
 	const bool is_player_inv = &inv == &inventoryPlayer;
 
 
-	InventoryClick(data_manager, 
-				   core::SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
+	InventoryClick(data_manager,
+	               core::SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
 	InventorySort(inventoryPlayer);
 }
 
@@ -438,8 +440,8 @@ void game::PlayerData::InventorySort(data::Item::Inventory& inv) const {
 	// The inventory must be sorted without moving the selected cursor
 
 	// Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
-	std::vector<data::Item::Stack> inv_temp;
-	inv_temp.reserve(inv.size());
+	std::vector<data::Item::Stack> sorted_inv;
+	sorted_inv.reserve(inv.size());
 	for (const auto& stack : inv) {
 		// Skip the cursor
 		if (stack.item == nullptr ||
@@ -447,11 +449,11 @@ void game::PlayerData::InventorySort(data::Item::Inventory& inv) const {
 			continue;
 		}
 
-		inv_temp.push_back(stack);
+		sorted_inv.push_back(stack);
 	}
 
 	// Sort temp inventory (does not contain cursor)
-	std::sort(inv_temp.begin(), inv_temp.end(),
+	std::sort(sorted_inv.begin(), sorted_inv.end(),
 	          [](const data::Item::Stack a, const data::Item::Stack b) {
 		          const auto& a_name = a.item->GetLocalizedName();
 		          const auto& b_name = b.item->GetLocalizedName();
@@ -460,82 +462,91 @@ void game::PlayerData::InventorySort(data::Item::Inventory& inv) const {
 	          });
 
 	// Compress item stacks
-	for (int64_t i = inv_temp.size() - 1; i >= 0; --i) {
-		auto buffer_item_count = inv_temp[i].count;
-		const auto stack_size  = inv_temp[i].item->stackSize;
+	if (sorted_inv.size() > 1) {
+		// Cannot compress slot 0 with anything before it
+		for (auto sort_inv_index = sorted_inv.size() - 1; sort_inv_index > 0; --sort_inv_index) {
 
-		// Find index which the same item type begins
-		auto j = i;
-		while (inv_temp[j].item == inv_temp[i].item) {
-			if (j == 0) {
-				j = -1;
-				break;
+			auto buffer_item_count = sorted_inv[sort_inv_index].count;
+			const auto stack_size  = sorted_inv[sort_inv_index].item->stackSize;
+
+			// Find index which the same item type begins
+			auto stack_compress_begin = sort_inv_index;
+			while (sorted_inv[stack_compress_begin - 1].item == sorted_inv[sort_inv_index].item) {
+				stack_compress_begin--;
+				if (stack_compress_begin == 0)
+					break;
 			}
-			j--;
-		}
-		// Ends 1 before, shift 1 ahead
-		j++;
 
-		for (; j < i; ++j) {
 
-			// If item somehow exceeds stack do not attempt to stack into it
-			if (inv_temp[j].count > stack_size)
-				continue;
+			// Compress stacks
+			for (; stack_compress_begin < sort_inv_index; ++stack_compress_begin) {
 
-			// Amount which can be dropped is space left until reaching stack size
-			const uint16_t max_drop_amount = stack_size - inv_temp[j].count;
+				// If item somehow exceeds stack do not attempt to stack into it
+				if (sorted_inv[stack_compress_begin].count > stack_size)
+					continue;
 
-			// Has enough to max current stack and move on
-			if (buffer_item_count > max_drop_amount) {
-				inv_temp[j].count = stack_size;
-				buffer_item_count -= max_drop_amount;
+				// Amount which can be dropped is space left until reaching stack size
+				const uint16_t max_drop_amount = stack_size - sorted_inv[stack_compress_begin].count;
+
+				// Has enough to max current stack and move on
+				if (buffer_item_count > max_drop_amount) {
+					sorted_inv[stack_compress_begin].count = stack_size;
+					buffer_item_count -= max_drop_amount;
+				}
+					// Not enough to drop and move on
+				else {
+					sorted_inv[stack_compress_begin].count += buffer_item_count;
+					sorted_inv[sort_inv_index].item = nullptr;
+					buffer_item_count               = 0;
+					break;
+				}
 			}
-				// Not enough to drop and move on
-			else {
-				inv_temp[j].count += buffer_item_count;
-				inv_temp[i].item  = nullptr;
-				buffer_item_count = 0;
-				break;
+			// Did not drop all items off
+			if (buffer_item_count > 0) {
+				sorted_inv[sort_inv_index].count = buffer_item_count;
 			}
-		}
-		// Did not drop all items off
-		if (buffer_item_count > 0) {
-			inv_temp[i].count = buffer_item_count;
-		}
 
+		}
 	}
 
-	// Copy back into origin inventory
-	int64_t start               = -1;  // The index of the first blank slot post sorting
-	unsigned int inv_temp_index = 0;
+
+	// Copy sorted inventory back into origin inventory
+	bool has_empty_slot = false;
+
+	std::size_t start          = 0;   // The index of the first blank slot post sorting
+	std::size_t inv_temp_index = 0;
+
 	for (size_t i = 0; i < inv.size(); ++i) {
 		// Skip the cursor
 		if (inv[i].item != nullptr &&
 			inv[i].item->GetLocalizedName() == data::Item::kInventorySelectedCursor)
 			continue;
 
-		if (inv_temp_index >= inv_temp.size()) {
-			start = i;
-			break;
+		// Iterated through every item in the sorted inventory
+		if (inv_temp_index >= sorted_inv.size()) {
+			has_empty_slot = true;
+			start          = i;
+			goto loop_exit;
 		}
-		// Omit empty gaps in inv_temp from the compressing process
-		while (inv_temp[inv_temp_index].item == nullptr) {
+		// Omit empty gaps in sorted inv from the compressing process
+		while (sorted_inv[inv_temp_index].item == nullptr) {
 			inv_temp_index++;
-			if (inv_temp_index >= inv_temp.size()) {
-				start = i;
+			if (inv_temp_index >= sorted_inv.size()) {
+				has_empty_slot = true;
+				start          = i;
 				goto loop_exit;
 			}
 		}
 
-		inv[i] = inv_temp[inv_temp_index++];
+		inv[i] = sorted_inv[inv_temp_index++];
 	}
 loop_exit:
 
-	if (start == -1)  // Start being -1 means that there is no empty slots
+	if (!has_empty_slot)
 		return;
 
 	// Copy empty spaces into the remainder of the slots
-	for (auto i = core::SafeCast<std::size_t>(start); i < inv.size(); ++i) {
+	for (auto i = start; i < inv.size(); ++i) {
 		// Skip the cursor
 		if (inv[i].item != nullptr &&
 			inv[i].item->GetLocalizedName() == data::Item::kInventorySelectedCursor)

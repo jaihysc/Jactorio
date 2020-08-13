@@ -70,6 +70,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype_managerTests.cpp
 
+	${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/assembly_machineTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/inserterTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/entity/mining_drillTests.cpp
@@ -104,6 +105,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/update_dispatcherTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
 
 

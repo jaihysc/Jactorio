@@ -12,7 +12,6 @@
 #include "core/math.h"
 #include "data/prototype_manager.h"
 #include "data/prototype/entity/resource_entity.h"
-#include "data/prototype/interface/update_listener.h"
 #include "data/prototype/tile/noise_layer.h"
 #include "data/prototype/tile/tile.h"
 #include "game/world/chunk_tile.h"
@@ -331,9 +330,9 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 
 			// For resource amount, scale noise value up by richness 
 			const auto noise_range = noise_layer.GetValNoiseRange(noise_val);
-			const auto noise_min   = noise_range.first;
-			const auto noise_max   = noise_range.second;
-			auto resource_amount   = core::LossyCast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
+			const auto noise_min = noise_range.first;
+			const auto noise_max = noise_range.second;
+			auto resource_amount = core::LossyCast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
 
 			if (resource_amount <= 0)
 				resource_amount = 1;
@@ -360,7 +359,7 @@ void game::WorldData::QueueChunkGeneration(const ChunkCoordAxis chunk_x,
 
 	// Writing
 	std::lock_guard<std::mutex> lk{worldGenQueueMutex_};
-	worldGenChunks_.insert(std::pair{chunk_x, chunk_y});
+	worldGenChunks_.insert({chunk_x, chunk_y});
 }
 
 void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8_t amount) {
@@ -378,69 +377,4 @@ void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8
 			break;
 	}
 
-}
-
-// ======================================================================
-
-game::WorldData::UpdateDispatcher::ListenerEntry game::WorldData::UpdateDispatcher::Register(
-	const WorldCoordAxis current_world_x, const WorldCoordAxis current_world_y,
-	const WorldCoordAxis target_world_x, const WorldCoordAxis target_world_y,
-	const data::IUpdateListener& proto_listener) {
-
-	return Register({current_world_x, current_world_y},
-	                {target_world_x, target_world_y}, proto_listener);
-}
-
-game::WorldData::UpdateDispatcher::ListenerEntry game::WorldData::UpdateDispatcher::Register(
-	const WorldCoord& current_coords, const WorldCoord& target_coords, const data::IUpdateListener& proto_listener) {
-
-	auto& collection = container_[std::make_tuple(target_coords.x, target_coords.y)];
-	collection.emplace_back(CollectionElement{current_coords, &proto_listener});
-
-	return {current_coords, target_coords};
-}
-
-bool game::WorldData::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
-	const auto world_tuple = std::make_tuple(entry.emitter.x, entry.emitter.y);
-	auto& collection       = container_[world_tuple];
-
-    // Collection may be erased, thus its size cannot be checked during the for loop
-    auto collection_size = collection.size();
-
-	for (decltype(collection.size()) i = 0; i < collection_size; ++i) {
-		auto& element = collection[i];
-
-		if (element.receiver == entry.receiver) {
-			collection.erase(collection.begin() + i);
-			collection_size = collection.size();  // Collection shrunk, thus max size must be updated
-
-			if (collection.empty())
-				container_.erase(world_tuple);
-		}
-	}
-
-	return false;
-}
-
-void game::WorldData::UpdateDispatcher::Dispatch(const WorldCoordAxis world_x, const WorldCoordAxis world_y,
-                                                 const data::UpdateType type) {
-	Dispatch({world_x, world_y}, type);
-}
-
-void game::WorldData::UpdateDispatcher::Dispatch(const WorldCoord& world_pair, const data::UpdateType type) {
-	// Must be tuple to index into container_ since it uses a hash function only usable with tuples
-	const auto world_tuple = std::make_tuple(world_pair.x, world_pair.y);
-
-	if (container_.find(world_tuple) == container_.end())
-		return;
-
-	auto& collection = container_[world_tuple];
-
-	for (auto& entry : collection) {
-		entry.callback->OnTileUpdate(worldData_, world_pair, entry.receiver, type);
-	}
-}
-
-game::WorldData::UpdateDispatcher::DebugInfo game::WorldData::UpdateDispatcher::GetDebugInfo() const noexcept {
-	return {container_};
 }

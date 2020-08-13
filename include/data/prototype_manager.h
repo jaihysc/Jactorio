@@ -14,6 +14,17 @@
 
 namespace jactorio::data
 {
+	template <typename TProto>
+	struct IsValidPrototype
+	{
+		static constexpr bool value =
+			std::is_base_of_v<PrototypeBase, TProto> && !std::is_abstract_v<TProto>;
+	};
+
+	/// Pybind callbacks to append into the data manager at the pointer 
+	/// SerialProtoPtr deserializes with this
+	inline PrototypeManager* active_data_manager = nullptr;
+
 	///
 	/// \brief Manages prototype data
 	class PrototypeManager
@@ -22,14 +33,6 @@ namespace jactorio::data
 		static constexpr PrototypeIdT kInternalIdStart = 1;
 
 		using RelocationTableContainerT = std::vector<const PrototypeBase*>;
-		using SerializationTableContainerT = std::unordered_map<const PrototypeBase*, PrototypeIdT>;
-
-		template <typename TProto>
-		struct IsValidPrototype
-		{
-			static constexpr bool value =
-				std::is_base_of_v<PrototypeBase, TProto> && !std::is_abstract_v<TProto>;
-		};
 
 		struct DebugInfo;
 
@@ -143,16 +146,6 @@ namespace jactorio::data
 		J_NODISCARD const TProto& RelocationTableGet(PrototypeIdT prototype_id) const noexcept;
 
 
-		// Serialize
-
-		///
-		/// \brief SerializationTableGet can be used after this is called
-		void GenerateSerializationTable();
-
-		///
-		/// \brief Fetches prototype id at prototype pointer
-		J_NODISCARD PrototypeIdT SerializationTableGet(const PrototypeBase& prototype) const noexcept;
-
 		J_NODISCARD DebugInfo GetDebugInfo() const;
 
 	private:
@@ -166,7 +159,6 @@ namespace jactorio::data
 		struct DebugInfo
 		{
 			const RelocationTableContainerT& relocationTable;
-			const SerializationTableContainerT& serializationTable;
 		};
 
 
@@ -174,7 +166,6 @@ namespace jactorio::data
 		std::unordered_map<std::string, PrototypeBase*> dataRaw_[static_cast<int>(DataCategory::count_)];
 
 		RelocationTableContainerT relocationTable_;
-		SerializationTableContainerT serializationTable_;
 
 
 		/// Internal id which will be assigned to the next prototype added
@@ -185,7 +176,7 @@ namespace jactorio::data
 	};
 
 	template <typename TProto,
-	          std::enable_if_t<PrototypeManager::IsValidPrototype<TProto>::value, int>>
+	          std::enable_if_t<IsValidPrototype<TProto>::value, int>>
 	TProto* PrototypeManager::DataRawGet(const std::string& iname) const noexcept {
 		static_assert(TProto::category != DataCategory::none);
 
@@ -207,7 +198,7 @@ namespace jactorio::data
 	}
 
 	template <typename TProto,
-	          std::enable_if_t<PrototypeManager::IsValidPrototype<TProto>::value, int>>
+	          std::enable_if_t<IsValidPrototype<TProto>::value, int>>
 	std::vector<TProto*> PrototypeManager::DataRawGetAll(const DataCategory type) const {
 		auto category_items = dataRaw_[static_cast<uint16_t>(type)];
 
@@ -223,7 +214,7 @@ namespace jactorio::data
 	}
 
 	template <typename TProto,
-	          std::enable_if_t<PrototypeManager::IsValidPrototype<TProto>::value, int>>
+	          std::enable_if_t<IsValidPrototype<TProto>::value, int>>
 	std::vector<TProto*> PrototypeManager::DataRawGetAllSorted(const DataCategory type) const {
 		std::vector<TProto*> items = DataRawGetAll<TProto>(type);
 
@@ -237,7 +228,7 @@ namespace jactorio::data
 	}
 
 	template <typename TProto, typename ... TArgs,
-	          std::enable_if_t<PrototypeManager::IsValidPrototype<TProto>::value, int>>
+	          std::enable_if_t<IsValidPrototype<TProto>::value, int>>
 	TProto& PrototypeManager::AddProto(const std::string& iname, TArgs&&... args) {
 
 		auto* proto = new TProto(std::forward<TArgs>(args)...);
@@ -266,10 +257,6 @@ namespace jactorio::data
 		auto* proto = relocationTable_[prototype_id];
 		return static_cast<const TProto&>(*proto);
 	}
-
-
-	/// For pybind callbacks to append into the data manager at the pointer 
-	inline PrototypeManager* active_data_manager = nullptr;
 }
 
 #endif //JACTORIO_INCLUDE_DATA_DATA_MANAGER_H

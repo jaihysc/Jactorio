@@ -242,29 +242,4 @@ namespace jactorio::data
 		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(0), &sprite);
 		EXPECT_EQ(dataManager_.GetDebugInfo().relocationTable.size(), 1);
 	}
-
-
-	TEST_F(DataManagerTest, GenerateSerializationTable) {
-		auto& sprite_1 = dataManager_.AddProto<Sprite>();
-		auto& sprite_2 = dataManager_.AddProto<Sprite>();
-		auto& sprite_3 = dataManager_.AddProto<Sprite>();
-
-		dataManager_.GenerateSerializationTable();
-
-		EXPECT_EQ(dataManager_.SerializationTableGet(sprite_1), 0);
-		EXPECT_EQ(dataManager_.SerializationTableGet(sprite_2), 1);
-		EXPECT_EQ(dataManager_.SerializationTableGet(sprite_3), 2);
-	}
-
-	TEST_F(DataManagerTest, ClearSerializationTable) {
-		dataManager_.AddProto<Sprite>();
-		dataManager_.GenerateSerializationTable();
-
-		dataManager_.ClearData();
-
-		dataManager_.AddProto<Sprite>();
-		dataManager_.GenerateSerializationTable();
-
-		EXPECT_EQ(dataManager_.GetDebugInfo().serializationTable.size(), 1);
-	}
 }

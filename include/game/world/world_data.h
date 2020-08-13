@@ -11,6 +11,7 @@
 #include "jactorio.h"
 #include "core/data_type.h"
 #include "game/world/chunk.h"
+#include "game/world/update_dispatcher.h"
 
 namespace jactorio::data
 {
@@ -38,19 +39,6 @@ namespace jactorio::game
 
 		// ======================================================================
 		// World chunk
-	private:
-		// The world is make up of chunks
-		// Each chunk contains 32 x 32 tiles
-		// 
-		// Chunks increment heading right and down
-		using WorldChunksKey = uint64_t;
-
-		/// world_chunks_key correlate to a chunk
-		std::unordered_map<std::tuple<ChunkCoordAxis, ChunkCoordAxis>,
-		                   Chunk,
-		                   core::hash<std::tuple<ChunkCoordAxis, ChunkCoordAxis>>> worldChunks_;
-
-	public:
 		static constexpr uint8_t kChunkWidth = 32;
 
 		mutable std::mutex worldDataMutex{};  // Held by the thread which is currently operating on a chunk
@@ -165,12 +153,6 @@ namespace jactorio::game
 
 		// ==============================================================
 		// Logic chunk 
-	private:
-
-		std::set<Chunk*> logicChunks_;
-
-	public:
-		// Stores chunks which have entities requiring logic updates
 
 		///
 		/// \brief Adds a layer at coordinates to be considered for logic updates
@@ -199,14 +181,6 @@ namespace jactorio::game
 
 		// ======================================================================
 		// World generation
-	private:
-		int worldGenSeed_ = 1001;
-
-		/// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
-		mutable std::set<std::pair<ChunkCoordAxis, ChunkCoordAxis>> worldGenChunks_;
-		mutable std::mutex worldGenQueueMutex_;
-
-	public:
 
 		void SetWorldGeneratorSeed(const int seed) { worldGenSeed_ = seed; }
 		J_NODISCARD int GetWorldGeneratorSeed() const { return worldGenSeed_; }
@@ -226,71 +200,27 @@ namespace jactorio::game
 
 		// ======================================================================
 
-		///
-		/// \brief Calls callbacks for tile updates
-		class UpdateDispatcher
-		{
-			using CallbackT = const data::IUpdateListener*;
 
-			struct CollectionElement
-			{
-				WorldCoord receiver;
-				CallbackT callback;
-			};
+		CEREAL_SERIALIZE(archive) {
+			archive(updateDispatcher, worldGenSeed_); //, m.worldChunks_, m.logicChunks_);
+		}
 
-			using CollectionT = std::vector<CollectionElement>;
+		UpdateDispatcher updateDispatcher;
 
-			using ContainerKeyT = std::tuple<WorldCoordAxis, WorldCoordAxis>;
-			/// Emitting tile -> list of (Receiving tile + callback)
-			using ContainerT = std::unordered_map<ContainerKeyT, CollectionT, core::hash<ContainerKeyT>>;
+	private:
+		using ChunkKey = std::tuple<ChunkCoordAxis, ChunkCoordAxis>;
+		using ChunkHasher = core::hash<ChunkKey>;
 
-			ContainerT container_;
+		/// Chunks increment heading right and down
+		std::unordered_map<ChunkKey, Chunk, ChunkHasher> worldChunks_;
+		std::set<Chunk*> logicChunks_;
 
-			struct DebugInfo;
 
-		public:
-			struct ListenerEntry
-			{
-				/// Current
-				WorldCoord receiver;
-				/// Registered
-				WorldCoord emitter;
-			};
+		mutable std::mutex worldGenQueueMutex_;
 
-			explicit UpdateDispatcher(WorldData& world_data)
-				: worldData_(world_data) {
-			}
-
-			///
-			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
-			ListenerEntry Register(WorldCoordAxis current_world_x, WorldCoordAxis current_world_y,
-			                       WorldCoordAxis target_world_x, WorldCoordAxis target_world_y,
-			                       const data::IUpdateListener& proto_listener);
-
-			///
-			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
-			ListenerEntry Register(const WorldCoord& current_coords, const WorldCoord& target_coords,
-			                       const data::IUpdateListener& proto_listener);
-
-			///
-			/// \brief Unregisters entry
-			/// \return true if succeeded, false if failed
-			bool Unregister(const ListenerEntry& entry);
-
-			void Dispatch(WorldCoordAxis world_x, WorldCoordAxis world_y, data::UpdateType type);
-			void Dispatch(const WorldCoord& world_pair, data::UpdateType type);
-
-			J_NODISCARD DebugInfo GetDebugInfo() const noexcept;
-
-		private:
-			WorldData& worldData_;
-
-			struct DebugInfo
-			{
-				const ContainerT& storedEntries;
-			};
-
-		} updateDispatcher{*this};
+		int worldGenSeed_ = 1001;
+		/// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
+		mutable std::set<ChunkKey> worldGenChunks_;
 	};
 }
 
