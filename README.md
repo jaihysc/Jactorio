@@ -66,6 +66,7 @@ sh ./runtests.sh <Build type used to build>
 The installation of dependencies listed below is automatic
 
 * [backward-cpp](https://github.com/bombela/backward-cpp)
+* [cereal](https://github.com/USCiLab/cereal)
 * [decimal_for_cpp](https://github.com/vpiotr/decimal_for_cpp)
 * [GLEW](http://glew.sourceforge.net/)
 * [glm](https://github.com/g-truc/glm)
