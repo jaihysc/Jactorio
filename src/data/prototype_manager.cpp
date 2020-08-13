@@ -10,16 +10,18 @@
 #include "data/local_parser.h"
 #include "data/pybind/pybind_manager.h"
 
-jactorio::data::PrototypeManager::~PrototypeManager() {
+using namespace jactorio;
+
+data::PrototypeManager::~PrototypeManager() {
 	ClearData();
 }
 
-void jactorio::data::PrototypeManager::SetDirectoryPrefix(const std::string& name) {
+void data::PrototypeManager::SetDirectoryPrefix(const std::string& name) {
 	directoryPrefix_ = name;
 }
 
-void jactorio::data::PrototypeManager::DataRawAdd(const std::string& iname,
-                                                  PrototypeBase* const prototype) {
+void data::PrototypeManager::DataRawAdd(const std::string& iname,
+                                        PrototypeBase* const prototype) {
 	const DataCategory data_category = prototype->Category();
 
 	// Use the following format internal name
@@ -71,7 +73,7 @@ void jactorio::data::PrototypeManager::DataRawAdd(const std::string& iname,
 	LOG_MESSAGE_F(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void jactorio::data::PrototypeManager::LoadData(
+void data::PrototypeManager::LoadData(
 	const std::string& data_folder_path) {
 	// Get all sub-folders in ~/data/
 	// Read data.cfg files within each sub-folder
@@ -160,7 +162,7 @@ void jactorio::data::PrototypeManager::LoadData(
 	}
 }
 
-void jactorio::data::PrototypeManager::ClearData() {
+void data::PrototypeManager::ClearData() {
 	// Iterate through both unordered maps and delete all pointers
 	for (auto& map : dataRaw_) {
 		// Category unordered maps
@@ -171,4 +173,38 @@ void jactorio::data::PrototypeManager::ClearData() {
 	}
 
 	internalIdNew_ = kInternalIdStart;
+}
+
+
+void data::PrototypeManager::GenerateRelocationTable() {
+	relocationTable_.resize(internalIdNew_ - 1);
+	for (auto& map : dataRaw_) {
+		for (auto& [iname, pointer] : map) {
+			assert(pointer != nullptr);
+			// Internal id starts at 1, vector indexes from 0
+			relocationTable_[pointer->internalId - 1] = pointer;
+		}
+	}
+}
+
+
+void data::PrototypeManager::GenerateSerializationTable() {
+	serializationTable_.clear();
+	for (auto& map : dataRaw_) {
+		for (auto& [iname, pointer] : map) {
+			assert(pointer != nullptr);
+			serializationTable_[pointer] = pointer->internalId - 1;  // Internal id starts at 1
+		}
+	}
+}
+
+data::PrototypeIdT data::PrototypeManager::SerializationTableGet(const PrototypeBase& prototype) const noexcept {
+	return serializationTable_.at(&prototype);
+}
+
+data::PrototypeManager::DebugInfo data::PrototypeManager::GetDebugInfo() const {
+	return {
+		relocationTable_,
+		serializationTable_
+	};
 }

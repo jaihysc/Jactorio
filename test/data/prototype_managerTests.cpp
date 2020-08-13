@@ -216,4 +216,55 @@ namespace jactorio::data
 
 		EXPECT_EQ(data_all.size(), 0);
 	}
+
+
+	TEST_F(DataManagerTest, GenerateRelocationTable) {
+		auto& sprite_1 = dataManager_.AddProto<Sprite>();
+		auto& sprite_2 = dataManager_.AddProto<Sprite>();
+		auto& sprite_3 = dataManager_.AddProto<Sprite>();
+
+		dataManager_.GenerateRelocationTable();
+
+		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(0), &sprite_1);
+		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(1), &sprite_2);
+		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(2), &sprite_3);
+	}
+
+	TEST_F(DataManagerTest, ClearRelocationTable) {
+		dataManager_.AddProto<Sprite>();
+		dataManager_.GenerateRelocationTable();
+
+		dataManager_.ClearData();
+
+		auto& sprite = dataManager_.AddProto<Sprite>();
+		dataManager_.GenerateRelocationTable();  // Does not save sprite from earlier
+
+		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(0), &sprite);
+		EXPECT_EQ(dataManager_.GetDebugInfo().relocationTable.size(), 1);
+	}
+
+
+	TEST_F(DataManagerTest, GenerateSerializationTable) {
+		auto& sprite_1 = dataManager_.AddProto<Sprite>();
+		auto& sprite_2 = dataManager_.AddProto<Sprite>();
+		auto& sprite_3 = dataManager_.AddProto<Sprite>();
+
+		dataManager_.GenerateSerializationTable();
+
+		EXPECT_EQ(dataManager_.SerializationTableGet(sprite_1), 0);
+		EXPECT_EQ(dataManager_.SerializationTableGet(sprite_2), 1);
+		EXPECT_EQ(dataManager_.SerializationTableGet(sprite_3), 2);
+	}
+
+	TEST_F(DataManagerTest, ClearSerializationTable) {
+		dataManager_.AddProto<Sprite>();
+		dataManager_.GenerateSerializationTable();
+
+		dataManager_.ClearData();
+
+		dataManager_.AddProto<Sprite>();
+		dataManager_.GenerateSerializationTable();
+
+		EXPECT_EQ(dataManager_.GetDebugInfo().serializationTable.size(), 1);
+	}
 }
