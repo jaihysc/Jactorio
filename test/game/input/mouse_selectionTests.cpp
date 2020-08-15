@@ -3,8 +3,8 @@
 #include <gtest/gtest.h>
 
 #include "data/prototype_manager.h"
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/mining_drill.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/mining_drill.h"
 #include "game/input/mouse_selection.h"
 #include "game/player/player_data.h"
 

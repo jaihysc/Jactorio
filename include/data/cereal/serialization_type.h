@@ -9,7 +9,7 @@
 #include "jactorio.h"
 #include "data/prototype_manager.h"
 #include "data/cereal/serialize.h"
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/framework/framework_base.h"
 
 namespace jactorio::data
 {

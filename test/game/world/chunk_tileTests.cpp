@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "data/prototype/entity/resource_entity.h"
-#include "data/prototype/tile/tile.h"
+#include "data/prototype/resource_entity.h"
+#include "data/prototype/tile.h"
 
 namespace jactorio::game
 {

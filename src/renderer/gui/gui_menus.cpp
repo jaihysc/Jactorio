@@ -7,10 +7,10 @@
 
 #include "core/utility.h"
 
-#include "data/prototype/entity/assembly_machine.h"
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/mining_drill.h"
-#include "data/prototype/item/recipe_group.h"
+#include "data/prototype/assembly_machine.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/mining_drill.h"
+#include "data/prototype/recipe_group.h"
 
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
@@ -311,7 +311,7 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::PrototypeMana
 // ======================================================================
 
 void renderer::CharacterMenu(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                             const data::PrototypeBase*, data::UniqueDataBase*) {
+                             const data::FrameworkBase*, data::UniqueDataBase*) {
 	SetupNextWindowLeft();
 	PlayerInventoryMenu(player_data, data_manager);
 
@@ -331,7 +331,7 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::Prototyp
 }
 
 void renderer::CursorWindow(game::PlayerData& player_data, const data::PrototypeManager&,
-                            const data::PrototypeBase*, data::UniqueDataBase*) {
+                            const data::FrameworkBase*, data::UniqueDataBase*) {
 	using namespace jactorio;
 	// Draw the tooltip of what is currently selected
 
@@ -381,7 +381,7 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::Prototype
 }
 
 void renderer::CraftingQueue(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                             const data::PrototypeBase*, data::UniqueDataBase*) {
+                             const data::FrameworkBase*, data::UniqueDataBase*) {
 	auto menu_data = GetMenuData();
 
 	ImGuiWindowFlags flags = 0;
@@ -434,7 +434,7 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 float last_pickup_fraction = 0.f;
 
 void renderer::PickupProgressbar(game::PlayerData& player_data, const data::PrototypeManager&,
-                                 const data::PrototypeBase*, data::UniqueDataBase*) {
+                                 const data::FrameworkBase*, data::UniqueDataBase*) {
 	constexpr float progress_bar_width  = 260 * 2;
 	constexpr float progress_bar_height = 13;
 
@@ -471,7 +471,7 @@ void renderer::PickupProgressbar(game::PlayerData& player_data, const data::Prot
 // ==========================================================================================
 // Entity menus
 void renderer::ContainerEntity(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                               const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
+                               const data::FrameworkBase* prototype, data::UniqueDataBase* unique_data) {
 	assert(prototype);
 	assert(unique_data);
 	auto& container_data = *static_cast<data::ContainerEntityData*>(unique_data);
@@ -500,7 +500,7 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::Protot
 }
 
 void renderer::MiningDrill(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                           const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
+                           const data::FrameworkBase* prototype, data::UniqueDataBase* unique_data) {
 	assert(prototype);
 	assert(unique_data);
 	const auto& drill_data = *static_cast<const data::MiningDrillData*>(unique_data);
@@ -522,7 +522,7 @@ void renderer::MiningDrill(game::PlayerData& player_data, const data::PrototypeM
 }
 
 void renderer::AssemblyMachine(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                               const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
+                               const data::FrameworkBase* prototype, data::UniqueDataBase* unique_data) {
 	assert(prototype);
 	assert(unique_data);
 

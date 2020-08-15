@@ -8,9 +8,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "jactorio.h"
-#include "data/prototype/entity/entity.h"
+#include "data/prototype/abstract_proto/entity.h"
 #include "data/prototype/interface/renderable.h"
-#include "data/prototype/tile/tile.h"
+#include "data/prototype/tile.h"
 #include "game/world/world_data.h"
 #include "renderer/opengl/error.h"
 #include "renderer/opengl/mvp_manager.h"
@@ -332,11 +332,11 @@ void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, game::ChunkTi
 		auto& tile_layer = tile.GetLayer(layer_index);
 
 
-		const auto* proto = tile_layer.GetPrototypeData<data::IPrototypeRenderable>();
+		const auto* proto = tile_layer.GetPrototypeData<data::FRenderable>();
 		if (!proto)  // Layer not initialized
 			continue;
 
-		const auto* unique_data = tile_layer.GetMultiTileTopLeft().GetUniqueData<data::PrototypeRenderableData>();
+		const auto* unique_data = tile_layer.GetMultiTileTopLeft().GetUniqueData<data::FRenderableData>();
 
 		// Unique data can be nullptr for certain layers
 

@@ -10,7 +10,7 @@
 #include "core/filesystem.h"
 
 #include "data/prototype_manager.h"
-#include "data/prototype/entity/inserter.h"
+#include "data/prototype/inserter.h"
 
 #include "game/game_data.h"
 #include "game/logic/transport_line_controller.h"

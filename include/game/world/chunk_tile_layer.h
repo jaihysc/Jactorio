@@ -4,7 +4,7 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
 #pragma once
 
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/framework/framework_base.h"
 #include "game/world/chunk_layer.h"
 
 namespace jactorio::game
@@ -25,7 +25,7 @@ namespace jactorio::game
 	public:
 		ChunkTileLayer() = default;
 
-		explicit ChunkTileLayer(const data::PrototypeBase* proto)
+		explicit ChunkTileLayer(const data::FrameworkBase* proto)
 			: ChunkLayer(proto) {
 		}
 

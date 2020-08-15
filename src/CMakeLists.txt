@@ -31,13 +31,14 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/data/local_parser.cpp
 	${JACTORIO_DIR}/data/prototype_manager.cpp
 
-	${JACTORIO_DIR}/data/prototype/entity/assembly_machine.cpp
-	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
-	${JACTORIO_DIR}/data/prototype/entity/inserter.cpp
-	${JACTORIO_DIR}/data/prototype/entity/mining_drill.cpp
-	${JACTORIO_DIR}/data/prototype/entity/transport_line.cpp
-	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
+	${JACTORIO_DIR}/data/prototype/assembly_machine.cpp
+	${JACTORIO_DIR}/data/prototype/container_entity.cpp
+	${JACTORIO_DIR}/data/prototype/inserter.cpp
+	${JACTORIO_DIR}/data/prototype/mining_drill.cpp
+	${JACTORIO_DIR}/data/prototype/recipe.cpp
 	${JACTORIO_DIR}/data/prototype/sprite.cpp
+	${JACTORIO_DIR}/data/prototype/abstract_proto/transport_line.cpp
+
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 
 

@@ -12,23 +12,23 @@
 #include <pybind11/stl_bind.h>
 
 #include "data/prototype_manager.h"
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/framework/framework_base.h"
 #include "data/prototype/prototype_type.h"
 #include "data/prototype/sprite.h"
-#include "data/prototype/entity/assembly_machine.h"
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/entity.h"
-#include "data/prototype/entity/health_entity.h"
-#include "data/prototype/entity/inserter.h"
-#include "data/prototype/entity/mining_drill.h"
-#include "data/prototype/entity/resource_entity.h"
-#include "data/prototype/entity/transport_belt.h"
-#include "data/prototype/entity/transport_line.h"
-#include "data/prototype/item/item.h"
-#include "data/prototype/item/recipe_category.h"
-#include "data/prototype/item/recipe_group.h"
-#include "data/prototype/tile/noise_layer.h"
-#include "data/prototype/tile/tile.h"
+#include "data/prototype/assembly_machine.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/abstract_proto/entity.h"
+#include "data/prototype/abstract_proto/health_entity.h"
+#include "data/prototype/inserter.h"
+#include "data/prototype/mining_drill.h"
+#include "data/prototype/resource_entity.h"
+#include "data/prototype/transport_belt.h"
+#include "data/prototype/abstract_proto/transport_line.h"
+#include "data/prototype/item.h"
+#include "data/prototype/recipe_category.h"
+#include "data/prototype/recipe_group.h"
+#include "data/prototype/noise_layer.h"
+#include "data/prototype/tile.h"
 
 // All the bindings in bindings/ defined for pybind
 // This should only be included by pybind_manager.h
@@ -42,7 +42,7 @@
 
 ///
 /// \brief Call from python context, stores traceback in prototype
-inline void ExtractPythonTraceback(jactorio::data::PrototypeBase& prototype) {
+inline void ExtractPythonTraceback(jactorio::data::FrameworkBase& prototype) {
 	py::exec(
 		"import sys as _sys \n"
 		"_stack_frame = _sys._getframe() \n"
@@ -143,12 +143,12 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 
 	// Prototype classes
-	py::class_<PrototypeBase>(m, "_PrototypeBase")
-		.def("name", &PrototypeBase::Set_name)
-		.def("category", &PrototypeBase::Category)
-		PYBIND_PROP(PrototypeBase, order);
+	py::class_<FrameworkBase>(m, "_FrameworkBase")
+		.def("name", &FrameworkBase::Set_name)
+		.def("category", &FrameworkBase::Category)
+		PYBIND_PROP(FrameworkBase, order);
 
-	PYBIND_DATA_CLASS(Sprite, Sprite, PrototypeBase)
+	PYBIND_DATA_CLASS(Sprite, Sprite, FrameworkBase)
 		PYBIND_PROP(Sprite, group)
 		PYBIND_PROP(Sprite, frames)
 		PYBIND_PROP(Sprite, sets)
@@ -160,15 +160,15 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("Terrain", Sprite::SpriteGroup::terrain)
 		.value("Gui", Sprite::SpriteGroup::gui);
 
-	PYBIND_DATA_CLASS(Item, Item, PrototypeBase)
+	PYBIND_DATA_CLASS(Item, Item, FrameworkBase)
 		PYBIND_PROP(Item, sprite)
 		PYBIND_PROP(Item, stackSize);
 
-	PYBIND_DATA_CLASS(Tile, Tile, PrototypeBase)
+	PYBIND_DATA_CLASS(Tile, Tile, FrameworkBase)
 		PYBIND_PROP(Tile, isWater)
 		PYBIND_PROP(Tile, sprite);
 
-	PYBIND_DATA_CLASS(NoiseLayer<Tile>, NoiseLayerTile, PrototypeBase)
+	PYBIND_DATA_CLASS(NoiseLayer<Tile>, NoiseLayerTile, FrameworkBase)
 		// Perlin noise properties
 		PYBIND_PROP(NoiseLayer<Tile>, octaveCount)
 		PYBIND_PROP(NoiseLayer<Tile>, frequency)
@@ -182,7 +182,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.def("add", &NoiseLayer<Tile>::Add)
 		.def("get", &NoiseLayer<Tile>::Get);
 
-	PYBIND_DATA_CLASS(NoiseLayer<Entity>, NoiseLayerEntity, PrototypeBase)
+	PYBIND_DATA_CLASS(NoiseLayer<Entity>, NoiseLayerEntity, FrameworkBase)
 		// Perlin noise properties
 		PYBIND_PROP(NoiseLayer<Entity>, octaveCount)
 		PYBIND_PROP(NoiseLayer<Entity>, frequency)
@@ -198,7 +198,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 
 	// Entity
-	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, PrototypeBase)
+	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, FrameworkBase)
 		PYBIND_PROP(Entity, sprite)
 		PYBIND_PROP(IRotatable, spriteE)
 		PYBIND_PROP(IRotatable, spriteS)
@@ -244,14 +244,14 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 
 	// Recipes
-	PYBIND_DATA_CLASS(RecipeGroup, RecipeGroup, PrototypeBase)
+	PYBIND_DATA_CLASS(RecipeGroup, RecipeGroup, FrameworkBase)
 		PYBIND_PROP_S(RecipeGroup, sprite, sprite, SetSprite)
 		PYBIND_PROP(RecipeGroup, recipeCategories);
 
-	PYBIND_DATA_CLASS(RecipeCategory, RecipeCategory, PrototypeBase)
+	PYBIND_DATA_CLASS(RecipeCategory, RecipeCategory, FrameworkBase)
 		PYBIND_PROP(RecipeCategory, recipes);
 
-	PYBIND_DATA_CLASS(Recipe, Recipe, PrototypeBase)
+	PYBIND_DATA_CLASS(Recipe, Recipe, FrameworkBase)
 		PYBIND_PROP(Recipe, craftingTime)
 		PYBIND_PROP(Recipe, ingredients)
 		PYBIND_PROP(Recipe, product);
@@ -283,7 +283,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 	m.def("get", [](const DataCategory category, const std::string& iname) {
 		assert(active_data_manager);
 
-		return active_data_manager->DataRawGet<PrototypeBase>(category, iname);
+		return active_data_manager->DataRawGet<FrameworkBase>(category, iname);
 	}, pybind11::return_value_policy::reference);
 
 	// ############################################################

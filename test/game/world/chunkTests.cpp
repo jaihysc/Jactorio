@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "data/prototype/sprite.h"
-#include "data/prototype/tile/tile.h"
+#include "data/prototype/tile.h"
 #include "game/world/chunk.h"
 #include "game/world/world_data.h"
 

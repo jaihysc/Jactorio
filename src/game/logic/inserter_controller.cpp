@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "data/prototype/entity/inserter.h"
+#include "data/prototype/inserter.h"
 
 using namespace jactorio;
 

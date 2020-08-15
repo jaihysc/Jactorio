@@ -11,7 +11,7 @@
 
 #include "jactorio.h"
 
-#include "data/prototype/entity/entity.h"
+#include "data/prototype/abstract_proto/entity.h"
 #include "game/event/event.h"
 #include "game/player/player_data.h"
 #include "renderer/display_window.h"

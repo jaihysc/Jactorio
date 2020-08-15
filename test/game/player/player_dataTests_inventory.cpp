@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "data/prototype_manager.h"
-#include "data/prototype/entity/container_entity.h"
+#include "data/prototype/container_entity.h"
 #include "game/player/player_data.h"
 
 namespace jactorio::game

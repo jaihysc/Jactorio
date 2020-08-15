@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/framework/framework_base.h"
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 

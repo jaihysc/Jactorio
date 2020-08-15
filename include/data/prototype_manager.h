@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "data/data_category.h"
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/framework/framework_base.h"
 
 namespace jactorio::data
 {
@@ -18,7 +18,7 @@ namespace jactorio::data
 	struct IsValidPrototype
 	{
 		static constexpr bool value =
-			std::is_base_of_v<PrototypeBase, TProto> && !std::is_abstract_v<TProto>;
+			std::is_base_of_v<FrameworkBase, TProto> && !std::is_abstract_v<TProto>;
 	};
 
 	/// Pybind callbacks to append into the data manager at the pointer 
@@ -32,7 +32,7 @@ namespace jactorio::data
 		/// Position 0 reserved to indicate error
 		static constexpr PrototypeIdT kInternalIdStart = 1;
 
-		using RelocationTableContainerT = std::vector<const PrototypeBase*>;
+		using RelocationTableContainerT = std::vector<const FrameworkBase*>;
 
 		struct DebugInfo;
 
@@ -61,7 +61,7 @@ namespace jactorio::data
 		///
 		/// Abstract types allowed for Python API
 		template <typename TProto,
-		          std::enable_if_t<std::is_base_of_v<PrototypeBase, TProto>, int>  = 0>
+		          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>  = 0>
 		TProto* DataRawGet(DataCategory data_category, const std::string& iname) const noexcept;
 
 
@@ -109,8 +109,8 @@ namespace jactorio::data
 		///
 		/// \brief Searches through all categories for prototype
 		/// \return pointer to prototype, nullptr if not found
-		template <typename TProto = PrototypeBase,
-		          std::enable_if_t<std::is_base_of_v<PrototypeBase, TProto>, int>  = 0>
+		template <typename TProto = FrameworkBase,
+		          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>  = 0>
 		J_NODISCARD TProto* FindProto(const std::string& iname) const noexcept;
 
 
@@ -141,8 +141,8 @@ namespace jactorio::data
 
 		///
 		/// \brief Fetches prototype at prototype id
-		template <typename TProto = PrototypeBase,
-		          std::enable_if_t<std::is_base_of_v<PrototypeBase, TProto>, int>  = 0>
+		template <typename TProto = FrameworkBase,
+		          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>  = 0>
 		J_NODISCARD const TProto& RelocationTableGet(PrototypeIdT prototype_id) const noexcept;
 
 
@@ -153,7 +153,7 @@ namespace jactorio::data
 		/// \brief Adds a prototype
 		/// \param iname Internal name of prototype
 		/// \param prototype Prototype pointer, takes ownership, must be unique for each added
-		void DataRawAdd(const std::string& iname, PrototypeBase* prototype);
+		void DataRawAdd(const std::string& iname, FrameworkBase* prototype);
 
 
 		struct DebugInfo
@@ -163,7 +163,7 @@ namespace jactorio::data
 
 
 		/// Example: data_raw[static_cast<int>(image)]["grass-1"] -> Prototype_base
-		std::unordered_map<std::string, PrototypeBase*> dataRaw_[static_cast<int>(DataCategory::count_)];
+		std::unordered_map<std::string, FrameworkBase*> dataRaw_[static_cast<int>(DataCategory::count_)];
 
 		RelocationTableContainerT relocationTable_;
 
@@ -184,7 +184,7 @@ namespace jactorio::data
 	}
 
 	template <typename TProto,
-	          std::enable_if_t<std::is_base_of_v<PrototypeBase, TProto>, int>>
+	          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>>
 	TProto* PrototypeManager::DataRawGet(const DataCategory data_category, const std::string& iname) const noexcept {
 
 		auto* category = &dataRaw_[static_cast<uint16_t>(data_category)];
@@ -193,7 +193,7 @@ namespace jactorio::data
 			return nullptr;
 		}
 
-		PrototypeBase* base = category->at(iname);
+		FrameworkBase* base = category->at(iname);
 		return static_cast<TProto*>(base);
 	}
 
@@ -206,7 +206,7 @@ namespace jactorio::data
 		items.reserve(category_items.size());
 
 		for (auto& it : category_items) {
-			PrototypeBase* base_ptr = it.second;
+			FrameworkBase* base_ptr = it.second;
 			items.push_back(static_cast<TProto*>(base_ptr));
 		}
 
@@ -221,7 +221,7 @@ namespace jactorio::data
 		// Sort
 		std::sort(items.begin(),
 		          items.end(),
-		          [](PrototypeBase* a, PrototypeBase* b) {
+		          [](FrameworkBase* a, FrameworkBase* b) {
 			          return a->order < b->order;
 		          });
 		return items;
@@ -239,7 +239,7 @@ namespace jactorio::data
 	}
 
 	template <typename TProto,
-	          std::enable_if_t<std::is_base_of_v<PrototypeBase, TProto>, int>>
+	          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>>
 	TProto* PrototypeManager::FindProto(const std::string& iname) const noexcept {
 		for (const auto& map : dataRaw_) {
 			auto i = map.find(iname);
@@ -250,7 +250,7 @@ namespace jactorio::data
 		return nullptr;
 	}
 
-	template <typename TProto, std::enable_if_t<std::is_base_of_v<PrototypeBase, TProto>, int>>
+	template <typename TProto, std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>>
 	const TProto& PrototypeManager::RelocationTableGet(const PrototypeIdT prototype_id) const noexcept {
 		assert(relocationTable_.at(prototype_id));
 

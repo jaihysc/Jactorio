@@ -9,8 +9,8 @@
 #include "jactorio.h"
 
 #include "data/prototype_manager.h"
-#include "data/prototype/entity/inserter.h"
-#include "data/prototype/entity/transport_line.h"
+#include "data/prototype/inserter.h"
+#include "data/prototype/abstract_proto/transport_line.h"
 
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
@@ -55,7 +55,7 @@ void renderer::DebugMenuLogic(game::PlayerData& player_data, const data::Prototy
 }
 
 void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeManager&,
-                         const data::PrototypeBase*, data::UniqueDataBase*) {
+                         const data::FrameworkBase*, data::UniqueDataBase*) {
 	using namespace jactorio;
 
 	ImGuiWindowFlags main_window_flags = 0;

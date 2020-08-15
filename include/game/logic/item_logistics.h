@@ -5,9 +5,9 @@
 #pragma once
 
 #include "data/prototype/type.h"
-#include "data/prototype/entity/assembly_machine.h"
-#include "data/prototype/entity/transport_line.h"
-#include "data/prototype/item/item.h"
+#include "data/prototype/assembly_machine.h"
+#include "data/prototype/abstract_proto/transport_line.h"
+#include "data/prototype/item.h"
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 
@@ -47,7 +47,7 @@ namespace jactorio::game
 
 	protected:
 		data::UniqueDataBase* targetUniqueData_     = nullptr;
-		const data::PrototypeBase* targetProtoData_ = nullptr;
+		const data::FrameworkBase* targetProtoData_ = nullptr;
 
 		data::Orientation orientation_;
 	};

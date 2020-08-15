@@ -2,8 +2,8 @@
 
 #include "game/world/chunk_tile.h"
 
-#include "data/prototype/entity/entity.h"
-#include "data/prototype/tile/tile.h"
+#include "data/prototype/abstract_proto/entity.h"
+#include "data/prototype/tile.h"
 
 // ======================================================================
 // Tile

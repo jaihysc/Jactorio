@@ -6,7 +6,7 @@
 
 #include "jactorio.h"
 
-#include "data/prototype/tile/tile.h"
+#include "data/prototype/tile.h"
 #include "game/world/world_data.h"
 
 using namespace jactorio;

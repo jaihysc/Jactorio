@@ -5,7 +5,7 @@
 #include "jactorio.h"
 
 #include "data/prototype_manager.h"
-#include "data/prototype/entity/entity.h"
+#include "data/prototype/abstract_proto/entity.h"
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/world_data.h"

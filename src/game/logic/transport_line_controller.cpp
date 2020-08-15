@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "data/prototype/entity/transport_line.h"
+#include "data/prototype/abstract_proto/transport_line.h"
 #include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 

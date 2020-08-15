@@ -4,7 +4,7 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_LAYER_H
 #pragma once
 
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/framework/framework_base.h"
 
 namespace jactorio::game
 {
@@ -17,7 +17,7 @@ namespace jactorio::game
 		ChunkLayer() = default;
 
 	public:
-		explicit ChunkLayer(const data::PrototypeBase* proto)
+		explicit ChunkLayer(const data::FrameworkBase* proto)
 			: prototypeData(proto) {
 		}
 
@@ -44,7 +44,7 @@ namespace jactorio::game
 
 		///
 		/// \tparam T Return type which prototypeData is cast to
-		template <typename T = data::PrototypeBase>
+		template <typename T = data::FrameworkBase>
 		J_NODISCARD const T* GetPrototypeData() {
 			return static_cast<const T*>(prototypeData);
 		}
@@ -88,7 +88,7 @@ namespace jactorio::game
 		// Entities also possesses a sprite pointer within their prototype
 
 		/// Depending on the layer, this will be either a data::Tile*, data::Entity* or a data::Sprite* <br>
-		const data::PrototypeBase* prototypeData = nullptr;
+		const data::FrameworkBase* prototypeData = nullptr;
 
 	protected:
 		/// Data for the prototype which is unique per tile and layer <br>

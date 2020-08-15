@@ -8,8 +8,8 @@
 #include <glm/glm.hpp>
 
 #include "data/prototype/interface/rotatable.h"
-#include "data/prototype/item/item.h"
-#include "data/prototype/item/recipe.h"
+#include "data/prototype/item.h"
+#include "data/prototype/recipe.h"
 #include "game/world/chunk_tile_layer.h"
 
 namespace jactorio::game

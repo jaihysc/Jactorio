@@ -10,13 +10,13 @@
 #include "jactorio.h"
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/framework/framework_base.h"
 
 namespace jactorio::data
 {
 	///
 	/// Unique data: Renderable_data
-	class Sprite final : public PrototypeBase
+	class Sprite final : public FrameworkBase
 	{
 	public:
 		using SpriteDimension = uint32_t;
@@ -46,7 +46,7 @@ namespace jactorio::data
 
 		friend void swap(Sprite& lhs, Sprite& rhs) noexcept {
 			using std::swap;
-			swap(static_cast<PrototypeBase&>(lhs), static_cast<PrototypeBase&>(rhs));
+			swap(static_cast<FrameworkBase&>(lhs), static_cast<FrameworkBase&>(rhs));
 			swap(lhs.group, rhs.group);
 			swap(lhs.frames, rhs.frames);
 			swap(lhs.sets, rhs.sets);

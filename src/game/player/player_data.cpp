@@ -8,9 +8,9 @@
 
 #include "core/math.h"
 #include "data/prototype_manager.h"
-#include "data/prototype/entity/resource_entity.h"
+#include "data/prototype/resource_entity.h"
 #include "data/prototype/interface/update_listener.h"
-#include "data/prototype/tile/tile.h"
+#include "data/prototype/tile.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"

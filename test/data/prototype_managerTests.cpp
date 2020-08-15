@@ -157,7 +157,7 @@ namespace jactorio::data
 	TEST_F(DataManagerTest, DataRawGetInvalid) {
 		// Should return a nullptr if the item is non-existent
 		const auto* ptr =
-			dataManager_.DataRawGet<PrototypeBase>(DataCategory::sprite, "asdfjsadhfkjdsafhs");
+			dataManager_.DataRawGet<FrameworkBase>(DataCategory::sprite, "asdfjsadhfkjdsafhs");
 
 		EXPECT_EQ(ptr, nullptr);
 	}

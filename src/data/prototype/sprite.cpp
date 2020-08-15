@@ -29,7 +29,7 @@ data::Sprite::~Sprite() {
 }
 
 data::Sprite::Sprite(const Sprite& other)
-	: PrototypeBase(other),
+	: FrameworkBase(other),
 	  group(other.group),
 	  width_(other.width_),
 	  height_(other.height_),
@@ -45,7 +45,7 @@ data::Sprite::Sprite(const Sprite& other)
 }
 
 data::Sprite::Sprite(Sprite&& other) noexcept
-	: PrototypeBase{std::move(other)},
+	: FrameworkBase{std::move(other)},
 	  group{std::move(other.group)},
 	  frames{other.frames},
 	  sets{other.sets},

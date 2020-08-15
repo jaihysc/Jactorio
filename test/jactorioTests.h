@@ -6,12 +6,12 @@
 
 #include "core/data_type.h"
 #include "data/prototype_manager.h"
-#include "data/prototype/entity/assembly_machine.h"
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/inserter.h"
-#include "data/prototype/entity/mining_drill.h"
-#include "data/prototype/entity/resource_entity.h"
-#include "data/prototype/entity/transport_line.h"
+#include "data/prototype/assembly_machine.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/inserter.h"
+#include "data/prototype/mining_drill.h"
+#include "data/prototype/resource_entity.h"
+#include "data/prototype/abstract_proto/transport_line.h"
 #include "game/world/world_data.h"
 
 namespace jactorio
