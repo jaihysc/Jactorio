@@ -211,10 +211,25 @@ void game::InitLogicLoop() {
 
 
 	game_data->input.key.Register([]() {
+		LOG_MESSAGE(info, "Saving savegame");
+
 		std::ofstream out_cereal_stream("savegame.bin", std::ios_base::binary);
 		cereal::PortableBinaryOutputArchive output_archive(out_cereal_stream);
 		output_archive(game_data->world);
 	}, SDLK_l, InputAction::key_up);
+
+	game_data->input.key.Register([]() {
+		LOG_MESSAGE(info, "Loading savegame");
+		game_data->prototype.GenerateRelocationTable();
+		
+		std::ifstream in_cereal_stream("savegame.bin", std::ios_base::binary);
+		cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
+
+	    WorldData m1;
+	    iarchive(m1); 
+
+		printf("Break");
+	}, SDLK_k, InputAction::key_up);
 
 
 	LogicLoop();

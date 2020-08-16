@@ -3,15 +3,19 @@
 #include <gtest/gtest.h>
 
 #include "game/world/update_dispatcher.h"
+
+#include "data/prototype/abstract_proto/entity.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game
 {
 	class UpdateDispatcherTest : public testing::Test
 	{
-		class MockUpdateListener final : public data::IUpdateListener
+		class MockUpdateListener final : public data::Entity
 		{
 		public:
+			PROTOTYPE_CATEGORY(test);
+
 			mutable WorldCoord emit;
 			mutable WorldCoord receive;
 			mutable int calls = 0;
@@ -28,6 +32,13 @@ namespace jactorio::game
 				calls++;
 				this->type = type;
 			}
+
+
+			void OnBuild(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
+			             ChunkTileLayer& tile_layer, data::Orientation orientation) const override {}
+
+			void OnRemove(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
+			              ChunkTileLayer& tile_layer) const override {}
 		};
 
 	protected:

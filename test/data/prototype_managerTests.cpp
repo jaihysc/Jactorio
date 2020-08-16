@@ -225,9 +225,9 @@ namespace jactorio::data
 
 		dataManager_.GenerateRelocationTable();
 
-		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(0), &sprite_1);
-		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(1), &sprite_2);
-		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(2), &sprite_3);
+		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(sprite_1.internalId), &sprite_1);
+		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(sprite_2.internalId), &sprite_2);
+		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(sprite_3.internalId), &sprite_3);
 	}
 
 	TEST_F(DataManagerTest, ClearRelocationTable) {
@@ -239,7 +239,7 @@ namespace jactorio::data
 		auto& sprite = dataManager_.AddProto<Sprite>();
 		dataManager_.GenerateRelocationTable();  // Does not save sprite from earlier
 
-		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(0), &sprite);
+		EXPECT_EQ(&dataManager_.RelocationTableGet<Sprite>(1), &sprite);
 		EXPECT_EQ(dataManager_.GetDebugInfo().relocationTable.size(), 1);
 	}
 }

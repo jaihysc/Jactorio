@@ -499,7 +499,7 @@ void renderer::DebugWorldInfo(const game::PlayerData& player_data) {
 
 			for (const auto& callback : entry.second) {
 				std::ostringstream sstream;
-				sstream << callback.callback;  // Get pointer address
+				sstream << callback.callback.Get();  // Get pointer address
 				ImGui::Text("%d %d %s", callback.receiver.x, callback.receiver.y, sstream.str().c_str());
 			}
 		}

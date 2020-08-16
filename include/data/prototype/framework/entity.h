@@ -7,6 +7,7 @@
 #include "data/prototype/framework/renderable.h"
 #include "data/prototype/interface/deferred.h"
 #include "data/prototype/interface/rotatable.h"
+#include "data/prototype/interface/update_listener.h"
 
 namespace jactorio::data
 {

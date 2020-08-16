@@ -36,6 +36,7 @@ namespace jactorio::data
 
 		~Sprite() override;
 
+
 		Sprite(const Sprite& other);
 		Sprite(Sprite&& other) noexcept;
 
@@ -48,6 +49,7 @@ namespace jactorio::data
 			using std::swap;
 			swap(static_cast<FrameworkBase&>(lhs), static_cast<FrameworkBase&>(rhs));
 			swap(lhs.group, rhs.group);
+			swap(lhs.invertSetFrame, rhs.invertSetFrame);
 			swap(lhs.frames, rhs.frames);
 			swap(lhs.sets, rhs.sets);
 			swap(lhs.trim, rhs.trim);

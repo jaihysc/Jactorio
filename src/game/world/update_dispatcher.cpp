@@ -7,17 +7,17 @@ using namespace jactorio;
 game::UpdateDispatcher::ListenerEntry game::UpdateDispatcher::Register(
 	const WorldCoordAxis current_world_x, const WorldCoordAxis current_world_y,
 	const WorldCoordAxis target_world_x, const WorldCoordAxis target_world_y,
-	const data::IUpdateListener& proto_listener) {
+	const data::FEntity& proto_listener) {
 
 	return Register({current_world_x, current_world_y},
 	                {target_world_x, target_world_y}, proto_listener);
 }
 
 game::UpdateDispatcher::ListenerEntry game::UpdateDispatcher::Register(
-	const WorldCoord& current_coords, const WorldCoord& target_coords, const data::IUpdateListener& proto_listener) {
+	const WorldCoord& current_coords, const WorldCoord& target_coords, const data::FEntity& proto_listener) {
 
 	auto& collection = container_[std::make_tuple(target_coords.x, target_coords.y)];
-	collection.emplace_back(CollectionElement{current_coords, &proto_listener});
+	collection.emplace_back(CollectionElement{current_coords, CallbackT(proto_listener)});
 
 	return {current_coords, target_coords};
 }

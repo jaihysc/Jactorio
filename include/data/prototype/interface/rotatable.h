@@ -5,7 +5,6 @@
 #pragma once
 
 #include "data/prototype/sprite.h"
-#include "data/prototype/type.h"
 
 namespace jactorio::game
 {

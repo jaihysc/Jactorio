@@ -7,8 +7,7 @@
 #include "jactorio.h"
 #include "core/coordinate_tuple.h"
 #include "data/cereal/serialization_type.h"
-#include "data/cereal/serialize.h"
-#include "data/prototype/interface/update_listener.h"
+#include "data/prototype/framework/entity.h"
 
 #include <cereal/types/tuple.hpp>
 #include <cereal/types/unordered_map.hpp>
@@ -21,7 +20,7 @@ namespace jactorio::game
 	/// \brief Calls callbacks for tile updates
 	class UpdateDispatcher
 	{
-		using CallbackT = const data::IUpdateListener*;
+		using CallbackT = data::SerialProtoPtr<const data::FEntity>;
 
 		struct CollectionElement
 		{
@@ -29,7 +28,7 @@ namespace jactorio::game
 			CallbackT callback;
 
 			CEREAL_SERIALIZE(archive) {
-				archive(receiver); // , callback);  // TODO rework data inheritance such that this has an internal id
+				archive(receiver, callback);
 			}
 		};
 
@@ -54,12 +53,12 @@ namespace jactorio::game
 		/// \brief Registers proto_listener callback when target coords is updated, providing current coords
 		ListenerEntry Register(WorldCoordAxis current_world_x, WorldCoordAxis current_world_y,
 		                       WorldCoordAxis target_world_x, WorldCoordAxis target_world_y,
-		                       const data::IUpdateListener& proto_listener);
+		                       const data::FEntity& proto_listener);
 
 		///
 		/// \brief Registers proto_listener callback when target coords is updated, providing current coords
 		ListenerEntry Register(const WorldCoord& current_coords, const WorldCoord& target_coords,
-		                       const data::IUpdateListener& proto_listener);
+		                       const data::FEntity& proto_listener);
 
 		///
 		/// \brief Unregisters entry

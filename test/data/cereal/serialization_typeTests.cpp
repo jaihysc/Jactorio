@@ -7,25 +7,38 @@
 
 namespace jactorio::data
 {
+	TEST(CerealSerializePrototypePointer, ConstructPointer) {
+		Sprite sprite;
+		SerialProtoPtr<Sprite> serial_proto = &sprite;
+		EXPECT_EQ(serial_proto.Get(), &sprite);
+	}
+
+	TEST(CerealSerializePrototypePointer, ConstructReference) {
+		Sprite sprite;
+		SerialProtoPtr<Sprite> serial_proto(sprite);
+		EXPECT_EQ(serial_proto.Get(), &sprite);
+	}
+
 	TEST(CerealSerializePrototypePointer, GetSetPrototype) {
 		SerialProtoPtr<Sprite> serial_proto;
+		EXPECT_EQ(serial_proto.Get(), nullptr);
 
-		// .Get
-		Sprite* sprite_ptr = serial_proto.Get();
-		EXPECT_EQ(sprite_ptr, nullptr);
-
-		// operator =
 		Sprite sprite;
 		serial_proto = &sprite;
-		EXPECT_EQ(serial_proto.Get(), &sprite);
-
-		// operator ->
 		serial_proto->sets = 3;
 		EXPECT_EQ(sprite.sets, 3);
 
-		// operator *
-		(*serial_proto).sets;
-		EXPECT_EQ(sprite.sets, 3);
+		// (*serial_proto).sets;
+		// EXPECT_EQ(sprite.sets, 3);
 	}
 	
+	TEST(CerealSerializePrototypePointer, GetPrototypeConst) {
+		Sprite sprite;
+		sprite.sets = 32;
+
+		SerialProtoPtr<const Sprite> serial_proto(sprite);
+
+		EXPECT_EQ(serial_proto->sets, 32);
+		// EXPECT_EQ((*serial_proto).sets, 32);
+	}
 }

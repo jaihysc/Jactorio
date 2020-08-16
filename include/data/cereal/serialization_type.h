@@ -7,9 +7,9 @@
 #include <type_traits>
 
 #include "jactorio.h"
+#include "core/math.h"
 #include "data/prototype_manager.h"
 #include "data/cereal/serialize.h"
-#include "data/prototype/framework/framework_base.h"
 
 namespace jactorio::data
 {
@@ -21,42 +21,77 @@ namespace jactorio::data
 	template <typename TProto>
 	class SerialProtoPtr
 	{
-		static_assert(IsValidPrototype<TProto>::value);
-	public:
+		static_assert(std::is_base_of_v<FrameworkBase, TProto>, "TProto must inherit FrameworkBase for internal id");
+		static_assert(!std::is_pointer_v<TProto>, "TProto should not be a pointer, remove the indirection");
 
+		using ValueT = std::size_t;
+		static constexpr auto kArchiveSize = sizeof(ValueT); 
+
+	public:
 		SerialProtoPtr() = default;
 
-		SerialProtoPtr(TProto* proto)
-			: proto_(proto) {
+		SerialProtoPtr(TProto* proto) {  // Intentionally non explicit to allow assignment from pointer directly
+			SetProto(proto);
 		}
+
+		explicit SerialProtoPtr(TProto& proto) {
+			SetProto(&proto);
+		}
+
 
 		TProto* operator->() {
-			return proto_;
+			return GetProto();
 		}
 
-		TProto operator*() {
-			return *proto_;
+		const TProto* operator->() const {
+			return GetProto();
 		}
+
+		// TProto operator*() {  // Cannot instantiate abstract classes
+		// 	return *GetProto();
+		// }
 
 		J_NODISCARD TProto* Get() noexcept {
-			return proto_;
+			return GetProto();
 		}
 
 		J_NODISCARD const TProto* Get() const noexcept {
-			return proto_;
+			return GetProto();
 		}
 
 
 		CEREAL_LOAD(archive) {
-			// TODO
+			CerealArchive<kArchiveSize>(archive, value_);  // Deserialized as internal id
+
+			assert(active_data_manager != nullptr);
+			auto* proto_ptr = &active_data_manager->RelocationTableGet<TProto>(  // Converted to prototype*
+				core::SafeCast<PrototypeIdT>(value_)
+			);
+			SetProto(proto_ptr);
 		}
 
 		CEREAL_SAVE(archive) {
-			archive(proto_);
+			auto save_val = static_cast<ValueT>(GetProto()->internalId);
+			CerealArchive<kArchiveSize>(archive, save_val);
 		}
 
 	private:
-		TProto* proto_ = nullptr;
+
+		J_NODISCARD TProto* GetProto() noexcept {
+			return reinterpret_cast<TProto*>(value_);
+		}
+
+		J_NODISCARD const TProto* GetProto() const noexcept {
+			return reinterpret_cast<TProto*>(value_);
+		}
+
+		void SetProto(TProto* proto) noexcept {
+			value_ = reinterpret_cast<ValueT>(proto);
+		}
+
+
+		/// ptr or internal id
+		ValueT value_ = 0;
 	};
 }
 

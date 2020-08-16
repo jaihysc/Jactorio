@@ -431,9 +431,13 @@ namespace jactorio::game
 	};
 
 	TEST_F(PlayerDataPlacementTest, PlacePickupCallPickupRemoveEvents) {
-		class MockUpdateListener : public data::IUpdateListener
+		class MockUpdateListener : public data::Entity
 		{
 		public:
+			data::DataCategory Category() const override {
+				return data::DataCategory::test;
+			}
+
 			mutable WorldCoord emit;
 			mutable WorldCoord receive;
 			mutable data::UpdateType type = data::UpdateType::remove;
@@ -446,6 +450,13 @@ namespace jactorio::game
 				receive    = receive_coords;
 				this->type = type;
 			}
+
+			
+			void OnBuild(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
+			             ChunkTileLayer& tile_layer, data::Orientation orientation) const override {}
+
+			void OnRemove(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
+			              ChunkTileLayer& tile_layer) const override {}
 		};
 
 		// The world tile must have a tile prototype

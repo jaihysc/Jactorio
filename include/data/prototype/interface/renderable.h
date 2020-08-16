@@ -9,19 +9,19 @@
 #include "core/data_type.h"
 #include "core/math.h"
 #include "data/prototype/sprite.h"
-#include "data/prototype/type.h"
-#include "game/world/world_data.h"
 
 namespace jactorio
 {
 	namespace data
 	{
 		class PrototypeManager;
+		enum class Orientation;
 	}
 
 	namespace game
 	{
 		class PlayerData;
+		class WorldData;
 		class ChunkTileLayer;
 		class Chunk;
 	}

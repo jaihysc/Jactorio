@@ -29,13 +29,17 @@ data::Sprite::~Sprite() {
 }
 
 data::Sprite::Sprite(const Sprite& other)
-	: FrameworkBase(other),
-	  group(other.group),
-	  width_(other.width_),
-	  height_(other.height_),
-	  bytesPerPixel_(other.bytesPerPixel_),
-	  spritePath_(other.spritePath_),
-	  spriteBuffer_(other.spriteBuffer_) {
+	: FrameworkBase{other},
+	  group{other.group},
+	  invertSetFrame{other.invertSetFrame},
+	  frames{other.frames},
+	  sets{other.sets},
+	  trim{other.trim},
+	  width_{other.width_},
+	  height_{other.height_},
+	  bytesPerPixel_{other.bytesPerPixel_},
+	  spritePath_{other.spritePath_},
+	  spriteBuffer_{other.spriteBuffer_} {
 
 	const auto size = core::SafeCast<std::size_t>(other.width_) * other.height_ * other.bytesPerPixel_;
 	spriteBuffer_   = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_)));  // stbi uses malloc
