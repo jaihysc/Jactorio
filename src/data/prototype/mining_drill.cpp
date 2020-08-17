@@ -68,13 +68,13 @@ jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::Wo
 	world_pair.x -= this->miningRadius;
 	world_pair.y -= this->miningRadius;
 
-	for (uint32_t y = 0; y < 2 * this->miningRadius + this->tileHeight; ++y) {
-		for (uint32_t x = 0; x < 2 * this->miningRadius + this->tileWidth; ++x) {
+	for (uint32_t y = 0; y < 2u * this->miningRadius + this->tileHeight; ++y) {
+		for (uint32_t x = 0; x < 2u * this->miningRadius + this->tileWidth; ++x) {
 			const game::ChunkTile* tile =
 				world_data.GetTile(world_pair.x + x, world_pair.y + y);
 
 			const auto& resource = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
-			if (resource.prototypeData.Get()!= nullptr)
+			if (resource.prototypeData.Get() != nullptr)
 				return static_cast<const ResourceEntity*>(resource.prototypeData.Get())->GetItem();
 		}
 	}
@@ -116,12 +116,12 @@ bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
 	coords.x -= this->miningRadius;
 	coords.y -= this->miningRadius;
 
-	for (uint32_t y = 0; y < 2 * this->miningRadius + this->tileHeight; ++y) {
-		for (uint32_t x = 0; x < 2 * this->miningRadius + this->tileWidth; ++x) {
+	for (uint32_t y = 0; y < 2u * this->miningRadius + this->tileHeight; ++y) {
+		for (uint32_t x = 0; x < 2u * this->miningRadius + this->tileWidth; ++x) {
 			const game::ChunkTile* tile =
 				world_data.GetTile(coords.x + x, coords.y + y);
 
-			if (tile->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData.Get()!= nullptr)
+			if (tile->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData.Get() != nullptr)
 				return true;
 		}
 	}
@@ -158,8 +158,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
                                                    game::LogicData& logic_data,
                                                    const WorldCoord& emit_world_coords,
                                                    const WorldCoord& receive_world_coords, Orientation) const {
-	auto& self_layer = world_data.GetTile(receive_world_coords)
-	                             ->GetLayer(game::ChunkTile::ChunkLayer::entity).GetMultiTileTopLeft();
+	auto& self_layer = *world_data.GetLayerTopLeft(receive_world_coords, game::ChunkTile::ChunkLayer::entity);
 
 	auto* drill_data = static_cast<MiningDrillData*>(self_layer.GetUniqueData());
 	assert(drill_data);
@@ -168,8 +167,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 	if (emit_world_coords != drill_data->outputTileCoords)
 		return;
 
-	auto& output_layer = world_data.GetTile(emit_world_coords)
-	                               ->GetLayer(game::ChunkTile::ChunkLayer::entity).GetMultiTileTopLeft();
+	auto& output_layer = *world_data.GetLayerTopLeft(emit_world_coords, game::ChunkTile::ChunkLayer::entity);
 
 	const bool initialized =
 		drill_data->outputTile.Initialize(world_data,
@@ -197,7 +195,7 @@ void jactorio::data::MiningDrill::OnRemove(game::WorldData&,
 	UniqueDataBase* drill_data;
 
 	if (tile_layer.IsMultiTile())
-		drill_data = tile_layer.GetMultiTileTopLeft().GetUniqueData();
+		drill_data = tile_layer.GetUniqueData();
 	else
 		drill_data = tile_layer.GetUniqueData();
 
@@ -226,7 +224,7 @@ bool jactorio::data::MiningDrill::SetupResourceDeduction(const game::WorldData& 
 
 			auto& resource_layer = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
 
-			if (resource_layer.prototypeData.Get()!= nullptr) {
+			if (resource_layer.prototypeData.Get() != nullptr) {
 				drill_data.outputItem     = static_cast<const ResourceEntity*>(resource_layer.prototypeData.Get())->GetItem();
 				drill_data.resourceOffset = y * x_span + x;
 				return true;

@@ -350,7 +350,7 @@ namespace jactorio::game
 			// Valid range is 1.3 and 1.7 inclusive
 			return segment_->GetItem(true, 1.5).second.second != nullptr;
 		};
-		
+
 		segment_->AppendItem(true, 0.5, *itemProto_);
 		segment_->AppendItem(true, 0.5, *itemProto_);   // 1.00
 		segment_->AppendItem(true, 0.29, *itemProto_);  // 1.29

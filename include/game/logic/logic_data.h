@@ -39,7 +39,7 @@ namespace jactorio::game
 				std::reference_wrapper<const data::IDeferred> prototype;
 				data::UniqueDataBase* uniqueData;
 			};
-			
+
 			using CallbackContainerT = std::unordered_map<GameTickT, std::vector<CallbackContainerEntry>>;
 
 			/// \brief 0 indicates invalid callback

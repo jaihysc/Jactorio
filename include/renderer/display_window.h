@@ -42,7 +42,7 @@ namespace jactorio::renderer
 		std::array<int, 2> windowPos_{0, 0};
 		std::array<int, 2> windowSize_{0, 0};
 
-		SDL_Window* sdlWindow_ = nullptr;
+		SDL_Window* sdlWindow_      = nullptr;
 		SDL_GLContext sdlGlContext_ = nullptr;
 
 		bool glContextActive_ = false;

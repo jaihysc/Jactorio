@@ -23,6 +23,12 @@ namespace jactorio
 	// It is difficult to compute enough decimal points by hand for EXPECT_DOUBLE_EQ, thus EXPECT_NEAR is used
 	constexpr double kFloatingAbsErr = 0.000000001;
 
+	inline void TestSetupMultiTileProp(game::ChunkTileLayer& ctl, const game::MultiTileData& mt_data, data::FRenderable& proto) {
+		proto.tileWidth   = mt_data.span;
+		proto.tileHeight  = mt_data.height;
+		ctl.prototypeData = &proto;
+	}
+
 	///
 	/// \brief Creates a container of size 10 at coordinates
 	inline game::ChunkTileLayer& TestSetupContainer(game::WorldData& world_data,
@@ -80,9 +86,11 @@ namespace jactorio
 	/// \return top left layer
 	inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::WorldData& world_data,
 	                                                      const WorldCoord& world_coords,
-	                                                      const data::AssemblyMachine& assembly_proto) {
+	                                                      data::AssemblyMachine& assembly_proto) {
+		assembly_proto.tileWidth  = 2;
+		assembly_proto.tileHeight = 2;
+
 		auto& origin_layer = world_data.GetTile(world_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
-		origin_layer.InitMultiTileProp(2, 2);
 
 		for (int y = 0; y < 2; ++y) {
 			for (int x = 0; x < 2; ++x) {
@@ -94,7 +102,6 @@ namespace jactorio
 
 				layer.prototypeData  = &assembly_proto;
 				layer.multiTileIndex = y * 2 + x;
-				layer.SetMultiTileParent(&origin_layer);
 			}
 		}
 
@@ -158,8 +165,8 @@ namespace jactorio
 		rt.recipe.ingredients  = {{"@1", 1}, {"@2", 1}};
 		rt.recipe.product      = {"@3", 1};
 
-		rt.item1 = &proto_manager.AddProto<data::Item>("@1");
-		rt.item2 = &proto_manager.AddProto<data::Item>("@2");
+		rt.item1       = &proto_manager.AddProto<data::Item>("@1");
+		rt.item2       = &proto_manager.AddProto<data::Item>("@2");
 		rt.itemProduct = &proto_manager.AddProto<data::Item>("@3");
 
 		return rt;
@@ -181,8 +188,8 @@ namespace jactorio
 		std::ifstream in_cereal_stream(save_file, std::ios_base::binary);
 		cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
 
-	    T deserialized_val;
-	    iarchive(deserialized_val); 
+		T deserialized_val;
+		iarchive(deserialized_val);
 		return deserialized_val;
 	}
 }

@@ -139,7 +139,7 @@ std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegmen
 	auto* tile = world_data.GetTile(world_x, world_y);
 	if (tile) {
 		auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
-		if (!layer.prototypeData.Get()|| layer.prototypeData->Category() != DataCategory::transport_belt)
+		if (!layer.prototypeData.Get() || layer.prototypeData->Category() != DataCategory::transport_belt)
 			return nullptr;
 
 		auto* unique_data = layer.GetUniqueData<TransportLineData>();
@@ -1007,7 +1007,7 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 		// TODO improve this algorithm for updating target segments
 		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
 			auto& layer = chunk.Tiles()[i].GetLayer(game::ChunkTile::ChunkLayer::entity);
-			if (!layer.prototypeData.Get()|| layer.prototypeData->Category() != DataCategory::transport_belt)
+			if (!layer.prototypeData.Get() || layer.prototypeData->Category() != DataCategory::transport_belt)
 				continue;
 
 			const auto& line_segment = layer.GetUniqueData<TransportLineData>()->lineSegment.get();

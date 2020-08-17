@@ -4,8 +4,8 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "jactorio.h"
 

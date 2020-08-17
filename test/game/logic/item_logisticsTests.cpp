@@ -184,9 +184,9 @@ namespace jactorio::game
 	}
 
 	TEST_F(ItemDropOffTest, InsertOffset) {
-		auto line_data             = CreateTransportLine(data::Orientation::up);
-		line_data.lineSegmentIndex = 1;
-		line_data.lineSegment->itemOffset        = 10;  // Arbitrary itemOffset
+		auto line_data                    = CreateTransportLine(data::Orientation::up);
+		line_data.lineSegmentIndex        = 1;
+		line_data.lineSegment->itemOffset = 10;  // Arbitrary itemOffset
 
 		TransportLineInsert(data::Orientation::up, line_data);
 		ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
@@ -395,8 +395,8 @@ namespace jactorio::game
 
 		// Exceeds max stack size
 		recipe_pack.recipe.ingredients[0].second = 50;  // Requires 50, can only hold 50
-		recipe_pack.item1->stackSize    = 50;
-		asm_data.ingredientInv[0].count = 50;
+		recipe_pack.item1->stackSize             = 50;
+		asm_data.ingredientInv[0].count          = 50;
 		EXPECT_FALSE(CanInsertAssemblyMachine(args));
 
 		// Under the max ingredient count multiple that a slot can be filled

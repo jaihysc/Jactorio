@@ -25,7 +25,7 @@ namespace jactorio::data
 		static_assert(!std::is_pointer_v<TProto>, "TProto should not be a pointer, remove the indirection");
 
 		using ValueT = std::size_t;
-		static constexpr auto kArchiveSize = sizeof(ValueT); 
+		static constexpr auto kArchiveSize = sizeof(ValueT);
 
 	public:
 		SerialProtoPtr() = default;

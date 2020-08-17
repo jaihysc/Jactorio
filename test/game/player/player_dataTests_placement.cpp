@@ -8,8 +8,8 @@
 #include "data/prototype_manager.h"
 #include "data/prototype/container_entity.h"
 #include "data/prototype/resource_entity.h"
-#include "data/prototype/interface/update_listener.h"
 #include "data/prototype/tile.h"
+#include "data/prototype/interface/update_listener.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game
@@ -451,12 +451,14 @@ namespace jactorio::game
 				this->type = type;
 			}
 
-			
+
 			void OnBuild(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
-			             ChunkTileLayer& tile_layer, data::Orientation orientation) const override {}
+			             ChunkTileLayer& tile_layer, data::Orientation orientation) const override {
+			}
 
 			void OnRemove(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
-			              ChunkTileLayer& tile_layer) const override {}
+			              ChunkTileLayer& tile_layer) const override {
+			}
 		};
 
 		// The world tile must have a tile prototype

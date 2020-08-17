@@ -172,9 +172,9 @@ namespace jactorio::data
 
 		TestSetupContainer(worldData_, {4, 2}, container);
 
-		auto& tile  = TestSetupDrill(worldData_, logicData_,
-		                             {1, 1},
-		                             resource_, drillProto_, 1);
+		auto& tile = TestSetupDrill(worldData_, logicData_,
+		                            {1, 1},
+		                            resource_, drillProto_, 1);
 		auto& tile2 = TestSetupResource(worldData_, {3, 4}, resource_, 1);
 		auto& tile3 = TestSetupResource(worldData_, {4, 4}, resource_, 1);
 

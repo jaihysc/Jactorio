@@ -8,9 +8,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "jactorio.h"
+#include "data/prototype/tile.h"
 #include "data/prototype/abstract_proto/entity.h"
 #include "data/prototype/interface/renderable.h"
-#include "data/prototype/tile.h"
 #include "game/world/world_data.h"
 #include "renderer/opengl/error.h"
 #include "renderer/opengl/mvp_manager.h"
@@ -336,7 +336,7 @@ void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, const game::C
 		if (!proto)  // Layer not initialized
 			continue;
 
-		const auto* unique_data = tile_layer.GetMultiTileTopLeft().GetUniqueData<data::FRenderableData>();
+		const auto* unique_data = tile_layer.GetUniqueData<data::FRenderableData>();
 
 		// Unique data can be nullptr for certain layers
 
@@ -438,14 +438,14 @@ void renderer::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv,
 
 void renderer::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv,
                                                     const game::ChunkTileLayer& tile_layer) noexcept {
-	game::MultiTileData& mt_data = tile_layer.GetMultiTileData();
+	const auto& mt_data = tile_layer.GetMultiTileData();
 
 	// Calculate the correct UV coordinates for multi-tile entities
 	// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
 
 	// Total length of the sprite, to be split among the different tiles
-	const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / core::SafeCast<float>(mt_data.multiTileSpan);
-	const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / core::SafeCast<float>(mt_data.multiTileHeight);
+	const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / core::SafeCast<float>(mt_data.span);
+	const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / core::SafeCast<float>(mt_data.height);
 
 	const double x_multiplier = tile_layer.GetOffsetX();
 	const double y_multiplier = tile_layer.GetOffsetY();

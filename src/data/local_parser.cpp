@@ -71,7 +71,7 @@ void ParseEol(jactorio::data::PrototypeManager& data_manager, ParserData& parser
 		prototype->SetLocalizedName(parser_data.currentLineBuffer);
 		LOG_MESSAGE_F(debug, "Registered local '%s' '%s'", str_s.str().c_str(), parser_data.currentLineBuffer.c_str());
 	}
-	else  {
+	else {
 		LOG_MESSAGE_F(warning, "Local option '%s' missing matching prototype internal name", str_s.str().c_str());
 	}
 

@@ -96,7 +96,7 @@ namespace jactorio::core
 
 		TVal z;
 
-		
+
 		CEREAL_SERIALIZE(archive) {
 			archive(cereal::base_class<Position2<TVal>>(this), z);
 		}

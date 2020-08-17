@@ -174,7 +174,7 @@ namespace jactorio::game
 		// Inserter will not pick up items that it can never drop off
 
 		// Cannot drop into assembly machine since it has no recipe
-		const data::AssemblyMachine asm_machine{};
+		data::AssemblyMachine asm_machine{};
 		TestSetupAssemblyMachine(worldData_, {0, 1}, asm_machine);
 
 		auto* pickup = BuildChest({3, 2}, data::Orientation::right, 10);

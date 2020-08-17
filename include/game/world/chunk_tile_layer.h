@@ -4,8 +4,9 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
 #pragma once
 
-#include "data/prototype/framework/framework_base.h"
-#include "game/world/chunk_layer.h"
+#include "data/cereal/serialization_type.h"
+#include "data/cereal/serialize.h"
+#include "data/prototype/framework/renderable.h"
 
 #include <cereal/cereal.hpp>
 
@@ -13,27 +14,35 @@ namespace jactorio::game
 {
 	struct MultiTileData
 	{
+		using ValueT = uint8_t;
+
 		/// Number of tiles the sprite should span 
-		uint8_t multiTileSpan   = 1;
-		uint8_t multiTileHeight = 1;
+		uint8_t span   = 1;
+		uint8_t height = 1;
+
+		friend bool operator==(const MultiTileData& lhs, const MultiTileData& rhs) {
+			return std::tie(lhs.span, lhs.height) == std::tie(rhs.span, rhs.height);
+		}
+
+		friend bool operator!=(const MultiTileData& lhs, const MultiTileData& rhs) {
+			return !(lhs == rhs);
+		}
 	};
 
 	///
-	/// \brief A Chunk_tile has many layers
-	/// \remark Commonly instantiated, limit the size of variables
-	/// \remark !! Set the multi tile index before using any multi tile methods
-	class ChunkTileLayer : public ChunkLayer
+	/// \brief A Layers within a ChunkTIle layers
+	class ChunkTileLayer
 	{
+		using MultiTileValueT = MultiTileData::ValueT;
+
 	public:
 		ChunkTileLayer() = default;
 
-		explicit ChunkTileLayer(const data::FrameworkBase* proto)
-			: ChunkLayer(proto) {
+		explicit ChunkTileLayer(const data::FRenderable* proto)
+			: prototypeData(proto) {
 		}
 
-		~ChunkTileLayer() {
-			Clear();
-		}
+		~ChunkTileLayer() = default;
 
 		ChunkTileLayer(const ChunkTileLayer& other);
 		ChunkTileLayer(ChunkTileLayer&& other) noexcept;
@@ -43,108 +52,92 @@ namespace jactorio::game
 			return *this;
 		}
 
+
 		friend void swap(ChunkTileLayer& lhs, ChunkTileLayer& rhs) noexcept {
 			using std::swap;
-			swap(static_cast<ChunkLayer&>(lhs), static_cast<ChunkLayer&>(rhs));
 			swap(lhs.multiTileIndex, rhs.multiTileIndex);
-			swap(lhs.multiTileData_, rhs.multiTileData_);
+			swap(lhs.prototypeData, rhs.prototypeData);
+			swap(lhs.uniqueData_, rhs.uniqueData_);
 		}
 
 
 		///
 		/// \brief Resets data on this tile and frees any heap allocated data 
-		void Clear();
+		void Clear() noexcept;
+
+
+		// Prototype
+
+		///
+		/// \tparam T Return type which prototypeData is cast to
+		template <typename T = data::FRenderable>
+		J_NODISCARD const T* GetPrototypeData() const {
+			return static_cast<const T*>(prototypeData.Get());
+		}
+
+		// Unique data
+
+		///
+		/// \brief Heap allocates unique data
+		/// \return Created unique data
+		template <typename TData, typename ... Args>
+		TData* MakeUniqueData(Args&& ... args) {
+			assert(!uniqueData_);  // Trying to create already created uniqueData
+
+			uniqueData_ = std::make_unique<TData>(std::forward<Args>(args) ...);
+			return static_cast<TData*>(uniqueData_.get());
+		}
+
+		///
+		/// \tparam T Return type which uniqueData is cast to
+		template <typename T = data::UniqueDataBase>
+		J_NODISCARD T* GetUniqueData() noexcept {
+			return static_cast<T*>(uniqueData_.get());
+		}
+
+		///
+		/// \tparam T Return type which uniqueData is cast to
+		template <typename T = data::UniqueDataBase>
+		J_NODISCARD const T* GetUniqueData() const noexcept {
+			return static_cast<const T*>(uniqueData_.get());
+		}
+
+
+		// ======================================================================
 
 
 		///
 		/// \return Whether or not this tile belongs to a multi tile placement
 		J_NODISCARD bool IsMultiTile() const {
-			if (multiTileIndex != 0)
-				assert(multiTileData_ != nullptr);  // Multi tiles should never have nullptr for parent_layer
+			if (!HasMultiTileData())
+				return false;
 
-			return multiTileData_ != nullptr;
+			return GetMultiTileData().span != 1 || GetMultiTileData().height != 1;
 		}
 
 		///
 		/// \return Whether or not this is the top left tile of a multi tile placement
 		J_NODISCARD bool IsMultiTileTopLeft() const {
-			if (multiTileIndex != 0)
-				assert(multiTileData_ != nullptr);  // Multi tiles should never have nullptr for parent_layer
-
-			return multiTileData_ != nullptr && multiTileIndex == 0;
-		}
-
-		// ======================================================================
-
-		///
-		/// \brief Initializes (heap allocates) the properties of the multi tile
-		void InitMultiTileProp(const uint8_t multi_tile_span, const uint8_t multi_tile_height) {
-			assert(multi_tile_span > 0);
-			assert(multi_tile_height > 0);
-
-			assert(multiTileIndex == 0);  // Only valid for top left multi tiles
-
-			if (multiTileData_ == nullptr)
-				multiTileData_ = new MultiTileData{multi_tile_span, multi_tile_height};
-			else {
-				auto* data            = static_cast<MultiTileData*>(multiTileData_);
-				data->multiTileSpan   = multi_tile_span;
-				data->multiTileHeight = multi_tile_height;
-			}
+			return IsMultiTile() && multiTileIndex == 0;
 		}
 
 
-		///
-		/// \brief Sets the pointer to the top left multi tile
-		void SetMultiTileParent(ChunkTileLayer* parent) {
-			assert(parent != nullptr);
-			assert(multiTileIndex != 0);  // Only valid for tiles other than the top left
-			multiTileData_ = parent;
+		J_NODISCARD bool HasMultiTileData() const {
+			return prototypeData != nullptr;
 		}
-
-		///
-		/// \brief Gets the top left multi tile pointer if this is not the top left tile
-		J_NODISCARD ChunkTileLayer* GetMultiTileParent() const {
-			assert(IsMultiTile());
-			assert(!IsMultiTileTopLeft());
-
-			return static_cast<ChunkTileLayer*>(multiTileData_);
-		}
-
-		///
-		/// \brief Gets top left layer if is multi tile, otherwise itself if not a multi tile
-		J_NODISCARD ChunkTileLayer& GetMultiTileTopLeft() {
-			if (!IsMultiTile() || IsMultiTileTopLeft())
-				return *this;
-
-			auto* val = static_cast<ChunkTileLayer*>(multiTileData_);
-			assert(val);
-			return *val;
-		}
-
-		J_NODISCARD const ChunkTileLayer& GetMultiTileTopLeft() const {
-			return const_cast<ChunkTileLayer&>(
-				const_cast<ChunkTileLayer*>(this)->GetMultiTileTopLeft()
-			);
-		}
-
 
 		///
 		/// \brief Return the multi tile data for the current multi tile placement
-		J_NODISCARD MultiTileData& GetMultiTileData() const {
-			assert(IsMultiTile());
-
-			if (IsMultiTileTopLeft())
-				return *static_cast<MultiTileData*>(multiTileData_);
-
-			return GetMultiTileParent()->GetMultiTileData();
+		J_NODISCARD MultiTileData GetMultiTileData() const {
+			assert(prototypeData != nullptr);
+			return {prototypeData->tileWidth, prototypeData->tileHeight};
 		}
 
 
 		///
 		/// \brief Adjusts provided x, y to coordinates of top left tile
 		template <typename Tx, typename Ty>
-		void AdjustToTopLeft(Tx& x, Ty& y) {
+		void AdjustToTopLeft(Tx& x, Ty& y) const {
 			if (!IsMultiTile())
 				return;
 
@@ -153,79 +146,57 @@ namespace jactorio::game
 		}
 
 		/// \return Number of tiles from top left on X axis
-		J_NODISCARD uint8_t GetOffsetX() const {
-			MultiTileData& data = GetMultiTileData();
-			return multiTileIndex % data.multiTileSpan;
+		J_NODISCARD MultiTileValueT GetOffsetX() const {
+			const auto& data = GetMultiTileData();
+			return multiTileIndex % data.span;
 		}
 
 		/// \return Number of tiles from top left on Y axis
-		J_NODISCARD uint8_t GetOffsetY() const {
-			MultiTileData& data = GetMultiTileData();
-			return multiTileIndex / data.multiTileSpan;
+		J_NODISCARD MultiTileValueT GetOffsetY() const {
+			const auto& data = GetMultiTileData();
+			return multiTileIndex / data.span;
 		}
 
 
 		CEREAL_SERIALIZE(archive) {
-			archive(cereal::base_class<ChunkLayer>(this), multiTileIndex); // TODO OH NO -> , multiTileData_);
+			archive(prototypeData, multiTileIndex); //, uniqueData_);  // TODO must serialize unique data
 		}
 
+		/// A layer may point to a tile prototype to provide additional data (collisions, world gen) 
+		data::SerialProtoPtr<const data::FRenderable> prototypeData;
+
+
 		///	
-		/// \brief If the layer is multi-tile, eg: 3 x 3
+		/// \brief If the layer is multi-tile, eg: 3 x 2
 		/// 0 1 2
 		/// 3 4 5
-		/// 6 7 8
-		uint8_t multiTileIndex = 0;
+		MultiTileValueT multiTileIndex = 0;
 
 	private:
-		// Multi tiles:
-		// 
-		//  1. Unique data is stored in the top left tile, indicated by:
-		// 		1. multi_tile_index = 0
-		// 		2. parent_layer != nullptr
-		// 
-		//  2. Non-top left tiles holds a pointer to the top left tile, indicated by:
-		// 		1. multi_tile_index != 0
-		// 		parent_layer should always != nullptr
-		//
-
-
-		//  For multi tile prototypes, this serves 2 purposes
-		// 
-		//  1. Hold a pointer to the top left tile
-		//  2. Holds a pointer to the properties of the multi tile if this is the top left tile
-		//
-		void* multiTileData_ = nullptr;
+		/// Data for the prototype which is unique per tile and layer
+		std::unique_ptr<data::UniqueDataBase> uniqueData_;
 	};
 
-	// NOTE! Multi tiles which are not the top left corner cannot be copied perfectly as they need to point to the top left
-	// corner, additional post processing is required to specify the parent
-	// Attempting to use methods without specifying the parent will result in assertions failing
-
 	inline ChunkTileLayer::ChunkTileLayer(const ChunkTileLayer& other)
-		: ChunkLayer{other},
+		: prototypeData(other.prototypeData),
 		  multiTileIndex{other.multiTileIndex} {
 
-		if (other.IsMultiTileTopLeft())
-			multiTileData_ = new MultiTileData(*static_cast<MultiTileData*>(other.multiTileData_));
-		else
-			multiTileData_ = nullptr;
+		// Use prototype defined method for copying uniqueData_ if other has data to copy
+		if (other.uniqueData_ != nullptr) {
+			assert(other.prototypeData.Get() != nullptr);  // No prototype_data_ available for copying unique_data_
+			uniqueData_ = other.prototypeData->CopyUniqueData(other.uniqueData_.get());
+		}
 	}
 
 	inline ChunkTileLayer::ChunkTileLayer(ChunkTileLayer&& other) noexcept
-		: ChunkLayer{std::move(other)},
+		: prototypeData(other.prototypeData),
 		  multiTileIndex{other.multiTileIndex},
-		  multiTileData_{other.multiTileData_} {
-		other.multiTileData_ = nullptr;
+		  uniqueData_(std::move(other.uniqueData_)) {
 	}
 
-	inline void ChunkTileLayer::Clear() {
+	inline void ChunkTileLayer::Clear() noexcept {
 		uniqueData_.reset();
-		prototypeData = nullptr;
-
-		if (IsMultiTileTopLeft())
-			delete static_cast<MultiTileData*>(multiTileData_);
-		multiTileData_ = nullptr;
-
+		prototypeData  = nullptr;
 		multiTileIndex = 0;
 	}
 }

@@ -17,7 +17,7 @@ namespace jactorio::data
 		// Allows for fast lookup of item recipes instead of searching through an entire unordered_map
 		EXPECT_EQ(jactorio::data::Recipe::GetItemRecipe(dataManager_, "non-existent-item"), nullptr);
 
-		auto& laptop_recipe = dataManager_.AddProto<Recipe>();
+		auto& laptop_recipe   = dataManager_.AddProto<Recipe>();
 		laptop_recipe.product = {"Laptop", 1};
 
 		const auto* recipe = Recipe::GetItemRecipe(dataManager_, "Laptop");
@@ -48,13 +48,13 @@ namespace jactorio::data
 		recipe_final.product     = {"final", 1};
 
 		// Intermediate 1 requires raw 1 (12), raw 2 (3) -> produces 1
-		auto& recipe_intermediate1 = dataManager_.AddProto<Recipe>("r-intermediate1");
+		auto& recipe_intermediate1       = dataManager_.AddProto<Recipe>("r-intermediate1");
 		recipe_intermediate1.ingredients = {{"raw-1", 12}, {"raw-2", 3}};
 		recipe_intermediate1.product     = {"intermediate-1", 1};
 
 
 		// Intermediate 2 requires raw 1 (7) -> produces 2
-		auto& recipe_intermediate2 = dataManager_.AddProto<Recipe>("r-intermediate2");
+		auto& recipe_intermediate2       = dataManager_.AddProto<Recipe>("r-intermediate2");
 		recipe_intermediate2.ingredients = {{"raw-1", 7}};
 		recipe_intermediate2.product     = {"intermediate-2", 2};
 

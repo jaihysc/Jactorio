@@ -46,7 +46,7 @@ void PlaceAtCoords(game::WorldData& world_data,
                    const WorldCoordAxis y,
                    const std::function<void(game::ChunkTile*)>& place_func) {
 	// Place --- The places tiles are known to be valid
-	int entity_index = 0;
+	uint32_t entity_index = 0;
 
 	// The top left is handled differently
 	auto* top_left_tile = world_data.GetTile(x, y);
@@ -60,8 +60,6 @@ void PlaceAtCoords(game::WorldData& world_data,
 
 	// Multi tile
 
-	top_left.InitMultiTileProp(tile_width, tile_height);
-
 	int offset_x = 1;
 	for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
 		for (; offset_x < tile_width; ++offset_x) {
@@ -70,8 +68,6 @@ void PlaceAtCoords(game::WorldData& world_data,
 
 			auto& layer_tile          = tile->GetLayer(layer);
 			layer_tile.multiTileIndex = entity_index++;
-
-			layer_tile.SetMultiTileParent(&top_left);
 		}
 		offset_x = 0;
 	}

@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "data/prototype/container_entity.h"
-#include "data/prototype/abstract_proto/entity.h"
 #include "data/prototype/tile.h"
+#include "data/prototype/abstract_proto/entity.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game
@@ -346,12 +346,12 @@ namespace jactorio::game
 				// Ensure tile width and height are properly set
 				EXPECT_EQ(
 					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileData()
-					.multiTileSpan,
+					.span,
 					3
 				);
 				EXPECT_EQ(
 					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileData().
-					multiTileHeight,
+					height,
 					4
 				);
 			}

@@ -12,23 +12,23 @@
 #include <pybind11/stl_bind.h>
 
 #include "data/prototype_manager.h"
-#include "data/prototype/framework/framework_base.h"
-#include "data/prototype/prototype_type.h"
-#include "data/prototype/sprite.h"
 #include "data/prototype/assembly_machine.h"
 #include "data/prototype/container_entity.h"
-#include "data/prototype/abstract_proto/entity.h"
-#include "data/prototype/abstract_proto/health_entity.h"
 #include "data/prototype/inserter.h"
-#include "data/prototype/mining_drill.h"
-#include "data/prototype/resource_entity.h"
-#include "data/prototype/transport_belt.h"
-#include "data/prototype/abstract_proto/transport_line.h"
 #include "data/prototype/item.h"
+#include "data/prototype/mining_drill.h"
+#include "data/prototype/noise_layer.h"
+#include "data/prototype/prototype_type.h"
 #include "data/prototype/recipe_category.h"
 #include "data/prototype/recipe_group.h"
-#include "data/prototype/noise_layer.h"
+#include "data/prototype/resource_entity.h"
+#include "data/prototype/sprite.h"
 #include "data/prototype/tile.h"
+#include "data/prototype/transport_belt.h"
+#include "data/prototype/abstract_proto/entity.h"
+#include "data/prototype/abstract_proto/health_entity.h"
+#include "data/prototype/abstract_proto/transport_line.h"
+#include "data/prototype/framework/framework_base.h"
 
 // All the bindings in bindings/ defined for pybind
 // This should only be included by pybind_manager.h
@@ -49,7 +49,7 @@ inline void ExtractPythonTraceback(jactorio::data::FrameworkBase& prototype) {
 	);
 
 	std::vector<std::string> stack_frames{};
-	
+
 	while (py::eval("_stack_frame != None").cast<bool>()) {
 		stack_frames.push_back(static_cast<py::str>(py::eval("_stack_frame")));
 

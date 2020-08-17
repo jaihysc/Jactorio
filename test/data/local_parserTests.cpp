@@ -3,8 +3,8 @@
 #include <gtest/gtest.h>
 
 #include "data/data_exception.h"
-#include "data/prototype_manager.h"
 #include "data/local_parser.h"
+#include "data/prototype_manager.h"
 #include "data/prototype/sprite.h"
 
 namespace jactorio::data
@@ -19,7 +19,7 @@ namespace jactorio::data
 		// Setup prototypes
 		dataManager_.SetDirectoryPrefix("test");
 
-		auto& prototype = dataManager_.AddProto<Sprite>("test_tile");
+		auto& prototype  = dataManager_.AddProto<Sprite>("test_tile");
 		auto& prototype2 = dataManager_.AddProto<Sprite>("test_tile1");
 
 		const std::string str =

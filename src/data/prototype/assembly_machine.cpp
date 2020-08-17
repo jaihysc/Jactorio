@@ -77,7 +77,7 @@ void data::AssemblyMachineData::CraftAddProduct() {
 // ======================================================================
 
 data::Sprite::FrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-															  GameTickT game_tick) const {
+                                                              GameTickT game_tick) const {
 	const auto& machine_data = static_cast<const AssemblyMachineData&>(unique_data);
 
 	if (!machine_data.deferralEntry.Valid())
@@ -130,7 +130,7 @@ void data::AssemblyMachine::OnRemove(game::WorldData& world_data,
                                      game::LogicData& logic_data,
                                      const WorldCoord& world_coords,
                                      game::ChunkTileLayer& tile_layer) const {
-	auto& machine_data = *tile_layer.GetMultiTileTopLeft().GetUniqueData<AssemblyMachineData>();
+	auto& machine_data = *tile_layer.GetUniqueData<AssemblyMachineData>();
 
 	logic_data.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
 }

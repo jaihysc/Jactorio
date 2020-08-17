@@ -23,7 +23,7 @@ J_NODISCARD bool MoveNextItem(const game::TransportLineOffset& tiles_moved,
 			// Found a valid item to decrement
 			if (!has_target_segment) {
 				// Always check every item from index 0 if there is a target segment as the previous item may have moved
-				index = core::SafeCast<uint16_t>(i);  
+				index = core::SafeCast<uint16_t>(i);
 			}
 			i_item_offset -= tiles_moved;
 

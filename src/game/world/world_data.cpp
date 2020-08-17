@@ -11,8 +11,8 @@
 
 #include "core/math.h"
 #include "data/prototype_manager.h"
-#include "data/prototype/resource_entity.h"
 #include "data/prototype/noise_layer.h"
+#include "data/prototype/resource_entity.h"
 #include "data/prototype/tile.h"
 #include "game/world/chunk_tile.h"
 
@@ -158,6 +158,50 @@ game::ChunkTile* game::WorldData::GetTile(const WorldCoord& world_pair) {
 
 const game::ChunkTile* game::WorldData::GetTile(const WorldCoord& world_pair) const {
 	return GetTile(world_pair.x, world_pair.y);
+}
+
+
+// ======================================================================
+
+
+game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_coord,
+                                                 const ChunkTile::ChunkLayer layer) {
+	auto* tile = GetTile(world_coord);
+	if (tile == nullptr)
+		return nullptr;
+
+	return GetTileTopLeft(world_coord, tile->GetLayer(layer));
+}
+
+const game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_coord,
+                                                       const ChunkTile::ChunkLayer layer) const {
+	return const_cast<WorldData*>(this)->GetTileTopLeft(world_coord, layer);
+}
+
+game::ChunkTile* game::WorldData::GetTileTopLeft(WorldCoord world_coord,
+                                                 const ChunkTileLayer& chunk_tile_layer) {
+	chunk_tile_layer.AdjustToTopLeft(world_coord.x, world_coord.y);
+	return GetTile(world_coord);
+}
+
+const game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_coord,
+                                                       const ChunkTileLayer& chunk_tile_layer) const {
+	return const_cast<WorldData*>(this)->GetTileTopLeft(world_coord, chunk_tile_layer);
+}
+
+
+game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& world_coord,
+                                                       const ChunkTile::ChunkLayer& tile_layer) noexcept {
+	auto* tile = GetTileTopLeft(world_coord, tile_layer);
+	if (tile == nullptr)
+		return nullptr;
+
+	return &tile->GetLayer(tile_layer);
+}
+
+const game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& world_coord,
+                                                             const ChunkTile::ChunkLayer& tile_layer) const noexcept {
+	return const_cast<WorldData*>(this)->GetLayerTopLeft(world_coord, tile_layer);
 }
 
 

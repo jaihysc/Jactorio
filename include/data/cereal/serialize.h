@@ -44,7 +44,7 @@ namespace jactorio::data
 	/// \brief Size checks arguments to be archived to avoid runtime errors
 	template <std::size_t ArchiveSize, typename TArchive, typename ... TArgs>
 	void CerealArchive(TArchive& archiver, TArgs&& ... args) {
-		static_assert(sizeof...(TArgs) > 0,  "At least 1 argument must be provided to archiver");
+		static_assert(sizeof...(TArgs) > 0, "At least 1 argument must be provided to archiver");
 		static_assert((sizeof(TArgs) + ... + 0) == ArchiveSize, "Provided arguments does not match archive size");
 
 		archiver(std::forward<TArgs>(args) ...);

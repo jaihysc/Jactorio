@@ -52,7 +52,7 @@ namespace jactorio::game
 		///
 		/// \remark For cereal deserialization only
 		Chunk() = default;
-		
+
 		///
 		/// \brief Default initialization of chunk tiles
 		Chunk(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y)
@@ -85,7 +85,7 @@ namespace jactorio::game
 			return overlays[static_cast<OverlayArrayT::size_type>(layer)];
 		}
 
-		
+
 		// Items requiring logic updates
 
 		J_NODISCARD LogicGroupContainerT& GetLogicGroup(const LogicGroup layer) {

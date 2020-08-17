@@ -6,8 +6,8 @@
 
 #include <deque>
 
-#include "data/prototype/type.h"
 #include "data/prototype/item.h"
+#include "data/prototype/type.h"
 #include "game/logic/transport_line_controller.h"
 
 namespace jactorio::game

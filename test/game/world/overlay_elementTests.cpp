@@ -50,7 +50,7 @@ namespace jactorio::game
 
 		oe.SetZPosition(12);
 		EXPECT_FLOAT_EQ(oe.position.z, 12.f);
-		
+
 		oe.SetZPosition(OverlayLayer::general);
 		EXPECT_FLOAT_EQ(oe.position.z, 0.4f);
 

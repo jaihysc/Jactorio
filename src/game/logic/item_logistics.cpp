@@ -4,9 +4,9 @@
 
 #include "data/prototype/assembly_machine.h"
 #include "data/prototype/container_entity.h"
+#include "data/prototype/item.h"
 #include "data/prototype/abstract_proto/entity.h"
 #include "data/prototype/abstract_proto/transport_line.h"
-#include "data/prototype/item.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/transport_line_controller.h"
@@ -69,13 +69,13 @@ bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& args) const {
 	return true;
 }
 
-void GetAdjustedLineOffset(const bool use_line_left, 
-						   game::TransportLineOffset& pickup_offset,
-						   const data::TransportLineData& line_data) {
+void GetAdjustedLineOffset(const bool use_line_left,
+                           game::TransportLineOffset& pickup_offset,
+                           const data::TransportLineData& line_data) {
 	game::TransportSegment::ApplyTerminationDeduction(use_line_left,
-	                                            line_data.lineSegment->terminationType,
-	                                            game::TransportSegment::TerminationType::straight,
-	                                            pickup_offset);
+	                                                  line_data.lineSegment->terminationType,
+	                                                  game::TransportSegment::TerminationType::straight,
+	                                                  pickup_offset);
 }
 
 bool game::ItemDropOff::CanInsertTransportBelt(const DropOffParams&) const {
@@ -165,7 +165,7 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
 	}
 
 	constexpr double insertion_offset_base = 0.5;
-	auto offset = TransportLineOffset(line_data.lineSegmentIndex + insertion_offset_base);
+	auto offset                            = TransportLineOffset(line_data.lineSegmentIndex + insertion_offset_base);
 
 	GetAdjustedLineOffset(use_line_left, offset, line_data);
 	return line_data.lineSegment->TryInsertItem(use_line_left,
@@ -328,7 +328,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
 
 
 	try_pickup_item(use_line_left);
-	if (item == nullptr) {  
+	if (item == nullptr) {
 		// Try picking up from other lane if preferred lane fails
 		// use_line_left itself must be inverted so the handling after an item was picked up utilizes the correct lane
 		use_line_left = !use_line_left;

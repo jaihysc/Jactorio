@@ -24,14 +24,14 @@ namespace jactorio::data
 		EXPECT_EQ(serial_proto.Get(), nullptr);
 
 		Sprite sprite;
-		serial_proto = &sprite;
+		serial_proto       = &sprite;
 		serial_proto->sets = 3;
 		EXPECT_EQ(sprite.sets, 3);
 
 		// (*serial_proto).sets;
 		// EXPECT_EQ(sprite.sets, 3);
 	}
-	
+
 	TEST(CerealSerializePrototypePointer, GetPrototypeConst) {
 		Sprite sprite;
 		sprite.sets = 32;

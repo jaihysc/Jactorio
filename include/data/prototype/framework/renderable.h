@@ -15,6 +15,10 @@ namespace jactorio::data
 
 	class FRenderable : public FrameworkBase, public IRenderable
 	{
+	public:
+		// Number of tiles this entity spans
+		PYTHON_PROP_REF_I(uint8_t, tileWidth, 1);
+		PYTHON_PROP_REF_I(uint8_t, tileHeight, 1);
 	};
 }
 

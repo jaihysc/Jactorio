@@ -69,7 +69,7 @@ namespace jactorio::game
 		// since recipe_craft_tick() is not called
 
 		// Register items
-		auto& item = dataManager_.AddProto<data::Item>("item-1");
+		auto& item         = dataManager_.AddProto<data::Item>("item-1");
 		auto& item_product = dataManager_.AddProto<data::Item>("item-product");
 
 		// Register recipes

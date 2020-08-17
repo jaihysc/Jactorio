@@ -12,7 +12,7 @@ namespace jactorio::renderer
 {
 	class DisplayWindow;
 
-	
+
 	// If true, ImGui has handled the a input event and thus should not be carried to down the layer
 	inline bool input_mouse_captured    = false;
 	inline bool input_keyboard_captured = false;
@@ -21,7 +21,7 @@ namespace jactorio::renderer
 	struct MenuData
 	{
 		MenuData(const SpriteUvCoordsT& sprite_positions,
-				 const unsigned tex_id)
+		         const unsigned tex_id)
 			: spritePositions(sprite_positions),
 			  texId(tex_id) {
 		}
@@ -39,7 +39,7 @@ namespace jactorio::renderer
 	void Setup(const DisplayWindow& display_window);
 
 	void ImguiDraw(const DisplayWindow& display_window,
-				   game::PlayerData& player_data, const data::PrototypeManager& data_manager, game::EventData& event);
+	               game::PlayerData& player_data, const data::PrototypeManager& data_manager, game::EventData& event);
 
 	void ImguiTerminate();
 }

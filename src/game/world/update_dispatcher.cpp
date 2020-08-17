@@ -45,13 +45,13 @@ bool game::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
 }
 
 void game::UpdateDispatcher::Dispatch(WorldData& world_data,
-                                                 const WorldCoordAxis world_x, const WorldCoordAxis world_y,
-                                                 const data::UpdateType type) {
+                                      const WorldCoordAxis world_x, const WorldCoordAxis world_y,
+                                      const data::UpdateType type) {
 	Dispatch(world_data, {world_x, world_y}, type);
 }
 
 void game::UpdateDispatcher::Dispatch(WorldData& world_data,
-                                                 const WorldCoord& world_pair, const data::UpdateType type) {
+                                      const WorldCoord& world_pair, const data::UpdateType type) {
 	// Must be tuple to index into container_ since it uses a hash function only usable with tuples
 	const auto world_tuple = std::make_tuple(world_pair.x, world_pair.y);
 

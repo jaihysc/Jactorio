@@ -150,6 +150,36 @@ namespace jactorio::game
 		/// \return nullptr if no tile exists
 		J_NODISCARD const ChunkTile* GetTile(const WorldCoord& world_pair) const;
 
+		// ======================================================================
+
+		///
+		/// \brief Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
+		J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, ChunkTile::ChunkLayer layer);
+
+		///
+		/// \brief Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
+		J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, ChunkTile::ChunkLayer layer) const;
+
+		///
+		/// \brief Gets top left tile if is multi tile, otherwise itself if not a multi tile
+		J_NODISCARD ChunkTile* GetTileTopLeft(WorldCoord world_coord,
+		                                      const ChunkTileLayer& chunk_tile_layer);
+
+		///
+		/// \brief Gets top left tile if is multi tile, otherwise itself if not a multi tile
+		J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord,
+		                                            const ChunkTileLayer& chunk_tile_layer) const;
+
+
+		///
+		/// \brief Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself 
+		J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
+		                                            const ChunkTile::ChunkLayer& tile_layer) noexcept;
+
+		///
+		/// \brief Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself 
+		J_NODISCARD const ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
+		                                                  const ChunkTile::ChunkLayer& tile_layer) const noexcept;
 
 		// ==============================================================
 		// Logic chunk 

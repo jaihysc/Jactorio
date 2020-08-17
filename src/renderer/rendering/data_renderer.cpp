@@ -326,7 +326,7 @@ void renderer::DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_c
 
 	// Held item
 	if (inserter_data.status == data::InserterData::Status::dropoff) {
-		constexpr auto held_item_pixel_offset = 
+		constexpr auto held_item_pixel_offset =
 			core::LossyCast<float>((Renderer::tileWidth - Renderer::tileWidth * game::kItemWidth) / 2);
 
 		const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_data.heldItem.item->sprite->internalId);

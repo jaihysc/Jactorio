@@ -25,7 +25,7 @@
 using namespace jactorio;
 
 const SpriteUvCoordsT* sprite_positions = nullptr;
-unsigned int tex_id = 0;  // Assigned by openGL
+unsigned int tex_id                     = 0;  // Assigned by openGL
 
 void renderer::SetupCharacterData(RendererSprites& renderer_sprites) {
 	sprite_positions = &renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::gui).spritePositions;
@@ -159,7 +159,6 @@ void renderer::ImguiDraw(const DisplayWindow& display_window,
 
 	auto* layer = player_data.GetActivatedLayer();
 	if (layer != nullptr) {
-		layer    = &layer->GetMultiTileTopLeft();
 		drew_gui = static_cast<const data::Entity*>(layer->prototypeData.Get())->OnRShowGui(player_data, data_manager, layer);
 		if (drew_gui) {
 			SetVisible(Menu::CharacterMenu, false);

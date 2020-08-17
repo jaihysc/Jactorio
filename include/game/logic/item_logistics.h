@@ -4,10 +4,10 @@
 #define JACTORIO_GAME_LOGIC_ITEM_LOGISTICS_H
 #pragma once
 
-#include "data/prototype/type.h"
 #include "data/prototype/assembly_machine.h"
-#include "data/prototype/abstract_proto/transport_line.h"
 #include "data/prototype/item.h"
+#include "data/prototype/type.h"
+#include "data/prototype/abstract_proto/transport_line.h"
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 

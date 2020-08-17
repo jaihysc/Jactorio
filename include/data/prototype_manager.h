@@ -254,7 +254,7 @@ namespace jactorio::data
 	const TProto& PrototypeManager::RelocationTableGet(PrototypeIdT prototype_id) const noexcept {
 		assert(prototype_id > 0);
 		prototype_id -= 1;  // Prototype ids start from 1
-		
+
 		assert(relocationTable_.at(prototype_id));
 
 		auto* proto = relocationTable_[prototype_id];

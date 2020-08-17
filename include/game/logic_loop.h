@@ -8,7 +8,7 @@ namespace jactorio::game
 {
 	void InitLogicLoop();
 
-	inline bool logic_thread_should_exit   = false;
+	inline bool logic_thread_should_exit            = false;
 	inline volatile bool prototype_loading_complete = false;
 }
 

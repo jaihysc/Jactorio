@@ -40,10 +40,6 @@ namespace jactorio::data
 		PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
 
-		// Number of tiles this entity spans
-		PYTHON_PROP_REF_I(ProtoUintT, tileWidth, 1);
-		PYTHON_PROP_REF_I(ProtoUintT, tileHeight, 1);
-
 		// Can be rotated by player?
 		PYTHON_PROP_REF_I(bool, rotatable, false);
 		// Can be placed by player?

@@ -18,8 +18,8 @@ namespace jactorio::core
 	/// \brief Performs cast, data may be lost
 	template <class TTarget, class TOriginal>
 	constexpr TTarget LossyCast(TOriginal val,
-								std::enable_if_t<std::is_integral_v<TOriginal> || std::is_floating_point_v<TOriginal>, int> = 0,
-								std::enable_if_t<std::is_integral_v<TTarget> || std::is_floating_point_v<TTarget>, int> = 0)
+	                            std::enable_if_t<std::is_integral_v<TOriginal> || std::is_floating_point_v<TOriginal>, int>  = 0,
+	                            std::enable_if_t<std::is_integral_v<TTarget> || std::is_floating_point_v<TTarget>, int>      = 0)
 	noexcept {
 
 		return static_cast<TTarget>(val);
@@ -30,8 +30,8 @@ namespace jactorio::core
 	/// \remark Same behavior as static cast if assertions are disabled
 	template <class TTargetInt, class TOriginalInt>
 	constexpr TTargetInt SafeCast(TOriginalInt val,
-	                              std::enable_if_t<std::is_integral_v<TOriginalInt>, int> = 0,
-								  std::enable_if_t<std::is_integral_v<TTargetInt> || std::is_floating_point_v<TTargetInt>, int> = 0)
+	                              std::enable_if_t<std::is_integral_v<TOriginalInt>, int>                                        = 0,
+	                              std::enable_if_t<std::is_integral_v<TTargetInt> || std::is_floating_point_v<TTargetInt>, int>  = 0)
 	noexcept {
 
 		constexpr bool is_different_signedness = (std::is_signed<TTargetInt>::value != std::is_signed<TOriginalInt>::value);

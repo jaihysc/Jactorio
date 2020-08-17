@@ -9,8 +9,8 @@
 #include "core/math.h"
 #include "data/prototype_manager.h"
 #include "data/prototype/resource_entity.h"
-#include "data/prototype/interface/update_listener.h"
 #include "data/prototype/tile.h"
+#include "data/prototype/interface/update_listener.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"
@@ -310,7 +310,9 @@ bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldCoord&
 	// Activate the clicked entity / prototype. For example: show the gui
 	// Since this is entity layer, everything is guaranteed to be an entity
 
-	auto& selected_layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
+	constexpr auto select_layer = ChunkTile::ChunkLayer::entity;
+
+	auto& selected_layer = tile->GetLayer(select_layer);
 	if (!selected_layer.prototypeData.Get())
 		return false;
 
@@ -320,7 +322,7 @@ bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldCoord&
 	// else
 
 	// Clicking on an existing entity will activate it
-	activatedLayer_ = &selected_layer.GetMultiTileTopLeft();
+	activatedLayer_ = &world_data.GetTileTopLeft(world_pair, selected_layer)->GetLayer(select_layer);
 	return true;
 }
 
@@ -388,7 +390,9 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 		}
 			// Is normal entity
 		else {
-			auto& layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
+			constexpr auto select_layer = ChunkTile::ChunkLayer::entity;
+
+			auto& layer = tile->GetLayer(select_layer);
 
 			// User may have hovered on another tile other than the top left
 			auto tl_tile_x = tile_x;
@@ -397,7 +401,8 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 
 
 			// Picking up an entity which is set in activated_layer will unset activated_layer
-			if (activatedLayer_ == &layer.GetMultiTileTopLeft())
+			if (activatedLayer_ == &world_data.GetTileTopLeft({tile_x, tile_y},
+			                                                  layer)->GetLayer(select_layer))
 				activatedLayer_ = nullptr;
 
 			// Call events

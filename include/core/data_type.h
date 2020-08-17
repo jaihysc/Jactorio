@@ -12,7 +12,7 @@ namespace jactorio::core
 {
 	template <typename TVal>
 	struct Position2;
-	
+
 	template <typename TPosition>
 	struct QuadPosition;
 }
@@ -35,7 +35,7 @@ namespace jactorio
 	/// Offset from top left of chunk
 	using OverlayOffsetAxis = float;
 
-	
+
 	using UvPositionT = core::QuadPosition<core::Position2<float>>;
 	/// Internal id of sprite to uv coordinates
 	using SpriteUvCoordsT = std::unordered_map<unsigned int, UvPositionT>;

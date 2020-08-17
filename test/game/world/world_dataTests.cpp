@@ -2,10 +2,12 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/sprite.h"
+#include "game/world/world_data.h"
+
+#include "jactorioTests.h"
+#include "data/prototype/container_entity.h"
 #include "data/prototype/tile.h"
 #include "game/world/chunk.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
@@ -69,8 +71,8 @@ namespace jactorio::game
 
 	TEST_F(WorldDataTest, WorldOverrideChunk) {
 		// Adding a chunk to an existing location SHOULD NOT overwrite it
-		const auto chunk  = Chunk{5, 1};
-		auto chunk2 = Chunk{5, 1};
+		const auto chunk = Chunk{5, 1};
+		auto chunk2      = Chunk{5, 1};
 
 		// Set a sprite at chunk2 so it can be tested
 		data::Tile tile{};
@@ -103,7 +105,7 @@ namespace jactorio::game
 
 	TEST_F(WorldDataTest, GetTileWorldCoords) {
 		// Tests both overloads int, int and std::pair<int, int>
-		const auto chunk_tile      = ChunkTile();
+		const auto chunk_tile = ChunkTile();
 
 		// World coords 0, 0 - Chunk 0 0, position 0 0
 		{
@@ -162,6 +164,49 @@ namespace jactorio::game
 
 			EXPECT_EQ(worldData_.GetChunkW({-1, 0}), chunk);
 		}
+	}
+
+	TEST_F(WorldDataTest, GetTileTopLeft) {
+		worldData_.EmplaceChunk(0, 0);
+		const WorldCoord bottom_coord = {6, 6};
+
+		auto* bottom_tile  = worldData_.GetTile(bottom_coord);
+		auto& bottom_layer = bottom_tile->GetLayer(ChunkTile::ChunkLayer::entity);
+
+		data::ContainerEntity proto;
+		TestSetupMultiTileProp(bottom_layer, {2, 1}, proto);
+
+
+		// multiTileIndex is 0
+		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, bottom_layer), bottom_tile);  // Returns self if not multi tile
+		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, ChunkTile::ChunkLayer::entity), bottom_tile);
+
+		//
+		auto* top_tile = worldData_.GetTile(5, 6);
+
+		bottom_layer.multiTileIndex = 1;
+		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
+		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, ChunkTile::ChunkLayer::entity), top_tile);
+	}
+
+	TEST_F(WorldDataTest, GetLayerTopLeft) {
+		worldData_.EmplaceChunk(0, 0);
+
+		auto* top_tile    = worldData_.GetTile(0, 0);
+		auto* unique_data = top_tile->GetLayer(ChunkTile::ChunkLayer::resource).MakeUniqueData<data::ContainerEntityData>(10);
+
+		auto* bottom_tile  = worldData_.GetTile({1, 2});
+		auto& bottom_layer = bottom_tile->GetLayer(ChunkTile::ChunkLayer::resource);
+
+		data::ContainerEntity proto;
+		TestSetupMultiTileProp(bottom_layer, {7, 10}, proto);
+		bottom_layer.multiTileIndex = 15;
+
+		EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, ChunkTile::ChunkLayer::resource)->GetUniqueData(), unique_data);
+	}
+
+	TEST_F(WorldDataTest, GetLayerTopLeftUninitialized) {
+		EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, ChunkTile::ChunkLayer::entity), nullptr);
 	}
 
 

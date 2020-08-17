@@ -212,7 +212,7 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 
 		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
 			auto& layer = chunk->Tiles()[i].GetLayer(game::ChunkTile::ChunkLayer::entity);
-			if (!layer.prototypeData.Get()|| layer.prototypeData->Category() != data::DataCategory::transport_belt)
+			if (!layer.prototypeData.Get() || layer.prototypeData->Category() != data::DataCategory::transport_belt)
 				continue;
 
 			auto& line_data    = *static_cast<data::TransportLineData*>(layer.GetUniqueData());
@@ -302,7 +302,8 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 				}
 			);
 			object_layer.emplace_back(
-				game::OverlayElement{*outline_sprite,
+				game::OverlayElement{
+					*outline_sprite,
 					{core::SafeCast<float>(pos_x), core::SafeCast<float>(pos_y)},
 					{core::SafeCast<float>(segment_len_x), core::SafeCast<float>(segment_len_y)},
 					draw_overlay_layer
@@ -449,7 +450,7 @@ void renderer::DebugInserterInfo(game::PlayerData& player_data) {
 		return;
 
 	auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
-	if (!layer.prototypeData.Get()|| layer.prototypeData->Category() != data::DataCategory::inserter) {
+	if (!layer.prototypeData.Get() || layer.prototypeData->Category() != data::DataCategory::inserter) {
 		ImGui::Text("No inserter at selected tile");
 		return;
 	}

@@ -22,7 +22,7 @@ namespace jactorio::game
 		/// \brief Creates the cursor prototype which is hardcoded when an item is selected
 		void SetupInventoryCursor() {
 			setupCursor_ = true;
-			cursor_ = &dataManager_.AddProto<data::Item>(data::Item::kInventorySelectedCursor);
+			cursor_      = &dataManager_.AddProto<data::Item>(data::Item::kInventorySelectedCursor);
 		}
 	};
 

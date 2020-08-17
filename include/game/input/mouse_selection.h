@@ -32,7 +32,7 @@ namespace jactorio::game
 	class MouseSelection
 	{
 		static constexpr OverlayLayer kCursorOverlayLayer = OverlayLayer::general;
-		
+
 	public:
 		J_NODISCARD static double GetCursorX();
 		J_NODISCARD static double GetCursorY();
@@ -51,7 +51,7 @@ namespace jactorio::game
 		                 data::Orientation
 		                 placement_orientation);
 	private:
-		ChunkCoord lastChunkPos_  = {0, 0};
+		ChunkCoord lastChunkPos_        = {0, 0};
 		size_t lastOverlayElementIndex_ = UINT64_MAX;
 	};
 

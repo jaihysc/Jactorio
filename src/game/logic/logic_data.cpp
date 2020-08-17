@@ -10,7 +10,7 @@ void game::LogicData::DeferralTimer::DeferralUpdate(WorldData& world_data, const
 	if (game_tick > 0)
 		assert(game_tick > lastGameTick_); // assertion would fail on game tick 0, since lastGameTick would be 0
 	else
-		assert(game_tick >= lastGameTick_); 
+		assert(game_tick >= lastGameTick_);
 
 	lastGameTick_ = game_tick;
 
@@ -24,8 +24,8 @@ void game::LogicData::DeferralTimer::DeferralUpdate(WorldData& world_data, const
 }
 
 game::LogicData::DeferralTimer::DeferralEntry game::LogicData::DeferralTimer::RegisterAtTick(const data::IDeferred& deferred,
-                                                                                             data::UniqueDataBase* unique_data,
-                                                                                             const GameTickT due_game_tick) {
+	data::UniqueDataBase* unique_data,
+	const GameTickT due_game_tick) {
 	assert(due_game_tick > lastGameTick_);
 
 	auto& due_tick_callback = callbacks_[due_game_tick];
@@ -35,8 +35,8 @@ game::LogicData::DeferralTimer::DeferralEntry game::LogicData::DeferralTimer::Re
 }
 
 game::LogicData::DeferralTimer::DeferralEntry game::LogicData::DeferralTimer::RegisterFromTick(const data::IDeferred& deferred,
-                                                                                               data::UniqueDataBase* unique_data,
-                                                                                               const GameTickT elapse_game_tick) {
+	data::UniqueDataBase* unique_data,
+	const GameTickT elapse_game_tick) {
 
 	assert(elapse_game_tick > 0);
 	return RegisterAtTick(deferred, unique_data, lastGameTick_ + elapse_game_tick);
