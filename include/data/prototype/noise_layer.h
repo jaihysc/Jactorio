@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "data/prototype/resource_entity.h"
+#include "data/prototype/tile.h"
 #include "data/prototype/abstract_proto/entity.h"
 #include "data/prototype/framework/framework_base.h"
 
