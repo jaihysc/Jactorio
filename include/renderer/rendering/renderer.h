@@ -154,7 +154,7 @@ namespace jactorio::renderer
 		                  core::Position2<int> render_tile_offset,
 		                  GameTickT game_tick) const noexcept;
 
-		void PrepareTileLayers(RendererLayer& r_layer, game::ChunkTile& tile,
+		void PrepareTileLayers(RendererLayer& r_layer, const game::ChunkTile& tile,
 		                       const core::Position2<float>& pixel_pos,
 		                       GameTickT game_tick) const noexcept;
 

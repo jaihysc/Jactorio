@@ -48,7 +48,7 @@ namespace jactorio::game
 			{
 				auto& neighbor_layer       = worldData_.GetTile(neighbor_update_coord)->GetLayer(ChunkTile::ChunkLayer::entity);
 				const auto* neighbor_proto =
-					static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData);
+					static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData.Get());
 
 				if (neighbor_proto)
 					neighbor_proto->OnNeighborUpdate(worldData_, logicData_,

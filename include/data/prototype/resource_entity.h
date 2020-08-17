@@ -38,8 +38,8 @@ namespace jactorio::data
 			this->placeable = false;
 		}
 
-		UniqueDataBase* CopyUniqueData(UniqueDataBase* ptr) const override {
-			return new ResourceEntityData(*static_cast<ResourceEntityData*>(ptr));
+		std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* ptr) const override {
+			return std::make_unique<ResourceEntityData>(*static_cast<ResourceEntityData*>(ptr));
 		}
 
 		void OnBuild(game::WorldData&,

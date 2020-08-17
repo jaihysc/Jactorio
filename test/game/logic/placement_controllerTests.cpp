@@ -56,8 +56,9 @@ namespace jactorio::game
 			land_tile->isWater  = false;
 
 
-			// Create chunk
-			auto* chunk_tiles = new ChunkTile[kChunkWidth * kChunkWidth];
+			auto* chunk = world_data.EmplaceChunk(0, 0);
+
+			auto& chunk_tiles = chunk->Tiles();
 			for (int y = 0; y < kChunkWidth; ++y) {
 				bool y_water = false;
 
@@ -80,8 +81,6 @@ namespace jactorio::game
 					chunk_tiles[y * kChunkWidth + x].SetTilePrototype(tile_ptr);
 				}
 			}
-
-			world_data.EmplaceChunk(0, 0, chunk_tiles);
 		}
 
 	protected:

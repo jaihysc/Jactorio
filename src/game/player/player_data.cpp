@@ -188,7 +188,7 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 		if (tile) {
 			auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
-			const auto* entity = static_cast<const data::Entity*>(layer.prototypeData);
+			const auto* entity = static_cast<const data::Entity*>(layer.prototypeData.Get());
 			if (entity)
 				entity->OnNeighborUpdate(world_data,
 				                         logic_data,
@@ -311,7 +311,7 @@ bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldCoord&
 	// Since this is entity layer, everything is guaranteed to be an entity
 
 	auto& selected_layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
-	if (!selected_layer.prototypeData)
+	if (!selected_layer.prototypeData.Get())
 		return false;
 
 	// // If clicking again on the same entity, deactivate
@@ -401,7 +401,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 				activatedLayer_ = nullptr;
 
 			// Call events
-			const auto* entity = static_cast<const data::Entity*>(layer.prototypeData);
+			const auto* entity = static_cast<const data::Entity*>(layer.prototypeData.Get());
 
 			entity->OnRemove(world_data, logic_data, {tile_x, tile_y}, layer);
 

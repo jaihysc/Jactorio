@@ -56,7 +56,6 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/game/player/player_data.cpp
 
-	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
 	${JACTORIO_DIR}/game/world/update_dispatcher.cpp
 	${JACTORIO_DIR}/game/world/world_data.cpp

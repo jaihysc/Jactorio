@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include "jactorio.h"
 
@@ -164,7 +165,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Copies the unique_data associated with a prototype
-		virtual UniqueDataBase* CopyUniqueData(UniqueDataBase* ptr) const {
+		virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* ptr) const {
 			assert(false);  // Not implemented
 			return nullptr;
 		}

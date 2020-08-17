@@ -73,9 +73,9 @@ jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::Wo
 			const game::ChunkTile* tile =
 				world_data.GetTile(world_pair.x + x, world_pair.y + y);
 
-			game::ChunkTileLayer& resource = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
-			if (resource.prototypeData != nullptr)
-				return static_cast<const ResourceEntity*>(resource.prototypeData)->GetItem();
+			const auto& resource = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
+			if (resource.prototypeData.Get()!= nullptr)
+				return static_cast<const ResourceEntity*>(resource.prototypeData.Get())->GetItem();
 		}
 	}
 
@@ -121,7 +121,7 @@ bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
 			const game::ChunkTile* tile =
 				world_data.GetTile(coords.x + x, coords.y + y);
 
-			if (tile->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData != nullptr)
+			if (tile->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData.Get()!= nullptr)
 				return true;
 		}
 	}
@@ -226,8 +226,8 @@ bool jactorio::data::MiningDrill::SetupResourceDeduction(const game::WorldData& 
 
 			auto& resource_layer = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
 
-			if (resource_layer.prototypeData != nullptr) {
-				drill_data.outputItem     = static_cast<const ResourceEntity*>(resource_layer.prototypeData)->GetItem();
+			if (resource_layer.prototypeData.Get()!= nullptr) {
+				drill_data.outputItem     = static_cast<const ResourceEntity*>(resource_layer.prototypeData.Get())->GetItem();
 				drill_data.resourceOffset = y * x_span + x;
 				return true;
 			}

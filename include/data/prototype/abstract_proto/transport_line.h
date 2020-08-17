@@ -94,9 +94,13 @@ namespace jactorio::data
 		///
 		/// \brief Attempts to retrieve transport line data at world coordinates on tile
 		/// \return pointer to data or nullptr if non existent
-		J_NODISCARD static TransportLineData* GetLineData(const game::WorldData& world_data,
+		J_NODISCARD static TransportLineData* GetLineData(game::WorldData& world_data,
 		                                                  WorldCoordAxis world_x,
 		                                                  WorldCoordAxis world_y);
+
+		J_NODISCARD static const TransportLineData* GetLineData(const game::WorldData& world_data,
+		                                                        WorldCoordAxis world_x,
+		                                                        WorldCoordAxis world_y);
 
 		static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
 		                                                             TransportLineData* up,

@@ -4,6 +4,7 @@
 
 #include "game/world/update_dispatcher.h"
 
+#include "jactorioTests.h"
 #include "data/prototype/abstract_proto/entity.h"
 #include "game/world/world_data.h"
 
@@ -11,6 +12,7 @@ namespace jactorio::game
 {
 	class UpdateDispatcherTest : public testing::Test
 	{
+	protected:
 		class MockUpdateListener final : public data::Entity
 		{
 		public:
@@ -35,13 +37,14 @@ namespace jactorio::game
 
 
 			void OnBuild(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
-			             ChunkTileLayer& tile_layer, data::Orientation orientation) const override {}
+			             ChunkTileLayer& tile_layer, data::Orientation orientation) const override {
+			}
 
 			void OnRemove(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
-			              ChunkTileLayer& tile_layer) const override {}
+			              ChunkTileLayer& tile_layer) const override {
+			}
 		};
 
-	protected:
 		WorldData worldData_;
 		UpdateDispatcher& dispatcher_ = worldData_.updateDispatcher;
 
@@ -103,5 +106,33 @@ namespace jactorio::game
 		dispatcher_.Unregister(entry);
 
 		EXPECT_EQ(dispatcher_.GetDebugInfo().storedEntries.size(), 0);
+	}
+
+	TEST_F(UpdateDispatcherTest, Serialize) {
+		data::PrototypeManager proto_manager;
+		auto& registered_mock     = proto_manager.AddProto<MockUpdateListener>();
+		data::active_data_manager = &proto_manager;  // Needs to access prototype manager to deserialize
+
+		UpdateDispatcher original;
+		original.Register({1, 2}, {3, 4}, registered_mock);
+		original.Register({5, 6}, {7, 8}, registered_mock);
+
+		proto_manager.GenerateRelocationTable();
+		const auto result = TestSerializeDeserialize<UpdateDispatcher>(original);
+
+		const auto& stored_entries = result.GetDebugInfo().storedEntries;
+		ASSERT_EQ(stored_entries.size(), 2);
+
+		const auto& collection1 = stored_entries.at(std::make_tuple(3, 4));
+		ASSERT_EQ(collection1.size(), 1);
+		EXPECT_EQ(collection1[0].receiver.x, 1);
+		EXPECT_EQ(collection1[0].receiver.y, 2);
+		EXPECT_EQ(collection1[0].callback.Get(), &registered_mock);
+
+		const auto& collection2 = stored_entries.at(std::make_tuple(7, 8));
+		ASSERT_EQ(collection2.size(), 1);
+		EXPECT_EQ(collection2[0].receiver.x, 5);
+		EXPECT_EQ(collection2[0].receiver.y, 6);
+		EXPECT_EQ(collection2[0].callback.Get(), &registered_mock);
 	}
 }

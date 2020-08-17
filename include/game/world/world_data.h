@@ -202,7 +202,7 @@ namespace jactorio::game
 
 
 		CEREAL_SERIALIZE(archive) {
-			archive(updateDispatcher, worldGenSeed_); //, m.worldChunks_, m.logicChunks_);
+			archive(updateDispatcher, worldChunks_, worldGenSeed_); //, m.worldChunks_, m.logicChunks_);
 		}
 
 		UpdateDispatcher updateDispatcher;

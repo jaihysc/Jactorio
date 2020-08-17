@@ -183,7 +183,7 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 
 	// Each object layer holds a transport line segment
 	for (const auto& tile_layer : layers) {
-		const auto& line_proto = *static_cast<const data::TransportLine*>(tile_layer->prototypeData);
+		const auto& line_proto = *static_cast<const data::TransportLine*>(tile_layer->prototypeData.Get());
 		auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
 
 		// Left
@@ -218,7 +218,7 @@ void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
 
 	// Each object layer holds a transport line segment
 	for (const auto& tile_layer : layers) {
-		const auto* line_proto = static_cast<const data::TransportLine*>(tile_layer->prototypeData);
+		const auto* line_proto = static_cast<const data::TransportLine*>(tile_layer->prototypeData.Get());
 		auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
 
 		auto tiles_moved = line_proto->speed;

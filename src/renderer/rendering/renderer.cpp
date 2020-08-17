@@ -306,7 +306,7 @@ void renderer::Renderer::PrepareChunk(RendererLayer& r_layer, const game::Chunk&
                                       const core::Position2<int> render_tile_offset,
                                       const GameTickT game_tick) const noexcept {
 	// Load chunk into buffer
-	game::ChunkTile* tiles = chunk.Tiles();
+	const auto& tiles = chunk.Tiles();
 
 
 	// Iterate through and load tiles of a chunk into layer for rendering
@@ -325,11 +325,11 @@ void renderer::Renderer::PrepareChunk(RendererLayer& r_layer, const game::Chunk&
 	PrepareOverlayLayers(r_layer, chunk, render_tile_offset);
 }
 
-void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, game::ChunkTile& tile,
+void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, const game::ChunkTile& tile,
                                            const core::Position2<float>& pixel_pos,
                                            const GameTickT game_tick) const noexcept {
 	for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
-		auto& tile_layer = tile.GetLayer(layer_index);
+		const auto& tile_layer = tile.GetLayer(layer_index);
 
 
 		const auto* proto = tile_layer.GetPrototypeData<data::FRenderable>();

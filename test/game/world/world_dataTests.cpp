@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 
 #include "data/prototype/sprite.h"
-#include "data/prototype/interface/update_listener.h"
 #include "data/prototype/tile.h"
 #include "game/world/chunk.h"
 #include "game/world/world_data.h"
@@ -71,7 +70,7 @@ namespace jactorio::game
 	TEST_F(WorldDataTest, WorldOverrideChunk) {
 		// Adding a chunk to an existing location SHOULD NOT overwrite it
 		const auto chunk  = Chunk{5, 1};
-		const auto chunk2 = Chunk{5, 1};
+		auto chunk2 = Chunk{5, 1};
 
 		// Set a sprite at chunk2 so it can be tested
 		data::Tile tile{};
@@ -104,14 +103,13 @@ namespace jactorio::game
 
 	TEST_F(WorldDataTest, GetTileWorldCoords) {
 		// Tests both overloads int, int and std::pair<int, int>
-		constexpr auto chunk_width = WorldData::kChunkWidth;
 		const auto chunk_tile      = ChunkTile();
 
 		// World coords 0, 0 - Chunk 0 0, position 0 0
 		{
-			auto* tiles = new ChunkTile[32 * 32];
+			auto* chunk = worldData_.EmplaceChunk(0, 0);
+			auto& tiles = chunk->Tiles();
 			tiles[0]    = chunk_tile;
-			worldData_.EmplaceChunk(0, 0, tiles);
 
 			EXPECT_EQ(worldData_.GetTile(0, 0), &tiles[0]);
 			EXPECT_NE(worldData_.GetTile(0, 1), &tiles[0]);
@@ -123,9 +121,9 @@ namespace jactorio::game
 
 		// World coords -31, -31 - Chunk -1 -1, position 1 1
 		{
-			auto* tiles = new ChunkTile[chunk_width * chunk_width];
+			auto* chunk = worldData_.EmplaceChunk(-1, -1);
+			auto& tiles = chunk->Tiles();
 			tiles[33]   = chunk_tile;
-			worldData_.EmplaceChunk(-1, -1, tiles);
 
 			EXPECT_EQ(worldData_.GetTile(-31, -31), &tiles[33]);
 			EXPECT_NE(worldData_.GetTile(-31, -32), &tiles[33]);
@@ -137,9 +135,9 @@ namespace jactorio::game
 
 		// World coords -32, 0 - Chunk -1 0, position 0 0
 		{
-			auto* tiles = new ChunkTile[chunk_width * chunk_width];
+			auto* chunk = worldData_.EmplaceChunk(-1, 0);
+			auto& tiles = chunk->Tiles();
 			tiles[0]    = chunk_tile;
-			worldData_.EmplaceChunk(-1, 0, tiles);
 
 			EXPECT_EQ(worldData_.GetTile(-32, 0), &tiles[0]);
 			EXPECT_NE(worldData_.GetTile(-31, 0), &tiles[0]);

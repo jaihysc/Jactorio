@@ -109,20 +109,28 @@ data::TransportLineData::LineOrientation data::TransportLine::GetLineOrientation
 
 #undef NEIGHBOR_VALID
 
-data::TransportLineData* data::TransportLine::GetLineData(const game::WorldData& world_data,
+data::TransportLineData* data::TransportLine::GetLineData(game::WorldData& world_data,
                                                           const WorldCoordAxis world_x,
                                                           const WorldCoordAxis world_y) {
-	const auto* tile = world_data.GetTile(world_x, world_y);
+	auto* tile = world_data.GetTile(world_x, world_y);
 	if (!tile)  // No tile exists
 		return nullptr;
 
 	auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 	if (!dynamic_cast<const TransportLine*>(  // Not an instance of transport line
-		layer.prototypeData))
+		layer.prototypeData.Get()))
 		return nullptr;
 
 	return layer.GetUniqueData<TransportLineData>();
+}
+
+const data::TransportLineData* data::TransportLine::GetLineData(const game::WorldData& world_data,
+                                                                const WorldCoordAxis world_x,
+                                                                const WorldCoordAxis world_y) {
+	return const_cast<TransportLineData*>(
+		GetLineData(const_cast<game::WorldData&>(world_data), world_x, world_y)
+	);
 }
 
 std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegment(game::WorldData& world_data,
@@ -131,7 +139,7 @@ std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegmen
 	auto* tile = world_data.GetTile(world_x, world_y);
 	if (tile) {
 		auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
-		if (!layer.prototypeData || layer.prototypeData->Category() != DataCategory::transport_belt)
+		if (!layer.prototypeData.Get()|| layer.prototypeData->Category() != DataCategory::transport_belt)
 			return nullptr;
 
 		auto* unique_data = layer.GetUniqueData<TransportLineData>();
@@ -230,7 +238,7 @@ void ShiftSegmentHead(game::TransportSegment& line_segment) {
 /// \param line_segment Beginning segment, traveling inverse Orientation line_segment.length tiles, <br>
 /// all tiles set to reference this
 /// \param offset Offsets segment id numbering, world_coords must be also adjusted to the appropriate offset when calling
-void UpdateSegmentTiles(const game::WorldData& world_data,
+void UpdateSegmentTiles(game::WorldData& world_data,
                         const WorldCoord& world_coords,
                         const std::shared_ptr<game::TransportSegment>& line_segment,
                         const int offset = 0) {
@@ -261,7 +269,7 @@ void UpdateSegmentTiles(const game::WorldData& world_data,
 
 ///
 ///	\brief Updates the orientation of current and neighboring transport lines 
-void UpdateNeighborOrientation(const game::WorldData& world_data,
+void UpdateNeighborOrientation(game::WorldData& world_data,
                                const WorldCoord& world_coords,
                                LineData4Way line_data_4,
                                data::TransportLineData* center) {
@@ -499,9 +507,9 @@ void UpdateLineTargets(game::WorldData& world_data,
 /// it will be changed to New
 template <game::TransportSegment::TerminationType Required,
           game::TransportSegment::TerminationType New>
-void TryChangeTerminationType(const game::WorldData& world_data,
-                              const int32_t world_x, const int32_t world_y) {
-	data::TransportLineData* line_data = data::TransportLine::GetLineData(world_data, world_x, world_y);
+void TryChangeTerminationType(game::WorldData& world_data,
+                              const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
+	auto* line_data = data::TransportLine::GetLineData(world_data, world_x, world_y);
 	if (line_data) {
 		if (line_data->lineSegment->terminationType == Required) {
 			line_data->lineSegment->terminationType = New;
@@ -999,7 +1007,7 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 		// TODO improve this algorithm for updating target segments
 		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
 			auto& layer = chunk.Tiles()[i].GetLayer(game::ChunkTile::ChunkLayer::entity);
-			if (!layer.prototypeData || layer.prototypeData->Category() != DataCategory::transport_belt)
+			if (!layer.prototypeData.Get()|| layer.prototypeData->Category() != DataCategory::transport_belt)
 				continue;
 
 			const auto& line_segment = layer.GetUniqueData<TransportLineData>()->lineSegment.get();

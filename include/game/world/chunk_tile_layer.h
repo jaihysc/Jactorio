@@ -7,6 +7,8 @@
 #include "data/prototype/framework/framework_base.h"
 #include "game/world/chunk_layer.h"
 
+#include <cereal/cereal.hpp>
+
 namespace jactorio::game
 {
 	struct MultiTileData
@@ -48,43 +50,11 @@ namespace jactorio::game
 			swap(lhs.multiTileData_, rhs.multiTileData_);
 		}
 
+
 		///
 		/// \brief Resets data on this tile and frees any heap allocated data 
 		void Clear();
 
-
-		// ======================================================================
-		// Multi tile functionality
-		///	
-		/// \brief If the layer is multi-tile, eg: 3 x 3
-		/// 0 1 2
-		/// 3 4 5
-		/// 6 7 8
-		uint8_t multiTileIndex = 0;
-
-	private:
-		/*
-		 * Multi tiles:
-		 *
-		 * 1. Unique data is stored in the top left tile, indicated by:
-		 *		1. multi_tile_index = 0
-		 *		2. parent_layer != nullptr
-		 *
-		 * 2. Non-top left tiles holds a pointer to the top left tile, indicated by:
-		 *		1. multi_tile_index != 0
-		 *		parent_layer should always != nullptr
-		 */
-
-
-		/*
-		 * For multi tile prototypes, this serves 2 purposes
-		 *
-		 * 1. Hold a pointer to the top left tile
-		 * 2. Holds a pointer to the properties of the multi tile if this is the top left tile
-		 */
-		void* multiTileData_ = nullptr;
-
-	public:
 
 		///
 		/// \return Whether or not this tile belongs to a multi tile placement
@@ -152,7 +122,12 @@ namespace jactorio::game
 			return *val;
 		}
 
-		// ======================================================================
+		J_NODISCARD const ChunkTileLayer& GetMultiTileTopLeft() const {
+			return const_cast<ChunkTileLayer&>(
+				const_cast<ChunkTileLayer*>(this)->GetMultiTileTopLeft()
+			);
+		}
+
 
 		///
 		/// \brief Return the multi tile data for the current multi tile placement
@@ -165,7 +140,6 @@ namespace jactorio::game
 			return GetMultiTileParent()->GetMultiTileData();
 		}
 
-		// ======================================================================
 
 		///
 		/// \brief Adjusts provided x, y to coordinates of top left tile
@@ -189,6 +163,38 @@ namespace jactorio::game
 			MultiTileData& data = GetMultiTileData();
 			return multiTileIndex / data.multiTileSpan;
 		}
+
+
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<ChunkLayer>(this), multiTileIndex); // TODO OH NO -> , multiTileData_);
+		}
+
+		///	
+		/// \brief If the layer is multi-tile, eg: 3 x 3
+		/// 0 1 2
+		/// 3 4 5
+		/// 6 7 8
+		uint8_t multiTileIndex = 0;
+
+	private:
+		// Multi tiles:
+		// 
+		//  1. Unique data is stored in the top left tile, indicated by:
+		// 		1. multi_tile_index = 0
+		// 		2. parent_layer != nullptr
+		// 
+		//  2. Non-top left tiles holds a pointer to the top left tile, indicated by:
+		// 		1. multi_tile_index != 0
+		// 		parent_layer should always != nullptr
+		//
+
+
+		//  For multi tile prototypes, this serves 2 purposes
+		// 
+		//  1. Hold a pointer to the top left tile
+		//  2. Holds a pointer to the properties of the multi tile if this is the top left tile
+		//
+		void* multiTileData_ = nullptr;
 	};
 
 	// NOTE! Multi tiles which are not the top left corner cannot be copied perfectly as they need to point to the top left
@@ -213,8 +219,7 @@ namespace jactorio::game
 	}
 
 	inline void ChunkTileLayer::Clear() {
-		delete uniqueData_;
-		uniqueData_   = nullptr;
+		uniqueData_.reset();
 		prototypeData = nullptr;
 
 		if (IsMultiTileTopLeft())

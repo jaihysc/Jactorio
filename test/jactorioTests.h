@@ -4,6 +4,8 @@
 #define JACTORIO_TEST_JACTORIOTESTS_H
 #pragma once
 
+#include <fstream>
+
 #include "core/data_type.h"
 #include "data/prototype_manager.h"
 #include "data/prototype/assembly_machine.h"
@@ -13,6 +15,8 @@
 #include "data/prototype/resource_entity.h"
 #include "data/prototype/abstract_proto/transport_line.h"
 #include "game/world/world_data.h"
+
+#include <cereal/archives/portable_binary.hpp>
 
 namespace jactorio
 {
@@ -159,6 +163,27 @@ namespace jactorio
 		rt.itemProduct = &proto_manager.AddProto<data::Item>("@3");
 
 		return rt;
+	}
+
+
+	///
+	/// \brief Serializes T and returns deserialized T
+	template <typename T>
+	J_NODISCARD T TestSerializeDeserialize(const T& object) {
+		constexpr auto save_file = "savegame.dat";
+
+		{
+			std::ofstream out_cereal_stream(save_file, std::ios_base::binary);
+			cereal::PortableBinaryOutputArchive output_archive(out_cereal_stream);
+			output_archive(object);
+		}  // Must go out of scope to flush
+
+		std::ifstream in_cereal_stream(save_file, std::ios_base::binary);
+		cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
+
+	    T deserialized_val;
+	    iarchive(deserialized_val); 
+		return deserialized_val;
 	}
 }
 

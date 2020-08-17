@@ -51,6 +51,20 @@ namespace jactorio::data
 		// 	return *GetProto();
 		// }
 
+
+		friend bool operator==(const SerialProtoPtr& lhs, const SerialProtoPtr& rhs) {
+			return lhs.value_ == rhs.value_;
+		}
+
+		friend bool operator!=(const SerialProtoPtr& lhs, const SerialProtoPtr& rhs) {
+			return !(lhs == rhs);
+		}
+
+		friend void swap(SerialProtoPtr& lhs, SerialProtoPtr& rhs) noexcept {
+			using std::swap;
+			swap(lhs.value_, rhs.value_);
+		}
+
 		J_NODISCARD TProto* Get() noexcept {
 			return GetProto();
 		}
@@ -91,6 +105,7 @@ namespace jactorio::data
 
 
 		/// ptr or internal id
+		static_assert(sizeof(ValueT) == sizeof(TProto*));
 		ValueT value_ = 0;
 	};
 }

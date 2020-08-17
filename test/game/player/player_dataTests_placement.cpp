@@ -26,8 +26,8 @@ namespace jactorio::game
 		// Creates the base tile and entity at world coords
 		void SetEntityCoords(const int world_x,
 		                     const int world_y,
-		                     data::Tile* tile_proto,
-		                     data::Entity* entity_proto) const {
+		                     const data::Tile* tile_proto,
+		                     const data::Entity* entity_proto) {
 			worldData_.GetTile(world_x, world_y)
 			          ->GetLayer(ChunkTile::ChunkLayer::base).prototypeData = tile_proto;
 

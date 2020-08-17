@@ -4,12 +4,16 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_LAYER_H
 #pragma once
 
+#include "data/cereal/serialize.h"
+#include "data/cereal/serialization_type.h"
 #include "data/prototype/framework/framework_base.h"
+
+#include <cereal/types/memory.hpp>
 
 namespace jactorio::game
 {
 	///
-	/// \brief Abstract class for Chunk_tile_layer, Chunk_object_layer, Chunk_struct_layer
+	/// \brief Abstract class for ChunkTileLayer
 	/// \remark Will only delete unique_data, others must be manually deleted
 	class ChunkLayer
 	{
@@ -21,10 +25,7 @@ namespace jactorio::game
 			: prototypeData(proto) {
 		}
 
-		// Prototype data must be deleted after chunk data
-		~ChunkLayer() {
-			delete uniqueData_;
-		}
+		~ChunkLayer() = default;
 
 		ChunkLayer(const ChunkLayer& other);
 		ChunkLayer(ChunkLayer&& other) noexcept;
@@ -45,8 +46,8 @@ namespace jactorio::game
 		///
 		/// \tparam T Return type which prototypeData is cast to
 		template <typename T = data::FrameworkBase>
-		J_NODISCARD const T* GetPrototypeData() {
-			return static_cast<const T*>(prototypeData);
+		J_NODISCARD const T* GetPrototypeData() const {
+			return static_cast<const T*>(prototypeData.Get());
 		}
 
 		// Unique data access
@@ -58,8 +59,8 @@ namespace jactorio::game
 		TData* MakeUniqueData(Args&& ... args) {
 			assert(!uniqueData_);  // Trying to create already created uniqueData
 
-			uniqueData_ = new TData(std::forward<Args>(args) ...);
-			return static_cast<TData*>(uniqueData_);
+			uniqueData_ = std::make_unique<TData>(std::forward<Args>(args) ...);
+			return static_cast<TData*>(uniqueData_.get());
 		}
 
 		///
@@ -67,7 +68,7 @@ namespace jactorio::game
 		/// \tparam T Return type which uniqueData is cast to
 		template <typename T = data::UniqueDataBase>
 		J_NODISCARD T* GetUniqueData() {
-			return static_cast<T*>(uniqueData_);
+			return static_cast<T*>(uniqueData_.get());
 		}
 
 		///
@@ -75,7 +76,11 @@ namespace jactorio::game
 		/// \tparam T Return type which uniqueData is cast to
 		template <typename T = data::UniqueDataBase>
 		J_NODISCARD const T* GetUniqueData() const {
-			return static_cast<const T*>(uniqueData_);
+			return static_cast<const T*>(uniqueData_.get());
+		}
+
+		CEREAL_SERIALIZE(archive) { 
+			archive(prototypeData);  // TODO missing unique data
 		}
 
 		// ======================================================================
@@ -88,12 +93,12 @@ namespace jactorio::game
 		// Entities also possesses a sprite pointer within their prototype
 
 		/// Depending on the layer, this will be either a data::Tile*, data::Entity* or a data::Sprite* <br>
-		const data::FrameworkBase* prototypeData = nullptr;
+		data::SerialProtoPtr<const data::FrameworkBase> prototypeData;
 
 	protected:
 		/// Data for the prototype which is unique per tile and layer <br>
 		/// When this layer is deleted, unique_data_ will be deleted with delete method in prototype_data_
-		data::UniqueDataBase* uniqueData_ = nullptr;
+		std::unique_ptr<data::UniqueDataBase> uniqueData_;
 	};
 
 	inline ChunkLayer::ChunkLayer(const ChunkLayer& other)
@@ -101,16 +106,14 @@ namespace jactorio::game
 
 		// Use prototype defined method for copying unique_data_ if other has data to copy
 		if (other.uniqueData_ != nullptr) {
-			assert(other.prototypeData != nullptr);  // No prototype_data_ available for copying unique_data_
-			uniqueData_ = other.prototypeData->CopyUniqueData(other.uniqueData_);
+			assert(other.prototypeData.Get() != nullptr);  // No prototype_data_ available for copying unique_data_
+			uniqueData_ = other.prototypeData->CopyUniqueData(other.uniqueData_.get());
 		}
 	}
 
 	inline ChunkLayer::ChunkLayer(ChunkLayer&& other) noexcept
 		: prototypeData(other.prototypeData),
-		  uniqueData_(other.uniqueData_) {
-		// After moving data away, set unique_data to nullptr so it is not deleted
-		other.uniqueData_ = nullptr;
+		  uniqueData_(std::move(other.uniqueData_)) {
 	}
 }
 

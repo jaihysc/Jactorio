@@ -247,14 +247,14 @@ void GenerateChunk(game::WorldData& world_data,
 	);
 
 
-	const auto* chunk = world_data.GetChunkC(chunk_x, chunk_y);
+	auto* chunk = world_data.GetChunkC(chunk_x, chunk_y);
 
 	// Allocate new tiles if chunk has not been generated yet
 	if (chunk == nullptr) {
 		chunk = world_data.EmplaceChunk(chunk_x, chunk_y);
 	}
 
-	game::ChunkTile* tiles = chunk->Tiles();
+	auto& tiles = chunk->Tiles();
 
 	int seed_offset = 0;  // Incremented every time a noise layer generates to keep terrain unique
 	for (const auto* noise_layer : noise_layers) {

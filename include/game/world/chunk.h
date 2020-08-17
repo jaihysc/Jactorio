@@ -6,82 +6,34 @@
 
 #include "jactorio.h"
 
-#include <utility>
+#include <array>
 #include <vector>
 
+#include "data/cereal/serialize.h"
 #include "game/world/chunk_tile.h"
 #include "game/world/overlay_element.h"
+
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
 
 namespace jactorio::game
 {
 	///
-	/// \brief A chunk within the game <br>
+	/// \brief A chunk within the game
+	///
 	/// Made up of tiles and objects:
 	///		tiles: Has 32 x 32, fixed grid location
 	///		objects: Has no set amount, can exist anywhere on chunk
 	class Chunk
 	{
 	public:
-		using OverlayContainer = std::vector<OverlayElement>;
-		using LogicGroupType = std::vector<ChunkTileLayer*>;
+		using OverlayContainerT = std::vector<OverlayElement>;
+		using LogicGroupContainerT = std::vector<ChunkTileLayer*>;
 
 
 		static constexpr uint8_t kChunkWidth = 32;
 		static constexpr uint16_t kChunkArea = static_cast<uint16_t>(kChunkWidth) * kChunkWidth;
 
-
-		///
-		/// \brief Default initialization of chunk tiles
-		/// \param chunk_x X position of chunk
-		/// \param chunk_y Y position of chunk
-		Chunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
-
-		///
-		/// \param chunk_x X position of chunk
-		/// \param chunk_y Y position of chunk
-		/// \param tiles Array of size 32 * 32 (1024) tiles <br>
-	    ///			Do not delete the provided pointer, it will be automatically
-		///			freed when Chunk is destructed
-		Chunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y, ChunkTile* tiles);
-
-		~Chunk();
-
-		Chunk(const Chunk& other);
-		Chunk(Chunk&& other) noexcept;
-
-		Chunk& operator=(Chunk other);
-
-		friend void swap(Chunk& lhs, Chunk& rhs) noexcept {
-			using std::swap;
-			swap(lhs.position_, rhs.position_);
-			swap(lhs.tiles_, rhs.tiles_);
-		}
-
-		// ======================================================================
-
-		J_NODISCARD ChunkCoord GetPosition() const { return position_; }
-
-		J_NODISCARD ChunkTile* Tiles() const {
-			return tiles_;
-		}
-
-		// ======================================================================
-		// Overlays - Rendered without being fixed to a tile position
-
-		OverlayContainer overlays[kOverlayLayerCount];
-
-		OverlayContainer& GetOverlay(const OverlayLayer layer) {
-			return const_cast<OverlayContainer&>(
-				static_cast<const Chunk*>(this)->GetOverlay(layer)
-			);
-		}
-
-		J_NODISCARD const OverlayContainer& GetOverlay(OverlayLayer layer) const {
-			return overlays[static_cast<int>(layer)];
-		}
-
-		// ======================================================================
-		// Items requiring logic updates
 		enum class LogicGroup
 		{
 			transport_line = 0,
@@ -91,23 +43,74 @@ namespace jactorio::game
 
 		static constexpr int kLogicGroupCount = static_cast<int>(LogicGroup::count_);
 
-		/// Holds pointer to UniqueData at tile requiring logic update
-		LogicGroupType logicGroups[kLogicGroupCount];
+	private:
+		using TileArrayT = std::array<ChunkTile, kChunkArea>;
+		using OverlayArrayT = std::array<OverlayContainerT, kOverlayLayerCount>;
+		using LogicGroupArrayT = std::array<LogicGroupContainerT, kLogicGroupCount>;
 
-		J_NODISCARD LogicGroupType& GetLogicGroup(const LogicGroup layer) {
-			return const_cast<LogicGroupType&>(
+	public:
+		///
+		/// \remark For cereal deserialization only
+		Chunk() = default;
+		
+		///
+		/// \brief Default initialization of chunk tiles
+		Chunk(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y)
+			: position_({chunk_x, chunk_y}) {
+		}
+
+
+		// ======================================================================
+
+		J_NODISCARD ChunkCoord GetPosition() const { return position_; }
+
+		J_NODISCARD TileArrayT& Tiles() {
+			return tiles_;
+		}
+
+		J_NODISCARD const TileArrayT& Tiles() const {
+			return tiles_;
+		}
+
+
+		// Overlays - Rendered without being fixed to a tile position
+
+		OverlayContainerT& GetOverlay(const OverlayLayer layer) {
+			return const_cast<OverlayContainerT&>(
+				static_cast<const Chunk*>(this)->GetOverlay(layer)
+			);
+		}
+
+		J_NODISCARD const OverlayContainerT& GetOverlay(OverlayLayer layer) const {
+			return overlays[static_cast<OverlayArrayT::size_type>(layer)];
+		}
+
+		
+		// Items requiring logic updates
+
+		J_NODISCARD LogicGroupContainerT& GetLogicGroup(const LogicGroup layer) {
+			return const_cast<LogicGroupContainerT&>(
 				static_cast<const Chunk*>(this)->GetLogicGroup(layer)
 			);
 		}
 
-		J_NODISCARD const LogicGroupType& GetLogicGroup(const LogicGroup layer) const {
-			return logicGroups[static_cast<int>(layer)];
+		J_NODISCARD const LogicGroupContainerT& GetLogicGroup(const LogicGroup layer) const {
+			return logicGroups[static_cast<LogicGroupArrayT::size_type>(layer)];
 		}
+
+
+		CEREAL_SERIALIZE(archiver) {
+			archiver(position_, tiles_); // TODO incomplete
+		}
+
+		OverlayArrayT overlays;
+
+		/// Holds pointer to UniqueData at tile requiring logic update
+		LogicGroupArrayT logicGroups;
 
 	private:
 		ChunkCoord position_;
-		/// Pointers to the actual tiles since they are static size of 32x32
-		ChunkTile* tiles_ = nullptr;
+		TileArrayT tiles_;
 	};
 }
 

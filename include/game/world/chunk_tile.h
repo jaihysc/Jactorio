@@ -6,7 +6,11 @@
 
 #include "jactorio.h"
 
-#include "chunk_tile_layer.h"
+#include <array>
+
+#include "game/world/chunk_tile_layer.h"
+
+#include <cereal/types/array.hpp>
 
 // Cannot include the data headers
 namespace jactorio::data
@@ -37,13 +41,23 @@ namespace jactorio::game
 		static constexpr int kTileLayerCount = static_cast<int>(ChunkLayer::count_);
 
 
-		J_NODISCARD ChunkTileLayer& GetLayer(const ChunkLayer layer) const {
+		J_NODISCARD ChunkTileLayer& GetLayer(const ChunkLayer layer) {
 			return layers[GetLayerIndex(layer)];
 		}
 
-		J_NODISCARD ChunkTileLayer& GetLayer(const uint8_t layer_index) const {
+		J_NODISCARD const ChunkTileLayer& GetLayer(const ChunkLayer layer) const {
+			return layers[GetLayerIndex(layer)];
+		}
+
+
+		J_NODISCARD ChunkTileLayer& GetLayer(const uint8_t layer_index) {
 			return layers[layer_index];
 		}
+
+		J_NODISCARD const ChunkTileLayer& GetLayer(const uint8_t layer_index) const {
+			return layers[layer_index];
+		}
+
 
 		static unsigned int GetLayerIndex(ChunkLayer category) {
 			return static_cast<unsigned int>(category);
@@ -55,19 +69,20 @@ namespace jactorio::game
 
 		// chunk_layer::base only
 		J_NODISCARD const data::Tile* GetTilePrototype(ChunkLayer category = ChunkLayer::base) const;
-		void SetTilePrototype(const data::Tile* tile_prototype, ChunkLayer category = ChunkLayer::base) const;
+		void SetTilePrototype(const data::Tile* tile_prototype, ChunkLayer category = ChunkLayer::base);
 
 
 		// chunk_layer::resource, chunk_layer::entity only
 		J_NODISCARD const data::Entity* GetEntityPrototype(ChunkLayer category = ChunkLayer::entity) const;
-		void SetEntityPrototype(const data::Entity* tile_prototype, ChunkLayer category = ChunkLayer::entity) const;
+		void SetEntityPrototype(const data::Entity* tile_prototype, ChunkLayer category = ChunkLayer::entity);
 
 
-		// ============================================================================================
-		// Minimize the variables below vvvv
+		CEREAL_SERIALIZE(archive) {
+			archive(layers);
+		}
 
 		/// \remark To access prototype at each location, cast desired prototype_category to int and index tile_prototypes
-		mutable ChunkTileLayer layers[kTileLayerCount];
+		std::array<ChunkTileLayer, kTileLayerCount> layers;
 	};
 }
 

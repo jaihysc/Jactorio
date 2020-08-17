@@ -160,7 +160,7 @@ void renderer::ImguiDraw(const DisplayWindow& display_window,
 	auto* layer = player_data.GetActivatedLayer();
 	if (layer != nullptr) {
 		layer    = &layer->GetMultiTileTopLeft();
-		drew_gui = static_cast<const data::Entity*>(layer->prototypeData)->OnRShowGui(player_data, data_manager, layer);
+		drew_gui = static_cast<const data::Entity*>(layer->prototypeData.Get())->OnRShowGui(player_data, data_manager, layer);
 		if (drew_gui) {
 			SetVisible(Menu::CharacterMenu, false);
 		}

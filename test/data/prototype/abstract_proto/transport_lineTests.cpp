@@ -103,10 +103,10 @@ namespace jactorio::data
 				return;
 
 			auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
-			if (!layer.prototypeData)
+			if (!layer.prototypeData.Get())
 				return;
 
-			static_cast<const Entity*>(layer.prototypeData)
+			static_cast<const Entity*>(layer.prototypeData.Get())
 				->OnNeighborUpdate(worldData_, logicData_, emit_coords, receive_coords, emit_orientation);
 		}
 
