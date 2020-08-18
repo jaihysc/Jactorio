@@ -30,7 +30,7 @@ namespace jactorio::data
 	TEST_F(InserterTest, OnBuildCreateDataInvalid) {
 		BuildInserter({1, 1}, Orientation::right);
 
-		auto& layer         = worldData_.GetTile({1, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		auto& layer         = worldData_.GetTile({1, 1})->GetLayer(game::TileLayer::entity);
 		auto* inserter_data = layer.GetUniqueData<InserterData>();
 		ASSERT_TRUE(inserter_data);
 
@@ -131,10 +131,10 @@ namespace jactorio::data
 
 		// Removed chest
 
-		worldData_.GetTile({3, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();
+		worldData_.GetTile({3, 1})->GetLayer(game::TileLayer::entity).Clear();
 		worldData_.updateDispatcher.Dispatch(worldData_, {3, 1}, UpdateType::place);
 
-		worldData_.GetTile({1, 1})->GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();
+		worldData_.GetTile({1, 1})->GetLayer(game::TileLayer::entity).Clear();
 		worldData_.updateDispatcher.Dispatch(worldData_, {1, 1}, UpdateType::place);
 
 		EXPECT_FALSE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());

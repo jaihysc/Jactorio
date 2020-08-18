@@ -116,7 +116,7 @@ data::TransportLineData* data::TransportLine::GetLineData(game::WorldData& world
 	if (!tile)  // No tile exists
 		return nullptr;
 
-	auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
+	auto& layer = tile->GetLayer(game::TileLayer::entity);
 
 	if (!dynamic_cast<const TransportLine*>(  // Not an instance of transport line
 		layer.prototypeData.Get()))
@@ -138,7 +138,7 @@ std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegmen
                                                                                   const WorldCoordAxis world_y) {
 	auto* tile = world_data.GetTile(world_x, world_y);
 	if (tile) {
-		auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		auto& layer = tile->GetLayer(game::TileLayer::entity);
 		if (!layer.prototypeData.Get() || layer.prototypeData->Category() != DataCategory::transport_belt)
 			return nullptr;
 
@@ -741,7 +741,7 @@ data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
 
 		world_data.LogicRegister(game::Chunk::LogicGroup::transport_line,
 		                         world_coords,
-		                         game::ChunkTile::ChunkLayer::entity);
+		                         game::TileLayer::entity);
 		break;
 
 	case InitSegmentStatus::group_behind:
@@ -773,7 +773,7 @@ data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
 		RemoveFromLogic(world_data, world_coords, *line_segment);
 		world_data.LogicRegister(game::Chunk::LogicGroup::transport_line,
 		                         world_coords,
-		                         game::ChunkTile::ChunkLayer::entity);
+		                         game::TileLayer::entity);
 
 		// Renumber
 		UpdateSegmentTiles(world_data, world_coords, line_segment);
@@ -995,7 +995,7 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 
 		// Add to be considered for logic updates
 		chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line).emplace_back(
-			&world_data.GetTile(n_seg_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity)
+			&world_data.GetTile(n_seg_coords)->GetLayer(game::TileLayer::entity)
 		);
 
 		// ======================================================================
@@ -1006,7 +1006,7 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 		// Update other segments leading into old segment
 		// TODO improve this algorithm for updating target segments
 		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
-			auto& layer = chunk.Tiles()[i].GetLayer(game::ChunkTile::ChunkLayer::entity);
+			auto& layer = chunk.Tiles()[i].GetLayer(game::TileLayer::entity);
 			if (!layer.prototypeData.Get() || layer.prototypeData->Category() != DataCategory::transport_belt)
 				continue;
 

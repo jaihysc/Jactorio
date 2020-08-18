@@ -109,7 +109,7 @@ namespace jactorio::game
 			chunk->Tiles()[0].GetEntityPrototype(),
 			entity.get());
 
-		EXPECT_FALSE(chunk->Tiles()[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).IsMultiTile());
+		EXPECT_FALSE(chunk->Tiles()[0].GetLayer(jactorio::game::TileLayer::entity).IsMultiTile());
 	}
 
 	TEST_F(PlacementControllerTest, PlaceEntity1x1Invalid) {
@@ -194,7 +194,7 @@ namespace jactorio::game
 
 				// Should count up according to the rules specified in entity_index
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileIndex(),
+					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
 					entity_index++
 				);
 			}
@@ -338,19 +338,19 @@ namespace jactorio::game
 
 				// Should count up according to the rules specified in entity_index
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileIndex(),
+					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
 					entity_index++
 				);
 
 
 				// Ensure tile width and height are properly set
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileData()
+					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData()
 					.span,
 					3
 				);
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileData().
+					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData().
 					height,
 					4
 				);

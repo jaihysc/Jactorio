@@ -197,7 +197,7 @@ namespace jactorio::data
 
 	TEST_F(AssemblyMachineTest, Build) {
 		// Creates unique data on build
-		auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
 
 		proto_.OnBuild(worldData_,
 		               logicData_,
@@ -208,7 +208,7 @@ namespace jactorio::data
 	}
 
 	TEST_F(AssemblyMachineTest, OnRemoveRemoveDeferralEntry) {
-		auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
 		proto_.OnBuild(worldData_, logicData_, {0, 0}, layer, Orientation::up);
 
 		const auto* assembly_proto = layer.GetPrototypeData<AssemblyMachine>();

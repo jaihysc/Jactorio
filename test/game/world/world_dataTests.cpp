@@ -171,7 +171,7 @@ namespace jactorio::game
 		const WorldCoord bottom_coord = {6, 6};
 
 		auto* bottom_tile  = worldData_.GetTile(bottom_coord);
-		auto& bottom_layer = bottom_tile->GetLayer(ChunkTile::ChunkLayer::entity);
+		auto& bottom_layer = bottom_tile->GetLayer(TileLayer::entity);
 
 		data::ContainerEntity proto;
 		TestSetupMultiTileProp(bottom_layer, {2, 1}, proto);
@@ -179,34 +179,34 @@ namespace jactorio::game
 
 		// multiTileIndex is 0
 		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, bottom_layer), bottom_tile);  // Returns self if not multi tile
-		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, ChunkTile::ChunkLayer::entity), bottom_tile);
+		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, TileLayer::entity), bottom_tile);
 
 		//
 		auto* top_tile = worldData_.GetTile(5, 6);
 
 		bottom_layer.SetMultiTileIndex(1);
 		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
-		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, ChunkTile::ChunkLayer::entity), top_tile);
+		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, TileLayer::entity), top_tile);
 	}
 
 	TEST_F(WorldDataTest, GetLayerTopLeft) {
 		worldData_.EmplaceChunk(0, 0);
 
 		auto* top_tile    = worldData_.GetTile(0, 0);
-		auto* unique_data = top_tile->GetLayer(ChunkTile::ChunkLayer::resource).MakeUniqueData<data::ContainerEntityData>(10);
+		auto* unique_data = top_tile->GetLayer(TileLayer::resource).MakeUniqueData<data::ContainerEntityData>(10);
 
 		auto* bottom_tile  = worldData_.GetTile({1, 2});
-		auto& bottom_layer = bottom_tile->GetLayer(ChunkTile::ChunkLayer::resource);
+		auto& bottom_layer = bottom_tile->GetLayer(TileLayer::resource);
 
 		data::ContainerEntity proto;
 		TestSetupMultiTileProp(bottom_layer, {7, 10}, proto);
 		bottom_layer.SetMultiTileIndex(15);
 
-		EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, ChunkTile::ChunkLayer::resource)->GetUniqueData(), unique_data);
+		EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), unique_data);
 	}
 
 	TEST_F(WorldDataTest, GetLayerTopLeftUninitialized) {
-		EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, ChunkTile::ChunkLayer::entity), nullptr);
+		EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::entity), nullptr);
 	}
 
 
@@ -229,7 +229,7 @@ namespace jactorio::game
 		worldData_.EmplaceChunk(1, 0);  // 32, 0 is chunk coords 1, 0
 		worldData_.LogicRegister(Chunk::LogicGroup::inserter,
 		                         {32, 0},
-		                         ChunkTile::ChunkLayer::entity);
+		                         TileLayer::entity);
 
 		// Added chunk
 		ASSERT_EQ(worldData_.LogicGetChunks().size(), 1);
@@ -241,14 +241,14 @@ namespace jactorio::game
 		// Registering again will not duplicate logic chunk
 		worldData_.LogicRegister(Chunk::LogicGroup::inserter,
 		                         {42, 0},
-		                         ChunkTile::ChunkLayer::entity);
+		                         TileLayer::entity);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
 
 		// Registering same position does nothing
 		worldData_.LogicRegister(Chunk::LogicGroup::inserter,
 		                         {42, 0},
-		                         ChunkTile::ChunkLayer::entity);
+		                         TileLayer::entity);
 		EXPECT_EQ((*worldData_.LogicGetChunks().begin())
 		          ->GetLogicGroup(Chunk::LogicGroup::inserter).size(), 2);
 	}
@@ -257,36 +257,36 @@ namespace jactorio::game
 		worldData_.EmplaceChunk(1, 0);
 		worldData_.LogicRegister(Chunk::LogicGroup::inserter,
 		                         {32, 0},
-		                         ChunkTile::ChunkLayer::entity);
+		                         TileLayer::entity);
 
 		worldData_.LogicRegister(Chunk::LogicGroup::transport_line,
 		                         {33, 0},
-		                         ChunkTile::ChunkLayer::entity);
+		                         TileLayer::entity);
 
 		// Registering again will not duplicate logic chunk
 		worldData_.LogicRegister(Chunk::LogicGroup::inserter,
 		                         {42, 0},
-		                         ChunkTile::ChunkLayer::entity);
+		                         TileLayer::entity);
 
 
 		// Removed 1, another one remains
 		worldData_.LogicRemove(Chunk::LogicGroup::inserter,
 		                       {32, 0},
-		                       ChunkTile::ChunkLayer::entity);
+		                       TileLayer::entity);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
 
 		// Inserter group empty, but transport line group is not, DO NOT remove from logic chunks
 		worldData_.LogicRemove(Chunk::LogicGroup::inserter,
 		                       {42, 0},
-		                       ChunkTile::ChunkLayer::entity);
+		                       TileLayer::entity);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
 
 		// All groups empty, remove logic chunk
 		worldData_.LogicRemove(Chunk::LogicGroup::transport_line,
 		                       {33, 0},
-		                       ChunkTile::ChunkLayer::entity);
+		                       TileLayer::entity);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
 	}
 
@@ -296,7 +296,7 @@ namespace jactorio::game
 		// Removed 1, another one remains
 		worldData_.LogicRemove(Chunk::LogicGroup::inserter,
 		                       {32, 0},
-		                       ChunkTile::ChunkLayer::entity);
+		                       TileLayer::entity);
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
 	}
 

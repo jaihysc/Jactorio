@@ -39,7 +39,7 @@ bool game::PlacementLocationValid(WorldData& world_data,
 // Entity placement
 
 void PlaceAtCoords(game::WorldData& world_data,
-                   const game::ChunkTile::ChunkLayer layer,
+                   const game::TileLayer layer,
                    const uint8_t tile_width,
                    const uint8_t tile_height,
                    const WorldCoordAxis x,
@@ -76,7 +76,7 @@ void PlaceAtCoords(game::WorldData& world_data,
 }
 
 void RemoveAtCoords(game::WorldData& world_data,
-                    const game::ChunkTile::ChunkLayer layer,
+                    const game::TileLayer layer,
                     const uint8_t tile_width,
                     const uint8_t tile_height,
                     WorldCoordAxis x,
@@ -117,12 +117,12 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
 
 		RemoveAtCoords(
 			world_data,
-			ChunkTile::ChunkLayer::entity,
+			TileLayer::entity,
 			t_entity->tileWidth,
 			t_entity->tileHeight,
 			x, y,
 			[](ChunkTile* chunk_tile) {
-				chunk_tile->GetLayer(ChunkTile::ChunkLayer::entity).Clear();
+				chunk_tile->GetLayer(TileLayer::entity).Clear();
 			});
 
 		return true;
@@ -134,7 +134,7 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
 
 	PlaceAtCoords(
 		world_data,
-		ChunkTile::ChunkLayer::entity,
+		TileLayer::entity,
 		entity->tileWidth, entity->tileHeight,
 		x, y,
 		[&](ChunkTile* chunk_tile) {

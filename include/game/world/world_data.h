@@ -154,11 +154,11 @@ namespace jactorio::game
 
 		///
 		/// \brief Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
-		J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, ChunkTile::ChunkLayer layer);
+		J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, TileLayer layer);
 
 		///
 		/// \brief Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
-		J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, ChunkTile::ChunkLayer layer) const;
+		J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, TileLayer layer) const;
 
 		///
 		/// \brief Gets top left tile if is multi tile, otherwise itself if not a multi tile
@@ -174,19 +174,19 @@ namespace jactorio::game
 		///
 		/// \brief Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself 
 		J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
-		                                            const ChunkTile::ChunkLayer& tile_layer) noexcept;
+		                                            const TileLayer& tile_layer) noexcept;
 
 		///
 		/// \brief Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself 
 		J_NODISCARD const ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
-		                                                  const ChunkTile::ChunkLayer& tile_layer) const noexcept;
+		                                                  const TileLayer& tile_layer) const noexcept;
 
 		// ==============================================================
 		// Logic chunk 
 
 		///
 		/// \brief Adds a layer at coordinates to be considered for logic updates
-		void LogicRegister(Chunk::LogicGroup group, const WorldCoord& world_pair, ChunkTile::ChunkLayer layer);
+		void LogicRegister(Chunk::LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
 
 		///
 		/// \brief Removes a layer at coordinates to be considered for logic updates
@@ -196,7 +196,7 @@ namespace jactorio::game
 
 		///
 		/// \brief Removes a layer at coordinates to be considered for logic updates
-		void LogicRemove(Chunk::LogicGroup group, const WorldCoord& world_pair, ChunkTile::ChunkLayer layer);
+		void LogicRemove(Chunk::LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
 
 
 		///

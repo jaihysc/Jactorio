@@ -186,7 +186,7 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 	                                   const data::Orientation target_orientation) {
 		const game::ChunkTile* tile = world_data.GetTile(receive_x, receive_y);
 		if (tile) {
-			auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			auto& layer = tile->GetLayer(game::TileLayer::entity);
 
 			const auto* entity = static_cast<const data::Entity*>(layer.prototypeData.Get());
 			if (entity)
@@ -281,7 +281,7 @@ bool game::PlayerData::TryPlaceEntity(WorldData& world_data,
 
 	// Call events
 
-	auto& selected_layer = tile->GetLayer(ChunkTile::ChunkLayer::entity);
+	auto& selected_layer = tile->GetLayer(TileLayer::entity);
 
 	entity_ptr->OnBuild(world_data, logic_data,
 	                    {world_x, world_y}, selected_layer, placementOrientation);
@@ -310,7 +310,7 @@ bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldCoord&
 	// Activate the clicked entity / prototype. For example: show the gui
 	// Since this is entity layer, everything is guaranteed to be an entity
 
-	constexpr auto select_layer = ChunkTile::ChunkLayer::entity;
+	constexpr auto select_layer = TileLayer::entity;
 
 	auto& selected_layer = tile->GetLayer(select_layer);
 	if (!selected_layer.prototypeData.Get())
@@ -337,7 +337,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 	bool is_resource_ptr = true;
 	{
 		const auto* entity_ptr   = tile->GetEntityPrototype();
-		const auto* resource_ptr = tile->GetEntityPrototype(ChunkTile::ChunkLayer::resource);
+		const auto* resource_ptr = tile->GetEntityPrototype(TileLayer::resource);
 
 		// Picking up entities takes priority since it is higher on the layer
 		if (entity_ptr != nullptr) {
@@ -378,7 +378,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 		pickupTickCounter_ = 0;
 		// Resource entity
 		if (is_resource_ptr) {
-			auto& layer         = tile->GetLayer(ChunkTile::ChunkLayer::resource);
+			auto& layer         = tile->GetLayer(TileLayer::resource);
 			auto* resource_data = layer.GetUniqueData<data::ResourceEntityData>();
 
 			assert(resource_data != nullptr);  // Resource tiles should have valid data
@@ -390,7 +390,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 		}
 			// Is normal entity
 		else {
-			constexpr auto select_layer = ChunkTile::ChunkLayer::entity;
+			constexpr auto select_layer = TileLayer::entity;
 
 			auto& layer = tile->GetLayer(select_layer);
 

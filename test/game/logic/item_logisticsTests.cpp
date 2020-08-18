@@ -164,7 +164,7 @@ namespace jactorio::game
 		world_data.AddChunk(Chunk(0, 0));
 
 		auto& layer = world_data.GetTile(3, 1)
-		                        ->GetLayer(ChunkTile::ChunkLayer::entity);
+		                        ->GetLayer(TileLayer::entity);
 
 		layer.MakeUniqueData<data::ContainerEntityData>(10);
 

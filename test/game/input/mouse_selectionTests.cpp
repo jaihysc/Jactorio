@@ -91,7 +91,7 @@ namespace jactorio::game
 
 		SetupMouseCursor();
 
-		worldData_.GetTile(0, 0)->GetLayer(ChunkTile::ChunkLayer::entity).prototypeData = &entity_;
+		worldData_.GetTile(0, 0)->GetLayer(TileLayer::entity).prototypeData = &entity_;
 
 
 		auto& overlay_layer = worldData_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::general);
@@ -131,7 +131,7 @@ namespace jactorio::game
 		SetupMouseCursor();
 
 		worldData_.GetTile(0, 0)
-		          ->GetLayer(ChunkTile::ChunkLayer::entity).prototypeData = &entity_;
+		          ->GetLayer(TileLayer::entity).prototypeData = &entity_;
 
 		auto& overlay_layer = worldData_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::general);
 
@@ -147,7 +147,7 @@ namespace jactorio::game
 		SetupMouseCursor();
 
 		worldData_.GetTile(0, 0)
-		          ->GetLayer(ChunkTile::ChunkLayer::resource).prototypeData = &entity_;
+		          ->GetLayer(TileLayer::resource).prototypeData = &entity_;
 
 		auto& overlay_layer = worldData_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::general);
 

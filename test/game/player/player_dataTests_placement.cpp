@@ -29,10 +29,10 @@ namespace jactorio::game
 		                     const data::Tile* tile_proto,
 		                     const data::Entity* entity_proto) {
 			worldData_.GetTile(world_x, world_y)
-			          ->GetLayer(ChunkTile::ChunkLayer::base).prototypeData = tile_proto;
+			          ->GetLayer(TileLayer::base).prototypeData = tile_proto;
 
 			worldData_.GetTile(world_x, world_y)
-			          ->GetLayer(ChunkTile::ChunkLayer::entity).prototypeData = entity_proto;
+			          ->GetLayer(TileLayer::entity).prototypeData = entity_proto;
 		}
 	};
 
@@ -122,7 +122,7 @@ namespace jactorio::game
 		EXPECT_EQ(playerData_.GetSelectedItemStack()->count, 1);  // 1 less item 
 
 		// The on_build() method should get called, creating unique data on the tile which holds the inventory
-		EXPECT_NE(tile.GetLayer(ChunkTile::ChunkLayer::entity).GetUniqueData(), nullptr);
+		EXPECT_NE(tile.GetLayer(TileLayer::entity).GetUniqueData(), nullptr);
 
 
 		// Do not place at 1, 0
@@ -169,13 +169,13 @@ namespace jactorio::game
 
 		EXPECT_TRUE(playerData_.TryActivateLayer(worldData_, {0, 0}));
 		EXPECT_EQ(playerData_.GetActivatedLayer(),
-		          &tile->GetLayer(ChunkTile::ChunkLayer::entity));
+		          &tile->GetLayer(TileLayer::entity));
 
 
 		// Clicking again will NOT unset
 		EXPECT_TRUE(playerData_.TryActivateLayer(worldData_, {0, 0}));
 		EXPECT_EQ(playerData_.GetActivatedLayer(),
-		          &tile->GetLayer(ChunkTile::ChunkLayer::entity));
+		          &tile->GetLayer(TileLayer::entity));
 
 
 		// Activated layer can be set to nullptr to unactivate layers
@@ -222,7 +222,7 @@ namespace jactorio::game
 
 		EXPECT_TRUE(playerData_.TryActivateLayer(worldData_, {2, 3}));
 		EXPECT_EQ(playerData_.GetActivatedLayer(),
-		          &tile->GetLayer(ChunkTile::ChunkLayer::entity));
+		          &tile->GetLayer(TileLayer::entity));
 
 
 		// Picking up entity will unset
@@ -253,7 +253,7 @@ namespace jactorio::game
 			WorldData world_data{};
 			entity.OnBuild(world_data, logicData_,
 			               {},
-			               tile.GetLayer(ChunkTile::ChunkLayer::entity), data::Orientation::up);
+			               tile.GetLayer(TileLayer::entity), data::Orientation::up);
 		}
 
 
@@ -285,7 +285,7 @@ namespace jactorio::game
 		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 1);
 
 		// Unique data for layer should have been deleted
-		EXPECT_EQ(tile.GetLayer(ChunkTile::ChunkLayer::entity).GetUniqueData(), nullptr);
+		EXPECT_EQ(tile.GetLayer(TileLayer::entity).GetUniqueData(), nullptr);
 	}
 
 	TEST_F(PlayerDataPlacementTest, TryPickupResource) {
@@ -302,10 +302,10 @@ namespace jactorio::game
 		auto& tile  = *worldData_.GetTile(0, 0);
 		auto& tile2 = *worldData_.GetTile(1, 0);
 
-		tile.SetEntityPrototype(&entity, ChunkTile::ChunkLayer::resource);
+		tile.SetEntityPrototype(&entity, TileLayer::resource);
 
 		// Holds the resources available at the tile, should be decremented when extracted
-		auto* resource_data = tile.GetLayer(ChunkTile::ChunkLayer::resource)
+		auto* resource_data = tile.GetLayer(TileLayer::resource)
 		                          .MakeUniqueData<data::ResourceEntityData>(2);
 
 
@@ -313,7 +313,7 @@ namespace jactorio::game
 		playerData_.TryPickup(worldData_, logicData_, 0, 0, 180);
 		// Resource entity should only become nullptr after all the resources are extracted
 		EXPECT_EQ(
-			tile.GetEntityPrototype(ChunkTile::ChunkLayer::resource),
+			tile.GetEntityPrototype(TileLayer::resource),
 			&entity);
 
 		EXPECT_EQ(resource_data->resourceAmount, 1);
@@ -327,7 +327,7 @@ namespace jactorio::game
 		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
 		playerData_.TryPickup(worldData_, logicData_, 0, 0, 60);
 		EXPECT_EQ(
-			tile2.GetEntityPrototype(ChunkTile::ChunkLayer::resource),
+			tile2.GetEntityPrototype(TileLayer::resource),
 			nullptr);  // Picked up, item given to inventory
 
 		// Resource_data should be deleted
@@ -349,10 +349,10 @@ namespace jactorio::game
 		resource_entity.SetItem(&item);
 
 
-		tile.SetEntityPrototype(&resource_entity, ChunkTile::ChunkLayer::resource);
+		tile.SetEntityPrototype(&resource_entity, TileLayer::resource);
 
 		// Holds the resources available at the tile, should be decremented when extracted
-		auto* resource_data = tile.GetLayer(ChunkTile::ChunkLayer::resource)
+		auto* resource_data = tile.GetLayer(TileLayer::resource)
 		                          .MakeUniqueData<data::ResourceEntityData>(2);
 
 
@@ -567,7 +567,7 @@ namespace jactorio::game
 		for (int y = 1; y < 4; ++y) {
 			for (int x = 1; x < 3; ++x) {
 				worldData_.GetTile(x, y)
-				          ->GetLayer(ChunkTile::ChunkLayer::base).prototypeData = &tile_proto;
+				          ->GetLayer(TileLayer::base).prototypeData = &tile_proto;
 			}
 		}
 

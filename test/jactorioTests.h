@@ -36,7 +36,7 @@ namespace jactorio
 	                                                const data::ContainerEntity& container_entity,
 	                                                const int container_capacity = 10) {
 		auto& container_layer = world_data.GetTile(world_coords)
-		                                  ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		                                  ->GetLayer(game::TileLayer::entity);
 
 		container_layer.prototypeData = &container_entity;
 		container_layer.MakeUniqueData<data::ContainerEntityData>(container_capacity);
@@ -53,7 +53,7 @@ namespace jactorio
 	                                               const data::Orientation orientation) {
 		using namespace jactorio;
 
-		auto& layer = world_data.GetTile(world_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		auto& layer = world_data.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
 
 		layer.prototypeData = &inserter_proto;
 		inserter_proto.OnBuild(world_data, logic_data, world_coords, layer, orientation);
@@ -72,13 +72,13 @@ namespace jactorio
 		auto* chunk = world_data.GetChunkW(world_coords);
 		assert(chunk);
 
-		auto& layer         = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		auto& layer         = tile->GetLayer(game::TileLayer::entity);
 		layer.prototypeData = &prototype;
 
 		layer.MakeUniqueData<data::TransportLineData>(segment);
 
 		chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)
-		     .emplace_back(&tile->GetLayer(game::ChunkTile::ChunkLayer::entity));
+		     .emplace_back(&tile->GetLayer(game::TileLayer::entity));
 	}
 
 	///
@@ -90,7 +90,7 @@ namespace jactorio
 		assembly_proto.tileWidth  = 2;
 		assembly_proto.tileHeight = 2;
 
-		auto& origin_layer = world_data.GetTile(world_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		auto& origin_layer = world_data.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
 
 		for (int y = 0; y < 2; ++y) {
 			for (int x = 0; x < 2; ++x) {
@@ -98,7 +98,7 @@ namespace jactorio
 					continue;
 
 				auto& layer = world_data.GetTile(world_coords.x + x, world_coords.y + y)
-				                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+				                        ->GetLayer(game::TileLayer::entity);
 
 				layer.prototypeData  = &assembly_proto;
 				layer.SetMultiTileIndex(y * 2 + x);
@@ -119,7 +119,7 @@ namespace jactorio
 		game::ChunkTile* tile = world_data.GetTile(world_coord);
 		assert(tile);
 
-		auto& resource_layer         = tile->GetLayer(game::ChunkTile::ChunkLayer::resource);
+		auto& resource_layer         = tile->GetLayer(game::TileLayer::resource);
 		resource_layer.prototypeData = &resource;
 		resource_layer.MakeUniqueData<data::ResourceEntityData>(resource_amount);
 
@@ -141,7 +141,7 @@ namespace jactorio
 		TestSetupResource(world_data, world_coord, resource, resource_amount);
 
 		drill.OnBuild(world_data, logic_data,
-		              world_coord, tile->GetLayer(game::ChunkTile::ChunkLayer::entity),
+		              world_coord, tile->GetLayer(game::TileLayer::entity),
 		              data::Orientation::right);
 
 		return *tile;

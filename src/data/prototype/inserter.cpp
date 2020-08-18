@@ -63,10 +63,10 @@ void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
 void data::Inserter::OnTileUpdate(game::WorldData& world_data,
                                   const WorldCoord& emit_coords,
                                   const WorldCoord& receive_coords, UpdateType) const {
-	auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+	auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::TileLayer::entity);
 	auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
 
-	auto& target_layer = world_data.GetTile(emit_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+	auto& target_layer = world_data.GetTile(emit_coords)->GetLayer(game::TileLayer::entity);
 	auto* target_data  = target_layer.GetUniqueData();
 
 	//
@@ -88,7 +88,7 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 
 		world_data.LogicRemove(game::Chunk::LogicGroup::inserter,
 		                       receive_coords,
-		                       game::ChunkTile::ChunkLayer::entity);
+		                       game::TileLayer::entity);
 		return;
 	}
 
@@ -105,14 +105,14 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 	if (inserter_data.pickup.IsInitialized() && inserter_data.dropoff.IsInitialized()) {
 		world_data.LogicRegister(game::Chunk::LogicGroup::inserter,
 		                         receive_coords,
-		                         game::ChunkTile::ChunkLayer::entity);
+		                         game::TileLayer::entity);
 	}
 }
 
 void data::Inserter::OnRemove(game::WorldData& world_data, game::LogicData&,
                               const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const {
 	world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords,
-	                       game::ChunkTile::ChunkLayer::entity);
+	                       game::TileLayer::entity);
 
 	const auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
 

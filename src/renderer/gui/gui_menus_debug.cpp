@@ -211,7 +211,7 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 		object_layer.clear();
 
 		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
-			auto& layer = chunk->Tiles()[i].GetLayer(game::ChunkTile::ChunkLayer::entity);
+			auto& layer = chunk->Tiles()[i].GetLayer(game::TileLayer::entity);
 			if (!layer.prototypeData.Get() || layer.prototypeData->Category() != data::DataCategory::transport_belt)
 				continue;
 
@@ -449,7 +449,7 @@ void renderer::DebugInserterInfo(game::PlayerData& player_data) {
 	if (!tile)
 		return;
 
-	auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
+	auto& layer = tile->GetLayer(game::TileLayer::entity);
 	if (!layer.prototypeData.Get() || layer.prototypeData->Category() != data::DataCategory::inserter) {
 		ImGui::Text("No inserter at selected tile");
 		return;

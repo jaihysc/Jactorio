@@ -165,7 +165,7 @@ const game::ChunkTile* game::WorldData::GetTile(const WorldCoord& world_pair) co
 
 
 game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_coord,
-                                                 const ChunkTile::ChunkLayer layer) {
+                                                 const TileLayer layer) {
 	auto* tile = GetTile(world_coord);
 	if (tile == nullptr)
 		return nullptr;
@@ -174,7 +174,7 @@ game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_coord,
 }
 
 const game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_coord,
-                                                       const ChunkTile::ChunkLayer layer) const {
+                                                       const TileLayer layer) const {
 	return const_cast<WorldData*>(this)->GetTileTopLeft(world_coord, layer);
 }
 
@@ -191,7 +191,7 @@ const game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_c
 
 
 game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& world_coord,
-                                                       const ChunkTile::ChunkLayer& tile_layer) noexcept {
+                                                       const TileLayer& tile_layer) noexcept {
 	auto* tile = GetTileTopLeft(world_coord, tile_layer);
 	if (tile == nullptr)
 		return nullptr;
@@ -200,7 +200,7 @@ game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& world_c
 }
 
 const game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& world_coord,
-                                                             const ChunkTile::ChunkLayer& tile_layer) const noexcept {
+                                                             const TileLayer& tile_layer) const noexcept {
 	return const_cast<WorldData*>(this)->GetLayerTopLeft(world_coord, tile_layer);
 }
 
@@ -209,9 +209,9 @@ const game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& w
 // Logic chunks
 
 void game::WorldData::LogicRegister(const Chunk::LogicGroup group, const WorldCoord& world_pair,
-                                    const ChunkTile::ChunkLayer layer) {
+                                    const TileLayer layer) {
 	assert(group != Chunk::LogicGroup::count_);
-	assert(layer != ChunkTile::ChunkLayer::count_);
+	assert(layer != TileLayer::count_);
 
 	auto* chunk = GetChunkW(world_pair);
 	assert(chunk);
@@ -248,7 +248,7 @@ void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldCoor
 }
 
 void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldCoord& world_pair,
-                                  const ChunkTile::ChunkLayer layer) {
+                                  const TileLayer layer) {
 	auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
 
 	LogicRemove(group, world_pair, [&](ChunkTileLayer* t_layer) {
@@ -384,7 +384,7 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 			// Place new tile
 			auto* new_tile = static_cast<data::ResourceEntity*>(tile);
 
-			auto& layer         = target.GetLayer(game::ChunkTile::ChunkLayer::resource);
+			auto& layer         = target.GetLayer(game::TileLayer::resource);
 			layer.prototypeData = new_tile;
 
 			assert(resource_amount > 0);

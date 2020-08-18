@@ -96,8 +96,8 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 		overlay_layer.push_back(element);
 		save_overlay_info();
 	}
-	else if (tile->GetLayer(ChunkTile::ChunkLayer::entity).prototypeData.Get() ||
-		tile->GetLayer(ChunkTile::ChunkLayer::resource).prototypeData.Get()) {
+	else if (tile->GetLayer(TileLayer::entity).prototypeData.Get() ||
+		tile->GetLayer(TileLayer::resource).prototypeData.Get()) {
 
 		// Is hovering over entity	
 		const auto* sprite =

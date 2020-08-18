@@ -56,7 +56,7 @@ namespace jactorio::data
 		// Has resource tiles
 		ResourceEntity resource{};
 		worldData_.GetTile(0, 0)
-		          ->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData = &resource;
+		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource;
 
 		EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}));
 	}
@@ -79,7 +79,7 @@ namespace jactorio::data
 
 		ResourceEntity resource{};
 		worldData_.GetTile(7, 6)
-		          ->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData = &resource;
+		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource;
 
 		EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}));
 	}
@@ -90,20 +90,20 @@ namespace jactorio::data
 
 
 		worldData_.GetTile(0, 0)
-		          ->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData = &resource_;
+		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource_;
 
 		EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr);  // No resources in range
 
 
 		worldData_.GetTile(6, 5)
-		          ->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData = &resource_;
+		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource_;
 
 		EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr);  // No resources in range
 
 		// ======================================================================
 
 		worldData_.GetTile(5, 5)
-		          ->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData = &resource_;
+		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource_;
 		EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), &resourceItem_);
 
 		// Closer to the top left
@@ -113,7 +113,7 @@ namespace jactorio::data
 			resource2.SetItem(&item2);
 
 			worldData_.GetTile(1, 1)
-			          ->GetLayer(game::ChunkTile::ChunkLayer::resource).prototypeData = &resource2;
+			          ->GetLayer(game::TileLayer::resource).prototypeData = &resource2;
 			EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), &item2);
 		}
 	}
@@ -132,7 +132,7 @@ namespace jactorio::data
 		                            {1, 1},
 		                            resource_, drillProto_, 100);
 
-		auto* data = tile.GetLayer(game::ChunkTile::ChunkLayer::entity).GetUniqueData<MiningDrillData>();
+		auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
 		EXPECT_EQ(data->resourceCoord.x, 0);
 		EXPECT_EQ(data->resourceCoord.y, 0);
@@ -140,7 +140,7 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Resource taken from ground
-		auto& resource_layer = tile.GetLayer(game::ChunkTile::ChunkLayer::resource);
+		auto& resource_layer = tile.GetLayer(game::TileLayer::resource);
 
 		EXPECT_EQ(resource_layer.GetUniqueData<ResourceEntityData>()->resourceAmount, 99);
 
@@ -151,7 +151,7 @@ namespace jactorio::data
 		data->outputTile.DropOff(logicData_, {&item, 1});
 
 		game::ChunkTileLayer& container_layer =
-			worldData_.GetTile(4, 2)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			worldData_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
 
 		EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 1);
 
@@ -179,9 +179,9 @@ namespace jactorio::data
 		auto& tile3 = TestSetupResource(worldData_, {4, 4}, resource_, 1);
 
 
-		auto& resource_layer  = tile.GetLayer(game::ChunkTile::ChunkLayer::resource);
-		auto& resource_layer2 = tile2.GetLayer(game::ChunkTile::ChunkLayer::resource);
-		auto& resource_layer3 = tile3.GetLayer(game::ChunkTile::ChunkLayer::resource);
+		auto& resource_layer  = tile.GetLayer(game::TileLayer::resource);
+		auto& resource_layer2 = tile2.GetLayer(game::TileLayer::resource);
+		auto& resource_layer3 = tile3.GetLayer(game::TileLayer::resource);
 
 		// ======================================================================
 
@@ -196,7 +196,7 @@ namespace jactorio::data
 		EXPECT_EQ(resource_layer3.GetUniqueData(), nullptr);
 
 		EXPECT_TRUE(logicData_.deferralTimer.GetDebugInfo().callbacks.empty());
-		auto* drill_data = tile.GetLayer(game::ChunkTile::ChunkLayer::entity).GetUniqueData<MiningDrillData>();
+		auto* drill_data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
 		EXPECT_FALSE(drill_data->deferralEntry.Valid());
 	}
@@ -213,7 +213,7 @@ namespace jactorio::data
 
 		// ======================================================================
 
-		auto& container_layer = worldData_.GetTile(4, 2)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		auto& container_layer = worldData_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
 		auto* container_data  = container_layer.GetUniqueData<ContainerEntityData>();
 
 		// No output since output inventory is full
@@ -239,7 +239,7 @@ namespace jactorio::data
 		TestSetupAssemblyMachine(worldData_, {4, 1}, asm_machine);
 
 		auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
-		auto* data = tile.GetLayer(game::ChunkTile::ChunkLayer::entity).GetUniqueData<MiningDrillData>();
+		auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
 		EXPECT_TRUE(data->outputTile.IsInitialized());
 	}
@@ -262,7 +262,7 @@ namespace jactorio::data
 		// ======================================================================
 		// Should now insert as it has an entity to output to
 
-		auto* data = tile.GetLayer(game::ChunkTile::ChunkLayer::entity).GetUniqueData<MiningDrillData>();
+		auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
 		// Ensure it inserts into the correct entity
 		Item item{};
@@ -270,7 +270,7 @@ namespace jactorio::data
 
 		game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 2)
 		                                                  ->GetLayer(
-			                                                  game::ChunkTile::ChunkLayer::entity);
+			                                                  game::TileLayer::entity);
 
 		EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count,
 		          1);
@@ -287,9 +287,9 @@ namespace jactorio::data
 		auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
 
 		drillProto_.OnRemove(worldData_, logicData_,
-		                     {1, 1}, tile.GetLayer(game::ChunkTile::ChunkLayer::entity));
+		                     {1, 1}, tile.GetLayer(game::TileLayer::entity));
 
-		tile.GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();  // Deletes drill data
+		tile.GetLayer(game::TileLayer::entity).Clear();  // Deletes drill data
 
 		// Should no longer be valid
 		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
@@ -306,7 +306,7 @@ namespace jactorio::data
 
 		// Remove chest
 		game::ChunkTile* tile = worldData_.GetTile(4, 2);
-		tile->GetLayer(game::ChunkTile::ChunkLayer::entity).Clear();  // Remove container 
+		tile->GetLayer(game::TileLayer::entity).Clear();  // Remove container 
 
 		// Should only remove the callback once
 		drillProto_.OnNeighborUpdate(worldData_, logicData_,
@@ -348,7 +348,7 @@ namespace jactorio::data
 		{
 			game::ChunkTileLayer& container_layer =
 				worldData_.GetTile(2, 0)
-				          ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+				          ->GetLayer(game::TileLayer::entity);
 
 			EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count,
 			          0);
@@ -356,7 +356,7 @@ namespace jactorio::data
 		{
 			game::ChunkTileLayer& container_layer =
 				worldData_.GetTile(4, 1)
-				          ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+				          ->GetLayer(game::TileLayer::entity);
 
 			EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count,
 			          0);

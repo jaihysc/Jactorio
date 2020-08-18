@@ -46,7 +46,7 @@ namespace jactorio::data
 			const Orientation orientation) {
 
 			auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents(world_coords, orientation);
 		}
@@ -56,7 +56,7 @@ namespace jactorio::data
 		void AddTransportLine(const TransportLineData::LineOrientation orientation,
 		                      const WorldCoordAxis x,
 		                      const WorldCoordAxis y) {
-			auto& layer         = worldData_.GetTile(x, y)->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			auto& layer         = worldData_.GetTile(x, y)->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 
 			TlBuildEvents({x, y}, TransportLineData::ToOrientation(orientation));
@@ -102,7 +102,7 @@ namespace jactorio::data
 			if (!tile)
 				return;
 
-			auto& layer = tile->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			auto& layer = tile->GetLayer(game::TileLayer::entity);
 			if (!layer.prototypeData.Get())
 				return;
 
@@ -116,7 +116,7 @@ namespace jactorio::data
 		void TlBuildEvents(const WorldCoord& world_coords,
 		                   const Orientation orientation) {
 			auto& layer = worldData_.GetTile(world_coords)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 
 			lineProto_.OnBuild(worldData_, logicData_, world_coords, layer, orientation);
 
@@ -139,7 +139,7 @@ namespace jactorio::data
 		void TlRemoveEvents(const WorldCoord& world_coords) {
 
 			auto& layer = worldData_.GetTile(world_coords)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 
 			lineProto_.OnRemove(worldData_, logicData_, world_coords, layer);
 
@@ -191,7 +191,7 @@ namespace jactorio::data
 		J_NODISCARD auto& GetLineData(const WorldCoord& world_coords) const {
 			return *static_cast<const TransportLineData*>(
 				worldData_.GetTile(world_coords)->GetLayer(
-					game::ChunkTile::ChunkLayer::entity).GetUniqueData()
+					game::TileLayer::entity).GetUniqueData()
 			);
 		}
 
@@ -232,7 +232,7 @@ namespace jactorio::data
 		worldData_.AddChunk(game::Chunk{-1, 0});
 
 		auto& layer = worldData_.GetTile(-5, 0)
-		                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		                        ->GetLayer(game::TileLayer::entity);
 		layer.prototypeData = &lineProto_;
 
 		TlBuildEvents({-5, 0}, Orientation::right);
@@ -329,7 +329,7 @@ namespace jactorio::data
 		AddTopTransportLine(TransportLineData::LineOrientation::right);
 
 		auto& layer = worldData_.GetTile(1, 1)
-		                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		                        ->GetLayer(game::TileLayer::entity);
 
 
 		auto proto          = TransportBelt{};
@@ -341,7 +341,7 @@ namespace jactorio::data
 
 		{
 			auto& result_layer = worldData_.GetTile(1, 0)
-			                               ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                               ->GetLayer(game::TileLayer::entity);
 
 			EXPECT_EQ(
 				static_cast<jactorio::data::TransportLineData*>(result_layer.GetUniqueData())->orientation,
@@ -364,7 +364,7 @@ namespace jactorio::data
 		AddTransportLine(TransportLineData::LineOrientation::right, 1, 1);  // Between the 2 above and below
 
 		auto& layer = worldData_.GetTile(1, 2)
-		                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		                        ->GetLayer(game::TileLayer::entity);
 		layer.prototypeData = &lineProto_;
 
 
@@ -373,7 +373,7 @@ namespace jactorio::data
 
 		{
 			auto& result_layer = worldData_.GetTile(1, 1)
-			                               ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                               ->GetLayer(game::TileLayer::entity);
 
 			EXPECT_EQ(
 				static_cast<jactorio::data::TransportLineData*>(result_layer.GetUniqueData())->orientation,
@@ -391,12 +391,12 @@ namespace jactorio::data
 
 
 		auto& down_layer = worldData_.GetTile(0, 0)
-		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		                             ->GetLayer(game::TileLayer::entity);
 		down_layer.prototypeData = &lineProto_;
 		TlBuildEvents({0, 0}, Orientation::down);
 
 		auto& left_layer = worldData_.GetTile(1, 0)
-		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		                             ->GetLayer(game::TileLayer::entity);
 		left_layer.prototypeData = &lineProto_;
 		TlBuildEvents({1, 0}, Orientation::left);
 
@@ -416,12 +416,12 @@ namespace jactorio::data
 		// Change the transport_line_segment termination type in accordance with orientation when placed ahead of existing line 
 
 		auto& left_layer = worldData_.GetTile(1, 0)
-		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		                             ->GetLayer(game::TileLayer::entity);
 		left_layer.prototypeData = &lineProto_;
 		TlBuildEvents({1, 0}, Orientation::left);
 
 		auto& down_layer = worldData_.GetTile(0, 0)
-		                             ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+		                             ->GetLayer(game::TileLayer::entity);
 		down_layer.prototypeData = &lineProto_;
 		TlBuildEvents({0, 0}, Orientation::down);
 
@@ -951,14 +951,14 @@ namespace jactorio::data
 
 		{
 			auto& layer = worldData_.GetTile(0, 0)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({0, 0}, Orientation::up);
 		}
 		{
 			// Second transport line should connect to first
 			auto& layer = worldData_.GetTile(1, 0)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({1, 0}, Orientation::left);
 		}
@@ -981,13 +981,13 @@ namespace jactorio::data
 
 		{
 			auto& layer = worldData_.GetTile(1, 0)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({1, 0}, Orientation::left);
 		}
 		{
 			auto& layer = worldData_.GetTile(0, 0)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({0, 0}, Orientation::up);
 		}
@@ -1007,13 +1007,13 @@ namespace jactorio::data
 
 		{
 			auto& layer = worldData_.GetTile(0, 0)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({0, 0}, Orientation::down);
 		}
 		{
 			auto& layer = worldData_.GetTile(0, 1)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({0, 1}, Orientation::up);
 		}
@@ -1290,25 +1290,25 @@ namespace jactorio::data
 
 		{
 			auto& layer = worldData_.GetTile(0, 0)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({0, 0}, Orientation::right);
 		}
 		{
 			auto& layer = worldData_.GetTile(1, 0)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({1, 0}, Orientation::down);
 		}
 		{
 			auto& layer = worldData_.GetTile(1, 1)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({1, 1}, Orientation::left);
 		}
 		{
 			auto& layer = worldData_.GetTile(0, 1)
-			                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
+			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents({0, 1}, Orientation::up);
 		}
