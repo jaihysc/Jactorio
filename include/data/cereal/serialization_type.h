@@ -77,6 +77,9 @@ namespace jactorio::data
 		CEREAL_LOAD(archive) {
 			CerealArchive<kArchiveSize>(archive, value_);  // Deserialized as internal id
 
+			if (value_ == 0)  // nullptr
+				return;
+			
 			assert(active_data_manager != nullptr);
 			auto* proto_ptr = &active_data_manager->RelocationTableGet<TProto>(  // Converted to prototype*
 				core::SafeCast<PrototypeIdT>(value_)
@@ -85,7 +88,10 @@ namespace jactorio::data
 		}
 
 		CEREAL_SAVE(archive) {
-			auto save_val = static_cast<ValueT>(GetProto()->internalId);
+			ValueT save_val = 0;
+			if (value_ != 0)
+				save_val = static_cast<ValueT>(GetProto()->internalId);
+
 			CerealArchive<kArchiveSize>(archive, save_val);
 		}
 

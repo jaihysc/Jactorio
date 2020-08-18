@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 
 #include "data/cereal/serialization_type.h"
+
+#include "jactorioTests.h"
 #include "data/prototype/sprite.h"
 
 namespace jactorio::data
@@ -40,5 +42,13 @@ namespace jactorio::data
 
 		EXPECT_EQ(serial_proto->sets, 32);
 		// EXPECT_EQ((*serial_proto).sets, 32);
+	}
+
+	
+	TEST(CerealSerializePrototypePointer, SerializeNull) {
+		SerialProtoPtr<const Sprite> original(nullptr);
+
+		auto result = TestSerializeDeserialize(original);
+		EXPECT_EQ(result.Get(), nullptr);
 	}
 }
