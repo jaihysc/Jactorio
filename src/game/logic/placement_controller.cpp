@@ -53,7 +53,7 @@ void PlaceAtCoords(game::WorldData& world_data,
 	place_func(top_left_tile);
 
 	auto& top_left          = top_left_tile->GetLayer(layer);
-	top_left.multiTileIndex = entity_index++;
+	top_left.SetMultiTileIndex(entity_index++);
 
 	if (tile_width == 1 && tile_height == 1)
 		return;
@@ -67,7 +67,7 @@ void PlaceAtCoords(game::WorldData& world_data,
 			place_func(tile);
 
 			auto& layer_tile          = tile->GetLayer(layer);
-			layer_tile.multiTileIndex = entity_index++;
+			layer_tile.SetMultiTileIndex(entity_index++);
 		}
 		offset_x = 0;
 	}
@@ -85,7 +85,7 @@ void RemoveAtCoords(game::WorldData& world_data,
 		const auto* tile = world_data.GetTile(x, y);
 		assert(tile != nullptr);  // Attempted to remove a on a non existent tile
 
-		const auto tile_index = tile->GetLayer(layer).multiTileIndex;
+		const auto tile_index = tile->GetLayer(layer).GetMultiTileIndex();
 
 		y -= core::SafeCast<WorldCoordAxis>(tile_index / tile_width);
 		x -= tile_index % tile_width;

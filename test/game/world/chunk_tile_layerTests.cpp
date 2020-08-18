@@ -25,38 +25,49 @@ namespace jactorio::game
 		// Copy construct
 		{
 			const ChunkTileLayer ctl_copy{ctl};
-			EXPECT_EQ(ctl_copy.multiTileIndex, 0);
+			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 0);
 		}
 		// Copy assignment
 		{
-			ctl.multiTileIndex            = 4;
+			ctl.SetMultiTileIndex(4);
 			const ChunkTileLayer ctl_copy = ctl;
-			EXPECT_EQ(ctl_copy.multiTileIndex, 4);
+			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 4);
 		}
 	}
 
 	TEST_F(ChunkTileLayerTest, CopyMultiTile) {
 		ChunkTileLayer ctl{};
 		SetupMultiTileProp(ctl, {1, 2});
-		ctl.multiTileIndex = 3;
+		ctl.MakeUniqueData<data::ContainerEntityData>(32);
 
 		// Copy construct
 		{
 			const ChunkTileLayer ctl_copy{ctl};
-			EXPECT_EQ(ctl_copy.multiTileIndex, 3);
+			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 0);
 
-			EXPECT_EQ(ctl.GetMultiTileData().span, 1);
+			EXPECT_EQ(ctl_copy.GetMultiTileData().height, 2);
 			EXPECT_EQ(ctl_copy.GetMultiTileData(), ctl.GetMultiTileData());
+			
+		}
+		ctl.SetMultiTileIndex(3);
+		{
+			const ChunkTileLayer ctl_copy{ctl};
+			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 3);
+
+			EXPECT_EQ(ctl_copy.GetMultiTileData().span, 1);
+			EXPECT_EQ(ctl_copy.GetMultiTileData(), ctl.GetMultiTileData());
+
+			EXPECT_EQ(ctl_copy.GetTopLeftLayer(), nullptr);  // Unique data/top left layer not copied
 		}
 		// Copy assignment
 		{
-			ctl.multiTileIndex = 6;
+			ctl.SetMultiTileIndex(6);
 
 			const ChunkTileLayer ctl_copy = ctl;
-			EXPECT_EQ(ctl_copy.multiTileIndex, 6);
+			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 6);
 
-			EXPECT_EQ(ctl.GetMultiTileData().height, 2);
 			EXPECT_EQ(ctl_copy.GetMultiTileData(), ctl.GetMultiTileData());
+			EXPECT_EQ(ctl_copy.GetTopLeftLayer(), nullptr);  // Unique data/top left layer not copied
 		}
 	}
 
@@ -68,19 +79,19 @@ namespace jactorio::game
 		{
 			ChunkTileLayer ctl{};
 			SetupMultiTileProp(ctl, {1, 1});
-			ctl.multiTileIndex = 0;
+			ctl.SetMultiTileIndex(0);
 			EXPECT_FALSE(ctl.IsMultiTile());  // multiTileIndex is 0, multiTileData is 1, 1
 		}
 		{
 			ChunkTileLayer ctl{};
 			SetupMultiTileProp(ctl, {1, 2});
-			ctl.multiTileIndex = 0;
+			ctl.SetMultiTileIndex(0);
 			EXPECT_TRUE(ctl.IsMultiTile());
 		}
 		{
 			ChunkTileLayer ctl{};
 			SetupMultiTileProp(ctl, {1, 2});
-			ctl.multiTileIndex = 4;
+			ctl.SetMultiTileIndex(4);
 			EXPECT_TRUE(ctl.IsMultiTile());
 		}
 	}
@@ -88,20 +99,41 @@ namespace jactorio::game
 	TEST_F(ChunkTileLayerTest, IsMultiTileTopLeft) {
 		{
 			ChunkTileLayer ctl{};
-			ctl.multiTileIndex = 0;
+			ctl.SetMultiTileIndex(0);
 			EXPECT_FALSE(ctl.IsMultiTileTopLeft());
 		}
 
 		{
 			ChunkTileLayer ctl{};
-			ctl.multiTileIndex = 0;
+			ctl.SetMultiTileIndex(0);
 			SetupMultiTileProp(ctl, {1, 2});
 			EXPECT_TRUE(ctl.IsMultiTileTopLeft());
 		}
 		{
 			ChunkTileLayer ctl{};
-			ctl.multiTileIndex = 4;
+			ctl.SetMultiTileIndex(4);
 			EXPECT_FALSE(ctl.IsMultiTileTopLeft());
+		}
+	}
+
+	TEST_F(ChunkTileLayerTest, IsNonTopLeftMultiTile) {
+		{
+			ChunkTileLayer ctl{};
+			ctl.SetMultiTileIndex(0);
+			EXPECT_FALSE(ctl.IsNonTopLeftMultiTile());
+		}
+
+		{
+			ChunkTileLayer ctl{};
+			SetupMultiTileProp(ctl, {1, 2});
+			ctl.SetMultiTileIndex(0);
+			EXPECT_FALSE(ctl.IsNonTopLeftMultiTile());
+		}
+		{
+			ChunkTileLayer ctl{};
+			SetupMultiTileProp(ctl, {1, 2});
+			ctl.SetMultiTileIndex(4);
+			EXPECT_TRUE(ctl.IsNonTopLeftMultiTile());
 		}
 	}
 
@@ -129,14 +161,37 @@ namespace jactorio::game
 
 
 		ChunkTileLayer second{};
-		second.multiTileIndex = 1;
+		second.SetMultiTileIndex(1);
 		ASSERT_FALSE(second.HasMultiTileData());
+	}
+
+
+	TEST_F(ChunkTileLayerTest, SetMultiTileIndex) {
+		ChunkTileLayer ctl;
+		ctl.MakeUniqueData<data::ContainerEntityData>(3);
+
+		ctl.SetMultiTileIndex(1);  // unique data should be deleted 
+
+		// Valgrind emits error if unique data not deleted
+	}
+
+	TEST_F(ChunkTileLayerTest, GetTopleftLayer) {
+		ChunkTileLayer top_left;
+
+		ChunkTileLayer ctl;
+		SetupMultiTileProp(ctl, {1, 2});
+		ctl.SetMultiTileIndex(1); 
+
+		EXPECT_EQ(ctl.GetTopLeftLayer(), nullptr);
+
+		ctl.SetTopLeftLayer(top_left);
+		EXPECT_EQ(ctl.GetTopLeftLayer(), &top_left);
 	}
 
 	TEST_F(ChunkTileLayerTest, AdjustToTopleft) {
 		ChunkTileLayer ctl{};
 		SetupMultiTileProp(ctl, {3, 2});
-		ctl.multiTileIndex = 5;
+		ctl.SetMultiTileIndex(5);
 
 		int x = 0;
 		int y = 0;
@@ -160,7 +215,7 @@ namespace jactorio::game
 	TEST_F(ChunkTileLayerTest, GetOffsetX) {
 		ChunkTileLayer ctl{};
 		SetupMultiTileProp(ctl, {10, 2});
-		ctl.multiTileIndex = 19;
+		ctl.SetMultiTileIndex(19);
 
 		EXPECT_EQ(ctl.GetOffsetX(), 9);
 	}
@@ -168,7 +223,7 @@ namespace jactorio::game
 	TEST_F(ChunkTileLayerTest, GetOffsetY) {
 		ChunkTileLayer ctl{};
 		SetupMultiTileProp(ctl, {5, 2});
-		ctl.multiTileIndex = 20;
+		ctl.SetMultiTileIndex(20);
 
 		EXPECT_EQ(ctl.GetOffsetY(), 4);
 	}

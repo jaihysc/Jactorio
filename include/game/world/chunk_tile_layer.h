@@ -30,10 +30,11 @@ namespace jactorio::game
 	};
 
 	///
-	/// \brief A Layers within a ChunkTIle layers
+	/// \brief A Layers within a ChunkTile layers
 	class ChunkTileLayer
 	{
 		using MultiTileValueT = MultiTileData::ValueT;
+		using UniqueDataContainerT = std::unique_ptr<data::UniqueDataBase>;
 
 	public:
 		ChunkTileLayer() = default;
@@ -42,7 +43,7 @@ namespace jactorio::game
 			: prototypeData(proto) {
 		}
 
-		~ChunkTileLayer() = default;
+		~ChunkTileLayer();
 
 		ChunkTileLayer(const ChunkTileLayer& other);
 		ChunkTileLayer(ChunkTileLayer&& other) noexcept;
@@ -55,9 +56,9 @@ namespace jactorio::game
 
 		friend void swap(ChunkTileLayer& lhs, ChunkTileLayer& rhs) noexcept {
 			using std::swap;
-			swap(lhs.multiTileIndex, rhs.multiTileIndex);
+			swap(lhs.multiTileIndex_, rhs.multiTileIndex_);
 			swap(lhs.prototypeData, rhs.prototypeData);
-			swap(lhs.uniqueData_, rhs.uniqueData_);
+			swap(lhs.data_.uniqueData, rhs.data_.uniqueData);
 		}
 
 
@@ -66,14 +67,14 @@ namespace jactorio::game
 		void Clear() noexcept;
 
 
+		// ======================================================================
+
 		// Prototype
 
 		///
 		/// \tparam T Return type which prototypeData is cast to
 		template <typename T = data::FRenderable>
-		J_NODISCARD const T* GetPrototypeData() const {
-			return static_cast<const T*>(prototypeData.Get());
-		}
+		J_NODISCARD const T* GetPrototypeData() const;
 
 		// Unique data
 
@@ -81,123 +82,126 @@ namespace jactorio::game
 		/// \brief Heap allocates unique data
 		/// \return Created unique data
 		template <typename TData, typename ... Args>
-		TData* MakeUniqueData(Args&& ... args) {
-			assert(!uniqueData_);  // Trying to create already created uniqueData
-
-			uniqueData_ = std::make_unique<TData>(std::forward<Args>(args) ...);
-			return static_cast<TData*>(uniqueData_.get());
-		}
+		TData* MakeUniqueData(Args&& ... args);
 
 		///
 		/// \tparam T Return type which uniqueData is cast to
 		template <typename T = data::UniqueDataBase>
-		J_NODISCARD T* GetUniqueData() noexcept {
-			return static_cast<T*>(uniqueData_.get());
-		}
+		J_NODISCARD T* GetUniqueData() noexcept;
 
 		///
 		/// \tparam T Return type which uniqueData is cast to
 		template <typename T = data::UniqueDataBase>
-		J_NODISCARD const T* GetUniqueData() const noexcept {
-			return static_cast<const T*>(uniqueData_.get());
-		}
+		J_NODISCARD const T* GetUniqueData() const noexcept;
 
 
 		// ======================================================================
 
 
-		///
-		/// \return Whether or not this tile belongs to a multi tile placement
-		J_NODISCARD bool IsMultiTile() const {
-			if (!HasMultiTileData())
-				return false;
-
-			return GetMultiTileData().span != 1 || GetMultiTileData().height != 1;
-		}
-
-		///
-		/// \return Whether or not this is the top left tile of a multi tile placement
-		J_NODISCARD bool IsMultiTileTopLeft() const {
-			return IsMultiTile() && multiTileIndex == 0;
-		}
+		J_NODISCARD bool IsMultiTile() const;
+		J_NODISCARD bool IsMultiTileTopLeft() const;
+		J_NODISCARD bool IsNonTopLeftMultiTile() const;
 
 
-		J_NODISCARD bool HasMultiTileData() const {
-			return prototypeData != nullptr;
-		}
+		J_NODISCARD bool HasMultiTileData() const;
+		J_NODISCARD MultiTileData GetMultiTileData() const;
 
-		///
-		/// \brief Return the multi tile data for the current multi tile placement
-		J_NODISCARD MultiTileData GetMultiTileData() const {
-			assert(prototypeData != nullptr);
-			return {prototypeData->tileWidth, prototypeData->tileHeight};
-		}
+		
+		J_NODISCARD MultiTileValueT GetMultiTileIndex() const noexcept;
+		void SetMultiTileIndex(MultiTileValueT multi_tile_index);
+
+		// Ensure multi tile index is set prior to calling Get/Set
+		J_NODISCARD ChunkTileLayer* GetTopLeftLayer() const noexcept;
+		void SetTopLeftLayer(ChunkTileLayer& ctl) noexcept;
 
 
 		///
 		/// \brief Adjusts provided x, y to coordinates of top left tile
 		template <typename Tx, typename Ty>
-		void AdjustToTopLeft(Tx& x, Ty& y) const {
-			if (!IsMultiTile())
-				return;
+		void AdjustToTopLeft(Tx& x, Ty& y) const;
 
-			x -= GetOffsetX();
-			y -= GetOffsetY();
-		}
-
+		///
 		/// \return Number of tiles from top left on X axis
-		J_NODISCARD MultiTileValueT GetOffsetX() const {
-			const auto& data = GetMultiTileData();
-			return multiTileIndex % data.span;
-		}
-
+		J_NODISCARD MultiTileValueT GetOffsetX() const;
+		///
 		/// \return Number of tiles from top left on Y axis
-		J_NODISCARD MultiTileValueT GetOffsetY() const {
-			const auto& data = GetMultiTileData();
-			return multiTileIndex / data.span;
-		}
+		J_NODISCARD MultiTileValueT GetOffsetY() const;
 
 
 		CEREAL_SERIALIZE(archive) {
-			archive(prototypeData, multiTileIndex); //, uniqueData_);  // TODO must serialize unique data
+			// archive(prototypeData, data_.uniqueData, multiTileIndex_);  // TODO must serialize unique data
+			archive(prototypeData, multiTileIndex_);
 		}
 
 		/// A layer may point to a tile prototype to provide additional data (collisions, world gen) 
 		data::SerialProtoPtr<const data::FRenderable> prototypeData;
 
+	private:
+		/// uniqueData when multiTileIndex == 0, topLeft when multiTileIndex != 0 
+		union UData
+		{
+			static_assert(sizeof(ChunkTileLayer*) == sizeof(UniqueDataContainerT));
+
+			// Memory management done by ChunkTileLayer
+			UData() {
+				new (&uniqueData) UniqueDataContainerT{};
+			}
+			
+			~UData() {}
+
+
+			void DestroyUniqueData() noexcept {
+				uniqueData.~UniqueDataContainerT();
+			}
+
+
+			UniqueDataContainerT uniqueData;
+			ChunkTileLayer* topLeft;
+		};
+
+		UData data_;
 
 		///	
-		/// \brief If the layer is multi-tile, eg: 3 x 2
+		/// If the layer is multi-tile, eg: 3 x 2
 		/// 0 1 2
 		/// 3 4 5
-		MultiTileValueT multiTileIndex = 0;
-
-	private:
-		/// Data for the prototype which is unique per tile and layer
-		std::unique_ptr<data::UniqueDataBase> uniqueData_;
+		MultiTileValueT multiTileIndex_ = 0;
 	};
 
-	inline ChunkTileLayer::ChunkTileLayer(const ChunkTileLayer& other)
-		: prototypeData(other.prototypeData),
-		  multiTileIndex{other.multiTileIndex} {
-
-		// Use prototype defined method for copying uniqueData_ if other has data to copy
-		if (other.uniqueData_ != nullptr) {
-			assert(other.prototypeData.Get() != nullptr);  // No prototype_data_ available for copying unique_data_
-			uniqueData_ = other.prototypeData->CopyUniqueData(other.uniqueData_.get());
-		}
+	template <typename T>
+	const T* ChunkTileLayer::GetPrototypeData() const {
+		return static_cast<const T*>(prototypeData.Get());
 	}
 
-	inline ChunkTileLayer::ChunkTileLayer(ChunkTileLayer&& other) noexcept
-		: prototypeData(other.prototypeData),
-		  multiTileIndex{other.multiTileIndex},
-		  uniqueData_(std::move(other.uniqueData_)) {
+
+	template <typename TData, typename ... Args>
+	TData* ChunkTileLayer::MakeUniqueData(Args&&... args) {
+		if (IsMultiTile())
+			assert(IsMultiTileTopLeft());
+		assert(!data_.uniqueData);  // Trying to create already created uniqueData
+
+		data_.uniqueData = std::make_unique<TData>(std::forward<Args>(args) ...);
+		return static_cast<TData*>(data_.uniqueData.get());
 	}
 
-	inline void ChunkTileLayer::Clear() noexcept {
-		uniqueData_.reset();
-		prototypeData  = nullptr;
-		multiTileIndex = 0;
+	template <typename T>
+	T* ChunkTileLayer::GetUniqueData() noexcept {
+		return static_cast<T*>(data_.uniqueData.get());
+	}
+
+	template <typename T>
+	const T* ChunkTileLayer::GetUniqueData() const noexcept {
+		return const_cast<ChunkTileLayer*>(this)->GetUniqueData<const T>();
+	}
+
+
+	template <typename Tx, typename Ty>
+	void ChunkTileLayer::AdjustToTopLeft(Tx& x, Ty& y) const {
+		if (!IsMultiTile())
+			return;
+
+		x -= GetOffsetX();
+		y -= GetOffsetY();
 	}
 }
 

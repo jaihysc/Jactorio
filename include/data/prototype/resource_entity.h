@@ -32,15 +32,13 @@ namespace jactorio::data
 	{
 	public:
 		PROTOTYPE_CATEGORY(resource_entity);
+		PROTOTYPE_DATA_TRIVIAL_COPY(ResourceEntityData);
 
 		ResourceEntity() {
 			// Resource entities can never be placed
 			this->placeable = false;
 		}
 
-		std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* ptr) const override {
-			return std::make_unique<ResourceEntityData>(*static_cast<ResourceEntityData*>(ptr));
-		}
 
 		void OnBuild(game::WorldData&,
 		             game::LogicData&,

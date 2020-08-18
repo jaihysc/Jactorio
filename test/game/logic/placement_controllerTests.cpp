@@ -194,9 +194,9 @@ namespace jactorio::game
 
 				// Should count up according to the rules specified in entity_index
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).
-					multiTileIndex,
-					entity_index++);
+					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileIndex(),
+					entity_index++
+				);
 			}
 		}
 
@@ -338,9 +338,9 @@ namespace jactorio::game
 
 				// Should count up according to the rules specified in entity_index
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).
-					multiTileIndex,
-					entity_index++);
+					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileIndex(),
+					entity_index++
+				);
 
 
 				// Ensure tile width and height are properly set

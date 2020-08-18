@@ -97,6 +97,12 @@ namespace jactorio::data
 	J_NODISCARD jactorio::data::DataCategory Category() const override { return jactorio::data::DataCategory::category__; }\
 	static_assert(true)
 
+#define PROTOTYPE_DATA_TRIVIAL_COPY(data_ty__)\
+	std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* ptr) const override {\
+		return std::make_unique<data_ty__>(*static_cast<data_ty__*>(ptr));\
+	}\
+	static_assert(true)
+
 	using PrototypeIdT = uint32_t;
 
 	class FrameworkBase

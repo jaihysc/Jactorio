@@ -101,7 +101,7 @@ namespace jactorio
 				                        ->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 				layer.prototypeData  = &assembly_proto;
-				layer.multiTileIndex = y * 2 + x;
+				layer.SetMultiTileIndex(y * 2 + x);
 			}
 		}
 

@@ -184,7 +184,7 @@ namespace jactorio::game
 		//
 		auto* top_tile = worldData_.GetTile(5, 6);
 
-		bottom_layer.multiTileIndex = 1;
+		bottom_layer.SetMultiTileIndex(1);
 		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
 		EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, ChunkTile::ChunkLayer::entity), top_tile);
 	}
@@ -200,7 +200,7 @@ namespace jactorio::game
 
 		data::ContainerEntity proto;
 		TestSetupMultiTileProp(bottom_layer, {7, 10}, proto);
-		bottom_layer.multiTileIndex = 15;
+		bottom_layer.SetMultiTileIndex(15);
 
 		EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, ChunkTile::ChunkLayer::resource)->GetUniqueData(), unique_data);
 	}

@@ -23,6 +23,7 @@ namespace jactorio::data
 	{
 	public:
 		PROTOTYPE_CATEGORY(container_entity);
+		PROTOTYPE_DATA_TRIVIAL_COPY(ContainerEntityData);
 
 		ContainerEntity()
 			: inventorySize(0) {
