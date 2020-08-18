@@ -102,6 +102,7 @@ namespace jactorio
 
 				layer.prototypeData  = &assembly_proto;
 				layer.SetMultiTileIndex(y * 2 + x);
+				layer.SetTopLeftLayer(origin_layer);
 			}
 		}
 

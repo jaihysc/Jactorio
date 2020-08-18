@@ -85,14 +85,29 @@ namespace jactorio::game
 		TData* MakeUniqueData(Args&& ... args);
 
 		///
+		/// \brief Unique data at current layer or if multi tile, top left
 		/// \tparam T Return type which uniqueData is cast to
 		template <typename T = data::UniqueDataBase>
 		J_NODISCARD T* GetUniqueData() noexcept;
 
 		///
+		/// \brief Unique data at current layer or if multi tile, top left
 		/// \tparam T Return type which uniqueData is cast to
 		template <typename T = data::UniqueDataBase>
 		J_NODISCARD const T* GetUniqueData() const noexcept;
+
+		
+		///
+		/// \brief Unique data at current layer
+		/// \tparam T Return type which uniqueData is cast to
+		template <typename T = data::UniqueDataBase>
+		J_NODISCARD T* GetUniqueDataLocal() noexcept;
+
+		///
+		/// \brief Unique data at current layer
+		/// \tparam T Return type which uniqueData is cast to
+		template <typename T = data::UniqueDataBase>
+		J_NODISCARD const T* GetUniqueDataLocal() const noexcept;
 
 
 		// ======================================================================
@@ -110,8 +125,11 @@ namespace jactorio::game
 		J_NODISCARD MultiTileValueT GetMultiTileIndex() const noexcept;
 		void SetMultiTileIndex(MultiTileValueT multi_tile_index);
 
-		// Ensure multi tile index is set prior to calling Get/Set
+		///
+		/// \remark Ensure multi tile index is set prior to calling
 		J_NODISCARD ChunkTileLayer* GetTopLeftLayer() const noexcept;
+		///
+		/// \remark Ensure multi tile index is set prior to calling
 		void SetTopLeftLayer(ChunkTileLayer& ctl) noexcept;
 
 
@@ -144,11 +162,14 @@ namespace jactorio::game
 
 			// Memory management done by ChunkTileLayer
 			UData() {
-				new (&uniqueData) UniqueDataContainerT{};
+				ConstructUniqueData();
 			}
 			
 			~UData() {}
 
+			void ConstructUniqueData() noexcept {
+				new (&uniqueData) UniqueDataContainerT{};
+			}
 
 			void DestroyUniqueData() noexcept {
 				uniqueData.~UniqueDataContainerT();
@@ -186,12 +207,30 @@ namespace jactorio::game
 
 	template <typename T>
 	T* ChunkTileLayer::GetUniqueData() noexcept {
-		return static_cast<T*>(data_.uniqueData.get());
+		if (IsNonTopLeftMultiTile()) {
+			assert(data_.topLeft != nullptr);
+			return data_.topLeft->GetUniqueDataLocal<T>();
+		}
+
+		return GetUniqueDataLocal<T>();
 	}
 
 	template <typename T>
 	const T* ChunkTileLayer::GetUniqueData() const noexcept {
 		return const_cast<ChunkTileLayer*>(this)->GetUniqueData<const T>();
+	}
+
+	template <typename T>
+	T* ChunkTileLayer::GetUniqueDataLocal() noexcept {
+		if (IsMultiTile())
+			assert(IsMultiTileTopLeft());
+
+		return static_cast<T*>(data_.uniqueData.get());
+	}
+
+	template <typename T>
+	const T* ChunkTileLayer::GetUniqueDataLocal() const noexcept {
+		return const_cast<ChunkTileLayer*>(this)->GetUniqueDataLocal<const T>();
 	}
 
 

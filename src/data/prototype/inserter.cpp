@@ -66,7 +66,7 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 	auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 	auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
 
-	auto& target_layer = *world_data.GetLayerTopLeft(emit_coords, game::ChunkTile::ChunkLayer::entity);
+	auto& target_layer = world_data.GetTile(emit_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 	auto* target_data  = target_layer.GetUniqueData();
 
 	//

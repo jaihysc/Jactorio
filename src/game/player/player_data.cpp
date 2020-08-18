@@ -322,7 +322,7 @@ bool game::PlayerData::TryActivateLayer(WorldData& world_data, const WorldCoord&
 	// else
 
 	// Clicking on an existing entity will activate it
-	activatedLayer_ = &world_data.GetTileTopLeft(world_pair, selected_layer)->GetLayer(select_layer);
+	activatedLayer_ = world_data.GetLayerTopLeft(world_pair, select_layer);
 	return true;
 }
 
@@ -401,8 +401,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 
 
 			// Picking up an entity which is set in activated_layer will unset activated_layer
-			if (activatedLayer_ == &world_data.GetTileTopLeft({tile_x, tile_y},
-			                                                  layer)->GetLayer(select_layer))
+			if (activatedLayer_ == world_data.GetLayerTopLeft({tile_x, tile_y}, select_layer))
 				activatedLayer_ = nullptr;
 
 			// Call events

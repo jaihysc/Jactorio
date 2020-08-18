@@ -158,7 +158,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
                                                    game::LogicData& logic_data,
                                                    const WorldCoord& emit_world_coords,
                                                    const WorldCoord& receive_world_coords, Orientation) const {
-	auto& self_layer = *world_data.GetLayerTopLeft(receive_world_coords, game::ChunkTile::ChunkLayer::entity);
+	auto& self_layer = world_data.GetTile(receive_world_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 	auto* drill_data = static_cast<MiningDrillData*>(self_layer.GetUniqueData());
 	assert(drill_data);
@@ -167,7 +167,7 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 	if (emit_world_coords != drill_data->outputTileCoords)
 		return;
 
-	auto& output_layer = *world_data.GetLayerTopLeft(emit_world_coords, game::ChunkTile::ChunkLayer::entity);
+	auto& output_layer = world_data.GetTile(emit_world_coords)->GetLayer(game::ChunkTile::ChunkLayer::entity);
 
 	const bool initialized =
 		drill_data->outputTile.Initialize(world_data,

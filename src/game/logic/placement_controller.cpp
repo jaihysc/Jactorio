@@ -67,7 +67,9 @@ void PlaceAtCoords(game::WorldData& world_data,
 			place_func(tile);
 
 			auto& layer_tile          = tile->GetLayer(layer);
+
 			layer_tile.SetMultiTileIndex(entity_index++);
+			layer_tile.SetTopLeftLayer(top_left);
 		}
 		offset_x = 0;
 	}

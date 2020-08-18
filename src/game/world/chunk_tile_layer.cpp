@@ -28,7 +28,11 @@ game::ChunkTileLayer::ChunkTileLayer(ChunkTileLayer&& other) noexcept
 
 
 void game::ChunkTileLayer::Clear() noexcept {
-	data_.uniqueData.reset();
+	if (multiTileIndex_ == 0) {
+		data_.DestroyUniqueData();
+	}
+	data_.ConstructUniqueData();
+
 	prototypeData  = nullptr;
 	multiTileIndex_ = 0;
 }

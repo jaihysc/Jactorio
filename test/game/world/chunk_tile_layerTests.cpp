@@ -71,6 +71,23 @@ namespace jactorio::game
 		}
 	}
 
+
+	TEST_F(ChunkTileLayerTest, GetUniqueData) {
+		ChunkTileLayer top_left{};
+		SetupMultiTileProp(top_left, {2, 3});
+		top_left.MakeUniqueData<data::ContainerEntityData>(10);
+
+		ChunkTileLayer ctl{};
+		SetupMultiTileProp(ctl, {2, 3});
+		ctl.SetMultiTileIndex(3);
+		ctl.SetTopLeftLayer(top_left);
+		
+
+		EXPECT_EQ(top_left.GetUniqueData(), ctl.GetUniqueData());
+		EXPECT_EQ(top_left.GetUniqueData(), top_left.GetUniqueDataLocal());
+	}
+
+
 	TEST_F(ChunkTileLayerTest, IsMultiTile) {
 		{
 			const ChunkTileLayer ctl{};
