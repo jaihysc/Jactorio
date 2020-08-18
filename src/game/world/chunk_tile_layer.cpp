@@ -5,7 +5,7 @@
 using namespace jactorio;
 
 game::ChunkTileLayer::~ChunkTileLayer() {
-	if (IsMultiTileTopLeft())
+	if (multiTileIndex_ == 0)
 		data_.DestroyUniqueData();
 }
 
