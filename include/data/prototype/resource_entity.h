@@ -15,18 +15,26 @@ namespace jactorio::data
 	{
 		using ResourceCount = uint32_t;
 
-		/// Resource entity should never have 0 resources, when it does it is treated as infinite
+		/// Resource entity should never reach 0 resources, when it does it is treated as infinite
 		static constexpr ResourceCount kInfiniteResource = 0;
 
+
+		ResourceEntityData() = default;
 
 		explicit ResourceEntityData(const ResourceCount resource_amount)
 			: resourceAmount(resource_amount) {
 		}
 
-		///
-		/// \brief Amount of product which can still be extracted from this tile
-		ResourceCount resourceAmount;
+
+		/// Amount of product which can still be extracted from this tile
+		ResourceCount resourceAmount = 1;
+
+
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<EntityData>(this), resourceAmount);
+		}
 	};
+
 
 	class ResourceEntity final : public Entity
 	{

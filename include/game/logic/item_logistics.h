@@ -73,7 +73,7 @@ namespace jactorio::game
 		struct DropOffParams
 		{
 			LogicData& logicData;
-			const data::Item::Stack& itemStack;
+			const data::ItemStack& itemStack;
 			/// Entity to drop into
 			data::UniqueDataBase& uniqueData;
 			data::Orientation orientation;
@@ -81,7 +81,7 @@ namespace jactorio::game
 
 		///
 		///	 \brief Insert provided item at destination
-		bool DropOff(LogicData& logic_data, const data::Item::Stack& item_stack) const {
+		bool DropOff(LogicData& logic_data, const data::ItemStack& item_stack) const {
 			assert(targetUniqueData_);
 			assert(dropFunc_);
 			return (this->*dropFunc_)({logic_data, item_stack, *targetUniqueData_, orientation_});
@@ -121,7 +121,7 @@ namespace jactorio::game
 	class InserterPickup : public ItemHandler
 	{
 		/// Success, picked up stack
-		using PickupReturn = std::pair<bool, data::Item::Stack>;
+		using PickupReturn = std::pair<bool, data::ItemStack>;
 		using GetPickupReturn = const data::Item*;
 
 	public:

@@ -12,18 +12,17 @@
 #include "game/logic/transport_segment.h"
 #include "renderer/rendering/renderer.h"
 
+#include <cereal/types/memory.hpp>
+
 namespace jactorio::data
 {
 	///
 	/// \brief TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
-	struct TransportLineData : HealthEntityData
+	struct TransportLineData final : HealthEntityData
 	{
 		explicit TransportLineData(std::shared_ptr<game::TransportSegment> line_segment)
 			: lineSegment(std::move(line_segment)) {
 		}
-
-		TransportLineData(const TransportLineData& other)     = delete;
-		TransportLineData(TransportLineData&& other) noexcept = delete;
 
 		///
 		/// <Entry direction>_<Exit direction>
@@ -47,17 +46,6 @@ namespace jactorio::data
 			left_up = 4,
 		};
 
-		/// The logic chunk line_segment associated
-		std::shared_ptr<game::TransportSegment> lineSegment;
-
-		/// The distance to the head of the transport line
-		/// \remark For rendering purposes, the length should never exceed ~2 chunks at most
-		uint8_t lineSegmentIndex = 0;
-
-		LineOrientation orientation = LineOrientation::up;
-
-		//
-
 		///
 		/// \brief Updates orientation and member set for rendering 
 		void SetOrientation(LineOrientation orientation) {
@@ -68,6 +56,32 @@ namespace jactorio::data
 		///
 		/// \brief Converts lineOrientation to placementOrientation
 		static Orientation ToOrientation(LineOrientation line_orientation);
+
+
+		//
+
+
+		/// The logic chunk line_segment associated
+		std::shared_ptr<game::TransportSegment> lineSegment;
+
+		/// The distance to the head of the transport line
+		/// \remark For rendering purposes, the length should never exceed ~2 chunks at most
+		uint8_t lineSegmentIndex = 0;
+
+		LineOrientation orientation = LineOrientation::up;
+		
+
+		CEREAL_SERIALIZE(archive) {
+			archive(lineSegment, lineSegmentIndex, orientation, cereal::base_class<HealthEntityData>(this));
+		}
+
+		CEREAL_LOAD_CONSTRUCT(archive, construct, TransportLineData) {
+			std::shared_ptr<game::TransportSegment> line_segment;
+			archive(line_segment);
+			construct(line_segment);
+			
+			archive(construct->lineSegmentIndex, construct->orientation, cereal::base_class<HealthEntityData>(construct.ptr()));
+		}
 	};
 
 

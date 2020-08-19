@@ -199,7 +199,7 @@ bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& args) cons
 }
 
 bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& args) const {
-	assert(args.itemStack.item);
+	assert(args.itemStack.item != nullptr);
 	assert(args.itemStack.count > 0);
 
 	auto& machine_data = static_cast<data::AssemblyMachineData&>(args.uniqueData);
@@ -354,7 +354,7 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupAssemblyMac
 		return nullptr;
 
 	auto& product_stack = machine_data.productInv[0];
-	return product_stack.filter;
+	return product_stack.filter.Get();
 }
 
 game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(const PickupParams& args) const {

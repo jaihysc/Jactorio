@@ -47,9 +47,13 @@ namespace jactorio::data
 			return GetProto();
 		}
 
-		// TProto operator*() {  // Cannot instantiate abstract classes
-		// 	return *GetProto();
-		// }
+		TProto& operator*() {
+			return *GetProto();
+		}
+
+		const TProto& operator*() const {
+			return *GetProto();
+		}
 
 
 		friend bool operator==(const SerialProtoPtr& lhs, const SerialProtoPtr& rhs) {

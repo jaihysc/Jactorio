@@ -25,18 +25,29 @@
 #error CEREAL_SAVE macro already defined, likely from an external library
 #endif
 
+#ifdef CEREAL_LOAD_CONSTRUCT
+#error CEREAL_LOAD_CONSTRUCT macro already defined, likey from an external library
+#endif
 
-#define CEREAL_SERIALIZE(archiver__)\
-	template <typename TArchive>\
+
+#define CEREAL_SERIALIZE(archiver__)       \
+	template <typename TArchive>           \
 	void serialize(TArchive& (archiver__))
 
-#define CEREAL_LOAD(archiver__)\
-	template <typename TArchive>\
+#define CEREAL_LOAD(archiver__)       \
+	template <typename TArchive>      \
 	void load(TArchive& (archiver__))
 
-#define CEREAL_SAVE(archiver__)\
-	template <typename TArchive>\
+#define CEREAL_SAVE(archiver__)               \
+	template <typename TArchive>              \
 	void save(TArchive& (archiver__)) const
+
+///
+/// \remark For types serialized via smart pointer only
+#define CEREAL_LOAD_CONSTRUCT(archiver__, constructor__, data_ty__)                  \
+		template <class TArchive>                                                    \
+		static void load_and_construct(TArchive& archive,                            \
+		                               cereal::construct<data_ty__>& construct)
 
 namespace jactorio::data
 {

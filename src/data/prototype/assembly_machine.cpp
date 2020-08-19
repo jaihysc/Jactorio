@@ -47,7 +47,7 @@ bool data::AssemblyMachineData::CanBeginCrafting() const {
 		const auto& i_required  = recipe_->ingredients[i];
 
 		// No item, Wrong item or not enough of item
-		if (!i_possessed.item ||
+		if (i_possessed.item == nullptr ||
 			i_possessed.item->name != i_required.first ||
 			i_possessed.count < i_required.second) {
 			return false;
@@ -69,7 +69,7 @@ void data::AssemblyMachineData::CraftRemoveIngredients() {
 
 void data::AssemblyMachineData::CraftAddProduct() {
 	// Add product
-	assert(productInv[0].filter);
+	assert(productInv[0].filter != nullptr);
 	productInv[0].item = productInv[0].filter;
 	productInv[0].count += recipe_->product.second;
 }

@@ -20,6 +20,8 @@
 #include "renderer/gui/imgui_manager.h"
 
 
+#include "data/cereal/register_type.h"
+
 #include <fstream>
 #include <cereal/archives/portable_binary.hpp>
 

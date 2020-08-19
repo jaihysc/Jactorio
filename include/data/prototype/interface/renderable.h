@@ -8,6 +8,7 @@
 
 #include "core/data_type.h"
 #include "core/math.h"
+#include "data/cereal/serialize.h"
 #include "data/prototype/sprite.h"
 
 namespace jactorio
@@ -48,6 +49,11 @@ namespace jactorio::data
 
 	public:
 		Sprite::SetT set = 0;
+
+
+		CEREAL_SERIALIZE(archive) {
+			archive(set);
+		}
 	};
 
 	///

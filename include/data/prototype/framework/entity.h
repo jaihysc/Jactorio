@@ -13,6 +13,9 @@ namespace jactorio::data
 {
 	struct FEntityData : FRenderableData
 	{
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<FRenderableData>(this));
+		}
 	};
 
 	class FEntity : public FRenderable, public IRotatable, public IDeferred, public IUpdateListener

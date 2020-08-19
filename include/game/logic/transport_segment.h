@@ -10,6 +10,8 @@
 #include "data/prototype/type.h"
 #include "game/logic/transport_line_controller.h"
 
+#include <cereal/types/deque.hpp>
+
 namespace jactorio::game
 {
 	// Each item's distance (in tiles) to the next item or the end of this transport line segment
@@ -64,6 +66,13 @@ namespace jactorio::game
 
 		/// Visibility of items on lane
 		bool visible = true;
+
+
+		CEREAL_SERIALIZE(archive) {
+			// backItemDistance.g
+			// TODO backItemDistance needs serialization support
+			// archive(lane, index, visible);
+		}
 	};
 
 	///
@@ -102,35 +111,9 @@ namespace jactorio::game
 			  length(segment_length) {
 		}
 
-		TransportLane left;
-		TransportLane right;
-
-		/// Direction items in this segment travel in
-		data::Orientation direction;
-
-		/// Segment this transport line feeds into
-		TransportSegment* targetSegment = nullptr;
-
-		/// How the belt terminates (bends left, right, straight) (Single belt side)
-		TerminationType terminationType;
-
-		/// Length of this segment in tiles
-		SegmentLengthT length;
-
-		/// \brief Offset applied for TransportLineData::lineSegmentIndex
-		///
-		/// When this segment is extended from the head, offset increments 1.
-		/// When the segment is shortened from the head, offset decrements 1.
-		/// No effect when extended or shortened from the tail.
-		/// <br>
-		/// The offset ensures that all entities which stores a segment index tile inserts at the same location
-		/// when the segment is extended or shortened, used in methods with a Abs suffix
-		IntOffsetT itemOffset = 0;
-
-		/// If this segment terminates side only, this is the offset from the beginning of target segment to insert at
-		IntOffsetT targetInsertOffset = 0;
 
 		// ======================================================================
+
 
 		J_NODISCARD TransportLane& GetSide(const bool left_side) {
 			return left_side ? left : right;
@@ -217,6 +200,58 @@ namespace jactorio::game
 		/// \param val Distance from beginning of transport segment
 		void GetOffsetAbs(IntOffsetT& val) const;
 		void GetOffsetAbs(FloatOffsetT& val) const;
+
+
+		// ======================================================================
+
+		
+		/// Direction items in this segment travel in
+		data::Orientation direction;
+
+		/// How the belt terminates (bends left, right, straight) (Single belt side)
+		TerminationType terminationType;
+
+		/// Length of this segment in tiles
+		SegmentLengthT length;
+
+
+		TransportLane left;
+		TransportLane right;
+
+
+		/// Offset applied for TransportBeltData::lineSegmentIndex
+		///
+		/// When this segment is extended from the head, offset increments 1.
+		/// When the segment is shortened from the head, offset decrements 1.
+		/// No effect when extended or shortened from the tail.
+		///
+		/// The offset ensures that all entities which stores a segment index tile inserts at the same location
+		/// when the segment is extended or shortened, used in methods with a Abs suffix
+		IntOffsetT itemOffset = 0;
+
+		/// If this segment terminates side only, this is the offset from the beginning of target segment to insert at
+		IntOffsetT targetInsertOffset = 0;
+
+		/// Segment this transport line feeds into
+		TransportSegment* targetSegment = nullptr;
+
+
+		CEREAL_SERIALIZE(archive) {
+			// TODO transport segments must be relinked upon load
+			archive(direction, terminationType, length,
+					left, right, itemOffset, targetInsertOffset);
+		}	
+
+		CEREAL_LOAD_CONSTRUCT(archive, construct, TransportSegment) {
+			data::Orientation line_dir;
+			TerminationType term_type;
+			SegmentLengthT seg_length;
+			
+			archive(line_dir, term_type, seg_length);
+			construct(line_dir, term_type, seg_length);
+
+			archive(construct->left, construct->right, construct->itemOffset, construct->targetInsertOffset);
+		}
 	};
 
 	template <bool IsLeftLane>

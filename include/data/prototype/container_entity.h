@@ -8,13 +8,23 @@
 
 namespace jactorio::data
 {
-	struct ContainerEntityData : HealthEntityData
+	struct ContainerEntityData final : HealthEntityData
 	{
+		ContainerEntityData() = default;
+		
 		explicit ContainerEntityData(const uint16_t inventory_size) {
 			inventory.resize(inventory_size);
 		}
 
+		explicit ContainerEntityData(Item::Inventory inv)
+			: inventory(std::move(inv)) {
+		}
+
 		Item::Inventory inventory;
+
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<HealthEntityData>(this), inventory);
+		}
 	};
 
 	///

@@ -12,6 +12,10 @@
 #include "core/utility.h"
 #include "data/data_category.h"
 #include "data/data_exception.h"
+#include "data/cereal/serialize.h"
+
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/polymorphic.hpp>
 
 // Creates a setters for python API primarily, to chain initialization
 
@@ -89,6 +93,13 @@ namespace jactorio::data
 		UniqueDataBase(UniqueDataBase&& other) noexcept            = default;
 		UniqueDataBase& operator=(const UniqueDataBase& other)     = default;
 		UniqueDataBase& operator=(UniqueDataBase&& other) noexcept = default;
+
+
+		CEREAL_SERIALIZE(archive) {
+		}
+
+		CEREAL_LOAD_CONSTRUCT(archive, construct, UniqueDataBase) {
+		}
 	};
 
 

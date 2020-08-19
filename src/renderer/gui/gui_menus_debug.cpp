@@ -170,7 +170,7 @@ void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::Proto
 		ImGui::PushID(item->name.c_str());
 
 		if (ImGui::Button(item->GetLocalizedName().c_str())) {
-			data::Item::Stack item_stack = {item, core::SafeCast<data::Item::StackCount>(give_amount)};
+			data::ItemStack item_stack = {item, core::SafeCast<data::Item::StackCount>(give_amount)};
 			game::AddStack(player_data.inventoryPlayer, item_stack);
 		}
 		ImGui::PopID();

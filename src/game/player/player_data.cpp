@@ -366,7 +366,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 		LOG_MESSAGE(debug, "Player picked up entity");
 
 		// Give picked up item to player
-		const auto item_stack = data::Item::Stack{chosen_ptr->GetItem(), 1};
+		const auto item_stack = data::ItemStack{chosen_ptr->GetItem(), 1};
 
 		// Failed to add item, likely because the inventory is full
 		if (!CanAddStack(inventoryPlayer, item_stack).first)
@@ -444,7 +444,7 @@ void game::PlayerData::InventorySort(data::Item::Inventory& inv) const {
 	// The inventory must be sorted without moving the selected cursor
 
 	// Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
-	std::vector<data::Item::Stack> sorted_inv;
+	std::vector<data::ItemStack> sorted_inv;
 	sorted_inv.reserve(inv.size());
 	for (const auto& stack : inv) {
 		// Skip the cursor
@@ -458,7 +458,7 @@ void game::PlayerData::InventorySort(data::Item::Inventory& inv) const {
 
 	// Sort temp inventory (does not contain cursor)
 	std::sort(sorted_inv.begin(), sorted_inv.end(),
-	          [](const data::Item::Stack a, const data::Item::Stack b) {
+	          [](const data::ItemStack a, const data::ItemStack b) {
 		          const auto& a_name = a.item->GetLocalizedName();
 		          const auto& b_name = b.item->GetLocalizedName();
 
@@ -634,7 +634,7 @@ void game::PlayerData::InventoryClick(const data::PrototypeManager& data_manager
 	}
 }
 
-const data::Item::Stack* game::PlayerData::GetSelectedItemStack() const {
+const data::ItemStack* game::PlayerData::GetSelectedItemStack() const {
 	if (!hasItemSelected_)
 		return nullptr;
 
@@ -710,7 +710,7 @@ void game::PlayerData::RecipeCraftTick(const data::PrototypeManager& data_manage
 			data::RecipeItem recipe_item = recipe->product;
 			const auto* product_item     = data_manager.DataRawGet<data::Item>(recipe_item.first);
 
-			data::Item::Stack item = {product_item, recipe_item.second};
+			data::ItemStack item = {product_item, recipe_item.second};
 
 			// Deduct based on the deductions
 			std::map<std::string, uint16_t>::iterator element;

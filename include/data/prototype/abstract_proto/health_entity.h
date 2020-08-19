@@ -11,6 +11,11 @@ namespace jactorio::data
 	struct HealthEntityData : EntityData
 	{
 		uint16_t health = 0;
+
+		
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<EntityData>(this), health);
+		}
 	};
 
 	class HealthEntity : public Entity

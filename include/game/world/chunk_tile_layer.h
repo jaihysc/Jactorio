@@ -147,8 +147,7 @@ namespace jactorio::game
 
 
 		CEREAL_SERIALIZE(archive) {
-			// archive(prototypeData, data_.uniqueData, multiTileIndex_);  // TODO must serialize unique data
-			archive(prototypeData, multiTileIndex_);
+			archive(prototypeData, data_.uniqueData, multiTileIndex_);
 		}
 
 		/// A layer may point to a tile prototype to provide additional data (collisions, world gen) 

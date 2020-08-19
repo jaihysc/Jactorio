@@ -11,6 +11,9 @@ namespace jactorio::data
 {
 	struct FRenderableData : UniqueDataBase, IRenderableData
 	{
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<UniqueDataBase>(this), cereal::base_class<IRenderableData>(this));
+		}
 	};
 
 	class FRenderable : public FrameworkBase, public IRenderable

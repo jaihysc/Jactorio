@@ -73,6 +73,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/prototype/assembly_machineTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/container_entityTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/inserterTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/mining_drillTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp

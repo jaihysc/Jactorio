@@ -475,7 +475,7 @@ namespace jactorio::game
 		entity.SetItem(&item);
 
 
-		data::Item::Stack selected_item = {&item, 1};
+		data::ItemStack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
 		// Update listeners should be dispatched
@@ -533,7 +533,7 @@ namespace jactorio::game
 		entity.SetItem(&item);
 
 
-		data::Item::Stack selected_item = {&item, 1};
+		data::ItemStack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
 		playerData_.TryPlaceEntity(worldData_, logicData_, 0, 0);
@@ -588,7 +588,7 @@ namespace jactorio::game
 		// ======================================================================
 		// Place
 
-		data::Item::Stack selected_item = {&item, 1};
+		data::ItemStack selected_item = {&item, 1};
 		playerData_.SetSelectedItem(selected_item);
 
 		playerData_.TryPlaceEntity(worldData_, logicData_, 1, 1);

@@ -166,10 +166,10 @@ namespace jactorio::game
 		std::map<std::string, uint16_t> craftingItemExtras_;
 
 		/// Item which is held until there is space in the player inventory to return
-		data::Item::Stack craftingHeldItem_ = {nullptr, 0};
+		data::ItemStack craftingHeldItem_ = {nullptr, 0};
 
 
-		data::Item::Stack selectedItem_;
+		data::ItemStack selectedItem_;
 
 		bool hasItemSelected_                         = false;
 		unsigned short selectedItemIndex_             = 0;
@@ -204,7 +204,7 @@ namespace jactorio::game
 		///
 		/// \brief Gets the currently item player is currently holding on the cursor
 		/// \return nullptr if there is no item selected
-		J_NODISCARD const data::Item::Stack* GetSelectedItemStack() const;
+		J_NODISCARD const data::ItemStack* GetSelectedItemStack() const;
 
 		///
 		/// \brief Deselects the current item and returns it to its slot ONLY if selected by reference
@@ -288,7 +288,7 @@ namespace jactorio::game
 			return craftingItemExtras_;
 		}
 
-		void SetSelectedItem(const data::Item::Stack& item) {
+		void SetSelectedItem(const data::ItemStack& item) {
 			hasItemSelected_ = true;
 			selectedItem_ = item;
 		}

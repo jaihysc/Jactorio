@@ -6,6 +6,7 @@
 
 #include "jactorioTests.h"
 #include "data/prototype/sprite.h"
+#include "data/prototype/item.h"
 
 namespace jactorio::data
 {
@@ -30,18 +31,28 @@ namespace jactorio::data
 		serial_proto->sets = 3;
 		EXPECT_EQ(sprite.sets, 3);
 
-		// (*serial_proto).sets;
-		// EXPECT_EQ(sprite.sets, 3);
+		(*serial_proto).sets = 4;
+		EXPECT_EQ(sprite.sets, 4);
 	}
 
-	TEST(CerealSerializePrototypePointer, GetPrototypeConst) {
+	TEST(CerealSerializePrototypePointer, GetConstPrototype) {
 		Sprite sprite;
 		sprite.sets = 32;
 
 		SerialProtoPtr<const Sprite> serial_proto(sprite);
 
 		EXPECT_EQ(serial_proto->sets, 32);
-		// EXPECT_EQ((*serial_proto).sets, 32);
+		EXPECT_EQ((*serial_proto).sets, 32);
+	}
+
+	TEST(CerealSerializePrototypePointer, GetPrototypeConstWrapper) {
+		Sprite sprite;
+		sprite.sets = 32;
+
+		const SerialProtoPtr<const Sprite> serial_proto(sprite);
+
+		EXPECT_EQ(serial_proto->sets, 32);
+		EXPECT_EQ((*serial_proto).sets, 32);
 	}
 
 	

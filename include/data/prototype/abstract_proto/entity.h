@@ -17,6 +17,9 @@ namespace jactorio::data
 	/// \brief Unique per entity placed in the world
 	struct EntityData : FEntityData
 	{
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<FEntityData>(this));
+		}
 	};
 
 	///
