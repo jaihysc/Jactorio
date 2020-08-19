@@ -14,20 +14,24 @@
 
 namespace jactorio::game
 {
-	struct GameInput
+	///
+	/// \brief Does not persist across application restarts
+	struct GameDataLocal
 	{
-		MouseSelection mouse{};
-		KeyInput key{};
+		struct GameInput
+		{
+			MouseSelection mouse{};
+			KeyInput key{};
+		};
+
+		data::PrototypeManager prototype{};
+		GameInput input{};
 	};
 
 	///
-	/// \brief Holds all data for the runtime of the game (Wrapped with Pybind)
-	/// Each sub data has its own mutex enabling concurrency
-	struct GameData
+	/// \brief Serialized runtime data, persists across restarts
+	struct GameDataGlobal
 	{
-		data::PrototypeManager prototype{};
-
-		GameInput input{};
 		EventData event{};
 
 		PlayerData player{};
@@ -36,9 +40,18 @@ namespace jactorio::game
 		LogicData logic{};
 	};
 
-	/// This should only be accessed from logic_loop or render_main,
-	/// any other should get references to members to remain testable
-	inline GameData* game_data;
+	 // static_assert(std::is_move_constructible_v<GameDataGlobal>);
+	 // static_assert(std::is_move_assignable_v<GameDataGlobal>);
+	 //
+	 // static_assert(std::is_move_constructible_v<EventData>);
+	 // static_assert(std::is_move_constructible_v<PlayerData>);
+	 // static_assert(std::is_move_constructible_v<WorldData>);
+	 // static_assert(std::is_move_constructible_v<LogicData>);
+	 //
+	 // static_assert(std::is_move_assignable_v<EventData>);
+	 // static_assert(std::is_move_assignable_v<PlayerData>);
+	 // static_assert(std::is_move_assignable_v<WorldData>);
+	 // static_assert(std::is_move_assignable_v<LogicData>);
 }
 
 #endif //JACTORIO_INCLUDE_GAME_GAME_DATA_H

@@ -401,8 +401,6 @@ void game::WorldData::QueueChunkGeneration(const ChunkCoordAxis chunk_x,
 	if (worldGenChunks_.find(chunk_key) != worldGenChunks_.end())
 		return;
 
-	// Writing
-	std::lock_guard<std::mutex> lk{worldGenQueueMutex_};
 	worldGenChunks_.insert({chunk_x, chunk_y});
 }
 

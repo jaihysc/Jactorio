@@ -22,7 +22,6 @@ namespace jactorio::game
 	{
 	public:
 		/// Used when concurrently accessing player data, such as for rendering
-		std::mutex mutex;
 
 	private:
 		// ======================================================================

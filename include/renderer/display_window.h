@@ -9,6 +9,11 @@
 
 #include "jactorio.h"
 
+namespace jactorio
+{
+	struct LogicRenderLoopCommon;
+}
+
 namespace jactorio::renderer
 {
 	///
@@ -36,7 +41,7 @@ namespace jactorio::renderer
 		J_NODISCARD SDL_GLContext GetContext() const;
 		J_NODISCARD bool WindowContextActive() const;
 
-		void HandleSdlEvent(const SDL_Event& sdl_event) const;
+		void HandleSdlEvent(LogicRenderLoopCommon& common, const SDL_Event& sdl_event) const;
 
 	private:
 		std::array<int, 2> windowPos_{0, 0};

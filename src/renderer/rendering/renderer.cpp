@@ -157,6 +157,7 @@ void renderer::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 		}
 	};
 
+	std::mutex world_gen_mutex;
 
 	for (int y = 0; y < chunk_amount.y; ++y) {
 
@@ -177,7 +178,7 @@ void renderer::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 
 		chunkDrawThreads_[started_threads] =
 			std::async(std::launch::async, &Renderer::PrepareChunkRow, this,
-			           std::ref(r_layer_tile), std::ref(world_data),
+			           std::ref(r_layer_tile), std::ref(world_data), std::ref(world_gen_mutex),
 			           row_start, chunk_amount.x,
 			           render_tile_offset,
 			           game_tick
@@ -277,7 +278,7 @@ core::Position2<int> renderer::Renderer::GetChunkDrawAmount(const int position_x
 	return {chunk_amount_x, chunk_amount_y};
 }
 
-void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data,
+void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data, std::mutex& world_gen_mutex,
                                          const core::Position2<int> row_start, const int chunk_span,
                                          const core::Position2<int> render_tile_offset,
                                          const GameTickT game_tick) const noexcept {
@@ -289,6 +290,7 @@ void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer, const game::Wor
 
 		// Queue chunk for generation if it does not exist
 		if (!chunk) {
+			std::lock_guard<std::mutex> gen_guard{world_gen_mutex};
 			world_data.QueueChunkGeneration(chunk_x, row_start.y);
 			continue;
 		}

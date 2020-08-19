@@ -18,7 +18,7 @@ namespace jactorio::game
 	{
 		// ======================================================================
 		// World properties
-		std::atomic<GameTickT> gameTick_ = 0;
+		GameTickT gameTick_ = 0;
 
 	public:
 		/// \brief Called by the logic loop every update

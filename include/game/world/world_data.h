@@ -35,13 +35,11 @@ namespace jactorio::game
 		}
 
 		WorldData(const WorldData& other) = delete;
-		WorldData(WorldData&& other)      = delete;
+		WorldData(WorldData&& other) noexcept = default;
 
 		// ======================================================================
 		// World chunk
 		static constexpr uint8_t kChunkWidth = 32;
-
-		mutable std::mutex worldDataMutex{};  // Held by the thread which is currently operating on a chunk
 
 		///
 		/// \brief Converts world coordinate to chunk coordinate
@@ -245,8 +243,6 @@ namespace jactorio::game
 		std::unordered_map<ChunkKey, Chunk, ChunkHasher> worldChunks_;
 		std::set<Chunk*> logicChunks_;
 
-
-		mutable std::mutex worldGenQueueMutex_;
 
 		int worldGenSeed_ = 1001;
 		/// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done

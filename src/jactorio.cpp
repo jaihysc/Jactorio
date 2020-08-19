@@ -14,8 +14,10 @@ void InitializeGame() {
 	// Rendering + logic initialization
 	LOG_MESSAGE(info, "1 - Data stage");
 
-	std::thread logic_thread    = std::thread(game::InitLogicLoop);
-	std::thread renderer_thread = std::thread(renderer::RenderInit);
+	LogicRenderLoopCommon common_data;
+
+	std::thread logic_thread    = std::thread(game::InitLogicLoop, std::ref(common_data));
+	std::thread renderer_thread = std::thread(renderer::RenderInit, std::ref(common_data));
 
 	logic_thread.join();
 	renderer_thread.join();
