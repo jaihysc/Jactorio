@@ -28,15 +28,16 @@ namespace jactorio::game
 	class WorldData
 	{
 	public:
-		static constexpr uint8_t kChunkWidth = 32;
+		static constexpr auto kChunkWidth = Chunk::kChunkWidth;
 
+		static ChunkCoordAxis WorldCToChunkC(WorldCoordAxis world_coord);
+		static ChunkCoord WorldCToChunkC(const WorldCoord& world_coord);
 		///
-		/// \brief Converts world coordinate to chunk coordinate
-		static ChunkCoordAxis ToChunkCoord(WorldCoordAxis world_coord);
+		/// \brief Chunk coord -> World coord at first tile of chunk
+		static WorldCoordAxis ChunkCToWorldC(ChunkCoordAxis chunk_coord);
+		static WorldCoord ChunkCToWorldC(const ChunkCoord& chunk_coord);
 
-		///
-		/// \brief Converts world coordinate to overlay element coordinates
-		static OverlayOffsetAxis ToOverlayCoord(WorldCoordAxis world_coord);
+		static OverlayOffsetAxis WorldCToOverlayC(WorldCoordAxis world_coord);
 
 
 		// World access
@@ -230,6 +231,12 @@ namespace jactorio::game
 		auto UpdateDispatch(TArgs&& ... args) {
 			updateDispatcher.Dispatch(*this, std::forward<TArgs>(args) ...);
 		}
+
+
+		///
+		/// \brief To be used after deserializing.
+		/// Steps through all chunks and sets the top left tile for all multi tile tiles as its pointer cannot be serialized
+		void ResolveMultiTileTopLeft();
 
 
 		CEREAL_SERIALIZE(archive) {

@@ -5,7 +5,7 @@
 using namespace jactorio;
 
 game::ChunkTileLayer::~ChunkTileLayer() {
-	if (multiTileIndex_ == 0)
+	if (IsTopLeft())
 		data_.DestroyUniqueData();
 }
 
@@ -28,7 +28,7 @@ game::ChunkTileLayer::ChunkTileLayer(ChunkTileLayer&& other) noexcept
 
 
 void game::ChunkTileLayer::Clear() noexcept {
-	if (multiTileIndex_ == 0) {
+	if (IsTopLeft()) {
 		data_.DestroyUniqueData();
 	}
 	data_.ConstructUniqueData();
@@ -39,6 +39,10 @@ void game::ChunkTileLayer::Clear() noexcept {
 
 // ======================================================================
 
+bool game::ChunkTileLayer::IsTopLeft() const noexcept {
+	return multiTileIndex_ == 0;
+}
+
 bool game::ChunkTileLayer::IsMultiTile() const {
 	if (!HasMultiTileData())
 		return false;
@@ -47,7 +51,7 @@ bool game::ChunkTileLayer::IsMultiTile() const {
 }
 
 bool game::ChunkTileLayer::IsMultiTileTopLeft() const {
-	return IsMultiTile() && multiTileIndex_ == 0;
+	return IsMultiTile() && IsTopLeft();
 }
 
 bool game::ChunkTileLayer::IsNonTopLeftMultiTile() const {

@@ -25,33 +25,37 @@ void data::SerializeGameData(const game::GameDataGlobal& game_data) {
 game::GameDataGlobal data::DeserializeGameData(game::GameDataLocal& data_local) {
 	LOG_MESSAGE(info, "Loading savegame");
 
-	const std::vector<std::function<void()>> pre_load_hooks
+	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> pre_load_hooks
 	{
-		[&]() {
+		[&](auto*) {
 			data_local.prototype.GenerateRelocationTable();
 			active_data_manager = &data_local.prototype;
 		},
 	};
-	std::vector<std::function<void()>> post_load_hooks
+	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> post_load_hooks
 	{
+		[&](auto* data_global) {
+			data_global->world.ResolveMultiTileTopLeft();
+		},
 	};
 
 
 	// ======================================================================
 
-	auto run_hooks = [](const std::vector<std::function<void()>>& hooks, const std::string& message) {
+	auto run_hooks = [](const std::vector<std::function<void(game::GameDataGlobal*)>>& hooks, const std::string& message,
+	                    game::GameDataGlobal* data_global) {
 		for (std::size_t i = 0; i < hooks.size(); ++i) {
 			LOG_MESSAGE_F(debug, "%s %d of %d", message.c_str(), i + 1, hooks.size());
 
 			const auto& hook = hooks[i];
-			hook();
+			hook(data_global);
 		}
 
 		LOG_MESSAGE_F(debug, "%s Done", message.c_str());
 	};
 
 
-	run_hooks(pre_load_hooks, "Pre load hook");
+	run_hooks(pre_load_hooks, "Pre load hook", nullptr);
 
 	std::ifstream in_cereal_stream(kSaveGameFileName, std::ios_base::binary);
 	cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
@@ -59,7 +63,7 @@ game::GameDataGlobal data::DeserializeGameData(game::GameDataLocal& data_local) 
 	game::GameDataGlobal m;
 	iarchive(m);
 
-	run_hooks(pre_load_hooks, "Post load hook");
+	run_hooks(post_load_hooks, "Post load hook", &m);
 
 	return m;
 }

@@ -18,7 +18,7 @@
 
 using namespace jactorio;
 
-ChunkCoordAxis game::WorldData::ToChunkCoord(WorldCoordAxis world_coord) {
+ChunkCoordAxis game::WorldData::WorldCToChunkC(WorldCoordAxis world_coord) {
 	ChunkCoordAxis chunk_coord = 0;
 
 	if (world_coord < 0) {
@@ -30,7 +30,21 @@ ChunkCoordAxis game::WorldData::ToChunkCoord(WorldCoordAxis world_coord) {
 	return chunk_coord;
 }
 
-OverlayOffsetAxis game::WorldData::ToOverlayCoord(const WorldCoordAxis world_coord) {
+ChunkCoord game::WorldData::WorldCToChunkC(const WorldCoord& world_coord) {
+	return {WorldCToChunkC(world_coord.x), WorldCToChunkC(world_coord.y)};
+}
+
+
+WorldCoordAxis game::WorldData::ChunkCToWorldC(const ChunkCoordAxis chunk_coord) {
+	return chunk_coord * kChunkWidth;
+}
+
+WorldCoord game::WorldData::ChunkCToWorldC(const ChunkCoord& chunk_coord) {
+	return {ChunkCToWorldC(chunk_coord.x), ChunkCToWorldC(chunk_coord.y)};
+}
+
+
+OverlayOffsetAxis game::WorldData::WorldCToOverlayC(const WorldCoordAxis world_coord) {
 	WorldCoordAxis val;
 
 	if (world_coord < 0) {
@@ -86,11 +100,11 @@ const game::Chunk* game::WorldData::GetChunkC(const ChunkCoord& chunk_pair) cons
 
 
 game::Chunk* game::WorldData::GetChunkW(const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-	return GetChunkC(ToChunkCoord(world_x), ToChunkCoord(world_y));
+	return GetChunkC(WorldCToChunkC(world_x), WorldCToChunkC(world_y));
 }
 
 const game::Chunk* game::WorldData::GetChunkW(const WorldCoordAxis world_x, const WorldCoordAxis world_y) const {
-	return GetChunkC(ToChunkCoord(world_x), ToChunkCoord(world_y));
+	return GetChunkC(WorldCToChunkC(world_x), WorldCToChunkC(world_y));
 }
 
 
@@ -419,5 +433,37 @@ void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8
 
 		if (--amount == 0)
 			break;
+	}
+}
+
+
+void game::WorldData::ResolveMultiTileTopLeft() {
+	for (auto& [c_coord, chunk] : worldChunks_) {
+
+		for (uint32_t y = 0; y < kChunkWidth; ++y) {  // x, y is position within current chunk
+			for (uint32_t x = 0; x < kChunkWidth; ++x) {
+
+				auto world_coord = ChunkCToWorldC({std::get<0>(c_coord), std::get<1>(c_coord)});
+				world_coord.x += x;
+				world_coord.y += y;
+				
+				auto* tile = GetTile(world_coord);
+				assert(tile != nullptr);
+				
+				for (uint8_t layer_i = 0; layer_i < ChunkTile::kTileLayerCount; ++layer_i) {
+					auto& layer = tile->layers[layer_i];
+					
+					if (layer.GetMultiTileIndex() != 0) {
+						layer.AdjustToTopLeft(world_coord.x, world_coord.y);
+						auto* tl_tile = GetTile(world_coord);  // Now adjusted to top left
+						assert(tl_tile != nullptr);
+
+						layer.SetTopLeftLayer(tl_tile->GetLayer(layer_i));
+					}
+				}
+				
+			}
+		}
+
 	}
 }

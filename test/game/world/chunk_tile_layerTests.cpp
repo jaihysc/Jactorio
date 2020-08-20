@@ -6,6 +6,7 @@
 
 #include "jactorioTests.h"
 #include "data/prototype/container_entity.h"
+#include "data/cereal/register_type.h"
 
 namespace jactorio::game
 {
@@ -87,6 +88,33 @@ namespace jactorio::game
 		EXPECT_EQ(top_left.GetUniqueData(), top_left.GetUniqueDataLocal());
 	}
 
+
+	TEST_F(ChunkTileLayerTest, IsTopLeft) {
+		{
+			const ChunkTileLayer ctl{};
+			EXPECT_TRUE(ctl.IsTopLeft());
+		}
+		{
+			ChunkTileLayer ctl{};
+			ctl.SetMultiTileIndex(0);
+			EXPECT_TRUE(ctl.IsTopLeft());
+		}
+		{
+			ChunkTileLayer ctl{};
+			SetupMultiTileProp(ctl, {1, 2});
+			EXPECT_TRUE(ctl.IsTopLeft());
+		}
+		{
+			ChunkTileLayer ctl{};
+			ctl.SetMultiTileIndex(4);
+			EXPECT_FALSE(ctl.IsTopLeft());
+		}
+		{
+			ChunkTileLayer ctl{};
+			ctl.SetMultiTileIndex(90);
+			EXPECT_FALSE(ctl.IsTopLeft());
+		}
+	}
 
 	TEST_F(ChunkTileLayerTest, IsMultiTile) {
 		{
@@ -243,5 +271,42 @@ namespace jactorio::game
 		ctl.SetMultiTileIndex(20);
 
 		EXPECT_EQ(ctl.GetOffsetY(), 4);
+	}
+
+
+	TEST_F(ChunkTileLayerTest, Serialize) {
+		data::PrototypeManager proto_manager;
+		data::active_data_manager = &proto_manager;
+
+		auto& proto = proto_manager.AddProto<data::ContainerEntity>();
+
+		ChunkTileLayer top_left;
+		TestSetupMultiTileProp(top_left, {2, 2}, proto);
+		top_left.SetMultiTileIndex(0);
+		top_left.MakeUniqueData<data::ContainerEntityData>(10);
+
+		ChunkTileLayer bot_right;
+		TestSetupMultiTileProp(bot_right, {2, 2}, proto);
+		bot_right.SetMultiTileIndex(3);
+		bot_right.SetTopLeftLayer(top_left);
+
+		proto_manager.GenerateRelocationTable();
+
+		// ======================================================================
+		auto result_tl = TestSerializeDeserialize(top_left);
+		auto result_br = TestSerializeDeserialize(bot_right);
+
+		EXPECT_EQ(result_tl.prototypeData, &proto);
+		EXPECT_NE(result_tl.GetUniqueData(), nullptr);
+
+		EXPECT_EQ(result_tl.GetMultiTileData().span, 2);
+		EXPECT_EQ(result_tl.GetMultiTileData().height, 2);
+
+		
+		EXPECT_EQ(result_br.prototypeData, &proto);
+		EXPECT_EQ(result_br.GetTopLeftLayer(), nullptr);
+
+		EXPECT_EQ(result_br.GetMultiTileData().span, 2);
+		EXPECT_EQ(result_br.GetMultiTileData().height, 2);
 	}
 }

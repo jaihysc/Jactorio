@@ -948,7 +948,7 @@ void DisconnectTargetSegment(game::WorldData& world_data,
 }
 
 double ToChunkOffset(const WorldCoordAxis world_coord) {
-	return fabs(game::WorldData::ToChunkCoord(world_coord) * game::Chunk::kChunkWidth - world_coord);
+	return fabs(game::WorldData::WorldCToChunkC(world_coord) * game::Chunk::kChunkWidth - world_coord);
 }
 
 void data::TransportLine::OnRemove(game::WorldData& world_data,

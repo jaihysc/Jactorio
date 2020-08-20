@@ -74,7 +74,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	// Saves such that can be found and removed in the future
 	auto save_overlay_info = [&]() {
 		lastOverlayElementIndex_ = overlay_layer.size() - 1;
-		lastChunkPos_            = {WorldData::ToChunkCoord(world_x), WorldData::ToChunkCoord(world_y)};
+		lastChunkPos_            = {WorldData::WorldCToChunkC(world_x), WorldData::WorldCToChunkC(world_y)};
 	};
 
 
@@ -86,7 +86,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 
 		OverlayElement element{
 			*selected_entity->OnRGetSprite(set),
-			{WorldData::ToOverlayCoord(world_x), WorldData::ToOverlayCoord(world_y)},
+			{WorldData::WorldCToOverlayC(world_x), WorldData::WorldCToOverlayC(world_y)},
 			{core::SafeCast<float>(selected_entity->tileWidth), core::SafeCast<float>(selected_entity->tileHeight)},
 			kCursorOverlayLayer
 		};
@@ -108,7 +108,7 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 
 		overlay_layer.push_back({
 			*sprite,
-			{WorldData::ToOverlayCoord(world_x), WorldData::ToOverlayCoord(world_y)},
+			{WorldData::WorldCToOverlayC(world_x), WorldData::WorldCToOverlayC(world_y)},
 			{1, 1},
 			kCursorOverlayLayer
 		});

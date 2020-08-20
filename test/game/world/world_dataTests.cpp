@@ -17,24 +17,38 @@ namespace jactorio::game
 		WorldData worldData_{};
 	};
 
-	TEST_F(WorldDataTest, ToChunkCoords) {
-		EXPECT_EQ(WorldData::ToChunkCoord(-33), -2);
-		EXPECT_EQ(WorldData::ToChunkCoord(-32), -1);
-		EXPECT_EQ(WorldData::ToChunkCoord(-1), -1);
-		EXPECT_EQ(WorldData::ToChunkCoord(31), 0);
-		EXPECT_EQ(WorldData::ToChunkCoord(32), 1);
+	TEST_F(WorldDataTest, WorldCToChunkC) {
+		EXPECT_EQ(WorldData::WorldCToChunkC(-33), -2);
+		EXPECT_EQ(WorldData::WorldCToChunkC(-32), -1);
+		EXPECT_EQ(WorldData::WorldCToChunkC(-1), -1);
+		EXPECT_EQ(WorldData::WorldCToChunkC(31), 0);
+		EXPECT_EQ(WorldData::WorldCToChunkC(32), 1);
+
+		EXPECT_EQ(WorldData::WorldCToChunkC({160, 999999}).x, 5);
+		EXPECT_EQ(WorldData::WorldCToChunkC({999999, -64}).y, -2);
 	}
 
-	TEST_F(WorldDataTest, ToOverlayCoords) {
-		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(0), 0);
-		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(31), 31);
-		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(32), 0);
-		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(63), 31);
+	TEST_F(WorldDataTest, ChunkCToWorldC) {
+		EXPECT_EQ(WorldData::ChunkCToWorldC(0), 0);
+		EXPECT_EQ(WorldData::ChunkCToWorldC(1), 32);
+		EXPECT_EQ(WorldData::ChunkCToWorldC(5), 160);
+		EXPECT_EQ(WorldData::ChunkCToWorldC(-1), -32);
+		EXPECT_EQ(WorldData::ChunkCToWorldC(-2), -64);
 
-		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-1), 31);
-		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-32), 0);
-		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-33), 31);
-		EXPECT_FLOAT_EQ(WorldData::ToOverlayCoord(-65), 31);
+		EXPECT_EQ(WorldData::ChunkCToWorldC({-6, 2323232}).x, -192);
+		EXPECT_EQ(WorldData::ChunkCToWorldC({12321, 420}).y, 13440);
+	}
+
+	TEST_F(WorldDataTest, WorldCToOverlayC) {
+		EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(0), 0);
+		EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(31), 31);
+		EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(32), 0);
+		EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(63), 31);
+
+		EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(-1), 31);
+		EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(-32), 0);
+		EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(-33), 31);
+		EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(-65), 31);
 	}
 
 	TEST_F(WorldDataTest, WorldAddChunk) {
@@ -329,5 +343,37 @@ namespace jactorio::game
 
 		// Vector reference should now be empty
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+	}
+
+
+	class ResolveMultiTileTopLeftTest : public testing::Test
+	{
+	protected:
+		WorldData worldData_;
+		data::ContainerEntity proto_;  // Any proto is fine
+
+		///
+		/// \brief Checks that multi-tile tile is linked to top left
+		void ExpectTLResolved(const WorldCoord& coord, const TileLayer tile_layer) {
+			auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
+			ASSERT_NE(top_left, nullptr);
+			EXPECT_EQ(top_left->prototypeData, &proto_);
+		}
+	};
+
+	TEST_F(ResolveMultiTileTopLeftTest, SameChunk) {
+		worldData_.EmplaceChunk(0, 0);
+
+		TestSetupMultiTile<false>(worldData_, proto_,
+		                          {1, 0}, TileLayer::base, {3, 2});
+
+		worldData_.ResolveMultiTileTopLeft();
+
+		ExpectTLResolved({2, 0}, TileLayer::base);
+		ExpectTLResolved({3, 0}, TileLayer::base);
+
+		ExpectTLResolved({1, 1}, TileLayer::base);
+		ExpectTLResolved({2, 1}, TileLayer::base);
+		ExpectTLResolved({3, 1}, TileLayer::base);
 	}
 }

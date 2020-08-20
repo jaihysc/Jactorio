@@ -30,6 +30,39 @@ namespace jactorio
 	}
 
 	///
+	/// \brief Sets up a multi tile with proto using provided properties
+	/// \tparam SetTopLeftLayer If false, non top left multi tiles will not know the top left layer
+	/// \return Top left tile
+	template <bool SetTopLeftLayer = true>
+	game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world_data, data::FRenderable& proto,
+	                                         const WorldCoord& world_coord, const game::TileLayer tile_layer,
+	                                         const game::MultiTileData& mt_data) {
+
+		auto& origin_layer = world_data.GetTile(world_coord)->GetLayer(tile_layer);
+		TestSetupMultiTileProp(origin_layer, mt_data, proto);
+
+		for (int y = 0; y < proto.tileHeight; ++y) {
+			for (int x = 0; x < proto.tileWidth; ++x) {
+				if (x == 0 && y == 0)
+					continue;
+
+				auto& layer = world_data.GetTile(world_coord.x + x, world_coord.y + y)
+				                        ->GetLayer(tile_layer);
+
+				layer.prototypeData = &proto;
+				layer.SetMultiTileIndex(y * proto.tileWidth + x);
+
+				if constexpr (SetTopLeftLayer) {
+					layer.SetTopLeftLayer(origin_layer);
+				}
+
+			}
+		}
+
+		return origin_layer;
+	}
+
+	///
 	/// \brief Creates a container of size 10 at coordinates
 	inline game::ChunkTileLayer& TestSetupContainer(game::WorldData& world_data,
 	                                                const WorldCoord& world_coords,
@@ -87,27 +120,9 @@ namespace jactorio
 	inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::WorldData& world_data,
 	                                                      const WorldCoord& world_coords,
 	                                                      data::AssemblyMachine& assembly_proto) {
-		assembly_proto.tileWidth  = 2;
-		assembly_proto.tileHeight = 2;
-
-		auto& origin_layer = world_data.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
-
-		for (int y = 0; y < 2; ++y) {
-			for (int x = 0; x < 2; ++x) {
-				if (x == 0 && y == 0)
-					continue;
-
-				auto& layer = world_data.GetTile(world_coords.x + x, world_coords.y + y)
-				                        ->GetLayer(game::TileLayer::entity);
-
-				layer.prototypeData  = &assembly_proto;
-				layer.SetMultiTileIndex(y * 2 + x);
-				layer.SetTopLeftLayer(origin_layer);
-			}
-		}
-
+		auto& origin_layer = TestSetupMultiTile(world_data, assembly_proto,
+												world_coords, game::TileLayer::entity, {2, 2});
 		origin_layer.MakeUniqueData<data::AssemblyMachineData>();
-
 		return origin_layer;
 	}
 

@@ -96,7 +96,7 @@ namespace jactorio::game
 		template <typename T = data::UniqueDataBase>
 		J_NODISCARD const T* GetUniqueData() const noexcept;
 
-		
+
 		///
 		/// \brief Unique data at current layer
 		/// \tparam T Return type which uniqueData is cast to
@@ -113,6 +113,7 @@ namespace jactorio::game
 		// ======================================================================
 
 
+		J_NODISCARD bool IsTopLeft() const noexcept;  // Destructor use safe
 		J_NODISCARD bool IsMultiTile() const;
 		J_NODISCARD bool IsMultiTileTopLeft() const;
 		J_NODISCARD bool IsNonTopLeftMultiTile() const;
@@ -121,7 +122,7 @@ namespace jactorio::game
 		J_NODISCARD bool HasMultiTileData() const;
 		J_NODISCARD MultiTileData GetMultiTileData() const;
 
-		
+
 		J_NODISCARD MultiTileValueT GetMultiTileIndex() const noexcept;
 		void SetMultiTileIndex(MultiTileValueT multi_tile_index);
 
@@ -147,7 +148,19 @@ namespace jactorio::game
 
 
 		CEREAL_SERIALIZE(archive) {
-			archive(prototypeData, data_.uniqueData, multiTileIndex_);
+			constexpr auto archive_size = sizeof prototypeData + sizeof data_.uniqueData + sizeof multiTileIndex_;
+
+			if (IsTopLeft()) {
+				// This path always chosen on load
+				data::CerealArchive<archive_size>(archive,
+				                                  prototypeData, data_.uniqueData, multiTileIndex_);
+			}
+			else {
+				// Non top left tiles do not have unique data
+				UniqueDataContainerT empty_unique = nullptr;
+				data::CerealArchive<archive_size>(archive,
+				                                  prototypeData, empty_unique, multiTileIndex_);
+			}
 		}
 
 		/// A layer may point to a tile prototype to provide additional data (collisions, world gen) 
@@ -163,11 +176,12 @@ namespace jactorio::game
 			UData() {
 				ConstructUniqueData();
 			}
-			
-			~UData() {}
+
+			~UData() {
+			}
 
 			void ConstructUniqueData() noexcept {
-				new (&uniqueData) UniqueDataContainerT{};
+				new(&uniqueData) UniqueDataContainerT{};
 			}
 
 			void DestroyUniqueData() noexcept {
