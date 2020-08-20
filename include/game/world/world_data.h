@@ -28,17 +28,6 @@ namespace jactorio::game
 	class WorldData
 	{
 	public:
-		WorldData() = default;
-
-		~WorldData() {
-			ClearChunkData();
-		}
-
-		WorldData(const WorldData& other) = delete;
-		WorldData(WorldData&& other) noexcept = default;
-
-		// ======================================================================
-		// World chunk
 		static constexpr uint8_t kChunkWidth = 32;
 
 		///
@@ -227,6 +216,20 @@ namespace jactorio::game
 
 
 		// ======================================================================
+
+		///
+		/// \brief Forwards args to updateDispatcher.Dispatch itself being world data
+		template <typename ... TArgs>
+		auto UpdateDispatch(const WorldCoord& coord, TArgs&& ... args) {
+			updateDispatcher.Dispatch(*this, coord, std::forward<TArgs>(args) ...);
+		}
+
+		///
+		/// \brief Forwards args to updateDispatcher.Dispatch itself being world data
+		template <typename ... TArgs>
+		auto UpdateDispatch(TArgs&& ... args) {
+			updateDispatcher.Dispatch(*this, std::forward<TArgs>(args) ...);
+		}
 
 
 		CEREAL_SERIALIZE(archive) {

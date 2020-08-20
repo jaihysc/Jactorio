@@ -201,7 +201,7 @@ void HandleWindowEvent(game::EventData& event, const SDL_Event& sdl_event) {
 void renderer::DisplayWindow::HandleSdlEvent(LogicRenderLoopCommon& common, const SDL_Event& sdl_event) const {
 	switch (sdl_event.type) {
 	case SDL_WINDOWEVENT:
-		HandleWindowEvent(common.gameDataGlobal.event, sdl_event);
+		HandleWindowEvent(common.gameDataLocal.event, sdl_event);
 		break;
 
 	case SDL_QUIT:

@@ -36,14 +36,14 @@ namespace jactorio::game
 		LogicData logicData_{};
 		WorldData worldData_{};
 
-		LogicData::DeferralTimer& timer_ = logicData_.deferralTimer;
+		DeferralTimer& timer_ = logicData_.deferralTimer;
 
 		class MockDeferred final : public data::IDeferred
 		{
 		public:
 			mutable bool callbackCalled              = false;
 			mutable data::UniqueDataBase* dataPtr    = nullptr;
-			mutable LogicData::DeferralTimer* dTimer = nullptr;
+			mutable DeferralTimer* dTimer = nullptr;
 
 			void OnDeferTimeElapsed(WorldData&, LogicData& logic_data,
 			                        data::UniqueDataBase* unique_data) const override {
@@ -68,13 +68,13 @@ namespace jactorio::game
 		EXPECT_EQ(index.callbackIndex, 1);
 		EXPECT_TRUE(index.Valid());
 
-		timer_.DeferralUpdate(worldData_, 0);
+		logicData_.DeferralUpdate(worldData_, 0);
 		EXPECT_FALSE(deferred_.callbackCalled);
 
-		timer_.DeferralUpdate(worldData_, 1);
+		logicData_.DeferralUpdate(worldData_, 1);
 		EXPECT_FALSE(deferred_.callbackCalled);
 
-		timer_.DeferralUpdate(worldData_, 2);
+		logicData_.DeferralUpdate(worldData_, 2);
 		EXPECT_TRUE(deferred_.callbackCalled);
 		EXPECT_EQ(deferred_.dataPtr, unique_data.get());
 		EXPECT_EQ(deferred_.dTimer, &timer_);
@@ -89,13 +89,13 @@ namespace jactorio::game
 		EXPECT_EQ(index.callbackIndex, 1);
 		EXPECT_TRUE(index.Valid());
 
-		timer_.DeferralUpdate(worldData_, 0);
+		logicData_.DeferralUpdate(worldData_, 0);
 		EXPECT_FALSE(deferred_.callbackCalled);
 
-		timer_.DeferralUpdate(worldData_, 1);
+		logicData_.DeferralUpdate(worldData_, 1);
 		EXPECT_FALSE(deferred_.callbackCalled);
 
-		timer_.DeferralUpdate(worldData_, 2);
+		logicData_.DeferralUpdate(worldData_, 2);
 		EXPECT_TRUE(deferred_.callbackCalled);
 		EXPECT_EQ(deferred_.dataPtr, unique_data.get());
 		EXPECT_EQ(deferred_.dTimer, &timer_);
@@ -104,7 +104,7 @@ namespace jactorio::game
 	TEST_F(DeferralTimerTest, RegisterDeferralRemoveOldCallbacks) {
 		timer_.RegisterAtTick(deferred_, nullptr, 2);
 
-		timer_.DeferralUpdate(worldData_, 2);
+		logicData_.DeferralUpdate(worldData_, 2);
 		ASSERT_TRUE(deferred_.callbackCalled);
 
 		// Callback at 2 has been removed since it update was called for game tick 2
@@ -117,7 +117,7 @@ namespace jactorio::game
 		timer_.RemoveDeferral(entry);
 
 		// Callback removed
-		timer_.DeferralUpdate(worldData_, 2);
+		logicData_.DeferralUpdate(worldData_, 2);
 		EXPECT_FALSE(deferred_.callbackCalled);
 	}
 
@@ -129,7 +129,7 @@ namespace jactorio::game
 		timer_.RemoveDeferral(deferral_entry_2);
 
 		// Both deferrals removed
-		timer_.DeferralUpdate(worldData_, 2);
+		logicData_.DeferralUpdate(worldData_, 2);
 		EXPECT_FALSE(deferred_.callbackCalled);
 	}
 
@@ -147,11 +147,11 @@ namespace jactorio::game
 			EXPECT_EQ(entry.callbackIndex, 0);
 			EXPECT_FALSE(entry.Valid());
 
-			timer_.DeferralUpdate(worldData_, 1);
+			logicData_.DeferralUpdate(worldData_, 1);
 			EXPECT_FALSE(deferred.callbackCalled);
 		}
 		{
-			LogicData::DeferralTimer::DeferralEntry entry{12, 0};  // Invalid entry since .second is 0
+			DeferralTimer::DeferralEntry entry{12, 0};  // Invalid entry since .second is 0
 			timer_.RemoveDeferralEntry(entry);
 		}
 	}

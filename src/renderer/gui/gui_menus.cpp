@@ -43,7 +43,7 @@ void ImplementInventoryIsItemClicked(game::PlayerData& player_data,
 }
 
 float GetProgressBarFraction(const GameTickT game_tick,
-                             const game::LogicData::DeferralTimer::DeferralEntry& entry, const float total_ticks) {
+                             const game::DeferralTimer::DeferralEntry& entry, const float total_ticks) {
 	if (!entry.Valid())
 		return 0.f;
 

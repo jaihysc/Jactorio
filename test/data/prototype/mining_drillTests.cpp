@@ -157,7 +157,7 @@ namespace jactorio::data
 
 		// ======================================================================
 
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 30);  // Takes 60 ticks to mine / 2 (since mining speed is 2)
+		logicData_.DeferralUpdate(worldData_, 30);  // Takes 60 ticks to mine / 2 (since mining speed is 2)
 
 		EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[1].count, 1);
 
@@ -186,12 +186,12 @@ namespace jactorio::data
 		// ======================================================================
 
 		resource_layer2.Clear();  // Resource 2 was mined by an external source
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
+		logicData_.DeferralUpdate(worldData_, 60);
 		EXPECT_EQ(resource_layer.prototypeData, nullptr);
 		EXPECT_EQ(resource_layer.GetUniqueData(), nullptr);
 
 		// Found another resource (resource3)
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 120);
+		logicData_.DeferralUpdate(worldData_, 120);
 		EXPECT_EQ(resource_layer3.prototypeData, nullptr);
 		EXPECT_EQ(resource_layer3.GetUniqueData(), nullptr);
 
@@ -222,12 +222,12 @@ namespace jactorio::data
 
 		container_data->inventory[0] = {&item, 50};
 
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
+		logicData_.DeferralUpdate(worldData_, 60);
 		EXPECT_EQ(container_data->inventory[0].count, 50);
 
 		// Output has space
 		container_data->inventory[0] = {nullptr, 0};
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 61);
+		logicData_.DeferralUpdate(worldData_, 61);
 		EXPECT_EQ(container_data->inventory[0].count, 1);
 	}
 
@@ -292,7 +292,7 @@ namespace jactorio::data
 		tile.GetLayer(game::TileLayer::entity).Clear();  // Deletes drill data
 
 		// Should no longer be valid
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
+		logicData_.DeferralUpdate(worldData_, 60);
 	}
 
 	TEST_F(MiningDrillTest, RemoveOutputEntity) {
@@ -320,7 +320,7 @@ namespace jactorio::data
 		                             {1, 1}, Orientation::right);
 
 		// Should no longer be valid
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
+		logicData_.DeferralUpdate(worldData_, 60);
 	}
 
 	TEST_F(MiningDrillTest, UpdateNonOutput) {
@@ -342,7 +342,7 @@ namespace jactorio::data
 		                             {4, 1},
 		                             {1, 1}, Orientation::right);
 
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
+		logicData_.DeferralUpdate(worldData_, 60);
 
 		// If the on_neighbor_update event was ignored, no items will be added
 		{

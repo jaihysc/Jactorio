@@ -48,7 +48,7 @@ void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
 		OrientationIncrement(orientation, emit_coords.x, emit_coords.y, this->tileReach);
 
 		world_data.updateDispatcher.Register(world_coords, emit_coords, *this);
-		world_data.updateDispatcher.Dispatch(world_data, emit_coords, UpdateType::place);
+		world_data.UpdateDispatch(emit_coords, UpdateType::place);
 	}
 	// Pickup side
 	{
@@ -56,7 +56,7 @@ void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
 		OrientationIncrement(orientation, emit_coords.x, emit_coords.y, this->tileReach * -1);
 
 		world_data.updateDispatcher.Register(world_coords, emit_coords, *this);
-		world_data.updateDispatcher.Dispatch(world_data, emit_coords, UpdateType::place);
+		world_data.UpdateDispatch(emit_coords, UpdateType::place);
 	}
 }
 

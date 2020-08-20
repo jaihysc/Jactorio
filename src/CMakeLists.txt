@@ -47,10 +47,10 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
 
+	${JACTORIO_DIR}/game/logic/deferral_timer.cpp
 	${JACTORIO_DIR}/game/logic/inserter_controller.cpp
 	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
 	${JACTORIO_DIR}/game/logic/item_logistics.cpp
-	${JACTORIO_DIR}/game/logic/logic_data.cpp
 	${JACTORIO_DIR}/game/logic/placement_controller.cpp
 	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
 	${JACTORIO_DIR}/game/logic/transport_segment.cpp

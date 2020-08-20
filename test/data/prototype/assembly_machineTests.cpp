@@ -66,7 +66,7 @@ namespace jactorio::data
 		SetupRecipe();
 
 		// Recipe crafted in 60 ticks
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 900);
+		logicData_.DeferralUpdate(worldData_, 900);
 		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
 
 		EXPECT_EQ(data_.deferralEntry.dueTick, 0);
@@ -251,21 +251,21 @@ namespace jactorio::data
 		EXPECT_EQ(data_.ingredientInv[1].count, 2);
 
 		// -- Output product
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 60);
+		logicData_.DeferralUpdate(worldData_, 60);
 		EXPECT_EQ(data_.productInv[0].count, 1);
 
 
 		// Craft 2
 		EXPECT_EQ(data_.ingredientInv[0].count, 1);
 		EXPECT_EQ(data_.ingredientInv[1].count, 1);
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 120);
+		logicData_.DeferralUpdate(worldData_, 120);
 		EXPECT_EQ(data_.productInv[0].count, 2);
 
 
 		// Craft 3
 		EXPECT_EQ(data_.ingredientInv[0].count, 0);
 		EXPECT_EQ(data_.ingredientInv[1].count, 0);
-		logicData_.deferralTimer.DeferralUpdate(worldData_, 180);
+		logicData_.DeferralUpdate(worldData_, 180);
 		EXPECT_EQ(data_.productInv[0].count, 3);
 
 

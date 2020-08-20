@@ -34,7 +34,7 @@ namespace jactorio::data
 		/// Base number of ticks to mine resource with no modifiers applied (mining speed, boosts, ...)
 		uint16_t miningTicks = 1;
 
-		game::LogicData::DeferralTimer::DeferralEntry deferralEntry{};
+		game::DeferralTimer::DeferralEntry deferralEntry{};
 	};
 
 
@@ -138,11 +138,11 @@ namespace jactorio::data
 
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource 
-		void RegisterMineCallback(game::LogicData::DeferralTimer& timer, MiningDrillData* unique_data) const;
+		void RegisterMineCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
 
 		///
 		/// \brief Sets up deferred callback for when it has mined a resource, but failed to output
-		void RegisterOutputCallback(game::LogicData::DeferralTimer& timer, MiningDrillData* unique_data) const;
+		void RegisterOutputCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
 	};
 }
 

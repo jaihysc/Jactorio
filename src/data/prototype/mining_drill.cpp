@@ -274,7 +274,7 @@ bool jactorio::data::MiningDrill::DeductResource(game::WorldData& world_data, Mi
 	return true;
 }
 
-void jactorio::data::MiningDrill::RegisterMineCallback(game::LogicData::DeferralTimer& timer,
+void jactorio::data::MiningDrill::RegisterMineCallback(game::DeferralTimer& timer,
                                                        MiningDrillData* unique_data) const {
 	const auto mine_ticks = core::LossyCast<GameTickT>(unique_data->miningTicks / miningSpeed);
 	assert(mine_ticks > 0);
@@ -282,7 +282,7 @@ void jactorio::data::MiningDrill::RegisterMineCallback(game::LogicData::Deferral
 	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, mine_ticks);
 }
 
-void jactorio::data::MiningDrill::RegisterOutputCallback(game::LogicData::DeferralTimer& timer,
+void jactorio::data::MiningDrill::RegisterOutputCallback(game::DeferralTimer& timer,
                                                          MiningDrillData* unique_data) const {
 	constexpr int output_retry_ticks = 1;
 	static_assert(output_retry_ticks > 0);

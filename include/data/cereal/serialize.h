@@ -51,6 +51,7 @@
 
 namespace jactorio::game
 {
+	struct GameDataLocal;
 	struct GameDataGlobal;
 }
 
@@ -67,7 +68,7 @@ namespace jactorio::data
 	}
 
 	void SerializeGameData(const game::GameDataGlobal& game_data);
-	game::GameDataGlobal DeserializeGameData();
+	game::GameDataGlobal DeserializeGameData(game::GameDataLocal& data_local);
 }
 
 #endif // JACTORIO_DATA_CEREAL_SERIALIZE_H

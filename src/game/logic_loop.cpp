@@ -46,8 +46,8 @@ void LogicLoop(LogicRenderLoopCommon& common) {
 				std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
 				common.gameDataGlobal.logic.GameTickAdvance();
-				common.gameDataGlobal.logic.deferralTimer.DeferralUpdate(common.gameDataGlobal.world,
-				                                                         common.gameDataGlobal.logic.GameTick());
+				common.gameDataGlobal.logic.DeferralUpdate(common.gameDataGlobal.world,
+														   common.gameDataGlobal.logic.GameTick());
 
 				// Retrieved mvp matrix may be invalid on startup
 				common.gameDataGlobal.player.MouseCalculateSelectedTile(renderer::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
@@ -81,7 +81,7 @@ void LogicLoop(LogicRenderLoopCommon& common) {
 			// Lock all mutexes for events
 			std::lock_guard<std::mutex> world_guard{common.worldDataMutex};
 			std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
-			common.gameDataGlobal.event.Raise<game::LogicTickEvent>(
+			common.gameDataLocal.event.Raise<game::LogicTickEvent>(
 				game::EventType::logic_tick, common.gameDataGlobal.logic.GameTick() % kGameHertz);
 			common.gameDataLocal.input.key.Raise();
 		}
@@ -210,22 +210,11 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
 
 
 	common.gameDataLocal.input.key.Register([&]() {
-		LOG_MESSAGE(info, "Saving savegame");
-
-		std::ofstream out_cereal_stream("savegame.bin", std::ios_base::binary);
-		cereal::PortableBinaryOutputArchive output_archive(out_cereal_stream);
-		output_archive(common.gameDataGlobal.world);
+		data::SerializeGameData(common.gameDataGlobal);
 	}, SDLK_l, InputAction::key_up);
 
 	common.gameDataLocal.input.key.Register([&]() {
-		LOG_MESSAGE(info, "Loading savegame");
-		common.gameDataLocal.prototype.GenerateRelocationTable();
-
-		std::ifstream in_cereal_stream("savegame.bin", std::ios_base::binary);
-		cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
-
-		WorldData m1;
-		iarchive(m1);
+		auto g_data = data::DeserializeGameData(common.gameDataLocal);
 
 		printf("Break");
 	}, SDLK_k, InputAction::key_up);

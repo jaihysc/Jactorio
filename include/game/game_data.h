@@ -26,32 +26,24 @@ namespace jactorio::game
 
 		data::PrototypeManager prototype{};
 		GameInput input{};
+		EventData event{};
 	};
 
 	///
 	/// \brief Serialized runtime data, persists across restarts
 	struct GameDataGlobal
 	{
-		EventData event{};
-
 		PlayerData player{};
 
 		WorldData world{};
 		LogicData logic{};
-	};
 
-	 // static_assert(std::is_move_constructible_v<GameDataGlobal>);
-	 // static_assert(std::is_move_assignable_v<GameDataGlobal>);
-	 //
-	 // static_assert(std::is_move_constructible_v<EventData>);
-	 // static_assert(std::is_move_constructible_v<PlayerData>);
-	 // static_assert(std::is_move_constructible_v<WorldData>);
-	 // static_assert(std::is_move_constructible_v<LogicData>);
-	 //
-	 // static_assert(std::is_move_assignable_v<EventData>);
-	 // static_assert(std::is_move_assignable_v<PlayerData>);
-	 // static_assert(std::is_move_assignable_v<WorldData>);
-	 // static_assert(std::is_move_assignable_v<LogicData>);
+
+		CEREAL_SERIALIZE(archive) {
+			// TODO player and logic
+			archive(world);
+		}
+	};
 }
 
 #endif //JACTORIO_INCLUDE_GAME_GAME_DATA_H

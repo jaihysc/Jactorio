@@ -70,7 +70,7 @@ void RenderingLoop(LogicRenderLoopCommon& common, renderer::DisplayWindow& displ
 		{
 			EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
 
-			common.gameDataGlobal.event.Raise<game::RendererTickEvent>(
+			common.gameDataLocal.event.Raise<game::RendererTickEvent>(
 				game::EventType::renderer_tick,
 				game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)}
 			);
@@ -91,7 +91,7 @@ void RenderingLoop(LogicRenderLoopCommon& common, renderer::DisplayWindow& displ
 			ImguiDraw(display_window,
 			          common.gameDataGlobal.player,
 			          common.gameDataLocal.prototype,
-			          common.gameDataGlobal.event);
+			          common.gameDataLocal.event);
 		}
 		// ======================================================================
 		// ======================================================================
@@ -179,7 +179,7 @@ void renderer::RenderInit(LogicRenderLoopCommon& common) {
 	// ======================================================================
 
 	common.gameDataLocal.input.key.Register([&]() {
-		common.gameDataGlobal.event.SubscribeOnce(game::EventType::renderer_tick, [](game::EventBase& e) {
+		common.gameDataLocal.event.SubscribeOnce(game::EventType::renderer_tick, [](game::EventBase& e) {
 			auto& render_e = static_cast<game::RendererTickEvent&>(e);
 			auto& window   = render_e.windows[0].get();
 

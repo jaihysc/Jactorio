@@ -18,7 +18,7 @@ namespace jactorio::data
 		Item::Inventory productInv;
 
 		/// Callback called when recipe is finished crafting
-		game::LogicData::DeferralTimer::DeferralEntry deferralEntry;
+		game::DeferralTimer::DeferralEntry deferralEntry;
 
 
 		J_NODISCARD bool HasRecipe() const { return recipe_ != nullptr; }

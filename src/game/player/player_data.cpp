@@ -286,7 +286,7 @@ bool game::PlayerData::TryPlaceEntity(WorldData& world_data,
 	entity_ptr->OnBuild(world_data, logic_data,
 	                    {world_x, world_y}, selected_layer, placementOrientation);
 	UpdateNeighboringEntities(world_data, logic_data, {world_x, world_y}, entity_ptr);
-	world_data.updateDispatcher.Dispatch(world_data, world_x, world_y, data::UpdateType::place);
+	world_data.UpdateDispatch(world_x, world_y, data::UpdateType::place);
 
 	return true;
 }
@@ -414,7 +414,7 @@ void game::PlayerData::TryPickup(WorldData& world_data,
 
 			UpdateNeighboringEntities(world_data, logic_data, {tl_tile_x, tl_tile_y}, entity);
 
-			world_data.updateDispatcher.Dispatch(world_data, tile_x, tile_y, data::UpdateType::remove);
+			world_data.UpdateDispatch(tile_x, tile_y, data::UpdateType::remove);
 		}
 	}
 }
