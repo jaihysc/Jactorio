@@ -371,6 +371,10 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 			if (base_layer != nullptr && base_layer->isWater)
 				return;
 
+			// Already has a resource
+			if (target.GetLayer(game::TileLayer::resource).prototypeData != nullptr)
+				return;
+
 
 			// For resource amount, scale noise value up by richness 
 			const auto noise_range = noise_layer.GetValNoiseRange(noise_val);
@@ -395,11 +399,7 @@ void Generate(game::WorldData& world_data, const data::PrototypeManager& data_ma
 
 void game::WorldData::QueueChunkGeneration(const ChunkCoordAxis chunk_x,
                                            const ChunkCoordAxis chunk_y) const {
-	const auto chunk_key = std::make_pair(chunk_x, chunk_y);
-
-	// Is the chunk already under generation? If so return
-	if (worldGenChunks_.find(chunk_key) != worldGenChunks_.end())
-		return;
+	// .find is not needed to check for duplicates as insert already does that
 
 	worldGenChunks_.insert({chunk_x, chunk_y});
 }
@@ -407,16 +407,17 @@ void game::WorldData::QueueChunkGeneration(const ChunkCoordAxis chunk_x,
 void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8_t amount) {
 	assert(amount > 0);
 
-	// Generate a chunk
-	// Find the first chunk which has yet been generated, ->second is true indicates it NEEDS generation
-	for (const auto& coords : worldGenChunks_) {
+	// https://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
+
+	for (auto it = worldGenChunks_.cbegin(); it != worldGenChunks_.cend() /* not hoisted */; /* no increment */) {
+		const auto& coords = *it;
+
+		assert(worldGenChunks_.count(coords) == 1);
 		Generate(*this, data_manager, std::get<0>(coords), std::get<1>(coords));
 
-		// Mark the chunk as done generating
-		worldGenChunks_.erase(coords);
+		worldGenChunks_.erase(it++);
 
 		if (--amount == 0)
 			break;
 	}
-
 }
