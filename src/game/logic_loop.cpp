@@ -214,7 +214,7 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
 	}, SDLK_l, InputAction::key_up);
 
 	common.gameDataLocal.input.key.Register([&]() {
-		auto g_data = data::DeserializeGameData(common.gameDataLocal);
+		data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal);
 
 		printf("Break");
 	}, SDLK_k, InputAction::key_up);

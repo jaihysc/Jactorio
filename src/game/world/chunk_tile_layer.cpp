@@ -14,7 +14,7 @@ game::ChunkTileLayer::ChunkTileLayer(const ChunkTileLayer& other)
 	  multiTileIndex_{other.multiTileIndex_} {
 
 	// Use prototype defined method for copying uniqueData_ if other has data to copy
-	if (other.data_.uniqueData != nullptr) {
+	if (IsTopLeft() && other.data_.uniqueData != nullptr) {
 		assert(other.prototypeData.Get() != nullptr);  // No prototype_data_ available for copying unique_data_
 		data_.uniqueData = other.prototypeData->CopyUniqueData(other.data_.uniqueData.get());
 	}

@@ -20,55 +20,61 @@ namespace jactorio::game
 		}
 	};
 
-	TEST_F(ChunkTileLayerTest, CopyNonMultiTile) {
-		ChunkTileLayer ctl{};
+	TEST_F(ChunkTileLayerTest, Copy) {
+		ChunkTileLayer top_left;
+		SetupMultiTileProp(top_left, {5, 2});
+		top_left.MakeUniqueData<data::ContainerEntityData>(32);
 
-		// Copy construct
+		ChunkTileLayer ctl;
+		SetupMultiTileProp(ctl, {5, 2});
+		ctl.SetMultiTileIndex(4);
+		ctl.SetTopLeftLayer(top_left);
+
+		// Top left
 		{
-			const ChunkTileLayer ctl_copy{ctl};
-			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 0);
+			const ChunkTileLayer copy{top_left};
+			EXPECT_EQ(copy.GetMultiTileIndex(), 0);
+
+			EXPECT_EQ(copy.GetMultiTileData().height, 2);
+			EXPECT_EQ(copy.GetMultiTileData(), top_left.GetMultiTileData());
+
+			EXPECT_EQ(copy.GetUniqueData<data::ContainerEntityData>()->inventory.size(), 32);
 		}
-		// Copy assignment
+		// Non top left
 		{
-			ctl.SetMultiTileIndex(4);
-			const ChunkTileLayer ctl_copy = ctl;
-			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 4);
+			const ChunkTileLayer copy = ctl;
+
+			EXPECT_EQ(copy.GetMultiTileIndex(), 4);
+
+			EXPECT_EQ(copy.GetMultiTileData().span, 5);
+			EXPECT_EQ(copy.GetMultiTileData(), top_left.GetMultiTileData());
+
+			EXPECT_EQ(copy.GetTopLeftLayer(), nullptr);  // top left layer not copied
 		}
 	}
 
-	TEST_F(ChunkTileLayerTest, CopyMultiTile) {
-		ChunkTileLayer ctl{};
-		SetupMultiTileProp(ctl, {1, 2});
-		ctl.MakeUniqueData<data::ContainerEntityData>(32);
+	TEST_F(ChunkTileLayerTest, Move) {
+		ChunkTileLayer top_left;
+		SetupMultiTileProp(top_left, {5, 2});
+		top_left.MakeUniqueData<data::ContainerEntityData>(32);
 
-		// Copy construct
+		ChunkTileLayer ctl;
+		SetupMultiTileProp(ctl, {5, 2});
+		ctl.SetMultiTileIndex(4);
+		ctl.SetTopLeftLayer(top_left);
+
+		// Top left
 		{
-			const ChunkTileLayer ctl_copy{ctl};
-			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 0);
+			const ChunkTileLayer move_to = std::move(top_left);
 
-			EXPECT_EQ(ctl_copy.GetMultiTileData().height, 2);
-			EXPECT_EQ(ctl_copy.GetMultiTileData(), ctl.GetMultiTileData());
-			
+			EXPECT_EQ(top_left.GetUniqueData<data::ContainerEntityData>(), nullptr);  // Gave ownership
+			EXPECT_NE(move_to.GetUniqueData<data::ContainerEntityData>(), nullptr);  // Took ownership
 		}
-		ctl.SetMultiTileIndex(3);
+		// Non top left
 		{
-			const ChunkTileLayer ctl_copy{ctl};
-			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 3);
+			const ChunkTileLayer move_to = std::move(ctl);
 
-			EXPECT_EQ(ctl_copy.GetMultiTileData().span, 1);
-			EXPECT_EQ(ctl_copy.GetMultiTileData(), ctl.GetMultiTileData());
-
-			EXPECT_EQ(ctl_copy.GetTopLeftLayer(), nullptr);  // Unique data/top left layer not copied
-		}
-		// Copy assignment
-		{
-			ctl.SetMultiTileIndex(6);
-
-			const ChunkTileLayer ctl_copy = ctl;
-			EXPECT_EQ(ctl_copy.GetMultiTileIndex(), 6);
-
-			EXPECT_EQ(ctl_copy.GetMultiTileData(), ctl.GetMultiTileData());
-			EXPECT_EQ(ctl_copy.GetTopLeftLayer(), nullptr);  // Unique data/top left layer not copied
+			EXPECT_EQ(move_to.GetTopLeftLayer(), &top_left); 
 		}
 	}
 

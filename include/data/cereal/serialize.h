@@ -68,7 +68,9 @@ namespace jactorio::data
 	}
 
 	void SerializeGameData(const game::GameDataGlobal& game_data);
-	game::GameDataGlobal DeserializeGameData(game::GameDataLocal& data_local);
+	///
+	/// \param out_data_global Deserialized into this 
+	void DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGlobal& out_data_global);
 }
 
 #endif // JACTORIO_DATA_CEREAL_SERIALIZE_H

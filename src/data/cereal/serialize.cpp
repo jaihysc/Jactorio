@@ -20,9 +20,11 @@ void data::SerializeGameData(const game::GameDataGlobal& game_data) {
 	std::ofstream out_cereal_stream(kSaveGameFileName, std::ios_base::binary);
 	cereal::PortableBinaryOutputArchive output_archive(out_cereal_stream);
 	output_archive(game_data);
+
+	LOG_MESSAGE(info, "Saving savegame Done");
 }
 
-game::GameDataGlobal data::DeserializeGameData(game::GameDataLocal& data_local) {
+void data::DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGlobal& out_data_global) {
 	LOG_MESSAGE(info, "Loading savegame");
 
 	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> pre_load_hooks
@@ -60,10 +62,9 @@ game::GameDataGlobal data::DeserializeGameData(game::GameDataLocal& data_local) 
 	std::ifstream in_cereal_stream(kSaveGameFileName, std::ios_base::binary);
 	cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
 
-	game::GameDataGlobal m;
-	iarchive(m);
+	iarchive(out_data_global);
 
-	run_hooks(post_load_hooks, "Post load hook", &m);
+	run_hooks(post_load_hooks, "Post load hook", &out_data_global);
 
-	return m;
+	LOG_MESSAGE(info, "Loading savegame Done");
 }
