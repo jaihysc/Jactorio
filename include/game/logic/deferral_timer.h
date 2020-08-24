@@ -48,8 +48,8 @@ namespace jactorio::game
 				archive(dueTick, callbackIndex);
 			}
 
-			GameTickT dueTick;
-			CallbackIndex callbackIndex;
+			GameTickT dueTick = 0;
+			CallbackIndex callbackIndex = 0;
 
 		};
 

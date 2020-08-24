@@ -4,8 +4,6 @@
 #define JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
 #pragma once
 
-#include <optional>
-
 #include "data/prototype/prototype_type.h"
 #include "data/prototype/resource_entity.h"
 #include "data/prototype/abstract_proto/health_entity.h"
@@ -15,18 +13,18 @@ namespace jactorio::data
 {
 	struct MiningDrillData final : HealthEntityData
 	{
-		explicit MiningDrillData(game::ItemDropOff output_tile)
-			: outputTile(std::move(output_tile)) {
+		explicit MiningDrillData(const Orientation orientation)
+			: output(orientation) {
 		}
 
-		game::ItemDropOff outputTile;
-		WorldCoord outputTileCoords{};
+		game::ItemDropOff output;
+		WorldCoord outputTile;
 
-		Item* outputItem = nullptr;
+		SerialProtoPtr<const Item> outputItem = nullptr;
 
 
 		/// Top left mining area coordinate
-		WorldCoord resourceCoord{};
+		WorldCoord resourceCoord;
 		/// Resource to mine offset to the right wrapping down (wrap on miningRadius)
 		uint16_t resourceOffset = 0;
 
@@ -34,7 +32,27 @@ namespace jactorio::data
 		/// Base number of ticks to mine resource with no modifiers applied (mining speed, boosts, ...)
 		uint16_t miningTicks = 1;
 
-		game::DeferralTimer::DeferralEntry deferralEntry{};
+		game::DeferralTimer::DeferralEntry deferralEntry;
+
+
+		CEREAL_SERIALIZE(archive) {
+			archive(output.GetOrientation(),
+					outputTile, outputItem,
+					resourceCoord, resourceOffset,
+					miningTicks, deferralEntry,
+					cereal::base_class<HealthEntityData>(this));
+		}
+
+		CEREAL_LOAD_CONSTRUCT(archive, construct, MiningDrillData) {
+			Orientation orientation;
+			archive(orientation);
+			construct(orientation);
+
+			archive(construct->outputTile, construct->outputItem,
+					construct->resourceCoord, construct->resourceOffset,
+					construct->miningTicks, construct->deferralEntry,
+					cereal::base_class<HealthEntityData>(construct.ptr()));
+		}
 	};
 
 

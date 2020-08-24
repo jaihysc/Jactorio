@@ -87,7 +87,7 @@ void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData& world_data
 	// Re-register callback and insert item, remove item from ground for next elapse
 	auto* drill_data = static_cast<MiningDrillData*>(unique_data);
 
-	const bool outputted_item = drill_data->outputTile.DropOff(logic_data, {drill_data->outputItem, 1});
+	const bool outputted_item = drill_data->output.DropOff(logic_data, {drill_data->outputItem, 1});
 
 	if (outputted_item) {
 		if (DeductResource(world_data, *drill_data)) {
@@ -137,7 +137,7 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 	output_coords.x += world_coords.x;
 	output_coords.y += world_coords.y;
 
-	auto* drill_data = tile_layer.MakeUniqueData<MiningDrillData>(game::ItemDropOff(orientation));
+	auto* drill_data = tile_layer.MakeUniqueData<MiningDrillData>(orientation);
 	assert(drill_data);
 
 
@@ -149,7 +149,7 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 	assert(drill_data->outputItem != nullptr);  // Should not have been allowed to be placed on no resources
 
 	drill_data->set              = OnRGetSpriteSet(orientation, world_data, world_coords);
-	drill_data->outputTileCoords = output_coords;
+	drill_data->outputTile = output_coords;
 
 	OnNeighborUpdate(world_data, logic_data, output_coords, world_coords, orientation);
 }
@@ -164,13 +164,13 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 	assert(drill_data);
 
 	// Ignore updates from non output tiles 
-	if (emit_world_coords != drill_data->outputTileCoords)
+	if (emit_world_coords != drill_data->outputTile)
 		return;
 
 	auto& output_layer = world_data.GetTile(emit_world_coords)->GetLayer(game::TileLayer::entity);
 
 	const bool initialized =
-		drill_data->outputTile.Initialize(world_data,
+		drill_data->output.Initialize(world_data,
 		                                  *output_layer.GetUniqueData(), emit_world_coords);
 
 	// Do not register callback to mine items if there is no valid entity to output items to

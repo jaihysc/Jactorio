@@ -45,6 +45,11 @@ namespace jactorio::game
 			return targetUniqueData_ != nullptr;
 		}
 
+
+		J_NODISCARD data::Orientation GetOrientation() const noexcept {
+			return orientation_;
+		}
+
 	protected:
 		data::UniqueDataBase* targetUniqueData_     = nullptr;
 		const data::FrameworkBase* targetProtoData_ = nullptr;

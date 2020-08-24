@@ -148,7 +148,7 @@ namespace jactorio::data
 		// Ensure it inserts into the correct entity
 
 		Item item{};
-		data->outputTile.DropOff(logicData_, {&item, 1});
+		data->output.DropOff(logicData_, {&item, 1});
 
 		game::ChunkTileLayer& container_layer =
 			worldData_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
@@ -241,7 +241,7 @@ namespace jactorio::data
 		auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
 		auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
-		EXPECT_TRUE(data->outputTile.IsInitialized());
+		EXPECT_TRUE(data->output.IsInitialized());
 	}
 
 	TEST_F(MiningDrillTest, BuildNoOutput) {
@@ -266,7 +266,7 @@ namespace jactorio::data
 
 		// Ensure it inserts into the correct entity
 		Item item{};
-		data->outputTile.DropOff(logicData_, {&item, 1});
+		data->output.DropOff(logicData_, {&item, 1});
 
 		game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 2)
 		                                                  ->GetLayer(
@@ -361,5 +361,19 @@ namespace jactorio::data
 			EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count,
 			          0);
 		}
+	}
+
+	TEST_F(MiningDrillTest, Serialize) {
+		auto derived = std::make_unique<MiningDrillData>(Orientation::down);
+		derived->health = 4392;
+
+		std::unique_ptr<UniqueDataBase> base = std::move(derived);
+
+		// ======================================================================
+
+		const auto result_base = TestSerializeDeserialize(base);
+		const auto* result_derived = static_cast<const MiningDrillData*>(result_base.get());
+
+		EXPECT_EQ(result_derived->health, 4392);
 	}
 }
