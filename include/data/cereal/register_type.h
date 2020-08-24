@@ -6,6 +6,7 @@
 #include "data/prototype/resource_entity.h"
 #include "data/prototype/transport_belt.h"
 #include "data/prototype/assembly_machine.h"
+#include "data/prototype/inserter.h"
 
 CEREAL_REGISTER_TYPE(jactorio::data::ResourceEntityData);
 
@@ -14,5 +15,7 @@ CEREAL_REGISTER_TYPE(jactorio::data::TransportLineData);
 CEREAL_REGISTER_TYPE(jactorio::data::ContainerEntityData);
 
 CEREAL_REGISTER_TYPE(jactorio::data::AssemblyMachineData);
+
+CEREAL_REGISTER_TYPE(jactorio::data::InserterData);
 
 #endif // JACTORIO_DATA_CEREAL_REGISTER_TYPE_H

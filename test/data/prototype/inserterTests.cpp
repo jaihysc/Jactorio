@@ -142,4 +142,24 @@ namespace jactorio::data
 
 		EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
 	}
+
+	TEST_F(InserterTest, Serialize) {
+		auto inserter_data = std::make_unique<InserterData>(Orientation::left);
+
+		inserter_data->rotationDegree = 145.234;
+		inserter_data->status         = InserterData::Status::dropoff;
+		inserter_data->heldItem       = {nullptr, 32};
+
+		// ======================================================================
+
+		const std::unique_ptr<UniqueDataBase> base_data = std::move(inserter_data);
+
+		const auto result_base  = TestSerializeDeserialize(base_data);
+		const auto* result_data = static_cast<InserterData*>(result_base.get());
+
+		EXPECT_EQ(result_data->orientation, Orientation::left);
+		EXPECT_DOUBLE_EQ(result_data->rotationDegree.getAsDouble(), 145.234);
+		EXPECT_EQ(result_data->status, InserterData::Status::dropoff);
+		EXPECT_EQ(result_data->heldItem.count, 32);
+	}
 }

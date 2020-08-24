@@ -42,6 +42,21 @@ namespace jactorio::data
 
 		game::ItemDropOff dropoff;
 		game::InserterPickup pickup;
+
+
+		CEREAL_SERIALIZE(archive) {
+			archive(orientation, rotationDegree, status, heldItem, cereal::base_class<HealthEntityData>(this));
+			// Todo pickup / dropoff requires post processing to reinitialize
+		}
+
+		CEREAL_LOAD_CONSTRUCT(archive, construct, InserterData) {
+			Orientation orientation;
+			archive(orientation);
+			construct(orientation);
+
+			archive(construct->rotationDegree, construct->status, construct->heldItem,
+			        cereal::base_class<HealthEntityData>(construct.ptr()));
+		}
 	};
 
 
