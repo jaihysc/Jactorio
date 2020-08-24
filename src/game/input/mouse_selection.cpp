@@ -11,8 +11,8 @@
 #include "game/world/world_data.h"
 #include "renderer/rendering/renderer.h"
 
-double x_position = 0.f;
-double y_position = 0.f;
+double x_position = 0.;
+double y_position = 0.;
 
 void jactorio::game::SetCursorPosition(const double x_pos, const double y_pos) {
 	x_position = x_pos;

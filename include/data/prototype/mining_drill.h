@@ -52,7 +52,7 @@ namespace jactorio::data
 		PROTOTYPE_CATEGORY(mining_drill);
 
 		/// Mining ticks divided by this
-		PYTHON_PROP_REF_I(double, miningSpeed, 1.f);
+		PYTHON_PROP_REF_I(ProtoFloatT, miningSpeed, 1.);
 
 		/// Number of tiles to extend the mining radius around the entity outside of entity tile width and height	
 		PYTHON_PROP_REF_I(uint16_t, miningRadius, 1);
@@ -77,7 +77,7 @@ namespace jactorio::data
 		// ======================================================================
 		// Logic
 		///
-		/// \briefs Finds the FIRST output item of the mining drill, beginning from top left
+		/// \brief Finds the FIRST output item of the mining drill, beginning from top left
 		J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, WorldCoord world_pair) const;
 
 		void OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,

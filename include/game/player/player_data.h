@@ -20,13 +20,6 @@ namespace jactorio::game
 	/// \brief Stores information & functions regarding a player (Duplicated for multiple players)
 	class PlayerData
 	{
-	public:
-		/// Used when concurrently accessing player data, such as for rendering
-
-	private:
-		// ======================================================================
-		// Player specific mouse selection
-
 		WorldCoord mouseSelectedTile_;
 
 	public:
@@ -78,12 +71,10 @@ namespace jactorio::game
 
 		///
 		/// \brief If the tile at the specified amount is valid, the player will be moved to that tile
-		/// \param amount
 		void MovePlayerX(float amount);
 
 		///
 		/// \brief If the tile at the specified amount is valid, the player will be moved to that tile
-		/// \param amount
 		void MovePlayerY(float amount);
 
 
@@ -250,7 +241,7 @@ namespace jactorio::game
 		/// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the inventory
 		bool RecipeCanCraftR(const data::PrototypeManager& data_manager,
 		                     std::map<const data::Item*, uint32_t>& used_items,
-		                     const data::Recipe& recipe, uint16_t batches) const;
+		                     const data::Recipe& recipe, unsigned batches) const;
 	public:
 		///
 		/// \brief Recursively depth first crafts the recipe
@@ -259,7 +250,6 @@ namespace jactorio::game
 
 		///
 		/// \brief Recursively steps through a recipe and subrecipies to determine if it is craftable
-		/// \param recipe
 		/// \param batches How many runs of the recipe
 		J_NODISCARD bool RecipeCanCraft(const data::PrototypeManager& data_manager, const data::Recipe& recipe,
 		                                uint16_t batches) const;

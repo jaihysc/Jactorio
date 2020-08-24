@@ -58,7 +58,7 @@ namespace jactorio::data
 		///
 		/// \brief Degrees to rotate per tick 
 		/// \remark For Python API use only
-		PYTHON_PROP_I(ProtoFloatT, rotationSpeedFloat, 0.1f);
+		PYTHON_PROP_I(ProtoFloatT, rotationSpeedFloat, 0.1);
 
 		///
 		/// \brief Tile distance which the inserter can reach

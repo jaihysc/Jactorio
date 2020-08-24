@@ -15,25 +15,26 @@ using namespace jactorio;
 /// \brief Recursively resolves raw materials
 void ResolveRawRecipe(const data::PrototypeManager& data_manager,
                       std::unordered_map<std::string, uint16_t>& materials_raw,
-                      const data::Recipe* recipe, const uint16_t amount) {
+                      const data::Recipe* recipe, const uint16_t craft_amount) {
 	using namespace jactorio;
 
-	for (const auto& recipe_ingredient : recipe->ingredients) {
-		const auto* ingredient_recipe = data::Recipe::GetItemRecipe(data_manager, recipe_ingredient.first);
+	for (const auto& [ing_name, ing_needed_amount] : recipe->ingredients) {
+		const auto* ing_recipe = data::Recipe::GetItemRecipe(data_manager, ing_name);
 
 		// No recipe means this is a raw material
-		if (ingredient_recipe == nullptr) {
-			// Add raw material to map
-			materials_raw[recipe_ingredient.first] += recipe_ingredient.second *
-				amount;  // ingredient count * #product needed
+		if (ing_recipe == nullptr) {
+			materials_raw[ing_name] += ing_needed_amount * craft_amount;
 			continue;
 		}
 
+		const auto craft_needed_amount = ing_needed_amount * craft_amount;
+		const auto craft_amount_per = ing_recipe->product.second;
+
 		// To calculate amount required, find the next highest multiple of the ingredient recipe
-		// e.g: 5 required, recipe in batches of 2 = 6
-		unsigned int x = recipe_ingredient.second * amount, y = ingredient_recipe->product.second, q;
-		q              = (x + y - 1) / y;
-		ResolveRawRecipe(data_manager, materials_raw, ingredient_recipe, q);
+		// e.g: 5 required, recipe in batches of 2 = 3 crafts required
+
+		const auto batches_required = (craft_needed_amount + craft_amount_per - 1) / craft_amount_per;
+		ResolveRawRecipe(data_manager, materials_raw, ing_recipe, batches_required);
 	}
 
 }

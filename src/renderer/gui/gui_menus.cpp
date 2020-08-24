@@ -348,7 +348,7 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::Prototype
 		// Draw the window at the cursor
 		const ImVec2 cursor_pos(
 			core::LossyCast<float>(game::MouseSelection::GetCursorX()),
-			core::LossyCast<float>(game::MouseSelection::GetCursorY() + 2.f)
+			core::LossyCast<float>(game::MouseSelection::GetCursorY()) + 2.f
 		);
 		ImGui::SetNextWindowPos(cursor_pos);
 

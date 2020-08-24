@@ -54,7 +54,7 @@ namespace jactorio::data
 		PROTOTYPE_CATEGORY(assembly_machine);
 
 		/// Original crafting time / assemblySpeed = new crafting time
-		PYTHON_PROP_REF_I(ProtoFloatT, assemblySpeed, 1.f);
+		PYTHON_PROP_REF_I(ProtoFloatT, assemblySpeed, 1.);
 
 		// ======================================================================
 
@@ -85,7 +85,7 @@ namespace jactorio::data
 		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 		void PostLoadValidate(const PrototypeManager&) const override {
-			J_DATA_ASSERT(assemblySpeed > 0.f, "Assembly speed cannot be 0");
+			J_DATA_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");
 		}
 	};
 }

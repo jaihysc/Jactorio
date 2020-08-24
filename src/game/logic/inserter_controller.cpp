@@ -8,7 +8,7 @@
 
 using namespace jactorio;
 
-double game::GetInserterArmOffset(const core::TIntDegree degree, const uint8_t target_distance) {
+double game::GetInserterArmOffset(const core::TIntDegree degree, const unsigned target_distance) {
 	auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
 	result *= core::TanF(degree);
 	result *= -1;
@@ -17,7 +17,7 @@ double game::GetInserterArmOffset(const core::TIntDegree degree, const uint8_t t
 	return result;
 }
 
-double game::GetInserterArmLength(const core::TIntDegree degree, const uint8_t target_distance) {
+double game::GetInserterArmLength(const core::TIntDegree degree, const unsigned target_distance) {
 	auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
 	result /= core::CosF(degree);
 	result *= -1;

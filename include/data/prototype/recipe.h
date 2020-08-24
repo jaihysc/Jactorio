@@ -36,7 +36,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Gets number of logic ticks necessary to craft recipe
-		J_NODISCARD GameTickT GetCraftingTime(double multiplier = 1.f) const;
+		J_NODISCARD GameTickT GetCraftingTime(double multiplier = 1.) const;
 
 		///
 		/// \brief Looks up recipe for item of iname

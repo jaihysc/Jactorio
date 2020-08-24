@@ -106,9 +106,9 @@ namespace jactorio::game
 
 		TransportSegment(const data::Orientation direction, const TerminationType termination_type,
 		                 TransportSegment* target_segment, const uint8_t segment_length)
-			: direction(direction), targetSegment(target_segment),
-			  terminationType(termination_type),
-			  length(segment_length) {
+			: direction(direction), terminationType(termination_type),
+			  length(segment_length),
+			  targetSegment(target_segment) {
 		}
 
 

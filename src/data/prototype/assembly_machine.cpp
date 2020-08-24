@@ -83,7 +83,7 @@ data::Sprite::FrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBa
 	if (!machine_data.deferralEntry.Valid())
 		game_tick = 0;
 
-	return AllOfSprite(*sprite, game_tick, 1.f / 6);
+	return AllOfSprite(*sprite, game_tick, 1. / 6);
 }
 
 bool data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
@@ -102,7 +102,7 @@ bool data::AssemblyMachine::TryBeginCrafting(game::LogicData& logic_data,
 	data.deferralEntry = logic_data.deferralTimer.RegisterFromTick(
 		*this,
 		&data,
-		data.GetRecipe()->GetCraftingTime(1.f / this->assemblySpeed));
+		data.GetRecipe()->GetCraftingTime(1. / this->assemblySpeed));
 
 	data.CraftRemoveIngredients();
 	return true;
@@ -119,16 +119,16 @@ void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData&, game::LogicData
 	TryBeginCrafting(logic_data, *machine_data);
 }
 
-void data::AssemblyMachine::OnBuild(game::WorldData& world_data,
-                                    game::LogicData& logic_data,
-                                    const WorldCoord& world_coords,
-                                    game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
+void data::AssemblyMachine::OnBuild(game::WorldData&,
+                                    game::LogicData&,
+                                    const WorldCoord&,
+                                    game::ChunkTileLayer& tile_layer, const Orientation) const {
 	tile_layer.MakeUniqueData<AssemblyMachineData>();
 }
 
-void data::AssemblyMachine::OnRemove(game::WorldData& world_data,
+void data::AssemblyMachine::OnRemove(game::WorldData&,
                                      game::LogicData& logic_data,
-                                     const WorldCoord& world_coords,
+                                     const WorldCoord&,
                                      game::ChunkTileLayer& tile_layer) const {
 	auto& machine_data = *tile_layer.GetUniqueData<AssemblyMachineData>();
 

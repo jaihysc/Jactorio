@@ -199,8 +199,8 @@ void renderer::Renderer::CalculateViewMatrix(const float player_x, const float p
 
 	// Decimal is used to shift the camera
 	// Invert the movement to give the illusion of moving in the correct direction
-	const float camera_offset_x = (player_x - position_x) * core::SafeCast<float>(tileWidth) * -1;
-	const float camera_offset_y = (player_y - position_y) * core::SafeCast<float>(tileWidth) * -1;
+	const float camera_offset_x = (player_x - core::SafeCast<float>(position_x)) * core::SafeCast<float>(tileWidth) * -1;
+	const float camera_offset_y = (player_y - core::SafeCast<float>(position_y)) * core::SafeCast<float>(tileWidth) * -1;
 
 	// Remaining pixel distance not covered by tiles and chunks are covered by the view matrix to center
 	const auto tile_amount = GetTileDrawAmount();

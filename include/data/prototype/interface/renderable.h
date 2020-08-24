@@ -131,7 +131,7 @@ namespace jactorio::data
 			const auto frames = core::SafeCast<uint16_t>(sprite.frames) * sprite.sets;
 
 			// Shift the peak (which is at x = 0) such that when x = 0, y = 0
-			const auto adjusted_x = game_tick - (1.f / speed) * (frames - 1);
+			const auto adjusted_x = game_tick - (1. / speed) * (frames - 1);
 
 			const auto v_l = core::LossyCast<int64_t>(speed * abs(adjusted_x));
 			const auto v_r = core::SafeCast<int64_t>(frames) * 2 - 2;

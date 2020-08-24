@@ -856,28 +856,27 @@ void game::PlayerData::RecipeCraftR(const data::PrototypeManager& data_manager, 
 
 bool game::PlayerData::RecipeCanCraftR(const data::PrototypeManager& data_manager,
                                        std::map<const data::Item*, uint32_t>& used_items,
-                                       const data::Recipe& recipe, const uint16_t batches) const {
-	for (const auto& ingredient : recipe.ingredients) {
-		const auto* ingredient_proto = data_manager.DataRawGet<data::Item>(
-			ingredient.first);
+                                       const data::Recipe& recipe, const unsigned batches) const {
+	for (const auto& [ing_name, ing_amount_to_craft] : recipe.ingredients) {
+		const auto* ing_item = data_manager.DataRawGet<data::Item>(ing_name);
 
 		// If item has already been counted, use the map used_items. Otherwise, count from inventory
 		unsigned int possess_amount;
-		if (used_items.find(ingredient_proto) != used_items.end()) {
-			possess_amount = used_items[ingredient_proto];
+		if (used_items.find(ing_item) != used_items.end()) {
+			possess_amount = used_items[ing_item];
 		}
 		else {
-			possess_amount               = GetInvItemCount(inventoryPlayer, ingredient_proto);
-			used_items[ingredient_proto] = possess_amount;
+			possess_amount               = GetInvItemCount(inventoryPlayer, ing_item);
+			used_items[ing_item] = possess_amount;
 		}
 
 		// Ingredient met, subtract from used_items, check others
-		if (possess_amount >= core::SafeCast<unsigned>(ingredient.second * batches)) {
-			used_items[ingredient_proto] -= ingredient.second * batches;
+		if (possess_amount >= core::SafeCast<unsigned>(ing_amount_to_craft * batches)) {
+			used_items[ing_item] -= ing_amount_to_craft * batches;
 			continue;
 		}
 
-		const auto* ingredient_recipe = data::Recipe::GetItemRecipe(data_manager, ingredient.first);
+		const auto* ingredient_recipe = data::Recipe::GetItemRecipe(data_manager, ing_name);
 		// Ingredient cannot be crafted
 		if (ingredient_recipe == nullptr)
 			return false;
@@ -887,9 +886,9 @@ bool game::PlayerData::RecipeCanCraftR(const data::PrototypeManager& data_manage
 		// Amount still needed to be crafted
 		unsigned int ingredient_required_batches;
 		{
-			used_items[ingredient_proto] = 0;  // Use up amount available + craft to reach desired amount
+			used_items[ing_item] = 0;  // Use up amount available + craft to reach desired amount
 
-			const unsigned int x = ingredient.second * batches - possess_amount;
+			const unsigned int x = ing_amount_to_craft * batches - possess_amount;
 			const unsigned int y = ingredient_recipe->product.second;
 			// Round up to always ensure enough is crafted
 			ingredient_required_batches = (x + y - 1) / y;

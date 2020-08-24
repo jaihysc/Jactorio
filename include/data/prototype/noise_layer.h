@@ -39,7 +39,7 @@ namespace jactorio::data
 				return DataCategory::noise_layer_entity;
 
 			return DataCategory::none;
-		};
+		}
 
 		NoiseLayer() {
 			SetStartNoise(-1.f);
@@ -55,8 +55,8 @@ namespace jactorio::data
 
 		// See http://libnoise.sourceforge.net/glossary/ for usage of the following parameters
 		PYTHON_PROP_REF_I(ProtoIntT, octaveCount, 8);
-		PYTHON_PROP_REF_I(ProtoFloatT, frequency, 0.25f);
-		PYTHON_PROP_REF_I(ProtoFloatT, persistence, 0.5f);
+		PYTHON_PROP_REF_I(ProtoFloatT, frequency, 0.25);
+		PYTHON_PROP_REF_I(ProtoFloatT, persistence, 0.5);
 
 		/// Affects number of resources generated for Resource entities
 		PYTHON_PROP_REF_I(ProtoFloatT, richness, 100.f);

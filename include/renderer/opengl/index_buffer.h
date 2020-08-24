@@ -12,7 +12,6 @@ namespace jactorio::renderer
 	{
 	public:
 		///
-		/// \param data
 		/// \param count Number of indices
 		IndexBuffer(const unsigned int* data, unsigned int count);
 		~IndexBuffer();

@@ -23,7 +23,7 @@ namespace jactorio::data
 		// Icon displayed in the menu
 		Sprite* sprite = nullptr;
 
-		RecipeGroup* SetSprite(Sprite* (sprite)) {
+		RecipeGroup* SetSprite(Sprite* sprite) {
 			sprite->group.push_back(Sprite::SpriteGroup::gui);
 			this->sprite = sprite;
 			return this;

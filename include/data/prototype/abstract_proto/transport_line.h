@@ -96,7 +96,7 @@ namespace jactorio::data
 		///
 		/// \brief Number of tiles traveled by each item on the belt per tick
 		/// \remark For Python API use only
-		PYTHON_PROP_I(double, speedFloat, 0.01f);
+		PYTHON_PROP_I(ProtoFloatT, speedFloat, 0.01);
 
 		/// Number of tiles traveled by each item on the belt per tick
 		game::TransportLineOffset speed;
@@ -164,7 +164,7 @@ namespace jactorio::data
 			speed = game::TransportLineOffset(speedFloat);
 		}
 
-		void PostLoadValidate(const PrototypeManager& data_manager) const override {
+		void PostLoadValidate(const PrototypeManager&) const override {
 			J_DATA_ASSERT(speedFloat >= 0.001, "Transport line speed below minimum 0.001");
 			// Cannot exceed item_width because of limitations in the logic
 			J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");

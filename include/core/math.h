@@ -57,7 +57,7 @@ namespace jactorio::core
 
 
 	// If necessary in the future, swap these to another implementation
-	using TDegree = float;
+	using TDegree = double;
 
 	inline double Sin(const TDegree degree) {
 		return sin(degree / (180 / kPi));

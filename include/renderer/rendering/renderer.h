@@ -28,8 +28,8 @@ namespace jactorio::renderer
 	public:
 		static constexpr unsigned int tileWidth = 6;
 
-		static constexpr double kDepthBufferNearMax = 1.f;
-		static constexpr double kDepthBufferFarMax  = -1.f;
+		static constexpr double kDepthBufferNearMax = 1.;
+		static constexpr double kDepthBufferFarMax  = -1.;
 
 		Renderer();
 

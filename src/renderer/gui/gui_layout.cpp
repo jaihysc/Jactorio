@@ -16,7 +16,7 @@ void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::Prot
 
 	ImVec2 cursor_pos(
 		core::LossyCast<float>(game::MouseSelection::GetCursorX()),
-		core::LossyCast<float>(game::MouseSelection::GetCursorY() + 10.f)
+		core::LossyCast<float>(game::MouseSelection::GetCursorY()) + 10.f
 	);
 	// If an item is currently selected, move the tooltip down to not overlap
 	if (player_data.GetSelectedItemStack())

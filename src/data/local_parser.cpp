@@ -35,7 +35,7 @@ struct ParserData
 	///
 	/// \brief Logs parsing error message and throws
 	/// \exception Data_exception Thrown when this function is called
-	void ParseError(const std::string& message) const {
+	[[noreturn]] void ParseError(const std::string& message) const {
 		std::stringstream str_s;
 		str_s << "Localization parse failed " << lineNumber << ":" << charNumber << "\n" << message;
 		LOG_MESSAGE_F(error, "%s", str_s.str().c_str());
