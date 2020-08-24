@@ -15,7 +15,9 @@ void data::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data, const 
 
 		// Set filters
 		for (size_t i = 0; i < ingredientInv.size(); ++i) {
-			ingredientInv[i].filter = data_manager.DataRawGet<Item>(new_recipe->ingredients[i].first);
+			const auto* ingredient = data_manager.DataRawGet<Item>(new_recipe->ingredients[i].first);
+			assert(ingredient != nullptr);
+			ingredientInv[i].filter = ingredient;
 		}
 
 		const auto* product = data_manager.DataRawGet<Item>(new_recipe->product.first);
@@ -34,7 +36,7 @@ void data::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data, const 
 }
 
 bool data::AssemblyMachineData::CanBeginCrafting() const {
-	if (!recipe_)
+	if (recipe_ == nullptr)
 		return false;
 
 	// Cannot craft if it will exceed stacksize

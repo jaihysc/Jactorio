@@ -252,6 +252,7 @@ namespace jactorio::data
 
 	template <typename TProto, std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>>
 	const TProto& PrototypeManager::RelocationTableGet(PrototypeIdT prototype_id) const noexcept {
+		assert(relocationTable_.size() >= prototype_id);
 		assert(prototype_id > 0);
 		prototype_id -= 1;  // Prototype ids start from 1
 

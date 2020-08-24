@@ -4,6 +4,7 @@
 #define JACTORIO_DATA_PROTOTYPE_ENTITY_ASSEMBLY_MACHINE_H
 #pragma once
 
+#include "data/cereal/serialization_type.h"
 #include "data/prototype/recipe.h"
 #include "data/prototype/type.h"
 #include "data/prototype/abstract_proto/health_entity.h"
@@ -14,15 +15,8 @@ namespace jactorio::data
 
 	struct AssemblyMachineData final : HealthEntityData
 	{
-		Item::Inventory ingredientInv;
-		Item::Inventory productInv;
-
-		/// Callback called when recipe is finished crafting
-		game::DeferralTimer::DeferralEntry deferralEntry;
-
-
 		J_NODISCARD bool HasRecipe() const { return recipe_ != nullptr; }
-		J_NODISCARD const Recipe* GetRecipe() const { return recipe_; }
+		J_NODISCARD const Recipe* GetRecipe() const { return recipe_.Get(); }
 
 		///
 		/// \brief Changes recipe to provided recipe, nullptr for no recipe
@@ -42,9 +36,20 @@ namespace jactorio::data
 		/// \brief Outputs recipe product to product inventory
 		void CraftAddProduct();
 
+
+		CEREAL_SERIALIZE(archive) {
+			archive(cereal::base_class<HealthEntityData>(this), deferralEntry, ingredientInv, productInv, recipe_);
+		}
+
+		/// Callback called when recipe is finished crafting
+		game::DeferralTimer::DeferralEntry deferralEntry;
+		
+		Item::Inventory ingredientInv;
+		Item::Inventory productInv;
+
 	private:
 		/// Currently selected recipe for assembling
-		const Recipe* recipe_ = nullptr;
+		SerialProtoPtr<const Recipe> recipe_ = nullptr;
 	};
 
 

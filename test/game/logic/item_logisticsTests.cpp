@@ -333,7 +333,7 @@ namespace jactorio::game
 		auto recipe_pack = TestSetupRecipe(prototype_manager);
 
 		data::AssemblyMachineData asm_data{};
-		asm_data.ChangeRecipe(logicData_, prototype_manager, &recipe_pack.recipe);
+		asm_data.ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
 
 		asm_data.ingredientInv[0] = {recipe_pack.item1, 5, recipe_pack.item1};
 		asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
@@ -380,7 +380,7 @@ namespace jactorio::game
 		data::PrototypeManager prototype_manager{};
 
 		auto recipe_pack = TestSetupRecipe(prototype_manager);
-		asm_data.ChangeRecipe(logicData_, prototype_manager, &recipe_pack.recipe);
+		asm_data.ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
 
 		// Has recipe, wrong item
 		EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
@@ -394,7 +394,7 @@ namespace jactorio::game
 		EXPECT_FALSE(CanInsertAssemblyMachine(args));
 
 		// Exceeds max stack size
-		recipe_pack.recipe.ingredients[0].second = 50;  // Requires 50, can only hold 50
+		recipe_pack.recipe->ingredients[0].second = 50;  // Requires 50, can only hold 50
 		recipe_pack.item1->stackSize             = 50;
 		asm_data.ingredientInv[0].count          = 50;
 		EXPECT_FALSE(CanInsertAssemblyMachine(args));
@@ -756,7 +756,7 @@ namespace jactorio::game
 		auto recipe_pack = TestSetupRecipe(prototype_manager);
 
 
-		data->ChangeRecipe(logicData_, prototype_manager, &recipe_pack.recipe);
+		data->ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
 
 		// No items in product inventory
 		EXPECT_FALSE(

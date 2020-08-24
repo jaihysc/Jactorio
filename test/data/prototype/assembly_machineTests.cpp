@@ -20,7 +20,7 @@ namespace jactorio::data
 		AssemblyMachineData data_{};
 		AssemblyMachine proto_;
 
-		Recipe recipe_{};
+		Recipe* recipe_    = nullptr;
 		Item* item1_       = nullptr;
 		Item* item2_       = nullptr;
 		Item* itemProduct_ = nullptr;
@@ -54,9 +54,9 @@ namespace jactorio::data
 		EXPECT_EQ(data_.GetRecipe(), nullptr);
 
 		// Has recipe
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 		EXPECT_TRUE(data_.HasRecipe());
-		EXPECT_EQ(data_.GetRecipe(), &recipe_);
+		EXPECT_EQ(data_.GetRecipe(), recipe_);
 	}
 
 	TEST_F(AssemblyMachineTest, ChangeRecipeSelectRecipe) {
@@ -67,7 +67,7 @@ namespace jactorio::data
 
 		// Recipe crafted in 60 ticks
 		logicData_.DeferralUpdate(worldData_, 900);
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 
 		EXPECT_EQ(data_.deferralEntry.dueTick, 0);
 
@@ -87,7 +87,7 @@ namespace jactorio::data
 	TEST_F(AssemblyMachineTest, ChangeRecipeRemoveRecipe) {
 		SetupRecipe();
 
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 
 		SetupMachineCraftingInv();
 		ASSERT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
@@ -109,7 +109,7 @@ namespace jactorio::data
 		SetupRecipe();
 
 		// Ingredients not yet present
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 		EXPECT_FALSE(data_.CanBeginCrafting());
 
 		// Ingredients does not match 
@@ -126,9 +126,9 @@ namespace jactorio::data
 	TEST_F(AssemblyMachineTest, CanBeginCraftingStackLimit) {
 		SetupRecipe();
 		itemProduct_->stackSize = 50;
-		recipe_.product.second  = 2;  // 2 per crafting
+		recipe_->product.second  = 2;  // 2 per crafting
 
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 		SetupMachineCraftingInv();
 		data_.productInv[0] = {itemProduct_, 49, itemProduct_};
 
@@ -139,7 +139,7 @@ namespace jactorio::data
 
 	TEST_F(AssemblyMachineTest, CraftDeductIngredients) {
 		SetupRecipe();
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 
 		data_.ingredientInv[0] = {item1_, 5};
 		data_.ingredientInv[1] = {item1_, 10};
@@ -164,7 +164,7 @@ namespace jactorio::data
 
 	TEST_F(AssemblyMachineTest, CraftAddProduct) {
 		SetupRecipe();
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 
 		data_.ingredientInv[0] = {item1_, 5};
 		data_.ingredientInv[1] = {item1_, 10};
@@ -176,6 +176,50 @@ namespace jactorio::data
 		ASSERT_EQ(data_.productInv[0].filter, itemProduct_);
 	}
 
+	TEST_F(AssemblyMachineTest, Serialize) {
+		SetupRecipe();
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+
+		data_.ingredientInv[0] = {item1_, 5};
+		data_.ingredientInv[1] = {item2_, 10};
+
+		data_.productInv[0] = {itemProduct_, 6};
+
+		data_.deferralEntry.dueTick = 7;
+		data_.deferralEntry.callbackIndex = 6;
+
+		data_.health = 4321;
+
+
+		active_data_manager = &dataManager_;
+		dataManager_.GenerateRelocationTable();
+		const auto result   = TestSerializeDeserialize(data_);
+
+		ASSERT_EQ(result.ingredientInv.size(), 2);
+
+		EXPECT_EQ(result.ingredientInv[0].item, item1_);
+		EXPECT_EQ(result.ingredientInv[1].item, item2_);
+
+		EXPECT_EQ(result.ingredientInv[0].count, 5);
+		EXPECT_EQ(result.ingredientInv[1].count, 10);
+
+		
+		ASSERT_EQ(result.productInv.size(), 1);
+
+		EXPECT_EQ(result.productInv[0].item, itemProduct_);
+		EXPECT_EQ(result.productInv[0].count, 6);
+
+
+		EXPECT_EQ(result.GetRecipe(), recipe_);
+
+		
+		EXPECT_EQ(result.deferralEntry.dueTick, 7);
+		EXPECT_EQ(result.deferralEntry.callbackIndex, 6);
+
+		
+		EXPECT_EQ(result.health, 4321);
+	}
+
 	// ======================================================================
 
 	TEST_F(AssemblyMachineTest, AssemblySpeed) {
@@ -185,9 +229,9 @@ namespace jactorio::data
 
 		proto_.assemblySpeed = 2;
 
-		recipe_.craftingTime = 1.f;
+		recipe_->craftingTime = 1.f;
 
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 
 		SetupMachineCraftingInv();
 		ASSERT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
@@ -215,7 +259,7 @@ namespace jactorio::data
 		auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
 
 		SetupRecipe();
-		assembly_data->ChangeRecipe(logicData_, dataManager_, &recipe_);
+		assembly_data->ChangeRecipe(logicData_, dataManager_, recipe_);
 
 		assembly_proto->OnRemove(worldData_, logicData_, {0, 0}, layer);
 		EXPECT_EQ(assembly_data->deferralEntry.callbackIndex, 0);
@@ -227,7 +271,7 @@ namespace jactorio::data
 
 		// Ok, has items
 		SetupRecipe();
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 		SetupMachineCraftingInv(10);
 
 		EXPECT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
@@ -240,7 +284,7 @@ namespace jactorio::data
 	TEST_F(AssemblyMachineTest, CraftingLoop) {
 		SetupRecipe();
 
-		data_.ChangeRecipe(logicData_, dataManager_, &recipe_);
+		data_.ChangeRecipe(logicData_, dataManager_, recipe_);
 		SetupMachineCraftingInv(3);
 
 		// Craft 1

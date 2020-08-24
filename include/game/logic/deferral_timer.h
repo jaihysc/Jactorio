@@ -9,6 +9,7 @@
 
 #include "jactorio.h"
 #include "core/data_type.h"
+#include "data/cereal/serialize.h"
 #include "data/prototype/interface/deferred.h"
 
 namespace jactorio::game
@@ -34,18 +35,22 @@ namespace jactorio::game
 		/// \brief Information about the registered deferral for removing
 		struct DeferralEntry
 		{
-			GameTickT dueTick;
-			CallbackIndex callbackIndex;
-
-			J_NODISCARD
-
-			bool Valid() const {
+			J_NODISCARD bool Valid() const {
 				return callbackIndex != 0;
 			}
 
 			void Invalidate() {
 				callbackIndex = 0;
 			}
+
+
+			CEREAL_SERIALIZE(archive) {
+				archive(dueTick, callbackIndex);
+			}
+
+			GameTickT dueTick;
+			CallbackIndex callbackIndex;
+
 		};
 
 		///

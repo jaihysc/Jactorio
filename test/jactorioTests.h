@@ -165,7 +165,7 @@ namespace jactorio
 
 	struct TestSetupRecipeReturn
 	{
-		data::Recipe recipe{};
+		data::Recipe* recipe    = nullptr;
 		data::Item* item1       = nullptr;
 		data::Item* item2       = nullptr;
 		data::Item* itemProduct = nullptr;
@@ -175,15 +175,17 @@ namespace jactorio
 	/// \brief Sets up and registers a recipe
 	/// 1a + 1b = 1c
 	J_NODISCARD inline auto TestSetupRecipe(data::PrototypeManager& proto_manager) {
-		TestSetupRecipeReturn rt{};
+		TestSetupRecipeReturn rt;
 
-		rt.recipe.craftingTime = 1.f;
-		rt.recipe.ingredients  = {{"@1", 1}, {"@2", 1}};
-		rt.recipe.product      = {"@3", 1};
+		rt.recipe = &proto_manager.AddProto<data::Recipe>();
 
-		rt.item1       = &proto_manager.AddProto<data::Item>("@1");
-		rt.item2       = &proto_manager.AddProto<data::Item>("@2");
-		rt.itemProduct = &proto_manager.AddProto<data::Item>("@3");
+		rt.recipe->craftingTime = 1.f;
+		rt.recipe->ingredients  = {{"__test/r-ingredient-1", 1}, {"__test/r-ingredient-2", 1}};
+		rt.recipe->product      = {"__test/r-product", 1};
+
+		rt.item1       = &proto_manager.AddProto<data::Item>("__test/r-ingredient-1");
+		rt.item2       = &proto_manager.AddProto<data::Item>("__test/r-ingredient-2");
+		rt.itemProduct = &proto_manager.AddProto<data::Item>("__test/r-product");
 
 		return rt;
 	}
