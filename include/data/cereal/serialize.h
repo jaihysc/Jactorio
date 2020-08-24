@@ -21,8 +21,16 @@
 #error CEREAL_LOAD macro already defined, likely from an external library
 #endif
 
+#ifdef CEREAL_LOAD_EXERN
+#error CEREAL_LOAD_EXERN macro already defined, likely from an external library
+#endif
+
 #ifdef CEREAL_SAVE
 #error CEREAL_SAVE macro already defined, likely from an external library
+#endif
+
+#ifdef CEREAL_SAVE_EXTERN
+#error CEREAL_SAVE_EXTERN macro already defined, likely from an external library
 #endif
 
 #ifdef CEREAL_LOAD_CONSTRUCT
@@ -38,9 +46,19 @@
 	template <typename TArchive>      \
 	void load(TArchive& (archiver__))
 
+#define CEREAL_LOAD_EXTERN(archiver__, ty__, ty_ref__) \
+	template<class Archive>                            \
+	void load(Archive& (archiver__),                   \
+	          ty__& (ty_ref__))
+
 #define CEREAL_SAVE(archiver__)               \
 	template <typename TArchive>              \
 	void save(TArchive& (archiver__)) const
+
+#define CEREAL_SAVE_EXTERN(archiver__, ty__, ty_ref__) \
+	template<class Archive>                            \
+	void save(Archive& (archiver__),                   \
+	          const ty__& (ty_ref__))
 
 ///
 /// \remark For types serialized via smart pointer only

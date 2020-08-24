@@ -99,7 +99,7 @@ namespace jactorio::data
 		PYTHON_PROP_I(ProtoFloatT, speedFloat, 0.01);
 
 		/// Number of tiles traveled by each item on the belt per tick
-		game::TransportLineOffset speed;
+		LineDistT speed;
 
 
 		// ======================================================================
@@ -161,7 +161,7 @@ namespace jactorio::data
 		// Data events
 		void PostLoad() override {
 			// Convert floating point speed to fixed precision decimal speed
-			speed = game::TransportLineOffset(speedFloat);
+			speed = LineDistT(speedFloat);
 		}
 
 		void PostLoadValidate(const PrototypeManager&) const override {

@@ -61,7 +61,7 @@ namespace jactorio::game
 		auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
 		inv[0]    = {&item, 10};
 
-		pickup.Pickup(logicData_, 1, data::ToRotationDegree(180.f), 2);
+		pickup.Pickup(logicData_, 1, data::RotationDegreeT(180.f), 2);
 
 		EXPECT_EQ(inv[0].count, 8);
 	}
@@ -190,7 +190,7 @@ namespace jactorio::game
 
 		TransportLineInsert(data::Orientation::up, line_data);
 		ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
-		EXPECT_DOUBLE_EQ(line_data.lineSegment->right.lane[0].first.getAsDouble(), 1.5f);
+		EXPECT_DOUBLE_EQ(line_data.lineSegment->right.lane[0].dist.getAsDouble(), 1.5f);
 	}
 
 	TEST_F(ItemDropOffTest, InsertTransportLineUp) {
@@ -324,7 +324,7 @@ namespace jactorio::game
 
 		TransportLineInsert(data::Orientation::up, left);
 		ASSERT_EQ(left.lineSegment->left.lane.size(), 1);
-		EXPECT_DOUBLE_EQ(left.lineSegment->left.lane[0].first.getAsDouble(), 0.5 + 0.7);
+		EXPECT_DOUBLE_EQ(left.lineSegment->left.lane[0].dist.getAsDouble(), 0.5 + 0.7);
 	}
 
 	TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
@@ -449,7 +449,7 @@ namespace jactorio::game
 
 			const auto result = PickupTransportBelt({
 				logicData_,
-				1, data::ToRotationDegree(kMaxInserterDegree),
+				1, data::RotationDegreeT(kMaxInserterDegree),
 				pickup_amount,
 				line_data,
 				orientation
@@ -524,7 +524,7 @@ namespace jactorio::game
 
 		PickupContainerEntity({
 			logicData_,
-			1, data::ToRotationDegree(179),
+			1, data::RotationDegreeT(179),
 			1, container_data,
 			data::Orientation::up
 		});
@@ -533,7 +533,7 @@ namespace jactorio::game
 
 		PickupParams args = {
 			logicData_,
-			1, data::ToRotationDegree(180),
+			1, data::RotationDegreeT(180),
 			2, container_data,
 			data::Orientation::up
 		};
@@ -703,7 +703,7 @@ namespace jactorio::game
 		EXPECT_EQ(
 			GetPickupTransportBelt({
 				logicData_,
-				1, data::ToRotationDegree(180),
+				1, data::RotationDegreeT(180),
 				1, line, data::Orientation::up
 				}),
 			&lineItem_
@@ -721,7 +721,7 @@ namespace jactorio::game
 		EXPECT_EQ(
 			GetPickupTransportBelt({
 				logicData_,
-				1, data::ToRotationDegree(180),
+				1, data::RotationDegreeT(180),
 				1, line, data::Orientation::up
 				}),
 			&lineItem_
@@ -745,7 +745,7 @@ namespace jactorio::game
 		// Does nothing as there is no recipe yet
 		PickupAssemblyMachine({
 				logicData_,
-				2, data::ToRotationDegree(kMaxInserterDegree),
+				2, data::RotationDegreeT(kMaxInserterDegree),
 				2,
 				*data, data::Orientation::up
 			}
@@ -761,7 +761,7 @@ namespace jactorio::game
 		// No items in product inventory
 		EXPECT_FALSE(
 			PickupAssemblyMachine({logicData_,
-				2, data::ToRotationDegree(kMaxInserterDegree),
+				2, data::RotationDegreeT(kMaxInserterDegree),
 				2,
 				*data, data::Orientation::up
 				}).first
@@ -778,7 +778,7 @@ namespace jactorio::game
 
 		PickupParams args{
 			logicData_,
-			2, data::ToRotationDegree(kMaxInserterDegree),
+			2, data::RotationDegreeT(kMaxInserterDegree),
 			2,
 			*data, data::Orientation::up
 		};

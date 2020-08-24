@@ -71,6 +71,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/prototype_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
+	${JACTORIO_TEST_DIR}/data/cereal/supportTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/prototype/assembly_machineTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/container_entityTests.cpp

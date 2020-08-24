@@ -426,14 +426,14 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 		ImGui::Text("Left ----------");
 		ImGui::Text("Status: %s", segment.left.IsActive() ? "Active" : "Stopped");
 		for (auto& item : segment.left.lane) {
-			ImGui::Text("%s %5.5f", item.second->name.c_str(), item.first.getAsDouble());
+			ImGui::Text("%s %5.5f", item.item->name.c_str(), item.dist.getAsDouble());
 		}
 
 		ImGui::Separator();
 		ImGui::Text("Right ----------");
 		ImGui::Text("Status: %s", segment.right.IsActive() ? "Active" : "Stopped");
 		for (auto& item : segment.right.lane) {
-			ImGui::Text("%s %5.5f", item.second->name.c_str(), item.first.getAsDouble());
+			ImGui::Text("%s %5.5f", item.item->name.c_str(), item.dist.getAsDouble());
 		}
 
 	}

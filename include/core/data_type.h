@@ -8,6 +8,8 @@
 #include <tuple>
 #include <unordered_map>
 
+#include <decimal.h>
+
 namespace jactorio::core
 {
 	template <typename TVal>
@@ -39,6 +41,9 @@ namespace jactorio
 	using UvPositionT = core::QuadPosition<core::Position2<float>>;
 	/// Internal id of sprite to uv coordinates
 	using SpriteUvCoordsT = std::unordered_map<unsigned int, UvPositionT>;
+
+	
+	using Decimal3T = dec::decimal<3>;
 }
 
 namespace jactorio::core

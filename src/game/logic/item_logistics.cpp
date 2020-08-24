@@ -70,7 +70,7 @@ bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& args) const {
 }
 
 void GetAdjustedLineOffset(const bool use_line_left,
-                           game::TransportLineOffset& pickup_offset,
+                           data::LineDistT& pickup_offset,
                            const data::TransportLineData& line_data) {
 	game::TransportSegment::ApplyTerminationDeduction(use_line_left,
 	                                                  line_data.lineSegment->terminationType,
@@ -165,7 +165,7 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
 	}
 
 	constexpr double insertion_offset_base = 0.5;
-	auto offset                            = TransportLineOffset(line_data.lineSegmentIndex + insertion_offset_base);
+	auto offset                            = data::LineDistT(line_data.lineSegmentIndex + insertion_offset_base);
 
 	GetAdjustedLineOffset(use_line_left, offset, line_data);
 	return line_data.lineSegment->TryInsertItem(use_line_left,
@@ -288,8 +288,8 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 	auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
 
 	const auto props         = GetBeltPickupProps(args);
-	const bool use_line_left = props.first;
-	const auto pickup_offset = props.second;
+	const bool use_line_left = props.first; 
+	const auto pickup_offset = props.second; // Cannot capture structured binding
 
 	const data::Item* item;
 
@@ -297,7 +297,9 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 		auto adjusted_pickup_offset = pickup_offset;
 
 		GetAdjustedLineOffset(left_lane, adjusted_pickup_offset, line_data);
-		item = line_data.lineSegment->GetItem(left_lane, adjusted_pickup_offset.getAsDouble()).second.second;
+
+		auto [dq_index, line_item] = line_data.lineSegment->GetItem(left_lane, adjusted_pickup_offset.getAsDouble()); 
+		item = line_item.item.Get();
 	};
 
 
@@ -385,11 +387,11 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(c
 }
 
 
-bool game::InserterPickup::IsAtMaxDegree(const data::RotationDegree& degree) {
-	return degree == data::ToRotationDegree(kMaxInserterDegree);
+bool game::InserterPickup::IsAtMaxDegree(const data::RotationDegreeT& degree) {
+	return degree == data::RotationDegreeT(kMaxInserterDegree);
 }
 
-std::pair<bool, game::TransportLineOffset> game::InserterPickup::GetBeltPickupProps(const PickupParams& args) {
+std::pair<bool, data::LineDistT> game::InserterPickup::GetBeltPickupProps(const PickupParams& args) {
 	auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
 
 	bool use_line_left = false;
@@ -447,7 +449,7 @@ std::pair<bool, game::TransportLineOffset> game::InserterPickup::GetBeltPickupPr
 		break;
 	}
 
-	auto pickup_offset = TransportLineOffset(
+	auto pickup_offset = data::LineDistT(
 		line_data.lineSegmentIndex +
 		GetInserterArmOffset(core::SafeCast<core::TIntDegree>(args.degree.getAsInteger()), args.inserterTileReach)
 	);

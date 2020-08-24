@@ -12,9 +12,6 @@
 /// \brief Transport line logic for anything moving items
 namespace jactorio::game
 {
-	constexpr int kTransportLineDecimalPlace = 3;
-	using TransportLineOffset = dec::decimal<kTransportLineDecimalPlace>;
-
 	// For storing line offsets during transitions, items are treated as having no width
 
 	/* Placement of items on transport line (Expressed as decimal percentages of a tile)

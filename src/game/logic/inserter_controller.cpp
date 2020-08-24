@@ -55,7 +55,7 @@ void RotateInserters(DropoffQueue& dropoff_queue, PickupQueue& pickup_queue,
 	case data::InserterData::Status::dropoff:
 		props.data.rotationDegree -= props.proto.rotationSpeed;
 
-		if (props.data.rotationDegree <= data::ToRotationDegree(kMinInserterDegree)) {
+		if (props.data.rotationDegree <= data::RotationDegreeT(kMinInserterDegree)) {
 			props.data.rotationDegree = 0;  // Prevents underflow if the inserter sits idle for a long time
 			dropoff_queue.push_back(props);
 		}
@@ -66,7 +66,7 @@ void RotateInserters(DropoffQueue& dropoff_queue, PickupQueue& pickup_queue,
 		// Rotate the inserter
 		props.data.rotationDegree += props.proto.rotationSpeed;
 
-		if (props.data.rotationDegree > data::ToRotationDegree(kMaxInserterDegree)) {
+		if (props.data.rotationDegree > data::RotationDegreeT(kMaxInserterDegree)) {
 			props.data.rotationDegree = kMaxInserterDegree;  // Prevents overflow
 			pickup_queue.push_back(props);
 		}

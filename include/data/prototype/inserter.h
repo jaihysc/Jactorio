@@ -32,7 +32,7 @@ namespace jactorio::data
 		Orientation orientation;
 
 		/// Rotation degree of current inserter, 0 is dropoff, 180 is pickup 
-		RotationDegree rotationDegree = ToRotationDegree(game::kMaxInserterDegree);
+		RotationDegreeT rotationDegree = RotationDegreeT(game::kMaxInserterDegree);
 
 		/// Current inserter status
 		Status status = Status::pickup;
@@ -66,11 +66,11 @@ namespace jactorio::data
 
 		///
 		/// \brief Degrees to rotate per tick 
-		RotationDegree rotationSpeed;
+		RotationDegreeT rotationSpeed;
 
 
 		void PostLoad() override {
-			rotationSpeed = ToRotationDegree(rotationSpeedFloat);
+			rotationSpeed = RotationDegreeT(rotationSpeedFloat);
 		}
 
 

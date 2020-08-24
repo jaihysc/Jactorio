@@ -142,7 +142,7 @@ namespace jactorio::game
 		{
 			LogicData& logicData;
 			data::ProtoUintT inserterTileReach;
-			const data::RotationDegree& degree;
+			const data::RotationDegreeT& degree;
 			data::Item::StackCount amount;
 			data::UniqueDataBase& uniqueData;
 			data::Orientation orientation;
@@ -152,7 +152,7 @@ namespace jactorio::game
 		///	 \brief Insert provided item at destination
 		PickupReturn Pickup(LogicData& logic_data,
 		                    const data::ProtoUintT inserter_tile_reach,
-		                    const data::RotationDegree& degree,
+		                    const data::RotationDegreeT& degree,
 		                    const data::Item::StackCount amount) const {
 			assert(targetUniqueData_);
 			assert(pickupFunc_);
@@ -166,7 +166,7 @@ namespace jactorio::game
 		/// \return Item which will picked up by Pickup()
 		J_NODISCARD GetPickupReturn GetPickup(LogicData& logic_data,
 		                                      const data::ProtoUintT inserter_tile_reach,
-		                                      const data::RotationDegree& degree) const {
+		                                      const data::RotationDegreeT& degree) const {
 			assert(targetUniqueData_);
 			assert(getPickupFunc_);
 			return (this->*getPickupFunc_)({
@@ -187,7 +187,7 @@ namespace jactorio::game
 
 		///
 		/// \returns true if at maximum inserter degree
-		static bool IsAtMaxDegree(const data::RotationDegree& degree);
+		static bool IsAtMaxDegree(const data::RotationDegreeT& degree);
 
 		using PickupFunc = decltype(&InserterPickup::PickupContainerEntity);
 		using GetPickupFunc = decltype(&InserterPickup::GetPickupContainerEntity);
@@ -196,7 +196,7 @@ namespace jactorio::game
 		GetPickupFunc getPickupFunc_ = nullptr;
 
 	private:
-		static std::pair<bool, TransportLineOffset> GetBeltPickupProps(const PickupParams& args);
+		static std::pair<bool, data::LineDistT> GetBeltPickupProps(const PickupParams& args);
 	};
 }
 

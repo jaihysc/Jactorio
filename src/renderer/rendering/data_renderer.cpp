@@ -54,9 +54,9 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 
 	for (const auto& line_item : line_segment_side) {
 		// Move the target offset (up or down depending on multiplier)
-		*target_offset += line_item.first.getAsDouble() * multiplier;
+		*target_offset += line_item.dist.getAsDouble() * multiplier;
 
-		const auto& uv_pos = renderer::Renderer::GetSpriteUvCoords(uv_coords, line_item.second->sprite->internalId);
+		const auto& uv_pos = renderer::Renderer::GetSpriteUvCoords(uv_coords, line_item.item->sprite->internalId);
 
 		constexpr float pixel_z = kPixelZ;
 		// In pixels
