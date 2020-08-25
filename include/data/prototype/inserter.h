@@ -46,7 +46,6 @@ namespace jactorio::data
 
 		CEREAL_SERIALIZE(archive) {
 			archive(orientation, rotationDegree, status, heldItem, cereal::base_class<HealthEntityData>(this));
-			// Todo pickup / dropoff requires post processing to reinitialize
 		}
 
 		CEREAL_LOAD_CONSTRUCT(archive, construct, InserterData) {
@@ -113,6 +112,10 @@ namespace jactorio::data
 		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
 
+		void OnDeserialize(game::WorldData& world_data, const WorldCoord& world_coord,
+		                   game::ChunkTileLayer& tile_layer) const override;
+
+
 		void PostLoadValidate(const PrototypeManager&) const override {
 			J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
 			J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
@@ -122,6 +125,13 @@ namespace jactorio::data
 		void ValidatedPostLoad() override {
 			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 		}
+
+	private:
+		J_NODISCARD WorldCoord GetDropoffCoord(WorldCoord world_coord, Orientation orientation) const;
+		J_NODISCARD WorldCoord GetPickupCoord(WorldCoord world_coord, Orientation orientation) const;
+
+		void InitPickupDropoff(game::WorldData& world_data,
+		                       const WorldCoord& world_coord, Orientation orientation) const;
 	};
 }
 

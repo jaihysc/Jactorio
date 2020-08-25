@@ -41,23 +41,7 @@ void data::Inserter::OnBuild(game::WorldData& world_data, game::LogicData&,
 	auto* inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
 	inserter_data->set  = OnRGetSpriteSet(orientation, world_data, world_coords);
 
-
-	// Dropoff side
-	{
-		auto emit_coords = world_coords;
-		OrientationIncrement(orientation, emit_coords.x, emit_coords.y, this->tileReach);
-
-		world_data.updateDispatcher.Register(world_coords, emit_coords, *this);
-		world_data.UpdateDispatch(emit_coords, UpdateType::place);
-	}
-	// Pickup side
-	{
-		auto emit_coords = world_coords;
-		OrientationIncrement(orientation, emit_coords.x, emit_coords.y, this->tileReach * -1);
-
-		world_data.updateDispatcher.Register(world_coords, emit_coords, *this);
-		world_data.UpdateDispatch(emit_coords, UpdateType::place);
-	}
+	InitPickupDropoff(world_data, world_coords, orientation);
 }
 
 void data::Inserter::OnTileUpdate(game::WorldData& world_data,
@@ -71,11 +55,8 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 
 	//
 
-	auto pickup_coords = receive_coords;
-	OrientationIncrement(inserter_data.orientation, pickup_coords.x, pickup_coords.y, this->tileReach * -1);
-
-	auto dropoff_coords = receive_coords;
-	OrientationIncrement(inserter_data.orientation, dropoff_coords.x, dropoff_coords.y, this->tileReach);
+	const auto pickup_coords = GetPickupCoord(receive_coords, inserter_data.orientation);
+	const auto dropoff_coords = GetDropoffCoord(receive_coords, inserter_data.orientation);
 
 	// Neighbor was removed, Uninitialize removed item handler
 	if (!target_data) {
@@ -94,10 +75,10 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 
 
 	if (emit_coords == pickup_coords) {
-		inserter_data.pickup.Initialize(world_data,  emit_coords);
+		inserter_data.pickup.Initialize(world_data, emit_coords);
 	}
 	else if (emit_coords == dropoff_coords) {
-		inserter_data.dropoff.Initialize(world_data,  emit_coords);
+		inserter_data.dropoff.Initialize(world_data, emit_coords);
 	}
 
 
@@ -116,20 +97,50 @@ void data::Inserter::OnRemove(game::WorldData& world_data, game::LogicData&,
 
 	const auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
 
+	world_data.updateDispatcher.Unregister({
+		world_coords,
+		GetDropoffCoord(world_coords, inserter_data->orientation)
+	});
+	world_data.updateDispatcher.Unregister({
+		world_coords,
+		GetPickupCoord(world_coords, inserter_data->orientation)
+	});
+}
+
+void data::Inserter::OnDeserialize(game::WorldData& world_data, const WorldCoord& world_coord,
+                                   game::ChunkTileLayer& tile_layer) const {
+	auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
+	assert(inserter_data != nullptr);
+
+	InitPickupDropoff(world_data, world_coord, inserter_data->orientation);
+}
+
+// ======================================================================
+
+WorldCoord data::Inserter::GetDropoffCoord(WorldCoord world_coord, const Orientation orientation) const {
+	OrientationIncrement(orientation,
+	                     world_coord.x, world_coord.y, this->tileReach);
+	return world_coord;
+}
+
+WorldCoord data::Inserter::GetPickupCoord(WorldCoord world_coord, const Orientation orientation) const {
+	OrientationIncrement(orientation,
+	                     world_coord.x, world_coord.y, this->tileReach * -1);
+	return world_coord;
+}
+
+void data::Inserter::InitPickupDropoff(game::WorldData& world_data,
+                                       const WorldCoord& world_coord, const Orientation orientation) const {
 	// Dropoff side
 	{
-		auto emit_coords = world_coords;
-		OrientationIncrement(inserter_data->orientation,
-		                     emit_coords.x, emit_coords.y, this->tileReach);
-
-		world_data.updateDispatcher.Unregister({world_coords, emit_coords});
+		auto emit_coords = GetDropoffCoord(world_coord, orientation);
+		world_data.updateDispatcher.Register(world_coord, emit_coords, *this);
+		world_data.UpdateDispatch(emit_coords, UpdateType::place);
 	}
 	// Pickup side
 	{
-		auto emit_coords = world_coords;
-		OrientationIncrement(inserter_data->orientation,
-		                     emit_coords.x, emit_coords.y, this->tileReach * -1);
-
-		world_data.updateDispatcher.Unregister({world_coords, emit_coords});
+		auto emit_coords = GetPickupCoord(world_coord, orientation);
+		world_data.updateDispatcher.Register(world_coord, emit_coords, *this);
+		world_data.UpdateDispatch(emit_coords, UpdateType::place);
 	}
 }
