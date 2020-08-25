@@ -49,13 +49,6 @@ bool game::ItemDropOff::Initialize(const WorldData& world_data,
 	return true;
 }
 
-bool game::ItemDropOff::Initialize(const WorldData& world_data,
-                                   data::UniqueDataBase& target_unique_data, const WorldCoord& world_coord) {
-	return Initialize(world_data,
-	                  target_unique_data,
-	                  world_coord.x, world_coord.y);
-}
-
 bool game::ItemDropOff::CanInsertContainerEntity(const DropOffParams&) const {
 	return true;
 }
@@ -258,13 +251,6 @@ bool game::InserterPickup::Initialize(const WorldData& world_data,
 
 	return true;
 }
-
-bool game::InserterPickup::Initialize(const WorldData& world_data,
-                                      data::UniqueDataBase& target_unique_data,
-                                      const WorldCoord& world_coord) {
-	return Initialize(world_data, target_unique_data, world_coord.x, world_coord.y);
-}
-
 
 game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupContainerEntity(const PickupParams& args) const {
 	auto& container = static_cast<data::ContainerEntityData&>(args.uniqueData);
