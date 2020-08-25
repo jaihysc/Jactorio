@@ -437,7 +437,7 @@ void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8
 }
 
 
-void game::WorldData::ResolveMultiTileTopLeft() {
+void game::WorldData::DeserializePostProcess() {
 	for (auto& [c_coord, chunk] : worldChunks_) {
 
 		for (uint32_t y = 0; y < kChunkWidth; ++y) {  // x, y is position within current chunk
@@ -461,7 +461,9 @@ void game::WorldData::ResolveMultiTileTopLeft() {
 						layer.SetTopLeftLayer(tl_tile->GetLayer(layer_i));
 					}
 
-					// assert(layer.prototypeData != nullptr);
+					if (layer.prototypeData != nullptr) {
+						layer.prototypeData->OnDeserialize(*this, world_coord, layer);
+					}
 				}
 				
 			}

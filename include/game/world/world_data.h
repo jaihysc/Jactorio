@@ -234,9 +234,11 @@ namespace jactorio::game
 
 
 		///
-		/// \brief To be used after deserializing.
-		/// Steps through all chunks and sets the top left tile for all multi tile tiles as its pointer cannot be serialized
-		void ResolveMultiTileTopLeft();
+		/// \brief To be used after deserializing
+		/// Steps through all chunks:
+		/// Dispatches OnDeserialize(),
+		/// Sets the top left tile for all multi tile tiles as its pointer cannot be serialized
+		void DeserializePostProcess();
 
 
 		CEREAL_SERIALIZE(archive) {

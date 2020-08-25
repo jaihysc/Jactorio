@@ -153,6 +153,10 @@ namespace jactorio::data
 			assert(false);  // Unimplemented
 		}
 
+		void OnDeserialize(game::WorldData& world_data,
+						   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const override {
+		}
+
 	private:
 		/// Item when entity is picked up
 		Item* item_ = nullptr;

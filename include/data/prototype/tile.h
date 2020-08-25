@@ -64,6 +64,11 @@ namespace jactorio::data
 
 		// ======================================================================
 		// Data
+
+		void OnDeserialize(game::WorldData& world_data,
+						   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const override {
+		}
+
 		void PostLoadValidate(const PrototypeManager& data_manager) const override;
 	};
 

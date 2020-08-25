@@ -4,10 +4,24 @@
 #define JACTORIO_DATA_PROTOTYPE_INTERFACE_SERIALIZABLE_H
 #pragma once
 
+#include "core/data_type.h"
+
+namespace jactorio::game
+{
+	class WorldData;
+	class ChunkTileLayer;
+}
+
 namespace jactorio::data
 {
 	class ISerializable
 	{
+	public:
+		ISerializable() = default;
+		virtual ~ISerializable() = default;
+
+		virtual void OnDeserialize(game::WorldData& world_data,
+								   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const = 0;
 	};
 }
 

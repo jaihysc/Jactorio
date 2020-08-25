@@ -37,7 +37,7 @@ void data::DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGl
 	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> post_load_hooks
 	{
 		[&](auto* data_global) {
-			data_global->world.ResolveMultiTileTopLeft();
+			data_global->world.DeserializePostProcess();
 		},
 	};
 

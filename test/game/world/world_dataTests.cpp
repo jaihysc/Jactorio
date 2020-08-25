@@ -346,7 +346,7 @@ namespace jactorio::game
 	}
 
 
-	class ResolveMultiTileTopLeftTest : public testing::Test
+	class WorldDataDeserialize : public testing::Test
 	{
 	protected:
 		WorldData worldData_;
@@ -361,13 +361,13 @@ namespace jactorio::game
 		}
 	};
 
-	TEST_F(ResolveMultiTileTopLeftTest, SameChunk) {
+	TEST_F(WorldDataDeserialize, SameChunk) {
 		worldData_.EmplaceChunk(0, 0);
 
 		TestSetupMultiTile<false>(worldData_, proto_,
 		                          {1, 0}, TileLayer::base, {3, 2});
 
-		worldData_.ResolveMultiTileTopLeft();
+		worldData_.DeserializePostProcess();
 
 		ExpectTLResolved({2, 0}, TileLayer::base);
 		ExpectTLResolved({3, 0}, TileLayer::base);
@@ -375,5 +375,33 @@ namespace jactorio::game
 		ExpectTLResolved({1, 1}, TileLayer::base);
 		ExpectTLResolved({2, 1}, TileLayer::base);
 		ExpectTLResolved({3, 1}, TileLayer::base);
+	}
+
+	TEST_F(WorldDataDeserialize, CallOnDeserialize) {
+		class MockWorldObject : public TestMockWorldObject
+		{
+		public:
+			void OnDeserialize(WorldData&, const WorldCoord& world_coord, ChunkTileLayer& tile_layer) const override {
+				EXPECT_EQ(world_coord.x, 5);
+				EXPECT_EQ(world_coord.y, 6);
+				onDeserializeCalled = true;
+
+				chunkTileLayer = &tile_layer;
+			}
+
+			mutable bool onDeserializeCalled = false;
+			mutable ChunkTileLayer* chunkTileLayer = nullptr;
+		};
+
+		worldData_.EmplaceChunk(0, 0);
+
+		MockWorldObject mock_obj;
+		auto& tile_layer = worldData_.GetTile(5, 6)->GetLayer(TileLayer::entity);
+		tile_layer.prototypeData = &mock_obj;
+
+		worldData_.DeserializePostProcess();
+
+		EXPECT_TRUE(mock_obj.onDeserializeCalled);
+		EXPECT_EQ(mock_obj.chunkTileLayer, &tile_layer);
 	}
 }

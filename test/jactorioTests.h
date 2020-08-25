@@ -23,6 +23,44 @@ namespace jactorio
 	// It is difficult to compute enough decimal points by hand for EXPECT_DOUBLE_EQ, thus EXPECT_NEAR is used
 	constexpr double kFloatingAbsErr = 0.000000001;
 
+	///
+	/// \brief Inherit and override what is necessary
+	class TestMockWorldObject : public data::FWorldObject
+	{
+	public:
+		PROTOTYPE_CATEGORY(test);
+
+		void PostLoadValidate(const data::PrototypeManager&) const override {
+		}
+
+		J_NODISCARD data::Sprite* OnRGetSprite(data::Sprite::SetT set) const override {
+			return nullptr;
+		}
+
+		J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation orientation,
+													   game::WorldData& world_data,
+		                                               const WorldCoord& world_coords) const override {
+			return 0;
+		}
+
+		J_NODISCARD data::Sprite::FrameT OnRGetSpriteFrame(const data::UniqueDataBase& unique_data,
+														   GameTickT game_tick) const override {
+			return 0;
+		}
+
+		bool OnRShowGui(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
+		                game::ChunkTileLayer* tile_layer) const override {
+			return false;
+		}
+
+		void OnDeserialize(game::WorldData& world_data,
+						   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer)const override {
+		}
+	};
+
+	static_assert(!std::is_abstract_v<TestMockWorldObject>);
+
+
 	inline void TestSetupMultiTileProp(game::ChunkTileLayer& ctl, const game::MultiTileData& mt_data, data::FWorldObject& proto) {
 		proto.tileWidth   = mt_data.span;
 		proto.tileHeight  = mt_data.height;
