@@ -38,13 +38,13 @@ namespace jactorio
 		}
 
 		J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation orientation,
-													   game::WorldData& world_data,
+		                                               game::WorldData& world_data,
 		                                               const WorldCoord& world_coords) const override {
 			return 0;
 		}
 
 		J_NODISCARD data::Sprite::FrameT OnRGetSpriteFrame(const data::UniqueDataBase& unique_data,
-														   GameTickT game_tick) const override {
+		                                                   GameTickT game_tick) const override {
 			return 0;
 		}
 
@@ -54,7 +54,7 @@ namespace jactorio
 		}
 
 		void OnDeserialize(game::WorldData& world_data,
-						   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer)const override {
+		                   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const override {
 		}
 	};
 
@@ -159,7 +159,7 @@ namespace jactorio
 	                                                      const WorldCoord& world_coords,
 	                                                      data::AssemblyMachine& assembly_proto) {
 		auto& origin_layer = TestSetupMultiTile(world_data, assembly_proto,
-												world_coords, game::TileLayer::entity, {2, 2});
+		                                        world_coords, game::TileLayer::entity, {2, 2});
 		origin_layer.MakeUniqueData<data::AssemblyMachineData>();
 		return origin_layer;
 	}
@@ -181,21 +181,21 @@ namespace jactorio
 
 	///
 	/// \brief Creates a drill in the world, calling OnBuild
-	inline game::ChunkTile& TestSetupDrill(game::WorldData& world_data,
-	                                       game::LogicData& logic_data,
-	                                       const WorldCoord& world_coord,
-	                                       data::ResourceEntity& resource,
-	                                       data::MiningDrill& drill,
+	inline game::ChunkTile& TestSetupDrill(game::WorldData& world_data, game::LogicData& logic_data,
+	                                       const WorldCoord& world_coord, const data::Orientation orientation,
+	                                       data::ResourceEntity& resource, data::MiningDrill& drill,
 	                                       const data::ResourceEntityData::ResourceCount resource_amount = 100) {
-		game::ChunkTile* tile = world_data.GetTile(world_coord);
+		auto* tile = world_data.GetTile(world_coord);
 		assert(tile);
+
+		auto& layer = tile->GetLayer(game::TileLayer::entity);
 
 		// Resource needed for OnBuild
 		TestSetupResource(world_data, world_coord, resource, resource_amount);
 
+		layer.prototypeData = &drill;
 		drill.OnBuild(world_data, logic_data,
-		              world_coord, tile->GetLayer(game::TileLayer::entity),
-		              data::Orientation::right);
+					  world_coord, layer, orientation);
 
 		return *tile;
 	}

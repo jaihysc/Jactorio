@@ -104,8 +104,7 @@ namespace jactorio::data
 		///
 		/// \brief Ensures that the mining radius covers a resource entity
 		J_NODISCARD bool OnCanBuild(const game::WorldData& world_data,
-		                            const WorldCoord& world_coords) const
-		override;
+		                            const WorldCoord& world_coords) const override;
 
 		void OnBuild(game::WorldData& world_data,
 		             game::LogicData& logic_data,
@@ -121,6 +120,9 @@ namespace jactorio::data
 		void OnRemove(game::WorldData& world_data,
 		              game::LogicData& logic_data,
 		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
+
+		void OnDeserialize(game::WorldData& world_data,
+						   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const override;
 
 
 		void PostLoadValidate(const PrototypeManager&) const override {
@@ -138,6 +140,10 @@ namespace jactorio::data
 		}
 
 	private:
+		static bool InitializeOutput(game::WorldData& world_data,
+									 const WorldCoord& output_coord, MiningDrillData* drill_data);
+
+		J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& world_coord, Orientation orientation) const;
 
 		J_NODISCARD int GetMiningAreaX() const;
 		J_NODISCARD int GetMiningAreaY() const;

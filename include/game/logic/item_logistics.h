@@ -15,15 +15,13 @@ namespace jactorio::game
 {
 	///
 	/// Initialize: Return false if failed
-#define J_ITEM_HANDLER_COMMON()                                                  \
-	bool Initialize(const WorldData& world_data,                                 \
-	                data::UniqueDataBase& target_unique_data,                    \
+#define J_ITEM_HANDLER_COMMON                                                    \
+	bool Initialize(WorldData& world_data,                                       \
 	                WorldCoordAxis world_x, WorldCoordAxis world_y);             \
 																		         \
-	bool Initialize(const WorldData& world_data,                                 \
-	                data::UniqueDataBase& target_unique_data,                    \
+	bool Initialize(WorldData& world_data,                                       \
 	                const WorldCoord& world_coord) {                             \
-						return Initialize(world_data, target_unique_data, world_coord.x, world_coord.y);};
+						return Initialize(world_data, world_coord.x, world_coord.y);};
 
 	///
 	/// \brief Base class for handling items (pickup / droOff)
@@ -67,7 +65,7 @@ namespace jactorio::game
 			: ItemHandler(orientation) {
 		}
 
-		J_ITEM_HANDLER_COMMON()
+		J_ITEM_HANDLER_COMMON
 
 
 		struct DropOffParams
@@ -129,7 +127,7 @@ namespace jactorio::game
 			: ItemHandler(orientation) {
 		}
 
-		J_ITEM_HANDLER_COMMON()
+		J_ITEM_HANDLER_COMMON
 
 		/// \remark Picks up items when at max deg
 		struct PickupParams

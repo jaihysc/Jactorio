@@ -94,10 +94,10 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 
 
 	if (emit_coords == pickup_coords) {
-		inserter_data.pickup.Initialize(world_data, *target_data, emit_coords);
+		inserter_data.pickup.Initialize(world_data,  emit_coords);
 	}
 	else if (emit_coords == dropoff_coords) {
-		inserter_data.dropoff.Initialize(world_data, *target_data, emit_coords);
+		inserter_data.dropoff.Initialize(world_data,  emit_coords);
 	}
 
 

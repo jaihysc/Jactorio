@@ -14,13 +14,14 @@ namespace jactorio::data
 	class MiningDrillTest : public testing::Test
 	{
 	protected:
-		game::WorldData worldData_{};
-		game::LogicData logicData_{};
+		game::WorldData worldData_;
+		game::LogicData logicData_;
 
-		MiningDrill drillProto_{};
+		MiningDrill drillProto_;
 
-		Item resourceItem_{};
-		ResourceEntity resource_{};
+		Item resourceItem_;
+		ResourceEntity resource_;
+		ContainerEntity container_;
 
 		void SetUp() override {
 			worldData_.EmplaceChunk(0, 0);
@@ -124,12 +125,11 @@ namespace jactorio::data
 
 		drillProto_.miningSpeed          = 2;  // Halves mining time
 		drillProto_.resourceOutput.right = {3, 1};
-		ContainerEntity container{};
 
 
-		TestSetupContainer(worldData_, {4, 2}, container);
+		TestSetupContainer(worldData_, {4, 2}, container_);
 		auto& tile = TestSetupDrill(worldData_, logicData_,
-		                            {1, 1},
+		                            {1, 1}, Orientation::right,
 		                            resource_, drillProto_, 100);
 
 		auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
@@ -167,13 +167,12 @@ namespace jactorio::data
 
 	TEST_F(MiningDrillTest, ExtractRemoveResourceEntity) {
 		drillProto_.resourceOutput.right = {3, 1};
-		const ContainerEntity container{};
 
 
-		TestSetupContainer(worldData_, {4, 2}, container);
+		TestSetupContainer(worldData_, {4, 2}, container_);
 
 		auto& tile = TestSetupDrill(worldData_, logicData_,
-		                            {1, 1},
+		                            {1, 1}, Orientation::right,
 		                            resource_, drillProto_, 1);
 		auto& tile2 = TestSetupResource(worldData_, {3, 4}, resource_, 1);
 		auto& tile3 = TestSetupResource(worldData_, {4, 4}, resource_, 1);
@@ -205,11 +204,12 @@ namespace jactorio::data
 		// If output is blocked, drill attempts to output at next game tick
 
 		drillProto_.resourceOutput.right = {3, 1};
-		ContainerEntity container{};
 
 
-		TestSetupContainer(worldData_, {4, 2}, container, 1);
-		TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
+		TestSetupContainer(worldData_, {4, 2}, container_, 1);
+		TestSetupDrill(worldData_, logicData_,
+		               {1, 1}, Orientation::right,
+		               resource_, drillProto_);
 
 		// ======================================================================
 
@@ -238,7 +238,9 @@ namespace jactorio::data
 		AssemblyMachine asm_machine{};
 		TestSetupAssemblyMachine(worldData_, {4, 1}, asm_machine);
 
-		auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
+		auto& tile = TestSetupDrill(worldData_, logicData_,
+		                            {1, 1}, Orientation::right,
+		                            resource_, drillProto_);
 		auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
 		EXPECT_TRUE(data->output.IsInitialized());
@@ -249,11 +251,12 @@ namespace jactorio::data
 		// Should do nothing until an output is built
 
 		drillProto_.resourceOutput.right = {3, 1};
-		ContainerEntity container{};
 
 
-		auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
-		TestSetupContainer(worldData_, {4, 2}, container);
+		auto& tile = TestSetupDrill(worldData_, logicData_,
+		                            {1, 1}, Orientation::right,
+		                            resource_, drillProto_);
+		TestSetupContainer(worldData_, {4, 2}, container_);
 
 		drillProto_.OnNeighborUpdate(worldData_, logicData_,
 		                             {4, 2},
@@ -281,10 +284,12 @@ namespace jactorio::data
 		// callback to the unique_data which now no longer exists
 
 		drillProto_.resourceOutput.right = {3, 1};
-		ContainerEntity container{};
 
-		TestSetupContainer(worldData_, {4, 2}, container);
-		auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
+
+		TestSetupContainer(worldData_, {4, 2}, container_);
+		auto& tile = TestSetupDrill(worldData_, logicData_,
+		                            {1, 1}, Orientation::right,
+		                            resource_, drillProto_);
 
 		drillProto_.OnRemove(worldData_, logicData_,
 		                     {1, 1}, tile.GetLayer(game::TileLayer::entity));
@@ -299,10 +304,12 @@ namespace jactorio::data
 		// When the mining drill's output entity is removed, it needs to unregister the defer update
 
 		drillProto_.resourceOutput.right = {3, 1};
-		ContainerEntity container{};
 
-		TestSetupContainer(worldData_, {4, 2}, container);
-		TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
+
+		TestSetupContainer(worldData_, {4, 2}, container_);
+		TestSetupDrill(worldData_, logicData_,
+		               {1, 1}, Orientation::right,
+		               resource_, drillProto_);
 
 		// Remove chest
 		game::ChunkTile* tile = worldData_.GetTile(4, 2);
@@ -328,12 +335,14 @@ namespace jactorio::data
 
 		drillProto_.resourceOutput.up    = {1, -1};
 		drillProto_.resourceOutput.right = {3, 1};
-		TestSetupDrill(worldData_, logicData_, {1, 1}, resource_, drillProto_);
+		TestSetupDrill(worldData_, logicData_,
+		               {1, 1}, Orientation::right,
+		               resource_, drillProto_);
 
 		// ======================================================================
-		ContainerEntity container{};
-		TestSetupContainer(worldData_, {2, 0}, container);
-		TestSetupContainer(worldData_, {4, 1}, container);
+
+		TestSetupContainer(worldData_, {2, 0}, container_);
+		TestSetupContainer(worldData_, {4, 1}, container_);
 
 		drillProto_.OnNeighborUpdate(worldData_, logicData_,
 		                             {2, 0},
@@ -364,16 +373,34 @@ namespace jactorio::data
 	}
 
 	TEST_F(MiningDrillTest, Serialize) {
-		auto derived = std::make_unique<MiningDrillData>(Orientation::down);
+		auto derived    = std::make_unique<MiningDrillData>(Orientation::down);
 		derived->health = 4392;
 
 		std::unique_ptr<UniqueDataBase> base = std::move(derived);
 
 		// ======================================================================
 
-		const auto result_base = TestSerializeDeserialize(base);
+		const auto result_base     = TestSerializeDeserialize(base);
 		const auto* result_derived = static_cast<const MiningDrillData*>(result_base.get());
 
 		EXPECT_EQ(result_derived->health, 4392);
+	}
+
+	TEST_F(MiningDrillTest, OnDeserialize) {
+		drillProto_.resourceOutput.down = {1, 3};
+
+		auto& tile = TestSetupDrill(worldData_, logicData_,
+		                            {1, 1}, Orientation::down,
+		                            resource_, drillProto_);
+
+		// Drill's output is current uninitialized
+
+		TestSetupContainer(worldData_, {2, 4}, container_);
+
+		worldData_.DeserializePostProcess();
+
+		// Now initialized
+
+		EXPECT_TRUE(tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>()->output.IsInitialized());
 	}
 }

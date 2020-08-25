@@ -9,16 +9,17 @@
 #include "game/logic/item_logistics.h"
 #include "renderer/gui/gui_menus.h"
 
+using namespace jactorio;
 
-bool jactorio::data::MiningDrill::OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
-                                             game::ChunkTileLayer* tile_layer) const {
+bool data::MiningDrill::OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
+                                   game::ChunkTileLayer* tile_layer) const {
 	auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
 
 	renderer::MiningDrill(player_data, data_manager, this, drill_data);
 	return true;
 }
 
-jactorio::data::Sprite* jactorio::data::MiningDrill::OnRGetSprite(const Sprite::SetT set) const {
+data::Sprite* data::MiningDrill::OnRGetSprite(const Sprite::SetT set) const {
 	if (set <= 7)
 		return sprite;
 
@@ -31,9 +32,9 @@ jactorio::data::Sprite* jactorio::data::MiningDrill::OnRGetSprite(const Sprite::
 	return spriteW;
 }
 
-jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
-                                                                          game::WorldData&,
-                                                                          const WorldCoord&) const {
+data::Sprite::SetT data::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
+                                                      game::WorldData&,
+                                                      const WorldCoord&) const {
 	switch (orientation) {
 	case Orientation::up:
 		return 0;
@@ -50,8 +51,8 @@ jactorio::data::Sprite::SetT jactorio::data::MiningDrill::OnRGetSpriteSet(const 
 	}
 }
 
-jactorio::data::Sprite::FrameT jactorio::data::MiningDrill::OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                                              GameTickT game_tick) const {
+data::Sprite::FrameT data::MiningDrill::OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                          GameTickT game_tick) const {
 	const auto& drill_data = static_cast<const MiningDrillData&>(unique_data);
 
 	// Drill is inactive
@@ -63,8 +64,8 @@ jactorio::data::Sprite::FrameT jactorio::data::MiningDrill::OnRGetSpriteFrame(co
 
 // ======================================================================
 
-jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::WorldData& world_data,
-                                                                  WorldCoord world_pair) const {
+data::Item* data::MiningDrill::FindOutputItem(const game::WorldData& world_data,
+                                              WorldCoord world_pair) const {
 	world_pair.x -= this->miningRadius;
 	world_pair.y -= this->miningRadius;
 
@@ -82,8 +83,8 @@ jactorio::data::Item* jactorio::data::MiningDrill::FindOutputItem(const game::Wo
 	return nullptr;
 }
 
-void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,
-                                                     UniqueDataBase* unique_data) const {
+void data::MiningDrill::OnDeferTimeElapsed(game::WorldData& world_data, game::LogicData& logic_data,
+                                           UniqueDataBase* unique_data) const {
 	// Re-register callback and insert item, remove item from ground for next elapse
 	auto* drill_data = static_cast<MiningDrillData*>(unique_data);
 
@@ -103,8 +104,8 @@ void jactorio::data::MiningDrill::OnDeferTimeElapsed(game::WorldData& world_data
 }
 
 
-bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
-                                             const WorldCoord& world_coords) const {
+bool data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
+                                   const WorldCoord& world_coords) const {
 	auto coords = world_coords;
 	/*
 	 * [ ] [ ] [ ] [ ] [ ]
@@ -129,14 +130,10 @@ bool jactorio::data::MiningDrill::OnCanBuild(const game::WorldData& world_data,
 	return false;
 }
 
-void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
-                                          game::LogicData& logic_data,
-                                          const WorldCoord& world_coords,
-                                          game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
-	WorldCoord output_coords = this->resourceOutput.Get(orientation);
-	output_coords.x += world_coords.x;
-	output_coords.y += world_coords.y;
-
+void data::MiningDrill::OnBuild(game::WorldData& world_data,
+                                game::LogicData& logic_data,
+                                const WorldCoord& world_coords,
+                                game::ChunkTileLayer& tile_layer, const Orientation orientation) const {
 	auto* drill_data = tile_layer.MakeUniqueData<MiningDrillData>(orientation);
 	assert(drill_data);
 
@@ -148,16 +145,18 @@ void jactorio::data::MiningDrill::OnBuild(game::WorldData& world_data,
 	assert(success);
 	assert(drill_data->outputItem != nullptr);  // Should not have been allowed to be placed on no resources
 
-	drill_data->set              = OnRGetSpriteSet(orientation, world_data, world_coords);
+	const auto output_coords = GetOutputCoord(world_coords, orientation);
+
+	drill_data->set        = OnRGetSpriteSet(orientation, world_data, world_coords);
 	drill_data->outputTile = output_coords;
 
 	OnNeighborUpdate(world_data, logic_data, output_coords, world_coords, orientation);
 }
 
-void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
-                                                   game::LogicData& logic_data,
-                                                   const WorldCoord& emit_world_coords,
-                                                   const WorldCoord& receive_world_coords, Orientation) const {
+void data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
+                                         game::LogicData& logic_data,
+                                         const WorldCoord& emit_world_coords,
+                                         const WorldCoord& receive_world_coords, Orientation) const {
 	auto& self_layer = world_data.GetTile(receive_world_coords)->GetLayer(game::TileLayer::entity);
 
 	auto* drill_data = static_cast<MiningDrillData*>(self_layer.GetUniqueData());
@@ -167,14 +166,9 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 	if (emit_world_coords != drill_data->outputTile)
 		return;
 
-	auto& output_layer = world_data.GetTile(emit_world_coords)->GetLayer(game::TileLayer::entity);
-
-	const bool initialized =
-		drill_data->output.Initialize(world_data,
-		                                  *output_layer.GetUniqueData(), emit_world_coords);
 
 	// Do not register callback to mine items if there is no valid entity to output items to
-	if (initialized) {
+	if (InitializeOutput(world_data, emit_world_coords, drill_data)) {
 		drill_data->miningTicks =
 			core::LossyCast<uint16_t>(core::SafeCast<float>(kGameHertz) * drill_data->outputItem->entityPrototype->pickupTime);
 
@@ -189,25 +183,47 @@ void jactorio::data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 }
 
 
-void jactorio::data::MiningDrill::OnRemove(game::WorldData&,
-                                           game::LogicData& logic_data,
-                                           const WorldCoord&, game::ChunkTileLayer& tile_layer) const {
+void data::MiningDrill::OnRemove(game::WorldData&,
+                                 game::LogicData& logic_data,
+                                 const WorldCoord&, game::ChunkTileLayer& tile_layer) const {
 	auto* drill_data = tile_layer.GetUniqueData<MiningDrillData>();
 	logic_data.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
 }
 
+void data::MiningDrill::OnDeserialize(game::WorldData& world_data,
+                                      const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const {
+	auto* drill_data = tile_layer.GetUniqueData<MiningDrillData>();
+	assert(drill_data != nullptr);
+
+	InitializeOutput(world_data, GetOutputCoord(world_coord, drill_data->output.GetOrientation()), drill_data);
+}
+
 // ======================================================================
 
-int jactorio::data::MiningDrill::GetMiningAreaX() const {
+bool data::MiningDrill::InitializeOutput(game::WorldData& world_data, 
+										 const WorldCoord& output_coord, MiningDrillData* drill_data) {
+	return drill_data->output.Initialize(world_data, output_coord);
+}
+
+WorldCoord data::MiningDrill::GetOutputCoord(const WorldCoord& world_coord, const Orientation orientation) const {
+	WorldCoord output_coords = this->resourceOutput.Get(orientation);
+	output_coords.x += world_coord.x;
+	output_coords.y += world_coord.y;
+
+	return output_coords;
+}
+
+
+int data::MiningDrill::GetMiningAreaX() const {
 	return 2 * this->miningRadius + this->tileWidth;
 }
 
-int jactorio::data::MiningDrill::GetMiningAreaY() const {
+int data::MiningDrill::GetMiningAreaY() const {
 	return 2 * this->miningRadius + this->tileHeight;
 }
 
-bool jactorio::data::MiningDrill::SetupResourceDeduction(const game::WorldData& world_data,
-                                                         MiningDrillData& drill_data) const {
+bool data::MiningDrill::SetupResourceDeduction(const game::WorldData& world_data,
+                                               MiningDrillData& drill_data) const {
 	const auto x_span = GetMiningAreaX();
 	const auto y_span = GetMiningAreaY();
 
@@ -230,8 +246,8 @@ bool jactorio::data::MiningDrill::SetupResourceDeduction(const game::WorldData& 
 	return false;
 }
 
-bool jactorio::data::MiningDrill::DeductResource(game::WorldData& world_data, MiningDrillData& drill_data,
-                                                 const ResourceEntityData::ResourceCount amount) const {
+bool data::MiningDrill::DeductResource(game::WorldData& world_data, MiningDrillData& drill_data,
+                                       const ResourceEntityData::ResourceCount amount) const {
 
 	auto get_resource_layer = [&]() {
 		auto* resource_tile =
@@ -268,16 +284,16 @@ bool jactorio::data::MiningDrill::DeductResource(game::WorldData& world_data, Mi
 	return true;
 }
 
-void jactorio::data::MiningDrill::RegisterMineCallback(game::DeferralTimer& timer,
-                                                       MiningDrillData* unique_data) const {
+void data::MiningDrill::RegisterMineCallback(game::DeferralTimer& timer,
+                                             MiningDrillData* unique_data) const {
 	const auto mine_ticks = core::LossyCast<GameTickT>(unique_data->miningTicks / miningSpeed);
 	assert(mine_ticks > 0);
 
 	unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, mine_ticks);
 }
 
-void jactorio::data::MiningDrill::RegisterOutputCallback(game::DeferralTimer& timer,
-                                                         MiningDrillData* unique_data) const {
+void data::MiningDrill::RegisterOutputCallback(game::DeferralTimer& timer,
+                                               MiningDrillData* unique_data) const {
 	constexpr int output_retry_ticks = 1;
 	static_assert(output_retry_ticks > 0);
 
