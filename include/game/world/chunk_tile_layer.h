@@ -6,7 +6,7 @@
 
 #include "data/cereal/serialization_type.h"
 #include "data/cereal/serialize.h"
-#include "data/prototype/framework/renderable.h"
+#include "data/prototype/framework/world_object.h"
 
 #include <cereal/cereal.hpp>
 
@@ -39,7 +39,7 @@ namespace jactorio::game
 	public:
 		ChunkTileLayer() = default;
 
-		explicit ChunkTileLayer(const data::FRenderable* proto)
+		explicit ChunkTileLayer(const data::FWorldObject* proto)
 			: prototypeData(proto) {
 		}
 
@@ -73,7 +73,7 @@ namespace jactorio::game
 
 		///
 		/// \tparam T Return type which prototypeData is cast to
-		template <typename T = data::FRenderable>
+		template <typename T = data::FWorldObject>
 		J_NODISCARD const T* GetPrototypeData() const;
 
 		// Unique data
@@ -87,26 +87,26 @@ namespace jactorio::game
 		///
 		/// \brief Unique data at current layer or if multi tile, top left
 		/// \tparam T Return type which uniqueData is cast to
-		template <typename T = data::UniqueDataBase>
+		template <typename T = data::FWorldObjectData>
 		J_NODISCARD T* GetUniqueData() noexcept;
 
 		///
 		/// \brief Unique data at current layer or if multi tile, top left
 		/// \tparam T Return type which uniqueData is cast to
-		template <typename T = data::UniqueDataBase>
+		template <typename T = data::FWorldObjectData>
 		J_NODISCARD const T* GetUniqueData() const noexcept;
 
 
 		///
 		/// \brief Unique data at current layer
 		/// \tparam T Return type which uniqueData is cast to
-		template <typename T = data::UniqueDataBase>
+		template <typename T = data::FWorldObjectData>
 		J_NODISCARD T* GetUniqueDataLocal() noexcept;
 
 		///
 		/// \brief Unique data at current layer
 		/// \tparam T Return type which uniqueData is cast to
-		template <typename T = data::UniqueDataBase>
+		template <typename T = data::FWorldObjectData>
 		J_NODISCARD const T* GetUniqueDataLocal() const noexcept;
 
 
@@ -164,7 +164,7 @@ namespace jactorio::game
 		}
 
 		/// A layer may point to a tile prototype to provide additional data (collisions, world gen) 
-		data::SerialProtoPtr<const data::FRenderable> prototypeData;
+		data::SerialProtoPtr<const data::FWorldObject> prototypeData;
 
 	private:
 		/// uniqueData when multiTileIndex == 0, topLeft when multiTileIndex != 0 
@@ -210,6 +210,8 @@ namespace jactorio::game
 
 	template <typename TData, typename ... Args>
 	TData* ChunkTileLayer::MakeUniqueData(Args&&... args) {
+		static_assert(std::is_base_of_v<data::FWorldObjectData, TData>);
+
 		if (IsMultiTile())
 			assert(IsMultiTileTopLeft());
 		assert(!data_.uniqueData);  // Trying to create already created uniqueData

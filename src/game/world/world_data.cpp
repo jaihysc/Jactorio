@@ -460,6 +460,8 @@ void game::WorldData::ResolveMultiTileTopLeft() {
 
 						layer.SetTopLeftLayer(tl_tile->GetLayer(layer_i));
 					}
+
+					// assert(layer.prototypeData != nullptr);
 				}
 				
 			}

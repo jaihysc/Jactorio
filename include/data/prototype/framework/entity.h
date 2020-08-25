@@ -4,21 +4,21 @@
 #define JACTORIO_DATA_PROTOTYPE_FRAMEWORK_ENTITY_H
 #pragma once
 
-#include "data/prototype/framework/renderable.h"
+#include "data/prototype/framework/world_object.h"
 #include "data/prototype/interface/deferred.h"
 #include "data/prototype/interface/rotatable.h"
 #include "data/prototype/interface/update_listener.h"
 
 namespace jactorio::data
 {
-	struct FEntityData : FRenderableData
+	struct FEntityData : FWorldObjectData
 	{
 		CEREAL_SERIALIZE(archive) {
-			archive(cereal::base_class<FRenderableData>(this));
+			archive(cereal::base_class<FWorldObjectData>(this));
 		}
 	};
 
-	class FEntity : public FRenderable, public IRotatable, public IDeferred, public IUpdateListener
+	class FEntity : public FWorldObject, public IRotatable, public IDeferred, public IUpdateListener
 	{
 	};
 }

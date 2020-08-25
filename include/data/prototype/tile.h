@@ -5,14 +5,14 @@
 
 #include "data/prototype/sprite.h"
 #include "data/prototype/framework/framework_base.h"
-#include "data/prototype/framework/renderable.h"
+#include "data/prototype/framework/world_object.h"
 
 namespace jactorio::data
 {
 	///
 	/// \brief Tiles which are auto-placed by the world generator <br>
 	/// Configure how the world generator places these tiles with a Noise_layer
-	class Tile final : public FRenderable
+	class Tile final : public FWorldObject
 	{
 	public:
 		PROTOTYPE_CATEGORY(tile);

@@ -23,7 +23,7 @@ namespace jactorio
 	// It is difficult to compute enough decimal points by hand for EXPECT_DOUBLE_EQ, thus EXPECT_NEAR is used
 	constexpr double kFloatingAbsErr = 0.000000001;
 
-	inline void TestSetupMultiTileProp(game::ChunkTileLayer& ctl, const game::MultiTileData& mt_data, data::FRenderable& proto) {
+	inline void TestSetupMultiTileProp(game::ChunkTileLayer& ctl, const game::MultiTileData& mt_data, data::FWorldObject& proto) {
 		proto.tileWidth   = mt_data.span;
 		proto.tileHeight  = mt_data.height;
 		ctl.prototypeData = &proto;
@@ -34,7 +34,7 @@ namespace jactorio
 	/// \tparam SetTopLeftLayer If false, non top left multi tiles will not know the top left layer
 	/// \return Top left tile
 	template <bool SetTopLeftLayer = true>
-	game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world_data, data::FRenderable& proto,
+	game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world_data, data::FWorldObject& proto,
 	                                         const WorldCoord& world_coord, const game::TileLayer tile_layer,
 	                                         const game::MultiTileData& mt_data) {
 

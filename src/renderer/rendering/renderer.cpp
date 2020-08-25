@@ -334,11 +334,11 @@ void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, const game::C
 		const auto& tile_layer = tile.GetLayer(layer_index);
 
 
-		const auto* proto = tile_layer.GetPrototypeData<data::FRenderable>();
+		const auto* proto = tile_layer.GetPrototypeData();
 		if (!proto)  // Layer not initialized
 			continue;
 
-		const auto* unique_data = tile_layer.GetUniqueData<data::FRenderableData>();
+		const auto* unique_data = tile_layer.GetUniqueData();
 
 		// Unique data can be nullptr for certain layers
 
