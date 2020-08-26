@@ -64,7 +64,7 @@ namespace jactorio::data
 		/// The logic chunk line_segment associated
 		std::shared_ptr<game::TransportSegment> lineSegment;
 
-		/// The distance to the head of the transport line
+		/// Tile distance to the head of the transport line
 		/// \remark For rendering purposes, the length should never exceed ~2 chunks at most
 		uint8_t lineSegmentIndex = 0;
 
@@ -109,18 +109,10 @@ namespace jactorio::data
 		/// \brief Attempts to retrieve transport line data at world coordinates on tile
 		/// \return pointer to data or nullptr if non existent
 		J_NODISCARD static TransportLineData* GetLineData(game::WorldData& world_data,
-		                                                  WorldCoordAxis world_x,
-		                                                  WorldCoordAxis world_y);
+		                                                  WorldCoordAxis world_x, WorldCoordAxis world_y);
 
 		J_NODISCARD static const TransportLineData* GetLineData(const game::WorldData& world_data,
-		                                                        WorldCoordAxis world_x,
-		                                                        WorldCoordAxis world_y);
-
-		static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
-		                                                             TransportLineData* up,
-		                                                             TransportLineData* right,
-		                                                             TransportLineData* down,
-		                                                             TransportLineData* left);
+		                                                        WorldCoordAxis world_x, WorldCoordAxis world_y);
 
 		///
 		/// \brief Gets transport segment at world coords
@@ -128,6 +120,15 @@ namespace jactorio::data
 		static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
 		                                                                    WorldCoordAxis world_x,
 		                                                                    WorldCoordAxis world_y);
+
+		///
+		/// \brief Determines line orientation given orientation and neighbors
+		static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
+		                                                             TransportLineData* up,
+		                                                             TransportLineData* right,
+		                                                             TransportLineData* down,
+		                                                             TransportLineData* left);
+
 
 		// ======================================================================
 		// Game events
@@ -140,6 +141,7 @@ namespace jactorio::data
 		                                         const WorldCoord& world_coords) const override;
 
 		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const override;
+
 
 		void OnBuild(game::WorldData& world_data,
 		             game::LogicData& logic_data,

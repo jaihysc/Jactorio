@@ -11,25 +11,23 @@
 
 namespace jactorio::data
 {
-	/*
 	// General tests
 	// Neighbor updates
 	// Bends
 	// Side only
 	// Connecting segments
 	// Grouping
-	*/
 
 	class TransportLineTest : public testing::Test
 	{
 	protected:
-		game::WorldData worldData_{};
-		game::LogicData logicData_{};
+		game::WorldData worldData_;
+		game::LogicData logicData_;
 
-		TransportBelt lineProto_{};
+		TransportBelt lineProto_;
 
 		void SetUp() override {
-			worldData_.AddChunk(game::Chunk{0, 0});
+			worldData_.EmplaceChunk({0, 0});
 		}
 
 		// ======================================================================
@@ -41,47 +39,30 @@ namespace jactorio::data
 
 		///
 		/// \brief Sets the prototype pointer for a transport line at tile
-		void BuildTransportLine(
-			const WorldCoord world_coords,
-			const Orientation orientation) {
+		game::ChunkTileLayer& BuildTransportLine(const WorldCoord world_coords, const Orientation orientation) {
+			auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)->GetLayer(game::TileLayer::entity);
 
-			auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)
-			                        ->GetLayer(game::TileLayer::entity);
 			layer.prototypeData = &lineProto_;
 			TlBuildEvents(world_coords, orientation);
-		}
 
-		///
-		/// \brief Creates new Transport line segment alongside data at tile
-		void AddTransportLine(const TransportLineData::LineOrientation orientation,
-		                      const WorldCoordAxis x,
-		                      const WorldCoordAxis y) {
-			auto& layer         = worldData_.GetTile(x, y)->GetLayer(game::TileLayer::entity);
-			layer.prototypeData = &lineProto_;
-
-			TlBuildEvents({x, y}, TransportLineData::ToOrientation(orientation));
-		}
-
-		void AddTransportLine(const WorldCoord& world_coords,
-		                      const TransportLineData::LineOrientation orientation) {
-			AddTransportLine(orientation, world_coords.x, world_coords.y);
+			return layer;
 		}
 
 		/// Creates a transport line with the provided orientation above/right/below/left of 1, 1
-		void AddTopTransportLine(const TransportLineData::LineOrientation orientation) {
-			AddTransportLine(orientation, 1, 0);
+		auto& BuildTopTransportLine(const Orientation orientation) {
+			return BuildTransportLine({1, 0}, orientation);
 		}
 
-		void AddRightTransportLine(const TransportLineData::LineOrientation orientation) {
-			AddTransportLine(orientation, 2, 1);
+		auto& BuildRightTransportLine(const Orientation orientation) {
+			return BuildTransportLine({2, 1}, orientation);
 		}
 
-		void AddBottomTransportLine(const TransportLineData::LineOrientation orientation) {
-			AddTransportLine(orientation, 1, 2);
+		auto& BuildBottomTransportLine(const Orientation orientation) {
+			return BuildTransportLine({1, 2}, orientation);
 		}
 
-		void AddLeftTransportLine(const TransportLineData::LineOrientation orientation) {
-			AddTransportLine(orientation, 0, 1);
+		auto& BuildLeftTransportLine(const Orientation orientation) {
+			return BuildTransportLine({0, 1}, orientation);
 		}
 
 		///
@@ -92,25 +73,6 @@ namespace jactorio::data
 			          static_cast<data::Sprite::SetT>(expected_line_orientation));
 		}
 
-		// ======================================================================
-	private:
-		void DispatchNeighborUpdate(const WorldCoord& emit_coords,
-		                            const WorldCoord& receive_coords,
-		                            const Orientation emit_orientation) {
-
-			auto* tile = worldData_.GetTile(receive_coords);
-			if (!tile)
-				return;
-
-			auto& layer = tile->GetLayer(game::TileLayer::entity);
-			if (!layer.prototypeData.Get())
-				return;
-
-			static_cast<const Entity*>(layer.prototypeData.Get())
-				->OnNeighborUpdate(worldData_, logicData_, emit_coords, receive_coords, emit_orientation);
-		}
-
-	protected:
 		///
 		/// \brief Dispatches the appropriate events for when a transport line is built
 		void TlBuildEvents(const WorldCoord& world_coords,
@@ -182,17 +144,14 @@ namespace jactorio::data
 
 		// Grouping
 
-		std::vector<game::ChunkTileLayer*>& GetTransportLines(
-			const ChunkCoord& chunk_coords) {
+		std::vector<game::ChunkTileLayer*>& GetTransportLines(const ChunkCoord& chunk_coords) {
 			return worldData_.GetChunkC(chunk_coords.x, chunk_coords.y)
 			                 ->GetLogicGroup(game::Chunk::LogicGroup::transport_line);
 		}
 
 		J_NODISCARD auto& GetLineData(const WorldCoord& world_coords) const {
-			return *static_cast<const TransportLineData*>(
-				worldData_.GetTile(world_coords)->GetLayer(
-					game::TileLayer::entity).GetUniqueData()
-			);
+			return *worldData_.GetTile(world_coords)
+			                  ->GetLayer(game::TileLayer::entity).GetUniqueData<TransportLineData>();
 		}
 
 		auto GetLineSegmentIndex(const WorldCoord& world_coords) const {
@@ -221,6 +180,23 @@ namespace jactorio::data
 
 			EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 		}
+
+	private:
+		void DispatchNeighborUpdate(const WorldCoord& emit_coords,
+		                            const WorldCoord& receive_coords,
+		                            const Orientation emit_orientation) {
+
+			auto* tile = worldData_.GetTile(receive_coords);
+			if (!tile)
+				return;
+
+			auto& layer = tile->GetLayer(game::TileLayer::entity);
+			if (!layer.prototypeData.Get())
+				return;
+
+			static_cast<const Entity*>(layer.prototypeData.Get())
+				->OnNeighborUpdate(worldData_, logicData_, emit_coords, receive_coords, emit_orientation);
+		}
 	};
 
 
@@ -229,7 +205,7 @@ namespace jactorio::data
 
 	TEST_F(TransportLineTest, OnBuildCreateTransportLineSegment) {
 		// Should create a transport line segment and add its chunk to logic chunks
-		worldData_.AddChunk(game::Chunk{-1, 0});
+		worldData_.EmplaceChunk({-1, 0});
 
 		auto& layer = worldData_.GetTile(-5, 0)
 		                        ->GetLayer(game::TileLayer::entity);
@@ -256,7 +232,7 @@ namespace jactorio::data
 
 	TEST_F(TransportLineTest, OnRemoveDeleteTransportLineSegment) {
 		// Removing a transport line needs to delete the transport line segment associated with it
-		AddTransportLine({0, 0}, TransportLineData::LineOrientation::left);
+		BuildTransportLine({0, 0}, Orientation::left);
 
 		TlRemoveEvents({0, 0});
 
@@ -279,11 +255,11 @@ namespace jactorio::data
 		 * 4 3 2
 		 *   1
 		 */
-		AddTransportLine({1, 1}, TransportLineData::LineOrientation::up);
+		BuildTransportLine({1, 1}, Orientation::up);
 
-		AddTransportLine({2, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
+		BuildTransportLine({2, 0}, Orientation::right);
+		BuildTransportLine({1, 0}, Orientation::right);
+		BuildTransportLine({0, 0}, Orientation::right);
 
 		auto& tile_layers = GetTransportLines({0, 0});
 
@@ -302,11 +278,11 @@ namespace jactorio::data
 		 * /> > > 
 		 *    ^ 
 		 */
-		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({2, 0}, TransportLineData::LineOrientation::right);
+		BuildTransportLine({0, 0}, Orientation::right);
+		BuildTransportLine({1, 0}, Orientation::right);
+		BuildTransportLine({2, 0}, Orientation::right);
 
-		AddTransportLine({1, 1}, TransportLineData::LineOrientation::up);
+		BuildTransportLine({1, 1}, Orientation::up);
 
 
 		TlRemoveEvents({0, 0});
@@ -326,13 +302,13 @@ namespace jactorio::data
 		 * >
 		 * ^
 		 */
-		AddTopTransportLine(TransportLineData::LineOrientation::right);
+		BuildTopTransportLine(Orientation::right);
 
 		auto& layer = worldData_.GetTile(1, 1)
 		                        ->GetLayer(game::TileLayer::entity);
 
 
-		auto proto          = TransportBelt{};
+		TransportBelt proto;
 		layer.prototypeData = &proto;
 
 
@@ -359,9 +335,9 @@ namespace jactorio::data
 		 *  >
 		 *  ^
 		 */
-		AddTopTransportLine(TransportLineData::LineOrientation::down);
-		AddBottomTransportLine(TransportLineData::LineOrientation::up);
-		AddTransportLine(TransportLineData::LineOrientation::right, 1, 1);  // Between the 2 above and below
+		BuildTopTransportLine(Orientation::down);
+		BuildBottomTransportLine(Orientation::up);
+		BuildTransportLine({1, 1}, Orientation::right);  // Between the 2 above and below
 
 		auto& layer = worldData_.GetTile(1, 2)
 		                        ->GetLayer(game::TileLayer::entity);
@@ -446,8 +422,8 @@ namespace jactorio::data
 		 * v
 		 * >
 		 */
-		AddTransportLine({0, 0}, TransportLineData::LineOrientation::down);
-		AddTransportLine({0, 1}, TransportLineData::LineOrientation::right);
+		BuildTransportLine({0, 0}, Orientation::down);
+		BuildTransportLine({0, 1}, Orientation::right);
 
 
 		TlRemoveEvents({0, 1});
@@ -482,217 +458,265 @@ namespace jactorio::data
 	}
 
 
-	TEST_F(TransportLineTest, OrientationUp1) {
+	TEST_F(TransportLineTest, RightBendUp) {
 		/*
 		 * > ^
 		 */
-		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+		BuildLeftTransportLine(Orientation::right);
 		ValidateResultOrientation(Orientation::up,
 		                          TransportLineData::LineOrientation::right_up);
 	}
 
-	TEST_F(TransportLineTest, OrientationUp2) {
+	TEST_F(TransportLineTest, LeftBendUp) {
 		/*
 		 *   ^ <
 		 */
-		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		BuildRightTransportLine(Orientation::left);
 		ValidateResultOrientation(Orientation::up,
 		                          TransportLineData::LineOrientation::left_up);
 	}
 
-	TEST_F(TransportLineTest, OrientationUp3) {
+	TEST_F(TransportLineTest, LeftRightStraightUp) {
 		/*
 		 * > ^ <
 		 */
 		// Top and bottom points to one line, line should be straight
 
-		AddLeftTransportLine(TransportLineData::LineOrientation::right);
-		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		BuildLeftTransportLine(Orientation::right);
+		BuildRightTransportLine(Orientation::left);
 		ValidateResultOrientation(Orientation::up,
 		                          TransportLineData::LineOrientation::up);
 	}
 
-	TEST_F(TransportLineTest, OrientationUp4) {
+	TEST_F(TransportLineTest, RightBendUpHasRightBehind) {
 		/*
 		 * > ^ 
 		 *   >
 		 */
-		AddLeftTransportLine(TransportLineData::LineOrientation::right);
-		AddBottomTransportLine(TransportLineData::LineOrientation::right_down);
+		BuildLeftTransportLine(Orientation::right);
+		BuildBottomTransportLine(Orientation::down);
 		ValidateResultOrientation(Orientation::up,
 		                          TransportLineData::LineOrientation::right_up);
 	}
 
-	TEST_F(TransportLineTest, OrientationUp5) {
+	TEST_F(TransportLineTest, RightStraightUpHasUpBehind) {
 		/*
 		 * > ^ 
 		 *   ^
 		 */
-		AddLeftTransportLine(TransportLineData::LineOrientation::right);
-		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		BuildLeftTransportLine(Orientation::right);
+		BuildBottomTransportLine(Orientation::up);
 		ValidateResultOrientation(Orientation::up,
 		                          TransportLineData::LineOrientation::up);
 	}
 
-	TEST_F(TransportLineTest, OrientationUp6) {
+	TEST_F(TransportLineTest, LeftBendUpHasLeftAtLeftSide) {
 		/*
 		 * < ^ <
 		 */
 
-		AddLeftTransportLine(TransportLineData::LineOrientation::left);
-		AddRightTransportLine(TransportLineData::LineOrientation::left);
+		BuildLeftTransportLine(Orientation::left);
+		BuildRightTransportLine(Orientation::left);
 		ValidateResultOrientation(Orientation::up,
 		                          TransportLineData::LineOrientation::left_up);
 	}
 
 	// ===
 
-	TEST_F(TransportLineTest, OrientationRight1) {
+	TEST_F(TransportLineTest, DownBendRight) {
 		/*
 		 *  v
 		 *  >
 		 */
-		AddTopTransportLine(TransportLineData::LineOrientation::down);
+		BuildTopTransportLine(Orientation::down);
 		ValidateResultOrientation(Orientation::right,
 		                          TransportLineData::LineOrientation::down_right);
 	}
 
-	TEST_F(TransportLineTest, OrientationRight2) {
+	TEST_F(TransportLineTest, UpBendRight) {
 		/*
 		 * >
 		 * ^
 		 */
-		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		BuildBottomTransportLine(Orientation::up);
 		ValidateResultOrientation(Orientation::right,
 		                          TransportLineData::LineOrientation::up_right);
 	}
 
-	TEST_F(TransportLineTest, OrientationRight3) {
-		// Top and bottom points to one line, line should be straight
+	TEST_F(TransportLineTest, UpDownStraightRight) {
+		/*
+		 * v
+		 * >
+		 * ^
+		 */
 
-		AddTopTransportLine(TransportLineData::LineOrientation::down);
-		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		BuildTopTransportLine(Orientation::down);
+		BuildBottomTransportLine(Orientation::up);
 		ValidateResultOrientation(Orientation::right,
 		                          TransportLineData::LineOrientation::right);
 	}
 
-	TEST_F(TransportLineTest, OrientationRight4) {
+	TEST_F(TransportLineTest, DownBendRightHasUpAtLeftSide) {
 		/*
 		 *   v
 		 * ^ >
 		 */
-		AddTopTransportLine(TransportLineData::LineOrientation::down);
-		AddLeftTransportLine(TransportLineData::LineOrientation::up);  // Does not point to center
+		BuildTopTransportLine(Orientation::down);
+		BuildLeftTransportLine(Orientation::up);
 		ValidateResultOrientation(Orientation::right,
 		                          TransportLineData::LineOrientation::down_right);
 	}
 
-	TEST_F(TransportLineTest, OrientationRight5) {
+	TEST_F(TransportLineTest, DownStraightRightHasRightAtLeftSide) {
 		/*
 		 *   v
 		 * > >
 		 */
-		AddTopTransportLine(TransportLineData::LineOrientation::down);
-		AddLeftTransportLine(
-			TransportLineData::LineOrientation::right);  // Points at center, center now straight 
+		BuildTopTransportLine(Orientation::down);
+		BuildLeftTransportLine(
+			Orientation::right);  // Points at center, center now straight 
 		ValidateResultOrientation(Orientation::right,
 		                          TransportLineData::LineOrientation::right);
 	}
 
-	TEST_F(TransportLineTest, OrientationRight6) {
+	TEST_F(TransportLineTest, UpBendRightHasUpAbove) {
 		/*
 		 * ^
 		 * >
 		 * ^
 		 */
-		AddTopTransportLine(TransportLineData::LineOrientation::up);
-		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+		BuildTopTransportLine(Orientation::up);
+		BuildBottomTransportLine(Orientation::up);
 		ValidateResultOrientation(Orientation::right,
 		                          TransportLineData::LineOrientation::up_right);
 	}
 
 	// ===
 
-	TEST_F(TransportLineTest, OrientationDown1) {
-		AddLeftTransportLine(TransportLineData::LineOrientation::right);
+	TEST_F(TransportLineTest, RightBendDown) {
+		/*
+		 * > v
+		 */
+		BuildLeftTransportLine(Orientation::right);
 		ValidateResultOrientation(Orientation::down,
 		                          TransportLineData::LineOrientation::right_down);
 	}
 
-	TEST_F(TransportLineTest, OrientationDown2) {
-		AddRightTransportLine(TransportLineData::LineOrientation::left);
+	TEST_F(TransportLineTest, LeftBendDown) {
+		/*
+		 * v <
+		 */
+		BuildRightTransportLine(Orientation::left);
 		ValidateResultOrientation(Orientation::down,
 		                          TransportLineData::LineOrientation::left_down);
 	}
 
-	TEST_F(TransportLineTest, OrientationDown3) {
-		// Top and bottom points to one line, line should be straight
-
-		AddLeftTransportLine(TransportLineData::LineOrientation::right);
-		AddRightTransportLine(TransportLineData::LineOrientation::left);
+	TEST_F(TransportLineTest, LeftRightStraightDown) {
+		/*
+		 * > v <
+		 */
+		BuildLeftTransportLine(Orientation::right);
+		BuildRightTransportLine(Orientation::left);
 		ValidateResultOrientation(Orientation::down,
 		                          TransportLineData::LineOrientation::down);
 	}
 
-	TEST_F(TransportLineTest, OrientationDown4) {
-		AddLeftTransportLine(TransportLineData::LineOrientation::right);
-		AddTopTransportLine(TransportLineData::LineOrientation::left);
+	TEST_F(TransportLineTest, RightBendDownHasLeftAbove) {
+		/*
+		 *   <
+		 * > v
+		 */
+		BuildLeftTransportLine(Orientation::right);
+		BuildTopTransportLine(Orientation::left);
 		ValidateResultOrientation(Orientation::down,
 		                          TransportLineData::LineOrientation::right_down);
 	}
 
-	TEST_F(TransportLineTest, OrientationDown5) {
-		AddLeftTransportLine(TransportLineData::LineOrientation::right);
-		AddTopTransportLine(TransportLineData::LineOrientation::right_down);
+	TEST_F(TransportLineTest, RightStraightDownHasDownAbove) {
+		/*
+		 *   v
+		 * > v
+		 */
+		BuildLeftTransportLine(Orientation::right);
+		BuildTopTransportLine(Orientation::down);
 		ValidateResultOrientation(Orientation::down,
 		                          TransportLineData::LineOrientation::down);
 	}
 
-	TEST_F(TransportLineTest, OrientationDown6) {
-		AddLeftTransportLine(TransportLineData::LineOrientation::left);
-		AddRightTransportLine(TransportLineData::LineOrientation::left);
+	TEST_F(TransportLineTest, LeftBendDownHasLeftAtLeftSide) {
+		/*
+		 * < v <
+		 */
+		BuildLeftTransportLine(Orientation::left);
+		BuildRightTransportLine(Orientation::left);
 		ValidateResultOrientation(Orientation::down,
 		                          TransportLineData::LineOrientation::left_down);
 	}
 
 	// ===
 
-	TEST_F(TransportLineTest, OrientationLeft1) {
-		AddTopTransportLine(TransportLineData::LineOrientation::down);
+	TEST_F(TransportLineTest, DownBendLeft) {
+		/*
+		 * v
+		 * <
+		 */
+		BuildTopTransportLine(Orientation::down);
 		ValidateResultOrientation(Orientation::left,
 		                          TransportLineData::LineOrientation::down_left);
 	}
 
-	TEST_F(TransportLineTest, OrientationLeft2) {
-		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+	TEST_F(TransportLineTest, UpBendLeft) {
+		/*
+		 * <
+		 * ^
+		 */
+		BuildBottomTransportLine(Orientation::up);
 		ValidateResultOrientation(Orientation::left,
 		                          TransportLineData::LineOrientation::up_left);
 	}
 
-	TEST_F(TransportLineTest, OrientationLeft3) {
-		AddTopTransportLine(TransportLineData::LineOrientation::down);
-		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+	TEST_F(TransportLineTest, UpDownStraightLeft) {
+		/*
+		 * v
+		 * <
+		 * ^
+		 */
+		BuildTopTransportLine(Orientation::down);
+		BuildBottomTransportLine(Orientation::up);
 		ValidateResultOrientation(Orientation::left,
 		                          TransportLineData::LineOrientation::left);
 	}
 
-	TEST_F(TransportLineTest, OrientationLeft4) {
-		AddTopTransportLine(TransportLineData::LineOrientation::down);
-		AddRightTransportLine(TransportLineData::LineOrientation::up);
+	TEST_F(TransportLineTest, DownBendLeftHasUpRightSide) {
+		/*
+		 * v
+		 * < ^
+		 */
+		BuildTopTransportLine(Orientation::down);
+		BuildRightTransportLine(Orientation::up);
 		ValidateResultOrientation(Orientation::left,
 		                          TransportLineData::LineOrientation::down_left);
 	}
 
-	TEST_F(TransportLineTest, OrientationLeft5) {
-		AddTopTransportLine(TransportLineData::LineOrientation::down);
-		AddRightTransportLine(TransportLineData::LineOrientation::left);
+	TEST_F(TransportLineTest, DownStraightLeftHasLeftRightSide) {
+		/*
+		 * v
+		 * < <
+		 */
+		BuildTopTransportLine(Orientation::down);
+		BuildRightTransportLine(Orientation::left);
 		ValidateResultOrientation(Orientation::left,
 		                          TransportLineData::LineOrientation::left);
 	}
 
-	TEST_F(TransportLineTest, OrientationLeft6) {
-		AddTopTransportLine(TransportLineData::LineOrientation::up);
-		AddBottomTransportLine(TransportLineData::LineOrientation::up);
+	TEST_F(TransportLineTest, UpBendLeftHasUpAbove) {
+		/*
+		 * ^
+		 * <
+		 * ^
+		 */
+		BuildTopTransportLine(Orientation::up);
+		BuildBottomTransportLine(Orientation::up);
 		ValidateResultOrientation(Orientation::left,
 		                          TransportLineData::LineOrientation::up_left);
 	}
@@ -1055,7 +1079,7 @@ namespace jactorio::data
 
 	TEST_F(TransportLineTest, OnBuildUpGroupAheadCrossChunk) {
 		// Since grouping ahead requires adjustment of a position within the current logic chunk, crossing chunks requires special logic
-		worldData_.AddChunk(game::Chunk{0, -1});
+		worldData_.EmplaceChunk({0, -1});
 
 		BuildTransportLine({0, -1}, Orientation::up);
 		BuildTransportLine({0, 0}, Orientation::up);
@@ -1068,7 +1092,7 @@ namespace jactorio::data
 
 	TEST_F(TransportLineTest, OnBuildUpGroupBehindCrossChunk) {
 		// Since grouping ahead requires adjustment of a position within the current logic chunk, crossing chunks requires special logic
-		worldData_.AddChunk(game::Chunk{0, -1});
+		worldData_.EmplaceChunk({0, -1});
 
 		BuildTransportLine({0, 0}, Orientation::up);
 		BuildTransportLine({0, -1}, Orientation::up);
@@ -1148,8 +1172,8 @@ namespace jactorio::data
 		/*
 		 * > >  
 		 */
-		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
+		BuildTransportLine({0, 0}, Orientation::right);
+		BuildTransportLine({1, 0}, Orientation::right);
 
 		TlRemoveEvents({1, 0});
 
@@ -1164,9 +1188,9 @@ namespace jactorio::data
 		/*
 		 * > > v
 		 */
-		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({2, 0}, TransportLineData::LineOrientation::down);
+		BuildTransportLine({0, 0}, Orientation::right);
+		BuildTransportLine({1, 0}, Orientation::right);
+		BuildTransportLine({2, 0}, Orientation::down);
 
 		TlRemoveEvents({1, 0});
 
@@ -1184,10 +1208,10 @@ namespace jactorio::data
 		/*
 		 * > /> > >
 		 */
-		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({2, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({3, 0}, TransportLineData::LineOrientation::right);
+		BuildTransportLine({0, 0}, Orientation::right);
+		BuildTransportLine({1, 0}, Orientation::right);
+		BuildTransportLine({2, 0}, Orientation::right);
+		BuildTransportLine({3, 0}, Orientation::right);
 
 		TlRemoveEvents({1, 0});
 
@@ -1204,18 +1228,18 @@ namespace jactorio::data
 
 	TEST_F(TransportLineTest, OnRemoveGroupMiddleUpdateTargetSegment) {
 		// The new segment created when removing a group needs to update target segments so point to the newly created segment
-		worldData_.AddChunk(game::Chunk(-1, 0));
+		worldData_.EmplaceChunk({-1, 0});
 
 		/*
 		 * > > /> >
 		 *   ^ 
 		 */
-		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({2, 0}, TransportLineData::LineOrientation::right);
+		BuildTransportLine({0, 0}, Orientation::right);
+		BuildTransportLine({1, 0}, Orientation::right);
+		BuildTransportLine({2, 0}, Orientation::right);
 
-		AddTransportLine({-1, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({0, 1}, TransportLineData::LineOrientation::up);
+		BuildTransportLine({-1, 0}, Orientation::right);
+		BuildTransportLine({0, 1}, Orientation::up);
 
 		TlRemoveEvents({1, 0});
 
@@ -1267,8 +1291,8 @@ namespace jactorio::data
 		/*
 		 * > >  
 		 */
-		AddTransportLine({0, 0}, TransportLineData::LineOrientation::right);
-		AddTransportLine({1, 0}, TransportLineData::LineOrientation::right);
+		BuildTransportLine({0, 0}, Orientation::right);
+		BuildTransportLine({1, 0}, Orientation::right);
 
 		TlRemoveEvents({0, 0});
 

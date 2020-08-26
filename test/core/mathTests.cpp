@@ -14,6 +14,15 @@ namespace jactorio::core
 		// auto d = SafeCast<uint8_t>(256);  // Error: Loss of data
 	}
 
+	TEST(Math, SafeCastAssign) {
+		auto a = 42;
+		auto c = 1ull;
+
+		SafeCastAssign(a, c);
+
+		EXPECT_EQ(a, c);
+	}
+
 	TEST(Math, FloatEq) {
 		// Checks floats are equal within a tolerance
 

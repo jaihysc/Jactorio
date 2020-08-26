@@ -63,6 +63,12 @@ namespace jactorio::game
 			return &conditional.first->second;
 		}
 
+		template <typename ... TChunkArgs>
+		Chunk* EmplaceChunk(const ChunkCoord& chunk_coord,
+		                    TChunkArgs ... args) {
+			return EmplaceChunk(chunk_coord.x, chunk_coord.y, std::forward<TChunkArgs>() ...);
+		}
+
 		///
 		/// \brief Attempts to delete chunk at chunk_x, chunk_y
 		void DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
