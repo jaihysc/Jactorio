@@ -162,6 +162,9 @@ namespace jactorio::data
 		              game::LogicData& logic_data,
 		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
 
+		void OnDeserialize(game::WorldData& world_data,
+						   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const override;
+
 
 		// ======================================================================
 		// Data events

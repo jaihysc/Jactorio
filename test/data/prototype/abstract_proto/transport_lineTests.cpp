@@ -240,6 +240,26 @@ namespace jactorio::data
 		EXPECT_TRUE(worldData_.GetChunkC({0, 0})->GetLogicGroup(jactorio::game::Chunk::LogicGroup::transport_line).empty());
 	}
 
+	TEST_F(TransportLineTest, OnDeserializeRelinkTarget) {
+		// In this configuration, segment at {0, 1} will not group with the center one
+		BuildRightTransportLine(Orientation::right);
+		const auto& line_left = BuildLeftTransportLine(Orientation::right);
+
+		BuildTopTransportLine(Orientation::up);
+		BuildBottomTransportLine(Orientation::down);
+
+		const auto& center_line = BuildTransportLine({1, 1}, Orientation::right);
+		const auto& center_segment    = center_line.GetUniqueData<TransportLineData>()->lineSegment;
+
+		const auto& left_segment    = line_left.GetUniqueData<TransportLineData>()->lineSegment;
+		left_segment->targetSegment = nullptr;
+
+		// Re links target segment
+		worldData_.DeserializePostProcess();
+
+		EXPECT_EQ(left_segment->targetSegment, center_segment.get());
+	}
+
 	// ======================================================================
 	// Neighbor updates
 

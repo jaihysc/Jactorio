@@ -985,3 +985,13 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
 		o_line_segment->length = o_line_data.lineSegmentIndex;
 	}
 }
+
+void data::TransportLine::OnDeserialize(game::WorldData& world_data,
+                                        const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const {
+	auto* origin_data = tile_layer.GetUniqueData<TransportLineData>();
+	assert(origin_data != nullptr);
+
+	CalculateLineTargets4(world_data,
+						  world_coord, TransportLineData::ToOrientation(origin_data->orientation),
+						  *origin_data, GetLineData4(world_data, world_coord));
+}
