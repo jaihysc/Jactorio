@@ -93,6 +93,9 @@ namespace jactorio::data
 		TransportLine() = default;
 
 	public:
+		/// up, right, down, left
+		using LineData4Way = std::array<TransportLineData*, 4>;
+
 		///
 		/// \brief Number of tiles traveled by each item on the belt per tick
 		/// \remark For Python API use only
@@ -115,6 +118,10 @@ namespace jactorio::data
 		                                                        WorldCoordAxis world_x, WorldCoordAxis world_y);
 
 		///
+		/// \brief Gets line data for the 4 neighbors of origin coord
+		J_NODISCARD static LineData4Way GetLineData4(game::WorldData& world_data, const WorldCoord& origin_coord);
+
+		///
 		/// \brief Gets transport segment at world coords
 		/// \return nullptr if no segment exists
 		static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
@@ -124,10 +131,7 @@ namespace jactorio::data
 		///
 		/// \brief Determines line orientation given orientation and neighbors
 		static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
-		                                                             TransportLineData* up,
-		                                                             TransportLineData* right,
-		                                                             TransportLineData* down,
-		                                                             TransportLineData* left);
+		                                                             const LineData4Way& line_data4);
 
 
 		// ======================================================================

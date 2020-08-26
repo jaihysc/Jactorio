@@ -47,7 +47,7 @@ namespace jactorio::core
 	}
 
 	template <typename TyLeft, typename TyRight>
-	void SafeCastAssign(TyLeft&& l_val, TyRight&& r_val) {
+	void SafeCastAssign(TyLeft& l_val, TyRight&& r_val) {
 		l_val = SafeCast<std::remove_reference_t<decltype(l_val)>>(r_val);
 	}
 
