@@ -8,7 +8,6 @@
 
 #include "data/prototype/container_entity.h"
 #include "data/prototype/tile.h"
-#include "data/prototype/abstract_proto/entity.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game
@@ -56,9 +55,9 @@ namespace jactorio::game
 			land_tile->isWater  = false;
 
 
-			auto* chunk = world_data.EmplaceChunk(0, 0);
+			auto& chunk = world_data.EmplaceChunk(0, 0);
 
-			auto& chunk_tiles = chunk->Tiles();
+			auto& chunk_tiles = chunk.Tiles();
 			for (int y = 0; y < kChunkWidth; ++y) {
 				bool y_water = false;
 

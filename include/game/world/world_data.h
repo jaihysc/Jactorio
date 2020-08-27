@@ -43,28 +43,21 @@ namespace jactorio::game
 		// World access
 
 		///
-		/// \brief Copy adds a chunk into the game world
-		/// Will overwrite existing chunks if they occupy the same position
-		/// \param chunk Chunk to be added to the world
-		/// \return Pointer to added chunk
-		Chunk* AddChunk(const Chunk& chunk);
-
-		///
-		/// \brief Adds a chunk into the game world
-		/// Will overwrite existing chunks if they occupy the same position
 		/// \param args Additional arguments to be provided alongside chunk_x chunk_y to Chunk constructor
-		/// \return Pointer to added chunk
+		/// \return Added chunk
 		template <typename ... TChunkArgs>
-		Chunk* EmplaceChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y,
+		Chunk& EmplaceChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y,
 		                    TChunkArgs ... args) {
-			auto conditional = worldChunks_.emplace(std::piecewise_construct,
+			const auto& [it, success] = worldChunks_.emplace(std::piecewise_construct,
 			                                        std::make_tuple(chunk_x, chunk_y),
 			                                        std::make_tuple(chunk_x, chunk_y, args...));
-			return &conditional.first->second;
+			assert(success);  // Attempted to insert at already existent location
+			
+			return it->second;
 		}
 
 		template <typename ... TChunkArgs>
-		Chunk* EmplaceChunk(const ChunkCoord& chunk_coord,
+		Chunk& EmplaceChunk(const ChunkCoord& chunk_coord,
 		                    TChunkArgs ... args) {
 			return EmplaceChunk(chunk_coord.x, chunk_coord.y, std::forward<TChunkArgs>() ...);
 		}
@@ -197,7 +190,7 @@ namespace jactorio::game
 		/// \brief Adds a chunk to be considered for logic updates, if the logic chunk already exists at Chunk*,
 		/// a reference to the existing one will be returned
 		/// \param chunk The chunk this logic chunk is associated with
-		void LogicAddChunk(Chunk* chunk);
+		void LogicAddChunk(Chunk& chunk);
 
 		///
 		/// \brief Returns all the chunks which require logic updates

@@ -33,7 +33,7 @@ namespace jactorio::game
 		void SetUp() override {
 			playerData_.SetPlayerWorldData(worldData_);
 			playerData_.SetPlayerLogicData(logicData_);
-			worldData_.AddChunk(Chunk(0, 0));
+			worldData_.EmplaceChunk(0, 0);
 
 			entity_.sprite    = &entitySprite_;
 			entity_.placeable = true;

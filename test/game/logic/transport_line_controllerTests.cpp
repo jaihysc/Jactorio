@@ -33,8 +33,8 @@ namespace jactorio::game
 		///
 		/// \brief Creates a world, chunk and logic chunk at 0, 0
 		void SetUp() override {
-			chunk_ = worldData_.EmplaceChunk(0, 0);
-			worldData_.LogicAddChunk(chunk_);
+			chunk_ = &worldData_.EmplaceChunk(0, 0);
+			worldData_.LogicAddChunk(*chunk_);
 		}
 
 		///

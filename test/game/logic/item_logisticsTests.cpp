@@ -27,7 +27,6 @@ namespace jactorio::game
 	TEST_F(ItemLogisticsTest, Uninitialize) {
 		ItemDropOff drop_off{data::Orientation::up};
 
-		worldData_.EmplaceChunk(0, 0);
 		auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
 
 		data::ContainerEntity container;
@@ -78,6 +77,10 @@ namespace jactorio::game
 	class ItemDropOffTest : public testing::Test, public ItemDropOff
 	{
 	public:
+		void SetUp() override {
+			worldData_.EmplaceChunk(0, 0);
+		}
+
 		explicit ItemDropOffTest()
 			: ItemDropOff(data::Orientation::up) {
 		}
@@ -89,9 +92,7 @@ namespace jactorio::game
 		/// \brief Creates a transport line with orientation
 		data::TransportLineData CreateTransportLine(const data::Orientation orientation,
 		                                            const TransportSegment::TerminationType ttype =
-			                                            TransportSegment::TerminationType::straight) {
-			worldData_.AddChunk(Chunk(0, 0));
-
+			                                            TransportSegment::TerminationType::straight) const {
 			const auto segment = std::make_shared<TransportSegment>(
 				orientation,
 				ttype,
@@ -113,11 +114,10 @@ namespace jactorio::game
 	};
 
 	TEST_F(ItemDropOffTest, GetInsertFunc) {
-		worldData_.EmplaceChunk(0, 0);
 		worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<data::ContainerEntityData>(1);
 
 		auto set_prototype = [&](data::Entity& entity_proto) {
-			auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
+			auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
 			layer.prototypeData = &entity_proto;
 		};
 
@@ -162,10 +162,7 @@ namespace jactorio::game
 	// ======================================================================
 
 	TEST_F(ItemDropOffTest, InsertContainerEntity) {
-		WorldData world_data;
-		world_data.EmplaceChunk(0, 0);
-
-		auto& layer = world_data.GetTile(3, 1)
+		auto& layer = worldData_.GetTile(3, 1)
 		                        ->GetLayer(TileLayer::entity);
 
 		layer.MakeUniqueData<data::ContainerEntityData>(10);
@@ -397,8 +394,8 @@ namespace jactorio::game
 
 		// Exceeds max stack size
 		recipe_pack.recipe->ingredients[0].second = 50;  // Requires 50, can only hold 50
-		recipe_pack.item1->stackSize             = 50;
-		asm_data.ingredientInv[0].count          = 50;
+		recipe_pack.item1->stackSize              = 50;
+		asm_data.ingredientInv[0].count           = 50;
 		EXPECT_FALSE(CanInsertAssemblyMachine(args));
 
 		// Under the max ingredient count multiple that a slot can be filled
@@ -465,11 +462,10 @@ namespace jactorio::game
 	};
 
 	TEST_F(InserterPickupTest, GetPickupFunc) {
-		worldData_.EmplaceChunk(0, 0);
 		worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<data::ContainerEntityData>(1);
 
 		auto set_prototype = [&](data::Entity& entity_proto) {
-			auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
+			auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
 			layer.prototypeData = &entity_proto;
 		};
 

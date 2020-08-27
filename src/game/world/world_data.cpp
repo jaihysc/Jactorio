@@ -57,13 +57,6 @@ OverlayOffsetAxis game::WorldData::WorldCToOverlayC(const WorldCoordAxis world_c
 	return core::SafeCast<OverlayOffsetAxis>(val);
 }
 
-game::Chunk* game::WorldData::AddChunk(const Chunk& chunk) {
-	const auto position = chunk.GetPosition();
-
-	auto conditional = worldChunks_.emplace(std::make_tuple(position.x, position.y), chunk);
-	return &conditional.first->second;
-}
-
 void game::WorldData::DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) {
 	worldChunks_.erase(std::make_tuple(chunk_x, chunk_y));
 }
@@ -270,9 +263,8 @@ void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldCoor
 	});
 }
 
-void game::WorldData::LogicAddChunk(Chunk* chunk) {
-	assert(chunk != nullptr);
-	logicChunks_.emplace(chunk);
+void game::WorldData::LogicAddChunk(Chunk& chunk) {
+	logicChunks_.emplace(&chunk);
 }
 
 std::set<game::Chunk*>& game::WorldData::LogicGetChunks() {
@@ -309,7 +301,7 @@ void GenerateChunk(game::WorldData& world_data,
 
 	// Allocate new tiles if chunk has not been generated yet
 	if (chunk == nullptr) {
-		chunk = world_data.EmplaceChunk(chunk_x, chunk_y);
+		chunk = &world_data.EmplaceChunk(chunk_x, chunk_y);
 	}
 
 	auto& tiles = chunk->Tiles();
