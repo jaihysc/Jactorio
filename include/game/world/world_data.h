@@ -27,6 +27,9 @@ namespace jactorio::game
 	/// \brief Stores all data for a world
 	class WorldData
 	{
+		using LogicChunkContainerT = std::vector<Chunk*>;
+		using SerialLogicChunkContainerT = std::vector<ChunkCoord>;
+
 	public:
 		static constexpr auto kChunkWidth = Chunk::kChunkWidth;
 
@@ -41,6 +44,27 @@ namespace jactorio::game
 
 
 		// World access
+
+		WorldData() = default;
+		~WorldData() = default;
+
+		WorldData(const WorldData& other);
+		WorldData(WorldData&& other) noexcept = default;
+
+		WorldData& operator=(WorldData other) {
+			swap(*this, other);
+			return *this;
+		}
+
+		friend void swap(WorldData& lhs, WorldData& rhs) noexcept {
+			using std::swap;
+			swap(lhs.updateDispatcher, rhs.updateDispatcher);
+			swap(lhs.worldChunks_, rhs.worldChunks_);
+			swap(lhs.logicChunks_, rhs.logicChunks_);
+			swap(lhs.worldGenSeed_, rhs.worldGenSeed_);
+			swap(lhs.worldGenChunks_, rhs.worldGenChunks_);
+		}
+
 
 		///
 		/// \param args Additional arguments to be provided alongside chunk_x chunk_y to Chunk constructor
@@ -194,7 +218,7 @@ namespace jactorio::game
 
 		///
 		/// \brief Returns all the chunks which require logic updates
-		J_NODISCARD std::set<Chunk*>& LogicGetChunks();
+		J_NODISCARD LogicChunkContainerT& LogicGetChunks();
 
 		// ======================================================================
 		// World generation
@@ -240,9 +264,20 @@ namespace jactorio::game
 		void DeserializePostProcess();
 
 
-		CEREAL_SERIALIZE(archive) {
-			archive(updateDispatcher, worldChunks_, worldGenSeed_); //, m.worldChunks_, m.logicChunks_);
+		CEREAL_LOAD(archive) {
+			SerialLogicChunkContainerT logic_chunks;
+			archive(updateDispatcher, worldChunks_,  worldGenSeed_, logic_chunks);
+
+			logicChunks_.clear();
+
+			FromSerializeLogicChunkContainer(logic_chunks);
 		}
+
+		CEREAL_SAVE(archive) {
+			auto logic_chunks = ToSerializeLogicChunkContainer();
+			archive(updateDispatcher, worldChunks_, worldGenSeed_, logic_chunks);
+		}
+
 
 		UpdateDispatcher updateDispatcher;
 
@@ -252,12 +287,15 @@ namespace jactorio::game
 
 		/// Chunks increment heading right and down
 		std::unordered_map<ChunkKey, Chunk, ChunkHasher> worldChunks_;
-		std::set<Chunk*> logicChunks_;
+		LogicChunkContainerT logicChunks_;
 
 
 		int worldGenSeed_ = 1001;
 		/// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
 		mutable std::set<ChunkKey> worldGenChunks_;
+
+		J_NODISCARD SerialLogicChunkContainerT ToSerializeLogicChunkContainer() const;
+		void FromSerializeLogicChunkContainer(const SerialLogicChunkContainerT& serial_logic);
 	};
 }
 

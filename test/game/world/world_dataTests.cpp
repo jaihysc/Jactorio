@@ -50,6 +50,32 @@ namespace jactorio::game
 		EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(-65), 31);
 	}
 
+	TEST_F(WorldDataTest, CopyLogicChunk) {
+		{
+			auto& chunk = worldData_.EmplaceChunk({0, 0});
+			worldData_.LogicAddChunk(chunk);
+		}
+
+		auto world_copy = worldData_;
+
+		ASSERT_EQ(world_copy.LogicGetChunks().size(), 1);
+
+		EXPECT_EQ(*world_copy.LogicGetChunks().begin(), world_copy.GetChunkC({0, 0}));
+	}
+
+	TEST_F(WorldDataTest, MoveLogicChunk) {
+		{
+			auto& chunk = worldData_.EmplaceChunk({0, 0});
+			worldData_.LogicAddChunk(chunk);
+		}
+
+		auto world_move = std::move(worldData_);
+
+		ASSERT_EQ(world_move.LogicGetChunks().size(), 1);
+
+		EXPECT_EQ(*world_move.LogicGetChunks().begin(), world_move.GetChunkC({0, 0}));
+	}
+
 	TEST_F(WorldDataTest, WorldAddChunk) {
 		const auto& added_chunk = worldData_.EmplaceChunk({5, 1});
 
@@ -222,25 +248,27 @@ namespace jactorio::game
 		                         {32, 0},
 		                         TileLayer::entity);
 
-		// Added chunk
-		ASSERT_EQ(worldData_.LogicGetChunks().size(), 1);
+		auto& logic_chunks = worldData_.LogicGetChunks();
 
-		EXPECT_NE(worldData_.LogicGetChunks().find(worldData_.GetChunkC({1, 0})),
-		          worldData_.LogicGetChunks().end());
+		// Added chunk
+		ASSERT_EQ(logic_chunks.size(), 1);
+
+		EXPECT_NE(std::find(logic_chunks.begin(), logic_chunks.end(), worldData_.GetChunkC({1, 0})),
+		          logic_chunks.end());
 
 
 		// Registering again will not duplicate logic chunk
 		worldData_.LogicRegister(Chunk::LogicGroup::inserter,
 		                         {42, 0},
 		                         TileLayer::entity);
-		EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+		EXPECT_EQ(logic_chunks.size(), 1);
 
 
 		// Registering same position does nothing
 		worldData_.LogicRegister(Chunk::LogicGroup::inserter,
 		                         {42, 0},
 		                         TileLayer::entity);
-		EXPECT_EQ((*worldData_.LogicGetChunks().begin())
+		EXPECT_EQ((*logic_chunks.begin())
 		          ->GetLogicGroup(Chunk::LogicGroup::inserter).size(), 2);
 	}
 
@@ -380,5 +408,16 @@ namespace jactorio::game
 
 		EXPECT_TRUE(mock_obj.onDeserializeCalled);
 		EXPECT_EQ(mock_obj.chunkTileLayer, &tile_layer);
+	}
+
+	TEST_F(WorldDataDeserialize, DeserializeLogicChunks) {
+		worldData_.LogicAddChunk(worldData_.EmplaceChunk(0, 0));
+
+		auto result = TestSerializeDeserialize(worldData_);
+		auto& result_logic_chunks = result.LogicGetChunks();
+
+		ASSERT_EQ(result_logic_chunks.size(), 1);
+
+		EXPECT_EQ(result_logic_chunks[0], result.GetChunkC({0, 0}));
 	}
 }

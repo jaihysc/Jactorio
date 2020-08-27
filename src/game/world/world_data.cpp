@@ -57,6 +57,20 @@ OverlayOffsetAxis game::WorldData::WorldCToOverlayC(const WorldCoordAxis world_c
 	return core::SafeCast<OverlayOffsetAxis>(val);
 }
 
+// ======================================================================
+
+game::WorldData::WorldData(const WorldData& other)
+	: updateDispatcher{other.updateDispatcher},
+	  worldChunks_{other.worldChunks_},
+	  logicChunks_{other.logicChunks_},
+	  worldGenSeed_{other.worldGenSeed_},
+	  worldGenChunks_{other.worldGenChunks_} {
+
+	for (auto*& logic_chunk : logicChunks_) {
+		logic_chunk = GetChunkC(logic_chunk->GetPosition());
+	}
+}
+
 void game::WorldData::DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) {
 	worldChunks_.erase(std::make_tuple(chunk_x, chunk_y));
 }
@@ -230,7 +244,7 @@ void game::WorldData::LogicRegister(const Chunk::LogicGroup group, const WorldCo
 	if (std::find(logic_group.begin(), logic_group.end(), tile_layer) != logic_group.end())
 		return;
 
-	logicChunks_.emplace(chunk);
+	LogicAddChunk(*chunk);
 	chunk->GetLogicGroup(group).push_back(tile_layer);
 }
 
@@ -251,7 +265,10 @@ void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldCoor
 			return;
 	}
 
-	logicChunks_.erase(chunk);
+	logicChunks_.erase(
+		std::remove(logicChunks_.begin(), logicChunks_.end(), chunk),
+		logicChunks_.end()
+	);
 }
 
 void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldCoord& world_pair,
@@ -264,10 +281,13 @@ void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldCoor
 }
 
 void game::WorldData::LogicAddChunk(Chunk& chunk) {
-	logicChunks_.emplace(&chunk);
+	// Only add a chunk for logic updates once
+	if (std::find(logicChunks_.begin(), logicChunks_.end(), &chunk) == logicChunks_.end()) {
+		logicChunks_.emplace_back(&chunk);
+	}
 }
 
-std::set<game::Chunk*>& game::WorldData::LogicGetChunks() {
+game::WorldData::LogicChunkContainerT& game::WorldData::LogicGetChunks() {
 	return logicChunks_;
 }
 
@@ -462,4 +482,30 @@ void game::WorldData::DeserializePostProcess() {
 		}
 
 	}
+}
+
+
+// ======================================================================
+
+
+game::WorldData::SerialLogicChunkContainerT game::WorldData::ToSerializeLogicChunkContainer() const {
+	SerialLogicChunkContainerT serial_logic;
+
+	serial_logic.reserve(logicChunks_.size());
+
+	for (const auto& logic_chunk : logicChunks_) {
+		serial_logic.push_back(logic_chunk->GetPosition());
+	}
+
+	return serial_logic;
+}
+
+void game::WorldData::FromSerializeLogicChunkContainer(const SerialLogicChunkContainerT& serial_logic) {
+	assert(logicChunks_.empty());
+
+	for (const auto& logic_chunk : serial_logic) {
+		logicChunks_.push_back(GetChunkC(logic_chunk));
+	}
+
+	assert(logicChunks_.size() == serial_logic.size());
 }
