@@ -28,11 +28,17 @@ namespace jactorio
 	constexpr int kGameHertz = 60;  // 60 updates per second
 
 
+	/// Tiles in the world
 	using WorldCoordAxis = int32_t;
 	using WorldCoord = core::Position2<WorldCoordAxis>;
 
+	/// Chunks in the world
 	using ChunkCoordAxis = int32_t;
 	using ChunkCoord = core::Position2<ChunkCoordAxis>;
+
+	/// Tiles within a chunk
+	using ChunkTileCoordAxis = uint8_t;
+	using ChunkTileCoord = core::Position2<ChunkTileCoordAxis>;
 
 	/// Offset from top left of chunk
 	using OverlayOffsetAxis = float;

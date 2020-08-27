@@ -250,7 +250,6 @@ namespace jactorio::game
 
 
 		CEREAL_SERIALIZE(archive) {
-			// TODO transport segments must be relinked upon load
 			archive(direction, terminationType, length,
 					left, right, itemOffset, targetInsertOffset);
 		}	

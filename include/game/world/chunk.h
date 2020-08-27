@@ -41,12 +41,26 @@ namespace jactorio::game
 			count_
 		};
 
-		static constexpr int kLogicGroupCount = static_cast<int>(LogicGroup::count_);
+		static constexpr auto kLogicGroupCount = static_cast<int>(LogicGroup::count_);
 
 	private:
 		using TileArrayT = std::array<ChunkTile, kChunkArea>;
 		using OverlayArrayT = std::array<OverlayContainerT, kOverlayLayerCount>;
 		using LogicGroupArrayT = std::array<LogicGroupContainerT, kLogicGroupCount>;
+
+
+		struct TileLayerInfo
+		{
+			ChunkTileCoord coord;
+			TileLayer tileLayer;
+
+			CEREAL_SERIALIZE(archive) {
+				archive(coord, tileLayer);
+			}
+		};
+
+		/// LogicGroupArrayT converted to this to be serialized
+		using SerialLogicGroupArrayT = std::array<std::vector<TileLayerInfo>, kLogicGroupCount>;
 
 	public:
 		///
@@ -59,48 +73,64 @@ namespace jactorio::game
 			: position_({chunk_x, chunk_y}) {
 		}
 
+		~Chunk() = default;
+
+		Chunk(const Chunk& other);
+		Chunk(Chunk&& other) noexcept;
+
+		Chunk& operator=(Chunk other) {
+			swap(*this, other);
+			return *this;
+		}
+
+		friend void swap(Chunk& lhs, Chunk& rhs) noexcept {
+			using std::swap;
+			swap(lhs.overlays, rhs.overlays);
+			swap(lhs.logicGroups, rhs.logicGroups);
+			swap(lhs.position_, rhs.position_);
+			swap(lhs.tiles_, rhs.tiles_);
+		}
+
 
 		// ======================================================================
 
+
 		J_NODISCARD ChunkCoord GetPosition() const { return position_; }
 
-		J_NODISCARD TileArrayT& Tiles() {
-			return tiles_;
-		}
+		J_NODISCARD TileArrayT& Tiles();
+		J_NODISCARD const TileArrayT& Tiles() const;
 
-		J_NODISCARD const TileArrayT& Tiles() const {
-			return tiles_;
-		}
+		///
+		/// \brief Gets tile at x, y offset from top left of chunk
+		J_NODISCARD ChunkTile& GetCTile(ChunkTileCoordAxis x, ChunkTileCoordAxis y);
+		J_NODISCARD const ChunkTile& GetCTile(ChunkTileCoordAxis x, ChunkTileCoordAxis y) const;
+
+		J_NODISCARD ChunkTile& GetCTile(const ChunkTileCoord& coord);
+		J_NODISCARD const ChunkTile& GetCTile(const ChunkTileCoord& coord) const;
 
 
 		// Overlays - Rendered without being fixed to a tile position
 
-		OverlayContainerT& GetOverlay(const OverlayLayer layer) {
-			return const_cast<OverlayContainerT&>(
-				static_cast<const Chunk*>(this)->GetOverlay(layer)
-			);
-		}
-
-		J_NODISCARD const OverlayContainerT& GetOverlay(OverlayLayer layer) const {
-			return overlays[static_cast<OverlayArrayT::size_type>(layer)];
-		}
+		OverlayContainerT& GetOverlay(OverlayLayer layer);
+		J_NODISCARD const OverlayContainerT& GetOverlay(OverlayLayer layer) const;
 
 
 		// Items requiring logic updates
 
-		J_NODISCARD LogicGroupContainerT& GetLogicGroup(const LogicGroup layer) {
-			return const_cast<LogicGroupContainerT&>(
-				static_cast<const Chunk*>(this)->GetLogicGroup(layer)
-			);
+		J_NODISCARD LogicGroupContainerT& GetLogicGroup(LogicGroup layer);
+		J_NODISCARD const LogicGroupContainerT& GetLogicGroup(LogicGroup layer) const;
+
+
+		CEREAL_SAVE(archive) {
+			auto serial_logic = ToSerializeLogicGroupArray();
+			archive(position_, tiles_, serial_logic);
 		}
 
-		J_NODISCARD const LogicGroupContainerT& GetLogicGroup(const LogicGroup layer) const {
-			return logicGroups[static_cast<LogicGroupArrayT::size_type>(layer)];
-		}
+		CEREAL_LOAD(archive) {
+			SerialLogicGroupArrayT serial_logic;
+			archive(position_, tiles_, serial_logic);
 
-
-		CEREAL_SERIALIZE(archiver) {
-			archiver(position_, tiles_); // TODO incomplete
+			FromSerializeLogicGroupArray(serial_logic);
 		}
 
 		OverlayArrayT overlays;
@@ -111,6 +141,16 @@ namespace jactorio::game
 	private:
 		ChunkCoord position_;
 		TileArrayT tiles_;
+
+		///
+		/// \brief Other chunk has logic entries pointing to tiles within itself,
+		/// this will recreate the entries, pointing to this chunk's tiles
+		void ResolveLogicEntries(const Chunk& other) noexcept;
+
+		J_NODISCARD TileLayerInfo GetLayerInfo(const ChunkTileLayer& ctl) const noexcept;
+
+		J_NODISCARD SerialLogicGroupArrayT ToSerializeLogicGroupArray() const;
+		void FromSerializeLogicGroupArray(const SerialLogicGroupArrayT& serial_logic);
 	};
 }
 
