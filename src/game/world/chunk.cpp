@@ -144,5 +144,7 @@ void game::Chunk::FromSerializeLogicGroupArray(const SerialLogicGroupArrayT& ser
 			auto& layer = GetCTile(serial_entry.coord).GetLayer(serial_entry.tileLayer);
 			logicGroups[i_group].push_back(&layer);
 		}
+
+		assert(logicGroups[i_group].size() == serial_group.size());
 	}
 }

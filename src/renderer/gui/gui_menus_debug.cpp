@@ -480,64 +480,78 @@ void renderer::DebugWorldInfo(const game::PlayerData& player_data) {
 
 	auto& world_data = player_data.GetPlayerWorldData();
 
-	const auto dispatcher_info = world_data.updateDispatcher.GetDebugInfo();
-	ImGui::Text("Update dispatchers: %lld", dispatcher_info.storedEntries.size());
+	if (ImGui::CollapsingHeader("Update dispatchers")) {
+		const auto dispatcher_info = world_data.updateDispatcher.GetDebugInfo();
+		ImGui::Text("Update dispatchers: %lld", dispatcher_info.storedEntries.size());
 
-	// Format of data displayed
-	ImGui::Text("Registered coordinate > Listener coordinate | Listener prototype");
+		// Format of data displayed
+		ImGui::Text("Registered coordinate > Listener coordinate | Listener prototype");
 
-	size_t id = 0;
-	for (const auto& entry : dispatcher_info.storedEntries) {
+		size_t id = 0;
+		for (const auto& entry : dispatcher_info.storedEntries) {
 
-		const auto world_x = std::get<0>(entry.first);
-		const auto world_y = std::get<1>(entry.first);
+			const auto world_x = std::get<0>(entry.first);
+			const auto world_y = std::get<1>(entry.first);
 
-		if (ImGui::TreeNode(reinterpret_cast<void*>(id),
-		                    "%d %d | %lld",
-		                    world_x, world_y, entry.second.size())) {
+			if (ImGui::TreeNode(reinterpret_cast<void*>(id),
+			                    "%d %d | %lld",
+			                    world_x, world_y, entry.second.size())) {
 
-			core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
-
-			for (const auto& callback : entry.second) {
-				std::ostringstream sstream;
-				sstream << callback.callback.Get();  // Get pointer address
-				ImGui::Text("%d %d %s", callback.receiver.x, callback.receiver.y, sstream.str().c_str());
-			}
-		}
-
-		++id;
-	}
-
-	// ======================================================================
-
-	/*
-	constexpr int chunk_radius = 3;  // Chunk radius around the player to display information for
-	ImGui::Text("Radius of %d around the player", chunk_radius);
-
-
-	const auto start_chunk_x = game::WorldData::ToChunkCoord(player_data.GetPlayerPositionX());
-	const auto start_chunk_y = game::WorldData::ToChunkCoord(player_data.GetPlayerPositionY());
-
-	for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
-		for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {
-			auto* chunk = world_data.GetChunkC(chunk_x, chunk_y);
-
-			if (chunk == nullptr)
-				continue;
-
-			// Unique id to identify tree node
-			const auto* node_id = reinterpret_cast<void*>(core::LossyCast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
-
-			const bool is_player_chunk = chunk_x == start_chunk_x && chunk_y == start_chunk_y;
-
-			if (ImGui::TreeNode(node_id, "%s %d %d",
-			                    is_player_chunk ? ">" : " ", chunk_x, chunk_y)) {
 				core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+
+				for (const auto& callback : entry.second) {
+					std::ostringstream sstream;
+					sstream << callback.callback.Get();  // Get pointer address
+					ImGui::Text("%d %d %s", callback.receiver.x, callback.receiver.y, sstream.str().c_str());
+				}
 			}
 
+			++id;
 		}
 	}
-	*/
+
+	if (ImGui::CollapsingHeader("Chunks")) {
+		auto show_chunk_info = [](game::Chunk& chunk) {
+			for (std::size_t i = 0; i < chunk.logicGroups.size(); ++i) {
+				auto& logic_group = chunk.logicGroups[i];
+				ImGui::Text("Logic group %d | Size: %lld", i, logic_group.size());
+			}
+
+			for (std::size_t i = 0; i < chunk.overlays.size(); ++i) {
+				auto& overlay_group = chunk.overlays[i];
+				ImGui::Text("Overlay group %d | Size: %lld", i, overlay_group.size());
+			}
+		};
+
+		
+		constexpr int chunk_radius = 3;  // Chunk radius around the player to display information for
+		ImGui::Text("Radius of %d around the player", chunk_radius);
+
+		const auto start_chunk_x = game::WorldData::WorldCToChunkC(player_data.GetPlayerPositionX());
+		const auto start_chunk_y = game::WorldData::WorldCToChunkC(player_data.GetPlayerPositionY());
+
+		for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
+			for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {
+				auto* chunk = world_data.GetChunkC(chunk_x, chunk_y);
+
+				if (chunk == nullptr)
+					continue;
+
+				// Unique id to identify tree node
+				const auto* node_id = reinterpret_cast<void*>(core::LossyCast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
+
+				const bool is_player_chunk = chunk_x == start_chunk_x && chunk_y == start_chunk_y;
+
+				if (ImGui::TreeNode(node_id, "%s %d %d",
+				                    is_player_chunk ? ">" : " ", chunk_x, chunk_y)) {
+					core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+					show_chunk_info(*chunk);
+				}
+
+			}
+		}
+
+	}
 }
 
 void renderer::DebugLogicInfo(const game::LogicData& logic_data) {
