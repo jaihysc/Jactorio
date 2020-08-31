@@ -8,7 +8,7 @@
 namespace jactorio::game
 {
 	TEST(OverlayElement, Construct) {
-		data::Sprite sprite{};
+		data::Sprite sprite;
 
 		/*/
 		OverlayElement o1 = {sprite, {0.5, 1}, {2, 3}};
@@ -22,7 +22,7 @@ namespace jactorio::game
 		*/
 
 
-		OverlayElement o2 = {sprite, {0.5, 1}, {2, 3}, OverlayLayer::general};
+		OverlayElement o2 = {sprite, {0.5, 1}, {2, 3}, OverlayLayer::cursor};
 
 		EXPECT_FLOAT_EQ(o2.position.x, 0.5f);
 		EXPECT_FLOAT_EQ(o2.position.y, 1.f);
@@ -43,7 +43,7 @@ namespace jactorio::game
 	}
 
 	TEST(OverlayElement, GetSetZPosition) {
-		data::Sprite sprite{};
+		data::Sprite sprite;
 		OverlayElement oe = {sprite, {0.5, 1, 0.f}, {2, 3}};
 
 		EXPECT_FLOAT_EQ(oe.position.z, 0.f);
@@ -51,9 +51,9 @@ namespace jactorio::game
 		oe.SetZPosition(12);
 		EXPECT_FLOAT_EQ(oe.position.z, 12.f);
 
-		oe.SetZPosition(OverlayLayer::general);
+		oe.SetZPosition(OverlayLayer::cursor);
 		EXPECT_FLOAT_EQ(oe.position.z, 0.4f);
 
-		EXPECT_FLOAT_EQ(oe.ToZPosition(OverlayLayer::general), 0.4f);
+		EXPECT_FLOAT_EQ(oe.ToZPosition(OverlayLayer::cursor), 0.4f);
 	}
 }

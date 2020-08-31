@@ -11,42 +11,44 @@
 #include "game/world/world_data.h"
 #include "renderer/rendering/renderer.h"
 
+using namespace jactorio;
+
 double x_position = 0.;
 double y_position = 0.;
 
-void jactorio::game::SetCursorPosition(const double x_pos, const double y_pos) {
+void game::SetCursorPosition(const double x_pos, const double y_pos) {
 	x_position = x_pos;
 	y_position = y_pos;
 }
 
 
-double jactorio::game::MouseSelection::GetCursorX() {
+double game::MouseSelection::GetCursorX() {
 	return x_position;
 }
 
-double jactorio::game::MouseSelection::GetCursorY() {
+double game::MouseSelection::GetCursorY() {
 	return y_position;
 }
 
 
-void jactorio::game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager) {
+void game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager) {
 	const auto cursor_position = player_data.GetMouseTileCoords();
 	const auto* stack          = player_data.GetSelectedItemStack();
 
 	if (stack)
 		DrawOverlay(player_data, data_manager,
 		            static_cast<data::Entity*>(stack->item->entityPrototype),
-		            cursor_position.x, cursor_position.y, player_data.placementOrientation);
+		            {cursor_position.x, cursor_position.y}, player_data.placementOrientation);
 	else
 		DrawOverlay(player_data, data_manager,
 		            nullptr,
-		            cursor_position.x, cursor_position.y, player_data.placementOrientation);
+		            {cursor_position.x, cursor_position.y}, player_data.placementOrientation);
 }
 
-void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
-                                                 const data::Entity* const selected_entity,
-                                                 const int world_x, const int world_y,
-                                                 const data::Orientation placement_orientation) {
+void game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
+                                       const data::Entity* const selected_entity,
+                                       const WorldCoord& coord,
+                                       const data::Orientation placement_orientation) {
 	WorldData& world_data = player_data.GetPlayerWorldData();
 
 	// Clear last overlay
@@ -61,20 +63,20 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 	}
 
 	// Draw new overlay
-	auto* chunk = world_data.GetChunkW(world_x, world_y);
+	auto* chunk = world_data.GetChunkW(coord.x, coord.y);
 	if (!chunk)
 		return;
 
 	auto& overlay_layer = chunk->GetOverlay(kCursorOverlayLayer);
 
-	auto* tile = world_data.GetTile(world_x, world_y);
+	auto* tile = world_data.GetTile(coord.x, coord.y);
 	if (!tile)
 		return;
 
 	// Saves such that can be found and removed in the future
 	auto save_overlay_info = [&]() {
 		lastOverlayElementIndex_ = overlay_layer.size() - 1;
-		lastChunkPos_            = {WorldData::WorldCToChunkC(world_x), WorldData::WorldCToChunkC(world_y)};
+		lastChunkPos_            = {WorldData::WorldCToChunkC(coord.x), WorldData::WorldCToChunkC(coord.y)};
 	};
 
 
@@ -82,11 +84,11 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 		// Has item selected
 		const auto set = selected_entity->OnRGetSpriteSet(placement_orientation,
 		                                                  world_data,
-		                                                  {world_x, world_y});
+		                                                  {coord.x, coord.y});
 
 		OverlayElement element{
 			*selected_entity->OnRGetSprite(set),
-			{WorldData::WorldCToOverlayC(world_x), WorldData::WorldCToOverlayC(world_y)},
+			{WorldData::WorldCToOverlayC(coord.x), WorldData::WorldCToOverlayC(coord.y)},
 			{core::SafeCast<float>(selected_entity->tileWidth), core::SafeCast<float>(selected_entity->tileHeight)},
 			kCursorOverlayLayer
 		};
@@ -108,10 +110,14 @@ void jactorio::game::MouseSelection::DrawOverlay(PlayerData& player_data, const 
 
 		overlay_layer.push_back({
 			*sprite,
-			{WorldData::WorldCToOverlayC(world_x), WorldData::WorldCToOverlayC(world_y)},
+			{WorldData::WorldCToOverlayC(coord.x), WorldData::WorldCToOverlayC(coord.y)},
 			{1, 1},
 			kCursorOverlayLayer
 		});
 		save_overlay_info();
 	}
+}
+
+void game::MouseSelection::SkipErasingLastOverlay() noexcept {
+	lastOverlayElementIndex_ = UINT64_MAX;
 }

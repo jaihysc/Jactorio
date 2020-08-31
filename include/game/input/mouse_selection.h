@@ -31,7 +31,7 @@ namespace jactorio::game
 	/// \brief Handles mouse input and selection
 	class MouseSelection
 	{
-		static constexpr OverlayLayer kCursorOverlayLayer = OverlayLayer::general;
+		static constexpr OverlayLayer kCursorOverlayLayer = OverlayLayer::cursor;
 
 	public:
 		J_NODISCARD static double GetCursorX();
@@ -47,10 +47,12 @@ namespace jactorio::game
 		///
 		/// \brief Draws selection box over entity & no item selected. | With item selected: draws ghost of entity
 		void DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
-		                 const data::Entity* selected_entity, int world_x, int world_y,
-		                 data::Orientation
-		                 placement_orientation);
-	private:
+		                 const data::Entity* selected_entity, const WorldCoord& coord,
+		                 data::Orientation placement_orientation);
+
+        void SkipErasingLastOverlay() noexcept;
+
+    private:
 		ChunkCoord lastChunkPos_        = {0, 0};
 		size_t lastOverlayElementIndex_ = UINT64_MAX;
 	};

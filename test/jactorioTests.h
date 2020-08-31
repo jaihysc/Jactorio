@@ -61,6 +61,27 @@ namespace jactorio
 	static_assert(!std::is_abstract_v<TestMockWorldObject>);
 
 
+	class TestMockEntity : public data::Entity
+	{
+    public:
+		PROTOTYPE_CATEGORY(test);
+
+        void OnBuild(game::WorldData& world_data,
+            game::LogicData& logic_data,
+            const WorldCoord& world_coords,
+            game::ChunkTileLayer& tile_layer,
+            data::Orientation orientation) const override {
+        }
+
+        void OnRemove(game::WorldData& world_data,
+            game::LogicData& logic_data,
+            const WorldCoord& world_coords,
+            game::ChunkTileLayer& tile_layer) const override {
+        }
+	};
+	static_assert(!std::is_abstract_v<TestMockEntity>);
+
+
 	inline void TestSetupMultiTileProp(game::ChunkTileLayer& ctl, const game::MultiTileData& mt_data, data::FWorldObject& proto) {
 		proto.tileWidth   = mt_data.span;
 		proto.tileHeight  = mt_data.height;

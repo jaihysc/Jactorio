@@ -33,6 +33,9 @@ void data::DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGl
 			data_local.prototype.GenerateRelocationTable();
 			active_data_manager = &data_local.prototype;
 		},
+		[&](auto*) {
+			data_local.input.mouse.SkipErasingLastOverlay();  // All overlays will be cleared
+		},
 	};
 	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> post_load_hooks
 	{
