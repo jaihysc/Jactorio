@@ -33,7 +33,7 @@ namespace jactorio::data
         using core::PointerWrapper<TProto>::PointerWrapper;
 
         CEREAL_LOAD(archive) {
-            CerealArchive<this->kArchiveSize_>(archive, this->value_); // Deserialized as internal id
+            CerealArchive<kArchiveSize_>(archive, this->value_); // Deserialized as internal id
 
             if (this->value_ == 0) // nullptr
                 return;
@@ -41,7 +41,7 @@ namespace jactorio::data
             assert(active_prototype_manager != nullptr);
             auto* proto_ptr = &active_prototype_manager->RelocationTableGet<TProto>( // Converted to prototype*
                 core::SafeCast<PrototypeIdT>(this->value_));
-            SetProto(proto_ptr);
+            this->SetProto(proto_ptr);
         }
 
         CEREAL_SAVE(archive) {
@@ -49,7 +49,7 @@ namespace jactorio::data
             if (this->value_ != 0)
                 save_val = static_cast<ValueT>(this->Get()->internalId);
 
-            CerealArchive<this->kArchiveSize_>(archive, save_val);
+            CerealArchive<kArchiveSize_>(archive, save_val);
         }
     };
 

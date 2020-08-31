@@ -148,39 +148,6 @@ namespace jactorio::game
 		J_NODISCARD MultiTileValueT GetOffsetY() const;
 
 
-        CEREAL_LOAD(archive) {
-            constexpr auto archive_size = GetArchiveSize();
-            data::CerealArchive<archive_size>(archive,
-                                              prototypeData, data_.uniqueData, multiTileIndex_);
-
-            const auto& unique_data = data_.uniqueData;
-
-            if (unique_data != nullptr) {
-                assert(data::active_unique_data_manager != nullptr);
-                data::active_unique_data_manager->StoreRelocationEntry(*unique_data);
-            }
-        }
-
-        CEREAL_SAVE(archive) {
-            constexpr auto archive_size = GetArchiveSize();
-			if (IsTopLeft()) {
-                const auto& unique_data = data_.uniqueData;
-
-                if (unique_data != nullptr) {
-                    assert(data::active_unique_data_manager != nullptr);
-                    data::active_unique_data_manager->AssignId(*unique_data);
-                }
-				data::CerealArchive<archive_size>(archive,
-				                                  prototypeData, unique_data, multiTileIndex_);
-			}
-			else {
-				// Non top left tiles do not have unique data
-				UniqueDataContainerT empty_unique = nullptr;
-				data::CerealArchive<archive_size>(archive,
-				                                  prototypeData, empty_unique, multiTileIndex_);
-			}
-		}
-
 		/// A layer may point to a tile prototype to provide additional data (collisions, world gen) 
 		data::SerialProtoPtr<const data::FWorldObject> prototypeData;
 
@@ -223,6 +190,40 @@ namespace jactorio::game
         static constexpr size_t GetArchiveSize() {
             return sizeof prototypeData + sizeof data_.uniqueData + sizeof multiTileIndex_;
         }
+
+    public:
+        CEREAL_LOAD(archive) {
+            constexpr auto archive_size = GetArchiveSize();
+            data::CerealArchive<archive_size>(archive,
+                                              prototypeData, data_.uniqueData, multiTileIndex_);
+
+            const auto& unique_data = data_.uniqueData;
+
+            if (unique_data != nullptr) {
+                assert(data::active_unique_data_manager != nullptr);
+                data::active_unique_data_manager->StoreRelocationEntry(*unique_data);
+            }
+        }
+
+        CEREAL_SAVE(archive) {
+            constexpr auto archive_size = GetArchiveSize();
+			if (IsTopLeft()) {
+                const auto& unique_data = data_.uniqueData;
+
+                if (unique_data != nullptr) {
+                    assert(data::active_unique_data_manager != nullptr);
+                    data::active_unique_data_manager->AssignId(*unique_data);
+                }
+				data::CerealArchive<archive_size>(archive,
+				                                  prototypeData, unique_data, multiTileIndex_);
+			}
+			else {
+				// Non top left tiles do not have unique data
+				UniqueDataContainerT empty_unique = nullptr;
+				data::CerealArchive<archive_size>(archive,
+				                                  prototypeData, empty_unique, multiTileIndex_);
+			}
+		}
 	};
 
 	template <typename T>
