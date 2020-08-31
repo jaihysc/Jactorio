@@ -11,6 +11,7 @@
 #include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
+#include "data/unique_data_manager.h"
 
 namespace jactorio::game
 {
@@ -20,26 +21,29 @@ namespace jactorio::game
 	{
 		struct GameInput
 		{
-			MouseSelection mouse{};
-			KeyInput key{};
+			MouseSelection mouse;
+			KeyInput key;
 		};
 
-		data::PrototypeManager prototype{};
-		GameInput input{};
-		EventData event{};
+		data::PrototypeManager prototype;
+        data::UniqueDataManager unique;
+
+		GameInput input;
+		EventData event;
 	};
 
 	///
 	/// \brief Serialized runtime data, persists across restarts
 	struct GameDataGlobal
 	{
-		PlayerData player{};
+		PlayerData player;
 
-		WorldData world{};
-		LogicData logic{};
+		WorldData world;
+		LogicData logic;
 
 
 		CEREAL_SERIALIZE(archive) {
+            // Order must be: world, logic, player
 			// TODO player and logic
 			archive(world);
 		}

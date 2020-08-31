@@ -27,22 +27,19 @@ void data::SerializeGameData(const game::GameDataGlobal& game_data) {
 void data::DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGlobal& out_data_global) {
 	LOG_MESSAGE(info, "Loading savegame");
 
-	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> pre_load_hooks
-	{
-		[&](auto*) {
-			data_local.prototype.GenerateRelocationTable();
-			active_data_manager = &data_local.prototype;
-		},
-		[&](auto*) {
-			data_local.input.mouse.SkipErasingLastOverlay();  // All overlays will be cleared
-		},
-	};
-	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> post_load_hooks
-	{
-		[&](auto* data_global) {
-			data_global->world.DeserializePostProcess();
-		},
-	};
+	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> pre_load_hooks{
+        [&](auto* /*data_global*/) {
+            data_local.prototype.GenerateRelocationTable();
+            active_data_manager = &data_local.prototype;
+        },
+        [&](auto* /*data_global*/) {
+            data_local.input.mouse.SkipErasingLastOverlay(); // All overlays will be cleared
+        },
+    };
+	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> post_load_hooks{
+        [&](auto* data_global) { data_global->world.DeserializePostProcess(); },
+        [&](auto* /*data_global*/) { data_local.unique.RelocationClear(); },
+    };
 
 
 	// ======================================================================

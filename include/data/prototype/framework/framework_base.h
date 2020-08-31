@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
-#define JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_FRAMEWORK_FRAMEWORK_BASE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_FRAMEWORK_FRAMEWORK_BASE_H
 #pragma once
 
 #include <memory>
@@ -66,6 +66,9 @@ namespace jactorio::data
 {
 	class PrototypeManager;
 
+    using PrototypeIdT = uint32_t;
+    using UniqueDataIdT = uint32_t;
+
 	///
 	/// \brief Creates a formatted log message if log level permits
 	template <typename ... Args, typename = std::common_type<Args ...>>
@@ -95,7 +98,10 @@ namespace jactorio::data
 		UniqueDataBase& operator=(UniqueDataBase&& other) noexcept = default;
 
 
+        UniqueDataIdT internalId = 0;
+
 		CEREAL_SERIALIZE(archive) {
+            archive(internalId);
 		}
 
 		CEREAL_LOAD_CONSTRUCT(archive, construct, UniqueDataBase) {
@@ -114,7 +120,6 @@ namespace jactorio::data
 	}\
 	static_assert(true)
 
-	using PrototypeIdT = uint32_t;
 
 	class FrameworkBase
 	{
@@ -147,7 +152,7 @@ namespace jactorio::data
 		///
 		/// \brief Unique per prototype, unique & auto assigned per new prototype added
 		/// 0 indicates invalid id
-		uint32_t internalId = 0;
+		PrototypeIdT internalId = 0;
 
 		/// To location prototype was constructed
 		std::string pythonTraceback;
@@ -159,7 +164,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Determines the priority of this prototype used in certain situations
-		/// Automatically assigned incrementally alongside internalId if 0 
+		/// Automatically assigned incrementally alongside internalId if 0
 		/// \remark 0 indicates invalid id
 		PYTHON_PROP_REF_I(unsigned int, order, 0);
 
@@ -211,4 +216,4 @@ namespace jactorio::data
 	};
 }
 
-#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_BASE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_FRAMEWORK_FRAMEWORK_BASE_H
