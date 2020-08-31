@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_GAME_LOGIC_DEFERRAL_TIMER_H
-#define JACTORIO_GAME_LOGIC_DEFERRAL_TIMER_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_DEFERRAL_TIMER_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_DEFERRAL_TIMER_H
 #pragma once
 
 #include <unordered_map>
@@ -85,6 +85,11 @@ namespace jactorio::game
 
 		J_NODISCARD DebugInfo GetDebugInfo() const;
 
+
+        CEREAL_SERIALIZE(archive) {
+            // TODO
+        }
+
 	private:
 		CallbackContainerT callbacks_;
 
@@ -95,7 +100,7 @@ namespace jactorio::game
 		class BlankCallback final : public data::IDeferred
 		{
 		public:
-			void OnDeferTimeElapsed(WorldData&, LogicData&, data::UniqueDataBase*) const override {
+			void OnDeferTimeElapsed(WorldData& /*world_data*/, LogicData& /*logic_data*/, data::UniqueDataBase* /*unique_data*/) const override {
 			}
 		} blankCallback_;
 
@@ -106,4 +111,4 @@ namespace jactorio::game
 	};
 }
 
-#endif // JACTORIO_GAME_LOGIC_DEFERRAL_TIMER_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_DEFERRAL_TIMER_H

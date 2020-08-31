@@ -30,7 +30,7 @@ void data::DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGl
 	const std::vector<std::function<void(game::GameDataGlobal* data_global)>> pre_load_hooks{
         [&](auto* /*data_global*/) {
             data_local.prototype.GenerateRelocationTable();
-            active_data_manager = &data_local.prototype;
+            active_prototype_manager = &data_local.prototype;
         },
         [&](auto* /*data_global*/) {
             data_local.input.mouse.SkipErasingLastOverlay(); // All overlays will be cleared

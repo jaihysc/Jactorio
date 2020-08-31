@@ -5,61 +5,53 @@
 #include "data/cereal/serialization_type.h"
 
 #include "jactorioTests.h"
-#include "data/prototype/sprite.h"
-#include "data/prototype/item.h"
 
 namespace jactorio::data
 {
-	TEST(CerealSerializePrototypePointer, ConstructPointer) {
-		Sprite sprite;
-		SerialProtoPtr<Sprite> serial_proto = &sprite;
-		EXPECT_EQ(serial_proto.Get(), &sprite);
-	}
+    TEST(SerialPrototypePointer, Serialize) {
+        data::PrototypeManager proto_manager;
 
-	TEST(CerealSerializePrototypePointer, ConstructReference) {
-		Sprite sprite;
-		SerialProtoPtr<Sprite> serial_proto(sprite);
-		EXPECT_EQ(serial_proto.Get(), &sprite);
-	}
+        auto& container = proto_manager.AddProto<ContainerEntity>();
 
-	TEST(CerealSerializePrototypePointer, GetSetPrototype) {
-		SerialProtoPtr<Sprite> serial_proto;
-		EXPECT_EQ(serial_proto.Get(), nullptr);
+        SerialProtoPtr<const ContainerEntity> original(&container);
 
-		Sprite sprite;
-		serial_proto       = &sprite;
-		serial_proto->sets = 3;
-		EXPECT_EQ(sprite.sets, 3);
 
-		(*serial_proto).sets = 4;
-		EXPECT_EQ(sprite.sets, 4);
-	}
+        proto_manager.GenerateRelocationTable();
+        data::active_prototype_manager = &proto_manager;
 
-	TEST(CerealSerializePrototypePointer, GetConstPrototype) {
-		Sprite sprite;
-		sprite.sets = 32;
+        auto result = TestSerializeDeserialize(original);
 
-		SerialProtoPtr<const Sprite> serial_proto(sprite);
 
-		EXPECT_EQ(serial_proto->sets, 32);
-		EXPECT_EQ((*serial_proto).sets, 32);
-	}
+        EXPECT_EQ(result.Get()->internalId, 1);
+        EXPECT_TRUE(original == result);
+        EXPECT_EQ(original.Get(), result.Get());
+    }
 
-	TEST(CerealSerializePrototypePointer, GetPrototypeConstWrapper) {
-		Sprite sprite;
-		sprite.sets = 32;
-
-		const SerialProtoPtr<const Sprite> serial_proto(sprite);
-
-		EXPECT_EQ(serial_proto->sets, 32);
-		EXPECT_EQ((*serial_proto).sets, 32);
-	}
-
-	
-	TEST(CerealSerializePrototypePointer, SerializeNull) {
+	TEST(SerialPrototypePointer, SerializeNull) {
 		SerialProtoPtr<const Sprite> original(nullptr);
+
+        EXPECT_TRUE(original == SerialProtoPtr<const Sprite>(nullptr));
+        EXPECT_FALSE(original != SerialProtoPtr<const Sprite>(nullptr));
 
 		auto result = TestSerializeDeserialize(original);
 		EXPECT_EQ(result.Get(), nullptr);
 	}
+
+    TEST(SerialUniqueDataPointer, Serialize) {
+        data::UniqueDataManager unique_manager;
+
+        ContainerEntityData container;
+        container.health = 42;
+        unique_manager.AssignId(container);
+        unique_manager.StoreRelocationEntry(container);
+
+        SerialUniqueDataPtr serial_ptr(&container);
+
+
+        data::active_unique_data_manager = &unique_manager;
+        auto result = TestSerializeDeserialize(serial_ptr);
+
+        EXPECT_EQ(result->internalId, 1);
+        EXPECT_EQ(result->health, 42);
+    }
 }

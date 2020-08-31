@@ -5,7 +5,7 @@
 #include "game/world/chunk_tile_layer.h"
 
 #include "jactorioTests.h"
-#include "data/prototype/container_entity.h"
+#include "data/unique_data_manager.h"
 #include "data/cereal/register_type.h"
 
 namespace jactorio::game
@@ -279,10 +279,12 @@ namespace jactorio::game
 		EXPECT_EQ(ctl.GetOffsetY(), 4);
 	}
 
-
 	TEST_F(ChunkTileLayerTest, Serialize) {
 		data::PrototypeManager proto_manager;
-		data::active_data_manager = &proto_manager;
+        data::UniqueDataManager unique_manager;
+
+		data::active_prototype_manager = &proto_manager;
+        data::active_unique_data_manager = &unique_manager;
 
 		auto& proto = proto_manager.AddProto<data::ContainerEntity>();
 
@@ -303,7 +305,8 @@ namespace jactorio::game
 		auto result_br = TestSerializeDeserialize(bot_right);
 
 		EXPECT_EQ(result_tl.prototypeData, &proto);
-		EXPECT_NE(result_tl.GetUniqueData(), nullptr);
+		ASSERT_NE(result_tl.GetUniqueData(), nullptr);
+        EXPECT_EQ(result_tl.GetUniqueData()->internalId, 1);
 
 		EXPECT_EQ(result_tl.GetMultiTileData().span, 2);
 		EXPECT_EQ(result_tl.GetMultiTileData().height, 2);
@@ -314,5 +317,8 @@ namespace jactorio::game
 
 		EXPECT_EQ(result_br.GetMultiTileData().span, 2);
 		EXPECT_EQ(result_br.GetMultiTileData().height, 2);
+
+
+        EXPECT_EQ(unique_manager.GetDebugInfo().dataEntries.size(), 1);
 	}
 }

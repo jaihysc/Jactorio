@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
-#define JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_MANAGER_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_MANAGER_H
 #pragma once
 
 #include <algorithm>
@@ -23,7 +23,7 @@ namespace jactorio::data
 
 	/// Pybind callbacks to append into the data manager at the pointer 
 	/// SerialProtoPtr deserializes with this
-	inline PrototypeManager* active_data_manager = nullptr;
+	inline PrototypeManager* active_prototype_manager = nullptr;
 
 	///
 	/// \brief Manages prototype data
@@ -263,4 +263,4 @@ namespace jactorio::data
 	}
 }
 
-#endif //JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_MANAGER_H

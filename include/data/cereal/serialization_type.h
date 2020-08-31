@@ -1,123 +1,93 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_CEREAL_SERIALIZATION_TYPE_H
-#define JACTORIO_DATA_CEREAL_SERIALIZATION_TYPE_H
+#ifndef JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZATION_TYPE_H
+#define JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZATION_TYPE_H
 #pragma once
 
 #include <type_traits>
 
 #include "jactorio.h"
+
 #include "core/math.h"
-#include "data/prototype_manager.h"
+#include "core/pointer_wrapper.h"
 #include "data/cereal/serialize.h"
+#include "data/prototype_manager.h"
+#include "data/unique_data_manager.h"
 
 namespace jactorio::data
 {
-	///
-	/// \brief Manages non owning pointer to prototype
-	/// \remark Uses the global active prototype manager for deserializing
-	///
-	/// Converts pointer to internal id when serializing, from internal id to pointer when deserializing
-	template <typename TProto>
-	class SerialProtoPtr
-	{
-		static_assert(std::is_base_of_v<FrameworkBase, TProto>, "TProto must inherit FrameworkBase for internal id");
-		static_assert(!std::is_pointer_v<TProto>, "TProto should not be a pointer, remove the indirection");
+    ///
+    /// Manages non owning pointer to prototype
+    /// \remark Uses the global active prototype manager for deserializing
+    ///
+    /// Converts pointer to internal id when serializing, from internal id to pointer when deserializing
+    template <typename TProto>
+    class SerialProtoPtr : public core::PointerWrapper<TProto>
+    {
+        static_assert(std::is_base_of_v<FrameworkBase, TProto>, "TProto must inherit FrameworkBase for internal id");
 
-		using ValueT = std::size_t;
-		static constexpr auto kArchiveSize = sizeof(ValueT);
+        using ValueT                        = typename core::PointerWrapper<TProto>::ValueT;
+        static constexpr auto kArchiveSize_ = sizeof(ValueT);
 
-	public:
-		SerialProtoPtr() = default;
+    public:
+        using core::PointerWrapper<TProto>::PointerWrapper;
 
-		SerialProtoPtr(TProto* proto) {  // Intentionally non explicit to allow assignment from pointer directly
-			SetProto(proto);
-		}
+        CEREAL_LOAD(archive) {
+            CerealArchive<this->kArchiveSize_>(archive, this->value_); // Deserialized as internal id
 
-		explicit SerialProtoPtr(TProto& proto) {
-			SetProto(&proto);
-		}
+            if (this->value_ == 0) // nullptr
+                return;
 
+            assert(active_prototype_manager != nullptr);
+            auto* proto_ptr = &active_prototype_manager->RelocationTableGet<TProto>( // Converted to prototype*
+                core::SafeCast<PrototypeIdT>(this->value_));
+            SetProto(proto_ptr);
+        }
 
-		TProto* operator->() {
-			return GetProto();
-		}
+        CEREAL_SAVE(archive) {
+            ValueT save_val = 0;
+            if (this->value_ != 0)
+                save_val = static_cast<ValueT>(this->Get()->internalId);
 
-		const TProto* operator->() const {
-			return GetProto();
-		}
+            CerealArchive<this->kArchiveSize_>(archive, save_val);
+        }
+    };
 
-		TProto& operator*() {
-			return *GetProto();
-		}
-
-		const TProto& operator*() const {
-			return *GetProto();
-		}
+    template <class T>
+    SerialProtoPtr(T) -> SerialProtoPtr<std::remove_pointer_t<T>>;
 
 
-		friend bool operator==(const SerialProtoPtr& lhs, const SerialProtoPtr& rhs) {
-			return lhs.value_ == rhs.value_;
-		}
+    ///
+    /// Manages non owning pointer to unique data
+    /// \remark Uses the global active unique data manager for deserializing
+    template <typename TUnique>
+    class SerialUniqueDataPtr : public core::PointerWrapper<TUnique>
+    {
+        static_assert(std::is_base_of_v<UniqueDataBase, TUnique>,
+                      "TUnique must inherit UniqueDataBase for internal id");
 
-		friend bool operator!=(const SerialProtoPtr& lhs, const SerialProtoPtr& rhs) {
-			return !(lhs == rhs);
-		}
+        using ValueT                        = typename core::PointerWrapper<TUnique>::ValueT;
+        static constexpr auto kArchiveSize_ = sizeof(data::UniqueDataIdT);
 
-		friend void swap(SerialProtoPtr& lhs, SerialProtoPtr& rhs) noexcept {
-			using std::swap;
-			swap(lhs.value_, rhs.value_);
-		}
+    public:
+        using core::PointerWrapper<TUnique>::PointerWrapper;
 
-		J_NODISCARD TProto* Get() noexcept {
-			return GetProto();
-		}
+        CEREAL_LOAD(archive) {
+            data::UniqueDataIdT id;
+            data::CerealArchive<kArchiveSize_>(archive, id);
 
-		J_NODISCARD const TProto* Get() const noexcept {
-			return GetProto();
-		}
+            assert(data::active_unique_data_manager != nullptr);
+            this->SetProto(static_cast<TUnique*>(&data::active_unique_data_manager->RelocationTableGet(id)));
+        }
 
+        CEREAL_SAVE(archive) {
+            data::UniqueDataIdT id = this->Get()->internalId;
+            data::CerealArchive<kArchiveSize_>(archive, id);
+        }
+    };
 
-		CEREAL_LOAD(archive) {
-			CerealArchive<kArchiveSize>(archive, value_);  // Deserialized as internal id
+    template <class T>
+    SerialUniqueDataPtr(T) -> SerialUniqueDataPtr<std::remove_pointer_t<T>>;
+} // namespace jactorio::data
 
-			if (value_ == 0)  // nullptr
-				return;
-			
-			assert(active_data_manager != nullptr);
-			auto* proto_ptr = &active_data_manager->RelocationTableGet<TProto>(  // Converted to prototype*
-				core::SafeCast<PrototypeIdT>(value_)
-			);
-			SetProto(proto_ptr);
-		}
-
-		CEREAL_SAVE(archive) {
-			ValueT save_val = 0;
-			if (value_ != 0)
-				save_val = static_cast<ValueT>(GetProto()->internalId);
-
-			CerealArchive<kArchiveSize>(archive, save_val);
-		}
-
-	private:
-
-		J_NODISCARD TProto* GetProto() noexcept {
-			return reinterpret_cast<TProto*>(value_);
-		}
-
-		J_NODISCARD const TProto* GetProto() const noexcept {
-			return reinterpret_cast<TProto*>(value_);
-		}
-
-		void SetProto(TProto* proto) noexcept {
-			value_ = reinterpret_cast<ValueT>(proto);
-		}
-
-
-		/// ptr or internal id
-		static_assert(sizeof(ValueT) == sizeof(TProto*));
-		ValueT value_ = 0;
-	};
-}
-
-#endif // JACTORIO_DATA_CEREAL_SERIALIZATION_TYPE_H
+#endif // JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZATION_TYPE_H

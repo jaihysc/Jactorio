@@ -68,8 +68,8 @@ inline void ExtractPythonTraceback(jactorio::data::FrameworkBase& prototype) {
 
 #define PYBIND_DATA_CLASS(cpp_class__, py_name__, ...)\
 	m.def(#py_name__, [](const std::string& iname = "") {\
-		assert(active_data_manager);\
-		auto& prototype = active_data_manager->AddProto<cpp_class__>(iname);\
+		assert(active_prototype_manager);\
+		auto& prototype = active_prototype_manager->AddProto<cpp_class__>(iname);\
 		\
 		ExtractPythonTraceback(prototype);\
 		\
@@ -281,9 +281,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("Inserter", DataCategory::inserter);
 
 	m.def("get", [](const DataCategory category, const std::string& iname) {
-		assert(active_data_manager);
+		assert(active_prototype_manager);
 
-		return active_data_manager->DataRawGet<FrameworkBase>(category, iname);
+		return active_prototype_manager->DataRawGet<FrameworkBase>(category, iname);
 	}, pybind11::return_value_policy::reference);
 
 	// ############################################################

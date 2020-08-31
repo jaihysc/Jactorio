@@ -10,6 +10,10 @@
 
 namespace jactorio::data
 {
+    class UniqueDataManager;
+
+    inline UniqueDataManager* active_unique_data_manager = nullptr;
+
     class UniqueDataManager
     {
         static constexpr UniqueDataIdT kDefaultId_ = 1;

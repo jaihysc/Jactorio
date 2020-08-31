@@ -44,8 +44,9 @@ namespace jactorio::game
 
 		CEREAL_SERIALIZE(archive) {
             // Order must be: world, logic, player
-			// TODO player and logic
 			archive(world);
+            archive(logic);
+            // TODO player
 		}
 	};
 }

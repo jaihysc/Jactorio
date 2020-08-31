@@ -399,7 +399,7 @@ namespace jactorio::game
 		segment->right.visible = false;
 
 
-		data::active_data_manager = &proto_manager;
+		data::active_prototype_manager = &proto_manager;
 		proto_manager.GenerateRelocationTable();
 
 		// ======================================================================

@@ -191,7 +191,7 @@ namespace jactorio::data
 		data_.health = 4321;
 
 
-		active_data_manager = &dataManager_;
+        active_prototype_manager = &dataManager_;
 		dataManager_.GenerateRelocationTable();
 		const auto result   = TestSerializeDeserialize(data_);
 

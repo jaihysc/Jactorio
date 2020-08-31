@@ -122,7 +122,7 @@ namespace jactorio::data
 
 
 	TEST_F(DataManagerTest, LoadData) {
-		active_data_manager = &dataManager_;
+        active_prototype_manager = &dataManager_;
 		dataManager_.SetDirectoryPrefix("asdf");
 
 		// Load_data should set the directory prefix based on the subfolder

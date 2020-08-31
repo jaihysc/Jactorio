@@ -54,8 +54,8 @@ bool game::ChunkTileLayer::IsMultiTileTopLeft() const {
 	return IsMultiTile() && IsTopLeft();
 }
 
-bool game::ChunkTileLayer::IsNonTopLeftMultiTile() const {
-	return IsMultiTile() && !IsMultiTileTopLeft();
+bool game::ChunkTileLayer::IsNonTopLeftMultiTile() const noexcept {
+	return multiTileIndex_ != 0;
 }
 
 

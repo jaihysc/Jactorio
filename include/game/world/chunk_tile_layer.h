@@ -7,6 +7,7 @@
 #include "data/cereal/serialization_type.h"
 #include "data/cereal/serialize.h"
 #include "data/prototype/framework/world_object.h"
+#include "data/unique_data_manager.h"
 
 #include <cereal/cereal.hpp>
 
@@ -116,7 +117,7 @@ namespace jactorio::game
 		J_NODISCARD bool IsTopLeft() const noexcept;  // Destructor use safe
 		J_NODISCARD bool IsMultiTile() const;
 		J_NODISCARD bool IsMultiTileTopLeft() const;
-		J_NODISCARD bool IsNonTopLeftMultiTile() const;
+		J_NODISCARD bool IsNonTopLeftMultiTile() const noexcept;
 
 
 		J_NODISCARD bool HasMultiTileData() const;
@@ -147,13 +148,30 @@ namespace jactorio::game
 		J_NODISCARD MultiTileValueT GetOffsetY() const;
 
 
-		CEREAL_SERIALIZE(archive) {
-			constexpr auto archive_size = sizeof prototypeData + sizeof data_.uniqueData + sizeof multiTileIndex_;
+        CEREAL_LOAD(archive) {
+            constexpr auto archive_size = GetArchiveSize();
+            data::CerealArchive<archive_size>(archive,
+                                              prototypeData, data_.uniqueData, multiTileIndex_);
 
+            const auto& unique_data = data_.uniqueData;
+
+            if (unique_data != nullptr) {
+                assert(data::active_unique_data_manager != nullptr);
+                data::active_unique_data_manager->StoreRelocationEntry(*unique_data);
+            }
+        }
+
+        CEREAL_SAVE(archive) {
+            constexpr auto archive_size = GetArchiveSize();
 			if (IsTopLeft()) {
-				// This path always chosen on load
+                const auto& unique_data = data_.uniqueData;
+
+                if (unique_data != nullptr) {
+                    assert(data::active_unique_data_manager != nullptr);
+                    data::active_unique_data_manager->AssignId(*unique_data);
+                }
 				data::CerealArchive<archive_size>(archive,
-				                                  prototypeData, data_.uniqueData, multiTileIndex_);
+				                                  prototypeData, unique_data, multiTileIndex_);
 			}
 			else {
 				// Non top left tiles do not have unique data
@@ -195,11 +213,16 @@ namespace jactorio::game
 
 		UData data_;
 
-		///	
+		///
 		/// If the layer is multi-tile, eg: 3 x 2
 		/// 0 1 2
 		/// 3 4 5
 		MultiTileValueT multiTileIndex_ = 0;
+
+
+        static constexpr size_t GetArchiveSize() {
+            return sizeof prototypeData + sizeof data_.uniqueData + sizeof multiTileIndex_;
+        }
 	};
 
 	template <typename T>

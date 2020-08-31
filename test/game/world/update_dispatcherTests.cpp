@@ -111,7 +111,7 @@ namespace jactorio::game
 	TEST_F(UpdateDispatcherTest, Serialize) {
 		data::PrototypeManager proto_manager;
 		auto& registered_mock     = proto_manager.AddProto<MockUpdateListener>();
-		data::active_data_manager = &proto_manager;  // Needs to access prototype manager to deserialize
+		data::active_prototype_manager = &proto_manager;  // Needs to access prototype manager to deserialize
 
 		UpdateDispatcher original;
 		original.Register({1, 2}, {3, 4}, registered_mock);

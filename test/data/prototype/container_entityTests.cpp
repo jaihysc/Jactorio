@@ -22,7 +22,7 @@ namespace jactorio::data
 		container.inventory[4].filter = &item_2;
 
 		proto_manager.GenerateRelocationTable();
-		active_data_manager = &proto_manager;
+        active_prototype_manager = &proto_manager;
 
 		// ======================================================================
 		const auto result = TestSerializeDeserialize(container);

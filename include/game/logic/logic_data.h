@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_GAME_LOGIC_LOGIC_DATA_H
-#define JACTORIO_GAME_LOGIC_LOGIC_DATA_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_DATA_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_DATA_H
 #pragma once
 
 #include "game/logic/deferral_timer.h"
@@ -28,6 +28,10 @@ namespace jactorio::game
 		}
 
 
+        CEREAL_SERIALIZE(archive) {
+            archive(deferralTimer, gameTick_);
+        }
+
 		DeferralTimer deferralTimer;
 
 	private:
@@ -35,4 +39,4 @@ namespace jactorio::game
 	};
 }
 
-#endif // JACTORIO_GAME_LOGIC_LOGIC_DATA_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_DATA_H
