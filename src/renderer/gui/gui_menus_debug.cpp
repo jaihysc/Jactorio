@@ -581,7 +581,7 @@ void renderer::DebugLogicInfo(const game::LogicData& logic_data) {
 
 			for (const auto& callback : callback_tick.second) {
 				std::ostringstream sstream;
-				sstream << callback.uniqueData;  // Get pointer address
+				sstream << callback.uniqueData.Get();
 				ImGui::Text("%s", sstream.str().c_str());
 			}
 		}

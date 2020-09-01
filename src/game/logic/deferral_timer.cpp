@@ -16,47 +16,47 @@ void game::DeferralTimer::DeferralUpdate(LogicData& logic_data, WorldData& world
 
 	// Call callbacks
 	for (auto& pair : callbacks_[game_tick]) {
-		pair.prototype.get().OnDeferTimeElapsed(world_data, logic_data, pair.uniqueData);
-	}
+        pair.prototype->OnDeferTimeElapsed(world_data, logic_data, pair.uniqueData.Get());
+    }
 
-	// Remove used callbacks
+    // Remove used callbacks
 	callbacks_.erase(game_tick);
 }
 
-game::DeferralTimer::DeferralEntry game::DeferralTimer::RegisterAtTick(const data::IDeferred& deferred,
-	data::UniqueDataBase* unique_data,
-	const GameTickT due_game_tick) {
-	assert(due_game_tick > lastGameTick_);
+game::DeferralTimer::DeferralEntry game::DeferralTimer::RegisterAtTick(const DeferPrototypeT& deferred,
+                                                                       DeferUniqueDataT* unique_data,
+                                                                       GameTickT due_game_tick) {
+    assert(due_game_tick > lastGameTick_);
 
-	auto& due_tick_callback = callbacks_[due_game_tick];
-	due_tick_callback.emplace_back(CallbackContainerEntry{std::ref(deferred), unique_data});
+    auto& due_tick_callback = callbacks_[due_game_tick];
+    due_tick_callback.emplace_back(CallbackContainerEntry{&deferred, unique_data});
 
-	return {due_game_tick, due_tick_callback.size()};
+    return {due_game_tick, due_tick_callback.size()};
 }
 
-game::DeferralTimer::DeferralEntry game::DeferralTimer::RegisterFromTick(const data::IDeferred& deferred,
-	data::UniqueDataBase* unique_data,
-	const GameTickT elapse_game_tick) {
+game::DeferralTimer::DeferralEntry game::DeferralTimer::RegisterFromTick(const DeferPrototypeT& deferred,
+                                                                         DeferUniqueDataT* unique_data,
+                                                                         GameTickT elapse_game_tick) {
 
-	assert(elapse_game_tick > 0);
-	return RegisterAtTick(deferred, unique_data, lastGameTick_ + elapse_game_tick);
+    assert(elapse_game_tick > 0);
+    return RegisterAtTick(deferred, unique_data, lastGameTick_ + elapse_game_tick);
 }
 
 void game::DeferralTimer::RemoveDeferral(DeferralEntry entry) {
 	assert(entry.callbackIndex != 0);  // Invalid callback index
 
 	// due_game_tick does not exist
-	if (callbacks_.find(entry.dueTick) == callbacks_.end())
-		return;
+    if (callbacks_.find(entry.dueTick) == callbacks_.end())
+        return;
 
-	auto& due_tick_callback = callbacks_[entry.dueTick];
+    auto& due_tick_callback = callbacks_[entry.dueTick];
 
-	// Index is +1 than actual index
-	entry.callbackIndex -= 1;
-	assert(entry.callbackIndex <= due_tick_callback.size());  // Index out of range
+    // Index is +1 than actual index
+    entry.callbackIndex -= 1;
+    assert(entry.callbackIndex <= due_tick_callback.size()); // Index out of range
 
-	// Instead of erasing, make the callback a blank function so that future remove calls do not go out of range
-	due_tick_callback[entry.callbackIndex].prototype = blankCallback_;
+    // Instead of erasing, make the callback a blank function so that future remove calls do not go out of range
+    due_tick_callback[entry.callbackIndex].prototype = &blankCallback_;
 }
 
 void game::DeferralTimer::RemoveDeferralEntry(DeferralEntry& entry) {

@@ -106,6 +106,7 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
 
 	// Initialize game data
 	data::active_prototype_manager = &common.gameDataLocal.prototype;
+    data::active_unique_data_manager = &common.gameDataLocal.unique;
 
 	try {
 		common.gameDataLocal.prototype.LoadData(core::ResolvePath("data"));

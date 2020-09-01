@@ -5,28 +5,25 @@
 #include "game/logic/deferral_timer.h"
 
 #include "jactorioTests.h"
-#include "data/prototype/framework/framework_base.h"
-#include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
 	class DeferralTimerTest : public testing::Test
 	{
 	protected:
-		LogicData logicData_{};
-		WorldData worldData_{};
+		LogicData logicData_;
+		WorldData worldData_;
 
 		DeferralTimer& timer_ = logicData_.deferralTimer;
 
-		class MockDeferred final : public data::IDeferred
+		class MockDeferred final : public TestMockEntity
 		{
 		public:
 			mutable bool callbackCalled           = false;
 			mutable data::UniqueDataBase* dataPtr = nullptr;
 			mutable DeferralTimer* dTimer         = nullptr;
 
-			void OnDeferTimeElapsed(WorldData&, LogicData& logic_data,
+			void OnDeferTimeElapsed(WorldData& /*world_data*/, LogicData& logic_data,
 			                        data::UniqueDataBase* unique_data) const override {
 				callbackCalled = true;
 				dataPtr        = unique_data;
@@ -34,17 +31,17 @@ namespace jactorio::game
 			};
 		};
 
-		const MockDeferred deferred_{};
+		const MockDeferred deferred_;
 
-		class MockUniqueData final : public data::UniqueDataBase
+		class MockUniqueData final : public data::FEntityData
 		{
 		};
 	};
 
 	TEST_F(DeferralTimerTest, RregisterAtTick) {
-		const auto unique_data = std::make_unique<MockUniqueData>();
+		MockUniqueData unique_data;
 
-		const auto index = timer_.RegisterAtTick(deferred_, unique_data.get(), 2);
+		const auto index = timer_.RegisterAtTick(deferred_, &unique_data, 2);
 		EXPECT_EQ(index.dueTick, 2);
 		EXPECT_EQ(index.callbackIndex, 1);
 		EXPECT_TRUE(index.Valid());
@@ -57,15 +54,15 @@ namespace jactorio::game
 
 		logicData_.DeferralUpdate(worldData_, 2);
 		EXPECT_TRUE(deferred_.callbackCalled);
-		EXPECT_EQ(deferred_.dataPtr, unique_data.get());
+		EXPECT_EQ(deferred_.dataPtr, &unique_data);
 		EXPECT_EQ(deferred_.dTimer, &timer_);
 	}
 
 	TEST_F(DeferralTimerTest, RegisterFromTick) {
-		const auto unique_data = std::make_unique<MockUniqueData>();
+		MockUniqueData unique_data;
 
 		// Elapse 2 ticks from now
-		const auto index = timer_.RegisterFromTick(deferred_, unique_data.get(), 2);
+		const auto index = timer_.RegisterFromTick(deferred_, &unique_data, 2);
 		EXPECT_EQ(index.dueTick, 2);
 		EXPECT_EQ(index.callbackIndex, 1);
 		EXPECT_TRUE(index.Valid());
@@ -78,7 +75,7 @@ namespace jactorio::game
 
 		logicData_.DeferralUpdate(worldData_, 2);
 		EXPECT_TRUE(deferred_.callbackCalled);
-		EXPECT_EQ(deferred_.dataPtr, unique_data.get());
+		EXPECT_EQ(deferred_.dataPtr, &unique_data);
 		EXPECT_EQ(deferred_.dTimer, &timer_);
 	}
 
@@ -120,7 +117,7 @@ namespace jactorio::game
 
 	TEST_F(DeferralTimerTest, RemoveDeferralEntry) {
 		{
-			const MockDeferred deferred{};
+			const MockDeferred deferred;
 			auto entry = timer_.RegisterAtTick(deferred, nullptr, 1);
 
 			timer_.RemoveDeferralEntry(entry);
@@ -137,11 +134,39 @@ namespace jactorio::game
 		}
 	}
 
-	TEST_F(DeferralTimerTest, Serialize) {
+	TEST_F(DeferralTimerTest, SerializeDeferralEntry) {
 		const DeferralTimer::DeferralEntry entry {32, 123};
 
 		const auto result = TestSerializeDeserialize(entry);
 		EXPECT_EQ(result.dueTick, 32);
 		EXPECT_EQ(result.callbackIndex, 123);
 	}
+
+    TEST_F(DeferralTimerTest, SerializeCallbacks) {
+        data::PrototypeManager proto_manager;
+        data::UniqueDataManager unique_manager;
+
+        auto& defer_proto = proto_manager.AddProto<MockDeferred>();
+        MockUniqueData unique_data;
+
+        timer_.RegisterAtTick(defer_proto, &unique_data, 10);
+
+
+        proto_manager.GenerateRelocationTable();
+        unique_manager.AssignId(unique_data);
+        unique_manager.StoreRelocationEntry(unique_data);
+
+        data::active_prototype_manager = &proto_manager;
+        data::active_unique_data_manager = &unique_manager;
+        const auto result = TestSerializeDeserialize(timer_);
+
+
+        const auto info = result.GetDebugInfo();
+        ASSERT_EQ(info.callbacks.size(), 1);
+        ASSERT_EQ(info.callbacks.at(10).size(), 1);
+
+        const auto& entry = info.callbacks.at(10)[0];
+        EXPECT_EQ(entry.prototype, &defer_proto);
+        EXPECT_EQ(entry.uniqueData, &unique_data);
+    }
 }
