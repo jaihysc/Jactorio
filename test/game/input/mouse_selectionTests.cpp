@@ -5,9 +5,7 @@
 #include "game/input/mouse_selection.h"
 
 #include "jactorioTests.h"
-#include "data/prototype_manager.h"
-#include "data/prototype/container_entity.h"
-#include "data/prototype/mining_drill.h"
+
 #include "game/player/player_data.h"
 
 namespace jactorio::game
@@ -33,8 +31,8 @@ namespace jactorio::game
 		data::ContainerEntity entity_;
 
 		void SetUp() override {
-			playerData_.SetPlayerWorldData(worldData_);
-			playerData_.SetPlayerLogicData(logicData_);
+			playerData_.world.SetPlayerWorldData(worldData_);
+			playerData_.world.SetPlayerLogicData(logicData_);
 			worldData_.EmplaceChunk(0, 0);
 
 			entity_.sprite    = &entitySprite_;
@@ -164,7 +162,7 @@ namespace jactorio::game
 
 		WorldData world_data;
 		PlayerData player_data;
-		player_data.SetPlayerWorldData(world_data);
+		player_data.world.SetPlayerWorldData(world_data);
 
 		MouseSelection mouse_selection;
 

@@ -2,19 +2,13 @@
 
 #include "renderer/gui/imgui_manager.h"
 
-#include <cassert>
 #include <imgui.h>
-#include <SDL.h>
-#include <unordered_map>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_sdl.h>
 
 #include "jactorio.h"
 
 #include "data/prototype/abstract_proto/entity.h"
-#include "game/event/event.h"
-#include "game/player/player_data.h"
-#include "renderer/display_window.h"
 #include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/gui_menus_debug.h"
@@ -157,14 +151,14 @@ void renderer::ImguiDraw(const DisplayWindow& display_window,
 
 	bool drew_gui = false;
 
-	auto* layer = player_data.GetActivatedLayer();
+	auto* layer = player_data.placement.GetActivatedLayer();
 	if (layer != nullptr) {
 		drew_gui = static_cast<const data::Entity*>(layer->prototypeData.Get())->OnRShowGui(player_data, data_manager, layer);
 		if (drew_gui) {
 			SetVisible(Menu::CharacterMenu, false);
 		}
 		else {
-			player_data.SetActivatedLayer(nullptr);
+			player_data.placement.SetActivatedLayer(nullptr);
 		}
 	}
 

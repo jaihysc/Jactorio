@@ -9,18 +9,9 @@
 #include <examples/imgui_impl_sdl.h>
 
 #include "jactorio.h"
-#include "core/resource_guard.h"
 
-#include "renderer/display_window.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/opengl/shader.h"
-#include "renderer/opengl/texture.h"
-#include "renderer/rendering/spritemap_generator.h"
-
-#include "game/game_data.h"
-#include "game/logic_loop.h"
-#include "game/event/event.h"
-#include "game/input/input_manager.h"
 
 using namespace jactorio;
 
@@ -82,7 +73,7 @@ void RenderingLoop(LogicRenderLoopCommon& common, renderer::DisplayWindow& displ
 			main_renderer->GlRenderPlayerPosition(
 				common.gameDataGlobal.logic.GameTick(),
 				common.gameDataGlobal.world,
-				common.gameDataGlobal.player.GetPlayerPositionX(), common.gameDataGlobal.player.GetPlayerPositionY()
+				common.gameDataGlobal.player.world.GetPlayerPositionX(), common.gameDataGlobal.player.world.GetPlayerPositionY()
 			);
 
 

@@ -7,21 +7,14 @@
 #include <thread>
 
 #include "jactorio.h"
+
 #include "core/filesystem.h"
-
-#include "data/prototype_manager.h"
 #include "data/prototype/inserter.h"
-
-#include "game/game_data.h"
-#include "game/logic/transport_line_controller.h"
-
 #include "renderer/render_loop.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/imgui_manager.h"
 
-
 #include "data/cereal/register_type.h"
-
 #include <fstream>
 #include <cereal/archives/portable_binary.hpp>
 
@@ -50,7 +43,7 @@ void LogicLoop(LogicRenderLoopCommon& common) {
 														   common.gameDataGlobal.logic.GameTick());
 
 				// Retrieved mvp matrix may be invalid on startup
-				common.gameDataGlobal.player.MouseCalculateSelectedTile(renderer::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
+				common.gameDataGlobal.player.world.MouseCalculateSelectedTile(renderer::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
 
 				common.gameDataGlobal.world.GenChunk(common.gameDataLocal.prototype);
 				common.gameDataLocal.input.mouse.DrawCursorOverlay(common.gameDataGlobal.player,
@@ -75,7 +68,7 @@ void LogicLoop(LogicRenderLoopCommon& common) {
 			{
 				std::lock_guard<std::mutex> guard{common.playerDataMutex};
 
-				common.gameDataGlobal.player.RecipeCraftTick(common.gameDataLocal.prototype);
+				common.gameDataGlobal.player.crafting.RecipeCraftTick(common.gameDataLocal.prototype);
 			}
 
 			// Lock all mutexes for events
@@ -126,28 +119,28 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
 
 	// ======================================================================
 	// Temporary Startup settings
-	common.gameDataGlobal.player.SetPlayerWorldData(common.gameDataGlobal.world);  // Main world is player's world
-	common.gameDataGlobal.player.SetPlayerLogicData(common.gameDataGlobal.logic);  // Should be same for every player 
+	common.gameDataGlobal.player.world.SetPlayerWorldData(common.gameDataGlobal.world);  // Main world is player's world
+	common.gameDataGlobal.player.world.SetPlayerLogicData(common.gameDataGlobal.logic);  // Should be same for every player
 
 
 	// ======================================================================
 
-	// Movement controls
+	// World controls
 	common.gameDataLocal.input.key.Register([&]() {
-		common.gameDataGlobal.player.MovePlayerY(kMoveSpeed * -1);
+		common.gameDataGlobal.player.world.MovePlayerY(kMoveSpeed * -1);
 	}, SDLK_w, InputAction::key_held);
 
 
 	common.gameDataLocal.input.key.Register([&]() {
-		common.gameDataGlobal.player.MovePlayerY(kMoveSpeed);
+		common.gameDataGlobal.player.world.MovePlayerY(kMoveSpeed);
 	}, SDLK_s, InputAction::key_held);
 
 	common.gameDataLocal.input.key.Register([&]() {
-		common.gameDataGlobal.player.MovePlayerX(kMoveSpeed * -1);
+		common.gameDataGlobal.player.world.MovePlayerX(kMoveSpeed * -1);
 	}, SDLK_a, InputAction::key_held);
 
 	common.gameDataLocal.input.key.Register([&]() {
-		common.gameDataGlobal.player.MovePlayerX(kMoveSpeed);
+		common.gameDataGlobal.player.world.MovePlayerX(kMoveSpeed);
 	}, SDLK_d, InputAction::key_held);
 
 
@@ -159,8 +152,8 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
 
 	common.gameDataLocal.input.key.Register([&]() {
 		// If a layer is already activated, deactivate it, otherwise open the gui menu
-		if (common.gameDataGlobal.player.GetActivatedLayer() != nullptr)
-			common.gameDataGlobal.player.SetActivatedLayer(nullptr);
+		if (common.gameDataGlobal.player.placement.GetActivatedLayer() != nullptr)
+			common.gameDataGlobal.player.placement.SetActivatedLayer(nullptr);
 		else
 			SetVisible(renderer::Menu::CharacterMenu,
 			           !IsVisible(renderer::Menu::CharacterMenu));
@@ -170,42 +163,43 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
 
 	// Rotating orientation	
 	common.gameDataLocal.input.key.Register([&]() {
-		common.gameDataGlobal.player.RotatePlacementOrientation();
+		common.gameDataGlobal.player.placement.RotatePlacementOrientation();
 	}, SDLK_r, InputAction::key_up);
 	common.gameDataLocal.input.key.Register([&]() {
-		common.gameDataGlobal.player.CounterRotatePlacementOrientation();
+		common.gameDataGlobal.player.placement.CounterRotatePlacementOrientation();
 	}, SDLK_r, InputAction::key_up, KMOD_LSHIFT);
 
 
 	common.gameDataLocal.input.key.Register([&]() {
-		common.gameDataGlobal.player.DeselectSelectedItem();
+		common.gameDataGlobal.player.inventory.DeselectSelectedItem();
 	}, SDLK_q, InputAction::key_down);
 
 	// Place entities
 	common.gameDataLocal.input.key.Register([&]() {
-		if (renderer::input_mouse_captured || !common.gameDataGlobal.player.MouseSelectedTileInRange())
+		if (renderer::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
 			return;
 
-		const auto tile_selected = common.gameDataGlobal.player.GetMouseTileCoords();
-		common.gameDataGlobal.player.TryPlaceEntity(common.gameDataGlobal.world, common.gameDataGlobal.logic,
+		const auto tile_selected = common.gameDataGlobal.player.world.GetMouseTileCoords();
+		common.gameDataGlobal.player.placement.TryPlaceEntity(common.gameDataGlobal.world, common.gameDataGlobal.logic,
 		                                            tile_selected.x, tile_selected.y);
 	}, MouseInput::left, InputAction::key_held);
 
 	common.gameDataLocal.input.key.Register([&]() {
-		if (renderer::input_mouse_captured || !common.gameDataGlobal.player.MouseSelectedTileInRange())
+		if (renderer::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
 			return;
 
-		common.gameDataGlobal.player.TryActivateLayer(common.gameDataGlobal.world, common.gameDataGlobal.player.GetMouseTileCoords());
+		common.gameDataGlobal.player.placement.TryActivateLayer(common.gameDataGlobal.world,
+                                                                common.gameDataGlobal.player.world.GetMouseTileCoords());
 
 	}, MouseInput::left, InputAction::key_down);
 
 	// Remove entities or mine resource
 	common.gameDataLocal.input.key.Register([&]() {
-		if (renderer::input_mouse_captured || !common.gameDataGlobal.player.MouseSelectedTileInRange())
+		if (renderer::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
 			return;
 
-		const auto tile_selected = common.gameDataGlobal.player.GetMouseTileCoords();
-		common.gameDataGlobal.player.TryPickup(common.gameDataGlobal.world, common.gameDataGlobal.logic,
+		const auto tile_selected = common.gameDataGlobal.player.world.GetMouseTileCoords();
+		common.gameDataGlobal.player.placement.TryPickup(common.gameDataGlobal.world, common.gameDataGlobal.logic,
 		                                       tile_selected.x, tile_selected.y);
 	}, MouseInput::right, InputAction::key_held);
 

@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include "data/prototype/recipe.h"
 #include "data/prototype_manager.h"
 #include "game/player/player_data.h"
 
@@ -10,8 +11,11 @@ namespace jactorio::game
 	class PlayerDataRecipeTest : public testing::Test
 	{
 	protected:
-		PlayerData playerData_{};
-		data::PrototypeManager dataManager_{};
+		PlayerData playerData_;
+        PlayerData::Inventory& playerInv_ = playerData_.inventory;
+        PlayerData::Crafting& playerCraft_ = playerData_.crafting;
+
+		data::PrototypeManager dataManager_;
 
 		data::Item* itemProduct_ = nullptr;
 		data::Item* item1_       = nullptr;
@@ -57,10 +61,8 @@ namespace jactorio::game
 
 
 	TEST_F(PlayerDataRecipeTest, RecipeSelectRecipeGroup) {
-
-		playerData_.RecipeGroupSelect(1);
-
-		EXPECT_EQ(playerData_.RecipeGroupGetSelected(), 1);
+		playerCraft_.RecipeGroupSelect(1);
+		EXPECT_EQ(playerCraft_.RecipeGroupGetSelected(), 1);
 	}
 
 
@@ -79,31 +81,31 @@ namespace jactorio::game
 		recipe.Set_craftingTime(1);
 
 		// 10 of item in player inventory
-		playerData_.inventoryPlayer[0] = {&item, 10};
+		playerInv_.inventoryPlayer[0] = {&item, 10};
 
 		// Queue 2 crafts
-		playerData_.RecipeQueue(dataManager_, recipe);
-		playerData_.RecipeQueue(dataManager_, recipe);
+		playerCraft_.QueueRecipe(dataManager_, recipe);
+		playerCraft_.QueueRecipe(dataManager_, recipe);
 
 		// Used up 2 * 2 (4) items
-		EXPECT_EQ(playerData_.inventoryPlayer[0].item, &item);
-		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 6);
+		EXPECT_EQ(playerInv_.inventoryPlayer[0].item, &item);
+		EXPECT_EQ(playerInv_.inventoryPlayer[0].count, 6);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[1].item, nullptr);
+		EXPECT_EQ(playerInv_.inventoryPlayer[1].item, nullptr);
 
 
 		//
 
 
 		// Output items should be in slot index 1 after 60 ticks (1 second) for each item
-		playerData_.RecipeCraftTick(dataManager_, 30);  // Not done yet
+		playerCraft_.RecipeCraftTick(dataManager_, 30);  // Not done yet
 
-		EXPECT_EQ(playerData_.inventoryPlayer[1].item, nullptr);
+		EXPECT_EQ(playerInv_.inventoryPlayer[1].item, nullptr);
 
-		playerData_.RecipeCraftTick(dataManager_, 90);
+		playerCraft_.RecipeCraftTick(dataManager_, 90);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[1].item, &item_product);
-		EXPECT_EQ(playerData_.inventoryPlayer[1].count, 2);
+		EXPECT_EQ(playerInv_.inventoryPlayer[1].item, &item_product);
+		EXPECT_EQ(playerInv_.inventoryPlayer[1].count, 2);
 	}
 
 
@@ -111,23 +113,23 @@ namespace jactorio::game
 		// Should recursively craft the product, crafting intermediate products as necessary
 		SetupTestRecipe();
 
-		playerData_.inventoryPlayer[0] = {item2_, 1};
+		playerInv_.inventoryPlayer[0] = {item2_, 1};
 
-		playerData_.inventoryPlayer[1] = {itemSub1_, 10};
-		playerData_.inventoryPlayer[2] = {itemSub2_, 20};
+		playerInv_.inventoryPlayer[1] = {itemSub1_, 10};
+		playerInv_.inventoryPlayer[2] = {itemSub2_, 20};
 
-		playerData_.RecipeCraftR(dataManager_, *finalRecipe_);
+		playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
 
-		playerData_.RecipeCraftTick(dataManager_, 9999);  // Should be enough ticks to finish crafting
+		playerCraft_.RecipeCraftTick(dataManager_, 9999);  // Should be enough ticks to finish crafting
 
-		EXPECT_EQ(playerData_.inventoryPlayer[0].item, item1_);  // 1 extra item 1 from crafting
-		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 1);
+		EXPECT_EQ(playerInv_.inventoryPlayer[0].item, item1_);  // 1 extra item 1 from crafting
+		EXPECT_EQ(playerInv_.inventoryPlayer[0].count, 1);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[1].item, itemProduct_);
-		EXPECT_EQ(playerData_.inventoryPlayer[1].count, 1);
+		EXPECT_EQ(playerInv_.inventoryPlayer[1].item, itemProduct_);
+		EXPECT_EQ(playerInv_.inventoryPlayer[1].count, 1);
 
-		EXPECT_EQ(playerData_.GetCraftingItemDeductions().size(), 0);
-		EXPECT_EQ(playerData_.GetCraftingItemExtras().size(), 0);
+		EXPECT_EQ(playerCraft_.GetCraftingItemDeductions().size(), 0);
+		EXPECT_EQ(playerCraft_.GetCraftingItemExtras().size(), 0);
 	}
 
 	TEST_F(PlayerDataRecipeTest, RecipeCraftResurse2) {
@@ -135,28 +137,28 @@ namespace jactorio::game
 		SetupTestRecipe();
 
 		// All ingredients should be completely used up
-		playerData_.inventoryPlayer[0] = {item2_, 4};
-		playerData_.inventoryPlayer[1] = {itemSub1_, 30};
-		playerData_.inventoryPlayer[2] = {itemSub2_, 60};
+		playerInv_.inventoryPlayer[0] = {item2_, 4};
+		playerInv_.inventoryPlayer[1] = {itemSub1_, 30};
+		playerInv_.inventoryPlayer[2] = {itemSub2_, 60};
 
-		playerData_.RecipeCraftR(dataManager_, *finalRecipe_);
-		playerData_.RecipeCraftR(dataManager_, *finalRecipe_);
-		playerData_.RecipeCraftR(dataManager_, *finalRecipe_);
+		playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
+		playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
+		playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
 
 		// This should not craft item1 since there will be 3 in excess from the previous 3 crafting
-		playerData_.RecipeCraftR(dataManager_, *finalRecipe_);
+		playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
 
-		playerData_.RecipeCraftTick(dataManager_, 9999);  // Should be enough ticks to finish crafting
+		playerCraft_.RecipeCraftTick(dataManager_, 9999);  // Should be enough ticks to finish crafting
 
-		EXPECT_EQ(playerData_.inventoryPlayer[0].item, itemProduct_);
-		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 4);
+		EXPECT_EQ(playerInv_.inventoryPlayer[0].item, itemProduct_);
+		EXPECT_EQ(playerInv_.inventoryPlayer[0].count, 4);
 
-		EXPECT_EQ(playerData_.GetCraftingItemDeductions().size(), 0);
-		EXPECT_EQ(playerData_.GetCraftingItemExtras().size(), 0);
+		EXPECT_EQ(playerCraft_.GetCraftingItemDeductions().size(), 0);
+		EXPECT_EQ(playerCraft_.GetCraftingItemExtras().size(), 0);
 
 		// Ensure there were no excess items
-		for (std::size_t i = 1; i < playerData_.inventoryPlayer.size(); ++i) {
-			EXPECT_EQ(playerData_.inventoryPlayer[i].item, nullptr);
+		for (std::size_t i = 1; i < playerInv_.inventoryPlayer.size(); ++i) {
+			EXPECT_EQ(playerInv_.inventoryPlayer[i].item, nullptr);
 		}
 	}
 
@@ -166,16 +168,16 @@ namespace jactorio::game
 
 		// 3-B + 1-C -> 1-A
 		// 5-B1 + 10-B2 -> 2-B
-		playerData_.inventoryPlayer[0] = {item1_, 1};
-		playerData_.inventoryPlayer[1] = {item2_, 2};
+		playerInv_.inventoryPlayer[0] = {item1_, 1};
+		playerInv_.inventoryPlayer[1] = {item2_, 2};
 
-		playerData_.inventoryPlayer[2] = {itemSub1_, 5};
-		playerData_.inventoryPlayer[3] = {itemSub2_, 10};
+		playerInv_.inventoryPlayer[2] = {itemSub1_, 5};
+		playerInv_.inventoryPlayer[3] = {itemSub2_, 10};
 
 		// Crafting item-product:
 		// Item 1 requires one batch to be crafted
 		// Crafting requires for item 2 met
-		EXPECT_EQ(playerData_.RecipeCanCraft(dataManager_,*finalRecipe_, 1), true);
+		EXPECT_EQ(playerCraft_.RecipeCanCraft(dataManager_,*finalRecipe_, 1), true);
 	}
 
 	TEST_F(PlayerDataRecipeTest, RecipeCanCraftInvalid) {
@@ -184,16 +186,16 @@ namespace jactorio::game
 
 		// 3-B + 1-C -> 1-A
 		// 5-B1 + 10-B2 -> 2-B
-		playerData_.inventoryPlayer[0] = {item1_, 1};
-		playerData_.inventoryPlayer[1] = {item2_, 2};
+		playerInv_.inventoryPlayer[0] = {item1_, 1};
+		playerInv_.inventoryPlayer[1] = {item2_, 2};
 
-		playerData_.inventoryPlayer[2] = {itemSub1_, 5};
+		playerInv_.inventoryPlayer[2] = {itemSub1_, 5};
 		// player_inventory[3] = {item_sub2, 10};  // Without this, the recipe cannot be crafted
 
 		// Crafting item-product:
 		// Item 1 requires one batch to be crafted
 		// Crafting requires for item 2 met
-		EXPECT_EQ(playerData_.RecipeCanCraft(dataManager_,*finalRecipe_, 1), false);
+		EXPECT_EQ(playerCraft_.RecipeCanCraft(dataManager_,*finalRecipe_, 1), false);
 	}
 
 	TEST_F(PlayerDataRecipeTest, RecipeCanCraftInvalid2) {
@@ -204,10 +206,10 @@ namespace jactorio::game
 		// Final product: item-1 + item-sub-2
 		// item-2: item-sub-1 + item-sub-2
 
-		playerData_.inventoryPlayer[1] = {itemSub1_, 10};
-		playerData_.inventoryPlayer[2] = {itemSub2_, 5};
+		playerInv_.inventoryPlayer[1] = {itemSub1_, 10};
+		playerInv_.inventoryPlayer[2] = {itemSub2_, 5};
 
-		EXPECT_EQ(playerData_.RecipeCanCraft(dataManager_,*finalRecipe_, 1), false);
+		EXPECT_EQ(playerCraft_.RecipeCanCraft(dataManager_,*finalRecipe_, 1), false);
 	}
 
 	TEST_F(PlayerDataRecipeTest, RecipeCraftFullInventory) {
@@ -216,28 +218,28 @@ namespace jactorio::game
 
 		// Should be able to craft
 		SetupTestRecipe();
-		playerData_.inventoryPlayer[0] = {item1_, 3};
-		playerData_.inventoryPlayer[1] = {item2_, 1};
+		playerInv_.inventoryPlayer[0] = {item1_, 3};
+		playerInv_.inventoryPlayer[1] = {item2_, 1};
 
-		EXPECT_TRUE(playerData_.RecipeCanCraft(dataManager_,*finalRecipe_, 1));
-		playerData_.RecipeCraftR(dataManager_, *finalRecipe_);
+		EXPECT_TRUE(playerCraft_.RecipeCanCraft(dataManager_,*finalRecipe_, 1));
+		playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
 
 		// Fill inventory so crafted item cannot be returned
 		data::Item filler_item{};
-		for (auto& slot : playerData_.inventoryPlayer) {
+		for (auto& slot : playerInv_.inventoryPlayer) {
 			slot.item  = &filler_item;
 			slot.count = 1;
 		}
 
 		// Will not return item until slot is freed
-		playerData_.RecipeCraftTick(dataManager_, 9999);
-		playerData_.RecipeCraftTick(dataManager_, 9999);
-		playerData_.RecipeCraftTick(dataManager_, 9999);
+		playerCraft_.RecipeCraftTick(dataManager_, 9999);
+		playerCraft_.RecipeCraftTick(dataManager_, 9999);
+		playerCraft_.RecipeCraftTick(dataManager_, 9999);
 
-		playerData_.inventoryPlayer[0] = {nullptr, 0};
-		playerData_.RecipeCraftTick(dataManager_, 9999);
+		playerInv_.inventoryPlayer[0] = {nullptr, 0};
+		playerCraft_.RecipeCraftTick(dataManager_, 9999);
 
-		EXPECT_EQ(playerData_.inventoryPlayer[0].item, itemProduct_);
-		EXPECT_EQ(playerData_.inventoryPlayer[0].count, 1);
+		EXPECT_EQ(playerInv_.inventoryPlayer[0].item, itemProduct_);
+		EXPECT_EQ(playerInv_.inventoryPlayer[0].count, 1);
 	}
 }

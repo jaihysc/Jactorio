@@ -2,14 +2,9 @@
 
 #include "game/input/mouse_selection.h"
 
-#include "jactorio.h"
-
-#include "data/prototype_manager.h"
 #include "data/prototype/abstract_proto/entity.h"
 #include "game/player/player_data.h"
-#include "game/world/chunk_tile.h"
 #include "game/world/world_data.h"
-#include "renderer/rendering/renderer.h"
 
 using namespace jactorio;
 
@@ -32,24 +27,24 @@ double game::MouseSelection::GetCursorY() {
 
 
 void game::MouseSelection::DrawCursorOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager) {
-	const auto cursor_position = player_data.GetMouseTileCoords();
-	const auto* stack          = player_data.GetSelectedItemStack();
+	const auto cursor_position = player_data.world.GetMouseTileCoords();
+	const auto* stack          = player_data.inventory.GetSelectedItemStack();
 
-	if (stack)
+	if (stack != nullptr)
 		DrawOverlay(player_data, data_manager,
 		            static_cast<data::Entity*>(stack->item->entityPrototype),
-		            {cursor_position.x, cursor_position.y}, player_data.placementOrientation);
+		            {cursor_position.x, cursor_position.y}, player_data.placement.placementOrientation);
 	else
 		DrawOverlay(player_data, data_manager,
 		            nullptr,
-		            {cursor_position.x, cursor_position.y}, player_data.placementOrientation);
+		            {cursor_position.x, cursor_position.y}, player_data.placement.placementOrientation);
 }
 
 void game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
                                        const data::Entity* const selected_entity,
                                        const WorldCoord& coord,
                                        const data::Orientation placement_orientation) {
-	WorldData& world_data = player_data.GetPlayerWorldData();
+	WorldData& world_data = player_data.world.GetPlayerWorldData();
 
 	// Clear last overlay
 	if (lastOverlayElementIndex_ != UINT64_MAX) {
@@ -64,13 +59,13 @@ void game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::Prot
 
 	// Draw new overlay
 	auto* chunk = world_data.GetChunkW(coord.x, coord.y);
-	if (!chunk)
+	if (chunk == nullptr)
 		return;
 
 	auto& overlay_layer = chunk->GetOverlay(kCursorOverlayLayer);
 
 	auto* tile = world_data.GetTile(coord.x, coord.y);
-	if (!tile)
+	if (tile == nullptr)
 		return;
 
 	// Saves such that can be found and removed in the future
@@ -80,7 +75,7 @@ void game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::Prot
 	};
 
 
-	if (selected_entity && selected_entity->placeable) {
+	if (selected_entity != nullptr && selected_entity->placeable) {
 		// Has item selected
 		const auto set = selected_entity->OnRGetSpriteSet(placement_orientation,
 		                                                  world_data,
@@ -98,15 +93,15 @@ void game::MouseSelection::DrawOverlay(PlayerData& player_data, const data::Prot
 		overlay_layer.push_back(element);
 		save_overlay_info();
 	}
-	else if (tile->GetLayer(TileLayer::entity).prototypeData.Get() ||
-		tile->GetLayer(TileLayer::resource).prototypeData.Get()) {
+	else if (tile->GetLayer(TileLayer::entity).prototypeData.Get() != nullptr ||
+		tile->GetLayer(TileLayer::resource).prototypeData.Get() != nullptr) {
 
 		// Is hovering over entity	
 		const auto* sprite =
-			data_manager.DataRawGet<data::Sprite>(player_data.MouseSelectedTileInRange()
+			data_manager.DataRawGet<data::Sprite>(player_data.world.MouseSelectedTileInRange()
 				                                      ? "__core__/cursor-select"
 				                                      : "__core__/cursor-invalid");
-		assert(sprite);
+		assert(sprite != nullptr);
 
 		overlay_layer.push_back({
 			*sprite,

@@ -2,8 +2,6 @@
 
 #include "renderer/gui/gui_layout.h"
 
-
-#include "core/math.h"
 #include "game/input/mouse_selection.h"
 #include "renderer/gui/gui_colors.h"
 #include "renderer/rendering/renderer.h"
@@ -19,7 +17,7 @@ void renderer::DrawCursorTooltip(game::PlayerData& player_data, const data::Prot
 		core::LossyCast<float>(game::MouseSelection::GetCursorY()) + 10.f
 	);
 	// If an item is currently selected, move the tooltip down to not overlap
-	if (player_data.GetSelectedItemStack())
+	if (player_data.inventory.GetSelectedItemStack() != nullptr)
 		cursor_pos.y += kInventorySlotWidth;
 
 	ImGui::SetNextWindowPos(cursor_pos);
@@ -130,7 +128,7 @@ void renderer::DrawItemSlot(const MenuData& menu_data, const uint8_t scale, cons
 		button_events();
 
 		if (!button_hovered) {
-			if ((backing_button_hover = ImGui::IsItemHovered()) == true)
+			if ((backing_button_hover = ImGui::IsItemHovered()))
 				button_hovered = true;
 		}
 	}
@@ -216,7 +214,7 @@ ImVec2 renderer::GetWindowSize() {
 		2 * kGuiStyleWindowPaddingY + 80);
 
 	window_size.x += 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
-	window_size.y += core::SafeCast<unsigned int>(game::PlayerData::kDefaultInventorySize / 10) *
+	window_size.y += core::SafeCast<unsigned int>(game::PlayerData::Inventory::kDefaultInventorySize / 10) *
 		(kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
 
 	return window_size;
