@@ -31,7 +31,7 @@ namespace jactorio::game
 			};
 		};
 
-		const MockDeferred deferred_;
+		const MockDeferred deferred_{};
 
 		class MockUniqueData final : public data::FEntityData
 		{
