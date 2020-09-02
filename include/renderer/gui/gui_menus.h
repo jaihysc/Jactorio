@@ -6,6 +6,7 @@
 
 #include "jactorio.h"
 
+#include "core/data_type.h"
 #include "data/prototype_manager.h"
 
 namespace jactorio
@@ -13,6 +14,7 @@ namespace jactorio
 	namespace game
 	{
 		class PlayerData;
+        class LogicData;
 	}
 
 	namespace data
@@ -24,9 +26,20 @@ namespace jactorio
 
 namespace jactorio::renderer
 {
+    struct MenuFunctionParams
+    {
+        GameWorlds& worlds;
+        game::LogicData& logic;
+        game::PlayerData& player;
+
+        const data::PrototypeManager& protoManager;
+
+        const data::FrameworkBase* prototype = nullptr;
+        data::UniqueDataBase* uniqueData = nullptr;
+    };
+
 	/// Function to draw the menu
-	using MenuFunction = void (*)(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-	                              const data::FrameworkBase* prototype, data::UniqueDataBase* unique_data);
+	using MenuFunction = void (*)(const MenuFunctionParams& params);
 
 	// ======================================================================
 	// Substitutes name_ below at macro definitions to create an array of guis
@@ -51,8 +64,7 @@ namespace jactorio::renderer
 
 	// Function
 #define J_GUI_WINDOW_SUB(name_)\
-	void name_(game::PlayerData& player_data, const data::PrototypeManager& data_manager,\
-			   const data::FrameworkBase* prototype = nullptr, data::UniqueDataBase* unique_data = nullptr);
+	void name_(const MenuFunctionParams& params);
 
 	J_GUI_WINDOW
 
@@ -91,6 +103,7 @@ namespace jactorio::renderer
 	};
 
 #undef J_GUI_WINDOW
+#undef J_GUI_WINDOW_SUB
 
 	// ======================================================================
 	// Window visibility handling

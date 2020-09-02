@@ -306,8 +306,10 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::PrototypeMana
 
 // ======================================================================
 
-void renderer::CharacterMenu(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                             const data::FrameworkBase*, data::UniqueDataBase*) {
+void renderer::CharacterMenu(const MenuFunctionParams& params) {
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
+
 	SetupNextWindowLeft();
 	PlayerInventoryMenu(player_data, data_manager);
 
@@ -326,11 +328,10 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::Prototyp
 	           });
 }
 
-void renderer::CursorWindow(game::PlayerData& player_data, const data::PrototypeManager&,
-                            const data::FrameworkBase*, data::UniqueDataBase*) {
-	using namespace jactorio;
+void renderer::CursorWindow(const MenuFunctionParams& params) {
 	// Draw the tooltip of what is currently selected
 
+    auto& player_data = params.player;
 	const auto menu_data = GetMenuData();
 
 	// Player has an item selected, draw it on the tooltip
@@ -376,8 +377,9 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::Prototype
 	}
 }
 
-void renderer::CraftingQueue(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                             const data::FrameworkBase*, data::UniqueDataBase*) {
+void renderer::CraftingQueue(const MenuFunctionParams& params) {
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
 	auto menu_data = GetMenuData();
 
 	ImGuiWindowFlags flags = 0;
@@ -429,8 +431,9 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 
 float last_pickup_fraction = 0.f;
 
-void renderer::PickupProgressbar(game::PlayerData& player_data, const data::PrototypeManager&,
-                                 const data::FrameworkBase*, data::UniqueDataBase*) {
+void renderer::PickupProgressbar(const MenuFunctionParams& params) {
+    auto& player_data = params.player;
+
 	constexpr float progress_bar_width  = 260 * 2;
 	constexpr float progress_bar_height = 13;
 
@@ -466,10 +469,14 @@ void renderer::PickupProgressbar(game::PlayerData& player_data, const data::Prot
 
 // ==========================================================================================
 // Entity menus
-void renderer::ContainerEntity(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                               const data::FrameworkBase* prototype, data::UniqueDataBase* unique_data) {
-	assert(prototype);
-	assert(unique_data);
+void renderer::ContainerEntity(const MenuFunctionParams& params) {
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
+    const auto* prototype = params.prototype;
+    auto* unique_data = params.uniqueData;
+
+	assert(prototype != nullptr);
+	assert(unique_data != nullptr);
 	auto& container_data = *static_cast<data::ContainerEntityData*>(unique_data);
 
 	SetupNextWindowLeft();
@@ -495,10 +502,15 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::Protot
 	});
 }
 
-void renderer::MiningDrill(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                           const data::FrameworkBase* prototype, data::UniqueDataBase* unique_data) {
-	assert(prototype);
-	assert(unique_data);
+void renderer::MiningDrill(const MenuFunctionParams& params) {
+    auto& logic_data = params.logic;
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
+    const auto* prototype = params.prototype;
+    auto* unique_data = params.uniqueData;
+
+	assert(prototype != nullptr);
+	assert(unique_data != nullptr);
 	const auto& drill_data = *static_cast<const data::MiningDrillData*>(unique_data);
 
 	SetupNextWindowLeft();
@@ -512,17 +524,20 @@ void renderer::MiningDrill(game::PlayerData& player_data, const data::PrototypeM
 	DrawTitleBar(prototype->GetLocalizedName());
 
 	ImGui::ProgressBar(
-		GetProgressBarFraction(player_data.world.GetPlayerLogicData().GameTick(),
-		                       drill_data.deferralEntry, drill_data.miningTicks)
+		GetProgressBarFraction(logic_data.GameTick(), drill_data.deferralEntry, drill_data.miningTicks)
 	);
 }
 
-void renderer::AssemblyMachine(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                               const data::FrameworkBase* prototype, data::UniqueDataBase* unique_data) {
-	assert(prototype);
-	assert(unique_data);
+void renderer::AssemblyMachine(const MenuFunctionParams& params) {
+    auto& logic_data = params.logic;
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
+    const auto* prototype = params.prototype;
+    auto* unique_data = params.uniqueData;
 
-	auto& logic_data = player_data.world.GetPlayerLogicData();
+	assert(prototype != nullptr);
+	assert(unique_data != nullptr);
+
 
 	const auto& machine_proto = *static_cast<const data::AssemblyMachine*>(prototype);
 	auto& machine_data        = *static_cast<data::AssemblyMachineData*>(unique_data);
@@ -600,7 +615,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 
 		const auto progress =
 			GetProgressBarFraction(
-				player_data.world.GetPlayerLogicData().GameTick(),
+                logic_data.GameTick(),
 				machine_data.deferralEntry,
 				core::SafeCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed))
 			);

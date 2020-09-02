@@ -19,6 +19,11 @@ namespace jactorio::core
 	struct QuadPosition;
 }
 
+namespace jactorio::game
+{
+    class WorldData;
+}
+
 namespace jactorio
 {
 	// Data types of the various components within Jactorio
@@ -28,9 +33,14 @@ namespace jactorio
 	constexpr int kGameHertz = 60;  // 60 updates per second
 
 
+    /// Forward declaration only, game::WorldData must be included
+    using GameWorlds = std::vector<game::WorldData>;
+
 	/// Tiles in the world
 	using WorldCoordAxis = int32_t;
 	using WorldCoord = core::Position2<WorldCoordAxis>;
+    /// World currently in
+    using WorldId = std::size_t;
 
 	/// Chunks in the world
 	using ChunkCoordAxis = int32_t;
@@ -54,10 +64,6 @@ namespace jactorio
 
 namespace jactorio::core
 {
-	// Defines standard data pairs for use across this application
-	// This is used for better naming compared to std::pair's .first and .second
-
-	// =================================================
 	// Defines hash functions for tuples as keys in std::unordered_map
 
 	template <typename Tt>

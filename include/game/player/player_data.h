@@ -46,19 +46,9 @@ namespace jactorio::game
 
             // ======================================================================
 
-            void SetPlayerWorldData(WorldData& world_data) { playerWorldData_ = &world_data; }
-            J_NODISCARD WorldData& GetPlayerWorldData() const {
-                assert(playerWorldData_ != nullptr); // Player is not in a world!
-                return *playerWorldData_;
-            }
+            void SetId(WorldId world_id) noexcept { worldId_ = world_id; }
+            J_NODISCARD WorldId GetId() const noexcept { return worldId_; }
 
-            void SetPlayerLogicData(LogicData& logic_data) { playerLogicData_ = &logic_data; }
-            J_NODISCARD LogicData& GetPlayerLogicData() const {
-                assert(playerLogicData_); // Player is not associated with logic data!
-                return *playerLogicData_;
-            }
-
-            // ======================================================================
 
             /// The tile the player is on, decimals indicate partial tile
             J_NODISCARD float GetPlayerPositionX() const { return playerPositionX_; }
@@ -83,8 +73,7 @@ namespace jactorio::game
             float playerPositionY_ = 0;
 
             /// The world the player is currently in
-            WorldData* playerWorldData_ = nullptr;
-            LogicData* playerLogicData_ = nullptr;
+            WorldId worldId_        = 0;
         };
 
 
@@ -184,10 +173,10 @@ namespace jactorio::game
 
             ///
             /// Rotates placement_orientation clockwise
-            void RotatePlacementOrientation();
+            void RotateOrientation();
             ///
             /// Rotates placement_orientation counter clockwise
-            void CounterRotatePlacementOrientation();
+            void CounterRotateOrientation();
 
 
             ///
@@ -228,7 +217,7 @@ namespace jactorio::game
             J_NODISCARD float GetPickupPercentage() const;
 
 
-            data::Orientation placementOrientation = data::Orientation::up;
+            data::Orientation orientation = data::Orientation::up;
 
         private:
             ChunkTileLayer* activatedLayer_ = nullptr;
@@ -330,6 +319,9 @@ namespace jactorio::game
         Inventory inventory;
         Placement placement{inventory};
         Crafting crafting{inventory};
+
+
+        CEREAL_SERIALIZE(archive) {}
     };
 }
 

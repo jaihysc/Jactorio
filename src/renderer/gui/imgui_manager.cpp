@@ -113,18 +113,24 @@ void renderer::Setup(const DisplayWindow& display_window) {
 }
 
 void DrawMenu(renderer::Menu menu,
-              game::PlayerData& player_data, const data::PrototypeManager& data_manager,
+              GameWorlds& worlds,
+              game::LogicData& logic,
+              game::PlayerData& player,
+              const data::PrototypeManager& proto_manager,
               data::UniqueDataBase* unique_data = nullptr) {
 	auto& gui_menu = renderer::menus[static_cast<int>(menu)];
 
 	if (gui_menu.visible) {
-		gui_menu.drawPtr(player_data, data_manager, nullptr, unique_data);
+		gui_menu.drawPtr({worlds, logic, player, proto_manager, nullptr, unique_data});
 	}
 }
 
 void renderer::ImguiDraw(const DisplayWindow& display_window,
-                         game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                         game::EventData& event) {
+                         GameWorlds& worlds,
+                         game::LogicData& logic,
+                         game::PlayerData& player,
+                         const data::PrototypeManager& proto_manager,
+                         game::EventData& /*event*/) {
 	EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
 	// Start the Dear ImGui frame
@@ -143,33 +149,34 @@ void renderer::ImguiDraw(const DisplayWindow& display_window,
 	// ImPushFont(font);
 	// ImPopFont();
 
-	DrawMenu(Menu::DebugMenu, player_data, data_manager);
-	DebugMenuLogic(player_data, data_manager);
+    DrawMenu(Menu::DebugMenu, worlds, logic, player, proto_manager);
+    DebugMenuLogic(worlds, logic, player, proto_manager);
 
 	// Draw gui for active entity
 	// Do not draw character and recipe menu while in an entity menu
 
 	bool drew_gui = false;
 
-	auto* layer = player_data.placement.GetActivatedLayer();
+	auto* layer = player.placement.GetActivatedLayer();
 	if (layer != nullptr) {
-		drew_gui = static_cast<const data::Entity*>(layer->prototypeData.Get())->OnRShowGui(player_data, data_manager, layer);
+		drew_gui = layer->GetPrototypeData<data::Entity>()->OnRShowGui(worlds, logic, player, proto_manager, layer);
 		if (drew_gui) {
 			SetVisible(Menu::CharacterMenu, false);
 		}
 		else {
-			player_data.placement.SetActivatedLayer(nullptr);
+            player.placement.SetActivatedLayer(nullptr);
 		}
 	}
 
 	if (!drew_gui) {
-		DrawMenu(Menu::CharacterMenu, player_data, data_manager);
+        DrawMenu(Menu::CharacterMenu, worlds, logic, player, proto_manager);
 	}
 
 	// Player gui
-	CursorWindow(player_data, data_manager);
-	CraftingQueue(player_data, data_manager);
-	PickupProgressbar(player_data, data_manager);
+    MenuFunctionParams menu_params{worlds, logic, player, proto_manager};
+	CursorWindow(menu_params);
+	CraftingQueue(menu_params);
+	PickupProgressbar(menu_params);
 
 	// Render
 	ImGui::Render();

@@ -81,8 +81,11 @@ namespace jactorio::data
 		// ======================================================================
 		// Rendering
 
-		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
-		                game::ChunkTileLayer* tile_layer) const override;
+        bool OnRShowGui(GameWorlds& worlds,
+                        game::LogicData& logic,
+                        game::PlayerData& player,
+                        const PrototypeManager& data_manager,
+                        game::ChunkTileLayer* tile_layer) const override;
 
 
 		J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT set) const override;

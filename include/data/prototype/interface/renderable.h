@@ -21,8 +21,10 @@ namespace jactorio
 
 	namespace game
 	{
-		class PlayerData;
 		class WorldData;
+        class LogicData;
+        class PlayerData;
+
 		class ChunkTileLayer;
 		class Chunk;
 	}
@@ -75,7 +77,7 @@ namespace jactorio::data
 		J_NODISCARD virtual Sprite* OnRGetSprite(Sprite::SetT set) const = 0;
 
 		///
-		/// \brief Maps a placementOrientation to a <set, frame>
+		/// \brief Maps a orientation to a <set, frame>
 		J_NODISCARD virtual Sprite::SetT OnRGetSpriteSet(Orientation orientation,
 		                                                 game::WorldData& world_data,
 		                                                 const WorldCoord& world_coords) const = 0;
@@ -87,8 +89,11 @@ namespace jactorio::data
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data
-		virtual bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
-		                        game::ChunkTileLayer* tile_layer) const = 0;
+		virtual bool OnRShowGui(GameWorlds& worlds,
+                                game::LogicData& logic,
+                                game::PlayerData& player,
+                                const PrototypeManager& data_manager,
+                                game::ChunkTileLayer* tile_layer) const = 0;
 
 		///
 		/// \param pixel_offset Pixels to top left of current tile

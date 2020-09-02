@@ -112,14 +112,14 @@ bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x
 void game::PlayerData::World::MovePlayerX(const float amount) {
     const float target_x = playerPositionX_ + amount;
 
-    if (TargetTileValid(playerWorldData_, core::LossyCast<int>(target_x), core::LossyCast<int>(playerPositionY_)))
+//    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(target_x), core::LossyCast<int>(playerPositionY_)))
         playerPositionX_ = target_x;
 }
 
 void game::PlayerData::World::MovePlayerY(const float amount) {
     const float target_y = playerPositionY_ + amount;
 
-    if (TargetTileValid(playerWorldData_, core::LossyCast<int>(playerPositionX_), core::LossyCast<int>(target_y)))
+//    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(playerPositionX_), core::LossyCast<int>(target_y)))
         playerPositionY_ = target_y;
 }
 
@@ -127,43 +127,43 @@ void game::PlayerData::World::MovePlayerY(const float amount) {
 // ============================================================================================
 // Entity placement / pickup
 
-void game::PlayerData::Placement::RotatePlacementOrientation() {
-    switch (placementOrientation) {
+void game::PlayerData::Placement::RotateOrientation() {
+    switch (orientation) {
     case data::Orientation::up:
-        placementOrientation = data::Orientation::right;
+        orientation = data::Orientation::right;
         break;
     case data::Orientation::right:
-        placementOrientation = data::Orientation::down;
+        orientation = data::Orientation::down;
         break;
     case data::Orientation::down:
-        placementOrientation = data::Orientation::left;
+        orientation = data::Orientation::left;
         break;
     case data::Orientation::left:
-        placementOrientation = data::Orientation::up;
+        orientation = data::Orientation::up;
         break;
     default:
         assert(false); // Missing switch case
-        placementOrientation = data::Orientation::up;
+        orientation = data::Orientation::up;
     }
 }
 
-void game::PlayerData::Placement::CounterRotatePlacementOrientation() {
-    switch (placementOrientation) {
+void game::PlayerData::Placement::CounterRotateOrientation() {
+    switch (orientation) {
     case data::Orientation::up:
-        placementOrientation = data::Orientation::left;
+        orientation = data::Orientation::left;
         break;
     case data::Orientation::left:
-        placementOrientation = data::Orientation::down;
+        orientation = data::Orientation::down;
         break;
     case data::Orientation::down:
-        placementOrientation = data::Orientation::right;
+        orientation = data::Orientation::right;
         break;
     case data::Orientation::right:
-        placementOrientation = data::Orientation::up;
+        orientation = data::Orientation::up;
         break;
     default:
         assert(false); // Missing switch case
-        placementOrientation = data::Orientation::up;
+        orientation = data::Orientation::up;
     }
 }
 
@@ -278,7 +278,7 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
 
     auto& selected_layer = tile->GetLayer(TileLayer::entity);
 
-    entity_ptr->OnBuild(world_data, logic_data, {world_x, world_y}, selected_layer, placementOrientation);
+    entity_ptr->OnBuild(world_data, logic_data, {world_x, world_y}, selected_layer, orientation);
     UpdateNeighboringEntities(world_data, logic_data, {world_x, world_y}, entity_ptr);
     world_data.UpdateDispatch(world_x, world_y, data::UpdateType::place);
 

@@ -12,9 +12,12 @@ void jactorio::data::ContainerEntity::OnBuild(game::WorldData&,
 	tile_layer.MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 
-bool jactorio::data::ContainerEntity::OnRShowGui(game::PlayerData& player_data,
-                                                 const PrototypeManager& data_manager, game::ChunkTileLayer* tile_layer) const {
-	renderer::ContainerEntity(player_data, data_manager,
-	                          this, tile_layer->GetUniqueData<ContainerEntityData>());
+bool jactorio::data::ContainerEntity::OnRShowGui(GameWorlds& worlds,
+                                                 game::LogicData& logic,
+                                                 game::PlayerData& player,
+                                                 const PrototypeManager& data_manager,
+                                                 game::ChunkTileLayer* tile_layer) const {
+	renderer::ContainerEntity({worlds, logic, player, data_manager,
+	                          this, tile_layer->GetUniqueData<ContainerEntityData>()});
 	return true;
 }

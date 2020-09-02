@@ -88,9 +88,12 @@ data::Sprite::FrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBa
 	return AllOfSprite(*sprite, game_tick, 1. / 6);
 }
 
-bool data::AssemblyMachine::OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
+bool data::AssemblyMachine::OnRShowGui(GameWorlds& worlds,
+                                       game::LogicData& logic,
+                                       game::PlayerData& player,
+                                       const PrototypeManager& proto_manager,
                                        game::ChunkTileLayer* tile_layer) const {
-	renderer::AssemblyMachine(player_data, data_manager, this, tile_layer->GetUniqueData());
+	renderer::AssemblyMachine({worlds, logic, player, proto_manager, this, tile_layer->GetUniqueData()});
 	return true;
 }
 

@@ -53,8 +53,6 @@ namespace jactorio::data
 			this->set         = static_cast<uint16_t>(orientation);
 		}
 
-		///
-		/// \brief Converts lineOrientation to placementOrientation
 		static Orientation ToOrientation(LineOrientation line_orientation);
 
 

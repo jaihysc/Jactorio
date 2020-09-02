@@ -100,8 +100,11 @@ namespace jactorio::data
 			return 0;
 		}
 
-		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
-		                game::ChunkTileLayer* tile_layer) const override {
+        bool OnRShowGui(GameWorlds& /*worlds*/,
+                        game::LogicData& /*logic*/,
+                        game::PlayerData& /*player*/,
+                        const PrototypeManager& /*data_manager*/,
+                        game::ChunkTileLayer* /*tile_layer*/) const override {
 			return false;
 		}
 

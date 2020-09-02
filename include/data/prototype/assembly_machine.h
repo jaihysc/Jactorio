@@ -65,8 +65,11 @@ namespace jactorio::data
 
 		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const override;
 
-		bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
-		                game::ChunkTileLayer* tile_layer) const override;
+        bool OnRShowGui(GameWorlds& worlds,
+                        game::LogicData& logic,
+                        game::PlayerData& player,
+                        const PrototypeManager& proto_manager,
+                        game::ChunkTileLayer* tile_layer) const override;
 
 
 		// ======================================================================

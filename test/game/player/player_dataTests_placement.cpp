@@ -36,35 +36,35 @@ namespace jactorio::game
 	};
 
 	TEST_F(PlayerDataPlacementTest, RotatePlacementOrientation) {
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::up);
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::up);
 
-        playerPlace_.RotatePlacementOrientation();
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::right);
+        playerPlace_.RotateOrientation();
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::right);
 
-        playerPlace_.RotatePlacementOrientation();
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::down);
+        playerPlace_.RotateOrientation();
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::down);
 
-        playerPlace_.RotatePlacementOrientation();
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::left);
+        playerPlace_.RotateOrientation();
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::left);
 
-        playerPlace_.RotatePlacementOrientation();
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::up);
+        playerPlace_.RotateOrientation();
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::up);
 	}
 
 	TEST_F(PlayerDataPlacementTest, CounterRotatePlacementOrientation) {
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::up);
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::up);
 
-        playerPlace_.CounterRotatePlacementOrientation();
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::left);
+        playerPlace_.CounterRotateOrientation();
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::left);
 
-        playerPlace_.CounterRotatePlacementOrientation();
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::down);
+        playerPlace_.CounterRotateOrientation();
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::down);
 
-        playerPlace_.CounterRotatePlacementOrientation();
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::right);
+        playerPlace_.CounterRotateOrientation();
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::right);
 
-        playerPlace_.CounterRotatePlacementOrientation();
-		EXPECT_EQ(playerPlace_.placementOrientation, data::Orientation::up);
+        playerPlace_.CounterRotateOrientation();
+		EXPECT_EQ(playerPlace_.orientation, data::Orientation::up);
 	}
 
 	TEST_F(PlayerDataPlacementTest, TryPlaceEntity) {

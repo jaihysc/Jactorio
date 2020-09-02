@@ -27,12 +27,15 @@ bool show_inserter_info       = false;
 
 bool show_world_info = false;
 
-void renderer::DebugMenuLogic(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
+void renderer::DebugMenuLogic(GameWorlds& worlds,
+                              game::LogicData& logic,
+                              game::PlayerData& player,
+                              const data::PrototypeManager& data_manager) {
 	if (show_transport_line_info)
-		DebugTransportLineInfo(player_data, data_manager);
+        DebugTransportLineInfo(worlds, player, data_manager);
 
 	if (show_inserter_info)
-		DebugInserterInfo(player_data);
+        DebugInserterInfo(worlds, player);
 
 	if (show_demo_window)
 		ImGui::ShowDemoWindow();
@@ -41,17 +44,18 @@ void renderer::DebugMenuLogic(game::PlayerData& player_data, const data::Prototy
 		DebugTimings();
 
 	if (show_item_spawner_window)
-		DebugItemSpawner(player_data, data_manager);
+		DebugItemSpawner(player, data_manager);
 
 	if (show_world_info) {
-		DebugWorldInfo(player_data);
-		DebugLogicInfo(player_data.world.GetPlayerLogicData());
+        DebugWorldInfo(worlds, player);
+		DebugLogicInfo(logic);
 	}
 }
 
-void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeManager&,
-                         const data::FrameworkBase*, data::UniqueDataBase*) {
-	using namespace jactorio;
+void renderer::DebugMenu(const MenuFunctionParams& params) {
+    auto& player = params.player;
+    auto& world  = params.worlds[player.world.GetId()];
+    auto& logic  = params.logic;
 
 	ImGuiWindowFlags main_window_flags = 0;
 	main_window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
@@ -69,7 +73,7 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeMan
 		ImGui::Text("Layer count | Tile: %d", game::ChunkTile::kTileLayerCount);
 
 		if (ImGui::Button("Clear debug overlays")) {
-			for (auto* chunk : player_data.world.GetPlayerWorldData().LogicGetChunks()) {
+			for (auto* chunk : world.LogicGetChunks()) {
 
 				auto& object_layer = chunk->GetOverlay(game::OverlayLayer::debug);
 				object_layer.clear();
@@ -78,27 +82,21 @@ void renderer::DebugMenu(game::PlayerData& player_data, const data::PrototypeMan
 	}
 
 	if (ImGui::CollapsingHeader("Game")) {
-		auto& world_data = player_data.world.GetPlayerWorldData();
-
 		ImGui::Text("Cursor position: %f, %f",
 		            game::MouseSelection::GetCursorX(),
 		            game::MouseSelection::GetCursorY());
-		ImGui::Text("Cursor world position: %d, %d",
-		            player_data.world.GetMouseTileCoords().x,
-		            player_data.world.GetMouseTileCoords().y);
+		ImGui::Text("Cursor world position: %d, %d", player.world.GetMouseTileCoords().x, player.world.GetMouseTileCoords().y);
 
-		ImGui::Text("Player position %f %f",
-		            player_data.world.GetPlayerPositionX(),
-		            player_data.world.GetPlayerPositionY());
+		ImGui::Text("Player position %f %f", player.world.GetPlayerPositionX(), player.world.GetPlayerPositionY());
 
-		ImGui::Text("Game tick: %llu", player_data.world.GetPlayerLogicData().GameTick());
-		ImGui::Text("Chunk updates: %llu", world_data.LogicGetChunks().size());
+		ImGui::Text("Game tick: %llu", logic.GameTick());
+		ImGui::Text("Chunk updates: %llu", world.LogicGetChunks().size());
 
 		ImGui::Separator();
 
-		int seed = world_data.GetWorldGeneratorSeed();
+		int seed = world.GetWorldGeneratorSeed();
 		ImGui::InputInt("World generator seed", &seed);
-		world_data.SetWorldGeneratorSeed(seed);
+        world.SetWorldGeneratorSeed(seed);
 
 		// Options
 		ImGui::Checkbox("Item spawner", &show_item_spawner_window);
@@ -176,9 +174,7 @@ WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
 bool show_transport_segments     = false;
 
-void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeManager& data_manager) {
-	using namespace jactorio;
-
+void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager& data_manager) {
 	constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
 
 	// Sprite representing the update point
@@ -201,13 +197,13 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 		data_manager.DataRawGet<data::Sprite>("__core__/arrow-left");
 
 	// Get all update points and add it to the chunk's objects for drawing
-	for (auto* chunk : world_data.LogicGetChunks()) {
+	for (auto* chunk : world.LogicGetChunks()) {
 		auto& object_layer = chunk->GetOverlay(draw_overlay_layer);
 		object_layer.clear();
 
 		for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
 			auto& layer = chunk->Tiles()[i].GetLayer(game::TileLayer::entity);
-			if (!layer.prototypeData.Get() || layer.prototypeData->Category() != data::DataCategory::transport_belt)
+			if (layer.prototypeData.Get() == nullptr || layer.prototypeData->Category() != data::DataCategory::transport_belt)
 				continue;
 
 			auto& line_data    = *static_cast<data::TransportLineData*>(layer.GetUniqueData());
@@ -308,12 +304,16 @@ void ShowTransportSegments(game::WorldData& world_data, const data::PrototypeMan
 	}
 }
 
-void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
+void renderer::DebugTransportLineInfo(GameWorlds& worlds,
+                                      game::PlayerData& player,
+                                      const data::PrototypeManager& proto_manager) {
+    auto& world = worlds[player.world.GetId()];
+
 	ImGuard guard{};
 	guard.Begin("Transport Line Info");
 
-	const auto selected_tile      = player_data.world.GetMouseTileCoords();
-	data::TransportLineData* data = data::TransportLine::GetLineData(player_data.world.GetPlayerWorldData(),
+	const auto selected_tile      = player.world.GetMouseTileCoords();
+	data::TransportLineData* data = data::TransportLine::GetLineData(world,
 	                                                                 selected_tile.x, selected_tile.y);
 
 	// Try to use current selected line segment first, otherwise used the last valid if checked
@@ -321,7 +321,7 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 
 
 	if (ImGui::Button("Make all belt items visible")) {
-		for (auto* chunk : player_data.world.GetPlayerWorldData().LogicGetChunks()) {
+		for (auto* chunk : world.LogicGetChunks()) {
 			for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
 				auto& segment         = *transport_line->GetUniqueData<data::TransportLineData>()->lineSegment;
 				segment.left.visible  = true;
@@ -334,7 +334,7 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 	ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
 	if (show_transport_segments)
-		ShowTransportSegments(player_data.world.GetPlayerWorldData(), data_manager);
+		ShowTransportSegments(world, proto_manager);
 
 	if (data != nullptr) {
 		last_valid_line_segment = selected_tile;
@@ -342,7 +342,7 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 	}
 	else {
 		if (use_last_valid_line_segment) {
-			data = data::TransportLine::GetLineData(player_data.world.GetPlayerWorldData(),
+			data = data::TransportLine::GetLineData(world,
 			                                        last_valid_line_segment.x,
 			                                        last_valid_line_segment.y);
 			if (data != nullptr)
@@ -409,12 +409,12 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 		if (ImGui::Button("Append Item Left"))
 			segment.AppendItem(true,
 			                   0.2,
-			                   *data_manager.DataRawGet<data::Item>(iname));
+			                   *proto_manager.DataRawGet<data::Item>(iname));
 
 		if (ImGui::Button("Append Item Right"))
 			segment.AppendItem(false,
 			                   0.2,
-			                   *data_manager.DataRawGet<data::Item>(iname));
+			                   *proto_manager.DataRawGet<data::Item>(iname));
 
 
 		// Display items
@@ -434,13 +434,15 @@ void renderer::DebugTransportLineInfo(game::PlayerData& player_data, const data:
 	}
 }
 
-void renderer::DebugInserterInfo(game::PlayerData& player_data) {
+void renderer::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
+    auto& world = worlds[player.world.GetId()];
+
 	ImGuard guard{};
 	guard.Begin("Inserter info");
 
-	const auto selected_tile = player_data.world.GetMouseTileCoords();
+	const auto selected_tile = player.world.GetMouseTileCoords();
 
-	auto* tile = player_data.world.GetPlayerWorldData().GetTile(selected_tile);
+	auto* tile = world.GetTile(selected_tile);
 	if (tile == nullptr)
 		return;
 
@@ -469,14 +471,14 @@ void renderer::DebugInserterInfo(game::PlayerData& player_data) {
 	ImGui::Text("Dropoff %s", inserter_data.dropoff.IsInitialized() ? "true" : "false");
 }
 
-void renderer::DebugWorldInfo(const game::PlayerData& player_data) {
-	ImGuard guard{};
+void renderer::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
+    auto& world = worlds[player.world.GetId()];
+
+	ImGuard guard;
 	guard.Begin("World info");
 
-	auto& world_data = player_data.world.GetPlayerWorldData();
-
 	if (ImGui::CollapsingHeader("Update dispatchers")) {
-		const auto dispatcher_info = world_data.updateDispatcher.GetDebugInfo();
+		const auto dispatcher_info = world.updateDispatcher.GetDebugInfo();
 		ImGui::Text("Update dispatchers: %lld", dispatcher_info.storedEntries.size());
 
 		// Format of data displayed
@@ -522,12 +524,12 @@ void renderer::DebugWorldInfo(const game::PlayerData& player_data) {
 		constexpr int chunk_radius = 3;  // Chunk radius around the player to display information for
 		ImGui::Text("Radius of %d around the player", chunk_radius);
 
-		const auto start_chunk_x = game::WorldData::WorldCToChunkC(player_data.world.GetPlayerPositionX());
-		const auto start_chunk_y = game::WorldData::WorldCToChunkC(player_data.world.GetPlayerPositionY());
+		const auto start_chunk_x = game::WorldData::WorldCToChunkC(player.world.GetPlayerPositionX());
+		const auto start_chunk_y = game::WorldData::WorldCToChunkC(player.world.GetPlayerPositionY());
 
 		for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
 			for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {
-				auto* chunk = world_data.GetChunkC(chunk_x, chunk_y);
+				auto* chunk = world.GetChunkC(chunk_x, chunk_y);
 
 				if (chunk == nullptr)
 					continue;

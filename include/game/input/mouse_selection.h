@@ -31,7 +31,7 @@ namespace jactorio::game
 	/// \brief Handles mouse input and selection
 	class MouseSelection
 	{
-		static constexpr OverlayLayer kCursorOverlayLayer = OverlayLayer::cursor;
+		static constexpr OverlayLayer kCursorOverlayLayer_ = OverlayLayer::cursor;
 
 	public:
 		J_NODISCARD static double GetCursorX();
@@ -41,14 +41,17 @@ namespace jactorio::game
 		// Client only mouse selection (affects only rendering) For Player mouse selection, see player_data
 
 		///
-		/// \brief Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the cursor
-		void DrawCursorOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager);
+		/// Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the cursor
+        void DrawCursorOverlay(GameWorlds& worlds, PlayerData& player_data, const data::PrototypeManager& proto_manager);
 
 		///
-		/// \brief Draws selection box over entity & no item selected. | With item selected: draws ghost of entity
-		void DrawOverlay(PlayerData& player_data, const data::PrototypeManager& data_manager,
-		                 const data::Entity* selected_entity, const WorldCoord& coord,
-		                 data::Orientation placement_orientation);
+		/// Draws cursor_sprite when over entity & no item selected or item not placeable
+		/// With item selected: draws ghost of entity
+        void DrawOverlay(WorldData& world,
+                         const WorldCoord& coord,
+                         data::Orientation orientation,
+                         const data::Entity* selected_entity,
+                         const data::Sprite& cursor_sprite);
 
         void SkipErasingLastOverlay() noexcept;
 

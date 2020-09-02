@@ -38,8 +38,12 @@ namespace jactorio::renderer
 
 	void Setup(const DisplayWindow& display_window);
 
-	void ImguiDraw(const DisplayWindow& display_window,
-	               game::PlayerData& player_data, const data::PrototypeManager& data_manager, game::EventData& event);
+    void ImguiDraw(const DisplayWindow& display_window,
+                   GameWorlds& worlds,
+                   game::LogicData& logic,
+                   game::PlayerData& player,
+                   const data::PrototypeManager& proto_manager,
+                   game::EventData&);
 
 	void ImguiTerminate();
 }

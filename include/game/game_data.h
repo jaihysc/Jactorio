@@ -15,40 +15,41 @@
 
 namespace jactorio::game
 {
-	///
-	/// \brief Does not persist across application restarts
-	struct GameDataLocal
-	{
-		struct GameInput
-		{
-			MouseSelection mouse;
-			KeyInput key;
-		};
+    ///
+    /// Does not persist across application restarts
+    struct GameDataLocal
+    {
+        struct GameInput
+        {
+            MouseSelection mouse;
+            KeyInput key;
+        };
 
-		data::PrototypeManager prototype;
+        data::PrototypeManager prototype;
         data::UniqueDataManager unique;
 
-		GameInput input;
+        GameInput input;
 		EventData event;
 	};
 
-	///
-	/// \brief Serialized runtime data, persists across restarts
-	struct GameDataGlobal
-	{
-		PlayerData player;
+    ///
+    /// Serialized runtime data, persists across restarts
+    struct GameDataGlobal
+    {
+        GameWorlds worlds;
+        LogicData logic;
+        PlayerData player;
 
-		WorldData world;
-		LogicData logic;
+        static_assert(std::is_same_v<GameWorlds::size_type, WorldId>);
 
 
-		CEREAL_SERIALIZE(archive) {
+        CEREAL_SERIALIZE(archive) {
             // Order must be: world, logic, player
-			archive(world);
+            archive(worlds);
             archive(logic);
-            // TODO player
-		}
-	};
+            archive(player);
+        }
+    };
 }
 
 #endif //JACTORIO_INCLUDE_GAME_GAME_DATA_H
