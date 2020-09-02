@@ -26,15 +26,43 @@ namespace jactorio::game
     class PlayerData
     {
     public:
+        PlayerData() = default;
+        ~PlayerData() = default;
+
+        PlayerData(const PlayerData& other)
+            : world{other.world},
+              inventory{other.inventory},
+              placement{other.placement},
+              crafting{other.crafting} {
+            placement.playerInv_ = &inventory;
+            crafting.playerInv_  = &inventory;
+        }
+
+        PlayerData(PlayerData&& other) noexcept
+            : world{std::move(other.world)},
+              inventory{std::move(other.inventory)},
+              placement{std::move(other.placement)},
+              crafting{std::move(other.crafting)} {
+            placement.playerInv_ = &inventory;
+            crafting.playerInv_  = &inventory;
+        }
+
+        PlayerData& operator=(PlayerData other) {
+            using std::swap;
+            swap(*this, other);
+            return *this;
+        }
+
         ///
         /// How the player perceives the world, does not modify the world
         class World
         {
+            using PlayerPosT = float;
+
         public:
             ///
             /// Call on game tick to calculate the coordinates of mouse selected tile
-            /// Cached in mouse_selected_tile_
-            void MouseCalculateSelectedTile(const glm::mat4& mvp_matrix);
+            void CalculateMouseSelectedTile(const glm::mat4& mvp_matrix);
 
             ///
             /// Gets the world X, Y of the tile the mouse is hovered over, computed by calculate_selected_tile(x, y)
@@ -50,17 +78,20 @@ namespace jactorio::game
             J_NODISCARD WorldId GetId() const noexcept { return worldId_; }
 
 
+            ///
             /// The tile the player is on, decimals indicate partial tile
-            J_NODISCARD float GetPlayerPositionX() const { return playerPositionX_; }
-            J_NODISCARD float GetPlayerPositionY() const { return playerPositionY_; }
+            J_NODISCARD PlayerPosT GetPositionX() const { return positionX_; }
+            J_NODISCARD PlayerPosT GetPositionY() const { return positionY_; }
 
             ///
             /// If the tile at the specified amount is valid, the player will be moved to that tile
-            void MovePlayerX(float amount);
+            void MovePlayerX(PlayerPosT amount);
+            void MovePlayerY(PlayerPosT amount);
 
-            ///
-            /// If the tile at the specified amount is valid, the player will be moved to that tile
-            void MovePlayerY(float amount);
+            void SetPlayerX(PlayerPosT x) noexcept { positionX_ = x; }
+            void SetPlayerY(PlayerPosT y) noexcept { positionY_ = y; }
+
+            CEREAL_SERIALIZE(archive) { archive(worldId_, positionX_, positionY_); }
 
         private:
             ///
@@ -69,11 +100,11 @@ namespace jactorio::game
 
             WorldCoord mouseSelectedTile_;
 
-            float playerPositionX_ = 0;
-            float playerPositionY_ = 0;
+            PlayerPosT positionX_ = 0;
+            PlayerPosT positionY_ = 0;
 
             /// The world the player is currently in
-            WorldId worldId_        = 0;
+            WorldId worldId_ = 0;
         };
 
 
@@ -86,7 +117,7 @@ namespace jactorio::game
             static constexpr unsigned short kDefaultInventorySize = 80;
 
             ///
-            /// High level method for inventory actions, prefer over calls to InventoryClick and others
+            /// High level method for inventory actions, prefer over calls to HandleClick and others
             void HandleInventoryActions(const data::PrototypeManager& data_manager,
                                         data::Item::Inventory& inv,
                                         size_t index,
@@ -103,17 +134,17 @@ namespace jactorio::game
             /// Interacts with the inventory at index
             /// \param index The inventory index
             /// \param mouse_button Mouse button pressed; 0 - Left, 1 - Right
-            /// \param allow_reference_select If true, left clicking will select the item by reference
-            void InventoryClick(const data::PrototypeManager& data_manager,
-                                uint16_t index,
-                                uint16_t mouse_button,
-                                bool allow_reference_select,
-                                data::Item::Inventory& inv);
+            /// \param reference_select If true, left clicking will select the item by reference
+            void HandleClick(const data::PrototypeManager& data_manager,
+                             uint16_t index,
+                             uint16_t mouse_button,
+                             bool reference_select,
+                             data::Item::Inventory& inv);
 
             ///
             /// Gets the currently item player is currently holding on the cursor
             /// \return nullptr if there is no item selected
-            J_NODISCARD const data::ItemStack* GetSelectedItemStack() const;
+            J_NODISCARD const data::ItemStack* GetSelectedItem() const;
 
             ///
             /// Deselects the current item and returns it to its slot ONLY if selected by reference
@@ -132,18 +163,6 @@ namespace jactorio::game
 
 
 #ifdef JACTORIO_BUILD_TEST
-            void ClearPlayerInventory() {
-                for (auto& i : inventoryPlayer) {
-                    i.item  = nullptr;
-                    i.count = 0;
-                }
-            }
-
-            void ResetInventoryVariables() {
-                hasItemSelected_   = false;
-                selectByReference_ = false;
-            }
-
             void SetSelectedItem(const data::ItemStack& item) {
                 hasItemSelected_ = true;
                 selectedItem_    = item;
@@ -151,15 +170,18 @@ namespace jactorio::game
 #endif
 
 
-            data::Item::Inventory inventoryPlayer{kDefaultInventorySize};
+            CEREAL_SERIALIZE(archive) {
+                archive(inventory, selectedItem_, hasItemSelected_, selectedItemIndex_, selectByReference_);
+            }
+
+            data::Item::Inventory inventory{kDefaultInventorySize};
 
         private:
             data::ItemStack selectedItem_;
 
-            bool hasItemSelected_                         = false;
-            unsigned short selectedItemIndex_             = 0;
-            data::Item::Inventory* selectedItemInventory_ = nullptr;
-            bool selectByReference_                       = false;
+            bool hasItemSelected_             = false;
+            unsigned short selectedItemIndex_ = 0;
+            bool selectByReference_           = false;
         };
 
 
@@ -168,8 +190,10 @@ namespace jactorio::game
 
         class Placement
         {
+            friend PlayerData;
+
         public:
-            Placement(PlayerData::Inventory& player_inv) : playerInv_(player_inv) {}
+            Placement(PlayerData::Inventory& player_inv) : playerInv_(&player_inv) {}
 
             ///
             /// Rotates placement_orientation clockwise
@@ -230,7 +254,8 @@ namespace jactorio::game
             const void* lastSelectedPtr_ = nullptr;
             const void* lastTilePtr_     = nullptr;
 
-            PlayerData::Inventory& playerInv_;
+
+            PlayerData::Inventory* playerInv_;
         };
 
 
@@ -239,13 +264,15 @@ namespace jactorio::game
 
         class Crafting
         {
-            using RecipeQueueT = std::deque<const data::Recipe*>;
+            friend PlayerData;
+
+            using RecipeQueueT = std::deque<data::SerialProtoPtr<const data::Recipe>>;
 
             using CraftingItemDeductionsT = std::map<std::string, uint16_t>;
             using CraftingItemExtrasT     = std::map<std::string, uint16_t>;
 
         public:
-            Crafting(PlayerData::Inventory& player_inv) : playerInv_(player_inv) {}
+            Crafting(PlayerData::Inventory& player_inv) : playerInv_(&player_inv) {}
 
 
             void RecipeGroupSelect(uint16_t index);
@@ -282,6 +309,14 @@ namespace jactorio::game
 #endif
 
 
+            CEREAL_SERIALIZE(archive) {
+                archive(craftingQueue_,
+                        craftingTicksRemaining_,
+                        craftingItemDeductions_,
+                        craftingItemExtras_,
+                        craftingHeldItem_);
+            }
+
             /// Current text in recipe search menu
             std::string recipeSearchText;
 
@@ -298,7 +333,7 @@ namespace jactorio::game
 
             uint16_t selectedRecipeGroup_ = 0;
 
-            std::deque<const data::Recipe*> craftingQueue_;
+            RecipeQueueT craftingQueue_;
             uint16_t craftingTicksRemaining_ = 0;
 
             /// Items to be deducted away during crafting and not returned to the player inventory
@@ -311,7 +346,8 @@ namespace jactorio::game
             /// Item which is held until there is space in the player inventory to return
             data::ItemStack craftingHeldItem_ = {nullptr, 0};
 
-            PlayerData::Inventory& playerInv_;
+
+            PlayerData::Inventory* playerInv_;
         };
 
 
@@ -321,7 +357,7 @@ namespace jactorio::game
         Crafting crafting{inventory};
 
 
-        CEREAL_SERIALIZE(archive) {}
+        CEREAL_SERIALIZE(archive) { archive(world, inventory, crafting); }
     };
 }
 

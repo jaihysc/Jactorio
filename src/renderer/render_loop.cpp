@@ -76,7 +76,8 @@ void RenderingLoop(LogicRenderLoopCommon& common, renderer::DisplayWindow& displ
 			main_renderer->GlRenderPlayerPosition(
 				common.gameDataGlobal.logic.GameTick(),
 				player_world,
-				player_data.world.GetPlayerPositionX(), player_data.world.GetPlayerPositionY()
+                                                  player_data.world.GetPositionX(),
+                                                  player_data.world.GetPositionY()
 			);
 
 

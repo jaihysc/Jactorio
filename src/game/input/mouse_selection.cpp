@@ -30,7 +30,7 @@ void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
                                              PlayerData& player_data,
                                              const data::PrototypeManager& proto_manager) {
 	const auto cursor_position = player_data.world.GetMouseTileCoords();
-	const auto* stack          = player_data.inventory.GetSelectedItemStack();
+	const auto* stack          = player_data.inventory.GetSelectedItem();
 
     const auto* sprite = proto_manager.DataRawGet<data::Sprite>(player_data.world.MouseSelectedTileInRange()
                                               ? "__core__/cursor-select"

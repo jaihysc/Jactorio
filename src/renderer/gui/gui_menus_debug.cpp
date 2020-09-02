@@ -87,7 +87,7 @@ void renderer::DebugMenu(const MenuFunctionParams& params) {
 		            game::MouseSelection::GetCursorY());
 		ImGui::Text("Cursor world position: %d, %d", player.world.GetMouseTileCoords().x, player.world.GetMouseTileCoords().y);
 
-		ImGui::Text("Player position %f %f", player.world.GetPlayerPositionX(), player.world.GetPlayerPositionY());
+		ImGui::Text("Player position %f %f", player.world.GetPositionX(), player.world.GetPositionY());
 
 		ImGui::Text("Game tick: %llu", logic.GameTick());
 		ImGui::Text("Chunk updates: %llu", world.LogicGetChunks().size());
@@ -141,7 +141,7 @@ void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::Proto
 		give_amount = 1;
 
 	if (ImGui::Button("Clear inventory")) {
-		for (auto& i : player_data.inventory.inventoryPlayer) {
+		for (auto& i : player_data.inventory.inventory) {
 			i = {nullptr, 0};
 		}
 	}
@@ -150,8 +150,8 @@ void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::Proto
 	if (new_inv_size < 0)
 		new_inv_size = 0;
 
-	if (new_inv_size != player_data.inventory.inventoryPlayer.size()) {
-		player_data.inventory.inventoryPlayer.resize(new_inv_size);
+	if (new_inv_size != player_data.inventory.inventory.size()) {
+		player_data.inventory.inventory.resize(new_inv_size);
 	}
 
 
@@ -164,7 +164,7 @@ void renderer::DebugItemSpawner(game::PlayerData& player_data, const data::Proto
 
 		if (ImGui::Button(item->GetLocalizedName().c_str())) {
 			data::ItemStack item_stack = {item, core::SafeCast<data::Item::StackCount>(give_amount)};
-			game::AddStack(player_data.inventory.inventoryPlayer, item_stack);
+			game::AddStack(player_data.inventory.inventory, item_stack);
 		}
 		ImGui::PopID();
 	}
@@ -524,8 +524,8 @@ void renderer::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player
 		constexpr int chunk_radius = 3;  // Chunk radius around the player to display information for
 		ImGui::Text("Radius of %d around the player", chunk_radius);
 
-		const auto start_chunk_x = game::WorldData::WorldCToChunkC(player.world.GetPlayerPositionX());
-		const auto start_chunk_y = game::WorldData::WorldCToChunkC(player.world.GetPlayerPositionY());
+		const auto start_chunk_x = game::WorldData::WorldCToChunkC(player.world.GetPositionX());
+		const auto start_chunk_y = game::WorldData::WorldCToChunkC(player.world.GetPositionY());
 
 		for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
 			for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {

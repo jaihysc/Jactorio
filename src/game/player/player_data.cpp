@@ -16,9 +16,9 @@
 
 using namespace jactorio;
 
-void game::PlayerData::World::MouseCalculateSelectedTile(const glm::mat4& mvp_matrix) {
-    const auto truncated_player_pos_x = core::SafeCast<float>(core::LossyCast<int>(playerPositionX_));
-    const auto truncated_player_pos_y = core::SafeCast<float>(core::LossyCast<int>(playerPositionY_));
+void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_matrix) {
+    const auto truncated_player_pos_x = core::SafeCast<float>(core::LossyCast<int>(positionX_));
+    const auto truncated_player_pos_y = core::SafeCast<float>(core::LossyCast<int>(positionY_));
 
     float pixels_from_center_x;
     float pixels_from_center_y;
@@ -52,11 +52,11 @@ void game::PlayerData::World::MouseCalculateSelectedTile(const glm::mat4& mvp_ma
 
         // If player is standing on a partial tile, adjust the center accordingly to the correct location
         mouse_x_center -=
-            core::SafeCast<float>(renderer::Renderer::tileWidth) * (playerPositionX_ - truncated_player_pos_x);
+            core::SafeCast<float>(renderer::Renderer::tileWidth) * (positionX_ - truncated_player_pos_x);
 
         // This is plus since the y axis is inverted
         mouse_y_center +=
-            core::SafeCast<float>(renderer::Renderer::tileWidth) * (playerPositionY_ - truncated_player_pos_y);
+            core::SafeCast<float>(renderer::Renderer::tileWidth) * (positionY_ - truncated_player_pos_y);
 
 
         pixels_from_center_x = norm_positions.x - mouse_x_center;
@@ -82,8 +82,8 @@ bool game::PlayerData::World::MouseSelectedTileInRange() const {
 
     // Maximum distance of from the player where tiles can be reached
     constexpr unsigned int max_reach = 34;
-    const auto tile_dist             = abs(playerPositionX_ - core::SafeCast<float>(cursor_position.x)) +
-        abs(playerPositionY_ - core::SafeCast<float>(cursor_position.y));
+    const auto tile_dist             = abs(positionX_ - core::SafeCast<float>(cursor_position.x)) +
+        abs(positionY_ - core::SafeCast<float>(cursor_position.y));
 
     return tile_dist <= max_reach;
 }
@@ -92,7 +92,7 @@ bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x
     assert(world_data != nullptr); // Player is not in a world
 
     const auto* origin_tile =
-        world_data->GetTile(core::LossyCast<int>(playerPositionX_), core::LossyCast<int>(playerPositionY_));
+        world_data->GetTile(core::LossyCast<int>(positionX_), core::LossyCast<int>(positionY_));
 
     if (origin_tile == nullptr)
         return false;
@@ -110,17 +110,17 @@ bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x
 }
 
 void game::PlayerData::World::MovePlayerX(const float amount) {
-    const float target_x = playerPositionX_ + amount;
+    const float target_x = positionX_ + amount;
 
 //    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(target_x), core::LossyCast<int>(playerPositionY_)))
-        playerPositionX_ = target_x;
+    positionX_ = target_x;
 }
 
 void game::PlayerData::World::MovePlayerY(const float amount) {
-    const float target_y = playerPositionY_ + amount;
+    const float target_y = positionY_ + amount;
 
 //    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(playerPositionX_), core::LossyCast<int>(target_y)))
-        playerPositionY_ = target_y;
+    positionY_ = target_y;
 }
 
 
@@ -244,7 +244,7 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
     if (tile == nullptr)
         return false;
 
-    const auto* stack = playerInv_.GetSelectedItemStack();
+    const auto* stack = playerInv_->GetSelectedItem();
 
     // No selected item or selected item is not placeable and clicked on a entity
     if (stack == nullptr)
@@ -270,8 +270,8 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
     // All validations passed, entity has been placed
 
     // If item stack was used up, sort player inventory to fill gap
-    if (!playerInv_.DecrementSelectedItem()) {
-        playerInv_.InventorySort(playerInv_.inventoryPlayer);
+    if (!playerInv_->DecrementSelectedItem()) {
+        playerInv_->InventorySort(playerInv_->inventory);
     }
 
     // Call events
@@ -290,7 +290,7 @@ bool game::PlayerData::Placement::TryActivateLayer(WorldData& world_data, const 
     if (tile == nullptr)
         return false;
 
-    const auto* stack = playerInv_.GetSelectedItemStack();
+    const auto* stack = playerInv_->GetSelectedItem();
 
     // Can activate if: No selected item OR selected item is not placeable
     if (stack != nullptr) {
@@ -361,11 +361,11 @@ void game::PlayerData::Placement::TryPickup(
         const auto item_stack = data::ItemStack{chosen_ptr->GetItem(), 1};
 
         // Failed to add item, likely because the inventory is full
-        if (!CanAddStack(playerInv_.inventoryPlayer, item_stack).first)
+        if (!CanAddStack(playerInv_->inventory, item_stack).first)
             return;
 
-        AddStack(playerInv_.inventoryPlayer, item_stack);
-        playerInv_.InventorySort(playerInv_.inventoryPlayer);
+        AddStack(playerInv_->inventory, item_stack);
+        playerInv_->InventorySort(playerInv_->inventory);
 
         pickupTickCounter_ = 0;
         // Resource entity
@@ -425,11 +425,11 @@ void game::PlayerData::Inventory::HandleInventoryActions(const data::PrototypeMa
                                                          data::Item::Inventory& inv,
                                                          const size_t index,
                                                          const bool half_select) {
-    const bool is_player_inv = &inv == &inventoryPlayer;
+    const bool is_player_inv = &inv == &inventory;
 
 
-    InventoryClick(data_manager, core::SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
-    InventorySort(inventoryPlayer);
+    HandleClick(data_manager, core::SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
+    InventorySort(inventory);
 }
 
 void game::PlayerData::Inventory::InventorySort(data::Item::Inventory& inv) {
@@ -553,16 +553,19 @@ loop_exit:
 // LEFT CLICK - Select by reference, the item in the cursor mirrors the inventory item
 // RIGHT CLICK - Select unique, the item in the cursor exists independently of the inventory item
 
-void game::PlayerData::Inventory::InventoryClick(const data::PrototypeManager& data_manager,
-                                                 const uint16_t index,
-                                                 const uint16_t mouse_button,
-                                                 const bool allow_reference_select,
+void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data_manager,
+                                              uint16_t index,
+                                              uint16_t mouse_button,
+                                                 bool reference_select,
                                                  data::Item::Inventory& inv) {
-    assert(index < inventoryPlayer.size());
+    assert(index < inventory.size());
     assert(mouse_button == 0 || mouse_button == 1); // Only left + right click supported
 
+    if (reference_select)
+        assert(&inv == &inventory); // Can only reference select player inventory to allow serialization support
+
     // Clicking on the same location + inventory, selecting by reference: deselect
-    if (hasItemSelected_ && selectByReference_ && selectedItemIndex_ == index && selectedItemInventory_ == &inv) {
+    if (hasItemSelected_ && selectByReference_ && selectedItemIndex_ == index) {
         hasItemSelected_ = false;
 
         // Add referenced item to slot
@@ -579,17 +582,16 @@ void game::PlayerData::Inventory::InventoryClick(const data::PrototypeManager& d
 
         hasItemSelected_       = true;
         selectedItemIndex_     = index;
-        selectedItemInventory_ = &inv;
 
         // Reference
-        if (allow_reference_select && mouse_button == 0) {
-            assert(&inv == &inventoryPlayer); // Select by reference only allowed for player inventory
+        if (reference_select && mouse_button == 0) {
+            assert(&inv == &inventory); // Select by reference only allowed for player inventory
             selectByReference_ = true;
             selectedItem_      = inv[index];
 
             // Swap icon out for a cursor indicating the current index is selected
-            inventoryPlayer[index].item  = data_manager.DataRawGet<data::Item>(data::Item::kInventorySelectedCursor);
-            inventoryPlayer[index].count = 0;
+            inventory[index].item  = data_manager.DataRawGet<data::Item>(data::Item::kInventorySelectedCursor);
+            inventory[index].count = 0;
 
             // Return is necessary when selecting by reference
             // The item needs to be moved after selecting the next inventory slot
@@ -605,25 +607,22 @@ void game::PlayerData::Inventory::InventoryClick(const data::PrototypeManager& d
 		// DO NOT return for it to move the item into the new inventory
 	}
 
-	const bool cursor_empty =
-		MoveItemstackToIndex(selectedItem_,
-		                     inv[index],
-		                     mouse_button);
-	// Cursor slot is empty
+	const bool cursor_empty = MoveItemstackToIndex(selectedItem_, inv[index], mouse_button);
+
 	if (cursor_empty) {
 		hasItemSelected_ = false;
 
 		if (selectByReference_) {
 			// Remove cursor icon
-			assert(selectedItemIndex_ < inventoryPlayer.size());
+			assert(selectedItemIndex_ < inventory.size());
 			// Select by reference is only for inventory_player
-			inventoryPlayer[selectedItemIndex_].item  = nullptr;
-			inventoryPlayer[selectedItemIndex_].count = 0;
+            inventory[selectedItemIndex_].item  = nullptr;
+            inventory[selectedItemIndex_].count = 0;
 		}
 	}
 }
 
-const data::ItemStack* game::PlayerData::Inventory::GetSelectedItemStack() const {
+const data::ItemStack* game::PlayerData::Inventory::GetSelectedItem() const {
     if (!hasItemSelected_)
         return nullptr;
 
@@ -635,7 +634,7 @@ bool game::PlayerData::Inventory::DeselectSelectedItem() {
         return false;
 
     // Add referenced item to slot
-    inventoryPlayer[selectedItemIndex_] = selectedItem_;
+    inventory[selectedItemIndex_] = selectedItem_;
     hasItemSelected_                    = false;
     return true;
 }
@@ -659,8 +658,8 @@ bool game::PlayerData::Inventory::DecrementSelectedItem() {
         // Item stack now empty
         hasItemSelected_ = false;
         // Remove selection cursor
-        inventoryPlayer[selectedItemIndex_].item  = nullptr;
-        inventoryPlayer[selectedItemIndex_].count = 0;
+        inventory[selectedItemIndex_].item  = nullptr;
+        inventory[selectedItemIndex_].count = 0;
 
         return false;
     }
@@ -681,7 +680,7 @@ uint16_t game::PlayerData::Crafting::RecipeGroupGetSelected() const {
 void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& data_manager, uint16_t ticks) {
     // Attempt to return held item if inventory is full
     if (craftingHeldItem_.count != 0) {
-        const auto extra_items  = AddStack(playerInv_.inventoryPlayer, craftingHeldItem_);
+        const auto extra_items  = AddStack(playerInv_->inventory, craftingHeldItem_);
         craftingHeldItem_.count = extra_items;
         return;
     }
@@ -692,7 +691,7 @@ void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& d
         if (ticks >= craftingTicksRemaining_) {
             ticks -= craftingTicksRemaining_;
 
-            const auto* recipe = craftingQueue_.front();
+            const auto* recipe = craftingQueue_.front().Get();
             craftingQueue_.pop_front();
 
             // Return product
@@ -736,7 +735,7 @@ void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& d
                     // If entry is 0, erase it
                     craftingItemExtras_.erase(recipe_item.first);
 
-                const auto extra_items = AddStack(playerInv_.inventoryPlayer, item);
+                const auto extra_items = AddStack(playerInv_->inventory, item);
                 if (extra_items != 0)
                     craftingHeldItem_ = {item.item, extra_items};
             }
@@ -761,14 +760,14 @@ void game::PlayerData::Crafting::QueueRecipe(const data::PrototypeManager& data_
     for (const auto& ingredient : recipe.ingredients) {
         const auto* item = data_manager.DataRawGet<data::Item>(ingredient.first);
 
-        DeleteInvItem(playerInv_.inventoryPlayer, item, ingredient.second);
+        DeleteInvItem(playerInv_->inventory, item, ingredient.second);
     }
 
     // Queue is empty, crafting time for the first item in queue must be set here
     if (craftingQueue_.empty())
         craftingTicksRemaining_ = core::LossyCast<uint16_t>(recipe.craftingTime * kGameHertz);
 
-    craftingQueue_.push_back(&recipe);
+    craftingQueue_.emplace_back(&recipe);
 }
 
 const game::PlayerData::Crafting::RecipeQueueT& game::PlayerData::Crafting::GetRecipeQueue() const {
@@ -783,7 +782,7 @@ void game::PlayerData::Crafting::RecipeCraftR(const data::PrototypeManager& data
     for (const auto& ingredient : recipe.ingredients) {
         const auto* ingredient_proto = data_manager.DataRawGet<data::Item>(ingredient.first);
 
-        const uint32_t possess_amount = GetInvItemCount(playerInv_.inventoryPlayer, ingredient_proto);
+        const uint32_t possess_amount = GetInvItemCount(playerInv_->inventory, ingredient_proto);
 
         // Insufficient ingredient amount in player inventory
         if (possess_amount < ingredient.second) {
@@ -858,7 +857,7 @@ bool game::PlayerData::Crafting::RecipeCanCraftR(const data::PrototypeManager& d
             possess_amount = used_items[ing_item];
         }
         else {
-            possess_amount       = GetInvItemCount(playerInv_.inventoryPlayer, ing_item);
+            possess_amount       = GetInvItemCount(playerInv_->inventory, ing_item);
             used_items[ing_item] = possess_amount;
         }
 

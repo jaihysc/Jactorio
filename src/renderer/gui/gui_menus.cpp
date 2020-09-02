@@ -66,8 +66,8 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::PrototypeMan
 	auto menu_data = renderer::GetMenuData();
 
 	renderer::RemoveItemSlotTopPadding();
-	renderer::DrawSlots(10, player_data.inventory.inventoryPlayer.size(), 1, [&](auto index, auto& button_hovered) {
-		const auto& stack = player_data.inventory.inventoryPlayer[index];
+	renderer::DrawSlots(10, player_data.inventory.inventory.size(), 1, [&](auto index, auto& button_hovered) {
+		const auto& stack = player_data.inventory.inventory[index];
 
 		// Draw blank slot if item doe snot exist at inventory slot
 		auto sprite_id = stack.item != nullptr ? stack.item->sprite->internalId : 0;
@@ -78,7 +78,7 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::PrototypeMan
 			stack.count,
 			button_hovered,
 			[&]() {
-				ImplementInventoryIsItemClicked(player_data, data_manager, player_data.inventory.inventoryPlayer, index);
+				ImplementInventoryIsItemClicked(player_data, data_manager, player_data.inventory.inventory, index);
 
 				// Only draw tooltip + item count if item count is not 0
 				if (ImGui::IsItemHovered() && stack.count != 0) {
@@ -249,7 +249,7 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::PrototypeMana
 				DrawItemSlot(menu_data, 1, item->sprite->internalId, 0, hovered);
 
 				// Amount of the current ingredient the player has in inventory
-				const auto player_item_count = game::GetInvItemCount(player_data.inventory.inventoryPlayer, item);
+				const auto player_item_count = game::GetInvItemCount(player_data.inventory.inventory, item);
 
 				ImGui::SameLine(renderer::kInventorySlotWidth * 1.5);
 
@@ -319,7 +319,7 @@ void renderer::CharacterMenu(const MenuFunctionParams& params) {
 		           if (ImGui::IsItemClicked()) {
 			           if (player_data.crafting.RecipeCanCraft(data_manager, recipe, 1)) {
 				           player_data.crafting.RecipeCraftR(data_manager, recipe);
-				           player_data.inventory.InventorySort(player_data.inventory.inventoryPlayer);
+				           player_data.inventory.InventorySort(player_data.inventory.inventory);
 			           }
 		           }
 
@@ -335,7 +335,7 @@ void renderer::CursorWindow(const MenuFunctionParams& params) {
 	const auto menu_data = GetMenuData();
 
 	// Player has an item selected, draw it on the tooltip
-	const auto* selected_stack = player_data.inventory.GetSelectedItemStack();
+	const auto* selected_stack = player_data.inventory.GetSelectedItem();
 
 	if (selected_stack != nullptr) {
 		ImGuard guard{};
@@ -419,7 +419,8 @@ void renderer::CraftingQueue(const MenuFunctionParams& params) {
 	guard.PushStyleColor(ImGuiCol_Border, kGuiColNone);
 
 	DrawSlots(10, recipe_queue.size(), 1, [&](auto index, auto& button_hovered) {
-		const data::Recipe* recipe = recipe_queue.at(index);
+		const data::Recipe* recipe = recipe_queue.at(index).Get();
+        assert(recipe != nullptr);
 
 		const auto* item =
 			data_manager.DataRawGet<data::Item>(recipe->product.first);

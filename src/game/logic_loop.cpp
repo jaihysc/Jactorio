@@ -72,7 +72,7 @@ void LogicLoop(LogicRenderLoopCommon& common) {
 			std::lock_guard<std::mutex> world_guard{common.worldDataMutex};
 
             // Retrieved mvp matrix may be invalid on startup
-            player.world.MouseCalculateSelectedTile(renderer::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
+            player.world.CalculateMouseSelectedTile(renderer::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
             input.mouse.DrawCursorOverlay(worlds, player, proto);
 
 
