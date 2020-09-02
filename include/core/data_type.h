@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <tuple>
 #include <unordered_map>
+#include <vector>
 
 #include <decimal.h>
 
