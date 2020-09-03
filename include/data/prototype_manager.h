@@ -30,7 +30,7 @@ namespace jactorio::data
 	class PrototypeManager
 	{
 		/// Position 0 reserved to indicate error
-		static constexpr PrototypeIdT kInternalIdStart = 1;
+		static constexpr PrototypeIdT kInternalIdStart_ = 1;
 
 		using RelocationTableContainerT = std::vector<const FrameworkBase*>;
 
@@ -51,8 +51,7 @@ namespace jactorio::data
 		///
 		/// \brief Gets prototype at specified name, cast to T
 		/// \return nullptr if the specified prototype does not exist
-		template <typename TProto,
-		          std::enable_if_t<IsValidPrototype<TProto>::value, int>  = 0>
+		template <typename TProto>
 		TProto* DataRawGet(const std::string& iname) const noexcept;
 
 		///
@@ -60,21 +59,18 @@ namespace jactorio::data
 		/// \return nullptr if the specified prototype does not exist
 		///
 		/// Abstract types allowed for Python API
-		template <typename TProto,
-		          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>  = 0>
+		template <typename TProto>
 		TProto* DataRawGet(DataCategory data_category, const std::string& iname) const noexcept;
 
 
 		///
 		/// \brief Gets pointers to all data of specified data_type
-		template <typename TProto,
-		          std::enable_if_t<IsValidPrototype<TProto>::value, int>  = 0>
+		template <typename TProto>
 		std::vector<TProto*> DataRawGetAll(DataCategory type) const;
 
 		///
 		/// \brief Gets pointers to all data of specified data_type, sorted by Prototype_base.order
-		template <typename TProto,
-		          std::enable_if_t<IsValidPrototype<TProto>::value, int>  = 0>
+		template <typename TProto>
 		std::vector<TProto*> DataRawGetAllSorted(DataCategory type) const;
 
 
@@ -90,8 +86,7 @@ namespace jactorio::data
 		///
 		/// \brief Create anonymous prototype TProto
 		/// \return Created prototype
-		template <typename TProto,
-		          std::enable_if_t<IsValidPrototype<TProto>::value, int>  = 0>
+		template <typename TProto>
 		TProto& AddProto() {
 			return AddProto<TProto>("");
 		}
@@ -99,8 +94,7 @@ namespace jactorio::data
 		///
 		/// \brief Forwards TArgs to create prototype TProto
 		/// \return Created prototype
-		template <typename TProto, typename ... TArgs,
-		          std::enable_if_t<IsValidPrototype<TProto>::value, int>  = 0>
+		template <typename TProto, typename ... TArgs>
 		TProto& AddProto(const std::string& iname, TArgs&& ... args);
 
 
@@ -109,8 +103,7 @@ namespace jactorio::data
 		///
 		/// \brief Searches through all categories for prototype
 		/// \return pointer to prototype, nullptr if not found
-		template <typename TProto = FrameworkBase,
-		          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>  = 0>
+		template <typename TProto = FrameworkBase>
 		J_NODISCARD TProto* FindProto(const std::string& iname) const noexcept;
 
 
@@ -141,8 +134,7 @@ namespace jactorio::data
 
 		///
 		/// \brief Fetches prototype at prototype id
-		template <typename TProto = FrameworkBase,
-		          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>  = 0>
+		template <typename TProto = FrameworkBase>
 		J_NODISCARD const TProto& RelocationTableGet(PrototypeIdT prototype_id) const noexcept;
 
 
@@ -169,37 +161,40 @@ namespace jactorio::data
 
 
 		/// Internal id which will be assigned to the next prototype added
-		PrototypeIdT internalIdNew_ = kInternalIdStart;
+		PrototypeIdT internalIdNew_ = kInternalIdStart_;
 
 		/// Appended to the beginning of each new prototype
 		std::string directoryPrefix_;
 	};
 
-	template <typename TProto,
-	          std::enable_if_t<IsValidPrototype<TProto>::value, int>>
+	template <typename TProto>
 	TProto* PrototypeManager::DataRawGet(const std::string& iname) const noexcept {
+        static_assert(IsValidPrototype<TProto>::value);
 		static_assert(TProto::category != DataCategory::none);
 
 		return DataRawGet<TProto>(TProto::category, iname);
 	}
 
-	template <typename TProto,
-	          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>>
+	template <typename TProto>
 	TProto* PrototypeManager::DataRawGet(const DataCategory data_category, const std::string& iname) const noexcept {
+        static_assert(std::is_base_of_v<FrameworkBase, TProto>);
 
-		auto* category = &dataRaw_[static_cast<uint16_t>(data_category)];
-		if (category->find(iname) == category->end()) {
-			LOG_MESSAGE_F(error, "Attempted to access non-existent prototype %s", iname.c_str());
-			return nullptr;
-		}
+		const auto* category = &dataRaw_[static_cast<uint16_t>(data_category)];
 
-		FrameworkBase* base = category->at(iname);
-		return static_cast<TProto*>(base);
+        try {
+            FrameworkBase* base = category->at(iname);
+            return static_cast<TProto*>(base);
+        }
+        catch (std::out_of_range&) {
+            LOG_MESSAGE_F(error, "Attempted to access non-existent prototype %s", iname.c_str());
+            return nullptr;
+        }
 	}
 
-	template <typename TProto,
-	          std::enable_if_t<IsValidPrototype<TProto>::value, int>>
+	template <typename TProto>
 	std::vector<TProto*> PrototypeManager::DataRawGetAll(const DataCategory type) const {
+        static_assert(IsValidPrototype<TProto>::value);
+
 		auto category_items = dataRaw_[static_cast<uint16_t>(type)];
 
 		std::vector<TProto*> items;
@@ -213,9 +208,10 @@ namespace jactorio::data
 		return items;
 	}
 
-	template <typename TProto,
-	          std::enable_if_t<IsValidPrototype<TProto>::value, int>>
+	template <typename TProto>
 	std::vector<TProto*> PrototypeManager::DataRawGetAllSorted(const DataCategory type) const {
+        static_assert(IsValidPrototype<TProto>::value);
+
 		std::vector<TProto*> items = DataRawGetAll<TProto>(type);
 
 		// Sort
@@ -227,9 +223,9 @@ namespace jactorio::data
 		return items;
 	}
 
-	template <typename TProto, typename ... TArgs,
-	          std::enable_if_t<IsValidPrototype<TProto>::value, int>>
+	template <typename TProto, typename ... TArgs>
 	TProto& PrototypeManager::AddProto(const std::string& iname, TArgs&&... args) {
+        static_assert(IsValidPrototype<TProto>::value);
 
 		auto* proto = new TProto(std::forward<TArgs>(args)...);
 		assert(proto != nullptr);
@@ -238,9 +234,10 @@ namespace jactorio::data
 		return *proto;
 	}
 
-	template <typename TProto,
-	          std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>>
+	template <typename TProto>
 	TProto* PrototypeManager::FindProto(const std::string& iname) const noexcept {
+        static_assert(std::is_base_of_v<FrameworkBase, TProto>);
+
 		for (const auto& map : dataRaw_) {
 			auto i = map.find(iname);
 			if (i != map.end()) {
@@ -250,15 +247,17 @@ namespace jactorio::data
 		return nullptr;
 	}
 
-	template <typename TProto, std::enable_if_t<std::is_base_of_v<FrameworkBase, TProto>, int>>
+	template <typename TProto>
 	const TProto& PrototypeManager::RelocationTableGet(PrototypeIdT prototype_id) const noexcept {
+        static_assert(std::is_base_of_v<FrameworkBase, TProto>);
+
 		assert(relocationTable_.size() >= prototype_id);
 		assert(prototype_id > 0);
 		prototype_id -= 1;  // Prototype ids start from 1
 
 		assert(relocationTable_.at(prototype_id));
 
-		auto* proto = relocationTable_[prototype_id];
+		const auto* proto = relocationTable_[prototype_id];
 		return static_cast<const TProto&>(*proto);
 	}
 }

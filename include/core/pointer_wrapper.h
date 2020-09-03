@@ -24,10 +24,10 @@ namespace jactorio::core
         PointerWrapper() = default;
 
         PointerWrapper(Ty* proto) { // Intentionally non explicit to allow assignment from pointer directly
-            SetProto(proto);
+            SetPtr(proto);
         }
 
-        explicit PointerWrapper(Ty& proto) { SetProto(&proto); }
+        explicit PointerWrapper(Ty& proto) { SetPtr(&proto); }
 
 
         Ty* operator->() { return GetPtr(); }
@@ -56,14 +56,14 @@ namespace jactorio::core
         static_assert(sizeof(ValueT) == sizeof(Ty*));
         ValueT value_ = 0;
 
-        void SetProto(Ty* proto) noexcept { value_ = reinterpret_cast<ValueT>(proto); }
+        void SetPtr(Ty* proto) noexcept { value_ = reinterpret_cast<ValueT>(proto); }
 
     private:
         J_NODISCARD Ty* GetPtr() noexcept { return reinterpret_cast<Ty*>(value_); }
         J_NODISCARD Ty* GetPtr() const noexcept { return reinterpret_cast<Ty*>(value_); }
     };
 
-    template <class T>
+    template <class T, std::enable_if_t<!std::is_same_v<T, std::nullptr_t>, int> = 0>
     PointerWrapper(T) -> PointerWrapper<std::remove_pointer_t<T>>;
 } // namespace jactorio::core
 

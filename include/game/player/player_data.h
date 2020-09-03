@@ -48,10 +48,18 @@ namespace jactorio::game
         }
 
         PlayerData& operator=(PlayerData other) {
-            using std::swap;
             swap(*this, other);
             return *this;
         }
+
+        friend void swap(PlayerData& lhs, PlayerData& rhs) noexcept {
+            using std::swap;
+            swap(lhs.world, rhs.world);
+            swap(lhs.inventory, rhs.inventory);
+            swap(lhs.placement, rhs.placement);
+            swap(lhs.crafting, rhs.crafting);
+        }
+
 
         ///
         /// How the player perceives the world, does not modify the world
@@ -74,7 +82,7 @@ namespace jactorio::game
 
             // ======================================================================
 
-            void SetId(WorldId world_id) noexcept { worldId_ = world_id; }
+            void SetId(const WorldId world_id) noexcept { worldId_ = world_id; }
             J_NODISCARD WorldId GetId() const noexcept { return worldId_; }
 
 
@@ -88,8 +96,8 @@ namespace jactorio::game
             void MovePlayerX(PlayerPosT amount);
             void MovePlayerY(PlayerPosT amount);
 
-            void SetPlayerX(PlayerPosT x) noexcept { positionX_ = x; }
-            void SetPlayerY(PlayerPosT y) noexcept { positionY_ = y; }
+            void SetPlayerX(const PlayerPosT x) noexcept { positionX_ = x; }
+            void SetPlayerY(const PlayerPosT y) noexcept { positionY_ = y; }
 
             CEREAL_SERIALIZE(archive) { archive(worldId_, positionX_, positionY_); }
 
@@ -128,7 +136,7 @@ namespace jactorio::game
             ///
             /// Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying
             /// stack size
-            static void InventorySort(data::Item::Inventory& inv) ;
+            static void InventorySort(data::Item::Inventory& inv);
 
             ///
             /// Interacts with the inventory at index
@@ -170,11 +178,12 @@ namespace jactorio::game
 #endif
 
 
+            data::Item::Inventory inventory{kDefaultInventorySize};
+
+
             CEREAL_SERIALIZE(archive) {
                 archive(inventory, selectedItem_, hasItemSelected_, selectedItemIndex_, selectByReference_);
             }
-
-            data::Item::Inventory inventory{kDefaultInventorySize};
 
         private:
             data::ItemStack selectedItem_;
@@ -193,7 +202,18 @@ namespace jactorio::game
             friend PlayerData;
 
         public:
-            Placement(PlayerData::Inventory& player_inv) : playerInv_(&player_inv) {}
+            explicit Placement(Inventory& player_inv) : playerInv_(&player_inv) {}
+
+            friend void swap(Placement& lhs, Placement& rhs) noexcept {
+                using std::swap;
+                swap(lhs.orientation, rhs.orientation);
+                swap(lhs.activatedLayer_, rhs.activatedLayer_);
+                swap(lhs.pickupTickCounter_, rhs.pickupTickCounter_);
+                swap(lhs.pickupTickTarget_, rhs.pickupTickTarget_);
+                swap(lhs.lastSelectedPtr_, rhs.lastSelectedPtr_);
+                swap(lhs.lastTilePtr_, rhs.lastTilePtr_);
+            }
+
 
             ///
             /// Rotates placement_orientation clockwise
@@ -255,7 +275,7 @@ namespace jactorio::game
             const void* lastTilePtr_     = nullptr;
 
 
-            PlayerData::Inventory* playerInv_;
+            Inventory* playerInv_;
         };
 
 
@@ -272,7 +292,18 @@ namespace jactorio::game
             using CraftingItemExtrasT     = std::map<std::string, uint16_t>;
 
         public:
-            Crafting(PlayerData::Inventory& player_inv) : playerInv_(&player_inv) {}
+            explicit Crafting(Inventory& player_inv) : playerInv_(&player_inv) {}
+
+            friend void swap(Crafting& lhs, Crafting& rhs) noexcept {
+                using std::swap;
+                swap(lhs.recipeSearchText, rhs.recipeSearchText);
+                swap(lhs.selectedRecipeGroup_, rhs.selectedRecipeGroup_);
+                swap(lhs.craftingQueue_, rhs.craftingQueue_);
+                swap(lhs.craftingTicksRemaining_, rhs.craftingTicksRemaining_);
+                swap(lhs.craftingItemDeductions_, rhs.craftingItemDeductions_);
+                swap(lhs.craftingItemExtras_, rhs.craftingItemExtras_);
+                swap(lhs.craftingHeldItem_, rhs.craftingHeldItem_);
+            }
 
 
             void RecipeGroupSelect(uint16_t index);
@@ -309,6 +340,10 @@ namespace jactorio::game
 #endif
 
 
+            /// Current text in recipe search menu
+            std::string recipeSearchText;
+
+
             CEREAL_SERIALIZE(archive) {
                 archive(craftingQueue_,
                         craftingTicksRemaining_,
@@ -316,9 +351,6 @@ namespace jactorio::game
                         craftingItemExtras_,
                         craftingHeldItem_);
             }
-
-            /// Current text in recipe search menu
-            std::string recipeSearchText;
 
         private:
             ///
@@ -347,7 +379,7 @@ namespace jactorio::game
             data::ItemStack craftingHeldItem_ = {nullptr, 0};
 
 
-            PlayerData::Inventory* playerInv_;
+            Inventory* playerInv_;
         };
 
 

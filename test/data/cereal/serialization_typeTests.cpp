@@ -54,4 +54,12 @@ namespace jactorio::data
         EXPECT_EQ(result->internalId, 1);
         EXPECT_EQ(result->health, 42);
     }
+
+    TEST(SerialUniqueDataPointer, SerializeNull) {
+        SerialUniqueDataPtr<ContainerEntityData> serial_ptr(nullptr);
+
+        auto result = TestSerializeDeserialize(serial_ptr);
+
+        EXPECT_EQ(result.Get(), nullptr);
+    }
 }

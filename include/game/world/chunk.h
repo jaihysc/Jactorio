@@ -121,11 +121,6 @@ namespace jactorio::game
 		J_NODISCARD const LogicGroupContainerT& GetLogicGroup(LogicGroup layer) const;
 
 
-		CEREAL_SAVE(archive) {
-			auto serial_logic = ToSerializeLogicGroupArray();
-			archive(position_, tiles_, serial_logic);
-		}
-
 		CEREAL_LOAD(archive) {
 			SerialLogicGroupArrayT serial_logic;
 			archive(position_, tiles_, serial_logic);
@@ -133,7 +128,13 @@ namespace jactorio::game
 			FromSerializeLogicGroupArray(serial_logic);
 		}
 
-		OverlayArrayT overlays;
+        CEREAL_SAVE(archive) {
+            auto serial_logic = ToSerializeLogicGroupArray();
+            archive(position_, tiles_, serial_logic);
+        }
+
+
+        OverlayArrayT overlays;
 
 		/// Holds pointer to UniqueData at tile requiring logic update
 		LogicGroupArrayT logicGroups;

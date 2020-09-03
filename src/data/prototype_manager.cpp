@@ -172,7 +172,7 @@ void data::PrototypeManager::ClearData() {
 		map.clear();
 	}
 
-	internalIdNew_ = kInternalIdStart;
+	internalIdNew_ = kInternalIdStart_;
 }
 
 

@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_ASSEMBLY_MACHINE_H
-#define JACTORIO_DATA_PROTOTYPE_ENTITY_ASSEMBLY_MACHINE_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ASSEMBLY_MACHINE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ASSEMBLY_MACHINE_H
 #pragma once
 
 #include "data/cereal/serialization_type.h"
@@ -37,15 +37,16 @@ namespace jactorio::data
 		void CraftAddProduct();
 
 
-		CEREAL_SERIALIZE(archive) {
-			archive(cereal::base_class<HealthEntityData>(this), deferralEntry, ingredientInv, productInv, recipe_);
-		}
-
 		/// Callback called when recipe is finished crafting
 		game::DeferralTimer::DeferralEntry deferralEntry;
 		
 		Item::Inventory ingredientInv;
 		Item::Inventory productInv;
+
+
+        CEREAL_SERIALIZE(archive) {
+            archive(cereal::base_class<HealthEntityData>(this), deferralEntry, ingredientInv, productInv, recipe_);
+        }
 
 	private:
 		/// Currently selected recipe for assembling
@@ -98,4 +99,4 @@ namespace jactorio::data
 	};
 }
 
-#endif // JACTORIO_DATA_PROTOTYPE_ENTITY_ASSEMBLY_MACHINE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ASSEMBLY_MACHINE_H

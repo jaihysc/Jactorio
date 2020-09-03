@@ -14,8 +14,13 @@ void data::UniqueDataManager::AssignId(UniqueDataBase& framework_base) noexcept 
 void data::UniqueDataManager::StoreRelocationEntry(UniqueDataBase& unique_data) {
     assert(unique_data.internalId > 0);
 
-    dataEntries_.resize(unique_data.internalId);
-    dataEntries_[unique_data.internalId - kDefaultId_] = &unique_data;
+    if (dataEntries_.size() < unique_data.internalId) {
+        dataEntries_.resize(unique_data.internalId);
+    }
+
+    auto index = unique_data.internalId - kDefaultId_;
+    assert(index < dataEntries_.size());
+    dataEntries_[index] = &unique_data;
 }
 
 data::UniqueDataBase& data::UniqueDataManager::RelocationTableGet(data::UniqueDataIdT id) const noexcept {

@@ -4,9 +4,6 @@
 
 #include <tuple>
 
-#include "data/prototype_manager.h"
-#include "data/prototype/resource_entity.h"
-#include "game/logic/item_logistics.h"
 #include "renderer/gui/gui_menus.h"
 
 using namespace jactorio;
@@ -159,11 +156,11 @@ void data::MiningDrill::OnBuild(game::WorldData& world_data,
 void data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
                                          game::LogicData& logic_data,
                                          const WorldCoord& emit_world_coords,
-                                         const WorldCoord& receive_world_coords, Orientation) const {
+                                         const WorldCoord& receive_world_coords, Orientation /*emit_orientation*/) const {
 	auto& self_layer = world_data.GetTile(receive_world_coords)->GetLayer(game::TileLayer::entity);
 
-	auto* drill_data = static_cast<MiningDrillData*>(self_layer.GetUniqueData());
-	assert(drill_data);
+	auto* drill_data = self_layer.GetUniqueData<MiningDrillData>();
+	assert(drill_data != nullptr);
 
 	// Ignore updates from non output tiles 
 	if (emit_world_coords != drill_data->outputTile)

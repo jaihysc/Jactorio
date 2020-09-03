@@ -4,8 +4,6 @@
 #define JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZATION_TYPE_H
 #pragma once
 
-#include <type_traits>
-
 #include "jactorio.h"
 
 #include "core/math.h"
@@ -42,7 +40,7 @@ namespace jactorio::data
             assert(active_prototype_manager != nullptr);
             auto* proto_ptr = &active_prototype_manager->RelocationTableGet<TProto>( // Converted to prototype*
                 core::SafeCast<PrototypeIdT>(this->value_));
-            this->SetProto(proto_ptr);
+            this->SetPtr(proto_ptr);
         }
 
         CEREAL_SAVE(archive) {
@@ -54,7 +52,7 @@ namespace jactorio::data
         }
     };
 
-    template <class T>
+    template <class T, std::enable_if_t<!std::is_same_v<T, std::nullptr_t>, int> = 0>
     SerialProtoPtr(T) -> SerialProtoPtr<std::remove_pointer_t<T>>;
 
 
@@ -77,17 +75,25 @@ namespace jactorio::data
             data::UniqueDataIdT id;
             data::CerealArchive<kArchiveSize_>(archive, id);
 
+            if (id == 0) // nullptr
+                return;
+
             assert(data::active_unique_data_manager != nullptr);
-            this->SetProto(static_cast<TUnique*>(&data::active_unique_data_manager->RelocationTableGet(id)));
+            this->SetPtr(static_cast<TUnique*>(&data::active_unique_data_manager->RelocationTableGet(id)));
         }
 
         CEREAL_SAVE(archive) {
-            data::UniqueDataIdT id = this->Get()->internalId;
+            const auto* unique_data = this->Get();
+
+            data::UniqueDataIdT id = 0;
+            if (unique_data != nullptr)
+                id = unique_data->internalId;
+
             data::CerealArchive<kArchiveSize_>(archive, id);
         }
     };
 
-    template <class T>
+    template <class T, std::enable_if_t<!std::is_same_v<T, std::nullptr_t>, int> = 0>
     SerialUniqueDataPtr(T) -> SerialUniqueDataPtr<std::remove_pointer_t<T>>;
 } // namespace jactorio::data
 

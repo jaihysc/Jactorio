@@ -106,7 +106,7 @@ namespace jactorio::game
 
         public:
             PROTOTYPE_CATEGORY(none);
-            void PostLoadValidate(const data::PrototypeManager& manager) const override {}
+            void PostLoadValidate(const data::PrototypeManager& /*manager*/) const override {}
 
             data::Sprite* OnRGetSprite(data::Sprite::SetT /*set*/) const override { return nullptr; }
 

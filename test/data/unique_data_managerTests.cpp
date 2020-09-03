@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 
 #include "data/prototype/assembly_machine.h"
-#include "data/unique_data_manager.h"
 
 namespace jactorio::data
 {

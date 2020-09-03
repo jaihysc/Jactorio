@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_PROTOTYPE_INTERFACE_SERIALIZABLE_H
-#define JACTORIO_DATA_PROTOTYPE_INTERFACE_SERIALIZABLE_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_SERIALIZABLE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_SERIALIZABLE_H
 #pragma once
 
 #include "core/data_type.h"
@@ -20,9 +20,15 @@ namespace jactorio::data
 		ISerializable() = default;
 		virtual ~ISerializable() = default;
 
+        ISerializable(const ISerializable& other) = default;
+        ISerializable(ISerializable&& other) = default;
+
+        ISerializable& operator=(const ISerializable& other) = default;
+        ISerializable& operator=(ISerializable&& other) = default;
+
 		virtual void OnDeserialize(game::WorldData& world_data,
 								   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const = 0;
 	};
 }
 
-#endif // JACTORIO_DATA_PROTOTYPE_INTERFACE_SERIALIZABLE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_SERIALIZABLE_H

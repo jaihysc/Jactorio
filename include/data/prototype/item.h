@@ -27,6 +27,10 @@ namespace jactorio::data
 		using StackCount = uint16_t;
 		using Inventory = std::vector<ItemStack>;
 
+    private:
+        static constexpr StackCount kDefaultStackSize_ = 50;
+
+    public:
 		// Hard coded item inames
 		static constexpr char kInventorySelectedCursor[] = "__core__/inventory-selected-cursor";
 		static constexpr char kResetIname[]              = "__core__/reset";
@@ -35,19 +39,18 @@ namespace jactorio::data
 		PROTOTYPE_CATEGORY(item);
 
 		Item()
-			: stackSize(kDefaultStackSize) {
+			: stackSize(kDefaultStackSize_) {
 		}
 
 		explicit Item(Sprite* sprite)
-			: ItemBase(sprite), stackSize(kDefaultStackSize) {
+			: ItemBase(sprite), stackSize(kDefaultStackSize_) {
 		}
 
 		/// If this item belongs to an entity - otherwise nullptr
 		Entity* entityPrototype              = nullptr;
-		DataCategory entityPrototypeCategory = DataCategory::none;
 
 
-		///
+        ///
 		/// \brief Number of items which can be together
 		PYTHON_PROP_REF(StackCount, stackSize);
 
@@ -55,9 +58,6 @@ namespace jactorio::data
 		void ValidatedPostLoad() override {
 			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
 		}
-
-	private:
-		static constexpr StackCount kDefaultStackSize = 50;
 	};
 
 	struct ItemStack

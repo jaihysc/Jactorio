@@ -5,26 +5,22 @@
 #include "game/world/update_dispatcher.h"
 
 #include "jactorioTests.h"
-#include "data/prototype/abstract_proto/entity.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
 	class UpdateDispatcherTest : public testing::Test
 	{
 	protected:
-		class MockUpdateListener final : public data::Entity
+		class MockUpdateListener final : public TestMockEntity
 		{
 		public:
-			PROTOTYPE_CATEGORY(test);
-
 			mutable WorldCoord emit;
 			mutable WorldCoord receive;
 			mutable int calls = 0;
 
 			mutable data::UpdateType type = data::UpdateType::remove;
 
-			void OnTileUpdate(WorldData&,
+			void OnTileUpdate(WorldData& /*world_data*/,
 			                  const WorldCoord& emit_coords,
 			                  const WorldCoord& receive_coords,
 			                  const data::UpdateType type) const override {
@@ -33,15 +29,6 @@ namespace jactorio::game
 
 				calls++;
 				this->type = type;
-			}
-
-
-			void OnBuild(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
-			             ChunkTileLayer& tile_layer, data::Orientation orientation) const override {
-			}
-
-			void OnRemove(WorldData& world_data, LogicData& logic_data, const WorldCoord& world_coords,
-			              ChunkTileLayer& tile_layer) const override {
 			}
 		};
 
