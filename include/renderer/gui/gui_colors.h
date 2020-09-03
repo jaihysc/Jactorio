@@ -10,42 +10,42 @@ namespace jactorio::renderer
 {
 	/// Defines macros for the color scheme used in Jactorio
 
-	constexpr ImU32 kGuiColNone             = IM_COL32(0, 0, 0, 0);
+	constexpr ImU32 kGuiColNone = IM_COL32(0, 0, 0, 0);
 
 	// Text
-	constexpr ImU32 kGuiColText             = IM_COL32(255, 230, 192, 255);
-	constexpr ImU32 kGuiColTextWarning      = IM_COL32(212, 145, 52, 255);
-	constexpr ImU32 kGuiColTextError        = IM_COL32(194, 101, 99, 255);
+	constexpr ImU32 kGuiColText        = IM_COL32(255, 230, 192, 255);
+	constexpr ImU32 kGuiColTextWarning = IM_COL32(212, 145, 52, 255);
+	constexpr ImU32 kGuiColTextError   = IM_COL32(194, 101, 99, 255);
 
 	// Tooltip
 	constexpr ImU32 kGuiColTooltipTitleBg   = IM_COL32(224, 202, 169, 255);
 	constexpr ImU32 kGuiColTooltipTitleText = IM_COL32(49, 48, 49, 255);
 
 	// Window colors
-	constexpr ImU32 kGuiColWindowBg         = IM_COL32(49, 48, 49, 255);
-	constexpr ImU32 kGuiColTitleBg          = IM_COL32(49, 48, 49, 255);
-	constexpr ImU32 kGuiColTitleBgActive    = IM_COL32(49, 48, 49, 255);
+	constexpr ImU32 kGuiColWindowBg      = IM_COL32(49, 48, 49, 255);
+	constexpr ImU32 kGuiColTitleBg       = IM_COL32(49, 48, 49, 255);
+	constexpr ImU32 kGuiColTitleBgActive = IM_COL32(49, 48, 49, 255);
 
 	// Message / display boxes
-	constexpr ImU32 kGuiColFrameBg          = IM_COL32(128, 129, 129, 255);
-	constexpr ImU32 kGuiColFrameBgHover     = IM_COL32(144, 144, 145, 255);
-	constexpr ImU32 kGuiColFrameBgActive    = IM_COL32(144, 144, 145, 255);
+	constexpr ImU32 kGuiColFrameBg       = IM_COL32(128, 129, 129, 255);
+	constexpr ImU32 kGuiColFrameBgHover  = IM_COL32(144, 144, 145, 255);
+	constexpr ImU32 kGuiColFrameBgActive = IM_COL32(144, 144, 145, 255);
 
 	// Buttons - Inventory boxes
-	constexpr ImU32 kGuiColButton           = IM_COL32(128, 129, 129, 255);
-	constexpr ImU32 kGuiColButtonHover      = IM_COL32(227, 152, 39, 255);
-	constexpr ImU32 kGuiColButtonActive     = IM_COL32(227, 152, 39, 255);
-	constexpr ImU32 kGuiColCheckmark        = IM_COL32(0, 0, 0, 255);
+	constexpr ImU32 kGuiColButton       = IM_COL32(128, 129, 129, 255);
+	constexpr ImU32 kGuiColButtonHover  = IM_COL32(227, 152, 39, 255);
+	constexpr ImU32 kGuiColButtonActive = IM_COL32(227, 152, 39, 255);
+	constexpr ImU32 kGuiColCheckmark    = IM_COL32(0, 0, 0, 255);
 
 	// Large horizontal row button
-	constexpr ImU32 kGuiColHeader           = IM_COL32(128, 129, 129, 255);
-	constexpr ImU32 kGuiColHeaderHover      = IM_COL32(227, 152, 39, 255);
-	constexpr ImU32 kGuiColHeaderActive     = IM_COL32(227, 152, 39, 255);
+	constexpr ImU32 kGuiColHeader       = IM_COL32(128, 129, 129, 255);
+	constexpr ImU32 kGuiColHeaderHover  = IM_COL32(227, 152, 39, 255);
+	constexpr ImU32 kGuiColHeaderActive = IM_COL32(227, 152, 39, 255);
 
 	// Menu tabs
-	constexpr ImU32 kGuiColTab              = IM_COL32(128, 129, 129, 255);
-	constexpr ImU32 kGuiColTabHover         = IM_COL32(227, 152, 39, 255);
-	constexpr ImU32 kGuiColTabActive        = IM_COL32(49, 48, 49, 255);
+	constexpr ImU32 kGuiColTab       = IM_COL32(128, 129, 129, 255);
+	constexpr ImU32 kGuiColTabHover  = IM_COL32(227, 152, 39, 255);
+	constexpr ImU32 kGuiColTabActive = IM_COL32(49, 48, 49, 255);
 
 	// Resize tab
 	constexpr ImU32 kGuiColResizeGrip       = IM_COL32(98, 98, 98, 255);
@@ -53,9 +53,9 @@ namespace jactorio::renderer
 	constexpr ImU32 kGuiColResizeGripActive = IM_COL32(128, 129, 129, 255);
 
 	// Separators
-	constexpr ImU32 kGuiColSeparator        = IM_COL32(128, 129, 129, 255);
-	constexpr ImU32 kGuiColSeparatorHover   = IM_COL32(128, 129, 129, 255);
-	constexpr ImU32 kGuiColSeparatorActive  = IM_COL32(128, 129, 129, 255);
+	constexpr ImU32 kGuiColSeparator       = IM_COL32(128, 129, 129, 255);
+	constexpr ImU32 kGuiColSeparatorHover  = IM_COL32(128, 129, 129, 255);
+	constexpr ImU32 kGuiColSeparatorActive = IM_COL32(128, 129, 129, 255);
 
 	// Popup
 	constexpr ImU32 kGuiColPopupBg = IM_COL32(49, 48, 49, 200);

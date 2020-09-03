@@ -33,6 +33,7 @@ validate_dependency(SDL-mirror)
 validate_dependency(decimal_for_cpp)
 validate_dependency(StackWalker)
 validate_dependency(backward-cpp)
+validate_dependency(cereal)
 
 
 # Ones which need to be built
@@ -110,6 +111,7 @@ set(JACTORIO_LIB_HEADER_FILES
 	${PROJECT_SOURCE_DIR}/lib/decimal_for_cpp/include
 	${PROJECT_SOURCE_DIR}/lib/StackWalker/Main
 	${PROJECT_SOURCE_DIR}/lib/backward-cpp
+	${PROJECT_SOURCE_DIR}/lib/cereal/include
 )
 # ======================================== END HEADER files .h
 

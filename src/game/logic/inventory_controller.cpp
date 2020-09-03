@@ -27,7 +27,7 @@ void InventoryVerify(const data::Item::Inventory& inv) {
 	for (const auto& stack : inv) {
 		if (stack.item == nullptr || stack.count == 0) {
 			// Inventory selection cursor exempt from having 0 for count
-			if (stack.item && stack.item->name == data::Item::kInventorySelectedCursor) {
+			if (stack.item != nullptr && stack.item->name == data::Item::kInventorySelectedCursor) {
 				continue;
 			}
 
@@ -41,8 +41,8 @@ void InventoryVerify(const data::Item::Inventory& inv) {
 
 ///
 /// \brief Attempts to drop one item from origin item stack to target itme stack
-bool DropOneOriginItem(data::Item::Stack& origin_item_stack,
-                       data::Item::Stack& target_item_stack) {
+bool DropOneOriginItem(data::ItemStack& origin_item_stack,
+                       data::ItemStack& target_item_stack) {
 	target_item_stack.item = origin_item_stack.item;
 	target_item_stack.count++;
 
@@ -56,13 +56,13 @@ bool DropOneOriginItem(data::Item::Stack& origin_item_stack,
 	return false;
 }
 
-bool game::StackMatchesFilter(const data::Item::Stack& origin_stack, const data::Item::Stack& target_stack) {
+bool game::StackMatchesFilter(const data::ItemStack& origin_stack, const data::ItemStack& target_stack) {
 	// Origin stack must match target stack if filter is set and origin stack has an item
 	return origin_stack.item == nullptr || target_stack.filter == nullptr || origin_stack.item == target_stack.filter;
 }
 
-bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
-                                data::Item::Stack& target_stack,
+bool game::MoveItemstackToIndex(data::ItemStack& origin_stack,
+                                data::ItemStack& target_stack,
                                 const unsigned short mouse_button) {
 	assert(mouse_button == 0 || mouse_button == 1); // Only left and right click are currently supported
 
@@ -198,7 +198,7 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 		(origin_stack.item == nullptr && StackMatchesFilter(target_stack, origin_stack)) ||
 		origin_stack.filter == target_stack.filter) {
 
-		const auto* item = origin_stack.item;
+		const auto item = origin_stack.item;
 		const auto count = origin_stack.count;
 
 		origin_stack.item  = target_stack.item;
@@ -221,7 +221,7 @@ bool game::MoveItemstackToIndex(data::Item::Stack& origin_stack,
 // Can be used by non-player inventories 
 
 std::pair<bool, size_t> game::CanAddStack(const data::Item::Inventory& inv,
-                                          const data::Item::Stack& item_stack) {
+                                          const data::ItemStack& item_stack) {
 	J_INVENTORY_VERIFY(inv, guard);
 
 	// Amount left which needs to be added
@@ -256,7 +256,7 @@ std::pair<bool, size_t> game::CanAddStack(const data::Item::Inventory& inv,
 }
 
 data::Item::StackCount game::AddStack(data::Item::Inventory& inv,
-                                      const data::Item::Stack& item_stack) {
+                                      const data::ItemStack& item_stack) {
 	J_INVENTORY_VERIFY(inv, guard);
 
 	// Amount left which needs to be added
@@ -296,7 +296,7 @@ data::Item::StackCount game::AddStack(data::Item::Inventory& inv,
 }
 
 bool game::AddStackSub(data::Item::Inventory& inv,
-                       data::Item::Stack& item_stack) {
+                       data::ItemStack& item_stack) {
 	J_INVENTORY_VERIFY(inv, guard);
 
 	const auto remainder = AddStack(inv, item_stack);
@@ -328,7 +328,7 @@ const data::Item* game::GetFirstItem(const data::Item::Inventory& inv) {
 	for (const auto& i : inv) {
 		if (i.item != nullptr) {
 			assert(i.count != 0);
-			return i.item;
+			return i.item.Get();
 		}
 	}
 	return nullptr;

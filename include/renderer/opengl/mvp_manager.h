@@ -42,7 +42,7 @@ namespace jactorio::renderer
 		/// \brief Modifying the returned pointer will change the location of the camera
 		glm::vec3* GetViewTransform() noexcept {
 			return &cameraTransform_;
-		};
+		}
 
 		///
 		/// \brief Sets the current view transform

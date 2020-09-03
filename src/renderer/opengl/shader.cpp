@@ -110,7 +110,7 @@ int jactorio::renderer::Shader::GetUniformLocation(
 }
 
 
-void jactorio::renderer::Shader::SetUniform1I(const int& location, int v) {
+void jactorio::renderer::Shader::SetUniform1I(const int& location, const int v) {
 	DEBUG_OPENGL_CALL(glUniform1i(location, v));
 }
 

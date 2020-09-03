@@ -5,7 +5,6 @@
 #pragma once
 
 #include "data/prototype/sprite.h"
-#include "data/prototype/type.h"
 
 namespace jactorio::game
 {
@@ -30,9 +29,9 @@ namespace jactorio::data
 
 	public:
 		// The single sprite from entity serves as north
-		PYTHON_PROP_I(IRotatable, Sprite*, spriteE, nullptr);
-		PYTHON_PROP_I(IRotatable, Sprite*, spriteS, nullptr);
-		PYTHON_PROP_I(IRotatable, Sprite*, spriteW, nullptr);
+		PYTHON_PROP_I(Sprite*, spriteE, nullptr);
+		PYTHON_PROP_I(Sprite*, spriteS, nullptr);
+		PYTHON_PROP_I(Sprite*, spriteW, nullptr);
 	};
 }
 

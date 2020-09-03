@@ -11,7 +11,6 @@
 // Cuts away paths, keeps only the filename
 #ifdef _MSC_VER
 #define FILENAME (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
-#undef __GNUC__
 #endif
 
 #ifdef __GNUC__
@@ -23,12 +22,12 @@
 // Logging macros
 //
 // Prefer calling LOG_MESSAGE to log a message over log_message()
-#define LOG_MESSAGE(severity, format)\
-	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity>(format, FILENAME, __LINE__)
+#define LOG_MESSAGE(severity__, format__)\
+	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity__>(format__, FILENAME, __LINE__)
 
 // Allows the message to contain a format, similar to printf
-#define LOG_MESSAGE_F(severity, format, ...)\
-	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity>(format, FILENAME, __LINE__, __VA_ARGS__)
+#define LOG_MESSAGE_F(severity__, format__, ...)\
+	jactorio::core::MakeLogMessage<jactorio::core::LogSeverity::severity__>(format__, FILENAME, __LINE__, __VA_ARGS__)
 
 
 namespace jactorio::core

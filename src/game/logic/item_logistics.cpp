@@ -2,28 +2,27 @@
 
 #include "game/logic/item_logistics.h"
 
-#include "data/prototype/entity/assembly_machine.h"
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/entity.h"
-#include "data/prototype/entity/transport_line.h"
-#include "data/prototype/item/item.h"
+#include "data/prototype/assembly_machine.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/item.h"
+#include "data/prototype/abstract_proto/transport_line.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/transport_line_controller.h"
 
 using namespace jactorio;
 
-bool game::ItemDropOff::Initialize(const WorldData& world_data,
-                                   data::UniqueDataBase& target_unique_data,
+bool game::ItemDropOff::Initialize(WorldData& world_data,
                                    const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-	const data::Entity* entity =
-		world_data.GetTile(world_x, world_y)
-		          ->GetEntityPrototype();
+	auto* tile = world_data.GetTile(world_x, world_y);
+	assert(tile != nullptr);
+	
+	auto& layer = tile->GetLayer(TileLayer::entity);
 
-	if (!entity)
+	if (layer.prototypeData == nullptr)
 		return false;
 
-	switch (entity->Category()) {
+	switch (layer.prototypeData->Category()) {
 	case data::DataCategory::container_entity:
 		dropFunc_ = &ItemDropOff::InsertContainerEntity;
 		canDropFunc_ = &ItemDropOff::CanInsertContainerEntity;
@@ -43,17 +42,12 @@ bool game::ItemDropOff::Initialize(const WorldData& world_data,
 		return false;
 	}
 
-	targetProtoData_  = entity;
-	targetUniqueData_ = &target_unique_data;
+	assert(layer.GetUniqueData() != nullptr);
+
+	targetProtoData_  = layer.prototypeData.Get();
+	targetUniqueData_ = layer.GetUniqueData();
 
 	return true;
-}
-
-bool game::ItemDropOff::Initialize(const WorldData& world_data,
-                                   data::UniqueDataBase& target_unique_data, const WorldCoord& world_coord) {
-	return Initialize(world_data,
-	                  target_unique_data,
-	                  world_coord.x, world_coord.y);
 }
 
 bool game::ItemDropOff::CanInsertContainerEntity(const DropOffParams&) const {
@@ -69,13 +63,13 @@ bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& args) const {
 	return true;
 }
 
-void GetAdjustedLineOffset(const bool use_line_left, 
-						   game::TransportLineOffset& pickup_offset,
-						   const data::TransportLineData& line_data) {
+void GetAdjustedLineOffset(const bool use_line_left,
+                           data::LineDistT& pickup_offset,
+                           const data::TransportLineData& line_data) {
 	game::TransportSegment::ApplyTerminationDeduction(use_line_left,
-	                                            line_data.lineSegment->terminationType,
-	                                            game::TransportSegment::TerminationType::straight,
-	                                            pickup_offset);
+	                                                  line_data.lineSegment->terminationType,
+	                                                  game::TransportSegment::TerminationType::straight,
+	                                                  pickup_offset);
 }
 
 bool game::ItemDropOff::CanInsertTransportBelt(const DropOffParams&) const {
@@ -165,7 +159,7 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
 	}
 
 	constexpr double insertion_offset_base = 0.5;
-	auto offset = TransportLineOffset(line_data.lineSegmentIndex + insertion_offset_base);
+	auto offset                            = data::LineDistT(line_data.lineSegmentIndex + insertion_offset_base);
 
 	GetAdjustedLineOffset(use_line_left, offset, line_data);
 	return line_data.lineSegment->TryInsertItem(use_line_left,
@@ -199,7 +193,7 @@ bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& args) cons
 }
 
 bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& args) const {
-	assert(args.itemStack.item);
+	assert(args.itemStack.item != nullptr);
 	assert(args.itemStack.count > 0);
 
 	auto& machine_data = static_cast<data::AssemblyMachineData&>(args.uniqueData);
@@ -223,17 +217,17 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& args) const {
 
 // ======================================================================
 
-bool game::InserterPickup::Initialize(const WorldData& world_data,
-                                      data::UniqueDataBase& target_unique_data,
+bool game::InserterPickup::Initialize(WorldData& world_data,
                                       const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-	const data::Entity* entity =
-		world_data.GetTile(world_x, world_y)
-		          ->GetEntityPrototype();
+	auto* tile = world_data.GetTile(world_x, world_y);
+	assert(tile != nullptr);
+	
+	auto& layer = tile->GetLayer(TileLayer::entity);
 
-	if (!entity)
+	if (layer.prototypeData == nullptr)
 		return false;
 
-	switch (entity->Category()) {
+	switch (layer.prototypeData->Category()) {
 	case data::DataCategory::container_entity:
 		pickupFunc_ = &InserterPickup::PickupContainerEntity;
 		getPickupFunc_ = &InserterPickup::GetPickupContainerEntity;
@@ -253,18 +247,13 @@ bool game::InserterPickup::Initialize(const WorldData& world_data,
 		return false;
 	}
 
-	targetProtoData_  = entity;
-	targetUniqueData_ = &target_unique_data;
+	assert(layer.GetUniqueData() != nullptr);
+
+	targetProtoData_  = layer.prototypeData.Get();
+	targetUniqueData_ = layer.GetUniqueData();
 
 	return true;
 }
-
-bool game::InserterPickup::Initialize(const WorldData& world_data,
-                                      data::UniqueDataBase& target_unique_data,
-                                      const WorldCoord& world_coord) {
-	return Initialize(world_data, target_unique_data, world_coord.x, world_coord.y);
-}
-
 
 game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupContainerEntity(const PickupParams& args) const {
 	auto& container = static_cast<data::ContainerEntityData&>(args.uniqueData);
@@ -288,8 +277,8 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 	auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
 
 	const auto props         = GetBeltPickupProps(args);
-	const bool use_line_left = props.first;
-	const auto pickup_offset = props.second;
+	const bool use_line_left = props.first; 
+	const auto pickup_offset = props.second; // Cannot capture structured binding
 
 	const data::Item* item;
 
@@ -297,7 +286,9 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 		auto adjusted_pickup_offset = pickup_offset;
 
 		GetAdjustedLineOffset(left_lane, adjusted_pickup_offset, line_data);
-		item = line_data.lineSegment->GetItem(left_lane, adjusted_pickup_offset.getAsDouble()).second.second;
+
+		auto [dq_index, line_item] = line_data.lineSegment->GetItem(left_lane, adjusted_pickup_offset.getAsDouble()); 
+		item = line_item.item.Get();
 	};
 
 
@@ -328,7 +319,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
 
 
 	try_pickup_item(use_line_left);
-	if (item == nullptr) {  
+	if (item == nullptr) {
 		// Try picking up from other lane if preferred lane fails
 		// use_line_left itself must be inverted so the handling after an item was picked up utilizes the correct lane
 		use_line_left = !use_line_left;
@@ -354,7 +345,7 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupAssemblyMac
 		return nullptr;
 
 	auto& product_stack = machine_data.productInv[0];
-	return product_stack.filter;
+	return product_stack.filter.Get();
 }
 
 game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(const PickupParams& args) const {
@@ -385,11 +376,11 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(c
 }
 
 
-bool game::InserterPickup::IsAtMaxDegree(const data::RotationDegree& degree) {
-	return degree == data::ToRotationDegree(kMaxInserterDegree);
+bool game::InserterPickup::IsAtMaxDegree(const data::RotationDegreeT& degree) {
+	return degree == data::RotationDegreeT(kMaxInserterDegree);
 }
 
-std::pair<bool, game::TransportLineOffset> game::InserterPickup::GetBeltPickupProps(const PickupParams& args) {
+std::pair<bool, data::LineDistT> game::InserterPickup::GetBeltPickupProps(const PickupParams& args) {
 	auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
 
 	bool use_line_left = false;
@@ -447,7 +438,7 @@ std::pair<bool, game::TransportLineOffset> game::InserterPickup::GetBeltPickupPr
 		break;
 	}
 
-	auto pickup_offset = TransportLineOffset(
+	auto pickup_offset = data::LineDistT(
 		line_data.lineSegmentIndex +
 		GetInserterArmOffset(core::SafeCast<core::TIntDegree>(args.degree.getAsInteger()), args.inserterTileReach)
 	);

@@ -24,7 +24,6 @@ namespace jactorio::renderer
 
 	///
 	/// \param title Title of the tooltip
-	/// \param description
 	/// \param draw_func Code to run while drawing the tooltip
 	void DrawCursorTooltip(game::PlayerData& player_data, const data::PrototypeManager&, const char* title,
 	                       const char* description,
@@ -55,7 +54,6 @@ namespace jactorio::renderer
 
 	///
 	/// \brief Positions item slots based on provided specifications
-	/// \param scale 
 	/// \param sprite_iid Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
 	/// \param item_count Number to display on the item, 0 to hide
 	/// \param button_hovered Used to ensure hover status is only applied to one item slot out of a set

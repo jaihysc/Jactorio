@@ -8,9 +8,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "jactorio.h"
-#include "data/prototype/entity/entity.h"
+#include "data/prototype/tile.h"
+#include "data/prototype/abstract_proto/entity.h"
 #include "data/prototype/interface/renderable.h"
-#include "data/prototype/tile/tile.h"
 #include "game/world/world_data.h"
 #include "renderer/opengl/error.h"
 #include "renderer/opengl/mvp_manager.h"
@@ -157,6 +157,7 @@ void renderer::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 		}
 	};
 
+	std::mutex world_gen_mutex;
 
 	for (int y = 0; y < chunk_amount.y; ++y) {
 
@@ -177,7 +178,7 @@ void renderer::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 
 		chunkDrawThreads_[started_threads] =
 			std::async(std::launch::async, &Renderer::PrepareChunkRow, this,
-			           std::ref(r_layer_tile), std::ref(world_data),
+			           std::ref(r_layer_tile), std::ref(world_data), std::ref(world_gen_mutex),
 			           row_start, chunk_amount.x,
 			           render_tile_offset,
 			           game_tick
@@ -198,8 +199,8 @@ void renderer::Renderer::CalculateViewMatrix(const float player_x, const float p
 
 	// Decimal is used to shift the camera
 	// Invert the movement to give the illusion of moving in the correct direction
-	const float camera_offset_x = (player_x - position_x) * core::SafeCast<float>(tileWidth) * -1;
-	const float camera_offset_y = (player_y - position_y) * core::SafeCast<float>(tileWidth) * -1;
+	const float camera_offset_x = (player_x - core::SafeCast<float>(position_x)) * core::SafeCast<float>(tileWidth) * -1;
+	const float camera_offset_y = (player_y - core::SafeCast<float>(position_y)) * core::SafeCast<float>(tileWidth) * -1;
 
 	// Remaining pixel distance not covered by tiles and chunks are covered by the view matrix to center
 	const auto tile_amount = GetTileDrawAmount();
@@ -277,7 +278,7 @@ core::Position2<int> renderer::Renderer::GetChunkDrawAmount(const int position_x
 	return {chunk_amount_x, chunk_amount_y};
 }
 
-void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data,
+void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data, std::mutex& world_gen_mutex,
                                          const core::Position2<int> row_start, const int chunk_span,
                                          const core::Position2<int> render_tile_offset,
                                          const GameTickT game_tick) const noexcept {
@@ -289,6 +290,7 @@ void renderer::Renderer::PrepareChunkRow(RendererLayer& r_layer, const game::Wor
 
 		// Queue chunk for generation if it does not exist
 		if (!chunk) {
+			std::lock_guard<std::mutex> gen_guard{world_gen_mutex};
 			world_data.QueueChunkGeneration(chunk_x, row_start.y);
 			continue;
 		}
@@ -306,7 +308,7 @@ void renderer::Renderer::PrepareChunk(RendererLayer& r_layer, const game::Chunk&
                                       const core::Position2<int> render_tile_offset,
                                       const GameTickT game_tick) const noexcept {
 	// Load chunk into buffer
-	game::ChunkTile* tiles = chunk.Tiles();
+	const auto& tiles = chunk.Tiles();
 
 
 	// Iterate through and load tiles of a chunk into layer for rendering
@@ -325,18 +327,18 @@ void renderer::Renderer::PrepareChunk(RendererLayer& r_layer, const game::Chunk&
 	PrepareOverlayLayers(r_layer, chunk, render_tile_offset);
 }
 
-void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, game::ChunkTile& tile,
+void renderer::Renderer::PrepareTileLayers(RendererLayer& r_layer, const game::ChunkTile& tile,
                                            const core::Position2<float>& pixel_pos,
                                            const GameTickT game_tick) const noexcept {
 	for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
-		auto& tile_layer = tile.GetLayer(layer_index);
+		const auto& tile_layer = tile.GetLayer(layer_index);
 
 
-		const auto* proto = tile_layer.GetPrototypeData<data::IPrototypeRenderable>();
+		const auto* proto = tile_layer.GetPrototypeData();
 		if (!proto)  // Layer not initialized
 			continue;
 
-		const auto* unique_data = tile_layer.GetMultiTileTopLeft().GetUniqueData<data::PrototypeRenderableData>();
+		const auto* unique_data = tile_layer.GetUniqueData();
 
 		// Unique data can be nullptr for certain layers
 
@@ -438,14 +440,14 @@ void renderer::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv,
 
 void renderer::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv,
                                                     const game::ChunkTileLayer& tile_layer) noexcept {
-	game::MultiTileData& mt_data = tile_layer.GetMultiTileData();
+	const auto& mt_data = tile_layer.GetMultiTileData();
 
 	// Calculate the correct UV coordinates for multi-tile entities
 	// Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
 
 	// Total length of the sprite, to be split among the different tiles
-	const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / core::SafeCast<float>(mt_data.multiTileSpan);
-	const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / core::SafeCast<float>(mt_data.multiTileHeight);
+	const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / core::SafeCast<float>(mt_data.span);
+	const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / core::SafeCast<float>(mt_data.height);
 
 	const double x_multiplier = tile_layer.GetOffsetX();
 	const double y_multiplier = tile_layer.GetOffsetY();

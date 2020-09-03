@@ -54,9 +54,9 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 
 	for (const auto& line_item : line_segment_side) {
 		// Move the target offset (up or down depending on multiplier)
-		*target_offset += line_item.first.getAsDouble() * multiplier;
+		*target_offset += line_item.dist.getAsDouble() * multiplier;
 
-		const auto& uv_pos = renderer::Renderer::GetSpriteUvCoords(uv_coords, line_item.second->sprite->internalId);
+		const auto& uv_pos = renderer::Renderer::GetSpriteUvCoords(uv_coords, line_item.item->sprite->internalId);
 
 		constexpr float pixel_z = kPixelZ;
 		// In pixels
@@ -64,14 +64,14 @@ void PrepareTransportSegmentData(renderer::RendererLayer& layer, const SpriteUvC
 			{
 				{
 					{
-						core::LossyCast<float>(pixel_offset.x + tile_x * core::SafeCast<float>(renderer::Renderer::tileWidth)),
-						core::LossyCast<float>(pixel_offset.y + tile_y * core::SafeCast<float>(renderer::Renderer::tileWidth)),
+						pixel_offset.x + core::LossyCast<float>(tile_x) * core::SafeCast<float>(renderer::Renderer::tileWidth),
+						pixel_offset.y + core::LossyCast<float>(tile_y) * core::SafeCast<float>(renderer::Renderer::tileWidth),
 					},
 					{
-						core::LossyCast<float>(pixel_offset.x +
-							core::LossyCast<float>(tile_x + kItemWidth) * core::SafeCast<float>(renderer::Renderer::tileWidth)),
-						core::LossyCast<float>(pixel_offset.y +
-							core::LossyCast<float>(tile_y + kItemWidth) * core::SafeCast<float>(renderer::Renderer::tileWidth)),
+						pixel_offset.x + core::LossyCast<float>(tile_x + kItemWidth)
+							* core::SafeCast<float>(renderer::Renderer::tileWidth),
+						pixel_offset.y + core::LossyCast<float>(tile_y + kItemWidth)
+							* core::SafeCast<float>(renderer::Renderer::tileWidth),
 					},
 				},
 				{uv_pos.topLeft, uv_pos.bottomRight}
@@ -326,7 +326,7 @@ void renderer::DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_c
 
 	// Held item
 	if (inserter_data.status == data::InserterData::Status::dropoff) {
-		constexpr auto held_item_pixel_offset = 
+		constexpr auto held_item_pixel_offset =
 			core::LossyCast<float>((Renderer::tileWidth - Renderer::tileWidth * game::kItemWidth) / 2);
 
 		const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_data.heldItem.item->sprite->internalId);

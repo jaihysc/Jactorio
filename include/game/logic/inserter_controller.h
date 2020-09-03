@@ -34,7 +34,7 @@ namespace jactorio::game
 	///
 	/// \param degree Current degree of inserter arm 0 <= degree <= 180
 	/// \param target_distance Tiles to the location which the inserter picks up / drops items
-	double GetInserterArmOffset(core::TIntDegree degree, uint8_t target_distance);
+	double GetInserterArmOffset(core::TIntDegree degree, unsigned target_distance);
 
 	///
 	/// \brief Gets the tile length of the inserter arm 
@@ -46,7 +46,7 @@ namespace jactorio::game
 	///
 	/// \param degree Current degree of inserter arm 0 <= degree <= 180
 	/// \param target_distance Tiles to the location which the inserter picks up / drops items
-	double GetInserterArmLength(core::TIntDegree degree, uint8_t target_distance);
+	double GetInserterArmLength(core::TIntDegree degree, unsigned target_distance);
 
 
 	///

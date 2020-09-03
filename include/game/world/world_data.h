@@ -11,6 +11,7 @@
 #include "jactorio.h"
 #include "core/data_type.h"
 #include "game/world/chunk.h"
+#include "game/world/update_dispatcher.h"
 
 namespace jactorio::data
 {
@@ -26,65 +27,63 @@ namespace jactorio::game
 	/// \brief Stores all data for a world
 	class WorldData
 	{
-	public:
-		WorldData() = default;
-
-		~WorldData() {
-			ClearChunkData();
-		}
-
-		WorldData(const WorldData& other) = delete;
-		WorldData(WorldData&& other)      = delete;
-
-		// ======================================================================
-		// World chunk
-	private:
-		// The world is make up of chunks
-		// Each chunk contains 32 x 32 tiles
-		// 
-		// Chunks increment heading right and down
-		using WorldChunksKey = uint64_t;
-
-		/// world_chunks_key correlate to a chunk
-		std::unordered_map<std::tuple<ChunkCoordAxis, ChunkCoordAxis>,
-		                   Chunk,
-		                   core::hash<std::tuple<ChunkCoordAxis, ChunkCoordAxis>>> worldChunks_;
+		using LogicChunkContainerT = std::vector<Chunk*>;
+		using SerialLogicChunkContainerT = std::vector<ChunkCoord>;
 
 	public:
-		static constexpr uint8_t kChunkWidth = 32;
+		static constexpr auto kChunkWidth = Chunk::kChunkWidth;
 
-		mutable std::mutex worldDataMutex{};  // Held by the thread which is currently operating on a chunk
-
+		static ChunkCoordAxis WorldCToChunkC(WorldCoordAxis world_coord);
+		static ChunkCoord WorldCToChunkC(const WorldCoord& world_coord);
 		///
-		/// \brief Converts world coordinate to chunk coordinate
-		static ChunkCoordAxis ToChunkCoord(WorldCoordAxis world_coord);
+		/// \brief Chunk coord -> World coord at first tile of chunk
+		static WorldCoordAxis ChunkCToWorldC(ChunkCoordAxis chunk_coord);
+		static WorldCoord ChunkCToWorldC(const ChunkCoord& chunk_coord);
 
-		///
-		/// \brief Converts world coordinate to overlay element coordinates
-		static OverlayOffsetAxis ToOverlayCoord(WorldCoordAxis world_coord);
+		static OverlayOffsetAxis WorldCToOverlayC(WorldCoordAxis world_coord);
 
 
 		// World access
 
-		///
-		/// \brief Copy adds a chunk into the game world
-		/// Will overwrite existing chunks if they occupy the same position
-		/// \param chunk Chunk to be added to the world
-		/// \return Pointer to added chunk
-		Chunk* AddChunk(const Chunk& chunk);
+		WorldData() = default;
+		~WorldData() = default;
+
+		WorldData(const WorldData& other);
+		WorldData(WorldData&& other) noexcept = default;
+
+		WorldData& operator=(WorldData other) {
+			swap(*this, other);
+			return *this;
+		}
+
+		friend void swap(WorldData& lhs, WorldData& rhs) noexcept {
+			using std::swap;
+			swap(lhs.updateDispatcher, rhs.updateDispatcher);
+			swap(lhs.worldChunks_, rhs.worldChunks_);
+			swap(lhs.logicChunks_, rhs.logicChunks_);
+			swap(lhs.worldGenSeed_, rhs.worldGenSeed_);
+			swap(lhs.worldGenChunks_, rhs.worldGenChunks_);
+		}
+
 
 		///
-		/// \brief Adds a chunk into the game world
-		/// Will overwrite existing chunks if they occupy the same position
 		/// \param args Additional arguments to be provided alongside chunk_x chunk_y to Chunk constructor
-		/// \return Pointer to added chunk
+		/// \return Added chunk
 		template <typename ... TChunkArgs>
-		Chunk* EmplaceChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y,
+		Chunk& EmplaceChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y,
 		                    TChunkArgs ... args) {
-			auto conditional = worldChunks_.emplace(std::piecewise_construct,
+			const auto& [it, success] = worldChunks_.emplace(std::piecewise_construct,
 			                                        std::make_tuple(chunk_x, chunk_y),
 			                                        std::make_tuple(chunk_x, chunk_y, args...));
-			return &conditional.first->second;
+			assert(success);  // Attempted to insert at already existent location
+			
+			return it->second;
+		}
+
+		template <typename ... TChunkArgs>
+		Chunk& EmplaceChunk(const ChunkCoord& chunk_coord,
+		                    TChunkArgs ... args) {
+			return EmplaceChunk(chunk_coord.x, chunk_coord.y, std::forward<TChunkArgs>() ...);
 		}
 
 		///
@@ -162,19 +161,43 @@ namespace jactorio::game
 		/// \return nullptr if no tile exists
 		J_NODISCARD const ChunkTile* GetTile(const WorldCoord& world_pair) const;
 
+		// ======================================================================
+
+		///
+		/// \brief Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
+		J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, TileLayer layer);
+
+		///
+		/// \brief Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
+		J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, TileLayer layer) const;
+
+		///
+		/// \brief Gets top left tile if is multi tile, otherwise itself if not a multi tile
+		J_NODISCARD ChunkTile* GetTileTopLeft(WorldCoord world_coord,
+		                                      const ChunkTileLayer& chunk_tile_layer);
+
+		///
+		/// \brief Gets top left tile if is multi tile, otherwise itself if not a multi tile
+		J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord,
+		                                            const ChunkTileLayer& chunk_tile_layer) const;
+
+
+		///
+		/// \brief Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself 
+		J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
+		                                            const TileLayer& tile_layer) noexcept;
+
+		///
+		/// \brief Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself 
+		J_NODISCARD const ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
+		                                                  const TileLayer& tile_layer) const noexcept;
 
 		// ==============================================================
 		// Logic chunk 
-	private:
-
-		std::set<Chunk*> logicChunks_;
-
-	public:
-		// Stores chunks which have entities requiring logic updates
 
 		///
 		/// \brief Adds a layer at coordinates to be considered for logic updates
-		void LogicRegister(Chunk::LogicGroup group, const WorldCoord& world_pair, ChunkTile::ChunkLayer layer);
+		void LogicRegister(Chunk::LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
 
 		///
 		/// \brief Removes a layer at coordinates to be considered for logic updates
@@ -184,29 +207,21 @@ namespace jactorio::game
 
 		///
 		/// \brief Removes a layer at coordinates to be considered for logic updates
-		void LogicRemove(Chunk::LogicGroup group, const WorldCoord& world_pair, ChunkTile::ChunkLayer layer);
+		void LogicRemove(Chunk::LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
 
 
 		///
 		/// \brief Adds a chunk to be considered for logic updates, if the logic chunk already exists at Chunk*,
 		/// a reference to the existing one will be returned
 		/// \param chunk The chunk this logic chunk is associated with
-		void LogicAddChunk(Chunk* chunk);
+		void LogicAddChunk(Chunk& chunk);
 
 		///
 		/// \brief Returns all the chunks which require logic updates
-		J_NODISCARD std::set<Chunk*>& LogicGetChunks();
+		J_NODISCARD LogicChunkContainerT& LogicGetChunks();
 
 		// ======================================================================
 		// World generation
-	private:
-		int worldGenSeed_ = 1001;
-
-		/// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
-		mutable std::set<std::pair<ChunkCoordAxis, ChunkCoordAxis>> worldGenChunks_;
-		mutable std::mutex worldGenQueueMutex_;
-
-	public:
 
 		void SetWorldGeneratorSeed(const int seed) { worldGenSeed_ = seed; }
 		J_NODISCARD int GetWorldGeneratorSeed() const { return worldGenSeed_; }
@@ -227,70 +242,60 @@ namespace jactorio::game
 		// ======================================================================
 
 		///
-		/// \brief Calls callbacks for tile updates
-		class UpdateDispatcher
-		{
-			using CallbackT = const data::IUpdateListener*;
+		/// \brief Forwards args to updateDispatcher.Dispatch itself being world data
+		template <typename ... TArgs>
+		auto UpdateDispatch(const WorldCoord& coord, TArgs&& ... args) {
+			updateDispatcher.Dispatch(*this, coord, std::forward<TArgs>(args) ...);
+		}
 
-			struct CollectionElement
-			{
-				WorldCoord receiver;
-				CallbackT callback;
-			};
+		///
+		/// \brief Forwards args to updateDispatcher.Dispatch itself being world data
+		template <typename ... TArgs>
+		auto UpdateDispatch(TArgs&& ... args) {
+			updateDispatcher.Dispatch(*this, std::forward<TArgs>(args) ...);
+		}
 
-			using CollectionT = std::vector<CollectionElement>;
 
-			using ContainerKeyT = std::tuple<WorldCoordAxis, WorldCoordAxis>;
-			/// Emitting tile -> list of (Receiving tile + callback)
-			using ContainerT = std::unordered_map<ContainerKeyT, CollectionT, core::hash<ContainerKeyT>>;
+		///
+		/// \brief To be used after deserializing
+		/// Steps through all chunks:
+		/// Dispatches OnDeserialize(),
+		/// Sets the top left tile for all multi tile tiles as its pointer cannot be serialized
+		void DeserializePostProcess();
 
-			ContainerT container_;
 
-			struct DebugInfo;
+		CEREAL_LOAD(archive) {
+			SerialLogicChunkContainerT logic_chunks;
+			archive(updateDispatcher, worldChunks_,  worldGenSeed_, logic_chunks);
 
-		public:
-			struct ListenerEntry
-			{
-				/// Current
-				WorldCoord receiver;
-				/// Registered
-				WorldCoord emitter;
-			};
+			logicChunks_.clear();
 
-			explicit UpdateDispatcher(WorldData& world_data)
-				: worldData_(world_data) {
-			}
+			FromSerializeLogicChunkContainer(logic_chunks);
+		}
 
-			///
-			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
-			ListenerEntry Register(WorldCoordAxis current_world_x, WorldCoordAxis current_world_y,
-			                       WorldCoordAxis target_world_x, WorldCoordAxis target_world_y,
-			                       const data::IUpdateListener& proto_listener);
+		CEREAL_SAVE(archive) {
+			auto logic_chunks = ToSerializeLogicChunkContainer();
+			archive(updateDispatcher, worldChunks_, worldGenSeed_, logic_chunks);
+		}
 
-			///
-			/// \brief Registers proto_listener callback when target coords is updated, providing current coords
-			ListenerEntry Register(const WorldCoord& current_coords, const WorldCoord& target_coords,
-			                       const data::IUpdateListener& proto_listener);
 
-			///
-			/// \brief Unregisters entry
-			/// \return true if succeeded, false if failed
-			bool Unregister(const ListenerEntry& entry);
+		UpdateDispatcher updateDispatcher;
 
-			void Dispatch(WorldCoordAxis world_x, WorldCoordAxis world_y, data::UpdateType type);
-			void Dispatch(const WorldCoord& world_pair, data::UpdateType type);
+	private:
+		using ChunkKey = std::tuple<ChunkCoordAxis, ChunkCoordAxis>;
+		using ChunkHasher = core::hash<ChunkKey>;
 
-			J_NODISCARD DebugInfo GetDebugInfo() const noexcept;
+		/// Chunks increment heading right and down
+		std::unordered_map<ChunkKey, Chunk, ChunkHasher> worldChunks_;
+		LogicChunkContainerT logicChunks_;
 
-		private:
-			WorldData& worldData_;
 
-			struct DebugInfo
-			{
-				const ContainerT& storedEntries;
-			};
+		int worldGenSeed_ = 1001;
+		/// Stores whether or not a chunk is being generated, this gets cleared once all world generation is done
+		mutable std::set<ChunkKey> worldGenChunks_;
 
-		} updateDispatcher{*this};
+		J_NODISCARD SerialLogicChunkContainerT ToSerializeLogicChunkContainer() const;
+		void FromSerializeLogicChunkContainer(const SerialLogicChunkContainerT& serial_logic);
 	};
 }
 

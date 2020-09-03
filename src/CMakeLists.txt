@@ -30,24 +30,28 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/data/local_parser.cpp
 	${JACTORIO_DIR}/data/prototype_manager.cpp
+	${JACTORIO_DIR}/data/unique_data_manager.cpp
 
-	${JACTORIO_DIR}/data/prototype/entity/assembly_machine.cpp
-	${JACTORIO_DIR}/data/prototype/entity/container_entity.cpp
-	${JACTORIO_DIR}/data/prototype/entity/inserter.cpp
-	${JACTORIO_DIR}/data/prototype/entity/mining_drill.cpp
-	${JACTORIO_DIR}/data/prototype/entity/transport_line.cpp
-	${JACTORIO_DIR}/data/prototype/item/recipe.cpp
+	${JACTORIO_DIR}/data/cereal/serialize.cpp
+
+	${JACTORIO_DIR}/data/prototype/assembly_machine.cpp
+	${JACTORIO_DIR}/data/prototype/container_entity.cpp
+	${JACTORIO_DIR}/data/prototype/inserter.cpp
+	${JACTORIO_DIR}/data/prototype/mining_drill.cpp
+	${JACTORIO_DIR}/data/prototype/recipe.cpp
 	${JACTORIO_DIR}/data/prototype/sprite.cpp
+	${JACTORIO_DIR}/data/prototype/abstract_proto/transport_line.cpp
+
 	${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 
 
 	${JACTORIO_DIR}/game/input/input_manager.cpp
 	${JACTORIO_DIR}/game/input/mouse_selection.cpp
 
+	${JACTORIO_DIR}/game/logic/deferral_timer.cpp
 	${JACTORIO_DIR}/game/logic/inserter_controller.cpp
 	${JACTORIO_DIR}/game/logic/inventory_controller.cpp
 	${JACTORIO_DIR}/game/logic/item_logistics.cpp
-	${JACTORIO_DIR}/game/logic/logic_data.cpp
 	${JACTORIO_DIR}/game/logic/placement_controller.cpp
 	${JACTORIO_DIR}/game/logic/transport_line_controller.cpp
 	${JACTORIO_DIR}/game/logic/transport_segment.cpp
@@ -57,6 +61,8 @@ set(JACTORIO_SRC_FILES
 
 	${JACTORIO_DIR}/game/world/chunk.cpp
 	${JACTORIO_DIR}/game/world/chunk_tile.cpp
+	${JACTORIO_DIR}/game/world/chunk_tile_layer.cpp
+	${JACTORIO_DIR}/game/world/update_dispatcher.cpp
 	${JACTORIO_DIR}/game/world/world_data.cpp
 
 

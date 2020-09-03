@@ -7,28 +7,34 @@
 #include <thread>
 
 #include "jactorio.h"
+
 #include "core/filesystem.h"
-
-#include "data/prototype_manager.h"
-#include "data/prototype/entity/inserter.h"
-
-#include "game/game_data.h"
-#include "game/logic/transport_line_controller.h"
-
+#include "data/prototype/inserter.h"
 #include "renderer/render_loop.h"
 #include "renderer/gui/gui_menus.h"
 #include "renderer/gui/imgui_manager.h"
+
+#include "data/cereal/register_type.h"
+#include <fstream>
+#include <cereal/archives/portable_binary.hpp>
 
 using namespace jactorio;
 
 constexpr float kMoveSpeed = 0.8f;
 
-void LogicLoop() {
-	auto& game_data = *game::game_data;
-
+void LogicLoop(LogicRenderLoopCommon& common) {
 	// Runtime
+
+    auto& worlds = common.gameDataGlobal.worlds;
+    auto& logic = common.gameDataGlobal.logic;
+    auto& player = common.gameDataGlobal.player;
+
+    auto& event = common.gameDataLocal.event;
+    auto& input = common.gameDataLocal.input;
+    auto& proto = common.gameDataLocal.prototype;
+
 	auto next_frame = std::chrono::steady_clock::now();
-	while (!game::logic_thread_should_exit) {
+	while (!common.logicThreadShouldExit) {
 		EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
 		// ======================================================================
@@ -36,47 +42,47 @@ void LogicLoop() {
 		{
 			EXECUTION_PROFILE_SCOPE(logic_update_timer, "Logic update");
 
-			// ======================================================================	
-			// World chunks			
-			{
-				std::lock_guard<std::mutex> guard{game_data.world.worldDataMutex};
+			// ======================================================================
+			// World chunks
+            for (auto& world : worlds) {
+				std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
-				game_data.logic.GameTickAdvance();
-				game_data.logic.deferralTimer.DeferralUpdate(game_data.world, game_data.logic.GameTick());
+				logic.GameTickAdvance();
+				logic.DeferralUpdate(world, logic.GameTick());
 
-				// Retrieved mvp matrix may be invalid on startup
-				game_data.player.MouseCalculateSelectedTile(renderer::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
 
-				game_data.world.GenChunk(game_data.prototype);
-				game_data.input.mouse.DrawCursorOverlay(game_data.player, game_data.prototype);
+				world.GenChunk(proto);
 
 
 				// Logistics logic
 				{
 					EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-					game::TransportLineLogicUpdate(game_data.world);
+					game::TransportLineLogicUpdate(world);
 				}
 				{
 					EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");
 
-					game::InserterLogicUpdate(game_data.world, game_data.logic);
+					game::InserterLogicUpdate(world, logic);
 				}
 			}
 
 			// ======================================================================
 			// Player logic
-			{
-				std::lock_guard<std::mutex> guard{game_data.player.mutex};
+			std::lock_guard<std::mutex> world_guard{common.worldDataMutex};
 
-				game_data.player.RecipeCraftTick(game_data.prototype);
-			}
+            // Retrieved mvp matrix may be invalid on startup
+            player.world.CalculateMouseSelectedTile(renderer::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
+            input.mouse.DrawCursorOverlay(worlds, player, proto);
 
-			// Lock all mutexes for events
-			std::lock_guard<std::mutex> world_guard{game_data.world.worldDataMutex};
-			std::lock_guard<std::mutex> gui_guard{game_data.player.mutex};
-			game_data.event.Raise<game::LogicTickEvent>(game::EventType::logic_tick, game_data.logic.GameTick() % kGameHertz);
-			game_data.input.key.Raise();
+
+            std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
+
+            player.crafting.RecipeCraftTick(proto);
+
+
+			event.Raise<game::LogicTickEvent>(game::EventType::logic_tick, logic.GameTick() % kGameHertz);
+			input.key.Raise();
 		}
 		// ======================================================================
 		// ======================================================================
@@ -91,19 +97,18 @@ void LogicLoop() {
 }
 
 
-void game::InitLogicLoop() {
-	core::ResourceGuard<void> loop_termination_guard([]() {
-		renderer::render_thread_should_exit = true;
-		logic_thread_should_exit            = true;
+void game::InitLogicLoop(LogicRenderLoopCommon& common) {
+	core::CapturingGuard<void()> loop_termination_guard([&]() {
+		common.renderThreadShouldExit = true;
+		common.logicThreadShouldExit  = true;
 	});
 
 	// Initialize game data
-	core::ResourceGuard<void> game_data_guard([]() { delete game_data; });
-	game_data                 = new GameData();
-	data::active_data_manager = &game_data->prototype;
+	data::active_prototype_manager = &common.gameDataLocal.prototype;
+    data::active_unique_data_manager = &common.gameDataLocal.unique;
 
 	try {
-		game_data->prototype.LoadData(core::ResolvePath("data"));
+		common.gameDataLocal.prototype.LoadData(core::ResolvePath("data"));
 	}
 	catch (data::DataException&) {
 		// Prototype loading error
@@ -116,45 +121,46 @@ void game::InitLogicLoop() {
 	}
 
 	LOG_MESSAGE(info, "Prototype loading complete");
-	prototype_loading_complete = true;
+	common.prototypeLoadingComplete = true;
 
 	// ======================================================================
 	// Temporary Startup settings
-	game_data->player.SetPlayerWorldData(game_data->world);  // Main world is player's world
-	game_data->player.SetPlayerLogicData(game_data->logic);  // Should be same for every player 
+    common.gameDataGlobal.worlds.resize(1);
+
+    common.gameDataGlobal.player.world.SetId(0);
 
 
 	// ======================================================================
 
-	// Movement controls
-	game_data->input.key.Register([]() {
-		game_data->player.MovePlayerY(kMoveSpeed * -1);
+	// World controls
+	common.gameDataLocal.input.key.Register([&]() {
+		common.gameDataGlobal.player.world.MovePlayerY(kMoveSpeed * -1);
 	}, SDLK_w, InputAction::key_held);
 
 
-	game_data->input.key.Register([]() {
-		game_data->player.MovePlayerY(kMoveSpeed);
+	common.gameDataLocal.input.key.Register([&]() {
+		common.gameDataGlobal.player.world.MovePlayerY(kMoveSpeed);
 	}, SDLK_s, InputAction::key_held);
 
-	game_data->input.key.Register([]() {
-		game_data->player.MovePlayerX(kMoveSpeed * -1);
+	common.gameDataLocal.input.key.Register([&]() {
+		common.gameDataGlobal.player.world.MovePlayerX(kMoveSpeed * -1);
 	}, SDLK_a, InputAction::key_held);
 
-	game_data->input.key.Register([]() {
-		game_data->player.MovePlayerX(kMoveSpeed);
+	common.gameDataLocal.input.key.Register([&]() {
+		common.gameDataGlobal.player.world.MovePlayerX(kMoveSpeed);
 	}, SDLK_d, InputAction::key_held);
 
 
 	// Menus
-	game_data->input.key.Register([]() {
+	common.gameDataLocal.input.key.Register([&]() {
 		SetVisible(renderer::Menu::DebugMenu,
 		           !IsVisible(renderer::Menu::DebugMenu));
 	}, SDLK_BACKQUOTE, InputAction::key_up);
 
-	game_data->input.key.Register([]() {
+	common.gameDataLocal.input.key.Register([&]() {
 		// If a layer is already activated, deactivate it, otherwise open the gui menu
-		if (game_data->player.GetActivatedLayer() != nullptr)
-			game_data->player.SetActivatedLayer(nullptr);
+		if (common.gameDataGlobal.player.placement.GetActivatedLayer() != nullptr)
+			common.gameDataGlobal.player.placement.SetActivatedLayer(nullptr);
 		else
 			SetVisible(renderer::Menu::CharacterMenu,
 			           !IsVisible(renderer::Menu::CharacterMenu));
@@ -163,48 +169,68 @@ void game::InitLogicLoop() {
 
 
 	// Rotating orientation	
-	game_data->input.key.Register([]() {
-		game_data->player.RotatePlacementOrientation();
+	common.gameDataLocal.input.key.Register([&]() { common.gameDataGlobal.player.placement.RotateOrientation();
 	}, SDLK_r, InputAction::key_up);
-	game_data->input.key.Register([]() {
-		game_data->player.CounterRotatePlacementOrientation();
+	common.gameDataLocal.input.key.Register([&]() { common.gameDataGlobal.player.placement.CounterRotateOrientation();
 	}, SDLK_r, InputAction::key_up, KMOD_LSHIFT);
 
 
-	game_data->input.key.Register([]() {
-		game_data->player.DeselectSelectedItem();
+	common.gameDataLocal.input.key.Register([&]() {
+		common.gameDataGlobal.player.inventory.DeselectSelectedItem();
 	}, SDLK_q, InputAction::key_down);
 
 	// Place entities
-	game_data->input.key.Register([]() {
-		if (renderer::input_mouse_captured || !game_data->player.MouseSelectedTileInRange())
+	common.gameDataLocal.input.key.Register([&]() {
+		if (renderer::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
 			return;
 
-		const auto tile_selected = game_data->player.GetMouseTileCoords();
-		game_data->player.TryPlaceEntity(game_data->world, game_data->logic,
-		                                 tile_selected.x, tile_selected.y);
+		const auto tile_selected = common.gameDataGlobal.player.world.GetMouseTileCoords();
+
+        auto& player = common.gameDataGlobal.player;
+        auto& world = common.gameDataGlobal.worlds[player.world.GetId()];
+
+		player.placement.TryPlaceEntity(world, common.gameDataGlobal.logic,
+                                        tile_selected.x, tile_selected.y);
 	}, MouseInput::left, InputAction::key_held);
 
-	game_data->input.key.Register([]() {
-		if (renderer::input_mouse_captured || !game_data->player.MouseSelectedTileInRange())
+	common.gameDataLocal.input.key.Register([&]() {
+        if (renderer::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
 			return;
 
-		game_data->player.TryActivateLayer(game_data->world, game_data->player.GetMouseTileCoords());
+        auto& player = common.gameDataGlobal.player;
+        auto& world = common.gameDataGlobal.worlds[player.world.GetId()];
+
+        player.placement.TryActivateLayer(world, player.world.GetMouseTileCoords());
 
 	}, MouseInput::left, InputAction::key_down);
 
 	// Remove entities or mine resource
-	game_data->input.key.Register([]() {
-		if (renderer::input_mouse_captured || !game_data->player.MouseSelectedTileInRange())
+	common.gameDataLocal.input.key.Register([&]() {
+		if (renderer::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
 			return;
 
-		const auto tile_selected = game_data->player.GetMouseTileCoords();
-		game_data->player.TryPickup(game_data->world, game_data->logic,
-		                            tile_selected.x, tile_selected.y);
+		const auto tile_selected = common.gameDataGlobal.player.world.GetMouseTileCoords();
+
+        auto& player = common.gameDataGlobal.player;
+        auto& world = common.gameDataGlobal.worlds[player.world.GetId()];
+
+        player.placement.TryPickup(world, common.gameDataGlobal.logic,
+                                   tile_selected.x, tile_selected.y);
 	}, MouseInput::right, InputAction::key_held);
 
 
-	LogicLoop();
+	common.gameDataLocal.input.key.Register([&]() {
+		data::SerializeGameData(common.gameDataGlobal);
+	}, SDLK_l, InputAction::key_up);
+
+	common.gameDataLocal.input.key.Register([&]() {
+		data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal);
+
+		printf("Break");
+	}, SDLK_k, InputAction::key_up);
+
+
+	LogicLoop(common);
 
 
 	LOG_MESSAGE(info, "Logic thread exited");

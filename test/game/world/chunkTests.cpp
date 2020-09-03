@@ -2,74 +2,45 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/sprite.h"
-#include "data/prototype/tile/tile.h"
 #include "game/world/chunk.h"
-#include "game/world/world_data.h"
 
-#include <memory>
+#include "jactorioTests.h"
 
 namespace jactorio::game
 {
-	TEST(Chunk, ChunkSetTile) {
-		constexpr auto chunk_width = WorldData::kChunkWidth;
-		// The tiles pointer is only stored by the Chunk, modifying the original tiles pointer
-		// will modify the tiles of the chunk
+	TEST(Chunk, LogicCopy) {
+		Chunk chunk_a(0, 0);
+		chunk_a.GetLogicGroup(Chunk::LogicGroup::transport_line)
+		       .push_back(&chunk_a.GetCTile(3, 4).GetLayer(TileLayer::base));
 
-		// Mock data
-		const auto sprite_proto = std::make_unique<data::Sprite>(data::Sprite());
-		const auto tile_proto   = std::make_unique<data::Tile>(data::Tile());
-		tile_proto->sprite      = sprite_proto.get();
-
-
-		// Chunk tile 1
-		auto chunk_tile_1 = ChunkTile();
-
-		const auto tile_layer_1 = ChunkTileLayer(tile_proto.get());
-		chunk_tile_1.layers[0]  = tile_layer_1;
-
-
-		// Chunk tile 2
-		auto chunk_tile_2 = ChunkTile();
-
-		const ChunkTileLayer tile_layer_2{};
-		chunk_tile_2.layers[0] = tile_layer_2;
-
-
-		// Deleted by chunk
-		auto* tiles = new ChunkTile[chunk_width * chunk_width];
-		tiles[0]    = chunk_tile_1;
-
-		const Chunk chunk{0, 0, tiles};
-		EXPECT_EQ(chunk.Tiles()[0].layers[0].prototypeData, tile_layer_1.prototypeData);
-
-		tiles[0] = chunk_tile_2;
-		EXPECT_EQ(chunk.Tiles()[0].layers[0].prototypeData, tile_layer_2.prototypeData);
-
-
-		// Prototype data in the actual application is managed by data_manager
+		auto chunk_b = chunk_a;
+		EXPECT_EQ(chunk_b.GetLogicGroup(Chunk::LogicGroup::transport_line)[0],
+		          &chunk_b.GetCTile(3, 4).GetLayer(TileLayer::base));
 	}
 
-	TEST(Chunk, ChunkCopy) {
-		const Chunk chunk_a{0, 0};
+	TEST(Chunk, LogicMove) {
+		Chunk chunk_a(0, 0);
+		chunk_a.GetLogicGroup(Chunk::LogicGroup::inserter)
+		       .push_back(&chunk_a.GetCTile(4, 3).GetLayer(TileLayer::resource));
 
-		const auto chunk_copy = chunk_a;
-		// Should not copy the pointer for tiles
-		EXPECT_NE(chunk_copy.Tiles(), chunk_a.Tiles());
+		auto chunk_b = std::move(chunk_a);
+		EXPECT_EQ(chunk_b.GetLogicGroup(Chunk::LogicGroup::inserter)[0],
+		          &chunk_b.GetCTile(4, 3).GetLayer(TileLayer::resource));
 	}
 
-	TEST(Chunk, ChunkMove) {
-		Chunk chunk_a{0, 0};
+	TEST(Chunk, GetCTile) {
+		// GetCTile means Get Chunk Tile
+		// GetTile already taken by WorldData
 
-		const auto chunk_move = std::move(chunk_a);
-		EXPECT_EQ(chunk_a.Tiles(), nullptr);
+		Chunk chunk(4, 4);
+		EXPECT_EQ(&chunk.Tiles()[23 * 32 + 12], &chunk.GetCTile({12, 23}));
 	}
 
 	TEST(Chunk, GetObjectLayer) {
 		Chunk chunk_a{0, 0};
 
 		// Should return the layer specified by the index of the enum objectLayer
-		EXPECT_EQ(&chunk_a.GetOverlay(OverlayLayer::general), &chunk_a.overlays[0]);
+		EXPECT_EQ(&chunk_a.GetOverlay(OverlayLayer::cursor), &chunk_a.overlays[0]);
 	}
 
 	TEST(Chunk, GetLogicGroup) {
@@ -77,5 +48,19 @@ namespace jactorio::game
 
 		// Should return the layer specified by the index of the enum objectLayer
 		EXPECT_EQ(&chunk.GetLogicGroup(Chunk::LogicGroup::transport_line), &chunk.logicGroups[0]);
+	}
+
+	TEST(Chunk, SerializeLogicGroups) {
+		Chunk chunk{0, 0};
+
+		chunk.GetLogicGroup(Chunk::LogicGroup::inserter).push_back(
+			&chunk.GetCTile(4, 10).GetLayer(TileLayer::entity)
+		);
+
+		auto result        = TestSerializeDeserialize(chunk);
+		auto& result_logic = result.GetLogicGroup(Chunk::LogicGroup::inserter);
+
+		ASSERT_EQ(result_logic.size(), 1);
+		EXPECT_EQ(result_logic[0], &result.GetCTile(4, 10).GetLayer(TileLayer::entity));
 	}
 }

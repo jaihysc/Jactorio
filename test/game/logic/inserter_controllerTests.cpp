@@ -4,9 +4,9 @@
 
 #include "jactorioTests.h"
 
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/inserter.h"
-#include "data/prototype/entity/transport_belt.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/inserter.h"
+#include "data/prototype/transport_belt.h"
 #include "game/logic/inserter_controller.h"
 
 namespace jactorio::game
@@ -23,7 +23,7 @@ namespace jactorio::game
 		data::Item containerItemProto_{};
 
 		void SetUp() override {
-			auto* chunk = worldData_.EmplaceChunk(0, 0);
+			auto& chunk = worldData_.EmplaceChunk(0, 0);
 			worldData_.LogicAddChunk(chunk);
 		}
 
@@ -46,9 +46,9 @@ namespace jactorio::game
 
 			// Emit neighbor update
 			{
-				auto& neighbor_layer       = worldData_.GetTile(neighbor_update_coord)->GetLayer(ChunkTile::ChunkLayer::entity);
+				auto& neighbor_layer       = worldData_.GetTile(neighbor_update_coord)->GetLayer(TileLayer::entity);
 				const auto* neighbor_proto =
-					static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData);
+					static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData.Get());
 
 				if (neighbor_proto)
 					neighbor_proto->OnNeighborUpdate(worldData_, logicData_,
@@ -174,7 +174,7 @@ namespace jactorio::game
 		// Inserter will not pick up items that it can never drop off
 
 		// Cannot drop into assembly machine since it has no recipe
-		const data::AssemblyMachine asm_machine{};
+		data::AssemblyMachine asm_machine{};
 		TestSetupAssemblyMachine(worldData_, {0, 1}, asm_machine);
 
 		auto* pickup = BuildChest({3, 2}, data::Orientation::right, 10);

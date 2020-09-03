@@ -63,22 +63,29 @@ set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/mathTests.cpp
+	${JACTORIO_TEST_DIR}/core/pointer_wrapperTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
 	${JACTORIO_TEST_DIR}/core/utilityTests.cpp
 
 
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/unique_data_managerTests.cpp
 
-	${JACTORIO_TEST_DIR}/data/prototype/entity/assembly_machineTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/entity/inserterTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/entity/mining_drillTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/entity/transport_lineTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/interface/renderableTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/item/recipeTests.cpp
+	${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
+	${JACTORIO_TEST_DIR}/data/cereal/supportTests.cpp
+
+	${JACTORIO_TEST_DIR}/data/prototype/assembly_machineTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/container_entityTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/inserterTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/mining_drillTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/recipeTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
+
+	${JACTORIO_TEST_DIR}/data/prototype/abstract_proto/transport_lineTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/interface/renderableTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
@@ -88,6 +95,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
 
+	${JACTORIO_TEST_DIR}/game/logic/deferral_timerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
@@ -99,11 +107,13 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_recipe.cpp
+	${JACTORIO_TEST_DIR}/game/player/player_dataTests_world.cpp
 
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/update_dispatcherTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
 
 

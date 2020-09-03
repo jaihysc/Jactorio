@@ -4,7 +4,7 @@
 #define JACTORIO_RENDERER_RENDERING_DATA_RENDERER_H
 #pragma once
 
-#include "data/prototype/entity/inserter.h"
+#include "data/prototype/inserter.h"
 #include "data/prototype/interface/renderable.h"
 #include "game/logic/transport_segment.h"
 

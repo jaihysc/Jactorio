@@ -18,8 +18,8 @@ namespace jactorio::core
 	/// \brief Performs cast, data may be lost
 	template <class TTarget, class TOriginal>
 	constexpr TTarget LossyCast(TOriginal val,
-								std::enable_if_t<std::is_integral_v<TOriginal> || std::is_floating_point_v<TOriginal>, int> = 0,
-								std::enable_if_t<std::is_integral_v<TTarget> || std::is_floating_point_v<TTarget>, int> = 0)
+	                            std::enable_if_t<std::is_integral_v<TOriginal> || std::is_floating_point_v<TOriginal>, int>  = 0,
+	                            std::enable_if_t<std::is_integral_v<TTarget> || std::is_floating_point_v<TTarget>, int>      = 0)
 	noexcept {
 
 		return static_cast<TTarget>(val);
@@ -30,8 +30,8 @@ namespace jactorio::core
 	/// \remark Same behavior as static cast if assertions are disabled
 	template <class TTargetInt, class TOriginalInt>
 	constexpr TTargetInt SafeCast(TOriginalInt val,
-	                              std::enable_if_t<std::is_integral_v<TOriginalInt>, int> = 0,
-								  std::enable_if_t<std::is_integral_v<TTargetInt> || std::is_floating_point_v<TTargetInt>, int> = 0)
+	                              std::enable_if_t<std::is_integral_v<TOriginalInt>, int>                                        = 0,
+	                              std::enable_if_t<std::is_integral_v<TTargetInt> || std::is_floating_point_v<TTargetInt>, int>  = 0)
 	noexcept {
 
 		constexpr bool is_different_signedness = (std::is_signed<TTargetInt>::value != std::is_signed<TOriginalInt>::value);
@@ -46,6 +46,11 @@ namespace jactorio::core
 		return cast_val;
 	}
 
+	template <typename TyLeft, typename TyRight>
+	void SafeCastAssign(TyLeft& l_val, TyRight&& r_val) {
+		l_val = SafeCast<std::remove_reference_t<decltype(l_val)>>(r_val);
+	}
+
 	// ======================================================================
 	// Math functions for floating point numbers
 
@@ -57,7 +62,7 @@ namespace jactorio::core
 
 
 	// If necessary in the future, swap these to another implementation
-	using TDegree = float;
+	using TDegree = double;
 
 	inline double Sin(const TDegree degree) {
 		return sin(degree / (180 / kPi));

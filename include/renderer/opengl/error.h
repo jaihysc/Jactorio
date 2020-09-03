@@ -7,7 +7,6 @@
 // Different break statements depending on the compiler
 #ifdef _MSC_VER
 #define DEBUG_BREAK __debugbreak();
-#undef __GNUC__
 #endif
 
 #ifdef __GNUC__
@@ -19,10 +18,12 @@
 
 // Wrap a function with DEBUG_OPENGL_CALL to automatically call this when an error occurs and pause code execution
 #ifdef JACTORIO_DEBUG_BUILD
-#define DEBUG_OPENGL_CALL(func)\
-			jactorio::renderer::OpenglClearErrors();\
-			func;\
-			if ((jactorio::renderer::OpenglPrintErrors(#func, __FILE__, __LINE__))) DEBUG_BREAK
+#define DEBUG_OPENGL_CALL(instructions__)                                                                 \
+			jactorio::renderer::OpenglClearErrors();                                                      \
+			instructions__;                                                                               \
+			if ((jactorio::renderer::OpenglPrintErrors(#instructions__, __FILE__, __LINE__))) DEBUG_BREAK \
+			static_assert(true)
+
 #else
 #define DEBUG_OPENGL_CALL(func)\
 			func;

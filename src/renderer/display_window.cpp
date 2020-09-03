@@ -168,11 +168,11 @@ bool renderer::DisplayWindow::WindowContextActive() const {
 // ======================================================================
 // Events
 
-void HandleWindowEvent(const SDL_Event& sdl_event) {
+void HandleWindowEvent(game::EventData& event, const SDL_Event& sdl_event) {
 	switch (sdl_event.window.event) {
 	case SDL_WINDOWEVENT_RESIZED:
 	case SDL_WINDOWEVENT_SIZE_CHANGED:
-		renderer::ChangeWindowSize(sdl_event.window.data1, sdl_event.window.data2);
+		renderer::ChangeWindowSize(event, sdl_event.window.data1, sdl_event.window.data2);
 		break;
 
 	case SDL_WINDOWEVENT_SHOWN:
@@ -198,14 +198,14 @@ void HandleWindowEvent(const SDL_Event& sdl_event) {
 	}
 }
 
-void renderer::DisplayWindow::HandleSdlEvent(const SDL_Event& sdl_event) const {
+void renderer::DisplayWindow::HandleSdlEvent(LogicRenderLoopCommon& common, const SDL_Event& sdl_event) const {
 	switch (sdl_event.type) {
 	case SDL_WINDOWEVENT:
-		HandleWindowEvent(sdl_event);
+		HandleWindowEvent(common.gameDataLocal.event, sdl_event);
 		break;
 
 	case SDL_QUIT:
-		render_thread_should_exit = true;
+		common.renderThreadShouldExit = true;
 		break;
 
 		// Keyboard events

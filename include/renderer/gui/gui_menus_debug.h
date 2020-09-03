@@ -11,17 +11,22 @@ namespace jactorio::renderer
 	// Debug menu main is in gui_menus.h
 
 	// For performing logic when certain debug options are checked
-	void DebugMenuLogic(game::PlayerData& player_data, const data::PrototypeManager& data_manager);
+    void DebugMenuLogic(GameWorlds& worlds,
+                        game::LogicData& logic,
+                        game::PlayerData& player,
+                        const data::PrototypeManager& data_manager);
 
 	void DebugTimings();
 
 	void DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeManager& data_manager);
 
-	void DebugTransportLineInfo(game::PlayerData& player_data, const data::PrototypeManager& data_manager);
+    void DebugTransportLineInfo(GameWorlds& worlds,
+                                game::PlayerData& player,
+                                const data::PrototypeManager& proto_manager);
 
-	void DebugInserterInfo(game::PlayerData& player_data);
+    void DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player);
 
-	void DebugWorldInfo(const game::PlayerData& player_data);
+    void DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player);
 
 	void DebugLogicInfo(const game::LogicData& logic_data);
 }

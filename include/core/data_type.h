@@ -7,14 +7,22 @@
 #include <cstdint>
 #include <tuple>
 #include <unordered_map>
+#include <vector>
+
+#include <decimal.h>
 
 namespace jactorio::core
 {
 	template <typename TVal>
 	struct Position2;
-	
+
 	template <typename TPosition>
 	struct QuadPosition;
+}
+
+namespace jactorio::game
+{
+    class WorldData;
 }
 
 namespace jactorio
@@ -26,27 +34,37 @@ namespace jactorio
 	constexpr int kGameHertz = 60;  // 60 updates per second
 
 
+    /// Forward declaration only, game::WorldData must be included
+    using GameWorlds = std::vector<game::WorldData>;
+
+	/// Tiles in the world
 	using WorldCoordAxis = int32_t;
 	using WorldCoord = core::Position2<WorldCoordAxis>;
+    /// World currently in
+    using WorldId = std::size_t;
 
+	/// Chunks in the world
 	using ChunkCoordAxis = int32_t;
 	using ChunkCoord = core::Position2<ChunkCoordAxis>;
+
+	/// Tiles within a chunk
+	using ChunkTileCoordAxis = uint8_t;
+	using ChunkTileCoord = core::Position2<ChunkTileCoordAxis>;
 
 	/// Offset from top left of chunk
 	using OverlayOffsetAxis = float;
 
-	
+
 	using UvPositionT = core::QuadPosition<core::Position2<float>>;
 	/// Internal id of sprite to uv coordinates
 	using SpriteUvCoordsT = std::unordered_map<unsigned int, UvPositionT>;
+
+	
+	using Decimal3T = dec::decimal<3>;
 }
 
 namespace jactorio::core
 {
-	// Defines standard data pairs for use across this application
-	// This is used for better naming compared to std::pair's .first and .second
-
-	// =================================================
 	// Defines hash functions for tuples as keys in std::unordered_map
 
 	template <typename Tt>

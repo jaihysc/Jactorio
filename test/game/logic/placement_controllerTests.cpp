@@ -6,9 +6,8 @@
 
 #include <memory>
 
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/entity.h"
-#include "data/prototype/tile/tile.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/tile.h"
 #include "game/world/world_data.h"
 
 namespace jactorio::game
@@ -56,8 +55,9 @@ namespace jactorio::game
 			land_tile->isWater  = false;
 
 
-			// Create chunk
-			auto* chunk_tiles = new ChunkTile[kChunkWidth * kChunkWidth];
+			auto& chunk = world_data.EmplaceChunk(0, 0);
+
+			auto& chunk_tiles = chunk.Tiles();
 			for (int y = 0; y < kChunkWidth; ++y) {
 				bool y_water = false;
 
@@ -80,8 +80,6 @@ namespace jactorio::game
 					chunk_tiles[y * kChunkWidth + x].SetTilePrototype(tile_ptr);
 				}
 			}
-
-			world_data.EmplaceChunk(0, 0, chunk_tiles);
 		}
 
 	protected:
@@ -110,7 +108,7 @@ namespace jactorio::game
 			chunk->Tiles()[0].GetEntityPrototype(),
 			entity.get());
 
-		EXPECT_FALSE(chunk->Tiles()[0].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).IsMultiTile());
+		EXPECT_FALSE(chunk->Tiles()[0].GetLayer(jactorio::game::TileLayer::entity).IsMultiTile());
 	}
 
 	TEST_F(PlacementControllerTest, PlaceEntity1x1Invalid) {
@@ -195,9 +193,9 @@ namespace jactorio::game
 
 				// Should count up according to the rules specified in entity_index
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).
-					multiTileIndex,
-					entity_index++);
+					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
+					entity_index++
+				);
 			}
 		}
 
@@ -339,20 +337,20 @@ namespace jactorio::game
 
 				// Should count up according to the rules specified in entity_index
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).
-					multiTileIndex,
-					entity_index++);
+					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
+					entity_index++
+				);
 
 
 				// Ensure tile width and height are properly set
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileData()
-					.multiTileSpan,
+					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData()
+					.span,
 					3
 				);
 				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::ChunkTile::ChunkLayer::entity).GetMultiTileData().
-					multiTileHeight,
+					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData().
+					height,
 					4
 				);
 			}

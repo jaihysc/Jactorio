@@ -10,17 +10,18 @@
 #include "data/local_parser.h"
 #include "data/pybind/pybind_manager.h"
 
-jactorio::data::PrototypeManager::~PrototypeManager() {
+using namespace jactorio;
+
+data::PrototypeManager::~PrototypeManager() {
 	ClearData();
 }
 
-void jactorio::data::PrototypeManager::SetDirectoryPrefix(const std::string& name) {
+void data::PrototypeManager::SetDirectoryPrefix(const std::string& name) {
 	directoryPrefix_ = name;
 }
 
-void jactorio::data::PrototypeManager::DataRawAdd(const std::string& iname,
-                                                  PrototypeBase* const prototype,
-                                                  const bool add_directory_prefix) {
+void data::PrototypeManager::DataRawAdd(const std::string& iname,
+                                        FrameworkBase* const prototype) {
 	const DataCategory data_category = prototype->Category();
 
 	// Use the following format internal name
@@ -28,7 +29,7 @@ void jactorio::data::PrototypeManager::DataRawAdd(const std::string& iname,
 	std::string formatted_iname;
 	{
 		std::ostringstream sstr;
-		if (add_directory_prefix)
+		if (!directoryPrefix_.empty())
 			sstr << "__" << directoryPrefix_ << "__/";
 
 		sstr << iname;
@@ -44,7 +45,7 @@ void jactorio::data::PrototypeManager::DataRawAdd(const std::string& iname,
 		formatted_iname = sstr.str();
 	}
 	else {
-		const auto& category = dataRaw[static_cast<uint16_t>(data_category)];
+		const auto& category = dataRaw_[static_cast<uint16_t>(data_category)];
 		auto it              = category.find(formatted_iname);
 		if (it != category.end()) {
 			LOG_MESSAGE_F(warning,
@@ -68,11 +69,11 @@ void jactorio::data::PrototypeManager::DataRawAdd(const std::string& iname,
 	prototype->internalId = internalIdNew_++;
 
 
-	dataRaw[static_cast<uint16_t>(data_category)][formatted_iname] = prototype;
+	dataRaw_[static_cast<uint16_t>(data_category)][formatted_iname] = prototype;
 	LOG_MESSAGE_F(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void jactorio::data::PrototypeManager::LoadData(
+void data::PrototypeManager::LoadData(
 	const std::string& data_folder_path) {
 	// Get all sub-folders in ~/data/
 	// Read data.cfg files within each sub-folder
@@ -141,7 +142,7 @@ void jactorio::data::PrototypeManager::LoadData(
 	}
 
 	LOG_MESSAGE(info, "Validating loaded prototypes");
-	for (auto& prototype_categories : dataRaw) {
+	for (auto& prototype_categories : dataRaw_) {
 		for (auto& pair : prototype_categories) {
 			auto& prototype = *pair.second;
 			LOG_MESSAGE_F(debug, "Validating prototype %d %s", prototype.internalId, prototype.name.c_str());
@@ -161,18 +162,9 @@ void jactorio::data::PrototypeManager::LoadData(
 	}
 }
 
-bool jactorio::data::PrototypeManager::PrototypeExists(const std::string& iname) const {
-	for (const auto& map : dataRaw) {
-		if (map.find(iname) != map.end()) {
-			return true;
-		}
-	}
-	return false;
-}
-
-void jactorio::data::PrototypeManager::ClearData() {
+void data::PrototypeManager::ClearData() {
 	// Iterate through both unordered maps and delete all pointers
-	for (auto& map : dataRaw) {
+	for (auto& map : dataRaw_) {
 		// Category unordered maps
 		for (auto& category_pair : map) {
 			delete category_pair.second;
@@ -180,5 +172,23 @@ void jactorio::data::PrototypeManager::ClearData() {
 		map.clear();
 	}
 
-	internalIdNew_ = internal_id_start;
+	internalIdNew_ = kInternalIdStart_;
+}
+
+
+void data::PrototypeManager::GenerateRelocationTable() {
+	relocationTable_.resize(internalIdNew_ - 1);
+	for (auto& map : dataRaw_) {
+		for (auto& [iname, pointer] : map) {
+			assert(pointer != nullptr);
+			// Internal id starts at 1, vector indexes from 0
+			relocationTable_[pointer->internalId - 1] = pointer;
+		}
+	}
+}
+
+data::PrototypeManager::DebugInfo data::PrototypeManager::GetDebugInfo() const {
+	return {
+		relocationTable_,
+	};
 }

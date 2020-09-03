@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "data/prototype/entity/transport_line.h"
+#include "data/prototype/abstract_proto/transport_line.h"
 #include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
 
@@ -14,16 +14,16 @@ using namespace jactorio;
 /// \brief Sets index to the next item with a distance greater than item_width and decrement it
 /// If there is no item AND has_target_segment == false, index is set as size of transport line
 /// \return true if an item was decremented
-J_NODISCARD bool MoveNextItem(const game::TransportLineOffset& tiles_moved,
+J_NODISCARD bool MoveNextItem(const data::LineDistT& tiles_moved,
                               std::deque<game::TransportLineItem>& line_side,
                               uint16_t& index, const bool has_target_segment) {
 	for (size_t i = core::SafeCast<size_t>(index) + 1; i < line_side.size(); ++i) {
-		auto& i_item_offset = line_side[i].first;
-		if (i_item_offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(game::kItemSpacing)) {
+		auto& i_item_offset = line_side[i].dist;
+		if (i_item_offset > data::LineDistT(game::kItemSpacing)) {
 			// Found a valid item to decrement
 			if (!has_target_segment) {
 				// Always check every item from index 0 if there is a target segment as the previous item may have moved
-				index = core::SafeCast<uint16_t>(i);  
+				index = core::SafeCast<uint16_t>(i);
 			}
 			i_item_offset -= tiles_moved;
 
@@ -46,24 +46,24 @@ J_NODISCARD bool MoveNextItem(const game::TransportLineOffset& tiles_moved,
 }
 
 template <bool IsLeft>
-void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSegment& segment) {
+void UpdateSide(const data::LineDistT& tiles_moved, game::TransportSegment& segment) {
 	using namespace jactorio;
 	auto& side      = segment.GetSide(IsLeft);
 	uint16_t& index = side.index;
 
-	game::TransportLineOffset& offset             = side.lane[index].first;
-	game::TransportLineOffset& back_item_distance = side.backItemDistance;
+	data::LineDistT& offset             = side.lane[index].dist;
+	data::LineDistT& back_item_distance = side.backItemDistance;
 
 	// Front item if index is 0
 	if (index == 0) {
 		// Front item does not need to be moved
-		if (offset >= dec::decimal_cast<game::kTransportLineDecimalPlace>(0))
+		if (offset >= data::LineDistT(0))
 			return;
 
 		if (segment.targetSegment) {
 			game::TransportSegment& target_segment = *segment.targetSegment;
 			// Offset to insert at target segment from head 
-			game::TransportLineOffset target_offset;
+			data::LineDistT target_offset;
 			{
 				double length;
 				switch (segment.terminationType) {
@@ -81,9 +81,7 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 					length = target_segment.length;
 					break;
 				}
-				target_offset = dec::decimal_cast<game::kTransportLineDecimalPlace>(
-					length - fabs(offset.getAsDouble())
-				);
+				target_offset = data::LineDistT(length - fabs(offset.getAsDouble()));
 			}
 
 			game::TransportSegment::ApplyTerminationDeduction<IsLeft>(segment.terminationType,
@@ -96,18 +94,18 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 			default:
 				moved_item = target_segment.TryInsertItem(IsLeft,
 				                                          target_offset.getAsDouble(),
-				                                          *side.lane[index].second);
+				                                          *side.lane[index].item);
 				break;
 
 				// Side insertion
 			case game::TransportSegment::TerminationType::left_only:
 				moved_item = target_segment.left.TryInsertItem(target_offset.getAsDouble(),
-				                                               *side.lane[index].second,
+				                                               *side.lane[index].item,
 				                                               target_segment.itemOffset);
 				break;
 			case game::TransportSegment::TerminationType::right_only:
 				moved_item = target_segment.right.TryInsertItem(target_offset.getAsDouble(),
-				                                                *side.lane[index].second,
+				                                                *side.lane[index].item,
 				                                                target_segment.itemOffset);
 				break;
 			}
@@ -120,7 +118,7 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 				// Move the next item forwards to preserve spacing & update back_item_distance
 				if (!side.lane.empty()) {  // This will not work with speeds greater than item_spacing
 					// Offset is always negative
-					side.lane.front().first += offset;
+					side.lane.front().dist += offset;
 				}
 				else {
 					// No items left in segment
@@ -161,8 +159,7 @@ void UpdateSide(const game::TransportLineOffset& tiles_moved, game::TransportSeg
 		// Items behind another item in transport line
 
 		// Items following the first item will leave a gap of item_width
-		if (offset > dec::decimal_cast<game::kTransportLineDecimalPlace>(
-			game::kItemSpacing))
+		if (offset >data::LineDistT(game::kItemSpacing))
 			return;
 
 		// Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
@@ -183,7 +180,7 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 
 	// Each object layer holds a transport line segment
 	for (const auto& tile_layer : layers) {
-		const auto& line_proto = *static_cast<const data::TransportLine*>(tile_layer->prototypeData);
+		const auto& line_proto = *static_cast<const data::TransportLine*>(tile_layer->prototypeData.Get());
 		auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
 
 		// Left
@@ -192,7 +189,7 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 			const auto index = line_segment.left.index;
 			// Empty or index indicates nothing should be moved
 			if (line_segment.left.IsActive()) {
-				left.lane[index].first -= line_proto.speed;
+				left.lane[index].dist -= line_proto.speed;
 				line_segment.left.backItemDistance -= line_proto.speed;
 			}
 		}
@@ -203,7 +200,7 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 			const auto index = line_segment.right.index;
 			// Empty or index indicates nothing should be moved
 			if (line_segment.right.IsActive()) {
-				right.lane[index].first -= line_proto.speed;
+				right.lane[index].dist -= line_proto.speed;
 				line_segment.right.backItemDistance -= line_proto.speed;
 			}
 		}
@@ -218,7 +215,7 @@ void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
 
 	// Each object layer holds a transport line segment
 	for (const auto& tile_layer : layers) {
-		const auto* line_proto = static_cast<const data::TransportLine*>(tile_layer->prototypeData);
+		const auto* line_proto = static_cast<const data::TransportLine*>(tile_layer->prototypeData.Get());
 		auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
 
 		auto tiles_moved = line_proto->speed;

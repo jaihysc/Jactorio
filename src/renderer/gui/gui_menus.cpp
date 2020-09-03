@@ -5,12 +5,10 @@
 #include <functional>
 #include <sstream>
 
-#include "core/utility.h"
-
-#include "data/prototype/entity/assembly_machine.h"
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/mining_drill.h"
-#include "data/prototype/item/recipe_group.h"
+#include "data/prototype/assembly_machine.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/mining_drill.h"
+#include "data/prototype/recipe_group.h"
 
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
@@ -18,8 +16,6 @@
 
 #include "renderer/gui/gui_colors.h"
 #include "renderer/gui/gui_layout.h"
-#include "renderer/gui/imgui_manager.h"
-#include "renderer/rendering/renderer.h"
 
 using namespace jactorio;
 
@@ -32,18 +28,18 @@ void ImplementInventoryIsItemClicked(game::PlayerData& player_data,
                                      const std::function<void()>& on_click = []() {
                                      }) {
 	if (ImGui::IsItemClicked()) {
-		player_data.HandleInventoryActions(data_manager, inv, index, HalfSelectOnLeft);
+		player_data.inventory.HandleInventoryActions(data_manager, inv, index, HalfSelectOnLeft);
 		on_click();
 	}
 	else if (ImGui::IsItemClicked(1)) {
-		player_data.HandleInventoryActions(data_manager, inv, index, HalfSelectOnRight);
+		player_data.inventory.HandleInventoryActions(data_manager, inv, index, HalfSelectOnRight);
 		on_click();
 	}
 
 }
 
 float GetProgressBarFraction(const GameTickT game_tick,
-                             const game::LogicData::DeferralTimer::DeferralEntry& entry, const float total_ticks) {
+                             const game::DeferralTimer::DeferralEntry& entry, const float total_ticks) {
 	if (!entry.Valid())
 		return 0.f;
 
@@ -70,8 +66,8 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::PrototypeMan
 	auto menu_data = renderer::GetMenuData();
 
 	renderer::RemoveItemSlotTopPadding();
-	renderer::DrawSlots(10, player_data.inventoryPlayer.size(), 1, [&](auto index, auto& button_hovered) {
-		const auto& stack = player_data.inventoryPlayer[index];
+	renderer::DrawSlots(10, player_data.inventory.inventory.size(), 1, [&](auto index, auto& button_hovered) {
+		const auto& stack = player_data.inventory.inventory[index];
 
 		// Draw blank slot if item doe snot exist at inventory slot
 		auto sprite_id = stack.item != nullptr ? stack.item->sprite->internalId : 0;
@@ -82,7 +78,7 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::PrototypeMan
 			stack.count,
 			button_hovered,
 			[&]() {
-				ImplementInventoryIsItemClicked(player_data, data_manager, player_data.inventoryPlayer, index);
+				ImplementInventoryIsItemClicked(player_data, data_manager, player_data.inventory.inventory, index);
 
 				// Only draw tooltip + item count if item count is not 0
 				if (ImGui::IsItemHovered() && stack.count != 0) {
@@ -134,14 +130,14 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 
 		char buf[search_buf_size + 1];
 
-		const auto end = std::min(player_data.recipeSearchText.size(), search_buf_size);
+		const auto end = std::min(player_data.crafting.recipeSearchText.size(), search_buf_size);
 		for (size_t i = 0; i < end; ++i) {
-			buf[i] = player_data.recipeSearchText[i];
+			buf[i] = player_data.crafting.recipeSearchText[i];
 		}
 		buf[end] = '\0';
 
 		ImGui::InputText("", buf, search_buf_size);
-		player_data.recipeSearchText = buf;
+		player_data.crafting.recipeSearchText = buf;
 
 		// Continue title bar calculations from where the label text was
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::SafeCast<float>(renderer::kGuiStyleTitlebarPaddingY) / 2);
@@ -160,7 +156,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 				const auto& product_name =
 					data_manager.DataRawGet<data::Item>(recipe->product.first)->GetLocalizedName();
 
-				if (core::StrToLower(product_name).find(core::StrToLower(player_data.recipeSearchText)) != std::string::npos) {
+				if (core::StrToLower(product_name).find(core::StrToLower(player_data.crafting.recipeSearchText)) != std::string::npos) {
 					goto loop_exit;
 				}
 			}
@@ -170,13 +166,13 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 	loop_exit:
 		// Different color for currently selected recipe group
 		renderer::ImGuard recipe_group_guard{};
-		if (index == player_data.RecipeGroupGetSelected())
+		if (index == player_data.crafting.RecipeGroupGetSelected())
 			recipe_group_guard.PushStyleColor(ImGuiCol_Button, renderer::kGuiColButtonHover);
 
 		DrawItemSlot(menu_data, 2, recipe_group->sprite->internalId, 0, button_hovered, [&]() {
 			// Recipe group click
 			if (ImGui::IsItemClicked())
-				player_data.RecipeGroupSelect(index);
+				player_data.crafting.RecipeGroupSelect(index);
 
 			// Item tooltip
 			std::stringstream description_ss;
@@ -196,13 +192,13 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 	});
 
 	// Menu recipes
-	const auto& selected_group = groups[player_data.RecipeGroupGetSelected()];
+	const auto& selected_group = groups[player_data.crafting.RecipeGroupGetSelected()];
 
 	bool button_hovered = false;
 	for (const auto& recipe_category : selected_group->recipeCategories) {
 		const auto& recipes = recipe_category->recipes;
 
-		renderer::DrawSlots(10, recipes.size(), 1, [&](auto index, auto&) {
+		renderer::DrawSlots(10, recipes.size(), 1, [&](auto index, auto& /*slot_hovered*/) {
 			const data::Recipe* recipe = recipes.at(index);
 
 			const auto* product =
@@ -211,7 +207,7 @@ void RecipeMenu(game::PlayerData& player_data, const data::PrototypeManager& dat
 
 			// Do not draw item slot if it does not match search text
 			if (core::StrToLower(product->GetLocalizedName())
-				.find(core::StrToLower(player_data.recipeSearchText)) == std::string::npos)
+				.find(core::StrToLower(player_data.crafting.recipeSearchText)) == std::string::npos)
 				return;
 
 			DrawItemSlot(menu_data, 1, product->sprite->internalId, 0, button_hovered, [&]() {
@@ -253,13 +249,13 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::PrototypeMana
 				DrawItemSlot(menu_data, 1, item->sprite->internalId, 0, hovered);
 
 				// Amount of the current ingredient the player has in inventory
-				const auto player_item_count = game::GetInvItemCount(player_data.inventoryPlayer, item);
+				const auto player_item_count = game::GetInvItemCount(player_data.inventory.inventory, item);
 
 				ImGui::SameLine(renderer::kInventorySlotWidth * 1.5);
 
 				// Does not have ingredient
 				if (IsPlayerCrafting && player_item_count < ingredient_pair.second) {
-					const bool can_be_recurse_crafted = player_data.RecipeCanCraft(data_manager, recipe, 1);
+					const bool can_be_recurse_crafted = player_data.crafting.RecipeCanCraft(data_manager, recipe, 1);
 
 					renderer::ImGuard guard{};
 					if (can_be_recurse_crafted)
@@ -285,14 +281,14 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::PrototypeMana
 
 			auto raw_inames = data::Recipe::RecipeGetTotalRaw(data_manager, product_item->name);
 
-			renderer::DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto&) {
+			renderer::DrawSlots(5, raw_inames.size(), 1, [&](const auto slot_index, auto& /*slot_hover*/) {
 				const auto* item =
 					data_manager.DataRawGet<data::Item>(raw_inames[slot_index].first);
 
 				const auto item_count_required = raw_inames[slot_index].second;
 
 				// const auto player_item_count = 
-				// 	game::GetInvItemCount(player_data.inventoryPlayer, player_data.kInventorySize, item);
+				// 	game::GetInvItemCount(player_data.inventory.inventoryPlayer, player_data.inventory.kInventorySize, item);
 				//
 				//
 				// J_GUI_RAII_STYLE_COLOR_POP(1);
@@ -310,8 +306,10 @@ void RecipeHoverTooltip(game::PlayerData& player_data, const data::PrototypeMana
 
 // ======================================================================
 
-void renderer::CharacterMenu(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                             const data::PrototypeBase*, data::UniqueDataBase*) {
+void renderer::CharacterMenu(const MenuFunctionParams& params) {
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
+
 	SetupNextWindowLeft();
 	PlayerInventoryMenu(player_data, data_manager);
 
@@ -319,9 +317,9 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::Prototyp
 	RecipeMenu(player_data, data_manager, "Recipe",
 	           [&](auto& recipe, auto& button_hovered) {
 		           if (ImGui::IsItemClicked()) {
-			           if (player_data.RecipeCanCraft(data_manager, recipe, 1)) {
-				           player_data.RecipeCraftR(data_manager, recipe);
-				           player_data.InventorySort(player_data.inventoryPlayer);
+			           if (player_data.crafting.RecipeCanCraft(data_manager, recipe, 1)) {
+				           player_data.crafting.RecipeCraftR(data_manager, recipe);
+				           player_data.inventory.InventorySort(player_data.inventory.inventory);
 			           }
 		           }
 
@@ -330,17 +328,16 @@ void renderer::CharacterMenu(game::PlayerData& player_data, const data::Prototyp
 	           });
 }
 
-void renderer::CursorWindow(game::PlayerData& player_data, const data::PrototypeManager&,
-                            const data::PrototypeBase*, data::UniqueDataBase*) {
-	using namespace jactorio;
+void renderer::CursorWindow(const MenuFunctionParams& params) {
 	// Draw the tooltip of what is currently selected
 
+    auto& player_data = params.player;
 	const auto menu_data = GetMenuData();
 
 	// Player has an item selected, draw it on the tooltip
-	const auto* selected_stack = player_data.GetSelectedItemStack();
+	const auto* selected_stack = player_data.inventory.GetSelectedItem();
 
-	if (selected_stack) {
+	if (selected_stack != nullptr) {
 		ImGuard guard{};
 		guard.PushStyleColor(ImGuiCol_Border, kGuiColNone);
 		guard.PushStyleColor(ImGuiCol_PopupBg, kGuiColNone);
@@ -348,7 +345,7 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::Prototype
 		// Draw the window at the cursor
 		const ImVec2 cursor_pos(
 			core::LossyCast<float>(game::MouseSelection::GetCursorX()),
-			core::LossyCast<float>(game::MouseSelection::GetCursorY() + 2.f)
+			core::LossyCast<float>(game::MouseSelection::GetCursorY()) + 2.f
 		);
 		ImGui::SetNextWindowPos(cursor_pos);
 
@@ -380,8 +377,9 @@ void renderer::CursorWindow(game::PlayerData& player_data, const data::Prototype
 	}
 }
 
-void renderer::CraftingQueue(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                             const data::PrototypeBase*, data::UniqueDataBase*) {
+void renderer::CraftingQueue(const MenuFunctionParams& params) {
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
 	auto menu_data = GetMenuData();
 
 	ImGuiWindowFlags flags = 0;
@@ -392,7 +390,7 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 	flags |= ImGuiWindowFlags_NoScrollbar;
 	flags |= ImGuiWindowFlags_NoScrollWithMouse;
 
-	const auto& recipe_queue = player_data.GetRecipeQueue();
+	const auto& recipe_queue = player_data.crafting.GetRecipeQueue();
 
 
 	const auto y_slots = (recipe_queue.size() + 10 - 1) / 10;  // Always round up for slot count
@@ -421,7 +419,8 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 	guard.PushStyleColor(ImGuiCol_Border, kGuiColNone);
 
 	DrawSlots(10, recipe_queue.size(), 1, [&](auto index, auto& button_hovered) {
-		const data::Recipe* recipe = recipe_queue.at(index);
+		const data::Recipe* recipe = recipe_queue.at(index).Get();
+        assert(recipe != nullptr);
 
 		const auto* item =
 			data_manager.DataRawGet<data::Item>(recipe->product.first);
@@ -433,12 +432,13 @@ void renderer::CraftingQueue(game::PlayerData& player_data, const data::Prototyp
 
 float last_pickup_fraction = 0.f;
 
-void renderer::PickupProgressbar(game::PlayerData& player_data, const data::PrototypeManager&,
-                                 const data::PrototypeBase*, data::UniqueDataBase*) {
+void renderer::PickupProgressbar(const MenuFunctionParams& params) {
+    auto& player_data = params.player;
+
 	constexpr float progress_bar_width  = 260 * 2;
 	constexpr float progress_bar_height = 13;
 
-	const float pickup_fraction = player_data.GetPickupPercentage();
+	const float pickup_fraction = player_data.placement.GetPickupPercentage();
 	// Do not draw progress bar if 0 or has not moved since last tick
 	if (pickup_fraction == 0 || last_pickup_fraction == pickup_fraction)
 		return;
@@ -470,10 +470,14 @@ void renderer::PickupProgressbar(game::PlayerData& player_data, const data::Prot
 
 // ==========================================================================================
 // Entity menus
-void renderer::ContainerEntity(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                               const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
-	assert(prototype);
-	assert(unique_data);
+void renderer::ContainerEntity(const MenuFunctionParams& params) {
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
+    const auto* prototype = params.prototype;
+    auto* unique_data = params.uniqueData;
+
+	assert(prototype != nullptr);
+	assert(unique_data != nullptr);
 	auto& container_data = *static_cast<data::ContainerEntityData*>(unique_data);
 
 	SetupNextWindowLeft();
@@ -499,10 +503,15 @@ void renderer::ContainerEntity(game::PlayerData& player_data, const data::Protot
 	});
 }
 
-void renderer::MiningDrill(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                           const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
-	assert(prototype);
-	assert(unique_data);
+void renderer::MiningDrill(const MenuFunctionParams& params) {
+    auto& logic_data = params.logic;
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
+    const auto* prototype = params.prototype;
+    auto* unique_data = params.uniqueData;
+
+	assert(prototype != nullptr);
+	assert(unique_data != nullptr);
 	const auto& drill_data = *static_cast<const data::MiningDrillData*>(unique_data);
 
 	SetupNextWindowLeft();
@@ -516,17 +525,20 @@ void renderer::MiningDrill(game::PlayerData& player_data, const data::PrototypeM
 	DrawTitleBar(prototype->GetLocalizedName());
 
 	ImGui::ProgressBar(
-		GetProgressBarFraction(player_data.GetPlayerLogicData().GameTick(),
-		                       drill_data.deferralEntry, drill_data.miningTicks)
+		GetProgressBarFraction(logic_data.GameTick(), drill_data.deferralEntry, drill_data.miningTicks)
 	);
 }
 
-void renderer::AssemblyMachine(game::PlayerData& player_data, const data::PrototypeManager& data_manager,
-                               const data::PrototypeBase* prototype, data::UniqueDataBase* unique_data) {
-	assert(prototype);
-	assert(unique_data);
+void renderer::AssemblyMachine(const MenuFunctionParams& params) {
+    auto& logic_data = params.logic;
+    auto& player_data = params.player;
+    const auto& data_manager = params.protoManager;
+    const auto* prototype = params.prototype;
+    auto* unique_data = params.uniqueData;
 
-	auto& logic_data = player_data.GetPlayerLogicData();
+	assert(prototype != nullptr);
+	assert(unique_data != nullptr);
+
 
 	const auto& machine_proto = *static_cast<const data::AssemblyMachine*>(prototype);
 	auto& machine_data        = *static_cast<data::AssemblyMachineData*>(unique_data);
@@ -551,7 +563,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 
 		// Ingredients 
 		RemoveItemSlotTopPadding();
-		DrawSlots(10, machine_data.ingredientInv.size() + 1, 1, [&](auto index, bool&) {
+		DrawSlots(10, machine_data.ingredientInv.size() + 1, 1, [&](auto index, bool& /*slot_hover*/) {
 			// Recipe change button
 			if (index == machine_data.ingredientInv.size()) {
 				auto* reset_icon = data_manager.DataRawGet<data::Item>(data::Item::kResetIname);
@@ -604,7 +616,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 
 		const auto progress =
 			GetProgressBarFraction(
-				player_data.GetPlayerLogicData().GameTick(),
+                logic_data.GameTick(),
 				machine_data.deferralEntry,
 				core::SafeCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed))
 			);
@@ -615,7 +627,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 		ImGui::SetCursorPosY(original_cursor_y);
 
 		// Product
-		DrawSlots(10, 1, 1, [&](auto, bool&) {
+		DrawSlots(10, 1, 1, [&](auto /*slot_index*/, bool& /*slot_hover*/) {
 			auto* product_item =
 				data_manager.DataRawGet<data::Item>(machine_data.GetRecipe()->product.first);
 
@@ -634,7 +646,7 @@ void renderer::AssemblyMachine(game::PlayerData& player_data, const data::Protot
 					if (ImGui::IsItemHovered() && !button_hovered) {
 						const auto* recipe = data::Recipe::GetItemRecipe(data_manager,
 						                                                 machine_data.GetRecipe()->product.first);
-						assert(recipe);
+						assert(recipe != nullptr);
 						RecipeHoverTooltip<false>(player_data, data_manager, *recipe);
 					}
 

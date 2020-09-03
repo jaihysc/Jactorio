@@ -36,8 +36,8 @@ jactorio::renderer::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer,
 
 	DEBUG_OPENGL_CALL(
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-					 core::SafeCast<GLsizei>(width), core::SafeCast<GLsizei>(height),
-					 0, GL_RGBA, GL_UNSIGNED_BYTE, textureBuffer_.get()
+			core::SafeCast<GLsizei>(width), core::SafeCast<GLsizei>(height),
+			0, GL_RGBA, GL_UNSIGNED_BYTE, textureBuffer_.get()
 		)
 	);
 

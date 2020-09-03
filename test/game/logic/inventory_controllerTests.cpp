@@ -21,7 +21,7 @@ namespace jactorio::game
 		// Moving from inventory position 0 to position 3
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -49,7 +49,7 @@ namespace jactorio::game
 		// position 3 already has 30 items, adding 10 from position 0 to equal 40.
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -77,7 +77,7 @@ namespace jactorio::game
 		// this leaves 10 in the original location (0) and 50 in the target location (3)
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -103,7 +103,7 @@ namespace jactorio::game
 		// The item stacks are of different items, therefore only swapping positions
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -132,7 +132,7 @@ namespace jactorio::game
 		// slot 0 is filtered, therefore no swap occurs
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		const auto item  = std::make_unique<data::Item>();
 		const auto item2 = std::make_unique<data::Item>();
@@ -188,7 +188,7 @@ namespace jactorio::game
 		// The target slot is full, origin slot has something
 		// swap the 2 items
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -214,7 +214,7 @@ namespace jactorio::game
 		// Moving nothing to nothing results in nothing!
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		inv[0].item  = nullptr;
 		inv[0].count = 0;
@@ -240,7 +240,7 @@ namespace jactorio::game
 		// Move out only the stack size into the empty slot
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -267,7 +267,7 @@ namespace jactorio::game
 		// Move out only the stack size into the empty origin slot
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -294,7 +294,7 @@ namespace jactorio::game
 		// Move out only 10 to reach the stack size in the target slot
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		const auto item = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -324,7 +324,7 @@ namespace jactorio::game
 		// round down, unless there is only 1, where one is taken
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		auto item       = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -412,7 +412,7 @@ namespace jactorio::game
 		// Target inventory is empty, right clicking drops 1 item off
 
 		constexpr unsigned short inv_size = 10;
-		data::Item::Stack inv[inv_size];
+		data::ItemStack inv[inv_size];
 
 		auto item       = std::make_unique<data::Item>();
 		item->stackSize = 50;
@@ -521,7 +521,7 @@ namespace jactorio::game
 		inv[1].item  = item.get();
 		inv[1].count = 21;
 
-		auto add_item = data::Item::Stack{item2.get(), 20};
+		auto add_item = data::ItemStack{item2.get(), 20};
 		EXPECT_TRUE(CanAddStack(inv, add_item).first);
 		EXPECT_TRUE(AddStackSub(inv, add_item));
 
@@ -564,7 +564,7 @@ namespace jactorio::game
 		inv[3].item  = item_we_add_to.get();
 		inv[3].count = 20;
 
-		auto add_item = data::Item::Stack{item_we_add_to.get(), 50};
+		auto add_item = data::ItemStack{item_we_add_to.get(), 50};
 		EXPECT_TRUE(CanAddStack(inv, add_item).first);
 		EXPECT_TRUE(AddStackSub(inv, add_item));
 
@@ -599,7 +599,7 @@ namespace jactorio::game
 		inv[0].item  = item.get();
 		inv[0].count = 10;
 
-		auto add_item = data::Item::Stack{item2.get(), 20};
+		auto add_item = data::ItemStack{item2.get(), 20};
 		EXPECT_FALSE(CanAddStack(inv, add_item).first);
 		EXPECT_FALSE(AddStackSub(inv, add_item));
 

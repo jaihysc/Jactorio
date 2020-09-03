@@ -28,8 +28,8 @@ namespace jactorio::renderer
 	public:
 		static constexpr unsigned int tileWidth = 6;
 
-		static constexpr double kDepthBufferNearMax = 1.f;
-		static constexpr double kDepthBufferFarMax  = -1.f;
+		static constexpr double kDepthBufferNearMax = 1.;
+		static constexpr double kDepthBufferFarMax  = -1.;
 
 		Renderer();
 
@@ -145,7 +145,7 @@ namespace jactorio::renderer
 		/// \param row_start Chunk coordinate where the row of chunks starts
 		/// \param chunk_span Number of chunks spanned
 		/// \param render_tile_offset Offset drawn tiles on screen by this tile amount
-		void PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data,
+		void PrepareChunkRow(RendererLayer& r_layer, const game::WorldData& world_data, std::mutex& world_gen_mutex,
 		                     core::Position2<int> row_start, int chunk_span,
 		                     core::Position2<int> render_tile_offset,
 		                     GameTickT game_tick) const noexcept;
@@ -154,7 +154,7 @@ namespace jactorio::renderer
 		                  core::Position2<int> render_tile_offset,
 		                  GameTickT game_tick) const noexcept;
 
-		void PrepareTileLayers(RendererLayer& r_layer, game::ChunkTile& tile,
+		void PrepareTileLayers(RendererLayer& r_layer, const game::ChunkTile& tile,
 		                       const core::Position2<float>& pixel_pos,
 		                       GameTickT game_tick) const noexcept;
 

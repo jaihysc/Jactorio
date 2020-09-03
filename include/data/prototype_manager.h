@@ -1,22 +1,41 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
-#define JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_MANAGER_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_MANAGER_H
 #pragma once
 
 #include <algorithm>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
 #include "data/data_category.h"
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/framework/framework_base.h"
 
 namespace jactorio::data
 {
+	template <typename TProto>
+	struct IsValidPrototype
+	{
+		static constexpr bool value =
+			std::is_base_of_v<FrameworkBase, TProto> && !std::is_abstract_v<TProto>;
+	};
+
+	/// Pybind callbacks to append into the data manager at the pointer 
+	/// SerialProtoPtr deserializes with this
+	inline PrototypeManager* active_prototype_manager = nullptr;
+
 	///
 	/// \brief Manages prototype data
 	class PrototypeManager
 	{
+		/// Position 0 reserved to indicate error
+		static constexpr PrototypeIdT kInternalIdStart_ = 1;
+
+		using RelocationTableContainerT = std::vector<const FrameworkBase*>;
+
+		struct DebugInfo;
+
 	public:
 		PrototypeManager() = default;
 		~PrototypeManager();
@@ -24,98 +43,71 @@ namespace jactorio::data
 		PrototypeManager(const PrototypeManager& other)     = delete;
 		PrototypeManager(PrototypeManager&& other) noexcept = delete;
 
-	private:
-		/// Position 0 reserved to indicate error
-		static constexpr auto internal_id_start = 1;
-
-		/// Internal id which will be assigned to the next prototype added
-		unsigned int internalIdNew_ = internal_id_start;
-
-		/// Appended to the beginning of each new prototype
-		std::string directoryPrefix_;
-
-	public:
 		/// Path of the data folder from the executing directory
 		static constexpr char kDataFolder[] = "data";
 
-		/// Example: data_raw[static_cast<int>(image)]["grass-1"] -> Prototype_base
-		std::unordered_map<std::string, PrototypeBase*> dataRaw[static_cast<int>(DataCategory::count_)];
-
+		// Get
 
 		///
 		/// \brief Gets prototype at specified name, cast to T
 		/// \return nullptr if the specified prototype does not exist
-		template <typename T>
-		T* DataRawGet(const std::string& iname) const {
-			static_assert(T::category != DataCategory::none);
-
-			return DataRawGet<T>(T::category, iname);
-		}
+		template <typename TProto>
+		TProto* DataRawGet(const std::string& iname) const noexcept;
 
 		///
 		/// \brief Gets prototype at specified category and name, cast to T
 		/// \return nullptr if the specified prototype does not exist
-		template <typename T>
-		T* DataRawGet(const DataCategory data_category, const std::string& iname) const {
-
-			auto* category = &dataRaw[static_cast<uint16_t>(data_category)];
-			if (category->find(iname) == category->end()) {
-				LOG_MESSAGE_F(error, "Attempted to access non-existent prototype %s", iname.c_str());
-				return nullptr;
-			}
-
-			PrototypeBase* base = category->at(iname);
-			return static_cast<T*>(base);
-		}
+		///
+		/// Abstract types allowed for Python API
+		template <typename TProto>
+		TProto* DataRawGet(DataCategory data_category, const std::string& iname) const noexcept;
 
 
 		///
 		/// \brief Gets pointers to all data of specified data_type
-		template <typename T>
-		std::vector<T*> DataRawGetAll(const DataCategory type) const {
-			auto category_items = dataRaw[static_cast<uint16_t>(type)];
-
-			std::vector<T*> items;
-			items.reserve(category_items.size());
-
-			for (auto& it : category_items) {
-				PrototypeBase* base_ptr = it.second;
-				items.push_back(static_cast<T*>(base_ptr));
-			}
-
-			return items;
-		}
+		template <typename TProto>
+		std::vector<TProto*> DataRawGetAll(DataCategory type) const;
 
 		///
 		/// \brief Gets pointers to all data of specified data_type, sorted by Prototype_base.order
-		template <typename T>
-		std::vector<T*> DataRawGetAllSorted(const DataCategory type) const {
-			std::vector<T*> items = DataRawGetAll<T>(type);
+		template <typename TProto>
+		std::vector<TProto*> DataRawGetAllSorted(DataCategory type) const;
 
-			// Sort
-			std::sort(items.begin(),
-			          items.end(),
-			          [](PrototypeBase* a, PrototypeBase* b) {
-				          return a->order < b->order;
-			          });
-			return items;
+
+		// Add 
+
+		///
+		/// \brief Sets the prefix which will be added to all internal names
+		/// Provide empty string to disable
+		/// 
+		/// Prefix of "base" : "electric-pole" becomes "__base__/electric-pole"
+		void SetDirectoryPrefix(const std::string& name = "");
+
+		///
+		/// \brief Create anonymous prototype TProto
+		/// \return Created prototype
+		template <typename TProto>
+		TProto& AddProto() {
+			return AddProto<TProto>("");
 		}
 
+		///
+		/// \brief Forwards TArgs to create prototype TProto
+		/// \return Created prototype
+		template <typename TProto, typename ... TArgs>
+		TProto& AddProto(const std::string& iname, TArgs&& ... args);
+
+
+		// Utility
+
+		///
+		/// \brief Searches through all categories for prototype
+		/// \return pointer to prototype, nullptr if not found
+		template <typename TProto = FrameworkBase>
+		J_NODISCARD TProto* FindProto(const std::string& iname) const noexcept;
+
+
 		// ======================================================================
-
-		///
-		/// \brief Sets the prefix which will be added to all internal names <br>
-		/// Prefix of "base" : "electric-pole" becomes "__base__/electric-pole"
-		void SetDirectoryPrefix(const std::string& name);
-
-		///
-		/// \brief Adds a prototype
-		/// \param iname Internal name of prototype
-		/// \param prototype Prototype pointer, do not delete, must be unique for each added
-		/// \param add_directory_prefix Should the directory prefix be appended to the provided iname
-		void DataRawAdd(const std::string& iname,
-		                PrototypeBase* prototype,
-		                bool add_directory_prefix = false);
 
 
 		///
@@ -127,17 +119,147 @@ namespace jactorio::data
 
 
 		///
-		/// \brief Searches through all categories to check if prototype exists, perfer DataRawGet() == nullptr if category is known
-		J_NODISCARD bool PrototypeExists(const std::string& iname) const;
-
-		///
 		/// \brief Frees all pointer data within data_raw, clears data_raw
 		void ClearData();
+
+
+		// ======================================================================
+
+
+		// Deserialize
+
+		///
+		/// \brief RelocationTableGet can be used after this is called
+		void GenerateRelocationTable();
+
+		///
+		/// \brief Fetches prototype at prototype id
+		template <typename TProto = FrameworkBase>
+		J_NODISCARD const TProto& RelocationTableGet(PrototypeIdT prototype_id) const noexcept;
+
+
+		J_NODISCARD DebugInfo GetDebugInfo() const;
+
+	private:
+		///
+		/// \brief Adds a prototype
+		/// \param iname Internal name of prototype
+		/// \param prototype Prototype pointer, takes ownership, must be unique for each added
+		void DataRawAdd(const std::string& iname, FrameworkBase* prototype);
+
+
+		struct DebugInfo
+		{
+			const RelocationTableContainerT& relocationTable;
+		};
+
+
+		/// Example: data_raw[static_cast<int>(image)]["grass-1"] -> Prototype_base
+		std::unordered_map<std::string, FrameworkBase*> dataRaw_[static_cast<int>(DataCategory::count_)];
+
+		RelocationTableContainerT relocationTable_;
+
+
+		/// Internal id which will be assigned to the next prototype added
+		PrototypeIdT internalIdNew_ = kInternalIdStart_;
+
+		/// Appended to the beginning of each new prototype
+		std::string directoryPrefix_;
 	};
 
+	template <typename TProto>
+	TProto* PrototypeManager::DataRawGet(const std::string& iname) const noexcept {
+        static_assert(IsValidPrototype<TProto>::value);
+		static_assert(TProto::category != DataCategory::none);
 
-	/// For pybind callbacks to append into the data manager at the pointer 
-	inline PrototypeManager* active_data_manager = nullptr;
+		return DataRawGet<TProto>(TProto::category, iname);
+	}
+
+	template <typename TProto>
+	TProto* PrototypeManager::DataRawGet(const DataCategory data_category, const std::string& iname) const noexcept {
+        static_assert(std::is_base_of_v<FrameworkBase, TProto>);
+
+		const auto* category = &dataRaw_[static_cast<uint16_t>(data_category)];
+
+        try {
+            FrameworkBase* base = category->at(iname);
+            return static_cast<TProto*>(base);
+        }
+        catch (std::out_of_range&) {
+            LOG_MESSAGE_F(error, "Attempted to access non-existent prototype %s", iname.c_str());
+            return nullptr;
+        }
+	}
+
+	template <typename TProto>
+	std::vector<TProto*> PrototypeManager::DataRawGetAll(const DataCategory type) const {
+        static_assert(IsValidPrototype<TProto>::value);
+
+		auto category_items = dataRaw_[static_cast<uint16_t>(type)];
+
+		std::vector<TProto*> items;
+		items.reserve(category_items.size());
+
+		for (auto& it : category_items) {
+			FrameworkBase* base_ptr = it.second;
+			items.push_back(static_cast<TProto*>(base_ptr));
+		}
+
+		return items;
+	}
+
+	template <typename TProto>
+	std::vector<TProto*> PrototypeManager::DataRawGetAllSorted(const DataCategory type) const {
+        static_assert(IsValidPrototype<TProto>::value);
+
+		std::vector<TProto*> items = DataRawGetAll<TProto>(type);
+
+		// Sort
+		std::sort(items.begin(),
+		          items.end(),
+		          [](FrameworkBase* a, FrameworkBase* b) {
+			          return a->order < b->order;
+		          });
+		return items;
+	}
+
+	template <typename TProto, typename ... TArgs>
+	TProto& PrototypeManager::AddProto(const std::string& iname, TArgs&&... args) {
+        static_assert(IsValidPrototype<TProto>::value);
+
+		auto* proto = new TProto(std::forward<TArgs>(args)...);
+		assert(proto != nullptr);
+
+		DataRawAdd(iname, proto);
+		return *proto;
+	}
+
+	template <typename TProto>
+	TProto* PrototypeManager::FindProto(const std::string& iname) const noexcept {
+        static_assert(std::is_base_of_v<FrameworkBase, TProto>);
+
+		for (const auto& map : dataRaw_) {
+			auto i = map.find(iname);
+			if (i != map.end()) {
+				return static_cast<TProto*>(i->second);
+			}
+		}
+		return nullptr;
+	}
+
+	template <typename TProto>
+	const TProto& PrototypeManager::RelocationTableGet(PrototypeIdT prototype_id) const noexcept {
+        static_assert(std::is_base_of_v<FrameworkBase, TProto>);
+
+		assert(relocationTable_.size() >= prototype_id);
+		assert(prototype_id > 0);
+		prototype_id -= 1;  // Prototype ids start from 1
+
+		assert(relocationTable_.at(prototype_id));
+
+		const auto* proto = relocationTable_[prototype_id];
+		return static_cast<const TProto&>(*proto);
+	}
 }
 
-#endif //JACTORIO_INCLUDE_DATA_DATA_MANAGER_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_MANAGER_H

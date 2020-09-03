@@ -4,181 +4,245 @@
 
 #include "game/world/chunk_tile_layer.h"
 
+#include "jactorioTests.h"
+#include "data/unique_data_manager.h"
+#include "data/cereal/register_type.h"
+
 namespace jactorio::game
 {
-	TEST(ChunkTileLayer, CopyNonMultiTile) {
-		// Since the top left tile copy is unknown, it is set as nullptr
+	class ChunkTileLayerTest : public testing::Test
+	{
+	protected:
+		data::ContainerEntity proto_;
 
-		const ChunkTileLayer ctl{};
-
-		// Copy construct
-		{
-			const ChunkTileLayer ctl_copy{ctl};
-			EXPECT_FALSE(ctl_copy.IsMultiTile());
+		void SetupMultiTileProp(ChunkTileLayer& ctl, const MultiTileData& mt_data) {
+			TestSetupMultiTileProp(ctl, mt_data, proto_);
 		}
-		// Copy assignment
+	};
+
+	TEST_F(ChunkTileLayerTest, Copy) {
+		ChunkTileLayer top_left;
+		SetupMultiTileProp(top_left, {5, 2});
+		top_left.MakeUniqueData<data::ContainerEntityData>(32);
+
+		ChunkTileLayer ctl;
+		SetupMultiTileProp(ctl, {5, 2});
+		ctl.SetMultiTileIndex(4);
+		ctl.SetTopLeftLayer(top_left);
+
+		// Top left
 		{
-			const ChunkTileLayer ctl_copy = ctl;
-			EXPECT_FALSE(ctl_copy.IsMultiTile());
+			const ChunkTileLayer copy{top_left};
+			EXPECT_EQ(copy.GetMultiTileIndex(), 0);
+
+			EXPECT_EQ(copy.GetMultiTileData().height, 2);
+			EXPECT_EQ(copy.GetMultiTileData(), top_left.GetMultiTileData());
+
+			EXPECT_EQ(copy.GetUniqueData<data::ContainerEntityData>()->inventory.size(), 32);
+		}
+		// Non top left
+		{
+			const ChunkTileLayer copy = ctl;
+
+			EXPECT_EQ(copy.GetMultiTileIndex(), 4);
+
+			EXPECT_EQ(copy.GetMultiTileData().span, 5);
+			EXPECT_EQ(copy.GetMultiTileData(), top_left.GetMultiTileData());
+
+			EXPECT_EQ(copy.GetTopLeftLayer(), nullptr);  // top left layer not copied
 		}
 	}
 
-	TEST(ChunkTileLayer, CopyMultiTile) {
-		// Since the top left tile copy is unknown, it is set as nullptr
-		ChunkTileLayer parent{};
-		parent.multiTileIndex = 0;
-		parent.InitMultiTileProp(1, 2);
+	TEST_F(ChunkTileLayerTest, Move) {
+		ChunkTileLayer top_left;
+		SetupMultiTileProp(top_left, {5, 2});
+		top_left.MakeUniqueData<data::ContainerEntityData>(32);
+
+		ChunkTileLayer ctl;
+		SetupMultiTileProp(ctl, {5, 2});
+		ctl.SetMultiTileIndex(4);
+		ctl.SetTopLeftLayer(top_left);
+
+		// Top left
+		{
+			const ChunkTileLayer move_to = std::move(top_left);
+
+			EXPECT_EQ(top_left.GetUniqueData<data::ContainerEntityData>(), nullptr);  // Gave ownership
+			EXPECT_NE(move_to.GetUniqueData<data::ContainerEntityData>(), nullptr);  // Took ownership
+		}
+		// Non top left
+		{
+			const ChunkTileLayer move_to = std::move(ctl);
+
+			EXPECT_EQ(move_to.GetTopLeftLayer(), &top_left); 
+		}
+	}
+
+
+	TEST_F(ChunkTileLayerTest, GetUniqueData) {
+		ChunkTileLayer top_left{};
+		SetupMultiTileProp(top_left, {2, 3});
+		top_left.MakeUniqueData<data::ContainerEntityData>(10);
 
 		ChunkTileLayer ctl{};
-		ctl.multiTileIndex = 3;
-		ctl.SetMultiTileParent(&parent);
+		SetupMultiTileProp(ctl, {2, 3});
+		ctl.SetMultiTileIndex(3);
+		ctl.SetTopLeftLayer(top_left);
+		
 
-		// Copy construct
+		EXPECT_EQ(top_left.GetUniqueData(), ctl.GetUniqueData());
+		EXPECT_EQ(top_left.GetUniqueData(), top_left.GetUniqueDataLocal());
+	}
+
+
+	TEST_F(ChunkTileLayerTest, IsTopLeft) {
 		{
-			ChunkTileLayer ctl_copy{ctl};
-			EXPECT_NE(ctl_copy.multiTileIndex, 0);
-
-			ctl_copy.multiTileIndex = 0;  // Set index to 0 so .is_multi_tile() does not assert false
-			EXPECT_FALSE(ctl_copy.IsMultiTile());  // Not considered multi tile since it does not point to parent
+			const ChunkTileLayer ctl{};
+			EXPECT_TRUE(ctl.IsTopLeft());
 		}
-		// Copy assignment
 		{
-			ChunkTileLayer ctl_copy = ctl;
-			EXPECT_NE(ctl_copy.multiTileIndex, 0);
-
-			ctl_copy.multiTileIndex = 0;  // Set index to 0 so .is_multi_tile() does not assert false
-			EXPECT_FALSE(ctl_copy.IsMultiTile());  // Not considered multi tile since it does not point to parent
+			ChunkTileLayer ctl{};
+			ctl.SetMultiTileIndex(0);
+			EXPECT_TRUE(ctl.IsTopLeft());
+		}
+		{
+			ChunkTileLayer ctl{};
+			SetupMultiTileProp(ctl, {1, 2});
+			EXPECT_TRUE(ctl.IsTopLeft());
+		}
+		{
+			ChunkTileLayer ctl{};
+			ctl.SetMultiTileIndex(4);
+			EXPECT_FALSE(ctl.IsTopLeft());
+		}
+		{
+			ChunkTileLayer ctl{};
+			ctl.SetMultiTileIndex(90);
+			EXPECT_FALSE(ctl.IsTopLeft());
 		}
 	}
 
-	TEST(ChunkTileLayer, CopyMultiTileTopLeft) {
-		ChunkTileLayer ctl{};
-		ctl.multiTileIndex = 0;
-		ctl.InitMultiTileProp(1, 2);
-
-		// Copy construct
+	TEST_F(ChunkTileLayerTest, IsMultiTile) {
 		{
-			const ChunkTileLayer ctl_copy{ctl};
-			EXPECT_NE(&ctl_copy.GetMultiTileData(), &ctl.GetMultiTileData());
+			const ChunkTileLayer ctl{};
+			EXPECT_FALSE(ctl.IsMultiTile());  // No prototype data
 		}
-		// Copy assignment
-		{
-			const ChunkTileLayer ctl_copy = ctl;
-			EXPECT_NE(&ctl_copy.GetMultiTileData(), &ctl.GetMultiTileData());
-		}
-	}
-
-	TEST(ChunkTileLayer, IsMultiTile) {
 		{
 			ChunkTileLayer ctl{};
-			ctl.multiTileIndex = 0;
-			EXPECT_FALSE(ctl.IsMultiTile());
+			SetupMultiTileProp(ctl, {1, 1});
+			ctl.SetMultiTileIndex(0);
+			EXPECT_FALSE(ctl.IsMultiTile());  // multiTileIndex is 0, multiTileData is 1, 1
 		}
-
 		{
 			ChunkTileLayer ctl{};
-			ctl.multiTileIndex = 0;
-			ctl.InitMultiTileProp(1, 2);
+			SetupMultiTileProp(ctl, {1, 2});
+			ctl.SetMultiTileIndex(0);
 			EXPECT_TRUE(ctl.IsMultiTile());
 		}
 		{
 			ChunkTileLayer ctl{};
-			ctl.multiTileIndex = 4;
-			ctl.SetMultiTileParent(&ctl);  // Some random address
+			SetupMultiTileProp(ctl, {1, 2});
+			ctl.SetMultiTileIndex(4);
 			EXPECT_TRUE(ctl.IsMultiTile());
 		}
 	}
 
-	TEST(ChunkTileLayer, IsMultiTileTopLeft) {
+	TEST_F(ChunkTileLayerTest, IsMultiTileTopLeft) {
 		{
 			ChunkTileLayer ctl{};
-			ctl.multiTileIndex = 0;
+			ctl.SetMultiTileIndex(0);
 			EXPECT_FALSE(ctl.IsMultiTileTopLeft());
 		}
 
 		{
 			ChunkTileLayer ctl{};
-			ctl.multiTileIndex = 0;
-			ctl.InitMultiTileProp(1, 2);
+			ctl.SetMultiTileIndex(0);
+			SetupMultiTileProp(ctl, {1, 2});
 			EXPECT_TRUE(ctl.IsMultiTileTopLeft());
 		}
 		{
 			ChunkTileLayer ctl{};
-			ctl.multiTileIndex = 4;
-			ctl.SetMultiTileParent(&ctl);  // Some random address
+			ctl.SetMultiTileIndex(4);
 			EXPECT_FALSE(ctl.IsMultiTileTopLeft());
 		}
 	}
 
+	TEST_F(ChunkTileLayerTest, IsNonTopLeftMultiTile) {
+		{
+			ChunkTileLayer ctl{};
+			ctl.SetMultiTileIndex(0);
+			EXPECT_FALSE(ctl.IsNonTopLeftMultiTile());
+		}
 
-	TEST(ChunkTileLayer, GetMultiTileTopLeft) {
-		ChunkTileLayer first{};
-		EXPECT_EQ(&first.GetMultiTileTopLeft(), &first);  // Returns self if not multi tile
-
-		first.InitMultiTileProp(12, 32);
-
-		ChunkTileLayer second{};
-		second.multiTileIndex = 1;
-		second.SetMultiTileParent(&first);
-
-
-		EXPECT_EQ(&first.GetMultiTileTopLeft(), &first);
-		EXPECT_EQ(&second.GetMultiTileTopLeft(), &first);
+		{
+			ChunkTileLayer ctl{};
+			SetupMultiTileProp(ctl, {1, 2});
+			ctl.SetMultiTileIndex(0);
+			EXPECT_FALSE(ctl.IsNonTopLeftMultiTile());
+		}
+		{
+			ChunkTileLayer ctl{};
+			SetupMultiTileProp(ctl, {1, 2});
+			ctl.SetMultiTileIndex(4);
+			EXPECT_TRUE(ctl.IsNonTopLeftMultiTile());
+		}
 	}
 
-	/*
-	TEST(ChunkTileLayer, GetMultiTileTopLeftNonMultitile) {
-		jactorio::game::ChunkTileLayer first{};
-
-		EXPECT_EQ(first.GetMultiTileTopLeft(), &first);
-	}
-	*/
-
-	TEST(ChunkTileLayer, SetMultiTileParent) {
-		ChunkTileLayer first{};
-		ChunkTileLayer second{};
-		second.multiTileIndex = 1;
-		second.SetMultiTileParent(&first);
-
-		EXPECT_EQ(second.GetMultiTileParent(), &first);
-	}
-
-	TEST(ChunkTileLayer, OverrideMultiTileData) {
+	TEST_F(ChunkTileLayerTest, OverrideMultiTileData) {
 		// Both should return the same multi tile data
-		ChunkTileLayer first{};
-		first.InitMultiTileProp(12, 32);
-		first.InitMultiTileProp(3, 30);
-
-		MultiTileData& data = first.GetMultiTileData();
-
-		EXPECT_EQ(data.multiTileSpan, 3);
-		EXPECT_EQ(data.multiTileHeight, 30);
-	}
-
-	TEST(ChunkTileLayer, GetMultiTileData) {
-		// Both should return the same multi tile data
-		ChunkTileLayer first{};
-		first.InitMultiTileProp(12, 32);
-
-		ChunkTileLayer second{};
-		second.multiTileIndex = 1;
-		second.SetMultiTileParent(&first);
-
-
-		MultiTileData& data_1 = first.GetMultiTileData();
-		MultiTileData& data_2 = second.GetMultiTileData();
-
-		EXPECT_EQ(&data_1, &data_2);
-		EXPECT_NE(&data_1, nullptr);
-	}
-
-	TEST(ChunkTileLayer, AdjustToTopleft) {
-		ChunkTileLayer parent{};
-		parent.InitMultiTileProp(3, 2);
-
 		ChunkTileLayer ctl{};
-		ctl.multiTileIndex = 5;
-		ctl.SetMultiTileParent(&parent);
+		SetupMultiTileProp(ctl, {12, 32});
+		SetupMultiTileProp(ctl, {3, 30});
+
+		const auto& data = ctl.GetMultiTileData();
+
+		EXPECT_EQ(data.span, 3);
+		EXPECT_EQ(data.height, 30);
+	}
+
+	TEST_F(ChunkTileLayerTest, GetMultiTileData) {
+		ChunkTileLayer first{};
+		SetupMultiTileProp(first, {12, 32});
+
+		ASSERT_TRUE(first.HasMultiTileData());
+		const auto& data_1 = first.GetMultiTileData();
+
+		EXPECT_EQ(data_1.span, proto_.tileWidth);
+		EXPECT_EQ(data_1.height, proto_.tileHeight);
+
+
+		ChunkTileLayer second{};
+		second.SetMultiTileIndex(1);
+		ASSERT_FALSE(second.HasMultiTileData());
+	}
+
+
+	TEST_F(ChunkTileLayerTest, SetMultiTileIndex) {
+		ChunkTileLayer ctl;
+		ctl.MakeUniqueData<data::ContainerEntityData>(3);
+
+		ctl.SetMultiTileIndex(1);  // unique data should be deleted 
+
+		// Valgrind emits error if unique data not deleted
+	}
+
+	TEST_F(ChunkTileLayerTest, GetTopleftLayer) {
+		ChunkTileLayer top_left;
+
+		ChunkTileLayer ctl;
+		SetupMultiTileProp(ctl, {1, 2});
+		ctl.SetMultiTileIndex(1); 
+
+		EXPECT_EQ(ctl.GetTopLeftLayer(), nullptr);
+
+		ctl.SetTopLeftLayer(top_left);
+		EXPECT_EQ(ctl.GetTopLeftLayer(), &top_left);
+	}
+
+	TEST_F(ChunkTileLayerTest, AdjustToTopleft) {
+		ChunkTileLayer ctl{};
+		SetupMultiTileProp(ctl, {3, 2});
+		ctl.SetMultiTileIndex(5);
 
 		int x = 0;
 		int y = 0;
@@ -188,8 +252,8 @@ namespace jactorio::game
 		EXPECT_EQ(y, -1);
 	}
 
-	TEST(ChunkTileLayer, AdjustToTopleftNonMultiTile) {
-		ChunkTileLayer ctl{};
+	TEST_F(ChunkTileLayerTest, AdjustToTopleftNonMultiTile) {
+		const ChunkTileLayer ctl{};
 
 		int x = 0;
 		int y = 0;
@@ -199,25 +263,62 @@ namespace jactorio::game
 		EXPECT_EQ(y, 0);
 	}
 
-	TEST(ChunkTileLayer, GetOffsetX) {
-		ChunkTileLayer parent{};
-		parent.InitMultiTileProp(10, 2);
-
+	TEST_F(ChunkTileLayerTest, GetOffsetX) {
 		ChunkTileLayer ctl{};
-		ctl.multiTileIndex = 19;
-		ctl.SetMultiTileParent(&parent);
+		SetupMultiTileProp(ctl, {10, 2});
+		ctl.SetMultiTileIndex(19);
 
 		EXPECT_EQ(ctl.GetOffsetX(), 9);
 	}
 
-	TEST(ChunkTileLayer, GetOffsetY) {
-		ChunkTileLayer parent{};
-		parent.InitMultiTileProp(5, 2);
-
+	TEST_F(ChunkTileLayerTest, GetOffsetY) {
 		ChunkTileLayer ctl{};
-		ctl.multiTileIndex = 20;
-		ctl.SetMultiTileParent(&parent);
+		SetupMultiTileProp(ctl, {5, 2});
+		ctl.SetMultiTileIndex(20);
 
 		EXPECT_EQ(ctl.GetOffsetY(), 4);
+	}
+
+	TEST_F(ChunkTileLayerTest, Serialize) {
+		data::PrototypeManager proto_manager;
+        data::UniqueDataManager unique_manager;
+
+		data::active_prototype_manager = &proto_manager;
+        data::active_unique_data_manager = &unique_manager;
+
+		auto& proto = proto_manager.AddProto<data::ContainerEntity>();
+
+		ChunkTileLayer top_left;
+		TestSetupMultiTileProp(top_left, {2, 2}, proto);
+		top_left.SetMultiTileIndex(0);
+		top_left.MakeUniqueData<data::ContainerEntityData>(10);
+
+		ChunkTileLayer bot_right;
+		TestSetupMultiTileProp(bot_right, {2, 2}, proto);
+		bot_right.SetMultiTileIndex(3);
+		bot_right.SetTopLeftLayer(top_left);
+
+		proto_manager.GenerateRelocationTable();
+
+		// ======================================================================
+		auto result_tl = TestSerializeDeserialize(top_left);
+		auto result_br = TestSerializeDeserialize(bot_right);
+
+		EXPECT_EQ(result_tl.prototypeData, &proto);
+		ASSERT_NE(result_tl.GetUniqueData(), nullptr);
+        EXPECT_EQ(result_tl.GetUniqueData()->internalId, 1);
+
+		EXPECT_EQ(result_tl.GetMultiTileData().span, 2);
+		EXPECT_EQ(result_tl.GetMultiTileData().height, 2);
+
+		
+		EXPECT_EQ(result_br.prototypeData, &proto);
+		EXPECT_EQ(result_br.GetTopLeftLayer(), nullptr);
+
+		EXPECT_EQ(result_br.GetMultiTileData().span, 2);
+		EXPECT_EQ(result_br.GetMultiTileData().height, 2);
+
+
+        EXPECT_EQ(unique_manager.GetDebugInfo().dataEntries.size(), 1);
 	}
 }

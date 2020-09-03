@@ -152,7 +152,7 @@ namespace jactorio::renderer
 		                                    SpritemapDimensionT spritemap_width,
 		                                    GeneratorNode& base_node,
 		                                    bool invert_sprites,
-											SpriteUvCoordsT& image_positions,
+		                                    SpriteUvCoordsT& image_positions,
 		                                    SpritemapDimensionT x_offset, SpritemapDimensionT y_offset);
 	};
 }

@@ -237,7 +237,7 @@ void renderer::RendererSprites::GenerateSpritemapNodes(std::vector<const data::S
 
 renderer::RendererSprites::SpritemapDimensionT renderer::RendererSprites::GetSpritemapWidth(GeneratorNode& base_node) {
 	// Added to width of each sprite
-	SpritemapDimensionT width    = 0;
+	SpritemapDimensionT width   = 0;
 	GeneratorNode* current_node = &base_node;
 
 	while (true) {
@@ -307,7 +307,7 @@ void renderer::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture:
                                                         const SpritemapDimensionT spritemap_width,
                                                         GeneratorNode& base_node,
                                                         const bool invert_sprites,
-														SpriteUvCoordsT& image_positions,
+                                                        SpriteUvCoordsT& image_positions,
                                                         SpritemapDimensionT x_offset, const SpritemapDimensionT y_offset) {
 	auto adjusted_x_offset = x_offset;
 	auto adjusted_y_offset = y_offset;

@@ -4,11 +4,11 @@
 
 #include <vector>
 
-#include "data/prototype/entity/inserter.h"
+#include "data/prototype/inserter.h"
 
 using namespace jactorio;
 
-double game::GetInserterArmOffset(const core::TIntDegree degree, const uint8_t target_distance) {
+double game::GetInserterArmOffset(const core::TIntDegree degree, const unsigned target_distance) {
 	auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
 	result *= core::TanF(degree);
 	result *= -1;
@@ -17,7 +17,7 @@ double game::GetInserterArmOffset(const core::TIntDegree degree, const uint8_t t
 	return result;
 }
 
-double game::GetInserterArmLength(const core::TIntDegree degree, const uint8_t target_distance) {
+double game::GetInserterArmLength(const core::TIntDegree degree, const unsigned target_distance) {
 	auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
 	result /= core::CosF(degree);
 	result *= -1;
@@ -55,7 +55,7 @@ void RotateInserters(DropoffQueue& dropoff_queue, PickupQueue& pickup_queue,
 	case data::InserterData::Status::dropoff:
 		props.data.rotationDegree -= props.proto.rotationSpeed;
 
-		if (props.data.rotationDegree <= data::ToRotationDegree(kMinInserterDegree)) {
+		if (props.data.rotationDegree <= data::RotationDegreeT(kMinInserterDegree)) {
 			props.data.rotationDegree = 0;  // Prevents underflow if the inserter sits idle for a long time
 			dropoff_queue.push_back(props);
 		}
@@ -66,7 +66,7 @@ void RotateInserters(DropoffQueue& dropoff_queue, PickupQueue& pickup_queue,
 		// Rotate the inserter
 		props.data.rotationDegree += props.proto.rotationSpeed;
 
-		if (props.data.rotationDegree > data::ToRotationDegree(kMaxInserterDegree)) {
+		if (props.data.rotationDegree > data::RotationDegreeT(kMaxInserterDegree)) {
 			props.data.rotationDegree = kMaxInserterDegree;  // Prevents overflow
 			pickup_queue.push_back(props);
 		}

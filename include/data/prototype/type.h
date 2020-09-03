@@ -4,10 +4,10 @@
 #define JACTORIO_DATA_PROTOTYPE_TYPE_H
 #pragma once
 
-#include <decimal.h>
 #include <type_traits>
 
 #include "jactorio.h"
+#include "core/data_type.h"
 
 namespace jactorio::data
 {
@@ -15,18 +15,11 @@ namespace jactorio::data
 	using ProtoIntT = int32_t;
 	using ProtoUintT = uint32_t;
 
-	// Common types used by prototypes, includes no jactorio files
-
-	constexpr auto kInserterRotationDecimals = 3;
-
 	// Defines types for prototype classes
-	using RotationDegree = dec::decimal<kInserterRotationDecimals>;
 
-	J_NODISCARD inline RotationDegree ToRotationDegree(const double val) {
-		return dec::decimal_cast<kInserterRotationDecimals>(val);
-	}
-
-	//
+	/// Transport line item distance
+	using LineDistT = Decimal3T;
+	using RotationDegreeT = Decimal3T;
 
 	enum class Orientation
 	{
@@ -57,7 +50,7 @@ namespace jactorio::data
 	                          TyX& x, TyY& y, TyInc increment = 1) {
 		static_assert(std::is_same<TyX, TyY>::value);
 		static_assert(std::is_signed<TyX>::value);
-		
+
 		switch (orientation) {
 		case Orientation::up:
 			y -= static_cast<TyX>(increment);

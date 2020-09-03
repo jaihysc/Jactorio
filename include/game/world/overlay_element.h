@@ -14,7 +14,7 @@ namespace jactorio::game
 	enum class OverlayLayer
 	{
 		// A separate layer is only needed when it needs to be accessed independently, otherwise join together in single layer
-		general = 0,
+		cursor = 0,
 		debug,
 		count_
 	};

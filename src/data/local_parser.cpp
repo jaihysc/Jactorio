@@ -35,7 +35,7 @@ struct ParserData
 	///
 	/// \brief Logs parsing error message and throws
 	/// \exception Data_exception Thrown when this function is called
-	void ParseError(const std::string& message) const {
+	[[noreturn]] void ParseError(const std::string& message) const {
 		std::stringstream str_s;
 		str_s << "Localization parse failed " << lineNumber << ":" << charNumber << "\n" << message;
 		LOG_MESSAGE_F(error, "%s", str_s.str().c_str());
@@ -66,20 +66,12 @@ void ParseEol(jactorio::data::PrototypeManager& data_manager, ParserData& parser
 	std::stringstream str_s;
 	str_s << "__" << directory_prefix << "__/" << parser_data.lValue;
 
-	bool found = false;
-	for (auto& category : data_manager.dataRaw) {
-		for (auto& prototype : category) {
-			if (prototype.first == str_s.str()) {
-				found = true;
-				prototype.second->SetLocalizedName(parser_data.currentLineBuffer);
-
-				LOG_MESSAGE_F(debug, "Registered local '%s' '%s'", str_s.str().c_str(), parser_data.currentLineBuffer.c_str());
-				goto loop_exit;
-			}
-		}
+	auto* prototype = data_manager.FindProto(str_s.str());
+	if (prototype) {
+		prototype->SetLocalizedName(parser_data.currentLineBuffer);
+		LOG_MESSAGE_F(debug, "Registered local '%s' '%s'", str_s.str().c_str(), parser_data.currentLineBuffer.c_str());
 	}
-loop_exit:
-	if (!found) {
+	else {
 		LOG_MESSAGE_F(warning, "Local option '%s' missing matching prototype internal name", str_s.str().c_str());
 	}
 

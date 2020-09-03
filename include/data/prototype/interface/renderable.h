@@ -8,20 +8,23 @@
 
 #include "core/data_type.h"
 #include "core/math.h"
+#include "data/cereal/serialize.h"
 #include "data/prototype/sprite.h"
-#include "data/prototype/type.h"
-#include "game/world/world_data.h"
 
 namespace jactorio
 {
 	namespace data
 	{
 		class PrototypeManager;
+		enum class Orientation;
 	}
 
 	namespace game
 	{
-		class PlayerData;
+		class WorldData;
+        class LogicData;
+        class PlayerData;
+
 		class ChunkTileLayer;
 		class Chunk;
 	}
@@ -48,6 +51,11 @@ namespace jactorio::data
 
 	public:
 		Sprite::SetT set = 0;
+
+
+		CEREAL_SERIALIZE(archive) {
+			archive(set);
+		}
 	};
 
 	///
@@ -69,7 +77,7 @@ namespace jactorio::data
 		J_NODISCARD virtual Sprite* OnRGetSprite(Sprite::SetT set) const = 0;
 
 		///
-		/// \brief Maps a placementOrientation to a <set, frame>
+		/// \brief Maps a orientation to a <set, frame>
 		J_NODISCARD virtual Sprite::SetT OnRGetSpriteSet(Orientation orientation,
 		                                                 game::WorldData& world_data,
 		                                                 const WorldCoord& world_coords) const = 0;
@@ -81,8 +89,11 @@ namespace jactorio::data
 
 		///
 		/// \brief Displays the menu associated with itself with the provided data
-		virtual bool OnRShowGui(game::PlayerData& player_data, const PrototypeManager& data_manager,
-		                        game::ChunkTileLayer* tile_layer) const = 0;
+		virtual bool OnRShowGui(GameWorlds& worlds,
+                                game::LogicData& logic,
+                                game::PlayerData& player,
+                                const PrototypeManager& data_manager,
+                                game::ChunkTileLayer* tile_layer) const = 0;
 
 		///
 		/// \param pixel_offset Pixels to top left of current tile
@@ -104,7 +115,7 @@ namespace jactorio::data
 		                                  const AnimationSpeed speed = 1) {
 			assert(speed > 0);
 
-			const auto frame = 
+			const auto frame =
 				core::LossyCast<GameTickT>(speed * game_tick) % (core::SafeCast<uint64_t>(sprite.frames) * sprite.sets);
 
 			return core::SafeCast<Sprite::FrameT>(frame);
@@ -125,7 +136,7 @@ namespace jactorio::data
 			const auto frames = core::SafeCast<uint16_t>(sprite.frames) * sprite.sets;
 
 			// Shift the peak (which is at x = 0) such that when x = 0, y = 0
-			const auto adjusted_x = game_tick - (1.f / speed) * (frames - 1);
+			const auto adjusted_x = game_tick - (1. / speed) * (frames - 1);
 
 			const auto v_l = core::LossyCast<int64_t>(speed * abs(adjusted_x));
 			const auto v_r = core::SafeCast<int64_t>(frames) * 2 - 2;

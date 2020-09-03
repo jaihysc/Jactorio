@@ -11,34 +11,45 @@
 #include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
+#include "data/unique_data_manager.h"
 
 namespace jactorio::game
 {
-	struct GameInput
-	{
-		MouseSelection mouse{};
-		KeyInput key{};
+    ///
+    /// Does not persist across application restarts
+    struct GameDataLocal
+    {
+        struct GameInput
+        {
+            MouseSelection mouse;
+            KeyInput key;
+        };
+
+        data::PrototypeManager prototype;
+        data::UniqueDataManager unique;
+
+        GameInput input;
+		EventData event;
 	};
 
-	///
-	/// \brief Holds all data for the runtime of the game (Wrapped with Pybind)
-	/// Each sub data has its own mutex enabling concurrency
-	struct GameData
-	{
-		data::PrototypeManager prototype{};
+    ///
+    /// Serialized runtime data, persists across restarts
+    struct GameDataGlobal
+    {
+        GameWorlds worlds;
+        LogicData logic;
+        PlayerData player;
 
-		GameInput input{};
-		EventData event{};
+        static_assert(std::is_same_v<GameWorlds::size_type, WorldId>);
 
-		PlayerData player{};
 
-		WorldData world{};
-		LogicData logic{};
-	};
-
-	/// This should only be accessed from logic_loop or render_main,
-	/// any other should get references to members to remain testable
-	inline GameData* game_data;
+        CEREAL_SERIALIZE(archive) {
+            // Order must be: world, logic, player
+            archive(worlds);
+            archive(logic);
+            archive(player);
+        }
+    };
 }
 
 #endif //JACTORIO_INCLUDE_GAME_GAME_DATA_H

@@ -27,7 +27,8 @@ namespace jactorio::game
 	TEST_F(EventTest, SubscribeRaiseEvent) {
 		int counter = 0;
 
-		eventData_.Subscribe(EventType::logic_tick, [](MockEvent&) {});
+		eventData_.Subscribe(EventType::logic_tick, [](MockEvent&) {
+		});
 
 		eventData_.Raise<MockEvent>(EventType::logic_tick, 12, counter);
 		EXPECT_EQ(counter, 12);
@@ -41,7 +42,8 @@ namespace jactorio::game
 
 		int counter = 0;
 
-		eventData_.SubscribeOnce(EventType::logic_tick, [](MockEvent&) {});
+		eventData_.SubscribeOnce(EventType::logic_tick, [](MockEvent&) {
+		});
 
 		eventData_.Raise<MockEvent>(EventType::logic_tick, 12, counter);
 		EXPECT_EQ(counter, 12);
@@ -52,27 +54,27 @@ namespace jactorio::game
 	}
 
 	TEST_F(EventTest, UnsubscribeEvent) {
-		
-		int counter   = 0;
-		
+
+		int counter = 0;
+
 		auto callback = [](MockEvent&) {
 		};
-		
+
 		auto callback2 = [](MockEvent&) {
 		};
-		
-		
+
+
 		eventData_.Subscribe(EventType::game_chunk_generated, callback);
-		
+
 		EXPECT_TRUE(eventData_.Unsubscribe(EventType::game_chunk_generated, callback));
 		EXPECT_FALSE(eventData_.Unsubscribe(EventType::game_chunk_generated, callback2));  // Does not exist
-		
-		
+
+
 		// One time
 		eventData_.SubscribeOnce(EventType::game_chunk_generated, callback);
 		EXPECT_TRUE(eventData_.Unsubscribe(EventType::game_chunk_generated, callback));
 		EXPECT_FALSE(eventData_.Unsubscribe(EventType::game_chunk_generated, callback2));  // Does not exist
-		
+
 		// counter unchanged since all callbacks unsubscribed
 		eventData_.Raise<MockEvent>(EventType::game_chunk_generated, 1, counter);
 		EXPECT_EQ(counter, 0);
@@ -80,9 +82,10 @@ namespace jactorio::game
 
 	TEST_F(EventTest, ClearAllData) {
 		int counter = 0;
-		eventData_.Subscribe(EventType::game_chunk_generated, [](MockEvent&) { });
+		eventData_.Subscribe(EventType::game_chunk_generated, [](MockEvent&) {
+		});
 		eventData_.ClearAllData();
-		
+
 		// Nothing gets raises since it is cleared
 		eventData_.Raise<MockEvent>(EventType::game_chunk_generated, 1, counter);
 		EXPECT_EQ(counter, 0);

@@ -4,28 +4,31 @@
 #define JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_BINDINGS_H
 #pragma once
 
+#include <algorithm>
+#include <vector>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
 #include "data/prototype_manager.h"
-#include "data/prototype/prototype_base.h"
+#include "data/prototype/assembly_machine.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/inserter.h"
+#include "data/prototype/item.h"
+#include "data/prototype/mining_drill.h"
+#include "data/prototype/noise_layer.h"
 #include "data/prototype/prototype_type.h"
+#include "data/prototype/recipe_category.h"
+#include "data/prototype/recipe_group.h"
+#include "data/prototype/resource_entity.h"
 #include "data/prototype/sprite.h"
-#include "data/prototype/entity/assembly_machine.h"
-#include "data/prototype/entity/container_entity.h"
-#include "data/prototype/entity/entity.h"
-#include "data/prototype/entity/health_entity.h"
-#include "data/prototype/entity/inserter.h"
-#include "data/prototype/entity/mining_drill.h"
-#include "data/prototype/entity/resource_entity.h"
-#include "data/prototype/entity/transport_belt.h"
-#include "data/prototype/entity/transport_line.h"
-#include "data/prototype/item/item.h"
-#include "data/prototype/item/recipe_category.h"
-#include "data/prototype/item/recipe_group.h"
-#include "data/prototype/tile/noise_layer.h"
-#include "data/prototype/tile/tile.h"
+#include "data/prototype/tile.h"
+#include "data/prototype/transport_belt.h"
+#include "data/prototype/abstract_proto/entity.h"
+#include "data/prototype/abstract_proto/health_entity.h"
+#include "data/prototype/abstract_proto/transport_line.h"
+#include "data/prototype/framework/framework_base.h"
 
 // All the bindings in bindings/ defined for pybind
 // This should only be included by pybind_manager.h
@@ -36,24 +39,51 @@
 // A python object with name _Sprite will be generated to avoid ambiguity
 // To construct sprite, a constructor with the name Sprite(...) is available
 
-#define PYBIND_DATA_CLASS(cpp_class_, py_name_, ...)\
-	m.def(#py_name_, [](const std::string& iname = "") {\
-		auto* prototype = new (cpp_class_);\
+
+///
+/// \brief Call from python context, stores traceback in prototype
+inline void ExtractPythonTraceback(jactorio::data::FrameworkBase& prototype) {
+	py::exec(
+		"import sys as _sys \n"
+		"_stack_frame = _sys._getframe() \n"
+	);
+
+	std::vector<std::string> stack_frames{};
+
+	while (py::eval("_stack_frame != None").cast<bool>()) {
+		stack_frames.push_back(static_cast<py::str>(py::eval("_stack_frame")));
+
+		py::exec("_stack_frame = _stack_frame.f_back");
+	}
+
+	// Reverse as most recent call is last
+	std::reverse(stack_frames.begin(), stack_frames.end());
+
+	for (auto& stack_frame : stack_frames) {
+		prototype.pythonTraceback.append(stack_frame);
+		prototype.pythonTraceback.append("\n");
+	}
+	prototype.pythonTraceback.pop_back();  // Remove final newline
+}
+
+#define PYBIND_DATA_CLASS(cpp_class__, py_name__, ...)\
+	m.def(#py_name__, [](const std::string& iname = "") {\
+		assert(active_prototype_manager);\
+		auto& prototype = active_prototype_manager->AddProto<cpp_class__>(iname);\
 		\
-		assert(active_data_manager);\
-		active_data_manager->DataRawAdd(iname, prototype, true);\
+		ExtractPythonTraceback(prototype);\
 		\
-		return prototype;\
+		return &prototype;\
 	}, py::arg("iname") = "", pybind11::return_value_policy::reference);\
-	py::class_<cpp_class_, __VA_ARGS__>(m, "_" #py_name_)
+	py::class_<cpp_class__, __VA_ARGS__>(m, "_" #py_name__)
 
 // Does not define a function for creating the class
-#define PYBIND_DATA_CLASS_ABSTRACT(cpp_class_, py_name_, inherits_)\
-	py::class_<cpp_class_, inherits_>(m, "_" #py_name_)
+#define PYBIND_DATA_CLASS_ABSTRACT(cpp_class__, py_name__, inherits_)\
+	py::class_<cpp_class__, inherits_>(m, "_" #py_name__)
 
 
-#define PYBIND_TYPE_CLASS(cpp_class_, py_name_)\
-	py::class_<cpp_class_>(m, "_" #py_name_)
+#define PYBIND_TYPE_CLASS(cpp_class__, py_name__)\
+	py::class_<cpp_class__>(m, "_" #py_name__)
 
 // Macros below generates a self returning setter and the actual variable
 // For standard class members, a setter exists: set_NAME_OF_MEMBER
@@ -82,15 +112,15 @@
 	.def_readwrite("_" #name_, &class_::name_)
 
 // If the python name is different from the c++ name
-#define PYBIND_PROP_S(class_, py_name_, cpp_name_, cpp_name_set_)\
-	.def          (#py_name_    , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
-	.def_readwrite("_" #py_name_, &class_::cpp_name_)
+#define PYBIND_PROP_S(class_, py_name__, cpp_name_, cpp_name_set_)\
+	.def          (#py_name__    , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
+	.def_readwrite("_" #py_name__, &class_::cpp_name_)
 
 
 // If the member utilizes a getter and settler
-#define PYBIND_PROP_GET_SET(class_, py_name_, cpp_name_set_, cpp_name_get_)\
-	.def(#py_name_       , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
-	.def("get_" #py_name_, &class_::cpp_name_get_, pybind11::return_value_policy::reference)
+#define PYBIND_PROP_GET_SET(class_, py_name__, cpp_name_set_, cpp_name_get_)\
+	.def(#py_name__       , &class_::cpp_name_set_, pybind11::return_value_policy::reference)\
+	.def("get_" #py_name__, &class_::cpp_name_get_, pybind11::return_value_policy::reference)
 
 // ======================================================================
 
@@ -113,12 +143,12 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 
 	// Prototype classes
-	py::class_<PrototypeBase>(m, "_PrototypeBase")
-		.def("name", &PrototypeBase::Set_name)
-		.def("category", &PrototypeBase::Category)
-		PYBIND_PROP(PrototypeBase, order);
+	py::class_<FrameworkBase>(m, "_FrameworkBase")
+		.def("name", &FrameworkBase::Set_name)
+		.def("category", &FrameworkBase::Category)
+		PYBIND_PROP(FrameworkBase, order);
 
-	PYBIND_DATA_CLASS(Sprite, Sprite, PrototypeBase)
+	PYBIND_DATA_CLASS(Sprite, Sprite, FrameworkBase)
 		PYBIND_PROP(Sprite, group)
 		PYBIND_PROP(Sprite, frames)
 		PYBIND_PROP(Sprite, sets)
@@ -130,15 +160,15 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("Terrain", Sprite::SpriteGroup::terrain)
 		.value("Gui", Sprite::SpriteGroup::gui);
 
-	PYBIND_DATA_CLASS(Item, Item, PrototypeBase)
+	PYBIND_DATA_CLASS(Item, Item, FrameworkBase)
 		PYBIND_PROP(Item, sprite)
 		PYBIND_PROP(Item, stackSize);
 
-	PYBIND_DATA_CLASS(Tile, Tile, PrototypeBase)
+	PYBIND_DATA_CLASS(Tile, Tile, FrameworkBase)
 		PYBIND_PROP(Tile, isWater)
 		PYBIND_PROP(Tile, sprite);
 
-	PYBIND_DATA_CLASS(NoiseLayer<Tile>, NoiseLayerTile, PrototypeBase)
+	PYBIND_DATA_CLASS(NoiseLayer<Tile>, NoiseLayerTile, FrameworkBase)
 		// Perlin noise properties
 		PYBIND_PROP(NoiseLayer<Tile>, octaveCount)
 		PYBIND_PROP(NoiseLayer<Tile>, frequency)
@@ -152,7 +182,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.def("add", &NoiseLayer<Tile>::Add)
 		.def("get", &NoiseLayer<Tile>::Get);
 
-	PYBIND_DATA_CLASS(NoiseLayer<Entity>, NoiseLayerEntity, PrototypeBase)
+	PYBIND_DATA_CLASS(NoiseLayer<Entity>, NoiseLayerEntity, FrameworkBase)
 		// Perlin noise properties
 		PYBIND_PROP(NoiseLayer<Entity>, octaveCount)
 		PYBIND_PROP(NoiseLayer<Entity>, frequency)
@@ -168,7 +198,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 
 	// Entity
-	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, PrototypeBase)
+	PYBIND_DATA_CLASS_ABSTRACT(Entity, Entity, FrameworkBase)
 		PYBIND_PROP(Entity, sprite)
 		PYBIND_PROP(IRotatable, spriteE)
 		PYBIND_PROP(IRotatable, spriteS)
@@ -214,14 +244,14 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 
 	// Recipes
-	PYBIND_DATA_CLASS(RecipeGroup, RecipeGroup, PrototypeBase)
+	PYBIND_DATA_CLASS(RecipeGroup, RecipeGroup, FrameworkBase)
 		PYBIND_PROP_S(RecipeGroup, sprite, sprite, SetSprite)
 		PYBIND_PROP(RecipeGroup, recipeCategories);
 
-	PYBIND_DATA_CLASS(RecipeCategory, RecipeCategory, PrototypeBase)
+	PYBIND_DATA_CLASS(RecipeCategory, RecipeCategory, FrameworkBase)
 		PYBIND_PROP(RecipeCategory, recipes);
 
-	PYBIND_DATA_CLASS(Recipe, Recipe, PrototypeBase)
+	PYBIND_DATA_CLASS(Recipe, Recipe, FrameworkBase)
 		PYBIND_PROP(Recipe, craftingTime)
 		PYBIND_PROP(Recipe, ingredients)
 		PYBIND_PROP(Recipe, product);
@@ -251,9 +281,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 		.value("Inserter", DataCategory::inserter);
 
 	m.def("get", [](const DataCategory category, const std::string& iname) {
-		assert(active_data_manager);
+		assert(active_prototype_manager);
 
-		return active_data_manager->DataRawGet<PrototypeBase>(category, iname);
+		return active_prototype_manager->DataRawGet<FrameworkBase>(category, iname);
 	}, pybind11::return_value_policy::reference);
 
 	// ############################################################

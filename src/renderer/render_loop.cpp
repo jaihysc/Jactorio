@@ -9,18 +9,9 @@
 #include <examples/imgui_impl_sdl.h>
 
 #include "jactorio.h"
-#include "core/resource_guard.h"
 
-#include "renderer/display_window.h"
 #include "renderer/gui/imgui_manager.h"
 #include "renderer/opengl/shader.h"
-#include "renderer/opengl/texture.h"
-#include "renderer/rendering/spritemap_generator.h"
-
-#include "game/game_data.h"
-#include "game/logic_loop.h"
-#include "game/event/event.h"
-#include "game/input/input_manager.h"
 
 using namespace jactorio;
 
@@ -29,7 +20,8 @@ unsigned int window_y = 0;
 
 renderer::Renderer* main_renderer = nullptr;
 
-void renderer::ChangeWindowSize(const unsigned int window_size_x,
+void renderer::ChangeWindowSize(game::EventData& event,
+								const unsigned int window_size_x,
                                 const unsigned int window_size_y) {
 	// Ignore minimize
 	if (window_size_x == 0 && window_size_y == 0)
@@ -42,7 +34,7 @@ void renderer::ChangeWindowSize(const unsigned int window_size_x,
 	window_x = window_size_x;
 	window_y = window_size_y;
 
-	game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, []() {
+	event.SubscribeOnce(game::EventType::renderer_tick, []() {
 		main_renderer->GlResizeWindow(window_x, window_y);
 	});
 
@@ -54,40 +46,49 @@ renderer::Renderer* renderer::GetBaseRenderer() {
 }
 
 
-void RenderingLoop(renderer::DisplayWindow& display_window) {
+void RenderingLoop(LogicRenderLoopCommon& common, renderer::DisplayWindow& display_window) {
 	LOG_MESSAGE(info, "2 - Runtime stage");
 
 	auto next_frame = std::chrono::steady_clock::now();  // For zeroing the time
 
 	SDL_Event e;
 
-	while (!renderer::render_thread_should_exit) {
+	while (!common.renderThreadShouldExit) {
 		EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
+
+        auto& player_data = common.gameDataGlobal.player;
+        auto& player_world = common.gameDataGlobal.worlds[player_data.world.GetId()];
 
 		// ======================================================================
 		// RENDER LOOP ======================================================================
 		{
 			EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
 
-			game::game_data->event.Raise<game::RendererTickEvent>(
+			common.gameDataLocal.event.Raise<game::RendererTickEvent>(
 				game::EventType::renderer_tick,
 				game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)}
 			);
 
 			renderer::Renderer::GlClear();
-			std::lock_guard<std::mutex> guard{game::game_data->world.worldDataMutex};
+			std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
 			// MVP Matrices updated in here
 			main_renderer->GlRenderPlayerPosition(
-				game::game_data->logic.GameTick(),
-				game::game_data->world,
-				game::game_data->player.GetPlayerPositionX(), game::game_data->player.GetPlayerPositionY()
+				common.gameDataGlobal.logic.GameTick(),
+				player_world,
+                                                  player_data.world.GetPositionX(),
+                                                  player_data.world.GetPositionY()
 			);
 
 
-			std::lock_guard<std::mutex> gui_guard{game::game_data->player.mutex};
+			std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
 
-			ImguiDraw(display_window, game::game_data->player, game::game_data->prototype, game::game_data->event);
+            ImguiDraw(display_window,
+                      common.gameDataGlobal.worlds,
+                      common.gameDataGlobal.logic,
+                      player_data,
+                      common.gameDataLocal.prototype,
+                      common.gameDataLocal.event);
 		}
 		// ======================================================================
 		// ======================================================================
@@ -103,15 +104,15 @@ void RenderingLoop(renderer::DisplayWindow& display_window) {
 
 		while (SDL_PollEvent(&e)) {
 			ImGui_ImplSDL2_ProcessEvent(&e);
-			display_window.HandleSdlEvent(e);
+			display_window.HandleSdlEvent(common, e);
 		}
 	}
 }
 
-void renderer::RenderInit() {
-	core::ResourceGuard<void> loop_termination_guard([]() {
-		render_thread_should_exit      = true;
-		game::logic_thread_should_exit = true;
+void renderer::RenderInit(LogicRenderLoopCommon& common) {
+	core::CapturingGuard<void()> loop_termination_guard([&]() {
+		common.renderThreadShouldExit = true;
+		common.logicThreadShouldExit  = true;
 	});
 
 	// Init window
@@ -151,14 +152,14 @@ void renderer::RenderInit() {
 
 	// Since game data will be now accessed, wait until prototype loading is complete
 	LOG_MESSAGE(debug, "Waiting for prototype loading to complete");
-	while (!game::prototype_loading_complete);
+	while (!common.prototypeLoadingComplete);
 	LOG_MESSAGE(debug, "Continuing renderer initialization");
 
 
 	// Loading textures
 	auto renderer_sprites = RendererSprites();
-	renderer_sprites.GInitializeSpritemap(game::game_data->prototype, data::Sprite::SpriteGroup::terrain, true);
-	renderer_sprites.GInitializeSpritemap(game::game_data->prototype, data::Sprite::SpriteGroup::gui, false);
+	renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, data::Sprite::SpriteGroup::terrain, true);
+	renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, data::Sprite::SpriteGroup::gui, false);
 
 
 	Renderer::GlSetup();
@@ -174,8 +175,8 @@ void renderer::RenderInit() {
 
 	// ======================================================================
 
-	game::game_data->input.key.Register([]() {
-		game::game_data->event.SubscribeOnce(game::EventType::renderer_tick, [](game::EventBase& e) {
+	common.gameDataLocal.input.key.Register([&]() {
+		common.gameDataLocal.event.SubscribeOnce(game::EventType::renderer_tick, [](game::EventBase& e) {
 			auto& render_e = static_cast<game::RendererTickEvent&>(e);
 			auto& window   = render_e.windows[0].get();
 
@@ -184,7 +185,7 @@ void renderer::RenderInit() {
 		});
 	}, SDLK_SPACE, game::InputAction::key_down);
 
-	RenderingLoop(display_window);
+	RenderingLoop(common, display_window);
 
 	LOG_MESSAGE(info, "Renderer thread exited");
 }

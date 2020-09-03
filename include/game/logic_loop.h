@@ -4,12 +4,31 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_LOOP_H
 #pragma once
 
+#include <mutex>
+
+#include "game/game_data.h"
+
+namespace jactorio
+{
+	struct LogicRenderLoopCommon
+	{
+		// Held by the thread which is currently operating on these sets of data 
+
+		std::mutex playerDataMutex;
+		std::mutex worldDataMutex;
+
+		game::GameDataLocal gameDataLocal;
+		game::GameDataGlobal gameDataGlobal;
+
+		bool logicThreadShouldExit             = false;
+		bool renderThreadShouldExit            = false;
+		volatile bool prototypeLoadingComplete = false;
+	};
+}
+
 namespace jactorio::game
 {
-	void InitLogicLoop();
-
-	inline bool logic_thread_should_exit   = false;
-	inline volatile bool prototype_loading_complete = false;
+	void InitLogicLoop(LogicRenderLoopCommon& common);
 }
 
 #endif //JACTORIO_INCLUDE_GAME_LOGIC_LOOP_H

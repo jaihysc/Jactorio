@@ -5,7 +5,7 @@
 #include "renderer/opengl/index_buffer.h"
 #include "renderer/opengl/error.h"
 
-jactorio::renderer::IndexBuffer::IndexBuffer(const unsigned* data, unsigned count) {
+jactorio::renderer::IndexBuffer::IndexBuffer(const unsigned* data, const unsigned count) {
 	DEBUG_OPENGL_CALL(glGenBuffers(1, &id_));
 	Reserve(data, count);
 }
@@ -15,7 +15,7 @@ jactorio::renderer::IndexBuffer::~IndexBuffer() {
 	DEBUG_OPENGL_CALL(glDeleteBuffers(1, &id_));
 }
 
-void jactorio::renderer::IndexBuffer::Reserve(const void* data, uint32_t index_count) {
+void jactorio::renderer::IndexBuffer::Reserve(const void* data, const uint32_t index_count) {
 	Bind();
 	DEBUG_OPENGL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(GLuint), data, GL_STATIC_DRAW));
 	count_ = index_count;

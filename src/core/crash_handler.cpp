@@ -12,10 +12,10 @@
 
 // Logs message to stderr and file
 #define CRASH_LOG_MESSAGE(format_, ... )\
-	{\
+	do {\
 		fprintf(file, format_, __VA_ARGS__);\
 		fprintf(stderr, format_, __VA_ARGS__);\
-	}
+	} while (0)
 
 // Close ofstream and open as FILE*
 #define CRASH_OPEN_LOG_FILE()\
@@ -53,7 +53,7 @@ private:
 	FILE* file;  // Cannot be renamed for macro to work
 };
 
-LONG WINAPI TopLevelExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo) {
+LONG WINAPI TopLevelExceptionHandler(const PEXCEPTION_POINTERS pExceptionInfo) {
 	CRASH_OPEN_LOG_FILE();
 
 	std::ostringstream sstr;

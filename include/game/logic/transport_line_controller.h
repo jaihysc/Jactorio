@@ -12,9 +12,6 @@
 /// \brief Transport line logic for anything moving items
 namespace jactorio::game
 {
-	constexpr int kTransportLineDecimalPlace = 3;
-	using TransportLineOffset = dec::decimal<kTransportLineDecimalPlace>;
-
 	// For storing line offsets during transitions, items are treated as having no width
 
 	/* Placement of items on transport line (Expressed as decimal percentages of a tile)
@@ -38,10 +35,10 @@ namespace jactorio::game
 	 */
 
 	/// Width of one item on a belt (in tiles)
-	constexpr double kItemWidth = 0.4f;
+	constexpr double kItemWidth = 0.4;
 
 	/// Distance left between each item when transport line is fully compressed (in tiles)
-	constexpr double kItemSpacing = 0.25f;
+	constexpr double kItemSpacing = 0.25;
 
 	// Number of tiles to offset items in order to line up on the L / R sides of the belt for all 4 directions
 	// Direction is direction of item movement for the transport line
@@ -109,13 +106,13 @@ namespace jactorio::game
 	//     |    |    *
 	//     |    |    *
 	// 
-	constexpr double kBendLeftLReduction = 0.7f;
-	constexpr double kBendLeftRReduction = 0.3f;
+	constexpr double kBendLeftLReduction = 0.7;
+	constexpr double kBendLeftRReduction = 0.3;
 
-	constexpr double kBendRightLReduction = 0.3f;
-	constexpr double kBendRightRReduction = 0.7f;
+	constexpr double kBendRightLReduction = 0.3;
+	constexpr double kBendRightRReduction = 0.7;
 
-	constexpr double kTargetSideOnlyReduction = 0.7f;
+	constexpr double kTargetSideOnlyReduction = 0.7;
 
 
 	// ======================================================================
