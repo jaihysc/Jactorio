@@ -6,401 +6,351 @@
 
 #include "jactorioTests.h"
 
-#include "data/prototype/container_entity.h"
-#include "data/prototype/resource_entity.h"
-
 namespace jactorio::data
 {
-	class MiningDrillTest : public testing::Test
-	{
-	protected:
-		game::WorldData worldData_;
-		game::LogicData logicData_;
-
-		MiningDrill drillProto_;
-
-		Item resourceItem_;
-		ResourceEntity resource_;
-		ContainerEntity container_;
+    class MiningDrillTest : public testing::Test
+    {
+    protected:
+        game::WorldData worldData_;
+        game::LogicData logicData_;
 
-		void SetUp() override {
-			worldData_.EmplaceChunk(0, 0);
+        MiningDrill drillProto_;
 
-			drillProto_.tileWidth    = 3;
-			drillProto_.tileHeight   = 3;
-			drillProto_.miningRadius = 1;
+        Item resourceItem_;
+        ResourceEntity resource_;
+        ContainerEntity container_;
 
-			resource_.pickupTime = 1.f;
-			resource_.SetItem(&resourceItem_);
-		}
-	};
+        void SetUp() override {
+            worldData_.EmplaceChunk(0, 0);
 
-	TEST_F(MiningDrillTest, OnCanBuild) {
-		/*
-		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
-		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
-		 * [ ] [ ] [X] [x] [x] [x] [ ] [ ]
-		 * [ ] [ ] [x] [x] [x] [x] [ ] [ ]
-		 * [ ] [ ] [x] [x] [x] [x] [ ] [ ]
-		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
-		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
-		 */
+            drillProto_.tileWidth    = 3;
+            drillProto_.tileHeight   = 3;
+            drillProto_.miningRadius = 1;
 
-		MiningDrill drill{};
-		drill.tileWidth    = 4;
-		drill.tileHeight   = 3;
-		drill.miningRadius = 2;
+            resource_.pickupTime = 1.f;
+            resource_.SetItem(&resourceItem_);
+        }
+    };
 
-		// Has no resource tiles
-		EXPECT_FALSE(drill.OnCanBuild(worldData_, {2, 2}));
+    TEST_F(MiningDrillTest, OnCanBuild) {
+        /*
+         * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+         * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+         * [ ] [ ] [X] [x] [x] [x] [ ] [ ]
+         * [ ] [ ] [x] [x] [x] [x] [ ] [ ]
+         * [ ] [ ] [x] [x] [x] [x] [ ] [ ]
+         * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+         * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+         */
 
-		// Has resource tiles
-		ResourceEntity resource{};
-		worldData_.GetTile(0, 0)
-		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource;
+        MiningDrill drill{};
+        drill.tileWidth    = 4;
+        drill.tileHeight   = 3;
+        drill.miningRadius = 2;
 
-		EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}));
-	}
+        // Has no resource tiles
+        EXPECT_FALSE(drill.OnCanBuild(worldData_, {2, 2}));
 
-	TEST_F(MiningDrillTest, OnCanBuild2) {
-		/*
-		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
-		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
-		 * [ ] [ ] [X] [x] [x] [x] [ ] [ ]
-		 * [ ] [ ] [x] [x] [x] [x] [ ] [ ]
-		 * [ ] [ ] [x] [x] [x] [x] [ ] [ ]
-		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
-		 * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
-		 */
+        // Has resource tiles
+        ResourceEntity resource{};
+        worldData_.GetTile(0, 0)->GetLayer(game::TileLayer::resource).prototypeData = &resource;
 
-		MiningDrill drill{};
-		drill.tileWidth    = 4;
-		drill.tileHeight   = 3;
-		drill.miningRadius = 2;
+        EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}));
+    }
 
-		ResourceEntity resource{};
-		worldData_.GetTile(7, 6)
-		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource;
+    TEST_F(MiningDrillTest, OnCanBuild2) {
+        /*
+         * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+         * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+         * [ ] [ ] [X] [x] [x] [x] [ ] [ ]
+         * [ ] [ ] [x] [x] [x] [x] [ ] [ ]
+         * [ ] [ ] [x] [x] [x] [x] [ ] [ ]
+         * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+         * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
+         */
 
-		EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}));
-	}
+        MiningDrill drill{};
+        drill.tileWidth    = 4;
+        drill.tileHeight   = 3;
+        drill.miningRadius = 2;
 
-	TEST_F(MiningDrillTest, FindOutputItem) {
+        ResourceEntity resource{};
+        worldData_.GetTile(7, 6)->GetLayer(game::TileLayer::resource).prototypeData = &resource;
 
-		EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr);  // No resources 
+        EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}));
+    }
 
+    TEST_F(MiningDrillTest, FindOutputItem) {
 
-		worldData_.GetTile(0, 0)
-		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource_;
+        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr); // No resources
 
-		EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr);  // No resources in range
 
+        worldData_.GetTile(0, 0)->GetLayer(game::TileLayer::resource).prototypeData = &resource_;
 
-		worldData_.GetTile(6, 5)
-		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource_;
+        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr); // No resources in range
 
-		EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr);  // No resources in range
 
-		// ======================================================================
+        worldData_.GetTile(6, 5)->GetLayer(game::TileLayer::resource).prototypeData = &resource_;
 
-		worldData_.GetTile(5, 5)
-		          ->GetLayer(game::TileLayer::resource).prototypeData = &resource_;
-		EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), &resourceItem_);
+        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr); // No resources in range
 
-		// Closer to the top left
-		{
-			Item item2{};
-			ResourceEntity resource2{};
-			resource2.SetItem(&item2);
+        // ======================================================================
 
-			worldData_.GetTile(1, 1)
-			          ->GetLayer(game::TileLayer::resource).prototypeData = &resource2;
-			EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), &item2);
-		}
-	}
+        worldData_.GetTile(5, 5)->GetLayer(game::TileLayer::resource).prototypeData = &resource_;
+        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), &resourceItem_);
 
+        // Closer to the top left
+        {
+            Item item2{};
+            ResourceEntity resource2{};
+            resource2.SetItem(&item2);
 
-	TEST_F(MiningDrillTest, BuildAndExtractResource) {
-		// Mining drill is built with an item output chest
+            worldData_.GetTile(1, 1)->GetLayer(game::TileLayer::resource).prototypeData = &resource2;
+            EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), &item2);
+        }
+    }
 
-		drillProto_.miningSpeed          = 2;  // Halves mining time
-		drillProto_.resourceOutput.right = {3, 1};
 
+    TEST_F(MiningDrillTest, BuildAndExtractResource) {
+        // Mining drill is built with an item output chest
 
-		TestSetupContainer(worldData_, {4, 2}, container_);
-		auto& tile = TestSetupDrill(worldData_, logicData_,
-		                            {1, 1}, Orientation::right,
-		                            resource_, drillProto_, 100);
+        drillProto_.miningSpeed          = 2; // Halves mining time
+        drillProto_.resourceOutput.right = {3, 1};
 
-		auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
-		EXPECT_EQ(data->resourceCoord.x, 0);
-		EXPECT_EQ(data->resourceCoord.y, 0);
-		EXPECT_EQ(data->resourceOffset, 6);
+        TestSetupContainer(worldData_, {4, 2}, container_);
+        auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_, 100);
 
-		// ======================================================================
-		// Resource taken from ground
-		auto& resource_layer = tile.GetLayer(game::TileLayer::resource);
+        auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
-		EXPECT_EQ(resource_layer.GetUniqueData<ResourceEntityData>()->resourceAmount, 99);
+        EXPECT_EQ(data->resourceCoord.x, 0);
+        EXPECT_EQ(data->resourceCoord.y, 0);
+        EXPECT_EQ(data->resourceOffset, 6);
 
-		// ======================================================================
-		// Ensure it inserts into the correct entity
+        // ======================================================================
+        // Resource taken from ground
+        auto& resource_layer = tile.GetLayer(game::TileLayer::resource);
 
-		Item item{};
-		data->output.DropOff(logicData_, {&item, 1});
+        EXPECT_EQ(resource_layer.GetUniqueData<ResourceEntityData>()->resourceAmount, 99);
 
-		game::ChunkTileLayer& container_layer =
-			worldData_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
+        // ======================================================================
+        // Ensure it inserts into the correct entity
 
-		EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 1);
+        Item item{};
+        data->output.DropOff(logicData_, {&item, 1});
 
-		// ======================================================================
+        game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
 
-		logicData_.DeferralUpdate(worldData_, 30);  // Takes 60 ticks to mine / 2 (since mining speed is 2)
+        EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 1);
 
-		EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[1].count, 1);
+        // ======================================================================
 
-		// Another resource taken for next output
-		EXPECT_EQ(resource_layer.GetUniqueData<ResourceEntityData>()->resourceAmount, 98);
-	}
+        logicData_.DeferralUpdate(worldData_, 30); // Takes 60 ticks to mine / 2 (since mining speed is 2)
 
-	TEST_F(MiningDrillTest, ExtractRemoveResourceEntity) {
-		drillProto_.resourceOutput.right = {3, 1};
+        EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[1].count, 1);
 
+        // Another resource taken for next output
+        EXPECT_EQ(resource_layer.GetUniqueData<ResourceEntityData>()->resourceAmount, 98);
+    }
 
-		TestSetupContainer(worldData_, {4, 2}, container_);
+    TEST_F(MiningDrillTest, ExtractRemoveResourceEntity) {
+        drillProto_.resourceOutput.right = {3, 1};
 
-		auto& tile = TestSetupDrill(worldData_, logicData_,
-		                            {1, 1}, Orientation::right,
-		                            resource_, drillProto_, 1);
-		auto& tile2 = TestSetupResource(worldData_, {3, 4}, resource_, 1);
-		auto& tile3 = TestSetupResource(worldData_, {4, 4}, resource_, 1);
 
+        TestSetupContainer(worldData_, {4, 2}, container_);
 
-		auto& resource_layer  = tile.GetLayer(game::TileLayer::resource);
-		auto& resource_layer2 = tile2.GetLayer(game::TileLayer::resource);
-		auto& resource_layer3 = tile3.GetLayer(game::TileLayer::resource);
+        auto& tile  = TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_, 1);
+        auto& tile2 = TestSetupResource(worldData_, {3, 4}, resource_, 1);
+        auto& tile3 = TestSetupResource(worldData_, {4, 4}, resource_, 1);
 
-		// ======================================================================
 
-		resource_layer2.Clear();  // Resource 2 was mined by an external source
-		logicData_.DeferralUpdate(worldData_, 60);
-		EXPECT_EQ(resource_layer.prototypeData, nullptr);
-		EXPECT_EQ(resource_layer.GetUniqueData(), nullptr);
+        auto& resource_layer  = tile.GetLayer(game::TileLayer::resource);
+        auto& resource_layer2 = tile2.GetLayer(game::TileLayer::resource);
+        auto& resource_layer3 = tile3.GetLayer(game::TileLayer::resource);
 
-		// Found another resource (resource3)
-		logicData_.DeferralUpdate(worldData_, 120);
-		EXPECT_EQ(resource_layer3.prototypeData, nullptr);
-		EXPECT_EQ(resource_layer3.GetUniqueData(), nullptr);
+        // ======================================================================
 
-		EXPECT_TRUE(logicData_.deferralTimer.GetDebugInfo().callbacks.empty());
-		auto* drill_data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
+        resource_layer2.Clear(); // Resource 2 was mined by an external source
+        logicData_.DeferralUpdate(worldData_, 60);
+        EXPECT_EQ(resource_layer.prototypeData, nullptr);
+        EXPECT_EQ(resource_layer.GetUniqueData(), nullptr);
 
-		EXPECT_FALSE(drill_data->deferralEntry.Valid());
-	}
+        // Found another resource (resource3)
+        logicData_.DeferralUpdate(worldData_, 120);
+        EXPECT_EQ(resource_layer3.prototypeData, nullptr);
+        EXPECT_EQ(resource_layer3.GetUniqueData(), nullptr);
 
-	TEST_F(MiningDrillTest, ExtractResourceOutputBlocked) {
-		// If output is blocked, drill attempts to output at next game tick
+        EXPECT_TRUE(logicData_.deferralTimer.GetDebugInfo().callbacks.empty());
+        auto* drill_data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
-		drillProto_.resourceOutput.right = {3, 1};
+        EXPECT_FALSE(drill_data->deferralEntry.Valid());
+    }
 
+    TEST_F(MiningDrillTest, ExtractResourceOutputBlocked) {
+        // If output is blocked, drill attempts to output at next game tick
 
-		TestSetupContainer(worldData_, {4, 2}, container_, 1);
-		TestSetupDrill(worldData_, logicData_,
-		               {1, 1}, Orientation::right,
-		               resource_, drillProto_);
+        drillProto_.resourceOutput.right = {3, 1};
 
-		// ======================================================================
 
-		auto& container_layer = worldData_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
-		auto* container_data  = container_layer.GetUniqueData<ContainerEntityData>();
+        TestSetupContainer(worldData_, {4, 2}, container_, 1);
+        TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
 
-		// No output since output inventory is full
-		Item item;
-		item.stackSize = 50;
+        // ======================================================================
 
-		container_data->inventory[0] = {&item, 50};
+        auto& container_layer = worldData_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
+        auto* container_data  = container_layer.GetUniqueData<ContainerEntityData>();
 
-		logicData_.DeferralUpdate(worldData_, 60);
-		EXPECT_EQ(container_data->inventory[0].count, 50);
+        // No output since output inventory is full
+        Item item;
+        item.stackSize = 50;
 
-		// Output has space
-		container_data->inventory[0] = {nullptr, 0};
-		logicData_.DeferralUpdate(worldData_, 61);
-		EXPECT_EQ(container_data->inventory[0].count, 1);
-	}
+        container_data->inventory[0] = {&item, 50};
 
-	TEST_F(MiningDrillTest, BuildMultiTileOutput) {
+        logicData_.DeferralUpdate(worldData_, 60);
+        EXPECT_EQ(container_data->inventory[0].count, 50);
 
-		drillProto_.resourceOutput.right = {3, 1};
+        // Output has space
+        container_data->inventory[0] = {nullptr, 0};
+        logicData_.DeferralUpdate(worldData_, 61);
+        EXPECT_EQ(container_data->inventory[0].count, 1);
+    }
 
-		AssemblyMachine asm_machine{};
-		TestSetupAssemblyMachine(worldData_, {4, 1}, asm_machine);
+    TEST_F(MiningDrillTest, BuildMultiTileOutput) {
 
-		auto& tile = TestSetupDrill(worldData_, logicData_,
-		                            {1, 1}, Orientation::right,
-		                            resource_, drillProto_);
-		auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
+        drillProto_.resourceOutput.right = {3, 1};
 
-		EXPECT_TRUE(data->output.IsInitialized());
-	}
+        AssemblyMachine asm_machine{};
+        TestSetupAssemblyMachine(worldData_, {4, 1}, asm_machine);
 
-	TEST_F(MiningDrillTest, BuildNoOutput) {
-		// Mining drill is built without anywhere to output items
-		// Should do nothing until an output is built
+        auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
+        auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
-		drillProto_.resourceOutput.right = {3, 1};
+        EXPECT_TRUE(data->output.IsInitialized());
+    }
 
+    TEST_F(MiningDrillTest, BuildNoOutput) {
+        // Mining drill is built without anywhere to output items
+        // Should do nothing until an output is built
 
-		auto& tile = TestSetupDrill(worldData_, logicData_,
-		                            {1, 1}, Orientation::right,
-		                            resource_, drillProto_);
-		TestSetupContainer(worldData_, {4, 2}, container_);
+        drillProto_.resourceOutput.right = {3, 1};
 
-		drillProto_.OnNeighborUpdate(worldData_, logicData_,
-		                             {4, 2},
-		                             {1, 1}, Orientation::right);
 
-		// ======================================================================
-		// Should now insert as it has an entity to output to
+        auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
+        TestSetupContainer(worldData_, {4, 2}, container_);
 
-		auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
+        drillProto_.OnNeighborUpdate(worldData_, logicData_, {4, 2}, {1, 1}, Orientation::right);
 
-		// Ensure it inserts into the correct entity
-		Item item{};
-		data->output.DropOff(logicData_, {&item, 1});
+        // ======================================================================
+        // Should now insert as it has an entity to output to
 
-		game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 2)
-		                                                  ->GetLayer(
-			                                                  game::TileLayer::entity);
+        auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
-		EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count,
-		          1);
-	}
+        // Ensure it inserts into the correct entity
+        Item item{};
+        data->output.DropOff(logicData_, {&item, 1});
 
-	TEST_F(MiningDrillTest, RemoveDrill) {
-		// When the mining drill is removed, it needs to unregister the defer update
-		// callback to the unique_data which now no longer exists
+        game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
 
-		drillProto_.resourceOutput.right = {3, 1};
+        EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 1);
+    }
 
+    TEST_F(MiningDrillTest, RemoveDrill) {
+        // When the mining drill is removed, it needs to unregister the defer update
+        // callback to the unique_data which now no longer exists
 
-		TestSetupContainer(worldData_, {4, 2}, container_);
-		auto& tile = TestSetupDrill(worldData_, logicData_,
-		                            {1, 1}, Orientation::right,
-		                            resource_, drillProto_);
+        drillProto_.resourceOutput.right = {3, 1};
 
-		drillProto_.OnRemove(worldData_, logicData_,
-		                     {1, 1}, tile.GetLayer(game::TileLayer::entity));
 
-		tile.GetLayer(game::TileLayer::entity).Clear();  // Deletes drill data
+        TestSetupContainer(worldData_, {4, 2}, container_);
+        auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
 
-		// Should no longer be valid
-		logicData_.DeferralUpdate(worldData_, 60);
-	}
+        drillProto_.OnRemove(worldData_, logicData_, {1, 1}, tile.GetLayer(game::TileLayer::entity));
 
-	TEST_F(MiningDrillTest, RemoveOutputEntity) {
-		// When the mining drill's output entity is removed, it needs to unregister the defer update
+        tile.GetLayer(game::TileLayer::entity).Clear(); // Deletes drill data
 
-		drillProto_.resourceOutput.right = {3, 1};
+        // Should no longer be valid
+        logicData_.DeferralUpdate(worldData_, 60);
+    }
 
+    TEST_F(MiningDrillTest, RemoveOutputEntity) {
+        // When the mining drill's output entity is removed, it needs to unregister the defer update
 
-		TestSetupContainer(worldData_, {4, 2}, container_);
-		TestSetupDrill(worldData_, logicData_,
-		               {1, 1}, Orientation::right,
-		               resource_, drillProto_);
+        drillProto_.resourceOutput.right = {3, 1};
 
-		// Remove chest
-		game::ChunkTile* tile = worldData_.GetTile(4, 2);
-		tile->GetLayer(game::TileLayer::entity).Clear();  // Remove container 
 
-		// Should only remove the callback once
-		drillProto_.OnNeighborUpdate(worldData_, logicData_,
-		                             {4, 2},
-		                             {1, 1}, Orientation::right);
-		drillProto_.OnNeighborUpdate(worldData_, logicData_,
-		                             {4, 2},
-		                             {1, 1}, Orientation::right);
-		drillProto_.OnNeighborUpdate(worldData_, logicData_,
-		                             {4, 2},
-		                             {1, 1}, Orientation::right);
+        TestSetupContainer(worldData_, {4, 2}, container_);
+        TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
 
-		// Should no longer be valid
-		logicData_.DeferralUpdate(worldData_, 60);
-	}
+        // Remove chest
+        game::ChunkTile* tile = worldData_.GetTile(4, 2);
+        tile->GetLayer(game::TileLayer::entity).Clear(); // Remove container
 
-	TEST_F(MiningDrillTest, UpdateNonOutput) {
-		// Mining drill should ignore on_neighbor_update from tiles other than the item output tile
+        // Should only remove the callback once
+        drillProto_.OnNeighborUpdate(worldData_, logicData_, {4, 2}, {1, 1}, Orientation::right);
+        drillProto_.OnNeighborUpdate(worldData_, logicData_, {4, 2}, {1, 1}, Orientation::right);
+        drillProto_.OnNeighborUpdate(worldData_, logicData_, {4, 2}, {1, 1}, Orientation::right);
 
-		drillProto_.resourceOutput.up    = {1, -1};
-		drillProto_.resourceOutput.right = {3, 1};
-		TestSetupDrill(worldData_, logicData_,
-		               {1, 1}, Orientation::right,
-		               resource_, drillProto_);
+        // Should no longer be valid
+        logicData_.DeferralUpdate(worldData_, 60);
+    }
 
-		// ======================================================================
+    TEST_F(MiningDrillTest, UpdateNonOutput) {
+        // Mining drill should ignore on_neighbor_update from tiles other than the item output tile
 
-		TestSetupContainer(worldData_, {2, 0}, container_);
-		TestSetupContainer(worldData_, {4, 1}, container_);
+        drillProto_.resourceOutput.up    = {1, -1};
+        drillProto_.resourceOutput.right = {3, 1};
+        TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
 
-		drillProto_.OnNeighborUpdate(worldData_, logicData_,
-		                             {2, 0},
-		                             {1, 1}, Orientation::up);
-		drillProto_.OnNeighborUpdate(worldData_, logicData_,
-		                             {4, 1},
-		                             {1, 1}, Orientation::right);
+        // ======================================================================
 
-		logicData_.DeferralUpdate(worldData_, 60);
+        TestSetupContainer(worldData_, {2, 0}, container_);
+        TestSetupContainer(worldData_, {4, 1}, container_);
 
-		// If the on_neighbor_update event was ignored, no items will be added
-		{
-			game::ChunkTileLayer& container_layer =
-				worldData_.GetTile(2, 0)
-				          ->GetLayer(game::TileLayer::entity);
+        drillProto_.OnNeighborUpdate(worldData_, logicData_, {2, 0}, {1, 1}, Orientation::up);
+        drillProto_.OnNeighborUpdate(worldData_, logicData_, {4, 1}, {1, 1}, Orientation::right);
 
-			EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count,
-			          0);
-		}
-		{
-			game::ChunkTileLayer& container_layer =
-				worldData_.GetTile(4, 1)
-				          ->GetLayer(game::TileLayer::entity);
+        logicData_.DeferralUpdate(worldData_, 60);
 
-			EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count,
-			          0);
-		}
-	}
+        // If the on_neighbor_update event was ignored, no items will be added
+        {
+            game::ChunkTileLayer& container_layer = worldData_.GetTile(2, 0)->GetLayer(game::TileLayer::entity);
 
-	TEST_F(MiningDrillTest, Serialize) {
-		auto derived    = std::make_unique<MiningDrillData>(Orientation::down);
-		derived->health = 4392;
+            EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 0);
+        }
+        {
+            game::ChunkTileLayer& container_layer = worldData_.GetTile(4, 1)->GetLayer(game::TileLayer::entity);
 
-		std::unique_ptr<UniqueDataBase> base = std::move(derived);
+            EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 0);
+        }
+    }
 
-		// ======================================================================
+    TEST_F(MiningDrillTest, Serialize) {
+        auto derived    = std::make_unique<MiningDrillData>(Orientation::down);
+        derived->health = 4392;
 
-		const auto result_base     = TestSerializeDeserialize(base);
-		const auto* result_derived = static_cast<const MiningDrillData*>(result_base.get());
+        std::unique_ptr<UniqueDataBase> base = std::move(derived);
 
-		EXPECT_EQ(result_derived->health, 4392);
-	}
+        // ======================================================================
 
-	TEST_F(MiningDrillTest, OnDeserialize) {
-		drillProto_.resourceOutput.down = {1, 3};
+        const auto result_base     = TestSerializeDeserialize(base);
+        const auto* result_derived = static_cast<const MiningDrillData*>(result_base.get());
 
-		auto& tile = TestSetupDrill(worldData_, logicData_,
-		                            {1, 1}, Orientation::down,
-		                            resource_, drillProto_);
+        EXPECT_EQ(result_derived->health, 4392);
+    }
 
-		// Drill's output is current uninitialized
+    TEST_F(MiningDrillTest, OnDeserialize) {
+        drillProto_.resourceOutput.down = {1, 3};
 
-		TestSetupContainer(worldData_, {2, 4}, container_);
+        auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::down, resource_, drillProto_);
 
-		worldData_.DeserializePostProcess();
+        // Drill's output is current uninitialized
 
-		// Now initialized
+        TestSetupContainer(worldData_, {2, 4}, container_);
 
-		EXPECT_TRUE(tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>()->output.IsInitialized());
-	}
-}
+        worldData_.DeserializePostProcess();
+
+        // Now initialized
+
+        EXPECT_TRUE(tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>()->output.IsInitialized());
+    }
+} // namespace jactorio::data

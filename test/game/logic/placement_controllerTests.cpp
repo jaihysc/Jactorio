@@ -12,370 +12,331 @@
 
 namespace jactorio::game
 {
-	// NOTE
-	// !Checking if the selected tile is too far from the player is not done in these tests!
-	//
-
-	// Creates world_data and generates a test world within it
-	class PlacementControllerTest : public testing::Test
-	{
-	public:
-		static constexpr auto kChunkWidth = WorldData::kChunkWidth;
-
-	private:
-		static void GenerateTestWorld(WorldData& world_data,
-		                              data::Tile* water_tile,
-		                              data::Tile* land_tile) {
-			// Generates a quarter chunk on which to test entity placement (16 x 16)
-			// Following indices begin at 0:
-			// Row of water: [1, 4, 8]
-			// Column of water: [1, 4, 8]
-
-			/* # is land
-			 * - is water
-			   #-##-###-#######
-			   ----------------
-			   #-##-###-#######
-			   #-##-###-#######
-			   ----------------
-			   #-##-###-#######
-			   #-##-###-#######
-			   #-##-###-#######
-			   ----------------
-			   #-##-###-#######
-			   #-##-###-#######
-			   #-##-###-#######
-			   #-##-###-#######
-			   #-##-###-#######
-			   #-##-###-#######
-			   #-##-###-#######
-			 */
+    // NOTE
+    // !Checking if the selected tile is too far from the player is not done in these tests!
+    //
+
+    // Creates world_data and generates a test world within it
+    class PlacementControllerTest : public testing::Test
+    {
+    public:
+        static constexpr auto kChunkWidth = WorldData::kChunkWidth;
+
+    private:
+        static void GenerateTestWorld(WorldData& world_data, data::Tile* water_tile, data::Tile* land_tile) {
+            // Generates a quarter chunk on which to test entity placement (16 x 16)
+            // Following indices begin at 0:
+            // Row of water: [1, 4, 8]
+            // Column of water: [1, 4, 8]
 
-			water_tile->isWater = true;
-			land_tile->isWater  = false;
-
-
-			auto& chunk = world_data.EmplaceChunk(0, 0);
+            /* # is land
+             * - is water
+               #-##-###-#######
+               ----------------
+               #-##-###-#######
+               #-##-###-#######
+               ----------------
+               #-##-###-#######
+               #-##-###-#######
+               #-##-###-#######
+               ----------------
+               #-##-###-#######
+               #-##-###-#######
+               #-##-###-#######
+               #-##-###-#######
+               #-##-###-#######
+               #-##-###-#######
+               #-##-###-#######
+             */
 
-			auto& chunk_tiles = chunk.Tiles();
-			for (int y = 0; y < kChunkWidth; ++y) {
-				bool y_water = false;
+            water_tile->isWater = true;
+            land_tile->isWater  = false;
 
-				// Water at Y index 1, 4, 8
-				if (y == 1 || y == 4 || y == 8)
-					y_water = true;
 
-				for (int x = 0; x < kChunkWidth; ++x) {
-					bool x_water = false;
-
-					// Water at X index 1, 4, 8
-					if (x == 1 || x == 4 || x == 8)
-						x_water = true;
+            auto& chunk = world_data.EmplaceChunk(0, 0);
 
-					auto* tile_ptr = land_tile;
-					if (x_water || y_water) {
-						tile_ptr = water_tile;
-					}
+            auto& chunk_tiles = chunk.Tiles();
+            for (int y = 0; y < kChunkWidth; ++y) {
+                bool y_water = false;
 
-					chunk_tiles[y * kChunkWidth + x].SetTilePrototype(tile_ptr);
-				}
-			}
-		}
+                // Water at Y index 1, 4, 8
+                if (y == 1 || y == 4 || y == 8)
+                    y_water = true;
 
-	protected:
-		std::unique_ptr<data::Tile> waterTile_ = std::make_unique<data::Tile>();
-		std::unique_ptr<data::Tile> landTile_  = std::make_unique<data::Tile>();
+                for (int x = 0; x < kChunkWidth; ++x) {
+                    bool x_water = false;
 
-		WorldData worldData_{};
+                    // Water at X index 1, 4, 8
+                    if (x == 1 || x == 4 || x == 8)
+                        x_water = true;
 
-		void SetUp() override {
-			GenerateTestWorld(worldData_, waterTile_.get(), landTile_.get());
+                    auto* tile_ptr = land_tile;
+                    if (x_water || y_water) {
+                        tile_ptr = water_tile;
+                    }
 
-		}
-	};
+                    chunk_tiles[y * kChunkWidth + x].SetTilePrototype(tile_ptr);
+                }
+            }
+        }
 
+    protected:
+        std::unique_ptr<data::Tile> waterTile_ = std::make_unique<data::Tile>();
+        std::unique_ptr<data::Tile> landTile_  = std::make_unique<data::Tile>();
 
-	TEST_F(PlacementControllerTest, PlaceEntity1x1Valid) {
-		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity = std::make_unique<data::ContainerEntity>();
-
-		const auto chunk = worldData_.GetChunkC(0, 0);
+        WorldData worldData_{};
 
-		EXPECT_EQ(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 0, 0), true);
+        void SetUp() override {
+            GenerateTestWorld(worldData_, waterTile_.get(), landTile_.get());
+        }
+    };
 
-		// Set entity and sprite layer
-		EXPECT_EQ(
-			chunk->Tiles()[0].GetEntityPrototype(),
-			entity.get());
 
-		EXPECT_FALSE(chunk->Tiles()[0].GetLayer(jactorio::game::TileLayer::entity).IsMultiTile());
-	}
+    TEST_F(PlacementControllerTest, PlaceEntity1x1Valid) {
+        // Place an entity at various locations, checking that it does not place on invalid tiles
+        const auto entity = std::make_unique<data::ContainerEntity>();
 
-	TEST_F(PlacementControllerTest, PlaceEntity1x1Invalid) {
-		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity = std::make_unique<data::ContainerEntity>();
+        const auto chunk = worldData_.GetChunkC(0, 0);
 
-		// Invalid, placing on a base tile which is water
-		const auto chunk = worldData_.GetChunkC(0, 0);
+        EXPECT_EQ(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 0, 0), true);
 
-		EXPECT_EQ(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 1, 0), false);
-		EXPECT_EQ(
-			chunk->Tiles()[0].GetEntityPrototype(),
-			nullptr);
+        // Set entity and sprite layer
+        EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), entity.get());
 
-	}
+        EXPECT_FALSE(chunk->Tiles()[0].GetLayer(jactorio::game::TileLayer::entity).IsMultiTile());
+    }
 
+    TEST_F(PlacementControllerTest, PlaceEntity1x1Invalid) {
+        // Place an entity at various locations, checking that it does not place on invalid tiles
+        const auto entity = std::make_unique<data::ContainerEntity>();
 
-	TEST_F(PlacementControllerTest, RemoveEntity1x1Valid) {
-		// An existing tile location should have its entity and layer sprite pointer set to nullptr
-		// To remove, pass a nullptr as entity
-		const auto entity = std::make_unique<data::ContainerEntity>();
+        // Invalid, placing on a base tile which is water
+        const auto chunk = worldData_.GetChunkC(0, 0);
 
+        EXPECT_EQ(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 1, 0), false);
+        EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
+    }
 
-		const auto chunk = worldData_.GetChunkC(0, 0);
 
-		// Place entity, taken from the test above (place_entity_1x1_valid)
-		{
-			// const auto chunk = world_data.get_chunk(0, 0);
+    TEST_F(PlacementControllerTest, RemoveEntity1x1Valid) {
+        // An existing tile location should have its entity and layer sprite pointer set to nullptr
+        // To remove, pass a nullptr as entity
+        const auto entity = std::make_unique<data::ContainerEntity>();
 
-			EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 0, 0));
 
-			// Set entity and sprite layer
-			EXPECT_EQ(
-				chunk->Tiles()[0].GetEntityPrototype(),
-				entity.get());
-		}
+        const auto chunk = worldData_.GetChunkC(0, 0);
 
-		// Valid Removal
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 0, 0));
+        // Place entity, taken from the test above (place_entity_1x1_valid)
+        {
+            // const auto chunk = world_data.get_chunk(0, 0);
 
-		// Should all be nullptr after being removed
-		EXPECT_EQ(
-			chunk->Tiles()[0].GetEntityPrototype(),
-			nullptr);
-	}
+            EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 0, 0));
 
-	TEST_F(PlacementControllerTest, RemoveEntity1x1Invalid) {
-		// Removing a location with nullptr entity and sprite does nothing, returns false to indicate nothing was removed
-		const auto chunk = worldData_.GetChunkC(0, 0);
+            // Set entity and sprite layer
+            EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), entity.get());
+        }
 
-		// Invalid Removal
-		EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 0, 0));
+        // Valid Removal
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 0, 0));
 
-		// Should all remain nullptr
-		EXPECT_EQ(
-			chunk->Tiles()[0].GetEntityPrototype(),
-			nullptr);
-	}
+        // Should all be nullptr after being removed
+        EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
+    }
 
+    TEST_F(PlacementControllerTest, RemoveEntity1x1Invalid) {
+        // Removing a location with nullptr entity and sprite does nothing, returns false to indicate nothing was
+        // removed
+        const auto chunk = worldData_.GetChunkC(0, 0);
 
-	TEST_F(PlacementControllerTest, PlaceEntity3x3Valid) {
-		// For entities spanning > 1 tiles, the given location is the top left of the entity
+        // Invalid Removal
+        EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 0, 0));
 
-		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity  = std::make_unique<data::ContainerEntity>();
-		entity->tileWidth  = 3;
-		entity->tileHeight = 3;
+        // Should all remain nullptr
+        EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
+    }
 
-		const auto chunk = worldData_.GetChunkC(0, 0);
 
+    TEST_F(PlacementControllerTest, PlaceEntity3x3Valid) {
+        // For entities spanning > 1 tiles, the given location is the top left of the entity
 
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
+        // Place an entity at various locations, checking that it does not place on invalid tiles
+        const auto entity  = std::make_unique<data::ContainerEntity>();
+        entity->tileWidth  = 3;
+        entity->tileHeight = 3;
 
-		// Expect entity and sprite layer to be set, as well as entity_index
-		int entity_index = 0;
-		for (int y = 5; y < 5 + 3; ++y) {
-			for (int x = 5; x < 5 + 3; ++x) {
-				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(
-					chunk->Tiles()[index].GetEntityPrototype(),
-					entity.get());
+        const auto chunk = worldData_.GetChunkC(0, 0);
 
-				// Should count up according to the rules specified in entity_index
-				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
-					entity_index++
-				);
-			}
-		}
 
-	}
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
 
-	TEST_F(PlacementControllerTest, PlaceEntity3x3Invalid1) {
-		// For entities spanning > 1 tiles, the given location is the top left of the entity
+        // Expect entity and sprite layer to be set, as well as entity_index
+        int entity_index = 0;
+        for (int y = 5; y < 5 + 3; ++y) {
+            for (int x = 5; x < 5 + 3; ++x) {
+                const auto index = y * kChunkWidth + x;
+                EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(), entity.get());
 
-		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity  = std::make_unique<data::ContainerEntity>();
-		entity->tileWidth  = 3;
-		entity->tileHeight = 3;
+                // Should count up according to the rules specified in entity_index
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
+                          entity_index++);
+            }
+        }
+    }
 
-		const auto chunk = worldData_.GetChunkC(0, 0);
+    TEST_F(PlacementControllerTest, PlaceEntity3x3Invalid1) {
+        // For entities spanning > 1 tiles, the given location is the top left of the entity
 
+        // Place an entity at various locations, checking that it does not place on invalid tiles
+        const auto entity  = std::make_unique<data::ContainerEntity>();
+        entity->tileWidth  = 3;
+        entity->tileHeight = 3;
 
-		EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 4, 5));
+        const auto chunk = worldData_.GetChunkC(0, 0);
 
-		// Expect entity and sprite layer to be set, as well as entity_index
-		for (int y = 5; y < 5 + 3; ++y) {
-			for (int x = 5; x < 5 + 3; ++x) {
-				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(
-					chunk->Tiles()[index].GetEntityPrototype(),
-					nullptr);
-			}
-		}
 
-	}
+        EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 4, 5));
 
-	TEST_F(PlacementControllerTest, PlaceEntity3x3Invalid2) {
-		// For entities spanning > 1 tiles, the given location is the top left of the entity
+        // Expect entity and sprite layer to be set, as well as entity_index
+        for (int y = 5; y < 5 + 3; ++y) {
+            for (int x = 5; x < 5 + 3; ++x) {
+                const auto index = y * kChunkWidth + x;
+                EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(), nullptr);
+            }
+        }
+    }
 
-		// Place an entity at various locations, checking that it does not place on invalid tiles
-		const auto entity  = std::make_unique<data::ContainerEntity>();
-		entity->tileWidth  = 3;
-		entity->tileHeight = 3;
+    TEST_F(PlacementControllerTest, PlaceEntity3x3Invalid2) {
+        // For entities spanning > 1 tiles, the given location is the top left of the entity
 
-		const auto* chunk = worldData_.GetChunkC(0, 0);
+        // Place an entity at various locations, checking that it does not place on invalid tiles
+        const auto entity  = std::make_unique<data::ContainerEntity>();
+        entity->tileWidth  = 3;
+        entity->tileHeight = 3;
 
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
-		EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 2));
 
-		// Expect entity and sprite layer to be set, as well as entity_index
-		for (int y = 5; y < 5 + 3; ++y) {
-			for (int x = 5; x < 5 + 3; ++x) {
-				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(
-					chunk->Tiles()[index].GetEntityPrototype(),
-					nullptr);
-			}
-		}
+        EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 2));
 
-	}
+        // Expect entity and sprite layer to be set, as well as entity_index
+        for (int y = 5; y < 5 + 3; ++y) {
+            for (int x = 5; x < 5 + 3; ++x) {
+                const auto index = y * kChunkWidth + x;
+                EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(), nullptr);
+            }
+        }
+    }
 
-	TEST_F(PlacementControllerTest, PlaceEntity3x3Invalid3) {
-		// When the placed entity overlaps another entity, the placement is also invalid
-		const auto entity  = std::make_unique<data::ContainerEntity>();
-		entity->tileWidth  = 3;
-		entity->tileHeight = 3;
+    TEST_F(PlacementControllerTest, PlaceEntity3x3Invalid3) {
+        // When the placed entity overlaps another entity, the placement is also invalid
+        const auto entity  = std::make_unique<data::ContainerEntity>();
+        entity->tileWidth  = 3;
+        entity->tileHeight = 3;
 
 
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
-		EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 9));
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
+        EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 9));
+    }
 
-	}
+    TEST_F(PlacementControllerTest, RemoveEntity3x3Valid1) {
+        // When removing an entity, specifying anywhere will remove the entire entity
+        const auto entity  = std::make_unique<data::ContainerEntity>();
+        entity->tileWidth  = 3;
+        entity->tileHeight = 3;
 
-	TEST_F(PlacementControllerTest, RemoveEntity3x3Valid1) {
-		// When removing an entity, specifying anywhere will remove the entire entity
-		const auto entity  = std::make_unique<data::ContainerEntity>();
-		entity->tileWidth  = 3;
-		entity->tileHeight = 3;
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
-		const auto* chunk = worldData_.GetChunkC(0, 0);
 
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 5, 5));
 
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 5, 5));
+        // Check that it has been deleted
+        for (int y = 5; y < 5 + 3; ++y) {
+            for (int x = 5; x < 5 + 3; ++x) {
+                const auto index = y * kChunkWidth + x;
+                EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(), nullptr);
 
-		// Check that it has been deleted
-		for (int y = 5; y < 5 + 3; ++y) {
-			for (int x = 5; x < 5 + 3; ++x) {
-				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(),
-				          nullptr);
+                // Entity index is undefined since no entity exists now
+            }
+        }
+    }
 
-				// Entity index is undefined since no entity exists now
-			}
-		}
-	}
+    TEST_F(PlacementControllerTest, RemoveEntity3x3Valid2) {
+        // When removing an entity, specifying anywhere will remove the entire entity
+        const auto entity  = std::make_unique<data::ContainerEntity>();
+        entity->tileWidth  = 3;
+        entity->tileHeight = 3;
 
-	TEST_F(PlacementControllerTest, RemoveEntity3x3Valid2) {
-		// When removing an entity, specifying anywhere will remove the entire entity
-		const auto entity  = std::make_unique<data::ContainerEntity>();
-		entity->tileWidth  = 3;
-		entity->tileHeight = 3;
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
-		const auto* chunk = worldData_.GetChunkC(0, 0);
 
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 7, 5));
+        // Check that it has been deleted
+        for (int y = 5; y < 5 + 3; ++y) {
+            for (int x = 5; x < 5 + 3; ++x) {
+                const auto index = y * kChunkWidth + x;
+                EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(), nullptr);
 
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 7, 5));
-		// Check that it has been deleted
-		for (int y = 5; y < 5 + 3; ++y) {
-			for (int x = 5; x < 5 + 3; ++x) {
-				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(),
-				          nullptr);
+                // Entity index is undefined since no entity exists now
+            }
+        }
+    }
 
-				// Entity index is undefined since no entity exists now
-			}
-		}
-	}
 
+    // 3 x 4
 
-	// 3 x 4
+    TEST_F(PlacementControllerTest, PlaceEntity3x4Valid) {
+        // Ensure that irregular shaped multi-tiles fully remove
 
-	TEST_F(PlacementControllerTest, PlaceEntity3x4Valid) {
-		// Ensure that irregular shaped multi-tiles fully remove
+        // For entities spanning > 1 tiles, the given location is the top left of the entity
+        const auto entity  = std::make_unique<data::ContainerEntity>();
+        entity->tileWidth  = 3;
+        entity->tileHeight = 4;
 
-		// For entities spanning > 1 tiles, the given location is the top left of the entity
-		const auto entity  = std::make_unique<data::ContainerEntity>();
-		entity->tileWidth  = 3;
-		entity->tileHeight = 4;
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
-		const auto* chunk = worldData_.GetChunkC(0, 0);
 
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
 
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
+        // Expect entity and sprite layer to be set, as well as entity_index
+        int entity_index = 0;
+        for (int y = 10; y < 10 + 4; ++y) {
+            for (int x = 9; x < 9 + 3; ++x) {
+                const auto index = y * kChunkWidth + x;
+                EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(), entity.get());
 
-		// Expect entity and sprite layer to be set, as well as entity_index
-		int entity_index = 0;
-		for (int y = 10; y < 10 + 4; ++y) {
-			for (int x = 9; x < 9 + 3; ++x) {
-				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(
-					chunk->Tiles()[index].GetEntityPrototype(),
-					entity.get());
+                // Should count up according to the rules specified in entity_index
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
+                          entity_index++);
 
-				// Should count up according to the rules specified in entity_index
-				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
-					entity_index++
-				);
 
+                // Ensure tile width and height are properly set
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData().span, 3);
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData().height,
+                          4);
+            }
+        }
+    }
 
-				// Ensure tile width and height are properly set
-				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData()
-					.span,
-					3
-				);
-				EXPECT_EQ(
-					chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData().
-					height,
-					4
-				);
-			}
-		}
-	}
+    TEST_F(PlacementControllerTest, RemoveEntity3x4Valid) {
+        // Ensure that irregular shaped multi-tiles fully remove
+        const auto entity  = std::make_unique<data::ContainerEntity>();
+        entity->tileWidth  = 3;
+        entity->tileHeight = 4;
 
-	TEST_F(PlacementControllerTest, RemoveEntity3x4Valid) {
-		// Ensure that irregular shaped multi-tiles fully remove
-		const auto entity  = std::make_unique<data::ContainerEntity>();
-		entity->tileWidth  = 3;
-		entity->tileHeight = 4;
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
-		const auto* chunk = worldData_.GetChunkC(0, 0);
 
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
+        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 9, 13));
 
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
-		EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 9, 13));
-
-		// Expect entity and sprite layer to be set, as well as entity_index
-		for (int y = 10; y < 10 + 4; ++y) {
-			for (int x = 9; x < 9 + 3; ++x) {
-				const auto index = y * kChunkWidth + x;
-				EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(),
-				          nullptr);
-			}
-		}
-	}
-}
+        // Expect entity and sprite layer to be set, as well as entity_index
+        for (int y = 10; y < 10 + 4; ++y) {
+            for (int x = 9; x < 9 + 3; ++x) {
+                const auto index = y * kChunkWidth + x;
+                EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(), nullptr);
+            }
+        }
+    }
+} // namespace jactorio::game

@@ -27,15 +27,15 @@ namespace jactorio::data
         EXPECT_EQ(original.Get(), result.Get());
     }
 
-	TEST(SerialPrototypePointer, SerializeNull) {
-		SerialProtoPtr<const Sprite> original(nullptr);
+    TEST(SerialPrototypePointer, SerializeNull) {
+        SerialProtoPtr<const Sprite> original(nullptr);
 
         EXPECT_TRUE(original == SerialProtoPtr<const Sprite>(nullptr));
         EXPECT_FALSE(original != SerialProtoPtr<const Sprite>(nullptr));
 
-		auto result = TestSerializeDeserialize(original);
-		EXPECT_EQ(result.Get(), nullptr);
-	}
+        auto result = TestSerializeDeserialize(original);
+        EXPECT_EQ(result.Get(), nullptr);
+    }
 
     TEST(SerialUniqueDataPointer, Serialize) {
         data::UniqueDataManager unique_manager;
@@ -49,7 +49,7 @@ namespace jactorio::data
 
 
         data::active_unique_data_manager = &unique_manager;
-        auto result = TestSerializeDeserialize(serial_ptr);
+        auto result                      = TestSerializeDeserialize(serial_ptr);
 
         EXPECT_EQ(result->internalId, 1);
         EXPECT_EQ(result->health, 42);
@@ -62,4 +62,4 @@ namespace jactorio::data
 
         EXPECT_EQ(result.Get(), nullptr);
     }
-}
+} // namespace jactorio::data

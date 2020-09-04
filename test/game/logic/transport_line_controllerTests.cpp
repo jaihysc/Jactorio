@@ -5,909 +5,845 @@
 #include <memory>
 
 #include "jactorioTests.h"
+
 #include "data/prototype/transport_belt.h"
-#include "game/logic/transport_line_controller.h"
-#include "game/logic/transport_segment.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
-	// Tests:
-	// - Line logic
-	// - Line properties
-	// - Item transition (to another segment)
-
-
-	class TransportLineControllerTest : public testing::Test
-	{
-	protected:
-		WorldData worldData_{};
-		LogicData logicData_{};
-
-		Chunk* chunk_ = nullptr;
-
-		data::Item itemProto_{};
-		const std::unique_ptr<data::TransportBelt> transportBeltProto_ =
-			std::make_unique<data::TransportBelt>();
-
-		///
-		/// \brief Creates a world, chunk and logic chunk at 0, 0
-		void SetUp() override {
-			chunk_ = &worldData_.EmplaceChunk(0, 0);
-			worldData_.LogicAddChunk(*chunk_);
-		}
-
-		///
-		/// \brief Creates tile UniqueData for TransportSegment
-		void RegisterSegment(const WorldCoord& world_coords,
-		                     const std::shared_ptr<TransportSegment>& segment) {
-			TestRegisterTransportSegment(worldData_, world_coords, segment, *transportBeltProto_);
-		}
-	};
-
-	TEST_F(TransportLineControllerTest, LineLogic) {
-		// Same as line logic, but belts are faster (0.06), which seems to break the current logic at the time of writing
-		const auto j_belt_speed = 0.06;
-
-		transportBeltProto_->speed = j_belt_speed;  // <---
-
-		// Segments (Logic chunk must be created first)
-		auto up_segment = std::make_shared<TransportSegment>(
-			data::Orientation::up,
-			TransportSegment::TerminationType::bend_right,
-			5);
-		const auto right_segment = std::make_shared<TransportSegment>(
-			data::Orientation::right,
-			TransportSegment::TerminationType::bend_right,
-			5);
-		const auto down_segment = std::make_shared<TransportSegment>(
-			data::Orientation::down,
-			TransportSegment::TerminationType::bend_right,
-			5);
-		auto left_segment = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::bend_right,
-			5);
-
-		// What each transport segment empties into
-		up_segment->targetSegment    = right_segment.get();
-		right_segment->targetSegment = down_segment.get();
-		down_segment->targetSegment  = left_segment.get();
-		left_segment->targetSegment  = up_segment.get();
-
-		RegisterSegment({0, 0}, up_segment);
-		RegisterSegment({4, 0}, right_segment);
-		RegisterSegment({4, 5}, down_segment);
-		RegisterSegment({0, 5}, left_segment);
-
-		// Logic
-		left_segment->AppendItem(true, 0.f, itemProto_);
-		left_segment->AppendItem(true, kItemSpacing, itemProto_);
-		left_segment->AppendItem(true, kItemSpacing, itemProto_);
-
-		// 1 update
-		// first item moved to up segment
-		TransportLineLogicUpdate(worldData_);
-		ASSERT_EQ(up_segment->left.lane.size(), 1);
-		ASSERT_EQ(left_segment->left.lane.size(), 2);
-
-		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 4.40 - j_belt_speed);
-		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.25 - j_belt_speed);
-		EXPECT_DOUBLE_EQ(left_segment->left.lane[1].dist.getAsDouble(), 0.25);
-
-		// 2 updates | 0.12
-		for (int i = 0; i < 2; ++i) {
-			TransportLineLogicUpdate(worldData_);
-		}
-		ASSERT_EQ(up_segment->left.lane.size(), 1);
-		ASSERT_EQ(left_segment->left.lane.size(), 2);
-
-		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 4.40 - (3 * j_belt_speed));
-		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.25 - (3 * j_belt_speed));
-		EXPECT_DOUBLE_EQ(left_segment->left.lane[1].dist.getAsDouble(), 0.25);
-
-
-		// 2 updates | Total distance = 4(0.06) = 0.24
-		// second item moved to up segment
-		for (int i = 0; i < 2; ++i) {
-			TransportLineLogicUpdate(worldData_);
-		}
-		ASSERT_EQ(up_segment->left.lane.size(), 2);
-		ASSERT_EQ(left_segment->left.lane.size(), 1);
-
-		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 4.40 - (5 * j_belt_speed));
-		EXPECT_DOUBLE_EQ(up_segment->left.lane[1].dist.getAsDouble(), 0.25);  // Spacing maintained
-		// Item 2 was 0.01 -> -0.05
-		// | -0.05 - 0.20 | = 0.25 Maintains distance
-		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.20);
-	}
-
-
-	TEST_F(TransportLineControllerTest, LineLogicRightBend) {
-		// Validates the correct handling of multiple items across transport lines
-		// The spacing between items should be maintained
-
-		transportBeltProto_->speed = 0.01f;
-
-		/*
-		 *    --------- RIGHT -------- >
-		 *    ^
-		 *    |
-		 *    | UP
-		 *    |
-		 *    |
-		 */
-
-		auto up_segment = std::make_shared<TransportSegment>(
-			data::Orientation::up,
-			TransportSegment::TerminationType::bend_right,
-			4);
-		auto right_segment = std::make_shared<TransportSegment>(
-			data::Orientation::right,
-			TransportSegment::TerminationType::straight,
-			4);
-
-		up_segment->targetSegment = right_segment.get();
-
-		RegisterSegment({0, 0}, up_segment);
-		RegisterSegment({3, 0}, right_segment);
-
-		// Offset is distance from beginning, or previous item
-		up_segment->AppendItem(true, 0.f, itemProto_);
-		up_segment->AppendItem(true, 1, itemProto_);
-		up_segment->AppendItem(true, 1, itemProto_);
-		static_assert(kItemSpacing < 1);  // Tested positions would otherwise be invalid
-
-		// Logic
-		// Should transfer the first item
-		TransportLineLogicUpdate(worldData_);
-
-
-		EXPECT_EQ(up_segment->left.lane.size(), 2);
-		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 0.99);
-		EXPECT_DOUBLE_EQ(up_segment->left.lane[1].dist.getAsDouble(), 1.);
-
-		EXPECT_EQ(right_segment->left.lane.size(), 1);
-		// Moved forward once 4 - 0.3 - 0.01
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 3.69);
-
-		// Transfer second item after (1 / 0.01) + 1 update - 1 update (Already moved once above)
-		for (int i = 0; i < 100; ++i) {
-			TransportLineLogicUpdate(worldData_);
-		}
-
-		EXPECT_EQ(up_segment->left.lane.size(), 1);
-		EXPECT_EQ(right_segment->left.lane.size(), 2);
-		// Spacing of 1 tile between the items is maintained across belts
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 2.69);
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), 1);
-
-
-		// Third item
-		for (int i = 0; i < 100; ++i) {
-			TransportLineLogicUpdate(worldData_);
-		}
-		EXPECT_EQ(up_segment->left.lane.size(), 0);
-		EXPECT_EQ(right_segment->left.lane.size(), 3);
-
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 1.69);
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), 1);
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[2].dist.getAsDouble(), 1);
-	}
-
-	TEST_F(TransportLineControllerTest, LineLogicCompressedRightBend) {
-		// Same as line_logic_right_bend, but items are compressed
-
-		transportBeltProto_->speed = 0.01f;
-
-		/*
-		 * COMPRESSED
-		 *    --------- RIGHT -------- >
-		 *    ^
-		 *    |
-		 *    | UP
-		 *    |
-		 *    |
-		 */
-
-		auto up_segment = std::make_shared<TransportSegment>(
-			data::Orientation::up,
-			TransportSegment::TerminationType::bend_right,
-			4);
-		auto right_segment = std::make_shared<TransportSegment>(
-			data::Orientation::right,
-			TransportSegment::TerminationType::straight,
-			4);
-
-		up_segment->targetSegment = right_segment.get();
-
-		RegisterSegment({0, 0}, up_segment);
-		RegisterSegment({3, 0}, right_segment);
-
-		// Offset is distance from beginning, or previous item
-		up_segment->AppendItem(true, 0.f, itemProto_);
-		up_segment->AppendItem(true, kItemSpacing, itemProto_);
-
-		// First item
-		TransportLineLogicUpdate(worldData_);
-
-
-		EXPECT_EQ(up_segment->left.lane.size(), 1);
-		EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 0.24);
-
-		EXPECT_EQ(right_segment->left.lane.size(), 1);
-		// Moved forward once 4 - 0.3 - 0.01
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 3.69);
-
-
-		// Transfer second item after (0.25 / 0.01) + 1 update - 1 update (Already moved once above)
-		for (int i = 0; i < 25; ++i) {
-			TransportLineLogicUpdate(worldData_);
-		}
-
-		EXPECT_EQ(up_segment->left.lane.size(), 0);
-		EXPECT_EQ(right_segment->left.lane.size(), 2);
-		// Spacing is maintained across belts
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 3.44);
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), 0.25);
-	}
-
-	TEST_F(TransportLineControllerTest, LineLogicStopAtEndOfLine) {
-		// When no target_segment is provided:
-		// First Item will stop at the end of line (Distance is 0)
-		// Trailing items will stop at item_width from the previous item
-
-		transportBeltProto_->speed = 0.01f;
-
-		auto segment = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::straight,
-			10);
-
-		RegisterSegment({0, 0}, segment);
-
-		segment->AppendItem(true, 0.5f, itemProto_);
-		segment->AppendItem(true, kItemSpacing, itemProto_);
-		segment->AppendItem(true, kItemSpacing + 1.f, itemProto_);
-
-		// Will reach distance 0 after 0.5 / 0.01 updates
-		for (int i = 0; i < 50; ++i) {
-			TransportLineLogicUpdate(worldData_);
-		}
-
-		EXPECT_EQ(segment->left.index, 0);
-		EXPECT_DOUBLE_EQ(segment->left.lane[0].dist.getAsDouble(), 0);
-
-		// On the next update, with no target segment, first item is kept at 0, second item untouched
-		// move index to 2 (was 0) as it has a distance greater than item_width
-		TransportLineLogicUpdate(worldData_);
-
-
-		EXPECT_EQ(segment->left.index, 2);
-		EXPECT_DOUBLE_EQ(segment->left.lane[0].dist.getAsDouble(), 0);
-		EXPECT_DOUBLE_EQ(segment->left.lane[1].dist.getAsDouble(), kItemSpacing);
-		EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), kItemSpacing + 0.99);
+    // Tests:
+    // - Line logic
+    // - Line properties
+    // - Item transition (to another segment)
+
+
+    class TransportLineControllerTest : public testing::Test
+    {
+    protected:
+        WorldData worldData_{};
+        LogicData logicData_{};
+
+        Chunk* chunk_ = nullptr;
+
+        data::Item itemProto_{};
+        const std::unique_ptr<data::TransportBelt> transportBeltProto_ = std::make_unique<data::TransportBelt>();
+
+        ///
+        /// \brief Creates a world, chunk and logic chunk at 0, 0
+        void SetUp() override {
+            chunk_ = &worldData_.EmplaceChunk(0, 0);
+            worldData_.LogicAddChunk(*chunk_);
+        }
+
+        ///
+        /// \brief Creates tile UniqueData for TransportSegment
+        void RegisterSegment(const WorldCoord& world_coords, const std::shared_ptr<TransportSegment>& segment) {
+            TestRegisterTransportSegment(worldData_, world_coords, segment, *transportBeltProto_);
+        }
+    };
+
+    TEST_F(TransportLineControllerTest, LineLogic) {
+        // Same as line logic, but belts are faster (0.06), which seems to break the current logic at the time of
+        // writing
+        const auto j_belt_speed = 0.06;
+
+        transportBeltProto_->speed = j_belt_speed; // <---
+
+        // Segments (Logic chunk must be created first)
+        auto up_segment =
+            std::make_shared<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        const auto right_segment = std::make_shared<TransportSegment>(
+            data::Orientation::right, TransportSegment::TerminationType::bend_right, 5);
+        const auto down_segment = std::make_shared<TransportSegment>(
+            data::Orientation::down, TransportSegment::TerminationType::bend_right, 5);
+        auto left_segment = std::make_shared<TransportSegment>(
+            data::Orientation::left, TransportSegment::TerminationType::bend_right, 5);
+
+        // What each transport segment empties into
+        up_segment->targetSegment    = right_segment.get();
+        right_segment->targetSegment = down_segment.get();
+        down_segment->targetSegment  = left_segment.get();
+        left_segment->targetSegment  = up_segment.get();
+
+        RegisterSegment({0, 0}, up_segment);
+        RegisterSegment({4, 0}, right_segment);
+        RegisterSegment({4, 5}, down_segment);
+        RegisterSegment({0, 5}, left_segment);
+
+        // Logic
+        left_segment->AppendItem(true, 0.f, itemProto_);
+        left_segment->AppendItem(true, kItemSpacing, itemProto_);
+        left_segment->AppendItem(true, kItemSpacing, itemProto_);
+
+        // 1 update
+        // first item moved to up segment
+        TransportLineLogicUpdate(worldData_);
+        ASSERT_EQ(up_segment->left.lane.size(), 1);
+        ASSERT_EQ(left_segment->left.lane.size(), 2);
+
+        EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 4.40 - j_belt_speed);
+        EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.25 - j_belt_speed);
+        EXPECT_DOUBLE_EQ(left_segment->left.lane[1].dist.getAsDouble(), 0.25);
+
+        // 2 updates | 0.12
+        for (int i = 0; i < 2; ++i) {
+            TransportLineLogicUpdate(worldData_);
+        }
+        ASSERT_EQ(up_segment->left.lane.size(), 1);
+        ASSERT_EQ(left_segment->left.lane.size(), 2);
+
+        EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 4.40 - (3 * j_belt_speed));
+        EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.25 - (3 * j_belt_speed));
+        EXPECT_DOUBLE_EQ(left_segment->left.lane[1].dist.getAsDouble(), 0.25);
+
+
+        // 2 updates | Total distance = 4(0.06) = 0.24
+        // second item moved to up segment
+        for (int i = 0; i < 2; ++i) {
+            TransportLineLogicUpdate(worldData_);
+        }
+        ASSERT_EQ(up_segment->left.lane.size(), 2);
+        ASSERT_EQ(left_segment->left.lane.size(), 1);
+
+        EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 4.40 - (5 * j_belt_speed));
+        EXPECT_DOUBLE_EQ(up_segment->left.lane[1].dist.getAsDouble(), 0.25); // Spacing maintained
+        // Item 2 was 0.01 -> -0.05
+        // | -0.05 - 0.20 | = 0.25 Maintains distance
+        EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.20);
+    }
+
 
-		// After 0.2 + 0.99 / 0.01 updates, the Third item will not move in following updates
-		for (int j = 0; j < 99; ++j) {
-			TransportLineLogicUpdate(worldData_);
-		}
-		EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), kItemSpacing);
-
-		TransportLineLogicUpdate(worldData_);
+    TEST_F(TransportLineControllerTest, LineLogicRightBend) {
+        // Validates the correct handling of multiple items across transport lines
+        // The spacing between items should be maintained
 
-		// Index set to 0, checking if a valid target exists to move items forward
-		EXPECT_EQ(segment->left.index, 0);
+        transportBeltProto_->speed = 0.01f;
 
-		EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), kItemSpacing);
+        /*
+         *    --------- RIGHT -------- >
+         *    ^
+         *    |
+         *    | UP
+         *    |
+         *    |
+         */
 
+        auto up_segment =
+            std::make_shared<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 4);
+        auto right_segment = std::make_shared<TransportSegment>(
+            data::Orientation::right, TransportSegment::TerminationType::straight, 4);
 
-		// Updates do nothing since all items are compressed
-		for (int k = 0; k < 50; ++k) {
-			TransportLineLogicUpdate(worldData_);
-		}
-	}
+        up_segment->targetSegment = right_segment.get();
 
-	TEST_F(TransportLineControllerTest, LineLogicStopAtFilledTargetSegment) {
-		// For the right lane:
+        RegisterSegment({0, 0}, up_segment);
+        RegisterSegment({3, 0}, right_segment);
 
-		transportBeltProto_->speed = 0.01f;
+        // Offset is distance from beginning, or previous item
+        up_segment->AppendItem(true, 0.f, itemProto_);
+        up_segment->AppendItem(true, 1, itemProto_);
+        up_segment->AppendItem(true, 1, itemProto_);
+        static_assert(kItemSpacing < 1); // Tested positions would otherwise be invalid
 
-		/*
-		 *    --------- RIGHT -------- >
-		 *    ^
-		 *    |
-		 *    | UP
-		 *    |
-		 *    |
-		 */
+        // Logic
+        // Should transfer the first item
+        TransportLineLogicUpdate(worldData_);
 
-		auto up_segment = std::make_shared<TransportSegment>(
-			data::Orientation::up,
-			TransportSegment::TerminationType::bend_right,
-			4);
-		auto right_segment = std::make_shared<TransportSegment>(
-			data::Orientation::right,
-			TransportSegment::TerminationType::straight,
-			4);
 
-		up_segment->targetSegment = right_segment.get();
+        EXPECT_EQ(up_segment->left.lane.size(), 2);
+        EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 0.99);
+        EXPECT_DOUBLE_EQ(up_segment->left.lane[1].dist.getAsDouble(), 1.);
 
-		RegisterSegment({0, 0}, up_segment);
-		RegisterSegment({3, 0}, right_segment);
+        EXPECT_EQ(right_segment->left.lane.size(), 1);
+        // Moved forward once 4 - 0.3 - 0.01
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 3.69);
 
-		// RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / kItemSpacing{0.25} = 13.2
-		for (int i = 0; i < 14; ++i) {
-			right_segment->AppendItem(false, 0.f, itemProto_);
-		}
+        // Transfer second item after (1 / 0.01) + 1 update - 1 update (Already moved once above)
+        for (int i = 0; i < 100; ++i) {
+            TransportLineLogicUpdate(worldData_);
+        }
 
-		// Items on up line should stop
-		up_segment->AppendItem(false, 0.f, itemProto_);
+        EXPECT_EQ(up_segment->left.lane.size(), 1);
+        EXPECT_EQ(right_segment->left.lane.size(), 2);
+        // Spacing of 1 tile between the items is maintained across belts
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 2.69);
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), 1);
 
-		// WIll not move after an arbitrary number of updates
-		for (int i = 0; i < 34; ++i) {
-			TransportLineLogicUpdate(worldData_);
-		}
 
-		EXPECT_DOUBLE_EQ(up_segment->right.lane.front().dist.getAsDouble(), 0);
-	}
+        // Third item
+        for (int i = 0; i < 100; ++i) {
+            TransportLineLogicUpdate(worldData_);
+        }
+        EXPECT_EQ(up_segment->left.lane.size(), 0);
+        EXPECT_EQ(right_segment->left.lane.size(), 3);
 
-	TEST_F(TransportLineControllerTest, LineLogicNewSegmentAddedAhead) {
-		//     2      1
-		// < ----- < -----
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 1.69);
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), 1);
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[2].dist.getAsDouble(), 1);
+    }
 
-		transportBeltProto_->speed = 0.04f;
+    TEST_F(TransportLineControllerTest, LineLogicCompressedRightBend) {
+        // Same as line_logic_right_bend, but items are compressed
 
-		// Segments (Logic chunk must be created first)
-		auto left_segment = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::straight,
-			2);
+        transportBeltProto_->speed = 0.01f;
 
-		RegisterSegment({2, 1}, left_segment);
+        /*
+         * COMPRESSED
+         *    --------- RIGHT -------- >
+         *    ^
+         *    |
+         *    | UP
+         *    |
+         *    |
+         */
 
-		// One item stopped, one still moving
-		left_segment->AppendItem(true, 0, itemProto_);
-		TransportLineLogicUpdate(worldData_);
-		EXPECT_EQ(left_segment.get()->left.index, 0);
+        auto up_segment =
+            std::make_shared<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 4);
+        auto right_segment = std::make_shared<TransportSegment>(
+            data::Orientation::right, TransportSegment::TerminationType::straight, 4);
 
-		left_segment->AppendItem(true, 2, itemProto_);
-		TransportLineLogicUpdate(worldData_);
-		EXPECT_EQ(left_segment.get()->left.index, 1);
+        up_segment->targetSegment = right_segment.get();
 
+        RegisterSegment({0, 0}, up_segment);
+        RegisterSegment({3, 0}, right_segment);
 
-		// ======================================================================
-		const auto left_segment_2 = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::straight,
-			1);
+        // Offset is distance from beginning, or previous item
+        up_segment->AppendItem(true, 0.f, itemProto_);
+        up_segment->AppendItem(true, kItemSpacing, itemProto_);
 
-		left_segment->targetSegment = left_segment_2.get();
+        // First item
+        TransportLineLogicUpdate(worldData_);
 
-		RegisterSegment({1, 1}, left_segment_2);
 
-		// Update neighboring segments as a new segment was placed
-		transportBeltProto_->OnNeighborUpdate(worldData_,
-		                                      logicData_,
-		                                      {1, 1},
-		                                      {2, 1}, data::Orientation::right);
+        EXPECT_EQ(up_segment->left.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(up_segment->left.lane[0].dist.getAsDouble(), 0.24);
 
-		EXPECT_EQ(left_segment.get()->left.index, 0);
-	}
+        EXPECT_EQ(right_segment->left.lane.size(), 1);
+        // Moved forward once 4 - 0.3 - 0.01
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 3.69);
 
-	TEST_F(TransportLineControllerTest, LineLogicTargetTemporarilyBlocked) {
-		// If the target segment is temporarily blocked, it will move into it at the next opportunity
 
-		//     1      2
-		// < ----- < -----
+        // Transfer second item after (0.25 / 0.01) + 1 update - 1 update (Already moved once above)
+        for (int i = 0; i < 25; ++i) {
+            TransportLineLogicUpdate(worldData_);
+        }
 
-		transportBeltProto_->speed = 0.04f;
+        EXPECT_EQ(up_segment->left.lane.size(), 0);
+        EXPECT_EQ(right_segment->left.lane.size(), 2);
+        // Spacing is maintained across belts
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 3.44);
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), 0.25);
+    }
 
-		const auto left_segment = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::straight,
-			1);
-		RegisterSegment({1, 1}, left_segment);
+    TEST_F(TransportLineControllerTest, LineLogicStopAtEndOfLine) {
+        // When no target_segment is provided:
+        // First Item will stop at the end of line (Distance is 0)
+        // Trailing items will stop at item_width from the previous item
 
+        transportBeltProto_->speed = 0.01f;
 
-		auto left_segment_2 = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::straight,
-			1);
-		left_segment_2->targetSegment = left_segment.get();
-		RegisterSegment({2, 1}, left_segment_2);
+        auto segment = std::make_shared<TransportSegment>(
+            data::Orientation::left, TransportSegment::TerminationType::straight, 10);
 
+        RegisterSegment({0, 0}, segment);
 
-		// ======================================================================
+        segment->AppendItem(true, 0.5f, itemProto_);
+        segment->AppendItem(true, kItemSpacing, itemProto_);
+        segment->AppendItem(true, kItemSpacing + 1.f, itemProto_);
 
+        // Will reach distance 0 after 0.5 / 0.01 updates
+        for (int i = 0; i < 50; ++i) {
+            TransportLineLogicUpdate(worldData_);
+        }
 
-		left_segment->AppendItem(true, 1 - kItemSpacing + 0.01, itemProto_);
+        EXPECT_EQ(segment->left.index, 0);
+        EXPECT_DOUBLE_EQ(segment->left.lane[0].dist.getAsDouble(), 0);
 
-		left_segment_2->AppendItem(true, 0, itemProto_);
-		left_segment_2->AppendItem(true, 0.5, itemProto_);
-		left_segment_2->AppendItem(true, 2, itemProto_);
+        // On the next update, with no target segment, first item is kept at 0, second item untouched
+        // move index to 2 (was 0) as it has a distance greater than item_width
+        TransportLineLogicUpdate(worldData_);
 
-		TransportLineLogicUpdate(worldData_);
 
-		ASSERT_EQ(left_segment->left.lane.size(), 1);
+        EXPECT_EQ(segment->left.index, 2);
+        EXPECT_DOUBLE_EQ(segment->left.lane[0].dist.getAsDouble(), 0);
+        EXPECT_DOUBLE_EQ(segment->left.lane[1].dist.getAsDouble(), kItemSpacing);
+        EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), kItemSpacing + 0.99);
 
-		TransportLineLogicUpdate(worldData_);
+        // After 0.2 + 0.99 / 0.01 updates, the Third item will not move in following updates
+        for (int j = 0; j < 99; ++j) {
+            TransportLineLogicUpdate(worldData_);
+        }
+        EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), kItemSpacing);
 
-		ASSERT_EQ(left_segment->left.lane.size(), 2);
-	}
+        TransportLineLogicUpdate(worldData_);
 
+        // Index set to 0, checking if a valid target exists to move items forward
+        EXPECT_EQ(segment->left.index, 0);
 
-	// ======================================================================
-	// Line properties
+        EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), kItemSpacing);
 
-	TEST_F(TransportLineControllerTest, ItemSpacing) {
-		// A minimum distance of kItemSpacing is maintained between items
 
-		auto right_segment = std::make_shared<TransportSegment>(
-			data::Orientation::right,
-			TransportSegment::TerminationType::bend_right,
-			4);
+        // Updates do nothing since all items are compressed
+        for (int k = 0; k < 50; ++k) {
+            TransportLineLogicUpdate(worldData_);
+        }
+    }
 
-		RegisterSegment({0, 0}, right_segment);
+    TEST_F(TransportLineControllerTest, LineLogicStopAtFilledTargetSegment) {
+        // For the right lane:
 
-		right_segment->AppendItem(true, 0.f, itemProto_);
-		right_segment->AppendItem(true, 0.f, itemProto_);  // Insert behind previous item
+        transportBeltProto_->speed = 0.01f;
 
-		// Check that second item has a minimum distance of kItemSpacing
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.);
-		EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), kItemSpacing);
-	}
+        /*
+         *    --------- RIGHT -------- >
+         *    ^
+         *    |
+         *    | UP
+         *    |
+         *    |
+         */
 
-	TEST_F(TransportLineControllerTest, BackItemDistance) {
-		/*
-		 * ^
-		 * |
-		 * |
-		 * 
-		 * ^
-		 * |
-		 * |
-		 */
+        auto up_segment =
+            std::make_shared<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 4);
+        auto right_segment = std::make_shared<TransportSegment>(
+            data::Orientation::right, TransportSegment::TerminationType::straight, 4);
 
-		transportBeltProto_->speed = 0.05;
+        up_segment->targetSegment = right_segment.get();
 
+        RegisterSegment({0, 0}, up_segment);
+        RegisterSegment({3, 0}, right_segment);
 
-		// Segments (Logic chunk must be created first)
-		auto up_segment_1 = std::make_shared<TransportSegment>(data::Orientation::up,
-		                                                       TransportSegment::TerminationType::straight,
-		                                                       1);
-		auto up_segment_2 = std::make_shared<TransportSegment>(data::Orientation::up,
-		                                                       TransportSegment::TerminationType::straight,
-		                                                       1);
+        // RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / kItemSpacing{0.25} = 13.2
+        for (int i = 0; i < 14; ++i) {
+            right_segment->AppendItem(false, 0.f, itemProto_);
+        }
 
-		up_segment_2->targetSegment = up_segment_1.get();
+        // Items on up line should stop
+        up_segment->AppendItem(false, 0.f, itemProto_);
 
-		RegisterSegment({0, 0}, up_segment_1);
-		RegisterSegment({0, 1}, up_segment_2);
+        // WIll not move after an arbitrary number of updates
+        for (int i = 0; i < 34; ++i) {
+            TransportLineLogicUpdate(worldData_);
+        }
 
-		up_segment_2->AppendItem(true, 0.05, itemProto_);
-		EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
+        EXPECT_DOUBLE_EQ(up_segment->right.lane.front().dist.getAsDouble(), 0);
+    }
 
-		TransportLineLogicUpdate(worldData_);
-		EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
+    TEST_F(TransportLineControllerTest, LineLogicNewSegmentAddedAhead) {
+        //     2      1
+        // < ----- < -----
 
-		// Segment 1
-		TransportLineLogicUpdate(worldData_);
-		EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
+        transportBeltProto_->speed = 0.04f;
 
-		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.95);  // First segment now
+        // Segments (Logic chunk must be created first)
+        auto left_segment =
+            std::make_shared<TransportSegment>(data::Orientation::left, TransportSegment::TerminationType::straight, 2);
 
-		for (int i = 0; i < 19; ++i) {
-			TransportLineLogicUpdate(worldData_);
-		}
-		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
+        RegisterSegment({2, 1}, left_segment);
 
-		// Remains at 0
-		TransportLineLogicUpdate(worldData_);
-		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
+        // One item stopped, one still moving
+        left_segment->AppendItem(true, 0, itemProto_);
+        TransportLineLogicUpdate(worldData_);
+        EXPECT_EQ(left_segment.get()->left.index, 0);
 
+        left_segment->AppendItem(true, 2, itemProto_);
+        TransportLineLogicUpdate(worldData_);
+        EXPECT_EQ(left_segment.get()->left.index, 1);
 
-		// ======================================================================
-		// Fill the first segment up to 4 items
-		up_segment_1->AppendItem(true, 0, itemProto_);
-		up_segment_1->AppendItem(true, 0, itemProto_);
-		up_segment_1->AppendItem(true, 0, itemProto_);
-		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
 
+        // ======================================================================
+        const auto left_segment_2 =
+            std::make_shared<TransportSegment>(data::Orientation::left, TransportSegment::TerminationType::straight, 1);
 
-		// Will not enter since segment 1 is full
-		up_segment_2->AppendItem(true, 0.05, itemProto_);
-		TransportLineLogicUpdate(worldData_);
-		TransportLineLogicUpdate(worldData_);
-		TransportLineLogicUpdate(worldData_);
-		EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
-		EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
-	}
+        left_segment->targetSegment = left_segment_2.get();
 
+        RegisterSegment({1, 1}, left_segment_2);
 
-	// ======================================================================
-	// Item transition
+        // Update neighboring segments as a new segment was placed
+        transportBeltProto_->OnNeighborUpdate(worldData_, logicData_, {1, 1}, {2, 1}, data::Orientation::right);
 
+        EXPECT_EQ(left_segment.get()->left.index, 0);
+    }
 
-	TEST_F(TransportLineControllerTest, TransitionStraight) {
-		// Transferring from a straight segment traveling left to another one traveling left
-		/*
-		 * < ------ LEFT (1) ------		< ------ LEFT (2) -------
-		 */
+    TEST_F(TransportLineControllerTest, LineLogicTargetTemporarilyBlocked) {
+        // If the target segment is temporarily blocked, it will move into it at the next opportunity
 
-		transportBeltProto_->speed = 0.01f;
+        //     1      2
+        // < ----- < -----
 
-		auto segment_1 = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::straight,
-			4);
-		auto segment_2 = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::straight,
-			4);
+        transportBeltProto_->speed = 0.04f;
 
-		segment_2->targetSegment = segment_1.get();
+        const auto left_segment =
+            std::make_shared<TransportSegment>(data::Orientation::left, TransportSegment::TerminationType::straight, 1);
+        RegisterSegment({1, 1}, left_segment);
 
-		RegisterSegment({0, 0}, segment_1);
-		RegisterSegment({3, 0}, segment_2);
 
-		// Insert item on left + right side
-		segment_2->AppendItem(true, 0.02f, itemProto_);
-		segment_2->AppendItem(false, 0.02f, itemProto_);
+        auto left_segment_2 =
+            std::make_shared<TransportSegment>(data::Orientation::left, TransportSegment::TerminationType::straight, 1);
+        left_segment_2->targetSegment = left_segment.get();
+        RegisterSegment({2, 1}, left_segment_2);
 
-		// Travel to the next belt in 0.02 / 0.01 + 1 updates
-		for (int i = 0; i < 3; ++i) {
-			TransportLineLogicUpdate(worldData_);
-		}
 
-		EXPECT_EQ(segment_2->left.lane.size(), 0);
-		EXPECT_EQ(segment_2->right.lane.size(), 0);
-		// 3.99 tiles from the end of this transport line
-		EXPECT_DOUBLE_EQ(segment_1->left.lane[0].dist.getAsDouble(), 3.99);
-		EXPECT_DOUBLE_EQ(segment_1->right.lane[0].dist.getAsDouble(), 3.99);
-	}
+        // ======================================================================
 
-	TEST_F(TransportLineControllerTest, TransitionSideLeft) {
-		// Belt feeding into only one side of another belt
-		/*
-		 *                           Right     Left
-		 *                             |    -    |
-		 *                             |    -    |
-		 *        --------- A ----->   |    -    |
-		 *        --------- B ----->   | v  -    | Downwards belt
-		 *                             |    -    |
-		 *                             |    -    |
-		 *                             |  v -    |
-		 */
-		// A first, fill entire lane, if A is not compressed, B moves
 
-		transportBeltProto_->speed = 0.05;
+        left_segment->AppendItem(true, 1 - kItemSpacing + 0.01, itemProto_);
 
+        left_segment_2->AppendItem(true, 0, itemProto_);
+        left_segment_2->AppendItem(true, 0.5, itemProto_);
+        left_segment_2->AppendItem(true, 2, itemProto_);
 
-		// Segments (Logic chunk must be created first)
-		auto right_segment = std::make_shared<TransportSegment>(
-			data::Orientation::right,
-			TransportSegment::TerminationType::right_only,
-			5);
-		auto down_segment = std::make_shared<TransportSegment>(
-			data::Orientation::down,
-			TransportSegment::TerminationType::straight,
-			10);
+        TransportLineLogicUpdate(worldData_);
 
-		right_segment->targetSegment      = down_segment.get();
-		right_segment->targetInsertOffset = 8;  // 8 + 1 = 9
+        ASSERT_EQ(left_segment->left.lane.size(), 1);
 
-		down_segment->itemOffset = 1;
+        TransportLineLogicUpdate(worldData_);
 
-		RegisterSegment({4, 0}, right_segment);
-		RegisterSegment({4, 9}, down_segment);
+        ASSERT_EQ(left_segment->left.lane.size(), 2);
+    }
 
-		// Insert items
-		for (int i = 0; i < 3; ++i) {
-			right_segment->AppendItem(true, 0.f, itemProto_);
-			right_segment->AppendItem(false, 0.f, itemProto_);
-		}
 
-		// Logic tests
-		TransportLineLogicUpdate(worldData_);
+    // ======================================================================
+    // Line properties
 
-		// Since the target belt is empty, both A + B inserts into right lane
-		EXPECT_EQ(right_segment->left.lane.size(), 2);
-		EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.2);  // 0.25 - 0.05
+    TEST_F(TransportLineControllerTest, ItemSpacing) {
+        // A minimum distance of kItemSpacing is maintained between items
 
-		EXPECT_EQ(right_segment->right.lane.size(), 2);
-		EXPECT_EQ(right_segment->right.lane[0].dist.getAsDouble(), 0.2);
+        auto right_segment = std::make_shared<TransportSegment>(
+            data::Orientation::right, TransportSegment::TerminationType::bend_right, 4);
 
+        RegisterSegment({0, 0}, right_segment);
 
-		ASSERT_EQ(down_segment->right.lane.size(), 2);
-		// 10 - 0.7 - 0.05
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.25);
-		// (10 - 0.3 - 0.05) - (10 - 0.7 - 0.05)
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[1].dist.getAsDouble(), 0.4);
+        right_segment->AppendItem(true, 0.f, itemProto_);
+        right_segment->AppendItem(true, 0.f, itemProto_); // Insert behind previous item
 
+        // Check that second item has a minimum distance of kItemSpacing
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.);
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), kItemSpacing);
+    }
 
-		// ======================================================================
-		// End on One update prior to transitioning
-		for (int j = 0; j < 4; ++j) {
-			TransportLineLogicUpdate(worldData_);
-		}
-		EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.0);
-		EXPECT_EQ(right_segment->right.lane[0].dist.getAsDouble(), 0.0);
+    TEST_F(TransportLineControllerTest, BackItemDistance) {
+        /*
+         * ^
+         * |
+         * |
+         *
+         * ^
+         * |
+         * |
+         */
 
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.05);
+        transportBeltProto_->speed = 0.05;
 
 
-		// ======================================================================
-		// Transition items
-		TransportLineLogicUpdate(worldData_);
-		EXPECT_EQ(right_segment->left.lane.size(), 1);
-		EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.2);  // 0.25 - 0.05
+        // Segments (Logic chunk must be created first)
+        auto up_segment_1 =
+            std::make_shared<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::straight, 1);
+        auto up_segment_2 =
+            std::make_shared<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::straight, 1);
 
+        up_segment_2->targetSegment = up_segment_1.get();
 
-		// ======================================================================
-		// Right lane (B) stops, left (A) takes priority
-		EXPECT_EQ(right_segment->right.lane.size(), 2);  // Unmoved
-		EXPECT_EQ(right_segment->right.lane[0].dist.getAsDouble(), 0.f);
+        RegisterSegment({0, 0}, up_segment_1);
+        RegisterSegment({0, 1}, up_segment_2);
 
-		ASSERT_EQ(down_segment->right.lane.size(), 3);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.00);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[1].dist.getAsDouble(), 0.4);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[2].dist.getAsDouble(), 0.25);
+        up_segment_2->AppendItem(true, 0.05, itemProto_);
+        EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
 
+        TransportLineLogicUpdate(worldData_);
+        EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
-		// ======================================================================
-		// Transition third item for Lane A, should wake up lane B after passing
-		for (int j = 0; j < 4 + 13 + 1; ++j) {  // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
-			TransportLineLogicUpdate(worldData_);
-		}
-		EXPECT_EQ(right_segment->left.lane.size(), 0);
-		EXPECT_EQ(right_segment->right.lane.size(), 1);  // Woke and moved
+        // Segment 1
+        TransportLineLogicUpdate(worldData_);
+        EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
-		ASSERT_EQ(down_segment->right.lane.size(), 5);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 8.10);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[3].dist.getAsDouble(), 0.25);
+        EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.95); // First segment now
 
-	}
+        for (int i = 0; i < 19; ++i) {
+            TransportLineLogicUpdate(worldData_);
+        }
+        EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
-	TEST_F(TransportLineControllerTest, TransitionSideRight) {
-		// Belt feeding into only one side of another belt moving updards
-		/*
-		 * Left     Right
-		 *  |    -    |
-		 *  |    -    |
-		 *  |    -    |	<------------ A -------------
-		 *  |  ^ -    | <------------ B -------------
-		 *  |    -    |
-		 *  |    -    |
-		 *  |    -    |
-		 */
-		// B first, fill entire lane, if B is not compressed, A moves
+        // Remains at 0
+        TransportLineLogicUpdate(worldData_);
+        EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
-		transportBeltProto_->speed = 0.05;
 
+        // ======================================================================
+        // Fill the first segment up to 4 items
+        up_segment_1->AppendItem(true, 0, itemProto_);
+        up_segment_1->AppendItem(true, 0, itemProto_);
+        up_segment_1->AppendItem(true, 0, itemProto_);
+        EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
 
-		// Segments (Logic chunk must be created first)
-		auto left_segment = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::right_only,
-			5);
-		auto down_segment = std::make_shared<TransportSegment>(
-			data::Orientation::down,
-			TransportSegment::TerminationType::straight,
-			20);
 
-		left_segment->targetSegment = down_segment.get();
+        // Will not enter since segment 1 is full
+        up_segment_2->AppendItem(true, 0.05, itemProto_);
+        TransportLineLogicUpdate(worldData_);
+        TransportLineLogicUpdate(worldData_);
+        TransportLineLogicUpdate(worldData_);
+        EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
+        EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
+    }
 
-		left_segment->targetInsertOffset = -1;  // Will insert into up_segment with offset of 9 absolute
-		down_segment->itemOffset         = 10;
 
-		RegisterSegment({4, 0}, left_segment);
-		RegisterSegment({4, 9}, down_segment);
+    // ======================================================================
+    // Item transition
 
 
-		// Insert items
-		for (int i = 0; i < 3; ++i) {
-			left_segment->AppendItem(true, 0.f, itemProto_);
-			left_segment->AppendItem(false, 0.f, itemProto_);
-		}
+    TEST_F(TransportLineControllerTest, TransitionStraight) {
+        // Transferring from a straight segment traveling left to another one traveling left
+        /*
+         * < ------ LEFT (1) ------		< ------ LEFT (2) -------
+         */
 
-		// Logic tests
-		TransportLineLogicUpdate(worldData_);
+        transportBeltProto_->speed = 0.01f;
 
-		// Since the target belt is empty, both A + B inserts into right lane
-		EXPECT_EQ(left_segment->left.lane.size(), 2);
-		EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.2);  // 0.25 - 0.05
+        auto segment_1 =
+            std::make_shared<TransportSegment>(data::Orientation::left, TransportSegment::TerminationType::straight, 4);
+        auto segment_2 =
+            std::make_shared<TransportSegment>(data::Orientation::left, TransportSegment::TerminationType::straight, 4);
 
-		EXPECT_EQ(left_segment->right.lane.size(), 2);
-		EXPECT_EQ(left_segment->right.lane[0].dist.getAsDouble(), 0.2);
+        segment_2->targetSegment = segment_1.get();
 
+        RegisterSegment({0, 0}, segment_1);
+        RegisterSegment({3, 0}, segment_2);
 
-		ASSERT_EQ(down_segment->right.lane.size(), 2);
-		// 10 - 0.7 - 0.05
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.25);
-		// (10 - 0.3 - 0.05) - (10 - 0.7 - 0.05)
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[1].dist.getAsDouble(), 0.4);
+        // Insert item on left + right side
+        segment_2->AppendItem(true, 0.02f, itemProto_);
+        segment_2->AppendItem(false, 0.02f, itemProto_);
 
+        // Travel to the next belt in 0.02 / 0.01 + 1 updates
+        for (int i = 0; i < 3; ++i) {
+            TransportLineLogicUpdate(worldData_);
+        }
 
-		// ======================================================================
-		// End on One update prior to transitioning
-		for (int j = 0; j < 4; ++j) {
-			TransportLineLogicUpdate(worldData_);
-		}
-		EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.0);
-		EXPECT_EQ(left_segment->right.lane[0].dist.getAsDouble(), 0.0);
+        EXPECT_EQ(segment_2->left.lane.size(), 0);
+        EXPECT_EQ(segment_2->right.lane.size(), 0);
+        // 3.99 tiles from the end of this transport line
+        EXPECT_DOUBLE_EQ(segment_1->left.lane[0].dist.getAsDouble(), 3.99);
+        EXPECT_DOUBLE_EQ(segment_1->right.lane[0].dist.getAsDouble(), 3.99);
+    }
 
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.05);
+    TEST_F(TransportLineControllerTest, TransitionSideLeft) {
+        // Belt feeding into only one side of another belt
+        /*
+         *                           Right     Left
+         *                             |    -    |
+         *                             |    -    |
+         *        --------- A ----->   |    -    |
+         *        --------- B ----->   | v  -    | Downwards belt
+         *                             |    -    |
+         *                             |    -    |
+         *                             |  v -    |
+         */
+        // A first, fill entire lane, if A is not compressed, B moves
 
+        transportBeltProto_->speed = 0.05;
 
-		// ======================================================================
-		// Transition items
-		TransportLineLogicUpdate(worldData_);
-		EXPECT_EQ(left_segment->left.lane.size(), 1);
-		EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.2);  // 0.25 - 0.05
 
+        // Segments (Logic chunk must be created first)
+        auto right_segment = std::make_shared<TransportSegment>(
+            data::Orientation::right, TransportSegment::TerminationType::right_only, 5);
+        auto down_segment = std::make_shared<TransportSegment>(
+            data::Orientation::down, TransportSegment::TerminationType::straight, 10);
 
-		// ======================================================================
-		// Right lane (B) stops, left (A) takes priority
-		EXPECT_EQ(left_segment->right.lane.size(), 2);  // Unmoved
-		EXPECT_EQ(left_segment->right.lane[0].dist.getAsDouble(), 0.f);
+        right_segment->targetSegment      = down_segment.get();
+        right_segment->targetInsertOffset = 8; // 8 + 1 = 9
 
-		ASSERT_EQ(down_segment->right.lane.size(), 3);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.00);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[1].dist.getAsDouble(), 0.4);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[2].dist.getAsDouble(), 0.25);
+        down_segment->itemOffset = 1;
 
+        RegisterSegment({4, 0}, right_segment);
+        RegisterSegment({4, 9}, down_segment);
 
-		// ======================================================================
-		// Transition third item for Lane A, should wake up lane B after passing
-		for (int j = 0; j < 4 + 13 + 1; ++j) {  // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
-			TransportLineLogicUpdate(worldData_);
-		}
-		EXPECT_EQ(left_segment->left.lane.size(), 0);
-		EXPECT_EQ(left_segment->right.lane.size(), 1);  // Woke and moved
+        // Insert items
+        for (int i = 0; i < 3; ++i) {
+            right_segment->AppendItem(true, 0.f, itemProto_);
+            right_segment->AppendItem(false, 0.f, itemProto_);
+        }
 
-		ASSERT_EQ(down_segment->right.lane.size(), 5);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 8.10);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[3].dist.getAsDouble(), 0.25);
+        // Logic tests
+        TransportLineLogicUpdate(worldData_);
 
-	}
+        // Since the target belt is empty, both A + B inserts into right lane
+        EXPECT_EQ(right_segment->left.lane.size(), 2);
+        EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.2); // 0.25 - 0.05
 
-	TEST_F(TransportLineControllerTest, TransitionSideOnlyToBending) {
-		//     v
-		// < < <
-		//     ^
+        EXPECT_EQ(right_segment->right.lane.size(), 2);
+        EXPECT_EQ(right_segment->right.lane[0].dist.getAsDouble(), 0.2);
 
-		transportBeltProto_->speed = 0.06;
 
-		auto left_segment = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::bend_right,
-			4);
-		left_segment->itemOffset = 1;
-		RegisterSegment({2, 2}, left_segment);
+        ASSERT_EQ(down_segment->right.lane.size(), 2);
+        // 10 - 0.7 - 0.05
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.25);
+        // (10 - 0.3 - 0.05) - (10 - 0.7 - 0.05)
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[1].dist.getAsDouble(), 0.4);
 
-		// ======================================================================
 
-		auto down_segment = std::make_shared<TransportSegment>(
-			data::Orientation::down,
-			TransportSegment::TerminationType::right_only,
-			1);
+        // ======================================================================
+        // End on One update prior to transitioning
+        for (int j = 0; j < 4; ++j) {
+            TransportLineLogicUpdate(worldData_);
+        }
+        EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.0);
+        EXPECT_EQ(right_segment->right.lane[0].dist.getAsDouble(), 0.0);
 
-		down_segment->targetSegment      = left_segment.get();
-		down_segment->targetInsertOffset = 2;
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.05);
 
-		RegisterSegment({3, 1}, down_segment);
 
+        // ======================================================================
+        // Transition items
+        TransportLineLogicUpdate(worldData_);
+        EXPECT_EQ(right_segment->left.lane.size(), 1);
+        EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.2); // 0.25 - 0.05
 
-		// Left lane
 
+        // ======================================================================
+        // Right lane (B) stops, left (A) takes priority
+        EXPECT_EQ(right_segment->right.lane.size(), 2); // Unmoved
+        EXPECT_EQ(right_segment->right.lane[0].dist.getAsDouble(), 0.f);
 
-		down_segment->AppendItem(true, 0, itemProto_);
+        ASSERT_EQ(down_segment->right.lane.size(), 3);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.00);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[1].dist.getAsDouble(), 0.4);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[2].dist.getAsDouble(), 0.25);
 
-		TransportLineLogicUpdate(worldData_);
 
-		ASSERT_EQ(left_segment->right.lane.size(), 1);
+        // ======================================================================
+        // Transition third item for Lane A, should wake up lane B after passing
+        for (int j = 0; j < 4 + 13 + 1; ++j) { // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
+            TransportLineLogicUpdate(worldData_);
+        }
+        EXPECT_EQ(right_segment->left.lane.size(), 0);
+        EXPECT_EQ(right_segment->right.lane.size(), 1); // Woke and moved
 
-		// (line offset) - belt speed
-		EXPECT_DOUBLE_EQ(left_segment->right.lane[0].dist.getAsDouble(), (0.3 + 0.7) + 2. - 0.06);
+        ASSERT_EQ(down_segment->right.lane.size(), 5);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 8.10);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[3].dist.getAsDouble(), 0.25);
+    }
 
+    TEST_F(TransportLineControllerTest, TransitionSideRight) {
+        // Belt feeding into only one side of another belt moving updards
+        /*
+         * Left     Right
+         *  |    -    |
+         *  |    -    |
+         *  |    -    |	<------------ A -------------
+         *  |  ^ -    | <------------ B -------------
+         *  |    -    |
+         *  |    -    |
+         *  |    -    |
+         */
+        // B first, fill entire lane, if B is not compressed, A moves
 
-		// Right lane
+        transportBeltProto_->speed = 0.05;
 
 
-		left_segment->right.lane.clear();
+        // Segments (Logic chunk must be created first)
+        auto left_segment = std::make_shared<TransportSegment>(
+            data::Orientation::left, TransportSegment::TerminationType::right_only, 5);
+        auto down_segment = std::make_shared<TransportSegment>(
+            data::Orientation::down, TransportSegment::TerminationType::straight, 20);
 
-		down_segment->AppendItem(false, 0, itemProto_);
+        left_segment->targetSegment = down_segment.get();
 
-		TransportLineLogicUpdate(worldData_);
+        left_segment->targetInsertOffset = -1; // Will insert into up_segment with offset of 9 absolute
+        down_segment->itemOffset         = 10;
 
-		ASSERT_EQ(left_segment->right.lane.size(), 1);
+        RegisterSegment({4, 0}, left_segment);
+        RegisterSegment({4, 9}, down_segment);
 
-		EXPECT_DOUBLE_EQ(left_segment->right.lane[0].dist.getAsDouble(), (0.3 + 0.3) + 2. - 0.06);
 
+        // Insert items
+        for (int i = 0; i < 3; ++i) {
+            left_segment->AppendItem(true, 0.f, itemProto_);
+            left_segment->AppendItem(false, 0.f, itemProto_);
+        }
 
-		// ======================================================================
+        // Logic tests
+        TransportLineLogicUpdate(worldData_);
 
-		auto up_segment = std::make_shared<TransportSegment>(
-			data::Orientation::up,
-			TransportSegment::TerminationType::left_only,
-			1);
+        // Since the target belt is empty, both A + B inserts into right lane
+        EXPECT_EQ(left_segment->left.lane.size(), 2);
+        EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.2); // 0.25 - 0.05
 
-		up_segment->targetSegment      = left_segment.get();
-		up_segment->targetInsertOffset = 2;
+        EXPECT_EQ(left_segment->right.lane.size(), 2);
+        EXPECT_EQ(left_segment->right.lane[0].dist.getAsDouble(), 0.2);
 
-		RegisterSegment({3, 3}, up_segment);
 
+        ASSERT_EQ(down_segment->right.lane.size(), 2);
+        // 10 - 0.7 - 0.05
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.25);
+        // (10 - 0.3 - 0.05) - (10 - 0.7 - 0.05)
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[1].dist.getAsDouble(), 0.4);
 
-		// Left lane
 
+        // ======================================================================
+        // End on One update prior to transitioning
+        for (int j = 0; j < 4; ++j) {
+            TransportLineLogicUpdate(worldData_);
+        }
+        EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.0);
+        EXPECT_EQ(left_segment->right.lane[0].dist.getAsDouble(), 0.0);
 
-		up_segment->AppendItem(true, 0, itemProto_);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.05);
 
-		TransportLineLogicUpdate(worldData_);
 
-		ASSERT_EQ(left_segment->left.lane.size(), 1);
+        // ======================================================================
+        // Transition items
+        TransportLineLogicUpdate(worldData_);
+        EXPECT_EQ(left_segment->left.lane.size(), 1);
+        EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.2); // 0.25 - 0.05
 
-		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), (0.7 + 0.3) + 2. - 0.06);
 
+        // ======================================================================
+        // Right lane (B) stops, left (A) takes priority
+        EXPECT_EQ(left_segment->right.lane.size(), 2); // Unmoved
+        EXPECT_EQ(left_segment->right.lane[0].dist.getAsDouble(), 0.f);
 
-		// Right lane
+        ASSERT_EQ(down_segment->right.lane.size(), 3);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 9.00);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[1].dist.getAsDouble(), 0.4);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[2].dist.getAsDouble(), 0.25);
 
 
-		left_segment->left.lane.clear();
+        // ======================================================================
+        // Transition third item for Lane A, should wake up lane B after passing
+        for (int j = 0; j < 4 + 13 + 1; ++j) { // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
+            TransportLineLogicUpdate(worldData_);
+        }
+        EXPECT_EQ(left_segment->left.lane.size(), 0);
+        EXPECT_EQ(left_segment->right.lane.size(), 1); // Woke and moved
 
-		up_segment->AppendItem(false, 0, itemProto_);
+        ASSERT_EQ(down_segment->right.lane.size(), 5);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), 8.10);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[3].dist.getAsDouble(), 0.25);
+    }
 
-		TransportLineLogicUpdate(worldData_);
+    TEST_F(TransportLineControllerTest, TransitionSideOnlyToBending) {
+        //     v
+        // < < <
+        //     ^
 
-		ASSERT_EQ(left_segment->left.lane.size(), 1);
+        transportBeltProto_->speed = 0.06;
 
-		EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), (0.7 + 0.7) + 2. - 0.06);
-	}
+        auto left_segment = std::make_shared<TransportSegment>(
+            data::Orientation::left, TransportSegment::TerminationType::bend_right, 4);
+        left_segment->itemOffset = 1;
+        RegisterSegment({2, 2}, left_segment);
 
-	TEST_F(TransportLineControllerTest, TransitionBendingToSideOnly) {
-		// > v
-		//   v
-		// < < <
+        // ======================================================================
 
-		transportBeltProto_->speed = 0.06;
+        auto down_segment = std::make_shared<TransportSegment>(
+            data::Orientation::down, TransportSegment::TerminationType::right_only, 1);
 
-		auto down_segment = std::make_shared<TransportSegment>(
-			data::Orientation::down,
-			TransportSegment::TerminationType::right_only,
-			3);
+        down_segment->targetSegment      = left_segment.get();
+        down_segment->targetInsertOffset = 2;
 
-		RegisterSegment({3, 2}, down_segment);
+        RegisterSegment({3, 1}, down_segment);
 
 
-		auto right_segment = std::make_shared<TransportSegment>(
-			data::Orientation::right,
-			TransportSegment::TerminationType::bend_right,
-			2);
+        // Left lane
 
-		right_segment->targetSegment = down_segment.get();
 
-		RegisterSegment({2, 1}, right_segment);
+        down_segment->AppendItem(true, 0, itemProto_);
 
+        TransportLineLogicUpdate(worldData_);
 
-		// ======================================================================
-		// Left
+        ASSERT_EQ(left_segment->right.lane.size(), 1);
 
-		right_segment->AppendItem(true, 0, itemProto_);
+        // (line offset) - belt speed
+        EXPECT_DOUBLE_EQ(left_segment->right.lane[0].dist.getAsDouble(), (0.3 + 0.7) + 2. - 0.06);
 
-		TransportLineLogicUpdate(worldData_);
 
-		ASSERT_EQ(down_segment->left.lane.size(), 1);
-		EXPECT_DOUBLE_EQ(down_segment->left.lane[0].dist.getAsDouble(), (0.3 + 1. + 0.7) - 0.06);
+        // Right lane
 
 
-		// Right
+        left_segment->right.lane.clear();
 
-		right_segment->AppendItem(false, 0, itemProto_);
+        down_segment->AppendItem(false, 0, itemProto_);
 
-		TransportLineLogicUpdate(worldData_);
+        TransportLineLogicUpdate(worldData_);
 
-		ASSERT_EQ(down_segment->right.lane.size(), 1);
-		EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), (0.3 + 1. + 0.3) - 0.06);
-	}
-}
+        ASSERT_EQ(left_segment->right.lane.size(), 1);
+
+        EXPECT_DOUBLE_EQ(left_segment->right.lane[0].dist.getAsDouble(), (0.3 + 0.3) + 2. - 0.06);
+
+
+        // ======================================================================
+
+        auto up_segment =
+            std::make_shared<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::left_only, 1);
+
+        up_segment->targetSegment      = left_segment.get();
+        up_segment->targetInsertOffset = 2;
+
+        RegisterSegment({3, 3}, up_segment);
+
+
+        // Left lane
+
+
+        up_segment->AppendItem(true, 0, itemProto_);
+
+        TransportLineLogicUpdate(worldData_);
+
+        ASSERT_EQ(left_segment->left.lane.size(), 1);
+
+        EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), (0.7 + 0.3) + 2. - 0.06);
+
+
+        // Right lane
+
+
+        left_segment->left.lane.clear();
+
+        up_segment->AppendItem(false, 0, itemProto_);
+
+        TransportLineLogicUpdate(worldData_);
+
+        ASSERT_EQ(left_segment->left.lane.size(), 1);
+
+        EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), (0.7 + 0.7) + 2. - 0.06);
+    }
+
+    TEST_F(TransportLineControllerTest, TransitionBendingToSideOnly) {
+        // > v
+        //   v
+        // < < <
+
+        transportBeltProto_->speed = 0.06;
+
+        auto down_segment = std::make_shared<TransportSegment>(
+            data::Orientation::down, TransportSegment::TerminationType::right_only, 3);
+
+        RegisterSegment({3, 2}, down_segment);
+
+
+        auto right_segment = std::make_shared<TransportSegment>(
+            data::Orientation::right, TransportSegment::TerminationType::bend_right, 2);
+
+        right_segment->targetSegment = down_segment.get();
+
+        RegisterSegment({2, 1}, right_segment);
+
+
+        // ======================================================================
+        // Left
+
+        right_segment->AppendItem(true, 0, itemProto_);
+
+        TransportLineLogicUpdate(worldData_);
+
+        ASSERT_EQ(down_segment->left.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(down_segment->left.lane[0].dist.getAsDouble(), (0.3 + 1. + 0.7) - 0.06);
+
+
+        // Right
+
+        right_segment->AppendItem(false, 0, itemProto_);
+
+        TransportLineLogicUpdate(worldData_);
+
+        ASSERT_EQ(down_segment->right.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), (0.3 + 1. + 0.3) - 0.06);
+    }
+} // namespace jactorio::game

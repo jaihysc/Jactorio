@@ -7,23 +7,23 @@
 
 namespace jactorio::game
 {
-	class LogicDataTest : public testing::Test
-	{
-	protected:
-		LogicData logicData_{};
-	};
+    class LogicDataTest : public testing::Test
+    {
+    protected:
+        LogicData logicData_{};
+    };
 
-	TEST_F(LogicDataTest, OnTickAdvance) {
-		// Should move the game_tick forward
-		EXPECT_EQ(logicData_.GameTick(), 0);
+    TEST_F(LogicDataTest, OnTickAdvance) {
+        // Should move the game_tick forward
+        EXPECT_EQ(logicData_.GameTick(), 0);
 
-		logicData_.GameTickAdvance();
-		EXPECT_EQ(logicData_.GameTick(), 1);
+        logicData_.GameTickAdvance();
+        EXPECT_EQ(logicData_.GameTick(), 1);
 
-		logicData_.GameTickAdvance();
-		EXPECT_EQ(logicData_.GameTick(), 2);
+        logicData_.GameTickAdvance();
+        EXPECT_EQ(logicData_.GameTick(), 2);
 
-		logicData_.GameTickAdvance();
-		EXPECT_EQ(logicData_.GameTick(), 3);
-	}
-}
+        logicData_.GameTickAdvance();
+        EXPECT_EQ(logicData_.GameTick(), 3);
+    }
+} // namespace jactorio::game
