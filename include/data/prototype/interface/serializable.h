@@ -8,27 +8,28 @@
 
 namespace jactorio::game
 {
-	class WorldData;
-	class ChunkTileLayer;
-}
+    class WorldData;
+    class ChunkTileLayer;
+} // namespace jactorio::game
 
 namespace jactorio::data
 {
-	class ISerializable
-	{
-	public:
-		ISerializable() = default;
-		virtual ~ISerializable() = default;
+    class ISerializable
+    {
+    public:
+        ISerializable()          = default;
+        virtual ~ISerializable() = default;
 
         ISerializable(const ISerializable& other) = default;
-        ISerializable(ISerializable&& other) = default;
+        ISerializable(ISerializable&& other)      = default;
 
         ISerializable& operator=(const ISerializable& other) = default;
         ISerializable& operator=(ISerializable&& other) = default;
 
-		virtual void OnDeserialize(game::WorldData& world_data,
-								   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const = 0;
-	};
-}
+        virtual void OnDeserialize(game::WorldData& world_data,
+                                   const WorldCoord& world_coord,
+                                   game::ChunkTileLayer& tile_layer) const = 0;
+    };
+} // namespace jactorio::data
 
 #endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_SERIALIZABLE_H

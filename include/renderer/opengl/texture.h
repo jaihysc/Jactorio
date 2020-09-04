@@ -10,46 +10,53 @@
 
 namespace jactorio::renderer
 {
-	///
-	/// \brief Manages a jactorio::data::Sprite* and creates a texture for OpenGL <br>
-	/// This will delete the sprite* when the texture is deleted
-	class Texture
-	{
-		using DimensionT = uint64_t;
-	public:
-		using SpriteBufferT = unsigned char;
+    ///
+    /// \brief Manages a jactorio::data::Sprite* and creates a texture for OpenGL <br>
+    /// This will delete the sprite* when the texture is deleted
+    class Texture
+    {
+        using DimensionT = uint64_t;
 
-		///
-		/// \param buffer new allocated buffer, will be deleted when texture is deleted (assumed to be RGBA)
-		/// \param width Width of buffer image
-		/// \param height Height of buffer image
-		Texture(std::shared_ptr<SpriteBufferT> buffer, DimensionT width, DimensionT height);
-		~Texture();
+    public:
+        using SpriteBufferT = unsigned char;
 
-		Texture(const Texture& other)                = delete;
-		Texture(Texture&& other) noexcept            = delete;
-		Texture& operator=(const Texture& other)     = delete;
-		Texture& operator=(Texture&& other) noexcept = delete;
+        ///
+        /// \param buffer new allocated buffer, will be deleted when texture is deleted (assumed to be RGBA)
+        /// \param width Width of buffer image
+        /// \param height Height of buffer image
+        Texture(std::shared_ptr<SpriteBufferT> buffer, DimensionT width, DimensionT height);
+        ~Texture();
 
-		///
-		/// \exception Renderer_exception Index out of bounds
-		void Bind(unsigned int slot = 0) const;
+        Texture(const Texture& other)     = delete;
+        Texture(Texture&& other) noexcept = delete;
+        Texture& operator=(const Texture& other) = delete;
+        Texture& operator=(Texture&& other) noexcept = delete;
 
-		static void Unbind();
+        ///
+        /// \exception Renderer_exception Index out of bounds
+        void Bind(unsigned int slot = 0) const;
 
-		J_NODISCARD DimensionT Width() const { return width_; }
-		J_NODISCARD DimensionT Height() const { return height_; }
+        static void Unbind();
 
-		J_NODISCARD unsigned int GetId() const { return rendererId_; }
+        J_NODISCARD DimensionT Width() const {
+            return width_;
+        }
+        J_NODISCARD DimensionT Height() const {
+            return height_;
+        }
 
-	private:
-		static unsigned int boundTextureId_;
-		unsigned int rendererId_;
+        J_NODISCARD unsigned int GetId() const {
+            return rendererId_;
+        }
 
-		// Image properties
-		std::shared_ptr<SpriteBufferT> textureBuffer_;
-		DimensionT width_, height_;
-	};
-}
+    private:
+        static unsigned int boundTextureId_;
+        unsigned int rendererId_;
 
-#endif //JACTORIO_INCLUDE_RENDERER_OPENGL_TEXTURE_H
+        // Image properties
+        std::shared_ptr<SpriteBufferT> textureBuffer_;
+        DimensionT width_, height_;
+    };
+} // namespace jactorio::renderer
+
+#endif // JACTORIO_INCLUDE_RENDERER_OPENGL_TEXTURE_H

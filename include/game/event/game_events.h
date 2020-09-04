@@ -12,43 +12,39 @@
 
 namespace jactorio::game
 {
-	class LogicTickEvent final : public EventBase
-	{
-	public:
-		explicit LogicTickEvent(const unsigned short tick)
-			: gameTick(tick) {
-		}
+    class LogicTickEvent final : public EventBase
+    {
+    public:
+        explicit LogicTickEvent(const unsigned short tick) : gameTick(tick) {}
 
-		///
-		/// 0 - 59
-		unsigned short gameTick;
+        ///
+        /// 0 - 59
+        unsigned short gameTick;
 
-		EVENT_TYPE(logic_tick)
-		EVENT_CATEGORY(in_game)
-	};
+        EVENT_TYPE(logic_tick)
+        EVENT_CATEGORY(in_game)
+    };
 
-	class RendererTickEvent final : public EventBase
-	{
-	public:
-		using DisplayWindowContainerT = std::vector<std::reference_wrapper<renderer::DisplayWindow>>;
+    class RendererTickEvent final : public EventBase
+    {
+    public:
+        using DisplayWindowContainerT = std::vector<std::reference_wrapper<renderer::DisplayWindow>>;
 
-		explicit RendererTickEvent(const DisplayWindowContainerT& window)
-			: windows(window) {
-		}
+        explicit RendererTickEvent(const DisplayWindowContainerT& window) : windows(window) {}
 
-		const DisplayWindowContainerT& windows;
+        const DisplayWindowContainerT& windows;
 
-		EVENT_TYPE(renderer_tick)
-		EVENT_CATEGORY(application)
-	};
+        EVENT_TYPE(renderer_tick)
+        EVENT_CATEGORY(application)
+    };
 
-	// Gui
-	class GuiOpenedEvent : public EventBase
-	{
-	public:
-		EVENT_TYPE(game_gui_open)
-		EVENT_CATEGORY(in_game)
-	};
-}
+    // Gui
+    class GuiOpenedEvent : public EventBase
+    {
+    public:
+        EVENT_TYPE(game_gui_open)
+        EVENT_CATEGORY(in_game)
+    };
+} // namespace jactorio::game
 
-#endif //JACTORIO_INCLUDE_GAME_EVENT_GAME_EVENTS_H
+#endif // JACTORIO_INCLUDE_GAME_EVENT_GAME_EVENTS_H

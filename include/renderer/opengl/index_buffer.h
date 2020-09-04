@@ -8,32 +8,32 @@
 
 namespace jactorio::renderer
 {
-	class IndexBuffer
-	{
-	public:
-		///
-		/// \param count Number of indices
-		IndexBuffer(const unsigned int* data, unsigned int count);
-		~IndexBuffer();
+    class IndexBuffer
+    {
+    public:
+        ///
+        /// \param count Number of indices
+        IndexBuffer(const unsigned int* data, unsigned int count);
+        ~IndexBuffer();
 
-		IndexBuffer(const IndexBuffer& other)                = delete;
-		IndexBuffer(IndexBuffer&& other) noexcept            = delete;
-		IndexBuffer& operator=(const IndexBuffer& other)     = delete;
-		IndexBuffer& operator=(IndexBuffer&& other) noexcept = delete;
+        IndexBuffer(const IndexBuffer& other)     = delete;
+        IndexBuffer(IndexBuffer&& other) noexcept = delete;
+        IndexBuffer& operator=(const IndexBuffer& other) = delete;
+        IndexBuffer& operator=(IndexBuffer&& other) noexcept = delete;
 
-		///
-		/// \brief Creates a new buffer of provided specifications
-		void Reserve(const void* data, uint32_t index_count);
+        ///
+        /// \brief Creates a new buffer of provided specifications
+        void Reserve(const void* data, uint32_t index_count);
 
-		void Bind() const;
-		static void Unbind();
+        void Bind() const;
+        static void Unbind();
 
-		J_NODISCARD unsigned int Count() const;
+        J_NODISCARD unsigned int Count() const;
 
-	private:
-		unsigned int id_    = 0;
-		unsigned int count_ = 0;
-	};
-}
+    private:
+        unsigned int id_    = 0;
+        unsigned int count_ = 0;
+    };
+} // namespace jactorio::renderer
 
-#endif //JACTORIO_INCLUDE_RENDERER_OPENGL_INDEX_BUFFER_H
+#endif // JACTORIO_INCLUDE_RENDERER_OPENGL_INDEX_BUFFER_H

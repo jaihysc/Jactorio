@@ -12,122 +12,105 @@
 
 namespace jactorio::core
 {
-	template <typename TVal>
-	struct Position1
-	{
-		static_assert(std::is_trivial<TVal>::value);
+    template <typename TVal>
+    struct Position1
+    {
+        static_assert(std::is_trivial<TVal>::value);
 
-		using ValueT = TVal;
+        using ValueT = TVal;
 
-		Position1()
-			: x(0) {
-		}
+        Position1() : x(0) {}
 
-		explicit Position1(TVal x)
-			: x(x) {
-		}
+        explicit Position1(TVal x) : x(x) {}
 
-		TVal x;
+        TVal x;
 
 
-		CEREAL_SERIALIZE(archive) {
-			archive(x);
-		}
+        CEREAL_SERIALIZE(archive) {
+            archive(x);
+        }
 
-		friend bool operator==(const Position1& lhs, const Position1& rhs) {
-			return lhs.x == rhs.x;
-		}
+        friend bool operator==(const Position1& lhs, const Position1& rhs) {
+            return lhs.x == rhs.x;
+        }
 
-		friend bool operator!=(const Position1& lhs, const Position1& rhs) {
-			return !(lhs == rhs);
-		}
-	};
+        friend bool operator!=(const Position1& lhs, const Position1& rhs) {
+            return !(lhs == rhs);
+        }
+    };
 
-	template <typename TVal>
-	struct Position2 : Position1<TVal>
-	{
-		using ValueT = TVal;
+    template <typename TVal>
+    struct Position2 : Position1<TVal>
+    {
+        using ValueT = TVal;
 
-		Position2()
-			: Position1<TVal>(), y(0) {
-		}
+        Position2() : Position1<TVal>(), y(0) {}
 
-		Position2(const Position1<TVal>& x, TVal y)
-			: Position1<TVal>(x), y(y) {
-		}
+        Position2(const Position1<TVal>& x, TVal y) : Position1<TVal>(x), y(y) {}
 
-		Position2(TVal x, TVal y)
-			: Position1<TVal>(x), y(y) {
-		}
+        Position2(TVal x, TVal y) : Position1<TVal>(x), y(y) {}
 
-		TVal y;
+        TVal y;
 
 
-		CEREAL_SERIALIZE(archive) {
-			archive(cereal::base_class<Position1<TVal>>(this), y);
-		}
+        CEREAL_SERIALIZE(archive) {
+            archive(cereal::base_class<Position1<TVal>>(this), y);
+        }
 
-		friend bool operator==(const Position2& lhs, const Position2& rhs) {
-			return std::tie(static_cast<const Position1<TVal>&>(lhs), lhs.y)
-				== std::tie(static_cast<const Position1<TVal>&>(rhs), rhs.y);
-		}
+        friend bool operator==(const Position2& lhs, const Position2& rhs) {
+            return std::tie(static_cast<const Position1<TVal>&>(lhs), lhs.y) ==
+                std::tie(static_cast<const Position1<TVal>&>(rhs), rhs.y);
+        }
 
-		friend bool operator!=(const Position2& lhs, const Position2& rhs) {
-			return !(lhs == rhs);
-		}
-	};
+        friend bool operator!=(const Position2& lhs, const Position2& rhs) {
+            return !(lhs == rhs);
+        }
+    };
 
-	template <typename TVal>
-	struct Position3 : Position2<TVal>
-	{
-		using ValueT = TVal;
+    template <typename TVal>
+    struct Position3 : Position2<TVal>
+    {
+        using ValueT = TVal;
 
-		Position3()
-			: Position2<TVal>(), z(0) {
-		}
+        Position3() : Position2<TVal>(), z(0) {}
 
-		Position3(const Position2<TVal>& xy, TVal z)
-			: Position2<TVal>(xy), z(z) {
-		}
+        Position3(const Position2<TVal>& xy, TVal z) : Position2<TVal>(xy), z(z) {}
 
-		Position3(TVal x, TVal y, TVal z)
-			: Position2<TVal>(x, y), z(z) {
-		}
+        Position3(TVal x, TVal y, TVal z) : Position2<TVal>(x, y), z(z) {}
 
-		TVal z;
+        TVal z;
 
 
-		CEREAL_SERIALIZE(archive) {
-			archive(cereal::base_class<Position2<TVal>>(this), z);
-		}
+        CEREAL_SERIALIZE(archive) {
+            archive(cereal::base_class<Position2<TVal>>(this), z);
+        }
 
-		friend bool operator==(const Position3& lhs, const Position3& rhs) {
-			return std::tie(static_cast<const Position2<TVal>&>(lhs), lhs.z)
-				== std::tie(static_cast<const Position2<TVal>&>(rhs), rhs.z);
-		}
+        friend bool operator==(const Position3& lhs, const Position3& rhs) {
+            return std::tie(static_cast<const Position2<TVal>&>(lhs), lhs.z) ==
+                std::tie(static_cast<const Position2<TVal>&>(rhs), rhs.z);
+        }
 
-		friend bool operator!=(const Position3& lhs, const Position3& rhs) {
-			return !(lhs == rhs);
-		}
-	};
+        friend bool operator!=(const Position3& lhs, const Position3& rhs) {
+            return !(lhs == rhs);
+        }
+    };
 
 
-	template <typename TPosition>
-	struct QuadPosition
-	{
-		static_assert(std::is_base_of<Position1<typename TPosition::ValueT>, TPosition>::value);
+    template <typename TPosition>
+    struct QuadPosition
+    {
+        static_assert(std::is_base_of<Position1<typename TPosition::ValueT>, TPosition>::value);
 
-		using PositionT = TPosition;
+        using PositionT = TPosition;
 
-		QuadPosition() = default;
+        QuadPosition() = default;
 
-		QuadPosition(const TPosition top_left, const TPosition bottom_right)
-			: topLeft(top_left), bottomRight(bottom_right) {
-		}
+        QuadPosition(const TPosition top_left, const TPosition bottom_right)
+            : topLeft(top_left), bottomRight(bottom_right) {}
 
-		TPosition topLeft;
-		TPosition bottomRight;
-	};
-}
+        TPosition topLeft;
+        TPosition bottomRight;
+    };
+} // namespace jactorio::core
 
 #endif // JACTORIO_CORE_COORDINATE_TUPLE_H

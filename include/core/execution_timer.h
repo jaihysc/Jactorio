@@ -10,45 +10,44 @@
 #include <string>
 
 #define EXECUTION_PROFILE_SCOPE(timer_variable_name, item_name) \
-	auto (timer_variable_name) = jactorio::core::ExecutionTimer(item_name)
+    auto(timer_variable_name) = jactorio::core::ExecutionTimer(item_name)
 
-#define EXECUTION_PROFILE_SCOPE_STOP(timer_variable_name) \
-	timer_variable_name.stop()
+#define EXECUTION_PROFILE_SCOPE_STOP(timer_variable_name) timer_variable_name.stop()
 
 namespace jactorio::core
 {
-	///
-	/// \brief Times execution time within a scope, to stop early, call stop() <br>
-	/// Begins counter upon instantiation, stops upon being destroyed or stop called
-	class ExecutionTimer
-	{
-	public:
-		explicit ExecutionTimer(const std::string& name);
-		~ExecutionTimer();
+    ///
+    /// \brief Times execution time within a scope, to stop early, call stop() <br>
+    /// Begins counter upon instantiation, stops upon being destroyed or stop called
+    class ExecutionTimer
+    {
+    public:
+        explicit ExecutionTimer(const std::string& name);
+        ~ExecutionTimer();
 
-		///
-		/// \brief Stops the Execution_timer
-		void Stop() const noexcept;
+        ///
+        /// \brief Stops the Execution_timer
+        void Stop() const noexcept;
 
-		ExecutionTimer(const ExecutionTimer& other)                = delete;
-		ExecutionTimer(ExecutionTimer&& other) noexcept            = delete;
-		ExecutionTimer& operator=(const ExecutionTimer& other)     = delete;
-		ExecutionTimer& operator=(ExecutionTimer&& other) noexcept = delete;
+        ExecutionTimer(const ExecutionTimer& other)     = delete;
+        ExecutionTimer(ExecutionTimer&& other) noexcept = delete;
+        ExecutionTimer& operator=(const ExecutionTimer& other) = delete;
+        ExecutionTimer& operator=(ExecutionTimer&& other) noexcept = delete;
 
 
-		///
-		/// \brief Contains measured times of all Execution_timers <br>
-		/// Key is the timer_name_ of each instance
-		/// Value is time taken in milliseconds
-		static std::map<std::string, double> measuredTimes;
+        ///
+        /// \brief Contains measured times of all Execution_timers <br>
+        /// Key is the timer_name_ of each instance
+        /// Value is time taken in milliseconds
+        static std::map<std::string, double> measuredTimes;
 
-	private:
-		mutable std::mutex measuredTimesMutex_ = std::mutex{};
+    private:
+        mutable std::mutex measuredTimesMutex_ = std::mutex{};
 
-		// Name of item being timed, used for tracking timers
-		std::string timerName_;
-		std::chrono::time_point<std::chrono::high_resolution_clock> startTime_;
-	};
-}
+        // Name of item being timed, used for tracking timers
+        std::string timerName_;
+        std::chrono::time_point<std::chrono::high_resolution_clock> startTime_;
+    };
+} // namespace jactorio::core
 
-#endif //JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
+#endif // JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H

@@ -10,62 +10,55 @@
 
 namespace jactorio::data
 {
-	// Unique per resource entity placed
-	struct ResourceEntityData final : EntityData
-	{
-		using ResourceCount = uint32_t;
+    // Unique per resource entity placed
+    struct ResourceEntityData final : EntityData
+    {
+        using ResourceCount = uint32_t;
 
-		/// Resource entity should never reach 0 resources, when it does it is treated as infinite
-		static constexpr ResourceCount kInfiniteResource = 0;
-
-
-		ResourceEntityData() = default;
-
-		explicit ResourceEntityData(const ResourceCount resource_amount)
-			: resourceAmount(resource_amount) {
-		}
+        /// Resource entity should never reach 0 resources, when it does it is treated as infinite
+        static constexpr ResourceCount kInfiniteResource = 0;
 
 
-		/// Amount of product which can still be extracted from this tile
-		ResourceCount resourceAmount = 1;
+        ResourceEntityData() = default;
+
+        explicit ResourceEntityData(const ResourceCount resource_amount) : resourceAmount(resource_amount) {}
 
 
-		CEREAL_SERIALIZE(archive) {
-			archive(cereal::base_class<EntityData>(this), resourceAmount);
-		}
-	};
+        /// Amount of product which can still be extracted from this tile
+        ResourceCount resourceAmount = 1;
 
 
-	class ResourceEntity final : public Entity
-	{
-	public:
-		PROTOTYPE_CATEGORY(resource_entity);
-		PROTOTYPE_DATA_TRIVIAL_COPY(ResourceEntityData);
-
-		ResourceEntity() {
-			// Resource entities can never be placed
-			this->placeable = false;
-		}
+        CEREAL_SERIALIZE(archive) {
+            archive(cereal::base_class<EntityData>(this), resourceAmount);
+        }
+    };
 
 
-		void OnBuild(game::WorldData&,
-		             game::LogicData&,
-		             const WorldCoord&,
-		             game::ChunkTileLayer&, Orientation) const override {
-			assert(false);  // Is not player placeable
-		}
+    class ResourceEntity final : public Entity
+    {
+    public:
+        PROTOTYPE_CATEGORY(resource_entity);
+        PROTOTYPE_DATA_TRIVIAL_COPY(ResourceEntityData);
 
-		void OnRemove(game::WorldData&,
-		              game::LogicData&,
-		              const WorldCoord&, game::ChunkTileLayer&) const override {
-		}
+        ResourceEntity() {
+            // Resource entities can never be placed
+            this->placeable = false;
+        }
 
 
-		void PostLoadValidate(const PrototypeManager&) const override {
-			// Must convert to at least 1 game tick
-			J_DATA_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
-		}
-	};
-}
+        void OnBuild(
+            game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer&, Orientation) const override {
+            assert(false); // Is not player placeable
+        }
 
-#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
+        void OnRemove(game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer&) const override {}
+
+
+        void PostLoadValidate(const PrototypeManager&) const override {
+            // Must convert to at least 1 game tick
+            J_DATA_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
+        }
+    };
+} // namespace jactorio::data
+
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H

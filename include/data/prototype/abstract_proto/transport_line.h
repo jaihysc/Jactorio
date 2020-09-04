@@ -16,171 +16,180 @@
 
 namespace jactorio::data
 {
-	///
-	/// \brief TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
-	struct TransportLineData final : HealthEntityData
-	{
-		explicit TransportLineData(std::shared_ptr<game::TransportSegment> line_segment)
-			: lineSegment(std::move(line_segment)) {
-		}
+    ///
+    /// \brief TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
+    struct TransportLineData final : HealthEntityData
+    {
+        explicit TransportLineData(std::shared_ptr<game::TransportSegment> line_segment)
+            : lineSegment(std::move(line_segment)) {}
 
-		///
-		/// <Entry direction>_<Exit direction>
-		enum class LineOrientation
-		{
-			// Following the layout of the sprite
-			up_left = 10,
-			up = 2,
-			up_right = 8,
+        ///
+        /// <Entry direction>_<Exit direction>
+        enum class LineOrientation
+        {
+            // Following the layout of the sprite
+            up_left  = 10,
+            up       = 2,
+            up_right = 8,
 
-			right_up = 6,
-			right = 0,
-			right_down = 11,
+            right_up   = 6,
+            right      = 0,
+            right_down = 11,
 
-			down_right = 5,
-			down = 3,
-			down_left = 7,
+            down_right = 5,
+            down       = 3,
+            down_left  = 7,
 
-			left_down = 9,
-			left = 1,
-			left_up = 4,
-		};
+            left_down = 9,
+            left      = 1,
+            left_up   = 4,
+        };
 
-		///
-		/// \brief Updates orientation and member set for rendering 
-		void SetOrientation(LineOrientation orientation) {
-			this->orientation = orientation;
-			this->set         = static_cast<uint16_t>(orientation);
-		}
+        ///
+        /// \brief Updates orientation and member set for rendering
+        void SetOrientation(LineOrientation orientation) {
+            this->orientation = orientation;
+            this->set         = static_cast<uint16_t>(orientation);
+        }
 
-		static Orientation ToOrientation(LineOrientation line_orientation);
-
-
-		//
+        static Orientation ToOrientation(LineOrientation line_orientation);
 
 
-		/// The logic chunk line_segment associated
-		std::shared_ptr<game::TransportSegment> lineSegment;
-
-		/// Tile distance to the head of the transport line
-		/// \remark For rendering purposes, the length should never exceed ~2 chunks at most
-		uint8_t lineSegmentIndex = 0;
-
-		LineOrientation orientation = LineOrientation::up;
-		
-
-		CEREAL_SERIALIZE(archive) {
-			archive(lineSegment, lineSegmentIndex, orientation, cereal::base_class<HealthEntityData>(this));
-		}
-
-		CEREAL_LOAD_CONSTRUCT(archive, construct, TransportLineData) {
-			std::shared_ptr<game::TransportSegment> line_segment;
-			archive(line_segment);
-			construct(line_segment);
-			
-			archive(construct->lineSegmentIndex, construct->orientation, cereal::base_class<HealthEntityData>(construct.ptr()));
-		}
-	};
+        //
 
 
-	///
-	/// \brief Abstract class for all everything which moves items (belts, underground belts, splitters)
-	class TransportLine : public HealthEntity
-	{
-	protected:
-		TransportLine() = default;
+        /// The logic chunk line_segment associated
+        std::shared_ptr<game::TransportSegment> lineSegment;
 
-	public:
-		/// up, right, down, left
-		using LineData4Way = std::array<TransportLineData*, 4>;
+        /// Tile distance to the head of the transport line
+        /// \remark For rendering purposes, the length should never exceed ~2 chunks at most
+        uint8_t lineSegmentIndex = 0;
 
-		///
-		/// \brief Number of tiles traveled by each item on the belt per tick
-		/// \remark For Python API use only
-		PYTHON_PROP_I(ProtoFloatT, speedFloat, 0.01);
-
-		/// Number of tiles traveled by each item on the belt per tick
-		LineDistT speed;
+        LineOrientation orientation = LineOrientation::up;
 
 
-		// ======================================================================
-		// Data access
+        CEREAL_SERIALIZE(archive) {
+            archive(lineSegment, lineSegmentIndex, orientation, cereal::base_class<HealthEntityData>(this));
+        }
 
-		///
-		/// \brief Attempts to retrieve transport line data at world coordinates on tile
-		/// \return pointer to data or nullptr if non existent
-		J_NODISCARD static TransportLineData* GetLineData(game::WorldData& world_data,
-		                                                  WorldCoordAxis world_x, WorldCoordAxis world_y);
+        CEREAL_LOAD_CONSTRUCT(archive, construct, TransportLineData) {
+            std::shared_ptr<game::TransportSegment> line_segment;
+            archive(line_segment);
+            construct(line_segment);
 
-		J_NODISCARD static const TransportLineData* GetLineData(const game::WorldData& world_data,
-		                                                        WorldCoordAxis world_x, WorldCoordAxis world_y);
-
-		///
-		/// \brief Gets line data for the 4 neighbors of origin coord
-		J_NODISCARD static LineData4Way GetLineData4(game::WorldData& world_data, const WorldCoord& origin_coord);
-
-		///
-		/// \brief Gets transport segment at world coords
-		/// \return nullptr if no segment exists
-		static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
-		                                                                    WorldCoordAxis world_x,
-		                                                                    WorldCoordAxis world_y);
-
-		///
-		/// \brief Determines line orientation given orientation and neighbors
-		static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
-		                                                             const LineData4Way& line_data4);
+            archive(construct->lineSegmentIndex,
+                    construct->orientation,
+                    cereal::base_class<HealthEntityData>(construct.ptr()));
+        }
+    };
 
 
-		// ======================================================================
-		// Game events
+    ///
+    /// \brief Abstract class for all everything which moves items (belts, underground belts, splitters)
+    class TransportLine : public HealthEntity
+    {
+    protected:
+        TransportLine() = default;
 
-		void OnRDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-		                       const core::Position2<float>& pixel_offset,
-		                       const UniqueDataBase* unique_data) const override;
+    public:
+        /// up, right, down, left
+        using LineData4Way = std::array<TransportLineData*, 4>;
 
-		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
-		                                         const WorldCoord& world_coords) const override;
+        ///
+        /// \brief Number of tiles traveled by each item on the belt per tick
+        /// \remark For Python API use only
+        PYTHON_PROP_I(ProtoFloatT, speedFloat, 0.01);
 
-		J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const override;
-
-
-		void OnBuild(game::WorldData& world_data,
-		             game::LogicData& logic_data,
-		             const WorldCoord& world_coords,
-		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
-
-		void OnNeighborUpdate(game::WorldData& world_data,
-		                      game::LogicData& logic_data,
-		                      const WorldCoord& emit_world_coords,
-		                      const WorldCoord& receive_world_coords,
-		                      Orientation emit_orientation) const override;
-
-		void OnRemove(game::WorldData& world_data,
-		              game::LogicData& logic_data,
-		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
-
-		void OnDeserialize(game::WorldData& world_data,
-						   const WorldCoord& world_coord, game::ChunkTileLayer& tile_layer) const override;
+        /// Number of tiles traveled by each item on the belt per tick
+        LineDistT speed;
 
 
-		// ======================================================================
-		// Data events
-		void PostLoad() override {
-			// Convert floating point speed to fixed precision decimal speed
-			speed = LineDistT(speedFloat);
-		}
+        // ======================================================================
+        // Data access
 
-		void PostLoadValidate(const PrototypeManager&) const override {
-			J_DATA_ASSERT(speedFloat >= 0.001, "Transport line speed below minimum 0.001");
-			// Cannot exceed item_width because of limitations in the logic
-			J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");
-		}
+        ///
+        /// \brief Attempts to retrieve transport line data at world coordinates on tile
+        /// \return pointer to data or nullptr if non existent
+        J_NODISCARD static TransportLineData* GetLineData(game::WorldData& world_data,
+                                                          WorldCoordAxis world_x,
+                                                          WorldCoordAxis world_y);
 
-		void ValidatedPostLoad() override {
-			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-		}
-	};
-}
+        J_NODISCARD static const TransportLineData* GetLineData(const game::WorldData& world_data,
+                                                                WorldCoordAxis world_x,
+                                                                WorldCoordAxis world_y);
 
-#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
+        ///
+        /// \brief Gets line data for the 4 neighbors of origin coord
+        J_NODISCARD static LineData4Way GetLineData4(game::WorldData& world_data, const WorldCoord& origin_coord);
+
+        ///
+        /// \brief Gets transport segment at world coords
+        /// \return nullptr if no segment exists
+        static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
+                                                                            WorldCoordAxis world_x,
+                                                                            WorldCoordAxis world_y);
+
+        ///
+        /// \brief Determines line orientation given orientation and neighbors
+        static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
+                                                                     const LineData4Way& line_data4);
+
+
+        // ======================================================================
+        // Game events
+
+        void OnRDrawUniqueData(renderer::RendererLayer& layer,
+                               const SpriteUvCoordsT& uv_coords,
+                               const core::Position2<float>& pixel_offset,
+                               const UniqueDataBase* unique_data) const override;
+
+        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation,
+                                                 game::WorldData& world_data,
+                                                 const WorldCoord& world_coords) const override;
+
+        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                     GameTickT game_tick) const override;
+
+
+        void OnBuild(game::WorldData& world_data,
+                     game::LogicData& logic_data,
+                     const WorldCoord& world_coords,
+                     game::ChunkTileLayer& tile_layer,
+                     Orientation orientation) const override;
+
+        void OnNeighborUpdate(game::WorldData& world_data,
+                              game::LogicData& logic_data,
+                              const WorldCoord& emit_world_coords,
+                              const WorldCoord& receive_world_coords,
+                              Orientation emit_orientation) const override;
+
+        void OnRemove(game::WorldData& world_data,
+                      game::LogicData& logic_data,
+                      const WorldCoord& world_coords,
+                      game::ChunkTileLayer& tile_layer) const override;
+
+        void OnDeserialize(game::WorldData& world_data,
+                           const WorldCoord& world_coord,
+                           game::ChunkTileLayer& tile_layer) const override;
+
+
+        // ======================================================================
+        // Data events
+        void PostLoad() override {
+            // Convert floating point speed to fixed precision decimal speed
+            speed = LineDistT(speedFloat);
+        }
+
+        void PostLoadValidate(const PrototypeManager&) const override {
+            J_DATA_ASSERT(speedFloat >= 0.001, "Transport line speed below minimum 0.001");
+            // Cannot exceed item_width because of limitations in the logic
+            J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");
+        }
+
+        void ValidatedPostLoad() override {
+            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+        }
+    };
+} // namespace jactorio::data
+
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H

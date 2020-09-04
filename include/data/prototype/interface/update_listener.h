@@ -8,27 +8,27 @@
 
 namespace jactorio::game
 {
-	class WorldData;
+    class WorldData;
 }
 
 namespace jactorio::data
 {
-	enum class UpdateType
-	{
-		place,
-		remove
-	};
+    enum class UpdateType
+    {
+        place,
+        remove
+    };
 
-	class IUpdateListener
-	{
-	public:
-		virtual ~IUpdateListener() = default;
+    class IUpdateListener
+    {
+    public:
+        virtual ~IUpdateListener() = default;
 
-		virtual void OnTileUpdate(game::WorldData& world_data,
-		                          const WorldCoord& emit_coords,
-		                          const WorldCoord& receive_coords,
-		                          UpdateType type) const = 0;
-	};
-}
+        virtual void OnTileUpdate(game::WorldData& world_data,
+                                  const WorldCoord& emit_coords,
+                                  const WorldCoord& receive_coords,
+                                  UpdateType type) const = 0;
+    };
+} // namespace jactorio::data
 
 #endif // JACTORIO_DATA_PROTOTYPE_INTERFACE_UPDATE_LISTENER_H

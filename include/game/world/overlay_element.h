@@ -9,77 +9,76 @@
 
 namespace jactorio::game
 {
-	///
-	/// \brief Named values for each z buffer number
-	enum class OverlayLayer
-	{
-		// A separate layer is only needed when it needs to be accessed independently, otherwise join together in single layer
-		cursor = 0,
-		debug,
-		count_
-	};
+    ///
+    /// \brief Named values for each z buffer number
+    enum class OverlayLayer
+    {
+        // A separate layer is only needed when it needs to be accessed independently, otherwise join together in single
+        // layer
+        cursor = 0,
+        debug,
+        count_
+    };
 
-	constexpr int kOverlayLayerCount = static_cast<int>(OverlayLayer::count_);
+    constexpr int kOverlayLayerCount = static_cast<int>(OverlayLayer::count_);
 
 
-	///
-	/// \brief Holds items which do not adhere to the tiles for rendering
-	class OverlayElement
-	{
-		/// z position of first layer
-		static constexpr float kDefaultZPos = 0.4f;
-		/// Every layer above increases its z position by this amount
-		static constexpr float kZPosMultiplier = 0.01f;
+    ///
+    /// \brief Holds items which do not adhere to the tiles for rendering
+    class OverlayElement
+    {
+        /// z position of first layer
+        static constexpr float kDefaultZPos = 0.4f;
+        /// Every layer above increases its z position by this amount
+        static constexpr float kZPosMultiplier = 0.01f;
 
-	public:
-		/*
-		OverlayElement(const data::Sprite& sprite,
-		               const core::Position2<PositionT>& position,
-		               const core::Position2<PositionT>& size)
-			: OverlayElement(sprite, core::Position3<PositionT>{position, 0.f}, size) {
-		}
-		*/
+    public:
+        /*
+        OverlayElement(const data::Sprite& sprite,
+                       const core::Position2<PositionT>& position,
+                       const core::Position2<PositionT>& size)
+            : OverlayElement(sprite, core::Position3<PositionT>{position, 0.f}, size) {
+        }
+        */
 
-		OverlayElement(const data::Sprite& sprite,
-		               const core::Position2<OverlayOffsetAxis>& position,
-		               const core::Position2<OverlayOffsetAxis>& size,
-		               const OverlayLayer layer)
-			: OverlayElement(sprite, core::Position3<OverlayOffsetAxis>{position, ToZPosition(layer)}, size) {
-		}
+        OverlayElement(const data::Sprite& sprite,
+                       const core::Position2<OverlayOffsetAxis>& position,
+                       const core::Position2<OverlayOffsetAxis>& size,
+                       const OverlayLayer layer)
+            : OverlayElement(sprite, core::Position3<OverlayOffsetAxis>{position, ToZPosition(layer)}, size) {}
 
-		OverlayElement(const data::Sprite& sprite,
-		               const core::Position3<OverlayOffsetAxis>& position,
-		               const core::Position2<OverlayOffsetAxis>& size)
-			: sprite(&sprite), position(position), size(size) {
-		}
+        OverlayElement(const data::Sprite& sprite,
+                       const core::Position3<OverlayOffsetAxis>& position,
+                       const core::Position2<OverlayOffsetAxis>& size)
+            : sprite(&sprite), position(position), size(size) {}
 
-		// ======================================================================
+        // ======================================================================
 
-		void SetZPosition(const OverlayOffsetAxis z_pos) {
-			position.z = z_pos;
-		}
+        void SetZPosition(const OverlayOffsetAxis z_pos) {
+            position.z = z_pos;
+        }
 
-		void SetZPosition(const OverlayLayer layer) {
-			assert(layer != OverlayLayer::count_);
-			SetZPosition(ToZPosition(layer));
-		}
+        void SetZPosition(const OverlayLayer layer) {
+            assert(layer != OverlayLayer::count_);
+            SetZPosition(ToZPosition(layer));
+        }
 
-		J_NODISCARD static OverlayOffsetAxis ToZPosition(const OverlayLayer layer) noexcept {
-			return kDefaultZPos + kZPosMultiplier * static_cast<float>(layer);
-		}
+        J_NODISCARD static OverlayOffsetAxis ToZPosition(const OverlayLayer layer) noexcept {
+            return kDefaultZPos + kZPosMultiplier * static_cast<float>(layer);
+        }
 
-		// ======================================================================
+        // ======================================================================
 
-		const data::Sprite* sprite;
+        const data::Sprite* sprite;
 
-		data::Sprite::SetT spriteSet = 0;
+        data::Sprite::SetT spriteSet = 0;
 
-		/// Distance (tiles) from top left of chunk to top left of sprite + z value
-		core::Position3<OverlayOffsetAxis> position;
+        /// Distance (tiles) from top left of chunk to top left of sprite + z value
+        core::Position3<OverlayOffsetAxis> position;
 
-		/// Distance (tiles) the sprite spans
-		core::Position2<OverlayOffsetAxis> size;
-	};
-}
+        /// Distance (tiles) the sprite spans
+        core::Position2<OverlayOffsetAxis> size;
+    };
+} // namespace jactorio::game
 
-#endif //JACTORIO_INCLUDE_GAME_OVERLAY_ELEMENT_H
+#endif // JACTORIO_INCLUDE_GAME_OVERLAY_ELEMENT_H

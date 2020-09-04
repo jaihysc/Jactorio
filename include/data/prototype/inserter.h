@@ -6,133 +6,143 @@
 
 #include <decimal.h>
 
-#include "data/prototype/type.h"
 #include "data/prototype/abstract_proto/health_entity.h"
 #include "data/prototype/interface/update_listener.h"
+#include "data/prototype/type.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
 
 namespace jactorio::data
 {
-	///
-	/// \brief Holds the internal structure for inserters
-	struct InserterData final : HealthEntityData
-	{
-		explicit InserterData(const Orientation orientation)
-			: orientation(orientation), dropoff(orientation), pickup(orientation) {
-		}
+    ///
+    /// \brief Holds the internal structure for inserters
+    struct InserterData final : HealthEntityData
+    {
+        explicit InserterData(const Orientation orientation)
+            : orientation(orientation), dropoff(orientation), pickup(orientation) {}
 
-		enum class Status
-		{
-			dropoff,
-			pickup
-		};
+        enum class Status
+        {
+            dropoff,
+            pickup
+        };
 
-		// Orientation points towards dropoff
-		Orientation orientation;
+        // Orientation points towards dropoff
+        Orientation orientation;
 
-		/// Rotation degree of current inserter, 0 is dropoff, 180 is pickup 
-		RotationDegreeT rotationDegree = RotationDegreeT(game::kMaxInserterDegree);
+        /// Rotation degree of current inserter, 0 is dropoff, 180 is pickup
+        RotationDegreeT rotationDegree = RotationDegreeT(game::kMaxInserterDegree);
 
-		/// Current inserter status
-		Status status = Status::pickup;
+        /// Current inserter status
+        Status status = Status::pickup;
 
-		/// Current item held by inserter
-		ItemStack heldItem;
+        /// Current item held by inserter
+        ItemStack heldItem;
 
-		game::ItemDropOff dropoff;
-		game::InserterPickup pickup;
-
-
-		CEREAL_SERIALIZE(archive) {
-			archive(orientation, rotationDegree, status, heldItem, cereal::base_class<HealthEntityData>(this));
-		}
-
-		CEREAL_LOAD_CONSTRUCT(archive, construct, InserterData) {
-			Orientation orientation;
-			archive(orientation);
-			construct(orientation);
-
-			archive(construct->rotationDegree, construct->status, construct->heldItem,
-			        cereal::base_class<HealthEntityData>(construct.ptr()));
-		}
-	};
+        game::ItemDropOff dropoff;
+        game::InserterPickup pickup;
 
 
-	class Inserter final : public HealthEntity
-	{
-	public:
-		PROTOTYPE_CATEGORY(inserter);
+        CEREAL_SERIALIZE(archive) {
+            archive(orientation, rotationDegree, status, heldItem, cereal::base_class<HealthEntityData>(this));
+        }
 
-		/// Part closer to the base
-		PYTHON_PROP_I(Sprite*, armSprite, nullptr);
-		/// The hand holding the item
-		PYTHON_PROP_I(Sprite*, handSprite, nullptr);
+        CEREAL_LOAD_CONSTRUCT(archive, construct, InserterData) {
+            Orientation orientation;
+            archive(orientation);
+            construct(orientation);
 
-		///
-		/// \brief Degrees to rotate per tick 
-		/// \remark For Python API use only
-		PYTHON_PROP_I(ProtoFloatT, rotationSpeedFloat, 0.1);
-
-		///
-		/// \brief Tile distance which the inserter can reach
-		PYTHON_PROP_I(ProtoUintT, tileReach, 1);
-
-		///
-		/// \brief Degrees to rotate per tick 
-		RotationDegreeT rotationSpeed;
+            archive(construct->rotationDegree,
+                    construct->status,
+                    construct->heldItem,
+                    cereal::base_class<HealthEntityData>(construct.ptr()));
+        }
+    };
 
 
-		void PostLoad() override {
-			rotationSpeed = RotationDegreeT(rotationSpeedFloat);
-		}
+    class Inserter final : public HealthEntity
+    {
+    public:
+        PROTOTYPE_CATEGORY(inserter);
+
+        /// Part closer to the base
+        PYTHON_PROP_I(Sprite*, armSprite, nullptr);
+        /// The hand holding the item
+        PYTHON_PROP_I(Sprite*, handSprite, nullptr);
+
+        ///
+        /// \brief Degrees to rotate per tick
+        /// \remark For Python API use only
+        PYTHON_PROP_I(ProtoFloatT, rotationSpeedFloat, 0.1);
+
+        ///
+        /// \brief Tile distance which the inserter can reach
+        PYTHON_PROP_I(ProtoUintT, tileReach, 1);
+
+        ///
+        /// \brief Degrees to rotate per tick
+        RotationDegreeT rotationSpeed;
 
 
-		// ======================================================================
-
-		void OnRDrawUniqueData(renderer::RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-		                       const core::Position2<float>& pixel_offset,
-		                       const UniqueDataBase* unique_data) const override;
-
-		J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation, game::WorldData& world_data,
-		                                         const WorldCoord& world_coords) const override;
-
-		///
-		/// \param orientation Points towards dropoff
-		void OnBuild(game::WorldData& world_data, game::LogicData& logic_data,
-		             const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer,
-		             Orientation orientation) const override;
+        void PostLoad() override {
+            rotationSpeed = RotationDegreeT(rotationSpeedFloat);
+        }
 
 
-		void OnTileUpdate(game::WorldData& world_data,
-		                  const WorldCoord& emit_coords,
-		                  const WorldCoord& receive_coords, UpdateType type) const override;
+        // ======================================================================
 
-		void OnRemove(game::WorldData& world_data, game::LogicData& logic_data,
-		              const WorldCoord& world_coords, game::ChunkTileLayer& tile_layer) const override;
+        void OnRDrawUniqueData(renderer::RendererLayer& layer,
+                               const SpriteUvCoordsT& uv_coords,
+                               const core::Position2<float>& pixel_offset,
+                               const UniqueDataBase* unique_data) const override;
+
+        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation,
+                                                 game::WorldData& world_data,
+                                                 const WorldCoord& world_coords) const override;
+
+        ///
+        /// \param orientation Points towards dropoff
+        void OnBuild(game::WorldData& world_data,
+                     game::LogicData& logic_data,
+                     const WorldCoord& world_coords,
+                     game::ChunkTileLayer& tile_layer,
+                     Orientation orientation) const override;
 
 
-		void OnDeserialize(game::WorldData& world_data, const WorldCoord& world_coord,
-		                   game::ChunkTileLayer& tile_layer) const override;
+        void OnTileUpdate(game::WorldData& world_data,
+                          const WorldCoord& emit_coords,
+                          const WorldCoord& receive_coords,
+                          UpdateType type) const override;
+
+        void OnRemove(game::WorldData& world_data,
+                      game::LogicData& logic_data,
+                      const WorldCoord& world_coords,
+                      game::ChunkTileLayer& tile_layer) const override;
 
 
-		void PostLoadValidate(const PrototypeManager&) const override {
-			J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
-			J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
-			J_DATA_ASSERT(handSprite != nullptr, "Hand sprite not provided");
-		}
+        void OnDeserialize(game::WorldData& world_data,
+                           const WorldCoord& world_coord,
+                           game::ChunkTileLayer& tile_layer) const override;
 
-		void ValidatedPostLoad() override {
-			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-		}
 
-	private:
-		J_NODISCARD WorldCoord GetDropoffCoord(WorldCoord world_coord, Orientation orientation) const;
-		J_NODISCARD WorldCoord GetPickupCoord(WorldCoord world_coord, Orientation orientation) const;
+        void PostLoadValidate(const PrototypeManager&) const override {
+            J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
+            J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
+            J_DATA_ASSERT(handSprite != nullptr, "Hand sprite not provided");
+        }
 
-		void InitPickupDropoff(game::WorldData& world_data,
-		                       const WorldCoord& world_coord, Orientation orientation) const;
-	};
-}
+        void ValidatedPostLoad() override {
+            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+        }
+
+    private:
+        J_NODISCARD WorldCoord GetDropoffCoord(WorldCoord world_coord, Orientation orientation) const;
+        J_NODISCARD WorldCoord GetPickupCoord(WorldCoord world_coord, Orientation orientation) const;
+
+        void InitPickupDropoff(game::WorldData& world_data,
+                               const WorldCoord& world_coord,
+                               Orientation orientation) const;
+    };
+} // namespace jactorio::data
 
 #endif // JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H

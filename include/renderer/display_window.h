@@ -4,54 +4,54 @@
 #define JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
 #pragma once
 
-#include <array>
 #include <SDL.h>
+#include <array>
 
 #include "jactorio.h"
 
 namespace jactorio
 {
-	struct LogicRenderLoopCommon;
+    struct LogicRenderLoopCommon;
 }
 
 namespace jactorio::renderer
 {
-	///
-	/// \brief Manages a window in which the user sees
-	class DisplayWindow
-	{
-	public:
-		///
-		/// \brief Creates openGL context and window
-		/// \exception Data_exception if logo cannot be found
-		/// \return Non 0 if error occurred
-		int Init(int width, int height);
+    ///
+    /// \brief Manages a window in which the user sees
+    class DisplayWindow
+    {
+    public:
+        ///
+        /// \brief Creates openGL context and window
+        /// \exception Data_exception if logo cannot be found
+        /// \return Non 0 if error occurred
+        int Init(int width, int height);
 
-		///
-		/// \brief Terminates openGL context and window
-		/// \return Non 0 if error occurred
-		int Terminate();
-
-
-		J_NODISCARD bool IsFullscreen() const;
-		void SetFullscreen(bool desired_fullscreen);
+        ///
+        /// \brief Terminates openGL context and window
+        /// \return Non 0 if error occurred
+        int Terminate();
 
 
-		J_NODISCARD SDL_Window* GetWindow() const;
-		J_NODISCARD SDL_GLContext GetContext() const;
-		J_NODISCARD bool WindowContextActive() const;
+        J_NODISCARD bool IsFullscreen() const;
+        void SetFullscreen(bool desired_fullscreen);
 
-		void HandleSdlEvent(LogicRenderLoopCommon& common, const SDL_Event& sdl_event) const;
 
-	private:
-		std::array<int, 2> windowPos_{0, 0};
-		std::array<int, 2> windowSize_{0, 0};
+        J_NODISCARD SDL_Window* GetWindow() const;
+        J_NODISCARD SDL_GLContext GetContext() const;
+        J_NODISCARD bool WindowContextActive() const;
 
-		SDL_Window* sdlWindow_      = nullptr;
-		SDL_GLContext sdlGlContext_ = nullptr;
+        void HandleSdlEvent(LogicRenderLoopCommon& common, const SDL_Event& sdl_event) const;
 
-		bool glContextActive_ = false;
-	};
-}
+    private:
+        std::array<int, 2> windowPos_{0, 0};
+        std::array<int, 2> windowSize_{0, 0};
 
-#endif //JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
+        SDL_Window* sdlWindow_      = nullptr;
+        SDL_GLContext sdlGlContext_ = nullptr;
+
+        bool glContextActive_ = false;
+    };
+} // namespace jactorio::renderer
+
+#endif // JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H

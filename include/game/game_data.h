@@ -5,13 +5,13 @@
 #pragma once
 
 #include "data/prototype_manager.h"
+#include "data/unique_data_manager.h"
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
-#include "data/unique_data_manager.h"
 
 namespace jactorio::game
 {
@@ -29,8 +29,8 @@ namespace jactorio::game
         data::UniqueDataManager unique;
 
         GameInput input;
-		EventData event;
-	};
+        EventData event;
+    };
 
     ///
     /// Serialized runtime data, persists across restarts
@@ -50,6 +50,6 @@ namespace jactorio::game
             archive(player);
         }
     };
-}
+} // namespace jactorio::game
 
-#endif //JACTORIO_INCLUDE_GAME_GAME_DATA_H
+#endif // JACTORIO_INCLUDE_GAME_GAME_DATA_H

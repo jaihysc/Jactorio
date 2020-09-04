@@ -38,57 +38,54 @@
 #endif
 
 
-#define CEREAL_SERIALIZE(archiver__)       \
-	template <typename TArchive>           \
-	void serialize(TArchive& (archiver__))
+#define CEREAL_SERIALIZE(archiver__) \
+    template <typename TArchive>     \
+    void serialize(TArchive&(archiver__))
 
-#define CEREAL_LOAD(archiver__)       \
-	template <typename TArchive>      \
-	void load(TArchive& (archiver__))
+#define CEREAL_LOAD(archiver__)  \
+    template <typename TArchive> \
+    void load(TArchive&(archiver__))
 
 #define CEREAL_LOAD_EXTERN(archiver__, ty__, ty_ref__) \
-	template<class Archive>                            \
-	void load(Archive& (archiver__),                   \
-	          ty__& (ty_ref__))
+    template <class Archive>                           \
+    void load(Archive&(archiver__), ty__&(ty_ref__))
 
-#define CEREAL_SAVE(archiver__)               \
-	template <typename TArchive>              \
-	void save(TArchive& (archiver__)) const
+#define CEREAL_SAVE(archiver__)  \
+    template <typename TArchive> \
+    void save(TArchive&(archiver__)) const
 
 #define CEREAL_SAVE_EXTERN(archiver__, ty__, ty_ref__) \
-	template<class Archive>                            \
-	void save(Archive& (archiver__),                   \
-	          const ty__& (ty_ref__))
+    template <class Archive>                           \
+    void save(Archive&(archiver__), const ty__&(ty_ref__))
 
 ///
 /// \remark For types serialized via smart pointer only
-#define CEREAL_LOAD_CONSTRUCT(archiver__, constructor__, data_ty__)                  \
-		template <class TArchive>                                                    \
-		static void load_and_construct(TArchive& archive,                            \
-		                               cereal::construct<data_ty__>& construct)
+#define CEREAL_LOAD_CONSTRUCT(archiver__, constructor__, data_ty__) \
+    template <class TArchive>                                       \
+    static void load_and_construct(TArchive& archive, cereal::construct<data_ty__>& construct)
 
 namespace jactorio::game
 {
-	struct GameDataLocal;
-	struct GameDataGlobal;
-}
+    struct GameDataLocal;
+    struct GameDataGlobal;
+} // namespace jactorio::game
 
 namespace jactorio::data
 {
-	///
-	/// \brief Size checks arguments to be archived to avoid runtime errors
-	template <std::size_t ArchiveSize, typename TArchive, typename ... TArgs>
-	void CerealArchive(TArchive& archiver, TArgs&& ... args) {
-		static_assert(sizeof...(TArgs) > 0, "At least 1 argument must be provided to archiver");
-		static_assert((sizeof(TArgs) + ... + 0) == ArchiveSize, "Provided arguments does not match archive size");
+    ///
+    /// \brief Size checks arguments to be archived to avoid runtime errors
+    template <std::size_t ArchiveSize, typename TArchive, typename... TArgs>
+    void CerealArchive(TArchive& archiver, TArgs&&... args) {
+        static_assert(sizeof...(TArgs) > 0, "At least 1 argument must be provided to archiver");
+        static_assert((sizeof(TArgs) + ... + 0) == ArchiveSize, "Provided arguments does not match archive size");
 
-		archiver(std::forward<TArgs>(args) ...);
-	}
+        archiver(std::forward<TArgs>(args)...);
+    }
 
-	void SerializeGameData(const game::GameDataGlobal& game_data);
-	///
-	/// \param out_data_global Deserialized into this 
-	void DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGlobal& out_data_global);
-}
+    void SerializeGameData(const game::GameDataGlobal& game_data);
+    ///
+    /// \param out_data_global Deserialized into this
+    void DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGlobal& out_data_global);
+} // namespace jactorio::data
 
 #endif // JACTORIO_DATA_CEREAL_SERIALIZE_H

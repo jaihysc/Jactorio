@@ -31,7 +31,9 @@ namespace jactorio::game
             data::SerialUniqueDataPtr<data::UniqueDataBase> uniqueData;
 
 
-            CEREAL_SERIALIZE(archive) { archive(prototype, uniqueData); }
+            CEREAL_SERIALIZE(archive) {
+                archive(prototype, uniqueData);
+            }
         };
 
         using CallbackContainerT = std::unordered_map<GameTickT, std::vector<CallbackContainerEntry>>;
@@ -46,12 +48,18 @@ namespace jactorio::game
         /// Information about the registered deferral for removing
         struct DeferralEntry
         {
-            J_NODISCARD bool Valid() const { return callbackIndex != 0; }
+            J_NODISCARD bool Valid() const {
+                return callbackIndex != 0;
+            }
 
-            void Invalidate() { callbackIndex = 0; }
+            void Invalidate() {
+                callbackIndex = 0;
+            }
 
 
-            CEREAL_SERIALIZE(archive) { archive(dueTick, callbackIndex); }
+            CEREAL_SERIALIZE(archive) {
+                archive(dueTick, callbackIndex);
+            }
 
             GameTickT dueTick           = 0;
             CallbackIndex callbackIndex = 0;
@@ -92,7 +100,9 @@ namespace jactorio::game
         J_NODISCARD DebugInfo GetDebugInfo() const;
 
 
-        CEREAL_SERIALIZE(archive) { archive(callbacks_, lastGameTick_); }
+        CEREAL_SERIALIZE(archive) {
+            archive(callbacks_, lastGameTick_);
+        }
 
     private:
         CallbackContainerT callbacks_;
@@ -108,7 +118,9 @@ namespace jactorio::game
             PROTOTYPE_CATEGORY(none);
             void PostLoadValidate(const data::PrototypeManager& /*manager*/) const override {}
 
-            data::Sprite* OnRGetSprite(data::Sprite::SetT /*set*/) const override { return nullptr; }
+            data::Sprite* OnRGetSprite(data::Sprite::SetT /*set*/) const override {
+                return nullptr;
+            }
 
             data::Sprite::SetT OnRGetSpriteSet(data::Orientation /*orientation*/,
                                                WorldData& /*world_data*/,
@@ -148,6 +160,6 @@ namespace jactorio::game
             const CallbackContainerT& callbacks;
         };
     };
-}
+} // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_DEFERRAL_TIMER_H

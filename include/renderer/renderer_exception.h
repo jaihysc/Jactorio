@@ -8,12 +8,12 @@
 
 namespace jactorio::renderer
 {
-	// These are raised by renderer classes if an error occurred
-	class RendererException : public std::runtime_error
-	{
-		using std::runtime_error::runtime_error;
-	};
-}
+    // These are raised by renderer classes if an error occurred
+    class RendererException : public std::runtime_error
+    {
+        using std::runtime_error::runtime_error;
+    };
+} // namespace jactorio::renderer
 
 
 #endif // JACTORIO_INCLUDE_RENDERER_RENDERER_EXCEPTION_H

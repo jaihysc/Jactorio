@@ -10,13 +10,16 @@
 
 namespace jactorio::renderer
 {
-	void DrawTransportSegmentItems(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-	                               const core::Position2<float>& pixel_offset,
-	                               game::TransportSegment& line_segment);
+    void DrawTransportSegmentItems(RendererLayer& layer,
+                                   const SpriteUvCoordsT& uv_coords,
+                                   const core::Position2<float>& pixel_offset,
+                                   game::TransportSegment& line_segment);
 
-	void DrawInserterArm(RendererLayer& layer, const SpriteUvCoordsT& uv_coords,
-	                     const core::Position2<float>& pixel_offset,
-	                     const data::Inserter& inserter_proto, const data::InserterData& inserter_data);
-}
+    void DrawInserterArm(RendererLayer& layer,
+                         const SpriteUvCoordsT& uv_coords,
+                         const core::Position2<float>& pixel_offset,
+                         const data::Inserter& inserter_proto,
+                         const data::InserterData& inserter_data);
+} // namespace jactorio::renderer
 
 #endif // JACTORIO_RENDERER_RENDERING_DATA_RENDERER_H

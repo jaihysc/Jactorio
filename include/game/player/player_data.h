@@ -4,8 +4,8 @@
 #define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
 #pragma once
 
-#include <queue>
 #include <glm/glm.hpp>
+#include <queue>
 
 #include "data/prototype/item.h"
 #include "data/prototype/type.h"
@@ -26,14 +26,11 @@ namespace jactorio::game
     class PlayerData
     {
     public:
-        PlayerData() = default;
+        PlayerData()  = default;
         ~PlayerData() = default;
 
         PlayerData(const PlayerData& other)
-            : world{other.world},
-              inventory{other.inventory},
-              placement{other.placement},
-              crafting{other.crafting} {
+            : world{other.world}, inventory{other.inventory}, placement{other.placement}, crafting{other.crafting} {
             placement.playerInv_ = &inventory;
             crafting.playerInv_  = &inventory;
         }
@@ -74,7 +71,9 @@ namespace jactorio::game
 
             ///
             /// Gets the world X, Y of the tile the mouse is hovered over, computed by calculate_selected_tile(x, y)
-            J_NODISCARD WorldCoord GetMouseTileCoords() const { return mouseSelectedTile_; }
+            J_NODISCARD WorldCoord GetMouseTileCoords() const {
+                return mouseSelectedTile_;
+            }
 
             ///
             /// \return true if selected tile is within placement range
@@ -82,24 +81,38 @@ namespace jactorio::game
 
             // ======================================================================
 
-            void SetId(const WorldId world_id) noexcept { worldId_ = world_id; }
-            J_NODISCARD WorldId GetId() const noexcept { return worldId_; }
+            void SetId(const WorldId world_id) noexcept {
+                worldId_ = world_id;
+            }
+            J_NODISCARD WorldId GetId() const noexcept {
+                return worldId_;
+            }
 
 
             ///
             /// The tile the player is on, decimals indicate partial tile
-            J_NODISCARD PlayerPosT GetPositionX() const { return positionX_; }
-            J_NODISCARD PlayerPosT GetPositionY() const { return positionY_; }
+            J_NODISCARD PlayerPosT GetPositionX() const {
+                return positionX_;
+            }
+            J_NODISCARD PlayerPosT GetPositionY() const {
+                return positionY_;
+            }
 
             ///
             /// If the tile at the specified amount is valid, the player will be moved to that tile
             void MovePlayerX(PlayerPosT amount);
             void MovePlayerY(PlayerPosT amount);
 
-            void SetPlayerX(const PlayerPosT x) noexcept { positionX_ = x; }
-            void SetPlayerY(const PlayerPosT y) noexcept { positionY_ = y; }
+            void SetPlayerX(const PlayerPosT x) noexcept {
+                positionX_ = x;
+            }
+            void SetPlayerY(const PlayerPosT y) noexcept {
+                positionY_ = y;
+            }
 
-            CEREAL_SERIALIZE(archive) { archive(worldId_, positionX_, positionY_); }
+            CEREAL_SERIALIZE(archive) {
+                archive(worldId_, positionX_, positionY_);
+            }
 
         private:
             ///
@@ -225,12 +238,16 @@ namespace jactorio::game
 
             ///
             /// Sets the activated layer, use nullptr to unset
-            void SetActivatedLayer(ChunkTileLayer* layer) { activatedLayer_ = layer; }
+            void SetActivatedLayer(ChunkTileLayer* layer) {
+                activatedLayer_ = layer;
+            }
 
             ///
             /// Gets the layer of the entity activated on by the player
             /// \return nullptr If no layer is activated by the player
-            J_NODISCARD ChunkTileLayer* GetActivatedLayer() const { return activatedLayer_; }
+            J_NODISCARD ChunkTileLayer* GetActivatedLayer() const {
+                return activatedLayer_;
+            }
 
 
             ///
@@ -335,8 +352,12 @@ namespace jactorio::game
                                             uint16_t batches) const;
 
 #ifdef JACTORIO_BUILD_TEST
-            CraftingItemDeductionsT& GetCraftingItemDeductions() { return craftingItemDeductions_; }
-            CraftingItemExtrasT& GetCraftingItemExtras() { return craftingItemExtras_; }
+            CraftingItemDeductionsT& GetCraftingItemDeductions() {
+                return craftingItemDeductions_;
+            }
+            CraftingItemExtrasT& GetCraftingItemExtras() {
+                return craftingItemExtras_;
+            }
 #endif
 
 
@@ -389,8 +410,10 @@ namespace jactorio::game
         Crafting crafting{inventory};
 
 
-        CEREAL_SERIALIZE(archive) { archive(world, inventory, crafting); }
+        CEREAL_SERIALIZE(archive) {
+            archive(world, inventory, crafting);
+        }
     };
-}
+} // namespace jactorio::game
 
-#endif //JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
+#endif // JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H

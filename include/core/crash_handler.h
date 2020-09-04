@@ -6,7 +6,7 @@
 
 namespace jactorio::core
 {
-	void RegisterCrashHandler();
+    void RegisterCrashHandler();
 }
 
 #endif // JACTORIO_CRASH_HANDLER_H

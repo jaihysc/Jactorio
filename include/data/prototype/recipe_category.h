@@ -4,26 +4,25 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_CATEGORY_H
 #pragma once
 
-#include "data/prototype/recipe.h"
 #include "data/prototype/framework/framework_base.h"
+#include "data/prototype/recipe.h"
 
 namespace jactorio::data
 {
-	///
-	/// \brief A category to sort recipes within a recipe group
-	class RecipeCategory final : public FrameworkBase
-	{
-	public:
-		PROTOTYPE_CATEGORY(recipe_category);
+    ///
+    /// \brief A category to sort recipes within a recipe group
+    class RecipeCategory final : public FrameworkBase
+    {
+    public:
+        PROTOTYPE_CATEGORY(recipe_category);
 
-		RecipeCategory() = default;
+        RecipeCategory() = default;
 
-		// Recipes belonging to this category
-		PYTHON_PROP_REF(std::vector<Recipe*>, recipes);
+        // Recipes belonging to this category
+        PYTHON_PROP_REF(std::vector<Recipe*>, recipes);
 
-		void PostLoadValidate(const PrototypeManager&) const override {
-		}
-	};
-}
+        void PostLoadValidate(const PrototypeManager&) const override {}
+    };
+} // namespace jactorio::data
 
-#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_CATEGORY_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_RECIPE_CATEGORY_H

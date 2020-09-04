@@ -8,51 +8,45 @@
 
 namespace jactorio::data
 {
-	struct ContainerEntityData final : HealthEntityData
-	{
-		ContainerEntityData() = default;
-		
-		explicit ContainerEntityData(const uint16_t inventory_size) {
-			inventory.resize(inventory_size);
-		}
+    struct ContainerEntityData final : HealthEntityData
+    {
+        ContainerEntityData() = default;
 
-		explicit ContainerEntityData(Item::Inventory inv)
-			: inventory(std::move(inv)) {
-		}
+        explicit ContainerEntityData(const uint16_t inventory_size) {
+            inventory.resize(inventory_size);
+        }
 
-		Item::Inventory inventory;
+        explicit ContainerEntityData(Item::Inventory inv) : inventory(std::move(inv)) {}
 
-		CEREAL_SERIALIZE(archive) {
-			archive(cereal::base_class<HealthEntityData>(this), inventory);
-		}
-	};
+        Item::Inventory inventory;
 
-	///
-	/// \brief An entity with an inventory, such as a chest
-	class ContainerEntity final : public HealthEntity
-	{
-	public:
-		PROTOTYPE_CATEGORY(container_entity);
-		PROTOTYPE_DATA_TRIVIAL_COPY(ContainerEntityData);
+        CEREAL_SERIALIZE(archive) {
+            archive(cereal::base_class<HealthEntityData>(this), inventory);
+        }
+    };
 
-		ContainerEntity()
-			: inventorySize(0) {
-		}
+    ///
+    /// \brief An entity with an inventory, such as a chest
+    class ContainerEntity final : public HealthEntity
+    {
+    public:
+        PROTOTYPE_CATEGORY(container_entity);
+        PROTOTYPE_DATA_TRIVIAL_COPY(ContainerEntityData);
 
-		PYTHON_PROP_REF(uint16_t, inventorySize);
+        ContainerEntity() : inventorySize(0) {}
+
+        PYTHON_PROP_REF(uint16_t, inventorySize);
 
 
-		// Events
+        // Events
 
-		void OnBuild(game::WorldData& world_data,
-		             game::LogicData& logic_data,
-		             const WorldCoord& world_coords,
-		             game::ChunkTileLayer& tile_layer, Orientation orientation) const override;
+        void OnBuild(game::WorldData& world_data,
+                     game::LogicData& logic_data,
+                     const WorldCoord& world_coords,
+                     game::ChunkTileLayer& tile_layer,
+                     Orientation orientation) const override;
 
-		void OnRemove(game::WorldData&,
-		              game::LogicData&,
-		              const WorldCoord&, game::ChunkTileLayer&) const override {
-		}
+        void OnRemove(game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer&) const override {}
 
         bool OnRShowGui(GameWorlds& worlds,
                         game::LogicData& logic,
@@ -60,10 +54,10 @@ namespace jactorio::data
                         const PrototypeManager& data_manager,
                         game::ChunkTileLayer* tile_layer) const override;
 
-		void ValidatedPostLoad() override {
-			sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-		}
-	};
-}
+        void ValidatedPostLoad() override {
+            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+        }
+    };
+} // namespace jactorio::data
 
-#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H

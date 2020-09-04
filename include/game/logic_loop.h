@@ -10,25 +10,25 @@
 
 namespace jactorio
 {
-	struct LogicRenderLoopCommon
-	{
-		// Held by the thread which is currently operating on these sets of data 
+    struct LogicRenderLoopCommon
+    {
+        // Held by the thread which is currently operating on these sets of data
 
-		std::mutex playerDataMutex;
-		std::mutex worldDataMutex;
+        std::mutex playerDataMutex;
+        std::mutex worldDataMutex;
 
-		game::GameDataLocal gameDataLocal;
-		game::GameDataGlobal gameDataGlobal;
+        game::GameDataLocal gameDataLocal;
+        game::GameDataGlobal gameDataGlobal;
 
-		bool logicThreadShouldExit             = false;
-		bool renderThreadShouldExit            = false;
-		volatile bool prototypeLoadingComplete = false;
-	};
-}
+        bool logicThreadShouldExit             = false;
+        bool renderThreadShouldExit            = false;
+        volatile bool prototypeLoadingComplete = false;
+    };
+} // namespace jactorio
 
 namespace jactorio::game
 {
-	void InitLogicLoop(LogicRenderLoopCommon& common);
+    void InitLogicLoop(LogicRenderLoopCommon& common);
 }
 
-#endif //JACTORIO_INCLUDE_GAME_LOGIC_LOOP_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_LOOP_H
