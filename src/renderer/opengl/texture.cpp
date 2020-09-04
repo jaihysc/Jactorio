@@ -4,66 +4,65 @@
 
 #include <utility>
 
-#include "renderer/opengl/texture.h"
 #include "core/logger.h"
 #include "core/math.h"
-#include "renderer/renderer_exception.h"
 #include "renderer/opengl/error.h"
+#include "renderer/opengl/texture.h"
+#include "renderer/renderer_exception.h"
 
 unsigned int jactorio::renderer::Texture::boundTextureId_ = 0;
 
 jactorio::renderer::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer,
-                                     const DimensionT width, const DimensionT height)
-	: rendererId_(0), textureBuffer_(std::move(buffer)), width_(width), height_(height) {
+                                     const DimensionT width,
+                                     const DimensionT height)
+    : rendererId_(0), textureBuffer_(std::move(buffer)), width_(width), height_(height) {
 
-	if (!textureBuffer_) {
-		LOG_MESSAGE(error, "Received empty texture");
-		return;
-	}
+    if (!textureBuffer_) {
+        LOG_MESSAGE(error, "Received empty texture");
+        return;
+    }
 
-	DEBUG_OPENGL_CALL(glGenTextures(1, &rendererId_));
-	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, rendererId_));
+    DEBUG_OPENGL_CALL(glGenTextures(1, &rendererId_));
+    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, rendererId_));
 
-	// Required by openGL, handles when textures are too big/small
-	DEBUG_OPENGL_CALL(
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	DEBUG_OPENGL_CALL(
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	DEBUG_OPENGL_CALL(
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-	DEBUG_OPENGL_CALL(
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    // Required by openGL, handles when textures are too big/small
+    DEBUG_OPENGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    DEBUG_OPENGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    DEBUG_OPENGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    DEBUG_OPENGL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-	DEBUG_OPENGL_CALL(
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-			core::SafeCast<GLsizei>(width), core::SafeCast<GLsizei>(height),
-			0, GL_RGBA, GL_UNSIGNED_BYTE, textureBuffer_.get()
-		)
-	);
+    DEBUG_OPENGL_CALL(glTexImage2D(GL_TEXTURE_2D,
+                                   0,
+                                   GL_RGBA8,
+                                   core::SafeCast<GLsizei>(width),
+                                   core::SafeCast<GLsizei>(height),
+                                   0,
+                                   GL_RGBA,
+                                   GL_UNSIGNED_BYTE,
+                                   textureBuffer_.get()));
 
-	// Rebind the last bound texture
-	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, boundTextureId_));
+    // Rebind the last bound texture
+    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, boundTextureId_));
 }
 
 jactorio::renderer::Texture::~Texture() {
-	DEBUG_OPENGL_CALL(glDeleteTextures(1, &rendererId_));
+    DEBUG_OPENGL_CALL(glDeleteTextures(1, &rendererId_));
 }
 
 void jactorio::renderer::Texture::Bind(const unsigned int slot) const {
-	// Ensure there is sufficient slots to bind the texture
-	int texture_units;
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
-	if (slot >= core::SafeCast<unsigned int>(texture_units)) {
-		LOG_MESSAGE_F(error,
-		              "Texture slot out of bounds, attempting to bind at index %d", slot);
-		throw RendererException("Texture slot out of bounds");
-	}
+    // Ensure there is sufficient slots to bind the texture
+    int texture_units;
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
+    if (slot >= core::SafeCast<unsigned int>(texture_units)) {
+        LOG_MESSAGE_F(error, "Texture slot out of bounds, attempting to bind at index %d", slot);
+        throw RendererException("Texture slot out of bounds");
+    }
 
-	DEBUG_OPENGL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
-	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, rendererId_));
-	boundTextureId_ = rendererId_;
+    DEBUG_OPENGL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
+    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, rendererId_));
+    boundTextureId_ = rendererId_;
 }
 
 void jactorio::renderer::Texture::Unbind() {
-	DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
+    DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }

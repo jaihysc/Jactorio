@@ -3,46 +3,46 @@
 #include <thread>
 
 #include "jactorio.h"
+
 #include "core/crash_handler.h"
 #include "core/filesystem.h"
 #include "game/logic_loop.h"
 #include "renderer/render_loop.h"
 
 void InitializeGame() {
-	using namespace jactorio;
+    using namespace jactorio;
 
-	// Rendering + logic initialization
-	LOG_MESSAGE(info, "1 - Data stage");
+    // Rendering + logic initialization
+    LOG_MESSAGE(info, "1 - Data stage");
 
-	LogicRenderLoopCommon common_data;
+    LogicRenderLoopCommon common_data;
 
-	std::thread logic_thread    = std::thread(game::InitLogicLoop, std::ref(common_data));
-	std::thread renderer_thread = std::thread(renderer::RenderInit, std::ref(common_data));
+    std::thread logic_thread    = std::thread(game::InitLogicLoop, std::ref(common_data));
+    std::thread renderer_thread = std::thread(renderer::RenderInit, std::ref(common_data));
 
-	logic_thread.join();
-	renderer_thread.join();
+    logic_thread.join();
+    renderer_thread.join();
 }
 
 ///
 /// ENTRY POINT
-/// 
+///
 int main(int ac, char* av[]) {
-	using namespace jactorio;
+    using namespace jactorio;
 
-	core::SetExecutingDirectory(av[0]);
+    core::SetExecutingDirectory(av[0]);
 
-	// Log file
-	core::ResourceGuard log_guard(&core::CloseLogFile);
-	core::OpenLogFile();
+    // Log file
+    core::ResourceGuard log_guard(&core::CloseLogFile);
+    core::OpenLogFile();
 
-	core::RegisterCrashHandler();
+    core::RegisterCrashHandler();
 
-	// Initial startup message
-	LOG_MESSAGE_F(info, "%s | %s build, version: %s\n\n",
-	              JACTORIO_BUILD_TARGET_PLATFORM, BUILD_TYPE, JACTORIO_VERSION);
+    // Initial startup message
+    LOG_MESSAGE_F(info, "%s | %s build, version: %s\n\n", JACTORIO_BUILD_TARGET_PLATFORM, BUILD_TYPE, JACTORIO_VERSION);
 
-	InitializeGame();
+    InitializeGame();
 
-	LOG_MESSAGE(info, "goodbye!");
-	return 0;
+    LOG_MESSAGE(info, "goodbye!");
+    return 0;
 }

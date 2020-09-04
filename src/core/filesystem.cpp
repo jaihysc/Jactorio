@@ -11,53 +11,53 @@
 std::string executing_directory;
 
 std::string jactorio::core::GetExecutingDirectory() {
-	return executing_directory;
+    return executing_directory;
 }
 
 void jactorio::core::SetExecutingDirectory(const std::string& directory) {
-	std::string path = directory;
+    std::string path = directory;
 
-	// Convert backwards slashes to forwards if on windows
+    // Convert backwards slashes to forwards if on windows
 #ifdef WIN32
-	for (char& i : path) {
-		if (i == '\\')
-			i = '/';
-	}
+    for (char& i : path) {
+        if (i == '\\')
+            i = '/';
+    }
 #endif
 
-	{
-		// Get first /
-		int64_t i = path.size();
-		while (i >= 0 && path[i] != '/')
-			--i;
+    {
+        // Get first /
+        int64_t i = path.size();
+        while (i >= 0 && path[i] != '/')
+            --i;
 
-		if (i < 0)  // In case / does not exist
-			i = 0;
+        if (i < 0) // In case / does not exist
+            i = 0;
 
-		// Erase everything prior to first /
-		path.erase(i, path.size() - i);
-	}
+        // Erase everything prior to first /
+        path.erase(i, path.size() - i);
+    }
 
-	LOG_MESSAGE_F(info, "Set executing directory: %s", path.c_str());
+    LOG_MESSAGE_F(info, "Set executing directory: %s", path.c_str());
 
-	executing_directory = path;
+    executing_directory = path;
 }
 
 std::string jactorio::core::ResolvePath(const std::string& path) {
-	// Catch old usages of ResolvePath
-	// if (!path.empty()) {
-	// 	assert(path[0] != '~');
-	// }
+    // Catch old usages of ResolvePath
+    // if (!path.empty()) {
+    // 	assert(path[0] != '~');
+    // }
 
-	std::string str = executing_directory;
-	return str.append("/").append(path);
+    std::string str = executing_directory;
+    return str.append("/").append(path);
 }
 
 
 std::string jactorio::core::ReadFile(const std::string& path) {
-	const std::ifstream in(path);
+    const std::ifstream in(path);
 
-	std::stringstream sstr;
-	sstr << in.rdbuf();
-	return sstr.str();
+    std::stringstream sstr;
+    sstr << in.rdbuf();
+    return sstr.str();
 }
