@@ -8,11 +8,11 @@
 
 namespace jactorio::data
 {
-	// These are raised by prototype classes if an error occurred
-	class DataException : public std::runtime_error
-	{
-		using std::runtime_error::runtime_error;
-	};
-}
+    // These are raised by prototype classes if an error occurred
+    class DataException : public std::runtime_error
+    {
+        using std::runtime_error::runtime_error;
+    };
+} // namespace jactorio::data
 
-#endif //JACTORIO_INCLUDE_DATA_DATA_EXCEPTION_H
+#endif // JACTORIO_INCLUDE_DATA_DATA_EXCEPTION_H

@@ -18,7 +18,7 @@ namespace jactorio::core
     protected:
         static_assert(!std::is_pointer_v<Ty>, "Ty should not be a pointer, remove the indirection");
 
-        using ValueT                        = std::size_t;
+        using ValueT = std::size_t;
 
     public:
         PointerWrapper() = default;
@@ -27,20 +27,32 @@ namespace jactorio::core
             SetPtr(proto);
         }
 
-        explicit PointerWrapper(Ty& proto) { SetPtr(&proto); }
+        explicit PointerWrapper(Ty& proto) {
+            SetPtr(&proto);
+        }
 
 
-        Ty* operator->() { return GetPtr(); }
-        Ty* operator->() const { return GetPtr(); }
+        Ty* operator->() {
+            return GetPtr();
+        }
+        Ty* operator->() const {
+            return GetPtr();
+        }
 
-        Ty& operator*() { return *GetPtr(); }
-        Ty& operator*() const { return *GetPtr(); }
+        Ty& operator*() {
+            return *GetPtr();
+        }
+        Ty& operator*() const {
+            return *GetPtr();
+        }
 
 
         friend bool operator==(const PointerWrapper& lhs, const PointerWrapper& rhs) {
             return lhs.value_ == rhs.value_;
         }
-        friend bool operator!=(const PointerWrapper& lhs, const PointerWrapper& rhs) { return !(lhs == rhs); }
+        friend bool operator!=(const PointerWrapper& lhs, const PointerWrapper& rhs) {
+            return !(lhs == rhs);
+        }
 
 
         friend void swap(PointerWrapper& lhs, PointerWrapper& rhs) noexcept {
@@ -48,19 +60,29 @@ namespace jactorio::core
             swap(lhs.value_, rhs.value_);
         }
 
-        J_NODISCARD Ty* Get() noexcept { return GetPtr(); }
-        J_NODISCARD Ty* Get() const noexcept { return GetPtr(); }
+        J_NODISCARD Ty* Get() noexcept {
+            return GetPtr();
+        }
+        J_NODISCARD Ty* Get() const noexcept {
+            return GetPtr();
+        }
 
     protected:
         /// ptr or internal id
         static_assert(sizeof(ValueT) == sizeof(Ty*));
         ValueT value_ = 0;
 
-        void SetPtr(Ty* proto) noexcept { value_ = reinterpret_cast<ValueT>(proto); }
+        void SetPtr(Ty* proto) noexcept {
+            value_ = reinterpret_cast<ValueT>(proto);
+        }
 
     private:
-        J_NODISCARD Ty* GetPtr() noexcept { return reinterpret_cast<Ty*>(value_); }
-        J_NODISCARD Ty* GetPtr() const noexcept { return reinterpret_cast<Ty*>(value_); }
+        J_NODISCARD Ty* GetPtr() noexcept {
+            return reinterpret_cast<Ty*>(value_);
+        }
+        J_NODISCARD Ty* GetPtr() const noexcept {
+            return reinterpret_cast<Ty*>(value_);
+        }
     };
 
     template <class T, std::enable_if_t<!std::is_same_v<T, std::nullptr_t>, int> = 0>

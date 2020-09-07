@@ -25,4 +25,4 @@ namespace jactorio::game
         EXPECT_FLOAT_EQ(result.GetPositionX(), 32.41);
         EXPECT_FLOAT_EQ(result.GetPositionY(), 16.92);
     }
-}
+} // namespace jactorio::game

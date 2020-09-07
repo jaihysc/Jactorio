@@ -8,13 +8,13 @@
 
 namespace jactorio::data
 {
-	TEST(CerealSupport, DecDecimal) {
-		constexpr auto original_val = 6345532.536;
+    TEST(CerealSupport, DecDecimal) {
+        constexpr auto original_val = 6345532.536;
 
-		const Decimal3T val(original_val);
+        const Decimal3T val(original_val);
 
-		const auto result = TestSerializeDeserialize(val);
+        const auto result = TestSerializeDeserialize(val);
 
-		EXPECT_DOUBLE_EQ(result.getAsDouble(), original_val);
-	}
-}
+        EXPECT_DOUBLE_EQ(result.getAsDouble(), original_val);
+    }
+} // namespace jactorio::data

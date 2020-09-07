@@ -7,20 +7,20 @@
 using namespace jactorio;
 
 void game::DeferralTimer::DeferralUpdate(LogicData& logic_data, WorldData& world_data, const GameTickT game_tick) {
-	if (game_tick > 0)
-		assert(game_tick > lastGameTick_); // assertion would fail on game tick 0, since lastGameTick would be 0
-	else
-		assert(game_tick >= lastGameTick_);
+    if (game_tick > 0)
+        assert(game_tick > lastGameTick_); // assertion would fail on game tick 0, since lastGameTick would be 0
+    else
+        assert(game_tick >= lastGameTick_);
 
-	lastGameTick_ = game_tick;
+    lastGameTick_ = game_tick;
 
-	// Call callbacks
-	for (auto& pair : callbacks_[game_tick]) {
+    // Call callbacks
+    for (auto& pair : callbacks_[game_tick]) {
         pair.prototype->OnDeferTimeElapsed(world_data, logic_data, pair.uniqueData.Get());
     }
 
     // Remove used callbacks
-	callbacks_.erase(game_tick);
+    callbacks_.erase(game_tick);
 }
 
 game::DeferralTimer::DeferralEntry game::DeferralTimer::RegisterAtTick(const DeferPrototypeT& deferred,
@@ -43,9 +43,9 @@ game::DeferralTimer::DeferralEntry game::DeferralTimer::RegisterFromTick(const D
 }
 
 void game::DeferralTimer::RemoveDeferral(DeferralEntry entry) {
-	assert(entry.callbackIndex != 0);  // Invalid callback index
+    assert(entry.callbackIndex != 0); // Invalid callback index
 
-	// due_game_tick does not exist
+    // due_game_tick does not exist
     if (callbacks_.find(entry.dueTick) == callbacks_.end())
         return;
 
@@ -60,13 +60,13 @@ void game::DeferralTimer::RemoveDeferral(DeferralEntry entry) {
 }
 
 void game::DeferralTimer::RemoveDeferralEntry(DeferralEntry& entry) {
-	if (!entry.Valid())
-		return;
+    if (!entry.Valid())
+        return;
 
-	RemoveDeferral(entry);
-	entry.Invalidate();
+    RemoveDeferral(entry);
+    entry.Invalidate();
 }
 
 game::DeferralTimer::DebugInfo game::DeferralTimer::GetDebugInfo() const {
-	return {callbacks_};
+    return {callbacks_};
 }

@@ -14,12 +14,12 @@ time_t start_time = clock();
 
 
 void jactorio::core::OpenLogFile() {
-	log_file.open(ResolvePath(kLogFileName));
+    log_file.open(ResolvePath(kLogFileName));
 }
 
 void jactorio::core::CloseLogFile() {
-	if (log_file.is_open())
-		log_file.close();
+    if (log_file.is_open())
+        log_file.close();
 }
 
 
@@ -30,87 +30,87 @@ void jactorio::core::LogMessage(const LogSeverity severity,
                                 const int line,
                                 const std::string& message) {
 
-	const float time = static_cast<float>(clock() - start_time) / CLOCKS_PER_SEC;
+    const float time = static_cast<float>(clock() - start_time) / CLOCKS_PER_SEC;
 
-	const uint64_t buf_count = kMaxLogMsgLength + sizeof(kLogFmt);
+    const uint64_t buf_count = kMaxLogMsgLength + sizeof(kLogFmt);
 
-	char s[buf_count];
+    char s[buf_count];
 
-	// Console
+    // Console
 
-	snprintf(s,
-	         buf_count * sizeof(char),
-	         kLogFmt,
-	         time,
-	         LogSeverityStrColored(severity).c_str(),
-	         group.c_str(),
-	         line,
-	         message.c_str());
+    snprintf(s,
+             buf_count * sizeof(char),
+             kLogFmt,
+             time,
+             LogSeverityStrColored(severity).c_str(),
+             group.c_str(),
+             line,
+             message.c_str());
 
-	std::cout << s << "\033[0m\n";
+    std::cout << s << "\033[0m\n";
 
-	// Log file
+    // Log file
 
-	snprintf(s,
-	         buf_count * sizeof(char),
-	         kLogFmt,
-	         time,
-	         LogSeverityStr(severity).c_str(),
-	         group.c_str(),
-	         line,
-	         message.c_str());
+    snprintf(s,
+             buf_count * sizeof(char),
+             kLogFmt,
+             time,
+             LogSeverityStr(severity).c_str(),
+             group.c_str(),
+             line,
+             message.c_str());
 
-	log_file << s << "\n";
+    log_file << s << "\n";
 }
 
 std::string jactorio::core::LogSeverityStr(const LogSeverity severity) {
-	std::string severity_str;
+    std::string severity_str;
 
-	switch (severity) {
-	case LogSeverity::debug:
-		severity_str = "Debug   ";
-		break;
-	case LogSeverity::info:
-		severity_str = "Info    ";
-		break;
-	case LogSeverity::warning:
-		severity_str = "Warning ";
-		break;
-	case LogSeverity::error:
-		severity_str = "ERROR   ";
-		break;
-	case LogSeverity::critical:
-		severity_str = "CRITICAL";
-		break;
-	default:
-		severity_str = "        ";
-	}
+    switch (severity) {
+    case LogSeverity::debug:
+        severity_str = "Debug   ";
+        break;
+    case LogSeverity::info:
+        severity_str = "Info    ";
+        break;
+    case LogSeverity::warning:
+        severity_str = "Warning ";
+        break;
+    case LogSeverity::error:
+        severity_str = "ERROR   ";
+        break;
+    case LogSeverity::critical:
+        severity_str = "CRITICAL";
+        break;
+    default:
+        severity_str = "        ";
+    }
 
-	return severity_str;
+    return severity_str;
 }
 
 std::string jactorio::core::LogSeverityStrColored(const LogSeverity severity) {
-	std::string severity_str;
+    std::string severity_str;
 
-	switch (severity) {
-	case LogSeverity::debug:
-		severity_str = "\033[1;90mDebug   ";  // Gray
-		break;
-	case LogSeverity::info:
-		severity_str = "Info    ";
-		break;
-	case LogSeverity::warning:
-		severity_str = "\033[1;33mWarning ";  // Yellow
-		break;
-	case LogSeverity::error:
-		severity_str = "\033[1;31mERROR   ";  // Red
-		break;
-	case LogSeverity::critical:
-		severity_str = "\033[1;31mCRITICAL";  // Red
-		break;
-	default:
-		severity_str = "        ";
-	}
+    switch (severity) {
+    case LogSeverity::debug:
+        severity_str = "\033[1;90mDebug   "; // Gray
+        break;
+    case LogSeverity::info:
+        severity_str = "Info    ";
+        break;
+    case LogSeverity::warning:
+        severity_str = "\033[1;33mWarning "; // Yellow
+        break;
+    case LogSeverity::error:
+        severity_str = "\033[1;31mERROR   "; // Red
+        break;
+    case LogSeverity::critical:
+        severity_str = "\033[1;31mCRITICAL"; // Red
+        break;
+    default:
+        severity_str = "        ";
+    }
 
-	return severity_str;
+    return severity_str;
 }

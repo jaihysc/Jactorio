@@ -9,21 +9,21 @@
 
 namespace jactorio::core
 {
-	///
-	/// \brief Converts provided string to lower case
-	inline std::string StrToLower(const std::string& str) {
-		std::string temp = str;
-		std::transform(temp.begin(), temp.end(), temp.begin(), tolower);
-		return temp;
-	}
+    ///
+    /// \brief Converts provided string to lower case
+    inline std::string StrToLower(const std::string& str) {
+        std::string temp = str;
+        std::transform(temp.begin(), temp.end(), temp.begin(), tolower);
+        return temp;
+    }
 
-	///
-	/// \brief Converts provided string to lower case
-	inline std::string StrToUpper(const std::string& str) {
-		std::string temp = str;
-		std::transform(temp.begin(), temp.end(), temp.begin(), toupper);
-		return temp;
-	}
-}
+    ///
+    /// \brief Converts provided string to lower case
+    inline std::string StrToUpper(const std::string& str) {
+        std::string temp = str;
+        std::transform(temp.begin(), temp.end(), temp.begin(), toupper);
+        return temp;
+    }
+} // namespace jactorio::core
 
 #endif // JACTORIO_CORE_UTILITY_H

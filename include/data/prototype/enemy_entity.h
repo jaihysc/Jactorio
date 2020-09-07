@@ -7,9 +7,9 @@
 
 namespace jactorio::data
 {
-	class EnemyEntity final : public Entity
-	{
-	};
-}
+    class EnemyEntity final : public Entity
+    {
+    };
+} // namespace jactorio::data
 
 #endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENEMY_ENTITY_H

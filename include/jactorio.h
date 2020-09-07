@@ -11,7 +11,7 @@
 #include <cassert>
 #include <cstdint>
 
-#define J_NODISCARD [[nodiscard]]
+#define J_NODISCARD  [[nodiscard]]
 #define J_DEPRECATED [[deprecated]]
 
 // Build type
@@ -21,4 +21,4 @@
 #define BUILD_TYPE "Release"
 #endif
 
-#endif //JACTORIO_INCLUDE_JACTORIO_H
+#endif // JACTORIO_INCLUDE_JACTORIO_H

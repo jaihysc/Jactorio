@@ -4,112 +4,117 @@
 #define JACTORIO_INCLUDE_GAME_INPUT_INPUT_MANAGER_H
 #pragma once
 
-#include <functional>
 #include <SDL_keyboard.h>
+#include <functional>
 #include <unordered_map>
 
 #include "core/data_type.h"
 
 namespace jactorio::game
 {
-	enum class InputAction
-	{
-		none,
+    enum class InputAction
+    {
+        none,
 
-		// First pressed down
-		key_down,
+        // First pressed down
+        key_down,
 
-		// While pressed down, before repeat
-		key_pressed,
-		// Press down enough to repeat
-		key_repeat,
+        // While pressed down, before repeat
+        key_pressed,
+        // Press down enough to repeat
+        key_repeat,
 
-		// pressed and repeat
-		key_held,
+        // pressed and repeat
+        key_held,
 
-		// Key lifted
-		key_up
-	};
+        // Key lifted
+        key_up
+    };
 
-	enum class MouseInput
-	{
-		left,
-		middle,
-		right,
-		x1,
-		x2
-	};
+    enum class MouseInput
+    {
+        left,
+        middle,
+        right,
+        x1,
+        x2
+    };
 
-	class KeyInput
-	{
-		using InputCallback = std::function<void()>;
-		using CallbackId = uint64_t;
+    class KeyInput
+    {
+        using InputCallback = std::function<void()>;
+        using CallbackId    = uint64_t;
 
-		/// Positive = SDL_KeyCode
-		/// Negative = MouseInput * -1
-		using IntKeyMouseCodePair = int;
+        /// Positive = SDL_KeyCode
+        /// Negative = MouseInput * -1
+        using IntKeyMouseCodePair = int;
 
-		using InputKeyData = std::tuple<IntKeyMouseCodePair, InputAction, SDL_Keymod>;
-
-
-		// ======================================================================
-
-		static std::unordered_map<IntKeyMouseCodePair, InputKeyData> activeInputs_;
-
-	public:
-		///
-		/// \brief Sets the state of an input
-		/// Callbacks for the respective inputs are called when CallCallbacks() is called
-		static void SetInput(SDL_KeyCode keycode, InputAction action, SDL_Keymod mod = KMOD_NONE);
-		static void SetInput(MouseInput mouse, InputAction action, SDL_Keymod mod = KMOD_NONE);
+        using InputKeyData = std::tuple<IntKeyMouseCodePair, InputAction, SDL_Keymod>;
 
 
-		// ======================================================================
+        // ======================================================================
 
-	private:
-		// Increments with each new assigned callback, one is probably not having 4 million registered callbacks
-		// so this doesn't need to be decremented
-		CallbackId callbackId_ = 1;
+        static std::unordered_map<IntKeyMouseCodePair, InputKeyData> activeInputs_;
 
-
-		// tuple format: key, action, mods
-		// id of callbacks registered to the tuple
-		std::unordered_map<InputKeyData, std::vector<CallbackId>,
-		                   core::hash<InputKeyData>> callbackIds_{};
-
-		std::unordered_map<CallbackId, InputCallback> inputCallbacks_{};
+    public:
+        ///
+        /// \brief Sets the state of an input
+        /// Callbacks for the respective inputs are called when CallCallbacks() is called
+        static void SetInput(SDL_KeyCode keycode, InputAction action, SDL_Keymod mod = KMOD_NONE);
+        static void SetInput(MouseInput mouse, InputAction action, SDL_Keymod mod = KMOD_NONE);
 
 
-		void CallCallbacks(const InputKeyData& input);
+        // ======================================================================
 
-	public:
-		///
-		/// \brief Registers a keyboard input callback which will be called when the specified input is activated
-		/// \return id of the registered callback, 0 Indicates error
-		CallbackId Register(const InputCallback& callback, SDL_KeyCode key, InputAction action, SDL_Keymod mods = KMOD_NONE);
-
-		///
-		/// \brief Registers a mouse input callback which will be called when the specified input is activated
-		/// \return id of the registered callback, 0 Indicates error
-		CallbackId Register(const InputCallback& callback, MouseInput button, InputAction action, SDL_Keymod mods = KMOD_NONE);
+    private:
+        // Increments with each new assigned callback, one is probably not having 4 million registered callbacks
+        // so this doesn't need to be decremented
+        CallbackId callbackId_ = 1;
 
 
-		///
-		/// \brief Calls registered callbacks based on the input set with set_input(...)
-		void Raise();
+        // tuple format: key, action, mods
+        // id of callbacks registered to the tuple
+        std::unordered_map<InputKeyData, std::vector<CallbackId>, core::hash<InputKeyData>> callbackIds_{};
+
+        std::unordered_map<CallbackId, InputCallback> inputCallbacks_{};
 
 
-		///
-		/// \brief Removes specified callback at callback_id
-		void Unsubscribe(CallbackId callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods = KMOD_NONE);
+        void CallCallbacks(const InputKeyData& input);
 
-		///
-		/// \brief Deletes all callback data
-		void ClearData();
+    public:
+        ///
+        /// \brief Registers a keyboard input callback which will be called when the specified input is activated
+        /// \return id of the registered callback, 0 Indicates error
+        CallbackId Register(const InputCallback& callback,
+                            SDL_KeyCode key,
+                            InputAction action,
+                            SDL_Keymod mods = KMOD_NONE);
 
-		///
-		static InputAction ToInputAction(int action, bool repeat);
-	};
-}
+        ///
+        /// \brief Registers a mouse input callback which will be called when the specified input is activated
+        /// \return id of the registered callback, 0 Indicates error
+        CallbackId Register(const InputCallback& callback,
+                            MouseInput button,
+                            InputAction action,
+                            SDL_Keymod mods = KMOD_NONE);
 
-#endif //JACTORIO_INCLUDE_GAME_INPUT_INPUT_MANAGER_H
+
+        ///
+        /// \brief Calls registered callbacks based on the input set with set_input(...)
+        void Raise();
+
+
+        ///
+        /// \brief Removes specified callback at callback_id
+        void Unsubscribe(CallbackId callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods = KMOD_NONE);
+
+        ///
+        /// \brief Deletes all callback data
+        void ClearData();
+
+        ///
+        static InputAction ToInputAction(int action, bool repeat);
+    };
+} // namespace jactorio::game
+
+#endif // JACTORIO_INCLUDE_GAME_INPUT_INPUT_MANAGER_H

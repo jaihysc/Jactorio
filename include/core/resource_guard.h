@@ -8,57 +8,55 @@
 
 namespace jactorio::core
 {
-	///
-	/// RAII wrapper which calls the provided function in its destructor
-	template <typename T>
-	class ResourceGuard
-	{
-		// Function returning T
-		using Function = T (*)();
+    ///
+    /// RAII wrapper which calls the provided function in its destructor
+    template <typename T>
+    class ResourceGuard
+    {
+        // Function returning T
+        using Function = T (*)();
 
-		Function f_;
-	public:
-		///
-		/// \param f Function which will be called upon exiting current scope
-		explicit ResourceGuard(const Function f)
-			: f_(f) {
-		}
+        Function f_;
 
-		~ResourceGuard() {
-			f_();
-		}
+    public:
+        ///
+        /// \param f Function which will be called upon exiting current scope
+        explicit ResourceGuard(const Function f) : f_(f) {}
 
-
-		ResourceGuard(const ResourceGuard& other)                = delete;
-		ResourceGuard(ResourceGuard&& other) noexcept            = delete;
-		ResourceGuard& operator=(const ResourceGuard& other)     = delete;
-		ResourceGuard& operator=(ResourceGuard&& other) noexcept = delete;
-	};
-
-	///
-	/// Capturing RAII wrapper which calls the provided function in its destructor
-	template <typename T = void()>
-	class CapturingGuard
-	{
-		using Function = std::function<T>;
-
-		Function f_;
-	public:
-		///
-		/// \param f Function which will be called upon exiting current scope
-		explicit CapturingGuard(const Function f)
-			: f_(f) {
-		}
-
-		~CapturingGuard() {
-			f_();
-		}
+        ~ResourceGuard() {
+            f_();
+        }
 
 
-		CapturingGuard(const CapturingGuard& other)                = delete;
-		CapturingGuard(CapturingGuard&& other) noexcept            = delete;
-		CapturingGuard& operator=(const CapturingGuard& other)     = delete;
-		CapturingGuard& operator=(CapturingGuard&& other) noexcept = delete;
-	};
-}
-#endif //JACTORIO_INCLUDE_CORE_RESOURCE_GUARD_H
+        ResourceGuard(const ResourceGuard& other)     = delete;
+        ResourceGuard(ResourceGuard&& other) noexcept = delete;
+        ResourceGuard& operator=(const ResourceGuard& other) = delete;
+        ResourceGuard& operator=(ResourceGuard&& other) noexcept = delete;
+    };
+
+    ///
+    /// Capturing RAII wrapper which calls the provided function in its destructor
+    template <typename T = void()>
+    class CapturingGuard
+    {
+        using Function = std::function<T>;
+
+        Function f_;
+
+    public:
+        ///
+        /// \param f Function which will be called upon exiting current scope
+        explicit CapturingGuard(const Function f) : f_(f) {}
+
+        ~CapturingGuard() {
+            f_();
+        }
+
+
+        CapturingGuard(const CapturingGuard& other)     = delete;
+        CapturingGuard(CapturingGuard&& other) noexcept = delete;
+        CapturingGuard& operator=(const CapturingGuard& other) = delete;
+        CapturingGuard& operator=(CapturingGuard&& other) noexcept = delete;
+    };
+} // namespace jactorio::core
+#endif // JACTORIO_INCLUDE_CORE_RESOURCE_GUARD_H

@@ -6,38 +6,38 @@
 
 namespace jactorio::data
 {
-	enum class DataCategory
-	{
-		none = 0,
-		tile,
-		sprite,
-		noise_layer_tile,
-		noise_layer_entity,
-		sound,
-		item,
+    enum class DataCategory
+    {
+        none = 0,
+        tile,
+        sprite,
+        noise_layer_tile,
+        noise_layer_entity,
+        sound,
+        item,
 
-		entity,
-		resource_entity,
-		enemy_entity,
+        entity,
+        resource_entity,
+        enemy_entity,
 
-		health_entity,
-		container_entity,
+        health_entity,
+        container_entity,
 
-		assembly_machine,
-		transport_belt,
-		mining_drill,
-		inserter,
+        assembly_machine,
+        transport_belt,
+        mining_drill,
+        inserter,
 
-		recipe,
-		recipe_category,
-		recipe_group,
+        recipe,
+        recipe_category,
+        recipe_group,
 
 
-		// For test use only
-		test,
+        // For test use only
+        test,
 
-		count_
-	};
+        count_
+    };
 }
 
-#endif //JACTORIO_INCLUDE_DATA_DATA_CATEGORY_H
+#endif // JACTORIO_INCLUDE_DATA_DATA_CATEGORY_H

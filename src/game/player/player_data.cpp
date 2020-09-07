@@ -51,12 +51,10 @@ void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_ma
         }
 
         // If player is standing on a partial tile, adjust the center accordingly to the correct location
-        mouse_x_center -=
-            core::SafeCast<float>(renderer::Renderer::tileWidth) * (positionX_ - truncated_player_pos_x);
+        mouse_x_center -= core::SafeCast<float>(renderer::Renderer::tileWidth) * (positionX_ - truncated_player_pos_x);
 
         // This is plus since the y axis is inverted
-        mouse_y_center +=
-            core::SafeCast<float>(renderer::Renderer::tileWidth) * (positionY_ - truncated_player_pos_y);
+        mouse_y_center += core::SafeCast<float>(renderer::Renderer::tileWidth) * (positionY_ - truncated_player_pos_y);
 
 
         pixels_from_center_x = norm_positions.x - mouse_x_center;
@@ -64,17 +62,19 @@ void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_ma
     }
 
     // Calculate tile position based on current player position
-	float tile_x = truncated_player_pos_x + pixels_from_center_x / core::LossyCast<float>(renderer::Renderer::tileWidth);
+    float tile_x =
+        truncated_player_pos_x + pixels_from_center_x / core::LossyCast<float>(renderer::Renderer::tileWidth);
 
-	float tile_y = truncated_player_pos_y + pixels_from_center_y / core::LossyCast<float>(renderer::Renderer::tileWidth);
+    float tile_y =
+        truncated_player_pos_y + pixels_from_center_y / core::LossyCast<float>(renderer::Renderer::tileWidth);
 
-	// Subtract extra tile if negative because no tile exists at -0, -0
-	if (tile_x < 0)
-		tile_x -= 1.f;
-	if (tile_y < 0)
-		tile_y -= 1.f;
+    // Subtract extra tile if negative because no tile exists at -0, -0
+    if (tile_x < 0)
+        tile_x -= 1.f;
+    if (tile_y < 0)
+        tile_y -= 1.f;
 
-	mouseSelectedTile_ = {core::LossyCast<WorldCoordAxis>(tile_x), core::LossyCast<WorldCoordAxis>(tile_y)};
+    mouseSelectedTile_ = {core::LossyCast<WorldCoordAxis>(tile_x), core::LossyCast<WorldCoordAxis>(tile_y)};
 }
 
 bool game::PlayerData::World::MouseSelectedTileInRange() const {
@@ -91,8 +91,7 @@ bool game::PlayerData::World::MouseSelectedTileInRange() const {
 bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x, const int y) const {
     assert(world_data != nullptr); // Player is not in a world
 
-    const auto* origin_tile =
-        world_data->GetTile(core::LossyCast<int>(positionX_), core::LossyCast<int>(positionY_));
+    const auto* origin_tile = world_data->GetTile(core::LossyCast<int>(positionX_), core::LossyCast<int>(positionY_));
 
     if (origin_tile == nullptr)
         return false;
@@ -112,14 +111,14 @@ bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x
 void game::PlayerData::World::MovePlayerX(const float amount) {
     const float target_x = positionX_ + amount;
 
-//    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(target_x), core::LossyCast<int>(playerPositionY_)))
+    //    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(target_x), core::LossyCast<int>(playerPositionY_)))
     positionX_ = target_x;
 }
 
 void game::PlayerData::World::MovePlayerY(const float amount) {
     const float target_y = positionY_ + amount;
 
-//    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(playerPositionX_), core::LossyCast<int>(target_y)))
+    //    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(playerPositionX_), core::LossyCast<int>(target_y)))
     positionY_ = target_y;
 }
 
@@ -193,47 +192,41 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 
     // Clockwise from top left
 
-	/*
-	 *     [1] [2]
-	 * [A] [X] [x] [3]
-	 * [9] [x] [x] [4]
-	 * [8] [x] [x] [5]
-	 *     [7] [6]
-	 */
+    /*
+     *     [1] [2]
+     * [A] [X] [x] [3]
+     * [9] [x] [x] [4]
+     * [8] [x] [x] [5]
+     *     [7] [6]
+     */
 
-	// x and y are receive coordinates
-	for (data::ProtoUintT i = 0; i < entity_ptr->tileWidth; ++i) {
-		const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(i);
-		const auto y = world_coord.y - 1;
+    // x and y are receive coordinates
+    for (data::ProtoUintT i = 0; i < entity_ptr->tileWidth; ++i) {
+        const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(i);
+        const auto y = world_coord.y - 1;
 
-		call_on_neighbor_update(x, y + 1,
-		                        x, y,
-		                        data::Orientation::down);
-	}
-	for (data::ProtoUintT i = 0; i < entity_ptr->tileHeight; ++i) {
-		const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth);
-		const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(i);
+        call_on_neighbor_update(x, y + 1, x, y, data::Orientation::down);
+    }
+    for (data::ProtoUintT i = 0; i < entity_ptr->tileHeight; ++i) {
+        const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth);
+        const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(i);
 
-		call_on_neighbor_update(x - 1, y,
-		                        x, y,
-		                        data::Orientation::left);
-	}
-	for (data::ProtoUintT i = 1; i <= entity_ptr->tileWidth; ++i) {
-		const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth) - core::SafeCast<WorldCoordAxis>(i);
-		const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight);
+        call_on_neighbor_update(x - 1, y, x, y, data::Orientation::left);
+    }
+    for (data::ProtoUintT i = 1; i <= entity_ptr->tileWidth; ++i) {
+        const auto x =
+            world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth) - core::SafeCast<WorldCoordAxis>(i);
+        const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight);
 
-		call_on_neighbor_update(x, y - 1,
-		                        x, y,
-		                        data::Orientation::up);
-	}
-	for (data::ProtoUintT i = 1; i <= entity_ptr->tileHeight; ++i) {
-		const auto x = world_coord.x - 1;
-		const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight) - core::SafeCast<WorldCoordAxis>(i);
+        call_on_neighbor_update(x, y - 1, x, y, data::Orientation::up);
+    }
+    for (data::ProtoUintT i = 1; i <= entity_ptr->tileHeight; ++i) {
+        const auto x = world_coord.x - 1;
+        const auto y =
+            world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight) - core::SafeCast<WorldCoordAxis>(i);
 
-		call_on_neighbor_update(x + 1, y,
-		                        x, y,
-		                        data::Orientation::right);
-	}
+        call_on_neighbor_update(x + 1, y, x, y, data::Orientation::right);
+    }
 }
 
 bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
@@ -406,9 +399,9 @@ void game::PlayerData::Placement::TryPickup(
 
             UpdateNeighboringEntities(world_data, logic_data, {tl_tile_x, tl_tile_y}, entity);
 
-			world_data.UpdateDispatch(tile_x, tile_y, data::UpdateType::remove);
-		}
-	}
+            world_data.UpdateDispatch(tile_x, tile_y, data::UpdateType::remove);
+        }
+    }
 }
 
 float game::PlayerData::Placement::GetPickupPercentage() const {
@@ -482,72 +475,69 @@ void game::PlayerData::Inventory::InventorySort(data::Item::Inventory& inv) {
                 // Amount which can be dropped is space left until reaching stack size
                 const uint16_t max_drop_amount = stack_size - sorted_inv[stack_compress_begin].count;
 
-				// Has enough to max current stack and move on
-				if (buffer_item_count > max_drop_amount) {
-					sorted_inv[stack_compress_begin].count = stack_size;
-					buffer_item_count -= max_drop_amount;
-				}
-					// Not enough to drop and move on
-				else {
-					sorted_inv[stack_compress_begin].count += buffer_item_count;
-					sorted_inv[sort_inv_index].item = nullptr;
-					buffer_item_count               = 0;
-					break;
-				}
-			}
-			// Did not drop all items off
-			if (buffer_item_count > 0) {
-				sorted_inv[sort_inv_index].count = buffer_item_count;
-			}
+                // Has enough to max current stack and move on
+                if (buffer_item_count > max_drop_amount) {
+                    sorted_inv[stack_compress_begin].count = stack_size;
+                    buffer_item_count -= max_drop_amount;
+                }
+                // Not enough to drop and move on
+                else {
+                    sorted_inv[stack_compress_begin].count += buffer_item_count;
+                    sorted_inv[sort_inv_index].item = nullptr;
+                    buffer_item_count               = 0;
+                    break;
+                }
+            }
+            // Did not drop all items off
+            if (buffer_item_count > 0) {
+                sorted_inv[sort_inv_index].count = buffer_item_count;
+            }
+        }
+    }
 
-		}
-	}
 
+    // Copy sorted inventory back into origin inventory
+    bool has_empty_slot = false;
 
-	// Copy sorted inventory back into origin inventory
-	bool has_empty_slot = false;
+    std::size_t start          = 0; // The index of the first blank slot post sorting
+    std::size_t inv_temp_index = 0;
 
-	std::size_t start          = 0;   // The index of the first blank slot post sorting
-	std::size_t inv_temp_index = 0;
+    for (size_t i = 0; i < inv.size(); ++i) {
+        // Skip the cursor
+        if (inv[i].item != nullptr && inv[i].item->GetLocalizedName() == data::Item::kInventorySelectedCursor)
+            continue;
 
-	for (size_t i = 0; i < inv.size(); ++i) {
-		// Skip the cursor
-		if (inv[i].item != nullptr &&
-			inv[i].item->GetLocalizedName() == data::Item::kInventorySelectedCursor)
-			continue;
+        // Iterated through every item in the sorted inventory
+        if (inv_temp_index >= sorted_inv.size()) {
+            has_empty_slot = true;
+            start          = i;
+            goto loop_exit;
+        }
+        // Omit empty gaps in sorted inv from the compressing process
+        while (sorted_inv[inv_temp_index].item == nullptr) {
+            inv_temp_index++;
+            if (inv_temp_index >= sorted_inv.size()) {
+                has_empty_slot = true;
+                start          = i;
+                goto loop_exit;
+            }
+        }
 
-		// Iterated through every item in the sorted inventory
-		if (inv_temp_index >= sorted_inv.size()) {
-			has_empty_slot = true;
-			start          = i;
-			goto loop_exit;
-		}
-		// Omit empty gaps in sorted inv from the compressing process
-		while (sorted_inv[inv_temp_index].item == nullptr) {
-			inv_temp_index++;
-			if (inv_temp_index >= sorted_inv.size()) {
-				has_empty_slot = true;
-				start          = i;
-				goto loop_exit;
-			}
-		}
-
-		inv[i] = sorted_inv[inv_temp_index++];
-	}
+        inv[i] = sorted_inv[inv_temp_index++];
+    }
 loop_exit:
 
-	if (!has_empty_slot)
-		return;
+    if (!has_empty_slot)
+        return;
 
-	// Copy empty spaces into the remainder of the slots
-	for (auto i = start; i < inv.size(); ++i) {
-		// Skip the cursor
-		if (inv[i].item != nullptr &&
-			inv[i].item->GetLocalizedName() == data::Item::kInventorySelectedCursor)
-			continue;
+    // Copy empty spaces into the remainder of the slots
+    for (auto i = start; i < inv.size(); ++i) {
+        // Skip the cursor
+        if (inv[i].item != nullptr && inv[i].item->GetLocalizedName() == data::Item::kInventorySelectedCursor)
+            continue;
 
-		inv[i] = {nullptr, 0};
-	}
+        inv[i] = {nullptr, 0};
+    }
 }
 
 // LEFT CLICK - Select by reference, the item in the cursor mirrors the inventory item
@@ -556,8 +546,8 @@ loop_exit:
 void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data_manager,
                                               uint16_t index,
                                               uint16_t mouse_button,
-                                                 bool reference_select,
-                                                 data::Item::Inventory& inv) {
+                                              bool reference_select,
+                                              data::Item::Inventory& inv) {
     assert(index < inventory.size());
     assert(mouse_button == 0 || mouse_button == 1); // Only left + right click supported
 
@@ -580,8 +570,8 @@ void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data
         if (inv[index].item == nullptr)
             return;
 
-        hasItemSelected_       = true;
-        selectedItemIndex_     = index;
+        hasItemSelected_   = true;
+        selectedItemIndex_ = index;
 
         // Reference
         if (reference_select && mouse_button == 0) {
@@ -601,25 +591,25 @@ void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data
         // Unique
         selectByReference_ = false;
 
-		// Clear the cursor inventory so half can be moved into it
-		selectedItem_.item  = nullptr;
-		selectedItem_.count = 0;
-		// DO NOT return for it to move the item into the new inventory
-	}
+        // Clear the cursor inventory so half can be moved into it
+        selectedItem_.item  = nullptr;
+        selectedItem_.count = 0;
+        // DO NOT return for it to move the item into the new inventory
+    }
 
-	const bool cursor_empty = MoveItemstackToIndex(selectedItem_, inv[index], mouse_button);
+    const bool cursor_empty = MoveItemstackToIndex(selectedItem_, inv[index], mouse_button);
 
-	if (cursor_empty) {
-		hasItemSelected_ = false;
+    if (cursor_empty) {
+        hasItemSelected_ = false;
 
-		if (selectByReference_) {
-			// Remove cursor icon
-			assert(selectedItemIndex_ < inventory.size());
-			// Select by reference is only for inventory_player
+        if (selectByReference_) {
+            // Remove cursor icon
+            assert(selectedItemIndex_ < inventory.size());
+            // Select by reference is only for inventory_player
             inventory[selectedItemIndex_].item  = nullptr;
             inventory[selectedItemIndex_].count = 0;
-		}
-	}
+        }
+    }
 }
 
 const data::ItemStack* game::PlayerData::Inventory::GetSelectedItem() const {
@@ -635,7 +625,7 @@ bool game::PlayerData::Inventory::DeselectSelectedItem() {
 
     // Add referenced item to slot
     inventory[selectedItemIndex_] = selectedItem_;
-    hasItemSelected_                    = false;
+    hasItemSelected_              = false;
     return true;
 }
 
@@ -725,8 +715,8 @@ void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& d
                 }
             }
 
-			// Still has items to return to player inventory
-			if (item.count != 0) {
+            // Still has items to return to player inventory
+            if (item.count != 0) {
                 // Extra not available in queue anymore since it has been returned to the player
                 auto& queue_extras = craftingItemExtras_[recipe_item.first];
                 if (queue_extras > item.count)
@@ -745,12 +735,11 @@ void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& d
                 craftingTicksRemaining_ = core::LossyCast<uint16_t>(craftingQueue_.front()->craftingTime * kGameHertz);
         }
         // Crafting ticks remaining is greater, decrement ticks remaining
-		else {
-			craftingTicksRemaining_ -= ticks;
-			break;
-		}
-	}
-
+        else {
+            craftingTicksRemaining_ -= ticks;
+            break;
+        }
+    }
 }
 
 void game::PlayerData::Crafting::QueueRecipe(const data::PrototypeManager& data_manager, const data::Recipe& recipe) {
@@ -824,22 +813,21 @@ void game::PlayerData::Crafting::RecipeCraftR(const data::PrototypeManager& data
                 // Keep track of excess amounts
                 const auto excess = batches * yield - amount_needed;
                 if (excess > 0)
-					craftingItemExtras_[ingredient.first] += excess;
-				else
-					// All available from queue used up, delete entry
-					craftingItemExtras_.erase(ingredient.first);
+                    craftingItemExtras_[ingredient.first] += excess;
+                else
+                    // All available from queue used up, delete entry
+                    craftingItemExtras_.erase(ingredient.first);
 
-				// Craft sub-recipes recursively until met
-				for (unsigned int i = 0; i < batches; ++i) {
-					assert(ingredient_recipe);
-					RecipeCraftR(data_manager, *ingredient_recipe);
-				}
-			}
+                // Craft sub-recipes recursively until met
+                for (unsigned int i = 0; i < batches; ++i) {
+                    assert(ingredient_recipe);
+                    RecipeCraftR(data_manager, *ingredient_recipe);
+                }
+            }
+        }
+    }
 
-		}
-	}
-
-	// Ingredients met - Queue crafting recipe
+    // Ingredients met - Queue crafting recipe
     QueueRecipe(data_manager, recipe);
 }
 
@@ -893,7 +881,6 @@ bool game::PlayerData::Crafting::RecipeCanCraftR(const data::PrototypeManager& d
     }
 
     return true;
-
 }
 
 bool game::PlayerData::Crafting::RecipeCanCraft(const data::PrototypeManager& data_manager,

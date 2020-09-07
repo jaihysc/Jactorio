@@ -6,11 +6,11 @@
 
 namespace jactorio::core
 {
-	TEST(Utility, StrToLower) {
-		EXPECT_EQ(StrToLower("ASDADxcxvcASDJAKDJ:AL"), "asdadxcxvcasdjakdj:al");
-	}
+    TEST(Utility, StrToLower) {
+        EXPECT_EQ(StrToLower("ASDADxcxvcASDJAKDJ:AL"), "asdadxcxvcasdjakdj:al");
+    }
 
-	TEST(Utility, StrToUpper) {
-		EXPECT_EQ(StrToUpper("ASDADxcxvcASDJAKDJ:AL"), "ASDADXCXVCASDJAKDJ:AL");
-	}
-}
+    TEST(Utility, StrToUpper) {
+        EXPECT_EQ(StrToUpper("ASDADxcxvcASDJAKDJ:AL"), "ASDADXCXVCASDJAKDJ:AL");
+    }
+} // namespace jactorio::core

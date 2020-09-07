@@ -4,31 +4,29 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_BASE_H
 #pragma once
 
-#include "data/prototype/sprite.h"
 #include "data/prototype/framework/framework_base.h"
+#include "data/prototype/sprite.h"
 
 namespace jactorio::data
 {
-	///
-	/// \brief Basic abstract class for items
-	class ItemBase : public FrameworkBase
-	{
-	protected:
-		ItemBase() = default;
+    ///
+    /// \brief Basic abstract class for items
+    class ItemBase : public FrameworkBase
+    {
+    protected:
+        ItemBase() = default;
 
-		explicit ItemBase(Sprite* sprite)
-			: sprite(sprite) {
-		}
+        explicit ItemBase(Sprite* sprite) : sprite(sprite) {}
 
-	public:
-		PYTHON_PROP_I(Sprite*, sprite, nullptr);
+    public:
+        PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
-		void PostLoadValidate(const PrototypeManager&) const override;
-	};
+        void PostLoadValidate(const PrototypeManager&) const override;
+    };
 
-	inline void ItemBase::PostLoadValidate(const PrototypeManager&) const {
-		J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
-	}
-}
+    inline void ItemBase::PostLoadValidate(const PrototypeManager&) const {
+        J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
+    }
+} // namespace jactorio::data
 
-#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_BASE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_BASE_H

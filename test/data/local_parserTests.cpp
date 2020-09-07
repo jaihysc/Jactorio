@@ -4,60 +4,59 @@
 
 #include "data/data_exception.h"
 #include "data/local_parser.h"
-#include "data/prototype_manager.h"
 #include "data/prototype/sprite.h"
 
 namespace jactorio::data
 {
-	class LocalParserTest : public testing::Test
-	{
-	protected:
-		PrototypeManager dataManager_;
-	};
+    class LocalParserTest : public testing::Test
+    {
+    protected:
+        PrototypeManager dataManager_;
+    };
 
-	TEST_F(LocalParserTest, Parse) {
-		// Setup prototypes
-		dataManager_.SetDirectoryPrefix("test");
+    TEST_F(LocalParserTest, Parse) {
+        // Setup prototypes
+        dataManager_.SetDirectoryPrefix("test");
 
-		auto& prototype  = dataManager_.AddProto<Sprite>("test_tile");
-		auto& prototype2 = dataManager_.AddProto<Sprite>("test_tile1");
+        auto& prototype  = dataManager_.AddProto<Sprite>("test_tile");
+        auto& prototype2 = dataManager_.AddProto<Sprite>("test_tile1");
 
-		const std::string str =
-			R"(test_tile=Test tile 1
+        const std::string str =
+            R"(test_tile=Test tile 1
 
 
 		
 				test_tile1=Test tile 2)";
 
-		LocalParse(dataManager_, str, "test");
+        LocalParse(dataManager_, str, "test");
 
-		// Validate local was set
-		EXPECT_EQ(prototype.GetLocalizedName(), "Test tile 1");
-		EXPECT_EQ(prototype2.GetLocalizedName(), "Test tile 2");
-	}
+        // Validate local was set
+        EXPECT_EQ(prototype.GetLocalizedName(), "Test tile 1");
+        EXPECT_EQ(prototype2.GetLocalizedName(), "Test tile 2");
+    }
 
-	void ExpectErr(PrototypeManager& data_manager, const std::string& str) {
-		try {
-			LocalParse(data_manager, str, "asdf");
-		}
-		catch (DataException&) {
-			return;
-		}
+    void ExpectErr(PrototypeManager& data_manager, const std::string& str) {
+        try {
+            LocalParse(data_manager, str, "asdf");
+        }
+        catch (DataException&) {
+            return;
+        }
 
-		// Failed to throw exception
-		printf("Expected parse failure with: %s\n", str.c_str());
-		FAIL();
-	}
+        // Failed to throw exception
+        printf("Expected parse failure with: %s\n", str.c_str());
+        FAIL();
+    }
 
-	TEST_F(LocalParserTest, ParseErr) {
-		// Illegal character (=)
-		// Missing r val after =
-		// Missing r val
-		// Missing l val
+    TEST_F(LocalParserTest, ParseErr) {
+        // Illegal character (=)
+        // Missing r val after =
+        // Missing r val
+        // Missing l val
 
-		ExpectErr(dataManager_, "graphics/g1=g1 graphics/r1=r1");
-		ExpectErr(dataManager_, "audio/s5=");
-		ExpectErr(dataManager_, "graphics/g2 g2");
-		ExpectErr(dataManager_, "    =r2");
-	}
-}
+        ExpectErr(dataManager_, "graphics/g1=g1 graphics/r1=r1");
+        ExpectErr(dataManager_, "audio/s5=");
+        ExpectErr(dataManager_, "graphics/g2 g2");
+        ExpectErr(dataManager_, "    =r2");
+    }
+} // namespace jactorio::data

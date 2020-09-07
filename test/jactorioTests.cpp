@@ -6,11 +6,11 @@
 #include "core/filesystem.h"
 
 int main(int ac, char* av[]) {
-	jactorio::core::SetExecutingDirectory(av[0]);
+    jactorio::core::SetExecutingDirectory(av[0]);
 
-	jactorio::core::RegisterCrashHandler();
+    jactorio::core::RegisterCrashHandler();
 
-	testing::InitGoogleTest(&ac, av);
-	RUN_ALL_TESTS();
-	return 0;  // Always return 0 even if tests fail, as a non-zero return code is seen as abnormal test suite exit
+    testing::InitGoogleTest(&ac, av);
+    RUN_ALL_TESTS();
+    return 0; // Always return 0 even if tests fail, as a non-zero return code is seen as abnormal test suite exit
 }

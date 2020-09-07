@@ -11,16 +11,16 @@
 
 namespace jactorio::data
 {
-	struct FEntityData : FWorldObjectData
-	{
-		CEREAL_SERIALIZE(archive) {
-			archive(cereal::base_class<FWorldObjectData>(this));
-		}
-	};
+    struct FEntityData : FWorldObjectData
+    {
+        CEREAL_SERIALIZE(archive) {
+            archive(cereal::base_class<FWorldObjectData>(this));
+        }
+    };
 
-	class FEntity : public FWorldObject, public IRotatable, public IDeferred, public IUpdateListener
-	{
-	};
-}
+    class FEntity : public FWorldObject, public IRotatable, public IDeferred, public IUpdateListener
+    {
+    };
+} // namespace jactorio::data
 
 #endif // JACTORIO_DATA_PROTOTYPE_FRAMEWORK_ENTITY_H

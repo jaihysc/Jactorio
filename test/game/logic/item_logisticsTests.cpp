@@ -13,782 +13,714 @@
 
 namespace jactorio::game
 {
-	class ItemLogisticsTest : public testing::Test
-	{
-	protected:
-		WorldData worldData_;
-		LogicData logicData_;
-
-		void SetUp() override {
-			worldData_.EmplaceChunk(0, 0);
-		}
-	};
-
-	TEST_F(ItemLogisticsTest, Uninitialize) {
-		ItemDropOff drop_off{data::Orientation::up};
-
-		auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
-
-		data::ContainerEntity container;
-		layer.prototypeData = &container;
-		layer.MakeUniqueData<data::ContainerEntityData>(1);
-
-		ASSERT_TRUE(drop_off.Initialize(worldData_, {2, 4}));
-		drop_off.Uninitialize();
+    class ItemLogisticsTest : public testing::Test
+    {
+    protected:
+        WorldData worldData_;
+        LogicData logicData_;
 
-		EXPECT_FALSE(drop_off.IsInitialized());
-	}
+        void SetUp() override {
+            worldData_.EmplaceChunk(0, 0);
+        }
+    };
 
-	TEST_F(ItemLogisticsTest, DropOffDropItem) {
-		data::ContainerEntity container_entity;
-		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+    TEST_F(ItemLogisticsTest, Uninitialize) {
+        ItemDropOff drop_off{data::Orientation::up};
 
-		ItemDropOff drop_off{data::Orientation::up};
-		ASSERT_TRUE(drop_off.Initialize(worldData_,{2, 4}));
+        auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
 
-		data::Item item;
-		drop_off.DropOff(logicData_, {&item, 10});
+        data::ContainerEntity container;
+        layer.prototypeData = &container;
+        layer.MakeUniqueData<data::ContainerEntityData>(1);
 
-		EXPECT_EQ(
-			container_layer.GetUniqueData<data::ContainerEntityData>()->inventory[0].count,
-			10);
-	}
+        ASSERT_TRUE(drop_off.Initialize(worldData_, {2, 4}));
+        drop_off.Uninitialize();
 
-	TEST_F(ItemLogisticsTest, InserterPickupItem) {
-		data::ContainerEntity container_entity;
-		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+        EXPECT_FALSE(drop_off.IsInitialized());
+    }
 
-		InserterPickup pickup{data::Orientation::up};
-		ASSERT_TRUE(pickup.Initialize(worldData_,{2, 4}));
+    TEST_F(ItemLogisticsTest, DropOffDropItem) {
+        data::ContainerEntity container_entity;
+        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
 
-		data::Item item;
-		auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
-		inv[0]    = {&item, 10};
+        ItemDropOff drop_off{data::Orientation::up};
+        ASSERT_TRUE(drop_off.Initialize(worldData_, {2, 4}));
 
-		pickup.Pickup(logicData_, 1, data::RotationDegreeT(180.f), 2);
+        data::Item item;
+        drop_off.DropOff(logicData_, {&item, 10});
 
-		EXPECT_EQ(inv[0].count, 8);
-	}
+        EXPECT_EQ(container_layer.GetUniqueData<data::ContainerEntityData>()->inventory[0].count, 10);
+    }
 
-	// ======================================================================
+    TEST_F(ItemLogisticsTest, InserterPickupItem) {
+        data::ContainerEntity container_entity;
+        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
 
-	///
-	/// Inherits ItemDropOff to gain access to insertion methods
-	class ItemDropOffTest : public testing::Test, public ItemDropOff
-	{
-	public:
-		void SetUp() override {
-			worldData_.EmplaceChunk(0, 0);
-		}
+        InserterPickup pickup{data::Orientation::up};
+        ASSERT_TRUE(pickup.Initialize(worldData_, {2, 4}));
 
-		explicit ItemDropOffTest()
-			: ItemDropOff(data::Orientation::up) {
-		}
+        data::Item item;
+        auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
+        inv[0]    = {&item, 10};
 
-	protected:
-		WorldData worldData_;
-		LogicData logicData_;
+        pickup.Pickup(logicData_, 1, data::RotationDegreeT(180.f), 2);
 
-		/// \brief Creates a transport line with orientation
-		data::TransportLineData CreateTransportLine(const data::Orientation orientation,
-		                                            const TransportSegment::TerminationType ttype =
-			                                            TransportSegment::TerminationType::straight) const {
-			const auto segment = std::make_shared<TransportSegment>(
-				orientation,
-				ttype,
-				2
-			);
+        EXPECT_EQ(inv[0].count, 8);
+    }
 
-			return data::TransportLineData{segment};
-		}
+    // ======================================================================
 
-		///
-		/// \param orientation Inserter orientation to dropoff
-		void TransportLineInsert(const data::Orientation orientation,
-		                         data::TransportLineData& line_data) {
-			data::Item item;
-			InsertTransportBelt({logicData_, {&item, 1}, line_data, orientation});
+    ///
+    /// Inherits ItemDropOff to gain access to insertion methods
+    class ItemDropOffTest : public testing::Test, public ItemDropOff
+    {
+    public:
+        void SetUp() override {
+            worldData_.EmplaceChunk(0, 0);
+        }
 
-			EXPECT_TRUE(CanInsertTransportBelt({logicData_, {}, line_data, data::Orientation::up}));
-		}
-	};
+        explicit ItemDropOffTest() : ItemDropOff(data::Orientation::up) {}
 
-	TEST_F(ItemDropOffTest, GetInsertFunc) {
-		worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<data::ContainerEntityData>(1);
+    protected:
+        WorldData worldData_;
+        LogicData logicData_;
 
-		auto set_prototype = [&](data::Entity& entity_proto) {
-			auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
-			layer.prototypeData = &entity_proto;
-		};
+        /// \brief Creates a transport line with orientation
+        data::TransportLineData CreateTransportLine(
+            const data::Orientation orientation,
+            const TransportSegment::TerminationType ttype = TransportSegment::TerminationType::straight) const {
+            const auto segment = std::make_shared<TransportSegment>(orientation, ttype, 2);
 
-		// No: Empty tile cannot be inserted into
-		EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
-		EXPECT_FALSE(this->IsInitialized());
+            return data::TransportLineData{segment};
+        }
 
+        ///
+        /// \param orientation Inserter orientation to dropoff
+        void TransportLineInsert(const data::Orientation orientation, data::TransportLineData& line_data) {
+            data::Item item;
+            InsertTransportBelt({logicData_, {&item, 1}, line_data, orientation});
 
-		// Ok: Transport belt can be inserted onto
-		data::TransportBelt belt;
-		set_prototype(belt);
+            EXPECT_TRUE(CanInsertTransportBelt({logicData_, {}, line_data, data::Orientation::up}));
+        }
+    };
 
-		EXPECT_TRUE(this->Initialize(worldData_, {2, 4}));
-		EXPECT_TRUE(this->IsInitialized());
+    TEST_F(ItemDropOffTest, GetInsertFunc) {
+        worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<data::ContainerEntityData>(1);
 
+        auto set_prototype = [&](data::Entity& entity_proto) {
+            auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
+            layer.prototypeData = &entity_proto;
+        };
 
-		// No: Mining drill 
-		data::MiningDrill drill;
-		set_prototype(drill);
+        // No: Empty tile cannot be inserted into
+        EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
+        EXPECT_FALSE(this->IsInitialized());
 
-		EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
-		EXPECT_TRUE(this->IsInitialized());  // Still initialized from transport belt
 
+        // Ok: Transport belt can be inserted onto
+        data::TransportBelt belt;
+        set_prototype(belt);
 
-		// Ok: Container
-		data::ContainerEntity container;
-		set_prototype(container);
+        EXPECT_TRUE(this->Initialize(worldData_, {2, 4}));
+        EXPECT_TRUE(this->IsInitialized());
 
-		EXPECT_TRUE(this->Initialize(worldData_, {2, 4}));
-		EXPECT_TRUE(this->IsInitialized());
 
+        // No: Mining drill
+        data::MiningDrill drill;
+        set_prototype(drill);
 
-		// Ok: Assembly machine
-		data::AssemblyMachine assembly_machine;  // Will also make unique data, so it needs to be on another tile
-		TestSetupAssemblyMachine(worldData_, {3, 4}, assembly_machine);
+        EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
+        EXPECT_TRUE(this->IsInitialized()); // Still initialized from transport belt
 
-		EXPECT_TRUE(this->Initialize(worldData_, {3, 5}));
-		EXPECT_TRUE(this->IsInitialized());
-		EXPECT_EQ(this->targetProtoData_, &assembly_machine);
-	}
-
-	// ======================================================================
-
-	TEST_F(ItemDropOffTest, InsertContainerEntity) {
-		auto& layer = worldData_.GetTile(3, 1)
-		                        ->GetLayer(TileLayer::entity);
-
-		layer.MakeUniqueData<data::ContainerEntityData>(10);
-
-		auto* container_data = layer.GetUniqueData<data::ContainerEntityData>();
-
-
-		data::Item item;
-		// Orientation is orientation from origin object
-		EXPECT_TRUE(
-			InsertContainerEntity({logicData_, {&item, 2}, *container_data, data::Orientation::down})
-		);
-		EXPECT_TRUE(CanInsertContainerEntity({logicData_, {}, *container_data, data::Orientation::up}));
-
-		// Inserted item
-		EXPECT_EQ(container_data->inventory[0].item, &item);
-		EXPECT_EQ(container_data->inventory[0].count, 2);
-	}
-
-	TEST_F(ItemDropOffTest, InsertOffset) {
-		auto line_data                    = CreateTransportLine(data::Orientation::up);
-		line_data.lineSegmentIndex        = 1;
-		line_data.lineSegment->itemOffset = 10;  // Arbitrary itemOffset
-
-		TransportLineInsert(data::Orientation::up, line_data);
-		ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
-		EXPECT_DOUBLE_EQ(line_data.lineSegment->right.lane[0].dist.getAsDouble(), 1.5);
-	}
-
-	TEST_F(ItemDropOffTest, InsertTransportLineUp) {
-		{
-			auto line = CreateTransportLine(data::Orientation::up);
-
-			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::up);
-
-			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::up);
-
-			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::up);
-
-			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
-		}
-	}
-
-	TEST_F(ItemDropOffTest, InsertTransportLineRight) {
-		{
-			auto line = CreateTransportLine(data::Orientation::right);
-
-			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::right);
-
-			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::right);
-
-			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::right);
-
-			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-	}
-
-	TEST_F(ItemDropOffTest, InsertTransportLineDown) {
-		{
-			auto line = CreateTransportLine(data::Orientation::down);
-
-			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::down);
 
-			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::down);
+        // Ok: Container
+        data::ContainerEntity container;
+        set_prototype(container);
 
-			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::down);
+        EXPECT_TRUE(this->Initialize(worldData_, {2, 4}));
+        EXPECT_TRUE(this->IsInitialized());
 
-			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
-		}
-	}
 
-	TEST_F(ItemDropOffTest, InsertTransportLineLeft) {
-		{
-			auto line = CreateTransportLine(data::Orientation::left);
+        // Ok: Assembly machine
+        data::AssemblyMachine assembly_machine; // Will also make unique data, so it needs to be on another tile
+        TestSetupAssemblyMachine(worldData_, {3, 4}, assembly_machine);
 
-			TransportLineInsert(data::Orientation::up, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::left);
+        EXPECT_TRUE(this->Initialize(worldData_, {3, 5}));
+        EXPECT_TRUE(this->IsInitialized());
+        EXPECT_EQ(this->targetProtoData_, &assembly_machine);
+    }
 
-			TransportLineInsert(data::Orientation::right, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::left);
+    // ======================================================================
+
+    TEST_F(ItemDropOffTest, InsertContainerEntity) {
+        auto& layer = worldData_.GetTile(3, 1)->GetLayer(TileLayer::entity);
+
+        layer.MakeUniqueData<data::ContainerEntityData>(10);
+
+        auto* container_data = layer.GetUniqueData<data::ContainerEntityData>();
+
+
+        data::Item item;
+        // Orientation is orientation from origin object
+        EXPECT_TRUE(InsertContainerEntity({logicData_, {&item, 2}, *container_data, data::Orientation::down}));
+        EXPECT_TRUE(CanInsertContainerEntity({logicData_, {}, *container_data, data::Orientation::up}));
+
+        // Inserted item
+        EXPECT_EQ(container_data->inventory[0].item, &item);
+        EXPECT_EQ(container_data->inventory[0].count, 2);
+    }
+
+    TEST_F(ItemDropOffTest, InsertOffset) {
+        auto line_data                    = CreateTransportLine(data::Orientation::up);
+        line_data.lineSegmentIndex        = 1;
+        line_data.lineSegment->itemOffset = 10; // Arbitrary itemOffset
+
+        TransportLineInsert(data::Orientation::up, line_data);
+        ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(line_data.lineSegment->right.lane[0].dist.getAsDouble(), 1.5);
+    }
+
+    TEST_F(ItemDropOffTest, InsertTransportLineUp) {
+        {
+            auto line = CreateTransportLine(data::Orientation::up);
+
+            TransportLineInsert(data::Orientation::up, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::up);
+
+            TransportLineInsert(data::Orientation::right, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::up);
+
+            TransportLineInsert(data::Orientation::down, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::up);
+
+            TransportLineInsert(data::Orientation::left, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+        }
+    }
+
+    TEST_F(ItemDropOffTest, InsertTransportLineRight) {
+        {
+            auto line = CreateTransportLine(data::Orientation::right);
+
+            TransportLineInsert(data::Orientation::up, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::right);
+
+            TransportLineInsert(data::Orientation::right, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::right);
+
+            TransportLineInsert(data::Orientation::down, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::right);
 
-			TransportLineInsert(data::Orientation::down, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::left);
+            TransportLineInsert(data::Orientation::left, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+    }
 
-			TransportLineInsert(data::Orientation::left, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
-		}
-	}
+    TEST_F(ItemDropOffTest, InsertTransportLineDown) {
+        {
+            auto line = CreateTransportLine(data::Orientation::down);
 
-	TEST_F(ItemDropOffTest, DropoffTransportLineNonStraight) {
-		// -->
-		// ^
-		// | <--
+            TransportLineInsert(data::Orientation::up, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::down);
 
-		auto right = CreateTransportLine(data::Orientation::right, TransportSegment::TerminationType::straight);
-		auto up    = CreateTransportLine(data::Orientation::up, TransportSegment::TerminationType::bend_right);
-		auto left  = CreateTransportLine(data::Orientation::left, TransportSegment::TerminationType::bend_right);
+            TransportLineInsert(data::Orientation::right, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::down);
 
-		left.lineSegment->targetSegment = up.lineSegment.get();
-		up.lineSegment->targetSegment   = right.lineSegment.get();
+            TransportLineInsert(data::Orientation::down, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::down);
 
-		left.lineSegmentIndex = 1;
+            TransportLineInsert(data::Orientation::left, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+        }
+    }
 
+    TEST_F(ItemDropOffTest, InsertTransportLineLeft) {
+        {
+            auto line = CreateTransportLine(data::Orientation::left);
 
-		data::Item item;
+            TransportLineInsert(data::Orientation::up, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::left);
 
-		TransportLineInsert(data::Orientation::up, left);
-		ASSERT_EQ(left.lineSegment->left.lane.size(), 1);
-		EXPECT_DOUBLE_EQ(left.lineSegment->left.lane[0].dist.getAsDouble(), 0.5 + 0.7);
-	}
+            TransportLineInsert(data::Orientation::right, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::left);
 
-	TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
-		data::PrototypeManager prototype_manager;
+            TransportLineInsert(data::Orientation::down, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::left);
 
-		auto recipe_pack = TestSetupRecipe(prototype_manager);
+            TransportLineInsert(data::Orientation::left, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+        }
+    }
 
-		data::AssemblyMachineData asm_data;
-		asm_data.ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
+    TEST_F(ItemDropOffTest, DropoffTransportLineNonStraight) {
+        // -->
+        // ^
+        // | <--
 
-		asm_data.ingredientInv[0] = {recipe_pack.item1, 5, recipe_pack.item1};
-		asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
+        auto right = CreateTransportLine(data::Orientation::right, TransportSegment::TerminationType::straight);
+        auto up    = CreateTransportLine(data::Orientation::up, TransportSegment::TerminationType::bend_right);
+        auto left  = CreateTransportLine(data::Orientation::left, TransportSegment::TerminationType::bend_right);
 
+        left.lineSegment->targetSegment = up.lineSegment.get();
+        up.lineSegment->targetSegment   = right.lineSegment.get();
 
-		// Needs prototype data to register crafting callback
-		data::AssemblyMachine assembly_machine;
-		targetProtoData_ = &assembly_machine;
+        left.lineSegmentIndex = 1;
 
-		// Orientation doesn't matter
-		EXPECT_TRUE(InsertAssemblyMachine({logicData_, {recipe_pack.item2, 10}, asm_data, data::Orientation::up}));
 
-		EXPECT_EQ(asm_data.ingredientInv[1].item, recipe_pack.item2);
-		EXPECT_EQ(asm_data.ingredientInv[1].count, 9);  // 1 used to begin crafting
+        data::Item item;
 
-		// Registered to start crafting
-		EXPECT_NE(asm_data.deferralEntry.callbackIndex, 0);
-	}
+        TransportLineInsert(data::Orientation::up, left);
+        ASSERT_EQ(left.lineSegment->left.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(left.lineSegment->left.lane[0].dist.getAsDouble(), 0.5 + 0.7);
+    }
 
-	TEST_F(ItemDropOffTest, InsertAssemblyMachineExceedStack) {
-		// Inserters will not insert into assembly machines if it will exceed the current item's stack limit
+    TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
+        data::PrototypeManager prototype_manager;
 
-		data::PrototypeManager prototype_manager;
-		auto recipe_pack = TestSetupRecipe(prototype_manager);
+        auto recipe_pack = TestSetupRecipe(prototype_manager);
 
-		data::AssemblyMachineData asm_data;
-		asm_data.ingredientInv.resize(2);
-		asm_data.ingredientInv[0] = {recipe_pack.item1, 49, recipe_pack.item1};
-		asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
+        data::AssemblyMachineData asm_data;
+        asm_data.ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
 
-		// 49 + 2 > 50
-		EXPECT_FALSE(InsertAssemblyMachine({logicData_, {recipe_pack.item1, 2}, asm_data, data::Orientation::up}));
-	}
+        asm_data.ingredientInv[0] = {recipe_pack.item1, 5, recipe_pack.item1};
+        asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
 
-	TEST_F(ItemDropOffTest, CanInsertAssemblyMachine) {
-		data::AssemblyMachineData asm_data;
 
-		data::Item item;
+        // Needs prototype data to register crafting callback
+        data::AssemblyMachine assembly_machine;
+        targetProtoData_ = &assembly_machine;
 
-		// No recipe
-		EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
+        // Orientation doesn't matter
+        EXPECT_TRUE(InsertAssemblyMachine({logicData_, {recipe_pack.item2, 10}, asm_data, data::Orientation::up}));
 
+        EXPECT_EQ(asm_data.ingredientInv[1].item, recipe_pack.item2);
+        EXPECT_EQ(asm_data.ingredientInv[1].count, 9); // 1 used to begin crafting
 
-		data::PrototypeManager prototype_manager;
+        // Registered to start crafting
+        EXPECT_NE(asm_data.deferralEntry.callbackIndex, 0);
+    }
 
-		auto recipe_pack = TestSetupRecipe(prototype_manager);
-		asm_data.ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
+    TEST_F(ItemDropOffTest, InsertAssemblyMachineExceedStack) {
+        // Inserters will not insert into assembly machines if it will exceed the current item's stack limit
 
-		// Has recipe, wrong item
-		EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
+        data::PrototypeManager prototype_manager;
+        auto recipe_pack = TestSetupRecipe(prototype_manager);
 
-		// Has recipe, correct item
-		DropOffParams args{logicData_, {recipe_pack.item1, 2000}, asm_data, data::Orientation::down};
-		EXPECT_TRUE(CanInsertAssemblyMachine(args));
+        data::AssemblyMachineData asm_data;
+        asm_data.ingredientInv.resize(2);
+        asm_data.ingredientInv[0] = {recipe_pack.item1, 49, recipe_pack.item1};
+        asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
 
-		// Exceeds the max ingredient count multiple that a slot can be filled
-		asm_data.ingredientInv[0].count = 2;
-		EXPECT_FALSE(CanInsertAssemblyMachine(args));
+        // 49 + 2 > 50
+        EXPECT_FALSE(InsertAssemblyMachine({logicData_, {recipe_pack.item1, 2}, asm_data, data::Orientation::up}));
+    }
 
-		// Exceeds max stack size
-		recipe_pack.recipe->ingredients[0].second = 50;  // Requires 50, can only hold 50
-		recipe_pack.item1->stackSize              = 50;
-		asm_data.ingredientInv[0].count           = 50;
-		EXPECT_FALSE(CanInsertAssemblyMachine(args));
+    TEST_F(ItemDropOffTest, CanInsertAssemblyMachine) {
+        data::AssemblyMachineData asm_data;
 
-		// Under the max ingredient count multiple that a slot can be filled
-		asm_data.ingredientInv[0].count = 1;
-		EXPECT_TRUE(CanInsertAssemblyMachine(args));
-	}
+        data::Item item;
 
-	// ======================================================================
+        // No recipe
+        EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
 
-	class InserterPickupTest : public testing::Test, public InserterPickup
-	{
-	public:
-		explicit InserterPickupTest()
-			: InserterPickup(data::Orientation::up) {
-		}
 
-		void SetUp() override {
-			worldData_.EmplaceChunk(0, 0);
-		}
+        data::PrototypeManager prototype_manager;
 
-	protected:
-		WorldData worldData_;
-		LogicData logicData_;
+        auto recipe_pack = TestSetupRecipe(prototype_manager);
+        asm_data.ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
 
-		data::Inserter inserterProto_;
+        // Has recipe, wrong item
+        EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, data::Orientation::down}));
 
-		/// Item which will be on transport segments from CreateTransportLine
-		data::Item lineItem_;
+        // Has recipe, correct item
+        DropOffParams args{logicData_, {recipe_pack.item1, 2000}, asm_data, data::Orientation::down};
+        EXPECT_TRUE(CanInsertAssemblyMachine(args));
 
-		/// \brief Creates a transport line with  1 item on each side
-		data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
+        // Exceeds the max ingredient count multiple that a slot can be filled
+        asm_data.ingredientInv[0].count = 2;
+        EXPECT_FALSE(CanInsertAssemblyMachine(args));
 
-			const auto segment = std::make_shared<TransportSegment>(
-				orientation,
-				TransportSegment::TerminationType::straight,
-				2
-			);
+        // Exceeds max stack size
+        recipe_pack.recipe->ingredients[0].second = 50; // Requires 50, can only hold 50
+        recipe_pack.item1->stackSize              = 50;
+        asm_data.ingredientInv[0].count           = 50;
+        EXPECT_FALSE(CanInsertAssemblyMachine(args));
 
-			segment->InsertItem(false, 0.5, lineItem_);
-			segment->InsertItem(true, 0.5, lineItem_);
+        // Under the max ingredient count multiple that a slot can be filled
+        asm_data.ingredientInv[0].count = 1;
+        EXPECT_TRUE(CanInsertAssemblyMachine(args));
+    }
 
-			return data::TransportLineData{segment};
-		}
+    // ======================================================================
 
+    class InserterPickupTest : public testing::Test, public InserterPickup
+    {
+    public:
+        explicit InserterPickupTest() : InserterPickup(data::Orientation::up) {}
 
-		/// \param orientation Orientation to line being picked up from
-		void PickupLine(const data::Orientation orientation,
-		                data::TransportLineData& line_data) {
-			constexpr int pickup_amount = 1;
+        void SetUp() override {
+            worldData_.EmplaceChunk(0, 0);
+        }
 
-			const auto result = PickupTransportBelt({
-				logicData_,
-				1, data::RotationDegreeT(kMaxInserterDegree),
-				pickup_amount,
-				line_data,
-				orientation
-			});
+    protected:
+        WorldData worldData_;
+        LogicData logicData_;
 
-			EXPECT_TRUE(result.first);
+        data::Inserter inserterProto_;
 
-			EXPECT_NE(result.second.item, nullptr);
-			EXPECT_EQ(result.second.count, pickup_amount);
-		}
-	};
+        /// Item which will be on transport segments from CreateTransportLine
+        data::Item lineItem_;
 
-	TEST_F(InserterPickupTest, GetPickupFunc) {
-		worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<data::ContainerEntityData>(1);
+        /// \brief Creates a transport line with  1 item on each side
+        data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
 
-		auto set_prototype = [&](data::Entity& entity_proto) {
-			auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
-			layer.prototypeData = &entity_proto;
-		};
+            const auto segment =
+                std::make_shared<TransportSegment>(orientation, TransportSegment::TerminationType::straight, 2);
 
+            segment->InsertItem(false, 0.5, lineItem_);
+            segment->InsertItem(true, 0.5, lineItem_);
 
-		// No: Empty tile cannot be picked up from
-		EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
-		EXPECT_FALSE(this->IsInitialized());
+            return data::TransportLineData{segment};
+        }
 
 
-		// Ok: Transport belt can be picked up from
-		data::TransportBelt belt;
-		set_prototype(belt);
+        /// \param orientation Orientation to line being picked up from
+        void PickupLine(const data::Orientation orientation, data::TransportLineData& line_data) {
+            constexpr int pickup_amount = 1;
 
-		EXPECT_TRUE(this->Initialize(worldData_, {2, 4}));
-		EXPECT_TRUE(this->IsInitialized());
+            const auto result = PickupTransportBelt(
+                {logicData_, 1, data::RotationDegreeT(kMaxInserterDegree), pickup_amount, line_data, orientation});
 
+            EXPECT_TRUE(result.first);
 
-		// No: Mining drill 
-		data::MiningDrill drill;
-		set_prototype(drill);
+            EXPECT_NE(result.second.item, nullptr);
+            EXPECT_EQ(result.second.count, pickup_amount);
+        }
+    };
 
-		EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
-		EXPECT_TRUE(this->IsInitialized());  // Still initialized from transport belt
+    TEST_F(InserterPickupTest, GetPickupFunc) {
+        worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<data::ContainerEntityData>(1);
 
+        auto set_prototype = [&](data::Entity& entity_proto) {
+            auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
+            layer.prototypeData = &entity_proto;
+        };
 
-		// Ok: Container
-		data::ContainerEntity container;
-		set_prototype(container);
 
-		EXPECT_TRUE(this->Initialize(worldData_, {2, 4}));
-		EXPECT_TRUE(this->IsInitialized());
+        // No: Empty tile cannot be picked up from
+        EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
+        EXPECT_FALSE(this->IsInitialized());
 
 
-		// Ok: Assembly machine
-		data::AssemblyMachine assembly_machine;
-		TestSetupAssemblyMachine(worldData_, {3, 4}, assembly_machine);
+        // Ok: Transport belt can be picked up from
+        data::TransportBelt belt;
+        set_prototype(belt);
 
-		EXPECT_TRUE(this->Initialize(worldData_, {4, 5}));
-		EXPECT_TRUE(this->IsInitialized());
-		EXPECT_EQ(this->targetProtoData_, &assembly_machine);
-	}
+        EXPECT_TRUE(this->Initialize(worldData_, {2, 4}));
+        EXPECT_TRUE(this->IsInitialized());
 
-	TEST_F(InserterPickupTest, PickupContainerEntity) {
-		data::ContainerEntity container_entity;
-		auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
-		auto& container_data  = *container_layer.GetUniqueData();
 
-		data::Item item;
-		auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
-		inv[0]    = {&item, 10};
+        // No: Mining drill
+        data::MiningDrill drill;
+        set_prototype(drill);
 
+        EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
+        EXPECT_TRUE(this->IsInitialized()); // Still initialized from transport belt
 
-		PickupContainerEntity({
-			logicData_,
-			1, data::RotationDegreeT(179),
-			1, container_data,
-			data::Orientation::up
-		});
-		EXPECT_EQ(inv[0].count, 10);  // No items picked up, not 180 degrees
 
+        // Ok: Container
+        data::ContainerEntity container;
+        set_prototype(container);
 
-		PickupParams args = {
-			logicData_,
-			1, data::RotationDegreeT(180),
-			2, container_data,
-			data::Orientation::up
-		};
+        EXPECT_TRUE(this->Initialize(worldData_, {2, 4}));
+        EXPECT_TRUE(this->IsInitialized());
 
-		EXPECT_EQ(GetPickupContainerEntity(args), &item);
 
-		auto result = PickupContainerEntity(args);
-		EXPECT_EQ(inv[0].count, 8);  // At 180 degrees, 2 items picked up
-		EXPECT_EQ(result.second.item, &item);
-		EXPECT_EQ(result.second.count, 2);
-	}
+        // Ok: Assembly machine
+        data::AssemblyMachine assembly_machine;
+        TestSetupAssemblyMachine(worldData_, {3, 4}, assembly_machine);
 
-	TEST_F(InserterPickupTest, PickupTransportLineUp) {
-		// Line is above inserter
-		{
-			auto line = CreateTransportLine(data::Orientation::up);
-
-			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::up);
-
-			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::up);
-
-			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::up);
-
-			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-		}
-	}
-
-	TEST_F(InserterPickupTest, PickupTransportLineRight) {
-		{
-			auto line = CreateTransportLine(data::Orientation::right);
-
-			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::right);
-
-			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::right);
-
-			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::right);
-
-			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-		}
-	}
-
-	TEST_F(InserterPickupTest, PickupTransportLineDown) {
-		{
-			auto line = CreateTransportLine(data::Orientation::down);
-
-			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::down);
-
-			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::down);
-
-			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::down);
-
-			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-	}
-
-	TEST_F(InserterPickupTest, PickupTransportLineLeft) {
-		{
-			auto line = CreateTransportLine(data::Orientation::left);
-
-			PickupLine(data::Orientation::up, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::left);
-
-			PickupLine(data::Orientation::right, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::left);
-
-			PickupLine(data::Orientation::down, line);
-			EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-		}
-		{
-			auto line = CreateTransportLine(data::Orientation::left);
-
-			PickupLine(data::Orientation::left, line);
-			EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		}
-	}
-
-	TEST_F(InserterPickupTest, PickupTransportLineNonStraight) {
-		// -->
-		// ^
-		// | <--
-
-		const auto right = std::make_shared<TransportSegment>(
-			data::Orientation::right,
-			TransportSegment::TerminationType::straight,
-			2
-		);
-
-		const auto up = std::make_shared<TransportSegment>(
-			data::Orientation::up,
-			TransportSegment::TerminationType::bend_right,
-			2
-		);
-
-		const auto left = std::make_shared<TransportSegment>(
-			data::Orientation::left,
-			TransportSegment::TerminationType::bend_right,
-			2
-		);
+        EXPECT_TRUE(this->Initialize(worldData_, {4, 5}));
+        EXPECT_TRUE(this->IsInitialized());
+        EXPECT_EQ(this->targetProtoData_, &assembly_machine);
+    }
 
-		left->targetSegment = up.get();
-		up->targetSegment   = right.get();
-
-		data::TransportLineData line{left};
-		line.lineSegmentIndex = 1;
-
-
-		data::Item item;
-
-		left->AppendItem(true, 0.5 + 0.7, item);
-		PickupLine(data::Orientation::up, line);
-		EXPECT_EQ(left->left.lane.size(), 0);
-
-		left->AppendItem(false, 0.5 + 0.3, item);
-		PickupLine(data::Orientation::up, line);
-		EXPECT_EQ(left->right.lane.size(), 0);
-	}
-
-	TEST_F(InserterPickupTest, PickupTransportLineAlternativeSide) {
-		// If the preferred lane is available, inserter will attempt to pick up from other lane
-		auto line = CreateTransportLine(data::Orientation::up);
-
-		EXPECT_EQ(
-			GetPickupTransportBelt({
-				logicData_,
-				1, data::RotationDegreeT(180),
-				1, line, data::Orientation::up
-				}),
-			&lineItem_
-		);
-
-		// Should set index to 0 since a item was removed
-		line.lineSegment->right.index = 10;
-
-		PickupLine(data::Orientation::up, line);
-		EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-		EXPECT_EQ(line.lineSegment->right.index, 0);
-
-
-		// Use alternative side
-		EXPECT_EQ(
-			GetPickupTransportBelt({
-				logicData_,
-				1, data::RotationDegreeT(180),
-				1, line, data::Orientation::up
-				}),
-			&lineItem_
-		);
-
-		line.lineSegment->left.index = 10;
-
-		PickupLine(data::Orientation::up, line);
-		EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-		EXPECT_EQ(line.lineSegment->left.index, 0);
-	}
-
-
-	TEST_F(InserterPickupTest, PickupAssemblyMachine) {
-		data::PrototypeManager prototype_manager;
-
-		data::AssemblyMachine asm_machine;
-		auto& layer = TestSetupAssemblyMachine(worldData_, {0, 0}, asm_machine);
-		auto* data  = layer.GetUniqueData<data::AssemblyMachineData>();
-
-		// Does nothing as there is no recipe yet
-		PickupAssemblyMachine({
-				logicData_,
-				2, data::RotationDegreeT(kMaxInserterDegree),
-				2,
-				*data, data::Orientation::up
-			}
-		);
-
-		// ======================================================================
-
-		auto recipe_pack = TestSetupRecipe(prototype_manager);
-
-
-		data->ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
-
-		// No items in product inventory
-		EXPECT_FALSE(
-			PickupAssemblyMachine({logicData_,
-				2, data::RotationDegreeT(kMaxInserterDegree),
-				2,
-				*data, data::Orientation::up
-				}).first
-		);
-
-
-		// Has items in product inventory
-		data->ingredientInv[0] = {recipe_pack.item1, 1};
-		data->ingredientInv[1] = {recipe_pack.item2, 1};
-
-		data->productInv[0] = {recipe_pack.itemProduct, 10, recipe_pack.itemProduct};
-
-		targetProtoData_ = &asm_machine;
-
-		PickupParams args{
-			logicData_,
-			2, data::RotationDegreeT(kMaxInserterDegree),
-			2,
-			*data, data::Orientation::up
-		};
-
-		EXPECT_EQ(GetPickupAssemblyMachine(args), recipe_pack.itemProduct);
-		auto result = PickupAssemblyMachine(args);
-
-		EXPECT_TRUE(result.first);
-		EXPECT_EQ(result.second.item, recipe_pack.itemProduct);
-		EXPECT_EQ(result.second.count, 2);
-
-		EXPECT_EQ(data->productInv[0].count, 8);
-
-		// Begin crafting since ingredients are met
-		EXPECT_NE(data->deferralEntry.callbackIndex, 0);
-	}
-}
+    TEST_F(InserterPickupTest, PickupContainerEntity) {
+        data::ContainerEntity container_entity;
+        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+        auto& container_data  = *container_layer.GetUniqueData();
+
+        data::Item item;
+        auto& inv = container_layer.GetUniqueData<data::ContainerEntityData>()->inventory;
+        inv[0]    = {&item, 10};
+
+
+        PickupContainerEntity({logicData_, 1, data::RotationDegreeT(179), 1, container_data, data::Orientation::up});
+        EXPECT_EQ(inv[0].count, 10); // No items picked up, not 180 degrees
+
+
+        PickupParams args = {logicData_, 1, data::RotationDegreeT(180), 2, container_data, data::Orientation::up};
+
+        EXPECT_EQ(GetPickupContainerEntity(args), &item);
+
+        auto result = PickupContainerEntity(args);
+        EXPECT_EQ(inv[0].count, 8); // At 180 degrees, 2 items picked up
+        EXPECT_EQ(result.second.item, &item);
+        EXPECT_EQ(result.second.count, 2);
+    }
+
+    TEST_F(InserterPickupTest, PickupTransportLineUp) {
+        // Line is above inserter
+        {
+            auto line = CreateTransportLine(data::Orientation::up);
+
+            PickupLine(data::Orientation::up, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::up);
+
+            PickupLine(data::Orientation::right, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::up);
+
+            PickupLine(data::Orientation::down, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::up);
+
+            PickupLine(data::Orientation::left, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+        }
+    }
+
+    TEST_F(InserterPickupTest, PickupTransportLineRight) {
+        {
+            auto line = CreateTransportLine(data::Orientation::right);
+
+            PickupLine(data::Orientation::up, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::right);
+
+            PickupLine(data::Orientation::right, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::right);
+
+            PickupLine(data::Orientation::down, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::right);
+
+            PickupLine(data::Orientation::left, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+        }
+    }
+
+    TEST_F(InserterPickupTest, PickupTransportLineDown) {
+        {
+            auto line = CreateTransportLine(data::Orientation::down);
+
+            PickupLine(data::Orientation::up, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::down);
+
+            PickupLine(data::Orientation::right, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::down);
+
+            PickupLine(data::Orientation::down, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::down);
+
+            PickupLine(data::Orientation::left, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+    }
+
+    TEST_F(InserterPickupTest, PickupTransportLineLeft) {
+        {
+            auto line = CreateTransportLine(data::Orientation::left);
+
+            PickupLine(data::Orientation::up, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::left);
+
+            PickupLine(data::Orientation::right, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::left);
+
+            PickupLine(data::Orientation::down, line);
+            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+        }
+        {
+            auto line = CreateTransportLine(data::Orientation::left);
+
+            PickupLine(data::Orientation::left, line);
+            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        }
+    }
+
+    TEST_F(InserterPickupTest, PickupTransportLineNonStraight) {
+        // -->
+        // ^
+        // | <--
+
+        const auto right = std::make_shared<TransportSegment>(
+            data::Orientation::right, TransportSegment::TerminationType::straight, 2);
+
+        const auto up =
+            std::make_shared<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 2);
+
+        const auto left = std::make_shared<TransportSegment>(
+            data::Orientation::left, TransportSegment::TerminationType::bend_right, 2);
+
+        left->targetSegment = up.get();
+        up->targetSegment   = right.get();
+
+        data::TransportLineData line{left};
+        line.lineSegmentIndex = 1;
+
+
+        data::Item item;
+
+        left->AppendItem(true, 0.5 + 0.7, item);
+        PickupLine(data::Orientation::up, line);
+        EXPECT_EQ(left->left.lane.size(), 0);
+
+        left->AppendItem(false, 0.5 + 0.3, item);
+        PickupLine(data::Orientation::up, line);
+        EXPECT_EQ(left->right.lane.size(), 0);
+    }
+
+    TEST_F(InserterPickupTest, PickupTransportLineAlternativeSide) {
+        // If the preferred lane is available, inserter will attempt to pick up from other lane
+        auto line = CreateTransportLine(data::Orientation::up);
+
+        EXPECT_EQ(GetPickupTransportBelt({logicData_, 1, data::RotationDegreeT(180), 1, line, data::Orientation::up}),
+                  &lineItem_);
+
+        // Should set index to 0 since a item was removed
+        line.lineSegment->right.index = 10;
+
+        PickupLine(data::Orientation::up, line);
+        EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+        EXPECT_EQ(line.lineSegment->right.index, 0);
+
+
+        // Use alternative side
+        EXPECT_EQ(GetPickupTransportBelt({logicData_, 1, data::RotationDegreeT(180), 1, line, data::Orientation::up}),
+                  &lineItem_);
+
+        line.lineSegment->left.index = 10;
+
+        PickupLine(data::Orientation::up, line);
+        EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+        EXPECT_EQ(line.lineSegment->left.index, 0);
+    }
+
+
+    TEST_F(InserterPickupTest, PickupAssemblyMachine) {
+        data::PrototypeManager prototype_manager;
+
+        data::AssemblyMachine asm_machine;
+        auto& layer = TestSetupAssemblyMachine(worldData_, {0, 0}, asm_machine);
+        auto* data  = layer.GetUniqueData<data::AssemblyMachineData>();
+
+        // Does nothing as there is no recipe yet
+        PickupAssemblyMachine(
+            {logicData_, 2, data::RotationDegreeT(kMaxInserterDegree), 2, *data, data::Orientation::up});
+
+        // ======================================================================
+
+        auto recipe_pack = TestSetupRecipe(prototype_manager);
+
+
+        data->ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
+
+        // No items in product inventory
+        EXPECT_FALSE(PickupAssemblyMachine(
+                         {logicData_, 2, data::RotationDegreeT(kMaxInserterDegree), 2, *data, data::Orientation::up})
+                         .first);
+
+
+        // Has items in product inventory
+        data->ingredientInv[0] = {recipe_pack.item1, 1};
+        data->ingredientInv[1] = {recipe_pack.item2, 1};
+
+        data->productInv[0] = {recipe_pack.itemProduct, 10, recipe_pack.itemProduct};
+
+        targetProtoData_ = &asm_machine;
+
+        PickupParams args{logicData_, 2, data::RotationDegreeT(kMaxInserterDegree), 2, *data, data::Orientation::up};
+
+        EXPECT_EQ(GetPickupAssemblyMachine(args), recipe_pack.itemProduct);
+        auto result = PickupAssemblyMachine(args);
+
+        EXPECT_TRUE(result.first);
+        EXPECT_EQ(result.second.item, recipe_pack.itemProduct);
+        EXPECT_EQ(result.second.count, 2);
+
+        EXPECT_EQ(data->productInv[0].count, 8);
+
+        // Begin crafting since ingredients are met
+        EXPECT_NE(data->deferralEntry.callbackIndex, 0);
+    }
+} // namespace jactorio::game

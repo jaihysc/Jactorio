@@ -8,10 +8,10 @@
 
 namespace jactorio::data
 {
-	class TransportBelt final : public TransportLine
-	{
-		PROTOTYPE_CATEGORY(transport_belt);
-	};
-}
+    class TransportBelt final : public TransportLine
+    {
+        PROTOTYPE_CATEGORY(transport_belt);
+    };
+} // namespace jactorio::data
 
-#endif //JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_BELT_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_BELT_H
