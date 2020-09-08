@@ -14,7 +14,7 @@ namespace jactorio::game
 namespace jactorio::data
 {
     ///
-    /// \brief Entities which can be rotated by the player
+    /// Entities which can be rotated by the player
     class IRotatable
     {
     protected:

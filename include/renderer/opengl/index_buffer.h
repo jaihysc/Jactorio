@@ -22,7 +22,7 @@ namespace jactorio::renderer
         IndexBuffer& operator=(IndexBuffer&& other) noexcept = delete;
 
         ///
-        /// \brief Creates a new buffer of provided specifications
+        /// Creates a new buffer of provided specifications
         void Reserve(const void* data, uint32_t index_count);
 
         void Bind() const;

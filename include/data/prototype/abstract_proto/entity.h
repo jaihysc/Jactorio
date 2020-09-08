@@ -14,7 +14,7 @@
 namespace jactorio::data
 {
     ///
-    /// \brief Unique per entity placed in the world
+    /// Unique per entity placed in the world
     struct EntityData : FEntityData
     {
         CEREAL_SERIALIZE(archive) {
@@ -23,7 +23,7 @@ namespace jactorio::data
     };
 
     ///
-    /// \brief Placeable items in the world
+    /// Placeable items in the world
     class Entity : public FEntity
     {
     public:
@@ -113,7 +113,7 @@ namespace jactorio::data
         // Game events
 
         ///
-        /// \brief Entity was build in the world
+        /// Entity was build in the world
         virtual void OnBuild(game::WorldData& world_data,
                              game::LogicData& logic_data,
                              const WorldCoord& world_coords,
@@ -121,7 +121,7 @@ namespace jactorio::data
                              Orientation orientation) const = 0;
 
         ///
-        /// \brief Returns true if itself can be built at the specified world_coords being its top left
+        /// Returns true if itself can be built at the specified world_coords being its top left
         /// \return true if can be built
         J_NODISCARD virtual bool OnCanBuild(const game::WorldData& world_data, const WorldCoord& world_coords) const {
             return true;
@@ -129,14 +129,14 @@ namespace jactorio::data
 
 
         ///
-        /// \brief Entity was picked up from a built state, called BEFORE the entity has been removed
+        /// Entity was picked up from a built state, called BEFORE the entity has been removed
         virtual void OnRemove(game::WorldData& world_data,
                               game::LogicData& logic_data,
                               const WorldCoord& world_coords,
                               game::ChunkTileLayer& tile_layer) const = 0;
 
         ///
-        /// \brief A neighbor of this prototype in the world was updated
+        /// A neighbor of this prototype in the world was updated
         /// \param emit_coords Coordinates of the prototype which is EMITTING the update
         /// \param receive_coords Layer of the prototype RECEIVING the update
         /// \param emit_orientation Orientation to the prototype EMITTING the update

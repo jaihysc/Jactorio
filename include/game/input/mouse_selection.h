@@ -29,7 +29,7 @@ namespace jactorio
 namespace jactorio::game
 {
     ///
-    /// \brief Handles mouse input and selection
+    /// Handles mouse input and selection
     class MouseSelection
     {
         static constexpr OverlayLayer kCursorOverlayLayer_ = OverlayLayer::cursor;

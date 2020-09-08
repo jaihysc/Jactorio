@@ -10,7 +10,7 @@
 namespace jactorio::data
 {
     ///
-    /// \brief Tiles which are auto-placed by the world generator <br>
+    /// Tiles which are auto-placed by the world generator <br>
     /// Configure how the world generator places these tiles with a Noise_layer
     class Tile final : public FWorldObject
     {

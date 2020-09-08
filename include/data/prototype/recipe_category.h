@@ -10,7 +10,7 @@
 namespace jactorio::data
 {
     ///
-    /// \brief A category to sort recipes within a recipe group
+    /// A category to sort recipes within a recipe group
     class RecipeCategory final : public FrameworkBase
     {
     public:

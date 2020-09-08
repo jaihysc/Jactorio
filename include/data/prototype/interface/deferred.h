@@ -21,7 +21,7 @@ namespace jactorio
 
 namespace jactorio::data
 {
-    /// \brief Has actions which completes at a later game tick
+    /// Has actions which completes at a later game tick
     class IDeferred
     {
     public:
@@ -34,7 +34,7 @@ namespace jactorio::data
         IDeferred& operator=(IDeferred&& other) noexcept = default;
 
         ///
-        /// \brief The callback requested at the specified game tick was reached
+        /// The callback requested at the specified game tick was reached
         /// \param world_data world data containing deferred timer which dispatched this callback
         /// \param unique_data Unique data the callback was registered with
         virtual void OnDeferTimeElapsed(game::WorldData& world_data,

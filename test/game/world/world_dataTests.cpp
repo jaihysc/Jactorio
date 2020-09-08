@@ -334,7 +334,7 @@ namespace jactorio::game
         data::ContainerEntity proto_; // Any proto is fine
 
         ///
-        /// \brief Checks that multi-tile tile is linked to top left
+        /// Checks that multi-tile tile is linked to top left
         void ExpectTLResolved(const WorldCoord& coord, const TileLayer tile_layer) {
             auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
             ASSERT_NE(top_left, nullptr);

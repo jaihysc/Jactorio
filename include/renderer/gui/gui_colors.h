@@ -82,7 +82,7 @@ namespace jactorio::renderer
 
 
     ///
-    /// \brief RAII wrapper for imgui features
+    /// RAII wrapper for imgui features
     class ImGuard
     {
         bool windowBegun_         = false;

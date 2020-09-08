@@ -26,7 +26,7 @@ namespace jactorio::data
     };
 
     ///
-    /// \brief An entity with an inventory, such as a chest
+    /// An entity with an inventory, such as a chest
     class ContainerEntity final : public HealthEntity
     {
     public:

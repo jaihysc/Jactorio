@@ -9,7 +9,7 @@
 #include "game/world/world_data.h"
 
 ///
-/// \brief Transport line logic for anything moving items
+/// Transport line logic for anything moving items
 namespace jactorio::game
 {
     // For storing line offsets during transitions, items are treated as having no width
@@ -119,7 +119,7 @@ namespace jactorio::game
 
 
     ///
-    /// \brief Updates belt logic for a logic chunk
+    /// Updates belt logic for a logic chunk
     void TransportLineLogicUpdate(WorldData& world_data);
 } // namespace jactorio::game
 

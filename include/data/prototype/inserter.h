@@ -15,7 +15,7 @@
 namespace jactorio::data
 {
     ///
-    /// \brief Holds the internal structure for inserters
+    /// Holds the internal structure for inserters
     struct InserterData final : HealthEntityData
     {
         explicit InserterData(const Orientation orientation)
@@ -71,16 +71,16 @@ namespace jactorio::data
         PYTHON_PROP_I(Sprite*, handSprite, nullptr);
 
         ///
-        /// \brief Degrees to rotate per tick
+        /// Degrees to rotate per tick
         /// \remark For Python API use only
         PYTHON_PROP_I(ProtoFloatT, rotationSpeedFloat, 0.1);
 
         ///
-        /// \brief Tile distance which the inserter can reach
+        /// Tile distance which the inserter can reach
         PYTHON_PROP_I(ProtoUintT, tileReach, 1);
 
         ///
-        /// \brief Degrees to rotate per tick
+        /// Degrees to rotate per tick
         RotationDegreeT rotationSpeed;
 
 

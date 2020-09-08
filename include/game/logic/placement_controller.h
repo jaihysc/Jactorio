@@ -24,7 +24,7 @@ namespace jactorio::game
     // ======================================================================
 
     ///
-    /// \brief Places / removes entities at world coordinates
+    /// Places / removes entities at world coordinates
     /// \remark Pass nullptr for entity to remove
     /// \return true if placed / removed successfully
     bool PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity, WorldCoordAxis x, WorldCoordAxis y);

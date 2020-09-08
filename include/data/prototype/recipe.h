@@ -18,13 +18,13 @@ namespace jactorio::data
     using RecipeItem = std::pair<std::string, uint16_t>;
 
     ///
-    /// \brief Defines an in game recipe to craft items
+    /// Defines an in game recipe to craft items
     class Recipe final : public FrameworkBase
     {
     public:
         PROTOTYPE_CATEGORY(recipe);
 
-        /// \brief Seconds to complete recipe
+        /// Seconds to complete recipe
         PYTHON_PROP_REF_I(ProtoFloatT, craftingTime, 1);
 
         PYTHON_PROP_REF(std::vector<RecipeItem>, ingredients);
@@ -35,16 +35,16 @@ namespace jactorio::data
         void PostLoadValidate(const PrototypeManager&) const override;
 
         ///
-        /// \brief Gets number of logic ticks necessary to craft recipe
+        /// Gets number of logic ticks necessary to craft recipe
         J_NODISCARD GameTickT GetCraftingTime(double multiplier = 1.) const;
 
         ///
-        /// \brief Looks up recipe for item of iname
+        /// Looks up recipe for item of iname
         /// \returns nullptr if not found
         static const Recipe* GetItemRecipe(const PrototypeManager& data_manager, const std::string& iname);
 
         ///
-        /// \brief Returns raw materials for a recipe <br>
+        /// Returns raw materials for a recipe <br>
         /// Assumes all provided names are valid <br>
         /// A raw material is something which cannot be hand crafted
         static std::vector<RecipeItem> RecipeGetTotalRaw(const PrototypeManager& data_manager,

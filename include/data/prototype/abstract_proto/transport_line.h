@@ -17,7 +17,7 @@
 namespace jactorio::data
 {
     ///
-    /// \brief TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
+    /// TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
     struct TransportLineData final : HealthEntityData
     {
         explicit TransportLineData(std::shared_ptr<game::TransportSegment> line_segment)
@@ -46,7 +46,7 @@ namespace jactorio::data
         };
 
         ///
-        /// \brief Updates orientation and member set for rendering
+        /// Updates orientation and member set for rendering
         void SetOrientation(LineOrientation orientation) {
             this->orientation = orientation;
             this->set         = static_cast<uint16_t>(orientation);
@@ -85,7 +85,7 @@ namespace jactorio::data
 
 
     ///
-    /// \brief Abstract class for all everything which moves items (belts, underground belts, splitters)
+    /// Abstract class for all everything which moves items (belts, underground belts, splitters)
     class TransportLine : public HealthEntity
     {
     protected:
@@ -96,7 +96,7 @@ namespace jactorio::data
         using LineData4Way = std::array<TransportLineData*, 4>;
 
         ///
-        /// \brief Number of tiles traveled by each item on the belt per tick
+        /// Number of tiles traveled by each item on the belt per tick
         /// \remark For Python API use only
         PYTHON_PROP_I(ProtoFloatT, speedFloat, 0.01);
 
@@ -108,7 +108,7 @@ namespace jactorio::data
         // Data access
 
         ///
-        /// \brief Attempts to retrieve transport line data at world coordinates on tile
+        /// Attempts to retrieve transport line data at world coordinates on tile
         /// \return pointer to data or nullptr if non existent
         J_NODISCARD static TransportLineData* GetLineData(game::WorldData& world_data,
                                                           WorldCoordAxis world_x,
@@ -119,18 +119,18 @@ namespace jactorio::data
                                                                 WorldCoordAxis world_y);
 
         ///
-        /// \brief Gets line data for the 4 neighbors of origin coord
+        /// Gets line data for the 4 neighbors of origin coord
         J_NODISCARD static LineData4Way GetLineData4(game::WorldData& world_data, const WorldCoord& origin_coord);
 
         ///
-        /// \brief Gets transport segment at world coords
+        /// Gets transport segment at world coords
         /// \return nullptr if no segment exists
         static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
                                                                             WorldCoordAxis world_x,
                                                                             WorldCoordAxis world_y);
 
         ///
-        /// \brief Determines line orientation given orientation and neighbors
+        /// Determines line orientation given orientation and neighbors
         static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
                                                                      const LineData4Way& line_data4);
 

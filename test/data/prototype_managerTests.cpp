@@ -14,7 +14,7 @@ namespace jactorio::data
     protected:
         PrototypeManager dataManager_{};
 
-        /// \brief Returns true if element exists in vector
+        /// Returns true if element exists in vector
         static bool Contains(const std::vector<Sprite*>& vector, const std::string& key) {
             for (const auto& i : vector) {
                 if (i->name == key) {

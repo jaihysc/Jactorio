@@ -24,7 +24,7 @@ namespace jactorio
     constexpr double kFloatingAbsErr = 0.000000001;
 
     ///
-    /// \brief Inherit and override what is necessary
+    /// Inherit and override what is necessary
     class TestMockWorldObject : public data::FWorldObject
     {
     public:
@@ -91,7 +91,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Sets up a multi tile with proto using provided properties
+    /// Sets up a multi tile with proto using provided properties
     /// \tparam SetTopLeftLayer If false, non top left multi tiles will not know the top left layer
     /// \return Top left tile
     template <bool SetTopLeftLayer = true>
@@ -124,7 +124,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Creates a container of size 10 at coordinates
+    /// Creates a container of size 10 at coordinates
     inline game::ChunkTileLayer& TestSetupContainer(game::WorldData& world_data,
                                                     const WorldCoord& world_coords,
                                                     const data::ContainerEntity& container_entity,
@@ -138,7 +138,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Creates an inserter at coordinates
+    /// Creates an inserter at coordinates
     inline game::ChunkTileLayer& TestSetupInserter(game::WorldData& world_data,
                                                    game::LogicData& logic_data,
                                                    const WorldCoord& world_coords,
@@ -155,7 +155,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Registers and creates tile UniqueData for TransportSegment
+    /// Registers and creates tile UniqueData for TransportSegment
     inline void TestRegisterTransportSegment(game::WorldData& world_data,
                                              const WorldCoord& world_coords,
                                              const std::shared_ptr<game::TransportSegment>& segment,
@@ -175,7 +175,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Creates a 2x2 multi tile assembly machine at coordinates
+    /// Creates a 2x2 multi tile assembly machine at coordinates
     /// \return top left layer
     inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::WorldData& world_data,
                                                           const WorldCoord& world_coords,
@@ -202,7 +202,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Creates a drill in the world, calling OnBuild
+    /// Creates a drill in the world, calling OnBuild
     inline game::ChunkTile& TestSetupDrill(game::WorldData& world_data,
                                            game::LogicData& logic_data,
                                            const WorldCoord& world_coord,
@@ -234,7 +234,7 @@ namespace jactorio
     };
 
     ///
-    /// \brief Sets up and registers a recipe
+    /// Sets up and registers a recipe
     /// 1a + 1b = 1c
     J_NODISCARD inline auto TestSetupRecipe(data::PrototypeManager& proto_manager) {
         TestSetupRecipeReturn rt;
@@ -254,7 +254,7 @@ namespace jactorio
 
 
     ///
-    /// \brief Serializes T and returns deserialized T
+    /// Serializes T and returns deserialized T
     template <typename T>
     J_NODISCARD T TestSerializeDeserialize(const T& object) {
         constexpr auto save_file = "savegame.dat";

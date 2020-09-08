@@ -69,7 +69,7 @@ namespace jactorio::data
         using TrimT  = uint16_t;
 
         ///
-        /// \brief Group(s) determines which spritemap(s) this sprite is placed on
+        /// Group(s) determines which spritemap(s) this sprite is placed on
         PYTHON_PROP_REF(std::vector<SpriteGroup>, group);
 
         /*
@@ -84,20 +84,20 @@ namespace jactorio::data
          */
 
         ///
-        /// \brief If true : X = Set, Y = Frame,
+        /// If true : X = Set, Y = Frame,
         ///			  false: Y = Set, X = Frame
         PYTHON_PROP_REF_I(bool, invertSetFrame, false);
 
         ///
-        /// \brief Animation frames, X axis, indexed by 0 based index, 1 if single
+        /// Animation frames, X axis, indexed by 0 based index, 1 if single
         PYTHON_PROP_REF_I(FrameT, frames, 1);
         ///
-        /// \brief Y axis, indexed by 0 based index, 1 if single
+        /// Y axis, indexed by 0 based index, 1 if single
         PYTHON_PROP_REF_I(SetT, sets, 1);
 
 
         ///
-        /// \brief Pixels to remove from the border when get_coords() is called
+        /// Pixels to remove from the border when get_coords() is called
         PYTHON_PROP_REF_I(TrimT, trim, 0);
 
 
@@ -106,11 +106,11 @@ namespace jactorio::data
         bool IsInGroup(SpriteGroup group) const;
 
         ///
-        /// \brief If group is empty, it is set to the group provided
+        /// If group is empty, it is set to the group provided
         void DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group);
 
         ///
-        /// \brief Gets OpenGl UV coordinates for region within a sprite, applying a deduction of trim pixels around the
+        /// Gets OpenGl UV coordinates for region within a sprite, applying a deduction of trim pixels around the
         /// border \remark Requires width_ and height_ to be initialized \return UV coordinates for set, frame within
         /// sprite (0, 0) is top left
         J_NODISCARD UvPositionT GetCoords(SetT set, FrameT frame) const;
@@ -121,20 +121,20 @@ namespace jactorio::data
         J_NODISCARD const unsigned char* GetSpritePtr() const;
 
         ///
-        /// \brief Gets size of image on X axis
+        /// Gets size of image on X axis
         J_NODISCARD SpriteDimension GetWidth() const {
             return width_;
         }
 
         ///
-        /// \brief Gets size of image on Y axis
+        /// Gets size of image on Y axis
         J_NODISCARD SpriteDimension GetHeight() const {
             return height_;
         }
 
 
         ///
-        /// \brief Loads a sprite from sprite_path into member sprite
+        /// Loads a sprite from sprite_path into member sprite
         /// \remark Do not include ~/data/
         Sprite* LoadImage(const std::string& image_path);
 
@@ -159,7 +159,7 @@ namespace jactorio::data
         unsigned char* spriteBuffer_ = nullptr;
 
         ///
-        /// \brief Loads image from file
+        /// Loads image from file
         /// load_image only sets the sprite_path and calls this
         /// \exception DataException Failed to load from file
         void LoadImageFromFile();
@@ -182,7 +182,7 @@ namespace jactorio::data
          */
 
         ///
-        /// \brief Performs the following adjustments to set and frame
+        /// Performs the following adjustments to set and frame
         /// \tparam InvertSet set is flipped horizontally if true
         /// \param set Modulus of total number of sets
         /// \param frame Modulus of total number of frames, every multiple of frames increases set by 1

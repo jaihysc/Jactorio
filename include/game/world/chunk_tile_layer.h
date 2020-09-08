@@ -31,7 +31,7 @@ namespace jactorio::game
     };
 
     ///
-    /// \brief A Layers within a ChunkTile layers
+    /// A Layers within a ChunkTile layers
     class ChunkTileLayer
     {
         using MultiTileValueT      = MultiTileData::ValueT;
@@ -62,7 +62,7 @@ namespace jactorio::game
 
 
         ///
-        /// \brief Resets data on this tile and frees any heap allocated data
+        /// Resets data on this tile and frees any heap allocated data
         void Clear() noexcept;
 
 
@@ -78,32 +78,32 @@ namespace jactorio::game
         // Unique data
 
         ///
-        /// \brief Heap allocates unique data
+        /// Heap allocates unique data
         /// \return Created unique data
         template <typename TData, typename... Args>
         TData* MakeUniqueData(Args&&... args);
 
         ///
-        /// \brief Unique data at current layer or if multi tile, top left
+        /// Unique data at current layer or if multi tile, top left
         /// \tparam T Return type which uniqueData is cast to
         template <typename T = data::FWorldObjectData>
         J_NODISCARD T* GetUniqueData() noexcept;
 
         ///
-        /// \brief Unique data at current layer or if multi tile, top left
+        /// Unique data at current layer or if multi tile, top left
         /// \tparam T Return type which uniqueData is cast to
         template <typename T = data::FWorldObjectData>
         J_NODISCARD const T* GetUniqueData() const noexcept;
 
 
         ///
-        /// \brief Unique data at current layer
+        /// Unique data at current layer
         /// \tparam T Return type which uniqueData is cast to
         template <typename T = data::FWorldObjectData>
         J_NODISCARD T* GetUniqueDataLocal() noexcept;
 
         ///
-        /// \brief Unique data at current layer
+        /// Unique data at current layer
         /// \tparam T Return type which uniqueData is cast to
         template <typename T = data::FWorldObjectData>
         J_NODISCARD const T* GetUniqueDataLocal() const noexcept;
@@ -134,7 +134,7 @@ namespace jactorio::game
 
 
         ///
-        /// \brief Adjusts provided x, y to coordinates of top left tile
+        /// Adjusts provided x, y to coordinates of top left tile
         template <typename Tx, typename Ty>
         void AdjustToTopLeft(Tx& x, Ty& y) const;
 

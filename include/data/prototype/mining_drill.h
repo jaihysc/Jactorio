@@ -61,7 +61,7 @@ namespace jactorio::data
 
 
     ///
-    /// \brief Drill, Mines resource entities
+    /// Drill, Mines resource entities
     class MiningDrill final : public HealthEntity
     {
         /*
@@ -104,7 +104,7 @@ namespace jactorio::data
         // ======================================================================
         // Logic
         ///
-        /// \brief Finds the FIRST output item of the mining drill, beginning from top left
+        /// Finds the FIRST output item of the mining drill, beginning from top left
         J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, WorldCoord world_pair) const;
 
         void OnDeferTimeElapsed(game::WorldData& world_data,
@@ -112,7 +112,7 @@ namespace jactorio::data
                                 UniqueDataBase* unique_data) const override;
 
         ///
-        /// \brief Ensures that the mining radius covers a resource entity
+        /// Ensures that the mining radius covers a resource entity
         J_NODISCARD bool OnCanBuild(const game::WorldData& world_data, const WorldCoord& world_coords) const override;
 
         void OnBuild(game::WorldData& world_data,
@@ -162,23 +162,23 @@ namespace jactorio::data
         J_NODISCARD int GetMiningAreaY() const;
 
         ///
-        /// \brief Sets up drill data such that resources can be deducted from the ground
+        /// Sets up drill data such that resources can be deducted from the ground
         /// \return true if a resource was found, otherwise false
         bool SetupResourceDeduction(const game::WorldData& world_data, MiningDrillData& drill_data) const;
 
         ///
-        /// \brief Removes resource using resourceCoord + resourceOffset in drill_data, searches for another resource if
+        /// Removes resource using resourceCoord + resourceOffset in drill_data, searches for another resource if
         /// depleted \return true if successful
         bool DeductResource(game::WorldData& world_data,
                             MiningDrillData& drill_data,
                             ResourceEntityData::ResourceCount amount = 1) const;
 
         ///
-        /// \brief Sets up deferred callback for when it has mined a resource
+        /// Sets up deferred callback for when it has mined a resource
         void RegisterMineCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
 
         ///
-        /// \brief Sets up deferred callback for when it has mined a resource, but failed to output
+        /// Sets up deferred callback for when it has mined a resource, but failed to output
         void RegisterOutputCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
     };
 } // namespace jactorio::data

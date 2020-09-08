@@ -85,7 +85,7 @@ namespace jactorio::game
         WorldData worldData_;
         LogicData logicData_;
 
-        /// \brief Creates a transport line with orientation
+        /// Creates a transport line with orientation
         data::TransportLineData CreateTransportLine(
             const data::Orientation orientation,
             const TransportSegment::TerminationType ttype = TransportSegment::TerminationType::straight) const {
@@ -411,7 +411,7 @@ namespace jactorio::game
         /// Item which will be on transport segments from CreateTransportLine
         data::Item lineItem_;
 
-        /// \brief Creates a transport line with  1 item on each side
+        /// Creates a transport line with  1 item on each side
         data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
 
             const auto segment =

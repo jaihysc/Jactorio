@@ -18,7 +18,7 @@
 namespace jactorio::game
 {
     ///
-    /// \brief Calls callbacks for tile updates
+    /// Calls callbacks for tile updates
     class UpdateDispatcher
     {
         using CallbackT = data::SerialProtoPtr<const data::FEntity>;
@@ -51,7 +51,7 @@ namespace jactorio::game
         };
 
         ///
-        /// \brief Registers proto_listener callback when target coords is updated, providing current coords
+        /// Registers proto_listener callback when target coords is updated, providing current coords
         ListenerEntry Register(WorldCoordAxis current_world_x,
                                WorldCoordAxis current_world_y,
                                WorldCoordAxis target_world_x,
@@ -59,13 +59,13 @@ namespace jactorio::game
                                const data::FEntity& proto_listener);
 
         ///
-        /// \brief Registers proto_listener callback when target coords is updated, providing current coords
+        /// Registers proto_listener callback when target coords is updated, providing current coords
         ListenerEntry Register(const WorldCoord& current_coords,
                                const WorldCoord& target_coords,
                                const data::FEntity& proto_listener);
 
         ///
-        /// \brief Unregisters entry
+        /// Unregisters entry
         /// \return true if succeeded, false if failed
         bool Unregister(const ListenerEntry& entry);
 

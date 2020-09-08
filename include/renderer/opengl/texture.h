@@ -11,7 +11,7 @@
 namespace jactorio::renderer
 {
     ///
-    /// \brief Manages a jactorio::data::Sprite* and creates a texture for OpenGL <br>
+    /// Manages a jactorio::data::Sprite* and creates a texture for OpenGL <br>
     /// This will delete the sprite* when the texture is deleted
     class Texture
     {

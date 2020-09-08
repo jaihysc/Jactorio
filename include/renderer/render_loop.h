@@ -12,11 +12,11 @@ namespace jactorio::renderer
     void ChangeWindowSize(game::EventData& event, unsigned int window_size_x, unsigned int window_size_y);
 
     ///
-    /// \brief Gives pointer to base renderer rendering the map for changing the zoom level or any operation
+    /// Gives pointer to base renderer rendering the map for changing the zoom level or any operation
     Renderer* GetBaseRenderer();
 
     ///
-    /// \brief Initiates rendering and starts the rendering thread
+    /// Initiates rendering and starts the rendering thread
     void RenderInit(LogicRenderLoopCommon& common);
 } // namespace jactorio::renderer
 

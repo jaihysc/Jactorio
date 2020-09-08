@@ -9,7 +9,7 @@
 namespace jactorio::data
 {
     ///
-    /// \brief Evaluates string of python
+    /// Evaluates string of python
     /// \param python_str Python string to interpret
     /// \param file_name if specified, used to display logging information from python sys.stdout
     /// \exception Data_exception if error occurred

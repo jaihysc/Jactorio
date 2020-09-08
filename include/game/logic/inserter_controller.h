@@ -25,7 +25,7 @@ namespace jactorio::game
     constexpr auto kMaxInserterDegree = 180;
 
     ///
-    /// \brief Gets the tile distance of the inserter arm to its resting position at 0 or 180 degrees
+    /// Gets the tile distance of the inserter arm to its resting position at 0 or 180 degrees
     ///
     ///   / |
     ///  /  | x
@@ -37,7 +37,7 @@ namespace jactorio::game
     double GetInserterArmOffset(core::TIntDegree degree, unsigned target_distance);
 
     ///
-    /// \brief Gets the tile length of the inserter arm
+    /// Gets the tile length of the inserter arm
     ///
     ///   / |
     /// x/  |
@@ -50,7 +50,7 @@ namespace jactorio::game
 
 
     ///
-    /// \brief Updates inserter logic for a logic chunk
+    /// Updates inserter logic for a logic chunk
     void InserterLogicUpdate(WorldData& world_data, LogicData& logic_data);
 } // namespace jactorio::game
 

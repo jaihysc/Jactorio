@@ -15,7 +15,7 @@
 namespace jactorio::renderer
 {
     ///
-    /// \brief Generates spritemaps on initialization with tile sprites
+    /// Generates spritemaps on initialization with tile sprites
     /// - Concatenate sprite into spritemap
     /// - Location of a sprite within spritemap
     class RendererSprites
@@ -66,29 +66,29 @@ namespace jactorio::renderer
 
     public:
         ///
-        /// \brief Frees all spritemap memory
+        /// Frees all spritemap memory
         void ClearSpritemaps();
 
         ///
-        /// \brief Creates a spritemap and stores it as a renderer::Texture
+        /// Creates a spritemap and stores it as a renderer::Texture
         /// \remark Requires OpenGL context
         void GInitializeSpritemap(const data::PrototypeManager& data_manager,
                                   data::Sprite::SpriteGroup group,
                                   bool invert_sprites);
 
         ///
-        /// \brief Creates a spritemap
+        /// Creates a spritemap
         J_NODISCARD SpritemapData CreateSpritemap(const data::PrototypeManager& data_manager,
                                                   data::Sprite::SpriteGroup group,
                                                   bool invert_sprites) const;
 
         ///
-        /// \brief Retrieves spritemap at specified group
+        /// Retrieves spritemap at specified group
         const SpritemapData& GetSpritemap(data::Sprite::SpriteGroup group);
         const Texture* GetTexture(data::Sprite::SpriteGroup group);
 
         ///
-        /// \brief Generates spritemap
+        /// Generates spritemap
         /// \remark Color in non specified areas of the spritemap are undefined
         /// \param sprites Collection of pointers towards sprite prototypes
         /// \param invert_sprites Whether or not to vertically invert the sprites on the spritemap. Commonly done for
@@ -101,7 +101,7 @@ namespace jactorio::renderer
         static constexpr int sprite_border = 1;
 
         ///
-        /// \brief Holds a sprite and its neighbors on the spritemap
+        /// Holds a sprite and its neighbors on the spritemap
         struct GeneratorNode
         {
             explicit GeneratorNode(const data::Sprite* sprite) : sprite(sprite) {}
@@ -113,17 +113,17 @@ namespace jactorio::renderer
         };
 
         ///
-        /// \brief Gets sprite width with adjustments
+        /// Gets sprite width with adjustments
         static data::Sprite::SpriteDimension GetSpriteWidth(const data::Sprite* sprite);
         ///
-        /// \brief Gets sprite height with adjustments
+        /// Gets sprite height with adjustments
         static data::Sprite::SpriteDimension GetSpriteHeight(const data::Sprite* sprite);
 
 
         static void SortInputSprites(std::vector<const data::Sprite*>& sprites);
 
         ///
-        /// \brief Recursively creates linked GeneratorNodes of sprites
+        /// Recursively creates linked GeneratorNodes of sprites
         ///
         /// Will erase from sprites as each sprite is used
         static void GenerateSpritemapNodes(std::vector<const data::Sprite*>& sprites,
@@ -134,13 +134,13 @@ namespace jactorio::renderer
 
 
         ///
-        /// \brief Calculates width of spritemap with adjustments
+        /// Calculates width of spritemap with adjustments
         /// \param base_node node above parent node
         static SpritemapDimensionT GetSpritemapWidth(GeneratorNode& base_node);
 
 
         ///
-        /// \brief Copies pixel at sprite_x, sprite_y to spritemap buffer
+        /// Copies pixel at sprite_x, sprite_y to spritemap buffer
         static void SetSpritemapPixel(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
                                       SpritemapDimensionT spritemap_width,
                                       bool invert_sprites,
@@ -152,7 +152,7 @@ namespace jactorio::renderer
                                       unsigned pixel_x,
                                       unsigned pixel_y);
         ///
-        /// \brief Recursively outputs GeneratorNodes into provided sprite buffer
+        /// Recursively outputs GeneratorNodes into provided sprite buffer
         static void GenerateSpritemapOutput(std::shared_ptr<Texture::SpriteBufferT>& spritemap_buffer,
                                             SpritemapDimensionT spritemap_width,
                                             GeneratorNode& base_node,

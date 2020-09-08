@@ -19,7 +19,7 @@
 namespace jactorio::game
 {
     ///
-    /// \brief A chunk within the game
+    /// A chunk within the game
     ///
     /// Made up of tiles and objects:
     ///		tiles: Has 32 x 32, fixed grid location
@@ -68,7 +68,7 @@ namespace jactorio::game
         Chunk() = default;
 
         ///
-        /// \brief Default initialization of chunk tiles
+        /// Default initialization of chunk tiles
         Chunk(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) : position_({chunk_x, chunk_y}) {}
 
         ~Chunk() = default;
@@ -101,7 +101,7 @@ namespace jactorio::game
         J_NODISCARD const TileArrayT& Tiles() const;
 
         ///
-        /// \brief Gets tile at x, y offset from top left of chunk
+        /// Gets tile at x, y offset from top left of chunk
         J_NODISCARD ChunkTile& GetCTile(ChunkTileCoordAxis x, ChunkTileCoordAxis y);
         J_NODISCARD const ChunkTile& GetCTile(ChunkTileCoordAxis x, ChunkTileCoordAxis y) const;
 
@@ -144,7 +144,7 @@ namespace jactorio::game
         TileArrayT tiles_;
 
         ///
-        /// \brief Other chunk has logic entries pointing to tiles within itself,
+        /// Other chunk has logic entries pointing to tiles within itself,
         /// this will recreate the entries, pointing to this chunk's tiles
         void ResolveLogicEntries(const Chunk& other) noexcept;
 

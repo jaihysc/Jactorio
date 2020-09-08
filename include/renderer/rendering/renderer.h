@@ -48,13 +48,13 @@ namespace jactorio::renderer
         // OpenGL calls
 
         ///
-        /// \brief Sets up OpenGl settings, only need to call once on program start
+        /// Sets up OpenGl settings, only need to call once on program start
         static void GlSetup() noexcept;
 
         static void GlClear() noexcept;
 
         ///
-        /// \brief Resizes rendering buffers to new window size
+        /// Resizes rendering buffers to new window size
         void GlResizeWindow(unsigned int window_x, unsigned int window_y) noexcept;
 
 
@@ -78,13 +78,13 @@ namespace jactorio::renderer
 
 
         ///
-        /// \brief Renderer will lookup uv coords at the provided spritemap_coords
+        /// Renderer will lookup uv coords at the provided spritemap_coords
         void SetSpriteUvCoords(const SpriteUvCoordsT& spritemap_coords) noexcept {
             spritemapCoords_ = &spritemap_coords;
         }
 
         ///
-        /// \brief Faster non range checked get into spritemapCoords_
+        /// Faster non range checked get into spritemapCoords_
         /// \remark Ensure key always exists
         J_NODISCARD static const SpriteUvCoordsT::mapped_type& GetSpriteUvCoords(
             const SpriteUvCoordsT& map, SpriteUvCoordsT::key_type key) noexcept;
@@ -128,19 +128,19 @@ namespace jactorio::renderer
         static constexpr int kPaddingChunks = 1;
 
         ///
-        /// \brief Number of tiles to draw to fill window dimensions
+        /// Number of tiles to draw to fill window dimensions
         J_NODISCARD core::Position2<int> GetTileDrawAmount() const noexcept;
 
         ///
-        /// \brief All tiles drawn will have its position added to tile offset
+        /// All tiles drawn will have its position added to tile offset
         J_NODISCARD core::Position2<int> GetTileDrawOffset(int position_x, int position_y) const noexcept;
 
         ///
-        /// \brief Top left chunk coordinates to begin drawing
+        /// Top left chunk coordinates to begin drawing
         J_NODISCARD core::Position2<int> GetChunkDrawStart(int position_x, int position_y) const noexcept;
 
         ///
-        /// \brief Number of chunks to draw to fill window dimensions
+        /// Number of chunks to draw to fill window dimensions
         J_NODISCARD core::Position2<int> GetChunkDrawAmount(int position_x, int position_y) const noexcept;
 
 
@@ -184,12 +184,12 @@ namespace jactorio::renderer
         static void ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTileLayer& tile_layer) noexcept;
 
         ///
-        /// \brief Draws current data to the screen
+        /// Draws current data to the screen
         /// \param index_count Count of indices to draw
         static void GlDraw(uint64_t index_count) noexcept;
 
         ///
-        /// \brief Updates projection matrix and zoom level
+        /// Updates projection matrix and zoom level
         void GlUpdateTileProjectionMatrix() noexcept;
 
         // ======================================================================

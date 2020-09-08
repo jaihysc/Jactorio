@@ -66,7 +66,7 @@ namespace jactorio::renderer
 
     // ======================================================================
 
-    /// \brief For testing the actual generation algorithm
+    /// For testing the actual generation algorithm
     class SpritemapGeneratorTest : public testing::Test
     {
     protected:

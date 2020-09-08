@@ -20,7 +20,7 @@ struct ParserData
     bool inRVal = false; // Right of equals sign
 
     ///
-    /// \brief Call this when entering a new line to reset variables and buffers
+    /// Call this when entering a new line to reset variables and buffers
     void ResetVariables() {
         charNumber = 0;
 
@@ -30,7 +30,7 @@ struct ParserData
     }
 
     ///
-    /// \brief Logs parsing error message and throws
+    /// Logs parsing error message and throws
     /// \exception Data_exception Thrown when this function is called
     [[noreturn]] void ParseError(const std::string& message) const {
         std::stringstream str_s;
@@ -43,7 +43,7 @@ struct ParserData
 
 
 ///
-/// \brief Helper for parse, handles end of line actions
+/// Helper for parse, handles end of line actions
 void ParseEol(jactorio::data::PrototypeManager& data_manager,
               ParserData& parser_data,
               const std::string& directory_prefix) {

@@ -48,28 +48,28 @@ namespace jactorio::core
 
 
     ///
-    /// \brief Relative path supported, call this after setting the executing directory
+    /// Relative path supported, call this after setting the executing directory
     void OpenLogFile();
     void CloseLogFile();
 
     ///
-    /// \brief Logs a message to console
+    /// Logs a message to console
     /// Format: Timestamp [severity] - [group] message
     void LogMessage(LogSeverity severity, const std::string& group, int line, const std::string& message);
 
     ///
-    /// \brief Converts log_severity to a string
+    /// Converts log_severity to a string
     /// \return The log severity as string
     std::string LogSeverityStr(LogSeverity severity);
 
     ///
-    /// \brief Converts log_severity to a string with color
+    /// Converts log_severity to a string with color
     /// \return The log severity as string
     std::string LogSeverityStrColored(LogSeverity severity);
 
 
     ///
-    /// \brief Creates a formatted log message if log level permits
+    /// Creates a formatted log message if log level permits
     template <LogSeverity Severity, typename... Args, typename = std::common_type<Args...>>
     void MakeLogMessage(const char* format, const char* file, const int line, Args&&... args) {
         if constexpr (static_cast<int>(Severity) >= JACTORIO_LOG_LEVEL) {

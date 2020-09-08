@@ -31,7 +31,7 @@ namespace jactorio::game
     };
 
     ///
-    /// \brief A tile in the world
+    /// A tile in the world
     /// ! Be careful when adding members to this class, its size should be minimized ! This is created for every chunk
     class ChunkTile
     {

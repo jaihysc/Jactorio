@@ -10,7 +10,7 @@
 namespace jactorio::game
 {
     ///
-    /// \brief Named values for each z buffer number
+    /// Named values for each z buffer number
     enum class OverlayLayer
     {
         // A separate layer is only needed when it needs to be accessed independently, otherwise join together in single
@@ -24,7 +24,7 @@ namespace jactorio::game
 
 
     ///
-    /// \brief Holds items which do not adhere to the tiles for rendering
+    /// Holds items which do not adhere to the tiles for rendering
     class OverlayElement
     {
         /// z position of first layer

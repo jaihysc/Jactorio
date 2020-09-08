@@ -232,7 +232,7 @@ static void ShiftSegmentHeadBackward(game::TransportSegment& line_segment) {
 }
 
 ///
-/// \brief Updates the world tiles which references a transport segment, props: line_segment_index, line_segment
+/// Updates the world tiles which references a transport segment, props: line_segment_index, line_segment
 /// \param world_coords Beginning tile to update
 /// \param line_segment Beginning segment, traveling inverse Orientation line_segment.length tiles, <br>
 /// all tiles set to reference this
@@ -321,7 +321,7 @@ void CalculateNeighborLineOrientation(game::WorldData& world_data,
 // Updating termination type
 
 ///
-/// \brief Shifts origin segment forwards if neighbor line orientation matches template arguments
+/// Shifts origin segment forwards if neighbor line orientation matches template arguments
 template <data::TransportLineData::LineOrientation BendLeft,
           data::TransportLineData::LineOrientation BendRight,
           data::TransportLineData::LineOrientation LeftOnly,
@@ -348,7 +348,7 @@ void TryShiftSegment(game::WorldData& world_data,
 }
 
 ///
-/// \brief Shifts origin segment forwards depending on its orientation with the appropriate neighbor
+/// Shifts origin segment forwards depending on its orientation with the appropriate neighbor
 void TryShiftSegment(game::WorldData& world_data,
                      const WorldCoord& origin_coords,
                      const std::shared_ptr<game::TransportSegment>& origin_segment,
@@ -391,7 +391,7 @@ void TryShiftSegment(game::WorldData& world_data,
 }
 
 ///
-/// \brief Changes terminate type of neighbors depending on origin
+/// Changes terminate type of neighbors depending on origin
 /// \tparam IsNeighborUpdate If true, length and itemOffset will also be updated
 /// \remark This does not move across logic chunks and may make the position negative
 template <bool IsNeighborUpdate>
@@ -514,7 +514,7 @@ void CalculateNeighborTermination(game::WorldData& world_data,
 // Build
 
 ///
-/// \brief Initializes line data and groups transport segments
+/// Initializes line data and groups transport segments
 /// Sets the transport segment grouped / newly created with in tile_layer and returns it
 /// \return Created data for at tile_layer, was a new transport segment created
 data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
@@ -635,7 +635,7 @@ data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
 }
 
 ///
-/// \brief Determines a line + neighbor segment's target segment
+/// Determines a line + neighbor segment's target segment
 /// \tparam OriginConnect Orientation required for origin_segment to connect to neighbor segment
 /// \tparam TargetConnect Orientation required for neighbor segment to connect to origin segment
 template <data::Orientation OriginConnect, data::Orientation TargetConnect>
@@ -682,7 +682,7 @@ void CalculateLineTargets(game::WorldData& world_data,
 }
 
 ///
-/// \brief Set the target segment to the neighbor origin is pointing to,
+/// Set the target segment to the neighbor origin is pointing to,
 /// and the neighbor's target segment which is pointing to origin
 void CalculateLineTargets4(game::WorldData& world_data,
                            const WorldCoord& origin_coord,
@@ -788,7 +788,7 @@ void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
 // Remove
 
 ///
-/// \brief Updates neighboring segments after transport line is removed
+/// Updates neighboring segments after transport line is removed
 /// \param origin_coord Coords of origin_segment
 /// \param origin_data Removed line segment data
 /// \param neighbor_data Neighboring line segment data

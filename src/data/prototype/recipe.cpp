@@ -12,7 +12,7 @@
 using namespace jactorio;
 
 ///
-/// \brief Recursively resolves raw materials
+/// Recursively resolves raw materials
 void ResolveRawRecipe(const data::PrototypeManager& data_manager,
                       std::unordered_map<std::string, uint16_t>& materials_raw,
                       const data::Recipe* recipe,

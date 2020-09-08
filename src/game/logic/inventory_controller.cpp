@@ -21,7 +21,7 @@ using namespace jactorio;
 #endif
 
 ///
-/// \brief Validates that the contents of the inventory are valid
+/// Validates that the contents of the inventory are valid
 /// Disabled in release builds
 void InventoryVerify(const data::Item::Inventory& inv) {
     for (const auto& stack : inv) {
@@ -40,7 +40,7 @@ void InventoryVerify(const data::Item::Inventory& inv) {
 // ======================================================================
 
 ///
-/// \brief Attempts to drop one item from origin item stack to target itme stack
+/// Attempts to drop one item from origin item stack to target itme stack
 bool DropOneOriginItem(data::ItemStack& origin_item_stack, data::ItemStack& target_item_stack) {
     target_item_stack.item = origin_item_stack.item;
     target_item_stack.count++;

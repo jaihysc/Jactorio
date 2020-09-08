@@ -17,18 +17,18 @@ namespace jactorio
 namespace jactorio::renderer
 {
     ///
-    /// \brief Manages a window in which the user sees
+    /// Manages a window in which the user sees
     class DisplayWindow
     {
     public:
         ///
-        /// \brief Creates openGL context and window
+        /// Creates openGL context and window
         /// \exception Data_exception if logo cannot be found
         /// \return Non 0 if error occurred
         int Init(int width, int height);
 
         ///
-        /// \brief Terminates openGL context and window
+        /// Terminates openGL context and window
         /// \return Non 0 if error occurred
         int Terminate();
 

@@ -28,14 +28,14 @@ namespace jactorio::game
         const std::unique_ptr<data::TransportBelt> transportBeltProto_ = std::make_unique<data::TransportBelt>();
 
         ///
-        /// \brief Creates a world, chunk and logic chunk at 0, 0
+        /// Creates a world, chunk and logic chunk at 0, 0
         void SetUp() override {
             chunk_ = &worldData_.EmplaceChunk(0, 0);
             worldData_.LogicAddChunk(*chunk_);
         }
 
         ///
-        /// \brief Creates tile UniqueData for TransportSegment
+        /// Creates tile UniqueData for TransportSegment
         void RegisterSegment(const WorldCoord& world_coords, const std::shared_ptr<TransportSegment>& segment) {
             TestRegisterTransportSegment(worldData_, world_coords, segment, *transportBeltProto_);
         }

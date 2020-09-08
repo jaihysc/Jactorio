@@ -98,7 +98,7 @@ namespace jactorio::data
 
 
         ///
-        /// \brief Adds a tile range, the order which this is called affects the order of the tile range <br>
+        /// Adds a tile range, the order which this is called affects the order of the tile range <br>
         /// \remark Will not add if start_val is not set
         /// \param end_range Exclusive ending range, unless it is last item
         /// \param prototype FrameworkBase or inheritors
@@ -115,7 +115,7 @@ namespace jactorio::data
 
 
         ///
-        /// \brief Fetches the tile at the current range
+        /// Fetches the tile at the current range
         /// normalize is false, Nullptr if out of range
         /// normalize is true, Min/max value tile if out of range
         J_NODISCARD T* Get(NoiseValT val) const {
@@ -129,7 +129,7 @@ namespace jactorio::data
         }
 
         ///
-        /// \brief Gets start end range for a noise value
+        /// Gets start end range for a noise value
         /// \return inclusive start, exclusive end range unless it is last item, {0, 0} if invalid
         J_NODISCARD std::pair<NoiseValT, NoiseValT> GetValNoiseRange(NoiseValT val) const {
             TryNormalizeNoiseVal(val);
@@ -152,7 +152,7 @@ namespace jactorio::data
 
     private:
         ///
-        /// \brief If normalize is set, normalizes provided value
+        /// If normalize is set, normalizes provided value
         void TryNormalizeNoiseVal(NoiseValT& val) const {
             // Ending range must be inclusive for last noise value so normalize works
 

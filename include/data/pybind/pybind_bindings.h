@@ -41,7 +41,7 @@
 
 
 ///
-/// \brief Call from python context, stores traceback in prototype
+/// Call from python context, stores traceback in prototype
 inline void ExtractPythonTraceback(jactorio::data::FrameworkBase& prototype) {
     py::exec("import sys as _sys \n"
              "_stack_frame = _sys._getframe() \n");

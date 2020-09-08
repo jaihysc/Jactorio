@@ -22,7 +22,7 @@ namespace jactorio::renderer
         VertexArray& operator=(VertexArray&& other) noexcept = delete;
 
         ///
-        /// \brief Adds specified buffer to the vertex array
+        /// Adds specified buffer to the vertex array
         /// \remark Vertex_buffer must be deleted manually, it is not managed by the vertex array
         /// \param vb Vertex buffer to add to vertex array
         /// \param span Number of floats for one set of coordinates (2 for X and Y)

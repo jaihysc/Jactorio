@@ -38,7 +38,7 @@ namespace jactorio::data
 
 
         ///
-        /// \brief Sets the prototype pointer for a transport line at tile
+        /// Sets the prototype pointer for a transport line at tile
         game::ChunkTileLayer& BuildTransportLine(const WorldCoord world_coords, const Orientation orientation) {
             auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)->GetLayer(game::TileLayer::entity);
 
@@ -66,7 +66,7 @@ namespace jactorio::data
         }
 
         ///
-        /// \brief Validates that a tile at coords 1,1 with the placement orientation produces the expected line
+        /// Validates that a tile at coords 1,1 with the placement orientation produces the expected line
         /// orientation
         void ValidateResultOrientation(const Orientation placement_orientation,
                                        const TransportLineData::LineOrientation expected_line_orientation) {
@@ -75,7 +75,7 @@ namespace jactorio::data
         }
 
         ///
-        /// \brief Dispatches the appropriate events for when a transport line is built
+        /// Dispatches the appropriate events for when a transport line is built
         void TlBuildEvents(const WorldCoord& world_coords, const Orientation orientation) {
             auto& layer = worldData_.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
 
@@ -92,7 +92,7 @@ namespace jactorio::data
         }
 
         ///
-        /// \brief Dispatches the appropriate events AFTER a transport line is removed
+        /// Dispatches the appropriate events AFTER a transport line is removed
         void TlRemoveEvents(const WorldCoord& world_coords) {
 
             auto& layer = worldData_.GetTile(world_coords)->GetLayer(game::TileLayer::entity);

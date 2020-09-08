@@ -12,7 +12,7 @@
 namespace jactorio::game
 {
     ///
-    /// \brief Used for dispatching and listening to events
+    /// Used for dispatching and listening to events
     class EventData
     {
         using CallbackFunc = void (*)(EventBase&);
@@ -23,7 +23,7 @@ namespace jactorio::game
 
     public:
         ///
-        /// \brief Subscribes a callback to an event
+        /// Subscribes a callback to an event
         /// \param callback Should accept single parameter EventBase by reference
         template <typename T>
         void Subscribe(const EventType event_type, T callback) {
@@ -31,7 +31,7 @@ namespace jactorio::game
         }
 
         ///
-        /// \brief Subscribes a callback to an event which will only run once
+        /// Subscribes a callback to an event which will only run once
         /// \param callback Should accept single parameter EventBase by reference
         template <typename T>
         void SubscribeOnce(const EventType event_type, T callback) {
@@ -39,7 +39,7 @@ namespace jactorio::game
         }
 
         ///
-        /// \brief Unsubscribes a callback to an event
+        /// Unsubscribes a callback to an event
         /// \return true if successfully removed, false if callback does not exist
         template <typename T>
         bool Unsubscribe(const EventType event_type, T callback) {
@@ -72,7 +72,7 @@ namespace jactorio::game
         }
 
         ///
-        /// \brief Raises event of EventType, forwards args to constructor of TEvent inheriting EventBase,
+        /// Raises event of EventType, forwards args to constructor of TEvent inheriting EventBase,
         /// Constructed event is provided by reference to all callbacks
         template <typename TEvent, typename... Args>
         void Raise(const EventType event_type, Args&&... args) {
@@ -98,7 +98,7 @@ namespace jactorio::game
 
 
         ///
-        /// \brief Erases all data held
+        /// Erases all data held
         void ClearAllData() {
             // All callbacks registered to event
             for (auto& vector : eventHandlers_) {

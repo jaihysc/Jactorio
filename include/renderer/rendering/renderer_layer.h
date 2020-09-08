@@ -17,7 +17,7 @@
 namespace jactorio::renderer
 {
     ///
-    /// \brief Generates and maintains the buffers of a rendering layer
+    /// Generates and maintains the buffers of a rendering layer
     /// Currently 2 buffers are used: Vertex and UV
     /// \remark Can only be created and destructed in an Opengl Context
     /// \remark Methods with Gl prefix must be called from an OpenGl context
@@ -71,31 +71,31 @@ namespace jactorio::renderer
         // ======================================================================
 
         ///
-        /// \brief Appends element to layer, after the highest element index where values were assigned
+        /// Appends element to layer, after the highest element index where values were assigned
         /// \remark Ensure GlWriteBegin() has been called first before attempting to write into buffers
         void PushBack(const Element& element, VertexPositionT::PositionT::ValueT z) noexcept;
         void PushBack(const Element& element, VertexPositionT::PositionT::ValueT z, float rotate_deg) noexcept;
 
         ///
-        /// \brief Returns current element capacity of buffers
+        /// Returns current element capacity of buffers
         J_NODISCARD uint32_t GetCapacity() const noexcept;
 
         ///
-        /// \brief Returns count of elements' index in buffers
+        /// Returns count of elements' index in buffers
         J_NODISCARD uint64_t GetIndicesCount() const noexcept;
 
         ///
-        /// \brief Queues allocation to hold element count
+        /// Queues allocation to hold element count
         /// \remark Performs reserves upon calling GlHandleBufferResize
         void Reserve(uint32_t count) noexcept;
 
         ///
-        /// \brief Queues resizing the buffer down to the initial size on upon construction
+        /// Queues resizing the buffer down to the initial size on upon construction
         /// \remark Performs reserves upon calling GlHandleBufferResize
         void ResizeDefault() noexcept;
 
         ///
-        /// \brief Signal to begin overriding old existing data in buffers
+        /// Signal to begin overriding old existing data in buffers
         /// \remark Does not guarantee that underlying buffers will be zeroed, merely that
         /// the data will not by uploaded with glBufferSubData
         void Clear() noexcept;
@@ -103,28 +103,28 @@ namespace jactorio::renderer
         // ======================================================================
 
         ///
-        /// \brief Begins writing data to buffers
+        /// Begins writing data to buffers
         void GlWriteBegin() noexcept;
         ///
-        /// \brief Ends writing data to buffers
+        /// Ends writing data to buffers
         void GlWriteEnd() noexcept;
 
 
         ///
-        /// \brief If a buffer resize was requested, resizes the buffers
+        /// If a buffer resize was requested, resizes the buffers
         void GlHandleBufferResize();
 
         ///
-        /// \brief Deletes vertex and index buffers
+        /// Deletes vertex and index buffers
         void GlDeleteBuffers() noexcept;
 
         ///
-        /// \brief Binds the vertex buffers, call this prior to drawing
+        /// Binds the vertex buffers, call this prior to drawing
         void GlBindBuffers() const noexcept;
 
     private:
         ///
-        /// \brief Handles detection of buffer resizing
+        /// Handles detection of buffer resizing
         /// \return true if ok to push back into buffers, false if not
         bool PrePushBackChecks() noexcept;
 
@@ -139,18 +139,18 @@ namespace jactorio::renderer
         void SetBufferUv(uint32_t buffer_index, const UvPositionT& u_pos) const noexcept;
 
         ///
-        /// \brief Generates indices to draw tiles using the grid from gen_render_grid
+        /// Generates indices to draw tiles using the grid from gen_render_grid
         /// \returns Indices to be feed into Index_buffer
         static std::unique_ptr<unsigned int[]> GenRenderGridIndices(uint32_t tile_count);
 
 
         ///
-        /// \brief Initializes vertex buffers for rendering vertex and uv buffers + index buffer
+        /// Initializes vertex buffers for rendering vertex and uv buffers + index buffer
         /// \remark Should only be called once
         void GlInitBuffers();
 
         ///
-        /// \brief Only deletes heap vertex buffers, does not set pointers to nullptr
+        /// Only deletes heap vertex buffers, does not set pointers to nullptr
         void GlFreeBuffers() const noexcept;
 
         // ======================================================================

@@ -23,7 +23,7 @@ namespace jactorio::game
     };
 
     ///
-    /// \brief Base class for handling items (pickup / droOff)
+    /// Base class for handling items (pickup / droOff)
     class ItemHandler
     {
     protected:
@@ -54,7 +54,7 @@ namespace jactorio::game
 
 
     ///
-    /// \brief Represents a world location where items can be inserted
+    /// Represents a world location where items can be inserted
     class ItemDropOff : public ItemHandler
     {
     public:
@@ -104,13 +104,13 @@ namespace jactorio::game
         using DropOffFunc    = decltype(&ItemDropOff::InsertContainerEntity);
         using CanDropOffFunc = decltype(&ItemDropOff::CanInsertContainerEntity);
 
-        /// \brief Chosen function for inserting at destination
+        /// Chosen function for inserting at destination
         DropOffFunc dropFunc_       = nullptr;
         CanDropOffFunc canDropFunc_ = nullptr;
     };
 
     ///
-    /// \brief Represents a world location where items can be picked up by inserters
+    /// Represents a world location where items can be picked up by inserters
     class InserterPickup : public ItemHandler
     {
         /// Success, picked up stack

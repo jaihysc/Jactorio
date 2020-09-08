@@ -20,7 +20,7 @@
 using namespace jactorio;
 
 ///
-/// \brief Implements ImGui::IsItemClicked() for left and right mouse buttons
+/// Implements ImGui::IsItemClicked() for left and right mouse buttons
 template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
 void ImplementInventoryIsItemClicked(
     game::PlayerData& player_data,
@@ -55,7 +55,7 @@ const ImGuiWindowFlags kMenuFlags =
     0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
 
 ///
-/// \brief Draws the player's inventory menu
+/// Draws the player's inventory menu
 void PlayerInventoryMenu(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
     const ImVec2 window_size = renderer::GetWindowSize();
     ImGui::SetNextWindowSize(window_size);
@@ -207,7 +207,7 @@ void RecipeMenu(game::PlayerData& player_data,
 }
 
 ///
-/// \brief Draws preview tooltip for a recipe
+/// Draws preview tooltip for a recipe
 /// \tparam IsPlayerCrafting Shows items possessed by the player and opportunities for intermediate crafting
 template <bool IsPlayerCrafting>
 void RecipeHoverTooltip(game::PlayerData& player_data,

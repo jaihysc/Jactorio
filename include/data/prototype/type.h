@@ -40,7 +40,7 @@ namespace jactorio::data
     }
 
     ///
-    /// \brief Increments or decrements Ty var depending on orientation.
+    /// Increments or decrements Ty var depending on orientation.
     /// up--, right++, down++, left--
     /// \remark Type must implement operator+= and operator-=
     /// \remark if incrementer type not provided, Typeof x will bw used

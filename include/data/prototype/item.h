@@ -47,7 +47,7 @@ namespace jactorio::data
 
 
         ///
-        /// \brief Number of items which can be together
+        /// Number of items which can be together
         PYTHON_PROP_REF(StackCount, stackSize);
 
 

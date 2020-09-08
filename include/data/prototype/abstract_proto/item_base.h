@@ -10,7 +10,7 @@
 namespace jactorio::data
 {
     ///
-    /// \brief Basic abstract class for items
+    /// Basic abstract class for items
     class ItemBase : public FrameworkBase
     {
     protected:
