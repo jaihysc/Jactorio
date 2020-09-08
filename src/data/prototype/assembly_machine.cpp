@@ -3,7 +3,7 @@
 #include "data/prototype/assembly_machine.h"
 
 #include "game/world/world_data.h"
-#include "renderer/gui/gui_menus.h"
+#include "render/gui/gui_menus.h"
 
 using namespace jactorio;
 
@@ -92,7 +92,7 @@ bool data::AssemblyMachine::OnRShowGui(GameWorlds& worlds,
                                        game::PlayerData& player,
                                        const PrototypeManager& proto_manager,
                                        game::ChunkTileLayer* tile_layer) const {
-    renderer::AssemblyMachine({worlds, logic, player, proto_manager, this, tile_layer->GetUniqueData()});
+    render::AssemblyMachine({worlds, logic, player, proto_manager, this, tile_layer->GetUniqueData()});
     return true;
 }
 

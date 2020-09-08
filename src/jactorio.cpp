@@ -7,7 +7,7 @@
 #include "core/crash_handler.h"
 #include "core/filesystem.h"
 #include "game/logic_loop.h"
-#include "renderer/render_loop.h"
+#include "render//render_loop.h"
 
 void InitializeGame() {
     using namespace jactorio;
@@ -18,7 +18,7 @@ void InitializeGame() {
     LogicRenderLoopCommon common_data;
 
     std::thread logic_thread    = std::thread(game::InitLogicLoop, std::ref(common_data));
-    std::thread renderer_thread = std::thread(renderer::RenderInit, std::ref(common_data));
+    std::thread renderer_thread = std::thread(render::RenderInit, std::ref(common_data));
 
     logic_thread.join();
     renderer_thread.join();

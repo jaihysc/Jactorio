@@ -6,7 +6,7 @@
 #include <cmath>
 
 #include "game/logic/transport_segment.h"
-#include "renderer/rendering/data_renderer.h"
+#include "render//rendering/data_renderer.h"
 
 using namespace jactorio;
 using LineData4Way = data::TransportLine::LineData4Way;
@@ -163,7 +163,7 @@ data::TransportLineData::LineOrientation data::TransportLine::GetLineOrientation
 // Game events
 
 
-void data::TransportLine::OnRDrawUniqueData(renderer::RendererLayer& layer,
+void data::TransportLine::OnRDrawUniqueData(render::RendererLayer& layer,
                                             const SpriteUvCoordsT& uv_coords,
                                             const core::Position2<float>& pixel_offset,
                                             const UniqueDataBase* unique_data) const {

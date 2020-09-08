@@ -2,11 +2,11 @@
 
 #include "data/prototype/inserter.h"
 
-#include "renderer/rendering/data_renderer.h"
+#include "render/rendering/data_renderer.h"
 
 using namespace jactorio;
 
-void data::Inserter::OnRDrawUniqueData(renderer::RendererLayer& layer,
+void data::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
                                        const SpriteUvCoordsT& uv_coords,
                                        const core::Position2<float>& pixel_offset,
                                        const UniqueDataBase* unique_data) const {

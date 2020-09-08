@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "game/event/event_base.h"
-#include "renderer/display_window.h"
+#include "render/display_window.h"
 
 namespace jactorio::game
 {
@@ -28,7 +28,7 @@ namespace jactorio::game
     class RendererTickEvent final : public EventBase
     {
     public:
-        using DisplayWindowContainerT = std::vector<std::reference_wrapper<renderer::DisplayWindow>>;
+        using DisplayWindowContainerT = std::vector<std::reference_wrapper<render::DisplayWindow>>;
 
         explicit RendererTickEvent(const DisplayWindowContainerT& window) : windows(window) {}
 

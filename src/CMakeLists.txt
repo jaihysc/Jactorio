@@ -57,36 +57,36 @@ set(JACTORIO_SRC_FILES
 	${JACTORIO_DIR}/game/logic/transport_segment.cpp
 	${JACTORIO_DIR}/game/logic_loop.cpp
 
-	${JACTORIO_DIR}/game/player/player_data.cpp
+        ${JACTORIO_DIR}/game/player/player_data.cpp
 
-	${JACTORIO_DIR}/game/world/chunk.cpp
-	${JACTORIO_DIR}/game/world/chunk_tile.cpp
-	${JACTORIO_DIR}/game/world/chunk_tile_layer.cpp
-	${JACTORIO_DIR}/game/world/update_dispatcher.cpp
-	${JACTORIO_DIR}/game/world/world_data.cpp
+        ${JACTORIO_DIR}/game/world/chunk.cpp
+        ${JACTORIO_DIR}/game/world/chunk_tile.cpp
+        ${JACTORIO_DIR}/game/world/chunk_tile_layer.cpp
+        ${JACTORIO_DIR}/game/world/update_dispatcher.cpp
+        ${JACTORIO_DIR}/game/world/world_data.cpp
 
 
-	${JACTORIO_DIR}/renderer/gui/gui_layout.cpp
-	${JACTORIO_DIR}/renderer/gui/gui_menus.cpp
-	${JACTORIO_DIR}/renderer/gui/gui_menus_debug.cpp
-	${JACTORIO_DIR}/renderer/gui/imgui_manager.cpp
+        ${JACTORIO_DIR}/render/gui/gui_layout.cpp
+        ${JACTORIO_DIR}/render/gui/gui_menus.cpp
+        ${JACTORIO_DIR}/render/gui/gui_menus_debug.cpp
+        ${JACTORIO_DIR}/render/gui/imgui_manager.cpp
 
-	${JACTORIO_DIR}/renderer/opengl/error.cpp
-	${JACTORIO_DIR}/renderer/opengl/index_buffer.cpp
-	${JACTORIO_DIR}/renderer/opengl/mvp_manager.cpp
-	${JACTORIO_DIR}/renderer/opengl/shader.cpp
-	${JACTORIO_DIR}/renderer/opengl/texture.cpp
-	${JACTORIO_DIR}/renderer/opengl/vertex_array.cpp
-	${JACTORIO_DIR}/renderer/opengl/vertex_buffer.cpp
+        ${JACTORIO_DIR}/render/opengl/error.cpp
+        ${JACTORIO_DIR}/render/opengl/index_buffer.cpp
+        ${JACTORIO_DIR}/render/opengl/mvp_manager.cpp
+        ${JACTORIO_DIR}/render/opengl/shader.cpp
+        ${JACTORIO_DIR}/render/opengl/texture.cpp
+        ${JACTORIO_DIR}/render/opengl/vertex_array.cpp
+        ${JACTORIO_DIR}/render/opengl/vertex_buffer.cpp
 
-	${JACTORIO_DIR}/renderer/display_window.cpp
-	${JACTORIO_DIR}/renderer/render_loop.cpp
+        ${JACTORIO_DIR}/render/display_window.cpp
+        ${JACTORIO_DIR}/render/render_loop.cpp
 
-	${JACTORIO_DIR}/renderer/rendering/data_renderer.cpp
-	${JACTORIO_DIR}/renderer/rendering/renderer.cpp
-	${JACTORIO_DIR}/renderer/rendering/renderer_layer.cpp
-	${JACTORIO_DIR}/renderer/rendering/spritemap_generator.cpp
-)
+        ${JACTORIO_DIR}/render/rendering/data_renderer.cpp
+        ${JACTORIO_DIR}/render/rendering/renderer.cpp
+        ${JACTORIO_DIR}/render/rendering/renderer_layer.cpp
+        ${JACTORIO_DIR}/render/rendering/spritemap_generator.cpp
+        )
 # ======================================== END Source files .cpp
 
 

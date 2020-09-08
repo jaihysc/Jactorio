@@ -3,7 +3,7 @@
 #include "data/prototype/container_entity.h"
 
 #include "game/world/world_data.h"
-#include "renderer/gui/gui_menus.h"
+#include "render/gui/gui_menus.h"
 
 void jactorio::data::ContainerEntity::OnBuild(
     game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer& tile_layer, Orientation) const {
@@ -15,7 +15,7 @@ bool jactorio::data::ContainerEntity::OnRShowGui(GameWorlds& worlds,
                                                  game::PlayerData& player,
                                                  const PrototypeManager& data_manager,
                                                  game::ChunkTileLayer* tile_layer) const {
-    renderer::ContainerEntity(
+    render::ContainerEntity(
         {worlds, logic, player, data_manager, this, tile_layer->GetUniqueData<ContainerEntityData>()});
     return true;
 }

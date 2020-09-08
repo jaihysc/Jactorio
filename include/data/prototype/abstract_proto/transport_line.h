@@ -10,7 +10,7 @@
 #include "data/prototype/abstract_proto/health_entity.h"
 #include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_segment.h"
-#include "renderer/rendering/renderer.h"
+#include "render/rendering/renderer.h"
 
 #include <cereal/types/memory.hpp>
 
@@ -138,7 +138,7 @@ namespace jactorio::data
         // ======================================================================
         // Game events
 
-        void OnRDrawUniqueData(renderer::RendererLayer& layer,
+        void OnRDrawUniqueData(render::RendererLayer& layer,
                                const SpriteUvCoordsT& uv_coords,
                                const core::Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;

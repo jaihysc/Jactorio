@@ -91,7 +91,7 @@ namespace jactorio::data
 
         // ======================================================================
 
-        void OnRDrawUniqueData(renderer::RendererLayer& layer,
+        void OnRDrawUniqueData(render::RendererLayer& layer,
                                const SpriteUvCoordsT& uv_coords,
                                const core::Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;

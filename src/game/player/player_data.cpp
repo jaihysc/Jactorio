@@ -12,7 +12,7 @@
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"
 #include "game/world/world_data.h"
-#include "renderer/rendering/renderer.h"
+#include "render/rendering/renderer.h"
 
 using namespace jactorio;
 
@@ -23,8 +23,8 @@ void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_ma
     float pixels_from_center_x;
     float pixels_from_center_y;
     {
-        const auto window_width  = renderer::Renderer::GetWindowWidth();
-        const auto window_height = renderer::Renderer::GetWindowHeight();
+        const auto window_width  = render::Renderer::GetWindowWidth();
+        const auto window_height = render::Renderer::GetWindowHeight();
 
         // Account for MVP matrices
         // Normalize to -1 | 1 used by the matrix
@@ -51,10 +51,10 @@ void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_ma
         }
 
         // If player is standing on a partial tile, adjust the center accordingly to the correct location
-        mouse_x_center -= core::SafeCast<float>(renderer::Renderer::tileWidth) * (positionX_ - truncated_player_pos_x);
+        mouse_x_center -= core::SafeCast<float>(render::Renderer::tileWidth) * (positionX_ - truncated_player_pos_x);
 
         // This is plus since the y axis is inverted
-        mouse_y_center += core::SafeCast<float>(renderer::Renderer::tileWidth) * (positionY_ - truncated_player_pos_y);
+        mouse_y_center += core::SafeCast<float>(render::Renderer::tileWidth) * (positionY_ - truncated_player_pos_y);
 
 
         pixels_from_center_x = norm_positions.x - mouse_x_center;
@@ -62,11 +62,9 @@ void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_ma
     }
 
     // Calculate tile position based on current player position
-    float tile_x =
-        truncated_player_pos_x + pixels_from_center_x / core::LossyCast<float>(renderer::Renderer::tileWidth);
+    float tile_x = truncated_player_pos_x + pixels_from_center_x / core::LossyCast<float>(render::Renderer::tileWidth);
 
-    float tile_y =
-        truncated_player_pos_y + pixels_from_center_y / core::LossyCast<float>(renderer::Renderer::tileWidth);
+    float tile_y = truncated_player_pos_y + pixels_from_center_y / core::LossyCast<float>(render::Renderer::tileWidth);
 
     // Subtract extra tile if negative because no tile exists at -0, -0
     if (tile_x < 0)

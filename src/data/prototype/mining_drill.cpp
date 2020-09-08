@@ -4,7 +4,7 @@
 
 #include <tuple>
 
-#include "renderer/gui/gui_menus.h"
+#include "render/gui/gui_menus.h"
 
 using namespace jactorio;
 
@@ -15,7 +15,7 @@ bool data::MiningDrill::OnRShowGui(GameWorlds& worlds,
                                    game::ChunkTileLayer* tile_layer) const {
     auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
 
-    renderer::MiningDrill({worlds, logic, player, data_manager, this, drill_data});
+    render::MiningDrill({worlds, logic, player, data_manager, this, drill_data});
     return true;
 }
 
