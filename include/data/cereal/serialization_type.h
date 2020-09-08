@@ -6,7 +6,7 @@
 
 #include "jactorio.h"
 
-#include "core/math.h"
+#include "core/convert.h"
 #include "core/pointer_wrapper.h"
 #include "data/cereal/serialize.h"
 #include "data/prototype_manager.h"
