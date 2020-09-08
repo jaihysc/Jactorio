@@ -61,16 +61,17 @@ add_compile_definitions(JACTORIO_BUILD_TEST)  # Disables warning when using test
 set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 # ======================================== Test files .cpp
 set(JACTORIO_TEST_FILES
-	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
-	${JACTORIO_TEST_DIR}/core/mathTests.cpp
-	${JACTORIO_TEST_DIR}/core/pointer_wrapperTests.cpp
-	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
-	${JACTORIO_TEST_DIR}/core/utilityTests.cpp
+        ${JACTORIO_TEST_DIR}/core/convertTests.cpp
+        ${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
+        ${JACTORIO_TEST_DIR}/core/mathTests.cpp
+        ${JACTORIO_TEST_DIR}/core/pointer_wrapperTests.cpp
+        ${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
+        ${JACTORIO_TEST_DIR}/core/utilityTests.cpp
 
 
-	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype_managerTests.cpp
-	${JACTORIO_TEST_DIR}/data/unique_data_managerTests.cpp
+        ${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
+        ${JACTORIO_TEST_DIR}/data/prototype_managerTests.cpp
+        ${JACTORIO_TEST_DIR}/data/unique_data_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/cereal/supportTests.cpp

@@ -4,8 +4,8 @@
 
 #include <mutex>
 
+#include "core/convert.h"
 #include "core/data_type.h"
-#include "core/math.h"
 #include "data/prototype/item.h"
 #include "data/prototype_manager.h"
 

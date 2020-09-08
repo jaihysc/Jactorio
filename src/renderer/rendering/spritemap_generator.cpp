@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <map>
 
+#include "core/convert.h"
 #include "core/logger.h"
-#include "core/math.h"
 #include "data/prototype_manager.h"
 
 using namespace jactorio;

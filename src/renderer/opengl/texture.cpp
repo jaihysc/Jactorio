@@ -4,8 +4,8 @@
 
 #include <utility>
 
+#include "core/convert.h"
 #include "core/logger.h"
-#include "core/math.h"
 #include "renderer/opengl/error.h"
 #include "renderer/opengl/texture.h"
 #include "renderer/renderer_exception.h"

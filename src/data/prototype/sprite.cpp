@@ -9,8 +9,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "core/convert.h"
 #include "core/filesystem.h"
-#include "core/math.h"
 
 using namespace jactorio;
 

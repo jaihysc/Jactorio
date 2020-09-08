@@ -2,8 +2,8 @@
 
 #include "renderer/opengl/mvp_manager.h"
 
+#include "core/convert.h"
 #include "core/logger.h"
-#include "core/math.h"
 #include "renderer/opengl/shader.h"
 
 using namespace jactorio;

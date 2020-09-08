@@ -6,8 +6,8 @@
 
 #include <cmath>
 
+#include "core/convert.h"
 #include "core/data_type.h"
-#include "core/math.h"
 #include "data/cereal/serialize.h"
 #include "data/prototype/sprite.h"
 

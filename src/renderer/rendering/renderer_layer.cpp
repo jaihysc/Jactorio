@@ -5,7 +5,7 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
-#include "core/math.h"
+#include "core/convert.h"
 #include "game/player/player_data.h"
 
 using namespace jactorio;
