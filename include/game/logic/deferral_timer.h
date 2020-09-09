@@ -133,10 +133,7 @@ namespace jactorio::game
                 return 0;
             }
 
-            bool OnRShowGui(GameWorlds& /*worlds*/,
-                            game::LogicData& /*logic*/,
-                            game::PlayerData& /*player*/,
-                            const data::PrototypeManager& /*data_manager*/,
+            bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/,
                             game::ChunkTileLayer* /*tile_layer*/) const override {
                 return false;
             }

@@ -15,15 +15,12 @@ namespace jactorio
 {
     namespace data
     {
-        class PrototypeManager;
         enum class Orientation;
     } // namespace data
 
     namespace game
     {
         class WorldData;
-        class LogicData;
-        class PlayerData;
 
         class ChunkTileLayer;
         class Chunk;
@@ -32,6 +29,7 @@ namespace jactorio
     namespace render
     {
         class RendererLayer;
+        class GuiRenderer;
     }
 } // namespace jactorio
 
@@ -87,11 +85,7 @@ namespace jactorio::data
 
         ///
         /// Displays the menu associated with itself with the provided data
-        virtual bool OnRShowGui(GameWorlds& worlds,
-                                game::LogicData& logic,
-                                game::PlayerData& player,
-                                const PrototypeManager& data_manager,
-                                game::ChunkTileLayer* tile_layer) const = 0;
+        virtual bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const = 0;
 
         ///
         /// \param pixel_offset Pixels to top left of current tile

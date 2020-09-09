@@ -1,45 +1,17 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
-#define JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
+#ifndef JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_H
+#define JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_H
 #pragma once
 
 #include "jactorio.h"
 
-#include "core/data_type.h"
-#include "data/prototype_manager.h"
-
-namespace jactorio
-{
-    namespace game
-    {
-        class PlayerData;
-        class LogicData;
-    } // namespace game
-
-    namespace data
-    {
-        struct UniqueDataBase;
-    }
-} // namespace jactorio
-
+#include "render/gui/gui_renderer.h"
 
 namespace jactorio::render
 {
-    struct MenuFunctionParams
-    {
-        GameWorlds& worlds;
-        game::LogicData& logic;
-        game::PlayerData& player;
-
-        const data::PrototypeManager& protoManager;
-
-        const data::FrameworkBase* prototype = nullptr;
-        data::UniqueDataBase* uniqueData     = nullptr;
-    };
-
     /// Function to draw the menu
-    using MenuFunction = void (*)(const MenuFunctionParams& params);
+    using MenuFunction = void (*)(const GuiRenderer& g_rendr);
 
     // ======================================================================
     // Substitutes name_ below at macro definitions to create an array of guis
@@ -63,14 +35,14 @@ namespace jactorio::render
     // Macro definitions - 3
 
     // Function
-#define J_GUI_WINDOW_SUB(name_) void name_(const MenuFunctionParams& params);
+#define J_GUI_WINDOW_SUB(name__) void name__(const GuiRenderer& g_rendr);
 
     J_GUI_WINDOW
 
 
     // Enum
 #undef J_GUI_WINDOW_SUB
-#define J_GUI_WINDOW_SUB(name_) name_,
+#define J_GUI_WINDOW_SUB(name__) name__,
 
     enum class Menu
     {
@@ -80,7 +52,7 @@ namespace jactorio::render
 
     // Menu array
 #undef J_GUI_WINDOW_SUB
-#define J_GUI_WINDOW_SUB(name_) {name_},
+#define J_GUI_WINDOW_SUB(name__) {name__},
 
     ///
     /// \remark Index with menu
@@ -109,4 +81,4 @@ namespace jactorio::render
     }
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_H
+#endif // JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_H

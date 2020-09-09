@@ -52,7 +52,7 @@ void render::DebugMenuLogic(GameWorlds& worlds,
     }
 }
 
-void render::DebugMenu(const MenuFunctionParams& params) {
+void render::DebugMenu(const GuiRenderer& params) {
     auto& player = params.player;
     auto& world  = params.worlds[player.world.GetId()];
     auto& logic  = params.logic;

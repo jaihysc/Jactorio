@@ -48,11 +48,7 @@ namespace jactorio::data
 
         void OnRemove(game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer&) const override {}
 
-        bool OnRShowGui(GameWorlds& worlds,
-                        game::LogicData& logic,
-                        game::PlayerData& player,
-                        const PrototypeManager& data_manager,
-                        game::ChunkTileLayer* tile_layer) const override;
+        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
 
         void ValidatedPostLoad() override {
             sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});

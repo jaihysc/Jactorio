@@ -110,16 +110,11 @@ void render::Setup(const DisplayWindow& display_window) {
     LOG_MESSAGE(info, "Imgui initialized");
 }
 
-void DrawMenu(render::Menu menu,
-              GameWorlds& worlds,
-              game::LogicData& logic,
-              game::PlayerData& player,
-              const data::PrototypeManager& proto_manager,
-              data::UniqueDataBase* unique_data = nullptr) {
+void DrawMenu(render::Menu menu, render::GuiRenderer g_rendr, data::UniqueDataBase* unique_data = nullptr) {
     auto& gui_menu = render::menus[static_cast<int>(menu)];
 
     if (gui_menu.visible) {
-        gui_menu.drawPtr({worlds, logic, player, proto_manager, nullptr, unique_data});
+        gui_menu.drawPtr({g_rendr, nullptr, unique_data});
     }
 }
 
@@ -147,17 +142,15 @@ void render::ImguiDraw(const DisplayWindow& display_window,
     // ImPushFont(font);
     // ImPopFont();
 
-    DrawMenu(Menu::DebugMenu, worlds, logic, player, proto_manager);
-    DebugMenuLogic(worlds, logic, player, proto_manager);
+    auto menu_data = GetMenuData();
+    GuiRenderer g_rendr{worlds, logic, player, proto_manager, menu_data};
 
-    // Draw gui for active entity
-    // Do not draw character and recipe menu while in an entity menu
 
     bool drew_gui = false;
 
     auto* layer = player.placement.GetActivatedLayer();
     if (layer != nullptr) {
-        drew_gui = layer->GetPrototypeData<data::Entity>()->OnRShowGui(worlds, logic, player, proto_manager, layer);
+        drew_gui = layer->GetPrototypeData<data::Entity>()->OnRShowGui(g_rendr, layer);
         if (drew_gui) {
             SetVisible(Menu::CharacterMenu, false);
         }
@@ -167,14 +160,16 @@ void render::ImguiDraw(const DisplayWindow& display_window,
     }
 
     if (!drew_gui) {
-        DrawMenu(Menu::CharacterMenu, worlds, logic, player, proto_manager);
+        DrawMenu(Menu::CharacterMenu, g_rendr);
     }
 
     // Player gui
-    MenuFunctionParams menu_params{worlds, logic, player, proto_manager};
-    CursorWindow(menu_params);
-    CraftingQueue(menu_params);
-    PickupProgressbar(menu_params);
+    DrawMenu(Menu::DebugMenu, g_rendr);
+    DebugMenuLogic(worlds, logic, player, proto_manager);
+
+    CursorWindow(g_rendr);
+    CraftingQueue(g_rendr);
+    PickupProgressbar(g_rendr);
 
     // Render
     ImGui::Render();

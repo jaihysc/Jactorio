@@ -28,11 +28,6 @@ namespace jactorio::render
     /// In order to auto resize to fit the title's text since the title is not accounted
     void FitTitle(std::stringstream& description_ss, std::size_t target_len);
 
-    ///
-    /// Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
-    void DrawTitleBar(
-        const std::string& title, const std::function<void()>& draw_func = []() {});
-
     // ======================================================================
     // Widget Positioning
 

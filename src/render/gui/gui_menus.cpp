@@ -21,8 +21,9 @@ using namespace jactorio;
 
 ///
 /// Implements ImGui::IsItemClicked() for left and right mouse buttons
+/// \param callback Called after inventory actions were handled
 template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
-void ImplementInventoryIsItemClicked(
+void HandleInvClicked(
     game::PlayerData& player_data,
     const data::PrototypeManager& data_manager,
     data::Item::Inventory& inv,
@@ -36,6 +37,16 @@ void ImplementInventoryIsItemClicked(
         player_data.inventory.HandleInventoryActions(data_manager, inv, index, HalfSelectOnRight);
         on_click();
     }
+}
+
+template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
+void HandleInvClicked(
+    const render::GuiRenderer& g_rendr,
+    data::Item::Inventory& inv,
+    const size_t index,
+    const std::function<void()>& on_click = []() {}) {
+
+    HandleInvClicked<HalfSelectOnLeft, HalfSelectOnRight>(g_rendr.player, g_rendr.protoManager, inv, index, on_click);
 }
 
 float GetProgressBarFraction(const GameTickT game_tick,
@@ -56,26 +67,24 @@ const ImGuiWindowFlags kMenuFlags =
 
 ///
 /// Draws the player's inventory menu
-void PlayerInventoryMenu(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
+void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
     render::GuiMenu menu;
     menu.Begin("_character", nullptr, kMenuFlags); // TODO handle this
 
     menu.DrawTitleBar("Character");
 
-    // TODO remove need for this
-    auto menu_data = render::GetMenuData();
 
-    auto& player_inv = player_data.inventory.inventory;
+    auto& player_inv = g_rendr.player.inventory.inventory;
 
-    render::GuiSlotRenderer item_slots;
+    auto item_slots = g_rendr.MakeComponent<render::GuiSlotRenderer>();
     item_slots.Begin(player_inv.size(), [&](auto index) {
         const auto& stack = player_inv[index];
 
-        item_slots.DrawSlot(menu_data, stack, [&]() {
-            ImplementInventoryIsItemClicked(player_data, data_manager, player_inv, index);
+        item_slots.DrawSlot(stack, [&]() {
+            HandleInvClicked(g_rendr, player_inv, index);
 
             if (ImGui::IsItemHovered() && stack.count != 0) {
-                render::DrawCursorTooltip(player_data.inventory.GetSelectedItem() != nullptr,
+                render::DrawCursorTooltip(g_rendr.player.inventory.GetSelectedItem() != nullptr,
                                           stack.item->GetLocalizedName().c_str(),
                                           "sample description",
                                           [&]() {
@@ -89,15 +98,17 @@ void PlayerInventoryMenu(game::PlayerData& player_data, const data::PrototypeMan
     });
 }
 
-void RecipeMenu(game::PlayerData& player_data,
-                const data::PrototypeManager& data_manager,
+void RecipeMenu(const render::GuiRenderer g_rendr,
                 const std::string& title,
                 const std::function<void(const data::Recipe& recipe, bool& button_hovered)>& item_slot_draw) {
+    auto& player_data         = g_rendr.player;
+    const auto& proto_manager = g_rendr.protoManager;
+
     render::GuiMenu menu;
     menu.Begin("_recipe", nullptr, kMenuFlags);
 
     // Title with search bar
-    render::DrawTitleBar(title, [&]() {
+    menu.DrawTitleBar(title, [&]() {
         // Vertically center title text with search bar
         ImGui::SameLine();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::SafeCast<float>(render::kGuiStyleTitlebarPaddingY) / 2);
@@ -127,12 +138,10 @@ void RecipeMenu(game::PlayerData& player_data,
         return compare_item_name.find(compare_str) != std::string::npos;
     };
 
-    const auto menu_data = render::GetMenuData();
-
     // Menu groups
-    auto groups = data_manager.DataRawGetAllSorted<data::RecipeGroup>(data::DataCategory::recipe_group);
+    auto groups = proto_manager.DataRawGetAllSorted<data::RecipeGroup>(data::DataCategory::recipe_group);
 
-    render::GuiSlotRenderer group_slots;
+    auto group_slots     = g_rendr.MakeComponent<render::GuiSlotRenderer>();
     group_slots.slotSpan = 5;
     group_slots.scale    = 2;
     group_slots.Begin(groups.size(), [&](const uint16_t index) {
@@ -142,7 +151,7 @@ void RecipeMenu(game::PlayerData& player_data,
         for (auto& recipe_category : recipe_group->recipeCategories) {
             for (auto& recipe : recipe_category->recipes) {
                 const auto& product_name =
-                    data_manager.DataRawGet<data::Item>(recipe->product.first)->GetLocalizedName();
+                    proto_manager.DataRawGet<data::Item>(recipe->product.first)->GetLocalizedName();
 
                 if (matches_search_str(product_name, player_data.crafting.recipeSearchText))
                     goto loop_exit;
@@ -156,7 +165,7 @@ void RecipeMenu(game::PlayerData& player_data,
         if (index == player_data.crafting.RecipeGroupGetSelected())
             recipe_group_guard.PushStyleColor(ImGuiCol_Button, render::kGuiColButtonHover);
 
-        group_slots.DrawSlot(menu_data, recipe_group->sprite->internalId, [&]() {
+        group_slots.DrawSlot(recipe_group->sprite->internalId, [&]() {
             if (ImGui::IsItemClicked())
                 player_data.crafting.RecipeGroupSelect(index);
 
@@ -182,18 +191,17 @@ void RecipeMenu(game::PlayerData& player_data,
     for (const auto& recipe_category : selected_group->recipeCategories) {
         const auto& recipes = recipe_category->recipes;
 
-        render::GuiSlotRenderer recipe_row;
+        auto recipe_row = g_rendr.MakeComponent<render::GuiSlotRenderer>();
         recipe_row.Begin(recipes.size(), [&](auto index) {
             const auto* recipe = recipes.at(index);
 
-            const auto* product = data_manager.DataRawGet<data::Item>(recipe->product.first);
+            const auto* product = proto_manager.DataRawGet<data::Item>(recipe->product.first);
             assert(product != nullptr); // Invalid recipe product
 
             if (!matches_search_str(product->GetLocalizedName(), player_data.crafting.recipeSearchText))
                 return;
 
-            recipe_row.DrawSlot(
-                menu_data, product->sprite->internalId, [&]() { item_slot_draw(*recipe, button_hovered); });
+            recipe_row.DrawSlot(product->sprite->internalId, [&]() { item_slot_draw(*recipe, button_hovered); });
         });
     }
 }
@@ -202,12 +210,11 @@ void RecipeMenu(game::PlayerData& player_data,
 /// Draws preview tooltip for a recipe
 /// \tparam IsPlayerCrafting Shows items possessed by the player and opportunities for intermediate crafting
 template <bool IsPlayerCrafting>
-void RecipeHoverTooltip(game::PlayerData& player_data,
-                        const data::PrototypeManager& data_manager,
-                        const data::Recipe& recipe) {
-    auto menu_data = render::GetMenuData();
+void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const data::Recipe& recipe) {
+    auto& player_data         = g_rendr.player;
+    const auto& proto_manager = g_rendr.protoManager;
 
-    auto* product_item = data_manager.DataRawGet<data::Item>(recipe.product.first);
+    auto* product_item = proto_manager.DataRawGet<data::Item>(recipe.product.first);
     assert(product_item);
 
     std::stringstream title_ss;
@@ -229,17 +236,17 @@ void RecipeHoverTooltip(game::PlayerData& player_data,
         [&]() {
             // Ingredients
             for (const auto& ingredient_pair : recipe.ingredients) {
-                const auto* item = data_manager.DataRawGet<data::Item>(ingredient_pair.first);
+                const auto* item = proto_manager.DataRawGet<data::Item>(ingredient_pair.first);
 
-                render::GuiSlotRenderer ingredient_row;
-                ingredient_row.DrawSlot(menu_data, item->sprite->internalId);
+                auto ingredient_row = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+                ingredient_row.DrawSlot(item->sprite->internalId);
 
                 ImGui::SameLine(render::kInventorySlotWidth * 1.5);
 
                 const auto player_item_count = game::GetInvItemCount(player_data.inventory.inventory, item);
                 // Does not have ingredient
                 if (IsPlayerCrafting && player_item_count < ingredient_pair.second) {
-                    const bool can_be_recurse_crafted = player_data.crafting.RecipeCanCraft(data_manager, recipe, 1);
+                    const bool can_be_recurse_crafted = player_data.crafting.RecipeCanCraft(proto_manager, recipe, 1);
 
                     render::ImGuard text_guard;
                     if (can_be_recurse_crafted)
@@ -262,13 +269,13 @@ void RecipeHoverTooltip(game::PlayerData& player_data,
 
             ImGui::Text("%s", "Total Raw:");
 
-            auto raw_inames = data::Recipe::RecipeGetTotalRaw(data_manager, product_item->name);
+            auto raw_inames = data::Recipe::RecipeGetTotalRaw(proto_manager, product_item->name);
 
-            render::GuiSlotRenderer raw_item_slots;
+            auto raw_item_slots                = g_rendr.MakeComponent<render::GuiSlotRenderer>();
             raw_item_slots.slotSpan            = 5;
             raw_item_slots.endingVerticalSpace = 0;
             raw_item_slots.Begin(raw_inames.size(), [&](const auto slot_index) {
-                const auto* item = data_manager.DataRawGet<data::Item>(raw_inames[slot_index].first);
+                const auto* item = proto_manager.DataRawGet<data::Item>(raw_inames[slot_index].first);
 
                 const auto item_count_required = raw_inames[slot_index].second;
 
@@ -284,42 +291,39 @@ void RecipeHoverTooltip(game::PlayerData& player_data,
                 // else
                 // 	ImGui::PushStyleColor(ImGuiCol_Text, J_GUI_COL_TEXT);
 
-                raw_item_slots.DrawSlot(menu_data, item->sprite->internalId, item_count_required);
+                raw_item_slots.DrawSlot(item->sprite->internalId, item_count_required);
             });
         });
 }
 
 // ======================================================================
 
-void render::CharacterMenu(const MenuFunctionParams& params) {
-    auto& player_data        = params.player;
-    const auto& data_manager = params.protoManager;
-
+void render::CharacterMenu(const GuiRenderer& g_rendr) {
     SetupNextWindowLeft();
-    PlayerInventoryMenu(player_data, data_manager);
+    PlayerInventoryMenu(g_rendr);
 
     SetupNextWindowRight();
-    RecipeMenu(player_data, data_manager, "Recipe", [&](auto& recipe, auto& button_hovered) {
+    RecipeMenu(g_rendr, "Recipe", [&](auto& recipe, auto& button_hovered) {
+        auto& player              = g_rendr.player;
+        const auto& proto_manager = g_rendr.protoManager;
+
         if (ImGui::IsItemClicked()) {
-            if (player_data.crafting.RecipeCanCraft(data_manager, recipe, 1)) {
-                player_data.crafting.RecipeCraftR(data_manager, recipe);
-                player_data.inventory.InventorySort(player_data.inventory.inventory);
+            if (player.crafting.RecipeCanCraft(proto_manager, recipe, 1)) {
+                player.crafting.RecipeCraftR(proto_manager, recipe);
+                player.inventory.InventorySort(player.inventory.inventory);
             }
         }
 
         if (ImGui::IsItemHovered() && !button_hovered)
-            RecipeHoverTooltip<true>(player_data, data_manager, recipe);
+            RecipeHoverTooltip<true>(g_rendr, recipe);
     });
 }
 
-void render::CursorWindow(const MenuFunctionParams& params) {
+void render::CursorWindow(const GuiRenderer& g_rendr) {
     // Draw the tooltip of what is currently selected
 
-    auto& player_data    = params.player;
-    const auto menu_data = GetMenuData();
-
     // Player has an item selected, draw it on the tooltip
-    const auto* selected_stack = player_data.inventory.GetSelectedItem();
+    const auto* selected_stack = g_rendr.player.inventory.GetSelectedItem();
 
     if (selected_stack != nullptr) {
         ImGuard guard{};
@@ -344,10 +348,10 @@ void render::CursorWindow(const MenuFunctionParams& params) {
         ImGui::SetNextWindowFocus();
         menu.Begin("_selected_item", nullptr, flags);
 
-        const auto& positions = menu_data.spritePositions.at(selected_stack->item->sprite->internalId);
+        const auto& positions = g_rendr.menuData.spritePositions.at(selected_stack->item->sprite->internalId);
 
         ImGui::SameLine(10.f);
-        ImGui::Image(reinterpret_cast<void*>(menu_data.texId),
+        ImGui::Image(reinterpret_cast<void*>(g_rendr.menuData.texId),
                      ImVec2(32, 32),
 
                      ImVec2(positions.topLeft.x, positions.topLeft.y),
@@ -358,11 +362,7 @@ void render::CursorWindow(const MenuFunctionParams& params) {
     }
 }
 
-void render::CraftingQueue(const MenuFunctionParams& params) {
-    auto& player_data        = params.player;
-    const auto& data_manager = params.protoManager;
-    auto menu_data           = GetMenuData();
-
+void render::CraftingQueue(const GuiRenderer& g_rendr) {
     ImGuiWindowFlags flags = 0;
     flags |= ImGuiWindowFlags_NoBackground;
     flags |= ImGuiWindowFlags_NoTitleBar;
@@ -371,7 +371,7 @@ void render::CraftingQueue(const MenuFunctionParams& params) {
     flags |= ImGuiWindowFlags_NoScrollbar;
     flags |= ImGuiWindowFlags_NoScrollWithMouse;
 
-    const auto& recipe_queue = player_data.crafting.GetRecipeQueue();
+    const auto& recipe_queue = g_rendr.player.crafting.GetRecipeQueue();
 
 
     const auto y_slots = (recipe_queue.size() + 10 - 1) / 10; // Always round up for slot count
@@ -397,25 +397,23 @@ void render::CraftingQueue(const MenuFunctionParams& params) {
     guard.PushStyleColor(ImGuiCol_Button, kGuiColNone);
     guard.PushStyleColor(ImGuiCol_Border, kGuiColNone);
 
-    render::GuiSlotRenderer queued_item_row;
+    auto queued_item_row = g_rendr.MakeComponent<render::GuiSlotRenderer>();
     queued_item_row.Begin(recipe_queue.size(), [&](auto index) {
         const auto* recipe = recipe_queue.at(index).Get();
         assert(recipe != nullptr);
 
-        const auto* item = data_manager.DataRawGet<data::Item>(recipe->product.first);
-        queued_item_row.DrawSlot(menu_data, item->sprite->internalId, recipe->product.second);
+        const auto* item = g_rendr.protoManager.DataRawGet<data::Item>(recipe->product.first);
+        queued_item_row.DrawSlot(item->sprite->internalId, recipe->product.second);
     });
 }
 
 float last_pickup_fraction = 0.f;
 
-void render::PickupProgressbar(const MenuFunctionParams& params) {
-    auto& player_data = params.player;
-
+void render::PickupProgressbar(const GuiRenderer& g_rendr) {
     constexpr float progress_bar_width  = 260 * 2;
     constexpr float progress_bar_height = 13;
 
-    const float pickup_fraction = player_data.placement.GetPickupPercentage();
+    const float pickup_fraction = g_rendr.player.placement.GetPickupPercentage();
     // Do not draw progress bar if 0 or has not moved since last tick
     if (pickup_fraction == 0 || last_pickup_fraction == pickup_fraction)
         return;
@@ -448,105 +446,98 @@ void render::PickupProgressbar(const MenuFunctionParams& params) {
 
 // ==========================================================================================
 // Entity menus
-void render::ContainerEntity(const MenuFunctionParams& params) {
-    auto& player_data        = params.player;
-    const auto& data_manager = params.protoManager;
-    const auto* prototype    = params.prototype;
-    auto* unique_data        = params.uniqueData;
-
-    assert(prototype != nullptr);
-    assert(unique_data != nullptr);
-    auto& container_data = *static_cast<data::ContainerEntityData*>(unique_data);
-
+void render::ContainerEntity(const GuiRenderer& g_rendr) {
     SetupNextWindowLeft();
-    PlayerInventoryMenu(player_data, data_manager);
+    PlayerInventoryMenu(g_rendr);
 
     SetupNextWindowRight();
 
     GuiMenu menu;
     menu.Begin("_container", nullptr, kMenuFlags);
 
-    DrawTitleBar(prototype->GetLocalizedName());
 
-    GuiSlotRenderer inv_slots;
+    const auto* prototype = g_rendr.prototype;
+    assert(prototype != nullptr);
+    menu.DrawTitleBar(prototype->GetLocalizedName());
+
+    auto* unique_data = g_rendr.uniqueData;
+    assert(unique_data != nullptr);
+    auto& container_data = *static_cast<data::ContainerEntityData*>(unique_data);
+
+    auto inv_slots = g_rendr.MakeComponent<render::GuiSlotRenderer>();
     inv_slots.Begin(container_data.inventory.size(), [&](auto index) {
         const auto sprite_id = container_data.inventory[index].item != nullptr
             ? container_data.inventory[index].item->sprite->internalId
             : 0;
 
-        inv_slots.DrawSlot(GetMenuData(), sprite_id, container_data.inventory[index].count, [&]() {
-            ImplementInventoryIsItemClicked(player_data, data_manager, container_data.inventory, index);
+        inv_slots.DrawSlot(sprite_id, container_data.inventory[index].count, [&]() {
+            HandleInvClicked(g_rendr, container_data.inventory, index);
         });
     });
 }
 
-void render::MiningDrill(const MenuFunctionParams& params) {
-    auto& logic_data         = params.logic;
-    auto& player_data        = params.player;
-    const auto& data_manager = params.protoManager;
-    const auto* prototype    = params.prototype;
-    auto* unique_data        = params.uniqueData;
-
-    assert(prototype != nullptr);
+void render::MiningDrill(const GuiRenderer& g_rendr) {
+    auto* unique_data = g_rendr.uniqueData;
     assert(unique_data != nullptr);
     const auto& drill_data = *static_cast<const data::MiningDrillData*>(unique_data);
 
     SetupNextWindowLeft();
-    PlayerInventoryMenu(player_data, data_manager);
+    PlayerInventoryMenu(g_rendr);
 
     SetupNextWindowRight();
 
     GuiMenu menu;
     menu.Begin("_mining_drill", nullptr, kMenuFlags);
 
-    DrawTitleBar(prototype->GetLocalizedName());
+    const auto* prototype = g_rendr.prototype;
+    assert(prototype != nullptr);
+    menu.DrawTitleBar(prototype->GetLocalizedName());
 
-    ImGui::ProgressBar(GetProgressBarFraction(logic_data.GameTick(), drill_data.deferralEntry, drill_data.miningTicks));
+    ImGui::ProgressBar(
+        GetProgressBarFraction(g_rendr.logic.GameTick(), drill_data.deferralEntry, drill_data.miningTicks));
 }
 
-void render::AssemblyMachine(const MenuFunctionParams& params) {
-    auto& logic_data         = params.logic;
-    auto& player_data        = params.player;
-    const auto& data_manager = params.protoManager;
-    const auto* prototype    = params.prototype;
-    auto* unique_data        = params.uniqueData;
+void render::AssemblyMachine(const GuiRenderer& g_rendr) {
+    auto& logic               = g_rendr.logic;
+    const auto& proto_manager = g_rendr.protoManager;
 
+    const auto* prototype = g_rendr.prototype;
     assert(prototype != nullptr);
+
+    auto* unique_data = g_rendr.uniqueData;
     assert(unique_data != nullptr);
 
 
     const auto& machine_proto = *static_cast<const data::AssemblyMachine*>(prototype);
     auto& machine_data        = *static_cast<data::AssemblyMachineData*>(unique_data);
 
-    auto menu_data = GetMenuData();
-
     if (machine_data.HasRecipe()) {
         const auto window_size = GetWindowSize();
 
         SetupNextWindowLeft(window_size);
-        PlayerInventoryMenu(player_data, data_manager);
+        PlayerInventoryMenu(g_rendr);
 
         SetupNextWindowRight();
 
         GuiMenu menu;
         menu.Begin("_assembly_machine", nullptr, kMenuFlags);
 
-        DrawTitleBar(prototype->GetLocalizedName());
+        menu.DrawTitleBar(prototype->GetLocalizedName());
 
 
         bool button_hovered = false;
 
         // Ingredients
-        render::GuiSlotRenderer ingredient_slots;
+        auto ingredient_slots = g_rendr.MakeComponent<render::GuiSlotRenderer>();
         ingredient_slots.Begin(machine_data.ingredientInv.size() + 1, [&](auto index) {
             // Recipe change button
             if (index == machine_data.ingredientInv.size()) {
-                auto* reset_icon = data_manager.DataRawGet<data::Item>(data::Item::kResetIname);
+                auto* reset_icon = proto_manager.DataRawGet<data::Item>(data::Item::kResetIname);
                 assert(reset_icon != nullptr);
 
-                ingredient_slots.DrawSlot(menu_data, reset_icon->sprite->internalId, [&]() {
+                ingredient_slots.DrawSlot(reset_icon->sprite->internalId, [&]() {
                     if (ImGui::IsItemClicked()) {
-                        machine_data.ChangeRecipe(logic_data, data_manager, nullptr);
+                        machine_data.ChangeRecipe(logic, proto_manager, nullptr);
                     }
                 });
                 return;
@@ -554,24 +545,23 @@ void render::AssemblyMachine(const MenuFunctionParams& params) {
 
             // Item which is required
             auto* ingredient_item =
-                data_manager.DataRawGet<data::Item>(machine_data.GetRecipe()->ingredients[index].first);
+                proto_manager.DataRawGet<data::Item>(machine_data.GetRecipe()->ingredients[index].first);
             assert(ingredient_item != nullptr);
 
             // Amount of item possessed
 
             ingredient_slots.DrawSlot(
-                menu_data, ingredient_item->sprite->internalId, machine_data.ingredientInv[index].count, [&]() {
-                    ImplementInventoryIsItemClicked(
-                        player_data, data_manager, machine_data.ingredientInv, index, [&]() {
-                            machine_proto.TryBeginCrafting(logic_data, machine_data);
-                        });
+                ingredient_item->sprite->internalId, machine_data.ingredientInv[index].count, [&]() {
+                    HandleInvClicked(g_rendr, machine_data.ingredientInv, index, [&]() {
+                        machine_proto.TryBeginCrafting(logic, machine_data);
+                    });
 
                     if (ImGui::IsItemHovered() && !button_hovered) {
-                        auto* recipe = data::Recipe::GetItemRecipe(data_manager,
+                        auto* recipe = data::Recipe::GetItemRecipe(proto_manager,
                                                                    machine_data.GetRecipe()->ingredients[index].first);
 
                         if (recipe)
-                            RecipeHoverTooltip<false>(player_data, data_manager, *recipe);
+                            RecipeHoverTooltip<false>(g_rendr, *recipe);
                     }
                 });
         });
@@ -586,7 +576,7 @@ void render::AssemblyMachine(const MenuFunctionParams& params) {
         ImGui::SetCursorPosY(original_cursor_y + core::SafeCast<float>(kGuiStyleTitlebarPaddingY) / 2);
 
         const auto progress = GetProgressBarFraction(
-            logic_data.GameTick(),
+            logic.GameTick(),
             machine_data.deferralEntry,
             core::SafeCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed)));
 
@@ -597,37 +587,36 @@ void render::AssemblyMachine(const MenuFunctionParams& params) {
 
 
         // Product
-        render::GuiSlotRenderer product_slots;
+        auto product_slots = g_rendr.MakeComponent<render::GuiSlotRenderer>();
         product_slots.Begin(1, [&](auto /*slot_index*/) {
-            auto* product_item = data_manager.DataRawGet<data::Item>(machine_data.GetRecipe()->product.first);
+            auto* product_item = proto_manager.DataRawGet<data::Item>(machine_data.GetRecipe()->product.first);
 
             assert(product_item != nullptr);
-            product_slots.DrawSlot(
-                menu_data, product_item->sprite->internalId, machine_data.productInv[0].count, [&]() {
-                    ImplementInventoryIsItemClicked(player_data, data_manager, machine_data.productInv, 0, [&]() {
-                        machine_proto.TryBeginCrafting(logic_data, machine_data);
-                    });
-
-                    if (ImGui::IsItemHovered() && !button_hovered) {
-                        const auto* recipe =
-                            data::Recipe::GetItemRecipe(data_manager, machine_data.GetRecipe()->product.first);
-                        assert(recipe != nullptr);
-
-                        RecipeHoverTooltip<false>(player_data, data_manager, *recipe);
-                    }
+            product_slots.DrawSlot(product_item->sprite->internalId, machine_data.productInv[0].count, [&]() {
+                HandleInvClicked(g_rendr, machine_data.productInv, 0, [&]() {
+                    machine_proto.TryBeginCrafting(logic, machine_data);
                 });
+
+                if (ImGui::IsItemHovered() && !button_hovered) {
+                    const auto* recipe =
+                        data::Recipe::GetItemRecipe(proto_manager, machine_data.GetRecipe()->product.first);
+                    assert(recipe != nullptr);
+
+                    RecipeHoverTooltip<false>(g_rendr, *recipe);
+                }
+            });
         });
     }
     else {
         // Only draw recipe menu if no recipe is selected for assembling
         SetupNextWindowCenter();
-        RecipeMenu(player_data, data_manager, prototype->GetLocalizedName(), [&](auto& recipe, auto& button_hovered) {
+        RecipeMenu(g_rendr, prototype->GetLocalizedName(), [&](auto& recipe, auto& button_hovered) {
             if (ImGui::IsItemClicked()) {
-                machine_data.ChangeRecipe(logic_data, data_manager, &recipe);
+                machine_data.ChangeRecipe(logic, proto_manager, &recipe);
             }
 
             if (ImGui::IsItemHovered() && !button_hovered)
-                RecipeHoverTooltip<false>(player_data, data_manager, recipe);
+                RecipeHoverTooltip<false>(g_rendr, recipe);
         });
     }
 }

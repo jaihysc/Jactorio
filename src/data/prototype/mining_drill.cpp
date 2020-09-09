@@ -8,14 +8,10 @@
 
 using namespace jactorio;
 
-bool data::MiningDrill::OnRShowGui(GameWorlds& worlds,
-                                   game::LogicData& logic,
-                                   game::PlayerData& player,
-                                   const PrototypeManager& data_manager,
-                                   game::ChunkTileLayer* tile_layer) const {
+bool data::MiningDrill::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const {
     auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
 
-    render::MiningDrill({worlds, logic, player, data_manager, this, drill_data});
+    render::MiningDrill({g_rendr, this, drill_data});
     return true;
 }
 

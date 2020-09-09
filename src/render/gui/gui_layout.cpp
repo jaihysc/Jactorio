@@ -13,15 +13,6 @@ void render::FitTitle(std::stringstream& description_ss, const std::size_t targe
         description_ss << " ";
 }
 
-void render::DrawTitleBar(const std::string& title, const std::function<void()>& draw_func) {
-    AddVerticalSpaceAbsolute(kGuiStyleFramePaddingY);
-
-    ImGui::Text("%s", title.c_str());
-    draw_func();
-
-    AddVerticalSpaceAbsolute(kGuiStyleTitlebarPaddingY - kGuiStyleItemSpacingY);
-}
-
 // ======================================================================
 
 void render::AddVerticalSpace(const float y) {

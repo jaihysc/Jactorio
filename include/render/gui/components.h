@@ -16,7 +16,9 @@ namespace jactorio::data
 
 namespace jactorio::render
 {
-    class GuiMenu : public GuiComponentBase
+    class GuiRenderer;
+
+    class GuiMenu
     {
     public:
         GuiMenu();
@@ -38,6 +40,7 @@ namespace jactorio::render
         }
 
         ///
+        /// Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
         /// \param callback Called after drawing title
         void DrawTitleBar(
             const std::string& title, const std::function<void()>& callback = []() {}); // TODO alias callback
@@ -49,6 +52,8 @@ namespace jactorio::render
         using DrawSlotCallbackT = std::function<void()>;
 
     public:
+        GuiSlotRenderer(const GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
+
         ///
         /// \param slot_count Number of slots to draw
         /// \param callback Use to draw slot
@@ -59,21 +64,19 @@ namespace jactorio::render
         /// \param item_count Number to display on the item, 0 to hide
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            const MenuData& menu_data,
-            const data::PrototypeIdT sprite_id,
-            const uint16_t item_count,
-            const DrawSlotCallbackT& callback = [] {});
+            const data::PrototypeIdT sprite_id, const uint16_t item_count, const DrawSlotCallbackT& callback = [] {});
         ///
         /// Draws slot without item count
         /// \param sprite_id Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            const MenuData& menu_data, const data::PrototypeIdT sprite_id, const DrawSlotCallbackT& callback = [] {});
+            const data::PrototypeIdT sprite_id, const DrawSlotCallbackT& callback = [] {});
 
         ///
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            const MenuData& menu_data, const data::ItemStack& item_stack, const DrawSlotCallbackT& callback = [] {});
+            const data::ItemStack& item_stack, const DrawSlotCallbackT& callback = [] {});
+
 
         /// Slots before wrapping onto new line
         uint8_t slotSpan = 10;
@@ -83,12 +86,15 @@ namespace jactorio::render
         float endingVerticalSpace = -1.f;
 
     private:
-        bool buttonHovered_ = false;
-
         ///
         /// Invisible button which detects clicks
         /// \return True if hovered
         bool DrawBackingButton();
+
+
+        bool buttonHovered_ = false;
+
+        const GuiRenderer* guiRenderer_;
     };
 
     ///

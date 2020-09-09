@@ -8,6 +8,7 @@
 #include "data/prototype/item.h"
 #include "game/input/mouse_selection.h"
 #include "render/gui/gui_colors.h"
+#include "render/gui/gui_renderer.h"
 
 using namespace jactorio;
 
@@ -77,8 +78,7 @@ void render::GuiSlotRenderer::Begin(std::size_t slot_count,
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + kInventorySlotPadding); // Allows consecutive begins to line up
 }
 
-void render::GuiSlotRenderer::DrawSlot(const MenuData& menu_data,
-                                       const data::PrototypeIdT sprite_id,
+void render::GuiSlotRenderer::DrawSlot(const data::PrototypeIdT sprite_id,
                                        const uint16_t item_count,
                                        const DrawSlotCallbackT& callback) {
     const float x_offset = ImGui::GetCursorPosX();
@@ -115,6 +115,8 @@ void render::GuiSlotRenderer::DrawSlot(const MenuData& menu_data,
             (scale - 1) * kInventorySlotPadding // To align with other scales, account for the padding between slots
             - 2 * kInventorySlotImagePadding;
 
+        const auto& menu_data = guiRenderer_->menuData;
+
         const auto& uv = menu_data.spritePositions.at(sprite_id);
         ImGui::ImageButton(reinterpret_cast<void*>(menu_data.texId),
                            ImVec2(core::SafeCast<float>(button_size), core::SafeCast<float>(button_size)),
@@ -131,19 +133,14 @@ void render::GuiSlotRenderer::DrawSlot(const MenuData& menu_data,
     }
 }
 
-void render::GuiSlotRenderer::DrawSlot(const render::MenuData& menu_data,
-                                       const data::PrototypeIdT sprite_id,
+void render::GuiSlotRenderer::DrawSlot(const data::PrototypeIdT sprite_id,
                                        const render::GuiSlotRenderer::DrawSlotCallbackT& callback) {
-    DrawSlot(menu_data, sprite_id, 0, callback);
+    DrawSlot(sprite_id, 0, callback);
 }
 
-void render::GuiSlotRenderer::DrawSlot(const render::MenuData& menu_data,
-                                       const data::ItemStack& item_stack,
+void render::GuiSlotRenderer::DrawSlot(const data::ItemStack& item_stack,
                                        const render::GuiSlotRenderer::DrawSlotCallbackT& callback) {
-    DrawSlot(menu_data,
-             item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->internalId,
-             item_stack.count,
-             callback);
+    DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->internalId, item_stack.count, callback);
 }
 
 bool render::GuiSlotRenderer::DrawBackingButton() {
