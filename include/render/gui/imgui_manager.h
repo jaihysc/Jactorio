@@ -8,6 +8,8 @@
 #include "game/player/player_data.h"
 #include "render//rendering/spritemap_generator.h"
 
+// TODO forward def
+
 namespace jactorio::render
 {
     class DisplayWindow;

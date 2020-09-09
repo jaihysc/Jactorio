@@ -103,6 +103,8 @@ namespace jactorio::render
         ImGuard(ImGuard&& other) noexcept = delete;
 
 
+        ///
+        /// For debug menus only, use GuiMenu instead
         template <typename... Args>
         void Begin(Args&&... args) {
             ImGui::Begin(std::forward<Args>(args)...);

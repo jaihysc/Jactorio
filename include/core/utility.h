@@ -5,25 +5,24 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <string>
+
+#include "jactorio.h"
 
 namespace jactorio::core
 {
     ///
     /// Converts provided string to lower case
-    inline std::string StrToLower(const std::string& str) {
-        std::string temp = str;
-        std::transform(temp.begin(), temp.end(), temp.begin(), tolower);
-        return temp;
-    }
+    J_NODISCARD std::string StrToLower(std::string str);
 
     ///
     /// Converts provided string to lower case
-    inline std::string StrToUpper(const std::string& str) {
-        std::string temp = str;
-        std::transform(temp.begin(), temp.end(), temp.begin(), toupper);
-        return temp;
-    }
+    J_NODISCARD std::string StrToUpper(std::string str);
+
+    ///
+    /// Remove leading and trailing whitespace ' ' and '\0'
+    J_NODISCARD std::string StrTrimWhitespace(std::string str);
 } // namespace jactorio::core
 
 #endif // JACTORIO_CORE_UTILITY_H

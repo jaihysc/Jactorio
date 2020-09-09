@@ -84,15 +84,15 @@ namespace jactorio::render
 
     ///
     /// \remark Index with menu
-    struct GuiMenu
+    struct GuiWindow
     {
-        GuiMenu(const MenuFunction draw_ptr) noexcept : drawPtr(draw_ptr) {}
+        GuiWindow(const MenuFunction draw_ptr) noexcept : drawPtr(draw_ptr) {}
 
         MenuFunction drawPtr = nullptr;
         bool visible         = false;
     };
 
-    inline GuiMenu menus[]{J_GUI_WINDOW};
+    inline GuiWindow menus[]{J_GUI_WINDOW};
 
 #undef J_GUI_WINDOW
 #undef J_GUI_WINDOW_SUB
