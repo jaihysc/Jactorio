@@ -62,14 +62,11 @@ float GetProgressBarFraction(const GameTickT game_tick,
 // ==========================================================================================
 // Player menus (Excluding entity menus)
 
-const ImGuiWindowFlags kMenuFlags =
-    0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
-
 ///
 /// Draws the player's inventory menu
 void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
     render::GuiMenu menu;
-    menu.Begin("_character", nullptr, kMenuFlags); // TODO handle this
+    menu.Begin("_character");
 
     menu.DrawTitleBar("Character");
 
@@ -100,12 +97,12 @@ void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
 
 void RecipeMenu(const render::GuiRenderer g_rendr,
                 const std::string& title,
-                const std::function<void(const data::Recipe& recipe, bool& button_hovered)>& item_slot_draw) {
+                const std::function<void(const data::Recipe& recipe)>& item_slot_draw) {
     auto& player_data         = g_rendr.player;
     const auto& proto_manager = g_rendr.protoManager;
 
     render::GuiMenu menu;
-    menu.Begin("_recipe", nullptr, kMenuFlags);
+    menu.Begin("_recipe");
 
     // Title with search bar
     menu.DrawTitleBar(title, [&]() {
@@ -187,7 +184,6 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     // Menu recipes
     const auto& selected_group = groups[player_data.crafting.RecipeGroupGetSelected()];
 
-    bool button_hovered = false; // todo remove this
     for (const auto& recipe_category : selected_group->recipeCategories) {
         const auto& recipes = recipe_category->recipes;
 
@@ -201,7 +197,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
             if (!matches_search_str(product->GetLocalizedName(), player_data.crafting.recipeSearchText))
                 return;
 
-            recipe_row.DrawSlot(product->sprite->internalId, [&]() { item_slot_draw(*recipe, button_hovered); });
+            recipe_row.DrawSlot(product->sprite->internalId, [&]() { item_slot_draw(*recipe); });
         });
     }
 }
@@ -303,7 +299,7 @@ void render::CharacterMenu(const GuiRenderer& g_rendr) {
     PlayerInventoryMenu(g_rendr);
 
     SetupNextWindowRight();
-    RecipeMenu(g_rendr, "Recipe", [&](auto& recipe, auto& button_hovered) {
+    RecipeMenu(g_rendr, "Recipe", [&](auto& recipe) {
         auto& player              = g_rendr.player;
         const auto& proto_manager = g_rendr.protoManager;
 
@@ -314,7 +310,7 @@ void render::CharacterMenu(const GuiRenderer& g_rendr) {
             }
         }
 
-        if (ImGui::IsItemHovered() && !button_hovered)
+        if (ImGui::IsItemHovered())
             RecipeHoverTooltip<true>(g_rendr, recipe);
     });
 }
@@ -334,19 +330,11 @@ void render::CursorWindow(const GuiRenderer& g_rendr) {
         const ImVec2 cursor_pos(core::LossyCast<float>(game::MouseSelection::GetCursorX()),
                                 core::LossyCast<float>(game::MouseSelection::GetCursorY()) + 2.f);
         ImGui::SetNextWindowPos(cursor_pos);
-
-        ImGuiWindowFlags flags = 0;
-        flags |= ImGuiWindowFlags_NoBackground;
-        flags |= ImGuiWindowFlags_NoTitleBar;
-        flags |= ImGuiWindowFlags_NoCollapse;
-        flags |= ImGuiWindowFlags_NoMove;
-        flags |= ImGuiWindowFlags_NoResize;
-
-        // ======================================================================
+        ImGui::SetNextWindowFocus();
 
         render::GuiMenu menu;
-        ImGui::SetNextWindowFocus();
-        menu.Begin("_selected_item", nullptr, flags);
+        menu.AppendFlags(ImGuiWindowFlags_NoBackground);
+        menu.Begin("_selected_item");
 
         const auto& positions = g_rendr.menuData.spritePositions.at(selected_stack->item->sprite->internalId);
 
@@ -363,16 +351,7 @@ void render::CursorWindow(const GuiRenderer& g_rendr) {
 }
 
 void render::CraftingQueue(const GuiRenderer& g_rendr) {
-    ImGuiWindowFlags flags = 0;
-    flags |= ImGuiWindowFlags_NoBackground;
-    flags |= ImGuiWindowFlags_NoTitleBar;
-    flags |= ImGuiWindowFlags_NoMove;
-    flags |= ImGuiWindowFlags_NoResize;
-    flags |= ImGuiWindowFlags_NoScrollbar;
-    flags |= ImGuiWindowFlags_NoScrollWithMouse;
-
     const auto& recipe_queue = g_rendr.player.crafting.GetRecipeQueue();
-
 
     const auto y_slots = (recipe_queue.size() + 10 - 1) / 10; // Always round up for slot count
     auto y_offset      = y_slots * (kInventorySlotWidth + kInventorySlotPadding);
@@ -391,7 +370,8 @@ void render::CraftingQueue(const GuiRenderer& g_rendr) {
 
     // Window
     render::GuiMenu menu;
-    menu.Begin("_crafting_queue", nullptr, flags);
+    menu.AppendFlags(ImGuiWindowFlags_NoMove, ImGuiWindowFlags_NoBackground, ImGuiWindowFlags_NoScrollWithMouse);
+    menu.Begin("_crafting_queue");
 
     ImGuard guard;
     guard.PushStyleColor(ImGuiCol_Button, kGuiColNone);
@@ -420,12 +400,6 @@ void render::PickupProgressbar(const GuiRenderer& g_rendr) {
     last_pickup_fraction = pickup_fraction;
 
 
-    ImGuiWindowFlags flags = 0;
-    flags |= ImGuiWindowFlags_NoBackground;
-    flags |= ImGuiWindowFlags_NoTitleBar;
-    flags |= ImGuiWindowFlags_NoMove;
-    flags |= ImGuiWindowFlags_NoResize;
-
     ImGui::SetNextWindowSize(ImVec2(progress_bar_width, progress_bar_height));
     ImGui::SetNextWindowPos(
         ImVec2(core::SafeCast<float>(Renderer::GetWindowWidth()) / 2 - (progress_bar_width / 2), // Center X
@@ -434,7 +408,8 @@ void render::PickupProgressbar(const GuiRenderer& g_rendr) {
 
     // Window
     GuiMenu menu;
-    menu.Begin("_entity_pickup_status", nullptr, flags);
+    menu.AppendFlags(ImGuiWindowFlags_NoBackground, ImGuiWindowFlags_NoMove);
+    menu.Begin("_entity_pickup_status");
 
     ImGuard guard;
     guard.PushStyleColor(ImGuiCol_Text, kGuiColNone);
@@ -453,7 +428,7 @@ void render::ContainerEntity(const GuiRenderer& g_rendr) {
     SetupNextWindowRight();
 
     GuiMenu menu;
-    menu.Begin("_container", nullptr, kMenuFlags);
+    menu.Begin("_e_container");
 
 
     const auto* prototype = g_rendr.prototype;
@@ -487,7 +462,7 @@ void render::MiningDrill(const GuiRenderer& g_rendr) {
     SetupNextWindowRight();
 
     GuiMenu menu;
-    menu.Begin("_mining_drill", nullptr, kMenuFlags);
+    menu.Begin("_e_mining_drill");
 
     const auto* prototype = g_rendr.prototype;
     assert(prototype != nullptr);
@@ -520,12 +495,10 @@ void render::AssemblyMachine(const GuiRenderer& g_rendr) {
         SetupNextWindowRight();
 
         GuiMenu menu;
-        menu.Begin("_assembly_machine", nullptr, kMenuFlags);
+        menu.Begin("_e_assembly_machine");
 
         menu.DrawTitleBar(prototype->GetLocalizedName());
 
-
-        bool button_hovered = false;
 
         // Ingredients
         auto ingredient_slots = g_rendr.MakeComponent<render::GuiSlotRenderer>();
@@ -556,7 +529,7 @@ void render::AssemblyMachine(const GuiRenderer& g_rendr) {
                         machine_proto.TryBeginCrafting(logic, machine_data);
                     });
 
-                    if (ImGui::IsItemHovered() && !button_hovered) {
+                    if (ImGui::IsItemHovered()) {
                         auto* recipe = data::Recipe::GetItemRecipe(proto_manager,
                                                                    machine_data.GetRecipe()->ingredients[index].first);
 
@@ -597,7 +570,7 @@ void render::AssemblyMachine(const GuiRenderer& g_rendr) {
                     machine_proto.TryBeginCrafting(logic, machine_data);
                 });
 
-                if (ImGui::IsItemHovered() && !button_hovered) {
+                if (ImGui::IsItemHovered()) {
                     const auto* recipe =
                         data::Recipe::GetItemRecipe(proto_manager, machine_data.GetRecipe()->product.first);
                     assert(recipe != nullptr);
@@ -610,12 +583,12 @@ void render::AssemblyMachine(const GuiRenderer& g_rendr) {
     else {
         // Only draw recipe menu if no recipe is selected for assembling
         SetupNextWindowCenter();
-        RecipeMenu(g_rendr, prototype->GetLocalizedName(), [&](auto& recipe, auto& button_hovered) {
+        RecipeMenu(g_rendr, prototype->GetLocalizedName(), [&](auto& recipe) {
             if (ImGui::IsItemClicked()) {
                 machine_data.ChangeRecipe(logic, proto_manager, &recipe);
             }
 
-            if (ImGui::IsItemHovered() && !button_hovered)
+            if (ImGui::IsItemHovered())
                 RecipeHoverTooltip<false>(g_rendr, recipe);
         });
     }

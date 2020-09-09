@@ -22,6 +22,10 @@ render::GuiMenu::~GuiMenu() {
     ImGui::End();
 }
 
+void render::GuiMenu::Begin(const char* name) const {
+    ImGui::Begin(name, nullptr, flags_);
+}
+
 void render::GuiMenu::DrawTitleBar(const std::string& title, const std::function<void()>& callback) {
     AddVerticalSpaceAbsolute(kGuiStyleFramePaddingY);
 
@@ -35,7 +39,7 @@ void render::GuiMenu::DrawTitleBar(const std::string& title, const std::function
 // ======================================================================
 
 
-void render::GuiSlotRenderer::Begin(std::size_t slot_count,
+void render::GuiSlotRenderer::Begin(const std::size_t slot_count,
                                     const render::GuiSlotRenderer::BeginCallbackT& callback) const {
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - kInventorySlotPadding);
 
@@ -48,7 +52,7 @@ void render::GuiSlotRenderer::Begin(std::size_t slot_count,
     std::size_t index = 0;
     while (index < slot_count) {
         const uint16_t x = index % slotSpan;
-        ImGui::SameLine(x_offset + x * scale * (kInventorySlotWidth + kInventorySlotPadding));
+        ImGui::SameLine(x_offset + core::SafeCast<float>(x * scale * (kInventorySlotWidth + kInventorySlotPadding)));
 
         ImGui::PushID(core::SafeCast<int>(index)); // Uniquely identifies the button
 
@@ -86,7 +90,8 @@ void render::GuiSlotRenderer::DrawSlot(const data::PrototypeIdT sprite_id,
 
     ImGui::SetCursorPos({x_offset, y_offset});
 
-    bool backing_button_hover = DrawBackingButton();
+    DrawBackingButton();
+    bool backing_button_hover = ImGui::IsItemHovered();
     callback(); // Register events with backing button
 
 
@@ -143,29 +148,18 @@ void render::GuiSlotRenderer::DrawSlot(const data::ItemStack& item_stack,
     DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->internalId, item_stack.count, callback);
 }
 
-bool render::GuiSlotRenderer::DrawBackingButton() {
+void render::GuiSlotRenderer::DrawBackingButton() const {
     render::ImGuard guard;
     guard.PushStyleColor(ImGuiCol_Button, render::kGuiColNone);
     guard.PushStyleColor(ImGuiCol_ButtonHovered, render::kGuiColNone);
     guard.PushStyleColor(ImGuiCol_ButtonActive, render::kGuiColNone);
 
+    auto width = core::SafeCast<float>((kInventorySlotWidth + kInventorySlotPadding) * this->scale);
+    auto padding = width / 2;
 
-    ImGui::ImageButton(nullptr,
-                       ImVec2(0, 0),
-                       ImVec2(-1, -1),
-                       ImVec2(-1, -1),
-                       (render::kInventorySlotWidth / 2 + render::kInventorySlotPadding) * this->scale);
+    assert(padding * 2 == width); // Slots will not line up if does not halve evenly
 
-
-    bool hovered = false;
-
-    if (!this->buttonHovered_) {
-        hovered = ImGui::IsItemHovered();
-        if (hovered)
-            this->buttonHovered_ = true;
-    }
-
-    return hovered;
+    ImGui::ImageButton(nullptr, ImVec2(0, 0), ImVec2(-1, -1), ImVec2(-1, -1), padding);
 }
 
 

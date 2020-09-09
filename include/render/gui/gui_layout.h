@@ -14,7 +14,9 @@
 namespace jactorio::render
 {
     constexpr int kInventorySlotWidth        = 36;
-    constexpr int kInventorySlotPadding      = 3;
+    /// Between slots
+    constexpr int kInventorySlotPadding      = 2;
+    /// Between image and edge of slot
     constexpr int kInventorySlotImagePadding = 2;
 
     constexpr int kInventoryItemCountXOffset = 0;

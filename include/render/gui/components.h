@@ -5,6 +5,7 @@
 #pragma once
 
 #include <functional>
+#include <type_traits>
 
 #include "render/gui/component_base.h"
 #include "render/gui/gui_layout.h"
@@ -20,6 +21,9 @@ namespace jactorio::render
 
     class GuiMenu
     {
+        static constexpr ImGuiWindowFlags kDefaultFlags =
+            0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
+
     public:
         GuiMenu();
 
@@ -34,16 +38,31 @@ namespace jactorio::render
 
         ///
         /// Must be called before using Draw__ methods
-        template <typename... TParams>
-        void Begin(TParams&&... params) {
-            ImGui::Begin(std::forward<TParams>(params)...);
-        }
+        void Begin(const char* name) const;
 
         ///
         /// Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
         /// \param callback Called after drawing title
         void DrawTitleBar(
             const std::string& title, const std::function<void()>& callback = []() {}); // TODO alias callback
+
+
+        J_NODISCARD ImGuiWindowFlags GetFlags() const noexcept {
+            return flags_;
+        }
+
+        void SetFlags(const ImGuiWindowFlags flags) {
+            flags_ = flags;
+        }
+
+        template <typename... TParam>
+        void AppendFlags(TParam... flags) {
+            static_assert(std::is_same_v<ImGuiWindowFlags_, std::common_type_t<TParam...>>);
+            flags_ = flags_ | (flags | ...);
+        }
+
+    private:
+        ImGuiWindowFlags flags_ = kDefaultFlags;
     };
 
     class GuiSlotRenderer : public GuiComponentBase
@@ -51,9 +70,12 @@ namespace jactorio::render
         using BeginCallbackT    = std::function<void(std::size_t slot_index)>;
         using DrawSlotCallbackT = std::function<void()>;
 
-    public:
+        friend GuiRenderer;
+
+    protected:
         GuiSlotRenderer(const GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
 
+    public:
         ///
         /// \param slot_count Number of slots to draw
         /// \param callback Use to draw slot
@@ -88,11 +110,8 @@ namespace jactorio::render
     private:
         ///
         /// Invisible button which detects clicks
-        /// \return True if hovered
-        bool DrawBackingButton();
+        void DrawBackingButton() const;
 
-
-        bool buttonHovered_ = false;
 
         const GuiRenderer* guiRenderer_;
     };
