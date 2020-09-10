@@ -23,14 +23,6 @@ namespace jactorio::render
     constexpr int kInventoryItemCountYOffset = 0;
 
     // ======================================================================
-
-    ///
-    /// Pad the ingredients: text with trailing whitespace to reach the length of the title
-    ///
-    /// In order to auto resize to fit the title's text since the title is not accounted
-    void FitTitle(std::stringstream& description_ss, std::size_t target_len);
-
-    // ======================================================================
     // Widget Positioning
 
     ///

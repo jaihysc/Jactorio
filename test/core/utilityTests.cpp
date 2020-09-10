@@ -25,4 +25,10 @@ namespace jactorio::core
         EXPECT_TRUE(StrTrimWhitespace("            ").empty());
         EXPECT_TRUE(StrTrimWhitespace("").empty());
     }
+
+    TEST(Utility, StrMatchLen) {
+        EXPECT_EQ(StrMatchLen("abc", 10), "abc       ");
+        EXPECT_EQ(StrMatchLen("abc", 0), "abc");
+        EXPECT_EQ(StrMatchLen("", 5, '-'), "-----");
+    }
 } // namespace jactorio::core

@@ -7,8 +7,8 @@
 namespace jactorio::data
 {
     TEST(Sprite, SpriteCopy) {
-        Sprite first{};
-        auto second = first;
+        const Sprite first{};
+        const auto second = first;
 
         EXPECT_NE(first.GetSpritePtr(), second.GetSpritePtr());
     }
@@ -17,7 +17,7 @@ namespace jactorio::data
         Sprite first{};
         first.LoadImage("test/graphics/test/test_tile.png");
 
-        auto second = std::move(first);
+        const auto second = std::move(first);
 
         EXPECT_EQ(first.GetSpritePtr(), nullptr);
         EXPECT_NE(second.GetSpritePtr(), nullptr);

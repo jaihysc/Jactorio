@@ -91,7 +91,7 @@ void render::GuiSlotRenderer::DrawSlot(const data::PrototypeIdT sprite_id,
     ImGui::SetCursorPos({x_offset, y_offset});
 
     DrawBackingButton();
-    bool backing_button_hover = ImGui::IsItemHovered();
+    const bool backing_button_hover = ImGui::IsItemHovered();
     callback(); // Register events with backing button
 
 
@@ -154,8 +154,8 @@ void render::GuiSlotRenderer::DrawBackingButton() const {
     guard.PushStyleColor(ImGuiCol_ButtonHovered, render::kGuiColNone);
     guard.PushStyleColor(ImGuiCol_ButtonActive, render::kGuiColNone);
 
-    auto width = core::SafeCast<float>((kInventorySlotWidth + kInventorySlotPadding) * this->scale);
-    auto padding = width / 2;
+    const auto width   = core::SafeCast<float>((kInventorySlotWidth + kInventorySlotPadding) * this->scale);
+    const auto padding = width / 2;
 
     assert(padding * 2 == width); // Slots will not line up if does not halve evenly
 
@@ -167,8 +167,8 @@ void render::GuiSlotRenderer::DrawBackingButton() const {
 
 
 void render::DrawCursorTooltip(bool has_selected_item,
-                               const char* title,
-                               const char* description,
+                               const std::string& title,
+                               const std::string& description,
                                const std::function<void()>& draw_func) {
 
     ImVec2 cursor_pos(core::LossyCast<float>(game::MouseSelection::GetCursorX()),
@@ -197,13 +197,13 @@ void render::DrawCursorTooltip(bool has_selected_item,
     {
         ImGuard title_text_guard;
         title_text_guard.PushStyleColor(ImGuiCol_Text, kGuiColTooltipTitleText);
-        guard.Begin(title, nullptr, flags);
+        guard.Begin(title.c_str(), nullptr, flags);
     }
 
-    ImGui::Text("%s", description);
+    ImGui::Text("%s", core::StrMatchLen(description, title.size()).c_str());
 
     draw_func();
 
     // This window is always in front
-    ImGui::SetWindowFocus(title);
+    ImGui::SetWindowFocus(title.c_str());
 }

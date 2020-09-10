@@ -143,7 +143,7 @@ void render::ImguiDraw(const DisplayWindow& display_window,
     // ImPopFont();
 
     auto menu_data = GetMenuData();
-    GuiRenderer g_rendr{worlds, logic, player, proto_manager, menu_data};
+    const GuiRenderer g_rendr{worlds, logic, player, proto_manager, menu_data};
 
 
     bool drew_gui = false;

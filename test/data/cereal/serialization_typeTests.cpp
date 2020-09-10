@@ -28,7 +28,7 @@ namespace jactorio::data
     }
 
     TEST(SerialPrototypePointer, SerializeNull) {
-        SerialProtoPtr<const Sprite> original(nullptr);
+        const SerialProtoPtr<const Sprite> original(nullptr);
 
         EXPECT_TRUE(original == SerialProtoPtr<const Sprite>(nullptr));
         EXPECT_FALSE(original != SerialProtoPtr<const Sprite>(nullptr));
@@ -45,7 +45,7 @@ namespace jactorio::data
         unique_manager.AssignId(container);
         unique_manager.StoreRelocationEntry(container);
 
-        SerialUniqueDataPtr serial_ptr(&container);
+        const SerialUniqueDataPtr serial_ptr(&container);
 
 
         data::active_unique_data_manager = &unique_manager;
@@ -56,7 +56,7 @@ namespace jactorio::data
     }
 
     TEST(SerialUniqueDataPointer, SerializeNull) {
-        SerialUniqueDataPtr<ContainerEntityData> serial_ptr(nullptr);
+        const SerialUniqueDataPtr<ContainerEntityData> serial_ptr(nullptr);
 
         auto result = TestSerializeDeserialize(serial_ptr);
 

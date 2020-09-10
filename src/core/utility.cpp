@@ -51,3 +51,10 @@ std::string core::StrTrimWhitespace(std::string str) {
 
     return str;
 }
+
+std::string core::StrMatchLen(std::string str, std::size_t target_len, char padding) {
+    while (str.size() < target_len) {
+        str.push_back(padding);
+    }
+    return str;
+}

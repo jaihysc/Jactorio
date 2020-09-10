@@ -18,7 +18,7 @@ void data::UniqueDataManager::StoreRelocationEntry(UniqueDataBase& unique_data) 
         dataEntries_.resize(unique_data.internalId);
     }
 
-    auto index = unique_data.internalId - kDefaultId_;
+    const auto index = unique_data.internalId - kDefaultId_;
     assert(index < dataEntries_.size());
     dataEntries_[index] = &unique_data;
 }

@@ -117,11 +117,12 @@ namespace jactorio::render
     };
 
     ///
+    /// \remark Will pad description to match length of title if short to avoid cutting title off
     /// \param title Title of the tooltip
     /// \param draw_func Code to run while drawing the tooltip
     void DrawCursorTooltip(bool has_selected_item,
-                           const char* title,
-                           const char* description,
+                           const std::string& title,
+                           const std::string& description,
                            const std::function<void()>& draw_func);
 
 

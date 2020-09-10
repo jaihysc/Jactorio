@@ -36,7 +36,7 @@ namespace jactorio::core
     }
 
     TEST(PointerWrapper, GetConstTy) {
-        std::vector<int> vec_integer = {1, 2};
+        const std::vector<int> vec_integer = {1, 2};
 
         PointerWrapper<const std::vector<int>> p_wrapper(vec_integer);
 

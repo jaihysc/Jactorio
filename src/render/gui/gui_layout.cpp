@@ -8,13 +8,6 @@
 
 using namespace jactorio;
 
-void render::FitTitle(std::stringstream& description_ss, const std::size_t target_len) {
-    while (description_ss.str().size() < target_len)
-        description_ss << " ";
-}
-
-// ======================================================================
-
 void render::AddVerticalSpace(const float y) {
     AddVerticalSpaceAbsolute(y);
     ImGui::Dummy({0, 0});
