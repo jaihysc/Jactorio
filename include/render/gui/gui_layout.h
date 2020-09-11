@@ -9,13 +9,16 @@
 
 #include <imgui.h>
 
+#include "render/gui/gui_colors.h"
 #include "render/gui/imgui_manager.h"
 
 namespace jactorio::render
 {
-    constexpr int kInventorySlotWidth        = 36;
+    // TODO move this to namespace jactorio::gui
+
+    constexpr int kInventorySlotWidth = 36;
     /// Between slots
-    constexpr int kInventorySlotPadding      = 2;
+    constexpr int kInventorySlotPadding = 2;
     /// Between image and edge of slot
     constexpr int kInventorySlotImagePadding = 2;
 
@@ -24,6 +27,28 @@ namespace jactorio::render
 
     // ======================================================================
     // Widget Positioning
+
+    ///
+    /// Gets height of current ImGui font
+    float GetFontHeight();
+
+    constexpr unsigned GetTotalItemSlotWidth(const unsigned slots, const unsigned scale = 1) {
+        assert(scale > 0);
+
+        if (slots == 0)
+            return 0;
+        return slots * scale * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
+    }
+
+    constexpr unsigned GetTotalWindowPaddingX() {
+        return 2 * kGuiStyleWindowPaddingX;
+    }
+
+    ///
+    /// \param items Items after the first item
+    constexpr unsigned GetTotalWindowItemSpacingX(const unsigned items) {
+        return items * kGuiStyleItemSpacingX;
+    };
 
     ///
     /// Adds additional vertical space

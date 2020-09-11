@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include "render/gui/component_base.h"
+#include "render/gui/gui_colors.h"
 #include "render/gui/gui_layout.h"
 
 namespace jactorio::data
@@ -25,8 +26,7 @@ namespace jactorio::render
             0 | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
 
     public:
-        GuiMenu();
-
+        GuiMenu() = default;
         ~GuiMenu();
 
         GuiMenu(const GuiMenu&)  = delete;
@@ -40,23 +40,16 @@ namespace jactorio::render
         /// Must be called before using Draw__ methods
         void Begin(const char* name) const;
 
-        ///
-        /// Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
-        /// \param callback Called after drawing title
-        void DrawTitleBar(
-            const std::string& title, const std::function<void()>& callback = []() {}); // TODO alias callback
-
-
         J_NODISCARD ImGuiWindowFlags GetFlags() const noexcept {
             return flags_;
         }
 
-        void SetFlags(const ImGuiWindowFlags flags) {
+        void SetFlags(const ImGuiWindowFlags flags) noexcept {
             flags_ = flags;
         }
 
         template <typename... TParam>
-        void AppendFlags(TParam... flags) {
+        void AppendFlags(TParam... flags) noexcept {
             static_assert(std::is_same_v<ImGuiWindowFlags_, std::common_type_t<TParam...>>);
             flags_ = flags_ | (flags | ...);
         }
@@ -65,7 +58,7 @@ namespace jactorio::render
         ImGuiWindowFlags flags_ = kDefaultFlags;
     };
 
-    class GuiSlotRenderer : public GuiComponentBase
+    class GuiItemSlots : public GuiComponentBase
     {
         using BeginCallbackT    = std::function<void(std::size_t slot_index)>;
         using DrawSlotCallbackT = std::function<void()>;
@@ -73,7 +66,7 @@ namespace jactorio::render
         friend GuiRenderer;
 
     protected:
-        GuiSlotRenderer(const GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
+        explicit GuiItemSlots(const GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
 
     public:
         ///
@@ -86,18 +79,19 @@ namespace jactorio::render
         /// \param item_count Number to display on the item, 0 to hide
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            const data::PrototypeIdT sprite_id, const uint16_t item_count, const DrawSlotCallbackT& callback = [] {});
+            data::PrototypeIdT sprite_id, uint16_t item_count, const DrawSlotCallbackT& callback = [] {}) const;
+
         ///
         /// Draws slot without item count
         /// \param sprite_id Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            const data::PrototypeIdT sprite_id, const DrawSlotCallbackT& callback = [] {});
+            data::PrototypeIdT sprite_id, const DrawSlotCallbackT& callback = [] {}) const;
 
         ///
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            const data::ItemStack& item_stack, const DrawSlotCallbackT& callback = [] {});
+            const data::ItemStack& item_stack, const DrawSlotCallbackT& callback = [] {}) const;
 
 
         /// Slots before wrapping onto new line
@@ -117,6 +111,30 @@ namespace jactorio::render
     };
 
     ///
+    /// Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
+    class GuiTitle : public GuiComponentBase
+    {
+        using CallbackT = std::function<void()>;
+
+        friend GuiRenderer;
+
+    protected:
+        explicit GuiTitle(const GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
+
+    public:
+        /// \param callback Called after drawing title
+        void Begin(
+            const std::string& title, const CallbackT& callback = []() {}) const;
+
+        float topPadding    = kGuiStyleFramePaddingY;
+        float bottomPadding = kGuiStyleFramePaddingY;
+
+    private:
+        const GuiRenderer* guiRenderer_;
+    };
+
+
+    ///
     /// \remark Will pad description to match length of title if short to avoid cutting title off
     /// \param title Title of the tooltip
     /// \param draw_func Code to run while drawing the tooltip
@@ -124,8 +142,6 @@ namespace jactorio::render
                            const std::string& title,
                            const std::string& description,
                            const std::function<void()>& draw_func);
-
-
 } // namespace jactorio::render
 
 #endif // JACTORIO_INCLUDE_RENDER_GUI_COMPONENTS_H

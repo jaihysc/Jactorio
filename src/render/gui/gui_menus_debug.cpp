@@ -432,7 +432,7 @@ void render::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
 
     auto& inserter_data = *layer.GetUniqueData<data::InserterData>();
 
-    ImGui::Text("Orientation %s", data::OrientationToStr(inserter_data.orientation));
+    ImGui::Text("Orientation %s", OrientationToStr(inserter_data.orientation));
 
     ImGui::Text("Degree: %f", inserter_data.rotationDegree.getAsDouble());
 

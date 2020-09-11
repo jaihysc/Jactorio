@@ -14,10 +14,6 @@ using namespace jactorio;
 
 // ======================================================================
 
-render::GuiMenu::GuiMenu() {
-    ImGui::SetNextWindowSize(render::GetWindowSize());
-}
-
 render::GuiMenu::~GuiMenu() {
     ImGui::End();
 }
@@ -26,28 +22,16 @@ void render::GuiMenu::Begin(const char* name) const {
     ImGui::Begin(name, nullptr, flags_);
 }
 
-void render::GuiMenu::DrawTitleBar(const std::string& title, const std::function<void()>& callback) {
-    AddVerticalSpaceAbsolute(kGuiStyleFramePaddingY);
-
-    ImGui::Text("%s", title.c_str());
-    callback();
-
-    AddVerticalSpaceAbsolute(kGuiStyleTitlebarPaddingY - kGuiStyleItemSpacingY);
-}
-
-
 // ======================================================================
 
 
-void render::GuiSlotRenderer::Begin(const std::size_t slot_count,
-                                    const render::GuiSlotRenderer::BeginCallbackT& callback) const {
+void render::GuiItemSlots::Begin(const std::size_t slot_count, const BeginCallbackT& callback) const {
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - kInventorySlotPadding);
 
     const auto original_cursor_x = ImGui::GetCursorPosX();
 
-    // Start drawing without left padding
     float y_offset       = ImGui::GetCursorPosY();
-    const float x_offset = ImGui::GetCursorPosX() - kInventorySlotPadding;
+    const float x_offset = ImGui::GetCursorPosX();
 
     std::size_t index = 0;
     while (index < slot_count) {
@@ -82,13 +66,15 @@ void render::GuiSlotRenderer::Begin(const std::size_t slot_count,
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + kInventorySlotPadding); // Allows consecutive begins to line up
 }
 
-void render::GuiSlotRenderer::DrawSlot(const data::PrototypeIdT sprite_id,
-                                       const uint16_t item_count,
-                                       const DrawSlotCallbackT& callback) {
-    const float x_offset = ImGui::GetCursorPosX();
-    const float y_offset = ImGui::GetCursorPosY();
+void render::GuiItemSlots::DrawSlot(const data::PrototypeIdT sprite_id,
+                                    const uint16_t item_count,
+                                    const DrawSlotCallbackT& callback) const {
+    const float original_x_offset = ImGui::GetCursorPosX();
+    const float original_y_offset = ImGui::GetCursorPosY();
 
-    ImGui::SetCursorPos({x_offset, y_offset});
+    // Backing button sticks out on all sides
+    ImGui::SetCursorPos({original_x_offset - core::SafeCast<float>(kInventorySlotPadding / 2),
+                         original_y_offset - core::SafeCast<float>(kInventorySlotPadding / 2)});
 
     DrawBackingButton();
     const bool backing_button_hover = ImGui::IsItemHovered();
@@ -104,16 +90,17 @@ void render::GuiSlotRenderer::DrawSlot(const data::PrototypeIdT sprite_id,
     }
 
 
-    // Center in backing button
-    ImGui::SetCursorPos({x_offset + kInventorySlotPadding, y_offset + kInventorySlotPadding});
+    ImGui::SetCursorPos({original_x_offset, original_y_offset});
 
     if (sprite_id == 0) {
         // Blank button
-        ImGui::ImageButton(nullptr,
-                           ImVec2(0, 0),
-                           ImVec2(-1, -1),
-                           ImVec2(-1, -1),
-                           (kInventorySlotWidth / 2 * scale) + ((scale - 1) * kInventorySlotImagePadding));
+        const auto button_width  = core::SafeCast<float>(kInventorySlotWidth * scale);
+        const auto padding_width = kInventorySlotPadding * (scale - 1);
+
+        const auto total_width   = button_width + padding_width;
+        const auto frame_padding = total_width / 2;
+
+        ImGui::ImageButton(nullptr, {0, 0}, {-1, -1}, {-1, -1}, frame_padding);
     }
     else {
         const auto button_size = scale * kInventorySlotWidth +
@@ -124,49 +111,56 @@ void render::GuiSlotRenderer::DrawSlot(const data::PrototypeIdT sprite_id,
 
         const auto& uv = menu_data.spritePositions.at(sprite_id);
         ImGui::ImageButton(reinterpret_cast<void*>(menu_data.texId),
-                           ImVec2(core::SafeCast<float>(button_size), core::SafeCast<float>(button_size)),
-                           ImVec2(uv.topLeft.x, uv.topLeft.y),
-                           ImVec2(uv.bottomRight.x, uv.bottomRight.y),
+                           {core::SafeCast<float>(button_size), core::SafeCast<float>(button_size)},
+                           {uv.topLeft.x, uv.topLeft.y},
+                           {uv.bottomRight.x, uv.bottomRight.y},
                            kInventorySlotImagePadding);
     }
 
 
     // Total items count
     if (item_count != 0) {
-        ImGui::SetCursorPos({x_offset + kInventoryItemCountXOffset, y_offset + kInventoryItemCountYOffset});
+        ImGui::SetCursorPos(
+            {original_x_offset + kInventoryItemCountXOffset, original_y_offset + kInventoryItemCountYOffset});
         ImGui::Text("%d", item_count);
     }
 }
 
-void render::GuiSlotRenderer::DrawSlot(const data::PrototypeIdT sprite_id,
-                                       const render::GuiSlotRenderer::DrawSlotCallbackT& callback) {
+void render::GuiItemSlots::DrawSlot(const data::PrototypeIdT sprite_id, const DrawSlotCallbackT& callback) const {
     DrawSlot(sprite_id, 0, callback);
 }
 
-void render::GuiSlotRenderer::DrawSlot(const data::ItemStack& item_stack,
-                                       const render::GuiSlotRenderer::DrawSlotCallbackT& callback) {
+void render::GuiItemSlots::DrawSlot(const data::ItemStack& item_stack, const DrawSlotCallbackT& callback) const {
     DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->internalId, item_stack.count, callback);
 }
 
-void render::GuiSlotRenderer::DrawBackingButton() const {
-    render::ImGuard guard;
-    guard.PushStyleColor(ImGuiCol_Button, render::kGuiColNone);
-    guard.PushStyleColor(ImGuiCol_ButtonHovered, render::kGuiColNone);
-    guard.PushStyleColor(ImGuiCol_ButtonActive, render::kGuiColNone);
+void render::GuiItemSlots::DrawBackingButton() const {
+    ImGuard guard;
+    guard.PushStyleColor(ImGuiCol_Button, kGuiColNone);
+    guard.PushStyleColor(ImGuiCol_ButtonHovered, kGuiColNone);
+    guard.PushStyleColor(ImGuiCol_ButtonActive, kGuiColNone);
 
-    const auto width   = core::SafeCast<float>((kInventorySlotWidth + kInventorySlotPadding) * this->scale);
-    const auto padding = width / 2;
+    // kInventorySlotWidth not multiplied by 2 so that the backing button is tile-able
+    const auto width         = core::SafeCast<float>((kInventorySlotWidth + kInventorySlotPadding) * this->scale);
+    const auto frame_padding = width / 2;
 
-    assert(padding * 2 == width); // Slots will not line up if does not halve evenly
+    assert(frame_padding * 2 == width); // Slots will not line up if does not halve evenly
 
-    ImGui::ImageButton(nullptr, ImVec2(0, 0), ImVec2(-1, -1), ImVec2(-1, -1), padding);
+    ImGui::ImageButton(nullptr, {0, 0}, {-1, -1}, {-1, -1}, frame_padding);
 }
-
 
 // ======================================================================
 
+void render::GuiTitle::Begin(const std::string& title, const CallbackT& callback) const {
+    AddVerticalSpaceAbsolute(topPadding);
 
-void render::DrawCursorTooltip(bool has_selected_item,
+    ImGui::Text("%s", title.c_str());
+    callback();
+
+    AddVerticalSpaceAbsolute(bottomPadding);
+}
+
+void render::DrawCursorTooltip(const bool has_selected_item,
                                const std::string& title,
                                const std::string& description,
                                const std::function<void()>& draw_func) {

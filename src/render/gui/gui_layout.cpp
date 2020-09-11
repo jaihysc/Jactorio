@@ -8,6 +8,11 @@
 
 using namespace jactorio;
 
+float render::GetFontHeight() {
+    const auto* font = ImGui::GetFont();
+    return font->Ascent - font->Descent;
+}
+
 void render::AddVerticalSpace(const float y) {
     AddVerticalSpaceAbsolute(y);
     ImGui::Dummy({0, 0});
@@ -20,15 +25,15 @@ void render::AddVerticalSpaceAbsolute(const float y) {
 // ======================================================================
 
 ImVec2 render::GetWindowSize() {
-    // 20 is window padding on both sides, 80 for y is to avoid the scrollbar
-    auto window_size = ImVec2(2 * kGuiStyleWindowPaddingX, 2 * kGuiStyleWindowPaddingY + 80);
+    constexpr auto item_slot_per_row = 10;
+    constexpr auto extra_vert_px     = 80; // Some extra space, for appearance purposes only
 
-    window_size.x += 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding;
-    window_size.y += core::SafeCast<unsigned int>(game::PlayerData::Inventory::kDefaultInventorySize / 10) *
-            (kInventorySlotWidth + kInventorySlotPadding) -
-        kInventorySlotPadding;
 
-    return window_size;
+    constexpr auto size_x = GetTotalItemSlotWidth(item_slot_per_row) + GetTotalWindowPaddingX();
+    constexpr auto size_y = GetTotalItemSlotWidth(
+        core::SafeCast<unsigned int>(game::PlayerData::Inventory::kDefaultInventorySize / item_slot_per_row));
+
+    return {size_x, size_y + extra_vert_px};
 }
 
 ImVec2 render::GetWindowCenter() {

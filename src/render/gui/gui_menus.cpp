@@ -15,7 +15,6 @@
 #include "game/player/player_data.h"
 
 #include "render/gui/components.h"
-#include "render/gui/gui_colors.h"
 
 using namespace jactorio;
 
@@ -23,7 +22,7 @@ using namespace jactorio;
 
 ///
 /// Implements ImGui::IsItemClicked() for left and right mouse buttons
-/// \param callback Called after inventory actions were handled
+/// \param on_click Called after inventory actions were handled
 template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
 void HandleInvClicked(
     game::PlayerData& player_data,
@@ -67,15 +66,16 @@ float GetProgressBarFraction(const GameTickT game_tick,
 ///
 /// Draws the player's inventory menu
 void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
-    render::GuiMenu menu;
+    const render::GuiMenu menu;
     menu.Begin("_character");
 
-    menu.DrawTitleBar("Character");
+    const auto title = g_rendr.MakeComponent<render::GuiTitle>();
+    title.Begin("Character");
 
 
     auto& player_inv = g_rendr.player.inventory.inventory;
 
-    auto item_slots = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+    auto item_slots = g_rendr.MakeComponent<render::GuiItemSlots>();
     item_slots.Begin(player_inv.size(), [&](auto index) {
         const auto& stack = player_inv[index];
 
@@ -85,7 +85,7 @@ void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
             if (ImGui::IsItemHovered() && stack.count != 0) {
                 render::DrawCursorTooltip(g_rendr.player.inventory.GetSelectedItem() != nullptr,
                                           stack.item->GetLocalizedName(),
-                                          "sample description",
+                                          stack.item->GetLocalizedDescription(),
                                           [&]() {
                                               render::ImGuard tooltip_guard;
 
@@ -103,31 +103,32 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     auto& player_data         = g_rendr.player;
     const auto& proto_manager = g_rendr.protoManager;
 
-    render::GuiMenu menu;
+    const render::GuiMenu menu;
     menu.Begin("_recipe");
 
-    // Title with search bar
-    menu.DrawTitleBar(title, [&]() {
+    const auto gui_title = g_rendr.MakeComponent<render::GuiTitle>();
+    gui_title.Begin(title, [&]() {
+        constexpr ImU32 search_bar_padding = 4;
+
+        const auto original_cursor_y = ImGui::GetCursorPosY();
+
         // Vertically center title text with search bar
         ImGui::SameLine();
 
-        // TODO Is this the wrong constant to be halving
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::SafeCast<float>(render::kGuiStyleTitlebarPaddingY) / 2);
+        const auto title_bar_height  = original_cursor_y + render::kGuiStyleFramePaddingY;
+        const auto search_bar_height = render::GetFontHeight() + search_bar_padding * 2;
+        ImGui::SetCursorPosY(title_bar_height / 2 - search_bar_height / 2);
 
-        render::ImGuard title_guard;
-        // TODO Is this the wrong constant to be halving, should be progress bar?
-        title_guard.PushStyleVar(
-            ImGuiStyleVar_FramePadding,
-            {render::kGuiStyleWindowPaddingX, core::SafeCast<float>(render::kGuiStyleTitlebarPaddingY) / 2});
+        {
+            render::ImGuard guard;
+            guard.PushStyleVar(ImGuiStyleVar_FramePadding, {render::kGuiStyleWindowPaddingX, search_bar_padding});
 
+            auto& search_text = player_data.crafting.recipeSearchText;
+            search_text.resize(100);
+            ImGui::InputText("", search_text.data(), search_text.size());
+        }
 
-        auto& search_text = player_data.crafting.recipeSearchText;
-        search_text.resize(100);
-        ImGui::InputText("", search_text.data(), search_text.size());
-
-        // Continue title bar calculations from where the label text was
-        // TODO Just save the original, can do an assert to check
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() - core::SafeCast<float>(render::kGuiStyleTitlebarPaddingY) / 2);
+        ImGui::SetCursorPosY(original_cursor_y);
     });
 
 
@@ -144,7 +145,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     // Menu groups
     auto groups = proto_manager.DataRawGetAllSorted<data::RecipeGroup>(data::DataCategory::recipe_group);
 
-    auto group_slots     = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+    auto group_slots     = g_rendr.MakeComponent<render::GuiItemSlots>();
     group_slots.slotSpan = 5;
     group_slots.scale    = 2;
     group_slots.Begin(groups.size(), [&](const uint16_t index) {
@@ -188,7 +189,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     for (const auto& recipe_category : selected_group->recipeCategories) {
         const auto& recipes = recipe_category->recipes;
 
-        auto recipe_row = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+        auto recipe_row = g_rendr.MakeComponent<render::GuiItemSlots>();
         recipe_row.Begin(recipes.size(), [&](auto index) {
             const auto* recipe = recipes.at(index);
 
@@ -228,7 +229,7 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const data::Recipe& 
             for (const auto& ingredient_pair : recipe.ingredients) {
                 const auto* item = proto_manager.DataRawGet<data::Item>(ingredient_pair.first);
 
-                auto ingredient_row = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+                auto ingredient_row = g_rendr.MakeComponent<render::GuiItemSlots>();
                 ingredient_row.DrawSlot(item->sprite->internalId);
 
                 ImGui::SameLine(render::kInventorySlotWidth * 1.5);
@@ -261,7 +262,7 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const data::Recipe& 
 
             auto raw_inames = data::Recipe::RecipeGetTotalRaw(proto_manager, product_item->name);
 
-            auto raw_item_slots                = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+            auto raw_item_slots                = g_rendr.MakeComponent<render::GuiItemSlots>();
             raw_item_slots.slotSpan            = 5;
             raw_item_slots.endingVerticalSpace = 0;
             raw_item_slots.Begin(raw_inames.size(), [&](const auto slot_index) {
@@ -325,7 +326,7 @@ void render::CursorWindow(const GuiRenderer& g_rendr) {
                                  core::LossyCast<float>(game::MouseSelection::GetCursorY()) + 2.f});
         ImGui::SetNextWindowFocus();
 
-        render::GuiMenu menu;
+        GuiMenu menu;
         menu.AppendFlags(ImGuiWindowFlags_NoBackground);
         menu.Begin("_selected_item");
 
@@ -343,38 +344,40 @@ void render::CursorWindow(const GuiRenderer& g_rendr) {
 }
 
 void render::CraftingQueue(const GuiRenderer& g_rendr) {
-    const auto& recipe_queue = g_rendr.player.crafting.GetRecipeQueue();
-
     constexpr auto slot_span = 10;
 
-    const auto y_slots = (recipe_queue.size() + slot_span - 1) / slot_span; // Always round up for slot count
-    auto y_offset      = y_slots * (kInventorySlotWidth + kInventorySlotPadding);
 
-    const unsigned int max_queue_height = Renderer::GetWindowHeight() / 2; // Pixels
+    auto get_window_height = [slot_span](const std::size_t queued_items) {
+        const auto y_slots = (queued_items + slot_span - 1) / slot_span; // Always round up for slot count
 
-    // Clamp to max queue height if greater
-    if (y_offset > max_queue_height)
-        y_offset = max_queue_height;
+        auto window_height = y_slots * (kInventorySlotWidth + kInventorySlotPadding);
+        window_height += kGuiStyleWindowPaddingX;
+
+        const auto max_window_height = Renderer::GetWindowHeight() / 2; // Pixels
+        if (window_height > max_window_height)
+            window_height = max_window_height;
+
+        return window_height;
+    };
 
 
-    // TODO what on earth is this
-    // Use the x padding to keep it constant on x and y
-    ImGui::SetNextWindowPos(
-        {0, core::SafeCast<float>(Renderer::GetWindowHeight()) - y_offset - kGuiStyleWindowPaddingX});
+    const auto& recipe_queue = g_rendr.player.crafting.GetRecipeQueue();
+    const auto window_height = get_window_height(recipe_queue.size());
 
-    ImGui::SetNextWindowSize({20 + 10 * (kInventorySlotWidth + kInventorySlotPadding) - kInventorySlotPadding,
-                              core::SafeCast<float>(max_queue_height)});
+    ImGui::SetNextWindowPos({0, core::SafeCast<float>(Renderer::GetWindowHeight() - window_height)});
+    ImGui::SetNextWindowSize({GetTotalItemSlotWidth(slot_span) + GetTotalWindowPaddingX() + kGuiStyleScrollBarSize,
+                              core::SafeCast<float>(window_height)});
 
-    // Window
-    render::GuiMenu menu;
+    GuiMenu menu;
     menu.AppendFlags(ImGuiWindowFlags_NoMove, ImGuiWindowFlags_NoBackground, ImGuiWindowFlags_NoScrollWithMouse);
     menu.Begin("_crafting_queue");
+
 
     ImGuard guard;
     guard.PushStyleColor(ImGuiCol_Button, kGuiColNone);
     guard.PushStyleColor(ImGuiCol_Border, kGuiColNone);
 
-    auto queued_item_row = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+    auto queued_item_row     = g_rendr.MakeComponent<GuiItemSlots>();
     queued_item_row.slotSpan = slot_span;
     queued_item_row.Begin(recipe_queue.size(), [&](auto index) {
         const auto* recipe = recipe_queue.at(index).Get();
@@ -419,24 +422,25 @@ void render::PickupProgressbar(const GuiRenderer& g_rendr) {
 // ==========================================================================================
 // Entity menus
 void render::ContainerEntity(const GuiRenderer& g_rendr) {
-    SetupNextWindowLeft();
-    PlayerInventoryMenu(g_rendr);
-
-    SetupNextWindowRight();
-
-    GuiMenu menu;
-    menu.Begin("_e_container");
-
-
     const auto* prototype = g_rendr.prototype;
     assert(prototype != nullptr);
-    menu.DrawTitleBar(prototype->GetLocalizedName());
 
     auto* unique_data = g_rendr.uniqueData;
     assert(unique_data != nullptr);
     auto& container_data = *static_cast<data::ContainerEntityData*>(unique_data);
 
-    auto inv_slots = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+
+    SetupNextWindowLeft();
+    PlayerInventoryMenu(g_rendr);
+
+    SetupNextWindowRight();
+    const GuiMenu menu;
+    menu.Begin("_e_container");
+
+    const auto title = g_rendr.MakeComponent<GuiTitle>();
+    title.Begin(prototype->GetLocalizedName());
+
+    auto inv_slots = g_rendr.MakeComponent<GuiItemSlots>();
     inv_slots.Begin(container_data.inventory.size(), [&](auto index) {
         inv_slots.DrawSlot(container_data.inventory[index],
                            [&]() { HandleInvClicked(g_rendr, container_data.inventory, index); });
@@ -444,21 +448,24 @@ void render::ContainerEntity(const GuiRenderer& g_rendr) {
 }
 
 void render::MiningDrill(const GuiRenderer& g_rendr) {
+    const auto* prototype = g_rendr.prototype;
+    assert(prototype != nullptr);
+
     auto* unique_data = g_rendr.uniqueData;
     assert(unique_data != nullptr);
     const auto& drill_data = *static_cast<const data::MiningDrillData*>(unique_data);
+
 
     SetupNextWindowLeft();
     PlayerInventoryMenu(g_rendr);
 
     SetupNextWindowRight();
 
-    GuiMenu menu;
+    const GuiMenu menu;
     menu.Begin("_e_mining_drill");
 
-    const auto* prototype = g_rendr.prototype;
-    assert(prototype != nullptr);
-    menu.DrawTitleBar(prototype->GetLocalizedName());
+    const auto title = g_rendr.MakeComponent<GuiTitle>();
+    title.Begin(prototype->GetLocalizedName());
 
     ImGui::ProgressBar(
         GetProgressBarFraction(g_rendr.logic.GameTick(), drill_data.deferralEntry, drill_data.miningTicks));
@@ -486,14 +493,15 @@ void render::AssemblyMachine(const GuiRenderer& g_rendr) {
 
         SetupNextWindowRight();
 
-        GuiMenu menu;
+        const GuiMenu menu;
         menu.Begin("_e_assembly_machine");
 
-        menu.DrawTitleBar(prototype->GetLocalizedName());
+        const auto title = g_rendr.MakeComponent<GuiTitle>();
+        title.Begin(prototype->GetLocalizedName());
 
 
         // Ingredients
-        auto ingredient_slots = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+        auto ingredient_slots = g_rendr.MakeComponent<GuiItemSlots>();
         ingredient_slots.Begin(machine_data.ingredientInv.size() + 1, [&](auto index) {
             // Recipe change button
             if (index == machine_data.ingredientInv.size()) {
@@ -537,24 +545,19 @@ void render::AssemblyMachine(const GuiRenderer& g_rendr) {
 
 
         // Progress
-        // TODO why move down, why TitlebarPaddingY
-        const auto original_cursor_y = ImGui::GetCursorPosY();
-        ImGui::SetCursorPosY(original_cursor_y + core::SafeCast<float>(kGuiStyleTitlebarPaddingY) / 2);
-
         const auto progress = GetProgressBarFraction(
             logic.GameTick(),
             machine_data.deferralEntry,
             core::SafeCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed)));
 
-        // TODO why 2 *
-        ImGui::ProgressBar(progress, {window_size.x - 2 * kInventorySlotWidth, 0});
+        ImGui::ProgressBar(
+            progress,
+            {window_size.x - GetTotalWindowPaddingX() - GetTotalItemSlotWidth(1) - GetTotalWindowItemSpacingX(1), 0});
 
         ImGui::SameLine();
-        ImGui::SetCursorPosY(original_cursor_y);
-
 
         // Product
-        auto product_slots = g_rendr.MakeComponent<render::GuiSlotRenderer>();
+        auto product_slots = g_rendr.MakeComponent<GuiItemSlots>();
         product_slots.Begin(1, [&](auto /*slot_index*/) {
             auto* product_item = proto_manager.DataRawGet<data::Item>(machine_data.GetRecipe()->product.first);
 

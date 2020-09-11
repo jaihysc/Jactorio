@@ -107,10 +107,13 @@ void render::Setup(const DisplayWindow& display_window) {
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {kGuiStyleItemSpacingX, kGuiStyleItemSpacingY});
 
+    // Scrollbar
+    ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, kGuiStyleScrollBarSize);
+
     LOG_MESSAGE(info, "Imgui initialized");
 }
 
-void DrawMenu(render::Menu menu, render::GuiRenderer g_rendr, data::UniqueDataBase* unique_data = nullptr) {
+void DrawMenu(render::Menu menu, const render::GuiRenderer& g_rendr, data::UniqueDataBase* unique_data = nullptr) {
     auto& gui_menu = render::menus[static_cast<int>(menu)];
 
     if (gui_menu.visible) {

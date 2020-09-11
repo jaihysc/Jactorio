@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H
-#define JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H
+#ifndef JACTORIO_INCLUDE_RENDER_GUI_GUI_COLORS_H
+#define JACTORIO_INCLUDE_RENDER_GUI_GUI_COLORS_H
 #pragma once
 
 #include <imgui.h>
@@ -74,11 +74,16 @@ namespace jactorio::render
 
     constexpr ImU32 kGuiStyleTitlebarPaddingY = 10;
 
+    // From widgets' contents to its borders
     constexpr ImU32 kGuiStyleFramePaddingX = 10;
     constexpr ImU32 kGuiStyleFramePaddingY = 10;
 
+    // Space between widgets
     constexpr ImU32 kGuiStyleItemSpacingX = 8;
     constexpr ImU32 kGuiStyleItemSpacingY = 4;
+
+
+    constexpr ImU32 kGuiStyleScrollBarSize = 14;
 
 
     ///
@@ -137,4 +142,4 @@ namespace jactorio::render
 } // namespace jactorio::render
 
 
-#endif // JACTORIO_INCLUDE_RENDERER_GUI_GUI_COLORS_H
+#endif // JACTORIO_INCLUDE_RENDER_GUI_GUI_COLORS_H
