@@ -180,7 +180,7 @@ namespace jactorio::data
             speed = LineDistT(speedFloat);
         }
 
-        void PostLoadValidate(const PrototypeManager&) const override {
+        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
             J_DATA_ASSERT(speedFloat >= 0.001, "Transport line speed below minimum 0.001");
             // Cannot exceed item_width because of limitations in the logic
             J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");

@@ -29,8 +29,8 @@ data::Sprite* data::MiningDrill::OnRGetSprite(const Sprite::SetT set) const {
 }
 
 data::Sprite::SetT data::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
-                                                      game::WorldData&,
-                                                      const WorldCoord&) const {
+                                                      game::WorldData& /*world_data*/,
+                                                      const WorldCoord& /*world_coords*/) const {
     switch (orientation) {
     case Orientation::up:
         return 0;
@@ -178,9 +178,9 @@ void data::MiningDrill::OnNeighborUpdate(game::WorldData& world_data,
 }
 
 
-void data::MiningDrill::OnRemove(game::WorldData&,
+void data::MiningDrill::OnRemove(game::WorldData& /*world_data*/,
                                  game::LogicData& logic_data,
-                                 const WorldCoord&,
+                                 const WorldCoord& /*world_coords*/,
                                  game::ChunkTileLayer& tile_layer) const {
     auto* drill_data = tile_layer.GetUniqueData<MiningDrillData>();
     logic_data.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
@@ -228,7 +228,7 @@ bool data::MiningDrill::SetupResourceDeduction(const game::WorldData& world_data
         for (int x = 0; x < x_span; ++x) {
             const auto* tile = world_data.GetTile(drill_data.resourceCoord.x + x, drill_data.resourceCoord.y + y);
 
-            auto& resource_layer = tile->GetLayer(game::TileLayer::resource);
+            const auto& resource_layer = tile->GetLayer(game::TileLayer::resource);
 
             if (resource_layer.prototypeData.Get() != nullptr) {
                 drill_data.outputItem     = resource_layer.GetPrototypeData<ResourceEntity>()->GetItem();

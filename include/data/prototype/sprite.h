@@ -103,7 +103,7 @@ namespace jactorio::data
 
         ///
         /// \return true is Sprite is in specified group
-        bool IsInGroup(SpriteGroup group) const;
+        J_NODISCARD bool IsInGroup(SpriteGroup group) const;
 
         ///
         /// If group is empty, it is set to the group provided

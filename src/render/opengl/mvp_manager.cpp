@@ -67,8 +67,8 @@ void render::MvpManager::UpdateViewTransform() {
     GlSetViewMatrix(view_mat);
 }
 
-glm::mat4 render::MvpManager::ToProjMatrix(const unsigned short window_width,
-                                           const unsigned short window_height,
+glm::mat4 render::MvpManager::ToProjMatrix(const unsigned window_width,
+                                           const unsigned window_height,
                                            const float offset) {
     // Calculate aspect ratio scale based on "larger / smaller"
     float x_zoom_ratio = 1.f;

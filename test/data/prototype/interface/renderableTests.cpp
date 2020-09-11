@@ -18,15 +18,18 @@ namespace jactorio::data
 
 
     public:
-        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT) const override {
+        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT /*set*/) const override {
             return nullptr;
         }
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation, game::WorldData&, const WorldCoord&) const override {
+        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation /*orientation*/,
+                                                 game::WorldData& /*world_data*/,
+                                                 const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase&, GameTickT) const override {
+        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
+                                                     GameTickT /*game_tick*/) const override {
             return 0;
         }
 

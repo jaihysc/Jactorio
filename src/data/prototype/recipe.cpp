@@ -52,7 +52,6 @@ const data::Recipe* data::Recipe::GetItemRecipe(const PrototypeManager& data_man
 
 std::vector<data::RecipeItem> data::Recipe::RecipeGetTotalRaw(const PrototypeManager& data_manager,
                                                               const std::string& iname) {
-    // Key is ptr instead of std::string for some added speed
     std::unordered_map<std::string, uint16_t> map_raw;
 
     const auto* recipe = GetItemRecipe(data_manager, iname);
@@ -62,29 +61,33 @@ std::vector<data::RecipeItem> data::Recipe::RecipeGetTotalRaw(const PrototypeMan
     std::vector<RecipeItem> v;
     v.reserve(map_raw.size());
     for (auto& item : map_raw) {
-        v.emplace_back(item.first, item.second);
+        v.emplace_back(item);
     }
     return v;
 }
 
-void data::Recipe::PostLoadValidate(const PrototypeManager& data_manager) const {
+void data::Recipe::PostLoadValidate(const PrototypeManager& proto_manager) const {
     J_DATA_ASSERT(!ingredients.empty(), "No ingredients specified for recipe");
-    for (const auto& ingredient : ingredients) {
-        J_DATA_ASSERT(!ingredient.first.empty(), "Empty ingredient internal name specifier");
+    for (const auto& [ing_name, ing_req_amount] : ingredients) {
+        J_DATA_ASSERT(!ing_name.empty(), "Empty ingredient internal name specifier");
 
-        const auto* ingredient_item = data_manager.DataRawGet<Item>(ingredient.first);
-        J_DATA_ASSERT_F(ingredient_item, "Ingredient %s does not exist", ingredient.first.c_str());
+        const auto* ingredient_item = proto_manager.DataRawGet<Item>(ing_name);
+        assert(ingredient_item != nullptr);
 
-        J_DATA_ASSERT(ingredient.second > 0, "Ingredient required amount minimum is 1");
-        J_DATA_ASSERT_F(ingredient.second <= ingredient_item->stackSize,
+        J_DATA_ASSERT_F(ingredient_item, "Ingredient %s does not exist", ing_name.c_str());
+
+        J_DATA_ASSERT(ing_req_amount > 0, "Ingredient required amount minimum is 1");
+        J_DATA_ASSERT_F(ing_req_amount <= ingredient_item->stackSize,
                         "Ingredient required amount %d exceeds max stack size of ingredient %d",
-                        ingredient.second,
+                        ing_req_amount,
                         ingredient_item->stackSize);
     }
 
     J_DATA_ASSERT(!product.first.empty(), "No product specified for recipe");
 
-    const auto* item_product = data_manager.DataRawGet<Item>(product.first);
+    const auto* item_product = proto_manager.DataRawGet<Item>(product.first);
+    assert(item_product != nullptr);
+
     J_DATA_ASSERT_F(item_product != nullptr, "Product %s does not exist", product.first.c_str());
 
     J_DATA_ASSERT(product.second > 0, "Product yield amount minimum is 1");

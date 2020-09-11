@@ -54,12 +54,12 @@ void LogicLoop(LogicRenderLoopCommon& common) {
                 {
                     EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-                    game::TransportLineLogicUpdate(world);
+                    TransportLineLogicUpdate(world);
                 }
                 {
                     EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");
 
-                    game::InserterLogicUpdate(world, logic);
+                    InserterLogicUpdate(world, logic);
                 }
             }
 

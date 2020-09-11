@@ -176,11 +176,11 @@ namespace jactorio::data
                                     const Orientation emit_orientation) {
 
             auto* tile = worldData_.GetTile(receive_coords);
-            if (!tile)
+            if (tile == nullptr)
                 return;
 
             auto& layer = tile->GetLayer(game::TileLayer::entity);
-            if (!layer.prototypeData.Get())
+            if (layer.prototypeData.Get() == nullptr)
                 return;
 
             static_cast<const Entity*>(layer.prototypeData.Get())
@@ -964,7 +964,7 @@ namespace jactorio::data
     }
 
     TEST_F(TransportLineTest, OnBuildConnectTransportLineSegmentsTrailing) {
-        // A transport line placed infront of another one will set the target_segment of the neighbor
+        // A transport line placed in front of another one will set the target_segment of the neighbor
         /*
          * > ^
          */

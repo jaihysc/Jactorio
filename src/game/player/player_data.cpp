@@ -230,7 +230,7 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
 bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
                                                  LogicData& logic_data,
                                                  const WorldCoordAxis world_x,
-                                                 const WorldCoordAxis world_y) {
+                                                 const WorldCoordAxis world_y) const {
     auto* tile = world_data.GetTile(world_x, world_y);
     if (tile == nullptr)
         return false;
@@ -542,9 +542,9 @@ loop_exit:
 // RIGHT CLICK - Select unique, the item in the cursor exists independently of the inventory item
 
 void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data_manager,
-                                              uint16_t index,
-                                              uint16_t mouse_button,
-                                              bool reference_select,
+                                              const uint16_t index,
+                                              const uint16_t mouse_button,
+                                              const bool reference_select,
                                               data::Item::Inventory& inv) {
     assert(index < inventory.size());
     assert(mouse_button == 0 || mouse_button == 1); // Only left + right click supported

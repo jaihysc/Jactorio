@@ -42,7 +42,7 @@ namespace jactorio::render
                    game::LogicData& logic,
                    game::PlayerData& player,
                    const data::PrototypeManager& proto_manager,
-                   game::EventData&);
+                   game::EventData& event);
 
     void ImguiTerminate();
 } // namespace jactorio::render

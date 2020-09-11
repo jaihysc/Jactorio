@@ -15,7 +15,7 @@ std::string core::StrToUpper(std::string str) {
 }
 
 std::string core::StrTrimWhitespace(std::string str) {
-    auto is_whitespace_char = [](char c) {
+    auto is_whitespace_char = [](const char c) {
         switch (c) {
         case ' ':
         case '\0':
@@ -52,7 +52,7 @@ std::string core::StrTrimWhitespace(std::string str) {
     return str;
 }
 
-std::string core::StrMatchLen(std::string str, std::size_t target_len, char padding) {
+std::string core::StrMatchLen(std::string str, const std::size_t target_len, const char padding) {
     while (str.size() < target_len) {
         str.push_back(padding);
     }

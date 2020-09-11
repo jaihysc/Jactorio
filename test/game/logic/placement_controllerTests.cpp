@@ -96,7 +96,7 @@ namespace jactorio::game
         // Place an entity at various locations, checking that it does not place on invalid tiles
         const auto entity = std::make_unique<data::ContainerEntity>();
 
-        const auto chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
         EXPECT_EQ(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 0, 0), true);
 
@@ -111,7 +111,7 @@ namespace jactorio::game
         const auto entity = std::make_unique<data::ContainerEntity>();
 
         // Invalid, placing on a base tile which is water
-        const auto chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
         EXPECT_EQ(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 1, 0), false);
         EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
@@ -124,11 +124,11 @@ namespace jactorio::game
         const auto entity = std::make_unique<data::ContainerEntity>();
 
 
-        const auto chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
         // Place entity, taken from the test above (place_entity_1x1_valid)
         {
-            // const auto chunk = world_data.get_chunk(0, 0);
+            // const auto* chunk = world_data.get_chunk(0, 0);
 
             EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 0, 0));
 
@@ -146,7 +146,7 @@ namespace jactorio::game
     TEST_F(PlacementControllerTest, RemoveEntity1x1Invalid) {
         // Removing a location with nullptr entity and sprite does nothing, returns false to indicate nothing was
         // removed
-        const auto chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
         // Invalid Removal
         EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 0, 0));
@@ -164,7 +164,7 @@ namespace jactorio::game
         entity->tileWidth  = 3;
         entity->tileHeight = 3;
 
-        const auto chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
         EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
@@ -191,7 +191,7 @@ namespace jactorio::game
         entity->tileWidth  = 3;
         entity->tileHeight = 3;
 
-        const auto chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
         EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 4, 5));

@@ -30,20 +30,20 @@ namespace jactorio
     public:
         PROTOTYPE_CATEGORY(test);
 
-        void PostLoadValidate(const data::PrototypeManager&) const override {}
+        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {}
 
-        J_NODISCARD data::Sprite* OnRGetSprite(data::Sprite::SetT set) const override {
+        J_NODISCARD data::Sprite* OnRGetSprite(data::Sprite::SetT /*set*/) const override {
             return nullptr;
         }
 
-        J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation orientation,
-                                                       game::WorldData& world_data,
-                                                       const WorldCoord& world_coords) const override {
+        J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation /*orientation*/,
+                                                       game::WorldData& /*world_data*/,
+                                                       const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
-        J_NODISCARD data::Sprite::FrameT OnRGetSpriteFrame(const data::UniqueDataBase& unique_data,
-                                                           GameTickT game_tick) const override {
+        J_NODISCARD data::Sprite::FrameT OnRGetSpriteFrame(const data::UniqueDataBase& /*unique_data*/,
+                                                           GameTickT /*game_tick*/) const override {
             return 0;
         }
 

@@ -23,7 +23,7 @@ void data::UniqueDataManager::StoreRelocationEntry(UniqueDataBase& unique_data) 
     dataEntries_[index] = &unique_data;
 }
 
-data::UniqueDataBase& data::UniqueDataManager::RelocationTableGet(data::UniqueDataIdT id) const noexcept {
+data::UniqueDataBase& data::UniqueDataManager::RelocationTableGet(const UniqueDataIdT id) const noexcept {
     assert(id > 0);
     return *dataEntries_[id - kDefaultId_];
 }

@@ -46,7 +46,10 @@ namespace jactorio::data
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
-        void OnRemove(game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer&) const override {}
+        void OnRemove(game::WorldData& /*world_data*/,
+                      game::LogicData& /*logic_data*/,
+                      const WorldCoord& /*world_coords*/,
+                      game::ChunkTileLayer& /*tile_layer*/) const override {}
 
         bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
 

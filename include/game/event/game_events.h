@@ -7,6 +7,8 @@
 #include <functional>
 #include <vector>
 
+#include "jactorio.h"
+
 #include "game/event/event_base.h"
 #include "render/display_window.h"
 
@@ -15,11 +17,11 @@ namespace jactorio::game
     class LogicTickEvent final : public EventBase
     {
     public:
-        explicit LogicTickEvent(const unsigned short tick) : gameTick(tick) {}
+        explicit LogicTickEvent(const uint16_t tick) : gameTick(tick) {}
 
         ///
         /// 0 - 59
-        unsigned short gameTick;
+        uint16_t gameTick;
 
         EVENT_TYPE(logic_tick)
         EVENT_CATEGORY(in_game)

@@ -197,7 +197,7 @@ namespace jactorio::render
         MvpManager mvpManager_;
 
         /// Internal ids to spritemap positions
-        const SpriteUvCoordsT* spritemapCoords_;
+        const SpriteUvCoordsT* spritemapCoords_ = nullptr;
 
         static unsigned int windowWidth_;
         static unsigned int windowHeight_;

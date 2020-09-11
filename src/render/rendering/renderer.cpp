@@ -293,7 +293,7 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
         const auto* chunk = world_data.GetChunkC(chunk_x, row_start.y);
 
         // Queue chunk for generation if it does not exist
-        if (!chunk) {
+        if (chunk == nullptr) {
             std::lock_guard<std::mutex> gen_guard{world_gen_mutex};
             world_data.QueueChunkGeneration(chunk_x, row_start.y);
             continue;
@@ -308,10 +308,6 @@ void render::Renderer::PrepareChunk(RendererLayer& r_layer,
                                     const game::Chunk& chunk,
                                     const core::Position2<int> render_tile_offset,
                                     const GameTickT game_tick) const noexcept {
-    // Load chunk into buffer
-    const auto& tiles = chunk.Tiles();
-
-
     // Iterate through and load tiles of a chunk into layer for rendering
     for (uint8_t tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
         const auto pixel_y = core::SafeCast<float>(render_tile_offset.y + tile_y) * core::SafeCast<float>(tileWidth);
@@ -320,8 +316,7 @@ void render::Renderer::PrepareChunk(RendererLayer& r_layer,
             const auto pixel_x =
                 core::SafeCast<float>(render_tile_offset.x + tile_x) * core::SafeCast<float>(tileWidth);
 
-            PrepareTileLayers(
-                r_layer, tiles[tile_y * game::Chunk::kChunkWidth + tile_x], {pixel_x, pixel_y}, game_tick);
+            PrepareTileLayers(r_layer, chunk.GetCTile(tile_x, tile_y), {pixel_x, pixel_y}, game_tick);
         }
     }
 
@@ -337,7 +332,7 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
 
 
         const auto* proto = tile_layer.GetPrototypeData();
-        if (!proto) // Layer not initialized
+        if (proto == nullptr) // Layer not initialized
             continue;
 
         const auto* unique_data = tile_layer.GetUniqueData();
@@ -346,7 +341,7 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
 
         SpriteUvCoordsT::mapped_type uv;
 
-        if (unique_data) {
+        if (unique_data != nullptr) {
             const auto* sprite = proto->OnRGetSprite(unique_data->set);
             uv                 = GetSpriteUvCoords(sprite->internalId);
 

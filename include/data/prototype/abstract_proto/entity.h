@@ -86,18 +86,18 @@ namespace jactorio::data
         // Renderer events
 
 
-        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT set) const override {
+        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT /*set*/) const override {
             return sprite;
         }
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation,
-                                                 game::WorldData& world_data,
-                                                 const WorldCoord& world_coords) const override {
+        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation /*orientation*/,
+                                                 game::WorldData& /*world_data*/,
+                                                 const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                     GameTickT game_tick) const override {
+        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
+                                                     GameTickT /*game_tick*/) const override {
             return 0;
         }
 
@@ -119,7 +119,8 @@ namespace jactorio::data
         ///
         /// Returns true if itself can be built at the specified world_coords being its top left
         /// \return true if can be built
-        J_NODISCARD virtual bool OnCanBuild(const game::WorldData& world_data, const WorldCoord& world_coords) const {
+        J_NODISCARD virtual bool OnCanBuild(const game::WorldData& /*world_data*/,
+                                            const WorldCoord& /*world_coords*/) const {
             return true;
         }
 
@@ -136,23 +137,23 @@ namespace jactorio::data
         /// \param emit_coords Coordinates of the prototype which is EMITTING the update
         /// \param receive_coords Layer of the prototype RECEIVING the update
         /// \param emit_orientation Orientation to the prototype EMITTING the update
-        virtual void OnNeighborUpdate(game::WorldData& world_data,
-                                      game::LogicData& logic_data,
+        virtual void OnNeighborUpdate(game::WorldData& /*world_data*/,
+                                      game::LogicData& /*logic_data*/,
                                       const WorldCoord& emit_coords,
                                       const WorldCoord& receive_coords,
                                       Orientation emit_orientation) const {}
 
 
-        void OnDeferTimeElapsed(game::WorldData& world_data,
-                                game::LogicData& logic_data,
-                                UniqueDataBase* unique_data) const override {
+        void OnDeferTimeElapsed(game::WorldData& /*world_data*/,
+                                game::LogicData& /*logic_data*/,
+                                UniqueDataBase* /*unique_data*/) const override {
             assert(false); // Unimplemented
         }
 
-        void OnTileUpdate(game::WorldData& world_data,
-                          const WorldCoord& emit_coords,
-                          const WorldCoord& receive_coords,
-                          UpdateType type) const override {
+        void OnTileUpdate(game::WorldData& /*world_data*/,
+                          const WorldCoord& /*emit_coords*/,
+                          const WorldCoord& /*receive_coords*/,
+                          UpdateType /*type*/) const override {
             assert(false); // Unimplemented
         }
 
@@ -165,7 +166,7 @@ namespace jactorio::data
         Item* item_ = nullptr;
     };
 
-    inline void Entity::PostLoadValidate(const PrototypeManager& data_manager) const {
+    inline void Entity::PostLoadValidate(const PrototypeManager& /*data_manager*/) const {
         J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
         J_DATA_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive");
     }

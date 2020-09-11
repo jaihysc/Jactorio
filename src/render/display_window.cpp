@@ -8,7 +8,6 @@
 
 #include "jactorio.h"
 
-#include "core/math.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 #include "render//gui/imgui_manager.h"
@@ -67,7 +66,7 @@ int render::DisplayWindow::Init(const int width, const int height) {
                                   height,                       // height, in pixels
                                   SDL_WINDOW_OPENGL             // flags - see below
     );
-    if (!sdlWindow_) {
+    if (sdlWindow_ == nullptr) {
         SDL_Quit();
         LOG_MESSAGE(critical, "Error initializing window");
         goto sdl_error;
@@ -130,7 +129,7 @@ int render::DisplayWindow::Init(const int width, const int height) {
     // Error handling
 
 sdl_error:
-    if (sdlWindow_)
+    if (sdlWindow_ != nullptr)
         SDL_DestroyWindow(sdlWindow_);
     SDL_Quit();
     return 2;

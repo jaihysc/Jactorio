@@ -52,7 +52,7 @@ void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
 
 void game::MouseSelection::DrawOverlay(WorldData& world,
                                        const WorldCoord& coord,
-                                       data::Orientation orientation,
+                                       const data::Orientation orientation,
                                        const data::Entity* selected_entity,
                                        const data::Sprite& cursor_sprite) {
     // Clear last overlay

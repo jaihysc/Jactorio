@@ -96,7 +96,7 @@ namespace jactorio::data
                       const WorldCoord& world_coords,
                       game::ChunkTileLayer& tile_layer) const override;
 
-        void PostLoadValidate(const PrototypeManager&) const override {
+        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
             J_DATA_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");
         }
     };

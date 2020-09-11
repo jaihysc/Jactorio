@@ -125,7 +125,7 @@ namespace jactorio::data
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const PrototypeManager&) const override {
+        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
             J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
             J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
             J_DATA_ASSERT(handSprite != nullptr, "Hand sprite not provided");

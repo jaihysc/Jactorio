@@ -56,13 +56,13 @@ data::TransportLineData* data::TransportLine::GetLineData(game::WorldData& world
                                                           const WorldCoordAxis world_x,
                                                           const WorldCoordAxis world_y) {
     auto* tile = world_data.GetTile(world_x, world_y);
-    if (!tile) // No tile exists
+    if (tile == nullptr) // No tile exists
         return nullptr;
 
     auto& layer = tile->GetLayer(game::TileLayer::entity);
 
-    if (!dynamic_cast<const TransportLine*>( // Not an instance of transport line
-            layer.prototypeData.Get()))
+    if (dynamic_cast<const TransportLine*>( // Not an instance of transport line
+            layer.prototypeData.Get()) == nullptr)
         return nullptr;
 
     return layer.GetUniqueData<TransportLineData>();
@@ -87,9 +87,9 @@ std::shared_ptr<game::TransportSegment>* data::TransportLine::GetTransportSegmen
                                                                                   const WorldCoordAxis world_x,
                                                                                   const WorldCoordAxis world_y) {
     auto* tile = world_data.GetTile(world_x, world_y);
-    if (tile) {
+    if (tile != nullptr) {
         auto& layer = tile->GetLayer(game::TileLayer::entity);
-        if (!layer.prototypeData.Get() || layer.prototypeData->Category() != DataCategory::transport_belt)
+        if ((layer.prototypeData.Get() == nullptr) || layer.prototypeData->Category() != DataCategory::transport_belt)
             return nullptr;
 
         auto* unique_data = layer.GetUniqueData<TransportLineData>();
@@ -187,7 +187,8 @@ data::Sprite::SetT data::TransportLine::OnRGetSpriteSet(const Orientation orient
     return static_cast<uint16_t>(GetLineOrientation(orientation, GetLineData4(world_data, world_coords)));
 }
 
-data::Sprite::FrameT data::TransportLine::OnRGetSpriteFrame(const UniqueDataBase&, const GameTickT game_tick) const {
+data::Sprite::FrameT data::TransportLine::OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
+                                                            const GameTickT game_tick) const {
     return AllOfSet(*sprite, game_tick);
 }
 
@@ -256,7 +257,7 @@ static void UpdateSegmentTiles(game::WorldData& world_data,
     for (auto i = offset; i < line_segment->length; ++i) {
         auto* i_line_data =
             data::TransportLine::GetLineData(world_data, world_coords.x + x_offset, world_coords.y + y_offset);
-        if (!i_line_data)
+        if (i_line_data == nullptr)
             continue;
 
         core::SafeCastAssign(i_line_data->lineSegmentIndex, i);
@@ -299,19 +300,19 @@ void CalculateNeighborLineOrientation(game::WorldData& world_data,
     auto* b_right = data::TransportLine::GetLineData(world_data, world_coords.x + 1, world_coords.y + 1);
 
     // Top neighbor
-    if (line_data_4[0])
+    if (line_data_4[0] != nullptr)
         line_data_4[0]->SetOrientation(data::TransportLine::GetLineOrientation(
             data::TransportLineData::ToOrientation(line_data_4[0]->orientation), {top, t_right, center, t_left}));
     // Right
-    if (line_data_4[1])
+    if (line_data_4[1] != nullptr)
         line_data_4[1]->SetOrientation(data::TransportLine::GetLineOrientation(
             data::TransportLineData::ToOrientation(line_data_4[1]->orientation), {t_right, right, b_right, center}));
     // Bottom
-    if (line_data_4[2])
+    if (line_data_4[2] != nullptr)
         line_data_4[2]->SetOrientation(data::TransportLine::GetLineOrientation(
             data::TransportLineData::ToOrientation(line_data_4[2]->orientation), {center, b_right, bottom, b_left}));
     // Left
-    if (line_data_4[3])
+    if (line_data_4[3] != nullptr)
         line_data_4[3]->SetOrientation(data::TransportLine::GetLineOrientation(
             data::TransportLineData::ToOrientation(line_data_4[3]->orientation), {t_left, center, b_left, left}));
 }
@@ -554,12 +555,12 @@ data::TransportLineData& InitTransportSegment(game::WorldData& world_data,
     const auto index  = static_cast<int>(orientation);
     const int i_index = data::InvertOrientation(index);
 
-    if (!line_data[index] || line_data[index]->lineSegment->direction != orientation) {
+    if ((line_data[index] == nullptr) || line_data[index]->lineSegment->direction != orientation) {
 
         status = InitSegmentStatus::new_segment; // If failed to group with ahead, this is chosen
 
         // Failed to group with ahead, try to group with segment behind
-        if (line_data[i_index] && line_data[i_index]->lineSegment->direction == orientation) {
+        if ((line_data[i_index] != nullptr) && line_data[i_index]->lineSegment->direction == orientation) {
             // Group behind
 
             WorldCoord behind_coords = world_coords;
@@ -689,19 +690,19 @@ void CalculateLineTargets4(game::WorldData& world_data,
                            const data::Orientation origin_orient,
                            data::TransportLineData& origin_data,
                            const LineData4Way& line_data_4) {
-    if (line_data_4[0])
+    if (line_data_4[0] != nullptr)
         CalculateLineTargets<data::Orientation::up, data::Orientation::down>(
             world_data, origin_data, origin_orient, origin_coord.x, origin_coord.y - 1);
 
-    if (line_data_4[1])
+    if (line_data_4[1] != nullptr)
         CalculateLineTargets<data::Orientation::right, data::Orientation::left>(
             world_data, origin_data, origin_orient, origin_coord.x + 1, origin_coord.y);
 
-    if (line_data_4[2])
+    if (line_data_4[2] != nullptr)
         CalculateLineTargets<data::Orientation::down, data::Orientation::up>(
             world_data, origin_data, origin_orient, origin_coord.x, origin_coord.y + 1);
 
-    if (line_data_4[3])
+    if (line_data_4[3] != nullptr)
         CalculateLineTargets<data::Orientation::left, data::Orientation::right>(
             world_data, origin_data, origin_orient, origin_coord.x - 1, origin_coord.y);
 }
@@ -758,7 +759,7 @@ void data::TransportLine::OnNeighborUpdate(game::WorldData& world_data,
     // Run stuff here that on_build and on_remove both calls
 
     auto* line_data = GetLineData(world_data, receive_world_coords.x, receive_world_coords.y);
-    if (!line_data) // Transport line does not exist here
+    if (line_data == nullptr) // Transport line does not exist here
         return;
 
     // Reset segment lane item index to 0, since the head items MAY now have somewhere to go
@@ -799,7 +800,7 @@ void DisconnectSegment(game::WorldData& world_data,
 
 
     // Neighbor must target origin segment
-    if (!neighbor_data || neighbor_data->lineSegment->targetSegment != origin_data->lineSegment.get())
+    if ((neighbor_data == nullptr) || neighbor_data->lineSegment->targetSegment != origin_data->lineSegment.get())
         return;
 
     auto& neighbor_segment_p = neighbor_data->lineSegment;
@@ -845,7 +846,7 @@ double ToChunkOffset(const WorldCoordAxis world_coord) {
 }
 
 void data::TransportLine::OnRemove(game::WorldData& world_data,
-                                   game::LogicData&,
+                                   game::LogicData& /*logic_data*/,
                                    const WorldCoord& world_coords,
                                    game::ChunkTileLayer& tile_layer) const {
     auto* origin_data      = tile_layer.GetUniqueData<TransportLineData>();
@@ -889,7 +890,8 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
         // TODO improve this algorithm for updating target segments
         for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
             auto& layer = chunk.Tiles()[i].GetLayer(game::TileLayer::entity);
-            if (!layer.prototypeData.Get() || layer.prototypeData->Category() != DataCategory::transport_belt)
+            if ((layer.prototypeData.Get() == nullptr) ||
+                layer.prototypeData->Category() != DataCategory::transport_belt)
                 continue;
 
             const auto& line_segment = layer.GetUniqueData<TransportLineData>()->lineSegment.get();
@@ -924,7 +926,7 @@ void data::TransportLine::OnRemove(game::WorldData& world_data,
         OrientationIncrement(o_line_segment->direction, neighbor_chunk_coords.x, neighbor_chunk_coords.y, -1);
 
         auto* neighbor_l_chunk = world_data.GetChunkC(neighbor_chunk_coords);
-        if (neighbor_l_chunk) {
+        if (neighbor_l_chunk != nullptr) {
             for (auto& t_line : neighbor_l_chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
                 const auto& i_segment = t_line->GetUniqueData<TransportLineData>()->lineSegment;
 

@@ -91,14 +91,14 @@ namespace jactorio::game
     protected:
         // Dropoff functions
 
-        J_NODISCARD bool CanInsertContainerEntity(const DropOffParams& args) const;
-        bool InsertContainerEntity(const DropOffParams& args) const;
+        J_NODISCARD bool CanInsertContainerEntity(const DropOffParams& params) const;
+        bool InsertContainerEntity(const DropOffParams& params) const;
 
-        J_NODISCARD bool CanInsertTransportBelt(const DropOffParams& args) const;
-        bool InsertTransportBelt(const DropOffParams& args) const;
+        J_NODISCARD bool CanInsertTransportBelt(const DropOffParams& params) const;
+        bool InsertTransportBelt(const DropOffParams& params) const;
 
-        J_NODISCARD bool CanInsertAssemblyMachine(const DropOffParams& args) const;
-        bool InsertAssemblyMachine(const DropOffParams& args) const;
+        J_NODISCARD bool CanInsertAssemblyMachine(const DropOffParams& params) const;
+        bool InsertAssemblyMachine(const DropOffParams& params) const;
 
 
         using DropOffFunc    = decltype(&ItemDropOff::InsertContainerEntity);
@@ -157,14 +157,14 @@ namespace jactorio::game
         }
 
     protected:
-        J_NODISCARD GetPickupReturn GetPickupContainerEntity(const PickupParams& args) const;
-        PickupReturn PickupContainerEntity(const PickupParams& args) const;
+        J_NODISCARD GetPickupReturn GetPickupContainerEntity(const PickupParams& params) const;
+        PickupReturn PickupContainerEntity(const PickupParams& params) const;
 
-        J_NODISCARD GetPickupReturn GetPickupTransportBelt(const PickupParams& args) const;
-        PickupReturn PickupTransportBelt(const PickupParams& args) const;
+        J_NODISCARD GetPickupReturn GetPickupTransportBelt(const PickupParams& params) const;
+        PickupReturn PickupTransportBelt(const PickupParams& params) const;
 
-        J_NODISCARD GetPickupReturn GetPickupAssemblyMachine(const PickupParams& args) const;
-        PickupReturn PickupAssemblyMachine(const PickupParams& args) const;
+        J_NODISCARD GetPickupReturn GetPickupAssemblyMachine(const PickupParams& params) const;
+        PickupReturn PickupAssemblyMachine(const PickupParams& params) const;
 
         ///
         /// \returns true if at maximum inserter degree
@@ -177,7 +177,7 @@ namespace jactorio::game
         GetPickupFunc getPickupFunc_ = nullptr;
 
     private:
-        static std::pair<bool, data::LineDistT> GetBeltPickupProps(const PickupParams& args);
+        static std::pair<bool, data::LineDistT> GetBeltPickupProps(const PickupParams& params);
     };
 
 #undef J_ITEM_HANDLER_COMMON

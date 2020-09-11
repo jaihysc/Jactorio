@@ -40,7 +40,7 @@ void InventoryVerify(const data::Item::Inventory& inv) {
 // ======================================================================
 
 ///
-/// Attempts to drop one item from origin item stack to target itme stack
+/// Attempts to drop one item from origin item stack to target item stack
 bool DropOneOriginItem(data::ItemStack& origin_item_stack, data::ItemStack& target_item_stack) {
     target_item_stack.item = origin_item_stack.item;
     target_item_stack.count++;
@@ -103,7 +103,7 @@ bool game::MoveItemstackToIndex(data::ItemStack& origin_stack,
 
             // Addition of both stacks exceeding max stack size
             // Move origin to reach the max stack size in the target
-            const unsigned short move_amount = origin_stack.item->stackSize - target_stack.count;
+            const auto move_amount = origin_stack.item->stackSize - target_stack.count;
             origin_stack.count -= move_amount;
             target_stack.count += move_amount;
 
@@ -131,7 +131,7 @@ bool game::MoveItemstackToIndex(data::ItemStack& origin_stack,
             assert(origin_stack.item->stackSize > 0); // Invalid itemstack stacksize
 
             if (origin_stack.count > origin_stack.item->stackSize) {
-                const unsigned short stack_size = origin_stack.item->stackSize;
+                const auto stack_size = origin_stack.item->stackSize;
 
                 origin_stack.count -= stack_size;
                 target_stack.count = stack_size;
@@ -150,7 +150,7 @@ bool game::MoveItemstackToIndex(data::ItemStack& origin_stack,
             assert(target_stack.item->stackSize > 0); // Invalid itemstack stacksize
 
             if (target_stack.count > target_stack.item->stackSize) {
-                const unsigned short stack_size = target_stack.item->stackSize;
+                const auto stack_size = target_stack.item->stackSize;
 
                 target_stack.count -= stack_size;
                 origin_stack.count = stack_size;
@@ -161,19 +161,21 @@ bool game::MoveItemstackToIndex(data::ItemStack& origin_stack,
 
             // Take half on right click
             if (mouse_button == 1) {
-                unsigned short amount;
+                auto get_take_amount = [&]() -> data::Item::StackCount {
+                    // Never exceed the stack size
+                    if (target_stack.count > target_stack.item->stackSize * 2) {
+                        return target_stack.item->stackSize;
+                    }
 
-                // Never exceed the stack size
-                if (target_stack.count > target_stack.item->stackSize * 2) {
-                    amount = target_stack.item->stackSize;
-                }
-                // Take 1 if there is only 1 remaining
-                else if (target_stack.count == 1) {
-                    amount = 1;
-                }
-                else {
-                    amount = target_stack.count / 2;
-                }
+                    // Take 1 if there is only 1 remaining
+                    if (target_stack.count == 1) {
+                        return 1;
+                    }
+
+                    return target_stack.count / 2;
+                };
+
+                const auto amount = get_take_amount();
 
                 origin_stack.item  = target_stack.item;
                 origin_stack.count = amount;

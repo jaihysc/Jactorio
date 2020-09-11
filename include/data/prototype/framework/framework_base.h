@@ -203,7 +203,7 @@ namespace jactorio::data
 
         ///
         /// Copies the unique_data associated with a prototype
-        virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* ptr) const {
+        virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* /*ptr*/) const {
             assert(false); // Not implemented
             return nullptr;
         }
@@ -218,7 +218,7 @@ namespace jactorio::data
         ///
         /// Validates properties of the prototype are valid
         /// \exception data::Data_exception If invalid
-        virtual void PostLoadValidate(const PrototypeManager&) const = 0;
+        virtual void PostLoadValidate(const PrototypeManager& proto_manager) const = 0;
 
         ///
         /// Called after the prototype has been validated

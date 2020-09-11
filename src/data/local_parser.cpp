@@ -66,7 +66,7 @@ void ParseEol(jactorio::data::PrototypeManager& data_manager,
     str_s << "__" << directory_prefix << "__/" << parser_data.lValue;
 
     auto* prototype = data_manager.FindProto(str_s.str());
-    if (prototype) {
+    if (prototype != nullptr) {
         prototype->SetLocalizedName(parser_data.currentLineBuffer);
         LOG_MESSAGE_F(debug, "Registered local '%s' '%s'", str_s.str().c_str(), parser_data.currentLineBuffer.c_str());
     }

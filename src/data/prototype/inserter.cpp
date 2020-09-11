@@ -14,8 +14,8 @@ void data::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
 }
 
 data::Sprite::SetT data::Inserter::OnRGetSpriteSet(const Orientation orientation,
-                                                   game::WorldData&,
-                                                   const WorldCoord&) const {
+                                                   game::WorldData& /*unused*/,
+                                                   const WorldCoord& /*unused*/) const {
     switch (orientation) {
 
     case Orientation::up:
@@ -36,7 +36,7 @@ data::Sprite::SetT data::Inserter::OnRGetSpriteSet(const Orientation orientation
 }
 
 void data::Inserter::OnBuild(game::WorldData& world_data,
-                             game::LogicData&,
+                             game::LogicData& /*logic_data*/,
                              const WorldCoord& world_coords,
                              game::ChunkTileLayer& tile_layer,
                              Orientation orientation) const {
@@ -49,7 +49,7 @@ void data::Inserter::OnBuild(game::WorldData& world_data,
 void data::Inserter::OnTileUpdate(game::WorldData& world_data,
                                   const WorldCoord& emit_coords,
                                   const WorldCoord& receive_coords,
-                                  UpdateType) const {
+                                  UpdateType /*unused*/) const {
     auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::TileLayer::entity);
     auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
 
@@ -62,7 +62,7 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
     const auto dropoff_coords = GetDropoffCoord(receive_coords, inserter_data.orientation);
 
     // Neighbor was removed, Uninitialize removed item handler
-    if (!target_data) {
+    if (target_data == nullptr) {
         if (emit_coords == pickup_coords) {
             inserter_data.pickup.Uninitialize();
         }
@@ -90,7 +90,7 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 }
 
 void data::Inserter::OnRemove(game::WorldData& world_data,
-                              game::LogicData&,
+                              game::LogicData& /*logic_data*/,
                               const WorldCoord& world_coords,
                               game::ChunkTileLayer& tile_layer) const {
     world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords, game::TileLayer::entity);

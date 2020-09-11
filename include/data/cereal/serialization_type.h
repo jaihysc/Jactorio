@@ -27,13 +27,13 @@ namespace jactorio::data
         //        internal id");
 
         using ValueT                        = typename core::PointerWrapper<TProto>::ValueT;
-        static constexpr auto kArchiveSize_ = sizeof(ValueT);
+        static constexpr auto kArchiveSize  = sizeof(ValueT);
 
     public:
         using core::PointerWrapper<TProto>::PointerWrapper;
 
         CEREAL_LOAD(archive) {
-            CerealArchive<kArchiveSize_>(archive, this->value_); // Deserialized as internal id
+            CerealArchive<kArchiveSize>(archive, this->value_); // Deserialized as internal id
 
             if (this->value_ == 0) // nullptr
                 return;
@@ -49,7 +49,7 @@ namespace jactorio::data
             if (this->value_ != 0)
                 save_val = static_cast<ValueT>(this->Get()->internalId);
 
-            CerealArchive<kArchiveSize_>(archive, save_val);
+            CerealArchive<kArchiveSize>(archive, save_val);
         }
     };
 
@@ -67,30 +67,30 @@ namespace jactorio::data
         //                      "TUnique must inherit UniqueDataBase for internal id");
 
         using ValueT                        = typename core::PointerWrapper<TUnique>::ValueT;
-        static constexpr auto kArchiveSize_ = sizeof(data::UniqueDataIdT);
+        static constexpr auto kArchiveSize  = sizeof(UniqueDataIdT);
 
     public:
         using core::PointerWrapper<TUnique>::PointerWrapper;
 
         CEREAL_LOAD(archive) {
-            data::UniqueDataIdT id;
-            data::CerealArchive<kArchiveSize_>(archive, id);
+            UniqueDataIdT id;
+            data::CerealArchive<kArchiveSize>(archive, id);
 
             if (id == 0) // nullptr
                 return;
 
             assert(data::active_unique_data_manager != nullptr);
-            this->SetPtr(static_cast<TUnique*>(&data::active_unique_data_manager->RelocationTableGet(id)));
+            this->SetPtr(static_cast<TUnique*>(&active_unique_data_manager->RelocationTableGet(id)));
         }
 
         CEREAL_SAVE(archive) {
             const auto* unique_data = this->Get();
 
-            data::UniqueDataIdT id = 0;
+            UniqueDataIdT id = 0;
             if (unique_data != nullptr)
                 id = unique_data->internalId;
 
-            data::CerealArchive<kArchiveSize_>(archive, id);
+            data::CerealArchive<kArchiveSize>(archive, id);
         }
     };
 

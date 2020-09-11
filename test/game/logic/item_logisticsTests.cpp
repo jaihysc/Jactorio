@@ -412,7 +412,7 @@ namespace jactorio::game
         data::Item lineItem_;
 
         /// Creates a transport line with  1 item on each side
-        data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
+        data::TransportLineData CreateTransportLine(const data::Orientation orientation) const {
 
             const auto segment =
                 std::make_shared<TransportSegment>(orientation, TransportSegment::TerminationType::straight, 2);

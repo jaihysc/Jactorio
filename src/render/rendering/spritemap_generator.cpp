@@ -114,6 +114,7 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(
         GenerateSpritemapNodes(sorted_sprites, node_buffer, parent_node, max_width, spritemap_y);
 
 
+        assert(parent_node.above != nullptr);
         spritemap_x = GetSpritemapWidth(*parent_node.above);
     }
 
@@ -233,7 +234,7 @@ render::RendererSprites::SpritemapDimensionT render::RendererSprites::GetSpritem
     while (true) {
         width += GetSpriteWidth(current_node->sprite);
 
-        if (current_node->right)
+        if (current_node->right != nullptr)
             current_node = current_node->right;
         else
             break;
@@ -393,7 +394,7 @@ void render::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture::S
                                                          core::SafeCast<float>(adjusted_y_offset + sprite_height)};
         }
 
-        if (current_node->above) {
+        if (current_node->above != nullptr) {
             GenerateSpritemapOutput(spritemap_buffer,
                                     spritemap_width,
                                     *current_node->above,
@@ -410,7 +411,7 @@ void render::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture::S
         x_offset = adjusted_x_offset;
 
 
-        if (current_node->right)
+        if (current_node->right != nullptr)
             current_node = current_node->right;
         else
             break;

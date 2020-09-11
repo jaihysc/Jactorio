@@ -42,18 +42,18 @@ namespace jactorio::data
         // ======================================================================
         // Renderer
 
-        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT set) const override {
+        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT /*set*/) const override {
             return sprite;
         }
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                     GameTickT game_tick) const override {
+        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
+                                                     GameTickT /*game_tick*/) const override {
             return 0;
         }
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation,
-                                                 game::WorldData& world_data,
-                                                 const WorldCoord& world_coords) const override {
+        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation /*orientation*/,
+                                                 game::WorldData& /*world_data*/,
+                                                 const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
@@ -71,7 +71,7 @@ namespace jactorio::data
         void PostLoadValidate(const PrototypeManager& data_manager) const override;
     };
 
-    inline void Tile::PostLoadValidate(const PrototypeManager&) const {
+    inline void Tile::PostLoadValidate(const PrototypeManager& /*proto_manager*/) const {
         J_DATA_ASSERT(sprite != nullptr, "Sprite was not provided");
     }
 } // namespace jactorio::data

@@ -135,7 +135,7 @@ namespace jactorio::game
         class Inventory
         {
         public:
-            static constexpr unsigned short kDefaultInventorySize = 80;
+            static constexpr std::size_t kDefaultInventorySize = 80;
 
             ///
             /// High level method for inventory actions, prefer over calls to HandleClick and others
@@ -201,9 +201,9 @@ namespace jactorio::game
         private:
             data::ItemStack selectedItem_;
 
-            bool hasItemSelected_             = false;
-            unsigned short selectedItemIndex_ = 0;
-            bool selectByReference_           = false;
+            bool hasItemSelected_          = false;
+            std::size_t selectedItemIndex_ = 0;
+            bool selectByReference_        = false;
         };
 
 
@@ -256,7 +256,7 @@ namespace jactorio::game
             bool TryPlaceEntity(WorldData& world_data,
                                 LogicData& logic_data,
                                 WorldCoordAxis world_x,
-                                WorldCoordAxis world_y);
+                                WorldCoordAxis world_y) const;
 
             ///
             /// Attempts to activate the layer at world coordinates

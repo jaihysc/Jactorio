@@ -32,7 +32,7 @@ namespace jactorio::data
 
         // ======================================================================
 
-        void PostLoadValidate(const PrototypeManager&) const override;
+        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
 
         ///
         /// Gets number of logic ticks necessary to craft recipe

@@ -5,8 +5,11 @@
 #include "game/world/world_data.h"
 #include "render/gui/gui_menus.h"
 
-void jactorio::data::ContainerEntity::OnBuild(
-    game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer& tile_layer, Orientation) const {
+void jactorio::data::ContainerEntity::OnBuild(game::WorldData& /*world_data*/,
+                                              game::LogicData& /*logic_data*/,
+                                              const WorldCoord& /*world_coords*/,
+                                              game::ChunkTileLayer& tile_layer,
+                                              Orientation /*orientation*/) const {
     tile_layer.MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 

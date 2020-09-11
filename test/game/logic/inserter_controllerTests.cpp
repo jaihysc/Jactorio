@@ -49,7 +49,7 @@ namespace jactorio::game
                 const auto* neighbor_proto =
                     static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData.Get());
 
-                if (neighbor_proto)
+                if (neighbor_proto != nullptr)
                     neighbor_proto->OnNeighborUpdate(
                         worldData_, logicData_, coords, neighbor_update_coord, orientation);
             }

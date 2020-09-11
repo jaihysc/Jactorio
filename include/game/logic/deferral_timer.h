@@ -133,8 +133,7 @@ namespace jactorio::game
                 return 0;
             }
 
-            bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/,
-                            game::ChunkTileLayer* /*tile_layer*/) const override {
+            bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, ChunkTileLayer* /*tile_layer*/) const override {
                 return false;
             }
 

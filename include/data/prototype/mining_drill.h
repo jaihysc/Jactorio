@@ -133,7 +133,7 @@ namespace jactorio::data
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const PrototypeManager&) const override {
+        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
             J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");
             J_DATA_ASSERT(spriteE != nullptr, "East sprite not provided");
             J_DATA_ASSERT(spriteS != nullptr, "South sprite not provided");

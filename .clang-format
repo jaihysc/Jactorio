@@ -3,7 +3,7 @@ AccessModifierOffset: -4
 AlignConsecutiveAssignments: true
 AlignConsecutiveMacros: true
 AlignEscapedNewlines: Left
-AlignOperands: DontAlign
+AlignOperands: false
 AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty

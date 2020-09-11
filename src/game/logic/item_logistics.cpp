@@ -49,16 +49,16 @@ bool game::ItemDropOff::Initialize(WorldData& world_data, const WorldCoordAxis w
     return true;
 }
 
-bool game::ItemDropOff::CanInsertContainerEntity(const DropOffParams&) const {
+bool game::ItemDropOff::CanInsertContainerEntity(const DropOffParams& /*params*/) const {
     return true;
 }
 
-bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& args) const {
-    auto& container_data = static_cast<data::ContainerEntityData&>(args.uniqueData);
-    if (!CanAddStack(container_data.inventory, args.itemStack).first)
+bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& params) const {
+    auto& container_data = static_cast<data::ContainerEntityData&>(params.uniqueData);
+    if (!CanAddStack(container_data.inventory, params.itemStack).first)
         return false;
 
-    AddStack(container_data.inventory, args.itemStack);
+    AddStack(container_data.inventory, params.itemStack);
     return true;
 }
 
@@ -71,20 +71,20 @@ void GetAdjustedLineOffset(const bool use_line_left,
                                                       pickup_offset);
 }
 
-bool game::ItemDropOff::CanInsertTransportBelt(const DropOffParams&) const {
+bool game::ItemDropOff::CanInsertTransportBelt(const DropOffParams& /*params*/) const {
     return true;
 }
 
-bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
-    assert(args.itemStack.count == 1); // Can only insert 1 at a time
+bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
+    assert(params.itemStack.count == 1); // Can only insert 1 at a time
 
-    auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
+    auto& line_data = static_cast<data::TransportLineData&>(params.uniqueData);
 
     bool use_line_left = false;
     // Decide whether to add item to left side or right side
     switch (line_data.lineSegment->direction) {
     case data::Orientation::up:
-        switch (args.orientation) {
+        switch (params.orientation) {
         case data::Orientation::up:
             break;
         case data::Orientation::right:
@@ -102,7 +102,7 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
         break;
 
     case data::Orientation::right:
-        switch (args.orientation) {
+        switch (params.orientation) {
         case data::Orientation::up:
         case data::Orientation::right:
             break;
@@ -119,7 +119,7 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
         break;
 
     case data::Orientation::down:
-        switch (args.orientation) {
+        switch (params.orientation) {
         case data::Orientation::up:
             return false;
         case data::Orientation::right:
@@ -136,7 +136,7 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
         break;
 
     case data::Orientation::left:
-        switch (args.orientation) {
+        switch (params.orientation) {
         case data::Orientation::up:
             use_line_left = true;
             break;
@@ -161,11 +161,11 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& args) const {
     auto offset                            = data::LineDistT(line_data.lineSegmentIndex + insertion_offset_base);
 
     GetAdjustedLineOffset(use_line_left, offset, line_data);
-    return line_data.lineSegment->TryInsertItem(use_line_left, offset.getAsDouble(), *args.itemStack.item);
+    return line_data.lineSegment->TryInsertItem(use_line_left, offset.getAsDouble(), *params.itemStack.item);
 }
 
-bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& args) const {
-    auto& machine_data = static_cast<data::AssemblyMachineData&>(args.uniqueData);
+bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& params) const {
+    auto& machine_data = static_cast<data::AssemblyMachineData&>(params.uniqueData);
 
     constexpr int max_ingredient_sets = 2; // Will allow filling to (ingredient count for crafting) * 2
     static_assert(max_ingredient_sets >= 1);
@@ -178,7 +178,7 @@ bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& args) cons
     for (size_t i = 0; i < machine_data.ingredientInv.size(); ++i) {
         auto& slot = machine_data.ingredientInv[i];
 
-        if (slot.filter == args.itemStack.item) {
+        if (slot.filter == params.itemStack.item) {
 
             // Must be less than: max sets(multiples) of ingredient OR maximum stack size
             const auto max_count = max_ingredient_sets * recipe->ingredients[i].second;
@@ -189,22 +189,23 @@ bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& args) cons
     return false;
 }
 
-bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& args) const {
-    assert(args.itemStack.item != nullptr);
-    assert(args.itemStack.count > 0);
+bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const {
+    assert(params.itemStack.item != nullptr);
+    assert(params.itemStack.count > 0);
 
-    auto& machine_data = static_cast<data::AssemblyMachineData&>(args.uniqueData);
+    auto& machine_data = static_cast<data::AssemblyMachineData&>(params.uniqueData);
 
     for (auto& slot : machine_data.ingredientInv) {
-        if (slot.filter == args.itemStack.item) {
-            if (slot.count + args.itemStack.count > args.itemStack.item->stackSize)
+        if (slot.filter == params.itemStack.item) {
+            if (slot.count + params.itemStack.count > params.itemStack.item->stackSize)
                 continue;
 
-            slot.item = args.itemStack.item;
-            slot.count += args.itemStack.count;
+            slot.item = params.itemStack.item;
+            slot.count += params.itemStack.count;
 
             assert(targetProtoData_);
-            static_cast<const data::AssemblyMachine*>(targetProtoData_)->TryBeginCrafting(args.logicData, machine_data);
+            static_cast<const data::AssemblyMachine*>(targetProtoData_)
+                ->TryBeginCrafting(params.logicData, machine_data);
             return true;
         }
     }
@@ -252,32 +253,30 @@ bool game::InserterPickup::Initialize(WorldData& world_data,
     return true;
 }
 
-game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupContainerEntity(const PickupParams& args) const {
-    auto& container = static_cast<data::ContainerEntityData&>(args.uniqueData);
+game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupContainerEntity(const PickupParams& params) const {
+    auto& container = static_cast<data::ContainerEntityData&>(params.uniqueData);
     return GetFirstItem(container.inventory);
 }
 
-game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(const PickupParams& args) const {
-    if (!IsAtMaxDegree(args.degree))
+game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(const PickupParams& params) const {
+    if (!IsAtMaxDegree(params.degree))
         return {false, {}};
 
-    auto& container = static_cast<data::ContainerEntityData&>(args.uniqueData);
+    auto& container = static_cast<data::ContainerEntityData&>(params.uniqueData);
 
 
     const auto* target_item = GetFirstItem(container.inventory);
 
-    return {RemoveInvItem(container.inventory, target_item, args.amount), {target_item, args.amount}};
+    return {RemoveInvItem(container.inventory, target_item, params.amount), {target_item, params.amount}};
 }
 
 
-game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBelt(const PickupParams& args) const {
-    auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
+game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBelt(const PickupParams& params) const {
+    auto& line_data = static_cast<data::TransportLineData&>(params.uniqueData);
 
-    const auto props         = GetBeltPickupProps(args);
+    const auto props         = GetBeltPickupProps(params);
     const bool use_line_left = props.first;
     const auto pickup_offset = props.second; // Cannot capture structured binding
-
-    const data::Item* item;
 
     auto get_item = [&](const bool left_lane) {
         auto adjusted_pickup_offset = pickup_offset;
@@ -285,43 +284,41 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
         GetAdjustedLineOffset(left_lane, adjusted_pickup_offset, line_data);
 
         auto [dq_index, line_item] = line_data.lineSegment->GetItem(left_lane, adjusted_pickup_offset.getAsDouble());
-        item                       = line_item.item.Get();
+        return line_item.item.Get();
     };
 
 
-    get_item(use_line_left);
+    auto* item = get_item(use_line_left);
     if (item == nullptr) { // Try picking up from other lane if preferred lane fails
-        get_item(!use_line_left);
+        item = get_item(!use_line_left);
     }
 
     return item;
 }
 
 
-game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(const PickupParams& args) const {
-    auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
+game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(const PickupParams& params) const {
+    auto& line_data = static_cast<data::TransportLineData&>(params.uniqueData);
 
-    const auto props          = GetBeltPickupProps(args);
+    const auto props          = GetBeltPickupProps(params);
     bool use_line_left        = props.first;
     const auto& pickup_offset = props.second;
-
-    const data::Item* item;
 
     auto try_pickup_item = [&](const bool left_lane) {
         auto adjusted_pickup_offset = pickup_offset;
 
         GetAdjustedLineOffset(left_lane, adjusted_pickup_offset, line_data);
-        item = line_data.lineSegment->TryPopItem(left_lane, adjusted_pickup_offset.getAsDouble());
+        return line_data.lineSegment->TryPopItem(left_lane, adjusted_pickup_offset.getAsDouble());
     };
 
 
-    try_pickup_item(use_line_left);
+    auto* item = try_pickup_item(use_line_left);
     if (item == nullptr) {
         // Try picking up from other lane if preferred lane fails
         // use_line_left itself must be inverted so the handling after an item was picked up utilizes the correct lane
         use_line_left = !use_line_left;
 
-        try_pickup_item(use_line_left);
+        item = try_pickup_item(use_line_left);
     }
 
     if (item != nullptr) {
@@ -333,10 +330,10 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
 }
 
 
-game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupAssemblyMachine(const PickupParams& args) const {
-    assert(args.amount > 0);
+game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupAssemblyMachine(const PickupParams& params) const {
+    assert(params.amount > 0);
 
-    auto& machine_data = static_cast<data::AssemblyMachineData&>(args.uniqueData);
+    auto& machine_data = static_cast<data::AssemblyMachineData&>(params.uniqueData);
 
     if (!machine_data.HasRecipe())
         return nullptr;
@@ -345,14 +342,14 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupAssemblyMac
     return product_stack.filter.Get();
 }
 
-game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(const PickupParams& args) const {
-    assert(args.amount > 0);
+game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(const PickupParams& params) const {
+    assert(params.amount > 0);
 
-    if (!IsAtMaxDegree(args.degree))
+    if (!IsAtMaxDegree(params.degree))
         return {false, {}};
 
 
-    auto& machine_data = static_cast<data::AssemblyMachineData&>(args.uniqueData);
+    auto& machine_data = static_cast<data::AssemblyMachineData&>(params.uniqueData);
 
     if (!machine_data.HasRecipe())
         return {false, {}};
@@ -360,16 +357,16 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(c
     auto& product_stack = machine_data.productInv[0];
 
     // Not enough to pick up
-    if (product_stack.count < args.amount)
+    if (product_stack.count < params.amount)
         return {false, {}};
 
-    product_stack.count -= args.amount;
+    product_stack.count -= params.amount;
 
     const auto* asm_machine = static_cast<const data::AssemblyMachine*>(targetProtoData_);
     assert(asm_machine);
-    asm_machine->TryBeginCrafting(args.logicData, machine_data);
+    asm_machine->TryBeginCrafting(params.logicData, machine_data);
 
-    return {true, {product_stack.item, args.amount}};
+    return {true, {product_stack.item, params.amount}};
 }
 
 
@@ -377,13 +374,13 @@ bool game::InserterPickup::IsAtMaxDegree(const data::RotationDegreeT& degree) {
     return degree == data::RotationDegreeT(kMaxInserterDegree);
 }
 
-std::pair<bool, data::LineDistT> game::InserterPickup::GetBeltPickupProps(const PickupParams& args) {
-    auto& line_data = static_cast<data::TransportLineData&>(args.uniqueData);
+std::pair<bool, data::LineDistT> game::InserterPickup::GetBeltPickupProps(const PickupParams& params) {
+    auto& line_data = static_cast<data::TransportLineData&>(params.uniqueData);
 
     bool use_line_left = false;
     switch (line_data.lineSegment->direction) {
     case data::Orientation::up:
-        switch (args.orientation) {
+        switch (params.orientation) {
         case data::Orientation::down:
         case data::Orientation::left:
             use_line_left = true;
@@ -395,7 +392,7 @@ std::pair<bool, data::LineDistT> game::InserterPickup::GetBeltPickupProps(const 
         break;
 
     case data::Orientation::right:
-        switch (args.orientation) {
+        switch (params.orientation) {
         case data::Orientation::up:
         case data::Orientation::left:
             use_line_left = true;
@@ -407,7 +404,7 @@ std::pair<bool, data::LineDistT> game::InserterPickup::GetBeltPickupProps(const 
         break;
 
     case data::Orientation::down:
-        switch (args.orientation) {
+        switch (params.orientation) {
         case data::Orientation::up:
         case data::Orientation::right:
             use_line_left = true;
@@ -419,7 +416,7 @@ std::pair<bool, data::LineDistT> game::InserterPickup::GetBeltPickupProps(const 
         break;
 
     case data::Orientation::left:
-        switch (args.orientation) {
+        switch (params.orientation) {
         case data::Orientation::right:
         case data::Orientation::down:
             use_line_left = true;
@@ -437,7 +434,7 @@ std::pair<bool, data::LineDistT> game::InserterPickup::GetBeltPickupProps(const 
 
     auto pickup_offset = data::LineDistT(
         line_data.lineSegmentIndex +
-        GetInserterArmOffset(core::SafeCast<core::TIntDegree>(args.degree.getAsInteger()), args.inserterTileReach));
+        GetInserterArmOffset(core::SafeCast<core::TIntDegree>(params.degree.getAsInteger()), params.inserterTileReach));
 
     return {use_line_left, pickup_offset};
 }

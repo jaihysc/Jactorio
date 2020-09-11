@@ -10,7 +10,7 @@ using namespace jactorio;
 void data::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data,
                                              const PrototypeManager& data_manager,
                                              const Recipe* new_recipe) {
-    if (new_recipe) {
+    if (new_recipe != nullptr) {
         ingredientInv.resize(new_recipe->ingredients.size());
         productInv.resize(1);
 
@@ -106,7 +106,7 @@ bool data::AssemblyMachine::TryBeginCrafting(game::LogicData& logic_data, Assemb
 }
 
 
-void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData&,
+void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData& /*world_data*/,
                                                game::LogicData& logic_data,
                                                UniqueDataBase* unique_data) const {
     auto* machine_data = static_cast<AssemblyMachineData*>(unique_data);
@@ -117,14 +117,17 @@ void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData&,
     TryBeginCrafting(logic_data, *machine_data);
 }
 
-void data::AssemblyMachine::OnBuild(
-    game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer& tile_layer, const Orientation) const {
+void data::AssemblyMachine::OnBuild(game::WorldData& /*world_data*/,
+                                    game::LogicData& /*logic_data*/,
+                                    const WorldCoord& /*world_coords*/,
+                                    game::ChunkTileLayer& tile_layer,
+                                    const Orientation /*orientation*/) const {
     tile_layer.MakeUniqueData<AssemblyMachineData>();
 }
 
-void data::AssemblyMachine::OnRemove(game::WorldData&,
+void data::AssemblyMachine::OnRemove(game::WorldData& /*world_data*/,
                                      game::LogicData& logic_data,
-                                     const WorldCoord&,
+                                     const WorldCoord& /*world_coords*/,
                                      game::ChunkTileLayer& tile_layer) const {
     auto& machine_data = *tile_layer.GetUniqueData<AssemblyMachineData>();
 
