@@ -6,8 +6,9 @@
 
 #include "data/cereal/serialization_type.h"
 #include "data/prototype/abstract_proto/health_entity.h"
+#include "data/prototype/item.h"
 #include "data/prototype/recipe.h"
-#include "data/prototype/type.h"
+#include "game/logic/deferral_timer.h"
 
 namespace jactorio::data
 {
@@ -67,8 +68,8 @@ namespace jactorio::data
 
         // ======================================================================
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                     GameTickT game_tick) const override;
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                   GameTickT game_tick) const override;
 
 
         bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;

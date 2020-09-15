@@ -1,24 +1,22 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_H
-#define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_H
+#ifndef JACTORIO_INCLUDE_RENDER_RENDERING_RENDERER_H
+#define JACTORIO_INCLUDE_RENDER_RENDERING_RENDERER_H
 #pragma once
 
-#include <exception>
 #include <future>
 #include <glm/glm.hpp>
 
 #include "core/data_type.h"
-#include "game/world/chunk_tile_layer.h"
 #include "render/opengl/mvp_manager.h"
 #include "render/rendering/renderer_layer.h"
-#include "render/rendering/spritemap_generator.h"
 
 namespace jactorio::game
 {
-    class WorldData;
     class Chunk;
     class ChunkTile;
+    class ChunkTileLayer;
+    class WorldData;
 } // namespace jactorio::game
 
 namespace jactorio::render
@@ -204,4 +202,4 @@ namespace jactorio::render
     };
 }; // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_H
+#endif // JACTORIO_INCLUDE_RENDER_RENDERING_RENDERER_H

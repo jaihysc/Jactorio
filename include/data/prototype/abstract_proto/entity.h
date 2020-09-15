@@ -1,18 +1,18 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
-#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_ENTITY_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_ENTITY_H
 #pragma once
 
 #include "jactorio.h"
 
 #include "data/prototype/framework/entity.h"
-#include "data/prototype/item.h"
 #include "data/prototype/type.h"
-#include "game/logic/logic_data.h"
 
 namespace jactorio::data
 {
+    class Item;
+
     ///
     /// Unique per entity placed in the world
     struct EntityData : FEntityData
@@ -43,61 +43,45 @@ namespace jactorio::data
         PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
 
-        // Can be rotated by player?
+        /// Can be rotated by player?
         PYTHON_PROP_REF_I(bool, rotatable, false);
-        // Can be placed by player?
+        /// Can be placed by player?
         PYTHON_PROP_REF_I(bool, placeable, true);
-
-        // Item
-        J_NODISCARD Item* GetItem() const {
-            return item_;
-        }
-
-        Entity* SetItem(Item* item) {
-            item->entityPrototype = this;
-            this->item_           = item;
-
-            return this;
-        }
 
         /// Seconds to pickup entity
         PYTHON_PROP_REF_I(float, pickupTime, 1);
 
+        /// Item for this entity
+        J_NODISCARD Item* GetItem() const {
+            return item_;
+        }
 
-        void PostLoadValidate(const PrototypeManager& data_manager) const override;
+        Entity* SetItem(Item* item);
+
 
         // ======================================================================
         // Localized names
 
-        // Override the default setter to also set for the item associated with this
-        void SetLocalizedName(const std::string& localized_name) override {
-            this->localizedName_ = localized_name;
-            if (item_ != nullptr)
-                item_->SetLocalizedName(localized_name);
-        }
+        // Overrides the default setter to also set for the item associated with this
+        void SetLocalizedName(const std::string& localized_name) override;
+        void SetLocalizedDescription(const std::string& localized_description) override;
 
-        void SetLocalizedDescription(const std::string& localized_description) override {
-            this->localizedDescription_ = localized_description;
-            if (item_ != nullptr)
-                item_->SetLocalizedDescription(localized_description);
-        }
 
         // ======================================================================
         // Renderer events
 
-
-        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT /*set*/) const override {
+        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
             return sprite;
         }
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                                 game::WorldData& /*world_data*/,
-                                                 const WorldCoord& /*world_coords*/) const override {
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
+                                               game::WorldData& /*world_data*/,
+                                               const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                     GameTickT /*game_tick*/) const override {
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
+                                                   GameTickT /*game_tick*/) const override {
             return 0;
         }
 
@@ -161,15 +145,13 @@ namespace jactorio::data
                            const WorldCoord& world_coord,
                            game::ChunkTileLayer& tile_layer) const override {}
 
+
+        void PostLoadValidate(const PrototypeManager& data_manager) const override;
+
     private:
         /// Item when entity is picked up
         Item* item_ = nullptr;
     };
-
-    inline void Entity::PostLoadValidate(const PrototypeManager& /*data_manager*/) const {
-        J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
-        J_DATA_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive");
-    }
 } // namespace jactorio::data
 
-#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_ENTITY_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_ENTITY_H

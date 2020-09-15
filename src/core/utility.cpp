@@ -1,5 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
 
+#include <algorithm>
+
 #include "core/utility.h"
 
 using namespace jactorio;

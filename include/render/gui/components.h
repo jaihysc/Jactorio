@@ -7,8 +7,8 @@
 #include <functional>
 #include <type_traits>
 
+#include "core/data_type.h"
 #include "render/gui/component_base.h"
-#include "render/gui/gui_colors.h"
 #include "render/gui/gui_layout.h"
 
 namespace jactorio::data
@@ -79,14 +79,14 @@ namespace jactorio::render
         /// \param item_count Number to display on the item, 0 to hide
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            data::PrototypeIdT sprite_id, uint16_t item_count, const DrawSlotCallbackT& callback = [] {}) const;
+            PrototypeIdT sprite_id, uint16_t item_count, const DrawSlotCallbackT& callback = [] {}) const;
 
         ///
         /// Draws slot without item count
         /// \param sprite_id Internal id of the sprite to be drawn, if 0, a blank slot will be drawn
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            data::PrototypeIdT sprite_id, const DrawSlotCallbackT& callback = [] {}) const;
+            PrototypeIdT sprite_id, const DrawSlotCallbackT& callback = [] {}) const;
 
         ///
         /// \param callback Called after drawing invisible button which will be clicked on

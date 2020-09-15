@@ -8,11 +8,20 @@
 
 #include "jactorio.h"
 
+#include "core/execution_timer.h"
+
 #include "data/prototype/abstract_proto/entity.h"
+
+#include "game/player/player_data.h"
+#include "game/world/chunk_tile_layer.h"
+
+#include "render/display_window.h"
 #include "render/gui/gui_colors.h"
 #include "render/gui/gui_menus.h"
 #include "render/gui/gui_menus_debug.h"
+#include "render/gui/menu_data.h"
 #include "render/rendering/renderer.h"
+#include "render/rendering/spritemap_generator.h"
 
 // Inventory
 

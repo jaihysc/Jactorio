@@ -8,17 +8,26 @@
 
 #include "jactorio.h"
 
+#include "core/execution_timer.h"
 #include "core/filesystem.h"
+#include "core/loop_common.h"
+#include "core/resource_guard.h"
+
 #include "data/prototype/inserter.h"
+
+#include "game/event/game_events.h"
+#include "game/logic/transport_line_controller.h"
+
 #include "render/gui/gui_menus.h"
 #include "render/gui/imgui_manager.h"
 #include "render/render_loop.h"
+#include "render/rendering/renderer.h"
 
 using namespace jactorio;
 
 constexpr float kMoveSpeed = 0.8f;
 
-void LogicLoop(LogicRenderLoopCommon& common) {
+void LogicLoop(ThreadedLoopCommon& common) {
     // Runtime
 
     auto& worlds = common.gameDataGlobal.worlds;
@@ -92,7 +101,7 @@ void LogicLoop(LogicRenderLoopCommon& common) {
 }
 
 
-void game::InitLogicLoop(LogicRenderLoopCommon& common) {
+void game::InitLogicLoop(ThreadedLoopCommon& common) {
     core::CapturingGuard<void()> loop_termination_guard([&]() {
         common.renderThreadShouldExit = true;
         common.logicThreadShouldExit  = true;

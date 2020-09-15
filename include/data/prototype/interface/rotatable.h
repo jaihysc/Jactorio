@@ -1,15 +1,21 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_PROTOTYPE_INTERFACE_ROTATABLE_H
-#define JACTORIO_DATA_PROTOTYPE_INTERFACE_ROTATABLE_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_ROTATABLE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_ROTATABLE_H
 #pragma once
 
-#include "data/prototype/sprite.h"
-
-namespace jactorio::game
+namespace jactorio
 {
-    class WorldData;
-}
+    namespace data
+    {
+        class Sprite;
+    }
+    namespace game
+    {
+        class WorldData;
+
+    }
+} // namespace jactorio
 
 namespace jactorio::data
 {
@@ -35,4 +41,4 @@ namespace jactorio::data
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_DATA_PROTOTYPE_INTERFACE_ROTATABLE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_ROTATABLE_H

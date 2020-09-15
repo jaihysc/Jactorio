@@ -9,13 +9,12 @@
 
 #include <imgui.h>
 
+#include "jactorio.h"
+
 #include "render/gui/gui_colors.h"
-#include "render/gui/imgui_manager.h"
 
 namespace jactorio::render
 {
-    // TODO move this to namespace jactorio::gui
-
     constexpr int kInventorySlotWidth = 36;
     /// Between slots
     constexpr int kInventorySlotPadding = 2;

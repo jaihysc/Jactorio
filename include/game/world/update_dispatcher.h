@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_GAME_WORLD_UPDATE_DISPATCHER_H
-#define JACTORIO_GAME_WORLD_UPDATE_DISPATCHER_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_UPDATE_DISPATCHER_H
+#define JACTORIO_INCLUDE_GAME_WORLD_UPDATE_DISPATCHER_H
 #pragma once
 
 #include "jactorio.h"
@@ -91,4 +91,4 @@ namespace jactorio::game
     };
 } // namespace jactorio::game
 
-#endif // JACTORIO_GAME_WORLD_UPDATE_DISPATCHER_H
+#endif // JACTORIO_INCLUDE_GAME_WORLD_UPDATE_DISPATCHER_H

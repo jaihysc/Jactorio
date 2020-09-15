@@ -4,12 +4,12 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_FRAMEWORK_FRAMEWORK_BASE_H
 #pragma once
 
-#include <memory>
 #include <string>
+#include <type_traits>
 
 #include "jactorio.h"
 
-#include "core/utility.h"
+#include "core/data_type.h"
 #include "data/cereal/serialize.h"
 #include "data/data_category.h"
 #include "data/data_exception.h"
@@ -74,9 +74,6 @@
 namespace jactorio::data
 {
     class PrototypeManager;
-
-    using PrototypeIdT  = uint32_t;
-    using UniqueDataIdT = uint32_t;
 
     ///
     /// Creates a formatted log message if log level permits

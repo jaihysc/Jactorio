@@ -7,13 +7,18 @@
 #include <fstream>
 
 #include "core/data_type.h"
+
 #include "data/prototype/abstract_proto/transport_line.h"
 #include "data/prototype/assembly_machine.h"
 #include "data/prototype/container_entity.h"
 #include "data/prototype/inserter.h"
 #include "data/prototype/mining_drill.h"
+#include "data/prototype/recipe.h"
 #include "data/prototype/resource_entity.h"
+#include "data/prototype/sprite.h"
 #include "data/prototype_manager.h"
+
+#include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 
 #include <cereal/archives/portable_binary.hpp>
@@ -32,18 +37,18 @@ namespace jactorio
 
         void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {}
 
-        J_NODISCARD data::Sprite* OnRGetSprite(data::Sprite::SetT /*set*/) const override {
+        J_NODISCARD data::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
             return nullptr;
         }
 
-        J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation /*orientation*/,
-                                                       game::WorldData& /*world_data*/,
-                                                       const WorldCoord& /*world_coords*/) const override {
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(data::Orientation /*orientation*/,
+                                               game::WorldData& /*world_data*/,
+                                               const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
-        J_NODISCARD data::Sprite::FrameT OnRGetSpriteFrame(const data::UniqueDataBase& /*unique_data*/,
-                                                           GameTickT /*game_tick*/) const override {
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const data::UniqueDataBase& /*unique_data*/,
+                                                   GameTickT /*game_tick*/) const override {
             return 0;
         }
 

@@ -6,9 +6,12 @@
 #include "data/prototype/assembly_machine.h"
 #include "data/prototype/container_entity.h"
 #include "data/prototype/item.h"
+#include "data/prototype/recipe.h"
+
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/transport_line_controller.h"
+#include "game/world/world_data.h"
 
 using namespace jactorio;
 

@@ -1,14 +1,23 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_RENDER_MAIN_H
-#define JACTORIO_INCLUDE_RENDERER_RENDER_MAIN_H
+#ifndef JACTORIO_INCLUDE_RENDER_RENDER_LOOP_H
+#define JACTORIO_INCLUDE_RENDER_RENDER_LOOP_H
 #pragma once
 
-#include "game/logic_loop.h"
-#include "render//rendering/renderer.h"
+namespace jactorio
+{
+    struct ThreadedLoopCommon;
+
+    namespace game
+    {
+        class EventData;
+    }
+} // namespace jactorio
 
 namespace jactorio::render
 {
+    class Renderer;
+
     void ChangeWindowSize(game::EventData& event, unsigned int window_size_x, unsigned int window_size_y);
 
     ///
@@ -17,7 +26,7 @@ namespace jactorio::render
 
     ///
     /// Initiates rendering and starts the rendering thread
-    void RenderInit(LogicRenderLoopCommon& common);
+    void RenderInit(ThreadedLoopCommon& common);
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERER_RENDER_MAIN_H
+#endif // JACTORIO_INCLUDE_RENDER_RENDER_LOOP_H

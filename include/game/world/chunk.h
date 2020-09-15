@@ -4,10 +4,10 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_H
 #pragma once
 
-#include "jactorio.h"
-
 #include <array>
 #include <vector>
+
+#include "jactorio.h"
 
 #include "data/cereal/serialize.h"
 #include "game/world/chunk_tile.h"

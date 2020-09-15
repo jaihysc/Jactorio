@@ -4,9 +4,9 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H
 #pragma once
 
-#include "jactorio.h"
-
 #include <array>
+
+#include "jactorio.h"
 
 #include "game/world/chunk_tile_layer.h"
 

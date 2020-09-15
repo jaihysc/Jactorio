@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_RENDERER_EXCEPTION_H
-#define JACTORIO_INCLUDE_RENDERER_RENDERER_EXCEPTION_H
+#ifndef JACTORIO_INCLUDE_RENDER_RENDERER_EXCEPTION_H
+#define JACTORIO_INCLUDE_RENDER_RENDERER_EXCEPTION_H
 #pragma once
 
 #include <stdexcept>
@@ -16,4 +16,4 @@ namespace jactorio::render
 } // namespace jactorio::render
 
 
-#endif // JACTORIO_INCLUDE_RENDERER_RENDERER_EXCEPTION_H
+#endif // JACTORIO_INCLUDE_RENDER_RENDERER_EXCEPTION_H

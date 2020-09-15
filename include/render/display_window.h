@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
-#define JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
+#ifndef JACTORIO_INCLUDE_RENDER_DISPLAY_WINDOW_H
+#define JACTORIO_INCLUDE_RENDER_DISPLAY_WINDOW_H
 #pragma once
 
 #include <SDL.h>
@@ -11,7 +11,7 @@
 
 namespace jactorio
 {
-    struct LogicRenderLoopCommon;
+    struct ThreadedLoopCommon;
 }
 
 namespace jactorio::render
@@ -41,7 +41,7 @@ namespace jactorio::render
         J_NODISCARD SDL_GLContext GetContext() const;
         J_NODISCARD bool WindowContextActive() const;
 
-        void HandleSdlEvent(LogicRenderLoopCommon& common, const SDL_Event& sdl_event) const;
+        void HandleSdlEvent(ThreadedLoopCommon& common, const SDL_Event& sdl_event) const;
 
     private:
         std::array<int, 2> windowPos_{0, 0};
@@ -54,4 +54,4 @@ namespace jactorio::render
     };
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERER_WINDOW_WINDOW_MANAGER_H
+#endif // JACTORIO_INCLUDE_RENDER_DISPLAY_WINDOW_H

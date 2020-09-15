@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
-#define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_SEGMENT_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_SEGMENT_H
 #pragma once
 
 #include <deque>
@@ -89,9 +89,8 @@ namespace jactorio::game
 
     ///
     /// Stores a collection of items heading in one direction
-    struct TransportSegment
+    class TransportSegment
     {
-    private:
         using SegmentLengthT = uint8_t;
 
     public:
@@ -285,4 +284,4 @@ namespace jactorio::game
 } // namespace jactorio::game
 
 
-#endif // JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_SEGMENT_H

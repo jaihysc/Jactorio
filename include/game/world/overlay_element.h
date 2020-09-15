@@ -1,11 +1,15 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_OVERLAY_ELEMENT_H
-#define JACTORIO_INCLUDE_GAME_OVERLAY_ELEMENT_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_OVERLAY_ELEMENT_H
+#define JACTORIO_INCLUDE_GAME_WORLD_OVERLAY_ELEMENT_H
 #pragma once
 
 #include "core/coordinate_tuple.h"
-#include "data/prototype/sprite.h"
+
+namespace jactorio::data
+{
+    class Sprite;
+}
 
 namespace jactorio::game
 {
@@ -71,7 +75,7 @@ namespace jactorio::game
 
         const data::Sprite* sprite;
 
-        data::Sprite::SetT spriteSet = 0;
+        SpriteSetT spriteSet = 0;
 
         /// Distance (tiles) from top left of chunk to top left of sprite + z value
         core::Position3<OverlayOffsetAxis> position;
@@ -81,4 +85,4 @@ namespace jactorio::game
     };
 } // namespace jactorio::game
 
-#endif // JACTORIO_INCLUDE_GAME_OVERLAY_ELEMENT_H
+#endif // JACTORIO_INCLUDE_GAME_WORLD_OVERLAY_ELEMENT_H

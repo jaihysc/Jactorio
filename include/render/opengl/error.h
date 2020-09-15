@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H
-#define JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H
+#ifndef JACTORIO_INCLUDE_RENDER_OPENGL_ERROR_H
+#define JACTORIO_INCLUDE_RENDER_OPENGL_ERROR_H
 #pragma once
 
 // Different break statements depending on the compiler
@@ -35,4 +35,4 @@ namespace jactorio::render
     void OpenglClearErrors();
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERER_OPENGL_ERROR_H
+#endif // JACTORIO_INCLUDE_RENDER_OPENGL_ERROR_H

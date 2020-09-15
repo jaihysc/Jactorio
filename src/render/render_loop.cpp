@@ -10,8 +10,18 @@
 
 #include "jactorio.h"
 
+#include "core/execution_timer.h"
+#include "core/loop_common.h"
+#include "core/resource_guard.h"
+
+#include "data/prototype/sprite.h"
+
+#include "game/event/game_events.h"
+
 #include "render/gui/imgui_manager.h"
 #include "render/opengl/shader.h"
+#include "render/rendering/renderer.h"
+#include "render/rendering/spritemap_generator.h"
 
 using namespace jactorio;
 
@@ -44,7 +54,7 @@ render::Renderer* render::GetBaseRenderer() {
 }
 
 
-void RenderingLoop(LogicRenderLoopCommon& common, render::DisplayWindow& display_window) {
+void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_window) {
     LOG_MESSAGE(info, "2 - Runtime stage");
 
     auto next_frame = std::chrono::steady_clock::now(); // For zeroing the time
@@ -104,7 +114,7 @@ void RenderingLoop(LogicRenderLoopCommon& common, render::DisplayWindow& display
     }
 }
 
-void render::RenderInit(LogicRenderLoopCommon& common) {
+void render::RenderInit(ThreadedLoopCommon& common) {
     core::CapturingGuard<void()> loop_termination_guard([&]() {
         common.renderThreadShouldExit = true;
         common.logicThreadShouldExit  = true;

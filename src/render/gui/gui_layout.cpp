@@ -2,7 +2,7 @@
 
 #include "render/gui/gui_layout.h"
 
-#include "game/input/mouse_selection.h"
+#include "game/player/player_data.h"
 #include "render/gui/gui_colors.h"
 #include "render/rendering/renderer.h"
 

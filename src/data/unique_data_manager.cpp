@@ -18,20 +18,20 @@ void data::UniqueDataManager::StoreRelocationEntry(UniqueDataBase& unique_data) 
         dataEntries_.resize(unique_data.internalId);
     }
 
-    const auto index = unique_data.internalId - kDefaultId_;
+    const auto index = unique_data.internalId - kDefaultId;
     assert(index < dataEntries_.size());
     dataEntries_[index] = &unique_data;
 }
 
 data::UniqueDataBase& data::UniqueDataManager::RelocationTableGet(const UniqueDataIdT id) const noexcept {
     assert(id > 0);
-    return *dataEntries_[id - kDefaultId_];
+    return *dataEntries_[id - kDefaultId];
 }
 
 // ======================================================================
 
 void data::UniqueDataManager::RelocationClear() noexcept {
-    nextId_ = kDefaultId_;
+    nextId_ = kDefaultId;
     dataEntries_.clear();
 }
 

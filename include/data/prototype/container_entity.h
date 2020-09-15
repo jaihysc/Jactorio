@@ -1,10 +1,11 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
-#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_CONTAINER_ENTITY_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_CONTAINER_ENTITY_H
 #pragma once
 
 #include "data/prototype/abstract_proto/health_entity.h"
+#include "data/prototype/item.h"
 
 namespace jactorio::data
 {
@@ -53,10 +54,8 @@ namespace jactorio::data
 
         bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
 
-        void ValidatedPostLoad() override {
-            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-        }
+        void ValidatedPostLoad() override;
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_CONTAINER_ENTITY_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_CONTAINER_ENTITY_H

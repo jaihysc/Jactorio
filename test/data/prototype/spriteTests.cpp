@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include "core/coordinate_tuple.h"
 #include "data/prototype/sprite.h"
 
 namespace jactorio::data

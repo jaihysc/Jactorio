@@ -6,6 +6,11 @@
 
 #include "jactorio.h"
 
+#include "data/data_exception.h"
+#include "data/prototype_manager.h"
+
+using namespace jactorio;
+
 struct ParserData
 {
     // Used to store data as its being parsed
@@ -37,22 +42,18 @@ struct ParserData
         str_s << "Localization parse failed " << lineNumber << ":" << charNumber << "\n" << message;
         LOG_MESSAGE_F(error, "%s", str_s.str().c_str());
 
-        throw jactorio::data::DataException(str_s.str().c_str());
+        throw data::DataException(str_s.str().c_str());
     }
 };
 
 
 ///
 /// Helper for parse, handles end of line actions
-void ParseEol(jactorio::data::PrototypeManager& data_manager,
-              ParserData& parser_data,
-              const std::string& directory_prefix) {
-    using namespace jactorio;
-
+void ParseEol(data::PrototypeManager& data_manager, ParserData& parser_data, const std::string& directory_prefix) {
     // R val was not specified or empty
     if (parser_data.inLVal && !parser_data.inRVal)
         parser_data.ParseError("expected '=' to switch to r-value, got newline");
-    else if (parser_data.inRVal && parser_data.currentLineBuffer.empty())
+    if (parser_data.inRVal && parser_data.currentLineBuffer.empty())
         parser_data.ParseError("expected r-value, got newline");
 
     // Have not entered l value yet
@@ -78,9 +79,9 @@ void ParseEol(jactorio::data::PrototypeManager& data_manager,
     parser_data.lineNumber++;
 }
 
-void jactorio::data::LocalParse(PrototypeManager& data_manager,
-                                const std::string& file_str,
-                                const std::string& directory_prefix) {
+void data::LocalParse(PrototypeManager& data_manager,
+                      const std::string& file_str,
+                      const std::string& directory_prefix) {
     ParserData parser_data{};
 
     for (char c : file_str) {
@@ -133,9 +134,9 @@ void jactorio::data::LocalParse(PrototypeManager& data_manager,
     ParseEol(data_manager, parser_data, directory_prefix);
 }
 
-int jactorio::data::LocalParseNoThrow(PrototypeManager& data_manager,
-                                      const std::string& file_str,
-                                      const std::string& directory_prefix) {
+int data::LocalParseNoThrow(PrototypeManager& data_manager,
+                            const std::string& file_str,
+                            const std::string& directory_prefix) {
     try {
         LocalParse(data_manager, file_str, directory_prefix);
     }

@@ -4,14 +4,12 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_CONTROLLER_H
 #pragma once
 
-#include <decimal.h>
-
-#include "game/world/world_data.h"
-
-///
-/// Transport line logic for anything moving items
 namespace jactorio::game
 {
+    class WorldData;
+
+    /// Transport line logic for anything moving items
+
     // For storing line offsets during transitions, items are treated as having no width
 
     /* Placement of items on transport line (Expressed as decimal percentages of a tile)

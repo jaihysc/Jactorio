@@ -1,12 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
-#define JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_MINING_DRILL_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_MINING_DRILL_H
 #pragma once
 
 #include "data/prototype/abstract_proto/health_entity.h"
 #include "data/prototype/prototype_type.h"
-#include "data/prototype/resource_entity.h"
+#include "game/logic/deferral_timer.h"
 #include "game/logic/item_logistics.h"
 
 namespace jactorio::data
@@ -88,14 +88,14 @@ namespace jactorio::data
         bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
 
 
-        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT set) const override;
+        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT set) const override;
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation,
-                                                 game::WorldData& world_data,
-                                                 const WorldCoord& world_coords) const override;
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
+                                               game::WorldData& world_data,
+                                               const WorldCoord& world_coords) const override;
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                     GameTickT game_tick) const override;
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                   GameTickT game_tick) const override;
 
         // ======================================================================
         // Logic
@@ -133,19 +133,8 @@ namespace jactorio::data
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
-            J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");
-            J_DATA_ASSERT(spriteE != nullptr, "East sprite not provided");
-            J_DATA_ASSERT(spriteS != nullptr, "South sprite not provided");
-            J_DATA_ASSERT(spriteW != nullptr, "West sprite not provided");
-        }
-
-        void ValidatedPostLoad() override {
-            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-            spriteE->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-            spriteS->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-            spriteW->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-        }
+        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void ValidatedPostLoad() override;
 
     private:
         static bool InitializeOutput(game::WorldData& world_data,
@@ -167,7 +156,7 @@ namespace jactorio::data
         /// depleted \return true if successful
         bool DeductResource(game::WorldData& world_data,
                             MiningDrillData& drill_data,
-                            ResourceEntityData::ResourceCount amount = 1) const;
+                            ResourceEntityResourceCount amount = 1) const;
 
         ///
         /// Sets up deferred callback for when it has mined a resource
@@ -179,4 +168,4 @@ namespace jactorio::data
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_MINING_DRILL_H

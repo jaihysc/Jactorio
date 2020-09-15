@@ -1,16 +1,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
-#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_TRANSPORT_LINE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_TRANSPORT_LINE_H
 #pragma once
 
 #include <memory>
 
 #include "core/data_type.h"
 #include "data/prototype/abstract_proto/health_entity.h"
-#include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_segment.h"
-#include "render/rendering/renderer.h"
 
 #include <cereal/types/memory.hpp>
 
@@ -143,12 +141,12 @@ namespace jactorio::data
                                const core::Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation,
-                                                 game::WorldData& world_data,
-                                                 const WorldCoord& world_coords) const override;
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
+                                               game::WorldData& world_data,
+                                               const WorldCoord& world_coords) const override;
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                     GameTickT game_tick) const override;
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                   GameTickT game_tick) const override;
 
 
         void OnBuild(game::WorldData& world_data,
@@ -175,21 +173,11 @@ namespace jactorio::data
 
         // ======================================================================
         // Data events
-        void PostLoad() override {
-            // Convert floating point speed to fixed precision decimal speed
-            speed = LineDistT(speedFloat);
-        }
 
-        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
-            J_DATA_ASSERT(speedFloat >= 0.001, "Transport line speed below minimum 0.001");
-            // Cannot exceed item_width because of limitations in the logic
-            J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");
-        }
-
-        void ValidatedPostLoad() override {
-            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-        }
+        void PostLoad() override;
+        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void ValidatedPostLoad() override;
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_TRANSPORT_LINE_H

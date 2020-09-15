@@ -7,6 +7,8 @@
 
 #include "jactorio.h"
 
+#include "core/resource_guard.h"
+
 using namespace jactorio;
 
 #ifdef JACTORIO_DEBUG_BUILD

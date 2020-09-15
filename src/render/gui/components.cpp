@@ -5,10 +5,16 @@
 #include <imgui.h>
 
 #include "core/convert.h"
+#include "core/utility.h"
+
 #include "data/prototype/item.h"
+#include "data/prototype/sprite.h"
+
 #include "game/input/mouse_selection.h"
+
 #include "render/gui/gui_colors.h"
 #include "render/gui/gui_renderer.h"
+#include "render/gui/menu_data.h"
 
 using namespace jactorio;
 
@@ -66,7 +72,7 @@ void render::GuiItemSlots::Begin(const std::size_t slot_count, const BeginCallba
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + kInventorySlotPadding); // Allows consecutive begins to line up
 }
 
-void render::GuiItemSlots::DrawSlot(const data::PrototypeIdT sprite_id,
+void render::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
                                     const uint16_t item_count,
                                     const DrawSlotCallbackT& callback) const {
     const float original_x_offset = ImGui::GetCursorPosX();
@@ -126,7 +132,7 @@ void render::GuiItemSlots::DrawSlot(const data::PrototypeIdT sprite_id,
     }
 }
 
-void render::GuiItemSlots::DrawSlot(const data::PrototypeIdT sprite_id, const DrawSlotCallbackT& callback) const {
+void render::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id, const DrawSlotCallbackT& callback) const {
     DrawSlot(sprite_id, 0, callback);
 }
 

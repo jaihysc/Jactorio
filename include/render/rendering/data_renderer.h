@@ -1,15 +1,30 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_RENDERER_RENDERING_DATA_RENDERER_H
-#define JACTORIO_RENDERER_RENDERING_DATA_RENDERER_H
+#ifndef JACTORIO_INCLUDE_RENDER_RENDERING_DATA_RENDERER_H
+#define JACTORIO_INCLUDE_RENDER_RENDERING_DATA_RENDERER_H
 #pragma once
 
-#include "data/prototype/inserter.h"
-#include "data/prototype/interface/renderable.h"
-#include "game/logic/transport_segment.h"
+#include "core/coordinate_tuple.h"
+#include "core/data_type.h"
+
+namespace jactorio
+{
+    namespace data
+    {
+        class Inserter;
+        struct InserterData;
+    } // namespace data
+
+    namespace game
+    {
+        class TransportSegment;
+    }
+} // namespace jactorio
 
 namespace jactorio::render
 {
+    class RendererLayer;
+
     void DrawTransportSegmentItems(RendererLayer& layer,
                                    const SpriteUvCoordsT& uv_coords,
                                    const core::Position2<float>& pixel_offset,
@@ -22,4 +37,4 @@ namespace jactorio::render
                          const data::InserterData& inserter_data);
 } // namespace jactorio::render
 
-#endif // JACTORIO_RENDERER_RENDERING_DATA_RENDERER_H
+#endif // JACTORIO_INCLUDE_RENDER_RENDERING_DATA_RENDERER_H

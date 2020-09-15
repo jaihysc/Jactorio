@@ -30,6 +30,23 @@ namespace jactorio
     // Data types of the various components within Jactorio
     // Defined here to solve circular includes
 
+    using Decimal3T = dec::decimal<3>;
+
+
+    // Prototypes
+
+    using PrototypeIdT  = uint32_t;
+    using UniqueDataIdT = uint32_t;
+
+    using SpriteSetT   = uint16_t;
+    using SpriteFrameT = uint16_t;
+    using SpriteTrimT  = uint16_t;
+
+    using ResourceEntityResourceCount = uint32_t;
+
+
+    // Game
+
     using GameTickT          = uint64_t;
     constexpr int kGameHertz = 60; // 60 updates per second
 
@@ -55,12 +72,12 @@ namespace jactorio
     using OverlayOffsetAxis = float;
 
 
+    // Rendering
+
     using UvPositionT = core::QuadPosition<core::Position2<float>>;
     /// Internal id of sprite to uv coordinates
     using SpriteUvCoordsT = std::unordered_map<unsigned int, UvPositionT>;
 
-
-    using Decimal3T = dec::decimal<3>;
 } // namespace jactorio
 
 namespace jactorio::core

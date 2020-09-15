@@ -2,6 +2,7 @@
 
 #include "data/prototype/container_entity.h"
 
+#include "data/prototype/sprite.h"
 #include "game/world/world_data.h"
 #include "render/gui/gui_menus.h"
 
@@ -17,4 +18,8 @@ bool jactorio::data::ContainerEntity::OnRShowGui(const render::GuiRenderer& g_re
                                                  game::ChunkTileLayer* tile_layer) const {
     render::ContainerEntity({g_rendr, this, tile_layer->GetUniqueData<ContainerEntityData>()});
     return true;
+}
+
+void jactorio::data::ContainerEntity::ValidatedPostLoad() {
+    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 }

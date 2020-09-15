@@ -4,17 +4,17 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_RENDERABLE_H
 #pragma once
 
-#include <cmath>
+#include "jactorio.h"
 
-#include "core/convert.h"
 #include "core/data_type.h"
 #include "data/cereal/serialize.h"
-#include "data/prototype/sprite.h"
 
 namespace jactorio
 {
     namespace data
     {
+        class Sprite;
+        struct UniqueDataBase;
         enum class Orientation;
     } // namespace data
 
@@ -30,7 +30,7 @@ namespace jactorio
     {
         class RendererLayer;
         class GuiRenderer;
-    }
+    } // namespace render
 } // namespace jactorio
 
 namespace jactorio::data
@@ -43,10 +43,10 @@ namespace jactorio::data
         IRenderableData()          = default;
         virtual ~IRenderableData() = default;
 
-        explicit IRenderableData(const Sprite::SetT set) : set(set) {}
+        explicit IRenderableData(const SpriteSetT set) : set(set) {}
 
     public:
-        Sprite::SetT set = 0;
+        SpriteSetT set = 0;
 
 
         CEREAL_SERIALIZE(archive) {
@@ -70,18 +70,18 @@ namespace jactorio::data
     public:
         ///
         /// Gets a sprite corresponding to the provided set
-        J_NODISCARD virtual Sprite* OnRGetSprite(Sprite::SetT set) const = 0;
+        J_NODISCARD virtual Sprite* OnRGetSprite(SpriteSetT set) const = 0;
 
         ///
         /// Maps a orientation to a <set, frame>
-        J_NODISCARD virtual Sprite::SetT OnRGetSpriteSet(Orientation orientation,
-                                                         game::WorldData& world_data,
-                                                         const WorldCoord& world_coords) const = 0;
+        J_NODISCARD virtual SpriteSetT OnRGetSpriteSet(Orientation orientation,
+                                                       game::WorldData& world_data,
+                                                       const WorldCoord& world_coords) const = 0;
 
         ///
         /// Gets frame for sprite corresponding to provided game tick
-        J_NODISCARD virtual Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                             GameTickT game_tick) const = 0;
+        J_NODISCARD virtual SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                           GameTickT game_tick) const = 0;
 
         ///
         /// Displays the menu associated with itself with the provided data
@@ -102,48 +102,15 @@ namespace jactorio::data
 
         ///
         /// Every set / frame of a sprite is part of the same animation
-        static Sprite::FrameT AllOfSprite(Sprite& sprite, const GameTickT game_tick, const AnimationSpeed speed = 1) {
-            assert(speed > 0);
-
-            const auto frame =
-                core::LossyCast<GameTickT>(speed * game_tick) % (core::SafeCast<uint64_t>(sprite.frames) * sprite.sets);
-
-            return core::SafeCast<Sprite::FrameT>(frame);
-        }
+        static SpriteFrameT AllOfSprite(Sprite& sprite, GameTickT game_tick, AnimationSpeed speed = 1);
 
         ///
         /// Every set / frame of a sprite is part of the same animation, plays forwards then backwards
-        static Sprite::FrameT AllOfSpriteReversing(Sprite& sprite,
-                                                   const GameTickT game_tick,
-                                                   const AnimationSpeed speed = 1) {
-            assert(speed > 0);
-
-            // s = speed, f = frames
-            // y = abs( mod(s * (x - 1/s * (f - 1)), (f * 2 - 2)) - f + 1 )
-
-            // Graph this function to make it easier to understand
-
-            const auto frames = core::SafeCast<uint16_t>(sprite.frames) * sprite.sets;
-
-            // Shift the peak (which is at x = 0) such that when x = 0, y = 0
-            const auto adjusted_x = game_tick - (1. / speed) * (frames - 1);
-
-            const auto v_l = core::LossyCast<int64_t>(speed * abs(adjusted_x));
-            const auto v_r = core::SafeCast<int64_t>(frames) * 2 - 2;
-
-            const auto val = (v_l % v_r) - frames + 1;
-            assert(val < frames);
-
-            return core::SafeCast<Sprite::FrameT>(abs(val));
-        }
+        static SpriteFrameT AllOfSpriteReversing(Sprite& sprite, GameTickT game_tick, AnimationSpeed speed = 1);
 
         ///
         /// Every frame of a set
-        static Sprite::FrameT AllOfSet(Sprite& sprite, const GameTickT game_tick, const AnimationSpeed speed = 1) {
-            assert(speed > 0);
-            const auto frame = core::LossyCast<GameTickT>(speed * game_tick) % sprite.frames;
-            return core::SafeCast<Sprite::FrameT>(frame);
-        }
+        static SpriteFrameT AllOfSet(Sprite& sprite, GameTickT game_tick, AnimationSpeed speed = 1);
     };
 } // namespace jactorio::data
 

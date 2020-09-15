@@ -1,14 +1,15 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_BASE_H
-#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_BASE_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_ITEM_BASE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_ITEM_BASE_H
 #pragma once
 
 #include "data/prototype/framework/framework_base.h"
-#include "data/prototype/sprite.h"
 
 namespace jactorio::data
 {
+    class Sprite;
+
     ///
     /// Basic abstract class for items
     class ItemBase : public FrameworkBase
@@ -29,4 +30,4 @@ namespace jactorio::data
     }
 } // namespace jactorio::data
 
-#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_BASE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_ITEM_BASE_H

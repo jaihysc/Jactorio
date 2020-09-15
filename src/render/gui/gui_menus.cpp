@@ -5,16 +5,24 @@
 #include <functional>
 #include <sstream>
 
+#include "core/utility.h"
+
 #include "data/prototype/assembly_machine.h"
 #include "data/prototype/container_entity.h"
 #include "data/prototype/mining_drill.h"
+#include "data/prototype/recipe.h"
+#include "data/prototype/recipe_category.h"
 #include "data/prototype/recipe_group.h"
+#include "data/prototype/sprite.h"
 
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
+#include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
 
 #include "render/gui/components.h"
+#include "render/gui/menu_data.h"
+#include "render/rendering/renderer.h"
 
 using namespace jactorio;
 

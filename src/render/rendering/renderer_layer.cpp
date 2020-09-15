@@ -6,7 +6,12 @@
 #include <glm/gtx/rotate_vector.hpp>
 
 #include "core/convert.h"
+
 #include "game/player/player_data.h"
+
+#include "render/opengl/index_buffer.h"
+#include "render/opengl/vertex_array.h"
+#include "render/opengl/vertex_buffer.h"
 
 using namespace jactorio;
 

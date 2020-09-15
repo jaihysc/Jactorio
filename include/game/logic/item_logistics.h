@@ -1,18 +1,19 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_GAME_LOGIC_ITEM_LOGISTICS_H
-#define JACTORIO_GAME_LOGIC_ITEM_LOGISTICS_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_ITEM_LOGISTICS_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_ITEM_LOGISTICS_H
 #pragma once
 
-#include "data/prototype/abstract_proto/transport_line.h"
-#include "data/prototype/assembly_machine.h"
+#include "core/coordinate_tuple.h"
+#include "core/data_type.h"
 #include "data/prototype/item.h"
 #include "data/prototype/type.h"
-#include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
+    class LogicData;
+    class WorldData;
+
     ///
     /// Initialize: Return false if failed
 #define J_ITEM_HANDLER_COMMON                                                               \
@@ -183,4 +184,4 @@ namespace jactorio::game
 #undef J_ITEM_HANDLER_COMMON
 } // namespace jactorio::game
 
-#endif // JACTORIO_GAME_LOGIC_ITEM_LOGISTICS_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_ITEM_LOGISTICS_H

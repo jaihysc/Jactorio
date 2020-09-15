@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_CEREAL_SERIALIZE_H
-#define JACTORIO_DATA_CEREAL_SERIALIZE_H
+#ifndef JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZE_H
+#define JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZE_H
 #pragma once
 
 #include <cstddef>
@@ -88,4 +88,4 @@ namespace jactorio::data
     void DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGlobal& out_data_global);
 } // namespace jactorio::data
 
-#endif // JACTORIO_DATA_CEREAL_SERIALIZE_H
+#endif // JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZE_H

@@ -2,9 +2,9 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/abstract_proto/transport_line.h"
+#include "jactorioTests.h"
+
 #include "data/prototype/transport_belt.h"
-#include "game/logic/transport_segment.h"
 
 // ======================================================================
 // Tests for the various bend orientations
@@ -71,7 +71,7 @@ namespace jactorio::data
         void ValidateResultOrientation(const Orientation placement_orientation,
                                        const TransportLineData::LineOrientation expected_line_orientation) {
             EXPECT_EQ(lineProto_.OnRGetSpriteSet(placement_orientation, worldData_, {1, 1}),
-                      static_cast<data::Sprite::SetT>(expected_line_orientation));
+                      static_cast<SpriteSetT>(expected_line_orientation));
         }
 
         ///

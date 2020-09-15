@@ -7,13 +7,10 @@
 #include <glm/glm.hpp>
 #include <queue>
 
+#include "core/coordinate_tuple.h"
 #include "data/prototype/item.h"
+#include "data/prototype/recipe.h"
 #include "data/prototype/type.h"
-
-namespace jactorio::data
-{
-    class Recipe;
-}
 
 namespace jactorio::game
 {

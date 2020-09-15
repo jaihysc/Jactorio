@@ -1,9 +1,11 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
+#include "render/opengl/vertex_array.h"
+
 #include <GL/glew.h>
 
 #include "render/opengl/error.h"
-#include "render/opengl/vertex_array.h"
+#include "render/opengl/vertex_buffer.h"
 
 jactorio::render::VertexArray::VertexArray() {
     DEBUG_OPENGL_CALL(glGenVertexArrays(1, &id_));

@@ -1,19 +1,18 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
-#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_RESOURCE_ENTITY_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_RESOURCE_ENTITY_H
 #pragma once
 
-#include "data/prototype/abstract_proto/entity.h"
-
 #include "core/data_type.h"
+#include "data/prototype/abstract_proto/entity.h"
 
 namespace jactorio::data
 {
     // Unique per resource entity placed
     struct ResourceEntityData final : EntityData
     {
-        using ResourceCount = uint32_t;
+        using ResourceCount = ResourceEntityResourceCount;
 
         /// Resource entity should never reach 0 resources, when it does it is treated as infinite
         static constexpr ResourceCount kInfiniteResource = 0;
@@ -67,4 +66,4 @@ namespace jactorio::data
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_RESOURCE_ENTITY_H

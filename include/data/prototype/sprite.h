@@ -9,7 +9,6 @@
 
 #include "jactorio.h"
 
-#include "core/coordinate_tuple.h"
 #include "core/data_type.h"
 #include "data/prototype/framework/framework_base.h"
 
@@ -64,10 +63,6 @@ namespace jactorio::data
         // ======================================================================
         // Sprite (image) properties
 
-        using SetT   = uint16_t;
-        using FrameT = uint16_t;
-        using TrimT  = uint16_t;
-
         ///
         /// Group(s) determines which spritemap(s) this sprite is placed on
         PYTHON_PROP_REF(std::vector<SpriteGroup>, group);
@@ -90,15 +85,15 @@ namespace jactorio::data
 
         ///
         /// Animation frames, X axis, indexed by 0 based index, 1 if single
-        PYTHON_PROP_REF_I(FrameT, frames, 1);
+        PYTHON_PROP_REF_I(SpriteFrameT, frames, 1);
         ///
         /// Y axis, indexed by 0 based index, 1 if single
-        PYTHON_PROP_REF_I(SetT, sets, 1);
+        PYTHON_PROP_REF_I(SpriteSetT, sets, 1);
 
 
         ///
         /// Pixels to remove from the border when get_coords() is called
-        PYTHON_PROP_REF_I(TrimT, trim, 0);
+        PYTHON_PROP_REF_I(SpriteTrimT, trim, 0);
 
 
         ///
@@ -113,7 +108,7 @@ namespace jactorio::data
         /// Gets OpenGl UV coordinates for region within a sprite, applying a deduction of trim pixels around the
         /// border \remark Requires width_ and height_ to be initialized \return UV coordinates for set, frame within
         /// sprite (0, 0) is top left
-        J_NODISCARD UvPositionT GetCoords(SetT set, FrameT frame) const;
+        J_NODISCARD UvPositionT GetCoords(SpriteSetT set, SpriteFrameT frame) const;
 
         // ======================================================================
         // Sprite ptr
@@ -187,7 +182,7 @@ namespace jactorio::data
         /// \param set Modulus of total number of sets
         /// \param frame Modulus of total number of frames, every multiple of frames increases set by 1
         template <bool InvertSet>
-        void AdjustSetFrame(SetT& set, FrameT& frame) const {
+        void AdjustSetFrame(SpriteSetT& set, SpriteFrameT& frame) const {
             set %= sets;
             set += frame / frames;
             frame = frame % frames;

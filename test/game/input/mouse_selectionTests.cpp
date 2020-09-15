@@ -166,14 +166,14 @@ namespace jactorio::game
         class MockEntity final : public TestMockEntity
         {
         public:
-            J_NODISCARD data::Sprite* OnRGetSprite(data::Sprite::SetT /*set*/) const override {
+            J_NODISCARD data::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
                 getSpriteCalled = true;
                 return nullptr;
             }
 
-            J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation /*orientation*/,
-                                                           WorldData& /*world_data*/,
-                                                           const WorldCoord& /*world_coords*/) const override {
+            J_NODISCARD SpriteSetT OnRGetSpriteSet(data::Orientation /*orientation*/,
+                                                   WorldData& /*world_data*/,
+                                                   const WorldCoord& /*world_coords*/) const override {
                 getSpriteSetCalled = true;
                 return 16;
             }

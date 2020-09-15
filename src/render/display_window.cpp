@@ -8,10 +8,16 @@
 
 #include "jactorio.h"
 
+#include "core/loop_common.h"
+
+#include "data/prototype/sprite.h"
+
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-#include "render//gui/imgui_manager.h"
-#include "render//render_loop.h"
+
+#include "render/gui/imgui_manager.h"
+#include "render/render_loop.h"
+#include "render/rendering/renderer.h"
 
 using namespace jactorio;
 
@@ -198,7 +204,7 @@ void HandleWindowEvent(game::EventData& event, const SDL_Event& sdl_event) {
     }
 }
 
-void render::DisplayWindow::HandleSdlEvent(LogicRenderLoopCommon& common, const SDL_Event& sdl_event) const {
+void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL_Event& sdl_event) const {
     switch (sdl_event.type) {
     case SDL_WINDOWEVENT:
         HandleWindowEvent(common.gameDataLocal.event, sdl_event);

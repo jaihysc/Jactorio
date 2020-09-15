@@ -6,7 +6,7 @@
 #include <sstream>
 
 #include "core/filesystem.h"
-#include "core/logger.h"
+#include "core/resource_guard.h"
 #include "data/local_parser.h"
 #include "data/pybind/pybind_manager.h"
 

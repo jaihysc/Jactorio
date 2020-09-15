@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "core/convert.h"
+#include "core/coordinate_tuple.h"
 #include "core/filesystem.h"
 
 using namespace jactorio;
@@ -102,7 +103,7 @@ void data::Sprite::LoadImageFromFile() {
 }
 
 
-UvPositionT data::Sprite::GetCoords(SetT set, FrameT frame) const {
+UvPositionT data::Sprite::GetCoords(SpriteSetT set, SpriteFrameT frame) const {
     float width_base  = core::SafeCast<float>(width_) / core::SafeCast<float>(frames);
     float height_base = core::SafeCast<float>(height_) / core::SafeCast<float>(sets);
 

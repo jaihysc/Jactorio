@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "game/event/game_events.h"
+#include "game/event/event_base.h"
 
 namespace jactorio::game
 {

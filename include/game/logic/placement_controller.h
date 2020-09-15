@@ -6,6 +6,11 @@
 
 #include "data/prototype/abstract_proto/entity.h"
 
+namespace jactorio::data
+{
+    class Entity;
+}
+
 namespace jactorio::game
 {
     // ChunkTileLayer data layout

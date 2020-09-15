@@ -4,6 +4,11 @@
 
 #include "jactorio.h"
 
+#include "data/prototype/inserter.h"
+#include "data/prototype/sprite.h"
+#include "game/logic/transport_segment.h"
+#include "render/rendering/renderer.h"
+
 using namespace jactorio;
 
 constexpr float kPixelZ = 0.1f;
@@ -59,8 +64,7 @@ void PrepareTransportSegmentData(render::RendererLayer& layer,
 
         constexpr float pixel_z = kPixelZ;
         // In pixels
-        layer.PushBack(
-            {{
+        layer.PushBack({{
                             {
                                 pixel_offset.x +
                                     core::LossyCast<float>(tile_x) * core::SafeCast<float>(render::Renderer::tileWidth),
@@ -75,9 +79,9 @@ void PrepareTransportSegmentData(render::RendererLayer& layer,
                                     core::LossyCast<float>(tile_y + kItemWidth) *
                                         core::SafeCast<float>(render::Renderer::tileWidth),
                             },
-             },
-             {uv_pos.topLeft, uv_pos.bottomRight}},
-            pixel_z);
+                        },
+                        {uv_pos.topLeft, uv_pos.bottomRight}},
+                       pixel_z);
     }
 }
 

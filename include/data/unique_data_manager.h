@@ -16,7 +16,7 @@ namespace jactorio::data
 
     class UniqueDataManager
     {
-        static constexpr UniqueDataIdT kDefaultId_ = 1;
+        static constexpr UniqueDataIdT kDefaultId = 1;
 
         using DataEntriesT = std::vector<UniqueDataBase*>;
 
@@ -44,7 +44,7 @@ namespace jactorio::data
             DataEntriesT& dataEntries;
         };
 
-        UniqueDataIdT nextId_ = kDefaultId_;
+        UniqueDataIdT nextId_ = kDefaultId;
         DataEntriesT dataEntries_;
     };
 } // namespace jactorio::data

@@ -5,8 +5,10 @@
 #include <array>
 #include <cmath>
 
+#include "data/prototype/sprite.h"
 #include "game/logic/transport_segment.h"
-#include "render//rendering/data_renderer.h"
+#include "game/world/world_data.h"
+#include "render/rendering/data_renderer.h"
 
 using namespace jactorio;
 using LineData4Way = data::TransportLine::LineData4Way;
@@ -181,14 +183,14 @@ void data::TransportLine::OnRDrawUniqueData(render::RendererLayer& layer,
     DrawTransportSegmentItems(layer, uv_coords, pixel_offset, *line_data.lineSegment);
 }
 
-data::Sprite::SetT data::TransportLine::OnRGetSpriteSet(const Orientation orientation,
-                                                        game::WorldData& world_data,
-                                                        const WorldCoord& world_coords) const {
+SpriteSetT data::TransportLine::OnRGetSpriteSet(const Orientation orientation,
+                                                game::WorldData& world_data,
+                                                const WorldCoord& world_coords) const {
     return static_cast<uint16_t>(GetLineOrientation(orientation, GetLineData4(world_data, world_coords)));
 }
 
-data::Sprite::FrameT data::TransportLine::OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                            const GameTickT game_tick) const {
+SpriteFrameT data::TransportLine::OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
+                                                    const GameTickT game_tick) const {
     return AllOfSet(*sprite, game_tick);
 }
 
@@ -962,4 +964,19 @@ void data::TransportLine::OnDeserialize(game::WorldData& world_data,
                           TransportLineData::ToOrientation(origin_data->orientation),
                           *origin_data,
                           GetLineData4(world_data, world_coord));
+}
+
+void data::TransportLine::PostLoad() {
+    // Convert floating point speed to fixed precision decimal speed
+    speed = LineDistT(speedFloat);
+}
+
+void data::TransportLine::PostLoadValidate(const PrototypeManager& /*proto_manager*/) const {
+    J_DATA_ASSERT(speedFloat >= 0.001, "Transport line speed below minimum 0.001");
+    // Cannot exceed item_width because of limitations in the logic
+    J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");
+}
+
+void data::TransportLine::ValidatedPostLoad() {
+    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 }

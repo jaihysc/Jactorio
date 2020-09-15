@@ -1,14 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H
-#define JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_INSERTER_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_INSERTER_H
 #pragma once
 
 #include <decimal.h>
 
 #include "data/prototype/abstract_proto/health_entity.h"
-#include "data/prototype/interface/update_listener.h"
-#include "data/prototype/type.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
 
@@ -96,9 +94,9 @@ namespace jactorio::data
                                const core::Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation,
-                                                 game::WorldData& world_data,
-                                                 const WorldCoord& world_coords) const override;
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
+                                               game::WorldData& world_data,
+                                               const WorldCoord& world_coords) const override;
 
         ///
         /// \param orientation Points towards dropoff
@@ -125,15 +123,8 @@ namespace jactorio::data
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
-            J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
-            J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
-            J_DATA_ASSERT(handSprite != nullptr, "Hand sprite not provided");
-        }
-
-        void ValidatedPostLoad() override {
-            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-        }
+        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void ValidatedPostLoad() override;
 
     private:
         J_NODISCARD WorldCoord GetDropoffCoord(WorldCoord world_coord, Orientation orientation) const;
@@ -145,4 +136,4 @@ namespace jactorio::data
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_DATA_PROTOTYPE_ENTITY_INSERTER_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_INSERTER_H

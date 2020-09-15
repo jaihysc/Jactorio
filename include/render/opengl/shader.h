@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_OPENGL_SHADER_H
-#define JACTORIO_INCLUDE_RENDERER_OPENGL_SHADER_H
+#ifndef JACTORIO_INCLUDE_RENDER_OPENGL_SHADER_H
+#define JACTORIO_INCLUDE_RENDER_OPENGL_SHADER_H
 #pragma once
 
 #include <GL/glew.h>
@@ -45,4 +45,4 @@ namespace jactorio::render
     };
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERER_OPENGL_SHADER_H
+#endif // JACTORIO_INCLUDE_RENDER_OPENGL_SHADER_H

@@ -5,12 +5,11 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
-
-#include "data/prototype_manager.h"
 
 namespace jactorio::data
 {
+    class PrototypeManager;
+
     ///
     /// Parses localization files found in data/__name__/local/<lang>.cfg <br>
     ///

@@ -1,14 +1,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef DATA_PROTOTYPE_TILE_TILE_H
-#define DATA_PROTOTYPE_TILE_TILE_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_TILE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_TILE_H
 
-#include "data/prototype/framework/framework_base.h"
 #include "data/prototype/framework/world_object.h"
-#include "data/prototype/sprite.h"
 
 namespace jactorio::data
 {
+    class Sprite;
+
     ///
     /// Tiles which are auto-placed by the world generator <br>
     /// Configure how the world generator places these tiles with a Noise_layer
@@ -42,18 +42,18 @@ namespace jactorio::data
         // ======================================================================
         // Renderer
 
-        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT /*set*/) const override {
+        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
             return sprite;
         }
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                     GameTickT /*game_tick*/) const override {
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
+                                                   GameTickT /*game_tick*/) const override {
             return 0;
         }
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                                 game::WorldData& /*world_data*/,
-                                                 const WorldCoord& /*world_coords*/) const override {
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
+                                               game::WorldData& /*world_data*/,
+                                               const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
@@ -76,4 +76,4 @@ namespace jactorio::data
     }
 } // namespace jactorio::data
 
-#endif // DATA_PROTOTYPE_TILE_TILE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_TILE_H

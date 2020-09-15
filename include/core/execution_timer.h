@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
-#define JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
+#ifndef JACTORIO_INCLUDE_CORE_EXECUTION_TIMER_H
+#define JACTORIO_INCLUDE_CORE_EXECUTION_TIMER_H
 #pragma once
 
 #include <chrono>
@@ -50,4 +50,4 @@ namespace jactorio::core
     };
 } // namespace jactorio::core
 
-#endif // JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
+#endif // JACTORIO_INCLUDE_CORE_EXECUTION_TIMER_H

@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
-#define JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
+#ifndef JACTORIO_INCLUDE_RENDER_RENDERING_RENDERER_LAYER_H
+#define JACTORIO_INCLUDE_RENDER_RENDERING_RENDERER_LAYER_H
 #pragma once
 
 #include <memory>
@@ -10,12 +10,13 @@
 
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
-#include "render/opengl/index_buffer.h"
-#include "render/opengl/vertex_array.h"
-#include "render/opengl/vertex_buffer.h"
 
 namespace jactorio::render
 {
+    class IndexBuffer;
+    class VertexArray;
+    class VertexBuffer;
+
     ///
     /// Generates and maintains the buffers of a rendering layer
     /// Currently 2 buffers are used: Vertex and UV
@@ -179,4 +180,4 @@ namespace jactorio::render
     };
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERER_RENDERING_RENDERER_LAYER_H
+#endif // JACTORIO_INCLUDE_RENDER_RENDERING_RENDERER_LAYER_H

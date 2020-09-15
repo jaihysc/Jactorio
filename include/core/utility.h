@@ -4,8 +4,6 @@
 #define JACTORIO_INCLUDE_CORE_UTILITY_H
 #pragma once
 
-#include <algorithm>
-#include <array>
 #include <string>
 
 #include "jactorio.h"

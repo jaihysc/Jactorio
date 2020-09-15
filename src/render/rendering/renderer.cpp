@@ -9,10 +9,10 @@
 
 #include "jactorio.h"
 
-#include "data/prototype/abstract_proto/entity.h"
-#include "data/prototype/tile.h"
+#include "core/execution_timer.h"
+#include "data/prototype/sprite.h"
 #include "game/world/world_data.h"
-#include "render//opengl/error.h"
+#include "render/opengl/error.h"
 
 using namespace jactorio;
 

@@ -4,6 +4,11 @@
 
 #include <tuple>
 
+#include "data/prototype/item.h"
+#include "data/prototype/resource_entity.h"
+#include "data/prototype/sprite.h"
+#include "game/logic/logic_data.h"
+#include "game/world/world_data.h"
 #include "render/gui/gui_menus.h"
 
 using namespace jactorio;
@@ -15,7 +20,7 @@ bool data::MiningDrill::OnRShowGui(const render::GuiRenderer& g_rendr, game::Chu
     return true;
 }
 
-data::Sprite* data::MiningDrill::OnRGetSprite(const Sprite::SetT set) const {
+data::Sprite* data::MiningDrill::OnRGetSprite(const SpriteSetT set) const {
     if (set <= 7)
         return sprite;
 
@@ -28,9 +33,9 @@ data::Sprite* data::MiningDrill::OnRGetSprite(const Sprite::SetT set) const {
     return spriteW;
 }
 
-data::Sprite::SetT data::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
-                                                      game::WorldData& /*world_data*/,
-                                                      const WorldCoord& /*world_coords*/) const {
+SpriteSetT data::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
+                                              game::WorldData& /*world_data*/,
+                                              const WorldCoord& /*world_coords*/) const {
     switch (orientation) {
     case Orientation::up:
         return 0;
@@ -47,8 +52,7 @@ data::Sprite::SetT data::MiningDrill::OnRGetSpriteSet(const Orientation orientat
     }
 }
 
-data::Sprite::FrameT data::MiningDrill::OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                          GameTickT game_tick) const {
+SpriteFrameT data::MiningDrill::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
     const auto& drill_data = static_cast<const MiningDrillData&>(unique_data);
 
     // Drill is inactive
@@ -195,7 +199,23 @@ void data::MiningDrill::OnDeserialize(game::WorldData& world_data,
     InitializeOutput(world_data, GetOutputCoord(world_coord, drill_data->output.GetOrientation()), drill_data);
 }
 
+void data::MiningDrill::PostLoadValidate(const PrototypeManager& /*data_manager*/) const {
+    J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");
+    J_DATA_ASSERT(spriteE != nullptr, "East sprite not provided");
+    J_DATA_ASSERT(spriteS != nullptr, "South sprite not provided");
+    J_DATA_ASSERT(spriteW != nullptr, "West sprite not provided");
+}
+
+void data::MiningDrill::ValidatedPostLoad() {
+    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+    spriteE->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+    spriteS->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+    spriteW->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+}
+
+
 // ======================================================================
+
 
 bool data::MiningDrill::InitializeOutput(game::WorldData& world_data,
                                          const WorldCoord& output_coord,

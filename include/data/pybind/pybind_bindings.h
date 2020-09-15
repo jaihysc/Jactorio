@@ -22,6 +22,7 @@
 #include "data/prototype/mining_drill.h"
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/prototype_type.h"
+#include "data/prototype/recipe.h"
 #include "data/prototype/recipe_category.h"
 #include "data/prototype/recipe_group.h"
 #include "data/prototype/resource_entity.h"

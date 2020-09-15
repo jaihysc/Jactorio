@@ -22,12 +22,10 @@ namespace jactorio::data
     template <typename TProto>
     class SerialProtoPtr : public core::PointerWrapper<TProto>
     {
-        // Removing static_assert allows use with forward declarations
-        //        static_assert(std::is_base_of_v<FrameworkBase, TProto>, "TProto must inherit FrameworkBase for
-        //        internal id");
+        static_assert(std::is_base_of_v<FrameworkBase, TProto>, "TProto must inherit FrameworkBase for internal id");
 
-        using ValueT                        = typename core::PointerWrapper<TProto>::ValueT;
-        static constexpr auto kArchiveSize  = sizeof(ValueT);
+        using ValueT                       = typename core::PointerWrapper<TProto>::ValueT;
+        static constexpr auto kArchiveSize = sizeof(ValueT);
 
     public:
         using core::PointerWrapper<TProto>::PointerWrapper;
@@ -63,11 +61,11 @@ namespace jactorio::data
     template <typename TUnique>
     class SerialUniqueDataPtr : public core::PointerWrapper<TUnique>
     {
-        //        static_assert(std::is_base_of_v<UniqueDataBase, TUnique>,
-        //                      "TUnique must inherit UniqueDataBase for internal id");
+        static_assert(std::is_base_of_v<UniqueDataBase, TUnique>,
+                      "TUnique must inherit UniqueDataBase for internal id");
 
-        using ValueT                        = typename core::PointerWrapper<TUnique>::ValueT;
-        static constexpr auto kArchiveSize  = sizeof(UniqueDataIdT);
+        using ValueT                       = typename core::PointerWrapper<TUnique>::ValueT;
+        static constexpr auto kArchiveSize = sizeof(UniqueDataIdT);
 
     public:
         using core::PointerWrapper<TUnique>::PointerWrapper;

@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "data/prototype/interface/renderable.h"
+#include "data/prototype/sprite.h"
 
 namespace jactorio::data
 {
@@ -18,18 +19,18 @@ namespace jactorio::data
 
 
     public:
-        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT /*set*/) const override {
+        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
             return nullptr;
         }
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                                 game::WorldData& /*world_data*/,
-                                                 const WorldCoord& /*world_coords*/) const override {
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
+                                               game::WorldData& /*world_data*/,
+                                               const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
-                                                     GameTickT /*game_tick*/) const override {
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
+                                                   GameTickT /*game_tick*/) const override {
             return 0;
         }
 

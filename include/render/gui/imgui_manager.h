@@ -1,33 +1,40 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
-#define JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
+#ifndef JACTORIO_INCLUDE_RENDER_GUI_IMGUI_MANAGER_H
+#define JACTORIO_INCLUDE_RENDER_GUI_IMGUI_MANAGER_H
 #pragma once
 
-#include "game/event/event.h"
-#include "game/player/player_data.h"
-#include "render//rendering/spritemap_generator.h"
+#include "jactorio.h"
 
-// TODO forward def
+#include "core/data_type.h"
+
+namespace jactorio
+{
+    namespace game
+    {
+        class EventData;
+        class PlayerData;
+        class LogicData;
+    } // namespace game
+
+    namespace data
+    {
+        class PrototypeManager;
+    } // namespace data
+} // namespace jactorio
 
 namespace jactorio::render
 {
     class DisplayWindow;
+    class RendererSprites;
+
+    struct MenuData;
 
 
     // If true, ImGui has handled the a input event and thus should not be carried to down the layer
     inline bool input_mouse_captured    = false;
     inline bool input_keyboard_captured = false;
 
-
-    struct MenuData
-    {
-        MenuData(const SpriteUvCoordsT& sprite_positions, const unsigned tex_id)
-            : spritePositions(sprite_positions), texId(tex_id) {}
-
-        const SpriteUvCoordsT& spritePositions;
-        unsigned int texId = 0; // Assigned by openGL
-    };
 
     ///
     /// Initializes the spritemap for rendering the character menus <br>
@@ -47,4 +54,4 @@ namespace jactorio::render
     void ImguiTerminate();
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERER_GUI_IMGUI_MANAGER_H
+#endif // JACTORIO_INCLUDE_RENDER_GUI_IMGUI_MANAGER_H

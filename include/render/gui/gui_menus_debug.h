@@ -1,10 +1,24 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_DEBUG_H
-#define JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_DEBUG_H
+#ifndef JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_DEBUG_H
+#define JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_DEBUG_H
 #pragma once
 
-#include "game/player/player_data.h"
+#include "core/data_type.h"
+
+namespace jactorio
+{
+    namespace data
+    {
+        class PrototypeManager;
+    }
+
+    namespace game
+    {
+        class LogicData;
+        class PlayerData;
+    } // namespace game
+} // namespace jactorio
 
 namespace jactorio::render
 {
@@ -31,4 +45,4 @@ namespace jactorio::render
     void DebugLogicInfo(const game::LogicData& logic_data);
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERER_GUI_GUI_MENUS_DEBUG_H
+#endif // JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_DEBUG_H

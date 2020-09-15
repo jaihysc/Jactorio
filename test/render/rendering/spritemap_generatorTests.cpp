@@ -2,12 +2,9 @@
 
 #include <gtest/gtest.h>
 
-#include "render//rendering/spritemap_generator.h"
+#include "render/rendering/spritemap_generator.h"
 
-#include <tuple>
-#include <vector>
-
-#include "data/prototype_manager.h"
+#include "jactorioTests.h"
 
 namespace jactorio::render
 {

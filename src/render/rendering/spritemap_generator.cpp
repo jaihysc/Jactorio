@@ -6,7 +6,10 @@
 #include <map>
 
 #include "core/convert.h"
+#include "core/coordinate_tuple.h"
 #include "core/logger.h"
+#include "core/resource_guard.h"
+
 #include "data/prototype_manager.h"
 
 using namespace jactorio;

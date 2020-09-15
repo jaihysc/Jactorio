@@ -2,6 +2,8 @@
 
 #include "data/prototype/assembly_machine.h"
 
+#include "data/prototype/recipe.h"
+#include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 #include "render/gui/gui_menus.h"
 
@@ -77,8 +79,7 @@ void data::AssemblyMachineData::CraftAddProduct() {
 
 // ======================================================================
 
-data::Sprite::FrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                              GameTickT game_tick) const {
+SpriteFrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
     const auto& machine_data = static_cast<const AssemblyMachineData&>(unique_data);
 
     if (!machine_data.deferralEntry.Valid())
