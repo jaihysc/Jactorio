@@ -117,8 +117,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES Windows)
 ENDIF ()
 # ======================================== END Lib files .cpp
 
-
-if (JACTORIO_BUILD_TESTS)
+IF (JACTORIO_BUILD_TESTS OR NOT JACTORIO_INTERPROCEDURAL_OPTIMIZATION)
     # library linked to for tests
     add_library(jactorioBase
             ${JACTORIO_SRC_FILES}
@@ -126,12 +125,12 @@ if (JACTORIO_BUILD_TESTS)
             )
     target_include_directories(jactorioBase PUBLIC ${JACTORIO_INCLUDE_FILES})
     target_link_libraries(jactorioBase jactorioLib)
-endif ()
+ENDIF ()
 
 
 # Jactorio Executable
-IF (JACTORIO_INTERPROCEDURAL_OPTIMIZATION OR NOT JACTORIO_BUILD_TESTS)
-    # Must compile sources separately for IPO or when tests are not built
+IF (JACTORIO_INTERPROCEDURAL_OPTIMIZATION)
+    # Must compile sources separately for IPO
     add_executable(jactorio
             ${JACTORIO_DIR}/jactorio.cpp
             ${JACTORIO_SRC_FILES}
