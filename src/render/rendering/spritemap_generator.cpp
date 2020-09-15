@@ -1,12 +1,11 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "render//rendering/spritemap_generator.h"
+#include "render/rendering/spritemap_generator.h"
 
 #include <algorithm>
 #include <map>
 
 #include "core/convert.h"
-#include "core/coordinate_tuple.h"
 #include "core/logger.h"
 #include "core/resource_guard.h"
 
