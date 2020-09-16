@@ -77,7 +77,6 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/render/gui/gui_layout.cpp
         ${JACTORIO_DIR}/render/gui/gui_menus.cpp
         ${JACTORIO_DIR}/render/gui/gui_menus_debug.cpp
-        ${JACTORIO_DIR}/render/gui/gui_renderer.cpp
         ${JACTORIO_DIR}/render/gui/imgui_manager.cpp
 
         ${JACTORIO_DIR}/render/opengl/error.cpp

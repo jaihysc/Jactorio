@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 
-#include "render//display_window.h"
+#include "render/display_window.h"
 
 #include <SDL.h>
 

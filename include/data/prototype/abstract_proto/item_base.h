@@ -22,7 +22,7 @@ namespace jactorio::data
     public:
         PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
-        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override;
+        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
     };
 
     inline void ItemBase::PostLoadValidate(const PrototypeManager& /*proto_manager*/) const {

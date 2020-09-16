@@ -4,7 +4,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "render//opengl/mvp_manager.h"
+#include "render/opengl/mvp_manager.h"
 
 namespace jactorio::render
 {

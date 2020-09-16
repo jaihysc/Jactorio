@@ -6,7 +6,7 @@
 
 #include "jactorio.h"
 
-#include "render//opengl/error.h"
+#include "render/opengl/error.h"
 
 // Do not directly call this
 // Wrap a function with DEBUG_BREAK_IF_FALSE to automatically call this when an error occurs and pause code execution

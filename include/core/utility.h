@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "jactorio.h"
 
@@ -19,8 +20,12 @@ namespace jactorio::core
     J_NODISCARD std::string StrToUpper(std::string str);
 
     ///
+    /// Remove specified leading and trailing characters
+    J_NODISCARD std::string StrTrim(std::string str, const std::vector<char>& chars);
+
+    ///
     /// Remove leading and trailing whitespace ' ' and '\0'
-    J_NODISCARD std::string StrTrimWhitespace(std::string str);
+    J_NODISCARD std::string StrTrimWhitespace(const std::string& str);
 
     ///
     /// If str is less than target_len, it is padded to target_len with char padding

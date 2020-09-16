@@ -359,7 +359,7 @@ void render::CraftingQueue(const GuiRenderer& g_rendr) {
         const auto y_slots = (queued_items + slot_span - 1) / slot_span; // Always round up for slot count
 
         auto window_height = y_slots * (kInventorySlotWidth + kInventorySlotPadding);
-        window_height += kGuiStyleWindowPaddingX;
+        window_height += kGuiStyleWindowPaddingY;
 
         const auto max_window_height = Renderer::GetWindowHeight() / 2; // Pixels
         if (window_height > max_window_height)

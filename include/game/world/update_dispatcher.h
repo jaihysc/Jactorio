@@ -7,6 +7,7 @@
 #include "jactorio.h"
 
 #include "core/coordinate_tuple.h"
+#include "core/hashers.h"
 #include "data/cereal/serialization_type.h"
 #include "data/prototype/framework/entity.h"
 

@@ -14,6 +14,11 @@ namespace jactorio::core
         EXPECT_EQ(StrToUpper("ASDADxcxvcASDJAKDJ:AL"), "ASDADXCXVCASDJAKDJ:AL");
     }
 
+    TEST(Utility, StrTrim) {
+        EXPECT_EQ(StrTrim("aaaabcdefgbbbb", {'a', 'b'}), "cdefg");
+        EXPECT_EQ(StrTrim("11112222fff22221113", {'1', '2'}), "fff22221113");
+    }
+
     TEST(Utility, StrTrimWhitespace) {
         std::string str = "     abcdefg    ";
         str.resize(100);

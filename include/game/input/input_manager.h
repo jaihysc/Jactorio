@@ -8,7 +8,7 @@
 #include <functional>
 #include <unordered_map>
 
-#include "core/data_type.h"
+#include "core/hashers.h"
 
 namespace jactorio::game
 {

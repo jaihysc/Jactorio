@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 
-#include "render//rendering/renderer.h"
+#include "render/rendering/renderer.h"
 
 #include <future>
 #include <glm/gtc/matrix_transform.hpp>
