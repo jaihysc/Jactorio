@@ -11,13 +11,13 @@ namespace jactorio::game
     class LogicData
     {
     public:
-        /// \brief Called by the logic loop every update
+        /// Called by the logic loop every update
         void GameTickAdvance() {
             ++gameTick_;
         }
 
         ///
-        /// \brief Number of logic updates since the world was created
+        /// Number of logic updates since the world was created
         J_NODISCARD GameTickT GameTick() const {
             return gameTick_;
         }
@@ -25,7 +25,7 @@ namespace jactorio::game
         // ======================================================================
 
         ///
-        /// \brief Forwards args to deferralTimer.DeferralUpdate with itself being logic data
+        /// Forwards args to deferralTimer.DeferralUpdate with itself being logic data
         template <typename... TArgs>
         auto DeferralUpdate(TArgs&&... args) {
             deferralTimer.DeferralUpdate(*this, std::forward<TArgs>(args)...);

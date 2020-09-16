@@ -25,7 +25,7 @@ namespace jactorio::data
     }
 
     ///
-    /// \brief Returns true if iname exists in array and matches count
+    /// Returns true if iname exists in array and matches count
     bool VectorGetVal(std::vector<RecipeItem>& vector, const std::string& iname, const uint16_t val) {
         for (auto& i : vector) {
             if (i.first == iname) {

@@ -1,15 +1,17 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_GAME_LOGIC_INSERTER_CONTROLLER_H
-#define JACTORIO_GAME_LOGIC_INSERTER_CONTROLLER_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_INSERTER_CONTROLLER_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_INSERTER_CONTROLLER_H
 #pragma once
 
+#include "core/data_type.h"
 #include "core/math.h"
-#include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
+    class WorldData;
+    class LogicData;
+
     // Inserter behavior
     //
     // Transport lines:
@@ -25,7 +27,7 @@ namespace jactorio::game
     constexpr auto kMaxInserterDegree = 180;
 
     ///
-    /// \brief Gets the tile distance of the inserter arm to its resting position at 0 or 180 degrees
+    /// Gets the tile distance of the inserter arm to its resting position at 0 or 180 degrees
     ///
     ///   / |
     ///  /  | x
@@ -37,7 +39,7 @@ namespace jactorio::game
     double GetInserterArmOffset(core::TIntDegree degree, unsigned target_distance);
 
     ///
-    /// \brief Gets the tile length of the inserter arm
+    /// Gets the tile length of the inserter arm
     ///
     ///   / |
     /// x/  |
@@ -50,8 +52,8 @@ namespace jactorio::game
 
 
     ///
-    /// \brief Updates inserter logic for a logic chunk
+    /// Updates inserter logic for a logic chunk
     void InserterLogicUpdate(WorldData& world_data, LogicData& logic_data);
 } // namespace jactorio::game
 
-#endif // JACTORIO_GAME_LOGIC_INSERTER_CONTROLLER_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_INSERTER_CONTROLLER_H

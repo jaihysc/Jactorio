@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
-#define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_SEGMENT_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_SEGMENT_H
 #pragma once
 
 #include <deque>
@@ -20,7 +20,7 @@ namespace jactorio::game
     // See FFF 176 https://factorio.com/blog/post/fff-176
 
     ///
-    /// \brief Item on a transport line
+    /// Item on a transport line
     /// Tile distance from next item or end of transport line, pointer to item
     struct TransportLineItem
     {
@@ -39,7 +39,7 @@ namespace jactorio::game
     };
 
     ///
-    /// \brief One side of a transport line
+    /// One side of a transport line
     struct TransportLane
     {
         using IntOffsetT   = int16_t;
@@ -88,10 +88,9 @@ namespace jactorio::game
     };
 
     ///
-    /// \brief Stores a collection of items heading in one direction
-    struct TransportSegment
+    /// Stores a collection of items heading in one direction
+    class TransportSegment
     {
-    private:
         using SegmentLengthT = uint8_t;
 
     public:
@@ -143,7 +142,7 @@ namespace jactorio::game
         J_NODISCARD bool IsActive(bool left_side) const;
 
         ///
-        /// \brief Deducts tile length offset to get offset based on lane length
+        /// Deducts tile length offset to get offset based on lane length
         /// \param target_segment_ttype If deducting termination of current segment's target is unnecessary, use
         /// straight
         ///
@@ -168,30 +167,30 @@ namespace jactorio::game
         // Item insertion
 
         ///
-        /// \brief Appends item onto the specified side of a belt behind the last item
+        /// Appends item onto the specified side of a belt behind the last item
         /// \param offset Number of tiles to offset from previous item or the end of the transport line segment when
         /// there are no items
         void AppendItem(bool left_side, FloatOffsetT offset, const data::Item& item);
 
         ///
-        /// \brief Inserts the item onto the specified belt side at the offset from the beginning of the transport line
+        /// Inserts the item onto the specified belt side at the offset from the beginning of the transport line
         /// \param offset Distance from beginning of transport line
         void InsertItem(bool left_side, FloatOffsetT offset, const data::Item& item);
 
         ///
-        /// \brief Attempts to insert the item onto the specified belt side at the offset from the beginning of the
+        /// Attempts to insert the item onto the specified belt side at the offset from the beginning of the
         /// transport line \param offset Distance from beginning of transport line \return false if unsuccessful
         bool TryInsertItem(bool left_side, FloatOffsetT offset, const data::Item& item);
 
         ///
-        /// \brief Finds item at offset within epsilon upper and lower bounds inclusive, <deque index,
+        /// Finds item at offset within epsilon upper and lower bounds inclusive, <deque index,
         /// TransportLineItem> \return .second.second is nullptr if no items were found
         J_NODISCARD std::pair<size_t, TransportLineItem> GetItem(bool left_side,
                                                                  FloatOffsetT offset,
                                                                  FloatOffsetT epsilon = kItemWidth / 2) const;
 
         ///
-        /// \brief Finds and removes item at offset within epsilon inclusive
+        /// Finds and removes item at offset within epsilon inclusive
         /// \return nullptr if no items were found
         const data::Item* TryPopItem(bool left_side, FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 
@@ -210,7 +209,7 @@ namespace jactorio::game
 
 
         ///
-        /// \brief Adjusts provided value such that InsertItem(, offset, ) is at the correct location
+        /// Adjusts provided value such that InsertItem(, offset, ) is at the correct location
         ///
         /// This is because segments are numbered from 0 to n from the head of the line, storing the segmentIndex
         /// directly leads to insertion at the incorrect locations when the segment length is changed.
@@ -285,4 +284,4 @@ namespace jactorio::game
 } // namespace jactorio::game
 
 
-#endif // JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_LINE_STRUCTURE_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_TRANSPORT_SEGMENT_H

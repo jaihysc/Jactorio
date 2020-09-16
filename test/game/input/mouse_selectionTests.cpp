@@ -40,7 +40,7 @@ namespace jactorio::game
         world_.EmplaceChunk(0, 0);
 
         // Should set item's sprite at overlay layer at world position 0, 0
-        data::Sprite cursor;
+        const data::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, data::Orientation::up, &entity_, cursor);
 
 
@@ -69,7 +69,7 @@ namespace jactorio::game
 
         // Should NOT set item's sprite at overlay layer at world position 0, 0 since the entity selected is not
         // placeable
-        data::Sprite cursor;
+        const data::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, data::Orientation::up, &entity_, cursor);
 
 
@@ -112,7 +112,7 @@ namespace jactorio::game
 
         world_.EmplaceChunk(0, 0);
 
-        data::Sprite cursor;
+        const data::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, data::Orientation::up, nullptr, cursor);
 
         auto& overlay_layer = world_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::cursor);
@@ -156,7 +156,7 @@ namespace jactorio::game
         // When selecting no world / chunk not generated
         // Attempt to clear last tile and do nothing
 
-        data::Sprite cursor;
+        const data::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, data::Orientation::up, nullptr, cursor);
     }
 
@@ -166,14 +166,14 @@ namespace jactorio::game
         class MockEntity final : public TestMockEntity
         {
         public:
-            J_NODISCARD data::Sprite* OnRGetSprite(data::Sprite::SetT /*set*/) const override {
+            J_NODISCARD data::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
                 getSpriteCalled = true;
                 return nullptr;
             }
 
-            J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation /*orientation*/,
-                                                           WorldData& /*world_data*/,
-                                                           const WorldCoord& /*world_coords*/) const override {
+            J_NODISCARD SpriteSetT OnRGetSpriteSet(data::Orientation /*orientation*/,
+                                                   WorldData& /*world_data*/,
+                                                   const WorldCoord& /*world_coords*/) const override {
                 getSpriteSetCalled = true;
                 return 16;
             }
@@ -188,7 +188,7 @@ namespace jactorio::game
         entity.rotatable = true;
         entity.placeable = true;
 
-        data::Sprite cursor;
+        const data::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, data::Orientation::up, &entity, cursor);
 
         EXPECT_TRUE(entity.getSpriteCalled);
@@ -199,7 +199,7 @@ namespace jactorio::game
         world_.EmplaceChunk(0, 0);
 
         world_.GetTile(0, 0)->GetLayer(TileLayer::resource).prototypeData = &entity_;
-        data::Sprite cursor;
+        const data::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, data::Orientation::up, nullptr, cursor);
 
         world_.GetTile(1, 0)->GetLayer(TileLayer::resource).prototypeData = &entity_;

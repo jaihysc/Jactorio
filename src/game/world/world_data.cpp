@@ -281,8 +281,7 @@ game::WorldData::LogicChunkContainerT& game::WorldData::LogicGetChunks() {
 template <typename T>
 void GenerateChunk(game::WorldData& world_data,
                    const data::PrototypeManager& data_manager,
-                   const int chunk_x,
-                   const int chunk_y,
+                   const ChunkCoord& chunk_coord,
                    const data::DataCategory data_category,
                    void (*func)(game::ChunkTile& target_tile,
                                 void* prototype,
@@ -301,14 +300,12 @@ void GenerateChunk(game::WorldData& world_data,
         noise_layers.begin(), noise_layers.end(), [](auto* left, auto* right) { return left->order < right->order; });
 
 
-    auto* chunk = world_data.GetChunkC(chunk_x, chunk_y);
+    auto* chunk = world_data.GetChunkC(chunk_coord);
 
     // Allocate new tiles if chunk has not been generated yet
     if (chunk == nullptr) {
-        chunk = &world_data.EmplaceChunk(chunk_x, chunk_y);
+        chunk = &world_data.EmplaceChunk(chunk_coord);
     }
-
-    auto& tiles = chunk->Tiles();
 
     int seed_offset = 0; // Incremented every time a noise layer generates to keep terrain unique
     for (const auto* noise_layer : noise_layers) {
@@ -327,7 +324,8 @@ void GenerateChunk(game::WorldData& world_data,
         height_map_builder.SetDestSize(game::Chunk::kChunkWidth, game::Chunk::kChunkWidth);
 
         // Since x, y represents the center of the chunk, +- 0.5 to get the edges
-        height_map_builder.SetBounds(chunk_x - 0.5, chunk_x + 0.5, chunk_y - 0.5, chunk_y + 0.5);
+        height_map_builder.SetBounds(
+            chunk_coord.x - 0.5, chunk_coord.x + 0.5, chunk_coord.y - 0.5, chunk_coord.y + 0.5);
         height_map_builder.Build();
 
 
@@ -337,14 +335,14 @@ void GenerateChunk(game::WorldData& world_data,
                 float noise_val = base_terrain_height_map.GetValue(x, y);
                 auto* new_tile  = noise_layer->Get(noise_val);
 
-                func(tiles[y * game::Chunk::kChunkWidth + x], new_tile, *noise_layer, noise_val);
+                func(chunk->GetCTile(x, y), new_tile, *noise_layer, noise_val);
             }
         }
     }
 }
 
 ///
-/// \brief Generates a chunk and adds it to the world when done <br>
+/// Generates a chunk and adds it to the world when done <br>
 /// Call this with a std::thread to to this in async
 void Generate(game::WorldData& world_data,
               const data::PrototypeManager& data_manager,
@@ -355,25 +353,23 @@ void Generate(game::WorldData& world_data,
     LOG_MESSAGE_F(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
 
     // Base
-    GenerateChunk<data::Tile>(world_data,
-                              data_manager,
-                              chunk_x,
-                              chunk_y,
-                              data::DataCategory::noise_layer_tile,
-                              [](game::ChunkTile& target, void* tile, const auto&, float) {
-                                  assert(tile != nullptr); // Base tile should never generate nullptr
-                                  // Add the tile prototype to the Chunk_tile
-                                  auto* new_tile = static_cast<data::Tile*>(tile);
+    GenerateChunk<data::Tile>(
+        world_data,
+        data_manager,
+        {chunk_x, chunk_y},
+        data::DataCategory::noise_layer_tile,
+        [](game::ChunkTile& target, void* tile, const auto& /*noise_layer*/, float /*noise_val*/) {
+            assert(tile != nullptr); // Base tile should never generate nullptr
 
-                                  target.SetTilePrototype(new_tile);
-                              });
+            auto* new_tile = static_cast<data::Tile*>(tile);
+            target.SetTilePrototype(new_tile);
+        });
 
     // Resources
     GenerateChunk<data::ResourceEntity>(
         world_data,
         data_manager,
-        chunk_x,
-        chunk_y,
+        {chunk_x, chunk_y},
         data::DataCategory::noise_layer_entity,
         [](game::ChunkTile& target, void* tile, const auto& noise_layer, float noise_val) {
             if (tile == nullptr) // Do not override existing tiles

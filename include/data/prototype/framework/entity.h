@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_PROTOTYPE_FRAMEWORK_ENTITY_H
-#define JACTORIO_DATA_PROTOTYPE_FRAMEWORK_ENTITY_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_FRAMEWORK_ENTITY_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_FRAMEWORK_ENTITY_H
 #pragma once
 
 #include "data/prototype/framework/world_object.h"
@@ -23,4 +23,4 @@ namespace jactorio::data
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_DATA_PROTOTYPE_FRAMEWORK_ENTITY_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_FRAMEWORK_ENTITY_H

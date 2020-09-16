@@ -11,7 +11,7 @@
 using namespace jactorio;
 
 ///
-/// \brief Sets index to the next item with a distance greater than item_width and decrement it
+/// Sets index to the next item with a distance greater than item_width and decrement it
 /// If there is no item AND has_target_segment == false, index is set as size of transport line
 /// \return true if an item was decremented
 J_NODISCARD bool MoveNextItem(const data::LineDistT& tiles_moved,
@@ -165,7 +165,7 @@ void UpdateSide(const data::LineDistT& tiles_moved, game::TransportSegment& segm
 }
 
 ///
-/// \brief Moves items for transport lines
+/// Moves items for transport lines
 /// \param l_chunk Chunk to update
 void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
     const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
@@ -200,7 +200,7 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 }
 
 ///
-/// \brief Transitions items on transport lines to other lines and modifies whether of not the line is active
+/// Transitions items on transport lines to other lines and modifies whether of not the line is active
 /// \param l_chunk Chunk to update
 void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
     const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);

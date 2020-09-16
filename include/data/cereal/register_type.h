@@ -1,5 +1,7 @@
-#ifndef JACTORIO_DATA_CEREAL_REGISTER_TYPE_H
-#define JACTORIO_DATA_CEREAL_REGISTER_TYPE_H
+// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
+
+#ifndef JACTORIO_INCLUDE_DATA_CEREAL_REGISTER_TYPE_H
+#define JACTORIO_INCLUDE_DATA_CEREAL_REGISTER_TYPE_H
 #pragma once
 
 #include "data/prototype/assembly_machine.h"
@@ -21,4 +23,4 @@ CEREAL_REGISTER_TYPE(jactorio::data::InserterData);
 
 CEREAL_REGISTER_TYPE(jactorio::data::MiningDrillData);
 
-#endif // JACTORIO_DATA_CEREAL_REGISTER_TYPE_H
+#endif // JACTORIO_INCLUDE_DATA_CEREAL_REGISTER_TYPE_H

@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_CORE_COORDINATE_TUPLE_H
-#define JACTORIO_CORE_COORDINATE_TUPLE_H
+#ifndef JACTORIO_INCLUDE_CORE_COORDINATE_TUPLE_H
+#define JACTORIO_INCLUDE_CORE_COORDINATE_TUPLE_H
 #pragma once
 
 #include <tuple>
@@ -113,4 +113,4 @@ namespace jactorio::core
     };
 } // namespace jactorio::core
 
-#endif // JACTORIO_CORE_COORDINATE_TUPLE_H
+#endif // JACTORIO_INCLUDE_CORE_COORDINATE_TUPLE_H

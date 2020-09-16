@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
-#define JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
+#ifndef JACTORIO_INCLUDE_CORE_EXECUTION_TIMER_H
+#define JACTORIO_INCLUDE_CORE_EXECUTION_TIMER_H
 #pragma once
 
 #include <chrono>
@@ -17,7 +17,7 @@
 namespace jactorio::core
 {
     ///
-    /// \brief Times execution time within a scope, to stop early, call stop() <br>
+    /// Times execution time within a scope, to stop early, call stop() <br>
     /// Begins counter upon instantiation, stops upon being destroyed or stop called
     class ExecutionTimer
     {
@@ -26,7 +26,7 @@ namespace jactorio::core
         ~ExecutionTimer();
 
         ///
-        /// \brief Stops the Execution_timer
+        /// Stops the Execution_timer
         void Stop() const noexcept;
 
         ExecutionTimer(const ExecutionTimer& other)     = delete;
@@ -36,7 +36,7 @@ namespace jactorio::core
 
 
         ///
-        /// \brief Contains measured times of all Execution_timers <br>
+        /// Contains measured times of all Execution_timers <br>
         /// Key is the timer_name_ of each instance
         /// Value is time taken in milliseconds
         static std::map<std::string, double> measuredTimes;
@@ -50,4 +50,4 @@ namespace jactorio::core
     };
 } // namespace jactorio::core
 
-#endif // JACTORIO_INCLUDE_CORE_DEBUG_EXECUTION_TIMER_H
+#endif // JACTORIO_INCLUDE_CORE_EXECUTION_TIMER_H

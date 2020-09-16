@@ -1,19 +1,18 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
-#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_RESOURCE_ENTITY_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_RESOURCE_ENTITY_H
 #pragma once
 
-#include "data/prototype/abstract_proto/entity.h"
-
 #include "core/data_type.h"
+#include "data/prototype/abstract_proto/entity.h"
 
 namespace jactorio::data
 {
     // Unique per resource entity placed
     struct ResourceEntityData final : EntityData
     {
-        using ResourceCount = uint32_t;
+        using ResourceCount = ResourceEntityResourceCount;
 
         /// Resource entity should never reach 0 resources, when it does it is treated as infinite
         static constexpr ResourceCount kInfiniteResource = 0;
@@ -46,19 +45,25 @@ namespace jactorio::data
         }
 
 
-        void OnBuild(
-            game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer&, Orientation) const override {
+        void OnBuild(game::WorldData& /*world_data*/,
+                     game::LogicData& /*logic_data*/,
+                     const WorldCoord& /*world_coords*/,
+                     game::ChunkTileLayer& /*tile_layer*/,
+                     Orientation /*orientation*/) const override {
             assert(false); // Is not player placeable
         }
 
-        void OnRemove(game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer&) const override {}
+        void OnRemove(game::WorldData& /*world_data*/,
+                      game::LogicData& /*logic_data*/,
+                      const WorldCoord& /*world_coords*/,
+                      game::ChunkTileLayer& /*tile_layer*/) const override {}
 
 
-        void PostLoadValidate(const PrototypeManager&) const override {
+        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
             // Must convert to at least 1 game tick
             J_DATA_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
         }
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_RESOURCE_ENTITY_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_RESOURCE_ENTITY_H

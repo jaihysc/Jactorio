@@ -6,8 +6,11 @@
 
 #include "core/crash_handler.h"
 #include "core/filesystem.h"
+#include "core/loop_common.h"
+#include "core/resource_guard.h"
+
 #include "game/logic_loop.h"
-#include "renderer/render_loop.h"
+#include "render/render_loop.h"
 
 void InitializeGame() {
     using namespace jactorio;
@@ -15,10 +18,10 @@ void InitializeGame() {
     // Rendering + logic initialization
     LOG_MESSAGE(info, "1 - Data stage");
 
-    LogicRenderLoopCommon common_data;
+    ThreadedLoopCommon common_data;
 
     std::thread logic_thread    = std::thread(game::InitLogicLoop, std::ref(common_data));
-    std::thread renderer_thread = std::thread(renderer::RenderInit, std::ref(common_data));
+    std::thread renderer_thread = std::thread(render::RenderInit, std::ref(common_data));
 
     logic_thread.join();
     renderer_thread.join();

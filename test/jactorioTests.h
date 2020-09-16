@@ -7,13 +7,18 @@
 #include <fstream>
 
 #include "core/data_type.h"
+
 #include "data/prototype/abstract_proto/transport_line.h"
 #include "data/prototype/assembly_machine.h"
 #include "data/prototype/container_entity.h"
 #include "data/prototype/inserter.h"
 #include "data/prototype/mining_drill.h"
+#include "data/prototype/recipe.h"
 #include "data/prototype/resource_entity.h"
+#include "data/prototype/sprite.h"
 #include "data/prototype_manager.h"
+
+#include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 
 #include <cereal/archives/portable_binary.hpp>
@@ -24,34 +29,30 @@ namespace jactorio
     constexpr double kFloatingAbsErr = 0.000000001;
 
     ///
-    /// \brief Inherit and override what is necessary
+    /// Inherit and override what is necessary
     class TestMockWorldObject : public data::FWorldObject
     {
     public:
         PROTOTYPE_CATEGORY(test);
 
-        void PostLoadValidate(const data::PrototypeManager&) const override {}
+        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {}
 
-        J_NODISCARD data::Sprite* OnRGetSprite(data::Sprite::SetT set) const override {
+        J_NODISCARD data::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
             return nullptr;
         }
 
-        J_NODISCARD data::Sprite::SetT OnRGetSpriteSet(data::Orientation orientation,
-                                                       game::WorldData& world_data,
-                                                       const WorldCoord& world_coords) const override {
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(data::Orientation /*orientation*/,
+                                               game::WorldData& /*world_data*/,
+                                               const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
-        J_NODISCARD data::Sprite::FrameT OnRGetSpriteFrame(const data::UniqueDataBase& unique_data,
-                                                           GameTickT game_tick) const override {
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const data::UniqueDataBase& /*unique_data*/,
+                                                   GameTickT /*game_tick*/) const override {
             return 0;
         }
 
-        bool OnRShowGui(GameWorlds& /*worlds*/,
-                        game::LogicData& /*logic*/,
-                        game::PlayerData& /*player*/,
-                        const data::PrototypeManager& /*data_manager*/,
-                        game::ChunkTileLayer* /*tile_layer*/) const override {
+        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTileLayer* /*tile_layer*/) const override {
             return false;
         }
 
@@ -91,7 +92,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Sets up a multi tile with proto using provided properties
+    /// Sets up a multi tile with proto using provided properties
     /// \tparam SetTopLeftLayer If false, non top left multi tiles will not know the top left layer
     /// \return Top left tile
     template <bool SetTopLeftLayer = true>
@@ -124,7 +125,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Creates a container of size 10 at coordinates
+    /// Creates a container of size 10 at coordinates
     inline game::ChunkTileLayer& TestSetupContainer(game::WorldData& world_data,
                                                     const WorldCoord& world_coords,
                                                     const data::ContainerEntity& container_entity,
@@ -138,7 +139,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Creates an inserter at coordinates
+    /// Creates an inserter at coordinates
     inline game::ChunkTileLayer& TestSetupInserter(game::WorldData& world_data,
                                                    game::LogicData& logic_data,
                                                    const WorldCoord& world_coords,
@@ -155,7 +156,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Registers and creates tile UniqueData for TransportSegment
+    /// Registers and creates tile UniqueData for TransportSegment
     inline void TestRegisterTransportSegment(game::WorldData& world_data,
                                              const WorldCoord& world_coords,
                                              const std::shared_ptr<game::TransportSegment>& segment,
@@ -175,7 +176,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Creates a 2x2 multi tile assembly machine at coordinates
+    /// Creates a 2x2 multi tile assembly machine at coordinates
     /// \return top left layer
     inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::WorldData& world_data,
                                                           const WorldCoord& world_coords,
@@ -202,7 +203,7 @@ namespace jactorio
     }
 
     ///
-    /// \brief Creates a drill in the world, calling OnBuild
+    /// Creates a drill in the world, calling OnBuild
     inline game::ChunkTile& TestSetupDrill(game::WorldData& world_data,
                                            game::LogicData& logic_data,
                                            const WorldCoord& world_coord,
@@ -234,7 +235,7 @@ namespace jactorio
     };
 
     ///
-    /// \brief Sets up and registers a recipe
+    /// Sets up and registers a recipe
     /// 1a + 1b = 1c
     J_NODISCARD inline auto TestSetupRecipe(data::PrototypeManager& proto_manager) {
         TestSetupRecipeReturn rt;
@@ -254,7 +255,7 @@ namespace jactorio
 
 
     ///
-    /// \brief Serializes T and returns deserialized T
+    /// Serializes T and returns deserialized T
     template <typename T>
     J_NODISCARD T TestSerializeDeserialize(const T& object) {
         constexpr auto save_file = "savegame.dat";

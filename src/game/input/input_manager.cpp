@@ -65,7 +65,7 @@ game::KeyInput::CallbackId game::KeyInput::Register(const InputCallback& callbac
 }
 
 void game::KeyInput::Raise() {
-    // if (renderer::imgui_manager::input_captured)
+    // if (render::imgui_manager::input_captured)
     // return;
 
     // active_input is the keys which are held (active)

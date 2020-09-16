@@ -5,14 +5,13 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
-
-#include "data/prototype_manager.h"
 
 namespace jactorio::data
 {
+    class PrototypeManager;
+
     ///
-    /// \brief Parses localization files found in data/__name__/local/<lang>.cfg <br>
+    /// Parses localization files found in data/__name__/local/<lang>.cfg <br>
     ///
     /// Only the currently selected language will be parsed.
     /// Parsed data will be added to data_raw in data_manager
@@ -35,13 +34,13 @@ namespace jactorio::data
 #undef KEY_DEF
 
     ///
-    /// \brief Parses a .cfg file, will throw exceptions on error
+    /// Parses a .cfg file, will throw exceptions on error
     /// \param file_str File contents
     /// \param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
     void LocalParse(PrototypeManager& data_manager, const std::string& file_str, const std::string& directory_prefix);
 
     ///
-    /// \brief Parses a .cfg file, does not throw
+    /// Parses a .cfg file, does not throw
     /// \param file_str File contents
     /// \param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
     /// \return non-zero if error occurred

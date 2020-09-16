@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_PROTOTYPE_PROTOTYPE_TYPE_H
-#define JACTORIO_DATA_PROTOTYPE_PROTOTYPE_TYPE_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_TYPE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_TYPE_H
 #pragma once
 
 #include "core/coordinate_tuple.h"
@@ -11,7 +11,7 @@
 namespace jactorio::data
 {
     ///
-    /// \brief Represents an output location for an entity on 4 orientation
+    /// Represents an output location for an entity on 4 orientation
     struct Tile4Way
     {
         Tile4Way() = default;
@@ -19,6 +19,7 @@ namespace jactorio::data
         Tile4Way(const WorldCoord& up, const WorldCoord& right, const WorldCoord& down, const WorldCoord& left)
             : up(up), right(right), down(down), left(left) {}
 
+        // For Python API
         explicit Tile4Way(std::tuple<std::pair<WorldCoordAxis, WorldCoordAxis>,
                                      std::pair<WorldCoordAxis, WorldCoordAxis>,
                                      std::pair<WorldCoordAxis, WorldCoordAxis>,
@@ -54,4 +55,4 @@ namespace jactorio::data
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_DATA_PROTOTYPE_PROTOTYPE_TYPE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_PROTOTYPE_TYPE_H

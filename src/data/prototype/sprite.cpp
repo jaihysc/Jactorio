@@ -9,8 +9,9 @@
 #include <type_traits>
 #include <utility>
 
+#include "core/convert.h"
+#include "core/coordinate_tuple.h"
 #include "core/filesystem.h"
-#include "core/math.h"
 
 using namespace jactorio;
 
@@ -40,7 +41,7 @@ data::Sprite::Sprite(const Sprite& other)
       spriteBuffer_{other.spriteBuffer_} {
 
     const auto size = core::SafeCast<std::size_t>(other.width_) * other.height_ * other.bytesPerPixel_;
-    spriteBuffer_   = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_))); // stbi uses malloc
+    spriteBuffer_   = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_))); // NOLINT: stbi uses malloc
     for (std::size_t i = 0; i < size; ++i) {
         spriteBuffer_[i] = other.spriteBuffer_[i];
     }
@@ -91,7 +92,7 @@ void data::Sprite::LoadImageFromFile() {
                               4 // 4 desired channels for RGBA
     );
 
-    if (!spriteBuffer_) {
+    if (spriteBuffer_ == nullptr) {
         LOG_MESSAGE_F(error, "Failed to read sprite at: %s", spritePath_.c_str());
 
         std::ostringstream sstr;
@@ -102,7 +103,7 @@ void data::Sprite::LoadImageFromFile() {
 }
 
 
-UvPositionT data::Sprite::GetCoords(SetT set, FrameT frame) const {
+UvPositionT data::Sprite::GetCoords(SpriteSetT set, SpriteFrameT frame) const {
     float width_base  = core::SafeCast<float>(width_) / core::SafeCast<float>(frames);
     float height_base = core::SafeCast<float>(height_) / core::SafeCast<float>(sets);
 
@@ -144,7 +145,7 @@ data::Sprite* data::Sprite::LoadImage(const std::string& image_path) {
     return this;
 }
 
-void data::Sprite::PostLoadValidate(const PrototypeManager&) const {
+void data::Sprite::PostLoadValidate(const PrototypeManager& /*proto_manager*/) const {
     J_DATA_ASSERT(frames > 0, "Frames must be at least 1");
     J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
 }

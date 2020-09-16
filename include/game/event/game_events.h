@@ -7,19 +7,21 @@
 #include <functional>
 #include <vector>
 
+#include "jactorio.h"
+
 #include "game/event/event_base.h"
-#include "renderer/display_window.h"
+#include "render/display_window.h"
 
 namespace jactorio::game
 {
     class LogicTickEvent final : public EventBase
     {
     public:
-        explicit LogicTickEvent(const unsigned short tick) : gameTick(tick) {}
+        explicit LogicTickEvent(const uint16_t tick) : gameTick(tick) {}
 
         ///
         /// 0 - 59
-        unsigned short gameTick;
+        uint16_t gameTick;
 
         EVENT_TYPE(logic_tick)
         EVENT_CATEGORY(in_game)
@@ -28,7 +30,7 @@ namespace jactorio::game
     class RendererTickEvent final : public EventBase
     {
     public:
-        using DisplayWindowContainerT = std::vector<std::reference_wrapper<renderer::DisplayWindow>>;
+        using DisplayWindowContainerT = std::vector<std::reference_wrapper<render::DisplayWindow>>;
 
         explicit RendererTickEvent(const DisplayWindowContainerT& window) : windows(window) {}
 

@@ -4,12 +4,12 @@
 #define JACTORIO_INCLUDE_DATA_PROTOTYPE_FRAMEWORK_FRAMEWORK_BASE_H
 #pragma once
 
-#include <memory>
 #include <string>
+#include <type_traits>
 
 #include "jactorio.h"
 
-#include "core/utility.h"
+#include "core/data_type.h"
 #include "data/cereal/serialize.h"
 #include "data/data_category.h"
 #include "data/data_exception.h"
@@ -75,11 +75,8 @@ namespace jactorio::data
 {
     class PrototypeManager;
 
-    using PrototypeIdT  = uint32_t;
-    using UniqueDataIdT = uint32_t;
-
     ///
-    /// \brief Creates a formatted log message if log level permits
+    /// Creates a formatted log message if log level permits
     template <typename... Args, typename = std::common_type<Args...>>
     void DataAssert(const bool condition, const char* format, Args&&... args) {
         constexpr int max_msg_length = 3000;
@@ -92,7 +89,7 @@ namespace jactorio::data
     }
 
     ///
-    /// \brief Abstract base class for all unique data
+    /// Abstract base class for all unique data
     struct UniqueDataBase
     {
     protected:
@@ -156,11 +153,11 @@ namespace jactorio::data
 
         DataCategory category = DataCategory::none;
         ///
-        /// \brief Category of this Prototype item
+        /// Category of this Prototype item
         virtual DataCategory Category() const = 0;
 
         ///
-        /// \brief Unique per prototype, unique & auto assigned per new prototype added
+        /// Unique per prototype, unique & auto assigned per new prototype added
         /// 0 indicates invalid id
         PrototypeIdT internalId = 0;
 
@@ -169,11 +166,11 @@ namespace jactorio::data
 
 
         ///
-        /// \brief Internal name, MUST BE unique per data_category
+        /// Internal name, MUST BE unique per data_category
         PYTHON_PROP_REF(std::string, name);
 
         ///
-        /// \brief Determines the priority of this prototype used in certain situations
+        /// Determines the priority of this prototype used in certain situations
         /// Automatically assigned incrementally alongside internalId if 0
         /// \remark 0 indicates invalid id
         PYTHON_PROP_REF_I(unsigned int, order, 0);
@@ -202,8 +199,8 @@ namespace jactorio::data
         // Unique data associated with entity
 
         ///
-        /// \brief Copies the unique_data associated with a prototype
-        virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* ptr) const {
+        /// Copies the unique_data associated with a prototype
+        virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* /*ptr*/) const {
             assert(false); // Not implemented
             return nullptr;
         }
@@ -212,16 +209,16 @@ namespace jactorio::data
         // ======================================================================
         // Data Events
         ///
-        /// \brief Called after all prototypes are loaded prior to validation
+        /// Called after all prototypes are loaded prior to validation
         virtual void PostLoad() {}
 
         ///
-        /// \brief Validates properties of the prototype are valid
+        /// Validates properties of the prototype are valid
         /// \exception data::Data_exception If invalid
-        virtual void PostLoadValidate(const PrototypeManager&) const = 0;
+        virtual void PostLoadValidate(const PrototypeManager& proto_manager) const = 0;
 
         ///
-        /// \brief Called after the prototype has been validated
+        /// Called after the prototype has been validated
         virtual void ValidatedPostLoad() {}
 
     protected:

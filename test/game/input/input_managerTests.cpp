@@ -5,7 +5,7 @@
 #include "jactorio.h"
 
 #include "game/input/input_manager.h"
-#include "renderer/gui/imgui_manager.h"
+#include "render/gui/imgui_manager.h"
 
 namespace jactorio::game
 {
@@ -145,12 +145,12 @@ namespace jactorio::game
     // 	input::set_input(GLFW_KEY_V, jactorio::game::inputAction::key_pressed);
     //
     // 	// Block
-    // 	jactorio::renderer::imgui_manager::input_captured = true;
+    // 	jactorio::render::imgui_manager::input_captured = true;
     // 	input::raise();
     // 	EXPECT_EQ(counter, 0);
     //
     // 	// Unblock
-    // 	jactorio::renderer::imgui_manager::input_captured = false;
+    // 	jactorio::render::imgui_manager::input_captured = false;
     // 	input::raise();
     // 	EXPECT_EQ(counter, 1);
     // }

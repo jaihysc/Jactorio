@@ -32,7 +32,7 @@ namespace jactorio::game
         }
 
         ///
-        /// \brief Creates chest with, emits OnNeighborUpdate
+        /// Creates chest with, emits OnNeighborUpdate
         /// \param orientation Orientation to chest from inserter
         /// \param stack_count Amount of items chest starts with
         data::ContainerEntityData* BuildChest(const WorldCoord& coords,
@@ -49,7 +49,7 @@ namespace jactorio::game
                 const auto* neighbor_proto =
                     static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData.Get());
 
-                if (neighbor_proto)
+                if (neighbor_proto != nullptr)
                     neighbor_proto->OnNeighborUpdate(
                         worldData_, logicData_, coords, neighbor_update_coord, orientation);
             }

@@ -3,6 +3,7 @@
 #include "game/input/mouse_selection.h"
 
 #include "data/prototype/abstract_proto/entity.h"
+#include "data/prototype/sprite.h"
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
 
@@ -52,7 +53,7 @@ void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
 
 void game::MouseSelection::DrawOverlay(WorldData& world,
                                        const WorldCoord& coord,
-                                       data::Orientation orientation,
+                                       const data::Orientation orientation,
                                        const data::Entity* selected_entity,
                                        const data::Sprite& cursor_sprite) {
     // Clear last overlay

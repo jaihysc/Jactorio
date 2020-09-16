@@ -23,7 +23,7 @@ namespace jactorio::data
     inline PrototypeManager* active_prototype_manager = nullptr;
 
     ///
-    /// \brief Manages prototype data
+    /// Manages prototype data
     class PrototypeManager
     {
         /// Position 0 reserved to indicate error
@@ -46,13 +46,13 @@ namespace jactorio::data
         // Get
 
         ///
-        /// \brief Gets prototype at specified name, cast to T
+        /// Gets prototype at specified name, cast to T
         /// \return nullptr if the specified prototype does not exist
         template <typename TProto>
         TProto* DataRawGet(const std::string& iname) const noexcept;
 
         ///
-        /// \brief Gets prototype at specified category and name, cast to T
+        /// Gets prototype at specified category and name, cast to T
         /// \return nullptr if the specified prototype does not exist
         ///
         /// Abstract types allowed for Python API
@@ -61,12 +61,12 @@ namespace jactorio::data
 
 
         ///
-        /// \brief Gets pointers to all data of specified data_type
+        /// Gets pointers to all data of specified data_type
         template <typename TProto>
         std::vector<TProto*> DataRawGetAll(DataCategory type) const;
 
         ///
-        /// \brief Gets pointers to all data of specified data_type, sorted by Prototype_base.order
+        /// Gets pointers to all data of specified data_type, sorted by Prototype_base.order
         template <typename TProto>
         std::vector<TProto*> DataRawGetAllSorted(DataCategory type) const;
 
@@ -74,14 +74,14 @@ namespace jactorio::data
         // Add
 
         ///
-        /// \brief Sets the prefix which will be added to all internal names
+        /// Sets the prefix which will be added to all internal names
         /// Provide empty string to disable
         ///
         /// Prefix of "base" : "electric-pole" becomes "__base__/electric-pole"
         void SetDirectoryPrefix(const std::string& name = "");
 
         ///
-        /// \brief Create anonymous prototype TProto
+        /// Create anonymous prototype TProto
         /// \return Created prototype
         template <typename TProto>
         TProto& AddProto() {
@@ -89,7 +89,7 @@ namespace jactorio::data
         }
 
         ///
-        /// \brief Forwards TArgs to create prototype TProto
+        /// Forwards TArgs to create prototype TProto
         /// \return Created prototype
         template <typename TProto, typename... TArgs>
         TProto& AddProto(const std::string& iname, TArgs&&... args);
@@ -98,7 +98,7 @@ namespace jactorio::data
         // Utility
 
         ///
-        /// \brief Searches through all categories for prototype
+        /// Searches through all categories for prototype
         /// \return pointer to prototype, nullptr if not found
         template <typename TProto = FrameworkBase>
         J_NODISCARD TProto* FindProto(const std::string& iname) const noexcept;
@@ -108,7 +108,7 @@ namespace jactorio::data
 
 
         ///
-        /// \brief Loads data and their properties from data/ folder,
+        /// Loads data and their properties from data/ folder,
         /// \remark In normal usage, data access methods can be used only after calling this
         /// \param data_folder_path Do not include a / at the end (Valid usage: dc/xy/data)
         /// \exception DataException Prototype validation failed or Pybind error
@@ -116,7 +116,7 @@ namespace jactorio::data
 
 
         ///
-        /// \brief Frees all pointer data within data_raw, clears data_raw
+        /// Frees all pointer data within data_raw, clears data_raw
         void ClearData();
 
 
@@ -126,11 +126,11 @@ namespace jactorio::data
         // Deserialize
 
         ///
-        /// \brief RelocationTableGet can be used after this is called
+        /// RelocationTableGet can be used after this is called
         void GenerateRelocationTable();
 
         ///
-        /// \brief Fetches prototype at prototype id
+        /// Fetches prototype at prototype id
         template <typename TProto = FrameworkBase>
         J_NODISCARD const TProto& RelocationTableGet(PrototypeIdT prototype_id) const noexcept;
 
@@ -139,7 +139,7 @@ namespace jactorio::data
 
     private:
         ///
-        /// \brief Adds a prototype
+        /// Adds a prototype
         /// \param iname Internal name of prototype
         /// \param prototype Prototype pointer, takes ownership, must be unique for each added
         void DataRawAdd(const std::string& iname, FrameworkBase* prototype);

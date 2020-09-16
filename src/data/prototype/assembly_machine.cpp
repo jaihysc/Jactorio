@@ -2,15 +2,17 @@
 
 #include "data/prototype/assembly_machine.h"
 
+#include "data/prototype/recipe.h"
+#include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
-#include "renderer/gui/gui_menus.h"
+#include "render/gui/gui_menus.h"
 
 using namespace jactorio;
 
 void data::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data,
                                              const PrototypeManager& data_manager,
                                              const Recipe* new_recipe) {
-    if (new_recipe) {
+    if (new_recipe != nullptr) {
         ingredientInv.resize(new_recipe->ingredients.size());
         productInv.resize(1);
 
@@ -77,8 +79,7 @@ void data::AssemblyMachineData::CraftAddProduct() {
 
 // ======================================================================
 
-data::Sprite::FrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                              GameTickT game_tick) const {
+SpriteFrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& unique_data, GameTickT game_tick) const {
     const auto& machine_data = static_cast<const AssemblyMachineData&>(unique_data);
 
     if (!machine_data.deferralEntry.Valid())
@@ -87,12 +88,8 @@ data::Sprite::FrameT data::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBa
     return AllOfSprite(*sprite, game_tick, 1. / 6);
 }
 
-bool data::AssemblyMachine::OnRShowGui(GameWorlds& worlds,
-                                       game::LogicData& logic,
-                                       game::PlayerData& player,
-                                       const PrototypeManager& proto_manager,
-                                       game::ChunkTileLayer* tile_layer) const {
-    renderer::AssemblyMachine({worlds, logic, player, proto_manager, this, tile_layer->GetUniqueData()});
+bool data::AssemblyMachine::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const {
+    render::AssemblyMachine({g_rendr, this, tile_layer->GetUniqueData()});
     return true;
 }
 
@@ -110,7 +107,7 @@ bool data::AssemblyMachine::TryBeginCrafting(game::LogicData& logic_data, Assemb
 }
 
 
-void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData&,
+void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData& /*world_data*/,
                                                game::LogicData& logic_data,
                                                UniqueDataBase* unique_data) const {
     auto* machine_data = static_cast<AssemblyMachineData*>(unique_data);
@@ -121,14 +118,17 @@ void data::AssemblyMachine::OnDeferTimeElapsed(game::WorldData&,
     TryBeginCrafting(logic_data, *machine_data);
 }
 
-void data::AssemblyMachine::OnBuild(
-    game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer& tile_layer, const Orientation) const {
+void data::AssemblyMachine::OnBuild(game::WorldData& /*world_data*/,
+                                    game::LogicData& /*logic_data*/,
+                                    const WorldCoord& /*world_coords*/,
+                                    game::ChunkTileLayer& tile_layer,
+                                    const Orientation /*orientation*/) const {
     tile_layer.MakeUniqueData<AssemblyMachineData>();
 }
 
-void data::AssemblyMachine::OnRemove(game::WorldData&,
+void data::AssemblyMachine::OnRemove(game::WorldData& /*world_data*/,
                                      game::LogicData& logic_data,
-                                     const WorldCoord&,
+                                     const WorldCoord& /*world_coords*/,
                                      game::ChunkTileLayer& tile_layer) const {
     auto& machine_data = *tile_layer.GetUniqueData<AssemblyMachineData>();
 

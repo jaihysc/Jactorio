@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/interface/rotatable.h"
 #include "data/prototype/prototype_type.h"
+#include "data/prototype/sprite.h"
 
 namespace jactorio::data
 {

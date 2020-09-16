@@ -334,7 +334,7 @@ namespace jactorio::game
         data::ContainerEntity proto_; // Any proto is fine
 
         ///
-        /// \brief Checks that multi-tile tile is linked to top left
+        /// Checks that multi-tile tile is linked to top left
         void ExpectTLResolved(const WorldCoord& coord, const TileLayer tile_layer) {
             auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
             ASSERT_NE(top_left, nullptr);
@@ -361,7 +361,9 @@ namespace jactorio::game
         class MockWorldObject : public TestMockWorldObject
         {
         public:
-            void OnDeserialize(WorldData&, const WorldCoord& world_coord, ChunkTileLayer& tile_layer) const override {
+            void OnDeserialize(WorldData& /*world_data*/,
+                               const WorldCoord& world_coord,
+                               ChunkTileLayer& tile_layer) const override {
                 EXPECT_EQ(world_coord.x, 5);
                 EXPECT_EQ(world_coord.y, 6);
                 onDeserializeCalled = true;

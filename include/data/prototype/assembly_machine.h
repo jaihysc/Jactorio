@@ -6,8 +6,9 @@
 
 #include "data/cereal/serialization_type.h"
 #include "data/prototype/abstract_proto/health_entity.h"
+#include "data/prototype/item.h"
 #include "data/prototype/recipe.h"
-#include "data/prototype/type.h"
+#include "game/logic/deferral_timer.h"
 
 namespace jactorio::data
 {
@@ -23,20 +24,20 @@ namespace jactorio::data
         }
 
         ///
-        /// \brief Changes recipe to provided recipe, nullptr for no recipe
+        /// Changes recipe to provided recipe, nullptr for no recipe
         void ChangeRecipe(game::LogicData& logic_data, const PrototypeManager& data_manager, const Recipe* new_recipe);
 
         ///
-        /// \brief Checks if necessary ingredients are present to begin crafting
+        /// Checks if necessary ingredients are present to begin crafting
         /// \return true if recipe crafting has begun
         J_NODISCARD bool CanBeginCrafting() const;
 
         ///
-        /// \brief Deducts items from ingredient inventory equal to amount specified by recipe
+        /// Deducts items from ingredient inventory equal to amount specified by recipe
         void CraftRemoveIngredients();
 
         ///
-        /// \brief Outputs recipe product to product inventory
+        /// Outputs recipe product to product inventory
         void CraftAddProduct();
 
 
@@ -67,20 +68,17 @@ namespace jactorio::data
 
         // ======================================================================
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                     GameTickT game_tick) const override;
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                   GameTickT game_tick) const override;
 
-        bool OnRShowGui(GameWorlds& worlds,
-                        game::LogicData& logic,
-                        game::PlayerData& player,
-                        const PrototypeManager& proto_manager,
-                        game::ChunkTileLayer* tile_layer) const override;
+
+        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
 
 
         // ======================================================================
 
         ///
-        /// \brief Begins crafting if ingredients are met
+        /// Begins crafting if ingredients are met
         /// \return true if crafting has begun
         bool TryBeginCrafting(game::LogicData& logic_data, AssemblyMachineData& data) const;
 
@@ -99,7 +97,7 @@ namespace jactorio::data
                       const WorldCoord& world_coords,
                       game::ChunkTileLayer& tile_layer) const override;
 
-        void PostLoadValidate(const PrototypeManager&) const override {
+        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
             J_DATA_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");
         }
     };

@@ -85,7 +85,7 @@ namespace jactorio::game
         WorldData worldData_;
         LogicData logicData_;
 
-        /// \brief Creates a transport line with orientation
+        /// Creates a transport line with orientation
         data::TransportLineData CreateTransportLine(
             const data::Orientation orientation,
             const TransportSegment::TerminationType ttype = TransportSegment::TerminationType::straight) const {
@@ -297,9 +297,9 @@ namespace jactorio::game
         // ^
         // | <--
 
-        auto right = CreateTransportLine(data::Orientation::right, TransportSegment::TerminationType::straight);
-        auto up    = CreateTransportLine(data::Orientation::up, TransportSegment::TerminationType::bend_right);
-        auto left  = CreateTransportLine(data::Orientation::left, TransportSegment::TerminationType::bend_right);
+        const auto right = CreateTransportLine(data::Orientation::right, TransportSegment::TerminationType::straight);
+        const auto up    = CreateTransportLine(data::Orientation::up, TransportSegment::TerminationType::bend_right);
+        auto left        = CreateTransportLine(data::Orientation::left, TransportSegment::TerminationType::bend_right);
 
         left.lineSegment->targetSegment = up.lineSegment.get();
         up.lineSegment->targetSegment   = right.lineSegment.get();
@@ -344,7 +344,7 @@ namespace jactorio::game
         // Inserters will not insert into assembly machines if it will exceed the current item's stack limit
 
         data::PrototypeManager prototype_manager;
-        auto recipe_pack = TestSetupRecipe(prototype_manager);
+        const auto recipe_pack = TestSetupRecipe(prototype_manager);
 
         data::AssemblyMachineData asm_data;
         asm_data.ingredientInv.resize(2);
@@ -411,8 +411,8 @@ namespace jactorio::game
         /// Item which will be on transport segments from CreateTransportLine
         data::Item lineItem_;
 
-        /// \brief Creates a transport line with  1 item on each side
-        data::TransportLineData CreateTransportLine(const data::Orientation orientation) {
+        /// Creates a transport line with  1 item on each side
+        data::TransportLineData CreateTransportLine(const data::Orientation orientation) const {
 
             const auto segment =
                 std::make_shared<TransportSegment>(orientation, TransportSegment::TerminationType::straight, 2);
@@ -639,7 +639,7 @@ namespace jactorio::game
         line.lineSegmentIndex = 1;
 
 
-        data::Item item;
+        const data::Item item;
 
         left->AppendItem(true, 0.5 + 0.7, item);
         PickupLine(data::Orientation::up, line);

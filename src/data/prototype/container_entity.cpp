@@ -2,20 +2,24 @@
 
 #include "data/prototype/container_entity.h"
 
+#include "data/prototype/sprite.h"
 #include "game/world/world_data.h"
-#include "renderer/gui/gui_menus.h"
+#include "render/gui/gui_menus.h"
 
-void jactorio::data::ContainerEntity::OnBuild(
-    game::WorldData&, game::LogicData&, const WorldCoord&, game::ChunkTileLayer& tile_layer, Orientation) const {
+void jactorio::data::ContainerEntity::OnBuild(game::WorldData& /*world_data*/,
+                                              game::LogicData& /*logic_data*/,
+                                              const WorldCoord& /*world_coords*/,
+                                              game::ChunkTileLayer& tile_layer,
+                                              Orientation /*orientation*/) const {
     tile_layer.MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 
-bool jactorio::data::ContainerEntity::OnRShowGui(GameWorlds& worlds,
-                                                 game::LogicData& logic,
-                                                 game::PlayerData& player,
-                                                 const PrototypeManager& data_manager,
+bool jactorio::data::ContainerEntity::OnRShowGui(const render::GuiRenderer& g_rendr,
                                                  game::ChunkTileLayer* tile_layer) const {
-    renderer::ContainerEntity(
-        {worlds, logic, player, data_manager, this, tile_layer->GetUniqueData<ContainerEntityData>()});
+    render::ContainerEntity({g_rendr, this, tile_layer->GetUniqueData<ContainerEntityData>()});
     return true;
+}
+
+void jactorio::data::ContainerEntity::ValidatedPostLoad() {
+    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 }

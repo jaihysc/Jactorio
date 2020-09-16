@@ -6,6 +6,11 @@
 
 #include "jactorio.h"
 
+#include "data/data_exception.h"
+#include "data/prototype_manager.h"
+
+using namespace jactorio;
+
 struct ParserData
 {
     // Used to store data as its being parsed
@@ -20,7 +25,7 @@ struct ParserData
     bool inRVal = false; // Right of equals sign
 
     ///
-    /// \brief Call this when entering a new line to reset variables and buffers
+    /// Call this when entering a new line to reset variables and buffers
     void ResetVariables() {
         charNumber = 0;
 
@@ -30,29 +35,25 @@ struct ParserData
     }
 
     ///
-    /// \brief Logs parsing error message and throws
+    /// Logs parsing error message and throws
     /// \exception Data_exception Thrown when this function is called
     [[noreturn]] void ParseError(const std::string& message) const {
         std::stringstream str_s;
         str_s << "Localization parse failed " << lineNumber << ":" << charNumber << "\n" << message;
         LOG_MESSAGE_F(error, "%s", str_s.str().c_str());
 
-        throw jactorio::data::DataException(str_s.str().c_str());
+        throw data::DataException(str_s.str().c_str());
     }
 };
 
 
 ///
-/// \brief Helper for parse, handles end of line actions
-void ParseEol(jactorio::data::PrototypeManager& data_manager,
-              ParserData& parser_data,
-              const std::string& directory_prefix) {
-    using namespace jactorio;
-
+/// Helper for parse, handles end of line actions
+void ParseEol(data::PrototypeManager& data_manager, ParserData& parser_data, const std::string& directory_prefix) {
     // R val was not specified or empty
     if (parser_data.inLVal && !parser_data.inRVal)
         parser_data.ParseError("expected '=' to switch to r-value, got newline");
-    else if (parser_data.inRVal && parser_data.currentLineBuffer.empty())
+    if (parser_data.inRVal && parser_data.currentLineBuffer.empty())
         parser_data.ParseError("expected r-value, got newline");
 
     // Have not entered l value yet
@@ -66,7 +67,7 @@ void ParseEol(jactorio::data::PrototypeManager& data_manager,
     str_s << "__" << directory_prefix << "__/" << parser_data.lValue;
 
     auto* prototype = data_manager.FindProto(str_s.str());
-    if (prototype) {
+    if (prototype != nullptr) {
         prototype->SetLocalizedName(parser_data.currentLineBuffer);
         LOG_MESSAGE_F(debug, "Registered local '%s' '%s'", str_s.str().c_str(), parser_data.currentLineBuffer.c_str());
     }
@@ -78,9 +79,9 @@ void ParseEol(jactorio::data::PrototypeManager& data_manager,
     parser_data.lineNumber++;
 }
 
-void jactorio::data::LocalParse(PrototypeManager& data_manager,
-                                const std::string& file_str,
-                                const std::string& directory_prefix) {
+void data::LocalParse(PrototypeManager& data_manager,
+                      const std::string& file_str,
+                      const std::string& directory_prefix) {
     ParserData parser_data{};
 
     for (char c : file_str) {
@@ -133,9 +134,9 @@ void jactorio::data::LocalParse(PrototypeManager& data_manager,
     ParseEol(data_manager, parser_data, directory_prefix);
 }
 
-int jactorio::data::LocalParseNoThrow(PrototypeManager& data_manager,
-                                      const std::string& file_str,
-                                      const std::string& directory_prefix) {
+int data::LocalParseNoThrow(PrototypeManager& data_manager,
+                            const std::string& file_str,
+                            const std::string& directory_prefix) {
     try {
         LocalParse(data_manager, file_str, directory_prefix);
     }

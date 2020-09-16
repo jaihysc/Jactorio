@@ -32,7 +32,7 @@ namespace jactorio::data
         }
 
         ///
-        /// \brief Sets inventory contents of assembly machine to allow crafting
+        /// Sets inventory contents of assembly machine to allow crafting
         void SetupMachineCraftingInv(const Item::StackCount amount = 1) {
             data_.ingredientInv[0] = {item1_, amount};
             data_.ingredientInv[1] = {item2_, amount};

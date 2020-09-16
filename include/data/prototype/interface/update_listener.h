@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_PROTOTYPE_INTERFACE_UPDATE_LISTENER_H
-#define JACTORIO_DATA_PROTOTYPE_INTERFACE_UPDATE_LISTENER_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_UPDATE_LISTENER_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_UPDATE_LISTENER_H
 #pragma once
 
 #include "core/data_type.h"
@@ -31,4 +31,4 @@ namespace jactorio::data
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_DATA_PROTOTYPE_INTERFACE_UPDATE_LISTENER_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_INTERFACE_UPDATE_LISTENER_H

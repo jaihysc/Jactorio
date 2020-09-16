@@ -22,6 +22,7 @@
 #include "data/prototype/mining_drill.h"
 #include "data/prototype/noise_layer.h"
 #include "data/prototype/prototype_type.h"
+#include "data/prototype/recipe.h"
 #include "data/prototype/recipe_category.h"
 #include "data/prototype/recipe_group.h"
 #include "data/prototype/resource_entity.h"
@@ -41,7 +42,7 @@
 
 
 ///
-/// \brief Call from python context, stores traceback in prototype
+/// Call from python context, stores traceback in prototype
 inline void ExtractPythonTraceback(jactorio::data::FrameworkBase& prototype) {
     py::exec("import sys as _sys \n"
              "_stack_frame = _sys._getframe() \n");

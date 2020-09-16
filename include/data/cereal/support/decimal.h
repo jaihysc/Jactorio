@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_CEREAL_SUPPORT_DECIMAL_H
-#define JACTORIO_DATA_CEREAL_SUPPORT_DECIMAL_H
+#ifndef JACTORIO_INCLUDE_DATA_CEREAL_SUPPORT_DECIMAL_H
+#define JACTORIO_INCLUDE_DATA_CEREAL_SUPPORT_DECIMAL_H
 #pragma once
 
 #include "core/data_type.h"
@@ -26,4 +26,4 @@ namespace cereal
     }
 } // namespace cereal
 
-#endif // JACTORIO_DATA_CEREAL_SUPPORT_DECIMAL_H
+#endif // JACTORIO_INCLUDE_DATA_CEREAL_SUPPORT_DECIMAL_H

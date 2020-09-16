@@ -25,7 +25,7 @@ namespace jactorio::data
 namespace jactorio::game
 {
     ///
-    /// \brief Stores all data for a world
+    /// Stores all data for a world
     class WorldData
     {
         using LogicChunkContainerT       = std::vector<Chunk*>;
@@ -37,7 +37,7 @@ namespace jactorio::game
         static ChunkCoordAxis WorldCToChunkC(WorldCoordAxis world_coord);
         static ChunkCoord WorldCToChunkC(const WorldCoord& world_coord);
         ///
-        /// \brief Chunk coord -> World coord at first tile of chunk
+        /// Chunk coord -> World coord at first tile of chunk
         static WorldCoordAxis ChunkCToWorldC(ChunkCoordAxis chunk_coord);
         static WorldCoord ChunkCToWorldC(const ChunkCoord& chunk_coord);
 
@@ -86,32 +86,32 @@ namespace jactorio::game
         }
 
         ///
-        /// \brief Attempts to delete chunk at chunk_x, chunk_y
+        /// Attempts to delete chunk at chunk_x, chunk_y
         void DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
 
         ///
-        /// \brief Erases, frees memory from all stored chunk data + its subsequent contents and logic chunks
+        /// Erases, frees memory from all stored chunk data + its subsequent contents and logic chunks
         void ClearChunkData();
 
 
         ///
-        /// \brief Retrieves a chunk in game world using chunk coordinates
+        /// Retrieves a chunk in game world using chunk coordinates
         /// \return nullptr if no chunk exists
         J_NODISCARD Chunk* GetChunkC(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
 
         ///
-        /// \brief Retrieves a chunk in game world using chunk coordinates
+        /// Retrieves a chunk in game world using chunk coordinates
         /// \return nullptr if no chunk exists
         J_NODISCARD const Chunk* GetChunkC(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) const;
 
 
         ///
-        /// \brief Retrieves a chunk in game world using chunk coordinates
+        /// Retrieves a chunk in game world using chunk coordinates
         /// \return nullptr if no chunk exists
         J_NODISCARD Chunk* GetChunkC(const ChunkCoord& chunk_pair);
 
         ///
-        /// \brief Retrieves a chunk in game world using chunk coordinates
+        /// Retrieves a chunk in game world using chunk coordinates
         /// \return nullptr if no chunk exists
         J_NODISCARD const Chunk* GetChunkC(const ChunkCoord& chunk_pair) const;
 
@@ -140,53 +140,53 @@ namespace jactorio::game
         // ======================================================================
 
         ///
-        /// \brief Gets the tile at the specified world coordinate
+        /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
         J_NODISCARD ChunkTile* GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y);
 
         ///
-        /// \brief Gets the tile at the specified world coordinate
+        /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
         J_NODISCARD const ChunkTile* GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y) const;
 
 
         ///
-        /// \brief Gets the tile at the specified world coordinate
+        /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
         J_NODISCARD ChunkTile* GetTile(const WorldCoord& world_pair);
 
         ///
-        /// \brief Gets the tile at the specified world coordinate
+        /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
         J_NODISCARD const ChunkTile* GetTile(const WorldCoord& world_pair) const;
 
         // ======================================================================
 
         ///
-        /// \brief Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
+        /// Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
         J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, TileLayer layer);
 
         ///
-        /// \brief Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
+        /// Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
         J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, TileLayer layer) const;
 
         ///
-        /// \brief Gets top left tile if is multi tile, otherwise itself if not a multi tile
+        /// Gets top left tile if is multi tile, otherwise itself if not a multi tile
         J_NODISCARD ChunkTile* GetTileTopLeft(WorldCoord world_coord, const ChunkTileLayer& chunk_tile_layer);
 
         ///
-        /// \brief Gets top left tile if is multi tile, otherwise itself if not a multi tile
+        /// Gets top left tile if is multi tile, otherwise itself if not a multi tile
         J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord,
                                                     const ChunkTileLayer& chunk_tile_layer) const;
 
 
         ///
-        /// \brief Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
+        /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
         J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
                                                     const TileLayer& tile_layer) noexcept;
 
         ///
-        /// \brief Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
+        /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
         J_NODISCARD const ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
                                                           const TileLayer& tile_layer) const noexcept;
 
@@ -194,29 +194,29 @@ namespace jactorio::game
         // Logic chunk
 
         ///
-        /// \brief Adds a layer at coordinates to be considered for logic updates
+        /// Adds a layer at coordinates to be considered for logic updates
         void LogicRegister(Chunk::LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
 
         ///
-        /// \brief Removes a layer at coordinates to be considered for logic updates
+        /// Removes a layer at coordinates to be considered for logic updates
         /// w/ custom comparison func to remove
         void LogicRemove(Chunk::LogicGroup group,
                          const WorldCoord& world_pair,
                          const std::function<bool(ChunkTileLayer*)>& pred);
 
         ///
-        /// \brief Removes a layer at coordinates to be considered for logic updates
+        /// Removes a layer at coordinates to be considered for logic updates
         void LogicRemove(Chunk::LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
 
 
         ///
-        /// \brief Adds a chunk to be considered for logic updates, if the logic chunk already exists at Chunk*,
+        /// Adds a chunk to be considered for logic updates, if the logic chunk already exists at Chunk*,
         /// a reference to the existing one will be returned
         /// \param chunk The chunk this logic chunk is associated with
         void LogicAddChunk(Chunk& chunk);
 
         ///
-        /// \brief Returns all the chunks which require logic updates
+        /// Returns all the chunks which require logic updates
         J_NODISCARD LogicChunkContainerT& LogicGetChunks();
 
         // ======================================================================
@@ -231,12 +231,12 @@ namespace jactorio::game
 
 
         ///
-        /// \brief Queues a chunk to be generated at specified position
+        /// Queues a chunk to be generated at specified position
         /// \remark To be called from render thread only
         void QueueChunkGeneration(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) const;
 
         ///
-        /// \brief Takes first in from chunk generation queue and generates chunk
+        /// Takes first in from chunk generation queue and generates chunk
         /// Call once per logic loop tick to generate one chunk only, this keeps performance constant
         /// when generating large amounts of chunks
         void GenChunk(const data::PrototypeManager& data_manager, uint8_t amount = 1);
@@ -245,14 +245,14 @@ namespace jactorio::game
         // ======================================================================
 
         ///
-        /// \brief Forwards args to updateDispatcher.Dispatch itself being world data
+        /// Forwards args to updateDispatcher.Dispatch itself being world data
         template <typename... TArgs>
         auto UpdateDispatch(const WorldCoord& coord, TArgs&&... args) {
             updateDispatcher.Dispatch(*this, coord, std::forward<TArgs>(args)...);
         }
 
         ///
-        /// \brief Forwards args to updateDispatcher.Dispatch itself being world data
+        /// Forwards args to updateDispatcher.Dispatch itself being world data
         template <typename... TArgs>
         auto UpdateDispatch(TArgs&&... args) {
             updateDispatcher.Dispatch(*this, std::forward<TArgs>(args)...);
@@ -260,7 +260,7 @@ namespace jactorio::game
 
 
         ///
-        /// \brief To be used after deserializing
+        /// To be used after deserializing
         /// Steps through all chunks:
         /// Dispatches OnDeserialize(),
         /// Sets the top left tile for all multi tile tiles as its pointer cannot be serialized

@@ -19,7 +19,7 @@ namespace jactorio::game
         playerWorld_.SetPlayerX(32.41);
         playerWorld_.SetPlayerY(16.92);
 
-        auto result = TestSerializeDeserialize(playerWorld_);
+        const auto result = TestSerializeDeserialize(playerWorld_);
 
         EXPECT_EQ(result.GetId(), 32);
         EXPECT_FLOAT_EQ(result.GetPositionX(), 32.41);

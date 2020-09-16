@@ -2,20 +2,22 @@
 
 #include "data/prototype/inserter.h"
 
-#include "renderer/rendering/data_renderer.h"
+#include "data/prototype/sprite.h"
+#include "game/world/world_data.h"
+#include "render/rendering/data_renderer.h"
 
 using namespace jactorio;
 
-void data::Inserter::OnRDrawUniqueData(renderer::RendererLayer& layer,
+void data::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
                                        const SpriteUvCoordsT& uv_coords,
                                        const core::Position2<float>& pixel_offset,
                                        const UniqueDataBase* unique_data) const {
     DrawInserterArm(layer, uv_coords, pixel_offset, *this, *static_cast<const InserterData*>(unique_data));
 }
 
-data::Sprite::SetT data::Inserter::OnRGetSpriteSet(const Orientation orientation,
-                                                   game::WorldData&,
-                                                   const WorldCoord&) const {
+SpriteSetT data::Inserter::OnRGetSpriteSet(const Orientation orientation,
+                                           game::WorldData& /*world_data*/,
+                                           const WorldCoord& /*world_coords*/) const {
     switch (orientation) {
 
     case Orientation::up:
@@ -36,7 +38,7 @@ data::Sprite::SetT data::Inserter::OnRGetSpriteSet(const Orientation orientation
 }
 
 void data::Inserter::OnBuild(game::WorldData& world_data,
-                             game::LogicData&,
+                             game::LogicData& /*logic_data*/,
                              const WorldCoord& world_coords,
                              game::ChunkTileLayer& tile_layer,
                              Orientation orientation) const {
@@ -49,7 +51,7 @@ void data::Inserter::OnBuild(game::WorldData& world_data,
 void data::Inserter::OnTileUpdate(game::WorldData& world_data,
                                   const WorldCoord& emit_coords,
                                   const WorldCoord& receive_coords,
-                                  UpdateType) const {
+                                  UpdateType /*type*/) const {
     auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::TileLayer::entity);
     auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
 
@@ -62,7 +64,7 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
     const auto dropoff_coords = GetDropoffCoord(receive_coords, inserter_data.orientation);
 
     // Neighbor was removed, Uninitialize removed item handler
-    if (!target_data) {
+    if (target_data == nullptr) {
         if (emit_coords == pickup_coords) {
             inserter_data.pickup.Uninitialize();
         }
@@ -90,7 +92,7 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
 }
 
 void data::Inserter::OnRemove(game::WorldData& world_data,
-                              game::LogicData&,
+                              game::LogicData& /*logic_data*/,
                               const WorldCoord& world_coords,
                               game::ChunkTileLayer& tile_layer) const {
     world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords, game::TileLayer::entity);
@@ -108,6 +110,16 @@ void data::Inserter::OnDeserialize(game::WorldData& world_data,
     assert(inserter_data != nullptr);
 
     InitPickupDropoff(world_data, world_coord, inserter_data->orientation);
+}
+
+void data::Inserter::PostLoadValidate(const PrototypeManager& /*proto_manager*/) const {
+    J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
+    J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
+    J_DATA_ASSERT(handSprite != nullptr, "Hand sprite not provided");
+}
+
+void data::Inserter::ValidatedPostLoad() {
+    sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 }
 
 // ======================================================================

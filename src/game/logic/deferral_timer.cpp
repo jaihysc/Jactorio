@@ -25,7 +25,7 @@ void game::DeferralTimer::DeferralUpdate(LogicData& logic_data, WorldData& world
 
 game::DeferralTimer::DeferralEntry game::DeferralTimer::RegisterAtTick(const DeferPrototypeT& deferred,
                                                                        DeferUniqueDataT* unique_data,
-                                                                       GameTickT due_game_tick) {
+                                                                       const GameTickT due_game_tick) {
     assert(due_game_tick > lastGameTick_);
 
     auto& due_tick_callback = callbacks_[due_game_tick];
@@ -36,7 +36,7 @@ game::DeferralTimer::DeferralEntry game::DeferralTimer::RegisterAtTick(const Def
 
 game::DeferralTimer::DeferralEntry game::DeferralTimer::RegisterFromTick(const DeferPrototypeT& deferred,
                                                                          DeferUniqueDataT* unique_data,
-                                                                         GameTickT elapse_game_tick) {
+                                                                         const GameTickT elapse_game_tick) {
 
     assert(elapse_game_tick > 0);
     return RegisterAtTick(deferred, unique_data, lastGameTick_ + elapse_game_tick);

@@ -1,18 +1,19 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_GAME_LOGIC_ITEM_LOGISTICS_H
-#define JACTORIO_GAME_LOGIC_ITEM_LOGISTICS_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_ITEM_LOGISTICS_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_ITEM_LOGISTICS_H
 #pragma once
 
-#include "data/prototype/abstract_proto/transport_line.h"
-#include "data/prototype/assembly_machine.h"
+#include "core/coordinate_tuple.h"
+#include "core/data_type.h"
 #include "data/prototype/item.h"
 #include "data/prototype/type.h"
-#include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
 
 namespace jactorio::game
 {
+    class LogicData;
+    class WorldData;
+
     ///
     /// Initialize: Return false if failed
 #define J_ITEM_HANDLER_COMMON                                                               \
@@ -23,7 +24,7 @@ namespace jactorio::game
     };
 
     ///
-    /// \brief Base class for handling items (pickup / droOff)
+    /// Base class for handling items (pickup / droOff)
     class ItemHandler
     {
     protected:
@@ -54,7 +55,7 @@ namespace jactorio::game
 
 
     ///
-    /// \brief Represents a world location where items can be inserted
+    /// Represents a world location where items can be inserted
     class ItemDropOff : public ItemHandler
     {
     public:
@@ -91,26 +92,26 @@ namespace jactorio::game
     protected:
         // Dropoff functions
 
-        J_NODISCARD bool CanInsertContainerEntity(const DropOffParams& args) const;
-        bool InsertContainerEntity(const DropOffParams& args) const;
+        J_NODISCARD bool CanInsertContainerEntity(const DropOffParams& params) const;
+        bool InsertContainerEntity(const DropOffParams& params) const;
 
-        J_NODISCARD bool CanInsertTransportBelt(const DropOffParams& args) const;
-        bool InsertTransportBelt(const DropOffParams& args) const;
+        J_NODISCARD bool CanInsertTransportBelt(const DropOffParams& params) const;
+        bool InsertTransportBelt(const DropOffParams& params) const;
 
-        J_NODISCARD bool CanInsertAssemblyMachine(const DropOffParams& args) const;
-        bool InsertAssemblyMachine(const DropOffParams& args) const;
+        J_NODISCARD bool CanInsertAssemblyMachine(const DropOffParams& params) const;
+        bool InsertAssemblyMachine(const DropOffParams& params) const;
 
 
         using DropOffFunc    = decltype(&ItemDropOff::InsertContainerEntity);
         using CanDropOffFunc = decltype(&ItemDropOff::CanInsertContainerEntity);
 
-        /// \brief Chosen function for inserting at destination
+        /// Chosen function for inserting at destination
         DropOffFunc dropFunc_       = nullptr;
         CanDropOffFunc canDropFunc_ = nullptr;
     };
 
     ///
-    /// \brief Represents a world location where items can be picked up by inserters
+    /// Represents a world location where items can be picked up by inserters
     class InserterPickup : public ItemHandler
     {
         /// Success, picked up stack
@@ -157,14 +158,14 @@ namespace jactorio::game
         }
 
     protected:
-        J_NODISCARD GetPickupReturn GetPickupContainerEntity(const PickupParams& args) const;
-        PickupReturn PickupContainerEntity(const PickupParams& args) const;
+        J_NODISCARD GetPickupReturn GetPickupContainerEntity(const PickupParams& params) const;
+        PickupReturn PickupContainerEntity(const PickupParams& params) const;
 
-        J_NODISCARD GetPickupReturn GetPickupTransportBelt(const PickupParams& args) const;
-        PickupReturn PickupTransportBelt(const PickupParams& args) const;
+        J_NODISCARD GetPickupReturn GetPickupTransportBelt(const PickupParams& params) const;
+        PickupReturn PickupTransportBelt(const PickupParams& params) const;
 
-        J_NODISCARD GetPickupReturn GetPickupAssemblyMachine(const PickupParams& args) const;
-        PickupReturn PickupAssemblyMachine(const PickupParams& args) const;
+        J_NODISCARD GetPickupReturn GetPickupAssemblyMachine(const PickupParams& params) const;
+        PickupReturn PickupAssemblyMachine(const PickupParams& params) const;
 
         ///
         /// \returns true if at maximum inserter degree
@@ -177,10 +178,10 @@ namespace jactorio::game
         GetPickupFunc getPickupFunc_ = nullptr;
 
     private:
-        static std::pair<bool, data::LineDistT> GetBeltPickupProps(const PickupParams& args);
+        static std::pair<bool, data::LineDistT> GetBeltPickupProps(const PickupParams& params);
     };
 
 #undef J_ITEM_HANDLER_COMMON
 } // namespace jactorio::game
 
-#endif // JACTORIO_GAME_LOGIC_ITEM_LOGISTICS_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_ITEM_LOGISTICS_H

@@ -1,16 +1,20 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_OVERLAY_ELEMENT_H
-#define JACTORIO_INCLUDE_GAME_OVERLAY_ELEMENT_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_OVERLAY_ELEMENT_H
+#define JACTORIO_INCLUDE_GAME_WORLD_OVERLAY_ELEMENT_H
 #pragma once
 
 #include "core/coordinate_tuple.h"
-#include "data/prototype/sprite.h"
+
+namespace jactorio::data
+{
+    class Sprite;
+}
 
 namespace jactorio::game
 {
     ///
-    /// \brief Named values for each z buffer number
+    /// Named values for each z buffer number
     enum class OverlayLayer
     {
         // A separate layer is only needed when it needs to be accessed independently, otherwise join together in single
@@ -24,7 +28,7 @@ namespace jactorio::game
 
 
     ///
-    /// \brief Holds items which do not adhere to the tiles for rendering
+    /// Holds items which do not adhere to the tiles for rendering
     class OverlayElement
     {
         /// z position of first layer
@@ -71,7 +75,7 @@ namespace jactorio::game
 
         const data::Sprite* sprite;
 
-        data::Sprite::SetT spriteSet = 0;
+        SpriteSetT spriteSet = 0;
 
         /// Distance (tiles) from top left of chunk to top left of sprite + z value
         core::Position3<OverlayOffsetAxis> position;
@@ -81,4 +85,4 @@ namespace jactorio::game
     };
 } // namespace jactorio::game
 
-#endif // JACTORIO_INCLUDE_GAME_OVERLAY_ELEMENT_H
+#endif // JACTORIO_INCLUDE_GAME_WORLD_OVERLAY_ELEMENT_H

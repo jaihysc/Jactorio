@@ -1,23 +1,21 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
-#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_TRANSPORT_LINE_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_TRANSPORT_LINE_H
 #pragma once
 
 #include <memory>
 
 #include "core/data_type.h"
 #include "data/prototype/abstract_proto/health_entity.h"
-#include "game/logic/transport_line_controller.h"
 #include "game/logic/transport_segment.h"
-#include "renderer/rendering/renderer.h"
 
 #include <cereal/types/memory.hpp>
 
 namespace jactorio::data
 {
     ///
-    /// \brief TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
+    /// TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
     struct TransportLineData final : HealthEntityData
     {
         explicit TransportLineData(std::shared_ptr<game::TransportSegment> line_segment)
@@ -46,7 +44,7 @@ namespace jactorio::data
         };
 
         ///
-        /// \brief Updates orientation and member set for rendering
+        /// Updates orientation and member set for rendering
         void SetOrientation(LineOrientation orientation) {
             this->orientation = orientation;
             this->set         = static_cast<uint16_t>(orientation);
@@ -85,7 +83,7 @@ namespace jactorio::data
 
 
     ///
-    /// \brief Abstract class for all everything which moves items (belts, underground belts, splitters)
+    /// Abstract class for all everything which moves items (belts, underground belts, splitters)
     class TransportLine : public HealthEntity
     {
     protected:
@@ -96,7 +94,7 @@ namespace jactorio::data
         using LineData4Way = std::array<TransportLineData*, 4>;
 
         ///
-        /// \brief Number of tiles traveled by each item on the belt per tick
+        /// Number of tiles traveled by each item on the belt per tick
         /// \remark For Python API use only
         PYTHON_PROP_I(ProtoFloatT, speedFloat, 0.01);
 
@@ -108,7 +106,7 @@ namespace jactorio::data
         // Data access
 
         ///
-        /// \brief Attempts to retrieve transport line data at world coordinates on tile
+        /// Attempts to retrieve transport line data at world coordinates on tile
         /// \return pointer to data or nullptr if non existent
         J_NODISCARD static TransportLineData* GetLineData(game::WorldData& world_data,
                                                           WorldCoordAxis world_x,
@@ -119,18 +117,18 @@ namespace jactorio::data
                                                                 WorldCoordAxis world_y);
 
         ///
-        /// \brief Gets line data for the 4 neighbors of origin coord
+        /// Gets line data for the 4 neighbors of origin coord
         J_NODISCARD static LineData4Way GetLineData4(game::WorldData& world_data, const WorldCoord& origin_coord);
 
         ///
-        /// \brief Gets transport segment at world coords
+        /// Gets transport segment at world coords
         /// \return nullptr if no segment exists
         static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
                                                                             WorldCoordAxis world_x,
                                                                             WorldCoordAxis world_y);
 
         ///
-        /// \brief Determines line orientation given orientation and neighbors
+        /// Determines line orientation given orientation and neighbors
         static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
                                                                      const LineData4Way& line_data4);
 
@@ -138,17 +136,17 @@ namespace jactorio::data
         // ======================================================================
         // Game events
 
-        void OnRDrawUniqueData(renderer::RendererLayer& layer,
+        void OnRDrawUniqueData(render::RendererLayer& layer,
                                const SpriteUvCoordsT& uv_coords,
                                const core::Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation,
-                                                 game::WorldData& world_data,
-                                                 const WorldCoord& world_coords) const override;
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
+                                               game::WorldData& world_data,
+                                               const WorldCoord& world_coords) const override;
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                     GameTickT game_tick) const override;
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                   GameTickT game_tick) const override;
 
 
         void OnBuild(game::WorldData& world_data,
@@ -175,21 +173,11 @@ namespace jactorio::data
 
         // ======================================================================
         // Data events
-        void PostLoad() override {
-            // Convert floating point speed to fixed precision decimal speed
-            speed = LineDistT(speedFloat);
-        }
 
-        void PostLoadValidate(const PrototypeManager&) const override {
-            J_DATA_ASSERT(speedFloat >= 0.001, "Transport line speed below minimum 0.001");
-            // Cannot exceed item_width because of limitations in the logic
-            J_DATA_ASSERT(speedFloat < 0.25, "Transport line speed equal or above maximum of 0.25");
-        }
-
-        void ValidatedPostLoad() override {
-            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-        }
+        void PostLoad() override;
+        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void ValidatedPostLoad() override;
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ENTITY_TRANSPORT_TRANSPORT_LINE_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ABSTRACT_PROTO_TRANSPORT_LINE_H

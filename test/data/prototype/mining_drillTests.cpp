@@ -328,7 +328,7 @@ namespace jactorio::data
         auto derived    = std::make_unique<MiningDrillData>(Orientation::down);
         derived->health = 4392;
 
-        std::unique_ptr<UniqueDataBase> base = std::move(derived);
+        const std::unique_ptr<UniqueDataBase> base = std::move(derived);
 
         // ======================================================================
 

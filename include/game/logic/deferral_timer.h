@@ -118,26 +118,22 @@ namespace jactorio::game
             PROTOTYPE_CATEGORY(none);
             void PostLoadValidate(const data::PrototypeManager& /*manager*/) const override {}
 
-            data::Sprite* OnRGetSprite(data::Sprite::SetT /*set*/) const override {
+            data::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
                 return nullptr;
             }
 
-            data::Sprite::SetT OnRGetSpriteSet(data::Orientation /*orientation*/,
-                                               WorldData& /*world_data*/,
-                                               const WorldCoord& /*world_coords*/) const override {
+            SpriteSetT OnRGetSpriteSet(data::Orientation /*orientation*/,
+                                       WorldData& /*world_data*/,
+                                       const WorldCoord& /*world_coords*/) const override {
                 return 0;
             }
 
-            data::Sprite::FrameT OnRGetSpriteFrame(const data::UniqueDataBase& /*unique_data*/,
-                                                   GameTickT /*game_tick*/) const override {
+            SpriteFrameT OnRGetSpriteFrame(const data::UniqueDataBase& /*unique_data*/,
+                                           GameTickT /*game_tick*/) const override {
                 return 0;
             }
 
-            bool OnRShowGui(GameWorlds& /*worlds*/,
-                            game::LogicData& /*logic*/,
-                            game::PlayerData& /*player*/,
-                            const data::PrototypeManager& /*data_manager*/,
-                            game::ChunkTileLayer* /*tile_layer*/) const override {
+            bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, ChunkTileLayer* /*tile_layer*/) const override {
                 return false;
             }
 

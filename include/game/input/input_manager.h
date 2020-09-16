@@ -8,7 +8,7 @@
 #include <functional>
 #include <unordered_map>
 
-#include "core/data_type.h"
+#include "core/hashers.h"
 
 namespace jactorio::game
 {
@@ -58,7 +58,7 @@ namespace jactorio::game
 
     public:
         ///
-        /// \brief Sets the state of an input
+        /// Sets the state of an input
         /// Callbacks for the respective inputs are called when CallCallbacks() is called
         static void SetInput(SDL_KeyCode keycode, InputAction action, SDL_Keymod mod = KMOD_NONE);
         static void SetInput(MouseInput mouse, InputAction action, SDL_Keymod mod = KMOD_NONE);
@@ -83,7 +83,7 @@ namespace jactorio::game
 
     public:
         ///
-        /// \brief Registers a keyboard input callback which will be called when the specified input is activated
+        /// Registers a keyboard input callback which will be called when the specified input is activated
         /// \return id of the registered callback, 0 Indicates error
         CallbackId Register(const InputCallback& callback,
                             SDL_KeyCode key,
@@ -91,7 +91,7 @@ namespace jactorio::game
                             SDL_Keymod mods = KMOD_NONE);
 
         ///
-        /// \brief Registers a mouse input callback which will be called when the specified input is activated
+        /// Registers a mouse input callback which will be called when the specified input is activated
         /// \return id of the registered callback, 0 Indicates error
         CallbackId Register(const InputCallback& callback,
                             MouseInput button,
@@ -100,16 +100,16 @@ namespace jactorio::game
 
 
         ///
-        /// \brief Calls registered callbacks based on the input set with set_input(...)
+        /// Calls registered callbacks based on the input set with set_input(...)
         void Raise();
 
 
         ///
-        /// \brief Removes specified callback at callback_id
+        /// Removes specified callback at callback_id
         void Unsubscribe(CallbackId callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods = KMOD_NONE);
 
         ///
-        /// \brief Deletes all callback data
+        /// Deletes all callback data
         void ClearData();
 
         ///

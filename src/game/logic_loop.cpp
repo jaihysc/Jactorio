@@ -8,17 +8,26 @@
 
 #include "jactorio.h"
 
+#include "core/execution_timer.h"
 #include "core/filesystem.h"
+#include "core/loop_common.h"
+#include "core/resource_guard.h"
+
 #include "data/prototype/inserter.h"
-#include "renderer/gui/gui_menus.h"
-#include "renderer/gui/imgui_manager.h"
-#include "renderer/render_loop.h"
+
+#include "game/event/game_events.h"
+#include "game/logic/transport_line_controller.h"
+
+#include "render/gui/gui_menus.h"
+#include "render/gui/imgui_manager.h"
+#include "render/render_loop.h"
+#include "render/rendering/renderer.h"
 
 using namespace jactorio;
 
 constexpr float kMoveSpeed = 0.8f;
 
-void LogicLoop(LogicRenderLoopCommon& common) {
+void LogicLoop(ThreadedLoopCommon& common) {
     // Runtime
 
     auto& worlds = common.gameDataGlobal.worlds;
@@ -54,12 +63,12 @@ void LogicLoop(LogicRenderLoopCommon& common) {
                 {
                     EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-                    game::TransportLineLogicUpdate(world);
+                    TransportLineLogicUpdate(world);
                 }
                 {
                     EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");
 
-                    game::InserterLogicUpdate(world, logic);
+                    InserterLogicUpdate(world, logic);
                 }
             }
 
@@ -68,7 +77,7 @@ void LogicLoop(LogicRenderLoopCommon& common) {
             std::lock_guard<std::mutex> world_guard{common.worldDataMutex};
 
             // Retrieved mvp matrix may be invalid on startup
-            player.world.CalculateMouseSelectedTile(renderer::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
+            player.world.CalculateMouseSelectedTile(render::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
             input.mouse.DrawCursorOverlay(worlds, player, proto);
 
 
@@ -92,7 +101,7 @@ void LogicLoop(LogicRenderLoopCommon& common) {
 }
 
 
-void game::InitLogicLoop(LogicRenderLoopCommon& common) {
+void game::InitLogicLoop(ThreadedLoopCommon& common) {
     core::CapturingGuard<void()> loop_termination_guard([&]() {
         common.renderThreadShouldExit = true;
         common.logicThreadShouldExit  = true;
@@ -144,7 +153,7 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
 
     // Menus
     common.gameDataLocal.input.key.Register(
-        [&]() { SetVisible(renderer::Menu::DebugMenu, !IsVisible(renderer::Menu::DebugMenu)); },
+        [&]() { SetVisible(render::Menu::DebugMenu, !IsVisible(render::Menu::DebugMenu)); },
         SDLK_BACKQUOTE,
         InputAction::key_up);
 
@@ -154,7 +163,7 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
             if (common.gameDataGlobal.player.placement.GetActivatedLayer() != nullptr)
                 common.gameDataGlobal.player.placement.SetActivatedLayer(nullptr);
             else
-                SetVisible(renderer::Menu::CharacterMenu, !IsVisible(renderer::Menu::CharacterMenu));
+                SetVisible(render::Menu::CharacterMenu, !IsVisible(render::Menu::CharacterMenu));
         },
         SDLK_TAB,
         InputAction::key_up);
@@ -176,7 +185,7 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
     // Place entities
     common.gameDataLocal.input.key.Register(
         [&]() {
-            if (renderer::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
+            if (render::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
                 return;
 
             const auto tile_selected = common.gameDataGlobal.player.world.GetMouseTileCoords();
@@ -191,7 +200,7 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
 
     common.gameDataLocal.input.key.Register(
         [&]() {
-            if (renderer::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
+            if (render::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
                 return;
 
             auto& player = common.gameDataGlobal.player;
@@ -205,7 +214,7 @@ void game::InitLogicLoop(LogicRenderLoopCommon& common) {
     // Remove entities or mine resource
     common.gameDataLocal.input.key.Register(
         [&]() {
-            if (renderer::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
+            if (render::input_mouse_captured || !common.gameDataGlobal.player.world.MouseSelectedTileInRange())
                 return;
 
             const auto tile_selected = common.gameDataGlobal.player.world.GetMouseTileCoords();

@@ -2,6 +2,8 @@
 
 #include "core/execution_timer.h"
 
+#include "core/convert.h"
+
 std::map<std::string, double> jactorio::core::ExecutionTimer::measuredTimes = std::map<std::string, double>();
 
 jactorio::core::ExecutionTimer::ExecutionTimer(const std::string& name) {
@@ -14,14 +16,13 @@ jactorio::core::ExecutionTimer::~ExecutionTimer() {
 }
 
 void jactorio::core::ExecutionTimer::Stop() const noexcept {
-    const long long start =
-        std::chrono::time_point_cast<std::chrono::microseconds>(startTime_).time_since_epoch().count();
+    const auto start = std::chrono::time_point_cast<std::chrono::microseconds>(startTime_).time_since_epoch().count();
 
     const auto end_time = std::chrono::high_resolution_clock::now();
-    const long long end = std::chrono::time_point_cast<std::chrono::microseconds>(end_time).time_since_epoch().count();
+    const auto end      = std::chrono::time_point_cast<std::chrono::microseconds>(end_time).time_since_epoch().count();
 
     // Microseconds conversion to milliseconds
-    const double milliseconds = (end - start) * 0.001f;
+    const double milliseconds = core::SafeCast<double>(end - start) * 0.001;
 
     std::lock_guard guard(measuredTimesMutex_);
     try {

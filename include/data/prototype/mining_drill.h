@@ -1,12 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
-#define JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_MINING_DRILL_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_MINING_DRILL_H
 #pragma once
 
 #include "data/prototype/abstract_proto/health_entity.h"
 #include "data/prototype/prototype_type.h"
-#include "data/prototype/resource_entity.h"
+#include "game/logic/deferral_timer.h"
 #include "game/logic/item_logistics.h"
 
 namespace jactorio::data
@@ -61,7 +61,7 @@ namespace jactorio::data
 
 
     ///
-    /// \brief Drill, Mines resource entities
+    /// Drill, Mines resource entities
     class MiningDrill final : public HealthEntity
     {
         /*
@@ -85,26 +85,22 @@ namespace jactorio::data
         // ======================================================================
         // Rendering
 
-        bool OnRShowGui(GameWorlds& worlds,
-                        game::LogicData& logic,
-                        game::PlayerData& player,
-                        const PrototypeManager& data_manager,
-                        game::ChunkTileLayer* tile_layer) const override;
+        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
 
 
-        J_NODISCARD Sprite* OnRGetSprite(Sprite::SetT set) const override;
+        J_NODISCARD Sprite* OnRGetSprite(SpriteSetT set) const override;
 
-        J_NODISCARD Sprite::SetT OnRGetSpriteSet(Orientation orientation,
-                                                 game::WorldData& world_data,
-                                                 const WorldCoord& world_coords) const override;
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
+                                               game::WorldData& world_data,
+                                               const WorldCoord& world_coords) const override;
 
-        J_NODISCARD Sprite::FrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
-                                                     GameTickT game_tick) const override;
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
+                                                   GameTickT game_tick) const override;
 
         // ======================================================================
         // Logic
         ///
-        /// \brief Finds the FIRST output item of the mining drill, beginning from top left
+        /// Finds the FIRST output item of the mining drill, beginning from top left
         J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, WorldCoord world_pair) const;
 
         void OnDeferTimeElapsed(game::WorldData& world_data,
@@ -112,7 +108,7 @@ namespace jactorio::data
                                 UniqueDataBase* unique_data) const override;
 
         ///
-        /// \brief Ensures that the mining radius covers a resource entity
+        /// Ensures that the mining radius covers a resource entity
         J_NODISCARD bool OnCanBuild(const game::WorldData& world_data, const WorldCoord& world_coords) const override;
 
         void OnBuild(game::WorldData& world_data,
@@ -137,19 +133,8 @@ namespace jactorio::data
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const PrototypeManager&) const override {
-            J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");
-            J_DATA_ASSERT(spriteE != nullptr, "East sprite not provided");
-            J_DATA_ASSERT(spriteS != nullptr, "South sprite not provided");
-            J_DATA_ASSERT(spriteW != nullptr, "West sprite not provided");
-        }
-
-        void ValidatedPostLoad() override {
-            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-            spriteE->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-            spriteS->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-            spriteW->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
-        }
+        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void ValidatedPostLoad() override;
 
     private:
         static bool InitializeOutput(game::WorldData& world_data,
@@ -162,25 +147,25 @@ namespace jactorio::data
         J_NODISCARD int GetMiningAreaY() const;
 
         ///
-        /// \brief Sets up drill data such that resources can be deducted from the ground
+        /// Sets up drill data such that resources can be deducted from the ground
         /// \return true if a resource was found, otherwise false
         bool SetupResourceDeduction(const game::WorldData& world_data, MiningDrillData& drill_data) const;
 
         ///
-        /// \brief Removes resource using resourceCoord + resourceOffset in drill_data, searches for another resource if
+        /// Removes resource using resourceCoord + resourceOffset in drill_data, searches for another resource if
         /// depleted \return true if successful
         bool DeductResource(game::WorldData& world_data,
                             MiningDrillData& drill_data,
-                            ResourceEntityData::ResourceCount amount = 1) const;
+                            ResourceEntityResourceCount amount = 1) const;
 
         ///
-        /// \brief Sets up deferred callback for when it has mined a resource
+        /// Sets up deferred callback for when it has mined a resource
         void RegisterMineCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
 
         ///
-        /// \brief Sets up deferred callback for when it has mined a resource, but failed to output
+        /// Sets up deferred callback for when it has mined a resource, but failed to output
         void RegisterOutputCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
     };
 } // namespace jactorio::data
 
-#endif // JACTORIO_DATA_PROTOTYPE_ENTITY_MINING_DRILL_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_MINING_DRILL_H

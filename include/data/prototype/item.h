@@ -1,12 +1,11 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H
-#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H
+#ifndef JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_H
+#define JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_H
 #pragma once
 
 #include "data/cereal/serialization_type.h"
 #include "data/prototype/abstract_proto/item_base.h"
-#include "data/prototype/sprite.h"
 
 #include <cereal/types/vector.hpp>
 
@@ -28,7 +27,7 @@ namespace jactorio::data
         using Inventory  = std::vector<ItemStack>;
 
     private:
-        static constexpr StackCount kDefaultStackSize_ = 50;
+        static constexpr StackCount kDefaultStackSize = 50;
 
     public:
         // Hard coded item inames
@@ -38,22 +37,20 @@ namespace jactorio::data
 
         PROTOTYPE_CATEGORY(item);
 
-        Item() : stackSize(kDefaultStackSize_) {}
+        Item() : stackSize(kDefaultStackSize) {}
 
-        explicit Item(Sprite* sprite) : ItemBase(sprite), stackSize(kDefaultStackSize_) {}
+        explicit Item(Sprite* sprite) : ItemBase(sprite), stackSize(kDefaultStackSize) {}
 
         /// If this item belongs to an entity - otherwise nullptr
         Entity* entityPrototype = nullptr;
 
 
         ///
-        /// \brief Number of items which can be together
+        /// Number of items which can be together
         PYTHON_PROP_REF(StackCount, stackSize);
 
 
-        void ValidatedPostLoad() override {
-            sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
-        }
+        void ValidatedPostLoad() override;
     };
 
     struct ItemStack
@@ -71,4 +68,4 @@ namespace jactorio::data
 
 } // namespace jactorio::data
 
-#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_ITEM_H
+#endif // JACTORIO_INCLUDE_DATA_PROTOTYPE_ITEM_H
