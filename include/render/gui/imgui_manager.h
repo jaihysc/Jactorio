@@ -4,8 +4,6 @@
 #define JACTORIO_INCLUDE_RENDER_GUI_IMGUI_MANAGER_H
 #pragma once
 
-#include "jactorio.h"
-
 #include "core/data_type.h"
 
 namespace jactorio
@@ -40,9 +38,11 @@ namespace jactorio::render
     /// Initializes the spritemap for rendering the character menus <br>
     /// \remark Requires Sprite::sprite_group::gui to be initialized
     void SetupCharacterData(RendererSprites& renderer_sprites);
-    J_NODISCARD MenuData GetMenuData();
 
     void Setup(const DisplayWindow& display_window);
+
+    void ImguiBeginFrame(const DisplayWindow& display_window);
+    void ImguiRenderFrame();
 
     void ImguiDraw(const DisplayWindow& display_window,
                    GameWorlds& worlds,

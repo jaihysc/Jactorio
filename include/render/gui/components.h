@@ -58,6 +58,23 @@ namespace jactorio::render
         ImGuiWindowFlags flags_ = kDefaultFlags;
     };
 
+
+    ///
+    /// Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
+    class GuiTitle
+    {
+        using CallbackT = std::function<void()>;
+
+    public:
+        /// \param callback Called after drawing title
+        void Begin(
+            const std::string& title, const CallbackT& callback = []() {}) const;
+
+        float topPadding    = kGuiStyleFramePaddingY;
+        float bottomPadding = kGuiStyleFramePaddingY;
+    };
+
+
     class GuiItemSlots : public GuiComponentBase
     {
         using BeginCallbackT    = std::function<void(std::size_t slot_index)>;
@@ -107,29 +124,6 @@ namespace jactorio::render
         void DrawBackingButton() const;
 
 
-        const GuiRenderer* guiRenderer_;
-    };
-
-    ///
-    /// Emulates the ImGui title bar, but allows for drawing additional widgets other than text with the callback
-    class GuiTitle : public GuiComponentBase
-    {
-        using CallbackT = std::function<void()>;
-
-        friend GuiRenderer;
-
-    protected:
-        explicit GuiTitle(const GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
-
-    public:
-        /// \param callback Called after drawing title
-        void Begin(
-            const std::string& title, const CallbackT& callback = []() {}) const;
-
-        float topPadding    = kGuiStyleFramePaddingY;
-        float bottomPadding = kGuiStyleFramePaddingY;
-
-    private:
         const GuiRenderer* guiRenderer_;
     };
 

@@ -211,7 +211,7 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
         break;
 
     case SDL_QUIT:
-        common.renderThreadShouldExit = true;
+        common.gameState = ThreadedLoopCommon::GameState::quit;
         break;
 
         // Keyboard events

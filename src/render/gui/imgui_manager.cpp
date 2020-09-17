@@ -35,11 +35,6 @@ void render::SetupCharacterData(RendererSprites& renderer_sprites) {
     tex_id           = renderer_sprites.GetTexture(data::Sprite::SpriteGroup::gui)->GetId();
 }
 
-render::MenuData render::GetMenuData() {
-    return {*sprite_positions, tex_id};
-}
-
-
 void render::Setup(const DisplayWindow& display_window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -122,6 +117,17 @@ void render::Setup(const DisplayWindow& display_window) {
     LOG_MESSAGE(info, "Imgui initialized");
 }
 
+void render::ImguiBeginFrame(const DisplayWindow& display_window) {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
+    ImGui::NewFrame();
+}
+
+void render::ImguiRenderFrame() {
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
 void DrawMenu(render::Menu menu, const render::GuiRenderer& g_rendr, data::UniqueDataBase* unique_data = nullptr) {
     auto& gui_menu = render::menus[static_cast<int>(menu)];
 
@@ -138,10 +144,7 @@ void render::ImguiDraw(const DisplayWindow& display_window,
                        game::EventData& /*event*/) {
     EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
-    ImGui::NewFrame();
+    ImguiBeginFrame(display_window);
 
     // Has imgui handled a mouse or keyboard event?
     ImGuiIO& io             = ImGui::GetIO();
@@ -154,7 +157,7 @@ void render::ImguiDraw(const DisplayWindow& display_window,
     // ImPushFont(font);
     // ImPopFont();
 
-    auto menu_data = GetMenuData();
+    MenuData menu_data = {*sprite_positions, tex_id};
     const GuiRenderer g_rendr{worlds, logic, player, proto_manager, menu_data};
 
 
@@ -183,9 +186,7 @@ void render::ImguiDraw(const DisplayWindow& display_window,
     CraftingQueue(g_rendr);
     PickupProgressbar(g_rendr);
 
-    // Render
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    ImguiRenderFrame();
 }
 
 void render::ImguiTerminate() {

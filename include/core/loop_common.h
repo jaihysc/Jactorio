@@ -14,14 +14,22 @@ namespace jactorio
     /// Used between threaded loops
     struct ThreadedLoopCommon
     {
+        enum class GameState
+        {
+            main_menu,
+            in_world,
+            quit
+        };
+
         std::mutex playerDataMutex;
         std::mutex worldDataMutex;
 
         game::GameDataLocal gameDataLocal;
         game::GameDataGlobal gameDataGlobal;
 
+        GameState gameState = GameState::main_menu;
+
         bool logicThreadShouldExit             = false;
-        bool renderThreadShouldExit            = false;
         volatile bool prototypeLoadingComplete = false;
     };
 } // namespace jactorio

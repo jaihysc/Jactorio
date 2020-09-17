@@ -102,11 +102,6 @@ void LogicLoop(ThreadedLoopCommon& common) {
 
 
 void game::InitLogicLoop(ThreadedLoopCommon& common) {
-    core::CapturingGuard<void()> loop_termination_guard([&]() {
-        common.renderThreadShouldExit = true;
-        common.logicThreadShouldExit  = true;
-    });
-
     // Initialize game data
     data::active_prototype_manager   = &common.gameDataLocal.prototype;
     data::active_unique_data_manager = &common.gameDataLocal.unique;

@@ -19,6 +19,7 @@
 #include "game/event/game_events.h"
 
 #include "render/gui/imgui_manager.h"
+#include "render/gui/main_menu.h"
 #include "render/opengl/shader.h"
 #include "render/rendering/renderer.h"
 #include "render/rendering/spritemap_generator.h"
@@ -54,14 +55,76 @@ render::Renderer* render::GetBaseRenderer() {
 }
 
 
-void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_window) {
-    LOG_MESSAGE(info, "2 - Runtime stage");
+///
+/// Waits until next frame time, draws frame
+void TimedDrawFrame(render::DisplayWindow& display_window, std::chrono::steady_clock::time_point& next_frame) {
+    // Sleep until the next fixed update interval
+    const auto time_end = std::chrono::steady_clock::now();
+    while (time_end > next_frame) {
+        next_frame += std::chrono::nanoseconds(16666666);
+    }
+    std::this_thread::sleep_until(next_frame);
+
+    SDL_GL_SwapWindow(display_window.GetWindow());
+
+    render::Renderer::GlClear();
+}
+
+///
+/// Retrieves and handles sdl events
+void PollEvents(ThreadedLoopCommon& common, render::DisplayWindow& display_window, SDL_Event& e) {
+    while (SDL_PollEvent(&e)) {
+        ImGui_ImplSDL2_ProcessEvent(&e);
+        display_window.HandleSdlEvent(common, e);
+    }
+}
+
+
+void RenderMainMenuLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_window) {
+    constexpr auto main_menu_game_state = ThreadedLoopCommon::GameState::main_menu;
+
+    if (common.gameState != main_menu_game_state)
+        return;
+
+
+    LOG_MESSAGE(info, "2 - Main menu");
+
+    auto next_frame = std::chrono::steady_clock::now();
+
+    SDL_Event e;
+
+    while (common.gameState == main_menu_game_state) {
+        common.gameDataLocal.event.Raise<game::RendererTickEvent>(
+            game::EventType::renderer_tick, game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
+
+        render::ImguiBeginFrame(display_window);
+
+        render::MainMenu(common);
+
+        render::ImguiRenderFrame();
+
+        // ======================================================================
+        // ======================================================================
+
+        TimedDrawFrame(display_window, next_frame);
+        PollEvents(common, display_window, e);
+    }
+}
+
+void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_window) {
+    constexpr auto world_render_game_state = ThreadedLoopCommon::GameState::in_world;
+
+    if (common.gameState != world_render_game_state)
+        return;
+
+
+    LOG_MESSAGE(info, "3 - Runtime stage");
 
     auto next_frame = std::chrono::steady_clock::now(); // For zeroing the time
 
     SDL_Event e;
 
-    while (!common.renderThreadShouldExit) {
+    while (common.gameState == world_render_game_state) {
         EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
         auto& player_data  = common.gameDataGlobal.player;
@@ -76,7 +139,6 @@ void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_wi
                 game::EventType::renderer_tick,
                 game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
 
-            render::Renderer::GlClear();
             std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
             // MVP Matrices updated in here
@@ -98,27 +160,20 @@ void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_wi
         // ======================================================================
         // ======================================================================
 
-        // Sleep until the next fixed update interval
-        auto time_end = std::chrono::steady_clock::now();
-        while (time_end > next_frame) {
-            next_frame += std::chrono::nanoseconds(16666666);
-        }
-        std::this_thread::sleep_until(next_frame);
+        TimedDrawFrame(display_window, next_frame);
+        PollEvents(common, display_window, e);
+    }
+}
 
-        SDL_GL_SwapWindow(display_window.GetWindow());
-
-        while (SDL_PollEvent(&e)) {
-            ImGui_ImplSDL2_ProcessEvent(&e);
-            display_window.HandleSdlEvent(common, e);
-        }
+void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_window) {
+    while (common.gameState != ThreadedLoopCommon::GameState::quit) {
+        RenderMainMenuLoop(common, display_window);
+        RenderWorldLoop(common, display_window);
     }
 }
 
 void render::RenderInit(ThreadedLoopCommon& common) {
-    core::CapturingGuard<void()> loop_termination_guard([&]() {
-        common.renderThreadShouldExit = true;
-        common.logicThreadShouldExit  = true;
-    });
+    core::CapturingGuard<void()> loop_termination_guard([&]() { common.logicThreadShouldExit = true; });
 
     // Init window
     DisplayWindow display_window{};
