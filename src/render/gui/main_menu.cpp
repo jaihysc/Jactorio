@@ -11,17 +11,17 @@
 
 using namespace jactorio;
 
-static float GetMainMenuWidth() {
+J_NODISCARD static float GetMainMenuWidth() {
     constexpr auto min_width = 150;
 
-    const auto calculated_width = core::SafeCast<float>(render::Renderer::GetWindowWidth()) / 4.f;
+    const auto calculated_width = core::SafeCast<float>(render::Renderer::GetWindowWidth()) / 3.f;
     if (calculated_width < min_width)
         return min_width;
 
     return calculated_width;
 }
 
-static float GetMainMenuHeight() {
+J_NODISCARD static float GetMainMenuHeight() {
     constexpr auto min_height = 200;
 
     const auto calculated_height = core::SafeCast<float>(render::Renderer::GetWindowHeight()) / 2.f;
@@ -31,13 +31,105 @@ static float GetMainMenuHeight() {
     return calculated_height;
 }
 
+J_NODISCARD static float GetButtonWidth() {
+    return GetMainMenuWidth() - render::GetTotalWindowPaddingX();
+}
 
-J_NODISCARD static bool MenuButton(const char* label) {
-    constexpr auto button_height = 50;
-    return ImGui::Button(label, {GetMainMenuWidth() - render::GetTotalWindowPaddingX(), button_height});
+J_NODISCARD static float GetButtonHeight() {
+    return 50;
+}
+
+J_NODISCARD static float GetButtonMiniWidth() {
+    return GetButtonWidth() / 4;
+}
+
+J_NODISCARD static float GetButtonMiniHeight() {
+    return GetButtonHeight() / 2;
+}
+
+static enum class MenuMenuWindow { main, new_game } current_menu;
+
+
+///
+/// \param width If 0, uses default
+/// \param height If 0, uses default
+J_NODISCARD static bool MenuButton(const char* label, float width = 0, float height = 0) {
+    if (width == 0) {
+        width = GetButtonWidth();
+    }
+
+    if (height == 0) {
+        height = GetButtonHeight();
+    }
+
+    return ImGui::Button(label, {width, height});
+}
+
+J_NODISCARD static bool MenuButtonMini(const char* label) {
+    return MenuButton(label, GetButtonMiniWidth(), GetButtonMiniHeight());
+}
+
+///
+/// Menu button for heading back to previous menu
+static bool MenuBackButton(const MenuMenuWindow new_menu) {
+    if (MenuButtonMini("Back")) {
+        current_menu = new_menu;
+        return true;
+    }
+
+    return false;
+}
+
+
+///
+/// \param button_gap Additional gap of that would have fit provided button count
+static void SameLineMenuButtonMini(const unsigned button_gap = 0) {
+    ImGui::SameLine();
+
+    const auto previous_button_end_x = ImGui::GetCursorPosX() - render::GetTotalWindowItemSpacingX(1);
+    ImGui::SetCursorPosX(previous_button_end_x + GetButtonMiniWidth() * core::SafeCast<float>(button_gap));
+}
+
+// ======================================================================
+
+
+static void NewGameMenu(ThreadedLoopCommon& common) {
+    const render::GuiMenu menu;
+    render::SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    menu.Begin("_main_menu");
+
+    const render::GuiTitle title;
+    title.Begin("New game");
+
+    // Get set seed
+    auto seed = common.gameDataGlobal.worlds[0].GetWorldGeneratorSeed(); // Should be same for all worlds
+    ImGui::InputInt("Seed", &seed);
+
+    for (auto& world : common.gameDataGlobal.worlds) {
+        world.SetWorldGeneratorSeed(seed);
+    }
+
+    MenuBackButton(MenuMenuWindow::main);
+    SameLineMenuButtonMini(2);
+
+    if (MenuButtonMini("Start")) {
+        common.gameState = ThreadedLoopCommon::GameState::in_world;
+    }
 }
 
 void render::MainMenu(ThreadedLoopCommon& common) {
+    switch (current_menu) {
+    case MenuMenuWindow::main:
+        break;
+    case MenuMenuWindow::new_game:
+        NewGameMenu(common);
+        return;
+
+    default:
+        assert(false);
+        break;
+    }
+
     const GuiMenu menu;
     SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
     menu.Begin("_main_menu");
@@ -45,14 +137,18 @@ void render::MainMenu(ThreadedLoopCommon& common) {
     const GuiTitle title;
     title.Begin("Jactorio | " JACTORIO_VERSION);
 
-    if constexpr (JACTORIO_DEBUG_BUILD) {
-        ImGui::Text("NOTE: Debug build");
+#ifdef JACTORIO_DEBUG_BUILD
+    ImGui::Text("NOTE: Debug build");
+
+    if (MenuButton("Debug start game")) {
+        common.gameState = ThreadedLoopCommon::GameState::in_world;
     }
+#endif
 
     // ======================================================================
 
     if (MenuButton("New game")) {
-        common.gameState = ThreadedLoopCommon::GameState::in_world;
+        current_menu = MenuMenuWindow::new_game;
     }
 
     if (MenuButton("Load game")) {
