@@ -5,6 +5,7 @@
 #include "jactorio.h"
 
 #include "core/loop_common.h"
+#include "data/cereal/serialize.h"
 #include "render/gui/components.h"
 #include "render/gui/gui_layout.h"
 #include "render/rendering/renderer.h"
@@ -47,7 +48,7 @@ J_NODISCARD static float GetButtonMiniHeight() {
     return GetButtonHeight() / 2;
 }
 
-static enum class MenuMenuWindow { main, new_game } current_menu;
+static enum class MenuMenuWindow { main, new_game, load_game } current_menu;
 
 
 ///
@@ -96,7 +97,7 @@ static void SameLineMenuButtonMini(const unsigned button_gap = 0) {
 static void NewGameMenu(ThreadedLoopCommon& common) {
     const render::GuiMenu menu;
     render::SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
-    menu.Begin("_main_menu");
+    menu.Begin("_new_game_menu");
 
     const render::GuiTitle title;
     title.Begin("New game");
@@ -117,6 +118,30 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     }
 }
 
+void render::SavegameBrowserMenu(ThreadedLoopCommon& common) {
+    const GuiMenu menu;
+    SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    menu.Begin("_savegame_browser_menu");
+
+    const GuiTitle title;
+    title.Begin("Load game");
+
+    for (const auto& save_game : data::GetSaveDirIt()) {
+        const auto filename = save_game.path().stem().string();
+
+        if (MenuButton(filename.c_str())) {
+            data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal, filename);
+        }
+    }
+
+    MenuBackButton(MenuMenuWindow::main);
+    SameLineMenuButtonMini(2);
+
+    if (MenuButtonMini("Play")) {
+        common.gameState = ThreadedLoopCommon::GameState::in_world;
+    }
+}
+
 void render::MainMenu(ThreadedLoopCommon& common) {
     switch (current_menu) {
     case MenuMenuWindow::main:
@@ -124,6 +149,10 @@ void render::MainMenu(ThreadedLoopCommon& common) {
     case MenuMenuWindow::new_game:
         NewGameMenu(common);
         return;
+    case MenuMenuWindow::load_game:
+        SavegameBrowserMenu(common);
+        return;
+
 
     default:
         assert(false);
@@ -152,7 +181,7 @@ void render::MainMenu(ThreadedLoopCommon& common) {
     }
 
     if (MenuButton("Load game")) {
-        // TODO
+        current_menu = MenuMenuWindow::load_game;
     }
 
     if (MenuButton("Quit")) {

@@ -2,6 +2,7 @@
 
 #include "data/cereal/serialize.h"
 
+#include <filesystem>
 #include <fstream>
 #include <functional>
 
@@ -12,20 +13,23 @@
 
 using namespace jactorio;
 
-static constexpr auto kSaveGameFileName = "savegame.dat";
+static constexpr auto kSaveGameFolder  = "saves";
+static constexpr auto kSaveGameFileExt = "dat";
 
-void data::SerializeGameData(const game::GameDataGlobal& game_data) {
-    LOG_MESSAGE(info, "Saving savegame");
+void data::SerializeGameData(const game::GameDataGlobal& game_data, const std::string& save_name) {
+    LOG_MESSAGE_F(info, "Saving savegame as %s", save_name.c_str());
 
-    std::ofstream out_cereal_stream(kSaveGameFileName, std::ios_base::binary);
+    std::ofstream out_cereal_stream(ResolveSavePath(save_name), std::ios_base::binary);
     cereal::PortableBinaryOutputArchive output_archive(out_cereal_stream);
     output_archive(game_data);
 
     LOG_MESSAGE(info, "Saving savegame Done");
 }
 
-void data::DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGlobal& out_data_global) {
-    LOG_MESSAGE(info, "Loading savegame");
+void data::DeserializeGameData(game::GameDataLocal& data_local,
+                               game::GameDataGlobal& out_data_global,
+                               const std::string& save_name) {
+    LOG_MESSAGE_F(info, "Loading savegame %s", save_name.c_str());
 
     const std::vector<std::function<void()>> pre_load_hooks{
         [&]() {
@@ -65,7 +69,7 @@ void data::DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGl
 
     run_hooks(pre_load_hooks, "Pre load hook");
 
-    std::ifstream in_cereal_stream(kSaveGameFileName, std::ios_base::binary);
+    std::ifstream in_cereal_stream(ResolveSavePath(save_name), std::ios_base::binary);
     cereal::PortableBinaryInputArchive iarchive(in_cereal_stream);
 
     iarchive(out_data_global);
@@ -73,4 +77,34 @@ void data::DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGl
     run_hooks(post_load_hooks, "Post load hook");
 
     LOG_MESSAGE(info, "Loading savegame Done");
+}
+
+
+///
+/// If save directory does not exist, a directory is made
+void CheckExistsSaveDirectory() {
+    if (!std::filesystem::exists(kSaveGameFolder)) {
+        std::filesystem::create_directory(kSaveGameFolder);
+    }
+}
+
+std::string data::ResolveSavePath(const std::string& save_name) {
+    const auto path = std::filesystem::path(save_name);
+    assert(!path.has_root_path());
+    assert(!path.has_root_name());
+    assert(!path.has_root_directory());
+    assert(path.has_relative_path());
+    assert(!path.has_parent_path());
+    assert(path.has_stem());
+    assert(path.has_filename());
+    assert(!path.has_extension());
+
+
+    CheckExistsSaveDirectory();
+    return std::string(kSaveGameFolder) + "/" + save_name + "." + kSaveGameFileExt;
+}
+
+std::filesystem::directory_iterator data::GetSaveDirIt() {
+    CheckExistsSaveDirectory();
+    return std::filesystem::directory_iterator(kSaveGameFolder);
 }

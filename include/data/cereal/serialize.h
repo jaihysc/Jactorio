@@ -5,7 +5,10 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
 #include <utility>
+
+#include "jactorio.h"
 
 // Macros for cereal serialization
 
@@ -82,10 +85,21 @@ namespace jactorio::data
         archiver(std::forward<TArgs>(args)...);
     }
 
-    void SerializeGameData(const game::GameDataGlobal& game_data);
+    void SerializeGameData(const game::GameDataGlobal& game_data, const std::string& save_name);
     ///
     /// \param out_data_global Deserialized into this
-    void DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGlobal& out_data_global);
+    void DeserializeGameData(game::GameDataLocal& data_local,
+                             game::GameDataGlobal& out_data_global,
+                             const std::string& save_name);
+
+
+    ///
+    /// \param save_name No path, no extensions
+    J_NODISCARD std::string ResolveSavePath(const std::string& save_name);
+
+    ///
+    /// Iterator to save directory, directory itself is always valid
+    J_NODISCARD std::filesystem::directory_iterator GetSaveDirIt();
 } // namespace jactorio::data
 
 #endif // JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZE_H

@@ -11,7 +11,6 @@
 #include "core/execution_timer.h"
 #include "core/filesystem.h"
 #include "core/loop_common.h"
-#include "core/resource_guard.h"
 
 #include "data/prototype/inserter.h"
 
@@ -44,7 +43,7 @@ void LogicLoop(ThreadedLoopCommon& common) {
 
         // ======================================================================
         // LOGIC LOOP ======================================================================
-        {
+        if (common.gameState == ThreadedLoopCommon::GameState::in_world) {
             EXECUTION_PROFILE_SCOPE(logic_update_timer, "Logic update");
 
             // ======================================================================
@@ -224,11 +223,11 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
 
 
     common.gameDataLocal.input.key.Register(
-        [&]() { data::SerializeGameData(common.gameDataGlobal); }, SDLK_l, InputAction::key_up);
+        [&]() { data::SerializeGameData(common.gameDataGlobal, "test_save"); }, SDLK_l, InputAction::key_up);
 
     common.gameDataLocal.input.key.Register(
         [&]() {
-            data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal);
+            data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal, "test_save");
 
             printf("Break");
         },
