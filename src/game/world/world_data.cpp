@@ -433,36 +433,47 @@ void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8
 
 
 void game::WorldData::DeserializePostProcess() {
-    for (auto& [c_coord, chunk] : worldChunks_) {
+    auto iterate_world_chunks =
+        [&](const std::function<void(const WorldCoord& coord, ChunkTileLayer& layer, uint8_t layer_i)>& callback) {
+            for (auto& [c_coord, chunk] : worldChunks_) {
 
-        for (uint32_t y = 0; y < kChunkWidth; ++y) { // x, y is position within current chunk
-            for (uint32_t x = 0; x < kChunkWidth; ++x) {
+                for (uint32_t y = 0; y < kChunkWidth; ++y) { // x, y is position within current chunk
+                    for (uint32_t x = 0; x < kChunkWidth; ++x) {
 
-                auto world_coord = ChunkCToWorldC({std::get<0>(c_coord), std::get<1>(c_coord)});
-                world_coord.x += x;
-                world_coord.y += y;
+                        auto world_coord = ChunkCToWorldC({std::get<0>(c_coord), std::get<1>(c_coord)});
+                        world_coord.x += x;
+                        world_coord.y += y;
 
-                auto* tile = GetTile(world_coord);
-                assert(tile != nullptr);
+                        auto* tile = GetTile(world_coord);
+                        assert(tile != nullptr);
 
-                for (uint8_t layer_i = 0; layer_i < ChunkTile::kTileLayerCount; ++layer_i) {
-                    auto& layer = tile->layers[layer_i];
+                        for (uint8_t layer_i = 0; layer_i < ChunkTile::kTileLayerCount; ++layer_i) {
+                            auto& layer = tile->layers[layer_i];
 
-                    if (layer.GetMultiTileIndex() != 0) {
-                        layer.AdjustToTopLeft(world_coord.x, world_coord.y);
-                        auto* tl_tile = GetTile(world_coord); // Now adjusted to top left
-                        assert(tl_tile != nullptr);
-
-                        layer.SetTopLeftLayer(tl_tile->GetLayer(layer_i));
-                    }
-
-                    if (layer.prototypeData != nullptr) {
-                        layer.prototypeData->OnDeserialize(*this, world_coord, layer);
+                            callback(world_coord, layer, layer_i);
+                        }
                     }
                 }
             }
+        };
+
+    // Resolve multi tiles
+    iterate_world_chunks([this](auto coord, auto& layer, auto layer_i) {
+        if (layer.GetMultiTileIndex() != 0) {
+            layer.AdjustToTopLeft(coord.x, coord.y);
+            auto* tl_tile = GetTile(coord); // Now adjusted to top left
+            assert(tl_tile != nullptr);
+
+            layer.SetTopLeftLayer(tl_tile->GetLayer(layer_i));
         }
-    }
+    });
+
+    // OnDeserialize
+    iterate_world_chunks([this](const auto& coord, auto& layer, auto /*layer_i*/) {
+        if (layer.prototypeData != nullptr) {
+            layer.prototypeData->OnDeserialize(*this, coord, layer);
+        }
+    });
 }
 
 

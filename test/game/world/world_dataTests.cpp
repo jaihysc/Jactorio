@@ -331,6 +331,8 @@ namespace jactorio::game
     {
     protected:
         WorldData worldData_;
+        LogicData logicData_;
+
         data::ContainerEntity proto_; // Any proto is fine
 
         ///
@@ -355,6 +357,39 @@ namespace jactorio::game
         ExpectTLResolved({1, 1}, TileLayer::base);
         ExpectTLResolved({2, 1}, TileLayer::base);
         ExpectTLResolved({3, 1}, TileLayer::base);
+    }
+
+    TEST_F(WorldDataDeserialize, ResolveMultiTilesFirst) {
+        worldData_.EmplaceChunk(0, 0);
+
+        /*
+         *   I
+         * A A  Must resolve Assembly machine multi tile first before calling OnDeserialize for Inserter
+         * A A
+         */
+
+        data::PrototypeManager proto_manager;
+        data::UniqueDataManager unique_manager;
+
+
+        auto& asm_machine = proto_manager.AddProto<data::AssemblyMachine>();
+        TestSetupAssemblyMachine(worldData_, {0, 2}, asm_machine);
+
+        auto& inserter = proto_manager.AddProto<data::Inserter>();
+        TestSetupInserter(worldData_, logicData_, {1, 1}, inserter, data::Orientation::down);
+
+
+        data::active_prototype_manager   = &proto_manager;
+        data::active_unique_data_manager = &unique_manager;
+        proto_manager.GenerateRelocationTable();
+
+        auto result = TestSerializeDeserialize(worldData_);
+        result.DeserializePostProcess();
+
+        auto* result_inserter_data =
+            result.GetTile({1, 1})->GetLayer(TileLayer::entity).GetUniqueData<data::InserterData>();
+
+        EXPECT_TRUE(result_inserter_data->dropoff.IsInitialized());
     }
 
     TEST_F(WorldDataDeserialize, CallOnDeserialize) {

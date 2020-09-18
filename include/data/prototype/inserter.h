@@ -62,6 +62,7 @@ namespace jactorio::data
     {
     public:
         PROTOTYPE_CATEGORY(inserter);
+        PROTOTYPE_DATA_TRIVIAL_COPY(InserterData);
 
         /// Part closer to the base
         PYTHON_PROP_I(Sprite*, armSprite, nullptr);
