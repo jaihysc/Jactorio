@@ -5,7 +5,7 @@
 #include "jactorio.h"
 
 #include "core/loop_common.h"
-#include "data/cereal/serialize.h"
+#include "data/save_game_manager.h"
 #include "render/gui/components.h"
 #include "render/gui/gui_layout.h"
 #include "render/rendering/renderer.h"

@@ -61,28 +61,28 @@ add_compile_definitions(JACTORIO_BUILD_TEST)  # Disables warning when using test
 set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 # ======================================== Test files .cpp
 set(JACTORIO_TEST_FILES
-		${JACTORIO_TEST_DIR}/core/convertTests.cpp
-		${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
-		${JACTORIO_TEST_DIR}/core/mathTests.cpp
-		${JACTORIO_TEST_DIR}/core/pointer_wrapperTests.cpp
-		${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
-		${JACTORIO_TEST_DIR}/core/utilityTests.cpp
+	${JACTORIO_TEST_DIR}/core/convertTests.cpp
+	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
+	${JACTORIO_TEST_DIR}/core/mathTests.cpp
+	${JACTORIO_TEST_DIR}/core/pointer_wrapperTests.cpp
+	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
+	${JACTORIO_TEST_DIR}/core/utilityTests.cpp
 
 
-		${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
-		${JACTORIO_TEST_DIR}/data/prototype_managerTests.cpp
-		${JACTORIO_TEST_DIR}/data/unique_data_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/save_game_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/unique_data_managerTests.cpp
 
-		${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
-		${JACTORIO_TEST_DIR}/data/cereal/serializeTests.cpp
-		${JACTORIO_TEST_DIR}/data/cereal/supportTests.cpp
+	${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
+	${JACTORIO_TEST_DIR}/data/cereal/supportTests.cpp
 
-		${JACTORIO_TEST_DIR}/data/prototype/assembly_machineTests.cpp
-		${JACTORIO_TEST_DIR}/data/prototype/container_entityTests.cpp
-		${JACTORIO_TEST_DIR}/data/prototype/inserterTests.cpp
-		${JACTORIO_TEST_DIR}/data/prototype/mining_drillTests.cpp
-		${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
-		${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/assembly_machineTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/container_entityTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/inserterTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/mining_drillTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
+	${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/recipeTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
 
@@ -109,19 +109,19 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_recipe.cpp
-		${JACTORIO_TEST_DIR}/game/player/player_dataTests_world.cpp
+	${JACTORIO_TEST_DIR}/game/player/player_dataTests_world.cpp
 
-		${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
-		${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
-		${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
-		${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
-		${JACTORIO_TEST_DIR}/game/world/update_dispatcherTests.cpp
-		${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/update_dispatcherTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
 
 
-		${JACTORIO_TEST_DIR}/render/rendering/mvp_managerTests.cpp
-		${JACTORIO_TEST_DIR}/render/rendering/spritemap_generatorTests.cpp
-		)
+	${JACTORIO_TEST_DIR}/render/rendering/mvp_managerTests.cpp
+	${JACTORIO_TEST_DIR}/render/rendering/spritemap_generatorTests.cpp
+)
 # ======================================== END Test files .cpp
 
 # Test executable

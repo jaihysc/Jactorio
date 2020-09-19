@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "data/cereal/serialize.h"
+#include "data/save_game_manager.h"
 
 #include <filesystem>
 #include <fstream>
@@ -79,6 +79,29 @@ void data::DeserializeGameData(game::GameDataLocal& data_local,
     LOG_MESSAGE(info, "Loading savegame Done");
 }
 
+bool data::IsValidSaveName(const std::string& save_name) {
+    const auto path = std::filesystem::path(save_name);
+
+    if (path.has_root_path())
+        return false;
+    if (path.has_root_name())
+        return false;
+    if (path.has_root_directory())
+        return false;
+    if (!path.has_relative_path())
+        return false;
+    if (path.has_parent_path())
+        return false;
+    if (!path.has_stem())
+        return false;
+    if (!path.has_filename())
+        return false;
+    if (path.has_extension())
+        return false;
+
+    return true;
+}
+
 
 ///
 /// If save directory does not exist, a directory is made
@@ -89,16 +112,7 @@ void CheckExistsSaveDirectory() {
 }
 
 std::string data::ResolveSavePath(const std::string& save_name) {
-    const auto path = std::filesystem::path(save_name);
-    assert(!path.has_root_path());
-    assert(!path.has_root_name());
-    assert(!path.has_root_directory());
-    assert(path.has_relative_path());
-    assert(!path.has_parent_path());
-    assert(path.has_stem());
-    assert(path.has_filename());
-    assert(!path.has_extension());
-
+    assert(IsValidSaveName(save_name));
 
     CheckExistsSaveDirectory();
     return std::string(kSaveGameFolder) + "/" + save_name + "." + kSaveGameFileExt;

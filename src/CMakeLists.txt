@@ -31,9 +31,8 @@ set(JACTORIO_SRC_FILES
 
         ${JACTORIO_DIR}/data/local_parser.cpp
         ${JACTORIO_DIR}/data/prototype_manager.cpp
+        ${JACTORIO_DIR}/data/save_game_manager.cpp
         ${JACTORIO_DIR}/data/unique_data_manager.cpp
-
-        ${JACTORIO_DIR}/data/cereal/serialize.cpp
 
         ${JACTORIO_DIR}/data/prototype/assembly_machine.cpp
         ${JACTORIO_DIR}/data/prototype/container_entity.cpp
