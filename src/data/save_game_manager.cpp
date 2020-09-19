@@ -82,6 +82,10 @@ void data::DeserializeGameData(game::GameDataLocal& data_local,
 bool data::IsValidSaveName(const std::string& save_name) {
     const auto path = std::filesystem::path(save_name);
 
+    // Backslash (\) disallowed on all platforms to maintain file portability with Windows
+    if (path.string().find("\\") != std::string::npos)
+        return false;
+
     if (path.has_root_path())
         return false;
     if (path.has_root_name())
