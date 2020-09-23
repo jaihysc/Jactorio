@@ -296,6 +296,12 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const data::Recipe& 
 
 // ======================================================================
 
+
+void render::MainMenu(const GuiRenderer& /*g_rendr*/) {
+    assert(false); // To draw main menu, test for if menu is visible and call custom main menu draw function in
+                   // render/main_menu.h
+}
+
 void render::CharacterMenu(const GuiRenderer& g_rendr) {
     SetupNextWindowLeft();
     PlayerInventoryMenu(g_rendr);

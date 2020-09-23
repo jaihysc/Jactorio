@@ -18,6 +18,7 @@
 
 #include "game/event/game_events.h"
 
+#include "render/gui/gui_menus.h"
 #include "render/gui/imgui_manager.h"
 #include "render/gui/main_menu.h"
 #include "render/opengl/shader.h"
@@ -149,6 +150,13 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
 
 
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
+
+            core::ResourceGuard imgui_render_guard(+[]() { render::ImguiRenderFrame(); });
+            ImguiBeginFrame(display_window);
+
+            if (IsVisible(render::Menu::MainMenu)) {
+                render::MainMenu(common);
+            }
 
             ImguiDraw(display_window,
                       common.gameDataGlobal.worlds,

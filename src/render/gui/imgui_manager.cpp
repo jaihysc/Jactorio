@@ -144,8 +144,6 @@ void render::ImguiDraw(const DisplayWindow& display_window,
                        game::EventData& /*event*/) {
     EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
-    ImguiBeginFrame(display_window);
-
     // Has imgui handled a mouse or keyboard event?
     ImGuiIO& io             = ImGui::GetIO();
     input_mouse_captured    = io.WantCaptureMouse;
@@ -185,8 +183,6 @@ void render::ImguiDraw(const DisplayWindow& display_window,
     CursorWindow(g_rendr);
     CraftingQueue(g_rendr);
     PickupProgressbar(g_rendr);
-
-    ImguiRenderFrame();
 }
 
 void render::ImguiTerminate() {

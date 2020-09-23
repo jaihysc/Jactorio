@@ -224,17 +224,9 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
 
 
     common.gameDataLocal.input.key.Register(
-        [&]() { data::SerializeGameData(common.gameDataGlobal, "test_save"); }, SDLK_l, InputAction::key_up);
-
-    common.gameDataLocal.input.key.Register(
-        [&]() {
-            data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal, "test_save");
-
-            printf("Break");
-        },
-        SDLK_k,
+        [&]() { SetVisible(render::Menu::MainMenu, !IsVisible(render::Menu::MainMenu)); },
+        SDLK_ESCAPE,
         InputAction::key_up);
-
 
     LogicLoop(common);
 

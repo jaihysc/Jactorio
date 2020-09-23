@@ -20,6 +20,8 @@ namespace jactorio::render
     // pickup_progressbar : Draws progressbar indicating entity pickup status
 
 #define J_GUI_WINDOW                    \
+    J_GUI_WINDOW_SUB(MainMenu)          \
+                                        \
     J_GUI_WINDOW_SUB(DebugMenu)         \
                                         \
     J_GUI_WINDOW_SUB(CharacterMenu)     \
