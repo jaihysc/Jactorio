@@ -69,9 +69,10 @@ void game::WorldData::DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y
     worldChunks_.erase(std::make_tuple(chunk_x, chunk_y));
 }
 
-void game::WorldData::ClearChunkData() {
+void game::WorldData::Clear() {
     worldChunks_.clear();
     logicChunks_.clear();
+    worldGenChunks_.clear();
 }
 
 // ======================================================================

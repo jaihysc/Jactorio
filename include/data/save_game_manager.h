@@ -17,6 +17,11 @@ namespace jactorio::game
 
 namespace jactorio::data
 {
+    ///
+    /// Must be called before world data is cleared
+    void PrepareWorldDataClear(game::GameDataLocal& data_local, game::GameDataGlobal& data_global);
+
+
     void SerializeGameData(const game::GameDataGlobal& game_data, const std::string& save_name);
     ///
     /// \param out_data_global Deserialized into this

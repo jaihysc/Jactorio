@@ -6,8 +6,41 @@
 
 #include <fstream>
 
+#include "core/loop_common.h"
+#include "data/prototype/container_entity.h"
+#include "data/prototype/sprite.h"
+
 namespace jactorio::data
 {
+    TEST(SaveGameManager, PrepareWorldDataClear) {
+        game::GameDataGlobal global;
+        game::GameDataLocal local;
+
+        global.worlds.emplace_back();
+        global.worlds[0].EmplaceChunk(0, 0);
+
+
+        // 1 Should not attempt to remove cursor overlays
+        const Sprite sprite;
+        const ContainerEntity container;
+        local.input.mouse.DrawOverlay(global.worlds[0], {0, 0}, Orientation::up, &container, sprite);
+
+        // 2 Should not hold pointer to any tile layer (as they will be destroyed)
+        game::ChunkTileLayer tile_layer;
+        global.player.placement.SetActivatedLayer(&tile_layer);
+
+
+        PrepareWorldDataClear(local, global);
+
+
+        // 1
+        local.input.mouse.DrawOverlay(global.worlds[0], {0, 1}, Orientation::up, &container, sprite);
+        EXPECT_EQ(global.worlds[0].GetChunkC(0, 0)->GetOverlay(game::OverlayLayer::cursor).size(), 2);
+
+        // 2
+        EXPECT_EQ(global.player.placement.GetActivatedLayer(), nullptr);
+    }
+
     TEST(SaveGameManager, IsValidSaveName) {
         EXPECT_TRUE(IsValidSaveName("."));
         EXPECT_TRUE(IsValidSaveName("im"));

@@ -8,6 +8,7 @@
 #include "data/save_game_manager.h"
 #include "render/gui/components.h"
 #include "render/gui/gui_layout.h"
+#include "render/gui/gui_menus.h"
 #include "render/rendering/renderer.h"
 
 using namespace jactorio;
@@ -94,6 +95,13 @@ static void SameLineMenuButtonMini(const unsigned button_gap = 0) {
 // ======================================================================
 
 
+static void ChangeGameState(ThreadedLoopCommon& common, const ThreadedLoopCommon::GameState new_state) {
+    SetVisible(render::Menu::MainMenu, false);
+
+    current_menu     = MenuMenuWindow::main;
+    common.gameState = new_state;
+}
+
 static void NewGameMenu(ThreadedLoopCommon& common) {
     const render::GuiMenu menu;
     render::SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
@@ -114,7 +122,13 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Start")) {
-        common.gameState = ThreadedLoopCommon::GameState::in_world;
+        data::PrepareWorldDataClear(common.gameDataLocal, common.gameDataGlobal);
+
+        for (auto& world : common.gameDataGlobal.worlds) {
+            world.Clear();
+        }
+
+        ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
     }
 }
 
@@ -130,7 +144,7 @@ void render::SavegameBrowserMenu(ThreadedLoopCommon& common) {
         const auto filename = save_game.path().stem().string();
 
         if (MenuButton(filename.c_str())) {
-            data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal, filename);
+            data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal, filename); // TODO (may throw)
         }
     }
 
@@ -138,30 +152,38 @@ void render::SavegameBrowserMenu(ThreadedLoopCommon& common) {
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Play")) {
-        common.gameState = ThreadedLoopCommon::GameState::in_world;
+        ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
     }
 }
 
-void render::MainMenu(ThreadedLoopCommon& common) {
+///
+/// \return true if a submenu was drawn
+bool DrawSubmenu(ThreadedLoopCommon& common) {
     switch (current_menu) {
     case MenuMenuWindow::main:
         break;
     case MenuMenuWindow::new_game:
         NewGameMenu(common);
-        return;
+        return true;
     case MenuMenuWindow::load_game:
-        SavegameBrowserMenu(common);
-        return;
+        render::SavegameBrowserMenu(common);
+        return true;
 
 
     default:
         assert(false);
         break;
     }
+    return false;
+}
+
+void render::StartMenu(ThreadedLoopCommon& common) {
+    if (DrawSubmenu(common))
+        return;
 
     const GuiMenu menu;
     SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
-    menu.Begin("_main_menu");
+    menu.Begin("_start_menu");
 
     const GuiTitle title;
     title.Begin("Jactorio | " JACTORIO_VERSION);
@@ -170,7 +192,7 @@ void render::MainMenu(ThreadedLoopCommon& common) {
     ImGui::Text("NOTE: Debug build");
 
     if (MenuButton("Debug start game")) {
-        common.gameState = ThreadedLoopCommon::GameState::in_world;
+        ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
     }
 #endif
 
@@ -185,6 +207,31 @@ void render::MainMenu(ThreadedLoopCommon& common) {
     }
 
     if (MenuButton("Quit")) {
-        common.gameState = ThreadedLoopCommon::GameState::quit;
+        ChangeGameState(common, ThreadedLoopCommon::GameState::quit);
+    }
+}
+
+void render::MainMenu(ThreadedLoopCommon& common) {
+    if (DrawSubmenu(common))
+        return;
+
+    const GuiMenu menu;
+    SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    menu.Begin("_main_menu");
+
+    const GuiTitle title;
+    title.Begin("Main menu");
+
+
+    if (MenuButton("Load game")) {
+        current_menu = MenuMenuWindow::load_game;
+    }
+
+    if (MenuButton("Save game")) {
+        data::SerializeGameData(common.gameDataGlobal, "baguette"); // TODO obtain save name (may throw)
+    }
+
+    if (MenuButton("Quit")) {
+        ChangeGameState(common, ThreadedLoopCommon::GameState::main_menu);
     }
 }

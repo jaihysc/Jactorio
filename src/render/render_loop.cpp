@@ -100,7 +100,7 @@ void RenderMainMenuLoop(ThreadedLoopCommon& common, render::DisplayWindow& displ
 
         render::ImguiBeginFrame(display_window);
 
-        render::MainMenu(common);
+        render::StartMenu(common);
 
         render::ImguiRenderFrame();
 

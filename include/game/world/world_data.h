@@ -90,8 +90,9 @@ namespace jactorio::game
         void DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
 
         ///
-        /// Erases, frees memory from all stored chunk data + its subsequent contents and logic chunks
-        void ClearChunkData();
+        /// Clears chunk data, logic chunks and chunks awaiting generation
+        /// \remark Ensure PrepareWorldDataClear was called prior to this
+        void Clear();
 
 
         ///

@@ -16,6 +16,12 @@ using namespace jactorio;
 static constexpr auto kSaveGameFolder  = "saves";
 static constexpr auto kSaveGameFileExt = "dat";
 
+void data::PrepareWorldDataClear(game::GameDataLocal& data_local, game::GameDataGlobal& data_global) {
+    data_local.input.mouse.SkipErasingLastOverlay();         // All overlays will be cleared
+    data_global.player.placement.SetActivatedLayer(nullptr); // Prevents gui accessing non existent data
+}
+
+
 void data::SerializeGameData(const game::GameDataGlobal& game_data, const std::string& save_name) {
     LOG_MESSAGE_F(info, "Saving savegame as %s", save_name.c_str());
 
@@ -36,12 +42,7 @@ void data::DeserializeGameData(game::GameDataLocal& data_local,
             data_local.prototype.GenerateRelocationTable();
             active_prototype_manager = &data_local.prototype;
         },
-        [&]() {
-            data_local.input.mouse.SkipErasingLastOverlay(); // All overlays will be cleared
-        },
-        [&]() {
-            out_data_global.player.placement.SetActivatedLayer(nullptr); // Prevents gui accessing non existent data
-        },
+        [&]() { PrepareWorldDataClear(data_local, out_data_global); },
     };
     const std::vector<std::function<void()>> post_load_hooks{
         [&]() {
