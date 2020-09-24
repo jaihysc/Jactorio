@@ -161,7 +161,7 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
             }
             catch (cereal::Exception& e) {
                 last_load_error = e.what();
-                LOG_MESSAGE_F(error, "Failed to load game %s : %s", filename, e.what());
+                LOG_MESSAGE_F(error, "Failed to load game %s : %s", filename.c_str(), e.what());
             }
         }
     }
