@@ -12,10 +12,6 @@ namespace jactorio
 namespace jactorio::render
 {
     ///
-    /// Lists all save games, loads save game user clicks on
-    void SavegameBrowserMenu(ThreadedLoopCommon& common);
-
-    ///
     /// Menu upon start
     void StartMenu(ThreadedLoopCommon& common);
 

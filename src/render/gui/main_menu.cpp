@@ -49,8 +49,6 @@ J_NODISCARD static float GetButtonMiniHeight() {
     return GetButtonHeight() / 2;
 }
 
-static enum class MenuMenuWindow { main, new_game, load_game } current_menu;
-
 
 ///
 /// \param width If 0, uses default
@@ -72,10 +70,11 @@ J_NODISCARD static bool MenuButtonMini(const char* label) {
 }
 
 ///
-/// Menu button for heading back to previous menu
-static bool MenuBackButton(const MenuMenuWindow new_menu) {
+/// Menu button for heading back to previous menu when clicked
+/// \return true if clicked
+static bool MenuBackButton(MainMenuData& menu_data, const MainMenuData::Window new_menu) {
     if (MenuButtonMini("Back")) {
-        current_menu = new_menu;
+        menu_data.currentMenu = new_menu;
         return true;
     }
 
@@ -92,14 +91,21 @@ static void SameLineMenuButtonMini(const unsigned button_gap = 0) {
     ImGui::SetCursorPosX(previous_button_end_x + GetButtonMiniWidth() * core::SafeCast<float>(button_gap));
 }
 
+
+void ErrorText(const char* error_msg) {
+    render::ImGuard guard;
+    guard.PushStyleColor(ImGuiCol_Text, render::kGuiColTextError);
+    ImGui::TextUnformatted(error_msg);
+}
+
 // ======================================================================
 
 
 static void ChangeGameState(ThreadedLoopCommon& common, const ThreadedLoopCommon::GameState new_state) {
     SetVisible(render::Menu::MainMenu, false);
 
-    current_menu     = MenuMenuWindow::main;
-    common.gameState = new_state;
+    common.mainMenuData.currentMenu = MainMenuData::Window::main;
+    common.gameState                = new_state;
 }
 
 static void NewGameMenu(ThreadedLoopCommon& common) {
@@ -118,7 +124,7 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
         world.SetWorldGeneratorSeed(seed);
     }
 
-    MenuBackButton(MenuMenuWindow::main);
+    MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Start")) {
@@ -132,23 +138,35 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     }
 }
 
-void render::SavegameBrowserMenu(ThreadedLoopCommon& common) {
+///
+/// Lists all save games, loads save game user clicks on
+void LoadSaveGameMenu(ThreadedLoopCommon& common) {
+    using namespace render;
+
     const GuiMenu menu;
     SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
-    menu.Begin("_savegame_browser_menu");
+    menu.Begin("_save_game_browser_menu");
 
     const GuiTitle title;
     title.Begin("Load game");
+
+    auto& last_load_error = common.mainMenuData.lastLoadError;
 
     for (const auto& save_game : data::GetSaveDirIt()) {
         const auto filename = save_game.path().stem().string();
 
         if (MenuButton(filename.c_str())) {
-            data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal, filename); // TODO (may throw)
+            try {
+                data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal, filename);
+            }
+            catch (cereal::Exception& e) {
+                last_load_error = e.what();
+                LOG_MESSAGE_F(error, "Failed to load game %s : %s", filename, e.what());
+            }
         }
     }
 
-    MenuBackButton(MenuMenuWindow::main);
+    MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Play")) {
@@ -157,16 +175,59 @@ void render::SavegameBrowserMenu(ThreadedLoopCommon& common) {
 }
 
 ///
+/// Asks for save name and saves current world
+void SaveGameMenu(ThreadedLoopCommon& common) {
+    using namespace render;
+
+    const GuiMenu menu;
+    SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    menu.Begin("_save_game_menu");
+
+    const GuiTitle title;
+    title.Begin("Save game");
+
+
+    auto* save_name       = common.mainMenuData.saveName;
+    auto& last_save_error = common.mainMenuData.lastSaveError;
+
+    if (!data::IsValidSaveName(save_name)) {
+        ErrorText("Invalid save name");
+    }
+
+    ImGui::InputText("Save name", save_name, MainMenuData::kMaxSaveNameLength);
+
+
+    MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
+    SameLineMenuButtonMini(2);
+
+    if (data::IsValidSaveName(save_name)) {
+        if (MenuButtonMini("Save")) {
+            try {
+                data::SerializeGameData(common.gameDataGlobal, save_name);
+                common.mainMenuData.currentMenu = MainMenuData::Window::main;
+            }
+            catch (cereal::Exception& e) {
+                last_save_error = e.what();
+                LOG_MESSAGE_F(error, "Failed to save game as %s : %s", save_name, e.what());
+            }
+        }
+    }
+}
+
+///
 /// \return true if a submenu was drawn
 bool DrawSubmenu(ThreadedLoopCommon& common) {
-    switch (current_menu) {
-    case MenuMenuWindow::main:
+    switch (common.mainMenuData.currentMenu) {
+    case MainMenuData::Window::main:
         break;
-    case MenuMenuWindow::new_game:
+    case MainMenuData::Window::new_game:
         NewGameMenu(common);
         return true;
-    case MenuMenuWindow::load_game:
-        render::SavegameBrowserMenu(common);
+    case MainMenuData::Window::load_game:
+        LoadSaveGameMenu(common);
+        return true;
+    case MainMenuData::Window::save_game:
+        SaveGameMenu(common);
         return true;
 
 
@@ -189,7 +250,7 @@ void render::StartMenu(ThreadedLoopCommon& common) {
     title.Begin("Jactorio | " JACTORIO_VERSION);
 
 #ifdef JACTORIO_DEBUG_BUILD
-    ImGui::Text("NOTE: Debug build");
+    ImGui::TextUnformatted("NOTE: Debug build");
 
     if (MenuButton("Debug start game")) {
         ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
@@ -199,11 +260,11 @@ void render::StartMenu(ThreadedLoopCommon& common) {
     // ======================================================================
 
     if (MenuButton("New game")) {
-        current_menu = MenuMenuWindow::new_game;
+        common.mainMenuData.currentMenu = MainMenuData::Window::new_game;
     }
 
     if (MenuButton("Load game")) {
-        current_menu = MenuMenuWindow::load_game;
+        common.mainMenuData.currentMenu = MainMenuData::Window::load_game;
     }
 
     if (MenuButton("Quit")) {
@@ -224,11 +285,11 @@ void render::MainMenu(ThreadedLoopCommon& common) {
 
 
     if (MenuButton("Load game")) {
-        current_menu = MenuMenuWindow::load_game;
+        common.mainMenuData.currentMenu = MainMenuData::Window::load_game;
     }
 
     if (MenuButton("Save game")) {
-        data::SerializeGameData(common.gameDataGlobal, "baguette"); // TODO obtain save name (may throw)
+        common.mainMenuData.currentMenu = MainMenuData::Window::save_game;
     }
 
     if (MenuButton("Quit")) {
