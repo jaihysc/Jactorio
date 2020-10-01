@@ -36,7 +36,7 @@ namespace jactorio::game
     /// Serialized runtime data, persists across restarts
     struct GameDataGlobal
     {
-        GameWorlds worlds;
+        GameWorlds worlds{1};
         LogicData logic;
         PlayerData player;
 

@@ -116,25 +116,26 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     const render::GuiTitle title;
     title.Begin("New game");
 
-    // Get set seed
-    auto seed = common.gameDataGlobal.worlds[0].GetWorldGeneratorSeed(); // Should be same for all worlds
+
+    auto seed = common.GetDataGlobal().worlds[0].GetWorldGeneratorSeed(); // Should be same for all worlds
     ImGui::InputInt("Seed", &seed);
 
-    for (auto& world : common.gameDataGlobal.worlds) {
-        world.SetWorldGeneratorSeed(seed);
-    }
 
     MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Start")) {
-        data::PrepareWorldDataClear(common.gameDataLocal, common.gameDataGlobal);
+        data::PrepareWorldDataClear(common.gameDataLocal, common.GetDataGlobal());
 
-        for (auto& world : common.gameDataGlobal.worlds) {
-            world.Clear();
-        }
+        common.ResetGlobalData();
 
         ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
+    }
+
+
+    // Sets seed for newly reset global data as well
+    for (auto& world : common.GetDataGlobal().worlds) {
+        world.SetWorldGeneratorSeed(seed);
     }
 }
 
@@ -157,7 +158,7 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
 
         if (MenuButton(filename.c_str())) {
             try {
-                data::DeserializeGameData(common.gameDataLocal, common.gameDataGlobal, filename);
+                data::DeserializeGameData(common.gameDataLocal, common.GetDataGlobal(), filename);
             }
             catch (cereal::Exception& e) {
                 last_load_error = e.what();
@@ -203,7 +204,7 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
     if (data::IsValidSaveName(save_name)) {
         if (MenuButtonMini("Save")) {
             try {
-                data::SerializeGameData(common.gameDataGlobal, save_name);
+                data::SerializeGameData(common.GetDataGlobal(), save_name);
                 common.mainMenuData.currentMenu = MainMenuData::Window::main;
             }
             catch (cereal::Exception& e) {

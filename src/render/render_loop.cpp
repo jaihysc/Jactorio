@@ -128,8 +128,8 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
     while (common.gameState == world_render_game_state) {
         EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-        auto& player_data  = common.gameDataGlobal.player;
-        auto& player_world = common.gameDataGlobal.worlds[player_data.world.GetId()];
+        auto& player_data  = common.GetDataGlobal().player;
+        auto& player_world = common.GetDataGlobal().worlds[player_data.world.GetId()];
 
         // ======================================================================
         // RENDER LOOP ======================================================================
@@ -143,7 +143,7 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
             std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
             // MVP Matrices updated in here
-            main_renderer->GlRenderPlayerPosition(common.gameDataGlobal.logic.GameTick(),
+            main_renderer->GlRenderPlayerPosition(common.GetDataGlobal().logic.GameTick(),
                                                   player_world,
                                                   player_data.world.GetPositionX(),
                                                   player_data.world.GetPositionY());
@@ -159,8 +159,8 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
             }
 
             ImguiDraw(display_window,
-                      common.gameDataGlobal.worlds,
-                      common.gameDataGlobal.logic,
+                      common.GetDataGlobal().worlds,
+                      common.GetDataGlobal().logic,
                       player_data,
                       common.gameDataLocal.prototype,
                       common.gameDataLocal.event);

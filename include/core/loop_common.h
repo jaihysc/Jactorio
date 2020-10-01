@@ -5,6 +5,7 @@
 #pragma once
 
 #include <mutex>
+#include <optional>
 
 #include "game/game_data.h"
 
@@ -12,6 +13,7 @@ namespace jactorio
 {
     struct MainMenuData
     {
+        // TODO move this to header
         enum class Window
         {
             main,
@@ -33,8 +35,9 @@ namespace jactorio
 
     ///
     /// Used between threaded loops
-    struct ThreadedLoopCommon
+    class ThreadedLoopCommon
     {
+    public:
         enum class GameState
         {
             main_menu,
@@ -42,11 +45,25 @@ namespace jactorio
             quit
         };
 
+
+        ThreadedLoopCommon() {
+            gameDataGlobal_.emplace();
+        }
+
+
+        [[nodiscard]] game::GameDataGlobal& GetDataGlobal() noexcept {
+            return gameDataGlobal_.value();
+        }
+
+        [[nodiscard]] const game::GameDataGlobal& GetDataGlobal() const noexcept {
+            return gameDataGlobal_.value();
+        }
+
+
         std::mutex playerDataMutex;
         std::mutex worldDataMutex;
 
         game::GameDataLocal gameDataLocal;
-        game::GameDataGlobal gameDataGlobal;
 
         GameState gameState = GameState::main_menu;
         MainMenuData mainMenuData;
@@ -54,6 +71,17 @@ namespace jactorio
 
         bool logicThreadShouldExit             = false;
         volatile bool prototypeLoadingComplete = false;
+
+
+        ///
+        /// Reconstructs GameDataGlobal
+        void ResetGlobalData() {
+            gameDataGlobal_.reset();
+            gameDataGlobal_.emplace();
+        }
+
+    private:
+        std::optional<game::GameDataGlobal> gameDataGlobal_;
     };
 } // namespace jactorio
 
