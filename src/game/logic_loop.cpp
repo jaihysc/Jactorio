@@ -39,7 +39,7 @@ void LogicLoop(ThreadedLoopCommon& common) {
     auto& proto = common.gameDataLocal.prototype;
 
     auto next_frame = std::chrono::steady_clock::now();
-    while (!common.logicThreadShouldExit) {
+    while (common.gameState != ThreadedLoopCommon::GameState::quit) {
         EXECUTION_PROFILE_SCOPE(logic_loop_timer, "Logic loop");
 
         // ======================================================================

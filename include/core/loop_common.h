@@ -69,7 +69,6 @@ namespace jactorio
         MainMenuData mainMenuData;
 
 
-        bool logicThreadShouldExit             = false;
         volatile bool prototypeLoadingComplete = false;
 
 

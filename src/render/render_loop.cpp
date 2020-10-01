@@ -181,8 +181,6 @@ void RenderingLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_wi
 }
 
 void render::RenderInit(ThreadedLoopCommon& common) {
-    core::CapturingGuard<void()> loop_termination_guard([&]() { common.logicThreadShouldExit = true; });
-
     // Init window
     DisplayWindow display_window{};
     try {
