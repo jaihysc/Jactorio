@@ -98,6 +98,21 @@ void ErrorText(const char* error_msg) {
     ImGui::TextUnformatted(error_msg);
 }
 
+///
+/// \param error_str Cleared when user dismisses it
+void ErrorTextDismissible(std::string& error_str) {
+    if (error_str.empty())
+        return;
+
+    ErrorText(error_str.c_str());
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("x", {10, 10})) {
+        error_str.clear();
+    }
+}
+
 // ======================================================================
 
 
@@ -150,6 +165,7 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
     title.Begin("Load game");
 
     auto& last_load_error = common.mainMenuData.lastLoadError;
+    ErrorTextDismissible(last_load_error);
 
     for (const auto& save_game : data::GetSaveDirIt()) {
         const auto filename = save_game.path().stem().string();
@@ -188,6 +204,8 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
 
     auto* save_name       = common.mainMenuData.saveName;
     auto& last_save_error = common.mainMenuData.lastSaveError;
+
+    ErrorTextDismissible(last_save_error);
 
     if (!data::IsValidSaveName(save_name)) {
         ErrorText("Invalid save name");
