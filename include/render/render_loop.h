@@ -6,7 +6,7 @@
 
 namespace jactorio
 {
-    struct ThreadedLoopCommon;
+    class ThreadedLoopCommon;
 
     namespace game
     {

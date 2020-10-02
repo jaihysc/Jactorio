@@ -26,8 +26,6 @@
 
 using namespace jactorio;
 
-// TODO pull these helpers elsewhere
-
 ///
 /// Implements ImGui::IsItemClicked() for left and right mouse buttons
 /// \param on_click Called after inventory actions were handled
@@ -77,7 +75,7 @@ void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
     const render::GuiMenu menu;
     menu.Begin("_character");
 
-    const auto title = g_rendr.MakeComponent<render::GuiTitle>();
+    const render::GuiTitle title;
     title.Begin("Character");
 
 
@@ -114,7 +112,8 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     const render::GuiMenu menu;
     menu.Begin("_recipe");
 
-    const auto gui_title = g_rendr.MakeComponent<render::GuiTitle>();
+    const render::GuiTitle gui_title;
+    ;
     gui_title.Begin(title, [&]() {
         constexpr ImU32 search_bar_padding = 4;
 
@@ -297,6 +296,12 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const data::Recipe& 
 
 // ======================================================================
 
+
+void render::MainMenu(const GuiRenderer& /*g_rendr*/) {
+    assert(false); // To draw main menu, test for if menu is visible and call custom main menu draw function in
+                   // render/main_menu.h
+}
+
 void render::CharacterMenu(const GuiRenderer& g_rendr) {
     SetupNextWindowLeft();
     PlayerInventoryMenu(g_rendr);
@@ -445,7 +450,7 @@ void render::ContainerEntity(const GuiRenderer& g_rendr) {
     const GuiMenu menu;
     menu.Begin("_e_container");
 
-    const auto title = g_rendr.MakeComponent<GuiTitle>();
+    const GuiTitle title;
     title.Begin(prototype->GetLocalizedName());
 
     auto inv_slots = g_rendr.MakeComponent<GuiItemSlots>();
@@ -472,7 +477,7 @@ void render::MiningDrill(const GuiRenderer& g_rendr) {
     const GuiMenu menu;
     menu.Begin("_e_mining_drill");
 
-    const auto title = g_rendr.MakeComponent<GuiTitle>();
+    const GuiTitle title;
     title.Begin(prototype->GetLocalizedName());
 
     ImGui::ProgressBar(
@@ -504,7 +509,7 @@ void render::AssemblyMachine(const GuiRenderer& g_rendr) {
         const GuiMenu menu;
         menu.Begin("_e_assembly_machine");
 
-        const auto title = g_rendr.MakeComponent<GuiTitle>();
+        const GuiTitle title;
         title.Begin(prototype->GetLocalizedName());
 
 

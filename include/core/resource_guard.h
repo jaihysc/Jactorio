@@ -5,6 +5,7 @@
 #pragma once
 
 #include <functional>
+#include <type_traits>
 
 namespace jactorio::core
 {
@@ -33,6 +34,9 @@ namespace jactorio::core
         ResourceGuard& operator=(const ResourceGuard& other) = delete;
         ResourceGuard& operator=(ResourceGuard&& other) noexcept = delete;
     };
+
+    template <typename T>
+    ResourceGuard(T) -> ResourceGuard<std::invoke_result_t<std::decay<T>>>;
 
     ///
     /// Capturing RAII wrapper which calls the provided function in its destructor

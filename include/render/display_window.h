@@ -11,7 +11,7 @@
 
 namespace jactorio
 {
-    struct ThreadedLoopCommon;
+    class ThreadedLoopCommon;
 }
 
 namespace jactorio::render

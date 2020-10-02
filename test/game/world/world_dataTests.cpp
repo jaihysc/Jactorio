@@ -135,7 +135,7 @@ namespace jactorio::game
             EXPECT_EQ(worldData_.GetTile({0, 0}), &tiles[0]);
             EXPECT_NE(worldData_.GetTile({0, 1}), &tiles[0]);
         }
-        worldData_.ClearChunkData();
+        worldData_.Clear();
 
         // World coords -31, -31 - Chunk -1 -1, position 1 1
         {
@@ -149,7 +149,7 @@ namespace jactorio::game
             EXPECT_EQ(worldData_.GetTile({-31, -31}), &tiles[33]);
             EXPECT_NE(worldData_.GetTile({-31, -32}), &tiles[33]);
         }
-        worldData_.ClearChunkData();
+        worldData_.Clear();
 
         // World coords -32, 0 - Chunk -1 0, position 0 0
         {
@@ -225,15 +225,24 @@ namespace jactorio::game
     }
 
 
-    TEST_F(WorldDataTest, ClearChunkData) {
-        const auto& added_chunk = worldData_.EmplaceChunk({6, 6});
+    TEST_F(WorldDataTest, Clear) {
+        auto& added_chunk = worldData_.EmplaceChunk({6, 6});
 
         EXPECT_EQ(worldData_.GetChunkC(6, 6), &added_chunk);
+        worldData_.LogicAddChunk(added_chunk);
+        worldData_.QueueChunkGeneration(0, 0);
 
-        worldData_.ClearChunkData();
 
-        // Chunk no longer exists after it was cleared
+        worldData_.Clear();
+
+
+        const data::PrototypeManager proto_manager;
+        worldData_.GenChunk(proto_manager);
+
+        EXPECT_EQ(worldData_.GetChunkC(0, 0), nullptr);
+
         EXPECT_EQ(worldData_.GetChunkC(6, 6), nullptr);
+        EXPECT_TRUE(worldData_.LogicGetChunks().empty());
     }
 
 
@@ -320,7 +329,7 @@ namespace jactorio::game
         worldData_.LogicAddChunk(chunk);
 
         // Clear
-        worldData_.ClearChunkData();
+        worldData_.Clear();
 
         // Vector reference should now be empty
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
@@ -331,6 +340,8 @@ namespace jactorio::game
     {
     protected:
         WorldData worldData_;
+        LogicData logicData_;
+
         data::ContainerEntity proto_; // Any proto is fine
 
         ///
@@ -355,6 +366,39 @@ namespace jactorio::game
         ExpectTLResolved({1, 1}, TileLayer::base);
         ExpectTLResolved({2, 1}, TileLayer::base);
         ExpectTLResolved({3, 1}, TileLayer::base);
+    }
+
+    TEST_F(WorldDataDeserialize, ResolveMultiTilesFirst) {
+        worldData_.EmplaceChunk(0, 0);
+
+        /*
+         *   I
+         * A A  Must resolve Assembly machine multi tile first before calling OnDeserialize for Inserter
+         * A A
+         */
+
+        data::PrototypeManager proto_manager;
+        data::UniqueDataManager unique_manager;
+
+
+        auto& asm_machine = proto_manager.AddProto<data::AssemblyMachine>();
+        TestSetupAssemblyMachine(worldData_, {0, 2}, asm_machine);
+
+        auto& inserter = proto_manager.AddProto<data::Inserter>();
+        TestSetupInserter(worldData_, logicData_, {1, 1}, inserter, data::Orientation::down);
+
+
+        data::active_prototype_manager   = &proto_manager;
+        data::active_unique_data_manager = &unique_manager;
+        proto_manager.GenerateRelocationTable();
+
+        auto result = TestSerializeDeserialize(worldData_);
+        result.DeserializePostProcess();
+
+        auto* result_inserter_data =
+            result.GetTile({1, 1})->GetLayer(TileLayer::entity).GetUniqueData<data::InserterData>();
+
+        EXPECT_TRUE(result_inserter_data->dropoff.IsInitialized());
     }
 
     TEST_F(WorldDataDeserialize, CallOnDeserialize) {

@@ -4,6 +4,8 @@
 
 #include "core/resource_guard.h"
 
+#include <string>
+
 namespace jactorio::core
 {
     namespace
@@ -17,6 +19,12 @@ namespace jactorio::core
         }
 
         EXPECT_TRUE(non_capturing_called);
+    }
+
+    TEST(ResourceGuardTest, DeduceTemplateArgs) {
+        auto guard  = ResourceGuard(+[]() {});
+        auto guard2 = ResourceGuard(+[]() -> int { return 0; });
+        auto guard3 = ResourceGuard(+[]() -> std::string { return ""; });
     }
 
     TEST(ResourceGuardTest, CapturingCallDestructor) {

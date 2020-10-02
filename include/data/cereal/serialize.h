@@ -64,12 +64,6 @@
     template <class TArchive>                                       \
     static void load_and_construct(TArchive& archive, cereal::construct<data_ty__>& construct)
 
-namespace jactorio::game
-{
-    struct GameDataLocal;
-    struct GameDataGlobal;
-} // namespace jactorio::game
-
 namespace jactorio::data
 {
     ///
@@ -81,11 +75,6 @@ namespace jactorio::data
 
         archiver(std::forward<TArgs>(args)...);
     }
-
-    void SerializeGameData(const game::GameDataGlobal& game_data);
-    ///
-    /// \param out_data_global Deserialized into this
-    void DeserializeGameData(game::GameDataLocal& data_local, game::GameDataGlobal& out_data_global);
 } // namespace jactorio::data
 
 #endif // JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZE_H

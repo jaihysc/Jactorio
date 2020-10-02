@@ -20,6 +20,6 @@ fi
 cd "$(dirname "$0")" || exit 2
 
 cd out/"$1"/test/ || exit 2
-$gtestExecutor ./jactorioTest --gtest_filter="$gtestFilter" --gtest_output="xml:../../../TEST-gtest_results.xml" || exit 2
+$gtestExecutor ./jactorioTest --gtest_shuffle --gtest_repeat=10 --gtest_filter="$gtestFilter" --gtest_output="xml:../../../TEST-gtest_results.xml" || exit 2
 
 exit 0
