@@ -94,6 +94,7 @@ set(JACTORIO_TEST_FILES
 
 
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp
+	${JACTORIO_TEST_DIR}/game/game_dataTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp

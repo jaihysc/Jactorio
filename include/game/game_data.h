@@ -36,6 +36,9 @@ namespace jactorio::game
     /// Serialized runtime data, persists across restarts
     struct GameDataGlobal
     {
+        void ClearRefsToWorld(GameDataLocal& data_local);
+
+
         GameWorlds worlds{1};
         LogicData logic;
         PlayerData player;
@@ -50,6 +53,11 @@ namespace jactorio::game
             archive(player);
         }
     };
+
+    inline void GameDataGlobal::ClearRefsToWorld(GameDataLocal& data_local) {
+        data_local.input.mouse.SkipErasingLastOverlay(); // Overlays
+        player.placement.SetActivatedLayer(nullptr);     // ChunkTileLayer
+    }
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_GAME_DATA_H

@@ -73,15 +73,19 @@ namespace jactorio
 
 
         ///
-        /// Reconstructs GameDataGlobal
-        void ResetGlobalData() {
-            gameDataGlobal_.reset();
-            gameDataGlobal_.emplace();
-        }
+        /// Clears and reconstructs GameDataGlobal
+        void ResetGlobalData();
 
     private:
         std::optional<game::GameDataGlobal> gameDataGlobal_;
     };
+
+    inline void ThreadedLoopCommon::ResetGlobalData() {
+        GetDataGlobal().ClearRefsToWorld(gameDataLocal);
+
+        gameDataGlobal_.reset();
+        gameDataGlobal_.emplace();
+    }
 } // namespace jactorio
 
 

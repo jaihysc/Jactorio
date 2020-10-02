@@ -125,8 +125,6 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Start")) {
-        data::PrepareWorldDataClear(common.gameDataLocal, common.GetDataGlobal());
-
         common.ResetGlobalData();
 
         ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
