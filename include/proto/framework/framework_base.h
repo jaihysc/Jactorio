@@ -118,7 +118,7 @@ namespace jactorio::proto
 
 #define PROTOTYPE_CATEGORY(category__)                                                           \
     static constexpr jactorio::proto::Category category = jactorio::proto::Category::category__; \
-    J_NODISCARD jactorio::proto::Category Category() const override {                            \
+    J_NODISCARD jactorio::proto::Category GetCategory() const override {                         \
         return jactorio::proto::Category::category__;                                            \
     }                                                                                            \
     static_assert(true)
@@ -156,7 +156,7 @@ namespace jactorio::proto
         Category category = Category::none;
         ///
         /// Category of this Prototype item
-        virtual Category Category() const = 0;
+        virtual Category GetCategory() const = 0;
 
         ///
         /// Unique per prototype, unique & auto assigned per new prototype added

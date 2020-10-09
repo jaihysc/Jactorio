@@ -45,7 +45,7 @@ namespace jactorio::data
         // Internal name of prototype should have been renamed to match data_raw name
         // Data category should also have been set to the one provided on add
         EXPECT_EQ(proto->name, "__test__/raw-fish");
-        EXPECT_EQ(proto->Category(), jactorio::proto::Category::sprite);
+        EXPECT_EQ(proto->GetCategory(), jactorio::proto::Category::sprite);
         EXPECT_EQ(proto->internalId, 1);
         EXPECT_EQ(proto->order, 1);
         // Since no localized name was specified, it uses the internal name
@@ -76,7 +76,7 @@ namespace jactorio::data
         const auto* proto = dataManager_.DataRawGet<proto::Sprite>("raw-fish3");
 
         EXPECT_EQ(proto->name, "raw-fish3");
-        EXPECT_EQ(proto->Category(), proto::Category::sprite);
+        EXPECT_EQ(proto->GetCategory(), proto::Category::sprite);
         EXPECT_EQ(proto->internalId, 4);
     }
 

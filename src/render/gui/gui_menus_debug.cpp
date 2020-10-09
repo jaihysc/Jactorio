@@ -203,7 +203,7 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
         for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
             auto& layer = chunk->Tiles()[i].GetLayer(game::TileLayer::entity);
             if (layer.prototypeData.Get() == nullptr ||
-                layer.prototypeData->Category() != proto::Category::transport_belt)
+                layer.prototypeData->GetCategory() != proto::Category::transport_belt)
                 continue;
 
             auto& line_data    = *static_cast<proto::TransportLineData*>(layer.GetUniqueData());
@@ -433,7 +433,7 @@ void render::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
         return;
 
     auto& layer = tile->GetLayer(game::TileLayer::entity);
-    if (layer.prototypeData.Get() == nullptr || layer.prototypeData->Category() != proto::Category::inserter) {
+    if (layer.prototypeData.Get() == nullptr || layer.prototypeData->GetCategory() != proto::Category::inserter) {
         ImGui::Text("No inserter at selected tile");
         return;
     }

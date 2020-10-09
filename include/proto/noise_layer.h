@@ -27,7 +27,7 @@ namespace jactorio::proto
     public:
         using NoiseValT = float;
 
-        J_NODISCARD proto::Category Category() const override {
+        J_NODISCARD Category GetCategory() const override {
             bool constexpr is_tile   = std::is_same<T, Tile>::value;
             bool constexpr is_entity = std::is_same<T, Entity>::value || std::is_same<T, ResourceEntity>::value;
 

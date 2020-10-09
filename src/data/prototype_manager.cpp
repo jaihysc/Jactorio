@@ -21,7 +21,7 @@ void data::PrototypeManager::SetDirectoryPrefix(const std::string& name) {
 }
 
 void data::PrototypeManager::DataRawAdd(const std::string& iname, proto::FrameworkBase* const prototype) {
-    const auto data_category = prototype->Category();
+    const auto data_category = prototype->GetCategory();
 
     // Use the following format internal name
     // Format __dir__/iname

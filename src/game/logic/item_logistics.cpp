@@ -24,7 +24,7 @@ bool game::ItemDropOff::Initialize(WorldData& world_data, const WorldCoordAxis w
     if (layer.prototypeData == nullptr)
         return false;
 
-    switch (layer.prototypeData->Category()) {
+    switch (layer.prototypeData->GetCategory()) {
     case proto::Category::container_entity:
         dropFunc_    = &ItemDropOff::InsertContainerEntity;
         canDropFunc_ = &ItemDropOff::CanInsertContainerEntity;
@@ -228,7 +228,7 @@ bool game::InserterPickup::Initialize(WorldData& world_data,
     if (layer.prototypeData == nullptr)
         return false;
 
-    switch (layer.prototypeData->Category()) {
+    switch (layer.prototypeData->GetCategory()) {
     case proto::Category::container_entity:
         pickupFunc_    = &InserterPickup::PickupContainerEntity;
         getPickupFunc_ = &InserterPickup::GetPickupContainerEntity;

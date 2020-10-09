@@ -144,7 +144,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     // Prototype classes
     py::class_<FrameworkBase>(m, "_FrameworkBase")
         .def("name", &FrameworkBase::Set_name)
-        .def("category", &FrameworkBase::Category) PYBIND_PROP(FrameworkBase, order);
+        .def("category", &FrameworkBase::GetCategory) PYBIND_PROP(FrameworkBase, order);
 
     PYBIND_DATA_CLASS(Sprite, Sprite, FrameworkBase)
     PYBIND_PROP(Sprite, group)
