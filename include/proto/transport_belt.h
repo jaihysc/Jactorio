@@ -6,12 +6,12 @@
 
 #include "proto/abstract_proto/transport_line.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class TransportBelt final : public TransportLine
     {
         PROTOTYPE_CATEGORY(transport_belt);
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_TRANSPORT_BELT_H

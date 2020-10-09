@@ -8,6 +8,7 @@
 
 #include "core/data_type.h"
 
+#include "data/prototype_manager.h"
 #include "proto/abstract_proto/transport_line.h"
 #include "proto/assembly_machine.h"
 #include "proto/container_entity.h"
@@ -16,7 +17,6 @@
 #include "proto/recipe.h"
 #include "proto/resource_entity.h"
 #include "proto/sprite.h"
-#include "data/prototype_manager.h"
 
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
@@ -30,24 +30,24 @@ namespace jactorio
 
     ///
     /// Inherit and override what is necessary
-    class TestMockWorldObject : public data::FWorldObject
+    class TestMockWorldObject : public proto::FWorldObject
     {
     public:
         PROTOTYPE_CATEGORY(test);
 
         void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {}
 
-        J_NODISCARD data::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
+        J_NODISCARD proto::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
             return nullptr;
         }
 
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(data::Orientation /*orientation*/,
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(proto::Orientation /*orientation*/,
                                                game::WorldData& /*world_data*/,
                                                const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
 
-        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const data::UniqueDataBase& /*unique_data*/,
+        J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const proto::UniqueDataBase& /*unique_data*/,
                                                    GameTickT /*game_tick*/) const override {
             return 0;
         }
@@ -64,7 +64,7 @@ namespace jactorio
     static_assert(!std::is_abstract_v<TestMockWorldObject>);
 
 
-    class TestMockEntity : public data::Entity
+    class TestMockEntity : public proto::Entity
     {
     public:
         PROTOTYPE_CATEGORY(test);
@@ -73,7 +73,7 @@ namespace jactorio
                      game::LogicData& logic_data,
                      const WorldCoord& world_coords,
                      game::ChunkTileLayer& tile_layer,
-                     data::Orientation orientation) const override {}
+                     proto::Orientation orientation) const override {}
 
         void OnRemove(game::WorldData& world_data,
                       game::LogicData& logic_data,
@@ -85,7 +85,7 @@ namespace jactorio
 
     inline void TestSetupMultiTileProp(game::ChunkTileLayer& ctl,
                                        const game::MultiTileData& mt_data,
-                                       data::FWorldObject& proto) {
+                                       proto::FWorldObject& proto) {
         proto.tileWidth   = mt_data.span;
         proto.tileHeight  = mt_data.height;
         ctl.prototypeData = &proto;
@@ -97,7 +97,7 @@ namespace jactorio
     /// \return Top left tile
     template <bool SetTopLeftLayer = true>
     game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world_data,
-                                             data::FWorldObject& proto,
+                                             proto::FWorldObject& proto,
                                              const WorldCoord& world_coord,
                                              const game::TileLayer tile_layer,
                                              const game::MultiTileData& mt_data) {
@@ -128,12 +128,12 @@ namespace jactorio
     /// Creates a container of size 10 at coordinates
     inline game::ChunkTileLayer& TestSetupContainer(game::WorldData& world_data,
                                                     const WorldCoord& world_coords,
-                                                    const data::ContainerEntity& container_entity,
+                                                    const proto::ContainerEntity& container_entity,
                                                     const int container_capacity = 10) {
         auto& container_layer = world_data.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
 
         container_layer.prototypeData = &container_entity;
-        container_layer.MakeUniqueData<data::ContainerEntityData>(container_capacity);
+        container_layer.MakeUniqueData<proto::ContainerEntityData>(container_capacity);
 
         return container_layer;
     }
@@ -143,8 +143,8 @@ namespace jactorio
     inline game::ChunkTileLayer& TestSetupInserter(game::WorldData& world_data,
                                                    game::LogicData& logic_data,
                                                    const WorldCoord& world_coords,
-                                                   const data::Inserter& inserter_proto,
-                                                   const data::Orientation orientation) {
+                                                   const proto::Inserter& inserter_proto,
+                                                   const proto::Orientation orientation) {
         using namespace jactorio;
 
         auto& layer = world_data.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
@@ -160,7 +160,7 @@ namespace jactorio
     inline void TestRegisterTransportSegment(game::WorldData& world_data,
                                              const WorldCoord& world_coords,
                                              const std::shared_ptr<game::TransportSegment>& segment,
-                                             const data::TransportLine& prototype) {
+                                             const proto::TransportLine& prototype) {
         auto* tile = world_data.GetTile(world_coords);
         assert(tile);
         auto* chunk = world_data.GetChunkW(world_coords);
@@ -169,7 +169,7 @@ namespace jactorio
         auto& layer         = tile->GetLayer(game::TileLayer::entity);
         layer.prototypeData = &prototype;
 
-        layer.MakeUniqueData<data::TransportLineData>(segment);
+        layer.MakeUniqueData<proto::TransportLineData>(segment);
 
         chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)
             .emplace_back(&tile->GetLayer(game::TileLayer::entity));
@@ -180,24 +180,24 @@ namespace jactorio
     /// \return top left layer
     inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::WorldData& world_data,
                                                           const WorldCoord& world_coords,
-                                                          data::AssemblyMachine& assembly_proto) {
+                                                          proto::AssemblyMachine& assembly_proto) {
         auto& origin_layer =
             TestSetupMultiTile(world_data, assembly_proto, world_coords, game::TileLayer::entity, {2, 2});
-        origin_layer.MakeUniqueData<data::AssemblyMachineData>();
+        origin_layer.MakeUniqueData<proto::AssemblyMachineData>();
         return origin_layer;
     }
 
     inline game::ChunkTile& TestSetupResource(game::WorldData& world_data,
                                               const WorldCoord& world_coord,
-                                              data::ResourceEntity& resource,
-                                              const data::ResourceEntityData::ResourceCount resource_amount) {
+                                              proto::ResourceEntity& resource,
+                                              const proto::ResourceEntityData::ResourceCount resource_amount) {
 
         game::ChunkTile* tile = world_data.GetTile(world_coord);
         assert(tile);
 
         auto& resource_layer         = tile->GetLayer(game::TileLayer::resource);
         resource_layer.prototypeData = &resource;
-        resource_layer.MakeUniqueData<data::ResourceEntityData>(resource_amount);
+        resource_layer.MakeUniqueData<proto::ResourceEntityData>(resource_amount);
 
         return *tile;
     }
@@ -207,10 +207,10 @@ namespace jactorio
     inline game::ChunkTile& TestSetupDrill(game::WorldData& world_data,
                                            game::LogicData& logic_data,
                                            const WorldCoord& world_coord,
-                                           const data::Orientation orientation,
-                                           data::ResourceEntity& resource,
-                                           data::MiningDrill& drill,
-                                           const data::ResourceEntityData::ResourceCount resource_amount = 100) {
+                                           const proto::Orientation orientation,
+                                           proto::ResourceEntity& resource,
+                                           proto::MiningDrill& drill,
+                                           const proto::ResourceEntityData::ResourceCount resource_amount = 100) {
         auto* tile = world_data.GetTile(world_coord);
         assert(tile);
 
@@ -228,10 +228,10 @@ namespace jactorio
 
     struct TestSetupRecipeReturn
     {
-        data::Recipe* recipe    = nullptr;
-        data::Item* item1       = nullptr;
-        data::Item* item2       = nullptr;
-        data::Item* itemProduct = nullptr;
+        proto::Recipe* recipe    = nullptr;
+        proto::Item* item1       = nullptr;
+        proto::Item* item2       = nullptr;
+        proto::Item* itemProduct = nullptr;
     };
 
     ///
@@ -240,15 +240,15 @@ namespace jactorio
     J_NODISCARD inline auto TestSetupRecipe(data::PrototypeManager& proto_manager) {
         TestSetupRecipeReturn rt;
 
-        rt.recipe = &proto_manager.AddProto<data::Recipe>();
+        rt.recipe = &proto_manager.AddProto<proto::Recipe>();
 
         rt.recipe->craftingTime = 1.f;
         rt.recipe->ingredients  = {{"__test/r-ingredient-1", 1}, {"__test/r-ingredient-2", 1}};
         rt.recipe->product      = {"__test/r-product", 1};
 
-        rt.item1       = &proto_manager.AddProto<data::Item>("__test/r-ingredient-1");
-        rt.item2       = &proto_manager.AddProto<data::Item>("__test/r-ingredient-2");
-        rt.itemProduct = &proto_manager.AddProto<data::Item>("__test/r-product");
+        rt.item1       = &proto_manager.AddProto<proto::Item>("__test/r-ingredient-1");
+        rt.item2       = &proto_manager.AddProto<proto::Item>("__test/r-ingredient-2");
+        rt.itemProduct = &proto_manager.AddProto<proto::Item>("__test/r-product");
 
         return rt;
     }

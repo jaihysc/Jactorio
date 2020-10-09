@@ -7,9 +7,9 @@
 #include "game/logic/deferral_timer.h"
 #include "game/logic/item_logistics.h"
 #include "proto/abstract_proto/health_entity.h"
-#include "proto/prototype_type.h"
+#include "proto/detail/prototype_type.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     struct MiningDrillData final : HealthEntityData
     {
@@ -18,7 +18,7 @@ namespace jactorio::data
         game::ItemDropOff output;
         WorldCoord outputTile;
 
-        SerialProtoPtr<const Item> outputItem = nullptr;
+        data::SerialProtoPtr<const Item> outputItem = nullptr;
 
 
         /// Top left mining area coordinate
@@ -133,7 +133,7 @@ namespace jactorio::data
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
         void ValidatedPostLoad() override;
 
     private:
@@ -166,6 +166,6 @@ namespace jactorio::data
         /// Sets up deferred callback for when it has mined a resource, but failed to output
         void RegisterOutputCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_MINING_DRILL_H

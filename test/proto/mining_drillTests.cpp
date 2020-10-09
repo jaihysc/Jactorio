@@ -6,7 +6,7 @@
 
 #include "jactorioTests.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class MiningDrillTest : public testing::Test
     {
@@ -353,4 +353,4 @@ namespace jactorio::data
 
         EXPECT_TRUE(tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>()->output.IsInitialized());
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto

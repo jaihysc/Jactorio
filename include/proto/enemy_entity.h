@@ -5,11 +5,11 @@
 
 #include "proto/abstract_proto/entity.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class EnemyEntity final : public Entity
     {
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_ENTITY_ENEMY_ENTITY_H

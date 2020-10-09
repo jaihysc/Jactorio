@@ -25,11 +25,11 @@ using namespace jactorio;
 ///
 /// Validates that the contents of the inventory are valid
 /// Disabled in release builds
-void InventoryVerify(const data::Item::Inventory& inv) {
+void InventoryVerify(const proto::Item::Inventory& inv) {
     for (const auto& stack : inv) {
         if (stack.item == nullptr || stack.count == 0) {
             // Inventory selection cursor exempt from having 0 for count
-            if (stack.item != nullptr && stack.item->name == data::Item::kInventorySelectedCursor) {
+            if (stack.item != nullptr && stack.item->name == proto::Item::kInventorySelectedCursor) {
                 continue;
             }
 
@@ -43,7 +43,7 @@ void InventoryVerify(const data::Item::Inventory& inv) {
 
 ///
 /// Attempts to drop one item from origin item stack to target item stack
-bool DropOneOriginItem(data::ItemStack& origin_item_stack, data::ItemStack& target_item_stack) {
+bool DropOneOriginItem(proto::ItemStack& origin_item_stack, proto::ItemStack& target_item_stack) {
     target_item_stack.item = origin_item_stack.item;
     target_item_stack.count++;
 
@@ -57,13 +57,13 @@ bool DropOneOriginItem(data::ItemStack& origin_item_stack, data::ItemStack& targ
     return false;
 }
 
-bool game::StackMatchesFilter(const data::ItemStack& origin_stack, const data::ItemStack& target_stack) {
+bool game::StackMatchesFilter(const proto::ItemStack& origin_stack, const proto::ItemStack& target_stack) {
     // Origin stack must match target stack if filter is set and origin stack has an item
     return origin_stack.item == nullptr || target_stack.filter == nullptr || origin_stack.item == target_stack.filter;
 }
 
-bool game::MoveItemstackToIndex(data::ItemStack& origin_stack,
-                                data::ItemStack& target_stack,
+bool game::MoveItemstackToIndex(proto::ItemStack& origin_stack,
+                                proto::ItemStack& target_stack,
                                 const unsigned short mouse_button) {
     assert(mouse_button == 0 || mouse_button == 1); // Only left and right click are currently supported
 
@@ -163,7 +163,7 @@ bool game::MoveItemstackToIndex(data::ItemStack& origin_stack,
 
             // Take half on right click
             if (mouse_button == 1) {
-                auto get_take_amount = [&]() -> data::Item::StackCount {
+                auto get_take_amount = [&]() -> proto::Item::StackCount {
                     // Never exceed the stack size
                     if (target_stack.count > target_stack.item->stackSize * 2) {
                         return target_stack.item->stackSize;
@@ -222,7 +222,7 @@ bool game::MoveItemstackToIndex(data::ItemStack& origin_stack,
 // ======================================================================
 // Can be used by non-player inventories
 
-std::pair<bool, size_t> game::CanAddStack(const data::Item::Inventory& inv, const data::ItemStack& item_stack) {
+std::pair<bool, size_t> game::CanAddStack(const proto::Item::Inventory& inv, const proto::ItemStack& item_stack) {
     J_INVENTORY_VERIFY(inv, guard);
 
     // Amount left which needs to be added
@@ -256,7 +256,7 @@ std::pair<bool, size_t> game::CanAddStack(const data::Item::Inventory& inv, cons
     return {false, 0};
 }
 
-data::Item::StackCount game::AddStack(data::Item::Inventory& inv, const data::ItemStack& item_stack) {
+proto::Item::StackCount game::AddStack(proto::Item::Inventory& inv, const proto::ItemStack& item_stack) {
     J_INVENTORY_VERIFY(inv, guard);
 
     // Amount left which needs to be added
@@ -295,7 +295,7 @@ data::Item::StackCount game::AddStack(data::Item::Inventory& inv, const data::It
     return remaining_add;
 }
 
-bool game::AddStackSub(data::Item::Inventory& inv, data::ItemStack& item_stack) {
+bool game::AddStackSub(proto::Item::Inventory& inv, proto::ItemStack& item_stack) {
     J_INVENTORY_VERIFY(inv, guard);
 
     const auto remainder = AddStack(inv, item_stack);
@@ -309,7 +309,7 @@ bool game::AddStackSub(data::Item::Inventory& inv, data::ItemStack& item_stack) 
     return false;
 }
 
-uint32_t game::GetInvItemCount(const data::Item::Inventory& inv, const data::Item* item) {
+uint32_t game::GetInvItemCount(const proto::Item::Inventory& inv, const proto::Item* item) {
     J_INVENTORY_VERIFY(inv, guard);
 
     uint32_t count = 0;
@@ -320,7 +320,7 @@ uint32_t game::GetInvItemCount(const data::Item::Inventory& inv, const data::Ite
     return count;
 }
 
-const data::Item* game::GetFirstItem(const data::Item::Inventory& inv) {
+const proto::Item* game::GetFirstItem(const proto::Item::Inventory& inv) {
     J_INVENTORY_VERIFY(inv, guard);
 
     for (const auto& i : inv) {
@@ -333,7 +333,7 @@ const data::Item* game::GetFirstItem(const data::Item::Inventory& inv) {
 }
 
 
-bool game::RemoveInvItem(data::Item::Inventory& inv, const data::Item* item, const uint32_t remove_amount) {
+bool game::RemoveInvItem(proto::Item::Inventory& inv, const proto::Item* item, const uint32_t remove_amount) {
     J_INVENTORY_VERIFY(inv, guard);
 
     // Not enough to remove
@@ -344,7 +344,7 @@ bool game::RemoveInvItem(data::Item::Inventory& inv, const data::Item* item, con
     return true;
 }
 
-void game::DeleteInvItem(data::Item::Inventory& inv, const data::Item* item, uint32_t remove_amount) {
+void game::DeleteInvItem(proto::Item::Inventory& inv, const proto::Item* item, uint32_t remove_amount) {
     J_INVENTORY_VERIFY(inv, guard);
 
     for (auto& inv_i : inv) {

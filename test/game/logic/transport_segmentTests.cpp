@@ -11,13 +11,13 @@ namespace jactorio::game
     class TransportSegmentTest : public testing::Test
     {
     protected:
-        std::unique_ptr<data::Item> itemProto_                   = std::make_unique<data::Item>();
-        std::unique_ptr<data::TransportBelt> transportBeltProto_ = std::make_unique<data::TransportBelt>();
+        std::unique_ptr<proto::Item> itemProto_                   = std::make_unique<proto::Item>();
+        std::unique_ptr<proto::TransportBelt> transportBeltProto_ = std::make_unique<proto::TransportBelt>();
 
         WorldData worldData_{};
 
-        std::unique_ptr<TransportSegment> segment_ =
-            std::make_unique<TransportSegment>(data::Orientation::left, TransportSegment::TerminationType::straight, 2);
+        std::unique_ptr<TransportSegment> segment_ = std::make_unique<TransportSegment>(
+            proto::Orientation::left, TransportSegment::TerminationType::straight, 2);
 
         void SetUp() override {
             transportBeltProto_->speed = 0.01;
@@ -39,12 +39,12 @@ namespace jactorio::game
         segment_->AppendItem(true, kItemSpacing, *itemProto_);
 
         // Location 1.75 tiles from beginning of transport line is filled
-        EXPECT_FALSE(segment_->CanInsert(true, data::LineDistT(1.75)));
+        EXPECT_FALSE(segment_->CanInsert(true, proto::LineDistT(1.75)));
     }
 
     TEST_F(TransportSegmentTest, CanInsertEmptyTransportLine) {
         // THe entire transport line is empty and can thus insert
-        EXPECT_TRUE(segment_->CanInsert(false, data::LineDistT(1.75)));
+        EXPECT_TRUE(segment_->CanInsert(false, proto::LineDistT(1.75)));
     }
 
     TEST_F(TransportSegmentTest, CanInsertGap) {
@@ -58,20 +58,20 @@ namespace jactorio::game
 
 
         // Overlaps with the item at 1 by 0.01
-        EXPECT_FALSE(segment_->CanInsert(false, data::LineDistT(kItemSpacing - 0.01)));
+        EXPECT_FALSE(segment_->CanInsert(false, proto::LineDistT(kItemSpacing - 0.01)));
         // Will overlap with item at 1.5
-        EXPECT_FALSE(segment_->CanInsert(false, data::LineDistT(1.45)));
+        EXPECT_FALSE(segment_->CanInsert(false, proto::LineDistT(1.45)));
 
 
         // Sufficient space ahead and behind
-        EXPECT_TRUE(segment_->CanInsert(false, data::LineDistT(1.25)));
+        EXPECT_TRUE(segment_->CanInsert(false, proto::LineDistT(1.25)));
     }
 
     TEST_F(TransportSegmentTest, CanInsertFirstItem) {
         // The first item which is appended ignores an additional offset of kItemSpacing when calculating
         // whether or not it can be inserted
 
-        const data::LineDistT offset{0.f};
+        const proto::LineDistT offset{0.f};
 
         bool result = segment_->CanInsert(true, offset); // Ok, Offset can be 0, is first item
         EXPECT_TRUE(result);
@@ -88,7 +88,7 @@ namespace jactorio::game
     TEST_F(TransportSegmentTest, CanInsertAbs) {
         // the given offset should be adjusted as TransportSegment::itemOffset is adjusted where 1 = 1 tile
         segment_->itemOffset = 1;
-        const data::LineDistT offset{0.f};
+        const proto::LineDistT offset{0.f};
 
         segment_->AppendItem(true, 0, *itemProto_);
         const bool result = segment_->CanInsertAbs(true, offset); // Ok, offset (0) + itemOffset (1) = 1
@@ -118,8 +118,8 @@ namespace jactorio::game
     }
 
     TEST_F(TransportSegmentTest, AppendItem) {
-        auto line_segment =
-            std::make_unique<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment = std::make_unique<TransportSegment>(
+            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
 
         // Offset is from the beginning of the transport line OR the previous item if it exists
         line_segment->AppendItem(true, 1.3, *itemProto_);
@@ -139,8 +139,8 @@ namespace jactorio::game
         // The first item which is appended ignores an additional offset of kItemSpacing when calculating
         // whether or not it can be appended
 
-        auto line_segment =
-            std::make_unique<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment = std::make_unique<TransportSegment>(
+            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
 
         line_segment->AppendItem(true, 0, *itemProto_); // Ok, Offset can be 0, is first item
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 0);
@@ -155,8 +155,8 @@ namespace jactorio::game
     TEST_F(TransportSegmentTest, InsertItem) {
         // Insert INSERTS an item at an arbitrary position offset from the beginning of the transport line
 
-        auto line_segment =
-            std::make_unique<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment = std::make_unique<TransportSegment>(
+            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
 
         // Offset is ALWAYS from the beginning of the transport line
 
@@ -188,8 +188,8 @@ namespace jactorio::game
     }
 
     TEST_F(TransportSegmentTest, InsertItemAbs) {
-        auto line_segment =
-            std::make_unique<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment = std::make_unique<TransportSegment>(
+            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
         line_segment->itemOffset = 2;
 
         // Offset is ALWAYS from the beginning of the transport line + itemOffset
@@ -204,8 +204,8 @@ namespace jactorio::game
 
     TEST_F(TransportSegmentTest, TryInsertItem) {
 
-        auto line_segment =
-            std::make_unique<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment = std::make_unique<TransportSegment>(
+            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
 
         // Offset is ALWAYS from the beginning of the transport line
         {
@@ -235,8 +235,8 @@ namespace jactorio::game
 
     TEST_F(TransportSegmentTest, BackItemDistanceLeft) {
 
-        auto line_segment =
-            std::make_unique<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment = std::make_unique<TransportSegment>(
+            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
 
         EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 0);
 
@@ -263,8 +263,8 @@ namespace jactorio::game
 
     TEST_F(TransportSegmentTest, BackItemDistanceRight) {
 
-        auto line_segment =
-            std::make_unique<TransportSegment>(data::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment = std::make_unique<TransportSegment>(
+            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
 
         EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 0.);
 
@@ -341,7 +341,7 @@ namespace jactorio::game
 
         //
 
-        data::Item item2{};
+        proto::Item item2{};
         segment_->AppendItem(true, 0.1, *itemProto_);
         segment_->AppendItem(true, 0.8, item2);       // 0.9
         segment_->AppendItem(true, 0.9, *itemProto_); // 1.8
@@ -355,10 +355,10 @@ namespace jactorio::game
 
     TEST_F(TransportSegmentTest, Serialize) {
         data::PrototypeManager proto_manager;
-        auto& item = proto_manager.AddProto<data::Item>();
+        auto& item = proto_manager.AddProto<proto::Item>();
 
         auto segment = std::make_unique<TransportSegment>(
-            data::Orientation::down, TransportSegment::TerminationType::bend_left, 4);
+            proto::Orientation::down, TransportSegment::TerminationType::bend_left, 4);
 
         segment->AppendItem(true, 0.43, item);
         segment->AppendItem(true, 0.43, item);
@@ -378,7 +378,7 @@ namespace jactorio::game
         // ======================================================================
         auto result = TestSerializeDeserialize(segment);
 
-        EXPECT_EQ(result->direction, data::Orientation::down);
+        EXPECT_EQ(result->direction, proto::Orientation::down);
         EXPECT_EQ(result->terminationType, TransportSegment::TerminationType::bend_left);
         EXPECT_EQ(result->length, 4);
 

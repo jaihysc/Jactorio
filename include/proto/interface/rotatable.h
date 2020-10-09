@@ -6,7 +6,7 @@
 
 namespace jactorio
 {
-    namespace data
+    namespace proto
     {
         class Sprite;
     }
@@ -17,7 +17,7 @@ namespace jactorio
     }
 } // namespace jactorio
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     ///
     /// Entities which can be rotated by the player
@@ -39,6 +39,6 @@ namespace jactorio::data
         PYTHON_PROP_I(Sprite*, spriteS, nullptr);
         PYTHON_PROP_I(Sprite*, spriteW, nullptr);
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_INTERFACE_ROTATABLE_H

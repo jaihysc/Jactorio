@@ -8,9 +8,9 @@
 #include <queue>
 
 #include "core/coordinate_tuple.h"
+#include "proto/detail/type.h"
 #include "proto/item.h"
 #include "proto/recipe.h"
-#include "proto/type.h"
 
 namespace jactorio::game
 {
@@ -137,7 +137,7 @@ namespace jactorio::game
             ///
             /// High level method for inventory actions, prefer over calls to HandleClick and others
             void HandleInventoryActions(const data::PrototypeManager& data_manager,
-                                        data::Item::Inventory& inv,
+                                        proto::Item::Inventory& inv,
                                         size_t index,
                                         bool half_select);
 
@@ -146,7 +146,7 @@ namespace jactorio::game
             ///
             /// Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying
             /// stack size
-            static void InventorySort(data::Item::Inventory& inv);
+            static void InventorySort(proto::Item::Inventory& inv);
 
             ///
             /// Interacts with the inventory at index
@@ -157,12 +157,12 @@ namespace jactorio::game
                              uint16_t index,
                              uint16_t mouse_button,
                              bool reference_select,
-                             data::Item::Inventory& inv);
+                             proto::Item::Inventory& inv);
 
             ///
             /// Gets the currently item player is currently holding on the cursor
             /// \return nullptr if there is no item selected
-            J_NODISCARD const data::ItemStack* GetSelectedItem() const;
+            J_NODISCARD const proto::ItemStack* GetSelectedItem() const;
 
             ///
             /// Deselects the current item and returns it to its slot ONLY if selected by reference
@@ -181,14 +181,14 @@ namespace jactorio::game
 
 
 #ifdef JACTORIO_BUILD_TEST
-            void SetSelectedItem(const data::ItemStack& item) {
+            void SetSelectedItem(const proto::ItemStack& item) {
                 hasItemSelected_ = true;
                 selectedItem_    = item;
             }
 #endif
 
 
-            data::Item::Inventory inventory{kDefaultInventorySize};
+            proto::Item::Inventory inventory{kDefaultInventorySize};
 
 
             CEREAL_SERIALIZE(archive) {
@@ -196,7 +196,7 @@ namespace jactorio::game
             }
 
         private:
-            data::ItemStack selectedItem_;
+            proto::ItemStack selectedItem_;
 
             bool hasItemSelected_          = false;
             std::size_t selectedItemIndex_ = 0;
@@ -275,7 +275,7 @@ namespace jactorio::game
             J_NODISCARD float GetPickupPercentage() const;
 
 
-            data::Orientation orientation = data::Orientation::up;
+            proto::Orientation orientation = proto::Orientation::up;
 
         private:
             ChunkTileLayer* activatedLayer_ = nullptr;
@@ -300,7 +300,7 @@ namespace jactorio::game
         {
             friend PlayerData;
 
-            using RecipeQueueT = std::deque<data::SerialProtoPtr<const data::Recipe>>;
+            using RecipeQueueT = std::deque<data::SerialProtoPtr<const proto::Recipe>>;
 
             using CraftingItemDeductionsT = std::map<std::string, uint16_t>;
             using CraftingItemExtrasT     = std::map<std::string, uint16_t>;
@@ -329,7 +329,7 @@ namespace jactorio::game
 
             ///
             /// Queues a recipe to be crafted, this is displayed by the gui is the lower right corner
-            void QueueRecipe(const data::PrototypeManager& data_manager, const data::Recipe& recipe);
+            void QueueRecipe(const data::PrototypeManager& data_manager, const proto::Recipe& recipe);
 
             ///
             /// Returns const reference to recipe queue for rendering in gui
@@ -339,13 +339,13 @@ namespace jactorio::game
             ///
             /// Recursively depth first crafts the recipe
             /// \remark WILL NOT check that the given recipe is valid or required ingredients are present and assumes is
-            void RecipeCraftR(const data::PrototypeManager& data_manager, const data::Recipe& recipe);
+            void RecipeCraftR(const data::PrototypeManager& data_manager, const proto::Recipe& recipe);
 
             ///
             /// Recursively steps through a recipe and sub-recipes to determine if it is craftable
             /// \param batches How many runs of the recipe
             J_NODISCARD bool RecipeCanCraft(const data::PrototypeManager& data_manager,
-                                            const data::Recipe& recipe,
+                                            const proto::Recipe& recipe,
                                             uint16_t batches) const;
 
 #ifdef JACTORIO_BUILD_TEST
@@ -377,8 +377,8 @@ namespace jactorio::game
             /// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the
             /// inventory
             bool RecipeCanCraftR(const data::PrototypeManager& data_manager,
-                                 std::map<const data::Item*, uint32_t>& used_items,
-                                 const data::Recipe& recipe,
+                                 std::map<const proto::Item*, uint32_t>& used_items,
+                                 const proto::Recipe& recipe,
                                  unsigned batches) const;
 
             uint16_t selectedRecipeGroup_ = 0;
@@ -394,7 +394,7 @@ namespace jactorio::game
             CraftingItemExtrasT craftingItemExtras_;
 
             /// Item which is held until there is space in the player inventory to return
-            data::ItemStack craftingHeldItem_ = {nullptr, 0};
+            proto::ItemStack craftingHeldItem_ = {nullptr, 0};
 
 
             Inventory* playerInv_;

@@ -31,8 +31,8 @@ const SpriteUvCoordsT* sprite_positions = nullptr;
 unsigned int tex_id                     = 0; // Assigned by openGL
 
 void render::SetupCharacterData(RendererSprites& renderer_sprites) {
-    sprite_positions = &renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::gui).spritePositions;
-    tex_id           = renderer_sprites.GetTexture(data::Sprite::SpriteGroup::gui)->GetId();
+    sprite_positions = &renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::gui).spritePositions;
+    tex_id           = renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::gui)->GetId();
 }
 
 void render::Setup(const DisplayWindow& display_window) {
@@ -128,7 +128,7 @@ void render::ImguiRenderFrame() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void DrawMenu(render::Menu menu, const render::GuiRenderer& g_rendr, data::UniqueDataBase* unique_data = nullptr) {
+void DrawMenu(render::Menu menu, const render::GuiRenderer& g_rendr, proto::UniqueDataBase* unique_data = nullptr) {
     auto& gui_menu = render::menus[static_cast<int>(menu)];
 
     if (gui_menu.visible) {
@@ -163,7 +163,7 @@ void render::ImguiDraw(const DisplayWindow& display_window,
 
     auto* layer = player.placement.GetActivatedLayer();
     if (layer != nullptr) {
-        drew_gui = layer->GetPrototypeData<data::Entity>()->OnRShowGui(g_rendr, layer);
+        drew_gui = layer->GetPrototypeData<proto::Entity>()->OnRShowGui(g_rendr, layer);
         if (drew_gui) {
             SetVisible(Menu::CharacterMenu, false);
         }

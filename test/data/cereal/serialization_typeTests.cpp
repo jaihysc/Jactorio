@@ -11,9 +11,9 @@ namespace jactorio::data
     TEST(SerialPrototypePointer, Serialize) {
         PrototypeManager proto_manager;
 
-        auto& container = proto_manager.AddProto<ContainerEntity>();
+        auto& container = proto_manager.AddProto<proto::ContainerEntity>();
 
-        SerialProtoPtr<const ContainerEntity> original(&container);
+        SerialProtoPtr<const proto::ContainerEntity> original(&container);
 
 
         proto_manager.GenerateRelocationTable();
@@ -28,10 +28,10 @@ namespace jactorio::data
     }
 
     TEST(SerialPrototypePointer, SerializeNull) {
-        const SerialProtoPtr<const Sprite> original(nullptr);
+        const SerialProtoPtr<const proto::Sprite> original(nullptr);
 
-        EXPECT_TRUE(original == SerialProtoPtr<const Sprite>(nullptr));
-        EXPECT_FALSE(original != SerialProtoPtr<const Sprite>(nullptr));
+        EXPECT_TRUE(original == SerialProtoPtr<const proto::Sprite>(nullptr));
+        EXPECT_FALSE(original != SerialProtoPtr<const proto::Sprite>(nullptr));
 
         auto result = TestSerializeDeserialize(original);
         EXPECT_EQ(result.Get(), nullptr);
@@ -40,7 +40,7 @@ namespace jactorio::data
     TEST(SerialUniqueDataPointer, Serialize) {
         UniqueDataManager unique_manager;
 
-        ContainerEntityData container;
+        proto::ContainerEntityData container;
         container.health = 42;
         unique_manager.AssignId(container);
         unique_manager.StoreRelocationEntry(container);
@@ -56,7 +56,7 @@ namespace jactorio::data
     }
 
     TEST(SerialUniqueDataPointer, SerializeNull) {
-        const SerialUniqueDataPtr<ContainerEntityData> serial_ptr(nullptr);
+        const SerialUniqueDataPtr<proto::ContainerEntityData> serial_ptr(nullptr);
 
         auto result = TestSerializeDeserialize(serial_ptr);
 

@@ -74,19 +74,19 @@ namespace jactorio::render
         /// Creates a spritemap and stores it as a render::Texture
         /// \remark Requires OpenGL context
         void GInitializeSpritemap(const data::PrototypeManager& data_manager,
-                                  data::Sprite::SpriteGroup group,
+                                  proto::Sprite::SpriteGroup group,
                                   bool invert_sprites);
 
         ///
         /// Creates a spritemap
         J_NODISCARD SpritemapData CreateSpritemap(const data::PrototypeManager& data_manager,
-                                                  data::Sprite::SpriteGroup group,
+                                                  proto::Sprite::SpriteGroup group,
                                                   bool invert_sprites) const;
 
         ///
         /// Retrieves spritemap at specified group
-        const SpritemapData& GetSpritemap(data::Sprite::SpriteGroup group);
-        const Texture* GetTexture(data::Sprite::SpriteGroup group);
+        const SpritemapData& GetSpritemap(proto::Sprite::SpriteGroup group);
+        const Texture* GetTexture(proto::Sprite::SpriteGroup group);
 
         ///
         /// Generates spritemap
@@ -94,7 +94,7 @@ namespace jactorio::render
         /// \param sprites Collection of pointers towards sprite prototypes
         /// \param invert_sprites Whether or not to vertically invert the sprites on the spritemap. Commonly done for
         /// OpenGL
-        J_NODISCARD SpritemapData GenSpritemap(const std::vector<const data::Sprite*>& sprites,
+        J_NODISCARD SpritemapData GenSpritemap(const std::vector<const proto::Sprite*>& sprites,
                                                bool invert_sprites) const;
 
     private:
@@ -105,9 +105,9 @@ namespace jactorio::render
         /// Holds a sprite and its neighbors on the spritemap
         struct GeneratorNode
         {
-            explicit GeneratorNode(const data::Sprite* sprite) : sprite(sprite) {}
+            explicit GeneratorNode(const proto::Sprite* sprite) : sprite(sprite) {}
 
-            const data::Sprite* sprite;
+            const proto::Sprite* sprite;
 
             GeneratorNode* above = nullptr;
             GeneratorNode* right = nullptr;
@@ -115,19 +115,19 @@ namespace jactorio::render
 
         ///
         /// Gets sprite width with adjustments
-        static data::Sprite::SpriteDimension GetSpriteWidth(const data::Sprite* sprite);
+        static proto::Sprite::SpriteDimension GetSpriteWidth(const proto::Sprite* sprite);
         ///
         /// Gets sprite height with adjustments
-        static data::Sprite::SpriteDimension GetSpriteHeight(const data::Sprite* sprite);
+        static proto::Sprite::SpriteDimension GetSpriteHeight(const proto::Sprite* sprite);
 
 
-        static void SortInputSprites(std::vector<const data::Sprite*>& sprites);
+        static void SortInputSprites(std::vector<const proto::Sprite*>& sprites);
 
         ///
         /// Recursively creates linked GeneratorNodes of sprites
         ///
         /// Will erase from sprites as each sprite is used
-        static void GenerateSpritemapNodes(std::vector<const data::Sprite*>& sprites,
+        static void GenerateSpritemapNodes(std::vector<const proto::Sprite*>& sprites,
                                            std::vector<GeneratorNode*>& node_buffer,
                                            GeneratorNode& parent_node,
                                            SpritemapDimensionT max_width,
@@ -148,8 +148,8 @@ namespace jactorio::render
                                       SpritemapDimensionT spritemap_x_offset,
                                       SpritemapDimensionT spritemap_y_offset,
                                       const unsigned char* sprite_data,
-                                      data::Sprite::SpriteDimension sprite_width,
-                                      data::Sprite::SpriteDimension sprite_height,
+                                      proto::Sprite::SpriteDimension sprite_width,
+                                      proto::Sprite::SpriteDimension sprite_height,
                                       unsigned pixel_x,
                                       unsigned pixel_y);
         ///

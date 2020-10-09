@@ -17,12 +17,12 @@
 #include "proto/abstract_proto/transport_line.h"
 #include "proto/assembly_machine.h"
 #include "proto/container_entity.h"
+#include "proto/detail/prototype_type.h"
 #include "proto/framework/framework_base.h"
 #include "proto/inserter.h"
 #include "proto/item.h"
 #include "proto/mining_drill.h"
 #include "proto/noise_layer.h"
-#include "proto/prototype_type.h"
 #include "proto/recipe.h"
 #include "proto/recipe_category.h"
 #include "proto/recipe_group.h"
@@ -43,7 +43,7 @@
 
 ///
 /// Call from python context, stores traceback in prototype
-inline void ExtractPythonTraceback(jactorio::data::FrameworkBase& prototype) {
+inline void ExtractPythonTraceback(jactorio::proto::FrameworkBase& prototype) {
     py::exec("import sys as _sys \n"
              "_stack_frame = _sys._getframe() \n");
 
@@ -65,19 +65,19 @@ inline void ExtractPythonTraceback(jactorio::data::FrameworkBase& prototype) {
     prototype.pythonTraceback.pop_back(); // Remove final newline
 }
 
-#define PYBIND_DATA_CLASS(cpp_class__, py_name__, ...)                                \
-    m.def(                                                                            \
-        #py_name__,                                                                   \
-        [](const std::string& iname = "") {                                           \
-            assert(active_prototype_manager);                                         \
-            auto& prototype = active_prototype_manager->AddProto<cpp_class__>(iname); \
-                                                                                      \
-            ExtractPythonTraceback(prototype);                                        \
-                                                                                      \
-            return &prototype;                                                        \
-        },                                                                            \
-        py::arg("iname") = "",                                                        \
-        pybind11::return_value_policy::reference);                                    \
+#define PYBIND_DATA_CLASS(cpp_class__, py_name__, ...)                                                \
+    m.def(                                                                                            \
+        #py_name__,                                                                                   \
+        [](const std::string& iname = "") {                                                           \
+            assert(jactorio::data::active_prototype_manager);                                         \
+            auto& prototype = jactorio::data::active_prototype_manager->AddProto<cpp_class__>(iname); \
+                                                                                                      \
+            ExtractPythonTraceback(prototype);                                                        \
+                                                                                                      \
+            return &prototype;                                                                        \
+        },                                                                                            \
+        py::arg("iname") = "",                                                                        \
+        pybind11::return_value_policy::reference);                                                    \
     py::class_<cpp_class__, __VA_ARGS__>(m, "_" #py_name__)
 
 // Does not define a function for creating the class
@@ -127,7 +127,7 @@ inline void ExtractPythonTraceback(jactorio::data::FrameworkBase& prototype) {
 // ======================================================================
 
 PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
-    using namespace jactorio::data;
+    using namespace jactorio::proto;
 
     // Type
     PYBIND_TYPE_CLASS(Tile4Way, OutputTile4Way)
@@ -256,33 +256,33 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     // ############################################################
     // Data_raw + get/set
 
-    py::enum_<DataCategory>(m, "category")
-        .value("Tile", DataCategory::tile)
-        .value("Sprite", DataCategory::sprite)
-        .value("NoiseLayerTile", DataCategory::noise_layer_tile)
-        .value("NoiseLayerEntity", DataCategory::noise_layer_entity)
-        .value("Sound", DataCategory::sound)
-        .value("Item", DataCategory::item)
+    py::enum_<Category>(m, "category")
+        .value("Tile", Category::tile)
+        .value("Sprite", Category::sprite)
+        .value("NoiseLayerTile", Category::noise_layer_tile)
+        .value("NoiseLayerEntity", Category::noise_layer_entity)
+        .value("Sound", Category::sound)
+        .value("Item", Category::item)
 
-        .value("Recipe", DataCategory::recipe)
-        .value("RecipeCategory", DataCategory::recipe_category)
-        .value("RecipeGroup", DataCategory::recipe_group)
+        .value("Recipe", Category::recipe)
+        .value("RecipeCategory", Category::recipe_category)
+        .value("RecipeGroup", Category::recipe_group)
 
-        .value("ResourceEntity", DataCategory::resource_entity)
-        .value("EnemyEntity", DataCategory::enemy_entity)
+        .value("ResourceEntity", Category::resource_entity)
+        .value("EnemyEntity", Category::enemy_entity)
 
-        .value("ContainerEntity", DataCategory::container_entity)
-        .value("AssemblyMachine", DataCategory::assembly_machine)
-        .value("TransportBelt", DataCategory::transport_belt)
-        .value("MiningDrill", DataCategory::mining_drill)
-        .value("Inserter", DataCategory::inserter);
+        .value("ContainerEntity", Category::container_entity)
+        .value("AssemblyMachine", Category::assembly_machine)
+        .value("TransportBelt", Category::transport_belt)
+        .value("MiningDrill", Category::mining_drill)
+        .value("Inserter", Category::inserter);
 
     m.def(
         "get",
-        [](const DataCategory category, const std::string& iname) {
-            assert(active_prototype_manager);
+        [](const Category category, const std::string& iname) {
+            assert(jactorio::data::active_prototype_manager);
 
-            return active_prototype_manager->DataRawGet<FrameworkBase>(category, iname);
+            return jactorio::data::active_prototype_manager->DataRawGet<FrameworkBase>(category, iname);
         },
         pybind11::return_value_policy::reference);
 

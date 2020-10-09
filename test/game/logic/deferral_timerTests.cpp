@@ -19,13 +19,13 @@ namespace jactorio::game
         class MockDeferred final : public TestMockEntity
         {
         public:
-            mutable bool callbackCalled           = false;
-            mutable data::UniqueDataBase* dataPtr = nullptr;
-            mutable DeferralTimer* dTimer         = nullptr;
+            mutable bool callbackCalled            = false;
+            mutable proto::UniqueDataBase* dataPtr = nullptr;
+            mutable DeferralTimer* dTimer          = nullptr;
 
             void OnDeferTimeElapsed(WorldData& /*world_data*/,
                                     LogicData& logic_data,
-                                    data::UniqueDataBase* unique_data) const override {
+                                    proto::UniqueDataBase* unique_data) const override {
                 callbackCalled = true;
                 dataPtr        = unique_data;
                 dTimer         = &logic_data.deferralTimer;
@@ -34,7 +34,7 @@ namespace jactorio::game
 
         const MockDeferred deferred_{};
 
-        class MockUniqueData final : public data::FEntityData
+        class MockUniqueData final : public proto::FEntityData
         {
         };
     };

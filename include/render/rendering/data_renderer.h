@@ -9,11 +9,11 @@
 
 namespace jactorio
 {
-    namespace data
+    namespace proto
     {
         class Inserter;
         struct InserterData;
-    } // namespace data
+    } // namespace proto
 
     namespace game
     {
@@ -33,8 +33,8 @@ namespace jactorio::render
     void DrawInserterArm(RendererLayer& layer,
                          const SpriteUvCoordsT& uv_coords,
                          const core::Position2<float>& pixel_offset,
-                         const data::Inserter& inserter_proto,
-                         const data::InserterData& inserter_data);
+                         const proto::Inserter& inserter_proto,
+                         const proto::InserterData& inserter_data);
 } // namespace jactorio::render
 
 #endif // JACTORIO_INCLUDE_RENDER_RENDERING_DATA_RENDERER_H

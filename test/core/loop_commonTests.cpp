@@ -29,8 +29,8 @@ namespace jactorio::core
         ThreadedLoopCommon common;
 
 
-        const data::Sprite sprite;
-        const data::ContainerEntity container;
+        const proto::Sprite sprite;
+        const proto::ContainerEntity container;
 
         auto& local = common.gameDataLocal;
 
@@ -39,7 +39,7 @@ namespace jactorio::core
 
             global.worlds[0].EmplaceChunk(0, 0);
 
-            local.input.mouse.DrawOverlay(global.worlds[0], {0, 0}, data::Orientation::up, &container, sprite);
+            local.input.mouse.DrawOverlay(global.worlds[0], {0, 0}, proto::Orientation::up, &container, sprite);
         }
 
 
@@ -51,7 +51,7 @@ namespace jactorio::core
 
             global.worlds[0].EmplaceChunk(0, 0);
 
-            local.input.mouse.DrawOverlay(global.worlds[0], {0, 1}, data::Orientation::up, &container, sprite);
+            local.input.mouse.DrawOverlay(global.worlds[0], {0, 1}, proto::Orientation::up, &container, sprite);
         }
     }
 } // namespace jactorio::core

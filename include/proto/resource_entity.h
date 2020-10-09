@@ -7,7 +7,7 @@
 #include "core/data_type.h"
 #include "proto/abstract_proto/entity.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     // Unique per resource entity placed
     struct ResourceEntityData final : EntityData
@@ -59,11 +59,11 @@ namespace jactorio::data
                       game::ChunkTileLayer& /*tile_layer*/) const override {}
 
 
-        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
+        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {
             // Must convert to at least 1 game tick
             J_DATA_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
         }
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_RESOURCE_ENTITY_H

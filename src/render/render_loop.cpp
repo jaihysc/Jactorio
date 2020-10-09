@@ -187,7 +187,7 @@ void render::RenderInit(ThreadedLoopCommon& common) {
         if (display_window.Init(840, 490) != 0)
             return;
     }
-    catch (data::DataException&) {
+    catch (proto::ProtoError&) {
         return;
     }
 
@@ -221,16 +221,17 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // Loading textures
     auto renderer_sprites = RendererSprites();
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, data::Sprite::SpriteGroup::terrain, true);
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, data::Sprite::SpriteGroup::gui, false);
+    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, proto::Sprite::SpriteGroup::terrain, true);
+    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, proto::Sprite::SpriteGroup::gui, false);
 
 
     Renderer::GlSetup();
     main_renderer->GlSetDrawThreads(8);
 
     // Terrain
-    main_renderer->SetSpriteUvCoords(renderer_sprites.GetSpritemap(data::Sprite::SpriteGroup::terrain).spritePositions);
-    renderer_sprites.GetTexture(data::Sprite::SpriteGroup::terrain)->Bind(0);
+    main_renderer->SetSpriteUvCoords(
+        renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions);
+    renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::terrain)->Bind(0);
 
     // Gui
     SetupCharacterData(renderer_sprites);

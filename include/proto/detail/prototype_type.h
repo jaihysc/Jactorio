@@ -1,14 +1,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_PROTO_PROTOTYPE_TYPE_H
-#define JACTORIO_INCLUDE_PROTO_PROTOTYPE_TYPE_H
+#ifndef JACTORIO_INCLUDE_PROTO_DETAIL_PROTOTYPE_TYPE_H
+#define JACTORIO_INCLUDE_PROTO_DETAIL_PROTOTYPE_TYPE_H
 #pragma once
 
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
-#include "proto/type.h"
+#include "proto/detail/type.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     ///
     /// Represents an output location for an entity on 4 orientation
@@ -53,6 +53,6 @@ namespace jactorio::data
             }
         }
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
-#endif // JACTORIO_INCLUDE_PROTO_PROTOTYPE_TYPE_H
+#endif // JACTORIO_INCLUDE_PROTO_DETAIL_PROTOTYPE_TYPE_H

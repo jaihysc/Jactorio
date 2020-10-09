@@ -4,10 +4,10 @@
 
 #include "jactorioTests.h"
 
+#include "game/logic/inserter_controller.h"
 #include "proto/container_entity.h"
 #include "proto/inserter.h"
 #include "proto/transport_belt.h"
-#include "game/logic/inserter_controller.h"
 
 namespace jactorio::game
 {
@@ -17,17 +17,17 @@ namespace jactorio::game
         WorldData worldData_{};
         LogicData logicData_{};
 
-        data::Inserter inserterProto_{};
+        proto::Inserter inserterProto_{};
 
-        data::ContainerEntity containerProto_{};
-        data::Item containerItemProto_{};
+        proto::ContainerEntity containerProto_{};
+        proto::Item containerItemProto_{};
 
         void SetUp() override {
             auto& chunk = worldData_.EmplaceChunk(0, 0);
             worldData_.LogicAddChunk(chunk);
         }
 
-        ChunkTileLayer& BuildInserter(const WorldCoord& coords, const data::Orientation orientation) {
+        ChunkTileLayer& BuildInserter(const WorldCoord& coords, const proto::Orientation orientation) {
             return TestSetupInserter(worldData_, logicData_, coords, inserterProto_, orientation);
         }
 
@@ -35,19 +35,19 @@ namespace jactorio::game
         /// Creates chest with, emits OnNeighborUpdate
         /// \param orientation Orientation to chest from inserter
         /// \param stack_count Amount of items chest starts with
-        data::ContainerEntityData* BuildChest(const WorldCoord& coords,
-                                              const data::Orientation orientation,
-                                              const data::Item::StackCount stack_count,
-                                              const WorldCoord& neighbor_update_coord = {1, 2}) {
+        proto::ContainerEntityData* BuildChest(const WorldCoord& coords,
+                                               const proto::Orientation orientation,
+                                               const proto::Item::StackCount stack_count,
+                                               const WorldCoord& neighbor_update_coord = {1, 2}) {
             auto& layer = TestSetupContainer(worldData_, coords, containerProto_);
 
-            auto* unique_data = layer.GetUniqueData<data::ContainerEntityData>();
+            auto* unique_data = layer.GetUniqueData<proto::ContainerEntityData>();
 
             // Emit neighbor update
             {
                 auto& neighbor_layer = worldData_.GetTile(neighbor_update_coord)->GetLayer(TileLayer::entity);
                 const auto* neighbor_proto =
-                    static_cast<const data::ContainerEntity*>(neighbor_layer.prototypeData.Get());
+                    static_cast<const proto::ContainerEntity*>(neighbor_layer.prototypeData.Get());
 
                 if (neighbor_proto != nullptr)
                     neighbor_proto->OnNeighborUpdate(
@@ -85,23 +85,23 @@ namespace jactorio::game
         inserterProto_.rotationSpeed = 2.1;
         const int updates_to_target  = 86;
 
-        auto* dropoff = BuildChest({0, 2}, data::Orientation::left, 10);
-        auto* pickup  = BuildChest({2, 2}, data::Orientation::right, 10);
+        auto* dropoff = BuildChest({0, 2}, proto::Orientation::left, 10);
+        auto* pickup  = BuildChest({2, 2}, proto::Orientation::right, 10);
 
-        auto& inserter_layer = BuildInserter({1, 2}, data::Orientation::left);
-        auto* inserter_data  = inserter_layer.GetUniqueData<data::InserterData>();
+        auto& inserter_layer = BuildInserter({1, 2}, proto::Orientation::left);
+        auto* inserter_data  = inserter_layer.GetUniqueData<proto::InserterData>();
 
         // Pickup item
         InserterLogicUpdate(worldData_, logicData_);
         EXPECT_EQ(pickup->inventory[0].count, 9);
-        EXPECT_EQ(inserter_data->status, data::InserterData::Status::dropoff);
+        EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
 
         // Reach 0 degrees after 86 updates
         for (int i = 0; i < updates_to_target; ++i) {
             InserterLogicUpdate(worldData_, logicData_);
         }
         EXPECT_EQ(dropoff->inventory[0].count, 11);
-        EXPECT_EQ(inserter_data->status, data::InserterData::Status::pickup);
+        EXPECT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
         EXPECT_DOUBLE_EQ(inserter_data->rotationDegree.getAsDouble(), 0);
 
 
@@ -110,7 +110,7 @@ namespace jactorio::game
             InserterLogicUpdate(worldData_, logicData_);
         }
         EXPECT_EQ(pickup->inventory[0].count, 8);
-        EXPECT_EQ(inserter_data->status, data::InserterData::Status::dropoff);
+        EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
     }
 
     TEST_F(InserterControllerTest, PickupTransportSegment) {
@@ -118,17 +118,17 @@ namespace jactorio::game
         inserterProto_.tileReach     = 1;
 
         // Setup transport segment
-        data::Item item{};
-        data::TransportBelt segment_proto{};
+        proto::Item item{};
+        proto::TransportBelt segment_proto{};
 
-        auto dropoff =
-            std::make_shared<TransportSegment>(data::Orientation::left, TransportSegment::TerminationType::straight, 2);
+        auto dropoff = std::make_shared<TransportSegment>(
+            proto::Orientation::left, TransportSegment::TerminationType::straight, 2);
         TestRegisterTransportSegment(worldData_, {1, 0}, dropoff, segment_proto);
 
 
         //
-        auto pickup =
-            std::make_shared<TransportSegment>(data::Orientation::left, TransportSegment::TerminationType::straight, 2);
+        auto pickup = std::make_shared<TransportSegment>(
+            proto::Orientation::left, TransportSegment::TerminationType::straight, 2);
         TestRegisterTransportSegment(worldData_, {1, 2}, pickup, segment_proto);
 
         for (int i = 0; i < 1000; ++i) {
@@ -136,8 +136,8 @@ namespace jactorio::game
         }
 
 
-        auto& inserter_layer = BuildInserter({1, 1}, data::Orientation::up);
-        auto* inserter_data  = inserter_layer.GetUniqueData<data::InserterData>();
+        auto& inserter_layer = BuildInserter({1, 1}, proto::Orientation::up);
+        auto* inserter_data  = inserter_layer.GetUniqueData<proto::InserterData>();
 
         // Logic chunk will be unregistered if setup was invalid
         ASSERT_EQ(worldData_.LogicGetChunks().size(), 1);
@@ -145,47 +145,47 @@ namespace jactorio::game
 
         // Will not pickup unless over 90 degrees
         inserter_data->rotationDegree = 87.9;
-        inserter_data->status         = data::InserterData::Status::pickup;
+        inserter_data->status         = proto::InserterData::Status::pickup;
 
         InserterLogicUpdate(worldData_, logicData_);
-        ASSERT_EQ(inserter_data->status, data::InserterData::Status::pickup);
+        ASSERT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
 
 
         // Pickup when within arm length
         for (int i = 0; i < 42; ++i) {
             InserterLogicUpdate(worldData_, logicData_);
 
-            if (inserter_data->status != data::InserterData::Status::pickup) {
+            if (inserter_data->status != proto::InserterData::Status::pickup) {
                 printf("Failed on iteration %d\n", i);
-                ASSERT_EQ(inserter_data->status, data::InserterData::Status::pickup);
+                ASSERT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
                 FAIL();
             }
         }
 
 
         InserterLogicUpdate(worldData_, logicData_);
-        EXPECT_EQ(inserter_data->status, data::InserterData::Status::dropoff);
+        EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
     }
 
     TEST_F(InserterControllerTest, PickupIfCanDropOff) {
         // Inserter will not pick up items that it can never drop off
 
         // Cannot drop into assembly machine since it has no recipe
-        data::AssemblyMachine asm_machine{};
+        proto::AssemblyMachine asm_machine{};
         TestSetupAssemblyMachine(worldData_, {0, 1}, asm_machine);
 
-        auto* pickup = BuildChest({3, 2}, data::Orientation::right, 10);
+        auto* pickup = BuildChest({3, 2}, proto::Orientation::right, 10);
 
 
         inserterProto_.rotationSpeed = 2.1f;
-        auto& inserter_layer         = BuildInserter({2, 2}, data::Orientation::left);
-        auto* inserter_data          = inserter_layer.GetUniqueData<data::InserterData>();
+        auto& inserter_layer         = BuildInserter({2, 2}, proto::Orientation::left);
+        auto* inserter_data          = inserter_layer.GetUniqueData<proto::InserterData>();
 
 
         //
         InserterLogicUpdate(worldData_, logicData_);
 
-        EXPECT_EQ(inserter_data->status, data::InserterData::Status::pickup);
+        EXPECT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
         EXPECT_EQ(pickup->inventory[0].count, 10);
     }
 
@@ -194,13 +194,13 @@ namespace jactorio::game
 
         inserterProto_.rotationSpeed = 180.f;
 
-        auto* left_chest  = BuildChest({0, 2}, data::Orientation::up, 1);
-        auto* mid_chest   = BuildChest({2, 2}, data::Orientation::up, 0);
-        auto* right_chest = BuildChest({4, 2}, data::Orientation::up, 0);
+        auto* left_chest  = BuildChest({0, 2}, proto::Orientation::up, 1);
+        auto* mid_chest   = BuildChest({2, 2}, proto::Orientation::up, 0);
+        auto* right_chest = BuildChest({4, 2}, proto::Orientation::up, 0);
 
         // Order which inserters are updated should not matter
-        BuildInserter({3, 2}, data::Orientation::right);
-        BuildInserter({1, 2}, data::Orientation::right);
+        BuildInserter({3, 2}, proto::Orientation::right);
+        BuildInserter({1, 2}, proto::Orientation::right);
 
 
         // Pickup

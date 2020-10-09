@@ -4,7 +4,7 @@
 
 #include "jactorioTests.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     TEST(ContainerEntity, Serialize) {
         ContainerEntityData container(5);
@@ -14,7 +14,7 @@ namespace jactorio::data
         container.inventory[2].count = 89;
 
 
-        PrototypeManager proto_manager;
+        data::PrototypeManager proto_manager;
         auto& item_1 = proto_manager.AddProto<Item>();
         auto& item_2 = proto_manager.AddProto<Item>();
 
@@ -22,7 +22,7 @@ namespace jactorio::data
         container.inventory[4].filter = &item_2;
 
         proto_manager.GenerateRelocationTable();
-        active_prototype_manager = &proto_manager;
+        data::active_prototype_manager = &proto_manager;
 
         // ======================================================================
         const auto result = TestSerializeDeserialize(container);
@@ -36,4 +36,4 @@ namespace jactorio::data
         EXPECT_EQ(result.inventory[4].item, &item_1);
         EXPECT_EQ(result.inventory[4].filter, &item_2);
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto

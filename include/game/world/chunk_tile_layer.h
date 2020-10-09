@@ -35,12 +35,12 @@ namespace jactorio::game
     class ChunkTileLayer
     {
         using MultiTileValueT      = MultiTileData::ValueT;
-        using UniqueDataContainerT = std::unique_ptr<data::UniqueDataBase>;
+        using UniqueDataContainerT = std::unique_ptr<proto::UniqueDataBase>;
 
     public:
         ChunkTileLayer() = default;
 
-        explicit ChunkTileLayer(const data::FWorldObject* proto) : prototypeData(proto) {}
+        explicit ChunkTileLayer(const proto::FWorldObject* proto) : prototypeData(proto) {}
 
         ~ChunkTileLayer();
 
@@ -72,7 +72,7 @@ namespace jactorio::game
 
         ///
         /// \tparam T Return type which prototypeData is cast to
-        template <typename T = data::FWorldObject>
+        template <typename T = proto::FWorldObject>
         J_NODISCARD const T* GetPrototypeData() const;
 
         // Unique data
@@ -86,26 +86,26 @@ namespace jactorio::game
         ///
         /// Unique data at current layer or if multi tile, top left
         /// \tparam T Return type which uniqueData is cast to
-        template <typename T = data::FWorldObjectData>
+        template <typename T = proto::FWorldObjectData>
         J_NODISCARD T* GetUniqueData() noexcept;
 
         ///
         /// Unique data at current layer or if multi tile, top left
         /// \tparam T Return type which uniqueData is cast to
-        template <typename T = data::FWorldObjectData>
+        template <typename T = proto::FWorldObjectData>
         J_NODISCARD const T* GetUniqueData() const noexcept;
 
 
         ///
         /// Unique data at current layer
         /// \tparam T Return type which uniqueData is cast to
-        template <typename T = data::FWorldObjectData>
+        template <typename T = proto::FWorldObjectData>
         J_NODISCARD T* GetUniqueDataLocal() noexcept;
 
         ///
         /// Unique data at current layer
         /// \tparam T Return type which uniqueData is cast to
-        template <typename T = data::FWorldObjectData>
+        template <typename T = proto::FWorldObjectData>
         J_NODISCARD const T* GetUniqueDataLocal() const noexcept;
 
 
@@ -147,7 +147,7 @@ namespace jactorio::game
 
 
         /// A layer may point to a tile prototype to provide additional data (collisions, world gen)
-        data::SerialProtoPtr<const data::FWorldObject> prototypeData;
+        data::SerialProtoPtr<const proto::FWorldObject> prototypeData;
 
     private:
         /// uniqueData when multiTileIndex == 0, topLeft when multiTileIndex != 0
@@ -228,7 +228,7 @@ namespace jactorio::game
 
     template <typename TData, typename... Args>
     TData* ChunkTileLayer::MakeUniqueData(Args&&... args) {
-        static_assert(std::is_base_of_v<data::FWorldObjectData, TData>);
+        static_assert(std::is_base_of_v<proto::FWorldObjectData, TData>);
 
         if (IsMultiTile())
             assert(IsMultiTileTopLeft());

@@ -5,7 +5,7 @@
 
 #include "proto/framework/world_object.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class Sprite;
 
@@ -68,12 +68,12 @@ namespace jactorio::data
                            const WorldCoord& world_coord,
                            game::ChunkTileLayer& tile_layer) const override {}
 
-        void PostLoadValidate(const PrototypeManager& data_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& data_manager) const override;
     };
 
-    inline void Tile::PostLoadValidate(const PrototypeManager& /*proto_manager*/) const {
+    inline void Tile::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
         J_DATA_ASSERT(sprite != nullptr, "Sprite was not provided");
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_TILE_H

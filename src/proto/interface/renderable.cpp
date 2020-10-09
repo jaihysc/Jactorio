@@ -9,7 +9,7 @@
 
 using namespace jactorio;
 
-SpriteFrameT data::IRenderable::AllOfSprite(Sprite& sprite, const GameTickT game_tick, const AnimationSpeed speed) {
+SpriteFrameT proto::IRenderable::AllOfSprite(Sprite& sprite, const GameTickT game_tick, const AnimationSpeed speed) {
     assert(speed > 0);
 
     const auto frame =
@@ -18,9 +18,9 @@ SpriteFrameT data::IRenderable::AllOfSprite(Sprite& sprite, const GameTickT game
     return core::SafeCast<SpriteFrameT>(frame);
 }
 
-SpriteFrameT data::IRenderable::AllOfSpriteReversing(Sprite& sprite,
-                                                     const GameTickT game_tick,
-                                                     const AnimationSpeed speed) {
+SpriteFrameT proto::IRenderable::AllOfSpriteReversing(Sprite& sprite,
+                                                      const GameTickT game_tick,
+                                                      const AnimationSpeed speed) {
     assert(speed > 0);
 
     // s = speed, f = frames
@@ -42,7 +42,7 @@ SpriteFrameT data::IRenderable::AllOfSpriteReversing(Sprite& sprite,
     return core::SafeCast<SpriteFrameT>(abs(val));
 }
 
-SpriteFrameT data::IRenderable::AllOfSet(Sprite& sprite, const GameTickT game_tick, const AnimationSpeed speed) {
+SpriteFrameT proto::IRenderable::AllOfSet(Sprite& sprite, const GameTickT game_tick, const AnimationSpeed speed) {
     assert(speed > 0);
     const auto frame = core::LossyCast<GameTickT>(speed * game_tick) % sprite.frames;
     return core::SafeCast<SpriteFrameT>(frame);

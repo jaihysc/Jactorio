@@ -9,8 +9,8 @@
 namespace jactorio::game
 {
     TEST(InventoryController, StackMatchesFilter) {
-        data::Item item_1{};
-        data::Item item_2{};
+        proto::Item item_1{};
+        proto::Item item_2{};
 
         EXPECT_FALSE(StackMatchesFilter({&item_1, 1}, {nullptr, 0, &item_2}));
         EXPECT_TRUE(StackMatchesFilter({nullptr, 1}, {nullptr, 0, &item_2}));
@@ -21,9 +21,9 @@ namespace jactorio::game
         // Moving from inventory position 0 to position 3
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
         // Position 3 should have the 50 items + item prototype after moving
@@ -49,9 +49,9 @@ namespace jactorio::game
         // position 3 already has 30 items, adding 10 from position 0 to equal 40.
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
         inv[0].item  = item.get();
@@ -77,9 +77,9 @@ namespace jactorio::game
         // this leaves 10 in the original location (0) and 50 in the target location (3)
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
         inv[0].item  = item.get();
@@ -103,12 +103,12 @@ namespace jactorio::game
         // The item stacks are of different items, therefore only swapping positions
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
-        const auto item2 = std::make_unique<data::Item>();
+        const auto item2 = std::make_unique<proto::Item>();
         item2->stackSize = 100;
 
         // Position 3 should have the 50 items + item prototype after moving
@@ -132,10 +132,10 @@ namespace jactorio::game
         // slot 0 is filtered, therefore no swap occurs
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        const auto item  = std::make_unique<data::Item>();
-        const auto item2 = std::make_unique<data::Item>();
+        const auto item  = std::make_unique<proto::Item>();
+        const auto item2 = std::make_unique<proto::Item>();
 
         inv[0].item   = item.get();
         inv[0].count  = 2;
@@ -188,9 +188,9 @@ namespace jactorio::game
         // The target slot is full, origin slot has something
         // swap the 2 items
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
         inv[0].item  = item.get();
@@ -214,7 +214,7 @@ namespace jactorio::game
         // Moving nothing to nothing results in nothing!
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
         inv[0].item  = nullptr;
         inv[0].count = 0;
@@ -240,9 +240,9 @@ namespace jactorio::game
         // Move out only the stack size into the empty slot
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
         inv[0].item  = item.get();
@@ -267,9 +267,9 @@ namespace jactorio::game
         // Move out only the stack size into the empty origin slot
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
         inv[0].item  = nullptr;
@@ -294,9 +294,9 @@ namespace jactorio::game
         // Move out only 10 to reach the stack size in the target slot
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
         inv[0].item  = item.get();
@@ -324,9 +324,9 @@ namespace jactorio::game
         // round down, unless there is only 1, where one is taken
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        auto item       = std::make_unique<data::Item>();
+        auto item       = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
         // Case 1, even number
@@ -404,9 +404,9 @@ namespace jactorio::game
         // Target inventory is empty, right clicking drops 1 item off
 
         constexpr auto inv_size = 10;
-        data::ItemStack inv[inv_size];
+        proto::ItemStack inv[inv_size];
 
-        auto item       = std::make_unique<data::Item>();
+        auto item       = std::make_unique<proto::Item>();
         item->stackSize = 50;
 
         // Case 1, > 1 item
@@ -494,10 +494,10 @@ namespace jactorio::game
         // Should place in slot 2
 
         constexpr auto inv_size = 10;
-        data::Item::Inventory inv{inv_size};
+        proto::Item::Inventory inv{inv_size};
 
-        const auto item  = std::make_unique<data::Item>();
-        const auto item2 = std::make_unique<data::Item>();
+        const auto item  = std::make_unique<proto::Item>();
+        const auto item2 = std::make_unique<proto::Item>();
 
         // Another item
         inv[0].item  = item.get();
@@ -505,7 +505,7 @@ namespace jactorio::game
         inv[1].item  = item.get();
         inv[1].count = 21;
 
-        auto add_item = data::ItemStack{item2.get(), 20};
+        auto add_item = proto::ItemStack{item2.get(), 20};
         EXPECT_TRUE(CanAddStack(inv, add_item).first);
         EXPECT_TRUE(AddStackSub(inv, add_item));
 
@@ -530,10 +530,10 @@ namespace jactorio::game
         // Should place in slot 1 2 3 | Add amounts: (10, 10, 30)
 
         constexpr auto inv_size = 10;
-        data::Item::Inventory inv{inv_size};
+        proto::Item::Inventory inv{inv_size};
 
-        const auto another_item   = std::make_unique<data::Item>();
-        const auto item_we_add_to = std::make_unique<data::Item>();
+        const auto another_item   = std::make_unique<proto::Item>();
+        const auto item_we_add_to = std::make_unique<proto::Item>();
         item_we_add_to->stackSize = 50;
 
         inv[0].item  = another_item.get();
@@ -548,7 +548,7 @@ namespace jactorio::game
         inv[3].item  = item_we_add_to.get();
         inv[3].count = 20;
 
-        auto add_item = data::ItemStack{item_we_add_to.get(), 50};
+        auto add_item = proto::ItemStack{item_we_add_to.get(), 50};
         EXPECT_TRUE(CanAddStack(inv, add_item).first);
         EXPECT_TRUE(AddStackSub(inv, add_item));
 
@@ -575,15 +575,15 @@ namespace jactorio::game
     TEST(InventoryController, AddStackNoAvailableSlots) {
         // Slots 1 is full, inv size is 1, will return false
         constexpr auto inv_size = 1;
-        data::Item::Inventory inv{inv_size};
+        proto::Item::Inventory inv{inv_size};
 
-        const auto item  = std::make_unique<data::Item>();
-        const auto item2 = std::make_unique<data::Item>();
+        const auto item  = std::make_unique<proto::Item>();
+        const auto item2 = std::make_unique<proto::Item>();
 
         inv[0].item  = item.get();
         inv[0].count = 10;
 
-        auto add_item = data::ItemStack{item2.get(), 20};
+        auto add_item = proto::ItemStack{item2.get(), 20};
         EXPECT_FALSE(CanAddStack(inv, add_item).first);
         EXPECT_FALSE(AddStackSub(inv, add_item));
 
@@ -597,11 +597,11 @@ namespace jactorio::game
     TEST(InventoryController, AddStackFiltered) {
         // Item must match filter, otherwise it cannot be at the slot with the filter
 
-        data::Item filtered_item{};
-        data::Item not_filtered_item{};
+        proto::Item filtered_item{};
+        proto::Item not_filtered_item{};
 
         // Slot 0 is filtered
-        data::Item::Inventory inv{2};
+        proto::Item::Inventory inv{2};
         inv[0].filter = &filtered_item;
 
 
@@ -620,11 +620,11 @@ namespace jactorio::game
     //
     //
     TEST(InventoryController, GetInvItemCount) {
-        const auto item  = std::make_unique<data::Item>();
-        const auto item2 = std::make_unique<data::Item>();
+        const auto item  = std::make_unique<proto::Item>();
+        const auto item2 = std::make_unique<proto::Item>();
 
         constexpr auto inv_size = 30;
-        data::Item::Inventory inv{inv_size};
+        proto::Item::Inventory inv{inv_size};
 
         // Count these to a sum of 101
         inv[0]  = {item.get(), 20};
@@ -644,11 +644,11 @@ namespace jactorio::game
     }
 
     TEST(InventoryController, GetFirstItem) {
-        const auto item  = std::make_unique<data::Item>();
-        const auto item2 = std::make_unique<data::Item>();
+        const auto item  = std::make_unique<proto::Item>();
+        const auto item2 = std::make_unique<proto::Item>();
 
         constexpr auto inv_size = 10;
-        data::Item::Inventory inv{inv_size};
+        proto::Item::Inventory inv{inv_size};
 
         EXPECT_EQ(GetFirstItem(inv), nullptr); // No items
 
@@ -660,9 +660,9 @@ namespace jactorio::game
 
     TEST(InventoryController, RemoveInvItemS) {
         constexpr auto inv_size = 30;
-        data::Item::Inventory inv{inv_size};
+        proto::Item::Inventory inv{inv_size};
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         inv[20]         = {item.get(), 5};
         inv[23]         = {item.get(), 5};
 
@@ -677,9 +677,9 @@ namespace jactorio::game
 
     TEST(InventoryController, RemoveInvItemSInvalid) {
         constexpr auto inv_size = 30;
-        data::Item::Inventory inv{inv_size};
+        proto::Item::Inventory inv{inv_size};
 
-        const auto item = std::make_unique<data::Item>();
+        const auto item = std::make_unique<proto::Item>();
         inv[20]         = {item.get(), 5};
 
         // Attempting to remove 10 when only 5 exists

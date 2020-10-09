@@ -5,7 +5,7 @@
 #include "proto/interface/renderable.h"
 #include "proto/sprite.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class IRenderableTest : public testing::Test, public IRenderable
     {
@@ -86,4 +86,4 @@ namespace jactorio::data
         EXPECT_EQ(AllOfSet(sprite_, 23, 1.f / 2), 11);
         EXPECT_EQ(AllOfSet(sprite_, 24, 1.f / 2), 0);
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto

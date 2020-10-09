@@ -6,7 +6,7 @@
 
 #include "proto/framework/framework_base.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class Sprite;
 
@@ -22,12 +22,12 @@ namespace jactorio::data
     public:
         PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
-        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
     };
 
-    inline void ItemBase::PostLoadValidate(const PrototypeManager& /*proto_manager*/) const {
+    inline void ItemBase::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
         J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_ITEM_BASE_H

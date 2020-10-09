@@ -9,12 +9,12 @@
 
 #include <cereal/types/vector.hpp>
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class Entity;
 }
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     struct ItemStack;
 
@@ -55,17 +55,17 @@ namespace jactorio::data
 
     struct ItemStack
     {
-        SerialProtoPtr<const Item> item = nullptr;
-        Item::StackCount count          = 0;
+        data::SerialProtoPtr<const Item> item = nullptr;
+        Item::StackCount count                = 0;
 
-        /// data::Item which this->item is restricted to
-        SerialProtoPtr<const Item> filter = nullptr;
+        /// proto::Item which this->item is restricted to
+        data::SerialProtoPtr<const Item> filter = nullptr;
 
         CEREAL_SERIALIZE(archive) {
             archive(item, count, filter);
         }
     };
 
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_ITEM_H

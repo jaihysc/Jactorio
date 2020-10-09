@@ -4,9 +4,9 @@
 
 #include <cmath>
 
-#include "proto/abstract_proto/transport_line.h"
 #include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
+#include "proto/abstract_proto/transport_line.h"
 
 using namespace jactorio;
 
@@ -14,13 +14,13 @@ using namespace jactorio;
 /// Sets index to the next item with a distance greater than item_width and decrement it
 /// If there is no item AND has_target_segment == false, index is set as size of transport line
 /// \return true if an item was decremented
-J_NODISCARD bool MoveNextItem(const data::LineDistT& tiles_moved,
+J_NODISCARD bool MoveNextItem(const proto::LineDistT& tiles_moved,
                               std::deque<game::TransportLineItem>& line_side,
                               uint16_t& index,
                               const bool has_target_segment) {
     for (size_t i = core::SafeCast<size_t>(index) + 1; i < line_side.size(); ++i) {
         auto& i_item_offset = line_side[i].dist;
-        if (i_item_offset > data::LineDistT(game::kItemSpacing)) {
+        if (i_item_offset > proto::LineDistT(game::kItemSpacing)) {
             // Found a valid item to decrement
             if (!has_target_segment) {
                 // Always check every item from index 0 if there is a target segment as the previous item may have moved
@@ -47,24 +47,24 @@ J_NODISCARD bool MoveNextItem(const data::LineDistT& tiles_moved,
 }
 
 template <bool IsLeft>
-void UpdateSide(const data::LineDistT& tiles_moved, game::TransportSegment& segment) {
+void UpdateSide(const proto::LineDistT& tiles_moved, game::TransportSegment& segment) {
     using namespace jactorio;
     auto& side      = segment.GetSide(IsLeft);
     uint16_t& index = side.index;
 
-    data::LineDistT& offset             = side.lane[index].dist;
-    data::LineDistT& back_item_distance = side.backItemDistance;
+    proto::LineDistT& offset             = side.lane[index].dist;
+    proto::LineDistT& back_item_distance = side.backItemDistance;
 
     // Front item if index is 0
     if (index == 0) {
         // Front item does not need to be moved
-        if (offset >= data::LineDistT(0))
+        if (offset >= proto::LineDistT(0))
             return;
 
         if (segment.targetSegment) {
             game::TransportSegment& target_segment = *segment.targetSegment;
             // Offset to insert at target segment from head
-            data::LineDistT target_offset;
+            proto::LineDistT target_offset;
             {
                 double length;
                 switch (segment.terminationType) {
@@ -82,7 +82,7 @@ void UpdateSide(const data::LineDistT& tiles_moved, game::TransportSegment& segm
                     length = target_segment.length;
                     break;
                 }
-                target_offset = data::LineDistT(length - fabs(offset.getAsDouble()));
+                target_offset = proto::LineDistT(length - fabs(offset.getAsDouble()));
             }
 
             game::TransportSegment::ApplyTerminationDeduction<IsLeft>(
@@ -153,7 +153,7 @@ void UpdateSide(const data::LineDistT& tiles_moved, game::TransportSegment& segm
         // Items behind another item in transport line
 
         // Items following the first item will leave a gap of item_width
-        if (offset > data::LineDistT(game::kItemSpacing))
+        if (offset > proto::LineDistT(game::kItemSpacing))
             return;
 
         // Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
@@ -172,8 +172,8 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 
     // Each object layer holds a transport line segment
     for (const auto& tile_layer : layers) {
-        const auto& line_proto = *static_cast<const data::TransportLine*>(tile_layer->prototypeData.Get());
-        auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
+        const auto& line_proto = *static_cast<const proto::TransportLine*>(tile_layer->prototypeData.Get());
+        auto& line_segment     = *tile_layer->GetUniqueData<proto::TransportLineData>()->lineSegment;
 
         // Left
         {
@@ -207,8 +207,8 @@ void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
 
     // Each object layer holds a transport line segment
     for (const auto& tile_layer : layers) {
-        const auto* line_proto = static_cast<const data::TransportLine*>(tile_layer->prototypeData.Get());
-        auto& line_segment     = *tile_layer->GetUniqueData<data::TransportLineData>()->lineSegment;
+        const auto* line_proto = static_cast<const proto::TransportLine*>(tile_layer->prototypeData.Get());
+        auto& line_segment     = *tile_layer->GetUniqueData<proto::TransportLineData>()->lineSegment;
 
         auto tiles_moved = line_proto->speed;
 

@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_PROTO_TYPE_H
-#define JACTORIO_INCLUDE_PROTO_TYPE_H
+#ifndef JACTORIO_INCLUDE_PROTO_DETAIL_TYPE_H
+#define JACTORIO_INCLUDE_PROTO_DETAIL_TYPE_H
 #pragma once
 
 #include <type_traits>
@@ -10,7 +10,7 @@
 
 #include "core/data_type.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     using ProtoFloatT = double;
     using ProtoIntT   = int32_t;
@@ -87,6 +87,6 @@ namespace jactorio::data
 
         return "";
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
-#endif // JACTORIO_INCLUDE_PROTO_TYPE_H
+#endif // JACTORIO_INCLUDE_PROTO_DETAIL_TYPE_H

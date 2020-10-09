@@ -2,13 +2,13 @@
 
 #include <gtest/gtest.h>
 
-#include "proto/sprite.h"
 #include "game/world/overlay_element.h"
+#include "proto/sprite.h"
 
 namespace jactorio::game
 {
     TEST(OverlayElement, Construct) {
-        const data::Sprite sprite;
+        const proto::Sprite sprite;
 
         /*/
         OverlayElement o1 = {sprite, {0.5, 1}, {2, 3}};
@@ -43,7 +43,7 @@ namespace jactorio::game
     }
 
     TEST(OverlayElement, GetSetZPosition) {
-        const data::Sprite sprite;
+        const proto::Sprite sprite;
         OverlayElement oe = {sprite, {0.5, 1, 0.f}, {2, 3}};
 
         EXPECT_FLOAT_EQ(oe.position.z, 0.f);

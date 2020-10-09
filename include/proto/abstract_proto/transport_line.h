@@ -12,7 +12,7 @@
 
 #include <cereal/types/memory.hpp>
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     ///
     /// TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
@@ -175,9 +175,9 @@ namespace jactorio::data
         // Data events
 
         void PostLoad() override;
-        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
         void ValidatedPostLoad() override;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_TRANSPORT_LINE_H

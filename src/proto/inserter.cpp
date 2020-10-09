@@ -2,22 +2,22 @@
 
 #include "proto/inserter.h"
 
-#include "proto/sprite.h"
 #include "game/world/world_data.h"
+#include "proto/sprite.h"
 #include "render/rendering/data_renderer.h"
 
 using namespace jactorio;
 
-void data::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
-                                       const SpriteUvCoordsT& uv_coords,
-                                       const core::Position2<float>& pixel_offset,
-                                       const UniqueDataBase* unique_data) const {
+void proto::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
+                                        const SpriteUvCoordsT& uv_coords,
+                                        const core::Position2<float>& pixel_offset,
+                                        const UniqueDataBase* unique_data) const {
     DrawInserterArm(layer, uv_coords, pixel_offset, *this, *static_cast<const InserterData*>(unique_data));
 }
 
-SpriteSetT data::Inserter::OnRGetSpriteSet(const Orientation orientation,
-                                           game::WorldData& /*world_data*/,
-                                           const WorldCoord& /*world_coords*/) const {
+SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
+                                            game::WorldData& /*world_data*/,
+                                            const WorldCoord& /*world_coords*/) const {
     switch (orientation) {
 
     case Orientation::up:
@@ -37,21 +37,21 @@ SpriteSetT data::Inserter::OnRGetSpriteSet(const Orientation orientation,
     return 0;
 }
 
-void data::Inserter::OnBuild(game::WorldData& world_data,
-                             game::LogicData& /*logic_data*/,
-                             const WorldCoord& world_coords,
-                             game::ChunkTileLayer& tile_layer,
-                             Orientation orientation) const {
+void proto::Inserter::OnBuild(game::WorldData& world_data,
+                              game::LogicData& /*logic_data*/,
+                              const WorldCoord& world_coords,
+                              game::ChunkTileLayer& tile_layer,
+                              Orientation orientation) const {
     auto* inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
     inserter_data->set  = OnRGetSpriteSet(orientation, world_data, world_coords);
 
     InitPickupDropoff(world_data, world_coords, orientation);
 }
 
-void data::Inserter::OnTileUpdate(game::WorldData& world_data,
-                                  const WorldCoord& emit_coords,
-                                  const WorldCoord& receive_coords,
-                                  UpdateType /*type*/) const {
+void proto::Inserter::OnTileUpdate(game::WorldData& world_data,
+                                   const WorldCoord& emit_coords,
+                                   const WorldCoord& receive_coords,
+                                   UpdateType /*type*/) const {
     auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::TileLayer::entity);
     auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
 
@@ -91,10 +91,10 @@ void data::Inserter::OnTileUpdate(game::WorldData& world_data,
     }
 }
 
-void data::Inserter::OnRemove(game::WorldData& world_data,
-                              game::LogicData& /*logic_data*/,
-                              const WorldCoord& world_coords,
-                              game::ChunkTileLayer& tile_layer) const {
+void proto::Inserter::OnRemove(game::WorldData& world_data,
+                               game::LogicData& /*logic_data*/,
+                               const WorldCoord& world_coords,
+                               game::ChunkTileLayer& tile_layer) const {
     world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords, game::TileLayer::entity);
 
     const auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
@@ -103,40 +103,40 @@ void data::Inserter::OnRemove(game::WorldData& world_data,
     world_data.updateDispatcher.Unregister({world_coords, GetPickupCoord(world_coords, inserter_data->orientation)});
 }
 
-void data::Inserter::OnDeserialize(game::WorldData& world_data,
-                                   const WorldCoord& world_coord,
-                                   game::ChunkTileLayer& tile_layer) const {
+void proto::Inserter::OnDeserialize(game::WorldData& world_data,
+                                    const WorldCoord& world_coord,
+                                    game::ChunkTileLayer& tile_layer) const {
     auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
     assert(inserter_data != nullptr);
 
     InitPickupDropoff(world_data, world_coord, inserter_data->orientation);
 }
 
-void data::Inserter::PostLoadValidate(const PrototypeManager& /*proto_manager*/) const {
+void proto::Inserter::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
     J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
     J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
     J_DATA_ASSERT(handSprite != nullptr, "Hand sprite not provided");
 }
 
-void data::Inserter::ValidatedPostLoad() {
+void proto::Inserter::ValidatedPostLoad() {
     sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
 }
 
 // ======================================================================
 
-WorldCoord data::Inserter::GetDropoffCoord(WorldCoord world_coord, const Orientation orientation) const {
+WorldCoord proto::Inserter::GetDropoffCoord(WorldCoord world_coord, const Orientation orientation) const {
     OrientationIncrement(orientation, world_coord.x, world_coord.y, this->tileReach);
     return world_coord;
 }
 
-WorldCoord data::Inserter::GetPickupCoord(WorldCoord world_coord, const Orientation orientation) const {
+WorldCoord proto::Inserter::GetPickupCoord(WorldCoord world_coord, const Orientation orientation) const {
     OrientationIncrement(orientation, world_coord.x, world_coord.y, this->tileReach * -1);
     return world_coord;
 }
 
-void data::Inserter::InitPickupDropoff(game::WorldData& world_data,
-                                       const WorldCoord& world_coord,
-                                       const Orientation orientation) const {
+void proto::Inserter::InitPickupDropoff(game::WorldData& world_data,
+                                        const WorldCoord& world_coord,
+                                        const Orientation orientation) const {
     // Dropoff side
     {
         auto emit_coords = GetDropoffCoord(world_coord, orientation);

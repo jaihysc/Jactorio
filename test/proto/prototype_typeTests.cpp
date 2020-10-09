@@ -2,10 +2,10 @@
 
 #include <gtest/gtest.h>
 
-#include "proto/prototype_type.h"
+#include "proto/detail/prototype_type.h"
 #include "proto/sprite.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     TEST(PrototypeType, Tile4WayConstruct) {
         const Tile4Way tile{{1, 2}, {3, 4}, {5, 6}, {7, 8}};
@@ -44,7 +44,7 @@ namespace jactorio::data
     }
 
     TEST(PrototypeType, InvertOrientation) {
-        using namespace data;
+        using namespace proto;
 
         EXPECT_EQ(InvertOrientation(Orientation::up), Orientation::down);
         EXPECT_EQ(InvertOrientation(Orientation::right), Orientation::left);
@@ -58,7 +58,7 @@ namespace jactorio::data
     }
 
     TEST(PrototypeType, OrientationIncrement) {
-        using namespace data;
+        using namespace proto;
 
         int i = 0;
         OrientationIncrement<int>(Orientation::up, i, i);
@@ -78,4 +78,4 @@ namespace jactorio::data
         OrientationIncrement<int>(Orientation::left, l, l, 2);
         EXPECT_EQ(l, -2);
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto

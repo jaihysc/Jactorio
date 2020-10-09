@@ -11,7 +11,7 @@ namespace jactorio::game
     class WorldData;
 }
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     enum class UpdateType
     {
@@ -29,6 +29,6 @@ namespace jactorio::data
                                   const WorldCoord& receive_coords,
                                   UpdateType type) const = 0;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_INTERFACE_UPDATE_LISTENER_H

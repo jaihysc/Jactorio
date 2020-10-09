@@ -6,7 +6,7 @@
 
 using namespace jactorio;
 
-data::Entity* data::Entity::SetItem(Item* item) {
+proto::Entity* proto::Entity::SetItem(Item* item) {
     item->entityPrototype = this;
     this->item_           = item;
 
@@ -15,13 +15,13 @@ data::Entity* data::Entity::SetItem(Item* item) {
 
 // ======================================================================
 
-void data::Entity::SetLocalizedName(const std::string& localized_name) {
+void proto::Entity::SetLocalizedName(const std::string& localized_name) {
     this->localizedName_ = localized_name;
     if (item_ != nullptr)
         item_->SetLocalizedName(localized_name);
 }
 
-void data::Entity::SetLocalizedDescription(const std::string& localized_description) {
+void proto::Entity::SetLocalizedDescription(const std::string& localized_description) {
     this->localizedDescription_ = localized_description;
     if (item_ != nullptr)
         item_->SetLocalizedDescription(localized_description);
@@ -29,7 +29,7 @@ void data::Entity::SetLocalizedDescription(const std::string& localized_descript
 
 // ======================================================================
 
-void data::Entity::PostLoadValidate(const PrototypeManager& /*data_manager*/) const {
+void proto::Entity::PostLoadValidate(const data::PrototypeManager& /*data_manager*/) const {
 
     J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
     J_DATA_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive");

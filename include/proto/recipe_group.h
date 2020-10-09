@@ -6,7 +6,7 @@
 
 #include "proto/framework/framework_base.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class RecipeCategory;
     class Sprite;
@@ -32,8 +32,8 @@ namespace jactorio::data
         PYTHON_PROP_REF(std::vector<RecipeCategory*>, recipeCategories);
 
 
-        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {}
+        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {}
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_RECIPE_GROUP_H

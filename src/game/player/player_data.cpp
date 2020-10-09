@@ -5,13 +5,13 @@
 #include <algorithm>
 #include <map>
 
-#include "proto/recipe.h"
-#include "proto/resource_entity.h"
-#include "proto/tile.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"
 #include "game/world/world_data.h"
+#include "proto/recipe.h"
+#include "proto/resource_entity.h"
+#include "proto/tile.h"
 #include "render/rendering/renderer.h"
 
 using namespace jactorio;
@@ -126,41 +126,41 @@ void game::PlayerData::World::MovePlayerY(const float amount) {
 
 void game::PlayerData::Placement::RotateOrientation() {
     switch (orientation) {
-    case data::Orientation::up:
-        orientation = data::Orientation::right;
+    case proto::Orientation::up:
+        orientation = proto::Orientation::right;
         break;
-    case data::Orientation::right:
-        orientation = data::Orientation::down;
+    case proto::Orientation::right:
+        orientation = proto::Orientation::down;
         break;
-    case data::Orientation::down:
-        orientation = data::Orientation::left;
+    case proto::Orientation::down:
+        orientation = proto::Orientation::left;
         break;
-    case data::Orientation::left:
-        orientation = data::Orientation::up;
+    case proto::Orientation::left:
+        orientation = proto::Orientation::up;
         break;
     default:
         assert(false); // Missing switch case
-        orientation = data::Orientation::up;
+        orientation = proto::Orientation::up;
     }
 }
 
 void game::PlayerData::Placement::CounterRotateOrientation() {
     switch (orientation) {
-    case data::Orientation::up:
-        orientation = data::Orientation::left;
+    case proto::Orientation::up:
+        orientation = proto::Orientation::left;
         break;
-    case data::Orientation::left:
-        orientation = data::Orientation::down;
+    case proto::Orientation::left:
+        orientation = proto::Orientation::down;
         break;
-    case data::Orientation::down:
-        orientation = data::Orientation::right;
+    case proto::Orientation::down:
+        orientation = proto::Orientation::right;
         break;
-    case data::Orientation::right:
-        orientation = data::Orientation::up;
+    case proto::Orientation::right:
+        orientation = proto::Orientation::up;
         break;
     default:
         assert(false); // Missing switch case
-        orientation = data::Orientation::up;
+        orientation = proto::Orientation::up;
     }
 }
 
@@ -170,18 +170,18 @@ void game::PlayerData::Placement::CounterRotateOrientation() {
 void UpdateNeighboringEntities(game::WorldData& world_data,
                                game::LogicData& logic_data,
                                const WorldCoord& world_coord,
-                               const data::Entity* entity_ptr) {
+                               const proto::Entity* entity_ptr) {
 
     auto call_on_neighbor_update = [&](const WorldCoordAxis emit_x,
                                        const WorldCoordAxis emit_y,
                                        const WorldCoordAxis receive_x,
                                        const WorldCoordAxis receive_y,
-                                       const data::Orientation target_orientation) {
+                                       const proto::Orientation target_orientation) {
         const game::ChunkTile* tile = world_data.GetTile(receive_x, receive_y);
         if (tile != nullptr) {
             const auto& layer = tile->GetLayer(game::TileLayer::entity);
 
-            const auto* entity = static_cast<const data::Entity*>(layer.prototypeData.Get());
+            const auto* entity = static_cast<const proto::Entity*>(layer.prototypeData.Get());
             if (entity != nullptr)
                 entity->OnNeighborUpdate(
                     world_data, logic_data, {emit_x, emit_y}, {receive_x, receive_y}, target_orientation);
@@ -199,31 +199,31 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
      */
 
     // x and y are receive coordinates
-    for (data::ProtoUintT i = 0; i < entity_ptr->tileWidth; ++i) {
+    for (proto::ProtoUintT i = 0; i < entity_ptr->tileWidth; ++i) {
         const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(i);
         const auto y = world_coord.y - 1;
 
-        call_on_neighbor_update(x, y + 1, x, y, data::Orientation::down);
+        call_on_neighbor_update(x, y + 1, x, y, proto::Orientation::down);
     }
-    for (data::ProtoUintT i = 0; i < entity_ptr->tileHeight; ++i) {
+    for (proto::ProtoUintT i = 0; i < entity_ptr->tileHeight; ++i) {
         const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth);
         const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(i);
 
-        call_on_neighbor_update(x - 1, y, x, y, data::Orientation::left);
+        call_on_neighbor_update(x - 1, y, x, y, proto::Orientation::left);
     }
-    for (data::ProtoUintT i = 1; i <= entity_ptr->tileWidth; ++i) {
+    for (proto::ProtoUintT i = 1; i <= entity_ptr->tileWidth; ++i) {
         const auto x =
             world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth) - core::SafeCast<WorldCoordAxis>(i);
         const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight);
 
-        call_on_neighbor_update(x, y - 1, x, y, data::Orientation::up);
+        call_on_neighbor_update(x, y - 1, x, y, proto::Orientation::up);
     }
-    for (data::ProtoUintT i = 1; i <= entity_ptr->tileHeight; ++i) {
+    for (proto::ProtoUintT i = 1; i <= entity_ptr->tileHeight; ++i) {
         const auto x = world_coord.x - 1;
         const auto y =
             world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight) - core::SafeCast<WorldCoordAxis>(i);
 
-        call_on_neighbor_update(x + 1, y, x, y, data::Orientation::right);
+        call_on_neighbor_update(x + 1, y, x, y, proto::Orientation::right);
     }
 }
 
@@ -242,7 +242,7 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
         return false;
 
     // Does not have item, or placeable item
-    auto* entity_ptr = static_cast<data::Entity*>(stack->item->entityPrototype);
+    auto* entity_ptr = static_cast<proto::Entity*>(stack->item->entityPrototype);
     if (entity_ptr == nullptr || !entity_ptr->placeable)
         return false;
 
@@ -271,7 +271,7 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
 
     entity_ptr->OnBuild(world_data, logic_data, {world_x, world_y}, selected_layer, orientation);
     UpdateNeighboringEntities(world_data, logic_data, {world_x, world_y}, entity_ptr);
-    world_data.UpdateDispatch(world_x, world_y, data::UpdateType::place);
+    world_data.UpdateDispatch(world_x, world_y, proto::UpdateType::place);
 
     return true;
 }
@@ -286,7 +286,7 @@ bool game::PlayerData::Placement::TryActivateLayer(WorldData& world_data, const 
     // Can activate if: No selected item OR selected item is not placeable
     if (stack != nullptr) {
         // Ensure item attempting to place is an entity
-        auto* entity_ptr = static_cast<data::Entity*>(stack->item->entityPrototype);
+        auto* entity_ptr = static_cast<proto::Entity*>(stack->item->entityPrototype);
 
         if (entity_ptr != nullptr && entity_ptr->placeable)
             return false;
@@ -316,7 +316,7 @@ void game::PlayerData::Placement::TryPickup(
     WorldData& world_data, LogicData& logic_data, WorldCoordAxis tile_x, WorldCoordAxis tile_y, const uint16_t ticks) {
     auto* tile = world_data.GetTile(tile_x, tile_y);
 
-    const data::Entity* chosen_ptr;
+    const proto::Entity* chosen_ptr;
     bool is_resource_ptr = true;
     {
         const auto* entity_ptr   = tile->GetEntityPrototype();
@@ -349,7 +349,7 @@ void game::PlayerData::Placement::TryPickup(
         LOG_MESSAGE(debug, "Player picked up entity");
 
         // Give picked up item to player
-        const auto item_stack = data::ItemStack{chosen_ptr->GetItem(), 1};
+        const auto item_stack = proto::ItemStack{chosen_ptr->GetItem(), 1};
 
         // Failed to add item, likely because the inventory is full
         if (!CanAddStack(playerInv_->inventory, item_stack).first)
@@ -362,7 +362,7 @@ void game::PlayerData::Placement::TryPickup(
         // Resource entity
         if (is_resource_ptr) {
             auto& layer         = tile->GetLayer(TileLayer::resource);
-            auto* resource_data = layer.GetUniqueData<data::ResourceEntityData>();
+            auto* resource_data = layer.GetUniqueData<proto::ResourceEntityData>();
 
             assert(resource_data != nullptr); // Resource tiles should have valid data
 
@@ -388,7 +388,7 @@ void game::PlayerData::Placement::TryPickup(
                 activatedLayer_ = nullptr;
 
             // Call events
-            const auto* entity = static_cast<const data::Entity*>(layer.prototypeData.Get());
+            const auto* entity = static_cast<const proto::Entity*>(layer.prototypeData.Get());
 
             entity->OnRemove(world_data, logic_data, {tile_x, tile_y}, layer);
 
@@ -397,7 +397,7 @@ void game::PlayerData::Placement::TryPickup(
 
             UpdateNeighboringEntities(world_data, logic_data, {tl_tile_x, tl_tile_y}, entity);
 
-            world_data.UpdateDispatch(tile_x, tile_y, data::UpdateType::remove);
+            world_data.UpdateDispatch(tile_x, tile_y, proto::UpdateType::remove);
         }
     }
 }
@@ -413,7 +413,7 @@ float game::PlayerData::Placement::GetPickupPercentage() const {
 // Inventory
 
 void game::PlayerData::Inventory::HandleInventoryActions(const data::PrototypeManager& data_manager,
-                                                         data::Item::Inventory& inv,
+                                                         proto::Item::Inventory& inv,
                                                          const size_t index,
                                                          const bool half_select) {
     const bool is_player_inv = &inv == &inventory;
@@ -423,15 +423,15 @@ void game::PlayerData::Inventory::HandleInventoryActions(const data::PrototypeMa
     InventorySort(inventory);
 }
 
-void game::PlayerData::Inventory::InventorySort(data::Item::Inventory& inv) {
+void game::PlayerData::Inventory::InventorySort(proto::Item::Inventory& inv) {
     // The inventory must be sorted without moving the selected cursor
 
     // Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
-    std::vector<data::ItemStack> sorted_inv;
+    std::vector<proto::ItemStack> sorted_inv;
     sorted_inv.reserve(inv.size());
     for (const auto& stack : inv) {
         // Skip the cursor
-        if (stack.item == nullptr || stack.item->GetLocalizedName() == data::Item::kInventorySelectedCursor) {
+        if (stack.item == nullptr || stack.item->GetLocalizedName() == proto::Item::kInventorySelectedCursor) {
             continue;
         }
 
@@ -439,7 +439,7 @@ void game::PlayerData::Inventory::InventorySort(data::Item::Inventory& inv) {
     }
 
     // Sort temp inventory (does not contain cursor)
-    std::sort(sorted_inv.begin(), sorted_inv.end(), [](const data::ItemStack a, const data::ItemStack b) {
+    std::sort(sorted_inv.begin(), sorted_inv.end(), [](const proto::ItemStack a, const proto::ItemStack b) {
         const auto& a_name = a.item->GetLocalizedName();
         const auto& b_name = b.item->GetLocalizedName();
 
@@ -502,7 +502,7 @@ void game::PlayerData::Inventory::InventorySort(data::Item::Inventory& inv) {
 
     for (size_t i = 0; i < inv.size(); ++i) {
         // Skip the cursor
-        if (inv[i].item != nullptr && inv[i].item->GetLocalizedName() == data::Item::kInventorySelectedCursor)
+        if (inv[i].item != nullptr && inv[i].item->GetLocalizedName() == proto::Item::kInventorySelectedCursor)
             continue;
 
         // Iterated through every item in the sorted inventory
@@ -531,7 +531,7 @@ loop_exit:
     // Copy empty spaces into the remainder of the slots
     for (auto i = start; i < inv.size(); ++i) {
         // Skip the cursor
-        if (inv[i].item != nullptr && inv[i].item->GetLocalizedName() == data::Item::kInventorySelectedCursor)
+        if (inv[i].item != nullptr && inv[i].item->GetLocalizedName() == proto::Item::kInventorySelectedCursor)
             continue;
 
         inv[i] = {nullptr, 0};
@@ -545,7 +545,7 @@ void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data
                                               const uint16_t index,
                                               const uint16_t mouse_button,
                                               const bool reference_select,
-                                              data::Item::Inventory& inv) {
+                                              proto::Item::Inventory& inv) {
     assert(index < inventory.size());
     assert(mouse_button == 0 || mouse_button == 1); // Only left + right click supported
 
@@ -578,7 +578,7 @@ void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data
             selectedItem_      = inv[index];
 
             // Swap icon out for a cursor indicating the current index is selected
-            inventory[index].item  = data_manager.DataRawGet<data::Item>(data::Item::kInventorySelectedCursor);
+            inventory[index].item  = data_manager.DataRawGet<proto::Item>(proto::Item::kInventorySelectedCursor);
             inventory[index].count = 0;
 
             // Return is necessary when selecting by reference
@@ -610,7 +610,7 @@ void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data
     }
 }
 
-const data::ItemStack* game::PlayerData::Inventory::GetSelectedItem() const {
+const proto::ItemStack* game::PlayerData::Inventory::GetSelectedItem() const {
     if (!hasItemSelected_)
         return nullptr;
 
@@ -683,10 +683,10 @@ void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& d
             craftingQueue_.pop_front();
 
             // Return product
-            data::RecipeItem recipe_item = recipe->product;
-            const auto* product_item     = data_manager.DataRawGet<data::Item>(recipe_item.first);
+            proto::RecipeItem recipe_item = recipe->product;
+            const auto* product_item      = data_manager.DataRawGet<proto::Item>(recipe_item.first);
 
-            data::ItemStack item = {product_item, recipe_item.second};
+            proto::ItemStack item = {product_item, recipe_item.second};
 
             // Deduct based on the deductions
             std::map<std::string, uint16_t>::iterator element;
@@ -740,12 +740,12 @@ void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& d
     }
 }
 
-void game::PlayerData::Crafting::QueueRecipe(const data::PrototypeManager& data_manager, const data::Recipe& recipe) {
+void game::PlayerData::Crafting::QueueRecipe(const data::PrototypeManager& data_manager, const proto::Recipe& recipe) {
     LOG_MESSAGE_F(debug, "Queuing recipe: '%s'", recipe.product.first.c_str());
 
     // Remove ingredients
     for (const auto& ingredient : recipe.ingredients) {
-        const auto* item = data_manager.DataRawGet<data::Item>(ingredient.first);
+        const auto* item = data_manager.DataRawGet<proto::Item>(ingredient.first);
 
         DeleteInvItem(playerInv_->inventory, item, ingredient.second);
     }
@@ -765,9 +765,9 @@ uint16_t game::PlayerData::Crafting::GetCraftingTicksRemaining() const {
     return craftingTicksRemaining_;
 }
 
-void game::PlayerData::Crafting::RecipeCraftR(const data::PrototypeManager& data_manager, const data::Recipe& recipe) {
+void game::PlayerData::Crafting::RecipeCraftR(const data::PrototypeManager& data_manager, const proto::Recipe& recipe) {
     for (const auto& ingredient : recipe.ingredients) {
-        const auto* ingredient_proto = data_manager.DataRawGet<data::Item>(ingredient.first);
+        const auto* ingredient_proto = data_manager.DataRawGet<proto::Item>(ingredient.first);
 
         const uint32_t possess_amount = GetInvItemCount(playerInv_->inventory, ingredient_proto);
 
@@ -802,7 +802,7 @@ void game::PlayerData::Crafting::RecipeCraftR(const data::PrototypeManager& data
                 return_deductions += amount_needed + queued_available;
 
 
-                const auto* ingredient_recipe = data::Recipe::GetItemRecipe(data_manager, ingredient.first);
+                const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(data_manager, ingredient.first);
 
                 // Round up to always ensure enough is crafted
                 const unsigned int yield = ingredient_recipe->product.second;
@@ -831,11 +831,11 @@ void game::PlayerData::Crafting::RecipeCraftR(const data::PrototypeManager& data
 
 
 bool game::PlayerData::Crafting::RecipeCanCraftR(const data::PrototypeManager& data_manager,
-                                                 std::map<const data::Item*, uint32_t>& used_items,
-                                                 const data::Recipe& recipe,
+                                                 std::map<const proto::Item*, uint32_t>& used_items,
+                                                 const proto::Recipe& recipe,
                                                  const unsigned batches) const {
     for (const auto& [ing_name, ing_amount_to_craft] : recipe.ingredients) {
-        const auto* ing_item = data_manager.DataRawGet<data::Item>(ing_name);
+        const auto* ing_item = data_manager.DataRawGet<proto::Item>(ing_name);
 
         // If item has already been counted, use the map used_items. Otherwise, count from inventory
         unsigned int possess_amount;
@@ -853,7 +853,7 @@ bool game::PlayerData::Crafting::RecipeCanCraftR(const data::PrototypeManager& d
             continue;
         }
 
-        const auto* ingredient_recipe = data::Recipe::GetItemRecipe(data_manager, ing_name);
+        const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(data_manager, ing_name);
         // Ingredient cannot be crafted
         if (ingredient_recipe == nullptr)
             return false;
@@ -882,8 +882,8 @@ bool game::PlayerData::Crafting::RecipeCanCraftR(const data::PrototypeManager& d
 }
 
 bool game::PlayerData::Crafting::RecipeCanCraft(const data::PrototypeManager& data_manager,
-                                                const data::Recipe& recipe,
+                                                const proto::Recipe& recipe,
                                                 const uint16_t batches) const {
-    std::map<const data::Item*, uint32_t> used_items;
+    std::map<const proto::Item*, uint32_t> used_items;
     return RecipeCanCraftR(data_manager, used_items, recipe, batches);
 }

@@ -6,10 +6,10 @@
 
 #include "jactorio.h"
 
+#include "proto/detail/type.h"
 #include "proto/framework/entity.h"
-#include "proto/type.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class Item;
 
@@ -146,12 +146,12 @@ namespace jactorio::data
                            game::ChunkTileLayer& tile_layer) const override {}
 
 
-        void PostLoadValidate(const PrototypeManager& data_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& data_manager) const override;
 
     private:
         /// Item when entity is picked up
         Item* item_ = nullptr;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_ENTITY_H

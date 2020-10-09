@@ -7,7 +7,7 @@
 
 #include "core/filesystem.h"
 #include "core/logger.h"
-#include "data/data_exception.h"
+#include "proto/detail/exception.h"
 
 namespace py = pybind11;
 
@@ -56,7 +56,7 @@ int jactorio::data::PyExec(const std::string& python_str, const std::string& fil
     catch (py::error_already_set& err) {
         std::ostringstream oss;
         oss << file_name << "\n" << err.what();
-        throw DataException(oss.str());
+        throw proto::ProtoError(oss.str());
     }
 }
 

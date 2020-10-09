@@ -8,7 +8,7 @@
 #include "proto/interface/renderable.h"
 #include "proto/interface/serializable.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     struct FWorldObjectData : UniqueDataBase, IRenderableData
     {
@@ -24,6 +24,6 @@ namespace jactorio::data
         PYTHON_PROP_REF_I(uint8_t, tileWidth, 1);
         PYTHON_PROP_REF_I(uint8_t, tileHeight, 1);
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_FRAMEWORK_WORLD_OBJECT_H

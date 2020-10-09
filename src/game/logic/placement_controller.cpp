@@ -6,8 +6,8 @@
 
 #include "jactorio.h"
 
-#include "proto/tile.h"
 #include "game/world/world_data.h"
+#include "proto/tile.h"
 
 using namespace jactorio;
 
@@ -101,7 +101,7 @@ void RemoveAtCoords(game::WorldData& world_data,
 }
 
 bool game::PlaceEntityAtCoords(WorldData& world_data,
-                               const data::Entity* entity,
+                               const proto::Entity* entity,
                                const WorldCoordAxis x,
                                const WorldCoordAxis y) {
     const ChunkTile* tile = world_data.GetTile(x, y);
@@ -109,7 +109,7 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
 
     // entity is nullptr indicates removing an entity
     if (entity == nullptr) {
-        const data::Entity* t_entity = tile->GetEntityPrototype();
+        const proto::Entity* t_entity = tile->GetEntityPrototype();
 
         if (t_entity == nullptr) // Already removed
             return false;
@@ -134,6 +134,6 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
     return true;
 }
 
-bool game::PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity, const WorldCoord& world_pair) {
+bool game::PlaceEntityAtCoords(WorldData& world_data, const proto::Entity* entity, const WorldCoord& world_pair) {
     return PlaceEntityAtCoords(world_data, entity, world_pair.x, world_pair.y);
 }

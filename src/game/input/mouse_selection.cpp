@@ -33,7 +33,7 @@ void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
     const auto cursor_position = player_data.world.GetMouseTileCoords();
     const auto* stack          = player_data.inventory.GetSelectedItem();
 
-    const auto* sprite = proto_manager.DataRawGet<data::Sprite>(
+    const auto* sprite = proto_manager.DataRawGet<proto::Sprite>(
         player_data.world.MouseSelectedTileInRange() ? "__core__/cursor-select" : "__core__/cursor-invalid");
     assert(sprite != nullptr);
 
@@ -53,9 +53,9 @@ void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
 
 void game::MouseSelection::DrawOverlay(WorldData& world,
                                        const WorldCoord& coord,
-                                       const data::Orientation orientation,
-                                       const data::Entity* selected_entity,
-                                       const data::Sprite& cursor_sprite) {
+                                       const proto::Orientation orientation,
+                                       const proto::Entity* selected_entity,
+                                       const proto::Sprite& cursor_sprite) {
     // Clear last overlay
     if (lastOverlayElementIndex_ != UINT64_MAX) {
         auto* last_chunk = world.GetChunkC(lastChunkPos_);

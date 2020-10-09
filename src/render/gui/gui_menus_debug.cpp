@@ -165,12 +165,12 @@ void render::DebugItemSpawner(game::PlayerData& player_data, const data::Prototy
     ImGui::Separator();
 
 
-    auto game_items = data_manager.DataRawGetAll<data::Item>(data::DataCategory::item);
+    auto game_items = data_manager.DataRawGetAll<proto::Item>(proto::Category::item);
     for (auto& item : game_items) {
         ImGui::PushID(item->name.c_str());
 
         if (ImGui::Button(item->GetLocalizedName().c_str())) {
-            data::ItemStack item_stack = {item, core::SafeCast<data::Item::StackCount>(give_amount)};
+            proto::ItemStack item_stack = {item, core::SafeCast<proto::Item::StackCount>(give_amount)};
             game::AddStack(player_data.inventory.inventory, item_stack);
         }
         ImGui::PopID();
@@ -185,15 +185,15 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
     constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
 
     // Sprite representing the update point
-    const auto* sprite_stop         = data_manager.DataRawGet<data::Sprite>("__core__/rect-red");
-    const auto* sprite_moving       = data_manager.DataRawGet<data::Sprite>("__core__/rect-green");
-    const auto* sprite_left_moving  = data_manager.DataRawGet<data::Sprite>("__core__/rect-aqua");
-    const auto* sprite_right_moving = data_manager.DataRawGet<data::Sprite>("__core__/rect-pink");
+    const auto* sprite_stop         = data_manager.DataRawGet<proto::Sprite>("__core__/rect-red");
+    const auto* sprite_moving       = data_manager.DataRawGet<proto::Sprite>("__core__/rect-green");
+    const auto* sprite_left_moving  = data_manager.DataRawGet<proto::Sprite>("__core__/rect-aqua");
+    const auto* sprite_right_moving = data_manager.DataRawGet<proto::Sprite>("__core__/rect-pink");
 
-    const auto* sprite_up    = data_manager.DataRawGet<data::Sprite>("__core__/arrow-up");
-    const auto* sprite_right = data_manager.DataRawGet<data::Sprite>("__core__/arrow-right");
-    const auto* sprite_down  = data_manager.DataRawGet<data::Sprite>("__core__/arrow-down");
-    const auto* sprite_left  = data_manager.DataRawGet<data::Sprite>("__core__/arrow-left");
+    const auto* sprite_up    = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-up");
+    const auto* sprite_right = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-right");
+    const auto* sprite_down  = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-down");
+    const auto* sprite_left  = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-left");
 
     // Get all update points and add it to the chunk's objects for drawing
     for (auto* chunk : world.LogicGetChunks()) {
@@ -203,10 +203,10 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
         for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
             auto& layer = chunk->Tiles()[i].GetLayer(game::TileLayer::entity);
             if (layer.prototypeData.Get() == nullptr ||
-                layer.prototypeData->Category() != data::DataCategory::transport_belt)
+                layer.prototypeData->Category() != proto::Category::transport_belt)
                 continue;
 
-            auto& line_data    = *static_cast<data::TransportLineData*>(layer.GetUniqueData());
+            auto& line_data    = *static_cast<proto::TransportLineData*>(layer.GetUniqueData());
             auto& line_segment = *line_data.lineSegment;
 
             // Only draw for the head of segments
@@ -226,15 +226,15 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
             int segment_len_x;
             int segment_len_y;
 
-            const data::Sprite* direction_sprite;
-            const data::Sprite* outline_sprite;
+            const proto::Sprite* direction_sprite;
+            const proto::Sprite* outline_sprite;
 
             // Correspond the direction with a sprite representing the direction
             switch (line_segment.direction) {
             default:
                 assert(false); // Missing case label
 
-            case data::Orientation::up:
+            case proto::Orientation::up:
                 pos_x         = position_x;
                 pos_y         = position_y;
                 segment_len_x = 1;
@@ -242,7 +242,7 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
 
                 direction_sprite = sprite_up;
                 break;
-            case data::Orientation::right:
+            case proto::Orientation::right:
                 pos_x         = position_x - line_segment.length + 1;
                 pos_y         = position_y;
                 segment_len_x = line_segment.length;
@@ -250,7 +250,7 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
 
                 direction_sprite = sprite_right;
                 break;
-            case data::Orientation::down:
+            case proto::Orientation::down:
                 pos_x         = position_x;
                 pos_y         = position_y - line_segment.length + 1;
                 segment_len_x = 1;
@@ -258,7 +258,7 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
 
                 direction_sprite = sprite_down;
                 break;
-            case data::Orientation::left:
+            case proto::Orientation::left:
                 pos_x         = position_x;
                 pos_y         = position_y;
                 segment_len_x = line_segment.length;
@@ -306,8 +306,8 @@ void render::DebugTransportLineInfo(GameWorlds& worlds,
     ImGuard guard{};
     guard.Begin("Transport Line Info");
 
-    const auto selected_tile      = player.world.GetMouseTileCoords();
-    data::TransportLineData* data = data::TransportLine::GetLineData(world, selected_tile.x, selected_tile.y);
+    const auto selected_tile       = player.world.GetMouseTileCoords();
+    proto::TransportLineData* data = proto::TransportLine::GetLineData(world, selected_tile.x, selected_tile.y);
 
     // Try to use current selected line segment first, otherwise used the last valid if checked
     game::TransportSegment* segment_ptr = nullptr;
@@ -316,7 +316,7 @@ void render::DebugTransportLineInfo(GameWorlds& worlds,
     if (ImGui::Button("Make all belt items visible")) {
         for (auto* chunk : world.LogicGetChunks()) {
             for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
-                auto& segment         = *transport_line->GetUniqueData<data::TransportLineData>()->lineSegment;
+                auto& segment         = *transport_line->GetUniqueData<proto::TransportLineData>()->lineSegment;
                 segment.left.visible  = true;
                 segment.right.visible = true;
             }
@@ -335,7 +335,7 @@ void render::DebugTransportLineInfo(GameWorlds& worlds,
     }
     else {
         if (use_last_valid_line_segment) {
-            data = data::TransportLine::GetLineData(world, last_valid_line_segment.x, last_valid_line_segment.y);
+            data = proto::TransportLine::GetLineData(world, last_valid_line_segment.x, last_valid_line_segment.y);
             if (data != nullptr)
                 segment_ptr = data->lineSegment.get();
         }
@@ -398,10 +398,10 @@ void render::DebugTransportLineInfo(GameWorlds& worlds,
         // Appending item
         const std::string iname = "__base__/wooden-chest-item";
         if (ImGui::Button("Append Item Left"))
-            segment.AppendItem(true, 0.2, *proto_manager.DataRawGet<data::Item>(iname));
+            segment.AppendItem(true, 0.2, *proto_manager.DataRawGet<proto::Item>(iname));
 
         if (ImGui::Button("Append Item Right"))
-            segment.AppendItem(false, 0.2, *proto_manager.DataRawGet<data::Item>(iname));
+            segment.AppendItem(false, 0.2, *proto_manager.DataRawGet<proto::Item>(iname));
 
 
         // Display items
@@ -433,22 +433,22 @@ void render::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
         return;
 
     auto& layer = tile->GetLayer(game::TileLayer::entity);
-    if (layer.prototypeData.Get() == nullptr || layer.prototypeData->Category() != data::DataCategory::inserter) {
+    if (layer.prototypeData.Get() == nullptr || layer.prototypeData->Category() != proto::Category::inserter) {
         ImGui::Text("No inserter at selected tile");
         return;
     }
 
-    auto& inserter_data = *layer.GetUniqueData<data::InserterData>();
+    auto& inserter_data = *layer.GetUniqueData<proto::InserterData>();
 
     ImGui::Text("Orientation %s", OrientationToStr(inserter_data.orientation));
 
     ImGui::Text("Degree: %f", inserter_data.rotationDegree.getAsDouble());
 
     switch (inserter_data.status) {
-    case data::InserterData::Status::dropoff:
+    case proto::InserterData::Status::dropoff:
         ImGui::Text("Status: Dropoff");
         break;
-    case data::InserterData::Status::pickup:
+    case proto::InserterData::Status::pickup:
         ImGui::Text("Status: Pickup");
         break;
     }

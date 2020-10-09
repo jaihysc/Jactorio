@@ -9,7 +9,7 @@
 // ======================================================================
 // Tests for the various bend orientations
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     // General tests
     // Neighbor updates
@@ -210,10 +210,10 @@ namespace jactorio::data
 
         // Should have created a transport line structure
         ASSERT_EQ(tile_layers.size(), 1);
-        ASSERT_TRUE(dynamic_cast<jactorio::data::TransportLineData*>(tile_layers.front()->GetUniqueData()));
+        ASSERT_TRUE(dynamic_cast<jactorio::proto::TransportLineData*>(tile_layers.front()->GetUniqueData()));
 
         auto& line_segment = GetSegment(tile_layers[0]);
-        EXPECT_EQ(line_segment.direction, jactorio::data::Orientation::right);
+        EXPECT_EQ(line_segment.direction, jactorio::proto::Orientation::right);
         EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::straight);
         EXPECT_EQ(line_segment.length, 1);
     }
@@ -326,8 +326,8 @@ namespace jactorio::data
         {
             auto& result_layer = worldData_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<jactorio::data::TransportLineData*>(result_layer.GetUniqueData())->orientation,
-                      jactorio::data::TransportLineData::LineOrientation::up_right);
+            EXPECT_EQ(static_cast<jactorio::proto::TransportLineData*>(result_layer.GetUniqueData())->orientation,
+                      jactorio::proto::TransportLineData::LineOrientation::up_right);
         }
     }
 
@@ -354,8 +354,8 @@ namespace jactorio::data
         {
             auto& result_layer = worldData_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<jactorio::data::TransportLineData*>(result_layer.GetUniqueData())->orientation,
-                      jactorio::data::TransportLineData::LineOrientation::down_right);
+            EXPECT_EQ(static_cast<jactorio::proto::TransportLineData*>(result_layer.GetUniqueData())->orientation,
+                      jactorio::proto::TransportLineData::LineOrientation::down_right);
         }
     }
 
@@ -385,7 +385,7 @@ namespace jactorio::data
 
         // Should have lengthened segment and moved x 1 left
         EXPECT_EQ(segment.length, 2);
-        EXPECT_EQ(static_cast<jactorio::data::TransportLineData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
+        EXPECT_EQ(static_cast<jactorio::proto::TransportLineData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
     }
 
     TEST_F(TransportLineTest, OnBuildBendingTransportLineSegmentLeading) {
@@ -409,7 +409,7 @@ namespace jactorio::data
 
         // Should have lengthened segment and moved x 1 left
         EXPECT_EQ(segment.length, 2);
-        EXPECT_EQ(static_cast<jactorio::data::TransportLineData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
+        EXPECT_EQ(static_cast<jactorio::proto::TransportLineData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
     }
 
 
@@ -447,10 +447,10 @@ namespace jactorio::data
         line_data.lineSegmentIndex = 1; // Prevents it from attempting to delete line segment
 
         line_data.SetOrientation(TransportLineData::LineOrientation::down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::data::TransportLineData::LineOrientation::down));
+        EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::proto::TransportLineData::LineOrientation::down));
 
         line_data.SetOrientation(TransportLineData::LineOrientation::left_down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::data::TransportLineData::LineOrientation::left_down));
+        EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::proto::TransportLineData::LineOrientation::left_down));
     }
 
 
@@ -1330,4 +1330,4 @@ namespace jactorio::data
             EXPECT_EQ(line_segment.length, 2);
         }
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto

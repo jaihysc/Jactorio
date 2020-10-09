@@ -14,7 +14,7 @@
 #include "proto/resource_entity.h"
 #include "proto/tile.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     ///
     /// \remark MOST values will be in range -1, 1. SOME VALUES will be greater/less than -1, 1
@@ -27,18 +27,18 @@ namespace jactorio::data
     public:
         using NoiseValT = float;
 
-        J_NODISCARD DataCategory Category() const override {
+        J_NODISCARD proto::Category Category() const override {
             bool constexpr is_tile   = std::is_same<T, Tile>::value;
             bool constexpr is_entity = std::is_same<T, Entity>::value || std::is_same<T, ResourceEntity>::value;
 
             static_assert(is_tile || is_entity);
 
             if constexpr (is_tile)
-                return DataCategory::noise_layer_tile;
+                return Category::noise_layer_tile;
             if constexpr (is_entity)
-                return DataCategory::noise_layer_entity;
+                return Category::noise_layer_entity;
 
-            return DataCategory::none;
+            return Category::none;
         }
 
         NoiseLayer() {
@@ -142,7 +142,7 @@ namespace jactorio::data
         }
 
 
-        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
+        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {
             J_DATA_ASSERT(1 <= octaveCount, "A minimum of 1 octaves is required");
             J_DATA_ASSERT(0 < frequency, "Frequency must be greater than 0");
             J_DATA_ASSERT(0 < persistence, "Persistence must be greater than 0");
@@ -200,6 +200,6 @@ namespace jactorio::data
         /// The inclusive value where the noise range begins
         std::vector<NoiseValT> noiseRanges_;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_NOISE_LAYER_H

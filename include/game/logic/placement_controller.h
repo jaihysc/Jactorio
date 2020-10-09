@@ -6,7 +6,7 @@
 
 #include "proto/abstract_proto/entity.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class Entity;
 }
@@ -32,9 +32,9 @@ namespace jactorio::game
     /// Places / removes entities at world coordinates
     /// \remark Pass nullptr for entity to remove
     /// \return true if placed / removed successfully
-    bool PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity, WorldCoordAxis x, WorldCoordAxis y);
+    bool PlaceEntityAtCoords(WorldData& world_data, const proto::Entity* entity, WorldCoordAxis x, WorldCoordAxis y);
 
-    bool PlaceEntityAtCoords(WorldData& world_data, const data::Entity* entity, const WorldCoord& world_pair);
+    bool PlaceEntityAtCoords(WorldData& world_data, const proto::Entity* entity, const WorldCoord& world_pair);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_PLACEMENT_CONTROLLER_H

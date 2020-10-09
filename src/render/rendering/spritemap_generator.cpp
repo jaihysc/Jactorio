@@ -23,7 +23,7 @@ void render::RendererSprites::ClearSpritemaps() {
 }
 
 void render::RendererSprites::GInitializeSpritemap(const data::PrototypeManager& data_manager,
-                                                   data::Sprite::SpriteGroup group,
+                                                   proto::Sprite::SpriteGroup group,
                                                    const bool invert_sprites) {
     const auto spritemap_data = CreateSpritemap(data_manager, group, invert_sprites);
 
@@ -33,9 +33,9 @@ void render::RendererSprites::GInitializeSpritemap(const data::PrototypeManager&
 }
 
 render::RendererSprites::SpritemapData render::RendererSprites::CreateSpritemap(
-    const data::PrototypeManager& data_manager, data::Sprite::SpriteGroup group, const bool invert_sprites) const {
+    const data::PrototypeManager& data_manager, proto::Sprite::SpriteGroup group, const bool invert_sprites) const {
 
-    auto sprites = data_manager.DataRawGetAll<const data::Sprite>(data::DataCategory::sprite);
+    auto sprites = data_manager.DataRawGetAll<const proto::Sprite>(proto::Category::sprite);
 
     // Filter to group only
     sprites.erase(
@@ -62,11 +62,11 @@ render::RendererSprites::SpritemapData render::RendererSprites::CreateSpritemap(
 }
 
 
-const render::RendererSprites::SpritemapData& render::RendererSprites::GetSpritemap(data::Sprite::SpriteGroup group) {
+const render::RendererSprites::SpritemapData& render::RendererSprites::GetSpritemap(proto::Sprite::SpriteGroup group) {
     return spritemapDatas_[static_cast<int>(group)];
 }
 
-const render::Texture* render::RendererSprites::GetTexture(data::Sprite::SpriteGroup group) {
+const render::Texture* render::RendererSprites::GetTexture(proto::Sprite::SpriteGroup group) {
     return textures_[static_cast<int>(group)];
 }
 
@@ -75,7 +75,7 @@ const render::Texture* render::RendererSprites::GetTexture(data::Sprite::SpriteG
 // Spritemap generation functions
 
 render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(
-    const std::vector<const data::Sprite*>& sprites, const bool invert_sprites) const {
+    const std::vector<const proto::Sprite*>& sprites, const bool invert_sprites) const {
 
     LOG_MESSAGE_F(
         info, "Generating spritemap with %lld sprites, %s", sprites.size(), invert_sprites ? "Inverted" : "Upright");
@@ -158,15 +158,15 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(
 }
 
 
-data::Sprite::SpriteDimension render::RendererSprites::GetSpriteWidth(const data::Sprite* sprite) {
+proto::Sprite::SpriteDimension render::RendererSprites::GetSpriteWidth(const proto::Sprite* sprite) {
     return sprite->GetWidth() + 2 * sprite_border;
 }
 
-data::Sprite::SpriteDimension render::RendererSprites::GetSpriteHeight(const data::Sprite* sprite) {
+proto::Sprite::SpriteDimension render::RendererSprites::GetSpriteHeight(const proto::Sprite* sprite) {
     return sprite->GetHeight() + 2 * sprite_border;
 }
 
-void render::RendererSprites::SortInputSprites(std::vector<const data::Sprite*>& sprites) {
+void render::RendererSprites::SortInputSprites(std::vector<const proto::Sprite*>& sprites) {
     std::sort(sprites.begin(), sprites.end(), [](auto* first, auto* second) {
         const auto first_h  = GetSpriteHeight(first);
         const auto second_h = GetSpriteHeight(second);
@@ -179,7 +179,7 @@ void render::RendererSprites::SortInputSprites(std::vector<const data::Sprite*>&
     });
 }
 
-void render::RendererSprites::GenerateSpritemapNodes(std::vector<const data::Sprite*>& sprites,
+void render::RendererSprites::GenerateSpritemapNodes(std::vector<const proto::Sprite*>& sprites,
                                                      std::vector<GeneratorNode*>& node_buffer,
                                                      GeneratorNode& parent_node,
                                                      SpritemapDimensionT max_width,
@@ -187,8 +187,8 @@ void render::RendererSprites::GenerateSpritemapNodes(std::vector<const data::Spr
     GeneratorNode* current_node = &parent_node;
 
     while (!sprites.empty()) {
-        bool found_sprite          = false;
-        const data::Sprite* sprite = nullptr;
+        bool found_sprite           = false;
+        const proto::Sprite* sprite = nullptr;
 
         for (decltype(sprites.size()) i = 0; i < sprites.size(); ++i) {
             const auto* i_sprite = sprites[i];
@@ -248,10 +248,10 @@ render::RendererSprites::SpritemapDimensionT render::RendererSprites::GetSpritem
 // ======================================================================
 
 uint64_t GetSpriteIndex(const bool invert_sprites,
-                        const data::Sprite::SpriteDimension sprite_width,
-                        const data::Sprite::SpriteDimension sprite_height,
-                        const data::Sprite::SpriteDimension sprite_x,
-                        const data::Sprite::SpriteDimension sprite_y,
+                        const proto::Sprite::SpriteDimension sprite_width,
+                        const proto::Sprite::SpriteDimension sprite_height,
+                        const proto::Sprite::SpriteDimension sprite_x,
+                        const proto::Sprite::SpriteDimension sprite_y,
                         const uint8_t color_offset) {
     if (invert_sprites)
         return (core::SafeCast<uint64_t>(sprite_width) * (sprite_height - 1 - sprite_y) + sprite_x) * 4 + color_offset;
@@ -262,8 +262,8 @@ uint64_t GetSpriteIndex(const bool invert_sprites,
 uint64_t GetBufferIndex(const render::RendererSprites::SpritemapDimensionT spritemap_width,
                         const render::RendererSprites::SpritemapDimensionT spritemap_x_offset,
                         const render::RendererSprites::SpritemapDimensionT spritemap_y_offset,
-                        const data::Sprite::SpriteDimension pixel_x,
-                        const data::Sprite::SpriteDimension pixel_y,
+                        const proto::Sprite::SpriteDimension pixel_x,
+                        const proto::Sprite::SpriteDimension pixel_y,
                         const uint8_t color_offset) {
     uint64_t buffer_index = spritemap_width * (pixel_y + spritemap_y_offset);
     buffer_index += pixel_x + spritemap_x_offset;
@@ -277,8 +277,8 @@ void render::RendererSprites::SetSpritemapPixel(std::shared_ptr<Texture::SpriteB
                                                 const SpritemapDimensionT spritemap_x_offset,
                                                 const SpritemapDimensionT spritemap_y_offset,
                                                 const unsigned char* sprite_data,
-                                                const data::Sprite::SpriteDimension sprite_width,
-                                                const data::Sprite::SpriteDimension sprite_height,
+                                                const proto::Sprite::SpriteDimension sprite_width,
+                                                const proto::Sprite::SpriteDimension sprite_height,
                                                 const unsigned pixel_x,
                                                 const unsigned pixel_y) {
     for (uint8_t color_offset = 0; color_offset < 4; ++color_offset) {

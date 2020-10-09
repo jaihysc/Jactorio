@@ -10,7 +10,7 @@
 #include "game/logic/item_logistics.h"
 #include "proto/abstract_proto/health_entity.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     ///
     /// Holds the internal structure for inserters
@@ -124,7 +124,7 @@ namespace jactorio::data
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
         void ValidatedPostLoad() override;
 
     private:
@@ -135,6 +135,6 @@ namespace jactorio::data
                                const WorldCoord& world_coord,
                                Orientation orientation) const;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_INSERTER_H

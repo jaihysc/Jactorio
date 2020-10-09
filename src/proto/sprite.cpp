@@ -15,19 +15,19 @@
 
 using namespace jactorio;
 
-data::Sprite::Sprite(const std::string& sprite_path) {
+proto::Sprite::Sprite(const std::string& sprite_path) {
     LoadImage(sprite_path);
 }
 
-data::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group) : group(std::move(group)) {
+proto::Sprite::Sprite(const std::string& sprite_path, std::vector<SpriteGroup> group) : group(std::move(group)) {
     LoadImage(sprite_path);
 }
 
-data::Sprite::~Sprite() {
+proto::Sprite::~Sprite() {
     stbi_image_free(spriteBuffer_);
 }
 
-data::Sprite::Sprite(const Sprite& other)
+proto::Sprite::Sprite(const Sprite& other)
     : FrameworkBase{other},
       group{other.group},
       invertSetFrame{other.invertSetFrame},
@@ -47,7 +47,7 @@ data::Sprite::Sprite(const Sprite& other)
     }
 }
 
-data::Sprite::Sprite(Sprite&& other) noexcept
+proto::Sprite::Sprite(Sprite&& other) noexcept
     : FrameworkBase{std::move(other)},
       group{std::move(other.group)},
       frames{other.frames},
@@ -63,7 +63,7 @@ data::Sprite::Sprite(Sprite&& other) noexcept
 
 // ======================================================================
 
-bool data::Sprite::IsInGroup(const SpriteGroup group) const {
+bool proto::Sprite::IsInGroup(const SpriteGroup group) const {
     for (const auto& i : this->group) {
         if (i == group)
             return true;
@@ -72,7 +72,7 @@ bool data::Sprite::IsInGroup(const SpriteGroup group) const {
     return false;
 }
 
-void data::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group) {
+void proto::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group) {
     LOG_MESSAGE(debug, "Using default sprite group:");
     for (const auto& group : new_group) {
         LOG_MESSAGE_F(debug, "    %d", static_cast<int>(group));
@@ -84,7 +84,7 @@ void data::Sprite::DefaultSpriteGroup(const std::vector<SpriteGroup>& new_group)
     }
 }
 
-void data::Sprite::LoadImageFromFile() {
+void proto::Sprite::LoadImageFromFile() {
     spriteBuffer_ = stbi_load(spritePath_.c_str(),
                               &width_,
                               &height_,
@@ -98,12 +98,12 @@ void data::Sprite::LoadImageFromFile() {
         std::ostringstream sstr;
         sstr << "Failed to read sprite at: " << spritePath_;
 
-        throw DataException(sstr.str());
+        throw ProtoError(sstr.str());
     }
 }
 
 
-UvPositionT data::Sprite::GetCoords(SpriteSetT set, SpriteFrameT frame) const {
+UvPositionT proto::Sprite::GetCoords(SpriteSetT set, SpriteFrameT frame) const {
     float width_base  = core::SafeCast<float>(width_) / core::SafeCast<float>(frames);
     float height_base = core::SafeCast<float>(height_) / core::SafeCast<float>(sets);
 
@@ -134,18 +134,18 @@ UvPositionT data::Sprite::GetCoords(SpriteSetT set, SpriteFrameT frame) const {
              core::SafeCast<float>(height_)}};
 }
 
-const unsigned char* data::Sprite::GetSpritePtr() const {
+const unsigned char* proto::Sprite::GetSpritePtr() const {
     return spriteBuffer_;
 }
 
-data::Sprite* data::Sprite::LoadImage(const std::string& image_path) {
+proto::Sprite* proto::Sprite::LoadImage(const std::string& image_path) {
     spritePath_ = core::ResolvePath("data/" + image_path);
     LoadImageFromFile();
 
     return this;
 }
 
-void data::Sprite::PostLoadValidate(const PrototypeManager& /*proto_manager*/) const {
+void proto::Sprite::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
     J_DATA_ASSERT(frames > 0, "Frames must be at least 1");
     J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
 }

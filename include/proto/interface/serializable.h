@@ -12,7 +12,7 @@ namespace jactorio::game
     class ChunkTileLayer;
 } // namespace jactorio::game
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class ISerializable
     {
@@ -30,6 +30,6 @@ namespace jactorio::data
                                    const WorldCoord& world_coord,
                                    game::ChunkTileLayer& tile_layer) const = 0;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_INTERFACE_SERIALIZABLE_H

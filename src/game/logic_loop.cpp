@@ -109,7 +109,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     try {
         common.gameDataLocal.prototype.LoadData(core::ResolvePath("data"));
     }
-    catch (data::DataException&) {
+    catch (proto::ProtoError&) {
         // Prototype loading error
         return;
     }

@@ -5,7 +5,7 @@
 #include "core/coordinate_tuple.h"
 #include "proto/sprite.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     TEST(Sprite, SpriteCopy) {
         const Sprite first{};
@@ -33,8 +33,9 @@ namespace jactorio::data
 
             sprite.DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
 
-            EXPECT_NE(std::find(group.begin(), group.end(), jactorio::data::Sprite::SpriteGroup::terrain), group.end());
-            EXPECT_NE(std::find(group.begin(), group.end(), jactorio::data::Sprite::SpriteGroup::gui), group.end());
+            EXPECT_NE(std::find(group.begin(), group.end(), jactorio::proto::Sprite::SpriteGroup::terrain),
+                      group.end());
+            EXPECT_NE(std::find(group.begin(), group.end(), jactorio::proto::Sprite::SpriteGroup::gui), group.end());
         }
         {
             // If not blank, use initialization provided sprite groups
@@ -205,4 +206,4 @@ namespace jactorio::data
             EXPECT_FLOAT_EQ(coords.bottomRight.y, 0.936842105f);
         }
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto

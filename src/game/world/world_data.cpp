@@ -283,10 +283,10 @@ template <typename T>
 void GenerateChunk(game::WorldData& world_data,
                    const data::PrototypeManager& data_manager,
                    const ChunkCoord& chunk_coord,
-                   const data::DataCategory data_category,
+                   const proto::Category data_category,
                    void (*func)(game::ChunkTile& target_tile,
                                 void* prototype,
-                                const data::NoiseLayer<T>& noise_layer,
+                                const proto::NoiseLayer<T>& noise_layer,
                                 float noise_val)) {
     using namespace jactorio;
 
@@ -294,7 +294,7 @@ void GenerateChunk(game::WorldData& world_data,
     // In case something happens in the future
 
     // Get all TILE noise layers for building terrain
-    auto noise_layers = data_manager.DataRawGetAll<data::NoiseLayer<T>>(data_category);
+    auto noise_layers = data_manager.DataRawGetAll<proto::NoiseLayer<T>>(data_category);
 
     // Sort Noise layers, the one with the highest order takes priority if tiles overlap
     std::sort(
@@ -354,24 +354,24 @@ void Generate(game::WorldData& world_data,
     LOG_MESSAGE_F(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
 
     // Base
-    GenerateChunk<data::Tile>(
+    GenerateChunk<proto::Tile>(
         world_data,
         data_manager,
         {chunk_x, chunk_y},
-        data::DataCategory::noise_layer_tile,
+        proto::Category::noise_layer_tile,
         [](game::ChunkTile& target, void* tile, const auto& /*noise_layer*/, float /*noise_val*/) {
             assert(tile != nullptr); // Base tile should never generate nullptr
 
-            auto* new_tile = static_cast<data::Tile*>(tile);
+            auto* new_tile = static_cast<proto::Tile*>(tile);
             target.SetTilePrototype(new_tile);
         });
 
     // Resources
-    GenerateChunk<data::ResourceEntity>(
+    GenerateChunk<proto::ResourceEntity>(
         world_data,
         data_manager,
         {chunk_x, chunk_y},
-        data::DataCategory::noise_layer_entity,
+        proto::Category::noise_layer_entity,
         [](game::ChunkTile& target, void* tile, const auto& noise_layer, float noise_val) {
             if (tile == nullptr) // Do not override existing tiles
                 return;
@@ -397,13 +397,13 @@ void Generate(game::WorldData& world_data,
                 resource_amount = 1;
 
             // Place new tile
-            auto* new_tile = static_cast<data::ResourceEntity*>(tile);
+            auto* new_tile = static_cast<proto::ResourceEntity*>(tile);
 
             auto& layer         = target.GetLayer(game::TileLayer::resource);
             layer.prototypeData = new_tile;
 
             assert(resource_amount > 0);
-            layer.MakeUniqueData<data::ResourceEntityData>(resource_amount);
+            layer.MakeUniqueData<proto::ResourceEntityData>(resource_amount);
         });
 }
 

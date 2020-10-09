@@ -11,12 +11,12 @@
 
 namespace jactorio
 {
-    namespace data
+    namespace proto
     {
         class Sprite;
         struct UniqueDataBase;
         enum class Orientation;
-    } // namespace data
+    } // namespace proto
 
     namespace game
     {
@@ -33,7 +33,7 @@ namespace jactorio
     } // namespace render
 } // namespace jactorio
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     ///
     /// Inherit to allow drawing portions of a sprite
@@ -112,6 +112,6 @@ namespace jactorio::data
         /// Every frame of a set
         static SpriteFrameT AllOfSet(Sprite& sprite, GameTickT game_tick, AnimationSpeed speed = 1);
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_INTERFACE_RENDERABLE_H

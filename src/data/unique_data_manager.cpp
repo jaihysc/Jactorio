@@ -4,14 +4,14 @@
 
 using namespace jactorio;
 
-void data::UniqueDataManager::AssignId(UniqueDataBase& framework_base) noexcept {
+void data::UniqueDataManager::AssignId(proto::UniqueDataBase& framework_base) noexcept {
     framework_base.internalId = nextId_;
     nextId_++;
 }
 
 // ======================================================================
 
-void data::UniqueDataManager::StoreRelocationEntry(UniqueDataBase& unique_data) {
+void data::UniqueDataManager::StoreRelocationEntry(proto::UniqueDataBase& unique_data) {
     assert(unique_data.internalId > 0);
 
     if (dataEntries_.size() < unique_data.internalId) {
@@ -23,7 +23,7 @@ void data::UniqueDataManager::StoreRelocationEntry(UniqueDataBase& unique_data) 
     dataEntries_[index] = &unique_data;
 }
 
-data::UniqueDataBase& data::UniqueDataManager::RelocationTableGet(const UniqueDataIdT id) const noexcept {
+proto::UniqueDataBase& data::UniqueDataManager::RelocationTableGet(const UniqueDataIdT id) const noexcept {
     assert(id > 0);
     return *dataEntries_[id - kDefaultId];
 }

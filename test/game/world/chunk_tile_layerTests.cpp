@@ -12,7 +12,7 @@ namespace jactorio::game
     class ChunkTileLayerTest : public testing::Test
     {
     protected:
-        data::ContainerEntity proto_;
+        proto::ContainerEntity proto_;
 
         void SetupMultiTileProp(ChunkTileLayer& ctl, const MultiTileData& mt_data) {
             TestSetupMultiTileProp(ctl, mt_data, proto_);
@@ -22,7 +22,7 @@ namespace jactorio::game
     TEST_F(ChunkTileLayerTest, Copy) {
         ChunkTileLayer top_left;
         SetupMultiTileProp(top_left, {5, 2});
-        top_left.MakeUniqueData<data::ContainerEntityData>(32);
+        top_left.MakeUniqueData<proto::ContainerEntityData>(32);
 
         ChunkTileLayer ctl;
         SetupMultiTileProp(ctl, {5, 2});
@@ -37,7 +37,7 @@ namespace jactorio::game
             EXPECT_EQ(copy.GetMultiTileData().height, 2);
             EXPECT_EQ(copy.GetMultiTileData(), top_left.GetMultiTileData());
 
-            EXPECT_EQ(copy.GetUniqueData<data::ContainerEntityData>()->inventory.size(), 32);
+            EXPECT_EQ(copy.GetUniqueData<proto::ContainerEntityData>()->inventory.size(), 32);
         }
         // Non top left
         {
@@ -55,7 +55,7 @@ namespace jactorio::game
     TEST_F(ChunkTileLayerTest, Move) {
         ChunkTileLayer top_left;
         SetupMultiTileProp(top_left, {5, 2});
-        top_left.MakeUniqueData<data::ContainerEntityData>(32);
+        top_left.MakeUniqueData<proto::ContainerEntityData>(32);
 
         ChunkTileLayer ctl;
         SetupMultiTileProp(ctl, {5, 2});
@@ -66,8 +66,8 @@ namespace jactorio::game
         {
             const ChunkTileLayer move_to = std::move(top_left);
 
-            EXPECT_EQ(top_left.GetUniqueData<data::ContainerEntityData>(), nullptr); // Gave ownership
-            EXPECT_NE(move_to.GetUniqueData<data::ContainerEntityData>(), nullptr);  // Took ownership
+            EXPECT_EQ(top_left.GetUniqueData<proto::ContainerEntityData>(), nullptr); // Gave ownership
+            EXPECT_NE(move_to.GetUniqueData<proto::ContainerEntityData>(), nullptr);  // Took ownership
         }
         // Non top left
         {
@@ -81,7 +81,7 @@ namespace jactorio::game
     TEST_F(ChunkTileLayerTest, GetUniqueData) {
         ChunkTileLayer top_left{};
         SetupMultiTileProp(top_left, {2, 3});
-        top_left.MakeUniqueData<data::ContainerEntityData>(10);
+        top_left.MakeUniqueData<proto::ContainerEntityData>(10);
 
         ChunkTileLayer ctl{};
         SetupMultiTileProp(ctl, {2, 3});
@@ -218,7 +218,7 @@ namespace jactorio::game
 
     TEST_F(ChunkTileLayerTest, SetMultiTileIndex) {
         ChunkTileLayer ctl;
-        ctl.MakeUniqueData<data::ContainerEntityData>(3);
+        ctl.MakeUniqueData<proto::ContainerEntityData>(3);
 
         ctl.SetMultiTileIndex(1); // unique data should be deleted
 
@@ -285,12 +285,12 @@ namespace jactorio::game
         data::active_prototype_manager   = &proto_manager;
         data::active_unique_data_manager = &unique_manager;
 
-        auto& proto = proto_manager.AddProto<data::ContainerEntity>();
+        auto& proto = proto_manager.AddProto<proto::ContainerEntity>();
 
         ChunkTileLayer top_left;
         TestSetupMultiTileProp(top_left, {2, 2}, proto);
         top_left.SetMultiTileIndex(0);
-        top_left.MakeUniqueData<data::ContainerEntityData>(10);
+        top_left.MakeUniqueData<proto::ContainerEntityData>(10);
 
         ChunkTileLayer bot_right;
         TestSetupMultiTileProp(bot_right, {2, 2}, proto);

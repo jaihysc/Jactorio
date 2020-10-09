@@ -8,8 +8,8 @@
 
 #include "data/cereal/support/decimal.h"
 #include "game/logic/transport_line_controller.h"
+#include "proto/detail/type.h"
 #include "proto/item.h"
-#include "proto/type.h"
 
 #include <cereal/types/deque.hpp>
 
@@ -26,11 +26,11 @@ namespace jactorio::game
     {
         TransportLineItem() = default;
 
-        TransportLineItem(const data::LineDistT& line_dist, const data::Item* item_ptr)
+        TransportLineItem(const proto::LineDistT& line_dist, const proto::Item* item_ptr)
             : dist(line_dist), item(item_ptr) {}
 
-        data::LineDistT dist;
-        data::SerialProtoPtr<const data::Item> item;
+        proto::LineDistT dist;
+        data::SerialProtoPtr<const proto::Item> item;
 
 
         CEREAL_SERIALIZE(archive) {
@@ -52,20 +52,20 @@ namespace jactorio::game
         ///
         /// \param start_offset Item offset from the start of transport line in tiles
         /// \return true if an item can be inserted into this transport line
-        J_NODISCARD bool CanInsert(data::LineDistT start_offset, IntOffsetT item_offset);
+        J_NODISCARD bool CanInsert(proto::LineDistT start_offset, IntOffsetT item_offset);
 
         // Item insertion
         // See TransportSegment for function documentation
 
-        void AppendItem(FloatOffsetT offset, const data::Item& item);
+        void AppendItem(FloatOffsetT offset, const proto::Item& item);
 
-        void InsertItem(FloatOffsetT offset, const data::Item& item, IntOffsetT item_offset);
+        void InsertItem(FloatOffsetT offset, const proto::Item& item, IntOffsetT item_offset);
 
-        bool TryInsertItem(FloatOffsetT offset, const data::Item& item, IntOffsetT item_offset);
+        bool TryInsertItem(FloatOffsetT offset, const proto::Item& item, IntOffsetT item_offset);
 
         J_NODISCARD std::pair<size_t, TransportLineItem> GetItem(FloatOffsetT offset,
                                                                  FloatOffsetT epsilon = kItemWidth / 2) const;
-        const data::Item* TryPopItem(FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
+        const proto::Item* TryPopItem(FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 
         // ======================================================================
 
@@ -76,7 +76,7 @@ namespace jactorio::game
 
         /// Distance to the last item from beginning of transport line
         /// Avoids having to iterate through and count each time
-        data::LineDistT backItemDistance;
+        proto::LineDistT backItemDistance;
 
         /// Visibility of items on lane
         bool visible = true;
@@ -110,12 +110,12 @@ namespace jactorio::game
         };
 
 
-        TransportSegment(const data::Orientation direction,
+        TransportSegment(const proto::Orientation direction,
                          const TerminationType termination_type,
                          const uint8_t segment_length)
             : direction(direction), terminationType(termination_type), length(segment_length) {}
 
-        TransportSegment(const data::Orientation direction,
+        TransportSegment(const proto::Orientation direction,
                          const TerminationType termination_type,
                          TransportSegment* target_segment,
                          const uint8_t segment_length)
@@ -135,7 +135,7 @@ namespace jactorio::game
         ///
         /// \param start_offset Item offset from the start of transport line in tiles
         /// \return true if an item can be inserted into this transport line
-        J_NODISCARD bool CanInsert(bool left_side, const data::LineDistT& start_offset);
+        J_NODISCARD bool CanInsert(bool left_side, const proto::LineDistT& start_offset);
 
         ///
         /// \return true if left size is not empty and has a valid index
@@ -151,18 +151,18 @@ namespace jactorio::game
         static void ApplyTerminationDeduction(bool is_left,
                                               TerminationType segment_ttype,
                                               TerminationType target_segment_ttype,
-                                              data::LineDistT& offset);
+                                              proto::LineDistT& offset);
         template <bool IsLeftLane>
         static void ApplyTerminationDeduction(TerminationType segment_ttype,
                                               TerminationType target_segment_ttype,
-                                              data::LineDistT& offset);
+                                              proto::LineDistT& offset);
 
         static void ApplyLeftTerminationDeduction(TerminationType segment_ttype,
                                                   TerminationType target_segment_ttype,
-                                                  data::LineDistT& offset);
+                                                  proto::LineDistT& offset);
         static void ApplyRightTerminationDeduction(TerminationType segment_ttype,
                                                    TerminationType target_segment_ttype,
-                                                   data::LineDistT& offset);
+                                                   proto::LineDistT& offset);
 
         // Item insertion
 
@@ -170,17 +170,17 @@ namespace jactorio::game
         /// Appends item onto the specified side of a belt behind the last item
         /// \param offset Number of tiles to offset from previous item or the end of the transport line segment when
         /// there are no items
-        void AppendItem(bool left_side, FloatOffsetT offset, const data::Item& item);
+        void AppendItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
         ///
         /// Inserts the item onto the specified belt side at the offset from the beginning of the transport line
         /// \param offset Distance from beginning of transport line
-        void InsertItem(bool left_side, FloatOffsetT offset, const data::Item& item);
+        void InsertItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
         ///
         /// Attempts to insert the item onto the specified belt side at the offset from the beginning of the
         /// transport line \param offset Distance from beginning of transport line \return false if unsuccessful
-        bool TryInsertItem(bool left_side, FloatOffsetT offset, const data::Item& item);
+        bool TryInsertItem(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
         ///
         /// Finds item at offset within epsilon upper and lower bounds inclusive, <deque index,
@@ -192,7 +192,7 @@ namespace jactorio::game
         ///
         /// Finds and removes item at offset within epsilon inclusive
         /// \return nullptr if no items were found
-        const data::Item* TryPopItem(bool left_side, FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
+        const proto::Item* TryPopItem(bool left_side, FloatOffsetT offset, FloatOffsetT epsilon = kItemWidth / 2);
 
 
         // Item insertion with itemOffset
@@ -201,11 +201,11 @@ namespace jactorio::game
         // meaning the same offset from beginning of transport line will reference in the same world location
         // regardless of variable segment length or head position
 
-        J_NODISCARD bool CanInsertAbs(bool left_side, const data::LineDistT& start_offset);
+        J_NODISCARD bool CanInsertAbs(bool left_side, const proto::LineDistT& start_offset);
 
-        void InsertItemAbs(bool left_side, FloatOffsetT offset, const data::Item& item);
+        void InsertItemAbs(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
-        bool TryInsertItemAbs(bool left_side, FloatOffsetT offset, const data::Item& item);
+        bool TryInsertItemAbs(bool left_side, FloatOffsetT offset, const proto::Item& item);
 
 
         ///
@@ -224,7 +224,7 @@ namespace jactorio::game
 
 
         /// Direction items in this segment travel in
-        data::Orientation direction;
+        proto::Orientation direction;
 
         /// How the belt terminates (bends left, right, straight) (Single belt side)
         TerminationType terminationType;
@@ -259,7 +259,7 @@ namespace jactorio::game
         }
 
         CEREAL_LOAD_CONSTRUCT(archive, construct, TransportSegment) {
-            data::Orientation line_dir;
+            proto::Orientation line_dir;
             TerminationType term_type;
             SegmentLengthT seg_length;
 
@@ -273,7 +273,7 @@ namespace jactorio::game
     template <bool IsLeftLane>
     void TransportSegment::ApplyTerminationDeduction(const TerminationType segment_ttype,
                                                      const TerminationType target_segment_ttype,
-                                                     data::LineDistT& offset) {
+                                                     proto::LineDistT& offset) {
         if constexpr (IsLeftLane) {
             ApplyLeftTerminationDeduction(segment_ttype, target_segment_ttype, offset);
         }

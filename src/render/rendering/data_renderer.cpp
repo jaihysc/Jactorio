@@ -4,9 +4,9 @@
 
 #include "jactorio.h"
 
+#include "game/logic/transport_segment.h"
 #include "proto/inserter.h"
 #include "proto/sprite.h"
-#include "game/logic/transport_segment.h"
 #include "render/rendering/renderer.h"
 
 using namespace jactorio;
@@ -30,18 +30,18 @@ void PrepareTransportSegmentData(render::RendererLayer& layer,
     double multiplier = 1; // Either 1 or -1 to add or subtract
 
     switch (line_segment.direction) {
-    case data::Orientation::up:
+    case proto::Orientation::up:
         target_offset = &tile_y;
         break;
-    case data::Orientation::right:
+    case proto::Orientation::right:
         target_offset = &tile_x;
         multiplier    = -1;
         break;
-    case data::Orientation::down:
+    case proto::Orientation::down:
         target_offset = &tile_y;
         multiplier    = -1;
         break;
-    case data::Orientation::left:
+    case proto::Orientation::left:
         target_offset = &tile_x;
         break;
 
@@ -99,16 +99,16 @@ void render::DrawTransportSegmentItems(RendererLayer& layer,
     // Left
     // The offsets for straight are always applied to bend left and right
     switch (line_segment.direction) {
-    case data::Orientation::up:
+    case proto::Orientation::up:
         tile_x_offset += game::kLineUpLItemOffsetX;
         break;
-    case data::Orientation::right:
+    case proto::Orientation::right:
         tile_y_offset += game::kLineRightLItemOffsetY;
         break;
-    case data::Orientation::down:
+    case proto::Orientation::down:
         tile_x_offset += game::kLineDownLItemOffsetX;
         break;
-    case data::Orientation::left:
+    case proto::Orientation::left:
         tile_y_offset += game::kLineLeftLItemOffsetY;
         break;
     }
@@ -117,16 +117,16 @@ void render::DrawTransportSegmentItems(RendererLayer& layer,
     switch (line_segment.terminationType) {
     case game::TransportSegment::TerminationType::straight:
         switch (line_segment.direction) {
-        case data::Orientation::up:
+        case proto::Orientation::up:
             tile_y_offset -= game::kLineLeftUpStraightItemOffset;
             break;
-        case data::Orientation::right:
+        case proto::Orientation::right:
             tile_x_offset += game::kLineRightDownStraightItemOffset;
             break;
-        case data::Orientation::down:
+        case proto::Orientation::down:
             tile_y_offset += game::kLineRightDownStraightItemOffset;
             break;
-        case data::Orientation::left:
+        case proto::Orientation::left:
             tile_x_offset -= game::kLineLeftUpStraightItemOffset;
             break;
         }
@@ -134,16 +134,16 @@ void render::DrawTransportSegmentItems(RendererLayer& layer,
 
     case game::TransportSegment::TerminationType::bend_left:
         switch (line_segment.direction) {
-        case data::Orientation::up:
+        case proto::Orientation::up:
             tile_y_offset += game::kLineUpBlLItemOffsetY;
             break;
-        case data::Orientation::right:
+        case proto::Orientation::right:
             tile_x_offset += game::kLineRightBlLItemOffsetX;
             break;
-        case data::Orientation::down:
+        case proto::Orientation::down:
             tile_y_offset += game::kLineDownBlLItemOffsetY;
             break;
-        case data::Orientation::left:
+        case proto::Orientation::left:
             tile_x_offset += game::kLineLeftBlLItemOffsetX;
             break;
         }
@@ -151,16 +151,16 @@ void render::DrawTransportSegmentItems(RendererLayer& layer,
 
     case game::TransportSegment::TerminationType::bend_right:
         switch (line_segment.direction) {
-        case data::Orientation::up:
+        case proto::Orientation::up:
             tile_y_offset += game::kLineUpBrLItemOffsetY;
             break;
-        case data::Orientation::right:
+        case proto::Orientation::right:
             tile_x_offset += game::kLineRightBrLItemOffsetX;
             break;
-        case data::Orientation::down:
+        case proto::Orientation::down:
             tile_y_offset += game::kLineDownBrLItemOffsetY;
             break;
-        case data::Orientation::left:
+        case proto::Orientation::left:
             tile_x_offset += game::kLineLeftBrLItemOffsetX;
             break;
         }
@@ -170,16 +170,16 @@ void render::DrawTransportSegmentItems(RendererLayer& layer,
     case game::TransportSegment::TerminationType::right_only:
     case game::TransportSegment::TerminationType::left_only:
         switch (line_segment.direction) {
-        case data::Orientation::up:
+        case proto::Orientation::up:
             tile_y_offset += game::kLineUpSingleSideItemOffsetY;
             break;
-        case data::Orientation::right:
+        case proto::Orientation::right:
             tile_x_offset += game::kLineRightSingleSideItemOffsetX;
             break;
-        case data::Orientation::down:
+        case proto::Orientation::down:
             tile_y_offset += game::kLineDownSingleSideItemOffsetY;
             break;
-        case data::Orientation::left:
+        case proto::Orientation::left:
             tile_x_offset += game::kLineLeftSingleSideItemOffsetX;
             break;
         }
@@ -198,16 +198,16 @@ prepare_right:
 
     // The offsets for straight are always applied to bend left and right
     switch (line_segment.direction) {
-    case data::Orientation::up:
+    case proto::Orientation::up:
         tile_x_offset += game::kLineUpRItemOffsetX;
         break;
-    case data::Orientation::right:
+    case proto::Orientation::right:
         tile_y_offset += game::kLineRightRItemOffsetY;
         break;
-    case data::Orientation::down:
+    case proto::Orientation::down:
         tile_x_offset += game::kLineDownRItemOffsetX;
         break;
-    case data::Orientation::left:
+    case proto::Orientation::left:
         tile_y_offset += game::kLineLeftRItemOffsetY;
         break;
     }
@@ -217,16 +217,16 @@ prepare_right:
     switch (line_segment.terminationType) {
     case game::TransportSegment::TerminationType::straight:
         switch (line_segment.direction) {
-        case data::Orientation::up:
+        case proto::Orientation::up:
             tile_y_offset -= game::kLineLeftUpStraightItemOffset;
             break;
-        case data::Orientation::right:
+        case proto::Orientation::right:
             tile_x_offset += game::kLineRightDownStraightItemOffset;
             break;
-        case data::Orientation::down:
+        case proto::Orientation::down:
             tile_y_offset += game::kLineRightDownStraightItemOffset;
             break;
-        case data::Orientation::left:
+        case proto::Orientation::left:
             tile_x_offset -= game::kLineLeftUpStraightItemOffset;
             break;
         }
@@ -234,16 +234,16 @@ prepare_right:
 
     case game::TransportSegment::TerminationType::bend_left:
         switch (line_segment.direction) {
-        case data::Orientation::up:
+        case proto::Orientation::up:
             tile_y_offset += game::kLineUpBlRItemOffsetY;
             break;
-        case data::Orientation::right:
+        case proto::Orientation::right:
             tile_x_offset += game::kLineRightBlRItemOffsetX;
             break;
-        case data::Orientation::down:
+        case proto::Orientation::down:
             tile_y_offset += game::kLineDownBlRItemOffsetY;
             break;
-        case data::Orientation::left:
+        case proto::Orientation::left:
             tile_x_offset += game::kLineLeftBlRItemOffsetX;
             break;
         }
@@ -251,16 +251,16 @@ prepare_right:
 
     case game::TransportSegment::TerminationType::bend_right:
         switch (line_segment.direction) {
-        case data::Orientation::up:
+        case proto::Orientation::up:
             tile_y_offset += game::kLineUpBrRItemOffsetY;
             break;
-        case data::Orientation::right:
+        case proto::Orientation::right:
             tile_x_offset += game::kLineRightBrRItemOffsetX;
             break;
-        case data::Orientation::down:
+        case proto::Orientation::down:
             tile_y_offset += game::kLineDownBrRItemOffsetY;
             break;
-        case data::Orientation::left:
+        case proto::Orientation::left:
             tile_x_offset += game::kLineLeftBrRItemOffsetX;
             break;
         }
@@ -270,16 +270,16 @@ prepare_right:
     case game::TransportSegment::TerminationType::right_only:
     case game::TransportSegment::TerminationType::left_only:
         switch (line_segment.direction) {
-        case data::Orientation::up:
+        case proto::Orientation::up:
             tile_y_offset += game::kLineUpSingleSideItemOffsetY;
             break;
-        case data::Orientation::right:
+        case proto::Orientation::right:
             tile_x_offset += game::kLineRightSingleSideItemOffsetX;
             break;
-        case data::Orientation::down:
+        case proto::Orientation::down:
             tile_y_offset += game::kLineDownSingleSideItemOffsetY;
             break;
-        case data::Orientation::left:
+        case proto::Orientation::left:
             tile_x_offset += game::kLineLeftSingleSideItemOffsetX;
             break;
         }
@@ -294,8 +294,8 @@ prepare_right:
 void render::DrawInserterArm(RendererLayer& layer,
                              const SpriteUvCoordsT& uv_coords,
                              const core::Position2<OverlayOffsetAxis>& pixel_offset,
-                             const data::Inserter& inserter_proto,
-                             const data::InserterData& inserter_data) {
+                             const proto::Inserter& inserter_proto,
+                             const proto::InserterData& inserter_data) {
     {
         const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_proto.handSprite->internalId);
 
@@ -317,7 +317,7 @@ void render::DrawInserterArm(RendererLayer& layer,
 
 
     // Held item
-    if (inserter_data.status == data::InserterData::Status::dropoff) {
+    if (inserter_data.status == proto::InserterData::Status::dropoff) {
         constexpr auto held_item_pixel_offset =
             core::LossyCast<float>((Renderer::tileWidth - Renderer::tileWidth * game::kItemWidth) / 2);
 

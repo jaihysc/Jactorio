@@ -4,7 +4,7 @@
 
 #include "jactorioTests.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class AssemblyMachineTest : public testing::Test
     {
@@ -12,7 +12,7 @@ namespace jactorio::data
         game::WorldData worldData_;
         game::LogicData logicData_;
 
-        PrototypeManager dataManager_;
+        data::PrototypeManager dataManager_;
 
         AssemblyMachineData data_{};
         AssemblyMachine proto_;
@@ -188,7 +188,7 @@ namespace jactorio::data
         data_.health = 4321;
 
 
-        active_prototype_manager = &dataManager_;
+        data::active_prototype_manager = &dataManager_;
         dataManager_.GenerateRelocationTable();
         const auto result = TestSerializeDeserialize(data_);
 
@@ -310,4 +310,4 @@ namespace jactorio::data
         // No more crafting
         EXPECT_EQ(data_.deferralEntry.callbackIndex, 0);
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto

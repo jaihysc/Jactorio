@@ -10,7 +10,7 @@
 #include "proto/item.h"
 #include "proto/recipe.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class CraftAddProduct;
 
@@ -25,7 +25,9 @@ namespace jactorio::data
 
         ///
         /// Changes recipe to provided recipe, nullptr for no recipe
-        void ChangeRecipe(game::LogicData& logic_data, const PrototypeManager& data_manager, const Recipe* new_recipe);
+        void ChangeRecipe(game::LogicData& logic_data,
+                          const data::PrototypeManager& data_manager,
+                          const Recipe* new_recipe);
 
         ///
         /// Checks if necessary ingredients are present to begin crafting
@@ -54,7 +56,7 @@ namespace jactorio::data
 
     private:
         /// Currently selected recipe for assembling
-        SerialProtoPtr<const Recipe> recipe_ = nullptr;
+        data::SerialProtoPtr<const Recipe> recipe_ = nullptr;
     };
 
 
@@ -98,10 +100,10 @@ namespace jactorio::data
                       const WorldCoord& world_coords,
                       game::ChunkTileLayer& tile_layer) const override;
 
-        void PostLoadValidate(const PrototypeManager& /*proto_manager*/) const override {
+        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {
             J_DATA_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");
         }
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_ASSEMBLY_MACHINE_H

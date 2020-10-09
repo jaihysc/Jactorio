@@ -2,20 +2,20 @@
 
 #include <gtest/gtest.h>
 
-#include "proto/recipe.h"
 #include "data/prototype_manager.h"
+#include "proto/recipe.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class RecipeTest : public testing::Test
     {
     protected:
-        PrototypeManager dataManager_{};
+        data::PrototypeManager dataManager_{};
     };
 
     TEST_F(RecipeTest, GetItemRecipe) {
         // Allows for fast lookup of item recipes instead of searching through an entire unordered_map
-        EXPECT_EQ(jactorio::data::Recipe::GetItemRecipe(dataManager_, "non-existent-item"), nullptr);
+        EXPECT_EQ(jactorio::proto::Recipe::GetItemRecipe(dataManager_, "non-existent-item"), nullptr);
 
         auto& laptop_recipe   = dataManager_.AddProto<Recipe>();
         laptop_recipe.product = {"Laptop", 1};
@@ -82,7 +82,7 @@ namespace jactorio::data
         try {
             recipe.PostLoadValidate(dataManager_);
         }
-        catch (DataException&) {
+        catch (ProtoError&) {
             caught = true;
         }
 
@@ -90,4 +90,4 @@ namespace jactorio::data
             FAIL();
         }
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto

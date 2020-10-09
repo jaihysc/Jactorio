@@ -11,16 +11,16 @@
 #include "proto/resource_entity.h"
 #include "proto/transport_belt.h"
 
-CEREAL_REGISTER_TYPE(jactorio::data::ResourceEntityData);
+CEREAL_REGISTER_TYPE(jactorio::proto::ResourceEntityData);
 
-CEREAL_REGISTER_TYPE(jactorio::data::TransportLineData);
+CEREAL_REGISTER_TYPE(jactorio::proto::TransportLineData);
 
-CEREAL_REGISTER_TYPE(jactorio::data::ContainerEntityData);
+CEREAL_REGISTER_TYPE(jactorio::proto::ContainerEntityData);
 
-CEREAL_REGISTER_TYPE(jactorio::data::AssemblyMachineData);
+CEREAL_REGISTER_TYPE(jactorio::proto::AssemblyMachineData);
 
-CEREAL_REGISTER_TYPE(jactorio::data::InserterData);
+CEREAL_REGISTER_TYPE(jactorio::proto::InserterData);
 
-CEREAL_REGISTER_TYPE(jactorio::data::MiningDrillData);
+CEREAL_REGISTER_TYPE(jactorio::proto::MiningDrillData);
 
 #endif // JACTORIO_INCLUDE_DATA_CEREAL_REGISTER_TYPE_H

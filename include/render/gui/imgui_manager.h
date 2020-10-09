@@ -8,6 +8,11 @@
 
 namespace jactorio
 {
+    namespace data
+    {
+        class PrototypeManager;
+    } // namespace data
+
     namespace game
     {
         class EventData;
@@ -15,10 +20,6 @@ namespace jactorio
         class LogicData;
     } // namespace game
 
-    namespace data
-    {
-        class PrototypeManager;
-    } // namespace data
 } // namespace jactorio
 
 namespace jactorio::render

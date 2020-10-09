@@ -11,8 +11,8 @@
 
 #include "core/data_type.h"
 #include "data/cereal/serialize.h"
-#include "data/data_category.h"
-#include "data/data_exception.h"
+#include "proto/detail/category.h"
+#include "proto/detail/exception.h"
 
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/polymorphic.hpp>
@@ -57,24 +57,26 @@
     static_assert(true)
 
 // Assertions for post_load_validate
-#define J_DATA_ASSERT(condition, format)                                                     \
-    jactorio::data::DataAssert(condition,                                                    \
-                               "\"%s\", " format "\nTraceback (most recent call last):\n%s", \
-                               this->name.c_str(),                                           \
-                               this->pythonTraceback.c_str())
+#define J_DATA_ASSERT(condition, format)                                                      \
+    jactorio::proto::DataAssert(condition,                                                    \
+                                "\"%s\", " format "\nTraceback (most recent call last):\n%s", \
+                                this->name.c_str(),                                           \
+                                this->pythonTraceback.c_str())
 
-#define J_DATA_ASSERT_F(condition, format, ...)                                              \
-    jactorio::data::DataAssert(condition,                                                    \
-                               "\"%s\", " format "\nTraceback (most recent call last):\n%s", \
-                               this->name.c_str(),                                           \
-                               __VA_ARGS__,                                                  \
-                               this->pythonTraceback.c_str())
-
+#define J_DATA_ASSERT_F(condition, format, ...)                                               \
+    jactorio::proto::DataAssert(condition,                                                    \
+                                "\"%s\", " format "\nTraceback (most recent call last):\n%s", \
+                                this->name.c_str(),                                           \
+                                __VA_ARGS__,                                                  \
+                                this->pythonTraceback.c_str())
 
 namespace jactorio::data
 {
     class PrototypeManager;
+}
 
+namespace jactorio::proto
+{
     ///
     /// Creates a formatted log message if log level permits
     template <typename... Args, typename = std::common_type<Args...>>
@@ -84,7 +86,7 @@ namespace jactorio::data
         if (!(condition)) {
             char buffer[max_msg_length + 1];
             snprintf(buffer, max_msg_length, format, args...);
-            throw DataException(buffer);
+            throw ProtoError(buffer);
         }
     }
 
@@ -114,11 +116,11 @@ namespace jactorio::data
     };
 
 
-#define PROTOTYPE_CATEGORY(category__)                                                                 \
-    static constexpr jactorio::data::DataCategory category = jactorio::data::DataCategory::category__; \
-    J_NODISCARD jactorio::data::DataCategory Category() const override {                               \
-        return jactorio::data::DataCategory::category__;                                               \
-    }                                                                                                  \
+#define PROTOTYPE_CATEGORY(category__)                                                           \
+    static constexpr jactorio::proto::Category category = jactorio::proto::Category::category__; \
+    J_NODISCARD jactorio::proto::Category Category() const override {                            \
+        return jactorio::proto::Category::category__;                                            \
+    }                                                                                            \
     static_assert(true)
 
 #define PROTOTYPE_DATA_TRIVIAL_COPY(data_ty__)                                           \
@@ -151,10 +153,10 @@ namespace jactorio::data
 
         // ======================================================================
 
-        DataCategory category = DataCategory::none;
+        Category category = Category::none;
         ///
         /// Category of this Prototype item
-        virtual DataCategory Category() const = 0;
+        virtual Category Category() const = 0;
 
         ///
         /// Unique per prototype, unique & auto assigned per new prototype added
@@ -214,8 +216,8 @@ namespace jactorio::data
 
         ///
         /// Validates properties of the prototype are valid
-        /// \exception data::Data_exception If invalid
-        virtual void PostLoadValidate(const PrototypeManager& proto_manager) const = 0;
+        /// \exception proto::Data_exception If invalid
+        virtual void PostLoadValidate(const data::PrototypeManager& proto_manager) const = 0;
 
         ///
         /// Called after the prototype has been validated
@@ -225,6 +227,6 @@ namespace jactorio::data
         std::string localizedName_;
         std::string localizedDescription_;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_FRAMEWORK_FRAMEWORK_BASE_H

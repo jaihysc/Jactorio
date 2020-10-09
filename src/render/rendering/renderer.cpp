@@ -10,8 +10,8 @@
 #include "jactorio.h"
 
 #include "core/execution_timer.h"
-#include "proto/sprite.h"
 #include "game/world/world_data.h"
+#include "proto/sprite.h"
 #include "render/opengl/error.h"
 
 using namespace jactorio;

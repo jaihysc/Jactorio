@@ -9,7 +9,7 @@
 #include "proto/interface/rotatable.h"
 #include "proto/interface/update_listener.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     struct FEntityData : FWorldObjectData
     {
@@ -21,6 +21,6 @@ namespace jactorio::data
     class FEntity : public FWorldObject, public IRotatable, public IDeferred, public IUpdateListener
     {
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_FRAMEWORK_ENTITY_H

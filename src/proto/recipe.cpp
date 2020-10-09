@@ -6,8 +6,8 @@
 
 #include "core/convert.h"
 #include "core/data_type.h"
-#include "proto/item.h"
 #include "data/prototype_manager.h"
+#include "proto/item.h"
 
 using namespace jactorio;
 
@@ -15,12 +15,12 @@ using namespace jactorio;
 /// Recursively resolves raw materials
 void ResolveRawRecipe(const data::PrototypeManager& data_manager,
                       std::unordered_map<std::string, uint16_t>& materials_raw,
-                      const data::Recipe* recipe,
+                      const proto::Recipe* recipe,
                       const uint16_t craft_amount) {
     using namespace jactorio;
 
     for (const auto& [ing_name, ing_needed_amount] : recipe->ingredients) {
-        const auto* ing_recipe = data::Recipe::GetItemRecipe(data_manager, ing_name);
+        const auto* ing_recipe = proto::Recipe::GetItemRecipe(data_manager, ing_name);
 
         // No recipe means this is a raw material
         if (ing_recipe == nullptr) {
@@ -39,8 +39,9 @@ void ResolveRawRecipe(const data::PrototypeManager& data_manager,
     }
 }
 
-const data::Recipe* data::Recipe::GetItemRecipe(const PrototypeManager& data_manager, const std::string& iname) {
-    const auto recipes = data_manager.DataRawGetAll<const Recipe>(DataCategory::recipe);
+const proto::Recipe* proto::Recipe::GetItemRecipe(const data::PrototypeManager& data_manager,
+                                                  const std::string& iname) {
+    const auto recipes = data_manager.DataRawGetAll<const Recipe>(Category::recipe);
 
     for (const auto& recipe : recipes) {
         if (recipe->product.first == iname)
@@ -50,8 +51,8 @@ const data::Recipe* data::Recipe::GetItemRecipe(const PrototypeManager& data_man
     return nullptr;
 }
 
-std::vector<data::RecipeItem> data::Recipe::RecipeGetTotalRaw(const PrototypeManager& data_manager,
-                                                              const std::string& iname) {
+std::vector<proto::RecipeItem> proto::Recipe::RecipeGetTotalRaw(const data::PrototypeManager& data_manager,
+                                                                const std::string& iname) {
     std::unordered_map<std::string, uint16_t> map_raw;
 
     const auto* recipe = GetItemRecipe(data_manager, iname);
@@ -66,7 +67,7 @@ std::vector<data::RecipeItem> data::Recipe::RecipeGetTotalRaw(const PrototypeMan
     return v;
 }
 
-void data::Recipe::PostLoadValidate(const PrototypeManager& proto_manager) const {
+void proto::Recipe::PostLoadValidate(const data::PrototypeManager& proto_manager) const {
     J_DATA_ASSERT(!ingredients.empty(), "No ingredients specified for recipe");
     for (const auto& [ing_name, ing_req_amount] : ingredients) {
         J_DATA_ASSERT(!ing_name.empty(), "Empty ingredient internal name specifier");
@@ -97,6 +98,6 @@ void data::Recipe::PostLoadValidate(const PrototypeManager& proto_manager) const
                     item_product->stackSize);
 }
 
-GameTickT data::Recipe::GetCraftingTime(const double multiplier) const {
+GameTickT proto::Recipe::GetCraftingTime(const double multiplier) const {
     return core::LossyCast<GameTickT>(craftingTime * multiplier * kGameHertz);
 }

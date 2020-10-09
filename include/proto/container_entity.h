@@ -7,7 +7,7 @@
 #include "proto/abstract_proto/health_entity.h"
 #include "proto/item.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     struct ContainerEntityData final : HealthEntityData
     {
@@ -56,6 +56,6 @@ namespace jactorio::data
 
         void ValidatedPostLoad() override;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_CONTAINER_ENTITY_H

@@ -2,10 +2,9 @@
 
 #include <gtest/gtest.h>
 
-#include "data/data_exception.h"
 #include "data/local_parser.h"
-#include "proto/sprite.h"
 #include "data/prototype_manager.h"
+#include "proto/sprite.h"
 
 namespace jactorio::data
 {
@@ -19,8 +18,8 @@ namespace jactorio::data
         // Setup prototypes
         dataManager_.SetDirectoryPrefix("test");
 
-        auto& prototype  = dataManager_.AddProto<Sprite>("test_tile");
-        auto& prototype2 = dataManager_.AddProto<Sprite>("test_tile1");
+        auto& prototype  = dataManager_.AddProto<proto::Sprite>("test_tile");
+        auto& prototype2 = dataManager_.AddProto<proto::Sprite>("test_tile1");
 
         const std::string str =
             R"(test_tile=Test tile 1
@@ -40,7 +39,7 @@ namespace jactorio::data
         try {
             LocalParse(data_manager, str, "asdf");
         }
-        catch (DataException&) {
+        catch (proto::ProtoError&) {
             return;
         }
 

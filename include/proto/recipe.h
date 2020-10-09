@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "core/data_type.h"
+#include "proto/detail/type.h"
 #include "proto/framework/framework_base.h"
-#include "proto/type.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     // Internal name, amount required
     using RecipeItem = std::pair<std::string, uint16_t>;
@@ -32,7 +32,7 @@ namespace jactorio::data
 
         // ======================================================================
 
-        void PostLoadValidate(const PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
 
         ///
         /// Gets number of logic ticks necessary to craft recipe
@@ -41,15 +41,15 @@ namespace jactorio::data
         ///
         /// Looks up recipe for item of iname
         /// \returns nullptr if not found
-        static const Recipe* GetItemRecipe(const PrototypeManager& data_manager, const std::string& iname);
+        static const Recipe* GetItemRecipe(const data::PrototypeManager& data_manager, const std::string& iname);
 
         ///
         /// Returns raw materials for a recipe <br>
         /// Assumes all provided names are valid <br>
         /// A raw material is something which cannot be hand crafted
-        static std::vector<RecipeItem> RecipeGetTotalRaw(const PrototypeManager& data_manager,
+        static std::vector<RecipeItem> RecipeGetTotalRaw(const data::PrototypeManager& data_manager,
                                                          const std::string& iname);
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_RECIPE_H

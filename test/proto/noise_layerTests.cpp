@@ -5,11 +5,11 @@
 #include "proto/noise_layer.h"
 #include "proto/tile.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     TEST(NoiseLayer, GetSetTileNoiseRange) {
         {
-            auto noise_layer = jactorio::data::NoiseLayer<Tile>();
+            auto noise_layer = jactorio::proto::NoiseLayer<Tile>();
 
             auto tile_proto  = Tile();
             auto tile_proto2 = Tile();
@@ -34,7 +34,7 @@ namespace jactorio::data
             EXPECT_EQ(noise_layer.Get(1.5f), &tile_proto2);
         }
         {
-            auto noise_layer = jactorio::data::NoiseLayer<Tile>(-1, true);
+            auto noise_layer = jactorio::proto::NoiseLayer<Tile>(-1, true);
 
             auto tile_proto  = Tile();
             auto tile_proto2 = Tile();
@@ -61,7 +61,7 @@ namespace jactorio::data
     }
 
     TEST(NoiseLayer, GetSetNoiseStartVal) {
-        auto noise_layer = jactorio::data::NoiseLayer<Tile>();
+        auto noise_layer = jactorio::proto::NoiseLayer<Tile>();
 
         // Defaults to -1
         EXPECT_EQ(noise_layer.GetStartNoise(), -1);
@@ -75,7 +75,7 @@ namespace jactorio::data
 
     TEST(NoiseLayer, GetNoiseRangeStartEnd) {
         {
-            auto noise_layer = jactorio::data::NoiseLayer<Tile>();
+            auto noise_layer = jactorio::proto::NoiseLayer<Tile>();
 
             auto tile_proto  = Tile();
             auto tile_proto2 = Tile();
@@ -88,7 +88,7 @@ namespace jactorio::data
             EXPECT_EQ(noise_layer.GetEndNoise(), 1.5f);
         }
         {
-            auto noise_layer = jactorio::data::NoiseLayer<Tile>();
+            auto noise_layer = jactorio::proto::NoiseLayer<Tile>();
 
             // Defaults to -1
             EXPECT_EQ(noise_layer.GetStartNoise(), -1.f);
@@ -97,7 +97,7 @@ namespace jactorio::data
     }
 
     TEST(NoiseLayer, GetValNoiseRange) {
-        auto noise_layer      = jactorio::data::NoiseLayer<Tile>();
+        auto noise_layer      = jactorio::proto::NoiseLayer<Tile>();
         noise_layer.normalize = false;
 
         auto tile_proto  = Tile();
@@ -113,4 +113,4 @@ namespace jactorio::data
         EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(1.1f).first, 1);
         EXPECT_FLOAT_EQ(noise_layer.GetValNoiseRange(1.1f).second, 1.5);
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto

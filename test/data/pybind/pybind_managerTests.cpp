@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
-#include "data/data_exception.h"
 #include "data/pybind/pybind_manager.h"
+#include "proto/detail/exception.h"
 
 namespace jactorio::data
 {
@@ -25,7 +25,7 @@ namespace jactorio::data
         try {
             PyExec("asdf");
         }
-        catch (DataException&) {
+        catch (proto::ProtoError&) {
             caught = true;
         }
 

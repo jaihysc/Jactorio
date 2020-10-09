@@ -136,7 +136,7 @@ void render::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id, const DrawSlot
     DrawSlot(sprite_id, 0, callback);
 }
 
-void render::GuiItemSlots::DrawSlot(const data::ItemStack& item_stack, const DrawSlotCallbackT& callback) const {
+void render::GuiItemSlots::DrawSlot(const proto::ItemStack& item_stack, const DrawSlotCallbackT& callback) const {
     DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->internalId, item_stack.count, callback);
 }
 

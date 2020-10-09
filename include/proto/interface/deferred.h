@@ -6,7 +6,7 @@
 
 namespace jactorio
 {
-    namespace data
+    namespace proto
     {
         struct UniqueDataBase;
     }
@@ -19,7 +19,7 @@ namespace jactorio
 } // namespace jactorio
 
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     /// Has actions which completes at a later game tick
     class IDeferred
@@ -41,6 +41,6 @@ namespace jactorio::data
                                         game::LogicData& logic_data,
                                         UniqueDataBase* unique_data) const = 0;
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_INTERFACE_DEFERRED_H

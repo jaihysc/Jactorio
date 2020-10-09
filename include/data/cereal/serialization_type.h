@@ -22,7 +22,8 @@ namespace jactorio::data
     template <typename TProto>
     class SerialProtoPtr : public core::PointerWrapper<TProto>
     {
-        static_assert(std::is_base_of_v<FrameworkBase, TProto>, "TProto must inherit FrameworkBase for internal id");
+        static_assert(std::is_base_of_v<proto::FrameworkBase, TProto>,
+                      "TProto must inherit FrameworkBase for internal id");
 
         using ValueT                       = typename core::PointerWrapper<TProto>::ValueT;
         static constexpr auto kArchiveSize = sizeof(ValueT);
@@ -61,7 +62,7 @@ namespace jactorio::data
     template <typename TUnique>
     class SerialUniqueDataPtr : public core::PointerWrapper<TUnique>
     {
-        static_assert(std::is_base_of_v<UniqueDataBase, TUnique>,
+        static_assert(std::is_base_of_v<proto::UniqueDataBase, TUnique>,
                       "TUnique must inherit UniqueDataBase for internal id");
 
         using ValueT                       = typename core::PointerWrapper<TUnique>::ValueT;

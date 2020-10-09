@@ -6,6 +6,6 @@
 
 using namespace jactorio;
 
-void data::Item::ValidatedPostLoad() {
+void proto::Item::ValidatedPostLoad() {
     sprite->DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
 }

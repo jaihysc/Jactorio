@@ -17,18 +17,18 @@ namespace jactorio::render
 
     TEST_F(SpritemapCreationTest, CreateSpritemap) {
         // Sprite data delete by guard
-        dataManager_.AddProto<data::Sprite>(
-            "sprite1", data::Sprite("test/graphics/test/test_tile.png", {data::Sprite::SpriteGroup::terrain}));
-        dataManager_.AddProto<data::Sprite>(
-            "sprite2", data::Sprite("test/graphics/test/test_tile1.png", {data::Sprite::SpriteGroup::terrain}));
+        dataManager_.AddProto<proto::Sprite>(
+            "sprite1", proto::Sprite("test/graphics/test/test_tile.png", {proto::Sprite::SpriteGroup::terrain}));
+        dataManager_.AddProto<proto::Sprite>(
+            "sprite2", proto::Sprite("test/graphics/test/test_tile1.png", {proto::Sprite::SpriteGroup::terrain}));
 
-        dataManager_.AddProto<data::Sprite>(
-            "sprite3", data::Sprite("test/graphics/test/test_tile2.png", {data::Sprite::SpriteGroup::gui}));
-        dataManager_.AddProto<data::Sprite>(
-            "sprite4", data::Sprite("test/graphics/test/test_tile3.png", {data::Sprite::SpriteGroup::gui}));
+        dataManager_.AddProto<proto::Sprite>(
+            "sprite3", proto::Sprite("test/graphics/test/test_tile2.png", {proto::Sprite::SpriteGroup::gui}));
+        dataManager_.AddProto<proto::Sprite>(
+            "sprite4", proto::Sprite("test/graphics/test/test_tile3.png", {proto::Sprite::SpriteGroup::gui}));
 
         // Should filter out to only 2 entries
-        const auto data = rendererSprites_.CreateSpritemap(dataManager_, data::Sprite::SpriteGroup::terrain, false);
+        const auto data = rendererSprites_.CreateSpritemap(dataManager_, proto::Sprite::SpriteGroup::terrain, false);
 
         EXPECT_EQ(data.width, 68);  // 64 + 2(2)
         EXPECT_EQ(data.height, 34); // 32 + 2
@@ -39,22 +39,22 @@ namespace jactorio::render
 
         // Sprite data delete by guard
         // Terrain
-        dataManager_.AddProto<data::Sprite>(
-            "sprite1", data::Sprite("test/graphics/test/test_tile.png", {data::Sprite::SpriteGroup::terrain}));
-        dataManager_.AddProto<data::Sprite>(
-            "sprite2", data::Sprite("test/graphics/test/test_tile1.png", {data::Sprite::SpriteGroup::terrain}));
+        dataManager_.AddProto<proto::Sprite>(
+            "sprite1", proto::Sprite("test/graphics/test/test_tile.png", {proto::Sprite::SpriteGroup::terrain}));
+        dataManager_.AddProto<proto::Sprite>(
+            "sprite2", proto::Sprite("test/graphics/test/test_tile1.png", {proto::Sprite::SpriteGroup::terrain}));
 
         // Gui
-        dataManager_.AddProto<data::Sprite>(
-            "sprite3", data::Sprite("test/graphics/test/test_tile2.png", {data::Sprite::SpriteGroup::gui}));
-        dataManager_.AddProto<data::Sprite>(
-            "sprite4", data::Sprite("test/graphics/test/test_tile3.png", {data::Sprite::SpriteGroup::gui}));
+        dataManager_.AddProto<proto::Sprite>(
+            "sprite3", proto::Sprite("test/graphics/test/test_tile2.png", {proto::Sprite::SpriteGroup::gui}));
+        dataManager_.AddProto<proto::Sprite>(
+            "sprite4", proto::Sprite("test/graphics/test/test_tile3.png", {proto::Sprite::SpriteGroup::gui}));
 
         // None
-        dataManager_.AddProto<data::Sprite>("spriteNone", data::Sprite("test/graphics/test/test_tile.png", {}));
+        dataManager_.AddProto<proto::Sprite>("spriteNone", proto::Sprite("test/graphics/test/test_tile.png", {}));
 
         // Should filter out to 3 entries, total width of 32 * 3
-        const auto data = rendererSprites_.CreateSpritemap(dataManager_, data::Sprite::SpriteGroup::terrain, false);
+        const auto data = rendererSprites_.CreateSpritemap(dataManager_, proto::Sprite::SpriteGroup::terrain, false);
 
         EXPECT_EQ(data.width, 102); // 96 + 3(2)
         EXPECT_EQ(data.height, 34); // 32 + 2
@@ -98,10 +98,10 @@ namespace jactorio::render
             }
         }
 
-        std::vector<const data::Sprite*> prototypes_;
+        std::vector<const proto::Sprite*> prototypes_;
 
         void AddSprite(const std::string& image_path) {
-            auto* sprite       = new data::Sprite;
+            auto* sprite       = new proto::Sprite;
             sprite->internalId = static_cast<unsigned>(nextId_);
             sprite->LoadImage(image_path);
 

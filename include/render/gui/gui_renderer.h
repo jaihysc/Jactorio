@@ -13,18 +13,21 @@
 
 namespace jactorio
 {
+    namespace data
+    {
+        class PrototypeManager;
+    }
     namespace game
     {
         class PlayerData;
         class LogicData;
     } // namespace game
 
-    namespace data
+    namespace proto
     {
         class FrameworkBase;
         struct UniqueDataBase;
-        class PrototypeManager;
-    } // namespace data
+    } // namespace proto
 } // namespace jactorio
 
 
@@ -47,7 +50,7 @@ namespace jactorio::render
         /// \param g_rendr
         /// \param prototype
         /// \param unique_data
-        GuiRenderer(GuiRenderer g_rendr, const data::FrameworkBase* prototype, data::UniqueDataBase* unique_data)
+        GuiRenderer(GuiRenderer g_rendr, const proto::FrameworkBase* prototype, proto::UniqueDataBase* unique_data)
             : worlds(g_rendr.worlds),
               logic(g_rendr.logic),
               player(g_rendr.player),
@@ -76,8 +79,8 @@ namespace jactorio::render
 
         MenuData& menuData;
 
-        const data::FrameworkBase* prototype = nullptr;
-        data::UniqueDataBase* uniqueData     = nullptr;
+        const proto::FrameworkBase* prototype = nullptr;
+        proto::UniqueDataBase* uniqueData     = nullptr;
     };
 
 } // namespace jactorio::render

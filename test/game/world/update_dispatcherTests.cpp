@@ -18,12 +18,12 @@ namespace jactorio::game
             mutable WorldCoord receive;
             mutable int calls = 0;
 
-            mutable data::UpdateType type = data::UpdateType::remove;
+            mutable proto::UpdateType type = proto::UpdateType::remove;
 
             void OnTileUpdate(WorldData& /*world_data*/,
                               const WorldCoord& emit_coords,
                               const WorldCoord& receive_coords,
-                              const data::UpdateType type) const override {
+                              const proto::UpdateType type) const override {
                 emit    = emit_coords;
                 receive = receive_coords;
 
@@ -41,7 +41,7 @@ namespace jactorio::game
     TEST_F(UpdateDispatcherTest, Register) {
         dispatcher_.Register(2, 3, 5, 6, mock_);
 
-        dispatcher_.Dispatch(worldData_, 3, 7, data::UpdateType::place);
+        dispatcher_.Dispatch(worldData_, 3, 7, proto::UpdateType::place);
         EXPECT_EQ(mock_.emit.x, 0);
         EXPECT_EQ(mock_.emit.y, 0);
 
@@ -49,7 +49,7 @@ namespace jactorio::game
         EXPECT_EQ(mock_.receive.y, 0);
 
 
-        dispatcher_.Dispatch(worldData_, 5, 6, data::UpdateType::remove);
+        dispatcher_.Dispatch(worldData_, 5, 6, proto::UpdateType::remove);
 
         EXPECT_EQ(mock_.emit.x, 5);
         EXPECT_EQ(mock_.emit.y, 6);
@@ -57,7 +57,7 @@ namespace jactorio::game
         EXPECT_EQ(mock_.receive.x, 2);
         EXPECT_EQ(mock_.receive.y, 3);
 
-        EXPECT_EQ(mock_.type, data::UpdateType::remove);
+        EXPECT_EQ(mock_.type, proto::UpdateType::remove);
     }
 
     TEST_F(UpdateDispatcherTest, Unregister) {
@@ -68,7 +68,7 @@ namespace jactorio::game
         dispatcher_.Unregister(entry);
 
         // 1 registered, 1 unregistered
-        dispatcher_.Dispatch(worldData_, 5, 6, data::UpdateType::place);
+        dispatcher_.Dispatch(worldData_, 5, 6, proto::UpdateType::place);
         EXPECT_EQ(mock_.emit.x, 5);
         EXPECT_EQ(mock_.emit.y, 6);
 
@@ -78,8 +78,8 @@ namespace jactorio::game
     }
 
     TEST_F(UpdateDispatcherTest, RegisterNonExistent) {
-        dispatcher_.Dispatch(worldData_, 3, 7, data::UpdateType::place);
-        dispatcher_.Dispatch(worldData_, 5, 6, data::UpdateType::remove);
+        dispatcher_.Dispatch(worldData_, 3, 7, proto::UpdateType::place);
+        dispatcher_.Dispatch(worldData_, 5, 6, proto::UpdateType::remove);
 
         EXPECT_EQ(dispatcher_.GetDebugInfo().storedEntries.size(), 0);
     }

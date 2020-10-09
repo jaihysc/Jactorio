@@ -12,7 +12,7 @@
 #include "core/data_type.h"
 #include "proto/framework/framework_base.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     ///
     /// Unique data: Renderable_data
@@ -134,7 +134,7 @@ namespace jactorio::data
         Sprite* LoadImage(const std::string& image_path);
 
 
-        void PostLoadValidate(const PrototypeManager& data_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& data_manager) const override;
 
 #ifdef JACTORIO_BUILD_TEST
         void SetHeight(const int height) {
@@ -156,7 +156,7 @@ namespace jactorio::data
         ///
         /// Loads image from file
         /// load_image only sets the sprite_path and calls this
-        /// \exception DataException Failed to load from file
+        /// \exception ProtoError Failed to load from file
         void LoadImageFromFile();
 
 
@@ -193,6 +193,6 @@ namespace jactorio::data
             }
         }
     };
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_SPRITE_H

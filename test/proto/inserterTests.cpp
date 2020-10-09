@@ -7,7 +7,7 @@
 #include "proto/container_entity.h"
 #include "proto/inserter.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     class InserterTest : public testing::Test
     {
@@ -172,4 +172,4 @@ namespace jactorio::data
         EXPECT_TRUE(inserter_data->pickup.IsInitialized());
         EXPECT_TRUE(inserter_data->dropoff.IsInitialized());
     }
-} // namespace jactorio::data
+} // namespace jactorio::proto
