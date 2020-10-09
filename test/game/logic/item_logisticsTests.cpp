@@ -4,10 +4,10 @@
 
 #include "jactorioTests.h"
 
-#include "data/prototype/container_entity.h"
-#include "data/prototype/inserter.h"
-#include "data/prototype/mining_drill.h"
-#include "data/prototype/transport_belt.h"
+#include "proto/container_entity.h"
+#include "proto/inserter.h"
+#include "proto/mining_drill.h"
+#include "proto/transport_belt.h"
 #include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
 

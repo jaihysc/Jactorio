@@ -14,7 +14,7 @@
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
 
-#include "data/prototype/sprite.h"
+#include "proto/sprite.h"
 
 #include "game/event/game_events.h"
 

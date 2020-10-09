@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/sprite.h"
+#include "proto/sprite.h"
 #include "game/world/overlay_element.h"
 
 namespace jactorio::game

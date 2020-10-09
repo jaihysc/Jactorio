@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "data/prototype/inserter.h"
+#include "proto/inserter.h"
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
 

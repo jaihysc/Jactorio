@@ -10,9 +10,9 @@
 #include "core/execution_timer.h"
 #include "core/resource_guard.h"
 
-#include "data/prototype/inserter.h"
-#include "data/prototype/sprite.h"
-#include "data/prototype/transport_belt.h"
+#include "proto/inserter.h"
+#include "proto/sprite.h"
+#include "proto/transport_belt.h"
 
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"

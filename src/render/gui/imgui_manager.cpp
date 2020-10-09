@@ -10,7 +10,7 @@
 
 #include "core/execution_timer.h"
 
-#include "data/prototype/abstract_proto/entity.h"
+#include "proto/abstract_proto/entity.h"
 
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile_layer.h"

@@ -78,18 +78,6 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/cereal/supportTests.cpp
 
-	${JACTORIO_TEST_DIR}/data/prototype/assembly_machineTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/container_entityTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/inserterTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/mining_drillTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/recipeTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
-
-	${JACTORIO_TEST_DIR}/data/prototype/abstract_proto/transport_lineTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/interface/renderableTests.cpp
-
 	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
 
@@ -119,6 +107,19 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/update_dispatcherTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
+
+
+	${JACTORIO_TEST_DIR}/proto/assembly_machineTests.cpp
+	${JACTORIO_TEST_DIR}/proto/container_entityTests.cpp
+	${JACTORIO_TEST_DIR}/proto/inserterTests.cpp
+	${JACTORIO_TEST_DIR}/proto/mining_drillTests.cpp
+	${JACTORIO_TEST_DIR}/proto/noise_layerTests.cpp
+	${JACTORIO_TEST_DIR}/proto/prototype_typeTests.cpp
+	${JACTORIO_TEST_DIR}/proto/recipeTests.cpp
+	${JACTORIO_TEST_DIR}/proto/spriteTests.cpp
+
+	${JACTORIO_TEST_DIR}/proto/abstract_proto/transport_lineTests.cpp
+	${JACTORIO_TEST_DIR}/proto/interface/renderableTests.cpp
 
 
 	${JACTORIO_TEST_DIR}/render/rendering/mvp_managerTests.cpp

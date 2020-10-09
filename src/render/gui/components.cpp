@@ -7,8 +7,8 @@
 #include "core/convert.h"
 #include "core/utility.h"
 
-#include "data/prototype/item.h"
-#include "data/prototype/sprite.h"
+#include "proto/item.h"
+#include "proto/sprite.h"
 
 #include "game/input/mouse_selection.h"
 

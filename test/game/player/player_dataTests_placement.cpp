@@ -6,7 +6,7 @@
 
 #include "jactorioTests.h"
 
-#include "data/prototype/tile.h"
+#include "proto/tile.h"
 
 namespace jactorio::game
 {

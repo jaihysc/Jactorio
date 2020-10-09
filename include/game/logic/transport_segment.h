@@ -7,9 +7,9 @@
 #include <deque>
 
 #include "data/cereal/support/decimal.h"
-#include "data/prototype/item.h"
-#include "data/prototype/type.h"
 #include "game/logic/transport_line_controller.h"
+#include "proto/item.h"
+#include "proto/type.h"
 
 #include <cereal/types/deque.hpp>
 

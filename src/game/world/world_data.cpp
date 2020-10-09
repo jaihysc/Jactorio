@@ -8,7 +8,7 @@
 #include <noise/noiseutils.h>
 #include <set>
 
-#include "data/prototype/noise_layer.h"
+#include "proto/noise_layer.h"
 
 using namespace jactorio;
 

@@ -8,9 +8,9 @@
 #include <queue>
 
 #include "core/coordinate_tuple.h"
-#include "data/prototype/item.h"
-#include "data/prototype/recipe.h"
-#include "data/prototype/type.h"
+#include "proto/item.h"
+#include "proto/recipe.h"
+#include "proto/type.h"
 
 namespace jactorio::game
 {

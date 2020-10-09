@@ -4,7 +4,7 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_INVENTORY_CONTROLLER_H
 #pragma once
 
-#include "data/prototype/item.h"
+#include "proto/item.h"
 
 namespace jactorio::game
 {

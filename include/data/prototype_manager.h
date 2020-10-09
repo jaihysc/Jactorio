@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "data/data_category.h"
-#include "data/prototype/framework/framework_base.h"
+#include "proto/framework/framework_base.h"
 
 namespace jactorio::data
 {

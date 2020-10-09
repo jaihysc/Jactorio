@@ -2,11 +2,11 @@
 
 #include "game/logic/item_logistics.h"
 
-#include "data/prototype/abstract_proto/transport_line.h"
-#include "data/prototype/assembly_machine.h"
-#include "data/prototype/container_entity.h"
-#include "data/prototype/item.h"
-#include "data/prototype/recipe.h"
+#include "proto/abstract_proto/transport_line.h"
+#include "proto/assembly_machine.h"
+#include "proto/container_entity.h"
+#include "proto/item.h"
+#include "proto/recipe.h"
 
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"

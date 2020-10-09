@@ -12,7 +12,7 @@
 #include "core/data_type.h"
 #include "data/cereal/serialization_type.h"
 #include "data/cereal/serialize.h"
-#include "data/prototype/framework/entity.h"
+#include "proto/framework/entity.h"
 
 namespace jactorio::game
 {

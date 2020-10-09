@@ -8,14 +8,14 @@
 
 #include "core/data_type.h"
 
-#include "data/prototype/abstract_proto/transport_line.h"
-#include "data/prototype/assembly_machine.h"
-#include "data/prototype/container_entity.h"
-#include "data/prototype/inserter.h"
-#include "data/prototype/mining_drill.h"
-#include "data/prototype/recipe.h"
-#include "data/prototype/resource_entity.h"
-#include "data/prototype/sprite.h"
+#include "proto/abstract_proto/transport_line.h"
+#include "proto/assembly_machine.h"
+#include "proto/container_entity.h"
+#include "proto/inserter.h"
+#include "proto/mining_drill.h"
+#include "proto/recipe.h"
+#include "proto/resource_entity.h"
+#include "proto/sprite.h"
 #include "data/prototype_manager.h"
 
 #include "game/logic/logic_data.h"

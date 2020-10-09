@@ -2,10 +2,10 @@
 
 #include "game/input/mouse_selection.h"
 
-#include "data/prototype/abstract_proto/entity.h"
-#include "data/prototype/sprite.h"
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
+#include "proto/abstract_proto/entity.h"
+#include "proto/sprite.h"
 
 using namespace jactorio;
 

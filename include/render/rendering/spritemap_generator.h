@@ -10,7 +10,7 @@
 
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
-#include "data/prototype/sprite.h"
+#include "proto/sprite.h"
 #include "render/opengl/texture.h"
 
 namespace jactorio::render

@@ -4,7 +4,7 @@
 
 #include "jactorioTests.h"
 
-#include "data/prototype/transport_belt.h"
+#include "proto/transport_belt.h"
 
 namespace jactorio::game
 {

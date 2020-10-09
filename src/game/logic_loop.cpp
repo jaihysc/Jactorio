@@ -12,8 +12,8 @@
 #include "core/filesystem.h"
 #include "core/loop_common.h"
 
-#include "data/prototype/inserter.h"
 #include "data/save_game_manager.h"
+#include "proto/inserter.h"
 
 #include "game/event/game_events.h"
 #include "game/logic/transport_line_controller.h"

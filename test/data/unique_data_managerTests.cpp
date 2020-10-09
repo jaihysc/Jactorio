@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/assembly_machine.h"
+#include "proto/assembly_machine.h"
 
 namespace jactorio::data
 {

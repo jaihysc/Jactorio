@@ -7,13 +7,13 @@
 
 #include "core/utility.h"
 
-#include "data/prototype/assembly_machine.h"
-#include "data/prototype/container_entity.h"
-#include "data/prototype/mining_drill.h"
-#include "data/prototype/recipe.h"
-#include "data/prototype/recipe_category.h"
-#include "data/prototype/recipe_group.h"
-#include "data/prototype/sprite.h"
+#include "proto/assembly_machine.h"
+#include "proto/container_entity.h"
+#include "proto/mining_drill.h"
+#include "proto/recipe.h"
+#include "proto/recipe_category.h"
+#include "proto/recipe_group.h"
+#include "proto/sprite.h"
 
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"

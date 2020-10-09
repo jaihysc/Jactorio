@@ -9,8 +9,8 @@
 
 #include "jactorio.h"
 
-#include "data/prototype/type.h"
 #include "game/world/chunk.h"
+#include "proto/type.h"
 
 namespace jactorio
 {

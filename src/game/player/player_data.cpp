@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <map>
 
-#include "data/prototype/recipe.h"
-#include "data/prototype/resource_entity.h"
-#include "data/prototype/tile.h"
+#include "proto/recipe.h"
+#include "proto/resource_entity.h"
+#include "proto/tile.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"

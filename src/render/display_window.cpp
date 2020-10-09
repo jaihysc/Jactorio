@@ -10,7 +10,7 @@
 
 #include "core/loop_common.h"
 
-#include "data/prototype/sprite.h"
+#include "proto/sprite.h"
 
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"

@@ -34,20 +34,6 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/data/save_game_manager.cpp
         ${JACTORIO_DIR}/data/unique_data_manager.cpp
 
-        ${JACTORIO_DIR}/data/prototype/assembly_machine.cpp
-        ${JACTORIO_DIR}/data/prototype/container_entity.cpp
-        ${JACTORIO_DIR}/data/prototype/inserter.cpp
-        ${JACTORIO_DIR}/data/prototype/item.cpp
-        ${JACTORIO_DIR}/data/prototype/mining_drill.cpp
-        ${JACTORIO_DIR}/data/prototype/recipe.cpp
-        ${JACTORIO_DIR}/data/prototype/recipe_group.cpp
-        ${JACTORIO_DIR}/data/prototype/sprite.cpp
-
-        ${JACTORIO_DIR}/data/prototype/abstract_proto/entity.cpp
-        ${JACTORIO_DIR}/data/prototype/abstract_proto/transport_line.cpp
-
-        ${JACTORIO_DIR}/data/prototype/interface/renderable.cpp
-
         ${JACTORIO_DIR}/data/pybind/pybind_manager.cpp
 
 
@@ -72,7 +58,23 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/game/world/world_data.cpp
 
 
+        ${JACTORIO_DIR}/proto/assembly_machine.cpp
+        ${JACTORIO_DIR}/proto/container_entity.cpp
+        ${JACTORIO_DIR}/proto/inserter.cpp
+        ${JACTORIO_DIR}/proto/item.cpp
+        ${JACTORIO_DIR}/proto/mining_drill.cpp
+        ${JACTORIO_DIR}/proto/recipe.cpp
+        ${JACTORIO_DIR}/proto/recipe_group.cpp
+        ${JACTORIO_DIR}/proto/sprite.cpp
+
+        ${JACTORIO_DIR}/proto/abstract_proto/entity.cpp
+        ${JACTORIO_DIR}/proto/abstract_proto/transport_line.cpp
+
+        ${JACTORIO_DIR}/proto/interface/renderable.cpp
+
+
         ${JACTORIO_DIR}/render/gui/components.cpp
+
         ${JACTORIO_DIR}/render/gui/gui_layout.cpp
         ${JACTORIO_DIR}/render/gui/gui_menus.cpp
         ${JACTORIO_DIR}/render/gui/gui_menus_debug.cpp

@@ -6,8 +6,8 @@
 
 #include "data/cereal/serialization_type.h"
 #include "data/cereal/serialize.h"
-#include "data/prototype/framework/world_object.h"
 #include "data/unique_data_manager.h"
+#include "proto/framework/world_object.h"
 
 #include <cereal/cereal.hpp>
 

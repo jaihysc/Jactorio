@@ -4,8 +4,8 @@
 
 #include "game/game_data.h"
 
-#include "data/prototype/container_entity.h"
-#include "data/prototype/sprite.h"
+#include "proto/container_entity.h"
+#include "proto/sprite.h"
 
 namespace jactorio::game
 {

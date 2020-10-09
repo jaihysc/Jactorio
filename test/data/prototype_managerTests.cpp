@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-#include "data/prototype/sprite.h"
+#include "proto/sprite.h"
 #include "data/prototype_manager.h"
 
 namespace jactorio::data

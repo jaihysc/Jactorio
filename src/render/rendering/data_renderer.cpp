@@ -4,8 +4,8 @@
 
 #include "jactorio.h"
 
-#include "data/prototype/inserter.h"
-#include "data/prototype/sprite.h"
+#include "proto/inserter.h"
+#include "proto/sprite.h"
 #include "game/logic/transport_segment.h"
 #include "render/rendering/renderer.h"
 

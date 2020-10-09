@@ -6,8 +6,8 @@
 
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
-#include "data/prototype/item.h"
-#include "data/prototype/type.h"
+#include "proto/item.h"
+#include "proto/type.h"
 
 namespace jactorio::game
 {

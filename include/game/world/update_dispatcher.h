@@ -9,7 +9,7 @@
 #include "core/coordinate_tuple.h"
 #include "core/hashers.h"
 #include "data/cereal/serialization_type.h"
-#include "data/prototype/framework/entity.h"
+#include "proto/framework/entity.h"
 
 #include <cereal/types/tuple.hpp>
 #include <cereal/types/unordered_map.hpp>
