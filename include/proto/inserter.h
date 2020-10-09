@@ -8,7 +8,7 @@
 
 #include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
-#include "proto/abstract_proto/health_entity.h"
+#include "proto/abstract/health_entity.h"
 
 namespace jactorio::proto
 {

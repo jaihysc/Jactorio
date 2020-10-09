@@ -6,7 +6,7 @@
 
 #include "game/logic/transport_segment.h"
 #include "game/world/world_data.h"
-#include "proto/abstract_proto/transport_line.h"
+#include "proto/abstract/transport_line.h"
 
 using namespace jactorio;
 

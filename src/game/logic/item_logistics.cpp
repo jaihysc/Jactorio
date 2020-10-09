@@ -2,7 +2,7 @@
 
 #include "game/logic/item_logistics.h"
 
-#include "proto/abstract_proto/transport_line.h"
+#include "proto/abstract/transport_line.h"
 #include "proto/assembly_machine.h"
 #include "proto/container_entity.h"
 #include "proto/item.h"

@@ -6,7 +6,7 @@
 
 #include "data/cereal/serialization_type.h"
 #include "game/logic/deferral_timer.h"
-#include "proto/abstract_proto/health_entity.h"
+#include "proto/abstract/health_entity.h"
 #include "proto/item.h"
 #include "proto/recipe.h"
 

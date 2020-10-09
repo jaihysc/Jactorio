@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "proto/abstract_proto/transport_line.h"
+#include "proto/abstract/transport_line.h"
 
 #include <array>
 #include <cmath>

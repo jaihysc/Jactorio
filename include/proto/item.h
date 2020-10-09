@@ -5,7 +5,7 @@
 #pragma once
 
 #include "data/cereal/serialization_type.h"
-#include "proto/abstract_proto/item_base.h"
+#include "proto/abstract/item_base.h"
 
 #include <cereal/types/vector.hpp>
 

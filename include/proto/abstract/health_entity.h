@@ -1,10 +1,10 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_HEALTH_ENTITY_H
-#define JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_HEALTH_ENTITY_H
+#ifndef JACTORIO_INCLUDE_PROTO_ABSTRACT_HEALTH_ENTITY_H
+#define JACTORIO_INCLUDE_PROTO_ABSTRACT_HEALTH_ENTITY_H
 #pragma once
 
-#include "proto/abstract_proto/entity.h"
+#include "proto/abstract/entity.h"
 
 namespace jactorio::proto
 {
@@ -40,4 +40,4 @@ namespace jactorio::proto
     };
 } // namespace jactorio::proto
 
-#endif // JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_HEALTH_ENTITY_H
+#endif // JACTORIO_INCLUDE_PROTO_ABSTRACT_HEALTH_ENTITY_H

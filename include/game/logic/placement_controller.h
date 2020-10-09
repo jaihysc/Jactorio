@@ -4,7 +4,7 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_PLACEMENT_CONTROLLER_H
 #pragma once
 
-#include "proto/abstract_proto/entity.h"
+#include "proto/abstract/entity.h"
 
 namespace jactorio::proto
 {

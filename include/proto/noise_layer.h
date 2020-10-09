@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "proto/abstract_proto/entity.h"
+#include "proto/abstract/entity.h"
 #include "proto/framework/framework_base.h"
 #include "proto/resource_entity.h"
 #include "proto/tile.h"

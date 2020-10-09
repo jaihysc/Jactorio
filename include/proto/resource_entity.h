@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/data_type.h"
-#include "proto/abstract_proto/entity.h"
+#include "proto/abstract/entity.h"
 
 namespace jactorio::proto
 {

@@ -1,14 +1,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_TRANSPORT_LINE_H
-#define JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_TRANSPORT_LINE_H
+#ifndef JACTORIO_INCLUDE_PROTO_ABSTRACT_TRANSPORT_LINE_H
+#define JACTORIO_INCLUDE_PROTO_ABSTRACT_TRANSPORT_LINE_H
 #pragma once
 
 #include <memory>
 
 #include "core/data_type.h"
 #include "game/logic/transport_segment.h"
-#include "proto/abstract_proto/health_entity.h"
+#include "proto/abstract/health_entity.h"
 
 #include <cereal/types/memory.hpp>
 
@@ -180,4 +180,4 @@ namespace jactorio::proto
     };
 } // namespace jactorio::proto
 
-#endif // JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_TRANSPORT_LINE_H
+#endif // JACTORIO_INCLUDE_PROTO_ABSTRACT_TRANSPORT_LINE_H

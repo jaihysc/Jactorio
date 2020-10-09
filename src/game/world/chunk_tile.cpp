@@ -2,7 +2,7 @@
 
 #include "game/world/chunk_tile.h"
 
-#include "proto/abstract_proto/entity.h"
+#include "proto/abstract/entity.h"
 #include "proto/tile.h"
 
 // ======================================================================

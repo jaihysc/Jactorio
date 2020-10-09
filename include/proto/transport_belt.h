@@ -4,7 +4,7 @@
 #define JACTORIO_INCLUDE_PROTO_TRANSPORT_BELT_H
 #pragma once
 
-#include "proto/abstract_proto/transport_line.h"
+#include "proto/abstract/transport_line.h"
 
 namespace jactorio::proto
 {

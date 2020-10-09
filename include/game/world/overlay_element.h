@@ -4,7 +4,10 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_OVERLAY_ELEMENT_H
 #pragma once
 
+#include "jactorio.h"
+
 #include "core/coordinate_tuple.h"
+#include "core/data_type.h"
 
 namespace jactorio::proto
 {

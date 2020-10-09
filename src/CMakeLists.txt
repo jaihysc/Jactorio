@@ -67,8 +67,8 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/proto/recipe_group.cpp
         ${JACTORIO_DIR}/proto/sprite.cpp
 
-        ${JACTORIO_DIR}/proto/abstract_proto/entity.cpp
-        ${JACTORIO_DIR}/proto/abstract_proto/transport_line.cpp
+        ${JACTORIO_DIR}/proto/abstract/entity.cpp
+        ${JACTORIO_DIR}/proto/abstract/transport_line.cpp
 
         ${JACTORIO_DIR}/proto/interface/renderable.cpp
 

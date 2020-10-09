@@ -118,7 +118,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/proto/recipeTests.cpp
 	${JACTORIO_TEST_DIR}/proto/spriteTests.cpp
 
-	${JACTORIO_TEST_DIR}/proto/abstract_proto/transport_lineTests.cpp
+	${JACTORIO_TEST_DIR}/proto/abstract/transport_lineTests.cpp
 	${JACTORIO_TEST_DIR}/proto/interface/renderableTests.cpp
 
 

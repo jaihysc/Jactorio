@@ -4,7 +4,7 @@
 #define JACTORIO_INCLUDE_PROTO_CONTAINER_ENTITY_H
 #pragma once
 
-#include "proto/abstract_proto/health_entity.h"
+#include "proto/abstract/health_entity.h"
 #include "proto/item.h"
 
 namespace jactorio::proto

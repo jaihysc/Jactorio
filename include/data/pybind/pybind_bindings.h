@@ -12,9 +12,9 @@
 #include <pybind11/stl_bind.h>
 
 #include "data/prototype_manager.h"
-#include "proto/abstract_proto/entity.h"
-#include "proto/abstract_proto/health_entity.h"
-#include "proto/abstract_proto/transport_line.h"
+#include "proto/abstract/entity.h"
+#include "proto/abstract/health_entity.h"
+#include "proto/abstract/transport_line.h"
 #include "proto/assembly_machine.h"
 #include "proto/container_entity.h"
 #include "proto/detail/prototype_type.h"

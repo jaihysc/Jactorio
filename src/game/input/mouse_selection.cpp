@@ -4,7 +4,7 @@
 
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
-#include "proto/abstract_proto/entity.h"
+#include "proto/abstract/entity.h"
 #include "proto/sprite.h"
 
 using namespace jactorio;

@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_ITEM_BASE_H
-#define JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_ITEM_BASE_H
+#ifndef JACTORIO_INCLUDE_PROTO_ABSTRACT_ITEM_BASE_H
+#define JACTORIO_INCLUDE_PROTO_ABSTRACT_ITEM_BASE_H
 #pragma once
 
 #include "proto/framework/framework_base.h"
@@ -30,4 +30,4 @@ namespace jactorio::proto
     }
 } // namespace jactorio::proto
 
-#endif // JACTORIO_INCLUDE_PROTO_ABSTRACT_PROTO_ITEM_BASE_H
+#endif // JACTORIO_INCLUDE_PROTO_ABSTRACT_ITEM_BASE_H

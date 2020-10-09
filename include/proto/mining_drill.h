@@ -6,7 +6,7 @@
 
 #include "game/logic/deferral_timer.h"
 #include "game/logic/item_logistics.h"
-#include "proto/abstract_proto/health_entity.h"
+#include "proto/abstract/health_entity.h"
 #include "proto/detail/prototype_type.h"
 
 namespace jactorio::proto
