@@ -2,7 +2,7 @@
 
 #include "game/logic/item_logistics.h"
 
-#include "proto/abstract/transport_line.h"
+#include "proto/abstract/conveyor.h"
 #include "proto/assembly_machine.h"
 #include "proto/container_entity.h"
 #include "proto/item.h"
@@ -10,7 +10,6 @@
 
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"
-#include "game/logic/transport_line_controller.h"
 #include "game/world/world_data.h"
 
 using namespace jactorio;
@@ -67,10 +66,10 @@ bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& params) const
 
 void GetAdjustedLineOffset(const bool use_line_left,
                            proto::LineDistT& pickup_offset,
-                           const proto::TransportLineData& line_data) {
-    game::TransportSegment::ApplyTerminationDeduction(use_line_left,
+                           const proto::ConveyorData& line_data) {
+    game::ConveyorSegment::ApplyTerminationDeduction(use_line_left,
                                                       line_data.lineSegment->terminationType,
-                                                      game::TransportSegment::TerminationType::straight,
+                                                      game::ConveyorSegment::TerminationType::straight,
                                                       pickup_offset);
 }
 
@@ -81,7 +80,7 @@ bool game::ItemDropOff::CanInsertTransportBelt(const DropOffParams& /*params*/) 
 bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
     assert(params.itemStack.count == 1); // Can only insert 1 at a time
 
-    auto& line_data = static_cast<proto::TransportLineData&>(params.uniqueData);
+    auto& line_data = static_cast<proto::ConveyorData&>(params.uniqueData);
 
     bool use_line_left = false;
     // Decide whether to add item to left side or right side
@@ -275,7 +274,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(c
 
 
 game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBelt(const PickupParams& params) const {
-    auto& line_data = static_cast<proto::TransportLineData&>(params.uniqueData);
+    auto& line_data = static_cast<proto::ConveyorData&>(params.uniqueData);
 
     const auto props         = GetBeltPickupProps(params);
     const bool use_line_left = props.first;
@@ -301,7 +300,7 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 
 
 game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(const PickupParams& params) const {
-    auto& line_data = static_cast<proto::TransportLineData&>(params.uniqueData);
+    auto& line_data = static_cast<proto::ConveyorData&>(params.uniqueData);
 
     const auto props          = GetBeltPickupProps(params);
     bool use_line_left        = props.first;
@@ -378,7 +377,7 @@ bool game::InserterPickup::IsAtMaxDegree(const proto::RotationDegreeT& degree) {
 }
 
 std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const PickupParams& params) {
-    auto& line_data = static_cast<proto::TransportLineData&>(params.uniqueData);
+    auto& line_data = static_cast<proto::ConveyorData&>(params.uniqueData);
 
     bool use_line_left = false;
     switch (line_data.lineSegment->direction) {

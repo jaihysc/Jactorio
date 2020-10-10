@@ -1,13 +1,13 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_PROTO_ABSTRACT_TRANSPORT_LINE_H
-#define JACTORIO_INCLUDE_PROTO_ABSTRACT_TRANSPORT_LINE_H
+#ifndef JACTORIO_INCLUDE_PROTO_ABSTRACT_CONVEYOR_H
+#define JACTORIO_INCLUDE_PROTO_ABSTRACT_CONVEYOR_H
 #pragma once
 
 #include <memory>
 
 #include "core/data_type.h"
-#include "game/logic/transport_segment.h"
+#include "game/logic/conveyor_segment.h"
 #include "proto/abstract/health_entity.h"
 
 #include <cereal/types/memory.hpp>
@@ -15,10 +15,10 @@
 namespace jactorio::proto
 {
     ///
-    /// TransportLineData with a segment index of 0 manages a segment and will delete it when it is deleted
-    struct TransportLineData final : HealthEntityData
+    /// ConveyorData with a segment index of 0 manages a segment and will delete it when it is deleted
+    struct ConveyorData final : HealthEntityData
     {
-        explicit TransportLineData(std::shared_ptr<game::TransportSegment> line_segment)
+        explicit ConveyorData(std::shared_ptr<game::ConveyorSegment> line_segment)
             : lineSegment(std::move(line_segment)) {}
 
         ///
@@ -57,9 +57,9 @@ namespace jactorio::proto
 
 
         /// The logic chunk line_segment associated
-        std::shared_ptr<game::TransportSegment> lineSegment;
+        std::shared_ptr<game::ConveyorSegment> lineSegment;
 
-        /// Tile distance to the head of the transport line
+        /// Tile distance to the head of the conveyor
         /// \remark For rendering purposes, the length should never exceed ~2 chunks at most
         uint8_t lineSegmentIndex = 0;
 
@@ -70,8 +70,8 @@ namespace jactorio::proto
             archive(lineSegment, lineSegmentIndex, orientation, cereal::base_class<HealthEntityData>(this));
         }
 
-        CEREAL_LOAD_CONSTRUCT(archive, construct, TransportLineData) {
-            std::shared_ptr<game::TransportSegment> line_segment;
+        CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorData) {
+            std::shared_ptr<game::ConveyorSegment> line_segment;
             archive(line_segment);
             construct(line_segment);
 
@@ -84,14 +84,14 @@ namespace jactorio::proto
 
     ///
     /// Abstract class for all everything which moves items (belts, underground belts, splitters)
-    class TransportLine : public HealthEntity
+    class Conveyor : public HealthEntity
     {
     protected:
-        TransportLine() = default;
+        Conveyor() = default;
 
     public:
         /// up, right, down, left
-        using LineData4Way = std::array<TransportLineData*, 4>;
+        using LineData4Way = std::array<ConveyorData*, 4>;
 
         ///
         /// Number of tiles traveled by each item on the belt per tick
@@ -106,31 +106,31 @@ namespace jactorio::proto
         // Data access
 
         ///
-        /// Attempts to retrieve transport line data at world coordinates on tile
+        /// Attempts to retrieve conveyor data at world coordinates on tile
         /// \return pointer to data or nullptr if non existent
-        J_NODISCARD static TransportLineData* GetLineData(game::WorldData& world_data,
-                                                          WorldCoordAxis world_x,
-                                                          WorldCoordAxis world_y);
+        J_NODISCARD static ConveyorData* GetLineData(game::WorldData& world_data,
+                                                     WorldCoordAxis world_x,
+                                                     WorldCoordAxis world_y);
 
-        J_NODISCARD static const TransportLineData* GetLineData(const game::WorldData& world_data,
-                                                                WorldCoordAxis world_x,
-                                                                WorldCoordAxis world_y);
+        J_NODISCARD static const ConveyorData* GetLineData(const game::WorldData& world_data,
+                                                           WorldCoordAxis world_x,
+                                                           WorldCoordAxis world_y);
 
         ///
         /// Gets line data for the 4 neighbors of origin coord
         J_NODISCARD static LineData4Way GetLineData4(game::WorldData& world_data, const WorldCoord& origin_coord);
 
         ///
-        /// Gets transport segment at world coords
+        /// Gets conveyor segment at world coords
         /// \return nullptr if no segment exists
-        static std::shared_ptr<game::TransportSegment>* GetTransportSegment(game::WorldData& world_data,
-                                                                            WorldCoordAxis world_x,
-                                                                            WorldCoordAxis world_y);
+        static std::shared_ptr<game::ConveyorSegment>* GetConveyorSegment(game::WorldData& world_data,
+                                                                          WorldCoordAxis world_x,
+                                                                          WorldCoordAxis world_y);
 
         ///
         /// Determines line orientation given orientation and neighbors
-        static TransportLineData::LineOrientation GetLineOrientation(Orientation orientation,
-                                                                     const LineData4Way& line_data4);
+        static ConveyorData::LineOrientation GetLineOrientation(Orientation orientation,
+                                                                const LineData4Way& line_data4);
 
 
         // ======================================================================

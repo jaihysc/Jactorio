@@ -18,7 +18,7 @@ namespace jactorio::proto
     // Connecting segments
     // Grouping
 
-    class TransportLineTest : public testing::Test
+    class ConveyorTest : public testing::Test
     {
     protected:
         game::WorldData worldData_;
@@ -32,14 +32,14 @@ namespace jactorio::proto
 
         // ======================================================================
 
-        static game::TransportSegment& GetSegment(game::ChunkTileLayer* tile_layer) {
-            return *tile_layer->GetUniqueData<TransportLineData>()->lineSegment;
+        static game::ConveyorSegment& GetSegment(game::ChunkTileLayer* tile_layer) {
+            return *tile_layer->GetUniqueData<ConveyorData>()->lineSegment;
         }
 
 
         ///
-        /// Sets the prototype pointer for a transport line at tile
-        game::ChunkTileLayer& BuildTransportLine(const WorldCoord world_coords, const Orientation orientation) {
+        /// Sets the prototype pointer for a conveyor at tile
+        game::ChunkTileLayer& BuildConveyor(const WorldCoord world_coords, const Orientation orientation) {
             auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)->GetLayer(game::TileLayer::entity);
 
             layer.prototypeData = &lineProto_;
@@ -48,34 +48,34 @@ namespace jactorio::proto
             return layer;
         }
 
-        /// Creates a transport line with the provided orientation above/right/below/left of 1, 1
-        auto& BuildTopTransportLine(const Orientation orientation) {
-            return BuildTransportLine({1, 0}, orientation);
+        /// Creates a conveyor with the provided orientation above/right/below/left of 1, 1
+        auto& BuildTopConveyor(const Orientation orientation) {
+            return BuildConveyor({1, 0}, orientation);
         }
 
-        auto& BuildRightTransportLine(const Orientation orientation) {
-            return BuildTransportLine({2, 1}, orientation);
+        auto& BuildRightConveyor(const Orientation orientation) {
+            return BuildConveyor({2, 1}, orientation);
         }
 
-        auto& BuildBottomTransportLine(const Orientation orientation) {
-            return BuildTransportLine({1, 2}, orientation);
+        auto& BuildBottomConveyor(const Orientation orientation) {
+            return BuildConveyor({1, 2}, orientation);
         }
 
-        auto& BuildLeftTransportLine(const Orientation orientation) {
-            return BuildTransportLine({0, 1}, orientation);
+        auto& BuildLeftConveyor(const Orientation orientation) {
+            return BuildConveyor({0, 1}, orientation);
         }
 
         ///
         /// Validates that a tile at coords 1,1 with the placement orientation produces the expected line
         /// orientation
         void ValidateResultOrientation(const Orientation placement_orientation,
-                                       const TransportLineData::LineOrientation expected_line_orientation) {
+                                       const ConveyorData::LineOrientation expected_line_orientation) {
             EXPECT_EQ(lineProto_.OnRGetSpriteSet(placement_orientation, worldData_, {1, 1}),
                       static_cast<SpriteSetT>(expected_line_orientation));
         }
 
         ///
-        /// Dispatches the appropriate events for when a transport line is built
+        /// Dispatches the appropriate events for when a conveyor is built
         void TlBuildEvents(const WorldCoord& world_coords, const Orientation orientation) {
             auto& layer = worldData_.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
 
@@ -92,7 +92,7 @@ namespace jactorio::proto
         }
 
         ///
-        /// Dispatches the appropriate events AFTER a transport line is removed
+        /// Dispatches the appropriate events AFTER a conveyor is removed
         void TlRemoveEvents(const WorldCoord& world_coords) {
 
             auto& layer = worldData_.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
@@ -116,33 +116,31 @@ namespace jactorio::proto
         /// \param r_index index for right only segment in logic group
         void ValidateBendToSideOnly(const size_t l_index = 2, const size_t r_index = 1) {
             game::Chunk& chunk = *worldData_.GetChunkC(0, 0);
-            auto& logic_group  = chunk.GetLogicGroup(game::Chunk::LogicGroup::transport_line);
+            auto& logic_group  = chunk.GetLogicGroup(game::Chunk::LogicGroup::conveyor);
 
             ASSERT_EQ(logic_group.size(), 3);
 
             {
                 auto& line_segment = GetSegment(logic_group[r_index]);
-                EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+                EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::right_only);
                 EXPECT_EQ(line_segment.length, 2);
             }
             {
                 auto& line_segment = GetSegment(logic_group[l_index]);
-                EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+                EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::left_only);
                 EXPECT_EQ(line_segment.length, 2);
             }
         }
 
         // Grouping
 
-        std::vector<game::ChunkTileLayer*>& GetTransportLines(const ChunkCoord& chunk_coords) {
+        std::vector<game::ChunkTileLayer*>& GetConveyors(const ChunkCoord& chunk_coords) {
             return worldData_.GetChunkC(chunk_coords.x, chunk_coords.y)
-                ->GetLogicGroup(game::Chunk::LogicGroup::transport_line);
+                ->GetLogicGroup(game::Chunk::LogicGroup::conveyor);
         }
 
         J_NODISCARD auto& GetLineData(const WorldCoord& world_coords) const {
-            return *worldData_.GetTile(world_coords)
-                        ->GetLayer(game::TileLayer::entity)
-                        .GetUniqueData<TransportLineData>();
+            return *worldData_.GetTile(world_coords)->GetLayer(game::TileLayer::entity).GetUniqueData<ConveyorData>();
         }
 
         auto GetLineSegmentIndex(const WorldCoord& world_coords) const {
@@ -154,7 +152,7 @@ namespace jactorio::proto
         /// \param first Leading segment
         /// \param second Segment placed behind leading segment
         void GroupingValidate(const WorldCoord& first, const WorldCoord& second) {
-            ASSERT_EQ(GetTransportLines({0, 0}).size(), 1); // 0, 0 is chunk coordinate
+            ASSERT_EQ(GetConveyors({0, 0}).size(), 1); // 0, 0 is chunk coordinate
             EXPECT_EQ(GetLineData(first).lineSegment->length, 2);
 
             EXPECT_EQ(GetLineSegmentIndex(first), 0);
@@ -192,8 +190,8 @@ namespace jactorio::proto
     // ======================================================================
     // General tests
 
-    TEST_F(TransportLineTest, OnBuildCreateTransportLineSegment) {
-        // Should create a transport line segment and add its chunk to logic chunks
+    TEST_F(ConveyorTest, OnBuildCreateConveyorSegment) {
+        // Should create a conveyor segment and add its chunk to logic chunks
         worldData_.EmplaceChunk({-1, 0});
 
         auto& layer         = worldData_.GetTile(-5, 0)->GetLayer(game::TileLayer::entity);
@@ -206,41 +204,40 @@ namespace jactorio::proto
         // Added current chunk as a logic chunk
         ASSERT_EQ(worldData_.LogicGetChunks().size(), 1);
 
-        auto& tile_layers = GetTransportLines({-1, 0});
+        auto& tile_layers = GetConveyors({-1, 0});
 
-        // Should have created a transport line structure
+        // Should have created a conveyor structure
         ASSERT_EQ(tile_layers.size(), 1);
-        ASSERT_TRUE(dynamic_cast<jactorio::proto::TransportLineData*>(tile_layers.front()->GetUniqueData()));
+        ASSERT_TRUE(dynamic_cast<jactorio::proto::ConveyorData*>(tile_layers.front()->GetUniqueData()));
 
         auto& line_segment = GetSegment(tile_layers[0]);
         EXPECT_EQ(line_segment.direction, jactorio::proto::Orientation::right);
-        EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::straight);
+        EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::straight);
         EXPECT_EQ(line_segment.length, 1);
     }
 
-    TEST_F(TransportLineTest, OnRemoveDeleteTransportLineSegment) {
-        // Removing a transport line needs to delete the transport line segment associated with it
-        BuildTransportLine({0, 0}, Orientation::left);
+    TEST_F(ConveyorTest, OnRemoveDeleteConveyorSegment) {
+        // Removing a conveyor needs to delete the conveyor segment associated with it
+        BuildConveyor({0, 0}, Orientation::left);
 
         TlRemoveEvents({0, 0});
 
-        // Transport line structure count should be 0 as it was removed
-        EXPECT_TRUE(
-            worldData_.GetChunkC({0, 0})->GetLogicGroup(jactorio::game::Chunk::LogicGroup::transport_line).empty());
+        // Conveyor structure count should be 0 as it was removed
+        EXPECT_TRUE(worldData_.GetChunkC({0, 0})->GetLogicGroup(jactorio::game::Chunk::LogicGroup::conveyor).empty());
     }
 
-    TEST_F(TransportLineTest, OnDeserializeRelinkTarget) {
+    TEST_F(ConveyorTest, OnDeserializeRelinkTarget) {
         // In this configuration, segment at {0, 1} will not group with the center one
-        BuildRightTransportLine(Orientation::right);
-        const auto& line_left = BuildLeftTransportLine(Orientation::right);
+        BuildRightConveyor(Orientation::right);
+        const auto& line_left = BuildLeftConveyor(Orientation::right);
 
-        BuildTopTransportLine(Orientation::up);
-        BuildBottomTransportLine(Orientation::down);
+        BuildTopConveyor(Orientation::up);
+        BuildBottomConveyor(Orientation::down);
 
-        const auto& center_line    = BuildTransportLine({1, 1}, Orientation::right);
-        const auto& center_segment = center_line.GetUniqueData<TransportLineData>()->lineSegment;
+        const auto& center_line    = BuildConveyor({1, 1}, Orientation::right);
+        const auto& center_segment = center_line.GetUniqueData<ConveyorData>()->lineSegment;
 
-        const auto& left_segment    = line_left.GetUniqueData<TransportLineData>()->lineSegment;
+        const auto& left_segment    = line_left.GetUniqueData<ConveyorData>()->lineSegment;
         left_segment->targetSegment = nullptr;
 
         // Re links target segment
@@ -252,8 +249,8 @@ namespace jactorio::proto
     // ======================================================================
     // Neighbor updates
 
-    TEST_F(TransportLineTest, OnBuildNeighborBend) {
-        // Removing a transport line must update neighboring transport segments
+    TEST_F(ConveyorTest, OnBuildNeighborBend) {
+        // Removing a conveyor must update neighboring conveyor segments
         // The bottom segment goes from right_only to bend_right
 
         /*
@@ -264,54 +261,54 @@ namespace jactorio::proto
          * 4 3 2
          *   1
          */
-        BuildTransportLine({1, 1}, Orientation::up);
+        BuildConveyor({1, 1}, Orientation::up);
 
-        BuildTransportLine({2, 0}, Orientation::right);
-        BuildTransportLine({1, 0}, Orientation::right);
-        BuildTransportLine({0, 0}, Orientation::right);
+        BuildConveyor({2, 0}, Orientation::right);
+        BuildConveyor({1, 0}, Orientation::right);
+        BuildConveyor({0, 0}, Orientation::right);
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 2);
 
         auto& line_segment = GetSegment(tile_layers[0]);
-        EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+        EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::right_only);
         EXPECT_EQ(line_segment.length, 2);
     }
 
-    TEST_F(TransportLineTest, OnRemoveNeighborBend) {
-        // Removing a transport line must update neighboring transport segments
+    TEST_F(ConveyorTest, OnRemoveNeighborBend) {
+        // Removing a conveyor must update neighboring conveyor segments
         // The bottom segment goes from right_only to bend_right
 
         /*
          * /> > >
          *    ^
          */
-        BuildTransportLine({0, 0}, Orientation::right);
-        BuildTransportLine({1, 0}, Orientation::right);
-        BuildTransportLine({2, 0}, Orientation::right);
+        BuildConveyor({0, 0}, Orientation::right);
+        BuildConveyor({1, 0}, Orientation::right);
+        BuildConveyor({2, 0}, Orientation::right);
 
-        BuildTransportLine({1, 1}, Orientation::up);
+        BuildConveyor({1, 1}, Orientation::up);
 
 
         TlRemoveEvents({0, 0});
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 2);
 
         auto& line_segment = GetSegment(tile_layers[1]);
-        EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+        EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::bend_right);
         EXPECT_EQ(line_segment.length, 2);
     }
 
-    TEST_F(TransportLineTest, OnBuildUpdateNeighboringLines) {
+    TEST_F(ConveyorTest, OnBuildUpdateNeighboringLines) {
 
         /*
          * >
          * ^
          */
-        BuildTopTransportLine(Orientation::right);
+        BuildTopConveyor(Orientation::right);
 
         auto& layer = worldData_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
 
@@ -326,13 +323,13 @@ namespace jactorio::proto
         {
             auto& result_layer = worldData_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<jactorio::proto::TransportLineData*>(result_layer.GetUniqueData())->orientation,
-                      jactorio::proto::TransportLineData::LineOrientation::up_right);
+            EXPECT_EQ(static_cast<jactorio::proto::ConveyorData*>(result_layer.GetUniqueData())->orientation,
+                      jactorio::proto::ConveyorData::LineOrientation::up_right);
         }
     }
 
-    TEST_F(TransportLineTest, OnRemoveUpdateNeighboringLines) {
-        // The on_remove event should update the orientations of the neighboring belts to if the current transport
+    TEST_F(ConveyorTest, OnRemoveUpdateNeighboringLines) {
+        // The on_remove event should update the orientations of the neighboring belts to if the current conveyor
         // line is not there
 
         /*
@@ -340,9 +337,9 @@ namespace jactorio::proto
          *  >
          *  ^
          */
-        BuildTopTransportLine(Orientation::down);
-        BuildBottomTransportLine(Orientation::up);
-        BuildTransportLine({1, 1}, Orientation::right); // Between the 2 above and below
+        BuildTopConveyor(Orientation::down);
+        BuildBottomConveyor(Orientation::up);
+        BuildConveyor({1, 1}, Orientation::right); // Between the 2 above and below
 
         auto& layer         = worldData_.GetTile(1, 2)->GetLayer(game::TileLayer::entity);
         layer.prototypeData = &lineProto_;
@@ -354,17 +351,17 @@ namespace jactorio::proto
         {
             auto& result_layer = worldData_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<jactorio::proto::TransportLineData*>(result_layer.GetUniqueData())->orientation,
-                      jactorio::proto::TransportLineData::LineOrientation::down_right);
+            EXPECT_EQ(static_cast<jactorio::proto::ConveyorData*>(result_layer.GetUniqueData())->orientation,
+                      jactorio::proto::ConveyorData::LineOrientation::down_right);
         }
     }
 
     // ======================================================================
     // Bends
 
-    // Various custom arrangements of transport lines
-    TEST_F(TransportLineTest, OnBuildBendingTransportLineSegmentTrailing) {
-        // Change the transport_line_segment termination type in accordance with orientation when placed behind existing
+    // Various custom arrangements of conveyors
+    TEST_F(ConveyorTest, OnBuildBendingConveyorSegmentTrailing) {
+        // Change the conveyor_segment termination type in accordance with orientation when placed behind existing
         // line
 
 
@@ -376,20 +373,20 @@ namespace jactorio::proto
         left_layer.prototypeData = &lineProto_;
         TlBuildEvents({1, 0}, Orientation::left);
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 2);
 
         auto& segment = GetSegment(tile_layers[1]);
-        EXPECT_EQ(segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_left);
+        EXPECT_EQ(segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::bend_left);
 
         // Should have lengthened segment and moved x 1 left
         EXPECT_EQ(segment.length, 2);
-        EXPECT_EQ(static_cast<jactorio::proto::TransportLineData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
+        EXPECT_EQ(static_cast<jactorio::proto::ConveyorData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
     }
 
-    TEST_F(TransportLineTest, OnBuildBendingTransportLineSegmentLeading) {
-        // Change the transport_line_segment termination type in accordance with orientation when placed ahead of
+    TEST_F(ConveyorTest, OnBuildBendingConveyorSegmentLeading) {
+        // Change the conveyor_segment termination type in accordance with orientation when placed ahead of
         // existing line
 
         auto& left_layer         = worldData_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
@@ -400,296 +397,296 @@ namespace jactorio::proto
         down_layer.prototypeData = &lineProto_;
         TlBuildEvents({0, 0}, Orientation::down);
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 2);
 
         auto& segment = GetSegment(tile_layers[0]);
-        EXPECT_EQ(segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_left);
+        EXPECT_EQ(segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::bend_left);
 
         // Should have lengthened segment and moved x 1 left
         EXPECT_EQ(segment.length, 2);
-        EXPECT_EQ(static_cast<jactorio::proto::TransportLineData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
+        EXPECT_EQ(static_cast<jactorio::proto::ConveyorData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
     }
 
 
-    TEST_F(TransportLineTest, OnRemoveBend) {
-        // After removing a transport line the transport line that connects to it with a bend must become straight,
+    TEST_F(ConveyorTest, OnRemoveBend) {
+        // After removing a conveyor the conveyor that connects to it with a bend must become straight,
         // decrement segment_length by 1, and shift its position
 
         /*
          * v
          * >
          */
-        BuildTransportLine({0, 0}, Orientation::down);
-        BuildTransportLine({0, 1}, Orientation::right);
+        BuildConveyor({0, 0}, Orientation::down);
+        BuildConveyor({0, 1}, Orientation::right);
 
 
         TlRemoveEvents({0, 1});
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 1);
 
         auto& segment = GetSegment(tile_layers[0]);
-        EXPECT_EQ(segment.terminationType, jactorio::game::TransportSegment::TerminationType::straight);
+        EXPECT_EQ(segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::straight);
         EXPECT_EQ(segment.length, 1);
     }
 
-    TEST_F(TransportLineTest, SetOrientation) {
+    TEST_F(ConveyorTest, SetOrientation) {
         // When the orientation is set, the member "set" should also be updated
 
         // Arbitrary segment is fine since no logic updates are performed
-        const auto segment = std::make_shared<game::TransportSegment>(
-            Orientation::left, game::TransportSegment::TerminationType::straight, 1);
+        const auto segment = std::make_shared<game::ConveyorSegment>(
+            Orientation::left, game::ConveyorSegment::TerminationType::straight, 1);
 
-        TransportLineData line_data{segment};
+        ConveyorData line_data{segment};
         line_data.lineSegmentIndex = 1; // Prevents it from attempting to delete line segment
 
-        line_data.SetOrientation(TransportLineData::LineOrientation::down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::proto::TransportLineData::LineOrientation::down));
+        line_data.SetOrientation(ConveyorData::LineOrientation::down);
+        EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::proto::ConveyorData::LineOrientation::down));
 
-        line_data.SetOrientation(TransportLineData::LineOrientation::left_down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::proto::TransportLineData::LineOrientation::left_down));
+        line_data.SetOrientation(ConveyorData::LineOrientation::left_down);
+        EXPECT_EQ(line_data.set, static_cast<uint16_t>(jactorio::proto::ConveyorData::LineOrientation::left_down));
     }
 
 
-    TEST_F(TransportLineTest, RightBendUp) {
+    TEST_F(ConveyorTest, RightBendUp) {
         /*
          * > ^
          */
-        BuildLeftTransportLine(Orientation::right);
-        ValidateResultOrientation(Orientation::up, TransportLineData::LineOrientation::right_up);
+        BuildLeftConveyor(Orientation::right);
+        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::right_up);
     }
 
-    TEST_F(TransportLineTest, LeftBendUp) {
+    TEST_F(ConveyorTest, LeftBendUp) {
         /*
          *   ^ <
          */
-        BuildRightTransportLine(Orientation::left);
-        ValidateResultOrientation(Orientation::up, TransportLineData::LineOrientation::left_up);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::left_up);
     }
 
-    TEST_F(TransportLineTest, LeftRightStraightUp) {
+    TEST_F(ConveyorTest, LeftRightStraightUp) {
         /*
          * > ^ <
          */
         // Top and bottom points to one line, line should be straight
 
-        BuildLeftTransportLine(Orientation::right);
-        BuildRightTransportLine(Orientation::left);
-        ValidateResultOrientation(Orientation::up, TransportLineData::LineOrientation::up);
+        BuildLeftConveyor(Orientation::right);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::up);
     }
 
-    TEST_F(TransportLineTest, RightBendUpHasRightBehind) {
+    TEST_F(ConveyorTest, RightBendUpHasRightBehind) {
         /*
          * > ^
          *   >
          */
-        BuildLeftTransportLine(Orientation::right);
-        BuildBottomTransportLine(Orientation::down);
-        ValidateResultOrientation(Orientation::up, TransportLineData::LineOrientation::right_up);
+        BuildLeftConveyor(Orientation::right);
+        BuildBottomConveyor(Orientation::down);
+        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::right_up);
     }
 
-    TEST_F(TransportLineTest, RightStraightUpHasUpBehind) {
+    TEST_F(ConveyorTest, RightStraightUpHasUpBehind) {
         /*
          * > ^
          *   ^
          */
-        BuildLeftTransportLine(Orientation::right);
-        BuildBottomTransportLine(Orientation::up);
-        ValidateResultOrientation(Orientation::up, TransportLineData::LineOrientation::up);
+        BuildLeftConveyor(Orientation::right);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::up);
     }
 
-    TEST_F(TransportLineTest, LeftBendUpHasLeftAtLeftSide) {
+    TEST_F(ConveyorTest, LeftBendUpHasLeftAtLeftSide) {
         /*
          * < ^ <
          */
 
-        BuildLeftTransportLine(Orientation::left);
-        BuildRightTransportLine(Orientation::left);
-        ValidateResultOrientation(Orientation::up, TransportLineData::LineOrientation::left_up);
+        BuildLeftConveyor(Orientation::left);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::left_up);
     }
 
     // ===
 
-    TEST_F(TransportLineTest, DownBendRight) {
+    TEST_F(ConveyorTest, DownBendRight) {
         /*
          *  v
          *  >
          */
-        BuildTopTransportLine(Orientation::down);
-        ValidateResultOrientation(Orientation::right, TransportLineData::LineOrientation::down_right);
+        BuildTopConveyor(Orientation::down);
+        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::down_right);
     }
 
-    TEST_F(TransportLineTest, UpBendRight) {
+    TEST_F(ConveyorTest, UpBendRight) {
         /*
          * >
          * ^
          */
-        BuildBottomTransportLine(Orientation::up);
-        ValidateResultOrientation(Orientation::right, TransportLineData::LineOrientation::up_right);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::up_right);
     }
 
-    TEST_F(TransportLineTest, UpDownStraightRight) {
+    TEST_F(ConveyorTest, UpDownStraightRight) {
         /*
          * v
          * >
          * ^
          */
 
-        BuildTopTransportLine(Orientation::down);
-        BuildBottomTransportLine(Orientation::up);
-        ValidateResultOrientation(Orientation::right, TransportLineData::LineOrientation::right);
+        BuildTopConveyor(Orientation::down);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::right);
     }
 
-    TEST_F(TransportLineTest, DownBendRightHasUpAtLeftSide) {
+    TEST_F(ConveyorTest, DownBendRightHasUpAtLeftSide) {
         /*
          *   v
          * ^ >
          */
-        BuildTopTransportLine(Orientation::down);
-        BuildLeftTransportLine(Orientation::up);
-        ValidateResultOrientation(Orientation::right, TransportLineData::LineOrientation::down_right);
+        BuildTopConveyor(Orientation::down);
+        BuildLeftConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::down_right);
     }
 
-    TEST_F(TransportLineTest, DownStraightRightHasRightAtLeftSide) {
+    TEST_F(ConveyorTest, DownStraightRightHasRightAtLeftSide) {
         /*
          *   v
          * > >
          */
-        BuildTopTransportLine(Orientation::down);
-        BuildLeftTransportLine(Orientation::right); // Points at center, center now straight
-        ValidateResultOrientation(Orientation::right, TransportLineData::LineOrientation::right);
+        BuildTopConveyor(Orientation::down);
+        BuildLeftConveyor(Orientation::right); // Points at center, center now straight
+        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::right);
     }
 
-    TEST_F(TransportLineTest, UpBendRightHasUpAbove) {
+    TEST_F(ConveyorTest, UpBendRightHasUpAbove) {
         /*
          * ^
          * >
          * ^
          */
-        BuildTopTransportLine(Orientation::up);
-        BuildBottomTransportLine(Orientation::up);
-        ValidateResultOrientation(Orientation::right, TransportLineData::LineOrientation::up_right);
+        BuildTopConveyor(Orientation::up);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::up_right);
     }
 
     // ===
 
-    TEST_F(TransportLineTest, RightBendDown) {
+    TEST_F(ConveyorTest, RightBendDown) {
         /*
          * > v
          */
-        BuildLeftTransportLine(Orientation::right);
-        ValidateResultOrientation(Orientation::down, TransportLineData::LineOrientation::right_down);
+        BuildLeftConveyor(Orientation::right);
+        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::right_down);
     }
 
-    TEST_F(TransportLineTest, LeftBendDown) {
+    TEST_F(ConveyorTest, LeftBendDown) {
         /*
          * v <
          */
-        BuildRightTransportLine(Orientation::left);
-        ValidateResultOrientation(Orientation::down, TransportLineData::LineOrientation::left_down);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::left_down);
     }
 
-    TEST_F(TransportLineTest, LeftRightStraightDown) {
+    TEST_F(ConveyorTest, LeftRightStraightDown) {
         /*
          * > v <
          */
-        BuildLeftTransportLine(Orientation::right);
-        BuildRightTransportLine(Orientation::left);
-        ValidateResultOrientation(Orientation::down, TransportLineData::LineOrientation::down);
+        BuildLeftConveyor(Orientation::right);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::down);
     }
 
-    TEST_F(TransportLineTest, RightBendDownHasLeftAbove) {
+    TEST_F(ConveyorTest, RightBendDownHasLeftAbove) {
         /*
          *   <
          * > v
          */
-        BuildLeftTransportLine(Orientation::right);
-        BuildTopTransportLine(Orientation::left);
-        ValidateResultOrientation(Orientation::down, TransportLineData::LineOrientation::right_down);
+        BuildLeftConveyor(Orientation::right);
+        BuildTopConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::right_down);
     }
 
-    TEST_F(TransportLineTest, RightStraightDownHasDownAbove) {
+    TEST_F(ConveyorTest, RightStraightDownHasDownAbove) {
         /*
          *   v
          * > v
          */
-        BuildLeftTransportLine(Orientation::right);
-        BuildTopTransportLine(Orientation::down);
-        ValidateResultOrientation(Orientation::down, TransportLineData::LineOrientation::down);
+        BuildLeftConveyor(Orientation::right);
+        BuildTopConveyor(Orientation::down);
+        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::down);
     }
 
-    TEST_F(TransportLineTest, LeftBendDownHasLeftAtLeftSide) {
+    TEST_F(ConveyorTest, LeftBendDownHasLeftAtLeftSide) {
         /*
          * < v <
          */
-        BuildLeftTransportLine(Orientation::left);
-        BuildRightTransportLine(Orientation::left);
-        ValidateResultOrientation(Orientation::down, TransportLineData::LineOrientation::left_down);
+        BuildLeftConveyor(Orientation::left);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::left_down);
     }
 
     // ===
 
-    TEST_F(TransportLineTest, DownBendLeft) {
+    TEST_F(ConveyorTest, DownBendLeft) {
         /*
          * v
          * <
          */
-        BuildTopTransportLine(Orientation::down);
-        ValidateResultOrientation(Orientation::left, TransportLineData::LineOrientation::down_left);
+        BuildTopConveyor(Orientation::down);
+        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::down_left);
     }
 
-    TEST_F(TransportLineTest, UpBendLeft) {
+    TEST_F(ConveyorTest, UpBendLeft) {
         /*
          * <
          * ^
          */
-        BuildBottomTransportLine(Orientation::up);
-        ValidateResultOrientation(Orientation::left, TransportLineData::LineOrientation::up_left);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::up_left);
     }
 
-    TEST_F(TransportLineTest, UpDownStraightLeft) {
+    TEST_F(ConveyorTest, UpDownStraightLeft) {
         /*
          * v
          * <
          * ^
          */
-        BuildTopTransportLine(Orientation::down);
-        BuildBottomTransportLine(Orientation::up);
-        ValidateResultOrientation(Orientation::left, TransportLineData::LineOrientation::left);
+        BuildTopConveyor(Orientation::down);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::left);
     }
 
-    TEST_F(TransportLineTest, DownBendLeftHasUpRightSide) {
+    TEST_F(ConveyorTest, DownBendLeftHasUpRightSide) {
         /*
          * v
          * < ^
          */
-        BuildTopTransportLine(Orientation::down);
-        BuildRightTransportLine(Orientation::up);
-        ValidateResultOrientation(Orientation::left, TransportLineData::LineOrientation::down_left);
+        BuildTopConveyor(Orientation::down);
+        BuildRightConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::down_left);
     }
 
-    TEST_F(TransportLineTest, DownStraightLeftHasLeftRightSide) {
+    TEST_F(ConveyorTest, DownStraightLeftHasLeftRightSide) {
         /*
          * v
          * < <
          */
-        BuildTopTransportLine(Orientation::down);
-        BuildRightTransportLine(Orientation::left);
-        ValidateResultOrientation(Orientation::left, TransportLineData::LineOrientation::left);
+        BuildTopConveyor(Orientation::down);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::left);
     }
 
-    TEST_F(TransportLineTest, UpBendLeftHasUpAbove) {
+    TEST_F(ConveyorTest, UpBendLeftHasUpAbove) {
         /*
          * ^
          * <
          * ^
          */
-        BuildTopTransportLine(Orientation::up);
-        BuildBottomTransportLine(Orientation::up);
-        ValidateResultOrientation(Orientation::left, TransportLineData::LineOrientation::up_left);
+        BuildTopConveyor(Orientation::up);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::up_left);
     }
 
 
@@ -697,17 +694,17 @@ namespace jactorio::proto
     // Side only
 
     // Change bend to side only as initially, it forms a bend without the line on top / bottom
-    TEST_F(TransportLineTest, OnBuildUpChangeBendToSideOnly) {
+    TEST_F(ConveyorTest, OnBuildUpChangeBendToSideOnly) {
 
         /*
          *   ^
          * > ^ <
          */
-        BuildTransportLine({1, 0}, Orientation::up);
-        BuildTransportLine({1, 1}, Orientation::up);
+        BuildConveyor({1, 0}, Orientation::up);
+        BuildConveyor({1, 1}, Orientation::up);
 
-        BuildTransportLine({2, 1}, Orientation::left);
-        BuildTransportLine({0, 1}, Orientation::right);
+        BuildConveyor({2, 1}, Orientation::left);
+        BuildConveyor({0, 1}, Orientation::right);
 
         ValidateBendToSideOnly();
         EXPECT_EQ(GetLineSegmentIndex({0, 1}), 1);
@@ -721,18 +718,18 @@ namespace jactorio::proto
         EXPECT_EQ(GetLineData({2, 1}).lineSegment->itemOffset, 1);
     }
 
-    TEST_F(TransportLineTest, OnBuildRightChangeBendToSideOnly) {
+    TEST_F(ConveyorTest, OnBuildRightChangeBendToSideOnly) {
 
         /*
          *   v
          *   > >
          *   ^
          */
-        BuildTransportLine({1, 2}, Orientation::up);
-        BuildTransportLine({1, 0}, Orientation::down);
+        BuildConveyor({1, 2}, Orientation::up);
+        BuildConveyor({1, 0}, Orientation::down);
 
-        BuildTransportLine({1, 1}, Orientation::right);
-        BuildTransportLine({2, 1}, Orientation::right);
+        BuildConveyor({1, 1}, Orientation::right);
+        BuildConveyor({2, 1}, Orientation::right);
 
 
         ValidateBendToSideOnly(1, 0);
@@ -743,42 +740,42 @@ namespace jactorio::proto
         EXPECT_EQ(GetLineData({1, 2}).lineSegment->itemOffset, 1);
     }
 
-    TEST_F(TransportLineTest, OnBuildDownChangeBendToSideOnly) {
+    TEST_F(ConveyorTest, OnBuildDownChangeBendToSideOnly) {
 
         /*
          * > v <
          *   v
          */
-        BuildTransportLine({1, 1}, Orientation::down);
-        BuildTransportLine({1, 2}, Orientation::down);
+        BuildConveyor({1, 1}, Orientation::down);
+        BuildConveyor({1, 2}, Orientation::down);
 
-        BuildTransportLine({0, 1}, Orientation::right);
-        BuildTransportLine({2, 1}, Orientation::left);
+        BuildConveyor({0, 1}, Orientation::right);
+        BuildConveyor({2, 1}, Orientation::left);
 
         ValidateBendToSideOnly();
         EXPECT_EQ(GetLineData({0, 1}).lineSegment->targetInsertOffset, 0);
         EXPECT_EQ(GetLineData({2, 1}).lineSegment->targetInsertOffset, 0);
     }
 
-    TEST_F(TransportLineTest, OnBuildLeftChangeBendToSideOnly) {
+    TEST_F(ConveyorTest, OnBuildLeftChangeBendToSideOnly) {
 
         /*
          *   v
          * < <
          *   ^
          */
-        BuildTransportLine({0, 1}, Orientation::left);
-        BuildTransportLine({1, 1}, Orientation::left);
+        BuildConveyor({0, 1}, Orientation::left);
+        BuildConveyor({1, 1}, Orientation::left);
 
-        BuildTransportLine({1, 0}, Orientation::down);
-        BuildTransportLine({1, 2}, Orientation::up);
+        BuildConveyor({1, 0}, Orientation::down);
+        BuildConveyor({1, 2}, Orientation::up);
 
         ValidateBendToSideOnly();
         EXPECT_EQ(GetLineData({1, 0}).lineSegment->targetInsertOffset, 1);
         EXPECT_EQ(GetLineData({1, 2}).lineSegment->targetInsertOffset, 1);
     }
 
-    TEST_F(TransportLineTest, OnBuildUpUpdateNeighboringSegmentToSideOnly) {
+    TEST_F(ConveyorTest, OnBuildUpUpdateNeighboringSegmentToSideOnly) {
         /*
          *   ^
          *   ^
@@ -790,24 +787,24 @@ namespace jactorio::proto
          *   4
          * 1 5 2
          */
-        BuildTransportLine({0, 2}, Orientation::right);
-        BuildTransportLine({2, 2}, Orientation::left);
+        BuildConveyor({0, 2}, Orientation::right);
+        BuildConveyor({2, 2}, Orientation::left);
 
-        BuildTransportLine({1, 0}, Orientation::up);
-        BuildTransportLine({1, 1}, Orientation::up);
-        BuildTransportLine({1, 2}, Orientation::up);
+        BuildConveyor({1, 0}, Orientation::up);
+        BuildConveyor({1, 1}, Orientation::up);
+        BuildConveyor({1, 2}, Orientation::up);
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 3);
 
         {
             auto& line_segment = GetSegment(tile_layers[0]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::left_only);
         }
         {
             auto& line_segment = GetSegment(tile_layers[1]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::right_only);
         }
 
         EXPECT_EQ(GetLineSegmentIndex({0, 2}), 1);
@@ -817,7 +814,7 @@ namespace jactorio::proto
         EXPECT_EQ(GetLineData({2, 2}).lineSegment->targetInsertOffset, 2);
     }
 
-    TEST_F(TransportLineTest, OnBuildRightUpdateNeighboringSegmentToSideOnly) {
+    TEST_F(ConveyorTest, OnBuildRightUpdateNeighboringSegmentToSideOnly) {
         // Line 2 should change to right_only
 
         /*  v
@@ -829,29 +826,29 @@ namespace jactorio::proto
          *  3
          *  1
          */
-        BuildTransportLine({1, 2}, Orientation::up);
-        BuildTransportLine({1, 0}, Orientation::down);
+        BuildConveyor({1, 2}, Orientation::up);
+        BuildConveyor({1, 0}, Orientation::down);
 
-        BuildTransportLine({1, 1}, Orientation::right);
+        BuildConveyor({1, 1}, Orientation::right);
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 3);
 
         {
             auto& line_segment = GetSegment(tile_layers[0]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::right_only);
         }
         {
             auto& line_segment = GetSegment(tile_layers[1]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::left_only);
         }
 
         EXPECT_EQ(GetLineSegmentIndex({1, 2}), 1);
         EXPECT_EQ(GetLineSegmentIndex({1, 0}), 1);
     }
 
-    TEST_F(TransportLineTest, OnBuildDownUpdateNeighboringSegmentToSideOnly) {
+    TEST_F(ConveyorTest, OnBuildDownUpdateNeighboringSegmentToSideOnly) {
 
         /*
          * > v <
@@ -860,23 +857,23 @@ namespace jactorio::proto
          *
          * 1 3 2
          */
-        BuildTransportLine({0, 0}, Orientation::right);
-        BuildTransportLine({2, 0}, Orientation::left);
+        BuildConveyor({0, 0}, Orientation::right);
+        BuildConveyor({2, 0}, Orientation::left);
 
-        BuildTransportLine({1, 0}, Orientation::down);
+        BuildConveyor({1, 0}, Orientation::down);
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 3);
 
         {
             auto& line_segment = GetSegment(tile_layers[0]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::right_only);
             EXPECT_EQ(line_segment.itemOffset, 1); // Incremented 1 when turned side only
         }
         {
             auto& line_segment = GetSegment(tile_layers[1]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::left_only);
             EXPECT_EQ(line_segment.itemOffset, 1);
         }
 
@@ -884,7 +881,7 @@ namespace jactorio::proto
         EXPECT_EQ(GetLineSegmentIndex({2, 0}), 1);
     }
 
-    TEST_F(TransportLineTest, OnBuildLeftUpdateNeighboringSegmentToSideOnly) {
+    TEST_F(ConveyorTest, OnBuildLeftUpdateNeighboringSegmentToSideOnly) {
         // Line 2 should change to right_only
 
         /*   v
@@ -896,22 +893,22 @@ namespace jactorio::proto
          *   3
          *   2
          */
-        BuildTransportLine({0, 0}, Orientation::down);
-        BuildTransportLine({0, 2}, Orientation::up);
+        BuildConveyor({0, 0}, Orientation::down);
+        BuildConveyor({0, 2}, Orientation::up);
 
-        BuildTransportLine({0, 1}, Orientation::left);
+        BuildConveyor({0, 1}, Orientation::left);
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 3);
 
         {
             auto& line_segment = GetSegment(tile_layers[0]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::right_only);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::right_only);
         }
         {
             auto& line_segment = GetSegment(tile_layers[1]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::left_only);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::left_only);
         }
 
         EXPECT_EQ(GetLineSegmentIndex({0, 0}), 1);
@@ -922,23 +919,23 @@ namespace jactorio::proto
     // ======================================================================
     // Connecting segments
 
-    TEST_F(TransportLineTest, OnRemoveSetNeighborTargetSegment) {
-        // After removing a transport line, anything that points to it as a target_segment needs to be set to NULL
-        BuildTransportLine({0, 0}, Orientation::left);
-        BuildTransportLine({0, 1}, Orientation::up);
+    TEST_F(ConveyorTest, OnRemoveSetNeighborTargetSegment) {
+        // After removing a conveyor, anything that points to it as a target_segment needs to be set to NULL
+        BuildConveyor({0, 0}, Orientation::left);
+        BuildConveyor({0, 1}, Orientation::up);
 
 
         TlRemoveEvents({0, 0});
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 1);
         // Set back to nullptr
         EXPECT_EQ(GetSegment(tile_layers[0]).targetSegment, nullptr);
     }
 
-    TEST_F(TransportLineTest, OnBuildConnectTransportLineSegmentsLeading) {
-        // A transport line pointing to another one will set the target_segment
+    TEST_F(ConveyorTest, OnBuildConnectConveyorSegmentsLeading) {
+        // A conveyor pointing to another one will set the target_segment
         /*
          * ^ <
          * 1 2
@@ -950,21 +947,21 @@ namespace jactorio::proto
             TlBuildEvents({0, 0}, Orientation::up);
         }
         {
-            // Second transport line should connect to first
+            // Second conveyor should connect to first
             auto& layer         = worldData_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
             layer.prototypeData = &lineProto_;
             TlBuildEvents({1, 0}, Orientation::left);
         }
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 2);
         auto& line_segment = GetSegment(tile_layers[1]);
         EXPECT_EQ(line_segment.targetSegment, &GetSegment(tile_layers[0]));
     }
 
-    TEST_F(TransportLineTest, OnBuildConnectTransportLineSegmentsTrailing) {
-        // A transport line placed in front of another one will set the target_segment of the neighbor
+    TEST_F(ConveyorTest, OnBuildConnectConveyorSegmentsTrailing) {
+        // A conveyor placed in front of another one will set the target_segment of the neighbor
         /*
          * > ^
          */
@@ -983,15 +980,15 @@ namespace jactorio::proto
             TlBuildEvents({0, 0}, Orientation::up);
         }
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 2);
         auto& line_segment = GetSegment(tile_layers[0]);
         EXPECT_EQ(line_segment.targetSegment, &GetSegment(tile_layers[1]));
     }
 
-    TEST_F(TransportLineTest, OnBuildNoConnectTransportLineSegments) {
-        // Do not connect transport line segments pointed at each other
+    TEST_F(ConveyorTest, OnBuildNoConnectConveyorSegments) {
+        // Do not connect conveyor segments pointed at each other
         /*
          * > <
          */
@@ -1007,7 +1004,7 @@ namespace jactorio::proto
             TlBuildEvents({0, 1}, Orientation::up);
         }
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
 
         ASSERT_EQ(tile_layers.size(), 2);
 
@@ -1018,171 +1015,171 @@ namespace jactorio::proto
     // ======================================================================
     // Grouping
 
-    TEST_F(TransportLineTest, OnBuildUpGroupAhead) {
+    TEST_F(ConveyorTest, OnBuildUpGroupAhead) {
         // When placed behind a line with the same orientation, join the previous line by extending its length
         /*
          * ^
          * ^
          */
-        BuildTransportLine({0, 0}, Orientation::up);
-        BuildTransportLine({0, 1}, Orientation::up);
+        BuildConveyor({0, 0}, Orientation::up);
+        BuildConveyor({0, 1}, Orientation::up);
 
         GroupingValidate({0, 0}, {0, 1});
     }
 
-    TEST_F(TransportLineTest, OnBuildUpGroupBehind) {
+    TEST_F(ConveyorTest, OnBuildUpGroupBehind) {
         // When placed ahead of a line with the same orientation, shift the head to the current position
         /*
          * ^
          * ^
          */
-        BuildTransportLine({0, 1}, Orientation::up);
-        BuildTransportLine({0, 0}, Orientation::up);
+        BuildConveyor({0, 1}, Orientation::up);
+        BuildConveyor({0, 0}, Orientation::up);
 
         GroupBehindValidate({0, 0}, {0, 1});
     }
 
-    TEST_F(TransportLineTest, OnBuildUpGroupAheadCrossChunk) {
+    TEST_F(ConveyorTest, OnBuildUpGroupAheadCrossChunk) {
         // Since grouping ahead requires adjustment of a position within the current logic chunk, crossing chunks
         // requires special logic
         worldData_.EmplaceChunk({0, -1});
 
-        BuildTransportLine({0, -1}, Orientation::up);
-        BuildTransportLine({0, 0}, Orientation::up);
+        BuildConveyor({0, -1}, Orientation::up);
+        BuildConveyor({0, 0}, Orientation::up);
 
-        auto* segment = TransportLine::GetTransportSegment(worldData_, 0, 0);
+        auto* segment = Conveyor::GetConveyorSegment(worldData_, 0, 0);
         ASSERT_TRUE(segment);
 
         EXPECT_EQ(segment->get()->length, 1);
     }
 
-    TEST_F(TransportLineTest, OnBuildUpGroupBehindCrossChunk) {
+    TEST_F(ConveyorTest, OnBuildUpGroupBehindCrossChunk) {
         // Since grouping ahead requires adjustment of a position within the current logic chunk, crossing chunks
         // requires special logic
         worldData_.EmplaceChunk({0, -1});
 
-        BuildTransportLine({0, 0}, Orientation::up);
-        BuildTransportLine({0, -1}, Orientation::up);
+        BuildConveyor({0, 0}, Orientation::up);
+        BuildConveyor({0, -1}, Orientation::up);
 
-        auto* segment = TransportLine::GetTransportSegment(worldData_, 0, -1);
+        auto* segment = Conveyor::GetConveyorSegment(worldData_, 0, -1);
         ASSERT_TRUE(segment);
 
         EXPECT_EQ(segment->get()->length, 1);
     }
 
-    TEST_F(TransportLineTest, OnBuildRightGroupAhead) {
+    TEST_F(ConveyorTest, OnBuildRightGroupAhead) {
         /*
          * > >
          */
-        BuildTransportLine({1, 0}, Orientation::right);
-        BuildTransportLine({0, 0}, Orientation::right);
+        BuildConveyor({1, 0}, Orientation::right);
+        BuildConveyor({0, 0}, Orientation::right);
 
         GroupingValidate({1, 0}, {0, 0});
     }
 
-    TEST_F(TransportLineTest, OnBuildRightGroupBehind) {
+    TEST_F(ConveyorTest, OnBuildRightGroupBehind) {
         /*
          * > >
          */
-        BuildTransportLine({0, 0}, Orientation::right);
-        BuildTransportLine({1, 0}, Orientation::right);
+        BuildConveyor({0, 0}, Orientation::right);
+        BuildConveyor({1, 0}, Orientation::right);
 
         GroupBehindValidate({1, 0}, {0, 0});
     }
 
-    TEST_F(TransportLineTest, OnBuildDownGroupAhead) {
+    TEST_F(ConveyorTest, OnBuildDownGroupAhead) {
         /*
          * v
          * v
          */
-        BuildTransportLine({0, 1}, Orientation::down);
-        BuildTransportLine({0, 0}, Orientation::down);
+        BuildConveyor({0, 1}, Orientation::down);
+        BuildConveyor({0, 0}, Orientation::down);
 
         GroupingValidate({0, 1}, {0, 0});
     }
 
-    TEST_F(TransportLineTest, OnBuildDownGroupBehind) {
+    TEST_F(ConveyorTest, OnBuildDownGroupBehind) {
         /*
          * v
          * v
          */
-        BuildTransportLine({0, 0}, Orientation::down);
-        BuildTransportLine({0, 1}, Orientation::down);
+        BuildConveyor({0, 0}, Orientation::down);
+        BuildConveyor({0, 1}, Orientation::down);
 
         GroupBehindValidate({0, 1}, {0, 0});
     }
 
-    TEST_F(TransportLineTest, OnBuildLeftGroupAhead) {
+    TEST_F(ConveyorTest, OnBuildLeftGroupAhead) {
         /*
          * < <
          */
-        BuildTransportLine({0, 0}, Orientation::left);
-        BuildTransportLine({1, 0}, Orientation::left);
+        BuildConveyor({0, 0}, Orientation::left);
+        BuildConveyor({1, 0}, Orientation::left);
 
         GroupingValidate({0, 0}, {1, 0});
     }
 
-    TEST_F(TransportLineTest, OnBuildLeftGroupBehind) {
+    TEST_F(ConveyorTest, OnBuildLeftGroupBehind) {
         /*
          * < <
          */
-        BuildTransportLine({1, 0}, Orientation::left);
-        BuildTransportLine({0, 0}, Orientation::left);
+        BuildConveyor({1, 0}, Orientation::left);
+        BuildConveyor({0, 0}, Orientation::left);
 
         GroupBehindValidate({0, 0}, {1, 0});
     }
 
-    TEST_F(TransportLineTest, OnRemoveGroupBegin) {
-        // Removing beginning of grouped transport segment
+    TEST_F(ConveyorTest, OnRemoveGroupBegin) {
+        // Removing beginning of grouped conveyor segment
         // Create new segment, do not shorten segment ahead
 
         /*
          * > >
          */
-        BuildTransportLine({0, 0}, Orientation::right);
-        BuildTransportLine({1, 0}, Orientation::right);
+        BuildConveyor({0, 0}, Orientation::right);
+        BuildConveyor({1, 0}, Orientation::right);
 
         TlRemoveEvents({1, 0});
 
-        const auto& tile_layers = GetTransportLines({0, 0});
+        const auto& tile_layers = GetConveyors({0, 0});
         ASSERT_EQ(tile_layers.size(), 1);
         EXPECT_EQ(GetSegment(tile_layers[0]).length, 1);
 
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
     }
 
-    TEST_F(TransportLineTest, OnRemoveGroupBeginBend) {
+    TEST_F(ConveyorTest, OnRemoveGroupBeginBend) {
         /*
          * > > v
          */
-        BuildTransportLine({0, 0}, Orientation::right);
-        BuildTransportLine({1, 0}, Orientation::right);
-        BuildTransportLine({2, 0}, Orientation::down);
+        BuildConveyor({0, 0}, Orientation::right);
+        BuildConveyor({1, 0}, Orientation::right);
+        BuildConveyor({2, 0}, Orientation::down);
 
         TlRemoveEvents({1, 0});
 
-        const auto& tile_layers = GetTransportLines({0, 0});
+        const auto& tile_layers = GetConveyors({0, 0});
         ASSERT_EQ(tile_layers.size(), 2);
         EXPECT_EQ(GetSegment(tile_layers[0]).length, 1);
 
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
     }
 
-    TEST_F(TransportLineTest, OnRemoveGroupMiddle) {
-        // Removing middle of grouped transport segment
+    TEST_F(ConveyorTest, OnRemoveGroupMiddle) {
+        // Removing middle of grouped conveyor segment
         // Create new segment, shorten segment ahead
 
         /*
          * > /> > >
          */
-        BuildTransportLine({0, 0}, Orientation::right);
-        BuildTransportLine({1, 0}, Orientation::right);
-        BuildTransportLine({2, 0}, Orientation::right);
-        BuildTransportLine({3, 0}, Orientation::right);
+        BuildConveyor({0, 0}, Orientation::right);
+        BuildConveyor({1, 0}, Orientation::right);
+        BuildConveyor({2, 0}, Orientation::right);
+        BuildConveyor({3, 0}, Orientation::right);
 
         TlRemoveEvents({1, 0});
 
-        const auto& tile_layers = GetTransportLines({0, 0});
+        const auto& tile_layers = GetConveyors({0, 0});
         ASSERT_EQ(tile_layers.size(), 2);
         EXPECT_EQ(GetSegment(tile_layers[0]).length, 2);
 
@@ -1193,7 +1190,7 @@ namespace jactorio::proto
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
     }
 
-    TEST_F(TransportLineTest, OnRemoveGroupMiddleUpdateTargetSegment) {
+    TEST_F(ConveyorTest, OnRemoveGroupMiddleUpdateTargetSegment) {
         // The new segment created when removing a group needs to update target segments so point to the newly created
         // segment
         worldData_.EmplaceChunk({-1, 0});
@@ -1202,26 +1199,26 @@ namespace jactorio::proto
          * > > /> >
          *   ^
          */
-        BuildTransportLine({0, 0}, Orientation::right);
-        BuildTransportLine({1, 0}, Orientation::right);
-        BuildTransportLine({2, 0}, Orientation::right);
+        BuildConveyor({0, 0}, Orientation::right);
+        BuildConveyor({1, 0}, Orientation::right);
+        BuildConveyor({2, 0}, Orientation::right);
 
-        BuildTransportLine({-1, 0}, Orientation::right);
-        BuildTransportLine({0, 1}, Orientation::up);
+        BuildConveyor({-1, 0}, Orientation::right);
+        BuildConveyor({0, 1}, Orientation::up);
 
         TlRemoveEvents({1, 0});
 
-        const auto& tile_layers = GetTransportLines({0, 0});
+        const auto& tile_layers = GetConveyors({0, 0});
         ASSERT_EQ(tile_layers.size(), 3);
         EXPECT_EQ(GetLineData({0, 1}).lineSegment->targetSegment, GetSegment(tile_layers[1]).targetSegment);
 
 
-        const auto& tile_layers_left = GetTransportLines({-1, 0});
+        const auto& tile_layers_left = GetConveyors({-1, 0});
         ASSERT_EQ(tile_layers_left.size(), 1);
         EXPECT_EQ(GetLineData({-1, 0}).lineSegment->targetSegment, GetSegment(tile_layers[1]).targetSegment);
     }
 
-    TEST_F(TransportLineTest, OnRemoveGroupUpdateProperties) {
+    TEST_F(ConveyorTest, OnRemoveGroupUpdateProperties) {
         // The segment index must be updated when a formally bend segment becomes straight
         // The itemOffset must be subtracted
 
@@ -1229,10 +1226,10 @@ namespace jactorio::proto
          * />
          * ^
          */
-        BuildTransportLine({0, 1}, Orientation::up);
-        BuildTransportLine({0, 0}, Orientation::right);
+        BuildConveyor({0, 1}, Orientation::up);
+        BuildConveyor({0, 0}, Orientation::right);
 
-        const auto& struct_layer = GetTransportLines({0, 0});
+        const auto& struct_layer = GetConveyors({0, 0});
 
         ASSERT_EQ(struct_layer.size(), 2);
 
@@ -1250,28 +1247,28 @@ namespace jactorio::proto
         EXPECT_EQ(GetLineData({0, 1}).lineSegment->itemOffset, 0);
     }
 
-    TEST_F(TransportLineTest, OnRemoveGroupEnd) {
-        // Removing end of grouped transport segment
+    TEST_F(ConveyorTest, OnRemoveGroupEnd) {
+        // Removing end of grouped conveyor segment
         // Create no new segment, shorten segment ahead
 
         /*
          * > >
          */
-        BuildTransportLine({0, 0}, Orientation::right);
-        BuildTransportLine({1, 0}, Orientation::right);
+        BuildConveyor({0, 0}, Orientation::right);
+        BuildConveyor({1, 0}, Orientation::right);
 
         TlRemoveEvents({0, 0});
 
-        const auto& tile_layers = GetTransportLines({0, 0});
+        const auto& tile_layers = GetConveyors({0, 0});
         ASSERT_EQ(tile_layers.size(), 1);
         EXPECT_EQ(GetSegment(tile_layers[0]).length, 1);
     }
 
     // ======================================================================
-    // Various custom arrangements of transport lines
+    // Various custom arrangements of conveyors
 
-    TEST_F(TransportLineTest, TransportLineCircle) {
-        // Creates a circle of transport lines
+    TEST_F(ConveyorTest, ConveyorCircle) {
+        // Creates a circle of conveyors
 
         /*
          * > v
@@ -1300,33 +1297,33 @@ namespace jactorio::proto
         }
 
 
-        auto& tile_layers = GetTransportLines({0, 0});
+        auto& tile_layers = GetConveyors({0, 0});
         ASSERT_EQ(tile_layers.size(), 4);
 
         // Right
         {
             auto& line_segment = GetSegment(tile_layers[0]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::bend_right);
             EXPECT_EQ(line_segment.length, 2);
         }
         // Down
         {
             auto& line_segment = GetSegment(tile_layers[1]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::bend_right);
             EXPECT_EQ(line_segment.length, 2);
         }
 
         // Left
         {
             auto& line_segment = GetSegment(tile_layers[2]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::bend_right);
             EXPECT_EQ(line_segment.length, 2);
         }
 
         // Up
         {
             auto& line_segment = GetSegment(tile_layers[3]);
-            EXPECT_EQ(line_segment.terminationType, jactorio::game::TransportSegment::TerminationType::bend_right);
+            EXPECT_EQ(line_segment.terminationType, jactorio::game::ConveyorSegment::TerminationType::bend_right);
             EXPECT_EQ(line_segment.length, 2);
         }
     }

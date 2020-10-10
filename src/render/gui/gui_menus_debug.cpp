@@ -30,8 +30,8 @@ bool show_demo_window         = false;
 bool show_item_spawner_window = false;
 
 // Game
-bool show_transport_line_info = false;
-bool show_inserter_info       = false;
+bool show_conveyor_info = false;
+bool show_inserter_info = false;
 
 bool show_world_info = false;
 
@@ -39,8 +39,8 @@ void render::DebugMenuLogic(GameWorlds& worlds,
                             game::LogicData& logic,
                             game::PlayerData& player,
                             const data::PrototypeManager& data_manager) {
-    if (show_transport_line_info)
-        DebugTransportLineInfo(worlds, player, data_manager);
+    if (show_conveyor_info)
+        DebugConveyorInfo(worlds, player, data_manager);
 
     if (show_inserter_info)
         DebugInserterInfo(worlds, player);
@@ -108,7 +108,7 @@ void render::DebugMenu(const GuiRenderer& params) {
         // Options
         ImGui::Checkbox("Item spawner", &show_item_spawner_window);
 
-        ImGui::Checkbox("Show transport line info", &show_transport_line_info);
+        ImGui::Checkbox("Show conveyor info", &show_conveyor_info);
         ImGui::Checkbox("Show inserter info", &show_inserter_info);
 
         ImGui::Checkbox("World info", &show_world_info);
@@ -179,9 +179,9 @@ void render::DebugItemSpawner(game::PlayerData& player_data, const data::Prototy
 
 WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
-bool show_transport_segments     = false;
+bool show_conveyor_segments      = false;
 
-void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager& data_manager) {
+void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& data_manager) {
     constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
 
     // Sprite representing the update point
@@ -206,15 +206,15 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
                 layer.prototypeData->GetCategory() != proto::Category::transport_belt)
                 continue;
 
-            auto& line_data    = *static_cast<proto::TransportLineData*>(layer.GetUniqueData());
+            auto& line_data    = *static_cast<proto::ConveyorData*>(layer.GetUniqueData());
             auto& line_segment = *line_data.lineSegment;
 
             // Only draw for the head of segments
-            if (line_segment.terminationType == game::TransportSegment::TerminationType::straight &&
+            if (line_segment.terminationType == game::ConveyorSegment::TerminationType::straight &&
                 line_data.lineSegmentIndex != 0)
                 continue;
 
-            if (line_segment.terminationType != game::TransportSegment::TerminationType::straight &&
+            if (line_segment.terminationType != game::ConveyorSegment::TerminationType::straight &&
                 line_data.lineSegmentIndex != 1)
                 continue;
 
@@ -269,7 +269,7 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
             }
 
             // Shift items 1 tile forwards if segment bends
-            if (line_segment.terminationType != game::TransportSegment::TerminationType::straight) {
+            if (line_segment.terminationType != game::ConveyorSegment::TerminationType::straight) {
                 OrientationIncrement(line_segment.direction, pos_x, pos_y);
             }
 
@@ -298,36 +298,36 @@ void ShowTransportSegments(game::WorldData& world, const data::PrototypeManager&
     }
 }
 
-void render::DebugTransportLineInfo(GameWorlds& worlds,
-                                    game::PlayerData& player,
-                                    const data::PrototypeManager& proto_manager) {
+void render::DebugConveyorInfo(GameWorlds& worlds,
+                               game::PlayerData& player,
+                               const data::PrototypeManager& proto_manager) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard{};
-    guard.Begin("Transport Line Info");
+    guard.Begin("Conveyor Info");
 
-    const auto selected_tile       = player.world.GetMouseTileCoords();
-    proto::TransportLineData* data = proto::TransportLine::GetLineData(world, selected_tile.x, selected_tile.y);
+    const auto selected_tile  = player.world.GetMouseTileCoords();
+    proto::ConveyorData* data = proto::Conveyor::GetLineData(world, selected_tile.x, selected_tile.y);
 
     // Try to use current selected line segment first, otherwise used the last valid if checked
-    game::TransportSegment* segment_ptr = nullptr;
+    game::ConveyorSegment* segment_ptr = nullptr;
 
 
     if (ImGui::Button("Make all belt items visible")) {
         for (auto* chunk : world.LogicGetChunks()) {
-            for (auto* transport_line : chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)) {
-                auto& segment         = *transport_line->GetUniqueData<proto::TransportLineData>()->lineSegment;
+            for (auto* conveyor : chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor)) {
+                auto& segment         = *conveyor->GetUniqueData<proto::ConveyorData>()->lineSegment;
                 segment.left.visible  = true;
                 segment.right.visible = true;
             }
         }
     }
 
-    ImGui::Checkbox("Show transport line segments", &show_transport_segments);
+    ImGui::Checkbox("Show conveyor segments", &show_conveyor_segments);
     ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
-    if (show_transport_segments)
-        ShowTransportSegments(world, proto_manager);
+    if (show_conveyor_segments)
+        ShowConveyorSegments(world, proto_manager);
 
     if (data != nullptr) {
         last_valid_line_segment = selected_tile;
@@ -335,20 +335,20 @@ void render::DebugTransportLineInfo(GameWorlds& worlds,
     }
     else {
         if (use_last_valid_line_segment) {
-            data = proto::TransportLine::GetLineData(world, last_valid_line_segment.x, last_valid_line_segment.y);
+            data = proto::Conveyor::GetLineData(world, last_valid_line_segment.x, last_valid_line_segment.y);
             if (data != nullptr)
                 segment_ptr = data->lineSegment.get();
         }
     }
 
     if (segment_ptr == nullptr) {
-        ImGui::Text("Selected tile is not a transport line");
+        ImGui::Text("Selected tile is not a conveyor");
     }
     else {
         assert(data != nullptr);
-        game::TransportSegment& segment = *segment_ptr;
+        game::ConveyorSegment& segment = *segment_ptr;
 
-        // Show transport line properties
+        // Show conveyor properties
         // Show memory addresses
         {
             std::ostringstream sstream;
@@ -368,19 +368,19 @@ void render::DebugTransportLineInfo(GameWorlds& worlds,
         {
             std::string s;
             switch (segment.terminationType) {
-            case game::TransportSegment::TerminationType::straight:
+            case game::ConveyorSegment::TerminationType::straight:
                 s = "Straight";
                 break;
-            case game::TransportSegment::TerminationType::bend_left:
+            case game::ConveyorSegment::TerminationType::bend_left:
                 s = "Bend left";
                 break;
-            case game::TransportSegment::TerminationType::bend_right:
+            case game::ConveyorSegment::TerminationType::bend_right:
                 s = "Bend right";
                 break;
-            case game::TransportSegment::TerminationType::left_only:
+            case game::ConveyorSegment::TerminationType::left_only:
                 s = "Left side";
                 break;
-            case game::TransportSegment::TerminationType::right_only:
+            case game::ConveyorSegment::TerminationType::right_only:
                 s = "Right side";
                 break;
             default:

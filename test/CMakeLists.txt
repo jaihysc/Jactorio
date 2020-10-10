@@ -87,14 +87,14 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
 
+	${JACTORIO_TEST_DIR}/game/logic/conveyor_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/conveyor_segmentTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/deferral_timerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/logic_dataTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/transport_segmentTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp
@@ -118,7 +118,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/proto/recipeTests.cpp
 	${JACTORIO_TEST_DIR}/proto/spriteTests.cpp
 
-	${JACTORIO_TEST_DIR}/proto/abstract/transport_lineTests.cpp
+	${JACTORIO_TEST_DIR}/proto/abstract/conveyorTests.cpp
 	${JACTORIO_TEST_DIR}/proto/interface/renderableTests.cpp
 
 

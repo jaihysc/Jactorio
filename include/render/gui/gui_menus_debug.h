@@ -34,7 +34,7 @@ namespace jactorio::render
 
     void DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeManager& data_manager);
 
-    void DebugTransportLineInfo(GameWorlds& worlds,
+    void DebugConveyorInfo(GameWorlds& worlds,
                                 game::PlayerData& player,
                                 const data::PrototypeManager& proto_manager);
 

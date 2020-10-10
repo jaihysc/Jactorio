@@ -13,7 +13,7 @@
 
 CEREAL_REGISTER_TYPE(jactorio::proto::ResourceEntityData);
 
-CEREAL_REGISTER_TYPE(jactorio::proto::TransportLineData);
+CEREAL_REGISTER_TYPE(jactorio::proto::ConveyorData);
 
 CEREAL_REGISTER_TYPE(jactorio::proto::ContainerEntityData);
 

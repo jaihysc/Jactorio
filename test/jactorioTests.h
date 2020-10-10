@@ -9,7 +9,7 @@
 #include "core/data_type.h"
 
 #include "data/prototype_manager.h"
-#include "proto/abstract/transport_line.h"
+#include "proto/abstract/conveyor.h"
 #include "proto/assembly_machine.h"
 #include "proto/container_entity.h"
 #include "proto/inserter.h"
@@ -156,11 +156,11 @@ namespace jactorio
     }
 
     ///
-    /// Registers and creates tile UniqueData for TransportSegment
-    inline void TestRegisterTransportSegment(game::WorldData& world_data,
+    /// Registers and creates tile UniqueData for ConveyorSegment
+    inline void TestRegisterConveyorSegment(game::WorldData& world_data,
                                              const WorldCoord& world_coords,
-                                             const std::shared_ptr<game::TransportSegment>& segment,
-                                             const proto::TransportLine& prototype) {
+                                             const std::shared_ptr<game::ConveyorSegment>& segment,
+                                             const proto::Conveyor& prototype) {
         auto* tile = world_data.GetTile(world_coords);
         assert(tile);
         auto* chunk = world_data.GetChunkW(world_coords);
@@ -169,9 +169,9 @@ namespace jactorio
         auto& layer         = tile->GetLayer(game::TileLayer::entity);
         layer.prototypeData = &prototype;
 
-        layer.MakeUniqueData<proto::TransportLineData>(segment);
+        layer.MakeUniqueData<proto::ConveyorData>(segment);
 
-        chunk->GetLogicGroup(game::Chunk::LogicGroup::transport_line)
+        chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor)
             .emplace_back(&tile->GetLayer(game::TileLayer::entity));
     }
 

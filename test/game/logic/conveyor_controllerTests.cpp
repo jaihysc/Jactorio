@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include "game/logic/conveyor_controller.h"
+
 #include <memory>
 
 #include "jactorioTests.h"
@@ -16,7 +18,7 @@ namespace jactorio::game
     // - Item transition (to another segment)
 
 
-    class TransportLineControllerTest : public testing::Test
+    class ConveyorControllerTest : public testing::Test
     {
     protected:
         WorldData worldData_{};
@@ -35,13 +37,13 @@ namespace jactorio::game
         }
 
         ///
-        /// Creates tile UniqueData for TransportSegment
-        void RegisterSegment(const WorldCoord& world_coords, const std::shared_ptr<TransportSegment>& segment) {
-            TestRegisterTransportSegment(worldData_, world_coords, segment, *transportBeltProto_);
+        /// Creates tile UniqueData for ConveyorSegment
+        void RegisterSegment(const WorldCoord& world_coords, const std::shared_ptr<ConveyorSegment>& segment) {
+            TestRegisterConveyorSegment(worldData_, world_coords, segment, *transportBeltProto_);
         }
     };
 
-    TEST_F(TransportLineControllerTest, LineLogic) {
+    TEST_F(ConveyorControllerTest, LineLogic) {
         // Same as line logic, but belts are faster (0.06), which seems to break the current logic at the time of
         // writing
         const auto j_belt_speed = 0.06;
@@ -49,16 +51,15 @@ namespace jactorio::game
         transportBeltProto_->speed = j_belt_speed; // <---
 
         // Segments (Logic chunk must be created first)
-        auto up_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
-        const auto right_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::right, TransportSegment::TerminationType::bend_right, 5);
-        const auto down_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::down, TransportSegment::TerminationType::bend_right, 5);
-        auto left_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::bend_right, 5);
+        auto up_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 5);
+        const auto right_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::right, ConveyorSegment::TerminationType::bend_right, 5);
+        const auto down_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::down, ConveyorSegment::TerminationType::bend_right, 5);
+        auto left_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::left, ConveyorSegment::TerminationType::bend_right, 5);
 
-        // What each transport segment empties into
         up_segment->targetSegment    = right_segment.get();
         right_segment->targetSegment = down_segment.get();
         down_segment->targetSegment  = left_segment.get();
@@ -71,12 +72,12 @@ namespace jactorio::game
 
         // Logic
         left_segment->AppendItem(true, 0.f, itemProto_);
-        left_segment->AppendItem(true, kItemSpacing, itemProto_);
-        left_segment->AppendItem(true, kItemSpacing, itemProto_);
+        left_segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
+        left_segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
 
         // 1 update
         // first item moved to up segment
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
         ASSERT_EQ(up_segment->left.lane.size(), 1);
         ASSERT_EQ(left_segment->left.lane.size(), 2);
 
@@ -86,7 +87,7 @@ namespace jactorio::game
 
         // 2 updates | 0.12
         for (int i = 0; i < 2; ++i) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
         ASSERT_EQ(up_segment->left.lane.size(), 1);
         ASSERT_EQ(left_segment->left.lane.size(), 2);
@@ -99,7 +100,7 @@ namespace jactorio::game
         // 2 updates | Total distance = 4(0.06) = 0.24
         // second item moved to up segment
         for (int i = 0; i < 2; ++i) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
         ASSERT_EQ(up_segment->left.lane.size(), 2);
         ASSERT_EQ(left_segment->left.lane.size(), 1);
@@ -112,8 +113,8 @@ namespace jactorio::game
     }
 
 
-    TEST_F(TransportLineControllerTest, LineLogicRightBend) {
-        // Validates the correct handling of multiple items across transport lines
+    TEST_F(ConveyorControllerTest, LineLogicRightBend) {
+        // Validates the correct handling of multiple items across conveyors
         // The spacing between items should be maintained
 
         transportBeltProto_->speed = 0.01f;
@@ -127,10 +128,10 @@ namespace jactorio::game
          *    |
          */
 
-        auto up_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 4);
-        auto right_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::right, TransportSegment::TerminationType::straight, 4);
+        auto up_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 4);
+        auto right_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::right, ConveyorSegment::TerminationType::straight, 4);
 
         up_segment->targetSegment = right_segment.get();
 
@@ -141,11 +142,11 @@ namespace jactorio::game
         up_segment->AppendItem(true, 0.f, itemProto_);
         up_segment->AppendItem(true, 1, itemProto_);
         up_segment->AppendItem(true, 1, itemProto_);
-        static_assert(kItemSpacing < 1); // Tested positions would otherwise be invalid
+        static_assert(ConveyorProp::kItemSpacing < 1); // Tested positions would otherwise be invalid
 
         // Logic
         // Should transfer the first item
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
 
         EXPECT_EQ(up_segment->left.lane.size(), 2);
@@ -158,7 +159,7 @@ namespace jactorio::game
 
         // Transfer second item after (1 / 0.01) + 1 update - 1 update (Already moved once above)
         for (int i = 0; i < 100; ++i) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
 
         EXPECT_EQ(up_segment->left.lane.size(), 1);
@@ -170,7 +171,7 @@ namespace jactorio::game
 
         // Third item
         for (int i = 0; i < 100; ++i) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
         EXPECT_EQ(up_segment->left.lane.size(), 0);
         EXPECT_EQ(right_segment->left.lane.size(), 3);
@@ -180,7 +181,7 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(right_segment->left.lane[2].dist.getAsDouble(), 1);
     }
 
-    TEST_F(TransportLineControllerTest, LineLogicCompressedRightBend) {
+    TEST_F(ConveyorControllerTest, LineLogicCompressedRightBend) {
         // Same as line_logic_right_bend, but items are compressed
 
         transportBeltProto_->speed = 0.01f;
@@ -195,10 +196,10 @@ namespace jactorio::game
          *    |
          */
 
-        auto up_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 4);
-        auto right_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::right, TransportSegment::TerminationType::straight, 4);
+        auto up_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 4);
+        auto right_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::right, ConveyorSegment::TerminationType::straight, 4);
 
         up_segment->targetSegment = right_segment.get();
 
@@ -207,10 +208,10 @@ namespace jactorio::game
 
         // Offset is distance from beginning, or previous item
         up_segment->AppendItem(true, 0.f, itemProto_);
-        up_segment->AppendItem(true, kItemSpacing, itemProto_);
+        up_segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
 
         // First item
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
 
         EXPECT_EQ(up_segment->left.lane.size(), 1);
@@ -223,7 +224,7 @@ namespace jactorio::game
 
         // Transfer second item after (0.25 / 0.01) + 1 update - 1 update (Already moved once above)
         for (int i = 0; i < 25; ++i) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
 
         EXPECT_EQ(up_segment->left.lane.size(), 0);
@@ -233,25 +234,25 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), 0.25);
     }
 
-    TEST_F(TransportLineControllerTest, LineLogicStopAtEndOfLine) {
+    TEST_F(ConveyorControllerTest, LineLogicStopAtEndOfLine) {
         // When no target_segment is provided:
         // First Item will stop at the end of line (Distance is 0)
         // Trailing items will stop at item_width from the previous item
 
         transportBeltProto_->speed = 0.01f;
 
-        auto segment = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 10);
+        auto segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 10);
 
         RegisterSegment({0, 0}, segment);
 
         segment->AppendItem(true, 0.5f, itemProto_);
-        segment->AppendItem(true, kItemSpacing, itemProto_);
-        segment->AppendItem(true, kItemSpacing + 1.f, itemProto_);
+        segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
+        segment->AppendItem(true, ConveyorProp::kItemSpacing + 1.f, itemProto_);
 
         // Will reach distance 0 after 0.5 / 0.01 updates
         for (int i = 0; i < 50; ++i) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
 
         EXPECT_EQ(segment->left.index, 0);
@@ -259,35 +260,35 @@ namespace jactorio::game
 
         // On the next update, with no target segment, first item is kept at 0, second item untouched
         // move index to 2 (was 0) as it has a distance greater than item_width
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
 
         EXPECT_EQ(segment->left.index, 2);
         EXPECT_DOUBLE_EQ(segment->left.lane[0].dist.getAsDouble(), 0);
-        EXPECT_DOUBLE_EQ(segment->left.lane[1].dist.getAsDouble(), kItemSpacing);
-        EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), kItemSpacing + 0.99);
+        EXPECT_DOUBLE_EQ(segment->left.lane[1].dist.getAsDouble(), ConveyorProp::kItemSpacing);
+        EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), ConveyorProp::kItemSpacing + 0.99);
 
         // After 0.2 + 0.99 / 0.01 updates, the Third item will not move in following updates
         for (int j = 0; j < 99; ++j) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
-        EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), kItemSpacing);
+        EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), ConveyorProp::kItemSpacing);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         // Index set to 0, checking if a valid target exists to move items forward
         EXPECT_EQ(segment->left.index, 0);
 
-        EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), kItemSpacing);
+        EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), ConveyorProp::kItemSpacing);
 
 
         // Updates do nothing since all items are compressed
         for (int k = 0; k < 50; ++k) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
     }
 
-    TEST_F(TransportLineControllerTest, LineLogicStopAtFilledTargetSegment) {
+    TEST_F(ConveyorControllerTest, LineLogicStopAtFilledTargetSegment) {
         // For the right lane:
 
         transportBeltProto_->speed = 0.01f;
@@ -301,17 +302,17 @@ namespace jactorio::game
          *    |
          */
 
-        auto up_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 4);
-        auto right_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::right, TransportSegment::TerminationType::straight, 4);
+        auto up_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 4);
+        auto right_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::right, ConveyorSegment::TerminationType::straight, 4);
 
         up_segment->targetSegment = right_segment.get();
 
         RegisterSegment({0, 0}, up_segment);
         RegisterSegment({3, 0}, right_segment);
 
-        // RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / kItemSpacing{0.25} = 13.2
+        // RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / ConveyorProp::kItemSpacing{0.25} = 13.2
         for (int i = 0; i < 14; ++i) {
             right_segment->AppendItem(false, 0.f, itemProto_);
         }
@@ -321,37 +322,37 @@ namespace jactorio::game
 
         // WIll not move after an arbitrary number of updates
         for (int i = 0; i < 34; ++i) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
 
         EXPECT_DOUBLE_EQ(up_segment->right.lane.front().dist.getAsDouble(), 0);
     }
 
-    TEST_F(TransportLineControllerTest, LineLogicNewSegmentAddedAhead) {
+    TEST_F(ConveyorControllerTest, LineLogicNewSegmentAddedAhead) {
         //     2      1
         // < ----- < -----
 
         transportBeltProto_->speed = 0.04f;
 
         // Segments (Logic chunk must be created first)
-        auto left_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 2);
+        auto left_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 2);
 
         RegisterSegment({2, 1}, left_segment);
 
         // One item stopped, one still moving
         left_segment->AppendItem(true, 0, itemProto_);
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
         EXPECT_EQ(left_segment.get()->left.index, 0);
 
         left_segment->AppendItem(true, 2, itemProto_);
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
         EXPECT_EQ(left_segment.get()->left.index, 1);
 
 
         // ======================================================================
-        const auto left_segment_2 = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 1);
+        const auto left_segment_2 =
+            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 1);
 
         left_segment->targetSegment = left_segment_2.get();
 
@@ -363,7 +364,7 @@ namespace jactorio::game
         EXPECT_EQ(left_segment.get()->left.index, 0);
     }
 
-    TEST_F(TransportLineControllerTest, LineLogicTargetTemporarilyBlocked) {
+    TEST_F(ConveyorControllerTest, LineLogicTargetTemporarilyBlocked) {
         // If the target segment is temporarily blocked, it will move into it at the next opportunity
 
         //     1      2
@@ -371,13 +372,13 @@ namespace jactorio::game
 
         transportBeltProto_->speed = 0.04f;
 
-        const auto left_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 1);
+        const auto left_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 1);
         RegisterSegment({1, 1}, left_segment);
 
 
-        auto left_segment_2 = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 1);
+        auto left_segment_2 =
+            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 1);
         left_segment_2->targetSegment = left_segment.get();
         RegisterSegment({2, 1}, left_segment_2);
 
@@ -385,17 +386,17 @@ namespace jactorio::game
         // ======================================================================
 
 
-        left_segment->AppendItem(true, 1 - kItemSpacing + 0.01, itemProto_);
+        left_segment->AppendItem(true, 1 - ConveyorProp::kItemSpacing + 0.01, itemProto_);
 
         left_segment_2->AppendItem(true, 0, itemProto_);
         left_segment_2->AppendItem(true, 0.5, itemProto_);
         left_segment_2->AppendItem(true, 2, itemProto_);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         ASSERT_EQ(left_segment->left.lane.size(), 1);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         ASSERT_EQ(left_segment->left.lane.size(), 2);
     }
@@ -404,23 +405,23 @@ namespace jactorio::game
     // ======================================================================
     // Line properties
 
-    TEST_F(TransportLineControllerTest, ItemSpacing) {
-        // A minimum distance of kItemSpacing is maintained between items
+    TEST_F(ConveyorControllerTest, ItemSpacing) {
+        // A minimum distance of ConveyorProp::kItemSpacing is maintained between items
 
-        auto right_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::right, TransportSegment::TerminationType::bend_right, 4);
+        auto right_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::right, ConveyorSegment::TerminationType::bend_right, 4);
 
         RegisterSegment({0, 0}, right_segment);
 
         right_segment->AppendItem(true, 0.f, itemProto_);
         right_segment->AppendItem(true, 0.f, itemProto_); // Insert behind previous item
 
-        // Check that second item has a minimum distance of kItemSpacing
+        // Check that second item has a minimum distance of ConveyorProp::kItemSpacing
         EXPECT_DOUBLE_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.);
-        EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), kItemSpacing);
+        EXPECT_DOUBLE_EQ(right_segment->left.lane[1].dist.getAsDouble(), ConveyorProp::kItemSpacing);
     }
 
-    TEST_F(TransportLineControllerTest, BackItemDistance) {
+    TEST_F(ConveyorControllerTest, BackItemDistance) {
         /*
          * ^
          * |
@@ -436,9 +437,9 @@ namespace jactorio::game
 
         // Segments (Logic chunk must be created first)
         auto up_segment_1 =
-            std::make_shared<TransportSegment>(proto::Orientation::up, TransportSegment::TerminationType::straight, 1);
+            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::straight, 1);
         auto up_segment_2 =
-            std::make_shared<TransportSegment>(proto::Orientation::up, TransportSegment::TerminationType::straight, 1);
+            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::straight, 1);
 
         up_segment_2->targetSegment = up_segment_1.get();
 
@@ -448,22 +449,22 @@ namespace jactorio::game
         up_segment_2->AppendItem(true, 0.05, itemProto_);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
         // Segment 1
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
         EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.95); // First segment now
 
         for (int i = 0; i < 19; ++i) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
         EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
         // Remains at 0
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
         EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
 
@@ -477,9 +478,9 @@ namespace jactorio::game
 
         // Will not enter since segment 1 is full
         up_segment_2->AppendItem(true, 0.05, itemProto_);
-        TransportLineLogicUpdate(worldData_);
-        TransportLineLogicUpdate(worldData_);
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
         EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
     }
@@ -489,7 +490,7 @@ namespace jactorio::game
     // Item transition
 
 
-    TEST_F(TransportLineControllerTest, TransitionStraight) {
+    TEST_F(ConveyorControllerTest, TransitionStraight) {
         // Transferring from a straight segment traveling left to another one traveling left
         /*
          * < ------ LEFT (1) ------		< ------ LEFT (2) -------
@@ -497,10 +498,10 @@ namespace jactorio::game
 
         transportBeltProto_->speed = 0.01f;
 
-        auto segment_1 = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 4);
-        auto segment_2 = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 4);
+        auto segment_1 =
+            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 4);
+        auto segment_2 =
+            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 4);
 
         segment_2->targetSegment = segment_1.get();
 
@@ -513,17 +514,17 @@ namespace jactorio::game
 
         // Travel to the next belt in 0.02 / 0.01 + 1 updates
         for (int i = 0; i < 3; ++i) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
 
         EXPECT_EQ(segment_2->left.lane.size(), 0);
         EXPECT_EQ(segment_2->right.lane.size(), 0);
-        // 3.99 tiles from the end of this transport line
+        // 3.99 tiles from the end of this conveyor
         EXPECT_DOUBLE_EQ(segment_1->left.lane[0].dist.getAsDouble(), 3.99);
         EXPECT_DOUBLE_EQ(segment_1->right.lane[0].dist.getAsDouble(), 3.99);
     }
 
-    TEST_F(TransportLineControllerTest, TransitionSideLeft) {
+    TEST_F(ConveyorControllerTest, TransitionSideLeft) {
         // Belt feeding into only one side of another belt
         /*
          *                           Right     Left
@@ -541,10 +542,10 @@ namespace jactorio::game
 
 
         // Segments (Logic chunk must be created first)
-        auto right_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::right, TransportSegment::TerminationType::right_only, 5);
-        auto down_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::down, TransportSegment::TerminationType::straight, 10);
+        auto right_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::right, ConveyorSegment::TerminationType::right_only, 5);
+        auto down_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::down, ConveyorSegment::TerminationType::straight, 10);
 
         right_segment->targetSegment      = down_segment.get();
         right_segment->targetInsertOffset = 8; // 8 + 1 = 9
@@ -561,7 +562,7 @@ namespace jactorio::game
         }
 
         // Logic tests
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         // Since the target belt is empty, both A + B inserts into right lane
         EXPECT_EQ(right_segment->left.lane.size(), 2);
@@ -581,7 +582,7 @@ namespace jactorio::game
         // ======================================================================
         // End on One update prior to transitioning
         for (int j = 0; j < 4; ++j) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
         EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.0);
         EXPECT_EQ(right_segment->right.lane[0].dist.getAsDouble(), 0.0);
@@ -591,7 +592,7 @@ namespace jactorio::game
 
         // ======================================================================
         // Transition items
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
         EXPECT_EQ(right_segment->left.lane.size(), 1);
         EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.2); // 0.25 - 0.05
 
@@ -610,7 +611,7 @@ namespace jactorio::game
         // ======================================================================
         // Transition third item for Lane A, should wake up lane B after passing
         for (int j = 0; j < 4 + 13 + 1; ++j) { // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
         EXPECT_EQ(right_segment->left.lane.size(), 0);
         EXPECT_EQ(right_segment->right.lane.size(), 1); // Woke and moved
@@ -620,7 +621,7 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(down_segment->right.lane[3].dist.getAsDouble(), 0.25);
     }
 
-    TEST_F(TransportLineControllerTest, TransitionSideRight) {
+    TEST_F(ConveyorControllerTest, TransitionSideRight) {
         // Belt feeding into only one side of another belt moving updards
         /*
          * Left     Right
@@ -638,10 +639,10 @@ namespace jactorio::game
 
 
         // Segments (Logic chunk must be created first)
-        auto left_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::right_only, 5);
-        auto down_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::down, TransportSegment::TerminationType::straight, 20);
+        auto left_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::left, ConveyorSegment::TerminationType::right_only, 5);
+        auto down_segment =
+            std::make_shared<ConveyorSegment>(proto::Orientation::down, ConveyorSegment::TerminationType::straight, 20);
 
         left_segment->targetSegment = down_segment.get();
 
@@ -659,7 +660,7 @@ namespace jactorio::game
         }
 
         // Logic tests
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         // Since the target belt is empty, both A + B inserts into right lane
         EXPECT_EQ(left_segment->left.lane.size(), 2);
@@ -679,7 +680,7 @@ namespace jactorio::game
         // ======================================================================
         // End on One update prior to transitioning
         for (int j = 0; j < 4; ++j) {
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
         EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.0);
         EXPECT_EQ(left_segment->right.lane[0].dist.getAsDouble(), 0.0);
@@ -689,7 +690,7 @@ namespace jactorio::game
 
         // ======================================================================
         // Transition items
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
         EXPECT_EQ(left_segment->left.lane.size(), 1);
         EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.2); // 0.25 - 0.05
 
@@ -708,7 +709,7 @@ namespace jactorio::game
         // ======================================================================
         // Transition third item for Lane A, should wake up lane B after passing
         for (int j = 0; j < 4 + 13 + 1; ++j) { // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
-            TransportLineLogicUpdate(worldData_);
+            ConveyorLogicUpdate(worldData_);
         }
         EXPECT_EQ(left_segment->left.lane.size(), 0);
         EXPECT_EQ(left_segment->right.lane.size(), 1); // Woke and moved
@@ -718,22 +719,22 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(down_segment->right.lane[3].dist.getAsDouble(), 0.25);
     }
 
-    TEST_F(TransportLineControllerTest, TransitionSideOnlyToBending) {
+    TEST_F(ConveyorControllerTest, TransitionSideOnlyToBending) {
         //     v
         // < < <
         //     ^
 
         transportBeltProto_->speed = 0.06;
 
-        auto left_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::bend_right, 4);
+        auto left_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::left, ConveyorSegment::TerminationType::bend_right, 4);
         left_segment->itemOffset = 1;
         RegisterSegment({2, 2}, left_segment);
 
         // ======================================================================
 
-        auto down_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::down, TransportSegment::TerminationType::right_only, 1);
+        auto down_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::down, ConveyorSegment::TerminationType::right_only, 1);
 
         down_segment->targetSegment      = left_segment.get();
         down_segment->targetInsertOffset = 2;
@@ -746,7 +747,7 @@ namespace jactorio::game
 
         down_segment->AppendItem(true, 0, itemProto_);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         ASSERT_EQ(left_segment->right.lane.size(), 1);
 
@@ -761,7 +762,7 @@ namespace jactorio::game
 
         down_segment->AppendItem(false, 0, itemProto_);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         ASSERT_EQ(left_segment->right.lane.size(), 1);
 
@@ -771,7 +772,7 @@ namespace jactorio::game
         // ======================================================================
 
         auto up_segment =
-            std::make_shared<TransportSegment>(proto::Orientation::up, TransportSegment::TerminationType::left_only, 1);
+            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::left_only, 1);
 
         up_segment->targetSegment      = left_segment.get();
         up_segment->targetInsertOffset = 2;
@@ -784,7 +785,7 @@ namespace jactorio::game
 
         up_segment->AppendItem(true, 0, itemProto_);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         ASSERT_EQ(left_segment->left.lane.size(), 1);
 
@@ -798,28 +799,28 @@ namespace jactorio::game
 
         up_segment->AppendItem(false, 0, itemProto_);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         ASSERT_EQ(left_segment->left.lane.size(), 1);
 
         EXPECT_DOUBLE_EQ(left_segment->left.lane[0].dist.getAsDouble(), (0.7 + 0.7) + 2. - 0.06);
     }
 
-    TEST_F(TransportLineControllerTest, TransitionBendingToSideOnly) {
+    TEST_F(ConveyorControllerTest, TransitionBendingToSideOnly) {
         // > v
         //   v
         // < < <
 
         transportBeltProto_->speed = 0.06;
 
-        auto down_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::down, TransportSegment::TerminationType::right_only, 3);
+        auto down_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::down, ConveyorSegment::TerminationType::right_only, 3);
 
         RegisterSegment({3, 2}, down_segment);
 
 
-        auto right_segment = std::make_shared<TransportSegment>(
-            proto::Orientation::right, TransportSegment::TerminationType::bend_right, 2);
+        auto right_segment = std::make_shared<ConveyorSegment>(
+            proto::Orientation::right, ConveyorSegment::TerminationType::bend_right, 2);
 
         right_segment->targetSegment = down_segment.get();
 
@@ -831,7 +832,7 @@ namespace jactorio::game
 
         right_segment->AppendItem(true, 0, itemProto_);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         ASSERT_EQ(down_segment->left.lane.size(), 1);
         EXPECT_DOUBLE_EQ(down_segment->left.lane[0].dist.getAsDouble(), (0.3 + 1. + 0.7) - 0.06);
@@ -841,7 +842,7 @@ namespace jactorio::game
 
         right_segment->AppendItem(false, 0, itemProto_);
 
-        TransportLineLogicUpdate(worldData_);
+        ConveyorLogicUpdate(worldData_);
 
         ASSERT_EQ(down_segment->right.lane.size(), 1);
         EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), (0.3 + 1. + 0.3) - 0.06);

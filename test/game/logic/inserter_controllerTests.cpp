@@ -113,23 +113,23 @@ namespace jactorio::game
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
     }
 
-    TEST_F(InserterControllerTest, PickupTransportSegment) {
+    TEST_F(InserterControllerTest, PickupConveyorSegment) {
         inserterProto_.rotationSpeed = 2.1;
         inserterProto_.tileReach     = 1;
 
-        // Setup transport segment
+        // Setup conveyor segment
         proto::Item item{};
         proto::TransportBelt segment_proto{};
 
-        auto dropoff = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 2);
-        TestRegisterTransportSegment(worldData_, {1, 0}, dropoff, segment_proto);
+        auto dropoff =
+            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 2);
+        TestRegisterConveyorSegment(worldData_, {1, 0}, dropoff, segment_proto);
 
 
         //
-        auto pickup = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 2);
-        TestRegisterTransportSegment(worldData_, {1, 2}, pickup, segment_proto);
+        auto pickup =
+            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 2);
+        TestRegisterConveyorSegment(worldData_, {1, 2}, pickup, segment_proto);
 
         for (int i = 0; i < 1000; ++i) {
             pickup->AppendItem(false, 0, item);

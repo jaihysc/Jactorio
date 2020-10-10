@@ -18,7 +18,7 @@ namespace jactorio::proto
 
     // Defines types for prototype classes
 
-    /// Transport line item distance
+    /// Conveyor item distance
     using LineDistT       = Decimal3T;
     using RotationDegreeT = Decimal3T;
 

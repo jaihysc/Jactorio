@@ -4,11 +4,11 @@
 #define JACTORIO_INCLUDE_PROTO_TRANSPORT_BELT_H
 #pragma once
 
-#include "proto/abstract/transport_line.h"
+#include "proto/abstract/conveyor.h"
 
 namespace jactorio::proto
 {
-    class TransportBelt final : public TransportLine
+    class TransportBelt final : public Conveyor
     {
         PROTOTYPE_CATEGORY(transport_belt);
     };

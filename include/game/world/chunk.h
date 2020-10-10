@@ -36,7 +36,7 @@ namespace jactorio::game
 
         enum class LogicGroup
         {
-            transport_line = 0,
+            conveyor = 0,
             inserter,
             count_
         };

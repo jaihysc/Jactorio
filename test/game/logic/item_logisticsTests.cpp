@@ -85,18 +85,18 @@ namespace jactorio::game
         WorldData worldData_;
         LogicData logicData_;
 
-        /// Creates a transport line with orientation
-        proto::TransportLineData CreateTransportLine(
+        /// Creates a conveyor with orientation
+        proto::ConveyorData CreateConveyor(
             const proto::Orientation orientation,
-            const TransportSegment::TerminationType ttype = TransportSegment::TerminationType::straight) const {
-            const auto segment = std::make_shared<TransportSegment>(orientation, ttype, 2);
+            const ConveyorSegment::TerminationType ttype = ConveyorSegment::TerminationType::straight) const {
+            const auto segment = std::make_shared<ConveyorSegment>(orientation, ttype, 2);
 
-            return proto::TransportLineData{segment};
+            return proto::ConveyorData{segment};
         }
 
         ///
         /// \param orientation Inserter orientation to dropoff
-        void TransportLineInsert(const proto::Orientation orientation, proto::TransportLineData& line_data) {
+        void ConveyorInsert(const proto::Orientation orientation, proto::ConveyorData& line_data) {
             proto::Item item;
             InsertTransportBelt({logicData_, {&item, 1}, line_data, orientation});
 
@@ -130,7 +130,7 @@ namespace jactorio::game
         set_prototype(drill);
 
         EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
-        EXPECT_TRUE(this->IsInitialized()); // Still initialized from transport belt
+        EXPECT_TRUE(this->IsInitialized()); // Still initialized from conveyor belt
 
 
         // Ok: Container
@@ -171,135 +171,135 @@ namespace jactorio::game
     }
 
     TEST_F(ItemDropOffTest, InsertOffset) {
-        auto line_data                    = CreateTransportLine(proto::Orientation::up);
+        auto line_data                    = CreateConveyor(proto::Orientation::up);
         line_data.lineSegmentIndex        = 1;
         line_data.lineSegment->itemOffset = 10; // Arbitrary itemOffset
 
-        TransportLineInsert(proto::Orientation::up, line_data);
+        ConveyorInsert(proto::Orientation::up, line_data);
         ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
         EXPECT_DOUBLE_EQ(line_data.lineSegment->right.lane[0].dist.getAsDouble(), 1.5);
     }
 
-    TEST_F(ItemDropOffTest, InsertTransportLineUp) {
+    TEST_F(ItemDropOffTest, InsertConveyorUp) {
         {
-            auto line = CreateTransportLine(proto::Orientation::up);
+            auto line = CreateConveyor(proto::Orientation::up);
 
-            TransportLineInsert(proto::Orientation::up, line);
+            ConveyorInsert(proto::Orientation::up, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::up);
+            auto line = CreateConveyor(proto::Orientation::up);
 
-            TransportLineInsert(proto::Orientation::right, line);
+            ConveyorInsert(proto::Orientation::right, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::up);
+            auto line = CreateConveyor(proto::Orientation::up);
 
-            TransportLineInsert(proto::Orientation::down, line);
+            ConveyorInsert(proto::Orientation::down, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::up);
+            auto line = CreateConveyor(proto::Orientation::up);
 
-            TransportLineInsert(proto::Orientation::left, line);
+            ConveyorInsert(proto::Orientation::left, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
         }
     }
 
-    TEST_F(ItemDropOffTest, InsertTransportLineRight) {
+    TEST_F(ItemDropOffTest, InsertConveyorRight) {
         {
-            auto line = CreateTransportLine(proto::Orientation::right);
+            auto line = CreateConveyor(proto::Orientation::right);
 
-            TransportLineInsert(proto::Orientation::up, line);
+            ConveyorInsert(proto::Orientation::up, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::right);
+            auto line = CreateConveyor(proto::Orientation::right);
 
-            TransportLineInsert(proto::Orientation::right, line);
+            ConveyorInsert(proto::Orientation::right, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::right);
+            auto line = CreateConveyor(proto::Orientation::right);
 
-            TransportLineInsert(proto::Orientation::down, line);
+            ConveyorInsert(proto::Orientation::down, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::right);
+            auto line = CreateConveyor(proto::Orientation::right);
 
-            TransportLineInsert(proto::Orientation::left, line);
+            ConveyorInsert(proto::Orientation::left, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
     }
 
-    TEST_F(ItemDropOffTest, InsertTransportLineDown) {
+    TEST_F(ItemDropOffTest, InsertConveyorDown) {
         {
-            auto line = CreateTransportLine(proto::Orientation::down);
+            auto line = CreateConveyor(proto::Orientation::down);
 
-            TransportLineInsert(proto::Orientation::up, line);
+            ConveyorInsert(proto::Orientation::up, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::down);
+            auto line = CreateConveyor(proto::Orientation::down);
 
-            TransportLineInsert(proto::Orientation::right, line);
+            ConveyorInsert(proto::Orientation::right, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::down);
+            auto line = CreateConveyor(proto::Orientation::down);
 
-            TransportLineInsert(proto::Orientation::down, line);
+            ConveyorInsert(proto::Orientation::down, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::down);
+            auto line = CreateConveyor(proto::Orientation::down);
 
-            TransportLineInsert(proto::Orientation::left, line);
+            ConveyorInsert(proto::Orientation::left, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
         }
     }
 
-    TEST_F(ItemDropOffTest, InsertTransportLineLeft) {
+    TEST_F(ItemDropOffTest, InsertConveyorLeft) {
         {
-            auto line = CreateTransportLine(proto::Orientation::left);
+            auto line = CreateConveyor(proto::Orientation::left);
 
-            TransportLineInsert(proto::Orientation::up, line);
+            ConveyorInsert(proto::Orientation::up, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::left);
+            auto line = CreateConveyor(proto::Orientation::left);
 
-            TransportLineInsert(proto::Orientation::right, line);
+            ConveyorInsert(proto::Orientation::right, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::left);
+            auto line = CreateConveyor(proto::Orientation::left);
 
-            TransportLineInsert(proto::Orientation::down, line);
+            ConveyorInsert(proto::Orientation::down, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::left);
+            auto line = CreateConveyor(proto::Orientation::left);
 
-            TransportLineInsert(proto::Orientation::left, line);
+            ConveyorInsert(proto::Orientation::left, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
         }
     }
 
-    TEST_F(ItemDropOffTest, DropoffTransportLineNonStraight) {
+    TEST_F(ItemDropOffTest, DropoffConveyorNonStraight) {
         // -->
         // ^
         // | <--
 
-        const auto right = CreateTransportLine(proto::Orientation::right, TransportSegment::TerminationType::straight);
-        const auto up    = CreateTransportLine(proto::Orientation::up, TransportSegment::TerminationType::bend_right);
-        auto left        = CreateTransportLine(proto::Orientation::left, TransportSegment::TerminationType::bend_right);
+        const auto right = CreateConveyor(proto::Orientation::right, ConveyorSegment::TerminationType::straight);
+        const auto up    = CreateConveyor(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right);
+        auto left        = CreateConveyor(proto::Orientation::left, ConveyorSegment::TerminationType::bend_right);
 
         left.lineSegment->targetSegment = up.lineSegment.get();
         up.lineSegment->targetSegment   = right.lineSegment.get();
@@ -309,7 +309,7 @@ namespace jactorio::game
 
         proto::Item item;
 
-        TransportLineInsert(proto::Orientation::up, left);
+        ConveyorInsert(proto::Orientation::up, left);
         ASSERT_EQ(left.lineSegment->left.lane.size(), 1);
         EXPECT_DOUBLE_EQ(left.lineSegment->left.lane[0].dist.getAsDouble(), 0.5 + 0.7);
     }
@@ -408,24 +408,24 @@ namespace jactorio::game
 
         proto::Inserter inserterProto_;
 
-        /// Item which will be on transport segments from CreateTransportLine
+        /// Item which will be on conveyor segments from CreateConveyor
         proto::Item lineItem_;
 
-        /// Creates a transport line with  1 item on each side
-        proto::TransportLineData CreateTransportLine(const proto::Orientation orientation) const {
+        /// Creates a conveyor with  1 item on each side
+        proto::ConveyorData CreateConveyor(const proto::Orientation orientation) const {
 
             const auto segment =
-                std::make_shared<TransportSegment>(orientation, TransportSegment::TerminationType::straight, 2);
+                std::make_shared<ConveyorSegment>(orientation, ConveyorSegment::TerminationType::straight, 2);
 
             segment->InsertItem(false, 0.5, lineItem_);
             segment->InsertItem(true, 0.5, lineItem_);
 
-            return proto::TransportLineData{segment};
+            return proto::ConveyorData{segment};
         }
 
 
         /// \param orientation Orientation to line being picked up from
-        void PickupLine(const proto::Orientation orientation, proto::TransportLineData& line_data) {
+        void PickupLine(const proto::Orientation orientation, proto::ConveyorData& line_data) {
             constexpr int pickup_amount = 1;
 
             const auto result = PickupTransportBelt(
@@ -465,7 +465,7 @@ namespace jactorio::game
         set_prototype(drill);
 
         EXPECT_FALSE(this->Initialize(worldData_, {2, 4}));
-        EXPECT_TRUE(this->IsInitialized()); // Still initialized from transport belt
+        EXPECT_TRUE(this->IsInitialized()); // Still initialized from conveyor belt
 
 
         // Ok: Container
@@ -509,133 +509,133 @@ namespace jactorio::game
         EXPECT_EQ(result.second.count, 2);
     }
 
-    TEST_F(InserterPickupTest, PickupTransportLineUp) {
+    TEST_F(InserterPickupTest, PickupConveyorUp) {
         // Line is above inserter
         {
-            auto line = CreateTransportLine(proto::Orientation::up);
+            auto line = CreateConveyor(proto::Orientation::up);
 
             PickupLine(proto::Orientation::up, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::up);
+            auto line = CreateConveyor(proto::Orientation::up);
 
             PickupLine(proto::Orientation::right, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::up);
+            auto line = CreateConveyor(proto::Orientation::up);
 
             PickupLine(proto::Orientation::down, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::up);
+            auto line = CreateConveyor(proto::Orientation::up);
 
             PickupLine(proto::Orientation::left, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
         }
     }
 
-    TEST_F(InserterPickupTest, PickupTransportLineRight) {
+    TEST_F(InserterPickupTest, PickupConveyorRight) {
         {
-            auto line = CreateTransportLine(proto::Orientation::right);
+            auto line = CreateConveyor(proto::Orientation::right);
 
             PickupLine(proto::Orientation::up, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::right);
+            auto line = CreateConveyor(proto::Orientation::right);
 
             PickupLine(proto::Orientation::right, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::right);
+            auto line = CreateConveyor(proto::Orientation::right);
 
             PickupLine(proto::Orientation::down, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::right);
+            auto line = CreateConveyor(proto::Orientation::right);
 
             PickupLine(proto::Orientation::left, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
         }
     }
 
-    TEST_F(InserterPickupTest, PickupTransportLineDown) {
+    TEST_F(InserterPickupTest, PickupConveyorDown) {
         {
-            auto line = CreateTransportLine(proto::Orientation::down);
+            auto line = CreateConveyor(proto::Orientation::down);
 
             PickupLine(proto::Orientation::up, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::down);
+            auto line = CreateConveyor(proto::Orientation::down);
 
             PickupLine(proto::Orientation::right, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::down);
+            auto line = CreateConveyor(proto::Orientation::down);
 
             PickupLine(proto::Orientation::down, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::down);
+            auto line = CreateConveyor(proto::Orientation::down);
 
             PickupLine(proto::Orientation::left, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
     }
 
-    TEST_F(InserterPickupTest, PickupTransportLineLeft) {
+    TEST_F(InserterPickupTest, PickupConveyorLeft) {
         {
-            auto line = CreateTransportLine(proto::Orientation::left);
+            auto line = CreateConveyor(proto::Orientation::left);
 
             PickupLine(proto::Orientation::up, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::left);
+            auto line = CreateConveyor(proto::Orientation::left);
 
             PickupLine(proto::Orientation::right, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::left);
+            auto line = CreateConveyor(proto::Orientation::left);
 
             PickupLine(proto::Orientation::down, line);
             EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
         }
         {
-            auto line = CreateTransportLine(proto::Orientation::left);
+            auto line = CreateConveyor(proto::Orientation::left);
 
             PickupLine(proto::Orientation::left, line);
             EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
         }
     }
 
-    TEST_F(InserterPickupTest, PickupTransportLineNonStraight) {
+    TEST_F(InserterPickupTest, PickupConveyorNonStraight) {
         // -->
         // ^
         // | <--
 
-        const auto right = std::make_shared<TransportSegment>(
-            proto::Orientation::right, TransportSegment::TerminationType::straight, 2);
+        const auto right =
+            std::make_shared<ConveyorSegment>(proto::Orientation::right, ConveyorSegment::TerminationType::straight, 2);
 
-        const auto up = std::make_shared<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 2);
+        const auto up =
+            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 2);
 
-        const auto left = std::make_shared<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::bend_right, 2);
+        const auto left = std::make_shared<ConveyorSegment>(
+            proto::Orientation::left, ConveyorSegment::TerminationType::bend_right, 2);
 
         left->targetSegment = up.get();
         up->targetSegment   = right.get();
 
-        proto::TransportLineData line{left};
+        proto::ConveyorData line{left};
         line.lineSegmentIndex = 1;
 
 
@@ -650,9 +650,9 @@ namespace jactorio::game
         EXPECT_EQ(left->right.lane.size(), 0);
     }
 
-    TEST_F(InserterPickupTest, PickupTransportLineAlternativeSide) {
+    TEST_F(InserterPickupTest, PickupConveyorAlternativeSide) {
         // If the preferred lane is available, inserter will attempt to pick up from other lane
-        auto line = CreateTransportLine(proto::Orientation::up);
+        auto line = CreateConveyor(proto::Orientation::up);
 
         EXPECT_EQ(GetPickupTransportBelt({logicData_, 1, proto::RotationDegreeT(180), 1, line, proto::Orientation::up}),
                   &lineItem_);

@@ -8,7 +8,7 @@
 
 namespace jactorio::game
 {
-    class TransportSegmentTest : public testing::Test
+    class ConveyorSegmentTest : public testing::Test
     {
     protected:
         std::unique_ptr<proto::Item> itemProto_                   = std::make_unique<proto::Item>();
@@ -16,40 +16,40 @@ namespace jactorio::game
 
         WorldData worldData_{};
 
-        std::unique_ptr<TransportSegment> segment_ = std::make_unique<TransportSegment>(
-            proto::Orientation::left, TransportSegment::TerminationType::straight, 2);
+        std::unique_ptr<ConveyorSegment> segment_ =
+            std::make_unique<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 2);
 
         void SetUp() override {
             transportBeltProto_->speed = 0.01;
         }
     };
 
-    TEST_F(TransportSegmentTest, CanInsertFilledTransportLine) {
-        // THe entire transport line is compressed with items, cannot insert
+    TEST_F(ConveyorSegmentTest, CanInsertFilledConveyor) {
+        // THe entire conveyor is compressed with items, cannot insert
 
         // At spacing of 0.25, 4 items per segment
         segment_->AppendItem(true, 0., *itemProto_);
-        segment_->AppendItem(true, kItemSpacing, *itemProto_);
-        segment_->AppendItem(true, kItemSpacing, *itemProto_);
-        segment_->AppendItem(true, kItemSpacing, *itemProto_);
+        segment_->AppendItem(true, ConveyorProp::kItemSpacing, *itemProto_);
+        segment_->AppendItem(true, ConveyorProp::kItemSpacing, *itemProto_);
+        segment_->AppendItem(true, ConveyorProp::kItemSpacing, *itemProto_);
 
-        segment_->AppendItem(true, kItemSpacing, *itemProto_);
-        segment_->AppendItem(true, kItemSpacing, *itemProto_);
-        segment_->AppendItem(true, kItemSpacing, *itemProto_);
-        segment_->AppendItem(true, kItemSpacing, *itemProto_);
+        segment_->AppendItem(true, ConveyorProp::kItemSpacing, *itemProto_);
+        segment_->AppendItem(true, ConveyorProp::kItemSpacing, *itemProto_);
+        segment_->AppendItem(true, ConveyorProp::kItemSpacing, *itemProto_);
+        segment_->AppendItem(true, ConveyorProp::kItemSpacing, *itemProto_);
 
-        // Location 1.75 tiles from beginning of transport line is filled
+        // Location 1.75 tiles from beginning of conveyor is filled
         EXPECT_FALSE(segment_->CanInsert(true, proto::LineDistT(1.75)));
     }
 
-    TEST_F(TransportSegmentTest, CanInsertEmptyTransportLine) {
-        // THe entire transport line is empty and can thus insert
+    TEST_F(ConveyorSegmentTest, CanInsertEmptyConveyor) {
+        // THe entire conveyor is empty and can thus insert
         EXPECT_TRUE(segment_->CanInsert(false, proto::LineDistT(1.75)));
     }
 
-    TEST_F(TransportSegmentTest, CanInsertGap) {
+    TEST_F(ConveyorSegmentTest, CanInsertGap) {
         // Insert into a gap between 1 and 1.5
-        // Is wide enough for the item (item_width - kItemSpacing) to fit there
+        // Is wide enough for the item (item_width - ConveyorProp::kItemSpacing) to fit there
 
         segment_->AppendItem(false, 0., *itemProto_);
         segment_->AppendItem(false, 1., *itemProto_);
@@ -58,7 +58,7 @@ namespace jactorio::game
 
 
         // Overlaps with the item at 1 by 0.01
-        EXPECT_FALSE(segment_->CanInsert(false, proto::LineDistT(kItemSpacing - 0.01)));
+        EXPECT_FALSE(segment_->CanInsert(false, proto::LineDistT(ConveyorProp::kItemSpacing - 0.01)));
         // Will overlap with item at 1.5
         EXPECT_FALSE(segment_->CanInsert(false, proto::LineDistT(1.45)));
 
@@ -67,8 +67,8 @@ namespace jactorio::game
         EXPECT_TRUE(segment_->CanInsert(false, proto::LineDistT(1.25)));
     }
 
-    TEST_F(TransportSegmentTest, CanInsertFirstItem) {
-        // The first item which is appended ignores an additional offset of kItemSpacing when calculating
+    TEST_F(ConveyorSegmentTest, CanInsertFirstItem) {
+        // The first item which is appended ignores an additional offset of ConveyorProp::kItemSpacing when calculating
         // whether or not it can be inserted
 
         const proto::LineDistT offset{0.f};
@@ -77,16 +77,16 @@ namespace jactorio::game
         EXPECT_TRUE(result);
 
         segment_->AppendItem(true, 0, *itemProto_);
-        result = segment_->CanInsert(true, offset); // Not ok, offset changed to kItemSpacing
+        result = segment_->CanInsert(true, offset); // Not ok, offset changed to ConveyorProp::kItemSpacing
         EXPECT_FALSE(result);
 
         segment_->AppendItem(true, 0, *itemProto_);
-        result = segment_->CanInsert(true, offset); // Not ok, offset changed to kItemSpacing
+        result = segment_->CanInsert(true, offset); // Not ok, offset changed to ConveyorProp::kItemSpacing
         EXPECT_FALSE(result);
     }
 
-    TEST_F(TransportSegmentTest, CanInsertAbs) {
-        // the given offset should be adjusted as TransportSegment::itemOffset is adjusted where 1 = 1 tile
+    TEST_F(ConveyorSegmentTest, CanInsertAbs) {
+        // the given offset should be adjusted as ConveyorSegment::itemOffset is adjusted where 1 = 1 tile
         segment_->itemOffset = 1;
         const proto::LineDistT offset{0.f};
 
@@ -96,9 +96,9 @@ namespace jactorio::game
     }
 
 
-    TEST_F(TransportSegmentTest, IsActive) {
+    TEST_F(ConveyorSegmentTest, IsActive) {
         // Insert into a gap between 1 and 1.5
-        // Is wide enough for the item (item_width - kItemSpacing) to fit there
+        // Is wide enough for the item (item_width - ConveyorProp::kItemSpacing) to fit there
 
         EXPECT_FALSE(segment_->left.IsActive());
         EXPECT_FALSE(segment_->right.IsActive());
@@ -117,11 +117,11 @@ namespace jactorio::game
         EXPECT_FALSE(segment_->right.IsActive());
     }
 
-    TEST_F(TransportSegmentTest, AppendItem) {
-        auto line_segment = std::make_unique<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+    TEST_F(ConveyorSegmentTest, AppendItem) {
+        auto line_segment =
+            std::make_unique<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 5);
 
-        // Offset is from the beginning of the transport line OR the previous item if it exists
+        // Offset is from the beginning of the conveyor OR the previous item if it exists
         line_segment->AppendItem(true, 1.3, *itemProto_);
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 1.3);
 
@@ -135,30 +135,32 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[3].dist.getAsDouble(), 0.5);
     }
 
-    TEST_F(TransportSegmentTest, AppendItemFirstItem) {
-        // The first item which is appended ignores an additional offset of kItemSpacing when calculating
+    TEST_F(ConveyorSegmentTest, AppendItemFirstItem) {
+        // The first item which is appended ignores an additional offset of ConveyorProp::kItemSpacing when calculating
         // whether or not it can be appended
 
-        auto line_segment = std::make_unique<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment =
+            std::make_unique<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 5);
 
         line_segment->AppendItem(true, 0, *itemProto_); // Ok, Offset can be 0, is first item
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 0);
 
-        line_segment->AppendItem(true, 0, *itemProto_); // Not ok, offset changed to kItemSpacing
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), jactorio::game::kItemSpacing);
+        line_segment->AppendItem(true, 0, *itemProto_); // Not ok, offset changed to ConveyorProp::kItemSpacing
+        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(),
+                         jactorio::game::ConveyorProp::kItemSpacing);
 
-        line_segment->AppendItem(true, 0, *itemProto_); // Not ok, offset changed to kItemSpacing
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].dist.getAsDouble(), jactorio::game::kItemSpacing);
+        line_segment->AppendItem(true, 0, *itemProto_); // Not ok, offset changed to ConveyorProp::kItemSpacing
+        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].dist.getAsDouble(),
+                         jactorio::game::ConveyorProp::kItemSpacing);
     }
 
-    TEST_F(TransportSegmentTest, InsertItem) {
-        // Insert INSERTS an item at an arbitrary position offset from the beginning of the transport line
+    TEST_F(ConveyorSegmentTest, InsertItem) {
+        // Insert INSERTS an item at an arbitrary position offset from the beginning of the conveyor
 
-        auto line_segment = std::make_unique<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment =
+            std::make_unique<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 5);
 
-        // Offset is ALWAYS from the beginning of the transport line
+        // Offset is ALWAYS from the beginning of the conveyor
 
         line_segment->InsertItem(true, 1.2, *itemProto_);
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 1.2); // < 1.2
@@ -187,12 +189,12 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[4].dist.getAsDouble(), 0.7); // 2.5
     }
 
-    TEST_F(TransportSegmentTest, InsertItemAbs) {
-        auto line_segment = std::make_unique<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+    TEST_F(ConveyorSegmentTest, InsertItemAbs) {
+        auto line_segment =
+            std::make_unique<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 5);
         line_segment->itemOffset = 2;
 
-        // Offset is ALWAYS from the beginning of the transport line + itemOffset
+        // Offset is ALWAYS from the beginning of the conveyor + itemOffset
 
         line_segment->InsertItemAbs(true, 1.2, *itemProto_);
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 3.2);
@@ -202,12 +204,12 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), 0.3); // 1.5
     }
 
-    TEST_F(TransportSegmentTest, TryInsertItem) {
+    TEST_F(ConveyorSegmentTest, TryInsertItem) {
 
-        auto line_segment = std::make_unique<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment =
+            std::make_unique<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 5);
 
-        // Offset is ALWAYS from the beginning of the transport line
+        // Offset is ALWAYS from the beginning of the conveyor
         {
             const bool result = line_segment->TryInsertItem(true, 1.2, *itemProto_);
             ASSERT_TRUE(result);
@@ -220,7 +222,7 @@ namespace jactorio::game
         }
 
 
-        // Should also reenable transport line upon insertion if it is disabled
+        // Should also reenable conveyor upon insertion if it is disabled
         line_segment->left.index = 999;
 
         {
@@ -233,10 +235,10 @@ namespace jactorio::game
         EXPECT_EQ(line_segment->left.index, 0);
     }
 
-    TEST_F(TransportSegmentTest, BackItemDistanceLeft) {
+    TEST_F(ConveyorSegmentTest, BackItemDistanceLeft) {
 
-        auto line_segment = std::make_unique<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment =
+            std::make_unique<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 5);
 
         EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 0);
 
@@ -261,10 +263,10 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 0);
     }
 
-    TEST_F(TransportSegmentTest, BackItemDistanceRight) {
+    TEST_F(ConveyorSegmentTest, BackItemDistanceRight) {
 
-        auto line_segment = std::make_unique<TransportSegment>(
-            proto::Orientation::up, TransportSegment::TerminationType::bend_right, 5);
+        auto line_segment =
+            std::make_unique<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 5);
 
         EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 0.);
 
@@ -289,18 +291,18 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 0);
     }
 
-    TEST_F(TransportSegmentTest, GetOffsetAbs) {
+    TEST_F(ConveyorSegmentTest, GetOffsetAbs) {
         {
             segment_->itemOffset = 0;
 
-            TransportSegment::FloatOffsetT o = 3;
+            ConveyorSegment::FloatOffsetT o = 3;
             segment_->GetOffsetAbs(o);
             EXPECT_DOUBLE_EQ(o, 3.);
         }
         {
             segment_->itemOffset = 3;
 
-            TransportSegment::FloatOffsetT o = 3;
+            ConveyorSegment::FloatOffsetT o = 3;
             segment_->GetOffsetAbs(o);
             EXPECT_DOUBLE_EQ(o, 0.);
         }
@@ -308,13 +310,13 @@ namespace jactorio::game
         {
             segment_->itemOffset = -2;
 
-            TransportSegment::IntOffsetT o = 3;
+            ConveyorSegment::IntOffsetT o = 3;
             segment_->GetOffsetAbs(o);
             EXPECT_DOUBLE_EQ(o, 5.);
         }
     }
 
-    TEST_F(TransportSegmentTest, GetItem) {
+    TEST_F(ConveyorSegmentTest, GetItem) {
         auto get_item = [&]() { // true is an item is found
             // Valid range is 1.3 and 1.7 inclusive
             return segment_->GetItem(true, 1.5).second.item != nullptr;
@@ -329,7 +331,7 @@ namespace jactorio::game
         EXPECT_FALSE(get_item());
     }
 
-    TEST_F(TransportSegmentTest, TryPopItem) {
+    TEST_F(ConveyorSegmentTest, TryPopItem) {
         EXPECT_EQ(segment_->TryPopItem(true, 0.25), nullptr);
         EXPECT_EQ(segment_->TryPopItem(false, 0.25), nullptr);
 
@@ -353,12 +355,12 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(segment_->left.lane[1].dist.getAsDouble(), 1.7);
     }
 
-    TEST_F(TransportSegmentTest, Serialize) {
+    TEST_F(ConveyorSegmentTest, Serialize) {
         data::PrototypeManager proto_manager;
         auto& item = proto_manager.AddProto<proto::Item>();
 
-        auto segment = std::make_unique<TransportSegment>(
-            proto::Orientation::down, TransportSegment::TerminationType::bend_left, 4);
+        auto segment =
+            std::make_unique<ConveyorSegment>(proto::Orientation::down, ConveyorSegment::TerminationType::bend_left, 4);
 
         segment->AppendItem(true, 0.43, item);
         segment->AppendItem(true, 0.43, item);
@@ -379,7 +381,7 @@ namespace jactorio::game
         auto result = TestSerializeDeserialize(segment);
 
         EXPECT_EQ(result->direction, proto::Orientation::down);
-        EXPECT_EQ(result->terminationType, TransportSegment::TerminationType::bend_left);
+        EXPECT_EQ(result->terminationType, ConveyorSegment::TerminationType::bend_left);
         EXPECT_EQ(result->length, 4);
 
         auto& l_lane = result->left;

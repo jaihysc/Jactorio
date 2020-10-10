@@ -1,18 +1,16 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "game/logic/transport_segment.h"
+#include "game/logic/conveyor_segment.h"
 
 #include <decimal.h>
 
-#include "game/logic/transport_line_controller.h"
-
 using namespace jactorio;
 
-bool game::TransportLane::IsActive() const {
+bool game::ConveyorLane::IsActive() const {
     return !(lane.empty() || index >= lane.size());
 }
 
-bool game::TransportLane::CanInsert(proto::LineDistT start_offset, const IntOffsetT item_offset) {
+bool game::ConveyorLane::CanInsert(proto::LineDistT start_offset, const IntOffsetT item_offset) {
     start_offset += proto::LineDistT(item_offset);
     assert(start_offset.getAsDouble() >= 0);
 
@@ -21,11 +19,11 @@ bool game::TransportLane::CanInsert(proto::LineDistT start_offset, const IntOffs
     // Check if start_offset already has an item
     for (const auto& item : lane) {
         // Item is not compressed with the previous item
-        if (item.dist > proto::LineDistT(kItemSpacing)) {
+        if (item.dist > proto::LineDistT(ConveyorProp::kItemSpacing)) {
             //  OFFSET item_spacing               item_spacing   OFFSET + item.first
             //     | -------------- |   GAP FOR ITEM   | ------------ |
-            if (proto::LineDistT(kItemSpacing) + offset <= start_offset &&
-                start_offset <= offset + item.dist - proto::LineDistT(kItemSpacing)) {
+            if (proto::LineDistT(ConveyorProp::kItemSpacing) + offset <= start_offset &&
+                start_offset <= offset + item.dist - proto::LineDistT(ConveyorProp::kItemSpacing)) {
 
                 return true;
             }
@@ -40,28 +38,28 @@ bool game::TransportLane::CanInsert(proto::LineDistT start_offset, const IntOffs
 
     // Account for the item width of the last item if not the firs item
     if (!lane.empty())
-        offset += proto::LineDistT(kItemSpacing);
+        offset += proto::LineDistT(ConveyorProp::kItemSpacing);
 
     return offset <= start_offset;
 }
 
-void game::TransportLane::AppendItem(FloatOffsetT offset, const proto::Item& item) {
+void game::ConveyorLane::AppendItem(FloatOffsetT offset, const proto::Item& item) {
     // A minimum distance of item_spacing is maintained between items (AFTER the initial item)
-    if (offset < kItemSpacing && !lane.empty())
-        offset = kItemSpacing;
+    if (offset < ConveyorProp::kItemSpacing && !lane.empty())
+        offset = ConveyorProp::kItemSpacing;
 
     lane.emplace_back(proto::LineDistT(offset), &item);
     backItemDistance += proto::LineDistT{offset};
 }
 
-void game::TransportLane::InsertItem(FloatOffsetT offset, const proto::Item& item, const IntOffsetT item_offset) {
+void game::ConveyorLane::InsertItem(FloatOffsetT offset, const proto::Item& item, const IntOffsetT item_offset) {
     offset += item_offset;
     assert(offset >= 0);
 
     proto::LineDistT target_offset{offset}; // Location where item will be inserted
     proto::LineDistT counter_offset;        // Running tally of offset from beginning
 
-    std::deque<TransportLineItem>::iterator it;
+    std::deque<ConveyorItem>::iterator it;
     for (auto i = 0u; i < lane.size(); ++i) {
         counter_offset += lane[i].dist;
 
@@ -93,13 +91,13 @@ loop_exit:
     lane.emplace(it, target_offset, &item);
 }
 
-bool game::TransportLane::TryInsertItem(const FloatOffsetT offset,
-                                        const proto::Item& item,
-                                        const IntOffsetT item_offset) {
+bool game::ConveyorLane::TryInsertItem(const FloatOffsetT offset,
+                                       const proto::Item& item,
+                                       const IntOffsetT item_offset) {
     if (!CanInsert(proto::LineDistT(offset), item_offset))
         return false;
 
-    // Reenable transport segment if disabled
+    // Reenable conveyor segment if disabled
     if (!IsActive())
         index = 0;
 
@@ -107,8 +105,8 @@ bool game::TransportLane::TryInsertItem(const FloatOffsetT offset,
     return true;
 }
 
-std::pair<size_t, game::TransportLineItem> game::TransportLane::GetItem(const FloatOffsetT offset,
-                                                                        const FloatOffsetT epsilon) const {
+std::pair<size_t, game::ConveyorItem> game::ConveyorLane::GetItem(const FloatOffsetT offset,
+                                                                  const FloatOffsetT epsilon) const {
     const proto::LineDistT lower_bound{offset - epsilon};
     const proto::LineDistT upper_bound{offset + epsilon};
 
@@ -133,7 +131,7 @@ std::pair<size_t, game::TransportLineItem> game::TransportLane::GetItem(const Fl
     return {0, {}};
 }
 
-const proto::Item* game::TransportLane::TryPopItem(const FloatOffsetT offset, const FloatOffsetT epsilon) {
+const proto::Item* game::ConveyorLane::TryPopItem(const FloatOffsetT offset, const FloatOffsetT epsilon) {
     const auto result = GetItem(offset, epsilon);
 
     if (result.second.item == nullptr)
@@ -153,11 +151,11 @@ const proto::Item* game::TransportLane::TryPopItem(const FloatOffsetT offset, co
 
 // ======================================================================
 
-bool game::TransportSegment::CanInsert(const bool left_side, const proto::LineDistT& start_offset) {
+bool game::ConveyorSegment::CanInsert(const bool left_side, const proto::LineDistT& start_offset) {
     return left_side ? left.CanInsert(start_offset, 0) : right.CanInsert(start_offset, 0);
 }
 
-bool game::TransportSegment::IsActive(const bool left_side) const {
+bool game::ConveyorSegment::IsActive(const bool left_side) const {
     return left_side ? left.IsActive() : right.IsActive();
 }
 
@@ -171,99 +169,99 @@ bool game::TransportSegment::IsActive(const bool left_side) const {
 //       Segment
 
 
-void ApplyTerminationDeductionL(const game::TransportSegment::TerminationType termination_type,
+void ApplyTerminationDeductionL(const game::ConveyorSegment::TerminationType termination_type,
                                 proto::LineDistT& offset) {
     switch (termination_type) {
         // Feeding into another belt also needs to be deducted to feed at the right offset on the target belt
-    case game::TransportSegment::TerminationType::left_only:
-    case game::TransportSegment::TerminationType::bend_left:
-        offset -= proto::LineDistT(game::kBendLeftLReduction);
+    case game::ConveyorSegment::TerminationType::left_only:
+    case game::ConveyorSegment::TerminationType::bend_left:
+        offset -= proto::LineDistT(game::ConveyorProp::kBendLeftLReduction);
         break;
 
-    case game::TransportSegment::TerminationType::right_only:
-    case game::TransportSegment::TerminationType::bend_right:
-        offset -= proto::LineDistT(game::kBendRightLReduction);
+    case game::ConveyorSegment::TerminationType::right_only:
+    case game::ConveyorSegment::TerminationType::bend_right:
+        offset -= proto::LineDistT(game::ConveyorProp::kBendRightLReduction);
         break;
 
-    case game::TransportSegment::TerminationType::straight:
+    case game::ConveyorSegment::TerminationType::straight:
         break;
     }
 }
 
-void ApplyTargetTerminationDeductionL(const game::TransportSegment::TerminationType termination_type,
+void ApplyTargetTerminationDeductionL(const game::ConveyorSegment::TerminationType termination_type,
                                       proto::LineDistT& offset) {
     switch (termination_type) {
-    case game::TransportSegment::TerminationType::bend_left:
-        offset -= proto::LineDistT(game::kBendLeftLReduction);
+    case game::ConveyorSegment::TerminationType::bend_left:
+        offset -= proto::LineDistT(game::ConveyorProp::kBendLeftLReduction);
         break;
 
-    case game::TransportSegment::TerminationType::bend_right:
-        offset -= proto::LineDistT(game::kBendRightLReduction);
+    case game::ConveyorSegment::TerminationType::bend_right:
+        offset -= proto::LineDistT(game::ConveyorProp::kBendRightLReduction);
         break;
 
-    case game::TransportSegment::TerminationType::left_only:
-    case game::TransportSegment::TerminationType::right_only:
-        offset -= proto::LineDistT(game::kTargetSideOnlyReduction);
+    case game::ConveyorSegment::TerminationType::left_only:
+    case game::ConveyorSegment::TerminationType::right_only:
+        offset -= proto::LineDistT(game::ConveyorProp::kTargetSideOnlyReduction);
         break;
 
-    case game::TransportSegment::TerminationType::straight:
+    case game::ConveyorSegment::TerminationType::straight:
         break;
     }
 }
 
 
-void ApplyTerminationDeductionR(const game::TransportSegment::TerminationType termination_type,
+void ApplyTerminationDeductionR(const game::ConveyorSegment::TerminationType termination_type,
                                 proto::LineDistT& offset) {
     switch (termination_type) {
-    case game::TransportSegment::TerminationType::left_only:
-    case game::TransportSegment::TerminationType::bend_left:
-        offset -= proto::LineDistT(game::kBendLeftRReduction);
+    case game::ConveyorSegment::TerminationType::left_only:
+    case game::ConveyorSegment::TerminationType::bend_left:
+        offset -= proto::LineDistT(game::ConveyorProp::kBendLeftRReduction);
         break;
 
-    case game::TransportSegment::TerminationType::right_only:
-    case game::TransportSegment::TerminationType::bend_right:
-        offset -= proto::LineDistT(game::kBendRightRReduction);
+    case game::ConveyorSegment::TerminationType::right_only:
+    case game::ConveyorSegment::TerminationType::bend_right:
+        offset -= proto::LineDistT(game::ConveyorProp::kBendRightRReduction);
         break;
 
-    case game::TransportSegment::TerminationType::straight:
+    case game::ConveyorSegment::TerminationType::straight:
         break;
     }
 }
 
-void ApplyTargetTerminationDeductionR(const game::TransportSegment::TerminationType termination_type,
+void ApplyTargetTerminationDeductionR(const game::ConveyorSegment::TerminationType termination_type,
                                       proto::LineDistT& offset) {
     switch (termination_type) {
-    case game::TransportSegment::TerminationType::bend_left:
-        offset -= proto::LineDistT(game::kBendLeftRReduction);
+    case game::ConveyorSegment::TerminationType::bend_left:
+        offset -= proto::LineDistT(game::ConveyorProp::kBendLeftRReduction);
         break;
 
-    case game::TransportSegment::TerminationType::bend_right:
-        offset -= proto::LineDistT(game::kBendRightRReduction);
+    case game::ConveyorSegment::TerminationType::bend_right:
+        offset -= proto::LineDistT(game::ConveyorProp::kBendRightRReduction);
         break;
 
-    case game::TransportSegment::TerminationType::left_only:
-    case game::TransportSegment::TerminationType::right_only:
-        offset -= proto::LineDistT(game::kTargetSideOnlyReduction);
+    case game::ConveyorSegment::TerminationType::left_only:
+    case game::ConveyorSegment::TerminationType::right_only:
+        offset -= proto::LineDistT(game::ConveyorProp::kTargetSideOnlyReduction);
         break;
 
-    case game::TransportSegment::TerminationType::straight:
+    case game::ConveyorSegment::TerminationType::straight:
         break;
     }
 }
 
-void game::TransportSegment::ApplyTerminationDeduction(const bool is_left,
-                                                       const TerminationType segment_ttype,
-                                                       const TerminationType target_segment_ttype,
-                                                       proto::LineDistT& offset) {
+void game::ConveyorSegment::ApplyTerminationDeduction(const bool is_left,
+                                                      const TerminationType segment_ttype,
+                                                      const TerminationType target_segment_ttype,
+                                                      proto::LineDistT& offset) {
     if (is_left)
         ApplyLeftTerminationDeduction(segment_ttype, target_segment_ttype, offset);
     else
         ApplyRightTerminationDeduction(segment_ttype, target_segment_ttype, offset);
 }
 
-void game::TransportSegment::ApplyLeftTerminationDeduction(const TerminationType segment_ttype,
-                                                           const TerminationType target_segment_ttype,
-                                                           proto::LineDistT& offset) {
+void game::ConveyorSegment::ApplyLeftTerminationDeduction(const TerminationType segment_ttype,
+                                                          const TerminationType target_segment_ttype,
+                                                          proto::LineDistT& offset) {
     ApplyTerminationDeductionL(segment_ttype, offset);
 
     // Transition into right lane
@@ -273,9 +271,9 @@ void game::TransportSegment::ApplyLeftTerminationDeduction(const TerminationType
         ApplyTargetTerminationDeductionL(target_segment_ttype, offset);
 }
 
-void game::TransportSegment::ApplyRightTerminationDeduction(const TerminationType segment_ttype,
-                                                            const TerminationType target_segment_ttype,
-                                                            proto::LineDistT& offset) {
+void game::ConveyorSegment::ApplyRightTerminationDeduction(const TerminationType segment_ttype,
+                                                           const TerminationType target_segment_ttype,
+                                                           proto::LineDistT& offset) {
     ApplyTerminationDeductionR(segment_ttype, offset);
 
 
@@ -286,50 +284,48 @@ void game::TransportSegment::ApplyRightTerminationDeduction(const TerminationTyp
         ApplyTargetTerminationDeductionR(target_segment_ttype, offset);
 }
 
-void game::TransportSegment::AppendItem(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
+void game::ConveyorSegment::AppendItem(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
     left_side ? left.AppendItem(offset, item) : right.AppendItem(offset, item);
 }
 
-void game::TransportSegment::InsertItem(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
+void game::ConveyorSegment::InsertItem(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
     left_side ? left.InsertItem(offset, item, 0) : right.InsertItem(offset, item, 0);
 }
 
-bool game::TransportSegment::TryInsertItem(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
+bool game::ConveyorSegment::TryInsertItem(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
     return left_side ? left.TryInsertItem(offset, item, 0) : right.TryInsertItem(offset, item, 0);
 }
 
-std::pair<size_t, game::TransportLineItem> game::TransportSegment::GetItem(const bool left_side,
-                                                                           const FloatOffsetT offset,
-                                                                           const FloatOffsetT epsilon) const {
+std::pair<size_t, game::ConveyorItem> game::ConveyorSegment::GetItem(const bool left_side,
+                                                                     const FloatOffsetT offset,
+                                                                     const FloatOffsetT epsilon) const {
     return left_side ? left.GetItem(offset, epsilon) : right.GetItem(offset, epsilon);
 }
 
-const proto::Item* game::TransportSegment::TryPopItem(const bool left_side,
-                                                      const FloatOffsetT offset,
-                                                      const FloatOffsetT epsilon) {
+const proto::Item* game::ConveyorSegment::TryPopItem(const bool left_side,
+                                                     const FloatOffsetT offset,
+                                                     const FloatOffsetT epsilon) {
     return left_side ? left.TryPopItem(offset, epsilon) : right.TryPopItem(offset, epsilon);
 }
 
 // With itemOffset applied
 
-bool game::TransportSegment::CanInsertAbs(const bool left_side, const proto::LineDistT& start_offset) {
+bool game::ConveyorSegment::CanInsertAbs(const bool left_side, const proto::LineDistT& start_offset) {
     return left_side ? left.CanInsert(start_offset, itemOffset) : right.CanInsert(start_offset, itemOffset);
 }
 
-void game::TransportSegment::InsertItemAbs(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
+void game::ConveyorSegment::InsertItemAbs(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
     left_side ? left.InsertItem(offset, item, itemOffset) : right.InsertItem(offset, item, itemOffset);
 }
 
-bool game::TransportSegment::TryInsertItemAbs(const bool left_side,
-                                              const FloatOffsetT offset,
-                                              const proto::Item& item) {
+bool game::ConveyorSegment::TryInsertItemAbs(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
     return left_side ? left.TryInsertItem(offset, item, itemOffset) : right.TryInsertItem(offset, item, itemOffset);
 }
 
-void game::TransportSegment::GetOffsetAbs(IntOffsetT& val) const {
+void game::ConveyorSegment::GetOffsetAbs(IntOffsetT& val) const {
     val -= itemOffset;
 }
 
-void game::TransportSegment::GetOffsetAbs(FloatOffsetT& val) const {
+void game::ConveyorSegment::GetOffsetAbs(FloatOffsetT& val) const {
     val -= itemOffset;
 }

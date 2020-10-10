@@ -16,7 +16,7 @@
 #include "proto/inserter.h"
 
 #include "game/event/game_events.h"
-#include "game/logic/transport_line_controller.h"
+#include "game/logic/conveyor_controller.h"
 
 #include "render/gui/gui_menus.h"
 #include "render/gui/imgui_manager.h"
@@ -63,7 +63,7 @@ void LogicLoop(ThreadedLoopCommon& common) {
                 {
                     EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-                    TransportLineLogicUpdate(world);
+                    ConveyorLogicUpdate(world);
                 }
                 {
                     EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");

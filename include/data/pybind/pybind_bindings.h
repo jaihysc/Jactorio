@@ -12,9 +12,9 @@
 #include <pybind11/stl_bind.h>
 
 #include "data/prototype_manager.h"
+#include "proto/abstract/conveyor.h"
 #include "proto/abstract/entity.h"
 #include "proto/abstract/health_entity.h"
-#include "proto/abstract/transport_line.h"
 #include "proto/assembly_machine.h"
 #include "proto/container_entity.h"
 #include "proto/detail/prototype_type.h"
@@ -217,11 +217,11 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
 
     // Belts
-    PYBIND_DATA_CLASS_ABSTRACT(TransportLine, TransportLine, HealthEntity)
-    PYBIND_PROP_S(TransportLine, speed, speedFloat, Set_speedFloat);
+    PYBIND_DATA_CLASS_ABSTRACT(Conveyor, Conveyor, HealthEntity)
+    PYBIND_PROP_S(Conveyor, speed, speedFloat, Set_speedFloat);
 
     //
-    PYBIND_DATA_CLASS(TransportBelt, TransportBelt, TransportLine);
+    PYBIND_DATA_CLASS(TransportBelt, TransportBelt, Conveyor);
 
     // Assembly machine
     PYBIND_DATA_CLASS(AssemblyMachine, AssemblyMachine, HealthEntity)
