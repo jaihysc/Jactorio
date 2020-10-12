@@ -72,7 +72,7 @@ J_NODISCARD static bool MenuButtonMini(const char* label) {
 ///
 /// Menu button for heading back to previous menu when clicked
 /// \return true if clicked
-static bool MenuBackButton(MainMenuData& menu_data, const MainMenuData::Window new_menu) {
+static bool MenuBackButton(gui::MainMenuData& menu_data, const gui::MainMenuData::Window new_menu) {
     if (MenuButtonMini("Back")) {
         menu_data.currentMenu = new_menu;
         return true;
@@ -119,7 +119,7 @@ void ErrorTextDismissible(std::string& error_str) {
 static void ChangeGameState(ThreadedLoopCommon& common, const ThreadedLoopCommon::GameState new_state) {
     SetVisible(gui::Menu::MainMenu, false);
 
-    common.mainMenuData.currentMenu = MainMenuData::Window::main;
+    common.mainMenuData.currentMenu = gui::MainMenuData::Window::main;
     common.gameState                = new_state;
 }
 
@@ -136,7 +136,7 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     ImGui::InputInt("Seed", &seed);
 
 
-    MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
+    MenuBackButton(common.mainMenuData, gui::MainMenuData::Window::main);
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Start")) {
@@ -235,15 +235,15 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
 /// \return true if a submenu was drawn
 bool DrawSubmenu(ThreadedLoopCommon& common) {
     switch (common.mainMenuData.currentMenu) {
-    case MainMenuData::Window::main:
+    case gui::MainMenuData::Window::main:
         break;
-    case MainMenuData::Window::new_game:
+    case gui::MainMenuData::Window::new_game:
         NewGameMenu(common);
         return true;
-    case MainMenuData::Window::load_game:
+    case gui::MainMenuData::Window::load_game:
         LoadSaveGameMenu(common);
         return true;
-    case MainMenuData::Window::save_game:
+    case gui::MainMenuData::Window::save_game:
         SaveGameMenu(common);
         return true;
 
