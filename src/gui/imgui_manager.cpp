@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "render/gui/imgui_manager.h"
+#include "gui/imgui_manager.h"
 
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_sdl.h>
@@ -15,11 +15,11 @@
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile_layer.h"
 
+#include "gui/gui_colors.h"
+#include "gui/gui_menus.h"
+#include "gui/gui_menus_debug.h"
+#include "gui/menu_data.h"
 #include "render/display_window.h"
-#include "render/gui/gui_colors.h"
-#include "render/gui/gui_menus.h"
-#include "render/gui/gui_menus_debug.h"
-#include "render/gui/menu_data.h"
 #include "render/rendering/renderer.h"
 #include "render/rendering/spritemap_generator.h"
 
@@ -30,12 +30,12 @@ using namespace jactorio;
 const SpriteUvCoordsT* sprite_positions = nullptr;
 unsigned int tex_id                     = 0; // Assigned by openGL
 
-void render::SetupCharacterData(RendererSprites& renderer_sprites) {
+void gui::SetupCharacterData(render::RendererSprites& renderer_sprites) {
     sprite_positions = &renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::gui).spritePositions;
     tex_id           = renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::gui)->GetId();
 }
 
-void render::Setup(const DisplayWindow& display_window) {
+void gui::Setup(const render::DisplayWindow& display_window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -117,31 +117,31 @@ void render::Setup(const DisplayWindow& display_window) {
     LOG_MESSAGE(info, "Imgui initialized");
 }
 
-void render::ImguiBeginFrame(const DisplayWindow& display_window) {
+void gui::ImguiBeginFrame(const render::DisplayWindow& display_window) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(display_window.GetWindow());
     ImGui::NewFrame();
 }
 
-void render::ImguiRenderFrame() {
+void gui::ImguiRenderFrame() {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void DrawMenu(render::Menu menu, const render::GuiRenderer& g_rendr, proto::UniqueDataBase* unique_data = nullptr) {
-    auto& gui_menu = render::menus[static_cast<int>(menu)];
+void DrawMenu(gui::Menu menu, const render::GuiRenderer& g_rendr, proto::UniqueDataBase* unique_data = nullptr) {
+    auto& gui_menu = gui::menus[static_cast<int>(menu)];
 
     if (gui_menu.visible) {
         gui_menu.drawPtr({g_rendr, nullptr, unique_data});
     }
 }
 
-void render::ImguiDraw(const DisplayWindow& display_window,
-                       GameWorlds& worlds,
-                       game::LogicData& logic,
-                       game::PlayerData& player,
-                       const data::PrototypeManager& proto_manager,
-                       game::EventData& /*event*/) {
+void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
+                    GameWorlds& worlds,
+                    game::LogicData& logic,
+                    game::PlayerData& player,
+                    const data::PrototypeManager& proto_manager,
+                    game::EventData& /*event*/) {
     EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
     // Has imgui handled a mouse or keyboard event?
@@ -156,7 +156,7 @@ void render::ImguiDraw(const DisplayWindow& display_window,
     // ImPopFont();
 
     MenuData menu_data = {*sprite_positions, tex_id};
-    const GuiRenderer g_rendr{worlds, logic, player, proto_manager, menu_data};
+    const render::GuiRenderer g_rendr{worlds, logic, player, proto_manager, menu_data};
 
 
     bool drew_gui = false;
@@ -185,7 +185,7 @@ void render::ImguiDraw(const DisplayWindow& display_window,
     PickupProgressbar(g_rendr);
 }
 
-void render::ImguiTerminate() {
+void gui::ImguiTerminate() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();

@@ -1,12 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_GUI_GUI_COLORS_H
-#define JACTORIO_INCLUDE_RENDER_GUI_GUI_COLORS_H
+#ifndef JACTORIO_INCLUDE_GUI_GUI_COLORS_H
+#define JACTORIO_INCLUDE_GUI_GUI_COLORS_H
 #pragma once
 
 #include <imgui.h>
 
-namespace jactorio::render
+namespace jactorio::gui
 {
     /// Defines macros for the color scheme used in Jactorio
 
@@ -139,7 +139,7 @@ namespace jactorio::render
             styleVarPushed_++;
         }
     };
-} // namespace jactorio::render
+} // namespace jactorio::gui
 
 
-#endif // JACTORIO_INCLUDE_RENDER_GUI_GUI_COLORS_H
+#endif // JACTORIO_INCLUDE_GUI_GUI_COLORS_H

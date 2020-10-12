@@ -4,8 +4,8 @@
 
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
+#include "gui/gui_menus.h"
 #include "proto/recipe.h"
-#include "render/gui/gui_menus.h"
 
 using namespace jactorio;
 
@@ -89,7 +89,7 @@ SpriteFrameT proto::AssemblyMachine::OnRGetSpriteFrame(const UniqueDataBase& uni
 }
 
 bool proto::AssemblyMachine::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const {
-    render::AssemblyMachine({g_rendr, this, tile_layer->GetUniqueData()});
+    gui::AssemblyMachine({g_rendr, this, tile_layer->GetUniqueData()});
     return true;
 }
 

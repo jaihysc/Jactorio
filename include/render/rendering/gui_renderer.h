@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_GUI_GUI_RENDERER_H
-#define JACTORIO_INCLUDE_RENDER_GUI_GUI_RENDERER_H
+#ifndef JACTORIO_INCLUDE_RENDER_RENDERING_GUI_RENDERER_H
+#define JACTORIO_INCLUDE_RENDER_RENDERING_GUI_RENDERER_H
 #pragma once
 
 #include <type_traits>
@@ -9,32 +9,33 @@
 #include "jactorio.h"
 
 #include "core/data_type.h"
-#include "render/gui/component_base.h"
+#include "gui/component_base.h"
 
-namespace jactorio
+namespace jactorio::data
 {
-    namespace data
-    {
-        class PrototypeManager;
-    }
-    namespace game
-    {
-        class PlayerData;
-        class LogicData;
-    } // namespace game
+    class PrototypeManager;
+} // namespace jactorio::data
 
-    namespace proto
-    {
-        class FrameworkBase;
-        struct UniqueDataBase;
-    } // namespace proto
-} // namespace jactorio
+namespace jactorio::game
+{
+    class PlayerData;
+    class LogicData;
+} // namespace jactorio::game
+
+namespace jactorio::gui
+{
+    struct MenuData;
+} // namespace jactorio::gui
+
+namespace jactorio::proto
+{
+    class FrameworkBase;
+    struct UniqueDataBase;
+} // namespace jactorio::proto
 
 
 namespace jactorio::render
 {
-    struct MenuData;
-
     class GuiRenderer
     {
     public:
@@ -42,7 +43,7 @@ namespace jactorio::render
                     game::LogicData& logic,
                     game::PlayerData& player,
                     const data::PrototypeManager& proto_manager,
-                    MenuData& menu_data)
+                    gui::MenuData& menu_data)
             : worlds(worlds), logic(logic), player(player), protoManager(proto_manager), menuData(menu_data) {}
 
         ///
@@ -61,13 +62,13 @@ namespace jactorio::render
 
         template <typename T>
         J_NODISCARD T MakeComponent() const {
-            static_assert(std::is_base_of_v<GuiComponentBase, T>);
+            static_assert(std::is_base_of_v<gui::GuiComponentBase, T>);
             return T(this);
         }
 
         template <typename T>
         J_NODISCARD T MakeComponent() {
-            static_assert(std::is_base_of_v<GuiComponentBase, T>);
+            static_assert(std::is_base_of_v<gui::GuiComponentBase, T>);
             return T(this);
         }
 
@@ -77,7 +78,7 @@ namespace jactorio::render
 
         const data::PrototypeManager& protoManager;
 
-        MenuData& menuData;
+        gui::MenuData& menuData;
 
         const proto::FrameworkBase* prototype = nullptr;
         proto::UniqueDataBase* uniqueData     = nullptr;
@@ -85,4 +86,4 @@ namespace jactorio::render
 
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDER_GUI_GUI_RENDERER_H
+#endif // JACTORIO_INCLUDE_RENDER_RENDERING_GUI_RENDERER_H

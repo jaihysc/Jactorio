@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_GUI_GUI_LAYOUT_H
-#define JACTORIO_INCLUDE_RENDER_GUI_GUI_LAYOUT_H
+#ifndef JACTORIO_INCLUDE_GUI_GUI_LAYOUT_H
+#define JACTORIO_INCLUDE_GUI_GUI_LAYOUT_H
 #pragma once
 
 #include <functional>
@@ -11,9 +11,9 @@
 
 #include "jactorio.h"
 
-#include "render/gui/gui_colors.h"
+#include "gui/gui_colors.h"
 
-namespace jactorio::render
+namespace jactorio::gui
 {
     constexpr int kInventorySlotWidth = 36;
     /// Between slots
@@ -84,6 +84,6 @@ namespace jactorio::render
     /// The next window drawn will be centered on the screen
     void SetupNextWindowCenter(const ImVec2& window_size);
     void SetupNextWindowCenter();
-} // namespace jactorio::render
+} // namespace jactorio::gui
 
-#endif // JACTORIO_INCLUDE_RENDER_GUI_GUI_LAYOUT_H
+#endif // JACTORIO_INCLUDE_GUI_GUI_LAYOUT_H

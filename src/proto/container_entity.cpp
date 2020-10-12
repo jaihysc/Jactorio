@@ -3,8 +3,8 @@
 #include "proto/container_entity.h"
 
 #include "game/world/world_data.h"
+#include "gui/gui_menus.h"
 #include "proto/sprite.h"
-#include "render/gui/gui_menus.h"
 
 void jactorio::proto::ContainerEntity::OnBuild(game::WorldData& /*world_data*/,
                                                game::LogicData& /*logic_data*/,
@@ -16,7 +16,7 @@ void jactorio::proto::ContainerEntity::OnBuild(game::WorldData& /*world_data*/,
 
 bool jactorio::proto::ContainerEntity::OnRShowGui(const render::GuiRenderer& g_rendr,
                                                   game::ChunkTileLayer* tile_layer) const {
-    render::ContainerEntity({g_rendr, this, tile_layer->GetUniqueData<ContainerEntityData>()});
+    gui::ContainerEntity({g_rendr, this, tile_layer->GetUniqueData<ContainerEntityData>()});
     return true;
 }
 

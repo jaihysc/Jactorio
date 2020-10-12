@@ -6,17 +6,17 @@
 
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
+#include "gui/gui_menus.h"
 #include "proto/item.h"
 #include "proto/resource_entity.h"
 #include "proto/sprite.h"
-#include "render/gui/gui_menus.h"
 
 using namespace jactorio;
 
 bool proto::MiningDrill::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const {
     auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
 
-    render::MiningDrill({g_rendr, this, drill_data});
+    gui::MiningDrill({g_rendr, this, drill_data});
     return true;
 }
 

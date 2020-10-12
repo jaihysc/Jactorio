@@ -1,32 +1,32 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_GUI_IMGUI_MANAGER_H
-#define JACTORIO_INCLUDE_RENDER_GUI_IMGUI_MANAGER_H
+#ifndef JACTORIO_INCLUDE_GUI_IMGUI_MANAGER_H
+#define JACTORIO_INCLUDE_GUI_IMGUI_MANAGER_H
 #pragma once
 
 #include "core/data_type.h"
 
-namespace jactorio
+namespace jactorio::data
 {
-    namespace data
-    {
-        class PrototypeManager;
-    } // namespace data
+    class PrototypeManager;
+} // namespace jactorio::data
 
-    namespace game
-    {
-        class EventData;
-        class PlayerData;
-        class LogicData;
-    } // namespace game
-
-} // namespace jactorio
+namespace jactorio::game
+{
+    class EventData;
+    class PlayerData;
+    class LogicData;
+} // namespace jactorio::game
 
 namespace jactorio::render
 {
     class DisplayWindow;
     class RendererSprites;
+} // namespace jactorio::render
 
+
+namespace jactorio::gui
+{
     struct MenuData;
 
 
@@ -38,14 +38,14 @@ namespace jactorio::render
     ///
     /// Initializes the spritemap for rendering the character menus <br>
     /// \remark Requires Sprite::sprite_group::gui to be initialized
-    void SetupCharacterData(RendererSprites& renderer_sprites);
+    void SetupCharacterData(render::RendererSprites& renderer_sprites);
 
-    void Setup(const DisplayWindow& display_window);
+    void Setup(const render::DisplayWindow& display_window);
 
-    void ImguiBeginFrame(const DisplayWindow& display_window);
+    void ImguiBeginFrame(const render::DisplayWindow& display_window);
     void ImguiRenderFrame();
 
-    void ImguiDraw(const DisplayWindow& display_window,
+    void ImguiDraw(const render::DisplayWindow& display_window,
                    GameWorlds& worlds,
                    game::LogicData& logic,
                    game::PlayerData& player,
@@ -53,6 +53,6 @@ namespace jactorio::render
                    game::EventData& event);
 
     void ImguiTerminate();
-} // namespace jactorio::render
+} // namespace jactorio::gui
 
-#endif // JACTORIO_INCLUDE_RENDER_GUI_IMGUI_MANAGER_H
+#endif // JACTORIO_INCLUDE_GUI_IMGUI_MANAGER_H

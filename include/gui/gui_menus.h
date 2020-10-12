@@ -1,17 +1,17 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_H
-#define JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_H
+#ifndef JACTORIO_INCLUDE_GUI_GUI_MENUS_H
+#define JACTORIO_INCLUDE_GUI_GUI_MENUS_H
 #pragma once
 
 #include "jactorio.h"
 
-#include "render/gui/gui_renderer.h"
+#include "render/rendering/gui_renderer.h"
 
-namespace jactorio::render
+namespace jactorio::gui
 {
     /// Function to draw the menu
-    using MenuFunction = void (*)(const GuiRenderer& g_rendr);
+    using MenuFunction = void (*)(const render::GuiRenderer& g_rendr);
 
     // ======================================================================
     // Substitutes name_ below at macro definitions to create an array of guis
@@ -37,7 +37,7 @@ namespace jactorio::render
     // Macro definitions - 3
 
     // Function
-#define J_GUI_WINDOW_SUB(name__) void name__(const GuiRenderer& g_rendr);
+#define J_GUI_WINDOW_SUB(name__) void name__(const render::GuiRenderer& g_rendr);
 
     J_GUI_WINDOW
 
@@ -81,6 +81,6 @@ namespace jactorio::render
     inline void SetVisible(Menu gui_menu, const bool visibility) {
         menus[static_cast<int>(gui_menu)].visible = visibility;
     }
-} // namespace jactorio::render
+} // namespace jactorio::gui
 
-#endif // JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_H
+#endif // JACTORIO_INCLUDE_GUI_GUI_MENUS_H

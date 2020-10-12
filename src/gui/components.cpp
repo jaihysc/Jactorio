@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
 
-#include "render/gui/components.h"
+#include "gui/components.h"
 
 #include <imgui.h>
 
@@ -12,26 +12,26 @@
 
 #include "game/input/mouse_selection.h"
 
-#include "render/gui/gui_colors.h"
-#include "render/gui/gui_renderer.h"
-#include "render/gui/menu_data.h"
+#include "gui/gui_colors.h"
+#include "gui/menu_data.h"
+#include "render/rendering/gui_renderer.h"
 
 using namespace jactorio;
 
 // ======================================================================
 
-render::GuiMenu::~GuiMenu() {
+gui::GuiMenu::~GuiMenu() {
     ImGui::End();
 }
 
-void render::GuiMenu::Begin(const char* name) const {
+void gui::GuiMenu::Begin(const char* name) const {
     ImGui::Begin(name, nullptr, flags_);
 }
 
 // ======================================================================
 
 
-void render::GuiItemSlots::Begin(const std::size_t slot_count, const BeginCallbackT& callback) const {
+void gui::GuiItemSlots::Begin(const std::size_t slot_count, const BeginCallbackT& callback) const {
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - kInventorySlotPadding);
 
     const auto original_cursor_x = ImGui::GetCursorPosX();
@@ -72,9 +72,9 @@ void render::GuiItemSlots::Begin(const std::size_t slot_count, const BeginCallba
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + kInventorySlotPadding); // Allows consecutive begins to line up
 }
 
-void render::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
-                                    const uint16_t item_count,
-                                    const DrawSlotCallbackT& callback) const {
+void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
+                                 const uint16_t item_count,
+                                 const DrawSlotCallbackT& callback) const {
     const float original_x_offset = ImGui::GetCursorPosX();
     const float original_y_offset = ImGui::GetCursorPosY();
 
@@ -132,15 +132,15 @@ void render::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
     }
 }
 
-void render::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id, const DrawSlotCallbackT& callback) const {
+void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id, const DrawSlotCallbackT& callback) const {
     DrawSlot(sprite_id, 0, callback);
 }
 
-void render::GuiItemSlots::DrawSlot(const proto::ItemStack& item_stack, const DrawSlotCallbackT& callback) const {
+void gui::GuiItemSlots::DrawSlot(const proto::ItemStack& item_stack, const DrawSlotCallbackT& callback) const {
     DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->internalId, item_stack.count, callback);
 }
 
-void render::GuiItemSlots::DrawBackingButton() const {
+void gui::GuiItemSlots::DrawBackingButton() const {
     ImGuard guard;
     guard.PushStyleColor(ImGuiCol_Button, kGuiColNone);
     guard.PushStyleColor(ImGuiCol_ButtonHovered, kGuiColNone);
@@ -157,7 +157,7 @@ void render::GuiItemSlots::DrawBackingButton() const {
 
 // ======================================================================
 
-void render::GuiTitle::Begin(const std::string& title, const CallbackT& callback) const {
+void gui::GuiTitle::Begin(const std::string& title, const CallbackT& callback) const {
     AddVerticalSpaceAbsolute(topPadding);
 
     ImGui::Text("%s", title.c_str());
@@ -166,10 +166,10 @@ void render::GuiTitle::Begin(const std::string& title, const CallbackT& callback
     AddVerticalSpaceAbsolute(bottomPadding);
 }
 
-void render::DrawCursorTooltip(const bool has_selected_item,
-                               const std::string& title,
-                               const std::string& description,
-                               const std::function<void()>& draw_func) {
+void gui::DrawCursorTooltip(const bool has_selected_item,
+                            const std::string& title,
+                            const std::string& description,
+                            const std::function<void()>& draw_func) {
 
     ImVec2 cursor_pos(core::LossyCast<float>(game::MouseSelection::GetCursorX()),
                       core::LossyCast<float>(game::MouseSelection::GetCursorY()) + 10.f);

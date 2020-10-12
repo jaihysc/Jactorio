@@ -58,6 +58,14 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/game/world/world_data.cpp
 
 
+        ${JACTORIO_DIR}/gui/components.cpp
+        ${JACTORIO_DIR}/gui/gui_layout.cpp
+        ${JACTORIO_DIR}/gui/gui_menus.cpp
+        ${JACTORIO_DIR}/gui/gui_menus_debug.cpp
+        ${JACTORIO_DIR}/gui/imgui_manager.cpp
+        ${JACTORIO_DIR}/gui/main_menu.cpp
+
+
         ${JACTORIO_DIR}/proto/assembly_machine.cpp
         ${JACTORIO_DIR}/proto/container_entity.cpp
         ${JACTORIO_DIR}/proto/inserter.cpp
@@ -72,14 +80,6 @@ set(JACTORIO_SRC_FILES
 
         ${JACTORIO_DIR}/proto/interface/renderable.cpp
 
-
-        ${JACTORIO_DIR}/render/gui/components.cpp
-
-        ${JACTORIO_DIR}/render/gui/gui_layout.cpp
-        ${JACTORIO_DIR}/render/gui/gui_menus.cpp
-        ${JACTORIO_DIR}/render/gui/gui_menus_debug.cpp
-        ${JACTORIO_DIR}/render/gui/imgui_manager.cpp
-        ${JACTORIO_DIR}/render/gui/main_menu.cpp
 
         ${JACTORIO_DIR}/render/opengl/error.cpp
         ${JACTORIO_DIR}/render/opengl/index_buffer.cpp

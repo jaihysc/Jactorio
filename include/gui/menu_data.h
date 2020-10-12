@@ -1,12 +1,12 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_GUI_MENU_DATA_H
-#define JACTORIO_INCLUDE_RENDER_GUI_MENU_DATA_H
+#ifndef JACTORIO_INCLUDE_GUI_MENU_DATA_H
+#define JACTORIO_INCLUDE_GUI_MENU_DATA_H
 #pragma once
 
 #include "core/data_type.h"
 
-namespace jactorio::render
+namespace jactorio::gui
 {
     struct MenuData
     {
@@ -16,6 +16,6 @@ namespace jactorio::render
         const SpriteUvCoordsT& spritePositions;
         unsigned int texId = 0; // Assigned by openGL
     };
-} // namespace jactorio::render
+} // namespace jactorio::gui
 
-#endif // JACTORIO_INCLUDE_RENDER_GUI_MENU_DATA_H
+#endif // JACTORIO_INCLUDE_GUI_MENU_DATA_H

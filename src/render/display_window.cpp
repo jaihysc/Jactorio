@@ -15,7 +15,7 @@
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 
-#include "render/gui/imgui_manager.h"
+#include "gui/imgui_manager.h"
 #include "render/render_loop.h"
 #include "render/rendering/renderer.h"
 
@@ -237,7 +237,7 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
         game::SetCursorPosition(sdl_event.motion.x, sdl_event.motion.y);
         break;
     case SDL_MOUSEWHEEL:
-        if (!input_mouse_captured)
+        if (!gui::input_mouse_captured)
             GetBaseRenderer()->tileProjectionMatrixOffset += core::SafeCast<float>(sdl_event.wheel.y * 10);
         break;
     case SDL_MOUSEBUTTONUP:

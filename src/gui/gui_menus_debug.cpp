@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "render/gui/gui_menus_debug.h"
+#include "gui/gui_menus_debug.h"
 
 #include <imgui.h>
 #include <ostream>
@@ -20,8 +20,8 @@
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
 
-#include "render/gui/gui_colors.h"
-#include "render/gui/gui_menus.h"
+#include "gui/gui_colors.h"
+#include "gui/gui_menus.h"
 
 using namespace jactorio;
 
@@ -35,10 +35,10 @@ bool show_inserter_info = false;
 
 bool show_world_info = false;
 
-void render::DebugMenuLogic(GameWorlds& worlds,
-                            game::LogicData& logic,
-                            game::PlayerData& player,
-                            const data::PrototypeManager& data_manager) {
+void gui::DebugMenuLogic(GameWorlds& worlds,
+                         game::LogicData& logic,
+                         game::PlayerData& player,
+                         const data::PrototypeManager& data_manager) {
     if (show_conveyor_info)
         DebugConveyorInfo(worlds, player, data_manager);
 
@@ -60,7 +60,7 @@ void render::DebugMenuLogic(GameWorlds& worlds,
     }
 }
 
-void render::DebugMenu(const GuiRenderer& params) {
+void gui::DebugMenu(const render::GuiRenderer& params) {
     auto& player = params.player;
     auto& world  = params.worlds[player.world.GetId()];
     auto& logic  = params.logic;
@@ -122,7 +122,7 @@ void render::DebugMenu(const GuiRenderer& params) {
     ImGui::Checkbox("Demo Window", &show_demo_window);
 }
 
-void render::DebugTimings() {
+void gui::DebugTimings() {
     using namespace core;
 
     ImGuard guard{};
@@ -137,7 +137,7 @@ void render::DebugTimings() {
 int give_amount  = 100;
 int new_inv_size = game::PlayerData::Inventory::kDefaultInventorySize;
 
-void render::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
+void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
     using namespace core;
 
     ImGuard guard{};
@@ -298,9 +298,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
     }
 }
 
-void render::DebugConveyorInfo(GameWorlds& worlds,
-                               game::PlayerData& player,
-                               const data::PrototypeManager& proto_manager) {
+void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const data::PrototypeManager& proto_manager) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard{};
@@ -420,7 +418,7 @@ void render::DebugConveyorInfo(GameWorlds& worlds,
     }
 }
 
-void render::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
+void gui::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard{};
@@ -457,7 +455,7 @@ void render::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
     ImGui::Text("Dropoff %s", inserter_data.dropoff.IsInitialized() ? "true" : "false");
 }
 
-void render::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
+void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard;
@@ -533,7 +531,7 @@ void render::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) 
     }
 }
 
-void render::DebugLogicInfo(const game::LogicData& logic_data) {
+void gui::DebugLogicInfo(const game::LogicData& logic_data) {
     ImGuard guard;
     guard.Begin("Logic info");
 

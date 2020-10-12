@@ -1,14 +1,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "render/gui/main_menu.h"
+#include "gui/main_menu.h"
 
 #include "jactorio.h"
 
 #include "core/loop_common.h"
 #include "data/save_game_manager.h"
-#include "render/gui/components.h"
-#include "render/gui/gui_layout.h"
-#include "render/gui/gui_menus.h"
+#include "gui/components.h"
+#include "gui/gui_layout.h"
+#include "gui/gui_menus.h"
 #include "render/rendering/renderer.h"
 
 using namespace jactorio;
@@ -34,7 +34,7 @@ J_NODISCARD static float GetMainMenuHeight() {
 }
 
 J_NODISCARD static float GetButtonWidth() {
-    return GetMainMenuWidth() - render::GetTotalWindowPaddingX();
+    return GetMainMenuWidth() - gui::GetTotalWindowPaddingX();
 }
 
 J_NODISCARD static float GetButtonHeight() {
@@ -87,14 +87,14 @@ static bool MenuBackButton(MainMenuData& menu_data, const MainMenuData::Window n
 static void SameLineMenuButtonMini(const unsigned button_gap = 0) {
     ImGui::SameLine();
 
-    const auto previous_button_end_x = ImGui::GetCursorPosX() - render::GetTotalWindowItemSpacingX(1);
+    const auto previous_button_end_x = ImGui::GetCursorPosX() - gui::GetTotalWindowItemSpacingX(1);
     ImGui::SetCursorPosX(previous_button_end_x + GetButtonMiniWidth() * core::SafeCast<float>(button_gap));
 }
 
 
 void ErrorText(const char* error_msg) {
-    render::ImGuard guard;
-    guard.PushStyleColor(ImGuiCol_Text, render::kGuiColTextError);
+    gui::ImGuard guard;
+    guard.PushStyleColor(ImGuiCol_Text, gui::kGuiColTextError);
     ImGui::TextUnformatted(error_msg);
 }
 
@@ -117,18 +117,18 @@ void ErrorTextDismissible(std::string& error_str) {
 
 
 static void ChangeGameState(ThreadedLoopCommon& common, const ThreadedLoopCommon::GameState new_state) {
-    SetVisible(render::Menu::MainMenu, false);
+    SetVisible(gui::Menu::MainMenu, false);
 
     common.mainMenuData.currentMenu = MainMenuData::Window::main;
     common.gameState                = new_state;
 }
 
 static void NewGameMenu(ThreadedLoopCommon& common) {
-    const render::GuiMenu menu;
-    render::SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    const gui::GuiMenu menu;
+    gui::SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
     menu.Begin("_new_game_menu");
 
-    const render::GuiTitle title;
+    const gui::GuiTitle title;
     title.Begin("New game");
 
 
@@ -155,7 +155,7 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
 ///
 /// Lists all save games, loads save game user clicks on
 void LoadSaveGameMenu(ThreadedLoopCommon& common) {
-    using namespace render;
+    using namespace gui;
 
     const GuiMenu menu;
     SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
@@ -192,7 +192,7 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
 ///
 /// Asks for save name and saves current world
 void SaveGameMenu(ThreadedLoopCommon& common) {
-    using namespace render;
+    using namespace gui;
 
     const GuiMenu menu;
     SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
@@ -255,7 +255,7 @@ bool DrawSubmenu(ThreadedLoopCommon& common) {
     return false;
 }
 
-void render::StartMenu(ThreadedLoopCommon& common) {
+void gui::StartMenu(ThreadedLoopCommon& common) {
     if (DrawSubmenu(common))
         return;
 
@@ -289,7 +289,7 @@ void render::StartMenu(ThreadedLoopCommon& common) {
     }
 }
 
-void render::MainMenu(ThreadedLoopCommon& common) {
+void gui::MainMenu(ThreadedLoopCommon& common) {
     if (DrawSubmenu(common))
         return;
 

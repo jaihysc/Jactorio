@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_GUI_MAIN_MENU_H
-#define JACTORIO_INCLUDE_RENDER_GUI_MAIN_MENU_H
+#ifndef JACTORIO_INCLUDE_GUI_MAIN_MENU_H
+#define JACTORIO_INCLUDE_GUI_MAIN_MENU_H
 #pragma once
 
 namespace jactorio
@@ -9,7 +9,7 @@ namespace jactorio
     class ThreadedLoopCommon;
 }
 
-namespace jactorio::render
+namespace jactorio::gui
 {
     ///
     /// Menu upon start
@@ -18,6 +18,6 @@ namespace jactorio::render
     ///
     /// Menu in game
     void MainMenu(ThreadedLoopCommon& common);
-} // namespace jactorio::render
+} // namespace jactorio::gui
 
-#endif // JACTORIO_INCLUDE_RENDER_GUI_MAIN_MENU_H
+#endif // JACTORIO_INCLUDE_GUI_MAIN_MENU_H

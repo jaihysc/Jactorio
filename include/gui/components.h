@@ -1,15 +1,15 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' included in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_GUI_COMPONENTS_H
-#define JACTORIO_INCLUDE_RENDER_GUI_COMPONENTS_H
+#ifndef JACTORIO_INCLUDE_GUI_COMPONENTS_H
+#define JACTORIO_INCLUDE_GUI_COMPONENTS_H
 #pragma once
 
 #include <functional>
 #include <type_traits>
 
 #include "core/data_type.h"
-#include "render/gui/component_base.h"
-#include "render/gui/gui_layout.h"
+#include "gui/component_base.h"
+#include "gui/gui_layout.h"
 
 namespace jactorio::proto
 {
@@ -19,7 +19,10 @@ namespace jactorio::proto
 namespace jactorio::render
 {
     class GuiRenderer;
+}
 
+namespace jactorio::gui
+{
     class GuiMenu
     {
         static constexpr ImGuiWindowFlags kDefaultFlags =
@@ -80,10 +83,10 @@ namespace jactorio::render
         using BeginCallbackT    = std::function<void(std::size_t slot_index)>;
         using DrawSlotCallbackT = std::function<void()>;
 
-        friend GuiRenderer;
+        friend render::GuiRenderer;
 
     protected:
-        explicit GuiItemSlots(const GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
+        explicit GuiItemSlots(const render::GuiRenderer* gui_renderer) : guiRenderer_(gui_renderer) {}
 
     public:
         ///
@@ -124,7 +127,7 @@ namespace jactorio::render
         void DrawBackingButton() const;
 
 
-        const GuiRenderer* guiRenderer_;
+        const render::GuiRenderer* guiRenderer_;
     };
 
 
@@ -136,6 +139,6 @@ namespace jactorio::render
                            const std::string& title,
                            const std::string& description,
                            const std::function<void()>& draw_func);
-} // namespace jactorio::render
+} // namespace jactorio::gui
 
-#endif // JACTORIO_INCLUDE_RENDER_GUI_COMPONENTS_H
+#endif // JACTORIO_INCLUDE_GUI_COMPONENTS_H

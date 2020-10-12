@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_DEBUG_H
-#define JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_DEBUG_H
+#ifndef JACTORIO_INCLUDE_GUI_GUI_MENUS_DEBUG_H
+#define JACTORIO_INCLUDE_GUI_GUI_MENUS_DEBUG_H
 #pragma once
 
 #include "core/data_type.h"
@@ -20,7 +20,7 @@ namespace jactorio
     } // namespace game
 } // namespace jactorio
 
-namespace jactorio::render
+namespace jactorio::gui
 {
     // Debug menu main is in gui_menus.h
 
@@ -34,15 +34,13 @@ namespace jactorio::render
 
     void DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeManager& data_manager);
 
-    void DebugConveyorInfo(GameWorlds& worlds,
-                                game::PlayerData& player,
-                                const data::PrototypeManager& proto_manager);
+    void DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const data::PrototypeManager& proto_manager);
 
     void DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player);
 
     void DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player);
 
     void DebugLogicInfo(const game::LogicData& logic_data);
-} // namespace jactorio::render
+} // namespace jactorio::gui
 
-#endif // JACTORIO_INCLUDE_RENDER_GUI_GUI_MENUS_DEBUG_H
+#endif // JACTORIO_INCLUDE_GUI_GUI_MENUS_DEBUG_H
