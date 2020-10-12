@@ -2,6 +2,7 @@
 
 #ifndef JACTORIO_INCLUDE_PROTO_TILE_H
 #define JACTORIO_INCLUDE_PROTO_TILE_H
+#pragma once
 
 #include "proto/framework/world_object.h"
 
