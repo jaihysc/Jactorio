@@ -7,8 +7,8 @@
 #include "core/loop_common.h"
 #include "data/save_game_manager.h"
 #include "gui/components.h"
-#include "gui/gui_layout.h"
-#include "gui/gui_menus.h"
+#include "gui/layout.h"
+#include "gui/menus.h"
 #include "render/renderer.h"
 
 using namespace jactorio;

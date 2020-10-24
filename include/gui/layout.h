@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GUI_GUI_LAYOUT_H
-#define JACTORIO_INCLUDE_GUI_GUI_LAYOUT_H
+#ifndef JACTORIO_INCLUDE_GUI_LAYOUT_H
+#define JACTORIO_INCLUDE_GUI_LAYOUT_H
 #pragma once
 
 #include <functional>
@@ -11,7 +11,7 @@
 
 #include "jactorio.h"
 
-#include "gui/gui_colors.h"
+#include "gui/colors.h"
 
 namespace jactorio::gui
 {
@@ -86,4 +86,4 @@ namespace jactorio::gui
     void SetupNextWindowCenter();
 } // namespace jactorio::gui
 
-#endif // JACTORIO_INCLUDE_GUI_GUI_LAYOUT_H
+#endif // JACTORIO_INCLUDE_GUI_LAYOUT_H

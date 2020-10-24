@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GUI_GUI_MENUS_DEBUG_H
-#define JACTORIO_INCLUDE_GUI_GUI_MENUS_DEBUG_H
+#ifndef JACTORIO_INCLUDE_GUI_MENUS_DEBUG_H
+#define JACTORIO_INCLUDE_GUI_MENUS_DEBUG_H
 #pragma once
 
 #include "core/data_type.h"
@@ -22,7 +22,7 @@ namespace jactorio
 
 namespace jactorio::gui
 {
-    // Debug menu main is in gui_menus.h
+    // Debug menu main is in menus.h
 
     // For performing logic when certain debug options are checked
     void DebugMenuLogic(GameWorlds& worlds,
@@ -43,4 +43,4 @@ namespace jactorio::gui
     void DebugLogicInfo(const game::LogicData& logic_data);
 } // namespace jactorio::gui
 
-#endif // JACTORIO_INCLUDE_GUI_GUI_MENUS_DEBUG_H
+#endif // JACTORIO_INCLUDE_GUI_MENUS_DEBUG_H

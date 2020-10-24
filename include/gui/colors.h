@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GUI_GUI_COLORS_H
-#define JACTORIO_INCLUDE_GUI_GUI_COLORS_H
+#ifndef JACTORIO_INCLUDE_GUI_COLORS_H
+#define JACTORIO_INCLUDE_GUI_COLORS_H
 #pragma once
 
 #include <imgui.h>
@@ -142,4 +142,4 @@ namespace jactorio::gui
 } // namespace jactorio::gui
 
 
-#endif // JACTORIO_INCLUDE_GUI_GUI_COLORS_H
+#endif // JACTORIO_INCLUDE_GUI_COLORS_H

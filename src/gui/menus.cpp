@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "gui/gui_menus.h"
+#include "gui/menus.h"
 
 #include <functional>
 #include <sstream>

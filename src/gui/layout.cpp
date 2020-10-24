@@ -1,9 +1,9 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "gui/gui_layout.h"
+#include "gui/layout.h"
 
 #include "game/player/player_data.h"
-#include "gui/gui_colors.h"
+#include "gui/colors.h"
 #include "render/renderer.h"
 
 using namespace jactorio;

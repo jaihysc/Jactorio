@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "gui/gui_menus_debug.h"
+#include "gui/menus_debug.h"
 
 #include <imgui.h>
 #include <ostream>
@@ -20,8 +20,8 @@
 #include "game/player/player_data.h"
 #include "game/world/world_data.h"
 
-#include "gui/gui_colors.h"
-#include "gui/gui_menus.h"
+#include "gui/colors.h"
+#include "gui/menus.h"
 
 using namespace jactorio;
 

@@ -4,7 +4,7 @@
 
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
-#include "gui/gui_menus.h"
+#include "gui/menus.h"
 #include "proto/recipe.h"
 
 using namespace jactorio;

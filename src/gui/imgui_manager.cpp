@@ -15,10 +15,10 @@
 #include "game/player/player_data.h"
 #include "game/world/chunk_tile_layer.h"
 
-#include "gui/gui_colors.h"
-#include "gui/gui_menus.h"
-#include "gui/gui_menus_debug.h"
+#include "gui/colors.h"
 #include "gui/menu_data.h"
+#include "gui/menus.h"
+#include "gui/menus_debug.h"
 #include "render/display_window.h"
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"

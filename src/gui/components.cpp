@@ -12,7 +12,7 @@
 
 #include "game/input/mouse_selection.h"
 
-#include "gui/gui_colors.h"
+#include "gui/colors.h"
 #include "gui/menu_data.h"
 #include "render/gui_renderer.h"
 

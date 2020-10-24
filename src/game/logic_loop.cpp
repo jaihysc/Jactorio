@@ -18,8 +18,8 @@
 #include "game/event/game_events.h"
 #include "game/logic/conveyor_controller.h"
 
-#include "gui/gui_menus.h"
 #include "gui/imgui_manager.h"
+#include "gui/menus.h"
 #include "render/render_loop.h"
 #include "render/renderer.h"
 

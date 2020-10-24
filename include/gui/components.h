@@ -9,7 +9,7 @@
 
 #include "core/data_type.h"
 #include "gui/component_base.h"
-#include "gui/gui_layout.h"
+#include "gui/layout.h"
 
 namespace jactorio::proto
 {

@@ -59,11 +59,11 @@ set(JACTORIO_SRC_FILES
 
 
         ${JACTORIO_DIR}/gui/components.cpp
-        ${JACTORIO_DIR}/gui/gui_layout.cpp
-        ${JACTORIO_DIR}/gui/gui_menus.cpp
-        ${JACTORIO_DIR}/gui/gui_menus_debug.cpp
         ${JACTORIO_DIR}/gui/imgui_manager.cpp
+        ${JACTORIO_DIR}/gui/layout.cpp
         ${JACTORIO_DIR}/gui/main_menu.cpp
+        ${JACTORIO_DIR}/gui/menus.cpp
+        ${JACTORIO_DIR}/gui/menus_debug.cpp
 
 
         ${JACTORIO_DIR}/proto/assembly_machine.cpp

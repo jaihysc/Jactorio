@@ -18,9 +18,9 @@
 
 #include "game/event/game_events.h"
 
-#include "gui/gui_menus.h"
 #include "gui/imgui_manager.h"
 #include "gui/main_menu.h"
+#include "gui/menus.h"
 #include "render/opengl/shader.h"
 #include "render/renderer.h"
 #include "render/spritemap_generator.h"

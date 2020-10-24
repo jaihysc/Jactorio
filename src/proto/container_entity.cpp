@@ -3,7 +3,7 @@
 #include "proto/container_entity.h"
 
 #include "game/world/world_data.h"
-#include "gui/gui_menus.h"
+#include "gui/menus.h"
 #include "proto/sprite.h"
 
 void jactorio::proto::ContainerEntity::OnBuild(game::WorldData& /*world_data*/,
