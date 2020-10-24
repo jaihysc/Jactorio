@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDER_RENDERING_SPRITEMAP_GENERATOR_H
-#define JACTORIO_INCLUDE_RENDER_RENDERING_SPRITEMAP_GENERATOR_H
+#ifndef JACTORIO_INCLUDE_RENDERING_SPRITEMAP_GENERATOR_H
+#define JACTORIO_INCLUDE_RENDERING_SPRITEMAP_GENERATOR_H
 #pragma once
 
 #include <memory>
@@ -164,4 +164,4 @@ namespace jactorio::render
     };
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDER_RENDERING_SPRITEMAP_GENERATOR_H
+#endif // JACTORIO_INCLUDE_RENDERING_SPRITEMAP_GENERATOR_H

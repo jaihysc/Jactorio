@@ -22,8 +22,8 @@
 #include "gui/imgui_manager.h"
 #include "gui/main_menu.h"
 #include "render/opengl/shader.h"
-#include "render/rendering/renderer.h"
-#include "render/rendering/spritemap_generator.h"
+#include "render/renderer.h"
+#include "render/spritemap_generator.h"
 
 using namespace jactorio;
 

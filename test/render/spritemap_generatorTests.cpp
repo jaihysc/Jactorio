@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "render/rendering/spritemap_generator.h"
+#include "render/spritemap_generator.h"
 
 #include "jactorioTests.h"
 

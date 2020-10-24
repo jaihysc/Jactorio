@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "render/rendering/renderer_layer.h"
+#include "render/renderer_layer.h"
 #include "render/opengl/vertex_array.h"
 
 #include <glm/gtx/rotate_vector.hpp>

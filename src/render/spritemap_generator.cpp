@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "render/rendering/spritemap_generator.h"
+#include "render/spritemap_generator.h"
 
 #include <algorithm>
 #include <map>

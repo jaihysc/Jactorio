@@ -1,13 +1,13 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "render/rendering/data_renderer.h"
+#include "render/data_renderer.h"
 
 #include "jactorio.h"
 
 #include "game/logic/conveyor_segment.h"
 #include "proto/inserter.h"
 #include "proto/sprite.h"
-#include "render/rendering/renderer.h"
+#include "render/renderer.h"
 
 using namespace jactorio;
 
@@ -17,12 +17,12 @@ constexpr float kPixelZ = 0.1f;
 /// \param tile_x Tile offset (for distance after each item)
 /// \param tile_y Tile offset
 void PrepareConveyorSegmentData(render::RendererLayer& layer,
-                                 const SpriteUvCoordsT& uv_coords,
-                                 const game::ConveyorSegment& line_segment,
-                                 std::deque<game::ConveyorItem>& line_segment_side,
-                                 double tile_x,
-                                 double tile_y,
-                                 const core::Position2<OverlayOffsetAxis>& pixel_offset) {
+                                const SpriteUvCoordsT& uv_coords,
+                                const game::ConveyorSegment& line_segment,
+                                std::deque<game::ConveyorItem>& line_segment_side,
+                                double tile_x,
+                                double tile_y,
+                                const core::Position2<OverlayOffsetAxis>& pixel_offset) {
     using namespace game;
 
     // Either offset_x or offset_y which will be INCREASED or DECREASED
@@ -86,9 +86,9 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
 }
 
 void render::DrawConveyorSegmentItems(RendererLayer& layer,
-                                       const SpriteUvCoordsT& uv_coords,
-                                       const core::Position2<OverlayOffsetAxis>& pixel_offset,
-                                       game::ConveyorSegment& line_segment) {
+                                      const SpriteUvCoordsT& uv_coords,
+                                      const core::Position2<OverlayOffsetAxis>& pixel_offset,
+                                      game::ConveyorSegment& line_segment) {
     double tile_x_offset = 0;
     double tile_y_offset = 0;
 

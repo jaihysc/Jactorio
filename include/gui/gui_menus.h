@@ -6,7 +6,7 @@
 
 #include "jactorio.h"
 
-#include "render/rendering/gui_renderer.h"
+#include "render/gui_renderer.h"
 
 namespace jactorio::gui
 {

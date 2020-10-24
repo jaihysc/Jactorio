@@ -21,7 +21,7 @@
 #include "gui/gui_menus.h"
 #include "gui/imgui_manager.h"
 #include "render/render_loop.h"
-#include "render/rendering/renderer.h"
+#include "render/renderer.h"
 
 using namespace jactorio;
 

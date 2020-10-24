@@ -14,7 +14,7 @@
 
 #include "gui/gui_colors.h"
 #include "gui/menu_data.h"
-#include "render/rendering/gui_renderer.h"
+#include "render/gui_renderer.h"
 
 using namespace jactorio;
 

@@ -122,8 +122,8 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/proto/interface/renderableTests.cpp
 
 
-	${JACTORIO_TEST_DIR}/render/rendering/mvp_managerTests.cpp
-	${JACTORIO_TEST_DIR}/render/rendering/spritemap_generatorTests.cpp
+	${JACTORIO_TEST_DIR}/render/mvp_managerTests.cpp
+	${JACTORIO_TEST_DIR}/render/spritemap_generatorTests.cpp
 )
 # ======================================== END Test files .cpp
 

@@ -22,7 +22,7 @@
 
 #include "gui/components.h"
 #include "gui/menu_data.h"
-#include "render/rendering/renderer.h"
+#include "render/renderer.h"
 
 using namespace jactorio;
 

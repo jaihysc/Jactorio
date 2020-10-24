@@ -4,7 +4,7 @@
 
 #include "game/player/player_data.h"
 #include "gui/gui_colors.h"
-#include "render/rendering/renderer.h"
+#include "render/renderer.h"
 
 using namespace jactorio;
 

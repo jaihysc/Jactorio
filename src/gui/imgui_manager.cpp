@@ -20,8 +20,8 @@
 #include "gui/gui_menus_debug.h"
 #include "gui/menu_data.h"
 #include "render/display_window.h"
-#include "render/rendering/renderer.h"
-#include "render/rendering/spritemap_generator.h"
+#include "render/renderer.h"
+#include "render/spritemap_generator.h"
 
 // Inventory
 

@@ -9,7 +9,7 @@
 #include "gui/components.h"
 #include "gui/gui_layout.h"
 #include "gui/gui_menus.h"
-#include "render/rendering/renderer.h"
+#include "render/renderer.h"
 
 using namespace jactorio;
 
