@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "render/data_renderer.h"
+#include "render/proto_renderer.h"
 
 #include "jactorio.h"
 

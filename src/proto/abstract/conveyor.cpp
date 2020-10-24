@@ -8,7 +8,7 @@
 #include "game/logic/conveyor_segment.h"
 #include "game/world/world_data.h"
 #include "proto/sprite.h"
-#include "render/data_renderer.h"
+#include "render/proto_renderer.h"
 
 using namespace jactorio;
 using LineData4Way = proto::Conveyor::LineData4Way;

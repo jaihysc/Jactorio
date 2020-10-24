@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_RENDERING_DATA_RENDERER_H
-#define JACTORIO_INCLUDE_RENDERING_DATA_RENDERER_H
+#ifndef JACTORIO_INCLUDE_RENDERING_PROTO_RENDERER_H
+#define JACTORIO_INCLUDE_RENDERING_PROTO_RENDERER_H
 #pragma once
 
 #include "core/coordinate_tuple.h"
@@ -37,4 +37,4 @@ namespace jactorio::render
                          const proto::InserterData& inserter_data);
 } // namespace jactorio::render
 
-#endif // JACTORIO_INCLUDE_RENDERING_DATA_RENDERER_H
+#endif // JACTORIO_INCLUDE_RENDERING_PROTO_RENDERER_H
