@@ -4,6 +4,7 @@
 
 #include <filesystem>
 
+#include "data/globals.h"
 #include "data/prototype_manager.h"
 #include "proto/sprite.h"
 

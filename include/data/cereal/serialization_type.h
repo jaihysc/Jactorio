@@ -4,11 +4,10 @@
 #define JACTORIO_INCLUDE_DATA_CEREAL_SERIALIZATION_TYPE_H
 #pragma once
 
-#include "jactorio.h"
-
 #include "core/convert.h"
 #include "core/pointer_wrapper.h"
 #include "data/cereal/serialize.h"
+#include "data/globals.h"
 #include "data/prototype_manager.h"
 #include "data/unique_data_manager.h"
 

@@ -18,10 +18,6 @@ namespace jactorio::data
     struct IsValidPrototype
     { static constexpr bool value = std::is_base_of_v<proto::FrameworkBase, TProto> && !std::is_abstract_v<TProto>; };
 
-    /// Pybind callbacks to append into the data manager at the pointer
-    /// SerialProtoPtr deserializes with this
-    inline PrototypeManager* active_prototype_manager = nullptr;
-
     ///
     /// Manages prototype data
     class PrototypeManager
