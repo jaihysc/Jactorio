@@ -7,19 +7,19 @@
 #include "render/opengl/error.h"
 #include "render/opengl/vertex_buffer.h"
 
-jactorio::render::VertexArray::VertexArray() {
+using namespace jactorio;
+
+render::VertexArray::VertexArray() {
     DEBUG_OPENGL_CALL(glGenVertexArrays(1, &id_));
     DEBUG_OPENGL_CALL(glBindVertexArray(id_));
 }
 
-jactorio::render::VertexArray::~VertexArray() {
+render::VertexArray::~VertexArray() {
     Unbind();
     DEBUG_OPENGL_CALL(glDeleteVertexArrays(1, &id_));
 }
 
-void jactorio::render::VertexArray::AddBuffer(const VertexBuffer* vb,
-                                              const unsigned span,
-                                              const unsigned int location) const {
+void render::VertexArray::AddBuffer(const VertexBuffer* vb, const unsigned span, const unsigned int location) const {
     this->Bind();
     vb->Bind();
 
@@ -29,10 +29,10 @@ void jactorio::render::VertexArray::AddBuffer(const VertexBuffer* vb,
         location, span, GL_FLOAT, GL_FALSE, sizeof(float) * span, static_cast<const void*>(nullptr)));
 }
 
-void jactorio::render::VertexArray::Bind() const {
+void render::VertexArray::Bind() const {
     DEBUG_OPENGL_CALL(glBindVertexArray(id_));
 }
 
-void jactorio::render::VertexArray::Unbind() {
+void render::VertexArray::Unbind() {
     DEBUG_OPENGL_CALL(glBindVertexArray(0));
 }

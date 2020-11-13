@@ -72,25 +72,12 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/pybind_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/save_game_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/unique_data_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/cereal/supportTests.cpp
-
-	${JACTORIO_TEST_DIR}/data/prototype/assembly_machineTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/container_entityTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/inserterTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/mining_drillTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/noise_layerTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/prototype_typeTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/recipeTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/spriteTests.cpp
-
-	${JACTORIO_TEST_DIR}/data/prototype/abstract_proto/transport_lineTests.cpp
-	${JACTORIO_TEST_DIR}/data/prototype/interface/renderableTests.cpp
-
-	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
 
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp
@@ -99,14 +86,14 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
 
+	${JACTORIO_TEST_DIR}/game/logic/conveyor_controllerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/conveyor_segmentTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/deferral_timerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/logic_dataTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/transport_line_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/transport_segmentTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp
@@ -121,8 +108,21 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
 
 
-	${JACTORIO_TEST_DIR}/render/rendering/mvp_managerTests.cpp
-	${JACTORIO_TEST_DIR}/render/rendering/spritemap_generatorTests.cpp
+	${JACTORIO_TEST_DIR}/proto/assembly_machineTests.cpp
+	${JACTORIO_TEST_DIR}/proto/container_entityTests.cpp
+	${JACTORIO_TEST_DIR}/proto/inserterTests.cpp
+	${JACTORIO_TEST_DIR}/proto/mining_drillTests.cpp
+	${JACTORIO_TEST_DIR}/proto/noise_layerTests.cpp
+	${JACTORIO_TEST_DIR}/proto/prototype_typeTests.cpp
+	${JACTORIO_TEST_DIR}/proto/recipeTests.cpp
+	${JACTORIO_TEST_DIR}/proto/spriteTests.cpp
+
+	${JACTORIO_TEST_DIR}/proto/abstract/conveyorTests.cpp
+	${JACTORIO_TEST_DIR}/proto/interface/renderableTests.cpp
+
+
+	${JACTORIO_TEST_DIR}/render/mvp_managerTests.cpp
+	${JACTORIO_TEST_DIR}/render/spritemap_generatorTests.cpp
 )
 # ======================================== END Test files .cpp
 

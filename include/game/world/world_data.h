@@ -14,13 +14,13 @@
 #include "game/world/chunk.h"
 #include "game/world/update_dispatcher.h"
 
-namespace jactorio::data
+namespace jactorio::proto
 {
     enum class UpdateType;
 
     class IDeferred;
     class IUpdateListener;
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 namespace jactorio::game
 {

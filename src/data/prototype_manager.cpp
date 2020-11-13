@@ -8,7 +8,7 @@
 #include "core/filesystem.h"
 #include "core/resource_guard.h"
 #include "data/local_parser.h"
-#include "data/pybind/pybind_manager.h"
+#include "data/pybind_manager.h"
 
 using namespace jactorio;
 
@@ -20,8 +20,8 @@ void data::PrototypeManager::SetDirectoryPrefix(const std::string& name) {
     directoryPrefix_ = name;
 }
 
-void data::PrototypeManager::DataRawAdd(const std::string& iname, FrameworkBase* const prototype) {
-    const DataCategory data_category = prototype->Category();
+void data::PrototypeManager::DataRawAdd(const std::string& iname, proto::FrameworkBase* const prototype) {
+    const auto data_category = prototype->GetCategory();
 
     // Use the following format internal name
     // Format __dir__/iname
@@ -111,7 +111,7 @@ void data::PrototypeManager::LoadData(const std::string& data_folder_path) {
             try {
                 PyExec(py_file_contents, py_file_path.str());
             }
-            catch (DataException& e) {
+            catch (proto::ProtoError& e) {
                 LOG_MESSAGE_F(error, "%s", e.what());
                 throw;
             }
@@ -150,7 +150,7 @@ void data::PrototypeManager::LoadData(const std::string& data_folder_path) {
             try {
                 prototype.PostLoadValidate(*this);
             }
-            catch (DataException& e) {
+            catch (proto::ProtoError& e) {
                 LOG_MESSAGE_F(error, "Prototype validation failed: '%s'", e.what());
                 throw;
             }

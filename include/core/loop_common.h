@@ -8,31 +8,10 @@
 #include <optional>
 
 #include "game/game_data.h"
+#include "gui/main_menu_data.h"
 
 namespace jactorio
 {
-    struct MainMenuData
-    {
-        // TODO move this to header
-        enum class Window
-        {
-            main,
-            new_game,
-            load_game,
-            save_game
-        };
-
-        static constexpr auto kMaxSaveNameLength = 100;
-
-        char saveName[kMaxSaveNameLength + 1] = ""; // Holds user input for save name
-
-        std::string lastLoadError;
-        std::string lastSaveError;
-
-        Window currentMenu = Window::main;
-    };
-
-
     ///
     /// Used between threaded loops
     class ThreadedLoopCommon
@@ -66,7 +45,7 @@ namespace jactorio
         game::GameDataLocal gameDataLocal;
 
         GameState gameState = GameState::main_menu;
-        MainMenuData mainMenuData;
+        gui::MainMenuData mainMenuData;
 
 
         volatile bool prototypeLoadingComplete = false;

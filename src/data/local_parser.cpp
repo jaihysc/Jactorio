@@ -6,8 +6,8 @@
 
 #include "jactorio.h"
 
-#include "data/data_exception.h"
 #include "data/prototype_manager.h"
+#include "proto/detail/exception.h"
 
 using namespace jactorio;
 
@@ -42,7 +42,7 @@ struct ParserData
         str_s << "Localization parse failed " << lineNumber << ":" << charNumber << "\n" << message;
         LOG_MESSAGE_F(error, "%s", str_s.str().c_str());
 
-        throw data::DataException(str_s.str().c_str());
+        throw proto::ProtoError(str_s.str().c_str());
     }
 };
 
@@ -140,7 +140,7 @@ int data::LocalParseNoThrow(PrototypeManager& data_manager,
     try {
         LocalParse(data_manager, file_str, directory_prefix);
     }
-    catch (DataException&) {
+    catch (proto::ProtoError&) {
         return 1;
     }
 

@@ -7,7 +7,7 @@
 #include <fstream>
 
 #include "core/loop_common.h"
-#include "data/prototype/sprite.h"
+#include "proto/sprite.h"
 
 namespace jactorio::data
 {

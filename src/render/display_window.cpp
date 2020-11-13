@@ -10,14 +10,14 @@
 
 #include "core/loop_common.h"
 
-#include "data/prototype/sprite.h"
+#include "proto/sprite.h"
 
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 
-#include "render/gui/imgui_manager.h"
+#include "gui/imgui_manager.h"
 #include "render/render_loop.h"
-#include "render/rendering/renderer.h"
+#include "render/renderer.h"
 
 using namespace jactorio;
 
@@ -85,7 +85,7 @@ int render::DisplayWindow::Init(const int width, const int height) {
 
     // Set the Jactorio icon for the window
     {
-        const auto icon = data::Sprite("core/graphics/jactorio-64-64.png"); // <-- This will throw if it fails
+        const auto icon = proto::Sprite("core/graphics/jactorio-64-64.png"); // <-- This will throw if it fails
 
         // Convert the loaded Image into a surface for setting the icon
         SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(const_cast<unsigned char*>(icon.GetSpritePtr()),
@@ -237,7 +237,7 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
         game::SetCursorPosition(sdl_event.motion.x, sdl_event.motion.y);
         break;
     case SDL_MOUSEWHEEL:
-        if (!input_mouse_captured)
+        if (!gui::input_mouse_captured)
             GetBaseRenderer()->tileProjectionMatrixOffset += core::SafeCast<float>(sdl_event.wheel.y * 10);
         break;
     case SDL_MOUSEBUTTONUP:

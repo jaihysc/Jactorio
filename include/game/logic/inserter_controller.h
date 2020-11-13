@@ -14,10 +14,10 @@ namespace jactorio::game
 
     // Inserter behavior
     //
-    // Transport lines:
+    // Conveyors:
     //     Take from near side, place on near side
-    //     Take from anywhere within 1 tile on the transport line
-    //     Put in center of output transport line
+    //     Take from anywhere within 1 tile on the conveyor
+    //     Put in center of output conveyor
 
     constexpr auto kInserterCenterOffset = 0.5;
     /// Distance from inserter arm radius to the end of the last tile

@@ -9,18 +9,14 @@
 #include <unordered_map>
 #include <vector>
 
-#include "data/data_category.h"
-#include "data/prototype/framework/framework_base.h"
+#include "proto/detail/category.h"
+#include "proto/framework/framework_base.h"
 
 namespace jactorio::data
 {
     template <typename TProto>
     struct IsValidPrototype
-    { static constexpr bool value = std::is_base_of_v<FrameworkBase, TProto> && !std::is_abstract_v<TProto>; };
-
-    /// Pybind callbacks to append into the data manager at the pointer
-    /// SerialProtoPtr deserializes with this
-    inline PrototypeManager* active_prototype_manager = nullptr;
+    { static constexpr bool value = std::is_base_of_v<proto::FrameworkBase, TProto> && !std::is_abstract_v<TProto>; };
 
     ///
     /// Manages prototype data
@@ -29,7 +25,7 @@ namespace jactorio::data
         /// Position 0 reserved to indicate error
         static constexpr PrototypeIdT kInternalIdStart_ = 1;
 
-        using RelocationTableContainerT = std::vector<const FrameworkBase*>;
+        using RelocationTableContainerT = std::vector<const proto::FrameworkBase*>;
 
         struct DebugInfo;
 
@@ -57,18 +53,18 @@ namespace jactorio::data
         ///
         /// Abstract types allowed for Python API
         template <typename TProto>
-        TProto* DataRawGet(DataCategory data_category, const std::string& iname) const noexcept;
+        TProto* DataRawGet(proto::Category data_category, const std::string& iname) const noexcept;
 
 
         ///
         /// Gets pointers to all data of specified data_type
         template <typename TProto>
-        std::vector<TProto*> DataRawGetAll(DataCategory type) const;
+        std::vector<TProto*> DataRawGetAll(proto::Category type) const;
 
         ///
         /// Gets pointers to all data of specified data_type, sorted by Prototype_base.order
         template <typename TProto>
-        std::vector<TProto*> DataRawGetAllSorted(DataCategory type) const;
+        std::vector<TProto*> DataRawGetAllSorted(proto::Category type) const;
 
 
         // Add
@@ -100,7 +96,7 @@ namespace jactorio::data
         ///
         /// Searches through all categories for prototype
         /// \return pointer to prototype, nullptr if not found
-        template <typename TProto = FrameworkBase>
+        template <typename TProto = proto::FrameworkBase>
         J_NODISCARD TProto* FindProto(const std::string& iname) const noexcept;
 
 
@@ -111,7 +107,7 @@ namespace jactorio::data
         /// Loads data and their properties from data/ folder,
         /// \remark In normal usage, data access methods can be used only after calling this
         /// \param data_folder_path Do not include a / at the end (Valid usage: dc/xy/data)
-        /// \exception DataException Prototype validation failed or Pybind error
+        /// \exception ProtoError Prototype validation failed or Pybind error
         void LoadData(const std::string& data_folder_path);
 
 
@@ -131,7 +127,7 @@ namespace jactorio::data
 
         ///
         /// Fetches prototype at prototype id
-        template <typename TProto = FrameworkBase>
+        template <typename TProto = proto::FrameworkBase>
         J_NODISCARD const TProto& RelocationTableGet(PrototypeIdT prototype_id) const noexcept;
 
 
@@ -142,7 +138,7 @@ namespace jactorio::data
         /// Adds a prototype
         /// \param iname Internal name of prototype
         /// \param prototype Prototype pointer, takes ownership, must be unique for each added
-        void DataRawAdd(const std::string& iname, FrameworkBase* prototype);
+        void DataRawAdd(const std::string& iname, proto::FrameworkBase* prototype);
 
 
         struct DebugInfo
@@ -152,7 +148,7 @@ namespace jactorio::data
 
 
         /// Example: data_raw[static_cast<int>(image)]["grass-1"] -> Prototype_base
-        std::unordered_map<std::string, FrameworkBase*> dataRaw_[static_cast<int>(DataCategory::count_)];
+        std::unordered_map<std::string, proto::FrameworkBase*> dataRaw_[static_cast<int>(proto::Category::count_)];
 
         RelocationTableContainerT relocationTable_;
 
@@ -167,19 +163,19 @@ namespace jactorio::data
     template <typename TProto>
     TProto* PrototypeManager::DataRawGet(const std::string& iname) const noexcept {
         static_assert(IsValidPrototype<TProto>::value);
-        static_assert(TProto::category != DataCategory::none);
+        static_assert(TProto::category != proto::Category::none);
 
         return DataRawGet<TProto>(TProto::category, iname);
     }
 
     template <typename TProto>
-    TProto* PrototypeManager::DataRawGet(const DataCategory data_category, const std::string& iname) const noexcept {
-        static_assert(std::is_base_of_v<FrameworkBase, TProto>);
+    TProto* PrototypeManager::DataRawGet(const proto::Category data_category, const std::string& iname) const noexcept {
+        static_assert(std::is_base_of_v<proto::FrameworkBase, TProto>);
 
         const auto* category = &dataRaw_[static_cast<uint16_t>(data_category)];
 
         try {
-            FrameworkBase* base = category->at(iname);
+            proto::FrameworkBase* base = category->at(iname);
             return static_cast<TProto*>(base);
         }
         catch (std::out_of_range&) {
@@ -189,7 +185,7 @@ namespace jactorio::data
     }
 
     template <typename TProto>
-    std::vector<TProto*> PrototypeManager::DataRawGetAll(const DataCategory type) const {
+    std::vector<TProto*> PrototypeManager::DataRawGetAll(const proto::Category type) const {
         static_assert(IsValidPrototype<TProto>::value);
 
         auto category_items = dataRaw_[static_cast<uint16_t>(type)];
@@ -198,7 +194,7 @@ namespace jactorio::data
         items.reserve(category_items.size());
 
         for (auto& it : category_items) {
-            FrameworkBase* base_ptr = it.second;
+            proto::FrameworkBase* base_ptr = it.second;
             items.push_back(static_cast<TProto*>(base_ptr));
         }
 
@@ -206,13 +202,15 @@ namespace jactorio::data
     }
 
     template <typename TProto>
-    std::vector<TProto*> PrototypeManager::DataRawGetAllSorted(const DataCategory type) const {
+    std::vector<TProto*> PrototypeManager::DataRawGetAllSorted(const proto::Category type) const {
         static_assert(IsValidPrototype<TProto>::value);
 
         std::vector<TProto*> items = DataRawGetAll<TProto>(type);
 
         // Sort
-        std::sort(items.begin(), items.end(), [](FrameworkBase* a, FrameworkBase* b) { return a->order < b->order; });
+        std::sort(items.begin(), items.end(), [](proto::FrameworkBase* a, proto::FrameworkBase* b) {
+            return a->order < b->order;
+        });
         return items;
     }
 
@@ -229,7 +227,7 @@ namespace jactorio::data
 
     template <typename TProto>
     TProto* PrototypeManager::FindProto(const std::string& iname) const noexcept {
-        static_assert(std::is_base_of_v<FrameworkBase, TProto>);
+        static_assert(std::is_base_of_v<proto::FrameworkBase, TProto>);
 
         for (const auto& map : dataRaw_) {
             auto i = map.find(iname);
@@ -242,7 +240,7 @@ namespace jactorio::data
 
     template <typename TProto>
     const TProto& PrototypeManager::RelocationTableGet(PrototypeIdT prototype_id) const noexcept {
-        static_assert(std::is_base_of_v<FrameworkBase, TProto>);
+        static_assert(std::is_base_of_v<proto::FrameworkBase, TProto>);
 
         assert(relocationTable_.size() >= prototype_id);
         assert(prototype_id > 0);

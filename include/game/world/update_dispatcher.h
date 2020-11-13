@@ -9,7 +9,7 @@
 #include "core/coordinate_tuple.h"
 #include "core/hashers.h"
 #include "data/cereal/serialization_type.h"
-#include "data/prototype/framework/entity.h"
+#include "proto/framework/entity.h"
 
 #include <cereal/types/tuple.hpp>
 #include <cereal/types/unordered_map.hpp>
@@ -22,7 +22,7 @@ namespace jactorio::game
     /// Calls callbacks for tile updates
     class UpdateDispatcher
     {
-        using CallbackT = data::SerialProtoPtr<const data::FEntity>;
+        using CallbackT = data::SerialProtoPtr<const proto::FEntity>;
 
         struct CollectionElement
         {
@@ -57,13 +57,13 @@ namespace jactorio::game
                                WorldCoordAxis current_world_y,
                                WorldCoordAxis target_world_x,
                                WorldCoordAxis target_world_y,
-                               const data::FEntity& proto_listener);
+                               const proto::FEntity& proto_listener);
 
         ///
         /// Registers proto_listener callback when target coords is updated, providing current coords
         ListenerEntry Register(const WorldCoord& current_coords,
                                const WorldCoord& target_coords,
-                               const data::FEntity& proto_listener);
+                               const proto::FEntity& proto_listener);
 
         ///
         /// Unregisters entry
@@ -72,8 +72,8 @@ namespace jactorio::game
 
 
         // World data must be provided since references cannot be serialized
-        void Dispatch(WorldData& world_data, WorldCoordAxis world_x, WorldCoordAxis world_y, data::UpdateType type);
-        void Dispatch(WorldData& world_data, const WorldCoord& world_pair, data::UpdateType type);
+        void Dispatch(WorldData& world_data, WorldCoordAxis world_x, WorldCoordAxis world_y, proto::UpdateType type);
+        void Dispatch(WorldData& world_data, const WorldCoord& world_pair, proto::UpdateType type);
 
         J_NODISCARD DebugInfo GetDebugInfo() const noexcept;
 

@@ -12,16 +12,16 @@
 #include "core/filesystem.h"
 #include "core/loop_common.h"
 
-#include "data/prototype/inserter.h"
 #include "data/save_game_manager.h"
+#include "proto/inserter.h"
 
 #include "game/event/game_events.h"
-#include "game/logic/transport_line_controller.h"
+#include "game/logic/conveyor_controller.h"
 
-#include "render/gui/gui_menus.h"
-#include "render/gui/imgui_manager.h"
+#include "gui/imgui_manager.h"
+#include "gui/menus.h"
 #include "render/render_loop.h"
-#include "render/rendering/renderer.h"
+#include "render/renderer.h"
 
 using namespace jactorio;
 
@@ -63,7 +63,7 @@ void LogicLoop(ThreadedLoopCommon& common) {
                 {
                     EXECUTION_PROFILE_SCOPE(belt_timer, "Belt update");
 
-                    TransportLineLogicUpdate(world);
+                    ConveyorLogicUpdate(world);
                 }
                 {
                     EXECUTION_PROFILE_SCOPE(inserter_timer, "Inserter update");
@@ -109,7 +109,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     try {
         common.gameDataLocal.prototype.LoadData(core::ResolvePath("data"));
     }
-    catch (data::DataException&) {
+    catch (proto::ProtoError&) {
         // Prototype loading error
         return;
     }
@@ -141,7 +141,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
 
     // Menus
     common.gameDataLocal.input.key.Register(
-        [&]() { SetVisible(render::Menu::DebugMenu, !IsVisible(render::Menu::DebugMenu)); },
+        [&]() { SetVisible(gui::Menu::DebugMenu, !IsVisible(gui::Menu::DebugMenu)); },
         SDLK_BACKQUOTE,
         InputAction::key_up);
 
@@ -151,7 +151,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
             if (common.GetDataGlobal().player.placement.GetActivatedLayer() != nullptr)
                 common.GetDataGlobal().player.placement.SetActivatedLayer(nullptr);
             else
-                SetVisible(render::Menu::CharacterMenu, !IsVisible(render::Menu::CharacterMenu));
+                SetVisible(gui::Menu::CharacterMenu, !IsVisible(gui::Menu::CharacterMenu));
         },
         SDLK_TAB,
         InputAction::key_up);
@@ -173,7 +173,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     // Place entities
     common.gameDataLocal.input.key.Register(
         [&]() {
-            if (render::input_mouse_captured || !common.GetDataGlobal().player.world.MouseSelectedTileInRange())
+            if (gui::input_mouse_captured || !common.GetDataGlobal().player.world.MouseSelectedTileInRange())
                 return;
 
             const auto tile_selected = common.GetDataGlobal().player.world.GetMouseTileCoords();
@@ -188,7 +188,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
 
     common.gameDataLocal.input.key.Register(
         [&]() {
-            if (render::input_mouse_captured || !common.GetDataGlobal().player.world.MouseSelectedTileInRange())
+            if (gui::input_mouse_captured || !common.GetDataGlobal().player.world.MouseSelectedTileInRange())
                 return;
 
             auto& player = common.GetDataGlobal().player;
@@ -202,7 +202,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     // Remove entities or mine resource
     common.gameDataLocal.input.key.Register(
         [&]() {
-            if (render::input_mouse_captured || !common.GetDataGlobal().player.world.MouseSelectedTileInRange())
+            if (gui::input_mouse_captured || !common.GetDataGlobal().player.world.MouseSelectedTileInRange())
                 return;
 
             const auto tile_selected = common.GetDataGlobal().player.world.GetMouseTileCoords();
@@ -217,9 +217,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
 
 
     common.gameDataLocal.input.key.Register(
-        [&]() { SetVisible(render::Menu::MainMenu, !IsVisible(render::Menu::MainMenu)); },
-        SDLK_ESCAPE,
-        InputAction::key_up);
+        [&]() { SetVisible(gui::Menu::MainMenu, !IsVisible(gui::Menu::MainMenu)); }, SDLK_ESCAPE, InputAction::key_up);
 
     LogicLoop(common);
 

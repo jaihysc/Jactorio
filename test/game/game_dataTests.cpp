@@ -4,8 +4,8 @@
 
 #include "game/game_data.h"
 
-#include "data/prototype/container_entity.h"
-#include "data/prototype/sprite.h"
+#include "proto/container_entity.h"
+#include "proto/sprite.h"
 
 namespace jactorio::game
 {
@@ -14,15 +14,15 @@ namespace jactorio::game
         GameDataLocal local;
 
 
-        const data::Sprite sprite;
-        const data::ContainerEntity container;
+        const proto::Sprite sprite;
+        const proto::ContainerEntity container;
 
 
         global.worlds[0].EmplaceChunk(0, 0);
 
 
         // 1 Should not attempt to remove cursor overlays
-        local.input.mouse.DrawOverlay(global.worlds[0], {0, 0}, data::Orientation::up, &container, sprite);
+        local.input.mouse.DrawOverlay(global.worlds[0], {0, 0}, proto::Orientation::up, &container, sprite);
 
         // 2 Should not hold pointer to any tile layer (as they will be destroyed)
         ChunkTileLayer tile_layer;
@@ -33,7 +33,7 @@ namespace jactorio::game
 
 
         // 1 Fails if attempted to erase last overlay
-        local.input.mouse.DrawOverlay(global.worlds[0], {0, 1}, data::Orientation::up, &container, sprite);
+        local.input.mouse.DrawOverlay(global.worlds[0], {0, 1}, proto::Orientation::up, &container, sprite);
 
         // 2
         EXPECT_EQ(global.player.placement.GetActivatedLayer(), nullptr);

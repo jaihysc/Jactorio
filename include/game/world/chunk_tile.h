@@ -13,12 +13,12 @@
 #include <cereal/types/array.hpp>
 
 // Cannot include the data headers
-namespace jactorio::data
+namespace jactorio::proto
 {
     class Tile;
     class Entity;
     class Sprite;
-} // namespace jactorio::data
+} // namespace jactorio::proto
 
 namespace jactorio::game
 {
@@ -69,13 +69,13 @@ namespace jactorio::game
         // Methods below are type checked to avoid getting / setting the wrong data
 
         // chunk_layer::base only
-        J_NODISCARD const data::Tile* GetTilePrototype(TileLayer category = TileLayer::base) const;
-        void SetTilePrototype(const data::Tile* tile_prototype, TileLayer category = TileLayer::base);
+        J_NODISCARD const proto::Tile* GetTilePrototype(TileLayer category = TileLayer::base) const;
+        void SetTilePrototype(const proto::Tile* tile_prototype, TileLayer category = TileLayer::base);
 
 
         // chunk_layer::resource, chunk_layer::entity only
-        J_NODISCARD const data::Entity* GetEntityPrototype(TileLayer category = TileLayer::entity) const;
-        void SetEntityPrototype(const data::Entity* tile_prototype, TileLayer category = TileLayer::entity);
+        J_NODISCARD const proto::Entity* GetEntityPrototype(TileLayer category = TileLayer::entity) const;
+        void SetEntityPrototype(const proto::Entity* tile_prototype, TileLayer category = TileLayer::entity);
 
 
         CEREAL_SERIALIZE(archive) {

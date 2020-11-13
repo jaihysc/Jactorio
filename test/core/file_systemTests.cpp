@@ -25,17 +25,17 @@ namespace jactorio::core
     TEST_F(FileSystemTest, WorkingDirectoryGetSet) {
 #ifdef WIN32
         SetExecutingDirectory("C:\\x\\y\\z\\b.exe");
-        EXPECT_EQ(jactorio::core::GetExecutingDirectory(), "C:/x/y/z");
+        EXPECT_EQ(GetExecutingDirectory(), "C:/x/y/z");
 #endif
 
         SetExecutingDirectory("abcdefghijkl;'");
-        EXPECT_EQ(jactorio::core::GetExecutingDirectory(), "");
+        EXPECT_EQ(GetExecutingDirectory(), "");
 
         SetExecutingDirectory("x/y/z/b.exe");
-        EXPECT_EQ(jactorio::core::GetExecutingDirectory(), "x/y/z");
+        EXPECT_EQ(GetExecutingDirectory(), "x/y/z");
 
         SetExecutingDirectory("x/123456.exe");
-        EXPECT_EQ(jactorio::core::GetExecutingDirectory(), "x");
+        EXPECT_EQ(GetExecutingDirectory(), "x");
     }
 
     TEST_F(FileSystemTest, ResolvePath) {
@@ -45,11 +45,11 @@ namespace jactorio::core
 
         SetExecutingDirectory("antarctica/coolApplication.exe");
 
-        EXPECT_EQ(jactorio::core::ResolvePath(""), "antarctica/");
+        EXPECT_EQ(ResolvePath(""), "antarctica/");
 
-        EXPECT_EQ(jactorio::core::ResolvePath("glaciers/glacier1.png"), "antarctica/glaciers/glacier1.png");
+        EXPECT_EQ(ResolvePath("glaciers/glacier1.png"), "antarctica/glaciers/glacier1.png");
 
-        EXPECT_EQ(jactorio::core::ResolvePath("banana/banana1.png"), "antarctica/banana/banana1.png");
+        EXPECT_EQ(ResolvePath("banana/banana1.png"), "antarctica/banana/banana1.png");
 
         // Re- set the original executing directory
         SetExecutingDirectory(original_path);

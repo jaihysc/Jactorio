@@ -10,11 +10,11 @@ namespace jactorio::game
 {
     TEST(Chunk, LogicCopy) {
         Chunk chunk_a(0, 0);
-        chunk_a.GetLogicGroup(Chunk::LogicGroup::transport_line)
+        chunk_a.GetLogicGroup(Chunk::LogicGroup::conveyor)
             .push_back(&chunk_a.GetCTile(3, 4).GetLayer(TileLayer::base));
 
         auto chunk_b = chunk_a;
-        EXPECT_EQ(chunk_b.GetLogicGroup(Chunk::LogicGroup::transport_line)[0],
+        EXPECT_EQ(chunk_b.GetLogicGroup(Chunk::LogicGroup::conveyor)[0],
                   &chunk_b.GetCTile(3, 4).GetLayer(TileLayer::base));
     }
 
@@ -47,7 +47,7 @@ namespace jactorio::game
         Chunk chunk{0, 0};
 
         // Should return the layer specified by the index of the enum objectLayer
-        EXPECT_EQ(&chunk.GetLogicGroup(Chunk::LogicGroup::transport_line), &chunk.logicGroups[0]);
+        EXPECT_EQ(&chunk.GetLogicGroup(Chunk::LogicGroup::conveyor), &chunk.logicGroups[0]);
     }
 
     TEST(Chunk, SerializeLogicGroups) {

@@ -11,7 +11,7 @@ namespace jactorio::core
     std::string GetExecutingDirectory();
 
     ///
-    /// Replaces ~ at the beginning of the path with the executing directory <br>
+    /// Replaces ~ at the beginning of the path with the executing directory
     /// \remark If there is no ~ at the beginning of the path, nothing happens
     std::string ResolvePath(const std::string& path);
 

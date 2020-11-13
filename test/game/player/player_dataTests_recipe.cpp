@@ -17,14 +17,14 @@ namespace jactorio::game
 
         data::PrototypeManager dataManager_;
 
-        data::Item* itemProduct_ = nullptr;
-        data::Item* item1_       = nullptr;
-        data::Item* item2_       = nullptr;
-        data::Item* itemSub1_    = nullptr;
-        data::Item* itemSub2_    = nullptr;
+        proto::Item* itemProduct_ = nullptr;
+        proto::Item* item1_       = nullptr;
+        proto::Item* item2_       = nullptr;
+        proto::Item* itemSub1_    = nullptr;
+        proto::Item* itemSub2_    = nullptr;
 
-        data::Recipe* finalRecipe_ = nullptr;
-        data::Recipe* itemRecipe_  = nullptr;
+        proto::Recipe* finalRecipe_ = nullptr;
+        proto::Recipe* itemRecipe_  = nullptr;
 
 
         void SetupTestRecipe() {
@@ -41,20 +41,20 @@ namespace jactorio::game
              */
             // 3 item1 + 1 item2 -> 1 product
             // 5 sub1 + 10 sub2 -> 2 item1
-            itemProduct_ = &dataManager_.AddProto<data::Item>("item-product");
+            itemProduct_ = &dataManager_.AddProto<proto::Item>("item-product");
 
-            item1_ = &dataManager_.AddProto<data::Item>("item-1");
-            item2_ = &dataManager_.AddProto<data::Item>("item-2");
+            item1_ = &dataManager_.AddProto<proto::Item>("item-1");
+            item2_ = &dataManager_.AddProto<proto::Item>("item-2");
 
-            itemSub1_ = &dataManager_.AddProto<data::Item>("item-sub-1");
-            itemSub2_ = &dataManager_.AddProto<data::Item>("item-sub-2");
+            itemSub1_ = &dataManager_.AddProto<proto::Item>("item-sub-1");
+            itemSub2_ = &dataManager_.AddProto<proto::Item>("item-sub-2");
 
-            finalRecipe_ = &dataManager_.AddProto<data::Recipe>("item-product-recipe");
+            finalRecipe_ = &dataManager_.AddProto<proto::Recipe>("item-product-recipe");
             finalRecipe_->Set_ingredients({{"item-1", 3}, {"item-2", 1}});
             finalRecipe_->product      = {"item-product", 1};
             finalRecipe_->craftingTime = 1.5;
 
-            itemRecipe_ = &dataManager_.AddProto<data::Recipe>("item-1-recipe");
+            itemRecipe_ = &dataManager_.AddProto<proto::Recipe>("item-1-recipe");
             itemRecipe_->Set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});
             itemRecipe_->product       = {"item-1", 2};
             finalRecipe_->craftingTime = 3.1;
@@ -73,11 +73,11 @@ namespace jactorio::game
         // since recipe_craft_tick() is not called
 
         // Register items
-        auto& item         = dataManager_.AddProto<data::Item>("item-1");
-        auto& item_product = dataManager_.AddProto<data::Item>("item-product");
+        auto& item         = dataManager_.AddProto<proto::Item>("item-1");
+        auto& item_product = dataManager_.AddProto<proto::Item>("item-product");
 
         // Register recipes
-        auto recipe = data::Recipe();
+        auto recipe = proto::Recipe();
         recipe.Set_ingredients({{"item-1", 2}});
         recipe.product = {"item-product", 1};
         recipe.Set_craftingTime(1);
@@ -223,7 +223,7 @@ namespace jactorio::game
         playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
 
         // Fill inventory so crafted item cannot be returned
-        data::Item filler_item;
+        proto::Item filler_item;
         for (auto& slot : playerInv_.inventory) {
             slot.item  = &filler_item;
             slot.count = 1;

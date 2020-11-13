@@ -6,8 +6,8 @@
 
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
-#include "data/prototype/item.h"
-#include "data/prototype/type.h"
+#include "proto/detail/type.h"
+#include "proto/item.h"
 
 namespace jactorio::game
 {
@@ -30,7 +30,7 @@ namespace jactorio::game
     protected:
         ///
         /// \param orientation Orientation from origin prototype, "the destination is <orientation> of prototype"
-        explicit ItemHandler(const data::Orientation orientation) : orientation_(orientation) {}
+        explicit ItemHandler(const proto::Orientation orientation) : orientation_(orientation) {}
 
     public:
         void Uninitialize() noexcept {
@@ -42,15 +42,15 @@ namespace jactorio::game
         }
 
 
-        J_NODISCARD data::Orientation GetOrientation() const noexcept {
+        J_NODISCARD proto::Orientation GetOrientation() const noexcept {
             return orientation_;
         }
 
     protected:
-        data::UniqueDataBase* targetUniqueData_     = nullptr;
-        const data::FrameworkBase* targetProtoData_ = nullptr;
+        proto::UniqueDataBase* targetUniqueData_     = nullptr;
+        const proto::FrameworkBase* targetProtoData_ = nullptr;
 
-        data::Orientation orientation_;
+        proto::Orientation orientation_;
     };
 
 
@@ -59,7 +59,7 @@ namespace jactorio::game
     class ItemDropOff : public ItemHandler
     {
     public:
-        explicit ItemDropOff(const data::Orientation orientation) : ItemHandler(orientation) {}
+        explicit ItemDropOff(const proto::Orientation orientation) : ItemHandler(orientation) {}
 
         J_ITEM_HANDLER_COMMON
 
@@ -67,15 +67,15 @@ namespace jactorio::game
         struct DropOffParams
         {
             LogicData& logicData;
-            const data::ItemStack& itemStack;
+            const proto::ItemStack& itemStack;
             /// Entity to drop into
-            data::UniqueDataBase& uniqueData;
-            data::Orientation orientation;
+            proto::UniqueDataBase& uniqueData;
+            proto::Orientation orientation;
         };
 
         ///
         ///	 \brief Insert provided item at destination
-        bool DropOff(LogicData& logic_data, const data::ItemStack& item_stack) const {
+        bool DropOff(LogicData& logic_data, const proto::ItemStack& item_stack) const {
             assert(targetUniqueData_);
             assert(dropFunc_);
             return (this->*dropFunc_)({logic_data, item_stack, *targetUniqueData_, orientation_});
@@ -83,7 +83,7 @@ namespace jactorio::game
 
         ///
         ///	 \return true if dropoff can ever possible at the specified location
-        J_NODISCARD bool CanDropOff(LogicData& logic_data, const data::Item*& item) const {
+        J_NODISCARD bool CanDropOff(LogicData& logic_data, const proto::Item*& item) const {
             assert(targetUniqueData_);
             assert(canDropFunc_);
             return (this->*canDropFunc_)({logic_data, {item, 0}, *targetUniqueData_, orientation_});
@@ -115,11 +115,11 @@ namespace jactorio::game
     class InserterPickup : public ItemHandler
     {
         /// Success, picked up stack
-        using PickupReturn    = std::pair<bool, data::ItemStack>;
-        using GetPickupReturn = const data::Item*;
+        using PickupReturn    = std::pair<bool, proto::ItemStack>;
+        using GetPickupReturn = const proto::Item*;
 
     public:
-        explicit InserterPickup(const data::Orientation orientation) : ItemHandler(orientation) {}
+        explicit InserterPickup(const proto::Orientation orientation) : ItemHandler(orientation) {}
 
         J_ITEM_HANDLER_COMMON
 
@@ -127,19 +127,19 @@ namespace jactorio::game
         struct PickupParams
         {
             LogicData& logicData;
-            data::ProtoUintT inserterTileReach;
-            const data::RotationDegreeT& degree;
-            data::Item::StackCount amount;
-            data::UniqueDataBase& uniqueData;
-            data::Orientation orientation;
+            proto::ProtoUintT inserterTileReach;
+            const proto::RotationDegreeT& degree;
+            proto::Item::StackCount amount;
+            proto::UniqueDataBase& uniqueData;
+            proto::Orientation orientation;
         };
 
         ///
         ///	 \brief Insert provided item at destination
         PickupReturn Pickup(LogicData& logic_data,
-                            const data::ProtoUintT inserter_tile_reach,
-                            const data::RotationDegreeT& degree,
-                            const data::Item::StackCount amount) const {
+                            const proto::ProtoUintT inserter_tile_reach,
+                            const proto::RotationDegreeT& degree,
+                            const proto::Item::StackCount amount) const {
             assert(targetUniqueData_);
             assert(pickupFunc_);
             return (this->*pickupFunc_)(
@@ -149,8 +149,8 @@ namespace jactorio::game
         ///
         /// \return Item which will picked up by Pickup()
         J_NODISCARD GetPickupReturn GetPickup(LogicData& logic_data,
-                                              const data::ProtoUintT inserter_tile_reach,
-                                              const data::RotationDegreeT& degree) const {
+                                              const proto::ProtoUintT inserter_tile_reach,
+                                              const proto::RotationDegreeT& degree) const {
             assert(targetUniqueData_);
             assert(getPickupFunc_);
             return (this->*getPickupFunc_)(
@@ -169,7 +169,7 @@ namespace jactorio::game
 
         ///
         /// \returns true if at maximum inserter degree
-        static bool IsAtMaxDegree(const data::RotationDegreeT& degree);
+        static bool IsAtMaxDegree(const proto::RotationDegreeT& degree);
 
         using PickupFunc    = decltype(&InserterPickup::PickupContainerEntity);
         using GetPickupFunc = decltype(&InserterPickup::GetPickupContainerEntity);
@@ -178,7 +178,7 @@ namespace jactorio::game
         GetPickupFunc getPickupFunc_ = nullptr;
 
     private:
-        static std::pair<bool, data::LineDistT> GetBeltPickupProps(const PickupParams& params);
+        static std::pair<bool, proto::LineDistT> GetBeltPickupProps(const PickupParams& params);
     };
 
 #undef J_ITEM_HANDLER_COMMON

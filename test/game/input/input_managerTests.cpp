@@ -5,7 +5,7 @@
 #include "jactorio.h"
 
 #include "game/input/input_manager.h"
-#include "render/gui/imgui_manager.h"
+#include "gui/imgui_manager.h"
 
 namespace jactorio::game
 {

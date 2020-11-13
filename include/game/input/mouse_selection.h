@@ -9,16 +9,19 @@
 
 #include "jactorio.h"
 
-#include "data/prototype/type.h"
 #include "game/world/chunk.h"
+#include "proto/detail/type.h"
 
 namespace jactorio
 {
     namespace data
     {
-        class Entity;
         class PrototypeManager;
-    } // namespace data
+    }
+    namespace proto
+    {
+        class Entity;
+    } // namespace proto
 
     namespace game
     {
@@ -53,9 +56,9 @@ namespace jactorio::game
         /// With item selected: draws ghost of entity
         void DrawOverlay(WorldData& world,
                          const WorldCoord& coord,
-                         data::Orientation orientation,
-                         const data::Entity* selected_entity,
-                         const data::Sprite& cursor_sprite);
+                         proto::Orientation orientation,
+                         const proto::Entity* selected_entity,
+                         const proto::Sprite& cursor_sprite);
 
         void SkipErasingLastOverlay() noexcept;
 

@@ -188,7 +188,7 @@ namespace jactorio::game
         auto* bottom_tile  = worldData_.GetTile(bottom_coord);
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::entity);
 
-        data::ContainerEntity proto;
+        proto::ContainerEntity proto;
         TestSetupMultiTileProp(bottom_layer, {2, 1}, proto);
 
 
@@ -208,12 +208,12 @@ namespace jactorio::game
         worldData_.EmplaceChunk(0, 0);
 
         auto* top_tile    = worldData_.GetTile(0, 0);
-        auto* unique_data = top_tile->GetLayer(TileLayer::resource).MakeUniqueData<data::ContainerEntityData>(10);
+        auto* unique_data = top_tile->GetLayer(TileLayer::resource).MakeUniqueData<proto::ContainerEntityData>(10);
 
         auto* bottom_tile  = worldData_.GetTile({1, 2});
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::resource);
 
-        data::ContainerEntity proto;
+        proto::ContainerEntity proto;
         TestSetupMultiTileProp(bottom_layer, {7, 10}, proto);
         bottom_layer.SetMultiTileIndex(15);
 
@@ -275,7 +275,7 @@ namespace jactorio::game
         worldData_.EmplaceChunk(1, 0);
         worldData_.LogicRegister(Chunk::LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
-        worldData_.LogicRegister(Chunk::LogicGroup::transport_line, {33, 0}, TileLayer::entity);
+        worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {33, 0}, TileLayer::entity);
 
         // Registering again will not duplicate logic chunk
         worldData_.LogicRegister(Chunk::LogicGroup::inserter, {42, 0}, TileLayer::entity);
@@ -286,13 +286,13 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
 
-        // Inserter group empty, but transport line group is not, DO NOT remove from logic chunks
+        // Inserter group empty, but conveyor group is not, DO NOT remove from logic chunks
         worldData_.LogicRemove(Chunk::LogicGroup::inserter, {42, 0}, TileLayer::entity);
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
 
         // All groups empty, remove logic chunk
-        worldData_.LogicRemove(Chunk::LogicGroup::transport_line, {33, 0}, TileLayer::entity);
+        worldData_.LogicRemove(Chunk::LogicGroup::conveyor, {33, 0}, TileLayer::entity);
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
     }
 
@@ -342,7 +342,7 @@ namespace jactorio::game
         WorldData worldData_;
         LogicData logicData_;
 
-        data::ContainerEntity proto_; // Any proto is fine
+        proto::ContainerEntity proto_; // Any proto is fine
 
         ///
         /// Checks that multi-tile tile is linked to top left
@@ -381,11 +381,11 @@ namespace jactorio::game
         data::UniqueDataManager unique_manager;
 
 
-        auto& asm_machine = proto_manager.AddProto<data::AssemblyMachine>();
+        auto& asm_machine = proto_manager.AddProto<proto::AssemblyMachine>();
         TestSetupAssemblyMachine(worldData_, {0, 2}, asm_machine);
 
-        auto& inserter = proto_manager.AddProto<data::Inserter>();
-        TestSetupInserter(worldData_, logicData_, {1, 1}, inserter, data::Orientation::down);
+        auto& inserter = proto_manager.AddProto<proto::Inserter>();
+        TestSetupInserter(worldData_, logicData_, {1, 1}, inserter, proto::Orientation::down);
 
 
         data::active_prototype_manager   = &proto_manager;
@@ -396,7 +396,7 @@ namespace jactorio::game
         result.DeserializePostProcess();
 
         auto* result_inserter_data =
-            result.GetTile({1, 1})->GetLayer(TileLayer::entity).GetUniqueData<data::InserterData>();
+            result.GetTile({1, 1})->GetLayer(TileLayer::entity).GetUniqueData<proto::InserterData>();
 
         EXPECT_TRUE(result_inserter_data->dropoff.IsInitialized());
     }

@@ -4,9 +4,12 @@
 #define JACTORIO_INCLUDE_GAME_WORLD_OVERLAY_ELEMENT_H
 #pragma once
 
-#include "core/coordinate_tuple.h"
+#include "jactorio.h"
 
-namespace jactorio::data
+#include "core/coordinate_tuple.h"
+#include "core/data_type.h"
+
+namespace jactorio::proto
 {
     class Sprite;
 }
@@ -38,20 +41,20 @@ namespace jactorio::game
 
     public:
         /*
-        OverlayElement(const data::Sprite& sprite,
+        OverlayElement(const proto::Sprite& sprite,
                        const core::Position2<PositionT>& position,
                        const core::Position2<PositionT>& size)
             : OverlayElement(sprite, core::Position3<PositionT>{position, 0.f}, size) {
         }
         */
 
-        OverlayElement(const data::Sprite& sprite,
+        OverlayElement(const proto::Sprite& sprite,
                        const core::Position2<OverlayOffsetAxis>& position,
                        const core::Position2<OverlayOffsetAxis>& size,
                        const OverlayLayer layer)
             : OverlayElement(sprite, core::Position3<OverlayOffsetAxis>{position, ToZPosition(layer)}, size) {}
 
-        OverlayElement(const data::Sprite& sprite,
+        OverlayElement(const proto::Sprite& sprite,
                        const core::Position3<OverlayOffsetAxis>& position,
                        const core::Position2<OverlayOffsetAxis>& size)
             : sprite(&sprite), position(position), size(size) {}
@@ -73,7 +76,7 @@ namespace jactorio::game
 
         // ======================================================================
 
-        const data::Sprite* sprite;
+        const proto::Sprite* sprite;
 
         SpriteSetT spriteSet = 0;
 

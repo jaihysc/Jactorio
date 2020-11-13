@@ -4,9 +4,9 @@
 
 #include <vector>
 
-#include "data/prototype/inserter.h"
 #include "game/logic/logic_data.h"
 #include "game/world/world_data.h"
+#include "proto/inserter.h"
 
 using namespace jactorio;
 
@@ -37,8 +37,8 @@ double game::GetInserterArmLength(const core::TIntDegree degree, const unsigned 
 
 struct InserterUpdateProps
 {
-    const data::Inserter& proto;
-    data::InserterData& data;
+    const proto::Inserter& proto;
+    proto::InserterData& data;
 };
 
 using DropoffQueue = std::vector<InserterUpdateProps>;
@@ -53,21 +53,21 @@ void RotateInserters(DropoffQueue& dropoff_queue, PickupQueue& pickup_queue, con
 
     switch (props.data.status) {
 
-    case data::InserterData::Status::dropoff:
+    case proto::InserterData::Status::dropoff:
         props.data.rotationDegree -= props.proto.rotationSpeed;
 
-        if (props.data.rotationDegree <= data::RotationDegreeT(kMinInserterDegree)) {
+        if (props.data.rotationDegree <= proto::RotationDegreeT(kMinInserterDegree)) {
             props.data.rotationDegree = 0; // Prevents underflow if the inserter sits idle for a long time
             dropoff_queue.push_back(props);
         }
 
         return;
 
-    case data::InserterData::Status::pickup:
+    case proto::InserterData::Status::pickup:
         // Rotate the inserter
         props.data.rotationDegree += props.proto.rotationSpeed;
 
-        if (props.data.rotationDegree > data::RotationDegreeT(kMaxInserterDegree)) {
+        if (props.data.rotationDegree > proto::RotationDegreeT(kMaxInserterDegree)) {
             props.data.rotationDegree = kMaxInserterDegree; // Prevents overflow
             pickup_queue.push_back(props);
         }
@@ -84,7 +84,7 @@ void ProcessInserterDropoff(const DropoffQueue& dropoff_queue, game::LogicData& 
         auto& inserter_data = inserter_prop.data;
 
         if (inserter_data.dropoff.DropOff(logic_data, inserter_data.heldItem)) {
-            inserter_data.status = data::InserterData::Status::pickup;
+            inserter_data.status = proto::InserterData::Status::pickup;
         }
     }
 }
@@ -109,7 +109,7 @@ void ProcessInserterPickup(const PickupQueue& pickup_queue, game::LogicData& log
         if (result.first) {
             inserter_data.heldItem = result.second;
 
-            inserter_data.status = data::InserterData::Status::dropoff;
+            inserter_data.status = proto::InserterData::Status::dropoff;
         }
     }
 }
@@ -120,10 +120,10 @@ void game::InserterLogicUpdate(WorldData& world_data, LogicData& logic_data) {
 
     for (auto* chunk : world_data.LogicGetChunks()) {
         for (auto* tile_layer : chunk->GetLogicGroup(Chunk::LogicGroup::inserter)) {
-            auto* inserter_data = tile_layer->GetUniqueData<data::InserterData>();
+            auto* inserter_data = tile_layer->GetUniqueData<proto::InserterData>();
             assert(inserter_data);
 
-            const auto* proto_data = tile_layer->GetPrototypeData<data::Inserter>();
+            const auto* proto_data = tile_layer->GetPrototypeData<proto::Inserter>();
             assert(proto_data);
 
             RotateInserters(dropoff_queue, pickup_queue, {*proto_data, *inserter_data});

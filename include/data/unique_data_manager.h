@@ -6,30 +6,28 @@
 
 #include <vector>
 
-#include "data/prototype/framework/framework_base.h"
+#include "proto/framework/framework_base.h"
 
 namespace jactorio::data
 {
     class UniqueDataManager;
 
-    inline UniqueDataManager* active_unique_data_manager = nullptr;
-
     class UniqueDataManager
     {
         static constexpr UniqueDataIdT kDefaultId = 1;
 
-        using DataEntriesT = std::vector<UniqueDataBase*>;
+        using DataEntriesT = std::vector<proto::UniqueDataBase*>;
 
         struct DebugInfo;
 
     public:
         // For serializing
-        void AssignId(UniqueDataBase& framework_base) noexcept;
+        void AssignId(proto::UniqueDataBase& framework_base) noexcept;
 
 
         // For deserializing
-        void StoreRelocationEntry(UniqueDataBase& unique_data);
-        J_NODISCARD UniqueDataBase& RelocationTableGet(UniqueDataIdT id) const noexcept;
+        void StoreRelocationEntry(proto::UniqueDataBase& unique_data);
+        J_NODISCARD proto::UniqueDataBase& RelocationTableGet(UniqueDataIdT id) const noexcept;
 
 
         /// Resets internal data

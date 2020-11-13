@@ -17,7 +17,7 @@
 namespace jactorio::core
 {
     ///
-    /// Times execution time within a scope, to stop early, call stop() <br>
+    /// Times execution time within a scope, to stop early, call stop()
     /// Begins counter upon instantiation, stops upon being destroyed or stop called
     class ExecutionTimer
     {
@@ -36,7 +36,7 @@ namespace jactorio::core
 
 
         ///
-        /// Contains measured times of all Execution_timers <br>
+        /// Contains measured times of all Execution_timers
         /// Key is the timer_name_ of each instance
         /// Value is time taken in milliseconds
         static std::map<std::string, double> measuredTimes;

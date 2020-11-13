@@ -12,7 +12,7 @@
 #include "core/data_type.h"
 #include "data/cereal/serialization_type.h"
 #include "data/cereal/serialize.h"
-#include "data/prototype/framework/entity.h"
+#include "proto/framework/entity.h"
 
 namespace jactorio::game
 {
@@ -22,13 +22,13 @@ namespace jactorio::game
     /// Manages deferrals, prototypes inheriting 'Deferred'
     class DeferralTimer
     {
-        using DeferPrototypeT  = data::FEntity;
-        using DeferUniqueDataT = data::FEntityData;
+        using DeferPrototypeT  = proto::FEntity;
+        using DeferUniqueDataT = proto::FEntityData;
 
         struct CallbackContainerEntry
         {
             data::SerialProtoPtr<const DeferPrototypeT> prototype;
-            data::SerialUniqueDataPtr<data::UniqueDataBase> uniqueData;
+            data::SerialUniqueDataPtr<proto::UniqueDataBase> uniqueData;
 
 
             CEREAL_SERIALIZE(archive) {
@@ -111,24 +111,24 @@ namespace jactorio::game
 
         ///
         /// Used to fill the gap when a callback has been removed
-        class BlankCallback final : public data::FEntity
+        class BlankCallback final : public proto::FEntity
         {
 
         public:
             PROTOTYPE_CATEGORY(none);
             void PostLoadValidate(const data::PrototypeManager& /*manager*/) const override {}
 
-            data::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
+            proto::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
                 return nullptr;
             }
 
-            SpriteSetT OnRGetSpriteSet(data::Orientation /*orientation*/,
+            SpriteSetT OnRGetSpriteSet(proto::Orientation /*orientation*/,
                                        WorldData& /*world_data*/,
                                        const WorldCoord& /*world_coords*/) const override {
                 return 0;
             }
 
-            SpriteFrameT OnRGetSpriteFrame(const data::UniqueDataBase& /*unique_data*/,
+            SpriteFrameT OnRGetSpriteFrame(const proto::UniqueDataBase& /*unique_data*/,
                                            GameTickT /*game_tick*/) const override {
                 return 0;
             }
@@ -143,12 +143,12 @@ namespace jactorio::game
 
             void OnDeferTimeElapsed(WorldData& /*world_data*/,
                                     LogicData& /*logic_data*/,
-                                    data::UniqueDataBase* /*unique_data*/) const override {}
+                                    proto::UniqueDataBase* /*unique_data*/) const override {}
 
             void OnTileUpdate(WorldData& /*world_data*/,
                               const WorldCoord& /*emit_coords*/,
                               const WorldCoord& /*receive_coords*/,
-                              data::UpdateType /*type*/) const override {}
+                              proto::UpdateType /*type*/) const override {}
         } blankCallback_;
 
         struct DebugInfo

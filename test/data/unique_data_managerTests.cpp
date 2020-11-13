@@ -2,15 +2,15 @@
 
 #include <gtest/gtest.h>
 
-#include "data/prototype/assembly_machine.h"
+#include "proto/assembly_machine.h"
 
 namespace jactorio::data
 {
     TEST(UniqueDataManager, AssignId) {
         UniqueDataManager udm;
 
-        AssemblyMachineData data_1;
-        AssemblyMachineData data_2;
+        proto::AssemblyMachineData data_1;
+        proto::AssemblyMachineData data_2;
 
         udm.AssignId(data_1);
         udm.AssignId(data_2);
@@ -22,11 +22,11 @@ namespace jactorio::data
     TEST(UniqueDataManager, ClearResetId) {
         UniqueDataManager udm;
 
-        AssemblyMachineData data_1;
+        proto::AssemblyMachineData data_1;
         udm.AssignId(data_1);
 
         udm.RelocationClear();
-        AssemblyMachineData data_2;
+        proto::AssemblyMachineData data_2;
         udm.AssignId(data_2);
 
         EXPECT_EQ(data_1.internalId, 1);
@@ -36,12 +36,12 @@ namespace jactorio::data
     TEST(UniqueDataManager, StoreGetRelocationEntry) {
         UniqueDataManager udm;
 
-        AssemblyMachineData data_1;
+        proto::AssemblyMachineData data_1;
         data_1.internalId = 1;
         udm.StoreRelocationEntry(data_1);
 
 
-        AssemblyMachineData data_2;
+        proto::AssemblyMachineData data_2;
         data_2.internalId = 10;
         udm.StoreRelocationEntry(data_2);
 
@@ -52,12 +52,12 @@ namespace jactorio::data
     TEST(UniqueDataManager, StoreRelocationEntryOverwrite) {
         UniqueDataManager udm;
 
-        AssemblyMachineData data_1;
+        proto::AssemblyMachineData data_1;
         data_1.internalId = 1;
         udm.StoreRelocationEntry(data_1);
 
 
-        AssemblyMachineData data_2;
+        proto::AssemblyMachineData data_2;
         data_2.internalId = 1;
         udm.StoreRelocationEntry(data_2);
 
@@ -67,7 +67,7 @@ namespace jactorio::data
     TEST(UniqueDataManager, ClearRelocationTable) {
         UniqueDataManager udm;
 
-        AssemblyMachineData data_1;
+        proto::AssemblyMachineData data_1;
         data_1.internalId = 1;
         udm.StoreRelocationEntry(data_1);
 
