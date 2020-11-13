@@ -7,6 +7,7 @@
 #include "game/logic/conveyor_segment.h"
 #include "proto/inserter.h"
 #include "proto/sprite.h"
+#include "render/conveyor_offset.h"
 #include "render/renderer.h"
 
 using namespace jactorio;
@@ -100,16 +101,16 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     // The offsets for straight are always applied to bend left and right
     switch (line_segment.direction) {
     case proto::Orientation::up:
-        tile_x_offset += game::ConveyorProp::kLineUpLItemOffsetX;
+        tile_x_offset += ConveyorOffset::Up::kLX;
         break;
     case proto::Orientation::right:
-        tile_y_offset += game::ConveyorProp::kLineRightLItemOffsetY;
+        tile_y_offset += ConveyorOffset::Right::kLY;
         break;
     case proto::Orientation::down:
-        tile_x_offset += game::ConveyorProp::kLineDownLItemOffsetX;
+        tile_x_offset += ConveyorOffset::Down::kLX;
         break;
     case proto::Orientation::left:
-        tile_y_offset += game::ConveyorProp::kLineLeftLItemOffsetY;
+        tile_y_offset += ConveyorOffset::Left::kLY;
         break;
     }
 
@@ -118,16 +119,16 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     case game::ConveyorSegment::TerminationType::straight:
         switch (line_segment.direction) {
         case proto::Orientation::up:
-            tile_y_offset -= game::ConveyorProp::kLineLeftUpStraightItemOffset;
+            tile_y_offset -= ConveyorOffset::Up::kSY;
             break;
         case proto::Orientation::right:
-            tile_x_offset += game::ConveyorProp::kLineRightDownStraightItemOffset;
+            tile_x_offset += ConveyorOffset::Right::kSX;
             break;
         case proto::Orientation::down:
-            tile_y_offset += game::ConveyorProp::kLineRightDownStraightItemOffset;
+            tile_y_offset += ConveyorOffset::Down::kSY;
             break;
         case proto::Orientation::left:
-            tile_x_offset -= game::ConveyorProp::kLineLeftUpStraightItemOffset;
+            tile_x_offset -= ConveyorOffset::Left::kSX;
             break;
         }
         break;
@@ -135,16 +136,16 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     case game::ConveyorSegment::TerminationType::bend_left:
         switch (line_segment.direction) {
         case proto::Orientation::up:
-            tile_y_offset += game::ConveyorProp::kLineUpBlLItemOffsetY;
+            tile_y_offset += ConveyorOffset::Up::kBlLY;
             break;
         case proto::Orientation::right:
-            tile_x_offset += game::ConveyorProp::kLineRightBlLItemOffsetX;
+            tile_x_offset += ConveyorOffset::Right::kBlLX;
             break;
         case proto::Orientation::down:
-            tile_y_offset += game::ConveyorProp::kLineDownBlLItemOffsetY;
+            tile_y_offset += ConveyorOffset::Down::kBlLY;
             break;
         case proto::Orientation::left:
-            tile_x_offset += game::ConveyorProp::kLineLeftBlLItemOffsetX;
+            tile_x_offset += ConveyorOffset::Left::kBlLX;
             break;
         }
         break;
@@ -152,16 +153,16 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     case game::ConveyorSegment::TerminationType::bend_right:
         switch (line_segment.direction) {
         case proto::Orientation::up:
-            tile_y_offset += game::ConveyorProp::kLineUpBrLItemOffsetY;
+            tile_y_offset += ConveyorOffset::Up::kBrLY;
             break;
         case proto::Orientation::right:
-            tile_x_offset += game::ConveyorProp::kLineRightBrLItemOffsetX;
+            tile_x_offset += ConveyorOffset::Right::kBrLX;
             break;
         case proto::Orientation::down:
-            tile_y_offset += game::ConveyorProp::kLineDownBrLItemOffsetY;
+            tile_y_offset += ConveyorOffset::Down::kBrLY;
             break;
         case proto::Orientation::left:
-            tile_x_offset += game::ConveyorProp::kLineLeftBrLItemOffsetX;
+            tile_x_offset += ConveyorOffset::Left::kBrLX;
             break;
         }
         break;
@@ -171,16 +172,16 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
     case game::ConveyorSegment::TerminationType::left_only:
         switch (line_segment.direction) {
         case proto::Orientation::up:
-            tile_y_offset += game::ConveyorProp::kLineUpSingleSideItemOffsetY;
+            tile_y_offset += ConveyorOffset::Up::kSfY;
             break;
         case proto::Orientation::right:
-            tile_x_offset += game::ConveyorProp::kLineRightSingleSideItemOffsetX;
+            tile_x_offset += ConveyorOffset::Right::kSfX;
             break;
         case proto::Orientation::down:
-            tile_y_offset += game::ConveyorProp::kLineDownSingleSideItemOffsetY;
+            tile_y_offset += ConveyorOffset::Down::kSfY;
             break;
         case proto::Orientation::left:
-            tile_x_offset += game::ConveyorProp::kLineLeftSingleSideItemOffsetX;
+            tile_x_offset += ConveyorOffset::Left::kSfX;
             break;
         }
         break;
@@ -199,16 +200,16 @@ prepare_right:
     // The offsets for straight are always applied to bend left and right
     switch (line_segment.direction) {
     case proto::Orientation::up:
-        tile_x_offset += game::ConveyorProp::kLineUpRItemOffsetX;
+        tile_x_offset += ConveyorOffset::Up::kRX;
         break;
     case proto::Orientation::right:
-        tile_y_offset += game::ConveyorProp::kLineRightRItemOffsetY;
+        tile_y_offset += ConveyorOffset::Right::kRY;
         break;
     case proto::Orientation::down:
-        tile_x_offset += game::ConveyorProp::kLineDownRItemOffsetX;
+        tile_x_offset += ConveyorOffset::Down::kRX;
         break;
     case proto::Orientation::left:
-        tile_y_offset += game::ConveyorProp::kLineLeftRItemOffsetY;
+        tile_y_offset += ConveyorOffset::Left::kRY;
         break;
     }
 
@@ -218,16 +219,16 @@ prepare_right:
     case game::ConveyorSegment::TerminationType::straight:
         switch (line_segment.direction) {
         case proto::Orientation::up:
-            tile_y_offset -= game::ConveyorProp::kLineLeftUpStraightItemOffset;
+            tile_y_offset -= ConveyorOffset::Up::kSY;
             break;
         case proto::Orientation::right:
-            tile_x_offset += game::ConveyorProp::kLineRightDownStraightItemOffset;
+            tile_x_offset += ConveyorOffset::Right::kSX;
             break;
         case proto::Orientation::down:
-            tile_y_offset += game::ConveyorProp::kLineRightDownStraightItemOffset;
+            tile_y_offset += ConveyorOffset::Down::kSY;
             break;
         case proto::Orientation::left:
-            tile_x_offset -= game::ConveyorProp::kLineLeftUpStraightItemOffset;
+            tile_x_offset -= ConveyorOffset::Left::kSX;
             break;
         }
         break;
@@ -235,16 +236,16 @@ prepare_right:
     case game::ConveyorSegment::TerminationType::bend_left:
         switch (line_segment.direction) {
         case proto::Orientation::up:
-            tile_y_offset += game::ConveyorProp::kLineUpBlRItemOffsetY;
+            tile_y_offset += ConveyorOffset::Up::kBlRY;
             break;
         case proto::Orientation::right:
-            tile_x_offset += game::ConveyorProp::kLineRightBlRItemOffsetX;
+            tile_x_offset += ConveyorOffset::Right::kBlRX;
             break;
         case proto::Orientation::down:
-            tile_y_offset += game::ConveyorProp::kLineDownBlRItemOffsetY;
+            tile_y_offset += ConveyorOffset::Down::kBlRY;
             break;
         case proto::Orientation::left:
-            tile_x_offset += game::ConveyorProp::kLineLeftBlRItemOffsetX;
+            tile_x_offset += ConveyorOffset::Left::kBlRX;
             break;
         }
         break;
@@ -252,16 +253,16 @@ prepare_right:
     case game::ConveyorSegment::TerminationType::bend_right:
         switch (line_segment.direction) {
         case proto::Orientation::up:
-            tile_y_offset += game::ConveyorProp::kLineUpBrRItemOffsetY;
+            tile_y_offset += ConveyorOffset::Up::kBrRY;
             break;
         case proto::Orientation::right:
-            tile_x_offset += game::ConveyorProp::kLineRightBrRItemOffsetX;
+            tile_x_offset += ConveyorOffset::Right::kBrRX;
             break;
         case proto::Orientation::down:
-            tile_y_offset += game::ConveyorProp::kLineDownBrRItemOffsetY;
+            tile_y_offset += ConveyorOffset::Down::kBrRY;
             break;
         case proto::Orientation::left:
-            tile_x_offset += game::ConveyorProp::kLineLeftBrRItemOffsetX;
+            tile_x_offset += ConveyorOffset::Left::kBrRX;
             break;
         }
         break;
@@ -271,16 +272,16 @@ prepare_right:
     case game::ConveyorSegment::TerminationType::left_only:
         switch (line_segment.direction) {
         case proto::Orientation::up:
-            tile_y_offset += game::ConveyorProp::kLineUpSingleSideItemOffsetY;
+            tile_y_offset += ConveyorOffset::Up::kSfY;
             break;
         case proto::Orientation::right:
-            tile_x_offset += game::ConveyorProp::kLineRightSingleSideItemOffsetX;
+            tile_x_offset += ConveyorOffset::Right::kSfX;
             break;
         case proto::Orientation::down:
-            tile_y_offset += game::ConveyorProp::kLineDownSingleSideItemOffsetY;
+            tile_y_offset += ConveyorOffset::Down::kSfY;
             break;
         case proto::Orientation::left:
-            tile_x_offset += game::ConveyorProp::kLineLeftSingleSideItemOffsetX;
+            tile_x_offset += ConveyorOffset::Left::kSfX;
             break;
         }
         break;

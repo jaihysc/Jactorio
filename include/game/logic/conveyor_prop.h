@@ -8,6 +8,10 @@ namespace jactorio::game
 {
     struct ConveyorProp
     {
+        using ValueT = double;
+
+        ConveyorProp() = delete;
+
         // For storing line offsets during transitions, items are treated as having no width
 
         /* Placement of items on conveyor (Expressed as decimal percentages of a tile)
@@ -31,64 +35,10 @@ namespace jactorio::game
          */
 
         /// Width of one item on a belt (in tiles)
-        static constexpr double kItemWidth = 0.4;
+        static constexpr ValueT kItemWidth = 0.4;
 
         /// Distance left between each item when conveyor is fully compressed (in tiles)
-        static constexpr double kItemSpacing = 0.25;
-
-        // Number of tiles to offset items in order to line up on the L / R sides of the belt for all 4 directions
-        // Direction is direction of item movement for the conveyor
-
-        static constexpr double kLineBaseOffsetLeft  = 0.3;
-        static constexpr double kLineBaseOffsetRight = 0.7;
-
-        static constexpr double kLineLeftUpStraightItemOffset    = 0.25;
-        static constexpr double kLineRightDownStraightItemOffset = 0.75;
-
-        // up, right, down, left
-        static constexpr double kLineUpLItemOffsetX = kLineBaseOffsetLeft - kItemWidth / 2;
-        static constexpr double kLineUpRItemOffsetX = kLineBaseOffsetRight - kItemWidth / 2;
-
-        static constexpr double kLineRightLItemOffsetY = kLineBaseOffsetLeft - kItemWidth / 2;
-        static constexpr double kLineRightRItemOffsetY = kLineBaseOffsetRight - kItemWidth / 2;
-
-        static constexpr double kLineDownLItemOffsetX = kLineBaseOffsetRight - kItemWidth / 2;
-        static constexpr double kLineDownRItemOffsetX = kLineBaseOffsetLeft - kItemWidth / 2;
-
-        static constexpr double kLineLeftLItemOffsetY = kLineBaseOffsetRight - kItemWidth / 2;
-        static constexpr double kLineLeftRItemOffsetY = kLineBaseOffsetLeft - kItemWidth / 2;
-
-        // Bend left
-        static constexpr double kLineUpBlLItemOffsetY = kLineBaseOffsetRight - kItemWidth / 2;
-        static constexpr double kLineUpBlRItemOffsetY = kLineBaseOffsetLeft - kItemWidth / 2;
-
-        static constexpr double kLineRightBlLItemOffsetX = kLineBaseOffsetLeft - kItemWidth / 2;
-        static constexpr double kLineRightBlRItemOffsetX = kLineBaseOffsetRight - kItemWidth / 2;
-
-        static constexpr double kLineDownBlLItemOffsetY = kLineBaseOffsetLeft - kItemWidth / 2;
-        static constexpr double kLineDownBlRItemOffsetY = kLineBaseOffsetRight - kItemWidth / 2;
-
-        static constexpr double kLineLeftBlLItemOffsetX = kLineBaseOffsetRight - kItemWidth / 2;
-        static constexpr double kLineLeftBlRItemOffsetX = kLineBaseOffsetLeft - kItemWidth / 2;
-
-        // Bend right
-        static constexpr double kLineUpBrLItemOffsetY = kLineBaseOffsetLeft - kItemWidth / 2;
-        static constexpr double kLineUpBrRItemOffsetY = kLineBaseOffsetRight - kItemWidth / 2;
-
-        static constexpr double kLineRightBrLItemOffsetX = kLineBaseOffsetRight - kItemWidth / 2;
-        static constexpr double kLineRightBrRItemOffsetX = kLineBaseOffsetLeft - kItemWidth / 2;
-
-        static constexpr double kLineDownBrLItemOffsetY = kLineBaseOffsetRight - kItemWidth / 2;
-        static constexpr double kLineDownBrRItemOffsetY = kLineBaseOffsetLeft - kItemWidth / 2;
-
-        static constexpr double kLineLeftBrLItemOffsetX = kLineBaseOffsetLeft - kItemWidth / 2;
-        static constexpr double kLineLeftBrRItemOffsetX = kLineBaseOffsetRight - kItemWidth / 2;
-
-        // Feed side (left and right lanes are the same)
-        static constexpr double kLineUpSingleSideItemOffsetY    = kLineBaseOffsetRight - kItemWidth / 2;
-        static constexpr double kLineRightSingleSideItemOffsetX = kLineBaseOffsetLeft - kItemWidth / 2;
-        static constexpr double kLineDownSingleSideItemOffsetY  = kLineBaseOffsetLeft - kItemWidth / 2;
-        static constexpr double kLineLeftSingleSideItemOffsetX  = kLineBaseOffsetRight - kItemWidth / 2;
+        static constexpr ValueT kItemSpacing = 0.25;
 
 
         // When bending, the amounts below are reduced from the distance to the end of the next segment (see diagram
@@ -103,13 +53,13 @@ namespace jactorio::game
         //     |    |    *
         //     |    |    *
         //
-        static constexpr double kBendLeftLReduction = 0.7;
-        static constexpr double kBendLeftRReduction = 0.3;
+        static constexpr ValueT kBendLeftLReduction = 0.7;
+        static constexpr ValueT kBendLeftRReduction = 0.3;
 
-        static constexpr double kBendRightLReduction = 0.3;
-        static constexpr double kBendRightRReduction = 0.7;
+        static constexpr ValueT kBendRightLReduction = 0.3;
+        static constexpr ValueT kBendRightRReduction = 0.7;
 
-        static constexpr double kTargetSideOnlyReduction = 0.7;
+        static constexpr ValueT kTargetSideOnlyReduction = 0.7;
     };
 
 } // namespace jactorio::game
