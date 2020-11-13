@@ -72,13 +72,12 @@ set(JACTORIO_TEST_FILES
 
 	${JACTORIO_TEST_DIR}/data/local_parserTests.cpp
 	${JACTORIO_TEST_DIR}/data/prototype_managerTests.cpp
+	${JACTORIO_TEST_DIR}/data/pybind_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/save_game_managerTests.cpp
 	${JACTORIO_TEST_DIR}/data/unique_data_managerTests.cpp
 
 	${JACTORIO_TEST_DIR}/data/cereal/serialization_typeTests.cpp
 	${JACTORIO_TEST_DIR}/data/cereal/supportTests.cpp
-
-	${JACTORIO_TEST_DIR}/data/pybind/pybind_managerTests.cpp
 
 
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp

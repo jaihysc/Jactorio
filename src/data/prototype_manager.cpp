@@ -8,7 +8,7 @@
 #include "core/filesystem.h"
 #include "core/resource_guard.h"
 #include "data/local_parser.h"
-#include "data/pybind/pybind_manager.h"
+#include "data/pybind_manager.h"
 
 using namespace jactorio;
 

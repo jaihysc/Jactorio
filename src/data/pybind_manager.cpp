@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "data/pybind/pybind_manager.h"
+#include "data/pybind_manager.h"
 
 #include <pybind11/embed.h>
 #include <sstream>
@@ -12,7 +12,7 @@
 namespace py = pybind11;
 
 // Bindings to expose to python
-#include "data/pybind/pybind_bindings.h"
+#include "data/pybind/startup_bindings.h"
 
 py::object py_stdout;
 py::object py_stderr;

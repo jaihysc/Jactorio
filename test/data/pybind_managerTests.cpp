@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "data/pybind/pybind_manager.h"
+#include "data/pybind_manager.h"
 #include "proto/detail/exception.h"
 
 namespace jactorio::data

@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_MANAGER_H
-#define JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_MANAGER_H
+#ifndef JACTORIO_INCLUDE_DATA_PYBIND_MANAGER_H
+#define JACTORIO_INCLUDE_DATA_PYBIND_MANAGER_H
 #pragma once
 
 #include <string>
@@ -22,4 +22,4 @@ namespace jactorio::data
     void PyInterpreterTerminate();
 } // namespace jactorio::data
 
-#endif // JACTORIO_INCLUDE_DATA_PYBIND_PYBIND_MANAGER_H
+#endif // JACTORIO_INCLUDE_DATA_PYBIND_MANAGER_H
