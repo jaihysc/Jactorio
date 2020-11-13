@@ -98,7 +98,7 @@ namespace jactorio::proto
 
 
         ///
-        /// Adds a tile range, the order which this is called affects the order of the tile range <br>
+        /// Adds a tile range, the order which this is called affects the order of the tile range
         /// \remark Will not add if start_val is not set
         /// \param end_range Exclusive ending range, unless it is last item
         /// \param prototype FrameworkBase or inheritors

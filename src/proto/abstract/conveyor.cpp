@@ -235,7 +235,7 @@ static void ShiftSegmentHeadBackward(game::ConveyorSegment& line_segment) {
 ///
 /// Updates the world tiles which references a conveyor segment, props: line_segment_index, line_segment
 /// \param world_coords Beginning tile to update
-/// \param line_segment Beginning segment, traveling inverse Orientation line_segment.length tiles, <br>
+/// \param line_segment Beginning segment, traveling inverse Orientation line_segment.length tiles,
 /// all tiles set to reference this
 /// \param offset Offsets segment id numbering, world_coords must be also adjusted to the appropriate offset when
 /// calling

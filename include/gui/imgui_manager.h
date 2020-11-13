@@ -36,7 +36,7 @@ namespace jactorio::gui
 
 
     ///
-    /// Initializes the spritemap for rendering the character menus <br>
+    /// Initializes the spritemap for rendering the character menus
     /// \remark Requires Sprite::sprite_group::gui to be initialized
     void SetupCharacterData(render::RendererSprites& renderer_sprites);
 

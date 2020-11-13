@@ -11,7 +11,7 @@ namespace jactorio::data
     class PrototypeManager;
 
     ///
-    /// Parses localization files found in data/__name__/local/<lang>.cfg <br>
+    /// Parses localization files found in data/__name__/local/<lang>.cfg
     ///
     /// Only the currently selected language will be parsed.
     /// Parsed data will be added to data_raw in data_manager

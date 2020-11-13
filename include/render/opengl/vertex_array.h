@@ -26,7 +26,7 @@ namespace jactorio::render
         /// \remark Vertex_buffer must be deleted manually, it is not managed by the vertex array
         /// \param vb Vertex buffer to add to vertex array
         /// \param span Number of floats for one set of coordinates (2 for X and Y)
-        /// \param location Slot in vertex array in which vertex buffer is placed <br>
+        /// \param location Slot in vertex array in which vertex buffer is placed
         /// This must be managed manually to avoid conflicts
         void AddBuffer(const VertexBuffer* vb, unsigned span, unsigned location) const;
 

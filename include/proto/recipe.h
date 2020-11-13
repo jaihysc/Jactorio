@@ -44,8 +44,8 @@ namespace jactorio::proto
         static const Recipe* GetItemRecipe(const data::PrototypeManager& data_manager, const std::string& iname);
 
         ///
-        /// Returns raw materials for a recipe <br>
-        /// Assumes all provided names are valid <br>
+        /// Returns raw materials for a recipe
+        /// Assumes all provided names are valid
         /// A raw material is something which cannot be hand crafted
         static std::vector<RecipeItem> RecipeGetTotalRaw(const data::PrototypeManager& data_manager,
                                                          const std::string& iname);

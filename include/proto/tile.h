@@ -11,7 +11,7 @@ namespace jactorio::proto
     class Sprite;
 
     ///
-    /// Tiles which are auto-placed by the world generator <br>
+    /// Tiles which are auto-placed by the world generator
     /// Configure how the world generator places these tiles with a Noise_layer
     class Tile final : public FWorldObject
     {
