@@ -8,13 +8,15 @@
 
 #include "jactorio.h"
 
+using namespace jactorio;
+
 std::string executing_directory;
 
-std::string jactorio::core::GetExecutingDirectory() {
+std::string core::GetExecutingDirectory() {
     return executing_directory;
 }
 
-void jactorio::core::SetExecutingDirectory(const std::string& directory) {
+void core::SetExecutingDirectory(const std::string& directory) {
     std::string path = directory;
 
     // Convert backwards slashes to forwards if on windows
@@ -43,7 +45,7 @@ void jactorio::core::SetExecutingDirectory(const std::string& directory) {
     executing_directory = path;
 }
 
-std::string jactorio::core::ResolvePath(const std::string& path) {
+std::string core::ResolvePath(const std::string& path) {
     // Catch old usages of ResolvePath
     // if (!path.empty()) {
     // 	assert(path[0] != '~');
@@ -54,7 +56,7 @@ std::string jactorio::core::ResolvePath(const std::string& path) {
 }
 
 
-std::string jactorio::core::ReadFile(const std::string& path) {
+std::string core::ReadFile(const std::string& path) {
     const std::ifstream in(path);
 
     std::stringstream sstr;

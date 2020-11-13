@@ -10,11 +10,11 @@
 #include "render/opengl/texture.h"
 #include "render/renderer_exception.h"
 
-unsigned int jactorio::render::Texture::boundTextureId_ = 0;
+using namespace jactorio;
 
-jactorio::render::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer,
-                                   const DimensionT width,
-                                   const DimensionT height)
+unsigned int render::Texture::boundTextureId_ = 0;
+
+render::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer, const DimensionT width, const DimensionT height)
     : rendererId_(0), textureBuffer_(std::move(buffer)), width_(width), height_(height) {
 
     if (!textureBuffer_) {
@@ -45,11 +45,11 @@ jactorio::render::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer,
     DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, boundTextureId_));
 }
 
-jactorio::render::Texture::~Texture() {
+render::Texture::~Texture() {
     DEBUG_OPENGL_CALL(glDeleteTextures(1, &rendererId_));
 }
 
-void jactorio::render::Texture::Bind(const unsigned int slot) const {
+void render::Texture::Bind(const unsigned int slot) const {
     // Ensure there is sufficient slots to bind the texture
     int texture_units;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
@@ -63,6 +63,6 @@ void jactorio::render::Texture::Bind(const unsigned int slot) const {
     boundTextureId_ = rendererId_;
 }
 
-void jactorio::render::Texture::Unbind() {
+void render::Texture::Unbind() {
     DEBUG_OPENGL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }

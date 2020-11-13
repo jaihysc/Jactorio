@@ -14,12 +14,14 @@ namespace py = pybind11;
 // Bindings to expose to python
 #include "data/pybind/startup_bindings.h"
 
+using namespace jactorio;
+
 py::object py_stdout;
 py::object py_stderr;
 py::object py_stdout_buffer;
 py::object py_stderr_buffer;
 
-int jactorio::data::PyExec(const std::string& python_str, const std::string& file_name) {
+int data::PyExec(const std::string& python_str, const std::string& file_name) {
     try {
         // Redirect python sys.stdout to c++
         const auto string_io = py::module::import("io").attr("StringIO");
@@ -60,7 +62,7 @@ int jactorio::data::PyExec(const std::string& python_str, const std::string& fil
     }
 }
 
-void jactorio::data::PyInterpreterInit() {
+void data::PyInterpreterInit() {
     py::initialize_interpreter();
 
     // Used to redirect python sys.stdout
@@ -81,7 +83,7 @@ void jactorio::data::PyInterpreterInit() {
     LOG_MESSAGE(info, "Python interpreter initialized");
 }
 
-void jactorio::data::PyInterpreterTerminate() {
+void data::PyInterpreterTerminate() {
     // Redirect python sys.stdout
     const auto sysm     = py::module::import("sys");
     sysm.attr("stdout") = py_stdout;

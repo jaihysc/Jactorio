@@ -33,9 +33,8 @@ namespace jactorio::proto
 
             sprite.DefaultSpriteGroup({Sprite::SpriteGroup::terrain, Sprite::SpriteGroup::gui});
 
-            EXPECT_NE(std::find(group.begin(), group.end(), jactorio::proto::Sprite::SpriteGroup::terrain),
-                      group.end());
-            EXPECT_NE(std::find(group.begin(), group.end(), jactorio::proto::Sprite::SpriteGroup::gui), group.end());
+            EXPECT_NE(std::find(group.begin(), group.end(), Sprite::SpriteGroup::terrain), group.end());
+            EXPECT_NE(std::find(group.begin(), group.end(), Sprite::SpriteGroup::gui), group.end());
         }
         {
             // If not blank, use initialization provided sprite groups

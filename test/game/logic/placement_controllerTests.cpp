@@ -98,12 +98,12 @@ namespace jactorio::game
 
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
-        EXPECT_EQ(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 0, 0), true);
+        EXPECT_EQ(PlaceEntityAtCoords(worldData_, entity.get(), 0, 0), true);
 
         // Set entity and sprite layer
         EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), entity.get());
 
-        EXPECT_FALSE(chunk->Tiles()[0].GetLayer(jactorio::game::TileLayer::entity).IsMultiTile());
+        EXPECT_FALSE(chunk->Tiles()[0].GetLayer(TileLayer::entity).IsMultiTile());
     }
 
     TEST_F(PlacementControllerTest, PlaceEntity1x1Invalid) {
@@ -113,7 +113,7 @@ namespace jactorio::game
         // Invalid, placing on a base tile which is water
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
-        EXPECT_EQ(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 1, 0), false);
+        EXPECT_EQ(PlaceEntityAtCoords(worldData_, entity.get(), 1, 0), false);
         EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
     }
 
@@ -130,14 +130,14 @@ namespace jactorio::game
         {
             // const auto* chunk = world_data.get_chunk(0, 0);
 
-            EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 0, 0));
+            EXPECT_TRUE(PlaceEntityAtCoords(worldData_, entity.get(), 0, 0));
 
             // Set entity and sprite layer
             EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), entity.get());
         }
 
         // Valid Removal
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 0, 0));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, nullptr, 0, 0));
 
         // Should all be nullptr after being removed
         EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
@@ -149,7 +149,7 @@ namespace jactorio::game
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
         // Invalid Removal
-        EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 0, 0));
+        EXPECT_FALSE(PlaceEntityAtCoords(worldData_, nullptr, 0, 0));
 
         // Should all remain nullptr
         EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
@@ -167,7 +167,7 @@ namespace jactorio::game
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         int entity_index = 0;
@@ -177,8 +177,7 @@ namespace jactorio::game
                 EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(), entity.get());
 
                 // Should count up according to the rules specified in entity_index
-                EXPECT_EQ(chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
-                          entity_index++);
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(TileLayer::entity).GetMultiTileIndex(), entity_index++);
             }
         }
     }
@@ -194,7 +193,7 @@ namespace jactorio::game
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
-        EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 4, 5));
+        EXPECT_FALSE(PlaceEntityAtCoords(worldData_, entity.get(), 4, 5));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         for (int y = 5; y < 5 + 3; ++y) {
@@ -216,7 +215,7 @@ namespace jactorio::game
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
-        EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 2));
+        EXPECT_FALSE(PlaceEntityAtCoords(worldData_, entity.get(), 9, 2));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         for (int y = 5; y < 5 + 3; ++y) {
@@ -234,8 +233,8 @@ namespace jactorio::game
         entity->tileHeight = 3;
 
 
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
-        EXPECT_FALSE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 9));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
+        EXPECT_FALSE(PlaceEntityAtCoords(worldData_, entity.get(), 9, 9));
     }
 
     TEST_F(PlacementControllerTest, RemoveEntity3x3Valid1) {
@@ -247,8 +246,8 @@ namespace jactorio::game
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 5, 5));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, nullptr, 5, 5));
 
         // Check that it has been deleted
         for (int y = 5; y < 5 + 3; ++y) {
@@ -270,8 +269,8 @@ namespace jactorio::game
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 7, 5));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, entity.get(), 5, 5));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, nullptr, 7, 5));
         // Check that it has been deleted
         for (int y = 5; y < 5 + 3; ++y) {
             for (int x = 5; x < 5 + 3; ++x) {
@@ -297,7 +296,7 @@ namespace jactorio::game
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         int entity_index = 0;
@@ -307,14 +306,12 @@ namespace jactorio::game
                 EXPECT_EQ(chunk->Tiles()[index].GetEntityPrototype(), entity.get());
 
                 // Should count up according to the rules specified in entity_index
-                EXPECT_EQ(chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileIndex(),
-                          entity_index++);
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(TileLayer::entity).GetMultiTileIndex(), entity_index++);
 
 
                 // Ensure tile width and height are properly set
-                EXPECT_EQ(chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData().span, 3);
-                EXPECT_EQ(chunk->Tiles()[index].GetLayer(jactorio::game::TileLayer::entity).GetMultiTileData().height,
-                          4);
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(TileLayer::entity).GetMultiTileData().span, 3);
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(TileLayer::entity).GetMultiTileData().height, 4);
             }
         }
     }
@@ -328,8 +325,8 @@ namespace jactorio::game
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
-        EXPECT_TRUE(jactorio::game::PlaceEntityAtCoords(worldData_, nullptr, 9, 13));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
+        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, nullptr, 9, 13));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         for (int y = 10; y < 10 + 4; ++y) {

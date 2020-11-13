@@ -35,6 +35,6 @@ namespace jactorio::data
     }
 
     TEST_F(PybindManagerTest, ValidPythonStr) {
-        EXPECT_EQ(jactorio::data::PyExec("print(\"Hello\")"), 0);
+        EXPECT_EQ(PyExec("print(\"Hello\")"), 0);
     }
 } // namespace jactorio::data

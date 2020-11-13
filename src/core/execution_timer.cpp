@@ -4,18 +4,20 @@
 
 #include "core/convert.h"
 
-std::map<std::string, double> jactorio::core::ExecutionTimer::measuredTimes = std::map<std::string, double>();
+using namespace jactorio;
 
-jactorio::core::ExecutionTimer::ExecutionTimer(const std::string& name) {
+std::map<std::string, double> core::ExecutionTimer::measuredTimes = std::map<std::string, double>();
+
+core::ExecutionTimer::ExecutionTimer(const std::string& name) {
     timerName_ = name;
     startTime_ = std::chrono::high_resolution_clock::now();
 }
 
-jactorio::core::ExecutionTimer::~ExecutionTimer() {
+core::ExecutionTimer::~ExecutionTimer() {
     Stop();
 }
 
-void jactorio::core::ExecutionTimer::Stop() const noexcept {
+void core::ExecutionTimer::Stop() const noexcept {
     const auto start = std::chrono::time_point_cast<std::chrono::microseconds>(startTime_).time_since_epoch().count();
 
     const auto end_time = std::chrono::high_resolution_clock::now();

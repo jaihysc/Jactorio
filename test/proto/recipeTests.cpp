@@ -15,7 +15,7 @@ namespace jactorio::proto
 
     TEST_F(RecipeTest, GetItemRecipe) {
         // Allows for fast lookup of item recipes instead of searching through an entire unordered_map
-        EXPECT_EQ(jactorio::proto::Recipe::GetItemRecipe(dataManager_, "non-existent-item"), nullptr);
+        EXPECT_EQ(Recipe::GetItemRecipe(dataManager_, "non-existent-item"), nullptr);
 
         auto& laptop_recipe   = dataManager_.AddProto<Recipe>();
         laptop_recipe.product = {"Laptop", 1};

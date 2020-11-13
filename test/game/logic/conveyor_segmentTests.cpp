@@ -146,12 +146,10 @@ namespace jactorio::game
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 0);
 
         line_segment->AppendItem(true, 0, *itemProto_); // Not ok, offset changed to ConveyorProp::kItemSpacing
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(),
-                         jactorio::game::ConveyorProp::kItemSpacing);
+        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), ConveyorProp::kItemSpacing);
 
         line_segment->AppendItem(true, 0, *itemProto_); // Not ok, offset changed to ConveyorProp::kItemSpacing
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].dist.getAsDouble(),
-                         jactorio::game::ConveyorProp::kItemSpacing);
+        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].dist.getAsDouble(), ConveyorProp::kItemSpacing);
     }
 
     TEST_F(ConveyorSegmentTest, InsertItem) {
