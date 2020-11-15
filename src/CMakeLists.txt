@@ -48,6 +48,7 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/game/logic/placement_controller.cpp
         ${JACTORIO_DIR}/game/logic_loop.cpp
 
+        ${JACTORIO_DIR}/game/player/keybind_manager.cpp
         ${JACTORIO_DIR}/game/player/player_data.cpp
 
         ${JACTORIO_DIR}/game/world/chunk.cpp
