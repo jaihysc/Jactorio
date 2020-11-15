@@ -4,7 +4,7 @@
 
 using namespace jactorio;
 
-game::KeybindManager::KeybindManager(KeyInput& input) {}
+game::KeybindManager::KeybindManager(InputManager& input) {}
 
 void game::KeybindManager::ChangeActionInput(PlayerAction action,
                                              SDL_KeyCode key,

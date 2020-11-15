@@ -9,13 +9,13 @@
 
 namespace jactorio::game
 {
-    class KeyInput;
+    class InputManager;
     struct GameDataGlobal;
 
     class KeybindManager
     {
     public:
-        explicit KeybindManager(KeyInput& input);
+        explicit KeybindManager(InputManager& input);
 
         ///
         /// Modifies the keyboard input which correlates to the provided action

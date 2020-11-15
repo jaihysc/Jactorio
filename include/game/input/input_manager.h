@@ -12,7 +12,7 @@
 
 namespace jactorio::game
 {
-    class KeyInput
+    class InputManager
     {
         using InputCallback = std::function<void()>;
         using CallbackId    = uint64_t;

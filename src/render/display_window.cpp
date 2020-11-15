@@ -227,9 +227,9 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
 
         const auto keymod = static_cast<SDL_Keymod>(i_keymod);
 
-        game::KeyInput::SetInput(static_cast<SDL_KeyCode>(sdl_event.key.keysym.sym),
-                                 game::KeyInput::ToInputAction(sdl_event.key.type, sdl_event.key.repeat),
-                                 keymod);
+        game::InputManager::SetInput(static_cast<SDL_KeyCode>(sdl_event.key.keysym.sym),
+                                     game::InputManager::ToInputAction(sdl_event.key.type, sdl_event.key.repeat),
+                                     keymod);
     } break;
 
         // Mouse events
@@ -272,7 +272,7 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
             break;
         }
 
-        game::KeyInput::SetInput(mouse_input, action, KMOD_NONE);
+        game::InputManager::SetInput(mouse_input, action, KMOD_NONE);
     } break;
 
     default:

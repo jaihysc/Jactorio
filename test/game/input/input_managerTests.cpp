@@ -12,7 +12,7 @@ namespace jactorio::game
     class InputManagerTest : public testing::Test
     {
     protected:
-        KeyInput keyInput_;
+        InputManager keyInput_;
         int counter_ = 0;
 
         void TearDown() override {
