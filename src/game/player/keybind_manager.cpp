@@ -2,16 +2,33 @@
 
 #include "game/player/keybind_manager.h"
 
+#include "jactorio.h"
+
 using namespace jactorio;
 
-game::KeybindManager::KeybindManager(InputManager& input) {}
+void game::KeybindManager::ChangeActionInput(PlayerAction::Type action_type,
+                                             const SDL_KeyCode key,
+                                             const InputAction key_action,
+                                             const SDL_Keymod mods) {
+    const auto i_action = static_cast<int>(action_type);
+    assert(i_action < static_cast<int>(PlayerAction::kActionCount_));
 
-void game::KeybindManager::ChangeActionInput(PlayerAction action,
-                                             SDL_KeyCode key,
-                                             InputAction key_action,
-                                             SDL_Keymod mods) {}
+    auto& callback_id = actionCallbackId_[i_action];
+    if (callback_id != 0) {
+        // TODO unsubscribe
+        // inputManager_.Unsubscribe(callback_id);
+    }
 
-void game::KeybindManager::ChangeActionInput(PlayerAction action,
+    callback_id = inputManager_.Register(
+        [this, action_type]() {
+            PlayerAction::GetExecutor(action_type)(dataGlobal_); //
+        },
+        key,
+        key_action,
+        mods);
+}
+
+void game::KeybindManager::ChangeActionInput(PlayerAction::Type action_type,
                                              MouseInput key,
                                              InputAction key_action,
                                              SDL_Keymod mods) {}

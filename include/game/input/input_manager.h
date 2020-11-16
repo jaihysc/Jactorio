@@ -15,7 +15,6 @@ namespace jactorio::game
     class InputManager
     {
         using InputCallback = std::function<void()>;
-        using CallbackId    = uint64_t;
 
         /// Positive = SDL_KeyCode
         /// Negative = MouseInput * -1
@@ -29,6 +28,9 @@ namespace jactorio::game
         static std::unordered_map<IntKeyMouseCodePair, InputKeyData> activeInputs_;
 
     public:
+        /// 0 indicates invalid ID
+        using CallbackId = uint64_t;
+
         ///
         /// Sets the state of an input
         /// Callbacks for the respective inputs are called when CallCallbacks() is called
@@ -38,22 +40,6 @@ namespace jactorio::game
 
         // ======================================================================
 
-    private:
-        // Increments with each new assigned callback, one is probably not having 4 million registered callbacks
-        // so this doesn't need to be decremented
-        CallbackId callbackId_ = 1;
-
-
-        // tuple format: key, action, mods
-        // id of callbacks registered to the tuple
-        std::unordered_map<InputKeyData, std::vector<CallbackId>, core::hash<InputKeyData>> callbackIds_{};
-
-        std::unordered_map<CallbackId, InputCallback> inputCallbacks_{};
-
-
-        void CallCallbacks(const InputKeyData& input);
-
-    public:
         ///
         /// Registers a keyboard input callback which will be called when the specified input is activated
         /// \return id of the registered callback, 0 Indicates error
@@ -86,6 +72,21 @@ namespace jactorio::game
 
         ///
         static InputAction ToInputAction(int action, bool repeat);
+
+    private:
+        // Increments with each new assigned callback, one is probably not having 4 million registered callbacks
+        // so this doesn't need to be decremented
+        CallbackId callbackId_ = 1;
+
+
+        // tuple format: key, action, mods
+        // id of callbacks registered to the tuple
+        std::unordered_map<InputKeyData, std::vector<CallbackId>, core::hash<InputKeyData>> callbackIds_{};
+
+        std::unordered_map<CallbackId, InputCallback> inputCallbacks_{};
+
+
+        void CallCallbacks(const InputKeyData& input);
     };
 } // namespace jactorio::game
 

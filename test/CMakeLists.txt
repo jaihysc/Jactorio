@@ -96,6 +96,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/keybind_managerTests.cpp
+	${JACTORIO_TEST_DIR}/game/player/player_actionTests.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_dataTests_recipe.cpp
