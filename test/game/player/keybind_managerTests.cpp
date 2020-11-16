@@ -9,45 +9,65 @@
 
 namespace jactorio::game
 {
+    class KeybindManagerTest : public testing::Test
+    {
+    protected:
+        InputManager inputManager_;
+        GameDataGlobal dataGlobal_;
+        KeybindManager keybindManager_{inputManager_, dataGlobal_};
+
+        ///
+        /// Expects the PlayerAction test to be called after executing provided function f
+        void ExpectTestActionCalled(const std::function<void()>& f) const {
+            EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionX(), 0.f);
+            EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionY(), 0.f);
+
+            f();
+
+            EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionX(), -100.f);
+            EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionY(), 120.f);
+        }
+    };
+
     ///
-    /// Should set a input to trigger the action
-    TEST(KeybindManager, ChangeActionInput) {
-        InputManager input_manager;
-        GameDataGlobal data_global;
-        KeybindManager keybind_manager(input_manager, data_global);
+    /// Should set a keyboard input to trigger the action
+    TEST_F(KeybindManagerTest, ChangeActionInput) {
+        keybindManager_.ChangeActionInput(PlayerAction::Type::test, SDLK_0, InputAction::key_down);
 
-        keybind_manager.ChangeActionInput(PlayerAction::Type::test, SDLK_0, InputAction::key_down);
+        ExpectTestActionCalled([this]() {
+            InputManager::SetInput(SDLK_0, InputAction::key_down);
+            inputManager_.Raise();
+        });
+    }
 
-        EXPECT_FLOAT_EQ(data_global.player.world.GetPositionX(), 0.f);
-        EXPECT_FLOAT_EQ(data_global.player.world.GetPositionY(), 0.f);
+    ///
+    /// Should set a mouse input to trigger the action
+    TEST_F(KeybindManagerTest, MouseChangeActionInput) {
+        keybindManager_.ChangeActionInput(PlayerAction::Type::test, MouseInput::left, InputAction::key_down, KMOD_LALT);
 
-        InputManager::SetInput(SDLK_0, InputAction::key_down);
-        input_manager.Raise();
-
-        EXPECT_FLOAT_EQ(data_global.player.world.GetPositionX(), -100.f);
-        EXPECT_FLOAT_EQ(data_global.player.world.GetPositionY(), 120.f);
+        ExpectTestActionCalled([this]() {
+            InputManager::SetInput(MouseInput::left, InputAction::key_down, KMOD_LALT);
+            inputManager_.Raise();
+        });
     }
 
     ///
     /// The previous input for an action should be unsubscribed from and no longer trigger the action
-    TEST(KeybindManager, UnsubscribePreviousInput) {
-        InputManager input_manager;
-        GameDataGlobal data_global;
-        KeybindManager keybind_manager(input_manager, data_global);
+    TEST_F(KeybindManagerTest, UnsubscribePreviousInput) {
+        keybindManager_.ChangeActionInput(PlayerAction::Type::test, SDLK_0, InputAction::key_down);
+        keybindManager_.ChangeActionInput(PlayerAction::Type::test, SDLK_1, InputAction::key_up, KMOD_CAPS);
+        keybindManager_.ChangeActionInput(PlayerAction::Type::test, MouseInput::right, InputAction::key_up);
 
-        keybind_manager.ChangeActionInput(PlayerAction::Type::test, SDLK_0, InputAction::key_down);
-        keybind_manager.ChangeActionInput(PlayerAction::Type::test, SDLK_1, InputAction::key_up, KMOD_CAPS);
-
+        // Does nothing because unsubscribed
         InputManager::SetInput(SDLK_0, InputAction::key_down);
-        input_manager.Raise();
-
-        EXPECT_FLOAT_EQ(data_global.player.world.GetPositionX(), 0.f);
-        EXPECT_FLOAT_EQ(data_global.player.world.GetPositionY(), 0.f);
+        inputManager_.Raise();
 
         InputManager::SetInput(SDLK_1, InputAction::key_up, KMOD_CAPS);
-        input_manager.Raise();
+        inputManager_.Raise();
 
-        EXPECT_FLOAT_EQ(data_global.player.world.GetPositionX(), -100.f);
-        EXPECT_FLOAT_EQ(data_global.player.world.GetPositionY(), 120.f);
+        ExpectTestActionCalled([this]() {
+            InputManager::SetInput(MouseInput::right, InputAction::key_up);
+            inputManager_.Raise();
+        });
     }
 } // namespace jactorio::game
