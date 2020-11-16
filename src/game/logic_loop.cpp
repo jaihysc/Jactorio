@@ -121,9 +121,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     common.prototypeLoadingComplete = true;
 
 
-    // TODO temporary location for keybind manager
-    KeybindManager keybind_manager(common.gameDataLocal.input.key, common.GetDataGlobal());
-    keybind_manager.LoadDefaultKeybinds();
+    common.keybindManager.LoadDefaultKeybinds();
 
     LogicLoop(common);
 

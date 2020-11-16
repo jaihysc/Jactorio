@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include "game/game_data.h"
 #include "game/player/player_action.h"
 
 namespace jactorio::game

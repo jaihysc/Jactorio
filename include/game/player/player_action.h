@@ -4,9 +4,9 @@
 #define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_ACTION_H
 #pragma once
 
-#include <functional>
+#include <array>
 
-#include "game/game_data.h"
+#include "jactorio.h"
 
 namespace jactorio::game
 {
@@ -36,7 +36,7 @@ namespace jactorio::game
 
     struct PlayerAction
     {
-        using Executor = std::function<void(GameDataGlobal& data_global)>;
+        using Executor = void (*)(GameDataGlobal& data_global);
 
 #define J_CREATE_ACTION(enum_name__, executor__) enum_name__,
         enum class Type

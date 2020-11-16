@@ -231,6 +231,40 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
     }
 }
 
+// Options menu
+
+///
+/// Allows the user to change keybinds
+void OptionKeybindMenu(ThreadedLoopCommon& common) {
+    using namespace gui;
+
+    const GuiMenu menu;
+    SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    menu.Begin("_option_change_keybind_menu");
+
+    // TODO
+    common.keybindManager.ChangeActionInput(
+        game::PlayerAction::Type::place_entity, SDLK_0, game::InputAction::key_down);
+
+    MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
+}
+
+///
+/// Presents Various submenus for options of the game
+void OptionsMenu(ThreadedLoopCommon& common) {
+    using namespace gui;
+
+    const GuiMenu menu;
+    SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    menu.Begin("_options_menu");
+
+    if (MenuButton("Keybinds")) {
+        common.mainMenuData.currentMenu = MainMenuData::Window::option_change_keybind;
+    }
+
+    MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
+}
+
 ///
 /// \return true if a submenu was drawn
 bool DrawSubmenu(ThreadedLoopCommon& common) {
@@ -245,6 +279,13 @@ bool DrawSubmenu(ThreadedLoopCommon& common) {
         return true;
     case gui::MainMenuData::Window::save_game:
         SaveGameMenu(common);
+        return true;
+
+    case gui::MainMenuData::Window::options:
+        OptionsMenu(common);
+        return true;
+    case gui::MainMenuData::Window::option_change_keybind:
+        OptionKeybindMenu(common);
         return true;
 
 
@@ -284,6 +325,10 @@ void gui::StartMenu(ThreadedLoopCommon& common) {
         common.mainMenuData.currentMenu = MainMenuData::Window::load_game;
     }
 
+    if (MenuButton("Options")) {
+        common.mainMenuData.currentMenu = MainMenuData::Window::options;
+    }
+
     if (MenuButton("Quit")) {
         ChangeGameState(common, ThreadedLoopCommon::GameState::quit);
     }
@@ -308,6 +353,11 @@ void gui::MainMenu(ThreadedLoopCommon& common) {
     if (MenuButton("Save game")) {
         common.mainMenuData.currentMenu = MainMenuData::Window::save_game;
     }
+
+    if (MenuButton("Options")) {
+        common.mainMenuData.currentMenu = MainMenuData::Window::options;
+    }
+
 
     if (MenuButton("Quit")) {
         ChangeGameState(common, ThreadedLoopCommon::GameState::main_menu);

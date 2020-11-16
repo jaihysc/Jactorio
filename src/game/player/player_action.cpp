@@ -2,6 +2,7 @@
 
 #include "game/player/player_action.h"
 
+#include "game/game_data.h"
 #include "gui/imgui_manager.h"
 #include "gui/menus.h"
 

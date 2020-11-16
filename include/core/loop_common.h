@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "game/game_data.h"
+#include "game/player/keybind_manager.h"
 #include "gui/main_menu_data.h"
 
 namespace jactorio
@@ -43,6 +44,8 @@ namespace jactorio
         std::mutex worldDataMutex;
 
         game::GameDataLocal gameDataLocal;
+        game::KeybindManager keybindManager{gameDataLocal.input.key, GetDataGlobal()};
+
 
         GameState gameState = GameState::main_menu;
         gui::MainMenuData mainMenuData;
