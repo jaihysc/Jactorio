@@ -46,7 +46,8 @@ void render::ChangeWindowSize(game::EventData& event,
     window_x = window_size_x;
     window_y = window_size_y;
 
-    event.SubscribeOnce(game::EventType::renderer_tick, []() { main_renderer->GlResizeWindow(window_x, window_y); });
+    event.SubscribeOnce(game::EventType::renderer_tick,
+                        [](auto& /*e*/) { main_renderer->GlResizeWindow(window_x, window_y); });
 
     LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", window_size_x, window_size_y);
 }

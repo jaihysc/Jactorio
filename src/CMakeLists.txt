@@ -36,6 +36,8 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/data/unique_data_manager.cpp
 
 
+        ${JACTORIO_DIR}/game/event/event.cpp
+
         ${JACTORIO_DIR}/game/input/input_manager.cpp
         ${JACTORIO_DIR}/game/input/mouse_selection.cpp
 

@@ -8,21 +8,19 @@ namespace jactorio::game
 {
     enum class EventType
     {
-        // TODO world gen events, entity, player are not implemented
         none = 0,
 
         // User playing the game
 
         // Game window
-        window_move,
-        window_resize,
+        // window_move,
+        // window_resize,
 
         // Keyboard/mouse input
-        key_press,
-        key_repeat,
-        key_release,
-        mouse_move,
-        mouse_scroll,
+        keyboard_activity, // Keyboard key has activity
+        mouse_activity,    // Mouse key has activity
+        // mouse_move,
+        // mouse_scroll,
 
 
         // In-game
@@ -31,23 +29,23 @@ namespace jactorio::game
         renderer_tick, // Called prior event tick PRIOR to rendering
 
         // World gen
-        game_chunk_generated,
+        game_chunk_generated, // TODO unimplemented
 
         // Player
-        game_player_mine,
-        game_gui_open,
-        game_gui_character_open,
+        // game_player_mine,
+        game_gui_open, // TODO unimplemented
+        // game_gui_character_open,
 
         // Entity
-        game_entity_build,
-        game_entity_damaged,
-        game_entity_death,
+        // game_entity_build,
+        // game_entity_damaged,
+        // game_entity_death,
     };
 
 #define BIT_F(n) (1 << (n))
 
     // Bitfield of categories
-    enum EventCategory
+    enum class EventCategory
     {
         none = 0,
 
