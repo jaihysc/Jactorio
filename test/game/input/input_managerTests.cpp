@@ -160,13 +160,12 @@ namespace jactorio::game
 
         keyInput_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
 
-        keyInput_.Unsubscribe(callback_id, SDLK_SPACE, InputAction::key_pressed);
+        keyInput_.Unsubscribe(callback_id);
 
-        keyInput_.SetInput(SDLK_SPACE, InputAction::key_down);
+        InputManager::SetInput(SDLK_SPACE, InputAction::key_down);
         keyInput_.Raise();
 
-        // Only one of the callbacks was erased, therefore it should increment counter2 only once
-        // instead of twice
+        // key_down unsubscribed, before repeat still subscribed, increment only once instead of twice
         EXPECT_EQ(counter_, 1);
     }
 

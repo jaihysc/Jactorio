@@ -15,8 +15,7 @@ void game::KeybindManager::ChangeActionInput(PlayerAction::Type action_type,
 
     auto& callback_id = actionCallbackId_[i_action];
     if (callback_id != 0) {
-        // TODO unsubscribe
-        // inputManager_.Unsubscribe(callback_id);
+        inputManager_.Unsubscribe(callback_id);
     }
 
     callback_id = inputManager_.Register(

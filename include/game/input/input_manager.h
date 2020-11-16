@@ -64,7 +64,7 @@ namespace jactorio::game
 
         ///
         /// Removes specified callback at callback_id
-        void Unsubscribe(CallbackId callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods = KMOD_NONE);
+        void Unsubscribe(CallbackId callback_id);
 
         ///
         /// Deletes all callback data

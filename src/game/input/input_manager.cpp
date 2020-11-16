@@ -117,17 +117,18 @@ void game::InputManager::Raise() {
     }
 }
 
-void game::InputManager::Unsubscribe(const CallbackId callback_id,
-                                     SDL_KeyCode key,
-                                     InputAction action,
-                                     SDL_Keymod mods) {
-    auto& id_vector = callbackIds_[{key, action, mods}];
+void game::InputManager::Unsubscribe(const CallbackId callback_id) {
+    for (auto& [key, ids] : callbackIds_) {
+        for (auto id : ids) {
+            if (id == callback_id) {
+                // Erase the callback id to the callback
+                ids.erase(std::remove(ids.begin(), ids.end(), callback_id), ids.end());
 
-    // Erase the callback id to the callback
-    id_vector.erase(std::remove(id_vector.begin(), id_vector.end(), callback_id), id_vector.end());
-
-    // Erase the callback itself
-    inputCallbacks_.erase(callback_id);
+                // Erase the callback itself
+                inputCallbacks_.erase(callback_id);
+            }
+        }
+    }
 }
 
 void game::InputManager::ClearData() {
