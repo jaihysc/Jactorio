@@ -13,11 +13,25 @@ namespace jactorio::game
     struct GameDataGlobal;
 
     // Associates enum key (action) with method (executor)
-#define J_PLAYER_ACTIONS                                \
-    J_CREATE_ACTION(player_move_up, PlayerMoveUp)       \
-    J_CREATE_ACTION(player_move_right, PlayerMoveRight) \
-    J_CREATE_ACTION(player_move_down, PlayerMoveDown)   \
-    J_CREATE_ACTION(player_move_left, PlayerMoveLeft)   \
+#define J_PLAYER_ACTIONS                                                           \
+    J_CREATE_ACTION(player_move_up, PlayerMoveUp)                                  \
+    J_CREATE_ACTION(player_move_right, PlayerMoveRight)                            \
+    J_CREATE_ACTION(player_move_down, PlayerMoveDown)                              \
+    J_CREATE_ACTION(player_move_left, PlayerMoveLeft)                              \
+                                                                                   \
+    J_CREATE_ACTION(deselect_held_item, DeselectHeldItem)                          \
+                                                                                   \
+    J_CREATE_ACTION(place_entity, PlaceEntity)                                     \
+    J_CREATE_ACTION(activate_layer, ActivateLayer)                                 \
+    J_CREATE_ACTION(pickup_or_mine_entity, PickupOrMineEntity)                     \
+                                                                                   \
+    J_CREATE_ACTION(rotate_entity_clockwise, RotateEntityClockwise)                \
+    J_CREATE_ACTION(rotate_entity_counter_clockwise, RotateEntityCounterClockwise) \
+                                                                                   \
+    J_CREATE_ACTION(toggle_main_menu, ToggleMainMenu)                              \
+    J_CREATE_ACTION(toggle_debug_menu, ToggleDebugMenu)                            \
+    J_CREATE_ACTION(toggle_character_menu, ToggleCharacterMenu)                    \
+                                                                                   \
     J_CREATE_ACTION(test, ActionTest)
 
     struct PlayerAction
@@ -46,6 +60,19 @@ namespace jactorio::game
         static void PlayerMoveRight(GameDataGlobal& data_global);
         static void PlayerMoveDown(GameDataGlobal& data_global);
         static void PlayerMoveLeft(GameDataGlobal& data_global);
+
+        static void DeselectHeldItem(GameDataGlobal& data_global);
+
+        static void PlaceEntity(GameDataGlobal& data_global);
+        static void ActivateLayer(GameDataGlobal& data_global);
+        static void PickupOrMineEntity(GameDataGlobal& data_global);
+
+        static void RotateEntityClockwise(GameDataGlobal& data_global);
+        static void RotateEntityCounterClockwise(GameDataGlobal& data_global);
+
+        static void ToggleMainMenu(GameDataGlobal& data_global);
+        static void ToggleDebugMenu(GameDataGlobal& data_global);
+        static void ToggleCharacterMenu(GameDataGlobal& data_global);
 
         /// For test use only, sets player position to -100, 120
         static void ActionTest(GameDataGlobal& data_global);

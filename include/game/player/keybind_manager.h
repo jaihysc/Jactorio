@@ -38,6 +38,11 @@ namespace jactorio::game
                                InputAction key_action,
                                SDL_Keymod mods = KMOD_NONE);
 
+
+        ///
+        /// Uses pre-determined default keybinds for actions
+        void LoadDefaultKeybinds();
+
     private:
         InputManager& inputManager_;
         GameDataGlobal& dataGlobal_;
