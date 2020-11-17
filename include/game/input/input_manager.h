@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <unordered_map>
+#include <vector>
 
 #include "core/hashers.h"
 #include "game/input/input_type.h"
