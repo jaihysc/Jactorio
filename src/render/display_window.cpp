@@ -12,6 +12,7 @@
 
 #include "proto/sprite.h"
 
+#include "game/event/hardware_events.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 
@@ -225,11 +226,13 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
         i_keymod -= static_cast<int>(KMOD_NUM);
         i_keymod -= static_cast<int>(KMOD_CAPS);
 
-        const auto keymod = static_cast<SDL_Keymod>(i_keymod);
+        const auto keycode      = static_cast<SDL_KeyCode>(sdl_event.key.keysym.sym);
+        const auto input_action = game::InputManager::ToInputAction(sdl_event.key.type, sdl_event.key.repeat);
+        const auto keymod       = static_cast<SDL_Keymod>(i_keymod);
 
-        game::InputManager::SetInput(static_cast<SDL_KeyCode>(sdl_event.key.keysym.sym),
-                                     game::InputManager::ToInputAction(sdl_event.key.type, sdl_event.key.repeat),
-                                     keymod);
+        game::InputManager::SetInput(keycode, input_action, keymod);
+        common.gameDataLocal.event.Raise<game::KeyboardActivityEvent>(
+            game::EventType::keyboard_activity, keycode, input_action, keymod);
     } break;
 
         // Mouse events

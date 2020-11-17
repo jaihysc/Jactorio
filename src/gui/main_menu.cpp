@@ -6,6 +6,7 @@
 
 #include "core/loop_common.h"
 #include "data/save_game_manager.h"
+#include "game/event/hardware_events.h"
 #include "gui/components.h"
 #include "gui/layout.h"
 #include "gui/menus.h"
@@ -242,11 +243,71 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
     menu.Begin("_option_change_keybind_menu");
 
-    // TODO
-    common.keybindManager.ChangeActionInput(
-        game::PlayerAction::Type::place_entity, SDLK_0, game::InputAction::key_down);
 
-    MenuBackButton(common.mainMenuData, MainMenuData::Window::main);
+    // Set Key action, applies to all keybinds which are newly set
+    const char* items[] = {
+        "None",
+        "Key down",
+        "Key pressed (down + before repeat)",
+        "Key repeat",
+        "Key held (pressed + repeat)",
+        "Key up",
+    };
+
+    static const char* current_item = items[0];
+
+    // Dropdown menu to select key action
+    if (ImGui::BeginCombo("_option_change_keybind_menu-combo", current_item)) {
+        for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
+            const bool is_selected = current_item == items[i];
+
+            if (ImGui::Selectable(items[i], is_selected))
+                current_item = items[i];
+
+            if (is_selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+
+    // Key action which was selected
+    int key_action_index = 0;
+    for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
+        const bool is_selected = current_item == items[i];
+
+        if (is_selected) {
+            key_action_index = i;
+        }
+    }
+
+
+    // Keybinds
+    const auto& info = common.keybindManager.GetKeybindInfo();
+    for (std::size_t i = 0; i < info.size(); ++i) {
+        const auto& keybind = info[i];
+
+        ImGui::Text("%llu", keybind);
+
+        ImGui::SameLine();
+
+        if (MenuButtonMini("sample text")) {
+            common.gameDataLocal.event.SubscribeOnce(
+                game::EventType::keyboard_activity, [&common, i, key_action_index](auto& e) {
+                    auto& key_event = static_cast<game::KeyboardActivityEvent&>(e);
+
+                    LOG_MESSAGE(debug, "Change keybind");
+
+                    common.keybindManager.ChangeActionInput(static_cast<game::PlayerAction::Type>(i),
+                                                            key_event.key,
+                                                            static_cast<game::InputAction>(key_action_index),
+                                                            key_event.mods);
+                });
+        }
+    }
+
+    MenuBackButton(common.mainMenuData, MainMenuData::Window::options);
 }
 
 ///

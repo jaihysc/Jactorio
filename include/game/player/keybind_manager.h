@@ -43,6 +43,14 @@ namespace jactorio::game
         /// Uses pre-determined default keybinds for actions
         void LoadDefaultKeybinds();
 
+
+        ///
+        /// Returns input manager's id for each keybind, use it to get the key's name
+        /// Index each PlayerAction::Type by its value when cast to int
+        J_NODISCARD auto& KeybindManager::GetKeybindInfo() const {
+            return actionCallbackId_;
+        }
+
     private:
         InputManager& inputManager_;
         GameDataGlobal& dataGlobal_;
