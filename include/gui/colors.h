@@ -90,16 +90,18 @@ namespace jactorio::gui
     /// RAII wrapper for imgui features
     class ImGuard
     {
-        bool windowBegun_         = false;
-        uint8_t styleColorPushed_ = 0;
-        uint8_t styleVarPushed_   = 0;
-
     public:
         ImGuard() = default;
 
         ~ImGuard() {
             ImGui::PopStyleColor(styleColorPushed_);
             ImGui::PopStyleVar(styleVarPushed_);
+            for (unsigned i = 0; i < itemWidthPushed_; ++i) {
+                ImGui::PopItemWidth();
+            }
+            for (unsigned i = 0; i < idsPushed_; ++i) {
+                ImGui::PopID();
+            }
             if (windowBegun_)
                 ImGui::End();
         }
@@ -138,6 +140,25 @@ namespace jactorio::gui
             ImGui::PushStyleVar(idx, val);
             styleVarPushed_++;
         }
+
+        //
+        void PushItemWidth(const float item_width) {
+            ImGui::PushItemWidth(item_width);
+            itemWidthPushed_++;
+        }
+
+        void PushID(const char* str_id) {
+            ImGui::PushID(str_id);
+            idsPushed_++;
+        }
+
+    private:
+        bool windowBegun_         = false;
+        uint8_t styleColorPushed_ = 0;
+        uint8_t styleVarPushed_   = 0;
+
+        uint8_t itemWidthPushed_ = 0;
+        uint8_t idsPushed_       = 0;
     };
 } // namespace jactorio::gui
 

@@ -14,60 +14,73 @@
 
 using namespace jactorio;
 
-J_NODISCARD static float GetMainMenuWidth() {
+///
+/// \param fraction Fraction of the screen width to occupy
+J_NODISCARD static float GetMainMenuWidth(const float fraction = 1.f / 3) {
     constexpr auto min_width = 150;
 
-    const auto calculated_width = core::SafeCast<float>(render::Renderer::GetWindowWidth()) / 3.f;
+    const auto calculated_width = core::SafeCast<float>(render::Renderer::GetWindowWidth()) * fraction;
     if (calculated_width < min_width)
         return min_width;
 
     return calculated_width;
 }
 
-J_NODISCARD static float GetMainMenuHeight() {
+///
+/// \param fraction Fraction of the screen height to occupy
+J_NODISCARD static float GetMainMenuHeight(const float fraction = 1.f / 2) {
     constexpr auto min_height = 200;
 
-    const auto calculated_height = core::SafeCast<float>(render::Renderer::GetWindowHeight()) / 2.f;
+    const auto calculated_height = core::SafeCast<float>(render::Renderer::GetWindowHeight()) * fraction;
     if (calculated_height < min_height)
         return min_height;
 
     return calculated_height;
 }
 
+///
+/// Spans entire menu
 J_NODISCARD static float GetButtonWidth() {
-    return GetMainMenuWidth() - gui::GetTotalWindowPaddingX();
+    return ImGui::GetWindowSize().x - gui::GetTotalWindowPaddingX();
 }
 
 J_NODISCARD static float GetButtonHeight() {
     return 50;
 }
 
+///
+/// Quarter of menu (width some separation between buttons)
 J_NODISCARD static float GetButtonMiniWidth() {
-    return GetButtonWidth() / 4;
+    return GetButtonWidth() / 4 - gui::GetTotalWindowItemSpacingX(1);
 }
 
-J_NODISCARD static float GetButtonMiniHeight() {
-    return GetButtonHeight() / 2;
+///
+/// Total space by mini button taken including padding and spacing
+J_NODISCARD static auto GetButtonMiniSpan() {
+    return GetButtonMiniWidth() + gui::kGuiStyleItemSpacingX;
 }
 
 
 ///
-/// \param width If 0, uses default
-/// \param height If 0, uses default
-J_NODISCARD static bool MenuButton(const char* label, float width = 0, float height = 0) {
-    if (width == 0) {
+/// Button which spans entire menu
+/// \param width If -1: jactorio default, 0: Imgui default
+/// \param height If -1: jactorio default 0: Imgui default
+J_NODISCARD static bool MenuButton(const char* label, float width = -1, float height = -1) {
+    if (width == -1) {
         width = GetButtonWidth();
     }
 
-    if (height == 0) {
+    if (height == -1) {
         height = GetButtonHeight();
     }
 
     return ImGui::Button(label, {width, height});
 }
 
+///
+/// Spans quarter of menu, half height
 J_NODISCARD static bool MenuButtonMini(const char* label) {
-    return MenuButton(label, GetButtonMiniWidth(), GetButtonMiniHeight());
+    return MenuButton(label, GetButtonMiniWidth(), 0);
 }
 
 ///
@@ -84,12 +97,30 @@ static bool MenuBackButton(gui::MainMenuData& menu_data, const gui::MainMenuData
 
 
 ///
+/// Sets draw cursor to where next menu button should begin (similar to a tab stop)
+/// \remark Do NOT call SameLineMenuButtonMini, it is already on the same line
+/// \param button_gap Additional gap of that would have fit provided button count to skip
+static void ToNextMenuButtonMiniBegin(const unsigned button_gap = 0) {
+    ImGui::SameLine();
+
+    const auto but_width    = GetButtonMiniWidth();
+    const auto old_cursor_x = ImGui::GetCursorPosX();
+
+    float new_cursor_x = ImGui::GetStyle().WindowPadding.x;
+
+    while (new_cursor_x <= old_cursor_x) {
+        new_cursor_x += but_width;
+        new_cursor_x += gui::kGuiStyleItemSpacingX;
+    }
+    ImGui::SetCursorPosX(new_cursor_x + GetButtonMiniSpan() * core::SafeCast<float>(button_gap));
+}
+
+///
 /// \param button_gap Additional gap of that would have fit provided button count
 static void SameLineMenuButtonMini(const unsigned button_gap = 0) {
     ImGui::SameLine();
 
-    const auto previous_button_end_x = ImGui::GetCursorPosX() - gui::GetTotalWindowItemSpacingX(1);
-    ImGui::SetCursorPosX(previous_button_end_x + GetButtonMiniWidth() * core::SafeCast<float>(button_gap));
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + GetButtonMiniSpan() * core::SafeCast<float>(button_gap));
 }
 
 
@@ -240,8 +271,20 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     using namespace gui;
 
     const GuiMenu menu;
-    SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
+    SetupNextWindowCenter({GetMainMenuWidth(3.f / 4), GetMainMenuHeight(2.f / 3)});
     menu.Begin("_option_change_keybind_menu");
+
+    const GuiTitle title;
+    title.Begin("Keybinds");
+
+
+    ImGui::TextUnformatted("Name");
+
+    ToNextMenuButtonMiniBegin(1);
+    ImGui::TextUnformatted("Key");
+
+    ToNextMenuButtonMiniBegin();
+    ImGui::TextUnformatted("Action");
 
 
     // Set Key action, applies to all keybinds which are newly set
@@ -256,54 +299,70 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
     static const char* current_item = items[0];
 
-    // Dropdown menu to select key action
-    if (ImGui::BeginCombo("_option_change_keybind_menu-combo", current_item)) {
-        for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
-            const bool is_selected = current_item == items[i];
-
-            if (ImGui::Selectable(items[i], is_selected))
-                current_item = items[i];
-
-            if (is_selected) {
-                ImGui::SetItemDefaultFocus();
-            }
-        }
-        ImGui::EndCombo();
-    }
-
 
     // Key action which was selected
-    int key_action_index = 0;
-    for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
-        const bool is_selected = current_item == items[i];
-
-        if (is_selected) {
-            key_action_index = i;
-        }
-    }
-
-
-    // Keybinds
     const auto& info = common.keybindManager.GetKeybindInfo();
     for (std::size_t i = 0; i < info.size(); ++i) {
         const auto& keybind = info[i];
 
         ImGui::Text("%llu", keybind);
 
-        ImGui::SameLine();
+        ToNextMenuButtonMiniBegin(1);
 
-        if (MenuButtonMini("sample text")) {
-            common.gameDataLocal.event.SubscribeOnce(
-                game::EventType::keyboard_activity, [&common, i, key_action_index](auto& e) {
-                    auto& key_event = static_cast<game::KeyboardActivityEvent&>(e);
+        // Key bind
+        {
+            ImGuard guard;
 
-                    LOG_MESSAGE(debug, "Change keybind");
+            std::string id;
+            id.push_back(i);
 
-                    common.keybindManager.ChangeActionInput(static_cast<game::PlayerAction::Type>(i),
-                                                            key_event.key,
-                                                            static_cast<game::InputAction>(key_action_index),
-                                                            key_event.mods);
-                });
+            guard.PushID(id.c_str());
+            if (MenuButtonMini("Key bind")) {
+                int key_action_index = 0;
+                for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
+                    const bool is_selected = current_item == items[i];
+
+                    if (is_selected) {
+                        key_action_index = i;
+                    }
+                }
+
+                common.gameDataLocal.event.SubscribeOnce(
+                    game::EventType::keyboard_activity, [&common, i, key_action_index](auto& e) {
+                        auto& key_event = static_cast<game::KeyboardActivityEvent&>(e);
+
+                        LOG_MESSAGE(debug, "Change keybind");
+
+                        common.keybindManager.ChangeActionInput(static_cast<game::PlayerAction::Type>(i),
+                                                                key_event.key,
+                                                                static_cast<game::InputAction>(key_action_index),
+                                                                key_event.mods);
+                    });
+            }
+        }
+
+        SameLineMenuButtonMini();
+
+        // Key action
+        // Dropdown menu to select key action
+        ImGuard guard;
+        guard.PushItemWidth(GetButtonMiniWidth());
+
+        std::string combo_id = "##_option_change_keybind_menu-combo";
+        combo_id.push_back(i); // Uniquely identifies each combo
+
+        if (ImGui::BeginCombo(combo_id.c_str(), current_item)) {
+            for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
+                const bool is_selected = current_item == items[i];
+
+                if (ImGui::Selectable(items[i], is_selected))
+                    current_item = items[i];
+
+                if (is_selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
         }
     }
 
@@ -318,6 +377,9 @@ void OptionsMenu(ThreadedLoopCommon& common) {
     const GuiMenu menu;
     SetupNextWindowCenter({GetMainMenuWidth(), GetMainMenuHeight()});
     menu.Begin("_options_menu");
+
+    const GuiTitle title;
+    title.Begin("Options");
 
     if (MenuButton("Keybinds")) {
         common.mainMenuData.currentMenu = MainMenuData::Window::option_change_keybind;
