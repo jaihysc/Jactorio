@@ -10,6 +10,7 @@
 #include "gui/components.h"
 #include "gui/layout.h"
 #include "gui/menus.h"
+#include "proto/label.h"
 #include "render/renderer.h"
 
 using namespace jactorio;
@@ -303,9 +304,11 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     // Key action which was selected
     const auto& info = common.keybindManager.GetKeybindInfo();
     for (std::size_t i = 0; i < info.size(); ++i) {
-        const auto& keybind = info[i];
+        const auto action_label_name = std::string(proto::LabelNames::kPlayerActionPrefix) + std::to_string(i);
+        const auto* label            = common.gameDataLocal.prototype.DataRawGet<proto::Label>(action_label_name);
+        assert(label != nullptr);
 
-        ImGui::Text("%llu", keybind);
+        ImGui::TextUnformatted(label->GetLocalizedName().c_str());
 
         ToNextMenuButtonMiniBegin(1);
 
@@ -319,11 +322,11 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
             guard.PushID(id.c_str());
             if (MenuButtonMini("Key bind")) {
                 int key_action_index = 0;
-                for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
-                    const bool is_selected = current_item == items[i];
+                for (int j = 0; j < IM_ARRAYSIZE(items); j++) {
+                    const bool is_selected = current_item == items[j];
 
                     if (is_selected) {
-                        key_action_index = i;
+                        key_action_index = j;
                     }
                 }
 
@@ -352,11 +355,11 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         combo_id.push_back(i); // Uniquely identifies each combo
 
         if (ImGui::BeginCombo(combo_id.c_str(), current_item)) {
-            for (int i = 0; i < IM_ARRAYSIZE(items); i++) {
-                const bool is_selected = current_item == items[i];
+            for (auto& item : items) {
+                const bool is_selected = current_item == item;
 
-                if (ImGui::Selectable(items[i], is_selected))
-                    current_item = items[i];
+                if (ImGui::Selectable(item, is_selected))
+                    current_item = item;
 
                 if (is_selected) {
                     ImGui::SetItemDefaultFocus();

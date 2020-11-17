@@ -37,3 +37,8 @@ def addItem(name, path):
 
 addItem("inventory-selected-cursor", "core/graphics/hand.png")
 addItem("reset", "core/graphics/reset.png")
+
+
+# Labels
+for i in range(14):
+    j.Label("label_player-action-" + str(i))

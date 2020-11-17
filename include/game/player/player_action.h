@@ -12,7 +12,8 @@ namespace jactorio::game
 {
     struct GameDataGlobal;
 
-    // Associates enum key (action) with method (executor)
+    /// Associates enum key (action) with method (executor)
+    /// \remark Do NOT reorder as order here is referenced by localized names in local files
 #define J_PLAYER_ACTIONS                                                           \
     J_CREATE_ACTION(player_move_up, PlayerMoveUp)                                  \
     J_CREATE_ACTION(player_move_right, PlayerMoveRight)                            \
