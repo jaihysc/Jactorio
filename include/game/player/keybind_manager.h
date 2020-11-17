@@ -47,7 +47,7 @@ namespace jactorio::game
         ///
         /// Returns input manager's id for each keybind, use it to get the key's name
         /// Index each PlayerAction::Type by its value when cast to int
-        J_NODISCARD auto& KeybindManager::GetKeybindInfo() const {
+        J_NODISCARD auto& GetKeybindInfo() const {
             return actionCallbackId_;
         }
 
