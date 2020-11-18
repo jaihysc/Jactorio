@@ -5,6 +5,7 @@
 #include "jactorio.h"
 
 #include "core/loop_common.h"
+#include "core/resource_guard.h"
 #include "data/save_game_manager.h"
 #include "game/event/hardware_events.h"
 #include "gui/components.h"
@@ -289,7 +290,8 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
 
     // Set Key action, applies to all keybinds which are newly set
-    const char* items[] = {
+    std::array items{
+        // TODO localize
         "None",
         "Key down",
         "Key pressed (down + before repeat)",
@@ -298,7 +300,40 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         "Key up",
     };
 
-    static const char* current_item = items[0];
+
+    ///
+    /// Button which when clicked will set the next key for the player action
+    auto keybind_button = []() {
+        // TODO display key name
+        return MenuButtonMini("Key bind");
+    };
+
+    ///
+    /// Dropdown which displays current key action, and can be opened to select a new key action
+    /// \return {dropdown clicked, clicked InputAction}
+    auto key_action_dropdown = [&items](const char* dropdown_name,
+                                        game::InputAction current_key_action) -> std::pair<bool, game::InputAction> {
+        const auto current_key_action_index  = static_cast<int>(current_key_action);
+        const auto* current_key_action_c_str = items[current_key_action_index];
+
+        if (ImGui::BeginCombo(dropdown_name, current_key_action_c_str)) {
+            core::ResourceGuard guard(+[]() { ImGui::EndCombo(); });
+
+            for (std::size_t i = 0; i < items.size(); ++i) {
+                const bool is_selected = i == current_key_action_index;
+
+                if (ImGui::Selectable(items[i], is_selected)) {
+                    return {true, static_cast<game::InputAction>(i)};
+                }
+
+                if (is_selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+        }
+
+        return {false, static_cast<game::InputAction>(0)};
+    };
 
 
     // Key action which was selected
@@ -310,62 +345,45 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
         ImGui::TextUnformatted(label->GetLocalizedName().c_str());
 
-        ToNextMenuButtonMiniBegin(1);
+
+        const auto& [key, key_action, key_mod] = info[i];
+        const auto player_action               = static_cast<game::PlayerAction::Type>(i);
 
         // Key bind
         {
+            ToNextMenuButtonMiniBegin(1);
+
             ImGuard guard;
 
-            std::string id;
-            id.push_back(i);
+            std::string key_button_id;
+            key_button_id.push_back(i);
 
-            guard.PushID(id.c_str());
-            if (MenuButtonMini("Key bind")) {
-                int key_action_index = 0;
-                for (int j = 0; j < IM_ARRAYSIZE(items); j++) {
-                    const bool is_selected = current_item == items[j];
+            guard.PushID(key_button_id.c_str());
 
-                    if (is_selected) {
-                        key_action_index = j;
-                    }
-                }
-
+            if (keybind_button()) { // Clicked
                 common.gameDataLocal.event.SubscribeOnce(
-                    game::EventType::keyboard_activity, [&common, i, key_action_index](auto& e) {
+                    game::EventType::keyboard_activity, [&common, player_action](auto& e) {
                         auto& key_event = static_cast<game::KeyboardActivityEvent&>(e);
 
-                        LOG_MESSAGE(debug, "Change keybind");
-
-                        common.keybindManager.ChangeActionInput(static_cast<game::PlayerAction::Type>(i),
-                                                                key_event.key,
-                                                                static_cast<game::InputAction>(key_action_index),
-                                                                key_event.mods);
+                        common.keybindManager.ChangeActionKey(player_action, key_event.key);
                     });
             }
         }
 
-        SameLineMenuButtonMini();
 
         // Key action
-        // Dropdown menu to select key action
+
         ImGuard guard;
+        SameLineMenuButtonMini();
+
         guard.PushItemWidth(GetButtonMiniWidth());
 
         std::string combo_id = "##_option_change_keybind_menu-combo";
-        combo_id.push_back(i); // Uniquely identifies each combo
+        combo_id.push_back(i); // Uniquely identifies each dropdown
 
-        if (ImGui::BeginCombo(combo_id.c_str(), current_item)) {
-            for (auto& item : items) {
-                const bool is_selected = current_item == item;
-
-                if (ImGui::Selectable(item, is_selected))
-                    current_item = item;
-
-                if (is_selected) {
-                    ImGui::SetItemDefaultFocus();
-                }
-            }
-            ImGui::EndCombo();
+        auto [dropdown_clicked, clicked_player_action] = key_action_dropdown(combo_id.c_str(), key_action);
+        if (dropdown_clicked) {
+            common.keybindManager.ChangeActionKeyAction(player_action, clicked_player_action);
         }
     }
 

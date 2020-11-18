@@ -150,9 +150,6 @@ namespace jactorio::game
 
         const auto& info = keybindManager_.GetKeybindInfo();
 
-        EXPECT_EQ(info[static_cast<int>(PlayerAction::Type::place_entity)], 0); // Not registered
-
-        EXPECT_EQ(info[static_cast<int>(PlayerAction::Type::activate_layer)], 1);
-        EXPECT_EQ(info[static_cast<int>(PlayerAction::Type::test)], 2);
+        EXPECT_EQ(info.size(), PlayerAction::kActionCount_);
     }
 } // namespace jactorio::game
