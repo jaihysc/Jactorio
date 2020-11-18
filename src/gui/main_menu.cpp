@@ -2,6 +2,9 @@
 
 #include "gui/main_menu.h"
 
+#include <SDL.h>
+#undef main // SDL redefines main to do initialization, this is not needed here
+
 #include "jactorio.h"
 
 #include "core/loop_common.h"
@@ -303,9 +306,37 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
     ///
     /// Button which when clicked will set the next key for the player action
-    auto keybind_button = []() {
-        // TODO display key name
-        return MenuButtonMini("Key bind");
+    auto keybind_button = [](const game::InputManager::IntKeyMouseCodePair int_code) {
+        // Display key name
+        const char* key_name = "???";
+        if (int_code >= 0) {
+            key_name = SDL_GetKeyName(int_code);
+        }
+        else {
+            switch (static_cast<game::MouseInput>(int_code * -1)) {
+            case game::MouseInput::left:
+                key_name = "Mouse left";
+                break;
+            case game::MouseInput::middle:
+                key_name = "Mouse middle";
+                break;
+            case game::MouseInput::right:
+                key_name = "Mouse right";
+                break;
+            case game::MouseInput::x1:
+                key_name = "Mouse x1";
+                break;
+            case game::MouseInput::x2:
+                key_name = "Mouse x2";
+                break;
+
+            default:
+                assert(false); // Unknown mouse key
+                break;
+            }
+        }
+
+        return MenuButtonMini(key_name);
     };
 
     ///
@@ -360,7 +391,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
             guard.PushID(key_button_id.c_str());
 
-            if (keybind_button()) { // Clicked
+            if (keybind_button(key)) { // Clicked
                 common.gameDataLocal.event.SubscribeOnce(
                     game::EventType::keyboard_activity, [&common, player_action](auto& e) {
                         auto& key_event = static_cast<game::KeyboardActivityEvent&>(e);
