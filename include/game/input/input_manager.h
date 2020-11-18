@@ -17,18 +17,13 @@ namespace jactorio::game
     {
         using InputCallback = std::function<void()>;
 
+    public:
         /// Positive = SDL_KeyCode
-        /// Negative = MouseInput * -1
+        /// Negative = MouseInput * -1 (Should never be 0)
         using IntKeyMouseCodePair = int;
 
         using InputKeyData = std::tuple<IntKeyMouseCodePair, InputAction, SDL_Keymod>;
 
-
-        // ======================================================================
-
-        static std::unordered_map<IntKeyMouseCodePair, InputKeyData> activeInputs_;
-
-    public:
         /// 0 indicates invalid ID
         using CallbackId = uint64_t;
 
@@ -75,6 +70,9 @@ namespace jactorio::game
         static InputAction ToInputAction(int action, bool repeat);
 
     private:
+        static std::unordered_map<IntKeyMouseCodePair, InputKeyData> activeInputs_;
+
+
         // Increments with each new assigned callback, one is probably not having 4 million registered callbacks
         // so this doesn't need to be decremented
         CallbackId callbackId_ = 1;

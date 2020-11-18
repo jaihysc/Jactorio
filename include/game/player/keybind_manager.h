@@ -40,6 +40,23 @@ namespace jactorio::game
 
 
         ///
+        /// Modifies keyboard button for provided player action
+        void ChangeActionKey(PlayerAction::Type player_action, SDL_KeyCode key);
+
+        ///
+        /// Modifies mouse button for provided player action
+        void ChangeActionKey(PlayerAction::Type player_action, MouseInput key);
+
+        ///
+        /// Modifies the key's action for provided player action
+        void ChangeActionKeyAction(PlayerAction::Type player_action, InputAction key_action);
+
+        ///
+        /// Modifies the modifier for provided player action
+        void ChangeActionMod(PlayerAction::Type player_action, SDL_Keymod mod);
+
+
+        ///
         /// Uses pre-determined default keybinds for actions
         void LoadDefaultKeybinds();
 
@@ -56,7 +73,12 @@ namespace jactorio::game
         GameDataGlobal& dataGlobal_;
 
         /// Id of each action's executor in InputManager
+        /// Index by numerical value of PlayerAction::Type
         std::array<InputManager::CallbackId, PlayerAction::kActionCount_> actionCallbackId_{};
+
+        /// Keybind info of each action
+        /// Index by numerical value of PlayerAction::Type
+        std::array<InputManager::InputKeyData, PlayerAction::kActionCount_> actionKeyData_;
 
 
         ///

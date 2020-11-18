@@ -30,7 +30,9 @@ namespace jactorio::game
 
     enum class MouseInput
     {
-        left,
+        // Starting at 1 avoids conflict at 0 when stored in a int alongside SDL_Keycode
+
+        left = 1,
         middle,
         right,
         x1,
