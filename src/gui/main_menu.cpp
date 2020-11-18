@@ -393,10 +393,17 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
             if (keybind_button(key)) { // Clicked
                 common.gameDataLocal.event.SubscribeOnce(
-                    game::EventType::keyboard_activity, [&common, player_action](auto& e) {
-                        auto& key_event = static_cast<game::KeyboardActivityEvent&>(e);
+                    game::EventType::input_activity, [&common, player_action](auto& e) {
+                        const auto& input_variant = static_cast<game::InputActivityEvent&>(e).input;
 
-                        common.keybindManager.ChangeActionKey(player_action, key_event.key);
+                        if (std::holds_alternative<game::KeyboardActivityEvent>(input_variant)) {
+                            common.keybindManager.ChangeActionKey(
+                                player_action, std::get<game::KeyboardActivityEvent>(input_variant).key);
+                        }
+                        else {
+                            common.keybindManager.ChangeActionKey(
+                                player_action, std::get<game::MouseActivityEvent>(input_variant).key);
+                        }
                     });
             }
         }

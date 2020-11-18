@@ -4,6 +4,8 @@
 #define JACTORIO_INCLUDE_GAME_EVENT_HARDWARE_EVENTS_H
 #pragma once
 
+#include <variant>
+
 #include "game/event/event_base.h"
 #include "game/input/input_type.h"
 
@@ -34,6 +36,23 @@ namespace jactorio::game
         SDL_Keymod mods;
 
         EVENT_TYPE(mouse_activity)
+        EVENT_CATEGORY(application)
+    };
+
+    ///
+    /// Keyboard or mouse activity
+    class InputActivityEvent final : public EventBase
+    {
+    public:
+        InputActivityEvent(const SDL_KeyCode key, const InputAction key_action, const SDL_Keymod mods)
+            : input(std::in_place_type<KeyboardActivityEvent>, key, key_action, mods) {}
+
+        InputActivityEvent(const MouseInput key, const InputAction key_action, const SDL_Keymod mods)
+            : input(std::in_place_type<MouseActivityEvent>, key, key_action, mods) {}
+
+        std::variant<KeyboardActivityEvent, MouseActivityEvent> input;
+
+        EVENT_TYPE(input_activity)
         EVENT_CATEGORY(application)
     };
 

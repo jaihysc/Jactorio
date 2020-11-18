@@ -19,6 +19,7 @@ namespace jactorio::game
         // Keyboard/mouse input
         keyboard_activity, // Keyboard key has activity
         mouse_activity,    // Mouse key has activity
+        input_activity,    // Keyboard or mouse activity
         // mouse_move,
         // mouse_scroll,
 
