@@ -285,7 +285,7 @@ static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::T
             }
 
             common.keybindManager.ChangeActionKey(player_action, kb_event.key);
-            common.keybindManager.ChangeActionMod(player_action, kb_event.mods);
+            common.keybindManager.ChangeActionMods(player_action, kb_event.mods);
         }
         else {
             const auto& ms_event = std::get<game::MouseActivityEvent>(input_variant);
@@ -296,7 +296,7 @@ static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::T
             }
 
             common.keybindManager.ChangeActionKey(player_action, ms_event.key);
-            common.keybindManager.ChangeActionMod(player_action, ms_event.mods);
+            common.keybindManager.ChangeActionMods(player_action, ms_event.mods);
         }
     });
 }

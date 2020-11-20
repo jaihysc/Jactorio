@@ -4,31 +4,31 @@
 
 using namespace jactorio;
 
-void game::KeybindManager::ChangeActionInput(const PlayerAction::Type action_type,
+void game::KeybindManager::ChangeActionInput(const PlayerAction::Type player_action,
                                              const SDL_KeyCode key,
                                              const InputAction key_action,
                                              const SDL_Keymod mods) {
     assert(key >= 0); // Accidental call with MouseInput?
 
-    DoChangeActionInput(action_type, key, key_action, mods);
+    DoChangeActionInput(player_action, key, key_action, mods);
 
     // Store new key info
-    auto& [stored_key, stored_key_action, stored_mod] = actionKeyData_[static_cast<int>(action_type)];
+    auto& [stored_key, stored_key_action, stored_mod] = actionKeyData_[static_cast<int>(player_action)];
 
     stored_key        = key;
     stored_key_action = key_action;
     stored_mod        = mods;
 }
 
-void game::KeybindManager::ChangeActionInput(const PlayerAction::Type action_type,
+void game::KeybindManager::ChangeActionInput(const PlayerAction::Type player_action,
                                              const MouseInput key,
                                              const InputAction key_action,
                                              const SDL_Keymod mods) {
     assert(static_cast<int>(key) > 0); // MouseInput should start at 1 to avoid conflict with SDL_KeyCode
 
-    DoChangeActionInput(action_type, key, key_action, mods);
+    DoChangeActionInput(player_action, key, key_action, mods);
 
-    auto& [stored_key, stored_key_action, stored_mod] = actionKeyData_[static_cast<int>(action_type)];
+    auto& [stored_key, stored_key_action, stored_mod] = actionKeyData_[static_cast<int>(player_action)];
 
     stored_key        = static_cast<int>(key) * -1;
     stored_key_action = key_action;
@@ -59,14 +59,14 @@ void game::KeybindManager::ChangeActionKeyAction(PlayerAction::Type player_actio
     }
 }
 
-void game::KeybindManager::ChangeActionMod(PlayerAction::Type player_action, const SDL_Keymod mod) {
+void game::KeybindManager::ChangeActionMods(PlayerAction::Type player_action, const SDL_Keymod mods) {
     auto& [key, key_action, _] = actionKeyData_[static_cast<int>(player_action)];
 
     if (key >= 0) {
-        ChangeActionInput(player_action, static_cast<SDL_KeyCode>(key), key_action, mod);
+        ChangeActionInput(player_action, static_cast<SDL_KeyCode>(key), key_action, mods);
     }
     else {
-        ChangeActionInput(player_action, static_cast<MouseInput>(key * -1), key_action, mod);
+        ChangeActionInput(player_action, static_cast<MouseInput>(key * -1), key_action, mods);
     }
 }
 

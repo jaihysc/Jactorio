@@ -26,14 +26,14 @@ namespace jactorio::game
 
         ///
         /// Modifies the keyboard input which correlates to the provided action
-        void ChangeActionInput(PlayerAction::Type action_type,
+        void ChangeActionInput(PlayerAction::Type player_action,
                                SDL_KeyCode key,
                                InputAction key_action,
                                SDL_Keymod mods = KMOD_NONE);
 
         ///
         /// Modifies the mouse input which correlates to the provided action
-        void ChangeActionInput(PlayerAction::Type action_type,
+        void ChangeActionInput(PlayerAction::Type player_action,
                                MouseInput key,
                                InputAction key_action,
                                SDL_Keymod mods = KMOD_NONE);
@@ -52,8 +52,8 @@ namespace jactorio::game
         void ChangeActionKeyAction(PlayerAction::Type player_action, InputAction key_action);
 
         ///
-        /// Modifies the modifier for provided player action
-        void ChangeActionMod(PlayerAction::Type player_action, SDL_Keymod mod);
+        /// Modifies the modifiers for provided player action
+        void ChangeActionMods(PlayerAction::Type player_action, SDL_Keymod mods);
 
 
         ///

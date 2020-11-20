@@ -131,10 +131,10 @@ namespace jactorio::game
 
     ///
     /// Should change only the mod of a player action
-    TEST_F(KeybindManagerTest, ChangeActionMod) {
+    TEST_F(KeybindManagerTest, ChangeActionMods) {
         keybindManager_.ChangeActionInput(PlayerAction::Type::test, MouseInput::left, InputAction::key_down);
 
-        keybindManager_.ChangeActionMod(PlayerAction::Type::test, KMOD_LALT);
+        keybindManager_.ChangeActionMods(PlayerAction::Type::test, KMOD_LALT);
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(MouseInput::left, InputAction::key_down, KMOD_LALT);
