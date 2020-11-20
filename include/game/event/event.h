@@ -18,10 +18,6 @@ namespace jactorio::game
     {
         using CallbackFunc = std::function<void(EventBase& e)>;
 
-        std::unordered_map<EventType, std::vector<CallbackFunc>> eventHandlers_{};
-        // Handlers will only run once, and will need to be registered again with subscribeOnce()
-        std::unordered_map<EventType, std::vector<CallbackFunc>> eventHandlersOnce_{};
-
     public:
         ///
         /// Subscribes a callback to an event
@@ -49,6 +45,11 @@ namespace jactorio::game
         ///
         /// Erases all data held
         void ClearAllData();
+
+    private:
+        std::unordered_map<EventType, std::vector<CallbackFunc>> eventHandlers_;
+        // Handlers will only run once, and will need to be registered again with subscribeOnce()
+        std::unordered_map<EventType, std::vector<CallbackFunc>> eventHandlersOnce_;
     };
 
     template <typename TEvent, typename... Args>
@@ -61,11 +62,15 @@ namespace jactorio::game
         }
 
         // Single time events
-        for (auto& callback : eventHandlersOnce_[event_type]) {
+        auto& once_handlers               = eventHandlersOnce_[event_type];
+        const auto original_handler_count = once_handlers.size();
+
+        for (auto& callback : once_handlers) {
             TEvent event = TEvent(std::forward<Args>(args)...);
             callback(event);
         }
-        eventHandlersOnce_[event_type].clear();
+
+        once_handlers.erase(once_handlers.begin(), once_handlers.begin() + original_handler_count);
     }
 } // namespace jactorio::game
 
