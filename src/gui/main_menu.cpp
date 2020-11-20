@@ -271,6 +271,38 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
 // Options menu
 
 ///
+/// Changes player_action's keybind to next key up
+static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::Type player_action) {
+    common.gameDataLocal.event.SubscribeOnce(game::EventType::input_activity, [&common, player_action](auto& e) {
+        const auto& input_variant = static_cast<game::InputActivityEvent&>(e).input;
+
+        if (std::holds_alternative<game::KeyboardActivityEvent>(input_variant)) {
+            const auto& kb_event = std::get<game::KeyboardActivityEvent>(input_variant);
+
+            if (kb_event.keyAction != game::InputAction::key_up) {
+                ChangeKeyNextKeyUp(common, player_action);
+                return;
+            }
+
+            common.keybindManager.ChangeActionKey(player_action, kb_event.key);
+            common.keybindManager.ChangeActionMod(player_action, kb_event.mods);
+        }
+        else {
+            const auto& ms_event = std::get<game::MouseActivityEvent>(input_variant);
+
+            if (ms_event.keyAction != game::InputAction::key_up) {
+                ChangeKeyNextKeyUp(common, player_action);
+                return;
+            }
+
+            common.keybindManager.ChangeActionKey(player_action, ms_event.key);
+            common.keybindManager.ChangeActionMod(player_action, ms_event.mods);
+        }
+    });
+}
+
+
+///
 /// Allows the user to change keybinds
 void OptionKeybindMenu(ThreadedLoopCommon& common) {
     using namespace gui;
@@ -307,6 +339,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     ///
     /// Button which when clicked will set the next key for the player action
     auto keybind_button = [](const game::InputManager::IntKeyMouseCodePair int_code) {
+        // TODO mod names?!
         // Display key name
         const char* key_name = "???";
         if (int_code >= 0) {
@@ -392,19 +425,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
             guard.PushID(key_button_id.c_str());
 
             if (keybind_button(key)) { // Clicked
-                common.gameDataLocal.event.SubscribeOnce(
-                    game::EventType::input_activity, [&common, player_action](auto& e) {
-                        const auto& input_variant = static_cast<game::InputActivityEvent&>(e).input;
-
-                        if (std::holds_alternative<game::KeyboardActivityEvent>(input_variant)) {
-                            common.keybindManager.ChangeActionKey(
-                                player_action, std::get<game::KeyboardActivityEvent>(input_variant).key);
-                        }
-                        else {
-                            common.keybindManager.ChangeActionKey(
-                                player_action, std::get<game::MouseActivityEvent>(input_variant).key);
-                        }
-                    });
+                ChangeKeyNextKeyUp(common, player_action);
             }
         }
 
