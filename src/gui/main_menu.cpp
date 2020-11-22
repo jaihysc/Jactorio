@@ -338,29 +338,48 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
     ///
     /// Button which when clicked will set the next key for the player action
-    auto keybind_button = [](const game::InputManager::IntKeyMouseCodePair int_code) {
-        // TODO mod names?!
-        // Display key name
-        const char* key_name = "???";
+    auto keybind_button = [](const game::InputManager::IntKeyMouseCodePair int_code, const SDL_Keymod mods) {
+        std::string keybind_name;
+
+        // Mod names
+
+        ///
+        /// Tests if the provided key mod(s) is set
+        auto keymod_set = [&mods](const SDL_Keymod target_mods) {
+            return (mods & (static_cast<SDL_Keymod>(0) | target_mods)) == target_mods;
+        };
+
+        if (keymod_set(KMOD_LCTRL) || keymod_set(KMOD_RCTRL)) {
+            keybind_name += "CTRL + ";
+        }
+        if (keymod_set(KMOD_LSHIFT) || keymod_set(KMOD_RSHIFT)) {
+            keybind_name += "SHIFT + ";
+        }
+        if (keymod_set(KMOD_LALT) || keymod_set(KMOD_RALT)) {
+            keybind_name += "ALT + ";
+        }
+
+
+        // Key name
         if (int_code >= 0) {
-            key_name = SDL_GetKeyName(int_code);
+            keybind_name += SDL_GetKeyName(int_code);
         }
         else {
             switch (static_cast<game::MouseInput>(int_code * -1)) {
             case game::MouseInput::left:
-                key_name = "Mouse left";
+                keybind_name += "Mouse left";
                 break;
             case game::MouseInput::middle:
-                key_name = "Mouse middle";
+                keybind_name += "Mouse middle";
                 break;
             case game::MouseInput::right:
-                key_name = "Mouse right";
+                keybind_name += "Mouse right";
                 break;
             case game::MouseInput::x1:
-                key_name = "Mouse x1";
+                keybind_name += "Mouse x1";
                 break;
             case game::MouseInput::x2:
-                key_name = "Mouse x2";
+                keybind_name += "Mouse x2";
                 break;
 
             default:
@@ -369,7 +388,12 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
             }
         }
 
-        return MenuButtonMini(key_name);
+
+        if (keybind_name.empty()) {
+            keybind_name = "???";
+        }
+
+        return MenuButtonMini(keybind_name.c_str());
     };
 
     ///
@@ -424,7 +448,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
             guard.PushID(key_button_id.c_str());
 
-            if (keybind_button(key)) { // Clicked
+            if (keybind_button(key, key_mod)) { // Clicked
                 ChangeKeyNextKeyUp(common, player_action);
             }
         }
