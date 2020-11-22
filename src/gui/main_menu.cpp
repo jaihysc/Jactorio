@@ -349,14 +349,25 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
             return (mods & (static_cast<SDL_Keymod>(0) | target_mods)) == target_mods;
         };
 
-        if (keymod_set(KMOD_LCTRL) || keymod_set(KMOD_RCTRL)) {
-            keybind_name += "CTRL + ";
+        if (keymod_set(KMOD_LCTRL)) {
+            keybind_name += "L CTRL + ";
         }
-        if (keymod_set(KMOD_LSHIFT) || keymod_set(KMOD_RSHIFT)) {
-            keybind_name += "SHIFT + ";
+        if (keymod_set(KMOD_RCTRL)) {
+            keybind_name += "R CTRL + ";
         }
-        if (keymod_set(KMOD_LALT) || keymod_set(KMOD_RALT)) {
-            keybind_name += "ALT + ";
+
+        if (keymod_set(KMOD_LSHIFT)) {
+            keybind_name += "L SHIFT + ";
+        }
+        if (keymod_set(KMOD_RSHIFT)) {
+            keybind_name += "R SHIFT + ";
+        }
+
+        if (keymod_set(KMOD_LALT)) {
+            keybind_name += "L ALT + ";
+        }
+        if (keymod_set(KMOD_RALT)) {
+            keybind_name += "R ALT + ";
         }
 
 
