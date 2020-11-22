@@ -40,5 +40,13 @@ addItem("reset", "core/graphics/reset.png")
 
 
 # Labels
-for i in range(14):
-    j.Label("label_player-action-" + str(i))
+for i in range(13):
+    j.Label("label:player-action-" + str(i))
+
+j.Label("label:key-action-none")
+j.Label("label:key-action-key-down")
+j.Label("label:key-action-key-pressed")
+j.Label("label:key-action-key-repeat")
+j.Label("label:key-action-key-held")
+j.Label("label:key-action-key-up")     
+

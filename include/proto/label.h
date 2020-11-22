@@ -17,7 +17,14 @@ namespace jactorio::proto
         /// e.g: label_player-action-0
         ///      label_player-action-1
         ///      label_player-action-2
-        static constexpr auto kPlayerActionPrefix = "__core__/label_player-action-";
+        static constexpr auto kPlayerActionPrefix = "__core__/label:player-action-";
+
+        static constexpr auto kKeyActionNone     = "__core__/label:key-action-none";
+        static constexpr auto kKeyActionKDown    = "__core__/label:key-action-key-down";
+        static constexpr auto kKeyActionKPressed = "__core__/label:key-action-key-pressed";
+        static constexpr auto kKeyActionKRepeat  = "__core__/label:key-action-key-repeat";
+        static constexpr auto kKeyActionKHeld    = "__core__/label:key-action-key-held";
+        static constexpr auto kKeyActionKUp      = "__core__/label:key-action-key-up";
     };
 
     ///

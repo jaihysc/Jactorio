@@ -324,18 +324,6 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     ImGui::TextUnformatted("Action");
 
 
-    // Set Key action, applies to all keybinds which are newly set
-    std::array items{
-        // TODO localize
-        "None",
-        "Key down",
-        "Key pressed (down + before repeat)",
-        "Key repeat",
-        "Key held (pressed + repeat)",
-        "Key up",
-    };
-
-
     ///
     /// Button which when clicked will set the next key for the player action
     auto keybind_button = [](const game::InputManager::IntKeyMouseCodePair int_code, const SDL_Keymod mods) {
@@ -410,18 +398,35 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     ///
     /// Dropdown which displays current key action, and can be opened to select a new key action
     /// \return {dropdown clicked, clicked InputAction}
-    auto key_action_dropdown = [&items](const char* dropdown_name,
-                                        game::InputAction current_key_action) -> std::pair<bool, game::InputAction> {
+    auto key_action_dropdown = [&common](const char* dropdown_name,
+                                         game::InputAction current_key_action) -> std::pair<bool, game::InputAction> {
+        // MSVC fails CTAD with when this array is captured in a lambda
+        constexpr std::array<const char*, 6> key_action_labels{
+            proto::LabelNames::kKeyActionNone,
+            proto::LabelNames::kKeyActionKDown,
+            proto::LabelNames::kKeyActionKPressed,
+            proto::LabelNames::kKeyActionKRepeat,
+            proto::LabelNames::kKeyActionKHeld,
+            proto::LabelNames::kKeyActionKUp,
+        };
+
+        auto localize_key_action = [&common, &key_action_labels](const std::size_t key_action_index) {
+            return common.gameDataLocal.prototype
+                .DataRawGet<proto::Label>(std::string(key_action_labels[key_action_index]))
+                ->GetLocalizedName()
+                .c_str();
+        };
+
         const auto current_key_action_index  = static_cast<int>(current_key_action);
-        const auto* current_key_action_c_str = items[current_key_action_index];
+        const auto* current_key_action_c_str = localize_key_action(current_key_action_index);
 
         if (ImGui::BeginCombo(dropdown_name, current_key_action_c_str)) {
             core::ResourceGuard guard(+[]() { ImGui::EndCombo(); });
 
-            for (std::size_t i = 0; i < items.size(); ++i) {
+            for (std::size_t i = 0; i < key_action_labels.size(); ++i) {
                 const bool is_selected = i == current_key_action_index;
 
-                if (ImGui::Selectable(items[i], is_selected)) {
+                if (ImGui::Selectable(localize_key_action(i), is_selected)) {
                     return {true, static_cast<game::InputAction>(i)};
                 }
 
