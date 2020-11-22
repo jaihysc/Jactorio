@@ -437,7 +437,12 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
     // Key action which was selected
     const auto& info = common.keybindManager.GetKeybindInfo();
-    for (std::size_t i = 0; i < info.size(); ++i) {
+
+    // Omit displaying the test player action, which should be the last player action
+    static_assert(game::PlayerAction::Type::test ==
+                  static_cast<game::PlayerAction::Type>(game::PlayerAction::kActionCount_ - 1));
+
+    for (std::size_t i = 0; i < info.size() - 1; ++i) {
         const auto action_label_name = std::string(proto::LabelNames::kPlayerActionPrefix) + std::to_string(i);
         const auto* label            = common.gameDataLocal.prototype.DataRawGet<proto::Label>(action_label_name);
         assert(label != nullptr);
