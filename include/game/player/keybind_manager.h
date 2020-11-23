@@ -5,11 +5,17 @@
 #pragma once
 
 #include <array>
+#include <functional>
+#include <type_traits>
 
 #include "jactorio.h"
 
+#include "core/resource_guard.h"
+#include "data/cereal/serialize.h"
 #include "game/input/input_manager.h"
 #include "game/player/player_action.h"
+
+#include <cereal/types/array.hpp>
 
 namespace jactorio::game
 {
@@ -23,6 +29,25 @@ namespace jactorio::game
         /// \remark Provided parameter's lifetime must exceed this object
         explicit KeybindManager(InputManager& input, GameDataGlobal& data_global)
             : inputManager_(input), dataGlobal_(data_global) {}
+
+
+        KeybindManager(const KeybindManager& other)     = delete;
+        KeybindManager(KeybindManager&& other) noexcept = default;
+
+        KeybindManager& operator=(KeybindManager other) {
+            swap(*this, other);
+            return *this;
+        }
+
+
+        friend void swap(KeybindManager& lhs, KeybindManager& rhs) noexcept {
+            using std::swap;
+            swap(lhs.inputManager_, rhs.inputManager_);
+            swap(lhs.dataGlobal_, rhs.dataGlobal_);
+            swap(lhs.actionCallbackId_, rhs.actionCallbackId_);
+            swap(lhs.actionKeyData_, rhs.actionKeyData_);
+        }
+
 
         ///
         /// Modifies the keyboard input which correlates to the provided action
@@ -60,6 +85,11 @@ namespace jactorio::game
         /// Uses pre-determined default keybinds for actions
         void LoadDefaultKeybinds();
 
+        ///
+        /// Calls ChangeActionInput for all player actions with stored key bindings
+        /// \remark Only has effect after this object was deserialized to register all key bindings
+        void RegisterAllKeyData();
+
 
         ///
         /// Returns key information for each keybind
@@ -68,9 +98,23 @@ namespace jactorio::game
             return actionKeyData_;
         }
 
+
+        ///
+        /// Will register keybinds with inputManager_ on deserialize
+        CEREAL_SERIALIZE(archive) {
+            for (auto& [key_code, key_action, mods] : actionKeyData_) {
+                archive.startNode();
+                core::CapturingGuard<void()> guard([&archive]() { archive.finishNode(); });
+
+                archive(cereal::make_nvp("key_code", key_code),
+                        cereal::make_nvp("key_action", key_action),
+                        cereal::make_nvp("key_mods", mods));
+            }
+        }
+
     private:
-        InputManager& inputManager_;
-        GameDataGlobal& dataGlobal_;
+        std::reference_wrapper<InputManager> inputManager_;
+        std::reference_wrapper<GameDataGlobal> dataGlobal_;
 
         /// Id of each action's executor in InputManager
         /// Index by numerical value of PlayerAction::Type
@@ -83,6 +127,7 @@ namespace jactorio::game
 
         ///
         /// Performs actual change of input for action
+        /// Do not directly call, call ChangeActionInput
         /// \tparam TKey SDL_KeyCode or MouseInput
         template <typename TKey>
         void DoChangeActionInput(PlayerAction::Type action_type, TKey key, InputAction key_action, SDL_Keymod mods);
@@ -99,17 +144,20 @@ namespace jactorio::game
 
         auto& callback_id = actionCallbackId_[i_action];
         if (callback_id != 0) {
-            inputManager_.Unsubscribe(callback_id);
+            inputManager_.get().Unsubscribe(callback_id);
         }
 
-        callback_id = inputManager_.Register(
+        callback_id = inputManager_.get().Register(
             [this, action_type]() {
-                PlayerAction::GetExecutor(action_type)(dataGlobal_); //
+                PlayerAction::GetExecutor(action_type)(dataGlobal_.get()); //
             },
             key,
             key_action,
             mods);
     }
+
+    static_assert(std::is_move_constructible_v<KeybindManager>);
+    static_assert(std::is_move_assignable_v<KeybindManager>);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_PLAYER_KEYBIND_MANAGER_H

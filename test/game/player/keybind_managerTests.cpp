@@ -4,6 +4,9 @@
 
 #include "game/player/keybind_manager.h"
 
+#include <cereal/archives/json.hpp>
+#include <fstream>
+
 #include "game/game_data.h"
 #include "game/input/input_manager.h"
 
@@ -11,6 +14,8 @@ namespace jactorio::game
 {
     class KeybindManagerTest : public testing::Test
     {
+        static constexpr auto kSaveFileName = "test_keybindings.json";
+
     protected:
         InputManager inputManager_;
         GameDataGlobal dataGlobal_;
@@ -26,6 +31,27 @@ namespace jactorio::game
 
             EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionX(), -100.f);
             EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionY(), 120.f);
+        }
+
+        ///
+        /// Serializes KeybindManager to JSON
+        void Serialize() const {
+            std::ofstream of(kSaveFileName);
+            cereal::JSONOutputArchive archiver(of);
+
+            archiver(keybindManager_);
+        }
+
+        ///
+        /// Deserializes KeybindManager from JSON
+        void Deserialize() {
+            std::ifstream ifs(kSaveFileName);
+            cereal::JSONInputArchive archiver(ifs);
+
+            KeybindManager keybind_manager(inputManager_, dataGlobal_);
+            archiver(keybind_manager);
+
+            keybindManager_ = std::move(keybind_manager);
         }
     };
 
@@ -151,5 +177,39 @@ namespace jactorio::game
         const auto& info = keybindManager_.GetKeybindInfo();
 
         EXPECT_EQ(info.size(), PlayerAction::kActionCount_);
+    }
+
+    ///
+    /// Should save and load keybind info
+    TEST_F(KeybindManagerTest, SerializeKeyboardKeybindInfo) {
+        keybindManager_.ChangeActionInput(PlayerAction::Type::test, SDLK_0, InputAction::key_down);
+
+        Serialize();
+        inputManager_.ClearData();
+
+        Deserialize();
+        keybindManager_.RegisterAllKeyData();
+
+        ExpectTestActionCalled([this]() {
+            InputManager::SetInput(SDLK_0, InputAction::key_down);
+            inputManager_.Raise();
+        });
+    }
+
+    ///
+    /// Should save and load keybind info
+    TEST_F(KeybindManagerTest, SerializeMouseKeybindInfo) {
+        keybindManager_.ChangeActionInput(PlayerAction::Type::test, MouseInput::left, InputAction::key_up);
+
+        Serialize();
+        inputManager_.ClearData();
+
+        Deserialize();
+        keybindManager_.RegisterAllKeyData();
+
+        ExpectTestActionCalled([this]() {
+            InputManager::SetInput(MouseInput::left, InputAction::key_up);
+            inputManager_.Raise();
+        });
     }
 } // namespace jactorio::game

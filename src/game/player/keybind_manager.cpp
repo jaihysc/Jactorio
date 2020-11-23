@@ -92,3 +92,17 @@ void game::KeybindManager::LoadDefaultKeybinds() {
     ChangeActionInput(PlayerAction::Type::toggle_debug_menu, SDLK_BACKQUOTE, InputAction::key_up);
     ChangeActionInput(PlayerAction::Type::toggle_character_menu, SDLK_TAB, InputAction::key_up);
 }
+
+void game::KeybindManager::RegisterAllKeyData() {
+    for (std::size_t i = 0; i < actionKeyData_.size(); ++i) {
+        const auto& [key_code, key_action, mods] = actionKeyData_[i];
+
+        if (key_code >= 0) {
+            ChangeActionInput(static_cast<PlayerAction::Type>(i), static_cast<SDL_KeyCode>(key_code), key_action, mods);
+        }
+        else {
+            ChangeActionInput(
+                static_cast<PlayerAction::Type>(i), static_cast<MouseInput>(key_code * -1), key_action, mods);
+        }
+    }
+}
