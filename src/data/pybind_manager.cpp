@@ -80,7 +80,8 @@ void data::PyInterpreterInit() {
     py_stdout = sysm.attr("stdout");
     py_stderr = sysm.attr("stderr");
 
-    LOG_MESSAGE(info, "Python interpreter initialized");
+    const auto python_version = std::string(py::str(sysm.attr("version")));
+    LOG_MESSAGE_F(info, "Python interpreter initialized %s", python_version.c_str());
 }
 
 void data::PyInterpreterTerminate() {
