@@ -1,8 +1,3 @@
-# CMakeList.txt : CMake project for jactorio TESTS, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
-
 log_msg("")
 log_msg("[Jactorio test ]")
 
@@ -129,11 +124,11 @@ set(JACTORIO_TEST_FILES
 # ======================================== END Test files .cpp
 
 # Test executable
-add_executable(jactorioTest 
+add_executable(jactorioTest
 	${JACTORIO_TEST_DIR}/jactorioTests.cpp
 	${JACTORIO_TEST_FILES}
 )
-target_link_libraries(jactorioTest 
+target_link_libraries(jactorioTest
 	gtest_main jactorioBase
 )
 target_include_directories(jactorioTest
