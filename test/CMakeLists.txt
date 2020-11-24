@@ -135,3 +135,11 @@ target_include_directories(jactorioTest
 	PUBLIC
 	${JACTORIO_TEST_DIR}
 )
+
+
+# MSVC complains that it introduced reference to symbol _fltused which was previously compiled with /GL
+# This can be ignored since _fltused just means that floating point was used
+# https://stackoverflow.com/questions/1583196
+if (MSVC)
+	target_link_options(jactorioTest PRIVATE /INCLUDE:_fltused)
+endif()
