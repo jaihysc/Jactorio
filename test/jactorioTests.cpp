@@ -2,11 +2,12 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
+
 #include "core/crash_handler.h"
-#include "core/filesystem.h"
 
 int main(int ac, char* av[]) {
-    jactorio::core::SetExecutingDirectory(av[0]);
+    current_path(std::filesystem::path(av[0]).parent_path());
 
     jactorio::core::RegisterCrashHandler();
 

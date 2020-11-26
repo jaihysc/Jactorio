@@ -105,7 +105,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     data::active_unique_data_manager = &common.gameDataLocal.unique;
 
     try {
-        common.gameDataLocal.prototype.LoadData(core::ResolvePath("data"));
+        common.gameDataLocal.prototype.LoadData("data"); // TODO named constant for data folder
     }
     catch (proto::ProtoError&) {
         // Prototype loading error
@@ -113,7 +113,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     }
     catch (std::filesystem::filesystem_error&) {
         // Data folder not found error
-        LOG_MESSAGE_F(error, "data/ folder not found at %s", core::ResolvePath("data").c_str());
+        LOG_MESSAGE_F(error, "data/ folder not found at %s", "data");
         return;
     }
 

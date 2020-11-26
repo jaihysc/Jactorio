@@ -14,7 +14,7 @@ using namespace jactorio;
 
 unsigned int render::Shader::CompileShader(const std::string& filepath, const GLenum shader_type) {
 
-    const auto path          = core::ResolvePath(filepath);
+    const auto path          = filepath;
     const std::string source = core::ReadFile(path);
 
     if (source.empty()) {

@@ -139,7 +139,7 @@ const unsigned char* proto::Sprite::GetSpritePtr() const {
 }
 
 proto::Sprite* proto::Sprite::LoadImage(const std::string& image_path) {
-    spritePath_ = core::ResolvePath("data/" + image_path);
+    spritePath_ = "data/" + image_path; // TODO named constant for data folder
     LoadImageFromFile();
 
     return this;
