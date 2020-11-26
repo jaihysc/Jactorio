@@ -124,7 +124,7 @@ namespace jactorio::data
         dataManager_.SetDirectoryPrefix("asdf");
 
         // Load_data should set the directory prefix based on the subfolder
-        dataManager_.LoadData("data");
+        dataManager_.LoadData(PrototypeManager::kDataFolder);
 
         const auto* proto = dataManager_.DataRawGet<proto::Sprite>("__test__/test_tile");
 

@@ -9,8 +9,9 @@
 #include "jactorio.h"
 
 #include "core/execution_timer.h"
-#include "core/filesystem.h"
 #include "core/loop_common.h"
+
+#include "data/prototype_manager.h"
 
 #include "proto/inserter.h"
 
@@ -105,7 +106,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     data::active_unique_data_manager = &common.gameDataLocal.unique;
 
     try {
-        common.gameDataLocal.prototype.LoadData("data"); // TODO named constant for data folder
+        common.gameDataLocal.prototype.LoadData(data::PrototypeManager::kDataFolder);
     }
     catch (proto::ProtoError&) {
         // Prototype loading error
@@ -113,7 +114,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     }
     catch (std::filesystem::filesystem_error&) {
         // Data folder not found error
-        LOG_MESSAGE_F(error, "data/ folder not found at %s", "data");
+        LOG_MESSAGE_F(error, "data folder not found at %s", data::PrototypeManager::kDataFolder);
         return;
     }
 
