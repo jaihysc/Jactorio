@@ -15,6 +15,7 @@
 
 #include "proto/inserter.h"
 
+#include "data/save_game_manager.h"
 #include "game/event/game_events.h"
 #include "game/logic/conveyor_controller.h"
 #include "game/player/keybind_manager.h"
@@ -122,7 +123,16 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     common.prototypeLoadingComplete = true;
 
 
-    common.keybindManager.LoadDefaultKeybinds();
+    try {
+        if (!data::DeserializeKeybinds(common.keybindManager)) {
+            LOG_MESSAGE(warning, "No keybinds saved, using default keybinds");
+            common.keybindManager.LoadDefaultKeybinds();
+        }
+    }
+    catch (std::exception& e) {
+        LOG_MESSAGE_F(error, "Failed to load keybinds with message: %s, using default keybinds", e.what());
+        common.keybindManager.LoadDefaultKeybinds();
+    }
 
     LogicLoop(common);
 

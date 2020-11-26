@@ -491,7 +491,9 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         }
     }
 
-    MenuBackButton(common.mainMenuData, MainMenuData::Window::options);
+    if (MenuBackButton(common.mainMenuData, MainMenuData::Window::options)) {
+        data::SerializeKeybinds(common.keybindManager);
+    }
 }
 
 ///

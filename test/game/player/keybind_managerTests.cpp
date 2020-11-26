@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include "data/save_game_manager.h"
 #include "game/player/keybind_manager.h"
 
 #include <cereal/archives/json.hpp>
@@ -14,8 +15,6 @@ namespace jactorio::game
 {
     class KeybindManagerTest : public testing::Test
     {
-        static constexpr auto kSaveFileName = "test_keybindings.json";
-
     protected:
         InputManager inputManager_;
         GameDataGlobal dataGlobal_;
@@ -36,20 +35,14 @@ namespace jactorio::game
         ///
         /// Serializes KeybindManager to JSON
         void Serialize() const {
-            std::ofstream of(kSaveFileName);
-            cereal::JSONOutputArchive archiver(of);
-
-            archiver(keybindManager_);
+            data::SerializeKeybinds(keybindManager_);
         }
 
         ///
         /// Deserializes KeybindManager from JSON
         void Deserialize() {
-            std::ifstream ifs(kSaveFileName);
-            cereal::JSONInputArchive archiver(ifs);
-
             KeybindManager keybind_manager(inputManager_, dataGlobal_);
-            archiver(keybind_manager);
+            data::DeserializeKeybinds(keybind_manager);
 
             keybindManager_ = std::move(keybind_manager);
         }
