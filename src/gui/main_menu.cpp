@@ -494,6 +494,12 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
     if (MenuBackButton(common.mainMenuData, MainMenuData::Window::options)) {
         data::SerializeKeybinds(common.keybindManager);
     }
+
+    SameLineMenuButtonMini(2);
+
+    if (MenuButtonMini("Reset")) {
+        common.keybindManager.LoadDefaultKeybinds();
+    }
 }
 
 ///
