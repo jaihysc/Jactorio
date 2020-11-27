@@ -128,6 +128,10 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
             LOG_MESSAGE(warning, "No keybinds saved, using default keybinds");
             common.keybindManager.LoadDefaultKeybinds();
         }
+        else {
+            common.keybindManager.RegisterAllKeyData();
+            LOG_MESSAGE(info, "Loaded keybinds from file");
+        }
     }
     catch (std::exception& e) {
         LOG_MESSAGE_F(error, "Failed to load keybinds with message: %s, using default keybinds", e.what());
