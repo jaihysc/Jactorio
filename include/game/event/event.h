@@ -16,7 +16,7 @@ namespace jactorio::game
     /// Used for dispatching and listening to events
     class EventData
     {
-        using CallbackFunc = std::function<void(EventBase& e)>;
+        using CallbackFunc = std::function<void(const EventBase& e)>;
 
     public:
         ///

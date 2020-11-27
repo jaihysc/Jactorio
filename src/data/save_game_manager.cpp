@@ -8,7 +8,9 @@
 
 #include "data/cereal/register_type.h"
 #include "game/game_data.h"
+#include "game/player/keybind_manager.h"
 
+#include <cereal/archives/json.hpp>
 #include <cereal/archives/portable_binary.hpp>
 
 using namespace jactorio;
@@ -120,4 +122,29 @@ std::string data::ResolveSavePath(const std::string& save_name) {
 std::filesystem::directory_iterator data::GetSaveDirIt() {
     CheckExistsSaveDirectory();
     return std::filesystem::directory_iterator(kSaveGameFolder);
+}
+
+// ======================================================================
+
+void data::SerializeKeybinds(const game::KeybindManager& keybind_manager) {
+    LOG_MESSAGE_F(info, "Saving keybinds to %s", kKeybindSaveName);
+
+    std::ofstream of(kKeybindSaveName);
+    cereal::JSONOutputArchive archiver(of);
+
+    archiver(keybind_manager);
+}
+
+bool data::DeserializeKeybinds(game::KeybindManager& out_keybind_manager) {
+    LOG_MESSAGE_F(info, "Loading keybinds from %s", kKeybindSaveName);
+
+    if (!std::filesystem::exists(kKeybindSaveName))
+        return false;
+
+    std::ifstream ifs(kKeybindSaveName);
+    cereal::JSONInputArchive archiver(ifs);
+
+    archiver(out_keybind_manager);
+
+    return true;
 }

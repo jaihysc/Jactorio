@@ -99,8 +99,6 @@ namespace jactorio::game
         }
 
 
-        ///
-        /// Will register keybinds with inputManager_ on deserialize
         CEREAL_SERIALIZE(archive) {
             for (auto& [key_code, key_action, mods] : actionKeyData_) {
                 archive.startNode();

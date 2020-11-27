@@ -1,11 +1,11 @@
 ﻿// This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
+#include <filesystem>
 #include <thread>
 
 #include "jactorio.h"
 
 #include "core/crash_handler.h"
-#include "core/filesystem.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
 
@@ -33,7 +33,7 @@ void InitializeGame() {
 int main(int ac, char* av[]) {
     using namespace jactorio;
 
-    core::SetExecutingDirectory(av[0]);
+    current_path(std::filesystem::path(av[0]).parent_path());
 
     // Log file
     core::ResourceGuard log_guard(&core::CloseLogFile);

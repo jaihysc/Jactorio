@@ -9,11 +9,13 @@
 #include "jactorio.h"
 
 #include "core/execution_timer.h"
-#include "core/filesystem.h"
 #include "core/loop_common.h"
+
+#include "data/prototype_manager.h"
 
 #include "proto/inserter.h"
 
+#include "data/save_game_manager.h"
 #include "game/event/game_events.h"
 #include "game/logic/conveyor_controller.h"
 #include "game/player/keybind_manager.h"
@@ -105,7 +107,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     data::active_unique_data_manager = &common.gameDataLocal.unique;
 
     try {
-        common.gameDataLocal.prototype.LoadData(core::ResolvePath("data"));
+        common.gameDataLocal.prototype.LoadData(data::PrototypeManager::kDataFolder);
     }
     catch (proto::ProtoError&) {
         // Prototype loading error
@@ -113,7 +115,7 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     }
     catch (std::filesystem::filesystem_error&) {
         // Data folder not found error
-        LOG_MESSAGE_F(error, "data/ folder not found at %s", core::ResolvePath("data").c_str());
+        LOG_MESSAGE_F(error, "data folder not found at %s", data::PrototypeManager::kDataFolder);
         return;
     }
 
@@ -121,7 +123,20 @@ void game::InitLogicLoop(ThreadedLoopCommon& common) {
     common.prototypeLoadingComplete = true;
 
 
-    common.keybindManager.LoadDefaultKeybinds();
+    try {
+        if (!data::DeserializeKeybinds(common.keybindManager)) {
+            LOG_MESSAGE(warning, "No keybinds saved, using default keybinds");
+            common.keybindManager.LoadDefaultKeybinds();
+        }
+        else {
+            common.keybindManager.RegisterAllKeyData();
+            LOG_MESSAGE(info, "Loaded keybinds from file");
+        }
+    }
+    catch (std::exception& e) {
+        LOG_MESSAGE_F(error, "Failed to load keybinds with message: %s, using default keybinds", e.what());
+        common.keybindManager.LoadDefaultKeybinds();
+    }
 
     LogicLoop(common);
 
