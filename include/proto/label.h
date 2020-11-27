@@ -12,11 +12,11 @@ namespace jactorio::proto
     /// Constants for all labels' names
     struct LabelNames
     {
-        /// Access each label by appending a number of each PlayerAction::Type
+        /// Access each label by appending the number which corresponds to each PlayerAction::Type
         ///
-        /// e.g: label_player-action-0
-        ///      label_player-action-1
-        ///      label_player-action-2
+        /// e.g: __core__/label:player-action-0
+        ///      __core__/label:player-action-1
+        ///      __core__/label:player-action-2
         static constexpr auto kPlayerActionPrefix = "__core__/label:player-action-";
 
         static constexpr auto kKeyActionNone     = "__core__/label:key-action-none";

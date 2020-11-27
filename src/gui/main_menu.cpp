@@ -54,7 +54,7 @@ J_NODISCARD static float GetButtonHeight() {
 }
 
 ///
-/// Quarter of menu (width some separation between buttons)
+/// Quarter of menu (with some separation between buttons)
 J_NODISCARD static float GetButtonMiniWidth() {
     return GetButtonWidth() / 4 - gui::GetTotalWindowItemSpacingX(1);
 }
@@ -83,7 +83,7 @@ J_NODISCARD static bool MenuButton(const char* label, float width = -1, float he
 }
 
 ///
-/// Spans quarter of menu, half height
+/// Spans quarter of menu, ImGui default height
 J_NODISCARD static bool MenuButtonMini(const char* label) {
     return MenuButton(label, GetButtonMiniWidth(), 0);
 }

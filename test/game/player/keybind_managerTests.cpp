@@ -173,7 +173,7 @@ namespace jactorio::game
     }
 
     ///
-    /// Should save and load keybind info
+    /// Should save and load keyboard keybind info
     TEST_F(KeybindManagerTest, SerializeKeyboardKeybindInfo) {
         keybindManager_.ChangeActionInput(PlayerAction::Type::test, SDLK_0, InputAction::key_down);
 
@@ -190,7 +190,7 @@ namespace jactorio::game
     }
 
     ///
-    /// Should save and load keybind info
+    /// Should save and load mouse keybind info
     TEST_F(KeybindManagerTest, SerializeMouseKeybindInfo) {
         keybindManager_.ChangeActionInput(PlayerAction::Type::test, MouseInput::left, InputAction::key_up);
 
