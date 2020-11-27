@@ -77,9 +77,9 @@ namespace jactorio::game
 
         int counter = 0;
 
-        auto callback = [](EventBase& /*event*/) {};
+        auto callback = [](const EventBase& /*event*/) {};
 
-        auto callback2 = [](EventBase& /*event*/) {};
+        auto callback2 = [](const EventBase& /*event*/) {};
 
 
         eventData_.Subscribe(EventType::game_chunk_generated, callback);

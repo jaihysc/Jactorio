@@ -273,8 +273,8 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
 ///
 /// Changes player_action's keybind to next key up
 static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::Type player_action) {
-    common.gameDataLocal.event.SubscribeOnce(game::EventType::input_activity, [&common, player_action](auto& e) {
-        const auto& input_variant = static_cast<game::InputActivityEvent&>(e).input;
+    common.gameDataLocal.event.SubscribeOnce(game::EventType::input_activity, [&common, player_action](const auto& e) {
+        const auto& input_variant = static_cast<const game::InputActivityEvent&>(e).input;
 
         if (std::holds_alternative<game::KeyboardActivityEvent>(input_variant)) {
             const auto& kb_event = std::get<game::KeyboardActivityEvent>(input_variant);

@@ -242,9 +242,9 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     common.gameDataLocal.input.key.Register(
         [&]() {
-            common.gameDataLocal.event.SubscribeOnce(game::EventType::renderer_tick, [](game::EventBase& e) {
-                auto& render_e = static_cast<game::RendererTickEvent&>(e);
-                auto& window   = render_e.windows[0].get();
+            common.gameDataLocal.event.SubscribeOnce(game::EventType::renderer_tick, [](const game::EventBase& e) {
+                const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
+                auto& window         = render_e.windows[0].get();
 
                 window.SetFullscreen(!window.IsFullscreen());
                 main_renderer->GlResizeWindow(window_x, window_y);
