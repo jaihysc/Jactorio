@@ -5,7 +5,6 @@
 #include <pybind11/embed.h>
 #include <sstream>
 
-#include "core/filesystem.h"
 #include "core/logger.h"
 #include "proto/detail/exception.h"
 
@@ -73,14 +72,15 @@ void data::PyInterpreterInit() {
 
         // Include the data_manager::data_folder/ as a python search path to shorten imports
         std::stringstream s;
-        s << core::GetExecutingDirectory() << "/" << PrototypeManager::kDataFolder << "/";
+        s << PrototypeManager::kDataFolder << "/";
         sysm.attr("path").attr("append")(s.str());
     }
 
     py_stdout = sysm.attr("stdout");
     py_stderr = sysm.attr("stderr");
 
-    LOG_MESSAGE(info, "Python interpreter initialized");
+    const auto python_version = std::string(py::str(sysm.attr("version")));
+    LOG_MESSAGE_F(info, "Python interpreter initialized %s", python_version.c_str());
 }
 
 void data::PyInterpreterTerminate() {

@@ -15,7 +15,10 @@ namespace jactorio::gui
             main,
             new_game,
             load_game,
-            save_game
+            save_game,
+
+            options,
+            option_change_keybind
         };
 
         static constexpr auto kMaxSaveNameLength = 100;

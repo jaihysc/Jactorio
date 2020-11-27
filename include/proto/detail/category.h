@@ -9,6 +9,9 @@ namespace jactorio::proto
     enum class Category
     {
         none = 0,
+
+        label,
+
         tile,
         sprite,
         noise_layer_tile,

@@ -27,7 +27,7 @@ namespace jactorio::game
     TEST_F(EventTest, SubscribeRaiseEvent) {
         int counter = 0;
 
-        eventData_.Subscribe(EventType::logic_tick, [](MockEvent& /*event*/) {});
+        eventData_.Subscribe(EventType::logic_tick, [](auto& /*event*/) {});
 
         eventData_.Raise<MockEvent>(EventType::logic_tick, 12, counter);
         EXPECT_EQ(counter, 12);
@@ -41,7 +41,9 @@ namespace jactorio::game
 
         int counter = 0;
 
-        eventData_.SubscribeOnce(EventType::logic_tick, [](MockEvent& /*event*/) {});
+        eventData_.SubscribeOnce(EventType::logic_tick, [](auto& /*event*/) {});
+        eventData_.SubscribeOnce(EventType::renderer_tick, [](auto& /*event*/) {});
+
 
         eventData_.Raise<MockEvent>(EventType::logic_tick, 12, counter);
         EXPECT_EQ(counter, 12);
@@ -49,15 +51,35 @@ namespace jactorio::game
         // This will no longer run since it has been handled once above
         eventData_.Raise<MockEvent>(EventType::logic_tick, 12, counter);
         EXPECT_EQ(counter, 12); // Keeps origin val above
+
+
+        // Render tick event unaffected
+        eventData_.Raise<MockEvent>(EventType::renderer_tick, 2, counter);
+        EXPECT_EQ(counter, 14);
+    }
+
+    TEST_F(EventTest, SubscribeOnceInCallback) {
+        int counter = 0;
+
+        eventData_.SubscribeOnce(EventType::logic_tick, [this](auto& /*event*/) {
+            eventData_.SubscribeOnce(EventType::logic_tick, [](auto& /*event*/) {});
+        });
+
+
+        eventData_.Raise<MockEvent>(EventType::logic_tick, 1, counter);
+        EXPECT_EQ(counter, 1);
+
+        eventData_.Raise<MockEvent>(EventType::logic_tick, 10, counter);
+        EXPECT_EQ(counter, 11);
     }
 
     TEST_F(EventTest, UnsubscribeEvent) {
 
         int counter = 0;
 
-        auto callback = [](MockEvent& /*event*/) {};
+        auto callback = [](const EventBase& /*event*/) {};
 
-        auto callback2 = [](MockEvent& /*event*/) {};
+        auto callback2 = [](const EventBase& /*event*/) {};
 
 
         eventData_.Subscribe(EventType::game_chunk_generated, callback);
@@ -78,7 +100,7 @@ namespace jactorio::game
 
     TEST_F(EventTest, ClearAllData) {
         int counter = 0;
-        eventData_.Subscribe(EventType::game_chunk_generated, [](MockEvent& /*event*/) {});
+        eventData_.Subscribe(EventType::game_chunk_generated, [](auto& /*event*/) {});
         eventData_.ClearAllData();
 
         // Nothing gets raises since it is cleared

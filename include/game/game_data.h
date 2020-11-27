@@ -22,7 +22,7 @@ namespace jactorio::game
         struct GameInput
         {
             MouseSelection mouse;
-            KeyInput key;
+            InputManager key;
         };
 
         data::PrototypeManager prototype;

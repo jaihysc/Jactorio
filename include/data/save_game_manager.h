@@ -15,8 +15,17 @@ namespace jactorio::game
     struct GameDataGlobal;
 } // namespace jactorio::game
 
+namespace jactorio::game
+{
+    class KeybindManager;
+}
+
 namespace jactorio::data
 {
+    constexpr auto kKeybindSaveName = "keybinds.json";
+
+    // Save game
+
     void SerializeGameData(const game::GameDataGlobal& game_data, const std::string& save_name);
 
     ///
@@ -34,6 +43,19 @@ namespace jactorio::data
     ///
     /// Iterator to save directory, directory itself is always valid
     J_NODISCARD std::filesystem::directory_iterator GetSaveDirIt();
+
+    // Keybinds
+
+    ///
+    /// Serializes to kKeybindSaveName
+    void SerializeKeybinds(const game::KeybindManager& keybind_manager);
+
+    ///
+    /// Deserializes from kKeybindSaveName
+    /// \param out_keybind_manager Deserialized into this
+    /// \return false If file is not found, true if succeeded
+    bool DeserializeKeybinds(game::KeybindManager& out_keybind_manager);
+
 } // namespace jactorio::data
 
 #endif // JACTORIO_INCLUDE_DATA_SAVE_GAME_MANAGER_H

@@ -7,8 +7,6 @@
 #include <iostream>
 #include <string>
 
-#include "core/filesystem.h"
-
 using namespace jactorio;
 
 std::ofstream log_file;
@@ -16,7 +14,7 @@ time_t start_time = clock();
 
 
 void core::OpenLogFile() {
-    log_file.open(ResolvePath(kLogFileName));
+    log_file.open(kLogFileName);
 }
 
 void core::CloseLogFile() {

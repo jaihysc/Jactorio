@@ -13,9 +13,9 @@
     J_NODISCARD EventType GetEventType() const override { \
         return EventType::type;                           \
     }
-#define EVENT_CATEGORY(category)                        \
-    J_NODISCARD int GetCategoryFlags() const override { \
-        return category;                                \
+#define EVENT_CATEGORY(category)                                          \
+    J_NODISCARD int GetCategoryFlags() const override {                   \
+        return static_cast<int>(jactorio::game::EventCategory::category); \
     }
 
 namespace jactorio::game

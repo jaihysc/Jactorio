@@ -12,6 +12,7 @@
 
 #include "proto/sprite.h"
 
+#include "game/event/hardware_events.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 
@@ -225,11 +226,16 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
         i_keymod -= static_cast<int>(KMOD_NUM);
         i_keymod -= static_cast<int>(KMOD_CAPS);
 
-        const auto keymod = static_cast<SDL_Keymod>(i_keymod);
+        const auto keycode      = static_cast<SDL_KeyCode>(sdl_event.key.keysym.sym);
+        const auto input_action = game::InputManager::ToInputAction(sdl_event.key.type, sdl_event.key.repeat);
+        const auto keymod       = static_cast<SDL_Keymod>(i_keymod);
 
-        game::KeyInput::SetInput(static_cast<SDL_KeyCode>(sdl_event.key.keysym.sym),
-                                 game::KeyInput::ToInputAction(sdl_event.key.type, sdl_event.key.repeat),
-                                 keymod);
+        game::InputManager::SetInput(keycode, input_action, keymod);
+
+        common.gameDataLocal.event.Raise<game::KeyboardActivityEvent>(
+            game::EventType::keyboard_activity, keycode, input_action, keymod);
+        common.gameDataLocal.event.Raise<game::InputActivityEvent>(
+            game::EventType::input_activity, keycode, input_action, keymod);
     } break;
 
         // Mouse events
@@ -272,7 +278,12 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
             break;
         }
 
-        game::KeyInput::SetInput(mouse_input, action, KMOD_NONE);
+        game::InputManager::SetInput(mouse_input, action, KMOD_NONE);
+
+        common.gameDataLocal.event.Raise<game::MouseActivityEvent>(
+            game::EventType::mouse_activity, mouse_input, action, KMOD_NONE);
+        common.gameDataLocal.event.Raise<game::InputActivityEvent>(
+            game::EventType::input_activity, mouse_input, action, KMOD_NONE);
     } break;
 
     default:

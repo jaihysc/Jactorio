@@ -7,7 +7,6 @@
 #include <ios>
 #include <sstream>
 
-#include "core/filesystem.h"
 #include "core/logger.h"
 
 // Logs message to stderr and file
@@ -18,10 +17,10 @@
     } while (0)
 
 // Close ofstream and open as FILE*
-#define CRASH_OPEN_LOG_FILE()                                                                   \
-    jactorio::core::CloseLogFile();                                                             \
-    auto* file = fopen(jactorio::core::ResolvePath(jactorio::core::kLogFileName).c_str(), "a"); \
-    CRASH_LOG_MESSAGE("\n\nJactorio crashed%c", '\n');                                          \
+#define CRASH_OPEN_LOG_FILE()                              \
+    jactorio::core::CloseLogFile();                        \
+    auto* file = fopen(jactorio::core::kLogFileName, "a"); \
+    CRASH_LOG_MESSAGE("\n\nJactorio crashed%c", '\n');     \
     CRASH_LOG_MESSAGE("Below contains debug information related to the crash\n%c", '\n')
 
 

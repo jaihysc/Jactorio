@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "game/game_data.h"
+#include "game/player/keybind_manager.h"
 #include "gui/main_menu_data.h"
 
 namespace jactorio
@@ -25,11 +26,6 @@ namespace jactorio
         };
 
 
-        ThreadedLoopCommon() {
-            gameDataGlobal_.emplace();
-        }
-
-
         [[nodiscard]] game::GameDataGlobal& GetDataGlobal() noexcept {
             return gameDataGlobal_.value();
         }
@@ -44,6 +40,7 @@ namespace jactorio
 
         game::GameDataLocal gameDataLocal;
 
+
         GameState gameState = GameState::main_menu;
         gui::MainMenuData mainMenuData;
 
@@ -56,7 +53,11 @@ namespace jactorio
         void ResetGlobalData();
 
     private:
-        std::optional<game::GameDataGlobal> gameDataGlobal_;
+        std::optional<game::GameDataGlobal> gameDataGlobal_{std::in_place};
+
+    public:
+        // Requires game data global to be constructed first
+        game::KeybindManager keybindManager{gameDataLocal.input.key, GetDataGlobal()};
     };
 
     inline void ThreadedLoopCommon::ResetGlobalData() {

@@ -10,16 +10,17 @@
 
 using namespace jactorio;
 
-std::unordered_map<game::KeyInput::IntKeyMouseCodePair, game::KeyInput::InputKeyData> game::KeyInput::activeInputs_{};
+std::unordered_map<game::InputManager::IntKeyMouseCodePair, game::InputManager::InputKeyData>
+    game::InputManager::activeInputs_{};
 
-void game::KeyInput::SetInput(SDL_KeyCode keycode, InputAction action, SDL_Keymod mod) {
+void game::InputManager::SetInput(SDL_KeyCode keycode, InputAction action, SDL_Keymod mod) {
     assert(action != InputAction::key_held);    // Not valid for setting an input, either pressed or repeat
     assert(action != InputAction::key_pressed); // Not valid for setting an input, use key_down
 
     activeInputs_[keycode] = InputKeyData{keycode, action, mod};
 }
 
-void game::KeyInput::SetInput(MouseInput mouse, InputAction action, SDL_Keymod mod) {
+void game::InputManager::SetInput(MouseInput mouse, InputAction action, SDL_Keymod mod) {
     assert(action != InputAction::key_held);    // Not valid for setting an input, either pressed or repeat
     assert(action != InputAction::key_pressed); // Not valid for setting an input, use key_down
 
@@ -29,17 +30,17 @@ void game::KeyInput::SetInput(MouseInput mouse, InputAction action, SDL_Keymod m
 
 // ======================================================================
 
-void game::KeyInput::CallCallbacks(const InputKeyData& input) {
+void game::InputManager::CallCallbacks(const InputKeyData& input) {
     const auto& vector = callbackIds_[input];
     for (auto id : vector) {
         inputCallbacks_[id]();
     }
 }
 
-game::KeyInput::CallbackId game::KeyInput::Register(const InputCallback& callback,
-                                                    SDL_KeyCode key,
-                                                    InputAction action,
-                                                    SDL_Keymod mods) {
+game::InputManager::CallbackId game::InputManager::Register(const InputCallback& callback,
+                                                            SDL_KeyCode key,
+                                                            InputAction action,
+                                                            SDL_Keymod mods) {
     // Keyboard
     // Assign an id to the callback
     callbackIds_[{key, action, mods}].push_back(callbackId_);
@@ -50,10 +51,10 @@ game::KeyInput::CallbackId game::KeyInput::Register(const InputCallback& callbac
     return callbackId_++;
 }
 
-game::KeyInput::CallbackId game::KeyInput::Register(const InputCallback& callback,
-                                                    MouseInput button,
-                                                    InputAction action,
-                                                    SDL_Keymod mods) {
+game::InputManager::CallbackId game::InputManager::Register(const InputCallback& callback,
+                                                            MouseInput button,
+                                                            InputAction action,
+                                                            SDL_Keymod mods) {
     // Mouse
     // Assign an id to the callback
     callbackIds_[{static_cast<IntKeyMouseCodePair>(button) * -1, action, mods}].push_back(callbackId_);
@@ -64,7 +65,7 @@ game::KeyInput::CallbackId game::KeyInput::Register(const InputCallback& callbac
     return callbackId_++;
 }
 
-void game::KeyInput::Raise() {
+void game::InputManager::Raise() {
     // if (render::imgui_manager::input_captured)
     // return;
 
@@ -116,22 +117,26 @@ void game::KeyInput::Raise() {
     }
 }
 
-void game::KeyInput::Unsubscribe(const CallbackId callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods) {
-    auto& id_vector = callbackIds_[{key, action, mods}];
+void game::InputManager::Unsubscribe(const CallbackId callback_id) {
+    for (auto& [key, ids] : callbackIds_) {
+        for (auto id : ids) {
+            if (id == callback_id) {
+                // Erase the callback id to the callback
+                ids.erase(std::remove(ids.begin(), ids.end(), callback_id), ids.end());
 
-    // Erase the callback id to the callback
-    id_vector.erase(std::remove(id_vector.begin(), id_vector.end(), callback_id), id_vector.end());
-
-    // Erase the callback itself
-    inputCallbacks_.erase(callback_id);
+                // Erase the callback itself
+                inputCallbacks_.erase(callback_id);
+            }
+        }
+    }
 }
 
-void game::KeyInput::ClearData() {
+void game::InputManager::ClearData() {
     inputCallbacks_.clear();
     callbackIds_.clear();
 }
 
-game::InputAction game::KeyInput::ToInputAction(const int action, const bool repeat) {
+game::InputAction game::InputManager::ToInputAction(const int action, const bool repeat) {
     switch (action) {
     case SDL_KEYDOWN:
         if (repeat)

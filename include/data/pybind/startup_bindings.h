@@ -21,6 +21,7 @@
 #include "proto/framework/framework_base.h"
 #include "proto/inserter.h"
 #include "proto/item.h"
+#include "proto/label.h"
 #include "proto/mining_drill.h"
 #include "proto/noise_layer.h"
 #include "proto/recipe.h"
@@ -65,6 +66,8 @@ inline void ExtractPythonTraceback(jactorio::proto::FrameworkBase& prototype) {
     prototype.pythonTraceback.pop_back(); // Remove final newline
 }
 
+///
+/// Name of cpp class, python name to reference cpp class, cpp inheritors for cpp class
 #define PYBIND_DATA_CLASS(cpp_class__, py_name__, ...)                                                \
     m.def(                                                                                            \
         #py_name__,                                                                                   \
@@ -145,6 +148,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     py::class_<FrameworkBase>(m, "_FrameworkBase")
         .def("name", &FrameworkBase::Set_name)
         .def("category", &FrameworkBase::GetCategory) PYBIND_PROP(FrameworkBase, order);
+
+    PYBIND_DATA_CLASS(Label, Label, FrameworkBase);
 
     PYBIND_DATA_CLASS(Sprite, Sprite, FrameworkBase)
     PYBIND_PROP(Sprite, group)

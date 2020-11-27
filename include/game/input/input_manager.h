@@ -4,59 +4,29 @@
 #define JACTORIO_INCLUDE_GAME_INPUT_INPUT_MANAGER_H
 #pragma once
 
-#include <SDL_keyboard.h>
 #include <functional>
 #include <unordered_map>
+#include <vector>
 
 #include "core/hashers.h"
+#include "game/input/input_type.h"
 
 namespace jactorio::game
 {
-    enum class InputAction
-    {
-        none,
-
-        // First pressed down
-        key_down,
-
-        // While pressed down, before repeat
-        key_pressed,
-        // Press down enough to repeat
-        key_repeat,
-
-        // pressed and repeat
-        key_held,
-
-        // Key lifted
-        key_up
-    };
-
-    enum class MouseInput
-    {
-        left,
-        middle,
-        right,
-        x1,
-        x2
-    };
-
-    class KeyInput
+    class InputManager
     {
         using InputCallback = std::function<void()>;
-        using CallbackId    = uint64_t;
 
+    public:
         /// Positive = SDL_KeyCode
-        /// Negative = MouseInput * -1
+        /// Negative = MouseInput * -1 (Should never be 0)
         using IntKeyMouseCodePair = int;
 
         using InputKeyData = std::tuple<IntKeyMouseCodePair, InputAction, SDL_Keymod>;
 
+        /// 0 indicates invalid ID
+        using CallbackId = uint64_t;
 
-        // ======================================================================
-
-        static std::unordered_map<IntKeyMouseCodePair, InputKeyData> activeInputs_;
-
-    public:
         ///
         /// Sets the state of an input
         /// Callbacks for the respective inputs are called when CallCallbacks() is called
@@ -66,22 +36,6 @@ namespace jactorio::game
 
         // ======================================================================
 
-    private:
-        // Increments with each new assigned callback, one is probably not having 4 million registered callbacks
-        // so this doesn't need to be decremented
-        CallbackId callbackId_ = 1;
-
-
-        // tuple format: key, action, mods
-        // id of callbacks registered to the tuple
-        std::unordered_map<InputKeyData, std::vector<CallbackId>, core::hash<InputKeyData>> callbackIds_{};
-
-        std::unordered_map<CallbackId, InputCallback> inputCallbacks_{};
-
-
-        void CallCallbacks(const InputKeyData& input);
-
-    public:
         ///
         /// Registers a keyboard input callback which will be called when the specified input is activated
         /// \return id of the registered callback, 0 Indicates error
@@ -106,7 +60,7 @@ namespace jactorio::game
 
         ///
         /// Removes specified callback at callback_id
-        void Unsubscribe(CallbackId callback_id, SDL_KeyCode key, InputAction action, SDL_Keymod mods = KMOD_NONE);
+        void Unsubscribe(CallbackId callback_id);
 
         ///
         /// Deletes all callback data
@@ -114,6 +68,24 @@ namespace jactorio::game
 
         ///
         static InputAction ToInputAction(int action, bool repeat);
+
+    private:
+        static std::unordered_map<IntKeyMouseCodePair, InputKeyData> activeInputs_;
+
+
+        // Increments with each new assigned callback, one is probably not having 4 million registered callbacks
+        // so this doesn't need to be decremented
+        CallbackId callbackId_ = 1;
+
+
+        // tuple format: key, action, mods
+        // id of callbacks registered to the tuple
+        std::unordered_map<InputKeyData, std::vector<CallbackId>, core::hash<InputKeyData>> callbackIds_{};
+
+        std::unordered_map<CallbackId, InputCallback> inputCallbacks_{};
+
+
+        void CallCallbacks(const InputKeyData& input);
     };
 } // namespace jactorio::game
 
