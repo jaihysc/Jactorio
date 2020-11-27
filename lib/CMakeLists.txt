@@ -1,6 +1,4 @@
 # Includes dependencies
-cmake_minimum_required(VERSION 3.8)
-
 log_msg("")
 log_msg("[ Jactorio lib ]")
 
@@ -34,6 +32,12 @@ validate_dependency(decimal_for_cpp)
 validate_dependency(StackWalker)
 validate_dependency(backward-cpp)
 validate_dependency(cereal)
+
+
+# SDL, fixes unresolved symbols to memset, memcpy, __chkstk when using /GL (Whole program optimization)
+if (MSVC)
+	list(APPEND EXTRA_LIBS vcruntime msvcrt)
+endif()
 
 
 # Ones which need to be built

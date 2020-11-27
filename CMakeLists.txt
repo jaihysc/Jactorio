@@ -12,6 +12,9 @@ include(CheckIPOSupported)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_POLICY_DEFAULT_CMP0069 NEW) # Enable IPO for all
+
+
 project("jactorio")
 
 option(JACTORIO_BUILD_TESTS "JACTORIO_BUILD_TESTS")
@@ -35,8 +38,8 @@ function(jactorio_copy_data_files)
 
 	log_msg("Copying files to output directory: ${CMAKE_CURRENT_BINARY_DIR}/${JACTORIO_DATA_FOLDER}")
 
-	file(GLOB_RECURSE 
-		DATA_FILES 
+	file(GLOB_RECURSE
+		DATA_FILES
 		RELATIVE ${PROJECT_SOURCE_DIR}
 		${PROJECT_SOURCE_DIR}/${JACTORIO_DATA_FOLDER}/*
 	)
@@ -64,8 +67,8 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES Release OR CMAKE_BUILD_TYPE MATCHES RelWithDebIn
 	check_ipo_supported(RESULT result)
 
 	if(result)
-		log_msg("IPO: Available")
-		set(JACTORIO_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        log_msg("IPO: Available, Enabled")
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 	else()
 		log_msg("IPO: ~Unavailable")
 	endif()
