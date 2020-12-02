@@ -122,13 +122,13 @@ namespace jactorio::game
         proto::TransportBelt segment_proto{};
 
         auto dropoff =
-            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 2);
+            std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::straight, 2);
         TestRegisterConveyorSegment(worldData_, {1, 0}, dropoff, segment_proto);
 
 
         //
         auto pickup =
-            std::make_shared<ConveyorSegment>(proto::Orientation::left, ConveyorSegment::TerminationType::straight, 2);
+            std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::straight, 2);
         TestRegisterConveyorSegment(worldData_, {1, 2}, pickup, segment_proto);
 
         for (int i = 0; i < 1000; ++i) {

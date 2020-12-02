@@ -88,8 +88,8 @@ namespace jactorio::game
         /// Creates a conveyor with orientation
         proto::ConveyorData CreateConveyor(
             const proto::Orientation orientation,
-            const ConveyorSegment::TerminationType ttype = ConveyorSegment::TerminationType::straight) const {
-            const auto segment = std::make_shared<ConveyorSegment>(orientation, ttype, 2);
+            const ConveyorStruct::TerminationType ttype = ConveyorStruct::TerminationType::straight) const {
+            const auto segment = std::make_shared<ConveyorStruct>(orientation, ttype, 2);
 
             return proto::ConveyorData{segment};
         }
@@ -297,9 +297,9 @@ namespace jactorio::game
         // ^
         // | <--
 
-        const auto right = CreateConveyor(proto::Orientation::right, ConveyorSegment::TerminationType::straight);
-        const auto up    = CreateConveyor(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right);
-        auto left        = CreateConveyor(proto::Orientation::left, ConveyorSegment::TerminationType::bend_right);
+        const auto right = CreateConveyor(proto::Orientation::right, ConveyorStruct::TerminationType::straight);
+        const auto up    = CreateConveyor(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right);
+        auto left        = CreateConveyor(proto::Orientation::left, ConveyorStruct::TerminationType::bend_right);
 
         left.lineSegment->targetSegment = up.lineSegment.get();
         up.lineSegment->targetSegment   = right.lineSegment.get();
@@ -415,7 +415,7 @@ namespace jactorio::game
         proto::ConveyorData CreateConveyor(const proto::Orientation orientation) const {
 
             const auto segment =
-                std::make_shared<ConveyorSegment>(orientation, ConveyorSegment::TerminationType::straight, 2);
+                std::make_shared<ConveyorStruct>(orientation, ConveyorStruct::TerminationType::straight, 2);
 
             segment->InsertItem(false, 0.5, lineItem_);
             segment->InsertItem(true, 0.5, lineItem_);
@@ -624,13 +624,13 @@ namespace jactorio::game
         // | <--
 
         const auto right =
-            std::make_shared<ConveyorSegment>(proto::Orientation::right, ConveyorSegment::TerminationType::straight, 2);
+            std::make_shared<ConveyorStruct>(proto::Orientation::right, ConveyorStruct::TerminationType::straight, 2);
 
         const auto up =
-            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 2);
+            std::make_shared<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right, 2);
 
-        const auto left = std::make_shared<ConveyorSegment>(
-            proto::Orientation::left, ConveyorSegment::TerminationType::bend_right, 2);
+        const auto left =
+            std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::bend_right, 2);
 
         left->targetSegment = up.get();
         up->targetSegment   = right.get();

@@ -158,9 +158,9 @@ namespace jactorio
     ///
     /// Registers and creates tile UniqueData for ConveyorSegment
     inline void TestRegisterConveyorSegment(game::WorldData& world_data,
-                                             const WorldCoord& world_coords,
-                                             const std::shared_ptr<game::ConveyorSegment>& segment,
-                                             const proto::Conveyor& prototype) {
+                                            const WorldCoord& world_coords,
+                                            const std::shared_ptr<game::ConveyorStruct>& segment,
+                                            const proto::Conveyor& prototype) {
         auto* tile = world_data.GetTile(world_coords);
         assert(tile);
         auto* chunk = world_data.GetChunkW(world_coords);
@@ -171,8 +171,7 @@ namespace jactorio
 
         layer.MakeUniqueData<proto::ConveyorData>(segment);
 
-        chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor)
-            .emplace_back(&tile->GetLayer(game::TileLayer::entity));
+        chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor).emplace_back(&tile->GetLayer(game::TileLayer::entity));
     }
 
     ///

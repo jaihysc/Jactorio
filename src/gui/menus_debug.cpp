@@ -179,7 +179,7 @@ void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeM
 
 WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
-bool show_conveyor_segments      = false;
+bool show_conveyor_structs       = false;
 
 void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& data_manager) {
     constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
@@ -210,11 +210,11 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
             auto& line_segment = *line_data.lineSegment;
 
             // Only draw for the head of segments
-            if (line_segment.terminationType == game::ConveyorSegment::TerminationType::straight &&
+            if (line_segment.terminationType == game::ConveyorStruct::TerminationType::straight &&
                 line_data.lineSegmentIndex != 0)
                 continue;
 
-            if (line_segment.terminationType != game::ConveyorSegment::TerminationType::straight &&
+            if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight &&
                 line_data.lineSegmentIndex != 1)
                 continue;
 
@@ -269,7 +269,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
             }
 
             // Shift items 1 tile forwards if segment bends
-            if (line_segment.terminationType != game::ConveyorSegment::TerminationType::straight) {
+            if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight) {
                 OrientationIncrement(line_segment.direction, pos_x, pos_y);
             }
 
@@ -308,7 +308,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
     proto::ConveyorData* data = proto::Conveyor::GetLineData(world, selected_tile.x, selected_tile.y);
 
     // Try to use current selected line segment first, otherwise used the last valid if checked
-    game::ConveyorSegment* segment_ptr = nullptr;
+    game::ConveyorStruct* segment_ptr = nullptr;
 
 
     if (ImGui::Button("Make all belt items visible")) {
@@ -321,10 +321,10 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
         }
     }
 
-    ImGui::Checkbox("Show conveyor segments", &show_conveyor_segments);
+    ImGui::Checkbox("Show conveyor segments", &show_conveyor_structs);
     ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
-    if (show_conveyor_segments)
+    if (show_conveyor_structs)
         ShowConveyorSegments(world, proto_manager);
 
     if (data != nullptr) {
@@ -344,7 +344,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
     }
     else {
         assert(data != nullptr);
-        game::ConveyorSegment& segment = *segment_ptr;
+        game::ConveyorStruct& segment = *segment_ptr;
 
         // Show conveyor properties
         // Show memory addresses
@@ -366,19 +366,19 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
         {
             std::string s;
             switch (segment.terminationType) {
-            case game::ConveyorSegment::TerminationType::straight:
+            case game::ConveyorStruct::TerminationType::straight:
                 s = "Straight";
                 break;
-            case game::ConveyorSegment::TerminationType::bend_left:
+            case game::ConveyorStruct::TerminationType::bend_left:
                 s = "Bend left";
                 break;
-            case game::ConveyorSegment::TerminationType::bend_right:
+            case game::ConveyorStruct::TerminationType::bend_right:
                 s = "Bend right";
                 break;
-            case game::ConveyorSegment::TerminationType::left_only:
+            case game::ConveyorStruct::TerminationType::left_only:
                 s = "Left side";
                 break;
-            case game::ConveyorSegment::TerminationType::right_only:
+            case game::ConveyorStruct::TerminationType::right_only:
                 s = "Right side";
                 break;
             default:

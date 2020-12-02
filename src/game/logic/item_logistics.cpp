@@ -67,10 +67,10 @@ bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& params) const
 void GetAdjustedLineOffset(const bool use_line_left,
                            proto::LineDistT& pickup_offset,
                            const proto::ConveyorData& line_data) {
-    game::ConveyorSegment::ApplyTerminationDeduction(use_line_left,
-                                                      line_data.lineSegment->terminationType,
-                                                      game::ConveyorSegment::TerminationType::straight,
-                                                      pickup_offset);
+    game::ConveyorStruct::ApplyTerminationDeduction(use_line_left,
+                                                    line_data.lineSegment->terminationType,
+                                                    game::ConveyorStruct::TerminationType::straight,
+                                                    pickup_offset);
 }
 
 bool game::ItemDropOff::CanInsertTransportBelt(const DropOffParams& /*params*/) const {

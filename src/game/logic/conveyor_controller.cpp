@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "game/logic/conveyor_segment.h"
+#include "game/logic/conveyor_struct.h"
 #include "game/world/world_data.h"
 #include "proto/abstract/conveyor.h"
 
@@ -47,7 +47,7 @@ J_NODISCARD bool MoveNextItem(const proto::LineDistT& tiles_moved,
 }
 
 template <bool IsLeft>
-void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segment) {
+void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segment) {
     using namespace jactorio;
     auto& side      = segment.GetSide(IsLeft);
     uint16_t& index = side.index;
@@ -62,7 +62,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
             return;
 
         if (segment.targetSegment) {
-            game::ConveyorSegment& target_segment = *segment.targetSegment;
+            game::ConveyorStruct& target_segment = *segment.targetSegment;
             // Offset to insert at target segment from head
             proto::LineDistT target_offset;
             {
@@ -70,8 +70,8 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
                 switch (segment.terminationType) {
                     // Since segments terminating with side only can target the middle of a grouped segment, it uses
                     // its own member for head offset
-                case game::ConveyorSegment::TerminationType::left_only:
-                case game::ConveyorSegment::TerminationType::right_only:
+                case game::ConveyorStruct::TerminationType::left_only:
+                case game::ConveyorStruct::TerminationType::right_only:
                     // |   |   |   |
                     // 3   2   1   0
                     // targetOffset of 0: Length is 1
@@ -85,7 +85,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
                 target_offset = proto::LineDistT(length - fabs(offset.getAsDouble()));
             }
 
-            game::ConveyorSegment::ApplyTerminationDeduction<IsLeft>(
+            game::ConveyorStruct::ApplyTerminationDeduction<IsLeft>(
                 segment.terminationType, target_segment.terminationType, target_offset);
 
             bool moved_item;
@@ -96,11 +96,11 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
                 break;
 
                 // Side insertion
-            case game::ConveyorSegment::TerminationType::left_only:
+            case game::ConveyorStruct::TerminationType::left_only:
                 moved_item = target_segment.left.TryInsertItem(
                     target_offset.getAsDouble(), *side.lane[index].item, target_segment.itemOffset);
                 break;
-            case game::ConveyorSegment::TerminationType::right_only:
+            case game::ConveyorStruct::TerminationType::right_only:
                 moved_item = target_segment.right.TryInsertItem(
                     target_offset.getAsDouble(), *side.lane[index].item, target_segment.itemOffset);
                 break;

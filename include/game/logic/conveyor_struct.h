@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_SEGMENT_H
-#define JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_SEGMENT_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_STRUCT_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_STRUCT_H
 #pragma once
 
 #include <deque>
@@ -89,7 +89,7 @@ namespace jactorio::game
 
     ///
     /// Stores a collection of items heading in one direction
-    class ConveyorSegment
+    class ConveyorStruct
     {
         using SegmentLengthT = uint8_t;
 
@@ -110,15 +110,15 @@ namespace jactorio::game
         };
 
 
-        ConveyorSegment(const proto::Orientation direction,
-                        const TerminationType termination_type,
-                        const uint8_t segment_length)
+        ConveyorStruct(const proto::Orientation direction,
+                       const TerminationType termination_type,
+                       const uint8_t segment_length)
             : direction(direction), terminationType(termination_type), length(segment_length) {}
 
-        ConveyorSegment(const proto::Orientation direction,
-                        const TerminationType termination_type,
-                        ConveyorSegment* target_segment,
-                        const uint8_t segment_length)
+        ConveyorStruct(const proto::Orientation direction,
+                       const TerminationType termination_type,
+                       ConveyorStruct* target_segment,
+                       const uint8_t segment_length)
             : direction(direction),
               terminationType(termination_type),
               length(segment_length),
@@ -255,14 +255,14 @@ namespace jactorio::game
         IntOffsetT targetInsertOffset = 0;
 
         /// Segment this conveyor feeds into
-        ConveyorSegment* targetSegment = nullptr;
+        ConveyorStruct* targetSegment = nullptr;
 
 
         CEREAL_SERIALIZE(archive) {
             archive(direction, terminationType, length, left, right, itemOffset, targetInsertOffset);
         }
 
-        CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorSegment) {
+        CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorStruct) {
             proto::Orientation line_dir;
             TerminationType term_type;
             SegmentLengthT seg_length;
@@ -275,9 +275,9 @@ namespace jactorio::game
     };
 
     template <bool IsLeftLane>
-    void ConveyorSegment::ApplyTerminationDeduction(const TerminationType segment_ttype,
-                                                    const TerminationType target_segment_ttype,
-                                                    proto::LineDistT& offset) {
+    void ConveyorStruct::ApplyTerminationDeduction(const TerminationType segment_ttype,
+                                                   const TerminationType target_segment_ttype,
+                                                   proto::LineDistT& offset) {
         if constexpr (IsLeftLane) {
             ApplyLeftTerminationDeduction(segment_ttype, target_segment_ttype, offset);
         }
@@ -288,4 +288,4 @@ namespace jactorio::game
 } // namespace jactorio::game
 
 
-#endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_SEGMENT_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_STRUCT_H

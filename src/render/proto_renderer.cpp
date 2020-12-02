@@ -4,7 +4,7 @@
 
 #include "jactorio.h"
 
-#include "game/logic/conveyor_segment.h"
+#include "game/logic/conveyor_struct.h"
 #include "proto/inserter.h"
 #include "proto/sprite.h"
 #include "render/conveyor_offset.h"
@@ -19,7 +19,7 @@ constexpr float kPixelZ = 0.1f;
 /// \param tile_y Tile offset
 void PrepareConveyorSegmentData(render::RendererLayer& layer,
                                 const SpriteUvCoordsT& uv_coords,
-                                const game::ConveyorSegment& line_segment,
+                                const game::ConveyorStruct& line_segment,
                                 std::deque<game::ConveyorItem>& line_segment_side,
                                 double tile_x,
                                 double tile_y,
@@ -53,7 +53,7 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
     }
 
     // Shift items 1 tile forwards if segment bends
-    if (line_segment.terminationType != ConveyorSegment::TerminationType::straight) {
+    if (line_segment.terminationType != ConveyorStruct::TerminationType::straight) {
         OrientationIncrement(line_segment.direction, tile_x, tile_y);
     }
 
@@ -89,7 +89,7 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
 void render::DrawConveyorSegmentItems(RendererLayer& layer,
                                       const SpriteUvCoordsT& uv_coords,
                                       const core::Position2<OverlayOffsetAxis>& pixel_offset,
-                                      game::ConveyorSegment& line_segment) {
+                                      game::ConveyorStruct& line_segment) {
     double tile_x_offset = 0;
     double tile_y_offset = 0;
 
@@ -116,7 +116,7 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
 
     // Left side
     switch (line_segment.terminationType) {
-    case game::ConveyorSegment::TerminationType::straight:
+    case game::ConveyorStruct::TerminationType::straight:
         switch (line_segment.direction) {
         case proto::Orientation::up:
             tile_y_offset -= ConveyorOffset::Up::kSY;
@@ -133,7 +133,7 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
         }
         break;
 
-    case game::ConveyorSegment::TerminationType::bend_left:
+    case game::ConveyorStruct::TerminationType::bend_left:
         switch (line_segment.direction) {
         case proto::Orientation::up:
             tile_y_offset += ConveyorOffset::Up::kBlLY;
@@ -150,7 +150,7 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
         }
         break;
 
-    case game::ConveyorSegment::TerminationType::bend_right:
+    case game::ConveyorStruct::TerminationType::bend_right:
         switch (line_segment.direction) {
         case proto::Orientation::up:
             tile_y_offset += ConveyorOffset::Up::kBrLY;
@@ -168,8 +168,8 @@ void render::DrawConveyorSegmentItems(RendererLayer& layer,
         break;
 
         // Side insertion
-    case game::ConveyorSegment::TerminationType::right_only:
-    case game::ConveyorSegment::TerminationType::left_only:
+    case game::ConveyorStruct::TerminationType::right_only:
+    case game::ConveyorStruct::TerminationType::left_only:
         switch (line_segment.direction) {
         case proto::Orientation::up:
             tile_y_offset += ConveyorOffset::Up::kSfY;
@@ -216,7 +216,7 @@ prepare_right:
 
     // Right side
     switch (line_segment.terminationType) {
-    case game::ConveyorSegment::TerminationType::straight:
+    case game::ConveyorStruct::TerminationType::straight:
         switch (line_segment.direction) {
         case proto::Orientation::up:
             tile_y_offset -= ConveyorOffset::Up::kSY;
@@ -233,7 +233,7 @@ prepare_right:
         }
         break;
 
-    case game::ConveyorSegment::TerminationType::bend_left:
+    case game::ConveyorStruct::TerminationType::bend_left:
         switch (line_segment.direction) {
         case proto::Orientation::up:
             tile_y_offset += ConveyorOffset::Up::kBlRY;
@@ -250,7 +250,7 @@ prepare_right:
         }
         break;
 
-    case game::ConveyorSegment::TerminationType::bend_right:
+    case game::ConveyorStruct::TerminationType::bend_right:
         switch (line_segment.direction) {
         case proto::Orientation::up:
             tile_y_offset += ConveyorOffset::Up::kBrRY;
@@ -268,8 +268,8 @@ prepare_right:
         break;
 
         // Side insertion
-    case game::ConveyorSegment::TerminationType::right_only:
-    case game::ConveyorSegment::TerminationType::left_only:
+    case game::ConveyorStruct::TerminationType::right_only:
+    case game::ConveyorStruct::TerminationType::left_only:
         switch (line_segment.direction) {
         case proto::Orientation::up:
             tile_y_offset += ConveyorOffset::Up::kSfY;

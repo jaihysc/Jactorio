@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "core/data_type.h"
-#include "game/logic/conveyor_segment.h"
+#include "game/logic/conveyor_struct.h"
 #include "proto/abstract/health_entity.h"
 
 #include <cereal/types/memory.hpp>
@@ -18,7 +18,7 @@ namespace jactorio::proto
     /// ConveyorData with a segment index of 0 manages a segment and will delete it when it is deleted
     struct ConveyorData final : HealthEntityData
     {
-        explicit ConveyorData(std::shared_ptr<game::ConveyorSegment> line_segment)
+        explicit ConveyorData(std::shared_ptr<game::ConveyorStruct> line_segment)
             : lineSegment(std::move(line_segment)) {}
 
         ///
@@ -57,7 +57,7 @@ namespace jactorio::proto
 
 
         /// The logic chunk line_segment associated
-        std::shared_ptr<game::ConveyorSegment> lineSegment;
+        std::shared_ptr<game::ConveyorStruct> lineSegment;
 
         /// Tile distance to the head of the conveyor
         /// \remark For rendering purposes, the length should never exceed ~2 chunks at most
@@ -71,7 +71,7 @@ namespace jactorio::proto
         }
 
         CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorData) {
-            std::shared_ptr<game::ConveyorSegment> line_segment;
+            std::shared_ptr<game::ConveyorStruct> line_segment;
             archive(line_segment);
             construct(line_segment);
 
@@ -123,9 +123,9 @@ namespace jactorio::proto
         ///
         /// Gets conveyor segment at world coords
         /// \return nullptr if no segment exists
-        static std::shared_ptr<game::ConveyorSegment>* GetConveyorSegment(game::WorldData& world_data,
-                                                                          WorldCoordAxis world_x,
-                                                                          WorldCoordAxis world_y);
+        static std::shared_ptr<game::ConveyorStruct>* GetConveyorSegment(game::WorldData& world_data,
+                                                                         WorldCoordAxis world_x,
+                                                                         WorldCoordAxis world_y);
 
         ///
         /// Determines line orientation given orientation and neighbors

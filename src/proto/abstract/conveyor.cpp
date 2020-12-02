@@ -5,7 +5,7 @@
 #include <array>
 #include <cmath>
 
-#include "game/logic/conveyor_segment.h"
+#include "game/logic/conveyor_struct.h"
 #include "game/world/world_data.h"
 #include "proto/sprite.h"
 #include "render/proto_renderer.h"
@@ -85,9 +85,9 @@ LineData4Way proto::Conveyor::GetLineData4(game::WorldData& world_data, const Wo
     return {up, right, down, left};
 }
 
-std::shared_ptr<game::ConveyorSegment>* proto::Conveyor::GetConveyorSegment(game::WorldData& world_data,
-                                                                            const WorldCoordAxis world_x,
-                                                                            const WorldCoordAxis world_y) {
+std::shared_ptr<game::ConveyorStruct>* proto::Conveyor::GetConveyorSegment(game::WorldData& world_data,
+                                                                           const WorldCoordAxis world_x,
+                                                                           const WorldCoordAxis world_y) {
     auto* tile = world_data.GetTile(world_x, world_y);
     if (tile != nullptr) {
         auto& layer = tile->GetLayer(game::TileLayer::entity);
@@ -172,11 +172,11 @@ void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
     const auto& line_data = *static_cast<const ConveyorData*>(unique_data);
 
     // Only draw for the head of segments
-    if (line_data.lineSegment->terminationType == game::ConveyorSegment::TerminationType::straight &&
+    if (line_data.lineSegment->terminationType == game::ConveyorStruct::TerminationType::straight &&
         line_data.lineSegmentIndex != 0)
         return;
 
-    if (line_data.lineSegment->terminationType != game::ConveyorSegment::TerminationType::straight &&
+    if (line_data.lineSegment->terminationType != game::ConveyorStruct::TerminationType::straight &&
         line_data.lineSegmentIndex != 1)
         return;
 
@@ -195,7 +195,7 @@ SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_d
 }
 
 
-void RemoveFromLogic(game::WorldData& world_data, const WorldCoord& world_coords, game::ConveyorSegment& line_segment) {
+void RemoveFromLogic(game::WorldData& world_data, const WorldCoord& world_coords, game::ConveyorStruct& line_segment) {
     world_data.LogicRemove(game::Chunk::LogicGroup::conveyor, world_coords, [&](auto* t_layer) {
         auto* line_data = t_layer->template GetUniqueData<proto::ConveyorData>();
         return line_data->lineSegment.get() == &line_segment;
@@ -222,12 +222,12 @@ void RemoveFromLogic(game::WorldData& world_data, const WorldCoord& world_coords
 // ======================================================================
 // Build / Remove / Neighbor update
 
-static void ShiftSegmentHeadForward(game::ConveyorSegment& line_segment) {
+static void ShiftSegmentHeadForward(game::ConveyorStruct& line_segment) {
     line_segment.length++;
     line_segment.itemOffset++;
 }
 
-static void ShiftSegmentHeadBackward(game::ConveyorSegment& line_segment) {
+static void ShiftSegmentHeadBackward(game::ConveyorStruct& line_segment) {
     line_segment.length--;
     line_segment.itemOffset--;
 }
@@ -241,7 +241,7 @@ static void ShiftSegmentHeadBackward(game::ConveyorSegment& line_segment) {
 /// calling
 static void UpdateSegmentTiles(game::WorldData& world_data,
                                const WorldCoord& world_coords,
-                               const std::shared_ptr<game::ConveyorSegment>& line_segment,
+                               const std::shared_ptr<game::ConveyorStruct>& line_segment,
                                const int offset = 0) {
     using OffsetT = ChunkCoordAxis;
 
@@ -329,7 +329,7 @@ template <proto::ConveyorData::LineOrientation BendLeft,
           proto::ConveyorData::LineOrientation RightOnly>
 void TryShiftSegment(game::WorldData& world_data,
                      const WorldCoord& origin_coords,
-                     const std::shared_ptr<game::ConveyorSegment>& origin_segment,
+                     const std::shared_ptr<game::ConveyorStruct>& origin_segment,
                      proto::ConveyorData* neighbor_data) {
     if (!neighbor_data)
         return;
@@ -352,7 +352,7 @@ void TryShiftSegment(game::WorldData& world_data,
 /// Shifts origin segment forwards depending on its orientation with the appropriate neighbor
 void TryShiftSegment(game::WorldData& world_data,
                      const WorldCoord& origin_coords,
-                     const std::shared_ptr<game::ConveyorSegment>& origin_segment,
+                     const std::shared_ptr<game::ConveyorStruct>& origin_segment,
                      LineData4Way& neighbor_data4) {
     switch (origin_segment->direction) {
 
@@ -402,7 +402,7 @@ void CalculateNeighborTermination(game::WorldData& world_data,
 
     auto bend_update = [&world_data](const WorldCoordAxis w_x,
                                      const WorldCoordAxis w_y,
-                                     const game::ConveyorSegment::TerminationType new_ttype) {
+                                     const game::ConveyorStruct::TerminationType new_ttype) {
         auto* line_segment = proto::Conveyor::GetConveyorSegment(world_data, w_x, w_y);
         if (line_segment) {
             if constexpr (!IsNeighborUpdate) {
@@ -417,7 +417,7 @@ void CalculateNeighborTermination(game::WorldData& world_data,
     auto side_update = [&world_data](const WorldCoordAxis w_x,
                                      const WorldCoordAxis w_y,
                                      const proto::Orientation required_direction,
-                                     const game::ConveyorSegment::TerminationType new_ttype) {
+                                     const game::ConveyorStruct::TerminationType new_ttype) {
         auto* line_segment = proto::Conveyor::GetConveyorSegment(world_data, w_x, w_y);
         if (line_segment) {
             if (line_segment->get()->direction != required_direction)
@@ -435,34 +435,34 @@ void CalculateNeighborTermination(game::WorldData& world_data,
     switch (origin_line_orientation) {
         // Up
     case proto::ConveyorData::LineOrientation::up_left:
-        bend_update(origin_coord.x, origin_coord.y + 1, game::ConveyorSegment::TerminationType::bend_left);
+        bend_update(origin_coord.x, origin_coord.y + 1, game::ConveyorStruct::TerminationType::bend_left);
         break;
     case proto::ConveyorData::LineOrientation::up_right:
-        bend_update(origin_coord.x, origin_coord.y + 1, game::ConveyorSegment::TerminationType::bend_right);
+        bend_update(origin_coord.x, origin_coord.y + 1, game::ConveyorStruct::TerminationType::bend_right);
         break;
 
         // Right
     case proto::ConveyorData::LineOrientation::right_up:
-        bend_update(origin_coord.x - 1, origin_coord.y, game::ConveyorSegment::TerminationType::bend_left);
+        bend_update(origin_coord.x - 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_left);
         break;
     case proto::ConveyorData::LineOrientation::right_down:
-        bend_update(origin_coord.x - 1, origin_coord.y, game::ConveyorSegment::TerminationType::bend_right);
+        bend_update(origin_coord.x - 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_right);
         break;
 
         // Down
     case proto::ConveyorData::LineOrientation::down_right:
-        bend_update(origin_coord.x, origin_coord.y - 1, game::ConveyorSegment::TerminationType::bend_left);
+        bend_update(origin_coord.x, origin_coord.y - 1, game::ConveyorStruct::TerminationType::bend_left);
         break;
     case proto::ConveyorData::LineOrientation::down_left:
-        bend_update(origin_coord.x, origin_coord.y - 1, game::ConveyorSegment::TerminationType::bend_right);
+        bend_update(origin_coord.x, origin_coord.y - 1, game::ConveyorStruct::TerminationType::bend_right);
         break;
 
         // Left
     case proto::ConveyorData::LineOrientation::left_down:
-        bend_update(origin_coord.x + 1, origin_coord.y, game::ConveyorSegment::TerminationType::bend_left);
+        bend_update(origin_coord.x + 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_left);
         break;
     case proto::ConveyorData::LineOrientation::left_up:
-        bend_update(origin_coord.x + 1, origin_coord.y, game::ConveyorSegment::TerminationType::bend_right);
+        bend_update(origin_coord.x + 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_right);
         break;
 
 
@@ -471,41 +471,41 @@ void CalculateNeighborTermination(game::WorldData& world_data,
         side_update(origin_coord.x - 1,
                     origin_coord.y,
                     proto::Orientation::right,
-                    game::ConveyorSegment::TerminationType::left_only);
+                    game::ConveyorStruct::TerminationType::left_only);
         side_update(origin_coord.x + 1,
                     origin_coord.y,
                     proto::Orientation::left,
-                    game::ConveyorSegment::TerminationType::right_only);
+                    game::ConveyorStruct::TerminationType::right_only);
         break;
     case proto::ConveyorData::LineOrientation::right:
         side_update(origin_coord.x,
                     origin_coord.y - 1,
                     proto::Orientation::down,
-                    game::ConveyorSegment::TerminationType::left_only);
+                    game::ConveyorStruct::TerminationType::left_only);
         side_update(origin_coord.x,
                     origin_coord.y + 1,
                     proto::Orientation::up,
-                    game::ConveyorSegment::TerminationType::right_only);
+                    game::ConveyorStruct::TerminationType::right_only);
         break;
     case proto::ConveyorData::LineOrientation::down:
         side_update(origin_coord.x - 1,
                     origin_coord.y,
                     proto::Orientation::right,
-                    game::ConveyorSegment::TerminationType::right_only);
+                    game::ConveyorStruct::TerminationType::right_only);
         side_update(origin_coord.x + 1,
                     origin_coord.y,
                     proto::Orientation::left,
-                    game::ConveyorSegment::TerminationType::left_only);
+                    game::ConveyorStruct::TerminationType::left_only);
         break;
     case proto::ConveyorData::LineOrientation::left:
         side_update(origin_coord.x,
                     origin_coord.y - 1,
                     proto::Orientation::down,
-                    game::ConveyorSegment::TerminationType::right_only);
+                    game::ConveyorStruct::TerminationType::right_only);
         side_update(origin_coord.x,
                     origin_coord.y + 1,
                     proto::Orientation::up,
-                    game::ConveyorSegment::TerminationType::left_only);
+                    game::ConveyorStruct::TerminationType::left_only);
         break;
     }
 }
@@ -543,7 +543,7 @@ proto::ConveyorData& InitConveyorSegment(game::WorldData& world_data,
 
     auto& origin_chunk = *world_data.GetChunkW(world_coords);
 
-    std::shared_ptr<game::ConveyorSegment> line_segment;
+    std::shared_ptr<game::ConveyorStruct> line_segment;
     int line_segment_index = 0;
 
     enum class InitSegmentStatus
@@ -592,13 +592,13 @@ proto::ConveyorData& InitConveyorSegment(game::WorldData& world_data,
     switch (status) {
     case InitSegmentStatus::new_segment:
         line_segment =
-            std::make_shared<game::ConveyorSegment>(orientation, game::ConveyorSegment::TerminationType::straight, 1);
+            std::make_shared<game::ConveyorStruct>(orientation, game::ConveyorStruct::TerminationType::straight, 1);
 
         world_data.LogicRegister(game::Chunk::LogicGroup::conveyor, world_coords, game::TileLayer::entity);
         break;
 
     case InitSegmentStatus::group_behind:
-        // The conveyor segment's position is adjusted by init_conveyor_segment
+        // The conveyor segment's position is adjusted by init_conveyor_struct
         // Move the segment head behind forwards to current position
         line_segment = line_data[i_index]->lineSegment;
         ShiftSegmentHeadForward(*line_segment);
@@ -667,7 +667,7 @@ void CalculateLineTargets(game::WorldData& world_data,
         return;
 
 
-    auto connect_segment = [](game::ConveyorSegment& from, proto::ConveyorData& to_data) {
+    auto connect_segment = [](game::ConveyorStruct& from, proto::ConveyorData& to_data) {
         auto& to = *to_data.lineSegment;
 
         from.targetSegment = &to;
@@ -811,13 +811,13 @@ void DisconnectSegment(game::WorldData& world_data,
     switch (neighbor_segment.terminationType) {
 
         // Convert bend to straight
-    case game::ConveyorSegment::TerminationType::bend_left:
-    case game::ConveyorSegment::TerminationType::bend_right:
-    case game::ConveyorSegment::TerminationType::right_only:
-    case game::ConveyorSegment::TerminationType::left_only:
+    case game::ConveyorStruct::TerminationType::bend_left:
+    case game::ConveyorStruct::TerminationType::bend_right:
+    case game::ConveyorStruct::TerminationType::right_only:
+    case game::ConveyorStruct::TerminationType::left_only:
 
         ShiftSegmentHeadBackward(neighbor_segment);
-        neighbor_segment.terminationType = game::ConveyorSegment::TerminationType::straight;
+        neighbor_segment.terminationType = game::ConveyorStruct::TerminationType::straight;
 
         // Renumber segments following origin from index 0, formerly 1
         OrientationIncrement(neighbor_segment.direction, origin_coord.x, origin_coord.y, -1.f);
@@ -872,8 +872,8 @@ void proto::Conveyor::OnRemove(game::WorldData& world_data,
     const auto n_seg_length = o_line_segment->length - o_line_data.lineSegmentIndex - 1;
     if (n_seg_length > 0) {
         // Create new segment
-        const auto n_segment = std::make_shared<game::ConveyorSegment>(
-            o_line_segment->direction, game::ConveyorSegment::TerminationType::straight, n_seg_length);
+        const auto n_segment = std::make_shared<game::ConveyorStruct>(
+            o_line_segment->direction, game::ConveyorStruct::TerminationType::straight, n_seg_length);
         n_segment->itemOffset = o_line_segment->itemOffset - o_line_data.lineSegmentIndex - 1;
 
 
@@ -942,7 +942,7 @@ void proto::Conveyor::OnRemove(game::WorldData& world_data,
     if (o_line_data.lineSegmentIndex == 0 ||
         (o_line_data.lineSegmentIndex == 1 &&
          o_line_segment->terminationType != // Head of bending segments start at 1
-             game::ConveyorSegment::TerminationType::straight)) {
+             game::ConveyorStruct::TerminationType::straight)) {
 
         RemoveFromLogic(world_data, world_coords, *o_line_segment);
     }
