@@ -171,13 +171,13 @@ namespace jactorio::game
     }
 
     TEST_F(ItemDropOffTest, InsertOffset) {
-        auto line_data                    = CreateConveyor(proto::Orientation::up);
-        line_data.lineSegmentIndex        = 1;
-        line_data.lineSegment->itemOffset = 10; // Arbitrary itemOffset
+        auto line_data                  = CreateConveyor(proto::Orientation::up);
+        line_data.lineSegmentIndex      = 1;
+        line_data.structure->itemOffset = 10; // Arbitrary itemOffset
 
         ConveyorInsert(proto::Orientation::up, line_data);
-        ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
-        EXPECT_DOUBLE_EQ(line_data.lineSegment->right.lane[0].dist.getAsDouble(), 1.5);
+        ASSERT_EQ(line_data.structure->right.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(line_data.structure->right.lane[0].dist.getAsDouble(), 1.5);
     }
 
     TEST_F(ItemDropOffTest, InsertConveyorUp) {
@@ -185,26 +185,26 @@ namespace jactorio::game
             auto line = CreateConveyor(proto::Orientation::up);
 
             ConveyorInsert(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
             auto line = CreateConveyor(proto::Orientation::up);
 
             ConveyorInsert(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+            EXPECT_EQ(line.structure->left.lane.size(), 1);
         }
         {
             auto line = CreateConveyor(proto::Orientation::up);
 
             ConveyorInsert(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::up);
 
             ConveyorInsert(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
     }
 
@@ -213,26 +213,26 @@ namespace jactorio::game
             auto line = CreateConveyor(proto::Orientation::right);
 
             ConveyorInsert(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
             auto line = CreateConveyor(proto::Orientation::right);
 
             ConveyorInsert(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
             auto line = CreateConveyor(proto::Orientation::right);
 
             ConveyorInsert(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+            EXPECT_EQ(line.structure->left.lane.size(), 1);
         }
         {
             auto line = CreateConveyor(proto::Orientation::right);
 
             ConveyorInsert(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
     }
 
@@ -241,26 +241,26 @@ namespace jactorio::game
             auto line = CreateConveyor(proto::Orientation::down);
 
             ConveyorInsert(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::down);
 
             ConveyorInsert(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
             auto line = CreateConveyor(proto::Orientation::down);
 
             ConveyorInsert(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
             auto line = CreateConveyor(proto::Orientation::down);
 
             ConveyorInsert(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+            EXPECT_EQ(line.structure->left.lane.size(), 1);
         }
     }
 
@@ -269,26 +269,26 @@ namespace jactorio::game
             auto line = CreateConveyor(proto::Orientation::left);
 
             ConveyorInsert(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+            EXPECT_EQ(line.structure->left.lane.size(), 1);
         }
         {
             auto line = CreateConveyor(proto::Orientation::left);
 
             ConveyorInsert(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::left);
 
             ConveyorInsert(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
             auto line = CreateConveyor(proto::Orientation::left);
 
             ConveyorInsert(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
     }
 
@@ -301,8 +301,8 @@ namespace jactorio::game
         const auto up    = CreateConveyor(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right);
         auto left        = CreateConveyor(proto::Orientation::left, ConveyorStruct::TerminationType::bend_right);
 
-        left.lineSegment->targetSegment = up.lineSegment.get();
-        up.lineSegment->targetSegment   = right.lineSegment.get();
+        left.structure->target = up.structure.get();
+        up.structure->target   = right.structure.get();
 
         left.lineSegmentIndex = 1;
 
@@ -310,8 +310,8 @@ namespace jactorio::game
         proto::Item item;
 
         ConveyorInsert(proto::Orientation::up, left);
-        ASSERT_EQ(left.lineSegment->left.lane.size(), 1);
-        EXPECT_DOUBLE_EQ(left.lineSegment->left.lane[0].dist.getAsDouble(), 0.5 + 0.7);
+        ASSERT_EQ(left.structure->left.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(left.structure->left.lane[0].dist.getAsDouble(), 0.5 + 0.7);
     }
 
     TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
@@ -515,25 +515,25 @@ namespace jactorio::game
             auto line = CreateConveyor(proto::Orientation::up);
 
             PickupLine(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::up);
 
             PickupLine(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::up);
 
             PickupLine(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::up);
 
             PickupLine(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
     }
 
@@ -542,25 +542,25 @@ namespace jactorio::game
             auto line = CreateConveyor(proto::Orientation::right);
 
             PickupLine(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::right);
 
             PickupLine(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::right);
 
             PickupLine(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::right);
 
             PickupLine(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
     }
 
@@ -569,25 +569,25 @@ namespace jactorio::game
             auto line = CreateConveyor(proto::Orientation::down);
 
             PickupLine(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::down);
 
             PickupLine(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::down);
 
             PickupLine(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::down);
 
             PickupLine(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
     }
 
@@ -596,25 +596,25 @@ namespace jactorio::game
             auto line = CreateConveyor(proto::Orientation::left);
 
             PickupLine(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::left);
 
             PickupLine(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::left);
 
             PickupLine(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
             auto line = CreateConveyor(proto::Orientation::left);
 
             PickupLine(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
     }
 
@@ -632,8 +632,8 @@ namespace jactorio::game
         const auto left =
             std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::bend_right, 2);
 
-        left->targetSegment = up.get();
-        up->targetSegment   = right.get();
+        left->target = up.get();
+        up->target   = right.get();
 
         proto::ConveyorData line{left};
         line.lineSegmentIndex = 1;
@@ -658,22 +658,22 @@ namespace jactorio::game
                   &lineItem_);
 
         // Should set index to 0 since a item was removed
-        line.lineSegment->right.index = 10;
+        line.structure->right.index = 10;
 
         PickupLine(proto::Orientation::up, line);
-        EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-        EXPECT_EQ(line.lineSegment->right.index, 0);
+        EXPECT_EQ(line.structure->right.lane.size(), 0);
+        EXPECT_EQ(line.structure->right.index, 0);
 
 
         // Use alternative side
         EXPECT_EQ(GetPickupTransportBelt({logicData_, 1, proto::RotationDegreeT(180), 1, line, proto::Orientation::up}),
                   &lineItem_);
 
-        line.lineSegment->left.index = 10;
+        line.structure->left.index = 10;
 
         PickupLine(proto::Orientation::up, line);
-        EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-        EXPECT_EQ(line.lineSegment->left.index, 0);
+        EXPECT_EQ(line.structure->left.lane.size(), 0);
+        EXPECT_EQ(line.structure->left.index, 0);
     }
 
 

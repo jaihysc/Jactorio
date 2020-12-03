@@ -207,7 +207,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
                 continue;
 
             auto& line_data    = *static_cast<proto::ConveyorData*>(layer.GetUniqueData());
-            auto& line_segment = *line_data.lineSegment;
+            auto& line_segment = *line_data.structure;
 
             // Only draw for the head of segments
             if (line_segment.terminationType == game::ConveyorStruct::TerminationType::straight &&
@@ -314,7 +314,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
     if (ImGui::Button("Make all belt items visible")) {
         for (auto* chunk : world.LogicGetChunks()) {
             for (auto* conveyor : chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor)) {
-                auto& segment         = *conveyor->GetUniqueData<proto::ConveyorData>()->lineSegment;
+                auto& segment         = *conveyor->GetUniqueData<proto::ConveyorData>()->structure;
                 segment.left.visible  = true;
                 segment.right.visible = true;
             }
@@ -329,13 +329,13 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
 
     if (data != nullptr) {
         last_valid_line_segment = selected_tile;
-        segment_ptr             = data->lineSegment.get();
+        segment_ptr             = data->structure.get();
     }
     else {
         if (use_last_valid_line_segment) {
             data = proto::Conveyor::GetLineData(world, last_valid_line_segment.x, last_valid_line_segment.y);
             if (data != nullptr)
-                segment_ptr = data->lineSegment.get();
+                segment_ptr = data->structure.get();
         }
     }
 
@@ -355,8 +355,8 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
 
 
             std::ostringstream sstream2;
-            sstream2 << segment.targetSegment;
-            ImGui::Text("Target segment: %s", segment.targetSegment != nullptr ? sstream2.str().c_str() : "NULL");
+            sstream2 << segment.target;
+            ImGui::Text("Target segment: %s", segment.target != nullptr ? sstream2.str().c_str() : "NULL");
         }
 
         ImGui::Text("Item offset %d", segment.itemOffset);

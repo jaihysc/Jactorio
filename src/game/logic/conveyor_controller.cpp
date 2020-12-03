@@ -61,8 +61,8 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
         if (offset >= proto::LineDistT(0))
             return;
 
-        if (segment.targetSegment) {
-            game::ConveyorStruct& target_segment = *segment.targetSegment;
+        if (segment.target) {
+            game::ConveyorStruct& target_segment = *segment.target;
             // Offset to insert at target segment from head
             proto::LineDistT target_offset;
             {
@@ -130,7 +130,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
         offset = 0;
         back_item_distance += tiles_moved;
 
-        if (MoveNextItem(tiles_moved, side.lane, index, segment.targetSegment != nullptr)) {
+        if (MoveNextItem(tiles_moved, side.lane, index, segment.target != nullptr)) {
             back_item_distance -= tiles_moved;
         }
         /*
@@ -158,7 +158,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
 
         // Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
         offset = game::ConveyorProp::kItemSpacing;
-        if (MoveNextItem(tiles_moved, side.lane, index, segment.targetSegment != nullptr)) {
+        if (MoveNextItem(tiles_moved, side.lane, index, segment.target != nullptr)) {
             back_item_distance -= tiles_moved;
         }
     }
@@ -173,7 +173,7 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
     // Each object layer holds a conveyor segment
     for (const auto& tile_layer : layers) {
         const auto& line_proto = *static_cast<const proto::Conveyor*>(tile_layer->prototypeData.Get());
-        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->lineSegment;
+        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->structure;
 
         // Left
         {
@@ -208,7 +208,7 @@ void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
     // Each object layer holds a conveyor segment
     for (const auto& tile_layer : layers) {
         const auto* line_proto = static_cast<const proto::Conveyor*>(tile_layer->prototypeData.Get());
-        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->lineSegment;
+        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->structure;
 
         auto tiles_moved = line_proto->speed;
 

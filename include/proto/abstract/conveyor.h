@@ -19,7 +19,7 @@ namespace jactorio::proto
     struct ConveyorData final : HealthEntityData
     {
         explicit ConveyorData(std::shared_ptr<game::ConveyorStruct> line_segment)
-            : lineSegment(std::move(line_segment)) {}
+            : structure(std::move(line_segment)) {}
 
         ///
         /// <Entry direction>_<Exit direction>
@@ -57,7 +57,7 @@ namespace jactorio::proto
 
 
         /// The logic chunk line_segment associated
-        std::shared_ptr<game::ConveyorStruct> lineSegment;
+        std::shared_ptr<game::ConveyorStruct> structure;
 
         /// Tile distance to the head of the conveyor
         /// \remark For rendering purposes, the length should never exceed ~2 chunks at most
@@ -67,7 +67,7 @@ namespace jactorio::proto
 
 
         CEREAL_SERIALIZE(archive) {
-            archive(lineSegment, lineSegmentIndex, orientation, cereal::base_class<HealthEntityData>(this));
+            archive(structure, lineSegmentIndex, orientation, cereal::base_class<HealthEntityData>(this));
         }
 
         CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorData) {

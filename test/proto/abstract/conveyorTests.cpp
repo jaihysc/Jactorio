@@ -33,7 +33,7 @@ namespace jactorio::proto
         // ======================================================================
 
         static game::ConveyorStruct& GetSegment(game::ChunkTileLayer* tile_layer) {
-            return *tile_layer->GetUniqueData<ConveyorData>()->lineSegment;
+            return *tile_layer->GetUniqueData<ConveyorData>()->structure;
         }
 
 
@@ -153,17 +153,17 @@ namespace jactorio::proto
         /// \param second Segment placed behind leading segment
         void GroupingValidate(const WorldCoord& first, const WorldCoord& second) {
             ASSERT_EQ(GetConveyors({0, 0}).size(), 1); // 0, 0 is chunk coordinate
-            EXPECT_EQ(GetLineData(first).lineSegment->length, 2);
+            EXPECT_EQ(GetLineData(first).structure->length, 2);
 
             EXPECT_EQ(GetLineSegmentIndex(first), 0);
             EXPECT_EQ(GetLineSegmentIndex(second), 1);
 
-            EXPECT_EQ(GetLineData(first).lineSegment->targetSegment, nullptr);
+            EXPECT_EQ(GetLineData(first).structure->target, nullptr);
         }
 
         void GroupBehindValidate(const WorldCoord& first, const WorldCoord& second) {
             GroupingValidate(first, second);
-            EXPECT_EQ(GetLineData(first).lineSegment->itemOffset, 1);
+            EXPECT_EQ(GetLineData(first).structure->itemOffset, 1);
 
             EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
         }
@@ -235,15 +235,15 @@ namespace jactorio::proto
         BuildBottomConveyor(Orientation::down);
 
         const auto& center_line    = BuildConveyor({1, 1}, Orientation::right);
-        const auto& center_segment = center_line.GetUniqueData<ConveyorData>()->lineSegment;
+        const auto& center_segment = center_line.GetUniqueData<ConveyorData>()->structure;
 
-        const auto& left_segment    = line_left.GetUniqueData<ConveyorData>()->lineSegment;
-        left_segment->targetSegment = nullptr;
+        const auto& left_segment = line_left.GetUniqueData<ConveyorData>()->structure;
+        left_segment->target     = nullptr;
 
         // Re links target segment
         worldData_.DeserializePostProcess();
 
-        EXPECT_EQ(left_segment->targetSegment, center_segment.get());
+        EXPECT_EQ(left_segment->target, center_segment.get());
     }
 
     // ======================================================================
@@ -710,12 +710,12 @@ namespace jactorio::proto
         EXPECT_EQ(GetLineSegmentIndex({0, 1}), 1);
         EXPECT_EQ(GetLineSegmentIndex({2, 1}), 1);
 
-        EXPECT_EQ(GetLineData({0, 1}).lineSegment->targetInsertOffset, 1);
-        EXPECT_EQ(GetLineData({2, 1}).lineSegment->targetInsertOffset, 1);
+        EXPECT_EQ(GetLineData({0, 1}).structure->targetInsertOffset, 1);
+        EXPECT_EQ(GetLineData({2, 1}).structure->targetInsertOffset, 1);
 
         // Incremented 1 forwards
-        EXPECT_EQ(GetLineData({0, 1}).lineSegment->itemOffset, 1);
-        EXPECT_EQ(GetLineData({2, 1}).lineSegment->itemOffset, 1);
+        EXPECT_EQ(GetLineData({0, 1}).structure->itemOffset, 1);
+        EXPECT_EQ(GetLineData({2, 1}).structure->itemOffset, 1);
     }
 
     TEST_F(ConveyorTest, OnBuildRightChangeBendToSideOnly) {
@@ -733,11 +733,11 @@ namespace jactorio::proto
 
 
         ValidateBendToSideOnly(1, 0);
-        EXPECT_EQ(GetLineData({1, 0}).lineSegment->targetInsertOffset, 0);
-        EXPECT_EQ(GetLineData({1, 2}).lineSegment->targetInsertOffset, 0);
+        EXPECT_EQ(GetLineData({1, 0}).structure->targetInsertOffset, 0);
+        EXPECT_EQ(GetLineData({1, 2}).structure->targetInsertOffset, 0);
 
-        EXPECT_EQ(GetLineData({1, 0}).lineSegment->itemOffset, 1);
-        EXPECT_EQ(GetLineData({1, 2}).lineSegment->itemOffset, 1);
+        EXPECT_EQ(GetLineData({1, 0}).structure->itemOffset, 1);
+        EXPECT_EQ(GetLineData({1, 2}).structure->itemOffset, 1);
     }
 
     TEST_F(ConveyorTest, OnBuildDownChangeBendToSideOnly) {
@@ -753,8 +753,8 @@ namespace jactorio::proto
         BuildConveyor({2, 1}, Orientation::left);
 
         ValidateBendToSideOnly();
-        EXPECT_EQ(GetLineData({0, 1}).lineSegment->targetInsertOffset, 0);
-        EXPECT_EQ(GetLineData({2, 1}).lineSegment->targetInsertOffset, 0);
+        EXPECT_EQ(GetLineData({0, 1}).structure->targetInsertOffset, 0);
+        EXPECT_EQ(GetLineData({2, 1}).structure->targetInsertOffset, 0);
     }
 
     TEST_F(ConveyorTest, OnBuildLeftChangeBendToSideOnly) {
@@ -771,8 +771,8 @@ namespace jactorio::proto
         BuildConveyor({1, 2}, Orientation::up);
 
         ValidateBendToSideOnly();
-        EXPECT_EQ(GetLineData({1, 0}).lineSegment->targetInsertOffset, 1);
-        EXPECT_EQ(GetLineData({1, 2}).lineSegment->targetInsertOffset, 1);
+        EXPECT_EQ(GetLineData({1, 0}).structure->targetInsertOffset, 1);
+        EXPECT_EQ(GetLineData({1, 2}).structure->targetInsertOffset, 1);
     }
 
     TEST_F(ConveyorTest, OnBuildUpUpdateNeighboringSegmentToSideOnly) {
@@ -810,8 +810,8 @@ namespace jactorio::proto
         EXPECT_EQ(GetLineSegmentIndex({0, 2}), 1);
         EXPECT_EQ(GetLineSegmentIndex({2, 2}), 1);
 
-        EXPECT_EQ(GetLineData({0, 2}).lineSegment->targetInsertOffset, 2);
-        EXPECT_EQ(GetLineData({2, 2}).lineSegment->targetInsertOffset, 2);
+        EXPECT_EQ(GetLineData({0, 2}).structure->targetInsertOffset, 2);
+        EXPECT_EQ(GetLineData({2, 2}).structure->targetInsertOffset, 2);
     }
 
     TEST_F(ConveyorTest, OnBuildRightUpdateNeighboringSegmentToSideOnly) {
@@ -931,9 +931,10 @@ namespace jactorio::proto
 
         ASSERT_EQ(tile_layers.size(), 1);
         // Set back to nullptr
-        EXPECT_EQ(GetSegment(tile_layers[0]).targetSegment, nullptr);
+        EXPECT_EQ(GetSegment(tile_layers[0]).target, nullptr);
     }
 
+    // TODO ported
     TEST_F(ConveyorTest, OnBuildConnectConveyorSegmentsLeading) {
         // A conveyor pointing to another one will set the target_segment
         /*
@@ -957,9 +958,10 @@ namespace jactorio::proto
 
         ASSERT_EQ(tile_layers.size(), 2);
         auto& line_segment = GetSegment(tile_layers[1]);
-        EXPECT_EQ(line_segment.targetSegment, &GetSegment(tile_layers[0]));
+        EXPECT_EQ(line_segment.target, &GetSegment(tile_layers[0]));
     }
 
+    // TODO ported
     TEST_F(ConveyorTest, OnBuildConnectConveyorSegmentsTrailing) {
         // A conveyor placed in front of another one will set the target_segment of the neighbor
         /*
@@ -984,9 +986,10 @@ namespace jactorio::proto
 
         ASSERT_EQ(tile_layers.size(), 2);
         auto& line_segment = GetSegment(tile_layers[0]);
-        EXPECT_EQ(line_segment.targetSegment, &GetSegment(tile_layers[1]));
+        EXPECT_EQ(line_segment.target, &GetSegment(tile_layers[1]));
     }
 
+    // TODO ported
     TEST_F(ConveyorTest, OnBuildNoConnectConveyorSegments) {
         // Do not connect conveyor segments pointed at each other
         /*
@@ -1008,8 +1011,8 @@ namespace jactorio::proto
 
         ASSERT_EQ(tile_layers.size(), 2);
 
-        EXPECT_EQ(GetSegment(tile_layers[0]).targetSegment, nullptr);
-        EXPECT_EQ(GetSegment(tile_layers[1]).targetSegment, nullptr);
+        EXPECT_EQ(GetSegment(tile_layers[0]).target, nullptr);
+        EXPECT_EQ(GetSegment(tile_layers[1]).target, nullptr);
     }
 
     // ======================================================================
@@ -1210,12 +1213,12 @@ namespace jactorio::proto
 
         const auto& tile_layers = GetConveyors({0, 0});
         ASSERT_EQ(tile_layers.size(), 3);
-        EXPECT_EQ(GetLineData({0, 1}).lineSegment->targetSegment, GetSegment(tile_layers[1]).targetSegment);
+        EXPECT_EQ(GetLineData({0, 1}).structure->target, GetSegment(tile_layers[1]).target);
 
 
         const auto& tile_layers_left = GetConveyors({-1, 0});
         ASSERT_EQ(tile_layers_left.size(), 1);
-        EXPECT_EQ(GetLineData({-1, 0}).lineSegment->targetSegment, GetSegment(tile_layers[1]).targetSegment);
+        EXPECT_EQ(GetLineData({-1, 0}).structure->target, GetSegment(tile_layers[1]).target);
     }
 
     TEST_F(ConveyorTest, OnRemoveGroupUpdateProperties) {
@@ -1233,7 +1236,7 @@ namespace jactorio::proto
 
         ASSERT_EQ(struct_layer.size(), 2);
 
-        EXPECT_EQ(GetLineData({0, 1}).lineSegment->itemOffset, 1);
+        EXPECT_EQ(GetLineData({0, 1}).structure->itemOffset, 1);
 
 
         // Remove
@@ -1244,7 +1247,7 @@ namespace jactorio::proto
         ASSERT_EQ(struct_layer.size(), 1);
 
         EXPECT_EQ(GetLineData({0, 1}).lineSegmentIndex, 0);
-        EXPECT_EQ(GetLineData({0, 1}).lineSegment->itemOffset, 0);
+        EXPECT_EQ(GetLineData({0, 1}).structure->itemOffset, 0);
     }
 
     TEST_F(ConveyorTest, OnRemoveGroupEnd) {

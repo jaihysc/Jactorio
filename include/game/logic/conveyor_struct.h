@@ -119,10 +119,7 @@ namespace jactorio::game
                        const TerminationType termination_type,
                        ConveyorStruct* target_segment,
                        const uint8_t segment_length)
-            : direction(direction),
-              terminationType(termination_type),
-              length(segment_length),
-              targetSegment(target_segment) {}
+            : direction(direction), terminationType(termination_type), length(segment_length), target(target_segment) {}
 
 
         // ======================================================================
@@ -255,7 +252,7 @@ namespace jactorio::game
         IntOffsetT targetInsertOffset = 0;
 
         /// Segment this conveyor feeds into
-        ConveyorStruct* targetSegment = nullptr;
+        ConveyorStruct* target = nullptr;
 
 
         CEREAL_SERIALIZE(archive) {

@@ -60,10 +60,10 @@ namespace jactorio::game
         auto left_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::bend_right, 5);
 
-        up_segment->targetSegment    = right_segment.get();
-        right_segment->targetSegment = down_segment.get();
-        down_segment->targetSegment  = left_segment.get();
-        left_segment->targetSegment  = up_segment.get();
+        up_segment->target    = right_segment.get();
+        right_segment->target = down_segment.get();
+        down_segment->target  = left_segment.get();
+        left_segment->target  = up_segment.get();
 
         RegisterSegment({0, 0}, up_segment);
         RegisterSegment({4, 0}, right_segment);
@@ -133,7 +133,7 @@ namespace jactorio::game
         auto right_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::right, ConveyorStruct::TerminationType::straight, 4);
 
-        up_segment->targetSegment = right_segment.get();
+        up_segment->target = right_segment.get();
 
         RegisterSegment({0, 0}, up_segment);
         RegisterSegment({3, 0}, right_segment);
@@ -201,7 +201,7 @@ namespace jactorio::game
         auto right_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::right, ConveyorStruct::TerminationType::straight, 4);
 
-        up_segment->targetSegment = right_segment.get();
+        up_segment->target = right_segment.get();
 
         RegisterSegment({0, 0}, up_segment);
         RegisterSegment({3, 0}, right_segment);
@@ -307,7 +307,7 @@ namespace jactorio::game
         auto right_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::right, ConveyorStruct::TerminationType::straight, 4);
 
-        up_segment->targetSegment = right_segment.get();
+        up_segment->target = right_segment.get();
 
         RegisterSegment({0, 0}, up_segment);
         RegisterSegment({3, 0}, right_segment);
@@ -354,7 +354,7 @@ namespace jactorio::game
         const auto left_segment_2 =
             std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::straight, 1);
 
-        left_segment->targetSegment = left_segment_2.get();
+        left_segment->target = left_segment_2.get();
 
         RegisterSegment({1, 1}, left_segment_2);
 
@@ -379,7 +379,7 @@ namespace jactorio::game
 
         auto left_segment_2 =
             std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::straight, 1);
-        left_segment_2->targetSegment = left_segment.get();
+        left_segment_2->target = left_segment.get();
         RegisterSegment({2, 1}, left_segment_2);
 
 
@@ -441,7 +441,7 @@ namespace jactorio::game
         auto up_segment_2 =
             std::make_shared<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::straight, 1);
 
-        up_segment_2->targetSegment = up_segment_1.get();
+        up_segment_2->target = up_segment_1.get();
 
         RegisterSegment({0, 0}, up_segment_1);
         RegisterSegment({0, 1}, up_segment_2);
@@ -503,7 +503,7 @@ namespace jactorio::game
         auto segment_2 =
             std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::straight, 4);
 
-        segment_2->targetSegment = segment_1.get();
+        segment_2->target = segment_1.get();
 
         RegisterSegment({0, 0}, segment_1);
         RegisterSegment({3, 0}, segment_2);
@@ -547,7 +547,7 @@ namespace jactorio::game
         auto down_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::down, ConveyorStruct::TerminationType::straight, 10);
 
-        right_segment->targetSegment      = down_segment.get();
+        right_segment->target             = down_segment.get();
         right_segment->targetInsertOffset = 8; // 8 + 1 = 9
 
         down_segment->itemOffset = 1;
@@ -644,7 +644,7 @@ namespace jactorio::game
         auto down_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::down, ConveyorStruct::TerminationType::straight, 20);
 
-        left_segment->targetSegment = down_segment.get();
+        left_segment->target = down_segment.get();
 
         left_segment->targetInsertOffset = -1; // Will insert into up_segment with offset of 9 absolute
         down_segment->itemOffset         = 10;
@@ -736,7 +736,7 @@ namespace jactorio::game
         auto down_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::down, ConveyorStruct::TerminationType::right_only, 1);
 
-        down_segment->targetSegment      = left_segment.get();
+        down_segment->target             = left_segment.get();
         down_segment->targetInsertOffset = 2;
 
         RegisterSegment({3, 1}, down_segment);
@@ -774,7 +774,7 @@ namespace jactorio::game
         auto up_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::left_only, 1);
 
-        up_segment->targetSegment      = left_segment.get();
+        up_segment->target             = left_segment.get();
         up_segment->targetInsertOffset = 2;
 
         RegisterSegment({3, 3}, up_segment);
@@ -822,7 +822,7 @@ namespace jactorio::game
         auto right_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::right, ConveyorStruct::TerminationType::bend_right, 2);
 
-        right_segment->targetSegment = down_segment.get();
+        right_segment->target = down_segment.get();
 
         RegisterSegment({2, 1}, right_segment);
 
