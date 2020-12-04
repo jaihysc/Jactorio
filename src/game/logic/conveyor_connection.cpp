@@ -11,22 +11,22 @@ using namespace jactorio;
 ///
 /// Fetches struct at coord, nullptr if non existent
 static game::ConveyorStruct* GetStruct(game::WorldData& world, const WorldCoord& coord) {
-    // TODO incomplete
     auto* tile = world.GetTile(coord);
+    assert(tile != nullptr);
 
     auto& layer = tile->GetLayer(game::TileLayer::entity);
 
     const auto* proto = layer.GetPrototypeData();
+    if (proto == nullptr)
+        return nullptr;
 
-    switch (proto->category) {
+    switch (proto->GetCategory()) {
     case proto::Category::transport_belt:
-        break;
+        return layer.GetUniqueData<proto::ConveyorData>()->structure.get();
 
     default:
-        break;
+        return nullptr;
     }
-
-    return layer.GetUniqueData<proto::ConveyorData>()->structure.get();
 }
 
 ///
@@ -34,10 +34,12 @@ static game::ConveyorStruct* GetStruct(game::WorldData& world, const WorldCoord&
 /// \tparam OriginConnect Origin orientation required for origin to connect to neighbor
 /// \tparam NeighborConnect Neighbor orientation required for neighbor to connect to origin
 template <proto::Orientation OriginConnect, proto::Orientation NeighborConnect>
-static void CalculateTargets(game::ConveyorStruct& origin, game::ConveyorStruct& neighbor) {
-    // Do not attempt to connect to itself
-    // if (&origin == &neighbor)
-    //     return;
+static void CalculateTargets(game::ConveyorStruct& origin,
+                             game::ConveyorStruct& neighbor,
+                             const game::OnConnectCallback& callback) {
+    // Do not connect to itself
+    if (&origin == &neighbor)
+        return;
 
     const bool origin_can_connect   = origin.direction == OriginConnect;
     const bool neighbor_can_connect = neighbor.direction == NeighborConnect;
@@ -48,12 +50,11 @@ static void CalculateTargets(game::ConveyorStruct& origin, game::ConveyorStruct&
         return;
 
 
-    auto connect_segment = [](game::ConveyorStruct& from, game::ConveyorStruct& to) {
+    auto connect_segment = [&callback](game::ConveyorStruct& from, game::ConveyorStruct& to) {
         from.target = &to;
-
-        // from.targetInsertOffset = to.lineSegmentIndex; // TODO I need an index!
-        to.GetOffsetAbs(from.targetInsertOffset);
+        callback(from, to);
     };
+
 
     if (origin_can_connect)
         connect_segment(origin, neighbor);
@@ -61,11 +62,12 @@ static void CalculateTargets(game::ConveyorStruct& origin, game::ConveyorStruct&
         connect_segment(neighbor, origin);
 }
 
-void game::ConnectUp(WorldData& world, const WorldCoord& coord) {
+void game::ConnectUp(WorldData& world, const WorldCoord& coord, const OnConnectCallback& callback) {
     auto* current_struct = GetStruct(world, {coord.x, coord.y});
     auto* neigh_struct   = GetStruct(world, {coord.x, coord.y - 1});
 
-    // TODO incomplete
+    if (current_struct == nullptr || neigh_struct == nullptr)
+        return;
 
-    CalculateTargets<proto::Orientation::up, proto::Orientation::down>(*current_struct, *neigh_struct);
+    CalculateTargets<proto::Orientation::up, proto::Orientation::down>(*current_struct, *neigh_struct, callback);
 }

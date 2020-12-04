@@ -4,6 +4,8 @@
 
 #include "game/logic/conveyor_connection.h"
 
+#include "jactorioTests.h"
+
 #include "game/world/world_data.h"
 #include "proto/transport_belt.h"
 
@@ -20,39 +22,82 @@ namespace jactorio::game
             worldData_.EmplaceChunk(0, 0);
         }
 
-        // ======================================================================
-        // Connections
+        ///
+        /// Creates transport belt using provided conveyor structure
+        auto& BuildStruct(WorldData& world, const WorldCoord& coord, std::shared_ptr<ConveyorStruct>& conveyor_struct) {
+            auto& layer         = world.GetTile(coord)->GetLayer(TileLayer::entity);
+            layer.prototypeData = &transBelt_;
 
+            auto* ud = layer.MakeUniqueData<proto::ConveyorData>(conveyor_struct);
+            assert(ud != nullptr);
+
+            return ud->structure;
+        }
+
+        ///
+        /// Creates a transport belt with its own conveyor structure
         auto& BuildStruct(WorldData& world,
                           const WorldCoord& coord,
                           const proto::Orientation orien,
                           const ConveyorStruct::TerminationType ttype = ConveyorStruct::TerminationType::straight,
                           const std::uint8_t len                      = 1) {
-            auto& layer         = world.GetTile(coord)->GetLayer(TileLayer::entity);
-            layer.prototypeData = &transBelt_;
-
             auto con_struct = std::make_shared<ConveyorStruct>(orien, ttype, len);
 
-            auto* ud = layer.MakeUniqueData<proto::ConveyorData>(con_struct);
-            assert(ud != nullptr);
-
-            return *ud->structure;
+            return BuildStruct(world, coord, con_struct);
         }
     };
+
+    ///
+    /// Should gracefully handle no struct above
+    TEST_F(ConveyorConnectionTest, ConnectUpNoStructAbove) {
+        BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
+
+        ConnectUp(worldData_, {0, 1});
+    }
+
+    ///
+    /// Should gracefully handle entity not a conveyor struct
+    TEST_F(ConveyorConnectionTest, ConnectUpNonStruct) {
+        const proto::ContainerEntity container_proto;
+
+        TestSetupContainer(worldData_, {0, 0}, container_proto);
+        BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
+
+        ConnectUp(worldData_, {0, 1});
+    }
+
+    ///
+    /// Do not connect to itself if the struct spans multiple tiles
+    TEST_F(ConveyorConnectionTest, ConnectUpNoConnectSelf) {
+        auto& structure = BuildStruct(worldData_, {0, 0}, proto::Orientation::up);
+        BuildStruct(worldData_, {0, 1}, structure);
+
+        ConnectUp(worldData_, {0, 1});
+
+        EXPECT_EQ(structure->target, nullptr);
+    }
+
     ///
     /// A conveyor pointing to another one will set the target of the former to the latter
     TEST_F(ConveyorConnectionTest, ConnectUpLeading) {
         // ^
         // ^
 
-        auto& con_struct_ahead = BuildStruct(worldData_, {0, 0}, proto::Orientation::up);
-        auto& con_struct       = BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
+        auto& con_struct_ahead = *BuildStruct(worldData_, {0, 0}, proto::Orientation::up);
+        auto& con_struct       = *BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
 
-        ConnectUp(worldData_, {0, 1});
+        bool callback_called = false;
+        ConnectUp(worldData_, {0, 1}, [&](auto& from, auto& to) {
+            callback_called = true;
+
+            EXPECT_EQ(&from, &con_struct);
+            EXPECT_EQ(&to, &con_struct_ahead);
+        });
+
+        EXPECT_TRUE(callback_called);
 
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
-
 
     ///
     /// A conveyor placed in front of another one will set the target of the neighbor
@@ -60,12 +105,12 @@ namespace jactorio::game
         //  v
         //  >
 
-        auto& con_struct_above = BuildStruct(worldData_, {0, 0}, proto::Orientation::down);
-        auto& con_struct       = BuildStruct(worldData_, {0, 1}, proto::Orientation::right);
+        auto& con_struct_d = *BuildStruct(worldData_, {0, 0}, proto::Orientation::down);
+        auto& con_struct_r = *BuildStruct(worldData_, {0, 1}, proto::Orientation::right);
 
         ConnectUp(worldData_, {0, 1});
 
-        EXPECT_EQ(con_struct_above.target, &con_struct);
+        EXPECT_EQ(con_struct_d.target, &con_struct_r);
     }
 
     ///
@@ -74,12 +119,12 @@ namespace jactorio::game
         // v
         // ^
 
-        auto& con_struct_u = BuildStruct(worldData_, {0, 0}, proto::Orientation::down);
-        auto& con_struct_d = BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
+        auto& con_struct_d = *BuildStruct(worldData_, {0, 0}, proto::Orientation::down);
+        auto& con_struct_u = *BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
 
         ConnectUp(worldData_, {0, 1});
 
-        EXPECT_EQ(con_struct_u.target, nullptr);
         EXPECT_EQ(con_struct_d.target, nullptr);
+        EXPECT_EQ(con_struct_u.target, nullptr);
     }
 } // namespace jactorio::game

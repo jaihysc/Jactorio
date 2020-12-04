@@ -143,7 +143,6 @@ namespace jactorio::proto
 
         friend void swap(FrameworkBase& lhs, FrameworkBase& rhs) noexcept {
             using std::swap;
-            swap(lhs.category, rhs.category);
             swap(lhs.internalId, rhs.internalId);
             swap(lhs.name, rhs.name);
             swap(lhs.order, rhs.order);
@@ -153,7 +152,10 @@ namespace jactorio::proto
 
         // ======================================================================
 
-        Category category = Category::none;
+        ///
+        /// NON VIRTUAL category, use GetCategory if object is not downcast to its actual type
+        static constexpr Category category = Category::none;
+
         ///
         /// Category of this Prototype item
         virtual Category GetCategory() const = 0;

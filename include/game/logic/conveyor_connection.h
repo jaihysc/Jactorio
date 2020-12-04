@@ -4,11 +4,16 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONNECTION_H
 #pragma once
 
+#include <functional>
+
 #include "core/data_type.h"
 
 namespace jactorio::game
 {
     class WorldData;
+    class ConveyorStruct;
+
+    using OnConnectCallback = std::function<void(ConveyorStruct& from, ConveyorStruct& to)>;
 
     ///
     /// Calls Connect for up, right, down, left
@@ -24,7 +29,10 @@ namespace jactorio::game
     ///
     /// Attempts to connect to a connectable struct above or connect struct above to current
     /// \param coord Current struct's coordinate
-    void ConnectUp(WorldData& world, const WorldCoord& coord);
+    void ConnectUp(
+        WorldData& world,
+        const WorldCoord& coord,
+        const OnConnectCallback& callback = [](auto& /*from*/, auto& /*to*/) {});
 
     ///
     /// Attempts to disconnect from connected struct above
