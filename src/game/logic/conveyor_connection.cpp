@@ -66,12 +66,42 @@ static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& n
         connect_segment(neighbor_struct, origin);
 }
 
-void game::ConveyorConnectUp(WorldData& world, const WorldCoord& coord) {
+///
+/// Connection logic for origin and neighbor
+/// \tparam OriginConnect Origin orientation required for origin to connect to neighbor
+/// \tparam XOffset Offset applied to origin to get neighbor
+/// \tparam YOffset Offset applied to origin to get neighbor
+template <proto::Orientation OriginConnect, int XOffset, int YOffset>
+static void DoConnect(game::WorldData& world, const WorldCoord& coord) {
     auto* current_struct = GetStruct(world, {coord.x, coord.y});
-    auto* neigh_struct   = GetStruct(world, {coord.x, coord.y - 1});
+    auto* neigh_struct   = GetStruct(world, {coord.x + XOffset, coord.y + YOffset});
 
     if (current_struct == nullptr || neigh_struct == nullptr)
         return;
 
-    CalculateTargets<proto::Orientation::up, proto::Orientation::down>(*current_struct, *neigh_struct);
+    CalculateTargets<OriginConnect, InvertOrientation(OriginConnect)>(*current_struct, *neigh_struct);
+}
+
+
+void game::ConveyorConnect(WorldData& world, const WorldCoord& coord) {
+    ConveyorConnectUp(world, coord);
+    ConveyorConnectRight(world, coord);
+    ConveyorConnectDown(world, coord);
+    ConveyorConnectLeft(world, coord);
+}
+
+void game::ConveyorConnectUp(WorldData& world, const WorldCoord& coord) {
+    DoConnect<proto::Orientation::up, 0, -1>(world, coord);
+}
+
+void game::ConveyorConnectRight(WorldData& world, const WorldCoord& coord) {
+    DoConnect<proto::Orientation::right, 1, 0>(world, coord);
+}
+
+void game::ConveyorConnectDown(WorldData& world, const WorldCoord& coord) {
+    DoConnect<proto::Orientation::down, 0, 1>(world, coord);
+}
+
+void game::ConveyorConnectLeft(WorldData& world, const WorldCoord& coord) {
+    DoConnect<proto::Orientation::left, -1, 0>(world, coord);
 }

@@ -30,12 +30,12 @@ namespace jactorio::proto
         left
     };
 
-    inline int InvertOrientation(const int orientation) {
+    constexpr int InvertOrientation(const int orientation) {
         assert(0 <= orientation && orientation <= 3);
         return (orientation + 2) % 4;
     }
 
-    inline Orientation InvertOrientation(Orientation orientation) {
+    constexpr Orientation InvertOrientation(Orientation orientation) {
         return static_cast<Orientation>(InvertOrientation(static_cast<int>(orientation)));
     }
 

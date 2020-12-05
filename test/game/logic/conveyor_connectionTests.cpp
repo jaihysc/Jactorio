@@ -136,4 +136,49 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_u.targetInsertOffset, 10);
     }
 
+    // ======================================================================
+
+    ///
+    /// A conveyor pointing to another one will set the target of the former to the latter
+    TEST_F(ConveyorConnectionTest, ConnectRightLeading) {
+        // > >
+
+        auto& con_struct       = *BuildStruct(worldData_, {0, 0}, proto::Orientation::right).structure;
+        auto& con_struct_ahead = *BuildStruct(worldData_, {1, 0}, proto::Orientation::right).structure;
+
+        ConveyorConnectRight(worldData_, {0, 0});
+
+        EXPECT_EQ(con_struct.target, &con_struct_ahead);
+    }
+
+    // ======================================================================
+
+    ///
+    /// A conveyor pointing to another one will set the target of the former to the latter
+    TEST_F(ConveyorConnectionTest, ConnectDownLeading) {
+        // v
+        // v
+
+        auto& con_struct       = *BuildStruct(worldData_, {0, 0}, proto::Orientation::down).structure;
+        auto& con_struct_ahead = *BuildStruct(worldData_, {0, 1}, proto::Orientation::down).structure;
+
+        ConveyorConnectDown(worldData_, {0, 0});
+
+        EXPECT_EQ(con_struct.target, &con_struct_ahead);
+    }
+
+    // ======================================================================
+
+    ///
+    /// A conveyor pointing to another one will set the target of the former to the latter
+    TEST_F(ConveyorConnectionTest, ConnectLeftLeading) {
+        // < <
+
+        auto& con_struct_ahead = *BuildStruct(worldData_, {0, 0}, proto::Orientation::left).structure;
+        auto& con_struct       = *BuildStruct(worldData_, {1, 0}, proto::Orientation::left).structure;
+
+        ConveyorConnectLeft(worldData_, {1, 0});
+
+        EXPECT_EQ(con_struct.target, &con_struct_ahead);
+    }
 } // namespace jactorio::game
