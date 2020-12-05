@@ -48,6 +48,14 @@ namespace jactorio::game
     };
 
     ///
+    /// Should gracefully handle no tile above
+    TEST_F(ConveyorConnectionTest, ConnectUpNoTileAbove) {
+        BuildStruct(worldData_, {0, 0}, proto::Orientation::up);
+
+        ConveyorConnectUp(worldData_, {0, 0});
+    }
+
+    ///
     /// Should gracefully handle no struct above
     TEST_F(ConveyorConnectionTest, ConnectUpNoStructAbove) {
         BuildStruct(worldData_, {0, 1}, proto::Orientation::up);

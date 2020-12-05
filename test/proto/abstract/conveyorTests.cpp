@@ -934,9 +934,9 @@ namespace jactorio::proto
         EXPECT_EQ(GetSegment(tile_layers[0]).target, nullptr);
     }
 
-    // TODO ported
-    TEST_F(ConveyorTest, OnBuildConnectConveyorSegmentsLeading) {
-        // A conveyor pointing to another one will set the target_segment
+    ///
+    /// A conveyor pointing to another one will set the target_segment
+    TEST_F(ConveyorTest, OnBuildConnectConveyor) {
         /*
          * ^ <
          * 1 2
@@ -959,60 +959,6 @@ namespace jactorio::proto
         ASSERT_EQ(tile_layers.size(), 2);
         auto& line_segment = GetSegment(tile_layers[1]);
         EXPECT_EQ(line_segment.target, &GetSegment(tile_layers[0]));
-    }
-
-    // TODO ported
-    TEST_F(ConveyorTest, OnBuildConnectConveyorSegmentsTrailing) {
-        // A conveyor placed in front of another one will set the target_segment of the neighbor
-        /*
-         * > ^
-         */
-        /*
-         * 1 2
-         */
-
-        {
-            auto& layer         = worldData_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
-            layer.prototypeData = &lineProto_;
-            TlBuildEvents({1, 0}, Orientation::left);
-        }
-        {
-            auto& layer         = worldData_.GetTile(0, 0)->GetLayer(game::TileLayer::entity);
-            layer.prototypeData = &lineProto_;
-            TlBuildEvents({0, 0}, Orientation::up);
-        }
-
-        auto& tile_layers = GetConveyors({0, 0});
-
-        ASSERT_EQ(tile_layers.size(), 2);
-        auto& line_segment = GetSegment(tile_layers[0]);
-        EXPECT_EQ(line_segment.target, &GetSegment(tile_layers[1]));
-    }
-
-    // TODO ported
-    TEST_F(ConveyorTest, OnBuildNoConnectConveyorSegments) {
-        // Do not connect conveyor segments pointed at each other
-        /*
-         * > <
-         */
-
-        {
-            auto& layer         = worldData_.GetTile(0, 0)->GetLayer(game::TileLayer::entity);
-            layer.prototypeData = &lineProto_;
-            TlBuildEvents({0, 0}, Orientation::down);
-        }
-        {
-            auto& layer         = worldData_.GetTile(0, 1)->GetLayer(game::TileLayer::entity);
-            layer.prototypeData = &lineProto_;
-            TlBuildEvents({0, 1}, Orientation::up);
-        }
-
-        auto& tile_layers = GetConveyors({0, 0});
-
-        ASSERT_EQ(tile_layers.size(), 2);
-
-        EXPECT_EQ(GetSegment(tile_layers[0]).target, nullptr);
-        EXPECT_EQ(GetSegment(tile_layers[1]).target, nullptr);
     }
 
     // ======================================================================

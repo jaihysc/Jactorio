@@ -12,7 +12,8 @@ using namespace jactorio;
 /// Fetches struct at coord, nullptr if non existent
 static proto::ConveyorData* GetStruct(game::WorldData& world, const WorldCoord& coord) {
     auto* tile = world.GetTile(coord);
-    assert(tile != nullptr);
+    if (tile == nullptr)
+        return nullptr;
 
     auto& layer = tile->GetLayer(game::TileLayer::entity);
 

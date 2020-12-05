@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 
+#include "game/logic/conveyor_connection.h"
 #include "game/logic/conveyor_struct.h"
 #include "game/world/world_data.h"
 #include "proto/sprite.h"
@@ -635,78 +636,6 @@ proto::ConveyorData& InitConveyorSegment(game::WorldData& world_data,
     return *unique_data;
 }
 
-///
-/// Determines a line + neighbor segment's target segment
-/// \tparam OriginConnect Orientation required for origin_segment to connect to neighbor segment
-/// \tparam TargetConnect Orientation required for neighbor segment to connect to origin segment
-template <proto::Orientation OriginConnect, proto::Orientation TargetConnect>
-void CalculateLineTargets(game::WorldData& world_data,
-                          proto::ConveyorData& origin_data,
-                          const proto::Orientation origin_orientation,
-                          const WorldCoordAxis neighbor_world_x,
-                          const WorldCoordAxis neighbor_world_y) {
-    auto& origin_segment = *origin_data.structure;
-
-    auto* neighbor_data = proto::Conveyor::GetLineData(world_data, neighbor_world_x, neighbor_world_y);
-    if (!neighbor_data)
-        return;
-
-
-    auto& neighbor_segment = *neighbor_data->structure;
-
-    // Do not attempt to connect to itself
-    if (&origin_segment == &neighbor_segment)
-        return;
-
-    const bool origin_can_connect   = origin_orientation == OriginConnect;
-    const bool neighbor_can_connect = neighbor_segment.direction == TargetConnect;
-
-    // Only 1 can be valid at a time (does not both point to each other)
-    // Either origin feeds into neighbor, or neighbor feeds into origin depending on which one is valid
-    if (origin_can_connect == neighbor_can_connect)
-        return;
-
-
-    auto connect_segment = [](game::ConveyorStruct& from, proto::ConveyorData& to_data) {
-        auto& to = *to_data.structure;
-
-        from.target = &to;
-
-        from.targetInsertOffset = to_data.structIndex;
-        to.GetOffsetAbs(from.targetInsertOffset);
-    };
-
-    if (origin_can_connect)
-        connect_segment(origin_segment, *neighbor_data);
-    else
-        connect_segment(neighbor_segment, origin_data);
-}
-
-///
-/// Set the target segment to the neighbor origin is pointing to,
-/// and the neighbor's target segment which is pointing to origin
-void CalculateLineTargets4(game::WorldData& world_data,
-                           const WorldCoord& origin_coord,
-                           const proto::Orientation origin_orient,
-                           proto::ConveyorData& origin_data,
-                           const LineData4Way& line_data_4) {
-    if (line_data_4[0] != nullptr)
-        CalculateLineTargets<proto::Orientation::up, proto::Orientation::down>(
-            world_data, origin_data, origin_orient, origin_coord.x, origin_coord.y - 1);
-
-    if (line_data_4[1] != nullptr)
-        CalculateLineTargets<proto::Orientation::right, proto::Orientation::left>(
-            world_data, origin_data, origin_orient, origin_coord.x + 1, origin_coord.y);
-
-    if (line_data_4[2] != nullptr)
-        CalculateLineTargets<proto::Orientation::down, proto::Orientation::up>(
-            world_data, origin_data, origin_orient, origin_coord.x, origin_coord.y + 1);
-
-    if (line_data_4[3] != nullptr)
-        CalculateLineTargets<proto::Orientation::left, proto::Orientation::right>(
-            world_data, origin_data, origin_orient, origin_coord.x - 1, origin_coord.y);
-}
-
 void proto::Conveyor::OnBuild(game::WorldData& world_data,
                               game::LogicData& /*logic_data*/,
                               const WorldCoord& world_coords,
@@ -730,7 +659,7 @@ void proto::Conveyor::OnBuild(game::WorldData& world_data,
     TryShiftSegment(world_data, world_coords, line_segment_p, line_data_4);
     CalculateNeighborTermination<false>(world_data, world_coords, line_orientation);
 
-    CalculateLineTargets4(world_data, world_coords, orientation, line_data, line_data_4);
+    ConveyorConnect(world_data, world_coords);
 }
 
 //
@@ -957,11 +886,7 @@ void proto::Conveyor::OnDeserialize(game::WorldData& world_data,
     auto* origin_data = tile_layer.GetUniqueData<ConveyorData>();
     assert(origin_data != nullptr);
 
-    CalculateLineTargets4(world_data,
-                          world_coord,
-                          ConveyorData::ToOrientation(origin_data->orientation),
-                          *origin_data,
-                          GetLineData4(world_data, world_coord));
+    ConveyorConnect(world_data, world_coord);
 }
 
 void proto::Conveyor::PostLoad() {
