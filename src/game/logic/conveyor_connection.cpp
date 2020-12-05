@@ -62,7 +62,7 @@ static void CalculateTargets(game::ConveyorStruct& origin,
         connect_segment(neighbor, origin);
 }
 
-void game::ConnectUp(WorldData& world, const WorldCoord& coord, const OnConnectCallback& callback) {
+void game::ConveyorConnectUp(WorldData& world, const WorldCoord& coord, const OnConnectCallback& callback) {
     auto* current_struct = GetStruct(world, {coord.x, coord.y});
     auto* neigh_struct   = GetStruct(world, {coord.x, coord.y - 1});
 

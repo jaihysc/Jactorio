@@ -18,35 +18,35 @@ namespace jactorio::game
     ///
     /// Calls Connect for up, right, down, left
     /// \param coord Current struct's coordinate
-    void Connect(WorldData& world, const WorldCoord& coord);
+    void ConveyorConnect(WorldData& world, const WorldCoord& coord);
 
     ///
     /// Calls Disconnect for up, right, down, left
     /// \param coord Current struct's coordinate
-    void Disconnect(WorldData& world, const WorldCoord& coord);
+    void ConveyorDisconnect(WorldData& world, const WorldCoord& coord);
 
 
     ///
-    /// Attempts to connect to a connectable struct above or connect struct above to current
+    /// Attempts to connect to a connectable conveyor struct above or connect struct above to current
     /// \param coord Current struct's coordinate
-    void ConnectUp(
+    void ConveyorConnectUp(
         WorldData& world,
         const WorldCoord& coord,
         const OnConnectCallback& callback = [](auto& /*from*/, auto& /*to*/) {});
 
     ///
-    /// Attempts to disconnect from connected struct above
+    /// Attempts to disconnect from connected conveyor struct above
     /// \param coord Current struct's coordinate
-    void DisconnectUp(WorldData& world, const WorldCoord& coord);
+    void ConveyorDisconnectUp(WorldData& world, const WorldCoord& coord);
 
-    void ConnectRight(WorldData& world, const WorldCoord& coord);
-    void DisconnectRight(WorldData& world, const WorldCoord& coord);
+    void ConveyorConnectRight(WorldData& world, const WorldCoord& coord);
+    void ConveyorDisconnectRight(WorldData& world, const WorldCoord& coord);
 
-    void ConnectDown(WorldData& world, const WorldCoord& coord);
-    void DisconnectDown(WorldData& world, const WorldCoord& coord);
+    void ConveyorConnectDown(WorldData& world, const WorldCoord& coord);
+    void ConveyorDisconnectDown(WorldData& world, const WorldCoord& coord);
 
-    void ConnectLeft(WorldData& world, const WorldCoord& coord);
-    void DisconnectLeft(WorldData& world, const WorldCoord& coord);
+    void ConveyorConnectLeft(WorldData& world, const WorldCoord& coord);
+    void ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONNECTION_H

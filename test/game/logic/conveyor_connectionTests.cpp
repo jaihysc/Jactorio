@@ -52,7 +52,7 @@ namespace jactorio::game
     TEST_F(ConveyorConnectionTest, ConnectUpNoStructAbove) {
         BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
 
-        ConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(worldData_, {0, 1});
     }
 
     ///
@@ -63,7 +63,7 @@ namespace jactorio::game
         TestSetupContainer(worldData_, {0, 0}, container_proto);
         BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
 
-        ConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(worldData_, {0, 1});
     }
 
     ///
@@ -72,7 +72,7 @@ namespace jactorio::game
         auto& structure = BuildStruct(worldData_, {0, 0}, proto::Orientation::up);
         BuildStruct(worldData_, {0, 1}, structure);
 
-        ConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(worldData_, {0, 1});
 
         EXPECT_EQ(structure->target, nullptr);
     }
@@ -87,7 +87,7 @@ namespace jactorio::game
         auto& con_struct       = *BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
 
         bool callback_called = false;
-        ConnectUp(worldData_, {0, 1}, [&](auto& from, auto& to) {
+        ConveyorConnectUp(worldData_, {0, 1}, [&](auto& from, auto& to) {
             callback_called = true;
 
             EXPECT_EQ(&from, &con_struct);
@@ -108,7 +108,7 @@ namespace jactorio::game
         auto& con_struct_d = *BuildStruct(worldData_, {0, 0}, proto::Orientation::down);
         auto& con_struct_r = *BuildStruct(worldData_, {0, 1}, proto::Orientation::right);
 
-        ConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(worldData_, {0, 1});
 
         EXPECT_EQ(con_struct_d.target, &con_struct_r);
     }
@@ -122,7 +122,7 @@ namespace jactorio::game
         auto& con_struct_d = *BuildStruct(worldData_, {0, 0}, proto::Orientation::down);
         auto& con_struct_u = *BuildStruct(worldData_, {0, 1}, proto::Orientation::up);
 
-        ConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(worldData_, {0, 1});
 
         EXPECT_EQ(con_struct_d.target, nullptr);
         EXPECT_EQ(con_struct_u.target, nullptr);
