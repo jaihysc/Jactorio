@@ -61,13 +61,13 @@ namespace jactorio::proto
 
         /// Tile distance to the head of the conveyor
         /// \remark For rendering purposes, the length should never exceed ~2 chunks at most
-        uint8_t lineSegmentIndex = 0;
+        uint8_t structIndex = 0;
 
         LineOrientation orientation = LineOrientation::up;
 
 
         CEREAL_SERIALIZE(archive) {
-            archive(structure, lineSegmentIndex, orientation, cereal::base_class<HealthEntityData>(this));
+            archive(structure, structIndex, orientation, cereal::base_class<HealthEntityData>(this));
         }
 
         CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorData) {
@@ -75,9 +75,8 @@ namespace jactorio::proto
             archive(line_segment);
             construct(line_segment);
 
-            archive(construct->lineSegmentIndex,
-                    construct->orientation,
-                    cereal::base_class<HealthEntityData>(construct.ptr()));
+            archive(
+                construct->structIndex, construct->orientation, cereal::base_class<HealthEntityData>(construct.ptr()));
         }
     };
 

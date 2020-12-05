@@ -160,7 +160,7 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
     }
 
     constexpr double insertion_offset_base = 0.5;
-    auto offset                            = proto::LineDistT(line_data.lineSegmentIndex + insertion_offset_base);
+    auto offset                            = proto::LineDistT(line_data.structIndex + insertion_offset_base);
 
     GetAdjustedLineOffset(use_line_left, offset, line_data);
     return line_data.structure->TryInsertItem(use_line_left, offset.getAsDouble(), *params.itemStack.item);
@@ -435,7 +435,7 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
     }
 
     auto pickup_offset = proto::LineDistT(
-        line_data.lineSegmentIndex +
+        line_data.structIndex +
         GetInserterArmOffset(core::SafeCast<core::TIntDegree>(params.degree.getAsInteger()), params.inserterTileReach));
 
     return {use_line_left, pickup_offset};

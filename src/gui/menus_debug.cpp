@@ -211,11 +211,11 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
             // Only draw for the head of segments
             if (line_segment.terminationType == game::ConveyorStruct::TerminationType::straight &&
-                line_data.lineSegmentIndex != 0)
+                line_data.structIndex != 0)
                 continue;
 
             if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight &&
-                line_data.lineSegmentIndex != 1)
+                line_data.structIndex != 1)
                 continue;
 
             const auto position_x = i % game::Chunk::kChunkWidth;
@@ -361,7 +361,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
 
         ImGui::Text("Item offset %d", segment.itemOffset);
         ImGui::Text("Target insertion offset %d", segment.targetInsertOffset);
-        ImGui::Text("Length, Index: %d %d", segment.length, data->lineSegmentIndex);
+        ImGui::Text("Length, Index: %d %d", segment.length, data->structIndex);
 
         {
             std::string s;

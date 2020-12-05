@@ -172,7 +172,7 @@ namespace jactorio::game
 
     TEST_F(ItemDropOffTest, InsertOffset) {
         auto line_data                  = CreateConveyor(proto::Orientation::up);
-        line_data.lineSegmentIndex      = 1;
+        line_data.structIndex           = 1;
         line_data.structure->itemOffset = 10; // Arbitrary itemOffset
 
         ConveyorInsert(proto::Orientation::up, line_data);
@@ -304,7 +304,7 @@ namespace jactorio::game
         left.structure->target = up.structure.get();
         up.structure->target   = right.structure.get();
 
-        left.lineSegmentIndex = 1;
+        left.structIndex = 1;
 
 
         proto::Item item;
@@ -636,7 +636,7 @@ namespace jactorio::game
         up->target   = right.get();
 
         proto::ConveyorData line{left};
-        line.lineSegmentIndex = 1;
+        line.structIndex = 1;
 
 
         const proto::Item item;

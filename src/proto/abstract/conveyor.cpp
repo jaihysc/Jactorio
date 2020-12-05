@@ -173,11 +173,11 @@ void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
 
     // Only draw for the head of segments
     if (line_data.structure->terminationType == game::ConveyorStruct::TerminationType::straight &&
-        line_data.lineSegmentIndex != 0)
+        line_data.structIndex != 0)
         return;
 
     if (line_data.structure->terminationType != game::ConveyorStruct::TerminationType::straight &&
-        line_data.lineSegmentIndex != 1)
+        line_data.structIndex != 1)
         return;
 
     DrawConveyorSegmentItems(layer, uv_coords, pixel_offset, *line_data.structure);
@@ -260,7 +260,7 @@ static void UpdateSegmentTiles(game::WorldData& world_data,
         if (i_line_data == nullptr)
             continue;
 
-        core::SafeCastAssign(i_line_data->lineSegmentIndex, i);
+        core::SafeCastAssign(i_line_data->structIndex, i);
         i_line_data->structure = line_segment;
 
         x_offset += x_change;
@@ -608,7 +608,7 @@ proto::ConveyorData& InitConveyorSegment(game::WorldData& world_data,
         line_segment = line_data[index]->structure;
 
         line_data[index]->structure->length++; // Lengthening its tail, not head
-        line_segment_index = line_data[index]->lineSegmentIndex + 1;
+        line_segment_index = line_data[index]->structIndex + 1;
         break;
 
     default:
@@ -620,7 +620,7 @@ proto::ConveyorData& InitConveyorSegment(game::WorldData& world_data,
     auto* unique_data = tile_layer.MakeUniqueData<proto::ConveyorData>(line_segment);
     assert(unique_data != nullptr);
 
-    core::SafeCastAssign(unique_data->lineSegmentIndex, line_segment_index);
+    core::SafeCastAssign(unique_data->structIndex, line_segment_index);
 
     // Line data is not initialized yet inside switch
     if (status == InitSegmentStatus::group_behind) {
@@ -672,7 +672,7 @@ void CalculateLineTargets(game::WorldData& world_data,
 
         from.target = &to;
 
-        from.targetInsertOffset = to_data.lineSegmentIndex;
+        from.targetInsertOffset = to_data.structIndex;
         to.GetOffsetAbs(from.targetInsertOffset);
     };
 
@@ -869,12 +869,12 @@ void proto::Conveyor::OnRemove(game::WorldData& world_data,
     OrientationIncrement(o_line_segment->direction, n_seg_coords.x, n_seg_coords.y, -1);
 
     // Create new segment at behind cords if not the end of a segment
-    const auto n_seg_length = o_line_segment->length - o_line_data.lineSegmentIndex - 1;
+    const auto n_seg_length = o_line_segment->length - o_line_data.structIndex - 1;
     if (n_seg_length > 0) {
         // Create new segment
         const auto n_segment = std::make_shared<game::ConveyorStruct>(
             o_line_segment->direction, game::ConveyorStruct::TerminationType::straight, n_seg_length);
-        n_segment->itemOffset = o_line_segment->itemOffset - o_line_data.lineSegmentIndex - 1;
+        n_segment->itemOffset = o_line_segment->itemOffset - o_line_data.structIndex - 1;
 
 
         // Add to be considered for logic updates
@@ -939,15 +939,15 @@ void proto::Conveyor::OnRemove(game::WorldData& world_data,
 
     // Remove original conveyor segment referenced in ConveyorData if is head of segment
     // If not head, reduce the length of original segment to index + 1
-    if (o_line_data.lineSegmentIndex == 0 ||
-        (o_line_data.lineSegmentIndex == 1 &&
+    if (o_line_data.structIndex == 0 ||
+        (o_line_data.structIndex == 1 &&
          o_line_segment->terminationType != // Head of bending segments start at 1
              game::ConveyorStruct::TerminationType::straight)) {
 
         RemoveFromLogic(world_data, world_coords, *o_line_segment);
     }
     else {
-        o_line_segment->length = o_line_data.lineSegmentIndex;
+        o_line_segment->length = o_line_data.structIndex;
     }
 }
 

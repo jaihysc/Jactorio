@@ -144,7 +144,7 @@ namespace jactorio::proto
         }
 
         auto GetLineSegmentIndex(const WorldCoord& world_coords) const {
-            return GetLineData(world_coords).lineSegmentIndex;
+            return GetLineData(world_coords).structIndex;
         }
 
 
@@ -382,7 +382,7 @@ namespace jactorio::proto
 
         // Should have lengthened segment and moved x 1 left
         EXPECT_EQ(segment.length, 2);
-        EXPECT_EQ(static_cast<ConveyorData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
+        EXPECT_EQ(static_cast<ConveyorData*>(left_layer.GetUniqueData())->structIndex, 1);
     }
 
     TEST_F(ConveyorTest, OnBuildBendingConveyorSegmentLeading) {
@@ -406,7 +406,7 @@ namespace jactorio::proto
 
         // Should have lengthened segment and moved x 1 left
         EXPECT_EQ(segment.length, 2);
-        EXPECT_EQ(static_cast<ConveyorData*>(left_layer.GetUniqueData())->lineSegmentIndex, 1);
+        EXPECT_EQ(static_cast<ConveyorData*>(left_layer.GetUniqueData())->structIndex, 1);
     }
 
 
@@ -441,7 +441,7 @@ namespace jactorio::proto
             Orientation::left, game::ConveyorStruct::TerminationType::straight, 1);
 
         ConveyorData line_data{segment};
-        line_data.lineSegmentIndex = 1; // Prevents it from attempting to delete line segment
+        line_data.structIndex = 1; // Prevents it from attempting to delete line segment
 
         line_data.SetOrientation(ConveyorData::LineOrientation::down);
         EXPECT_EQ(line_data.set, static_cast<uint16_t>(ConveyorData::LineOrientation::down));
@@ -1246,7 +1246,7 @@ namespace jactorio::proto
 
         ASSERT_EQ(struct_layer.size(), 1);
 
-        EXPECT_EQ(GetLineData({0, 1}).lineSegmentIndex, 0);
+        EXPECT_EQ(GetLineData({0, 1}).structIndex, 0);
         EXPECT_EQ(GetLineData({0, 1}).structure->itemOffset, 0);
     }
 
