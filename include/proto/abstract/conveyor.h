@@ -18,6 +18,8 @@ namespace jactorio::proto
     /// ConveyorData with a segment index of 0 manages a segment and will delete it when it is deleted
     struct ConveyorData final : HealthEntityData
     {
+        ConveyorData() = default;
+
         explicit ConveyorData(std::shared_ptr<game::ConveyorStruct> line_segment)
             : structure(std::move(line_segment)) {}
 
@@ -46,28 +48,24 @@ namespace jactorio::proto
         ///
         /// Updates orientation and member set for rendering
         void SetOrientation(LineOrientation orientation) {
-            this->orientation = orientation;
-            this->set         = static_cast<uint16_t>(orientation);
+            this->lOrien = orientation;
+            this->set    = static_cast<uint16_t>(orientation);
         }
 
         static Orientation ToOrientation(LineOrientation line_orientation);
 
 
-        //
-
-
-        /// The logic chunk line_segment associated
-        std::shared_ptr<game::ConveyorStruct> structure;
+        std::shared_ptr<game::ConveyorStruct> structure = nullptr;
 
         /// Tile distance to the head of the conveyor
         /// \remark For rendering purposes, the length should never exceed ~2 chunks at most
         uint8_t structIndex = 0;
 
-        LineOrientation orientation = LineOrientation::up;
+        LineOrientation lOrien = LineOrientation::up;
 
 
         CEREAL_SERIALIZE(archive) {
-            archive(structure, structIndex, orientation, cereal::base_class<HealthEntityData>(this));
+            archive(structure, structIndex, lOrien, cereal::base_class<HealthEntityData>(this));
         }
 
         CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorData) {
@@ -75,8 +73,7 @@ namespace jactorio::proto
             archive(line_segment);
             construct(line_segment);
 
-            archive(
-                construct->structIndex, construct->orientation, cereal::base_class<HealthEntityData>(construct.ptr()));
+            archive(construct->structIndex, construct->lOrien, cereal::base_class<HealthEntityData>(construct.ptr()));
         }
     };
 

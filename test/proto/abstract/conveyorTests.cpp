@@ -323,7 +323,7 @@ namespace jactorio::proto
         {
             auto& result_layer = worldData_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->orientation,
+            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien,
                       ConveyorData::LineOrientation::up_right);
         }
     }
@@ -351,7 +351,7 @@ namespace jactorio::proto
         {
             auto& result_layer = worldData_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->orientation,
+            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien,
                       ConveyorData::LineOrientation::down_right);
         }
     }
@@ -964,6 +964,7 @@ namespace jactorio::proto
     // ======================================================================
     // Grouping
 
+    // TODO remove these tests after extracting conveyor grouping logic
     TEST_F(ConveyorTest, OnBuildUpGroupAhead) {
         // When placed behind a line with the same orientation, join the previous line by extending its length
         /*

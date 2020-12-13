@@ -6,6 +6,14 @@
 
 #include "core/data_type.h"
 
+namespace jactorio
+{
+    namespace proto
+    {
+        struct ConveyorData;
+    }
+} // namespace jactorio
+
 namespace jactorio::game
 {
     class WorldData;
@@ -57,6 +65,14 @@ namespace jactorio::game
     void ConveyorDisconnectDown(WorldData& world, const WorldCoord& coord);
 
     void ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord);
+
+
+    ///
+    /// Creates conveyor structure for provided conveyor
+    ///
+    /// The conveyor structure can either be grouped with the conveyor structure ahead, behind,
+    /// or a new conveyor structure created
+    void ConveyorCreate(WorldData& world, const WorldCoord& coord, proto::ConveyorData& conveyor);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONNECTION_H

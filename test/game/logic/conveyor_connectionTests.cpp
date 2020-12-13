@@ -45,6 +45,26 @@ namespace jactorio::game
 
             return BuildStruct(world, coord, con_struct);
         }
+
+        ///
+        /// Checks if conveyor at current coords with l_orien grouped with conveyor at ahead_coord with ahead_orien
+        /// \return true if grouped ahead
+        J_NODISCARD bool TestGroupAhead(const WorldCoord ahead_coord,
+                                        const proto::Orientation ahead_orien,
+                                        const WorldCoord current_coord,
+                                        const proto::ConveyorData::LineOrientation l_orien) {
+            WorldData world; // Cannot use test's world since this is building at the same tile multiple times
+            world.EmplaceChunk(0, 0);
+
+            auto& con_struct_ahead = BuildStruct(world, ahead_coord, ahead_orien).structure;
+
+            proto::ConveyorData con_data;
+            con_data.lOrien = l_orien;
+
+            ConveyorCreate(world, current_coord, con_data);
+
+            return con_data.structure == con_struct_ahead;
+        };
     };
 
     ///
@@ -189,4 +209,33 @@ namespace jactorio::game
 
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
+
+    //
+    //
+    //
+    //
+    //
+
+    ///
+    /// Using ahead conveyor structure in same direction is prioritized over creating a new conveyor structure
+    TEST_F(ConveyorConnectionTest, ConveyorCreateGetConveyorAhead) {
+
+        EXPECT_TRUE(TestGroupAhead({0, 0}, proto::Orientation::up, {0, 1}, proto::ConveyorData::LineOrientation::up));
+        EXPECT_TRUE(
+            TestGroupAhead({1, 0}, proto::Orientation::right, {0, 0}, proto::ConveyorData::LineOrientation::right));
+        EXPECT_TRUE(
+            TestGroupAhead({0, 1}, proto::Orientation::down, {0, 0}, proto::ConveyorData::LineOrientation::down));
+        EXPECT_TRUE(
+            TestGroupAhead({0, 0}, proto::Orientation::left, {1, 0}, proto::ConveyorData::LineOrientation::left));
+    }
+
+    ///
+    /// Cannot use ahead conveyor if it is in different direction
+    TEST_F(ConveyorConnectionTest, ConveyorCreateGetConveyorAheadDifferentDirection) {
+        EXPECT_FALSE(
+            TestGroupAhead({0, 0}, proto::Orientation::right, {0, 1}, proto::ConveyorData::LineOrientation::up));
+        EXPECT_FALSE(
+            TestGroupAhead({0, 0}, proto::Orientation::up, {0, 1}, proto::ConveyorData::LineOrientation::left_down));
+    }
+
 } // namespace jactorio::game

@@ -106,3 +106,30 @@ void game::ConveyorConnectDown(WorldData& world, const WorldCoord& coord) {
 void game::ConveyorConnectLeft(WorldData& world, const WorldCoord& coord) {
     DoConnect<proto::Orientation::left, -1, 0>(world, coord);
 }
+
+
+void game::ConveyorCreate(WorldData& world, const WorldCoord& coord, proto::ConveyorData& conveyor) {
+    const auto direction = proto::ConveyorData::ToOrientation(conveyor.lOrien);
+
+
+    auto get_ahead = [&world, direction](WorldCoord current_coord) {
+        OrientationIncrement(direction, current_coord.x, current_coord.y, 1);
+        return GetStruct(world, current_coord);
+    };
+
+    // auto get_behind = [&world, coord, direction]() {
+    //     OrientationIncrement(direction, coord.x, coord.y, -1);
+    //     return GetStruct(world, coord);
+    // };
+
+    auto* con_ahead = get_ahead(coord);
+
+    if (con_ahead != nullptr) {
+        if (con_ahead->structure->direction == direction) {
+            conveyor.structure = con_ahead->structure;
+            return;
+        }
+    }
+
+    conveyor.structure = std::make_shared<ConveyorStruct>(direction, ConveyorStruct::TerminationType::straight, 1);
+}

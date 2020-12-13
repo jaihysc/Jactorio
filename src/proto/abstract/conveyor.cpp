@@ -112,7 +112,7 @@ proto::ConveyorData::LineOrientation proto::Conveyor::GetLineOrientation(const O
 
     /// true if has neighbor line and its orientation matches provided
     auto neighbor_valid = [](const ConveyorData* conveyor, const Orientation orient) {
-        return conveyor != nullptr && ConveyorData::ToOrientation(conveyor->orientation) == orient;
+        return conveyor != nullptr && ConveyorData::ToOrientation(conveyor->lOrien) == orient;
     };
 
     switch (orientation) {
@@ -303,19 +303,19 @@ void CalculateNeighborLineOrientation(game::WorldData& world_data,
     // Top neighbor
     if (line_data_4[0] != nullptr)
         line_data_4[0]->SetOrientation(proto::Conveyor::GetLineOrientation(
-            proto::ConveyorData::ToOrientation(line_data_4[0]->orientation), {top, t_right, center, t_left}));
+            proto::ConveyorData::ToOrientation(line_data_4[0]->lOrien), {top, t_right, center, t_left}));
     // Right
     if (line_data_4[1] != nullptr)
         line_data_4[1]->SetOrientation(proto::Conveyor::GetLineOrientation(
-            proto::ConveyorData::ToOrientation(line_data_4[1]->orientation), {t_right, right, b_right, center}));
+            proto::ConveyorData::ToOrientation(line_data_4[1]->lOrien), {t_right, right, b_right, center}));
     // Bottom
     if (line_data_4[2] != nullptr)
         line_data_4[2]->SetOrientation(proto::Conveyor::GetLineOrientation(
-            proto::ConveyorData::ToOrientation(line_data_4[2]->orientation), {center, b_right, bottom, b_left}));
+            proto::ConveyorData::ToOrientation(line_data_4[2]->lOrien), {center, b_right, bottom, b_left}));
     // Left
     if (line_data_4[3] != nullptr)
         line_data_4[3]->SetOrientation(proto::Conveyor::GetLineOrientation(
-            proto::ConveyorData::ToOrientation(line_data_4[3]->orientation), {t_left, center, b_left, left}));
+            proto::ConveyorData::ToOrientation(line_data_4[3]->lOrien), {t_left, center, b_left, left}));
 }
 
 
@@ -335,7 +335,7 @@ void TryShiftSegment(game::WorldData& world_data,
     if (!neighbor_data)
         return;
 
-    switch (neighbor_data->orientation) {
+    switch (neighbor_data->lOrien) {
     case BendLeft:
     case BendRight:
     case LeftOnly:
@@ -648,8 +648,8 @@ void proto::Conveyor::OnBuild(game::WorldData& world_data,
 
     const auto line_orientation = GetLineOrientation(orientation, line_data_4);
 
-    line_data.set         = static_cast<uint16_t>(line_orientation);
-    line_data.orientation = line_orientation;
+    line_data.set    = static_cast<uint16_t>(line_orientation);
+    line_data.lOrien = line_orientation;
 
 
     // Update neighbor orientation has to be done PRIOR to applying segment shift
@@ -695,7 +695,7 @@ void proto::Conveyor::OnNeighborUpdate(game::WorldData& world_data,
     line_data->structure->left.index  = 0;
     line_data->structure->right.index = 0;
 
-    CalculateNeighborTermination<true>(world_data, receive_world_coords, line_data->orientation);
+    CalculateNeighborTermination<true>(world_data, receive_world_coords, line_data->lOrien);
 }
 
 //
