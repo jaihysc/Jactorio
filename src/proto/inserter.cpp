@@ -42,8 +42,8 @@ void proto::Inserter::OnBuild(game::WorldData& world_data,
                               const WorldCoord& world_coords,
                               game::ChunkTileLayer& tile_layer,
                               Orientation orientation) const {
-    auto* inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
-    inserter_data->set  = OnRGetSpriteSet(orientation, world_data, world_coords);
+    auto& inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
+    inserter_data.set   = OnRGetSpriteSet(orientation, world_data, world_coords);
 
     InitPickupDropoff(world_data, world_coords, orientation);
 }

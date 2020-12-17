@@ -38,12 +38,12 @@ namespace jactorio::game
         auto tile_layer          = ChunkTileLayer();
         tile_layer.prototypeData = entity_proto.get(); // Prototype data needed to delete unique data
 
-        auto* u_data = tile_layer.MakeUniqueData<proto::ResourceEntityData>(10);
+        auto& u_data = tile_layer.MakeUniqueData<proto::ResourceEntityData>(10);
 
         // MOVE layer
         const auto tile_layer_new = std::move(tile_layer);
 
-        EXPECT_EQ(tile_layer_new.GetUniqueData(), u_data);
+        EXPECT_EQ(tile_layer_new.GetUniqueData(), &u_data);
         EXPECT_EQ(tile_layer.GetUniqueData(), nullptr); // Moved into tile_layer_new, this becomes nullptr
 
         // Heap allocated data cleaned up by chunk_tile_layer destructors

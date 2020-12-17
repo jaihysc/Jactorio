@@ -618,10 +618,9 @@ proto::ConveyorData& InitConveyorSegment(game::WorldData& world_data,
     }
 
     // Create unique data at tile
-    auto* unique_data = tile_layer.MakeUniqueData<proto::ConveyorData>(line_segment);
-    assert(unique_data != nullptr);
+    auto& unique_data = tile_layer.MakeUniqueData<proto::ConveyorData>(line_segment);
 
-    core::SafeCastAssign(unique_data->structIndex, line_segment_index);
+    core::SafeCastAssign(unique_data.structIndex, line_segment_index);
 
     // Line data is not initialized yet inside switch
     if (status == InitSegmentStatus::group_behind) {
@@ -633,7 +632,7 @@ proto::ConveyorData& InitConveyorSegment(game::WorldData& world_data,
         UpdateSegmentTiles(world_data, world_coords, line_segment);
     }
 
-    return *unique_data;
+    return unique_data;
 }
 
 void proto::Conveyor::OnBuild(game::WorldData& world_data,

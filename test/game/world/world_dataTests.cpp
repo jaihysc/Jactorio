@@ -208,7 +208,7 @@ namespace jactorio::game
         worldData_.EmplaceChunk(0, 0);
 
         auto* top_tile    = worldData_.GetTile(0, 0);
-        auto* unique_data = top_tile->GetLayer(TileLayer::resource).MakeUniqueData<proto::ContainerEntityData>(10);
+        auto& unique_data = top_tile->GetLayer(TileLayer::resource).MakeUniqueData<proto::ContainerEntityData>(10);
 
         auto* bottom_tile  = worldData_.GetTile({1, 2});
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::resource);
@@ -217,7 +217,7 @@ namespace jactorio::game
         TestSetupMultiTileProp(bottom_layer, {7, 10}, proto);
         bottom_layer.SetMultiTileIndex(15);
 
-        EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), unique_data);
+        EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
     }
 
     TEST_F(WorldDataTest, GetLayerTopLeftUninitialized) {

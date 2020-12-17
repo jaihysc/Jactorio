@@ -81,7 +81,7 @@ namespace jactorio::game
         /// Heap allocates unique data
         /// \return Created unique data
         template <typename TData, typename... Args>
-        TData* MakeUniqueData(Args&&... args);
+        TData& MakeUniqueData(Args&&... args);
 
         ///
         /// Unique data at current layer or if multi tile, top left
@@ -227,7 +227,7 @@ namespace jactorio::game
 
 
     template <typename TData, typename... Args>
-    TData* ChunkTileLayer::MakeUniqueData(Args&&... args) {
+    TData& ChunkTileLayer::MakeUniqueData(Args&&... args) {
         static_assert(std::is_base_of_v<proto::FWorldObjectData, TData>);
 
         if (IsMultiTile())
@@ -235,7 +235,9 @@ namespace jactorio::game
         assert(!data_.uniqueData); // Trying to create already created uniqueData
 
         data_.uniqueData = std::make_unique<TData>(std::forward<Args>(args)...);
-        return static_cast<TData*>(data_.uniqueData.get());
+
+        assert(data_.uniqueData != nullptr);
+        return static_cast<TData&>(*data_.uniqueData.get());
     }
 
     template <typename T>

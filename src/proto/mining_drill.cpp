@@ -132,21 +132,20 @@ void proto::MiningDrill::OnBuild(game::WorldData& world_data,
                                  const WorldCoord& world_coords,
                                  game::ChunkTileLayer& tile_layer,
                                  const Orientation orientation) const {
-    auto* drill_data = tile_layer.MakeUniqueData<MiningDrillData>(orientation);
-    assert(drill_data);
+    auto& drill_data = tile_layer.MakeUniqueData<MiningDrillData>(orientation);
 
 
-    drill_data->resourceCoord.x = world_coords.x - this->miningRadius;
-    drill_data->resourceCoord.y = world_coords.y - this->miningRadius;
+    drill_data.resourceCoord.x = world_coords.x - this->miningRadius;
+    drill_data.resourceCoord.y = world_coords.y - this->miningRadius;
 
-    const bool success = SetupResourceDeduction(world_data, *drill_data);
+    const bool success = SetupResourceDeduction(world_data, drill_data);
     assert(success);
-    assert(drill_data->outputItem != nullptr); // Should not have been allowed to be placed on no resources
+    assert(drill_data.outputItem != nullptr); // Should not have been allowed to be placed on no resources
 
     const auto output_coords = GetOutputCoord(world_coords, orientation);
 
-    drill_data->set        = OnRGetSpriteSet(orientation, world_data, world_coords);
-    drill_data->outputTile = output_coords;
+    drill_data.set        = OnRGetSpriteSet(orientation, world_data, world_coords);
+    drill_data.outputTile = output_coords;
 
     OnNeighborUpdate(world_data, logic_data, output_coords, world_coords, orientation);
 }

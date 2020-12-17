@@ -291,7 +291,7 @@ namespace jactorio::game
         tile.SetEntityPrototype(&entity, TileLayer::resource);
 
         // Holds the resources available at the tile, should be decremented when extracted
-        auto* resource_data = tile.GetLayer(TileLayer::resource).MakeUniqueData<proto::ResourceEntityData>(2);
+        auto& resource_data = tile.GetLayer(TileLayer::resource).MakeUniqueData<proto::ResourceEntityData>(2);
 
 
         //
@@ -299,7 +299,7 @@ namespace jactorio::game
         // Resource entity should only become nullptr after all the resources are extracted
         EXPECT_EQ(tile.GetEntityPrototype(TileLayer::resource), &entity);
 
-        EXPECT_EQ(resource_data->resourceAmount, 1);
+        EXPECT_EQ(resource_data.resourceAmount, 1);
 
         EXPECT_EQ(playerInv_.inventory[0].item, &item); // Gave 1 resource to player
         EXPECT_EQ(playerInv_.inventory[0].count, 1);
@@ -334,7 +334,7 @@ namespace jactorio::game
         tile.SetEntityPrototype(&resource_entity, TileLayer::resource);
 
         // Holds the resources available at the tile, should be decremented when extracted
-        auto* resource_data = tile.GetLayer(TileLayer::resource).MakeUniqueData<proto::ResourceEntityData>(2);
+        auto& resource_data = tile.GetLayer(TileLayer::resource).MakeUniqueData<proto::ResourceEntityData>(2);
 
 
         // Other entity (e.g Container_entity)
@@ -353,10 +353,10 @@ namespace jactorio::game
         // Now that container entity is picked up, resource entity is next
         playerPlace_.TryPickup(worldData_, logicData_, 0, 0, 60);
         playerPlace_.TryPickup(worldData_, logicData_, 0, 0, 60);
-        EXPECT_EQ(resource_data->resourceAmount, 2); // Not picked up, still 60 more ticks required
+        EXPECT_EQ(resource_data.resourceAmount, 2); // Not picked up, still 60 more ticks required
 
         playerPlace_.TryPickup(worldData_, logicData_, 0, 0, 60);
-        EXPECT_EQ(resource_data->resourceAmount, 1); // Picked up
+        EXPECT_EQ(resource_data.resourceAmount, 1); // Picked up
     }
 
 

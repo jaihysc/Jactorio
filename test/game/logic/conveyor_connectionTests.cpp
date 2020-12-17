@@ -28,10 +28,7 @@ namespace jactorio::game
             auto& layer         = world.GetTile(coord)->GetLayer(TileLayer::entity);
             layer.prototypeData = &transBelt_;
 
-            auto* ud = layer.MakeUniqueData<proto::ConveyorData>(conveyor_struct);
-            assert(ud != nullptr);
-
-            return *ud;
+            return layer.MakeUniqueData<proto::ConveyorData>(conveyor_struct);
         }
 
         ///
