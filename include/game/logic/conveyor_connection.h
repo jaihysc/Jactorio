@@ -4,6 +4,8 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONNECTION_H
 #pragma once
 
+#include <memory>
+
 #include "core/data_type.h"
 
 namespace jactorio
