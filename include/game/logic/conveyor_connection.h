@@ -10,8 +10,9 @@ namespace jactorio
 {
     namespace proto
     {
+        enum class Orientation;
         struct ConveyorData;
-    }
+    } // namespace proto
 } // namespace jactorio
 
 namespace jactorio::game
@@ -72,7 +73,37 @@ namespace jactorio::game
     ///
     /// The conveyor structure can either be grouped with the conveyor structure ahead, behind,
     /// or a new conveyor structure created
-    void ConveyorCreate(WorldData& world, const WorldCoord& coord, proto::ConveyorData& conveyor);
+    /// \param direction Direction of conveyor
+    void ConveyorCreate(WorldData& world,
+                        const WorldCoord& coord,
+                        proto::ConveyorData& conveyor,
+                        proto::Orientation direction);
+
+
+    ///
+    /// Conveyor grows 1 tile longer in front of the current head
+    void ConveyorLengthenFront(ConveyorStruct& con_struct);
+
+    ///
+    /// Conveyor shrinks 1 tile shorter, the tile after the current head becomes the head
+    void ConveyorShortenFront(ConveyorStruct& con_struct);
+
+    ///
+    /// Removes conveyor to be considered for logic updates
+    void ConveyorLogicRemove(WorldData& world_data, const WorldCoord& world_coords, ConveyorStruct& con_struct);
+
+    // TODO split this into smaller functions
+    ///
+    /// Updates the tiles along a conveyor segment, props: line_segment_index, line_segment
+    /// \param world_coords Beginning tile to update
+    /// \param con_struct_p Beginning segment, traveling inverse Orientation line_segment.length tiles,
+    /// all tiles set to reference this
+    /// \param offset Offsets segment id numbering, world_coords must be also adjusted to the appropriate offset when
+    /// calling
+    void UpdateSegmentTiles(WorldData& world_data,
+                            const WorldCoord& world_coords,
+                            const std::shared_ptr<ConveyorStruct>& con_struct_p,
+                            int offset = 0);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONNECTION_H

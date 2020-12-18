@@ -9,8 +9,8 @@
 using namespace jactorio;
 
 ///
-/// Fetches struct at coord, nullptr if non existent
-static proto::ConveyorData* GetStruct(game::WorldData& world, const WorldCoord& coord) {
+/// Fetches conveyor data at coord, nullptr if non existent
+static proto::ConveyorData* GetConData(game::WorldData& world, const WorldCoord& coord) {
     auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return nullptr;
@@ -74,8 +74,8 @@ static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& n
 /// \tparam YOffset Offset applied to origin to get neighbor
 template <proto::Orientation OriginConnect, int XOffset, int YOffset>
 static void DoConnect(game::WorldData& world, const WorldCoord& coord) {
-    auto* current_struct = GetStruct(world, {coord.x, coord.y});
-    auto* neigh_struct   = GetStruct(world, {coord.x + XOffset, coord.y + YOffset});
+    auto* current_struct = GetConData(world, {coord.x, coord.y});
+    auto* neigh_struct   = GetConData(world, {coord.x + XOffset, coord.y + YOffset});
 
     if (current_struct == nullptr || neigh_struct == nullptr)
         return;
@@ -108,28 +108,134 @@ void game::ConveyorConnectLeft(WorldData& world, const WorldCoord& coord) {
 }
 
 
-void game::ConveyorCreate(WorldData& world, const WorldCoord& coord, proto::ConveyorData& conveyor) {
-    const auto direction = proto::ConveyorData::ToOrientation(conveyor.lOrien);
+void game::ConveyorCreate(WorldData& world,
+                          const WorldCoord& coord,
+                          proto::ConveyorData& conveyor,
+                          const proto::Orientation direction) {
 
+    /*
+     * Conveyor grouping rules:
+     *
+     * < < < [1, 2, 3] - Direction [order];
+     * Line ahead:
+     *		- Extends length of conveyor segment
+     *
+     * < < < [3, 2, 1]
+     * Line behind:
+     *		- Moves head of conveyor segment, shift leading item 1 tile back
+     *
+     * < < < [1, 3, 2]
+     * Line ahead and behind:
+     *		- Behaves as line ahead
+     */
 
-    auto get_ahead = [&world, direction](WorldCoord current_coord) {
+    auto& origin_chunk = *world.GetChunkW(coord);
+
+    auto get_ahead = [&world, direction, &origin_chunk](WorldCoord current_coord) -> proto::ConveyorData* {
         OrientationIncrement(direction, current_coord.x, current_coord.y, 1);
-        return GetStruct(world, current_coord);
+
+        // Grouping only allowed within the same chunk to guarantee a conveyor will be rendered
+        if (&origin_chunk != world.GetChunkW(current_coord)) {
+            return nullptr;
+        }
+
+        return GetConData(world, current_coord);
     };
 
-    // auto get_behind = [&world, coord, direction]() {
-    //     OrientationIncrement(direction, coord.x, coord.y, -1);
-    //     return GetStruct(world, coord);
-    // };
+    auto get_behind = [&world, direction, &origin_chunk](WorldCoord current_coord) -> proto::ConveyorData* {
+        OrientationIncrement(direction, current_coord.x, current_coord.y, -1);
+
+        if (&origin_chunk != world.GetChunkW(current_coord)) {
+            return nullptr;
+        }
+
+        return GetConData(world, current_coord);
+    };
+
+    // Group ahead
 
     auto* con_ahead = get_ahead(coord);
 
     if (con_ahead != nullptr) {
-        if (con_ahead->structure->direction == direction) {
+        auto& con_ahead_struct = *con_ahead->structure;
+        if (con_ahead_struct.direction == direction) {
             conveyor.structure = con_ahead->structure;
+
+            con_ahead_struct.length++;
+            conveyor.structIndex = con_ahead->structIndex + 1;
             return;
         }
     }
 
+
+    // Group behind
+
+    auto* con_behind = get_behind(coord);
+
+    if (con_behind != nullptr) {
+        auto& con_behind_struct = *con_behind->structure;
+        if (con_behind_struct.direction == direction) {
+            conveyor.structure = con_behind->structure;
+
+            // Move the conveyor behind's head forwards to current position
+            ConveyorLengthenFront(con_behind_struct);
+
+            // Remove old head from logic group, add new head which is now 1 tile ahead
+            ConveyorLogicRemove(world, coord, con_behind_struct);
+            world.LogicRegister(Chunk::LogicGroup::conveyor, coord, TileLayer::entity);
+
+            UpdateSegmentTiles(world, coord, conveyor.structure);
+            return;
+        }
+    }
+
+    // Create new conveyor
     conveyor.structure = std::make_shared<ConveyorStruct>(direction, ConveyorStruct::TerminationType::straight, 1);
+    world.LogicRegister(Chunk::LogicGroup::conveyor, coord, TileLayer::entity);
+}
+
+void game::ConveyorLengthenFront(ConveyorStruct& con_struct) {
+    con_struct.length++;
+    con_struct.itemOffset++;
+}
+
+void game::ConveyorShortenFront(ConveyorStruct& con_struct) {
+    con_struct.length--;
+    con_struct.itemOffset--;
+}
+
+void game::ConveyorLogicRemove(WorldData& world_data, const WorldCoord& world_coords, ConveyorStruct& con_struct) {
+    world_data.LogicRemove(Chunk::LogicGroup::conveyor, world_coords, [&](auto* t_layer) {
+        auto* line_data = t_layer->template GetUniqueData<proto::ConveyorData>();
+        return line_data->structure.get() == &con_struct;
+    });
+}
+
+void game::UpdateSegmentTiles(WorldData& world_data,
+                              const WorldCoord& world_coords,
+                              const std::shared_ptr<ConveyorStruct>& con_struct_p,
+                              const int offset) {
+    using OffsetT = ChunkCoordAxis;
+
+    OffsetT x_offset = 0;
+    OffsetT y_offset = 0;
+
+    // Should be -1, 0, 1 depending on orientation
+    OffsetT x_change = 0;
+    OffsetT y_change = 0;
+    OrientationIncrement(con_struct_p->direction, x_change, y_change, -1);
+
+    // Adjust the segment index number of all following segments
+    for (auto i = offset; i < con_struct_p->length; ++i) {
+        auto* i_line_data =
+            proto::Conveyor::GetLineData(world_data, world_coords.x + x_offset, world_coords.y + y_offset);
+        if (i_line_data == nullptr)
+            continue;
+
+        core::SafeCastAssign(i_line_data->structIndex, i);
+        i_line_data->structure = con_struct_p;
+
+        x_offset += x_change;
+        y_offset += y_change;
+    }
 }

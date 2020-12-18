@@ -44,23 +44,23 @@ namespace jactorio::game
         }
 
         ///
-        /// Checks if conveyor at current coords with l_orien grouped with conveyor at ahead_coord with ahead_orien
-        /// \return true if grouped ahead
-        J_NODISCARD bool TestGroupAhead(const WorldCoord ahead_coord,
-                                        const proto::Orientation ahead_orien,
-                                        const WorldCoord current_coord,
-                                        const proto::ConveyorData::LineOrientation l_orien) {
+        /// Checks if conveyor at current coords with l_orien grouped with other conveyor at other_coord with
+        /// other_orien
+        /// \return true if grouped
+        J_NODISCARD bool TestGrouping(const WorldCoord other_coord,
+                                      const proto::Orientation other_orien,
+                                      const WorldCoord current_coord,
+                                      const proto::Orientation direction) {
             WorldData world; // Cannot use test's world since this is building at the same tile multiple times
             world.EmplaceChunk(0, 0);
 
-            auto& con_struct_ahead = BuildStruct(world, ahead_coord, ahead_orien).structure;
+            auto& other_con_struct = BuildStruct(world, other_coord, other_orien).structure;
 
             proto::ConveyorData con_data;
-            con_data.lOrien = l_orien;
 
-            ConveyorCreate(world, current_coord, con_data);
+            ConveyorCreate(world, current_coord, con_data, direction);
 
-            return con_data.structure == con_struct_ahead;
+            return con_data.structure == other_con_struct;
         };
     };
 
@@ -215,24 +215,26 @@ namespace jactorio::game
 
     ///
     /// Using ahead conveyor structure in same direction is prioritized over creating a new conveyor structure
-    TEST_F(ConveyorConnectionTest, ConveyorCreateGetConveyorAhead) {
-
-        EXPECT_TRUE(TestGroupAhead({0, 0}, proto::Orientation::up, {0, 1}, proto::ConveyorData::LineOrientation::up));
-        EXPECT_TRUE(
-            TestGroupAhead({1, 0}, proto::Orientation::right, {0, 0}, proto::ConveyorData::LineOrientation::right));
-        EXPECT_TRUE(
-            TestGroupAhead({0, 1}, proto::Orientation::down, {0, 0}, proto::ConveyorData::LineOrientation::down));
-        EXPECT_TRUE(
-            TestGroupAhead({0, 0}, proto::Orientation::left, {1, 0}, proto::ConveyorData::LineOrientation::left));
+    TEST_F(ConveyorConnectionTest, ConveyorCreateGroupAhead) {
+        EXPECT_TRUE(TestGrouping({0, 0}, proto::Orientation::up, {0, 1}, proto::Orientation::up));
+        EXPECT_TRUE(TestGrouping({1, 0}, proto::Orientation::right, {0, 0}, proto::Orientation::right));
+        EXPECT_TRUE(TestGrouping({0, 1}, proto::Orientation::down, {0, 0}, proto::Orientation::down));
+        EXPECT_TRUE(TestGrouping({0, 0}, proto::Orientation::left, {1, 0}, proto::Orientation::left));
     }
 
     ///
     /// Cannot use ahead conveyor if it is in different direction
-    TEST_F(ConveyorConnectionTest, ConveyorCreateGetConveyorAheadDifferentDirection) {
-        EXPECT_FALSE(
-            TestGroupAhead({0, 0}, proto::Orientation::right, {0, 1}, proto::ConveyorData::LineOrientation::up));
-        EXPECT_FALSE(
-            TestGroupAhead({0, 0}, proto::Orientation::up, {0, 1}, proto::ConveyorData::LineOrientation::left_down));
+    TEST_F(ConveyorConnectionTest, ConveyorCreateGroupAheadDifferentDirection) {
+        EXPECT_FALSE(TestGrouping({0, 0}, proto::Orientation::right, {0, 1}, proto::Orientation::up));
+        EXPECT_FALSE(TestGrouping({0, 0}, proto::Orientation::up, {0, 1}, proto::Orientation::down));
     }
 
+    ///
+    /// Grouping with behind conveyor prioritized over creating a new conveyor structure
+    TEST_F(ConveyorConnectionTest, ConveyorCreateGroupBehind) {
+        EXPECT_TRUE(TestGrouping({0, 1}, proto::Orientation::up, {0, 0}, proto::Orientation::up));
+        EXPECT_TRUE(TestGrouping({0, 0}, proto::Orientation::right, {1, 0}, proto::Orientation::right));
+        EXPECT_TRUE(TestGrouping({0, 0}, proto::Orientation::down, {0, 1}, proto::Orientation::down));
+        EXPECT_TRUE(TestGrouping({1, 0}, proto::Orientation::left, {0, 0}, proto::Orientation::left));
+    }
 } // namespace jactorio::game
