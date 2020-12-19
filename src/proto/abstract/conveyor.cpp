@@ -5,8 +5,8 @@
 #include <array>
 #include <cmath>
 
-#include "game/logic/conveyor_connection.h"
 #include "game/logic/conveyor_struct.h"
+#include "game/logic/conveyor_utility.h"
 #include "game/world/world_data.h"
 #include "proto/sprite.h"
 #include "render/proto_renderer.h"

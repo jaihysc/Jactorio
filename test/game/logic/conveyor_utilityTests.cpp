@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "game/logic/conveyor_connection.h"
+#include "game/logic/conveyor_utility.h"
 
 #include <functional>
 #include <utility>

@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONNECTION_H
-#define JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONNECTION_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_UTILITY_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_UTILITY_H
 #pragma once
 
 #include <memory>
@@ -108,4 +108,4 @@ namespace jactorio::game
                             int offset = 0);
 } // namespace jactorio::game
 
-#endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONNECTION_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_UTILITY_H

@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "game/logic/conveyor_connection.h"
+#include "game/logic/conveyor_utility.h"
 
 #include "game/logic/conveyor_struct.h"
 #include "game/world/world_data.h"
