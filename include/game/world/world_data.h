@@ -219,6 +219,7 @@ namespace jactorio::game
         ///
         /// Returns all the chunks which require logic updates
         J_NODISCARD LogicChunkContainerT& LogicGetChunks();
+        J_NODISCARD const LogicChunkContainerT& LogicGetChunks() const;
 
         // ======================================================================
         // World generation

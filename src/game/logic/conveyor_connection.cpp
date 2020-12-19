@@ -36,6 +36,9 @@ static proto::ConveyorData* GetConData(game::WorldData& world, const WorldCoord&
 /// \tparam NeighborConnect Neighbor orientation required for neighbor to connect to origin
 template <proto::Orientation OriginConnect, proto::Orientation NeighborConnect>
 static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& neighbor) {
+    assert(origin.structure != nullptr);
+    assert(neighbor.structure != nullptr);
+
     auto& origin_struct   = *origin.structure;
     auto& neighbor_struct = *neighbor.structure;
 
@@ -157,6 +160,8 @@ void game::ConveyorCreate(WorldData& world,
     auto* con_ahead = get_ahead(coord);
 
     if (con_ahead != nullptr) {
+        assert(con_ahead->structure != nullptr);
+
         auto& con_ahead_struct = *con_ahead->structure;
         if (con_ahead_struct.direction == direction) {
             conveyor.structure = con_ahead->structure;
@@ -173,6 +178,8 @@ void game::ConveyorCreate(WorldData& world,
     auto* con_behind = get_behind(coord);
 
     if (con_behind != nullptr) {
+        assert(con_behind->structure != nullptr);
+
         auto& con_behind_struct = *con_behind->structure;
         if (con_behind_struct.direction == direction) {
             conveyor.structure = con_behind->structure;
@@ -229,8 +236,6 @@ void game::UpdateSegmentTiles(WorldData& world_data,
     for (auto i = offset; i < con_struct_p->length; ++i) {
         auto* i_line_data =
             proto::Conveyor::GetLineData(world_data, world_coords.x + x_offset, world_coords.y + y_offset);
-        if (i_line_data == nullptr)
-            continue;
 
         core::SafeCastAssign(i_line_data->structIndex, i);
         i_line_data->structure = con_struct_p;

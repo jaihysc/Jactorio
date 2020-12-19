@@ -273,6 +273,10 @@ void game::WorldData::LogicAddChunk(Chunk& chunk) {
 }
 
 game::WorldData::LogicChunkContainerT& game::WorldData::LogicGetChunks() {
+    return const_cast<LogicChunkContainerT&>(static_cast<const WorldData*>(this)->LogicGetChunks());
+}
+
+const game::WorldData::LogicChunkContainerT& game::WorldData::LogicGetChunks() const {
     return logicChunks_;
 }
 
