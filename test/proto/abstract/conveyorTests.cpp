@@ -987,7 +987,8 @@ namespace jactorio::proto
         /*
          * > /> > >
          */
-        BuildConveyor({0, 0}, Orientation::right);
+        auto& behind_con = BuildConveyor({0, 0}, Orientation::right);
+
         BuildConveyor({1, 0}, Orientation::right);
         BuildConveyor({2, 0}, Orientation::right);
         BuildConveyor({3, 0}, Orientation::right);
@@ -1001,6 +1002,8 @@ namespace jactorio::proto
         auto& behind_segment = GetSegment(tile_layers[1]);
         EXPECT_EQ(behind_segment.length, 1);
         EXPECT_EQ(behind_segment.itemOffset, 0); // Built 3 ahead: +3, remove at index 2: -2-1 = 0
+
+        EXPECT_EQ(behind_con.GetUniqueData<ConveyorData>()->structIndex, 0);
 
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
     }

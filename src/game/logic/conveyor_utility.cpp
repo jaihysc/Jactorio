@@ -191,7 +191,7 @@ void game::ConveyorCreate(WorldData& world,
             ConveyorLogicRemove(world, coord, con_behind_struct);
             world.LogicRegister(Chunk::LogicGroup::conveyor, coord, TileLayer::entity);
 
-            UpdateSegmentTiles(world, coord, conveyor.structure);
+            ConveyorRenumber(world, coord);
             return;
         }
     }
@@ -218,29 +218,34 @@ void game::ConveyorLogicRemove(WorldData& world_data, const WorldCoord& world_co
     });
 }
 
-void game::UpdateSegmentTiles(WorldData& world_data,
-                              const WorldCoord& world_coords,
-                              const std::shared_ptr<ConveyorStruct>& con_struct_p,
-                              const int offset) {
-    using OffsetT = ChunkCoordAxis;
+void game::ConveyorRenumber(WorldData& world, WorldCoord coord, const int start_id) {
+    auto* con_data = GetConData(world, coord);
+    assert(con_data != nullptr);
 
-    OffsetT x_offset = 0;
-    OffsetT y_offset = 0;
-
-    // Should be -1, 0, 1 depending on orientation
-    OffsetT x_change = 0;
-    OffsetT y_change = 0;
-    OrientationIncrement(con_struct_p->direction, x_change, y_change, -1);
-
-    // Adjust the segment index number of all following segments
-    for (auto i = offset; i < con_struct_p->length; ++i) {
-        auto* i_line_data =
-            proto::Conveyor::GetLineData(world_data, world_coords.x + x_offset, world_coords.y + y_offset);
+    for (auto i = start_id; i < con_data->structure->length; ++i) {
+        auto* i_line_data = GetConData(world, coord);
+        assert(i_line_data != nullptr);
 
         core::SafeCastAssign(i_line_data->structIndex, i);
+
+        OrientationIncrement(con_data->structure->direction, coord.x, coord.y, -1);
+    }
+}
+
+void game::ConveyorChangeStructure(WorldData& world,
+                                   WorldCoord coord,
+                                   const std::shared_ptr<ConveyorStruct>& con_struct_p) {
+    for (unsigned i = 0; i < con_struct_p->length; ++i) {
+        auto* i_line_data = GetConData(world, coord);
+        assert(i_line_data != nullptr);
+
         i_line_data->structure = con_struct_p;
 
-        x_offset += x_change;
-        y_offset += y_change;
+        // New segment should be in the same direction as the old segments
+        // It does not make sense to have a conveyor segment pointed up with
+        // its internal structure believing it moves right
+
+        assert(i_line_data->structure->direction == con_struct_p->direction);
+        OrientationIncrement(con_struct_p->direction, coord.x, coord.y, -1);
     }
 }

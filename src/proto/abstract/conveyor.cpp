@@ -286,7 +286,9 @@ void TryShiftSegment(game::WorldData& world_data,
     case LeftOnly:
     case RightOnly:
         ConveyorLengthenFront(*origin_segment);
-        UpdateSegmentTiles(world_data, origin_coords, origin_segment, 1);
+
+        // Id 0 belongs to the other conveyor segment, thus id at this coordinate is 1
+        ConveyorRenumber(world_data, origin_coords, 1);
         break;
 
     default:
@@ -346,112 +348,114 @@ void CalculateNeighborTermination(game::WorldData& world_data,
                                   const WorldCoord& origin_coord,
                                   const proto::ConveyorData::LineOrientation origin_line_orientation) {
 
-    auto bend_update = [&world_data](const WorldCoordAxis w_x,
-                                     const WorldCoordAxis w_y,
-                                     const game::ConveyorStruct::TerminationType new_ttype) {
+    ///
+    /// Updates neighbor at coordinates
+    auto change_ttype = [&world_data](const WorldCoordAxis w_x,
+                                      const WorldCoordAxis w_y,
+                                      const game::ConveyorStruct::TerminationType new_ttype) {
         auto* line_segment = proto::Conveyor::GetConveyorSegment(world_data, w_x, w_y);
-        if (line_segment) {
+        if (line_segment != nullptr) {
+            // If termination type is no longer straight, it its length is now +1 and must renumber all its tiles
+            // excluding id 0, since that belongs to its target
+
             if constexpr (!IsNeighborUpdate) {
                 ConveyorLengthenFront(**line_segment);
             }
             line_segment->get()->terminationType = new_ttype;
-
-            UpdateSegmentTiles(world_data, {w_x, w_y}, *line_segment, 1);
+            ConveyorRenumber(world_data, {w_x, w_y}, 1);
         }
     };
 
-    auto side_update = [&world_data](const WorldCoordAxis w_x,
-                                     const WorldCoordAxis w_y,
-                                     const proto::Orientation required_direction,
-                                     const game::ConveyorStruct::TerminationType new_ttype) {
+    ///
+    /// Updates neighbor at coordinates if it matches required_direction
+    auto try_change_ttype = [&world_data, &change_ttype](const WorldCoordAxis w_x,
+                                                         const WorldCoordAxis w_y,
+                                                         const proto::Orientation required_direction,
+                                                         const game::ConveyorStruct::TerminationType new_ttype) {
         auto* line_segment = proto::Conveyor::GetConveyorSegment(world_data, w_x, w_y);
-        if (line_segment) {
+
+        if (line_segment != nullptr) {
             if (line_segment->get()->direction != required_direction)
                 return;
-
-            if constexpr (!IsNeighborUpdate) {
-                ConveyorLengthenFront(**line_segment);
-            }
-            line_segment->get()->terminationType = new_ttype;
-
-            UpdateSegmentTiles(world_data, {w_x, w_y}, *line_segment, 1);
         }
+
+        change_ttype(w_x, w_y, new_ttype);
     };
 
     switch (origin_line_orientation) {
         // Up
     case proto::ConveyorData::LineOrientation::up_left:
-        bend_update(origin_coord.x, origin_coord.y + 1, game::ConveyorStruct::TerminationType::bend_left);
+        change_ttype(origin_coord.x, origin_coord.y + 1, game::ConveyorStruct::TerminationType::bend_left);
         break;
     case proto::ConveyorData::LineOrientation::up_right:
-        bend_update(origin_coord.x, origin_coord.y + 1, game::ConveyorStruct::TerminationType::bend_right);
+        change_ttype(origin_coord.x, origin_coord.y + 1, game::ConveyorStruct::TerminationType::bend_right);
         break;
 
         // Right
     case proto::ConveyorData::LineOrientation::right_up:
-        bend_update(origin_coord.x - 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_left);
+        change_ttype(origin_coord.x - 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_left);
         break;
     case proto::ConveyorData::LineOrientation::right_down:
-        bend_update(origin_coord.x - 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_right);
+        change_ttype(origin_coord.x - 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_right);
         break;
 
         // Down
     case proto::ConveyorData::LineOrientation::down_right:
-        bend_update(origin_coord.x, origin_coord.y - 1, game::ConveyorStruct::TerminationType::bend_left);
+        change_ttype(origin_coord.x, origin_coord.y - 1, game::ConveyorStruct::TerminationType::bend_left);
         break;
     case proto::ConveyorData::LineOrientation::down_left:
-        bend_update(origin_coord.x, origin_coord.y - 1, game::ConveyorStruct::TerminationType::bend_right);
+        change_ttype(origin_coord.x, origin_coord.y - 1, game::ConveyorStruct::TerminationType::bend_right);
         break;
 
         // Left
     case proto::ConveyorData::LineOrientation::left_down:
-        bend_update(origin_coord.x + 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_left);
+        change_ttype(origin_coord.x + 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_left);
         break;
     case proto::ConveyorData::LineOrientation::left_up:
-        bend_update(origin_coord.x + 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_right);
+        change_ttype(origin_coord.x + 1, origin_coord.y, game::ConveyorStruct::TerminationType::bend_right);
         break;
 
 
         // Straight (Check for conveyors on both sides to make side only)
     case proto::ConveyorData::LineOrientation::up:
-        side_update(origin_coord.x - 1,
-                    origin_coord.y,
-                    proto::Orientation::right,
-                    game::ConveyorStruct::TerminationType::left_only);
-        side_update(origin_coord.x + 1,
-                    origin_coord.y,
-                    proto::Orientation::left,
-                    game::ConveyorStruct::TerminationType::right_only);
+        try_change_ttype(origin_coord.x - 1,
+                         origin_coord.y,
+                         proto::Orientation::right,
+                         game::ConveyorStruct::TerminationType::left_only);
+        try_change_ttype(origin_coord.x + 1,
+                         origin_coord.y,
+                         proto::Orientation::left,
+                         game::ConveyorStruct::TerminationType::right_only);
         break;
     case proto::ConveyorData::LineOrientation::right:
-        side_update(origin_coord.x,
-                    origin_coord.y - 1,
-                    proto::Orientation::down,
-                    game::ConveyorStruct::TerminationType::left_only);
-        side_update(origin_coord.x,
-                    origin_coord.y + 1,
-                    proto::Orientation::up,
-                    game::ConveyorStruct::TerminationType::right_only);
+        try_change_ttype(origin_coord.x,
+                         origin_coord.y - 1,
+                         proto::Orientation::down,
+                         game::ConveyorStruct::TerminationType::left_only);
+        try_change_ttype(origin_coord.x,
+                         origin_coord.y + 1,
+                         proto::Orientation::up,
+                         game::ConveyorStruct::TerminationType::right_only);
         break;
     case proto::ConveyorData::LineOrientation::down:
-        side_update(origin_coord.x - 1,
-                    origin_coord.y,
-                    proto::Orientation::right,
-                    game::ConveyorStruct::TerminationType::right_only);
-        side_update(origin_coord.x + 1,
-                    origin_coord.y,
-                    proto::Orientation::left,
-                    game::ConveyorStruct::TerminationType::left_only);
+        try_change_ttype(origin_coord.x - 1,
+                         origin_coord.y,
+                         proto::Orientation::right,
+                         game::ConveyorStruct::TerminationType::right_only);
+        try_change_ttype(origin_coord.x + 1,
+                         origin_coord.y,
+                         proto::Orientation::left,
+                         game::ConveyorStruct::TerminationType::left_only);
         break;
     case proto::ConveyorData::LineOrientation::left:
-        side_update(origin_coord.x,
-                    origin_coord.y - 1,
-                    proto::Orientation::down,
-                    game::ConveyorStruct::TerminationType::right_only);
-        side_update(origin_coord.x,
-                    origin_coord.y + 1,
-                    proto::Orientation::up,
-                    game::ConveyorStruct::TerminationType::left_only);
+        try_change_ttype(origin_coord.x,
+                         origin_coord.y - 1,
+                         proto::Orientation::down,
+                         game::ConveyorStruct::TerminationType::right_only);
+        try_change_ttype(origin_coord.x,
+                         origin_coord.y + 1,
+                         proto::Orientation::up,
+                         game::ConveyorStruct::TerminationType::left_only);
         break;
     }
 }
@@ -575,8 +579,7 @@ void DisconnectSegment(game::WorldData& world_data,
 
         // Renumber segments following origin from index 0, formerly 1
         OrientationIncrement(neighbor_segment.direction, origin_coord.x, origin_coord.y, -1.f);
-
-        UpdateSegmentTiles(world_data, origin_coord, neighbor_segment_p);
+        ConveyorRenumber(world_data, origin_coord);
         break;
 
     default:
@@ -638,7 +641,9 @@ void proto::Conveyor::OnRemove(game::WorldData& world_data,
         // ======================================================================
 
         // Update trailing segments to use new segment and renumber
-        UpdateSegmentTiles(world_data, n_seg_coords, n_segment);
+        ConveyorChangeStructure(world_data, n_seg_coords, n_segment);
+        ConveyorRenumber(world_data, n_seg_coords);
+
 
         // Update other segments leading into old segment
         // TODO improve this algorithm for updating target segments

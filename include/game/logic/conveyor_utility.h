@@ -94,18 +94,18 @@ namespace jactorio::game
     /// Removes conveyor to be considered for logic updates
     void ConveyorLogicRemove(WorldData& world_data, const WorldCoord& world_coords, ConveyorStruct& con_struct);
 
-    // TODO split this into smaller functions
     ///
-    /// Updates the tiles along a conveyor segment, props: line_segment_index, line_segment
-    /// \param world_coords Beginning tile to update
-    /// \param con_struct_p Beginning segment, traveling inverse Orientation line_segment.length tiles,
-    /// all tiles set to reference this
-    /// \param offset Offsets segment id numbering, world_coords must be also adjusted to the appropriate offset when
-    /// calling
-    void UpdateSegmentTiles(WorldData& world_data,
-                            const WorldCoord& world_coords,
-                            const std::shared_ptr<ConveyorStruct>& con_struct_p,
-                            int offset = 0);
+    /// Renumbers structIndex for tiles along a conveyor segment at provided coords
+    /// \param start_id Id for current coordinate, renumber stops when start_id + 1 >= con_struct length
+    void ConveyorRenumber(WorldData& world, WorldCoord coord, int start_id = 0);
+
+    ///
+    /// Changes the conveyor structure for a conveyor segment
+    /// Updates tiles equal to provided con struct's length
+    /// \param con_struct_p Structure to change to
+    void ConveyorChangeStructure(WorldData& world,
+                                 WorldCoord coord,
+                                 const std::shared_ptr<ConveyorStruct>& con_struct_p);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_UTILITY_H
