@@ -546,116 +546,18 @@ void proto::Conveyor::OnNeighborUpdate(game::WorldData& world_data,
 // ======================================================================
 // Remove
 
-
-double ToChunkOffset(const WorldCoordAxis world_coord) {
-    return fabs(game::WorldData::WorldCToChunkC(world_coord) * game::Chunk::kChunkWidth - world_coord);
-}
-
+// TODO remove tile layer from event? or rename to shorter names
 void proto::Conveyor::OnRemove(game::WorldData& world_data,
                                game::LogicData& /*logic_data*/,
                                const WorldCoord& world_coords,
-                               game::ChunkTileLayer& tile_layer) const {
+                               game::ChunkTileLayer& /*tile_layer*/) const {
     const auto line_data_4 = GetLineData4(world_data, world_coords);
 
 
     CalculateNeighborLineOrientation(world_data, world_coords, line_data_4, nullptr);
     ConveyorDisconnect(world_data, world_coords);
 
-    auto& chunk = *world_data.GetChunkW(world_coords);
-
-    // o_ = old
-    // n_ = new
-
-    auto& o_line_data          = *tile_layer.GetUniqueData<ConveyorData>();
-    const auto& o_line_segment = o_line_data.structure;
-
-    auto n_seg_coords = world_coords;
-
-    OrientationIncrement(o_line_segment->direction, n_seg_coords.x, n_seg_coords.y, -1);
-
-    // Create new segment at behind cords if not the end of a segment
-    const auto n_seg_length = o_line_segment->length - o_line_data.structIndex - 1;
-    if (n_seg_length > 0) {
-        // Create new segment
-        const auto n_segment = std::make_shared<game::ConveyorStruct>(
-            o_line_segment->direction, game::ConveyorStruct::TerminationType::straight, n_seg_length);
-        n_segment->itemOffset = o_line_segment->itemOffset - o_line_data.structIndex - 1;
-
-
-        // Add to be considered for logic updates
-        chunk.GetLogicGroup(game::Chunk::LogicGroup::conveyor)
-            .emplace_back(&world_data.GetTile(n_seg_coords)->GetLayer(game::TileLayer::entity));
-
-        // ======================================================================
-
-        // Update trailing segments to use new segment and renumber
-        ConveyorChangeStructure(world_data, n_seg_coords, n_segment);
-        ConveyorRenumber(world_data, n_seg_coords);
-
-
-        // Update other segments leading into old segment
-        // TODO improve this algorithm for updating target segments
-        for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
-            auto& layer = chunk.Tiles()[i].GetLayer(game::TileLayer::entity);
-            if ((layer.prototypeData.Get() == nullptr) ||
-                layer.prototypeData->GetCategory() != Category::transport_belt)
-                continue;
-
-            const auto& line_segment = layer.GetUniqueData<ConveyorData>()->structure.get();
-
-
-            const auto position_x = i % game::Chunk::kChunkWidth;
-            const auto position_y = i / game::Chunk::kChunkWidth;
-            bool valid_neighbor   = false; // Neighbor must be BEHIND the segment which was removed
-            switch (o_line_segment->direction) {
-            case Orientation::up:
-                valid_neighbor = position_y > ToChunkOffset(world_coords.y);
-                break;
-            case Orientation::right:
-                valid_neighbor = position_x < ToChunkOffset(world_coords.x);
-                break;
-            case Orientation::down:
-                valid_neighbor = position_y < ToChunkOffset(world_coords.y);
-                break;
-            case Orientation::left:
-                valid_neighbor = position_x > ToChunkOffset(world_coords.x);
-                break;
-            }
-
-            if (valid_neighbor && line_segment->target == o_line_segment.get()) {
-                line_segment->target = n_segment.get();
-            }
-        }
-
-
-        // Update segment in neighboring logic chunk leading into old_segment
-        ChunkCoord neighbor_chunk_coords = chunk.GetPosition();
-        OrientationIncrement(o_line_segment->direction, neighbor_chunk_coords.x, neighbor_chunk_coords.y, -1);
-
-        auto* neighbor_l_chunk = world_data.GetChunkC(neighbor_chunk_coords);
-        if (neighbor_l_chunk != nullptr) {
-            for (auto& t_line : neighbor_l_chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor)) {
-                const auto& i_segment = t_line->GetUniqueData<ConveyorData>()->structure;
-
-                if (i_segment->target == o_line_segment.get()) {
-                    i_segment->target = n_segment.get();
-                }
-            }
-        }
-    }
-
-    // Remove original conveyor segment referenced in ConveyorData if is head of segment
-    // If not head, reduce the length of original segment to index + 1
-    if (o_line_data.structIndex == 0 ||
-        (o_line_data.structIndex == 1 &&
-         o_line_segment->terminationType != // Head of bending segments start at 1
-             game::ConveyorStruct::TerminationType::straight)) {
-
-        ConveyorLogicRemove(world_data, world_coords, *o_line_segment);
-    }
-    else {
-        o_line_segment->length = o_line_data.structIndex;
-    }
+    ConveyorRemove(world_data, world_coords);
 }
 
 void proto::Conveyor::OnDeserialize(game::WorldData& world_data,

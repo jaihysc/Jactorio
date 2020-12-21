@@ -371,19 +371,64 @@ namespace jactorio::game
         EXPECT_EQ(con_data_3.structIndex, 7);
     }
 
-    TEST_F(ConveyorConnectionTest, ConveyorChangeStructure) {
-        auto& con_struct   = CreateConveyor(worldData_, {5, 5}, proto::Orientation::up).structure;
-        con_struct->length = 3;
+    TEST_F(ConveyorConnectionTest, ChangeStructure) {
+        auto& new_con_struct   = CreateConveyor(worldData_, {5, 5}, proto::Orientation::up).structure;
+        new_con_struct->length = 3;
 
 
-        auto& con_data_1 = CreateConveyor(worldData_, {0, 0}, proto::Orientation::up);
+        auto& con_data_h             = CreateConveyor(worldData_, {0, 0}, proto::Orientation::up);
+        con_data_h.structure->length = 3;
 
-        auto& con_data_2 = CreateConveyor(worldData_, {0, 1}, proto::Orientation::up);
-        auto& con_data_3 = CreateConveyor(worldData_, {0, 2}, proto::Orientation::up);
+        auto& con_data_2 = BuildConveyor(worldData_, {0, 1}, con_data_h.structure);
+        auto& con_data_3 = BuildConveyor(worldData_, {0, 2}, con_data_h.structure);
 
-        ConveyorChangeStructure(worldData_, {0, 0}, con_struct);
-        EXPECT_EQ(con_data_1.structure, con_struct);
-        EXPECT_EQ(con_data_2.structure, con_struct);
-        EXPECT_EQ(con_data_3.structure, con_struct);
+        ConveyorChangeStructure(worldData_, {0, 0}, new_con_struct);
+        EXPECT_EQ(con_data_h.structure, new_con_struct);
+        EXPECT_EQ(con_data_2.structure, new_con_struct);
+        EXPECT_EQ(con_data_3.structure, new_con_struct);
+    }
+
+    ///
+    /// When changing structure, other structures which has the old structure as a target must be updated
+    /// to use the new structure
+    TEST_F(ConveyorConnectionTest, ChangeStructureUpdateTargets) {
+        worldData_.EmplaceChunk(0, -1);
+
+        auto& new_con_struct   = CreateConveyor(worldData_, {5, 5}, proto::Orientation::left).structure;
+        new_con_struct->length = 3;
+
+
+        auto& con_data_h             = CreateConveyor(worldData_, {0, 0}, proto::Orientation::left);
+        con_data_h.structure->length = 999; // Should use length of new con struct, not old
+
+        BuildConveyor(worldData_, {1, 0}, con_data_h.structure);
+        BuildConveyor(worldData_, {2, 0}, con_data_h.structure);
+
+
+        auto create_dependee_conveyor = [&](const WorldCoord& coord) -> proto::ConveyorData& {
+            auto& dependee = CreateConveyor(worldData_,
+                                            coord,
+                                            // Orientation does not matter, it determines if is dependee based on target
+                                            proto::Orientation::up,
+                                            ConveyorStruct::TerminationType::straight);
+
+            dependee.structure->target = con_data_h.structure.get();
+
+            return dependee;
+        };
+
+        // Dependee conveyors
+        auto& d_con_data_1 = create_dependee_conveyor({0, -1});
+        auto& d_con_data_2 = create_dependee_conveyor({1, 1});
+        auto& d_con_data_3 = create_dependee_conveyor({2, -1});
+        auto& d_con_data_4 = create_dependee_conveyor({3, 0});
+
+
+        ConveyorChangeStructure(worldData_, {0, 0}, new_con_struct);
+
+        EXPECT_EQ(d_con_data_1.structure->target, new_con_struct.get());
+        EXPECT_EQ(d_con_data_2.structure->target, new_con_struct.get());
+        EXPECT_EQ(d_con_data_3.structure->target, new_con_struct.get());
+        EXPECT_EQ(d_con_data_4.structure->target, new_con_struct.get());
     }
 } // namespace jactorio::game

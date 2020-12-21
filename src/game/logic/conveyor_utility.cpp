@@ -267,6 +267,56 @@ void game::ConveyorCreate(WorldData& world,
     world.LogicRegister(Chunk::LogicGroup::conveyor, coord, TileLayer::entity);
 }
 
+void game::ConveyorRemove(WorldData& world, const WorldCoord& coord) {
+    // o_ = old
+    // n_ = new
+
+    auto* o_line_data = GetConData(world, coord);
+    assert(o_line_data != nullptr);
+
+    const auto& o_line_segment = o_line_data->structure;
+
+    // ======================================================================
+
+    // Create new segment at behind cords if not the end of a segment
+
+    auto n_seg_coords = coord;
+    OrientationIncrement(o_line_segment->direction, n_seg_coords.x, n_seg_coords.y, -1);
+
+    const auto n_seg_length = o_line_segment->length - o_line_data->structIndex - 1;
+
+    if (n_seg_length > 0) {
+        const auto n_segment = std::make_shared<ConveyorStruct>(
+            o_line_segment->direction, ConveyorStruct::TerminationType::straight, n_seg_length);
+
+        // -1 to skip tile which was removed
+        n_segment->itemOffset = o_line_segment->itemOffset - o_line_data->structIndex - 1;
+
+        world.LogicRegister(Chunk::LogicGroup::conveyor, n_seg_coords, TileLayer::entity);
+
+        // Update trailing segments to use new segment and renumber
+        ConveyorChangeStructure(world, n_seg_coords, n_segment);
+        ConveyorRenumber(world, n_seg_coords);
+    }
+
+
+    // ======================================================================
+
+    // Remove original conveyor segment from logic updates if removed tile was head of segment
+    // If not head, reduce the length of original segment to match new length
+    if (o_line_data->structIndex == 0 ||
+        // Head of bending segments start at 1
+        (o_line_data->structIndex == 1 &&
+         o_line_segment->terminationType != ConveyorStruct::TerminationType::straight)) {
+
+        ConveyorLogicRemove(world, coord, *o_line_segment);
+    }
+    else {
+        o_line_segment->length = o_line_data->structIndex;
+    }
+}
+
+
 void game::ConveyorLengthenFront(ConveyorStruct& con_struct) {
     con_struct.length++;
     con_struct.itemOffset++;
@@ -298,20 +348,85 @@ void game::ConveyorRenumber(WorldData& world, WorldCoord coord, const int start_
     }
 }
 
+
+///
+/// If current tile has structure which has old_con_struct as a target, change to new_con_struct
+void ChangeTargetSingle(game::WorldData& world,
+                        const WorldCoord& coord,
+                        const game::ConveyorStruct& old_con_struct,
+                        game::ConveyorStruct& new_con_struct) {
+    auto* con_data = GetConData(world, coord);
+
+    if (con_data != nullptr && con_data->structure->target == &old_con_struct) {
+        con_data->structure->target = &new_con_struct;
+    }
+}
+
+///
+/// Change structures which has old_con_struct as a target to new_con_struct
+/// \param coord Coordinate to begin, incrementing in opposite direction of old_con_struct, old_con_struct.length times
+void ChangeTarget(game::WorldData& world,
+                  WorldCoord coord,
+                  const game::ConveyorStruct& old_con_struct,
+                  game::ConveyorStruct& new_con_struct) {
+
+    for (unsigned i = 0; i < old_con_struct.length; ++i) {
+        ChangeTargetSingle(world, coord, old_con_struct, new_con_struct);
+
+        OrientationIncrement(old_con_struct.direction, coord.x, coord.y, -1);
+    }
+}
+
 void game::ConveyorChangeStructure(WorldData& world,
                                    WorldCoord coord,
                                    const std::shared_ptr<ConveyorStruct>& con_struct_p) {
-    for (unsigned i = 0; i < con_struct_p->length; ++i) {
-        auto* i_line_data = GetConData(world, coord);
-        assert(i_line_data != nullptr);
 
-        i_line_data->structure = con_struct_p;
+    // Update targets of neighbor structures which has old structure as a target
+
+    auto* head_con_data = GetConData(world, coord);
+    assert(head_con_data != nullptr);
+
+    switch (con_struct_p->direction) {
+
+    case proto::Orientation::up:
+    case proto::Orientation::down:
+        ChangeTarget(world, {coord.x - 1, coord.y}, *head_con_data->structure, *con_struct_p);
+        ChangeTarget(world, {coord.x + 1, coord.y}, *head_con_data->structure, *con_struct_p);
+        break;
+
+    case proto::Orientation::right:
+    case proto::Orientation::left:
+        ChangeTarget(world, {coord.x, coord.y - 1}, *head_con_data->structure, *con_struct_p);
+        ChangeTarget(world, {coord.x, coord.y + 1}, *head_con_data->structure, *con_struct_p);
+        break;
+
+    default:
+        assert(false);
+    }
+
+    // Update the tile after the end of the NEW segment as they may be another con struct there
+    {
+        WorldCoord past_end_coord = coord;
+        OrientationIncrement(con_struct_p->direction, past_end_coord.x, past_end_coord.y, con_struct_p->length * -1);
+
+        ChangeTargetSingle(world, past_end_coord, *head_con_data->structure, *con_struct_p);
+    }
+
+
+    // Change structure
+    for (unsigned i = 0; i < con_struct_p->length; ++i) {
+        auto* i_con_data = GetConData(world, coord);
+        assert(i_con_data != nullptr);
+
 
         // New segment should be in the same direction as the old segments
         // It does not make sense to have a conveyor segment pointed up with
         // its internal structure believing it moves right
 
-        assert(i_line_data->structure->direction == con_struct_p->direction);
+        assert(i_con_data->structure->direction == con_struct_p->direction);
+
+        i_con_data->structure = con_struct_p;
+
         OrientationIncrement(con_struct_p->direction, coord.x, coord.y, -1);
     }
 }

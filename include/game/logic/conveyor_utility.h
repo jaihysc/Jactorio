@@ -85,6 +85,12 @@ namespace jactorio::game
                         proto::ConveyorData& conveyor,
                         proto::Orientation direction);
 
+    ///
+    /// Removes conveyor structure at provided coordinates
+    ///
+    /// Will ungroup the segment as necessary
+    void ConveyorRemove(WorldData& world, const WorldCoord& coord);
+
 
     ///
     /// Conveyor grows 1 tile longer in front of the current head
@@ -104,7 +110,8 @@ namespace jactorio::game
     void ConveyorRenumber(WorldData& world, WorldCoord coord, int start_id = 0);
 
     ///
-    /// Changes the conveyor structure for a conveyor segment
+    /// Changes the conveyor structure for a conveyor segment, updates neighboring structure's targets
+    /// if they used the old conveyor structure.
     /// Updates tiles equal to provided con struct's length
     /// \param con_struct_p Structure to change to
     void ConveyorChangeStructure(WorldData& world,
