@@ -122,8 +122,6 @@ void DisconnectSegment(game::WorldData& world, const WorldCoord& origin_coord, c
     if (neighbor_data == nullptr)
         return;
 
-    origin_data->structure->target = nullptr;
-
     // Neighbor target current, must adjust termination type of neighbor
     if (neighbor_data->structure->target == origin_data->structure.get()) {
         auto& neighbor_struct = *neighbor_data->structure;

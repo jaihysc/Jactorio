@@ -226,6 +226,17 @@ namespace jactorio::game
     //
 
     TEST_F(ConveyorConnectionTest, DisconnectUpToNeighbor) {
+        auto& con_struct        = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::down).structure;
+        auto& con_struct_behind = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
+
+        con_struct_behind.target = &con_struct;
+
+        ConveyorDisconnectUp(worldData_, {0, 1});
+
+        EXPECT_EQ(con_struct_behind.target, nullptr);
+    }
+
+    TEST_F(ConveyorConnectionTest, DisconnectUpNoDisconnectSelf) {
         auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
         auto& con_struct       = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
 
@@ -233,7 +244,7 @@ namespace jactorio::game
 
         ConveyorDisconnectUp(worldData_, {0, 1});
 
-        EXPECT_EQ(con_struct.target, nullptr);
+        EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
 
     ///
@@ -258,36 +269,36 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorConnectionTest, DisconnectRightToNeighbor) {
-        auto& con_struct_ahead = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::right).structure;
-        auto& con_struct       = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::right).structure;
+        auto& con_struct        = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::left).structure;
+        auto& con_struct_behind = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::left).structure;
 
-        con_struct.target = &con_struct_ahead;
+        con_struct_behind.target = &con_struct;
 
         ConveyorDisconnectRight(worldData_, {0, 0});
 
-        EXPECT_EQ(con_struct.target, nullptr);
+        EXPECT_EQ(con_struct_behind.target, nullptr);
     }
 
     TEST_F(ConveyorConnectionTest, DisconnectDownToNeighbor) {
-        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::down).structure;
-        auto& con_struct       = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
+        auto& con_struct        = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
+        auto& con_struct_behind = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
 
-        con_struct.target = &con_struct_ahead;
+        con_struct_behind.target = &con_struct;
 
         ConveyorDisconnectDown(worldData_, {0, 0});
 
-        EXPECT_EQ(con_struct.target, nullptr);
+        EXPECT_EQ(con_struct_behind.target, nullptr);
     }
 
     TEST_F(ConveyorConnectionTest, DisconnectLeftToNeighbor) {
-        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::left).structure;
-        auto& con_struct       = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::left).structure;
+        auto& con_struct        = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::right).structure;
+        auto& con_struct_behind = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::right).structure;
 
-        con_struct.target = &con_struct_ahead;
+        con_struct_behind.target = &con_struct;
 
         ConveyorDisconnectLeft(worldData_, {1, 0});
 
-        EXPECT_EQ(con_struct.target, nullptr);
+        EXPECT_EQ(con_struct_behind.target, nullptr);
     }
 
     //

@@ -54,22 +54,22 @@ namespace jactorio::game
     void ConveyorDisconnect(WorldData& world, const WorldCoord& coord);
 
     ///
-    /// Attempts to disconnect between connected conveyor segment above
+    /// Attempts to disconnect conveyor segment above
     /// \param coord Current struct's coordinate
     void ConveyorDisconnectUp(WorldData& world, const WorldCoord& coord);
 
     ///
-    /// Attempts to disconnect between connected conveyor segment to right
+    /// Attempts to disconnect conveyor segment to right
     /// \param coord Current struct's coordinate
     void ConveyorDisconnectRight(WorldData& world, const WorldCoord& coord);
 
     ///
-    /// Attempts to disconnect between connected conveyor segment below
+    /// Attempts to disconnect conveyor segment below
     /// \param coord Current struct's coordinate
     void ConveyorDisconnectDown(WorldData& world, const WorldCoord& coord);
 
     ///
-    /// Attempts to disconnect between connected conveyor segment to left
+    /// Attempts to disconnect conveyor segment to left
     /// \param coord Current struct's coordinate
     void ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord);
 
