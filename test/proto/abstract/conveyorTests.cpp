@@ -898,8 +898,9 @@ namespace jactorio::proto
     // ======================================================================
     // Connecting segments
 
-    TEST_F(ConveyorTest, OnRemoveSetNeighborTargetSegment) {
-        // After removing a conveyor, anything that points to it as a target_segment needs to be set to NULL
+    ///
+    /// After removing a conveyor, anything that points to it as a target needs to be set to NULL
+    TEST_F(ConveyorTest, OnRemoveDisconnectTargets) {
         BuildConveyor({0, 0}, Orientation::left);
         BuildConveyor({0, 1}, Orientation::up);
 

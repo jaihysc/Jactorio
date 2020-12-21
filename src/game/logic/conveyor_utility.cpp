@@ -10,7 +10,7 @@ using namespace jactorio;
 
 ///
 /// Fetches conveyor data at coord, nullptr if non existent
-static proto::ConveyorData* GetConData(game::WorldData& world, const WorldCoord& coord) {
+J_NODISCARD static proto::ConveyorData* GetConData(game::WorldData& world, const WorldCoord& coord) {
     auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return nullptr;
@@ -108,6 +108,72 @@ void game::ConveyorConnectDown(WorldData& world, const WorldCoord& coord) {
 
 void game::ConveyorConnectLeft(WorldData& world, const WorldCoord& coord) {
     DoConnect<proto::Orientation::left, -1, 0>(world, coord);
+}
+
+
+///
+/// Disconnects segments and adjusts segment termination type accordingly
+void DisconnectSegment(game::WorldData& world, const WorldCoord& origin_coord, const WorldCoord& neighbor_coord) {
+    auto* origin_data   = GetConData(world, origin_coord);
+    auto* neighbor_data = GetConData(world, neighbor_coord);
+
+    assert(origin_data != nullptr);
+
+    if (neighbor_data == nullptr)
+        return;
+
+    origin_data->structure->target = nullptr;
+
+    // Neighbor target current, must adjust termination type of neighbor
+    if (neighbor_data->structure->target == origin_data->structure.get()) {
+        auto& neighbor_struct = *neighbor_data->structure;
+
+        neighbor_struct.target = nullptr;
+
+
+        switch (neighbor_struct.terminationType) {
+
+            // Convert bend to straight
+        case game::ConveyorStruct::TerminationType::bend_left:
+        case game::ConveyorStruct::TerminationType::bend_right:
+        case game::ConveyorStruct::TerminationType::right_only:
+        case game::ConveyorStruct::TerminationType::left_only:
+
+            ConveyorShortenFront(neighbor_struct);
+            neighbor_struct.terminationType = game::ConveyorStruct::TerminationType::straight;
+
+            // Renumber tiles following head of neighboring segment from index 0, formerly 1
+            ConveyorRenumber(world, neighbor_coord);
+            break;
+
+        default:
+            // Does not bend
+            break;
+        }
+    }
+}
+
+void game::ConveyorDisconnect(WorldData& world, const WorldCoord& coord) {
+    ConveyorDisconnectUp(world, coord);
+    ConveyorDisconnectRight(world, coord);
+    ConveyorDisconnectDown(world, coord);
+    ConveyorDisconnectLeft(world, coord);
+}
+
+void game::ConveyorDisconnectUp(WorldData& world, const WorldCoord& coord) {
+    DisconnectSegment(world, coord, {coord.x, coord.y - 1});
+}
+
+void game::ConveyorDisconnectRight(WorldData& world, const WorldCoord& coord) {
+    DisconnectSegment(world, coord, {coord.x + 1, coord.y});
+}
+
+void game::ConveyorDisconnectDown(WorldData& world, const WorldCoord& coord) {
+    DisconnectSegment(world, coord, {coord.x, coord.y + 1});
+}
+
+void game::ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord) {
+    DisconnectSegment(world, coord, {coord.x - 1, coord.y});
 }
 
 

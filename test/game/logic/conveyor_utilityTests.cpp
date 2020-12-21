@@ -179,8 +179,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_u.targetInsertOffset, 10);
     }
 
-    // ======================================================================
-
     ///
     /// A conveyor pointing to another one will set the target of the former to the latter
     TEST_F(ConveyorConnectionTest, ConnectRightLeading) {
@@ -193,8 +191,6 @@ namespace jactorio::game
 
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
-
-    // ======================================================================
 
     ///
     /// A conveyor pointing to another one will set the target of the former to the latter
@@ -210,8 +206,6 @@ namespace jactorio::game
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
 
-    // ======================================================================
-
     ///
     /// A conveyor pointing to another one will set the target of the former to the latter
     TEST_F(ConveyorConnectionTest, ConnectLeftLeading) {
@@ -223,6 +217,77 @@ namespace jactorio::game
         ConveyorConnectLeft(worldData_, {1, 0});
 
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
+    }
+
+    //
+    //
+    //
+    //
+    //
+
+    TEST_F(ConveyorConnectionTest, DisconnectUpToNeighbor) {
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
+
+        con_struct.target = &con_struct_ahead;
+
+        ConveyorDisconnectUp(worldData_, {0, 1});
+
+        EXPECT_EQ(con_struct.target, nullptr);
+    }
+
+    ///
+    /// If neighbor segment connects to current and bends, the bend must be removed after disconnecting
+    TEST_F(ConveyorConnectionTest, DisconnectUpFromNeighborBending) {
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::right).structure;
+
+        con_struct_ahead.target          = &con_struct;
+        con_struct_ahead.terminationType = ConveyorStruct::TerminationType::bend_left;
+
+        con_struct_ahead.length     = 2;
+        con_struct_ahead.itemOffset = 1;
+
+
+        ConveyorDisconnectUp(worldData_, {0, 1});
+
+        EXPECT_EQ(con_struct_ahead.target, nullptr);
+        EXPECT_EQ(con_struct_ahead.terminationType, ConveyorStruct::TerminationType::straight);
+        EXPECT_EQ(con_struct_ahead.length, 1);
+        EXPECT_EQ(con_struct_ahead.itemOffset, 0);
+    }
+
+    TEST_F(ConveyorConnectionTest, DisconnectRightToNeighbor) {
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::right).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::right).structure;
+
+        con_struct.target = &con_struct_ahead;
+
+        ConveyorDisconnectRight(worldData_, {0, 0});
+
+        EXPECT_EQ(con_struct.target, nullptr);
+    }
+
+    TEST_F(ConveyorConnectionTest, DisconnectDownToNeighbor) {
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::down).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
+
+        con_struct.target = &con_struct_ahead;
+
+        ConveyorDisconnectDown(worldData_, {0, 0});
+
+        EXPECT_EQ(con_struct.target, nullptr);
+    }
+
+    TEST_F(ConveyorConnectionTest, DisconnectLeftToNeighbor) {
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::left).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::left).structure;
+
+        con_struct.target = &con_struct_ahead;
+
+        ConveyorDisconnectLeft(worldData_, {1, 0});
+
+        EXPECT_EQ(con_struct.target, nullptr);
     }
 
     //

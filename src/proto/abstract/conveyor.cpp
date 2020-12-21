@@ -546,57 +546,6 @@ void proto::Conveyor::OnNeighborUpdate(game::WorldData& world_data,
 // ======================================================================
 // Remove
 
-///
-/// Updates neighboring segments after conveyor is removed
-/// \param origin_coord Coords of origin_segment
-/// \param origin_data Removed line segment data
-/// \param neighbor_data Neighboring line segment data
-void DisconnectSegment(game::WorldData& world_data,
-                       WorldCoord origin_coord,
-                       proto::ConveyorData* origin_data,
-                       proto::ConveyorData* neighbor_data) {
-
-
-    // Neighbor must target origin segment
-    if ((neighbor_data == nullptr) || neighbor_data->structure->target != origin_data->structure.get())
-        return;
-
-    auto& neighbor_segment_p = neighbor_data->structure;
-    auto& neighbor_segment   = *neighbor_segment_p;
-
-    neighbor_segment.target = nullptr;
-
-    switch (neighbor_segment.terminationType) {
-
-        // Convert bend to straight
-    case game::ConveyorStruct::TerminationType::bend_left:
-    case game::ConveyorStruct::TerminationType::bend_right:
-    case game::ConveyorStruct::TerminationType::right_only:
-    case game::ConveyorStruct::TerminationType::left_only:
-
-        ConveyorShortenFront(neighbor_segment);
-        neighbor_segment.terminationType = game::ConveyorStruct::TerminationType::straight;
-
-        // Renumber segments following origin from index 0, formerly 1
-        OrientationIncrement(neighbor_segment.direction, origin_coord.x, origin_coord.y, -1.f);
-        ConveyorRenumber(world_data, origin_coord);
-        break;
-
-    default:
-        // Does not bend
-        break;
-    }
-}
-
-void DisconnectNeighborSegments(game::WorldData& world_data,
-                                const WorldCoord& origin_coord,
-                                proto::ConveyorData* origin_data,
-                                const LineData4Way& neighbor_data) {
-    for (int i = 0; i < 4; ++i) {
-        DisconnectSegment(world_data, origin_coord, origin_data, neighbor_data[i]);
-    }
-}
-
 
 double ToChunkOffset(const WorldCoordAxis world_coord) {
     return fabs(game::WorldData::WorldCToChunkC(world_coord) * game::Chunk::kChunkWidth - world_coord);
@@ -606,12 +555,11 @@ void proto::Conveyor::OnRemove(game::WorldData& world_data,
                                game::LogicData& /*logic_data*/,
                                const WorldCoord& world_coords,
                                game::ChunkTileLayer& tile_layer) const {
-    auto* origin_data      = tile_layer.GetUniqueData<ConveyorData>();
     const auto line_data_4 = GetLineData4(world_data, world_coords);
 
 
     CalculateNeighborLineOrientation(world_data, world_coords, line_data_4, nullptr);
-    DisconnectNeighborSegments(world_data, world_coords, origin_data, line_data_4);
+    ConveyorDisconnect(world_data, world_coords);
 
     auto& chunk = *world_data.GetChunkW(world_coords);
 

@@ -23,50 +23,54 @@ namespace jactorio::game
     class ConveyorStruct;
 
     ///
-    /// Calls Connect for up, right, down, left
+    /// Calls ConveyorConnect up, right, down, left
     /// \param coord Current struct's coordinate
     void ConveyorConnect(WorldData& world, const WorldCoord& coord);
 
     ///
-    /// Calls Disconnect for up, right, down, left
-    /// \param coord Current struct's coordinate
-    void ConveyorDisconnect(WorldData& world, const WorldCoord& coord);
-
-
-    ///
-    /// Attempts to connect to a connectable conveyor struct above or connect connectable conveyor struct above to
-    /// current
+    /// Attempts to connect between a connectable conveyor segment above
     /// \param coord Current conveyor struct's coordinate
     void ConveyorConnectUp(WorldData& world, const WorldCoord& coord);
 
     ///
-    /// Attempts to connect to a connectable conveyor struct at right or connect connectable conveyor struct at right to
-    /// current
+    /// Attempts to connect between a connectable conveyor segment to right
     /// \param coord Current conveyor struct's coordinate
     void ConveyorConnectRight(WorldData& world, const WorldCoord& coord);
 
     ///
-    /// Attempts to connect to a connectable conveyor struct below or connect connectable conveyor struct below to
-    /// current
+    /// Attempts to connect between a connectable conveyor segment below
     /// \param coord Current conveyor struct's coordinate
     void ConveyorConnectDown(WorldData& world, const WorldCoord& coord);
 
     ///
-    /// Attempts to connect to a connectable conveyor struct to left or connect connectable conveyor struct to left to
-    /// current
+    /// Attempts to connect between a connectable conveyor segment to left
     /// \param coord Current conveyor struct's coordinate
     void ConveyorConnectLeft(WorldData& world, const WorldCoord& coord);
 
 
     ///
-    /// Attempts to disconnect from connected conveyor struct above
+    /// Calls ConveyorDisconnect up, right, down, left
+    /// \param coord Current struct's coordinate
+    void ConveyorDisconnect(WorldData& world, const WorldCoord& coord);
+
+    ///
+    /// Attempts to disconnect between connected conveyor segment above
     /// \param coord Current struct's coordinate
     void ConveyorDisconnectUp(WorldData& world, const WorldCoord& coord);
 
+    ///
+    /// Attempts to disconnect between connected conveyor segment to right
+    /// \param coord Current struct's coordinate
     void ConveyorDisconnectRight(WorldData& world, const WorldCoord& coord);
 
+    ///
+    /// Attempts to disconnect between connected conveyor segment below
+    /// \param coord Current struct's coordinate
     void ConveyorDisconnectDown(WorldData& world, const WorldCoord& coord);
 
+    ///
+    /// Attempts to disconnect between connected conveyor segment to left
+    /// \param coord Current struct's coordinate
     void ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord);
 
 
