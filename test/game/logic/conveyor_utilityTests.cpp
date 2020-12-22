@@ -385,6 +385,10 @@ namespace jactorio::game
 
         ConveyorRemove(worldData_, {0, 0});
 
+        auto* con_data = worldData_.GetTile({0, 0})->GetLayer(TileLayer::entity).GetUniqueData<proto::ConveyorData>();
+        ASSERT_NE(con_data, nullptr);
+        EXPECT_EQ(con_data->structure, nullptr);
+
         EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(Chunk::LogicGroup::conveyor).size(), 0);
     }
 
@@ -549,4 +553,307 @@ namespace jactorio::game
         EXPECT_EQ(d_con_data_3.structure->target, new_con_struct.get());
         EXPECT_EQ(d_con_data_4.structure->target, new_con_struct.get());
     }
+
+    //
+    //
+    //
+    //
+
+    class ConveyorCalcLineOrienTest : public testing::Test
+    {
+    protected:
+        WorldData worldData_;
+
+        void SetUp() override {
+            worldData_.EmplaceChunk({0, 0});
+        }
+
+        /// Creates a conveyor with the provided orientation above/right/below/left of 1, 1
+        auto& BuildTopConveyor(const proto::Orientation orientation) {
+            return BuildConveyor({1, 0}, orientation);
+        }
+
+        auto& BuildRightConveyor(const proto::Orientation orientation) {
+            return BuildConveyor({2, 1}, orientation);
+        }
+
+        auto& BuildBottomConveyor(const proto::Orientation orientation) {
+            return BuildConveyor({1, 2}, orientation);
+        }
+
+        auto& BuildLeftConveyor(const proto::Orientation orientation) {
+            return BuildConveyor({0, 1}, orientation);
+        }
+
+        ///
+        /// Validates that a tile at coords 1,1 with the placement orientation produces the expected line
+        /// orientation
+        void ValidateResultOrientation(const proto::Orientation place_orien,
+                                       const proto::LineOrientation expected_l_orien) const {
+            EXPECT_EQ(ConveyorCalcLineOrien(worldData_, {1, 1}, place_orien), expected_l_orien);
+        }
+
+    private:
+        proto::TransportBelt lineProto_;
+
+        proto::ConveyorData& BuildConveyor(const WorldCoord world_coords, const proto::Orientation direction) {
+            auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)->GetLayer(TileLayer::entity);
+
+            layer.prototypeData = &lineProto_;
+
+            auto& con_data = layer.MakeUniqueData<proto::ConveyorData>();
+            ConveyorCreate(worldData_, world_coords, con_data, direction);
+
+            return con_data;
+        }
+    };
+
+    ///
+    /// A tile with no conveyor structure is treated as no conveyor at tile
+    TEST_F(ConveyorCalcLineOrienTest, IgnoreNullptrStruct) {
+        auto& l_con     = BuildLeftConveyor(proto::Orientation::right);
+        l_con.structure = nullptr;
+
+        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::up);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, RightBendUp) {
+        /*
+         * > ^
+         */
+        BuildLeftConveyor(proto::Orientation::right);
+        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::right_up);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, LeftBendUp) {
+        /*
+         *   ^ <
+         */
+        BuildRightConveyor(proto::Orientation::left);
+        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::left_up);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, LeftRightStraightUp) {
+        /*
+         * > ^ <
+         */
+        // Top and bottom points to one line, line should be straight
+
+        BuildLeftConveyor(proto::Orientation::right);
+        BuildRightConveyor(proto::Orientation::left);
+        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::up);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, RightBendUpHasRightBehind) {
+        /*
+         * > ^
+         *   >
+         */
+        BuildLeftConveyor(proto::Orientation::right);
+        BuildBottomConveyor(proto::Orientation::down);
+        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::right_up);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, RightStraightUpHasUpBehind) {
+        /*
+         * > ^
+         *   ^
+         */
+        BuildLeftConveyor(proto::Orientation::right);
+        BuildBottomConveyor(proto::Orientation::up);
+        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::up);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, LeftBendUpHasLeftAtLeftSide) {
+        /*
+         * < ^ <
+         */
+
+        BuildLeftConveyor(proto::Orientation::left);
+        BuildRightConveyor(proto::Orientation::left);
+        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::left_up);
+    }
+
+    // ===
+
+    TEST_F(ConveyorCalcLineOrienTest, DownBendRight) {
+        /*
+         *  v
+         *  >
+         */
+        BuildTopConveyor(proto::Orientation::down);
+        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::down_right);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, UpBendRight) {
+        /*
+         * >
+         * ^
+         */
+        BuildBottomConveyor(proto::Orientation::up);
+        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::up_right);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, UpDownStraightRight) {
+        /*
+         * v
+         * >
+         * ^
+         */
+
+        BuildTopConveyor(proto::Orientation::down);
+        BuildBottomConveyor(proto::Orientation::up);
+        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::right);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, DownBendRightHasUpAtLeftSide) {
+        /*
+         *   v
+         * ^ >
+         */
+        BuildTopConveyor(proto::Orientation::down);
+        BuildLeftConveyor(proto::Orientation::up);
+        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::down_right);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, DownStraightRightHasRightAtLeftSide) {
+        /*
+         *   v
+         * > >
+         */
+        BuildTopConveyor(proto::Orientation::down);
+        BuildLeftConveyor(proto::Orientation::right); // Points at center, center now straight
+        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::right);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, UpBendRightHasUpAbove) {
+        /*
+         * ^
+         * >
+         * ^
+         */
+        BuildTopConveyor(proto::Orientation::up);
+        BuildBottomConveyor(proto::Orientation::up);
+        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::up_right);
+    }
+
+    // ===
+
+    TEST_F(ConveyorCalcLineOrienTest, RightBendDown) {
+        /*
+         * > v
+         */
+        BuildLeftConveyor(proto::Orientation::right);
+        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::right_down);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, LeftBendDown) {
+        /*
+         * v <
+         */
+        BuildRightConveyor(proto::Orientation::left);
+        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::left_down);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, LeftRightStraightDown) {
+        /*
+         * > v <
+         */
+        BuildLeftConveyor(proto::Orientation::right);
+        BuildRightConveyor(proto::Orientation::left);
+        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::down);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, RightBendDownHasLeftAbove) {
+        /*
+         *   <
+         * > v
+         */
+        BuildLeftConveyor(proto::Orientation::right);
+        BuildTopConveyor(proto::Orientation::left);
+        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::right_down);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, RightStraightDownHasDownAbove) {
+        /*
+         *   v
+         * > v
+         */
+        BuildLeftConveyor(proto::Orientation::right);
+        BuildTopConveyor(proto::Orientation::down);
+        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::down);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, LeftBendDownHasLeftAtLeftSide) {
+        /*
+         * < v <
+         */
+        BuildLeftConveyor(proto::Orientation::left);
+        BuildRightConveyor(proto::Orientation::left);
+        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::left_down);
+    }
+
+    // ===
+
+    TEST_F(ConveyorCalcLineOrienTest, DownBendLeft) {
+        /*
+         * v
+         * <
+         */
+        BuildTopConveyor(proto::Orientation::down);
+        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::down_left);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, UpBendLeft) {
+        /*
+         * <
+         * ^
+         */
+        BuildBottomConveyor(proto::Orientation::up);
+        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::up_left);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, UpDownStraightLeft) {
+        /*
+         * v
+         * <
+         * ^
+         */
+        BuildTopConveyor(proto::Orientation::down);
+        BuildBottomConveyor(proto::Orientation::up);
+        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::left);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, DownBendLeftHasUpRightSide) {
+        /*
+         * v
+         * < ^
+         */
+        BuildTopConveyor(proto::Orientation::down);
+        BuildRightConveyor(proto::Orientation::up);
+        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::down_left);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, DownStraightLeftHasLeftRightSide) {
+        /*
+         * v
+         * < <
+         */
+        BuildTopConveyor(proto::Orientation::down);
+        BuildRightConveyor(proto::Orientation::left);
+        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::left);
+    }
+
+    TEST_F(ConveyorCalcLineOrienTest, UpBendLeftHasUpAbove) {
+        /*
+         * ^
+         * <
+         * ^
+         */
+        BuildTopConveyor(proto::Orientation::up);
+        BuildBottomConveyor(proto::Orientation::up);
+        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::up_left);
+    }
+
+
 } // namespace jactorio::game

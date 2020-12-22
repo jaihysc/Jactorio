@@ -24,28 +24,6 @@ namespace jactorio::proto
             : structure(std::move(line_segment)) {}
 
         ///
-        /// <Entry direction>_<Exit direction>
-        enum class LineOrientation
-        {
-            // Following the layout of the sprite
-            up_left  = 10,
-            up       = 2,
-            up_right = 8,
-
-            right_up   = 6,
-            right      = 0,
-            right_down = 11,
-
-            down_right = 5,
-            down       = 3,
-            down_left  = 7,
-
-            left_down = 9,
-            left      = 1,
-            left_up   = 4,
-        };
-
-        ///
         /// Updates orientation and member set for rendering
         void SetOrientation(LineOrientation orientation) {
             this->lOrien = orientation;
@@ -86,9 +64,6 @@ namespace jactorio::proto
         Conveyor() = default;
 
     public:
-        /// up, right, down, left
-        using LineData4Way = std::array<ConveyorData*, 4>;
-
         ///
         /// Number of tiles traveled by each item on the belt per tick
         /// \remark For Python API use only
@@ -96,19 +71,6 @@ namespace jactorio::proto
 
         /// Number of tiles traveled by each item on the belt per tick
         LineDistT speed;
-
-
-        // ======================================================================
-        // Data access
-
-        ///
-        /// Gets line data for the 4 neighbors of origin coord
-        J_NODISCARD static LineData4Way GetLineData4(game::WorldData& world_data, const WorldCoord& origin_coord);
-
-        ///
-        /// Determines line orientation given orientation and neighbors
-        static ConveyorData::LineOrientation GetLineOrientation(Orientation orientation,
-                                                                const LineData4Way& line_data4);
 
 
         // ======================================================================
@@ -127,21 +89,21 @@ namespace jactorio::proto
                                                    GameTickT game_tick) const override;
 
 
-        void OnBuild(game::WorldData& world_data,
-                     game::LogicData& logic_data,
-                     const WorldCoord& world_coords,
+        void OnBuild(game::WorldData& world,
+                     game::LogicData& logic,
+                     const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
-        void OnNeighborUpdate(game::WorldData& world_data,
-                              game::LogicData& logic_data,
+        void OnNeighborUpdate(game::WorldData& world,
+                              game::LogicData& logic,
                               const WorldCoord& emit_world_coords,
                               const WorldCoord& receive_world_coords,
                               Orientation emit_orientation) const override;
 
-        void OnRemove(game::WorldData& world_data,
-                      game::LogicData& logic_data,
-                      const WorldCoord& world_coords,
+        void OnRemove(game::WorldData& world,
+                      game::LogicData& logic,
+                      const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 
         void OnDeserialize(game::WorldData& world_data,

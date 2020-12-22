@@ -66,15 +66,6 @@ namespace jactorio::proto
         }
 
         ///
-        /// Validates that a tile at coords 1,1 with the placement orientation produces the expected line
-        /// orientation
-        void ValidateResultOrientation(const Orientation placement_orientation,
-                                       const ConveyorData::LineOrientation expected_line_orientation) {
-            EXPECT_EQ(lineProto_.OnRGetSpriteSet(placement_orientation, worldData_, {1, 1}),
-                      static_cast<SpriteSetT>(expected_line_orientation));
-        }
-
-        ///
         /// Dispatches the appropriate events for when a conveyor is built
         void TlBuildEvents(const WorldCoord& world_coords, const Orientation orientation) {
             auto& layer = worldData_.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
@@ -302,8 +293,7 @@ namespace jactorio::proto
         {
             auto& result_layer = worldData_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien,
-                      ConveyorData::LineOrientation::up_right);
+            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien, LineOrientation::up_right);
         }
     }
 
@@ -330,8 +320,7 @@ namespace jactorio::proto
         {
             auto& result_layer = worldData_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
 
-            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien,
-                      ConveyorData::LineOrientation::down_right);
+            EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien, LineOrientation::down_right);
         }
     }
 
@@ -422,250 +411,11 @@ namespace jactorio::proto
         ConveyorData line_data{segment};
         line_data.structIndex = 1; // Prevents it from attempting to delete line segment
 
-        line_data.SetOrientation(ConveyorData::LineOrientation::down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(ConveyorData::LineOrientation::down));
+        line_data.SetOrientation(LineOrientation::down);
+        EXPECT_EQ(line_data.set, static_cast<uint16_t>(LineOrientation::down));
 
-        line_data.SetOrientation(ConveyorData::LineOrientation::left_down);
-        EXPECT_EQ(line_data.set, static_cast<uint16_t>(ConveyorData::LineOrientation::left_down));
-    }
-
-
-    TEST_F(ConveyorTest, RightBendUp) {
-        /*
-         * > ^
-         */
-        BuildLeftConveyor(Orientation::right);
-        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::right_up);
-    }
-
-    TEST_F(ConveyorTest, LeftBendUp) {
-        /*
-         *   ^ <
-         */
-        BuildRightConveyor(Orientation::left);
-        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::left_up);
-    }
-
-    TEST_F(ConveyorTest, LeftRightStraightUp) {
-        /*
-         * > ^ <
-         */
-        // Top and bottom points to one line, line should be straight
-
-        BuildLeftConveyor(Orientation::right);
-        BuildRightConveyor(Orientation::left);
-        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::up);
-    }
-
-    TEST_F(ConveyorTest, RightBendUpHasRightBehind) {
-        /*
-         * > ^
-         *   >
-         */
-        BuildLeftConveyor(Orientation::right);
-        BuildBottomConveyor(Orientation::down);
-        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::right_up);
-    }
-
-    TEST_F(ConveyorTest, RightStraightUpHasUpBehind) {
-        /*
-         * > ^
-         *   ^
-         */
-        BuildLeftConveyor(Orientation::right);
-        BuildBottomConveyor(Orientation::up);
-        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::up);
-    }
-
-    TEST_F(ConveyorTest, LeftBendUpHasLeftAtLeftSide) {
-        /*
-         * < ^ <
-         */
-
-        BuildLeftConveyor(Orientation::left);
-        BuildRightConveyor(Orientation::left);
-        ValidateResultOrientation(Orientation::up, ConveyorData::LineOrientation::left_up);
-    }
-
-    // ===
-
-    TEST_F(ConveyorTest, DownBendRight) {
-        /*
-         *  v
-         *  >
-         */
-        BuildTopConveyor(Orientation::down);
-        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::down_right);
-    }
-
-    TEST_F(ConveyorTest, UpBendRight) {
-        /*
-         * >
-         * ^
-         */
-        BuildBottomConveyor(Orientation::up);
-        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::up_right);
-    }
-
-    TEST_F(ConveyorTest, UpDownStraightRight) {
-        /*
-         * v
-         * >
-         * ^
-         */
-
-        BuildTopConveyor(Orientation::down);
-        BuildBottomConveyor(Orientation::up);
-        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::right);
-    }
-
-    TEST_F(ConveyorTest, DownBendRightHasUpAtLeftSide) {
-        /*
-         *   v
-         * ^ >
-         */
-        BuildTopConveyor(Orientation::down);
-        BuildLeftConveyor(Orientation::up);
-        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::down_right);
-    }
-
-    TEST_F(ConveyorTest, DownStraightRightHasRightAtLeftSide) {
-        /*
-         *   v
-         * > >
-         */
-        BuildTopConveyor(Orientation::down);
-        BuildLeftConveyor(Orientation::right); // Points at center, center now straight
-        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::right);
-    }
-
-    TEST_F(ConveyorTest, UpBendRightHasUpAbove) {
-        /*
-         * ^
-         * >
-         * ^
-         */
-        BuildTopConveyor(Orientation::up);
-        BuildBottomConveyor(Orientation::up);
-        ValidateResultOrientation(Orientation::right, ConveyorData::LineOrientation::up_right);
-    }
-
-    // ===
-
-    TEST_F(ConveyorTest, RightBendDown) {
-        /*
-         * > v
-         */
-        BuildLeftConveyor(Orientation::right);
-        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::right_down);
-    }
-
-    TEST_F(ConveyorTest, LeftBendDown) {
-        /*
-         * v <
-         */
-        BuildRightConveyor(Orientation::left);
-        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::left_down);
-    }
-
-    TEST_F(ConveyorTest, LeftRightStraightDown) {
-        /*
-         * > v <
-         */
-        BuildLeftConveyor(Orientation::right);
-        BuildRightConveyor(Orientation::left);
-        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::down);
-    }
-
-    TEST_F(ConveyorTest, RightBendDownHasLeftAbove) {
-        /*
-         *   <
-         * > v
-         */
-        BuildLeftConveyor(Orientation::right);
-        BuildTopConveyor(Orientation::left);
-        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::right_down);
-    }
-
-    TEST_F(ConveyorTest, RightStraightDownHasDownAbove) {
-        /*
-         *   v
-         * > v
-         */
-        BuildLeftConveyor(Orientation::right);
-        BuildTopConveyor(Orientation::down);
-        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::down);
-    }
-
-    TEST_F(ConveyorTest, LeftBendDownHasLeftAtLeftSide) {
-        /*
-         * < v <
-         */
-        BuildLeftConveyor(Orientation::left);
-        BuildRightConveyor(Orientation::left);
-        ValidateResultOrientation(Orientation::down, ConveyorData::LineOrientation::left_down);
-    }
-
-    // ===
-
-    TEST_F(ConveyorTest, DownBendLeft) {
-        /*
-         * v
-         * <
-         */
-        BuildTopConveyor(Orientation::down);
-        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::down_left);
-    }
-
-    TEST_F(ConveyorTest, UpBendLeft) {
-        /*
-         * <
-         * ^
-         */
-        BuildBottomConveyor(Orientation::up);
-        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::up_left);
-    }
-
-    TEST_F(ConveyorTest, UpDownStraightLeft) {
-        /*
-         * v
-         * <
-         * ^
-         */
-        BuildTopConveyor(Orientation::down);
-        BuildBottomConveyor(Orientation::up);
-        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::left);
-    }
-
-    TEST_F(ConveyorTest, DownBendLeftHasUpRightSide) {
-        /*
-         * v
-         * < ^
-         */
-        BuildTopConveyor(Orientation::down);
-        BuildRightConveyor(Orientation::up);
-        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::down_left);
-    }
-
-    TEST_F(ConveyorTest, DownStraightLeftHasLeftRightSide) {
-        /*
-         * v
-         * < <
-         */
-        BuildTopConveyor(Orientation::down);
-        BuildRightConveyor(Orientation::left);
-        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::left);
-    }
-
-    TEST_F(ConveyorTest, UpBendLeftHasUpAbove) {
-        /*
-         * ^
-         * <
-         * ^
-         */
-        BuildTopConveyor(Orientation::up);
-        BuildBottomConveyor(Orientation::up);
-        ValidateResultOrientation(Orientation::left, ConveyorData::LineOrientation::up_left);
+        line_data.SetOrientation(LineOrientation::left_down);
+        EXPECT_EQ(line_data.set, static_cast<uint16_t>(LineOrientation::left_down));
     }
 
 

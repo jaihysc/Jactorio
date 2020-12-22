@@ -9,12 +9,12 @@
 #include "jactorio.h"
 
 #include "core/data_type.h"
+#include "proto/detail/type.h"
 
 namespace jactorio
 {
     namespace proto
     {
-        enum class Orientation;
         struct ConveyorData;
     } // namespace proto
 } // namespace jactorio
@@ -27,6 +27,7 @@ namespace jactorio::game
     ///
     /// Fetches conveyor data at coord, nullptr if non existent
     J_NODISCARD proto::ConveyorData* GetConData(WorldData& world, const WorldCoord& coord);
+    J_NODISCARD const proto::ConveyorData* GetConData(const WorldData& world, const WorldCoord& coord);
 
     ///
     /// Calls ConveyorConnect up, right, down, left
@@ -123,6 +124,15 @@ namespace jactorio::game
     void ConveyorChangeStructure(WorldData& world,
                                  WorldCoord coord,
                                  const std::shared_ptr<ConveyorStruct>& con_struct_p);
+
+    ///
+    /// Calculates line orientation for conveyor data at coord with provided direction
+    ///
+    /// Direction is provided separately to allow use when there is no conveyor data at coord
+    /// A tile is deemed to not have a conveyor if its structure is nullptr
+    J_NODISCARD proto::LineOrientation ConveyorCalcLineOrien(const WorldData& world,
+                                                             const WorldCoord& coord,
+                                                             proto::Orientation direction);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_UTILITY_H

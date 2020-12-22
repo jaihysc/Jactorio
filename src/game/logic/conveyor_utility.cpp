@@ -9,11 +9,15 @@
 using namespace jactorio;
 
 J_NODISCARD proto::ConveyorData* game::GetConData(WorldData& world, const WorldCoord& coord) {
-    auto* tile = world.GetTile(coord);
+    return const_cast<proto::ConveyorData*>(GetConData(static_cast<const WorldData&>(world), coord));
+}
+
+const proto::ConveyorData* game::GetConData(const WorldData& world, const WorldCoord& coord) {
+    const auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return nullptr;
 
-    auto& layer = tile->GetLayer(TileLayer::entity);
+    const auto& layer = tile->GetLayer(TileLayer::entity);
 
     const auto* proto = layer.GetPrototypeData();
     if (proto == nullptr)
@@ -310,6 +314,9 @@ void game::ConveyorRemove(WorldData& world, const WorldCoord& coord) {
     else {
         o_line_segment->length = o_line_data->structIndex;
     }
+
+    // Finished ungrouping, now remove the structure
+    o_line_data->structure = nullptr;
 }
 
 
@@ -424,5 +431,65 @@ void game::ConveyorChangeStructure(WorldData& world,
         i_con_data->structure = con_struct_p;
 
         OrientationIncrement(con_struct_p->direction, coord.x, coord.y, -1);
+    }
+}
+
+proto::LineOrientation game::ConveyorCalcLineOrien(const WorldData& world,
+                                                   const WorldCoord& coord,
+                                                   const proto::Orientation direction) {
+    const auto* up    = GetConData(world, {coord.x, coord.y - 1});
+    const auto* right = GetConData(world, {coord.x + 1, coord.y});
+    const auto* down  = GetConData(world, {coord.x, coord.y + 1});
+    const auto* left  = GetConData(world, {coord.x - 1, coord.y});
+
+    /// \return true if has neighbor segment and its direction matches provided
+    auto neighbor_valid = [](const proto::ConveyorData* conveyor, const proto::Orientation orient) {
+        return conveyor != nullptr && conveyor->structure != nullptr && conveyor->structure->direction == orient;
+    };
+
+    switch (direction) {
+    case proto::Orientation::up:
+        if (!neighbor_valid(down, proto::Orientation::up) &&
+            neighbor_valid(left, proto::Orientation::right) != neighbor_valid(right, proto::Orientation::left)) {
+
+            if (neighbor_valid(left, proto::Orientation::right))
+                return proto::LineOrientation::right_up;
+            return proto::LineOrientation::left_up;
+        }
+        return proto::LineOrientation::up;
+
+    case proto::Orientation::right:
+        if (!neighbor_valid(left, proto::Orientation::right) &&
+            neighbor_valid(up, proto::Orientation::down) != neighbor_valid(down, proto::Orientation::up)) {
+
+            if (neighbor_valid(up, proto::Orientation::down))
+                return proto::LineOrientation::down_right;
+            return proto::LineOrientation::up_right;
+        }
+        return proto::LineOrientation::right;
+
+    case proto::Orientation::down:
+        if (!neighbor_valid(up, proto::Orientation::down) &&
+            neighbor_valid(left, proto::Orientation::right) != neighbor_valid(right, proto::Orientation::left)) {
+
+            if (neighbor_valid(left, proto::Orientation::right))
+                return proto::LineOrientation::right_down;
+            return proto::LineOrientation::left_down;
+        }
+        return proto::LineOrientation::down;
+
+    case proto::Orientation::left:
+        if (!neighbor_valid(right, proto::Orientation::left) &&
+            neighbor_valid(up, proto::Orientation::down) != neighbor_valid(down, proto::Orientation::up)) {
+
+            if (neighbor_valid(up, proto::Orientation::down))
+                return proto::LineOrientation::down_left;
+            return proto::LineOrientation::up_left;
+        }
+        return proto::LineOrientation::left;
+
+    default:
+        assert(false);
+        return proto::LineOrientation::up;
     }
 }

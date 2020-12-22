@@ -87,6 +87,28 @@ namespace jactorio::proto
 
         return "";
     }
+
+    ///
+    /// <Entry direction>_<Exit direction>
+    enum class LineOrientation
+    {
+        // Following the sets of the sprite
+        up_left  = 10,
+        up       = 2,
+        up_right = 8,
+
+        right_up   = 6,
+        right      = 0,
+        right_down = 11,
+
+        down_right = 5,
+        down       = 3,
+        down_left  = 7,
+
+        left_down = 9,
+        left      = 1,
+        left_up   = 4,
+    };
 } // namespace jactorio::proto
 
 #endif // JACTORIO_INCLUDE_PROTO_DETAIL_TYPE_H
