@@ -250,8 +250,12 @@ namespace jactorio::game
     ///
     /// If neighbor segment connects to current and bends, the bend must be removed after disconnecting
     TEST_F(ConveyorConnectionTest, DisconnectUpFromNeighborBending) {
-        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
-        auto& con_struct       = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::right).structure;
+        auto& con_data_ahead = CreateConveyor(worldData_, {0, 0}, proto::Orientation::down);
+        auto& con_struct     = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::right).structure;
+
+        auto& con_struct_ahead = *con_data_ahead.structure;
+
+        con_data_ahead.structIndex = 1; // Should subtract 1
 
         con_struct_ahead.target          = &con_struct;
         con_struct_ahead.terminationType = ConveyorStruct::TerminationType::bend_left;
@@ -262,6 +266,7 @@ namespace jactorio::game
 
         ConveyorDisconnectUp(worldData_, {0, 1});
 
+        EXPECT_EQ(con_data_ahead.structIndex, 0);
         EXPECT_EQ(con_struct_ahead.target, nullptr);
         EXPECT_EQ(con_struct_ahead.terminationType, ConveyorStruct::TerminationType::straight);
         EXPECT_EQ(con_struct_ahead.length, 1);
@@ -357,6 +362,108 @@ namespace jactorio::game
         EXPECT_FALSE(TestGrouping({31, 0}, proto::Orientation::right, {32, 0}, proto::Orientation::right));
         EXPECT_FALSE(TestGrouping({0, 31}, proto::Orientation::down, {0, 32}, proto::Orientation::down));
         EXPECT_FALSE(TestGrouping({-1, 0}, proto::Orientation::left, {0, 0}, proto::Orientation::left));
+    }
+
+    //
+    //
+    //
+    //
+    //
+
+    ///
+    /// Remove head should unregister the head from logic updates
+    TEST_F(ConveyorConnectionTest, RemoveHead) {
+        //
+        // >
+        //
+
+        {
+            CreateConveyor(worldData_, {0, 0}, proto::Orientation::right);
+
+            worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {0, 0}, TileLayer::entity);
+        }
+
+        ConveyorRemove(worldData_, {0, 0});
+
+        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(Chunk::LogicGroup::conveyor).size(), 0);
+    }
+
+    ///
+    /// Removing beginning of grouped conveyor segment with bending termination
+    /// Creates new segment with what was the second tile now the head
+    TEST_F(ConveyorConnectionTest, RemoveHeadBendingTermination) {
+        //
+        // > > v
+        //
+
+        {
+            auto& head_con_data                      = CreateConveyor(worldData_, {1, 0}, proto::Orientation::right);
+            head_con_data.structIndex                = 1;
+            head_con_data.structure->terminationType = ConveyorStruct::TerminationType::bend_right;
+
+            BuildConveyor(worldData_, {0, 0}, head_con_data.structure);
+
+            CreateConveyor(worldData_, {2, 0}, proto::Orientation::down);
+
+
+            worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {1, 0}, TileLayer::entity);
+            worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {2, 0}, TileLayer::entity);
+        }
+
+        ConveyorRemove(worldData_, {1, 0});
+
+
+        auto* behind_con_data = GetConData(worldData_, {0, 0});
+        ASSERT_NE(behind_con_data, nullptr);
+
+        EXPECT_EQ(behind_con_data->structure->length, 1);
+        // Unaffected since this tile will be removed
+        EXPECT_EQ(behind_con_data->structure->terminationType, ConveyorStruct::TerminationType::bend_right);
+
+        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(Chunk::LogicGroup::conveyor).size(), 1);
+    }
+
+    ///
+    /// Removing middle of grouped conveyor segment
+    /// Create new segment behind, shorten segment ahead
+    TEST_F(ConveyorConnectionTest, RemoveMiddle) {
+        //
+        // > /> > >
+        //
+
+        {
+            auto& head_con_data                 = CreateConveyor(worldData_, {3, 0}, proto::Orientation::right);
+            head_con_data.structure->itemOffset = 30; // Will use this to set structure behind itemOffset
+            head_con_data.structure->length     = 4;  // Will use this to set structure behind length
+
+            BuildConveyor(worldData_, {2, 0}, head_con_data.structure);
+
+            auto& con_data_3       = BuildConveyor(worldData_, {1, 0}, head_con_data.structure);
+            con_data_3.structIndex = 2; // Will use this to set structure ahead length
+
+            auto& con_data_4       = BuildConveyor(worldData_, {0, 0}, head_con_data.structure);
+            con_data_4.structIndex = 100; // Should be changed
+        }
+
+        ConveyorRemove(worldData_, {1, 0});
+
+        auto* ahead_con_data = GetConData(worldData_, {3, 0});
+        ASSERT_NE(ahead_con_data, nullptr);
+
+        EXPECT_EQ(ahead_con_data->structure->length, 2);
+
+
+        auto* behind_con_data = GetConData(worldData_, {0, 0});
+        ASSERT_NE(behind_con_data, nullptr);
+
+        EXPECT_EQ(behind_con_data->structure->length, 1);
+        // itemOffset 30, remove at index 2, -1 (constant): 30 - 2 - 1 = 27
+        EXPECT_EQ(behind_con_data->structure->itemOffset, 27);
+        EXPECT_EQ(behind_con_data->structIndex, 0);
+
+
+        // The newly created segment was registered for logic updates
+        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(Chunk::LogicGroup::conveyor).size(), 1);
     }
 
     //

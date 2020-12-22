@@ -8,14 +8,12 @@
 
 using namespace jactorio;
 
-///
-/// Fetches conveyor data at coord, nullptr if non existent
-J_NODISCARD static proto::ConveyorData* GetConData(game::WorldData& world, const WorldCoord& coord) {
+J_NODISCARD proto::ConveyorData* game::GetConData(WorldData& world, const WorldCoord& coord) {
     auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return nullptr;
 
-    auto& layer = tile->GetLayer(game::TileLayer::entity);
+    auto& layer = tile->GetLayer(TileLayer::entity);
 
     const auto* proto = layer.GetPrototypeData();
     if (proto == nullptr)

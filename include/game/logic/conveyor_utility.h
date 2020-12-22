@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "jactorio.h"
+
 #include "core/data_type.h"
 
 namespace jactorio
@@ -21,6 +23,10 @@ namespace jactorio::game
 {
     class WorldData;
     class ConveyorStruct;
+
+    ///
+    /// Fetches conveyor data at coord, nullptr if non existent
+    J_NODISCARD proto::ConveyorData* GetConData(WorldData& world, const WorldCoord& coord);
 
     ///
     /// Calls ConveyorConnect up, right, down, left
