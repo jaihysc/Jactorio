@@ -15,6 +15,7 @@
 #include "proto/transport_belt.h"
 
 #include "game/input/mouse_selection.h"
+#include "game/logic/conveyor_utility.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
@@ -304,8 +305,8 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
     ImGuard guard{};
     guard.Begin("Conveyor Info");
 
-    const auto selected_tile  = player.world.GetMouseTileCoords();
-    proto::ConveyorData* data = proto::Conveyor::GetLineData(world, selected_tile.x, selected_tile.y);
+    const auto selected_tile = player.world.GetMouseTileCoords();
+    auto* con_data           = GetConData(world, {selected_tile.x, selected_tile.y});
 
     // Try to use current selected line segment first, otherwise used the last valid if checked
     game::ConveyorStruct* segment_ptr = nullptr;
@@ -327,15 +328,15 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
     if (show_conveyor_structs)
         ShowConveyorSegments(world, proto_manager);
 
-    if (data != nullptr) {
+    if (con_data != nullptr) {
         last_valid_line_segment = selected_tile;
-        segment_ptr             = data->structure.get();
+        segment_ptr             = con_data->structure.get();
     }
     else {
         if (use_last_valid_line_segment) {
-            data = proto::Conveyor::GetLineData(world, last_valid_line_segment.x, last_valid_line_segment.y);
-            if (data != nullptr)
-                segment_ptr = data->structure.get();
+            con_data = GetConData(world, {last_valid_line_segment.x, last_valid_line_segment.y});
+            if (con_data != nullptr)
+                segment_ptr = con_data->structure.get();
         }
     }
 
@@ -343,7 +344,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
         ImGui::Text("Selected tile is not a conveyor");
     }
     else {
-        assert(data != nullptr);
+        assert(con_data != nullptr);
         game::ConveyorStruct& segment = *segment_ptr;
 
         // Show conveyor properties
@@ -361,7 +362,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
 
         ImGui::Text("Item offset %d", segment.itemOffset);
         ImGui::Text("Target insertion offset %d", segment.targetInsertOffset);
-        ImGui::Text("Length, Index: %d %d", segment.length, data->structIndex);
+        ImGui::Text("Length, Index: %d %d", segment.length, con_data->structIndex);
 
         {
             std::string s;

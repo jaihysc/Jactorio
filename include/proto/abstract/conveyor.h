@@ -102,26 +102,8 @@ namespace jactorio::proto
         // Data access
 
         ///
-        /// Attempts to retrieve conveyor data at world coordinates on tile
-        /// \return pointer to data or nullptr if non existent
-        J_NODISCARD static ConveyorData* GetLineData(game::WorldData& world_data,
-                                                     WorldCoordAxis world_x,
-                                                     WorldCoordAxis world_y);
-
-        J_NODISCARD static const ConveyorData* GetLineData(const game::WorldData& world_data,
-                                                           WorldCoordAxis world_x,
-                                                           WorldCoordAxis world_y);
-
-        ///
         /// Gets line data for the 4 neighbors of origin coord
         J_NODISCARD static LineData4Way GetLineData4(game::WorldData& world_data, const WorldCoord& origin_coord);
-
-        ///
-        /// Gets conveyor segment at world coords
-        /// \return nullptr if no segment exists
-        static std::shared_ptr<game::ConveyorStruct>* GetConveyorSegment(game::WorldData& world_data,
-                                                                         WorldCoordAxis world_x,
-                                                                         WorldCoordAxis world_y);
 
         ///
         /// Determines line orientation given orientation and neighbors

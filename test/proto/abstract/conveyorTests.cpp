@@ -2,9 +2,11 @@
 
 #include <gtest/gtest.h>
 
+#include "proto/transport_belt.h"
+
 #include "jactorioTests.h"
 
-#include "proto/transport_belt.h"
+#include "game/logic/conveyor_utility.h"
 
 // ======================================================================
 // Tests for the various bend orientations
@@ -137,12 +139,12 @@ namespace jactorio::proto
                 ->GetLogicGroup(game::Chunk::LogicGroup::conveyor);
         }
 
-        J_NODISCARD auto& GetLineData(const WorldCoord& world_coords) const {
-            return *worldData_.GetTile(world_coords)->GetLayer(game::TileLayer::entity).GetUniqueData<ConveyorData>();
+        J_NODISCARD auto& GetConveyorData(const WorldCoord& world_coords) {
+            return *GetConData(worldData_, world_coords);
         }
 
-        auto GetLineSegmentIndex(const WorldCoord& world_coords) const {
-            return GetLineData(world_coords).structIndex;
+        auto GetStructIndex(const WorldCoord& world_coords) {
+            return GetConveyorData(world_coords).structIndex;
         }
 
     private:
@@ -684,15 +686,15 @@ namespace jactorio::proto
         BuildConveyor({0, 1}, Orientation::right);
 
         ValidateBendToSideOnly();
-        EXPECT_EQ(GetLineSegmentIndex({0, 1}), 1);
-        EXPECT_EQ(GetLineSegmentIndex({2, 1}), 1);
+        EXPECT_EQ(GetStructIndex({0, 1}), 1);
+        EXPECT_EQ(GetStructIndex({2, 1}), 1);
 
-        EXPECT_EQ(GetLineData({0, 1}).structure->targetInsertOffset, 1);
-        EXPECT_EQ(GetLineData({2, 1}).structure->targetInsertOffset, 1);
+        EXPECT_EQ(GetConveyorData({0, 1}).structure->targetInsertOffset, 1);
+        EXPECT_EQ(GetConveyorData({2, 1}).structure->targetInsertOffset, 1);
 
         // Incremented 1 forwards
-        EXPECT_EQ(GetLineData({0, 1}).structure->itemOffset, 1);
-        EXPECT_EQ(GetLineData({2, 1}).structure->itemOffset, 1);
+        EXPECT_EQ(GetConveyorData({0, 1}).structure->itemOffset, 1);
+        EXPECT_EQ(GetConveyorData({2, 1}).structure->itemOffset, 1);
     }
 
     TEST_F(ConveyorTest, OnBuildRightChangeBendToSideOnly) {
@@ -710,11 +712,11 @@ namespace jactorio::proto
 
 
         ValidateBendToSideOnly(1, 0);
-        EXPECT_EQ(GetLineData({1, 0}).structure->targetInsertOffset, 0);
-        EXPECT_EQ(GetLineData({1, 2}).structure->targetInsertOffset, 0);
+        EXPECT_EQ(GetConveyorData({1, 0}).structure->targetInsertOffset, 0);
+        EXPECT_EQ(GetConveyorData({1, 2}).structure->targetInsertOffset, 0);
 
-        EXPECT_EQ(GetLineData({1, 0}).structure->itemOffset, 1);
-        EXPECT_EQ(GetLineData({1, 2}).structure->itemOffset, 1);
+        EXPECT_EQ(GetConveyorData({1, 0}).structure->itemOffset, 1);
+        EXPECT_EQ(GetConveyorData({1, 2}).structure->itemOffset, 1);
     }
 
     TEST_F(ConveyorTest, OnBuildDownChangeBendToSideOnly) {
@@ -730,8 +732,8 @@ namespace jactorio::proto
         BuildConveyor({2, 1}, Orientation::left);
 
         ValidateBendToSideOnly();
-        EXPECT_EQ(GetLineData({0, 1}).structure->targetInsertOffset, 0);
-        EXPECT_EQ(GetLineData({2, 1}).structure->targetInsertOffset, 0);
+        EXPECT_EQ(GetConveyorData({0, 1}).structure->targetInsertOffset, 0);
+        EXPECT_EQ(GetConveyorData({2, 1}).structure->targetInsertOffset, 0);
     }
 
     TEST_F(ConveyorTest, OnBuildLeftChangeBendToSideOnly) {
@@ -748,8 +750,8 @@ namespace jactorio::proto
         BuildConveyor({1, 2}, Orientation::up);
 
         ValidateBendToSideOnly();
-        EXPECT_EQ(GetLineData({1, 0}).structure->targetInsertOffset, 1);
-        EXPECT_EQ(GetLineData({1, 2}).structure->targetInsertOffset, 1);
+        EXPECT_EQ(GetConveyorData({1, 0}).structure->targetInsertOffset, 1);
+        EXPECT_EQ(GetConveyorData({1, 2}).structure->targetInsertOffset, 1);
     }
 
     TEST_F(ConveyorTest, OnBuildUpUpdateNeighboringSegmentToSideOnly) {
@@ -784,11 +786,11 @@ namespace jactorio::proto
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::right_only);
         }
 
-        EXPECT_EQ(GetLineSegmentIndex({0, 2}), 1);
-        EXPECT_EQ(GetLineSegmentIndex({2, 2}), 1);
+        EXPECT_EQ(GetStructIndex({0, 2}), 1);
+        EXPECT_EQ(GetStructIndex({2, 2}), 1);
 
-        EXPECT_EQ(GetLineData({0, 2}).structure->targetInsertOffset, 2);
-        EXPECT_EQ(GetLineData({2, 2}).structure->targetInsertOffset, 2);
+        EXPECT_EQ(GetConveyorData({0, 2}).structure->targetInsertOffset, 2);
+        EXPECT_EQ(GetConveyorData({2, 2}).structure->targetInsertOffset, 2);
     }
 
     TEST_F(ConveyorTest, OnBuildRightUpdateNeighboringSegmentToSideOnly) {
@@ -821,8 +823,8 @@ namespace jactorio::proto
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::left_only);
         }
 
-        EXPECT_EQ(GetLineSegmentIndex({1, 2}), 1);
-        EXPECT_EQ(GetLineSegmentIndex({1, 0}), 1);
+        EXPECT_EQ(GetStructIndex({1, 2}), 1);
+        EXPECT_EQ(GetStructIndex({1, 0}), 1);
     }
 
     TEST_F(ConveyorTest, OnBuildDownUpdateNeighboringSegmentToSideOnly) {
@@ -854,8 +856,8 @@ namespace jactorio::proto
             EXPECT_EQ(line_segment.itemOffset, 1);
         }
 
-        EXPECT_EQ(GetLineSegmentIndex({0, 0}), 1);
-        EXPECT_EQ(GetLineSegmentIndex({2, 0}), 1);
+        EXPECT_EQ(GetStructIndex({0, 0}), 1);
+        EXPECT_EQ(GetStructIndex({2, 0}), 1);
     }
 
     TEST_F(ConveyorTest, OnBuildLeftUpdateNeighboringSegmentToSideOnly) {
@@ -888,8 +890,8 @@ namespace jactorio::proto
             EXPECT_EQ(line_segment.terminationType, game::ConveyorStruct::TerminationType::left_only);
         }
 
-        EXPECT_EQ(GetLineSegmentIndex({0, 0}), 1);
-        EXPECT_EQ(GetLineSegmentIndex({0, 2}), 1);
+        EXPECT_EQ(GetStructIndex({0, 0}), 1);
+        EXPECT_EQ(GetStructIndex({0, 2}), 1);
     }
 
     // ======================================================================

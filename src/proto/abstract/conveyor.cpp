@@ -55,53 +55,14 @@ proto::Orientation proto::ConveyorData::ToOrientation(const LineOrientation line
 // ======================================================================
 // Data access
 
-proto::ConveyorData* proto::Conveyor::GetLineData(game::WorldData& world_data,
-                                                  const WorldCoordAxis world_x,
-                                                  const WorldCoordAxis world_y) {
-    auto* tile = world_data.GetTile(world_x, world_y);
-    if (tile == nullptr) // No tile exists
-        return nullptr;
-
-    auto& layer = tile->GetLayer(game::TileLayer::entity);
-
-    if (dynamic_cast<const Conveyor*>( // Not an instance of conveyor
-            layer.prototypeData.Get()) == nullptr)
-        return nullptr;
-
-    return layer.GetUniqueData<ConveyorData>();
-}
-
-const proto::ConveyorData* proto::Conveyor::GetLineData(const game::WorldData& world_data,
-                                                        const WorldCoordAxis world_x,
-                                                        const WorldCoordAxis world_y) {
-    return const_cast<ConveyorData*>(GetLineData(const_cast<game::WorldData&>(world_data), world_x, world_y));
-}
-
 LineData4Way proto::Conveyor::GetLineData4(game::WorldData& world_data, const WorldCoord& origin_coord) {
-    auto* up    = GetLineData(world_data, origin_coord.x, origin_coord.y - 1);
-    auto* right = GetLineData(world_data, origin_coord.x + 1, origin_coord.y);
-    auto* down  = GetLineData(world_data, origin_coord.x, origin_coord.y + 1);
-    auto* left  = GetLineData(world_data, origin_coord.x - 1, origin_coord.y);
+    auto* up    = GetConData(world_data, {origin_coord.x, origin_coord.y - 1});
+    auto* right = GetConData(world_data, {origin_coord.x + 1, origin_coord.y});
+    auto* down  = GetConData(world_data, {origin_coord.x, origin_coord.y + 1});
+    auto* left  = GetConData(world_data, {origin_coord.x - 1, origin_coord.y});
 
     return {up, right, down, left};
 }
-
-std::shared_ptr<game::ConveyorStruct>* proto::Conveyor::GetConveyorSegment(game::WorldData& world_data,
-                                                                           const WorldCoordAxis world_x,
-                                                                           const WorldCoordAxis world_y) {
-    auto* tile = world_data.GetTile(world_x, world_y);
-    if (tile != nullptr) {
-        auto& layer = tile->GetLayer(game::TileLayer::entity);
-        if ((layer.prototypeData.Get() == nullptr) || layer.prototypeData->GetCategory() != Category::transport_belt)
-            return nullptr;
-
-        auto* unique_data = layer.GetUniqueData<ConveyorData>();
-        return &unique_data->structure;
-    }
-
-    return nullptr;
-}
-
 
 proto::ConveyorData::LineOrientation proto::Conveyor::GetLineOrientation(const Orientation orientation,
                                                                          const LineData4Way& line_data4) {
@@ -196,22 +157,6 @@ SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_d
 }
 
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
 // ======================================================================
 // Build / Remove / Neighbor update
 
@@ -234,16 +179,16 @@ void CalculateNeighborLineOrientation(game::WorldData& world_data,
      *     |*|        Bottom
      *     ---
      */
-    auto* top    = proto::Conveyor::GetLineData(world_data, world_coords.x, world_coords.y - 2);
-    auto* right  = proto::Conveyor::GetLineData(world_data, world_coords.x + 2, world_coords.y);
-    auto* bottom = proto::Conveyor::GetLineData(world_data, world_coords.x, world_coords.y + 2);
-    auto* left   = proto::Conveyor::GetLineData(world_data, world_coords.x - 2, world_coords.y);
+    auto* top    = GetConData(world_data, {world_coords.x, world_coords.y - 2});
+    auto* right  = GetConData(world_data, {world_coords.x + 2, world_coords.y});
+    auto* bottom = GetConData(world_data, {world_coords.x, world_coords.y + 2});
+    auto* left   = GetConData(world_data, {world_coords.x - 2, world_coords.y});
 
-    auto* t_left  = proto::Conveyor::GetLineData(world_data, world_coords.x - 1, world_coords.y - 1);
-    auto* t_right = proto::Conveyor::GetLineData(world_data, world_coords.x + 1, world_coords.y - 1);
+    auto* t_left  = GetConData(world_data, {world_coords.x - 1, world_coords.y - 1});
+    auto* t_right = GetConData(world_data, {world_coords.x + 1, world_coords.y - 1});
 
-    auto* b_left  = proto::Conveyor::GetLineData(world_data, world_coords.x - 1, world_coords.y + 1);
-    auto* b_right = proto::Conveyor::GetLineData(world_data, world_coords.x + 1, world_coords.y + 1);
+    auto* b_left  = GetConData(world_data, {world_coords.x - 1, world_coords.y + 1});
+    auto* b_right = GetConData(world_data, {world_coords.x + 1, world_coords.y + 1});
 
     // Top neighbor
     if (line_data_4[0] != nullptr)
@@ -263,9 +208,6 @@ void CalculateNeighborLineOrientation(game::WorldData& world_data,
             proto::ConveyorData::ToOrientation(line_data_4[3]->lOrien), {t_left, center, b_left, left}));
 }
 
-
-// ======================================================================
-// Updating termination type
 
 ///
 /// Shifts origin segment forwards if neighbor line orientation matches template arguments
@@ -353,15 +295,15 @@ void CalculateNeighborTermination(game::WorldData& world_data,
     auto change_ttype = [&world_data](const WorldCoordAxis w_x,
                                       const WorldCoordAxis w_y,
                                       const game::ConveyorStruct::TerminationType new_ttype) {
-        auto* line_segment = proto::Conveyor::GetConveyorSegment(world_data, w_x, w_y);
-        if (line_segment != nullptr) {
+        auto* con_data = GetConData(world_data, {w_x, w_y});
+        if (con_data != nullptr) {
             // If termination type is no longer straight, it its length is now +1 and must renumber all its tiles
             // excluding id 0, since that belongs to its target
 
             if constexpr (!IsNeighborUpdate) {
-                ConveyorLengthenFront(**line_segment);
+                ConveyorLengthenFront(*con_data->structure);
             }
-            line_segment->get()->terminationType = new_ttype;
+            con_data->structure->terminationType = new_ttype;
             ConveyorRenumber(world_data, {w_x, w_y}, 1);
         }
     };
@@ -372,10 +314,10 @@ void CalculateNeighborTermination(game::WorldData& world_data,
                                                          const WorldCoordAxis w_y,
                                                          const proto::Orientation required_direction,
                                                          const game::ConveyorStruct::TerminationType new_ttype) {
-        auto* line_segment = proto::Conveyor::GetConveyorSegment(world_data, w_x, w_y);
+        auto* con_data = GetConData(world_data, {w_x, w_y});
 
-        if (line_segment != nullptr) {
-            if (line_segment->get()->direction != required_direction)
+        if (con_data != nullptr) {
+            if (con_data->structure->direction != required_direction)
                 return;
         }
 
@@ -460,10 +402,6 @@ void CalculateNeighborTermination(game::WorldData& world_data,
     }
 }
 
-
-// ======================================================================
-// Build
-
 void proto::Conveyor::OnBuild(game::WorldData& world_data,
                               game::LogicData& /*logic_data*/,
                               const WorldCoord& world_coords,
@@ -491,24 +429,6 @@ void proto::Conveyor::OnBuild(game::WorldData& world_data,
     ConveyorConnect(world_data, world_coords);
 }
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-// ======================================================================
-// Neighbor update
 void proto::Conveyor::OnNeighborUpdate(game::WorldData& world_data,
                                        game::LogicData& /*logic_data*/,
                                        const WorldCoord& /*emit_world_coords*/,
@@ -516,7 +436,7 @@ void proto::Conveyor::OnNeighborUpdate(game::WorldData& world_data,
                                        Orientation /*emit_orientation*/) const {
     // Run stuff here that on_build and on_remove both calls
 
-    auto* line_data = GetLineData(world_data, receive_world_coords.x, receive_world_coords.y);
+    auto* line_data = GetConData(world_data, {receive_world_coords.x, receive_world_coords.y});
     if (line_data == nullptr) // Conveyor does not exist here
         return;
 
@@ -527,26 +447,6 @@ void proto::Conveyor::OnNeighborUpdate(game::WorldData& world_data,
     CalculateNeighborTermination<true>(world_data, receive_world_coords, line_data->lOrien);
 }
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-// ======================================================================
-// Remove
-
-// TODO remove tile layer from event? or rename to shorter names
 void proto::Conveyor::OnRemove(game::WorldData& world_data,
                                game::LogicData& /*logic_data*/,
                                const WorldCoord& world_coords,
