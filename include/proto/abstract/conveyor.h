@@ -97,8 +97,8 @@ namespace jactorio::proto
 
         void OnNeighborUpdate(game::WorldData& world,
                               game::LogicData& logic,
-                              const WorldCoord& emit_world_coords,
-                              const WorldCoord& receive_world_coords,
+                              const WorldCoord& emit_coord,
+                              const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
         void OnRemove(game::WorldData& world,

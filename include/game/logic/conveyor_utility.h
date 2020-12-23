@@ -137,6 +137,11 @@ namespace jactorio::game
     /// Updates line orientation for 4 neighbors of coord
     /// See ConveyorCalcLineOrien
     void ConveyorUpdateNeighborLineOrien(WorldData& world, const WorldCoord& coord);
+
+    ///
+    /// Updates the termination type for 4 neighbors of coord
+    void ConveyorUpdateNeighborTermination(WorldData& world, const WorldCoord& coord);
+
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_UTILITY_H

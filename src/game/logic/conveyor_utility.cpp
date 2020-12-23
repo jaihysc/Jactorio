@@ -509,3 +509,96 @@ void game::ConveyorUpdateNeighborLineOrien(WorldData& world, const WorldCoord& c
     calculate_neighbor({coord.x, coord.y + 1});
     calculate_neighbor({coord.x - 1, coord.y});
 }
+
+
+void game::ConveyorUpdateNeighborTermination(WorldData& world, const WorldCoord& coord) {
+
+    ///
+    /// Changes termination type at coordinates
+    auto change_ttype = [&world](const WorldCoord& neighbor_coord, const ConveyorStruct::TerminationType new_ttype) {
+        auto* con_data = GetConData(world, neighbor_coord);
+        if (con_data != nullptr) {
+            // If termination type is no longer straight, its length is now +1 and must renumber all its tiles
+            // excluding id 0, since that belongs to its target
+
+            if (con_data->structure->terminationType == ConveyorStruct::TerminationType::straight) {
+                ConveyorLengthenFront(*con_data->structure);
+            }
+
+            con_data->structure->terminationType = new_ttype;
+            ConveyorRenumber(world, neighbor_coord, 1);
+        }
+    };
+
+    ///
+    /// Changes termination type at coordinates if it matches required_direction
+    auto try_change_ttype = [&world, &change_ttype](const WorldCoord& neighbor_coord,
+                                                    const proto::Orientation required_direction,
+                                                    const ConveyorStruct::TerminationType new_ttype) {
+        auto* con_data = GetConData(world, neighbor_coord);
+
+        if (con_data != nullptr) {
+            if (con_data->structure->direction != required_direction)
+                return;
+        }
+
+        change_ttype(neighbor_coord, new_ttype);
+    };
+
+    auto* con_data = GetConData(world, coord);
+    assert(con_data != nullptr);
+
+    switch (ConveyorCalcLineOrien(world, coord, con_data->structure->direction)) {
+        // Up
+    case proto::LineOrientation::up_left:
+        change_ttype({coord.x, coord.y + 1}, ConveyorStruct::TerminationType::bend_left);
+        break;
+    case proto::LineOrientation::up_right:
+        change_ttype({coord.x, coord.y + 1}, ConveyorStruct::TerminationType::bend_right);
+        break;
+
+        // Right
+    case proto::LineOrientation::right_up:
+        change_ttype({coord.x - 1, coord.y}, ConveyorStruct::TerminationType::bend_left);
+        break;
+    case proto::LineOrientation::right_down:
+        change_ttype({coord.x - 1, coord.y}, ConveyorStruct::TerminationType::bend_right);
+        break;
+
+        // Down
+    case proto::LineOrientation::down_right:
+        change_ttype({coord.x, coord.y - 1}, ConveyorStruct::TerminationType::bend_left);
+        break;
+    case proto::LineOrientation::down_left:
+        change_ttype({coord.x, coord.y - 1}, ConveyorStruct::TerminationType::bend_right);
+        break;
+
+        // Left
+    case proto::LineOrientation::left_down:
+        change_ttype({coord.x + 1, coord.y}, ConveyorStruct::TerminationType::bend_left);
+        break;
+    case proto::LineOrientation::left_up:
+        change_ttype({coord.x + 1, coord.y}, ConveyorStruct::TerminationType::bend_right);
+        break;
+
+
+        // Straight (Check for conveyors on both sides to make side only)
+    case proto::LineOrientation::up:
+        try_change_ttype({coord.x - 1, coord.y}, proto::Orientation::right, ConveyorStruct::TerminationType::left_only);
+        try_change_ttype({coord.x + 1, coord.y}, proto::Orientation::left, ConveyorStruct::TerminationType::right_only);
+        break;
+    case proto::LineOrientation::right:
+        try_change_ttype({coord.x, coord.y - 1}, proto::Orientation::down, ConveyorStruct::TerminationType::left_only);
+        try_change_ttype({coord.x, coord.y + 1}, proto::Orientation::up, ConveyorStruct::TerminationType::right_only);
+        break;
+    case proto::LineOrientation::down:
+        try_change_ttype(
+            {coord.x - 1, coord.y}, proto::Orientation::right, ConveyorStruct::TerminationType::right_only);
+        try_change_ttype({coord.x + 1, coord.y}, proto::Orientation::left, ConveyorStruct::TerminationType::left_only);
+        break;
+    case proto::LineOrientation::left:
+        try_change_ttype({coord.x, coord.y - 1}, proto::Orientation::down, ConveyorStruct::TerminationType::right_only);
+        try_change_ttype({coord.x, coord.y + 1}, proto::Orientation::up, ConveyorStruct::TerminationType::left_only);
+        break;
+    }
+}
