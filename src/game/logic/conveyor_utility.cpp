@@ -493,3 +493,19 @@ proto::LineOrientation game::ConveyorCalcLineOrien(const WorldData& world,
         return proto::LineOrientation::up;
     }
 }
+
+void game::ConveyorUpdateNeighborLineOrien(WorldData& world, const WorldCoord& coord) {
+
+    auto calculate_neighbor = [&world](const WorldCoord& neighbor_coord) {
+        auto* con_data = GetConData(world, neighbor_coord);
+
+        if (con_data != nullptr) {
+            con_data->SetOrientation(ConveyorCalcLineOrien(world, neighbor_coord, con_data->structure->direction));
+        }
+    };
+
+    calculate_neighbor({coord.x, coord.y - 1});
+    calculate_neighbor({coord.x + 1, coord.y});
+    calculate_neighbor({coord.x, coord.y + 1});
+    calculate_neighbor({coord.x - 1, coord.y});
+}

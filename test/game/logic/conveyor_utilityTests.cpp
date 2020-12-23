@@ -15,7 +15,7 @@
 namespace jactorio::game
 {
 
-    class ConveyorConnectionTest : public testing::Test
+    class ConveyorUtilityTest : public testing::Test
     {
     protected:
         WorldData worldData_;
@@ -84,7 +84,7 @@ namespace jactorio::game
 
     ///
     /// Should gracefully handle no tile above
-    TEST_F(ConveyorConnectionTest, ConnectUpNoTileAbove) {
+    TEST_F(ConveyorUtilityTest, ConnectUpNoTileAbove) {
         CreateConveyor(worldData_, {0, 0}, proto::Orientation::up);
 
         ConveyorConnectUp(worldData_, {0, 0});
@@ -92,7 +92,7 @@ namespace jactorio::game
 
     ///
     /// Should gracefully handle no struct above
-    TEST_F(ConveyorConnectionTest, ConnectUpNoStructAbove) {
+    TEST_F(ConveyorUtilityTest, ConnectUpNoStructAbove) {
         CreateConveyor(worldData_, {0, 1}, proto::Orientation::up);
 
         ConveyorConnectUp(worldData_, {0, 1});
@@ -100,7 +100,7 @@ namespace jactorio::game
 
     ///
     /// Should gracefully handle entity not a conveyor struct
-    TEST_F(ConveyorConnectionTest, ConnectUpNonStruct) {
+    TEST_F(ConveyorUtilityTest, ConnectUpNonStruct) {
         const proto::ContainerEntity container_proto;
 
         TestSetupContainer(worldData_, {0, 0}, container_proto);
@@ -111,7 +111,7 @@ namespace jactorio::game
 
     ///
     /// Do not connect to itself if the struct spans multiple tiles
-    TEST_F(ConveyorConnectionTest, ConnectUpNoConnectSelf) {
+    TEST_F(ConveyorUtilityTest, ConnectUpNoConnectSelf) {
         auto& structure = CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
         BuildConveyor(worldData_, {0, 1}, structure);
 
@@ -122,7 +122,7 @@ namespace jactorio::game
 
     ///
     /// A conveyor pointing to another one will set the target of the former to the latter
-    TEST_F(ConveyorConnectionTest, ConnectUpLeading) {
+    TEST_F(ConveyorUtilityTest, ConnectUpLeading) {
         // ^
         // ^
 
@@ -136,7 +136,7 @@ namespace jactorio::game
 
     ///
     /// A conveyor placed in front of another one will set the target of the neighbor
-    TEST_F(ConveyorConnectionTest, ConnectUpTrailing) {
+    TEST_F(ConveyorUtilityTest, ConnectUpTrailing) {
         //  v
         //  >
 
@@ -150,7 +150,7 @@ namespace jactorio::game
 
     ///
     /// Do not connect conveyors with orientations pointed at each other
-    TEST_F(ConveyorConnectionTest, ConnectUpPointedTowardsEachOther) {
+    TEST_F(ConveyorUtilityTest, ConnectUpPointedTowardsEachOther) {
         // v
         // ^
 
@@ -165,7 +165,7 @@ namespace jactorio::game
 
     ///
     /// When connecting to a conveyor, it should store the target's structIndex as targetInsertOffset
-    TEST_F(ConveyorConnectionTest, ConnectUpSetStructIndex) {
+    TEST_F(ConveyorUtilityTest, ConnectUpSetStructIndex) {
         // >
         // ^
 
@@ -181,7 +181,7 @@ namespace jactorio::game
 
     ///
     /// A conveyor pointing to another one will set the target of the former to the latter
-    TEST_F(ConveyorConnectionTest, ConnectRightLeading) {
+    TEST_F(ConveyorUtilityTest, ConnectRightLeading) {
         // > >
 
         auto& con_struct       = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::right).structure;
@@ -194,7 +194,7 @@ namespace jactorio::game
 
     ///
     /// A conveyor pointing to another one will set the target of the former to the latter
-    TEST_F(ConveyorConnectionTest, ConnectDownLeading) {
+    TEST_F(ConveyorUtilityTest, ConnectDownLeading) {
         // v
         // v
 
@@ -208,7 +208,7 @@ namespace jactorio::game
 
     ///
     /// A conveyor pointing to another one will set the target of the former to the latter
-    TEST_F(ConveyorConnectionTest, ConnectLeftLeading) {
+    TEST_F(ConveyorUtilityTest, ConnectLeftLeading) {
         // < <
 
         auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::left).structure;
@@ -225,7 +225,7 @@ namespace jactorio::game
     //
     //
 
-    TEST_F(ConveyorConnectionTest, DisconnectUpToNeighbor) {
+    TEST_F(ConveyorUtilityTest, DisconnectUpToNeighbor) {
         auto& con_struct        = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::down).structure;
         auto& con_struct_behind = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
 
@@ -236,7 +236,7 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_behind.target, nullptr);
     }
 
-    TEST_F(ConveyorConnectionTest, DisconnectUpNoDisconnectSelf) {
+    TEST_F(ConveyorUtilityTest, DisconnectUpNoDisconnectSelf) {
         auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
         auto& con_struct       = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
 
@@ -249,7 +249,7 @@ namespace jactorio::game
 
     ///
     /// If neighbor segment connects to current and bends, the bend must be removed after disconnecting
-    TEST_F(ConveyorConnectionTest, DisconnectUpFromNeighborBending) {
+    TEST_F(ConveyorUtilityTest, DisconnectUpFromNeighborBending) {
         auto& con_data_ahead = CreateConveyor(worldData_, {0, 0}, proto::Orientation::down);
         auto& con_struct     = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::right).structure;
 
@@ -273,7 +273,7 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_ahead.itemOffset, 0);
     }
 
-    TEST_F(ConveyorConnectionTest, DisconnectRightToNeighbor) {
+    TEST_F(ConveyorUtilityTest, DisconnectRightToNeighbor) {
         auto& con_struct        = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::left).structure;
         auto& con_struct_behind = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::left).structure;
 
@@ -284,7 +284,7 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_behind.target, nullptr);
     }
 
-    TEST_F(ConveyorConnectionTest, DisconnectDownToNeighbor) {
+    TEST_F(ConveyorUtilityTest, DisconnectDownToNeighbor) {
         auto& con_struct        = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
         auto& con_struct_behind = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
 
@@ -295,7 +295,7 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_behind.target, nullptr);
     }
 
-    TEST_F(ConveyorConnectionTest, DisconnectLeftToNeighbor) {
+    TEST_F(ConveyorUtilityTest, DisconnectLeftToNeighbor) {
         auto& con_struct        = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::right).structure;
         auto& con_struct_behind = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::right).structure;
 
@@ -314,7 +314,7 @@ namespace jactorio::game
 
     ///
     /// Using ahead conveyor structure in same direction is prioritized over creating a new conveyor structure
-    TEST_F(ConveyorConnectionTest, ConveyorCreateGroupAhead) {
+    TEST_F(ConveyorUtilityTest, ConveyorCreateGroupAhead) {
         auto compare_func =
             [](const WorldData& /*world*/, const proto::ConveyorData& current, const proto::ConveyorData& other) {
                 EXPECT_EQ(current.structure->length, 2);
@@ -331,14 +331,14 @@ namespace jactorio::game
 
     ///
     /// Cannot use ahead conveyor if it is in different direction
-    TEST_F(ConveyorConnectionTest, ConveyorCreateGroupAheadDifferentDirection) {
+    TEST_F(ConveyorUtilityTest, ConveyorCreateGroupAheadDifferentDirection) {
         EXPECT_FALSE(TestGrouping({0, 0}, proto::Orientation::right, {0, 1}, proto::Orientation::up));
         EXPECT_FALSE(TestGrouping({0, 0}, proto::Orientation::up, {0, 1}, proto::Orientation::down));
     }
 
     ///
     /// Grouping with behind conveyor prioritized over creating a new conveyor structure
-    TEST_F(ConveyorConnectionTest, ConveyorCreateGroupBehind) {
+    TEST_F(ConveyorUtilityTest, ConveyorCreateGroupBehind) {
         auto compare_func =
             [](const WorldData& world, const proto::ConveyorData& current, const proto::ConveyorData& other) {
                 EXPECT_EQ(world.LogicGetChunks().at(0)->GetLogicGroup(Chunk::LogicGroup::conveyor).size(), 1);
@@ -357,7 +357,7 @@ namespace jactorio::game
 
     ///
     /// Conveyors will not group across chunk boundaries
-    TEST_F(ConveyorConnectionTest, ConveyorCreateNoGroupCrossChunk) {
+    TEST_F(ConveyorUtilityTest, ConveyorCreateNoGroupCrossChunk) {
         EXPECT_FALSE(TestGrouping({0, -1}, proto::Orientation::up, {0, 0}, proto::Orientation::up));
         EXPECT_FALSE(TestGrouping({31, 0}, proto::Orientation::right, {32, 0}, proto::Orientation::right));
         EXPECT_FALSE(TestGrouping({0, 31}, proto::Orientation::down, {0, 32}, proto::Orientation::down));
@@ -372,7 +372,7 @@ namespace jactorio::game
 
     ///
     /// Remove head should unregister the head from logic updates
-    TEST_F(ConveyorConnectionTest, RemoveHead) {
+    TEST_F(ConveyorUtilityTest, RemoveHead) {
         //
         // >
         //
@@ -395,7 +395,7 @@ namespace jactorio::game
     ///
     /// Removing beginning of grouped conveyor segment with bending termination
     /// Creates new segment with what was the second tile now the head
-    TEST_F(ConveyorConnectionTest, RemoveHeadBendingTermination) {
+    TEST_F(ConveyorUtilityTest, RemoveHeadBendingTermination) {
         //
         // > > v
         //
@@ -430,7 +430,7 @@ namespace jactorio::game
     ///
     /// Removing middle of grouped conveyor segment
     /// Create new segment behind, shorten segment ahead
-    TEST_F(ConveyorConnectionTest, RemoveMiddle) {
+    TEST_F(ConveyorUtilityTest, RemoveMiddle) {
         //
         // > /> > >
         //
@@ -476,7 +476,7 @@ namespace jactorio::game
     //
     //
 
-    TEST_F(ConveyorConnectionTest, ConveyorRenumber) {
+    TEST_F(ConveyorUtilityTest, ConveyorRenumber) {
         auto& con_data_1             = CreateConveyor(worldData_, {0, 0}, proto::Orientation::up);
         con_data_1.structure->length = 3;
         con_data_1.structIndex       = 5;
@@ -493,7 +493,7 @@ namespace jactorio::game
         EXPECT_EQ(con_data_3.structIndex, 7);
     }
 
-    TEST_F(ConveyorConnectionTest, ChangeStructure) {
+    TEST_F(ConveyorUtilityTest, ChangeStructure) {
         auto& new_con_struct   = CreateConveyor(worldData_, {5, 5}, proto::Orientation::up).structure;
         new_con_struct->length = 3;
 
@@ -513,7 +513,7 @@ namespace jactorio::game
     ///
     /// When changing structure, other structures which has the old structure as a target must be updated
     /// to use the new structure
-    TEST_F(ConveyorConnectionTest, ChangeStructureUpdateTargets) {
+    TEST_F(ConveyorUtilityTest, ChangeStructureUpdateTargets) {
         worldData_.EmplaceChunk(0, -1);
 
         auto& new_con_struct   = CreateConveyor(worldData_, {5, 5}, proto::Orientation::left).structure;
@@ -856,4 +856,21 @@ namespace jactorio::game
     }
 
 
+    ///
+    /// Should change line orientation of right neighbor from {0, 0} to up_right (Aesthetics only)
+    TEST_F(ConveyorUtilityTest, UpdateNeighborLineOrientation) {
+        //
+        // x > >
+        //   ^
+        //
+
+        auto& con_data_r_head = CreateConveyor(worldData_, {2, 0}, proto::Orientation::right);
+        auto& con_data_r_end  = BuildConveyor(worldData_, {1, 0}, con_data_r_head.structure);
+
+        CreateConveyor(worldData_, {1, 1}, proto::Orientation::up);
+
+        ConveyorUpdateNeighborLineOrien(worldData_, {0, 0});
+
+        EXPECT_EQ(con_data_r_end.lOrien, proto::LineOrientation::up_right);
+    }
 } // namespace jactorio::game

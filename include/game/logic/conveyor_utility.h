@@ -133,6 +133,10 @@ namespace jactorio::game
     J_NODISCARD proto::LineOrientation ConveyorCalcLineOrien(const WorldData& world,
                                                              const WorldCoord& coord,
                                                              proto::Orientation direction);
+    ///
+    /// Updates line orientation for 4 neighbors of coord
+    /// See ConveyorCalcLineOrien
+    void ConveyorUpdateNeighborLineOrien(WorldData& world, const WorldCoord& coord);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_UTILITY_H

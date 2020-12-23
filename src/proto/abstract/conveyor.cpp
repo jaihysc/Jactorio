@@ -78,26 +78,6 @@ SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_d
 // Build / Remove / Neighbor update
 
 ///
-///	\brief Calculates the line orientation of neighboring conveyors
-void CalculateNeighborLineOrientation(game::WorldData& world, const WorldCoord& coord) {
-
-    auto calculate_neighbor = [&world](const WorldCoord& neighbor_coord) {
-        auto* con_data = GetConData(world, neighbor_coord);
-
-        if (con_data != nullptr) {
-            const auto orien = proto::ConveyorData::ToOrientation(con_data->lOrien);
-            con_data->SetOrientation(ConveyorCalcLineOrien(world, neighbor_coord, orien));
-        }
-    };
-
-    calculate_neighbor({coord.x, coord.y - 1});
-    calculate_neighbor({coord.x + 1, coord.y});
-    calculate_neighbor({coord.x, coord.y + 1});
-    calculate_neighbor({coord.x - 1, coord.y});
-}
-
-
-///
 /// Shifts origin segment forwards if neighbor line orientation matches template arguments
 template <proto::LineOrientation BendLeft,
           proto::LineOrientation BendRight,
@@ -309,7 +289,7 @@ void proto::Conveyor::OnBuild(game::WorldData& world,
 
     // Update neighbor orientation has to be done PRIOR to applying segment shift
 
-    CalculateNeighborLineOrientation(world, coord);
+    ConveyorUpdateNeighborLineOrien(world, coord);
 
     TryShiftSegment(world, coord, con_structure_p);
     CalculateNeighborTermination<false>(world, coord, line_orientation);
@@ -341,7 +321,7 @@ void proto::Conveyor::OnRemove(game::WorldData& world,
                                game::ChunkTileLayer& /*tile_layer*/) const {
     ConveyorDisconnect(world, coord);
     ConveyorRemove(world, coord);
-    CalculateNeighborLineOrientation(world, coord);
+    ConveyorUpdateNeighborLineOrien(world, coord);
 }
 
 void proto::Conveyor::OnDeserialize(game::WorldData& world_data,
