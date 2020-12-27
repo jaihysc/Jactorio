@@ -28,6 +28,7 @@
 #include "proto/recipe_category.h"
 #include "proto/recipe_group.h"
 #include "proto/resource_entity.h"
+#include "proto/splitter.h"
 #include "proto/sprite.h"
 #include "proto/tile.h"
 #include "proto/transport_belt.h"
@@ -227,6 +228,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
     //
     PYBIND_DATA_CLASS(TransportBelt, TransportBelt, Conveyor);
+
+    //
+    PYBIND_DATA_CLASS(Splitter, Splitter, Conveyor);
 
     // Assembly machine
     PYBIND_DATA_CLASS(AssemblyMachine, AssemblyMachine, HealthEntity)

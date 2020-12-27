@@ -113,6 +113,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/proto/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/proto/prototype_typeTests.cpp
 	${JACTORIO_TEST_DIR}/proto/recipeTests.cpp
+	${JACTORIO_TEST_DIR}/proto/splitterTests.cpp
 	${JACTORIO_TEST_DIR}/proto/spriteTests.cpp
 
 	${JACTORIO_TEST_DIR}/proto/abstract/conveyorTests.cpp

@@ -14,8 +14,6 @@
 
 namespace jactorio::proto
 {
-    ///
-    /// ConveyorData with a segment index of 0 manages a segment and will delete it when it is deleted
     struct ConveyorData final : HealthEntityData
     {
         ConveyorData() = default;
