@@ -56,18 +56,18 @@
     }                                                  \
     static_assert(true)
 
-// Assertions for post_load_validate
-#define J_DATA_ASSERT(condition, format)                                                      \
-    jactorio::proto::DataAssert(condition,                                                    \
-                                "\"%s\", " format "\nTraceback (most recent call last):\n%s", \
-                                this->name.c_str(),                                           \
+// Assertions for PostLoadValidate
+#define J_PROTO_ASSERT(condition__, msg__)                                                   \
+    jactorio::proto::DataAssert(condition__,                                                 \
+                                "\"%s\", " msg__ "\nTraceback (most recent call last):\n%s", \
+                                this->name.c_str(),                                          \
                                 this->pythonTraceback.c_str())
 
-#define J_DATA_ASSERT_F(condition, format, ...)                                               \
-    jactorio::proto::DataAssert(condition,                                                    \
-                                "\"%s\", " format "\nTraceback (most recent call last):\n%s", \
-                                this->name.c_str(),                                           \
-                                __VA_ARGS__,                                                  \
+#define J_PROTO_ASSERT_F(condition__, format__, ...)                                            \
+    jactorio::proto::DataAssert(condition__,                                                    \
+                                "\"%s\", " format__ "\nTraceback (most recent call last):\n%s", \
+                                this->name.c_str(),                                             \
+                                __VA_ARGS__,                                                    \
                                 this->pythonTraceback.c_str())
 
 namespace jactorio::data

@@ -35,7 +35,7 @@ namespace jactorio::proto
         void PostLoadValidate(const data::PrototypeManager& data_manager) const override {
             Entity::PostLoadValidate(data_manager);
 
-            J_DATA_ASSERT(maxHealth > 0, "Max health must be greater than 0");
+            J_PROTO_ASSERT(maxHealth > 0, "Max health must be greater than 0");
         }
     };
 } // namespace jactorio::proto

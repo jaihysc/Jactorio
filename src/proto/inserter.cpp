@@ -113,9 +113,9 @@ void proto::Inserter::OnDeserialize(game::WorldData& world_data,
 }
 
 void proto::Inserter::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
-    J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
-    J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
-    J_DATA_ASSERT(handSprite != nullptr, "Hand sprite not provided");
+    J_PROTO_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
+    J_PROTO_ASSERT(armSprite != nullptr, "Arm sprite not provided");
+    J_PROTO_ASSERT(handSprite != nullptr, "Hand sprite not provided");
 }
 
 void proto::Inserter::ValidatedPostLoad() {

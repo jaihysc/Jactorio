@@ -199,10 +199,10 @@ void proto::MiningDrill::OnDeserialize(game::WorldData& world_data,
 }
 
 void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& /*data_manager*/) const {
-    J_DATA_ASSERT(sprite != nullptr, "North sprite not provided");
-    J_DATA_ASSERT(spriteE != nullptr, "East sprite not provided");
-    J_DATA_ASSERT(spriteS != nullptr, "South sprite not provided");
-    J_DATA_ASSERT(spriteW != nullptr, "West sprite not provided");
+    J_PROTO_ASSERT(sprite != nullptr, "North sprite not provided");
+    J_PROTO_ASSERT(spriteE != nullptr, "East sprite not provided");
+    J_PROTO_ASSERT(spriteS != nullptr, "South sprite not provided");
+    J_PROTO_ASSERT(spriteW != nullptr, "West sprite not provided");
 }
 
 void proto::MiningDrill::ValidatedPostLoad() {

@@ -129,9 +129,9 @@ void proto::Conveyor::PostLoad() {
 }
 
 void proto::Conveyor::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
-    J_DATA_ASSERT(speedFloat >= 0.001, "Conveyor speed below minimum 0.001");
+    J_PROTO_ASSERT(speedFloat >= 0.001, "Conveyor speed below minimum 0.001");
     // Cannot exceed item_width because of limitations in the logic
-    J_DATA_ASSERT(speedFloat < 0.25, "Conveyor speed equal or above maximum of 0.25");
+    J_PROTO_ASSERT(speedFloat < 0.25, "Conveyor speed equal or above maximum of 0.25");
 }
 
 void proto::Conveyor::ValidatedPostLoad() {

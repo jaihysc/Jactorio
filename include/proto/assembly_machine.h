@@ -101,7 +101,7 @@ namespace jactorio::proto
                       game::ChunkTileLayer& tile_layer) const override;
 
         void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {
-            J_DATA_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");
+            J_PROTO_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");
         }
     };
 } // namespace jactorio::proto
