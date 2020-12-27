@@ -25,6 +25,30 @@ namespace jactorio::game
     class ConveyorStruct;
 
     ///
+    /// Processes all steps for cleanly building a conveyor
+    ///
+    /// 1. Create conveyor struct
+    /// 2. Set conveyor line orientation
+    /// 3. Connect neighbors
+    /// 4. Update neighbor termination type
+    /// 5. Update neighbor line orientation
+    /// \remark Additional neighbors must be updated via ConveyorUpdateNeighborTermination in OnNeighborUpdate
+    void BuildConveyor(WorldData& world,
+                       const WorldCoord& coord,
+                       proto::ConveyorData& conveyor,
+                       proto::Orientation direction);
+
+    ///
+    /// Processes all steps for cleanly removing a conveyor
+    ///
+    /// 1. Destroy conveyor structure
+    /// 2. Disconnect neighbors
+    /// 3. Update neighbor line orientation
+    /// \remark Additional neighbors must be updated via ConveyorUpdateNeighborTermination in OnNeighborUpdate
+    void RemoveConveyor(WorldData& world, const WorldCoord& coord);
+
+
+    ///
     /// Fetches conveyor data at coord, nullptr if non existent
     J_NODISCARD proto::ConveyorData* GetConData(WorldData& world, const WorldCoord& coord);
     J_NODISCARD const proto::ConveyorData* GetConData(const WorldData& world, const WorldCoord& coord);
@@ -32,7 +56,7 @@ namespace jactorio::game
     ///
     /// Calls ConveyorConnect up, right, down, left
     /// \param coord Current struct's coordinate
-    void ConveyorConnect(WorldData& world, const WorldCoord& coord);
+    void ConveyorNeighborConnect(WorldData& world, const WorldCoord& coord);
 
     ///
     /// Attempts to connect between a connectable conveyor segment above
@@ -58,7 +82,7 @@ namespace jactorio::game
     ///
     /// Calls ConveyorDisconnect up, right, down, left
     /// \param coord Current struct's coordinate
-    void ConveyorDisconnect(WorldData& world, const WorldCoord& coord);
+    void ConveyorNeighborDisconnect(WorldData& world, const WorldCoord& coord);
 
     ///
     /// Attempts to disconnect conveyor segment above
@@ -93,10 +117,10 @@ namespace jactorio::game
                         proto::Orientation direction);
 
     ///
-    /// Removes conveyor structure at provided coordinates
+    /// Destroys conveyor structure at provided coordinates
     ///
     /// Will ungroup the segment as necessary
-    void ConveyorRemove(WorldData& world, const WorldCoord& coord);
+    void ConveyorDestroy(WorldData& world, const WorldCoord& coord);
 
 
     ///

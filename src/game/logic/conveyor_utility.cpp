@@ -8,6 +8,25 @@
 
 using namespace jactorio;
 
+void game::BuildConveyor(WorldData& world,
+                         const WorldCoord& coord,
+                         proto::ConveyorData& conveyor,
+                         const proto::Orientation direction) {
+    ConveyorCreate(world, coord, conveyor, direction);
+    conveyor.lOrien = ConveyorCalcLineOrien(world, coord, direction);
+
+    ConveyorNeighborConnect(world, coord);
+    ConveyorUpdateNeighborTermination(world, coord);
+    ConveyorUpdateNeighborLineOrien(world, coord);
+}
+
+void game::RemoveConveyor(WorldData& world, const WorldCoord& coord) {
+    ConveyorNeighborDisconnect(world, coord);
+    ConveyorDestroy(world, coord);
+    ConveyorUpdateNeighborLineOrien(world, coord);
+}
+
+
 J_NODISCARD proto::ConveyorData* game::GetConData(WorldData& world, const WorldCoord& coord) {
     return const_cast<proto::ConveyorData*>(GetConData(static_cast<const WorldData&>(world), coord));
 }
@@ -89,7 +108,7 @@ static void DoConnect(game::WorldData& world, const WorldCoord& coord) {
 }
 
 
-void game::ConveyorConnect(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorNeighborConnect(WorldData& world, const WorldCoord& coord) {
     ConveyorConnectUp(world, coord);
     ConveyorConnectRight(world, coord);
     ConveyorConnectDown(world, coord);
@@ -153,7 +172,7 @@ void DisconnectSegment(game::WorldData& world, const WorldCoord& origin_coord, c
     }
 }
 
-void game::ConveyorDisconnect(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorNeighborDisconnect(WorldData& world, const WorldCoord& coord) {
     ConveyorDisconnectUp(world, coord);
     ConveyorDisconnectRight(world, coord);
     ConveyorDisconnectDown(world, coord);
@@ -267,7 +286,7 @@ void game::ConveyorCreate(WorldData& world,
     world.LogicRegister(Chunk::LogicGroup::conveyor, coord, TileLayer::entity);
 }
 
-void game::ConveyorRemove(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorDestroy(WorldData& world, const WorldCoord& coord) {
     // o_ = old
     // n_ = new
 

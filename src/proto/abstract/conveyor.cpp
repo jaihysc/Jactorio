@@ -84,18 +84,9 @@ void proto::Conveyor::OnBuild(game::WorldData& world,
                               const Orientation orientation) const {
 
     auto& con_data = tile_layer.MakeUniqueData<ConveyorData>();
-    ConveyorCreate(world, coord, con_data, orientation);
+    BuildConveyor(world, coord, con_data, orientation);
 
-    const auto line_orientation = ConveyorCalcLineOrien(world, coord, orientation);
-
-    con_data.set    = static_cast<uint16_t>(line_orientation);
-    con_data.lOrien = line_orientation;
-
-
-    ConveyorUpdateNeighborLineOrien(world, coord);
-    ConveyorUpdateNeighborTermination(world, coord);
-
-    ConveyorConnect(world, coord);
+    con_data.set = static_cast<uint16_t>(con_data.lOrien);
 }
 
 void proto::Conveyor::OnNeighborUpdate(game::WorldData& world,
@@ -120,9 +111,7 @@ void proto::Conveyor::OnRemove(game::WorldData& world,
                                game::LogicData& /*logic*/,
                                const WorldCoord& coord,
                                game::ChunkTileLayer& /*tile_layer*/) const {
-    ConveyorDisconnect(world, coord);
-    ConveyorRemove(world, coord);
-    ConveyorUpdateNeighborLineOrien(world, coord);
+    RemoveConveyor(world, coord);
 }
 
 void proto::Conveyor::OnDeserialize(game::WorldData& world_data,
@@ -131,7 +120,7 @@ void proto::Conveyor::OnDeserialize(game::WorldData& world_data,
     auto* origin_data = tile_layer.GetUniqueData<ConveyorData>();
     assert(origin_data != nullptr);
 
-    ConveyorConnect(world_data, world_coord);
+    ConveyorNeighborConnect(world_data, world_coord);
 }
 
 void proto::Conveyor::PostLoad() {

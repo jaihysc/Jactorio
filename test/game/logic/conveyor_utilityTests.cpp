@@ -371,8 +371,8 @@ namespace jactorio::game
     //
 
     ///
-    /// Remove head should unregister the head from logic updates
-    TEST_F(ConveyorUtilityTest, RemoveHead) {
+    /// Destroy head should unregister the head from logic updates
+    TEST_F(ConveyorUtilityTest, DestroyHead) {
         //
         // >
         //
@@ -383,7 +383,7 @@ namespace jactorio::game
             worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {0, 0}, TileLayer::entity);
         }
 
-        ConveyorRemove(worldData_, {0, 0});
+        ConveyorDestroy(worldData_, {0, 0});
 
         auto* con_data = worldData_.GetTile({0, 0})->GetLayer(TileLayer::entity).GetUniqueData<proto::ConveyorData>();
         ASSERT_NE(con_data, nullptr);
@@ -395,7 +395,7 @@ namespace jactorio::game
     ///
     /// Removing beginning of grouped conveyor segment with bending termination
     /// Creates new segment with what was the second tile now the head
-    TEST_F(ConveyorUtilityTest, RemoveHeadBendingTermination) {
+    TEST_F(ConveyorUtilityTest, DestroyHeadBendingTermination) {
         //
         // > > v
         //
@@ -414,7 +414,7 @@ namespace jactorio::game
             worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {2, 0}, TileLayer::entity);
         }
 
-        ConveyorRemove(worldData_, {1, 0});
+        ConveyorDestroy(worldData_, {1, 0});
 
 
         auto* behind_con_data = GetConData(worldData_, {0, 0});
@@ -430,7 +430,7 @@ namespace jactorio::game
     ///
     /// Removing middle of grouped conveyor segment
     /// Create new segment behind, shorten segment ahead
-    TEST_F(ConveyorUtilityTest, RemoveMiddle) {
+    TEST_F(ConveyorUtilityTest, DestroyMiddle) {
         //
         // > /> > >
         //
@@ -449,7 +449,7 @@ namespace jactorio::game
             con_data_4.structIndex = 100; // Should be changed
         }
 
-        ConveyorRemove(worldData_, {1, 0});
+        ConveyorDestroy(worldData_, {1, 0});
 
         auto* ahead_con_data = GetConData(worldData_, {3, 0});
         ASSERT_NE(ahead_con_data, nullptr);
