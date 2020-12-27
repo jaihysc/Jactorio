@@ -75,7 +75,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
                     // |   |   |   |
                     // 3   2   1   0
                     // targetOffset of 0: Length is 1
-                    length = core::SafeCast<double>(1) + segment.targetInsertOffset;
+                    length = core::SafeCast<double>(1) + segment.sideInsertIndex;
                     break;
 
                 default:
@@ -98,11 +98,11 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
                 // Side insertion
             case game::ConveyorStruct::TerminationType::left_only:
                 moved_item = target_segment.left.TryInsertItem(
-                    target_offset.getAsDouble(), *side.lane[index].item, target_segment.itemOffset);
+                    target_offset.getAsDouble(), *side.lane[index].item, target_segment.headOffset);
                 break;
             case game::ConveyorStruct::TerminationType::right_only:
                 moved_item = target_segment.right.TryInsertItem(
-                    target_offset.getAsDouble(), *side.lane[index].item, target_segment.itemOffset);
+                    target_offset.getAsDouble(), *side.lane[index].item, target_segment.headOffset);
                 break;
             }
 

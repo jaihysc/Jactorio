@@ -238,25 +238,25 @@ namespace jactorio::game
         ConveyorLane right;
 
 
-        /// Offset applied for TransportBeltData::lineSegmentIndex
+        /// Offset applied for structIndex
         ///
         /// When this segment is extended from the head, offset increments 1.
         /// When the segment is shortened from the head, offset decrements 1.
         /// No effect when extended or shortened from the tail.
         ///
-        /// The offset ensures that all entities which stores a segment index tile inserts at the same location
+        /// The offset ensures that all entities which stores a struct index inserts at the same location
         /// when the segment is extended or shortened, used in methods with a Abs suffix
-        IntOffsetT itemOffset = 0;
+        IntOffsetT headOffset = 0;
 
-        /// If this segment terminates side only, this is the offset from the beginning of target segment to insert at
-        IntOffsetT targetInsertOffset = 0;
+        /// If this segment terminates side only, this is the the struct index to insert at with headOffset applied
+        IntOffsetT sideInsertIndex = 0;
 
-        /// Segment this conveyor feeds into
+        /// Conveyor this conveyor feeds into
         ConveyorStruct* target = nullptr;
 
 
         CEREAL_SERIALIZE(archive) {
-            archive(direction, terminationType, length, left, right, itemOffset, targetInsertOffset);
+            archive(direction, terminationType, length, left, right, headOffset, sideInsertIndex);
         }
 
         CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorStruct) {
@@ -267,7 +267,7 @@ namespace jactorio::game
             archive(line_dir, term_type, seg_length);
             construct(line_dir, term_type, seg_length);
 
-            archive(construct->left, construct->right, construct->itemOffset, construct->targetInsertOffset);
+            archive(construct->left, construct->right, construct->headOffset, construct->sideInsertIndex);
         }
     };
 

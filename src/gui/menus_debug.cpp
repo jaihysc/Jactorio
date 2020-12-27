@@ -360,8 +360,8 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
             ImGui::Text("Target segment: %s", segment.target != nullptr ? sstream2.str().c_str() : "NULL");
         }
 
-        ImGui::Text("Item offset %d", segment.itemOffset);
-        ImGui::Text("Target insertion offset %d", segment.targetInsertOffset);
+        ImGui::Text("Head offset %d", segment.headOffset);
+        ImGui::Text("Side insertion index %d", segment.sideInsertIndex);
         ImGui::Text("Length, Index: %d %d", segment.length, con_data->structIndex);
 
         {

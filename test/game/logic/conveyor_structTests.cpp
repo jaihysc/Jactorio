@@ -87,7 +87,7 @@ namespace jactorio::game
 
     TEST_F(ConveyorStructTest, CanInsertAbs) {
         // the given offset should be adjusted as ConveyorSegment::itemOffset is adjusted where 1 = 1 tile
-        segment_->itemOffset = 1;
+        segment_->headOffset = 1;
         const proto::LineDistT offset{0.f};
 
         segment_->AppendItem(true, 0, *itemProto_);
@@ -190,7 +190,7 @@ namespace jactorio::game
     TEST_F(ConveyorStructTest, InsertItemAbs) {
         auto line_segment =
             std::make_unique<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
-        line_segment->itemOffset = 2;
+        line_segment->headOffset = 2;
 
         // Offset is ALWAYS from the beginning of the conveyor + itemOffset
 
@@ -291,14 +291,14 @@ namespace jactorio::game
 
     TEST_F(ConveyorStructTest, GetOffsetAbs) {
         {
-            segment_->itemOffset = 0;
+            segment_->headOffset = 0;
 
             ConveyorStruct::FloatOffsetT o = 3;
             segment_->GetOffsetAbs(o);
             EXPECT_DOUBLE_EQ(o, 3.);
         }
         {
-            segment_->itemOffset = 3;
+            segment_->headOffset = 3;
 
             ConveyorStruct::FloatOffsetT o = 3;
             segment_->GetOffsetAbs(o);
@@ -306,7 +306,7 @@ namespace jactorio::game
         }
 
         {
-            segment_->itemOffset = -2;
+            segment_->headOffset = -2;
 
             ConveyorStruct::IntOffsetT o = 3;
             segment_->GetOffsetAbs(o);

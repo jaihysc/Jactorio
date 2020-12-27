@@ -311,21 +311,21 @@ const proto::Item* game::ConveyorStruct::TryPopItem(const bool left_side,
 // With itemOffset applied
 
 bool game::ConveyorStruct::CanInsertAbs(const bool left_side, const proto::LineDistT& start_offset) {
-    return left_side ? left.CanInsert(start_offset, itemOffset) : right.CanInsert(start_offset, itemOffset);
+    return left_side ? left.CanInsert(start_offset, headOffset) : right.CanInsert(start_offset, headOffset);
 }
 
 void game::ConveyorStruct::InsertItemAbs(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
-    left_side ? left.InsertItem(offset, item, itemOffset) : right.InsertItem(offset, item, itemOffset);
+    left_side ? left.InsertItem(offset, item, headOffset) : right.InsertItem(offset, item, headOffset);
 }
 
 bool game::ConveyorStruct::TryInsertItemAbs(const bool left_side, const FloatOffsetT offset, const proto::Item& item) {
-    return left_side ? left.TryInsertItem(offset, item, itemOffset) : right.TryInsertItem(offset, item, itemOffset);
+    return left_side ? left.TryInsertItem(offset, item, headOffset) : right.TryInsertItem(offset, item, headOffset);
 }
 
 void game::ConveyorStruct::GetOffsetAbs(IntOffsetT& val) const {
-    val -= itemOffset;
+    val -= headOffset;
 }
 
 void game::ConveyorStruct::GetOffsetAbs(FloatOffsetT& val) const {
-    val -= itemOffset;
+    val -= headOffset;
 }

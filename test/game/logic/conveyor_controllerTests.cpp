@@ -547,10 +547,10 @@ namespace jactorio::game
         auto down_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::down, ConveyorStruct::TerminationType::straight, 10);
 
-        right_segment->target             = down_segment.get();
-        right_segment->targetInsertOffset = 8; // 8 + 1 = 9
+        right_segment->target          = down_segment.get();
+        right_segment->sideInsertIndex = 8; // 8 + 1 = 9
 
-        down_segment->itemOffset = 1;
+        down_segment->headOffset = 1;
 
         RegisterSegment({4, 0}, right_segment);
         RegisterSegment({4, 9}, down_segment);
@@ -646,8 +646,8 @@ namespace jactorio::game
 
         left_segment->target = down_segment.get();
 
-        left_segment->targetInsertOffset = -1; // Will insert into up_segment with offset of 9 absolute
-        down_segment->itemOffset         = 10;
+        left_segment->sideInsertIndex = -1; // Will insert into up_segment with offset of 9 absolute
+        down_segment->headOffset      = 10;
 
         RegisterSegment({4, 0}, left_segment);
         RegisterSegment({4, 9}, down_segment);
@@ -728,7 +728,7 @@ namespace jactorio::game
 
         auto left_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::bend_right, 4);
-        left_segment->itemOffset = 1;
+        left_segment->headOffset = 1;
         RegisterSegment({2, 2}, left_segment);
 
         // ======================================================================
@@ -736,8 +736,8 @@ namespace jactorio::game
         auto down_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::down, ConveyorStruct::TerminationType::right_only, 1);
 
-        down_segment->target             = left_segment.get();
-        down_segment->targetInsertOffset = 2;
+        down_segment->target          = left_segment.get();
+        down_segment->sideInsertIndex = 2;
 
         RegisterSegment({3, 1}, down_segment);
 
@@ -774,8 +774,8 @@ namespace jactorio::game
         auto up_segment =
             std::make_shared<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::left_only, 1);
 
-        up_segment->target             = left_segment.get();
-        up_segment->targetInsertOffset = 2;
+        up_segment->target          = left_segment.get();
+        up_segment->sideInsertIndex = 2;
 
         RegisterSegment({3, 3}, up_segment);
 

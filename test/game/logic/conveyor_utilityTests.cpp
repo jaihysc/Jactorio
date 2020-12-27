@@ -176,7 +176,7 @@ namespace jactorio::game
 
         ConveyorConnectUp(worldData_, {0, 1});
 
-        EXPECT_EQ(con_struct_u.targetInsertOffset, 10);
+        EXPECT_EQ(con_struct_u.sideInsertIndex, 10);
     }
 
     ///
@@ -261,7 +261,7 @@ namespace jactorio::game
         con_struct_ahead.terminationType = ConveyorStruct::TerminationType::bend_left;
 
         con_struct_ahead.length     = 2;
-        con_struct_ahead.itemOffset = 1;
+        con_struct_ahead.headOffset = 1;
 
 
         ConveyorDisconnectUp(worldData_, {0, 1});
@@ -270,7 +270,7 @@ namespace jactorio::game
         EXPECT_EQ(con_struct_ahead.target, nullptr);
         EXPECT_EQ(con_struct_ahead.terminationType, ConveyorStruct::TerminationType::straight);
         EXPECT_EQ(con_struct_ahead.length, 1);
-        EXPECT_EQ(con_struct_ahead.itemOffset, 0);
+        EXPECT_EQ(con_struct_ahead.headOffset, 0);
     }
 
     TEST_F(ConveyorUtilityTest, DisconnectRightToNeighbor) {
@@ -437,7 +437,7 @@ namespace jactorio::game
 
         {
             auto& head_con_data                 = CreateConveyor(worldData_, {3, 0}, proto::Orientation::right);
-            head_con_data.structure->itemOffset = 30; // Will use this to set structure behind itemOffset
+            head_con_data.structure->headOffset = 30; // Will use this to set structure behind itemOffset
             head_con_data.structure->length     = 4;  // Will use this to set structure behind length
 
             BuildConveyor(worldData_, {2, 0}, head_con_data.structure);
@@ -462,7 +462,7 @@ namespace jactorio::game
 
         EXPECT_EQ(behind_con_data->structure->length, 1);
         // itemOffset 30, remove at index 2, -1 (constant): 30 - 2 - 1 = 27
-        EXPECT_EQ(behind_con_data->structure->itemOffset, 27);
+        EXPECT_EQ(behind_con_data->structure->headOffset, 27);
         EXPECT_EQ(behind_con_data->structIndex, 0);
 
 

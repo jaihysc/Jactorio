@@ -173,7 +173,7 @@ namespace jactorio::game
     TEST_F(ItemDropOffTest, InsertOffset) {
         auto line_data                  = CreateConveyor(proto::Orientation::up);
         line_data.structIndex           = 1;
-        line_data.structure->itemOffset = 10; // Arbitrary itemOffset
+        line_data.structure->headOffset = 10; // Arbitrary
 
         ConveyorInsert(proto::Orientation::up, line_data);
         ASSERT_EQ(line_data.structure->right.lane.size(), 1);

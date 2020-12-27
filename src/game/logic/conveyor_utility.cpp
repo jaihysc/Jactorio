@@ -61,8 +61,8 @@ static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& n
         from.target = to.structure.get();
 
         // Insert at the correct offset for targets spanning > 1 tiles
-        from.targetInsertOffset = to.structIndex;
-        to.structure->GetOffsetAbs(from.targetInsertOffset);
+        from.sideInsertIndex = to.structIndex;
+        to.structure->GetOffsetAbs(from.sideInsertIndex);
     };
 
 
@@ -290,7 +290,7 @@ void game::ConveyorRemove(WorldData& world, const WorldCoord& coord) {
             o_line_segment->direction, ConveyorStruct::TerminationType::straight, n_seg_length);
 
         // -1 to skip tile which was removed
-        n_segment->itemOffset = o_line_segment->itemOffset - o_line_data->structIndex - 1;
+        n_segment->headOffset = o_line_segment->headOffset - o_line_data->structIndex - 1;
 
         world.LogicRegister(Chunk::LogicGroup::conveyor, n_seg_coords, TileLayer::entity);
 
@@ -322,12 +322,12 @@ void game::ConveyorRemove(WorldData& world, const WorldCoord& coord) {
 
 void game::ConveyorLengthenFront(ConveyorStruct& con_struct) {
     con_struct.length++;
-    con_struct.itemOffset++;
+    con_struct.headOffset++;
 }
 
 void game::ConveyorShortenFront(ConveyorStruct& con_struct) {
     con_struct.length--;
-    con_struct.itemOffset--;
+    con_struct.headOffset--;
 }
 
 void game::ConveyorLogicRemove(WorldData& world_data, const WorldCoord& world_coords, ConveyorStruct& con_struct) {
