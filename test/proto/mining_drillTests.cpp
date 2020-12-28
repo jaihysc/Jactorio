@@ -23,8 +23,8 @@ namespace jactorio::proto
         void SetUp() override {
             worldData_.EmplaceChunk(0, 0);
 
-            drillProto_.tileWidth    = 3;
-            drillProto_.tileHeight   = 3;
+            drillProto_.SetWidth(3);
+            drillProto_.SetHeight(3);
             drillProto_.miningRadius = 1;
 
             resource_.pickupTime = 1.f;
@@ -44,8 +44,8 @@ namespace jactorio::proto
          */
 
         MiningDrill drill{};
-        drill.tileWidth    = 4;
-        drill.tileHeight   = 3;
+        drill.SetWidth(4);
+        drill.SetHeight(3);
         drill.miningRadius = 2;
 
         // Has no resource tiles
@@ -70,8 +70,8 @@ namespace jactorio::proto
          */
 
         MiningDrill drill{};
-        drill.tileWidth    = 4;
-        drill.tileHeight   = 3;
+        drill.SetWidth(4);
+        drill.SetHeight(3);
         drill.miningRadius = 2;
 
         ResourceEntity resource{};

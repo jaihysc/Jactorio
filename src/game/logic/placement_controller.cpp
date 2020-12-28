@@ -114,20 +114,23 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
         if (t_entity == nullptr) // Already removed
             return false;
 
-        RemoveAtCoords(
-            world_data, TileLayer::entity, t_entity->tileWidth, t_entity->tileHeight, x, y, [](ChunkTile* chunk_tile) {
-                chunk_tile->GetLayer(TileLayer::entity).Clear();
-            });
+        RemoveAtCoords(world_data,
+                       TileLayer::entity,
+                       t_entity->GetWidth(),
+                       t_entity->GetHeight(),
+                       x,
+                       y,
+                       [](ChunkTile* chunk_tile) { chunk_tile->GetLayer(TileLayer::entity).Clear(); });
 
         return true;
     }
 
     // Place
-    if (!PlacementLocationValid(world_data, entity->tileWidth, entity->tileHeight, x, y))
+    if (!PlacementLocationValid(world_data, entity->GetWidth(), entity->GetHeight(), x, y))
         return false;
 
     PlaceAtCoords(
-        world_data, TileLayer::entity, entity->tileWidth, entity->tileHeight, x, y, [&](ChunkTile* chunk_tile) {
+        world_data, TileLayer::entity, entity->GetWidth(), entity->GetHeight(), x, y, [&](ChunkTile* chunk_tile) {
             chunk_tile->SetEntityPrototype(entity);
         });
 

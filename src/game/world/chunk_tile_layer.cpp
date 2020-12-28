@@ -63,7 +63,7 @@ bool game::ChunkTileLayer::HasMultiTileData() const {
 
 game::MultiTileData game::ChunkTileLayer::GetMultiTileData() const {
     assert(prototypeData != nullptr);
-    return {prototypeData->tileWidth, prototypeData->tileHeight};
+    return {prototypeData->GetWidth(), prototypeData->GetHeight()};
 }
 
 

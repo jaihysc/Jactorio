@@ -209,8 +209,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     PYBIND_PROP(Entity, rotatable)
     PYBIND_PROP(Entity, placeable)
     PYBIND_PROP_GET_SET(Entity, item, SetItem, GetItem)
-    PYBIND_PROP(Entity, tileWidth)
-    PYBIND_PROP(Entity, tileHeight)
+    PYBIND_PROP_GET_SET(Entity, tileWidth, SetWidth, GetWidth)
+    PYBIND_PROP_GET_SET(Entity, tileHeight, SetHeight, GetHeight)
     PYBIND_PROP(Entity, pickupTime);
 
     PYBIND_DATA_CLASS_ABSTRACT(HealthEntity, HealthEntity, Entity)

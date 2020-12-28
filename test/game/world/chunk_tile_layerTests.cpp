@@ -206,8 +206,8 @@ namespace jactorio::game
         ASSERT_TRUE(first.HasMultiTileData());
         const auto& data_1 = first.GetMultiTileData();
 
-        EXPECT_EQ(data_1.span, proto_.tileWidth);
-        EXPECT_EQ(data_1.height, proto_.tileHeight);
+        EXPECT_EQ(data_1.span, proto_.GetWidth());
+        EXPECT_EQ(data_1.height, proto_.GetHeight());
 
 
         ChunkTileLayer second{};

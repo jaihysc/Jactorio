@@ -160,9 +160,9 @@ namespace jactorio::game
         // For entities spanning > 1 tiles, the given location is the top left of the entity
 
         // Place an entity at various locations, checking that it does not place on invalid tiles
-        const auto entity  = std::make_unique<proto::ContainerEntity>();
-        entity->tileWidth  = 3;
-        entity->tileHeight = 3;
+        const auto entity = std::make_unique<proto::ContainerEntity>();
+        entity->SetWidth(3);
+        entity->SetHeight(3);
 
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
@@ -186,9 +186,9 @@ namespace jactorio::game
         // For entities spanning > 1 tiles, the given location is the top left of the entity
 
         // Place an entity at various locations, checking that it does not place on invalid tiles
-        const auto entity  = std::make_unique<proto::ContainerEntity>();
-        entity->tileWidth  = 3;
-        entity->tileHeight = 3;
+        const auto entity = std::make_unique<proto::ContainerEntity>();
+        entity->SetWidth(3);
+        entity->SetHeight(3);
 
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
@@ -208,9 +208,9 @@ namespace jactorio::game
         // For entities spanning > 1 tiles, the given location is the top left of the entity
 
         // Place an entity at various locations, checking that it does not place on invalid tiles
-        const auto entity  = std::make_unique<proto::ContainerEntity>();
-        entity->tileWidth  = 3;
-        entity->tileHeight = 3;
+        const auto entity = std::make_unique<proto::ContainerEntity>();
+        entity->SetWidth(3);
+        entity->SetHeight(3);
 
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
@@ -228,9 +228,9 @@ namespace jactorio::game
 
     TEST_F(PlacementControllerTest, PlaceEntity3x3Invalid3) {
         // When the placed entity overlaps another entity, the placement is also invalid
-        const auto entity  = std::make_unique<proto::ContainerEntity>();
-        entity->tileWidth  = 3;
-        entity->tileHeight = 3;
+        const auto entity = std::make_unique<proto::ContainerEntity>();
+        entity->SetWidth(3);
+        entity->SetHeight(3);
 
 
         EXPECT_TRUE(PlaceEntityAtCoords(worldData_, entity.get(), 9, 10));
@@ -239,9 +239,9 @@ namespace jactorio::game
 
     TEST_F(PlacementControllerTest, RemoveEntity3x3Valid1) {
         // When removing an entity, specifying anywhere will remove the entire entity
-        const auto entity  = std::make_unique<proto::ContainerEntity>();
-        entity->tileWidth  = 3;
-        entity->tileHeight = 3;
+        const auto entity = std::make_unique<proto::ContainerEntity>();
+        entity->SetWidth(3);
+        entity->SetHeight(3);
 
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
@@ -262,9 +262,9 @@ namespace jactorio::game
 
     TEST_F(PlacementControllerTest, RemoveEntity3x3Valid2) {
         // When removing an entity, specifying anywhere will remove the entire entity
-        const auto entity  = std::make_unique<proto::ContainerEntity>();
-        entity->tileWidth  = 3;
-        entity->tileHeight = 3;
+        const auto entity = std::make_unique<proto::ContainerEntity>();
+        entity->SetWidth(3);
+        entity->SetHeight(3);
 
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
@@ -289,9 +289,9 @@ namespace jactorio::game
         // Ensure that irregular shaped multi-tiles fully remove
 
         // For entities spanning > 1 tiles, the given location is the top left of the entity
-        const auto entity  = std::make_unique<proto::ContainerEntity>();
-        entity->tileWidth  = 3;
-        entity->tileHeight = 4;
+        const auto entity = std::make_unique<proto::ContainerEntity>();
+        entity->SetWidth(3);
+        entity->SetHeight(4);
 
         const auto* chunk = worldData_.GetChunkC(0, 0);
 
@@ -318,9 +318,9 @@ namespace jactorio::game
 
     TEST_F(PlacementControllerTest, RemoveEntity3x4Valid) {
         // Ensure that irregular shaped multi-tiles fully remove
-        const auto entity  = std::make_unique<proto::ContainerEntity>();
-        entity->tileWidth  = 3;
-        entity->tileHeight = 4;
+        const auto entity = std::make_unique<proto::ContainerEntity>();
+        entity->SetWidth(3);
+        entity->SetHeight(4);
 
         const auto* chunk = worldData_.GetChunkC(0, 0);
 

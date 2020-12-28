@@ -20,9 +20,30 @@ namespace jactorio::proto
     class FWorldObject : public FrameworkBase, public IRenderable, public ISerializable
     {
     public:
-        // Number of tiles this entity spans
-        PYTHON_PROP_REF_I(uint8_t, tileWidth, 1);
-        PYTHON_PROP_REF_I(uint8_t, tileHeight, 1);
+        using TileSpanT = uint8_t;
+
+        // TODO Swaps width and height when orientation is left or right
+
+        J_NODISCARD TileSpanT GetWidth() const {
+            return width_;
+        }
+        FWorldObject* SetWidth(const TileSpanT width) {
+            width_ = width;
+            return this;
+        }
+
+        J_NODISCARD TileSpanT GetHeight() const {
+            return height_;
+        }
+        FWorldObject* SetHeight(const TileSpanT height) {
+            height_ = height;
+            return this;
+        }
+
+    private:
+        /// Number of tiles which object occupies
+        TileSpanT width_  = 1;
+        TileSpanT height_ = 1;
     };
 } // namespace jactorio::proto
 

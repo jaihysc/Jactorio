@@ -182,9 +182,9 @@ namespace jactorio::game
         // Create entity
         auto item = proto::Item();
 
-        auto entity        = std::make_unique<proto::ContainerEntity>();
-        entity->tileWidth  = 3;
-        entity->tileHeight = 4;
+        auto entity = std::make_unique<proto::ContainerEntity>();
+        entity->SetWidth(3);
+        entity->SetHeight(4);
         entity->SetItem(&item);
 
 
@@ -195,8 +195,8 @@ namespace jactorio::game
         worldData_.EmplaceChunk(0, 0);
 
 
-        for (uint32_t y = 0; y < entity->tileHeight; ++y) {
-            for (uint32_t x = 0; x < entity->tileWidth; ++x) {
+        for (uint32_t y = 0; y < entity->GetHeight(); ++y) {
+            for (uint32_t x = 0; x < entity->GetWidth(); ++x) {
                 auto* tile = worldData_.GetTile(x, y);
                 tile->SetTilePrototype(&tile_proto);
             }
@@ -519,9 +519,9 @@ namespace jactorio::game
 
         auto item = proto::Item{};
 
-        auto entity_proto       = MockEntityPlacement{};
-        entity_proto.tileWidth  = 2;
-        entity_proto.tileHeight = 3;
+        auto entity_proto = MockEntityPlacement{};
+        entity_proto.SetWidth(2);
+        entity_proto.SetHeight(3);
         entity_proto.SetItem(&item);
 
         worldData_.EmplaceChunk(0, 0);

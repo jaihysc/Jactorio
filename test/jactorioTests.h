@@ -86,8 +86,8 @@ namespace jactorio
     inline void TestSetupMultiTileProp(game::ChunkTileLayer& ctl,
                                        const game::MultiTileData& mt_data,
                                        proto::FWorldObject& proto) {
-        proto.tileWidth   = mt_data.span;
-        proto.tileHeight  = mt_data.height;
+        proto.SetWidth(mt_data.span);
+        proto.SetHeight(mt_data.height);
         ctl.prototypeData = &proto;
     }
 
@@ -105,15 +105,15 @@ namespace jactorio
         auto& origin_layer = world_data.GetTile(world_coord)->GetLayer(tile_layer);
         TestSetupMultiTileProp(origin_layer, mt_data, proto);
 
-        for (int y = 0; y < proto.tileHeight; ++y) {
-            for (int x = 0; x < proto.tileWidth; ++x) {
+        for (int y = 0; y < proto.GetHeight(); ++y) {
+            for (int x = 0; x < proto.GetWidth(); ++x) {
                 if (x == 0 && y == 0)
                     continue;
 
                 auto& layer = world_data.GetTile(world_coord.x + x, world_coord.y + y)->GetLayer(tile_layer);
 
                 layer.prototypeData = &proto;
-                layer.SetMultiTileIndex(y * proto.tileWidth + x);
+                layer.SetMultiTileIndex(y * proto.GetWidth() + x);
 
                 if constexpr (SetTopLeftLayer) {
                     layer.SetTopLeftLayer(origin_layer);

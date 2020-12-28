@@ -68,8 +68,8 @@ proto::Item* proto::MiningDrill::FindOutputItem(const game::WorldData& world_dat
     world_pair.x -= this->miningRadius;
     world_pair.y -= this->miningRadius;
 
-    for (uint32_t y = 0; y < 2u * this->miningRadius + this->tileHeight; ++y) {
-        for (uint32_t x = 0; x < 2u * this->miningRadius + this->tileWidth; ++x) {
+    for (uint32_t y = 0; y < 2u * this->miningRadius + this->GetHeight(); ++y) {
+        for (uint32_t x = 0; x < 2u * this->miningRadius + this->GetWidth(); ++x) {
             const game::ChunkTile* tile = world_data.GetTile(world_pair.x + x, world_pair.y + y);
 
             const auto& resource = tile->GetLayer(game::TileLayer::resource);
@@ -115,8 +115,8 @@ bool proto::MiningDrill::OnCanBuild(const game::WorldData& world_data, const Wor
     coords.x -= this->miningRadius;
     coords.y -= this->miningRadius;
 
-    for (uint32_t y = 0; y < 2u * this->miningRadius + this->tileHeight; ++y) {
-        for (uint32_t x = 0; x < 2u * this->miningRadius + this->tileWidth; ++x) {
+    for (uint32_t y = 0; y < 2u * this->miningRadius + this->GetHeight(); ++y) {
+        for (uint32_t x = 0; x < 2u * this->miningRadius + this->GetWidth(); ++x) {
             const game::ChunkTile* tile = world_data.GetTile(coords.x + x, coords.y + y);
 
             if (tile->GetLayer(game::TileLayer::resource).prototypeData.Get() != nullptr)
@@ -232,11 +232,11 @@ WorldCoord proto::MiningDrill::GetOutputCoord(const WorldCoord& world_coord, con
 
 
 int proto::MiningDrill::GetMiningAreaX() const {
-    return 2 * this->miningRadius + this->tileWidth;
+    return 2 * this->miningRadius + this->GetWidth();
 }
 
 int proto::MiningDrill::GetMiningAreaY() const {
-    return 2 * this->miningRadius + this->tileHeight;
+    return 2 * this->miningRadius + this->GetHeight();
 }
 
 bool proto::MiningDrill::SetupResourceDeduction(const game::WorldData& world_data, MiningDrillData& drill_data) const {

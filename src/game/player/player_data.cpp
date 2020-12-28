@@ -199,29 +199,29 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
      */
 
     // x and y are receive coordinates
-    for (proto::ProtoUintT i = 0; i < entity_ptr->tileWidth; ++i) {
+    for (proto::ProtoUintT i = 0; i < entity_ptr->GetWidth(); ++i) {
         const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(i);
         const auto y = world_coord.y - 1;
 
         call_on_neighbor_update(x, y + 1, x, y, proto::Orientation::down);
     }
-    for (proto::ProtoUintT i = 0; i < entity_ptr->tileHeight; ++i) {
-        const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth);
+    for (proto::ProtoUintT i = 0; i < entity_ptr->GetHeight(); ++i) {
+        const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth());
         const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(i);
 
         call_on_neighbor_update(x - 1, y, x, y, proto::Orientation::left);
     }
-    for (proto::ProtoUintT i = 1; i <= entity_ptr->tileWidth; ++i) {
+    for (proto::ProtoUintT i = 1; i <= entity_ptr->GetWidth(); ++i) {
         const auto x =
-            world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->tileWidth) - core::SafeCast<WorldCoordAxis>(i);
-        const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight);
+            world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth()) - core::SafeCast<WorldCoordAxis>(i);
+        const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight());
 
         call_on_neighbor_update(x, y - 1, x, y, proto::Orientation::up);
     }
-    for (proto::ProtoUintT i = 1; i <= entity_ptr->tileHeight; ++i) {
+    for (proto::ProtoUintT i = 1; i <= entity_ptr->GetHeight(); ++i) {
         const auto x = world_coord.x - 1;
         const auto y =
-            world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->tileHeight) - core::SafeCast<WorldCoordAxis>(i);
+            world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight()) - core::SafeCast<WorldCoordAxis>(i);
 
         call_on_neighbor_update(x + 1, y, x, y, proto::Orientation::right);
     }
