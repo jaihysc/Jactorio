@@ -385,7 +385,7 @@ namespace jactorio::game
         TestSetupAssemblyMachine(worldData_, {0, 2}, asm_machine);
 
         auto& inserter = proto_manager.AddProto<proto::Inserter>();
-        TestSetupInserter(worldData_, logicData_, {1, 1}, inserter, proto::Orientation::down);
+        TestSetupInserter(worldData_, logicData_, {1, 1}, inserter, Orientation::down);
 
 
         data::active_prototype_manager   = &proto_manager;

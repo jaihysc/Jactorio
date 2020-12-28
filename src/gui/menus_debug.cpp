@@ -235,7 +235,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
             default:
                 assert(false); // Missing case label
 
-            case proto::Orientation::up:
+            case Orientation::up:
                 pos_x         = position_x;
                 pos_y         = position_y;
                 segment_len_x = 1;
@@ -243,7 +243,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
                 direction_sprite = sprite_up;
                 break;
-            case proto::Orientation::right:
+            case Orientation::right:
                 pos_x         = position_x - line_segment.length + 1;
                 pos_y         = position_y;
                 segment_len_x = line_segment.length;
@@ -251,7 +251,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
                 direction_sprite = sprite_right;
                 break;
-            case proto::Orientation::down:
+            case Orientation::down:
                 pos_x         = position_x;
                 pos_y         = position_y - line_segment.length + 1;
                 segment_len_x = 1;
@@ -259,7 +259,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
                 direction_sprite = sprite_down;
                 break;
-            case proto::Orientation::left:
+            case Orientation::left:
                 pos_x         = position_x;
                 pos_y         = position_y;
                 segment_len_x = line_segment.length;

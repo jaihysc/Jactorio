@@ -39,7 +39,7 @@ namespace jactorio::game
         /// Creates a transport belt with its own conveyor structure
         auto& CreateConveyor(WorldData& world,
                              const WorldCoord& coord,
-                             const proto::Orientation orien,
+                             const Orientation orien,
                              const ConveyorStruct::TerminationType ttype = ConveyorStruct::TerminationType::straight,
                              const std::uint8_t len                      = 1) {
             auto con_struct = std::make_shared<ConveyorStruct>(orien, ttype, len);
@@ -54,9 +54,9 @@ namespace jactorio::game
         /// \return true if grouped
         J_NODISCARD bool TestGrouping(
             const WorldCoord other_coord,
-            const proto::Orientation other_direction,
+            const Orientation other_direction,
             const WorldCoord current_coord,
-            const proto::Orientation direction,
+            const Orientation direction,
             const std::function<
                 void(const WorldData& world, proto::ConveyorData& current, const proto::ConveyorData& other)>& compare =
                 [](auto&, auto&, auto&) {}) {
@@ -85,7 +85,7 @@ namespace jactorio::game
     ///
     /// Should gracefully handle no tile above
     TEST_F(ConveyorUtilityTest, ConnectUpNoTileAbove) {
-        CreateConveyor(worldData_, {0, 0}, proto::Orientation::up);
+        CreateConveyor(worldData_, {0, 0}, Orientation::up);
 
         ConveyorConnectUp(worldData_, {0, 0});
     }
@@ -93,7 +93,7 @@ namespace jactorio::game
     ///
     /// Should gracefully handle no struct above
     TEST_F(ConveyorUtilityTest, ConnectUpNoStructAbove) {
-        CreateConveyor(worldData_, {0, 1}, proto::Orientation::up);
+        CreateConveyor(worldData_, {0, 1}, Orientation::up);
 
         ConveyorConnectUp(worldData_, {0, 1});
     }
@@ -104,7 +104,7 @@ namespace jactorio::game
         const proto::ContainerEntity container_proto;
 
         TestSetupContainer(worldData_, {0, 0}, container_proto);
-        CreateConveyor(worldData_, {0, 1}, proto::Orientation::up);
+        CreateConveyor(worldData_, {0, 1}, Orientation::up);
 
         ConveyorConnectUp(worldData_, {0, 1});
     }
@@ -112,7 +112,7 @@ namespace jactorio::game
     ///
     /// Do not connect to itself if the struct spans multiple tiles
     TEST_F(ConveyorUtilityTest, ConnectUpNoConnectSelf) {
-        auto& structure = CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
+        auto& structure = CreateConveyor(worldData_, {0, 0}, Orientation::up).structure;
         BuildConveyor(worldData_, {0, 1}, structure);
 
         ConveyorConnectUp(worldData_, {0, 1});
@@ -126,8 +126,8 @@ namespace jactorio::game
         // ^
         // ^
 
-        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
-        auto& con_struct       = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, Orientation::up).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {0, 1}, Orientation::up).structure;
 
         ConveyorConnectUp(worldData_, {0, 1});
 
@@ -140,8 +140,8 @@ namespace jactorio::game
         //  v
         //  >
 
-        auto& con_struct_d = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
-        auto& con_struct_r = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::right).structure;
+        auto& con_struct_d = *CreateConveyor(worldData_, {0, 0}, Orientation::down).structure;
+        auto& con_struct_r = *CreateConveyor(worldData_, {0, 1}, Orientation::right).structure;
 
         ConveyorConnectUp(worldData_, {0, 1});
 
@@ -154,8 +154,8 @@ namespace jactorio::game
         // v
         // ^
 
-        auto& con_struct_d = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
-        auto& con_struct_u = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
+        auto& con_struct_d = *CreateConveyor(worldData_, {0, 0}, Orientation::down).structure;
+        auto& con_struct_u = *CreateConveyor(worldData_, {0, 1}, Orientation::up).structure;
 
         ConveyorConnectUp(worldData_, {0, 1});
 
@@ -169,8 +169,8 @@ namespace jactorio::game
         // >
         // ^
 
-        auto& con_data_r   = CreateConveyor(worldData_, {0, 0}, proto::Orientation::right);
-        auto& con_struct_u = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
+        auto& con_data_r   = CreateConveyor(worldData_, {0, 0}, Orientation::right);
+        auto& con_struct_u = *CreateConveyor(worldData_, {0, 1}, Orientation::up).structure;
 
         con_data_r.structIndex = 10;
 
@@ -184,8 +184,8 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, ConnectRightLeading) {
         // > >
 
-        auto& con_struct       = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::right).structure;
-        auto& con_struct_ahead = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::right).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {0, 0}, Orientation::right).structure;
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {1, 0}, Orientation::right).structure;
 
         ConveyorConnectRight(worldData_, {0, 0});
 
@@ -198,8 +198,8 @@ namespace jactorio::game
         // v
         // v
 
-        auto& con_struct       = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
-        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::down).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {0, 0}, Orientation::down).structure;
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 1}, Orientation::down).structure;
 
         ConveyorConnectDown(worldData_, {0, 0});
 
@@ -211,8 +211,8 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, ConnectLeftLeading) {
         // < <
 
-        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::left).structure;
-        auto& con_struct       = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::left).structure;
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, Orientation::left).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {1, 0}, Orientation::left).structure;
 
         ConveyorConnectLeft(worldData_, {1, 0});
 
@@ -226,8 +226,8 @@ namespace jactorio::game
     //
 
     TEST_F(ConveyorUtilityTest, DisconnectUpToNeighbor) {
-        auto& con_struct        = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::down).structure;
-        auto& con_struct_behind = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::down).structure;
+        auto& con_struct        = *CreateConveyor(worldData_, {0, 1}, Orientation::down).structure;
+        auto& con_struct_behind = *CreateConveyor(worldData_, {0, 0}, Orientation::down).structure;
 
         con_struct_behind.target = &con_struct;
 
@@ -237,8 +237,8 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorUtilityTest, DisconnectUpNoDisconnectSelf) {
-        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
-        auto& con_struct       = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
+        auto& con_struct_ahead = *CreateConveyor(worldData_, {0, 0}, Orientation::up).structure;
+        auto& con_struct       = *CreateConveyor(worldData_, {0, 1}, Orientation::up).structure;
 
         con_struct.target = &con_struct_ahead;
 
@@ -250,8 +250,8 @@ namespace jactorio::game
     ///
     /// If neighbor segment connects to current and bends, the bend must be removed after disconnecting
     TEST_F(ConveyorUtilityTest, DisconnectUpFromNeighborBending) {
-        auto& con_data_ahead = CreateConveyor(worldData_, {0, 0}, proto::Orientation::down);
-        auto& con_struct     = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::right).structure;
+        auto& con_data_ahead = CreateConveyor(worldData_, {0, 0}, Orientation::down);
+        auto& con_struct     = *CreateConveyor(worldData_, {0, 1}, Orientation::right).structure;
 
         auto& con_struct_ahead = *con_data_ahead.structure;
 
@@ -274,8 +274,8 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorUtilityTest, DisconnectRightToNeighbor) {
-        auto& con_struct        = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::left).structure;
-        auto& con_struct_behind = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::left).structure;
+        auto& con_struct        = *CreateConveyor(worldData_, {0, 0}, Orientation::left).structure;
+        auto& con_struct_behind = *CreateConveyor(worldData_, {1, 0}, Orientation::left).structure;
 
         con_struct_behind.target = &con_struct;
 
@@ -285,8 +285,8 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorUtilityTest, DisconnectDownToNeighbor) {
-        auto& con_struct        = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::up).structure;
-        auto& con_struct_behind = *CreateConveyor(worldData_, {0, 1}, proto::Orientation::up).structure;
+        auto& con_struct        = *CreateConveyor(worldData_, {0, 0}, Orientation::up).structure;
+        auto& con_struct_behind = *CreateConveyor(worldData_, {0, 1}, Orientation::up).structure;
 
         con_struct_behind.target = &con_struct;
 
@@ -296,8 +296,8 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorUtilityTest, DisconnectLeftToNeighbor) {
-        auto& con_struct        = *CreateConveyor(worldData_, {1, 0}, proto::Orientation::right).structure;
-        auto& con_struct_behind = *CreateConveyor(worldData_, {0, 0}, proto::Orientation::right).structure;
+        auto& con_struct        = *CreateConveyor(worldData_, {1, 0}, Orientation::right).structure;
+        auto& con_struct_behind = *CreateConveyor(worldData_, {0, 0}, Orientation::right).structure;
 
         con_struct_behind.target = &con_struct;
 
@@ -323,17 +323,17 @@ namespace jactorio::game
                 EXPECT_EQ(current.structIndex, 1);
             };
 
-        EXPECT_TRUE(TestGrouping({0, 0}, proto::Orientation::up, {0, 1}, proto::Orientation::up, compare_func));
-        EXPECT_TRUE(TestGrouping({1, 0}, proto::Orientation::right, {0, 0}, proto::Orientation::right, compare_func));
-        EXPECT_TRUE(TestGrouping({0, 1}, proto::Orientation::down, {0, 0}, proto::Orientation::down, compare_func));
-        EXPECT_TRUE(TestGrouping({0, 0}, proto::Orientation::left, {1, 0}, proto::Orientation::left, compare_func));
+        EXPECT_TRUE(TestGrouping({0, 0}, Orientation::up, {0, 1}, Orientation::up, compare_func));
+        EXPECT_TRUE(TestGrouping({1, 0}, Orientation::right, {0, 0}, Orientation::right, compare_func));
+        EXPECT_TRUE(TestGrouping({0, 1}, Orientation::down, {0, 0}, Orientation::down, compare_func));
+        EXPECT_TRUE(TestGrouping({0, 0}, Orientation::left, {1, 0}, Orientation::left, compare_func));
     }
 
     ///
     /// Cannot use ahead conveyor if it is in different direction
     TEST_F(ConveyorUtilityTest, ConveyorCreateGroupAheadDifferentDirection) {
-        EXPECT_FALSE(TestGrouping({0, 0}, proto::Orientation::right, {0, 1}, proto::Orientation::up));
-        EXPECT_FALSE(TestGrouping({0, 0}, proto::Orientation::up, {0, 1}, proto::Orientation::down));
+        EXPECT_FALSE(TestGrouping({0, 0}, Orientation::right, {0, 1}, Orientation::up));
+        EXPECT_FALSE(TestGrouping({0, 0}, Orientation::up, {0, 1}, Orientation::down));
     }
 
     ///
@@ -349,19 +349,19 @@ namespace jactorio::game
                 EXPECT_EQ(other.structIndex, 1);
             };
 
-        EXPECT_TRUE(TestGrouping({0, 1}, proto::Orientation::up, {0, 0}, proto::Orientation::up, compare_func));
-        EXPECT_TRUE(TestGrouping({0, 0}, proto::Orientation::right, {1, 0}, proto::Orientation::right, compare_func));
-        EXPECT_TRUE(TestGrouping({0, 0}, proto::Orientation::down, {0, 1}, proto::Orientation::down, compare_func));
-        EXPECT_TRUE(TestGrouping({1, 0}, proto::Orientation::left, {0, 0}, proto::Orientation::left, compare_func));
+        EXPECT_TRUE(TestGrouping({0, 1}, Orientation::up, {0, 0}, Orientation::up, compare_func));
+        EXPECT_TRUE(TestGrouping({0, 0}, Orientation::right, {1, 0}, Orientation::right, compare_func));
+        EXPECT_TRUE(TestGrouping({0, 0}, Orientation::down, {0, 1}, Orientation::down, compare_func));
+        EXPECT_TRUE(TestGrouping({1, 0}, Orientation::left, {0, 0}, Orientation::left, compare_func));
     }
 
     ///
     /// Conveyors will not group across chunk boundaries
     TEST_F(ConveyorUtilityTest, ConveyorCreateNoGroupCrossChunk) {
-        EXPECT_FALSE(TestGrouping({0, -1}, proto::Orientation::up, {0, 0}, proto::Orientation::up));
-        EXPECT_FALSE(TestGrouping({31, 0}, proto::Orientation::right, {32, 0}, proto::Orientation::right));
-        EXPECT_FALSE(TestGrouping({0, 31}, proto::Orientation::down, {0, 32}, proto::Orientation::down));
-        EXPECT_FALSE(TestGrouping({-1, 0}, proto::Orientation::left, {0, 0}, proto::Orientation::left));
+        EXPECT_FALSE(TestGrouping({0, -1}, Orientation::up, {0, 0}, Orientation::up));
+        EXPECT_FALSE(TestGrouping({31, 0}, Orientation::right, {32, 0}, Orientation::right));
+        EXPECT_FALSE(TestGrouping({0, 31}, Orientation::down, {0, 32}, Orientation::down));
+        EXPECT_FALSE(TestGrouping({-1, 0}, Orientation::left, {0, 0}, Orientation::left));
     }
 
     //
@@ -378,7 +378,7 @@ namespace jactorio::game
         //
 
         {
-            CreateConveyor(worldData_, {0, 0}, proto::Orientation::right);
+            CreateConveyor(worldData_, {0, 0}, Orientation::right);
 
             worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {0, 0}, TileLayer::entity);
         }
@@ -401,13 +401,13 @@ namespace jactorio::game
         //
 
         {
-            auto& head_con_data                      = CreateConveyor(worldData_, {1, 0}, proto::Orientation::right);
+            auto& head_con_data                      = CreateConveyor(worldData_, {1, 0}, Orientation::right);
             head_con_data.structIndex                = 1;
             head_con_data.structure->terminationType = ConveyorStruct::TerminationType::bend_right;
 
             BuildConveyor(worldData_, {0, 0}, head_con_data.structure);
 
-            CreateConveyor(worldData_, {2, 0}, proto::Orientation::down);
+            CreateConveyor(worldData_, {2, 0}, Orientation::down);
 
 
             worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {1, 0}, TileLayer::entity);
@@ -436,7 +436,7 @@ namespace jactorio::game
         //
 
         {
-            auto& head_con_data                 = CreateConveyor(worldData_, {3, 0}, proto::Orientation::right);
+            auto& head_con_data                 = CreateConveyor(worldData_, {3, 0}, Orientation::right);
             head_con_data.structure->headOffset = 30; // Will use this to set structure behind itemOffset
             head_con_data.structure->length     = 4;  // Will use this to set structure behind length
 
@@ -477,14 +477,14 @@ namespace jactorio::game
     //
 
     TEST_F(ConveyorUtilityTest, ConveyorRenumber) {
-        auto& con_data_1             = CreateConveyor(worldData_, {0, 0}, proto::Orientation::up);
+        auto& con_data_1             = CreateConveyor(worldData_, {0, 0}, Orientation::up);
         con_data_1.structure->length = 3;
         con_data_1.structIndex       = 5;
 
-        auto& con_data_2       = CreateConveyor(worldData_, {0, 1}, proto::Orientation::up);
+        auto& con_data_2       = CreateConveyor(worldData_, {0, 1}, Orientation::up);
         con_data_2.structIndex = 6;
 
-        auto& con_data_3       = CreateConveyor(worldData_, {0, 2}, proto::Orientation::up);
+        auto& con_data_3       = CreateConveyor(worldData_, {0, 2}, Orientation::up);
         con_data_3.structIndex = 7;
 
         ConveyorRenumber(worldData_, {0, 0}, 1);
@@ -494,11 +494,11 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorUtilityTest, ChangeStructure) {
-        auto& new_con_struct   = CreateConveyor(worldData_, {5, 5}, proto::Orientation::up).structure;
+        auto& new_con_struct   = CreateConveyor(worldData_, {5, 5}, Orientation::up).structure;
         new_con_struct->length = 3;
 
 
-        auto& con_data_h             = CreateConveyor(worldData_, {0, 0}, proto::Orientation::up);
+        auto& con_data_h             = CreateConveyor(worldData_, {0, 0}, Orientation::up);
         con_data_h.structure->length = 3;
 
         auto& con_data_2 = BuildConveyor(worldData_, {0, 1}, con_data_h.structure);
@@ -516,11 +516,11 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, ChangeStructureUpdateTargets) {
         worldData_.EmplaceChunk(0, -1);
 
-        auto& new_con_struct   = CreateConveyor(worldData_, {5, 5}, proto::Orientation::left).structure;
+        auto& new_con_struct   = CreateConveyor(worldData_, {5, 5}, Orientation::left).structure;
         new_con_struct->length = 3;
 
 
-        auto& con_data_h             = CreateConveyor(worldData_, {0, 0}, proto::Orientation::left);
+        auto& con_data_h             = CreateConveyor(worldData_, {0, 0}, Orientation::left);
         con_data_h.structure->length = 999; // Should use length of new con struct, not old
 
         BuildConveyor(worldData_, {1, 0}, con_data_h.structure);
@@ -531,7 +531,7 @@ namespace jactorio::game
             auto& dependee = CreateConveyor(worldData_,
                                             coord,
                                             // Orientation does not matter, it determines if is dependee based on target
-                                            proto::Orientation::up,
+                                            Orientation::up,
                                             ConveyorStruct::TerminationType::straight);
 
             dependee.structure->target = con_data_h.structure.get();
@@ -569,26 +569,26 @@ namespace jactorio::game
         }
 
         /// Creates a conveyor with the provided orientation above/right/below/left of 1, 1
-        auto& BuildTopConveyor(const proto::Orientation orientation) {
+        auto& BuildTopConveyor(const Orientation orientation) {
             return BuildConveyor({1, 0}, orientation);
         }
 
-        auto& BuildRightConveyor(const proto::Orientation orientation) {
+        auto& BuildRightConveyor(const Orientation orientation) {
             return BuildConveyor({2, 1}, orientation);
         }
 
-        auto& BuildBottomConveyor(const proto::Orientation orientation) {
+        auto& BuildBottomConveyor(const Orientation orientation) {
             return BuildConveyor({1, 2}, orientation);
         }
 
-        auto& BuildLeftConveyor(const proto::Orientation orientation) {
+        auto& BuildLeftConveyor(const Orientation orientation) {
             return BuildConveyor({0, 1}, orientation);
         }
 
         ///
         /// Validates that a tile at coords 1,1 with the placement orientation produces the expected line
         /// orientation
-        void ValidateResultOrientation(const proto::Orientation place_orien,
+        void ValidateResultOrientation(const Orientation place_orien,
                                        const proto::LineOrientation expected_l_orien) const {
             EXPECT_EQ(ConveyorCalcLineOrien(worldData_, {1, 1}, place_orien), expected_l_orien);
         }
@@ -596,7 +596,7 @@ namespace jactorio::game
     private:
         proto::TransportBelt lineProto_;
 
-        proto::ConveyorData& BuildConveyor(const WorldCoord world_coords, const proto::Orientation direction) {
+        proto::ConveyorData& BuildConveyor(const WorldCoord world_coords, const Orientation direction) {
             auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)->GetLayer(TileLayer::entity);
 
             layer.prototypeData = &lineProto_;
@@ -611,26 +611,26 @@ namespace jactorio::game
     ///
     /// A tile with no conveyor structure is treated as no conveyor at tile
     TEST_F(ConveyorCalcLineOrienTest, IgnoreNullptrStruct) {
-        auto& l_con     = BuildLeftConveyor(proto::Orientation::right);
+        auto& l_con     = BuildLeftConveyor(Orientation::right);
         l_con.structure = nullptr;
 
-        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::up);
+        ValidateResultOrientation(Orientation::up, proto::LineOrientation::up);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, RightBendUp) {
         /*
          * > ^
          */
-        BuildLeftConveyor(proto::Orientation::right);
-        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::right_up);
+        BuildLeftConveyor(Orientation::right);
+        ValidateResultOrientation(Orientation::up, proto::LineOrientation::right_up);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, LeftBendUp) {
         /*
          *   ^ <
          */
-        BuildRightConveyor(proto::Orientation::left);
-        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::left_up);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::up, proto::LineOrientation::left_up);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, LeftRightStraightUp) {
@@ -639,9 +639,9 @@ namespace jactorio::game
          */
         // Top and bottom points to one line, line should be straight
 
-        BuildLeftConveyor(proto::Orientation::right);
-        BuildRightConveyor(proto::Orientation::left);
-        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::up);
+        BuildLeftConveyor(Orientation::right);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::up, proto::LineOrientation::up);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, RightBendUpHasRightBehind) {
@@ -649,9 +649,9 @@ namespace jactorio::game
          * > ^
          *   >
          */
-        BuildLeftConveyor(proto::Orientation::right);
-        BuildBottomConveyor(proto::Orientation::down);
-        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::right_up);
+        BuildLeftConveyor(Orientation::right);
+        BuildBottomConveyor(Orientation::down);
+        ValidateResultOrientation(Orientation::up, proto::LineOrientation::right_up);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, RightStraightUpHasUpBehind) {
@@ -659,9 +659,9 @@ namespace jactorio::game
          * > ^
          *   ^
          */
-        BuildLeftConveyor(proto::Orientation::right);
-        BuildBottomConveyor(proto::Orientation::up);
-        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::up);
+        BuildLeftConveyor(Orientation::right);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::up, proto::LineOrientation::up);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, LeftBendUpHasLeftAtLeftSide) {
@@ -669,9 +669,9 @@ namespace jactorio::game
          * < ^ <
          */
 
-        BuildLeftConveyor(proto::Orientation::left);
-        BuildRightConveyor(proto::Orientation::left);
-        ValidateResultOrientation(proto::Orientation::up, proto::LineOrientation::left_up);
+        BuildLeftConveyor(Orientation::left);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::up, proto::LineOrientation::left_up);
     }
 
     // ===
@@ -681,8 +681,8 @@ namespace jactorio::game
          *  v
          *  >
          */
-        BuildTopConveyor(proto::Orientation::down);
-        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::down_right);
+        BuildTopConveyor(Orientation::down);
+        ValidateResultOrientation(Orientation::right, proto::LineOrientation::down_right);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, UpBendRight) {
@@ -690,8 +690,8 @@ namespace jactorio::game
          * >
          * ^
          */
-        BuildBottomConveyor(proto::Orientation::up);
-        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::up_right);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::right, proto::LineOrientation::up_right);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, UpDownStraightRight) {
@@ -701,9 +701,9 @@ namespace jactorio::game
          * ^
          */
 
-        BuildTopConveyor(proto::Orientation::down);
-        BuildBottomConveyor(proto::Orientation::up);
-        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::right);
+        BuildTopConveyor(Orientation::down);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::right, proto::LineOrientation::right);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, DownBendRightHasUpAtLeftSide) {
@@ -711,9 +711,9 @@ namespace jactorio::game
          *   v
          * ^ >
          */
-        BuildTopConveyor(proto::Orientation::down);
-        BuildLeftConveyor(proto::Orientation::up);
-        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::down_right);
+        BuildTopConveyor(Orientation::down);
+        BuildLeftConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::right, proto::LineOrientation::down_right);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, DownStraightRightHasRightAtLeftSide) {
@@ -721,9 +721,9 @@ namespace jactorio::game
          *   v
          * > >
          */
-        BuildTopConveyor(proto::Orientation::down);
-        BuildLeftConveyor(proto::Orientation::right); // Points at center, center now straight
-        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::right);
+        BuildTopConveyor(Orientation::down);
+        BuildLeftConveyor(Orientation::right); // Points at center, center now straight
+        ValidateResultOrientation(Orientation::right, proto::LineOrientation::right);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, UpBendRightHasUpAbove) {
@@ -732,9 +732,9 @@ namespace jactorio::game
          * >
          * ^
          */
-        BuildTopConveyor(proto::Orientation::up);
-        BuildBottomConveyor(proto::Orientation::up);
-        ValidateResultOrientation(proto::Orientation::right, proto::LineOrientation::up_right);
+        BuildTopConveyor(Orientation::up);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::right, proto::LineOrientation::up_right);
     }
 
     // ===
@@ -743,25 +743,25 @@ namespace jactorio::game
         /*
          * > v
          */
-        BuildLeftConveyor(proto::Orientation::right);
-        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::right_down);
+        BuildLeftConveyor(Orientation::right);
+        ValidateResultOrientation(Orientation::down, proto::LineOrientation::right_down);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, LeftBendDown) {
         /*
          * v <
          */
-        BuildRightConveyor(proto::Orientation::left);
-        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::left_down);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::down, proto::LineOrientation::left_down);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, LeftRightStraightDown) {
         /*
          * > v <
          */
-        BuildLeftConveyor(proto::Orientation::right);
-        BuildRightConveyor(proto::Orientation::left);
-        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::down);
+        BuildLeftConveyor(Orientation::right);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::down, proto::LineOrientation::down);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, RightBendDownHasLeftAbove) {
@@ -769,9 +769,9 @@ namespace jactorio::game
          *   <
          * > v
          */
-        BuildLeftConveyor(proto::Orientation::right);
-        BuildTopConveyor(proto::Orientation::left);
-        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::right_down);
+        BuildLeftConveyor(Orientation::right);
+        BuildTopConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::down, proto::LineOrientation::right_down);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, RightStraightDownHasDownAbove) {
@@ -779,18 +779,18 @@ namespace jactorio::game
          *   v
          * > v
          */
-        BuildLeftConveyor(proto::Orientation::right);
-        BuildTopConveyor(proto::Orientation::down);
-        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::down);
+        BuildLeftConveyor(Orientation::right);
+        BuildTopConveyor(Orientation::down);
+        ValidateResultOrientation(Orientation::down, proto::LineOrientation::down);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, LeftBendDownHasLeftAtLeftSide) {
         /*
          * < v <
          */
-        BuildLeftConveyor(proto::Orientation::left);
-        BuildRightConveyor(proto::Orientation::left);
-        ValidateResultOrientation(proto::Orientation::down, proto::LineOrientation::left_down);
+        BuildLeftConveyor(Orientation::left);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::down, proto::LineOrientation::left_down);
     }
 
     // ===
@@ -800,8 +800,8 @@ namespace jactorio::game
          * v
          * <
          */
-        BuildTopConveyor(proto::Orientation::down);
-        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::down_left);
+        BuildTopConveyor(Orientation::down);
+        ValidateResultOrientation(Orientation::left, proto::LineOrientation::down_left);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, UpBendLeft) {
@@ -809,8 +809,8 @@ namespace jactorio::game
          * <
          * ^
          */
-        BuildBottomConveyor(proto::Orientation::up);
-        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::up_left);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::left, proto::LineOrientation::up_left);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, UpDownStraightLeft) {
@@ -819,9 +819,9 @@ namespace jactorio::game
          * <
          * ^
          */
-        BuildTopConveyor(proto::Orientation::down);
-        BuildBottomConveyor(proto::Orientation::up);
-        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::left);
+        BuildTopConveyor(Orientation::down);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::left, proto::LineOrientation::left);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, DownBendLeftHasUpRightSide) {
@@ -829,9 +829,9 @@ namespace jactorio::game
          * v
          * < ^
          */
-        BuildTopConveyor(proto::Orientation::down);
-        BuildRightConveyor(proto::Orientation::up);
-        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::down_left);
+        BuildTopConveyor(Orientation::down);
+        BuildRightConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::left, proto::LineOrientation::down_left);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, DownStraightLeftHasLeftRightSide) {
@@ -839,9 +839,9 @@ namespace jactorio::game
          * v
          * < <
          */
-        BuildTopConveyor(proto::Orientation::down);
-        BuildRightConveyor(proto::Orientation::left);
-        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::left);
+        BuildTopConveyor(Orientation::down);
+        BuildRightConveyor(Orientation::left);
+        ValidateResultOrientation(Orientation::left, proto::LineOrientation::left);
     }
 
     TEST_F(ConveyorCalcLineOrienTest, UpBendLeftHasUpAbove) {
@@ -850,9 +850,9 @@ namespace jactorio::game
          * <
          * ^
          */
-        BuildTopConveyor(proto::Orientation::up);
-        BuildBottomConveyor(proto::Orientation::up);
-        ValidateResultOrientation(proto::Orientation::left, proto::LineOrientation::up_left);
+        BuildTopConveyor(Orientation::up);
+        BuildBottomConveyor(Orientation::up);
+        ValidateResultOrientation(Orientation::left, proto::LineOrientation::up_left);
     }
 
 
@@ -864,10 +864,10 @@ namespace jactorio::game
         //   ^
         //
 
-        auto& con_data_r_head = CreateConveyor(worldData_, {2, 0}, proto::Orientation::right);
+        auto& con_data_r_head = CreateConveyor(worldData_, {2, 0}, Orientation::right);
         auto& con_data_r_end  = BuildConveyor(worldData_, {1, 0}, con_data_r_head.structure);
 
-        CreateConveyor(worldData_, {1, 1}, proto::Orientation::up);
+        CreateConveyor(worldData_, {1, 1}, Orientation::up);
 
         ConveyorUpdateNeighborLineOrien(worldData_, {0, 0});
 

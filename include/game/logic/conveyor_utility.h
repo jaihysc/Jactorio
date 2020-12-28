@@ -9,6 +9,7 @@
 #include "jactorio.h"
 
 #include "core/data_type.h"
+#include "core/orientation.h"
 #include "proto/detail/type.h"
 
 namespace jactorio
@@ -33,10 +34,7 @@ namespace jactorio::game
     /// 4. Update neighbor termination type
     /// 5. Update neighbor line orientation
     /// \remark Additional neighbors must be updated via ConveyorUpdateNeighborTermination in OnNeighborUpdate
-    void BuildConveyor(WorldData& world,
-                       const WorldCoord& coord,
-                       proto::ConveyorData& conveyor,
-                       proto::Orientation direction);
+    void BuildConveyor(WorldData& world, const WorldCoord& coord, proto::ConveyorData& conveyor, Orientation direction);
 
     ///
     /// Processes all steps for cleanly removing a conveyor
@@ -114,7 +112,7 @@ namespace jactorio::game
     void ConveyorCreate(WorldData& world,
                         const WorldCoord& coord,
                         proto::ConveyorData& conveyor,
-                        proto::Orientation direction);
+                        Orientation direction);
 
     ///
     /// Destroys conveyor structure at provided coordinates
@@ -156,7 +154,7 @@ namespace jactorio::game
     /// A tile is deemed to not have a conveyor if its structure is nullptr
     J_NODISCARD proto::LineOrientation ConveyorCalcLineOrien(const WorldData& world,
                                                              const WorldCoord& coord,
-                                                             proto::Orientation direction);
+                                                             Orientation direction);
     ///
     /// Updates line orientation for 4 neighbors of coord
     /// See ConveyorCalcLineOrien

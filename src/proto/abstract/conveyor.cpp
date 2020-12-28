@@ -13,7 +13,7 @@
 
 using namespace jactorio;
 
-proto::Orientation proto::ConveyorData::ToOrientation(const LineOrientation line_orientation) {
+Orientation proto::ConveyorData::ToOrientation(const LineOrientation line_orientation) {
     switch (line_orientation) {
     case LineOrientation::up:
     case LineOrientation::right_up:

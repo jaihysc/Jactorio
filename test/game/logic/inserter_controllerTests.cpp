@@ -27,7 +27,7 @@ namespace jactorio::game
             worldData_.LogicAddChunk(chunk);
         }
 
-        ChunkTileLayer& BuildInserter(const WorldCoord& coords, const proto::Orientation orientation) {
+        ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
             return TestSetupInserter(worldData_, logicData_, coords, inserterProto_, orientation);
         }
 
@@ -36,7 +36,7 @@ namespace jactorio::game
         /// \param orientation Orientation to chest from inserter
         /// \param stack_count Amount of items chest starts with
         proto::ContainerEntityData* BuildChest(const WorldCoord& coords,
-                                               const proto::Orientation orientation,
+                                               const Orientation orientation,
                                                const proto::Item::StackCount stack_count,
                                                const WorldCoord& neighbor_update_coord = {1, 2}) {
             auto& layer = TestSetupContainer(worldData_, coords, containerProto_);
@@ -85,10 +85,10 @@ namespace jactorio::game
         inserterProto_.rotationSpeed = 2.1;
         const int updates_to_target  = 86;
 
-        auto* dropoff = BuildChest({0, 2}, proto::Orientation::left, 10);
-        auto* pickup  = BuildChest({2, 2}, proto::Orientation::right, 10);
+        auto* dropoff = BuildChest({0, 2}, Orientation::left, 10);
+        auto* pickup  = BuildChest({2, 2}, Orientation::right, 10);
 
-        auto& inserter_layer = BuildInserter({1, 2}, proto::Orientation::left);
+        auto& inserter_layer = BuildInserter({1, 2}, Orientation::left);
         auto* inserter_data  = inserter_layer.GetUniqueData<proto::InserterData>();
 
         // Pickup item
@@ -122,13 +122,13 @@ namespace jactorio::game
         proto::TransportBelt segment_proto{};
 
         auto dropoff =
-            std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::straight, 2);
+            std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
         TestRegisterConveyorSegment(worldData_, {1, 0}, dropoff, segment_proto);
 
 
         //
         auto pickup =
-            std::make_shared<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::straight, 2);
+            std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
         TestRegisterConveyorSegment(worldData_, {1, 2}, pickup, segment_proto);
 
         for (int i = 0; i < 1000; ++i) {
@@ -136,7 +136,7 @@ namespace jactorio::game
         }
 
 
-        auto& inserter_layer = BuildInserter({1, 1}, proto::Orientation::up);
+        auto& inserter_layer = BuildInserter({1, 1}, Orientation::up);
         auto* inserter_data  = inserter_layer.GetUniqueData<proto::InserterData>();
 
         // Logic chunk will be unregistered if setup was invalid
@@ -174,11 +174,11 @@ namespace jactorio::game
         proto::AssemblyMachine asm_machine{};
         TestSetupAssemblyMachine(worldData_, {0, 1}, asm_machine);
 
-        auto* pickup = BuildChest({3, 2}, proto::Orientation::right, 10);
+        auto* pickup = BuildChest({3, 2}, Orientation::right, 10);
 
 
         inserterProto_.rotationSpeed = 2.1f;
-        auto& inserter_layer         = BuildInserter({2, 2}, proto::Orientation::left);
+        auto& inserter_layer         = BuildInserter({2, 2}, Orientation::left);
         auto* inserter_data          = inserter_layer.GetUniqueData<proto::InserterData>();
 
 
@@ -194,13 +194,13 @@ namespace jactorio::game
 
         inserterProto_.rotationSpeed = 180.f;
 
-        auto* left_chest  = BuildChest({0, 2}, proto::Orientation::up, 1);
-        auto* mid_chest   = BuildChest({2, 2}, proto::Orientation::up, 0);
-        auto* right_chest = BuildChest({4, 2}, proto::Orientation::up, 0);
+        auto* left_chest  = BuildChest({0, 2}, Orientation::up, 1);
+        auto* mid_chest   = BuildChest({2, 2}, Orientation::up, 0);
+        auto* right_chest = BuildChest({4, 2}, Orientation::up, 0);
 
         // Order which inserters are updated should not matter
-        BuildInserter({3, 2}, proto::Orientation::right);
-        BuildInserter({1, 2}, proto::Orientation::right);
+        BuildInserter({3, 2}, Orientation::right);
+        BuildInserter({1, 2}, Orientation::right);
 
 
         // Pickup

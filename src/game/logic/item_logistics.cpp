@@ -85,16 +85,16 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
     bool use_line_left = false;
     // Decide whether to add item to left side or right side
     switch (line_data.structure->direction) {
-    case proto::Orientation::up:
+    case Orientation::up:
         switch (params.orientation) {
-        case proto::Orientation::up:
+        case Orientation::up:
             break;
-        case proto::Orientation::right:
+        case Orientation::right:
             use_line_left = true;
             break;
-        case proto::Orientation::down:
+        case Orientation::down:
             return false;
-        case proto::Orientation::left:
+        case Orientation::left:
             break;
 
         default:
@@ -103,15 +103,15 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
         }
         break;
 
-    case proto::Orientation::right:
+    case Orientation::right:
         switch (params.orientation) {
-        case proto::Orientation::up:
-        case proto::Orientation::right:
+        case Orientation::up:
+        case Orientation::right:
             break;
-        case proto::Orientation::down:
+        case Orientation::down:
             use_line_left = true;
             break;
-        case proto::Orientation::left:
+        case Orientation::left:
             return false;
 
         default:
@@ -120,14 +120,14 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
         }
         break;
 
-    case proto::Orientation::down:
+    case Orientation::down:
         switch (params.orientation) {
-        case proto::Orientation::up:
+        case Orientation::up:
             return false;
-        case proto::Orientation::right:
-        case proto::Orientation::down:
+        case Orientation::right:
+        case Orientation::down:
             break;
-        case proto::Orientation::left:
+        case Orientation::left:
             use_line_left = true;
             break;
 
@@ -137,15 +137,15 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
         }
         break;
 
-    case proto::Orientation::left:
+    case Orientation::left:
         switch (params.orientation) {
-        case proto::Orientation::up:
+        case Orientation::up:
             use_line_left = true;
             break;
-        case proto::Orientation::right:
+        case Orientation::right:
             return false;
-        case proto::Orientation::down:
-        case proto::Orientation::left:
+        case Orientation::down:
+        case Orientation::left:
             break;
 
         default:
@@ -381,10 +381,10 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
 
     bool use_line_left = false;
     switch (line_data.structure->direction) {
-    case proto::Orientation::up:
+    case Orientation::up:
         switch (params.orientation) {
-        case proto::Orientation::down:
-        case proto::Orientation::left:
+        case Orientation::down:
+        case Orientation::left:
             use_line_left = true;
             break;
 
@@ -393,10 +393,10 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
         }
         break;
 
-    case proto::Orientation::right:
+    case Orientation::right:
         switch (params.orientation) {
-        case proto::Orientation::up:
-        case proto::Orientation::left:
+        case Orientation::up:
+        case Orientation::left:
             use_line_left = true;
             break;
 
@@ -405,10 +405,10 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
         }
         break;
 
-    case proto::Orientation::down:
+    case Orientation::down:
         switch (params.orientation) {
-        case proto::Orientation::up:
-        case proto::Orientation::right:
+        case Orientation::up:
+        case Orientation::right:
             use_line_left = true;
             break;
 
@@ -417,10 +417,10 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
         }
         break;
 
-    case proto::Orientation::left:
+    case Orientation::left:
         switch (params.orientation) {
-        case proto::Orientation::right:
-        case proto::Orientation::down:
+        case Orientation::right:
+        case Orientation::down:
             use_line_left = true;
             break;
 

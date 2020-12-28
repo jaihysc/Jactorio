@@ -8,7 +8,7 @@
 #include <queue>
 
 #include "core/coordinate_tuple.h"
-#include "proto/detail/type.h"
+#include "core/orientation.h"
 #include "proto/item.h"
 #include "proto/recipe.h"
 
@@ -275,7 +275,7 @@ namespace jactorio::game
             J_NODISCARD float GetPickupPercentage() const;
 
 
-            proto::Orientation orientation = proto::Orientation::up;
+            Orientation orientation = Orientation::up;
 
         private:
             ChunkTileLayer* activatedLayer_ = nullptr;

@@ -11,7 +11,7 @@ using namespace jactorio;
 void game::BuildConveyor(WorldData& world,
                          const WorldCoord& coord,
                          proto::ConveyorData& conveyor,
-                         const proto::Orientation direction) {
+                         const Orientation direction) {
     ConveyorCreate(world, coord, conveyor, direction);
     conveyor.lOrien = ConveyorCalcLineOrien(world, coord, direction);
 
@@ -55,7 +55,7 @@ const proto::ConveyorData* game::GetConData(const WorldData& world, const WorldC
 /// Determines origin and neighbor's targets
 /// \tparam OriginConnect Origin orientation required for origin to connect to neighbor
 /// \tparam NeighborConnect Neighbor orientation required for neighbor to connect to origin
-template <proto::Orientation OriginConnect, proto::Orientation NeighborConnect>
+template <Orientation OriginConnect, Orientation NeighborConnect>
 static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& neighbor) {
     assert(origin.structure != nullptr);
     assert(neighbor.structure != nullptr);
@@ -96,7 +96,7 @@ static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& n
 /// \tparam OriginConnect Origin orientation required for origin to connect to neighbor
 /// \tparam XOffset Offset applied to origin to get neighbor
 /// \tparam YOffset Offset applied to origin to get neighbor
-template <proto::Orientation OriginConnect, int XOffset, int YOffset>
+template <Orientation OriginConnect, int XOffset, int YOffset>
 static void DoConnect(game::WorldData& world, const WorldCoord& coord) {
     auto* current_struct = GetConData(world, {coord.x, coord.y});
     auto* neigh_struct   = GetConData(world, {coord.x + XOffset, coord.y + YOffset});
@@ -116,19 +116,19 @@ void game::ConveyorNeighborConnect(WorldData& world, const WorldCoord& coord) {
 }
 
 void game::ConveyorConnectUp(WorldData& world, const WorldCoord& coord) {
-    DoConnect<proto::Orientation::up, 0, -1>(world, coord);
+    DoConnect<Orientation::up, 0, -1>(world, coord);
 }
 
 void game::ConveyorConnectRight(WorldData& world, const WorldCoord& coord) {
-    DoConnect<proto::Orientation::right, 1, 0>(world, coord);
+    DoConnect<Orientation::right, 1, 0>(world, coord);
 }
 
 void game::ConveyorConnectDown(WorldData& world, const WorldCoord& coord) {
-    DoConnect<proto::Orientation::down, 0, 1>(world, coord);
+    DoConnect<Orientation::down, 0, 1>(world, coord);
 }
 
 void game::ConveyorConnectLeft(WorldData& world, const WorldCoord& coord) {
-    DoConnect<proto::Orientation::left, -1, 0>(world, coord);
+    DoConnect<Orientation::left, -1, 0>(world, coord);
 }
 
 
@@ -199,7 +199,7 @@ void game::ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord) {
 void game::ConveyorCreate(WorldData& world,
                           const WorldCoord& coord,
                           proto::ConveyorData& conveyor,
-                          const proto::Orientation direction) {
+                          const Orientation direction) {
 
     /*
      * Conveyor grouping rules:
@@ -410,14 +410,14 @@ void game::ConveyorChangeStructure(WorldData& world,
 
     switch (con_struct_p->direction) {
 
-    case proto::Orientation::up:
-    case proto::Orientation::down:
+    case Orientation::up:
+    case Orientation::down:
         ChangeTarget(world, {coord.x - 1, coord.y}, *head_con_data->structure, *con_struct_p);
         ChangeTarget(world, {coord.x + 1, coord.y}, *head_con_data->structure, *con_struct_p);
         break;
 
-    case proto::Orientation::right:
-    case proto::Orientation::left:
+    case Orientation::right:
+    case Orientation::left:
         ChangeTarget(world, {coord.x, coord.y - 1}, *head_con_data->structure, *con_struct_p);
         ChangeTarget(world, {coord.x, coord.y + 1}, *head_con_data->structure, *con_struct_p);
         break;
@@ -455,53 +455,53 @@ void game::ConveyorChangeStructure(WorldData& world,
 
 proto::LineOrientation game::ConveyorCalcLineOrien(const WorldData& world,
                                                    const WorldCoord& coord,
-                                                   const proto::Orientation direction) {
+                                                   const Orientation direction) {
     const auto* up    = GetConData(world, {coord.x, coord.y - 1});
     const auto* right = GetConData(world, {coord.x + 1, coord.y});
     const auto* down  = GetConData(world, {coord.x, coord.y + 1});
     const auto* left  = GetConData(world, {coord.x - 1, coord.y});
 
     /// \return true if has neighbor segment and its direction matches provided
-    auto neighbor_valid = [](const proto::ConveyorData* conveyor, const proto::Orientation orient) {
+    auto neighbor_valid = [](const proto::ConveyorData* conveyor, const Orientation orient) {
         return conveyor != nullptr && conveyor->structure != nullptr && conveyor->structure->direction == orient;
     };
 
     switch (direction) {
-    case proto::Orientation::up:
-        if (!neighbor_valid(down, proto::Orientation::up) &&
-            neighbor_valid(left, proto::Orientation::right) != neighbor_valid(right, proto::Orientation::left)) {
+    case Orientation::up:
+        if (!neighbor_valid(down, Orientation::up) &&
+            neighbor_valid(left, Orientation::right) != neighbor_valid(right, Orientation::left)) {
 
-            if (neighbor_valid(left, proto::Orientation::right))
+            if (neighbor_valid(left, Orientation::right))
                 return proto::LineOrientation::right_up;
             return proto::LineOrientation::left_up;
         }
         return proto::LineOrientation::up;
 
-    case proto::Orientation::right:
-        if (!neighbor_valid(left, proto::Orientation::right) &&
-            neighbor_valid(up, proto::Orientation::down) != neighbor_valid(down, proto::Orientation::up)) {
+    case Orientation::right:
+        if (!neighbor_valid(left, Orientation::right) &&
+            neighbor_valid(up, Orientation::down) != neighbor_valid(down, Orientation::up)) {
 
-            if (neighbor_valid(up, proto::Orientation::down))
+            if (neighbor_valid(up, Orientation::down))
                 return proto::LineOrientation::down_right;
             return proto::LineOrientation::up_right;
         }
         return proto::LineOrientation::right;
 
-    case proto::Orientation::down:
-        if (!neighbor_valid(up, proto::Orientation::down) &&
-            neighbor_valid(left, proto::Orientation::right) != neighbor_valid(right, proto::Orientation::left)) {
+    case Orientation::down:
+        if (!neighbor_valid(up, Orientation::down) &&
+            neighbor_valid(left, Orientation::right) != neighbor_valid(right, Orientation::left)) {
 
-            if (neighbor_valid(left, proto::Orientation::right))
+            if (neighbor_valid(left, Orientation::right))
                 return proto::LineOrientation::right_down;
             return proto::LineOrientation::left_down;
         }
         return proto::LineOrientation::down;
 
-    case proto::Orientation::left:
-        if (!neighbor_valid(right, proto::Orientation::left) &&
-            neighbor_valid(up, proto::Orientation::down) != neighbor_valid(down, proto::Orientation::up)) {
+    case Orientation::left:
+        if (!neighbor_valid(right, Orientation::left) &&
+            neighbor_valid(up, Orientation::down) != neighbor_valid(down, Orientation::up)) {
 
-            if (neighbor_valid(up, proto::Orientation::down))
+            if (neighbor_valid(up, Orientation::down))
                 return proto::LineOrientation::down_left;
             return proto::LineOrientation::up_left;
         }
@@ -552,7 +552,7 @@ void game::ConveyorUpdateNeighborTermination(WorldData& world, const WorldCoord&
     ///
     /// Changes termination type at coordinates if it matches required_direction
     auto try_change_ttype = [&world, &change_ttype](const WorldCoord& neighbor_coord,
-                                                    const proto::Orientation required_direction,
+                                                    const Orientation required_direction,
                                                     const ConveyorStruct::TerminationType new_ttype) {
         auto* con_data = GetConData(world, neighbor_coord);
 
@@ -603,21 +603,21 @@ void game::ConveyorUpdateNeighborTermination(WorldData& world, const WorldCoord&
 
         // Straight (Check for conveyors on both sides to make side only)
     case proto::LineOrientation::up:
-        try_change_ttype({coord.x - 1, coord.y}, proto::Orientation::right, ConveyorStruct::TerminationType::left_only);
-        try_change_ttype({coord.x + 1, coord.y}, proto::Orientation::left, ConveyorStruct::TerminationType::right_only);
+        try_change_ttype({coord.x - 1, coord.y}, Orientation::right, ConveyorStruct::TerminationType::left_only);
+        try_change_ttype({coord.x + 1, coord.y}, Orientation::left, ConveyorStruct::TerminationType::right_only);
         break;
     case proto::LineOrientation::right:
-        try_change_ttype({coord.x, coord.y - 1}, proto::Orientation::down, ConveyorStruct::TerminationType::left_only);
-        try_change_ttype({coord.x, coord.y + 1}, proto::Orientation::up, ConveyorStruct::TerminationType::right_only);
+        try_change_ttype({coord.x, coord.y - 1}, Orientation::down, ConveyorStruct::TerminationType::left_only);
+        try_change_ttype({coord.x, coord.y + 1}, Orientation::up, ConveyorStruct::TerminationType::right_only);
         break;
     case proto::LineOrientation::down:
         try_change_ttype(
-            {coord.x - 1, coord.y}, proto::Orientation::right, ConveyorStruct::TerminationType::right_only);
-        try_change_ttype({coord.x + 1, coord.y}, proto::Orientation::left, ConveyorStruct::TerminationType::left_only);
+            {coord.x - 1, coord.y}, Orientation::right, ConveyorStruct::TerminationType::right_only);
+        try_change_ttype({coord.x + 1, coord.y}, Orientation::left, ConveyorStruct::TerminationType::left_only);
         break;
     case proto::LineOrientation::left:
-        try_change_ttype({coord.x, coord.y - 1}, proto::Orientation::down, ConveyorStruct::TerminationType::right_only);
-        try_change_ttype({coord.x, coord.y + 1}, proto::Orientation::up, ConveyorStruct::TerminationType::left_only);
+        try_change_ttype({coord.x, coord.y - 1}, Orientation::down, ConveyorStruct::TerminationType::right_only);
+        try_change_ttype({coord.x, coord.y + 1}, Orientation::up, ConveyorStruct::TerminationType::left_only);
         break;
     }
 }

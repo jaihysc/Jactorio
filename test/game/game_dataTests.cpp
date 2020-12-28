@@ -22,7 +22,7 @@ namespace jactorio::game
 
 
         // 1 Should not attempt to remove cursor overlays
-        local.input.mouse.DrawOverlay(global.worlds[0], {0, 0}, proto::Orientation::up, &container, sprite);
+        local.input.mouse.DrawOverlay(global.worlds[0], {0, 0}, Orientation::up, &container, sprite);
 
         // 2 Should not hold pointer to any tile layer (as they will be destroyed)
         ChunkTileLayer tile_layer;
@@ -33,7 +33,7 @@ namespace jactorio::game
 
 
         // 1 Fails if attempted to erase last overlay
-        local.input.mouse.DrawOverlay(global.worlds[0], {0, 1}, proto::Orientation::up, &container, sprite);
+        local.input.mouse.DrawOverlay(global.worlds[0], {0, 1}, Orientation::up, &container, sprite);
 
         // 2
         EXPECT_EQ(global.player.placement.GetActivatedLayer(), nullptr);

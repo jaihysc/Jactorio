@@ -34,35 +34,35 @@ namespace jactorio::game
     };
 
     TEST_F(PlayerDataPlacementTest, RotatePlacementOrientation) {
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::up);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::up);
 
         playerPlace_.RotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::right);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::right);
 
         playerPlace_.RotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::down);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::down);
 
         playerPlace_.RotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::left);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::left);
 
         playerPlace_.RotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::up);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::up);
     }
 
     TEST_F(PlayerDataPlacementTest, CounterRotatePlacementOrientation) {
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::up);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::up);
 
         playerPlace_.CounterRotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::left);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::left);
 
         playerPlace_.CounterRotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::down);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::down);
 
         playerPlace_.CounterRotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::right);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::right);
 
         playerPlace_.CounterRotateOrientation();
-        EXPECT_EQ(playerPlace_.orientation, proto::Orientation::up);
+        EXPECT_EQ(playerPlace_.orientation, Orientation::up);
     }
 
     TEST_F(PlayerDataPlacementTest, TryPlaceEntity) {
@@ -242,7 +242,7 @@ namespace jactorio::game
         // Create unique data by calling build event for prototype with layer
         {
             WorldData world_data{};
-            entity.OnBuild(world_data, logicData_, {}, tile.GetLayer(TileLayer::entity), proto::Orientation::up);
+            entity.OnBuild(world_data, logicData_, {}, tile.GetLayer(TileLayer::entity), Orientation::up);
         }
 
 
@@ -378,7 +378,7 @@ namespace jactorio::game
                      LogicData& /*logic_data*/,
                      const WorldCoord& /*world_coords*/,
                      ChunkTileLayer& /*tile_layer*/,
-                     proto::Orientation /*orientation*/) const override {
+                     Orientation /*orientation*/) const override {
             buildCalled = true;
         }
 
@@ -400,7 +400,7 @@ namespace jactorio::game
                               LogicData& /*logic_data*/,
                               const WorldCoord& emit_world_coords,
                               const WorldCoord& receive_world_coords,
-                              proto::Orientation /*emit_orientation*/) const override {
+                              Orientation /*emit_orientation*/) const override {
             emitCoords.push_back(emit_world_coords);
             receiveCoords.push_back(receive_world_coords);
         }

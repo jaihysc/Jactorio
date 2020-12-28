@@ -4,7 +4,7 @@
 #define JACTORIO_INCLUDE_PROTO_FRAMEWORK_WORLD_OBJECT_H
 #pragma once
 
-#include "proto/detail/type.h"
+#include "core/orientation.h"
 #include "proto/framework/framework_base.h"
 #include "proto/interface/renderable.h"
 #include "proto/interface/serializable.h"

@@ -7,6 +7,7 @@
 #include "jactorio.h"
 
 #include "core/data_type.h"
+#include "core/orientation.h"
 #include "data/cereal/serialize.h"
 
 namespace jactorio
@@ -15,7 +16,6 @@ namespace jactorio
     {
         class Sprite;
         struct UniqueDataBase;
-        enum class Orientation;
     } // namespace proto
 
     namespace game

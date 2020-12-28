@@ -41,7 +41,7 @@ namespace jactorio
             return nullptr;
         }
 
-        J_NODISCARD SpriteSetT OnRGetSpriteSet(proto::Orientation /*orientation*/,
+        J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
                                                game::WorldData& /*world_data*/,
                                                const WorldCoord& /*world_coords*/) const override {
             return 0;
@@ -73,7 +73,7 @@ namespace jactorio
                      game::LogicData& logic_data,
                      const WorldCoord& world_coords,
                      game::ChunkTileLayer& tile_layer,
-                     proto::Orientation orientation) const override {}
+                     Orientation orientation) const override {}
 
         void OnRemove(game::WorldData& world_data,
                       game::LogicData& logic_data,
@@ -144,7 +144,7 @@ namespace jactorio
                                                    game::LogicData& logic_data,
                                                    const WorldCoord& world_coords,
                                                    const proto::Inserter& inserter_proto,
-                                                   const proto::Orientation orientation) {
+                                                   const Orientation orientation) {
         using namespace jactorio;
 
         auto& layer = world_data.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
@@ -206,7 +206,7 @@ namespace jactorio
     inline game::ChunkTile& TestSetupDrill(game::WorldData& world_data,
                                            game::LogicData& logic_data,
                                            const WorldCoord& world_coord,
-                                           const proto::Orientation orientation,
+                                           const Orientation orientation,
                                            proto::ResourceEntity& resource,
                                            proto::MiningDrill& drill,
                                            const proto::ResourceEntityData::ResourceCount resource_amount = 100) {

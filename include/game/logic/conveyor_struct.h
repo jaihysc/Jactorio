@@ -6,6 +6,7 @@
 
 #include <deque>
 
+#include "core/orientation.h"
 #include "data/cereal/support/decimal.h"
 #include "game/logic/conveyor_prop.h"
 #include "proto/detail/type.h"
@@ -110,12 +111,12 @@ namespace jactorio::game
         };
 
 
-        ConveyorStruct(const proto::Orientation direction,
+        ConveyorStruct(const Orientation direction,
                        const TerminationType termination_type,
                        const uint8_t segment_length)
             : direction(direction), terminationType(termination_type), length(segment_length) {}
 
-        ConveyorStruct(const proto::Orientation direction,
+        ConveyorStruct(const Orientation direction,
                        const TerminationType termination_type,
                        ConveyorStruct* target_segment,
                        const uint8_t segment_length)
@@ -225,7 +226,7 @@ namespace jactorio::game
 
 
         /// Direction items in this segment travel in
-        proto::Orientation direction;
+        Orientation direction;
 
         /// How the belt terminates (bends left, right, straight) (Single belt side)
         TerminationType terminationType;
@@ -260,7 +261,7 @@ namespace jactorio::game
         }
 
         CEREAL_LOAD_CONSTRUCT(archive, construct, ConveyorStruct) {
-            proto::Orientation line_dir;
+            Orientation line_dir;
             TerminationType term_type;
             SegmentLengthT seg_length;
 

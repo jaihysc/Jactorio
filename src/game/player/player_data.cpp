@@ -126,41 +126,41 @@ void game::PlayerData::World::MovePlayerY(const float amount) {
 
 void game::PlayerData::Placement::RotateOrientation() {
     switch (orientation) {
-    case proto::Orientation::up:
-        orientation = proto::Orientation::right;
+    case Orientation::up:
+        orientation = Orientation::right;
         break;
-    case proto::Orientation::right:
-        orientation = proto::Orientation::down;
+    case Orientation::right:
+        orientation = Orientation::down;
         break;
-    case proto::Orientation::down:
-        orientation = proto::Orientation::left;
+    case Orientation::down:
+        orientation = Orientation::left;
         break;
-    case proto::Orientation::left:
-        orientation = proto::Orientation::up;
+    case Orientation::left:
+        orientation = Orientation::up;
         break;
     default:
         assert(false); // Missing switch case
-        orientation = proto::Orientation::up;
+        orientation = Orientation::up;
     }
 }
 
 void game::PlayerData::Placement::CounterRotateOrientation() {
     switch (orientation) {
-    case proto::Orientation::up:
-        orientation = proto::Orientation::left;
+    case Orientation::up:
+        orientation = Orientation::left;
         break;
-    case proto::Orientation::left:
-        orientation = proto::Orientation::down;
+    case Orientation::left:
+        orientation = Orientation::down;
         break;
-    case proto::Orientation::down:
-        orientation = proto::Orientation::right;
+    case Orientation::down:
+        orientation = Orientation::right;
         break;
-    case proto::Orientation::right:
-        orientation = proto::Orientation::up;
+    case Orientation::right:
+        orientation = Orientation::up;
         break;
     default:
         assert(false); // Missing switch case
-        orientation = proto::Orientation::up;
+        orientation = Orientation::up;
     }
 }
 
@@ -176,7 +176,7 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
                                        const WorldCoordAxis emit_y,
                                        const WorldCoordAxis receive_x,
                                        const WorldCoordAxis receive_y,
-                                       const proto::Orientation target_orientation) {
+                                       const Orientation target_orientation) {
         const game::ChunkTile* tile = world_data.GetTile(receive_x, receive_y);
         if (tile != nullptr) {
             const auto& layer = tile->GetLayer(game::TileLayer::entity);
@@ -203,27 +203,27 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
         const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(i);
         const auto y = world_coord.y - 1;
 
-        call_on_neighbor_update(x, y + 1, x, y, proto::Orientation::down);
+        call_on_neighbor_update(x, y + 1, x, y, Orientation::down);
     }
     for (proto::ProtoUintT i = 0; i < entity_ptr->GetHeight(); ++i) {
         const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth());
         const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(i);
 
-        call_on_neighbor_update(x - 1, y, x, y, proto::Orientation::left);
+        call_on_neighbor_update(x - 1, y, x, y, Orientation::left);
     }
     for (proto::ProtoUintT i = 1; i <= entity_ptr->GetWidth(); ++i) {
         const auto x =
             world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth()) - core::SafeCast<WorldCoordAxis>(i);
         const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight());
 
-        call_on_neighbor_update(x, y - 1, x, y, proto::Orientation::up);
+        call_on_neighbor_update(x, y - 1, x, y, Orientation::up);
     }
     for (proto::ProtoUintT i = 1; i <= entity_ptr->GetHeight(); ++i) {
         const auto x = world_coord.x - 1;
         const auto y =
             world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight()) - core::SafeCast<WorldCoordAxis>(i);
 
-        call_on_neighbor_update(x + 1, y, x, y, proto::Orientation::right);
+        call_on_neighbor_update(x + 1, y, x, y, Orientation::right);
     }
 }
 

@@ -60,6 +60,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/loop_commonTests.cpp
 	${JACTORIO_TEST_DIR}/core/mathTests.cpp
+	${JACTORIO_TEST_DIR}/core/orientationTests.cpp
 	${JACTORIO_TEST_DIR}/core/pointer_wrapperTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
 	${JACTORIO_TEST_DIR}/core/utilityTests.cpp

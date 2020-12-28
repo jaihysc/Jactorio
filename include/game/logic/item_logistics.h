@@ -6,6 +6,7 @@
 
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
+#include "core/orientation.h"
 #include "proto/detail/type.h"
 #include "proto/item.h"
 
@@ -30,7 +31,7 @@ namespace jactorio::game
     protected:
         ///
         /// \param orientation Orientation from origin prototype, "the destination is <orientation> of prototype"
-        explicit ItemHandler(const proto::Orientation orientation) : orientation_(orientation) {}
+        explicit ItemHandler(const Orientation orientation) : orientation_(orientation) {}
 
     public:
         void Uninitialize() noexcept {
@@ -42,7 +43,7 @@ namespace jactorio::game
         }
 
 
-        J_NODISCARD proto::Orientation GetOrientation() const noexcept {
+        J_NODISCARD Orientation GetOrientation() const noexcept {
             return orientation_;
         }
 
@@ -50,7 +51,7 @@ namespace jactorio::game
         proto::UniqueDataBase* targetUniqueData_     = nullptr;
         const proto::FrameworkBase* targetProtoData_ = nullptr;
 
-        proto::Orientation orientation_;
+        Orientation orientation_;
     };
 
 
@@ -59,7 +60,7 @@ namespace jactorio::game
     class ItemDropOff : public ItemHandler
     {
     public:
-        explicit ItemDropOff(const proto::Orientation orientation) : ItemHandler(orientation) {}
+        explicit ItemDropOff(const Orientation orientation) : ItemHandler(orientation) {}
 
         J_ITEM_HANDLER_COMMON
 
@@ -70,7 +71,7 @@ namespace jactorio::game
             const proto::ItemStack& itemStack;
             /// Entity to drop into
             proto::UniqueDataBase& uniqueData;
-            proto::Orientation orientation;
+            Orientation orientation;
         };
 
         ///
@@ -119,7 +120,7 @@ namespace jactorio::game
         using GetPickupReturn = const proto::Item*;
 
     public:
-        explicit InserterPickup(const proto::Orientation orientation) : ItemHandler(orientation) {}
+        explicit InserterPickup(const Orientation orientation) : ItemHandler(orientation) {}
 
         J_ITEM_HANDLER_COMMON
 
@@ -131,7 +132,7 @@ namespace jactorio::game
             const proto::RotationDegreeT& degree;
             proto::Item::StackCount amount;
             proto::UniqueDataBase& uniqueData;
-            proto::Orientation orientation;
+            Orientation orientation;
         };
 
         ///

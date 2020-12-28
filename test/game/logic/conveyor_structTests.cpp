@@ -17,7 +17,7 @@ namespace jactorio::game
         WorldData worldData_{};
 
         std::unique_ptr<ConveyorStruct> segment_ =
-            std::make_unique<ConveyorStruct>(proto::Orientation::left, ConveyorStruct::TerminationType::straight, 2);
+            std::make_unique<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
 
         void SetUp() override {
             transportBeltProto_->speed = 0.01;
@@ -119,7 +119,7 @@ namespace jactorio::game
 
     TEST_F(ConveyorStructTest, AppendItem) {
         auto line_segment =
-            std::make_unique<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
         // Offset is from the beginning of the conveyor OR the previous item if it exists
         line_segment->AppendItem(true, 1.3, *itemProto_);
@@ -140,7 +140,7 @@ namespace jactorio::game
         // whether or not it can be appended
 
         auto line_segment =
-            std::make_unique<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
         line_segment->AppendItem(true, 0, *itemProto_); // Ok, Offset can be 0, is first item
         EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 0);
@@ -156,7 +156,7 @@ namespace jactorio::game
         // Insert INSERTS an item at an arbitrary position offset from the beginning of the conveyor
 
         auto line_segment =
-            std::make_unique<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
         // Offset is ALWAYS from the beginning of the conveyor
 
@@ -189,7 +189,7 @@ namespace jactorio::game
 
     TEST_F(ConveyorStructTest, InsertItemAbs) {
         auto line_segment =
-            std::make_unique<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
         line_segment->headOffset = 2;
 
         // Offset is ALWAYS from the beginning of the conveyor + itemOffset
@@ -205,7 +205,7 @@ namespace jactorio::game
     TEST_F(ConveyorStructTest, TryInsertItem) {
 
         auto line_segment =
-            std::make_unique<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
         // Offset is ALWAYS from the beginning of the conveyor
         {
@@ -236,7 +236,7 @@ namespace jactorio::game
     TEST_F(ConveyorStructTest, BackItemDistanceLeft) {
 
         auto line_segment =
-            std::make_unique<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
         EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 0);
 
@@ -264,7 +264,7 @@ namespace jactorio::game
     TEST_F(ConveyorStructTest, BackItemDistanceRight) {
 
         auto line_segment =
-            std::make_unique<ConveyorStruct>(proto::Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
         EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 0.);
 
@@ -358,7 +358,7 @@ namespace jactorio::game
         auto& item = proto_manager.AddProto<proto::Item>();
 
         auto segment =
-            std::make_unique<ConveyorStruct>(proto::Orientation::down, ConveyorStruct::TerminationType::bend_left, 4);
+            std::make_unique<ConveyorStruct>(Orientation::down, ConveyorStruct::TerminationType::bend_left, 4);
 
         segment->AppendItem(true, 0.43, item);
         segment->AppendItem(true, 0.43, item);
@@ -378,7 +378,7 @@ namespace jactorio::game
         // ======================================================================
         auto result = TestSerializeDeserialize(segment);
 
-        EXPECT_EQ(result->direction, proto::Orientation::down);
+        EXPECT_EQ(result->direction, Orientation::down);
         EXPECT_EQ(result->terminationType, ConveyorStruct::TerminationType::bend_left);
         EXPECT_EQ(result->length, 4);
 
