@@ -4,6 +4,7 @@
 #define JACTORIO_INCLUDE_PROTO_FRAMEWORK_WORLD_OBJECT_H
 #pragma once
 
+#include "proto/detail/type.h"
 #include "proto/framework/framework_base.h"
 #include "proto/interface/renderable.h"
 #include "proto/interface/serializable.h"
@@ -22,9 +23,15 @@ namespace jactorio::proto
     public:
         using TileSpanT = uint8_t;
 
-        // TODO Swaps width and height when orientation is left or right
+        ///
+        /// If true, swaps width and height when orientation is left or right in Getters
+        PYTHON_PROP_REF_I(bool, rotateDimensions, true);
 
-        J_NODISCARD TileSpanT GetWidth() const {
+        // TODO remove default arg, for compatibility with existing code for now
+        J_NODISCARD TileSpanT GetWidth(const Orientation orientation = Orientation::up) const {
+            if (rotateDimensions && (orientation == Orientation::left || orientation == Orientation::right))
+                return height_;
+
             return width_;
         }
         FWorldObject* SetWidth(const TileSpanT width) {
@@ -32,7 +39,10 @@ namespace jactorio::proto
             return this;
         }
 
-        J_NODISCARD TileSpanT GetHeight() const {
+        J_NODISCARD TileSpanT GetHeight(const Orientation orientation = Orientation::up) const {
+            if (rotateDimensions && (orientation == Orientation::left || orientation == Orientation::right))
+                return width_;
+
             return height_;
         }
         FWorldObject* SetHeight(const TileSpanT height) {

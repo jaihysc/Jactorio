@@ -117,6 +117,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/proto/spriteTests.cpp
 
 	${JACTORIO_TEST_DIR}/proto/abstract/conveyorTests.cpp
+	${JACTORIO_TEST_DIR}/proto/abstract/entityTests.cpp
 	${JACTORIO_TEST_DIR}/proto/interface/renderableTests.cpp
 
 

@@ -29,6 +29,11 @@ void proto::Entity::SetLocalizedDescription(const std::string& localized_descrip
 
 // ======================================================================
 
+void proto::Entity::PostLoad() {
+    if (!rotatable)
+        rotateDimensions = false;
+}
+
 void proto::Entity::PostLoadValidate(const data::PrototypeManager& /*data_manager*/) const {
 
     J_PROTO_ASSERT(sprite != nullptr, "Sprite was not specified");

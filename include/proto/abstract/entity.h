@@ -44,6 +44,7 @@ namespace jactorio::proto
 
 
         /// Can be rotated by player?
+        /// If false, also sets rotateDimensions to false
         PYTHON_PROP_REF_I(bool, rotatable, false);
         /// Can be placed by player?
         PYTHON_PROP_REF_I(bool, placeable, true);
@@ -145,6 +146,8 @@ namespace jactorio::proto
                            const WorldCoord& world_coord,
                            game::ChunkTileLayer& tile_layer) const override {}
 
+
+        void PostLoad() override;
 
         void PostLoadValidate(const data::PrototypeManager& data_manager) const override;
 
