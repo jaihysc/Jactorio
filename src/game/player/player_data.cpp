@@ -252,8 +252,9 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
     if (!entity_ptr->OnCanBuild(world_data, {world_x, world_y}))
         return false;
 
+    // TODO It must remember orientation placed
     // Do not take item away from player unless item was successfully placed
-    if (!PlaceEntityAtCoords(world_data, entity_ptr, world_x, world_y))
+    if (!PlaceEntityAtCoords(world_data, {world_x, world_y}, Orientation::up, entity_ptr))
         // Failed to place because an entity already exists
         return false;
 
@@ -392,7 +393,8 @@ void game::PlayerData::Placement::TryPickup(
 
             entity->OnRemove(world_data, logic_data, {tile_x, tile_y}, layer);
 
-            const bool result = PlaceEntityAtCoords(world_data, nullptr, tile_x, tile_y);
+            // TODO It must remember orientation placed
+            const bool result = PlaceEntityAtCoords(world_data, {tile_x, tile_y}, Orientation::up, nullptr);
             assert(result); // false indicates failed to remove entity
 
             UpdateNeighboringEntities(world_data, logic_data, {tl_tile_x, tl_tile_y}, entity);
