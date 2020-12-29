@@ -2,6 +2,8 @@
 
 #include "game/world/chunk_tile_layer.h"
 
+#include "core/coordinate_tuple.h"
+
 using namespace jactorio;
 
 game::ChunkTileLayer::~ChunkTileLayer() {
@@ -95,6 +97,10 @@ void game::ChunkTileLayer::SetTopLeftLayer(ChunkTileLayer& ctl) noexcept {
 
 // ======================================================================
 
+
+void game::ChunkTileLayer::AdjustToTopLeft(WorldCoord& coord) const {
+    AdjustToTopLeft(coord.x, coord.y);
+}
 
 game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetOffsetX() const {
     const auto& data = GetMultiTileData();

@@ -138,6 +138,9 @@ namespace jactorio::game
         template <typename Tx, typename Ty>
         void AdjustToTopLeft(Tx& x, Ty& y) const;
 
+        void AdjustToTopLeft(WorldCoord& coord) const;
+
+
         ///
         /// \return Number of tiles from top left on X axis
         J_NODISCARD MultiTileValueT GetOffsetX() const;

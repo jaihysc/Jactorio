@@ -247,8 +247,13 @@ namespace jactorio::game
         int y = 0;
         ctl.AdjustToTopLeft(x, y);
 
+        WorldCoord coord;
+        ctl.AdjustToTopLeft(coord);
+
         EXPECT_EQ(x, -2);
         EXPECT_EQ(y, -1);
+
+        EXPECT_EQ(coord, WorldCoord(-2, -1));
     }
 
     TEST_F(ChunkTileLayerTest, AdjustToTopleftNonMultiTile) {
