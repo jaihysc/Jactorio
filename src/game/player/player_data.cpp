@@ -166,27 +166,25 @@ void game::PlayerData::Placement::CounterRotateOrientation() {
 
 
 ///
-/// \param world_coord Top left tile x, y
-void UpdateNeighboringEntities(game::WorldData& world_data,
-                               game::LogicData& logic_data,
-                               const WorldCoord& world_coord,
+/// \param coord Top left tile x, y
+/// \param orientation Orientation of placed / removed entity
+void UpdateNeighboringEntities(game::WorldData& world,
+                               game::LogicData& logic,
+                               const WorldCoord& coord,
+                               const Orientation orientation,
                                const proto::Entity* entity_ptr) {
 
-    auto call_on_neighbor_update = [&](const WorldCoordAxis emit_x,
-                                       const WorldCoordAxis emit_y,
-                                       const WorldCoordAxis receive_x,
-                                       const WorldCoordAxis receive_y,
-                                       const Orientation target_orientation) {
-        const game::ChunkTile* tile = world_data.GetTile(receive_x, receive_y);
-        if (tile != nullptr) {
-            const auto& layer = tile->GetLayer(game::TileLayer::entity);
+    auto call_on_neighbor_update =
+        [&](const WorldCoord& emit_coord, const WorldCoord& receive_coord, const Orientation target_orientation) {
+            const auto* tile = world.GetTile(receive_coord);
+            if (tile != nullptr) {
+                const auto& layer = tile->GetLayer(game::TileLayer::entity);
 
-            const auto* entity = static_cast<const proto::Entity*>(layer.prototypeData.Get());
-            if (entity != nullptr)
-                entity->OnNeighborUpdate(
-                    world_data, logic_data, {emit_x, emit_y}, {receive_x, receive_y}, target_orientation);
-        }
-    };
+                const auto* entity = layer.GetPrototypeData<proto::Entity>();
+                if (entity != nullptr)
+                    entity->OnNeighborUpdate(world, logic, emit_coord, receive_coord, target_orientation);
+            }
+        };
 
     // Clockwise from top left
 
@@ -199,39 +197,36 @@ void UpdateNeighboringEntities(game::WorldData& world_data,
      */
 
     // x and y are receive coordinates
-    for (proto::ProtoUintT i = 0; i < entity_ptr->GetWidth(); ++i) {
-        const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(i);
-        const auto y = world_coord.y - 1;
+    for (proto::ProtoUintT i = 0; i < entity_ptr->GetWidth(orientation); ++i) {
+        const auto x = coord.x + core::SafeCast<WorldCoordAxis>(i);
+        const auto y = coord.y - 1;
 
-        call_on_neighbor_update(x, y + 1, x, y, Orientation::down);
+        call_on_neighbor_update({x, y + 1}, {x, y}, Orientation::down);
     }
-    for (proto::ProtoUintT i = 0; i < entity_ptr->GetHeight(); ++i) {
-        const auto x = world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth());
-        const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(i);
+    for (proto::ProtoUintT i = 0; i < entity_ptr->GetHeight(orientation); ++i) {
+        const auto x = coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth(orientation));
+        const auto y = coord.y + core::SafeCast<WorldCoordAxis>(i);
 
-        call_on_neighbor_update(x - 1, y, x, y, Orientation::left);
+        call_on_neighbor_update({x - 1, y}, {x, y}, Orientation::left);
     }
-    for (proto::ProtoUintT i = 1; i <= entity_ptr->GetWidth(); ++i) {
-        const auto x =
-            world_coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth()) - core::SafeCast<WorldCoordAxis>(i);
-        const auto y = world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight());
+    for (proto::ProtoUintT i = 1; i <= entity_ptr->GetWidth(orientation); ++i) {
+        const auto x = coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth(orientation)) -
+            core::SafeCast<WorldCoordAxis>(i);
+        const auto y = coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight(orientation));
 
-        call_on_neighbor_update(x, y - 1, x, y, Orientation::up);
+        call_on_neighbor_update({x, y - 1}, {x, y}, Orientation::up);
     }
-    for (proto::ProtoUintT i = 1; i <= entity_ptr->GetHeight(); ++i) {
-        const auto x = world_coord.x - 1;
-        const auto y =
-            world_coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight()) - core::SafeCast<WorldCoordAxis>(i);
+    for (proto::ProtoUintT i = 1; i <= entity_ptr->GetHeight(orientation); ++i) {
+        const auto x = coord.x - 1;
+        const auto y = coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight(orientation)) -
+            core::SafeCast<WorldCoordAxis>(i);
 
-        call_on_neighbor_update(x + 1, y, x, y, Orientation::right);
+        call_on_neighbor_update({x + 1, y}, {x, y}, Orientation::right);
     }
 }
 
-bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
-                                                 LogicData& logic_data,
-                                                 const WorldCoordAxis world_x,
-                                                 const WorldCoordAxis world_y) const {
-    auto* tile = world_data.GetTile(world_x, world_y);
+bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world, LogicData& logic, const WorldCoord& coord) const {
+    auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return false;
 
@@ -249,12 +244,11 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
 
     assert(entity_ptr != nullptr);
     // Prototypes can perform additional checking on whether the location can be placed on or not
-    if (!entity_ptr->OnCanBuild(world_data, {world_x, world_y}))
+    if (!entity_ptr->OnCanBuild(world, coord))
         return false;
 
-    // TODO It must remember orientation placed
     // Do not take item away from player unless item was successfully placed
-    if (!PlaceEntityAtCoords(world_data, {world_x, world_y}, Orientation::up, entity_ptr))
+    if (!PlaceEntityAtCoords(world, coord, orientation, entity_ptr))
         // Failed to place because an entity already exists
         return false;
 
@@ -270,9 +264,9 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world_data,
 
     auto& selected_layer = tile->GetLayer(TileLayer::entity);
 
-    entity_ptr->OnBuild(world_data, logic_data, {world_x, world_y}, selected_layer, orientation);
-    UpdateNeighboringEntities(world_data, logic_data, {world_x, world_y}, entity_ptr);
-    world_data.UpdateDispatch(world_x, world_y, proto::UpdateType::place);
+    entity_ptr->OnBuild(world, logic, coord, selected_layer, orientation);
+    UpdateNeighboringEntities(world, logic, coord, orientation, entity_ptr);
+    world.UpdateDispatch(coord, proto::UpdateType::place);
 
     return true;
 }
@@ -313,9 +307,11 @@ bool game::PlayerData::Placement::TryActivateLayer(WorldData& world_data, const 
 }
 
 
-void game::PlayerData::Placement::TryPickup(
-    WorldData& world_data, LogicData& logic_data, WorldCoordAxis tile_x, WorldCoordAxis tile_y, const uint16_t ticks) {
-    auto* tile = world_data.GetTile(tile_x, tile_y);
+void game::PlayerData::Placement::TryPickup(WorldData& world,
+                                            LogicData& logic,
+                                            WorldCoord coord,
+                                            const uint16_t ticks) {
+    auto* tile = world.GetTile(coord);
 
     const proto::Entity* chosen_ptr;
     bool is_resource_ptr = true;
@@ -379,27 +375,25 @@ void game::PlayerData::Placement::TryPickup(
             auto& layer = tile->GetLayer(select_layer);
 
             // User may have hovered on another tile other than the top left
-            auto tl_tile_x = tile_x;
-            auto tl_tile_y = tile_y;
-            layer.AdjustToTopLeft(tl_tile_x, tl_tile_y);
+            layer.AdjustToTopLeft(coord);
 
 
             // Picking up an entity which is set in activated_layer will unset activated_layer
-            if (activatedLayer_ == world_data.GetLayerTopLeft({tile_x, tile_y}, select_layer))
+            if (activatedLayer_ == world.GetLayerTopLeft(coord, select_layer))
                 activatedLayer_ = nullptr;
 
             // Call events
-            const auto* entity = static_cast<const proto::Entity*>(layer.prototypeData.Get());
+            const auto* entity = layer.GetPrototypeData<proto::Entity>();
 
-            entity->OnRemove(world_data, logic_data, {tile_x, tile_y}, layer);
+            entity->OnRemove(world, logic, coord, layer);
 
             // TODO It must remember orientation placed
-            const bool result = PlaceEntityAtCoords(world_data, {tile_x, tile_y}, Orientation::up, nullptr);
+            const bool result = PlaceEntityAtCoords(world, coord, Orientation::up, nullptr);
             assert(result); // false indicates failed to remove entity
 
-            UpdateNeighboringEntities(world_data, logic_data, {tl_tile_x, tl_tile_y}, entity);
+            UpdateNeighboringEntities(world, logic, coord, Orientation::up, entity);
 
-            world_data.UpdateDispatch(tile_x, tile_y, proto::UpdateType::remove);
+            world.UpdateDispatch(coord, proto::UpdateType::remove);
         }
     }
 }
