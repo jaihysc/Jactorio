@@ -28,6 +28,7 @@ namespace jactorio::game
         SetupMultiTileProp(ctl, {5, 2});
         ctl.SetMultiTileIndex(4);
         ctl.SetTopLeftLayer(top_left);
+        ctl.SetOrientation(Orientation::right);
 
         // Top left
         {
@@ -38,6 +39,8 @@ namespace jactorio::game
             EXPECT_EQ(copy.GetMultiTileData(), top_left.GetMultiTileData());
 
             EXPECT_EQ(copy.GetUniqueData<proto::ContainerEntityData>()->inventory.size(), 32);
+
+            EXPECT_EQ(copy.GetOrientation(), Orientation::right);
         }
         // Non top left
         {
@@ -61,6 +64,7 @@ namespace jactorio::game
         SetupMultiTileProp(ctl, {5, 2});
         ctl.SetMultiTileIndex(4);
         ctl.SetTopLeftLayer(top_left);
+        ctl.SetOrientation(Orientation::right);
 
         // Top left
         {
@@ -68,15 +72,39 @@ namespace jactorio::game
 
             EXPECT_EQ(top_left.GetUniqueData<proto::ContainerEntityData>(), nullptr); // Gave ownership
             EXPECT_NE(move_to.GetUniqueData<proto::ContainerEntityData>(), nullptr);  // Took ownership
+
+            EXPECT_EQ(move_to.GetOrientation(), Orientation::right);
         }
         // Non top left
         {
             const ChunkTileLayer move_to = std::move(ctl);
 
             EXPECT_EQ(move_to.GetTopLeftLayer(), &top_left);
+
+            EXPECT_EQ(move_to.GetOrientation(), Orientation::right);
         }
     }
 
+    TEST_F(ChunkTileLayerTest, SetOrientationIsTopLeft) {
+        ChunkTileLayer top_left;
+
+        top_left.SetOrientation(Orientation::right);
+        EXPECT_EQ(top_left.GetOrientation(), Orientation::right);
+    }
+
+    TEST_F(ChunkTileLayerTest, SetOrientationNonTopLeft) {
+        ChunkTileLayer top_left;
+        SetupMultiTileProp(top_left, {2, 1});
+
+        ChunkTileLayer ctl;
+        ctl.SetMultiTileIndex(1);
+        ctl.SetTopLeftLayer(top_left);
+
+        ctl.SetOrientation(Orientation::right);
+
+        EXPECT_EQ(top_left.GetOrientation(), Orientation::right);
+        EXPECT_EQ(ctl.GetOrientation(), Orientation::right);
+    }
 
     TEST_F(ChunkTileLayerTest, GetUniqueData) {
         ChunkTileLayer top_left{};
@@ -301,6 +329,7 @@ namespace jactorio::game
         TestSetupMultiTileProp(bot_right, {2, 2}, proto);
         bot_right.SetMultiTileIndex(3);
         bot_right.SetTopLeftLayer(top_left);
+        bot_right.SetOrientation(Orientation::right);
 
         proto_manager.GenerateRelocationTable();
 
@@ -315,6 +344,7 @@ namespace jactorio::game
         EXPECT_EQ(result_tl.GetMultiTileData().span, 2);
         EXPECT_EQ(result_tl.GetMultiTileData().height, 2);
 
+        EXPECT_EQ(result_tl.GetOrientation(), Orientation::right);
 
         EXPECT_EQ(result_br.prototypeData, &proto);
         EXPECT_EQ(result_br.GetTopLeftLayer(), nullptr);

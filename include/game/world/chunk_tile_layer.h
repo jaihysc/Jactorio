@@ -58,6 +58,7 @@ namespace jactorio::game
             swap(lhs.multiTileIndex_, rhs.multiTileIndex_);
             swap(lhs.prototypeData, rhs.prototypeData);
             swap(lhs.data_.uniqueData, rhs.data_.uniqueData);
+            swap(lhs.orientation_, rhs.orientation_);
         }
 
 
@@ -67,6 +68,15 @@ namespace jactorio::game
 
 
         // ======================================================================
+
+        ///
+        /// Sets orientation at current layer or if multi tile, top left
+        void SetOrientation(Orientation orientation);
+
+        ///
+        /// Fetches orientation at current layer or if multi tile, top left
+        J_NODISCARD Orientation GetOrientation() const;
+
 
         // Prototype
 
@@ -186,15 +196,17 @@ namespace jactorio::game
         /// 3 4 5
         MultiTileValueT multiTileIndex_ = 0;
 
+        Orientation orientation_ = Orientation::up;
+
 
         static constexpr size_t GetArchiveSize() {
-            return sizeof prototypeData + sizeof data_.uniqueData + sizeof multiTileIndex_;
+            return sizeof prototypeData + sizeof data_.uniqueData + sizeof multiTileIndex_ + sizeof orientation_;
         }
 
     public:
         CEREAL_LOAD(archive) {
             constexpr auto archive_size = GetArchiveSize();
-            data::CerealArchive<archive_size>(archive, prototypeData, data_.uniqueData, multiTileIndex_);
+            data::CerealArchive<archive_size>(archive, prototypeData, data_.uniqueData, multiTileIndex_, orientation_);
 
             const auto& unique_data = data_.uniqueData;
 
@@ -213,12 +225,12 @@ namespace jactorio::game
                     assert(data::active_unique_data_manager != nullptr);
                     data::active_unique_data_manager->AssignId(*unique_data);
                 }
-                data::CerealArchive<archive_size>(archive, prototypeData, unique_data, multiTileIndex_);
+                data::CerealArchive<archive_size>(archive, prototypeData, unique_data, multiTileIndex_, orientation_);
             }
             else {
                 // Non top left tiles do not have unique data
                 UniqueDataContainerT empty_unique = nullptr;
-                data::CerealArchive<archive_size>(archive, prototypeData, empty_unique, multiTileIndex_);
+                data::CerealArchive<archive_size>(archive, prototypeData, empty_unique, multiTileIndex_, orientation_);
             }
         }
     };

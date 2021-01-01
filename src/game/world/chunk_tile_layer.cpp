@@ -12,7 +12,7 @@ game::ChunkTileLayer::~ChunkTileLayer() {
 }
 
 game::ChunkTileLayer::ChunkTileLayer(const ChunkTileLayer& other)
-    : prototypeData(other.prototypeData), multiTileIndex_{other.multiTileIndex_} {
+    : prototypeData{other.prototypeData}, multiTileIndex_{other.multiTileIndex_}, orientation_{other.orientation_} {
 
     // Use prototype defined method for copying uniqueData_ if other has data to copy
     if (IsTopLeft() && other.data_.uniqueData != nullptr) {
@@ -22,7 +22,7 @@ game::ChunkTileLayer::ChunkTileLayer(const ChunkTileLayer& other)
 }
 
 game::ChunkTileLayer::ChunkTileLayer(ChunkTileLayer&& other) noexcept
-    : prototypeData(other.prototypeData), multiTileIndex_{other.multiTileIndex_} {
+    : prototypeData{other.prototypeData}, multiTileIndex_{other.multiTileIndex_}, orientation_{other.orientation_} {
     data_.uniqueData = std::move(other.data_.uniqueData);
 }
 
@@ -35,6 +35,29 @@ void game::ChunkTileLayer::Clear() noexcept {
 
     prototypeData   = nullptr;
     multiTileIndex_ = 0;
+}
+
+void game::ChunkTileLayer::SetOrientation(const Orientation orientation) {
+    if (IsNonTopLeftMultiTile()) {
+        auto* top_left = GetTopLeftLayer();
+        assert(top_left != nullptr);
+
+        top_left->SetOrientation(orientation);
+    }
+    else {
+        orientation_ = orientation;
+    }
+}
+
+Orientation game::ChunkTileLayer::GetOrientation() const {
+    if (IsNonTopLeftMultiTile()) {
+        const auto* top_left = GetTopLeftLayer();
+        assert(top_left != nullptr);
+
+        return top_left->GetOrientation();
+    }
+
+    return orientation_;
 }
 
 // ======================================================================
