@@ -21,6 +21,8 @@ namespace jactorio::core
         using ValueT = std::size_t;
 
     public:
+        using element_type = Ty;
+
         PointerWrapper() = default;
 
         PointerWrapper(Ty* proto) { // Intentionally non explicit to allow assignment from pointer directly
