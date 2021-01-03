@@ -55,7 +55,6 @@ namespace jactorio::game
 
             auto& chunk = world_data.EmplaceChunk(0, 0);
 
-            auto& chunk_tiles = chunk.Tiles();
             for (int y = 0; y < kChunkWidth; ++y) {
                 bool y_water = false;
 
@@ -75,7 +74,7 @@ namespace jactorio::game
                         tile_ptr = water_tile;
                     }
 
-                    chunk_tiles[y * kChunkWidth + x].SetTilePrototype(tile_ptr);
+                    chunk.GetCTile(x, y).SetTilePrototype(Orientation::up, tile_ptr);
                 }
             }
         }

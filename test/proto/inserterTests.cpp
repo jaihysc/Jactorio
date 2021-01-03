@@ -23,7 +23,7 @@ namespace jactorio::proto
         }
 
         game::ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
-            return TestSetupInserter(worldData_, logicData_, coords, inserterProto_, orientation);
+            return TestSetupInserter(worldData_, logicData_, coords, orientation, inserterProto_);
         }
     };
 
@@ -43,8 +43,8 @@ namespace jactorio::proto
     TEST_F(InserterTest, FindPickupDropoffOnBuild) {
         // Finding pickup and dropoff tiles
 
-        TestSetupContainer(worldData_, {1, 1}, containerProto_);
-        TestSetupContainer(worldData_, {3, 1}, containerProto_);
+        TestSetupContainer(worldData_, {1, 1}, Orientation::up, containerProto_);
+        TestSetupContainer(worldData_, {3, 1}, Orientation::up, containerProto_);
 
         auto& layer = BuildInserter({2, 1}, Orientation::left);
 
@@ -62,7 +62,7 @@ namespace jactorio::proto
 
 
         // Dropoff
-        TestSetupContainer(worldData_, {1, 1}, containerProto_);
+        TestSetupContainer(worldData_, {1, 1}, Orientation::up, containerProto_);
         worldData_.UpdateDispatch({1, 1}, UpdateType::place);
 
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
@@ -70,7 +70,7 @@ namespace jactorio::proto
 
 
         // Pickup
-        TestSetupContainer(worldData_, {3, 1}, containerProto_);
+        TestSetupContainer(worldData_, {3, 1}, Orientation::up, containerProto_);
         worldData_.UpdateDispatch({3, 1}, UpdateType::place);
 
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
@@ -91,7 +91,7 @@ namespace jactorio::proto
         // Dropoff
         AssemblyMachine asm_machine;
 
-        TestSetupAssemblyMachine(worldData_, {1, 0}, asm_machine);
+        TestSetupAssemblyMachine(worldData_, {1, 0}, Orientation::up, asm_machine);
         worldData_.UpdateDispatch({2, 0}, UpdateType::place);
 
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
@@ -99,7 +99,7 @@ namespace jactorio::proto
 
 
         // Pickup
-        TestSetupContainer(worldData_, {2, 4}, containerProto_);
+        TestSetupContainer(worldData_, {2, 4}, Orientation::up, containerProto_);
         worldData_.UpdateDispatch({2, 4}, UpdateType::place);
 
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
@@ -109,14 +109,14 @@ namespace jactorio::proto
     TEST_F(InserterTest, RemovePickupDropoff) {
         // Finding pickup and dropoff tiles
 
-        TestSetupContainer(worldData_, {3, 1}, containerProto_);
+        TestSetupContainer(worldData_, {3, 1}, Orientation::up, containerProto_);
 
         auto& layer = BuildInserter({2, 1}, Orientation::left);
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
         EXPECT_FALSE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
 
 
-        TestSetupContainer(worldData_, {1, 1}, containerProto_);
+        TestSetupContainer(worldData_, {1, 1}, Orientation::up, containerProto_);
         worldData_.UpdateDispatch({1, 1}, UpdateType::place);
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
@@ -160,8 +160,8 @@ namespace jactorio::proto
 
         auto& inserter_layer = BuildInserter({5, 1}, Orientation::right);
 
-        TestSetupContainer(worldData_, {2, 1}, containerProto_); // Pickup
-        TestSetupContainer(worldData_, {8, 1}, containerProto_); // Dropoff
+        TestSetupContainer(worldData_, {2, 1}, Orientation::up, containerProto_); // Pickup
+        TestSetupContainer(worldData_, {8, 1}, Orientation::up, containerProto_); // Dropoff
 
         // Should locate pickup and dropoff
 

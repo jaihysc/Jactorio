@@ -28,7 +28,7 @@ namespace jactorio::game
         }
 
         ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
-            return TestSetupInserter(worldData_, logicData_, coords, inserterProto_, orientation);
+            return TestSetupInserter(worldData_, logicData_, coords, orientation, inserterProto_);
         }
 
         ///
@@ -39,15 +39,14 @@ namespace jactorio::game
                                                const Orientation orientation,
                                                const proto::Item::StackCount stack_count,
                                                const WorldCoord& neighbor_update_coord = {1, 2}) {
-            auto& layer = TestSetupContainer(worldData_, coords, containerProto_);
+            auto& layer = TestSetupContainer(worldData_, coords, Orientation::up, containerProto_);
 
             auto* unique_data = layer.GetUniqueData<proto::ContainerEntityData>();
 
             // Emit neighbor update
             {
-                auto& neighbor_layer = worldData_.GetTile(neighbor_update_coord)->GetLayer(TileLayer::entity);
-                const auto* neighbor_proto =
-                    static_cast<const proto::ContainerEntity*>(neighbor_layer.prototypeData.Get());
+                auto& neighbor_layer       = worldData_.GetTile(neighbor_update_coord)->GetLayer(TileLayer::entity);
+                const auto* neighbor_proto = neighbor_layer.GetPrototype<proto::ContainerEntity>();
 
                 if (neighbor_proto != nullptr)
                     neighbor_proto->OnNeighborUpdate(
@@ -123,13 +122,12 @@ namespace jactorio::game
 
         auto dropoff =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
-        TestRegisterConveyorSegment(worldData_, {1, 0}, dropoff, segment_proto);
+        TestCreateConveyorSegment(worldData_, {1, 0}, dropoff, segment_proto);
 
 
         //
-        auto pickup =
-            std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
-        TestRegisterConveyorSegment(worldData_, {1, 2}, pickup, segment_proto);
+        auto pickup = std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
+        TestCreateConveyorSegment(worldData_, {1, 2}, pickup, segment_proto);
 
         for (int i = 0; i < 1000; ++i) {
             pickup->AppendItem(false, 0, item);
@@ -172,7 +170,7 @@ namespace jactorio::game
 
         // Cannot drop into assembly machine since it has no recipe
         proto::AssemblyMachine asm_machine{};
-        TestSetupAssemblyMachine(worldData_, {0, 1}, asm_machine);
+        TestSetupAssemblyMachine(worldData_, {0, 1}, Orientation::up, asm_machine);
 
         auto* pickup = BuildChest({3, 2}, Orientation::right, 10);
 

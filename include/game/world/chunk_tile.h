@@ -68,14 +68,20 @@ namespace jactorio::game
         // ============================================================================================
         // Methods below are type checked to avoid getting / setting the wrong data
 
+        // TODO Remove these method
+
         // chunk_layer::base only
         J_NODISCARD const proto::Tile* GetTilePrototype(TileLayer category = TileLayer::base) const;
-        void SetTilePrototype(const proto::Tile* tile_prototype, TileLayer category = TileLayer::base);
+        void SetTilePrototype(Orientation orientation,
+                              const proto::Tile* tile_prototype,
+                              TileLayer category = TileLayer::base);
 
 
         // chunk_layer::resource, chunk_layer::entity only
         J_NODISCARD const proto::Entity* GetEntityPrototype(TileLayer category = TileLayer::entity) const;
-        void SetEntityPrototype(const proto::Entity* tile_prototype, TileLayer category = TileLayer::entity);
+        void SetEntityPrototype(Orientation orientation,
+                                const proto::Entity* tile_prototype,
+                                TileLayer category = TileLayer::entity);
 
 
         CEREAL_SERIALIZE(archive) {

@@ -26,13 +26,23 @@ namespace jactorio::game
         }
 
         ///
-        /// Creates transport belt, provided parameters forwarded to ConveyorData constructor
-        template <typename... TParams>
-        auto& BuildConveyor(WorldData& world, const WorldCoord& coord, TParams&&... params) {
-            auto& layer         = world.GetTile(coord)->GetLayer(TileLayer::entity);
-            layer.prototypeData = &transBelt_;
+        /// Creates a transport belt with no conveyor structure
+        auto& CreateConveyor(WorldData& world, const WorldCoord& coord, const Orientation direction) const {
+            auto& layer = world.GetTile(coord)->GetLayer(TileLayer::entity);
+            layer.SetPrototype(direction, &transBelt_);
 
-            return layer.MakeUniqueData<proto::ConveyorData>(std::forward<TParams>(params)...);
+            return layer.MakeUniqueData<proto::ConveyorData>();
+        }
+
+        ///
+        /// Creates a transport belt with provided conveyor structure
+        auto& CreateConveyor(WorldData& world,
+                             const WorldCoord& coord,
+                             const std::shared_ptr<ConveyorStruct>& con_struct_p) const {
+            auto& layer = world.GetTile(coord)->GetLayer(TileLayer::entity);
+            layer.SetPrototype(con_struct_p->direction, &transBelt_);
+
+            return layer.MakeUniqueData<proto::ConveyorData>(con_struct_p);
         }
 
         ///
@@ -44,7 +54,7 @@ namespace jactorio::game
                              const std::uint8_t len                      = 1) {
             auto con_struct = std::make_shared<ConveyorStruct>(orien, ttype, len);
 
-            return BuildConveyor(world, coord, con_struct);
+            return CreateConveyor(world, coord, con_struct);
         }
 
         ///
@@ -70,10 +80,10 @@ namespace jactorio::game
             world.EmplaceChunk(-1, 0);
             world.EmplaceChunk(1, 0);
 
-            auto& other_con_data = BuildConveyor(world, other_coord);
+            auto& other_con_data = CreateConveyor(world, other_coord, other_direction);
             ConveyorCreate(world, other_coord, other_con_data, other_direction);
 
-            auto& con_data = BuildConveyor(world, current_coord);
+            auto& con_data = CreateConveyor(world, current_coord, direction);
             ConveyorCreate(world, current_coord, con_data, direction);
 
             compare(world, con_data, other_con_data);
@@ -103,7 +113,7 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, ConnectUpNonStruct) {
         const proto::ContainerEntity container_proto;
 
-        TestSetupContainer(worldData_, {0, 0}, container_proto);
+        TestSetupContainer(worldData_, {0, 0}, Orientation::up, container_proto);
         CreateConveyor(worldData_, {0, 1}, Orientation::up);
 
         ConveyorConnectUp(worldData_, {0, 1});
@@ -113,7 +123,7 @@ namespace jactorio::game
     /// Do not connect to itself if the struct spans multiple tiles
     TEST_F(ConveyorUtilityTest, ConnectUpNoConnectSelf) {
         auto& structure = CreateConveyor(worldData_, {0, 0}, Orientation::up).structure;
-        BuildConveyor(worldData_, {0, 1}, structure);
+        CreateConveyor(worldData_, {0, 1}, structure);
 
         ConveyorConnectUp(worldData_, {0, 1});
 
@@ -405,7 +415,7 @@ namespace jactorio::game
             head_con_data.structIndex                = 1;
             head_con_data.structure->terminationType = ConveyorStruct::TerminationType::bend_right;
 
-            BuildConveyor(worldData_, {0, 0}, head_con_data.structure);
+            CreateConveyor(worldData_, {0, 0}, head_con_data.structure);
 
             CreateConveyor(worldData_, {2, 0}, Orientation::down);
 
@@ -440,12 +450,12 @@ namespace jactorio::game
             head_con_data.structure->headOffset = 30; // Will use this to set structure behind itemOffset
             head_con_data.structure->length     = 4;  // Will use this to set structure behind length
 
-            BuildConveyor(worldData_, {2, 0}, head_con_data.structure);
+            CreateConveyor(worldData_, {2, 0}, head_con_data.structure);
 
-            auto& con_data_3       = BuildConveyor(worldData_, {1, 0}, head_con_data.structure);
+            auto& con_data_3       = CreateConveyor(worldData_, {1, 0}, head_con_data.structure);
             con_data_3.structIndex = 2; // Will use this to set structure ahead length
 
-            auto& con_data_4       = BuildConveyor(worldData_, {0, 0}, head_con_data.structure);
+            auto& con_data_4       = CreateConveyor(worldData_, {0, 0}, head_con_data.structure);
             con_data_4.structIndex = 100; // Should be changed
         }
 
@@ -501,8 +511,8 @@ namespace jactorio::game
         auto& con_data_h             = CreateConveyor(worldData_, {0, 0}, Orientation::up);
         con_data_h.structure->length = 3;
 
-        auto& con_data_2 = BuildConveyor(worldData_, {0, 1}, con_data_h.structure);
-        auto& con_data_3 = BuildConveyor(worldData_, {0, 2}, con_data_h.structure);
+        auto& con_data_2 = CreateConveyor(worldData_, {0, 1}, con_data_h.structure);
+        auto& con_data_3 = CreateConveyor(worldData_, {0, 2}, con_data_h.structure);
 
         ConveyorChangeStructure(worldData_, {0, 0}, new_con_struct);
         EXPECT_EQ(con_data_h.structure, new_con_struct);
@@ -523,8 +533,8 @@ namespace jactorio::game
         auto& con_data_h             = CreateConveyor(worldData_, {0, 0}, Orientation::left);
         con_data_h.structure->length = 999; // Should use length of new con struct, not old
 
-        BuildConveyor(worldData_, {1, 0}, con_data_h.structure);
-        BuildConveyor(worldData_, {2, 0}, con_data_h.structure);
+        CreateConveyor(worldData_, {1, 0}, con_data_h.structure);
+        CreateConveyor(worldData_, {2, 0}, con_data_h.structure);
 
 
         auto create_dependee_conveyor = [&](const WorldCoord& coord) -> proto::ConveyorData& {
@@ -599,7 +609,7 @@ namespace jactorio::game
         proto::ConveyorData& BuildConveyor(const WorldCoord world_coords, const Orientation direction) {
             auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)->GetLayer(TileLayer::entity);
 
-            layer.prototypeData = &lineProto_;
+            layer.SetPrototype(direction, &lineProto_);
 
             auto& con_data = layer.MakeUniqueData<proto::ConveyorData>();
             ConveyorCreate(worldData_, world_coords, con_data, direction);
@@ -865,7 +875,7 @@ namespace jactorio::game
         //
 
         auto& con_data_r_head = CreateConveyor(worldData_, {2, 0}, Orientation::right);
-        auto& con_data_r_end  = BuildConveyor(worldData_, {1, 0}, con_data_r_head.structure);
+        auto& con_data_r_end  = CreateConveyor(worldData_, {1, 0}, con_data_r_head.structure);
 
         CreateConveyor(worldData_, {1, 1}, Orientation::up);
 

@@ -127,7 +127,7 @@ bool game::PlaceEntityAtCoords(WorldData& world,
 
     PlaceAtCoords(
         world, coord, TileLayer::entity, entity->GetWidth(orien), entity->GetHeight(orien), [&](ChunkTile* chunk_tile) {
-            chunk_tile->SetEntityPrototype(entity);
+            chunk_tile->SetEntityPrototype(orien, entity);
         });
 
     return true;

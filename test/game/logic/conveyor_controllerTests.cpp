@@ -36,10 +36,8 @@ namespace jactorio::game
             worldData_.LogicAddChunk(*chunk_);
         }
 
-        ///
-        /// Creates tile UniqueData for ConveyorSegment
-        void RegisterSegment(const WorldCoord& world_coords, const std::shared_ptr<ConveyorStruct>& segment) {
-            TestRegisterConveyorSegment(worldData_, world_coords, segment, *transportBeltProto_);
+        void CreateSegment(const WorldCoord& coord, const std::shared_ptr<ConveyorStruct>& segment) {
+            TestCreateConveyorSegment(worldData_, coord, segment, *transportBeltProto_);
         }
     };
 
@@ -65,10 +63,10 @@ namespace jactorio::game
         down_segment->target  = left_segment.get();
         left_segment->target  = up_segment.get();
 
-        RegisterSegment({0, 0}, up_segment);
-        RegisterSegment({4, 0}, right_segment);
-        RegisterSegment({4, 5}, down_segment);
-        RegisterSegment({0, 5}, left_segment);
+        CreateSegment({0, 0}, up_segment);
+        CreateSegment({4, 0}, right_segment);
+        CreateSegment({4, 5}, down_segment);
+        CreateSegment({0, 5}, left_segment);
 
         // Logic
         left_segment->AppendItem(true, 0.f, itemProto_);
@@ -135,8 +133,8 @@ namespace jactorio::game
 
         up_segment->target = right_segment.get();
 
-        RegisterSegment({0, 0}, up_segment);
-        RegisterSegment({3, 0}, right_segment);
+        CreateSegment({0, 0}, up_segment);
+        CreateSegment({3, 0}, right_segment);
 
         // Offset is distance from beginning, or previous item
         up_segment->AppendItem(true, 0.f, itemProto_);
@@ -203,8 +201,8 @@ namespace jactorio::game
 
         up_segment->target = right_segment.get();
 
-        RegisterSegment({0, 0}, up_segment);
-        RegisterSegment({3, 0}, right_segment);
+        CreateSegment({0, 0}, up_segment);
+        CreateSegment({3, 0}, right_segment);
 
         // Offset is distance from beginning, or previous item
         up_segment->AppendItem(true, 0.f, itemProto_);
@@ -244,7 +242,7 @@ namespace jactorio::game
         auto segment =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 10);
 
-        RegisterSegment({0, 0}, segment);
+        CreateSegment({0, 0}, segment);
 
         segment->AppendItem(true, 0.5f, itemProto_);
         segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
@@ -309,8 +307,8 @@ namespace jactorio::game
 
         up_segment->target = right_segment.get();
 
-        RegisterSegment({0, 0}, up_segment);
-        RegisterSegment({3, 0}, right_segment);
+        CreateSegment({0, 0}, up_segment);
+        CreateSegment({3, 0}, right_segment);
 
         // RIGHT LINE: 14 items can be fit on the right lane: (4 - 0.7) / ConveyorProp::kItemSpacing{0.25} = 13.2
         for (int i = 0; i < 14; ++i) {
@@ -338,7 +336,7 @@ namespace jactorio::game
         auto left_segment =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
 
-        RegisterSegment({2, 1}, left_segment);
+        CreateSegment({2, 1}, left_segment);
 
         // One item stopped, one still moving
         left_segment->AppendItem(true, 0, itemProto_);
@@ -356,7 +354,7 @@ namespace jactorio::game
 
         left_segment->target = left_segment_2.get();
 
-        RegisterSegment({1, 1}, left_segment_2);
+        CreateSegment({1, 1}, left_segment_2);
 
         // Update neighboring segments as a new segment was placed
         transportBeltProto_->OnNeighborUpdate(worldData_, logicData_, {1, 1}, {2, 1}, Orientation::right);
@@ -374,13 +372,13 @@ namespace jactorio::game
 
         const auto left_segment =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 1);
-        RegisterSegment({1, 1}, left_segment);
+        CreateSegment({1, 1}, left_segment);
 
 
         auto left_segment_2 =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 1);
         left_segment_2->target = left_segment.get();
-        RegisterSegment({2, 1}, left_segment_2);
+        CreateSegment({2, 1}, left_segment_2);
 
 
         // ======================================================================
@@ -411,7 +409,7 @@ namespace jactorio::game
         auto right_segment =
             std::make_shared<ConveyorStruct>(Orientation::right, ConveyorStruct::TerminationType::bend_right, 4);
 
-        RegisterSegment({0, 0}, right_segment);
+        CreateSegment({0, 0}, right_segment);
 
         right_segment->AppendItem(true, 0.f, itemProto_);
         right_segment->AppendItem(true, 0.f, itemProto_); // Insert behind previous item
@@ -443,8 +441,8 @@ namespace jactorio::game
 
         up_segment_2->target = up_segment_1.get();
 
-        RegisterSegment({0, 0}, up_segment_1);
-        RegisterSegment({0, 1}, up_segment_2);
+        CreateSegment({0, 0}, up_segment_1);
+        CreateSegment({0, 1}, up_segment_2);
 
         up_segment_2->AppendItem(true, 0.05, itemProto_);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
@@ -505,8 +503,8 @@ namespace jactorio::game
 
         segment_2->target = segment_1.get();
 
-        RegisterSegment({0, 0}, segment_1);
-        RegisterSegment({3, 0}, segment_2);
+        CreateSegment({0, 0}, segment_1);
+        CreateSegment({3, 0}, segment_2);
 
         // Insert item on left + right side
         segment_2->AppendItem(true, 0.02f, itemProto_);
@@ -552,8 +550,8 @@ namespace jactorio::game
 
         down_segment->headOffset = 1;
 
-        RegisterSegment({4, 0}, right_segment);
-        RegisterSegment({4, 9}, down_segment);
+        CreateSegment({4, 0}, right_segment);
+        CreateSegment({4, 9}, down_segment);
 
         // Insert items
         for (int i = 0; i < 3; ++i) {
@@ -649,8 +647,8 @@ namespace jactorio::game
         left_segment->sideInsertIndex = -1; // Will insert into up_segment with offset of 9 absolute
         down_segment->headOffset      = 10;
 
-        RegisterSegment({4, 0}, left_segment);
-        RegisterSegment({4, 9}, down_segment);
+        CreateSegment({4, 0}, left_segment);
+        CreateSegment({4, 9}, down_segment);
 
 
         // Insert items
@@ -729,7 +727,7 @@ namespace jactorio::game
         auto left_segment =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::bend_right, 4);
         left_segment->headOffset = 1;
-        RegisterSegment({2, 2}, left_segment);
+        CreateSegment({2, 2}, left_segment);
 
         // ======================================================================
 
@@ -739,7 +737,7 @@ namespace jactorio::game
         down_segment->target          = left_segment.get();
         down_segment->sideInsertIndex = 2;
 
-        RegisterSegment({3, 1}, down_segment);
+        CreateSegment({3, 1}, down_segment);
 
 
         // Left lane
@@ -777,7 +775,7 @@ namespace jactorio::game
         up_segment->target          = left_segment.get();
         up_segment->sideInsertIndex = 2;
 
-        RegisterSegment({3, 3}, up_segment);
+        CreateSegment({3, 3}, up_segment);
 
 
         // Left lane
@@ -816,7 +814,7 @@ namespace jactorio::game
         auto down_segment =
             std::make_shared<ConveyorStruct>(Orientation::down, ConveyorStruct::TerminationType::right_only, 3);
 
-        RegisterSegment({3, 2}, down_segment);
+        CreateSegment({3, 2}, down_segment);
 
 
         auto right_segment =
@@ -824,7 +822,7 @@ namespace jactorio::game
 
         right_segment->target = down_segment.get();
 
-        RegisterSegment({2, 1}, right_segment);
+        CreateSegment({2, 1}, right_segment);
 
 
         // ======================================================================

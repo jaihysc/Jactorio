@@ -331,7 +331,7 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
         const auto& tile_layer = tile.GetLayer(layer_index);
 
 
-        const auto* proto = tile_layer.GetPrototypeData();
+        const auto* proto = tile_layer.GetPrototype();
         if (proto == nullptr) // Layer not initialized
             continue;
 

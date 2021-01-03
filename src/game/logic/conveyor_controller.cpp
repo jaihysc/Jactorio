@@ -172,7 +172,7 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 
     // Each object layer holds a conveyor segment
     for (const auto& tile_layer : layers) {
-        const auto& line_proto = *static_cast<const proto::Conveyor*>(tile_layer->prototypeData.Get());
+        const auto& line_proto = *tile_layer->GetPrototype<proto::Conveyor>();
         auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->structure;
 
         // Left
@@ -207,7 +207,7 @@ void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
 
     // Each object layer holds a conveyor segment
     for (const auto& tile_layer : layers) {
-        const auto* line_proto = static_cast<const proto::Conveyor*>(tile_layer->prototypeData.Get());
+        const auto* line_proto = tile_layer->GetPrototype<proto::Conveyor>();
         auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->structure;
 
         auto tiles_moved = line_proto->speed;

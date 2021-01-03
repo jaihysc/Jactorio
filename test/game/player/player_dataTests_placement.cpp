@@ -22,14 +22,17 @@ namespace jactorio::game
 
         data::PrototypeManager dataManager_;
 
-        // Creates the base tile and entity at world coords
+        ///
+        /// Sets the base layer and entity at coord
         void SetEntityCoords(const int world_x,
                              const int world_y,
                              const proto::Tile* tile_proto,
                              const proto::Entity* entity_proto) {
-            worldData_.GetTile(world_x, world_y)->GetLayer(TileLayer::base).prototypeData = tile_proto;
+            worldData_.GetTile(world_x, world_y)->GetLayer(TileLayer::base).SetPrototype(Orientation::up, tile_proto);
 
-            worldData_.GetTile(world_x, world_y)->GetLayer(TileLayer::entity).prototypeData = entity_proto;
+            worldData_.GetTile(world_x, world_y)
+                ->GetLayer(TileLayer::entity)
+                .SetPrototype(Orientation::up, entity_proto);
         }
     };
 
@@ -86,10 +89,10 @@ namespace jactorio::game
         auto& tile  = *worldData_.GetTile(0, 0);
         auto& tile2 = *worldData_.GetTile(1, 0);
 
-        tile.SetTilePrototype(&tile_proto);
+        tile.SetTilePrototype(Orientation::up, &tile_proto);
 
-        tile2.SetTilePrototype(&tile_proto);
-        tile2.SetEntityPrototype(entity2.get());
+        tile2.SetTilePrototype(Orientation::up, &tile_proto);
+        tile2.SetEntityPrototype(Orientation::up, entity2.get());
 
 
         // Edge cases
@@ -97,7 +100,7 @@ namespace jactorio::game
 
         playerInv_.SetSelectedItem({&item_no_entity, 2});
 
-        tile.SetEntityPrototype(entity.get());
+        tile.SetEntityPrototype(Orientation::up, entity.get());
 
         EXPECT_FALSE(
             playerPlace_.TryPlaceEntity(worldData_, logicData_, {0, 0})); // Item holds no reference to an entity
@@ -110,7 +113,7 @@ namespace jactorio::game
         // Place at 0, 0
         playerInv_.SetSelectedItem({&item, 2});
 
-        tile.SetEntityPrototype(nullptr);
+        tile.GetLayer(TileLayer::entity).SetPrototype(nullptr);
 
         EXPECT_TRUE(playerPlace_.TryPlaceEntity(worldData_, logicData_, {0, 0})); // Place on empty tile 0, 0
 
@@ -145,14 +148,14 @@ namespace jactorio::game
         worldData_.EmplaceChunk(0, 0);
         auto* tile = worldData_.GetTile(0, 0);
 
-        tile->SetTilePrototype(&tile_proto);
+        tile->SetTilePrototype(Orientation::up, &tile_proto);
 
         // No entity, do not activate layer
         EXPECT_FALSE(playerPlace_.TryActivateLayer(worldData_, {0, 0}));
 
 
         // If selected item's entity is placeable, do not set activated_layer
-        tile->SetEntityPrototype(entity.get());
+        tile->SetEntityPrototype(Orientation::up, entity.get());
 
         playerInv_.SetSelectedItem({&item, 2});
 
@@ -199,7 +202,7 @@ namespace jactorio::game
         for (uint32_t y = 0; y < entity->GetHeight(Orientation::up); ++y) {
             for (uint32_t x = 0; x < entity->GetWidth(Orientation::up); ++x) {
                 auto* tile = worldData_.GetTile(x, y);
-                tile->SetTilePrototype(&tile_proto);
+                tile->SetTilePrototype(Orientation::up, &tile_proto);
             }
         }
 
@@ -237,8 +240,8 @@ namespace jactorio::game
         auto& tile  = *worldData_.GetTile(0, 0);
         auto& tile2 = *worldData_.GetTile(1, 0);
 
-        tile.SetEntityPrototype(&entity);
-        tile2.SetEntityPrototype(&entity);
+        tile.SetEntityPrototype(Orientation::up, &entity);
+        tile2.SetEntityPrototype(Orientation::up, &entity);
 
         // Create unique data by calling build event for prototype with layer
         {
@@ -290,7 +293,7 @@ namespace jactorio::game
         auto& tile  = *worldData_.GetTile(0, 0);
         auto& tile2 = *worldData_.GetTile(1, 0);
 
-        tile.SetEntityPrototype(&entity, TileLayer::resource);
+        tile.SetEntityPrototype(Orientation::up, &entity, TileLayer::resource);
 
         // Holds the resources available at the tile, should be decremented when extracted
         auto& resource_data = tile.GetLayer(TileLayer::resource).MakeUniqueData<proto::ResourceEntityData>(2);
@@ -333,7 +336,7 @@ namespace jactorio::game
         resource_entity.SetItem(&item);
 
 
-        tile.SetEntityPrototype(&resource_entity, TileLayer::resource);
+        tile.SetEntityPrototype(Orientation::up, &resource_entity, TileLayer::resource);
 
         // Holds the resources available at the tile, should be decremented when extracted
         auto& resource_data = tile.GetLayer(TileLayer::resource).MakeUniqueData<proto::ResourceEntityData>(2);
@@ -345,7 +348,7 @@ namespace jactorio::game
         container_entity.SetItem(&item);
 
 
-        tile.SetEntityPrototype(&container_entity);
+        tile.SetEntityPrototype(Orientation::up, &container_entity);
 
         //
         playerPlace_.TryPickup(worldData_, logicData_, {0, 0}, 60); // Container entity takes priority
@@ -431,7 +434,7 @@ namespace jactorio::game
         tile_proto.isWater = false;
 
         worldData_.EmplaceChunk(0, 0);
-        worldData_.GetTile(0, 0)->SetTilePrototype(&tile_proto);
+        worldData_.GetTile(0, 0)->SetTilePrototype(Orientation::up, &tile_proto);
 
 
         // Create entity
@@ -486,7 +489,7 @@ namespace jactorio::game
 
         worldData_.EmplaceChunk(0, 0);
         auto* tile = worldData_.GetTile(0, 0);
-        tile->SetTilePrototype(&tile_proto);
+        tile->SetTilePrototype(Orientation::up, &tile_proto);
 
 
         // Create entity
@@ -531,7 +534,7 @@ namespace jactorio::game
         // Set tiles so entity can be placed on it
         for (int y = 1; y < 4; ++y) {
             for (int x = 1; x < 3; ++x) {
-                worldData_.GetTile(x, y)->GetLayer(TileLayer::base).prototypeData = &tile_proto;
+                worldData_.GetTile(x, y)->GetLayer(TileLayer::base).SetPrototype(Orientation::up, &tile_proto);
             }
         }
 

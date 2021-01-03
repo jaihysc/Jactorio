@@ -20,10 +20,10 @@ bool game::ItemDropOff::Initialize(WorldData& world_data, const WorldCoordAxis w
 
     auto& layer = tile->GetLayer(TileLayer::entity);
 
-    if (layer.prototypeData == nullptr)
+    if (layer.GetPrototype() == nullptr)
         return false;
 
-    switch (layer.prototypeData->GetCategory()) {
+    switch (layer.GetPrototype()->GetCategory()) {
     case proto::Category::container_entity:
         dropFunc_    = &ItemDropOff::InsertContainerEntity;
         canDropFunc_ = &ItemDropOff::CanInsertContainerEntity;
@@ -45,7 +45,7 @@ bool game::ItemDropOff::Initialize(WorldData& world_data, const WorldCoordAxis w
 
     assert(layer.GetUniqueData() != nullptr);
 
-    targetProtoData_  = layer.prototypeData.Get();
+    targetProtoData_  = layer.GetPrototype();
     targetUniqueData_ = layer.GetUniqueData();
 
     return true;
@@ -224,10 +224,10 @@ bool game::InserterPickup::Initialize(WorldData& world_data,
 
     auto& layer = tile->GetLayer(TileLayer::entity);
 
-    if (layer.prototypeData == nullptr)
+    if (layer.GetPrototype() == nullptr)
         return false;
 
-    switch (layer.prototypeData->GetCategory()) {
+    switch (layer.GetPrototype()->GetCategory()) {
     case proto::Category::container_entity:
         pickupFunc_    = &InserterPickup::PickupContainerEntity;
         getPickupFunc_ = &InserterPickup::GetPickupContainerEntity;
@@ -249,7 +249,7 @@ bool game::InserterPickup::Initialize(WorldData& world_data,
 
     assert(layer.GetUniqueData() != nullptr);
 
-    targetProtoData_  = layer.prototypeData.Get();
+    targetProtoData_  = layer.GetPrototype();
     targetUniqueData_ = layer.GetUniqueData();
 
     return true;

@@ -34,13 +34,17 @@ namespace jactorio::game
     /// A Layers within a ChunkTile layers
     class ChunkTileLayer
     {
-        using MultiTileValueT      = MultiTileData::ValueT;
+        using MultiTileValueT = MultiTileData::ValueT;
+
+        using PrototypeContainerT  = data::SerialProtoPtr<const proto::FWorldObject>;
         using UniqueDataContainerT = std::unique_ptr<proto::UniqueDataBase>;
+
+        using PrototypeT = PrototypeContainerT::element_type;
 
     public:
         ChunkTileLayer() = default;
 
-        explicit ChunkTileLayer(const proto::FWorldObject* proto) : prototypeData(proto) {}
+        explicit ChunkTileLayer(const proto::FWorldObject* proto) : prototypeData_(proto) {}
 
         ~ChunkTileLayer();
 
@@ -56,7 +60,7 @@ namespace jactorio::game
         friend void swap(ChunkTileLayer& lhs, ChunkTileLayer& rhs) noexcept {
             using std::swap;
             swap(lhs.multiTileIndex_, rhs.multiTileIndex_);
-            swap(lhs.prototypeData, rhs.prototypeData);
+            swap(lhs.prototypeData_, rhs.prototypeData_);
             swap(lhs.data_.uniqueData, rhs.data_.uniqueData);
             swap(lhs.orientation_, rhs.orientation_);
         }
@@ -81,9 +85,19 @@ namespace jactorio::game
         // Prototype
 
         ///
+        /// Sets orientation and orientation for current tile layer
+        void SetPrototype(Orientation orientation, PrototypeT* prototype);
+
+        ///
+        /// Sets prototype at current tile layer to nullptr
+        ///
+        /// Behaves the same as SetPrototype(Orientation, PrototypeT*) excluding orientation
+        void SetPrototype(std::nullptr_t);
+
+        ///
         /// \tparam T Return type which prototypeData is cast to
-        template <typename T = proto::FWorldObject>
-        J_NODISCARD const T* GetPrototypeData() const;
+        template <typename T = PrototypeT>
+        J_NODISCARD const T* GetPrototype() const noexcept;
 
         // Unique data
 
@@ -158,10 +172,6 @@ namespace jactorio::game
         /// \return Number of tiles from top left on Y axis
         J_NODISCARD MultiTileValueT GetOffsetY() const;
 
-
-        /// A layer may point to a tile prototype to provide additional data (collisions, world gen)
-        data::SerialProtoPtr<const proto::FWorldObject> prototypeData;
-
     private:
         /// uniqueData when multiTileIndex == 0, topLeft when multiTileIndex != 0
         union UData
@@ -188,6 +198,9 @@ namespace jactorio::game
             ChunkTileLayer* topLeft;
         };
 
+        /// A layer may point to a tile prototype to provide additional data (collisions, world gen)
+        PrototypeContainerT prototypeData_;
+
         UData data_;
 
         ///
@@ -200,13 +213,13 @@ namespace jactorio::game
 
 
         static constexpr size_t GetArchiveSize() {
-            return sizeof prototypeData + sizeof data_.uniqueData + sizeof multiTileIndex_ + sizeof orientation_;
+            return sizeof prototypeData_ + sizeof data_.uniqueData + sizeof multiTileIndex_ + sizeof orientation_;
         }
 
     public:
         CEREAL_LOAD(archive) {
             constexpr auto archive_size = GetArchiveSize();
-            data::CerealArchive<archive_size>(archive, prototypeData, data_.uniqueData, multiTileIndex_, orientation_);
+            data::CerealArchive<archive_size>(archive, prototypeData_, data_.uniqueData, multiTileIndex_, orientation_);
 
             const auto& unique_data = data_.uniqueData;
 
@@ -225,19 +238,19 @@ namespace jactorio::game
                     assert(data::active_unique_data_manager != nullptr);
                     data::active_unique_data_manager->AssignId(*unique_data);
                 }
-                data::CerealArchive<archive_size>(archive, prototypeData, unique_data, multiTileIndex_, orientation_);
+                data::CerealArchive<archive_size>(archive, prototypeData_, unique_data, multiTileIndex_, orientation_);
             }
             else {
                 // Non top left tiles do not have unique data
                 UniqueDataContainerT empty_unique = nullptr;
-                data::CerealArchive<archive_size>(archive, prototypeData, empty_unique, multiTileIndex_, orientation_);
+                data::CerealArchive<archive_size>(archive, prototypeData_, empty_unique, multiTileIndex_, orientation_);
             }
         }
     };
 
     template <typename T>
-    const T* ChunkTileLayer::GetPrototypeData() const {
-        return static_cast<const T*>(prototypeData.Get());
+    const T* ChunkTileLayer::GetPrototype() const noexcept {
+        return static_cast<const T*>(prototypeData_.Get());
     }
 
 

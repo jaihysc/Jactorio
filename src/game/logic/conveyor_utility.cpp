@@ -38,7 +38,7 @@ const proto::ConveyorData* game::GetConData(const WorldData& world, const WorldC
 
     const auto& layer = tile->GetLayer(TileLayer::entity);
 
-    const auto* proto = layer.GetPrototypeData();
+    const auto* proto = layer.GetPrototype();
     if (proto == nullptr)
         return nullptr;
 
@@ -611,8 +611,7 @@ void game::ConveyorUpdateNeighborTermination(WorldData& world, const WorldCoord&
         try_change_ttype({coord.x, coord.y + 1}, Orientation::up, ConveyorStruct::TerminationType::right_only);
         break;
     case proto::LineOrientation::down:
-        try_change_ttype(
-            {coord.x - 1, coord.y}, Orientation::right, ConveyorStruct::TerminationType::right_only);
+        try_change_ttype({coord.x - 1, coord.y}, Orientation::right, ConveyorStruct::TerminationType::right_only);
         try_change_ttype({coord.x + 1, coord.y}, Orientation::left, ConveyorStruct::TerminationType::left_only);
         break;
     case proto::LineOrientation::left:

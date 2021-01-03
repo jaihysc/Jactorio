@@ -73,8 +73,8 @@ proto::Item* proto::MiningDrill::FindOutputItem(const game::WorldData& world_dat
             const game::ChunkTile* tile = world_data.GetTile(world_pair.x + x, world_pair.y + y);
 
             const auto& resource = tile->GetLayer(game::TileLayer::resource);
-            if (resource.prototypeData.Get() != nullptr)
-                return static_cast<const ResourceEntity*>(resource.prototypeData.Get())->GetItem();
+            if (resource.GetPrototype() != nullptr)
+                return resource.GetPrototype<ResourceEntity>()->GetItem();
         }
     }
 
@@ -119,7 +119,7 @@ bool proto::MiningDrill::OnCanBuild(const game::WorldData& world_data, const Wor
         for (uint32_t x = 0; x < 2u * this->miningRadius + this->GetWidth(); ++x) {
             const game::ChunkTile* tile = world_data.GetTile(coords.x + x, coords.y + y);
 
-            if (tile->GetLayer(game::TileLayer::resource).prototypeData.Get() != nullptr)
+            if (tile->GetLayer(game::TileLayer::resource).GetPrototype() != nullptr)
                 return true;
         }
     }
@@ -249,8 +249,8 @@ bool proto::MiningDrill::SetupResourceDeduction(const game::WorldData& world_dat
 
             const auto& resource_layer = tile->GetLayer(game::TileLayer::resource);
 
-            if (resource_layer.prototypeData.Get() != nullptr) {
-                drill_data.outputItem     = resource_layer.GetPrototypeData<ResourceEntity>()->GetItem();
+            if (resource_layer.GetPrototype() != nullptr) {
+                drill_data.outputItem     = resource_layer.GetPrototype<ResourceEntity>()->GetItem();
                 drill_data.resourceOffset = core::SafeCast<decltype(drill_data.resourceOffset)>(y * x_span + x);
                 return true;
             }

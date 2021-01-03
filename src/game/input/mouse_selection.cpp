@@ -100,8 +100,8 @@ void game::MouseSelection::DrawOverlay(WorldData& world,
         overlay_layer.push_back(element);
         save_overlay_info();
     }
-    else if (tile->GetLayer(TileLayer::entity).prototypeData.Get() != nullptr ||
-             tile->GetLayer(TileLayer::resource).prototypeData.Get() != nullptr) {
+    else if (tile->GetLayer(TileLayer::entity).GetPrototype() != nullptr ||
+             tile->GetLayer(TileLayer::resource).GetPrototype() != nullptr) {
 
         // Is hovering over entity
         overlay_layer.push_back({cursor_sprite,

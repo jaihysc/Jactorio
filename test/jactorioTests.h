@@ -83,36 +83,41 @@ namespace jactorio
     static_assert(!std::is_abstract_v<TestMockEntity>);
 
 
+    ///
+    /// Creates prototype with provided orientation and multi tile properties, attaches it to ctl to allow multi tile
+    /// properties to be accessed
     inline void TestSetupMultiTileProp(game::ChunkTileLayer& ctl,
+                                       const Orientation orientation,
                                        const game::MultiTileData& mt_data,
                                        proto::FWorldObject& proto) {
         proto.SetWidth(mt_data.span);
         proto.SetHeight(mt_data.height);
-        ctl.prototypeData = &proto;
+        ctl.SetPrototype(orientation, &proto);
     }
 
     ///
-    /// Sets up a multi tile with proto using provided properties
+    /// Sets up a multi tile with proto at coord on the provided specified tile layer
     /// \tparam SetTopLeftLayer If false, non top left multi tiles will not know the top left layer
     /// \return Top left tile
     template <bool SetTopLeftLayer = true>
-    game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world_data,
-                                             proto::FWorldObject& proto,
-                                             const WorldCoord& world_coord,
+    game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world,
+                                             const WorldCoord& coord,
                                              const game::TileLayer tile_layer,
+                                             const Orientation orientation,
+                                             proto::FWorldObject& proto,
                                              const game::MultiTileData& mt_data) {
 
-        auto& origin_layer = world_data.GetTile(world_coord)->GetLayer(tile_layer);
-        TestSetupMultiTileProp(origin_layer, mt_data, proto);
+        auto& origin_layer = world.GetTile(coord)->GetLayer(tile_layer);
+        TestSetupMultiTileProp(origin_layer, orientation, mt_data, proto);
 
         for (int y = 0; y < proto.GetHeight(); ++y) {
             for (int x = 0; x < proto.GetWidth(); ++x) {
                 if (x == 0 && y == 0)
                     continue;
 
-                auto& layer = world_data.GetTile(world_coord.x + x, world_coord.y + y)->GetLayer(tile_layer);
+                auto& layer = world.GetTile(coord.x + x, coord.y + y)->GetLayer(tile_layer);
 
-                layer.prototypeData = &proto;
+                layer.SetPrototype(orientation, &proto);
                 layer.SetMultiTileIndex(y * proto.GetWidth() + x);
 
                 if constexpr (SetTopLeftLayer) {
@@ -125,51 +130,50 @@ namespace jactorio
     }
 
     ///
-    /// Creates a container of size 10 at coordinates
-    inline game::ChunkTileLayer& TestSetupContainer(game::WorldData& world_data,
-                                                    const WorldCoord& world_coords,
+    /// Creates a container of provided size at coord
+    inline game::ChunkTileLayer& TestSetupContainer(game::WorldData& world,
+                                                    const WorldCoord& coord,
+                                                    const Orientation orientation,
                                                     const proto::ContainerEntity& container_entity,
                                                     const int container_capacity = 10) {
-        auto& container_layer = world_data.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
+        auto& container_layer = world.GetTile(coord)->GetLayer(game::TileLayer::entity);
 
-        container_layer.prototypeData = &container_entity;
+        container_layer.SetPrototype(orientation, &container_entity);
         container_layer.MakeUniqueData<proto::ContainerEntityData>(container_capacity);
 
         return container_layer;
     }
 
     ///
-    /// Creates an inserter at coordinates
-    inline game::ChunkTileLayer& TestSetupInserter(game::WorldData& world_data,
-                                                   game::LogicData& logic_data,
-                                                   const WorldCoord& world_coords,
-                                                   const proto::Inserter& inserter_proto,
-                                                   const Orientation orientation) {
-        using namespace jactorio;
+    /// Creates an inserter at coord
+    inline game::ChunkTileLayer& TestSetupInserter(game::WorldData& world,
+                                                   game::LogicData& logic,
+                                                   const WorldCoord& coord,
+                                                   const Orientation orientation,
+                                                   const proto::Inserter& inserter_proto) {
+        auto& layer = world.GetTile(coord)->GetLayer(game::TileLayer::entity);
 
-        auto& layer = world_data.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
-
-        layer.prototypeData = &inserter_proto;
-        inserter_proto.OnBuild(world_data, logic_data, world_coords, layer, orientation);
+        layer.SetPrototype(orientation, &inserter_proto);
+        inserter_proto.OnBuild(world, logic, coord, layer, orientation);
 
         return layer;
     }
 
     ///
-    /// Registers and creates tile UniqueData for ConveyorSegment
-    inline void TestRegisterConveyorSegment(game::WorldData& world_data,
-                                            const WorldCoord& world_coords,
-                                            const std::shared_ptr<game::ConveyorStruct>& segment,
-                                            const proto::Conveyor& prototype) {
-        auto* tile = world_data.GetTile(world_coords);
-        assert(tile);
-        auto* chunk = world_data.GetChunkW(world_coords);
-        assert(chunk);
+    /// Creates conveyor at coord, registers tile for logic updates
+    inline void TestCreateConveyorSegment(game::WorldData& world,
+                                          const WorldCoord& coord,
+                                          const std::shared_ptr<game::ConveyorStruct>& con_struct_p,
+                                          const proto::Conveyor& con_proto) {
+        auto* tile = world.GetTile(coord);
+        assert(tile != nullptr);
+        auto* chunk = world.GetChunkW(coord);
+        assert(chunk != nullptr);
 
-        auto& layer         = tile->GetLayer(game::TileLayer::entity);
-        layer.prototypeData = &prototype;
+        auto& layer = tile->GetLayer(game::TileLayer::entity);
+        layer.SetPrototype(con_struct_p->direction, &con_proto);
 
-        layer.MakeUniqueData<proto::ConveyorData>(segment);
+        layer.MakeUniqueData<proto::ConveyorData>(con_struct_p);
 
         chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor).emplace_back(&tile->GetLayer(game::TileLayer::entity));
     }
@@ -177,49 +181,52 @@ namespace jactorio
     ///
     /// Creates a 2x2 multi tile assembly machine at coordinates
     /// \return top left layer
-    inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::WorldData& world_data,
-                                                          const WorldCoord& world_coords,
+    inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::WorldData& world,
+                                                          const WorldCoord& coord,
+                                                          const Orientation orientation,
                                                           proto::AssemblyMachine& assembly_proto) {
         auto& origin_layer =
-            TestSetupMultiTile(world_data, assembly_proto, world_coords, game::TileLayer::entity, {2, 2});
+            TestSetupMultiTile(world, coord, game::TileLayer::entity, orientation, assembly_proto, {2, 2});
         origin_layer.MakeUniqueData<proto::AssemblyMachineData>();
         return origin_layer;
     }
 
-    inline game::ChunkTile& TestSetupResource(game::WorldData& world_data,
-                                              const WorldCoord& world_coord,
+    ///
+    /// Creates resource with orientation up at coord
+    inline game::ChunkTile& TestSetupResource(game::WorldData& world,
+                                              const WorldCoord& coord,
                                               proto::ResourceEntity& resource,
                                               const proto::ResourceEntityData::ResourceCount resource_amount) {
 
-        game::ChunkTile* tile = world_data.GetTile(world_coord);
-        assert(tile);
+        game::ChunkTile* tile = world.GetTile(coord);
+        assert(tile != nullptr);
 
-        auto& resource_layer         = tile->GetLayer(game::TileLayer::resource);
-        resource_layer.prototypeData = &resource;
+        auto& resource_layer = tile->GetLayer(game::TileLayer::resource);
+        resource_layer.SetPrototype(Orientation::up, &resource);
         resource_layer.MakeUniqueData<proto::ResourceEntityData>(resource_amount);
 
         return *tile;
     }
 
     ///
-    /// Creates a drill in the world, calling OnBuild
-    inline game::ChunkTile& TestSetupDrill(game::WorldData& world_data,
-                                           game::LogicData& logic_data,
-                                           const WorldCoord& world_coord,
+    /// Creates a drill in the world with orientation, calling OnBuild
+    inline game::ChunkTile& TestSetupDrill(game::WorldData& world,
+                                           game::LogicData& logic,
+                                           const WorldCoord& coord,
                                            const Orientation orientation,
                                            proto::ResourceEntity& resource,
                                            proto::MiningDrill& drill,
                                            const proto::ResourceEntityData::ResourceCount resource_amount = 100) {
-        auto* tile = world_data.GetTile(world_coord);
-        assert(tile);
+        auto* tile = world.GetTile(coord);
+        assert(tile != nullptr);
 
         auto& layer = tile->GetLayer(game::TileLayer::entity);
 
         // Resource needed for OnBuild
-        TestSetupResource(world_data, world_coord, resource, resource_amount);
+        TestSetupResource(world, coord, resource, resource_amount);
 
-        layer.prototypeData = &drill;
-        drill.OnBuild(world_data, logic_data, world_coord, layer, orientation);
+        layer.SetPrototype(orientation, &drill);
+        drill.OnBuild(world, logic, coord, layer, orientation);
 
         return *tile;
     }

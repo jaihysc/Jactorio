@@ -30,7 +30,7 @@ namespace jactorio::game
         auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
 
         proto::ContainerEntity container;
-        layer.prototypeData = &container;
+        layer.SetPrototype(Orientation::up, &container);
         layer.MakeUniqueData<proto::ContainerEntityData>(1);
 
         ASSERT_TRUE(drop_off.Initialize(worldData_, {2, 4}));
@@ -41,7 +41,7 @@ namespace jactorio::game
 
     TEST_F(ItemLogisticsTest, DropOffDropItem) {
         proto::ContainerEntity container_entity;
-        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, Orientation::up, container_entity);
 
         ItemDropOff drop_off{Orientation::up};
         ASSERT_TRUE(drop_off.Initialize(worldData_, {2, 4}));
@@ -54,7 +54,7 @@ namespace jactorio::game
 
     TEST_F(ItemLogisticsTest, InserterPickupItem) {
         proto::ContainerEntity container_entity;
-        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, Orientation::up, container_entity);
 
         InserterPickup pickup{Orientation::up};
         ASSERT_TRUE(pickup.Initialize(worldData_, {2, 4}));
@@ -108,8 +108,8 @@ namespace jactorio::game
         worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<proto::ContainerEntityData>(1);
 
         auto set_prototype = [&](proto::Entity& entity_proto) {
-            auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
-            layer.prototypeData = &entity_proto;
+            auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
+            layer.SetPrototype(Orientation::up, &entity_proto);
         };
 
         // No: Empty tile cannot be inserted into
@@ -143,7 +143,7 @@ namespace jactorio::game
 
         // Ok: Assembly machine
         proto::AssemblyMachine assembly_machine; // Will also make unique data, so it needs to be on another tile
-        TestSetupAssemblyMachine(worldData_, {3, 4}, assembly_machine);
+        TestSetupAssemblyMachine(worldData_, {3, 4}, Orientation::up, assembly_machine);
 
         EXPECT_TRUE(this->Initialize(worldData_, {3, 5}));
         EXPECT_TRUE(this->IsInitialized());
@@ -442,8 +442,8 @@ namespace jactorio::game
         worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<proto::ContainerEntityData>(1);
 
         auto set_prototype = [&](proto::Entity& entity_proto) {
-            auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
-            layer.prototypeData = &entity_proto;
+            auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
+            layer.SetPrototype(Orientation::up, &entity_proto);
         };
 
 
@@ -478,7 +478,7 @@ namespace jactorio::game
 
         // Ok: Assembly machine
         proto::AssemblyMachine assembly_machine;
-        TestSetupAssemblyMachine(worldData_, {3, 4}, assembly_machine);
+        TestSetupAssemblyMachine(worldData_, {3, 4}, Orientation::up, assembly_machine);
 
         EXPECT_TRUE(this->Initialize(worldData_, {4, 5}));
         EXPECT_TRUE(this->IsInitialized());
@@ -487,7 +487,7 @@ namespace jactorio::game
 
     TEST_F(InserterPickupTest, PickupContainerEntity) {
         proto::ContainerEntity container_entity;
-        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, Orientation::up, container_entity);
         auto& container_data  = *container_layer.GetUniqueData();
 
         proto::Item item;
@@ -681,12 +681,11 @@ namespace jactorio::game
         data::PrototypeManager prototype_manager;
 
         proto::AssemblyMachine asm_machine;
-        auto& layer = TestSetupAssemblyMachine(worldData_, {0, 0}, asm_machine);
+        auto& layer = TestSetupAssemblyMachine(worldData_, {0, 0}, Orientation::up, asm_machine);
         auto* data  = layer.GetUniqueData<proto::AssemblyMachineData>();
 
         // Does nothing as there is no recipe yet
-        PickupAssemblyMachine(
-            {logicData_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, Orientation::up});
+        PickupAssemblyMachine({logicData_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, Orientation::up});
 
         // ======================================================================
 

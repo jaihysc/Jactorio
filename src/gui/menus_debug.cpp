@@ -203,8 +203,8 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
         for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
             auto& layer = chunk->Tiles()[i].GetLayer(game::TileLayer::entity);
-            if (layer.prototypeData.Get() == nullptr ||
-                layer.prototypeData->GetCategory() != proto::Category::transport_belt)
+            if (layer.GetPrototype() == nullptr ||
+                layer.GetPrototype()->GetCategory() != proto::Category::transport_belt)
                 continue;
 
             auto& line_data    = *static_cast<proto::ConveyorData*>(layer.GetUniqueData());
@@ -432,7 +432,7 @@ void gui::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
         return;
 
     auto& layer = tile->GetLayer(game::TileLayer::entity);
-    if (layer.prototypeData.Get() == nullptr || layer.prototypeData->GetCategory() != proto::Category::inserter) {
+    if (layer.GetPrototype() == nullptr || layer.GetPrototype()->GetCategory() != proto::Category::inserter) {
         ImGui::Text("No inserter at selected tile");
         return;
     }

@@ -180,7 +180,7 @@ void UpdateNeighboringEntities(game::WorldData& world,
             if (tile != nullptr) {
                 const auto& layer = tile->GetLayer(game::TileLayer::entity);
 
-                const auto* entity = layer.GetPrototypeData<proto::Entity>();
+                const auto* entity = layer.GetPrototype<proto::Entity>();
                 if (entity != nullptr)
                     entity->OnNeighborUpdate(world, logic, emit_coord, receive_coord, target_orientation);
             }
@@ -293,7 +293,7 @@ bool game::PlayerData::Placement::TryActivateLayer(WorldData& world_data, const 
     constexpr auto select_layer = TileLayer::entity;
 
     auto& selected_layer = tile->GetLayer(select_layer);
-    if (selected_layer.prototypeData.Get() == nullptr)
+    if (selected_layer.GetPrototype() == nullptr)
         return false;
 
     // // If clicking again on the same entity, deactivate
@@ -383,7 +383,7 @@ void game::PlayerData::Placement::TryPickup(WorldData& world,
                 activatedLayer_ = nullptr;
 
             // Call events
-            const auto* entity = layer.GetPrototypeData<proto::Entity>();
+            const auto* entity = layer.GetPrototype<proto::Entity>();
 
             entity->OnRemove(world, logic, coord, layer);
 

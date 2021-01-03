@@ -12,17 +12,17 @@ game::ChunkTileLayer::~ChunkTileLayer() {
 }
 
 game::ChunkTileLayer::ChunkTileLayer(const ChunkTileLayer& other)
-    : prototypeData{other.prototypeData}, multiTileIndex_{other.multiTileIndex_}, orientation_{other.orientation_} {
+    : prototypeData_{other.prototypeData_}, multiTileIndex_{other.multiTileIndex_}, orientation_{other.orientation_} {
 
     // Use prototype defined method for copying uniqueData_ if other has data to copy
     if (IsTopLeft() && other.data_.uniqueData != nullptr) {
-        assert(other.prototypeData.Get() != nullptr); // No prototype_data_ available for copying unique_data_
-        data_.uniqueData = other.prototypeData->CopyUniqueData(other.data_.uniqueData.get());
+        assert(other.prototypeData_.Get() != nullptr); // No prototype_data_ available for copying unique_data_
+        data_.uniqueData = other.prototypeData_->CopyUniqueData(other.data_.uniqueData.get());
     }
 }
 
 game::ChunkTileLayer::ChunkTileLayer(ChunkTileLayer&& other) noexcept
-    : prototypeData{other.prototypeData}, multiTileIndex_{other.multiTileIndex_}, orientation_{other.orientation_} {
+    : prototypeData_{other.prototypeData_}, multiTileIndex_{other.multiTileIndex_}, orientation_{other.orientation_} {
     data_.uniqueData = std::move(other.data_.uniqueData);
 }
 
@@ -33,7 +33,7 @@ void game::ChunkTileLayer::Clear() noexcept {
     }
     data_.ConstructUniqueData();
 
-    prototypeData   = nullptr;
+    prototypeData_  = nullptr;
     multiTileIndex_ = 0;
 }
 
@@ -60,6 +60,15 @@ Orientation game::ChunkTileLayer::GetOrientation() const {
     return orientation_;
 }
 
+void game::ChunkTileLayer::SetPrototype(const Orientation orientation, PrototypeT* prototype) {
+    SetOrientation(orientation);
+    prototypeData_ = prototype;
+}
+
+void game::ChunkTileLayer::SetPrototype(std::nullptr_t) {
+    prototypeData_ = nullptr;
+}
+
 // ======================================================================
 
 bool game::ChunkTileLayer::IsTopLeft() const noexcept {
@@ -83,12 +92,12 @@ bool game::ChunkTileLayer::IsNonTopLeftMultiTile() const noexcept {
 
 
 bool game::ChunkTileLayer::HasMultiTileData() const {
-    return prototypeData != nullptr;
+    return prototypeData_ != nullptr;
 }
 
 game::MultiTileData game::ChunkTileLayer::GetMultiTileData() const {
-    assert(prototypeData != nullptr);
-    return {prototypeData->GetWidth(), prototypeData->GetHeight()};
+    assert(prototypeData_ != nullptr);
+    return {prototypeData_->GetWidth(), prototypeData_->GetHeight()};
 }
 
 

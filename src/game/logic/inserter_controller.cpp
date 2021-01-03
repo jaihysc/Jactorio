@@ -123,7 +123,7 @@ void game::InserterLogicUpdate(WorldData& world_data, LogicData& logic_data) {
             auto* inserter_data = tile_layer->GetUniqueData<proto::InserterData>();
             assert(inserter_data);
 
-            const auto* proto_data = tile_layer->GetPrototypeData<proto::Inserter>();
+            const auto* proto_data = tile_layer->GetPrototype<proto::Inserter>();
             assert(proto_data);
 
             RotateInserters(dropoff_queue, pickup_queue, {*proto_data, *inserter_data});

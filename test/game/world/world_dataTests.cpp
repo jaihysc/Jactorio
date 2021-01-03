@@ -189,7 +189,7 @@ namespace jactorio::game
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::entity);
 
         proto::ContainerEntity proto;
-        TestSetupMultiTileProp(bottom_layer, {2, 1}, proto);
+        TestSetupMultiTileProp(bottom_layer, Orientation::up, {2, 1}, proto);
 
 
         // multiTileIndex is 0
@@ -214,7 +214,7 @@ namespace jactorio::game
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::resource);
 
         proto::ContainerEntity proto;
-        TestSetupMultiTileProp(bottom_layer, {7, 10}, proto);
+        TestSetupMultiTileProp(bottom_layer, Orientation::up, {7, 10}, proto);
         bottom_layer.SetMultiTileIndex(15);
 
         EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
@@ -349,14 +349,14 @@ namespace jactorio::game
         void ExpectTLResolved(const WorldCoord& coord, const TileLayer tile_layer) {
             auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
             ASSERT_NE(top_left, nullptr);
-            EXPECT_EQ(top_left->prototypeData, &proto_);
+            EXPECT_EQ(top_left->GetPrototype(), &proto_);
         }
     };
 
     TEST_F(WorldDataDeserialize, SameChunk) {
         worldData_.EmplaceChunk(0, 0);
 
-        TestSetupMultiTile<false>(worldData_, proto_, {1, 0}, TileLayer::base, {3, 2});
+        TestSetupMultiTile<false>(worldData_, {1, 0}, TileLayer::base, Orientation::up, proto_, {3, 2});
 
         worldData_.DeserializePostProcess();
 
@@ -382,10 +382,10 @@ namespace jactorio::game
 
 
         auto& asm_machine = proto_manager.AddProto<proto::AssemblyMachine>();
-        TestSetupAssemblyMachine(worldData_, {0, 2}, asm_machine);
+        TestSetupAssemblyMachine(worldData_, {0, 2}, Orientation::up, asm_machine);
 
         auto& inserter = proto_manager.AddProto<proto::Inserter>();
-        TestSetupInserter(worldData_, logicData_, {1, 1}, inserter, Orientation::down);
+        TestSetupInserter(worldData_, logicData_, {1, 1}, Orientation::down, inserter);
 
 
         data::active_prototype_manager   = &proto_manager;
@@ -422,8 +422,8 @@ namespace jactorio::game
         worldData_.EmplaceChunk(0, 0);
 
         MockWorldObject mock_obj;
-        auto& tile_layer         = worldData_.GetTile(5, 6)->GetLayer(TileLayer::entity);
-        tile_layer.prototypeData = &mock_obj;
+        auto& tile_layer = worldData_.GetTile(5, 6)->GetLayer(TileLayer::entity);
+        tile_layer.SetPrototype(Orientation::up, &mock_obj);
 
         worldData_.DeserializePostProcess();
 
