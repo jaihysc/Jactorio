@@ -100,30 +100,27 @@ game::MultiTileData game::ChunkTileLayer::GetMultiTileData() const noexcept {
     return {prototypeData_->GetWidth(), prototypeData_->GetHeight()};
 }
 
-
-game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetMultiTileIndex() const noexcept {
-    return multiTileIndex_;
-}
-
-void game::ChunkTileLayer::SetMultiTileIndex(const MultiTileValueT multi_tile_index) noexcept {
+void game::ChunkTileLayer::SetupMultiTile(const MultiTileValueT multi_tile_index, ChunkTileLayer& top_left) noexcept {
     multiTileIndex_ = multi_tile_index;
 
     if (multi_tile_index != 0) {
         data_.DestroyUniqueData();
         data_.topLeft = nullptr;
     }
+
+    assert(IsNonTopLeftMultiTile());
+    assert(&top_left != this);
+    data_.topLeft = &top_left;
 }
 
+
+game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetMultiTileIndex() const noexcept {
+    return multiTileIndex_;
+}
 
 game::ChunkTileLayer* game::ChunkTileLayer::GetTopLeftLayer() const noexcept {
     assert(IsNonTopLeftMultiTile());
     return data_.topLeft;
-}
-
-void game::ChunkTileLayer::SetTopLeftLayer(ChunkTileLayer& ctl) noexcept {
-    assert(IsNonTopLeftMultiTile());
-    assert(&ctl != this);
-    data_.topLeft = &ctl;
 }
 
 

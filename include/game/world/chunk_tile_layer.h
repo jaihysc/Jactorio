@@ -85,13 +85,12 @@ namespace jactorio::game
         // Prototype
 
         ///
-        /// Sets orientation and orientation for current tile layer
+        /// Sets prototype for current tile layer and orientation for top left
+        /// \remark If SetupMultiTile was not called, orientation is set for current layer
         void SetPrototype(Orientation orientation, PrototypeT* prototype) noexcept;
 
         ///
         /// Sets prototype at current tile layer to nullptr
-        ///
-        /// Behaves the same as SetPrototype(Orientation, PrototypeT*) excluding orientation
         void SetPrototype(std::nullptr_t) noexcept;
 
         ///
@@ -146,15 +145,14 @@ namespace jactorio::game
         J_NODISCARD MultiTileData GetMultiTileData() const noexcept;
 
 
-        J_NODISCARD MultiTileValueT GetMultiTileIndex() const noexcept;
-        void SetMultiTileIndex(MultiTileValueT multi_tile_index) noexcept;
+        ///
+        /// Turn or unturn ChunkTileLayer to/from a multi tile
+        ///
+        /// Call prior to any operations involving multi tile index or top_left layer
+        void SetupMultiTile(MultiTileValueT multi_tile_index, ChunkTileLayer& top_left) noexcept;
 
-        ///
-        /// \remark Ensure multi tile index is set prior to calling
+        J_NODISCARD MultiTileValueT GetMultiTileIndex() const noexcept;
         J_NODISCARD ChunkTileLayer* GetTopLeftLayer() const noexcept;
-        ///
-        /// \remark Ensure multi tile index is set prior to calling
-        void SetTopLeftLayer(ChunkTileLayer& ctl) noexcept;
 
 
         ///

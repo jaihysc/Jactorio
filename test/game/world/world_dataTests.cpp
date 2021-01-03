@@ -199,7 +199,7 @@ namespace jactorio::game
         //
         auto* top_tile = worldData_.GetTile(5, 6);
 
-        bottom_layer.SetMultiTileIndex(1);
+        bottom_layer.SetupMultiTile(1, top_tile->GetLayer(TileLayer::entity));
         EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
         EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, TileLayer::entity), top_tile);
     }
@@ -215,7 +215,7 @@ namespace jactorio::game
 
         proto::ContainerEntity proto;
         TestSetupMultiTileProp(bottom_layer, Orientation::up, {7, 10}, proto);
-        bottom_layer.SetMultiTileIndex(15);
+        bottom_layer.SetupMultiTile(15, top_tile->GetLayer(TileLayer::resource));
 
         EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
     }
@@ -341,31 +341,40 @@ namespace jactorio::game
     protected:
         WorldData worldData_;
         LogicData logicData_;
-
-        proto::ContainerEntity proto_; // Any proto is fine
-
-        ///
-        /// Checks that multi-tile tile is linked to top left
-        void ExpectTLResolved(const WorldCoord& coord, const TileLayer tile_layer) {
-            auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
-            ASSERT_NE(top_left, nullptr);
-            EXPECT_EQ(top_left->GetPrototype(), &proto_);
-        }
     };
 
     TEST_F(WorldDataDeserialize, SameChunk) {
         worldData_.EmplaceChunk(0, 0);
 
-        TestSetupMultiTile<false>(worldData_, {1, 0}, TileLayer::base, Orientation::up, proto_, {3, 2});
+        data::PrototypeManager prototype_manager;
+        auto& proto = prototype_manager.AddProto<proto::ContainerEntity>();
+
+
+        TestSetupMultiTile(worldData_, {1, 0}, TileLayer::base, Orientation::up, proto, {3, 2});
+
+
+        prototype_manager.GenerateRelocationTable();
+        data::active_prototype_manager = &prototype_manager;
+
+        worldData_ = TestSerializeDeserialize(worldData_);
 
         worldData_.DeserializePostProcess();
 
-        ExpectTLResolved({2, 0}, TileLayer::base);
-        ExpectTLResolved({3, 0}, TileLayer::base);
 
-        ExpectTLResolved({1, 1}, TileLayer::base);
-        ExpectTLResolved({2, 1}, TileLayer::base);
-        ExpectTLResolved({3, 1}, TileLayer::base);
+        ///
+        /// Checks that multi-tile tile is linked to top left
+        auto expect_tl_resolved = [this, &proto](const WorldCoord& coord, const TileLayer tile_layer) {
+            auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
+            EXPECT_EQ(top_left, &worldData_.GetTile(1, 0)->GetLayer(TileLayer::base));
+            EXPECT_EQ(top_left->GetPrototype(), &proto);
+        };
+
+        expect_tl_resolved({2, 0}, TileLayer::base);
+        expect_tl_resolved({3, 0}, TileLayer::base);
+
+        expect_tl_resolved({1, 1}, TileLayer::base);
+        expect_tl_resolved({2, 1}, TileLayer::base);
+        expect_tl_resolved({3, 1}, TileLayer::base);
     }
 
     TEST_F(WorldDataDeserialize, ResolveMultiTilesFirst) {

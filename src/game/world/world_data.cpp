@@ -469,7 +469,7 @@ void game::WorldData::DeserializePostProcess() {
             auto* tl_tile = GetTile(coord); // Now adjusted to top left
             assert(tl_tile != nullptr);
 
-            layer.SetTopLeftLayer(tl_tile->GetLayer(layer_i));
+            layer.SetupMultiTile(layer.GetMultiTileIndex(), tl_tile->GetLayer(layer_i));
         }
     });
 

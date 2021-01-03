@@ -97,15 +97,13 @@ namespace jactorio
 
     ///
     /// Sets up a multi tile with proto at coord on the provided specified tile layer
-    /// \tparam SetTopLeftLayer If false, non top left multi tiles will not know the top left layer
     /// \return Top left tile
-    template <bool SetTopLeftLayer = true>
-    game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world,
-                                             const WorldCoord& coord,
-                                             const game::TileLayer tile_layer,
-                                             const Orientation orientation,
-                                             proto::FWorldObject& proto,
-                                             const game::MultiTileData& mt_data) {
+    inline game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world,
+                                                    const WorldCoord& coord,
+                                                    const game::TileLayer tile_layer,
+                                                    const Orientation orientation,
+                                                    proto::FWorldObject& proto,
+                                                    const game::MultiTileData& mt_data) {
 
         auto& origin_layer = world.GetTile(coord)->GetLayer(tile_layer);
         TestSetupMultiTileProp(origin_layer, orientation, mt_data, proto);
@@ -118,11 +116,8 @@ namespace jactorio
                 auto& layer = world.GetTile(coord.x + x, coord.y + y)->GetLayer(tile_layer);
 
                 layer.SetPrototype(orientation, &proto);
-                layer.SetMultiTileIndex(y * proto.GetWidth() + x);
 
-                if constexpr (SetTopLeftLayer) {
-                    layer.SetTopLeftLayer(origin_layer);
-                }
+                layer.SetupMultiTile(y * proto.GetWidth() + x, origin_layer);
             }
         }
 
