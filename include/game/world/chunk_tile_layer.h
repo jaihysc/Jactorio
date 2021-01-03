@@ -51,7 +51,7 @@ namespace jactorio::game
         ChunkTileLayer(const ChunkTileLayer& other);
         ChunkTileLayer(ChunkTileLayer&& other) noexcept;
 
-        ChunkTileLayer& operator=(ChunkTileLayer other) {
+        ChunkTileLayer& operator=(ChunkTileLayer other) noexcept {
             swap(*this, other);
             return *this;
         }
@@ -75,24 +75,24 @@ namespace jactorio::game
 
         ///
         /// Sets orientation at current layer or if multi tile, top left
-        void SetOrientation(Orientation orientation);
+        void SetOrientation(Orientation orientation) noexcept;
 
         ///
         /// Fetches orientation at current layer or if multi tile, top left
-        J_NODISCARD Orientation GetOrientation() const;
+        J_NODISCARD Orientation GetOrientation() const noexcept;
 
 
         // Prototype
 
         ///
         /// Sets orientation and orientation for current tile layer
-        void SetPrototype(Orientation orientation, PrototypeT* prototype);
+        void SetPrototype(Orientation orientation, PrototypeT* prototype) noexcept;
 
         ///
         /// Sets prototype at current tile layer to nullptr
         ///
         /// Behaves the same as SetPrototype(Orientation, PrototypeT*) excluding orientation
-        void SetPrototype(std::nullptr_t);
+        void SetPrototype(std::nullptr_t) noexcept;
 
         ///
         /// \tparam T Return type which prototypeData is cast to
@@ -137,17 +137,17 @@ namespace jactorio::game
 
 
         J_NODISCARD bool IsTopLeft() const noexcept; // Destructor use safe
-        J_NODISCARD bool IsMultiTile() const;
-        J_NODISCARD bool IsMultiTileTopLeft() const;
+        J_NODISCARD bool IsMultiTile() const noexcept;
+        J_NODISCARD bool IsMultiTileTopLeft() const noexcept;
         J_NODISCARD bool IsNonTopLeftMultiTile() const noexcept;
 
 
-        J_NODISCARD bool HasMultiTileData() const;
-        J_NODISCARD MultiTileData GetMultiTileData() const;
+        J_NODISCARD bool HasMultiTileData() const noexcept;
+        J_NODISCARD MultiTileData GetMultiTileData() const noexcept;
 
 
         J_NODISCARD MultiTileValueT GetMultiTileIndex() const noexcept;
-        void SetMultiTileIndex(MultiTileValueT multi_tile_index);
+        void SetMultiTileIndex(MultiTileValueT multi_tile_index) noexcept;
 
         ///
         /// \remark Ensure multi tile index is set prior to calling
@@ -162,15 +162,15 @@ namespace jactorio::game
         template <typename Tx, typename Ty>
         void AdjustToTopLeft(Tx& x, Ty& y) const;
 
-        void AdjustToTopLeft(WorldCoord& coord) const;
+        void AdjustToTopLeft(WorldCoord& coord) const noexcept;
 
 
         ///
         /// \return Number of tiles from top left on X axis
-        J_NODISCARD MultiTileValueT GetOffsetX() const;
+        J_NODISCARD MultiTileValueT GetOffsetX() const noexcept;
         ///
         /// \return Number of tiles from top left on Y axis
-        J_NODISCARD MultiTileValueT GetOffsetY() const;
+        J_NODISCARD MultiTileValueT GetOffsetY() const noexcept;
 
     private:
         /// uniqueData when multiTileIndex == 0, topLeft when multiTileIndex != 0
@@ -212,7 +212,7 @@ namespace jactorio::game
         Orientation orientation_ = Orientation::up;
 
 
-        static constexpr size_t GetArchiveSize() {
+        static constexpr size_t GetArchiveSize() noexcept {
             return sizeof prototypeData_ + sizeof data_.uniqueData + sizeof multiTileIndex_ + sizeof orientation_;
         }
 

@@ -25,34 +25,34 @@ namespace jactorio::core
 
         PointerWrapper() = default;
 
-        PointerWrapper(Ty* proto) { // Intentionally non explicit to allow assignment from pointer directly
+        PointerWrapper(Ty* proto) noexcept { // Intentionally non explicit to allow assignment from pointer directly
             SetPtr(proto);
         }
 
-        explicit PointerWrapper(Ty& proto) {
+        explicit PointerWrapper(Ty& proto) noexcept {
             SetPtr(&proto);
         }
 
 
-        Ty* operator->() {
+        Ty* operator->() noexcept {
             return GetPtr();
         }
-        Ty* operator->() const {
+        Ty* operator->() const noexcept {
             return GetPtr();
         }
 
-        Ty& operator*() {
+        Ty& operator*() noexcept {
             return *GetPtr();
         }
-        Ty& operator*() const {
+        Ty& operator*() const noexcept {
             return *GetPtr();
         }
 
 
-        friend bool operator==(const PointerWrapper& lhs, const PointerWrapper& rhs) {
+        friend bool operator==(const PointerWrapper& lhs, const PointerWrapper& rhs) noexcept {
             return lhs.value_ == rhs.value_;
         }
-        friend bool operator!=(const PointerWrapper& lhs, const PointerWrapper& rhs) {
+        friend bool operator!=(const PointerWrapper& lhs, const PointerWrapper& rhs) noexcept {
             return !(lhs == rhs);
         }
 

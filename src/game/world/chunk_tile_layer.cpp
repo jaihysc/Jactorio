@@ -37,7 +37,7 @@ void game::ChunkTileLayer::Clear() noexcept {
     multiTileIndex_ = 0;
 }
 
-void game::ChunkTileLayer::SetOrientation(const Orientation orientation) {
+void game::ChunkTileLayer::SetOrientation(const Orientation orientation) noexcept {
     if (IsNonTopLeftMultiTile()) {
         auto* top_left = GetTopLeftLayer();
         assert(top_left != nullptr);
@@ -49,7 +49,7 @@ void game::ChunkTileLayer::SetOrientation(const Orientation orientation) {
     }
 }
 
-Orientation game::ChunkTileLayer::GetOrientation() const {
+Orientation game::ChunkTileLayer::GetOrientation() const noexcept {
     if (IsNonTopLeftMultiTile()) {
         const auto* top_left = GetTopLeftLayer();
         assert(top_left != nullptr);
@@ -60,12 +60,12 @@ Orientation game::ChunkTileLayer::GetOrientation() const {
     return orientation_;
 }
 
-void game::ChunkTileLayer::SetPrototype(const Orientation orientation, PrototypeT* prototype) {
+void game::ChunkTileLayer::SetPrototype(const Orientation orientation, PrototypeT* prototype) noexcept {
     SetOrientation(orientation);
     prototypeData_ = prototype;
 }
 
-void game::ChunkTileLayer::SetPrototype(std::nullptr_t) {
+void game::ChunkTileLayer::SetPrototype(std::nullptr_t) noexcept {
     prototypeData_ = nullptr;
 }
 
@@ -75,14 +75,14 @@ bool game::ChunkTileLayer::IsTopLeft() const noexcept {
     return multiTileIndex_ == 0;
 }
 
-bool game::ChunkTileLayer::IsMultiTile() const {
+bool game::ChunkTileLayer::IsMultiTile() const noexcept {
     if (!HasMultiTileData())
         return false;
 
     return GetMultiTileData().span != 1 || GetMultiTileData().height != 1;
 }
 
-bool game::ChunkTileLayer::IsMultiTileTopLeft() const {
+bool game::ChunkTileLayer::IsMultiTileTopLeft() const noexcept {
     return IsMultiTile() && IsTopLeft();
 }
 
@@ -91,11 +91,11 @@ bool game::ChunkTileLayer::IsNonTopLeftMultiTile() const noexcept {
 }
 
 
-bool game::ChunkTileLayer::HasMultiTileData() const {
+bool game::ChunkTileLayer::HasMultiTileData() const noexcept {
     return prototypeData_ != nullptr;
 }
 
-game::MultiTileData game::ChunkTileLayer::GetMultiTileData() const {
+game::MultiTileData game::ChunkTileLayer::GetMultiTileData() const noexcept {
     assert(prototypeData_ != nullptr);
     return {prototypeData_->GetWidth(), prototypeData_->GetHeight()};
 }
@@ -105,7 +105,7 @@ game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetMultiTileIndex() 
     return multiTileIndex_;
 }
 
-void game::ChunkTileLayer::SetMultiTileIndex(const MultiTileValueT multi_tile_index) {
+void game::ChunkTileLayer::SetMultiTileIndex(const MultiTileValueT multi_tile_index) noexcept {
     multiTileIndex_ = multi_tile_index;
 
     if (multi_tile_index != 0) {
@@ -130,16 +130,16 @@ void game::ChunkTileLayer::SetTopLeftLayer(ChunkTileLayer& ctl) noexcept {
 // ======================================================================
 
 
-void game::ChunkTileLayer::AdjustToTopLeft(WorldCoord& coord) const {
+void game::ChunkTileLayer::AdjustToTopLeft(WorldCoord& coord) const noexcept {
     AdjustToTopLeft(coord.x, coord.y);
 }
 
-game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetOffsetX() const {
+game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetOffsetX() const noexcept {
     const auto& data = GetMultiTileData();
     return multiTileIndex_ % data.span;
 }
 
-game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetOffsetY() const {
+game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetOffsetY() const noexcept {
     const auto& data = GetMultiTileData();
     return multiTileIndex_ / data.span;
 }
