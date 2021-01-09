@@ -123,10 +123,10 @@ namespace jactorio::proto
     }                                                                                            \
     static_assert(true)
 
-#define PROTOTYPE_DATA_TRIVIAL_COPY(data_ty__)                                           \
-    std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* ptr) const override { \
-        return std::make_unique<data_ty__>(*static_cast<data_ty__*>(ptr));               \
-    }                                                                                    \
+#define PROTOTYPE_DATA_TRIVIAL_COPY(data_ty__)                                                 \
+    std::unique_ptr<UniqueDataBase> CopyUniqueData(const UniqueDataBase* ptr) const override { \
+        return std::make_unique<data_ty__>(*static_cast<const data_ty__*>(ptr));               \
+    }                                                                                          \
     static_assert(true)
 
 
@@ -204,7 +204,7 @@ namespace jactorio::proto
 
         ///
         /// Copies the unique_data associated with a prototype
-        virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* /*ptr*/) const {
+        virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(const UniqueDataBase* /*other*/) const {
             assert(false); // Not implemented
             return nullptr;
         }
