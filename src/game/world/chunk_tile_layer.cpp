@@ -7,120 +7,123 @@
 using namespace jactorio;
 
 game::ChunkTileLayer::~ChunkTileLayer() {
-    if (IsTopLeft())
-        data_.DestroyUniqueData();
-}
-
-game::ChunkTileLayer::ChunkTileLayer(const ChunkTileLayer& other)
-    : prototypeData_{other.prototypeData_}, multiTileIndex_{other.multiTileIndex_}, orientation_{other.orientation_} {
-
-    // Use prototype defined method for copying uniqueData_ if other has data to copy
-    if (IsTopLeft() && other.data_.uniqueData != nullptr) {
-        assert(other.prototypeData_.Get() != nullptr); // No prototype_data_ available for copying unique_data_
-        data_.uniqueData = other.prototypeData_->CopyUniqueData(other.data_.uniqueData.get());
+    if (IsTopLeft()) {
+        data_.DestructTopLeft();
+    }
+    else {
+        data_.DestructNonTopLeft();
     }
 }
 
-game::ChunkTileLayer::ChunkTileLayer(ChunkTileLayer&& other) noexcept
-    : prototypeData_{other.prototypeData_}, multiTileIndex_{other.multiTileIndex_}, orientation_{other.orientation_} {
-    data_.uniqueData = std::move(other.data_.uniqueData);
+game::ChunkTileLayer::ChunkTileLayer(const ChunkTileLayer& other) : common_(other.common_) {
+    if (other.IsTopLeft()) {
+        AsTopLeft() = other.AsTopLeft();
+        other.AsTopLeft().CopyUniqueData(AsTopLeft(), GetPrototype());
+    }
+    else {
+        AsNonTopLeft() = other.AsNonTopLeft();
+    }
+}
+
+game::ChunkTileLayer::ChunkTileLayer(ChunkTileLayer&& other) noexcept : common_(other.common_) {
+    if (IsTopLeft()) {
+        AsTopLeft() = std::move(other.AsTopLeft());
+    }
+    else {
+        AsNonTopLeft() = std::move(other.AsNonTopLeft());
+    }
 }
 
 
 void game::ChunkTileLayer::Clear() noexcept {
     if (IsTopLeft()) {
-        data_.DestroyUniqueData();
+        data_.DestructTopLeft();
     }
-    data_.ConstructUniqueData();
+    else {
+        data_.DestructNonTopLeft();
+    }
 
-    prototypeData_  = nullptr;
-    multiTileIndex_ = 0;
+    data_.ConstructTopLeft();
+
+    common_.~Common();
+    new (&common_) Common();
 }
 
 void game::ChunkTileLayer::SetOrientation(const Orientation orientation) noexcept {
-    if (IsNonTopLeftMultiTile()) {
-        auto* top_left = GetTopLeftLayer();
-        assert(top_left != nullptr);
-
-        top_left->SetOrientation(orientation);
-    }
-    else {
-        orientation_ = orientation;
-    }
+    common_.orientation = orientation;
 }
 
 Orientation game::ChunkTileLayer::GetOrientation() const noexcept {
-    if (IsNonTopLeftMultiTile()) {
-        const auto* top_left = GetTopLeftLayer();
-        assert(top_left != nullptr);
+    return common_.orientation;
+}
 
-        return top_left->GetOrientation();
-    }
-
-    return orientation_;
+void game::ChunkTileLayer::SetPrototype(const Orientation orientation, PrototypeT& prototype) noexcept {
+    SetPrototype(orientation, &prototype);
 }
 
 void game::ChunkTileLayer::SetPrototype(const Orientation orientation, PrototypeT* prototype) noexcept {
     SetOrientation(orientation);
-    prototypeData_ = prototype;
+    common_.prototype = prototype;
 }
 
 void game::ChunkTileLayer::SetPrototype(std::nullptr_t) noexcept {
-    prototypeData_ = nullptr;
+    common_.prototype = nullptr;
 }
 
 // ======================================================================
 
 bool game::ChunkTileLayer::IsTopLeft() const noexcept {
-    return multiTileIndex_ == 0;
+    return IsTopLeft(common_.multiTileIndex);
 }
 
 bool game::ChunkTileLayer::IsMultiTile() const noexcept {
-    if (!HasMultiTileData())
-        return false;
+    if (GetMultiTileIndex() > 0)
+        return true;
 
-    return GetMultiTileData().span != 1 || GetMultiTileData().height != 1;
+    return GetDimensions().span != 1 || GetDimensions().height != 1;
 }
 
 bool game::ChunkTileLayer::IsMultiTileTopLeft() const noexcept {
     return IsMultiTile() && IsTopLeft();
 }
 
-bool game::ChunkTileLayer::IsNonTopLeftMultiTile() const noexcept {
-    return multiTileIndex_ != 0;
+bool game::ChunkTileLayer::IsNonTopLeft() const noexcept {
+    return GetMultiTileIndex() != 0;
 }
 
 
-bool game::ChunkTileLayer::HasMultiTileData() const noexcept {
-    return prototypeData_ != nullptr;
-}
-
-game::MultiTileData game::ChunkTileLayer::GetMultiTileData() const noexcept {
-    assert(prototypeData_ != nullptr);
-    return {prototypeData_->GetWidth(), prototypeData_->GetHeight()};
-}
-
-void game::ChunkTileLayer::SetupMultiTile(const MultiTileValueT multi_tile_index, ChunkTileLayer& top_left) noexcept {
-    multiTileIndex_ = multi_tile_index;
-
-    if (multi_tile_index != 0) {
-        data_.DestroyUniqueData();
-        data_.topLeft = nullptr;
+game::MultiTileData game::ChunkTileLayer::GetDimensions() const noexcept {
+    if (GetPrototype() == nullptr) {
+        return {1, 1};
     }
+    return {GetPrototype()->GetWidth(GetOrientation()), GetPrototype()->GetHeight(GetOrientation())};
+}
 
-    assert(IsNonTopLeftMultiTile());
+void game::ChunkTileLayer::SetupMultiTile(const TileDistanceT multi_tile_index, ChunkTileLayer& top_left) noexcept {
+    assert(multi_tile_index > 0);
+
+    data_.DestructTopLeft();
+    data_.ConstructNonTopLeft();
+
+    common_.multiTileIndex = multi_tile_index;
+
+    assert(IsNonTopLeft());
     assert(&top_left != this);
-    data_.topLeft = &top_left;
+    AsNonTopLeft().topLeft = &top_left;
 }
 
 
-game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetMultiTileIndex() const noexcept {
-    return multiTileIndex_;
+game::ChunkTileLayer::TileDistanceT game::ChunkTileLayer::GetMultiTileIndex() const noexcept {
+    return common_.multiTileIndex;
 }
 
-game::ChunkTileLayer* game::ChunkTileLayer::GetTopLeftLayer() const noexcept {
-    assert(IsNonTopLeftMultiTile());
-    return data_.topLeft;
+game::ChunkTileLayer* game::ChunkTileLayer::GetTopLeftLayer() noexcept {
+    return const_cast<ChunkTileLayer*>(static_cast<const ChunkTileLayer*>(this)->GetTopLeftLayer());
+}
+
+const game::ChunkTileLayer* game::ChunkTileLayer::GetTopLeftLayer() const noexcept {
+    assert(IsNonTopLeft());
+    return AsNonTopLeft().topLeft;
 }
 
 
@@ -131,12 +134,52 @@ void game::ChunkTileLayer::AdjustToTopLeft(WorldCoord& coord) const noexcept {
     AdjustToTopLeft(coord.x, coord.y);
 }
 
-game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetOffsetX() const noexcept {
-    const auto& data = GetMultiTileData();
-    return multiTileIndex_ % data.span;
+game::ChunkTileLayer::TileDistanceT game::ChunkTileLayer::GetOffsetX() const noexcept {
+    const auto& data = GetDimensions();
+    return GetMultiTileIndex() % data.span;
 }
 
-game::ChunkTileLayer::MultiTileValueT game::ChunkTileLayer::GetOffsetY() const noexcept {
-    const auto& data = GetMultiTileData();
-    return multiTileIndex_ / data.span;
+game::ChunkTileLayer::TileDistanceT game::ChunkTileLayer::GetOffsetY() const noexcept {
+    const auto& data = GetDimensions();
+    return GetMultiTileIndex() / data.span;
 }
+
+bool game::ChunkTileLayer::IsTopLeft(const TileDistanceT multi_tile_index) noexcept {
+    return multi_tile_index == 0;
+}
+
+game::ChunkTileLayer::TopLeft& game::ChunkTileLayer::AsTopLeft() noexcept {
+    assert(IsTopLeft());
+    return data_.topLeft;
+}
+
+const game::ChunkTileLayer::TopLeft& game::ChunkTileLayer::AsTopLeft() const noexcept {
+    assert(IsTopLeft());
+    return data_.topLeft;
+}
+
+game::ChunkTileLayer::NonTopLeft& game::ChunkTileLayer::AsNonTopLeft() noexcept {
+    assert(IsNonTopLeft());
+    return data_.nonTopLeft;
+}
+
+const game::ChunkTileLayer::NonTopLeft& game::ChunkTileLayer::AsNonTopLeft() const noexcept {
+    assert(IsNonTopLeft());
+    return data_.nonTopLeft;
+}
+
+// ======================================================================
+
+game::ChunkTileLayer::TopLeft::TopLeft(const TopLeft& /*other*/) noexcept {}
+
+void game::ChunkTileLayer::TopLeft::CopyUniqueData(TopLeft& to, PrototypeT* prototype) const {
+    // Use prototype defined method for copying uniqueData_ if other has data to copy
+    if (uniqueData != nullptr) {
+        assert(prototype != nullptr); // No prototype available for copying unique data
+
+        auto copied_unique = prototype->CopyUniqueData(uniqueData.get());
+        to.uniqueData      = std::unique_ptr<UniqueDataT>(static_cast<UniqueDataT*>(copied_unique.release()));
+    }
+}
+
+game::ChunkTileLayer::NonTopLeft::NonTopLeft(const NonTopLeft& /*other*/) : topLeft(nullptr) {}

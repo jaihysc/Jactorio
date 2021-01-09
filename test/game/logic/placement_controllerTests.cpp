@@ -309,8 +309,8 @@ namespace jactorio::game
 
 
                 // Ensure tile width and height are properly set
-                EXPECT_EQ(chunk->Tiles()[index].GetLayer(TileLayer::entity).GetMultiTileData().span, 3);
-                EXPECT_EQ(chunk->Tiles()[index].GetLayer(TileLayer::entity).GetMultiTileData().height, 4);
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(TileLayer::entity).GetDimensions().span, 3);
+                EXPECT_EQ(chunk->Tiles()[index].GetLayer(TileLayer::entity).GetDimensions().height, 4);
             }
         }
     }

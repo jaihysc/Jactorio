@@ -17,143 +17,167 @@ namespace jactorio::game
         ///
         /// Calls TestSetupMultiTileProp with proto_
         /// ctl: Set prototype with provided orientation and multi tile properties
-        void SetupMultiTileProp(ChunkTileLayer& ctl, const Orientation orientation, const MultiTileData& mt_data) {
-            TestSetupMultiTileProp(ctl, orientation, mt_data, proto_);
-        }
+        // void SetupMultiTileProp(ChunkTileLayer& ctl, const Orientation orientation, const MultiTileData& mt_data) {
+        // TODO delete -> TestSetupMultiTileProp(ctl, orientation, mt_data, proto_);
+        // }
     };
 
-    TEST_F(ChunkTileLayerTest, Copy) {
+    TEST_F(ChunkTileLayerTest, CopyTopLeft) {
+        // Since orientation is right, width and height are swapped
+        proto_.SetWidth(2);
+        proto_.SetHeight(5);
+
         ChunkTileLayer top_left;
-        SetupMultiTileProp(top_left, Orientation::up, {5, 2});
+        top_left.SetPrototype(Orientation::right, proto_);
         top_left.MakeUniqueData<proto::ContainerEntityData>(32);
 
-        ChunkTileLayer ctl;
-        ctl.SetupMultiTile(4, top_left);
-        SetupMultiTileProp(ctl, Orientation::up, {5, 2});
-        ctl.SetOrientation(Orientation::right);
+        const ChunkTileLayer copy{top_left};
+        EXPECT_EQ(copy.GetMultiTileIndex(), 0);
 
-        // Top left
-        {
-            const ChunkTileLayer copy{top_left};
-            EXPECT_EQ(copy.GetMultiTileIndex(), 0);
+        EXPECT_EQ(copy.GetDimensions().span, 5);
+        EXPECT_EQ(copy.GetDimensions().height, 2);
+        EXPECT_EQ(copy.GetDimensions(), top_left.GetDimensions());
 
-            EXPECT_EQ(copy.GetMultiTileData().height, 2);
-            EXPECT_EQ(copy.GetMultiTileData(), top_left.GetMultiTileData());
+        EXPECT_EQ(copy.GetUniqueData<proto::ContainerEntityData>()->inventory.size(), 32);
 
-            EXPECT_EQ(copy.GetUniqueData<proto::ContainerEntityData>()->inventory.size(), 32);
-
-            EXPECT_EQ(copy.GetOrientation(), Orientation::right);
-        }
-        // Non top left
-        {
-            const ChunkTileLayer copy = ctl;
-
-            EXPECT_EQ(copy.GetMultiTileIndex(), 4);
-
-            EXPECT_EQ(copy.GetMultiTileData().span, 5);
-            EXPECT_EQ(copy.GetMultiTileData(), top_left.GetMultiTileData());
-
-            EXPECT_EQ(copy.GetTopLeftLayer(), nullptr); // top left layer not copied
-        }
+        EXPECT_EQ(copy.GetOrientation(), Orientation::right);
     }
 
-    TEST_F(ChunkTileLayerTest, Move) {
+    TEST_F(ChunkTileLayerTest, CopyNonTopLeft) {
+        // Since orientation is right, width and height are swapped
+        proto_.SetWidth(2);
+        proto_.SetHeight(5);
+
         ChunkTileLayer top_left;
-        SetupMultiTileProp(top_left, Orientation::up, {5, 2});
+        ChunkTileLayer ctl;
+        ctl.SetupMultiTile(4, top_left);
+        ctl.SetPrototype(Orientation::right, proto_);
+
+        const ChunkTileLayer copy = ctl;
+
+        EXPECT_EQ(copy.GetMultiTileIndex(), 4);
+
+        EXPECT_EQ(copy.GetDimensions().span, 5);
+        EXPECT_EQ(copy.GetDimensions().height, 2);
+
+        EXPECT_EQ(copy.GetTopLeftLayer(), nullptr); // top left layer not copied
+    }
+
+    TEST_F(ChunkTileLayerTest, CopyAssignTopLeft) {
+        ChunkTileLayer top_left;
+        top_left.SetPrototype(Orientation::up, proto_);
+        top_left.MakeUniqueData<proto::ContainerEntityData>(20);
+
+        ChunkTileLayer other;
+        other = top_left;
+
+        EXPECT_EQ(other.GetUniqueData<proto::ContainerEntityData>()->inventory.size(), 20);
+    }
+
+    TEST_F(ChunkTileLayerTest, MoveAssignNonTopLeft) {
+        ChunkTileLayer top_left;
+        ChunkTileLayer ctl;
+        ctl.SetPrototype(Orientation::up, proto_);
+        ctl.SetupMultiTile(3, top_left);
+
+        ChunkTileLayer other;
+        other = std::move(ctl);
+
+        EXPECT_EQ(other.GetTopLeftLayer(), &top_left);
+    }
+
+    TEST_F(ChunkTileLayerTest, MoveTopLeft) {
+        ChunkTileLayer top_left;
         top_left.MakeUniqueData<proto::ContainerEntityData>(32);
 
+        const ChunkTileLayer move_to = std::move(top_left);
+
+        EXPECT_EQ(top_left.GetUniqueData<proto::ContainerEntityData>(), nullptr); // Gave ownership
+        EXPECT_NE(move_to.GetUniqueData<proto::ContainerEntityData>(), nullptr);  // Took ownership
+
+        EXPECT_EQ(move_to.GetOrientation(), Orientation::up);
+    }
+
+    TEST_F(ChunkTileLayerTest, MoveNonTopLeft) {
+        ChunkTileLayer top_left;
         ChunkTileLayer ctl;
         ctl.SetupMultiTile(4, top_left);
-        SetupMultiTileProp(ctl, Orientation::up, {5, 2});
-        ctl.SetOrientation(Orientation::right);
+        ctl.SetPrototype(Orientation::right, proto_);
 
-        // Top left
-        {
-            const ChunkTileLayer move_to = std::move(top_left);
+        const ChunkTileLayer move_to = std::move(ctl);
 
-            EXPECT_EQ(top_left.GetUniqueData<proto::ContainerEntityData>(), nullptr); // Gave ownership
-            EXPECT_NE(move_to.GetUniqueData<proto::ContainerEntityData>(), nullptr);  // Took ownership
-
-            EXPECT_EQ(move_to.GetOrientation(), Orientation::right);
-        }
-        // Non top left
-        {
-            const ChunkTileLayer move_to = std::move(ctl);
-
-            EXPECT_EQ(move_to.GetTopLeftLayer(), &top_left);
-
-            EXPECT_EQ(move_to.GetOrientation(), Orientation::right);
-        }
+        EXPECT_EQ(move_to.GetTopLeftLayer(), &top_left);
+        EXPECT_EQ(move_to.GetOrientation(), Orientation::right);
     }
 
-    TEST_F(ChunkTileLayerTest, SetOrientationIsTopLeft) {
-        ChunkTileLayer top_left;
-
-        top_left.SetOrientation(Orientation::right);
-        EXPECT_EQ(top_left.GetOrientation(), Orientation::right);
-    }
-
-    TEST_F(ChunkTileLayerTest, SetOrientationNonTopLeft) {
-        ChunkTileLayer top_left;
-        SetupMultiTileProp(top_left, Orientation::up, {2, 1});
-
+    TEST_F(ChunkTileLayerTest, ClearTopLeft) {
         ChunkTileLayer ctl;
-        ctl.SetupMultiTile(1, top_left);
+        ctl.SetPrototype(Orientation::up, proto_);
+        ctl.MakeUniqueData<proto::ContainerEntityData>();
 
-        ctl.SetOrientation(Orientation::right);
+        ctl.Clear();
+
+        EXPECT_EQ(ctl.GetPrototype(), nullptr);
+        EXPECT_EQ(ctl.GetUniqueData(), nullptr);
+        EXPECT_EQ(ctl.GetMultiTileIndex(), 0);
+    }
+
+    TEST_F(ChunkTileLayerTest, ClearNonTopLeft) {
+        ChunkTileLayer top_left;
+        ChunkTileLayer ctl;
+        ctl.SetupMultiTile(2, top_left);
+        ctl.SetPrototype(Orientation::up, proto_);
+
+        ctl.Clear();
+
+        EXPECT_EQ(ctl.GetPrototype(), nullptr);
+        EXPECT_EQ(ctl.GetUniqueData(), nullptr);
+        EXPECT_EQ(ctl.GetMultiTileIndex(), 0);
+    }
+
+    TEST_F(ChunkTileLayerTest, GetSetOrientation) {
+        ChunkTileLayer top_left;
+        top_left.SetPrototype(Orientation::right, proto_);
 
         EXPECT_EQ(top_left.GetOrientation(), Orientation::right);
-        EXPECT_EQ(ctl.GetOrientation(), Orientation::right);
     }
 
     TEST_F(ChunkTileLayerTest, GetSetPrototype) {
-        ChunkTileLayer top_left;
-
         ChunkTileLayer ctl;
-        ctl.SetupMultiTile(1, top_left);
-        SetupMultiTileProp(ctl, Orientation::right, {2, 3});
+
+        ctl.SetPrototype(Orientation::right, proto_);
 
         EXPECT_EQ(ctl.GetPrototype(), &proto_);
-        EXPECT_EQ(top_left.GetOrientation(), Orientation::right);
-    }
+        EXPECT_EQ(ctl.GetOrientation(), Orientation::right);
 
-    TEST_F(ChunkTileLayerTest, GetSetNullPrototype) {
-        ChunkTileLayer ctl;
 
-        ctl.SetPrototype(Orientation::right, &proto_);
+        ctl.SetPrototype(Orientation::up, nullptr);
+
+        EXPECT_EQ(ctl.GetPrototype(), nullptr);
+        EXPECT_EQ(ctl.GetOrientation(), Orientation::up);
+
+
+        ctl.SetPrototype(Orientation::right, proto_);
         ctl.SetPrototype(nullptr);
 
         EXPECT_EQ(ctl.GetPrototype(), nullptr);
-        EXPECT_EQ(ctl.GetOrientation(), Orientation::right);
     }
 
     TEST_F(ChunkTileLayerTest, GetUniqueData) {
         ChunkTileLayer top_left;
-        SetupMultiTileProp(top_left, Orientation::up, {2, 3});
         top_left.MakeUniqueData<proto::ContainerEntityData>(10);
 
         ChunkTileLayer ctl;
         ctl.SetupMultiTile(3, top_left);
-        SetupMultiTileProp(ctl, Orientation::up, {2, 3});
 
 
         EXPECT_EQ(top_left.GetUniqueData(), ctl.GetUniqueData());
-        EXPECT_EQ(top_left.GetUniqueData(), top_left.GetUniqueDataLocal());
     }
 
 
     TEST_F(ChunkTileLayerTest, IsTopLeft) {
         {
             const ChunkTileLayer ctl;
-            EXPECT_TRUE(ctl.IsTopLeft());
-        }
-        {
-            ChunkTileLayer ctl;
-            EXPECT_TRUE(ctl.IsTopLeft());
-        }
-        {
-            ChunkTileLayer ctl;
-            SetupMultiTileProp(ctl, Orientation::up, {1, 2});
             EXPECT_TRUE(ctl.IsTopLeft());
         }
         {
@@ -167,23 +191,20 @@ namespace jactorio::game
     TEST_F(ChunkTileLayerTest, IsMultiTile) {
         {
             const ChunkTileLayer ctl;
-            EXPECT_FALSE(ctl.IsMultiTile()); // No prototype data
+            EXPECT_FALSE(ctl.IsMultiTile());
         }
         {
+            // Top left has to look at prototype to determine if it is multi tile
+            proto_.SetWidth(3);
+
             ChunkTileLayer ctl;
-            SetupMultiTileProp(ctl, Orientation::up, {1, 1});
-            EXPECT_FALSE(ctl.IsMultiTile()); // multiTileIndex is 0, multiTileData is 1, 1
-        }
-        {
-            ChunkTileLayer ctl;
-            SetupMultiTileProp(ctl, Orientation::up, {1, 2});
+            ctl.SetPrototype(Orientation::up, proto_);
             EXPECT_TRUE(ctl.IsMultiTile());
         }
         {
             ChunkTileLayer top_left;
             ChunkTileLayer ctl;
-            ctl.SetupMultiTile(4, top_left);
-            SetupMultiTileProp(ctl, Orientation::up, {1, 2});
+            ctl.SetupMultiTile(1, top_left);
             EXPECT_TRUE(ctl.IsMultiTile());
         }
     }
@@ -195,8 +216,10 @@ namespace jactorio::game
         }
 
         {
+            proto_.SetWidth(3);
+
             ChunkTileLayer ctl;
-            SetupMultiTileProp(ctl, Orientation::up, {1, 2});
+            ctl.SetPrototype(Orientation::up, proto_);
             EXPECT_TRUE(ctl.IsMultiTileTopLeft());
         }
         {
@@ -207,52 +230,40 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(ChunkTileLayerTest, IsNonTopLeftMultiTile) {
+    TEST_F(ChunkTileLayerTest, IsNonTopLeft) {
         {
             ChunkTileLayer ctl;
-            EXPECT_FALSE(ctl.IsNonTopLeftMultiTile());
+            EXPECT_FALSE(ctl.IsNonTopLeft());
         }
 
-        {
-            ChunkTileLayer ctl;
-            SetupMultiTileProp(ctl, Orientation::up, {1, 2});
-            EXPECT_FALSE(ctl.IsNonTopLeftMultiTile());
-        }
         {
             ChunkTileLayer top_left;
             ChunkTileLayer ctl;
-            ctl.SetupMultiTile(4, top_left);
-            SetupMultiTileProp(ctl, Orientation::up, {1, 2});
-            EXPECT_TRUE(ctl.IsNonTopLeftMultiTile());
+            ctl.SetupMultiTile(1, top_left);
+            EXPECT_TRUE(ctl.IsNonTopLeft());
         }
     }
 
-    TEST_F(ChunkTileLayerTest, OverrideMultiTileData) {
-        // Both should return the same multi tile data
-        ChunkTileLayer ctl;
-        SetupMultiTileProp(ctl, Orientation::up, {12, 32});
-        SetupMultiTileProp(ctl, Orientation::up, {3, 30});
+    TEST_F(ChunkTileLayerTest, GetDimensions) {
+        const ChunkTileLayer first;
+        const auto dimens = first.GetDimensions();
 
-        const auto& data = ctl.GetMultiTileData();
-
-        EXPECT_EQ(data.span, 3);
-        EXPECT_EQ(data.height, 30);
+        EXPECT_EQ(dimens.span, 1);
+        EXPECT_EQ(dimens.height, 1);
     }
 
-    TEST_F(ChunkTileLayerTest, GetMultiTileData) {
+    TEST_F(ChunkTileLayerTest, GetDimensionsMultiTile) {
+        proto::ContainerEntity container;
+        container.SetWidth(2);
+        container.SetHeight(3);
+
         ChunkTileLayer first;
-        SetupMultiTileProp(first, Orientation::up, {12, 32});
+        first.SetPrototype(Orientation::right, &container);
 
-        ASSERT_TRUE(first.HasMultiTileData());
-        const auto& data_1 = first.GetMultiTileData();
+        const auto& dimens = first.GetDimensions();
 
-        EXPECT_EQ(data_1.span, proto_.GetWidth());
-        EXPECT_EQ(data_1.height, proto_.GetHeight());
-
-
-        ChunkTileLayer second;
-        second.SetupMultiTile(1, first);
-        ASSERT_FALSE(second.HasMultiTileData());
+        EXPECT_EQ(dimens.span, container.GetWidth(Orientation::right));
+        EXPECT_EQ(dimens.height, container.GetHeight(Orientation::right));
     }
 
 
@@ -266,10 +277,12 @@ namespace jactorio::game
     }
 
     TEST_F(ChunkTileLayerTest, AdjustToTopleft) {
+        proto_.SetWidth(3);
+
         ChunkTileLayer top_left;
         ChunkTileLayer ctl;
+        ctl.SetPrototype(Orientation::up, proto_);
         ctl.SetupMultiTile(5, top_left);
-        SetupMultiTileProp(ctl, Orientation::up, {3, 2});
 
         int x = 0;
         int y = 0;
@@ -296,19 +309,23 @@ namespace jactorio::game
     }
 
     TEST_F(ChunkTileLayerTest, GetOffsetX) {
+        proto_.SetWidth(10);
+
         ChunkTileLayer top_left;
         ChunkTileLayer ctl;
+        ctl.SetPrototype(Orientation::up, proto_);
         ctl.SetupMultiTile(19, top_left);
-        SetupMultiTileProp(ctl, Orientation::up, {10, 2});
 
         EXPECT_EQ(ctl.GetOffsetX(), 9);
     }
 
     TEST_F(ChunkTileLayerTest, GetOffsetY) {
+        proto_.SetWidth(5);
+
         ChunkTileLayer top_left;
         ChunkTileLayer ctl;
+        ctl.SetPrototype(Orientation::up, proto_);
         ctl.SetupMultiTile(20, top_left);
-        SetupMultiTileProp(ctl, Orientation::up, {5, 2});
 
         EXPECT_EQ(ctl.GetOffsetY(), 4);
     }
@@ -321,15 +338,16 @@ namespace jactorio::game
         data::active_unique_data_manager = &unique_manager;
 
         auto& proto = proto_manager.AddProto<proto::ContainerEntity>();
+        proto.SetWidth(2); // Width and height are flipped since orientation is right
+        proto.SetHeight(3);
 
         ChunkTileLayer top_left;
-        TestSetupMultiTileProp(top_left, Orientation::up, {2, 2}, proto);
+        top_left.SetPrototype(Orientation::right, proto);
         top_left.MakeUniqueData<proto::ContainerEntityData>(10);
 
         ChunkTileLayer bot_right;
         bot_right.SetupMultiTile(3, top_left);
-        TestSetupMultiTileProp(bot_right, Orientation::up, {2, 2}, proto);
-        bot_right.SetOrientation(Orientation::right);
+        bot_right.SetPrototype(Orientation::right, proto);
 
         proto_manager.GenerateRelocationTable();
 
@@ -341,16 +359,16 @@ namespace jactorio::game
         ASSERT_NE(result_tl.GetUniqueData(), nullptr);
         EXPECT_EQ(result_tl.GetUniqueData()->internalId, 1);
 
-        EXPECT_EQ(result_tl.GetMultiTileData().span, 2);
-        EXPECT_EQ(result_tl.GetMultiTileData().height, 2);
+        EXPECT_EQ(result_tl.GetDimensions().span, 3);
+        EXPECT_EQ(result_tl.GetDimensions().height, 2);
 
         EXPECT_EQ(result_tl.GetOrientation(), Orientation::right);
 
         EXPECT_EQ(result_br.GetPrototype(), &proto);
         EXPECT_EQ(result_br.GetTopLeftLayer(), nullptr);
 
-        EXPECT_EQ(result_br.GetMultiTileData().span, 2);
-        EXPECT_EQ(result_br.GetMultiTileData().height, 2);
+        EXPECT_EQ(result_br.GetDimensions().span, 3);
+        EXPECT_EQ(result_br.GetDimensions().height, 2);
 
 
         EXPECT_EQ(unique_manager.GetDebugInfo().dataEntries.size(), 1);
