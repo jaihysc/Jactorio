@@ -31,6 +31,7 @@ bool show_demo_window         = false;
 bool show_item_spawner_window = false;
 
 // Game
+bool show_tile_info     = false;
 bool show_conveyor_info = false;
 bool show_inserter_info = false;
 
@@ -40,6 +41,9 @@ void gui::DebugMenuLogic(GameWorlds& worlds,
                          game::LogicData& logic,
                          game::PlayerData& player,
                          const data::PrototypeManager& data_manager) {
+    if (show_tile_info)
+        DebugTileInfo(worlds, player);
+
     if (show_conveyor_info)
         DebugConveyorInfo(worlds, player, data_manager);
 
@@ -59,6 +63,12 @@ void gui::DebugMenuLogic(GameWorlds& worlds,
         DebugWorldInfo(worlds, player);
         DebugLogicInfo(logic);
     }
+}
+
+std::string MemoryAddressToStr(const void* ptr) {
+    std::ostringstream sstream;
+    sstream << ptr;
+    return sstream.str();
 }
 
 void gui::DebugMenu(const render::GuiRenderer& params) {
@@ -109,6 +119,7 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
         // Options
         ImGui::Checkbox("Item spawner", &show_item_spawner_window);
 
+        ImGui::Checkbox("Show tile info", &show_tile_info);
         ImGui::Checkbox("Show conveyor info", &show_conveyor_info);
         ImGui::Checkbox("Show inserter info", &show_inserter_info);
 
@@ -175,6 +186,40 @@ void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeM
             game::AddStack(player_data.inventory.inventory, item_stack);
         }
         ImGui::PopID();
+    }
+}
+
+void gui::DebugTileInfo(GameWorlds& worlds, game::PlayerData& player) {
+    auto& world = worlds[player.world.GetId()];
+    auto* tile  = world.GetTile(player.world.GetMouseTileCoords());
+
+    ImGuard guard;
+    guard.Begin("Tile info");
+
+    ImGui::Text(
+        "Cursor world position: %d, %d", player.world.GetMouseTileCoords().x, player.world.GetMouseTileCoords().y);
+
+    if (tile == nullptr) {
+        ImGui::TextUnformatted("Not hovering over tile");
+        return;
+    }
+
+    for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
+        auto& layer = tile->GetLayer(layer_index);
+
+        ImGui::TextUnformatted("------------------------------------");
+        ImGui::Text("Layer %d", layer_index);
+
+        ImGui::Text("%s", layer.IsMultiTile() ? "Multi-tile" : "Non multi-tile");
+        ImGui::Text("%s", layer.IsTopLeft() ? "Top left" : "Non top left");
+
+        ImGui::Text("Multi-tile index: %d", layer.GetMultiTileIndex());
+
+        ImGui::Text("Orientation: %s", OrientationToStr(layer.GetOrientation()));
+        ImGui::Text("Dimensions: %d, %d", layer.GetDimensions().span, layer.GetDimensions().height);
+
+        ImGui::Text("Prototype: %s", MemoryAddressToStr(layer.GetPrototype()).c_str());
+        ImGui::Text("Unique data: %s", MemoryAddressToStr(layer.GetUniqueData()).c_str());
     }
 }
 
@@ -348,17 +393,9 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
         game::ConveyorStruct& segment = *segment_ptr;
 
         // Show conveyor properties
-        // Show memory addresses
-        {
-            std::ostringstream sstream;
-            sstream << segment_ptr;
-            ImGui::Text("Segment: %s", sstream.str().c_str());
-
-
-            std::ostringstream sstream2;
-            sstream2 << segment.target;
-            ImGui::Text("Target segment: %s", segment.target != nullptr ? sstream2.str().c_str() : "NULL");
-        }
+        ImGui::Text("Segment: %s", MemoryAddressToStr(segment_ptr).c_str());
+        ImGui::Text("Target segment: %s",
+                    segment.target != nullptr ? MemoryAddressToStr(segment.target).c_str() : "NULL");
 
         ImGui::Text("Head offset %d", segment.headOffset);
         ImGui::Text("Side insertion index %d", segment.sideInsertIndex);
@@ -480,9 +517,10 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
                 core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
                 for (const auto& callback : entry.second) {
-                    std::ostringstream sstream;
-                    sstream << callback.callback.Get(); // Get pointer address
-                    ImGui::Text("%d %d %s", callback.receiver.x, callback.receiver.y, sstream.str().c_str());
+                    ImGui::Text("%d %d %s",
+                                callback.receiver.x,
+                                callback.receiver.y,
+                                MemoryAddressToStr(callback.callback.Get()).c_str());
                 }
             }
 
@@ -560,9 +598,7 @@ void gui::DebugLogicInfo(const game::LogicData& logic_data) {
             core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
             for (const auto& callback : callback_tick.second) {
-                std::ostringstream sstream;
-                sstream << callback.uniqueData.Get();
-                ImGui::Text("%s", sstream.str().c_str());
+                ImGui::Text("%s", MemoryAddressToStr(callback.uniqueData.Get()).c_str());
             }
         }
 
