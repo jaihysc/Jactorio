@@ -364,6 +364,27 @@ namespace jactorio::game
         EXPECT_EQ(resource_data.resourceAmount, 1); // Picked up
     }
 
+    ///
+    /// Picking up an entity which is rotated (treated as 2x1 instead of 1x2)
+    TEST_F(PlayerDataPlacementTest, TryPickupRotated) {
+        worldData_.EmplaceChunk(0, 0);
+
+        proto::Item item;
+        proto::ContainerEntity container;
+        container.SetItem(&item);
+
+        container.SetDimensions(1, 2);
+        TestSetupContainer(worldData_, {1, 1}, Orientation::right, container); // Tiles {1, 1}, {2, 1}
+
+        playerPlace_.TryPickup(worldData_, logicData_, {2, 1}, 9999);
+
+        auto& left_container = *worldData_.GetTile(1, 1);
+        EXPECT_EQ(left_container.GetLayer(TileLayer::entity).GetPrototype(), nullptr);
+
+        auto& right_container = *worldData_.GetTile(2, 1);
+        EXPECT_EQ(right_container.GetLayer(TileLayer::entity).GetPrototype(), nullptr);
+    }
+
 
     // ======================================================================
 

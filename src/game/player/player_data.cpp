@@ -346,6 +346,7 @@ void game::PlayerData::Placement::TryPickup(WorldData& world,
         LOG_MESSAGE(debug, "Player picked up entity");
 
         // Give picked up item to player
+        assert(chosen_ptr->GetItem() != nullptr); // Entity prototype does not have an item prototype
         const auto item_stack = proto::ItemStack{chosen_ptr->GetItem(), 1};
 
         // Failed to add item, likely because the inventory is full
@@ -387,11 +388,10 @@ void game::PlayerData::Placement::TryPickup(WorldData& world,
 
             entity->OnRemove(world, logic, coord, layer);
 
-            // TODO It must remember orientation placed
-            const bool result = PlaceEntityAtCoords(world, coord, Orientation::up, nullptr);
+            const bool result = PlaceEntityAtCoords(world, coord, layer.GetOrientation(), nullptr);
             assert(result); // false indicates failed to remove entity
 
-            UpdateNeighboringEntities(world, logic, coord, Orientation::up, entity);
+            UpdateNeighboringEntities(world, logic, coord, layer.GetOrientation(), entity);
 
             world.UpdateDispatch(coord, proto::UpdateType::remove);
         }

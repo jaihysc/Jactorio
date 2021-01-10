@@ -90,7 +90,7 @@ namespace jactorio
                                                     const WorldCoord& coord,
                                                     const game::TileLayer tile_layer,
                                                     const Orientation orientation,
-                                                    proto::FWorldObject& proto) {
+                                                    const proto::FWorldObject& proto) {
 
         auto& origin_layer = world.GetTile(coord)->GetLayer(tile_layer);
         origin_layer.SetPrototype(orientation, proto);
@@ -118,9 +118,10 @@ namespace jactorio
                                                     const Orientation orientation,
                                                     const proto::ContainerEntity& container_entity,
                                                     const int container_capacity = 10) {
-        auto& container_layer = world.GetTile(coord)->GetLayer(game::TileLayer::entity);
+        auto& container_layer =
+            TestSetupMultiTile(world, coord, game::TileLayer::entity, orientation, container_entity);
 
-        container_layer.SetPrototype(orientation, &container_entity);
+        container_layer.SetPrototype(orientation, container_entity);
         container_layer.MakeUniqueData<proto::ContainerEntityData>(container_capacity);
 
         return container_layer;
