@@ -27,8 +27,7 @@ namespace jactorio::proto
         /// If true, swaps width and height when orientation is left or right in Getters
         PYTHON_PROP_REF_I(bool, rotateDimensions, true);
 
-        // TODO remove default arg, for compatibility with existing code for now
-        J_NODISCARD TileSpanT GetWidth(const Orientation orientation = Orientation::up) const {
+        J_NODISCARD TileSpanT GetWidth(const Orientation orientation) const {
             if (rotateDimensions && (orientation == Orientation::left || orientation == Orientation::right))
                 return height_;
 
@@ -39,7 +38,7 @@ namespace jactorio::proto
             return this;
         }
 
-        J_NODISCARD TileSpanT GetHeight(const Orientation orientation = Orientation::up) const {
+        J_NODISCARD TileSpanT GetHeight(const Orientation orientation) const {
             if (rotateDimensions && (orientation == Orientation::left || orientation == Orientation::right))
                 return width_;
 

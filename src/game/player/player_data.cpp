@@ -244,7 +244,7 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world, LogicData& lo
 
     assert(entity_ptr != nullptr);
     // Prototypes can perform additional checking on whether the location can be placed on or not
-    if (!entity_ptr->OnCanBuild(world, coord))
+    if (!entity_ptr->OnCanBuild(world, coord, orientation))
         return false;
 
     // Do not take item away from player unless item was successfully placed

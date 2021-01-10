@@ -95,8 +95,8 @@ namespace jactorio
         auto& origin_layer = world.GetTile(coord)->GetLayer(tile_layer);
         origin_layer.SetPrototype(orientation, proto);
 
-        for (int y = 0; y < proto.GetHeight(); ++y) {
-            for (int x = 0; x < proto.GetWidth(); ++x) {
+        for (int y = 0; y < proto.GetHeight(orientation); ++y) {
+            for (int x = 0; x < proto.GetWidth(orientation); ++x) {
                 if (x == 0 && y == 0)
                     continue;
 
@@ -104,7 +104,7 @@ namespace jactorio
 
                 layer.SetPrototype(orientation, &proto);
 
-                layer.SetupMultiTile(y * proto.GetWidth() + x, origin_layer);
+                layer.SetupMultiTile(y * proto.GetWidth(orientation) + x, origin_layer);
             }
         }
 

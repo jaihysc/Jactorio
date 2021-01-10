@@ -395,8 +395,9 @@ namespace jactorio::game
         }
 
 
-        J_NODISCARD bool OnCanBuild(const WorldData& /*world_data*/,
-                                    const WorldCoord& /*world_coords*/) const override {
+        J_NODISCARD bool OnCanBuild(const WorldData& /*world*/,
+                                    const WorldCoord& /*coord*/,
+                                    const Orientation /*orien*/) const override {
             return onCanBuildReturn;
         }
 

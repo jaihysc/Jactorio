@@ -49,13 +49,13 @@ namespace jactorio::proto
         drill.miningRadius = 2;
 
         // Has no resource tiles
-        EXPECT_FALSE(drill.OnCanBuild(worldData_, {2, 2}));
+        EXPECT_FALSE(drill.OnCanBuild(worldData_, {2, 2}, Orientation::up));
 
         // Has resource tiles
         ResourceEntity resource{};
         worldData_.GetTile(0, 0)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource);
 
-        EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}));
+        EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}, Orientation::up));
     }
 
     TEST_F(MiningDrillTest, OnCanBuild2) {
@@ -77,36 +77,34 @@ namespace jactorio::proto
         ResourceEntity resource{};
         worldData_.GetTile(7, 6)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource);
 
-        EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}));
+        EXPECT_TRUE(drill.OnCanBuild(worldData_, {2, 2}, Orientation::up));
     }
 
     TEST_F(MiningDrillTest, FindOutputItem) {
 
-        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr); // No resources
+        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}, Orientation::up), nullptr); // No resources
 
 
         worldData_.GetTile(0, 0)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource_);
-
-        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr); // No resources in range
+        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}, Orientation::up), nullptr); // No resources in range
 
 
         worldData_.GetTile(6, 5)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource_);
-
-        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), nullptr); // No resources in range
+        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}, Orientation::up), nullptr); // No resources in range
 
         // ======================================================================
 
         worldData_.GetTile(5, 5)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource_);
-        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), &resourceItem_);
+        EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}, Orientation::up), &resourceItem_);
 
         // Closer to the top left
         {
-            Item item2{};
-            ResourceEntity resource2{};
+            Item item2;
+            ResourceEntity resource2;
             resource2.SetItem(&item2);
 
             worldData_.GetTile(1, 1)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource2);
-            EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}), &item2);
+            EXPECT_EQ(drillProto_.FindOutputItem(worldData_, {2, 2}, Orientation::up), &item2);
         }
     }
 

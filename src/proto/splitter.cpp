@@ -14,8 +14,8 @@ void proto::Splitter::PostLoad() {
 void proto::Splitter::PostLoadValidate(const data::PrototypeManager& proto_manager) const {
     Conveyor::PostLoadValidate(proto_manager);
 
-    J_PROTO_ASSERT(this->GetWidth() == 2, "Tile width must be 2");
-    J_PROTO_ASSERT(this->GetHeight() == 1, "Tile height must be 1");
+    J_PROTO_ASSERT(this->GetWidth(Orientation::up) == 2, "Tile width must be 2");
+    J_PROTO_ASSERT(this->GetHeight(Orientation::up) == 1, "Tile height must be 1");
 }
 
 void proto::Splitter::ValidatedPostLoad() {
