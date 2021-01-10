@@ -13,13 +13,6 @@ namespace jactorio::game
     {
     protected:
         proto::ContainerEntity proto_;
-
-        ///
-        /// Calls TestSetupMultiTileProp with proto_
-        /// ctl: Set prototype with provided orientation and multi tile properties
-        // void SetupMultiTileProp(ChunkTileLayer& ctl, const Orientation orientation, const MultiTileData& mt_data) {
-        // TODO delete -> TestSetupMultiTileProp(ctl, orientation, mt_data, proto_);
-        // }
     };
 
     TEST_F(ChunkTileLayerTest, CopyTopLeft) {

@@ -50,6 +50,14 @@ namespace jactorio::proto
             return this;
         }
 
+        ///
+        /// Calls SetWidth and SetHeight
+        FWorldObject* SetDimensions(const TileSpanT width, const TileSpanT height) {
+            SetWidth(width);
+            SetHeight(height);
+            return this;
+        }
+
     private:
         /// Number of tiles which object occupies
         TileSpanT width_  = 1;

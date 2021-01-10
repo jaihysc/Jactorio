@@ -189,7 +189,8 @@ namespace jactorio::game
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::entity);
 
         proto::ContainerEntity proto;
-        TestSetupMultiTileProp(bottom_layer, Orientation::up, {2, 1}, proto);
+        proto.SetDimensions(2, 1);
+        bottom_layer.SetPrototype(Orientation::up, proto);
 
 
         // multiTileIndex is 0
@@ -214,7 +215,9 @@ namespace jactorio::game
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::resource);
 
         proto::ContainerEntity proto;
-        TestSetupMultiTileProp(bottom_layer, Orientation::up, {7, 10}, proto);
+        proto.SetDimensions(7, 10);
+        bottom_layer.SetPrototype(Orientation::up, proto);
+
         bottom_layer.SetupMultiTile(15, top_tile->GetLayer(TileLayer::resource));
 
         EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
@@ -349,8 +352,8 @@ namespace jactorio::game
         data::PrototypeManager prototype_manager;
         auto& proto = prototype_manager.AddProto<proto::ContainerEntity>();
 
-
-        TestSetupMultiTile(worldData_, {1, 0}, TileLayer::base, Orientation::up, proto, {3, 2});
+        proto.SetDimensions(3, 2);
+        TestSetupMultiTile(worldData_, {1, 0}, TileLayer::base, Orientation::up, proto);
 
 
         prototype_manager.GenerateRelocationTable();
@@ -391,6 +394,7 @@ namespace jactorio::game
 
 
         auto& asm_machine = proto_manager.AddProto<proto::AssemblyMachine>();
+        asm_machine.SetDimensions(2, 2);
         TestSetupAssemblyMachine(worldData_, {0, 2}, Orientation::up, asm_machine);
 
         auto& inserter = proto_manager.AddProto<proto::Inserter>();

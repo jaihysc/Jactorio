@@ -84,29 +84,16 @@ namespace jactorio
 
 
     ///
-    /// Creates prototype with provided orientation and multi tile properties, attaches it to ctl to allow multi tile
-    /// properties to be accessed
-    inline void TestSetupMultiTileProp(game::ChunkTileLayer& ctl,
-                                       const Orientation orientation,
-                                       const game::MultiTileData& mt_data,
-                                       proto::FWorldObject& proto) {
-        proto.SetWidth(mt_data.span);
-        proto.SetHeight(mt_data.height);
-        ctl.SetPrototype(orientation, &proto);
-    }
-
-    ///
     /// Sets up a multi tile with proto at coord on the provided specified tile layer
     /// \return Top left tile
     inline game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world,
                                                     const WorldCoord& coord,
                                                     const game::TileLayer tile_layer,
                                                     const Orientation orientation,
-                                                    proto::FWorldObject& proto,
-                                                    const game::MultiTileData& mt_data) {
+                                                    proto::FWorldObject& proto) {
 
         auto& origin_layer = world.GetTile(coord)->GetLayer(tile_layer);
-        TestSetupMultiTileProp(origin_layer, orientation, mt_data, proto);
+        origin_layer.SetPrototype(orientation, proto);
 
         for (int y = 0; y < proto.GetHeight(); ++y) {
             for (int x = 0; x < proto.GetWidth(); ++x) {
@@ -174,14 +161,13 @@ namespace jactorio
     }
 
     ///
-    /// Creates a 2x2 multi tile assembly machine at coordinates
+    /// Creates a assembly machine at coordinates
     /// \return top left layer
     inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::WorldData& world,
                                                           const WorldCoord& coord,
                                                           const Orientation orientation,
                                                           proto::AssemblyMachine& assembly_proto) {
-        auto& origin_layer =
-            TestSetupMultiTile(world, coord, game::TileLayer::entity, orientation, assembly_proto, {2, 2});
+        auto& origin_layer = TestSetupMultiTile(world, coord, game::TileLayer::entity, orientation, assembly_proto);
         origin_layer.MakeUniqueData<proto::AssemblyMachineData>();
         return origin_layer;
     }

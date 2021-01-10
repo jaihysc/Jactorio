@@ -219,7 +219,8 @@ namespace jactorio::proto
 
         drillProto_.resourceOutput.right = {3, 1};
 
-        AssemblyMachine asm_machine{};
+        AssemblyMachine asm_machine;
+        asm_machine.SetDimensions(2, 2);
         TestSetupAssemblyMachine(worldData_, {4, 1}, Orientation::up, asm_machine);
 
         auto& tile = TestSetupDrill(worldData_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
