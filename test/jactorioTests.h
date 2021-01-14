@@ -213,6 +213,34 @@ namespace jactorio
         return *tile;
     }
 
+    ///
+    /// Creates conveyor at tile with provided conveyor structure
+    inline auto& TestSetupConveyor(game::WorldData& world,
+                                   const WorldCoord& coord,
+                                   const proto::Conveyor& con_proto,
+                                   const std::shared_ptr<game::ConveyorStruct>& con_struct_p) {
+
+        auto& layer = world.GetTile(coord)->GetLayer(game::TileLayer::entity);
+        layer.SetPrototype(con_struct_p->direction, con_proto);
+
+        return layer.MakeUniqueData<proto::ConveyorData>(con_struct_p);
+    }
+
+    ///
+    /// Creates conveyor at tile its own conveyor structure
+    inline auto& TestSetupConveyor(
+        game::WorldData& world,
+        const WorldCoord& coord,
+        const Orientation orien,
+        const proto::Conveyor& con_proto,
+        const game::ConveyorStruct::TerminationType ttype = game::ConveyorStruct::TerminationType::straight,
+        const std::uint8_t len                            = 1) {
+
+        auto con_struct = std::make_shared<game::ConveyorStruct>(orien, ttype, len);
+
+        return TestSetupConveyor(world, coord, con_proto, con_struct);
+    }
+
 
     struct TestSetupRecipeReturn
     {
