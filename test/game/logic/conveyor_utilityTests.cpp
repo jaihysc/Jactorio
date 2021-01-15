@@ -14,7 +14,6 @@
 
 namespace jactorio::game
 {
-
     class ConveyorUtilityTest : public testing::Test
     {
     protected:
@@ -59,6 +58,33 @@ namespace jactorio::game
             return con_data.structure == other_con_data.structure;
         }
     };
+
+    TEST_F(ConveyorUtilityTest, GetConveyorDataConveyor) {
+        auto& con_data = TestSetupConveyor(worldData_, {0, 0}, Orientation::up, transBelt_);
+
+        EXPECT_EQ(GetConData(worldData_, {0, 0}), &con_data);
+    }
+
+    TEST_F(ConveyorUtilityTest, GetConveyorDataSplitter) {
+        proto::Splitter splitter;
+        splitter.SetWidth(2);
+
+        auto& splitter_data = TestSetupBlankSplitter(worldData_, {0, 0}, Orientation::up, splitter);
+
+        EXPECT_EQ(GetConData(worldData_, {0, 0}), &splitter_data.left);
+        EXPECT_EQ(GetConData(worldData_, {1, 0}), &splitter_data.right);
+    }
+
+    TEST_F(ConveyorUtilityTest, GetConveyorDataSplitterInverted) {
+        proto::Splitter splitter;
+        splitter.SetWidth(2);
+
+        auto& splitter_data = TestSetupBlankSplitter(worldData_, {0, 0}, Orientation::left, splitter);
+
+        EXPECT_EQ(GetConData(worldData_, {0, 1}), &splitter_data.left);
+        EXPECT_EQ(GetConData(worldData_, {0, 0}), &splitter_data.right);
+    }
+
 
     ///
     /// Should gracefully handle no tile above

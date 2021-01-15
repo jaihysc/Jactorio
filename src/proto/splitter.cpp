@@ -2,9 +2,43 @@
 
 #include "proto/splitter.h"
 
+#include "core/coordinate_tuple.h"
+#include "game/logic/conveyor_utility.h"
+#include "game/world/chunk_tile_layer.h"
+#include "game/world/world_data.h"
 #include "proto/sprite.h"
 
 using namespace jactorio;
+
+void proto::Splitter::OnBuild(game::WorldData& world,
+                              game::LogicData& /*logic*/,
+                              const WorldCoord& coord,
+                              game::ChunkTileLayer& tile_layer,
+                              const Orientation orientation) const {
+
+    tile_layer.MakeUniqueData<SplitterData>(orientation);
+
+    auto get_side_props = [&world](const WorldCoord& side_coord) {
+        auto* con_data = GetConData(world, side_coord);
+        assert(con_data != nullptr);
+
+        return std::pair{side_coord, std::ref(*con_data)};
+    };
+
+    BuildConveyor(world, {get_side_props(coord), get_side_props(GetNonTopLeftCoord(world, coord))}, orientation);
+}
+
+void proto::Splitter::OnNeighborUpdate(game::WorldData& world,
+                                       game::LogicData& logic,
+                                       const WorldCoord& emit_coord,
+                                       const WorldCoord& receive_coord,
+                                       Orientation emit_orientation) const {}
+
+void proto::Splitter::OnRemove(game::WorldData& world,
+                               game::LogicData& logic,
+                               const WorldCoord& coord,
+                               game::ChunkTileLayer& tile_layer) const {}
+
 
 void proto::Splitter::PostLoad() {
     // Convert floating point speed to fixed precision decimal speed
@@ -23,4 +57,34 @@ void proto::Splitter::ValidatedPostLoad() {
     spriteE->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
     spriteS->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
     spriteW->DefaultSpriteGroup({Sprite::SpriteGroup::terrain});
+}
+
+// ======================================================================
+
+WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::WorldData& world, const WorldCoord& coord) {
+    // Get top left coord
+
+    const auto* tile = world.GetTile(coord);
+    assert(tile != nullptr);
+    const auto& layer = tile->GetLayer(game::TileLayer::entity);
+
+    auto tl_coord = coord;
+    layer.AdjustToTopLeft(tl_coord);
+
+
+    // Increment to the other side depending on splitter 's orientation
+
+    switch (layer.GetUniqueData<SplitterData>()->orientation) {
+    case Orientation::up:
+    case Orientation::down:
+        return {tl_coord.x + 1, tl_coord.y};
+
+    case Orientation::right:
+    case Orientation::left:
+        return {tl_coord.x, tl_coord.y + 1};
+
+    default:
+        assert(false);
+        return {0, 0};
+    }
 }

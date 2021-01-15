@@ -16,6 +16,7 @@
 #include "proto/mining_drill.h"
 #include "proto/recipe.h"
 #include "proto/resource_entity.h"
+#include "proto/splitter.h"
 #include "proto/sprite.h"
 
 #include "game/logic/logic_data.h"
@@ -239,6 +240,19 @@ namespace jactorio
         auto con_struct = std::make_shared<game::ConveyorStruct>(orien, ttype, len);
 
         return TestSetupConveyor(world, coord, con_proto, con_struct);
+    }
+
+    ///
+    /// Creates splitter data at tile, no conveyor structure
+    inline auto& TestSetupBlankSplitter(game::WorldData& world,
+                                        const WorldCoord& coord,
+                                        const Orientation orien,
+                                        const proto::Splitter& splitter) {
+        auto* tile = world.GetTile(coord);
+        assert(tile != nullptr);
+
+        auto& top_left = TestSetupMultiTile(world, coord, game::TileLayer::entity, orien, splitter);
+        return top_left.MakeUniqueData<proto::SplitterData>(orien);
     }
 
 

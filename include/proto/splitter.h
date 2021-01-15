@@ -10,19 +10,49 @@ namespace jactorio::proto
 {
     struct SplitterData final : HealthEntityData
     {
-        // HealthData of left and right will be unused
+        explicit SplitterData(const Orientation orien) : orientation(orien) {}
 
+
+        // HealthData of left and right will be unused
         ConveyorData left;
         ConveyorData right;
+
+        /// Orientation of this splitter
+        Orientation orientation;
     };
 
     class Splitter : public Conveyor
     {
+    public:
         PROTOTYPE_CATEGORY(splitter);
+
+
+        void OnBuild(game::WorldData& world,
+                     game::LogicData& logic,
+                     const WorldCoord& coord,
+                     game::ChunkTileLayer& tile_layer,
+                     Orientation orientation) const override;
+
+        void OnNeighborUpdate(game::WorldData& world,
+                              game::LogicData& logic,
+                              const WorldCoord& emit_coord,
+                              const WorldCoord& receive_coord,
+                              Orientation emit_orientation) const override;
+
+        void OnRemove(game::WorldData& world,
+                      game::LogicData& logic,
+                      const WorldCoord& coord,
+                      game::ChunkTileLayer& tile_layer) const override;
 
         void PostLoad() override;
         void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
         void ValidatedPostLoad() override;
+
+    private:
+        ///
+        /// Gets the coordinate of the non top left side of the splitter
+        /// \remark Assumes current tile is part of a splitter
+        static WorldCoord GetNonTopLeftCoord(const game::WorldData& world, const WorldCoord& coord);
     };
 } // namespace jactorio::proto
 

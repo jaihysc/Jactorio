@@ -5,6 +5,7 @@
 #include "game/logic/conveyor_struct.h"
 #include "game/world/world_data.h"
 #include "proto/abstract/conveyor.h"
+#include "proto/splitter.h"
 
 using namespace jactorio;
 
@@ -12,12 +13,24 @@ void game::BuildConveyor(WorldData& world,
                          const WorldCoord& coord,
                          proto::ConveyorData& conveyor,
                          const Orientation direction) {
-    ConveyorCreate(world, coord, conveyor, direction);
-    conveyor.lOrien = ConveyorCalcLineOrien(world, coord, direction);
+    BuildConveyor(world, std::vector{std::pair{coord, std::ref(conveyor)}}, direction);
+}
 
-    ConveyorNeighborConnect(world, coord);
-    ConveyorUpdateNeighborTermination(world, coord);
-    ConveyorUpdateNeighborLineOrien(world, coord);
+void game::BuildConveyor(
+    WorldData& world,
+    const std::vector<std::pair<WorldCoord, std::reference_wrapper<proto::ConveyorData>>>& coord_conveyors,
+    const Orientation direction) {
+
+    for (const auto& [coord, ref_conveyor] : coord_conveyors) {
+        ConveyorCreate(world, coord, ref_conveyor, direction);
+        ref_conveyor.get().lOrien = ConveyorCalcLineOrien(world, coord, direction);
+    }
+
+    for (const auto& [coord, ref_conveyor] : coord_conveyors) {
+        ConveyorNeighborConnect(world, coord);
+        ConveyorUpdateNeighborTermination(world, coord);
+        ConveyorUpdateNeighborLineOrien(world, coord);
+    }
 }
 
 void game::RemoveConveyor(WorldData& world, const WorldCoord& coord) {
@@ -45,6 +58,28 @@ const proto::ConveyorData* game::GetConData(const WorldData& world, const WorldC
     switch (proto->GetCategory()) {
     case proto::Category::transport_belt:
         return layer.GetUniqueData<proto::ConveyorData>();
+
+    case proto::Category::splitter:
+    {
+        WorldCoord tl_coord = coord;
+        layer.AdjustToTopLeft(tl_coord);
+
+        const auto* splitter_data = layer.GetUniqueData<proto::SplitterData>();
+        assert(splitter_data != nullptr);
+
+        if (splitter_data->orientation == Orientation::up || splitter_data->orientation == Orientation::right) {
+            if (tl_coord == coord) {
+                return &splitter_data->left;
+            }
+            return &splitter_data->right;
+        }
+
+        // Down or left
+        if (tl_coord == coord) {
+            return &splitter_data->right;
+        }
+        return &splitter_data->left;
+    }
 
     default:
         return nullptr;
@@ -359,7 +394,7 @@ void game::ConveyorLogicRemove(WorldData& world_data, const WorldCoord& world_co
 void game::ConveyorRenumber(WorldData& world, WorldCoord coord, const int start_id) {
     auto* con_data = GetConData(world, coord);
     assert(con_data != nullptr);
-
+    assert(con_data->structure.get() != nullptr);
     for (auto i = start_id; i < con_data->structure->length; ++i) {
         auto* i_line_data = GetConData(world, coord);
         assert(i_line_data != nullptr);
