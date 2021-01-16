@@ -18,14 +18,15 @@ void proto::Splitter::OnBuild(game::WorldData& world,
 
     tile_layer.MakeUniqueData<SplitterData>(orientation);
 
-    auto get_side_props = [&world](const WorldCoord& side_coord) {
+    auto build_conveyor = [&world, orientation](const WorldCoord& side_coord) {
         auto* con_data = GetConData(world, side_coord);
         assert(con_data != nullptr);
 
-        return std::pair{side_coord, std::ref(*con_data)};
+        BuildConveyor(world, side_coord, *con_data, orientation);
     };
 
-    BuildConveyor(world, {get_side_props(coord), get_side_props(GetNonTopLeftCoord(world, coord))}, orientation);
+    build_conveyor(coord);
+    build_conveyor(GetNonTopLeftCoord(world, coord));
 }
 
 void proto::Splitter::OnNeighborUpdate(game::WorldData& world,

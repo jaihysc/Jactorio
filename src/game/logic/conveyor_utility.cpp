@@ -13,24 +13,13 @@ void game::BuildConveyor(WorldData& world,
                          const WorldCoord& coord,
                          proto::ConveyorData& conveyor,
                          const Orientation direction) {
-    BuildConveyor(world, std::vector{std::pair{coord, std::ref(conveyor)}}, direction);
-}
 
-void game::BuildConveyor(
-    WorldData& world,
-    const std::vector<std::pair<WorldCoord, std::reference_wrapper<proto::ConveyorData>>>& coord_conveyors,
-    const Orientation direction) {
+    ConveyorCreate(world, coord, conveyor, direction);
+    conveyor.lOrien = ConveyorCalcLineOrien(world, coord, direction);
 
-    for (const auto& [coord, ref_conveyor] : coord_conveyors) {
-        ConveyorCreate(world, coord, ref_conveyor, direction);
-        ref_conveyor.get().lOrien = ConveyorCalcLineOrien(world, coord, direction);
-    }
-
-    for (const auto& [coord, ref_conveyor] : coord_conveyors) {
-        ConveyorNeighborConnect(world, coord);
-        ConveyorUpdateNeighborTermination(world, coord);
-        ConveyorUpdateNeighborLineOrien(world, coord);
-    }
+    ConveyorNeighborConnect(world, coord);
+    ConveyorUpdateNeighborTermination(world, coord);
+    ConveyorUpdateNeighborLineOrien(world, coord);
 }
 
 void game::RemoveConveyor(WorldData& world, const WorldCoord& coord) {
@@ -136,7 +125,8 @@ static void DoConnect(game::WorldData& world, const WorldCoord& coord) {
     auto* current_struct = GetConData(world, {coord.x, coord.y});
     auto* neigh_struct   = GetConData(world, {coord.x + XOffset, coord.y + YOffset});
 
-    if (current_struct == nullptr || neigh_struct == nullptr)
+    // Multi-tile neighbors may not have structures while processing removes for all its tiles
+    if (current_struct == nullptr || neigh_struct == nullptr || neigh_struct->structure == nullptr)
         return;
 
     CalculateTargets<OriginConnect, InvertOrientation(OriginConnect)>(*current_struct, *neigh_struct);
@@ -574,6 +564,8 @@ void game::ConveyorUpdateNeighborTermination(WorldData& world, const WorldCoord&
     auto change_ttype = [&world](const WorldCoord& neighbor_coord, const ConveyorStruct::TerminationType new_ttype) {
         auto* con_data = GetConData(world, neighbor_coord);
         if (con_data != nullptr) {
+            assert(con_data->structure != nullptr);
+
             // If termination type is no longer straight, its length is now +1 and must renumber all its tiles
             // excluding id 0, since that belongs to its target
 
@@ -593,10 +585,12 @@ void game::ConveyorUpdateNeighborTermination(WorldData& world, const WorldCoord&
                                                     const ConveyorStruct::TerminationType new_ttype) {
         auto* con_data = GetConData(world, neighbor_coord);
 
-        if (con_data != nullptr) {
-            if (con_data->structure->direction != required_direction)
-                return;
-        }
+        // Multi-tile neighbors may not have structures while processing removes for all its tiles
+        if (con_data == nullptr || con_data->structure == nullptr)
+            return;
+
+        if (con_data->structure->direction != required_direction)
+            return;
 
         change_ttype(neighbor_coord, new_ttype);
     };

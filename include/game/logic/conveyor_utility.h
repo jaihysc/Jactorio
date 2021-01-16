@@ -38,20 +38,6 @@ namespace jactorio::game
     void BuildConveyor(WorldData& world, const WorldCoord& coord, proto::ConveyorData& conveyor, Orientation direction);
 
     ///
-    /// Builds conveyors at all coords first, then handles post build steps
-    ///
-    /// GetConData for splitters believes conveyor data exists on the left and right as a result of the multi-tile
-    /// However, they do not have structures yet
-    /// BuildConveyor accesses neighbors to check their structures, and we die
-    /// THUS:
-    /// Create all the conveyors first then do whatever logic is necessary
-    /// \param coord_conveyors List of coords to build conveyors
-    void BuildConveyor(
-        WorldData& world,
-        const std::vector<std::pair<WorldCoord, std::reference_wrapper<proto::ConveyorData>>>& coord_conveyors,
-        Orientation direction);
-
-    ///
     /// Processes all steps for cleanly removing a conveyor
     ///
     /// 1. Destroy conveyor structure
