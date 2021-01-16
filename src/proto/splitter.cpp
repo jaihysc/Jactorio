@@ -29,15 +29,21 @@ void proto::Splitter::OnBuild(game::WorldData& world,
 }
 
 void proto::Splitter::OnNeighborUpdate(game::WorldData& world,
-                                       game::LogicData& logic,
-                                       const WorldCoord& emit_coord,
+                                       game::LogicData& /*logic*/,
+                                       const WorldCoord& /*emit_coord*/,
                                        const WorldCoord& receive_coord,
-                                       Orientation emit_orientation) const {}
+                                       Orientation /*emit_orientation*/) const {
+    ConveyorUpdateNeighborTermination(world, receive_coord);
+}
 
 void proto::Splitter::OnRemove(game::WorldData& world,
-                               game::LogicData& logic,
+                               game::LogicData& /*logic*/,
                                const WorldCoord& coord,
-                               game::ChunkTileLayer& tile_layer) const {}
+                               game::ChunkTileLayer& /*tile_layer*/) const {
+
+    RemoveConveyor(world, coord);
+    RemoveConveyor(world, GetNonTopLeftCoord(world, coord));
+}
 
 
 void proto::Splitter::PostLoad() {

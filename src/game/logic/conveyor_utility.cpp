@@ -175,7 +175,8 @@ void DisconnectSegment(game::WorldData& world, const WorldCoord& origin_coord, c
 
     assert(origin_data != nullptr);
 
-    if (neighbor_data == nullptr)
+    // Multi-tile neighbors may not have structures while processing removes for all its tiles
+    if (neighbor_data == nullptr || neighbor_data->structure == nullptr)
         return;
 
     // Neighbor target current, must adjust termination type of neighbor
@@ -553,7 +554,8 @@ void game::ConveyorUpdateNeighborLineOrien(WorldData& world, const WorldCoord& c
     auto calculate_neighbor = [&world](const WorldCoord& neighbor_coord) {
         auto* con_data = GetConData(world, neighbor_coord);
 
-        if (con_data != nullptr) {
+        // Multi-tile neighbors may not have structures while processing removes for all its tiles
+        if (con_data != nullptr && con_data->structure != nullptr) {
             con_data->SetOrientation(ConveyorCalcLineOrien(world, neighbor_coord, con_data->structure->direction));
         }
     };

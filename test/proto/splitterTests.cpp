@@ -29,7 +29,7 @@ namespace jactorio::proto
     /// v v
     /// C C Orientation down
     /// < >
-    TEST_F(SplitterTest, BuildCreateConnectConveyor) {
+    TEST_F(SplitterTest, BuildConnectConveyor) {
         auto& con_data_tl = TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_);
         auto& con_data_tr = TestSetupConveyor(world_, {1, 0}, Orientation::down, transBelt_);
 
@@ -53,5 +53,39 @@ namespace jactorio::proto
 
         EXPECT_EQ(splitter_data->right.structure->target, con_data_bl.structure.get());
         EXPECT_EQ(splitter_data->left.structure->target, con_data_br.structure.get());
+    }
+
+    ///
+    /// Removing should disconnect from neighboring conveyors
+    ///   Left
+    /// < C <
+    /// v C <
+    TEST_F(SplitterTest, RemoveDisconnectConveyor) {
+        auto& con_data_lt = TestSetupConveyor(world_, {0, 0}, Orientation::left, transBelt_);
+        auto& con_data_lb = TestSetupConveyor(world_, {0, 1}, Orientation::down, transBelt_);
+
+        auto& con_data_rt = TestSetupConveyor(world_, {2, 0}, Orientation::left, transBelt_);
+        auto& con_data_rb = TestSetupConveyor(world_, {2, 1}, Orientation::left, transBelt_);
+
+        Splitter splitter;
+        splitter.SetWidth(2);
+        auto& splitter_data = TestSetupSplitter(world_, {1, 0}, Orientation::left, splitter);
+
+
+        splitter_data.left.structure->target  = con_data_lb.structure.get();
+        splitter_data.right.structure->target = con_data_lt.structure.get();
+
+        con_data_rb.structure->target = splitter_data.left.structure.get();
+        con_data_rt.structure->target = splitter_data.right.structure.get();
+
+
+        splitter.OnRemove(world_, logic_, {1, 0}, world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity));
+
+
+        EXPECT_EQ(splitter_data.left.structure.get(), nullptr);
+        EXPECT_EQ(splitter_data.right.structure.get(), nullptr);
+
+        EXPECT_EQ(con_data_rb.structure->target, nullptr);
+        EXPECT_EQ(con_data_rt.structure->target, nullptr);
     }
 } // namespace jactorio::proto
