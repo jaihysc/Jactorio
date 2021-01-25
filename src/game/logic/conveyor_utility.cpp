@@ -30,7 +30,7 @@ void game::RemoveConveyor(WorldData& world, const WorldCoord& coord, const Logic
 }
 
 
-J_NODISCARD proto::ConveyorData* game::GetConData(WorldData& world, const WorldCoord& coord) {
+proto::ConveyorData* game::GetConData(WorldData& world, const WorldCoord& coord) {
     return const_cast<proto::ConveyorData*>(GetConData(static_cast<const WorldData&>(world), coord));
 }
 
@@ -40,32 +40,36 @@ const proto::ConveyorData* game::GetConData(const WorldData& world, const WorldC
         return nullptr;
 
     const auto& layer = tile->GetLayer(TileLayer::entity);
+    return GetConData(layer);
+}
 
-    const auto* proto = layer.GetPrototype();
+proto::ConveyorData* game::GetConData(ChunkTileLayer& ctl) {
+    return const_cast<proto::ConveyorData*>(GetConData(static_cast<const ChunkTileLayer&>(ctl)));
+}
+
+const proto::ConveyorData* game::GetConData(const ChunkTileLayer& ctl) {
+    const auto* proto = ctl.GetPrototype();
     if (proto == nullptr)
         return nullptr;
 
     switch (proto->GetCategory()) {
     case proto::Category::transport_belt:
-        return layer.GetUniqueData<proto::ConveyorData>();
+        return ctl.GetUniqueData<proto::ConveyorData>();
 
     case proto::Category::splitter:
     {
-        WorldCoord tl_coord = coord;
-        layer.AdjustToTopLeft(tl_coord);
-
-        const auto* splitter_data = layer.GetUniqueData<proto::SplitterData>();
+        const auto* splitter_data = ctl.GetUniqueData<proto::SplitterData>();
         assert(splitter_data != nullptr);
 
         if (splitter_data->orientation == Orientation::up || splitter_data->orientation == Orientation::right) {
-            if (tl_coord == coord) {
+            if (ctl.IsTopLeft()) {
                 return &splitter_data->left;
             }
             return &splitter_data->right;
         }
 
         // Down or left
-        if (tl_coord == coord) {
+        if (ctl.IsTopLeft()) {
             return &splitter_data->right;
         }
         return &splitter_data->left;
@@ -377,12 +381,14 @@ void game::ConveyorShortenFront(ConveyorStruct& con_struct) {
     con_struct.headOffset--;
 }
 
-void game::ConveyorLogicRemove(WorldData& world_data,
-                               const WorldCoord& world_coords,
+void game::ConveyorLogicRemove(WorldData& world,
+                               const WorldCoord& coord,
                                ConveyorStruct& con_struct,
                                const LogicGroup logic_group) {
-    world_data.LogicRemove(logic_group, world_coords, [&](auto* t_layer) {
-        auto* line_data = t_layer->template GetUniqueData<proto::ConveyorData>();
+    world.LogicRemove(logic_group, coord, [&con_struct](auto* t_layer) {
+        assert(t_layer != nullptr);
+
+        auto* line_data = GetConData(*t_layer);
         return line_data->structure.get() == &con_struct;
     });
 }

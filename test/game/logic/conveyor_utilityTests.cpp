@@ -564,6 +564,19 @@ namespace jactorio::game
         EXPECT_EQ(d_con_data_4.structure->target, new_con_struct.get());
     }
 
+    ///
+    /// Ensures the function ConveyorLogicRemove also functions for splitters
+    TEST_F(ConveyorUtilityTest, LogicRemoveSplitter) {
+        const proto::Splitter splitter;
+
+        auto& splitter_data = TestSetupSplitter(worldData_, {0, 0}, Orientation::up, splitter);
+        worldData_.LogicRegister(kLogicGroup_, {0, 0}, TileLayer::entity);
+
+        ConveyorLogicRemove(worldData_, {0, 0}, *splitter_data.left.structure, kLogicGroup_);
+
+        EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+    }
+
     //
     //
     //

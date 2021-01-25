@@ -25,6 +25,7 @@ namespace jactorio
 namespace jactorio::game
 {
     class WorldData;
+    class ChunkTileLayer;
     class ConveyorStruct;
 
     ///
@@ -58,6 +59,11 @@ namespace jactorio::game
     /// Fetches conveyor data at coord, nullptr if non existent
     J_NODISCARD proto::ConveyorData* GetConData(WorldData& world, const WorldCoord& coord);
     J_NODISCARD const proto::ConveyorData* GetConData(const WorldData& world, const WorldCoord& coord);
+
+    ///
+    /// Fetches conveyor data at tile layer, nullptr if non existent
+    J_NODISCARD proto::ConveyorData* GetConData(ChunkTileLayer& ctl);
+    J_NODISCARD const proto::ConveyorData* GetConData(const ChunkTileLayer& ctl);
 
     ///
     /// Calls ConveyorConnect up, right, down, left
@@ -141,10 +147,10 @@ namespace jactorio::game
     void ConveyorShortenFront(ConveyorStruct& con_struct);
 
     ///
-    /// Removes conveyor to be considered for logic updates
+    /// Removes conveyor at coord to be considered for logic updates
     /// \param logic_group Logic group of conveyor
-    void ConveyorLogicRemove(WorldData& world_data,
-                             const WorldCoord& world_coords,
+    void ConveyorLogicRemove(WorldData& world,
+                             const WorldCoord& coord,
                              ConveyorStruct& con_struct,
                              LogicGroup logic_group);
 
