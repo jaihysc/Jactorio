@@ -168,7 +168,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
 /// Moves items for conveyors
 /// \param l_chunk Chunk to update
 void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
-    const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::conveyor);
+    const auto& layers = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
 
     // Each object layer holds a conveyor segment
     for (const auto& tile_layer : layers) {
@@ -203,7 +203,7 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 /// Transitions items on conveyors to other lines and modifies whether of not the line is active
 /// \param l_chunk Chunk to update
 void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
-    const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::conveyor);
+    const auto& layers = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
 
     // Each object layer holds a conveyor segment
     for (const auto& tile_layer : layers) {

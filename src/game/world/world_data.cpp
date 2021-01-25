@@ -220,10 +220,10 @@ const game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& w
 // ======================================================================
 // Logic chunks
 
-void game::WorldData::LogicRegister(const Chunk::LogicGroup group,
+void game::WorldData::LogicRegister(const LogicGroup group,
                                     const WorldCoord& world_pair,
                                     const TileLayer layer) {
-    assert(group != Chunk::LogicGroup::count_);
+    assert(group != LogicGroup::count_);
     assert(layer != TileLayer::count_);
 
     auto* chunk = GetChunkW(world_pair);
@@ -240,7 +240,7 @@ void game::WorldData::LogicRegister(const Chunk::LogicGroup group,
     chunk->GetLogicGroup(group).push_back(tile_layer);
 }
 
-void game::WorldData::LogicRemove(const Chunk::LogicGroup group,
+void game::WorldData::LogicRemove(const LogicGroup group,
                                   const WorldCoord& world_pair,
                                   const std::function<bool(ChunkTileLayer*)>& pred) {
     auto* chunk = GetChunkW(world_pair);
@@ -259,7 +259,7 @@ void game::WorldData::LogicRemove(const Chunk::LogicGroup group,
     logicChunks_.erase(std::remove(logicChunks_.begin(), logicChunks_.end(), chunk), logicChunks_.end());
 }
 
-void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldCoord& world_pair, const TileLayer layer) {
+void game::WorldData::LogicRemove(const LogicGroup group, const WorldCoord& world_pair, const TileLayer layer) {
     auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
 
     LogicRemove(group, world_pair, [&](ChunkTileLayer* t_layer) { return t_layer == tile_layer; });

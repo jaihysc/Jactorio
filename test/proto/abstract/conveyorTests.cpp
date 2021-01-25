@@ -81,7 +81,7 @@ namespace jactorio::proto
         /// \param r_index index for right only segment in logic group
         void ValidateBendToSideOnly(const size_t l_index = 2, const size_t r_index = 1) {
             game::Chunk& chunk = *worldData_.GetChunkC(0, 0);
-            auto& logic_group  = chunk.GetLogicGroup(game::Chunk::LogicGroup::conveyor);
+            auto& logic_group  = chunk.GetLogicGroup(game::LogicGroup::conveyor);
 
             ASSERT_EQ(logic_group.size(), 3);
 
@@ -100,8 +100,7 @@ namespace jactorio::proto
         // Grouping
 
         std::vector<game::ChunkTileLayer*>& GetConveyors(const ChunkCoord& chunk_coords) {
-            return worldData_.GetChunkC(chunk_coords.x, chunk_coords.y)
-                ->GetLogicGroup(game::Chunk::LogicGroup::conveyor);
+            return worldData_.GetChunkC(chunk_coords.x, chunk_coords.y)->GetLogicGroup(game::LogicGroup::conveyor);
         }
 
         J_NODISCARD auto& GetConveyorData(const WorldCoord& world_coords) {
@@ -167,7 +166,7 @@ namespace jactorio::proto
         TlRemoveEvents({0, 0});
 
         // Conveyor structure count should be 0 as it was removed
-        EXPECT_TRUE(worldData_.GetChunkC({0, 0})->GetLogicGroup(game::Chunk::LogicGroup::conveyor).empty());
+        EXPECT_TRUE(worldData_.GetChunkC({0, 0})->GetLogicGroup(game::LogicGroup::conveyor).empty());
     }
 
     TEST_F(ConveyorTest, OnDeserializeRelinkTarget) {

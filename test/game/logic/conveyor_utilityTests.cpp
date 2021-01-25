@@ -345,7 +345,7 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, ConveyorCreateGroupBehind) {
         auto compare_func =
             [](const WorldData& world, const proto::ConveyorData& current, const proto::ConveyorData& other) {
-                EXPECT_EQ(world.LogicGetChunks().at(0)->GetLogicGroup(Chunk::LogicGroup::conveyor).size(), 1);
+                EXPECT_EQ(world.LogicGetChunks().at(0)->GetLogicGroup(LogicGroup::conveyor).size(), 1);
 
                 EXPECT_EQ(current.structure->length, 2);
 
@@ -384,7 +384,7 @@ namespace jactorio::game
         {
             TestSetupConveyor(worldData_, {0, 0}, Orientation::right, transBelt_);
 
-            worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {0, 0}, TileLayer::entity);
+            worldData_.LogicRegister(LogicGroup::conveyor, {0, 0}, TileLayer::entity);
         }
 
         ConveyorDestroy(worldData_, {0, 0});
@@ -393,7 +393,7 @@ namespace jactorio::game
         ASSERT_NE(con_data, nullptr);
         EXPECT_EQ(con_data->structure, nullptr);
 
-        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(Chunk::LogicGroup::conveyor).size(), 0);
+        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(LogicGroup::conveyor).size(), 0);
     }
 
     ///
@@ -414,8 +414,8 @@ namespace jactorio::game
             TestSetupConveyor(worldData_, {2, 0}, Orientation::down, transBelt_);
 
 
-            worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {1, 0}, TileLayer::entity);
-            worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {2, 0}, TileLayer::entity);
+            worldData_.LogicRegister(LogicGroup::conveyor, {1, 0}, TileLayer::entity);
+            worldData_.LogicRegister(LogicGroup::conveyor, {2, 0}, TileLayer::entity);
         }
 
         ConveyorDestroy(worldData_, {1, 0});
@@ -428,7 +428,7 @@ namespace jactorio::game
         // Unaffected since this tile will be removed
         EXPECT_EQ(behind_con_data->structure->terminationType, ConveyorStruct::TerminationType::bend_right);
 
-        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(Chunk::LogicGroup::conveyor).size(), 1);
+        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(LogicGroup::conveyor).size(), 1);
     }
 
     ///
@@ -471,7 +471,7 @@ namespace jactorio::game
 
 
         // The newly created segment was registered for logic updates
-        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(Chunk::LogicGroup::conveyor).size(), 1);
+        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(LogicGroup::conveyor).size(), 1);
     }
 
     //

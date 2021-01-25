@@ -159,7 +159,7 @@ namespace jactorio
 
         layer.MakeUniqueData<proto::ConveyorData>(con_struct_p);
 
-        chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor).emplace_back(&tile->GetLayer(game::TileLayer::entity));
+        chunk->GetLogicGroup(game::LogicGroup::conveyor).emplace_back(&tile->GetLayer(game::TileLayer::entity));
     }
 
     ///

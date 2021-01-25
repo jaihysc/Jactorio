@@ -359,7 +359,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
 
     if (ImGui::Button("Make all belt items visible")) {
         for (auto* chunk : world.LogicGetChunks()) {
-            for (auto* conveyor : chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor)) {
+            for (auto* conveyor : chunk->GetLogicGroup(game::LogicGroup::conveyor)) {
                 auto& segment         = *conveyor->GetUniqueData<proto::ConveyorData>()->structure;
                 segment.left.visible  = true;
                 segment.right.visible = true;

@@ -196,18 +196,18 @@ namespace jactorio::game
 
         ///
         /// Adds a layer at coordinates to be considered for logic updates
-        void LogicRegister(Chunk::LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
+        void LogicRegister(LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
 
         ///
         /// Removes a layer at coordinates to be considered for logic updates
         /// w/ custom comparison func to remove
-        void LogicRemove(Chunk::LogicGroup group,
+        void LogicRemove(LogicGroup group,
                          const WorldCoord& world_pair,
                          const std::function<bool(ChunkTileLayer*)>& pred);
 
         ///
         /// Removes a layer at coordinates to be considered for logic updates
-        void LogicRemove(Chunk::LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
+        void LogicRemove(LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
 
 
         ///

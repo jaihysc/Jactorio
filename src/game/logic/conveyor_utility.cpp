@@ -300,7 +300,7 @@ void game::ConveyorCreate(WorldData& world,
 
             // Remove old head from logic group, add new head which is now 1 tile ahead
             ConveyorLogicRemove(world, coord, con_behind_struct);
-            world.LogicRegister(Chunk::LogicGroup::conveyor, coord, TileLayer::entity);
+            world.LogicRegister(LogicGroup::conveyor, coord, TileLayer::entity);
 
             ConveyorRenumber(world, coord);
             return;
@@ -309,7 +309,7 @@ void game::ConveyorCreate(WorldData& world,
 
     // Create new conveyor
     conveyor.structure = std::make_shared<ConveyorStruct>(direction, ConveyorStruct::TerminationType::straight, 1);
-    world.LogicRegister(Chunk::LogicGroup::conveyor, coord, TileLayer::entity);
+    world.LogicRegister(LogicGroup::conveyor, coord, TileLayer::entity);
 }
 
 void game::ConveyorDestroy(WorldData& world, const WorldCoord& coord) {
@@ -337,7 +337,7 @@ void game::ConveyorDestroy(WorldData& world, const WorldCoord& coord) {
         // -1 to skip tile which was removed
         n_segment->headOffset = o_line_segment->headOffset - o_line_data->structIndex - 1;
 
-        world.LogicRegister(Chunk::LogicGroup::conveyor, n_seg_coords, TileLayer::entity);
+        world.LogicRegister(LogicGroup::conveyor, n_seg_coords, TileLayer::entity);
 
         // Update trailing segments to use new segment and renumber
         ConveyorChangeStructure(world, n_seg_coords, n_segment);
@@ -376,7 +376,7 @@ void game::ConveyorShortenFront(ConveyorStruct& con_struct) {
 }
 
 void game::ConveyorLogicRemove(WorldData& world_data, const WorldCoord& world_coords, ConveyorStruct& con_struct) {
-    world_data.LogicRemove(Chunk::LogicGroup::conveyor, world_coords, [&](auto* t_layer) {
+    world_data.LogicRemove(LogicGroup::conveyor, world_coords, [&](auto* t_layer) {
         auto* line_data = t_layer->template GetUniqueData<proto::ConveyorData>();
         return line_data->structure.get() == &con_struct;
     });

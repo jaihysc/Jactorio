@@ -11,6 +11,7 @@
 
 #include "data/cereal/serialize.h"
 #include "game/world/chunk_tile.h"
+#include "game/world/logic_group.h"
 #include "game/world/overlay_element.h"
 
 #include <cereal/types/array.hpp>
@@ -33,15 +34,6 @@ namespace jactorio::game
 
         static constexpr uint8_t kChunkWidth = 32;
         static constexpr uint16_t kChunkArea = static_cast<uint16_t>(kChunkWidth) * kChunkWidth;
-
-        enum class LogicGroup
-        {
-            conveyor = 0,
-            inserter,
-            count_
-        };
-
-        static constexpr auto kLogicGroupCount = static_cast<int>(LogicGroup::count_);
 
     private:
         using TileArrayT       = std::array<ChunkTile, kChunkArea>;

@@ -72,7 +72,7 @@ void proto::Inserter::OnTileUpdate(game::WorldData& world_data,
             inserter_data.dropoff.Uninitialize();
         }
 
-        world_data.LogicRemove(game::Chunk::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
+        world_data.LogicRemove(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
         return;
     }
 
@@ -87,7 +87,7 @@ void proto::Inserter::OnTileUpdate(game::WorldData& world_data,
 
     // Add to logic updates if initialized, remove if not
     if (inserter_data.pickup.IsInitialized() && inserter_data.dropoff.IsInitialized()) {
-        world_data.LogicRegister(game::Chunk::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
+        world_data.LogicRegister(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
     }
 }
 
@@ -95,7 +95,7 @@ void proto::Inserter::OnRemove(game::WorldData& world_data,
                                game::LogicData& /*logic_data*/,
                                const WorldCoord& world_coords,
                                game::ChunkTileLayer& tile_layer) const {
-    world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords, game::TileLayer::entity);
+    world_data.LogicRemove(game::LogicGroup::inserter, world_coords, game::TileLayer::entity);
 
     const auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
 
