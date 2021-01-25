@@ -17,6 +17,10 @@ namespace jactorio::game
     class ConveyorUtilityTest : public testing::Test
     {
     protected:
+        ///
+        /// Logic group chosen for the tests
+        static constexpr LogicGroup kLogicGroup_ = LogicGroup::splitter;
+
         WorldData worldData_;
         proto::TransportBelt transBelt_;
 
@@ -48,10 +52,10 @@ namespace jactorio::game
             world.EmplaceChunk(1, 0);
 
             auto& other_con_data = TestSetupConveyor(world, other_coord, other_direction, transBelt_);
-            ConveyorCreate(world, other_coord, other_con_data, other_direction);
+            ConveyorCreate(world, other_coord, other_con_data, other_direction, kLogicGroup_);
 
             auto& con_data = TestSetupConveyor(world, current_coord, direction, transBelt_);
-            ConveyorCreate(world, current_coord, con_data, direction);
+            ConveyorCreate(world, current_coord, con_data, direction, kLogicGroup_);
 
             compare(world, con_data, other_con_data);
 
@@ -345,7 +349,7 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, ConveyorCreateGroupBehind) {
         auto compare_func =
             [](const WorldData& world, const proto::ConveyorData& current, const proto::ConveyorData& other) {
-                EXPECT_EQ(world.LogicGetChunks().at(0)->GetLogicGroup(LogicGroup::conveyor).size(), 1);
+                EXPECT_EQ(world.LogicGetChunks().at(0)->GetLogicGroup(kLogicGroup_).size(), 1);
 
                 EXPECT_EQ(current.structure->length, 2);
 
@@ -384,16 +388,16 @@ namespace jactorio::game
         {
             TestSetupConveyor(worldData_, {0, 0}, Orientation::right, transBelt_);
 
-            worldData_.LogicRegister(LogicGroup::conveyor, {0, 0}, TileLayer::entity);
+            worldData_.LogicRegister(kLogicGroup_, {0, 0}, TileLayer::entity);
         }
 
-        ConveyorDestroy(worldData_, {0, 0});
+        ConveyorDestroy(worldData_, {0, 0}, kLogicGroup_);
 
         auto* con_data = worldData_.GetTile({0, 0})->GetLayer(TileLayer::entity).GetUniqueData<proto::ConveyorData>();
         ASSERT_NE(con_data, nullptr);
         EXPECT_EQ(con_data->structure, nullptr);
 
-        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(LogicGroup::conveyor).size(), 0);
+        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 0);
     }
 
     ///
@@ -414,11 +418,11 @@ namespace jactorio::game
             TestSetupConveyor(worldData_, {2, 0}, Orientation::down, transBelt_);
 
 
-            worldData_.LogicRegister(LogicGroup::conveyor, {1, 0}, TileLayer::entity);
-            worldData_.LogicRegister(LogicGroup::conveyor, {2, 0}, TileLayer::entity);
+            worldData_.LogicRegister(kLogicGroup_, {1, 0}, TileLayer::entity);
+            worldData_.LogicRegister(kLogicGroup_, {2, 0}, TileLayer::entity);
         }
 
-        ConveyorDestroy(worldData_, {1, 0});
+        ConveyorDestroy(worldData_, {1, 0}, kLogicGroup_);
 
 
         auto* behind_con_data = GetConData(worldData_, {0, 0});
@@ -428,7 +432,7 @@ namespace jactorio::game
         // Unaffected since this tile will be removed
         EXPECT_EQ(behind_con_data->structure->terminationType, ConveyorStruct::TerminationType::bend_right);
 
-        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(LogicGroup::conveyor).size(), 1);
+        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 1);
     }
 
     ///
@@ -453,7 +457,7 @@ namespace jactorio::game
             con_data_4.structIndex = 100; // Should be changed
         }
 
-        ConveyorDestroy(worldData_, {1, 0});
+        ConveyorDestroy(worldData_, {1, 0}, kLogicGroup_);
 
         auto* ahead_con_data = GetConData(worldData_, {3, 0});
         ASSERT_NE(ahead_con_data, nullptr);
@@ -471,7 +475,7 @@ namespace jactorio::game
 
 
         // The newly created segment was registered for logic updates
-        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(LogicGroup::conveyor).size(), 1);
+        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 1);
     }
 
     //
@@ -608,7 +612,7 @@ namespace jactorio::game
             layer.SetPrototype(direction, &lineProto_);
 
             auto& con_data = layer.MakeUniqueData<proto::ConveyorData>();
-            ConveyorCreate(worldData_, world_coords, con_data, direction);
+            ConveyorCreate(worldData_, world_coords, con_data, direction, LogicGroup::conveyor);
 
             return con_data;
         }

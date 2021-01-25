@@ -10,6 +10,7 @@ namespace jactorio::game
     {
         conveyor = 0,
         inserter,
+        splitter,
         count_
     };
 

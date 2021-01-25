@@ -13,6 +13,8 @@
 
 using namespace jactorio;
 
+static constexpr game::LogicGroup kConveyorLogicGroup = game::LogicGroup::conveyor;
+
 Orientation proto::ConveyorData::ToOrientation(const LineOrientation line_orientation) {
     switch (line_orientation) {
     case LineOrientation::up:
@@ -84,7 +86,7 @@ void proto::Conveyor::OnBuild(game::WorldData& world,
                               const Orientation orientation) const {
 
     auto& con_data = tile_layer.MakeUniqueData<ConveyorData>();
-    BuildConveyor(world, coord, con_data, orientation);
+    BuildConveyor(world, coord, con_data, orientation, kConveyorLogicGroup);
 
     con_data.set = static_cast<uint16_t>(con_data.lOrien);
 }
@@ -111,7 +113,7 @@ void proto::Conveyor::OnRemove(game::WorldData& world,
                                game::LogicData& /*logic*/,
                                const WorldCoord& coord,
                                game::ChunkTileLayer& /*tile_layer*/) const {
-    RemoveConveyor(world, coord);
+    RemoveConveyor(world, coord, kConveyorLogicGroup);
 }
 
 void proto::Conveyor::OnDeserialize(game::WorldData& world_data,

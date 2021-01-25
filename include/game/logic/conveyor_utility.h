@@ -11,6 +11,7 @@
 
 #include "core/data_type.h"
 #include "core/orientation.h"
+#include "game/world/logic_group.h"
 #include "proto/detail/type.h"
 
 namespace jactorio
@@ -35,7 +36,12 @@ namespace jactorio::game
     /// 4. Update neighbor termination type
     /// 5. Update neighbor line orientation
     /// \remark Additional neighbors must be updated via ConveyorUpdateNeighborTermination in OnNeighborUpdate
-    void BuildConveyor(WorldData& world, const WorldCoord& coord, proto::ConveyorData& conveyor, Orientation direction);
+    /// \param logic_group Logic group of conveyor
+    void BuildConveyor(WorldData& world,
+                       const WorldCoord& coord,
+                       proto::ConveyorData& conveyor,
+                       Orientation direction,
+                       LogicGroup logic_group);
 
     ///
     /// Processes all steps for cleanly removing a conveyor
@@ -44,7 +50,8 @@ namespace jactorio::game
     /// 2. Disconnect neighbors
     /// 3. Update neighbor line orientation
     /// \remark Additional neighbors must be updated via ConveyorUpdateNeighborTermination in OnNeighborUpdate
-    void RemoveConveyor(WorldData& world, const WorldCoord& coord);
+    /// \param logic_group Logic group of conveyor
+    void RemoveConveyor(WorldData& world, const WorldCoord& coord, LogicGroup logic_group);
 
 
     ///
@@ -110,16 +117,19 @@ namespace jactorio::game
     /// The conveyor structure can either be grouped with the conveyor structure ahead, behind,
     /// or a new conveyor structure created
     /// \param direction Direction of conveyor
+    /// \param logic_group Logic group of conveyor
     void ConveyorCreate(WorldData& world,
                         const WorldCoord& coord,
                         proto::ConveyorData& conveyor,
-                        Orientation direction);
+                        Orientation direction,
+                        LogicGroup logic_group);
 
     ///
     /// Destroys conveyor structure at provided coordinates
     ///
     /// Will ungroup the segment as necessary
-    void ConveyorDestroy(WorldData& world, const WorldCoord& coord);
+    /// \param logic_group Logic group of conveyor
+    void ConveyorDestroy(WorldData& world, const WorldCoord& coord, LogicGroup logic_group);
 
 
     ///
@@ -132,7 +142,11 @@ namespace jactorio::game
 
     ///
     /// Removes conveyor to be considered for logic updates
-    void ConveyorLogicRemove(WorldData& world_data, const WorldCoord& world_coords, ConveyorStruct& con_struct);
+    /// \param logic_group Logic group of conveyor
+    void ConveyorLogicRemove(WorldData& world_data,
+                             const WorldCoord& world_coords,
+                             ConveyorStruct& con_struct,
+                             LogicGroup logic_group);
 
     ///
     /// Renumbers structIndex for tiles along a conveyor segment at provided coords

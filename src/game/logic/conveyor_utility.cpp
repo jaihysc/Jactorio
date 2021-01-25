@@ -12,9 +12,10 @@ using namespace jactorio;
 void game::BuildConveyor(WorldData& world,
                          const WorldCoord& coord,
                          proto::ConveyorData& conveyor,
-                         const Orientation direction) {
+                         const Orientation direction,
+                         const LogicGroup logic_group) {
 
-    ConveyorCreate(world, coord, conveyor, direction);
+    ConveyorCreate(world, coord, conveyor, direction, logic_group);
     conveyor.lOrien = ConveyorCalcLineOrien(world, coord, direction);
 
     ConveyorNeighborConnect(world, coord);
@@ -22,9 +23,9 @@ void game::BuildConveyor(WorldData& world,
     ConveyorUpdateNeighborLineOrien(world, coord);
 }
 
-void game::RemoveConveyor(WorldData& world, const WorldCoord& coord) {
+void game::RemoveConveyor(WorldData& world, const WorldCoord& coord, const LogicGroup logic_group) {
     ConveyorNeighborDisconnect(world, coord);
-    ConveyorDestroy(world, coord);
+    ConveyorDestroy(world, coord, logic_group);
     ConveyorUpdateNeighborLineOrien(world, coord);
 }
 
@@ -225,7 +226,8 @@ void game::ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord) {
 void game::ConveyorCreate(WorldData& world,
                           const WorldCoord& coord,
                           proto::ConveyorData& conveyor,
-                          const Orientation direction) {
+                          const Orientation direction,
+                          const LogicGroup logic_group) {
 
     /*
      * Conveyor grouping rules:
@@ -299,8 +301,8 @@ void game::ConveyorCreate(WorldData& world,
             ConveyorLengthenFront(con_behind_struct);
 
             // Remove old head from logic group, add new head which is now 1 tile ahead
-            ConveyorLogicRemove(world, coord, con_behind_struct);
-            world.LogicRegister(LogicGroup::conveyor, coord, TileLayer::entity);
+            ConveyorLogicRemove(world, coord, con_behind_struct, logic_group);
+            world.LogicRegister(logic_group, coord, TileLayer::entity);
 
             ConveyorRenumber(world, coord);
             return;
@@ -309,10 +311,10 @@ void game::ConveyorCreate(WorldData& world,
 
     // Create new conveyor
     conveyor.structure = std::make_shared<ConveyorStruct>(direction, ConveyorStruct::TerminationType::straight, 1);
-    world.LogicRegister(LogicGroup::conveyor, coord, TileLayer::entity);
+    world.LogicRegister(logic_group, coord, TileLayer::entity);
 }
 
-void game::ConveyorDestroy(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorDestroy(WorldData& world, const WorldCoord& coord, const LogicGroup logic_group) {
     // o_ = old
     // n_ = new
 
@@ -337,7 +339,7 @@ void game::ConveyorDestroy(WorldData& world, const WorldCoord& coord) {
         // -1 to skip tile which was removed
         n_segment->headOffset = o_line_segment->headOffset - o_line_data->structIndex - 1;
 
-        world.LogicRegister(LogicGroup::conveyor, n_seg_coords, TileLayer::entity);
+        world.LogicRegister(logic_group, n_seg_coords, TileLayer::entity);
 
         // Update trailing segments to use new segment and renumber
         ConveyorChangeStructure(world, n_seg_coords, n_segment);
@@ -354,7 +356,7 @@ void game::ConveyorDestroy(WorldData& world, const WorldCoord& coord) {
         (o_line_data->structIndex == 1 &&
          o_line_segment->terminationType != ConveyorStruct::TerminationType::straight)) {
 
-        ConveyorLogicRemove(world, coord, *o_line_segment);
+        ConveyorLogicRemove(world, coord, *o_line_segment, logic_group);
     }
     else {
         o_line_segment->length = o_line_data->structIndex;
@@ -375,8 +377,11 @@ void game::ConveyorShortenFront(ConveyorStruct& con_struct) {
     con_struct.headOffset--;
 }
 
-void game::ConveyorLogicRemove(WorldData& world_data, const WorldCoord& world_coords, ConveyorStruct& con_struct) {
-    world_data.LogicRemove(LogicGroup::conveyor, world_coords, [&](auto* t_layer) {
+void game::ConveyorLogicRemove(WorldData& world_data,
+                               const WorldCoord& world_coords,
+                               ConveyorStruct& con_struct,
+                               const LogicGroup logic_group) {
+    world_data.LogicRemove(logic_group, world_coords, [&](auto* t_layer) {
         auto* line_data = t_layer->template GetUniqueData<proto::ConveyorData>();
         return line_data->structure.get() == &con_struct;
     });

@@ -10,6 +10,8 @@
 
 using namespace jactorio;
 
+static constexpr game::LogicGroup kSplitterLogicGroup = game::LogicGroup::splitter;
+
 void proto::Splitter::OnBuild(game::WorldData& world,
                               game::LogicData& /*logic*/,
                               const WorldCoord& coord,
@@ -22,7 +24,7 @@ void proto::Splitter::OnBuild(game::WorldData& world,
         auto* con_data = GetConData(world, side_coord);
         assert(con_data != nullptr);
 
-        BuildConveyor(world, side_coord, *con_data, orientation);
+        BuildConveyor(world, side_coord, *con_data, orientation, kSplitterLogicGroup);
     };
 
     build_conveyor(coord);
@@ -42,8 +44,8 @@ void proto::Splitter::OnRemove(game::WorldData& world,
                                const WorldCoord& coord,
                                game::ChunkTileLayer& /*tile_layer*/) const {
 
-    RemoveConveyor(world, coord);
-    RemoveConveyor(world, GetNonTopLeftCoord(world, coord));
+    RemoveConveyor(world, coord, kSplitterLogicGroup);
+    RemoveConveyor(world, GetNonTopLeftCoord(world, coord), kSplitterLogicGroup);
 }
 
 
