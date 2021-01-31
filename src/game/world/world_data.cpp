@@ -220,10 +220,10 @@ const game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& w
 // ======================================================================
 // Logic chunks
 
-void game::WorldData::LogicRegister(const Chunk::LogicGroup group,
+void game::WorldData::LogicRegister(const LogicGroup group,
                                     const WorldCoord& world_pair,
                                     const TileLayer layer) {
-    assert(group != Chunk::LogicGroup::count_);
+    assert(group != LogicGroup::count_);
     assert(layer != TileLayer::count_);
 
     auto* chunk = GetChunkW(world_pair);
@@ -240,7 +240,7 @@ void game::WorldData::LogicRegister(const Chunk::LogicGroup group,
     chunk->GetLogicGroup(group).push_back(tile_layer);
 }
 
-void game::WorldData::LogicRemove(const Chunk::LogicGroup group,
+void game::WorldData::LogicRemove(const LogicGroup group,
                                   const WorldCoord& world_pair,
                                   const std::function<bool(ChunkTileLayer*)>& pred) {
     auto* chunk = GetChunkW(world_pair);
@@ -259,7 +259,7 @@ void game::WorldData::LogicRemove(const Chunk::LogicGroup group,
     logicChunks_.erase(std::remove(logicChunks_.begin(), logicChunks_.end(), chunk), logicChunks_.end());
 }
 
-void game::WorldData::LogicRemove(const Chunk::LogicGroup group, const WorldCoord& world_pair, const TileLayer layer) {
+void game::WorldData::LogicRemove(const LogicGroup group, const WorldCoord& world_pair, const TileLayer layer) {
     auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
 
     LogicRemove(group, world_pair, [&](ChunkTileLayer* t_layer) { return t_layer == tile_layer; });
@@ -273,6 +273,10 @@ void game::WorldData::LogicAddChunk(Chunk& chunk) {
 }
 
 game::WorldData::LogicChunkContainerT& game::WorldData::LogicGetChunks() {
+    return const_cast<LogicChunkContainerT&>(static_cast<const WorldData*>(this)->LogicGetChunks());
+}
+
+const game::WorldData::LogicChunkContainerT& game::WorldData::LogicGetChunks() const {
     return logicChunks_;
 }
 
@@ -363,7 +367,7 @@ void Generate(game::WorldData& world_data,
             assert(tile != nullptr); // Base tile should never generate nullptr
 
             auto* new_tile = static_cast<proto::Tile*>(tile);
-            target.SetTilePrototype(new_tile);
+            target.SetTilePrototype(Orientation::up, new_tile);
         });
 
     // Resources
@@ -382,7 +386,7 @@ void Generate(game::WorldData& world_data,
                 return;
 
             // Already has a resource
-            if (target.GetLayer(game::TileLayer::resource).prototypeData != nullptr)
+            if (target.GetLayer(game::TileLayer::resource).GetPrototype() != nullptr)
                 return;
 
 
@@ -399,8 +403,8 @@ void Generate(game::WorldData& world_data,
             // Place new tile
             auto* new_tile = static_cast<proto::ResourceEntity*>(tile);
 
-            auto& layer         = target.GetLayer(game::TileLayer::resource);
-            layer.prototypeData = new_tile;
+            auto& layer = target.GetLayer(game::TileLayer::resource);
+            layer.SetPrototype(Orientation::up, new_tile);
 
             assert(resource_amount > 0);
             layer.MakeUniqueData<proto::ResourceEntityData>(resource_amount);
@@ -465,14 +469,14 @@ void game::WorldData::DeserializePostProcess() {
             auto* tl_tile = GetTile(coord); // Now adjusted to top left
             assert(tl_tile != nullptr);
 
-            layer.SetTopLeftLayer(tl_tile->GetLayer(layer_i));
+            layer.SetupMultiTile(layer.GetMultiTileIndex(), tl_tile->GetLayer(layer_i));
         }
     });
 
     // OnDeserialize
     iterate_world_chunks([this](const auto& coord, auto& layer, auto /*layer_i*/) {
-        if (layer.prototypeData != nullptr) {
-            layer.prototypeData->OnDeserialize(*this, coord, layer);
+        if (layer.GetPrototype() != nullptr) {
+            layer.GetPrototype()->OnDeserialize(*this, coord, layer);
         }
     });
 }

@@ -29,8 +29,13 @@ void proto::Entity::SetLocalizedDescription(const std::string& localized_descrip
 
 // ======================================================================
 
+void proto::Entity::PostLoad() {
+    if (!rotatable)
+        rotateDimensions = false;
+}
+
 void proto::Entity::PostLoadValidate(const data::PrototypeManager& /*data_manager*/) const {
 
-    J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
-    J_DATA_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive");
+    J_PROTO_ASSERT(sprite != nullptr, "Sprite was not specified");
+    J_PROTO_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive");
 }

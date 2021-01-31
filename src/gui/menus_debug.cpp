@@ -15,6 +15,7 @@
 #include "proto/transport_belt.h"
 
 #include "game/input/mouse_selection.h"
+#include "game/logic/conveyor_utility.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
@@ -30,6 +31,7 @@ bool show_demo_window         = false;
 bool show_item_spawner_window = false;
 
 // Game
+bool show_tile_info     = false;
 bool show_conveyor_info = false;
 bool show_inserter_info = false;
 
@@ -39,6 +41,9 @@ void gui::DebugMenuLogic(GameWorlds& worlds,
                          game::LogicData& logic,
                          game::PlayerData& player,
                          const data::PrototypeManager& data_manager) {
+    if (show_tile_info)
+        DebugTileInfo(worlds, player);
+
     if (show_conveyor_info)
         DebugConveyorInfo(worlds, player, data_manager);
 
@@ -58,6 +63,12 @@ void gui::DebugMenuLogic(GameWorlds& worlds,
         DebugWorldInfo(worlds, player);
         DebugLogicInfo(logic);
     }
+}
+
+std::string MemoryAddressToStr(const void* ptr) {
+    std::ostringstream sstream;
+    sstream << ptr;
+    return sstream.str();
 }
 
 void gui::DebugMenu(const render::GuiRenderer& params) {
@@ -108,6 +119,7 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
         // Options
         ImGui::Checkbox("Item spawner", &show_item_spawner_window);
 
+        ImGui::Checkbox("Show tile info", &show_tile_info);
         ImGui::Checkbox("Show conveyor info", &show_conveyor_info);
         ImGui::Checkbox("Show inserter info", &show_inserter_info);
 
@@ -177,9 +189,43 @@ void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeM
     }
 }
 
+void gui::DebugTileInfo(GameWorlds& worlds, game::PlayerData& player) {
+    auto& world = worlds[player.world.GetId()];
+    auto* tile  = world.GetTile(player.world.GetMouseTileCoords());
+
+    ImGuard guard;
+    guard.Begin("Tile info");
+
+    ImGui::Text(
+        "Cursor world position: %d, %d", player.world.GetMouseTileCoords().x, player.world.GetMouseTileCoords().y);
+
+    if (tile == nullptr) {
+        ImGui::TextUnformatted("Not hovering over tile");
+        return;
+    }
+
+    for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
+        auto& layer = tile->GetLayer(layer_index);
+
+        ImGui::TextUnformatted("------------------------------------");
+        ImGui::Text("Layer %d", layer_index);
+
+        ImGui::Text("%s", layer.IsMultiTile() ? "Multi-tile" : "Non multi-tile");
+        ImGui::Text("%s", layer.IsTopLeft() ? "Top left" : "Non top left");
+
+        ImGui::Text("Multi-tile index: %d", layer.GetMultiTileIndex());
+
+        ImGui::Text("Orientation: %s", OrientationToStr(layer.GetOrientation()));
+        ImGui::Text("Dimensions: %d, %d", layer.GetDimensions().span, layer.GetDimensions().height);
+
+        ImGui::Text("Prototype: %s", MemoryAddressToStr(layer.GetPrototype()).c_str());
+        ImGui::Text("Unique data: %s", MemoryAddressToStr(layer.GetUniqueData()).c_str());
+    }
+}
+
 WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
-bool show_conveyor_segments      = false;
+bool show_conveyor_structs       = false;
 
 void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& data_manager) {
     constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
@@ -202,20 +248,20 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
         for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
             auto& layer = chunk->Tiles()[i].GetLayer(game::TileLayer::entity);
-            if (layer.prototypeData.Get() == nullptr ||
-                layer.prototypeData->GetCategory() != proto::Category::transport_belt)
+            if (layer.GetPrototype() == nullptr ||
+                layer.GetPrototype()->GetCategory() != proto::Category::transport_belt)
                 continue;
 
             auto& line_data    = *static_cast<proto::ConveyorData*>(layer.GetUniqueData());
-            auto& line_segment = *line_data.lineSegment;
+            auto& line_segment = *line_data.structure;
 
             // Only draw for the head of segments
-            if (line_segment.terminationType == game::ConveyorSegment::TerminationType::straight &&
-                line_data.lineSegmentIndex != 0)
+            if (line_segment.terminationType == game::ConveyorStruct::TerminationType::straight &&
+                line_data.structIndex != 0)
                 continue;
 
-            if (line_segment.terminationType != game::ConveyorSegment::TerminationType::straight &&
-                line_data.lineSegmentIndex != 1)
+            if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight &&
+                line_data.structIndex != 1)
                 continue;
 
             const auto position_x = i % game::Chunk::kChunkWidth;
@@ -234,7 +280,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
             default:
                 assert(false); // Missing case label
 
-            case proto::Orientation::up:
+            case Orientation::up:
                 pos_x         = position_x;
                 pos_y         = position_y;
                 segment_len_x = 1;
@@ -242,7 +288,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
                 direction_sprite = sprite_up;
                 break;
-            case proto::Orientation::right:
+            case Orientation::right:
                 pos_x         = position_x - line_segment.length + 1;
                 pos_y         = position_y;
                 segment_len_x = line_segment.length;
@@ -250,7 +296,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
                 direction_sprite = sprite_right;
                 break;
-            case proto::Orientation::down:
+            case Orientation::down:
                 pos_x         = position_x;
                 pos_y         = position_y - line_segment.length + 1;
                 segment_len_x = 1;
@@ -258,7 +304,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
                 direction_sprite = sprite_down;
                 break;
-            case proto::Orientation::left:
+            case Orientation::left:
                 pos_x         = position_x;
                 pos_y         = position_y;
                 segment_len_x = line_segment.length;
@@ -269,7 +315,7 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
             }
 
             // Shift items 1 tile forwards if segment bends
-            if (line_segment.terminationType != game::ConveyorSegment::TerminationType::straight) {
+            if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight) {
                 OrientationIncrement(line_segment.direction, pos_x, pos_y);
             }
 
@@ -304,38 +350,38 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
     ImGuard guard{};
     guard.Begin("Conveyor Info");
 
-    const auto selected_tile  = player.world.GetMouseTileCoords();
-    proto::ConveyorData* data = proto::Conveyor::GetLineData(world, selected_tile.x, selected_tile.y);
+    const auto selected_tile = player.world.GetMouseTileCoords();
+    auto* con_data           = GetConData(world, {selected_tile.x, selected_tile.y});
 
     // Try to use current selected line segment first, otherwise used the last valid if checked
-    game::ConveyorSegment* segment_ptr = nullptr;
+    game::ConveyorStruct* segment_ptr = nullptr;
 
 
     if (ImGui::Button("Make all belt items visible")) {
         for (auto* chunk : world.LogicGetChunks()) {
-            for (auto* conveyor : chunk->GetLogicGroup(game::Chunk::LogicGroup::conveyor)) {
-                auto& segment         = *conveyor->GetUniqueData<proto::ConveyorData>()->lineSegment;
+            for (auto* conveyor : chunk->GetLogicGroup(game::LogicGroup::conveyor)) {
+                auto& segment         = *conveyor->GetUniqueData<proto::ConveyorData>()->structure;
                 segment.left.visible  = true;
                 segment.right.visible = true;
             }
         }
     }
 
-    ImGui::Checkbox("Show conveyor segments", &show_conveyor_segments);
+    ImGui::Checkbox("Show conveyor segments", &show_conveyor_structs);
     ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
-    if (show_conveyor_segments)
+    if (show_conveyor_structs)
         ShowConveyorSegments(world, proto_manager);
 
-    if (data != nullptr) {
+    if (con_data != nullptr) {
         last_valid_line_segment = selected_tile;
-        segment_ptr             = data->lineSegment.get();
+        segment_ptr             = con_data->structure.get();
     }
     else {
         if (use_last_valid_line_segment) {
-            data = proto::Conveyor::GetLineData(world, last_valid_line_segment.x, last_valid_line_segment.y);
-            if (data != nullptr)
-                segment_ptr = data->lineSegment.get();
+            con_data = GetConData(world, {last_valid_line_segment.x, last_valid_line_segment.y});
+            if (con_data != nullptr)
+                segment_ptr = con_data->structure.get();
         }
     }
 
@@ -343,42 +389,34 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
         ImGui::Text("Selected tile is not a conveyor");
     }
     else {
-        assert(data != nullptr);
-        game::ConveyorSegment& segment = *segment_ptr;
+        assert(con_data != nullptr);
+        game::ConveyorStruct& segment = *segment_ptr;
 
         // Show conveyor properties
-        // Show memory addresses
-        {
-            std::ostringstream sstream;
-            sstream << segment_ptr;
-            ImGui::Text("Segment: %s", sstream.str().c_str());
+        ImGui::Text("Segment: %s", MemoryAddressToStr(segment_ptr).c_str());
+        ImGui::Text("Target segment: %s",
+                    segment.target != nullptr ? MemoryAddressToStr(segment.target).c_str() : "NULL");
 
-
-            std::ostringstream sstream2;
-            sstream2 << segment.targetSegment;
-            ImGui::Text("Target segment: %s", segment.targetSegment != nullptr ? sstream2.str().c_str() : "NULL");
-        }
-
-        ImGui::Text("Item offset %d", segment.itemOffset);
-        ImGui::Text("Target insertion offset %d", segment.targetInsertOffset);
-        ImGui::Text("Length, Index: %d %d", segment.length, data->lineSegmentIndex);
+        ImGui::Text("Head offset %d", segment.headOffset);
+        ImGui::Text("Side insertion index %d", segment.sideInsertIndex);
+        ImGui::Text("Length, Index: %d %d", segment.length, con_data->structIndex);
 
         {
             std::string s;
             switch (segment.terminationType) {
-            case game::ConveyorSegment::TerminationType::straight:
+            case game::ConveyorStruct::TerminationType::straight:
                 s = "Straight";
                 break;
-            case game::ConveyorSegment::TerminationType::bend_left:
+            case game::ConveyorStruct::TerminationType::bend_left:
                 s = "Bend left";
                 break;
-            case game::ConveyorSegment::TerminationType::bend_right:
+            case game::ConveyorStruct::TerminationType::bend_right:
                 s = "Bend right";
                 break;
-            case game::ConveyorSegment::TerminationType::left_only:
+            case game::ConveyorStruct::TerminationType::left_only:
                 s = "Left side";
                 break;
-            case game::ConveyorSegment::TerminationType::right_only:
+            case game::ConveyorStruct::TerminationType::right_only:
                 s = "Right side";
                 break;
             default:
@@ -431,7 +469,7 @@ void gui::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
         return;
 
     auto& layer = tile->GetLayer(game::TileLayer::entity);
-    if (layer.prototypeData.Get() == nullptr || layer.prototypeData->GetCategory() != proto::Category::inserter) {
+    if (layer.GetPrototype() == nullptr || layer.GetPrototype()->GetCategory() != proto::Category::inserter) {
         ImGui::Text("No inserter at selected tile");
         return;
     }
@@ -479,9 +517,10 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
                 core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
                 for (const auto& callback : entry.second) {
-                    std::ostringstream sstream;
-                    sstream << callback.callback.Get(); // Get pointer address
-                    ImGui::Text("%d %d %s", callback.receiver.x, callback.receiver.y, sstream.str().c_str());
+                    ImGui::Text("%d %d %s",
+                                callback.receiver.x,
+                                callback.receiver.y,
+                                MemoryAddressToStr(callback.callback.Get()).c_str());
                 }
             }
 
@@ -559,9 +598,7 @@ void gui::DebugLogicInfo(const game::LogicData& logic_data) {
             core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
             for (const auto& callback : callback_tick.second) {
-                std::ostringstream sstream;
-                sstream << callback.uniqueData.Get();
-                ImGui::Text("%s", sstream.str().c_str());
+                ImGui::Text("%s", MemoryAddressToStr(callback.uniqueData.Get()).c_str());
             }
         }
 

@@ -28,6 +28,7 @@ namespace jactorio::proto
 
         assembly_machine,
         transport_belt,
+        splitter,
         mining_drill,
         inserter,
 

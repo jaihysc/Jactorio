@@ -331,7 +331,7 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
         const auto& tile_layer = tile.GetLayer(layer_index);
 
 
-        const auto* proto = tile_layer.GetPrototypeData();
+        const auto* proto = tile_layer.GetPrototype();
         if (proto == nullptr) // Layer not initialized
             continue;
 
@@ -414,7 +414,7 @@ void render::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv, const UvPosition
 }
 
 void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTileLayer& tile_layer) noexcept {
-    const auto& mt_data = tile_layer.GetMultiTileData();
+    const auto& mt_data = tile_layer.GetDimensions();
 
     // Calculate the correct UV coordinates for multi-tile entities
     // Split the sprite into sections and stretch over multiple tiles if this entity is multi tile

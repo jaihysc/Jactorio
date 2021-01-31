@@ -28,6 +28,7 @@
 #include "proto/recipe_category.h"
 #include "proto/recipe_group.h"
 #include "proto/resource_entity.h"
+#include "proto/splitter.h"
 #include "proto/sprite.h"
 #include "proto/tile.h"
 #include "proto/transport_belt.h"
@@ -208,8 +209,8 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
     PYBIND_PROP(Entity, rotatable)
     PYBIND_PROP(Entity, placeable)
     PYBIND_PROP_GET_SET(Entity, item, SetItem, GetItem)
-    PYBIND_PROP(Entity, tileWidth)
-    PYBIND_PROP(Entity, tileHeight)
+    PYBIND_PROP_GET_SET(Entity, tileWidth, SetWidth, GetWidth)
+    PYBIND_PROP_GET_SET(Entity, tileHeight, SetHeight, GetHeight)
     PYBIND_PROP(Entity, pickupTime);
 
     PYBIND_DATA_CLASS_ABSTRACT(HealthEntity, HealthEntity, Entity)
@@ -227,6 +228,9 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
 
     //
     PYBIND_DATA_CLASS(TransportBelt, TransportBelt, Conveyor);
+
+    //
+    PYBIND_DATA_CLASS(Splitter, Splitter, Conveyor);
 
     // Assembly machine
     PYBIND_DATA_CLASS(AssemblyMachine, AssemblyMachine, HealthEntity)

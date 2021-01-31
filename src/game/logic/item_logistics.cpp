@@ -20,10 +20,10 @@ bool game::ItemDropOff::Initialize(WorldData& world_data, const WorldCoordAxis w
 
     auto& layer = tile->GetLayer(TileLayer::entity);
 
-    if (layer.prototypeData == nullptr)
+    if (layer.GetPrototype() == nullptr)
         return false;
 
-    switch (layer.prototypeData->GetCategory()) {
+    switch (layer.GetPrototype()->GetCategory()) {
     case proto::Category::container_entity:
         dropFunc_    = &ItemDropOff::InsertContainerEntity;
         canDropFunc_ = &ItemDropOff::CanInsertContainerEntity;
@@ -45,7 +45,7 @@ bool game::ItemDropOff::Initialize(WorldData& world_data, const WorldCoordAxis w
 
     assert(layer.GetUniqueData() != nullptr);
 
-    targetProtoData_  = layer.prototypeData.Get();
+    targetProtoData_  = layer.GetPrototype();
     targetUniqueData_ = layer.GetUniqueData();
 
     return true;
@@ -67,10 +67,10 @@ bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& params) const
 void GetAdjustedLineOffset(const bool use_line_left,
                            proto::LineDistT& pickup_offset,
                            const proto::ConveyorData& line_data) {
-    game::ConveyorSegment::ApplyTerminationDeduction(use_line_left,
-                                                      line_data.lineSegment->terminationType,
-                                                      game::ConveyorSegment::TerminationType::straight,
-                                                      pickup_offset);
+    game::ConveyorStruct::ApplyTerminationDeduction(use_line_left,
+                                                    line_data.structure->terminationType,
+                                                    game::ConveyorStruct::TerminationType::straight,
+                                                    pickup_offset);
 }
 
 bool game::ItemDropOff::CanInsertTransportBelt(const DropOffParams& /*params*/) const {
@@ -84,17 +84,17 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
 
     bool use_line_left = false;
     // Decide whether to add item to left side or right side
-    switch (line_data.lineSegment->direction) {
-    case proto::Orientation::up:
+    switch (line_data.structure->direction) {
+    case Orientation::up:
         switch (params.orientation) {
-        case proto::Orientation::up:
+        case Orientation::up:
             break;
-        case proto::Orientation::right:
+        case Orientation::right:
             use_line_left = true;
             break;
-        case proto::Orientation::down:
+        case Orientation::down:
             return false;
-        case proto::Orientation::left:
+        case Orientation::left:
             break;
 
         default:
@@ -103,15 +103,15 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
         }
         break;
 
-    case proto::Orientation::right:
+    case Orientation::right:
         switch (params.orientation) {
-        case proto::Orientation::up:
-        case proto::Orientation::right:
+        case Orientation::up:
+        case Orientation::right:
             break;
-        case proto::Orientation::down:
+        case Orientation::down:
             use_line_left = true;
             break;
-        case proto::Orientation::left:
+        case Orientation::left:
             return false;
 
         default:
@@ -120,14 +120,14 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
         }
         break;
 
-    case proto::Orientation::down:
+    case Orientation::down:
         switch (params.orientation) {
-        case proto::Orientation::up:
+        case Orientation::up:
             return false;
-        case proto::Orientation::right:
-        case proto::Orientation::down:
+        case Orientation::right:
+        case Orientation::down:
             break;
-        case proto::Orientation::left:
+        case Orientation::left:
             use_line_left = true;
             break;
 
@@ -137,15 +137,15 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
         }
         break;
 
-    case proto::Orientation::left:
+    case Orientation::left:
         switch (params.orientation) {
-        case proto::Orientation::up:
+        case Orientation::up:
             use_line_left = true;
             break;
-        case proto::Orientation::right:
+        case Orientation::right:
             return false;
-        case proto::Orientation::down:
-        case proto::Orientation::left:
+        case Orientation::down:
+        case Orientation::left:
             break;
 
         default:
@@ -160,10 +160,10 @@ bool game::ItemDropOff::InsertTransportBelt(const DropOffParams& params) const {
     }
 
     constexpr double insertion_offset_base = 0.5;
-    auto offset                            = proto::LineDistT(line_data.lineSegmentIndex + insertion_offset_base);
+    auto offset                            = proto::LineDistT(line_data.structIndex + insertion_offset_base);
 
     GetAdjustedLineOffset(use_line_left, offset, line_data);
-    return line_data.lineSegment->TryInsertItem(use_line_left, offset.getAsDouble(), *params.itemStack.item);
+    return line_data.structure->TryInsertItem(use_line_left, offset.getAsDouble(), *params.itemStack.item);
 }
 
 bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& params) const {
@@ -224,10 +224,10 @@ bool game::InserterPickup::Initialize(WorldData& world_data,
 
     auto& layer = tile->GetLayer(TileLayer::entity);
 
-    if (layer.prototypeData == nullptr)
+    if (layer.GetPrototype() == nullptr)
         return false;
 
-    switch (layer.prototypeData->GetCategory()) {
+    switch (layer.GetPrototype()->GetCategory()) {
     case proto::Category::container_entity:
         pickupFunc_    = &InserterPickup::PickupContainerEntity;
         getPickupFunc_ = &InserterPickup::GetPickupContainerEntity;
@@ -249,7 +249,7 @@ bool game::InserterPickup::Initialize(WorldData& world_data,
 
     assert(layer.GetUniqueData() != nullptr);
 
-    targetProtoData_  = layer.prototypeData.Get();
+    targetProtoData_  = layer.GetPrototype();
     targetUniqueData_ = layer.GetUniqueData();
 
     return true;
@@ -285,7 +285,7 @@ game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupTransportBe
 
         GetAdjustedLineOffset(left_lane, adjusted_pickup_offset, line_data);
 
-        auto [dq_index, line_item] = line_data.lineSegment->GetItem(left_lane, adjusted_pickup_offset.getAsDouble());
+        auto [dq_index, line_item] = line_data.structure->GetItem(left_lane, adjusted_pickup_offset.getAsDouble());
         return line_item.item.Get();
     };
 
@@ -310,7 +310,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
         auto adjusted_pickup_offset = pickup_offset;
 
         GetAdjustedLineOffset(left_lane, adjusted_pickup_offset, line_data);
-        return line_data.lineSegment->TryPopItem(left_lane, adjusted_pickup_offset.getAsDouble());
+        return line_data.structure->TryPopItem(left_lane, adjusted_pickup_offset.getAsDouble());
     };
 
 
@@ -324,7 +324,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupTransportBelt(con
     }
 
     if (item != nullptr) {
-        line_data.lineSegment->GetSide(use_line_left).index = 0;
+        line_data.structure->GetSide(use_line_left).index = 0;
 
         return {true, {item, 1}};
     }
@@ -380,11 +380,11 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
     auto& line_data = static_cast<proto::ConveyorData&>(params.uniqueData);
 
     bool use_line_left = false;
-    switch (line_data.lineSegment->direction) {
-    case proto::Orientation::up:
+    switch (line_data.structure->direction) {
+    case Orientation::up:
         switch (params.orientation) {
-        case proto::Orientation::down:
-        case proto::Orientation::left:
+        case Orientation::down:
+        case Orientation::left:
             use_line_left = true;
             break;
 
@@ -393,10 +393,10 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
         }
         break;
 
-    case proto::Orientation::right:
+    case Orientation::right:
         switch (params.orientation) {
-        case proto::Orientation::up:
-        case proto::Orientation::left:
+        case Orientation::up:
+        case Orientation::left:
             use_line_left = true;
             break;
 
@@ -405,10 +405,10 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
         }
         break;
 
-    case proto::Orientation::down:
+    case Orientation::down:
         switch (params.orientation) {
-        case proto::Orientation::up:
-        case proto::Orientation::right:
+        case Orientation::up:
+        case Orientation::right:
             use_line_left = true;
             break;
 
@@ -417,10 +417,10 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
         }
         break;
 
-    case proto::Orientation::left:
+    case Orientation::left:
         switch (params.orientation) {
-        case proto::Orientation::right:
-        case proto::Orientation::down:
+        case Orientation::right:
+        case Orientation::down:
             use_line_left = true;
             break;
 
@@ -435,7 +435,7 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
     }
 
     auto pickup_offset = proto::LineDistT(
-        line_data.lineSegmentIndex +
+        line_data.structIndex +
         GetInserterArmOffset(core::SafeCast<core::TIntDegree>(params.degree.getAsInteger()), params.inserterTileReach));
 
     return {use_line_left, pickup_offset};

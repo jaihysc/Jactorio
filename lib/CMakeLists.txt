@@ -35,7 +35,8 @@ validate_dependency(cereal)
 
 
 # SDL, fixes unresolved symbols to memset, memcpy, __chkstk when using /GL (Whole program optimization)
-if (MSVC)
+# Build in Debug just decided to fail one day, so these link targets are only added in when using /GL
+if (MSVC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 	list(APPEND EXTRA_LIBS vcruntime msvcrt)
 endif()
 

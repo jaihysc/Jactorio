@@ -56,18 +56,18 @@
     }                                                  \
     static_assert(true)
 
-// Assertions for post_load_validate
-#define J_DATA_ASSERT(condition, format)                                                      \
-    jactorio::proto::DataAssert(condition,                                                    \
-                                "\"%s\", " format "\nTraceback (most recent call last):\n%s", \
-                                this->name.c_str(),                                           \
+// Assertions for PostLoadValidate
+#define J_PROTO_ASSERT(condition__, msg__)                                                   \
+    jactorio::proto::DataAssert(condition__,                                                 \
+                                "\"%s\", " msg__ "\nTraceback (most recent call last):\n%s", \
+                                this->name.c_str(),                                          \
                                 this->pythonTraceback.c_str())
 
-#define J_DATA_ASSERT_F(condition, format, ...)                                               \
-    jactorio::proto::DataAssert(condition,                                                    \
-                                "\"%s\", " format "\nTraceback (most recent call last):\n%s", \
-                                this->name.c_str(),                                           \
-                                __VA_ARGS__,                                                  \
+#define J_PROTO_ASSERT_F(condition__, format__, ...)                                            \
+    jactorio::proto::DataAssert(condition__,                                                    \
+                                "\"%s\", " format__ "\nTraceback (most recent call last):\n%s", \
+                                this->name.c_str(),                                             \
+                                __VA_ARGS__,                                                    \
                                 this->pythonTraceback.c_str())
 
 namespace jactorio::data
@@ -123,10 +123,10 @@ namespace jactorio::proto
     }                                                                                            \
     static_assert(true)
 
-#define PROTOTYPE_DATA_TRIVIAL_COPY(data_ty__)                                           \
-    std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* ptr) const override { \
-        return std::make_unique<data_ty__>(*static_cast<data_ty__*>(ptr));               \
-    }                                                                                    \
+#define PROTOTYPE_DATA_TRIVIAL_COPY(data_ty__)                                                 \
+    std::unique_ptr<UniqueDataBase> CopyUniqueData(const UniqueDataBase* ptr) const override { \
+        return std::make_unique<data_ty__>(*static_cast<const data_ty__*>(ptr));               \
+    }                                                                                          \
     static_assert(true)
 
 
@@ -143,7 +143,6 @@ namespace jactorio::proto
 
         friend void swap(FrameworkBase& lhs, FrameworkBase& rhs) noexcept {
             using std::swap;
-            swap(lhs.category, rhs.category);
             swap(lhs.internalId, rhs.internalId);
             swap(lhs.name, rhs.name);
             swap(lhs.order, rhs.order);
@@ -153,7 +152,10 @@ namespace jactorio::proto
 
         // ======================================================================
 
-        Category category = Category::none;
+        ///
+        /// NON VIRTUAL category, use GetCategory if object is not downcast to its actual type
+        static constexpr Category category = Category::none;
+
         ///
         /// Category of this Prototype item
         virtual Category GetCategory() const = 0;
@@ -202,7 +204,7 @@ namespace jactorio::proto
 
         ///
         /// Copies the unique_data associated with a prototype
-        virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(UniqueDataBase* /*ptr*/) const {
+        virtual std::unique_ptr<UniqueDataBase> CopyUniqueData(const UniqueDataBase* /*other*/) const {
             assert(false); // Not implemented
             return nullptr;
         }

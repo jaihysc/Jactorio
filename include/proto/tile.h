@@ -73,7 +73,7 @@ namespace jactorio::proto
     };
 
     inline void Tile::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
-        J_DATA_ASSERT(sprite != nullptr, "Sprite was not provided");
+        J_PROTO_ASSERT(sprite != nullptr, "Sprite was not provided");
     }
 } // namespace jactorio::proto
 

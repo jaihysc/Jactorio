@@ -249,7 +249,7 @@ namespace jactorio::proto
         auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
         proto_.OnBuild(worldData_, logicData_, {0, 0}, layer, Orientation::up);
 
-        const auto* assembly_proto = layer.GetPrototypeData<AssemblyMachine>();
+        const auto* assembly_proto = layer.GetPrototype<AssemblyMachine>();
         auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
 
         SetupRecipe();

@@ -8,6 +8,8 @@
 
 namespace jactorio::core
 {
+    static_assert(std::is_same_v<PointerWrapper<int>::element_type, int>, "Incorrect element_type");
+
     TEST(PointerWrapper, ConstructPointer) {
         int integer              = 1;
         PointerWrapper p_wrapper = &integer;

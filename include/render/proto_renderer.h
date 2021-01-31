@@ -17,7 +17,7 @@ namespace jactorio
 
     namespace game
     {
-        class ConveyorSegment;
+        class ConveyorStruct;
     }
 } // namespace jactorio
 
@@ -28,7 +28,7 @@ namespace jactorio::render
     void DrawConveyorSegmentItems(RendererLayer& layer,
                                   const SpriteUvCoordsT& uv_coords,
                                   const core::Position2<float>& pixel_offset,
-                                  game::ConveyorSegment& line_segment);
+                                  game::ConveyorStruct& line_segment);
 
     void DrawInserterArm(RendererLayer& layer,
                          const SpriteUvCoordsT& uv_coords,

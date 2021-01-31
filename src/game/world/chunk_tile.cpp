@@ -12,13 +12,15 @@ using namespace jactorio;
 const proto::Tile* game::ChunkTile::GetTilePrototype(const TileLayer category) const {
 
     assert(category == TileLayer::base);
-    return static_cast<const proto::Tile*>(layers[GetLayerIndex(category)].prototypeData.Get());
+    return static_cast<const proto::Tile*>(layers[GetLayerIndex(category)].GetPrototype());
 }
 
-void game::ChunkTile::SetTilePrototype(const proto::Tile* tile_prototype, const TileLayer category) {
+void game::ChunkTile::SetTilePrototype(const Orientation orientation,
+                                       const proto::Tile* tile_prototype,
+                                       const TileLayer category) {
 
     assert(category == TileLayer::base);
-    layers[GetLayerIndex(category)].prototypeData = tile_prototype;
+    layers[GetLayerIndex(category)].SetPrototype(orientation, tile_prototype);
 }
 
 // ======================================================================
@@ -26,11 +28,13 @@ void game::ChunkTile::SetTilePrototype(const proto::Tile* tile_prototype, const 
 const proto::Entity* game::ChunkTile::GetEntityPrototype(const TileLayer category) const {
 
     assert(category == TileLayer::resource || category == TileLayer::entity);
-    return static_cast<const proto::Entity*>(layers[GetLayerIndex(category)].prototypeData.Get());
+    return static_cast<const proto::Entity*>(layers[GetLayerIndex(category)].GetPrototype());
 }
 
-void game::ChunkTile::SetEntityPrototype(const proto::Entity* tile_prototype, const TileLayer category) {
+void game::ChunkTile::SetEntityPrototype(const Orientation orientation,
+                                         const proto::Entity* tile_prototype,
+                                         const TileLayer category) {
 
     assert(category == TileLayer::resource || category == TileLayer::entity);
-    layers[GetLayerIndex(category)].prototypeData = tile_prototype;
+    layers[GetLayerIndex(category)].SetPrototype(orientation, tile_prototype);
 }

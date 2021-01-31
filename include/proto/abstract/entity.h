@@ -44,6 +44,7 @@ namespace jactorio::proto
 
 
         /// Can be rotated by player?
+        /// If false, also sets rotateDimensions to false
         PYTHON_PROP_REF_I(bool, rotatable, false);
         /// Can be placed by player?
         PYTHON_PROP_REF_I(bool, placeable, true);
@@ -101,10 +102,13 @@ namespace jactorio::proto
                              Orientation orientation) const = 0;
 
         ///
-        /// Returns true if itself can be built at the specified world_coords being its top left
+        /// Determines if prototype can be built at coord
+        /// \param coord Top left of prototype
+        /// \param orien Orientation of prototype
         /// \return true if can be built
-        J_NODISCARD virtual bool OnCanBuild(const game::WorldData& /*world_data*/,
-                                            const WorldCoord& /*world_coords*/) const {
+        J_NODISCARD virtual bool OnCanBuild(const game::WorldData& world,
+                                            const WorldCoord& coord,
+                                            const Orientation orien) const {
             return true;
         }
 
@@ -145,6 +149,8 @@ namespace jactorio::proto
                            const WorldCoord& world_coord,
                            game::ChunkTileLayer& tile_layer) const override {}
 
+
+        void PostLoad() override;
 
         void PostLoadValidate(const data::PrototypeManager& data_manager) const override;
 

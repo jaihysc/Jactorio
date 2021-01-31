@@ -26,7 +26,7 @@ namespace jactorio::proto
     };
 
     inline void ItemBase::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
-        J_DATA_ASSERT(sprite != nullptr, "Sprite was not specified");
+        J_PROTO_ASSERT(sprite != nullptr, "Sprite was not specified");
     }
 } // namespace jactorio::proto
 

@@ -60,6 +60,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
 	${JACTORIO_TEST_DIR}/core/loop_commonTests.cpp
 	${JACTORIO_TEST_DIR}/core/mathTests.cpp
+	${JACTORIO_TEST_DIR}/core/orientationTests.cpp
 	${JACTORIO_TEST_DIR}/core/pointer_wrapperTests.cpp
 	${JACTORIO_TEST_DIR}/core/resource_guardTests.cpp
 	${JACTORIO_TEST_DIR}/core/utilityTests.cpp
@@ -82,8 +83,9 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/logic/conveyor_controllerTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/conveyor_segmentTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/conveyor_structTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/deferral_timerTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/conveyor_utilityTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
@@ -112,9 +114,11 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/proto/noise_layerTests.cpp
 	${JACTORIO_TEST_DIR}/proto/prototype_typeTests.cpp
 	${JACTORIO_TEST_DIR}/proto/recipeTests.cpp
+	${JACTORIO_TEST_DIR}/proto/splitterTests.cpp
 	${JACTORIO_TEST_DIR}/proto/spriteTests.cpp
 
 	${JACTORIO_TEST_DIR}/proto/abstract/conveyorTests.cpp
+	${JACTORIO_TEST_DIR}/proto/abstract/entityTests.cpp
 	${JACTORIO_TEST_DIR}/proto/interface/renderableTests.cpp
 
 

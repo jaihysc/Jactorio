@@ -68,34 +68,34 @@ std::vector<proto::RecipeItem> proto::Recipe::RecipeGetTotalRaw(const data::Prot
 }
 
 void proto::Recipe::PostLoadValidate(const data::PrototypeManager& proto_manager) const {
-    J_DATA_ASSERT(!ingredients.empty(), "No ingredients specified for recipe");
+    J_PROTO_ASSERT(!ingredients.empty(), "No ingredients specified for recipe");
     for (const auto& [ing_name, ing_req_amount] : ingredients) {
-        J_DATA_ASSERT(!ing_name.empty(), "Empty ingredient internal name specifier");
+        J_PROTO_ASSERT(!ing_name.empty(), "Empty ingredient internal name specifier");
 
         const auto* ingredient_item = proto_manager.DataRawGet<Item>(ing_name);
         assert(ingredient_item != nullptr);
 
-        J_DATA_ASSERT_F(ingredient_item, "Ingredient %s does not exist", ing_name.c_str());
+        J_PROTO_ASSERT_F(ingredient_item, "Ingredient %s does not exist", ing_name.c_str());
 
-        J_DATA_ASSERT(ing_req_amount > 0, "Ingredient required amount minimum is 1");
-        J_DATA_ASSERT_F(ing_req_amount <= ingredient_item->stackSize,
-                        "Ingredient required amount %d exceeds max stack size of ingredient %d",
-                        ing_req_amount,
-                        ingredient_item->stackSize);
+        J_PROTO_ASSERT(ing_req_amount > 0, "Ingredient required amount minimum is 1");
+        J_PROTO_ASSERT_F(ing_req_amount <= ingredient_item->stackSize,
+                         "Ingredient required amount %d exceeds max stack size of ingredient %d",
+                         ing_req_amount,
+                         ingredient_item->stackSize);
     }
 
-    J_DATA_ASSERT(!product.first.empty(), "No product specified for recipe");
+    J_PROTO_ASSERT(!product.first.empty(), "No product specified for recipe");
 
     const auto* item_product = proto_manager.DataRawGet<Item>(product.first);
     assert(item_product != nullptr);
 
-    J_DATA_ASSERT_F(item_product != nullptr, "Product %s does not exist", product.first.c_str());
+    J_PROTO_ASSERT_F(item_product != nullptr, "Product %s does not exist", product.first.c_str());
 
-    J_DATA_ASSERT(product.second > 0, "Product yield amount minimum is 1");
-    J_DATA_ASSERT_F(product.second <= item_product->stackSize,
-                    "Product yield %d may not exceed product stack size %d",
-                    product.second,
-                    item_product->stackSize);
+    J_PROTO_ASSERT(product.second > 0, "Product yield amount minimum is 1");
+    J_PROTO_ASSERT_F(product.second <= item_product->stackSize,
+                     "Product yield %d may not exceed product stack size %d",
+                     product.second,
+                     item_product->stackSize);
 }
 
 GameTickT proto::Recipe::GetCraftingTime(const double multiplier) const {

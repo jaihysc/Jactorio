@@ -4,6 +4,7 @@
 #define JACTORIO_INCLUDE_PROTO_FRAMEWORK_WORLD_OBJECT_H
 #pragma once
 
+#include "core/orientation.h"
 #include "proto/framework/framework_base.h"
 #include "proto/interface/renderable.h"
 #include "proto/interface/serializable.h"
@@ -20,9 +21,46 @@ namespace jactorio::proto
     class FWorldObject : public FrameworkBase, public IRenderable, public ISerializable
     {
     public:
-        // Number of tiles this entity spans
-        PYTHON_PROP_REF_I(uint8_t, tileWidth, 1);
-        PYTHON_PROP_REF_I(uint8_t, tileHeight, 1);
+        using TileSpanT = uint8_t;
+
+        ///
+        /// If true, swaps width and height when orientation is left or right in Getters
+        PYTHON_PROP_REF_I(bool, rotateDimensions, true);
+
+        J_NODISCARD TileSpanT GetWidth(const Orientation orientation) const {
+            if (rotateDimensions && (orientation == Orientation::left || orientation == Orientation::right))
+                return height_;
+
+            return width_;
+        }
+        FWorldObject* SetWidth(const TileSpanT width) {
+            width_ = width;
+            return this;
+        }
+
+        J_NODISCARD TileSpanT GetHeight(const Orientation orientation) const {
+            if (rotateDimensions && (orientation == Orientation::left || orientation == Orientation::right))
+                return width_;
+
+            return height_;
+        }
+        FWorldObject* SetHeight(const TileSpanT height) {
+            height_ = height;
+            return this;
+        }
+
+        ///
+        /// Calls SetWidth and SetHeight
+        FWorldObject* SetDimensions(const TileSpanT width, const TileSpanT height) {
+            SetWidth(width);
+            SetHeight(height);
+            return this;
+        }
+
+    private:
+        /// Number of tiles which object occupies
+        TileSpanT width_  = 1;
+        TileSpanT height_ = 1;
     };
 } // namespace jactorio::proto
 

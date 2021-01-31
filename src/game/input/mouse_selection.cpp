@@ -53,7 +53,7 @@ void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
 
 void game::MouseSelection::DrawOverlay(WorldData& world,
                                        const WorldCoord& coord,
-                                       const proto::Orientation orientation,
+                                       const Orientation orientation,
                                        const proto::Entity* selected_entity,
                                        const proto::Sprite& cursor_sprite) {
     // Clear last overlay
@@ -89,19 +89,19 @@ void game::MouseSelection::DrawOverlay(WorldData& world,
         // Has item selected
         const auto set = selected_entity->OnRGetSpriteSet(orientation, world, {coord.x, coord.y});
 
-        OverlayElement element{
-            *selected_entity->OnRGetSprite(set),
-            {WorldData::WorldCToOverlayC(coord.x), WorldData::WorldCToOverlayC(coord.y)},
-            {core::SafeCast<float>(selected_entity->tileWidth), core::SafeCast<float>(selected_entity->tileHeight)},
-            kCursorOverlayLayer_};
+        OverlayElement element{*selected_entity->OnRGetSprite(set),
+                               {WorldData::WorldCToOverlayC(coord.x), WorldData::WorldCToOverlayC(coord.y)},
+                               {core::SafeCast<float>(selected_entity->GetWidth(orientation)),
+                                core::SafeCast<float>(selected_entity->GetHeight(orientation))},
+                               kCursorOverlayLayer_};
 
         element.spriteSet = set;
 
         overlay_layer.push_back(element);
         save_overlay_info();
     }
-    else if (tile->GetLayer(TileLayer::entity).prototypeData.Get() != nullptr ||
-             tile->GetLayer(TileLayer::resource).prototypeData.Get() != nullptr) {
+    else if (tile->GetLayer(TileLayer::entity).GetPrototype() != nullptr ||
+             tile->GetLayer(TileLayer::resource).GetPrototype() != nullptr) {
 
         // Is hovering over entity
         overlay_layer.push_back({cursor_sprite,

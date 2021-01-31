@@ -122,7 +122,7 @@ namespace jactorio::game
                 return nullptr;
             }
 
-            SpriteSetT OnRGetSpriteSet(proto::Orientation /*orientation*/,
+            SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
                                        WorldData& /*world_data*/,
                                        const WorldCoord& /*world_coords*/) const override {
                 return 0;

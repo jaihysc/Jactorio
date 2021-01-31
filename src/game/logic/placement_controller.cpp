@@ -7,18 +7,18 @@
 #include "jactorio.h"
 
 #include "game/world/world_data.h"
+#include "proto/abstract/entity.h"
 #include "proto/tile.h"
 
 using namespace jactorio;
 
-bool game::PlacementLocationValid(WorldData& world_data,
+bool game::PlacementLocationValid(WorldData& world,
+                                  const WorldCoord& coord,
                                   const uint8_t tile_width,
-                                  const uint8_t tile_height,
-                                  const WorldCoordAxis x,
-                                  const WorldCoordAxis y) {
+                                  const uint8_t tile_height) {
     for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
         for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
-            const ChunkTile* tile = world_data.GetTile(x + offset_x, y + offset_y);
+            const ChunkTile* tile = world.GetTile(coord.x + offset_x, coord.y + offset_y);
 
             // If the tile proto does not exist, or base tile prototype is water, NOT VALID placement
 
@@ -37,74 +37,70 @@ bool game::PlacementLocationValid(WorldData& world_data,
 // ======================================================================
 // Entity placement
 
-void PlaceAtCoords(game::WorldData& world_data,
+///
+/// \remark Assumes tiles are valid for placement
+void PlaceAtCoords(game::WorldData& world,
+                   const WorldCoord& coord,
                    const game::TileLayer layer,
                    const uint8_t tile_width,
                    const uint8_t tile_height,
-                   const WorldCoordAxis x,
-                   const WorldCoordAxis y,
                    const std::function<void(game::ChunkTile*)>& place_func) {
-    // Place --- The places tiles are known to be valid
-    game::MultiTileData::ValueT entity_index = 0;
+
 
     // The top left is handled differently
-    auto* top_left_tile = world_data.GetTile(x, y);
+    auto* top_left_tile = world.GetTile(coord);
     place_func(top_left_tile);
 
     auto& top_left = top_left_tile->GetLayer(layer);
-    top_left.SetMultiTileIndex(entity_index++);
 
     if (tile_width == 1 && tile_height == 1)
         return;
 
     // Multi tile
 
-    int offset_x = 1;
+    game::MultiTileData::ValueT entity_index = 1;
+    int offset_x                             = 1;
+
     for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
         for (; offset_x < tile_width; ++offset_x) {
-            auto* tile = world_data.GetTile(x + offset_x, y + offset_y);
+            auto* tile = world.GetTile(coord.x + offset_x, coord.y + offset_y);
             place_func(tile);
 
             auto& layer_tile = tile->GetLayer(layer);
 
-            layer_tile.SetMultiTileIndex(entity_index++);
-            layer_tile.SetTopLeftLayer(top_left);
+            layer_tile.SetupMultiTile(entity_index++, top_left);
         }
         offset_x = 0;
     }
 }
 
-void RemoveAtCoords(game::WorldData& world_data,
+void RemoveAtCoords(game::WorldData& world,
+                    WorldCoord coord,
                     const game::TileLayer layer,
                     const uint8_t tile_width,
                     const uint8_t tile_height,
-                    WorldCoordAxis x,
-                    WorldCoordAxis y,
                     void (*remove_func)(game::ChunkTile*)) {
+
     // Find top left corner
-    {
-        const auto* tile = world_data.GetTile(x, y);
-        assert(tile != nullptr); // Attempted to remove a on a non existent tile
+    const auto* tile = world.GetTile(coord);
+    assert(tile != nullptr); // Attempted to remove a on a non existent tile
 
-        const auto tile_index = tile->GetLayer(layer).GetMultiTileIndex();
+    tile->GetLayer(layer).AdjustToTopLeft(coord);
 
-        y -= core::SafeCast<WorldCoordAxis>(tile_index / tile_width);
-        x -= tile_index % tile_width;
-    }
 
     // Remove
     for (int offset_y = 0; offset_y < tile_height; ++offset_y) {
         for (int offset_x = 0; offset_x < tile_width; ++offset_x) {
-            remove_func(world_data.GetTile(x + offset_x, y + offset_y));
+            remove_func(world.GetTile(coord.x + offset_x, coord.y + offset_y));
         }
     }
 }
 
-bool game::PlaceEntityAtCoords(WorldData& world_data,
-                               const proto::Entity* entity,
-                               const WorldCoordAxis x,
-                               const WorldCoordAxis y) {
-    const ChunkTile* tile = world_data.GetTile(x, y);
+bool game::PlaceEntityAtCoords(WorldData& world,
+                               const WorldCoord& coord,
+                               const Orientation orien,
+                               const proto::Entity* entity) {
+    const ChunkTile* tile = world.GetTile(coord.x, coord.y);
     assert(tile != nullptr);
 
     // entity is nullptr indicates removing an entity
@@ -114,26 +110,24 @@ bool game::PlaceEntityAtCoords(WorldData& world_data,
         if (t_entity == nullptr) // Already removed
             return false;
 
-        RemoveAtCoords(
-            world_data, TileLayer::entity, t_entity->tileWidth, t_entity->tileHeight, x, y, [](ChunkTile* chunk_tile) {
-                chunk_tile->GetLayer(TileLayer::entity).Clear();
-            });
+        RemoveAtCoords(world,
+                       coord,
+                       TileLayer::entity,
+                       t_entity->GetWidth(orien),
+                       t_entity->GetHeight(orien),
+                       [](ChunkTile* chunk_tile) { chunk_tile->GetLayer(TileLayer::entity).Clear(); });
 
         return true;
     }
 
     // Place
-    if (!PlacementLocationValid(world_data, entity->tileWidth, entity->tileHeight, x, y))
+    if (!PlacementLocationValid(world, coord, entity->GetWidth(orien), entity->GetHeight(orien)))
         return false;
 
     PlaceAtCoords(
-        world_data, TileLayer::entity, entity->tileWidth, entity->tileHeight, x, y, [&](ChunkTile* chunk_tile) {
-            chunk_tile->SetEntityPrototype(entity);
+        world, coord, TileLayer::entity, entity->GetWidth(orien), entity->GetHeight(orien), [&](ChunkTile* chunk_tile) {
+            chunk_tile->SetEntityPrototype(orien, entity);
         });
 
     return true;
-}
-
-bool game::PlaceEntityAtCoords(WorldData& world_data, const proto::Entity* entity, const WorldCoord& world_pair) {
-    return PlaceEntityAtCoords(world_data, entity, world_pair.x, world_pair.y);
 }

@@ -146,6 +146,6 @@ proto::Sprite* proto::Sprite::LoadImage(const std::string& image_path) {
 }
 
 void proto::Sprite::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
-    J_DATA_ASSERT(frames > 0, "Frames must be at least 1");
-    J_DATA_ASSERT(sets > 0, "Sets must be at least 1");
+    J_PROTO_ASSERT(frames > 0, "Frames must be at least 1");
+    J_PROTO_ASSERT(sets > 0, "Sets must be at least 1");
 }

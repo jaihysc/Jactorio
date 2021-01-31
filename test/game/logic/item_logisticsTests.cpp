@@ -25,12 +25,12 @@ namespace jactorio::game
     };
 
     TEST_F(ItemLogisticsTest, Uninitialize) {
-        ItemDropOff drop_off{proto::Orientation::up};
+        ItemDropOff drop_off{Orientation::up};
 
         auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
 
         proto::ContainerEntity container;
-        layer.prototypeData = &container;
+        layer.SetPrototype(Orientation::up, &container);
         layer.MakeUniqueData<proto::ContainerEntityData>(1);
 
         ASSERT_TRUE(drop_off.Initialize(worldData_, {2, 4}));
@@ -41,9 +41,9 @@ namespace jactorio::game
 
     TEST_F(ItemLogisticsTest, DropOffDropItem) {
         proto::ContainerEntity container_entity;
-        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, Orientation::up, container_entity);
 
-        ItemDropOff drop_off{proto::Orientation::up};
+        ItemDropOff drop_off{Orientation::up};
         ASSERT_TRUE(drop_off.Initialize(worldData_, {2, 4}));
 
         proto::Item item;
@@ -54,9 +54,9 @@ namespace jactorio::game
 
     TEST_F(ItemLogisticsTest, InserterPickupItem) {
         proto::ContainerEntity container_entity;
-        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, Orientation::up, container_entity);
 
-        InserterPickup pickup{proto::Orientation::up};
+        InserterPickup pickup{Orientation::up};
         ASSERT_TRUE(pickup.Initialize(worldData_, {2, 4}));
 
         proto::Item item;
@@ -79,7 +79,7 @@ namespace jactorio::game
             worldData_.EmplaceChunk(0, 0);
         }
 
-        explicit ItemDropOffTest() : ItemDropOff(proto::Orientation::up) {}
+        explicit ItemDropOffTest() : ItemDropOff(Orientation::up) {}
 
     protected:
         WorldData worldData_;
@@ -87,20 +87,20 @@ namespace jactorio::game
 
         /// Creates a conveyor with orientation
         proto::ConveyorData CreateConveyor(
-            const proto::Orientation orientation,
-            const ConveyorSegment::TerminationType ttype = ConveyorSegment::TerminationType::straight) const {
-            const auto segment = std::make_shared<ConveyorSegment>(orientation, ttype, 2);
+            const Orientation orientation,
+            const ConveyorStruct::TerminationType ttype = ConveyorStruct::TerminationType::straight) const {
+            const auto segment = std::make_shared<ConveyorStruct>(orientation, ttype, 2);
 
             return proto::ConveyorData{segment};
         }
 
         ///
         /// \param orientation Inserter orientation to dropoff
-        void ConveyorInsert(const proto::Orientation orientation, proto::ConveyorData& line_data) {
+        void ConveyorInsert(const Orientation orientation, proto::ConveyorData& line_data) {
             proto::Item item;
             InsertTransportBelt({logicData_, {&item, 1}, line_data, orientation});
 
-            EXPECT_TRUE(CanInsertTransportBelt({logicData_, {}, line_data, proto::Orientation::up}));
+            EXPECT_TRUE(CanInsertTransportBelt({logicData_, {}, line_data, Orientation::up}));
         }
     };
 
@@ -108,8 +108,8 @@ namespace jactorio::game
         worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<proto::ContainerEntityData>(1);
 
         auto set_prototype = [&](proto::Entity& entity_proto) {
-            auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
-            layer.prototypeData = &entity_proto;
+            auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
+            layer.SetPrototype(Orientation::up, &entity_proto);
         };
 
         // No: Empty tile cannot be inserted into
@@ -143,7 +143,8 @@ namespace jactorio::game
 
         // Ok: Assembly machine
         proto::AssemblyMachine assembly_machine; // Will also make unique data, so it needs to be on another tile
-        TestSetupAssemblyMachine(worldData_, {3, 4}, assembly_machine);
+        assembly_machine.SetDimensions(2, 2);
+        TestSetupAssemblyMachine(worldData_, {3, 4}, Orientation::up, assembly_machine);
 
         EXPECT_TRUE(this->Initialize(worldData_, {3, 5}));
         EXPECT_TRUE(this->IsInitialized());
@@ -162,8 +163,8 @@ namespace jactorio::game
 
         proto::Item item;
         // Orientation is orientation from origin object
-        EXPECT_TRUE(InsertContainerEntity({logicData_, {&item, 2}, *container_data, proto::Orientation::down}));
-        EXPECT_TRUE(CanInsertContainerEntity({logicData_, {}, *container_data, proto::Orientation::up}));
+        EXPECT_TRUE(InsertContainerEntity({logicData_, {&item, 2}, *container_data, Orientation::down}));
+        EXPECT_TRUE(CanInsertContainerEntity({logicData_, {}, *container_data, Orientation::up}));
 
         // Inserted item
         EXPECT_EQ(container_data->inventory[0].item, &item);
@@ -171,124 +172,124 @@ namespace jactorio::game
     }
 
     TEST_F(ItemDropOffTest, InsertOffset) {
-        auto line_data                    = CreateConveyor(proto::Orientation::up);
-        line_data.lineSegmentIndex        = 1;
-        line_data.lineSegment->itemOffset = 10; // Arbitrary itemOffset
+        auto line_data                  = CreateConveyor(Orientation::up);
+        line_data.structIndex           = 1;
+        line_data.structure->headOffset = 10; // Arbitrary
 
-        ConveyorInsert(proto::Orientation::up, line_data);
-        ASSERT_EQ(line_data.lineSegment->right.lane.size(), 1);
-        EXPECT_DOUBLE_EQ(line_data.lineSegment->right.lane[0].dist.getAsDouble(), 1.5);
+        ConveyorInsert(Orientation::up, line_data);
+        ASSERT_EQ(line_data.structure->right.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(line_data.structure->right.lane[0].dist.getAsDouble(), 1.5);
     }
 
     TEST_F(ItemDropOffTest, InsertConveyorUp) {
         {
-            auto line = CreateConveyor(proto::Orientation::up);
+            auto line = CreateConveyor(Orientation::up);
 
-            ConveyorInsert(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            ConveyorInsert(Orientation::up, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::up);
+            auto line = CreateConveyor(Orientation::up);
 
-            ConveyorInsert(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+            ConveyorInsert(Orientation::right, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 1);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::up);
+            auto line = CreateConveyor(Orientation::up);
 
-            ConveyorInsert(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            ConveyorInsert(Orientation::down, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::up);
+            auto line = CreateConveyor(Orientation::up);
 
-            ConveyorInsert(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            ConveyorInsert(Orientation::left, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
     }
 
     TEST_F(ItemDropOffTest, InsertConveyorRight) {
         {
-            auto line = CreateConveyor(proto::Orientation::right);
+            auto line = CreateConveyor(Orientation::right);
 
-            ConveyorInsert(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            ConveyorInsert(Orientation::up, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::right);
+            auto line = CreateConveyor(Orientation::right);
 
-            ConveyorInsert(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            ConveyorInsert(Orientation::right, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::right);
+            auto line = CreateConveyor(Orientation::right);
 
-            ConveyorInsert(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+            ConveyorInsert(Orientation::down, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 1);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::right);
+            auto line = CreateConveyor(Orientation::right);
 
-            ConveyorInsert(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            ConveyorInsert(Orientation::left, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
     }
 
     TEST_F(ItemDropOffTest, InsertConveyorDown) {
         {
-            auto line = CreateConveyor(proto::Orientation::down);
+            auto line = CreateConveyor(Orientation::down);
 
-            ConveyorInsert(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            ConveyorInsert(Orientation::up, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::down);
+            auto line = CreateConveyor(Orientation::down);
 
-            ConveyorInsert(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            ConveyorInsert(Orientation::right, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::down);
+            auto line = CreateConveyor(Orientation::down);
 
-            ConveyorInsert(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            ConveyorInsert(Orientation::down, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::down);
+            auto line = CreateConveyor(Orientation::down);
 
-            ConveyorInsert(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+            ConveyorInsert(Orientation::left, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 1);
         }
     }
 
     TEST_F(ItemDropOffTest, InsertConveyorLeft) {
         {
-            auto line = CreateConveyor(proto::Orientation::left);
+            auto line = CreateConveyor(Orientation::left);
 
-            ConveyorInsert(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 1);
+            ConveyorInsert(Orientation::up, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 1);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::left);
+            auto line = CreateConveyor(Orientation::left);
 
-            ConveyorInsert(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            ConveyorInsert(Orientation::right, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::left);
+            auto line = CreateConveyor(Orientation::left);
 
-            ConveyorInsert(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            ConveyorInsert(Orientation::down, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::left);
+            auto line = CreateConveyor(Orientation::left);
 
-            ConveyorInsert(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 1);
+            ConveyorInsert(Orientation::left, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 1);
         }
     }
 
@@ -297,21 +298,21 @@ namespace jactorio::game
         // ^
         // | <--
 
-        const auto right = CreateConveyor(proto::Orientation::right, ConveyorSegment::TerminationType::straight);
-        const auto up    = CreateConveyor(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right);
-        auto left        = CreateConveyor(proto::Orientation::left, ConveyorSegment::TerminationType::bend_right);
+        const auto right = CreateConveyor(Orientation::right, ConveyorStruct::TerminationType::straight);
+        const auto up    = CreateConveyor(Orientation::up, ConveyorStruct::TerminationType::bend_right);
+        auto left        = CreateConveyor(Orientation::left, ConveyorStruct::TerminationType::bend_right);
 
-        left.lineSegment->targetSegment = up.lineSegment.get();
-        up.lineSegment->targetSegment   = right.lineSegment.get();
+        left.structure->target = up.structure.get();
+        up.structure->target   = right.structure.get();
 
-        left.lineSegmentIndex = 1;
+        left.structIndex = 1;
 
 
         proto::Item item;
 
-        ConveyorInsert(proto::Orientation::up, left);
-        ASSERT_EQ(left.lineSegment->left.lane.size(), 1);
-        EXPECT_DOUBLE_EQ(left.lineSegment->left.lane[0].dist.getAsDouble(), 0.5 + 0.7);
+        ConveyorInsert(Orientation::up, left);
+        ASSERT_EQ(left.structure->left.lane.size(), 1);
+        EXPECT_DOUBLE_EQ(left.structure->left.lane[0].dist.getAsDouble(), 0.5 + 0.7);
     }
 
     TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
@@ -331,7 +332,7 @@ namespace jactorio::game
         targetProtoData_ = &assembly_machine;
 
         // Orientation doesn't matter
-        EXPECT_TRUE(InsertAssemblyMachine({logicData_, {recipe_pack.item2, 10}, asm_data, proto::Orientation::up}));
+        EXPECT_TRUE(InsertAssemblyMachine({logicData_, {recipe_pack.item2, 10}, asm_data, Orientation::up}));
 
         EXPECT_EQ(asm_data.ingredientInv[1].item, recipe_pack.item2);
         EXPECT_EQ(asm_data.ingredientInv[1].count, 9); // 1 used to begin crafting
@@ -352,7 +353,7 @@ namespace jactorio::game
         asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
 
         // 49 + 2 > 50
-        EXPECT_FALSE(InsertAssemblyMachine({logicData_, {recipe_pack.item1, 2}, asm_data, proto::Orientation::up}));
+        EXPECT_FALSE(InsertAssemblyMachine({logicData_, {recipe_pack.item1, 2}, asm_data, Orientation::up}));
     }
 
     TEST_F(ItemDropOffTest, CanInsertAssemblyMachine) {
@@ -361,7 +362,7 @@ namespace jactorio::game
         proto::Item item;
 
         // No recipe
-        EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, proto::Orientation::down}));
+        EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, Orientation::down}));
 
 
         data::PrototypeManager prototype_manager;
@@ -370,10 +371,10 @@ namespace jactorio::game
         asm_data.ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
 
         // Has recipe, wrong item
-        EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, proto::Orientation::down}));
+        EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, Orientation::down}));
 
         // Has recipe, correct item
-        DropOffParams args{logicData_, {recipe_pack.item1, 2000}, asm_data, proto::Orientation::down};
+        DropOffParams args{logicData_, {recipe_pack.item1, 2000}, asm_data, Orientation::down};
         EXPECT_TRUE(CanInsertAssemblyMachine(args));
 
         // Exceeds the max ingredient count multiple that a slot can be filled
@@ -396,7 +397,7 @@ namespace jactorio::game
     class InserterPickupTest : public testing::Test, public InserterPickup
     {
     public:
-        explicit InserterPickupTest() : InserterPickup(proto::Orientation::up) {}
+        explicit InserterPickupTest() : InserterPickup(Orientation::up) {}
 
         void SetUp() override {
             worldData_.EmplaceChunk(0, 0);
@@ -412,10 +413,10 @@ namespace jactorio::game
         proto::Item lineItem_;
 
         /// Creates a conveyor with  1 item on each side
-        proto::ConveyorData CreateConveyor(const proto::Orientation orientation) const {
+        proto::ConveyorData CreateConveyor(const Orientation orientation) const {
 
             const auto segment =
-                std::make_shared<ConveyorSegment>(orientation, ConveyorSegment::TerminationType::straight, 2);
+                std::make_shared<ConveyorStruct>(orientation, ConveyorStruct::TerminationType::straight, 2);
 
             segment->InsertItem(false, 0.5, lineItem_);
             segment->InsertItem(true, 0.5, lineItem_);
@@ -425,7 +426,7 @@ namespace jactorio::game
 
 
         /// \param orientation Orientation to line being picked up from
-        void PickupLine(const proto::Orientation orientation, proto::ConveyorData& line_data) {
+        void PickupLine(const Orientation orientation, proto::ConveyorData& line_data) {
             constexpr int pickup_amount = 1;
 
             const auto result = PickupTransportBelt(
@@ -442,8 +443,8 @@ namespace jactorio::game
         worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity).MakeUniqueData<proto::ContainerEntityData>(1);
 
         auto set_prototype = [&](proto::Entity& entity_proto) {
-            auto& layer         = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
-            layer.prototypeData = &entity_proto;
+            auto& layer = worldData_.GetTile(2, 4)->GetLayer(TileLayer::entity);
+            layer.SetPrototype(Orientation::up, &entity_proto);
         };
 
 
@@ -478,7 +479,8 @@ namespace jactorio::game
 
         // Ok: Assembly machine
         proto::AssemblyMachine assembly_machine;
-        TestSetupAssemblyMachine(worldData_, {3, 4}, assembly_machine);
+        assembly_machine.SetDimensions(2, 2);
+        TestSetupAssemblyMachine(worldData_, {3, 4}, Orientation::up, assembly_machine);
 
         EXPECT_TRUE(this->Initialize(worldData_, {4, 5}));
         EXPECT_TRUE(this->IsInitialized());
@@ -487,7 +489,7 @@ namespace jactorio::game
 
     TEST_F(InserterPickupTest, PickupContainerEntity) {
         proto::ContainerEntity container_entity;
-        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, container_entity);
+        auto& container_layer = TestSetupContainer(worldData_, {2, 4}, Orientation::up, container_entity);
         auto& container_data  = *container_layer.GetUniqueData();
 
         proto::Item item;
@@ -495,11 +497,11 @@ namespace jactorio::game
         inv[0]    = {&item, 10};
 
 
-        PickupContainerEntity({logicData_, 1, proto::RotationDegreeT(179), 1, container_data, proto::Orientation::up});
+        PickupContainerEntity({logicData_, 1, proto::RotationDegreeT(179), 1, container_data, Orientation::up});
         EXPECT_EQ(inv[0].count, 10); // No items picked up, not 180 degrees
 
 
-        PickupParams args = {logicData_, 1, proto::RotationDegreeT(180), 2, container_data, proto::Orientation::up};
+        PickupParams args = {logicData_, 1, proto::RotationDegreeT(180), 2, container_data, Orientation::up};
 
         EXPECT_EQ(GetPickupContainerEntity(args), &item);
 
@@ -512,109 +514,109 @@ namespace jactorio::game
     TEST_F(InserterPickupTest, PickupConveyorUp) {
         // Line is above inserter
         {
-            auto line = CreateConveyor(proto::Orientation::up);
+            auto line = CreateConveyor(Orientation::up);
 
-            PickupLine(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            PickupLine(Orientation::up, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::up);
+            auto line = CreateConveyor(Orientation::up);
 
-            PickupLine(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            PickupLine(Orientation::right, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::up);
+            auto line = CreateConveyor(Orientation::up);
 
-            PickupLine(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            PickupLine(Orientation::down, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::up);
+            auto line = CreateConveyor(Orientation::up);
 
-            PickupLine(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            PickupLine(Orientation::left, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
     }
 
     TEST_F(InserterPickupTest, PickupConveyorRight) {
         {
-            auto line = CreateConveyor(proto::Orientation::right);
+            auto line = CreateConveyor(Orientation::right);
 
-            PickupLine(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            PickupLine(Orientation::up, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::right);
+            auto line = CreateConveyor(Orientation::right);
 
-            PickupLine(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            PickupLine(Orientation::right, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::right);
+            auto line = CreateConveyor(Orientation::right);
 
-            PickupLine(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            PickupLine(Orientation::down, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::right);
+            auto line = CreateConveyor(Orientation::right);
 
-            PickupLine(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            PickupLine(Orientation::left, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
     }
 
     TEST_F(InserterPickupTest, PickupConveyorDown) {
         {
-            auto line = CreateConveyor(proto::Orientation::down);
+            auto line = CreateConveyor(Orientation::down);
 
-            PickupLine(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            PickupLine(Orientation::up, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::down);
+            auto line = CreateConveyor(Orientation::down);
 
-            PickupLine(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            PickupLine(Orientation::right, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::down);
+            auto line = CreateConveyor(Orientation::down);
 
-            PickupLine(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            PickupLine(Orientation::down, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::down);
+            auto line = CreateConveyor(Orientation::down);
 
-            PickupLine(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            PickupLine(Orientation::left, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
     }
 
     TEST_F(InserterPickupTest, PickupConveyorLeft) {
         {
-            auto line = CreateConveyor(proto::Orientation::left);
+            auto line = CreateConveyor(Orientation::left);
 
-            PickupLine(proto::Orientation::up, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            PickupLine(Orientation::up, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::left);
+            auto line = CreateConveyor(Orientation::left);
 
-            PickupLine(proto::Orientation::right, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            PickupLine(Orientation::right, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::left);
+            auto line = CreateConveyor(Orientation::left);
 
-            PickupLine(proto::Orientation::down, line);
-            EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
+            PickupLine(Orientation::down, line);
+            EXPECT_EQ(line.structure->left.lane.size(), 0);
         }
         {
-            auto line = CreateConveyor(proto::Orientation::left);
+            auto line = CreateConveyor(Orientation::left);
 
-            PickupLine(proto::Orientation::left, line);
-            EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
+            PickupLine(Orientation::left, line);
+            EXPECT_EQ(line.structure->right.lane.size(), 0);
         }
     }
 
@@ -624,56 +626,56 @@ namespace jactorio::game
         // | <--
 
         const auto right =
-            std::make_shared<ConveyorSegment>(proto::Orientation::right, ConveyorSegment::TerminationType::straight, 2);
+            std::make_shared<ConveyorStruct>(Orientation::right, ConveyorStruct::TerminationType::straight, 2);
 
         const auto up =
-            std::make_shared<ConveyorSegment>(proto::Orientation::up, ConveyorSegment::TerminationType::bend_right, 2);
+            std::make_shared<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 2);
 
-        const auto left = std::make_shared<ConveyorSegment>(
-            proto::Orientation::left, ConveyorSegment::TerminationType::bend_right, 2);
+        const auto left =
+            std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::bend_right, 2);
 
-        left->targetSegment = up.get();
-        up->targetSegment   = right.get();
+        left->target = up.get();
+        up->target   = right.get();
 
         proto::ConveyorData line{left};
-        line.lineSegmentIndex = 1;
+        line.structIndex = 1;
 
 
         const proto::Item item;
 
         left->AppendItem(true, 0.5 + 0.7, item);
-        PickupLine(proto::Orientation::up, line);
+        PickupLine(Orientation::up, line);
         EXPECT_EQ(left->left.lane.size(), 0);
 
         left->AppendItem(false, 0.5 + 0.3, item);
-        PickupLine(proto::Orientation::up, line);
+        PickupLine(Orientation::up, line);
         EXPECT_EQ(left->right.lane.size(), 0);
     }
 
     TEST_F(InserterPickupTest, PickupConveyorAlternativeSide) {
         // If the preferred lane is available, inserter will attempt to pick up from other lane
-        auto line = CreateConveyor(proto::Orientation::up);
+        auto line = CreateConveyor(Orientation::up);
 
-        EXPECT_EQ(GetPickupTransportBelt({logicData_, 1, proto::RotationDegreeT(180), 1, line, proto::Orientation::up}),
+        EXPECT_EQ(GetPickupTransportBelt({logicData_, 1, proto::RotationDegreeT(180), 1, line, Orientation::up}),
                   &lineItem_);
 
         // Should set index to 0 since a item was removed
-        line.lineSegment->right.index = 10;
+        line.structure->right.index = 10;
 
-        PickupLine(proto::Orientation::up, line);
-        EXPECT_EQ(line.lineSegment->right.lane.size(), 0);
-        EXPECT_EQ(line.lineSegment->right.index, 0);
+        PickupLine(Orientation::up, line);
+        EXPECT_EQ(line.structure->right.lane.size(), 0);
+        EXPECT_EQ(line.structure->right.index, 0);
 
 
         // Use alternative side
-        EXPECT_EQ(GetPickupTransportBelt({logicData_, 1, proto::RotationDegreeT(180), 1, line, proto::Orientation::up}),
+        EXPECT_EQ(GetPickupTransportBelt({logicData_, 1, proto::RotationDegreeT(180), 1, line, Orientation::up}),
                   &lineItem_);
 
-        line.lineSegment->left.index = 10;
+        line.structure->left.index = 10;
 
-        PickupLine(proto::Orientation::up, line);
-        EXPECT_EQ(line.lineSegment->left.lane.size(), 0);
-        EXPECT_EQ(line.lineSegment->left.index, 0);
+        PickupLine(Orientation::up, line);
+        EXPECT_EQ(line.structure->left.lane.size(), 0);
+        EXPECT_EQ(line.structure->left.index, 0);
     }
 
 
@@ -681,12 +683,11 @@ namespace jactorio::game
         data::PrototypeManager prototype_manager;
 
         proto::AssemblyMachine asm_machine;
-        auto& layer = TestSetupAssemblyMachine(worldData_, {0, 0}, asm_machine);
+        auto& layer = TestSetupAssemblyMachine(worldData_, {0, 0}, Orientation::up, asm_machine);
         auto* data  = layer.GetUniqueData<proto::AssemblyMachineData>();
 
         // Does nothing as there is no recipe yet
-        PickupAssemblyMachine(
-            {logicData_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, proto::Orientation::up});
+        PickupAssemblyMachine({logicData_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, Orientation::up});
 
         // ======================================================================
 
@@ -697,7 +698,7 @@ namespace jactorio::game
 
         // No items in product inventory
         EXPECT_FALSE(PickupAssemblyMachine(
-                         {logicData_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, proto::Orientation::up})
+                         {logicData_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, Orientation::up})
                          .first);
 
 
@@ -709,7 +710,7 @@ namespace jactorio::game
 
         targetProtoData_ = &asm_machine;
 
-        PickupParams args{logicData_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, proto::Orientation::up};
+        PickupParams args{logicData_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, Orientation::up};
 
         EXPECT_EQ(GetPickupAssemblyMachine(args), recipe_pack.itemProduct);
         auto result = PickupAssemblyMachine(args);

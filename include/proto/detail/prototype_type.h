@@ -4,9 +4,11 @@
 #define JACTORIO_INCLUDE_PROTO_DETAIL_PROTOTYPE_TYPE_H
 #pragma once
 
+#include "jactorio.h"
+
 #include "core/coordinate_tuple.h"
 #include "core/data_type.h"
-#include "proto/detail/type.h"
+#include "core/orientation.h"
 
 namespace jactorio::proto
 {

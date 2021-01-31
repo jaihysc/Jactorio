@@ -42,12 +42,12 @@ void game::PlayerAction::PlaceEntity(GameDataGlobal& data_global) {
     if (gui::input_mouse_captured || !data_global.player.world.MouseSelectedTileInRange())
         return;
 
-    const auto tile_selected = data_global.player.world.GetMouseTileCoords();
+    const auto tile_selected_coord = data_global.player.world.GetMouseTileCoords();
 
     auto& player = data_global.player;
     auto& world  = data_global.worlds[player.world.GetId()];
 
-    player.placement.TryPlaceEntity(world, data_global.logic, tile_selected.x, tile_selected.y);
+    player.placement.TryPlaceEntity(world, data_global.logic, tile_selected_coord);
 }
 
 void game::PlayerAction::ActivateLayer(GameDataGlobal& data_global) {
@@ -64,12 +64,12 @@ void game::PlayerAction::PickupOrMineEntity(GameDataGlobal& data_global) {
     if (gui::input_mouse_captured || !data_global.player.world.MouseSelectedTileInRange())
         return;
 
-    const auto tile_selected = data_global.player.world.GetMouseTileCoords();
+    const auto tile_selected_coord = data_global.player.world.GetMouseTileCoords();
 
     auto& player = data_global.player;
     auto& world  = data_global.worlds[player.world.GetId()];
 
-    player.placement.TryPickup(world, data_global.logic, tile_selected.x, tile_selected.y);
+    player.placement.TryPickup(world, data_global.logic, tile_selected_coord);
 }
 
 

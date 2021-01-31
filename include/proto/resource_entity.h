@@ -61,7 +61,7 @@ namespace jactorio::proto
 
         void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {
             // Must convert to at least 1 game tick
-            J_DATA_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
+            J_PROTO_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
         }
     };
 } // namespace jactorio::proto

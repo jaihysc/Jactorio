@@ -42,8 +42,8 @@ void proto::Inserter::OnBuild(game::WorldData& world_data,
                               const WorldCoord& world_coords,
                               game::ChunkTileLayer& tile_layer,
                               Orientation orientation) const {
-    auto* inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
-    inserter_data->set  = OnRGetSpriteSet(orientation, world_data, world_coords);
+    auto& inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
+    inserter_data.set   = OnRGetSpriteSet(orientation, world_data, world_coords);
 
     InitPickupDropoff(world_data, world_coords, orientation);
 }
@@ -72,7 +72,7 @@ void proto::Inserter::OnTileUpdate(game::WorldData& world_data,
             inserter_data.dropoff.Uninitialize();
         }
 
-        world_data.LogicRemove(game::Chunk::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
+        world_data.LogicRemove(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
         return;
     }
 
@@ -87,7 +87,7 @@ void proto::Inserter::OnTileUpdate(game::WorldData& world_data,
 
     // Add to logic updates if initialized, remove if not
     if (inserter_data.pickup.IsInitialized() && inserter_data.dropoff.IsInitialized()) {
-        world_data.LogicRegister(game::Chunk::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
+        world_data.LogicRegister(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
     }
 }
 
@@ -95,7 +95,7 @@ void proto::Inserter::OnRemove(game::WorldData& world_data,
                                game::LogicData& /*logic_data*/,
                                const WorldCoord& world_coords,
                                game::ChunkTileLayer& tile_layer) const {
-    world_data.LogicRemove(game::Chunk::LogicGroup::inserter, world_coords, game::TileLayer::entity);
+    world_data.LogicRemove(game::LogicGroup::inserter, world_coords, game::TileLayer::entity);
 
     const auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
 
@@ -113,9 +113,9 @@ void proto::Inserter::OnDeserialize(game::WorldData& world_data,
 }
 
 void proto::Inserter::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
-    J_DATA_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
-    J_DATA_ASSERT(armSprite != nullptr, "Arm sprite not provided");
-    J_DATA_ASSERT(handSprite != nullptr, "Hand sprite not provided");
+    J_PROTO_ASSERT(tileReach != 0, "Invalid tileReach, > 0");
+    J_PROTO_ASSERT(armSprite != nullptr, "Arm sprite not provided");
+    J_PROTO_ASSERT(handSprite != nullptr, "Hand sprite not provided");
 }
 
 void proto::Inserter::ValidatedPostLoad() {

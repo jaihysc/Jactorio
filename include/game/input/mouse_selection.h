@@ -56,7 +56,7 @@ namespace jactorio::game
         /// With item selected: draws ghost of entity
         void DrawOverlay(WorldData& world,
                          const WorldCoord& coord,
-                         proto::Orientation orientation,
+                         Orientation orientation,
                          const proto::Entity* selected_entity,
                          const proto::Sprite& cursor_sprite);
 

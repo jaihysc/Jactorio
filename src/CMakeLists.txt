@@ -37,7 +37,8 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/game/input/mouse_selection.cpp
 
         ${JACTORIO_DIR}/game/logic/conveyor_controller.cpp
-        ${JACTORIO_DIR}/game/logic/conveyor_segment.cpp
+        ${JACTORIO_DIR}/game/logic/conveyor_struct.cpp
+        ${JACTORIO_DIR}/game/logic/conveyor_utility.cpp
         ${JACTORIO_DIR}/game/logic/deferral_timer.cpp
         ${JACTORIO_DIR}/game/logic/inserter_controller.cpp
         ${JACTORIO_DIR}/game/logic/inventory_controller.cpp
@@ -72,6 +73,7 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/proto/recipe.cpp
         ${JACTORIO_DIR}/proto/recipe_group.cpp
         ${JACTORIO_DIR}/proto/sprite.cpp
+        ${JACTORIO_DIR}/proto/splitter.cpp
 
         ${JACTORIO_DIR}/proto/abstract/conveyor.cpp
         ${JACTORIO_DIR}/proto/abstract/entity.cpp

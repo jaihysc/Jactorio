@@ -163,7 +163,7 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
 
     auto* layer = player.placement.GetActivatedLayer();
     if (layer != nullptr) {
-        drew_gui = layer->GetPrototypeData<proto::Entity>()->OnRShowGui(g_rendr, layer);
+        drew_gui = layer->GetPrototype<proto::Entity>()->OnRShowGui(g_rendr, layer);
         if (drew_gui) {
             SetVisible(Menu::CharacterMenu, false);
         }

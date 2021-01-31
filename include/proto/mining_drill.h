@@ -101,26 +101,30 @@ namespace jactorio::proto
         // Logic
         ///
         /// Finds the FIRST output item of the mining drill, beginning from top left
-        J_NODISCARD Item* FindOutputItem(const game::WorldData& world_data, WorldCoord world_pair) const;
+        /// \param orien Orientation of drill
+        J_NODISCARD Item* FindOutputItem(const game::WorldData& world, WorldCoord coord, Orientation orien) const;
 
-        void OnDeferTimeElapsed(game::WorldData& world_data,
-                                game::LogicData& logic_data,
+        void OnDeferTimeElapsed(game::WorldData& world,
+                                game::LogicData& logic,
                                 UniqueDataBase* unique_data) const override;
 
         ///
         /// Ensures that the mining radius covers a resource entity
-        J_NODISCARD bool OnCanBuild(const game::WorldData& world_data, const WorldCoord& world_coords) const override;
+        /// \param orien Orientation of drill
+        J_NODISCARD bool OnCanBuild(const game::WorldData& world,
+                                    const WorldCoord& coord,
+                                    Orientation orien) const override;
 
-        void OnBuild(game::WorldData& world_data,
-                     game::LogicData& logic_data,
-                     const WorldCoord& world_coords,
+        void OnBuild(game::WorldData& world,
+                     game::LogicData& logic,
+                     const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
-        void OnNeighborUpdate(game::WorldData& world_data,
-                              game::LogicData& logic_data,
-                              const WorldCoord& emit_world_coords,
-                              const WorldCoord& receive_world_coords,
+        void OnNeighborUpdate(game::WorldData& world,
+                              game::LogicData& logic,
+                              const WorldCoord& emit_coord,
+                              const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
         void OnRemove(game::WorldData& world_data,
@@ -143,18 +147,25 @@ namespace jactorio::proto
 
         J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& world_coord, Orientation orientation) const;
 
-        J_NODISCARD int GetMiningAreaX() const;
-        J_NODISCARD int GetMiningAreaY() const;
+        ///
+        /// \param orien Orientation of drill
+        J_NODISCARD int GetMiningAreaX(Orientation orien) const;
+        ///
+        /// \param orien Orientation of drill
+        J_NODISCARD int GetMiningAreaY(Orientation orien) const;
 
         ///
         /// Sets up drill data such that resources can be deducted from the ground
         /// \return true if a resource was found, otherwise false
-        bool SetupResourceDeduction(const game::WorldData& world_data, MiningDrillData& drill_data) const;
+        bool SetupResourceDeduction(const game::WorldData& world, MiningDrillData& drill_data, Orientation orien) const;
 
         ///
         /// Removes resource using resourceCoord + resourceOffset in drill_data, searches for another resource if
-        /// depleted \return true if successful
-        bool DeductResource(game::WorldData& world_data,
+        /// depleted
+        /// \param orien Orientation of drill
+        /// \return true if successful
+        bool DeductResource(game::WorldData& world,
+                            Orientation orien,
                             MiningDrillData& drill_data,
                             ResourceEntityResourceCount amount = 1) const;
 

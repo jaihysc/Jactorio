@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "game/logic/conveyor_segment.h"
+#include "game/logic/conveyor_struct.h"
 #include "game/world/world_data.h"
 #include "proto/abstract/conveyor.h"
 
@@ -47,7 +47,7 @@ J_NODISCARD bool MoveNextItem(const proto::LineDistT& tiles_moved,
 }
 
 template <bool IsLeft>
-void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segment) {
+void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segment) {
     using namespace jactorio;
     auto& side      = segment.GetSide(IsLeft);
     uint16_t& index = side.index;
@@ -61,8 +61,8 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
         if (offset >= proto::LineDistT(0))
             return;
 
-        if (segment.targetSegment) {
-            game::ConveyorSegment& target_segment = *segment.targetSegment;
+        if (segment.target) {
+            game::ConveyorStruct& target_segment = *segment.target;
             // Offset to insert at target segment from head
             proto::LineDistT target_offset;
             {
@@ -70,12 +70,12 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
                 switch (segment.terminationType) {
                     // Since segments terminating with side only can target the middle of a grouped segment, it uses
                     // its own member for head offset
-                case game::ConveyorSegment::TerminationType::left_only:
-                case game::ConveyorSegment::TerminationType::right_only:
+                case game::ConveyorStruct::TerminationType::left_only:
+                case game::ConveyorStruct::TerminationType::right_only:
                     // |   |   |   |
                     // 3   2   1   0
                     // targetOffset of 0: Length is 1
-                    length = core::SafeCast<double>(1) + segment.targetInsertOffset;
+                    length = core::SafeCast<double>(1) + segment.sideInsertIndex;
                     break;
 
                 default:
@@ -85,7 +85,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
                 target_offset = proto::LineDistT(length - fabs(offset.getAsDouble()));
             }
 
-            game::ConveyorSegment::ApplyTerminationDeduction<IsLeft>(
+            game::ConveyorStruct::ApplyTerminationDeduction<IsLeft>(
                 segment.terminationType, target_segment.terminationType, target_offset);
 
             bool moved_item;
@@ -96,13 +96,13 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
                 break;
 
                 // Side insertion
-            case game::ConveyorSegment::TerminationType::left_only:
+            case game::ConveyorStruct::TerminationType::left_only:
                 moved_item = target_segment.left.TryInsertItem(
-                    target_offset.getAsDouble(), *side.lane[index].item, target_segment.itemOffset);
+                    target_offset.getAsDouble(), *side.lane[index].item, target_segment.headOffset);
                 break;
-            case game::ConveyorSegment::TerminationType::right_only:
+            case game::ConveyorStruct::TerminationType::right_only:
                 moved_item = target_segment.right.TryInsertItem(
-                    target_offset.getAsDouble(), *side.lane[index].item, target_segment.itemOffset);
+                    target_offset.getAsDouble(), *side.lane[index].item, target_segment.headOffset);
                 break;
             }
 
@@ -130,7 +130,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
         offset = 0;
         back_item_distance += tiles_moved;
 
-        if (MoveNextItem(tiles_moved, side.lane, index, segment.targetSegment != nullptr)) {
+        if (MoveNextItem(tiles_moved, side.lane, index, segment.target != nullptr)) {
             back_item_distance -= tiles_moved;
         }
         /*
@@ -158,7 +158,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
 
         // Item has reached its end, set the offset to item_spacing since it was decremented 1 too many times
         offset = game::ConveyorProp::kItemSpacing;
-        if (MoveNextItem(tiles_moved, side.lane, index, segment.targetSegment != nullptr)) {
+        if (MoveNextItem(tiles_moved, side.lane, index, segment.target != nullptr)) {
             back_item_distance -= tiles_moved;
         }
     }
@@ -168,12 +168,12 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorSegment& segm
 /// Moves items for conveyors
 /// \param l_chunk Chunk to update
 void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
-    const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::conveyor);
+    const auto& layers = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
 
     // Each object layer holds a conveyor segment
     for (const auto& tile_layer : layers) {
-        const auto& line_proto = *static_cast<const proto::Conveyor*>(tile_layer->prototypeData.Get());
-        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->lineSegment;
+        const auto& line_proto = *tile_layer->GetPrototype<proto::Conveyor>();
+        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->structure;
 
         // Left
         {
@@ -203,12 +203,12 @@ void LogicUpdateMoveItems(const game::Chunk& l_chunk) {
 /// Transitions items on conveyors to other lines and modifies whether of not the line is active
 /// \param l_chunk Chunk to update
 void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
-    const auto& layers = l_chunk.GetLogicGroup(game::Chunk::LogicGroup::conveyor);
+    const auto& layers = l_chunk.GetLogicGroup(game::LogicGroup::conveyor);
 
     // Each object layer holds a conveyor segment
     for (const auto& tile_layer : layers) {
-        const auto* line_proto = static_cast<const proto::Conveyor*>(tile_layer->prototypeData.Get());
-        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->lineSegment;
+        const auto* line_proto = tile_layer->GetPrototype<proto::Conveyor>();
+        auto& line_segment     = *tile_layer->GetUniqueData<proto::ConveyorData>()->structure;
 
         auto tiles_moved = line_proto->speed;
 

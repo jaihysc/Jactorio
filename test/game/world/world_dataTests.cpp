@@ -189,7 +189,8 @@ namespace jactorio::game
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::entity);
 
         proto::ContainerEntity proto;
-        TestSetupMultiTileProp(bottom_layer, {2, 1}, proto);
+        proto.SetDimensions(2, 1);
+        bottom_layer.SetPrototype(Orientation::up, proto);
 
 
         // multiTileIndex is 0
@@ -199,7 +200,7 @@ namespace jactorio::game
         //
         auto* top_tile = worldData_.GetTile(5, 6);
 
-        bottom_layer.SetMultiTileIndex(1);
+        bottom_layer.SetupMultiTile(1, top_tile->GetLayer(TileLayer::entity));
         EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
         EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, TileLayer::entity), top_tile);
     }
@@ -208,16 +209,18 @@ namespace jactorio::game
         worldData_.EmplaceChunk(0, 0);
 
         auto* top_tile    = worldData_.GetTile(0, 0);
-        auto* unique_data = top_tile->GetLayer(TileLayer::resource).MakeUniqueData<proto::ContainerEntityData>(10);
+        auto& unique_data = top_tile->GetLayer(TileLayer::resource).MakeUniqueData<proto::ContainerEntityData>(10);
 
         auto* bottom_tile  = worldData_.GetTile({1, 2});
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::resource);
 
         proto::ContainerEntity proto;
-        TestSetupMultiTileProp(bottom_layer, {7, 10}, proto);
-        bottom_layer.SetMultiTileIndex(15);
+        proto.SetDimensions(7, 10);
+        bottom_layer.SetPrototype(Orientation::up, proto);
 
-        EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), unique_data);
+        bottom_layer.SetupMultiTile(15, top_tile->GetLayer(TileLayer::resource));
+
+        EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
     }
 
     TEST_F(WorldDataTest, GetLayerTopLeftUninitialized) {
@@ -250,7 +253,7 @@ namespace jactorio::game
 
     TEST_F(WorldDataTest, LogicRegister) {
         worldData_.EmplaceChunk(1, 0); // 32, 0 is chunk coords 1, 0
-        worldData_.LogicRegister(Chunk::LogicGroup::inserter, {32, 0}, TileLayer::entity);
+        worldData_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
         auto& logic_chunks = worldData_.LogicGetChunks();
 
@@ -262,37 +265,37 @@ namespace jactorio::game
 
 
         // Registering again will not duplicate logic chunk
-        worldData_.LogicRegister(Chunk::LogicGroup::inserter, {42, 0}, TileLayer::entity);
+        worldData_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
         EXPECT_EQ(logic_chunks.size(), 1);
 
 
         // Registering same position does nothing
-        worldData_.LogicRegister(Chunk::LogicGroup::inserter, {42, 0}, TileLayer::entity);
-        EXPECT_EQ((*logic_chunks.begin())->GetLogicGroup(Chunk::LogicGroup::inserter).size(), 2);
+        worldData_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
+        EXPECT_EQ((*logic_chunks.begin())->GetLogicGroup(LogicGroup::inserter).size(), 2);
     }
 
     TEST_F(WorldDataTest, LogicRemove) {
         worldData_.EmplaceChunk(1, 0);
-        worldData_.LogicRegister(Chunk::LogicGroup::inserter, {32, 0}, TileLayer::entity);
+        worldData_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
-        worldData_.LogicRegister(Chunk::LogicGroup::conveyor, {33, 0}, TileLayer::entity);
+        worldData_.LogicRegister(LogicGroup::conveyor, {33, 0}, TileLayer::entity);
 
         // Registering again will not duplicate logic chunk
-        worldData_.LogicRegister(Chunk::LogicGroup::inserter, {42, 0}, TileLayer::entity);
+        worldData_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
 
 
         // Removed 1, another one remains
-        worldData_.LogicRemove(Chunk::LogicGroup::inserter, {32, 0}, TileLayer::entity);
+        worldData_.LogicRemove(LogicGroup::inserter, {32, 0}, TileLayer::entity);
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
 
         // Inserter group empty, but conveyor group is not, DO NOT remove from logic chunks
-        worldData_.LogicRemove(Chunk::LogicGroup::inserter, {42, 0}, TileLayer::entity);
+        worldData_.LogicRemove(LogicGroup::inserter, {42, 0}, TileLayer::entity);
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
 
 
         // All groups empty, remove logic chunk
-        worldData_.LogicRemove(Chunk::LogicGroup::conveyor, {33, 0}, TileLayer::entity);
+        worldData_.LogicRemove(LogicGroup::conveyor, {33, 0}, TileLayer::entity);
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
     }
 
@@ -300,7 +303,7 @@ namespace jactorio::game
         worldData_.EmplaceChunk(1, 0);
 
         // Removed 1, another one remains
-        worldData_.LogicRemove(Chunk::LogicGroup::inserter, {32, 0}, TileLayer::entity);
+        worldData_.LogicRemove(LogicGroup::inserter, {32, 0}, TileLayer::entity);
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
     }
 
@@ -341,31 +344,40 @@ namespace jactorio::game
     protected:
         WorldData worldData_;
         LogicData logicData_;
-
-        proto::ContainerEntity proto_; // Any proto is fine
-
-        ///
-        /// Checks that multi-tile tile is linked to top left
-        void ExpectTLResolved(const WorldCoord& coord, const TileLayer tile_layer) {
-            auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
-            ASSERT_NE(top_left, nullptr);
-            EXPECT_EQ(top_left->prototypeData, &proto_);
-        }
     };
 
     TEST_F(WorldDataDeserialize, SameChunk) {
         worldData_.EmplaceChunk(0, 0);
 
-        TestSetupMultiTile<false>(worldData_, proto_, {1, 0}, TileLayer::base, {3, 2});
+        data::PrototypeManager prototype_manager;
+        auto& proto = prototype_manager.AddProto<proto::ContainerEntity>();
+
+        proto.SetDimensions(3, 2);
+        TestSetupMultiTile(worldData_, {1, 0}, TileLayer::base, Orientation::up, proto);
+
+
+        prototype_manager.GenerateRelocationTable();
+        data::active_prototype_manager = &prototype_manager;
+
+        worldData_ = TestSerializeDeserialize(worldData_);
 
         worldData_.DeserializePostProcess();
 
-        ExpectTLResolved({2, 0}, TileLayer::base);
-        ExpectTLResolved({3, 0}, TileLayer::base);
 
-        ExpectTLResolved({1, 1}, TileLayer::base);
-        ExpectTLResolved({2, 1}, TileLayer::base);
-        ExpectTLResolved({3, 1}, TileLayer::base);
+        ///
+        /// Checks that multi-tile tile is linked to top left
+        auto expect_tl_resolved = [this, &proto](const WorldCoord& coord, const TileLayer tile_layer) {
+            auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
+            EXPECT_EQ(top_left, &worldData_.GetTile(1, 0)->GetLayer(TileLayer::base));
+            EXPECT_EQ(top_left->GetPrototype(), &proto);
+        };
+
+        expect_tl_resolved({2, 0}, TileLayer::base);
+        expect_tl_resolved({3, 0}, TileLayer::base);
+
+        expect_tl_resolved({1, 1}, TileLayer::base);
+        expect_tl_resolved({2, 1}, TileLayer::base);
+        expect_tl_resolved({3, 1}, TileLayer::base);
     }
 
     TEST_F(WorldDataDeserialize, ResolveMultiTilesFirst) {
@@ -382,10 +394,11 @@ namespace jactorio::game
 
 
         auto& asm_machine = proto_manager.AddProto<proto::AssemblyMachine>();
-        TestSetupAssemblyMachine(worldData_, {0, 2}, asm_machine);
+        asm_machine.SetDimensions(2, 2);
+        TestSetupAssemblyMachine(worldData_, {0, 2}, Orientation::up, asm_machine);
 
         auto& inserter = proto_manager.AddProto<proto::Inserter>();
-        TestSetupInserter(worldData_, logicData_, {1, 1}, inserter, proto::Orientation::down);
+        TestSetupInserter(worldData_, logicData_, {1, 1}, Orientation::down, inserter);
 
 
         data::active_prototype_manager   = &proto_manager;
@@ -422,8 +435,8 @@ namespace jactorio::game
         worldData_.EmplaceChunk(0, 0);
 
         MockWorldObject mock_obj;
-        auto& tile_layer         = worldData_.GetTile(5, 6)->GetLayer(TileLayer::entity);
-        tile_layer.prototypeData = &mock_obj;
+        auto& tile_layer = worldData_.GetTile(5, 6)->GetLayer(TileLayer::entity);
+        tile_layer.SetPrototype(Orientation::up, &mock_obj);
 
         worldData_.DeserializePostProcess();
 
