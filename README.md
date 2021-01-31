@@ -4,7 +4,9 @@
 
 My attempt at recreating [Factorio](https://factorio.com), inspired by [Hopson98's recreation of Minecraft](https://github.com/Hopson97/MineCraft-One-Week-Challenge)
 
-Check out a [weekly log here](https://github.com/jaihysc/Jactorio/wiki/Devlog)
+[Screenshots](https://github.com/jaihysc/Jactorio/wiki/Screenshots)
+
+[Weekly log](https://github.com/jaihysc/Jactorio/wiki/Devlog)
 
 ## Work in progress
 
@@ -13,6 +15,8 @@ Check out a [weekly log here](https://github.com/jaihysc/Jactorio/wiki/Devlog)
 - [x] Drills
 - [x] Inserters
 - [x] Assembly Machines
+- [ ] Splitters
+- [ ] Underground belts
 - [ ] Smelting / Furnaces
 
 ## Building
