@@ -156,8 +156,8 @@ namespace jactorio::game
 
     ///
     /// Renumbers structIndex for tiles along a conveyor segment at provided coords
-    /// \param start_id Id for current coordinate, renumber stops when start_id + 1 >= con_struct length
-    void ConveyorRenumber(WorldData& world, WorldCoord coord, int start_id = 0);
+    /// \param start_index Index to start renumbering at, renumber stops when index >= con_struct length
+    void ConveyorRenumber(WorldData& world, WorldCoord coord, int start_index = 0);
 
     ///
     /// Changes the conveyor structure for a conveyor segment, updates neighboring structure's targets

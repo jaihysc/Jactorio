@@ -164,8 +164,11 @@ void game::ConveyorConnectLeft(WorldData& world, const WorldCoord& coord) {
 
 ///
 /// Disconnects segments and adjusts segment termination type accordingly
-void DisconnectSegment(game::WorldData& world, const WorldCoord& origin_coord, const WorldCoord& neighbor_coord) {
-    auto* origin_data   = GetConData(world, origin_coord);
+template <int XOffset, int YOffset>
+void DisconnectSegment(game::WorldData& world, const WorldCoord& coord) {
+    const auto neighbor_coord = WorldCoord(coord.x + XOffset, coord.y + YOffset);
+
+    auto* origin_data   = GetConData(world, coord);
     auto* neighbor_data = GetConData(world, neighbor_coord);
 
     assert(origin_data != nullptr);
@@ -211,19 +214,19 @@ void game::ConveyorNeighborDisconnect(WorldData& world, const WorldCoord& coord)
 }
 
 void game::ConveyorDisconnectUp(WorldData& world, const WorldCoord& coord) {
-    DisconnectSegment(world, coord, {coord.x, coord.y - 1});
+    DisconnectSegment<0, -1>(world, coord);
 }
 
 void game::ConveyorDisconnectRight(WorldData& world, const WorldCoord& coord) {
-    DisconnectSegment(world, coord, {coord.x + 1, coord.y});
+    DisconnectSegment<1, 0>(world, coord);
 }
 
 void game::ConveyorDisconnectDown(WorldData& world, const WorldCoord& coord) {
-    DisconnectSegment(world, coord, {coord.x, coord.y + 1});
+    DisconnectSegment<0, 1>(world, coord);
 }
 
 void game::ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord) {
-    DisconnectSegment(world, coord, {coord.x - 1, coord.y});
+    DisconnectSegment<-1, 0>(world, coord);
 }
 
 
@@ -393,11 +396,11 @@ void game::ConveyorLogicRemove(WorldData& world,
     });
 }
 
-void game::ConveyorRenumber(WorldData& world, WorldCoord coord, const int start_id) {
+void game::ConveyorRenumber(WorldData& world, WorldCoord coord, const int start_index) {
     auto* con_data = GetConData(world, coord);
     assert(con_data != nullptr);
     assert(con_data->structure.get() != nullptr);
-    for (auto i = start_id; i < con_data->structure->length; ++i) {
+    for (auto i = start_index; i < con_data->structure->length; ++i) {
         auto* i_line_data = GetConData(world, coord);
         assert(i_line_data != nullptr);
 

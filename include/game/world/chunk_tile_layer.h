@@ -76,7 +76,7 @@ namespace jactorio::game
         // ======================================================================
 
         ///
-        /// Fetches orientation at current layer or if multi tile, top left
+        /// Fetches orientation at current layer
         J_NODISCARD Orientation GetOrientation() const noexcept;
 
 
@@ -320,7 +320,7 @@ namespace jactorio::game
 
 
         ///
-        /// Sets orientation at current layer or if multi tile, top left
+        /// Sets orientation at current layer
         void SetOrientation(Orientation orientation) noexcept;
 
         J_NODISCARD static bool IsTopLeft(TileDistanceT multi_tile_index) noexcept;
