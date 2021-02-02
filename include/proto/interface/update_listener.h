@@ -8,7 +8,7 @@
 
 namespace jactorio::game
 {
-    class WorldData;
+    class World;
 }
 
 namespace jactorio::proto
@@ -24,7 +24,7 @@ namespace jactorio::proto
     public:
         virtual ~IUpdateListener() = default;
 
-        virtual void OnTileUpdate(game::WorldData& world_data,
+        virtual void OnTileUpdate(game::World& world,
                                   const WorldCoord& emit_coords,
                                   const WorldCoord& receive_coords,
                                   UpdateType type) const = 0;

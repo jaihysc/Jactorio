@@ -15,7 +15,7 @@ namespace jactorio::game
         GameWorlds gameWorlds_{1};
 
     protected:
-        WorldData& world_ = gameWorlds_[0];
+        World& world_ = gameWorlds_[0];
         LogicData logic_;
 
         PlayerData player_;
@@ -172,7 +172,7 @@ namespace jactorio::game
             }
 
             J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                                   WorldData& /*world_data*/,
+                                                   World& /*world*/,
                                                    const WorldCoord& /*world_coords*/) const override {
                 getSpriteSetCalled = true;
                 return 16;

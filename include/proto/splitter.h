@@ -27,19 +27,19 @@ namespace jactorio::proto
         PROTOTYPE_CATEGORY(splitter);
 
 
-        void OnBuild(game::WorldData& world,
+        void OnBuild(game::World& world,
                      game::LogicData& logic,
                      const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
-        void OnNeighborUpdate(game::WorldData& world,
+        void OnNeighborUpdate(game::World& world,
                               game::LogicData& logic,
                               const WorldCoord& emit_coord,
                               const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
-        void OnRemove(game::WorldData& world,
+        void OnRemove(game::World& world,
                       game::LogicData& logic,
                       const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
@@ -52,7 +52,7 @@ namespace jactorio::proto
         ///
         /// Gets the coordinate of the non top left side of the splitter
         /// \remark Assumes current tile is part of a splitter
-        static WorldCoord GetNonTopLeftCoord(const game::WorldData& world, const WorldCoord& coord);
+        static WorldCoord GetNonTopLeftCoord(const game::World& world, const WorldCoord& coord);
     };
 } // namespace jactorio::proto
 

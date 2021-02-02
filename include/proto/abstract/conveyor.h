@@ -80,31 +80,31 @@ namespace jactorio::proto
                                const UniqueDataBase* unique_data) const override;
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::WorldData& world_data,
+                                               game::World& world,
                                                const WorldCoord& world_coords) const override;
 
         J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
                                                    GameTickT game_tick) const override;
 
 
-        void OnBuild(game::WorldData& world,
+        void OnBuild(game::World& world,
                      game::LogicData& logic,
                      const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
-        void OnNeighborUpdate(game::WorldData& world,
+        void OnNeighborUpdate(game::World& world,
                               game::LogicData& logic,
                               const WorldCoord& emit_coord,
                               const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
-        void OnRemove(game::WorldData& world,
+        void OnRemove(game::World& world,
                       game::LogicData& logic,
                       const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 
-        void OnDeserialize(game::WorldData& world_data,
+        void OnDeserialize(game::World& world,
                            const WorldCoord& world_coord,
                            game::ChunkTileLayer& tile_layer) const override;
 

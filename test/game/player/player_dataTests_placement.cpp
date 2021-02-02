@@ -18,7 +18,7 @@ namespace jactorio::game
         PlayerData::Placement& playerPlace_ = playerData_.placement;
 
         LogicData logicData_;
-        WorldData worldData_;
+        World worldData_;
 
         data::PrototypeManager dataManager_;
 
@@ -245,8 +245,8 @@ namespace jactorio::game
 
         // Create unique data by calling build event for prototype with layer
         {
-            WorldData world_data{};
-            entity.OnBuild(world_data, logicData_, {}, tile.GetLayer(TileLayer::entity), Orientation::up);
+            World world{};
+            entity.OnBuild(world, logicData_, {}, tile.GetLayer(TileLayer::entity), Orientation::up);
         }
 
 
@@ -400,7 +400,7 @@ namespace jactorio::game
         mutable std::vector<WorldCoord> emitCoords;
         mutable std::vector<WorldCoord> receiveCoords;
 
-        void OnBuild(WorldData& /*world_data*/,
+        void OnBuild(World& /*world*/,
                      LogicData& /*logic_data*/,
                      const WorldCoord& /*world_coords*/,
                      ChunkTileLayer& /*tile_layer*/,
@@ -408,7 +408,7 @@ namespace jactorio::game
             buildCalled = true;
         }
 
-        void OnRemove(WorldData& /*world_data*/,
+        void OnRemove(World& /*world*/,
                       LogicData& /*logic_data*/,
                       const WorldCoord& /*world_coords*/,
                       ChunkTileLayer& /*tile_layer*/) const override {
@@ -416,14 +416,14 @@ namespace jactorio::game
         }
 
 
-        J_NODISCARD bool OnCanBuild(const WorldData& /*world*/,
+        J_NODISCARD bool OnCanBuild(const World& /*world*/,
                                     const WorldCoord& /*coord*/,
                                     const Orientation /*orien*/) const override {
             return onCanBuildReturn;
         }
 
 
-        void OnNeighborUpdate(WorldData& /*world_data*/,
+        void OnNeighborUpdate(World& /*world*/,
                               LogicData& /*logic_data*/,
                               const WorldCoord& emit_world_coords,
                               const WorldCoord& receive_world_coords,
@@ -441,7 +441,7 @@ namespace jactorio::game
             mutable WorldCoord receive;
             mutable proto::UpdateType type = proto::UpdateType::remove;
 
-            void OnTileUpdate(WorldData& /*world_data*/,
+            void OnTileUpdate(World& /*world*/,
                               const WorldCoord& emit_coords,
                               const WorldCoord& receive_coords,
                               const proto::UpdateType type) const override {

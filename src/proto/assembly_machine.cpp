@@ -3,7 +3,7 @@
 #include "proto/assembly_machine.h"
 
 #include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "gui/menus.h"
 #include "proto/recipe.h"
 
@@ -107,7 +107,7 @@ bool proto::AssemblyMachine::TryBeginCrafting(game::LogicData& logic_data, Assem
 }
 
 
-void proto::AssemblyMachine::OnDeferTimeElapsed(game::WorldData& /*world_data*/,
+void proto::AssemblyMachine::OnDeferTimeElapsed(game::World& /*world*/,
                                                 game::LogicData& logic_data,
                                                 UniqueDataBase* unique_data) const {
     auto* machine_data = static_cast<AssemblyMachineData*>(unique_data);
@@ -118,7 +118,7 @@ void proto::AssemblyMachine::OnDeferTimeElapsed(game::WorldData& /*world_data*/,
     TryBeginCrafting(logic_data, *machine_data);
 }
 
-void proto::AssemblyMachine::OnBuild(game::WorldData& /*world_data*/,
+void proto::AssemblyMachine::OnBuild(game::World& /*world*/,
                                      game::LogicData& /*logic_data*/,
                                      const WorldCoord& /*world_coords*/,
                                      game::ChunkTileLayer& tile_layer,
@@ -126,7 +126,7 @@ void proto::AssemblyMachine::OnBuild(game::WorldData& /*world_data*/,
     tile_layer.MakeUniqueData<AssemblyMachineData>();
 }
 
-void proto::AssemblyMachine::OnRemove(game::WorldData& /*world_data*/,
+void proto::AssemblyMachine::OnRemove(game::World& /*world*/,
                                       game::LogicData& logic_data,
                                       const WorldCoord& /*world_coords*/,
                                       game::ChunkTileLayer& tile_layer) const {

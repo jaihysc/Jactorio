@@ -3,13 +3,13 @@
 #include "game/logic/conveyor_utility.h"
 
 #include "game/logic/conveyor_struct.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/abstract/conveyor.h"
 #include "proto/splitter.h"
 
 using namespace jactorio;
 
-void game::BuildConveyor(WorldData& world,
+void game::BuildConveyor(World& world,
                          const WorldCoord& coord,
                          proto::ConveyorData& conveyor,
                          const Orientation direction,
@@ -23,18 +23,18 @@ void game::BuildConveyor(WorldData& world,
     ConveyorUpdateNeighborLineOrien(world, coord);
 }
 
-void game::RemoveConveyor(WorldData& world, const WorldCoord& coord, const LogicGroup logic_group) {
+void game::RemoveConveyor(World& world, const WorldCoord& coord, const LogicGroup logic_group) {
     ConveyorNeighborDisconnect(world, coord);
     ConveyorDestroy(world, coord, logic_group);
     ConveyorUpdateNeighborLineOrien(world, coord);
 }
 
 
-proto::ConveyorData* game::GetConData(WorldData& world, const WorldCoord& coord) {
-    return const_cast<proto::ConveyorData*>(GetConData(static_cast<const WorldData&>(world), coord));
+proto::ConveyorData* game::GetConData(World& world, const WorldCoord& coord) {
+    return const_cast<proto::ConveyorData*>(GetConData(static_cast<const World&>(world), coord));
 }
 
-const proto::ConveyorData* game::GetConData(const WorldData& world, const WorldCoord& coord) {
+const proto::ConveyorData* game::GetConData(const World& world, const WorldCoord& coord) {
     const auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return nullptr;
@@ -126,7 +126,7 @@ static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& n
 /// \tparam XOffset Offset applied to origin to get neighbor
 /// \tparam YOffset Offset applied to origin to get neighbor
 template <Orientation OriginConnect, int XOffset, int YOffset>
-static void DoConnect(game::WorldData& world, const WorldCoord& coord) {
+static void DoConnect(game::World& world, const WorldCoord& coord) {
     auto* current_struct = GetConData(world, {coord.x, coord.y});
     auto* neigh_struct   = GetConData(world, {coord.x + XOffset, coord.y + YOffset});
 
@@ -138,26 +138,26 @@ static void DoConnect(game::WorldData& world, const WorldCoord& coord) {
 }
 
 
-void game::ConveyorNeighborConnect(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorNeighborConnect(World& world, const WorldCoord& coord) {
     ConveyorConnectUp(world, coord);
     ConveyorConnectRight(world, coord);
     ConveyorConnectDown(world, coord);
     ConveyorConnectLeft(world, coord);
 }
 
-void game::ConveyorConnectUp(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorConnectUp(World& world, const WorldCoord& coord) {
     DoConnect<Orientation::up, 0, -1>(world, coord);
 }
 
-void game::ConveyorConnectRight(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorConnectRight(World& world, const WorldCoord& coord) {
     DoConnect<Orientation::right, 1, 0>(world, coord);
 }
 
-void game::ConveyorConnectDown(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorConnectDown(World& world, const WorldCoord& coord) {
     DoConnect<Orientation::down, 0, 1>(world, coord);
 }
 
-void game::ConveyorConnectLeft(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorConnectLeft(World& world, const WorldCoord& coord) {
     DoConnect<Orientation::left, -1, 0>(world, coord);
 }
 
@@ -165,7 +165,7 @@ void game::ConveyorConnectLeft(WorldData& world, const WorldCoord& coord) {
 ///
 /// Disconnects segments and adjusts segment termination type accordingly
 template <int XOffset, int YOffset>
-void DisconnectSegment(game::WorldData& world, const WorldCoord& coord) {
+void DisconnectSegment(game::World& world, const WorldCoord& coord) {
     const auto neighbor_coord = WorldCoord(coord.x + XOffset, coord.y + YOffset);
 
     auto* origin_data   = GetConData(world, coord);
@@ -206,31 +206,31 @@ void DisconnectSegment(game::WorldData& world, const WorldCoord& coord) {
     }
 }
 
-void game::ConveyorNeighborDisconnect(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorNeighborDisconnect(World& world, const WorldCoord& coord) {
     ConveyorDisconnectUp(world, coord);
     ConveyorDisconnectRight(world, coord);
     ConveyorDisconnectDown(world, coord);
     ConveyorDisconnectLeft(world, coord);
 }
 
-void game::ConveyorDisconnectUp(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorDisconnectUp(World& world, const WorldCoord& coord) {
     DisconnectSegment<0, -1>(world, coord);
 }
 
-void game::ConveyorDisconnectRight(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorDisconnectRight(World& world, const WorldCoord& coord) {
     DisconnectSegment<1, 0>(world, coord);
 }
 
-void game::ConveyorDisconnectDown(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorDisconnectDown(World& world, const WorldCoord& coord) {
     DisconnectSegment<0, 1>(world, coord);
 }
 
-void game::ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorDisconnectLeft(World& world, const WorldCoord& coord) {
     DisconnectSegment<-1, 0>(world, coord);
 }
 
 
-void game::ConveyorCreate(WorldData& world,
+void game::ConveyorCreate(World& world,
                           const WorldCoord& coord,
                           proto::ConveyorData& conveyor,
                           const Orientation direction,
@@ -321,7 +321,7 @@ void game::ConveyorCreate(WorldData& world,
     world.LogicRegister(logic_group, coord, TileLayer::entity);
 }
 
-void game::ConveyorDestroy(WorldData& world, const WorldCoord& coord, const LogicGroup logic_group) {
+void game::ConveyorDestroy(World& world, const WorldCoord& coord, const LogicGroup logic_group) {
     // o_ = old
     // n_ = new
 
@@ -384,7 +384,7 @@ void game::ConveyorShortenFront(ConveyorStruct& con_struct) {
     con_struct.headOffset--;
 }
 
-void game::ConveyorLogicRemove(WorldData& world,
+void game::ConveyorLogicRemove(World& world,
                                const WorldCoord& coord,
                                ConveyorStruct& con_struct,
                                const LogicGroup logic_group) {
@@ -396,7 +396,7 @@ void game::ConveyorLogicRemove(WorldData& world,
     });
 }
 
-void game::ConveyorRenumber(WorldData& world, WorldCoord coord, const int start_index) {
+void game::ConveyorRenumber(World& world, WorldCoord coord, const int start_index) {
     auto* con_data = GetConData(world, coord);
     assert(con_data != nullptr);
     assert(con_data->structure.get() != nullptr);
@@ -413,7 +413,7 @@ void game::ConveyorRenumber(WorldData& world, WorldCoord coord, const int start_
 
 ///
 /// If current tile has structure which has old_con_struct as a target, change to new_con_struct
-void ChangeTargetSingle(game::WorldData& world,
+void ChangeTargetSingle(game::World& world,
                         const WorldCoord& coord,
                         const game::ConveyorStruct& old_con_struct,
                         game::ConveyorStruct& new_con_struct) {
@@ -427,7 +427,7 @@ void ChangeTargetSingle(game::WorldData& world,
 ///
 /// Change structures which has old_con_struct as a target to new_con_struct
 /// \param coord Coordinate to begin, incrementing in opposite direction of old_con_struct, old_con_struct.length times
-void ChangeTarget(game::WorldData& world,
+void ChangeTarget(game::World& world,
                   WorldCoord coord,
                   const game::ConveyorStruct& old_con_struct,
                   game::ConveyorStruct& new_con_struct) {
@@ -439,7 +439,7 @@ void ChangeTarget(game::WorldData& world,
     }
 }
 
-void game::ConveyorChangeStructure(WorldData& world,
+void game::ConveyorChangeStructure(World& world,
                                    WorldCoord coord,
                                    const std::shared_ptr<ConveyorStruct>& con_struct_p) {
 
@@ -493,7 +493,7 @@ void game::ConveyorChangeStructure(WorldData& world,
     }
 }
 
-proto::LineOrientation game::ConveyorCalcLineOrien(const WorldData& world,
+proto::LineOrientation game::ConveyorCalcLineOrien(const World& world,
                                                    const WorldCoord& coord,
                                                    const Orientation direction) {
     const auto* up    = GetConData(world, {coord.x, coord.y - 1});
@@ -553,7 +553,7 @@ proto::LineOrientation game::ConveyorCalcLineOrien(const WorldData& world,
     }
 }
 
-void game::ConveyorUpdateNeighborLineOrien(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorUpdateNeighborLineOrien(World& world, const WorldCoord& coord) {
 
     auto calculate_neighbor = [&world](const WorldCoord& neighbor_coord) {
         auto* con_data = GetConData(world, neighbor_coord);
@@ -571,7 +571,7 @@ void game::ConveyorUpdateNeighborLineOrien(WorldData& world, const WorldCoord& c
 }
 
 
-void game::ConveyorUpdateNeighborTermination(WorldData& world, const WorldCoord& coord) {
+void game::ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coord) {
 
     ///
     /// Changes termination type at coordinates

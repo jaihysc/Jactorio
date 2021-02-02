@@ -12,7 +12,7 @@ namespace jactorio::proto
     class InserterTest : public testing::Test
     {
     protected:
-        game::WorldData worldData_;
+        game::World worldData_;
         game::LogicData logicData_;
 
         Inserter inserterProto_;

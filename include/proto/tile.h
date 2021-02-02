@@ -53,7 +53,7 @@ namespace jactorio::proto
         }
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::WorldData& /*world_data*/,
+                                               game::World& /*world*/,
                                                const WorldCoord& /*world_coords*/) const override {
             return 0;
         }
@@ -65,7 +65,7 @@ namespace jactorio::proto
         // ======================================================================
         // Data
 
-        void OnDeserialize(game::WorldData& world_data,
+        void OnDeserialize(game::World& world,
                            const WorldCoord& world_coord,
                            game::ChunkTileLayer& tile_layer) const override {}
 

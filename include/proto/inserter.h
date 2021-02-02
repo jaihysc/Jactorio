@@ -96,30 +96,30 @@ namespace jactorio::proto
                                const UniqueDataBase* unique_data) const override;
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::WorldData& world_data,
+                                               game::World& world,
                                                const WorldCoord& world_coords) const override;
 
         ///
         /// \param orientation Points towards dropoff
-        void OnBuild(game::WorldData& world_data,
+        void OnBuild(game::World& world,
                      game::LogicData& logic_data,
                      const WorldCoord& world_coords,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
 
-        void OnTileUpdate(game::WorldData& world_data,
+        void OnTileUpdate(game::World& world,
                           const WorldCoord& emit_coords,
                           const WorldCoord& receive_coords,
                           UpdateType type) const override;
 
-        void OnRemove(game::WorldData& world_data,
+        void OnRemove(game::World& world,
                       game::LogicData& logic_data,
                       const WorldCoord& world_coords,
                       game::ChunkTileLayer& tile_layer) const override;
 
 
-        void OnDeserialize(game::WorldData& world_data,
+        void OnDeserialize(game::World& world,
                            const WorldCoord& world_coord,
                            game::ChunkTileLayer& tile_layer) const override;
 
@@ -131,7 +131,7 @@ namespace jactorio::proto
         J_NODISCARD WorldCoord GetDropoffCoord(WorldCoord world_coord, Orientation orientation) const;
         J_NODISCARD WorldCoord GetPickupCoord(WorldCoord world_coord, Orientation orientation) const;
 
-        void InitPickupDropoff(game::WorldData& world_data,
+        void InitPickupDropoff(game::World& world,
                                const WorldCoord& world_coord,
                                Orientation orientation) const;
     };

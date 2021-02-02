@@ -10,12 +10,12 @@
 
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 
 using namespace jactorio;
 
-bool game::ItemDropOff::Initialize(WorldData& world_data, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-    auto* tile = world_data.GetTile(world_x, world_y);
+bool game::ItemDropOff::Initialize(World& world, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
+    auto* tile = world.GetTile(world_x, world_y);
     assert(tile != nullptr);
 
     auto& layer = tile->GetLayer(TileLayer::entity);
@@ -216,10 +216,10 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const
 
 // ======================================================================
 
-bool game::InserterPickup::Initialize(WorldData& world_data,
+bool game::InserterPickup::Initialize(World& world,
                                       const WorldCoordAxis world_x,
                                       const WorldCoordAxis world_y) {
-    auto* tile = world_data.GetTile(world_x, world_y);
+    auto* tile = world.GetTile(world_x, world_y);
     assert(tile != nullptr);
 
     auto& layer = tile->GetLayer(TileLayer::entity);

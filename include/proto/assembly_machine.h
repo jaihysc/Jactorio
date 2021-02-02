@@ -85,17 +85,17 @@ namespace jactorio::proto
         /// \return true if crafting has begun
         bool TryBeginCrafting(game::LogicData& logic_data, AssemblyMachineData& data) const;
 
-        void OnDeferTimeElapsed(game::WorldData& world_data,
+        void OnDeferTimeElapsed(game::World& world,
                                 game::LogicData& logic_data,
                                 UniqueDataBase* unique_data) const override;
 
-        void OnBuild(game::WorldData& world_data,
+        void OnBuild(game::World& world,
                      game::LogicData& logic_data,
                      const WorldCoord& world_coords,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
-        void OnRemove(game::WorldData& world_data,
+        void OnRemove(game::World& world,
                       game::LogicData& logic_data,
                       const WorldCoord& world_coords,
                       game::ChunkTileLayer& tile_layer) const override;

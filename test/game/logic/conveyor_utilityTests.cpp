@@ -9,7 +9,7 @@
 
 #include "jactorioTests.h"
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/transport_belt.h"
 
 namespace jactorio::game
@@ -21,7 +21,7 @@ namespace jactorio::game
         /// Logic group chosen for the tests
         static constexpr LogicGroup kLogicGroup_ = LogicGroup::splitter;
 
-        WorldData worldData_;
+        World worldData_;
         proto::TransportBelt transBelt_;
 
         void SetUp() override {
@@ -295,7 +295,7 @@ namespace jactorio::game
         /// Logic group chosen for the tests
         static constexpr LogicGroup kLogicGroup_ = LogicGroup::splitter;
 
-        WorldData worldData_;
+        World worldData_;
         proto::TransportBelt transBelt_;
 
         ///
@@ -309,10 +309,10 @@ namespace jactorio::game
             const WorldCoord current_coord,
             const Orientation direction,
             const std::function<
-                void(const WorldData& world, proto::ConveyorData& current, const proto::ConveyorData& other)>& compare =
+                void(const World& world, proto::ConveyorData& current, const proto::ConveyorData& other)>& compare =
                 [](auto&, auto&, auto&) {}) const {
 
-            WorldData world; // Cannot use test's world since this is building at the same tile multiple times
+            World world; // Cannot use test's world since this is building at the same tile multiple times
             world.EmplaceChunk(0, 0);
 
             // For testing grouping across chunk boundaries
@@ -337,7 +337,7 @@ namespace jactorio::game
     /// Using ahead conveyor structure in same direction is prioritized over creating a new conveyor structure
     TEST_F(ConveyorGroupingTest, ConveyorCreateGroupAhead) {
         auto compare_func =
-            [](const WorldData& /*world*/, const proto::ConveyorData& current, const proto::ConveyorData& other) {
+            [](const World& /*world*/, const proto::ConveyorData& current, const proto::ConveyorData& other) {
                 EXPECT_EQ(current.structure->length, 2);
 
                 EXPECT_EQ(other.structIndex, 0);
@@ -361,7 +361,7 @@ namespace jactorio::game
     /// Grouping with behind conveyor prioritized over creating a new conveyor structure
     TEST_F(ConveyorGroupingTest, ConveyorCreateGroupBehind) {
         auto compare_func =
-            [](const WorldData& world, const proto::ConveyorData& current, const proto::ConveyorData& other) {
+            [](const World& world, const proto::ConveyorData& current, const proto::ConveyorData& other) {
                 EXPECT_EQ(world.LogicGetChunks().at(0)->GetLogicGroup(kLogicGroup_).size(), 1);
 
                 EXPECT_EQ(current.structure->length, 2);
@@ -602,7 +602,7 @@ namespace jactorio::game
     class ConveyorCalcLineOrienTest : public testing::Test
     {
     protected:
-        WorldData worldData_;
+        World worldData_;
 
         void SetUp() override {
             worldData_.EmplaceChunk({0, 0});

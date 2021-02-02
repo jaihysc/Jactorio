@@ -24,7 +24,7 @@ namespace jactorio
 
 namespace jactorio::game
 {
-    class WorldData;
+    class World;
     class ChunkTileLayer;
     class ConveyorStruct;
 
@@ -38,7 +38,7 @@ namespace jactorio::game
     /// 5. Update neighbor line orientation
     /// \remark Additional neighbors must be updated via ConveyorUpdateNeighborTermination in OnNeighborUpdate
     /// \param logic_group Logic group of conveyor
-    void BuildConveyor(WorldData& world,
+    void BuildConveyor(World& world,
                        const WorldCoord& coord,
                        proto::ConveyorData& conveyor,
                        Orientation direction,
@@ -52,13 +52,13 @@ namespace jactorio::game
     /// 3. Update neighbor line orientation
     /// \remark Additional neighbors must be updated via ConveyorUpdateNeighborTermination in OnNeighborUpdate
     /// \param logic_group Logic group of conveyor
-    void RemoveConveyor(WorldData& world, const WorldCoord& coord, LogicGroup logic_group);
+    void RemoveConveyor(World& world, const WorldCoord& coord, LogicGroup logic_group);
 
 
     ///
     /// Fetches conveyor data at coord, nullptr if non existent
-    J_NODISCARD proto::ConveyorData* GetConData(WorldData& world, const WorldCoord& coord);
-    J_NODISCARD const proto::ConveyorData* GetConData(const WorldData& world, const WorldCoord& coord);
+    J_NODISCARD proto::ConveyorData* GetConData(World& world, const WorldCoord& coord);
+    J_NODISCARD const proto::ConveyorData* GetConData(const World& world, const WorldCoord& coord);
 
     ///
     /// Fetches conveyor data at tile layer, nullptr if non existent
@@ -68,53 +68,53 @@ namespace jactorio::game
     ///
     /// Calls ConveyorConnect up, right, down, left
     /// \param coord Current struct's coordinate
-    void ConveyorNeighborConnect(WorldData& world, const WorldCoord& coord);
+    void ConveyorNeighborConnect(World& world, const WorldCoord& coord);
 
     ///
     /// Attempts to connect between a connectable conveyor segment above
     /// \param coord Current conveyor struct's coordinate
-    void ConveyorConnectUp(WorldData& world, const WorldCoord& coord);
+    void ConveyorConnectUp(World& world, const WorldCoord& coord);
 
     ///
     /// Attempts to connect between a connectable conveyor segment to right
     /// \param coord Current conveyor struct's coordinate
-    void ConveyorConnectRight(WorldData& world, const WorldCoord& coord);
+    void ConveyorConnectRight(World& world, const WorldCoord& coord);
 
     ///
     /// Attempts to connect between a connectable conveyor segment below
     /// \param coord Current conveyor struct's coordinate
-    void ConveyorConnectDown(WorldData& world, const WorldCoord& coord);
+    void ConveyorConnectDown(World& world, const WorldCoord& coord);
 
     ///
     /// Attempts to connect between a connectable conveyor segment to left
     /// \param coord Current conveyor struct's coordinate
-    void ConveyorConnectLeft(WorldData& world, const WorldCoord& coord);
+    void ConveyorConnectLeft(World& world, const WorldCoord& coord);
 
 
     ///
     /// Calls ConveyorDisconnect up, right, down, left
     /// \param coord Current struct's coordinate
-    void ConveyorNeighborDisconnect(WorldData& world, const WorldCoord& coord);
+    void ConveyorNeighborDisconnect(World& world, const WorldCoord& coord);
 
     ///
     /// Attempts to disconnect conveyor segment above
     /// \param coord Current struct's coordinate
-    void ConveyorDisconnectUp(WorldData& world, const WorldCoord& coord);
+    void ConveyorDisconnectUp(World& world, const WorldCoord& coord);
 
     ///
     /// Attempts to disconnect conveyor segment to right
     /// \param coord Current struct's coordinate
-    void ConveyorDisconnectRight(WorldData& world, const WorldCoord& coord);
+    void ConveyorDisconnectRight(World& world, const WorldCoord& coord);
 
     ///
     /// Attempts to disconnect conveyor segment below
     /// \param coord Current struct's coordinate
-    void ConveyorDisconnectDown(WorldData& world, const WorldCoord& coord);
+    void ConveyorDisconnectDown(World& world, const WorldCoord& coord);
 
     ///
     /// Attempts to disconnect conveyor segment to left
     /// \param coord Current struct's coordinate
-    void ConveyorDisconnectLeft(WorldData& world, const WorldCoord& coord);
+    void ConveyorDisconnectLeft(World& world, const WorldCoord& coord);
 
 
     ///
@@ -124,7 +124,7 @@ namespace jactorio::game
     /// or a new conveyor structure created
     /// \param direction Direction of conveyor
     /// \param logic_group Logic group of conveyor
-    void ConveyorCreate(WorldData& world,
+    void ConveyorCreate(World& world,
                         const WorldCoord& coord,
                         proto::ConveyorData& conveyor,
                         Orientation direction,
@@ -135,7 +135,7 @@ namespace jactorio::game
     ///
     /// Will ungroup the segment as necessary
     /// \param logic_group Logic group of conveyor
-    void ConveyorDestroy(WorldData& world, const WorldCoord& coord, LogicGroup logic_group);
+    void ConveyorDestroy(World& world, const WorldCoord& coord, LogicGroup logic_group);
 
 
     ///
@@ -149,7 +149,7 @@ namespace jactorio::game
     ///
     /// Removes conveyor at coord to be considered for logic updates
     /// \param logic_group Logic group of conveyor
-    void ConveyorLogicRemove(WorldData& world,
+    void ConveyorLogicRemove(World& world,
                              const WorldCoord& coord,
                              ConveyorStruct& con_struct,
                              LogicGroup logic_group);
@@ -157,14 +157,14 @@ namespace jactorio::game
     ///
     /// Renumbers structIndex for tiles along a conveyor segment at provided coords
     /// \param start_index Index to start renumbering at, renumber stops when index >= con_struct length
-    void ConveyorRenumber(WorldData& world, WorldCoord coord, int start_index = 0);
+    void ConveyorRenumber(World& world, WorldCoord coord, int start_index = 0);
 
     ///
     /// Changes the conveyor structure for a conveyor segment, updates neighboring structure's targets
     /// if they used the old conveyor structure.
     /// Updates tiles equal to provided con struct's length
     /// \param con_struct_p Structure to change to
-    void ConveyorChangeStructure(WorldData& world,
+    void ConveyorChangeStructure(World& world,
                                  WorldCoord coord,
                                  const std::shared_ptr<ConveyorStruct>& con_struct_p);
 
@@ -173,17 +173,17 @@ namespace jactorio::game
     ///
     /// Direction is provided separately to allow use when there is no conveyor data at coord
     /// A tile is deemed to not have a conveyor if its structure is nullptr
-    J_NODISCARD proto::LineOrientation ConveyorCalcLineOrien(const WorldData& world,
+    J_NODISCARD proto::LineOrientation ConveyorCalcLineOrien(const World& world,
                                                              const WorldCoord& coord,
                                                              Orientation direction);
     ///
     /// Updates line orientation for 4 neighbors of coord
     /// See ConveyorCalcLineOrien
-    void ConveyorUpdateNeighborLineOrien(WorldData& world, const WorldCoord& coord);
+    void ConveyorUpdateNeighborLineOrien(World& world, const WorldCoord& coord);
 
     ///
     /// Updates the termination type for 4 neighbors of coord
-    void ConveyorUpdateNeighborTermination(WorldData& world, const WorldCoord& coord);
+    void ConveyorUpdateNeighborTermination(World& world, const WorldCoord& coord);
 
 } // namespace jactorio::game
 

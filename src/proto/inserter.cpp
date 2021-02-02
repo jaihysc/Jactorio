@@ -2,7 +2,7 @@
 
 #include "proto/inserter.h"
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/sprite.h"
 #include "render/proto_renderer.h"
 
@@ -16,7 +16,7 @@ void proto::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
 }
 
 SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
-                                            game::WorldData& /*world_data*/,
+                                            game::World& /*world*/,
                                             const WorldCoord& /*world_coords*/) const {
     switch (orientation) {
 
@@ -37,25 +37,25 @@ SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
     return 0;
 }
 
-void proto::Inserter::OnBuild(game::WorldData& world_data,
+void proto::Inserter::OnBuild(game::World& world,
                               game::LogicData& /*logic_data*/,
                               const WorldCoord& world_coords,
                               game::ChunkTileLayer& tile_layer,
                               Orientation orientation) const {
     auto& inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
-    inserter_data.set   = OnRGetSpriteSet(orientation, world_data, world_coords);
+    inserter_data.set   = OnRGetSpriteSet(orientation, world, world_coords);
 
-    InitPickupDropoff(world_data, world_coords, orientation);
+    InitPickupDropoff(world, world_coords, orientation);
 }
 
-void proto::Inserter::OnTileUpdate(game::WorldData& world_data,
+void proto::Inserter::OnTileUpdate(game::World& world,
                                    const WorldCoord& emit_coords,
                                    const WorldCoord& receive_coords,
                                    UpdateType /*type*/) const {
-    auto& inserter_layer = world_data.GetTile(receive_coords)->GetLayer(game::TileLayer::entity);
+    auto& inserter_layer = world.GetTile(receive_coords)->GetLayer(game::TileLayer::entity);
     auto& inserter_data  = *inserter_layer.GetUniqueData<InserterData>();
 
-    auto& target_layer = world_data.GetTile(emit_coords)->GetLayer(game::TileLayer::entity);
+    auto& target_layer = world.GetTile(emit_coords)->GetLayer(game::TileLayer::entity);
     auto* target_data  = target_layer.GetUniqueData();
 
     //
@@ -72,44 +72,44 @@ void proto::Inserter::OnTileUpdate(game::WorldData& world_data,
             inserter_data.dropoff.Uninitialize();
         }
 
-        world_data.LogicRemove(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
+        world.LogicRemove(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
         return;
     }
 
 
     if (emit_coords == pickup_coords) {
-        inserter_data.pickup.Initialize(world_data, emit_coords);
+        inserter_data.pickup.Initialize(world, emit_coords);
     }
     else if (emit_coords == dropoff_coords) {
-        inserter_data.dropoff.Initialize(world_data, emit_coords);
+        inserter_data.dropoff.Initialize(world, emit_coords);
     }
 
 
     // Add to logic updates if initialized, remove if not
     if (inserter_data.pickup.IsInitialized() && inserter_data.dropoff.IsInitialized()) {
-        world_data.LogicRegister(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
+        world.LogicRegister(game::LogicGroup::inserter, receive_coords, game::TileLayer::entity);
     }
 }
 
-void proto::Inserter::OnRemove(game::WorldData& world_data,
+void proto::Inserter::OnRemove(game::World& world,
                                game::LogicData& /*logic_data*/,
                                const WorldCoord& world_coords,
                                game::ChunkTileLayer& tile_layer) const {
-    world_data.LogicRemove(game::LogicGroup::inserter, world_coords, game::TileLayer::entity);
+    world.LogicRemove(game::LogicGroup::inserter, world_coords, game::TileLayer::entity);
 
     const auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
 
-    world_data.updateDispatcher.Unregister({world_coords, GetDropoffCoord(world_coords, inserter_data->orientation)});
-    world_data.updateDispatcher.Unregister({world_coords, GetPickupCoord(world_coords, inserter_data->orientation)});
+    world.updateDispatcher.Unregister({world_coords, GetDropoffCoord(world_coords, inserter_data->orientation)});
+    world.updateDispatcher.Unregister({world_coords, GetPickupCoord(world_coords, inserter_data->orientation)});
 }
 
-void proto::Inserter::OnDeserialize(game::WorldData& world_data,
+void proto::Inserter::OnDeserialize(game::World& world,
                                     const WorldCoord& world_coord,
                                     game::ChunkTileLayer& tile_layer) const {
     auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
     assert(inserter_data != nullptr);
 
-    InitPickupDropoff(world_data, world_coord, inserter_data->orientation);
+    InitPickupDropoff(world, world_coord, inserter_data->orientation);
 }
 
 void proto::Inserter::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
@@ -134,19 +134,19 @@ WorldCoord proto::Inserter::GetPickupCoord(WorldCoord world_coord, const Orienta
     return world_coord;
 }
 
-void proto::Inserter::InitPickupDropoff(game::WorldData& world_data,
+void proto::Inserter::InitPickupDropoff(game::World& world,
                                         const WorldCoord& world_coord,
                                         const Orientation orientation) const {
     // Dropoff side
     {
         auto emit_coords = GetDropoffCoord(world_coord, orientation);
-        world_data.updateDispatcher.Register(world_coord, emit_coords, *this);
-        world_data.UpdateDispatch(emit_coords, UpdateType::place);
+        world.updateDispatcher.Register(world_coord, emit_coords, *this);
+        world.UpdateDispatch(emit_coords, UpdateType::place);
     }
     // Pickup side
     {
         auto emit_coords = GetPickupCoord(world_coord, orientation);
-        world_data.updateDispatcher.Register(world_coord, emit_coords, *this);
-        world_data.UpdateDispatch(emit_coords, UpdateType::place);
+        world.updateDispatcher.Register(world_coord, emit_coords, *this);
+        world.UpdateDispatch(emit_coords, UpdateType::place);
     }
 }

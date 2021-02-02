@@ -11,7 +11,7 @@
 #include "game/input/mouse_selection.h"
 #include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 
 namespace jactorio::game
 {

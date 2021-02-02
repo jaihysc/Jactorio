@@ -14,7 +14,7 @@ namespace jactorio::game
     class InserterControllerTest : public testing::Test
     {
     protected:
-        WorldData worldData_{};
+        World worldData_{};
         LogicData logicData_{};
 
         proto::Inserter inserterProto_{};

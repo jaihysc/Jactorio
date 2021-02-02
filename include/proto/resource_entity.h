@@ -45,7 +45,7 @@ namespace jactorio::proto
         }
 
 
-        void OnBuild(game::WorldData& /*world_data*/,
+        void OnBuild(game::World& /*world*/,
                      game::LogicData& /*logic_data*/,
                      const WorldCoord& /*world_coords*/,
                      game::ChunkTileLayer& /*tile_layer*/,
@@ -53,7 +53,7 @@ namespace jactorio::proto
             assert(false); // Is not player placeable
         }
 
-        void OnRemove(game::WorldData& /*world_data*/,
+        void OnRemove(game::World& /*world*/,
                       game::LogicData& /*logic_data*/,
                       const WorldCoord& /*world_coords*/,
                       game::ChunkTileLayer& /*tile_layer*/) const override {}

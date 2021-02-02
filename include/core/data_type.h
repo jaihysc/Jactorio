@@ -21,7 +21,7 @@ namespace jactorio::core
 
 namespace jactorio::game
 {
-    class WorldData;
+    class World;
 }
 
 namespace jactorio
@@ -50,8 +50,8 @@ namespace jactorio
     constexpr int kGameHertz = 60; // 60 updates per second
 
 
-    /// Forward declaration only, game::WorldData must be included
-    using GameWorlds = std::vector<game::WorldData>;
+    /// Forward declaration only, game::World must be included
+    using GameWorlds = std::vector<game::World>;
 
     /// Tiles in the world
     using WorldCoordAxis = int32_t;

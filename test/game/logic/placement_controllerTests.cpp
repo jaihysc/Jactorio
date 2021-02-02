@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/container_entity.h"
 #include "proto/tile.h"
 
@@ -16,14 +16,14 @@ namespace jactorio::game
     // !Checking if the selected tile is too far from the player is not done in these tests!
     //
 
-    // Creates world_data and generates a test world within it
+    // Creates world and generates a test world within it
     class PlacementControllerTest : public testing::Test
     {
     public:
-        static constexpr auto kChunkWidth = WorldData::kChunkWidth;
+        static constexpr auto kChunkWidth = World::kChunkWidth;
 
     private:
-        static void GenerateTestWorld(WorldData& world_data, proto::Tile* water_tile, proto::Tile* land_tile) {
+        static void GenerateTestWorld(World& world, proto::Tile* water_tile, proto::Tile* land_tile) {
             // Generates a quarter chunk on which to test entity placement (16 x 16)
             // Following indices begin at 0:
             // Row of water: [1, 4, 8]
@@ -53,7 +53,7 @@ namespace jactorio::game
             land_tile->isWater  = false;
 
 
-            auto& chunk = world_data.EmplaceChunk(0, 0);
+            auto& chunk = world.EmplaceChunk(0, 0);
 
             for (int y = 0; y < kChunkWidth; ++y) {
                 bool y_water = false;
@@ -83,7 +83,7 @@ namespace jactorio::game
         std::unique_ptr<proto::Tile> waterTile_ = std::make_unique<proto::Tile>();
         std::unique_ptr<proto::Tile> landTile_  = std::make_unique<proto::Tile>();
 
-        WorldData worldData_{};
+        World worldData_{};
 
         void SetUp() override {
             GenerateTestWorld(worldData_, waterTile_.get(), landTile_.get());
@@ -127,7 +127,7 @@ namespace jactorio::game
 
         // Place entity, taken from the test above (place_entity_1x1_valid)
         {
-            // const auto* chunk = world_data.get_chunk(0, 0);
+            // const auto* chunk = world.get_chunk(0, 0);
 
             EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {0, 0}, Orientation::up, entity.get()));
 

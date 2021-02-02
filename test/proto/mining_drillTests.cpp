@@ -11,7 +11,7 @@ namespace jactorio::proto
     class MiningDrillTest : public testing::Test
     {
     protected:
-        game::WorldData worldData_;
+        game::World worldData_;
         game::LogicData logicData_;
 
         MiningDrill drillProto_;

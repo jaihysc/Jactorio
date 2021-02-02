@@ -45,14 +45,14 @@ bool game::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
     return false;
 }
 
-void game::UpdateDispatcher::Dispatch(WorldData& world_data,
+void game::UpdateDispatcher::Dispatch(World& world,
                                       const WorldCoordAxis world_x,
                                       const WorldCoordAxis world_y,
                                       const proto::UpdateType type) {
-    Dispatch(world_data, {world_x, world_y}, type);
+    Dispatch(world, {world_x, world_y}, type);
 }
 
-void game::UpdateDispatcher::Dispatch(WorldData& world_data,
+void game::UpdateDispatcher::Dispatch(World& world,
                                       const WorldCoord& world_pair,
                                       const proto::UpdateType type) {
     // Must be tuple to index into container_ since it uses a hash function only usable with tuples
@@ -64,7 +64,7 @@ void game::UpdateDispatcher::Dispatch(WorldData& world_data,
     auto& collection = container_[world_tuple];
 
     for (auto& entry : collection) {
-        entry.callback->OnTileUpdate(world_data, world_pair, entry.receiver, type);
+        entry.callback->OnTileUpdate(world, world_pair, entry.receiver, type);
     }
 }
 

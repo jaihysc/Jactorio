@@ -8,7 +8,7 @@
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/recipe.h"
 #include "proto/resource_entity.h"
 #include "proto/tile.h"
@@ -86,10 +86,10 @@ bool game::PlayerData::World::MouseSelectedTileInRange() const {
     return tile_dist <= max_reach;
 }
 
-bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x, const int y) const {
-    assert(world_data != nullptr); // Player is not in a world
+bool game::PlayerData::World::TargetTileValid(game::World* world, const int x, const int y) const {
+    assert(world != nullptr); // Player is not in a world
 
-    const auto* origin_tile = world_data->GetTile(core::LossyCast<int>(positionX_), core::LossyCast<int>(positionY_));
+    const auto* origin_tile = world->GetTile(core::LossyCast<int>(positionX_), core::LossyCast<int>(positionY_));
 
     if (origin_tile == nullptr)
         return false;
@@ -98,7 +98,7 @@ bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x
     if (origin_tile->GetTilePrototype()->isWater)
         return true;
 
-    const ChunkTile* tile = world_data->GetTile(x, y);
+    const ChunkTile* tile = world->GetTile(x, y);
     // Chunk not generated yet
     if (tile == nullptr)
         return false;
@@ -168,7 +168,7 @@ void game::PlayerData::Placement::CounterRotateOrientation() {
 ///
 /// \param coord Top left tile x, y
 /// \param orientation Orientation of placed / removed entity
-void UpdateNeighboringEntities(game::WorldData& world,
+void UpdateNeighboringEntities(game::World& world,
                                game::LogicData& logic,
                                const WorldCoord& coord,
                                const Orientation orientation,
@@ -225,7 +225,7 @@ void UpdateNeighboringEntities(game::WorldData& world,
     }
 }
 
-bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world, LogicData& logic, const WorldCoord& coord) const {
+bool game::PlayerData::Placement::TryPlaceEntity(game::World& world, LogicData& logic, const WorldCoord& coord) const {
     auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return false;
@@ -271,8 +271,8 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world, LogicData& lo
     return true;
 }
 
-bool game::PlayerData::Placement::TryActivateLayer(WorldData& world_data, const WorldCoord& world_pair) {
-    auto* tile = world_data.GetTile(world_pair);
+bool game::PlayerData::Placement::TryActivateLayer(game::World& world, const WorldCoord& world_pair) {
+    auto* tile = world.GetTile(world_pair);
     if (tile == nullptr)
         return false;
 
@@ -302,12 +302,12 @@ bool game::PlayerData::Placement::TryActivateLayer(WorldData& world_data, const 
     // else
 
     // Clicking on an existing entity will activate it
-    activatedLayer_ = world_data.GetLayerTopLeft(world_pair, select_layer);
+    activatedLayer_ = world.GetLayerTopLeft(world_pair, select_layer);
     return true;
 }
 
 
-void game::PlayerData::Placement::TryPickup(WorldData& world,
+void game::PlayerData::Placement::TryPickup(game::World& world,
                                             LogicData& logic,
                                             WorldCoord coord,
                                             const uint16_t ticks) {

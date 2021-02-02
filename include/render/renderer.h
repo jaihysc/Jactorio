@@ -16,7 +16,7 @@ namespace jactorio::game
     class Chunk;
     class ChunkTile;
     class ChunkTileLayer;
-    class WorldData;
+    class World;
 } // namespace jactorio::game
 
 namespace jactorio::render
@@ -93,11 +93,11 @@ namespace jactorio::render
         }
 
         ///
-        /// \param world_data World to render
+        /// \param world World to render
         /// \param player_x X Position of the player in tiles
         /// \param player_y Y Position of the player in tiles
         void GlRenderPlayerPosition(GameTickT game_tick,
-                                    const game::WorldData& world_data,
+                                    const game::World& world,
                                     float player_x,
                                     float player_y);
 
@@ -155,7 +155,7 @@ namespace jactorio::render
         /// \param chunk_span Number of chunks spanned
         /// \param render_tile_offset Offset drawn tiles on screen by this tile amount
         void PrepareChunkRow(RendererLayer& r_layer,
-                             const game::WorldData& world_data,
+                             const game::World& world,
                              std::mutex& world_gen_mutex,
                              core::Position2<int> row_start,
                              int chunk_span,

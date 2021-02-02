@@ -3,7 +3,7 @@
 #include "game/input/mouse_selection.h"
 
 #include "game/player/player_data.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/abstract/entity.h"
 #include "proto/sprite.h"
 
@@ -51,7 +51,7 @@ void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
     }
 }
 
-void game::MouseSelection::DrawOverlay(WorldData& world,
+void game::MouseSelection::DrawOverlay(World& world,
                                        const WorldCoord& coord,
                                        const Orientation orientation,
                                        const proto::Entity* selected_entity,
@@ -81,7 +81,7 @@ void game::MouseSelection::DrawOverlay(WorldData& world,
     // Saves such that can be found and removed in the future
     auto save_overlay_info = [&]() {
         lastOverlayElementIndex_ = overlay_layer.size() - 1;
-        lastChunkPos_            = {WorldData::WorldCToChunkC(coord.x), WorldData::WorldCToChunkC(coord.y)};
+        lastChunkPos_            = {World::WorldCToChunkC(coord.x), World::WorldCToChunkC(coord.y)};
     };
 
 
@@ -90,7 +90,7 @@ void game::MouseSelection::DrawOverlay(WorldData& world,
         const auto set = selected_entity->OnRGetSpriteSet(orientation, world, {coord.x, coord.y});
 
         OverlayElement element{*selected_entity->OnRGetSprite(set),
-                               {WorldData::WorldCToOverlayC(coord.x), WorldData::WorldCToOverlayC(coord.y)},
+                               {World::WorldCToOverlayC(coord.x), World::WorldCToOverlayC(coord.y)},
                                {core::SafeCast<float>(selected_entity->GetWidth(orientation)),
                                 core::SafeCast<float>(selected_entity->GetHeight(orientation))},
                                kCursorOverlayLayer_};
@@ -105,7 +105,7 @@ void game::MouseSelection::DrawOverlay(WorldData& world,
 
         // Is hovering over entity
         overlay_layer.push_back({cursor_sprite,
-                                 {WorldData::WorldCToOverlayC(coord.x), WorldData::WorldCToOverlayC(coord.y)},
+                                 {World::WorldCToOverlayC(coord.x), World::WorldCToOverlayC(coord.y)},
                                  {1, 1},
                                  kCursorOverlayLayer_});
         save_overlay_info();

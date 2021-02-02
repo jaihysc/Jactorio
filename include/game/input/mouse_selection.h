@@ -54,7 +54,7 @@ namespace jactorio::game
         ///
         /// Draws cursor_sprite when over entity & no item selected or item not placeable
         /// With item selected: draws ghost of entity
-        void DrawOverlay(WorldData& world,
+        void DrawOverlay(World& world,
                          const WorldCoord& coord,
                          Orientation orientation,
                          const proto::Entity* selected_entity,

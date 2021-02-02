@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "game/logic/conveyor_struct.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/abstract/conveyor.h"
 
 using namespace jactorio;
@@ -220,16 +220,16 @@ void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
     }
 }
 
-void game::ConveyorLogicUpdate(WorldData& world_data) {
+void game::ConveyorLogicUpdate(World& world) {
     // The logic update of conveyor items occur in 2 stages:
     // 		1. Move items on their conveyors
     //		2. Check if any items have reached the end of their lines, and need to be moved to another one
 
-    for (const auto& chunk_pair : world_data.LogicGetChunks()) {
+    for (const auto& chunk_pair : world.LogicGetChunks()) {
         LogicUpdateMoveItems(*chunk_pair);
     }
 
-    for (const auto& chunk_pair : world_data.LogicGetChunks()) {
+    for (const auto& chunk_pair : world.LogicGetChunks()) {
         LogicUpdateTransitionItems(*chunk_pair);
     }
 }

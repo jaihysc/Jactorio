@@ -2,13 +2,13 @@
 
 #include "proto/container_entity.h"
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "gui/menus.h"
 #include "proto/sprite.h"
 
 using namespace jactorio;
 
-void proto::ContainerEntity::OnBuild(game::WorldData& /*world_data*/,
+void proto::ContainerEntity::OnBuild(game::World& /*world*/,
                                      game::LogicData& /*logic_data*/,
                                      const WorldCoord& /*world_coords*/,
                                      game::ChunkTileLayer& tile_layer,

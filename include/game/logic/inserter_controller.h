@@ -9,7 +9,7 @@
 
 namespace jactorio::game
 {
-    class WorldData;
+    class World;
     class LogicData;
 
     // Inserter behavior
@@ -53,7 +53,7 @@ namespace jactorio::game
 
     ///
     /// Updates inserter logic for a logic chunk
-    void InserterLogicUpdate(WorldData& world_data, LogicData& logic_data);
+    void InserterLogicUpdate(World& world, LogicData& logic_data);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_INSERTER_CONTROLLER_H

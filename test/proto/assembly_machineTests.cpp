@@ -9,7 +9,7 @@ namespace jactorio::proto
     class AssemblyMachineTest : public testing::Test
     {
     protected:
-        game::WorldData worldData_;
+        game::World worldData_;
         game::LogicData logicData_;
 
         data::PrototypeManager dataManager_;

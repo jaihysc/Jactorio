@@ -104,7 +104,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/update_dispatcherTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/worldTests.cpp
 
 
 	${JACTORIO_TEST_DIR}/proto/assembly_machineTests.cpp

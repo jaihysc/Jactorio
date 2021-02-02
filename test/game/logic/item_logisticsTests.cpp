@@ -16,7 +16,7 @@ namespace jactorio::game
     class ItemLogisticsTest : public testing::Test
     {
     protected:
-        WorldData worldData_;
+        World worldData_;
         LogicData logicData_;
 
         void SetUp() override {
@@ -82,7 +82,7 @@ namespace jactorio::game
         explicit ItemDropOffTest() : ItemDropOff(Orientation::up) {}
 
     protected:
-        WorldData worldData_;
+        World worldData_;
         LogicData logicData_;
 
         /// Creates a conveyor with orientation
@@ -404,7 +404,7 @@ namespace jactorio::game
         }
 
     protected:
-        WorldData worldData_;
+        World worldData_;
         LogicData logicData_;
 
         proto::Inserter inserterProto_;

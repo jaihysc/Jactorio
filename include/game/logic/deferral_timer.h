@@ -68,7 +68,7 @@ namespace jactorio::game
         ///
         /// Calls all deferred callbacks for the current game tick
         /// \param game_tick Current game tick
-        void DeferralUpdate(LogicData& logic_data, WorldData& world_data, GameTickT game_tick);
+        void DeferralUpdate(LogicData& logic_data, World& world, GameTickT game_tick);
 
         ///
         /// Registers callback which will be called upon reaching the specified game tick
@@ -123,7 +123,7 @@ namespace jactorio::game
             }
 
             SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                       WorldData& /*world_data*/,
+                                       World& /*world*/,
                                        const WorldCoord& /*world_coords*/) const override {
                 return 0;
             }
@@ -137,15 +137,15 @@ namespace jactorio::game
                 return false;
             }
 
-            void OnDeserialize(WorldData& /*world_data*/,
+            void OnDeserialize(World& /*world*/,
                                const WorldCoord& /*world_coord*/,
                                ChunkTileLayer& /*tile_layer*/) const override {}
 
-            void OnDeferTimeElapsed(WorldData& /*world_data*/,
+            void OnDeferTimeElapsed(World& /*world*/,
                                     LogicData& /*logic_data*/,
                                     proto::UniqueDataBase* /*unique_data*/) const override {}
 
-            void OnTileUpdate(WorldData& /*world_data*/,
+            void OnTileUpdate(World& /*world*/,
                               const WorldCoord& /*emit_coords*/,
                               const WorldCoord& /*receive_coords*/,
                               proto::UpdateType /*type*/) const override {}

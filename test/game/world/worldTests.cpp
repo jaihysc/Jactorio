@@ -2,53 +2,53 @@
 
 #include <gtest/gtest.h>
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 
 #include "jactorioTests.h"
 
 namespace jactorio::game
 {
-    class WorldDataTest : public testing::Test
+    class WorldTest : public testing::Test
     {
     protected:
-        WorldData worldData_;
+        World worldData_;
     };
 
-    TEST_F(WorldDataTest, WorldCToChunkC) {
-        EXPECT_EQ(WorldData::WorldCToChunkC(-33), -2);
-        EXPECT_EQ(WorldData::WorldCToChunkC(-32), -1);
-        EXPECT_EQ(WorldData::WorldCToChunkC(-1), -1);
-        EXPECT_EQ(WorldData::WorldCToChunkC(31), 0);
-        EXPECT_EQ(WorldData::WorldCToChunkC(32), 1);
+    TEST_F(WorldTest, WorldCToChunkC) {
+        EXPECT_EQ(World::WorldCToChunkC(-33), -2);
+        EXPECT_EQ(World::WorldCToChunkC(-32), -1);
+        EXPECT_EQ(World::WorldCToChunkC(-1), -1);
+        EXPECT_EQ(World::WorldCToChunkC(31), 0);
+        EXPECT_EQ(World::WorldCToChunkC(32), 1);
 
-        EXPECT_EQ(WorldData::WorldCToChunkC({160, 999999}).x, 5);
-        EXPECT_EQ(WorldData::WorldCToChunkC({999999, -64}).y, -2);
+        EXPECT_EQ(World::WorldCToChunkC({160, 999999}).x, 5);
+        EXPECT_EQ(World::WorldCToChunkC({999999, -64}).y, -2);
     }
 
-    TEST_F(WorldDataTest, ChunkCToWorldC) {
-        EXPECT_EQ(WorldData::ChunkCToWorldC(0), 0);
-        EXPECT_EQ(WorldData::ChunkCToWorldC(1), 32);
-        EXPECT_EQ(WorldData::ChunkCToWorldC(5), 160);
-        EXPECT_EQ(WorldData::ChunkCToWorldC(-1), -32);
-        EXPECT_EQ(WorldData::ChunkCToWorldC(-2), -64);
+    TEST_F(WorldTest, ChunkCToWorldC) {
+        EXPECT_EQ(World::ChunkCToWorldC(0), 0);
+        EXPECT_EQ(World::ChunkCToWorldC(1), 32);
+        EXPECT_EQ(World::ChunkCToWorldC(5), 160);
+        EXPECT_EQ(World::ChunkCToWorldC(-1), -32);
+        EXPECT_EQ(World::ChunkCToWorldC(-2), -64);
 
-        EXPECT_EQ(WorldData::ChunkCToWorldC({-6, 2323232}).x, -192);
-        EXPECT_EQ(WorldData::ChunkCToWorldC({12321, 420}).y, 13440);
+        EXPECT_EQ(World::ChunkCToWorldC({-6, 2323232}).x, -192);
+        EXPECT_EQ(World::ChunkCToWorldC({12321, 420}).y, 13440);
     }
 
-    TEST_F(WorldDataTest, WorldCToOverlayC) {
-        EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(0), 0);
-        EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(31), 31);
-        EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(32), 0);
-        EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(63), 31);
+    TEST_F(WorldTest, WorldCToOverlayC) {
+        EXPECT_FLOAT_EQ(World::WorldCToOverlayC(0), 0);
+        EXPECT_FLOAT_EQ(World::WorldCToOverlayC(31), 31);
+        EXPECT_FLOAT_EQ(World::WorldCToOverlayC(32), 0);
+        EXPECT_FLOAT_EQ(World::WorldCToOverlayC(63), 31);
 
-        EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(-1), 31);
-        EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(-32), 0);
-        EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(-33), 31);
-        EXPECT_FLOAT_EQ(WorldData::WorldCToOverlayC(-65), 31);
+        EXPECT_FLOAT_EQ(World::WorldCToOverlayC(-1), 31);
+        EXPECT_FLOAT_EQ(World::WorldCToOverlayC(-32), 0);
+        EXPECT_FLOAT_EQ(World::WorldCToOverlayC(-33), 31);
+        EXPECT_FLOAT_EQ(World::WorldCToOverlayC(-65), 31);
     }
 
-    TEST_F(WorldDataTest, CopyLogicChunk) {
+    TEST_F(WorldTest, CopyLogicChunk) {
         {
             auto& chunk = worldData_.EmplaceChunk({0, 0});
             worldData_.LogicAddChunk(chunk);
@@ -61,7 +61,7 @@ namespace jactorio::game
         EXPECT_EQ(*world_copy.LogicGetChunks().begin(), world_copy.GetChunkC({0, 0}));
     }
 
-    TEST_F(WorldDataTest, MoveLogicChunk) {
+    TEST_F(WorldTest, MoveLogicChunk) {
         {
             auto& chunk = worldData_.EmplaceChunk({0, 0});
             worldData_.LogicAddChunk(chunk);
@@ -74,7 +74,7 @@ namespace jactorio::game
         EXPECT_EQ(*world_move.LogicGetChunks().begin(), world_move.GetChunkC({0, 0}));
     }
 
-    TEST_F(WorldDataTest, WorldAddChunk) {
+    TEST_F(WorldTest, WorldAddChunk) {
         const auto& added_chunk = worldData_.EmplaceChunk({5, 1});
 
         // Chunk knows its own location
@@ -86,7 +86,7 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.GetChunkC(1, 1), nullptr);
     }
 
-    TEST_F(WorldDataTest, WorldAddChunkNegative) {
+    TEST_F(WorldTest, WorldAddChunkNegative) {
         // Chunks initialized with empty tiles
         // Returns pointer to chunk which was added
         auto& added_chunk = worldData_.EmplaceChunk({-5, -1});
@@ -101,7 +101,7 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.GetChunkC(1, 1), nullptr);
     }
 
-    TEST_F(WorldDataTest, WorldDeleteChunk) {
+    TEST_F(WorldTest, WorldDeleteChunk) {
         worldData_.EmplaceChunk(3, 2);
         worldData_.DeleteChunk(3, 2);
 
@@ -111,7 +111,7 @@ namespace jactorio::game
         worldData_.DeleteChunk(2, 2);
     }
 
-    TEST_F(WorldDataTest, WorldGetChunkChunkCoords) {
+    TEST_F(WorldTest, WorldGetChunkChunkCoords) {
         const auto& added_chunk = worldData_.EmplaceChunk(5, 1);
 
         EXPECT_EQ(worldData_.GetChunkC(0, 0), nullptr);
@@ -119,7 +119,7 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.GetChunkC(5, 1), &added_chunk);
     }
 
-    TEST_F(WorldDataTest, GetTileWorldCoords) {
+    TEST_F(WorldTest, GetTileWorldCoords) {
         // Tests both overloads int, int and std::pair<int, int>
         const auto chunk_tile = ChunkTile();
 
@@ -165,7 +165,7 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(WorldDataTest, GetChunkWorldCoords) {
+    TEST_F(WorldTest, GetChunkWorldCoords) {
         {
             const auto& chunk = worldData_.EmplaceChunk(0, 0);
             EXPECT_EQ(worldData_.GetChunkW(31, 31), &chunk);
@@ -181,7 +181,7 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(WorldDataTest, GetTileTopLeft) {
+    TEST_F(WorldTest, GetTileTopLeft) {
         worldData_.EmplaceChunk(0, 0);
         const WorldCoord bottom_coord = {6, 6};
 
@@ -205,7 +205,7 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, TileLayer::entity), top_tile);
     }
 
-    TEST_F(WorldDataTest, GetLayerTopLeft) {
+    TEST_F(WorldTest, GetLayerTopLeft) {
         worldData_.EmplaceChunk(0, 0);
 
         auto* top_tile    = worldData_.GetTile(0, 0);
@@ -223,12 +223,12 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
     }
 
-    TEST_F(WorldDataTest, GetLayerTopLeftUninitialized) {
+    TEST_F(WorldTest, GetLayerTopLeftUninitialized) {
         EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::entity), nullptr);
     }
 
 
-    TEST_F(WorldDataTest, Clear) {
+    TEST_F(WorldTest, Clear) {
         auto& added_chunk = worldData_.EmplaceChunk({6, 6});
 
         EXPECT_EQ(worldData_.GetChunkC(6, 6), &added_chunk);
@@ -251,7 +251,7 @@ namespace jactorio::game
 
     // Logic chunks
 
-    TEST_F(WorldDataTest, LogicRegister) {
+    TEST_F(WorldTest, LogicRegister) {
         worldData_.EmplaceChunk(1, 0); // 32, 0 is chunk coords 1, 0
         worldData_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
@@ -274,7 +274,7 @@ namespace jactorio::game
         EXPECT_EQ((*logic_chunks.begin())->GetLogicGroup(LogicGroup::inserter).size(), 2);
     }
 
-    TEST_F(WorldDataTest, LogicRemove) {
+    TEST_F(WorldTest, LogicRemove) {
         worldData_.EmplaceChunk(1, 0);
         worldData_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
@@ -299,7 +299,7 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
     }
 
-    TEST_F(WorldDataTest, LogicRemoveNonExistent) {
+    TEST_F(WorldTest, LogicRemoveNonExistent) {
         worldData_.EmplaceChunk(1, 0);
 
         // Removed 1, another one remains
@@ -307,7 +307,7 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
     }
 
-    TEST_F(WorldDataTest, LogicAddChunk) {
+    TEST_F(WorldTest, LogicAddChunk) {
         Chunk chunk(0, 0);
 
         worldData_.LogicAddChunk(chunk);
@@ -316,7 +316,7 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
     }
 
-    TEST_F(WorldDataTest, LogicAddChunkNoDuplicate) {
+    TEST_F(WorldTest, LogicAddChunkNoDuplicate) {
         // If the chunk already exists, it should not add it
         Chunk chunk(0, 0);
 
@@ -326,7 +326,7 @@ namespace jactorio::game
         EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
     }
 
-    TEST_F(WorldDataTest, LogicClearChunkData) {
+    TEST_F(WorldTest, LogicClearChunkData) {
         Chunk chunk(0, 0);
 
         worldData_.LogicAddChunk(chunk);
@@ -339,14 +339,14 @@ namespace jactorio::game
     }
 
 
-    class WorldDataDeserialize : public testing::Test
+    class WorldDeserialize : public testing::Test
     {
     protected:
-        WorldData worldData_;
+        World worldData_;
         LogicData logicData_;
     };
 
-    TEST_F(WorldDataDeserialize, SameChunk) {
+    TEST_F(WorldDeserialize, SameChunk) {
         worldData_.EmplaceChunk(0, 0);
 
         data::PrototypeManager prototype_manager;
@@ -380,7 +380,7 @@ namespace jactorio::game
         expect_tl_resolved({3, 1}, TileLayer::base);
     }
 
-    TEST_F(WorldDataDeserialize, ResolveMultiTilesFirst) {
+    TEST_F(WorldDeserialize, ResolveMultiTilesFirst) {
         worldData_.EmplaceChunk(0, 0);
 
         /*
@@ -414,11 +414,11 @@ namespace jactorio::game
         EXPECT_TRUE(result_inserter_data->dropoff.IsInitialized());
     }
 
-    TEST_F(WorldDataDeserialize, CallOnDeserialize) {
+    TEST_F(WorldDeserialize, CallOnDeserialize) {
         class MockWorldObject : public TestMockWorldObject
         {
         public:
-            void OnDeserialize(WorldData& /*world_data*/,
+            void OnDeserialize(World& /*world*/,
                                const WorldCoord& world_coord,
                                ChunkTileLayer& tile_layer) const override {
                 EXPECT_EQ(world_coord.x, 5);
@@ -444,7 +444,7 @@ namespace jactorio::game
         EXPECT_EQ(mock_obj.chunkTileLayer, &tile_layer);
     }
 
-    TEST_F(WorldDataDeserialize, DeserializeLogicChunks) {
+    TEST_F(WorldDeserialize, DeserializeLogicChunks) {
         worldData_.LogicAddChunk(worldData_.EmplaceChunk(0, 0));
 
         auto result               = TestSerializeDeserialize(worldData_);

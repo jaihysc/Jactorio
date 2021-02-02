@@ -72,8 +72,8 @@ namespace jactorio::game
 
 
         // World data must be provided since references cannot be serialized
-        void Dispatch(WorldData& world_data, WorldCoordAxis world_x, WorldCoordAxis world_y, proto::UpdateType type);
-        void Dispatch(WorldData& world_data, const WorldCoord& world_pair, proto::UpdateType type);
+        void Dispatch(World& world, WorldCoordAxis world_x, WorldCoordAxis world_y, proto::UpdateType type);
+        void Dispatch(World& world, const WorldCoord& world_pair, proto::UpdateType type);
 
         J_NODISCARD DebugInfo GetDebugInfo() const noexcept;
 

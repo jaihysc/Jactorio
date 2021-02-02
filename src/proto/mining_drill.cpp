@@ -5,7 +5,7 @@
 #include <tuple>
 
 #include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "gui/menus.h"
 #include "proto/item.h"
 #include "proto/resource_entity.h"
@@ -34,7 +34,7 @@ proto::Sprite* proto::MiningDrill::OnRGetSprite(const SpriteSetT set) const {
 }
 
 SpriteSetT proto::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
-                                               game::WorldData& /*world_data*/,
+                                               game::World& /*world*/,
                                                const WorldCoord& /*world_coords*/) const {
     switch (orientation) {
     case Orientation::up:
@@ -64,7 +64,7 @@ SpriteFrameT proto::MiningDrill::OnRGetSpriteFrame(const UniqueDataBase& unique_
 
 // ======================================================================
 
-proto::Item* proto::MiningDrill::FindOutputItem(const game::WorldData& world,
+proto::Item* proto::MiningDrill::FindOutputItem(const game::World& world,
                                                 WorldCoord coord,
                                                 const Orientation orien) const {
     coord.x -= this->miningRadius;
@@ -83,7 +83,7 @@ proto::Item* proto::MiningDrill::FindOutputItem(const game::WorldData& world,
     return nullptr;
 }
 
-void proto::MiningDrill::OnDeferTimeElapsed(game::WorldData& world,
+void proto::MiningDrill::OnDeferTimeElapsed(game::World& world,
                                             game::LogicData& logic,
                                             UniqueDataBase* unique_data) const {
     // Re-register callback and insert item, remove item from ground for next elapse
@@ -106,7 +106,7 @@ void proto::MiningDrill::OnDeferTimeElapsed(game::WorldData& world,
 }
 
 
-bool proto::MiningDrill::OnCanBuild(const game::WorldData& world,
+bool proto::MiningDrill::OnCanBuild(const game::World& world,
                                     const WorldCoord& coord,
                                     const Orientation orien) const {
     auto coords = coord;
@@ -132,7 +132,7 @@ bool proto::MiningDrill::OnCanBuild(const game::WorldData& world,
     return false;
 }
 
-void proto::MiningDrill::OnBuild(game::WorldData& world,
+void proto::MiningDrill::OnBuild(game::World& world,
                                  game::LogicData& logic,
                                  const WorldCoord& coord,
                                  game::ChunkTileLayer& tile_layer,
@@ -155,7 +155,7 @@ void proto::MiningDrill::OnBuild(game::WorldData& world,
     OnNeighborUpdate(world, logic, output_coords, coord, orientation);
 }
 
-void proto::MiningDrill::OnNeighborUpdate(game::WorldData& world,
+void proto::MiningDrill::OnNeighborUpdate(game::World& world,
                                           game::LogicData& logic,
                                           const WorldCoord& emit_coord,
                                           const WorldCoord& receive_coord,
@@ -186,7 +186,7 @@ void proto::MiningDrill::OnNeighborUpdate(game::WorldData& world,
 }
 
 
-void proto::MiningDrill::OnRemove(game::WorldData& /*world_data*/,
+void proto::MiningDrill::OnRemove(game::World& /*world*/,
                                   game::LogicData& logic_data,
                                   const WorldCoord& /*world_coords*/,
                                   game::ChunkTileLayer& tile_layer) const {
@@ -194,13 +194,13 @@ void proto::MiningDrill::OnRemove(game::WorldData& /*world_data*/,
     logic_data.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
 }
 
-void proto::MiningDrill::OnDeserialize(game::WorldData& world_data,
+void proto::MiningDrill::OnDeserialize(game::World& world,
                                        const WorldCoord& world_coord,
                                        game::ChunkTileLayer& tile_layer) const {
     auto* drill_data = tile_layer.GetUniqueData<MiningDrillData>();
     assert(drill_data != nullptr);
 
-    InitializeOutput(world_data, GetOutputCoord(world_coord, drill_data->output.GetOrientation()), drill_data);
+    InitializeOutput(world, GetOutputCoord(world_coord, drill_data->output.GetOrientation()), drill_data);
 }
 
 void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& /*data_manager*/) const {
@@ -221,10 +221,10 @@ void proto::MiningDrill::ValidatedPostLoad() {
 // ======================================================================
 
 
-bool proto::MiningDrill::InitializeOutput(game::WorldData& world_data,
+bool proto::MiningDrill::InitializeOutput(game::World& world,
                                           const WorldCoord& output_coord,
                                           MiningDrillData* drill_data) {
-    return drill_data->output.Initialize(world_data, output_coord);
+    return drill_data->output.Initialize(world, output_coord);
 }
 
 WorldCoord proto::MiningDrill::GetOutputCoord(const WorldCoord& world_coord, const Orientation orientation) const {
@@ -244,7 +244,7 @@ int proto::MiningDrill::GetMiningAreaY(const Orientation orien) const {
     return 2 * this->miningRadius + this->GetHeight(orien);
 }
 
-bool proto::MiningDrill::SetupResourceDeduction(const game::WorldData& world,
+bool proto::MiningDrill::SetupResourceDeduction(const game::World& world,
                                                 MiningDrillData& drill_data,
                                                 const Orientation orien) const {
     const auto x_span = GetMiningAreaX(orien);
@@ -267,7 +267,7 @@ bool proto::MiningDrill::SetupResourceDeduction(const game::WorldData& world,
     return false;
 }
 
-bool proto::MiningDrill::DeductResource(game::WorldData& world,
+bool proto::MiningDrill::DeductResource(game::World& world,
                                         const Orientation orien,
                                         MiningDrillData& drill_data,
                                         const ResourceEntityData::ResourceCount amount) const {

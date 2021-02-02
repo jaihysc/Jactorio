@@ -10,7 +10,7 @@
 #include "jactorio.h"
 
 #include "core/execution_timer.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/sprite.h"
 #include "render/opengl/error.h"
 
@@ -95,7 +95,7 @@ const SpriteUvCoordsT::mapped_type& render::Renderer::GetSpriteUvCoords(const Sp
 }
 
 void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
-                                              const game::WorldData& world_data,
+                                              const game::World& world,
                                               const float player_x,
                                               const float player_y) {
     assert(spritemapCoords_);
@@ -179,7 +179,7 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
                                                         &Renderer::PrepareChunkRow,
                                                         this,
                                                         std::ref(r_layer_tile),
-                                                        std::ref(world_data),
+                                                        std::ref(world),
                                                         std::ref(world_gen_mutex),
                                                         row_start,
                                                         chunk_amount.x,
@@ -280,7 +280,7 @@ core::Position2<int> render::Renderer::GetChunkDrawAmount(const int position_x, 
 }
 
 void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
-                                       const game::WorldData& world_data,
+                                       const game::World& world,
                                        std::mutex& world_gen_mutex,
                                        const core::Position2<int> row_start,
                                        const int chunk_span,
@@ -290,12 +290,12 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
     for (int x = 0; x < chunk_span; ++x) {
         const auto chunk_x = x + row_start.x;
 
-        const auto* chunk = world_data.GetChunkC(chunk_x, row_start.y);
+        const auto* chunk = world.GetChunkC(chunk_x, row_start.y);
 
         // Queue chunk for generation if it does not exist
         if (chunk == nullptr) {
             std::lock_guard<std::mutex> gen_guard{world_gen_mutex};
-            world_data.QueueChunkGeneration(chunk_x, row_start.y);
+            world.QueueChunkGeneration(chunk_x, row_start.y);
             continue;
         }
 

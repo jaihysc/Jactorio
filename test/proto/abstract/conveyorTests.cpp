@@ -18,7 +18,7 @@ namespace jactorio::proto
     class ConveyorTest : public testing::Test
     {
     protected:
-        game::WorldData worldData_;
+        game::World worldData_;
         game::LogicData logicData_;
 
         TransportBelt lineProto_;

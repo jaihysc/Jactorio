@@ -20,7 +20,7 @@ namespace jactorio
 
     namespace game
     {
-        class WorldData;
+        class World;
 
         class ChunkTileLayer;
         class Chunk;
@@ -75,7 +75,7 @@ namespace jactorio::proto
         ///
         /// Maps a orientation to a <set, frame>
         J_NODISCARD virtual SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                                       game::WorldData& world_data,
+                                                       game::World& world,
                                                        const WorldCoord& world_coords) const = 0;
 
         ///

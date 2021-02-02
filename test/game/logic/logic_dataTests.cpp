@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 
 namespace jactorio::game
 {

@@ -19,7 +19,7 @@
 #include "game/logic/inventory_controller.h"
 #include "game/logic/logic_data.h"
 #include "game/player/player_data.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 
 #include "gui/colors.h"
 #include "gui/menus.h"
@@ -227,7 +227,7 @@ WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
 bool show_conveyor_structs       = false;
 
-void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& data_manager) {
+void ShowConveyorSegments(game::World& world, const data::PrototypeManager& data_manager) {
     constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
 
     // Sprite representing the update point
@@ -545,8 +545,8 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
         constexpr int chunk_radius = 3; // Chunk radius around the player to display information for
         ImGui::Text("Radius of %d around the player", chunk_radius);
 
-        const auto start_chunk_x = game::WorldData::WorldCToChunkC(player.world.GetPositionX());
-        const auto start_chunk_y = game::WorldData::WorldCToChunkC(player.world.GetPositionY());
+        const auto start_chunk_x = game::World::WorldCToChunkC(player.world.GetPositionX());
+        const auto start_chunk_y = game::World::WorldCToChunkC(player.world.GetPositionY());
 
         for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
             for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {

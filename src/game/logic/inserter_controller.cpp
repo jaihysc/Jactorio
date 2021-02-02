@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/inserter.h"
 
 using namespace jactorio;
@@ -114,11 +114,11 @@ void ProcessInserterPickup(const PickupQueue& pickup_queue, game::LogicData& log
     }
 }
 
-void game::InserterLogicUpdate(WorldData& world_data, LogicData& logic_data) {
+void game::InserterLogicUpdate(World& world, LogicData& logic_data) {
     DropoffQueue dropoff_queue{};
     PickupQueue pickup_queue{};
 
-    for (auto* chunk : world_data.LogicGetChunks()) {
+    for (auto* chunk : world.LogicGetChunks()) {
         for (auto* tile_layer : chunk->GetLogicGroup(LogicGroup::inserter)) {
             auto* inserter_data = tile_layer->GetUniqueData<proto::InserterData>();
             assert(inserter_data);

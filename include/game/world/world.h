@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
-#define JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_H
+#define JACTORIO_INCLUDE_GAME_WORLD_WORLD_H
 #pragma once
 
 #include <set>
@@ -26,7 +26,7 @@ namespace jactorio::game
 {
     ///
     /// Stores all data for a world
-    class WorldData
+    class World
     {
         using LogicChunkContainerT       = std::vector<Chunk*>;
         using SerialLogicChunkContainerT = std::vector<ChunkCoord>;
@@ -46,18 +46,18 @@ namespace jactorio::game
 
         // World access
 
-        WorldData()  = default;
-        ~WorldData() = default;
+        World()  = default;
+        ~World() = default;
 
-        WorldData(const WorldData& other);
-        WorldData(WorldData&& other) noexcept = default;
+        World(const World& other);
+        World(World&& other) noexcept = default;
 
-        WorldData& operator=(WorldData other) {
+        World& operator=(World other) {
             swap(*this, other);
             return *this;
         }
 
-        friend void swap(WorldData& lhs, WorldData& rhs) noexcept {
+        friend void swap(World& lhs, World& rhs) noexcept {
             using std::swap;
             swap(lhs.updateDispatcher, rhs.updateDispatcher);
             swap(lhs.worldChunks_, rhs.worldChunks_);
@@ -91,7 +91,7 @@ namespace jactorio::game
 
         ///
         /// Clears chunk data, logic chunks and chunks awaiting generation
-        /// \remark Ensure PrepareWorldDataClear was called prior to this
+        /// \remark Ensure PrepareWorldClear was called prior to this
         void Clear();
 
 
@@ -304,4 +304,4 @@ namespace jactorio::game
     };
 } // namespace jactorio::game
 
-#endif // JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
+#endif // JACTORIO_INCLUDE_GAME_WORLD_WORLD_H

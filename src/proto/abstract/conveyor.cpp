@@ -7,7 +7,7 @@
 
 #include "game/logic/conveyor_struct.h"
 #include "game/logic/conveyor_utility.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/sprite.h"
 #include "render/proto_renderer.h"
 
@@ -65,9 +65,9 @@ void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
 }
 
 SpriteSetT proto::Conveyor::OnRGetSpriteSet(const Orientation orientation,
-                                            game::WorldData& world_data,
+                                            game::World& world,
                                             const WorldCoord& world_coords) const {
-    return static_cast<uint16_t>(ConveyorCalcLineOrien(world_data, world_coords, orientation));
+    return static_cast<uint16_t>(ConveyorCalcLineOrien(world, world_coords, orientation));
 }
 
 SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
@@ -79,7 +79,7 @@ SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_d
 // ======================================================================
 // Build / Remove / Neighbor update
 
-void proto::Conveyor::OnBuild(game::WorldData& world,
+void proto::Conveyor::OnBuild(game::World& world,
                               game::LogicData& /*logic*/,
                               const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer,
@@ -91,7 +91,7 @@ void proto::Conveyor::OnBuild(game::WorldData& world,
     con_data.set = static_cast<uint16_t>(con_data.lOrien);
 }
 
-void proto::Conveyor::OnNeighborUpdate(game::WorldData& world,
+void proto::Conveyor::OnNeighborUpdate(game::World& world,
                                        game::LogicData& /*logic*/,
                                        const WorldCoord& /*emit_coord*/,
                                        const WorldCoord& receive_coord,
@@ -109,20 +109,20 @@ void proto::Conveyor::OnNeighborUpdate(game::WorldData& world,
     ConveyorUpdateNeighborTermination(world, receive_coord);
 }
 
-void proto::Conveyor::OnRemove(game::WorldData& world,
+void proto::Conveyor::OnRemove(game::World& world,
                                game::LogicData& /*logic*/,
                                const WorldCoord& coord,
                                game::ChunkTileLayer& /*tile_layer*/) const {
     RemoveConveyor(world, coord, kConveyorLogicGroup);
 }
 
-void proto::Conveyor::OnDeserialize(game::WorldData& world_data,
+void proto::Conveyor::OnDeserialize(game::World& world,
                                     const WorldCoord& world_coord,
                                     game::ChunkTileLayer& tile_layer) const {
     auto* origin_data = tile_layer.GetUniqueData<ConveyorData>();
     assert(origin_data != nullptr);
 
-    ConveyorNeighborConnect(world_data, world_coord);
+    ConveyorNeighborConnect(world, world_coord);
 }
 
 void proto::Conveyor::PostLoad() {

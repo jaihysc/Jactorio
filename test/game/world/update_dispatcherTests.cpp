@@ -20,7 +20,7 @@ namespace jactorio::game
 
             mutable proto::UpdateType type = proto::UpdateType::remove;
 
-            void OnTileUpdate(WorldData& /*world_data*/,
+            void OnTileUpdate(World& /*world*/,
                               const WorldCoord& emit_coords,
                               const WorldCoord& receive_coords,
                               const proto::UpdateType type) const override {
@@ -32,7 +32,7 @@ namespace jactorio::game
             }
         };
 
-        WorldData worldData_;
+        World worldData_;
         UpdateDispatcher& dispatcher_ = worldData_.updateDispatcher;
 
         MockUpdateListener mock_{};

@@ -21,7 +21,7 @@ namespace jactorio::game
     class ConveyorControllerTest : public testing::Test
     {
     protected:
-        WorldData worldData_{};
+        World worldData_{};
         LogicData logicData_{};
 
         Chunk* chunk_ = nullptr;

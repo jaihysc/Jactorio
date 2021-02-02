@@ -12,7 +12,7 @@ namespace jactorio::game
     {
     protected:
         LogicData logicData_;
-        WorldData worldData_;
+        World worldData_;
 
         DeferralTimer& timer_ = logicData_.deferralTimer;
 
@@ -23,7 +23,7 @@ namespace jactorio::game
             mutable proto::UniqueDataBase* dataPtr = nullptr;
             mutable DeferralTimer* dTimer          = nullptr;
 
-            void OnDeferTimeElapsed(WorldData& /*world_data*/,
+            void OnDeferTimeElapsed(World& /*world*/,
                                     LogicData& logic_data,
                                     proto::UniqueDataBase* unique_data) const override {
                 callbackCalled = true;

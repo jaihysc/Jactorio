@@ -6,7 +6,7 @@
 
 #include "jactorioTests.h"
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/transport_belt.h"
 
 namespace jactorio::proto
@@ -18,7 +18,7 @@ namespace jactorio::proto
             world_.EmplaceChunk(0, 0);
         }
 
-        game::WorldData world_;
+        game::World world_;
         game::LogicData logic_;
         TransportBelt transBelt_;
     };
