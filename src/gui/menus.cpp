@@ -18,7 +18,7 @@
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/logic_data.h"
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 
 #include "gui/components.h"
 #include "gui/menu_data.h"
@@ -31,17 +31,17 @@ using namespace jactorio;
 /// \param on_click Called after inventory actions were handled
 template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
 void HandleInvClicked(
-    game::PlayerData& player_data,
+    game::Player& player,
     const data::PrototypeManager& data_manager,
     proto::Item::Inventory& inv,
     const size_t index,
     const std::function<void()>& on_click = []() {}) {
     if (ImGui::IsItemClicked()) {
-        player_data.inventory.HandleInventoryActions(data_manager, inv, index, HalfSelectOnLeft);
+        player.inventory.HandleInventoryActions(data_manager, inv, index, HalfSelectOnLeft);
         on_click();
     }
     else if (ImGui::IsItemClicked(1)) {
-        player_data.inventory.HandleInventoryActions(data_manager, inv, index, HalfSelectOnRight);
+        player.inventory.HandleInventoryActions(data_manager, inv, index, HalfSelectOnRight);
         on_click();
     }
 }
@@ -106,7 +106,7 @@ void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
 void RecipeMenu(const render::GuiRenderer g_rendr,
                 const std::string& title,
                 const std::function<void(const proto::Recipe& recipe)>& item_slot_draw) {
-    auto& player_data         = g_rendr.player;
+    auto& player         = g_rendr.player;
     const auto& proto_manager = g_rendr.protoManager;
 
     const gui::GuiMenu menu;
@@ -130,7 +130,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
             gui::ImGuard guard;
             guard.PushStyleVar(ImGuiStyleVar_FramePadding, {gui::kGuiStyleWindowPaddingX, search_bar_padding});
 
-            auto& search_text = player_data.crafting.recipeSearchText;
+            auto& search_text = player.crafting.recipeSearchText;
             search_text.resize(100);
             ImGui::InputText("", search_text.data(), search_text.size());
         }
@@ -164,7 +164,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
                 const auto& product_name =
                     proto_manager.DataRawGet<proto::Item>(recipe->product.first)->GetLocalizedName();
 
-                if (matches_search_str(product_name, player_data.crafting.recipeSearchText))
+                if (matches_search_str(product_name, player.crafting.recipeSearchText))
                     goto loop_exit;
             }
         }
@@ -173,16 +173,16 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     loop_exit:
         // Different color for currently selected recipe group
         gui::ImGuard recipe_group_guard;
-        if (index == player_data.crafting.RecipeGroupGetSelected())
+        if (index == player.crafting.RecipeGroupGetSelected())
             recipe_group_guard.PushStyleColor(ImGuiCol_Button, gui::kGuiColButtonHover);
 
         group_slots.DrawSlot(recipe_group->sprite->internalId, [&]() {
             if (ImGui::IsItemClicked())
-                player_data.crafting.RecipeGroupSelect(index);
+                player.crafting.RecipeGroupSelect(index);
 
             // Item tooltip
             if (ImGui::IsItemHovered()) {
-                gui::DrawCursorTooltip(player_data.inventory.GetSelectedItem() != nullptr,
+                gui::DrawCursorTooltip(player.inventory.GetSelectedItem() != nullptr,
                                        recipe_group->GetLocalizedName(),
                                        recipe_group->GetLocalizedDescription(),
                                        [&]() {});
@@ -191,7 +191,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     });
 
     // Menu recipes
-    const auto& selected_group = groups[player_data.crafting.RecipeGroupGetSelected()];
+    const auto& selected_group = groups[player.crafting.RecipeGroupGetSelected()];
 
     for (const auto& recipe_category : selected_group->recipeCategories) {
         const auto& recipes = recipe_category->recipes;
@@ -203,7 +203,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
             const auto* product = proto_manager.DataRawGet<proto::Item>(recipe->product.first);
             assert(product != nullptr); // Invalid recipe product
 
-            if (!matches_search_str(product->GetLocalizedName(), player_data.crafting.recipeSearchText))
+            if (!matches_search_str(product->GetLocalizedName(), player.crafting.recipeSearchText))
                 return;
 
             recipe_row.DrawSlot(product->sprite->internalId, [&]() { item_slot_draw(*recipe); });
@@ -216,7 +216,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
 /// \tparam IsPlayerCrafting Shows items possessed by the player and opportunities for intermediate crafting
 template <bool IsPlayerCrafting>
 void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe& recipe) {
-    auto& player_data         = g_rendr.player;
+    auto& player         = g_rendr.player;
     const auto& proto_manager = g_rendr.protoManager;
 
     auto* product_item = proto_manager.DataRawGet<proto::Item>(recipe.product.first);
@@ -230,7 +230,7 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe&
     gui::ImGuard guard;
     guard.PushStyleColor(ImGuiCol_Button, gui::kGuiColNone);
 
-    gui::DrawCursorTooltip(player_data.inventory.GetSelectedItem() != nullptr, title_ss.str(), "Ingredients:", [&]() {
+    gui::DrawCursorTooltip(player.inventory.GetSelectedItem() != nullptr, title_ss.str(), "Ingredients:", [&]() {
         // Ingredients
         for (const auto& ingredient_pair : recipe.ingredients) {
             const auto* item = proto_manager.DataRawGet<proto::Item>(ingredient_pair.first);
@@ -240,10 +240,10 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe&
 
             ImGui::SameLine(gui::kInventorySlotWidth * 1.5);
 
-            const auto player_item_count = game::GetInvItemCount(player_data.inventory.inventory, item);
+            const auto player_item_count = game::GetInvItemCount(player.inventory.inventory, item);
             // Does not have ingredient
             if (IsPlayerCrafting && player_item_count < ingredient_pair.second) {
-                const bool can_be_recurse_crafted = player_data.crafting.RecipeCanCraft(proto_manager, recipe, 1);
+                const bool can_be_recurse_crafted = player.crafting.RecipeCanCraft(proto_manager, recipe, 1);
 
                 gui::ImGuard text_guard;
                 if (can_be_recurse_crafted)
@@ -276,7 +276,7 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe&
             const auto item_count_required = raw_inames[slot_index].second;
 
             // const auto player_item_count =
-            // 	game::GetInvItemCount(player_data.inventory.inventoryPlayer, player_data.inventory.kInventorySize,
+            // 	game::GetInvItemCount(player.inventory.inventoryPlayer, player.inventory.kInventorySize,
             // item);
             //
             //

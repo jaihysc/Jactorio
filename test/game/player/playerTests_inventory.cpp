@@ -2,16 +2,16 @@
 
 #include <gtest/gtest.h>
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 
 #include "jactorioTests.h"
 
 namespace jactorio::game
 {
-    class PlayerDataInventoryTest : public testing::Test
+    class PlayerInventoryTest : public testing::Test
     {
     protected:
-        PlayerData::Inventory playerInv_;
+        Player::Inventory playerInv_;
         data::PrototypeManager dataManager_;
 
         proto::Item* cursor_ = nullptr;
@@ -23,7 +23,7 @@ namespace jactorio::game
         }
     };
 
-    TEST_F(PlayerDataInventoryTest, InventoryLclickSelectItemByReference) {
+    TEST_F(PlayerInventoryTest, InventoryLclickSelectItemByReference) {
         // Left click on a slot picks up items by reference
         // The inventory slot becomes the cursor
         // The cursor holds the item
@@ -46,7 +46,7 @@ namespace jactorio::game
         EXPECT_EQ(cursor_item->count, 50);
     }
 
-    TEST_F(PlayerDataInventoryTest, InventoryLeftClickDeselectReferencedItem) {
+    TEST_F(PlayerInventoryTest, InventoryLeftClickDeselectReferencedItem) {
         // Left click on a slot picks up items by reference
         // Left / right clicking again on the same slot deselects the item
         SetupInventoryCursor();
@@ -71,7 +71,7 @@ namespace jactorio::game
         EXPECT_EQ(cursor_item, nullptr);
     }
 
-    TEST_F(PlayerDataInventoryTest, InventoryRightClickDeselectReferencedItem) {
+    TEST_F(PlayerInventoryTest, InventoryRightClickDeselectReferencedItem) {
         SetupInventoryCursor();
 
         const proto::Item item;
@@ -96,7 +96,7 @@ namespace jactorio::game
     }
 
     /*
-    TEST_F(PlayerDataInventoryTest, InventoryDeselectReferencedItem2Inventories) {
+    TEST_F(PlayerInventoryTest, InventoryDeselectReferencedItem2Inventories) {
         // Left click on a slot picks up items by reference
         // Left / right clicking again on the same slot in another inventory however will not deselect the item
         SetupInventoryCursor();
@@ -152,7 +152,7 @@ namespace jactorio::game
     }
  */
 
-    TEST_F(PlayerDataInventoryTest, InventoryMoveReferencedItem) {
+    TEST_F(PlayerInventoryTest, InventoryMoveReferencedItem) {
         // Left click on a slot picks up items by reference
         // Left click on index 3 to drop off the item at index
 
@@ -184,7 +184,7 @@ namespace jactorio::game
     }
 
 
-    TEST_F(PlayerDataInventoryTest, InventoryRclickSelectItemByUnique) {
+    TEST_F(PlayerInventoryTest, InventoryRclickSelectItemByUnique) {
         // Right click on a slot creates a new inventory slot in the cursor and places half from the inventory into it
         const proto::Item item;
 
@@ -202,7 +202,7 @@ namespace jactorio::game
         EXPECT_EQ(cursor_item->count, 20);
     }
 
-    TEST_F(PlayerDataInventoryTest, InventoryDropSingleUniqueItemNewStack) {
+    TEST_F(PlayerInventoryTest, InventoryDropSingleUniqueItemNewStack) {
         // Right click on item to pick up half into cursor
         // Right click on empty slot to drop 1 off from the cursor
         const proto::Item item;
@@ -236,7 +236,7 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[3].count, 1);
     }
 
-    TEST_F(PlayerDataInventoryTest, InventoryDropSingleItemOriginalStack) {
+    TEST_F(PlayerInventoryTest, InventoryDropSingleItemOriginalStack) {
         const proto::Item item;
 
         playerInv_.inventory[0].item  = &item;
@@ -256,7 +256,7 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[0].count, 6);
     }
 
-    TEST_F(PlayerDataInventoryTest, InventoryDropStackUniqueItem) {
+    TEST_F(PlayerInventoryTest, InventoryDropStackUniqueItem) {
         // Right click on item to pick up half into cursor
         // Left click on empty slot to drop entire stack off from the cursor
         const proto::Item item;
@@ -291,7 +291,7 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[3].count, 5);
     }
 
-    TEST_F(PlayerDataInventoryTest, InventoryClickEmptySlot) {
+    TEST_F(PlayerInventoryTest, InventoryClickEmptySlot) {
         // Left click on empty slot
         // Should remain unchanged
         playerInv_.inventory[0].item  = nullptr;
@@ -306,7 +306,7 @@ namespace jactorio::game
         EXPECT_EQ(cursor_item, nullptr);
     }
 
-    TEST_F(PlayerDataInventoryTest, InventoryClickFilters) {
+    TEST_F(PlayerInventoryTest, InventoryClickFilters) {
         // A inventory click at a stack location with a filter requires that the item attempting to insert into it
         // matches the filter
 
@@ -330,7 +330,7 @@ namespace jactorio::game
 
 
     // Increment / decrement selected item
-    TEST_F(PlayerDataInventoryTest, IncrementSelectedItem) {
+    TEST_F(PlayerInventoryTest, IncrementSelectedItem) {
         // If player selects item by "unique" or "reference",
         // It should function the same as it only modifies the cursor item stack
         proto::Item item;
@@ -368,7 +368,7 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(PlayerDataInventoryTest, IncrementSelectedItemExceedItemStack) {
+    TEST_F(PlayerInventoryTest, IncrementSelectedItemExceedItemStack) {
         // Attempting to increment an item exceeding item stack returns false and fails the increment
         proto::Item item;
         item.stackSize = 50;
@@ -388,7 +388,7 @@ namespace jactorio::game
     }
 
 
-    TEST_F(PlayerDataInventoryTest, DecrementSelectedItemUnique) {
+    TEST_F(PlayerInventoryTest, DecrementSelectedItemUnique) {
         // If player selects item by "unique"
         // If decremented to 0, deselect the cursor item
         proto::Item item;
@@ -426,7 +426,7 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(PlayerDataInventoryTest, DeselectSelectedItem) {
+    TEST_F(PlayerInventoryTest, DeselectSelectedItem) {
         // If player selects item by "unique"
         // If decremented to 0, deselect the cursor item
         proto::Item item;
@@ -447,7 +447,7 @@ namespace jactorio::game
         EXPECT_EQ(cursor_item, nullptr);
     }
 
-    TEST_F(PlayerDataInventoryTest, DecrementSelectedItemReachZeroReference) {
+    TEST_F(PlayerInventoryTest, DecrementSelectedItemReachZeroReference) {
         // Selected by reference
         // If decremented to 0, deselect the cursor item
         // If the selected item is empty after decrementing, return false
@@ -473,7 +473,7 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[0].count, 0);
     }
 
-    TEST_F(PlayerDataInventoryTest, PlayerInventorySort) {
+    TEST_F(PlayerInventoryTest, PlayerInventorySort) {
         proto::Item item;
         item.stackSize = 50;
 
@@ -525,7 +525,7 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[4].count, 1);
     }
 
-    TEST_F(PlayerDataInventoryTest, PlayerInventorySort2) {
+    TEST_F(PlayerInventoryTest, PlayerInventorySort2) {
         // Sorting will not move the item with inventory_selected_cursor_iname (to prevent breaking the inventory logic)
         SetupInventoryCursor();
 
@@ -546,7 +546,7 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(PlayerDataInventoryTest, PlayerInventorySortFull) {
+    TEST_F(PlayerInventoryTest, PlayerInventorySortFull) {
         // Sorting the inventory when it is full should also work
         proto::Item item;
         item.stackSize = 50;
@@ -566,7 +566,7 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(PlayerDataInventoryTest, PlayerInventorySortItemExcedingStack) {
+    TEST_F(PlayerInventoryTest, PlayerInventorySortItemExcedingStack) {
         // If there is an item which exceeds its stack size, do not attempt to stack into it
         proto::Item item;
         item.stackSize = 50;
@@ -592,7 +592,7 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[2].count, 10);
     }
 
-    TEST_F(PlayerDataInventoryTest, Serialize) {
+    TEST_F(PlayerInventoryTest, Serialize) {
         playerInv_.inventory[3].count = 43;
 
         auto result = TestSerializeDeserialize(playerInv_);
@@ -600,7 +600,7 @@ namespace jactorio::game
         EXPECT_EQ(result.inventory[3].count, 43);
     }
 
-    TEST_F(PlayerDataInventoryTest, SerializeSelectedItem) {
+    TEST_F(PlayerInventoryTest, SerializeSelectedItem) {
         SetupInventoryCursor();
 
         auto& item = dataManager_.AddProto<proto::Item>();

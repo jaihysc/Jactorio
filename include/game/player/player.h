@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
-#define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
+#ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_H
+#define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_H
 #pragma once
 
 #include <glm/glm.hpp>
@@ -20,19 +20,19 @@ namespace jactorio::game
 
     ///
     /// Stores information & functions regarding a player (Duplicated for multiple players)
-    class PlayerData
+    class Player
     {
     public:
-        PlayerData()  = default;
-        ~PlayerData() = default;
+        Player()  = default;
+        ~Player() = default;
 
-        PlayerData(const PlayerData& other)
+        Player(const Player& other)
             : world{other.world}, inventory{other.inventory}, placement{other.placement}, crafting{other.crafting} {
             placement.playerInv_ = &inventory;
             crafting.playerInv_  = &inventory;
         }
 
-        PlayerData(PlayerData&& other) noexcept
+        Player(Player&& other) noexcept
             : world{std::move(other.world)},
               inventory{std::move(other.inventory)},
               placement{std::move(other.placement)},
@@ -41,12 +41,12 @@ namespace jactorio::game
             crafting.playerInv_  = &inventory;
         }
 
-        PlayerData& operator=(PlayerData other) {
+        Player& operator=(Player other) {
             swap(*this, other);
             return *this;
         }
 
-        friend void swap(PlayerData& lhs, PlayerData& rhs) noexcept {
+        friend void swap(Player& lhs, Player& rhs) noexcept {
             using std::swap;
             swap(lhs.world, rhs.world);
             swap(lhs.inventory, rhs.inventory);
@@ -209,7 +209,7 @@ namespace jactorio::game
 
         class Placement
         {
-            friend PlayerData;
+            friend Player;
 
         public:
             explicit Placement(Inventory& player_inv) : playerInv_(&player_inv) {}
@@ -291,7 +291,7 @@ namespace jactorio::game
 
         class Crafting
         {
-            friend PlayerData;
+            friend Player;
 
             using RecipeQueueT = std::deque<data::SerialProtoPtr<const proto::Recipe>>;
 
@@ -406,4 +406,4 @@ namespace jactorio::game
     };
 } // namespace jactorio::game
 
-#endif // JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
+#endif // JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_H

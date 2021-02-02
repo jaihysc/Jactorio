@@ -25,7 +25,7 @@ namespace jactorio
 
     namespace game
     {
-        class PlayerData;
+        class Player;
     }
 } // namespace jactorio
 
@@ -42,14 +42,12 @@ namespace jactorio::game
         J_NODISCARD static double GetCursorY();
 
         // ======================================================================
-        // Client only mouse selection (affects only rendering) For Player mouse selection, see player_data
+        // Client only mouse selection (affects only rendering) For Player mouse selection, see player
 
         ///
         /// Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the
         /// cursor
-        void DrawCursorOverlay(GameWorlds& worlds,
-                               PlayerData& player_data,
-                               const data::PrototypeManager& proto_manager);
+        void DrawCursorOverlay(GameWorlds& worlds, Player& player, const data::PrototypeManager& proto_manager);
 
         ///
         /// Draws cursor_sprite when over entity & no item selected or item not placeable

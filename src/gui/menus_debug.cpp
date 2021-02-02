@@ -18,7 +18,7 @@
 #include "game/logic/conveyor_utility.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/logic_data.h"
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 #include "game/world/world.h"
 
 #include "gui/colors.h"
@@ -39,7 +39,7 @@ bool show_world_info = false;
 
 void gui::DebugMenuLogic(GameWorlds& worlds,
                          game::LogicData& logic,
-                         game::PlayerData& player,
+                         game::Player& player,
                          const data::PrototypeManager& data_manager) {
     if (show_tile_info)
         DebugTileInfo(worlds, player);
@@ -147,9 +147,9 @@ void gui::DebugTimings() {
 }
 
 int give_amount  = 100;
-int new_inv_size = game::PlayerData::Inventory::kDefaultInventorySize;
+int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
 
-void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
+void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& data_manager) {
     using namespace core;
 
     ImGuard guard{};
@@ -160,7 +160,7 @@ void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeM
         give_amount = 1;
 
     if (ImGui::Button("Clear inventory")) {
-        for (auto& i : player_data.inventory.inventory) {
+        for (auto& i : player.inventory.inventory) {
             i = {nullptr, 0};
         }
     }
@@ -169,8 +169,8 @@ void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeM
     if (new_inv_size < 0)
         new_inv_size = 0;
 
-    if (new_inv_size != player_data.inventory.inventory.size()) {
-        player_data.inventory.inventory.resize(new_inv_size);
+    if (new_inv_size != player.inventory.inventory.size()) {
+        player.inventory.inventory.resize(new_inv_size);
     }
 
 
@@ -183,13 +183,13 @@ void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeM
 
         if (ImGui::Button(item->GetLocalizedName().c_str())) {
             proto::ItemStack item_stack = {item, core::SafeCast<proto::Item::StackCount>(give_amount)};
-            game::AddStack(player_data.inventory.inventory, item_stack);
+            game::AddStack(player.inventory.inventory, item_stack);
         }
         ImGui::PopID();
     }
 }
 
-void gui::DebugTileInfo(GameWorlds& worlds, game::PlayerData& player) {
+void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     auto& world = worlds[player.world.GetId()];
     auto* tile  = world.GetTile(player.world.GetMouseTileCoords());
 
@@ -344,7 +344,7 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& data
     }
 }
 
-void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const data::PrototypeManager& proto_manager) {
+void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data::PrototypeManager& proto_manager) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard{};
@@ -456,7 +456,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
     }
 }
 
-void gui::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
+void gui::DebugInserterInfo(GameWorlds& worlds, game::Player& player) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard{};
@@ -493,7 +493,7 @@ void gui::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
     ImGui::Text("Dropoff %s", inserter_data.dropoff.IsInitialized() ? "true" : "false");
 }
 
-void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
+void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard;

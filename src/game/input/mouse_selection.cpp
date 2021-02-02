@@ -2,7 +2,7 @@
 
 #include "game/input/mouse_selection.h"
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 #include "game/world/world.h"
 #include "proto/abstract/entity.h"
 #include "proto/sprite.h"
@@ -28,26 +28,26 @@ double game::MouseSelection::GetCursorY() {
 
 
 void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
-                                             PlayerData& player_data,
+                                             Player& player,
                                              const data::PrototypeManager& proto_manager) {
-    const auto cursor_position = player_data.world.GetMouseTileCoords();
-    const auto* stack          = player_data.inventory.GetSelectedItem();
+    const auto cursor_position = player.world.GetMouseTileCoords();
+    const auto* stack          = player.inventory.GetSelectedItem();
 
     const auto* sprite = proto_manager.DataRawGet<proto::Sprite>(
-        player_data.world.MouseSelectedTileInRange() ? "__core__/cursor-select" : "__core__/cursor-invalid");
+        player.world.MouseSelectedTileInRange() ? "__core__/cursor-select" : "__core__/cursor-invalid");
     assert(sprite != nullptr);
 
 
     if (stack != nullptr) {
-        DrawOverlay(worlds[player_data.world.GetId()],
+        DrawOverlay(worlds[player.world.GetId()],
                     cursor_position,
-                    player_data.placement.orientation,
+                    player.placement.orientation,
                     stack->item->entityPrototype,
                     *sprite);
     }
     else {
         DrawOverlay(
-            worlds[player_data.world.GetId()], cursor_position, player_data.placement.orientation, nullptr, *sprite);
+            worlds[player.world.GetId()], cursor_position, player.placement.orientation, nullptr, *sprite);
     }
 }
 

@@ -2,19 +2,19 @@
 
 #include <gtest/gtest.h>
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 
 #include "jactorioTests.h"
 
 namespace jactorio::game
 {
-    class PlayerDataWorldTest : public testing::Test
+    class PlayerWorldTest : public testing::Test
     {
     protected:
-        PlayerData::World playerWorld_;
+        Player::World playerWorld_;
     };
 
-    TEST_F(PlayerDataWorldTest, Serialize) {
+    TEST_F(PlayerWorldTest, Serialize) {
         playerWorld_.SetId(32);
         playerWorld_.SetPlayerX(32.41);
         playerWorld_.SetPlayerY(16.92);

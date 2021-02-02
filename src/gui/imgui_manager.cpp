@@ -12,7 +12,7 @@
 
 #include "proto/abstract/entity.h"
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 #include "game/world/chunk_tile_layer.h"
 
 #include "gui/colors.h"
@@ -139,7 +139,7 @@ void DrawMenu(gui::Menu menu, const render::GuiRenderer& g_rendr, proto::UniqueD
 void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
                     GameWorlds& worlds,
                     game::LogicData& logic,
-                    game::PlayerData& player,
+                    game::Player& player,
                     const data::PrototypeManager& proto_manager,
                     game::EventData& /*event*/) {
     EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");

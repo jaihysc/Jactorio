@@ -6,7 +6,7 @@
 
 #include "jactorioTests.h"
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 
 namespace jactorio::game
 {
@@ -18,7 +18,7 @@ namespace jactorio::game
         World& world_ = gameWorlds_[0];
         LogicData logic_;
 
-        PlayerData player_;
+        Player player_;
         MouseSelection mouseSelection_;
 
 

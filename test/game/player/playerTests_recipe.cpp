@@ -2,18 +2,18 @@
 
 #include <gtest/gtest.h>
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 
 #include "jactorioTests.h"
 
 namespace jactorio::game
 {
-    class PlayerDataRecipeTest : public testing::Test
+    class PlayerRecipeTest : public testing::Test
     {
     protected:
-        PlayerData playerData_;
-        PlayerData::Inventory& playerInv_  = playerData_.inventory;
-        PlayerData::Crafting& playerCraft_ = playerData_.crafting;
+        Player playerData_;
+        Player::Inventory& playerInv_  = playerData_.inventory;
+        Player::Crafting& playerCraft_ = playerData_.crafting;
 
         data::PrototypeManager dataManager_;
 
@@ -62,13 +62,13 @@ namespace jactorio::game
     };
 
 
-    TEST_F(PlayerDataRecipeTest, RecipeSelectRecipeGroup) {
+    TEST_F(PlayerRecipeTest, RecipeSelectRecipeGroup) {
         playerCraft_.RecipeGroupSelect(1);
         EXPECT_EQ(playerCraft_.RecipeGroupGetSelected(), 1);
     }
 
 
-    TEST_F(PlayerDataRecipeTest, RecipeQueue) {
+    TEST_F(PlayerRecipeTest, RecipeQueue) {
         // Queueing 2 recipes will remove the ingredients from the player inventory, but will not return any products
         // since recipe_craft_tick() is not called
 
@@ -108,7 +108,7 @@ namespace jactorio::game
     }
 
 
-    TEST_F(PlayerDataRecipeTest, RecipeCraftResurse) {
+    TEST_F(PlayerRecipeTest, RecipeCraftResurse) {
         // Should recursively craft the product, crafting intermediate products as necessary
         SetupTestRecipe();
 
@@ -131,7 +131,7 @@ namespace jactorio::game
         EXPECT_EQ(playerCraft_.GetCraftingItemExtras().size(), 0);
     }
 
-    TEST_F(PlayerDataRecipeTest, RecipeCraftResurse2) {
+    TEST_F(PlayerRecipeTest, RecipeCraftResurse2) {
         // Calculations for recursive crafting should also factor in the excess left by previous recipes
         SetupTestRecipe();
 
@@ -161,7 +161,7 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(PlayerDataRecipeTest, RecipeCanCraft) {
+    TEST_F(PlayerRecipeTest, RecipeCanCraft) {
         // Should recursively step through a recipe and determine that it can be crafted
         SetupTestRecipe();
 
@@ -179,7 +179,7 @@ namespace jactorio::game
         EXPECT_EQ(playerCraft_.RecipeCanCraft(dataManager_, *finalRecipe_, 1), true);
     }
 
-    TEST_F(PlayerDataRecipeTest, RecipeCanCraftInvalid) {
+    TEST_F(PlayerRecipeTest, RecipeCanCraftInvalid) {
         // Should recursively step through a recipe and determine that it canNOT in fact be crafted
         SetupTestRecipe();
 
@@ -197,7 +197,7 @@ namespace jactorio::game
         EXPECT_EQ(playerCraft_.RecipeCanCraft(dataManager_, *finalRecipe_, 1), false);
     }
 
-    TEST_F(PlayerDataRecipeTest, RecipeCanCraftInvalid2) {
+    TEST_F(PlayerRecipeTest, RecipeCanCraftInvalid2) {
         // When encountering the same items, it must account for the fact it has already been used earlier
         // Should recursively step through a recipe and determine that it canNOT in fact be crafted
         SetupTestRecipe();
@@ -211,7 +211,7 @@ namespace jactorio::game
         EXPECT_EQ(playerCraft_.RecipeCanCraft(dataManager_, *finalRecipe_, 1), false);
     }
 
-    TEST_F(PlayerDataRecipeTest, RecipeCraftFullInventory) {
+    TEST_F(PlayerRecipeTest, RecipeCraftFullInventory) {
         // If the inventory is full, the item will be held,
         // preventing any further crafting until a slot in the inventory if freed for the item to be returned
 
@@ -244,7 +244,7 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[0].count, 1);
     }
 
-    TEST_F(PlayerDataRecipeTest, Serialize) {
+    TEST_F(PlayerRecipeTest, Serialize) {
         SetupTestRecipe();
 
         playerInv_.inventory[0] = {item2_, 1};

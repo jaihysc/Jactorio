@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 
 #include "jactorioTests.h"
 
@@ -10,12 +10,12 @@
 
 namespace jactorio::game
 {
-    class PlayerDataPlacementTest : public testing::Test
+    class PlayerPlacementTest : public testing::Test
     {
     protected:
-        PlayerData playerData_;
-        PlayerData::Inventory& playerInv_   = playerData_.inventory;
-        PlayerData::Placement& playerPlace_ = playerData_.placement;
+        Player playerData_;
+        Player::Inventory& playerInv_   = playerData_.inventory;
+        Player::Placement& playerPlace_ = playerData_.placement;
 
         LogicData logicData_;
         World worldData_;
@@ -36,7 +36,7 @@ namespace jactorio::game
         }
     };
 
-    TEST_F(PlayerDataPlacementTest, RotatePlacementOrientation) {
+    TEST_F(PlayerPlacementTest, RotatePlacementOrientation) {
         EXPECT_EQ(playerPlace_.orientation, Orientation::up);
 
         playerPlace_.RotateOrientation();
@@ -52,7 +52,7 @@ namespace jactorio::game
         EXPECT_EQ(playerPlace_.orientation, Orientation::up);
     }
 
-    TEST_F(PlayerDataPlacementTest, CounterRotatePlacementOrientation) {
+    TEST_F(PlayerPlacementTest, CounterRotatePlacementOrientation) {
         EXPECT_EQ(playerPlace_.orientation, Orientation::up);
 
         playerPlace_.CounterRotateOrientation();
@@ -68,7 +68,7 @@ namespace jactorio::game
         EXPECT_EQ(playerPlace_.orientation, Orientation::up);
     }
 
-    TEST_F(PlayerDataPlacementTest, TryPlaceEntity) {
+    TEST_F(PlayerPlacementTest, TryPlaceEntity) {
         // Create entity
         auto item           = proto::Item();
         auto item_no_entity = proto::Item(); // Does not hold an entity reference
@@ -131,7 +131,7 @@ namespace jactorio::game
         EXPECT_EQ(tile2.GetEntityPrototype(), entity2.get());
     }
 
-    TEST_F(PlayerDataPlacementTest, TryActivateLayer) {
+    TEST_F(PlayerPlacementTest, TryActivateLayer) {
         // Create entity
         auto item           = proto::Item();
         auto item_no_entity = proto::Item(); // Does not hold an entity reference
@@ -180,7 +180,7 @@ namespace jactorio::game
         EXPECT_EQ(playerPlace_.GetActivatedLayer(), nullptr);
     }
 
-    TEST_F(PlayerDataPlacementTest, TryPickupEntityDeactivateLayer) {
+    TEST_F(PlayerPlacementTest, TryPickupEntityDeactivateLayer) {
         // Picking up an entity wil unset activated layer if activated layer was the entity
 
         // Create entity
@@ -226,7 +226,7 @@ namespace jactorio::game
         EXPECT_EQ(playerPlace_.GetActivatedLayer(), nullptr);
     }
 
-    TEST_F(PlayerDataPlacementTest, TryPickupEntity) {
+    TEST_F(PlayerPlacementTest, TryPickupEntity) {
         // Create entity
         auto item = proto::Item();
 
@@ -279,7 +279,7 @@ namespace jactorio::game
         EXPECT_EQ(tile.GetLayer(TileLayer::entity).GetUniqueData(), nullptr);
     }
 
-    TEST_F(PlayerDataPlacementTest, TryPickupResource) {
+    TEST_F(PlayerPlacementTest, TryPickupResource) {
         // Create resource entity
         auto item = proto::Item();
 
@@ -323,7 +323,7 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[0].count, 2); // Player has 2 of resource
     }
 
-    TEST_F(PlayerDataPlacementTest, TryPickupLayered) {
+    TEST_F(PlayerPlacementTest, TryPickupLayered) {
         auto item = proto::Item();
         // Create world with the resource entity at 0, 0
         worldData_.EmplaceChunk(0, 0);
@@ -366,7 +366,7 @@ namespace jactorio::game
 
     ///
     /// Picking up an entity which is rotated (treated as 2x1 instead of 1x2)
-    TEST_F(PlayerDataPlacementTest, TryPickupRotated) {
+    TEST_F(PlayerPlacementTest, TryPickupRotated) {
         worldData_.EmplaceChunk(0, 0);
 
         proto::Item item;
@@ -433,7 +433,7 @@ namespace jactorio::game
         }
     };
 
-    TEST_F(PlayerDataPlacementTest, PlacePickupCallPickupRemoveEvents) {
+    TEST_F(PlayerPlacementTest, PlacePickupCallPickupRemoveEvents) {
         class MockUpdateListener : public TestMockEntity
         {
         public:
@@ -504,7 +504,7 @@ namespace jactorio::game
         EXPECT_EQ(mock_listener.type, proto::UpdateType::remove);
     }
 
-    TEST_F(PlayerDataPlacementTest, TryPlaceCallOnCanBuild) {
+    TEST_F(PlayerPlacementTest, TryPlaceCallOnCanBuild) {
         // The world tile must have a tile prototype
         auto tile_proto    = proto::Tile();
         tile_proto.isWater = false;
@@ -531,7 +531,7 @@ namespace jactorio::game
         EXPECT_EQ(tile->GetEntityPrototype(), nullptr);
     }
 
-    TEST_F(PlayerDataPlacementTest, TryPlaceTryRemoveCallOnNeighborUpdate) {
+    TEST_F(PlayerPlacementTest, TryPlaceTryRemoveCallOnNeighborUpdate) {
         // Placing or removing an entity should call on_neighbor_update for 10 adjacent tiles in clockwise order from
         // top left
 

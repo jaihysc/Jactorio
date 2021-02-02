@@ -18,7 +18,7 @@ namespace jactorio::data
 
 namespace jactorio::game
 {
-    class PlayerData;
+    class Player;
     class LogicData;
 } // namespace jactorio::game
 
@@ -41,7 +41,7 @@ namespace jactorio::render
     public:
         GuiRenderer(GameWorlds& worlds,
                     game::LogicData& logic,
-                    game::PlayerData& player,
+                    game::Player& player,
                     const data::PrototypeManager& proto_manager,
                     gui::MenuData& menu_data)
             : worlds(worlds), logic(logic), player(player), protoManager(proto_manager), menuData(menu_data) {}
@@ -74,7 +74,7 @@ namespace jactorio::render
 
         GameWorlds& worlds;
         game::LogicData& logic;
-        game::PlayerData& player;
+        game::Player& player;
 
         const data::PrototypeManager& protoManager;
 

@@ -7,7 +7,7 @@
 
 #include "core/convert.h"
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 
 #include "render/opengl/index_buffer.h"
 #include "render/opengl/vertex_array.h"

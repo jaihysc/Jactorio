@@ -14,7 +14,7 @@ namespace jactorio::data
 namespace jactorio::game
 {
     class EventData;
-    class PlayerData;
+    class Player;
     class LogicData;
 } // namespace jactorio::game
 
@@ -48,7 +48,7 @@ namespace jactorio::gui
     void ImguiDraw(const render::DisplayWindow& display_window,
                    GameWorlds& worlds,
                    game::LogicData& logic,
-                   game::PlayerData& player,
+                   game::Player& player,
                    const data::PrototypeManager& proto_manager,
                    game::EventData& event);
 
