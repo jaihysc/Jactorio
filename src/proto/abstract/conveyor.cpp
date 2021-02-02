@@ -66,8 +66,8 @@ void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
 
 SpriteSetT proto::Conveyor::OnRGetSpriteSet(const Orientation orientation,
                                             game::World& world,
-                                            const WorldCoord& world_coords) const {
-    return static_cast<uint16_t>(ConveyorCalcLineOrien(world, world_coords, orientation));
+                                            const WorldCoord& coord) const {
+    return static_cast<uint16_t>(ConveyorCalcLineOrien(world, coord, orientation));
 }
 
 SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
@@ -117,12 +117,12 @@ void proto::Conveyor::OnRemove(game::World& world,
 }
 
 void proto::Conveyor::OnDeserialize(game::World& world,
-                                    const WorldCoord& world_coord,
+                                    const WorldCoord& coord,
                                     game::ChunkTileLayer& tile_layer) const {
     auto* origin_data = tile_layer.GetUniqueData<ConveyorData>();
     assert(origin_data != nullptr);
 
-    ConveyorNeighborConnect(world, world_coord);
+    ConveyorNeighborConnect(world, coord);
 }
 
 void proto::Conveyor::PostLoad() {

@@ -10,7 +10,7 @@ using namespace jactorio;
 
 void proto::ContainerEntity::OnBuild(game::World& /*world*/,
                                      game::LogicData& /*logic_data*/,
-                                     const WorldCoord& /*world_coords*/,
+                                     const WorldCoord& /*coord*/,
                                      game::ChunkTileLayer& tile_layer,
                                      Orientation /*orientation*/) const {
     tile_layer.MakeUniqueData<ContainerEntityData>(inventorySize);

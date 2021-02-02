@@ -52,7 +52,7 @@ namespace jactorio::game
         };
 
         ///
-        /// Registers proto_listener callback when target coords is updated, providing current coords
+        /// Registers proto_listener callback when target coord is updated, providing current coord
         ListenerEntry Register(WorldCoordAxis current_world_x,
                                WorldCoordAxis current_world_y,
                                WorldCoordAxis target_world_x,
@@ -60,9 +60,9 @@ namespace jactorio::game
                                const proto::FEntity& proto_listener);
 
         ///
-        /// Registers proto_listener callback when target coords is updated, providing current coords
-        ListenerEntry Register(const WorldCoord& current_coords,
-                               const WorldCoord& target_coords,
+        /// Registers proto_listener callback when target coord is updated, providing current coord
+        ListenerEntry Register(const WorldCoord& current_coord,
+                               const WorldCoord& target_coord,
                                const proto::FEntity& proto_listener);
 
         ///
@@ -73,7 +73,7 @@ namespace jactorio::game
 
         // World data must be provided since references cannot be serialized
         void Dispatch(World& world, WorldCoordAxis world_x, WorldCoordAxis world_y, proto::UpdateType type);
-        void Dispatch(World& world, const WorldCoord& world_pair, proto::UpdateType type);
+        void Dispatch(World& world, const WorldCoord& coord, proto::UpdateType type);
 
         J_NODISCARD DebugInfo GetDebugInfo() const noexcept;
 

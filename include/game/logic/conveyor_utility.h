@@ -149,13 +149,10 @@ namespace jactorio::game
     ///
     /// Removes conveyor at coord to be considered for logic updates
     /// \param logic_group Logic group of conveyor
-    void ConveyorLogicRemove(World& world,
-                             const WorldCoord& coord,
-                             ConveyorStruct& con_struct,
-                             LogicGroup logic_group);
+    void ConveyorLogicRemove(World& world, const WorldCoord& coord, ConveyorStruct& con_struct, LogicGroup logic_group);
 
     ///
-    /// Renumbers structIndex for tiles along a conveyor segment at provided coords
+    /// Renumbers structIndex for tiles along a conveyor segment at provided coord
     /// \param start_index Index to start renumbering at, renumber stops when index >= con_struct length
     void ConveyorRenumber(World& world, WorldCoord coord, int start_index = 0);
 
@@ -164,9 +161,7 @@ namespace jactorio::game
     /// if they used the old conveyor structure.
     /// Updates tiles equal to provided con struct's length
     /// \param con_struct_p Structure to change to
-    void ConveyorChangeStructure(World& world,
-                                 WorldCoord coord,
-                                 const std::shared_ptr<ConveyorStruct>& con_struct_p);
+    void ConveyorChangeStructure(World& world, WorldCoord coord, const std::shared_ptr<ConveyorStruct>& con_struct_p);
 
     ///
     /// Calculates line orientation for conveyor data at coord with provided direction

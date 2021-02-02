@@ -419,10 +419,10 @@ namespace jactorio::game
         {
         public:
             void OnDeserialize(World& /*world*/,
-                               const WorldCoord& world_coord,
+                               const WorldCoord& coord,
                                ChunkTileLayer& tile_layer) const override {
-                EXPECT_EQ(world_coord.x, 5);
-                EXPECT_EQ(world_coord.y, 6);
+                EXPECT_EQ(coord.x, 5);
+                EXPECT_EQ(coord.y, 6);
                 onDeserializeCalled = true;
 
                 chunkTileLayer = &tile_layer;

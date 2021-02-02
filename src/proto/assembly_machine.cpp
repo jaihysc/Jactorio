@@ -120,7 +120,7 @@ void proto::AssemblyMachine::OnDeferTimeElapsed(game::World& /*world*/,
 
 void proto::AssemblyMachine::OnBuild(game::World& /*world*/,
                                      game::LogicData& /*logic_data*/,
-                                     const WorldCoord& /*world_coords*/,
+                                     const WorldCoord& /*coord*/,
                                      game::ChunkTileLayer& tile_layer,
                                      const Orientation /*orientation*/) const {
     tile_layer.MakeUniqueData<AssemblyMachineData>();
@@ -128,7 +128,7 @@ void proto::AssemblyMachine::OnBuild(game::World& /*world*/,
 
 void proto::AssemblyMachine::OnRemove(game::World& /*world*/,
                                       game::LogicData& logic_data,
-                                      const WorldCoord& /*world_coords*/,
+                                      const WorldCoord& /*coord*/,
                                       game::ChunkTileLayer& tile_layer) const {
     auto& machine_data = *tile_layer.GetUniqueData<AssemblyMachineData>();
 

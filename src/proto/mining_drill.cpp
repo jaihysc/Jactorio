@@ -35,7 +35,7 @@ proto::Sprite* proto::MiningDrill::OnRGetSprite(const SpriteSetT set) const {
 
 SpriteSetT proto::MiningDrill::OnRGetSpriteSet(const Orientation orientation,
                                                game::World& /*world*/,
-                                               const WorldCoord& /*world_coords*/) const {
+                                               const WorldCoord& /*coord*/) const {
     switch (orientation) {
     case Orientation::up:
         return 0;
@@ -188,19 +188,19 @@ void proto::MiningDrill::OnNeighborUpdate(game::World& world,
 
 void proto::MiningDrill::OnRemove(game::World& /*world*/,
                                   game::LogicData& logic_data,
-                                  const WorldCoord& /*world_coords*/,
+                                  const WorldCoord& /*coord*/,
                                   game::ChunkTileLayer& tile_layer) const {
     auto* drill_data = tile_layer.GetUniqueData<MiningDrillData>();
     logic_data.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
 }
 
 void proto::MiningDrill::OnDeserialize(game::World& world,
-                                       const WorldCoord& world_coord,
+                                       const WorldCoord& coord,
                                        game::ChunkTileLayer& tile_layer) const {
     auto* drill_data = tile_layer.GetUniqueData<MiningDrillData>();
     assert(drill_data != nullptr);
 
-    InitializeOutput(world, GetOutputCoord(world_coord, drill_data->output.GetOrientation()), drill_data);
+    InitializeOutput(world, GetOutputCoord(coord, drill_data->output.GetOrientation()), drill_data);
 }
 
 void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& /*data_manager*/) const {
@@ -227,10 +227,10 @@ bool proto::MiningDrill::InitializeOutput(game::World& world,
     return drill_data->output.Initialize(world, output_coord);
 }
 
-WorldCoord proto::MiningDrill::GetOutputCoord(const WorldCoord& world_coord, const Orientation orientation) const {
+WorldCoord proto::MiningDrill::GetOutputCoord(const WorldCoord& coord, const Orientation orientation) const {
     WorldCoord output_coords = this->resourceOutput.Get(orientation);
-    output_coords.x += world_coord.x;
-    output_coords.y += world_coord.y;
+    output_coords.x += coord.x;
+    output_coords.y += coord.y;
 
     return output_coords;
 }

@@ -44,7 +44,7 @@ namespace jactorio
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
                                                game::World& /*world*/,
-                                               const WorldCoord& /*world_coords*/) const override {
+                                               const WorldCoord& /*coord*/) const override {
             return 0;
         }
 
@@ -58,7 +58,7 @@ namespace jactorio
         }
 
         void OnDeserialize(game::World& world,
-                           const WorldCoord& world_coord,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override {}
     };
 
@@ -72,13 +72,13 @@ namespace jactorio
 
         void OnBuild(game::World& world,
                      game::LogicData& logic_data,
-                     const WorldCoord& world_coords,
+                     const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override {}
 
         void OnRemove(game::World& world,
                       game::LogicData& logic_data,
-                      const WorldCoord& world_coords,
+                      const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override {}
     };
     static_assert(!std::is_abstract_v<TestMockEntity>);

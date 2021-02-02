@@ -636,13 +636,13 @@ namespace jactorio::game
     private:
         proto::TransportBelt lineProto_;
 
-        proto::ConveyorData& BuildConveyor(const WorldCoord world_coords, const Orientation direction) {
-            auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)->GetLayer(TileLayer::entity);
+        proto::ConveyorData& BuildConveyor(const WorldCoord coord, const Orientation direction) {
+            auto& layer = worldData_.GetTile(coord.x, coord.y)->GetLayer(TileLayer::entity);
 
             layer.SetPrototype(direction, &lineProto_);
 
             auto& con_data = layer.MakeUniqueData<proto::ConveyorData>();
-            ConveyorCreate(worldData_, world_coords, con_data, direction, LogicGroup::conveyor);
+            ConveyorCreate(worldData_, coord, con_data, direction, LogicGroup::conveyor);
 
             return con_data;
         }

@@ -124,7 +124,7 @@ namespace jactorio::game
 
             SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
                                        World& /*world*/,
-                                       const WorldCoord& /*world_coords*/) const override {
+                                       const WorldCoord& /*coord*/) const override {
                 return 0;
             }
 
@@ -138,7 +138,7 @@ namespace jactorio::game
             }
 
             void OnDeserialize(World& /*world*/,
-                               const WorldCoord& /*world_coord*/,
+                               const WorldCoord& /*coord*/,
                                ChunkTileLayer& /*tile_layer*/) const override {}
 
             void OnDeferTimeElapsed(World& /*world*/,
@@ -146,8 +146,8 @@ namespace jactorio::game
                                     proto::UniqueDataBase* /*unique_data*/) const override {}
 
             void OnTileUpdate(World& /*world*/,
-                              const WorldCoord& /*emit_coords*/,
-                              const WorldCoord& /*receive_coords*/,
+                              const WorldCoord& /*emit_coord*/,
+                              const WorldCoord& /*receive_coord*/,
                               proto::UpdateType /*type*/) const override {}
         } blankCallback_;
 

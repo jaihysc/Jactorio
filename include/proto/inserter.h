@@ -97,30 +97,30 @@ namespace jactorio::proto
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
                                                game::World& world,
-                                               const WorldCoord& world_coords) const override;
+                                               const WorldCoord& coord) const override;
 
         ///
         /// \param orientation Points towards dropoff
         void OnBuild(game::World& world,
                      game::LogicData& logic_data,
-                     const WorldCoord& world_coords,
+                     const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
 
         void OnTileUpdate(game::World& world,
-                          const WorldCoord& emit_coords,
-                          const WorldCoord& receive_coords,
+                          const WorldCoord& emit_coord,
+                          const WorldCoord& receive_coord,
                           UpdateType type) const override;
 
         void OnRemove(game::World& world,
                       game::LogicData& logic_data,
-                      const WorldCoord& world_coords,
+                      const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 
 
         void OnDeserialize(game::World& world,
-                           const WorldCoord& world_coord,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override;
 
 
@@ -128,12 +128,10 @@ namespace jactorio::proto
         void ValidatedPostLoad() override;
 
     private:
-        J_NODISCARD WorldCoord GetDropoffCoord(WorldCoord world_coord, Orientation orientation) const;
-        J_NODISCARD WorldCoord GetPickupCoord(WorldCoord world_coord, Orientation orientation) const;
+        J_NODISCARD WorldCoord GetDropoffCoord(WorldCoord coord, Orientation orientation) const;
+        J_NODISCARD WorldCoord GetPickupCoord(WorldCoord coord, Orientation orientation) const;
 
-        void InitPickupDropoff(game::World& world,
-                               const WorldCoord& world_coord,
-                               Orientation orientation) const;
+        void InitPickupDropoff(game::World& world, const WorldCoord& coord, Orientation orientation) const;
     };
 } // namespace jactorio::proto
 

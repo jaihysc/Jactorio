@@ -92,7 +92,7 @@ namespace jactorio::proto
 
 
         ///
-        /// Pixels to remove from the border when get_coords() is called
+        /// Pixels to remove from the border when GetCoord() is called
         PYTHON_PROP_REF_I(SpriteTrimT, trim, 0);
 
 

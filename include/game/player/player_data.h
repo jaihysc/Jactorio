@@ -255,7 +255,7 @@ namespace jactorio::game
             ///
             /// Attempts to activate the layer at world coordinates
             /// \return true if layer was activated
-            bool TryActivateLayer(game::World& world, const WorldCoord& world_pair);
+            bool TryActivateLayer(game::World& world, const WorldCoord& coord);
 
             ///
             /// This will either pickup an entity, or mine resources from a resource tile

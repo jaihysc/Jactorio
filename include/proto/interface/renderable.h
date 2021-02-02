@@ -76,7 +76,7 @@ namespace jactorio::proto
         /// Maps a orientation to a <set, frame>
         J_NODISCARD virtual SpriteSetT OnRGetSpriteSet(Orientation orientation,
                                                        game::World& world,
-                                                       const WorldCoord& world_coords) const = 0;
+                                                       const WorldCoord& coord) const = 0;
 
         ///
         /// Gets frame for sprite corresponding to provided game tick

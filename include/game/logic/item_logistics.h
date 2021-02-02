@@ -20,8 +20,8 @@ namespace jactorio::game
 #define J_ITEM_HANDLER_COMMON                                                      \
     bool Initialize(World& world, WorldCoordAxis world_x, WorldCoordAxis world_y); \
                                                                                    \
-    bool Initialize(World& world, const WorldCoord& world_coord) {                 \
-        return Initialize(world, world_coord.x, world_coord.y);                    \
+    bool Initialize(World& world, const WorldCoord& coord) {                 \
+        return Initialize(world, coord.x, coord.y);                    \
     };
 
     ///

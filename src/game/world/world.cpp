@@ -12,20 +12,20 @@
 
 using namespace jactorio;
 
-ChunkCoordAxis game::World::WorldCToChunkC(WorldCoordAxis world_coord) {
+ChunkCoordAxis game::World::WorldCToChunkC(WorldCoordAxis coord) {
     ChunkCoordAxis chunk_coord = 0;
 
-    if (world_coord < 0) {
+    if (coord < 0) {
         chunk_coord -= 1;
-        world_coord += 1;
+        coord += 1;
     }
 
-    chunk_coord += core::LossyCast<ChunkCoordAxis>(core::LossyCast<float>(world_coord) / Chunk::kChunkWidth);
+    chunk_coord += core::LossyCast<ChunkCoordAxis>(core::LossyCast<float>(coord) / Chunk::kChunkWidth);
     return chunk_coord;
 }
 
-ChunkCoord game::World::WorldCToChunkC(const WorldCoord& world_coord) {
-    return {WorldCToChunkC(world_coord.x), WorldCToChunkC(world_coord.y)};
+ChunkCoord game::World::WorldCToChunkC(const WorldCoord& coord) {
+    return {WorldCToChunkC(coord.x), WorldCToChunkC(coord.y)};
 }
 
 
@@ -38,14 +38,14 @@ WorldCoord game::World::ChunkCToWorldC(const ChunkCoord& chunk_coord) {
 }
 
 
-OverlayOffsetAxis game::World::WorldCToOverlayC(const WorldCoordAxis world_coord) {
+OverlayOffsetAxis game::World::WorldCToOverlayC(const WorldCoordAxis coord) {
     WorldCoordAxis val;
 
-    if (world_coord < 0) {
-        val = ((world_coord + 1) % kChunkWidth) + kChunkWidth - 1;
+    if (coord < 0) {
+        val = ((coord + 1) % kChunkWidth) + kChunkWidth - 1;
     }
     else {
-        val = world_coord % kChunkWidth;
+        val = coord % kChunkWidth;
     }
 
     return core::SafeCast<OverlayOffsetAxis>(val);
@@ -109,12 +109,12 @@ const game::Chunk* game::World::GetChunkW(const WorldCoordAxis world_x, const Wo
 }
 
 
-game::Chunk* game::World::GetChunkW(const WorldCoord& world_pair) {
-    return GetChunkW(world_pair.x, world_pair.y);
+game::Chunk* game::World::GetChunkW(const WorldCoord& coord) {
+    return GetChunkW(coord.x, coord.y);
 }
 
-const game::Chunk* game::World::GetChunkW(const WorldCoord& world_pair) const {
-    return GetChunkW(world_pair.x, world_pair.y);
+const game::Chunk* game::World::GetChunkW(const WorldCoord& coord) const {
+    return GetChunkW(coord.x, coord.y);
 }
 
 // ======================================================================
@@ -167,53 +167,53 @@ const game::ChunkTile* game::World::GetTile(WorldCoordAxis world_x, WorldCoordAx
 }
 
 
-game::ChunkTile* game::World::GetTile(const WorldCoord& world_pair) {
-    return GetTile(world_pair.x, world_pair.y);
+game::ChunkTile* game::World::GetTile(const WorldCoord& coord) {
+    return GetTile(coord.x, coord.y);
 }
 
-const game::ChunkTile* game::World::GetTile(const WorldCoord& world_pair) const {
-    return GetTile(world_pair.x, world_pair.y);
+const game::ChunkTile* game::World::GetTile(const WorldCoord& coord) const {
+    return GetTile(coord.x, coord.y);
 }
 
 
 // ======================================================================
 
 
-game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& world_coord, const TileLayer layer) {
-    auto* tile = GetTile(world_coord);
+game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord, const TileLayer layer) {
+    auto* tile = GetTile(coord);
     if (tile == nullptr)
         return nullptr;
 
-    return GetTileTopLeft(world_coord, tile->GetLayer(layer));
+    return GetTileTopLeft(coord, tile->GetLayer(layer));
 }
 
-const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& world_coord, const TileLayer layer) const {
-    return const_cast<World*>(this)->GetTileTopLeft(world_coord, layer);
+const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord, const TileLayer layer) const {
+    return const_cast<World*>(this)->GetTileTopLeft(coord, layer);
 }
 
-game::ChunkTile* game::World::GetTileTopLeft(WorldCoord world_coord, const ChunkTileLayer& chunk_tile_layer) {
-    chunk_tile_layer.AdjustToTopLeft(world_coord.x, world_coord.y);
-    return GetTile(world_coord);
+game::ChunkTile* game::World::GetTileTopLeft(WorldCoord coord, const ChunkTileLayer& chunk_tile_layer) {
+    chunk_tile_layer.AdjustToTopLeft(coord.x, coord.y);
+    return GetTile(coord);
 }
 
-const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& world_coord,
+const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord,
                                                        const ChunkTileLayer& chunk_tile_layer) const {
-    return const_cast<World*>(this)->GetTileTopLeft(world_coord, chunk_tile_layer);
+    return const_cast<World*>(this)->GetTileTopLeft(coord, chunk_tile_layer);
 }
 
 
-game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& world_coord,
+game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord,
                                                        const TileLayer& tile_layer) noexcept {
-    auto* tile = GetTileTopLeft(world_coord, tile_layer);
+    auto* tile = GetTileTopLeft(coord, tile_layer);
     if (tile == nullptr)
         return nullptr;
 
     return &tile->GetLayer(tile_layer);
 }
 
-const game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& world_coord,
+const game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord,
                                                              const TileLayer& tile_layer) const noexcept {
-    return const_cast<World*>(this)->GetLayerTopLeft(world_coord, tile_layer);
+    return const_cast<World*>(this)->GetLayerTopLeft(coord, tile_layer);
 }
 
 
@@ -221,15 +221,15 @@ const game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& world
 // Logic chunks
 
 void game::World::LogicRegister(const LogicGroup group,
-                                    const WorldCoord& world_pair,
+                                    const WorldCoord& coord,
                                     const TileLayer layer) {
     assert(group != LogicGroup::count_);
     assert(layer != TileLayer::count_);
 
-    auto* chunk = GetChunkW(world_pair);
+    auto* chunk = GetChunkW(coord);
     assert(chunk);
 
-    auto* tile_layer  = &GetTile(world_pair)->GetLayer(layer);
+    auto* tile_layer  = &GetTile(coord)->GetLayer(layer);
     auto& logic_group = chunk->GetLogicGroup(group);
 
     // Already added to logic group at tile layer
@@ -241,9 +241,9 @@ void game::World::LogicRegister(const LogicGroup group,
 }
 
 void game::World::LogicRemove(const LogicGroup group,
-                                  const WorldCoord& world_pair,
+                                  const WorldCoord& coord,
                                   const std::function<bool(ChunkTileLayer*)>& pred) {
-    auto* chunk = GetChunkW(world_pair);
+    auto* chunk = GetChunkW(coord);
     assert(chunk);
 
     auto& logic_group = chunk->GetLogicGroup(group);
@@ -259,10 +259,10 @@ void game::World::LogicRemove(const LogicGroup group,
     logicChunks_.erase(std::remove(logicChunks_.begin(), logicChunks_.end(), chunk), logicChunks_.end());
 }
 
-void game::World::LogicRemove(const LogicGroup group, const WorldCoord& world_pair, const TileLayer layer) {
-    auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
+void game::World::LogicRemove(const LogicGroup group, const WorldCoord& coord, const TileLayer layer) {
+    auto* tile_layer = &GetTile(coord)->GetLayer(layer);
 
-    LogicRemove(group, world_pair, [&](ChunkTileLayer* t_layer) { return t_layer == tile_layer; });
+    LogicRemove(group, coord, [&](ChunkTileLayer* t_layer) { return t_layer == tile_layer; });
 }
 
 void game::World::LogicAddChunk(Chunk& chunk) {
@@ -445,17 +445,17 @@ void game::World::DeserializePostProcess() {
                 for (uint32_t y = 0; y < kChunkWidth; ++y) { // x, y is position within current chunk
                     for (uint32_t x = 0; x < kChunkWidth; ++x) {
 
-                        auto world_coord = ChunkCToWorldC({std::get<0>(c_coord), std::get<1>(c_coord)});
-                        world_coord.x += x;
-                        world_coord.y += y;
+                        auto coord = ChunkCToWorldC({std::get<0>(c_coord), std::get<1>(c_coord)});
+                        coord.x += x;
+                        coord.y += y;
 
-                        auto* tile = GetTile(world_coord);
+                        auto* tile = GetTile(coord);
                         assert(tile != nullptr);
 
                         for (uint8_t layer_i = 0; layer_i < ChunkTile::kTileLayerCount; ++layer_i) {
                             auto& layer = tile->layers[layer_i];
 
-                            callback(world_coord, layer, layer_i);
+                            callback(coord, layer, layer_i);
                         }
                     }
                 }

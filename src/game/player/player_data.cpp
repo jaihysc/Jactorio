@@ -271,8 +271,8 @@ bool game::PlayerData::Placement::TryPlaceEntity(game::World& world, LogicData& 
     return true;
 }
 
-bool game::PlayerData::Placement::TryActivateLayer(game::World& world, const WorldCoord& world_pair) {
-    auto* tile = world.GetTile(world_pair);
+bool game::PlayerData::Placement::TryActivateLayer(game::World& world, const WorldCoord& coord) {
+    auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return false;
 
@@ -302,7 +302,7 @@ bool game::PlayerData::Placement::TryActivateLayer(game::World& world, const Wor
     // else
 
     // Clicking on an existing entity will activate it
-    activatedLayer_ = world.GetLayerTopLeft(world_pair, select_layer);
+    activatedLayer_ = world.GetLayerTopLeft(coord, select_layer);
     return true;
 }
 

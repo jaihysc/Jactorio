@@ -27,7 +27,7 @@ namespace jactorio::proto
         ISerializable& operator=(ISerializable&& other) = default;
 
         virtual void OnDeserialize(game::World& world,
-                                   const WorldCoord& world_coord,
+                                   const WorldCoord& coord,
                                    game::ChunkTileLayer& tile_layer) const = 0;
     };
 } // namespace jactorio::proto

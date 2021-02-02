@@ -77,7 +77,7 @@ namespace jactorio::proto
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
                                                game::World& /*world*/,
-                                               const WorldCoord& /*world_coords*/) const override {
+                                               const WorldCoord& /*coord*/) const override {
             return 0;
         }
 
@@ -97,7 +97,7 @@ namespace jactorio::proto
         /// Entity was build in the world
         virtual void OnBuild(game::World& world,
                              game::LogicData& logic_data,
-                             const WorldCoord& world_coords,
+                             const WorldCoord& coord,
                              game::ChunkTileLayer& tile_layer,
                              Orientation orientation) const = 0;
 
@@ -117,7 +117,7 @@ namespace jactorio::proto
         /// Entity was picked up from a built state, called BEFORE the entity has been removed
         virtual void OnRemove(game::World& world,
                               game::LogicData& logic_data,
-                              const WorldCoord& world_coords,
+                              const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer) const = 0;
 
         ///
@@ -146,7 +146,7 @@ namespace jactorio::proto
         }
 
         void OnDeserialize(game::World& world,
-                           const WorldCoord& world_coord,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override {}
 
 

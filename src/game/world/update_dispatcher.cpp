@@ -53,10 +53,10 @@ void game::UpdateDispatcher::Dispatch(World& world,
 }
 
 void game::UpdateDispatcher::Dispatch(World& world,
-                                      const WorldCoord& world_pair,
+                                      const WorldCoord& coord,
                                       const proto::UpdateType type) {
     // Must be tuple to index into container_ since it uses a hash function only usable with tuples
-    const auto world_tuple = std::make_tuple(world_pair.x, world_pair.y);
+    const auto world_tuple = std::make_tuple(coord.x, coord.y);
 
     if (container_.find(world_tuple) == container_.end())
         return;
@@ -64,7 +64,7 @@ void game::UpdateDispatcher::Dispatch(World& world,
     auto& collection = container_[world_tuple];
 
     for (auto& entry : collection) {
-        entry.callback->OnTileUpdate(world, world_pair, entry.receiver, type);
+        entry.callback->OnTileUpdate(world, coord, entry.receiver, type);
     }
 }
 

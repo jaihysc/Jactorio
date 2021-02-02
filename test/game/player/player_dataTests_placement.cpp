@@ -402,7 +402,7 @@ namespace jactorio::game
 
         void OnBuild(World& /*world*/,
                      LogicData& /*logic_data*/,
-                     const WorldCoord& /*world_coords*/,
+                     const WorldCoord& /*coord*/,
                      ChunkTileLayer& /*tile_layer*/,
                      Orientation /*orientation*/) const override {
             buildCalled = true;
@@ -410,7 +410,7 @@ namespace jactorio::game
 
         void OnRemove(World& /*world*/,
                       LogicData& /*logic_data*/,
-                      const WorldCoord& /*world_coords*/,
+                      const WorldCoord& /*coord*/,
                       ChunkTileLayer& /*tile_layer*/) const override {
             removeCalled = true;
         }
@@ -425,11 +425,11 @@ namespace jactorio::game
 
         void OnNeighborUpdate(World& /*world*/,
                               LogicData& /*logic_data*/,
-                              const WorldCoord& emit_world_coords,
-                              const WorldCoord& receive_world_coords,
+                              const WorldCoord& emit_coord,
+                              const WorldCoord& receive_coord,
                               Orientation /*emit_orientation*/) const override {
-            emitCoords.push_back(emit_world_coords);
-            receiveCoords.push_back(receive_world_coords);
+            emitCoords.push_back(emit_coord);
+            receiveCoords.push_back(receive_coord);
         }
     };
 

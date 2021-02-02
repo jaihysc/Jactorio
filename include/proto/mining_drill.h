@@ -92,7 +92,7 @@ namespace jactorio::proto
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
                                                game::World& world,
-                                               const WorldCoord& world_coords) const override;
+                                               const WorldCoord& coord) const override;
 
         J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
                                                    GameTickT game_tick) const override;
@@ -129,11 +129,11 @@ namespace jactorio::proto
 
         void OnRemove(game::World& world,
                       game::LogicData& logic_data,
-                      const WorldCoord& world_coords,
+                      const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 
         void OnDeserialize(game::World& world,
-                           const WorldCoord& world_coord,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override;
 
 
@@ -145,7 +145,7 @@ namespace jactorio::proto
                                      const WorldCoord& output_coord,
                                      MiningDrillData* drill_data);
 
-        J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& world_coord, Orientation orientation) const;
+        J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& coord, Orientation orientation) const;
 
         ///
         /// \param orien Orientation of drill

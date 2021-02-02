@@ -36,42 +36,42 @@ namespace jactorio::proto
 
         ///
         /// Sets the prototype pointer for a conveyor at tile
-        game::ChunkTileLayer& BuildConveyor(const WorldCoord world_coords, const Orientation orientation) {
-            auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)->GetLayer(game::TileLayer::entity);
+        game::ChunkTileLayer& BuildConveyor(const WorldCoord coord, const Orientation orientation) {
+            auto& layer = worldData_.GetTile(coord.x, coord.y)->GetLayer(game::TileLayer::entity);
 
             layer.SetPrototype(orientation, &lineProto_);
-            TlBuildEvents(world_coords, orientation);
+            TlBuildEvents(coord, orientation);
 
             return layer;
         }
 
         ///
         /// Dispatches the appropriate events for when a conveyor is built
-        void TlBuildEvents(const WorldCoord& world_coords, const Orientation orientation) {
-            auto& layer = worldData_.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
+        void TlBuildEvents(const WorldCoord& coord, const Orientation orientation) {
+            auto& layer = worldData_.GetTile(coord)->GetLayer(game::TileLayer::entity);
 
-            lineProto_.OnBuild(worldData_, logicData_, world_coords, layer, orientation);
+            lineProto_.OnBuild(worldData_, logicData_, coord, layer, orientation);
 
             // Call on_neighbor_update for the 4 sides
-            DispatchNeighborUpdate(world_coords, {world_coords.x, world_coords.y - 1}, Orientation::up);
-            DispatchNeighborUpdate(world_coords, {world_coords.x + 1, world_coords.y}, Orientation::right);
-            DispatchNeighborUpdate(world_coords, {world_coords.x, world_coords.y + 1}, Orientation::down);
-            DispatchNeighborUpdate(world_coords, {world_coords.x - 1, world_coords.y}, Orientation::left);
+            DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);
+            DispatchNeighborUpdate(coord, {coord.x + 1, coord.y}, Orientation::right);
+            DispatchNeighborUpdate(coord, {coord.x, coord.y + 1}, Orientation::down);
+            DispatchNeighborUpdate(coord, {coord.x - 1, coord.y}, Orientation::left);
         }
 
         ///
         /// Dispatches the appropriate events AFTER a conveyor is removed
-        void TlRemoveEvents(const WorldCoord& world_coords) {
+        void TlRemoveEvents(const WorldCoord& coord) {
 
-            auto& layer = worldData_.GetTile(world_coords)->GetLayer(game::TileLayer::entity);
+            auto& layer = worldData_.GetTile(coord)->GetLayer(game::TileLayer::entity);
 
-            lineProto_.OnRemove(worldData_, logicData_, world_coords, layer);
+            lineProto_.OnRemove(worldData_, logicData_, coord, layer);
 
             // Call on_neighbor_update for the 4 sides
-            DispatchNeighborUpdate(world_coords, {world_coords.x, world_coords.y - 1}, Orientation::up);
-            DispatchNeighborUpdate(world_coords, {world_coords.x + 1, world_coords.y}, Orientation::right);
-            DispatchNeighborUpdate(world_coords, {world_coords.x, world_coords.y + 1}, Orientation::down);
-            DispatchNeighborUpdate(world_coords, {world_coords.x - 1, world_coords.y}, Orientation::left);
+            DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);
+            DispatchNeighborUpdate(coord, {coord.x + 1, coord.y}, Orientation::right);
+            DispatchNeighborUpdate(coord, {coord.x, coord.y + 1}, Orientation::down);
+            DispatchNeighborUpdate(coord, {coord.x - 1, coord.y}, Orientation::left);
         }
 
         // Bend
@@ -103,12 +103,12 @@ namespace jactorio::proto
             return worldData_.GetChunkC(chunk_coords.x, chunk_coords.y)->GetLogicGroup(game::LogicGroup::conveyor);
         }
 
-        J_NODISCARD auto& GetConveyorData(const WorldCoord& world_coords) {
-            return *GetConData(worldData_, world_coords);
+        J_NODISCARD auto& GetConveyorData(const WorldCoord& coord) {
+            return *GetConData(worldData_, coord);
         }
 
-        auto GetStructIndex(const WorldCoord& world_coords) {
-            return GetConveyorData(world_coords).structIndex;
+        auto GetStructIndex(const WorldCoord& coord) {
+            return GetConveyorData(coord).structIndex;
         }
 
     private:

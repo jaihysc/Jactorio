@@ -17,7 +17,7 @@ void proto::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
 
 SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
                                             game::World& /*world*/,
-                                            const WorldCoord& /*world_coords*/) const {
+                                            const WorldCoord& /*coord*/) const {
     switch (orientation) {
 
     case Orientation::up:
@@ -39,13 +39,13 @@ SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
 
 void proto::Inserter::OnBuild(game::World& world,
                               game::LogicData& /*logic_data*/,
-                              const WorldCoord& world_coords,
+                              const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer,
                               Orientation orientation) const {
     auto& inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
-    inserter_data.set   = OnRGetSpriteSet(orientation, world, world_coords);
+    inserter_data.set   = OnRGetSpriteSet(orientation, world, coord);
 
-    InitPickupDropoff(world, world_coords, orientation);
+    InitPickupDropoff(world, coord, orientation);
 }
 
 void proto::Inserter::OnTileUpdate(game::World& world,
@@ -93,23 +93,23 @@ void proto::Inserter::OnTileUpdate(game::World& world,
 
 void proto::Inserter::OnRemove(game::World& world,
                                game::LogicData& /*logic_data*/,
-                               const WorldCoord& world_coords,
+                               const WorldCoord& coord,
                                game::ChunkTileLayer& tile_layer) const {
-    world.LogicRemove(game::LogicGroup::inserter, world_coords, game::TileLayer::entity);
+    world.LogicRemove(game::LogicGroup::inserter, coord, game::TileLayer::entity);
 
     const auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
 
-    world.updateDispatcher.Unregister({world_coords, GetDropoffCoord(world_coords, inserter_data->orientation)});
-    world.updateDispatcher.Unregister({world_coords, GetPickupCoord(world_coords, inserter_data->orientation)});
+    world.updateDispatcher.Unregister({coord, GetDropoffCoord(coord, inserter_data->orientation)});
+    world.updateDispatcher.Unregister({coord, GetPickupCoord(coord, inserter_data->orientation)});
 }
 
 void proto::Inserter::OnDeserialize(game::World& world,
-                                    const WorldCoord& world_coord,
+                                    const WorldCoord& coord,
                                     game::ChunkTileLayer& tile_layer) const {
     auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
     assert(inserter_data != nullptr);
 
-    InitPickupDropoff(world, world_coord, inserter_data->orientation);
+    InitPickupDropoff(world, coord, inserter_data->orientation);
 }
 
 void proto::Inserter::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
@@ -124,29 +124,29 @@ void proto::Inserter::ValidatedPostLoad() {
 
 // ======================================================================
 
-WorldCoord proto::Inserter::GetDropoffCoord(WorldCoord world_coord, const Orientation orientation) const {
-    OrientationIncrement(orientation, world_coord.x, world_coord.y, this->tileReach);
-    return world_coord;
+WorldCoord proto::Inserter::GetDropoffCoord(WorldCoord coord, const Orientation orientation) const {
+    OrientationIncrement(orientation, coord.x, coord.y, this->tileReach);
+    return coord;
 }
 
-WorldCoord proto::Inserter::GetPickupCoord(WorldCoord world_coord, const Orientation orientation) const {
-    OrientationIncrement(orientation, world_coord.x, world_coord.y, this->tileReach * -1);
-    return world_coord;
+WorldCoord proto::Inserter::GetPickupCoord(WorldCoord coord, const Orientation orientation) const {
+    OrientationIncrement(orientation, coord.x, coord.y, this->tileReach * -1);
+    return coord;
 }
 
 void proto::Inserter::InitPickupDropoff(game::World& world,
-                                        const WorldCoord& world_coord,
+                                        const WorldCoord& coord,
                                         const Orientation orientation) const {
     // Dropoff side
     {
-        auto emit_coords = GetDropoffCoord(world_coord, orientation);
-        world.updateDispatcher.Register(world_coord, emit_coords, *this);
+        auto emit_coords = GetDropoffCoord(coord, orientation);
+        world.updateDispatcher.Register(coord, emit_coords, *this);
         world.UpdateDispatch(emit_coords, UpdateType::place);
     }
     // Pickup side
     {
-        auto emit_coords = GetPickupCoord(world_coord, orientation);
-        world.updateDispatcher.Register(world_coord, emit_coords, *this);
+        auto emit_coords = GetPickupCoord(coord, orientation);
+        world.updateDispatcher.Register(coord, emit_coords, *this);
         world.UpdateDispatch(emit_coords, UpdateType::place);
     }
 }
