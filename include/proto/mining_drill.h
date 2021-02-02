@@ -105,7 +105,7 @@ namespace jactorio::proto
         J_NODISCARD Item* FindOutputItem(const game::World& world, WorldCoord coord, Orientation orien) const;
 
         void OnDeferTimeElapsed(game::World& world,
-                                game::LogicData& logic,
+                                game::Logic& logic,
                                 UniqueDataBase* unique_data) const override;
 
         ///
@@ -116,19 +116,19 @@ namespace jactorio::proto
                                     Orientation orien) const override;
 
         void OnBuild(game::World& world,
-                     game::LogicData& logic,
+                     game::Logic& logic,
                      const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
         void OnNeighborUpdate(game::World& world,
-                              game::LogicData& logic,
+                              game::Logic& logic,
                               const WorldCoord& emit_coord,
                               const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
         void OnRemove(game::World& world,
-                      game::LogicData& logic_data,
+                      game::Logic& logic,
                       const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 

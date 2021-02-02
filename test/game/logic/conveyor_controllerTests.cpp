@@ -22,7 +22,7 @@ namespace jactorio::game
     {
     protected:
         World worldData_{};
-        LogicData logicData_{};
+        Logic logicData_{};
 
         Chunk* chunk_ = nullptr;
 

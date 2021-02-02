@@ -2,18 +2,18 @@
 
 #include <gtest/gtest.h>
 
-#include "game/logic/logic_data.h"
+#include "game/logic/logic.h"
 #include "game/world/world.h"
 
 namespace jactorio::game
 {
-    class LogicDataTest : public testing::Test
+    class LogicTest : public testing::Test
     {
     protected:
-        LogicData logicData_{};
+        Logic logicData_{};
     };
 
-    TEST_F(LogicDataTest, OnTickAdvance) {
+    TEST_F(LogicTest, OnTickAdvance) {
         // Should move the game_tick forward
         EXPECT_EQ(logicData_.GameTick(), 0);
 

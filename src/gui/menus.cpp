@@ -17,7 +17,7 @@
 
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
-#include "game/logic/logic_data.h"
+#include "game/logic/logic.h"
 #include "game/player/player.h"
 
 #include "gui/components.h"

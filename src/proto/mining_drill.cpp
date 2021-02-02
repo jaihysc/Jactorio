@@ -4,7 +4,7 @@
 
 #include <tuple>
 
-#include "game/logic/logic_data.h"
+#include "game/logic/logic.h"
 #include "game/world/world.h"
 #include "gui/menus.h"
 #include "proto/item.h"
@@ -84,7 +84,7 @@ proto::Item* proto::MiningDrill::FindOutputItem(const game::World& world,
 }
 
 void proto::MiningDrill::OnDeferTimeElapsed(game::World& world,
-                                            game::LogicData& logic,
+                                            game::Logic& logic,
                                             UniqueDataBase* unique_data) const {
     // Re-register callback and insert item, remove item from ground for next elapse
     auto* drill_data = static_cast<MiningDrillData*>(unique_data);
@@ -133,7 +133,7 @@ bool proto::MiningDrill::OnCanBuild(const game::World& world,
 }
 
 void proto::MiningDrill::OnBuild(game::World& world,
-                                 game::LogicData& logic,
+                                 game::Logic& logic,
                                  const WorldCoord& coord,
                                  game::ChunkTileLayer& tile_layer,
                                  const Orientation orientation) const {
@@ -156,7 +156,7 @@ void proto::MiningDrill::OnBuild(game::World& world,
 }
 
 void proto::MiningDrill::OnNeighborUpdate(game::World& world,
-                                          game::LogicData& logic,
+                                          game::Logic& logic,
                                           const WorldCoord& emit_coord,
                                           const WorldCoord& receive_coord,
                                           Orientation /*emit_orientation*/) const {
@@ -187,11 +187,11 @@ void proto::MiningDrill::OnNeighborUpdate(game::World& world,
 
 
 void proto::MiningDrill::OnRemove(game::World& /*world*/,
-                                  game::LogicData& logic_data,
+                                  game::Logic& logic,
                                   const WorldCoord& /*coord*/,
                                   game::ChunkTileLayer& tile_layer) const {
     auto* drill_data = tile_layer.GetUniqueData<MiningDrillData>();
-    logic_data.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
+    logic.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
 }
 
 void proto::MiningDrill::OnDeserialize(game::World& world,

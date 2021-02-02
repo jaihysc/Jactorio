@@ -16,7 +16,7 @@
 
 namespace jactorio::game
 {
-    class LogicData;
+    class Logic;
 
     ///
     /// Manages deferrals, prototypes inheriting 'Deferred'
@@ -68,7 +68,7 @@ namespace jactorio::game
         ///
         /// Calls all deferred callbacks for the current game tick
         /// \param game_tick Current game tick
-        void DeferralUpdate(LogicData& logic_data, World& world, GameTickT game_tick);
+        void DeferralUpdate(Logic& logic, World& world, GameTickT game_tick);
 
         ///
         /// Registers callback which will be called upon reaching the specified game tick
@@ -142,7 +142,7 @@ namespace jactorio::game
                                ChunkTileLayer& /*tile_layer*/) const override {}
 
             void OnDeferTimeElapsed(World& /*world*/,
-                                    LogicData& /*logic_data*/,
+                                    Logic& /*logic*/,
                                     proto::UniqueDataBase* /*unique_data*/) const override {}
 
             void OnTileUpdate(World& /*world*/,

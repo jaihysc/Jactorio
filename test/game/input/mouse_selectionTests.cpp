@@ -16,7 +16,7 @@ namespace jactorio::game
 
     protected:
         World& world_ = gameWorlds_[0];
-        LogicData logic_;
+        Logic logic_;
 
         Player player_;
         MouseSelection mouseSelection_;

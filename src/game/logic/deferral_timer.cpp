@@ -6,7 +6,7 @@
 
 using namespace jactorio;
 
-void game::DeferralTimer::DeferralUpdate(LogicData& logic_data, World& world, const GameTickT game_tick) {
+void game::DeferralTimer::DeferralUpdate(Logic& logic, World& world, const GameTickT game_tick) {
     if (game_tick > 0)
         assert(game_tick > lastGameTick_); // assertion would fail on game tick 0, since lastGameTick would be 0
     else
@@ -16,7 +16,7 @@ void game::DeferralTimer::DeferralUpdate(LogicData& logic_data, World& world, co
 
     // Call callbacks
     for (auto& pair : callbacks_[game_tick]) {
-        pair.prototype->OnDeferTimeElapsed(world, logic_data, pair.uniqueData.Get());
+        pair.prototype->OnDeferTimeElapsed(world, logic, pair.uniqueData.Get());
     }
 
     // Remove used callbacks

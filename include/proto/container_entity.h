@@ -42,13 +42,13 @@ namespace jactorio::proto
         // Events
 
         void OnBuild(game::World& world,
-                     game::LogicData& logic_data,
+                     game::Logic& logic,
                      const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
         void OnRemove(game::World& /*world*/,
-                      game::LogicData& /*logic_data*/,
+                      game::Logic& /*logic*/,
                       const WorldCoord& /*coord*/,
                       game::ChunkTileLayer& /*tile_layer*/) const override {}
 

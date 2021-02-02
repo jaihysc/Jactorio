@@ -96,7 +96,7 @@ namespace jactorio::proto
         ///
         /// Entity was build in the world
         virtual void OnBuild(game::World& world,
-                             game::LogicData& logic_data,
+                             game::Logic& logic,
                              const WorldCoord& coord,
                              game::ChunkTileLayer& tile_layer,
                              Orientation orientation) const = 0;
@@ -116,7 +116,7 @@ namespace jactorio::proto
         ///
         /// Entity was picked up from a built state, called BEFORE the entity has been removed
         virtual void OnRemove(game::World& world,
-                              game::LogicData& logic_data,
+                              game::Logic& logic,
                               const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer) const = 0;
 
@@ -126,14 +126,14 @@ namespace jactorio::proto
         /// \param receive_coords Layer of the prototype RECEIVING the update
         /// \param emit_orientation Orientation to the prototype EMITTING the update
         virtual void OnNeighborUpdate(game::World& /*world*/,
-                                      game::LogicData& /*logic_data*/,
+                                      game::Logic& /*logic*/,
                                       const WorldCoord& emit_coords,
                                       const WorldCoord& receive_coords,
                                       Orientation emit_orientation) const {}
 
 
         void OnDeferTimeElapsed(game::World& /*world*/,
-                                game::LogicData& /*logic_data*/,
+                                game::Logic& /*logic*/,
                                 UniqueDataBase* /*unique_data*/) const override {
             assert(false); // Unimplemented
         }

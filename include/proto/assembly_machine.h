@@ -25,7 +25,7 @@ namespace jactorio::proto
 
         ///
         /// Changes recipe to provided recipe, nullptr for no recipe
-        void ChangeRecipe(game::LogicData& logic_data,
+        void ChangeRecipe(game::Logic& logic,
                           const data::PrototypeManager& data_manager,
                           const Recipe* new_recipe);
 
@@ -83,20 +83,20 @@ namespace jactorio::proto
         ///
         /// Begins crafting if ingredients are met
         /// \return true if crafting has begun
-        bool TryBeginCrafting(game::LogicData& logic_data, AssemblyMachineData& data) const;
+        bool TryBeginCrafting(game::Logic& logic, AssemblyMachineData& data) const;
 
         void OnDeferTimeElapsed(game::World& world,
-                                game::LogicData& logic_data,
+                                game::Logic& logic,
                                 UniqueDataBase* unique_data) const override;
 
         void OnBuild(game::World& world,
-                     game::LogicData& logic_data,
+                     game::Logic& logic,
                      const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
         void OnRemove(game::World& world,
-                      game::LogicData& logic_data,
+                      game::Logic& logic,
                       const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 

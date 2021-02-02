@@ -17,7 +17,7 @@
 #include "game/input/mouse_selection.h"
 #include "game/logic/conveyor_utility.h"
 #include "game/logic/inventory_controller.h"
-#include "game/logic/logic_data.h"
+#include "game/logic/logic.h"
 #include "game/player/player.h"
 #include "game/world/world.h"
 
@@ -38,7 +38,7 @@ bool show_inserter_info = false;
 bool show_world_info = false;
 
 void gui::DebugMenuLogic(GameWorlds& worlds,
-                         game::LogicData& logic,
+                         game::Logic& logic,
                          game::Player& player,
                          const data::PrototypeManager& data_manager) {
     if (show_tile_info)
@@ -570,14 +570,14 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
     }
 }
 
-void gui::DebugLogicInfo(const game::LogicData& logic_data) {
+void gui::DebugLogicInfo(const game::Logic& logic) {
     ImGuard guard;
     guard.Begin("Logic info");
 
-    const auto timer_info = logic_data.deferralTimer.GetDebugInfo();
+    const auto timer_info = logic.deferralTimer.GetDebugInfo();
 
     ImGui::Text("Deferral timers: %llu", timer_info.callbacks.size());
-    ImGui::Text("Current game tick: %llu", logic_data.GameTick());
+    ImGui::Text("Current game tick: %llu", logic.GameTick());
 
     // Format of data displayed
     ImGui::Text("Due game tick > Registered prototype");
@@ -587,8 +587,8 @@ void gui::DebugLogicInfo(const game::LogicData& logic_data) {
 
         const auto due_tick = callback_tick.first;
 
-        assert(due_tick >= logic_data.GameTick());
-        const auto time_to_due = due_tick - logic_data.GameTick();
+        assert(due_tick >= logic.GameTick());
+        const auto time_to_due = due_tick - logic.GameTick();
 
         if (ImGui::TreeNode(reinterpret_cast<void*>(id),
                             "%lld (T- %lld) | %lld",

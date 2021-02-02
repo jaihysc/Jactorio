@@ -28,19 +28,19 @@ namespace jactorio::proto
 
 
         void OnBuild(game::World& world,
-                     game::LogicData& logic,
+                     game::Logic& logic,
                      const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
         void OnNeighborUpdate(game::World& world,
-                              game::LogicData& logic,
+                              game::Logic& logic,
                               const WorldCoord& emit_coord,
                               const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
         void OnRemove(game::World& world,
-                      game::LogicData& logic,
+                      game::Logic& logic,
                       const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 

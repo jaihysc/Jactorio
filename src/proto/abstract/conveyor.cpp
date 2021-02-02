@@ -80,7 +80,7 @@ SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_d
 // Build / Remove / Neighbor update
 
 void proto::Conveyor::OnBuild(game::World& world,
-                              game::LogicData& /*logic*/,
+                              game::Logic& /*logic*/,
                               const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer,
                               const Orientation orientation) const {
@@ -92,7 +92,7 @@ void proto::Conveyor::OnBuild(game::World& world,
 }
 
 void proto::Conveyor::OnNeighborUpdate(game::World& world,
-                                       game::LogicData& /*logic*/,
+                                       game::Logic& /*logic*/,
                                        const WorldCoord& /*emit_coord*/,
                                        const WorldCoord& receive_coord,
                                        Orientation /*emit_orientation*/) const {
@@ -110,7 +110,7 @@ void proto::Conveyor::OnNeighborUpdate(game::World& world,
 }
 
 void proto::Conveyor::OnRemove(game::World& world,
-                               game::LogicData& /*logic*/,
+                               game::Logic& /*logic*/,
                                const WorldCoord& coord,
                                game::ChunkTileLayer& /*tile_layer*/) const {
     RemoveConveyor(world, coord, kConveyorLogicGroup);

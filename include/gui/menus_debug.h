@@ -15,7 +15,7 @@ namespace jactorio
 
     namespace game
     {
-        class LogicData;
+        class Logic;
         class Player;
     } // namespace game
 } // namespace jactorio
@@ -26,7 +26,7 @@ namespace jactorio::gui
 
     // For performing logic when certain debug options are checked
     void DebugMenuLogic(GameWorlds& worlds,
-                        game::LogicData& logic,
+                        game::Logic& logic,
                         game::Player& player,
                         const data::PrototypeManager& data_manager);
 
@@ -44,7 +44,7 @@ namespace jactorio::gui
 
     void DebugWorldInfo(GameWorlds& worlds, const game::Player& player);
 
-    void DebugLogicInfo(const game::LogicData& logic_data);
+    void DebugLogicInfo(const game::Logic& logic);
 } // namespace jactorio::gui
 
 #endif // JACTORIO_INCLUDE_GUI_MENUS_DEBUG_H

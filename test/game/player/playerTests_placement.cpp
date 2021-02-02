@@ -17,7 +17,7 @@ namespace jactorio::game
         Player::Inventory& playerInv_   = playerData_.inventory;
         Player::Placement& playerPlace_ = playerData_.placement;
 
-        LogicData logicData_;
+        Logic logicData_;
         World worldData_;
 
         data::PrototypeManager dataManager_;
@@ -401,7 +401,7 @@ namespace jactorio::game
         mutable std::vector<WorldCoord> receiveCoords;
 
         void OnBuild(World& /*world*/,
-                     LogicData& /*logic_data*/,
+                     Logic& /*logic*/,
                      const WorldCoord& /*coord*/,
                      ChunkTileLayer& /*tile_layer*/,
                      Orientation /*orientation*/) const override {
@@ -409,7 +409,7 @@ namespace jactorio::game
         }
 
         void OnRemove(World& /*world*/,
-                      LogicData& /*logic_data*/,
+                      Logic& /*logic*/,
                       const WorldCoord& /*coord*/,
                       ChunkTileLayer& /*tile_layer*/) const override {
             removeCalled = true;
@@ -424,7 +424,7 @@ namespace jactorio::game
 
 
         void OnNeighborUpdate(World& /*world*/,
-                              LogicData& /*logic_data*/,
+                              Logic& /*logic*/,
                               const WorldCoord& emit_coord,
                               const WorldCoord& receive_coord,
                               Orientation /*emit_orientation*/) const override {

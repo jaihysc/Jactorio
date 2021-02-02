@@ -169,7 +169,7 @@ void game::Player::Placement::CounterRotateOrientation() {
 /// \param coord Top left tile x, y
 /// \param orientation Orientation of placed / removed entity
 void UpdateNeighboringEntities(game::World& world,
-                               game::LogicData& logic,
+                               game::Logic& logic,
                                const WorldCoord& coord,
                                const Orientation orientation,
                                const proto::Entity* entity_ptr) {
@@ -225,7 +225,7 @@ void UpdateNeighboringEntities(game::World& world,
     }
 }
 
-bool game::Player::Placement::TryPlaceEntity(game::World& world, LogicData& logic, const WorldCoord& coord) const {
+bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, const WorldCoord& coord) const {
     auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return false;
@@ -307,7 +307,7 @@ bool game::Player::Placement::TryActivateLayer(game::World& world, const WorldCo
 }
 
 
-void game::Player::Placement::TryPickup(game::World& world, LogicData& logic, WorldCoord coord, const uint16_t ticks) {
+void game::Player::Placement::TryPickup(game::World& world, Logic& logic, WorldCoord coord, const uint16_t ticks) {
     auto* tile = world.GetTile(coord);
 
     const proto::Entity* chosen_ptr;

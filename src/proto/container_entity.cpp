@@ -9,7 +9,7 @@
 using namespace jactorio;
 
 void proto::ContainerEntity::OnBuild(game::World& /*world*/,
-                                     game::LogicData& /*logic_data*/,
+                                     game::Logic& /*logic*/,
                                      const WorldCoord& /*coord*/,
                                      game::ChunkTileLayer& tile_layer,
                                      Orientation /*orientation*/) const {

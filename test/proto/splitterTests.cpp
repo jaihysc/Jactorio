@@ -19,7 +19,7 @@ namespace jactorio::proto
         }
 
         game::World world_;
-        game::LogicData logic_;
+        game::Logic logic_;
         TransportBelt transBelt_;
     };
 

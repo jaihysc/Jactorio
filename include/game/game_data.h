@@ -9,7 +9,7 @@
 #include "game/event/event.h"
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
-#include "game/logic/logic_data.h"
+#include "game/logic/logic.h"
 #include "game/player/player.h"
 #include "game/world/world.h"
 
@@ -40,7 +40,7 @@ namespace jactorio::game
 
 
         GameWorlds worlds{1};
-        LogicData logic;
+        Logic logic;
         Player player;
 
         static_assert(std::is_same_v<GameWorlds::size_type, WorldId>);

@@ -46,7 +46,7 @@ namespace jactorio::proto
 
 
         void OnBuild(game::World& /*world*/,
-                     game::LogicData& /*logic_data*/,
+                     game::Logic& /*logic*/,
                      const WorldCoord& /*coord*/,
                      game::ChunkTileLayer& /*tile_layer*/,
                      Orientation /*orientation*/) const override {
@@ -54,7 +54,7 @@ namespace jactorio::proto
         }
 
         void OnRemove(game::World& /*world*/,
-                      game::LogicData& /*logic_data*/,
+                      game::Logic& /*logic*/,
                       const WorldCoord& /*coord*/,
                       game::ChunkTileLayer& /*tile_layer*/) const override {}
 

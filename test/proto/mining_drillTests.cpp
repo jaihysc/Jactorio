@@ -12,7 +12,7 @@ namespace jactorio::proto
     {
     protected:
         game::World worldData_;
-        game::LogicData logicData_;
+        game::Logic logicData_;
 
         MiningDrill drillProto_;
 

@@ -138,7 +138,7 @@ void DrawMenu(gui::Menu menu, const render::GuiRenderer& g_rendr, proto::UniqueD
 
 void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
                     GameWorlds& worlds,
-                    game::LogicData& logic,
+                    game::Logic& logic,
                     game::Player& player,
                     const data::PrototypeManager& proto_manager,
                     game::EventData& /*event*/) {

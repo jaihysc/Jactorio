@@ -11,7 +11,7 @@ namespace jactorio::game
     class DeferralTimerTest : public testing::Test
     {
     protected:
-        LogicData logicData_;
+        Logic logicData_;
         World worldData_;
 
         DeferralTimer& timer_ = logicData_.deferralTimer;
@@ -24,11 +24,11 @@ namespace jactorio::game
             mutable DeferralTimer* dTimer          = nullptr;
 
             void OnDeferTimeElapsed(World& /*world*/,
-                                    LogicData& logic_data,
+                                    Logic& logic,
                                     proto::UniqueDataBase* unique_data) const override {
                 callbackCalled = true;
                 dataPtr        = unique_data;
-                dTimer         = &logic_data.deferralTimer;
+                dTimer         = &logic.deferralTimer;
             };
         };
 

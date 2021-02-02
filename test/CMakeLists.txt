@@ -89,7 +89,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/logic_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/logicTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/keybind_managerTests.cpp

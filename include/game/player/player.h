@@ -15,7 +15,7 @@
 namespace jactorio::game
 {
     class World;
-    class LogicData;
+    class Logic;
     class ChunkTileLayer;
 
     ///
@@ -250,7 +250,7 @@ namespace jactorio::game
             ///
             /// Will place an entity at the location or if an entity does not already exist
             /// \return true if entity was placed
-            bool TryPlaceEntity(game::World& world, LogicData& logic, const WorldCoord& coord) const;
+            bool TryPlaceEntity(game::World& world, Logic& logic, const WorldCoord& coord) const;
 
             ///
             /// Attempts to activate the layer at world coordinates
@@ -261,7 +261,7 @@ namespace jactorio::game
             /// This will either pickup an entity, or mine resources from a resource tile
             /// Call when the key for picking up entities is pressed
             /// If resource + entity exists on one tile, picking up entity takes priority
-            void TryPickup(game::World& world, LogicData& logic, WorldCoord coord, uint16_t ticks = 1);
+            void TryPickup(game::World& world, Logic& logic, WorldCoord coord, uint16_t ticks = 1);
 
             ///
             /// \return progress of entity pickup or resource extraction as a fraction between 0 - 1

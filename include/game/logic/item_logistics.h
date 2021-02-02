@@ -12,7 +12,7 @@
 
 namespace jactorio::game
 {
-    class LogicData;
+    class Logic;
     class World;
 
     ///
@@ -67,7 +67,7 @@ namespace jactorio::game
 
         struct DropOffParams
         {
-            LogicData& logicData;
+            Logic& logicData;
             const proto::ItemStack& itemStack;
             /// Entity to drop into
             proto::UniqueDataBase& uniqueData;
@@ -76,18 +76,18 @@ namespace jactorio::game
 
         ///
         ///	 \brief Insert provided item at destination
-        bool DropOff(LogicData& logic_data, const proto::ItemStack& item_stack) const {
+        bool DropOff(Logic& logic, const proto::ItemStack& item_stack) const {
             assert(targetUniqueData_);
             assert(dropFunc_);
-            return (this->*dropFunc_)({logic_data, item_stack, *targetUniqueData_, orientation_});
+            return (this->*dropFunc_)({logic, item_stack, *targetUniqueData_, orientation_});
         }
 
         ///
         ///	 \return true if dropoff can ever possible at the specified location
-        J_NODISCARD bool CanDropOff(LogicData& logic_data, const proto::Item*& item) const {
+        J_NODISCARD bool CanDropOff(Logic& logic, const proto::Item*& item) const {
             assert(targetUniqueData_);
             assert(canDropFunc_);
-            return (this->*canDropFunc_)({logic_data, {item, 0}, *targetUniqueData_, orientation_});
+            return (this->*canDropFunc_)({logic, {item, 0}, *targetUniqueData_, orientation_});
         }
 
     protected:
@@ -127,7 +127,7 @@ namespace jactorio::game
         /// \remark Picks up items when at max deg
         struct PickupParams
         {
-            LogicData& logicData;
+            Logic& logicData;
             proto::ProtoUintT inserterTileReach;
             const proto::RotationDegreeT& degree;
             proto::Item::StackCount amount;
@@ -137,25 +137,25 @@ namespace jactorio::game
 
         ///
         ///	 \brief Insert provided item at destination
-        PickupReturn Pickup(LogicData& logic_data,
+        PickupReturn Pickup(Logic& logic,
                             const proto::ProtoUintT inserter_tile_reach,
                             const proto::RotationDegreeT& degree,
                             const proto::Item::StackCount amount) const {
             assert(targetUniqueData_);
             assert(pickupFunc_);
             return (this->*pickupFunc_)(
-                {logic_data, inserter_tile_reach, degree, amount, *targetUniqueData_, orientation_});
+                {logic, inserter_tile_reach, degree, amount, *targetUniqueData_, orientation_});
         }
 
         ///
         /// \return Item which will picked up by Pickup()
-        J_NODISCARD GetPickupReturn GetPickup(LogicData& logic_data,
+        J_NODISCARD GetPickupReturn GetPickup(Logic& logic,
                                               const proto::ProtoUintT inserter_tile_reach,
                                               const proto::RotationDegreeT& degree) const {
             assert(targetUniqueData_);
             assert(getPickupFunc_);
             return (this->*getPickupFunc_)(
-                {logic_data, inserter_tile_reach, degree, 1, *targetUniqueData_, orientation_});
+                {logic, inserter_tile_reach, degree, 1, *targetUniqueData_, orientation_});
         }
 
     protected:

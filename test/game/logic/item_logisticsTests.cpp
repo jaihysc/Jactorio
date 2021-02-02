@@ -17,7 +17,7 @@ namespace jactorio::game
     {
     protected:
         World worldData_;
-        LogicData logicData_;
+        Logic logicData_;
 
         void SetUp() override {
             worldData_.EmplaceChunk(0, 0);
@@ -83,7 +83,7 @@ namespace jactorio::game
 
     protected:
         World worldData_;
-        LogicData logicData_;
+        Logic logicData_;
 
         /// Creates a conveyor with orientation
         proto::ConveyorData CreateConveyor(
@@ -405,7 +405,7 @@ namespace jactorio::game
 
     protected:
         World worldData_;
-        LogicData logicData_;
+        Logic logicData_;
 
         proto::Inserter inserterProto_;
 

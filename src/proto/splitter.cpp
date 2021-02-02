@@ -13,7 +13,7 @@ using namespace jactorio;
 static constexpr game::LogicGroup kSplitterLogicGroup = game::LogicGroup::splitter;
 
 void proto::Splitter::OnBuild(game::World& world,
-                              game::LogicData& /*logic*/,
+                              game::Logic& /*logic*/,
                               const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer,
                               const Orientation orientation) const {
@@ -32,7 +32,7 @@ void proto::Splitter::OnBuild(game::World& world,
 }
 
 void proto::Splitter::OnNeighborUpdate(game::World& world,
-                                       game::LogicData& /*logic*/,
+                                       game::Logic& /*logic*/,
                                        const WorldCoord& /*emit_coord*/,
                                        const WorldCoord& receive_coord,
                                        Orientation /*emit_orientation*/) const {
@@ -40,7 +40,7 @@ void proto::Splitter::OnNeighborUpdate(game::World& world,
 }
 
 void proto::Splitter::OnRemove(game::World& world,
-                               game::LogicData& /*logic*/,
+                               game::Logic& /*logic*/,
                                const WorldCoord& coord,
                                game::ChunkTileLayer& /*tile_layer*/) const {
 

@@ -14,7 +14,7 @@ namespace jactorio
     namespace game
     {
         class World;
-        class LogicData;
+        class Logic;
     } // namespace game
 } // namespace jactorio
 
@@ -38,7 +38,7 @@ namespace jactorio::proto
         /// \param world world data containing deferred timer which dispatched this callback
         /// \param unique_data Unique data the callback was registered with
         virtual void OnDeferTimeElapsed(game::World& world,
-                                        game::LogicData& logic_data,
+                                        game::Logic& logic,
                                         UniqueDataBase* unique_data) const = 0;
     };
 } // namespace jactorio::proto

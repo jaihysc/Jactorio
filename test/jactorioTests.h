@@ -19,7 +19,7 @@
 #include "proto/splitter.h"
 #include "proto/sprite.h"
 
-#include "game/logic/logic_data.h"
+#include "game/logic/logic.h"
 #include "game/world/world.h"
 
 #include <cereal/archives/portable_binary.hpp>
@@ -71,13 +71,13 @@ namespace jactorio
         PROTOTYPE_CATEGORY(test);
 
         void OnBuild(game::World& world,
-                     game::LogicData& logic_data,
+                     game::Logic& logic,
                      const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override {}
 
         void OnRemove(game::World& world,
-                      game::LogicData& logic_data,
+                      game::Logic& logic,
                       const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override {}
     };
@@ -131,7 +131,7 @@ namespace jactorio
     ///
     /// Creates an inserter at coord
     inline game::ChunkTileLayer& TestSetupInserter(game::World& world,
-                                                   game::LogicData& logic,
+                                                   game::Logic& logic,
                                                    const WorldCoord& coord,
                                                    const Orientation orientation,
                                                    const proto::Inserter& inserter_proto) {
@@ -194,7 +194,7 @@ namespace jactorio
     ///
     /// Creates a drill in the world with orientation, calling OnBuild
     inline game::ChunkTile& TestSetupDrill(game::World& world,
-                                           game::LogicData& logic,
+                                           game::Logic& logic,
                                            const WorldCoord& coord,
                                            const Orientation orientation,
                                            proto::ResourceEntity& resource,

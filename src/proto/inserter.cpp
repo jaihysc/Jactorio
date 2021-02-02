@@ -38,7 +38,7 @@ SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
 }
 
 void proto::Inserter::OnBuild(game::World& world,
-                              game::LogicData& /*logic_data*/,
+                              game::Logic& /*logic*/,
                               const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer,
                               Orientation orientation) const {
@@ -92,7 +92,7 @@ void proto::Inserter::OnTileUpdate(game::World& world,
 }
 
 void proto::Inserter::OnRemove(game::World& world,
-                               game::LogicData& /*logic_data*/,
+                               game::Logic& /*logic*/,
                                const WorldCoord& coord,
                                game::ChunkTileLayer& tile_layer) const {
     world.LogicRemove(game::LogicGroup::inserter, coord, game::TileLayer::entity);
