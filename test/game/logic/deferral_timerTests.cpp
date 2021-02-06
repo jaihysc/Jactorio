@@ -12,7 +12,7 @@ namespace jactorio::game
     {
     protected:
         Logic logicData_;
-        World worldData_;
+        World world_;
 
         DeferralTimer& timer_ = logicData_.deferralTimer;
 
@@ -45,13 +45,13 @@ namespace jactorio::game
         EXPECT_EQ(index.callbackIndex, 1);
         EXPECT_TRUE(index.Valid());
 
-        logicData_.DeferralUpdate(worldData_, 0);
+        logicData_.DeferralUpdate(world_, 0);
         EXPECT_FALSE(deferred_.callbackCalled);
 
-        logicData_.DeferralUpdate(worldData_, 1);
+        logicData_.DeferralUpdate(world_, 1);
         EXPECT_FALSE(deferred_.callbackCalled);
 
-        logicData_.DeferralUpdate(worldData_, 2);
+        logicData_.DeferralUpdate(world_, 2);
         EXPECT_TRUE(deferred_.callbackCalled);
         EXPECT_EQ(deferred_.dataPtr, &unique_data);
         EXPECT_EQ(deferred_.dTimer, &timer_);
@@ -66,13 +66,13 @@ namespace jactorio::game
         EXPECT_EQ(index.callbackIndex, 1);
         EXPECT_TRUE(index.Valid());
 
-        logicData_.DeferralUpdate(worldData_, 0);
+        logicData_.DeferralUpdate(world_, 0);
         EXPECT_FALSE(deferred_.callbackCalled);
 
-        logicData_.DeferralUpdate(worldData_, 1);
+        logicData_.DeferralUpdate(world_, 1);
         EXPECT_FALSE(deferred_.callbackCalled);
 
-        logicData_.DeferralUpdate(worldData_, 2);
+        logicData_.DeferralUpdate(world_, 2);
         EXPECT_TRUE(deferred_.callbackCalled);
         EXPECT_EQ(deferred_.dataPtr, &unique_data);
         EXPECT_EQ(deferred_.dTimer, &timer_);
@@ -81,7 +81,7 @@ namespace jactorio::game
     TEST_F(DeferralTimerTest, RegisterDeferralRemoveOldCallbacks) {
         timer_.RegisterAtTick(deferred_, nullptr, 2);
 
-        logicData_.DeferralUpdate(worldData_, 2);
+        logicData_.DeferralUpdate(world_, 2);
         ASSERT_TRUE(deferred_.callbackCalled);
 
         // Callback at 2 has been removed since it update was called for game tick 2
@@ -94,7 +94,7 @@ namespace jactorio::game
         timer_.RemoveDeferral(entry);
 
         // Callback removed
-        logicData_.DeferralUpdate(worldData_, 2);
+        logicData_.DeferralUpdate(world_, 2);
         EXPECT_FALSE(deferred_.callbackCalled);
     }
 
@@ -106,7 +106,7 @@ namespace jactorio::game
         timer_.RemoveDeferral(deferral_entry_2);
 
         // Both deferrals removed
-        logicData_.DeferralUpdate(worldData_, 2);
+        logicData_.DeferralUpdate(world_, 2);
         EXPECT_FALSE(deferred_.callbackCalled);
     }
 
@@ -124,7 +124,7 @@ namespace jactorio::game
             EXPECT_EQ(entry.callbackIndex, 0);
             EXPECT_FALSE(entry.Valid());
 
-            logicData_.DeferralUpdate(worldData_, 1);
+            logicData_.DeferralUpdate(world_, 1);
             EXPECT_FALSE(deferred.callbackCalled);
         }
         {

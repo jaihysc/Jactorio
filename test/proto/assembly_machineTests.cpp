@@ -9,7 +9,7 @@ namespace jactorio::proto
     class AssemblyMachineTest : public testing::Test
     {
     protected:
-        game::World worldData_;
+        game::World world_;
         game::Logic logicData_;
 
         data::PrototypeManager proto_;
@@ -39,7 +39,7 @@ namespace jactorio::proto
         }
 
         void SetUp() override {
-            worldData_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk(0, 0);
         }
     };
 
@@ -63,7 +63,7 @@ namespace jactorio::proto
         SetupRecipe();
 
         // Recipe crafted in 60 ticks
-        logicData_.DeferralUpdate(worldData_, 900);
+        logicData_.DeferralUpdate(world_, 900);
         data_.ChangeRecipe(logicData_, proto_, recipe_);
 
         EXPECT_EQ(data_.deferralEntry.dueTick, 0);
@@ -238,16 +238,16 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, Build) {
         // Creates unique data on build
-        auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
+        auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
 
-        asmMachine_.OnBuild(worldData_, logicData_, {0, 0}, layer, Orientation::up);
+        asmMachine_.OnBuild(world_, logicData_, {0, 0}, layer, Orientation::up);
 
         EXPECT_NE(layer.GetUniqueData(), nullptr);
     }
 
     TEST_F(AssemblyMachineTest, OnRemoveRemoveDeferralEntry) {
-        auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
-        asmMachine_.OnBuild(worldData_, logicData_, {0, 0}, layer, Orientation::up);
+        auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
+        asmMachine_.OnBuild(world_, logicData_, {0, 0}, layer, Orientation::up);
 
         const auto* assembly_proto = layer.GetPrototype<AssemblyMachine>();
         auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
@@ -255,7 +255,7 @@ namespace jactorio::proto
         SetupRecipe();
         assembly_data->ChangeRecipe(logicData_, proto_, recipe_);
 
-        assembly_proto->OnRemove(worldData_, logicData_, {0, 0}, layer);
+        assembly_proto->OnRemove(world_, logicData_, {0, 0}, layer);
         EXPECT_EQ(assembly_data->deferralEntry.callbackIndex, 0);
     }
 
@@ -289,21 +289,21 @@ namespace jactorio::proto
         EXPECT_EQ(data_.ingredientInv[1].count, 2);
 
         // -- Output product
-        logicData_.DeferralUpdate(worldData_, 60);
+        logicData_.DeferralUpdate(world_, 60);
         EXPECT_EQ(data_.productInv[0].count, 1);
 
 
         // Craft 2
         EXPECT_EQ(data_.ingredientInv[0].count, 1);
         EXPECT_EQ(data_.ingredientInv[1].count, 1);
-        logicData_.DeferralUpdate(worldData_, 120);
+        logicData_.DeferralUpdate(world_, 120);
         EXPECT_EQ(data_.productInv[0].count, 2);
 
 
         // Craft 3
         EXPECT_EQ(data_.ingredientInv[0].count, 0);
         EXPECT_EQ(data_.ingredientInv[1].count, 0);
-        logicData_.DeferralUpdate(worldData_, 180);
+        logicData_.DeferralUpdate(world_, 180);
         EXPECT_EQ(data_.productInv[0].count, 3);
 
 

@@ -14,7 +14,7 @@ namespace jactorio::game
     class InserterControllerTest : public testing::Test
     {
     protected:
-        World worldData_{};
+        World world_;
         Logic logicData_{};
 
         proto::Inserter inserterProto_{};
@@ -23,12 +23,12 @@ namespace jactorio::game
         proto::Item containerItemProto_{};
 
         void SetUp() override {
-            auto& chunk = worldData_.EmplaceChunk(0, 0);
-            worldData_.LogicAddChunk(chunk);
+            auto& chunk = world_.EmplaceChunk(0, 0);
+            world_.LogicAddChunk(chunk);
         }
 
         ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
-            return TestSetupInserter(worldData_, logicData_, coords, orientation, inserterProto_);
+            return TestSetupInserter(world_, logicData_, coords, orientation, inserterProto_);
         }
 
         ///
@@ -39,18 +39,18 @@ namespace jactorio::game
                                                const Orientation orientation,
                                                const proto::Item::StackCount stack_count,
                                                const WorldCoord& neighbor_update_coord = {1, 2}) {
-            auto& layer = TestSetupContainer(worldData_, coords, Orientation::up, containerProto_);
+            auto& layer = TestSetupContainer(world_, coords, Orientation::up, containerProto_);
 
             auto* unique_data = layer.GetUniqueData<proto::ContainerEntityData>();
 
             // Emit neighbor update
             {
-                auto& neighbor_layer       = worldData_.GetTile(neighbor_update_coord)->GetLayer(TileLayer::entity);
+                auto& neighbor_layer       = world_.GetTile(neighbor_update_coord)->GetLayer(TileLayer::entity);
                 const auto* neighbor_proto = neighbor_layer.GetPrototype<proto::ContainerEntity>();
 
                 if (neighbor_proto != nullptr)
                     neighbor_proto->OnNeighborUpdate(
-                        worldData_, logicData_, coords, neighbor_update_coord, orientation);
+                        world_, logicData_, coords, neighbor_update_coord, orientation);
             }
 
             if (stack_count != 0)
@@ -91,13 +91,13 @@ namespace jactorio::game
         auto* inserter_data  = inserter_layer.GetUniqueData<proto::InserterData>();
 
         // Pickup item
-        InserterLogicUpdate(worldData_, logicData_);
+        InserterLogicUpdate(world_, logicData_);
         EXPECT_EQ(pickup->inventory[0].count, 9);
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
 
         // Reach 0 degrees after 86 updates
         for (int i = 0; i < updates_to_target; ++i) {
-            InserterLogicUpdate(worldData_, logicData_);
+            InserterLogicUpdate(world_, logicData_);
         }
         EXPECT_EQ(dropoff->inventory[0].count, 11);
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
@@ -106,7 +106,7 @@ namespace jactorio::game
 
         // Return to pickup location after 86 updates, pick up item, set status to dropoff
         for (int i = 0; i < updates_to_target; ++i) {
-            InserterLogicUpdate(worldData_, logicData_);
+            InserterLogicUpdate(world_, logicData_);
         }
         EXPECT_EQ(pickup->inventory[0].count, 8);
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
@@ -122,12 +122,12 @@ namespace jactorio::game
 
         auto dropoff =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
-        TestCreateConveyorSegment(worldData_, {1, 0}, dropoff, segment_proto);
+        TestCreateConveyorSegment(world_, {1, 0}, dropoff, segment_proto);
 
 
         //
         auto pickup = std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
-        TestCreateConveyorSegment(worldData_, {1, 2}, pickup, segment_proto);
+        TestCreateConveyorSegment(world_, {1, 2}, pickup, segment_proto);
 
         for (int i = 0; i < 1000; ++i) {
             pickup->AppendItem(false, 0, item);
@@ -138,20 +138,20 @@ namespace jactorio::game
         auto* inserter_data  = inserter_layer.GetUniqueData<proto::InserterData>();
 
         // Logic chunk will be unregistered if setup was invalid
-        ASSERT_EQ(worldData_.LogicGetChunks().size(), 1);
+        ASSERT_EQ(world_.LogicGetChunks().size(), 1);
 
 
         // Will not pickup unless over 90 degrees
         inserter_data->rotationDegree = 87.9;
         inserter_data->status         = proto::InserterData::Status::pickup;
 
-        InserterLogicUpdate(worldData_, logicData_);
+        InserterLogicUpdate(world_, logicData_);
         ASSERT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
 
 
         // Pickup when within arm length
         for (int i = 0; i < 42; ++i) {
-            InserterLogicUpdate(worldData_, logicData_);
+            InserterLogicUpdate(world_, logicData_);
 
             if (inserter_data->status != proto::InserterData::Status::pickup) {
                 printf("Failed on iteration %d\n", i);
@@ -161,7 +161,7 @@ namespace jactorio::game
         }
 
 
-        InserterLogicUpdate(worldData_, logicData_);
+        InserterLogicUpdate(world_, logicData_);
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
     }
 
@@ -170,7 +170,7 @@ namespace jactorio::game
 
         // Cannot drop into assembly machine since it has no recipe
         proto::AssemblyMachine asm_machine{};
-        TestSetupAssemblyMachine(worldData_, {0, 1}, Orientation::up, asm_machine);
+        TestSetupAssemblyMachine(world_, {0, 1}, Orientation::up, asm_machine);
 
         auto* pickup = BuildChest({3, 2}, Orientation::right, 10);
 
@@ -181,7 +181,7 @@ namespace jactorio::game
 
 
         //
-        InserterLogicUpdate(worldData_, logicData_);
+        InserterLogicUpdate(world_, logicData_);
 
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
         EXPECT_EQ(pickup->inventory[0].count, 10);
@@ -202,15 +202,15 @@ namespace jactorio::game
 
 
         // Pickup
-        InserterLogicUpdate(worldData_, logicData_);
+        InserterLogicUpdate(world_, logicData_);
         EXPECT_EQ(left_chest->inventory[0].count, 0);
 
         // Dropoff, picked up by inserter2
-        InserterLogicUpdate(worldData_, logicData_);
+        InserterLogicUpdate(world_, logicData_);
         EXPECT_EQ(mid_chest->inventory[0].count, 0);
 
         // Dropoff by inserter2
-        InserterLogicUpdate(worldData_, logicData_);
+        InserterLogicUpdate(world_, logicData_);
         EXPECT_EQ(right_chest->inventory[0].count, 1);
     }
 } // namespace jactorio::game

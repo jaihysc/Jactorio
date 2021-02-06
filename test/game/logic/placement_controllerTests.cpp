@@ -83,10 +83,10 @@ namespace jactorio::game
         std::unique_ptr<proto::Tile> waterTile_ = std::make_unique<proto::Tile>();
         std::unique_ptr<proto::Tile> landTile_  = std::make_unique<proto::Tile>();
 
-        World worldData_{};
+        World world_;
 
         void SetUp() override {
-            GenerateTestWorld(worldData_, waterTile_.get(), landTile_.get());
+            GenerateTestWorld(world_, waterTile_.get(), landTile_.get());
         }
     };
 
@@ -95,9 +95,9 @@ namespace jactorio::game
         // Place an entity at various locations, checking that it does not place on invalid tiles
         const auto entity = std::make_unique<proto::ContainerEntity>();
 
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {0, 0}, Orientation::up, entity.get()));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {0, 0}, Orientation::up, entity.get()));
 
         // Set entity and sprite layer
         EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), entity.get());
@@ -110,9 +110,9 @@ namespace jactorio::game
         const auto entity = std::make_unique<proto::ContainerEntity>();
 
         // Invalid, placing on a base tile which is water
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
-        EXPECT_FALSE(PlaceEntityAtCoords(worldData_, {1, 0}, Orientation::up, entity.get()));
+        EXPECT_FALSE(PlaceEntityAtCoords(world_, {1, 0}, Orientation::up, entity.get()));
         EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
     }
 
@@ -123,20 +123,20 @@ namespace jactorio::game
         const auto entity = std::make_unique<proto::ContainerEntity>();
 
 
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
         // Place entity, taken from the test above (place_entity_1x1_valid)
         {
             // const auto* chunk = world.get_chunk(0, 0);
 
-            EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {0, 0}, Orientation::up, entity.get()));
+            EXPECT_TRUE(PlaceEntityAtCoords(world_, {0, 0}, Orientation::up, entity.get()));
 
             // Set entity and sprite layer
             EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), entity.get());
         }
 
         // Valid Removal
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {0, 0}, Orientation::up, nullptr));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {0, 0}, Orientation::up, nullptr));
 
         // Should all be nullptr after being removed
         EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
@@ -145,10 +145,10 @@ namespace jactorio::game
     TEST_F(PlacementControllerTest, RemoveEntity1x1Invalid) {
         // Removing a location with nullptr entity and sprite does nothing, returns false to indicate nothing was
         // removed
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
         // Invalid Removal
-        EXPECT_FALSE(PlaceEntityAtCoords(worldData_, {0, 0}, Orientation::up, nullptr));
+        EXPECT_FALSE(PlaceEntityAtCoords(world_, {0, 0}, Orientation::up, nullptr));
 
         // Should all remain nullptr
         EXPECT_EQ(chunk->Tiles()[0].GetEntityPrototype(), nullptr);
@@ -163,10 +163,10 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {5, 5}, Orientation::up, entity.get()));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {5, 5}, Orientation::up, entity.get()));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         int entity_index = 0;
@@ -189,10 +189,10 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
 
-        EXPECT_FALSE(PlaceEntityAtCoords(worldData_, {4, 5}, Orientation::up, entity.get()));
+        EXPECT_FALSE(PlaceEntityAtCoords(world_, {4, 5}, Orientation::up, entity.get()));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         for (int y = 5; y < 5 + 3; ++y) {
@@ -211,10 +211,10 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
 
-        EXPECT_FALSE(PlaceEntityAtCoords(worldData_, {9, 2}, Orientation::up, entity.get()));
+        EXPECT_FALSE(PlaceEntityAtCoords(world_, {9, 2}, Orientation::up, entity.get()));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         for (int y = 5; y < 5 + 3; ++y) {
@@ -232,8 +232,8 @@ namespace jactorio::game
         entity->SetHeight(3);
 
 
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {9, 10}, Orientation::up, entity.get()));
-        EXPECT_FALSE(PlaceEntityAtCoords(worldData_, {9, 9}, Orientation::up, entity.get()));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {9, 10}, Orientation::up, entity.get()));
+        EXPECT_FALSE(PlaceEntityAtCoords(world_, {9, 9}, Orientation::up, entity.get()));
     }
 
     TEST_F(PlacementControllerTest, RemoveEntity3x3Valid1) {
@@ -242,11 +242,11 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {5, 5}, Orientation::up, entity.get()));
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {5, 5}, Orientation::up, nullptr));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {5, 5}, Orientation::up, entity.get()));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {5, 5}, Orientation::up, nullptr));
 
         // Check that it has been deleted
         for (int y = 5; y < 5 + 3; ++y) {
@@ -265,11 +265,11 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {5, 5}, Orientation::up, entity.get()));
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {7, 5}, Orientation::up, nullptr));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {5, 5}, Orientation::up, entity.get()));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {7, 5}, Orientation::up, nullptr));
         // Check that it has been deleted
         for (int y = 5; y < 5 + 3; ++y) {
             for (int x = 5; x < 5 + 3; ++x) {
@@ -292,10 +292,10 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(4);
 
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {9, 10}, Orientation::up, entity.get()));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {9, 10}, Orientation::up, entity.get()));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         int entity_index = 0;
@@ -321,11 +321,11 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(4);
 
-        const auto* chunk = worldData_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC(0, 0);
 
 
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {9, 10}, Orientation::up, entity.get()));
-        EXPECT_TRUE(PlaceEntityAtCoords(worldData_, {9, 13}, Orientation::up, nullptr));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {9, 10}, Orientation::up, entity.get()));
+        EXPECT_TRUE(PlaceEntityAtCoords(world_, {9, 13}, Orientation::up, nullptr));
 
         // Expect entity and sprite layer to be set, as well as entity_index
         for (int y = 10; y < 10 + 4; ++y) {

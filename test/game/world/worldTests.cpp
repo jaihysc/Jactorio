@@ -11,7 +11,7 @@ namespace jactorio::game
     class WorldTest : public testing::Test
     {
     protected:
-        World worldData_;
+        World world_;
     };
 
     TEST_F(WorldTest, WorldCToChunkC) {
@@ -50,11 +50,11 @@ namespace jactorio::game
 
     TEST_F(WorldTest, CopyLogicChunk) {
         {
-            auto& chunk = worldData_.EmplaceChunk({0, 0});
-            worldData_.LogicAddChunk(chunk);
+            auto& chunk = world_.EmplaceChunk({0, 0});
+            world_.LogicAddChunk(chunk);
         }
 
-        auto world_copy = worldData_;
+        auto world_copy = world_;
 
         ASSERT_EQ(world_copy.LogicGetChunks().size(), 1);
 
@@ -63,11 +63,11 @@ namespace jactorio::game
 
     TEST_F(WorldTest, MoveLogicChunk) {
         {
-            auto& chunk = worldData_.EmplaceChunk({0, 0});
-            worldData_.LogicAddChunk(chunk);
+            auto& chunk = world_.EmplaceChunk({0, 0});
+            world_.LogicAddChunk(chunk);
         }
 
-        auto world_move = std::move(worldData_);
+        auto world_move = std::move(world_);
 
         ASSERT_EQ(world_move.LogicGetChunks().size(), 1);
 
@@ -75,21 +75,21 @@ namespace jactorio::game
     }
 
     TEST_F(WorldTest, WorldAddChunk) {
-        const auto& added_chunk = worldData_.EmplaceChunk({5, 1});
+        const auto& added_chunk = world_.EmplaceChunk({5, 1});
 
         // Chunk knows its own location
         EXPECT_EQ(added_chunk.GetPosition().x, 5);
         EXPECT_EQ(added_chunk.GetPosition().y, 1);
 
         // Should not initialize other chunks
-        EXPECT_EQ(worldData_.GetChunkC(-1, -1), nullptr);
-        EXPECT_EQ(worldData_.GetChunkC(1, 1), nullptr);
+        EXPECT_EQ(world_.GetChunkC(-1, -1), nullptr);
+        EXPECT_EQ(world_.GetChunkC(1, 1), nullptr);
     }
 
     TEST_F(WorldTest, WorldAddChunkNegative) {
         // Chunks initialized with empty tiles
         // Returns pointer to chunk which was added
-        auto& added_chunk = worldData_.EmplaceChunk({-5, -1});
+        auto& added_chunk = world_.EmplaceChunk({-5, -1});
 
         // Chunk knows its own location
         EXPECT_EQ(added_chunk.GetPosition().x, -5);
@@ -97,26 +97,26 @@ namespace jactorio::game
 
 
         // Should not initialize other chunks
-        EXPECT_EQ(worldData_.GetChunkC(-1, -1), nullptr);
-        EXPECT_EQ(worldData_.GetChunkC(1, 1), nullptr);
+        EXPECT_EQ(world_.GetChunkC(-1, -1), nullptr);
+        EXPECT_EQ(world_.GetChunkC(1, 1), nullptr);
     }
 
     TEST_F(WorldTest, WorldDeleteChunk) {
-        worldData_.EmplaceChunk(3, 2);
-        worldData_.DeleteChunk(3, 2);
+        world_.EmplaceChunk(3, 2);
+        world_.DeleteChunk(3, 2);
 
-        EXPECT_EQ(worldData_.GetChunkC(3, 2), nullptr);
+        EXPECT_EQ(world_.GetChunkC(3, 2), nullptr);
 
         // No effect, no chunk
-        worldData_.DeleteChunk(2, 2);
+        world_.DeleteChunk(2, 2);
     }
 
     TEST_F(WorldTest, WorldGetChunkChunkCoords) {
-        const auto& added_chunk = worldData_.EmplaceChunk(5, 1);
+        const auto& added_chunk = world_.EmplaceChunk(5, 1);
 
-        EXPECT_EQ(worldData_.GetChunkC(0, 0), nullptr);
-        EXPECT_EQ(worldData_.GetChunkC(5, 1), &added_chunk);
-        EXPECT_EQ(worldData_.GetChunkC(5, 1), &added_chunk);
+        EXPECT_EQ(world_.GetChunkC(0, 0), nullptr);
+        EXPECT_EQ(world_.GetChunkC(5, 1), &added_chunk);
+        EXPECT_EQ(world_.GetChunkC(5, 1), &added_chunk);
     }
 
     TEST_F(WorldTest, GetTileWorldCoords) {
@@ -125,67 +125,67 @@ namespace jactorio::game
 
         // World coords 0, 0 - Chunk 0 0, position 0 0
         {
-            auto& chunk = worldData_.EmplaceChunk(0, 0);
+            auto& chunk = world_.EmplaceChunk(0, 0);
             auto& tiles = chunk.Tiles();
             tiles[0]    = chunk_tile;
 
-            EXPECT_EQ(worldData_.GetTile(0, 0), &tiles[0]);
-            EXPECT_NE(worldData_.GetTile(0, 1), &tiles[0]);
+            EXPECT_EQ(world_.GetTile(0, 0), &tiles[0]);
+            EXPECT_NE(world_.GetTile(0, 1), &tiles[0]);
 
-            EXPECT_EQ(worldData_.GetTile({0, 0}), &tiles[0]);
-            EXPECT_NE(worldData_.GetTile({0, 1}), &tiles[0]);
+            EXPECT_EQ(world_.GetTile({0, 0}), &tiles[0]);
+            EXPECT_NE(world_.GetTile({0, 1}), &tiles[0]);
         }
-        worldData_.Clear();
+        world_.Clear();
 
         // World coords -31, -31 - Chunk -1 -1, position 1 1
         {
-            auto& chunk = worldData_.EmplaceChunk(-1, -1);
+            auto& chunk = world_.EmplaceChunk(-1, -1);
             auto& tiles = chunk.Tiles();
             tiles[33]   = chunk_tile;
 
-            EXPECT_EQ(worldData_.GetTile(-31, -31), &tiles[33]);
-            EXPECT_NE(worldData_.GetTile(-31, -32), &tiles[33]);
+            EXPECT_EQ(world_.GetTile(-31, -31), &tiles[33]);
+            EXPECT_NE(world_.GetTile(-31, -32), &tiles[33]);
 
-            EXPECT_EQ(worldData_.GetTile({-31, -31}), &tiles[33]);
-            EXPECT_NE(worldData_.GetTile({-31, -32}), &tiles[33]);
+            EXPECT_EQ(world_.GetTile({-31, -31}), &tiles[33]);
+            EXPECT_NE(world_.GetTile({-31, -32}), &tiles[33]);
         }
-        worldData_.Clear();
+        world_.Clear();
 
         // World coords -32, 0 - Chunk -1 0, position 0 0
         {
-            auto& chunk = worldData_.EmplaceChunk(-1, 0);
+            auto& chunk = world_.EmplaceChunk(-1, 0);
             auto& tiles = chunk.Tiles();
             tiles[0]    = chunk_tile;
 
-            EXPECT_EQ(worldData_.GetTile(-32, 0), &tiles[0]);
-            EXPECT_NE(worldData_.GetTile(-31, 0), &tiles[0]);
+            EXPECT_EQ(world_.GetTile(-32, 0), &tiles[0]);
+            EXPECT_NE(world_.GetTile(-31, 0), &tiles[0]);
 
-            EXPECT_EQ(worldData_.GetTile({-32, 0}), &tiles[0]);
-            EXPECT_NE(worldData_.GetTile({-31, 0}), &tiles[0]);
+            EXPECT_EQ(world_.GetTile({-32, 0}), &tiles[0]);
+            EXPECT_NE(world_.GetTile({-31, 0}), &tiles[0]);
         }
     }
 
     TEST_F(WorldTest, GetChunkWorldCoords) {
         {
-            const auto& chunk = worldData_.EmplaceChunk(0, 0);
-            EXPECT_EQ(worldData_.GetChunkW(31, 31), &chunk);
+            const auto& chunk = world_.EmplaceChunk(0, 0);
+            EXPECT_EQ(world_.GetChunkW(31, 31), &chunk);
 
-            EXPECT_EQ(worldData_.GetChunkW({31, 31}), &chunk);
+            EXPECT_EQ(world_.GetChunkW({31, 31}), &chunk);
         }
 
         {
-            const auto& chunk = worldData_.EmplaceChunk(-1, 0);
-            EXPECT_EQ(worldData_.GetChunkW(-1, 0), &chunk);
+            const auto& chunk = world_.EmplaceChunk(-1, 0);
+            EXPECT_EQ(world_.GetChunkW(-1, 0), &chunk);
 
-            EXPECT_EQ(worldData_.GetChunkW({-1, 0}), &chunk);
+            EXPECT_EQ(world_.GetChunkW({-1, 0}), &chunk);
         }
     }
 
     TEST_F(WorldTest, GetTileTopLeft) {
-        worldData_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk(0, 0);
         const WorldCoord bottom_coord = {6, 6};
 
-        auto* bottom_tile  = worldData_.GetTile(bottom_coord);
+        auto* bottom_tile  = world_.GetTile(bottom_coord);
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::entity);
 
         proto::ContainerEntity proto;
@@ -194,24 +194,24 @@ namespace jactorio::game
 
 
         // multiTileIndex is 0
-        EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, bottom_layer), bottom_tile); // Returns self if not multi tile
-        EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, TileLayer::entity), bottom_tile);
+        EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, bottom_layer), bottom_tile); // Returns self if not multi tile
+        EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, TileLayer::entity), bottom_tile);
 
         //
-        auto* top_tile = worldData_.GetTile(5, 6);
+        auto* top_tile = world_.GetTile(5, 6);
 
         bottom_layer.SetupMultiTile(1, top_tile->GetLayer(TileLayer::entity));
-        EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
-        EXPECT_EQ(worldData_.GetTileTopLeft(bottom_coord, TileLayer::entity), top_tile);
+        EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
+        EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, TileLayer::entity), top_tile);
     }
 
     TEST_F(WorldTest, GetLayerTopLeft) {
-        worldData_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk(0, 0);
 
-        auto* top_tile    = worldData_.GetTile(0, 0);
+        auto* top_tile    = world_.GetTile(0, 0);
         auto& unique_data = top_tile->GetLayer(TileLayer::resource).MakeUniqueData<proto::ContainerEntityData>(10);
 
-        auto* bottom_tile  = worldData_.GetTile({1, 2});
+        auto* bottom_tile  = world_.GetTile({1, 2});
         auto& bottom_layer = bottom_tile->GetLayer(TileLayer::resource);
 
         proto::ContainerEntity proto;
@@ -220,155 +220,155 @@ namespace jactorio::game
 
         bottom_layer.SetupMultiTile(15, top_tile->GetLayer(TileLayer::resource));
 
-        EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
+        EXPECT_EQ(world_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
     }
 
     TEST_F(WorldTest, GetLayerTopLeftUninitialized) {
-        EXPECT_EQ(worldData_.GetLayerTopLeft({1, 2}, TileLayer::entity), nullptr);
+        EXPECT_EQ(world_.GetLayerTopLeft({1, 2}, TileLayer::entity), nullptr);
     }
 
 
     TEST_F(WorldTest, Clear) {
-        auto& added_chunk = worldData_.EmplaceChunk({6, 6});
+        auto& added_chunk = world_.EmplaceChunk({6, 6});
 
-        EXPECT_EQ(worldData_.GetChunkC(6, 6), &added_chunk);
-        worldData_.LogicAddChunk(added_chunk);
-        worldData_.QueueChunkGeneration(0, 0);
+        EXPECT_EQ(world_.GetChunkC(6, 6), &added_chunk);
+        world_.LogicAddChunk(added_chunk);
+        world_.QueueChunkGeneration(0, 0);
 
 
-        worldData_.Clear();
+        world_.Clear();
 
 
         const data::PrototypeManager proto;
-        worldData_.GenChunk(proto);
+        world_.GenChunk(proto);
 
-        EXPECT_EQ(worldData_.GetChunkC(0, 0), nullptr);
+        EXPECT_EQ(world_.GetChunkC(0, 0), nullptr);
 
-        EXPECT_EQ(worldData_.GetChunkC(6, 6), nullptr);
-        EXPECT_TRUE(worldData_.LogicGetChunks().empty());
+        EXPECT_EQ(world_.GetChunkC(6, 6), nullptr);
+        EXPECT_TRUE(world_.LogicGetChunks().empty());
     }
 
 
     // Logic chunks
 
     TEST_F(WorldTest, LogicRegister) {
-        worldData_.EmplaceChunk(1, 0); // 32, 0 is chunk coords 1, 0
-        worldData_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
+        world_.EmplaceChunk(1, 0); // 32, 0 is chunk coords 1, 0
+        world_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
-        auto& logic_chunks = worldData_.LogicGetChunks();
+        auto& logic_chunks = world_.LogicGetChunks();
 
         // Added chunk
         ASSERT_EQ(logic_chunks.size(), 1);
 
-        EXPECT_NE(std::find(logic_chunks.begin(), logic_chunks.end(), worldData_.GetChunkC({1, 0})),
+        EXPECT_NE(std::find(logic_chunks.begin(), logic_chunks.end(), world_.GetChunkC({1, 0})),
                   logic_chunks.end());
 
 
         // Registering again will not duplicate logic chunk
-        worldData_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
+        world_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
         EXPECT_EQ(logic_chunks.size(), 1);
 
 
         // Registering same position does nothing
-        worldData_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
+        world_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
         EXPECT_EQ((*logic_chunks.begin())->GetLogicGroup(LogicGroup::inserter).size(), 2);
     }
 
     TEST_F(WorldTest, LogicRemove) {
-        worldData_.EmplaceChunk(1, 0);
-        worldData_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
+        world_.EmplaceChunk(1, 0);
+        world_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
-        worldData_.LogicRegister(LogicGroup::conveyor, {33, 0}, TileLayer::entity);
+        world_.LogicRegister(LogicGroup::conveyor, {33, 0}, TileLayer::entity);
 
         // Registering again will not duplicate logic chunk
-        worldData_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
+        world_.LogicRegister(LogicGroup::inserter, {42, 0}, TileLayer::entity);
 
 
         // Removed 1, another one remains
-        worldData_.LogicRemove(LogicGroup::inserter, {32, 0}, TileLayer::entity);
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+        world_.LogicRemove(LogicGroup::inserter, {32, 0}, TileLayer::entity);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
 
 
         // Inserter group empty, but conveyor group is not, DO NOT remove from logic chunks
-        worldData_.LogicRemove(LogicGroup::inserter, {42, 0}, TileLayer::entity);
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+        world_.LogicRemove(LogicGroup::inserter, {42, 0}, TileLayer::entity);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
 
 
         // All groups empty, remove logic chunk
-        worldData_.LogicRemove(LogicGroup::conveyor, {33, 0}, TileLayer::entity);
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+        world_.LogicRemove(LogicGroup::conveyor, {33, 0}, TileLayer::entity);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
     }
 
     TEST_F(WorldTest, LogicRemoveNonExistent) {
-        worldData_.EmplaceChunk(1, 0);
+        world_.EmplaceChunk(1, 0);
 
         // Removed 1, another one remains
-        worldData_.LogicRemove(LogicGroup::inserter, {32, 0}, TileLayer::entity);
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+        world_.LogicRemove(LogicGroup::inserter, {32, 0}, TileLayer::entity);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
     }
 
     TEST_F(WorldTest, LogicAddChunk) {
         Chunk chunk(0, 0);
 
-        worldData_.LogicAddChunk(chunk);
+        world_.LogicAddChunk(chunk);
         // Should return reference to newly created and added chunk
 
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
     }
 
     TEST_F(WorldTest, LogicAddChunkNoDuplicate) {
         // If the chunk already exists, it should not add it
         Chunk chunk(0, 0);
 
-        worldData_.LogicAddChunk(chunk);
-        worldData_.LogicAddChunk(chunk); // Attempting to add the same chunk again
+        world_.LogicAddChunk(chunk);
+        world_.LogicAddChunk(chunk); // Attempting to add the same chunk again
 
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
     }
 
     TEST_F(WorldTest, LogicClearChunkData) {
         Chunk chunk(0, 0);
 
-        worldData_.LogicAddChunk(chunk);
+        world_.LogicAddChunk(chunk);
 
         // Clear
-        worldData_.Clear();
+        world_.Clear();
 
         // Vector reference should now be empty
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
     }
 
 
     class WorldDeserialize : public testing::Test
     {
     protected:
-        World worldData_;
+        World world_;
         Logic logicData_;
     };
 
     TEST_F(WorldDeserialize, SameChunk) {
-        worldData_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk(0, 0);
 
         data::PrototypeManager proto;
         auto& container = proto.Make<proto::ContainerEntity>();
 
         container.SetDimensions(3, 2);
-        TestSetupMultiTile(worldData_, {1, 0}, TileLayer::base, Orientation::up, container);
+        TestSetupMultiTile(world_, {1, 0}, TileLayer::base, Orientation::up, container);
 
 
         proto.GenerateRelocationTable();
         data::active_prototype_manager = &proto;
 
-        worldData_ = TestSerializeDeserialize(worldData_);
+        world_ = TestSerializeDeserialize(world_);
 
-        worldData_.DeserializePostProcess();
+        world_.DeserializePostProcess();
 
 
         ///
         /// Checks that multi-tile tile is linked to top left
         auto expect_tl_resolved = [this, &container](const WorldCoord& coord, const TileLayer tile_layer) {
-            auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
-            EXPECT_EQ(top_left, &worldData_.GetTile(1, 0)->GetLayer(TileLayer::base));
+            auto* top_left = world_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
+            EXPECT_EQ(top_left, &world_.GetTile(1, 0)->GetLayer(TileLayer::base));
             EXPECT_EQ(top_left->GetPrototype(), &container);
         };
 
@@ -381,7 +381,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldDeserialize, ResolveMultiTilesFirst) {
-        worldData_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk(0, 0);
 
         /*
          *   I
@@ -395,17 +395,17 @@ namespace jactorio::game
 
         auto& asm_machine = proto.Make<proto::AssemblyMachine>();
         asm_machine.SetDimensions(2, 2);
-        TestSetupAssemblyMachine(worldData_, {0, 2}, Orientation::up, asm_machine);
+        TestSetupAssemblyMachine(world_, {0, 2}, Orientation::up, asm_machine);
 
         auto& inserter = proto.Make<proto::Inserter>();
-        TestSetupInserter(worldData_, logicData_, {1, 1}, Orientation::down, inserter);
+        TestSetupInserter(world_, logicData_, {1, 1}, Orientation::down, inserter);
 
 
         data::active_prototype_manager   = &proto;
         data::active_unique_data_manager = &unique_manager;
         proto.GenerateRelocationTable();
 
-        auto result = TestSerializeDeserialize(worldData_);
+        auto result = TestSerializeDeserialize(world_);
         result.DeserializePostProcess();
 
         auto* result_inserter_data =
@@ -430,22 +430,22 @@ namespace jactorio::game
             mutable ChunkTileLayer* chunkTileLayer = nullptr;
         };
 
-        worldData_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk(0, 0);
 
         MockWorldObject mock_obj;
-        auto& tile_layer = worldData_.GetTile(5, 6)->GetLayer(TileLayer::entity);
+        auto& tile_layer = world_.GetTile(5, 6)->GetLayer(TileLayer::entity);
         tile_layer.SetPrototype(Orientation::up, &mock_obj);
 
-        worldData_.DeserializePostProcess();
+        world_.DeserializePostProcess();
 
         EXPECT_TRUE(mock_obj.onDeserializeCalled);
         EXPECT_EQ(mock_obj.chunkTileLayer, &tile_layer);
     }
 
     TEST_F(WorldDeserialize, DeserializeLogicChunks) {
-        worldData_.LogicAddChunk(worldData_.EmplaceChunk(0, 0));
+        world_.LogicAddChunk(world_.EmplaceChunk(0, 0));
 
-        auto result               = TestSerializeDeserialize(worldData_);
+        auto result               = TestSerializeDeserialize(world_);
         auto& result_logic_chunks = result.LogicGetChunks();
 
         ASSERT_EQ(result_logic_chunks.size(), 1);

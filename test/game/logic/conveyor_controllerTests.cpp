@@ -21,7 +21,7 @@ namespace jactorio::game
     class ConveyorControllerTest : public testing::Test
     {
     protected:
-        World worldData_{};
+        World world_;
         Logic logicData_{};
 
         Chunk* chunk_ = nullptr;
@@ -32,12 +32,12 @@ namespace jactorio::game
         ///
         /// Creates a world, chunk and logic chunk at 0, 0
         void SetUp() override {
-            chunk_ = &worldData_.EmplaceChunk(0, 0);
-            worldData_.LogicAddChunk(*chunk_);
+            chunk_ = &world_.EmplaceChunk(0, 0);
+            world_.LogicAddChunk(*chunk_);
         }
 
         void CreateSegment(const WorldCoord& coord, const std::shared_ptr<ConveyorStruct>& segment) {
-            TestCreateConveyorSegment(worldData_, coord, segment, *transportBeltProto_);
+            TestCreateConveyorSegment(world_, coord, segment, *transportBeltProto_);
         }
     };
 
@@ -75,7 +75,7 @@ namespace jactorio::game
 
         // 1 update
         // first item moved to up segment
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
         ASSERT_EQ(up_segment->left.lane.size(), 1);
         ASSERT_EQ(left_segment->left.lane.size(), 2);
 
@@ -85,7 +85,7 @@ namespace jactorio::game
 
         // 2 updates | 0.12
         for (int i = 0; i < 2; ++i) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
         ASSERT_EQ(up_segment->left.lane.size(), 1);
         ASSERT_EQ(left_segment->left.lane.size(), 2);
@@ -98,7 +98,7 @@ namespace jactorio::game
         // 2 updates | Total distance = 4(0.06) = 0.24
         // second item moved to up segment
         for (int i = 0; i < 2; ++i) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
         ASSERT_EQ(up_segment->left.lane.size(), 2);
         ASSERT_EQ(left_segment->left.lane.size(), 1);
@@ -144,7 +144,7 @@ namespace jactorio::game
 
         // Logic
         // Should transfer the first item
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
 
         EXPECT_EQ(up_segment->left.lane.size(), 2);
@@ -157,7 +157,7 @@ namespace jactorio::game
 
         // Transfer second item after (1 / 0.01) + 1 update - 1 update (Already moved once above)
         for (int i = 0; i < 100; ++i) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
 
         EXPECT_EQ(up_segment->left.lane.size(), 1);
@@ -169,7 +169,7 @@ namespace jactorio::game
 
         // Third item
         for (int i = 0; i < 100; ++i) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
         EXPECT_EQ(up_segment->left.lane.size(), 0);
         EXPECT_EQ(right_segment->left.lane.size(), 3);
@@ -209,7 +209,7 @@ namespace jactorio::game
         up_segment->AppendItem(true, ConveyorProp::kItemSpacing, itemProto_);
 
         // First item
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
 
         EXPECT_EQ(up_segment->left.lane.size(), 1);
@@ -222,7 +222,7 @@ namespace jactorio::game
 
         // Transfer second item after (0.25 / 0.01) + 1 update - 1 update (Already moved once above)
         for (int i = 0; i < 25; ++i) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
 
         EXPECT_EQ(up_segment->left.lane.size(), 0);
@@ -250,7 +250,7 @@ namespace jactorio::game
 
         // Will reach distance 0 after 0.5 / 0.01 updates
         for (int i = 0; i < 50; ++i) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
 
         EXPECT_EQ(segment->left.index, 0);
@@ -258,7 +258,7 @@ namespace jactorio::game
 
         // On the next update, with no target segment, first item is kept at 0, second item untouched
         // move index to 2 (was 0) as it has a distance greater than item_width
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
 
         EXPECT_EQ(segment->left.index, 2);
@@ -268,11 +268,11 @@ namespace jactorio::game
 
         // After 0.2 + 0.99 / 0.01 updates, the Third item will not move in following updates
         for (int j = 0; j < 99; ++j) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
         EXPECT_DOUBLE_EQ(segment->left.lane[2].dist.getAsDouble(), ConveyorProp::kItemSpacing);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         // Index set to 0, checking if a valid target exists to move items forward
         EXPECT_EQ(segment->left.index, 0);
@@ -282,7 +282,7 @@ namespace jactorio::game
 
         // Updates do nothing since all items are compressed
         for (int k = 0; k < 50; ++k) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
     }
 
@@ -320,7 +320,7 @@ namespace jactorio::game
 
         // WIll not move after an arbitrary number of updates
         for (int i = 0; i < 34; ++i) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
 
         EXPECT_DOUBLE_EQ(up_segment->right.lane.front().dist.getAsDouble(), 0);
@@ -340,11 +340,11 @@ namespace jactorio::game
 
         // One item stopped, one still moving
         left_segment->AppendItem(true, 0, itemProto_);
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
         EXPECT_EQ(left_segment.get()->left.index, 0);
 
         left_segment->AppendItem(true, 2, itemProto_);
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
         EXPECT_EQ(left_segment.get()->left.index, 1);
 
 
@@ -357,7 +357,7 @@ namespace jactorio::game
         CreateSegment({1, 1}, left_segment_2);
 
         // Update neighboring segments as a new segment was placed
-        transportBeltProto_->OnNeighborUpdate(worldData_, logicData_, {1, 1}, {2, 1}, Orientation::right);
+        transportBeltProto_->OnNeighborUpdate(world_, logicData_, {1, 1}, {2, 1}, Orientation::right);
 
         EXPECT_EQ(left_segment.get()->left.index, 0);
     }
@@ -390,11 +390,11 @@ namespace jactorio::game
         left_segment_2->AppendItem(true, 0.5, itemProto_);
         left_segment_2->AppendItem(true, 2, itemProto_);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         ASSERT_EQ(left_segment->left.lane.size(), 1);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         ASSERT_EQ(left_segment->left.lane.size(), 2);
     }
@@ -447,22 +447,22 @@ namespace jactorio::game
         up_segment_2->AppendItem(true, 0.05, itemProto_);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0.05);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
         // Segment 1
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
 
         EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.95); // First segment now
 
         for (int i = 0; i < 19; ++i) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
         EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
         // Remains at 0
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
         EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0);
 
 
@@ -476,9 +476,9 @@ namespace jactorio::game
 
         // Will not enter since segment 1 is full
         up_segment_2->AppendItem(true, 0.05, itemProto_);
-        ConveyorLogicUpdate(worldData_);
-        ConveyorLogicUpdate(worldData_);
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
+        ConveyorLogicUpdate(world_);
+        ConveyorLogicUpdate(world_);
         EXPECT_DOUBLE_EQ(up_segment_1->left.backItemDistance.getAsDouble(), 0.75);
         EXPECT_DOUBLE_EQ(up_segment_2->left.backItemDistance.getAsDouble(), 0);
     }
@@ -512,7 +512,7 @@ namespace jactorio::game
 
         // Travel to the next belt in 0.02 / 0.01 + 1 updates
         for (int i = 0; i < 3; ++i) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
 
         EXPECT_EQ(segment_2->left.lane.size(), 0);
@@ -560,7 +560,7 @@ namespace jactorio::game
         }
 
         // Logic tests
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         // Since the target belt is empty, both A + B inserts into right lane
         EXPECT_EQ(right_segment->left.lane.size(), 2);
@@ -580,7 +580,7 @@ namespace jactorio::game
         // ======================================================================
         // End on One update prior to transitioning
         for (int j = 0; j < 4; ++j) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
         EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.0);
         EXPECT_EQ(right_segment->right.lane[0].dist.getAsDouble(), 0.0);
@@ -590,7 +590,7 @@ namespace jactorio::game
 
         // ======================================================================
         // Transition items
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
         EXPECT_EQ(right_segment->left.lane.size(), 1);
         EXPECT_EQ(right_segment->left.lane[0].dist.getAsDouble(), 0.2); // 0.25 - 0.05
 
@@ -609,7 +609,7 @@ namespace jactorio::game
         // ======================================================================
         // Transition third item for Lane A, should wake up lane B after passing
         for (int j = 0; j < 4 + 13 + 1; ++j) { // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
         EXPECT_EQ(right_segment->left.lane.size(), 0);
         EXPECT_EQ(right_segment->right.lane.size(), 1); // Woke and moved
@@ -658,7 +658,7 @@ namespace jactorio::game
         }
 
         // Logic tests
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         // Since the target belt is empty, both A + B inserts into right lane
         EXPECT_EQ(left_segment->left.lane.size(), 2);
@@ -678,7 +678,7 @@ namespace jactorio::game
         // ======================================================================
         // End on One update prior to transitioning
         for (int j = 0; j < 4; ++j) {
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
         EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.0);
         EXPECT_EQ(left_segment->right.lane[0].dist.getAsDouble(), 0.0);
@@ -688,7 +688,7 @@ namespace jactorio::game
 
         // ======================================================================
         // Transition items
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
         EXPECT_EQ(left_segment->left.lane.size(), 1);
         EXPECT_EQ(left_segment->left.lane[0].dist.getAsDouble(), 0.2); // 0.25 - 0.05
 
@@ -707,7 +707,7 @@ namespace jactorio::game
         // ======================================================================
         // Transition third item for Lane A, should wake up lane B after passing
         for (int j = 0; j < 4 + 13 + 1; ++j) { // 0.20 / 0.05 + (0.40 + 0.25) / 0.05 + 1 for transition
-            ConveyorLogicUpdate(worldData_);
+            ConveyorLogicUpdate(world_);
         }
         EXPECT_EQ(left_segment->left.lane.size(), 0);
         EXPECT_EQ(left_segment->right.lane.size(), 1); // Woke and moved
@@ -745,7 +745,7 @@ namespace jactorio::game
 
         down_segment->AppendItem(true, 0, itemProto_);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         ASSERT_EQ(left_segment->right.lane.size(), 1);
 
@@ -760,7 +760,7 @@ namespace jactorio::game
 
         down_segment->AppendItem(false, 0, itemProto_);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         ASSERT_EQ(left_segment->right.lane.size(), 1);
 
@@ -783,7 +783,7 @@ namespace jactorio::game
 
         up_segment->AppendItem(true, 0, itemProto_);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         ASSERT_EQ(left_segment->left.lane.size(), 1);
 
@@ -797,7 +797,7 @@ namespace jactorio::game
 
         up_segment->AppendItem(false, 0, itemProto_);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         ASSERT_EQ(left_segment->left.lane.size(), 1);
 
@@ -830,7 +830,7 @@ namespace jactorio::game
 
         right_segment->AppendItem(true, 0, itemProto_);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         ASSERT_EQ(down_segment->left.lane.size(), 1);
         EXPECT_DOUBLE_EQ(down_segment->left.lane[0].dist.getAsDouble(), (0.3 + 1. + 0.7) - 0.06);
@@ -840,7 +840,7 @@ namespace jactorio::game
 
         right_segment->AppendItem(false, 0, itemProto_);
 
-        ConveyorLogicUpdate(worldData_);
+        ConveyorLogicUpdate(world_);
 
         ASSERT_EQ(down_segment->right.lane.size(), 1);
         EXPECT_DOUBLE_EQ(down_segment->right.lane[0].dist.getAsDouble(), (0.3 + 1. + 0.3) - 0.06);

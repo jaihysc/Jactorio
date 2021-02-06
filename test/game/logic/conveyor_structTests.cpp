@@ -14,7 +14,7 @@ namespace jactorio::game
         std::unique_ptr<proto::Item> itemProto_                   = std::make_unique<proto::Item>();
         std::unique_ptr<proto::TransportBelt> transportBeltProto_ = std::make_unique<proto::TransportBelt>();
 
-        World worldData_{};
+        World world_;
 
         std::unique_ptr<ConveyorStruct> segment_ =
             std::make_unique<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);

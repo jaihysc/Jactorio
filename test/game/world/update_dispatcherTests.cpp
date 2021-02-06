@@ -32,8 +32,8 @@ namespace jactorio::game
             }
         };
 
-        World worldData_;
-        UpdateDispatcher& dispatcher_ = worldData_.updateDispatcher;
+        World world_;
+        UpdateDispatcher& dispatcher_ = world_.updateDispatcher;
 
         MockUpdateListener mock_{};
     };
@@ -41,7 +41,7 @@ namespace jactorio::game
     TEST_F(UpdateDispatcherTest, Register) {
         dispatcher_.Register(2, 3, 5, 6, mock_);
 
-        dispatcher_.Dispatch(worldData_, 3, 7, proto::UpdateType::place);
+        dispatcher_.Dispatch(world_, 3, 7, proto::UpdateType::place);
         EXPECT_EQ(mock_.emit.x, 0);
         EXPECT_EQ(mock_.emit.y, 0);
 
@@ -49,7 +49,7 @@ namespace jactorio::game
         EXPECT_EQ(mock_.receive.y, 0);
 
 
-        dispatcher_.Dispatch(worldData_, 5, 6, proto::UpdateType::remove);
+        dispatcher_.Dispatch(world_, 5, 6, proto::UpdateType::remove);
 
         EXPECT_EQ(mock_.emit.x, 5);
         EXPECT_EQ(mock_.emit.y, 6);
@@ -68,7 +68,7 @@ namespace jactorio::game
         dispatcher_.Unregister(entry);
 
         // 1 registered, 1 unregistered
-        dispatcher_.Dispatch(worldData_, 5, 6, proto::UpdateType::place);
+        dispatcher_.Dispatch(world_, 5, 6, proto::UpdateType::place);
         EXPECT_EQ(mock_.emit.x, 5);
         EXPECT_EQ(mock_.emit.y, 6);
 
@@ -78,8 +78,8 @@ namespace jactorio::game
     }
 
     TEST_F(UpdateDispatcherTest, RegisterNonExistent) {
-        dispatcher_.Dispatch(worldData_, 3, 7, proto::UpdateType::place);
-        dispatcher_.Dispatch(worldData_, 5, 6, proto::UpdateType::remove);
+        dispatcher_.Dispatch(world_, 3, 7, proto::UpdateType::place);
+        dispatcher_.Dispatch(world_, 5, 6, proto::UpdateType::remove);
 
         EXPECT_EQ(dispatcher_.GetDebugInfo().storedEntries.size(), 0);
     }
