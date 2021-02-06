@@ -10,7 +10,7 @@
 using namespace jactorio;
 
 void proto::AssemblyMachineData::ChangeRecipe(game::Logic& logic,
-                                              const data::PrototypeManager& data_manager,
+                                              const data::PrototypeManager& proto,
                                               const Recipe* new_recipe) {
     if (new_recipe != nullptr) {
         ingredientInv.resize(new_recipe->ingredients.size());
@@ -18,12 +18,12 @@ void proto::AssemblyMachineData::ChangeRecipe(game::Logic& logic,
 
         // Set filters
         for (size_t i = 0; i < ingredientInv.size(); ++i) {
-            const auto* ingredient = data_manager.DataRawGet<Item>(new_recipe->ingredients[i].first);
+            const auto* ingredient = proto.Get<Item>(new_recipe->ingredients[i].first);
             assert(ingredient != nullptr);
             ingredientInv[i].filter = ingredient;
         }
 
-        const auto* product = data_manager.DataRawGet<Item>(new_recipe->product.first);
+        const auto* product = proto.Get<Item>(new_recipe->product.first);
         assert(product);
         productInv[0].filter = product;
     }
@@ -99,8 +99,8 @@ bool proto::AssemblyMachine::TryBeginCrafting(game::Logic& logic, AssemblyMachin
     if (!data.CanBeginCrafting() || data.deferralEntry.Valid())
         return false;
 
-    data.deferralEntry = logic.deferralTimer.RegisterFromTick(
-        *this, &data, data.GetRecipe()->GetCraftingTime(1. / this->assemblySpeed));
+    data.deferralEntry =
+        logic.deferralTimer.RegisterFromTick(*this, &data, data.GetRecipe()->GetCraftingTime(1. / this->assemblySpeed));
 
     data.CraftRemoveIngredients();
     return true;

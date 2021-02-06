@@ -405,14 +405,14 @@ float game::Player::Placement::GetPickupPercentage() const {
 // ============================================================================================
 // Inventory
 
-void game::Player::Inventory::HandleInventoryActions(const data::PrototypeManager& data_manager,
+void game::Player::Inventory::HandleInventoryActions(const data::PrototypeManager& proto,
                                                      proto::Item::Inventory& inv,
                                                      const size_t index,
                                                      const bool half_select) {
     const bool is_player_inv = &inv == &inventory;
 
 
-    HandleClick(data_manager, core::SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
+    HandleClick(proto, core::SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
     InventorySort(inventory);
 }
 
@@ -534,7 +534,7 @@ loop_exit:
 // LEFT CLICK - Select by reference, the item in the cursor mirrors the inventory item
 // RIGHT CLICK - Select unique, the item in the cursor exists independently of the inventory item
 
-void game::Player::Inventory::HandleClick(const data::PrototypeManager& data_manager,
+void game::Player::Inventory::HandleClick(const data::PrototypeManager& proto,
                                           const uint16_t index,
                                           const uint16_t mouse_button,
                                           const bool reference_select,
@@ -571,7 +571,7 @@ void game::Player::Inventory::HandleClick(const data::PrototypeManager& data_man
             selectedItem_      = inv[index];
 
             // Swap icon out for a cursor indicating the current index is selected
-            inventory[index].item  = data_manager.DataRawGet<proto::Item>(proto::Item::kInventorySelectedCursor);
+            inventory[index].item  = proto.Get<proto::Item>(proto::Item::kInventorySelectedCursor);
             inventory[index].count = 0;
 
             // Return is necessary when selecting by reference
@@ -658,7 +658,7 @@ uint16_t game::Player::Crafting::RecipeGroupGetSelected() const {
     return selectedRecipeGroup_;
 }
 
-void game::Player::Crafting::RecipeCraftTick(const data::PrototypeManager& data_manager, uint16_t ticks) {
+void game::Player::Crafting::RecipeCraftTick(const data::PrototypeManager& proto, uint16_t ticks) {
     // Attempt to return held item if inventory is full
     if (craftingHeldItem_.count != 0) {
         const auto extra_items  = AddStack(playerInv_->inventory, craftingHeldItem_);
@@ -677,7 +677,7 @@ void game::Player::Crafting::RecipeCraftTick(const data::PrototypeManager& data_
 
             // Return product
             proto::RecipeItem recipe_item = recipe->product;
-            const auto* product_item      = data_manager.DataRawGet<proto::Item>(recipe_item.first);
+            const auto* product_item      = proto.Get<proto::Item>(recipe_item.first);
 
             proto::ItemStack item = {product_item, recipe_item.second};
 
@@ -733,12 +733,12 @@ void game::Player::Crafting::RecipeCraftTick(const data::PrototypeManager& data_
     }
 }
 
-void game::Player::Crafting::QueueRecipe(const data::PrototypeManager& data_manager, const proto::Recipe& recipe) {
+void game::Player::Crafting::QueueRecipe(const data::PrototypeManager& proto, const proto::Recipe& recipe) {
     LOG_MESSAGE_F(debug, "Queuing recipe: '%s'", recipe.product.first.c_str());
 
     // Remove ingredients
     for (const auto& ingredient : recipe.ingredients) {
-        const auto* item = data_manager.DataRawGet<proto::Item>(ingredient.first);
+        const auto* item = proto.Get<proto::Item>(ingredient.first);
 
         DeleteInvItem(playerInv_->inventory, item, ingredient.second);
     }
@@ -758,9 +758,9 @@ uint16_t game::Player::Crafting::GetCraftingTicksRemaining() const {
     return craftingTicksRemaining_;
 }
 
-void game::Player::Crafting::RecipeCraftR(const data::PrototypeManager& data_manager, const proto::Recipe& recipe) {
+void game::Player::Crafting::RecipeCraftR(const data::PrototypeManager& proto, const proto::Recipe& recipe) {
     for (const auto& ingredient : recipe.ingredients) {
-        const auto* ingredient_proto = data_manager.DataRawGet<proto::Item>(ingredient.first);
+        const auto* ingredient_proto = proto.Get<proto::Item>(ingredient.first);
 
         const uint32_t possess_amount = GetInvItemCount(playerInv_->inventory, ingredient_proto);
 
@@ -795,7 +795,7 @@ void game::Player::Crafting::RecipeCraftR(const data::PrototypeManager& data_man
                 return_deductions += amount_needed + queued_available;
 
 
-                const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(data_manager, ingredient.first);
+                const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(proto, ingredient.first);
 
                 // Round up to always ensure enough is crafted
                 const unsigned int yield = ingredient_recipe->product.second;
@@ -812,23 +812,23 @@ void game::Player::Crafting::RecipeCraftR(const data::PrototypeManager& data_man
                 // Craft sub-recipes recursively until met
                 for (unsigned int i = 0; i < batches; ++i) {
                     assert(ingredient_recipe);
-                    RecipeCraftR(data_manager, *ingredient_recipe);
+                    RecipeCraftR(proto, *ingredient_recipe);
                 }
             }
         }
     }
 
     // Ingredients met - Queue crafting recipe
-    QueueRecipe(data_manager, recipe);
+    QueueRecipe(proto, recipe);
 }
 
 
-bool game::Player::Crafting::RecipeCanCraftR(const data::PrototypeManager& data_manager,
+bool game::Player::Crafting::RecipeCanCraftR(const data::PrototypeManager& proto,
                                              std::map<const proto::Item*, uint32_t>& used_items,
                                              const proto::Recipe& recipe,
                                              const unsigned batches) const {
     for (const auto& [ing_name, ing_amount_to_craft] : recipe.ingredients) {
-        const auto* ing_item = data_manager.DataRawGet<proto::Item>(ing_name);
+        const auto* ing_item = proto.Get<proto::Item>(ing_name);
 
         // If item has already been counted, use the map used_items. Otherwise, count from inventory
         unsigned int possess_amount;
@@ -846,7 +846,7 @@ bool game::Player::Crafting::RecipeCanCraftR(const data::PrototypeManager& data_
             continue;
         }
 
-        const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(data_manager, ing_name);
+        const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(proto, ing_name);
         // Ingredient cannot be crafted
         if (ingredient_recipe == nullptr)
             return false;
@@ -866,7 +866,7 @@ bool game::Player::Crafting::RecipeCanCraftR(const data::PrototypeManager& data_
 
         // Is able to craft desired amount of ingredient recursively?
         assert(ingredient_recipe);
-        if (!RecipeCanCraftR(data_manager, used_items, *ingredient_recipe, ingredient_required_batches)) {
+        if (!RecipeCanCraftR(proto, used_items, *ingredient_recipe, ingredient_required_batches)) {
             return false;
         }
     }
@@ -874,9 +874,9 @@ bool game::Player::Crafting::RecipeCanCraftR(const data::PrototypeManager& data_
     return true;
 }
 
-bool game::Player::Crafting::RecipeCanCraft(const data::PrototypeManager& data_manager,
+bool game::Player::Crafting::RecipeCanCraft(const data::PrototypeManager& proto,
                                             const proto::Recipe& recipe,
                                             const uint16_t batches) const {
     std::map<const proto::Item*, uint32_t> used_items;
-    return RecipeCanCraftR(data_manager, used_items, recipe, batches);
+    return RecipeCanCraftR(proto, used_items, recipe, batches);
 }

@@ -47,7 +47,7 @@ namespace jactorio::game
         ///
         /// Draws a selection box if NO entity is selected, otherwise, draws a ghost of the entity selected at the
         /// cursor
-        void DrawCursorOverlay(GameWorlds& worlds, Player& player, const data::PrototypeManager& proto_manager);
+        void DrawCursorOverlay(GameWorlds& worlds, Player& player, const data::PrototypeManager& proto);
 
         ///
         /// Draws cursor_sprite when over entity & no item selected or item not placeable

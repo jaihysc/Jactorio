@@ -22,20 +22,21 @@ void render::RendererSprites::ClearSpritemaps() {
     spritemapDatas_.clear();
 }
 
-void render::RendererSprites::GInitializeSpritemap(const data::PrototypeManager& data_manager,
+void render::RendererSprites::GInitializeSpritemap(const data::PrototypeManager& proto,
                                                    proto::Sprite::SpriteGroup group,
                                                    const bool invert_sprites) {
-    const auto spritemap_data = CreateSpritemap(data_manager, group, invert_sprites);
+    const auto spritemap_data = CreateSpritemap(proto, group, invert_sprites);
 
     textures_[static_cast<int>(group)] =
         new Texture(spritemap_data.spriteBuffer, spritemap_data.width, spritemap_data.height);
     spritemapDatas_[static_cast<int>(group)] = spritemap_data;
 }
 
-render::RendererSprites::SpritemapData render::RendererSprites::CreateSpritemap(
-    const data::PrototypeManager& data_manager, proto::Sprite::SpriteGroup group, const bool invert_sprites) const {
+render::RendererSprites::SpritemapData render::RendererSprites::CreateSpritemap(const data::PrototypeManager& proto,
+                                                                                proto::Sprite::SpriteGroup group,
+                                                                                const bool invert_sprites) const {
 
-    auto sprites = data_manager.DataRawGetAll<const proto::Sprite>(proto::Category::sprite);
+    auto sprites = proto.GetAll<const proto::Sprite>(proto::Category::sprite);
 
     // Filter to group only
     sprites.erase(

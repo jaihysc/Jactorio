@@ -23,9 +23,7 @@ namespace jactorio::game
             mutable proto::UniqueDataBase* dataPtr = nullptr;
             mutable DeferralTimer* dTimer          = nullptr;
 
-            void OnDeferTimeElapsed(World& /*world*/,
-                                    Logic& logic,
-                                    proto::UniqueDataBase* unique_data) const override {
+            void OnDeferTimeElapsed(World& /*world*/, Logic& logic, proto::UniqueDataBase* unique_data) const override {
                 callbackCalled = true;
                 dataPtr        = unique_data;
                 dTimer         = &logic.deferralTimer;
@@ -144,20 +142,20 @@ namespace jactorio::game
     }
 
     TEST_F(DeferralTimerTest, SerializeCallbacks) {
-        data::PrototypeManager proto_manager;
+        data::PrototypeManager proto;
         data::UniqueDataManager unique_manager;
 
-        auto& defer_proto = proto_manager.AddProto<MockDeferred>();
+        auto& defer_proto = proto.Make<MockDeferred>();
         MockUniqueData unique_data;
 
         timer_.RegisterAtTick(defer_proto, &unique_data, 10);
 
 
-        proto_manager.GenerateRelocationTable();
+        proto.GenerateRelocationTable();
         unique_manager.AssignId(unique_data);
         unique_manager.StoreRelocationEntry(unique_data);
 
-        data::active_prototype_manager   = &proto_manager;
+        data::active_prototype_manager   = &proto;
         data::active_unique_data_manager = &unique_manager;
         const auto result                = TestSerializeDeserialize(timer_);
 

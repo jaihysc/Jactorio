@@ -14,15 +14,15 @@ namespace jactorio::proto
         container.inventory[2].count = 89;
 
 
-        data::PrototypeManager proto_manager;
-        auto& item_1 = proto_manager.AddProto<Item>();
-        auto& item_2 = proto_manager.AddProto<Item>();
+        data::PrototypeManager proto;
+        auto& item_1 = proto.Make<Item>();
+        auto& item_2 = proto.Make<Item>();
 
         container.inventory[4].item   = &item_1;
         container.inventory[4].filter = &item_2;
 
-        proto_manager.GenerateRelocationTable();
-        data::active_prototype_manager = &proto_manager;
+        proto.GenerateRelocationTable();
+        data::active_prototype_manager = &proto;
 
         // ======================================================================
         const auto result = TestSerializeDeserialize(container);

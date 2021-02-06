@@ -197,13 +197,12 @@ game::ChunkTile* game::World::GetTileTopLeft(WorldCoord coord, const ChunkTileLa
 }
 
 const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord,
-                                                       const ChunkTileLayer& chunk_tile_layer) const {
+                                                   const ChunkTileLayer& chunk_tile_layer) const {
     return const_cast<World*>(this)->GetTileTopLeft(coord, chunk_tile_layer);
 }
 
 
-game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord,
-                                                       const TileLayer& tile_layer) noexcept {
+game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord, const TileLayer& tile_layer) noexcept {
     auto* tile = GetTileTopLeft(coord, tile_layer);
     if (tile == nullptr)
         return nullptr;
@@ -212,7 +211,7 @@ game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord,
 }
 
 const game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord,
-                                                             const TileLayer& tile_layer) const noexcept {
+                                                         const TileLayer& tile_layer) const noexcept {
     return const_cast<World*>(this)->GetLayerTopLeft(coord, tile_layer);
 }
 
@@ -220,9 +219,7 @@ const game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord
 // ======================================================================
 // Logic chunks
 
-void game::World::LogicRegister(const LogicGroup group,
-                                    const WorldCoord& coord,
-                                    const TileLayer layer) {
+void game::World::LogicRegister(const LogicGroup group, const WorldCoord& coord, const TileLayer layer) {
     assert(group != LogicGroup::count_);
     assert(layer != TileLayer::count_);
 
@@ -241,8 +238,8 @@ void game::World::LogicRegister(const LogicGroup group,
 }
 
 void game::World::LogicRemove(const LogicGroup group,
-                                  const WorldCoord& coord,
-                                  const std::function<bool(ChunkTileLayer*)>& pred) {
+                              const WorldCoord& coord,
+                              const std::function<bool(ChunkTileLayer*)>& pred) {
     auto* chunk = GetChunkW(coord);
     assert(chunk);
 
@@ -285,7 +282,7 @@ const game::World::LogicChunkContainerT& game::World::LogicGetChunks() const {
 // T is value stored in noise_layer at data_category
 template <typename T>
 void GenerateChunk(game::World& world,
-                   const data::PrototypeManager& data_manager,
+                   const data::PrototypeManager& proto,
                    const ChunkCoord& chunk_coord,
                    const proto::Category data_category,
                    void (*func)(game::ChunkTile& target_tile,
@@ -298,7 +295,7 @@ void GenerateChunk(game::World& world,
     // In case something happens in the future
 
     // Get all TILE noise layers for building terrain
-    auto noise_layers = data_manager.DataRawGetAll<proto::NoiseLayer<T>>(data_category);
+    auto noise_layers = proto.GetAll<proto::NoiseLayer<T>>(data_category);
 
     // Sort Noise layers, the one with the highest order takes priority if tiles overlap
     std::sort(
@@ -349,10 +346,7 @@ void GenerateChunk(game::World& world,
 ///
 /// Generates a chunk and adds it to the world when done
 /// Call this with a std::thread to to this in async
-void Generate(game::World& world,
-              const data::PrototypeManager& data_manager,
-              const int chunk_x,
-              const int chunk_y) {
+void Generate(game::World& world, const data::PrototypeManager& proto, const int chunk_x, const int chunk_y) {
     using namespace jactorio;
 
     LOG_MESSAGE_F(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
@@ -360,7 +354,7 @@ void Generate(game::World& world,
     // Base
     GenerateChunk<proto::Tile>(
         world,
-        data_manager,
+        proto,
         {chunk_x, chunk_y},
         proto::Category::noise_layer_tile,
         [](game::ChunkTile& target, void* tile, const auto& /*noise_layer*/, float /*noise_val*/) {
@@ -373,7 +367,7 @@ void Generate(game::World& world,
     // Resources
     GenerateChunk<proto::ResourceEntity>(
         world,
-        data_manager,
+        proto,
         {chunk_x, chunk_y},
         proto::Category::noise_layer_entity,
         [](game::ChunkTile& target, void* tile, const auto& noise_layer, float noise_val) {
@@ -418,7 +412,7 @@ void game::World::QueueChunkGeneration(const ChunkCoordAxis chunk_x, const Chunk
     worldGenChunks_.insert({chunk_x, chunk_y});
 }
 
-void game::World::GenChunk(const data::PrototypeManager& data_manager, uint8_t amount) {
+void game::World::GenChunk(const data::PrototypeManager& proto, uint8_t amount) {
     assert(amount > 0);
 
     // https://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
@@ -427,7 +421,7 @@ void game::World::GenChunk(const data::PrototypeManager& data_manager, uint8_t a
         const auto& coords = *it;
 
         assert(worldGenChunks_.count(coords) == 1);
-        Generate(*this, data_manager, std::get<0>(coords), std::get<1>(coords));
+        Generate(*this, proto, std::get<0>(coords), std::get<1>(coords));
 
         worldGenChunks_.erase(it++);
 

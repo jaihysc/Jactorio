@@ -9,15 +9,15 @@
 namespace jactorio::data
 {
     TEST(SerialPrototypePointer, Serialize) {
-        PrototypeManager proto_manager;
+        PrototypeManager proto;
 
-        auto& container = proto_manager.AddProto<proto::ContainerEntity>();
+        auto& container = proto.Make<proto::ContainerEntity>();
 
         SerialProtoPtr<const proto::ContainerEntity> original(&container);
 
 
-        proto_manager.GenerateRelocationTable();
-        active_prototype_manager = &proto_manager;
+        proto.GenerateRelocationTable();
+        active_prototype_manager = &proto;
 
         auto result = TestSerializeDeserialize(original);
 

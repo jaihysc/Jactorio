@@ -152,7 +152,7 @@ namespace jactorio::proto
 
         void PostLoad() override;
 
-        void PostLoadValidate(const data::PrototypeManager& data_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
 
     private:
         /// Item when entity is picked up

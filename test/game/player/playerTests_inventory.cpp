@@ -12,14 +12,14 @@ namespace jactorio::game
     {
     protected:
         Player::Inventory playerInv_;
-        data::PrototypeManager dataManager_;
+        data::PrototypeManager proto_;
 
         proto::Item* cursor_ = nullptr;
 
         ///
         /// Creates the cursor prototype which is hardcoded when an item is selected
         void SetupInventoryCursor() {
-            cursor_ = &dataManager_.AddProto<proto::Item>(proto::Item::kInventorySelectedCursor);
+            cursor_ = &proto_.Make<proto::Item>(proto::Item::kInventorySelectedCursor);
         }
     };
 
@@ -36,7 +36,7 @@ namespace jactorio::game
         playerInv_.inventory[0].item  = &item;
         playerInv_.inventory[0].count = 50;
 
-        playerInv_.HandleClick(dataManager_, 0, 0, true, playerInv_.inventory);
+        playerInv_.HandleClick(proto_, 0, 0, true, playerInv_.inventory);
 
         EXPECT_EQ(playerInv_.inventory[0].item, cursor_);
         EXPECT_EQ(playerInv_.inventory[0].count, 0);
@@ -56,13 +56,13 @@ namespace jactorio::game
         playerInv_.inventory[0].item  = &item;
         playerInv_.inventory[0].count = 50;
 
-        playerInv_.HandleClick(dataManager_, 0, 0, true, playerInv_.inventory); // Select
+        playerInv_.HandleClick(proto_, 0, 0, true, playerInv_.inventory); // Select
 
         EXPECT_EQ(playerInv_.inventory[0].item, cursor_);
         EXPECT_EQ(playerInv_.inventory[0].count, 0);
 
 
-        playerInv_.HandleClick(dataManager_, 0, 0, true, playerInv_.inventory); // Deselect
+        playerInv_.HandleClick(proto_, 0, 0, true, playerInv_.inventory); // Deselect
 
         EXPECT_EQ(playerInv_.inventory[0].item, &item);
         EXPECT_EQ(playerInv_.inventory[0].count, 50);
@@ -79,14 +79,14 @@ namespace jactorio::game
         playerInv_.inventory[0].item  = &item;
         playerInv_.inventory[0].count = 50;
 
-        playerInv_.HandleClick(dataManager_, 0, 0, true, playerInv_.inventory); // Select
+        playerInv_.HandleClick(proto_, 0, 0, true, playerInv_.inventory); // Select
 
         const auto* cursor_item = playerInv_.GetSelectedItem();
         EXPECT_EQ(cursor_item->item, &item);
         EXPECT_EQ(cursor_item->count, 50);
 
 
-        playerInv_.HandleClick(dataManager_, 0, 1, true, playerInv_.inventory); // Deselect
+        playerInv_.HandleClick(proto_, 0, 1, true, playerInv_.inventory); // Deselect
 
         EXPECT_EQ(playerInv_.inventory[0].item, &item);
         EXPECT_EQ(playerInv_.inventory[0].count, 50);
@@ -110,11 +110,11 @@ namespace jactorio::game
             playerInv_.inventoryPlayer[0].item  = &item;
             playerInv_.inventoryPlayer[0].count = 50;
 
-            playerInv_.InventoryClick(dataManager_, 0, 0, true, playerInv_.inventoryPlayer);  // Select
+            playerInv_.InventoryClick(proto_, 0, 0, true, playerInv_.inventoryPlayer);  // Select
 
             // Deselect into inv_2
             proto::Item::Inventory inv_2{10};
-            playerInv_.InventoryClick(dataManager_, 0, 0, true, inv_2);  // Deselect
+            playerInv_.InventoryClick(proto_, 0, 0, true, inv_2);  // Deselect
 
             EXPECT_EQ(inv_2[0].item, &item);
             EXPECT_EQ(inv_2[0].count, 50);
@@ -132,11 +132,11 @@ namespace jactorio::game
             playerInv_.inventoryPlayer[0].item  = &item;
             playerInv_.inventoryPlayer[0].count = 50;
 
-            playerInv_.InventoryClick(dataManager_, 0, 0, true, playerInv_.inventoryPlayer);  // Select
+            playerInv_.InventoryClick(proto_, 0, 0, true, playerInv_.inventoryPlayer);  // Select
 
             // Deselect into inv_2
             proto::Item::Inventory inv_2{10};
-            playerInv_.InventoryClick(dataManager_, 0, 1, true, inv_2);  // Will NOT Deselect since in another inventory
+            playerInv_.InventoryClick(proto_, 0, 1, true, inv_2);  // Will NOT Deselect since in another inventory
 
             EXPECT_EQ(inv_2[0].item, &item);
             EXPECT_EQ(inv_2[0].count, 1);
@@ -168,8 +168,8 @@ namespace jactorio::game
             playerInv_.inventory[0].item  = &item;
             playerInv_.inventory[0].count = 50;
 
-            playerInv_.HandleClick(dataManager_, 0, 0, true, playerInv_.inventory); // Select item
-            playerInv_.HandleClick(dataManager_, 3, 0, true, playerInv_.inventory); // Drop item off
+            playerInv_.HandleClick(proto_, 0, 0, true, playerInv_.inventory); // Select item
+            playerInv_.HandleClick(proto_, 3, 0, true, playerInv_.inventory); // Drop item off
 
 
             EXPECT_EQ(playerInv_.inventory[0].item, nullptr);
@@ -192,7 +192,7 @@ namespace jactorio::game
         playerInv_.inventory[0].item  = &item;
         playerInv_.inventory[0].count = 40;
 
-        playerInv_.HandleClick(dataManager_, 0, 1, true, playerInv_.inventory); // Pick up half
+        playerInv_.HandleClick(proto_, 0, 1, true, playerInv_.inventory); // Pick up half
 
         playerInv_.inventory[0].item  = &item;
         playerInv_.inventory[0].count = 20;
@@ -210,7 +210,7 @@ namespace jactorio::game
         playerInv_.inventory[0].item  = &item;
         playerInv_.inventory[0].count = 10;
 
-        playerInv_.HandleClick(dataManager_, 0, 1, true, playerInv_.inventory); // Pick up half
+        playerInv_.HandleClick(proto_, 0, 1, true, playerInv_.inventory); // Pick up half
 
         EXPECT_EQ(playerInv_.inventory[0].item, &item);
         EXPECT_EQ(playerInv_.inventory[0].count, 5);
@@ -220,7 +220,7 @@ namespace jactorio::game
         EXPECT_EQ(cursor_item->count, 5);
 
 
-        playerInv_.HandleClick(dataManager_, 3, 1, true, playerInv_.inventory); // Drop 1 at index 3
+        playerInv_.HandleClick(proto_, 3, 1, true, playerInv_.inventory); // Drop 1 at index 3
 
         // Should remain unchanged
         EXPECT_EQ(playerInv_.inventory[0].item, &item);
@@ -242,9 +242,8 @@ namespace jactorio::game
         playerInv_.inventory[0].item  = &item;
         playerInv_.inventory[0].count = 10;
 
-        playerInv_.HandleClick(dataManager_, 0, 1, true, playerInv_.inventory); // Pick up half
-        playerInv_.HandleClick(
-            dataManager_, 0, 1, true, playerInv_.inventory); // Drop 1 one the stack it picked up from
+        playerInv_.HandleClick(proto_, 0, 1, true, playerInv_.inventory); // Pick up half
+        playerInv_.HandleClick(proto_, 0, 1, true, playerInv_.inventory); // Drop 1 one the stack it picked up from
 
         // Loses 1
         const auto* cursor_item = playerInv_.GetSelectedItem();
@@ -266,7 +265,7 @@ namespace jactorio::game
         playerInv_.inventory[0].count = 10;
 
 
-        playerInv_.HandleClick(dataManager_, 0, 1, true, playerInv_.inventory); // Pick up half
+        playerInv_.HandleClick(proto_, 0, 1, true, playerInv_.inventory); // Pick up half
 
         EXPECT_EQ(playerInv_.inventory[0].item, &item);
         EXPECT_EQ(playerInv_.inventory[0].count, 5);
@@ -276,7 +275,7 @@ namespace jactorio::game
         EXPECT_EQ(cursor_item->count, 5);
 
 
-        playerInv_.HandleClick(dataManager_, 3, 0, true, playerInv_.inventory); // Drop stack at index 3
+        playerInv_.HandleClick(proto_, 3, 0, true, playerInv_.inventory); // Drop stack at index 3
 
         // Should remain unchanged
         EXPECT_EQ(playerInv_.inventory[0].item, &item);
@@ -297,7 +296,7 @@ namespace jactorio::game
         playerInv_.inventory[0].item  = nullptr;
         playerInv_.inventory[0].count = 0;
 
-        playerInv_.HandleClick(dataManager_, 0, 0, true, playerInv_.inventory);
+        playerInv_.HandleClick(proto_, 0, 0, true, playerInv_.inventory);
 
         EXPECT_EQ(playerInv_.inventory[0].item, nullptr);
         EXPECT_EQ(playerInv_.inventory[0].count, 0);
@@ -321,7 +320,7 @@ namespace jactorio::game
         playerInv_.SetSelectedItem({&not_filtered_item, 10});
 
         // Cannot insert into slot 0
-        playerInv_.HandleClick(dataManager_, 0, 0, false, inv);
+        playerInv_.HandleClick(proto_, 0, 0, false, inv);
         EXPECT_EQ(inv[0].item, nullptr);
     }
 
@@ -342,7 +341,7 @@ namespace jactorio::game
         // Pickup
         {
             // Pick up 5 of item, now selected
-            playerInv_.HandleClick(dataManager_, 0, 1, true, playerInv_.inventory);
+            playerInv_.HandleClick(proto_, 0, 1, true, playerInv_.inventory);
 
             // Check if item was incremented
             EXPECT_EQ(playerInv_.IncrementSelectedItem(), true);
@@ -357,7 +356,7 @@ namespace jactorio::game
 
         // Drop item down at inv slot 1
         {
-            playerInv_.HandleClick(dataManager_, 1, 0, true, playerInv_.inventory);
+            playerInv_.HandleClick(proto_, 1, 0, true, playerInv_.inventory);
 
             // Inv now empty, contents in inv slot 1
             EXPECT_EQ(playerInv_.inventory[1].item, &item);
@@ -377,7 +376,7 @@ namespace jactorio::game
         playerInv_.inventory[0].count = 50;
 
         // Pickup
-        playerInv_.HandleClick(dataManager_, 0, 0, true, playerInv_.inventory);
+        playerInv_.HandleClick(proto_, 0, 0, true, playerInv_.inventory);
 
         // Failed to add item: Item stack already full
         EXPECT_EQ(playerInv_.IncrementSelectedItem(), false);
@@ -400,7 +399,7 @@ namespace jactorio::game
         // Pickup
         {
             // Pick up 5 of item, now selected
-            playerInv_.HandleClick(dataManager_, 0, 1, true, playerInv_.inventory);
+            playerInv_.HandleClick(proto_, 0, 1, true, playerInv_.inventory);
 
             // Check if item was incremented
             EXPECT_EQ(playerInv_.DecrementSelectedItem(), true);
@@ -415,7 +414,7 @@ namespace jactorio::game
 
         // Drop item down at inv slot 1
         {
-            playerInv_.HandleClick(dataManager_, 1, 0, true, playerInv_.inventory);
+            playerInv_.HandleClick(proto_, 1, 0, true, playerInv_.inventory);
 
             // Inv now empty, contents in inv slot 1
             EXPECT_EQ(playerInv_.inventory[1].item, &item);
@@ -435,7 +434,7 @@ namespace jactorio::game
         playerInv_.inventory[0].item  = &item;
         playerInv_.inventory[0].count = 10;
 
-        playerInv_.HandleClick(dataManager_, 0, 0, true, playerInv_.inventory);
+        playerInv_.HandleClick(proto_, 0, 0, true, playerInv_.inventory);
 
         EXPECT_TRUE(playerInv_.DeselectSelectedItem());
 
@@ -460,7 +459,7 @@ namespace jactorio::game
         playerInv_.inventory[0].count = 1;
 
         // Pickup
-        playerInv_.HandleClick(dataManager_, 0, 0, true, playerInv_.inventory);
+        playerInv_.HandleClick(proto_, 0, 0, true, playerInv_.inventory);
 
         EXPECT_EQ(playerInv_.DecrementSelectedItem(), false);
 
@@ -603,15 +602,15 @@ namespace jactorio::game
     TEST_F(PlayerInventoryTest, SerializeSelectedItem) {
         SetupInventoryCursor();
 
-        auto& item = dataManager_.AddProto<proto::Item>();
+        auto& item = proto_.Make<proto::Item>();
 
         playerInv_.inventory[8].item  = &item;
         playerInv_.inventory[8].count = 20;
-        playerInv_.HandleClick(dataManager_, 8, 0, true, playerInv_.inventory);
+        playerInv_.HandleClick(proto_, 8, 0, true, playerInv_.inventory);
 
 
-        dataManager_.GenerateRelocationTable();
-        data::active_prototype_manager = &dataManager_;
+        proto_.GenerateRelocationTable();
+        data::active_prototype_manager = &proto_;
 
         auto result = TestSerializeDeserialize(playerInv_);
 
@@ -621,7 +620,7 @@ namespace jactorio::game
         EXPECT_EQ(selected_item->item, &item);
         EXPECT_EQ(selected_item->count, 20);
 
-        result.HandleClick(dataManager_, 8, 0, true, result.inventory);
+        result.HandleClick(proto_, 8, 0, true, result.inventory);
         EXPECT_EQ(result.GetSelectedItem(), nullptr);
     }
 } // namespace jactorio::game

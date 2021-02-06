@@ -49,7 +49,7 @@ namespace jactorio::gui
                    GameWorlds& worlds,
                    game::Logic& logic,
                    game::Player& player,
-                   const data::PrototypeManager& proto_manager,
+                   const data::PrototypeManager& proto,
                    game::EventData& event);
 
     void ImguiTerminate();

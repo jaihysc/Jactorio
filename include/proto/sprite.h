@@ -134,7 +134,7 @@ namespace jactorio::proto
         Sprite* LoadImage(const std::string& image_path);
 
 
-        void PostLoadValidate(const data::PrototypeManager& data_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
 
 #ifdef JACTORIO_BUILD_TEST
         void SetHeight(const int height) {

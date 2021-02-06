@@ -411,8 +411,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         };
 
         auto localize_key_action = [&common, &key_action_labels](const std::size_t key_action_index) {
-            return common.gameDataLocal.prototype
-                .DataRawGet<proto::Label>(std::string(key_action_labels[key_action_index]))
+            return common.gameDataLocal.proto.Get<proto::Label>(std::string(key_action_labels[key_action_index]))
                 ->GetLocalizedName()
                 .c_str();
         };
@@ -449,7 +448,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
     for (std::size_t i = 0; i < info.size() - 1; ++i) {
         const auto action_label_name = std::string(proto::LabelNames::kPlayerActionPrefix) + std::to_string(i);
-        const auto* label            = common.gameDataLocal.prototype.DataRawGet<proto::Label>(action_label_name);
+        const auto* label            = common.gameDataLocal.proto.Get<proto::Label>(action_label_name);
         assert(label != nullptr);
 
         ImGui::TextUnformatted(label->GetLocalizedName().c_str());

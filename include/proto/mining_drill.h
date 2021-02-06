@@ -104,9 +104,7 @@ namespace jactorio::proto
         /// \param orien Orientation of drill
         J_NODISCARD Item* FindOutputItem(const game::World& world, WorldCoord coord, Orientation orien) const;
 
-        void OnDeferTimeElapsed(game::World& world,
-                                game::Logic& logic,
-                                UniqueDataBase* unique_data) const override;
+        void OnDeferTimeElapsed(game::World& world, game::Logic& logic, UniqueDataBase* unique_data) const override;
 
         ///
         /// Ensures that the mining radius covers a resource entity
@@ -137,13 +135,11 @@ namespace jactorio::proto
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
         void ValidatedPostLoad() override;
 
     private:
-        static bool InitializeOutput(game::World& world,
-                                     const WorldCoord& output_coord,
-                                     MiningDrillData* drill_data);
+        static bool InitializeOutput(game::World& world, const WorldCoord& output_coord, MiningDrillData* drill_data);
 
         J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& coord, Orientation orientation) const;
 

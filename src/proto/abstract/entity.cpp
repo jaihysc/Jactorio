@@ -34,7 +34,7 @@ void proto::Entity::PostLoad() {
         rotateDimensions = false;
 }
 
-void proto::Entity::PostLoadValidate(const data::PrototypeManager& /*data_manager*/) const {
+void proto::Entity::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
 
     J_PROTO_ASSERT(sprite != nullptr, "Sprite was not specified");
     J_PROTO_ASSERT(pickupTime >= 0, "Pickup time must be 0 or positive");

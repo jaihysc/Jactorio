@@ -25,7 +25,7 @@ namespace jactorio::game
             InputManager key;
         };
 
-        data::PrototypeManager prototype;
+        data::PrototypeManager proto;
         data::UniqueDataManager unique;
 
         GameInput input;

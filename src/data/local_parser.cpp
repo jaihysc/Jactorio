@@ -49,7 +49,7 @@ struct ParserData
 
 ///
 /// Helper for parse, handles end of line actions
-void ParseEol(data::PrototypeManager& data_manager, ParserData& parser_data, const std::string& directory_prefix) {
+void ParseEol(data::PrototypeManager& proto, ParserData& parser_data, const std::string& directory_prefix) {
     // R val was not specified or empty
     if (parser_data.inLVal && !parser_data.inRVal)
         parser_data.ParseError("expected '=' to switch to r-value, got newline");
@@ -66,7 +66,7 @@ void ParseEol(data::PrototypeManager& data_manager, ParserData& parser_data, con
     std::stringstream str_s;
     str_s << "__" << directory_prefix << "__/" << parser_data.lValue;
 
-    auto* prototype = data_manager.FindProto(str_s.str());
+    auto* prototype = proto.Find(str_s.str());
     if (prototype != nullptr) {
         prototype->SetLocalizedName(parser_data.currentLineBuffer);
         LOG_MESSAGE_F(debug, "Registered local '%s' '%s'", str_s.str().c_str(), parser_data.currentLineBuffer.c_str());
@@ -79,9 +79,7 @@ void ParseEol(data::PrototypeManager& data_manager, ParserData& parser_data, con
     parser_data.lineNumber++;
 }
 
-void data::LocalParse(PrototypeManager& data_manager,
-                      const std::string& file_str,
-                      const std::string& directory_prefix) {
+void data::LocalParse(PrototypeManager& proto, const std::string& file_str, const std::string& directory_prefix) {
     ParserData parser_data{};
 
     for (char c : file_str) {
@@ -97,7 +95,7 @@ void data::LocalParse(PrototypeManager& data_manager,
 
         // End of a line
         if (c == '\n') {
-            ParseEol(data_manager, parser_data, directory_prefix);
+            ParseEol(proto, parser_data, directory_prefix);
             continue;
         }
 
@@ -131,14 +129,12 @@ void data::LocalParse(PrototypeManager& data_manager,
             parser_data.currentLineBuffer.push_back(c);
     }
 
-    ParseEol(data_manager, parser_data, directory_prefix);
+    ParseEol(proto, parser_data, directory_prefix);
 }
 
-int data::LocalParseNoThrow(PrototypeManager& data_manager,
-                            const std::string& file_str,
-                            const std::string& directory_prefix) {
+int data::LocalParseNoThrow(PrototypeManager& proto, const std::string& file_str, const std::string& directory_prefix) {
     try {
-        LocalParse(data_manager, file_str, directory_prefix);
+        LocalParse(proto, file_str, directory_prefix);
     }
     catch (proto::ProtoError&) {
         return 1;

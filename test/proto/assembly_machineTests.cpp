@@ -12,10 +12,10 @@ namespace jactorio::proto
         game::World worldData_;
         game::Logic logicData_;
 
-        data::PrototypeManager dataManager_;
+        data::PrototypeManager proto_;
 
         AssemblyMachineData data_{};
-        AssemblyMachine proto_;
+        AssemblyMachine asmMachine_;
 
         Recipe* recipe_    = nullptr;
         Item* item1_       = nullptr;
@@ -23,7 +23,7 @@ namespace jactorio::proto
         Item* itemProduct_ = nullptr;
 
         void SetupRecipe() {
-            const auto recipe_data = TestSetupRecipe(dataManager_);
+            const auto recipe_data = TestSetupRecipe(proto_);
 
             recipe_      = recipe_data.recipe;
             item1_       = recipe_data.item1;
@@ -51,7 +51,7 @@ namespace jactorio::proto
         EXPECT_EQ(data_.GetRecipe(), nullptr);
 
         // Has recipe
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
         EXPECT_TRUE(data_.HasRecipe());
         EXPECT_EQ(data_.GetRecipe(), recipe_);
     }
@@ -64,7 +64,7 @@ namespace jactorio::proto
 
         // Recipe crafted in 60 ticks
         logicData_.DeferralUpdate(worldData_, 900);
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
 
         EXPECT_EQ(data_.deferralEntry.dueTick, 0);
 
@@ -77,22 +77,22 @@ namespace jactorio::proto
 
         // crafting
         SetupMachineCraftingInv();
-        EXPECT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
+        EXPECT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
         EXPECT_EQ(data_.deferralEntry.dueTick, 960);
     }
 
     TEST_F(AssemblyMachineTest, ChangeRecipeRemoveRecipe) {
         SetupRecipe();
 
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
 
         SetupMachineCraftingInv();
-        ASSERT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
+        ASSERT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
 
         ASSERT_NE(data_.deferralEntry.callbackIndex, 0);
 
         // Remove recipe
-        data_.ChangeRecipe(logicData_, dataManager_, nullptr);
+        data_.ChangeRecipe(logicData_, proto_, nullptr);
         EXPECT_EQ(data_.deferralEntry.callbackIndex, 0);
 
         EXPECT_EQ(data_.ingredientInv.size(), 0);
@@ -106,7 +106,7 @@ namespace jactorio::proto
         SetupRecipe();
 
         // Ingredients not yet present
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
         EXPECT_FALSE(data_.CanBeginCrafting());
 
         // Ingredients does not match
@@ -125,7 +125,7 @@ namespace jactorio::proto
         itemProduct_->stackSize = 50;
         recipe_->product.second = 2; // 2 per crafting
 
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
         SetupMachineCraftingInv();
         data_.productInv[0] = {itemProduct_, 49, itemProduct_};
 
@@ -136,7 +136,7 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, CraftDeductIngredients) {
         SetupRecipe();
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
 
         data_.ingredientInv[0] = {item1_, 5};
         data_.ingredientInv[1] = {item1_, 10};
@@ -161,7 +161,7 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, CraftAddProduct) {
         SetupRecipe();
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
 
         data_.ingredientInv[0] = {item1_, 5};
         data_.ingredientInv[1] = {item1_, 10};
@@ -175,7 +175,7 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, Serialize) {
         SetupRecipe();
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
 
         data_.ingredientInv[0] = {item1_, 5};
         data_.ingredientInv[1] = {item2_, 10};
@@ -188,8 +188,8 @@ namespace jactorio::proto
         data_.health = 4321;
 
 
-        data::active_prototype_manager = &dataManager_;
-        dataManager_.GenerateRelocationTable();
+        data::active_prototype_manager = &proto_;
+        proto_.GenerateRelocationTable();
         const auto result = TestSerializeDeserialize(data_);
 
         ASSERT_EQ(result.ingredientInv.size(), 2);
@@ -224,14 +224,14 @@ namespace jactorio::proto
 
         SetupRecipe();
 
-        proto_.assemblySpeed = 2;
+        asmMachine_.assemblySpeed = 2;
 
         recipe_->craftingTime = 1.f;
 
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
 
         SetupMachineCraftingInv();
-        ASSERT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
+        ASSERT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
 
         EXPECT_EQ(data_.deferralEntry.dueTick, 30);
     }
@@ -240,20 +240,20 @@ namespace jactorio::proto
         // Creates unique data on build
         auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
 
-        proto_.OnBuild(worldData_, logicData_, {0, 0}, layer, Orientation::up);
+        asmMachine_.OnBuild(worldData_, logicData_, {0, 0}, layer, Orientation::up);
 
         EXPECT_NE(layer.GetUniqueData(), nullptr);
     }
 
     TEST_F(AssemblyMachineTest, OnRemoveRemoveDeferralEntry) {
         auto& layer = worldData_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
-        proto_.OnBuild(worldData_, logicData_, {0, 0}, layer, Orientation::up);
+        asmMachine_.OnBuild(worldData_, logicData_, {0, 0}, layer, Orientation::up);
 
         const auto* assembly_proto = layer.GetPrototype<AssemblyMachine>();
         auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
 
         SetupRecipe();
-        assembly_data->ChangeRecipe(logicData_, dataManager_, recipe_);
+        assembly_data->ChangeRecipe(logicData_, proto_, recipe_);
 
         assembly_proto->OnRemove(worldData_, logicData_, {0, 0}, layer);
         EXPECT_EQ(assembly_data->deferralEntry.callbackIndex, 0);
@@ -261,28 +261,28 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, TryBeginCrafting) {
         // No items
-        EXPECT_FALSE(proto_.TryBeginCrafting(logicData_, data_));
+        EXPECT_FALSE(asmMachine_.TryBeginCrafting(logicData_, data_));
 
         // Ok, has items
         SetupRecipe();
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
         SetupMachineCraftingInv(10);
 
-        EXPECT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
+        EXPECT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
 
         // Already has deferral
         EXPECT_NE(data_.deferralEntry.callbackIndex, 0);
-        EXPECT_FALSE(proto_.TryBeginCrafting(logicData_, data_));
+        EXPECT_FALSE(asmMachine_.TryBeginCrafting(logicData_, data_));
     }
 
     TEST_F(AssemblyMachineTest, CraftingLoop) {
         SetupRecipe();
 
-        data_.ChangeRecipe(logicData_, dataManager_, recipe_);
+        data_.ChangeRecipe(logicData_, proto_, recipe_);
         SetupMachineCraftingInv(3);
 
         // Craft 1
-        EXPECT_TRUE(proto_.TryBeginCrafting(logicData_, data_));
+        EXPECT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
 
         // -- Items removed
         EXPECT_EQ(data_.ingredientInv[0].count, 2);

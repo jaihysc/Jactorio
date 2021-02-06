@@ -83,9 +83,7 @@ proto::Item* proto::MiningDrill::FindOutputItem(const game::World& world,
     return nullptr;
 }
 
-void proto::MiningDrill::OnDeferTimeElapsed(game::World& world,
-                                            game::Logic& logic,
-                                            UniqueDataBase* unique_data) const {
+void proto::MiningDrill::OnDeferTimeElapsed(game::World& world, game::Logic& logic, UniqueDataBase* unique_data) const {
     // Re-register callback and insert item, remove item from ground for next elapse
     auto* drill_data = static_cast<MiningDrillData*>(unique_data);
 
@@ -106,9 +104,7 @@ void proto::MiningDrill::OnDeferTimeElapsed(game::World& world,
 }
 
 
-bool proto::MiningDrill::OnCanBuild(const game::World& world,
-                                    const WorldCoord& coord,
-                                    const Orientation orien) const {
+bool proto::MiningDrill::OnCanBuild(const game::World& world, const WorldCoord& coord, const Orientation orien) const {
     auto coords = coord;
     /*
      * [ ] [ ] [ ] [ ] [ ]
@@ -203,7 +199,7 @@ void proto::MiningDrill::OnDeserialize(game::World& world,
     InitializeOutput(world, GetOutputCoord(coord, drill_data->output.GetOrientation()), drill_data);
 }
 
-void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& /*data_manager*/) const {
+void proto::MiningDrill::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
     J_PROTO_ASSERT(sprite != nullptr, "North sprite not provided");
     J_PROTO_ASSERT(spriteE != nullptr, "East sprite not provided");
     J_PROTO_ASSERT(spriteS != nullptr, "South sprite not provided");

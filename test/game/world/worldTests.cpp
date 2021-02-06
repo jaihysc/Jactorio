@@ -239,8 +239,8 @@ namespace jactorio::game
         worldData_.Clear();
 
 
-        const data::PrototypeManager proto_manager;
-        worldData_.GenChunk(proto_manager);
+        const data::PrototypeManager proto;
+        worldData_.GenChunk(proto);
 
         EXPECT_EQ(worldData_.GetChunkC(0, 0), nullptr);
 
@@ -349,15 +349,15 @@ namespace jactorio::game
     TEST_F(WorldDeserialize, SameChunk) {
         worldData_.EmplaceChunk(0, 0);
 
-        data::PrototypeManager prototype_manager;
-        auto& proto = prototype_manager.AddProto<proto::ContainerEntity>();
+        data::PrototypeManager proto;
+        auto& container = proto.Make<proto::ContainerEntity>();
 
-        proto.SetDimensions(3, 2);
-        TestSetupMultiTile(worldData_, {1, 0}, TileLayer::base, Orientation::up, proto);
+        container.SetDimensions(3, 2);
+        TestSetupMultiTile(worldData_, {1, 0}, TileLayer::base, Orientation::up, container);
 
 
-        prototype_manager.GenerateRelocationTable();
-        data::active_prototype_manager = &prototype_manager;
+        proto.GenerateRelocationTable();
+        data::active_prototype_manager = &proto;
 
         worldData_ = TestSerializeDeserialize(worldData_);
 
@@ -366,10 +366,10 @@ namespace jactorio::game
 
         ///
         /// Checks that multi-tile tile is linked to top left
-        auto expect_tl_resolved = [this, &proto](const WorldCoord& coord, const TileLayer tile_layer) {
+        auto expect_tl_resolved = [this, &container](const WorldCoord& coord, const TileLayer tile_layer) {
             auto* top_left = worldData_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
             EXPECT_EQ(top_left, &worldData_.GetTile(1, 0)->GetLayer(TileLayer::base));
-            EXPECT_EQ(top_left->GetPrototype(), &proto);
+            EXPECT_EQ(top_left->GetPrototype(), &container);
         };
 
         expect_tl_resolved({2, 0}, TileLayer::base);
@@ -389,21 +389,21 @@ namespace jactorio::game
          * A A
          */
 
-        data::PrototypeManager proto_manager;
+        data::PrototypeManager proto;
         data::UniqueDataManager unique_manager;
 
 
-        auto& asm_machine = proto_manager.AddProto<proto::AssemblyMachine>();
+        auto& asm_machine = proto.Make<proto::AssemblyMachine>();
         asm_machine.SetDimensions(2, 2);
         TestSetupAssemblyMachine(worldData_, {0, 2}, Orientation::up, asm_machine);
 
-        auto& inserter = proto_manager.AddProto<proto::Inserter>();
+        auto& inserter = proto.Make<proto::Inserter>();
         TestSetupInserter(worldData_, logicData_, {1, 1}, Orientation::down, inserter);
 
 
-        data::active_prototype_manager   = &proto_manager;
+        data::active_prototype_manager   = &proto;
         data::active_unique_data_manager = &unique_manager;
-        proto_manager.GenerateRelocationTable();
+        proto.GenerateRelocationTable();
 
         auto result = TestSerializeDeserialize(worldData_);
         result.DeserializePostProcess();
@@ -418,9 +418,7 @@ namespace jactorio::game
         class MockWorldObject : public TestMockWorldObject
         {
         public:
-            void OnDeserialize(World& /*world*/,
-                               const WorldCoord& coord,
-                               ChunkTileLayer& tile_layer) const override {
+            void OnDeserialize(World& /*world*/, const WorldCoord& coord, ChunkTileLayer& tile_layer) const override {
                 EXPECT_EQ(coord.x, 5);
                 EXPECT_EQ(coord.y, 6);
                 onDeserializeCalled = true;

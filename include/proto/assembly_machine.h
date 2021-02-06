@@ -25,9 +25,7 @@ namespace jactorio::proto
 
         ///
         /// Changes recipe to provided recipe, nullptr for no recipe
-        void ChangeRecipe(game::Logic& logic,
-                          const data::PrototypeManager& data_manager,
-                          const Recipe* new_recipe);
+        void ChangeRecipe(game::Logic& logic, const data::PrototypeManager& proto, const Recipe* new_recipe);
 
         ///
         /// Checks if necessary ingredients are present to begin crafting
@@ -85,9 +83,7 @@ namespace jactorio::proto
         /// \return true if crafting has begun
         bool TryBeginCrafting(game::Logic& logic, AssemblyMachineData& data) const;
 
-        void OnDeferTimeElapsed(game::World& world,
-                                game::Logic& logic,
-                                UniqueDataBase* unique_data) const override;
+        void OnDeferTimeElapsed(game::World& world, game::Logic& logic, UniqueDataBase* unique_data) const override;
 
         void OnBuild(game::World& world,
                      game::Logic& logic,
@@ -100,7 +96,7 @@ namespace jactorio::proto
                       const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 
-        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {
+        void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {
             J_PROTO_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");
         }
     };

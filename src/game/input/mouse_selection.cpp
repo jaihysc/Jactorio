@@ -27,14 +27,12 @@ double game::MouseSelection::GetCursorY() {
 }
 
 
-void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
-                                             Player& player,
-                                             const data::PrototypeManager& proto_manager) {
+void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds, Player& player, const data::PrototypeManager& proto) {
     const auto cursor_position = player.world.GetMouseTileCoords();
     const auto* stack          = player.inventory.GetSelectedItem();
 
-    const auto* sprite = proto_manager.DataRawGet<proto::Sprite>(
-        player.world.MouseSelectedTileInRange() ? "__core__/cursor-select" : "__core__/cursor-invalid");
+    const auto* sprite = proto.Get<proto::Sprite>(player.world.MouseSelectedTileInRange() ? "__core__/cursor-select"
+                                                                                          : "__core__/cursor-invalid");
     assert(sprite != nullptr);
 
 
@@ -46,8 +44,7 @@ void game::MouseSelection::DrawCursorOverlay(GameWorlds& worlds,
                     *sprite);
     }
     else {
-        DrawOverlay(
-            worlds[player.world.GetId()], cursor_position, player.placement.orientation, nullptr, *sprite);
+        DrawOverlay(worlds[player.world.GetId()], cursor_position, player.placement.orientation, nullptr, *sprite);
     }
 }
 

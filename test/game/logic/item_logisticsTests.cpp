@@ -316,12 +316,12 @@ namespace jactorio::game
     }
 
     TEST_F(ItemDropOffTest, InsertAssemblyMachine) {
-        data::PrototypeManager prototype_manager;
+        data::PrototypeManager proto;
 
-        auto recipe_pack = TestSetupRecipe(prototype_manager);
+        auto recipe_pack = TestSetupRecipe(proto);
 
         proto::AssemblyMachineData asm_data;
-        asm_data.ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
+        asm_data.ChangeRecipe(logicData_, proto, recipe_pack.recipe);
 
         asm_data.ingredientInv[0] = {recipe_pack.item1, 5, recipe_pack.item1};
         asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
@@ -344,8 +344,8 @@ namespace jactorio::game
     TEST_F(ItemDropOffTest, InsertAssemblyMachineExceedStack) {
         // Inserters will not insert into assembly machines if it will exceed the current item's stack limit
 
-        data::PrototypeManager prototype_manager;
-        const auto recipe_pack = TestSetupRecipe(prototype_manager);
+        data::PrototypeManager proto;
+        const auto recipe_pack = TestSetupRecipe(proto);
 
         proto::AssemblyMachineData asm_data;
         asm_data.ingredientInv.resize(2);
@@ -365,10 +365,10 @@ namespace jactorio::game
         EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, Orientation::down}));
 
 
-        data::PrototypeManager prototype_manager;
+        data::PrototypeManager proto;
 
-        auto recipe_pack = TestSetupRecipe(prototype_manager);
-        asm_data.ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
+        auto recipe_pack = TestSetupRecipe(proto);
+        asm_data.ChangeRecipe(logicData_, proto, recipe_pack.recipe);
 
         // Has recipe, wrong item
         EXPECT_FALSE(CanInsertAssemblyMachine({logicData_, {&item, 2}, asm_data, Orientation::down}));
@@ -680,7 +680,7 @@ namespace jactorio::game
 
 
     TEST_F(InserterPickupTest, PickupAssemblyMachine) {
-        data::PrototypeManager prototype_manager;
+        data::PrototypeManager proto;
 
         proto::AssemblyMachine asm_machine;
         auto& layer = TestSetupAssemblyMachine(worldData_, {0, 0}, Orientation::up, asm_machine);
@@ -691,10 +691,10 @@ namespace jactorio::game
 
         // ======================================================================
 
-        auto recipe_pack = TestSetupRecipe(prototype_manager);
+        auto recipe_pack = TestSetupRecipe(proto);
 
 
-        data->ChangeRecipe(logicData_, prototype_manager, recipe_pack.recipe);
+        data->ChangeRecipe(logicData_, proto, recipe_pack.recipe);
 
         // No items in product inventory
         EXPECT_FALSE(PickupAssemblyMachine(

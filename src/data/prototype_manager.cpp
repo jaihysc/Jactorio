@@ -13,14 +13,14 @@
 using namespace jactorio;
 
 data::PrototypeManager::~PrototypeManager() {
-    ClearData();
+    Clear();
 }
 
 void data::PrototypeManager::SetDirectoryPrefix(const std::string& name) {
     directoryPrefix_ = name;
 }
 
-void data::PrototypeManager::DataRawAdd(const std::string& iname, proto::FrameworkBase* const prototype) {
+void data::PrototypeManager::Add(const std::string& iname, proto::FrameworkBase* const prototype) {
     const auto data_category = prototype->GetCategory();
 
     // Use the following format internal name
@@ -72,7 +72,7 @@ void data::PrototypeManager::DataRawAdd(const std::string& iname, proto::Framewo
     LOG_MESSAGE_F(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void data::PrototypeManager::LoadData(const std::string& data_folder_path) {
+void data::PrototypeManager::Load(const std::string& folder_path) {
     // Get all sub-folders in ~/data/
     // Read data.cfg files within each sub-folder
     // Load extracted data into loaded_data
@@ -82,14 +82,14 @@ void data::PrototypeManager::LoadData(const std::string& data_folder_path) {
     PyInterpreterInit();
 
 
-    for (const auto& entry : std::filesystem::directory_iterator(data_folder_path)) {
+    for (const auto& entry : std::filesystem::directory_iterator(folder_path)) {
         const std::string directory_name = entry.path().filename().u8string();
 
         // Directory including current folder: eg: /data/base
         std::string current_directory;
         {
             std::stringstream ss;
-            ss << data_folder_path << "/" << directory_name;
+            ss << folder_path << "/" << directory_name;
             current_directory = ss.str();
         }
 
@@ -161,7 +161,7 @@ void data::PrototypeManager::LoadData(const std::string& data_folder_path) {
     }
 }
 
-void data::PrototypeManager::ClearData() {
+void data::PrototypeManager::Clear() {
     // Iterate through both unordered maps and delete all pointers
     for (auto& map : dataRaw_) {
         // Category unordered maps

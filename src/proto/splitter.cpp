@@ -54,8 +54,8 @@ void proto::Splitter::PostLoad() {
     speed = LineDistT(speedFloat);
 }
 
-void proto::Splitter::PostLoadValidate(const data::PrototypeManager& proto_manager) const {
-    Conveyor::PostLoadValidate(proto_manager);
+void proto::Splitter::PostLoadValidate(const data::PrototypeManager& proto) const {
+    Conveyor::PostLoadValidate(proto);
 
     J_PROTO_ASSERT(this->GetWidth(Orientation::up) == 2, "Tile width must be 2");
     J_PROTO_ASSERT(this->GetHeight(Orientation::up) == 1, "Tile height must be 1");

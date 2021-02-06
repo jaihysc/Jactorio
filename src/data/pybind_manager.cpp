@@ -70,7 +70,7 @@ void data::PyInterpreterInit() {
         // Clear all existing import paths to avoid conflicts
         sysm.attr("path").attr("clear")();
 
-        // Include the data_manager::data_folder/ as a python search path to shorten imports
+        // Include the PrototypeManager::kDataFolder as a python search path to shorten imports
         std::stringstream s;
         s << PrototypeManager::kDataFolder << "/";
         sysm.attr("path").attr("append")(s.str());

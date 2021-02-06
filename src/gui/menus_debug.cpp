@@ -40,12 +40,12 @@ bool show_world_info = false;
 void gui::DebugMenuLogic(GameWorlds& worlds,
                          game::Logic& logic,
                          game::Player& player,
-                         const data::PrototypeManager& data_manager) {
+                         const data::PrototypeManager& proto) {
     if (show_tile_info)
         DebugTileInfo(worlds, player);
 
     if (show_conveyor_info)
-        DebugConveyorInfo(worlds, player, data_manager);
+        DebugConveyorInfo(worlds, player, proto);
 
     if (show_inserter_info)
         DebugInserterInfo(worlds, player);
@@ -57,7 +57,7 @@ void gui::DebugMenuLogic(GameWorlds& worlds,
         DebugTimings();
 
     if (show_item_spawner_window)
-        DebugItemSpawner(player, data_manager);
+        DebugItemSpawner(player, proto);
 
     if (show_world_info) {
         DebugWorldInfo(worlds, player);
@@ -149,7 +149,7 @@ void gui::DebugTimings() {
 int give_amount  = 100;
 int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
 
-void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& data_manager) {
+void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& proto) {
     using namespace core;
 
     ImGuard guard{};
@@ -177,7 +177,7 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& d
     ImGui::Separator();
 
 
-    auto game_items = data_manager.DataRawGetAll<proto::Item>(proto::Category::item);
+    auto game_items = proto.GetAll<proto::Item>(proto::Category::item);
     for (auto& item : game_items) {
         ImGui::PushID(item->name.c_str());
 
@@ -227,19 +227,19 @@ WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
 bool show_conveyor_structs       = false;
 
-void ShowConveyorSegments(game::World& world, const data::PrototypeManager& data_manager) {
+void ShowConveyorSegments(game::World& world, const data::PrototypeManager& proto) {
     constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
 
     // Sprite representing the update point
-    const auto* sprite_stop         = data_manager.DataRawGet<proto::Sprite>("__core__/rect-red");
-    const auto* sprite_moving       = data_manager.DataRawGet<proto::Sprite>("__core__/rect-green");
-    const auto* sprite_left_moving  = data_manager.DataRawGet<proto::Sprite>("__core__/rect-aqua");
-    const auto* sprite_right_moving = data_manager.DataRawGet<proto::Sprite>("__core__/rect-pink");
+    const auto* sprite_stop         = proto.Get<proto::Sprite>("__core__/rect-red");
+    const auto* sprite_moving       = proto.Get<proto::Sprite>("__core__/rect-green");
+    const auto* sprite_left_moving  = proto.Get<proto::Sprite>("__core__/rect-aqua");
+    const auto* sprite_right_moving = proto.Get<proto::Sprite>("__core__/rect-pink");
 
-    const auto* sprite_up    = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-up");
-    const auto* sprite_right = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-right");
-    const auto* sprite_down  = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-down");
-    const auto* sprite_left  = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-left");
+    const auto* sprite_up    = proto.Get<proto::Sprite>("__core__/arrow-up");
+    const auto* sprite_right = proto.Get<proto::Sprite>("__core__/arrow-right");
+    const auto* sprite_down  = proto.Get<proto::Sprite>("__core__/arrow-down");
+    const auto* sprite_left  = proto.Get<proto::Sprite>("__core__/arrow-left");
 
     // Get all update points and add it to the chunk's objects for drawing
     for (auto* chunk : world.LogicGetChunks()) {
@@ -344,7 +344,7 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& data
     }
 }
 
-void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data::PrototypeManager& proto_manager) {
+void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data::PrototypeManager& proto) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard{};
@@ -371,7 +371,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data
     ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
     if (show_conveyor_structs)
-        ShowConveyorSegments(world, proto_manager);
+        ShowConveyorSegments(world, proto);
 
     if (con_data != nullptr) {
         last_valid_line_segment = selected_tile;
@@ -434,10 +434,10 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data
         // Appending item
         const std::string iname = "__base__/wooden-chest-item";
         if (ImGui::Button("Append Item Left"))
-            segment.AppendItem(true, 0.2, *proto_manager.DataRawGet<proto::Item>(iname));
+            segment.AppendItem(true, 0.2, *proto.Get<proto::Item>(iname));
 
         if (ImGui::Button("Append Item Right"))
-            segment.AppendItem(false, 0.2, *proto_manager.DataRawGet<proto::Item>(iname));
+            segment.AppendItem(false, 0.2, *proto.Get<proto::Item>(iname));
 
 
         // Display items

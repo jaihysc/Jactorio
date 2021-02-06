@@ -140,7 +140,7 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
                     GameWorlds& worlds,
                     game::Logic& logic,
                     game::Player& player,
-                    const data::PrototypeManager& proto_manager,
+                    const data::PrototypeManager& proto,
                     game::EventData& /*event*/) {
     EXECUTION_PROFILE_SCOPE(imgui_draw_timer, "Imgui draw");
 
@@ -156,7 +156,7 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
     // ImPopFont();
 
     MenuData menu_data = {*sprite_positions, tex_id};
-    const render::GuiRenderer g_rendr{worlds, logic, player, proto_manager, menu_data};
+    const render::GuiRenderer g_rendr{worlds, logic, player, proto, menu_data};
 
 
     bool drew_gui = false;
@@ -178,7 +178,7 @@ void gui::ImguiDraw(const render::DisplayWindow& /*display_window*/,
 
     // Player gui
     DrawMenu(Menu::DebugMenu, g_rendr);
-    DebugMenuLogic(worlds, logic, player, proto_manager);
+    DebugMenuLogic(worlds, logic, player, proto);
 
     CursorWindow(g_rendr);
     CraftingQueue(g_rendr);

@@ -28,17 +28,17 @@ namespace jactorio::gui
     void DebugMenuLogic(GameWorlds& worlds,
                         game::Logic& logic,
                         game::Player& player,
-                        const data::PrototypeManager& data_manager);
+                        const data::PrototypeManager& proto);
 
     void DebugTimings();
 
-    void DebugItemSpawner(game::Player& player, const data::PrototypeManager& data_manager);
+    void DebugItemSpawner(game::Player& player, const data::PrototypeManager& proto);
 
     ///
     /// Info on tile currently hovered over
     void DebugTileInfo(GameWorlds& worlds, game::Player& player);
 
-    void DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data::PrototypeManager& proto_manager);
+    void DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data::PrototypeManager& proto);
 
     void DebugInserterInfo(GameWorlds& worlds, game::Player& player);
 

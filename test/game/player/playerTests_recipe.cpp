@@ -15,7 +15,7 @@ namespace jactorio::game
         Player::Inventory& playerInv_  = playerData_.inventory;
         Player::Crafting& playerCraft_ = playerData_.crafting;
 
-        data::PrototypeManager dataManager_;
+        data::PrototypeManager proto_;
 
         proto::Item* itemProduct_ = nullptr;
         proto::Item* item1_       = nullptr;
@@ -41,20 +41,20 @@ namespace jactorio::game
              */
             // 3 item1 + 1 item2 -> 1 product
             // 5 sub1 + 10 sub2 -> 2 item1
-            itemProduct_ = &dataManager_.AddProto<proto::Item>("item-product");
+            itemProduct_ = &proto_.Make<proto::Item>("item-product");
 
-            item1_ = &dataManager_.AddProto<proto::Item>("item-1");
-            item2_ = &dataManager_.AddProto<proto::Item>("item-2");
+            item1_ = &proto_.Make<proto::Item>("item-1");
+            item2_ = &proto_.Make<proto::Item>("item-2");
 
-            itemSub1_ = &dataManager_.AddProto<proto::Item>("item-sub-1");
-            itemSub2_ = &dataManager_.AddProto<proto::Item>("item-sub-2");
+            itemSub1_ = &proto_.Make<proto::Item>("item-sub-1");
+            itemSub2_ = &proto_.Make<proto::Item>("item-sub-2");
 
-            finalRecipe_ = &dataManager_.AddProto<proto::Recipe>("item-product-recipe");
+            finalRecipe_ = &proto_.Make<proto::Recipe>("item-product-recipe");
             finalRecipe_->Set_ingredients({{"item-1", 3}, {"item-2", 1}});
             finalRecipe_->product      = {"item-product", 1};
             finalRecipe_->craftingTime = 1.5;
 
-            itemRecipe_ = &dataManager_.AddProto<proto::Recipe>("item-1-recipe");
+            itemRecipe_ = &proto_.Make<proto::Recipe>("item-1-recipe");
             itemRecipe_->Set_ingredients({{"item-sub-1", 5}, {"item-sub-2", 10}});
             itemRecipe_->product       = {"item-1", 2};
             finalRecipe_->craftingTime = 3.1;
@@ -73,8 +73,8 @@ namespace jactorio::game
         // since recipe_craft_tick() is not called
 
         // Register items
-        auto& item         = dataManager_.AddProto<proto::Item>("item-1");
-        auto& item_product = dataManager_.AddProto<proto::Item>("item-product");
+        auto& item         = proto_.Make<proto::Item>("item-1");
+        auto& item_product = proto_.Make<proto::Item>("item-product");
 
         // Register recipes
         auto recipe = proto::Recipe();
@@ -86,8 +86,8 @@ namespace jactorio::game
         playerInv_.inventory[0] = {&item, 10};
 
         // Queue 2 crafts
-        playerCraft_.QueueRecipe(dataManager_, recipe);
-        playerCraft_.QueueRecipe(dataManager_, recipe);
+        playerCraft_.QueueRecipe(proto_, recipe);
+        playerCraft_.QueueRecipe(proto_, recipe);
 
         // Used up 2 * 2 (4) items
         EXPECT_EQ(playerInv_.inventory[0].item, &item);
@@ -97,11 +97,11 @@ namespace jactorio::game
 
 
         // Output items should be in slot index 1 after 60 ticks (1 second) for each item
-        playerCraft_.RecipeCraftTick(dataManager_, 30); // Not done yet
+        playerCraft_.RecipeCraftTick(proto_, 30); // Not done yet
 
         EXPECT_EQ(playerInv_.inventory[1].item, nullptr);
 
-        playerCraft_.RecipeCraftTick(dataManager_, 90);
+        playerCraft_.RecipeCraftTick(proto_, 90);
 
         EXPECT_EQ(playerInv_.inventory[1].item, &item_product);
         EXPECT_EQ(playerInv_.inventory[1].count, 2);
@@ -117,9 +117,9 @@ namespace jactorio::game
         playerInv_.inventory[1] = {itemSub1_, 10};
         playerInv_.inventory[2] = {itemSub2_, 20};
 
-        playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
+        playerCraft_.RecipeCraftR(proto_, *finalRecipe_);
 
-        playerCraft_.RecipeCraftTick(dataManager_, (2 * 3.1 + 1.5) * kGameHertz);
+        playerCraft_.RecipeCraftTick(proto_, (2 * 3.1 + 1.5) * kGameHertz);
 
         EXPECT_EQ(playerInv_.inventory[0].item, item1_); // 1 extra item 1 from crafting
         EXPECT_EQ(playerInv_.inventory[0].count, 1);
@@ -140,14 +140,14 @@ namespace jactorio::game
         playerInv_.inventory[1] = {itemSub1_, 30};
         playerInv_.inventory[2] = {itemSub2_, 60};
 
-        playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
-        playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
-        playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
+        playerCraft_.RecipeCraftR(proto_, *finalRecipe_);
+        playerCraft_.RecipeCraftR(proto_, *finalRecipe_);
+        playerCraft_.RecipeCraftR(proto_, *finalRecipe_);
 
         // This should not craft item1 since there will be 3 in excess from the previous 3 crafting
-        playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
+        playerCraft_.RecipeCraftR(proto_, *finalRecipe_);
 
-        playerCraft_.RecipeCraftTick(dataManager_, 9999); // Should be enough ticks to finish crafting
+        playerCraft_.RecipeCraftTick(proto_, 9999); // Should be enough ticks to finish crafting
 
         EXPECT_EQ(playerInv_.inventory[0].item, itemProduct_);
         EXPECT_EQ(playerInv_.inventory[0].count, 4);
@@ -176,7 +176,7 @@ namespace jactorio::game
         // Crafting item-product:
         // Item 1 requires one batch to be crafted
         // Crafting requires for item 2 met
-        EXPECT_EQ(playerCraft_.RecipeCanCraft(dataManager_, *finalRecipe_, 1), true);
+        EXPECT_EQ(playerCraft_.RecipeCanCraft(proto_, *finalRecipe_, 1), true);
     }
 
     TEST_F(PlayerRecipeTest, RecipeCanCraftInvalid) {
@@ -194,7 +194,7 @@ namespace jactorio::game
         // Crafting item-product:
         // Item 1 requires one batch to be crafted
         // Crafting requires for item 2 met
-        EXPECT_EQ(playerCraft_.RecipeCanCraft(dataManager_, *finalRecipe_, 1), false);
+        EXPECT_EQ(playerCraft_.RecipeCanCraft(proto_, *finalRecipe_, 1), false);
     }
 
     TEST_F(PlayerRecipeTest, RecipeCanCraftInvalid2) {
@@ -208,7 +208,7 @@ namespace jactorio::game
         playerInv_.inventory[1] = {itemSub1_, 10};
         playerInv_.inventory[2] = {itemSub2_, 5};
 
-        EXPECT_EQ(playerCraft_.RecipeCanCraft(dataManager_, *finalRecipe_, 1), false);
+        EXPECT_EQ(playerCraft_.RecipeCanCraft(proto_, *finalRecipe_, 1), false);
     }
 
     TEST_F(PlayerRecipeTest, RecipeCraftFullInventory) {
@@ -219,8 +219,8 @@ namespace jactorio::game
         playerInv_.inventory[0] = {item1_, 3};
         playerInv_.inventory[1] = {item2_, 1};
 
-        EXPECT_TRUE(playerCraft_.RecipeCanCraft(dataManager_, *finalRecipe_, 1));
-        playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
+        EXPECT_TRUE(playerCraft_.RecipeCanCraft(proto_, *finalRecipe_, 1));
+        playerCraft_.RecipeCraftR(proto_, *finalRecipe_);
 
         // Fill inventory so crafted item cannot be returned
         proto::Item filler_item;
@@ -230,15 +230,15 @@ namespace jactorio::game
         }
 
         // Will not return item until slot is freed
-        playerCraft_.RecipeCraftTick(dataManager_, 9999);
-        playerCraft_.RecipeCraftTick(dataManager_, 9999);
-        playerCraft_.RecipeCraftTick(dataManager_, 9999);
+        playerCraft_.RecipeCraftTick(proto_, 9999);
+        playerCraft_.RecipeCraftTick(proto_, 9999);
+        playerCraft_.RecipeCraftTick(proto_, 9999);
 
         EXPECT_EQ(playerInv_.inventory[0].item, &filler_item);
         EXPECT_EQ(playerInv_.inventory[0].count, 1);
 
         playerInv_.inventory[0] = {nullptr, 0};
-        playerCraft_.RecipeCraftTick(dataManager_, 1);
+        playerCraft_.RecipeCraftTick(proto_, 1);
 
         EXPECT_EQ(playerInv_.inventory[0].item, itemProduct_);
         EXPECT_EQ(playerInv_.inventory[0].count, 1);
@@ -252,16 +252,16 @@ namespace jactorio::game
         playerInv_.inventory[1] = {itemSub1_, 10};
         playerInv_.inventory[2] = {itemSub2_, 20};
 
-        playerCraft_.RecipeCraftR(dataManager_, *finalRecipe_);
+        playerCraft_.RecipeCraftR(proto_, *finalRecipe_);
 
 
-        dataManager_.GenerateRelocationTable();
-        data::active_prototype_manager = &dataManager_;
+        proto_.GenerateRelocationTable();
+        data::active_prototype_manager = &proto_;
 
         auto result = TestSerializeDeserialize(playerData_);
 
 
-        result.crafting.RecipeCraftTick(dataManager_, (2 * 3.1 + 1.5) * kGameHertz);
+        result.crafting.RecipeCraftTick(proto_, (2 * 3.1 + 1.5) * kGameHertz);
 
         auto& result_inv = result.inventory;
         EXPECT_EQ(result_inv.inventory[0].item, item1_);

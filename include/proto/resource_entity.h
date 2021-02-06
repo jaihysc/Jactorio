@@ -59,7 +59,7 @@ namespace jactorio::proto
                       game::ChunkTileLayer& /*tile_layer*/) const override {}
 
 
-        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {
+        void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {
             // Must convert to at least 1 game tick
             J_PROTO_ASSERT(pickupTime * kGameHertz >= 1, "Pickup time is too small");
         }

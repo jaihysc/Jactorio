@@ -129,7 +129,7 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
     while (common.gameState == world_render_game_state) {
         EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-        auto& player  = common.GetDataGlobal().player;
+        auto& player       = common.GetDataGlobal().player;
         auto& player_world = common.GetDataGlobal().worlds[player.world.GetId()];
 
         // ======================================================================
@@ -163,7 +163,7 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
                            common.GetDataGlobal().worlds,
                            common.GetDataGlobal().logic,
                            player,
-                           common.gameDataLocal.prototype,
+                           common.gameDataLocal.proto,
                            common.gameDataLocal.event);
         }
         // ======================================================================
@@ -222,8 +222,8 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // Loading textures
     auto renderer_sprites = RendererSprites();
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, proto::Sprite::SpriteGroup::terrain, true);
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, proto::Sprite::SpriteGroup::gui, false);
+    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.proto, proto::Sprite::SpriteGroup::terrain, true);
+    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.proto, proto::Sprite::SpriteGroup::gui, false);
 
 
     Renderer::GlSetup();

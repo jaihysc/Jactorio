@@ -20,7 +20,7 @@ namespace jactorio::game
         Logic logicData_;
         World worldData_;
 
-        data::PrototypeManager dataManager_;
+        data::PrototypeManager proto_;
 
         ///
         /// Sets the base layer and entity at coord
@@ -230,7 +230,7 @@ namespace jactorio::game
         // Create entity
         auto item = proto::Item();
 
-        auto& entity      = dataManager_.AddProto<proto::ContainerEntity>();
+        auto& entity      = proto_.Make<proto::ContainerEntity>();
         entity.pickupTime = 1.f;
         entity.SetItem(&item);
 
@@ -283,7 +283,7 @@ namespace jactorio::game
         // Create resource entity
         auto item = proto::Item();
 
-        auto& entity      = dataManager_.AddProto<proto::ResourceEntity>();
+        auto& entity      = proto_.Make<proto::ResourceEntity>();
         entity.pickupTime = 3.f;
         entity.SetItem(&item);
 
@@ -331,7 +331,7 @@ namespace jactorio::game
 
 
         // Resource entity
-        auto& resource_entity      = dataManager_.AddProto<proto::ResourceEntity>();
+        auto& resource_entity      = proto_.Make<proto::ResourceEntity>();
         resource_entity.pickupTime = 3.f;
         resource_entity.SetItem(&item);
 
@@ -343,7 +343,7 @@ namespace jactorio::game
 
 
         // Other entity (e.g Container_entity)
-        auto& container_entity      = dataManager_.AddProto<proto::ContainerEntity>();
+        auto& container_entity      = proto_.Make<proto::ContainerEntity>();
         container_entity.pickupTime = 1.f;
         container_entity.SetItem(&item);
 

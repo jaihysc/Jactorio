@@ -183,8 +183,7 @@ namespace jactorio::game
 
         ///
         /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
-        J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& coord,
-                                                    const TileLayer& tile_layer) noexcept;
+        J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& coord, const TileLayer& tile_layer) noexcept;
 
         ///
         /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
@@ -201,9 +200,7 @@ namespace jactorio::game
         ///
         /// Removes a layer at coordinates to be considered for logic updates
         /// w/ custom comparison func to remove
-        void LogicRemove(LogicGroup group,
-                         const WorldCoord& coord,
-                         const std::function<bool(ChunkTileLayer*)>& pred);
+        void LogicRemove(LogicGroup group, const WorldCoord& coord, const std::function<bool(ChunkTileLayer*)>& pred);
 
         ///
         /// Removes a layer at coordinates to be considered for logic updates
@@ -241,7 +238,7 @@ namespace jactorio::game
         /// Takes first in from chunk generation queue and generates chunk
         /// Call once per logic loop tick to generate one chunk only, this keeps performance constant
         /// when generating large amounts of chunks
-        void GenChunk(const data::PrototypeManager& data_manager, uint8_t amount = 1);
+        void GenChunk(const data::PrototypeManager& proto, uint8_t amount = 1);
 
 
         // ======================================================================

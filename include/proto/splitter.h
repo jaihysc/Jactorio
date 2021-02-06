@@ -45,7 +45,7 @@ namespace jactorio::proto
                       game::ChunkTileLayer& tile_layer) const override;
 
         void PostLoad() override;
-        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
         void ValidatedPostLoad() override;
 
     private:

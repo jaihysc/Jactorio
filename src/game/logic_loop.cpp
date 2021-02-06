@@ -36,7 +36,7 @@ void LogicLoop(ThreadedLoopCommon& common) {
 
     auto& event = common.gameDataLocal.event;
     auto& input = common.gameDataLocal.input;
-    auto& proto = common.gameDataLocal.prototype;
+    auto& proto = common.gameDataLocal.proto;
 
     auto next_frame = std::chrono::steady_clock::now();
     while (common.gameState != ThreadedLoopCommon::GameState::quit) {
@@ -103,11 +103,11 @@ void LogicLoop(ThreadedLoopCommon& common) {
 
 void game::InitLogicLoop(ThreadedLoopCommon& common) {
     // Initialize game data
-    data::active_prototype_manager   = &common.gameDataLocal.prototype;
+    data::active_prototype_manager   = &common.gameDataLocal.proto;
     data::active_unique_data_manager = &common.gameDataLocal.unique;
 
     try {
-        common.gameDataLocal.prototype.LoadData(data::PrototypeManager::kDataFolder);
+        common.gameDataLocal.proto.Load(data::PrototypeManager::kDataFolder);
     }
     catch (proto::ProtoError&) {
         // Prototype loading error

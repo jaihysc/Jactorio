@@ -354,8 +354,8 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorStructTest, Serialize) {
-        data::PrototypeManager proto_manager;
-        auto& item = proto_manager.AddProto<proto::Item>();
+        data::PrototypeManager proto;
+        auto& item = proto.Make<proto::Item>();
 
         auto segment =
             std::make_unique<ConveyorStruct>(Orientation::down, ConveyorStruct::TerminationType::bend_left, 4);
@@ -372,8 +372,8 @@ namespace jactorio::game
         segment->right.visible          = false;
 
 
-        data::active_prototype_manager = &proto_manager;
-        proto_manager.GenerateRelocationTable();
+        data::active_prototype_manager = &proto;
+        proto.GenerateRelocationTable();
 
         // ======================================================================
         auto result = TestSerializeDeserialize(segment);

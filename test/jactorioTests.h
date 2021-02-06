@@ -36,7 +36,7 @@ namespace jactorio
     public:
         PROTOTYPE_CATEGORY(test);
 
-        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {}
+        void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {}
 
         J_NODISCARD proto::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
             return nullptr;
@@ -285,18 +285,18 @@ namespace jactorio
     ///
     /// Sets up and registers a recipe
     /// 1a + 1b = 1c
-    J_NODISCARD inline auto TestSetupRecipe(data::PrototypeManager& proto_manager) {
+    J_NODISCARD inline auto TestSetupRecipe(data::PrototypeManager& proto) {
         TestSetupRecipeReturn rt;
 
-        rt.recipe = &proto_manager.AddProto<proto::Recipe>();
+        rt.recipe = &proto.Make<proto::Recipe>();
 
         rt.recipe->craftingTime = 1.f;
         rt.recipe->ingredients  = {{"__test/r-ingredient-1", 1}, {"__test/r-ingredient-2", 1}};
         rt.recipe->product      = {"__test/r-product", 1};
 
-        rt.item1       = &proto_manager.AddProto<proto::Item>("__test/r-ingredient-1");
-        rt.item2       = &proto_manager.AddProto<proto::Item>("__test/r-ingredient-2");
-        rt.itemProduct = &proto_manager.AddProto<proto::Item>("__test/r-product");
+        rt.item1       = &proto.Make<proto::Item>("__test/r-ingredient-1");
+        rt.item2       = &proto.Make<proto::Item>("__test/r-ingredient-2");
+        rt.itemProduct = &proto.Make<proto::Item>("__test/r-product");
 
         return rt;
     }

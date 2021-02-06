@@ -32,16 +32,16 @@ using namespace jactorio;
 template <bool HalfSelectOnLeft = false, bool HalfSelectOnRight = true>
 void HandleInvClicked(
     game::Player& player,
-    const data::PrototypeManager& data_manager,
+    const data::PrototypeManager& proto,
     proto::Item::Inventory& inv,
     const size_t index,
     const std::function<void()>& on_click = []() {}) {
     if (ImGui::IsItemClicked()) {
-        player.inventory.HandleInventoryActions(data_manager, inv, index, HalfSelectOnLeft);
+        player.inventory.HandleInventoryActions(proto, inv, index, HalfSelectOnLeft);
         on_click();
     }
     else if (ImGui::IsItemClicked(1)) {
-        player.inventory.HandleInventoryActions(data_manager, inv, index, HalfSelectOnRight);
+        player.inventory.HandleInventoryActions(proto, inv, index, HalfSelectOnRight);
         on_click();
     }
 }
@@ -53,7 +53,7 @@ void HandleInvClicked(
     const size_t index,
     const std::function<void()>& on_click = []() {}) {
 
-    HandleInvClicked<HalfSelectOnLeft, HalfSelectOnRight>(g_rendr.player, g_rendr.protoManager, inv, index, on_click);
+    HandleInvClicked<HalfSelectOnLeft, HalfSelectOnRight>(g_rendr.player, g_rendr.proto, inv, index, on_click);
 }
 
 float GetProgressBarFraction(const GameTickT game_tick,
@@ -106,8 +106,8 @@ void PlayerInventoryMenu(const render::GuiRenderer& g_rendr) {
 void RecipeMenu(const render::GuiRenderer g_rendr,
                 const std::string& title,
                 const std::function<void(const proto::Recipe& recipe)>& item_slot_draw) {
-    auto& player         = g_rendr.player;
-    const auto& proto_manager = g_rendr.protoManager;
+    auto& player      = g_rendr.player;
+    const auto& proto = g_rendr.proto;
 
     const gui::GuiMenu menu;
     menu.Begin("_recipe");
@@ -150,7 +150,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     };
 
     // Menu groups
-    auto groups = proto_manager.DataRawGetAllSorted<proto::RecipeGroup>(proto::Category::recipe_group);
+    auto groups = proto.GetAllSorted<proto::RecipeGroup>(proto::Category::recipe_group);
 
     auto group_slots     = g_rendr.MakeComponent<gui::GuiItemSlots>();
     group_slots.slotSpan = 5;
@@ -161,8 +161,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
         // Only draw item categories matching searched product name
         for (auto& recipe_category : recipe_group->recipeCategories) {
             for (auto& recipe : recipe_category->recipes) {
-                const auto& product_name =
-                    proto_manager.DataRawGet<proto::Item>(recipe->product.first)->GetLocalizedName();
+                const auto& product_name = proto.Get<proto::Item>(recipe->product.first)->GetLocalizedName();
 
                 if (matches_search_str(product_name, player.crafting.recipeSearchText))
                     goto loop_exit;
@@ -200,7 +199,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
         recipe_row.Begin(recipes.size(), [&](auto index) {
             const auto* recipe = recipes.at(index);
 
-            const auto* product = proto_manager.DataRawGet<proto::Item>(recipe->product.first);
+            const auto* product = proto.Get<proto::Item>(recipe->product.first);
             assert(product != nullptr); // Invalid recipe product
 
             if (!matches_search_str(product->GetLocalizedName(), player.crafting.recipeSearchText))
@@ -216,10 +215,10 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
 /// \tparam IsPlayerCrafting Shows items possessed by the player and opportunities for intermediate crafting
 template <bool IsPlayerCrafting>
 void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe& recipe) {
-    auto& player         = g_rendr.player;
-    const auto& proto_manager = g_rendr.protoManager;
+    auto& player      = g_rendr.player;
+    const auto& proto = g_rendr.proto;
 
-    auto* product_item = proto_manager.DataRawGet<proto::Item>(recipe.product.first);
+    auto* product_item = proto.Get<proto::Item>(recipe.product.first);
     assert(product_item);
 
     // Show the product yield in the title
@@ -233,7 +232,7 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe&
     gui::DrawCursorTooltip(player.inventory.GetSelectedItem() != nullptr, title_ss.str(), "Ingredients:", [&]() {
         // Ingredients
         for (const auto& ingredient_pair : recipe.ingredients) {
-            const auto* item = proto_manager.DataRawGet<proto::Item>(ingredient_pair.first);
+            const auto* item = proto.Get<proto::Item>(ingredient_pair.first);
 
             auto ingredient_row = g_rendr.MakeComponent<gui::GuiItemSlots>();
             ingredient_row.DrawSlot(item->sprite->internalId);
@@ -243,7 +242,7 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe&
             const auto player_item_count = game::GetInvItemCount(player.inventory.inventory, item);
             // Does not have ingredient
             if (IsPlayerCrafting && player_item_count < ingredient_pair.second) {
-                const bool can_be_recurse_crafted = player.crafting.RecipeCanCraft(proto_manager, recipe, 1);
+                const bool can_be_recurse_crafted = player.crafting.RecipeCanCraft(proto, recipe, 1);
 
                 gui::ImGuard text_guard;
                 if (can_be_recurse_crafted)
@@ -265,13 +264,13 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe&
 
         ImGui::Text("%s", "Total Raw:");
 
-        auto raw_inames = proto::Recipe::RecipeGetTotalRaw(proto_manager, product_item->name);
+        auto raw_inames = proto::Recipe::RecipeGetTotalRaw(proto, product_item->name);
 
         auto raw_item_slots                = g_rendr.MakeComponent<gui::GuiItemSlots>();
         raw_item_slots.slotSpan            = 5;
         raw_item_slots.endingVerticalSpace = 0;
         raw_item_slots.Begin(raw_inames.size(), [&](const auto slot_index) {
-            const auto* item = proto_manager.DataRawGet<proto::Item>(raw_inames[slot_index].first);
+            const auto* item = proto.Get<proto::Item>(raw_inames[slot_index].first);
 
             const auto item_count_required = raw_inames[slot_index].second;
 
@@ -306,12 +305,12 @@ void gui::CharacterMenu(const render::GuiRenderer& g_rendr) {
 
     SetupNextWindowRight();
     RecipeMenu(g_rendr, "Recipe", [&](auto& recipe) {
-        auto& player              = g_rendr.player;
-        const auto& proto_manager = g_rendr.protoManager;
+        auto& player      = g_rendr.player;
+        const auto& proto = g_rendr.proto;
 
         if (ImGui::IsItemClicked()) {
-            if (player.crafting.RecipeCanCraft(proto_manager, recipe, 1)) {
-                player.crafting.RecipeCraftR(proto_manager, recipe);
+            if (player.crafting.RecipeCanCraft(proto, recipe, 1)) {
+                player.crafting.RecipeCraftR(proto, recipe);
                 player.inventory.InventorySort(player.inventory.inventory);
             }
         }
@@ -394,7 +393,7 @@ void gui::CraftingQueue(const render::GuiRenderer& g_rendr) {
         const auto* recipe = recipe_queue.at(index).Get();
         assert(recipe != nullptr);
 
-        const auto* item = g_rendr.protoManager.DataRawGet<proto::Item>(recipe->product.first);
+        const auto* item = g_rendr.proto.Get<proto::Item>(recipe->product.first);
         queued_item_row.DrawSlot(item->sprite->internalId, recipe->product.second);
     });
 }
@@ -483,8 +482,8 @@ void gui::MiningDrill(const render::GuiRenderer& g_rendr) {
 }
 
 void gui::AssemblyMachine(const render::GuiRenderer& g_rendr) {
-    auto& logic               = g_rendr.logic;
-    const auto& proto_manager = g_rendr.protoManager;
+    auto& logic       = g_rendr.logic;
+    const auto& proto = g_rendr.proto;
 
     const auto* prototype = g_rendr.prototype;
     assert(prototype != nullptr);
@@ -516,20 +515,19 @@ void gui::AssemblyMachine(const render::GuiRenderer& g_rendr) {
         ingredient_slots.Begin(machine_data.ingredientInv.size() + 1, [&](auto index) {
             // Recipe change button
             if (index == machine_data.ingredientInv.size()) {
-                auto* reset_icon = proto_manager.DataRawGet<proto::Item>(proto::Item::kResetIname);
+                auto* reset_icon = proto.Get<proto::Item>(proto::Item::kResetIname);
                 assert(reset_icon != nullptr);
 
                 ingredient_slots.DrawSlot(reset_icon->sprite->internalId, [&]() {
                     if (ImGui::IsItemClicked()) {
-                        machine_data.ChangeRecipe(logic, proto_manager, nullptr);
+                        machine_data.ChangeRecipe(logic, proto, nullptr);
                     }
                 });
                 return;
             }
 
             // Item which is required
-            auto* ingredient_item =
-                proto_manager.DataRawGet<proto::Item>(machine_data.GetRecipe()->ingredients[index].first);
+            auto* ingredient_item = proto.Get<proto::Item>(machine_data.GetRecipe()->ingredients[index].first);
             assert(ingredient_item != nullptr);
 
             // Amount of item possessed
@@ -541,8 +539,8 @@ void gui::AssemblyMachine(const render::GuiRenderer& g_rendr) {
                     });
 
                     if (ImGui::IsItemHovered()) {
-                        auto* recipe = proto::Recipe::GetItemRecipe(proto_manager,
-                                                                    machine_data.GetRecipe()->ingredients[index].first);
+                        auto* recipe =
+                            proto::Recipe::GetItemRecipe(proto, machine_data.GetRecipe()->ingredients[index].first);
 
                         if (recipe)
                             RecipeHoverTooltip<false>(g_rendr, *recipe);
@@ -570,7 +568,7 @@ void gui::AssemblyMachine(const render::GuiRenderer& g_rendr) {
         // Product
         auto product_slots = g_rendr.MakeComponent<GuiItemSlots>();
         product_slots.Begin(1, [&](auto /*slot_index*/) {
-            auto* product_item = proto_manager.DataRawGet<proto::Item>(machine_data.GetRecipe()->product.first);
+            auto* product_item = proto.Get<proto::Item>(machine_data.GetRecipe()->product.first);
 
             assert(product_item != nullptr);
             product_slots.DrawSlot(product_item->sprite->internalId, machine_data.productInv[0].count, [&]() {
@@ -579,8 +577,7 @@ void gui::AssemblyMachine(const render::GuiRenderer& g_rendr) {
                 });
 
                 if (ImGui::IsItemHovered()) {
-                    const auto* recipe =
-                        proto::Recipe::GetItemRecipe(proto_manager, machine_data.GetRecipe()->product.first);
+                    const auto* recipe = proto::Recipe::GetItemRecipe(proto, machine_data.GetRecipe()->product.first);
                     assert(recipe != nullptr);
 
                     RecipeHoverTooltip<false>(g_rendr, *recipe);
@@ -593,7 +590,7 @@ void gui::AssemblyMachine(const render::GuiRenderer& g_rendr) {
         SetupNextWindowCenter();
         RecipeMenu(g_rendr, prototype->GetLocalizedName(), [&](auto& recipe) {
             if (ImGui::IsItemClicked()) {
-                machine_data.ChangeRecipe(logic, proto_manager, &recipe);
+                machine_data.ChangeRecipe(logic, proto, &recipe);
             }
 
             if (ImGui::IsItemHovered())

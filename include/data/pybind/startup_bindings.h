@@ -69,19 +69,19 @@ inline void ExtractPythonTraceback(jactorio::proto::FrameworkBase& prototype) {
 
 ///
 /// Name of cpp class, python name to reference cpp class, cpp inheritors for cpp class
-#define PYBIND_DATA_CLASS(cpp_class__, py_name__, ...)                                                \
-    m.def(                                                                                            \
-        #py_name__,                                                                                   \
-        [](const std::string& iname = "") {                                                           \
-            assert(jactorio::data::active_prototype_manager);                                         \
-            auto& prototype = jactorio::data::active_prototype_manager->AddProto<cpp_class__>(iname); \
-                                                                                                      \
-            ExtractPythonTraceback(prototype);                                                        \
-                                                                                                      \
-            return &prototype;                                                                        \
-        },                                                                                            \
-        py::arg("iname") = "",                                                                        \
-        pybind11::return_value_policy::reference);                                                    \
+#define PYBIND_DATA_CLASS(cpp_class__, py_name__, ...)                                            \
+    m.def(                                                                                        \
+        #py_name__,                                                                               \
+        [](const std::string& iname = "") {                                                       \
+            assert(jactorio::data::active_prototype_manager);                                     \
+            auto& prototype = jactorio::data::active_prototype_manager->Make<cpp_class__>(iname); \
+                                                                                                  \
+            ExtractPythonTraceback(prototype);                                                    \
+                                                                                                  \
+            return &prototype;                                                                    \
+        },                                                                                        \
+        py::arg("iname") = "",                                                                    \
+        pybind11::return_value_policy::reference);                                                \
     py::class_<cpp_class__, __VA_ARGS__>(m, "_" #py_name__)
 
 // Does not define a function for creating the class
@@ -291,7 +291,7 @@ PYBIND11_EMBEDDED_MODULE(jactorioData, m) {
         [](const Category category, const std::string& iname) {
             assert(jactorio::data::active_prototype_manager);
 
-            return jactorio::data::active_prototype_manager->DataRawGet<FrameworkBase>(category, iname);
+            return jactorio::data::active_prototype_manager->Get<FrameworkBase>(category, iname);
         },
         pybind11::return_value_policy::reference);
 
