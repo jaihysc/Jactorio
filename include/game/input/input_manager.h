@@ -64,7 +64,7 @@ namespace jactorio::game
 
         ///
         /// Deletes all callback data
-        void ClearData();
+        void Clear();
 
         ///
         static InputAction ToInputAction(int action, bool repeat);

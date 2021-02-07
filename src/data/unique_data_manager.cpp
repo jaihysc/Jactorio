@@ -30,7 +30,7 @@ proto::UniqueDataBase& data::UniqueDataManager::RelocationTableGet(const UniqueD
 
 // ======================================================================
 
-void data::UniqueDataManager::RelocationClear() noexcept {
+void data::UniqueDataManager::Clear() noexcept {
     nextId_ = kDefaultId;
     dataEntries_.clear();
 }

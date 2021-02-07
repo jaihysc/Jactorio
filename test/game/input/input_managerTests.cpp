@@ -16,7 +16,7 @@ namespace jactorio::game
         int counter_ = 0;
 
         void TearDown() override {
-            keyInput_.ClearData();
+            keyInput_.Clear();
         }
     };
 
@@ -173,7 +173,7 @@ namespace jactorio::game
         keyInput_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
         keyInput_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
 
-        keyInput_.ClearData();
+        keyInput_.Clear();
 
         // Should not increment counter2 since all callbacks were cleared
         keyInput_.SetInput(SDLK_SPACE, InputAction::key_down);

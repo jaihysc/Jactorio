@@ -13,7 +13,7 @@
 
 using namespace jactorio;
 
-void render::RendererSprites::ClearSpritemaps() {
+void render::RendererSprites::Clear() {
     for (auto& map : textures_) {
         delete map.second;
     }

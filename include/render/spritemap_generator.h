@@ -44,7 +44,7 @@ namespace jactorio::render
         RendererSprites() = default;
 
         ~RendererSprites() {
-            ClearSpritemaps();
+            Clear();
         }
 
         RendererSprites(const RendererSprites& other)     = delete;
@@ -68,7 +68,7 @@ namespace jactorio::render
     public:
         ///
         /// Frees all spritemap memory
-        void ClearSpritemaps();
+        void Clear();
 
         ///
         /// Creates a spritemap and stores it as a render::Texture

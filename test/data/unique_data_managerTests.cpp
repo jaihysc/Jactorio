@@ -25,7 +25,7 @@ namespace jactorio::data
         proto::AssemblyMachineData data_1;
         udm.AssignId(data_1);
 
-        udm.RelocationClear();
+        udm.Clear();
         proto::AssemblyMachineData data_2;
         udm.AssignId(data_2);
 
@@ -71,7 +71,7 @@ namespace jactorio::data
         data_1.internalId = 1;
         udm.StoreRelocationEntry(data_1);
 
-        udm.RelocationClear();
+        udm.Clear();
 
         EXPECT_TRUE(udm.GetDebugInfo().dataEntries.empty());
     }

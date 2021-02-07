@@ -30,8 +30,8 @@ namespace jactorio::data
         J_NODISCARD proto::UniqueDataBase& RelocationTableGet(UniqueDataIdT id) const noexcept;
 
 
-        /// Resets internal data
-        void RelocationClear() noexcept;
+        /// Clears the relocation table
+        void Clear() noexcept;
 
 
         DebugInfo GetDebugInfo();

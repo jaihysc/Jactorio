@@ -131,7 +131,7 @@ void game::InputManager::Unsubscribe(const CallbackId callback_id) {
     }
 }
 
-void game::InputManager::ClearData() {
+void game::InputManager::Clear() {
     inputCallbacks_.clear();
     callbackIds_.clear();
 }

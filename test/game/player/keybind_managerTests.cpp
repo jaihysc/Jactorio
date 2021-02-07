@@ -178,7 +178,7 @@ namespace jactorio::game
         keybindManager_.ChangeActionInput(PlayerAction::Type::test, SDLK_0, InputAction::key_down);
 
         Serialize();
-        inputManager_.ClearData();
+        inputManager_.Clear();
 
         Deserialize();
         keybindManager_.RegisterAllKeyData();
@@ -195,7 +195,7 @@ namespace jactorio::game
         keybindManager_.ChangeActionInput(PlayerAction::Type::test, MouseInput::left, InputAction::key_up);
 
         Serialize();
-        inputManager_.ClearData();
+        inputManager_.Clear();
 
         Deserialize();
         keybindManager_.RegisterAllKeyData();

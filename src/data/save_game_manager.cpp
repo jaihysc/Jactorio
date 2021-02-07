@@ -46,7 +46,7 @@ void data::DeserializeGameData(game::GameDataLocal& data_local,
                 world.DeserializePostProcess();
             }
         },
-        [&]() { data_local.unique.RelocationClear(); },
+        [&]() { data_local.unique.Clear(); },
     };
 
 
