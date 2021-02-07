@@ -260,8 +260,7 @@ namespace jactorio::game
         // Added chunk
         ASSERT_EQ(logic_chunks.size(), 1);
 
-        EXPECT_NE(std::find(logic_chunks.begin(), logic_chunks.end(), world_.GetChunkC({1, 0})),
-                  logic_chunks.end());
+        EXPECT_NE(std::find(logic_chunks.begin(), logic_chunks.end(), world_.GetChunkC({1, 0})), logic_chunks.end());
 
 
         // Registering again will not duplicate logic chunk
@@ -390,7 +389,7 @@ namespace jactorio::game
          */
 
         data::PrototypeManager proto;
-        data::UniqueDataManager unique_manager;
+        data::UniqueDataManager unique;
 
 
         auto& asm_machine = proto.Make<proto::AssemblyMachine>();
@@ -402,7 +401,7 @@ namespace jactorio::game
 
 
         data::active_prototype_manager   = &proto;
-        data::active_unique_data_manager = &unique_manager;
+        data::active_unique_data_manager = &unique;
         proto.GenerateRelocationTable();
 
         auto result = TestSerializeDeserialize(world_);

@@ -7,72 +7,72 @@
 namespace jactorio::data
 {
     TEST(UniqueDataManager, AssignId) {
-        UniqueDataManager udm;
+        UniqueDataManager unique;
 
         proto::AssemblyMachineData data_1;
         proto::AssemblyMachineData data_2;
 
-        udm.AssignId(data_1);
-        udm.AssignId(data_2);
+        unique.AssignId(data_1);
+        unique.AssignId(data_2);
 
         EXPECT_EQ(data_1.internalId, 1);
         EXPECT_EQ(data_2.internalId, 2);
     }
 
     TEST(UniqueDataManager, ClearResetId) {
-        UniqueDataManager udm;
+        UniqueDataManager unique;
 
         proto::AssemblyMachineData data_1;
-        udm.AssignId(data_1);
+        unique.AssignId(data_1);
 
-        udm.Clear();
+        unique.Clear();
         proto::AssemblyMachineData data_2;
-        udm.AssignId(data_2);
+        unique.AssignId(data_2);
 
         EXPECT_EQ(data_1.internalId, 1);
         EXPECT_EQ(data_2.internalId, 1);
     }
 
     TEST(UniqueDataManager, StoreGetRelocationEntry) {
-        UniqueDataManager udm;
+        UniqueDataManager unique;
 
         proto::AssemblyMachineData data_1;
         data_1.internalId = 1;
-        udm.StoreRelocationEntry(data_1);
+        unique.StoreRelocationEntry(data_1);
 
 
         proto::AssemblyMachineData data_2;
         data_2.internalId = 10;
-        udm.StoreRelocationEntry(data_2);
+        unique.StoreRelocationEntry(data_2);
 
-        EXPECT_EQ(&udm.RelocationTableGet(1), &data_1);
-        EXPECT_EQ(&udm.RelocationTableGet(10), &data_2);
+        EXPECT_EQ(&unique.RelocationTableGet(1), &data_1);
+        EXPECT_EQ(&unique.RelocationTableGet(10), &data_2);
     }
 
     TEST(UniqueDataManager, StoreRelocationEntryOverwrite) {
-        UniqueDataManager udm;
+        UniqueDataManager unique;
 
         proto::AssemblyMachineData data_1;
         data_1.internalId = 1;
-        udm.StoreRelocationEntry(data_1);
+        unique.StoreRelocationEntry(data_1);
 
 
         proto::AssemblyMachineData data_2;
         data_2.internalId = 1;
-        udm.StoreRelocationEntry(data_2);
+        unique.StoreRelocationEntry(data_2);
 
-        EXPECT_EQ(&udm.RelocationTableGet(1), &data_2);
+        EXPECT_EQ(&unique.RelocationTableGet(1), &data_2);
     }
 
     TEST(UniqueDataManager, ClearRelocationTable) {
-        UniqueDataManager udm;
+        UniqueDataManager unique;
 
         proto::AssemblyMachineData data_1;
         data_1.internalId = 1;
-        udm.StoreRelocationEntry(data_1);
+        unique.StoreRelocationEntry(data_1);
 
-        udm.Clear();
+        unique.Clear();
 
-        EXPECT_TRUE(udm.GetDebugInfo().dataEntries.empty());
+        EXPECT_TRUE(unique.GetDebugInfo().dataEntries.empty());
     }
 } // namespace jactorio::data

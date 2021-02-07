@@ -38,17 +38,17 @@ namespace jactorio::data
     }
 
     TEST(SerialUniqueDataPointer, Serialize) {
-        UniqueDataManager unique_manager;
+        UniqueDataManager unique;
 
         proto::ContainerEntityData container;
         container.health = 42;
-        unique_manager.AssignId(container);
-        unique_manager.StoreRelocationEntry(container);
+        unique.AssignId(container);
+        unique.StoreRelocationEntry(container);
 
         const SerialUniqueDataPtr serial_ptr(&container);
 
 
-        active_unique_data_manager = &unique_manager;
+        active_unique_data_manager = &unique;
         auto result                = TestSerializeDeserialize(serial_ptr);
 
         EXPECT_EQ(result->internalId, 1);

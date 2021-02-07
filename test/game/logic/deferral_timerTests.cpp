@@ -143,7 +143,7 @@ namespace jactorio::game
 
     TEST_F(DeferralTimerTest, SerializeCallbacks) {
         data::PrototypeManager proto;
-        data::UniqueDataManager unique_manager;
+        data::UniqueDataManager unique;
 
         auto& defer_proto = proto.Make<MockDeferred>();
         MockUniqueData unique_data;
@@ -152,11 +152,11 @@ namespace jactorio::game
 
 
         proto.GenerateRelocationTable();
-        unique_manager.AssignId(unique_data);
-        unique_manager.StoreRelocationEntry(unique_data);
+        unique.AssignId(unique_data);
+        unique.StoreRelocationEntry(unique_data);
 
         data::active_prototype_manager   = &proto;
-        data::active_unique_data_manager = &unique_manager;
+        data::active_unique_data_manager = &unique;
         const auto result                = TestSerializeDeserialize(timer_);
 
 

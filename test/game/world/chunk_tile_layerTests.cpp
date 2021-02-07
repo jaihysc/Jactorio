@@ -325,10 +325,10 @@ namespace jactorio::game
 
     TEST_F(ChunkTileLayerTest, Serialize) {
         data::PrototypeManager proto;
-        data::UniqueDataManager unique_manager;
+        data::UniqueDataManager unique;
 
         data::active_prototype_manager   = &proto;
-        data::active_unique_data_manager = &unique_manager;
+        data::active_unique_data_manager = &unique;
 
         auto& container = proto.Make<proto::ContainerEntity>();
         container.SetWidth(2); // Width and height are flipped since orientation is right
@@ -364,6 +364,6 @@ namespace jactorio::game
         EXPECT_EQ(result_br.GetDimensions().height, 2);
 
 
-        EXPECT_EQ(unique_manager.GetDebugInfo().dataEntries.size(), 1);
+        EXPECT_EQ(unique.GetDebugInfo().dataEntries.size(), 1);
     }
 } // namespace jactorio::game
