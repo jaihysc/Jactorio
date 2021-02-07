@@ -13,9 +13,9 @@ namespace jactorio::game
     class PlayerPlacementTest : public testing::Test
     {
     protected:
-        Player playerData_;
-        Player::Inventory& playerInv_   = playerData_.inventory;
-        Player::Placement& playerPlace_ = playerData_.placement;
+        Player player_;
+        Player::Inventory& playerInv_   = player_.inventory;
+        Player::Placement& playerPlace_ = player_.placement;
 
         Logic logic_;
         World world_;

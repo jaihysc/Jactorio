@@ -11,9 +11,9 @@ namespace jactorio::game
     class PlayerRecipeTest : public testing::Test
     {
     protected:
-        Player playerData_;
-        Player::Inventory& playerInv_  = playerData_.inventory;
-        Player::Crafting& playerCraft_ = playerData_.crafting;
+        Player player_;
+        Player::Inventory& playerInv_  = player_.inventory;
+        Player::Crafting& playerCraft_ = player_.crafting;
 
         data::PrototypeManager proto_;
 
@@ -258,7 +258,7 @@ namespace jactorio::game
         proto_.GenerateRelocationTable();
         data::active_prototype_manager = &proto_;
 
-        auto result = TestSerializeDeserialize(playerData_);
+        auto result = TestSerializeDeserialize(player_);
 
 
         result.crafting.RecipeCraftTick(proto_, (2 * 3.1 + 1.5) * kGameHertz);
