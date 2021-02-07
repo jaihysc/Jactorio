@@ -206,8 +206,7 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const
             slot.count += params.itemStack.count;
 
             assert(targetProtoData_);
-            static_cast<const proto::AssemblyMachine*>(targetProtoData_)
-                ->TryBeginCrafting(params.logicData, machine_data);
+            static_cast<const proto::AssemblyMachine*>(targetProtoData_)->TryBeginCrafting(params.logic, machine_data);
             return true;
         }
     }
@@ -364,7 +363,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(c
 
     const auto* asm_machine = static_cast<const proto::AssemblyMachine*>(targetProtoData_);
     assert(asm_machine);
-    asm_machine->TryBeginCrafting(params.logicData, machine_data);
+    asm_machine->TryBeginCrafting(params.logic, machine_data);
 
     return {true, {product_stack.item, params.amount}};
 }

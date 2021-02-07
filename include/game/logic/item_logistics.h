@@ -20,8 +20,8 @@ namespace jactorio::game
 #define J_ITEM_HANDLER_COMMON                                                      \
     bool Initialize(World& world, WorldCoordAxis world_x, WorldCoordAxis world_y); \
                                                                                    \
-    bool Initialize(World& world, const WorldCoord& coord) {                 \
-        return Initialize(world, coord.x, coord.y);                    \
+    bool Initialize(World& world, const WorldCoord& coord) {                       \
+        return Initialize(world, coord.x, coord.y);                                \
     };
 
     ///
@@ -67,7 +67,7 @@ namespace jactorio::game
 
         struct DropOffParams
         {
-            Logic& logicData;
+            Logic& logic;
             const proto::ItemStack& itemStack;
             /// Entity to drop into
             proto::UniqueDataBase& uniqueData;
@@ -127,7 +127,7 @@ namespace jactorio::game
         /// \remark Picks up items when at max deg
         struct PickupParams
         {
-            Logic& logicData;
+            Logic& logic;
             proto::ProtoUintT inserterTileReach;
             const proto::RotationDegreeT& degree;
             proto::Item::StackCount amount;
@@ -143,8 +143,7 @@ namespace jactorio::game
                             const proto::Item::StackCount amount) const {
             assert(targetUniqueData_);
             assert(pickupFunc_);
-            return (this->*pickupFunc_)(
-                {logic, inserter_tile_reach, degree, amount, *targetUniqueData_, orientation_});
+            return (this->*pickupFunc_)({logic, inserter_tile_reach, degree, amount, *targetUniqueData_, orientation_});
         }
 
         ///
@@ -154,8 +153,7 @@ namespace jactorio::game
                                               const proto::RotationDegreeT& degree) const {
             assert(targetUniqueData_);
             assert(getPickupFunc_);
-            return (this->*getPickupFunc_)(
-                {logic, inserter_tile_reach, degree, 1, *targetUniqueData_, orientation_});
+            return (this->*getPickupFunc_)({logic, inserter_tile_reach, degree, 1, *targetUniqueData_, orientation_});
         }
 
     protected:

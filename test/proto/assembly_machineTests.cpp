@@ -10,7 +10,7 @@ namespace jactorio::proto
     {
     protected:
         game::World world_;
-        game::Logic logicData_;
+        game::Logic logic_;
 
         data::PrototypeManager proto_;
 
@@ -51,7 +51,7 @@ namespace jactorio::proto
         EXPECT_EQ(data_.GetRecipe(), nullptr);
 
         // Has recipe
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
         EXPECT_TRUE(data_.HasRecipe());
         EXPECT_EQ(data_.GetRecipe(), recipe_);
     }
@@ -63,8 +63,8 @@ namespace jactorio::proto
         SetupRecipe();
 
         // Recipe crafted in 60 ticks
-        logicData_.DeferralUpdate(world_, 900);
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        logic_.DeferralUpdate(world_, 900);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
 
         EXPECT_EQ(data_.deferralEntry.dueTick, 0);
 
@@ -77,22 +77,22 @@ namespace jactorio::proto
 
         // crafting
         SetupMachineCraftingInv();
-        EXPECT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
+        EXPECT_TRUE(asmMachine_.TryBeginCrafting(logic_, data_));
         EXPECT_EQ(data_.deferralEntry.dueTick, 960);
     }
 
     TEST_F(AssemblyMachineTest, ChangeRecipeRemoveRecipe) {
         SetupRecipe();
 
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
 
         SetupMachineCraftingInv();
-        ASSERT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
+        ASSERT_TRUE(asmMachine_.TryBeginCrafting(logic_, data_));
 
         ASSERT_NE(data_.deferralEntry.callbackIndex, 0);
 
         // Remove recipe
-        data_.ChangeRecipe(logicData_, proto_, nullptr);
+        data_.ChangeRecipe(logic_, proto_, nullptr);
         EXPECT_EQ(data_.deferralEntry.callbackIndex, 0);
 
         EXPECT_EQ(data_.ingredientInv.size(), 0);
@@ -106,7 +106,7 @@ namespace jactorio::proto
         SetupRecipe();
 
         // Ingredients not yet present
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
         EXPECT_FALSE(data_.CanBeginCrafting());
 
         // Ingredients does not match
@@ -125,7 +125,7 @@ namespace jactorio::proto
         itemProduct_->stackSize = 50;
         recipe_->product.second = 2; // 2 per crafting
 
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
         SetupMachineCraftingInv();
         data_.productInv[0] = {itemProduct_, 49, itemProduct_};
 
@@ -136,7 +136,7 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, CraftDeductIngredients) {
         SetupRecipe();
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
 
         data_.ingredientInv[0] = {item1_, 5};
         data_.ingredientInv[1] = {item1_, 10};
@@ -161,7 +161,7 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, CraftAddProduct) {
         SetupRecipe();
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
 
         data_.ingredientInv[0] = {item1_, 5};
         data_.ingredientInv[1] = {item1_, 10};
@@ -175,7 +175,7 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, Serialize) {
         SetupRecipe();
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
 
         data_.ingredientInv[0] = {item1_, 5};
         data_.ingredientInv[1] = {item2_, 10};
@@ -228,10 +228,10 @@ namespace jactorio::proto
 
         recipe_->craftingTime = 1.f;
 
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
 
         SetupMachineCraftingInv();
-        ASSERT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
+        ASSERT_TRUE(asmMachine_.TryBeginCrafting(logic_, data_));
 
         EXPECT_EQ(data_.deferralEntry.dueTick, 30);
     }
@@ -240,70 +240,70 @@ namespace jactorio::proto
         // Creates unique data on build
         auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
 
-        asmMachine_.OnBuild(world_, logicData_, {0, 0}, layer, Orientation::up);
+        asmMachine_.OnBuild(world_, logic_, {0, 0}, layer, Orientation::up);
 
         EXPECT_NE(layer.GetUniqueData(), nullptr);
     }
 
     TEST_F(AssemblyMachineTest, OnRemoveRemoveDeferralEntry) {
         auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
-        asmMachine_.OnBuild(world_, logicData_, {0, 0}, layer, Orientation::up);
+        asmMachine_.OnBuild(world_, logic_, {0, 0}, layer, Orientation::up);
 
         const auto* assembly_proto = layer.GetPrototype<AssemblyMachine>();
         auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
 
         SetupRecipe();
-        assembly_data->ChangeRecipe(logicData_, proto_, recipe_);
+        assembly_data->ChangeRecipe(logic_, proto_, recipe_);
 
-        assembly_proto->OnRemove(world_, logicData_, {0, 0}, layer);
+        assembly_proto->OnRemove(world_, logic_, {0, 0}, layer);
         EXPECT_EQ(assembly_data->deferralEntry.callbackIndex, 0);
     }
 
     TEST_F(AssemblyMachineTest, TryBeginCrafting) {
         // No items
-        EXPECT_FALSE(asmMachine_.TryBeginCrafting(logicData_, data_));
+        EXPECT_FALSE(asmMachine_.TryBeginCrafting(logic_, data_));
 
         // Ok, has items
         SetupRecipe();
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
         SetupMachineCraftingInv(10);
 
-        EXPECT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
+        EXPECT_TRUE(asmMachine_.TryBeginCrafting(logic_, data_));
 
         // Already has deferral
         EXPECT_NE(data_.deferralEntry.callbackIndex, 0);
-        EXPECT_FALSE(asmMachine_.TryBeginCrafting(logicData_, data_));
+        EXPECT_FALSE(asmMachine_.TryBeginCrafting(logic_, data_));
     }
 
     TEST_F(AssemblyMachineTest, CraftingLoop) {
         SetupRecipe();
 
-        data_.ChangeRecipe(logicData_, proto_, recipe_);
+        data_.ChangeRecipe(logic_, proto_, recipe_);
         SetupMachineCraftingInv(3);
 
         // Craft 1
-        EXPECT_TRUE(asmMachine_.TryBeginCrafting(logicData_, data_));
+        EXPECT_TRUE(asmMachine_.TryBeginCrafting(logic_, data_));
 
         // -- Items removed
         EXPECT_EQ(data_.ingredientInv[0].count, 2);
         EXPECT_EQ(data_.ingredientInv[1].count, 2);
 
         // -- Output product
-        logicData_.DeferralUpdate(world_, 60);
+        logic_.DeferralUpdate(world_, 60);
         EXPECT_EQ(data_.productInv[0].count, 1);
 
 
         // Craft 2
         EXPECT_EQ(data_.ingredientInv[0].count, 1);
         EXPECT_EQ(data_.ingredientInv[1].count, 1);
-        logicData_.DeferralUpdate(world_, 120);
+        logic_.DeferralUpdate(world_, 120);
         EXPECT_EQ(data_.productInv[0].count, 2);
 
 
         // Craft 3
         EXPECT_EQ(data_.ingredientInv[0].count, 0);
         EXPECT_EQ(data_.ingredientInv[1].count, 0);
-        logicData_.DeferralUpdate(world_, 180);
+        logic_.DeferralUpdate(world_, 180);
         EXPECT_EQ(data_.productInv[0].count, 3);
 
 

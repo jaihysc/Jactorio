@@ -13,7 +13,7 @@ namespace jactorio::proto
     {
     protected:
         game::World world_;
-        game::Logic logicData_;
+        game::Logic logic_;
 
         Inserter inserterProto_;
         ContainerEntity containerProto_;
@@ -23,7 +23,7 @@ namespace jactorio::proto
         }
 
         game::ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
-            return TestSetupInserter(world_, logicData_, coords, orientation, inserterProto_);
+            return TestSetupInserter(world_, logic_, coords, orientation, inserterProto_);
         }
     };
 

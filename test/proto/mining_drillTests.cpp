@@ -12,7 +12,7 @@ namespace jactorio::proto
     {
     protected:
         game::World world_;
-        game::Logic logicData_;
+        game::Logic logic_;
 
         MiningDrill drillProto_;
 
@@ -117,7 +117,7 @@ namespace jactorio::proto
 
 
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
-        auto& tile = TestSetupDrill(world_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_, 100);
+        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_, 100);
 
         auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
@@ -135,7 +135,7 @@ namespace jactorio::proto
         // Ensure it inserts into the correct entity
 
         Item item{};
-        data->output.DropOff(logicData_, {&item, 1});
+        data->output.DropOff(logic_, {&item, 1});
 
         game::ChunkTileLayer& container_layer = world_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
 
@@ -143,7 +143,7 @@ namespace jactorio::proto
 
         // ======================================================================
 
-        logicData_.DeferralUpdate(world_, 30); // Takes 60 ticks to mine / 2 (since mining speed is 2)
+        logic_.DeferralUpdate(world_, 30); // Takes 60 ticks to mine / 2 (since mining speed is 2)
 
         EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[1].count, 1);
 
@@ -157,7 +157,7 @@ namespace jactorio::proto
 
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
 
-        auto& tile  = TestSetupDrill(world_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_, 1);
+        auto& tile  = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_, 1);
         auto& tile2 = TestSetupResource(world_, {3, 4}, resource_, 1);
         auto& tile3 = TestSetupResource(world_, {4, 4}, resource_, 1);
 
@@ -169,16 +169,16 @@ namespace jactorio::proto
         // ======================================================================
 
         resource_layer2.Clear(); // Resource 2 was mined by an external source
-        logicData_.DeferralUpdate(world_, 60);
+        logic_.DeferralUpdate(world_, 60);
         EXPECT_EQ(resource_layer.GetPrototype(), nullptr);
         EXPECT_EQ(resource_layer.GetUniqueData(), nullptr);
 
         // Found another resource (resource3)
-        logicData_.DeferralUpdate(world_, 120);
+        logic_.DeferralUpdate(world_, 120);
         EXPECT_EQ(resource_layer3.GetPrototype(), nullptr);
         EXPECT_EQ(resource_layer3.GetUniqueData(), nullptr);
 
-        EXPECT_TRUE(logicData_.deferralTimer.GetDebugInfo().callbacks.empty());
+        EXPECT_TRUE(logic_.deferralTimer.GetDebugInfo().callbacks.empty());
         auto* drill_data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
         EXPECT_FALSE(drill_data->deferralEntry.Valid());
@@ -191,7 +191,7 @@ namespace jactorio::proto
 
 
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_, 1);
-        TestSetupDrill(world_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
+        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
 
         // ======================================================================
 
@@ -204,12 +204,12 @@ namespace jactorio::proto
 
         container_data->inventory[0] = {&item, 50};
 
-        logicData_.DeferralUpdate(world_, 60);
+        logic_.DeferralUpdate(world_, 60);
         EXPECT_EQ(container_data->inventory[0].count, 50);
 
         // Output has space
         container_data->inventory[0] = {nullptr, 0};
-        logicData_.DeferralUpdate(world_, 61);
+        logic_.DeferralUpdate(world_, 61);
         EXPECT_EQ(container_data->inventory[0].count, 1);
     }
 
@@ -221,7 +221,7 @@ namespace jactorio::proto
         asm_machine.SetDimensions(2, 2);
         TestSetupAssemblyMachine(world_, {4, 1}, Orientation::up, asm_machine);
 
-        auto& tile = TestSetupDrill(world_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
+        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
         auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
         EXPECT_TRUE(data->output.IsInitialized());
@@ -234,10 +234,10 @@ namespace jactorio::proto
         drillProto_.resourceOutput.right = {3, 1};
 
 
-        auto& tile = TestSetupDrill(world_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
+        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
 
-        drillProto_.OnNeighborUpdate(world_, logicData_, {4, 2}, {1, 1}, Orientation::right);
+        drillProto_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
 
         // ======================================================================
         // Should now insert as it has an entity to output to
@@ -246,7 +246,7 @@ namespace jactorio::proto
 
         // Ensure it inserts into the correct entity
         Item item{};
-        data->output.DropOff(logicData_, {&item, 1});
+        data->output.DropOff(logic_, {&item, 1});
 
         game::ChunkTileLayer& container_layer = world_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
 
@@ -261,14 +261,14 @@ namespace jactorio::proto
 
 
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
-        auto& tile = TestSetupDrill(world_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
+        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
 
-        drillProto_.OnRemove(world_, logicData_, {1, 1}, tile.GetLayer(game::TileLayer::entity));
+        drillProto_.OnRemove(world_, logic_, {1, 1}, tile.GetLayer(game::TileLayer::entity));
 
         tile.GetLayer(game::TileLayer::entity).Clear(); // Deletes drill data
 
         // Should no longer be valid
-        logicData_.DeferralUpdate(world_, 60);
+        logic_.DeferralUpdate(world_, 60);
     }
 
     TEST_F(MiningDrillTest, RemoveOutputEntity) {
@@ -278,19 +278,19 @@ namespace jactorio::proto
 
 
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
-        TestSetupDrill(world_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
+        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
 
         // Remove chest
         game::ChunkTile* tile = world_.GetTile(4, 2);
         tile->GetLayer(game::TileLayer::entity).Clear(); // Remove container
 
         // Should only remove the callback once
-        drillProto_.OnNeighborUpdate(world_, logicData_, {4, 2}, {1, 1}, Orientation::right);
-        drillProto_.OnNeighborUpdate(world_, logicData_, {4, 2}, {1, 1}, Orientation::right);
-        drillProto_.OnNeighborUpdate(world_, logicData_, {4, 2}, {1, 1}, Orientation::right);
+        drillProto_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
+        drillProto_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
+        drillProto_.OnNeighborUpdate(world_, logic_, {4, 2}, {1, 1}, Orientation::right);
 
         // Should no longer be valid
-        logicData_.DeferralUpdate(world_, 60);
+        logic_.DeferralUpdate(world_, 60);
     }
 
     TEST_F(MiningDrillTest, UpdateNonOutput) {
@@ -298,17 +298,17 @@ namespace jactorio::proto
 
         drillProto_.resourceOutput.up    = {1, -1};
         drillProto_.resourceOutput.right = {3, 1};
-        TestSetupDrill(world_, logicData_, {1, 1}, Orientation::right, resource_, drillProto_);
+        TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
 
         // ======================================================================
 
         TestSetupContainer(world_, {2, 0}, Orientation::up, container_);
         TestSetupContainer(world_, {4, 1}, Orientation::up, container_);
 
-        drillProto_.OnNeighborUpdate(world_, logicData_, {2, 0}, {1, 1}, Orientation::up);
-        drillProto_.OnNeighborUpdate(world_, logicData_, {4, 1}, {1, 1}, Orientation::right);
+        drillProto_.OnNeighborUpdate(world_, logic_, {2, 0}, {1, 1}, Orientation::up);
+        drillProto_.OnNeighborUpdate(world_, logic_, {4, 1}, {1, 1}, Orientation::right);
 
-        logicData_.DeferralUpdate(world_, 60);
+        logic_.DeferralUpdate(world_, 60);
 
         // If the on_neighbor_update event was ignored, no items will be added
         {
@@ -340,7 +340,7 @@ namespace jactorio::proto
     TEST_F(MiningDrillTest, OnDeserialize) {
         drillProto_.resourceOutput.down = {1, 3};
 
-        auto& tile = TestSetupDrill(world_, logicData_, {1, 1}, Orientation::down, resource_, drillProto_);
+        auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::down, resource_, drillProto_);
 
         // Drill's output is current uninitialized
 

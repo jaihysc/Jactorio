@@ -10,20 +10,20 @@ namespace jactorio::game
     class LogicTest : public testing::Test
     {
     protected:
-        Logic logicData_{};
+        Logic logic_;
     };
 
     TEST_F(LogicTest, OnTickAdvance) {
         // Should move the game_tick forward
-        EXPECT_EQ(logicData_.GameTick(), 0);
+        EXPECT_EQ(logic_.GameTick(), 0);
 
-        logicData_.GameTickAdvance();
-        EXPECT_EQ(logicData_.GameTick(), 1);
+        logic_.GameTickAdvance();
+        EXPECT_EQ(logic_.GameTick(), 1);
 
-        logicData_.GameTickAdvance();
-        EXPECT_EQ(logicData_.GameTick(), 2);
+        logic_.GameTickAdvance();
+        EXPECT_EQ(logic_.GameTick(), 2);
 
-        logicData_.GameTickAdvance();
-        EXPECT_EQ(logicData_.GameTick(), 3);
+        logic_.GameTickAdvance();
+        EXPECT_EQ(logic_.GameTick(), 3);
     }
 } // namespace jactorio::game

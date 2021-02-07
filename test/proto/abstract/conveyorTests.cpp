@@ -19,7 +19,7 @@ namespace jactorio::proto
     {
     protected:
         game::World world_;
-        game::Logic logicData_;
+        game::Logic logic_;
 
         TransportBelt lineProto_;
 
@@ -50,7 +50,7 @@ namespace jactorio::proto
         void TlBuildEvents(const WorldCoord& coord, const Orientation orientation) {
             auto& layer = world_.GetTile(coord)->GetLayer(game::TileLayer::entity);
 
-            lineProto_.OnBuild(world_, logicData_, coord, layer, orientation);
+            lineProto_.OnBuild(world_, logic_, coord, layer, orientation);
 
             // Call on_neighbor_update for the 4 sides
             DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);
@@ -65,7 +65,7 @@ namespace jactorio::proto
 
             auto& layer = world_.GetTile(coord)->GetLayer(game::TileLayer::entity);
 
-            lineProto_.OnRemove(world_, logicData_, coord, layer);
+            lineProto_.OnRemove(world_, logic_, coord, layer);
 
             // Call on_neighbor_update for the 4 sides
             DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);
@@ -125,7 +125,7 @@ namespace jactorio::proto
                 return;
 
             layer.GetPrototype<Entity>()->OnNeighborUpdate(
-                world_, logicData_, emit_coords, receive_coords, emit_orientation);
+                world_, logic_, emit_coords, receive_coords, emit_orientation);
         }
     };
 

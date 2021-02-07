@@ -342,7 +342,7 @@ namespace jactorio::game
     {
     protected:
         World world_;
-        Logic logicData_;
+        Logic logic_;
     };
 
     TEST_F(WorldDeserialize, SameChunk) {
@@ -397,7 +397,7 @@ namespace jactorio::game
         TestSetupAssemblyMachine(world_, {0, 2}, Orientation::up, asm_machine);
 
         auto& inserter = proto.Make<proto::Inserter>();
-        TestSetupInserter(world_, logicData_, {1, 1}, Orientation::down, inserter);
+        TestSetupInserter(world_, logic_, {1, 1}, Orientation::down, inserter);
 
 
         data::active_prototype_manager   = &proto;

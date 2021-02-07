@@ -15,7 +15,7 @@ namespace jactorio::game
     {
     protected:
         World world_;
-        Logic logicData_{};
+        Logic logic_;
 
         proto::Inserter inserterProto_{};
 
@@ -28,7 +28,7 @@ namespace jactorio::game
         }
 
         ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
-            return TestSetupInserter(world_, logicData_, coords, orientation, inserterProto_);
+            return TestSetupInserter(world_, logic_, coords, orientation, inserterProto_);
         }
 
         ///
@@ -49,8 +49,7 @@ namespace jactorio::game
                 const auto* neighbor_proto = neighbor_layer.GetPrototype<proto::ContainerEntity>();
 
                 if (neighbor_proto != nullptr)
-                    neighbor_proto->OnNeighborUpdate(
-                        world_, logicData_, coords, neighbor_update_coord, orientation);
+                    neighbor_proto->OnNeighborUpdate(world_, logic_, coords, neighbor_update_coord, orientation);
             }
 
             if (stack_count != 0)
@@ -91,13 +90,13 @@ namespace jactorio::game
         auto* inserter_data  = inserter_layer.GetUniqueData<proto::InserterData>();
 
         // Pickup item
-        InserterLogicUpdate(world_, logicData_);
+        InserterLogicUpdate(world_, logic_);
         EXPECT_EQ(pickup->inventory[0].count, 9);
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
 
         // Reach 0 degrees after 86 updates
         for (int i = 0; i < updates_to_target; ++i) {
-            InserterLogicUpdate(world_, logicData_);
+            InserterLogicUpdate(world_, logic_);
         }
         EXPECT_EQ(dropoff->inventory[0].count, 11);
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
@@ -106,7 +105,7 @@ namespace jactorio::game
 
         // Return to pickup location after 86 updates, pick up item, set status to dropoff
         for (int i = 0; i < updates_to_target; ++i) {
-            InserterLogicUpdate(world_, logicData_);
+            InserterLogicUpdate(world_, logic_);
         }
         EXPECT_EQ(pickup->inventory[0].count, 8);
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
@@ -145,13 +144,13 @@ namespace jactorio::game
         inserter_data->rotationDegree = 87.9;
         inserter_data->status         = proto::InserterData::Status::pickup;
 
-        InserterLogicUpdate(world_, logicData_);
+        InserterLogicUpdate(world_, logic_);
         ASSERT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
 
 
         // Pickup when within arm length
         for (int i = 0; i < 42; ++i) {
-            InserterLogicUpdate(world_, logicData_);
+            InserterLogicUpdate(world_, logic_);
 
             if (inserter_data->status != proto::InserterData::Status::pickup) {
                 printf("Failed on iteration %d\n", i);
@@ -161,7 +160,7 @@ namespace jactorio::game
         }
 
 
-        InserterLogicUpdate(world_, logicData_);
+        InserterLogicUpdate(world_, logic_);
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::dropoff);
     }
 
@@ -181,7 +180,7 @@ namespace jactorio::game
 
 
         //
-        InserterLogicUpdate(world_, logicData_);
+        InserterLogicUpdate(world_, logic_);
 
         EXPECT_EQ(inserter_data->status, proto::InserterData::Status::pickup);
         EXPECT_EQ(pickup->inventory[0].count, 10);
@@ -202,15 +201,15 @@ namespace jactorio::game
 
 
         // Pickup
-        InserterLogicUpdate(world_, logicData_);
+        InserterLogicUpdate(world_, logic_);
         EXPECT_EQ(left_chest->inventory[0].count, 0);
 
         // Dropoff, picked up by inserter2
-        InserterLogicUpdate(world_, logicData_);
+        InserterLogicUpdate(world_, logic_);
         EXPECT_EQ(mid_chest->inventory[0].count, 0);
 
         // Dropoff by inserter2
-        InserterLogicUpdate(world_, logicData_);
+        InserterLogicUpdate(world_, logic_);
         EXPECT_EQ(right_chest->inventory[0].count, 1);
     }
 } // namespace jactorio::game
