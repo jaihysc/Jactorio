@@ -34,8 +34,8 @@ render::Texture::Texture(std::shared_ptr<SpriteBufferT> buffer, const DimensionT
     DEBUG_OPENGL_CALL(glTexImage2D(GL_TEXTURE_2D,
                                    0,
                                    GL_RGBA8,
-                                   core::SafeCast<GLsizei>(width),
-                                   core::SafeCast<GLsizei>(height),
+                                   SafeCast<GLsizei>(width),
+                                   SafeCast<GLsizei>(height),
                                    0,
                                    GL_RGBA,
                                    GL_UNSIGNED_BYTE,
@@ -53,7 +53,7 @@ void render::Texture::Bind(const unsigned int slot) const {
     // Ensure there is sufficient slots to bind the texture
     int texture_units;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
-    if (slot >= core::SafeCast<unsigned int>(texture_units)) {
+    if (slot >= SafeCast<unsigned int>(texture_units)) {
         LOG_MESSAGE_F(error, "Texture slot out of bounds, attempting to bind at index %d", slot);
         throw RendererException("Texture slot out of bounds");
     }

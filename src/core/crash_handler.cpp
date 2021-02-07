@@ -17,10 +17,10 @@
     } while (0)
 
 // Close ofstream and open as FILE*
-#define CRASH_OPEN_LOG_FILE()                              \
-    jactorio::core::CloseLogFile();                        \
-    auto* file = fopen(jactorio::core::kLogFileName, "a"); \
-    CRASH_LOG_MESSAGE("\n\nJactorio crashed%c", '\n');     \
+#define CRASH_OPEN_LOG_FILE()                          \
+    jactorio::CloseLogFile();                          \
+    auto* file = fopen(jactorio::kLogFileName, "a");   \
+    CRASH_LOG_MESSAGE("\n\nJactorio crashed%c", '\n'); \
     CRASH_LOG_MESSAGE("Below contains debug information related to the crash\n%c", '\n')
 
 
@@ -155,7 +155,7 @@ void PrintStackTrace(FILE* file) {
     exit(signum);
 }
 
-void jactorio::core::RegisterCrashHandler() {
+void jactorio::RegisterCrashHandler() {
     // Crash handling functions
     signal(SIGABRT, &SignalCrashHandler);
     signal(SIGSEGV, &SignalCrashHandler);

@@ -40,7 +40,7 @@ proto::Sprite::Sprite(const Sprite& other)
       spritePath_{other.spritePath_},
       spriteBuffer_{other.spriteBuffer_} {
 
-    const auto size = core::SafeCast<std::size_t>(other.width_) * other.height_ * other.bytesPerPixel_;
+    const auto size = SafeCast<std::size_t>(other.width_) * other.height_ * other.bytesPerPixel_;
     spriteBuffer_   = static_cast<unsigned char*>(malloc(size * sizeof(*spriteBuffer_))); // NOLINT: stbi uses malloc
     for (std::size_t i = 0; i < size; ++i) {
         spriteBuffer_[i] = other.spriteBuffer_[i];
@@ -104,15 +104,15 @@ void proto::Sprite::LoadImageFromFile() {
 
 
 UvPositionT proto::Sprite::GetCoords(SpriteSetT set, SpriteFrameT frame) const {
-    float width_base  = core::SafeCast<float>(width_) / core::SafeCast<float>(frames);
-    float height_base = core::SafeCast<float>(height_) / core::SafeCast<float>(sets);
+    float width_base  = SafeCast<float>(width_) / SafeCast<float>(frames);
+    float height_base = SafeCast<float>(height_) / SafeCast<float>(sets);
 
     // If inverted:
     // Set   = X axis
     // Frame = Y axis
     if (invertSetFrame) {
-        width_base  = core::SafeCast<float>(width_) / core::SafeCast<float>(sets);
-        height_base = core::SafeCast<float>(height_) / core::SafeCast<float>(frames);
+        width_base  = SafeCast<float>(width_) / SafeCast<float>(sets);
+        height_base = SafeCast<float>(height_) / SafeCast<float>(frames);
 
         AdjustSetFrame<false>(frame, set);
 
@@ -126,12 +126,10 @@ UvPositionT proto::Sprite::GetCoords(SpriteSetT set, SpriteFrameT frame) const {
         assert(frame < frames);
     }
 
-    return {
-        {(width_base * core::SafeCast<float>(frame) + core::SafeCast<float>(trim)) / core::SafeCast<float>(width_),
-         (height_base * core::SafeCast<float>(set) + core::SafeCast<float>(trim)) / core::SafeCast<float>(height_)},
-        {(width_base * core::SafeCast<float>(frame + 1) - core::SafeCast<float>(trim)) / core::SafeCast<float>(width_),
-         (height_base * core::SafeCast<float>(set + 1) - core::SafeCast<float>(trim)) /
-             core::SafeCast<float>(height_)}};
+    return {{(width_base * SafeCast<float>(frame) + SafeCast<float>(trim)) / SafeCast<float>(width_),
+             (height_base * SafeCast<float>(set) + SafeCast<float>(trim)) / SafeCast<float>(height_)},
+            {(width_base * SafeCast<float>(frame + 1) - SafeCast<float>(trim)) / SafeCast<float>(width_),
+             (height_base * SafeCast<float>(set + 1) - SafeCast<float>(trim)) / SafeCast<float>(height_)}};
 }
 
 const unsigned char* proto::Sprite::GetSpritePtr() const {

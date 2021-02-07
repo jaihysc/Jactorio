@@ -10,14 +10,14 @@
 
 #include <decimal.h>
 
-namespace jactorio::core
+namespace jactorio
 {
     template <typename TVal>
     struct Position2;
 
     template <typename TPosition>
     struct QuadPosition;
-} // namespace jactorio::core
+} // namespace jactorio
 
 namespace jactorio::game
 {
@@ -55,17 +55,17 @@ namespace jactorio
 
     /// Tiles in the world
     using WorldCoordAxis = int32_t;
-    using WorldCoord     = core::Position2<WorldCoordAxis>;
+    using WorldCoord     = Position2<WorldCoordAxis>;
     /// World currently in
     using WorldId = std::size_t;
 
     /// Chunks in the world
     using ChunkCoordAxis = int32_t;
-    using ChunkCoord     = core::Position2<ChunkCoordAxis>;
+    using ChunkCoord     = Position2<ChunkCoordAxis>;
 
     /// Tiles within a chunk
     using ChunkTileCoordAxis = uint8_t;
-    using ChunkTileCoord     = core::Position2<ChunkTileCoordAxis>;
+    using ChunkTileCoord     = Position2<ChunkTileCoordAxis>;
 
     /// Offset from top left of chunk
     using OverlayOffsetAxis = float;
@@ -73,7 +73,7 @@ namespace jactorio
 
     // Rendering
 
-    using UvPositionT = core::QuadPosition<core::Position2<float>>;
+    using UvPositionT = QuadPosition<Position2<float>>;
     /// Internal id of sprite to uv coordinates
     using SpriteUvCoordsT = std::unordered_map<unsigned int, UvPositionT>;
 

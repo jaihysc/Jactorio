@@ -6,17 +6,17 @@
 
 using namespace jactorio;
 
-std::string core::StrToLower(std::string str) {
+std::string jactorio::StrToLower(std::string str) {
     std::transform(str.begin(), str.end(), str.begin(), tolower);
     return str;
 }
 
-std::string core::StrToUpper(std::string str) {
+std::string jactorio::StrToUpper(std::string str) {
     std::transform(str.begin(), str.end(), str.begin(), toupper);
     return str;
 }
 
-std::string core::StrTrim(std::string str, const std::vector<char>& chars) {
+std::string jactorio::StrTrim(std::string str, const std::vector<char>& chars) {
     auto is_trim_char = [&](const char c) { return std::find(chars.begin(), chars.end(), c) != chars.end(); };
 
     // Trim leading
@@ -44,11 +44,11 @@ std::string core::StrTrim(std::string str, const std::vector<char>& chars) {
     return str;
 }
 
-std::string core::StrTrimWhitespace(const std::string& str) {
+std::string jactorio::StrTrimWhitespace(const std::string& str) {
     return StrTrim(str, {' ', '\0'});
 }
 
-std::string core::StrMatchLen(std::string str, const std::size_t target_len, const char padding) {
+std::string jactorio::StrMatchLen(std::string str, const std::size_t target_len, const char padding) {
     while (str.size() < target_len) {
         str.push_back(padding);
     }

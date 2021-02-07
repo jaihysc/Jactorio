@@ -80,7 +80,7 @@ namespace jactorio::game
 
         // tuple format: key, action, mods
         // id of callbacks registered to the tuple
-        std::unordered_map<InputKeyData, std::vector<CallbackId>, core::hash<InputKeyData>> callbackIds_{};
+        std::unordered_map<InputKeyData, std::vector<CallbackId>, hash<InputKeyData>> callbackIds_{};
 
         std::unordered_map<CallbackId, InputCallback> inputCallbacks_{};
 

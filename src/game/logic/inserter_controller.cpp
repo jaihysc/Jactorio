@@ -10,18 +10,18 @@
 
 using namespace jactorio;
 
-double game::GetInserterArmOffset(const core::TIntDegree degree, const unsigned target_distance) {
+double game::GetInserterArmOffset(const TIntDegree degree, const unsigned target_distance) {
     auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
-    result *= core::TanF(degree);
+    result *= TanF(degree);
     result *= -1;
     result += kInserterCenterOffset;
 
     return result;
 }
 
-double game::GetInserterArmLength(const core::TIntDegree degree, const unsigned target_distance) {
+double game::GetInserterArmLength(const TIntDegree degree, const unsigned target_distance) {
     auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
-    result /= core::CosF(degree);
+    result /= CosF(degree);
     result *= -1;
 
     return result;
@@ -104,8 +104,8 @@ void ProcessInserterPickup(const PickupQueue& pickup_queue, game::Logic& logic) 
             continue;
 
 
-        const auto result = inserter_data.pickup.Pickup(
-            logic, inserter_proto.tileReach, inserter_data.rotationDegree, pickup_amount);
+        const auto result =
+            inserter_data.pickup.Pickup(logic, inserter_proto.tileReach, inserter_data.rotationDegree, pickup_amount);
         if (result.first) {
             inserter_data.heldItem = result.second;
 

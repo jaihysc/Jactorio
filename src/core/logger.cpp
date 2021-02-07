@@ -13,11 +13,11 @@ std::ofstream log_file;
 time_t start_time = clock();
 
 
-void core::OpenLogFile() {
+void jactorio::OpenLogFile() {
     log_file.open(kLogFileName);
 }
 
-void core::CloseLogFile() {
+void jactorio::CloseLogFile() {
     if (log_file.is_open())
         log_file.close();
 }
@@ -25,10 +25,10 @@ void core::CloseLogFile() {
 
 constexpr char kLogFmt[] = "%10.3f %s [%s:%d] %s";
 
-void core::LogMessage(const LogSeverity severity,
-                      const std::string& group,
-                      const int line,
-                      const std::string& message) {
+void jactorio::LogMessage(const LogSeverity severity,
+                          const std::string& group,
+                          const int line,
+                          const std::string& message) {
 
     const float time = static_cast<float>(clock() - start_time) / CLOCKS_PER_SEC;
 
@@ -63,7 +63,7 @@ void core::LogMessage(const LogSeverity severity,
     log_file << s << "\n";
 }
 
-std::string core::LogSeverityStr(const LogSeverity severity) {
+std::string jactorio::LogSeverityStr(const LogSeverity severity) {
     std::string severity_str;
 
     switch (severity) {
@@ -89,7 +89,7 @@ std::string core::LogSeverityStr(const LogSeverity severity) {
     return severity_str;
 }
 
-std::string core::LogSeverityStrColored(const LogSeverity severity) {
+std::string jactorio::LogSeverityStrColored(const LogSeverity severity) {
     std::string severity_str;
 
     switch (severity) {

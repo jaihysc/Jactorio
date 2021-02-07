@@ -36,10 +36,10 @@ int main(int ac, char* av[]) {
     current_path(std::filesystem::path(av[0]).parent_path());
 
     // Log file
-    core::ResourceGuard log_guard(&core::CloseLogFile);
-    core::OpenLogFile();
+    ResourceGuard log_guard(&CloseLogFile);
+    OpenLogFile();
 
-    core::RegisterCrashHandler();
+    RegisterCrashHandler();
 
     // Initial startup message
     LOG_MESSAGE_F(

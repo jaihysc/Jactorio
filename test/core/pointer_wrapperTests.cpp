@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace jactorio::core
+namespace jactorio
 {
     static_assert(std::is_same_v<PointerWrapper<int>::element_type, int>, "Incorrect element_type");
 
@@ -55,4 +55,4 @@ namespace jactorio::core
 
         EXPECT_EQ(p_wrapper->size(), 3);
     }
-} // namespace jactorio::core
+} // namespace jactorio

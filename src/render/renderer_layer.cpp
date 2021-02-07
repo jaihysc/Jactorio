@@ -56,7 +56,7 @@ uint32_t render::RendererLayer::GetCapacity() const noexcept {
 }
 
 uint64_t render::RendererLayer::GetIndicesCount() const noexcept {
-    return core::SafeCast<uint64_t>(nextElementIndex_) * kInIndicesPerElement;
+    return SafeCast<uint64_t>(nextElementIndex_) * kInIndicesPerElement;
 }
 
 void render::RendererLayer::Reserve(const uint32_t count) noexcept {
@@ -100,7 +100,7 @@ void render::RendererLayer::GlHandleBufferResize() {
         return;
 
     gResizeVertexBuffers_ = false;
-    eCapacity_            = core::LossyCast<decltype(eCapacity_)>(queuedECapacity_ * kResizeECapacityMultiplier);
+    eCapacity_            = LossyCast<decltype(eCapacity_)>(queuedECapacity_ * kResizeECapacityMultiplier);
 
     vertexVb_->Reserve(nullptr, eCapacity_ * kVbBytesPerElement, false);
     uvVb_->Reserve(nullptr, eCapacity_ * kVbBytesPerElement, false);
@@ -252,8 +252,7 @@ std::unique_ptr<unsigned int[]> render::RendererLayer::GenRenderGridIndices(cons
     // bottom right
     // bottom left
 
-    std::unique_ptr<unsigned int[]> positions(
-        new unsigned int[core::SafeCast<uint64_t>(tile_count) * kInIndicesPerElement]);
+    std::unique_ptr<unsigned int[]> positions(new unsigned int[SafeCast<uint64_t>(tile_count) * kInIndicesPerElement]);
 
     unsigned int positions_index    = 0;
     unsigned int index_buffer_index = 0; // Index to be saved into positions

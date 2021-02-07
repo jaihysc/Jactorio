@@ -88,8 +88,8 @@ void game::MouseSelection::DrawOverlay(World& world,
 
         OverlayElement element{*selected_entity->OnRGetSprite(set),
                                {World::WorldCToOverlayC(coord.x), World::WorldCToOverlayC(coord.y)},
-                               {core::SafeCast<float>(selected_entity->GetWidth(orientation)),
-                                core::SafeCast<float>(selected_entity->GetHeight(orientation))},
+                               {SafeCast<float>(selected_entity->GetWidth(orientation)),
+                                SafeCast<float>(selected_entity->GetHeight(orientation))},
                                kCursorOverlayLayer_};
 
         element.spriteSet = set;

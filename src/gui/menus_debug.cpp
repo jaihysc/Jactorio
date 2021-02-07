@@ -135,8 +135,6 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
 }
 
 void gui::DebugTimings() {
-    using namespace core;
-
     ImGuard guard{};
     guard.Begin("Timings");
     ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -150,8 +148,6 @@ int give_amount  = 100;
 int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
 
 void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& proto) {
-    using namespace core;
-
     ImGuard guard{};
     guard.Begin("Item spawner");
 
@@ -182,7 +178,7 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
         ImGui::PushID(item->name.c_str());
 
         if (ImGui::Button(item->GetLocalizedName().c_str())) {
-            proto::ItemStack item_stack = {item, core::SafeCast<proto::Item::StackCount>(give_amount)};
+            proto::ItemStack item_stack = {item, SafeCast<proto::Item::StackCount>(give_amount)};
             game::AddStack(player.inventory.inventory, item_stack);
         }
         ImGui::PopID();
@@ -332,13 +328,13 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
 
             object_layer.emplace_back(
                 game::OverlayElement{*direction_sprite,
-                                     {core::SafeCast<float>(pos_x), core::SafeCast<float>(pos_y)},
-                                     {core::SafeCast<float>(segment_len_x), core::SafeCast<float>(segment_len_y)},
+                                     {SafeCast<float>(pos_x), SafeCast<float>(pos_y)},
+                                     {SafeCast<float>(segment_len_x), SafeCast<float>(segment_len_y)},
                                      draw_overlay_layer});
             object_layer.emplace_back(
                 game::OverlayElement{*outline_sprite,
-                                     {core::SafeCast<float>(pos_x), core::SafeCast<float>(pos_y)},
-                                     {core::SafeCast<float>(segment_len_x), core::SafeCast<float>(segment_len_y)},
+                                     {SafeCast<float>(pos_x), SafeCast<float>(pos_y)},
+                                     {SafeCast<float>(segment_len_x), SafeCast<float>(segment_len_y)},
                                      draw_overlay_layer});
         }
     }
@@ -514,7 +510,7 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
 
             if (ImGui::TreeNode(reinterpret_cast<void*>(id), "%d %d | %lld", world_x, world_y, entry.second.size())) {
 
-                core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+                ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
                 for (const auto& callback : entry.second) {
                     ImGui::Text("%d %d %s",
@@ -557,12 +553,12 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
 
                 // Unique id to identify tree node
                 const auto* node_id =
-                    reinterpret_cast<void*>(core::LossyCast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
+                    reinterpret_cast<void*>(LossyCast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
 
                 const bool is_player_chunk = chunk_x == start_chunk_x && chunk_y == start_chunk_y;
 
                 if (ImGui::TreeNode(node_id, "%s %d %d", is_player_chunk ? ">" : " ", chunk_x, chunk_y)) {
-                    core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+                    ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
                     show_chunk_info(*chunk);
                 }
             }
@@ -595,7 +591,7 @@ void gui::DebugLogicInfo(const game::Logic& logic) {
                             due_tick,
                             time_to_due,
                             callback_tick.second.size())) {
-            core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+            ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
             for (const auto& callback : callback_tick.second) {
                 ImGui::Text("%s", MemoryAddressToStr(callback.uniqueData.Get()).c_str());

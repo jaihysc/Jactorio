@@ -7,7 +7,7 @@
 #include <functional>
 #include <type_traits>
 
-namespace jactorio::core
+namespace jactorio
 {
     ///
     /// RAII wrapper which calls the provided function in its destructor
@@ -62,5 +62,5 @@ namespace jactorio::core
         CapturingGuard& operator=(const CapturingGuard& other) = delete;
         CapturingGuard& operator=(CapturingGuard&& other) noexcept = delete;
     };
-} // namespace jactorio::core
+} // namespace jactorio
 #endif // JACTORIO_INCLUDE_CORE_RESOURCE_GUARD_H

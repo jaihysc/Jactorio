@@ -8,7 +8,7 @@
 
 using namespace jactorio;
 
-std::string core::ReadFile(const std::string& path) {
+std::string jactorio::ReadFile(const std::string& path) {
     const std::ifstream in(path);
 
     std::stringstream sstr;

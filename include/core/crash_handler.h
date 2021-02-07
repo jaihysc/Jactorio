@@ -4,7 +4,7 @@
 #define JACTORIO_INCLUDE_CORE_CRASH_HANDLER_H
 #pragma once
 
-namespace jactorio::core
+namespace jactorio
 {
     void RegisterCrashHandler();
 }

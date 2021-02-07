@@ -24,7 +24,7 @@ using namespace jactorio;
 J_NODISCARD static float GetMainMenuWidth(const float fraction = 1.f / 3) {
     constexpr auto min_width = 150;
 
-    const auto calculated_width = core::SafeCast<float>(render::Renderer::GetWindowWidth()) * fraction;
+    const auto calculated_width = SafeCast<float>(render::Renderer::GetWindowWidth()) * fraction;
     if (calculated_width < min_width)
         return min_width;
 
@@ -36,7 +36,7 @@ J_NODISCARD static float GetMainMenuWidth(const float fraction = 1.f / 3) {
 J_NODISCARD static float GetMainMenuHeight(const float fraction = 1.f / 2) {
     constexpr auto min_height = 200;
 
-    const auto calculated_height = core::SafeCast<float>(render::Renderer::GetWindowHeight()) * fraction;
+    const auto calculated_height = SafeCast<float>(render::Renderer::GetWindowHeight()) * fraction;
     if (calculated_height < min_height)
         return min_height;
 
@@ -117,7 +117,7 @@ static void ToNextMenuButtonMiniBegin(const unsigned button_gap = 0) {
         new_cursor_x += but_width;
         new_cursor_x += gui::kGuiStyleItemSpacingX;
     }
-    ImGui::SetCursorPosX(new_cursor_x + GetButtonMiniSpan() * core::SafeCast<float>(button_gap));
+    ImGui::SetCursorPosX(new_cursor_x + GetButtonMiniSpan() * SafeCast<float>(button_gap));
 }
 
 ///
@@ -125,7 +125,7 @@ static void ToNextMenuButtonMiniBegin(const unsigned button_gap = 0) {
 static void SameLineMenuButtonMini(const unsigned button_gap = 0) {
     ImGui::SameLine();
 
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + GetButtonMiniSpan() * core::SafeCast<float>(button_gap));
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + GetButtonMiniSpan() * SafeCast<float>(button_gap));
 }
 
 
@@ -420,7 +420,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         const auto* current_key_action_c_str = localize_key_action(current_key_action_index);
 
         if (ImGui::BeginCombo(dropdown_name, current_key_action_c_str)) {
-            core::ResourceGuard guard(+[]() { ImGui::EndCombo(); });
+            ResourceGuard guard(+[]() { ImGui::EndCombo(); });
 
             for (std::size_t i = 0; i < key_action_labels.size(); ++i) {
                 const bool is_selected = i == current_key_action_index;

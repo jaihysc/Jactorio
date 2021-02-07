@@ -8,7 +8,7 @@
 
 #include "jactorio.h"
 
-namespace jactorio::core
+namespace jactorio
 {
     ///
     /// Performs cast, data may be lost
@@ -35,7 +35,7 @@ namespace jactorio::core
 
         const auto cast_val = LossyCast<TTargetInt>(val);
 
-        if (core::LossyCast<TOriginalInt>(cast_val) != val ||
+        if (LossyCast<TOriginalInt>(cast_val) != val ||
             (is_different_signedness && ((cast_val < TTargetInt{}) != (val < TOriginalInt{})))) {
             assert(false);
         }
@@ -48,6 +48,6 @@ namespace jactorio::core
         l_val = SafeCast<std::remove_reference_t<decltype(l_val)>>(r_val);
     }
 
-} // namespace jactorio::core
+} // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_CONVERT_H

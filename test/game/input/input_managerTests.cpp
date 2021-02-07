@@ -138,7 +138,7 @@ namespace jactorio::game
     }
 
     // TEST_F(InputManagerTest, dispatch_input_callbacks_imgui_block) {
-    // 	auto guard = jactorio::core::Resource_guard(&input::clear_data);
+    // 	auto guard = jactorio::Resource_guard(&input::clear_data);
     //
     // 	input::subscribe(test_callback2, GLFW_KEY_V, jactorio::game::inputAction::key_pressed);
     //

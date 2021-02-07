@@ -152,7 +152,7 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
 
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
 
-            core::ResourceGuard imgui_render_guard(+[]() { gui::ImguiRenderFrame(); });
+            ResourceGuard imgui_render_guard(+[]() { gui::ImguiRenderFrame(); });
             gui::ImguiBeginFrame(display_window);
 
             if (IsVisible(gui::Menu::MainMenu)) {
@@ -193,12 +193,12 @@ void render::RenderInit(ThreadedLoopCommon& common) {
     }
 
 
-    core::ResourceGuard imgui_manager_guard(&gui::ImguiTerminate);
+    ResourceGuard imgui_manager_guard(&gui::ImguiTerminate);
     gui::Setup(display_window);
 
     // Shader
     // From my testing, allocating it on the heap is faster than using the stack
-    core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
+    ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
     main_renderer = new Renderer();
 
     const Shader shader(std::vector<ShaderCreationInput>{{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},

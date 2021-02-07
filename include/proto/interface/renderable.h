@@ -91,7 +91,7 @@ namespace jactorio::proto
         /// \param pixel_offset Pixels to top left of current tile
         virtual void OnRDrawUniqueData(render::RendererLayer& layer,
                                        const SpriteUvCoordsT& uv_coords,
-                                       const core::Position2<float>& pixel_offset,
+                                       const Position2<float>& pixel_offset,
                                        const UniqueDataBase* unique_data) const {}
 
     protected:

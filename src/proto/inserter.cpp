@@ -10,7 +10,7 @@ using namespace jactorio;
 
 void proto::Inserter::OnRDrawUniqueData(render::RendererLayer& layer,
                                         const SpriteUvCoordsT& uv_coords,
-                                        const core::Position2<float>& pixel_offset,
+                                        const Position2<float>& pixel_offset,
                                         const UniqueDataBase* unique_data) const {
     DrawInserterArm(layer, uv_coords, pixel_offset, *this, *static_cast<const InserterData*>(unique_data));
 }

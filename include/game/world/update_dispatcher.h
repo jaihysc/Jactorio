@@ -38,7 +38,7 @@ namespace jactorio::game
 
         using ContainerKeyT = std::tuple<WorldCoordAxis, WorldCoordAxis>;
         /// Emitting tile -> list of (Receiving tile + callback)
-        using ContainerT = std::unordered_map<ContainerKeyT, CollectionT, core::hash<ContainerKeyT>>;
+        using ContainerT = std::unordered_map<ContainerKeyT, CollectionT, hash<ContainerKeyT>>;
 
         struct DebugInfo;
 

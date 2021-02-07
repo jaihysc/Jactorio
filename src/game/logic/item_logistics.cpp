@@ -216,9 +216,7 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const
 
 // ======================================================================
 
-bool game::InserterPickup::Initialize(World& world,
-                                      const WorldCoordAxis world_x,
-                                      const WorldCoordAxis world_y) {
+bool game::InserterPickup::Initialize(World& world, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
     auto* tile = world.GetTile(world_x, world_y);
     assert(tile != nullptr);
 
@@ -436,7 +434,7 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
 
     auto pickup_offset = proto::LineDistT(
         line_data.structIndex +
-        GetInserterArmOffset(core::SafeCast<core::TIntDegree>(params.degree.getAsInteger()), params.inserterTileReach));
+        GetInserterArmOffset(SafeCast<TIntDegree>(params.degree.getAsInteger()), params.inserterTileReach));
 
     return {use_line_left, pickup_offset};
 }

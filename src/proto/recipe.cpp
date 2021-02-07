@@ -98,5 +98,5 @@ void proto::Recipe::PostLoadValidate(const data::PrototypeManager& proto) const 
 }
 
 GameTickT proto::Recipe::GetCraftingTime(const double multiplier) const {
-    return core::LossyCast<GameTickT>(craftingTime * multiplier * kGameHertz);
+    return LossyCast<GameTickT>(craftingTime * multiplier * kGameHertz);
 }

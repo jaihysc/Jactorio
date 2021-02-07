@@ -8,7 +8,7 @@
 
 #include "jactorio.h"
 
-namespace jactorio::core
+namespace jactorio
 {
     ///
     /// Manages non owning pointer to prototype
@@ -89,6 +89,6 @@ namespace jactorio::core
 
     template <class T, std::enable_if_t<!std::is_same_v<T, std::nullptr_t>, int> = 0>
     PointerWrapper(T) -> PointerWrapper<std::remove_pointer_t<T>>;
-} // namespace jactorio::core
+} // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_POINTER_WRAPPER_H

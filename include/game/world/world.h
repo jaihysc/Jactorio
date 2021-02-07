@@ -285,7 +285,7 @@ namespace jactorio::game
 
     private:
         using ChunkKey    = std::tuple<ChunkCoordAxis, ChunkCoordAxis>;
-        using ChunkHasher = core::hash<ChunkKey>;
+        using ChunkHasher = hash<ChunkKey>;
 
         /// Chunks increment heading right and down
         std::unordered_map<ChunkKey, Chunk, ChunkHasher> worldChunks_;

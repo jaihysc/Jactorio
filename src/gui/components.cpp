@@ -42,9 +42,9 @@ void gui::GuiItemSlots::Begin(const std::size_t slot_count, const BeginCallbackT
     std::size_t index = 0;
     while (index < slot_count) {
         const uint16_t x = index % slotSpan;
-        ImGui::SameLine(x_offset + core::SafeCast<float>(x * scale * (kInventorySlotWidth + kInventorySlotPadding)));
+        ImGui::SameLine(x_offset + SafeCast<float>(x * scale * (kInventorySlotWidth + kInventorySlotPadding)));
 
-        ImGui::PushID(core::SafeCast<int>(index)); // Uniquely identifies the button
+        ImGui::PushID(SafeCast<int>(index)); // Uniquely identifies the button
 
         ImGui::SetCursorPosY(y_offset);
         callback(index);
@@ -52,7 +52,7 @@ void gui::GuiItemSlots::Begin(const std::size_t slot_count, const BeginCallbackT
         ImGui::PopID();
 
         if (x == slotSpan - 1) {
-            y_offset += core::SafeCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding);
+            y_offset += SafeCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding);
         }
 
         ++index;
@@ -63,7 +63,7 @@ void gui::GuiItemSlots::Begin(const std::size_t slot_count, const BeginCallbackT
         ImGui::SetCursorPosY(y_offset);
 
         if (endingVerticalSpace < 0)
-            AddVerticalSpaceAbsolute(core::SafeCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
+            AddVerticalSpaceAbsolute(SafeCast<float>(scale) * (kInventorySlotWidth + kInventorySlotPadding));
         else
             AddVerticalSpaceAbsolute(endingVerticalSpace);
     }
@@ -79,8 +79,8 @@ void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
     const float original_y_offset = ImGui::GetCursorPosY();
 
     // Backing button sticks out on all sides
-    ImGui::SetCursorPos({original_x_offset - core::SafeCast<float>(kInventorySlotPadding / 2),
-                         original_y_offset - core::SafeCast<float>(kInventorySlotPadding / 2)});
+    ImGui::SetCursorPos({original_x_offset - SafeCast<float>(kInventorySlotPadding / 2),
+                         original_y_offset - SafeCast<float>(kInventorySlotPadding / 2)});
 
     DrawBackingButton();
     const bool backing_button_hover = ImGui::IsItemHovered();
@@ -100,7 +100,7 @@ void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
 
     if (sprite_id == 0) {
         // Blank button
-        const auto button_width  = core::SafeCast<float>(kInventorySlotWidth * scale);
+        const auto button_width  = SafeCast<float>(kInventorySlotWidth * scale);
         const auto padding_width = kInventorySlotPadding * (scale - 1);
 
         const auto total_width   = button_width + padding_width;
@@ -117,7 +117,7 @@ void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id,
 
         const auto& uv = menu_data.spritePositions.at(sprite_id);
         ImGui::ImageButton(reinterpret_cast<void*>(menu_data.texId),
-                           {core::SafeCast<float>(button_size), core::SafeCast<float>(button_size)},
+                           {SafeCast<float>(button_size), SafeCast<float>(button_size)},
                            {uv.topLeft.x, uv.topLeft.y},
                            {uv.bottomRight.x, uv.bottomRight.y},
                            kInventorySlotImagePadding);
@@ -147,7 +147,7 @@ void gui::GuiItemSlots::DrawBackingButton() const {
     guard.PushStyleColor(ImGuiCol_ButtonActive, kGuiColNone);
 
     // kInventorySlotWidth not multiplied by 2 so that the backing button is tile-able
-    const auto width         = core::SafeCast<float>((kInventorySlotWidth + kInventorySlotPadding) * this->scale);
+    const auto width         = SafeCast<float>((kInventorySlotWidth + kInventorySlotPadding) * this->scale);
     const auto frame_padding = width / 2;
 
     assert(frame_padding * 2 == width); // Slots will not line up if does not halve evenly
@@ -171,8 +171,8 @@ void gui::DrawCursorTooltip(const bool has_selected_item,
                             const std::string& description,
                             const std::function<void()>& draw_func) {
 
-    ImVec2 cursor_pos(core::LossyCast<float>(game::MouseSelection::GetCursorX()),
-                      core::LossyCast<float>(game::MouseSelection::GetCursorY()) + 10.f);
+    ImVec2 cursor_pos(LossyCast<float>(game::MouseSelection::GetCursorX()),
+                      LossyCast<float>(game::MouseSelection::GetCursorY()) + 10.f);
 
     // If an item is currently selected, move the tooltip down to not overlap
     if (has_selected_item)
@@ -200,7 +200,7 @@ void gui::DrawCursorTooltip(const bool has_selected_item,
         guard.Begin(title.c_str(), nullptr, flags);
     }
 
-    ImGui::Text("%s", core::StrMatchLen(description, title.size()).c_str());
+    ImGui::Text("%s", StrMatchLen(description, title.size()).c_str());
 
     draw_func();
 

@@ -168,8 +168,8 @@ void proto::MiningDrill::OnNeighborUpdate(game::World& world,
 
     // Do not register callback to mine items if there is no valid entity to output items to
     if (InitializeOutput(world, emit_coord, drill_data)) {
-        drill_data->miningTicks = core::LossyCast<uint16_t>(core::SafeCast<float>(kGameHertz) *
-                                                            drill_data->outputItem->entityPrototype->pickupTime);
+        drill_data->miningTicks =
+            LossyCast<uint16_t>(SafeCast<float>(kGameHertz) * drill_data->outputItem->entityPrototype->pickupTime);
 
         const bool success = DeductResource(world, self_layer.GetOrientation(), *drill_data);
         assert(success);
@@ -254,7 +254,7 @@ bool proto::MiningDrill::SetupResourceDeduction(const game::World& world,
 
             if (resource_layer.GetPrototype() != nullptr) {
                 drill_data.outputItem     = resource_layer.GetPrototype<ResourceEntity>()->GetItem();
-                drill_data.resourceOffset = core::SafeCast<decltype(drill_data.resourceOffset)>(y * x_span + x);
+                drill_data.resourceOffset = SafeCast<decltype(drill_data.resourceOffset)>(y * x_span + x);
                 return true;
             }
         }
@@ -304,7 +304,7 @@ bool proto::MiningDrill::DeductResource(game::World& world,
 }
 
 void proto::MiningDrill::RegisterMineCallback(game::DeferralTimer& timer, MiningDrillData* unique_data) const {
-    const auto mine_ticks = core::LossyCast<GameTickT>(unique_data->miningTicks / miningSpeed);
+    const auto mine_ticks = LossyCast<GameTickT>(unique_data->miningTicks / miningSpeed);
     assert(mine_ticks > 0);
 
     unique_data->deferralEntry = timer.RegisterFromTick(*this, unique_data, mine_ticks);

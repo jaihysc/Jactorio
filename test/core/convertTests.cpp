@@ -4,7 +4,7 @@
 
 #include "core/convert.h"
 
-namespace jactorio::core
+namespace jactorio
 {
     TEST(Math, SafeCast) {
         auto a = SafeCast<int>(42);
@@ -22,4 +22,4 @@ namespace jactorio::core
 
         EXPECT_EQ(a, c);
     }
-} // namespace jactorio::core
+} // namespace jactorio

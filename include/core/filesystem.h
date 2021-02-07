@@ -6,12 +6,12 @@
 
 #include <string>
 
-namespace jactorio::core
+namespace jactorio
 {
     ///
     /// Reads file from path as string
     /// \return Empty string if path is invalid
     std::string ReadFile(const std::string& path);
-} // namespace jactorio::core
+} // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_FILESYSTEM_H

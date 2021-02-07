@@ -7,7 +7,7 @@
 #include <tuple>
 #include <unordered_map>
 
-namespace jactorio::core
+namespace jactorio
 {
     // Defines hash functions for tuples as keys in std::unordered_map
 
@@ -50,6 +50,6 @@ namespace jactorio::core
             return seed;
         }
     };
-} // namespace jactorio::core
+} // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_HASHERS_H

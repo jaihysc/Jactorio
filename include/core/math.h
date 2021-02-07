@@ -8,7 +8,7 @@
 
 #include "jactorio.h"
 
-namespace jactorio::core
+namespace jactorio
 {
     // ======================================================================
     // Math functions for floating point numbers
@@ -1142,6 +1142,6 @@ namespace jactorio::core
         static_assert(sizeof(tan_value) / sizeof(double) == 360);
         return tan_value[degree];
     }
-} // namespace jactorio::core
+} // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_MATH_H

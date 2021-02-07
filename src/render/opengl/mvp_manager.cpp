@@ -74,16 +74,16 @@ glm::mat4 render::MvpManager::ToProjMatrix(const unsigned window_width,
     float x_zoom_ratio = 1.f;
     float y_zoom_ratio = 1.f;
     if (window_width > window_height) {
-        x_zoom_ratio = core::SafeCast<float>(window_width) / core::SafeCast<float>(window_height);
+        x_zoom_ratio = SafeCast<float>(window_width) / SafeCast<float>(window_height);
     }
     else {
-        y_zoom_ratio = core::SafeCast<float>(window_height) / core::SafeCast<float>(window_width);
+        y_zoom_ratio = SafeCast<float>(window_height) / SafeCast<float>(window_width);
     }
 
     return glm::ortho(offset * x_zoom_ratio,
-                      core::SafeCast<float>(window_width) - offset * x_zoom_ratio,
+                      SafeCast<float>(window_width) - offset * x_zoom_ratio,
 
-                      core::SafeCast<float>(window_height) - offset * y_zoom_ratio,
+                      SafeCast<float>(window_height) - offset * y_zoom_ratio,
                       offset * y_zoom_ratio,
 
                       -1.f,

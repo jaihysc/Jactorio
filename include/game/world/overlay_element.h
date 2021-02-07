@@ -42,21 +42,21 @@ namespace jactorio::game
     public:
         /*
         OverlayElement(const proto::Sprite& sprite,
-                       const core::Position2<PositionT>& position,
-                       const core::Position2<PositionT>& size)
-            : OverlayElement(sprite, core::Position3<PositionT>{position, 0.f}, size) {
+                       const Position2<PositionT>& position,
+                       const Position2<PositionT>& size)
+            : OverlayElement(sprite, Position3<PositionT>{position, 0.f}, size) {
         }
         */
 
         OverlayElement(const proto::Sprite& sprite,
-                       const core::Position2<OverlayOffsetAxis>& position,
-                       const core::Position2<OverlayOffsetAxis>& size,
+                       const Position2<OverlayOffsetAxis>& position,
+                       const Position2<OverlayOffsetAxis>& size,
                        const OverlayLayer layer)
-            : OverlayElement(sprite, core::Position3<OverlayOffsetAxis>{position, ToZPosition(layer)}, size) {}
+            : OverlayElement(sprite, Position3<OverlayOffsetAxis>{position, ToZPosition(layer)}, size) {}
 
         OverlayElement(const proto::Sprite& sprite,
-                       const core::Position3<OverlayOffsetAxis>& position,
-                       const core::Position2<OverlayOffsetAxis>& size)
+                       const Position3<OverlayOffsetAxis>& position,
+                       const Position2<OverlayOffsetAxis>& size)
             : sprite(&sprite), position(position), size(size) {}
 
         // ======================================================================
@@ -81,10 +81,10 @@ namespace jactorio::game
         SpriteSetT spriteSet = 0;
 
         /// Distance (tiles) from top left of chunk to top left of sprite + z value
-        core::Position3<OverlayOffsetAxis> position;
+        Position3<OverlayOffsetAxis> position;
 
         /// Distance (tiles) the sprite spans
-        core::Position2<OverlayOffsetAxis> size;
+        Position2<OverlayOffsetAxis> size;
     };
 } // namespace jactorio::game
 

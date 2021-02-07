@@ -78,7 +78,7 @@ void data::PrototypeManager::Load(const std::string& folder_path) {
     // Load extracted data into loaded_data
 
     // Terminate the interpreter after loading prototypes
-    auto py_guard = core::ResourceGuard(PyInterpreterTerminate);
+    auto py_guard = ResourceGuard(PyInterpreterTerminate);
     PyInterpreterInit();
 
 
@@ -98,7 +98,7 @@ void data::PrototypeManager::Load(const std::string& folder_path) {
             std::stringstream py_file_path;
             py_file_path << current_directory << "/data.py";
 
-            const std::string py_file_contents = core::ReadFile(py_file_path.str());
+            const std::string py_file_contents = ReadFile(py_file_path.str());
             // data.py file does not exist
             if (py_file_contents.empty()) {
                 LOG_MESSAGE_F(
@@ -133,7 +133,7 @@ void data::PrototypeManager::Load(const std::string& folder_path) {
                 continue;
             }
 
-            auto local_contents = core::ReadFile(cfg_file_path.str());
+            auto local_contents = ReadFile(cfg_file_path.str());
             LocalParseNoThrow(*this, local_contents, directory_name);
         }
 

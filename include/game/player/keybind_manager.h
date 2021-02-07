@@ -102,7 +102,7 @@ namespace jactorio::game
         CEREAL_SERIALIZE(archive) {
             for (auto& [key_code, key_action, mods] : actionKeyData_) {
                 archive.startNode();
-                core::CapturingGuard<void()> guard([&archive]() { archive.finishNode(); });
+                CapturingGuard<void()> guard([&archive]() { archive.finishNode(); });
 
                 archive(cereal::make_nvp("key_code", key_code),
                         cereal::make_nvp("key_action", key_action),

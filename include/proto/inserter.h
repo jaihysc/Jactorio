@@ -92,7 +92,7 @@ namespace jactorio::proto
 
         void OnRDrawUniqueData(render::RendererLayer& layer,
                                const SpriteUvCoordsT& uv_coords,
-                               const core::Position2<float>& pixel_offset,
+                               const Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,

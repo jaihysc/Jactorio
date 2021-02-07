@@ -4,7 +4,7 @@
 
 #include "core/utility.h"
 
-namespace jactorio::core
+namespace jactorio
 {
     TEST(Utility, StrToLower) {
         EXPECT_EQ(StrToLower("ASDADxcxvcASDJAKDJ:AL"), "asdadxcxvcasdjakdj:al");
@@ -36,4 +36,4 @@ namespace jactorio::core
         EXPECT_EQ(StrMatchLen("abc", 0), "abc");
         EXPECT_EQ(StrMatchLen("", 5, '-'), "-----");
     }
-} // namespace jactorio::core
+} // namespace jactorio

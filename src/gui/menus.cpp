@@ -62,8 +62,8 @@ float GetProgressBarFraction(const GameTickT game_tick,
     if (!entry.Valid())
         return 0.f;
 
-    const auto ticks_left = core::SafeCast<long double>(entry.dueTick) - game_tick;
-    return 1.f - core::LossyCast<float>(ticks_left / total_ticks);
+    const auto ticks_left = SafeCast<long double>(entry.dueTick) - game_tick;
+    return 1.f - LossyCast<float>(ticks_left / total_ticks);
 }
 
 // ==========================================================================================
@@ -143,8 +143,8 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
         if (str.empty())
             return true;
 
-        const auto compare_item_name = core::StrToLower(item_name);
-        const auto compare_str       = core::StrToLower(core::StrTrimWhitespace(str));
+        const auto compare_item_name = StrToLower(item_name);
+        const auto compare_str       = StrToLower(StrTrimWhitespace(str));
 
         return compare_item_name.find(compare_str) != std::string::npos;
     };
@@ -332,8 +332,8 @@ void gui::CursorWindow(const render::GuiRenderer& g_rendr) {
         guard.PushStyleColor(ImGuiCol_PopupBg, kGuiColNone);
 
         // Slightly off center so that user can still click
-        ImGui::SetNextWindowPos({core::LossyCast<float>(game::MouseSelection::GetCursorX()),
-                                 core::LossyCast<float>(game::MouseSelection::GetCursorY()) + 2.f});
+        ImGui::SetNextWindowPos({LossyCast<float>(game::MouseSelection::GetCursorX()),
+                                 LossyCast<float>(game::MouseSelection::GetCursorY()) + 2.f});
         ImGui::SetNextWindowFocus();
 
         GuiMenu menu;
@@ -374,9 +374,9 @@ void gui::CraftingQueue(const render::GuiRenderer& g_rendr) {
     const auto& recipe_queue = g_rendr.player.crafting.GetRecipeQueue();
     const auto window_height = get_window_height(recipe_queue.size());
 
-    ImGui::SetNextWindowPos({0, core::SafeCast<float>(render::Renderer::GetWindowHeight() - window_height)});
+    ImGui::SetNextWindowPos({0, SafeCast<float>(render::Renderer::GetWindowHeight() - window_height)});
     ImGui::SetNextWindowSize({GetTotalItemSlotWidth(slot_span) + GetTotalWindowPaddingX() + kGuiStyleScrollBarSize,
-                              core::SafeCast<float>(window_height)});
+                              SafeCast<float>(window_height)});
 
     GuiMenu menu;
     menu.AppendFlags(ImGuiWindowFlags_NoMove, ImGuiWindowFlags_NoBackground, ImGuiWindowFlags_NoScrollWithMouse);
@@ -413,8 +413,8 @@ void gui::PickupProgressbar(const render::GuiRenderer& g_rendr) {
 
     ImGui::SetNextWindowSize({progress_bar_width, progress_bar_height});
     ImGui::SetNextWindowPos(
-        {core::SafeCast<float>(render::Renderer::GetWindowWidth()) / 2 - (progress_bar_width / 2), // Center X
-         core::SafeCast<float>(render::Renderer::GetWindowHeight()) - progress_bar_height});
+        {SafeCast<float>(render::Renderer::GetWindowWidth()) / 2 - (progress_bar_width / 2), // Center X
+         SafeCast<float>(render::Renderer::GetWindowHeight()) - progress_bar_height});
 
     // Window
     GuiMenu menu;
@@ -557,7 +557,7 @@ void gui::AssemblyMachine(const render::GuiRenderer& g_rendr) {
         const auto progress = GetProgressBarFraction(
             logic.GameTick(),
             machine_data.deferralEntry,
-            core::SafeCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed)));
+            SafeCast<float>(machine_data.GetRecipe()->GetCraftingTime(machine_proto.assemblySpeed)));
 
         ImGui::ProgressBar(
             progress,

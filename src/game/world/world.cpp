@@ -20,7 +20,7 @@ ChunkCoordAxis game::World::WorldCToChunkC(WorldCoordAxis coord) {
         coord += 1;
     }
 
-    chunk_coord += core::LossyCast<ChunkCoordAxis>(core::LossyCast<float>(coord) / Chunk::kChunkWidth);
+    chunk_coord += LossyCast<ChunkCoordAxis>(LossyCast<float>(coord) / Chunk::kChunkWidth);
     return chunk_coord;
 }
 
@@ -48,7 +48,7 @@ OverlayOffsetAxis game::World::WorldCToOverlayC(const WorldCoordAxis coord) {
         val = coord % kChunkWidth;
     }
 
-    return core::SafeCast<OverlayOffsetAxis>(val);
+    return SafeCast<OverlayOffsetAxis>(val);
 }
 
 // ======================================================================
@@ -143,11 +143,11 @@ const game::ChunkTile* game::World::GetTile(WorldCoordAxis world_x, WorldCoordAx
         world_y += 1;
     }
 
-    chunk_index_x += core::SafeCast<float>(world_x) / Chunk::kChunkWidth;
-    chunk_index_y += core::SafeCast<float>(world_y) / Chunk::kChunkWidth;
+    chunk_index_x += SafeCast<float>(world_x) / Chunk::kChunkWidth;
+    chunk_index_y += SafeCast<float>(world_y) / Chunk::kChunkWidth;
 
 
-    const auto* chunk = GetChunkC(core::LossyCast<int>(chunk_index_x), core::LossyCast<int>(chunk_index_y));
+    const auto* chunk = GetChunkC(LossyCast<int>(chunk_index_x), LossyCast<int>(chunk_index_y));
 
     if (chunk != nullptr) {
         auto tile_index_x = world_x % Chunk::kChunkWidth;
@@ -389,7 +389,7 @@ void Generate(game::World& world, const data::PrototypeManager& proto, const int
             const auto noise_min   = noise_range.first;
             const auto noise_max   = noise_range.second;
             auto resource_amount =
-                core::LossyCast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
+                LossyCast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
 
             if (resource_amount <= 0)
                 resource_amount = 1;

@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace jactorio::core
+namespace jactorio
 {
     namespace
     {
@@ -35,4 +35,4 @@ namespace jactorio::core
 
         EXPECT_TRUE(called);
     }
-} // namespace jactorio::core
+} // namespace jactorio

@@ -404,7 +404,7 @@ void game::ConveyorRenumber(World& world, WorldCoord coord, const int start_inde
         auto* i_line_data = GetConData(world, coord);
         assert(i_line_data != nullptr);
 
-        core::SafeCastAssign(i_line_data->structIndex, i);
+        SafeCastAssign(i_line_data->structIndex, i);
 
         OrientationIncrement(con_data->structure->direction, coord.x, coord.y, -1);
     }

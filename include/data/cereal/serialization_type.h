@@ -19,16 +19,16 @@ namespace jactorio::data
     ///
     /// Converts pointer to internal id when serializing, from internal id to pointer when deserializing
     template <typename TProto>
-    class SerialProtoPtr : public core::PointerWrapper<TProto>
+    class SerialProtoPtr : public PointerWrapper<TProto>
     {
         static_assert(std::is_base_of_v<proto::FrameworkBase, TProto>,
                       "TProto must inherit FrameworkBase for internal id");
 
-        using ValueT                       = typename core::PointerWrapper<TProto>::ValueT;
+        using ValueT                       = typename PointerWrapper<TProto>::ValueT;
         static constexpr auto kArchiveSize = sizeof(ValueT);
 
     public:
-        using core::PointerWrapper<TProto>::PointerWrapper;
+        using PointerWrapper<TProto>::PointerWrapper;
 
         CEREAL_LOAD(archive) {
             CerealArchive<kArchiveSize>(archive, this->value_); // Deserialized as internal id
@@ -38,7 +38,7 @@ namespace jactorio::data
 
             assert(active_prototype_manager != nullptr);
             auto* proto_ptr = &active_prototype_manager->RelocationTableGet<TProto>( // Converted to prototype*
-                core::SafeCast<PrototypeIdT>(this->value_));
+                SafeCast<PrototypeIdT>(this->value_));
             this->SetPtr(proto_ptr);
         }
 
@@ -59,16 +59,16 @@ namespace jactorio::data
     /// Manages non owning pointer to unique data
     /// \remark Uses the global active unique data manager for deserializing
     template <typename TUnique>
-    class SerialUniqueDataPtr : public core::PointerWrapper<TUnique>
+    class SerialUniqueDataPtr : public PointerWrapper<TUnique>
     {
         static_assert(std::is_base_of_v<proto::UniqueDataBase, TUnique>,
                       "TUnique must inherit UniqueDataBase for internal id");
 
-        using ValueT                       = typename core::PointerWrapper<TUnique>::ValueT;
+        using ValueT                       = typename PointerWrapper<TUnique>::ValueT;
         static constexpr auto kArchiveSize = sizeof(UniqueDataIdT);
 
     public:
-        using core::PointerWrapper<TUnique>::PointerWrapper;
+        using PointerWrapper<TUnique>::PointerWrapper;
 
         CEREAL_LOAD(archive) {
             UniqueDataIdT id;
