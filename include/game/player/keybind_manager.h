@@ -28,7 +28,7 @@ namespace jactorio::game
         ///
         /// \remark Provided parameter's lifetime must exceed this object
         explicit KeybindManager(InputManager& input, GameDataGlobal& data_global)
-            : inputManager_(input), dataGlobal_(data_global) {}
+            : input_(input), dataGlobal_(data_global) {}
 
 
         KeybindManager(const KeybindManager& other)     = delete;
@@ -42,7 +42,7 @@ namespace jactorio::game
 
         friend void swap(KeybindManager& lhs, KeybindManager& rhs) noexcept {
             using std::swap;
-            swap(lhs.inputManager_, rhs.inputManager_);
+            swap(lhs.input_, rhs.input_);
             swap(lhs.dataGlobal_, rhs.dataGlobal_);
             swap(lhs.actionCallbackId_, rhs.actionCallbackId_);
             swap(lhs.actionKeyData_, rhs.actionKeyData_);
@@ -111,7 +111,7 @@ namespace jactorio::game
         }
 
     private:
-        std::reference_wrapper<InputManager> inputManager_;
+        std::reference_wrapper<InputManager> input_;
         std::reference_wrapper<GameDataGlobal> dataGlobal_;
 
         /// Id of each action's executor in InputManager
@@ -142,10 +142,10 @@ namespace jactorio::game
 
         auto& callback_id = actionCallbackId_[i_action];
         if (callback_id != 0) {
-            inputManager_.get().Unsubscribe(callback_id);
+            input_.get().Unsubscribe(callback_id);
         }
 
-        callback_id = inputManager_.get().Register(
+        callback_id = input_.get().Register(
             [this, action_type]() {
                 PlayerAction::GetExecutor(action_type)(dataGlobal_.get()); //
             },

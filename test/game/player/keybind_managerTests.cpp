@@ -16,9 +16,9 @@ namespace jactorio::game
     class KeybindManagerTest : public testing::Test
     {
     protected:
-        InputManager inputManager_;
+        InputManager input_;
         GameDataGlobal dataGlobal_;
-        KeybindManager keybindManager_{inputManager_, dataGlobal_};
+        KeybindManager keybindManager_{input_, dataGlobal_};
 
         ///
         /// Expects the PlayerAction test to be called after executing provided function f
@@ -41,7 +41,7 @@ namespace jactorio::game
         ///
         /// Deserializes KeybindManager from JSON
         void Deserialize() {
-            KeybindManager keybind_manager(inputManager_, dataGlobal_);
+            KeybindManager keybind_manager(input_, dataGlobal_);
             data::DeserializeKeybinds(keybind_manager);
 
             keybindManager_ = std::move(keybind_manager);
@@ -55,7 +55,7 @@ namespace jactorio::game
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(SDLK_0, InputAction::key_down);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 
@@ -66,7 +66,7 @@ namespace jactorio::game
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(MouseInput::left, InputAction::key_down, KMOD_LALT);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 
@@ -79,14 +79,14 @@ namespace jactorio::game
 
         // Does nothing because unsubscribed
         InputManager::SetInput(SDLK_0, InputAction::key_down);
-        inputManager_.Raise();
+        input_.Raise();
 
         InputManager::SetInput(SDLK_1, InputAction::key_up, KMOD_CAPS);
-        inputManager_.Raise();
+        input_.Raise();
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(MouseInput::right, InputAction::key_up);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 
@@ -99,7 +99,7 @@ namespace jactorio::game
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(SDLK_1, InputAction::key_down);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 
@@ -112,7 +112,7 @@ namespace jactorio::game
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(MouseInput::right, InputAction::key_up);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 
@@ -125,7 +125,7 @@ namespace jactorio::game
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(SDLK_a, InputAction::key_up);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 
@@ -139,12 +139,12 @@ namespace jactorio::game
         // keyboard button should not trigger keybind on mouse button
         InputManager::SetInput(static_cast<SDL_KeyCode>(MouseInput::left), // Has same numerical value
                                InputAction::key_up);
-        inputManager_.Raise();
+        input_.Raise();
 
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(MouseInput::left, InputAction::key_up);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 
@@ -157,7 +157,7 @@ namespace jactorio::game
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(MouseInput::left, InputAction::key_down, KMOD_LALT);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 
@@ -178,14 +178,14 @@ namespace jactorio::game
         keybindManager_.ChangeActionInput(PlayerAction::Type::test, SDLK_0, InputAction::key_down);
 
         Serialize();
-        inputManager_.Clear();
+        input_.Clear();
 
         Deserialize();
         keybindManager_.RegisterAllKeyData();
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(SDLK_0, InputAction::key_down);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 
@@ -195,14 +195,14 @@ namespace jactorio::game
         keybindManager_.ChangeActionInput(PlayerAction::Type::test, MouseInput::left, InputAction::key_up);
 
         Serialize();
-        inputManager_.Clear();
+        input_.Clear();
 
         Deserialize();
         keybindManager_.RegisterAllKeyData();
 
         ExpectTestActionCalled([this]() {
             InputManager::SetInput(MouseInput::left, InputAction::key_up);
-            inputManager_.Raise();
+            input_.Raise();
         });
     }
 } // namespace jactorio::game
