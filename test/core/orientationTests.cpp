@@ -6,16 +6,37 @@
 
 namespace jactorio
 {
-    TEST(Orientation, Invert) {
-        EXPECT_EQ(InvertOrientation(Orientation::up), Orientation::down);
-        EXPECT_EQ(InvertOrientation(Orientation::right), Orientation::left);
-        EXPECT_EQ(InvertOrientation(Orientation::down), Orientation::up);
-        EXPECT_EQ(InvertOrientation(Orientation::left), Orientation::right);
+    TEST(Orientation, Construct) {
+        const Orientation orien = Orientation::up;
+        EXPECT_EQ(orien, Orientation::up);
+    }
 
-        EXPECT_EQ(InvertOrientation(0), 2);
-        EXPECT_EQ(InvertOrientation(1), 3);
-        EXPECT_EQ(InvertOrientation(2), 0);
-        EXPECT_EQ(InvertOrientation(3), 1);
+    TEST(Orientation, Enumerate) {
+        const Orientation o = Orientation::left;
+
+        switch (o) {
+        case Orientation::up:
+            FAIL();
+        case Orientation::right:
+            FAIL();
+        case Orientation::down:
+            FAIL();
+        case Orientation::left:
+            break;
+
+        default:
+            FAIL();
+        }
+    }
+
+    TEST(Orientation, Invert) {
+        EXPECT_EQ(Orientation(Orientation::up).Invert(), Orientation::down);
+        EXPECT_EQ(Orientation(Orientation::right).Invert(), Orientation::left);
+        EXPECT_EQ(Orientation(Orientation::down).Invert(), Orientation::up);
+        EXPECT_EQ(Orientation(Orientation::left).Invert(), Orientation::right);
+
+        const Orientation o = Orientation::up;
+        EXPECT_EQ(o.Inverted(), Orientation::down);
     }
 
     TEST(Orientation, Increment) {

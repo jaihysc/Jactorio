@@ -84,7 +84,7 @@ const proto::ConveyorData* game::GetConData(const ChunkTileLayer& ctl) {
 /// Determines origin and neighbor's targets
 /// \tparam OriginConnect Origin orientation required for origin to connect to neighbor
 /// \tparam NeighborConnect Neighbor orientation required for neighbor to connect to origin
-template <Orientation OriginConnect, Orientation NeighborConnect>
+template <Direction OriginConnect, Direction NeighborConnect>
 static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& neighbor) {
     assert(origin.structure != nullptr);
     assert(neighbor.structure != nullptr);
@@ -125,7 +125,7 @@ static void CalculateTargets(proto::ConveyorData& origin, proto::ConveyorData& n
 /// \tparam OriginConnect Origin orientation required for origin to connect to neighbor
 /// \tparam XOffset Offset applied to origin to get neighbor
 /// \tparam YOffset Offset applied to origin to get neighbor
-template <Orientation OriginConnect, int XOffset, int YOffset>
+template <Direction OriginConnect, int XOffset, int YOffset>
 static void DoConnect(game::World& world, const WorldCoord& coord) {
     auto* current_struct = GetConData(world, {coord.x, coord.y});
     auto* neigh_struct   = GetConData(world, {coord.x + XOffset, coord.y + YOffset});
@@ -134,7 +134,7 @@ static void DoConnect(game::World& world, const WorldCoord& coord) {
     if (current_struct == nullptr || neigh_struct == nullptr || neigh_struct->structure == nullptr)
         return;
 
-    CalculateTargets<OriginConnect, InvertOrientation(OriginConnect)>(*current_struct, *neigh_struct);
+    CalculateTargets<OriginConnect, Orientation::Invert(OriginConnect)>(*current_struct, *neigh_struct);
 }
 
 

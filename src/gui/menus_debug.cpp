@@ -211,7 +211,7 @@ void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
 
         ImGui::Text("Multi-tile index: %d", layer.GetMultiTileIndex());
 
-        ImGui::Text("Orientation: %s", OrientationToStr(layer.GetOrientation()));
+        ImGui::Text("Orientation: %s", layer.GetOrientation().ToCstr());
         ImGui::Text("Dimensions: %d, %d", layer.GetDimensions().span, layer.GetDimensions().height);
 
         ImGui::Text("Prototype: %s", MemoryAddressToStr(layer.GetPrototype()).c_str());
@@ -423,7 +423,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data
             ImGui::Text("Termination Type: %s", s.c_str());
         }
 
-        ImGui::Text("Direction: %s", OrientationToStr(segment.direction));
+        ImGui::Text("Direction: %s", segment.direction.ToCstr());
 
         ImGui::Text("Item update index: %d %d", segment.left.index, segment.right.index);
 
@@ -472,7 +472,7 @@ void gui::DebugInserterInfo(GameWorlds& worlds, game::Player& player) {
 
     auto& inserter_data = *layer.GetUniqueData<proto::InserterData>();
 
-    ImGui::Text("Orientation %s", OrientationToStr(inserter_data.orientation));
+    ImGui::Text("Orientation %s", inserter_data.orientation.ToCstr());
 
     ImGui::Text("Degree: %f", inserter_data.rotationDegree.getAsDouble());
 
