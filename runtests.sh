@@ -13,7 +13,7 @@ gtestFilter="*"
 
 if [[ "$2" == "--leakcheck" ]]; then
     gtestExecutor="valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose"
-    gtestFilter="*:-PybindManagerTest.*:DataManagerTest.LoadData*"
+    gtestFilter="*:-PybindManagerTest.*:PrototypeManagerTest.Load*"
     echo "Using $gtestExecutor for leak check"
 fi
 

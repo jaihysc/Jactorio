@@ -10,7 +10,7 @@
 
 namespace jactorio::data
 {
-    class DataManagerTest : public testing::Test
+    class PrototypeManagerTest : public testing::Test
     {
     protected:
         PrototypeManager proto_;
@@ -27,14 +27,14 @@ namespace jactorio::data
         }
     };
 
-    TEST_F(DataManagerTest, Make) {
+    TEST_F(PrototypeManagerTest, Make) {
         auto& added_proto = proto_.Make<proto::Sprite>("raw-fish");
 
         const auto* proto = proto_.Get<proto::Sprite>("raw-fish");
         EXPECT_EQ(proto, &added_proto);
     }
 
-    TEST_F(DataManagerTest, Add) {
+    TEST_F(PrototypeManagerTest, Add) {
         proto_.SetDirectoryPrefix("test");
 
         proto_.Make<proto::Sprite>("raw-fish");
@@ -52,7 +52,7 @@ namespace jactorio::data
         EXPECT_EQ(sprite->GetLocalizedName(), "__test__/raw-fish");
     }
 
-    TEST_F(DataManagerTest, AddDirectoryPrefix) {
+    TEST_F(PrototypeManagerTest, AddDirectoryPrefix) {
         proto_.SetDirectoryPrefix();
 
         auto& prototype = proto_.Make<proto::Sprite>("raw-fish");
@@ -67,7 +67,7 @@ namespace jactorio::data
         }
     }
 
-    TEST_F(DataManagerTest, AddIncrementId) {
+    TEST_F(PrototypeManagerTest, AddIncrementId) {
         proto_.Make<proto::Sprite>("raw-fish0");
         proto_.Make<proto::Sprite>("raw-fish1");
         proto_.Make<proto::Sprite>("raw-fish2");
@@ -80,7 +80,7 @@ namespace jactorio::data
         EXPECT_EQ(proto->internalId, 4);
     }
 
-    TEST_F(DataManagerTest, OverrideExisting) {
+    TEST_F(PrototypeManagerTest, OverrideExisting) {
         proto_.SetDirectoryPrefix("test");
 
         // Normal name
@@ -118,7 +118,8 @@ namespace jactorio::data
     }
 
 
-    TEST_F(DataManagerTest, Load) {
+    /// This test excluded in Valgrind
+    TEST_F(PrototypeManagerTest, Load) {
         active_prototype_manager = &proto_;
         proto_.SetDirectoryPrefix("asdf");
 
@@ -137,7 +138,7 @@ namespace jactorio::data
         EXPECT_EQ(proto->GetHeight(), 32);
     }
 
-    TEST_F(DataManagerTest, LoadInvalidPath) {
+    TEST_F(PrototypeManagerTest, LoadInvalidPath) {
         // Loading an invalid path will throw filesystem exception
         proto_.SetDirectoryPrefix("asdf");
 
@@ -151,7 +152,7 @@ namespace jactorio::data
         }
     }
 
-    TEST_F(DataManagerTest, GetInvalid) {
+    TEST_F(PrototypeManagerTest, GetInvalid) {
         // Should return a nullptr if the item is non-existent
         const auto* ptr = proto_.Get<proto::FrameworkBase>(proto::Category::sprite, "asdfjsadhfkjdsafhs");
 
@@ -159,7 +160,7 @@ namespace jactorio::data
     }
 
 
-    TEST_F(DataManagerTest, GetAllOfType) {
+    TEST_F(PrototypeManagerTest, GetAllOfType) {
         proto_.Make<proto::Sprite>("test_tile1");
         proto_.Make<proto::Sprite>("test_tile2");
 
@@ -171,7 +172,7 @@ namespace jactorio::data
         EXPECT_EQ(Contains(paths, "asdf"), false);
     }
 
-    TEST_F(DataManagerTest, GetAllSorted) {
+    TEST_F(PrototypeManagerTest, GetAllSorted) {
         // Retrieved vector should have prototypes sorted in order of addition, first one being added is first in vector
         proto_.Make<proto::Sprite>("test_tile1");
         proto_.Make<proto::Sprite>("test_tile2");
@@ -187,7 +188,7 @@ namespace jactorio::data
         EXPECT_EQ(protos[3]->name, "test_tile4");
     }
 
-    TEST_F(DataManagerTest, PrototypeExists) {
+    TEST_F(PrototypeManagerTest, PrototypeExists) {
         EXPECT_FALSE(proto_.Find("bunny"));
 
         proto_.Make<proto::Sprite>("aqua");
@@ -195,7 +196,7 @@ namespace jactorio::data
         EXPECT_TRUE(proto_.Find("aqua"));
     }
 
-    TEST_F(DataManagerTest, Clear) {
+    TEST_F(PrototypeManagerTest, Clear) {
         proto_.Make<proto::Sprite>("small-electric-pole");
 
         proto_.Clear();
@@ -212,7 +213,7 @@ namespace jactorio::data
     }
 
 
-    TEST_F(DataManagerTest, GenerateRelocationTable) {
+    TEST_F(PrototypeManagerTest, GenerateRelocationTable) {
         auto& sprite_1 = proto_.Make<proto::Sprite>();
         auto& sprite_2 = proto_.Make<proto::Sprite>();
         auto& sprite_3 = proto_.Make<proto::Sprite>();
@@ -224,7 +225,7 @@ namespace jactorio::data
         EXPECT_EQ(&proto_.RelocationTableGet<proto::Sprite>(sprite_3.internalId), &sprite_3);
     }
 
-    TEST_F(DataManagerTest, ClearRelocationTable) {
+    TEST_F(PrototypeManagerTest, ClearRelocationTable) {
         proto_.Make<proto::Sprite>();
         proto_.GenerateRelocationTable();
 
