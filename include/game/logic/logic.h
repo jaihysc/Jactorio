@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_LOGIC_LOGI_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_H
 #define JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_H
 #pragma once
 
