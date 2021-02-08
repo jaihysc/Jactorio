@@ -129,8 +129,8 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
     while (common.gameState == world_render_game_state) {
         EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-        auto& player_data  = common.GetDataGlobal().player;
-        auto& player_world = common.GetDataGlobal().worlds[player_data.world.GetId()];
+        auto& player       = common.GetDataGlobal().player;
+        auto& player_world = common.GetDataGlobal().worlds[player.world.GetId()];
 
         // ======================================================================
         // RENDER LOOP ======================================================================
@@ -146,13 +146,13 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
             // MVP Matrices updated in here
             main_renderer->GlRenderPlayerPosition(common.GetDataGlobal().logic.GameTick(),
                                                   player_world,
-                                                  player_data.world.GetPositionX(),
-                                                  player_data.world.GetPositionY());
+                                                  player.world.GetPositionX(),
+                                                  player.world.GetPositionY());
 
 
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
 
-            core::ResourceGuard imgui_render_guard(+[]() { gui::ImguiRenderFrame(); });
+            ResourceGuard imgui_render_guard(+[]() { gui::ImguiRenderFrame(); });
             gui::ImguiBeginFrame(display_window);
 
             if (IsVisible(gui::Menu::MainMenu)) {
@@ -162,8 +162,8 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
             gui::ImguiDraw(display_window,
                            common.GetDataGlobal().worlds,
                            common.GetDataGlobal().logic,
-                           player_data,
-                           common.gameDataLocal.prototype,
+                           player,
+                           common.gameDataLocal.proto,
                            common.gameDataLocal.event);
         }
         // ======================================================================
@@ -193,12 +193,12 @@ void render::RenderInit(ThreadedLoopCommon& common) {
     }
 
 
-    core::ResourceGuard imgui_manager_guard(&gui::ImguiTerminate);
+    ResourceGuard imgui_manager_guard(&gui::ImguiTerminate);
     gui::Setup(display_window);
 
     // Shader
     // From my testing, allocating it on the heap is faster than using the stack
-    core::ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
+    ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
     main_renderer = new Renderer();
 
     const Shader shader(std::vector<ShaderCreationInput>{{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
@@ -222,8 +222,8 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // Loading textures
     auto renderer_sprites = RendererSprites();
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, proto::Sprite::SpriteGroup::terrain, true);
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.prototype, proto::Sprite::SpriteGroup::gui, false);
+    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.proto, proto::Sprite::SpriteGroup::terrain, true);
+    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.proto, proto::Sprite::SpriteGroup::gui, false);
 
 
     Renderer::GlSetup();

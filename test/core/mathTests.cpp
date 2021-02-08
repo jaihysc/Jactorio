@@ -4,7 +4,7 @@
 
 #include "core/math.h"
 
-namespace jactorio::core
+namespace jactorio
 {
     TEST(Math, FloatEq) {
         // Checks floats are equal within a tolerance
@@ -34,4 +34,4 @@ namespace jactorio::core
         EXPECT_DOUBLE_EQ(TanF(71), 2.90421087767582);
         EXPECT_DOUBLE_EQ(TanF(43), 0.9325150861376617056122);
     }
-} // namespace jactorio::core
+} // namespace jactorio

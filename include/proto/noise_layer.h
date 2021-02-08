@@ -142,7 +142,7 @@ namespace jactorio::proto
         }
 
 
-        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {
+        void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {
             J_PROTO_ASSERT(1 <= octaveCount, "A minimum of 1 octaves is required");
             J_PROTO_ASSERT(0 < frequency, "Frequency must be greater than 0");
             J_PROTO_ASSERT(0 < persistence, "Persistence must be greater than 0");

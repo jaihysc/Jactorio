@@ -6,25 +6,25 @@
 
 using namespace jactorio;
 
-std::map<std::string, double> core::ExecutionTimer::measuredTimes = std::map<std::string, double>();
+std::map<std::string, double> ExecutionTimer::measuredTimes = std::map<std::string, double>();
 
-core::ExecutionTimer::ExecutionTimer(const std::string& name) {
+ExecutionTimer::ExecutionTimer(const std::string& name) {
     timerName_ = name;
     startTime_ = std::chrono::high_resolution_clock::now();
 }
 
-core::ExecutionTimer::~ExecutionTimer() {
+ExecutionTimer::~ExecutionTimer() {
     Stop();
 }
 
-void core::ExecutionTimer::Stop() const noexcept {
+void ExecutionTimer::Stop() const noexcept {
     const auto start = std::chrono::time_point_cast<std::chrono::microseconds>(startTime_).time_since_epoch().count();
 
     const auto end_time = std::chrono::high_resolution_clock::now();
     const auto end      = std::chrono::time_point_cast<std::chrono::microseconds>(end_time).time_since_epoch().count();
 
     // Microseconds conversion to milliseconds
-    const double milliseconds = core::SafeCast<double>(end - start) * 0.001;
+    const double milliseconds = SafeCast<double>(end - start) * 0.001;
 
     std::lock_guard guard(measuredTimesMutex_);
     try {

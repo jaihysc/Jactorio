@@ -7,7 +7,7 @@
 #include "proto/container_entity.h"
 #include "proto/sprite.h"
 
-namespace jactorio::core
+namespace jactorio
 {
     TEST(LoopCommon, Construct) {
         ThreadedLoopCommon common;
@@ -54,4 +54,4 @@ namespace jactorio::core
             local.input.mouse.DrawOverlay(global.worlds[0], {0, 1}, Orientation::up, &container, sprite);
         }
     }
-} // namespace jactorio::core
+} // namespace jactorio

@@ -32,7 +32,7 @@ namespace jactorio::proto
         PYTHON_PROP_REF(std::vector<RecipeCategory*>, recipeCategories);
 
 
-        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {}
+        void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {}
     };
 } // namespace jactorio::proto
 

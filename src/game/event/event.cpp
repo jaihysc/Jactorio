@@ -41,7 +41,7 @@ bool game::EventData::Unsubscribe(const EventType event_type, CallbackFunc callb
     return removed;
 }
 
-void game::EventData::ClearAllData() {
+void game::EventData::Clear() {
     // All callbacks registered to event
     for (auto& [event_type, callbacks] : eventHandlers_) {
         callbacks.clear();

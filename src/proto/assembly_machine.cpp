@@ -2,15 +2,15 @@
 
 #include "proto/assembly_machine.h"
 
-#include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
+#include "game/logic/logic.h"
+#include "game/world/world.h"
 #include "gui/menus.h"
 #include "proto/recipe.h"
 
 using namespace jactorio;
 
-void proto::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data,
-                                              const data::PrototypeManager& data_manager,
+void proto::AssemblyMachineData::ChangeRecipe(game::Logic& logic,
+                                              const data::PrototypeManager& proto,
                                               const Recipe* new_recipe) {
     if (new_recipe != nullptr) {
         ingredientInv.resize(new_recipe->ingredients.size());
@@ -18,18 +18,18 @@ void proto::AssemblyMachineData::ChangeRecipe(game::LogicData& logic_data,
 
         // Set filters
         for (size_t i = 0; i < ingredientInv.size(); ++i) {
-            const auto* ingredient = data_manager.DataRawGet<Item>(new_recipe->ingredients[i].first);
+            const auto* ingredient = proto.Get<Item>(new_recipe->ingredients[i].first);
             assert(ingredient != nullptr);
             ingredientInv[i].filter = ingredient;
         }
 
-        const auto* product = data_manager.DataRawGet<Item>(new_recipe->product.first);
+        const auto* product = proto.Get<Item>(new_recipe->product.first);
         assert(product);
         productInv[0].filter = product;
     }
     else {
         // Remove recipe
-        logic_data.deferralTimer.RemoveDeferralEntry(deferralEntry);
+        logic.deferralTimer.RemoveDeferralEntry(deferralEntry);
 
         ingredientInv.resize(0);
         productInv.resize(0);
@@ -95,42 +95,42 @@ bool proto::AssemblyMachine::OnRShowGui(const render::GuiRenderer& g_rendr, game
 
 // ======================================================================
 
-bool proto::AssemblyMachine::TryBeginCrafting(game::LogicData& logic_data, AssemblyMachineData& data) const {
+bool proto::AssemblyMachine::TryBeginCrafting(game::Logic& logic, AssemblyMachineData& data) const {
     if (!data.CanBeginCrafting() || data.deferralEntry.Valid())
         return false;
 
-    data.deferralEntry = logic_data.deferralTimer.RegisterFromTick(
-        *this, &data, data.GetRecipe()->GetCraftingTime(1. / this->assemblySpeed));
+    data.deferralEntry =
+        logic.deferralTimer.RegisterFromTick(*this, &data, data.GetRecipe()->GetCraftingTime(1. / this->assemblySpeed));
 
     data.CraftRemoveIngredients();
     return true;
 }
 
 
-void proto::AssemblyMachine::OnDeferTimeElapsed(game::WorldData& /*world_data*/,
-                                                game::LogicData& logic_data,
+void proto::AssemblyMachine::OnDeferTimeElapsed(game::World& /*world*/,
+                                                game::Logic& logic,
                                                 UniqueDataBase* unique_data) const {
     auto* machine_data = static_cast<AssemblyMachineData*>(unique_data);
 
     machine_data->CraftAddProduct();
 
     machine_data->deferralEntry.Invalidate();
-    TryBeginCrafting(logic_data, *machine_data);
+    TryBeginCrafting(logic, *machine_data);
 }
 
-void proto::AssemblyMachine::OnBuild(game::WorldData& /*world_data*/,
-                                     game::LogicData& /*logic_data*/,
-                                     const WorldCoord& /*world_coords*/,
+void proto::AssemblyMachine::OnBuild(game::World& /*world*/,
+                                     game::Logic& /*logic*/,
+                                     const WorldCoord& /*coord*/,
                                      game::ChunkTileLayer& tile_layer,
                                      const Orientation /*orientation*/) const {
     tile_layer.MakeUniqueData<AssemblyMachineData>();
 }
 
-void proto::AssemblyMachine::OnRemove(game::WorldData& /*world_data*/,
-                                      game::LogicData& logic_data,
-                                      const WorldCoord& /*world_coords*/,
+void proto::AssemblyMachine::OnRemove(game::World& /*world*/,
+                                      game::Logic& logic,
+                                      const WorldCoord& /*coord*/,
                                       game::ChunkTileLayer& tile_layer) const {
     auto& machine_data = *tile_layer.GetUniqueData<AssemblyMachineData>();
 
-    logic_data.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
+    logic.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
 }

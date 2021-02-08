@@ -324,31 +324,31 @@ namespace jactorio::game
     }
 
     TEST_F(ChunkTileLayerTest, Serialize) {
-        data::PrototypeManager proto_manager;
-        data::UniqueDataManager unique_manager;
+        data::PrototypeManager proto;
+        data::UniqueDataManager unique;
 
-        data::active_prototype_manager   = &proto_manager;
-        data::active_unique_data_manager = &unique_manager;
+        data::active_prototype_manager   = &proto;
+        data::active_unique_data_manager = &unique;
 
-        auto& proto = proto_manager.AddProto<proto::ContainerEntity>();
-        proto.SetWidth(2); // Width and height are flipped since orientation is right
-        proto.SetHeight(3);
+        auto& container = proto.Make<proto::ContainerEntity>();
+        container.SetWidth(2); // Width and height are flipped since orientation is right
+        container.SetHeight(3);
 
         ChunkTileLayer top_left;
-        top_left.SetPrototype(Orientation::right, proto);
+        top_left.SetPrototype(Orientation::right, container);
         top_left.MakeUniqueData<proto::ContainerEntityData>(10);
 
         ChunkTileLayer bot_right;
         bot_right.SetupMultiTile(3, top_left);
-        bot_right.SetPrototype(Orientation::right, proto);
+        bot_right.SetPrototype(Orientation::right, container);
 
-        proto_manager.GenerateRelocationTable();
+        proto.GenerateRelocationTable();
 
         // ======================================================================
         auto result_tl = TestSerializeDeserialize(top_left);
         auto result_br = TestSerializeDeserialize(bot_right);
 
-        EXPECT_EQ(result_tl.GetPrototype(), &proto);
+        EXPECT_EQ(result_tl.GetPrototype(), &container);
         ASSERT_NE(result_tl.GetUniqueData(), nullptr);
         EXPECT_EQ(result_tl.GetUniqueData()->internalId, 1);
 
@@ -357,13 +357,13 @@ namespace jactorio::game
 
         EXPECT_EQ(result_tl.GetOrientation(), Orientation::right);
 
-        EXPECT_EQ(result_br.GetPrototype(), &proto);
+        EXPECT_EQ(result_br.GetPrototype(), &container);
         EXPECT_EQ(result_br.GetTopLeftLayer(), nullptr);
 
         EXPECT_EQ(result_br.GetDimensions().span, 3);
         EXPECT_EQ(result_br.GetDimensions().height, 2);
 
 
-        EXPECT_EQ(unique_manager.GetDebugInfo().dataEntries.size(), 1);
+        EXPECT_EQ(unique.GetDebugInfo().dataEntries.size(), 1);
     }
 } // namespace jactorio::game

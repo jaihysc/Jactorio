@@ -6,7 +6,7 @@
 
 #include "jactorioTests.h"
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 
 namespace jactorio::game
 {
@@ -15,10 +15,10 @@ namespace jactorio::game
         GameWorlds gameWorlds_{1};
 
     protected:
-        WorldData& world_ = gameWorlds_[0];
-        LogicData logic_;
+        World& world_ = gameWorlds_[0];
+        Logic logic_;
 
-        PlayerData player_;
+        Player player_;
         MouseSelection mouseSelection_;
 
 
@@ -172,8 +172,8 @@ namespace jactorio::game
             }
 
             J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                                   WorldData& /*world_data*/,
-                                                   const WorldCoord& /*world_coords*/) const override {
+                                                   World& /*world*/,
+                                                   const WorldCoord& /*coord*/) const override {
                 getSpriteSetCalled = true;
                 return 16;
             }

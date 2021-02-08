@@ -18,8 +18,8 @@ namespace jactorio::data
 
 namespace jactorio::game
 {
-    class PlayerData;
-    class LogicData;
+    class Player;
+    class Logic;
 } // namespace jactorio::game
 
 namespace jactorio::gui
@@ -40,11 +40,11 @@ namespace jactorio::render
     {
     public:
         GuiRenderer(GameWorlds& worlds,
-                    game::LogicData& logic,
-                    game::PlayerData& player,
-                    const data::PrototypeManager& proto_manager,
+                    game::Logic& logic,
+                    game::Player& player,
+                    const data::PrototypeManager& proto,
                     gui::MenuData& menu_data)
-            : worlds(worlds), logic(logic), player(player), protoManager(proto_manager), menuData(menu_data) {}
+            : worlds(worlds), logic(logic), player(player), proto(proto), menuData(menu_data) {}
 
         ///
         /// For OnRShowGui to init prototype and uniqueData
@@ -55,7 +55,7 @@ namespace jactorio::render
             : worlds(g_rendr.worlds),
               logic(g_rendr.logic),
               player(g_rendr.player),
-              protoManager(g_rendr.protoManager),
+              proto(g_rendr.proto),
               menuData(g_rendr.menuData),
               prototype(prototype),
               uniqueData(unique_data) {}
@@ -73,10 +73,10 @@ namespace jactorio::render
         }
 
         GameWorlds& worlds;
-        game::LogicData& logic;
-        game::PlayerData& player;
+        game::Logic& logic;
+        game::Player& player;
 
-        const data::PrototypeManager& protoManager;
+        const data::PrototypeManager& proto;
 
         gui::MenuData& menuData;
 

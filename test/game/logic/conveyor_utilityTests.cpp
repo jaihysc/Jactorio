@@ -9,7 +9,7 @@
 
 #include "jactorioTests.h"
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/transport_belt.h"
 
 namespace jactorio::game
@@ -21,55 +21,55 @@ namespace jactorio::game
         /// Logic group chosen for the tests
         static constexpr LogicGroup kLogicGroup_ = LogicGroup::splitter;
 
-        WorldData worldData_;
+        World world_;
         proto::TransportBelt transBelt_;
 
         void SetUp() override {
-            worldData_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk(0, 0);
         }
     };
 
     TEST_F(ConveyorUtilityTest, GetConveyorDataConveyor) {
-        auto& con_data = TestSetupConveyor(worldData_, {0, 0}, Orientation::up, transBelt_);
+        auto& con_data = TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_);
 
-        EXPECT_EQ(GetConData(worldData_, {0, 0}), &con_data);
+        EXPECT_EQ(GetConData(world_, {0, 0}), &con_data);
     }
 
     TEST_F(ConveyorUtilityTest, GetConveyorDataSplitter) {
         proto::Splitter splitter;
         splitter.SetWidth(2);
 
-        auto& splitter_data = TestSetupBlankSplitter(worldData_, {0, 0}, Orientation::up, splitter);
+        auto& splitter_data = TestSetupBlankSplitter(world_, {0, 0}, Orientation::up, splitter);
 
-        EXPECT_EQ(GetConData(worldData_, {0, 0}), &splitter_data.left);
-        EXPECT_EQ(GetConData(worldData_, {1, 0}), &splitter_data.right);
+        EXPECT_EQ(GetConData(world_, {0, 0}), &splitter_data.left);
+        EXPECT_EQ(GetConData(world_, {1, 0}), &splitter_data.right);
     }
 
     TEST_F(ConveyorUtilityTest, GetConveyorDataSplitterInverted) {
         proto::Splitter splitter;
         splitter.SetWidth(2);
 
-        auto& splitter_data = TestSetupBlankSplitter(worldData_, {0, 0}, Orientation::left, splitter);
+        auto& splitter_data = TestSetupBlankSplitter(world_, {0, 0}, Orientation::left, splitter);
 
-        EXPECT_EQ(GetConData(worldData_, {0, 1}), &splitter_data.left);
-        EXPECT_EQ(GetConData(worldData_, {0, 0}), &splitter_data.right);
+        EXPECT_EQ(GetConData(world_, {0, 1}), &splitter_data.left);
+        EXPECT_EQ(GetConData(world_, {0, 0}), &splitter_data.right);
     }
 
 
     ///
     /// Should gracefully handle no tile above
     TEST_F(ConveyorUtilityTest, ConnectUpNoTileAbove) {
-        TestSetupConveyor(worldData_, {0, 0}, Orientation::up, transBelt_);
+        TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_);
 
-        ConveyorConnectUp(worldData_, {0, 0});
+        ConveyorConnectUp(world_, {0, 0});
     }
 
     ///
     /// Should gracefully handle no struct above
     TEST_F(ConveyorUtilityTest, ConnectUpNoStructAbove) {
-        TestSetupConveyor(worldData_, {0, 1}, Orientation::up, transBelt_);
+        TestSetupConveyor(world_, {0, 1}, Orientation::up, transBelt_);
 
-        ConveyorConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(world_, {0, 1});
     }
 
     ///
@@ -77,19 +77,19 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, ConnectUpNonStruct) {
         const proto::ContainerEntity container_proto;
 
-        TestSetupContainer(worldData_, {0, 0}, Orientation::up, container_proto);
-        TestSetupConveyor(worldData_, {0, 1}, Orientation::up, transBelt_);
+        TestSetupContainer(world_, {0, 0}, Orientation::up, container_proto);
+        TestSetupConveyor(world_, {0, 1}, Orientation::up, transBelt_);
 
-        ConveyorConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(world_, {0, 1});
     }
 
     ///
     /// Do not connect to itself if the struct spans multiple tiles
     TEST_F(ConveyorUtilityTest, ConnectUpNoConnectSelf) {
-        auto& structure = TestSetupConveyor(worldData_, {0, 0}, Orientation::up, transBelt_).structure;
-        TestSetupConveyor(worldData_, {0, 1}, transBelt_, structure);
+        auto& structure = TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_).structure;
+        TestSetupConveyor(world_, {0, 1}, transBelt_, structure);
 
-        ConveyorConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(world_, {0, 1});
 
         EXPECT_EQ(structure->target, nullptr);
     }
@@ -100,10 +100,10 @@ namespace jactorio::game
         // ^
         // ^
 
-        auto& con_struct_ahead = *TestSetupConveyor(worldData_, {0, 0}, Orientation::up, transBelt_).structure;
-        auto& con_struct       = *TestSetupConveyor(worldData_, {0, 1}, Orientation::up, transBelt_).structure;
+        auto& con_struct_ahead = *TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_).structure;
+        auto& con_struct       = *TestSetupConveyor(world_, {0, 1}, Orientation::up, transBelt_).structure;
 
-        ConveyorConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(world_, {0, 1});
 
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
@@ -114,10 +114,10 @@ namespace jactorio::game
         //  v
         //  >
 
-        auto& con_struct_d = *TestSetupConveyor(worldData_, {0, 0}, Orientation::down, transBelt_).structure;
-        auto& con_struct_r = *TestSetupConveyor(worldData_, {0, 1}, Orientation::right, transBelt_).structure;
+        auto& con_struct_d = *TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_).structure;
+        auto& con_struct_r = *TestSetupConveyor(world_, {0, 1}, Orientation::right, transBelt_).structure;
 
-        ConveyorConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(world_, {0, 1});
 
         EXPECT_EQ(con_struct_d.target, &con_struct_r);
     }
@@ -128,10 +128,10 @@ namespace jactorio::game
         // v
         // ^
 
-        auto& con_struct_d = *TestSetupConveyor(worldData_, {0, 0}, Orientation::down, transBelt_).structure;
-        auto& con_struct_u = *TestSetupConveyor(worldData_, {0, 1}, Orientation::up, transBelt_).structure;
+        auto& con_struct_d = *TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_).structure;
+        auto& con_struct_u = *TestSetupConveyor(world_, {0, 1}, Orientation::up, transBelt_).structure;
 
-        ConveyorConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(world_, {0, 1});
 
         EXPECT_EQ(con_struct_d.target, nullptr);
         EXPECT_EQ(con_struct_u.target, nullptr);
@@ -143,12 +143,12 @@ namespace jactorio::game
         // >
         // ^
 
-        auto& con_data_r   = TestSetupConveyor(worldData_, {0, 0}, Orientation::right, transBelt_);
-        auto& con_struct_u = *TestSetupConveyor(worldData_, {0, 1}, Orientation::up, transBelt_).structure;
+        auto& con_data_r   = TestSetupConveyor(world_, {0, 0}, Orientation::right, transBelt_);
+        auto& con_struct_u = *TestSetupConveyor(world_, {0, 1}, Orientation::up, transBelt_).structure;
 
         con_data_r.structIndex = 10;
 
-        ConveyorConnectUp(worldData_, {0, 1});
+        ConveyorConnectUp(world_, {0, 1});
 
         EXPECT_EQ(con_struct_u.sideInsertIndex, 10);
     }
@@ -158,10 +158,10 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, ConnectRightLeading) {
         // > >
 
-        auto& con_struct       = *TestSetupConveyor(worldData_, {0, 0}, Orientation::right, transBelt_).structure;
-        auto& con_struct_ahead = *TestSetupConveyor(worldData_, {1, 0}, Orientation::right, transBelt_).structure;
+        auto& con_struct       = *TestSetupConveyor(world_, {0, 0}, Orientation::right, transBelt_).structure;
+        auto& con_struct_ahead = *TestSetupConveyor(world_, {1, 0}, Orientation::right, transBelt_).structure;
 
-        ConveyorConnectRight(worldData_, {0, 0});
+        ConveyorConnectRight(world_, {0, 0});
 
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
@@ -172,10 +172,10 @@ namespace jactorio::game
         // v
         // v
 
-        auto& con_struct       = *TestSetupConveyor(worldData_, {0, 0}, Orientation::down, transBelt_).structure;
-        auto& con_struct_ahead = *TestSetupConveyor(worldData_, {0, 1}, Orientation::down, transBelt_).structure;
+        auto& con_struct       = *TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_).structure;
+        auto& con_struct_ahead = *TestSetupConveyor(world_, {0, 1}, Orientation::down, transBelt_).structure;
 
-        ConveyorConnectDown(worldData_, {0, 0});
+        ConveyorConnectDown(world_, {0, 0});
 
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
@@ -185,10 +185,10 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, ConnectLeftLeading) {
         // < <
 
-        auto& con_struct_ahead = *TestSetupConveyor(worldData_, {0, 0}, Orientation::left, transBelt_).structure;
-        auto& con_struct       = *TestSetupConveyor(worldData_, {1, 0}, Orientation::left, transBelt_).structure;
+        auto& con_struct_ahead = *TestSetupConveyor(world_, {0, 0}, Orientation::left, transBelt_).structure;
+        auto& con_struct       = *TestSetupConveyor(world_, {1, 0}, Orientation::left, transBelt_).structure;
 
-        ConveyorConnectLeft(worldData_, {1, 0});
+        ConveyorConnectLeft(world_, {1, 0});
 
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
@@ -200,12 +200,12 @@ namespace jactorio::game
     //
 
     TEST_F(ConveyorUtilityTest, DisconnectUpToNeighbor) {
-        auto& con_struct        = *TestSetupConveyor(worldData_, {0, 1}, Orientation::down, transBelt_).structure;
-        auto& con_struct_behind = *TestSetupConveyor(worldData_, {0, 0}, Orientation::down, transBelt_).structure;
+        auto& con_struct        = *TestSetupConveyor(world_, {0, 1}, Orientation::down, transBelt_).structure;
+        auto& con_struct_behind = *TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_).structure;
 
         con_struct_behind.target = &con_struct;
 
-        ConveyorDisconnectUp(worldData_, {0, 1});
+        ConveyorDisconnectUp(world_, {0, 1});
 
         EXPECT_EQ(con_struct_behind.target, nullptr);
     }
@@ -213,12 +213,12 @@ namespace jactorio::game
     ///
     /// Only disconnects the conveyor above, not itself
     TEST_F(ConveyorUtilityTest, DisconnectUpNoDisconnectSelf) {
-        auto& con_struct_ahead = *TestSetupConveyor(worldData_, {0, 0}, Orientation::up, transBelt_).structure;
-        auto& con_struct       = *TestSetupConveyor(worldData_, {0, 1}, Orientation::up, transBelt_).structure;
+        auto& con_struct_ahead = *TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_).structure;
+        auto& con_struct       = *TestSetupConveyor(world_, {0, 1}, Orientation::up, transBelt_).structure;
 
         con_struct.target = &con_struct_ahead;
 
-        ConveyorDisconnectUp(worldData_, {0, 1});
+        ConveyorDisconnectUp(world_, {0, 1});
 
         EXPECT_EQ(con_struct.target, &con_struct_ahead);
     }
@@ -226,8 +226,8 @@ namespace jactorio::game
     ///
     /// If neighbor segment connects to current and bends, the bend must be removed after disconnecting
     TEST_F(ConveyorUtilityTest, DisconnectUpFromNeighborBending) {
-        auto& con_data_above = TestSetupConveyor(worldData_, {0, 0}, Orientation::down, transBelt_);
-        auto& con_struct     = *TestSetupConveyor(worldData_, {0, 1}, Orientation::right, transBelt_).structure;
+        auto& con_data_above = TestSetupConveyor(world_, {0, 0}, Orientation::down, transBelt_);
+        auto& con_struct     = *TestSetupConveyor(world_, {0, 1}, Orientation::right, transBelt_).structure;
 
         auto& con_struct_ahead = *con_data_above.structure;
 
@@ -240,7 +240,7 @@ namespace jactorio::game
         con_struct_ahead.headOffset = 1;
 
 
-        ConveyorDisconnectUp(worldData_, {0, 1});
+        ConveyorDisconnectUp(world_, {0, 1});
 
         EXPECT_EQ(con_data_above.structIndex, 0);
         EXPECT_EQ(con_struct_ahead.target, nullptr);
@@ -250,34 +250,34 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorUtilityTest, DisconnectRightToNeighbor) {
-        auto& con_struct        = *TestSetupConveyor(worldData_, {0, 0}, Orientation::left, transBelt_).structure;
-        auto& con_struct_behind = *TestSetupConveyor(worldData_, {1, 0}, Orientation::left, transBelt_).structure;
+        auto& con_struct        = *TestSetupConveyor(world_, {0, 0}, Orientation::left, transBelt_).structure;
+        auto& con_struct_behind = *TestSetupConveyor(world_, {1, 0}, Orientation::left, transBelt_).structure;
 
         con_struct_behind.target = &con_struct;
 
-        ConveyorDisconnectRight(worldData_, {0, 0});
+        ConveyorDisconnectRight(world_, {0, 0});
 
         EXPECT_EQ(con_struct_behind.target, nullptr);
     }
 
     TEST_F(ConveyorUtilityTest, DisconnectDownToNeighbor) {
-        auto& con_struct        = *TestSetupConveyor(worldData_, {0, 0}, Orientation::up, transBelt_).structure;
-        auto& con_struct_behind = *TestSetupConveyor(worldData_, {0, 1}, Orientation::up, transBelt_).structure;
+        auto& con_struct        = *TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_).structure;
+        auto& con_struct_behind = *TestSetupConveyor(world_, {0, 1}, Orientation::up, transBelt_).structure;
 
         con_struct_behind.target = &con_struct;
 
-        ConveyorDisconnectDown(worldData_, {0, 0});
+        ConveyorDisconnectDown(world_, {0, 0});
 
         EXPECT_EQ(con_struct_behind.target, nullptr);
     }
 
     TEST_F(ConveyorUtilityTest, DisconnectLeftToNeighbor) {
-        auto& con_struct        = *TestSetupConveyor(worldData_, {1, 0}, Orientation::right, transBelt_).structure;
-        auto& con_struct_behind = *TestSetupConveyor(worldData_, {0, 0}, Orientation::right, transBelt_).structure;
+        auto& con_struct        = *TestSetupConveyor(world_, {1, 0}, Orientation::right, transBelt_).structure;
+        auto& con_struct_behind = *TestSetupConveyor(world_, {0, 0}, Orientation::right, transBelt_).structure;
 
         con_struct_behind.target = &con_struct;
 
-        ConveyorDisconnectLeft(worldData_, {1, 0});
+        ConveyorDisconnectLeft(world_, {1, 0});
 
         EXPECT_EQ(con_struct_behind.target, nullptr);
     }
@@ -295,7 +295,7 @@ namespace jactorio::game
         /// Logic group chosen for the tests
         static constexpr LogicGroup kLogicGroup_ = LogicGroup::splitter;
 
-        WorldData worldData_;
+        World world_;
         proto::TransportBelt transBelt_;
 
         ///
@@ -309,10 +309,10 @@ namespace jactorio::game
             const WorldCoord current_coord,
             const Orientation direction,
             const std::function<
-                void(const WorldData& world, proto::ConveyorData& current, const proto::ConveyorData& other)>& compare =
+                void(const World& world, proto::ConveyorData& current, const proto::ConveyorData& other)>& compare =
                 [](auto&, auto&, auto&) {}) const {
 
-            WorldData world; // Cannot use test's world since this is building at the same tile multiple times
+            World world; // Cannot use test's world since this is building at the same tile multiple times
             world.EmplaceChunk(0, 0);
 
             // For testing grouping across chunk boundaries
@@ -337,7 +337,7 @@ namespace jactorio::game
     /// Using ahead conveyor structure in same direction is prioritized over creating a new conveyor structure
     TEST_F(ConveyorGroupingTest, ConveyorCreateGroupAhead) {
         auto compare_func =
-            [](const WorldData& /*world*/, const proto::ConveyorData& current, const proto::ConveyorData& other) {
+            [](const World& /*world*/, const proto::ConveyorData& current, const proto::ConveyorData& other) {
                 EXPECT_EQ(current.structure->length, 2);
 
                 EXPECT_EQ(other.structIndex, 0);
@@ -361,7 +361,7 @@ namespace jactorio::game
     /// Grouping with behind conveyor prioritized over creating a new conveyor structure
     TEST_F(ConveyorGroupingTest, ConveyorCreateGroupBehind) {
         auto compare_func =
-            [](const WorldData& world, const proto::ConveyorData& current, const proto::ConveyorData& other) {
+            [](const World& world, const proto::ConveyorData& current, const proto::ConveyorData& other) {
                 EXPECT_EQ(world.LogicGetChunks().at(0)->GetLogicGroup(kLogicGroup_).size(), 1);
 
                 EXPECT_EQ(current.structure->length, 2);
@@ -399,18 +399,18 @@ namespace jactorio::game
         //
 
         {
-            TestSetupConveyor(worldData_, {0, 0}, Orientation::right, transBelt_);
+            TestSetupConveyor(world_, {0, 0}, Orientation::right, transBelt_);
 
-            worldData_.LogicRegister(kLogicGroup_, {0, 0}, TileLayer::entity);
+            world_.LogicRegister(kLogicGroup_, {0, 0}, TileLayer::entity);
         }
 
-        ConveyorDestroy(worldData_, {0, 0}, kLogicGroup_);
+        ConveyorDestroy(world_, {0, 0}, kLogicGroup_);
 
-        auto* con_data = worldData_.GetTile({0, 0})->GetLayer(TileLayer::entity).GetUniqueData<proto::ConveyorData>();
+        auto* con_data = world_.GetTile({0, 0})->GetLayer(TileLayer::entity).GetUniqueData<proto::ConveyorData>();
         ASSERT_NE(con_data, nullptr);
         EXPECT_EQ(con_data->structure, nullptr);
 
-        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 0);
+        EXPECT_EQ(world_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 0);
     }
 
     ///
@@ -422,30 +422,30 @@ namespace jactorio::game
         //
 
         {
-            auto& head_con_data       = TestSetupConveyor(worldData_, {1, 0}, Orientation::right, transBelt_);
+            auto& head_con_data       = TestSetupConveyor(world_, {1, 0}, Orientation::right, transBelt_);
             head_con_data.structIndex = 1;
             head_con_data.structure->terminationType = ConveyorStruct::TerminationType::bend_right;
             head_con_data.structure->length          = 3;
 
-            TestSetupConveyor(worldData_, {0, 0}, transBelt_, head_con_data.structure);
+            TestSetupConveyor(world_, {0, 0}, transBelt_, head_con_data.structure);
 
-            TestSetupConveyor(worldData_, {2, 0}, Orientation::down, transBelt_);
+            TestSetupConveyor(world_, {2, 0}, Orientation::down, transBelt_);
 
 
-            worldData_.LogicRegister(kLogicGroup_, {1, 0}, TileLayer::entity);
-            worldData_.LogicRegister(kLogicGroup_, {2, 0}, TileLayer::entity);
+            world_.LogicRegister(kLogicGroup_, {1, 0}, TileLayer::entity);
+            world_.LogicRegister(kLogicGroup_, {2, 0}, TileLayer::entity);
         }
 
-        ConveyorDestroy(worldData_, {1, 0}, kLogicGroup_);
+        ConveyorDestroy(world_, {1, 0}, kLogicGroup_);
 
 
-        auto* behind_con_data = GetConData(worldData_, {0, 0});
+        auto* behind_con_data = GetConData(world_, {0, 0});
         ASSERT_NE(behind_con_data, nullptr);
 
         EXPECT_EQ(behind_con_data->structure->length, 1);
         EXPECT_EQ(behind_con_data->structure->terminationType, ConveyorStruct::TerminationType::straight);
 
-        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 2);
+        EXPECT_EQ(world_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 2);
     }
 
     ///
@@ -457,32 +457,32 @@ namespace jactorio::game
         //
 
         {
-            auto& head_con_data                 = TestSetupConveyor(worldData_, {4, 0}, Orientation::right, transBelt_);
+            auto& head_con_data                 = TestSetupConveyor(world_, {4, 0}, Orientation::right, transBelt_);
             head_con_data.structure->headOffset = 30;
             head_con_data.structure->length     = 5;
 
-            auto& con_data_2       = TestSetupConveyor(worldData_, {3, 0}, transBelt_, head_con_data.structure);
+            auto& con_data_2       = TestSetupConveyor(world_, {3, 0}, transBelt_, head_con_data.structure);
             con_data_2.structIndex = 1;
 
-            auto& con_data_3       = TestSetupConveyor(worldData_, {2, 0}, transBelt_, head_con_data.structure);
+            auto& con_data_3       = TestSetupConveyor(world_, {2, 0}, transBelt_, head_con_data.structure);
             con_data_3.structIndex = 2;
 
-            auto& con_data_4       = TestSetupConveyor(worldData_, {1, 0}, transBelt_, head_con_data.structure);
+            auto& con_data_4       = TestSetupConveyor(world_, {1, 0}, transBelt_, head_con_data.structure);
             con_data_4.structIndex = 3;
 
-            auto& con_data_5       = TestSetupConveyor(worldData_, {0, 0}, transBelt_, head_con_data.structure);
+            auto& con_data_5       = TestSetupConveyor(world_, {0, 0}, transBelt_, head_con_data.structure);
             con_data_5.structIndex = 4;
         }
 
-        ConveyorDestroy(worldData_, {2, 0}, kLogicGroup_);
+        ConveyorDestroy(world_, {2, 0}, kLogicGroup_);
 
-        auto* ahead_con_data = GetConData(worldData_, {4, 0});
+        auto* ahead_con_data = GetConData(world_, {4, 0});
         ASSERT_NE(ahead_con_data, nullptr);
 
         EXPECT_EQ(ahead_con_data->structure->length, 2);
 
 
-        auto* behind_con_data = GetConData(worldData_, {0, 0});
+        auto* behind_con_data = GetConData(world_, {0, 0});
         ASSERT_NE(behind_con_data, nullptr);
 
         EXPECT_EQ(behind_con_data->structIndex, 1);
@@ -492,7 +492,7 @@ namespace jactorio::game
 
 
         // The newly created segment was registered for logic updates
-        EXPECT_EQ(worldData_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 1);
+        EXPECT_EQ(world_.GetChunkW({0, 0})->GetLogicGroup(kLogicGroup_).size(), 1);
     }
 
     //
@@ -502,34 +502,34 @@ namespace jactorio::game
     //
 
     TEST_F(ConveyorUtilityTest, ConveyorRenumber) {
-        auto& con_data_1             = TestSetupConveyor(worldData_, {0, 0}, Orientation::up, transBelt_);
+        auto& con_data_1             = TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_);
         con_data_1.structure->length = 3;
         con_data_1.structIndex       = 5;
 
-        auto& con_data_2       = TestSetupConveyor(worldData_, {0, 1}, Orientation::up, transBelt_);
+        auto& con_data_2       = TestSetupConveyor(world_, {0, 1}, Orientation::up, transBelt_);
         con_data_2.structIndex = 6;
 
-        auto& con_data_3       = TestSetupConveyor(worldData_, {0, 2}, Orientation::up, transBelt_);
+        auto& con_data_3       = TestSetupConveyor(world_, {0, 2}, Orientation::up, transBelt_);
         con_data_3.structIndex = 7;
 
-        ConveyorRenumber(worldData_, {0, 0}, 1);
+        ConveyorRenumber(world_, {0, 0}, 1);
         EXPECT_EQ(con_data_1.structIndex, 1);
         EXPECT_EQ(con_data_2.structIndex, 2);
         EXPECT_EQ(con_data_3.structIndex, 7);
     }
 
     TEST_F(ConveyorUtilityTest, ChangeStructure) {
-        auto& new_con_struct   = TestSetupConveyor(worldData_, {5, 5}, Orientation::up, transBelt_).structure;
+        auto& new_con_struct   = TestSetupConveyor(world_, {5, 5}, Orientation::up, transBelt_).structure;
         new_con_struct->length = 3;
 
 
-        auto& con_data_h             = TestSetupConveyor(worldData_, {0, 0}, Orientation::up, transBelt_);
+        auto& con_data_h             = TestSetupConveyor(world_, {0, 0}, Orientation::up, transBelt_);
         con_data_h.structure->length = 3;
 
-        auto& con_data_2 = TestSetupConveyor(worldData_, {0, 1}, transBelt_, con_data_h.structure);
-        auto& con_data_3 = TestSetupConveyor(worldData_, {0, 2}, transBelt_, con_data_h.structure);
+        auto& con_data_2 = TestSetupConveyor(world_, {0, 1}, transBelt_, con_data_h.structure);
+        auto& con_data_3 = TestSetupConveyor(world_, {0, 2}, transBelt_, con_data_h.structure);
 
-        ConveyorChangeStructure(worldData_, {0, 0}, new_con_struct);
+        ConveyorChangeStructure(world_, {0, 0}, new_con_struct);
         EXPECT_EQ(con_data_h.structure, new_con_struct);
         EXPECT_EQ(con_data_2.structure, new_con_struct);
         EXPECT_EQ(con_data_3.structure, new_con_struct);
@@ -539,22 +539,22 @@ namespace jactorio::game
     /// When changing structure, other structures which has the old structure as a target must be updated
     /// to use the new structure
     TEST_F(ConveyorUtilityTest, ChangeStructureUpdateTargets) {
-        worldData_.EmplaceChunk(0, -1);
+        world_.EmplaceChunk(0, -1);
 
-        auto& new_con_struct   = TestSetupConveyor(worldData_, {5, 5}, Orientation::left, transBelt_).structure;
+        auto& new_con_struct   = TestSetupConveyor(world_, {5, 5}, Orientation::left, transBelt_).structure;
         new_con_struct->length = 3;
 
 
-        auto& con_data_h             = TestSetupConveyor(worldData_, {0, 0}, Orientation::left, transBelt_);
+        auto& con_data_h             = TestSetupConveyor(world_, {0, 0}, Orientation::left, transBelt_);
         con_data_h.structure->length = 999; // Should use length of new con struct, not old
 
-        TestSetupConveyor(worldData_, {1, 0}, transBelt_, con_data_h.structure);
-        TestSetupConveyor(worldData_, {2, 0}, transBelt_, con_data_h.structure);
+        TestSetupConveyor(world_, {1, 0}, transBelt_, con_data_h.structure);
+        TestSetupConveyor(world_, {2, 0}, transBelt_, con_data_h.structure);
 
 
         auto create_dependee_conveyor = [&](const WorldCoord& coord) -> proto::ConveyorData& {
             auto& dependee =
-                TestSetupConveyor(worldData_,
+                TestSetupConveyor(world_,
                                   coord,
                                   // Orientation does not matter, it determines if is dependee based on target
                                   Orientation::up,
@@ -573,7 +573,7 @@ namespace jactorio::game
         auto& d_con_data_4 = create_dependee_conveyor({3, 0});
 
 
-        ConveyorChangeStructure(worldData_, {0, 0}, new_con_struct);
+        ConveyorChangeStructure(world_, {0, 0}, new_con_struct);
 
         EXPECT_EQ(d_con_data_1.structure->target, new_con_struct.get());
         EXPECT_EQ(d_con_data_2.structure->target, new_con_struct.get());
@@ -586,12 +586,12 @@ namespace jactorio::game
     TEST_F(ConveyorUtilityTest, LogicRemoveSplitter) {
         const proto::Splitter splitter;
 
-        auto& splitter_data = TestSetupSplitter(worldData_, {0, 0}, Orientation::up, splitter);
-        worldData_.LogicRegister(kLogicGroup_, {0, 0}, TileLayer::entity);
+        auto& splitter_data = TestSetupSplitter(world_, {0, 0}, Orientation::up, splitter);
+        world_.LogicRegister(kLogicGroup_, {0, 0}, TileLayer::entity);
 
-        ConveyorLogicRemove(worldData_, {0, 0}, *splitter_data.left.structure, kLogicGroup_);
+        ConveyorLogicRemove(world_, {0, 0}, *splitter_data.left.structure, kLogicGroup_);
 
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
     }
 
     //
@@ -602,10 +602,10 @@ namespace jactorio::game
     class ConveyorCalcLineOrienTest : public testing::Test
     {
     protected:
-        WorldData worldData_;
+        World world_;
 
         void SetUp() override {
-            worldData_.EmplaceChunk({0, 0});
+            world_.EmplaceChunk({0, 0});
         }
 
         /// Creates a conveyor with the provided orientation above/right/below/left of 1, 1
@@ -630,19 +630,19 @@ namespace jactorio::game
         /// orientation
         void ValidateResultOrientation(const Orientation place_orien,
                                        const proto::LineOrientation expected_l_orien) const {
-            EXPECT_EQ(ConveyorCalcLineOrien(worldData_, {1, 1}, place_orien), expected_l_orien);
+            EXPECT_EQ(ConveyorCalcLineOrien(world_, {1, 1}, place_orien), expected_l_orien);
         }
 
     private:
         proto::TransportBelt lineProto_;
 
-        proto::ConveyorData& BuildConveyor(const WorldCoord world_coords, const Orientation direction) {
-            auto& layer = worldData_.GetTile(world_coords.x, world_coords.y)->GetLayer(TileLayer::entity);
+        proto::ConveyorData& BuildConveyor(const WorldCoord coord, const Orientation direction) {
+            auto& layer = world_.GetTile(coord.x, coord.y)->GetLayer(TileLayer::entity);
 
             layer.SetPrototype(direction, &lineProto_);
 
             auto& con_data = layer.MakeUniqueData<proto::ConveyorData>();
-            ConveyorCreate(worldData_, world_coords, con_data, direction, LogicGroup::conveyor);
+            ConveyorCreate(world_, coord, con_data, direction, LogicGroup::conveyor);
 
             return con_data;
         }
@@ -904,12 +904,12 @@ namespace jactorio::game
         //   ^
         //
 
-        auto& con_data_r_head = TestSetupConveyor(worldData_, {2, 0}, Orientation::right, transBelt_);
-        auto& con_data_r_end  = TestSetupConveyor(worldData_, {1, 0}, transBelt_, con_data_r_head.structure);
+        auto& con_data_r_head = TestSetupConveyor(world_, {2, 0}, Orientation::right, transBelt_);
+        auto& con_data_r_end  = TestSetupConveyor(world_, {1, 0}, transBelt_, con_data_r_head.structure);
 
-        TestSetupConveyor(worldData_, {1, 1}, Orientation::up, transBelt_);
+        TestSetupConveyor(world_, {1, 1}, Orientation::up, transBelt_);
 
-        ConveyorUpdateNeighborLineOrien(worldData_, {0, 0});
+        ConveyorUpdateNeighborLineOrien(world_, {0, 0});
 
         EXPECT_EQ(con_data_r_end.lOrien, proto::LineOrientation::up_right);
     }

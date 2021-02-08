@@ -2,7 +2,7 @@
 
 #include "gui/layout.h"
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 #include "gui/colors.h"
 #include "render/renderer.h"
 
@@ -31,14 +31,14 @@ ImVec2 gui::GetWindowSize() {
 
     constexpr auto size_x = GetTotalItemSlotWidth(item_slot_per_row) + GetTotalWindowPaddingX();
     constexpr auto size_y = GetTotalItemSlotWidth(
-        core::SafeCast<unsigned int>(game::PlayerData::Inventory::kDefaultInventorySize / item_slot_per_row));
+        SafeCast<unsigned int>(game::Player::Inventory::kDefaultInventorySize / item_slot_per_row));
 
     return {size_x, size_y + extra_vert_px};
 }
 
 ImVec2 gui::GetWindowCenter() {
-    return {core::SafeCast<float>(render::Renderer::GetWindowWidth()) / 2,
-            core::SafeCast<float>(render::Renderer::GetWindowHeight()) / 2};
+    return {SafeCast<float>(render::Renderer::GetWindowWidth()) / 2,
+            SafeCast<float>(render::Renderer::GetWindowHeight()) / 2};
 }
 
 void gui::SetupNextWindowLeft(const ImVec2& window_size) {

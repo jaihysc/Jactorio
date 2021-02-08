@@ -24,8 +24,8 @@ namespace jactorio::proto
         }
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::WorldData& /*world_data*/,
-                                               const WorldCoord& /*world_coords*/) const override {
+                                               game::World& /*world*/,
+                                               const WorldCoord& /*coord*/) const override {
             return 0;
         }
 

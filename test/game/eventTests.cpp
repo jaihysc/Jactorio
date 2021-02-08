@@ -101,7 +101,7 @@ namespace jactorio::game
     TEST_F(EventTest, ClearAllData) {
         int counter = 0;
         eventData_.Subscribe(EventType::game_chunk_generated, [](auto& /*event*/) {});
-        eventData_.ClearAllData();
+        eventData_.Clear();
 
         // Nothing gets raises since it is cleared
         eventData_.Raise<MockEvent>(EventType::game_chunk_generated, 1, counter);

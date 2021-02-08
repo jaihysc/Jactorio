@@ -20,7 +20,7 @@ namespace jactorio
 
     namespace game
     {
-        class WorldData;
+        class World;
 
         class ChunkTileLayer;
         class Chunk;
@@ -75,8 +75,8 @@ namespace jactorio::proto
         ///
         /// Maps a orientation to a <set, frame>
         J_NODISCARD virtual SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                                       game::WorldData& world_data,
-                                                       const WorldCoord& world_coords) const = 0;
+                                                       game::World& world,
+                                                       const WorldCoord& coord) const = 0;
 
         ///
         /// Gets frame for sprite corresponding to provided game tick
@@ -91,7 +91,7 @@ namespace jactorio::proto
         /// \param pixel_offset Pixels to top left of current tile
         virtual void OnRDrawUniqueData(render::RendererLayer& layer,
                                        const SpriteUvCoordsT& uv_coords,
-                                       const core::Position2<float>& pixel_offset,
+                                       const Position2<float>& pixel_offset,
                                        const UniqueDataBase* unique_data) const {}
 
     protected:

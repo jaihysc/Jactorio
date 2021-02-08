@@ -9,7 +9,7 @@
 
 #include "jactorio.h"
 
-namespace jactorio::core
+namespace jactorio
 {
     ///
     /// Converts provided string to lower case
@@ -30,6 +30,6 @@ namespace jactorio::core
     ///
     /// If str is less than target_len, it is padded to target_len with char padding
     J_NODISCARD std::string StrMatchLen(std::string str, std::size_t target_len, char padding = ' ');
-} // namespace jactorio::core
+} // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_UTILITY_H

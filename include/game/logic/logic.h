@@ -1,14 +1,14 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_DATA_H
-#define JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_DATA_H
+#ifndef JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_H
+#define JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_H
 #pragma once
 
 #include "game/logic/deferral_timer.h"
 
 namespace jactorio::game
 {
-    class LogicData
+    class Logic
     {
     public:
         /// Called by the logic loop every update
@@ -43,4 +43,4 @@ namespace jactorio::game
     };
 } // namespace jactorio::game
 
-#endif // JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_DATA_H
+#endif // JACTORIO_INCLUDE_GAME_LOGIC_LOGIC_H

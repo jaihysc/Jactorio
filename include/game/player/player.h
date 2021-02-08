@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
-#define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
+#ifndef JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_H
+#define JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_H
 #pragma once
 
 #include <glm/glm.hpp>
@@ -14,25 +14,25 @@
 
 namespace jactorio::game
 {
-    class WorldData;
-    class LogicData;
+    class World;
+    class Logic;
     class ChunkTileLayer;
 
     ///
     /// Stores information & functions regarding a player (Duplicated for multiple players)
-    class PlayerData
+    class Player
     {
     public:
-        PlayerData()  = default;
-        ~PlayerData() = default;
+        Player()  = default;
+        ~Player() = default;
 
-        PlayerData(const PlayerData& other)
+        Player(const Player& other)
             : world{other.world}, inventory{other.inventory}, placement{other.placement}, crafting{other.crafting} {
             placement.playerInv_ = &inventory;
             crafting.playerInv_  = &inventory;
         }
 
-        PlayerData(PlayerData&& other) noexcept
+        Player(Player&& other) noexcept
             : world{std::move(other.world)},
               inventory{std::move(other.inventory)},
               placement{std::move(other.placement)},
@@ -41,12 +41,12 @@ namespace jactorio::game
             crafting.playerInv_  = &inventory;
         }
 
-        PlayerData& operator=(PlayerData other) {
+        Player& operator=(Player other) {
             swap(*this, other);
             return *this;
         }
 
-        friend void swap(PlayerData& lhs, PlayerData& rhs) noexcept {
+        friend void swap(Player& lhs, Player& rhs) noexcept {
             using std::swap;
             swap(lhs.world, rhs.world);
             swap(lhs.inventory, rhs.inventory);
@@ -114,7 +114,7 @@ namespace jactorio::game
         private:
             ///
             /// \return true if the tile can be walked on
-            bool TargetTileValid(WorldData* world_data, int x, int y) const;
+            bool TargetTileValid(game::World* world, int x, int y) const;
 
             WorldCoord mouseSelectedTile_;
 
@@ -136,7 +136,7 @@ namespace jactorio::game
 
             ///
             /// High level method for inventory actions, prefer over calls to HandleClick and others
-            void HandleInventoryActions(const data::PrototypeManager& data_manager,
+            void HandleInventoryActions(const data::PrototypeManager& proto,
                                         proto::Item::Inventory& inv,
                                         size_t index,
                                         bool half_select);
@@ -153,7 +153,7 @@ namespace jactorio::game
             /// \param index The inventory index
             /// \param mouse_button Mouse button pressed; 0 - Left, 1 - Right
             /// \param reference_select If true, left clicking will select the item by reference
-            void HandleClick(const data::PrototypeManager& data_manager,
+            void HandleClick(const data::PrototypeManager& proto,
                              uint16_t index,
                              uint16_t mouse_button,
                              bool reference_select,
@@ -209,7 +209,7 @@ namespace jactorio::game
 
         class Placement
         {
-            friend PlayerData;
+            friend Player;
 
         public:
             explicit Placement(Inventory& player_inv) : playerInv_(&player_inv) {}
@@ -250,18 +250,18 @@ namespace jactorio::game
             ///
             /// Will place an entity at the location or if an entity does not already exist
             /// \return true if entity was placed
-            bool TryPlaceEntity(WorldData& world, LogicData& logic, const WorldCoord& coord) const;
+            bool TryPlaceEntity(game::World& world, Logic& logic, const WorldCoord& coord) const;
 
             ///
             /// Attempts to activate the layer at world coordinates
             /// \return true if layer was activated
-            bool TryActivateLayer(WorldData& world_data, const WorldCoord& world_pair);
+            bool TryActivateLayer(game::World& world, const WorldCoord& coord);
 
             ///
             /// This will either pickup an entity, or mine resources from a resource tile
             /// Call when the key for picking up entities is pressed
             /// If resource + entity exists on one tile, picking up entity takes priority
-            void TryPickup(WorldData& world, LogicData& logic, WorldCoord coord, uint16_t ticks = 1);
+            void TryPickup(game::World& world, Logic& logic, WorldCoord coord, uint16_t ticks = 1);
 
             ///
             /// \return progress of entity pickup or resource extraction as a fraction between 0 - 1
@@ -291,7 +291,7 @@ namespace jactorio::game
 
         class Crafting
         {
-            friend PlayerData;
+            friend Player;
 
             using RecipeQueueT = std::deque<data::SerialProtoPtr<const proto::Recipe>>;
 
@@ -318,11 +318,11 @@ namespace jactorio::game
 
             ///
             /// Call every tick to count down the crafting time for the currently queued item (60 ticks = 1 second)
-            void RecipeCraftTick(const data::PrototypeManager& data_manager, uint16_t ticks = 1);
+            void RecipeCraftTick(const data::PrototypeManager& proto, uint16_t ticks = 1);
 
             ///
             /// Queues a recipe to be crafted, this is displayed by the gui is the lower right corner
-            void QueueRecipe(const data::PrototypeManager& data_manager, const proto::Recipe& recipe);
+            void QueueRecipe(const data::PrototypeManager& proto, const proto::Recipe& recipe);
 
             ///
             /// Returns const reference to recipe queue for rendering in gui
@@ -332,12 +332,12 @@ namespace jactorio::game
             ///
             /// Recursively depth first crafts the recipe
             /// \remark WILL NOT check that the given recipe is valid or required ingredients are present and assumes is
-            void RecipeCraftR(const data::PrototypeManager& data_manager, const proto::Recipe& recipe);
+            void RecipeCraftR(const data::PrototypeManager& proto, const proto::Recipe& recipe);
 
             ///
             /// Recursively steps through a recipe and sub-recipes to determine if it is craftable
             /// \param batches How many runs of the recipe
-            J_NODISCARD bool RecipeCanCraft(const data::PrototypeManager& data_manager,
+            J_NODISCARD bool RecipeCanCraft(const data::PrototypeManager& proto,
                                             const proto::Recipe& recipe,
                                             uint16_t batches) const;
 
@@ -369,7 +369,7 @@ namespace jactorio::game
             /// \param used_items Tracks amount of an item that has already been used,
             /// so 2 recipes sharing one ingredient will be correctly accounted for in recursion when counting from the
             /// inventory
-            bool RecipeCanCraftR(const data::PrototypeManager& data_manager,
+            bool RecipeCanCraftR(const data::PrototypeManager& proto,
                                  std::map<const proto::Item*, uint32_t>& used_items,
                                  const proto::Recipe& recipe,
                                  unsigned batches) const;
@@ -406,4 +406,4 @@ namespace jactorio::game
     };
 } // namespace jactorio::game
 
-#endif // JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_DATA_H
+#endif // JACTORIO_INCLUDE_GAME_PLAYER_PLAYER_H

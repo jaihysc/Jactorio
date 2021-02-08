@@ -4,7 +4,7 @@
 
 #include "core/filesystem.h"
 
-namespace jactorio::core
+namespace jactorio
 {
     class FileSystemTest : public testing::Test
     {
@@ -18,4 +18,4 @@ namespace jactorio::core
 
         // Test does not check if the read contents are valid, it is assumed to be valid
     }
-} // namespace jactorio::core
+} // namespace jactorio

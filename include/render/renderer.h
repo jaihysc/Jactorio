@@ -16,7 +16,7 @@ namespace jactorio::game
     class Chunk;
     class ChunkTile;
     class ChunkTileLayer;
-    class WorldData;
+    class World;
 } // namespace jactorio::game
 
 namespace jactorio::render
@@ -93,13 +93,10 @@ namespace jactorio::render
         }
 
         ///
-        /// \param world_data World to render
+        /// \param world World to render
         /// \param player_x X Position of the player in tiles
         /// \param player_y Y Position of the player in tiles
-        void GlRenderPlayerPosition(GameTickT game_tick,
-                                    const game::WorldData& world_data,
-                                    float player_x,
-                                    float player_y);
+        void GlRenderPlayerPosition(GameTickT game_tick, const game::World& world, float player_x, float player_y);
 
 
         // ======================================================================
@@ -127,19 +124,19 @@ namespace jactorio::render
 
         ///
         /// Number of tiles to draw to fill window dimensions
-        J_NODISCARD core::Position2<int> GetTileDrawAmount() const noexcept;
+        J_NODISCARD Position2<int> GetTileDrawAmount() const noexcept;
 
         ///
         /// All tiles drawn will have its position added to tile offset
-        J_NODISCARD core::Position2<int> GetTileDrawOffset(int position_x, int position_y) const noexcept;
+        J_NODISCARD Position2<int> GetTileDrawOffset(int position_x, int position_y) const noexcept;
 
         ///
         /// Top left chunk coordinates to begin drawing
-        J_NODISCARD core::Position2<int> GetChunkDrawStart(int position_x, int position_y) const noexcept;
+        J_NODISCARD Position2<int> GetChunkDrawStart(int position_x, int position_y) const noexcept;
 
         ///
         /// Number of chunks to draw to fill window dimensions
-        J_NODISCARD core::Position2<int> GetChunkDrawAmount(int position_x, int position_y) const noexcept;
+        J_NODISCARD Position2<int> GetChunkDrawAmount(int position_x, int position_y) const noexcept;
 
 
         // Each chunk draw unit gets a render layer
@@ -155,26 +152,26 @@ namespace jactorio::render
         /// \param chunk_span Number of chunks spanned
         /// \param render_tile_offset Offset drawn tiles on screen by this tile amount
         void PrepareChunkRow(RendererLayer& r_layer,
-                             const game::WorldData& world_data,
+                             const game::World& world,
                              std::mutex& world_gen_mutex,
-                             core::Position2<int> row_start,
+                             Position2<int> row_start,
                              int chunk_span,
-                             core::Position2<int> render_tile_offset,
+                             Position2<int> render_tile_offset,
                              GameTickT game_tick) const noexcept;
 
         void PrepareChunk(RendererLayer& r_layer,
                           const game::Chunk& chunk,
-                          core::Position2<int> render_tile_offset,
+                          Position2<int> render_tile_offset,
                           GameTickT game_tick) const noexcept;
 
         void PrepareTileLayers(RendererLayer& r_layer,
                                const game::ChunkTile& tile,
-                               const core::Position2<float>& pixel_pos,
+                               const Position2<float>& pixel_pos,
                                GameTickT game_tick) const noexcept;
 
         void PrepareOverlayLayers(RendererLayer& r_layer,
                                   const game::Chunk& chunk,
-                                  core::Position2<int> render_tile_offset) const;
+                                  Position2<int> render_tile_offset) const;
 
 
         static void ApplySpriteUvAdjustment(UvPositionT& uv, const UvPositionT& uv_offset) noexcept;

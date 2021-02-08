@@ -10,7 +10,7 @@
 #include "jactorio.h"
 
 #include "core/execution_timer.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/sprite.h"
 #include "render/opengl/error.h"
 
@@ -95,7 +95,7 @@ const SpriteUvCoordsT::mapped_type& render::Renderer::GetSpriteUvCoords(const Sp
 }
 
 void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
-                                              const game::WorldData& world_data,
+                                              const game::World& world,
                                               const float player_x,
                                               const float player_y) {
     assert(spritemapCoords_);
@@ -116,8 +116,8 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
     // Right and bottom varies depending on tile size
 
     // Player position with decimal removed
-    const auto position_x = core::LossyCast<int>(player_x);
-    const auto position_y = core::LossyCast<int>(player_y);
+    const auto position_x = LossyCast<int>(player_x);
+    const auto position_y = LossyCast<int>(player_y);
 
 
     const auto tile_offset = GetTileDrawOffset(position_x, position_y);
@@ -161,7 +161,7 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
     for (int y = 0; y < chunk_amount.y; ++y) {
 
         // Wait for started threads to finish before starting new ones
-        if (core::SafeCast<size_t>(started_threads) == drawThreads_) {
+        if (SafeCast<size_t>(started_threads) == drawThreads_) {
             await_thread_completion();
             started_threads = 0;
         }
@@ -172,14 +172,14 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
         auto& r_layer_tile = renderLayers_[started_threads];
         begin_prepare_data(r_layer_tile);
 
-        core::Position2<int> row_start{chunk_start.x, chunk_y};
-        core::Position2<int> render_tile_offset{tile_offset.x, y * game::Chunk::kChunkWidth + tile_offset.y};
+        Position2<int> row_start{chunk_start.x, chunk_y};
+        Position2<int> render_tile_offset{tile_offset.x, y * game::Chunk::kChunkWidth + tile_offset.y};
 
         chunkDrawThreads_[started_threads] = std::async(std::launch::async,
                                                         &Renderer::PrepareChunkRow,
                                                         this,
                                                         std::ref(r_layer_tile),
-                                                        std::ref(world_data),
+                                                        std::ref(world),
                                                         std::ref(world_gen_mutex),
                                                         row_start,
                                                         chunk_amount.x,
@@ -193,17 +193,15 @@ void render::Renderer::GlRenderPlayerPosition(const GameTickT game_tick,
 }
 
 void render::Renderer::CalculateViewMatrix(const float player_x, const float player_y) noexcept {
-    const auto position_x = core::LossyCast<int>(player_x);
-    const auto position_y = core::LossyCast<int>(player_y);
+    const auto position_x = LossyCast<int>(player_x);
+    const auto position_y = LossyCast<int>(player_y);
 
     // Negative moves window right and down
 
     // Decimal is used to shift the camera
     // Invert the movement to give the illusion of moving in the correct direction
-    const float camera_offset_x =
-        (player_x - core::SafeCast<float>(position_x)) * core::SafeCast<float>(tileWidth) * -1;
-    const float camera_offset_y =
-        (player_y - core::SafeCast<float>(position_y)) * core::SafeCast<float>(tileWidth) * -1;
+    const float camera_offset_x = (player_x - SafeCast<float>(position_x)) * SafeCast<float>(tileWidth) * -1;
+    const float camera_offset_y = (player_y - SafeCast<float>(position_y)) * SafeCast<float>(tileWidth) * -1;
 
     // Remaining pixel distance not covered by tiles and chunks are covered by the view matrix to center
     const auto tile_amount = GetTileDrawAmount();
@@ -212,24 +210,22 @@ void render::Renderer::CalculateViewMatrix(const float player_x, const float pla
 
     // Divide by 2 first to truncate decimals
     // A LossyCast is used as during startup, tile_amount is invalid since the mvp matrix is invalid
-    view_transform->x =
-        core::LossyCast<float>(GetWindowWidth() / 2 - (tile_amount.x / 2 * tileWidth)) + camera_offset_x;
+    view_transform->x = LossyCast<float>(GetWindowWidth() / 2 - (tile_amount.x / 2 * tileWidth)) + camera_offset_x;
 
-    view_transform->y =
-        core::LossyCast<float>(GetWindowHeight() / 2 - (tile_amount.y / 2 * tileWidth)) + camera_offset_y;
+    view_transform->y = LossyCast<float>(GetWindowHeight() / 2 - (tile_amount.y / 2 * tileWidth)) + camera_offset_y;
 
     mvpManager_.UpdateViewTransform();
 }
 
-core::Position2<int> render::Renderer::GetTileDrawAmount() const noexcept {
+Position2<int> render::Renderer::GetTileDrawAmount() const noexcept {
     const auto matrix        = glm::vec4(1, -1, 1, 1) / mvpManager_.GetMvpMatrix();
-    const auto tile_amount_x = core::LossyCast<int>(matrix.x / core::LossyCast<double>(tileWidth) * 2) + 2;
-    const auto tile_amount_y = core::LossyCast<int>(matrix.y / core::LossyCast<double>(tileWidth) * 2) + 2;
+    const auto tile_amount_x = LossyCast<int>(matrix.x / LossyCast<double>(tileWidth) * 2) + 2;
+    const auto tile_amount_y = LossyCast<int>(matrix.y / LossyCast<double>(tileWidth) * 2) + 2;
 
     return {tile_amount_x, tile_amount_y};
 }
 
-core::Position2<int> render::Renderer::GetTileDrawOffset(const int position_x, const int position_y) const noexcept {
+Position2<int> render::Renderer::GetTileDrawOffset(const int position_x, const int position_y) const noexcept {
     // Player has not moved an entire chunk's width yet, offset the tiles
     // Modulus chunk_width to make it snap back to 0 after offsetting the entirety of a chunk
     // Inverted to move the tiles AWAY from the screen instead of following the screen
@@ -249,7 +245,7 @@ core::Position2<int> render::Renderer::GetTileDrawOffset(const int position_x, c
     return {tile_start_x, tile_start_y};
 }
 
-core::Position2<int> render::Renderer::GetChunkDrawStart(const int position_x, const int position_y) const noexcept {
+Position2<int> render::Renderer::GetChunkDrawStart(const int position_x, const int position_y) const noexcept {
     auto chunk_start_x = position_x / game::Chunk::kChunkWidth;
     auto chunk_start_y = position_y / game::Chunk::kChunkWidth;
 
@@ -266,7 +262,7 @@ core::Position2<int> render::Renderer::GetChunkDrawStart(const int position_x, c
     return {chunk_start_x, chunk_start_y};
 }
 
-core::Position2<int> render::Renderer::GetChunkDrawAmount(const int position_x, const int position_y) const noexcept {
+Position2<int> render::Renderer::GetChunkDrawAmount(const int position_x, const int position_y) const noexcept {
     const auto tile_offset = GetTileDrawOffset(position_x, position_y);
     const auto tile_amount = GetTileDrawAmount();
 
@@ -280,22 +276,22 @@ core::Position2<int> render::Renderer::GetChunkDrawAmount(const int position_x, 
 }
 
 void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
-                                       const game::WorldData& world_data,
+                                       const game::World& world,
                                        std::mutex& world_gen_mutex,
-                                       const core::Position2<int> row_start,
+                                       const Position2<int> row_start,
                                        const int chunk_span,
-                                       const core::Position2<int> render_tile_offset,
+                                       const Position2<int> render_tile_offset,
                                        const GameTickT game_tick) const noexcept {
 
     for (int x = 0; x < chunk_span; ++x) {
         const auto chunk_x = x + row_start.x;
 
-        const auto* chunk = world_data.GetChunkC(chunk_x, row_start.y);
+        const auto* chunk = world.GetChunkC(chunk_x, row_start.y);
 
         // Queue chunk for generation if it does not exist
         if (chunk == nullptr) {
             std::lock_guard<std::mutex> gen_guard{world_gen_mutex};
-            world_data.QueueChunkGeneration(chunk_x, row_start.y);
+            world.QueueChunkGeneration(chunk_x, row_start.y);
             continue;
         }
 
@@ -306,15 +302,14 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
 
 void render::Renderer::PrepareChunk(RendererLayer& r_layer,
                                     const game::Chunk& chunk,
-                                    const core::Position2<int> render_tile_offset,
+                                    const Position2<int> render_tile_offset,
                                     const GameTickT game_tick) const noexcept {
     // Iterate through and load tiles of a chunk into layer for rendering
     for (uint8_t tile_y = 0; tile_y < game::Chunk::kChunkWidth; ++tile_y) {
-        const auto pixel_y = core::SafeCast<float>(render_tile_offset.y + tile_y) * core::SafeCast<float>(tileWidth);
+        const auto pixel_y = SafeCast<float>(render_tile_offset.y + tile_y) * SafeCast<float>(tileWidth);
 
         for (uint8_t tile_x = 0; tile_x < game::Chunk::kChunkWidth; ++tile_x) {
-            const auto pixel_x =
-                core::SafeCast<float>(render_tile_offset.x + tile_x) * core::SafeCast<float>(tileWidth);
+            const auto pixel_x = SafeCast<float>(render_tile_offset.x + tile_x) * SafeCast<float>(tileWidth);
 
             PrepareTileLayers(r_layer, chunk.GetCTile(tile_x, tile_y), {pixel_x, pixel_y}, game_tick);
         }
@@ -325,7 +320,7 @@ void render::Renderer::PrepareChunk(RendererLayer& r_layer,
 
 void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
                                          const game::ChunkTile& tile,
-                                         const core::Position2<float>& pixel_pos,
+                                         const Position2<float>& pixel_pos,
                                          const GameTickT game_tick) const noexcept {
     for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
         const auto& tile_layer = tile.GetLayer(layer_index);
@@ -360,20 +355,19 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
         if (tile_layer.IsMultiTile())
             ApplyMultiTileUvAdjustment(uv, tile_layer);
 
-        const float pixel_z = 0.f + core::LossyCast<float>(0.01 * layer_index);
+        const float pixel_z = 0.f + LossyCast<float>(0.01 * layer_index);
 
-        r_layer.PushBack(
-            {{// top left of tile, 1 tile over and down
-              {pixel_pos.x, pixel_pos.y},
-              {pixel_pos.x + core::SafeCast<float>(tileWidth), pixel_pos.y + core::SafeCast<float>(tileWidth)}},
-             {uv.topLeft, uv.bottomRight}},
-            pixel_z);
+        r_layer.PushBack({{// top left of tile, 1 tile over and down
+                           {pixel_pos.x, pixel_pos.y},
+                           {pixel_pos.x + SafeCast<float>(tileWidth), pixel_pos.y + SafeCast<float>(tileWidth)}},
+                          {uv.topLeft, uv.bottomRight}},
+                         pixel_z);
     }
 }
 
 void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
                                             const game::Chunk& chunk,
-                                            const core::Position2<int> render_tile_offset) const {
+                                            const Position2<int> render_tile_offset) const {
 
     for (int layer_index = 0; layer_index < game::kOverlayLayerCount; ++layer_index) {
         const auto& overlay_container = chunk.overlays[layer_index];
@@ -386,12 +380,12 @@ void render::Renderer::PrepareOverlayLayers(RendererLayer& r_layer,
             r_layer.PushBack(
                 {{
 
-                     {(render_tile_offset.x + overlay.position.x) * core::SafeCast<float>(tileWidth),
+                     {(render_tile_offset.x + overlay.position.x) * SafeCast<float>(tileWidth),
 
-                      (render_tile_offset.y + overlay.position.y) * core::SafeCast<float>(tileWidth)},
-                     {(render_tile_offset.x + overlay.position.x + overlay.size.x) * core::SafeCast<float>(tileWidth),
+                      (render_tile_offset.y + overlay.position.y) * SafeCast<float>(tileWidth)},
+                     {(render_tile_offset.x + overlay.position.x + overlay.size.x) * SafeCast<float>(tileWidth),
 
-                      (render_tile_offset.y + overlay.position.y + overlay.size.y) * core::SafeCast<float>(tileWidth)}},
+                      (render_tile_offset.y + overlay.position.y + overlay.size.y) * SafeCast<float>(tileWidth)}},
                  {uv.topLeft, uv.bottomRight}},
                 overlay.position.z);
         }
@@ -420,15 +414,15 @@ void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::C
     // Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
 
     // Total length of the sprite, to be split among the different tiles
-    const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / core::SafeCast<float>(mt_data.span);
-    const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / core::SafeCast<float>(mt_data.height);
+    const auto len_x = (uv.bottomRight.x - uv.topLeft.x) / SafeCast<float>(mt_data.span);
+    const auto len_y = (uv.bottomRight.y - uv.topLeft.y) / SafeCast<float>(mt_data.height);
 
     const double x_multiplier = tile_layer.GetOffsetX();
     const double y_multiplier = tile_layer.GetOffsetY();
 
     // Opengl flips vertically, thus the y multiplier is inverted
-    uv.bottomRight.x = uv.topLeft.x + core::LossyCast<UvPositionT::PositionT::ValueT>(len_x * (x_multiplier + 1));
-    uv.bottomRight.y = uv.bottomRight.y - core::LossyCast<UvPositionT::PositionT::ValueT>(len_y * y_multiplier);
+    uv.bottomRight.x = uv.topLeft.x + LossyCast<UvPositionT::PositionT::ValueT>(len_x * (x_multiplier + 1));
+    uv.bottomRight.y = uv.bottomRight.y - LossyCast<UvPositionT::PositionT::ValueT>(len_y * y_multiplier);
 
     uv.topLeft.x = uv.bottomRight.x - len_x;
     uv.topLeft.y = uv.bottomRight.y - len_y;
@@ -437,13 +431,13 @@ void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::C
 
 void render::Renderer::GlDraw(const uint64_t index_count) noexcept {
     DEBUG_OPENGL_CALL(glDrawElements(GL_TRIANGLES,
-                                     core::SafeCast<GLsizei>(index_count),
+                                     SafeCast<GLsizei>(index_count),
                                      GL_UNSIGNED_INT,
                                      nullptr)); // Pointer not needed as buffer is already bound
 }
 
 void render::Renderer::GlUpdateTileProjectionMatrix() noexcept {
-    const auto max_tile_width = core::SafeCast<float>(tileWidth * 2);
+    const auto max_tile_width = SafeCast<float>(tileWidth * 2);
 
     if (tileProjectionMatrixOffset < max_tile_width)
         // Prevent zooming out too far
@@ -460,8 +454,8 @@ void render::Renderer::GlUpdateTileProjectionMatrix() noexcept {
 
         // Maximum zoom is 30 from center
         const int max_zoom_offset = 30;
-        if (tileProjectionMatrixOffset > core::SafeCast<float>(smallest_axis) / 2 - max_zoom_offset) {
-            tileProjectionMatrixOffset = core::SafeCast<float>(smallest_axis) / 2 - max_zoom_offset;
+        if (tileProjectionMatrixOffset > SafeCast<float>(smallest_axis) / 2 - max_zoom_offset) {
+            tileProjectionMatrixOffset = SafeCast<float>(smallest_axis) / 2 - max_zoom_offset;
         }
     }
 

@@ -89,22 +89,22 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/inventory_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/logic_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/logic/logicTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/player/keybind_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/player/player_actionTests.cpp
-	${JACTORIO_TEST_DIR}/game/player/player_dataTests_inventory.cpp
-	${JACTORIO_TEST_DIR}/game/player/player_dataTests_placement.cpp
-	${JACTORIO_TEST_DIR}/game/player/player_dataTests_recipe.cpp
-	${JACTORIO_TEST_DIR}/game/player/player_dataTests_world.cpp
+	${JACTORIO_TEST_DIR}/game/player/playerTests_inventory.cpp
+	${JACTORIO_TEST_DIR}/game/player/playerTests_placement.cpp
+	${JACTORIO_TEST_DIR}/game/player/playerTests_recipe.cpp
+	${JACTORIO_TEST_DIR}/game/player/playerTests_world.cpp
 
 	${JACTORIO_TEST_DIR}/game/world/chunkTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tileTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/chunk_tile_layerTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/update_dispatcherTests.cpp
-	${JACTORIO_TEST_DIR}/game/world/world_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/worldTests.cpp
 
 
 	${JACTORIO_TEST_DIR}/proto/assembly_machineTests.cpp

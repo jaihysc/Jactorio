@@ -15,7 +15,7 @@ using namespace jactorio;
 unsigned int render::Shader::CompileShader(const std::string& filepath, const GLenum shader_type) {
 
     const auto path          = filepath;
-    const std::string source = core::ReadFile(path);
+    const std::string source = ReadFile(path);
 
     if (source.empty()) {
         LOG_MESSAGE_F(error, "Shader compilation received empty string, type %d %s", shader_type, path.c_str());

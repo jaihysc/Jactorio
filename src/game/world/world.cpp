@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 
 #include <algorithm>
 #include <future>
@@ -12,48 +12,48 @@
 
 using namespace jactorio;
 
-ChunkCoordAxis game::WorldData::WorldCToChunkC(WorldCoordAxis world_coord) {
+ChunkCoordAxis game::World::WorldCToChunkC(WorldCoordAxis coord) {
     ChunkCoordAxis chunk_coord = 0;
 
-    if (world_coord < 0) {
+    if (coord < 0) {
         chunk_coord -= 1;
-        world_coord += 1;
+        coord += 1;
     }
 
-    chunk_coord += core::LossyCast<ChunkCoordAxis>(core::LossyCast<float>(world_coord) / Chunk::kChunkWidth);
+    chunk_coord += LossyCast<ChunkCoordAxis>(LossyCast<float>(coord) / Chunk::kChunkWidth);
     return chunk_coord;
 }
 
-ChunkCoord game::WorldData::WorldCToChunkC(const WorldCoord& world_coord) {
-    return {WorldCToChunkC(world_coord.x), WorldCToChunkC(world_coord.y)};
+ChunkCoord game::World::WorldCToChunkC(const WorldCoord& coord) {
+    return {WorldCToChunkC(coord.x), WorldCToChunkC(coord.y)};
 }
 
 
-WorldCoordAxis game::WorldData::ChunkCToWorldC(const ChunkCoordAxis chunk_coord) {
+WorldCoordAxis game::World::ChunkCToWorldC(const ChunkCoordAxis chunk_coord) {
     return chunk_coord * kChunkWidth;
 }
 
-WorldCoord game::WorldData::ChunkCToWorldC(const ChunkCoord& chunk_coord) {
+WorldCoord game::World::ChunkCToWorldC(const ChunkCoord& chunk_coord) {
     return {ChunkCToWorldC(chunk_coord.x), ChunkCToWorldC(chunk_coord.y)};
 }
 
 
-OverlayOffsetAxis game::WorldData::WorldCToOverlayC(const WorldCoordAxis world_coord) {
+OverlayOffsetAxis game::World::WorldCToOverlayC(const WorldCoordAxis coord) {
     WorldCoordAxis val;
 
-    if (world_coord < 0) {
-        val = ((world_coord + 1) % kChunkWidth) + kChunkWidth - 1;
+    if (coord < 0) {
+        val = ((coord + 1) % kChunkWidth) + kChunkWidth - 1;
     }
     else {
-        val = world_coord % kChunkWidth;
+        val = coord % kChunkWidth;
     }
 
-    return core::SafeCast<OverlayOffsetAxis>(val);
+    return SafeCast<OverlayOffsetAxis>(val);
 }
 
 // ======================================================================
 
-game::WorldData::WorldData(const WorldData& other)
+game::World::World(const World& other)
     : updateDispatcher{other.updateDispatcher},
       worldChunks_{other.worldChunks_},
       logicChunks_{other.logicChunks_},
@@ -65,11 +65,11 @@ game::WorldData::WorldData(const WorldData& other)
     }
 }
 
-void game::WorldData::DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) {
+void game::World::DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) {
     worldChunks_.erase(std::make_tuple(chunk_x, chunk_y));
 }
 
-void game::WorldData::Clear() {
+void game::World::Clear() {
     worldChunks_.clear();
     logicChunks_.clear();
     worldGenChunks_.clear();
@@ -77,11 +77,11 @@ void game::WorldData::Clear() {
 
 // ======================================================================
 
-game::Chunk* game::WorldData::GetChunkC(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) {
-    return const_cast<Chunk*>(static_cast<const WorldData&>(*this).GetChunkC(chunk_x, chunk_y));
+game::Chunk* game::World::GetChunkC(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) {
+    return const_cast<Chunk*>(static_cast<const World&>(*this).GetChunkC(chunk_x, chunk_y));
 }
 
-const game::Chunk* game::WorldData::GetChunkC(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) const {
+const game::Chunk* game::World::GetChunkC(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) const {
     const auto key = std::tuple<int, int>{chunk_x, chunk_y};
 
     if (worldChunks_.find(key) == worldChunks_.end())
@@ -91,39 +91,39 @@ const game::Chunk* game::WorldData::GetChunkC(const ChunkCoordAxis chunk_x, cons
 }
 
 
-game::Chunk* game::WorldData::GetChunkC(const ChunkCoord& chunk_pair) {
+game::Chunk* game::World::GetChunkC(const ChunkCoord& chunk_pair) {
     return GetChunkC(chunk_pair.x, chunk_pair.y);
 }
 
-const game::Chunk* game::WorldData::GetChunkC(const ChunkCoord& chunk_pair) const {
+const game::Chunk* game::World::GetChunkC(const ChunkCoord& chunk_pair) const {
     return GetChunkC(chunk_pair.x, chunk_pair.y);
 }
 
 
-game::Chunk* game::WorldData::GetChunkW(const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
+game::Chunk* game::World::GetChunkW(const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
     return GetChunkC(WorldCToChunkC(world_x), WorldCToChunkC(world_y));
 }
 
-const game::Chunk* game::WorldData::GetChunkW(const WorldCoordAxis world_x, const WorldCoordAxis world_y) const {
+const game::Chunk* game::World::GetChunkW(const WorldCoordAxis world_x, const WorldCoordAxis world_y) const {
     return GetChunkC(WorldCToChunkC(world_x), WorldCToChunkC(world_y));
 }
 
 
-game::Chunk* game::WorldData::GetChunkW(const WorldCoord& world_pair) {
-    return GetChunkW(world_pair.x, world_pair.y);
+game::Chunk* game::World::GetChunkW(const WorldCoord& coord) {
+    return GetChunkW(coord.x, coord.y);
 }
 
-const game::Chunk* game::WorldData::GetChunkW(const WorldCoord& world_pair) const {
-    return GetChunkW(world_pair.x, world_pair.y);
+const game::Chunk* game::World::GetChunkW(const WorldCoord& coord) const {
+    return GetChunkW(coord.x, coord.y);
 }
 
 // ======================================================================
 
-game::ChunkTile* game::WorldData::GetTile(const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-    return const_cast<ChunkTile*>(static_cast<const WorldData&>(*this).GetTile(world_x, world_y));
+game::ChunkTile* game::World::GetTile(const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
+    return const_cast<ChunkTile*>(static_cast<const World&>(*this).GetTile(world_x, world_y));
 }
 
-const game::ChunkTile* game::WorldData::GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y) const {
+const game::ChunkTile* game::World::GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y) const {
     // The negative chunks start at -1, unlike positive chunks at 0
     // Thus add 1 to become 0 so the calculations can be performed
     bool negative_x = false;
@@ -143,11 +143,11 @@ const game::ChunkTile* game::WorldData::GetTile(WorldCoordAxis world_x, WorldCoo
         world_y += 1;
     }
 
-    chunk_index_x += core::SafeCast<float>(world_x) / Chunk::kChunkWidth;
-    chunk_index_y += core::SafeCast<float>(world_y) / Chunk::kChunkWidth;
+    chunk_index_x += SafeCast<float>(world_x) / Chunk::kChunkWidth;
+    chunk_index_y += SafeCast<float>(world_y) / Chunk::kChunkWidth;
 
 
-    const auto* chunk = GetChunkC(core::LossyCast<int>(chunk_index_x), core::LossyCast<int>(chunk_index_y));
+    const auto* chunk = GetChunkC(LossyCast<int>(chunk_index_x), LossyCast<int>(chunk_index_y));
 
     if (chunk != nullptr) {
         auto tile_index_x = world_x % Chunk::kChunkWidth;
@@ -167,69 +167,66 @@ const game::ChunkTile* game::WorldData::GetTile(WorldCoordAxis world_x, WorldCoo
 }
 
 
-game::ChunkTile* game::WorldData::GetTile(const WorldCoord& world_pair) {
-    return GetTile(world_pair.x, world_pair.y);
+game::ChunkTile* game::World::GetTile(const WorldCoord& coord) {
+    return GetTile(coord.x, coord.y);
 }
 
-const game::ChunkTile* game::WorldData::GetTile(const WorldCoord& world_pair) const {
-    return GetTile(world_pair.x, world_pair.y);
+const game::ChunkTile* game::World::GetTile(const WorldCoord& coord) const {
+    return GetTile(coord.x, coord.y);
 }
 
 
 // ======================================================================
 
 
-game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_coord, const TileLayer layer) {
-    auto* tile = GetTile(world_coord);
+game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord, const TileLayer layer) {
+    auto* tile = GetTile(coord);
     if (tile == nullptr)
         return nullptr;
 
-    return GetTileTopLeft(world_coord, tile->GetLayer(layer));
+    return GetTileTopLeft(coord, tile->GetLayer(layer));
 }
 
-const game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_coord, const TileLayer layer) const {
-    return const_cast<WorldData*>(this)->GetTileTopLeft(world_coord, layer);
+const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord, const TileLayer layer) const {
+    return const_cast<World*>(this)->GetTileTopLeft(coord, layer);
 }
 
-game::ChunkTile* game::WorldData::GetTileTopLeft(WorldCoord world_coord, const ChunkTileLayer& chunk_tile_layer) {
-    chunk_tile_layer.AdjustToTopLeft(world_coord.x, world_coord.y);
-    return GetTile(world_coord);
+game::ChunkTile* game::World::GetTileTopLeft(WorldCoord coord, const ChunkTileLayer& chunk_tile_layer) {
+    chunk_tile_layer.AdjustToTopLeft(coord.x, coord.y);
+    return GetTile(coord);
 }
 
-const game::ChunkTile* game::WorldData::GetTileTopLeft(const WorldCoord& world_coord,
-                                                       const ChunkTileLayer& chunk_tile_layer) const {
-    return const_cast<WorldData*>(this)->GetTileTopLeft(world_coord, chunk_tile_layer);
+const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord,
+                                                   const ChunkTileLayer& chunk_tile_layer) const {
+    return const_cast<World*>(this)->GetTileTopLeft(coord, chunk_tile_layer);
 }
 
 
-game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& world_coord,
-                                                       const TileLayer& tile_layer) noexcept {
-    auto* tile = GetTileTopLeft(world_coord, tile_layer);
+game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord, const TileLayer& tile_layer) noexcept {
+    auto* tile = GetTileTopLeft(coord, tile_layer);
     if (tile == nullptr)
         return nullptr;
 
     return &tile->GetLayer(tile_layer);
 }
 
-const game::ChunkTileLayer* game::WorldData::GetLayerTopLeft(const WorldCoord& world_coord,
-                                                             const TileLayer& tile_layer) const noexcept {
-    return const_cast<WorldData*>(this)->GetLayerTopLeft(world_coord, tile_layer);
+const game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord,
+                                                         const TileLayer& tile_layer) const noexcept {
+    return const_cast<World*>(this)->GetLayerTopLeft(coord, tile_layer);
 }
 
 
 // ======================================================================
 // Logic chunks
 
-void game::WorldData::LogicRegister(const LogicGroup group,
-                                    const WorldCoord& world_pair,
-                                    const TileLayer layer) {
+void game::World::LogicRegister(const LogicGroup group, const WorldCoord& coord, const TileLayer layer) {
     assert(group != LogicGroup::count_);
     assert(layer != TileLayer::count_);
 
-    auto* chunk = GetChunkW(world_pair);
+    auto* chunk = GetChunkW(coord);
     assert(chunk);
 
-    auto* tile_layer  = &GetTile(world_pair)->GetLayer(layer);
+    auto* tile_layer  = &GetTile(coord)->GetLayer(layer);
     auto& logic_group = chunk->GetLogicGroup(group);
 
     // Already added to logic group at tile layer
@@ -240,10 +237,10 @@ void game::WorldData::LogicRegister(const LogicGroup group,
     chunk->GetLogicGroup(group).push_back(tile_layer);
 }
 
-void game::WorldData::LogicRemove(const LogicGroup group,
-                                  const WorldCoord& world_pair,
-                                  const std::function<bool(ChunkTileLayer*)>& pred) {
-    auto* chunk = GetChunkW(world_pair);
+void game::World::LogicRemove(const LogicGroup group,
+                              const WorldCoord& coord,
+                              const std::function<bool(ChunkTileLayer*)>& pred) {
+    auto* chunk = GetChunkW(coord);
     assert(chunk);
 
     auto& logic_group = chunk->GetLogicGroup(group);
@@ -259,24 +256,24 @@ void game::WorldData::LogicRemove(const LogicGroup group,
     logicChunks_.erase(std::remove(logicChunks_.begin(), logicChunks_.end(), chunk), logicChunks_.end());
 }
 
-void game::WorldData::LogicRemove(const LogicGroup group, const WorldCoord& world_pair, const TileLayer layer) {
-    auto* tile_layer = &GetTile(world_pair)->GetLayer(layer);
+void game::World::LogicRemove(const LogicGroup group, const WorldCoord& coord, const TileLayer layer) {
+    auto* tile_layer = &GetTile(coord)->GetLayer(layer);
 
-    LogicRemove(group, world_pair, [&](ChunkTileLayer* t_layer) { return t_layer == tile_layer; });
+    LogicRemove(group, coord, [&](ChunkTileLayer* t_layer) { return t_layer == tile_layer; });
 }
 
-void game::WorldData::LogicAddChunk(Chunk& chunk) {
+void game::World::LogicAddChunk(Chunk& chunk) {
     // Only add a chunk for logic updates once
     if (std::find(logicChunks_.begin(), logicChunks_.end(), &chunk) == logicChunks_.end()) {
         logicChunks_.emplace_back(&chunk);
     }
 }
 
-game::WorldData::LogicChunkContainerT& game::WorldData::LogicGetChunks() {
-    return const_cast<LogicChunkContainerT&>(static_cast<const WorldData*>(this)->LogicGetChunks());
+game::World::LogicChunkContainerT& game::World::LogicGetChunks() {
+    return const_cast<LogicChunkContainerT&>(static_cast<const World*>(this)->LogicGetChunks());
 }
 
-const game::WorldData::LogicChunkContainerT& game::WorldData::LogicGetChunks() const {
+const game::World::LogicChunkContainerT& game::World::LogicGetChunks() const {
     return logicChunks_;
 }
 
@@ -284,8 +281,8 @@ const game::WorldData::LogicChunkContainerT& game::WorldData::LogicGetChunks() c
 
 // T is value stored in noise_layer at data_category
 template <typename T>
-void GenerateChunk(game::WorldData& world_data,
-                   const data::PrototypeManager& data_manager,
+void GenerateChunk(game::World& world,
+                   const data::PrototypeManager& proto,
                    const ChunkCoord& chunk_coord,
                    const proto::Category data_category,
                    void (*func)(game::ChunkTile& target_tile,
@@ -298,24 +295,24 @@ void GenerateChunk(game::WorldData& world_data,
     // In case something happens in the future
 
     // Get all TILE noise layers for building terrain
-    auto noise_layers = data_manager.DataRawGetAll<proto::NoiseLayer<T>>(data_category);
+    auto noise_layers = proto.GetAll<proto::NoiseLayer<T>>(data_category);
 
     // Sort Noise layers, the one with the highest order takes priority if tiles overlap
     std::sort(
         noise_layers.begin(), noise_layers.end(), [](auto* left, auto* right) { return left->order < right->order; });
 
 
-    auto* chunk = world_data.GetChunkC(chunk_coord);
+    auto* chunk = world.GetChunkC(chunk_coord);
 
     // Allocate new tiles if chunk has not been generated yet
     if (chunk == nullptr) {
-        chunk = &world_data.EmplaceChunk(chunk_coord);
+        chunk = &world.EmplaceChunk(chunk_coord);
     }
 
     int seed_offset = 0; // Incremented every time a noise layer generates to keep terrain unique
     for (const auto* noise_layer : noise_layers) {
         module::Perlin base_terrain_noise_module;
-        base_terrain_noise_module.SetSeed(world_data.GetWorldGeneratorSeed() + seed_offset++);
+        base_terrain_noise_module.SetSeed(world.GetWorldGeneratorSeed() + seed_offset++);
 
         // Load properties of each noise layer
         base_terrain_noise_module.SetOctaveCount(noise_layer->octaveCount);
@@ -349,18 +346,15 @@ void GenerateChunk(game::WorldData& world_data,
 ///
 /// Generates a chunk and adds it to the world when done
 /// Call this with a std::thread to to this in async
-void Generate(game::WorldData& world_data,
-              const data::PrototypeManager& data_manager,
-              const int chunk_x,
-              const int chunk_y) {
+void Generate(game::World& world, const data::PrototypeManager& proto, const int chunk_x, const int chunk_y) {
     using namespace jactorio;
 
     LOG_MESSAGE_F(debug, "Generating new chunk at %d, %d...", chunk_x, chunk_y);
 
     // Base
     GenerateChunk<proto::Tile>(
-        world_data,
-        data_manager,
+        world,
+        proto,
         {chunk_x, chunk_y},
         proto::Category::noise_layer_tile,
         [](game::ChunkTile& target, void* tile, const auto& /*noise_layer*/, float /*noise_val*/) {
@@ -372,8 +366,8 @@ void Generate(game::WorldData& world_data,
 
     // Resources
     GenerateChunk<proto::ResourceEntity>(
-        world_data,
-        data_manager,
+        world,
+        proto,
         {chunk_x, chunk_y},
         proto::Category::noise_layer_entity,
         [](game::ChunkTile& target, void* tile, const auto& noise_layer, float noise_val) {
@@ -395,7 +389,7 @@ void Generate(game::WorldData& world_data,
             const auto noise_min   = noise_range.first;
             const auto noise_max   = noise_range.second;
             auto resource_amount =
-                core::LossyCast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
+                LossyCast<uint16_t>((noise_val - noise_min) * noise_layer.richness / (noise_max - noise_min));
 
             if (resource_amount <= 0)
                 resource_amount = 1;
@@ -412,13 +406,13 @@ void Generate(game::WorldData& world_data,
 }
 
 
-void game::WorldData::QueueChunkGeneration(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) const {
+void game::World::QueueChunkGeneration(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) const {
     // .find is not needed to check for duplicates as insert already does that
 
     worldGenChunks_.insert({chunk_x, chunk_y});
 }
 
-void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8_t amount) {
+void game::World::GenChunk(const data::PrototypeManager& proto, uint8_t amount) {
     assert(amount > 0);
 
     // https://stackoverflow.com/questions/8234779/how-to-remove-from-a-map-while-iterating-it
@@ -427,7 +421,7 @@ void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8
         const auto& coords = *it;
 
         assert(worldGenChunks_.count(coords) == 1);
-        Generate(*this, data_manager, std::get<0>(coords), std::get<1>(coords));
+        Generate(*this, proto, std::get<0>(coords), std::get<1>(coords));
 
         worldGenChunks_.erase(it++);
 
@@ -437,7 +431,7 @@ void game::WorldData::GenChunk(const data::PrototypeManager& data_manager, uint8
 }
 
 
-void game::WorldData::DeserializePostProcess() {
+void game::World::DeserializePostProcess() {
     auto iterate_world_chunks =
         [&](const std::function<void(const WorldCoord& coord, ChunkTileLayer& layer, uint8_t layer_i)>& callback) {
             for (auto& [c_coord, chunk] : worldChunks_) {
@@ -445,17 +439,17 @@ void game::WorldData::DeserializePostProcess() {
                 for (uint32_t y = 0; y < kChunkWidth; ++y) { // x, y is position within current chunk
                     for (uint32_t x = 0; x < kChunkWidth; ++x) {
 
-                        auto world_coord = ChunkCToWorldC({std::get<0>(c_coord), std::get<1>(c_coord)});
-                        world_coord.x += x;
-                        world_coord.y += y;
+                        auto coord = ChunkCToWorldC({std::get<0>(c_coord), std::get<1>(c_coord)});
+                        coord.x += x;
+                        coord.y += y;
 
-                        auto* tile = GetTile(world_coord);
+                        auto* tile = GetTile(coord);
                         assert(tile != nullptr);
 
                         for (uint8_t layer_i = 0; layer_i < ChunkTile::kTileLayerCount; ++layer_i) {
                             auto& layer = tile->layers[layer_i];
 
-                            callback(world_coord, layer, layer_i);
+                            callback(coord, layer, layer_i);
                         }
                     }
                 }
@@ -485,7 +479,7 @@ void game::WorldData::DeserializePostProcess() {
 // ======================================================================
 
 
-game::WorldData::SerialLogicChunkContainerT game::WorldData::ToSerializeLogicChunkContainer() const {
+game::World::SerialLogicChunkContainerT game::World::ToSerializeLogicChunkContainer() const {
     SerialLogicChunkContainerT serial_logic;
 
     serial_logic.reserve(logicChunks_.size());
@@ -497,7 +491,7 @@ game::WorldData::SerialLogicChunkContainerT game::WorldData::ToSerializeLogicChu
     return serial_logic;
 }
 
-void game::WorldData::FromSerializeLogicChunkContainer(const SerialLogicChunkContainerT& serial_logic) {
+void game::World::FromSerializeLogicChunkContainer(const SerialLogicChunkContainerT& serial_logic) {
     assert(logicChunks_.empty());
 
     for (const auto& logic_chunk : serial_logic) {

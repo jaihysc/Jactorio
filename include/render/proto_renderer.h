@@ -27,12 +27,12 @@ namespace jactorio::render
 
     void DrawConveyorSegmentItems(RendererLayer& layer,
                                   const SpriteUvCoordsT& uv_coords,
-                                  const core::Position2<float>& pixel_offset,
+                                  const Position2<float>& pixel_offset,
                                   game::ConveyorStruct& line_segment);
 
     void DrawInserterArm(RendererLayer& layer,
                          const SpriteUvCoordsT& uv_coords,
-                         const core::Position2<float>& pixel_offset,
+                         const Position2<float>& pixel_offset,
                          const proto::Inserter& inserter_proto,
                          const proto::InserterData& inserter_data);
 } // namespace jactorio::render

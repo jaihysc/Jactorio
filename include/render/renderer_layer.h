@@ -47,7 +47,7 @@ namespace jactorio::render
         static_assert(kVbIndicesPerCoordinate == kUvIndicesPerCoordinate);
 
     public:
-        using VertexPositionT = core::QuadPosition<core::Position2<float>>;
+        using VertexPositionT = QuadPosition<Position2<float>>;
 
         struct Element
         {

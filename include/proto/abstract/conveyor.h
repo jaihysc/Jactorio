@@ -76,36 +76,36 @@ namespace jactorio::proto
 
         void OnRDrawUniqueData(render::RendererLayer& layer,
                                const SpriteUvCoordsT& uv_coords,
-                               const core::Position2<float>& pixel_offset,
+                               const Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::WorldData& world_data,
-                                               const WorldCoord& world_coords) const override;
+                                               game::World& world,
+                                               const WorldCoord& coord) const override;
 
         J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
                                                    GameTickT game_tick) const override;
 
 
-        void OnBuild(game::WorldData& world,
-                     game::LogicData& logic,
+        void OnBuild(game::World& world,
+                     game::Logic& logic,
                      const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
-        void OnNeighborUpdate(game::WorldData& world,
-                              game::LogicData& logic,
+        void OnNeighborUpdate(game::World& world,
+                              game::Logic& logic,
                               const WorldCoord& emit_coord,
                               const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
-        void OnRemove(game::WorldData& world,
-                      game::LogicData& logic,
+        void OnRemove(game::World& world,
+                      game::Logic& logic,
                       const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 
-        void OnDeserialize(game::WorldData& world_data,
-                           const WorldCoord& world_coord,
+        void OnDeserialize(game::World& world,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override;
 
 
@@ -113,7 +113,7 @@ namespace jactorio::proto
         // Data events
 
         void PostLoad() override;
-        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
         void ValidatedPostLoad() override;
     };
 } // namespace jactorio::proto

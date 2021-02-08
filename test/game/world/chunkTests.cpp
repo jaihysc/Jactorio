@@ -10,18 +10,15 @@ namespace jactorio::game
 {
     TEST(Chunk, LogicCopy) {
         Chunk chunk_a(0, 0);
-        chunk_a.GetLogicGroup(LogicGroup::conveyor)
-            .push_back(&chunk_a.GetCTile(3, 4).GetLayer(TileLayer::base));
+        chunk_a.GetLogicGroup(LogicGroup::conveyor).push_back(&chunk_a.GetCTile(3, 4).GetLayer(TileLayer::base));
 
         auto chunk_b = chunk_a;
-        EXPECT_EQ(chunk_b.GetLogicGroup(LogicGroup::conveyor)[0],
-                  &chunk_b.GetCTile(3, 4).GetLayer(TileLayer::base));
+        EXPECT_EQ(chunk_b.GetLogicGroup(LogicGroup::conveyor)[0], &chunk_b.GetCTile(3, 4).GetLayer(TileLayer::base));
     }
 
     TEST(Chunk, LogicMove) {
         Chunk chunk_a(0, 0);
-        chunk_a.GetLogicGroup(LogicGroup::inserter)
-            .push_back(&chunk_a.GetCTile(4, 3).GetLayer(TileLayer::resource));
+        chunk_a.GetLogicGroup(LogicGroup::inserter).push_back(&chunk_a.GetCTile(4, 3).GetLayer(TileLayer::resource));
 
         auto chunk_b = std::move(chunk_a);
         EXPECT_EQ(chunk_b.GetLogicGroup(LogicGroup::inserter)[0],
@@ -30,7 +27,7 @@ namespace jactorio::game
 
     TEST(Chunk, GetCTile) {
         // GetCTile means Get Chunk Tile
-        // GetTile already taken by WorldData
+        // GetTile already taken by World
 
         Chunk chunk(4, 4);
         EXPECT_EQ(&chunk.Tiles()[23 * 32 + 12], &chunk.GetCTile({12, 23}));

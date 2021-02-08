@@ -19,8 +19,8 @@
 #include "proto/splitter.h"
 #include "proto/sprite.h"
 
-#include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
+#include "game/logic/logic.h"
+#include "game/world/world.h"
 
 #include <cereal/archives/portable_binary.hpp>
 
@@ -36,15 +36,15 @@ namespace jactorio
     public:
         PROTOTYPE_CATEGORY(test);
 
-        void PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const override {}
+        void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {}
 
         J_NODISCARD proto::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
             return nullptr;
         }
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::WorldData& /*world_data*/,
-                                               const WorldCoord& /*world_coords*/) const override {
+                                               game::World& /*world*/,
+                                               const WorldCoord& /*coord*/) const override {
             return 0;
         }
 
@@ -57,8 +57,8 @@ namespace jactorio
             return false;
         }
 
-        void OnDeserialize(game::WorldData& world_data,
-                           const WorldCoord& world_coord,
+        void OnDeserialize(game::World& world,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override {}
     };
 
@@ -70,15 +70,15 @@ namespace jactorio
     public:
         PROTOTYPE_CATEGORY(test);
 
-        void OnBuild(game::WorldData& world_data,
-                     game::LogicData& logic_data,
-                     const WorldCoord& world_coords,
+        void OnBuild(game::World& world,
+                     game::Logic& logic,
+                     const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override {}
 
-        void OnRemove(game::WorldData& world_data,
-                      game::LogicData& logic_data,
-                      const WorldCoord& world_coords,
+        void OnRemove(game::World& world,
+                      game::Logic& logic,
+                      const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override {}
     };
     static_assert(!std::is_abstract_v<TestMockEntity>);
@@ -87,7 +87,7 @@ namespace jactorio
     ///
     /// Sets up a multi tile with proto at coord on the provided specified tile layer
     /// \return Top left tile
-    inline game::ChunkTileLayer& TestSetupMultiTile(game::WorldData& world,
+    inline game::ChunkTileLayer& TestSetupMultiTile(game::World& world,
                                                     const WorldCoord& coord,
                                                     const game::TileLayer tile_layer,
                                                     const Orientation orientation,
@@ -114,7 +114,7 @@ namespace jactorio
 
     ///
     /// Creates a container of provided size at coord
-    inline game::ChunkTileLayer& TestSetupContainer(game::WorldData& world,
+    inline game::ChunkTileLayer& TestSetupContainer(game::World& world,
                                                     const WorldCoord& coord,
                                                     const Orientation orientation,
                                                     const proto::ContainerEntity& container_entity,
@@ -130,8 +130,8 @@ namespace jactorio
 
     ///
     /// Creates an inserter at coord
-    inline game::ChunkTileLayer& TestSetupInserter(game::WorldData& world,
-                                                   game::LogicData& logic,
+    inline game::ChunkTileLayer& TestSetupInserter(game::World& world,
+                                                   game::Logic& logic,
                                                    const WorldCoord& coord,
                                                    const Orientation orientation,
                                                    const proto::Inserter& inserter_proto) {
@@ -145,7 +145,7 @@ namespace jactorio
 
     ///
     /// Creates conveyor at coord, registers tile for logic updates
-    inline void TestCreateConveyorSegment(game::WorldData& world,
+    inline void TestCreateConveyorSegment(game::World& world,
                                           const WorldCoord& coord,
                                           const std::shared_ptr<game::ConveyorStruct>& con_struct_p,
                                           const proto::Conveyor& con_proto) {
@@ -165,7 +165,7 @@ namespace jactorio
     ///
     /// Creates a assembly machine at coordinates
     /// \return top left layer
-    inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::WorldData& world,
+    inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::World& world,
                                                           const WorldCoord& coord,
                                                           const Orientation orientation,
                                                           proto::AssemblyMachine& assembly_proto) {
@@ -176,7 +176,7 @@ namespace jactorio
 
     ///
     /// Creates resource with orientation up at coord
-    inline game::ChunkTile& TestSetupResource(game::WorldData& world,
+    inline game::ChunkTile& TestSetupResource(game::World& world,
                                               const WorldCoord& coord,
                                               proto::ResourceEntity& resource,
                                               const proto::ResourceEntityData::ResourceCount resource_amount) {
@@ -193,8 +193,8 @@ namespace jactorio
 
     ///
     /// Creates a drill in the world with orientation, calling OnBuild
-    inline game::ChunkTile& TestSetupDrill(game::WorldData& world,
-                                           game::LogicData& logic,
+    inline game::ChunkTile& TestSetupDrill(game::World& world,
+                                           game::Logic& logic,
                                            const WorldCoord& coord,
                                            const Orientation orientation,
                                            proto::ResourceEntity& resource,
@@ -216,7 +216,7 @@ namespace jactorio
 
     ///
     /// Creates conveyor at tile with provided conveyor structure
-    inline auto& TestSetupConveyor(game::WorldData& world,
+    inline auto& TestSetupConveyor(game::World& world,
                                    const WorldCoord& coord,
                                    const proto::Conveyor& con_proto,
                                    const std::shared_ptr<game::ConveyorStruct>& con_struct_p) {
@@ -230,7 +230,7 @@ namespace jactorio
     ///
     /// Creates conveyor at tile its own conveyor structure
     inline auto& TestSetupConveyor(
-        game::WorldData& world,
+        game::World& world,
         const WorldCoord& coord,
         const Orientation orien,
         const proto::Conveyor& con_proto,
@@ -244,7 +244,7 @@ namespace jactorio
 
     ///
     /// Creates splitter data at tile, no conveyor structure
-    inline auto& TestSetupBlankSplitter(game::WorldData& world,
+    inline auto& TestSetupBlankSplitter(game::World& world,
                                         const WorldCoord& coord,
                                         const Orientation orien,
                                         const proto::Splitter& splitter) {
@@ -257,7 +257,7 @@ namespace jactorio
 
     ///
     /// Creates splitter data at tile with conveyor structures
-    inline auto& TestSetupSplitter(game::WorldData& world,
+    inline auto& TestSetupSplitter(game::World& world,
                                    const WorldCoord& coord,
                                    const Orientation orien,
                                    const proto::Splitter& splitter) {
@@ -285,18 +285,18 @@ namespace jactorio
     ///
     /// Sets up and registers a recipe
     /// 1a + 1b = 1c
-    J_NODISCARD inline auto TestSetupRecipe(data::PrototypeManager& proto_manager) {
+    J_NODISCARD inline auto TestSetupRecipe(data::PrototypeManager& proto) {
         TestSetupRecipeReturn rt;
 
-        rt.recipe = &proto_manager.AddProto<proto::Recipe>();
+        rt.recipe = &proto.Make<proto::Recipe>();
 
         rt.recipe->craftingTime = 1.f;
         rt.recipe->ingredients  = {{"__test/r-ingredient-1", 1}, {"__test/r-ingredient-2", 1}};
         rt.recipe->product      = {"__test/r-product", 1};
 
-        rt.item1       = &proto_manager.AddProto<proto::Item>("__test/r-ingredient-1");
-        rt.item2       = &proto_manager.AddProto<proto::Item>("__test/r-ingredient-2");
-        rt.itemProduct = &proto_manager.AddProto<proto::Item>("__test/r-product");
+        rt.item1       = &proto.Make<proto::Item>("__test/r-ingredient-1");
+        rt.item2       = &proto.Make<proto::Item>("__test/r-ingredient-2");
+        rt.itemProduct = &proto.Make<proto::Item>("__test/r-product");
 
         return rt;
     }

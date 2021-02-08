@@ -43,8 +43,8 @@ namespace jactorio::game
 
 
         ///
-        /// Erases all data held
-        void ClearAllData();
+        /// Erases all event data held
+        void Clear();
 
     private:
         std::unordered_map<EventType, std::vector<CallbackFunc>> eventHandlers_;

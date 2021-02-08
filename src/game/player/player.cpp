@@ -1,6 +1,6 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#include "game/player/player_data.h"
+#include "game/player/player.h"
 
 #include <algorithm>
 #include <map>
@@ -8,7 +8,7 @@
 #include "game/input/mouse_selection.h"
 #include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/recipe.h"
 #include "proto/resource_entity.h"
 #include "proto/tile.h"
@@ -16,9 +16,9 @@
 
 using namespace jactorio;
 
-void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_matrix) {
-    const auto truncated_player_pos_x = core::SafeCast<float>(core::LossyCast<int>(positionX_));
-    const auto truncated_player_pos_y = core::SafeCast<float>(core::LossyCast<int>(positionY_));
+void game::Player::World::CalculateMouseSelectedTile(const glm::mat4& mvp_matrix) {
+    const auto truncated_player_pos_x = SafeCast<float>(LossyCast<int>(positionX_));
+    const auto truncated_player_pos_y = SafeCast<float>(LossyCast<int>(positionY_));
 
     float pixels_from_center_x;
     float pixels_from_center_y;
@@ -40,8 +40,8 @@ void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_ma
         {
             // Calculate the center tile on screen
             // Calculate number of pixels from center
-            const double win_center_norm_x = 2 * (core::SafeCast<double>(window_width) / 2 / window_width) - 1;
-            const double win_center_norm_y = 2 * (core::SafeCast<double>(window_height) / 2 / window_height) - 1;
+            const double win_center_norm_x = 2 * (SafeCast<double>(window_width) / 2 / window_width) - 1;
+            const double win_center_norm_y = 2 * (SafeCast<double>(window_height) / 2 / window_height) - 1;
 
             const glm::vec4 win_center_norm_positions =
                 mvp_matrix / glm::vec4(win_center_norm_x, win_center_norm_y, 1, 1);
@@ -51,10 +51,10 @@ void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_ma
         }
 
         // If player is standing on a partial tile, adjust the center accordingly to the correct location
-        mouse_x_center -= core::SafeCast<float>(render::Renderer::tileWidth) * (positionX_ - truncated_player_pos_x);
+        mouse_x_center -= SafeCast<float>(render::Renderer::tileWidth) * (positionX_ - truncated_player_pos_x);
 
         // This is plus since the y axis is inverted
-        mouse_y_center += core::SafeCast<float>(render::Renderer::tileWidth) * (positionY_ - truncated_player_pos_y);
+        mouse_y_center += SafeCast<float>(render::Renderer::tileWidth) * (positionY_ - truncated_player_pos_y);
 
 
         pixels_from_center_x = norm_positions.x - mouse_x_center;
@@ -62,9 +62,9 @@ void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_ma
     }
 
     // Calculate tile position based on current player position
-    float tile_x = truncated_player_pos_x + pixels_from_center_x / core::LossyCast<float>(render::Renderer::tileWidth);
+    float tile_x = truncated_player_pos_x + pixels_from_center_x / LossyCast<float>(render::Renderer::tileWidth);
 
-    float tile_y = truncated_player_pos_y + pixels_from_center_y / core::LossyCast<float>(render::Renderer::tileWidth);
+    float tile_y = truncated_player_pos_y + pixels_from_center_y / LossyCast<float>(render::Renderer::tileWidth);
 
     // Subtract extra tile if negative because no tile exists at -0, -0
     if (tile_x < 0)
@@ -72,24 +72,24 @@ void game::PlayerData::World::CalculateMouseSelectedTile(const glm::mat4& mvp_ma
     if (tile_y < 0)
         tile_y -= 1.f;
 
-    mouseSelectedTile_ = {core::LossyCast<WorldCoordAxis>(tile_x), core::LossyCast<WorldCoordAxis>(tile_y)};
+    mouseSelectedTile_ = {LossyCast<WorldCoordAxis>(tile_x), LossyCast<WorldCoordAxis>(tile_y)};
 }
 
-bool game::PlayerData::World::MouseSelectedTileInRange() const {
+bool game::Player::World::MouseSelectedTileInRange() const {
     const auto cursor_position = GetMouseTileCoords();
 
     // Maximum distance of from the player where tiles can be reached
     constexpr unsigned int max_reach = 34;
-    const auto tile_dist             = abs(positionX_ - core::SafeCast<float>(cursor_position.x)) +
-        abs(positionY_ - core::SafeCast<float>(cursor_position.y));
+    const auto tile_dist =
+        abs(positionX_ - SafeCast<float>(cursor_position.x)) + abs(positionY_ - SafeCast<float>(cursor_position.y));
 
     return tile_dist <= max_reach;
 }
 
-bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x, const int y) const {
-    assert(world_data != nullptr); // Player is not in a world
+bool game::Player::World::TargetTileValid(game::World* world, const int x, const int y) const {
+    assert(world != nullptr); // Player is not in a world
 
-    const auto* origin_tile = world_data->GetTile(core::LossyCast<int>(positionX_), core::LossyCast<int>(positionY_));
+    const auto* origin_tile = world->GetTile(LossyCast<int>(positionX_), LossyCast<int>(positionY_));
 
     if (origin_tile == nullptr)
         return false;
@@ -98,7 +98,7 @@ bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x
     if (origin_tile->GetTilePrototype()->isWater)
         return true;
 
-    const ChunkTile* tile = world_data->GetTile(x, y);
+    const ChunkTile* tile = world->GetTile(x, y);
     // Chunk not generated yet
     if (tile == nullptr)
         return false;
@@ -106,17 +106,17 @@ bool game::PlayerData::World::TargetTileValid(WorldData* world_data, const int x
     return !tile->GetTilePrototype()->isWater;
 }
 
-void game::PlayerData::World::MovePlayerX(const float amount) {
+void game::Player::World::MovePlayerX(const float amount) {
     const float target_x = positionX_ + amount;
 
-    //    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(target_x), core::LossyCast<int>(playerPositionY_)))
+    //    if (TargetTileValid(&GetWorld(), LossyCast<int>(target_x), LossyCast<int>(playerPositionY_)))
     positionX_ = target_x;
 }
 
-void game::PlayerData::World::MovePlayerY(const float amount) {
+void game::Player::World::MovePlayerY(const float amount) {
     const float target_y = positionY_ + amount;
 
-    //    if (TargetTileValid(&GetWorld(), core::LossyCast<int>(playerPositionX_), core::LossyCast<int>(target_y)))
+    //    if (TargetTileValid(&GetWorld(), LossyCast<int>(playerPositionX_), LossyCast<int>(target_y)))
     positionY_ = target_y;
 }
 
@@ -124,7 +124,7 @@ void game::PlayerData::World::MovePlayerY(const float amount) {
 // ============================================================================================
 // Entity placement / pickup
 
-void game::PlayerData::Placement::RotateOrientation() {
+void game::Player::Placement::RotateOrientation() {
     switch (orientation) {
     case Orientation::up:
         orientation = Orientation::right;
@@ -144,7 +144,7 @@ void game::PlayerData::Placement::RotateOrientation() {
     }
 }
 
-void game::PlayerData::Placement::CounterRotateOrientation() {
+void game::Player::Placement::CounterRotateOrientation() {
     switch (orientation) {
     case Orientation::up:
         orientation = Orientation::left;
@@ -168,8 +168,8 @@ void game::PlayerData::Placement::CounterRotateOrientation() {
 ///
 /// \param coord Top left tile x, y
 /// \param orientation Orientation of placed / removed entity
-void UpdateNeighboringEntities(game::WorldData& world,
-                               game::LogicData& logic,
+void UpdateNeighboringEntities(game::World& world,
+                               game::Logic& logic,
                                const WorldCoord& coord,
                                const Orientation orientation,
                                const proto::Entity* entity_ptr) {
@@ -198,34 +198,34 @@ void UpdateNeighboringEntities(game::WorldData& world,
 
     // x and y are receive coordinates
     for (proto::ProtoUintT i = 0; i < entity_ptr->GetWidth(orientation); ++i) {
-        const auto x = coord.x + core::SafeCast<WorldCoordAxis>(i);
+        const auto x = coord.x + SafeCast<WorldCoordAxis>(i);
         const auto y = coord.y - 1;
 
         call_on_neighbor_update({x, y + 1}, {x, y}, Orientation::down);
     }
     for (proto::ProtoUintT i = 0; i < entity_ptr->GetHeight(orientation); ++i) {
-        const auto x = coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth(orientation));
-        const auto y = coord.y + core::SafeCast<WorldCoordAxis>(i);
+        const auto x = coord.x + SafeCast<WorldCoordAxis>(entity_ptr->GetWidth(orientation));
+        const auto y = coord.y + SafeCast<WorldCoordAxis>(i);
 
         call_on_neighbor_update({x - 1, y}, {x, y}, Orientation::left);
     }
     for (proto::ProtoUintT i = 1; i <= entity_ptr->GetWidth(orientation); ++i) {
-        const auto x = coord.x + core::SafeCast<WorldCoordAxis>(entity_ptr->GetWidth(orientation)) -
-            core::SafeCast<WorldCoordAxis>(i);
-        const auto y = coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight(orientation));
+        const auto x =
+            coord.x + SafeCast<WorldCoordAxis>(entity_ptr->GetWidth(orientation)) - SafeCast<WorldCoordAxis>(i);
+        const auto y = coord.y + SafeCast<WorldCoordAxis>(entity_ptr->GetHeight(orientation));
 
         call_on_neighbor_update({x, y - 1}, {x, y}, Orientation::up);
     }
     for (proto::ProtoUintT i = 1; i <= entity_ptr->GetHeight(orientation); ++i) {
         const auto x = coord.x - 1;
-        const auto y = coord.y + core::SafeCast<WorldCoordAxis>(entity_ptr->GetHeight(orientation)) -
-            core::SafeCast<WorldCoordAxis>(i);
+        const auto y =
+            coord.y + SafeCast<WorldCoordAxis>(entity_ptr->GetHeight(orientation)) - SafeCast<WorldCoordAxis>(i);
 
         call_on_neighbor_update({x + 1, y}, {x, y}, Orientation::right);
     }
 }
 
-bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world, LogicData& logic, const WorldCoord& coord) const {
+bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, const WorldCoord& coord) const {
     auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return false;
@@ -271,8 +271,8 @@ bool game::PlayerData::Placement::TryPlaceEntity(WorldData& world, LogicData& lo
     return true;
 }
 
-bool game::PlayerData::Placement::TryActivateLayer(WorldData& world_data, const WorldCoord& world_pair) {
-    auto* tile = world_data.GetTile(world_pair);
+bool game::Player::Placement::TryActivateLayer(game::World& world, const WorldCoord& coord) {
+    auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return false;
 
@@ -302,15 +302,12 @@ bool game::PlayerData::Placement::TryActivateLayer(WorldData& world_data, const 
     // else
 
     // Clicking on an existing entity will activate it
-    activatedLayer_ = world_data.GetLayerTopLeft(world_pair, select_layer);
+    activatedLayer_ = world.GetLayerTopLeft(coord, select_layer);
     return true;
 }
 
 
-void game::PlayerData::Placement::TryPickup(WorldData& world,
-                                            LogicData& logic,
-                                            WorldCoord coord,
-                                            const uint16_t ticks) {
+void game::Player::Placement::TryPickup(game::World& world, Logic& logic, WorldCoord coord, const uint16_t ticks) {
     auto* tile = world.GetTile(coord);
 
     const proto::Entity* chosen_ptr;
@@ -334,7 +331,7 @@ void game::PlayerData::Placement::TryPickup(WorldData& world,
     // Selecting a new tile different from the last selected tile will reset the counter
     if (lastSelectedPtr_ != chosen_ptr || lastTilePtr_ != tile) {
         pickupTickCounter_ = 0;
-        pickupTickTarget_  = core::LossyCast<uint16_t>(chosen_ptr->pickupTime * kGameHertz); // Seconds to ticks
+        pickupTickTarget_  = LossyCast<uint16_t>(chosen_ptr->pickupTime * kGameHertz); // Seconds to ticks
     }
     // Remember the entity + tile which was selected
     lastSelectedPtr_ = chosen_ptr;
@@ -398,28 +395,28 @@ void game::PlayerData::Placement::TryPickup(WorldData& world,
     }
 }
 
-float game::PlayerData::Placement::GetPickupPercentage() const {
+float game::Player::Placement::GetPickupPercentage() const {
     if (lastSelectedPtr_ == nullptr) // Not initialized yet
         return 0.f;
 
-    return core::SafeCast<float>(pickupTickCounter_) / core::SafeCast<float>(pickupTickTarget_);
+    return SafeCast<float>(pickupTickCounter_) / SafeCast<float>(pickupTickTarget_);
 }
 
 // ============================================================================================
 // Inventory
 
-void game::PlayerData::Inventory::HandleInventoryActions(const data::PrototypeManager& data_manager,
-                                                         proto::Item::Inventory& inv,
-                                                         const size_t index,
-                                                         const bool half_select) {
+void game::Player::Inventory::HandleInventoryActions(const data::PrototypeManager& proto,
+                                                     proto::Item::Inventory& inv,
+                                                     const size_t index,
+                                                     const bool half_select) {
     const bool is_player_inv = &inv == &inventory;
 
 
-    HandleClick(data_manager, core::SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
+    HandleClick(proto, SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
     InventorySort(inventory);
 }
 
-void game::PlayerData::Inventory::InventorySort(proto::Item::Inventory& inv) {
+void game::Player::Inventory::InventorySort(proto::Item::Inventory& inv) {
     // The inventory must be sorted without moving the selected cursor
 
     // Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
@@ -537,11 +534,11 @@ loop_exit:
 // LEFT CLICK - Select by reference, the item in the cursor mirrors the inventory item
 // RIGHT CLICK - Select unique, the item in the cursor exists independently of the inventory item
 
-void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data_manager,
-                                              const uint16_t index,
-                                              const uint16_t mouse_button,
-                                              const bool reference_select,
-                                              proto::Item::Inventory& inv) {
+void game::Player::Inventory::HandleClick(const data::PrototypeManager& proto,
+                                          const uint16_t index,
+                                          const uint16_t mouse_button,
+                                          const bool reference_select,
+                                          proto::Item::Inventory& inv) {
     assert(index < inventory.size());
     assert(mouse_button == 0 || mouse_button == 1); // Only left + right click supported
 
@@ -574,7 +571,7 @@ void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data
             selectedItem_      = inv[index];
 
             // Swap icon out for a cursor indicating the current index is selected
-            inventory[index].item  = data_manager.DataRawGet<proto::Item>(proto::Item::kInventorySelectedCursor);
+            inventory[index].item  = proto.Get<proto::Item>(proto::Item::kInventorySelectedCursor);
             inventory[index].count = 0;
 
             // Return is necessary when selecting by reference
@@ -606,14 +603,14 @@ void game::PlayerData::Inventory::HandleClick(const data::PrototypeManager& data
     }
 }
 
-const proto::ItemStack* game::PlayerData::Inventory::GetSelectedItem() const {
+const proto::ItemStack* game::Player::Inventory::GetSelectedItem() const {
     if (!hasItemSelected_)
         return nullptr;
 
     return &selectedItem_;
 }
 
-bool game::PlayerData::Inventory::DeselectSelectedItem() {
+bool game::Player::Inventory::DeselectSelectedItem() {
     if (!hasItemSelected_ || !selectByReference_)
         return false;
 
@@ -623,7 +620,7 @@ bool game::PlayerData::Inventory::DeselectSelectedItem() {
     return true;
 }
 
-bool game::PlayerData::Inventory::IncrementSelectedItem() {
+bool game::Player::Inventory::IncrementSelectedItem() {
     assert(hasItemSelected_);
 
     // DO not increment if it will exceed the stack size
@@ -635,7 +632,7 @@ bool game::PlayerData::Inventory::IncrementSelectedItem() {
     return false;
 }
 
-bool game::PlayerData::Inventory::DecrementSelectedItem() {
+bool game::Player::Inventory::DecrementSelectedItem() {
     assert(hasItemSelected_);
 
     if (--selectedItem_.count == 0) {
@@ -653,15 +650,15 @@ bool game::PlayerData::Inventory::DecrementSelectedItem() {
 // ============================================================================================
 // Recipe
 
-void game::PlayerData::Crafting::RecipeGroupSelect(const uint16_t index) {
+void game::Player::Crafting::RecipeGroupSelect(const uint16_t index) {
     selectedRecipeGroup_ = index;
 }
 
-uint16_t game::PlayerData::Crafting::RecipeGroupGetSelected() const {
+uint16_t game::Player::Crafting::RecipeGroupGetSelected() const {
     return selectedRecipeGroup_;
 }
 
-void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& data_manager, uint16_t ticks) {
+void game::Player::Crafting::RecipeCraftTick(const data::PrototypeManager& proto, uint16_t ticks) {
     // Attempt to return held item if inventory is full
     if (craftingHeldItem_.count != 0) {
         const auto extra_items  = AddStack(playerInv_->inventory, craftingHeldItem_);
@@ -680,7 +677,7 @@ void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& d
 
             // Return product
             proto::RecipeItem recipe_item = recipe->product;
-            const auto* product_item      = data_manager.DataRawGet<proto::Item>(recipe_item.first);
+            const auto* product_item      = proto.Get<proto::Item>(recipe_item.first);
 
             proto::ItemStack item = {product_item, recipe_item.second};
 
@@ -726,7 +723,7 @@ void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& d
 
             // Set crafting ticks remaining to the next item
             if (!craftingQueue_.empty())
-                craftingTicksRemaining_ = core::LossyCast<uint16_t>(craftingQueue_.front()->craftingTime * kGameHertz);
+                craftingTicksRemaining_ = LossyCast<uint16_t>(craftingQueue_.front()->craftingTime * kGameHertz);
         }
         // Crafting ticks remaining is greater, decrement ticks remaining
         else {
@@ -736,34 +733,34 @@ void game::PlayerData::Crafting::RecipeCraftTick(const data::PrototypeManager& d
     }
 }
 
-void game::PlayerData::Crafting::QueueRecipe(const data::PrototypeManager& data_manager, const proto::Recipe& recipe) {
+void game::Player::Crafting::QueueRecipe(const data::PrototypeManager& proto, const proto::Recipe& recipe) {
     LOG_MESSAGE_F(debug, "Queuing recipe: '%s'", recipe.product.first.c_str());
 
     // Remove ingredients
     for (const auto& ingredient : recipe.ingredients) {
-        const auto* item = data_manager.DataRawGet<proto::Item>(ingredient.first);
+        const auto* item = proto.Get<proto::Item>(ingredient.first);
 
         DeleteInvItem(playerInv_->inventory, item, ingredient.second);
     }
 
     // Queue is empty, crafting time for the first item in queue must be set here
     if (craftingQueue_.empty())
-        craftingTicksRemaining_ = core::LossyCast<uint16_t>(recipe.craftingTime * kGameHertz);
+        craftingTicksRemaining_ = LossyCast<uint16_t>(recipe.craftingTime * kGameHertz);
 
     craftingQueue_.emplace_back(&recipe);
 }
 
-const game::PlayerData::Crafting::RecipeQueueT& game::PlayerData::Crafting::GetRecipeQueue() const {
+const game::Player::Crafting::RecipeQueueT& game::Player::Crafting::GetRecipeQueue() const {
     return craftingQueue_;
 }
 
-uint16_t game::PlayerData::Crafting::GetCraftingTicksRemaining() const {
+uint16_t game::Player::Crafting::GetCraftingTicksRemaining() const {
     return craftingTicksRemaining_;
 }
 
-void game::PlayerData::Crafting::RecipeCraftR(const data::PrototypeManager& data_manager, const proto::Recipe& recipe) {
+void game::Player::Crafting::RecipeCraftR(const data::PrototypeManager& proto, const proto::Recipe& recipe) {
     for (const auto& ingredient : recipe.ingredients) {
-        const auto* ingredient_proto = data_manager.DataRawGet<proto::Item>(ingredient.first);
+        const auto* ingredient_proto = proto.Get<proto::Item>(ingredient.first);
 
         const uint32_t possess_amount = GetInvItemCount(playerInv_->inventory, ingredient_proto);
 
@@ -798,7 +795,7 @@ void game::PlayerData::Crafting::RecipeCraftR(const data::PrototypeManager& data
                 return_deductions += amount_needed + queued_available;
 
 
-                const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(data_manager, ingredient.first);
+                const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(proto, ingredient.first);
 
                 // Round up to always ensure enough is crafted
                 const unsigned int yield = ingredient_recipe->product.second;
@@ -815,23 +812,23 @@ void game::PlayerData::Crafting::RecipeCraftR(const data::PrototypeManager& data
                 // Craft sub-recipes recursively until met
                 for (unsigned int i = 0; i < batches; ++i) {
                     assert(ingredient_recipe);
-                    RecipeCraftR(data_manager, *ingredient_recipe);
+                    RecipeCraftR(proto, *ingredient_recipe);
                 }
             }
         }
     }
 
     // Ingredients met - Queue crafting recipe
-    QueueRecipe(data_manager, recipe);
+    QueueRecipe(proto, recipe);
 }
 
 
-bool game::PlayerData::Crafting::RecipeCanCraftR(const data::PrototypeManager& data_manager,
-                                                 std::map<const proto::Item*, uint32_t>& used_items,
-                                                 const proto::Recipe& recipe,
-                                                 const unsigned batches) const {
+bool game::Player::Crafting::RecipeCanCraftR(const data::PrototypeManager& proto,
+                                             std::map<const proto::Item*, uint32_t>& used_items,
+                                             const proto::Recipe& recipe,
+                                             const unsigned batches) const {
     for (const auto& [ing_name, ing_amount_to_craft] : recipe.ingredients) {
-        const auto* ing_item = data_manager.DataRawGet<proto::Item>(ing_name);
+        const auto* ing_item = proto.Get<proto::Item>(ing_name);
 
         // If item has already been counted, use the map used_items. Otherwise, count from inventory
         unsigned int possess_amount;
@@ -844,12 +841,12 @@ bool game::PlayerData::Crafting::RecipeCanCraftR(const data::PrototypeManager& d
         }
 
         // Ingredient met, subtract from used_items, check others
-        if (possess_amount >= core::SafeCast<unsigned>(ing_amount_to_craft * batches)) {
+        if (possess_amount >= SafeCast<unsigned>(ing_amount_to_craft * batches)) {
             used_items[ing_item] -= ing_amount_to_craft * batches;
             continue;
         }
 
-        const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(data_manager, ing_name);
+        const auto* ingredient_recipe = proto::Recipe::GetItemRecipe(proto, ing_name);
         // Ingredient cannot be crafted
         if (ingredient_recipe == nullptr)
             return false;
@@ -869,7 +866,7 @@ bool game::PlayerData::Crafting::RecipeCanCraftR(const data::PrototypeManager& d
 
         // Is able to craft desired amount of ingredient recursively?
         assert(ingredient_recipe);
-        if (!RecipeCanCraftR(data_manager, used_items, *ingredient_recipe, ingredient_required_batches)) {
+        if (!RecipeCanCraftR(proto, used_items, *ingredient_recipe, ingredient_required_batches)) {
             return false;
         }
     }
@@ -877,9 +874,9 @@ bool game::PlayerData::Crafting::RecipeCanCraftR(const data::PrototypeManager& d
     return true;
 }
 
-bool game::PlayerData::Crafting::RecipeCanCraft(const data::PrototypeManager& data_manager,
-                                                const proto::Recipe& recipe,
-                                                const uint16_t batches) const {
+bool game::Player::Crafting::RecipeCanCraft(const data::PrototypeManager& proto,
+                                            const proto::Recipe& recipe,
+                                            const uint16_t batches) const {
     std::map<const proto::Item*, uint32_t> used_items;
-    return RecipeCanCraftR(data_manager, used_items, recipe, batches);
+    return RecipeCanCraftR(proto, used_items, recipe, batches);
 }

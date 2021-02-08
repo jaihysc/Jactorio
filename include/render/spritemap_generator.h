@@ -44,7 +44,7 @@ namespace jactorio::render
         RendererSprites() = default;
 
         ~RendererSprites() {
-            ClearSpritemaps();
+            Clear();
         }
 
         RendererSprites(const RendererSprites& other)     = delete;
@@ -68,18 +68,18 @@ namespace jactorio::render
     public:
         ///
         /// Frees all spritemap memory
-        void ClearSpritemaps();
+        void Clear();
 
         ///
         /// Creates a spritemap and stores it as a render::Texture
         /// \remark Requires OpenGL context
-        void GInitializeSpritemap(const data::PrototypeManager& data_manager,
+        void GInitializeSpritemap(const data::PrototypeManager& proto,
                                   proto::Sprite::SpriteGroup group,
                                   bool invert_sprites);
 
         ///
         /// Creates a spritemap
-        J_NODISCARD SpritemapData CreateSpritemap(const data::PrototypeManager& data_manager,
+        J_NODISCARD SpritemapData CreateSpritemap(const data::PrototypeManager& proto,
                                                   proto::Sprite::SpriteGroup group,
                                                   bool invert_sprites) const;
 

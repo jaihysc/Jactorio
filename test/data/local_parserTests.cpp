@@ -11,15 +11,15 @@ namespace jactorio::data
     class LocalParserTest : public testing::Test
     {
     protected:
-        PrototypeManager dataManager_;
+        PrototypeManager proto_;
     };
 
     TEST_F(LocalParserTest, Parse) {
         // Setup prototypes
-        dataManager_.SetDirectoryPrefix("test");
+        proto_.SetDirectoryPrefix("test");
 
-        auto& prototype  = dataManager_.AddProto<proto::Sprite>("test_tile");
-        auto& prototype2 = dataManager_.AddProto<proto::Sprite>("test_tile1");
+        auto& prototype  = proto_.Make<proto::Sprite>("test_tile");
+        auto& prototype2 = proto_.Make<proto::Sprite>("test_tile1");
 
         const std::string str =
             R"(test_tile=Test tile 1
@@ -28,16 +28,16 @@ namespace jactorio::data
 		
 				test_tile1=Test tile 2)";
 
-        LocalParse(dataManager_, str, "test");
+        LocalParse(proto_, str, "test");
 
         // Validate local was set
         EXPECT_EQ(prototype.GetLocalizedName(), "Test tile 1");
         EXPECT_EQ(prototype2.GetLocalizedName(), "Test tile 2");
     }
 
-    void ExpectErr(PrototypeManager& data_manager, const std::string& str) {
+    void ExpectErr(PrototypeManager& proto, const std::string& str) {
         try {
-            LocalParse(data_manager, str, "asdf");
+            LocalParse(proto, str, "asdf");
         }
         catch (proto::ProtoError&) {
             return;
@@ -54,9 +54,9 @@ namespace jactorio::data
         // Missing r val
         // Missing l val
 
-        ExpectErr(dataManager_, "graphics/g1=g1 graphics/r1=r1");
-        ExpectErr(dataManager_, "audio/s5=");
-        ExpectErr(dataManager_, "graphics/g2 g2");
-        ExpectErr(dataManager_, "    =r2");
+        ExpectErr(proto_, "graphics/g1=g1 graphics/r1=r1");
+        ExpectErr(proto_, "audio/s5=");
+        ExpectErr(proto_, "graphics/g2 g2");
+        ExpectErr(proto_, "    =r2");
     }
 } // namespace jactorio::data

@@ -10,10 +10,10 @@
 
 namespace jactorio::data
 {
-    class DataManagerTest : public testing::Test
+    class PrototypeManagerTest : public testing::Test
     {
     protected:
-        PrototypeManager dataManager_{};
+        PrototypeManager proto_;
 
         /// Returns true if element exists in vector
         static bool Contains(const std::vector<proto::Sprite*>& vector, const std::string& key) {
@@ -27,91 +27,90 @@ namespace jactorio::data
         }
     };
 
-    TEST_F(DataManagerTest, AddProto) {
-        auto& added_proto = dataManager_.AddProto<proto::Sprite>("raw-fish");
+    TEST_F(PrototypeManagerTest, Make) {
+        auto& added_proto = proto_.Make<proto::Sprite>("raw-fish");
 
-        const auto* proto = dataManager_.DataRawGet<proto::Sprite>("raw-fish");
+        const auto* proto = proto_.Get<proto::Sprite>("raw-fish");
         EXPECT_EQ(proto, &added_proto);
     }
 
-    TEST_F(DataManagerTest, DataRawAdd) {
-        dataManager_.SetDirectoryPrefix("test");
+    TEST_F(PrototypeManagerTest, Add) {
+        proto_.SetDirectoryPrefix("test");
 
-        dataManager_.AddProto<proto::Sprite>("raw-fish");
+        proto_.Make<proto::Sprite>("raw-fish");
 
-        const auto* proto = dataManager_.DataRawGet<proto::Sprite>("__test__/raw-fish");
+        const auto* sprite = proto_.Get<proto::Sprite>("__test__/raw-fish");
 
 
-        // data_manager should populate certain fields, see Prototype_base.h
         // Internal name of prototype should have been renamed to match data_raw name
         // Data category should also have been set to the one provided on add
-        EXPECT_EQ(proto->name, "__test__/raw-fish");
-        EXPECT_EQ(proto->GetCategory(), proto::Category::sprite);
-        EXPECT_EQ(proto->internalId, 1);
-        EXPECT_EQ(proto->order, 1);
+        EXPECT_EQ(sprite->name, "__test__/raw-fish");
+        EXPECT_EQ(sprite->GetCategory(), proto::Category::sprite);
+        EXPECT_EQ(sprite->internalId, 1);
+        EXPECT_EQ(sprite->order, 1);
         // Since no localized name was specified, it uses the internal name
-        EXPECT_EQ(proto->GetLocalizedName(), "__test__/raw-fish");
+        EXPECT_EQ(sprite->GetLocalizedName(), "__test__/raw-fish");
     }
 
-    TEST_F(DataManagerTest, DataRawAddDirectoryPrefix) {
-        dataManager_.SetDirectoryPrefix();
+    TEST_F(PrototypeManagerTest, AddDirectoryPrefix) {
+        proto_.SetDirectoryPrefix();
 
-        auto& prototype = dataManager_.AddProto<proto::Sprite>("raw-fish");
+        auto& prototype = proto_.Make<proto::Sprite>("raw-fish");
 
         {
-            const auto* proto = dataManager_.DataRawGet<proto::Sprite>("__has_prefix__/raw-fish");
+            const auto* proto = proto_.Get<proto::Sprite>("__has_prefix__/raw-fish");
             EXPECT_EQ(proto, nullptr);
         }
         {
-            const auto* proto = dataManager_.DataRawGet<proto::Sprite>("raw-fish");
+            const auto* proto = proto_.Get<proto::Sprite>("raw-fish");
             EXPECT_EQ(proto, &prototype);
         }
     }
 
-    TEST_F(DataManagerTest, DataRawAddIncrementId) {
-        dataManager_.AddProto<proto::Sprite>("raw-fish0");
-        dataManager_.AddProto<proto::Sprite>("raw-fish1");
-        dataManager_.AddProto<proto::Sprite>("raw-fish2");
-        dataManager_.AddProto<proto::Sprite>("raw-fish3");
+    TEST_F(PrototypeManagerTest, AddIncrementId) {
+        proto_.Make<proto::Sprite>("raw-fish0");
+        proto_.Make<proto::Sprite>("raw-fish1");
+        proto_.Make<proto::Sprite>("raw-fish2");
+        proto_.Make<proto::Sprite>("raw-fish3");
 
-        const auto* proto = dataManager_.DataRawGet<proto::Sprite>("raw-fish3");
+        const auto* proto = proto_.Get<proto::Sprite>("raw-fish3");
 
         EXPECT_EQ(proto->name, "raw-fish3");
         EXPECT_EQ(proto->GetCategory(), proto::Category::sprite);
         EXPECT_EQ(proto->internalId, 4);
     }
 
-    TEST_F(DataManagerTest, DataRawOverride) {
-        dataManager_.SetDirectoryPrefix("test");
+    TEST_F(PrototypeManagerTest, OverrideExisting) {
+        proto_.SetDirectoryPrefix("test");
 
         // Normal name
         {
-            dataManager_.AddProto<proto::Sprite>("small-electric-pole");
+            proto_.Make<proto::Sprite>("small-electric-pole");
 
             // Override
-            auto& prototype2 = dataManager_.AddProto<proto::Sprite>("small-electric-pole");
+            auto& prototype2 = proto_.Make<proto::Sprite>("small-electric-pole");
 
             // Get
-            const auto* proto = dataManager_.DataRawGet<proto::Sprite>("__test__/small-electric-pole");
+            const auto* proto = proto_.Get<proto::Sprite>("__test__/small-electric-pole");
 
             EXPECT_EQ(proto, &prototype2);
         }
 
-        dataManager_.ClearData();
+        proto_.Clear();
         // Empty name - Overriding is disabled for empty names, this is for destructor data_raw add
         // Instead, it will assign an auto generated name
         {
-            dataManager_.AddProto<proto::Sprite>("");
+            proto_.Make<proto::Sprite>("");
 
             // No Override
-            dataManager_.AddProto<proto::Sprite>("");
+            proto_.Make<proto::Sprite>("");
 
             // Get
-            const auto sprite_protos = dataManager_.DataRawGetAll<proto::Sprite>(proto::Category::sprite);
+            const auto sprite_protos = proto_.GetAll<proto::Sprite>(proto::Category::sprite);
             EXPECT_EQ(sprite_protos.size(), 2);
 
 
-            const auto* proto = dataManager_.DataRawGet<proto::Sprite>("");
+            const auto* proto = proto_.Get<proto::Sprite>("");
 
             // The empty name will be automatically assigned to something else
             EXPECT_EQ(proto, nullptr);
@@ -119,14 +118,15 @@ namespace jactorio::data
     }
 
 
-    TEST_F(DataManagerTest, LoadData) {
-        active_prototype_manager = &dataManager_;
-        dataManager_.SetDirectoryPrefix("asdf");
+    /// This test excluded in Valgrind
+    TEST_F(PrototypeManagerTest, Load) {
+        active_prototype_manager = &proto_;
+        proto_.SetDirectoryPrefix("asdf");
 
         // Load_data should set the directory prefix based on the subfolder
-        dataManager_.LoadData(PrototypeManager::kDataFolder);
+        proto_.Load(PrototypeManager::kDataFolder);
 
-        const auto* proto = dataManager_.DataRawGet<proto::Sprite>("__test__/test_tile");
+        const auto* proto = proto_.Get<proto::Sprite>("__test__/test_tile");
 
         if (proto == nullptr) {
             FAIL();
@@ -138,13 +138,13 @@ namespace jactorio::data
         EXPECT_EQ(proto->GetHeight(), 32);
     }
 
-    TEST_F(DataManagerTest, LoadDataInvalidPath) {
+    TEST_F(PrototypeManagerTest, LoadInvalidPath) {
         // Loading an invalid path will throw filesystem exception
-        dataManager_.SetDirectoryPrefix("asdf");
+        proto_.SetDirectoryPrefix("asdf");
 
         // Load_data should set the directory prefix based on the subfolder
         try {
-            dataManager_.LoadData("yeet");
+            proto_.Load("yeet");
             FAIL();
         }
         catch (std::filesystem::filesystem_error&) {
@@ -152,19 +152,19 @@ namespace jactorio::data
         }
     }
 
-    TEST_F(DataManagerTest, DataRawGetInvalid) {
+    TEST_F(PrototypeManagerTest, GetInvalid) {
         // Should return a nullptr if the item is non-existent
-        const auto* ptr = dataManager_.DataRawGet<proto::FrameworkBase>(proto::Category::sprite, "asdfjsadhfkjdsafhs");
+        const auto* ptr = proto_.Get<proto::FrameworkBase>(proto::Category::sprite, "asdfjsadhfkjdsafhs");
 
         EXPECT_EQ(ptr, nullptr);
     }
 
 
-    TEST_F(DataManagerTest, GetAllDataOfType) {
-        dataManager_.AddProto<proto::Sprite>("test_tile1");
-        dataManager_.AddProto<proto::Sprite>("test_tile2");
+    TEST_F(PrototypeManagerTest, GetAllOfType) {
+        proto_.Make<proto::Sprite>("test_tile1");
+        proto_.Make<proto::Sprite>("test_tile2");
 
-        const std::vector<proto::Sprite*> paths = dataManager_.DataRawGetAll<proto::Sprite>(proto::Category::sprite);
+        const std::vector<proto::Sprite*> paths = proto_.GetAll<proto::Sprite>(proto::Category::sprite);
 
         EXPECT_EQ(Contains(paths, "test_tile1"), true);
         EXPECT_EQ(Contains(paths, "test_tile2"), true);
@@ -172,16 +172,15 @@ namespace jactorio::data
         EXPECT_EQ(Contains(paths, "asdf"), false);
     }
 
-    TEST_F(DataManagerTest, GetAllSorted) {
+    TEST_F(PrototypeManagerTest, GetAllSorted) {
         // Retrieved vector should have prototypes sorted in order of addition, first one being added is first in vector
-        dataManager_.AddProto<proto::Sprite>("test_tile1");
-        dataManager_.AddProto<proto::Sprite>("test_tile2");
-        dataManager_.AddProto<proto::Sprite>("test_tile3");
-        dataManager_.AddProto<proto::Sprite>("test_tile4");
+        proto_.Make<proto::Sprite>("test_tile1");
+        proto_.Make<proto::Sprite>("test_tile2");
+        proto_.Make<proto::Sprite>("test_tile3");
+        proto_.Make<proto::Sprite>("test_tile4");
 
         // Get
-        const std::vector<proto::Sprite*> protos =
-            dataManager_.DataRawGetAllSorted<proto::Sprite>(proto::Category::sprite);
+        const std::vector<proto::Sprite*> protos = proto_.GetAllSorted<proto::Sprite>(proto::Category::sprite);
 
         EXPECT_EQ(protos[0]->name, "test_tile1");
         EXPECT_EQ(protos[1]->name, "test_tile2");
@@ -189,53 +188,53 @@ namespace jactorio::data
         EXPECT_EQ(protos[3]->name, "test_tile4");
     }
 
-    TEST_F(DataManagerTest, PrototypeExists) {
-        EXPECT_FALSE(dataManager_.FindProto("bunny"));
+    TEST_F(PrototypeManagerTest, PrototypeExists) {
+        EXPECT_FALSE(proto_.Find("bunny"));
 
-        dataManager_.AddProto<proto::Sprite>("aqua");
-        EXPECT_FALSE(dataManager_.FindProto("bunny"));
-        EXPECT_TRUE(dataManager_.FindProto("aqua"));
+        proto_.Make<proto::Sprite>("aqua");
+        EXPECT_FALSE(proto_.Find("bunny"));
+        EXPECT_TRUE(proto_.Find("aqua"));
     }
 
-    TEST_F(DataManagerTest, ClearData) {
-        dataManager_.AddProto<proto::Sprite>("small-electric-pole");
+    TEST_F(PrototypeManagerTest, Clear) {
+        proto_.Make<proto::Sprite>("small-electric-pole");
 
-        dataManager_.ClearData();
+        proto_.Clear();
 
         // Get
-        auto* data = dataManager_.DataRawGet<proto::Sprite>("small-electric-pole");
+        auto* data = proto_.Get<proto::Sprite>("small-electric-pole");
 
         EXPECT_EQ(data, nullptr);
 
         // Get all
-        const std::vector<proto::Sprite*> data_all = dataManager_.DataRawGetAll<proto::Sprite>(proto::Category::sprite);
+        const std::vector<proto::Sprite*> data_all = proto_.GetAll<proto::Sprite>(proto::Category::sprite);
 
         EXPECT_EQ(data_all.size(), 0);
     }
 
 
-    TEST_F(DataManagerTest, GenerateRelocationTable) {
-        auto& sprite_1 = dataManager_.AddProto<proto::Sprite>();
-        auto& sprite_2 = dataManager_.AddProto<proto::Sprite>();
-        auto& sprite_3 = dataManager_.AddProto<proto::Sprite>();
+    TEST_F(PrototypeManagerTest, GenerateRelocationTable) {
+        auto& sprite_1 = proto_.Make<proto::Sprite>();
+        auto& sprite_2 = proto_.Make<proto::Sprite>();
+        auto& sprite_3 = proto_.Make<proto::Sprite>();
 
-        dataManager_.GenerateRelocationTable();
+        proto_.GenerateRelocationTable();
 
-        EXPECT_EQ(&dataManager_.RelocationTableGet<proto::Sprite>(sprite_1.internalId), &sprite_1);
-        EXPECT_EQ(&dataManager_.RelocationTableGet<proto::Sprite>(sprite_2.internalId), &sprite_2);
-        EXPECT_EQ(&dataManager_.RelocationTableGet<proto::Sprite>(sprite_3.internalId), &sprite_3);
+        EXPECT_EQ(&proto_.RelocationTableGet<proto::Sprite>(sprite_1.internalId), &sprite_1);
+        EXPECT_EQ(&proto_.RelocationTableGet<proto::Sprite>(sprite_2.internalId), &sprite_2);
+        EXPECT_EQ(&proto_.RelocationTableGet<proto::Sprite>(sprite_3.internalId), &sprite_3);
     }
 
-    TEST_F(DataManagerTest, ClearRelocationTable) {
-        dataManager_.AddProto<proto::Sprite>();
-        dataManager_.GenerateRelocationTable();
+    TEST_F(PrototypeManagerTest, ClearRelocationTable) {
+        proto_.Make<proto::Sprite>();
+        proto_.GenerateRelocationTable();
 
-        dataManager_.ClearData();
+        proto_.Clear();
 
-        auto& sprite = dataManager_.AddProto<proto::Sprite>();
-        dataManager_.GenerateRelocationTable(); // Does not save sprite from earlier
+        auto& sprite = proto_.Make<proto::Sprite>();
+        proto_.GenerateRelocationTable(); // Does not save sprite from earlier
 
-        EXPECT_EQ(&dataManager_.RelocationTableGet<proto::Sprite>(1), &sprite);
-        EXPECT_EQ(dataManager_.GetDebugInfo().relocationTable.size(), 1);
+        EXPECT_EQ(&proto_.RelocationTableGet<proto::Sprite>(1), &sprite);
+        EXPECT_EQ(proto_.GetDebugInfo().relocationTable.size(), 1);
     }
 } // namespace jactorio::data

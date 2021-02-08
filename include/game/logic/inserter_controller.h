@@ -9,8 +9,8 @@
 
 namespace jactorio::game
 {
-    class WorldData;
-    class LogicData;
+    class World;
+    class Logic;
 
     // Inserter behavior
     //
@@ -36,7 +36,7 @@ namespace jactorio::game
     ///
     /// \param degree Current degree of inserter arm 0 <= degree <= 180
     /// \param target_distance Tiles to the location which the inserter picks up / drops items
-    double GetInserterArmOffset(core::TIntDegree degree, unsigned target_distance);
+    double GetInserterArmOffset(TIntDegree degree, unsigned target_distance);
 
     ///
     /// Gets the tile length of the inserter arm
@@ -48,12 +48,12 @@ namespace jactorio::game
     ///
     /// \param degree Current degree of inserter arm 0 <= degree <= 180
     /// \param target_distance Tiles to the location which the inserter picks up / drops items
-    double GetInserterArmLength(core::TIntDegree degree, unsigned target_distance);
+    double GetInserterArmLength(TIntDegree degree, unsigned target_distance);
 
 
     ///
     /// Updates inserter logic for a logic chunk
-    void InserterLogicUpdate(WorldData& world_data, LogicData& logic_data);
+    void InserterLogicUpdate(World& world, Logic& logic);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_INSERTER_CONTROLLER_H

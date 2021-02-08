@@ -9,15 +9,15 @@
 namespace jactorio::data
 {
     TEST(SerialPrototypePointer, Serialize) {
-        PrototypeManager proto_manager;
+        PrototypeManager proto;
 
-        auto& container = proto_manager.AddProto<proto::ContainerEntity>();
+        auto& container = proto.Make<proto::ContainerEntity>();
 
         SerialProtoPtr<const proto::ContainerEntity> original(&container);
 
 
-        proto_manager.GenerateRelocationTable();
-        active_prototype_manager = &proto_manager;
+        proto.GenerateRelocationTable();
+        active_prototype_manager = &proto;
 
         auto result = TestSerializeDeserialize(original);
 
@@ -38,17 +38,17 @@ namespace jactorio::data
     }
 
     TEST(SerialUniqueDataPointer, Serialize) {
-        UniqueDataManager unique_manager;
+        UniqueDataManager unique;
 
         proto::ContainerEntityData container;
         container.health = 42;
-        unique_manager.AssignId(container);
-        unique_manager.StoreRelocationEntry(container);
+        unique.AssignId(container);
+        unique.StoreRelocationEntry(container);
 
         const SerialUniqueDataPtr serial_ptr(&container);
 
 
-        active_unique_data_manager = &unique_manager;
+        active_unique_data_manager = &unique;
         auto result                = TestSerializeDeserialize(serial_ptr);
 
         EXPECT_EQ(result->internalId, 1);

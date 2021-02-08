@@ -20,7 +20,7 @@ namespace jactorio::game
 
             mutable proto::UpdateType type = proto::UpdateType::remove;
 
-            void OnTileUpdate(WorldData& /*world_data*/,
+            void OnTileUpdate(World& /*world*/,
                               const WorldCoord& emit_coords,
                               const WorldCoord& receive_coords,
                               const proto::UpdateType type) const override {
@@ -32,8 +32,8 @@ namespace jactorio::game
             }
         };
 
-        WorldData worldData_;
-        UpdateDispatcher& dispatcher_ = worldData_.updateDispatcher;
+        World world_;
+        UpdateDispatcher& dispatcher_ = world_.updateDispatcher;
 
         MockUpdateListener mock_{};
     };
@@ -41,7 +41,7 @@ namespace jactorio::game
     TEST_F(UpdateDispatcherTest, Register) {
         dispatcher_.Register(2, 3, 5, 6, mock_);
 
-        dispatcher_.Dispatch(worldData_, 3, 7, proto::UpdateType::place);
+        dispatcher_.Dispatch(world_, 3, 7, proto::UpdateType::place);
         EXPECT_EQ(mock_.emit.x, 0);
         EXPECT_EQ(mock_.emit.y, 0);
 
@@ -49,7 +49,7 @@ namespace jactorio::game
         EXPECT_EQ(mock_.receive.y, 0);
 
 
-        dispatcher_.Dispatch(worldData_, 5, 6, proto::UpdateType::remove);
+        dispatcher_.Dispatch(world_, 5, 6, proto::UpdateType::remove);
 
         EXPECT_EQ(mock_.emit.x, 5);
         EXPECT_EQ(mock_.emit.y, 6);
@@ -68,7 +68,7 @@ namespace jactorio::game
         dispatcher_.Unregister(entry);
 
         // 1 registered, 1 unregistered
-        dispatcher_.Dispatch(worldData_, 5, 6, proto::UpdateType::place);
+        dispatcher_.Dispatch(world_, 5, 6, proto::UpdateType::place);
         EXPECT_EQ(mock_.emit.x, 5);
         EXPECT_EQ(mock_.emit.y, 6);
 
@@ -78,8 +78,8 @@ namespace jactorio::game
     }
 
     TEST_F(UpdateDispatcherTest, RegisterNonExistent) {
-        dispatcher_.Dispatch(worldData_, 3, 7, proto::UpdateType::place);
-        dispatcher_.Dispatch(worldData_, 5, 6, proto::UpdateType::remove);
+        dispatcher_.Dispatch(world_, 3, 7, proto::UpdateType::place);
+        dispatcher_.Dispatch(world_, 5, 6, proto::UpdateType::remove);
 
         EXPECT_EQ(dispatcher_.GetDebugInfo().storedEntries.size(), 0);
     }
@@ -92,15 +92,15 @@ namespace jactorio::game
     }
 
     TEST_F(UpdateDispatcherTest, Serialize) {
-        data::PrototypeManager proto_manager;
-        auto& registered_mock          = proto_manager.AddProto<MockUpdateListener>();
-        data::active_prototype_manager = &proto_manager; // Needs to access prototype manager to deserialize
+        data::PrototypeManager proto;
+        auto& registered_mock          = proto.Make<MockUpdateListener>();
+        data::active_prototype_manager = &proto; // Needs to access prototype manager to deserialize
 
         UpdateDispatcher original;
         original.Register({1, 2}, {3, 4}, registered_mock);
         original.Register({5, 6}, {7, 8}, registered_mock);
 
-        proto_manager.GenerateRelocationTable();
+        proto.GenerateRelocationTable();
         const auto result = TestSerializeDeserialize<UpdateDispatcher>(original);
 
         const auto& stored_entries = result.GetDebugInfo().storedEntries;

@@ -92,48 +92,46 @@ namespace jactorio::proto
 
         void OnRDrawUniqueData(render::RendererLayer& layer,
                                const SpriteUvCoordsT& uv_coords,
-                               const core::Position2<float>& pixel_offset,
+                               const Position2<float>& pixel_offset,
                                const UniqueDataBase* unique_data) const override;
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::WorldData& world_data,
-                                               const WorldCoord& world_coords) const override;
+                                               game::World& world,
+                                               const WorldCoord& coord) const override;
 
         ///
         /// \param orientation Points towards dropoff
-        void OnBuild(game::WorldData& world_data,
-                     game::LogicData& logic_data,
-                     const WorldCoord& world_coords,
+        void OnBuild(game::World& world,
+                     game::Logic& logic,
+                     const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
 
-        void OnTileUpdate(game::WorldData& world_data,
-                          const WorldCoord& emit_coords,
-                          const WorldCoord& receive_coords,
+        void OnTileUpdate(game::World& world,
+                          const WorldCoord& emit_coord,
+                          const WorldCoord& receive_coord,
                           UpdateType type) const override;
 
-        void OnRemove(game::WorldData& world_data,
-                      game::LogicData& logic_data,
-                      const WorldCoord& world_coords,
+        void OnRemove(game::World& world,
+                      game::Logic& logic,
+                      const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 
 
-        void OnDeserialize(game::WorldData& world_data,
-                           const WorldCoord& world_coord,
+        void OnDeserialize(game::World& world,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
         void ValidatedPostLoad() override;
 
     private:
-        J_NODISCARD WorldCoord GetDropoffCoord(WorldCoord world_coord, Orientation orientation) const;
-        J_NODISCARD WorldCoord GetPickupCoord(WorldCoord world_coord, Orientation orientation) const;
+        J_NODISCARD WorldCoord GetDropoffCoord(WorldCoord coord, Orientation orientation) const;
+        J_NODISCARD WorldCoord GetPickupCoord(WorldCoord coord, Orientation orientation) const;
 
-        void InitPickupDropoff(game::WorldData& world_data,
-                               const WorldCoord& world_coord,
-                               Orientation orientation) const;
+        void InitPickupDropoff(game::World& world, const WorldCoord& coord, Orientation orientation) const;
     };
 } // namespace jactorio::proto
 

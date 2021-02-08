@@ -12,7 +12,7 @@ namespace jactorio
     }
     namespace game
     {
-        class WorldData;
+        class World;
 
     }
 } // namespace jactorio

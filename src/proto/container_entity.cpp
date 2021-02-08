@@ -2,15 +2,15 @@
 
 #include "proto/container_entity.h"
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "gui/menus.h"
 #include "proto/sprite.h"
 
 using namespace jactorio;
 
-void proto::ContainerEntity::OnBuild(game::WorldData& /*world_data*/,
-                                     game::LogicData& /*logic_data*/,
-                                     const WorldCoord& /*world_coords*/,
+void proto::ContainerEntity::OnBuild(game::World& /*world*/,
+                                     game::Logic& /*logic*/,
+                                     const WorldCoord& /*coord*/,
                                      game::ChunkTileLayer& tile_layer,
                                      Orientation /*orientation*/) const {
     tile_layer.MakeUniqueData<ContainerEntityData>(inventorySize);

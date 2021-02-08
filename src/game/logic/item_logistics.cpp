@@ -10,12 +10,12 @@
 
 #include "game/logic/inserter_controller.h"
 #include "game/logic/inventory_controller.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 
 using namespace jactorio;
 
-bool game::ItemDropOff::Initialize(WorldData& world_data, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-    auto* tile = world_data.GetTile(world_x, world_y);
+bool game::ItemDropOff::Initialize(World& world, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
+    auto* tile = world.GetTile(world_x, world_y);
     assert(tile != nullptr);
 
     auto& layer = tile->GetLayer(TileLayer::entity);
@@ -206,8 +206,7 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const
             slot.count += params.itemStack.count;
 
             assert(targetProtoData_);
-            static_cast<const proto::AssemblyMachine*>(targetProtoData_)
-                ->TryBeginCrafting(params.logicData, machine_data);
+            static_cast<const proto::AssemblyMachine*>(targetProtoData_)->TryBeginCrafting(params.logic, machine_data);
             return true;
         }
     }
@@ -216,10 +215,8 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const
 
 // ======================================================================
 
-bool game::InserterPickup::Initialize(WorldData& world_data,
-                                      const WorldCoordAxis world_x,
-                                      const WorldCoordAxis world_y) {
-    auto* tile = world_data.GetTile(world_x, world_y);
+bool game::InserterPickup::Initialize(World& world, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
+    auto* tile = world.GetTile(world_x, world_y);
     assert(tile != nullptr);
 
     auto& layer = tile->GetLayer(TileLayer::entity);
@@ -366,7 +363,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupAssemblyMachine(c
 
     const auto* asm_machine = static_cast<const proto::AssemblyMachine*>(targetProtoData_);
     assert(asm_machine);
-    asm_machine->TryBeginCrafting(params.logicData, machine_data);
+    asm_machine->TryBeginCrafting(params.logic, machine_data);
 
     return {true, {product_stack.item, params.amount}};
 }
@@ -436,7 +433,7 @@ std::pair<bool, proto::LineDistT> game::InserterPickup::GetBeltPickupProps(const
 
     auto pickup_offset = proto::LineDistT(
         line_data.structIndex +
-        GetInserterArmOffset(core::SafeCast<core::TIntDegree>(params.degree.getAsInteger()), params.inserterTileReach));
+        GetInserterArmOffset(SafeCast<TIntDegree>(params.degree.getAsInteger()), params.inserterTileReach));
 
     return {use_line_left, pickup_offset};
 }

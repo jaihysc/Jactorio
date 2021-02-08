@@ -13,8 +13,8 @@ namespace jactorio
 
     namespace game
     {
-        class WorldData;
-        class LogicData;
+        class World;
+        class Logic;
     } // namespace game
 } // namespace jactorio
 
@@ -35,10 +35,10 @@ namespace jactorio::proto
 
         ///
         /// The callback requested at the specified game tick was reached
-        /// \param world_data world data containing deferred timer which dispatched this callback
+        /// \param world world data containing deferred timer which dispatched this callback
         /// \param unique_data Unique data the callback was registered with
-        virtual void OnDeferTimeElapsed(game::WorldData& world_data,
-                                        game::LogicData& logic_data,
+        virtual void OnDeferTimeElapsed(game::World& world,
+                                        game::Logic& logic,
                                         UniqueDataBase* unique_data) const = 0;
     };
 } // namespace jactorio::proto

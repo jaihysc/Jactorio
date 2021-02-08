@@ -45,7 +45,7 @@ namespace jactorio::data
         /// Gets prototype at specified name, cast to T
         /// \return nullptr if the specified prototype does not exist
         template <typename TProto>
-        TProto* DataRawGet(const std::string& iname) const noexcept;
+        TProto* Get(const std::string& iname) const noexcept;
 
         ///
         /// Gets prototype at specified category and name, cast to T
@@ -53,21 +53,21 @@ namespace jactorio::data
         ///
         /// Abstract types allowed for Python API
         template <typename TProto>
-        TProto* DataRawGet(proto::Category data_category, const std::string& iname) const noexcept;
+        TProto* Get(proto::Category data_category, const std::string& iname) const noexcept;
 
 
         ///
         /// Gets pointers to all data of specified data_type
         template <typename TProto>
-        std::vector<TProto*> DataRawGetAll(proto::Category type) const;
+        std::vector<TProto*> GetAll(proto::Category type) const;
 
         ///
         /// Gets pointers to all data of specified data_type, sorted by Prototype_base.order
         template <typename TProto>
-        std::vector<TProto*> DataRawGetAllSorted(proto::Category type) const;
+        std::vector<TProto*> GetAllSorted(proto::Category type) const;
 
 
-        // Add
+        // Make
 
         ///
         /// Sets the prefix which will be added to all internal names
@@ -80,15 +80,15 @@ namespace jactorio::data
         /// Create anonymous prototype TProto
         /// \return Created prototype
         template <typename TProto>
-        TProto& AddProto() {
-            return AddProto<TProto>("");
+        TProto& Make() {
+            return Make<TProto>("");
         }
 
         ///
         /// Forwards TArgs to create prototype TProto
         /// \return Created prototype
         template <typename TProto, typename... TArgs>
-        TProto& AddProto(const std::string& iname, TArgs&&... args);
+        TProto& Make(const std::string& iname, TArgs&&... args);
 
 
         // Utility
@@ -97,23 +97,23 @@ namespace jactorio::data
         /// Searches through all categories for prototype
         /// \return pointer to prototype, nullptr if not found
         template <typename TProto = proto::FrameworkBase>
-        J_NODISCARD TProto* FindProto(const std::string& iname) const noexcept;
+        J_NODISCARD TProto* Find(const std::string& iname) const noexcept;
 
 
         // ======================================================================
 
 
         ///
-        /// Loads data and their properties from data/ folder,
-        /// \remark In normal usage, data access methods can be used only after calling this
-        /// \param data_folder_path Do not include a / at the end (Valid usage: dc/xy/data)
+        /// Loads prototypes and their properties from provided directory path
+        /// \remark This is how the game loads prototypes normally
+        /// \param folder_path Do not include a / at the end (Valid usage: dc/xy/data)
         /// \exception ProtoError Prototype validation failed or Pybind error
-        void LoadData(const std::string& data_folder_path);
+        void Load(const std::string& folder_path);
 
 
         ///
-        /// Frees all pointer data within data_raw, clears data_raw
-        void ClearData();
+        /// Clears all prototype data
+        void Clear();
 
 
         // ======================================================================
@@ -138,7 +138,7 @@ namespace jactorio::data
         /// Adds a prototype
         /// \param iname Internal name of prototype
         /// \param prototype Prototype pointer, takes ownership, must be unique for each added
-        void DataRawAdd(const std::string& iname, proto::FrameworkBase* prototype);
+        void Add(const std::string& iname, proto::FrameworkBase* prototype);
 
 
         struct DebugInfo
@@ -161,15 +161,15 @@ namespace jactorio::data
     };
 
     template <typename TProto>
-    TProto* PrototypeManager::DataRawGet(const std::string& iname) const noexcept {
+    TProto* PrototypeManager::Get(const std::string& iname) const noexcept {
         static_assert(IsValidPrototype<TProto>::value);
         static_assert(TProto::category != proto::Category::none);
 
-        return DataRawGet<TProto>(TProto::category, iname);
+        return Get<TProto>(TProto::category, iname);
     }
 
     template <typename TProto>
-    TProto* PrototypeManager::DataRawGet(const proto::Category data_category, const std::string& iname) const noexcept {
+    TProto* PrototypeManager::Get(const proto::Category data_category, const std::string& iname) const noexcept {
         static_assert(std::is_base_of_v<proto::FrameworkBase, TProto>);
 
         const auto* category = &dataRaw_[static_cast<uint16_t>(data_category)];
@@ -185,7 +185,7 @@ namespace jactorio::data
     }
 
     template <typename TProto>
-    std::vector<TProto*> PrototypeManager::DataRawGetAll(const proto::Category type) const {
+    std::vector<TProto*> PrototypeManager::GetAll(const proto::Category type) const {
         static_assert(IsValidPrototype<TProto>::value);
 
         auto category_items = dataRaw_[static_cast<uint16_t>(type)];
@@ -202,10 +202,10 @@ namespace jactorio::data
     }
 
     template <typename TProto>
-    std::vector<TProto*> PrototypeManager::DataRawGetAllSorted(const proto::Category type) const {
+    std::vector<TProto*> PrototypeManager::GetAllSorted(const proto::Category type) const {
         static_assert(IsValidPrototype<TProto>::value);
 
-        std::vector<TProto*> items = DataRawGetAll<TProto>(type);
+        std::vector<TProto*> items = GetAll<TProto>(type);
 
         // Sort
         std::sort(items.begin(), items.end(), [](proto::FrameworkBase* a, proto::FrameworkBase* b) {
@@ -215,18 +215,18 @@ namespace jactorio::data
     }
 
     template <typename TProto, typename... TArgs>
-    TProto& PrototypeManager::AddProto(const std::string& iname, TArgs&&... args) {
+    TProto& PrototypeManager::Make(const std::string& iname, TArgs&&... args) {
         static_assert(IsValidPrototype<TProto>::value);
 
         auto* proto = new TProto(std::forward<TArgs>(args)...);
         assert(proto != nullptr);
 
-        DataRawAdd(iname, proto);
+        Add(iname, proto);
         return *proto;
     }
 
     template <typename TProto>
-    TProto* PrototypeManager::FindProto(const std::string& iname) const noexcept {
+    TProto* PrototypeManager::Find(const std::string& iname) const noexcept {
         static_assert(std::is_base_of_v<proto::FrameworkBase, TProto>);
 
         for (const auto& map : dataRaw_) {

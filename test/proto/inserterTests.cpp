@@ -12,39 +12,39 @@ namespace jactorio::proto
     class InserterTest : public testing::Test
     {
     protected:
-        game::WorldData worldData_;
-        game::LogicData logicData_;
+        game::World world_;
+        game::Logic logic_;
 
         Inserter inserterProto_;
         ContainerEntity containerProto_;
 
         void SetUp() override {
-            worldData_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk(0, 0);
         }
 
         game::ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
-            return TestSetupInserter(worldData_, logicData_, coords, orientation, inserterProto_);
+            return TestSetupInserter(world_, logic_, coords, orientation, inserterProto_);
         }
     };
 
     TEST_F(InserterTest, OnBuildCreateDataInvalid) {
         BuildInserter({1, 1}, Orientation::right);
 
-        auto& layer         = worldData_.GetTile({1, 1})->GetLayer(game::TileLayer::entity);
+        auto& layer         = world_.GetTile({1, 1})->GetLayer(game::TileLayer::entity);
         auto* inserter_data = layer.GetUniqueData<InserterData>();
         ASSERT_TRUE(inserter_data);
 
         EXPECT_DOUBLE_EQ(inserter_data->rotationDegree.getAsDouble(), 180.);
 
         // Does not have both pickup + dropoff, not added
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
     }
 
     TEST_F(InserterTest, FindPickupDropoffOnBuild) {
         // Finding pickup and dropoff tiles
 
-        TestSetupContainer(worldData_, {1, 1}, Orientation::up, containerProto_);
-        TestSetupContainer(worldData_, {3, 1}, Orientation::up, containerProto_);
+        TestSetupContainer(world_, {1, 1}, Orientation::up, containerProto_);
+        TestSetupContainer(world_, {3, 1}, Orientation::up, containerProto_);
 
         auto& layer = BuildInserter({2, 1}, Orientation::left);
 
@@ -62,19 +62,19 @@ namespace jactorio::proto
 
 
         // Dropoff
-        TestSetupContainer(worldData_, {1, 1}, Orientation::up, containerProto_);
-        worldData_.UpdateDispatch({1, 1}, UpdateType::place);
+        TestSetupContainer(world_, {1, 1}, Orientation::up, containerProto_);
+        world_.UpdateDispatch({1, 1}, UpdateType::place);
 
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
 
 
         // Pickup
-        TestSetupContainer(worldData_, {3, 1}, Orientation::up, containerProto_);
-        worldData_.UpdateDispatch({3, 1}, UpdateType::place);
+        TestSetupContainer(world_, {3, 1}, Orientation::up, containerProto_);
+        world_.UpdateDispatch({3, 1}, UpdateType::place);
 
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 1); // Added since both are now valid
+        EXPECT_EQ(world_.LogicGetChunks().size(), 1); // Added since both are now valid
     }
 
     TEST_F(InserterTest, FindPickupDropoffFar) {
@@ -91,48 +91,48 @@ namespace jactorio::proto
         // Dropoff
         AssemblyMachine asm_machine;
         asm_machine.SetDimensions(2, 2);
-        TestSetupAssemblyMachine(worldData_, {1, 0}, Orientation::up, asm_machine);
-        worldData_.UpdateDispatch({2, 0}, UpdateType::place);
+        TestSetupAssemblyMachine(world_, {1, 0}, Orientation::up, asm_machine);
+        world_.UpdateDispatch({2, 0}, UpdateType::place);
 
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
 
 
         // Pickup
-        TestSetupContainer(worldData_, {2, 4}, Orientation::up, containerProto_);
-        worldData_.UpdateDispatch({2, 4}, UpdateType::place);
+        TestSetupContainer(world_, {2, 4}, Orientation::up, containerProto_);
+        world_.UpdateDispatch({2, 4}, UpdateType::place);
 
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 1); // Added since both are now valid
+        EXPECT_EQ(world_.LogicGetChunks().size(), 1); // Added since both are now valid
     }
 
     TEST_F(InserterTest, RemovePickupDropoff) {
         // Finding pickup and dropoff tiles
 
-        TestSetupContainer(worldData_, {3, 1}, Orientation::up, containerProto_);
+        TestSetupContainer(world_, {3, 1}, Orientation::up, containerProto_);
 
         auto& layer = BuildInserter({2, 1}, Orientation::left);
         EXPECT_TRUE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
         EXPECT_FALSE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
 
 
-        TestSetupContainer(worldData_, {1, 1}, Orientation::up, containerProto_);
-        worldData_.UpdateDispatch({1, 1}, UpdateType::place);
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 1);
+        TestSetupContainer(world_, {1, 1}, Orientation::up, containerProto_);
+        world_.UpdateDispatch({1, 1}, UpdateType::place);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 1);
 
 
         // Removed chest
 
-        worldData_.GetTile({3, 1})->GetLayer(game::TileLayer::entity).Clear();
-        worldData_.UpdateDispatch({3, 1}, UpdateType::place);
+        world_.GetTile({3, 1})->GetLayer(game::TileLayer::entity).Clear();
+        world_.UpdateDispatch({3, 1}, UpdateType::place);
 
-        worldData_.GetTile({1, 1})->GetLayer(game::TileLayer::entity).Clear();
-        worldData_.UpdateDispatch({1, 1}, UpdateType::place);
+        world_.GetTile({1, 1})->GetLayer(game::TileLayer::entity).Clear();
+        world_.UpdateDispatch({1, 1}, UpdateType::place);
 
         EXPECT_FALSE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
         EXPECT_FALSE(layer.GetUniqueData<InserterData>()->dropoff.IsInitialized());
 
-        EXPECT_EQ(worldData_.LogicGetChunks().size(), 0);
+        EXPECT_EQ(world_.LogicGetChunks().size(), 0);
     }
 
     TEST_F(InserterTest, Serialize) {
@@ -160,12 +160,12 @@ namespace jactorio::proto
 
         auto& inserter_layer = BuildInserter({5, 1}, Orientation::right);
 
-        TestSetupContainer(worldData_, {2, 1}, Orientation::up, containerProto_); // Pickup
-        TestSetupContainer(worldData_, {8, 1}, Orientation::up, containerProto_); // Dropoff
+        TestSetupContainer(world_, {2, 1}, Orientation::up, containerProto_); // Pickup
+        TestSetupContainer(world_, {8, 1}, Orientation::up, containerProto_); // Dropoff
 
         // Should locate pickup and dropoff
 
-        worldData_.DeserializePostProcess();
+        world_.DeserializePostProcess();
 
         auto* inserter_data = inserter_layer.GetUniqueData<InserterData>();
 

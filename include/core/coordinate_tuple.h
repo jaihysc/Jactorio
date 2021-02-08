@@ -10,7 +10,7 @@
 
 #include <cereal/types/base_class.hpp>
 
-namespace jactorio::core
+namespace jactorio
 {
     template <typename TVal>
     struct Position1
@@ -111,6 +111,6 @@ namespace jactorio::core
         TPosition topLeft;
         TPosition bottomRight;
     };
-} // namespace jactorio::core
+} // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_COORDINATE_TUPLE_H

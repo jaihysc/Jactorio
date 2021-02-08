@@ -39,7 +39,7 @@ game::ChunkTile& game::Chunk::GetCTile(const ChunkTileCoordAxis x, const ChunkTi
     using IndexT = uint16_t;
 
     static_assert(std::numeric_limits<IndexT>::max() > kChunkArea);
-    return tiles_[core::SafeCast<IndexT>(y) * kChunkWidth + x];
+    return tiles_[SafeCast<IndexT>(y) * kChunkWidth + x];
 }
 
 const game::ChunkTile& game::Chunk::GetCTile(const ChunkTileCoordAxis x, const ChunkTileCoordAxis y) const {

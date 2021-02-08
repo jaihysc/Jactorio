@@ -17,9 +17,9 @@
 #include "game/input/mouse_selection.h"
 #include "game/logic/conveyor_utility.h"
 #include "game/logic/inventory_controller.h"
-#include "game/logic/logic_data.h"
-#include "game/player/player_data.h"
-#include "game/world/world_data.h"
+#include "game/logic/logic.h"
+#include "game/player/player.h"
+#include "game/world/world.h"
 
 #include "gui/colors.h"
 #include "gui/menus.h"
@@ -38,14 +38,14 @@ bool show_inserter_info = false;
 bool show_world_info = false;
 
 void gui::DebugMenuLogic(GameWorlds& worlds,
-                         game::LogicData& logic,
-                         game::PlayerData& player,
-                         const data::PrototypeManager& data_manager) {
+                         game::Logic& logic,
+                         game::Player& player,
+                         const data::PrototypeManager& proto) {
     if (show_tile_info)
         DebugTileInfo(worlds, player);
 
     if (show_conveyor_info)
-        DebugConveyorInfo(worlds, player, data_manager);
+        DebugConveyorInfo(worlds, player, proto);
 
     if (show_inserter_info)
         DebugInserterInfo(worlds, player);
@@ -57,7 +57,7 @@ void gui::DebugMenuLogic(GameWorlds& worlds,
         DebugTimings();
 
     if (show_item_spawner_window)
-        DebugItemSpawner(player, data_manager);
+        DebugItemSpawner(player, proto);
 
     if (show_world_info) {
         DebugWorldInfo(worlds, player);
@@ -135,8 +135,6 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
 }
 
 void gui::DebugTimings() {
-    using namespace core;
-
     ImGuard guard{};
     guard.Begin("Timings");
     ImGui::Text("%fms (%.1f/s) Frame time", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -147,11 +145,9 @@ void gui::DebugTimings() {
 }
 
 int give_amount  = 100;
-int new_inv_size = game::PlayerData::Inventory::kDefaultInventorySize;
+int new_inv_size = game::Player::Inventory::kDefaultInventorySize;
 
-void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeManager& data_manager) {
-    using namespace core;
-
+void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& proto) {
     ImGuard guard{};
     guard.Begin("Item spawner");
 
@@ -160,7 +156,7 @@ void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeM
         give_amount = 1;
 
     if (ImGui::Button("Clear inventory")) {
-        for (auto& i : player_data.inventory.inventory) {
+        for (auto& i : player.inventory.inventory) {
             i = {nullptr, 0};
         }
     }
@@ -169,27 +165,27 @@ void gui::DebugItemSpawner(game::PlayerData& player_data, const data::PrototypeM
     if (new_inv_size < 0)
         new_inv_size = 0;
 
-    if (new_inv_size != player_data.inventory.inventory.size()) {
-        player_data.inventory.inventory.resize(new_inv_size);
+    if (new_inv_size != player.inventory.inventory.size()) {
+        player.inventory.inventory.resize(new_inv_size);
     }
 
 
     ImGui::Separator();
 
 
-    auto game_items = data_manager.DataRawGetAll<proto::Item>(proto::Category::item);
+    auto game_items = proto.GetAll<proto::Item>(proto::Category::item);
     for (auto& item : game_items) {
         ImGui::PushID(item->name.c_str());
 
         if (ImGui::Button(item->GetLocalizedName().c_str())) {
-            proto::ItemStack item_stack = {item, core::SafeCast<proto::Item::StackCount>(give_amount)};
-            game::AddStack(player_data.inventory.inventory, item_stack);
+            proto::ItemStack item_stack = {item, SafeCast<proto::Item::StackCount>(give_amount)};
+            game::AddStack(player.inventory.inventory, item_stack);
         }
         ImGui::PopID();
     }
 }
 
-void gui::DebugTileInfo(GameWorlds& worlds, game::PlayerData& player) {
+void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     auto& world = worlds[player.world.GetId()];
     auto* tile  = world.GetTile(player.world.GetMouseTileCoords());
 
@@ -227,19 +223,19 @@ WorldCoord last_valid_line_segment{};
 bool use_last_valid_line_segment = true;
 bool show_conveyor_structs       = false;
 
-void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& data_manager) {
+void ShowConveyorSegments(game::World& world, const data::PrototypeManager& proto) {
     constexpr game::OverlayLayer draw_overlay_layer = game::OverlayLayer::debug;
 
     // Sprite representing the update point
-    const auto* sprite_stop         = data_manager.DataRawGet<proto::Sprite>("__core__/rect-red");
-    const auto* sprite_moving       = data_manager.DataRawGet<proto::Sprite>("__core__/rect-green");
-    const auto* sprite_left_moving  = data_manager.DataRawGet<proto::Sprite>("__core__/rect-aqua");
-    const auto* sprite_right_moving = data_manager.DataRawGet<proto::Sprite>("__core__/rect-pink");
+    const auto* sprite_stop         = proto.Get<proto::Sprite>("__core__/rect-red");
+    const auto* sprite_moving       = proto.Get<proto::Sprite>("__core__/rect-green");
+    const auto* sprite_left_moving  = proto.Get<proto::Sprite>("__core__/rect-aqua");
+    const auto* sprite_right_moving = proto.Get<proto::Sprite>("__core__/rect-pink");
 
-    const auto* sprite_up    = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-up");
-    const auto* sprite_right = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-right");
-    const auto* sprite_down  = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-down");
-    const auto* sprite_left  = data_manager.DataRawGet<proto::Sprite>("__core__/arrow-left");
+    const auto* sprite_up    = proto.Get<proto::Sprite>("__core__/arrow-up");
+    const auto* sprite_right = proto.Get<proto::Sprite>("__core__/arrow-right");
+    const auto* sprite_down  = proto.Get<proto::Sprite>("__core__/arrow-down");
+    const auto* sprite_left  = proto.Get<proto::Sprite>("__core__/arrow-left");
 
     // Get all update points and add it to the chunk's objects for drawing
     for (auto* chunk : world.LogicGetChunks()) {
@@ -332,19 +328,19 @@ void ShowConveyorSegments(game::WorldData& world, const data::PrototypeManager& 
 
             object_layer.emplace_back(
                 game::OverlayElement{*direction_sprite,
-                                     {core::SafeCast<float>(pos_x), core::SafeCast<float>(pos_y)},
-                                     {core::SafeCast<float>(segment_len_x), core::SafeCast<float>(segment_len_y)},
+                                     {SafeCast<float>(pos_x), SafeCast<float>(pos_y)},
+                                     {SafeCast<float>(segment_len_x), SafeCast<float>(segment_len_y)},
                                      draw_overlay_layer});
             object_layer.emplace_back(
                 game::OverlayElement{*outline_sprite,
-                                     {core::SafeCast<float>(pos_x), core::SafeCast<float>(pos_y)},
-                                     {core::SafeCast<float>(segment_len_x), core::SafeCast<float>(segment_len_y)},
+                                     {SafeCast<float>(pos_x), SafeCast<float>(pos_y)},
+                                     {SafeCast<float>(segment_len_x), SafeCast<float>(segment_len_y)},
                                      draw_overlay_layer});
         }
     }
 }
 
-void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const data::PrototypeManager& proto_manager) {
+void gui::DebugConveyorInfo(GameWorlds& worlds, game::Player& player, const data::PrototypeManager& proto) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard{};
@@ -371,7 +367,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
     ImGui::Checkbox("Use last valid tile", &use_last_valid_line_segment);
 
     if (show_conveyor_structs)
-        ShowConveyorSegments(world, proto_manager);
+        ShowConveyorSegments(world, proto);
 
     if (con_data != nullptr) {
         last_valid_line_segment = selected_tile;
@@ -434,10 +430,10 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
         // Appending item
         const std::string iname = "__base__/wooden-chest-item";
         if (ImGui::Button("Append Item Left"))
-            segment.AppendItem(true, 0.2, *proto_manager.DataRawGet<proto::Item>(iname));
+            segment.AppendItem(true, 0.2, *proto.Get<proto::Item>(iname));
 
         if (ImGui::Button("Append Item Right"))
-            segment.AppendItem(false, 0.2, *proto_manager.DataRawGet<proto::Item>(iname));
+            segment.AppendItem(false, 0.2, *proto.Get<proto::Item>(iname));
 
 
         // Display items
@@ -456,7 +452,7 @@ void gui::DebugConveyorInfo(GameWorlds& worlds, game::PlayerData& player, const 
     }
 }
 
-void gui::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
+void gui::DebugInserterInfo(GameWorlds& worlds, game::Player& player) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard{};
@@ -493,7 +489,7 @@ void gui::DebugInserterInfo(GameWorlds& worlds, game::PlayerData& player) {
     ImGui::Text("Dropoff %s", inserter_data.dropoff.IsInitialized() ? "true" : "false");
 }
 
-void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
+void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
     auto& world = worlds[player.world.GetId()];
 
     ImGuard guard;
@@ -514,7 +510,7 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
 
             if (ImGui::TreeNode(reinterpret_cast<void*>(id), "%d %d | %lld", world_x, world_y, entry.second.size())) {
 
-                core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+                ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
                 for (const auto& callback : entry.second) {
                     ImGui::Text("%d %d %s",
@@ -545,8 +541,8 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
         constexpr int chunk_radius = 3; // Chunk radius around the player to display information for
         ImGui::Text("Radius of %d around the player", chunk_radius);
 
-        const auto start_chunk_x = game::WorldData::WorldCToChunkC(player.world.GetPositionX());
-        const auto start_chunk_y = game::WorldData::WorldCToChunkC(player.world.GetPositionY());
+        const auto start_chunk_x = game::World::WorldCToChunkC(player.world.GetPositionX());
+        const auto start_chunk_y = game::World::WorldCToChunkC(player.world.GetPositionY());
 
         for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
             for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {
@@ -557,12 +553,12 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
 
                 // Unique id to identify tree node
                 const auto* node_id =
-                    reinterpret_cast<void*>(core::LossyCast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
+                    reinterpret_cast<void*>(LossyCast<uint64_t>(chunk_y) * chunk_radius * 2 + chunk_x);
 
                 const bool is_player_chunk = chunk_x == start_chunk_x && chunk_y == start_chunk_y;
 
                 if (ImGui::TreeNode(node_id, "%s %d %d", is_player_chunk ? ">" : " ", chunk_x, chunk_y)) {
-                    core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+                    ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
                     show_chunk_info(*chunk);
                 }
             }
@@ -570,14 +566,14 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::PlayerData& player) {
     }
 }
 
-void gui::DebugLogicInfo(const game::LogicData& logic_data) {
+void gui::DebugLogicInfo(const game::Logic& logic) {
     ImGuard guard;
     guard.Begin("Logic info");
 
-    const auto timer_info = logic_data.deferralTimer.GetDebugInfo();
+    const auto timer_info = logic.deferralTimer.GetDebugInfo();
 
     ImGui::Text("Deferral timers: %llu", timer_info.callbacks.size());
-    ImGui::Text("Current game tick: %llu", logic_data.GameTick());
+    ImGui::Text("Current game tick: %llu", logic.GameTick());
 
     // Format of data displayed
     ImGui::Text("Due game tick > Registered prototype");
@@ -587,15 +583,15 @@ void gui::DebugLogicInfo(const game::LogicData& logic_data) {
 
         const auto due_tick = callback_tick.first;
 
-        assert(due_tick >= logic_data.GameTick());
-        const auto time_to_due = due_tick - logic_data.GameTick();
+        assert(due_tick >= logic.GameTick());
+        const auto time_to_due = due_tick - logic.GameTick();
 
         if (ImGui::TreeNode(reinterpret_cast<void*>(id),
                             "%lld (T- %lld) | %lld",
                             due_tick,
                             time_to_due,
                             callback_tick.second.size())) {
-            core::ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
+            ResourceGuard<void> node_guard([]() { ImGui::TreePop(); });
 
             for (const auto& callback : callback_tick.second) {
                 ImGui::Text("%s", MemoryAddressToStr(callback.uniqueData.Get()).c_str());

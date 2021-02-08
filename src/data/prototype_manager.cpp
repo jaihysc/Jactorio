@@ -13,14 +13,14 @@
 using namespace jactorio;
 
 data::PrototypeManager::~PrototypeManager() {
-    ClearData();
+    Clear();
 }
 
 void data::PrototypeManager::SetDirectoryPrefix(const std::string& name) {
     directoryPrefix_ = name;
 }
 
-void data::PrototypeManager::DataRawAdd(const std::string& iname, proto::FrameworkBase* const prototype) {
+void data::PrototypeManager::Add(const std::string& iname, proto::FrameworkBase* const prototype) {
     const auto data_category = prototype->GetCategory();
 
     // Use the following format internal name
@@ -72,24 +72,24 @@ void data::PrototypeManager::DataRawAdd(const std::string& iname, proto::Framewo
     LOG_MESSAGE_F(debug, "Added prototype %d %s", data_category, formatted_iname.c_str());
 }
 
-void data::PrototypeManager::LoadData(const std::string& data_folder_path) {
+void data::PrototypeManager::Load(const std::string& folder_path) {
     // Get all sub-folders in ~/data/
     // Read data.cfg files within each sub-folder
     // Load extracted data into loaded_data
 
     // Terminate the interpreter after loading prototypes
-    auto py_guard = core::ResourceGuard(PyInterpreterTerminate);
+    auto py_guard = ResourceGuard(PyInterpreterTerminate);
     PyInterpreterInit();
 
 
-    for (const auto& entry : std::filesystem::directory_iterator(data_folder_path)) {
+    for (const auto& entry : std::filesystem::directory_iterator(folder_path)) {
         const std::string directory_name = entry.path().filename().u8string();
 
         // Directory including current folder: eg: /data/base
         std::string current_directory;
         {
             std::stringstream ss;
-            ss << data_folder_path << "/" << directory_name;
+            ss << folder_path << "/" << directory_name;
             current_directory = ss.str();
         }
 
@@ -98,7 +98,7 @@ void data::PrototypeManager::LoadData(const std::string& data_folder_path) {
             std::stringstream py_file_path;
             py_file_path << current_directory << "/data.py";
 
-            const std::string py_file_contents = core::ReadFile(py_file_path.str());
+            const std::string py_file_contents = ReadFile(py_file_path.str());
             // data.py file does not exist
             if (py_file_contents.empty()) {
                 LOG_MESSAGE_F(
@@ -133,7 +133,7 @@ void data::PrototypeManager::LoadData(const std::string& data_folder_path) {
                 continue;
             }
 
-            auto local_contents = core::ReadFile(cfg_file_path.str());
+            auto local_contents = ReadFile(cfg_file_path.str());
             LocalParseNoThrow(*this, local_contents, directory_name);
         }
 
@@ -161,7 +161,7 @@ void data::PrototypeManager::LoadData(const std::string& data_folder_path) {
     }
 }
 
-void data::PrototypeManager::ClearData() {
+void data::PrototypeManager::Clear() {
     // Iterate through both unordered maps and delete all pointers
     for (auto& map : dataRaw_) {
         // Category unordered maps

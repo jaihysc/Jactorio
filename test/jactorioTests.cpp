@@ -9,7 +9,7 @@
 int main(int ac, char* av[]) {
     current_path(std::filesystem::path(av[0]).parent_path());
 
-    jactorio::core::RegisterCrashHandler();
+    jactorio::RegisterCrashHandler();
 
     testing::InitGoogleTest(&ac, av);
     RUN_ALL_TESTS();

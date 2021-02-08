@@ -15,7 +15,7 @@ using namespace jactorio;
 
 #define J_INVENTORY_VERIFY(inventory__, guard__) \
     InventoryVerify(inventory__);                \
-    core::CapturingGuard<void()> guard__([&]() { InventoryVerify(inventory__); })
+    CapturingGuard<void()> guard__([&]() { InventoryVerify(inventory__); })
 #else
 
 #define J_INVENTORY_VERIFY(inventory__, guard__)

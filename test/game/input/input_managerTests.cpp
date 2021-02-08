@@ -12,66 +12,65 @@ namespace jactorio::game
     class InputManagerTest : public testing::Test
     {
     protected:
-        InputManager keyInput_;
+        InputManager input_;
         int counter_ = 0;
 
         void TearDown() override {
-            keyInput_.ClearData();
+            input_.Clear();
         }
     };
 
     TEST_F(InputManagerTest, InputCallbackRegister) {
         int test_val = 0;
 
-        const auto callback_id =
-            keyInput_.Register([&]() { test_val = 1; }, SDLK_t, InputAction::key_down, KMOD_LSHIFT);
+        const auto callback_id = input_.Register([&]() { test_val = 1; }, SDLK_t, InputAction::key_down, KMOD_LSHIFT);
 
         // callback_id should not be 0
         EXPECT_NE(callback_id, 0);
 
-        keyInput_.SetInput(SDLK_t, InputAction::key_down, KMOD_LSHIFT);
-        keyInput_.Raise();
+        input_.SetInput(SDLK_t, InputAction::key_down, KMOD_LSHIFT);
+        input_.Raise();
         EXPECT_EQ(test_val, 1);
     }
 
     TEST_F(InputManagerTest, DispatchInputCallbacks) {
-        keyInput_.Register([&]() { counter_++; }, SDLK_v, InputAction::key_down);
-        keyInput_.Register([&]() { counter_++; }, SDLK_z, InputAction::key_down);
+        input_.Register([&]() { counter_++; }, SDLK_v, InputAction::key_down);
+        input_.Register([&]() { counter_++; }, SDLK_z, InputAction::key_down);
 
-        keyInput_.Register([&]() { counter_++; }, SDLK_x, InputAction::key_up, KMOD_CAPS);
+        input_.Register([&]() { counter_++; }, SDLK_x, InputAction::key_up, KMOD_CAPS);
 
         // ======================================================================
 
-        keyInput_.SetInput(SDLK_t, InputAction::key_down, KMOD_MODE);
-        keyInput_.Raise(); // Nothing called
+        input_.SetInput(SDLK_t, InputAction::key_down, KMOD_MODE);
+        input_.Raise(); // Nothing called
         EXPECT_EQ(counter_, 0);
 
 
-        keyInput_.SetInput(SDLK_v, InputAction::key_down, KMOD_CAPS);
-        keyInput_.Raise();
-        keyInput_.Raise();
+        input_.SetInput(SDLK_v, InputAction::key_down, KMOD_CAPS);
+        input_.Raise();
+        input_.Raise();
         EXPECT_EQ(counter_, 0);
 
         // Callback2 called once
-        keyInput_.SetInput(SDLK_v, InputAction::key_down);
-        keyInput_.Raise();
+        input_.SetInput(SDLK_v, InputAction::key_down);
+        input_.Raise();
         EXPECT_EQ(counter_, 1);
-        keyInput_.SetInput(SDLK_v, InputAction::key_up);
+        input_.SetInput(SDLK_v, InputAction::key_up);
 
 
         // The RELEASE action is only ever calls callbacks once
-        keyInput_.SetInput(SDLK_x, InputAction::key_up, KMOD_CAPS);
-        keyInput_.Raise();
-        keyInput_.Raise();
-        keyInput_.Raise();
-        keyInput_.Raise();
+        input_.SetInput(SDLK_x, InputAction::key_up, KMOD_CAPS);
+        input_.Raise();
+        input_.Raise();
+        input_.Raise();
+        input_.Raise();
         EXPECT_EQ(counter_, 2);
 
 
         // Inputs stack until released
-        keyInput_.SetInput(SDLK_v, InputAction::key_down);
-        keyInput_.SetInput(SDLK_z, InputAction::key_down);
-        keyInput_.Raise();
+        input_.SetInput(SDLK_v, InputAction::key_down);
+        input_.SetInput(SDLK_z, InputAction::key_down);
+        input_.Raise();
         EXPECT_EQ(counter_, 4);
     }
 
@@ -79,7 +78,7 @@ namespace jactorio::game
         // The action key_down will only raise once compared to key_pressed which repeatedly raises after the initial
         // raise
 
-        keyInput_.Register(
+        input_.Register(
             [&]() { // Callback 1
                 counter_ -= 50;
             },
@@ -87,7 +86,7 @@ namespace jactorio::game
             InputAction::key_down,
             KMOD_MODE);
 
-        keyInput_.Register(
+        input_.Register(
             [&]() { // Callback 2
                 counter_ += 100;
             },
@@ -96,32 +95,32 @@ namespace jactorio::game
             KMOD_MODE);
 
 
-        keyInput_.SetInput(SDLK_v, InputAction::key_down, KMOD_MODE);
-        keyInput_.Raise();
+        input_.SetInput(SDLK_v, InputAction::key_down, KMOD_MODE);
+        input_.Raise();
         EXPECT_EQ(counter_, 50); // Callback 1 + 2 called
 
-        keyInput_.Raise();
+        input_.Raise();
         EXPECT_EQ(counter_, 150); // Callback 2 called
 
-        keyInput_.Raise();
+        input_.Raise();
         EXPECT_EQ(counter_, 250); // Callback 2 called
     }
 
     TEST_F(InputManagerTest, InputCallbackHeld) {
         // The action key_held applies for both key_pressed and key_released
-        keyInput_.Register([&]() { counter_ += 1; }, SDLK_v, InputAction::key_held);
+        input_.Register([&]() { counter_ += 1; }, SDLK_v, InputAction::key_held);
 
 
-        keyInput_.SetInput(SDLK_v, InputAction::key_down);
-        keyInput_.Raise();
+        input_.SetInput(SDLK_v, InputAction::key_down);
+        input_.Raise();
         EXPECT_EQ(counter_, 1);
 
         // event emitted will be Key_pressed since this is the second time
-        keyInput_.Raise();
+        input_.Raise();
         EXPECT_EQ(counter_, 2);
 
-        keyInput_.SetInput(SDLK_v, InputAction::key_repeat);
-        keyInput_.Raise();
+        input_.SetInput(SDLK_v, InputAction::key_repeat);
+        input_.Raise();
         EXPECT_EQ(counter_, 3);
     }
 
@@ -129,16 +128,16 @@ namespace jactorio::game
         // Mouse buttons are stored as negative numbers, to avoid conflict with keyboard numbres
         int count = 0;
 
-        keyInput_.Register([&]() { count = 1; }, MouseInput::left, InputAction::key_down);
+        input_.Register([&]() { count = 1; }, MouseInput::left, InputAction::key_down);
 
-        keyInput_.SetInput(MouseInput::left, InputAction::key_down);
-        keyInput_.Raise();
+        input_.SetInput(MouseInput::left, InputAction::key_down);
+        input_.Raise();
 
         EXPECT_EQ(count, 1);
     }
 
     // TEST_F(InputManagerTest, dispatch_input_callbacks_imgui_block) {
-    // 	auto guard = jactorio::core::Resource_guard(&input::clear_data);
+    // 	auto guard = jactorio::Resource_guard(&input::clear_data);
     //
     // 	input::subscribe(test_callback2, GLFW_KEY_V, jactorio::game::inputAction::key_pressed);
     //
@@ -156,28 +155,28 @@ namespace jactorio::game
     // }
 
     TEST_F(InputManagerTest, RemoveInputCallback) {
-        const auto callback_id = keyInput_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
+        const auto callback_id = input_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
 
-        keyInput_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
+        input_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
 
-        keyInput_.Unsubscribe(callback_id);
+        input_.Unsubscribe(callback_id);
 
         InputManager::SetInput(SDLK_SPACE, InputAction::key_down);
-        keyInput_.Raise();
+        input_.Raise();
 
         // key_down unsubscribed, before repeat still subscribed, increment only once instead of twice
         EXPECT_EQ(counter_, 1);
     }
 
     TEST_F(InputManagerTest, ClearData) {
-        keyInput_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
-        keyInput_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
+        input_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
+        input_.Register([&]() { counter_++; }, SDLK_SPACE, InputAction::key_pressed);
 
-        keyInput_.ClearData();
+        input_.Clear();
 
         // Should not increment counter2 since all callbacks were cleared
-        keyInput_.SetInput(SDLK_SPACE, InputAction::key_down);
-        keyInput_.Raise();
+        input_.SetInput(SDLK_SPACE, InputAction::key_down);
+        input_.Raise();
 
         // Only one of the callbacks was erased, therefore it should increment counter2 only once
         // instead of twice

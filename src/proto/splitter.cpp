@@ -5,15 +5,15 @@
 #include "core/coordinate_tuple.h"
 #include "game/logic/conveyor_utility.h"
 #include "game/world/chunk_tile_layer.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/sprite.h"
 
 using namespace jactorio;
 
 static constexpr game::LogicGroup kSplitterLogicGroup = game::LogicGroup::splitter;
 
-void proto::Splitter::OnBuild(game::WorldData& world,
-                              game::LogicData& /*logic*/,
+void proto::Splitter::OnBuild(game::World& world,
+                              game::Logic& /*logic*/,
                               const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer,
                               const Orientation orientation) const {
@@ -31,16 +31,16 @@ void proto::Splitter::OnBuild(game::WorldData& world,
     build_conveyor(GetNonTopLeftCoord(world, coord));
 }
 
-void proto::Splitter::OnNeighborUpdate(game::WorldData& world,
-                                       game::LogicData& /*logic*/,
+void proto::Splitter::OnNeighborUpdate(game::World& world,
+                                       game::Logic& /*logic*/,
                                        const WorldCoord& /*emit_coord*/,
                                        const WorldCoord& receive_coord,
                                        Orientation /*emit_orientation*/) const {
     ConveyorUpdateNeighborTermination(world, receive_coord);
 }
 
-void proto::Splitter::OnRemove(game::WorldData& world,
-                               game::LogicData& /*logic*/,
+void proto::Splitter::OnRemove(game::World& world,
+                               game::Logic& /*logic*/,
                                const WorldCoord& coord,
                                game::ChunkTileLayer& /*tile_layer*/) const {
 
@@ -54,8 +54,8 @@ void proto::Splitter::PostLoad() {
     speed = LineDistT(speedFloat);
 }
 
-void proto::Splitter::PostLoadValidate(const data::PrototypeManager& proto_manager) const {
-    Conveyor::PostLoadValidate(proto_manager);
+void proto::Splitter::PostLoadValidate(const data::PrototypeManager& proto) const {
+    Conveyor::PostLoadValidate(proto);
 
     J_PROTO_ASSERT(this->GetWidth(Orientation::up) == 2, "Tile width must be 2");
     J_PROTO_ASSERT(this->GetHeight(Orientation::up) == 1, "Tile height must be 1");
@@ -70,7 +70,7 @@ void proto::Splitter::ValidatedPostLoad() {
 
 // ======================================================================
 
-WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::WorldData& world, const WorldCoord& coord) {
+WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world, const WorldCoord& coord) {
     // Get top left coord
 
     const auto* tile = world.GetTile(coord);

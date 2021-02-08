@@ -11,10 +11,10 @@ namespace jactorio::game
     class DeferralTimerTest : public testing::Test
     {
     protected:
-        LogicData logicData_;
-        WorldData worldData_;
+        Logic logic_;
+        World world_;
 
-        DeferralTimer& timer_ = logicData_.deferralTimer;
+        DeferralTimer& timer_ = logic_.deferralTimer;
 
         class MockDeferred final : public TestMockEntity
         {
@@ -23,12 +23,10 @@ namespace jactorio::game
             mutable proto::UniqueDataBase* dataPtr = nullptr;
             mutable DeferralTimer* dTimer          = nullptr;
 
-            void OnDeferTimeElapsed(WorldData& /*world_data*/,
-                                    LogicData& logic_data,
-                                    proto::UniqueDataBase* unique_data) const override {
+            void OnDeferTimeElapsed(World& /*world*/, Logic& logic, proto::UniqueDataBase* unique_data) const override {
                 callbackCalled = true;
                 dataPtr        = unique_data;
-                dTimer         = &logic_data.deferralTimer;
+                dTimer         = &logic.deferralTimer;
             };
         };
 
@@ -47,13 +45,13 @@ namespace jactorio::game
         EXPECT_EQ(index.callbackIndex, 1);
         EXPECT_TRUE(index.Valid());
 
-        logicData_.DeferralUpdate(worldData_, 0);
+        logic_.DeferralUpdate(world_, 0);
         EXPECT_FALSE(deferred_.callbackCalled);
 
-        logicData_.DeferralUpdate(worldData_, 1);
+        logic_.DeferralUpdate(world_, 1);
         EXPECT_FALSE(deferred_.callbackCalled);
 
-        logicData_.DeferralUpdate(worldData_, 2);
+        logic_.DeferralUpdate(world_, 2);
         EXPECT_TRUE(deferred_.callbackCalled);
         EXPECT_EQ(deferred_.dataPtr, &unique_data);
         EXPECT_EQ(deferred_.dTimer, &timer_);
@@ -68,13 +66,13 @@ namespace jactorio::game
         EXPECT_EQ(index.callbackIndex, 1);
         EXPECT_TRUE(index.Valid());
 
-        logicData_.DeferralUpdate(worldData_, 0);
+        logic_.DeferralUpdate(world_, 0);
         EXPECT_FALSE(deferred_.callbackCalled);
 
-        logicData_.DeferralUpdate(worldData_, 1);
+        logic_.DeferralUpdate(world_, 1);
         EXPECT_FALSE(deferred_.callbackCalled);
 
-        logicData_.DeferralUpdate(worldData_, 2);
+        logic_.DeferralUpdate(world_, 2);
         EXPECT_TRUE(deferred_.callbackCalled);
         EXPECT_EQ(deferred_.dataPtr, &unique_data);
         EXPECT_EQ(deferred_.dTimer, &timer_);
@@ -83,7 +81,7 @@ namespace jactorio::game
     TEST_F(DeferralTimerTest, RegisterDeferralRemoveOldCallbacks) {
         timer_.RegisterAtTick(deferred_, nullptr, 2);
 
-        logicData_.DeferralUpdate(worldData_, 2);
+        logic_.DeferralUpdate(world_, 2);
         ASSERT_TRUE(deferred_.callbackCalled);
 
         // Callback at 2 has been removed since it update was called for game tick 2
@@ -96,7 +94,7 @@ namespace jactorio::game
         timer_.RemoveDeferral(entry);
 
         // Callback removed
-        logicData_.DeferralUpdate(worldData_, 2);
+        logic_.DeferralUpdate(world_, 2);
         EXPECT_FALSE(deferred_.callbackCalled);
     }
 
@@ -108,7 +106,7 @@ namespace jactorio::game
         timer_.RemoveDeferral(deferral_entry_2);
 
         // Both deferrals removed
-        logicData_.DeferralUpdate(worldData_, 2);
+        logic_.DeferralUpdate(world_, 2);
         EXPECT_FALSE(deferred_.callbackCalled);
     }
 
@@ -126,7 +124,7 @@ namespace jactorio::game
             EXPECT_EQ(entry.callbackIndex, 0);
             EXPECT_FALSE(entry.Valid());
 
-            logicData_.DeferralUpdate(worldData_, 1);
+            logic_.DeferralUpdate(world_, 1);
             EXPECT_FALSE(deferred.callbackCalled);
         }
         {
@@ -144,21 +142,21 @@ namespace jactorio::game
     }
 
     TEST_F(DeferralTimerTest, SerializeCallbacks) {
-        data::PrototypeManager proto_manager;
-        data::UniqueDataManager unique_manager;
+        data::PrototypeManager proto;
+        data::UniqueDataManager unique;
 
-        auto& defer_proto = proto_manager.AddProto<MockDeferred>();
+        auto& defer_proto = proto.Make<MockDeferred>();
         MockUniqueData unique_data;
 
         timer_.RegisterAtTick(defer_proto, &unique_data, 10);
 
 
-        proto_manager.GenerateRelocationTable();
-        unique_manager.AssignId(unique_data);
-        unique_manager.StoreRelocationEntry(unique_data);
+        proto.GenerateRelocationTable();
+        unique.AssignId(unique_data);
+        unique.StoreRelocationEntry(unique_data);
 
-        data::active_prototype_manager   = &proto_manager;
-        data::active_unique_data_manager = &unique_manager;
+        data::active_prototype_manager   = &proto;
+        data::active_unique_data_manager = &unique;
         const auto result                = TestSerializeDeserialize(timer_);
 
 

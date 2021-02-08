@@ -7,7 +7,7 @@
 
 #include "game/logic/conveyor_struct.h"
 #include "game/logic/conveyor_utility.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/sprite.h"
 #include "render/proto_renderer.h"
 
@@ -48,7 +48,7 @@ Orientation proto::ConveyorData::ToOrientation(const LineOrientation line_orient
 
 void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
                                         const SpriteUvCoordsT& uv_coords,
-                                        const core::Position2<float>& pixel_offset,
+                                        const Position2<float>& pixel_offset,
                                         const UniqueDataBase* unique_data) const {
     const auto& line_data = *static_cast<const ConveyorData*>(unique_data);
 
@@ -65,9 +65,9 @@ void proto::Conveyor::OnRDrawUniqueData(render::RendererLayer& layer,
 }
 
 SpriteSetT proto::Conveyor::OnRGetSpriteSet(const Orientation orientation,
-                                            game::WorldData& world_data,
-                                            const WorldCoord& world_coords) const {
-    return static_cast<uint16_t>(ConveyorCalcLineOrien(world_data, world_coords, orientation));
+                                            game::World& world,
+                                            const WorldCoord& coord) const {
+    return static_cast<uint16_t>(ConveyorCalcLineOrien(world, coord, orientation));
 }
 
 SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_data*/,
@@ -79,8 +79,8 @@ SpriteFrameT proto::Conveyor::OnRGetSpriteFrame(const UniqueDataBase& /*unique_d
 // ======================================================================
 // Build / Remove / Neighbor update
 
-void proto::Conveyor::OnBuild(game::WorldData& world,
-                              game::LogicData& /*logic*/,
+void proto::Conveyor::OnBuild(game::World& world,
+                              game::Logic& /*logic*/,
                               const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer,
                               const Orientation orientation) const {
@@ -91,8 +91,8 @@ void proto::Conveyor::OnBuild(game::WorldData& world,
     con_data.set = static_cast<uint16_t>(con_data.lOrien);
 }
 
-void proto::Conveyor::OnNeighborUpdate(game::WorldData& world,
-                                       game::LogicData& /*logic*/,
+void proto::Conveyor::OnNeighborUpdate(game::World& world,
+                                       game::Logic& /*logic*/,
                                        const WorldCoord& /*emit_coord*/,
                                        const WorldCoord& receive_coord,
                                        Orientation /*emit_orientation*/) const {
@@ -109,20 +109,20 @@ void proto::Conveyor::OnNeighborUpdate(game::WorldData& world,
     ConveyorUpdateNeighborTermination(world, receive_coord);
 }
 
-void proto::Conveyor::OnRemove(game::WorldData& world,
-                               game::LogicData& /*logic*/,
+void proto::Conveyor::OnRemove(game::World& world,
+                               game::Logic& /*logic*/,
                                const WorldCoord& coord,
                                game::ChunkTileLayer& /*tile_layer*/) const {
     RemoveConveyor(world, coord, kConveyorLogicGroup);
 }
 
-void proto::Conveyor::OnDeserialize(game::WorldData& world_data,
-                                    const WorldCoord& world_coord,
+void proto::Conveyor::OnDeserialize(game::World& world,
+                                    const WorldCoord& coord,
                                     game::ChunkTileLayer& tile_layer) const {
     auto* origin_data = tile_layer.GetUniqueData<ConveyorData>();
     assert(origin_data != nullptr);
 
-    ConveyorNeighborConnect(world_data, world_coord);
+    ConveyorNeighborConnect(world, coord);
 }
 
 void proto::Conveyor::PostLoad() {
@@ -130,7 +130,7 @@ void proto::Conveyor::PostLoad() {
     speed = LineDistT(speedFloat);
 }
 
-void proto::Conveyor::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
+void proto::Conveyor::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
     J_PROTO_ASSERT(speedFloat >= 0.001, "Conveyor speed below minimum 0.001");
     // Cannot exceed item_width because of limitations in the logic
     J_PROTO_ASSERT(speedFloat < 0.25, "Conveyor speed equal or above maximum of 0.25");

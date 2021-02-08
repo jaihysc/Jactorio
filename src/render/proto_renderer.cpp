@@ -23,7 +23,7 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
                                 std::deque<game::ConveyorItem>& line_segment_side,
                                 double tile_x,
                                 double tile_y,
-                                const core::Position2<OverlayOffsetAxis>& pixel_offset) {
+                                const Position2<OverlayOffsetAxis>& pixel_offset) {
     using namespace game;
 
     // Either offset_x or offset_y which will be INCREASED or DECREASED
@@ -65,30 +65,29 @@ void PrepareConveyorSegmentData(render::RendererLayer& layer,
 
         constexpr float pixel_z = kPixelZ;
         // In pixels
-        layer.PushBack({{
-                            {
-                                pixel_offset.x +
-                                    core::LossyCast<float>(tile_x) * core::SafeCast<float>(render::Renderer::tileWidth),
-                                pixel_offset.y +
-                                    core::LossyCast<float>(tile_y) * core::SafeCast<float>(render::Renderer::tileWidth),
-                            },
-                            {
-                                pixel_offset.x +
-                                    core::LossyCast<float>(tile_x + ConveyorProp::kItemWidth) *
-                                        core::SafeCast<float>(render::Renderer::tileWidth),
-                                pixel_offset.y +
-                                    core::LossyCast<float>(tile_y + ConveyorProp::kItemWidth) *
-                                        core::SafeCast<float>(render::Renderer::tileWidth),
-                            },
-                        },
-                        {uv_pos.topLeft, uv_pos.bottomRight}},
-                       pixel_z);
+        layer.PushBack(
+            {{
+                 {
+                     pixel_offset.x + LossyCast<float>(tile_x) * SafeCast<float>(render::Renderer::tileWidth),
+                     pixel_offset.y + LossyCast<float>(tile_y) * SafeCast<float>(render::Renderer::tileWidth),
+                 },
+                 {
+                     pixel_offset.x +
+                         LossyCast<float>(tile_x + ConveyorProp::kItemWidth) *
+                             SafeCast<float>(render::Renderer::tileWidth),
+                     pixel_offset.y +
+                         LossyCast<float>(tile_y + ConveyorProp::kItemWidth) *
+                             SafeCast<float>(render::Renderer::tileWidth),
+                 },
+             },
+             {uv_pos.topLeft, uv_pos.bottomRight}},
+            pixel_z);
     }
 }
 
 void render::DrawConveyorSegmentItems(RendererLayer& layer,
                                       const SpriteUvCoordsT& uv_coords,
-                                      const core::Position2<OverlayOffsetAxis>& pixel_offset,
+                                      const Position2<OverlayOffsetAxis>& pixel_offset,
                                       game::ConveyorStruct& line_segment) {
     double tile_x_offset = 0;
     double tile_y_offset = 0;
@@ -294,7 +293,7 @@ prepare_right:
 
 void render::DrawInserterArm(RendererLayer& layer,
                              const SpriteUvCoordsT& uv_coords,
-                             const core::Position2<OverlayOffsetAxis>& pixel_offset,
+                             const Position2<OverlayOffsetAxis>& pixel_offset,
                              const proto::Inserter& inserter_proto,
                              const proto::InserterData& inserter_data) {
     {
@@ -313,14 +312,14 @@ void render::DrawInserterArm(RendererLayer& layer,
                           pixel_offset.y + Renderer::tileWidth - arm_pixel_offset}},
                         {uv.topLeft, uv.bottomRight}},
                        kPixelZ,
-                       core::LossyCast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset));
+                       LossyCast<float>(inserter_data.rotationDegree.getAsDouble() + rotation_offset));
     }
 
 
     // Held item
     if (inserter_data.status == proto::InserterData::Status::dropoff) {
         constexpr auto held_item_pixel_offset =
-            core::LossyCast<float>((Renderer::tileWidth - Renderer::tileWidth * game::ConveyorProp::kItemWidth) / 2);
+            LossyCast<float>((Renderer::tileWidth - Renderer::tileWidth * game::ConveyorProp::kItemWidth) / 2);
 
         const auto& uv = Renderer::GetSpriteUvCoords(uv_coords, inserter_data.heldItem.item->sprite->internalId);
 

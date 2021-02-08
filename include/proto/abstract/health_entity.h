@@ -32,8 +32,8 @@ namespace jactorio::proto
         /// \remark 0 max health is invalid
         PYTHON_PROP_REF_I(uint16_t, maxHealth, kDefaultHealth);
 
-        void PostLoadValidate(const data::PrototypeManager& data_manager) const override {
-            Entity::PostLoadValidate(data_manager);
+        void PostLoadValidate(const data::PrototypeManager& proto) const override {
+            Entity::PostLoadValidate(proto);
 
             J_PROTO_ASSERT(maxHealth > 0, "Max health must be greater than 0");
         }

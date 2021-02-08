@@ -4,24 +4,24 @@
 
 #include <vector>
 
-#include "game/logic/logic_data.h"
-#include "game/world/world_data.h"
+#include "game/logic/logic.h"
+#include "game/world/world.h"
 #include "proto/inserter.h"
 
 using namespace jactorio;
 
-double game::GetInserterArmOffset(const core::TIntDegree degree, const unsigned target_distance) {
+double game::GetInserterArmOffset(const TIntDegree degree, const unsigned target_distance) {
     auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
-    result *= core::TanF(degree);
+    result *= TanF(degree);
     result *= -1;
     result += kInserterCenterOffset;
 
     return result;
 }
 
-double game::GetInserterArmLength(const core::TIntDegree degree, const unsigned target_distance) {
+double game::GetInserterArmLength(const TIntDegree degree, const unsigned target_distance) {
     auto result = kInserterCenterOffset + target_distance - kInserterArmTileGap;
-    result /= core::CosF(degree);
+    result /= CosF(degree);
     result *= -1;
 
     return result;
@@ -79,17 +79,17 @@ void RotateInserters(DropoffQueue& dropoff_queue, PickupQueue& pickup_queue, con
     }
 }
 
-void ProcessInserterDropoff(const DropoffQueue& dropoff_queue, game::LogicData& logic_data) {
+void ProcessInserterDropoff(const DropoffQueue& dropoff_queue, game::Logic& logic) {
     for (const auto& inserter_prop : dropoff_queue) {
         auto& inserter_data = inserter_prop.data;
 
-        if (inserter_data.dropoff.DropOff(logic_data, inserter_data.heldItem)) {
+        if (inserter_data.dropoff.DropOff(logic, inserter_data.heldItem)) {
             inserter_data.status = proto::InserterData::Status::pickup;
         }
     }
 }
 
-void ProcessInserterPickup(const PickupQueue& pickup_queue, game::LogicData& logic_data) {
+void ProcessInserterPickup(const PickupQueue& pickup_queue, game::Logic& logic) {
     for (const auto& inserter_prop : pickup_queue) {
         auto& inserter_data        = inserter_prop.data;
         const auto& inserter_proto = inserter_prop.proto;
@@ -97,15 +97,15 @@ void ProcessInserterPickup(const PickupQueue& pickup_queue, game::LogicData& log
         constexpr int pickup_amount = 1;
 
         const auto* to_be_picked_item =
-            inserter_data.pickup.GetPickup(logic_data, inserter_proto.tileReach, inserter_data.rotationDegree);
+            inserter_data.pickup.GetPickup(logic, inserter_proto.tileReach, inserter_data.rotationDegree);
 
         // Do not pick up item if it cannot be dropped off
-        if (!inserter_data.dropoff.CanDropOff(logic_data, to_be_picked_item))
+        if (!inserter_data.dropoff.CanDropOff(logic, to_be_picked_item))
             continue;
 
 
-        const auto result = inserter_data.pickup.Pickup(
-            logic_data, inserter_proto.tileReach, inserter_data.rotationDegree, pickup_amount);
+        const auto result =
+            inserter_data.pickup.Pickup(logic, inserter_proto.tileReach, inserter_data.rotationDegree, pickup_amount);
         if (result.first) {
             inserter_data.heldItem = result.second;
 
@@ -114,11 +114,11 @@ void ProcessInserterPickup(const PickupQueue& pickup_queue, game::LogicData& log
     }
 }
 
-void game::InserterLogicUpdate(WorldData& world_data, LogicData& logic_data) {
+void game::InserterLogicUpdate(World& world, Logic& logic) {
     DropoffQueue dropoff_queue{};
     PickupQueue pickup_queue{};
 
-    for (auto* chunk : world_data.LogicGetChunks()) {
+    for (auto* chunk : world.LogicGetChunks()) {
         for (auto* tile_layer : chunk->GetLogicGroup(LogicGroup::inserter)) {
             auto* inserter_data = tile_layer->GetUniqueData<proto::InserterData>();
             assert(inserter_data);
@@ -130,6 +130,6 @@ void game::InserterLogicUpdate(WorldData& world_data, LogicData& logic_data) {
         }
     }
 
-    ProcessInserterDropoff(dropoff_queue, logic_data);
-    ProcessInserterPickup(pickup_queue, logic_data);
+    ProcessInserterDropoff(dropoff_queue, logic);
+    ProcessInserterPickup(pickup_queue, logic);
 }

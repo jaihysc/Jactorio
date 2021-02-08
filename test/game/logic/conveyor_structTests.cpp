@@ -14,7 +14,7 @@ namespace jactorio::game
         std::unique_ptr<proto::Item> itemProto_                   = std::make_unique<proto::Item>();
         std::unique_ptr<proto::TransportBelt> transportBeltProto_ = std::make_unique<proto::TransportBelt>();
 
-        WorldData worldData_{};
+        World world_;
 
         std::unique_ptr<ConveyorStruct> segment_ =
             std::make_unique<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
@@ -354,8 +354,8 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorStructTest, Serialize) {
-        data::PrototypeManager proto_manager;
-        auto& item = proto_manager.AddProto<proto::Item>();
+        data::PrototypeManager proto;
+        auto& item = proto.Make<proto::Item>();
 
         auto segment =
             std::make_unique<ConveyorStruct>(Orientation::down, ConveyorStruct::TerminationType::bend_left, 4);
@@ -372,8 +372,8 @@ namespace jactorio::game
         segment->right.visible          = false;
 
 
-        data::active_prototype_manager = &proto_manager;
-        proto_manager.GenerateRelocationTable();
+        data::active_prototype_manager = &proto;
+        proto.GenerateRelocationTable();
 
         // ======================================================================
         auto result = TestSerializeDeserialize(segment);

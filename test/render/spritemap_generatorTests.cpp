@@ -12,23 +12,23 @@ namespace jactorio::render
     {
     protected:
         RendererSprites rendererSprites_{};
-        data::PrototypeManager dataManager_{};
+        data::PrototypeManager proto_;
     };
 
     TEST_F(SpritemapCreationTest, CreateSpritemap) {
         // Sprite data delete by guard
-        dataManager_.AddProto<proto::Sprite>(
+        proto_.Make<proto::Sprite>(
             "sprite1", proto::Sprite("test/graphics/test/test_tile.png", {proto::Sprite::SpriteGroup::terrain}));
-        dataManager_.AddProto<proto::Sprite>(
+        proto_.Make<proto::Sprite>(
             "sprite2", proto::Sprite("test/graphics/test/test_tile1.png", {proto::Sprite::SpriteGroup::terrain}));
 
-        dataManager_.AddProto<proto::Sprite>(
+        proto_.Make<proto::Sprite>(
             "sprite3", proto::Sprite("test/graphics/test/test_tile2.png", {proto::Sprite::SpriteGroup::gui}));
-        dataManager_.AddProto<proto::Sprite>(
+        proto_.Make<proto::Sprite>(
             "sprite4", proto::Sprite("test/graphics/test/test_tile3.png", {proto::Sprite::SpriteGroup::gui}));
 
         // Should filter out to only 2 entries
-        const auto data = rendererSprites_.CreateSpritemap(dataManager_, proto::Sprite::SpriteGroup::terrain, false);
+        const auto data = rendererSprites_.CreateSpritemap(proto_, proto::Sprite::SpriteGroup::terrain, false);
 
         EXPECT_EQ(data.width, 68);  // 64 + 2(2)
         EXPECT_EQ(data.height, 34); // 32 + 2
@@ -39,22 +39,22 @@ namespace jactorio::render
 
         // Sprite data delete by guard
         // Terrain
-        dataManager_.AddProto<proto::Sprite>(
+        proto_.Make<proto::Sprite>(
             "sprite1", proto::Sprite("test/graphics/test/test_tile.png", {proto::Sprite::SpriteGroup::terrain}));
-        dataManager_.AddProto<proto::Sprite>(
+        proto_.Make<proto::Sprite>(
             "sprite2", proto::Sprite("test/graphics/test/test_tile1.png", {proto::Sprite::SpriteGroup::terrain}));
 
         // Gui
-        dataManager_.AddProto<proto::Sprite>(
+        proto_.Make<proto::Sprite>(
             "sprite3", proto::Sprite("test/graphics/test/test_tile2.png", {proto::Sprite::SpriteGroup::gui}));
-        dataManager_.AddProto<proto::Sprite>(
+        proto_.Make<proto::Sprite>(
             "sprite4", proto::Sprite("test/graphics/test/test_tile3.png", {proto::Sprite::SpriteGroup::gui}));
 
         // None
-        dataManager_.AddProto<proto::Sprite>("spriteNone", proto::Sprite("test/graphics/test/test_tile.png", {}));
+        proto_.Make<proto::Sprite>("spriteNone", proto::Sprite("test/graphics/test/test_tile.png", {}));
 
         // Should filter out to 3 entries, total width of 32 * 3
-        const auto data = rendererSprites_.CreateSpritemap(dataManager_, proto::Sprite::SpriteGroup::terrain, false);
+        const auto data = rendererSprites_.CreateSpritemap(proto_, proto::Sprite::SpriteGroup::terrain, false);
 
         EXPECT_EQ(data.width, 102); // 96 + 3(2)
         EXPECT_EQ(data.height, 34); // 32 + 2

@@ -6,11 +6,11 @@
 
 namespace jactorio::game
 {
-    class WorldData;
+    class World;
 
     ///
     /// Updates belt logic for a logic chunk
-    void ConveyorLogicUpdate(WorldData& world_data);
+    void ConveyorLogicUpdate(World& world);
 } // namespace jactorio::game
 
 #endif // JACTORIO_INCLUDE_GAME_LOGIC_CONVEYOR_CONTROLLER_H

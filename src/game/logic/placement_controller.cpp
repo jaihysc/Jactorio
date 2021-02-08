@@ -6,13 +6,13 @@
 
 #include "jactorio.h"
 
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/abstract/entity.h"
 #include "proto/tile.h"
 
 using namespace jactorio;
 
-bool game::PlacementLocationValid(WorldData& world,
+bool game::PlacementLocationValid(World& world,
                                   const WorldCoord& coord,
                                   const uint8_t tile_width,
                                   const uint8_t tile_height) {
@@ -39,7 +39,7 @@ bool game::PlacementLocationValid(WorldData& world,
 
 ///
 /// \remark Assumes tiles are valid for placement
-void PlaceAtCoords(game::WorldData& world,
+void PlaceAtCoords(game::World& world,
                    const WorldCoord& coord,
                    const game::TileLayer layer,
                    const uint8_t tile_width,
@@ -74,7 +74,7 @@ void PlaceAtCoords(game::WorldData& world,
     }
 }
 
-void RemoveAtCoords(game::WorldData& world,
+void RemoveAtCoords(game::World& world,
                     WorldCoord coord,
                     const game::TileLayer layer,
                     const uint8_t tile_width,
@@ -96,7 +96,7 @@ void RemoveAtCoords(game::WorldData& world,
     }
 }
 
-bool game::PlaceEntityAtCoords(WorldData& world,
+bool game::PlaceEntityAtCoords(World& world,
                                const WorldCoord& coord,
                                const Orientation orien,
                                const proto::Entity* entity) {

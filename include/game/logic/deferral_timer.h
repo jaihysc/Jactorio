@@ -16,7 +16,7 @@
 
 namespace jactorio::game
 {
-    class LogicData;
+    class Logic;
 
     ///
     /// Manages deferrals, prototypes inheriting 'Deferred'
@@ -68,7 +68,7 @@ namespace jactorio::game
         ///
         /// Calls all deferred callbacks for the current game tick
         /// \param game_tick Current game tick
-        void DeferralUpdate(LogicData& logic_data, WorldData& world_data, GameTickT game_tick);
+        void DeferralUpdate(Logic& logic, World& world, GameTickT game_tick);
 
         ///
         /// Registers callback which will be called upon reaching the specified game tick
@@ -116,15 +116,15 @@ namespace jactorio::game
 
         public:
             PROTOTYPE_CATEGORY(none);
-            void PostLoadValidate(const data::PrototypeManager& /*manager*/) const override {}
+            void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {}
 
             proto::Sprite* OnRGetSprite(SpriteSetT /*set*/) const override {
                 return nullptr;
             }
 
             SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                       WorldData& /*world_data*/,
-                                       const WorldCoord& /*world_coords*/) const override {
+                                       World& /*world*/,
+                                       const WorldCoord& /*coord*/) const override {
                 return 0;
             }
 
@@ -137,17 +137,17 @@ namespace jactorio::game
                 return false;
             }
 
-            void OnDeserialize(WorldData& /*world_data*/,
-                               const WorldCoord& /*world_coord*/,
+            void OnDeserialize(World& /*world*/,
+                               const WorldCoord& /*coord*/,
                                ChunkTileLayer& /*tile_layer*/) const override {}
 
-            void OnDeferTimeElapsed(WorldData& /*world_data*/,
-                                    LogicData& /*logic_data*/,
+            void OnDeferTimeElapsed(World& /*world*/,
+                                    Logic& /*logic*/,
                                     proto::UniqueDataBase* /*unique_data*/) const override {}
 
-            void OnTileUpdate(WorldData& /*world_data*/,
-                              const WorldCoord& /*emit_coords*/,
-                              const WorldCoord& /*receive_coords*/,
+            void OnTileUpdate(World& /*world*/,
+                              const WorldCoord& /*emit_coord*/,
+                              const WorldCoord& /*receive_coord*/,
                               proto::UpdateType /*type*/) const override {}
         } blankCallback_;
 

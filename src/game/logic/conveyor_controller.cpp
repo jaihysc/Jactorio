@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "game/logic/conveyor_struct.h"
-#include "game/world/world_data.h"
+#include "game/world/world.h"
 #include "proto/abstract/conveyor.h"
 
 using namespace jactorio;
@@ -18,13 +18,13 @@ J_NODISCARD bool MoveNextItem(const proto::LineDistT& tiles_moved,
                               std::deque<game::ConveyorItem>& line_side,
                               uint16_t& index,
                               const bool has_target_segment) {
-    for (size_t i = core::SafeCast<size_t>(index) + 1; i < line_side.size(); ++i) {
+    for (size_t i = SafeCast<size_t>(index) + 1; i < line_side.size(); ++i) {
         auto& i_item_offset = line_side[i].dist;
         if (i_item_offset > proto::LineDistT(game::ConveyorProp::kItemSpacing)) {
             // Found a valid item to decrement
             if (!has_target_segment) {
                 // Always check every item from index 0 if there is a target segment as the previous item may have moved
-                index = core::SafeCast<uint16_t>(i);
+                index = SafeCast<uint16_t>(i);
             }
             i_item_offset -= tiles_moved;
 
@@ -75,7 +75,7 @@ void UpdateSide(const proto::LineDistT& tiles_moved, game::ConveyorStruct& segme
                     // |   |   |   |
                     // 3   2   1   0
                     // targetOffset of 0: Length is 1
-                    length = core::SafeCast<double>(1) + segment.sideInsertIndex;
+                    length = SafeCast<double>(1) + segment.sideInsertIndex;
                     break;
 
                 default:
@@ -220,16 +220,16 @@ void LogicUpdateTransitionItems(const game::Chunk& l_chunk) {
     }
 }
 
-void game::ConveyorLogicUpdate(WorldData& world_data) {
+void game::ConveyorLogicUpdate(World& world) {
     // The logic update of conveyor items occur in 2 stages:
     // 		1. Move items on their conveyors
     //		2. Check if any items have reached the end of their lines, and need to be moved to another one
 
-    for (const auto& chunk_pair : world_data.LogicGetChunks()) {
+    for (const auto& chunk_pair : world.LogicGetChunks()) {
         LogicUpdateMoveItems(*chunk_pair);
     }
 
-    for (const auto& chunk_pair : world_data.LogicGetChunks()) {
+    for (const auto& chunk_pair : world.LogicGetChunks()) {
         LogicUpdateTransitionItems(*chunk_pair);
     }
 }

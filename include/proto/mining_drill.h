@@ -91,8 +91,8 @@ namespace jactorio::proto
         J_NODISCARD Sprite* OnRGetSprite(SpriteSetT set) const override;
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation orientation,
-                                               game::WorldData& world_data,
-                                               const WorldCoord& world_coords) const override;
+                                               game::World& world,
+                                               const WorldCoord& coord) const override;
 
         J_NODISCARD SpriteFrameT OnRGetSpriteFrame(const UniqueDataBase& unique_data,
                                                    GameTickT game_tick) const override;
@@ -102,50 +102,46 @@ namespace jactorio::proto
         ///
         /// Finds the FIRST output item of the mining drill, beginning from top left
         /// \param orien Orientation of drill
-        J_NODISCARD Item* FindOutputItem(const game::WorldData& world, WorldCoord coord, Orientation orien) const;
+        J_NODISCARD Item* FindOutputItem(const game::World& world, WorldCoord coord, Orientation orien) const;
 
-        void OnDeferTimeElapsed(game::WorldData& world,
-                                game::LogicData& logic,
-                                UniqueDataBase* unique_data) const override;
+        void OnDeferTimeElapsed(game::World& world, game::Logic& logic, UniqueDataBase* unique_data) const override;
 
         ///
         /// Ensures that the mining radius covers a resource entity
         /// \param orien Orientation of drill
-        J_NODISCARD bool OnCanBuild(const game::WorldData& world,
+        J_NODISCARD bool OnCanBuild(const game::World& world,
                                     const WorldCoord& coord,
                                     Orientation orien) const override;
 
-        void OnBuild(game::WorldData& world,
-                     game::LogicData& logic,
+        void OnBuild(game::World& world,
+                     game::Logic& logic,
                      const WorldCoord& coord,
                      game::ChunkTileLayer& tile_layer,
                      Orientation orientation) const override;
 
-        void OnNeighborUpdate(game::WorldData& world,
-                              game::LogicData& logic,
+        void OnNeighborUpdate(game::World& world,
+                              game::Logic& logic,
                               const WorldCoord& emit_coord,
                               const WorldCoord& receive_coord,
                               Orientation emit_orientation) const override;
 
-        void OnRemove(game::WorldData& world_data,
-                      game::LogicData& logic_data,
-                      const WorldCoord& world_coords,
+        void OnRemove(game::World& world,
+                      game::Logic& logic,
+                      const WorldCoord& coord,
                       game::ChunkTileLayer& tile_layer) const override;
 
-        void OnDeserialize(game::WorldData& world_data,
-                           const WorldCoord& world_coord,
+        void OnDeserialize(game::World& world,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override;
 
 
-        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
         void ValidatedPostLoad() override;
 
     private:
-        static bool InitializeOutput(game::WorldData& world_data,
-                                     const WorldCoord& output_coord,
-                                     MiningDrillData* drill_data);
+        static bool InitializeOutput(game::World& world, const WorldCoord& output_coord, MiningDrillData* drill_data);
 
-        J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& world_coord, Orientation orientation) const;
+        J_NODISCARD WorldCoord GetOutputCoord(const WorldCoord& coord, Orientation orientation) const;
 
         ///
         /// \param orien Orientation of drill
@@ -157,14 +153,14 @@ namespace jactorio::proto
         ///
         /// Sets up drill data such that resources can be deducted from the ground
         /// \return true if a resource was found, otherwise false
-        bool SetupResourceDeduction(const game::WorldData& world, MiningDrillData& drill_data, Orientation orien) const;
+        bool SetupResourceDeduction(const game::World& world, MiningDrillData& drill_data, Orientation orien) const;
 
         ///
         /// Removes resource using resourceCoord + resourceOffset in drill_data, searches for another resource if
         /// depleted
         /// \param orien Orientation of drill
         /// \return true if successful
-        bool DeductResource(game::WorldData& world,
+        bool DeductResource(game::World& world,
                             Orientation orien,
                             MiningDrillData& drill_data,
                             ResourceEntityResourceCount amount = 1) const;

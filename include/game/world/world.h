@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
-#define JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_WORLD_H
+#define JACTORIO_INCLUDE_GAME_WORLD_WORLD_H
 #pragma once
 
 #include <set>
@@ -26,7 +26,7 @@ namespace jactorio::game
 {
     ///
     /// Stores all data for a world
-    class WorldData
+    class World
     {
         using LogicChunkContainerT       = std::vector<Chunk*>;
         using SerialLogicChunkContainerT = std::vector<ChunkCoord>;
@@ -34,30 +34,30 @@ namespace jactorio::game
     public:
         static constexpr auto kChunkWidth = Chunk::kChunkWidth;
 
-        static ChunkCoordAxis WorldCToChunkC(WorldCoordAxis world_coord);
-        static ChunkCoord WorldCToChunkC(const WorldCoord& world_coord);
+        static ChunkCoordAxis WorldCToChunkC(WorldCoordAxis coord);
+        static ChunkCoord WorldCToChunkC(const WorldCoord& coord);
         ///
         /// Chunk coord -> World coord at first tile of chunk
         static WorldCoordAxis ChunkCToWorldC(ChunkCoordAxis chunk_coord);
         static WorldCoord ChunkCToWorldC(const ChunkCoord& chunk_coord);
 
-        static OverlayOffsetAxis WorldCToOverlayC(WorldCoordAxis world_coord);
+        static OverlayOffsetAxis WorldCToOverlayC(WorldCoordAxis coord);
 
 
         // World access
 
-        WorldData()  = default;
-        ~WorldData() = default;
+        World()  = default;
+        ~World() = default;
 
-        WorldData(const WorldData& other);
-        WorldData(WorldData&& other) noexcept = default;
+        World(const World& other);
+        World(World&& other) noexcept = default;
 
-        WorldData& operator=(WorldData other) {
+        World& operator=(World other) {
             swap(*this, other);
             return *this;
         }
 
-        friend void swap(WorldData& lhs, WorldData& rhs) noexcept {
+        friend void swap(World& lhs, World& rhs) noexcept {
             using std::swap;
             swap(lhs.updateDispatcher, rhs.updateDispatcher);
             swap(lhs.worldChunks_, rhs.worldChunks_);
@@ -91,7 +91,7 @@ namespace jactorio::game
 
         ///
         /// Clears chunk data, logic chunks and chunks awaiting generation
-        /// \remark Ensure PrepareWorldDataClear was called prior to this
+        /// \remark Ensure PrepareWorldClear was called prior to this
         void Clear();
 
 
@@ -131,12 +131,12 @@ namespace jactorio::game
         ///
         /// Gets the chunk at the specified world coordinate
         /// \return nullptr if no chunk exists
-        J_NODISCARD Chunk* GetChunkW(const WorldCoord& world_pair);
+        J_NODISCARD Chunk* GetChunkW(const WorldCoord& coord);
 
         ///
         /// Gets the chunk at the specified world coordinate
         /// \return nullptr if no chunk exists
-        J_NODISCARD const Chunk* GetChunkW(const WorldCoord& world_pair) const;
+        J_NODISCARD const Chunk* GetChunkW(const WorldCoord& coord) const;
 
         // ======================================================================
 
@@ -154,41 +154,40 @@ namespace jactorio::game
         ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD ChunkTile* GetTile(const WorldCoord& world_pair);
+        J_NODISCARD ChunkTile* GetTile(const WorldCoord& coord);
 
         ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTile* GetTile(const WorldCoord& world_pair) const;
+        J_NODISCARD const ChunkTile* GetTile(const WorldCoord& coord) const;
 
         // ======================================================================
 
         ///
         /// Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, TileLayer layer);
+        J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& coord, TileLayer layer);
 
         ///
         /// Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord, TileLayer layer) const;
+        J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& coord, TileLayer layer) const;
 
         ///
         /// Gets top left tile if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD ChunkTile* GetTileTopLeft(WorldCoord world_coord, const ChunkTileLayer& chunk_tile_layer);
+        J_NODISCARD ChunkTile* GetTileTopLeft(WorldCoord coord, const ChunkTileLayer& chunk_tile_layer);
 
         ///
         /// Gets top left tile if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& world_coord,
+        J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& coord,
                                                     const ChunkTileLayer& chunk_tile_layer) const;
 
 
         ///
         /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
-        J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
-                                                    const TileLayer& tile_layer) noexcept;
+        J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& coord, const TileLayer& tile_layer) noexcept;
 
         ///
         /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
-        J_NODISCARD const ChunkTileLayer* GetLayerTopLeft(const WorldCoord& world_coord,
+        J_NODISCARD const ChunkTileLayer* GetLayerTopLeft(const WorldCoord& coord,
                                                           const TileLayer& tile_layer) const noexcept;
 
         // ==============================================================
@@ -196,18 +195,16 @@ namespace jactorio::game
 
         ///
         /// Adds a layer at coordinates to be considered for logic updates
-        void LogicRegister(LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
+        void LogicRegister(LogicGroup group, const WorldCoord& coord, TileLayer layer);
 
         ///
         /// Removes a layer at coordinates to be considered for logic updates
         /// w/ custom comparison func to remove
-        void LogicRemove(LogicGroup group,
-                         const WorldCoord& world_pair,
-                         const std::function<bool(ChunkTileLayer*)>& pred);
+        void LogicRemove(LogicGroup group, const WorldCoord& coord, const std::function<bool(ChunkTileLayer*)>& pred);
 
         ///
         /// Removes a layer at coordinates to be considered for logic updates
-        void LogicRemove(LogicGroup group, const WorldCoord& world_pair, TileLayer layer);
+        void LogicRemove(LogicGroup group, const WorldCoord& coord, TileLayer layer);
 
 
         ///
@@ -241,7 +238,7 @@ namespace jactorio::game
         /// Takes first in from chunk generation queue and generates chunk
         /// Call once per logic loop tick to generate one chunk only, this keeps performance constant
         /// when generating large amounts of chunks
-        void GenChunk(const data::PrototypeManager& data_manager, uint8_t amount = 1);
+        void GenChunk(const data::PrototypeManager& proto, uint8_t amount = 1);
 
 
         // ======================================================================
@@ -288,7 +285,7 @@ namespace jactorio::game
 
     private:
         using ChunkKey    = std::tuple<ChunkCoordAxis, ChunkCoordAxis>;
-        using ChunkHasher = core::hash<ChunkKey>;
+        using ChunkHasher = hash<ChunkKey>;
 
         /// Chunks increment heading right and down
         std::unordered_map<ChunkKey, Chunk, ChunkHasher> worldChunks_;
@@ -304,4 +301,4 @@ namespace jactorio::game
     };
 } // namespace jactorio::game
 
-#endif // JACTORIO_INCLUDE_GAME_WORLD_WORLD_DATA_H
+#endif // JACTORIO_INCLUDE_GAME_WORLD_WORLD_H

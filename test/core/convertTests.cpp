@@ -4,9 +4,9 @@
 
 #include "core/convert.h"
 
-namespace jactorio::core
+namespace jactorio
 {
-    TEST(Math, SafeCast) {
+    TEST(Convert, SafeCast) {
         auto a = SafeCast<int>(42);
         auto c = SafeCast<uint64_t>(1); // Widening cast
 
@@ -14,7 +14,7 @@ namespace jactorio::core
         // auto d = SafeCast<uint8_t>(256);  // Error: Loss of data
     }
 
-    TEST(Math, SafeCastAssign) {
+    TEST(Convert, SafeCastAssign) {
         auto a = 42;
         auto c = 1ull;
 
@@ -22,4 +22,4 @@ namespace jactorio::core
 
         EXPECT_EQ(a, c);
     }
-} // namespace jactorio::core
+} // namespace jactorio

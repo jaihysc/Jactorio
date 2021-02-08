@@ -13,7 +13,7 @@
 
 using namespace jactorio;
 
-void render::RendererSprites::ClearSpritemaps() {
+void render::RendererSprites::Clear() {
     for (auto& map : textures_) {
         delete map.second;
     }
@@ -22,20 +22,21 @@ void render::RendererSprites::ClearSpritemaps() {
     spritemapDatas_.clear();
 }
 
-void render::RendererSprites::GInitializeSpritemap(const data::PrototypeManager& data_manager,
+void render::RendererSprites::GInitializeSpritemap(const data::PrototypeManager& proto,
                                                    proto::Sprite::SpriteGroup group,
                                                    const bool invert_sprites) {
-    const auto spritemap_data = CreateSpritemap(data_manager, group, invert_sprites);
+    const auto spritemap_data = CreateSpritemap(proto, group, invert_sprites);
 
     textures_[static_cast<int>(group)] =
         new Texture(spritemap_data.spriteBuffer, spritemap_data.width, spritemap_data.height);
     spritemapDatas_[static_cast<int>(group)] = spritemap_data;
 }
 
-render::RendererSprites::SpritemapData render::RendererSprites::CreateSpritemap(
-    const data::PrototypeManager& data_manager, proto::Sprite::SpriteGroup group, const bool invert_sprites) const {
+render::RendererSprites::SpritemapData render::RendererSprites::CreateSpritemap(const data::PrototypeManager& proto,
+                                                                                proto::Sprite::SpriteGroup group,
+                                                                                const bool invert_sprites) const {
 
-    auto sprites = data_manager.DataRawGetAll<const proto::Sprite>(proto::Category::sprite);
+    auto sprites = proto.GetAll<const proto::Sprite>(proto::Category::sprite);
 
     // Filter to group only
     sprites.erase(
@@ -94,7 +95,7 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(
     SpritemapDimensionT spritemap_y;
 
     std::vector<GeneratorNode*> node_buffer;
-    core::CapturingGuard<void()> guard([&]() {
+    CapturingGuard<void()> guard([&]() {
         for (auto* node : node_buffer) {
             delete node;
         }
@@ -125,7 +126,7 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(
     // Convert nodes into image output
 
 
-    const auto spritemap_buffer_size = core::SafeCast<uint64_t>(spritemap_x) * spritemap_y * 4;
+    const auto spritemap_buffer_size = SafeCast<uint64_t>(spritemap_x) * spritemap_y * 4;
 
     std::shared_ptr<Texture::SpriteBufferT> spritemap_buffer(new Texture::SpriteBufferT[spritemap_buffer_size],
                                                              [](const Texture::SpriteBufferT* p) { delete[] p; });
@@ -139,11 +140,11 @@ render::RendererSprites::SpritemapData render::RendererSprites::GenSpritemap(
     for (auto& image : image_positions) {
         auto& position = image.second;
 
-        position.topLeft.x /= core::SafeCast<float>(spritemap_x);
-        position.topLeft.y /= core::SafeCast<float>(spritemap_y);
+        position.topLeft.x /= SafeCast<float>(spritemap_x);
+        position.topLeft.y /= SafeCast<float>(spritemap_y);
 
-        position.bottomRight.x /= core::SafeCast<float>(spritemap_x);
-        position.bottomRight.y /= core::SafeCast<float>(spritemap_y);
+        position.bottomRight.x /= SafeCast<float>(spritemap_x);
+        position.bottomRight.y /= SafeCast<float>(spritemap_y);
     }
 
 
@@ -254,9 +255,9 @@ uint64_t GetSpriteIndex(const bool invert_sprites,
                         const proto::Sprite::SpriteDimension sprite_y,
                         const uint8_t color_offset) {
     if (invert_sprites)
-        return (core::SafeCast<uint64_t>(sprite_width) * (sprite_height - 1 - sprite_y) + sprite_x) * 4 + color_offset;
+        return (SafeCast<uint64_t>(sprite_width) * (sprite_height - 1 - sprite_y) + sprite_x) * 4 + color_offset;
 
-    return (core::SafeCast<uint64_t>(sprite_width) * sprite_y + sprite_x) * 4 + color_offset;
+    return (SafeCast<uint64_t>(sprite_width) * sprite_y + sprite_x) * 4 + color_offset;
 }
 
 uint64_t GetBufferIndex(const render::RendererSprites::SpritemapDimensionT spritemap_width,
@@ -389,11 +390,10 @@ void render::RendererSprites::GenerateSpritemapOutput(std::shared_ptr<Texture::S
         {
             auto& image_position = image_positions[sprite->internalId];
 
-            image_position.topLeft =
-                core::Position2{core::SafeCast<float>(adjusted_x_offset), core::SafeCast<float>(adjusted_y_offset)};
+            image_position.topLeft = Position2{SafeCast<float>(adjusted_x_offset), SafeCast<float>(adjusted_y_offset)};
 
-            image_position.bottomRight = core::Position2{core::SafeCast<float>(adjusted_x_offset + sprite_width),
-                                                         core::SafeCast<float>(adjusted_y_offset + sprite_height)};
+            image_position.bottomRight = Position2{SafeCast<float>(adjusted_x_offset + sprite_width),
+                                                   SafeCast<float>(adjusted_y_offset + sprite_height)};
         }
 
         if (current_node->above != nullptr) {

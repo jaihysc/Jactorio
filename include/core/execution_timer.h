@@ -10,11 +10,11 @@
 #include <string>
 
 #define EXECUTION_PROFILE_SCOPE(timer_variable_name, item_name) \
-    auto(timer_variable_name) = jactorio::core::ExecutionTimer(item_name)
+    auto(timer_variable_name) = jactorio::ExecutionTimer(item_name)
 
 #define EXECUTION_PROFILE_SCOPE_STOP(timer_variable_name) timer_variable_name.stop()
 
-namespace jactorio::core
+namespace jactorio
 {
     ///
     /// Times execution time within a scope, to stop early, call stop()
@@ -48,6 +48,6 @@ namespace jactorio::core
         std::string timerName_;
         std::chrono::time_point<std::chrono::high_resolution_clock> startTime_;
     };
-} // namespace jactorio::core
+} // namespace jactorio
 
 #endif // JACTORIO_INCLUDE_CORE_EXECUTION_TIMER_H

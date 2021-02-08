@@ -76,8 +76,8 @@ namespace jactorio::proto
         }
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::WorldData& /*world_data*/,
-                                               const WorldCoord& /*world_coords*/) const override {
+                                               game::World& /*world*/,
+                                               const WorldCoord& /*coord*/) const override {
             return 0;
         }
 
@@ -95,9 +95,9 @@ namespace jactorio::proto
 
         ///
         /// Entity was build in the world
-        virtual void OnBuild(game::WorldData& world_data,
-                             game::LogicData& logic_data,
-                             const WorldCoord& world_coords,
+        virtual void OnBuild(game::World& world,
+                             game::Logic& logic,
+                             const WorldCoord& coord,
                              game::ChunkTileLayer& tile_layer,
                              Orientation orientation) const = 0;
 
@@ -106,7 +106,7 @@ namespace jactorio::proto
         /// \param coord Top left of prototype
         /// \param orien Orientation of prototype
         /// \return true if can be built
-        J_NODISCARD virtual bool OnCanBuild(const game::WorldData& world,
+        J_NODISCARD virtual bool OnCanBuild(const game::World& world,
                                             const WorldCoord& coord,
                                             const Orientation orien) const {
             return true;
@@ -115,9 +115,9 @@ namespace jactorio::proto
 
         ///
         /// Entity was picked up from a built state, called BEFORE the entity has been removed
-        virtual void OnRemove(game::WorldData& world_data,
-                              game::LogicData& logic_data,
-                              const WorldCoord& world_coords,
+        virtual void OnRemove(game::World& world,
+                              game::Logic& logic,
+                              const WorldCoord& coord,
                               game::ChunkTileLayer& tile_layer) const = 0;
 
         ///
@@ -125,34 +125,34 @@ namespace jactorio::proto
         /// \param emit_coords Coordinates of the prototype which is EMITTING the update
         /// \param receive_coords Layer of the prototype RECEIVING the update
         /// \param emit_orientation Orientation to the prototype EMITTING the update
-        virtual void OnNeighborUpdate(game::WorldData& /*world_data*/,
-                                      game::LogicData& /*logic_data*/,
+        virtual void OnNeighborUpdate(game::World& /*world*/,
+                                      game::Logic& /*logic*/,
                                       const WorldCoord& emit_coords,
                                       const WorldCoord& receive_coords,
                                       Orientation emit_orientation) const {}
 
 
-        void OnDeferTimeElapsed(game::WorldData& /*world_data*/,
-                                game::LogicData& /*logic_data*/,
+        void OnDeferTimeElapsed(game::World& /*world*/,
+                                game::Logic& /*logic*/,
                                 UniqueDataBase* /*unique_data*/) const override {
             assert(false); // Unimplemented
         }
 
-        void OnTileUpdate(game::WorldData& /*world_data*/,
+        void OnTileUpdate(game::World& /*world*/,
                           const WorldCoord& /*emit_coords*/,
                           const WorldCoord& /*receive_coords*/,
                           UpdateType /*type*/) const override {
             assert(false); // Unimplemented
         }
 
-        void OnDeserialize(game::WorldData& world_data,
-                           const WorldCoord& world_coord,
+        void OnDeserialize(game::World& world,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override {}
 
 
         void PostLoad() override;
 
-        void PostLoadValidate(const data::PrototypeManager& data_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
 
     private:
         /// Item when entity is picked up

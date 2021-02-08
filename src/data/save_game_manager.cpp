@@ -35,8 +35,8 @@ void data::DeserializeGameData(game::GameDataLocal& data_local,
 
     const std::vector<std::function<void()>> pre_load_hooks{
         [&]() {
-            data_local.prototype.GenerateRelocationTable();
-            active_prototype_manager = &data_local.prototype;
+            data_local.proto.GenerateRelocationTable();
+            active_prototype_manager = &data_local.proto;
         },
         [&]() { out_data_global.ClearRefsToWorld(data_local); },
     };
@@ -46,7 +46,7 @@ void data::DeserializeGameData(game::GameDataLocal& data_local,
                 world.DeserializePostProcess();
             }
         },
-        [&]() { data_local.unique.RelocationClear(); },
+        [&]() { data_local.unique.Clear(); },
     };
 
 

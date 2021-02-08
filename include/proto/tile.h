@@ -36,7 +36,7 @@ namespace jactorio::proto
         /// If true, resources will not spawn on this and player cannot navigate onto it
         PYTHON_PROP_REF_I(bool, isWater, false);
 
-        /// Separately managed by data_manager
+        /// Separately managed by PrototypeManager
         PYTHON_PROP_I(Sprite*, sprite, nullptr);
 
 
@@ -53,8 +53,8 @@ namespace jactorio::proto
         }
 
         J_NODISCARD SpriteSetT OnRGetSpriteSet(Orientation /*orientation*/,
-                                               game::WorldData& /*world_data*/,
-                                               const WorldCoord& /*world_coords*/) const override {
+                                               game::World& /*world*/,
+                                               const WorldCoord& /*coord*/) const override {
             return 0;
         }
 
@@ -65,14 +65,14 @@ namespace jactorio::proto
         // ======================================================================
         // Data
 
-        void OnDeserialize(game::WorldData& world_data,
-                           const WorldCoord& world_coord,
+        void OnDeserialize(game::World& world,
+                           const WorldCoord& coord,
                            game::ChunkTileLayer& tile_layer) const override {}
 
-        void PostLoadValidate(const data::PrototypeManager& data_manager) const override;
+        void PostLoadValidate(const data::PrototypeManager& proto) const override;
     };
 
-    inline void Tile::PostLoadValidate(const data::PrototypeManager& /*proto_manager*/) const {
+    inline void Tile::PostLoadValidate(const data::PrototypeManager& /*proto*/) const {
         J_PROTO_ASSERT(sprite != nullptr, "Sprite was not provided");
     }
 } // namespace jactorio::proto

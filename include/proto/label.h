@@ -34,7 +34,7 @@ namespace jactorio::proto
     public:
         PROTOTYPE_CATEGORY(label);
 
-        void PostLoadValidate(const data::PrototypeManager& proto_manager) const override {}
+        void PostLoadValidate(const data::PrototypeManager& proto) const override {}
     };
 } // namespace jactorio::proto
 

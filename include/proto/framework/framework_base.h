@@ -219,7 +219,7 @@ namespace jactorio::proto
         ///
         /// Validates properties of the prototype are valid
         /// \exception proto::Data_exception If invalid
-        virtual void PostLoadValidate(const data::PrototypeManager& proto_manager) const = 0;
+        virtual void PostLoadValidate(const data::PrototypeManager& proto) const = 0;
 
         ///
         /// Called after the prototype has been validated
