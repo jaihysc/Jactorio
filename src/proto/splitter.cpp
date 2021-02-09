@@ -77,9 +77,7 @@ WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world, const W
     assert(tile != nullptr);
     const auto& layer = tile->GetLayer(game::TileLayer::entity);
 
-    auto tl_coord = coord;
-    layer.AdjustToTopLeft(tl_coord);
-
+    const auto tl_coord = coord.Incremented(layer);
 
     // Increment to the other side depending on splitter 's orientation
 

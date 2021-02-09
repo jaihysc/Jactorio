@@ -146,15 +146,7 @@ namespace jactorio::game
         J_NODISCARD const ChunkTileLayer* GetTopLeftLayer() const noexcept;
 
 
-        ///
-        /// Adjusts provided x, y to coordinates of top left tile
-        template <typename Tx, typename Ty>
-        void AdjustToTopLeft(Tx& x, Ty& y) const;
-
-        void AdjustToTopLeft(WorldCoord& coord) const noexcept;
-
-
-        ///
+        //
         /// \return Number of tiles from top left on X axis
         J_NODISCARD TileDistanceT GetOffsetX() const noexcept;
         ///
@@ -376,13 +368,13 @@ namespace jactorio::game
     }
 
 
-    template <typename Tx, typename Ty>
-    void ChunkTileLayer::AdjustToTopLeft(Tx& x, Ty& y) const {
-        if (!IsMultiTile())
+    template <typename TCoord, typename TIncrement>
+    void Position2Increment(const ChunkTileLayer& ctl, TCoord& coord, const TIncrement increment) {
+        if (!ctl.IsMultiTile())
             return;
 
-        x -= GetOffsetX();
-        y -= GetOffsetY();
+        coord.x -= ctl.GetOffsetX() * increment;
+        coord.y -= ctl.GetOffsetY() * increment;
     }
 } // namespace jactorio::game
 

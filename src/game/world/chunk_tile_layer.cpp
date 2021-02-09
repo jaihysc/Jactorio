@@ -130,10 +130,6 @@ const game::ChunkTileLayer* game::ChunkTileLayer::GetTopLeftLayer() const noexce
 // ======================================================================
 
 
-void game::ChunkTileLayer::AdjustToTopLeft(WorldCoord& coord) const noexcept {
-    AdjustToTopLeft(coord.x, coord.y);
-}
-
 game::ChunkTileLayer::TileDistanceT game::ChunkTileLayer::GetOffsetX() const noexcept {
     const auto& data = GetDimensions();
     return GetMultiTileIndex() % data.span;

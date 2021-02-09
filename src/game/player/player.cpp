@@ -307,7 +307,10 @@ bool game::Player::Placement::TryActivateLayer(game::World& world, const WorldCo
 }
 
 
-void game::Player::Placement::TryPickup(game::World& world, Logic& logic, WorldCoord coord, const uint16_t ticks) {
+void game::Player::Placement::TryPickup(game::World& world,
+                                        Logic& logic,
+                                        const WorldCoord& coord,
+                                        const uint16_t ticks) {
     auto* tile = world.GetTile(coord);
 
     const proto::Entity* chosen_ptr;
@@ -373,24 +376,24 @@ void game::Player::Placement::TryPickup(game::World& world, Logic& logic, WorldC
             auto& layer = tile->GetLayer(select_layer);
 
             // User may have hovered on another tile other than the top left
-            layer.AdjustToTopLeft(coord);
+            auto tl_coord = coord.Incremented(layer);
 
 
             // Picking up an entity which is set in activated_layer will unset activated_layer
-            if (activatedLayer_ == world.GetLayerTopLeft(coord, select_layer))
+            if (activatedLayer_ == world.GetLayerTopLeft(tl_coord, select_layer))
                 activatedLayer_ = nullptr;
 
             // Call events
             const auto* entity = layer.GetPrototype<proto::Entity>();
 
-            entity->OnRemove(world, logic, coord, layer);
+            entity->OnRemove(world, logic, tl_coord, layer);
 
-            const bool result = PlaceEntityAtCoords(world, coord, layer.GetOrientation(), nullptr);
+            const bool result = PlaceEntityAtCoords(world, tl_coord, layer.GetOrientation(), nullptr);
             assert(result); // false indicates failed to remove entity
 
-            UpdateNeighboringEntities(world, logic, coord, layer.GetOrientation(), entity);
+            UpdateNeighboringEntities(world, logic, tl_coord, layer.GetOrientation(), entity);
 
-            world.UpdateDispatch(coord, proto::UpdateType::remove);
+            world.UpdateDispatch(tl_coord, proto::UpdateType::remove);
         }
     }
 }

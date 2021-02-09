@@ -277,28 +277,21 @@ namespace jactorio::game
         ctl.SetPrototype(Orientation::up, proto_);
         ctl.SetupMultiTile(5, top_left);
 
-        int x = 0;
-        int y = 0;
-        ctl.AdjustToTopLeft(x, y);
+        Position2<int> p;
+        Position2Increment(ctl, p, -2);
 
-        WorldCoord coord;
-        ctl.AdjustToTopLeft(coord);
-
-        EXPECT_EQ(x, -2);
-        EXPECT_EQ(y, -1);
-
-        EXPECT_EQ(coord, WorldCoord(-2, -1));
+        EXPECT_EQ(p.x, 4);
+        EXPECT_EQ(p.y, 2);
     }
 
     TEST_F(ChunkTileLayerTest, AdjustToTopleftNonMultiTile) {
         const ChunkTileLayer ctl;
 
-        int x = 0;
-        int y = 0;
-        ctl.AdjustToTopLeft(x, y);
+        Position2<int> p;
+        Position2Increment(ctl, p, 100);
 
-        EXPECT_EQ(x, 0);
-        EXPECT_EQ(y, 0);
+        EXPECT_EQ(p.x, 0);
+        EXPECT_EQ(p.y, 0);
     }
 
     TEST_F(ChunkTileLayerTest, GetOffsetX) {

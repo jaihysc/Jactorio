@@ -261,7 +261,7 @@ namespace jactorio::game
             /// This will either pickup an entity, or mine resources from a resource tile
             /// Call when the key for picking up entities is pressed
             /// If resource + entity exists on one tile, picking up entity takes priority
-            void TryPickup(game::World& world, Logic& logic, WorldCoord coord, uint16_t ticks = 1);
+            void TryPickup(game::World& world, Logic& logic, const WorldCoord& coord, uint16_t ticks = 1);
 
             ///
             /// \return progress of entity pickup or resource extraction as a fraction between 0 - 1

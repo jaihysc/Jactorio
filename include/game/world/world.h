@@ -173,7 +173,7 @@ namespace jactorio::game
 
         ///
         /// Gets top left tile if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD ChunkTile* GetTileTopLeft(WorldCoord coord, const ChunkTileLayer& chunk_tile_layer);
+        J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& coord, const ChunkTileLayer& chunk_tile_layer);
 
         ///
         /// Gets top left tile if is multi tile, otherwise itself if not a multi tile

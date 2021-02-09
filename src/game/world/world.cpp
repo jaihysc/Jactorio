@@ -191,9 +191,8 @@ const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord, cons
     return const_cast<World*>(this)->GetTileTopLeft(coord, layer);
 }
 
-game::ChunkTile* game::World::GetTileTopLeft(WorldCoord coord, const ChunkTileLayer& chunk_tile_layer) {
-    chunk_tile_layer.AdjustToTopLeft(coord.x, coord.y);
-    return GetTile(coord);
+game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord, const ChunkTileLayer& chunk_tile_layer) {
+    return GetTile(coord.Incremented(chunk_tile_layer));
 }
 
 const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord,
@@ -457,10 +456,9 @@ void game::World::DeserializePostProcess() {
         };
 
     // Resolve multi tiles
-    iterate_world_chunks([this](auto coord, auto& layer, auto layer_i) {
+    iterate_world_chunks([this](const auto& coord, auto& layer, auto layer_i) {
         if (layer.GetMultiTileIndex() != 0) {
-            layer.AdjustToTopLeft(coord.x, coord.y);
-            auto* tl_tile = GetTile(coord); // Now adjusted to top left
+            auto* tl_tile = GetTile(coord.Incremented(layer)); // Now adjusted to top left
             assert(tl_tile != nullptr);
 
             layer.SetupMultiTile(layer.GetMultiTileIndex(), tl_tile->GetLayer(layer_i));

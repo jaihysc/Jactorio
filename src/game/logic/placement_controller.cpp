@@ -85,7 +85,7 @@ void RemoveAtCoords(game::World& world,
     const auto* tile = world.GetTile(coord);
     assert(tile != nullptr); // Attempted to remove a on a non existent tile
 
-    tile->GetLayer(layer).AdjustToTopLeft(coord);
+    coord.Increment(tile->GetLayer(layer));
 
 
     // Remove
