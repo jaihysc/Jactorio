@@ -4,6 +4,8 @@
 
 #include "core/orientation.h"
 
+#include "core/coordinate_tuple.h"
+
 namespace jactorio
 {
     TEST(Orientation, Construct) {
@@ -40,22 +42,24 @@ namespace jactorio
     }
 
     TEST(Orientation, Increment) {
-        int i = 0;
-        OrientationIncrement<int>(Orientation::up, i, i);
-        EXPECT_EQ(i, -1);
+        Position2<int> i;
+        Position2Increment(Orientation::up, i, 1);
+        EXPECT_EQ(i.x, 0);
+        EXPECT_EQ(i.y, -1);
 
-        int j   = 0;
-        int j_y = 0;
-        OrientationIncrement<int>(Orientation::right, j, j_y);
-        EXPECT_EQ(j, 1);
+        Position2<int> j;
+        Position2Increment(Orientation::right, j, -1);
+        EXPECT_EQ(j.x, -1);
+        EXPECT_EQ(j.y, 0);
 
-        int k   = 0;
-        int k_y = 0;
-        OrientationIncrement<int>(Orientation::down, k, k_y);
-        EXPECT_EQ(k_y, 1);
+        Position2<int> k;
+        Position2Increment(Orientation::down, k, 1);
+        EXPECT_EQ(k.x, 0);
+        EXPECT_EQ(k.y, 1);
 
-        int l = 0;
-        OrientationIncrement<int>(Orientation::left, l, l, 2);
-        EXPECT_EQ(l, -2);
+        Position2<int> l;
+        Position2Increment(Orientation::left, l, 2);
+        EXPECT_EQ(l.x, -2);
+        EXPECT_EQ(l.y, 0);
     }
 } // namespace jactorio

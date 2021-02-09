@@ -255,7 +255,7 @@ void game::ConveyorCreate(World& world,
     auto& origin_chunk = *world.GetChunkW(coord);
 
     auto get_ahead = [&world, direction, &origin_chunk](WorldCoord current_coord) -> proto::ConveyorData* {
-        OrientationIncrement(direction, current_coord.x, current_coord.y, 1);
+        current_coord.Increment(direction);
 
         // Grouping only allowed within the same chunk to guarantee a conveyor will be rendered
         if (&origin_chunk != world.GetChunkW(current_coord)) {
@@ -266,7 +266,7 @@ void game::ConveyorCreate(World& world,
     };
 
     auto get_behind = [&world, direction, &origin_chunk](WorldCoord current_coord) -> proto::ConveyorData* {
-        OrientationIncrement(direction, current_coord.x, current_coord.y, -1);
+        current_coord.Increment(direction, -1);
 
         if (&origin_chunk != world.GetChunkW(current_coord)) {
             return nullptr;
@@ -334,9 +334,7 @@ void game::ConveyorDestroy(World& world, const WorldCoord& coord, const LogicGro
 
     // Create new segment at behind cords if not the end of a segment
 
-    auto n_seg_coords = coord;
-    OrientationIncrement(o_line_segment->direction, n_seg_coords.x, n_seg_coords.y, -1);
-
+    const auto n_seg_coord  = coord.Incremented(o_line_segment->direction, -1);
     const auto n_seg_length = o_line_segment->length - o_line_data->structIndex - 1;
 
     if (n_seg_length > 0) {
@@ -346,11 +344,11 @@ void game::ConveyorDestroy(World& world, const WorldCoord& coord, const LogicGro
         // -1 to skip tile which was removed
         n_segment->headOffset = o_line_segment->headOffset - o_line_data->structIndex - 1;
 
-        world.LogicRegister(logic_group, n_seg_coords, TileLayer::entity);
+        world.LogicRegister(logic_group, n_seg_coord, TileLayer::entity);
 
         // Update trailing segments to use new segment and renumber
-        ConveyorChangeStructure(world, n_seg_coords, n_segment);
-        ConveyorRenumber(world, n_seg_coords);
+        ConveyorChangeStructure(world, n_seg_coord, n_segment);
+        ConveyorRenumber(world, n_seg_coord);
     }
 
 
@@ -406,7 +404,7 @@ void game::ConveyorRenumber(World& world, WorldCoord coord, const int start_inde
 
         SafeCastAssign(i_line_data->structIndex, i);
 
-        OrientationIncrement(con_data->structure->direction, coord.x, coord.y, -1);
+        coord.Increment(con_data->structure->direction, -1);
     }
 }
 
@@ -435,7 +433,7 @@ void ChangeTarget(game::World& world,
     for (unsigned i = 0; i < old_con_struct.length; ++i) {
         ChangeTargetSingle(world, coord, old_con_struct, new_con_struct);
 
-        OrientationIncrement(old_con_struct.direction, coord.x, coord.y, -1);
+        coord.Increment(old_con_struct.direction, -1);
     }
 }
 
@@ -468,8 +466,7 @@ void game::ConveyorChangeStructure(World& world,
 
     // Update the tile after the end of the NEW segment as they may be another con struct there
     {
-        WorldCoord past_end_coord = coord;
-        OrientationIncrement(con_struct_p->direction, past_end_coord.x, past_end_coord.y, con_struct_p->length * -1);
+        const auto past_end_coord = coord.Incremented(con_struct_p->direction, con_struct_p->length * -1);
 
         ChangeTargetSingle(world, past_end_coord, *head_con_data->structure, *con_struct_p);
     }
@@ -489,7 +486,7 @@ void game::ConveyorChangeStructure(World& world,
 
         i_con_data->structure = con_struct_p;
 
-        OrientationIncrement(con_struct_p->direction, coord.x, coord.y, -1);
+        coord.Increment(con_struct_p->direction, -1);
     }
 }
 

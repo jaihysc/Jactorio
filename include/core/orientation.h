@@ -4,8 +4,6 @@
 #define JACTORIO_INCLUDE_CORE_ORIENTATION_H
 #pragma once
 
-#include <type_traits>
-
 #include "jactorio.h"
 
 #include "data/cereal/serialize.h"
@@ -82,29 +80,23 @@ namespace jactorio
     // Supports templates which formerly used enum class Orientation
     using Direction = Orientation::Direction;
 
-
     ///
-    /// Increments or decrements Ty var depending on orientation.
+    /// Increments or decrements depending on orientation.
     /// up--, right++, down++, left--
-    /// \remark Type must implement operator+= and operator-=
-    /// \remark if incrementer type not provided, Typeof x will bw used
-    template <typename TyX, typename TyY, typename TyInc = TyX>
-    constexpr void OrientationIncrement(const Orientation orientation, TyX& x, TyY& y, TyInc increment = 1) {
-        static_assert(std::is_same<TyX, TyY>::value);
-        static_assert(std::is_signed<TyX>::value);
-
+    template <typename TCoord, typename TIncrement>
+    void Position2Increment(const Orientation orientation, TCoord& coord, const TIncrement increment) {
         switch (orientation) {
         case Orientation::up:
-            y -= static_cast<TyX>(increment);
+            coord.y -= increment;
             break;
         case Orientation::right:
-            x += static_cast<TyX>(increment);
+            coord.x += increment;
             break;
         case Orientation::down:
-            y += static_cast<TyX>(increment);
+            coord.y += increment;
             break;
         case Orientation::left:
-            x -= static_cast<TyX>(increment);
+            coord.x -= increment;
             break;
 
         default:

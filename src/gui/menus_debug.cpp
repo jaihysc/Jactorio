@@ -263,10 +263,8 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
             const auto position_x = i % game::Chunk::kChunkWidth;
             const auto position_y = i / game::Chunk::kChunkWidth;
 
-            int pos_x;
-            int pos_y;
-            int segment_len_x;
-            int segment_len_y;
+            Position2<int> pos;
+            Position2<int> segment_len;
 
             const proto::Sprite* direction_sprite;
             const proto::Sprite* outline_sprite;
@@ -277,34 +275,34 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
                 assert(false); // Missing case label
 
             case Orientation::up:
-                pos_x         = position_x;
-                pos_y         = position_y;
-                segment_len_x = 1;
-                segment_len_y = line_segment.length;
+                pos.x         = position_x;
+                pos.y         = position_y;
+                segment_len.x = 1;
+                segment_len.y = line_segment.length;
 
                 direction_sprite = sprite_up;
                 break;
             case Orientation::right:
-                pos_x         = position_x - line_segment.length + 1;
-                pos_y         = position_y;
-                segment_len_x = line_segment.length;
-                segment_len_y = 1;
+                pos.x         = position_x - line_segment.length + 1;
+                pos.y         = position_y;
+                segment_len.x = line_segment.length;
+                segment_len.y = 1;
 
                 direction_sprite = sprite_right;
                 break;
             case Orientation::down:
-                pos_x         = position_x;
-                pos_y         = position_y - line_segment.length + 1;
-                segment_len_x = 1;
-                segment_len_y = line_segment.length;
+                pos.x         = position_x;
+                pos.y         = position_y - line_segment.length + 1;
+                segment_len.x = 1;
+                segment_len.y = line_segment.length;
 
                 direction_sprite = sprite_down;
                 break;
             case Orientation::left:
-                pos_x         = position_x;
-                pos_y         = position_y;
-                segment_len_x = line_segment.length;
-                segment_len_y = 1;
+                pos.x         = position_x;
+                pos.y         = position_y;
+                segment_len.x = line_segment.length;
+                segment_len.y = 1;
 
                 direction_sprite = sprite_left;
                 break;
@@ -312,7 +310,7 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
 
             // Shift items 1 tile forwards if segment bends
             if (line_segment.terminationType != game::ConveyorStruct::TerminationType::straight) {
-                OrientationIncrement(line_segment.direction, pos_x, pos_y);
+                Position2Increment(line_segment.direction, pos, 1);
             }
 
 
@@ -328,13 +326,13 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
 
             object_layer.emplace_back(
                 game::OverlayElement{*direction_sprite,
-                                     {SafeCast<float>(pos_x), SafeCast<float>(pos_y)},
-                                     {SafeCast<float>(segment_len_x), SafeCast<float>(segment_len_y)},
+                                     {SafeCast<float>(pos.x), SafeCast<float>(pos.y)},
+                                     {SafeCast<float>(segment_len.x), SafeCast<float>(segment_len.y)},
                                      draw_overlay_layer});
             object_layer.emplace_back(
                 game::OverlayElement{*outline_sprite,
-                                     {SafeCast<float>(pos_x), SafeCast<float>(pos_y)},
-                                     {SafeCast<float>(segment_len_x), SafeCast<float>(segment_len_y)},
+                                     {SafeCast<float>(pos.x), SafeCast<float>(pos.y)},
+                                     {SafeCast<float>(segment_len.x), SafeCast<float>(segment_len.y)},
                                      draw_overlay_layer});
         }
     }

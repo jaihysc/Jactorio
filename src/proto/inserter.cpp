@@ -124,14 +124,12 @@ void proto::Inserter::ValidatedPostLoad() {
 
 // ======================================================================
 
-WorldCoord proto::Inserter::GetDropoffCoord(WorldCoord coord, const Orientation orientation) const {
-    OrientationIncrement(orientation, coord.x, coord.y, this->tileReach);
-    return coord;
+WorldCoord proto::Inserter::GetDropoffCoord(const WorldCoord& coord, const Orientation orientation) const {
+    return coord.Incremented(orientation, this->tileReach);
 }
 
-WorldCoord proto::Inserter::GetPickupCoord(WorldCoord coord, const Orientation orientation) const {
-    OrientationIncrement(orientation, coord.x, coord.y, this->tileReach * -1);
-    return coord;
+WorldCoord proto::Inserter::GetPickupCoord(const WorldCoord& coord, const Orientation orientation) const {
+    return coord.Incremented(orientation, this->tileReach * -1);
 }
 
 void proto::Inserter::InitPickupDropoff(game::World& world,
