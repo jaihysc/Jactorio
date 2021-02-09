@@ -37,14 +37,8 @@ namespace jactorio::data
     /// Parses a .cfg file, will throw exceptions on error
     /// \param file_str File contents
     /// \param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
+    /// \exception ProtoError if parsing failed
     void LocalParse(PrototypeManager& proto, const std::string& file_str, const std::string& directory_prefix);
-
-    ///
-    /// Parses a .cfg file, does not throw
-    /// \param file_str File contents
-    /// \param directory_prefix Added in front when searching for internal names : objectA -> __name__/objectA
-    /// \return non-zero if error occurred
-    int LocalParseNoThrow(PrototypeManager& proto, const std::string& file_str, const std::string& directory_prefix);
 } // namespace jactorio::data
 
 #endif // JACTORIO_INCLUDE_DATA_LOCAL_PARSER_H
