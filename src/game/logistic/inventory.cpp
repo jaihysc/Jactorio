@@ -18,7 +18,7 @@ using namespace jactorio;
     CapturingGuard<void()> guard__([&]() { Verify(); })
 #else
 
-#define J_INVENTORY_VERIFY(inventory__, guard__)
+#define J_INVENTORY_VERIFY(guard__)
 
 #endif
 
