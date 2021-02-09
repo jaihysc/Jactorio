@@ -57,14 +57,22 @@ namespace jactorio::data
 
 
         ///
-        /// Gets pointers to all data of specified data_type
+        /// Gets pointers to all data of specified category
         template <typename TProto>
-        std::vector<TProto*> GetAll(proto::Category type) const;
+        std::vector<TProto*> GetAll(proto::Category category) const;
+        ///
+        /// Gets pointers to all data of category specified by TProto
+        template <typename TProto>
+        std::vector<TProto*> GetAll() const;
 
         ///
-        /// Gets pointers to all data of specified data_type, sorted by Prototype_base.order
+        /// Gets pointers to all data of specified category, sorted by FrameworkBase.order
         template <typename TProto>
-        std::vector<TProto*> GetAllSorted(proto::Category type) const;
+        std::vector<TProto*> GetAllSorted(proto::Category category) const;
+        ///
+        /// Gets pointers to all data of category specified by TProto, sorted by FrameworkBase.order
+        template <typename TProto>
+        std::vector<TProto*> GetAllSorted() const;
 
 
         // Make
@@ -185,10 +193,10 @@ namespace jactorio::data
     }
 
     template <typename TProto>
-    std::vector<TProto*> PrototypeManager::GetAll(const proto::Category type) const {
+    std::vector<TProto*> PrototypeManager::GetAll(const proto::Category category) const {
         static_assert(IsValidPrototype<TProto>::value);
 
-        auto category_items = dataRaw_[static_cast<uint16_t>(type)];
+        auto category_items = dataRaw_[static_cast<uint16_t>(category)];
 
         std::vector<TProto*> items;
         items.reserve(category_items.size());
@@ -202,10 +210,15 @@ namespace jactorio::data
     }
 
     template <typename TProto>
-    std::vector<TProto*> PrototypeManager::GetAllSorted(const proto::Category type) const {
+    std::vector<TProto*> PrototypeManager::GetAll() const {
+        return GetAll<TProto>(TProto::category);
+    }
+
+    template <typename TProto>
+    std::vector<TProto*> PrototypeManager::GetAllSorted(const proto::Category category) const {
         static_assert(IsValidPrototype<TProto>::value);
 
-        std::vector<TProto*> items = GetAll<TProto>(type);
+        std::vector<TProto*> items = GetAll<TProto>(category);
 
         // Sort
         std::sort(items.begin(), items.end(), [](proto::FrameworkBase* a, proto::FrameworkBase* b) {
@@ -213,6 +226,12 @@ namespace jactorio::data
         });
         return items;
     }
+
+    template <typename TProto>
+    std::vector<TProto*> PrototypeManager::GetAllSorted() const {
+        return GetAllSorted<TProto>(TProto::category);
+    }
+
 
     template <typename TProto, typename... TArgs>
     TProto& PrototypeManager::Make(const std::string& iname, TArgs&&... args) {

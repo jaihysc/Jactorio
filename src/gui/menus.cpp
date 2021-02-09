@@ -150,7 +150,7 @@ void RecipeMenu(const render::GuiRenderer g_rendr,
     };
 
     // Menu groups
-    auto groups = proto.GetAllSorted<proto::RecipeGroup>(proto::Category::recipe_group);
+    auto groups = proto.GetAllSorted<proto::RecipeGroup>();
 
     auto group_slots     = g_rendr.MakeComponent<gui::GuiItemSlots>();
     group_slots.slotSpan = 5;

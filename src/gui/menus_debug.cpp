@@ -173,7 +173,7 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
     ImGui::Separator();
 
 
-    auto game_items = proto.GetAll<proto::Item>(proto::Category::item);
+    auto game_items = proto.GetAll<proto::Item>();
     for (auto& item : game_items) {
         ImGui::PushID(item->name.c_str());
 

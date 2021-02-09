@@ -40,7 +40,7 @@ void ResolveRawRecipe(const data::PrototypeManager& proto,
 }
 
 const proto::Recipe* proto::Recipe::GetItemRecipe(const data::PrototypeManager& proto, const std::string& iname) {
-    const auto recipes = proto.GetAll<const Recipe>(Category::recipe);
+    const auto recipes = proto.GetAll<const Recipe>();
 
     for (const auto& recipe : recipes) {
         if (recipe->product.first == iname)

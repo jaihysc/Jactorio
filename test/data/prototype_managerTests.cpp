@@ -106,7 +106,7 @@ namespace jactorio::data
             proto_.Make<proto::Sprite>("");
 
             // Get
-            const auto sprite_protos = proto_.GetAll<proto::Sprite>(proto::Category::sprite);
+            const auto sprite_protos = proto_.GetAll<proto::Sprite>();
             EXPECT_EQ(sprite_protos.size(), 2);
 
 
@@ -164,7 +164,7 @@ namespace jactorio::data
         proto_.Make<proto::Sprite>("test_tile1");
         proto_.Make<proto::Sprite>("test_tile2");
 
-        const std::vector<proto::Sprite*> paths = proto_.GetAll<proto::Sprite>(proto::Category::sprite);
+        const std::vector<proto::Sprite*> paths = proto_.GetAll<proto::Sprite>();
 
         EXPECT_EQ(Contains(paths, "test_tile1"), true);
         EXPECT_EQ(Contains(paths, "test_tile2"), true);
@@ -180,7 +180,7 @@ namespace jactorio::data
         proto_.Make<proto::Sprite>("test_tile4");
 
         // Get
-        const std::vector<proto::Sprite*> protos = proto_.GetAllSorted<proto::Sprite>(proto::Category::sprite);
+        const std::vector<proto::Sprite*> protos = proto_.GetAllSorted<proto::Sprite>();
 
         EXPECT_EQ(protos[0]->name, "test_tile1");
         EXPECT_EQ(protos[1]->name, "test_tile2");
@@ -207,7 +207,7 @@ namespace jactorio::data
         EXPECT_EQ(data, nullptr);
 
         // Get all
-        const std::vector<proto::Sprite*> data_all = proto_.GetAll<proto::Sprite>(proto::Category::sprite);
+        const std::vector<proto::Sprite*> data_all = proto_.GetAll<proto::Sprite>();
 
         EXPECT_EQ(data_all.size(), 0);
     }
