@@ -348,7 +348,7 @@ namespace jactorio::game
         const auto recipe_pack = TestSetupRecipe(proto);
 
         proto::AssemblyMachineData asm_data;
-        asm_data.ingredientInv.resize(2);
+        asm_data.ingredientInv.Resize(2);
         asm_data.ingredientInv[0] = {recipe_pack.item1, 49, recipe_pack.item1};
         asm_data.ingredientInv[1] = {nullptr, 0, recipe_pack.item2};
 

@@ -7,6 +7,7 @@
 #include <deque>
 
 #include "core/orientation.h"
+#include "data/cereal/serialization_type.h"
 #include "data/cereal/support/decimal.h"
 #include "game/logic/conveyor_prop.h"
 #include "proto/detail/type.h"

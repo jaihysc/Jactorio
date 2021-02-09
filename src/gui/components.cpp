@@ -7,10 +7,10 @@
 #include "core/convert.h"
 #include "core/utility.h"
 
-#include "proto/item.h"
 #include "proto/sprite.h"
 
 #include "game/input/mouse_selection.h"
+#include "game/logistic/inventory.h"
 
 #include "gui/colors.h"
 #include "gui/menu_data.h"
@@ -136,7 +136,7 @@ void gui::GuiItemSlots::DrawSlot(const PrototypeIdT sprite_id, const DrawSlotCal
     DrawSlot(sprite_id, 0, callback);
 }
 
-void gui::GuiItemSlots::DrawSlot(const proto::ItemStack& item_stack, const DrawSlotCallbackT& callback) const {
+void gui::GuiItemSlots::DrawSlot(const game::ItemStack& item_stack, const DrawSlotCallbackT& callback) const {
     DrawSlot(item_stack.item.Get() == nullptr ? 0 : item_stack.item->sprite->internalId, item_stack.count, callback);
 }
 

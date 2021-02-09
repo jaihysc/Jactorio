@@ -16,8 +16,8 @@
 
 #include "game/input/mouse_selection.h"
 #include "game/logic/conveyor_utility.h"
-#include "game/logic/inventory_controller.h"
 #include "game/logic/logic.h"
+#include "game/logistic/inventory.h"
 #include "game/player/player.h"
 #include "game/world/world.h"
 
@@ -165,8 +165,8 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
     if (new_inv_size < 0)
         new_inv_size = 0;
 
-    if (new_inv_size != player.inventory.inventory.size()) {
-        player.inventory.inventory.resize(new_inv_size);
+    if (new_inv_size != player.inventory.inventory.Size()) {
+        player.inventory.inventory.Resize(new_inv_size);
     }
 
 
@@ -178,8 +178,8 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
         ImGui::PushID(item->name.c_str());
 
         if (ImGui::Button(item->GetLocalizedName().c_str())) {
-            proto::ItemStack item_stack = {item, SafeCast<proto::Item::StackCount>(give_amount)};
-            game::AddStack(player.inventory.inventory, item_stack);
+            game::ItemStack item_stack = {item, SafeCast<proto::Item::StackCount>(give_amount)};
+            player.inventory.inventory.Add(item_stack);
         }
         ImGui::PopID();
     }

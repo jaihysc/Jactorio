@@ -156,7 +156,7 @@ namespace jactorio::game
         EXPECT_EQ(playerCraft_.GetCraftingItemExtras().size(), 0);
 
         // Ensure there were no excess items
-        for (std::size_t i = 1; i < playerInv_.inventory.size(); ++i) {
+        for (std::size_t i = 1; i < playerInv_.inventory.Size(); ++i) {
             EXPECT_EQ(playerInv_.inventory[i].item, nullptr);
         }
     }

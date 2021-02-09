@@ -31,7 +31,7 @@ namespace jactorio::game
         EXPECT_EQ(copy.GetDimensions().height, 2);
         EXPECT_EQ(copy.GetDimensions(), top_left.GetDimensions());
 
-        EXPECT_EQ(copy.GetUniqueData<proto::ContainerEntityData>()->inventory.size(), 32);
+        EXPECT_EQ(copy.GetUniqueData<proto::ContainerEntityData>()->inventory.Size(), 32);
 
         EXPECT_EQ(copy.GetOrientation(), Orientation::right);
     }
@@ -64,7 +64,7 @@ namespace jactorio::game
         ChunkTileLayer other;
         other = top_left;
 
-        EXPECT_EQ(other.GetUniqueData<proto::ContainerEntityData>()->inventory.size(), 20);
+        EXPECT_EQ(other.GetUniqueData<proto::ContainerEntityData>()->inventory.Size(), 20);
     }
 
     TEST_F(ChunkTileLayerTest, MoveAssignNonTopLeft) {

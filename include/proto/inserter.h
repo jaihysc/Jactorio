@@ -8,6 +8,7 @@
 
 #include "game/logic/inserter_controller.h"
 #include "game/logic/item_logistics.h"
+#include "game/logistic/inventory.h"
 #include "proto/abstract/health_entity.h"
 
 namespace jactorio::proto
@@ -35,7 +36,7 @@ namespace jactorio::proto
         Status status = Status::pickup;
 
         /// Current item held by inserter
-        ItemStack heldItem;
+        game::ItemStack heldItem;
 
         game::ItemDropOff dropoff;
         game::InserterPickup pickup;

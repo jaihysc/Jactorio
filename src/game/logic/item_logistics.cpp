@@ -9,7 +9,7 @@
 #include "proto/recipe.h"
 
 #include "game/logic/inserter_controller.h"
-#include "game/logic/inventory_controller.h"
+#include "game/logistic/inventory.h"
 #include "game/world/world.h"
 
 using namespace jactorio;
@@ -57,10 +57,10 @@ bool game::ItemDropOff::CanInsertContainerEntity(const DropOffParams& /*params*/
 
 bool game::ItemDropOff::InsertContainerEntity(const DropOffParams& params) const {
     auto& container_data = static_cast<proto::ContainerEntityData&>(params.uniqueData);
-    if (!CanAddStack(container_data.inventory, params.itemStack).first)
+    if (!container_data.inventory.CanAdd(params.itemStack).first)
         return false;
 
-    AddStack(container_data.inventory, params.itemStack);
+    container_data.inventory.Add(params.itemStack);
     return true;
 }
 
@@ -177,7 +177,7 @@ bool game::ItemDropOff::CanInsertAssemblyMachine(const DropOffParams& params) co
     if (recipe == nullptr)
         return false;
 
-    for (size_t i = 0; i < machine_data.ingredientInv.size(); ++i) {
+    for (size_t i = 0; i < machine_data.ingredientInv.Size(); ++i) {
         auto& slot = machine_data.ingredientInv[i];
 
         if (slot.filter == params.itemStack.item) {
@@ -254,7 +254,7 @@ bool game::InserterPickup::Initialize(World& world, const WorldCoordAxis world_x
 
 game::InserterPickup::GetPickupReturn game::InserterPickup::GetPickupContainerEntity(const PickupParams& params) const {
     auto& container = static_cast<proto::ContainerEntityData&>(params.uniqueData);
-    return GetFirstItem(container.inventory);
+    return container.inventory.First();
 }
 
 game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(const PickupParams& params) const {
@@ -264,9 +264,9 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(c
     auto& container = static_cast<proto::ContainerEntityData&>(params.uniqueData);
 
 
-    const auto* target_item = GetFirstItem(container.inventory);
+    const auto* target_item = container.inventory.First();
 
-    return {RemoveInvItem(container.inventory, target_item, params.amount), {target_item, params.amount}};
+    return {container.inventory.Remove(target_item, params.amount), {target_item, params.amount}};
 }
 
 

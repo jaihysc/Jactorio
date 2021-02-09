@@ -11,9 +11,9 @@
 #include "gui/component_base.h"
 #include "gui/layout.h"
 
-namespace jactorio::proto
+namespace jactorio::game
 {
-    struct ItemStack;
+    class ItemStack;
 }
 
 namespace jactorio::render
@@ -111,7 +111,7 @@ namespace jactorio::gui
         ///
         /// \param callback Called after drawing invisible button which will be clicked on
         void DrawSlot(
-            const proto::ItemStack& item_stack, const DrawSlotCallbackT& callback = [] {}) const;
+            const game::ItemStack& item_stack, const DrawSlotCallbackT& callback = [] {}) const;
 
 
         /// Slots before wrapping onto new line

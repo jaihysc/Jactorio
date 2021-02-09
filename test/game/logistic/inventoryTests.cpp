@@ -4,24 +4,23 @@
 
 #include <memory>
 
-#include "game/logic/inventory_controller.h"
+#include "game/logistic/inventory.h"
 
 namespace jactorio::game
 {
-    TEST(InventoryController, StackMatchesFilter) {
-        proto::Item item_1{};
-        proto::Item item_2{};
+    TEST(ItemSack, MatchesFilter) {
+        proto::Item item_1;
+        proto::Item item_2;
 
-        EXPECT_FALSE(StackMatchesFilter({&item_1, 1}, {nullptr, 0, &item_2}));
-        EXPECT_TRUE(StackMatchesFilter({nullptr, 1}, {nullptr, 0, &item_2}));
-        EXPECT_TRUE(StackMatchesFilter({&item_1, 1}, {nullptr, 0, nullptr}));
+        EXPECT_FALSE(ItemStack({&item_1, 1}).MatchesFilter({nullptr, 0, &item_2}));
+        EXPECT_TRUE(ItemStack({nullptr, 1}).MatchesFilter({nullptr, 0, &item_2}));
+        EXPECT_TRUE(ItemStack({&item_1, 1}).MatchesFilter({nullptr, 0, nullptr}));
     }
 
-    TEST(InventoryController, MoveStackToEmptySlot) {
+    TEST(Inventory, MoveStackToEmptySlot) {
         // Moving from inventory position 0 to position 3
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -43,13 +42,12 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 50);
     }
 
-    TEST(InventoryController, MoveStackToPartialFilledSlotNonExceeding) {
+    TEST(Inventory, MoveStackToPartialFilledSlotNonExceeding) {
         // Moving from inventory position 0 to position 3. not exceeding the max stack size
         // moving 10 items:
         // position 3 already has 30 items, adding 10 from position 0 to equal 40.
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -70,14 +68,13 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 40);
     }
 
-    TEST(InventoryController, MoveStackToPartialFilledSlotExceeding) {
+    TEST(Inventory, MoveStackToPartialFilledSlotExceeding) {
         // Moving from inventory position 0 to position 3. EXCEEDING the max stack size
         // moving 30 items:
         // position 3 already has 30 items, meaning only 20 can be moved into it to reach the stack size of 50.
         // this leaves 10 in the original location (0) and 50 in the target location (3)
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -98,12 +95,11 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 50);
     }
 
-    TEST(InventoryController, SwapItemStacks) {
+    TEST(Inventory, SwapItemStacks) {
         // Moving from inventory position 0 to position 3
         // The item stacks are of different items, therefore only swapping positions
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -127,12 +123,11 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 50);
     }
 
-    TEST(InventoryController, SwapItemStacksFilterd) {
+    TEST(Inventory, SwapItemStacksFilterd) {
         // Moving from inventory position 0 to position 3
         // slot 0 is filtered, therefore no swap occurs
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         const auto item  = std::make_unique<proto::Item>();
         const auto item2 = std::make_unique<proto::Item>();
@@ -183,12 +178,11 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].filter, nullptr);
     }
 
-    TEST(InventoryController, MoveStackFullTargetSlot) {
+    TEST(Inventory, MoveStackFullTargetSlot) {
         // Moving from inventory position 0 to position 3.
         // The target slot is full, origin slot has something
         // swap the 2 items
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -209,12 +203,11 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 18);
     }
 
-    TEST(InventoryController, MoveEmptySlotToEmptySlot) {
+    TEST(Inventory, MoveEmptySlotToEmptySlot) {
         // Moving from inventory position 0 to position 3
         // Moving nothing to nothing results in nothing!
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         inv[0].item  = nullptr;
         inv[0].count = 0;
@@ -234,13 +227,12 @@ namespace jactorio::game
 
     // Items somehow exceeding their item stacks
 
-    TEST(InventoryController, MoveExceedingStackToEmptySlot) {
+    TEST(Inventory, MoveExceedingStackToEmptySlot) {
         // Moving from inventory position 0 to position 3.
         // The origin item is somehow exceeding its stack size, perhaps a prototype update
         // Move out only the stack size into the empty slot
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -261,13 +253,12 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 50);
     }
 
-    TEST(InventoryController, MoveEmptySlotToExceedingStack) {
+    TEST(Inventory, MoveEmptySlotToExceedingStack) {
         // Moving from inventory position 0 to position 3.
         // The TARGET item is somehow exceeding its stack size, perhaps a prototype update
         // Move out only the stack size into the empty origin slot
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -288,13 +279,12 @@ namespace jactorio::game
         EXPECT_EQ(inv[3].count, 8950);
     }
 
-    TEST(InventoryController, MoveExceedingStackToPartialSlot) {
+    TEST(Inventory, MoveExceedingStackToPartialSlot) {
         // Moving from inventory position 0 to position 3.
         // The origin item is somehow exceeding its stack size, perhaps a prototype update
         // Move out only 10 to reach the stack size in the target slot
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         const auto item = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -318,13 +308,12 @@ namespace jactorio::game
     // ------------------------------------------------------
     // RIGHT click tests
     // ------------------------------------------------------
-    TEST(InventoryController, MoveRclickEmptyOriginInv) {
+    TEST(Inventory, MoveRclickEmptyOriginInv) {
         // Moving from inventory position 0 to position 3.
         // Origin inventory is empty, right clicking on an item takes half of it
         // round down, unless there is only 1, where one is taken
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         auto item       = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -399,12 +388,11 @@ namespace jactorio::game
         }
     }
 
-    TEST(InventoryController, MoveRclickEmptyTargetInv) {
+    TEST(Inventory, MoveRclickEmptyTargetInv) {
         // Moving from inventory position 0 to position 3.
         // Target inventory is empty, right clicking drops 1 item off
 
-        constexpr auto inv_size = 10;
-        proto::ItemStack inv[inv_size];
+        Inventory inv(10);
 
         auto item       = std::make_unique<proto::Item>();
         item->stackSize = 50;
@@ -488,13 +476,114 @@ namespace jactorio::game
     //
     //
     //
-    TEST(InventoryController, AddStackAddToEmptySlot) {
-        // Should find the first empty slot and add the item there
-        // Slots, 0, 1 Will be with another item
-        // Should place in slot 2
+    TEST(Inventory, Sort) {
+        proto::Item item;
+        item.stackSize = 50;
 
-        constexpr auto inv_size = 10;
-        proto::Item::Inventory inv{inv_size};
+        proto::Item item_2;
+        item_2.stackSize = 10;
+
+        Inventory inv{40};
+
+        // Item 1
+        inv[0].item  = &item;
+        inv[0].count = 10;
+
+        inv[10].item  = &item;
+        inv[10].count = 25;
+
+        inv[20].item  = &item;
+        inv[20].count = 25;
+
+        inv[13].item  = &item;
+        inv[13].count = 20;
+
+        inv[14].item  = &item;
+        inv[14].count = 30;
+
+        // Item 2
+        inv[31].item  = &item_2;
+        inv[31].count = 4;
+
+        inv[32].item  = &item_2;
+        inv[32].count = 6;
+
+        inv[22].item  = &item_2;
+        inv[22].count = 1;
+
+
+        // Sorted inventory should be as follows
+        // Item(count)
+        // 1(50), 1(50), 1(10), 2(10), 2(1)
+        inv.Sort();
+
+        EXPECT_EQ(inv[0].item, &item);
+        EXPECT_EQ(inv[0].count, 50);
+        EXPECT_EQ(inv[1].item, &item);
+        EXPECT_EQ(inv[1].count, 50);
+        EXPECT_EQ(inv[2].item, &item);
+        EXPECT_EQ(inv[2].count, 10);
+
+        EXPECT_EQ(inv[3].item, &item_2);
+        EXPECT_EQ(inv[3].count, 10);
+        EXPECT_EQ(inv[4].item, &item_2);
+        EXPECT_EQ(inv[4].count, 1);
+    }
+
+    TEST(Inventory, SortFull) {
+        proto::Item item;
+        item.stackSize = 50;
+
+        Inventory inv{30};
+        for (auto& i : inv) {
+            i.item  = &item;
+            i.count = 50;
+        }
+
+        inv.Sort();
+
+        for (auto& i : inv) {
+            EXPECT_EQ(i.item, &item);
+            EXPECT_EQ(i.count, 50);
+        }
+    }
+
+    ///
+    /// If there is an item which exceeds its stack size, do not attempt to stack into it
+    TEST(Inventory, SortItemExcedingStack) {
+        proto::Item item;
+        item.stackSize = 50;
+
+        Inventory inv{30};
+
+        inv[10].item  = &item;
+        inv[10].count = 100;
+
+        inv[11].item  = &item;
+        inv[11].count = 100;
+
+        inv[12].item  = &item;
+        inv[12].count = 10;
+
+        inv.Sort();
+
+        EXPECT_EQ(inv[0].item, &item);
+        EXPECT_EQ(inv[0].count, 100);
+
+        EXPECT_EQ(inv[1].item, &item);
+        EXPECT_EQ(inv[1].count, 100);
+
+        EXPECT_EQ(inv[2].item, &item);
+        EXPECT_EQ(inv[2].count, 10);
+    }
+
+    ///
+    /// Should find the first empty slot and add the item there
+    /// Slots, 0, 1 Will be with another item
+    /// Should place in slot 2
+
+    TEST(Inventory, AddStackToEmptySlot) {
+        Inventory inv(10);
 
         const auto item  = std::make_unique<proto::Item>();
         const auto item2 = std::make_unique<proto::Item>();
@@ -505,9 +594,9 @@ namespace jactorio::game
         inv[1].item  = item.get();
         inv[1].count = 21;
 
-        auto add_item = proto::ItemStack{item2.get(), 20};
-        EXPECT_TRUE(CanAddStack(inv, add_item).first);
-        EXPECT_TRUE(AddStackSub(inv, add_item));
+        auto add_item = ItemStack{item2.get(), 20};
+        EXPECT_TRUE(inv.CanAdd(add_item).first);
+        EXPECT_TRUE(inv.AddSub(add_item));
 
         EXPECT_EQ(add_item.count, 0);
 
@@ -522,15 +611,15 @@ namespace jactorio::game
         EXPECT_EQ(inv[2].count, 20);
     }
 
-    TEST(InventoryController, AddStackAddToExistingSlot) {
-        // Should find slot with item of same type, respecting max stack size, add the remaining at the next
-        // available slot which is another item of the same type
-        //
-        // Slots, 0 Will be with another item
-        // Should place in slot 1 2 3 | Add amounts: (10, 10, 30)
+    ///
+    /// Should find slot with item of same type, respecting max stack size, add the remaining at the next
+    /// available slot which is another item of the same type
+    ///
+    /// Slots, 0 Will be with another item
+    /// Should place in slot 1 2 3 | Add amounts: (10, 10, 30)
+    TEST(Inventory, AddStackToExistingSlot) {
 
-        constexpr auto inv_size = 10;
-        proto::Item::Inventory inv{inv_size};
+        Inventory inv(10);
 
         const auto another_item   = std::make_unique<proto::Item>();
         const auto item_we_add_to = std::make_unique<proto::Item>();
@@ -548,9 +637,9 @@ namespace jactorio::game
         inv[3].item  = item_we_add_to.get();
         inv[3].count = 20;
 
-        auto add_item = proto::ItemStack{item_we_add_to.get(), 50};
-        EXPECT_TRUE(CanAddStack(inv, add_item).first);
-        EXPECT_TRUE(AddStackSub(inv, add_item));
+        auto add_item = ItemStack{item_we_add_to.get(), 50};
+        EXPECT_TRUE(inv.CanAdd(add_item).first);
+        EXPECT_TRUE(inv.AddSub(add_item));
 
         EXPECT_EQ(add_item.count, 0);
 
@@ -572,10 +661,10 @@ namespace jactorio::game
         EXPECT_EQ(inv[4].count, 0);
     }
 
-    TEST(InventoryController, AddStackNoAvailableSlots) {
-        // Slots 1 is full, inv size is 1, will return false
-        constexpr auto inv_size = 1;
-        proto::Item::Inventory inv{inv_size};
+    ///
+    /// Slots 1 is full, inv size is 1, will return false
+    TEST(Inventory, AddStackNoAvailableSlots) {
+        Inventory inv(1);
 
         const auto item  = std::make_unique<proto::Item>();
         const auto item2 = std::make_unique<proto::Item>();
@@ -583,9 +672,9 @@ namespace jactorio::game
         inv[0].item  = item.get();
         inv[0].count = 10;
 
-        auto add_item = proto::ItemStack{item2.get(), 20};
-        EXPECT_FALSE(CanAddStack(inv, add_item).first);
-        EXPECT_FALSE(AddStackSub(inv, add_item));
+        auto add_item = ItemStack{item2.get(), 20};
+        EXPECT_FALSE(inv.CanAdd(add_item).first);
+        EXPECT_FALSE(inv.AddSub(add_item));
 
         EXPECT_EQ(add_item.count, 20);
 
@@ -594,37 +683,30 @@ namespace jactorio::game
         EXPECT_EQ(inv[0].count, 10);
     }
 
-    TEST(InventoryController, AddStackFiltered) {
-        // Item must match filter, otherwise it cannot be at the slot with the filter
+    ///
+    /// Item must match filter, otherwise it cannot be at the slot with the filter
+    TEST(Inventory, AddStackFiltered) {
+        proto::Item filtered_item;
+        proto::Item not_filtered_item;
 
-        proto::Item filtered_item{};
-        proto::Item not_filtered_item{};
 
-        // Slot 0 is filtered
-        proto::Item::Inventory inv{2};
+        Inventory inv(2);
+
         inv[0].filter = &filtered_item;
 
-
         // Cannot insert into slot 0
-        EXPECT_EQ(CanAddStack(inv, {&not_filtered_item, 10}).second, 1);
-        AddStack(inv, {&not_filtered_item, 10});
+        EXPECT_EQ(inv.CanAdd({&not_filtered_item, 10}).second, 1);
+        inv.Add({&not_filtered_item, 10});
 
         EXPECT_EQ(inv[0].item, nullptr);
         EXPECT_EQ(inv[1].item, &not_filtered_item);
     }
 
-    //
-    //
-    //
-    // Get item stack count
-    //
-    //
-    TEST(InventoryController, GetInvItemCount) {
+    TEST(Inventory, CountItem) {
         const auto item  = std::make_unique<proto::Item>();
         const auto item2 = std::make_unique<proto::Item>();
 
-        constexpr auto inv_size = 30;
-        proto::Item::Inventory inv{inv_size};
+        Inventory inv(30);
 
         // Count these to a sum of 101
         inv[0]  = {item.get(), 20};
@@ -640,33 +722,31 @@ namespace jactorio::game
         inv[13] = {item2.get(), 200};
         inv[28] = {item2.get(), 200};
 
-        EXPECT_EQ(GetInvItemCount(inv, item.get()), 101);
+        EXPECT_EQ(inv.Count(item.get()), 101);
     }
 
-    TEST(InventoryController, GetFirstItem) {
+    TEST(Inventory, GetFirstItem) {
         const auto item  = std::make_unique<proto::Item>();
         const auto item2 = std::make_unique<proto::Item>();
 
-        constexpr auto inv_size = 10;
-        proto::Item::Inventory inv{inv_size};
+        Inventory inv(10);
 
-        EXPECT_EQ(GetFirstItem(inv), nullptr); // No items
+        EXPECT_EQ(inv.First(), nullptr); // No items
 
         inv[3] = {item2.get(), 32};
         inv[4] = {item.get(), 2};
 
-        EXPECT_EQ(GetFirstItem(inv), item2.get());
+        EXPECT_EQ(inv.First(), item2.get());
     }
 
-    TEST(InventoryController, RemoveInvItemS) {
-        constexpr auto inv_size = 30;
-        proto::Item::Inventory inv{inv_size};
+    TEST(Inventory, Remove) {
+        Inventory inv(30);
 
         const auto item = std::make_unique<proto::Item>();
         inv[20]         = {item.get(), 5};
         inv[23]         = {item.get(), 5};
 
-        EXPECT_TRUE(RemoveInvItem(inv, item.get(), 10));
+        EXPECT_TRUE(inv.Remove(item.get(), 10));
 
         // Inventory should be empty
         for (auto& i : inv) {
@@ -675,15 +755,14 @@ namespace jactorio::game
         }
     }
 
-    TEST(InventoryController, RemoveInvItemSInvalid) {
-        constexpr auto inv_size = 30;
-        proto::Item::Inventory inv{inv_size};
+    TEST(Inventory, RemoveNotEnough) {
+        Inventory inv(30);
 
         const auto item = std::make_unique<proto::Item>();
         inv[20]         = {item.get(), 5};
 
         // Attempting to remove 10 when only 5 exists
-        EXPECT_FALSE(RemoveInvItem(inv, item.get(), 10));
+        EXPECT_FALSE(inv.Remove(item.get(), 10));
 
         // Inventory unchanged
         EXPECT_EQ(inv[20].item, item.get());

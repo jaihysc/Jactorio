@@ -9,7 +9,7 @@
 
 #include "core/coordinate_tuple.h"
 #include "core/orientation.h"
-#include "proto/item.h"
+#include "game/logistic/inventory.h"
 #include "proto/recipe.h"
 
 namespace jactorio::game
@@ -137,16 +137,11 @@ namespace jactorio::game
             ///
             /// High level method for inventory actions, prefer over calls to HandleClick and others
             void HandleInventoryActions(const data::PrototypeManager& proto,
-                                        proto::Item::Inventory& inv,
+                                        game::Inventory& inv,
                                         size_t index,
                                         bool half_select);
 
             // ======================================================================
-
-            ///
-            /// Sorts inventory items by internal name, grouping multiples of the same item into one stack, obeying
-            /// stack size
-            static void InventorySort(proto::Item::Inventory& inv);
 
             ///
             /// Interacts with the inventory at index
@@ -157,12 +152,12 @@ namespace jactorio::game
                              uint16_t index,
                              uint16_t mouse_button,
                              bool reference_select,
-                             proto::Item::Inventory& inv);
+                             game::Inventory& inv);
 
             ///
             /// Gets the currently item player is currently holding on the cursor
             /// \return nullptr if there is no item selected
-            J_NODISCARD const proto::ItemStack* GetSelectedItem() const;
+            J_NODISCARD const ItemStack* GetSelectedItem() const;
 
             ///
             /// Deselects the current item and returns it to its slot ONLY if selected by reference
@@ -181,14 +176,14 @@ namespace jactorio::game
 
 
 #ifdef JACTORIO_BUILD_TEST
-            void SetSelectedItem(const proto::ItemStack& item) {
+            void SetSelectedItem(const ItemStack& item) {
                 hasItemSelected_ = true;
                 selectedItem_    = item;
             }
 #endif
 
 
-            proto::Item::Inventory inventory{kDefaultInventorySize};
+            game::Inventory inventory{kDefaultInventorySize};
 
 
             CEREAL_SERIALIZE(archive) {
@@ -196,7 +191,7 @@ namespace jactorio::game
             }
 
         private:
-            proto::ItemStack selectedItem_;
+            ItemStack selectedItem_;
 
             bool hasItemSelected_          = false;
             std::size_t selectedItemIndex_ = 0;
@@ -387,7 +382,7 @@ namespace jactorio::game
             CraftingItemExtrasT craftingItemExtras_;
 
             /// Item which is held until there is space in the player inventory to return
-            proto::ItemStack craftingHeldItem_ = {nullptr, 0};
+            ItemStack craftingHeldItem_ = {nullptr, 0};
 
 
             Inventory* playerInv_;

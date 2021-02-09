@@ -6,8 +6,8 @@
 
 #include "data/cereal/serialization_type.h"
 #include "game/logic/deferral_timer.h"
+#include "game/logistic/inventory.h"
 #include "proto/abstract/health_entity.h"
-#include "proto/item.h"
 #include "proto/recipe.h"
 
 namespace jactorio::proto
@@ -44,8 +44,8 @@ namespace jactorio::proto
         /// Callback called when recipe is finished crafting
         game::DeferralTimer::DeferralEntry deferralEntry;
 
-        Item::Inventory ingredientInv;
-        Item::Inventory productInv;
+        game::Inventory ingredientInv;
+        game::Inventory productInv;
 
 
         CEREAL_SERIALIZE(archive) {

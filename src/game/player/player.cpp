@@ -2,12 +2,11 @@
 
 #include "game/player/player.h"
 
-#include <algorithm>
 #include <map>
 
 #include "game/input/mouse_selection.h"
-#include "game/logic/inventory_controller.h"
 #include "game/logic/placement_controller.h"
+#include "game/logistic/inventory.h"
 #include "game/world/world.h"
 #include "proto/recipe.h"
 #include "proto/resource_entity.h"
@@ -257,7 +256,7 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
 
     // If item stack was used up, sort player inventory to fill gap
     if (!playerInv_->DecrementSelectedItem()) {
-        playerInv_->InventorySort(playerInv_->inventory);
+        playerInv_->inventory.Sort();
     }
 
     // Call events
@@ -347,14 +346,14 @@ void game::Player::Placement::TryPickup(game::World& world,
 
         // Give picked up item to player
         assert(chosen_ptr->GetItem() != nullptr); // Entity prototype does not have an item prototype
-        const auto item_stack = proto::ItemStack{chosen_ptr->GetItem(), 1};
+        const auto item_stack = ItemStack{chosen_ptr->GetItem(), 1};
 
         // Failed to add item, likely because the inventory is full
-        if (!CanAddStack(playerInv_->inventory, item_stack).first)
+        if (!playerInv_->inventory.CanAdd(item_stack).first)
             return;
 
-        AddStack(playerInv_->inventory, item_stack);
-        playerInv_->InventorySort(playerInv_->inventory);
+        playerInv_->inventory.Add(item_stack);
+        playerInv_->inventory.Sort();
 
         pickupTickCounter_ = 0;
         // Resource entity
@@ -409,129 +408,14 @@ float game::Player::Placement::GetPickupPercentage() const {
 // Inventory
 
 void game::Player::Inventory::HandleInventoryActions(const data::PrototypeManager& proto,
-                                                     proto::Item::Inventory& inv,
+                                                     game::Inventory& inv,
                                                      const size_t index,
                                                      const bool half_select) {
     const bool is_player_inv = &inv == &inventory;
 
 
     HandleClick(proto, SafeCast<uint16_t>(index), half_select ? 1 : 0, is_player_inv, inv);
-    InventorySort(inventory);
-}
-
-void game::Player::Inventory::InventorySort(proto::Item::Inventory& inv) {
-    // The inventory must be sorted without moving the selected cursor
-
-    // Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
-    std::vector<proto::ItemStack> sorted_inv;
-    sorted_inv.reserve(inv.size());
-    for (const auto& stack : inv) {
-        // Skip the cursor
-        if (stack.item == nullptr || stack.item->GetLocalizedName() == proto::Item::kInventorySelectedCursor) {
-            continue;
-        }
-
-        sorted_inv.push_back(stack);
-    }
-
-    // Sort temp inventory (does not contain cursor)
-    std::sort(sorted_inv.begin(), sorted_inv.end(), [](const proto::ItemStack a, const proto::ItemStack b) {
-        const auto& a_name = a.item->GetLocalizedName();
-        const auto& b_name = b.item->GetLocalizedName();
-
-        return a_name < b_name;
-    });
-
-    // Compress item stacks
-    if (sorted_inv.size() > 1) {
-        // Cannot compress slot 0 with anything before it
-        for (auto sort_inv_index = sorted_inv.size() - 1; sort_inv_index > 0; --sort_inv_index) {
-
-            auto buffer_item_count = sorted_inv[sort_inv_index].count;
-            const auto stack_size  = sorted_inv[sort_inv_index].item->stackSize;
-
-            // Find index which the same item type begins
-            auto stack_compress_begin = sort_inv_index;
-            while (sorted_inv[stack_compress_begin - 1].item == sorted_inv[sort_inv_index].item) {
-                stack_compress_begin--;
-                if (stack_compress_begin == 0)
-                    break;
-            }
-
-
-            // Compress stacks
-            for (; stack_compress_begin < sort_inv_index; ++stack_compress_begin) {
-
-                // If item somehow exceeds stack do not attempt to stack into it
-                if (sorted_inv[stack_compress_begin].count > stack_size)
-                    continue;
-
-                // Amount which can be dropped is space left until reaching stack size
-                const uint16_t max_drop_amount = stack_size - sorted_inv[stack_compress_begin].count;
-
-                // Has enough to max current stack and move on
-                if (buffer_item_count > max_drop_amount) {
-                    sorted_inv[stack_compress_begin].count = stack_size;
-                    buffer_item_count -= max_drop_amount;
-                }
-                // Not enough to drop and move on
-                else {
-                    sorted_inv[stack_compress_begin].count += buffer_item_count;
-                    sorted_inv[sort_inv_index].item = nullptr;
-                    buffer_item_count               = 0;
-                    break;
-                }
-            }
-            // Did not drop all items off
-            if (buffer_item_count > 0) {
-                sorted_inv[sort_inv_index].count = buffer_item_count;
-            }
-        }
-    }
-
-
-    // Copy sorted inventory back into origin inventory
-    bool has_empty_slot = false;
-
-    std::size_t start          = 0; // The index of the first blank slot post sorting
-    std::size_t inv_temp_index = 0;
-
-    for (size_t i = 0; i < inv.size(); ++i) {
-        // Skip the cursor
-        if (inv[i].item != nullptr && inv[i].item->GetLocalizedName() == proto::Item::kInventorySelectedCursor)
-            continue;
-
-        // Iterated through every item in the sorted inventory
-        if (inv_temp_index >= sorted_inv.size()) {
-            has_empty_slot = true;
-            start          = i;
-            goto loop_exit;
-        }
-        // Omit empty gaps in sorted inv from the compressing process
-        while (sorted_inv[inv_temp_index].item == nullptr) {
-            inv_temp_index++;
-            if (inv_temp_index >= sorted_inv.size()) {
-                has_empty_slot = true;
-                start          = i;
-                goto loop_exit;
-            }
-        }
-
-        inv[i] = sorted_inv[inv_temp_index++];
-    }
-loop_exit:
-
-    if (!has_empty_slot)
-        return;
-
-    // Copy empty spaces into the remainder of the slots
-    for (auto i = start; i < inv.size(); ++i) {
-        // Skip the cursor
-        if (inv[i].item != nullptr && inv[i].item->GetLocalizedName() == proto::Item::kInventorySelectedCursor)
-            continue;
-
-        inv[i] = {nullptr, 0};
-    }
+    inventory.Sort();
 }
 
 // LEFT CLICK - Select by reference, the item in the cursor mirrors the inventory item
@@ -541,8 +425,8 @@ void game::Player::Inventory::HandleClick(const data::PrototypeManager& proto,
                                           const uint16_t index,
                                           const uint16_t mouse_button,
                                           const bool reference_select,
-                                          proto::Item::Inventory& inv) {
-    assert(index < inventory.size());
+                                          game::Inventory& inv) {
+    assert(index < inventory.Size());
     assert(mouse_button == 0 || mouse_button == 1); // Only left + right click supported
 
     if (reference_select)
@@ -598,7 +482,7 @@ void game::Player::Inventory::HandleClick(const data::PrototypeManager& proto,
 
         if (selectByReference_) {
             // Remove cursor icon
-            assert(selectedItemIndex_ < inventory.size());
+            assert(selectedItemIndex_ < inventory.Size());
             // Select by reference is only for inventory_player
             inventory[selectedItemIndex_].item  = nullptr;
             inventory[selectedItemIndex_].count = 0;
@@ -606,7 +490,7 @@ void game::Player::Inventory::HandleClick(const data::PrototypeManager& proto,
     }
 }
 
-const proto::ItemStack* game::Player::Inventory::GetSelectedItem() const {
+const game::ItemStack* game::Player::Inventory::GetSelectedItem() const {
     if (!hasItemSelected_)
         return nullptr;
 
@@ -664,7 +548,7 @@ uint16_t game::Player::Crafting::RecipeGroupGetSelected() const {
 void game::Player::Crafting::RecipeCraftTick(const data::PrototypeManager& proto, uint16_t ticks) {
     // Attempt to return held item if inventory is full
     if (craftingHeldItem_.count != 0) {
-        const auto extra_items  = AddStack(playerInv_->inventory, craftingHeldItem_);
+        const auto extra_items  = playerInv_->inventory.Add(craftingHeldItem_);
         craftingHeldItem_.count = extra_items;
         return;
     }
@@ -682,7 +566,7 @@ void game::Player::Crafting::RecipeCraftTick(const data::PrototypeManager& proto
             proto::RecipeItem recipe_item = recipe->product;
             const auto* product_item      = proto.Get<proto::Item>(recipe_item.first);
 
-            proto::ItemStack item = {product_item, recipe_item.second};
+            ItemStack item = {product_item, recipe_item.second};
 
             // Deduct based on the deductions
             std::map<std::string, uint16_t>::iterator element;
@@ -719,7 +603,7 @@ void game::Player::Crafting::RecipeCraftTick(const data::PrototypeManager& proto
                     // If entry is 0, erase it
                     craftingItemExtras_.erase(recipe_item.first);
 
-                const auto extra_items = AddStack(playerInv_->inventory, item);
+                const auto extra_items = playerInv_->inventory.Add(item);
                 if (extra_items != 0)
                     craftingHeldItem_ = {item.item, extra_items};
             }
@@ -743,7 +627,7 @@ void game::Player::Crafting::QueueRecipe(const data::PrototypeManager& proto, co
     for (const auto& ingredient : recipe.ingredients) {
         const auto* item = proto.Get<proto::Item>(ingredient.first);
 
-        DeleteInvItem(playerInv_->inventory, item, ingredient.second);
+        playerInv_->inventory.Delete(item, ingredient.second);
     }
 
     // Queue is empty, crafting time for the first item in queue must be set here
@@ -765,7 +649,7 @@ void game::Player::Crafting::RecipeCraftR(const data::PrototypeManager& proto, c
     for (const auto& ingredient : recipe.ingredients) {
         const auto* ingredient_proto = proto.Get<proto::Item>(ingredient.first);
 
-        const uint32_t possess_amount = GetInvItemCount(playerInv_->inventory, ingredient_proto);
+        const uint32_t possess_amount = playerInv_->inventory.Count(ingredient_proto);
 
         // Insufficient ingredient amount in player inventory
         if (possess_amount < ingredient.second) {
@@ -839,7 +723,7 @@ bool game::Player::Crafting::RecipeCanCraftR(const data::PrototypeManager& proto
             possess_amount = used_items[ing_item];
         }
         else {
-            possess_amount       = GetInvItemCount(playerInv_->inventory, ing_item);
+            possess_amount       = playerInv_->inventory.Count(ing_item);
             used_items[ing_item] = possess_amount;
         }
 

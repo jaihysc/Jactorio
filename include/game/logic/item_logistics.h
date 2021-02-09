@@ -4,11 +4,10 @@
 #define JACTORIO_INCLUDE_GAME_LOGIC_ITEM_LOGISTICS_H
 #pragma once
 
-#include "core/coordinate_tuple.h"
 #include "core/data_type.h"
 #include "core/orientation.h"
+#include "game/logistic/inventory.h"
 #include "proto/detail/type.h"
-#include "proto/item.h"
 
 namespace jactorio::game
 {
@@ -68,7 +67,7 @@ namespace jactorio::game
         struct DropOffParams
         {
             Logic& logic;
-            const proto::ItemStack& itemStack;
+            const ItemStack& itemStack;
             /// Entity to drop into
             proto::UniqueDataBase& uniqueData;
             Orientation orientation;
@@ -76,7 +75,7 @@ namespace jactorio::game
 
         ///
         ///	 \brief Insert provided item at destination
-        bool DropOff(Logic& logic, const proto::ItemStack& item_stack) const {
+        bool DropOff(Logic& logic, const ItemStack& item_stack) const {
             assert(targetUniqueData_);
             assert(dropFunc_);
             return (this->*dropFunc_)({logic, item_stack, *targetUniqueData_, orientation_});
@@ -116,7 +115,7 @@ namespace jactorio::game
     class InserterPickup : public ItemHandler
     {
         /// Success, picked up stack
-        using PickupReturn    = std::pair<bool, proto::ItemStack>;
+        using PickupReturn    = std::pair<bool, ItemStack>;
         using GetPickupReturn = const proto::Item*;
 
     public:

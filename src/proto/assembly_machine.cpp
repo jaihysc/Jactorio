@@ -13,11 +13,11 @@ void proto::AssemblyMachineData::ChangeRecipe(game::Logic& logic,
                                               const data::PrototypeManager& proto,
                                               const Recipe* new_recipe) {
     if (new_recipe != nullptr) {
-        ingredientInv.resize(new_recipe->ingredients.size());
-        productInv.resize(1);
+        ingredientInv.Resize(new_recipe->ingredients.size());
+        productInv.Resize(1);
 
         // Set filters
-        for (size_t i = 0; i < ingredientInv.size(); ++i) {
+        for (size_t i = 0; i < ingredientInv.Size(); ++i) {
             const auto* ingredient = proto.Get<Item>(new_recipe->ingredients[i].first);
             assert(ingredient != nullptr);
             ingredientInv[i].filter = ingredient;
@@ -31,8 +31,8 @@ void proto::AssemblyMachineData::ChangeRecipe(game::Logic& logic,
         // Remove recipe
         logic.deferralTimer.RemoveDeferralEntry(deferralEntry);
 
-        ingredientInv.resize(0);
-        productInv.resize(0);
+        ingredientInv.Resize(0);
+        productInv.Resize(0);
     }
 
     recipe_ = new_recipe;

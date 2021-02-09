@@ -461,7 +461,7 @@ namespace jactorio::game
         entity.SetItem(&item);
 
 
-        proto::ItemStack selected_item = {&item, 1};
+        ItemStack selected_item = {&item, 1};
         playerInv_.SetSelectedItem(selected_item);
 
         // Update listeners should be dispatched
@@ -518,7 +518,7 @@ namespace jactorio::game
         entity.SetItem(&item);
 
 
-        proto::ItemStack selected_item = {&item, 1};
+        ItemStack selected_item = {&item, 1};
         playerInv_.SetSelectedItem(selected_item);
 
         playerPlace_.TryPlaceEntity(world_, logic_, {0, 0});
@@ -573,7 +573,7 @@ namespace jactorio::game
         // ======================================================================
         // Place
 
-        proto::ItemStack selected_item = {&item, 1};
+        ItemStack selected_item = {&item, 1};
         playerInv_.SetSelectedItem(selected_item);
 
         playerPlace_.TryPlaceEntity(world_, logic_, {1, 1});

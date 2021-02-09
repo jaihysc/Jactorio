@@ -41,9 +41,11 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/game/logic/conveyor_utility.cpp
         ${JACTORIO_DIR}/game/logic/deferral_timer.cpp
         ${JACTORIO_DIR}/game/logic/inserter_controller.cpp
-        ${JACTORIO_DIR}/game/logic/inventory_controller.cpp
         ${JACTORIO_DIR}/game/logic/item_logistics.cpp
         ${JACTORIO_DIR}/game/logic/placement_controller.cpp
+
+        ${JACTORIO_DIR}/game/logistic/inventory.cpp
+
         ${JACTORIO_DIR}/game/logic_loop.cpp
 
         ${JACTORIO_DIR}/game/player/keybind_manager.cpp

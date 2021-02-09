@@ -4,8 +4,8 @@
 #define JACTORIO_INCLUDE_PROTO_CONTAINER_ENTITY_H
 #pragma once
 
+#include "game/logistic/inventory.h"
 #include "proto/abstract/health_entity.h"
-#include "proto/item.h"
 
 namespace jactorio::proto
 {
@@ -14,12 +14,12 @@ namespace jactorio::proto
         ContainerEntityData() = default;
 
         explicit ContainerEntityData(const uint16_t inventory_size) {
-            inventory.resize(inventory_size);
+            inventory.Resize(inventory_size);
         }
 
-        explicit ContainerEntityData(Item::Inventory inv) : inventory(std::move(inv)) {}
+        explicit ContainerEntityData(game::Inventory inv) : inventory(std::move(inv)) {}
 
-        Item::Inventory inventory;
+        game::Inventory inventory;
 
         CEREAL_SERIALIZE(archive) {
             archive(cereal::base_class<HealthEntityData>(this), inventory);

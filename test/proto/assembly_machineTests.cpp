@@ -68,8 +68,8 @@ namespace jactorio::proto
 
         EXPECT_EQ(data_.deferralEntry.dueTick, 0);
 
-        ASSERT_EQ(data_.ingredientInv.size(), 2);
-        ASSERT_EQ(data_.productInv.size(), 1);
+        ASSERT_EQ(data_.ingredientInv.Size(), 2);
+        ASSERT_EQ(data_.productInv.Size(), 1);
 
         EXPECT_EQ(data_.ingredientInv[0].filter, item1_);
         EXPECT_EQ(data_.ingredientInv[1].filter, item2_);
@@ -95,8 +95,8 @@ namespace jactorio::proto
         data_.ChangeRecipe(logic_, proto_, nullptr);
         EXPECT_EQ(data_.deferralEntry.callbackIndex, 0);
 
-        EXPECT_EQ(data_.ingredientInv.size(), 0);
-        EXPECT_EQ(data_.productInv.size(), 0);
+        EXPECT_EQ(data_.ingredientInv.Size(), 0);
+        EXPECT_EQ(data_.productInv.Size(), 0);
     }
 
     TEST_F(AssemblyMachineTest, CanBeginCrafting) {
@@ -192,7 +192,7 @@ namespace jactorio::proto
         proto_.GenerateRelocationTable();
         const auto result = TestSerializeDeserialize(data_);
 
-        ASSERT_EQ(result.ingredientInv.size(), 2);
+        ASSERT_EQ(result.ingredientInv.Size(), 2);
 
         EXPECT_EQ(result.ingredientInv[0].item, item1_);
         EXPECT_EQ(result.ingredientInv[1].item, item2_);
@@ -201,7 +201,7 @@ namespace jactorio::proto
         EXPECT_EQ(result.ingredientInv[1].count, 10);
 
 
-        ASSERT_EQ(result.productInv.size(), 1);
+        ASSERT_EQ(result.productInv.Size(), 1);
 
         EXPECT_EQ(result.productInv[0].item, itemProduct_);
         EXPECT_EQ(result.productInv[0].count, 6);
