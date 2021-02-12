@@ -42,7 +42,6 @@ set(JACTORIO_SRC_FILES
         ${JACTORIO_DIR}/game/logic/deferral_timer.cpp
         ${JACTORIO_DIR}/game/logic/inserter_controller.cpp
         ${JACTORIO_DIR}/game/logic/item_logistics.cpp
-        ${JACTORIO_DIR}/game/logic/placement_controller.cpp
 
         ${JACTORIO_DIR}/game/logistic/inventory.cpp
 

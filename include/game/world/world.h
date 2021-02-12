@@ -190,6 +190,21 @@ namespace jactorio::game
         J_NODISCARD const ChunkTileLayer* GetLayerTopLeft(const WorldCoord& coord,
                                                           const TileLayer& tile_layer) const noexcept;
 
+        // ======================================================================
+        // Placement
+
+        ///
+        /// Determines if entity of given dimensions can be placed at specified coord
+        /// \return true if a entity with the specified dimensions can be placed at coord
+        J_NODISCARD bool PlaceLocationValid(const WorldCoord& coord, Position2<uint8_t> dimensions) const;
+
+        ///
+        /// Places / removes entities at coord
+        /// \remark Pass nullptr for entity to remove
+        /// \return true if placed / removed successfully
+        bool Place(const WorldCoord& coord, Orientation orien, const proto::Entity* entity);
+
+
         // ==============================================================
         // Logic chunk
 

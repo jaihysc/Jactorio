@@ -5,7 +5,6 @@
 #include <map>
 
 #include "game/input/mouse_selection.h"
-#include "game/logic/placement_controller.h"
 #include "game/logistic/inventory.h"
 #include "game/world/world.h"
 #include "proto/recipe.h"
@@ -247,7 +246,7 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
         return false;
 
     // Do not take item away from player unless item was successfully placed
-    if (!PlaceEntityAtCoords(world, coord, orientation, entity_ptr))
+    if (!world.Place(coord, orientation, entity_ptr))
         // Failed to place because an entity already exists
         return false;
 
@@ -385,7 +384,7 @@ void game::Player::Placement::TryPickup(game::World& world,
 
             entity->OnRemove(world, logic, tl_coord, select_layer);
 
-            const bool result = PlaceEntityAtCoords(world, tl_coord, layer.GetOrientation(), nullptr);
+            const bool result = world.Place(tl_coord, layer.GetOrientation(), nullptr);
             assert(result); // false indicates failed to remove entity
 
             UpdateNeighboringEntities(world, logic, tl_coord, layer.GetOrientation(), entity);

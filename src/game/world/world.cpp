@@ -216,6 +216,93 @@ const game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord
 
 
 // ======================================================================
+// Placement
+
+bool game::World::PlaceLocationValid(const WorldCoord& coord, const Position2<uint8_t> dimensions) const {
+    for (int offset_y = 0; offset_y < dimensions.y; ++offset_y) {
+        for (int offset_x = 0; offset_x < dimensions.x; ++offset_x) {
+            const ChunkTile* tile = GetTile(coord.x + offset_x, coord.y + offset_y);
+
+            // If the tile proto does not exist, or base tile prototype is water, NOT VALID placement
+
+            const auto* tile_proto   = tile->GetTilePrototype();
+            const auto* entity_proto = tile->GetEntityPrototype();
+
+            if (entity_proto != nullptr || tile_proto == nullptr || tile_proto->isWater) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool game::World::Place(const WorldCoord& coord, const Orientation orien, const proto::Entity* entity) {
+    constexpr auto layer = TileLayer::entity;
+
+    auto* provided_tile = GetTile(coord);
+    assert(provided_tile != nullptr);
+
+    // entity is nullptr indicates removing an entity
+    if (entity == nullptr) {
+        const auto* t_entity = provided_tile->GetEntityPrototype();
+
+        if (t_entity == nullptr) // Already removed
+            return false;
+
+        // Find top left corner
+        const auto tl_coord = coord.Incremented(provided_tile->GetLayer(layer));
+
+        const Position2<uint8_t> dimensions = {t_entity->GetWidth(orien), t_entity->GetHeight(orien)};
+
+        // Remove
+        for (int offset_y = 0; offset_y < dimensions.y; ++offset_y) {
+            for (int offset_x = 0; offset_x < dimensions.x; ++offset_x) {
+                auto* tile = GetTile(tl_coord.x + offset_x, tl_coord.y + offset_y);
+                assert(tile != nullptr);
+
+                tile->GetLayer(layer).Clear();
+            }
+        }
+
+        return true;
+    }
+
+    // Place
+    const Position2<uint8_t> dimensions = {entity->GetWidth(orien), entity->GetHeight(orien)};
+
+    if (!PlaceLocationValid(coord, dimensions))
+        return false;
+
+    // The top left is handled differently
+    auto& top_left = provided_tile->GetLayer(layer);
+    top_left.SetPrototype(orien, entity);
+
+    if (dimensions.x != 1 || dimensions.y != 1) {
+        // Multi tile
+
+        MultiTileData::ValueT entity_index = 1;
+        int offset_x                       = 1;
+
+        for (int offset_y = 0; offset_y < dimensions.y; ++offset_y) {
+            for (; offset_x < dimensions.x; ++offset_x) {
+                auto* tile = GetTile(coord.x + offset_x, coord.y + offset_y);
+                assert(tile != nullptr);
+
+                auto& layer_tile = tile->GetLayer(layer);
+                layer_tile.SetPrototype(orien, entity);
+
+                layer_tile.SetupMultiTile(entity_index++, top_left);
+            }
+            offset_x = 0;
+        }
+    }
+
+    return true;
+}
+
+
+// ======================================================================
 // Logic chunks
 
 void game::World::LogicRegister(const LogicGroup group, const WorldCoord& coord, const TileLayer layer) {

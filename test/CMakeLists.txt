@@ -89,7 +89,6 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/logic/inserter_controllerTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/item_logisticsTests.cpp
 	${JACTORIO_TEST_DIR}/game/logic/logicTests.cpp
-	${JACTORIO_TEST_DIR}/game/logic/placement_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/logistic/inventoryTests.cpp
 
@@ -106,6 +105,7 @@ set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/game/world/overlay_elementTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/update_dispatcherTests.cpp
 	${JACTORIO_TEST_DIR}/game/world/worldTests.cpp
+	${JACTORIO_TEST_DIR}/game/world/worldTests_placement.cpp
 
 
 	${JACTORIO_TEST_DIR}/proto/assembly_machineTests.cpp
