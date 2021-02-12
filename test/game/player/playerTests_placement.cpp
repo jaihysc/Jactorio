@@ -240,11 +240,9 @@ namespace jactorio::game
         tile.SetEntityPrototype(Orientation::up, &entity);
         tile2.SetEntityPrototype(Orientation::up, &entity);
 
+
         // Create unique data by calling build event for prototype with layer
-        {
-            World world;
-            entity.OnBuild(world, logic_, {}, tile.GetLayer(TileLayer::entity), Orientation::up);
-        }
+        entity.OnBuild(world_, logic_, {0, 0}, TileLayer::entity, Orientation::up);
 
 
         //
@@ -399,7 +397,7 @@ namespace jactorio::game
         void OnBuild(World& /*world*/,
                      Logic& /*logic*/,
                      const WorldCoord& /*coord*/,
-                     ChunkTileLayer& /*tile_layer*/,
+                     TileLayer /*tlayer*/,
                      Orientation /*orientation*/) const override {
             buildCalled = true;
         }
@@ -407,7 +405,7 @@ namespace jactorio::game
         void OnRemove(World& /*world*/,
                       Logic& /*logic*/,
                       const WorldCoord& /*coord*/,
-                      ChunkTileLayer& /*tile_layer*/) const override {
+                      TileLayer /*tlayer*/) const override {
             removeCalled = true;
         }
 

@@ -118,19 +118,19 @@ void proto::AssemblyMachine::OnDeferTimeElapsed(game::World& /*world*/,
     TryBeginCrafting(logic, *machine_data);
 }
 
-void proto::AssemblyMachine::OnBuild(game::World& /*world*/,
+void proto::AssemblyMachine::OnBuild(game::World& world,
                                      game::Logic& /*logic*/,
-                                     const WorldCoord& /*coord*/,
-                                     game::ChunkTileLayer& tile_layer,
+                                     const WorldCoord& coord,
+                                     const game::TileLayer tlayer,
                                      const Orientation /*orientation*/) const {
-    tile_layer.MakeUniqueData<AssemblyMachineData>();
+    world.GetTile(coord)->GetLayer(tlayer).MakeUniqueData<AssemblyMachineData>();
 }
 
-void proto::AssemblyMachine::OnRemove(game::World& /*world*/,
+void proto::AssemblyMachine::OnRemove(game::World& world,
                                       game::Logic& logic,
-                                      const WorldCoord& /*coord*/,
-                                      game::ChunkTileLayer& tile_layer) const {
-    auto& machine_data = *tile_layer.GetUniqueData<AssemblyMachineData>();
+                                      const WorldCoord& coord,
+                                      const game::TileLayer tlayer) const {
+    auto& machine_data = *world.GetTile(coord)->GetLayer(tlayer).GetUniqueData<AssemblyMachineData>();
 
     logic.deferralTimer.RemoveDeferralEntry(machine_data.deferralEntry);
 }

@@ -240,22 +240,22 @@ namespace jactorio::proto
         // Creates unique data on build
         auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
 
-        asmMachine_.OnBuild(world_, logic_, {0, 0}, layer, Orientation::up);
+        asmMachine_.OnBuild(world_, logic_, {0, 0}, game::TileLayer::entity, Orientation::up);
 
         EXPECT_NE(layer.GetUniqueData(), nullptr);
     }
 
     TEST_F(AssemblyMachineTest, OnRemoveRemoveDeferralEntry) {
-        auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
-        asmMachine_.OnBuild(world_, logic_, {0, 0}, layer, Orientation::up);
+        asmMachine_.OnBuild(world_, logic_, {0, 0}, game::TileLayer::entity, Orientation::up);
 
+        auto& layer                = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
         const auto* assembly_proto = layer.GetPrototype<AssemblyMachine>();
         auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
 
         SetupRecipe();
         assembly_data->ChangeRecipe(logic_, proto_, recipe_);
 
-        assembly_proto->OnRemove(world_, logic_, {0, 0}, layer);
+        assembly_proto->OnRemove(world_, logic_, {0, 0}, game::TileLayer::entity);
         EXPECT_EQ(assembly_data->deferralEntry.callbackIndex, 0);
     }
 

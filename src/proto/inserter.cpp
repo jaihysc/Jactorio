@@ -40,9 +40,9 @@ SpriteSetT proto::Inserter::OnRGetSpriteSet(const Orientation orientation,
 void proto::Inserter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
-                              game::ChunkTileLayer& tile_layer,
+                              const game::TileLayer tlayer,
                               Orientation orientation) const {
-    auto& inserter_data = tile_layer.MakeUniqueData<InserterData>(orientation);
+    auto& inserter_data = world.GetTile(coord)->GetLayer(tlayer).MakeUniqueData<InserterData>(orientation);
     inserter_data.set   = OnRGetSpriteSet(orientation, world, coord);
 
     InitPickupDropoff(world, coord, orientation);
@@ -94,10 +94,10 @@ void proto::Inserter::OnTileUpdate(game::World& world,
 void proto::Inserter::OnRemove(game::World& world,
                                game::Logic& /*logic*/,
                                const WorldCoord& coord,
-                               game::ChunkTileLayer& tile_layer) const {
+                               const game::TileLayer tlayer) const {
     world.LogicRemove(game::LogicGroup::inserter, coord, game::TileLayer::entity);
 
-    const auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
+    const auto* inserter_data = world.GetTile(coord)->GetLayer(tlayer).GetUniqueData<InserterData>();
 
     world.updateDispatcher.Unregister({coord, GetDropoffCoord(coord, inserter_data->orientation)});
     world.updateDispatcher.Unregister({coord, GetPickupCoord(coord, inserter_data->orientation)});

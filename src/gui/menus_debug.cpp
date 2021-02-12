@@ -89,7 +89,7 @@ void gui::DebugMenu(const render::GuiRenderer& params) {
         // glm::vec3* view_translation = GetViewTransform();
         // ImGui::Text("Camera translation %f %f", view_translation->x, view_translation->y);
 
-        ImGui::Text("Layer count | Tile: %d", game::ChunkTile::kTileLayerCount);
+        ImGui::Text("Layer count | Tile: %d", game::kTileLayerCount);
 
         if (ImGui::Button("Clear debug overlays")) {
             for (auto* chunk : world.LogicGetChunks()) {
@@ -200,7 +200,7 @@ void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
         return;
     }
 
-    for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
+    for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
         auto& layer = tile->GetLayer(layer_index);
 
         ImGui::TextUnformatted("------------------------------------");

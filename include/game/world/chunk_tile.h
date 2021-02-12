@@ -9,6 +9,7 @@
 #include "jactorio.h"
 
 #include "game/world/chunk_tile_layer.h"
+#include "game/world/tile_layer.h"
 
 #include <cereal/types/array.hpp>
 
@@ -22,14 +23,6 @@ namespace jactorio::proto
 
 namespace jactorio::game
 {
-    enum class TileLayer
-    {
-        base = 0,
-        resource,
-        entity,
-        count_
-    };
-
     ///
     /// A tile in the world
     /// ! Be careful when adding members to this class, its size should be minimized ! This is created for every chunk
@@ -37,9 +30,6 @@ namespace jactorio::game
     {
     public:
         ChunkTile() = default;
-
-
-        static constexpr int kTileLayerCount = static_cast<int>(TileLayer::count_);
 
 
         J_NODISCARD ChunkTileLayer& GetLayer(const TileLayer layer) {

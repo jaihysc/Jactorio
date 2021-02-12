@@ -48,9 +48,7 @@ namespace jactorio::proto
         ///
         /// Dispatches the appropriate events for when a conveyor is built
         void TlBuildEvents(const WorldCoord& coord, const Orientation orientation) {
-            auto& layer = world_.GetTile(coord)->GetLayer(game::TileLayer::entity);
-
-            lineProto_.OnBuild(world_, logic_, coord, layer, orientation);
+            lineProto_.OnBuild(world_, logic_, coord, game::TileLayer::entity, orientation);
 
             // Call on_neighbor_update for the 4 sides
             DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);
@@ -62,10 +60,7 @@ namespace jactorio::proto
         ///
         /// Dispatches the appropriate events AFTER a conveyor is removed
         void TlRemoveEvents(const WorldCoord& coord) {
-
-            auto& layer = world_.GetTile(coord)->GetLayer(game::TileLayer::entity);
-
-            lineProto_.OnRemove(world_, logic_, coord, layer);
+            lineProto_.OnRemove(world_, logic_, coord, game::TileLayer::entity);
 
             // Call on_neighbor_update for the 4 sides
             DispatchNeighborUpdate(coord, {coord.x, coord.y - 1}, Orientation::up);

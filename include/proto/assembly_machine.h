@@ -88,13 +88,13 @@ namespace jactorio::proto
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::ChunkTileLayer& tile_layer,
+                     game::TileLayer tlayer,
                      Orientation orientation) const override;
 
         void OnRemove(game::World& world,
                       game::Logic& logic,
                       const WorldCoord& coord,
-                      game::ChunkTileLayer& tile_layer) const override;
+                      game::TileLayer tlayer) const override;
 
         void PostLoadValidate(const data::PrototypeManager& /*proto*/) const override {
             J_PROTO_ASSERT(assemblySpeed > 0., "Assembly speed cannot be 0");

@@ -445,7 +445,7 @@ void game::World::DeserializePostProcess() {
                         auto* tile = GetTile(coord);
                         assert(tile != nullptr);
 
-                        for (uint8_t layer_i = 0; layer_i < ChunkTile::kTileLayerCount; ++layer_i) {
+                        for (uint8_t layer_i = 0; layer_i < kTileLayerCount; ++layer_i) {
                             auto& layer = tile->layers[layer_i];
 
                             callback(coord, layer, layer_i);

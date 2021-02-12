@@ -15,10 +15,10 @@ static constexpr game::LogicGroup kSplitterLogicGroup = game::LogicGroup::splitt
 void proto::Splitter::OnBuild(game::World& world,
                               game::Logic& /*logic*/,
                               const WorldCoord& coord,
-                              game::ChunkTileLayer& tile_layer,
+                              const game::TileLayer tlayer,
                               const Orientation orientation) const {
 
-    tile_layer.MakeUniqueData<SplitterData>(orientation);
+    world.GetTile(coord)->GetLayer(tlayer).MakeUniqueData<SplitterData>(orientation);
 
     auto build_conveyor = [&world, orientation](const WorldCoord& side_coord) {
         auto* con_data = GetConData(world, side_coord);
@@ -42,7 +42,7 @@ void proto::Splitter::OnNeighborUpdate(game::World& world,
 void proto::Splitter::OnRemove(game::World& world,
                                game::Logic& /*logic*/,
                                const WorldCoord& coord,
-                               game::ChunkTileLayer& /*tile_layer*/) const {
+                               game::TileLayer /*tlayer*/) const {
 
     RemoveConveyor(world, coord, kSplitterLogicGroup);
     RemoveConveyor(world, GetNonTopLeftCoord(world, coord), kSplitterLogicGroup);

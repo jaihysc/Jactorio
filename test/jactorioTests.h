@@ -73,13 +73,13 @@ namespace jactorio
         void OnBuild(game::World& world,
                      game::Logic& logic,
                      const WorldCoord& coord,
-                     game::ChunkTileLayer& tile_layer,
+                     game::TileLayer tlayer,
                      Orientation orientation) const override {}
 
         void OnRemove(game::World& world,
                       game::Logic& logic,
                       const WorldCoord& coord,
-                      game::ChunkTileLayer& tile_layer) const override {}
+                      game::TileLayer tlayer) const override {}
     };
     static_assert(!std::is_abstract_v<TestMockEntity>);
 
@@ -138,7 +138,7 @@ namespace jactorio
         auto& layer = world.GetTile(coord)->GetLayer(game::TileLayer::entity);
 
         layer.SetPrototype(orientation, &inserter_proto);
-        inserter_proto.OnBuild(world, logic, coord, layer, orientation);
+        inserter_proto.OnBuild(world, logic, coord, game::TileLayer::entity, orientation);
 
         return layer;
     }
@@ -209,7 +209,7 @@ namespace jactorio
         TestSetupResource(world, coord, resource, resource_amount);
 
         layer.SetPrototype(orientation, &drill);
-        drill.OnBuild(world, logic, coord, layer, orientation);
+        drill.OnBuild(world, logic, coord, game::TileLayer::entity, orientation);
 
         return *tile;
     }
@@ -237,7 +237,7 @@ namespace jactorio
         const game::ConveyorStruct::TerminationType ttype = game::ConveyorStruct::TerminationType::straight,
         const std::uint8_t len                            = 1) {
 
-        auto con_struct = std::make_shared<game::ConveyorStruct>(orien, ttype, len);
+        const auto con_struct = std::make_shared<game::ConveyorStruct>(orien, ttype, len);
 
         return TestSetupConveyor(world, coord, con_proto, con_struct);
     }

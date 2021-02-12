@@ -261,9 +261,7 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
 
     // Call events
 
-    auto& selected_layer = tile->GetLayer(TileLayer::entity);
-
-    entity_ptr->OnBuild(world, logic, coord, selected_layer, orientation);
+    entity_ptr->OnBuild(world, logic, coord, TileLayer::entity, orientation);
     UpdateNeighboringEntities(world, logic, coord, orientation, entity_ptr);
     world.UpdateDispatch(coord, proto::UpdateType::place);
 
@@ -385,7 +383,7 @@ void game::Player::Placement::TryPickup(game::World& world,
             // Call events
             const auto* entity = layer.GetPrototype<proto::Entity>();
 
-            entity->OnRemove(world, logic, tl_coord, layer);
+            entity->OnRemove(world, logic, tl_coord, select_layer);
 
             const bool result = PlaceEntityAtCoords(world, tl_coord, layer.GetOrientation(), nullptr);
             assert(result); // false indicates failed to remove entity

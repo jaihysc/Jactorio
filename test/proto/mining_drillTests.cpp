@@ -263,7 +263,7 @@ namespace jactorio::proto
         TestSetupContainer(world_, {4, 2}, Orientation::up, container_);
         auto& tile = TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
 
-        drillProto_.OnRemove(world_, logic_, {1, 1}, tile.GetLayer(game::TileLayer::entity));
+        drillProto_.OnRemove(world_, logic_, {1, 1}, game::TileLayer::entity);
 
         tile.GetLayer(game::TileLayer::entity).Clear(); // Deletes drill data
 

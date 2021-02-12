@@ -6,6 +6,7 @@
 
 #include "jactorio.h"
 
+#include "game/world/tile_layer.h"
 #include "proto/detail/type.h"
 #include "proto/framework/entity.h"
 
@@ -98,7 +99,7 @@ namespace jactorio::proto
         virtual void OnBuild(game::World& world,
                              game::Logic& logic,
                              const WorldCoord& coord,
-                             game::ChunkTileLayer& tile_layer,
+                             game::TileLayer tlayer,
                              Orientation orientation) const = 0;
 
         ///
@@ -118,7 +119,7 @@ namespace jactorio::proto
         virtual void OnRemove(game::World& world,
                               game::Logic& logic,
                               const WorldCoord& coord,
-                              game::ChunkTileLayer& tile_layer) const = 0;
+                              game::TileLayer tlayer) const = 0;
 
         ///
         /// A neighbor of this prototype in the world was updated

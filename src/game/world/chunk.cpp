@@ -92,7 +92,7 @@ game::Chunk::TileLayerInfo game::Chunk::GetLayerInfo(const ChunkTileLayer& ctl) 
         for (uint8_t x = 0; x < kChunkWidth; ++x) {
             const auto& tile = GetCTile(x, y);
 
-            for (uint8_t i = 0; i < ChunkTile::kTileLayerCount; ++i) {
+            for (uint8_t i = 0; i < kTileLayerCount; ++i) {
                 const auto& layer = tile.GetLayer(i);
                 if (&layer == &ctl) {
                     return TileLayerInfo{{x, y}, static_cast<TileLayer>(i)};

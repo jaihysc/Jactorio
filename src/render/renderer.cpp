@@ -322,7 +322,7 @@ void render::Renderer::PrepareTileLayers(RendererLayer& r_layer,
                                          const game::ChunkTile& tile,
                                          const Position2<float>& pixel_pos,
                                          const GameTickT game_tick) const noexcept {
-    for (int layer_index = 0; layer_index < game::ChunkTile::kTileLayerCount; ++layer_index) {
+    for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
         const auto& tile_layer = tile.GetLayer(layer_index);
 
 
