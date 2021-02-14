@@ -5,9 +5,8 @@
 #pragma once
 
 #include <mutex>
-#include <optional>
 
-#include "game/game_data.h"
+#include "game/game_controller.h"
 #include "game/player/keybind_manager.h"
 #include "gui/main_menu_data.h"
 
@@ -26,19 +25,8 @@ namespace jactorio
         };
 
 
-        [[nodiscard]] game::GameDataGlobal& GetDataGlobal() noexcept {
-            return gameDataGlobal_.value();
-        }
-
-        [[nodiscard]] const game::GameDataGlobal& GetDataGlobal() const noexcept {
-            return gameDataGlobal_.value();
-        }
-
-
         std::mutex playerDataMutex;
         std::mutex worldDataMutex;
-
-        game::GameDataLocal gameDataLocal;
 
 
         GameState gameState = GameState::main_menu;
@@ -48,24 +36,10 @@ namespace jactorio
         volatile bool prototypeLoadingComplete = false;
 
 
-        ///
-        /// Clears and reconstructs GameDataGlobal
-        void ResetGlobalData();
+        game::GameController gameController;
 
-    private:
-        std::optional<game::GameDataGlobal> gameDataGlobal_{std::in_place};
-
-    public:
-        // Requires game data global to be constructed first
-        game::KeybindManager keybindManager{gameDataLocal.input.key, GetDataGlobal()};
+        game::KeybindManager keybindManager{gameController.input.key, gameController};
     };
-
-    inline void ThreadedLoopCommon::ResetGlobalData() {
-        GetDataGlobal().ClearRefsToWorld(gameDataLocal);
-
-        gameDataGlobal_.reset();
-        gameDataGlobal_.emplace();
-    }
 } // namespace jactorio
 
 

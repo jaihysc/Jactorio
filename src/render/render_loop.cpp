@@ -96,7 +96,7 @@ void RenderMainMenuLoop(ThreadedLoopCommon& common, render::DisplayWindow& displ
     SDL_Event e;
 
     while (common.gameState == main_menu_game_state) {
-        common.gameDataLocal.event.Raise<game::RendererTickEvent>(
+        common.gameController.event.Raise<game::RendererTickEvent>(
             game::EventType::renderer_tick, game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
 
         gui::ImguiBeginFrame(display_window);
@@ -129,22 +129,22 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
     while (common.gameState == world_render_game_state) {
         EXECUTION_PROFILE_SCOPE(render_loop_timer, "Render loop");
 
-        auto& player       = common.GetDataGlobal().player;
-        auto& player_world = common.GetDataGlobal().worlds[player.world.GetId()];
+        auto& player       = common.gameController.player;
+        auto& player_world = common.gameController.worlds[player.world.GetId()];
 
         // ======================================================================
         // RENDER LOOP ======================================================================
         {
             EXECUTION_PROFILE_SCOPE(logic_update_timer, "Render update");
 
-            common.gameDataLocal.event.Raise<game::RendererTickEvent>(
+            common.gameController.event.Raise<game::RendererTickEvent>(
                 game::EventType::renderer_tick,
                 game::RendererTickEvent::DisplayWindowContainerT{std::ref(display_window)});
 
             std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
             // MVP Matrices updated in here
-            main_renderer->GlRenderPlayerPosition(common.GetDataGlobal().logic.GameTick(),
+            main_renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(),
                                                   player_world,
                                                   player.world.GetPositionX(),
                                                   player.world.GetPositionY());
@@ -160,11 +160,11 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
             }
 
             gui::ImguiDraw(display_window,
-                           common.GetDataGlobal().worlds,
-                           common.GetDataGlobal().logic,
+                           common.gameController.worlds,
+                           common.gameController.logic,
                            player,
-                           common.gameDataLocal.proto,
-                           common.gameDataLocal.event);
+                           common.gameController.proto,
+                           common.gameController.event);
         }
         // ======================================================================
         // ======================================================================
@@ -222,8 +222,8 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // Loading textures
     auto renderer_sprites = RendererSprites();
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.proto, proto::Sprite::SpriteGroup::terrain, true);
-    renderer_sprites.GInitializeSpritemap(common.gameDataLocal.proto, proto::Sprite::SpriteGroup::gui, false);
+    renderer_sprites.GInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::terrain, true);
+    renderer_sprites.GInitializeSpritemap(common.gameController.proto, proto::Sprite::SpriteGroup::gui, false);
 
 
     Renderer::GlSetup();
@@ -240,9 +240,9 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // ======================================================================
 
-    common.gameDataLocal.input.key.Register(
+    common.gameController.input.key.Register(
         [&]() {
-            common.gameDataLocal.event.SubscribeOnce(game::EventType::renderer_tick, [](const game::EventBase& e) {
+            common.gameController.event.SubscribeOnce(game::EventType::renderer_tick, [](const game::EventBase& e) {
                 const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
                 auto& window         = render_e.windows[0].get();
 

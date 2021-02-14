@@ -30,13 +30,13 @@ using namespace jactorio;
 void LogicLoop(ThreadedLoopCommon& common) {
     // Runtime
 
-    auto& worlds = common.GetDataGlobal().worlds;
-    auto& logic  = common.GetDataGlobal().logic;
-    auto& player = common.GetDataGlobal().player;
+    auto& worlds = common.gameController.worlds;
+    auto& logic  = common.gameController.logic;
+    auto& player = common.gameController.player;
 
-    auto& event = common.gameDataLocal.event;
-    auto& input = common.gameDataLocal.input;
-    auto& proto = common.gameDataLocal.proto;
+    auto& event = common.gameController.event;
+    auto& input = common.gameController.input;
+    auto& proto = common.gameController.proto;
 
     auto next_frame = std::chrono::steady_clock::now();
     while (common.gameState != ThreadedLoopCommon::GameState::quit) {
@@ -103,11 +103,11 @@ void LogicLoop(ThreadedLoopCommon& common) {
 
 void game::InitLogicLoop(ThreadedLoopCommon& common) {
     // Initialize game data
-    data::active_prototype_manager   = &common.gameDataLocal.proto;
-    data::active_unique_data_manager = &common.gameDataLocal.unique;
+    data::active_prototype_manager   = &common.gameController.proto;
+    data::active_unique_data_manager = &common.gameController.unique;
 
     try {
-        common.gameDataLocal.proto.Load(data::PrototypeManager::kDataFolder);
+        common.gameController.proto.Load(data::PrototypeManager::kDataFolder);
     }
     catch (proto::ProtoError&) {
         // Prototype loading error

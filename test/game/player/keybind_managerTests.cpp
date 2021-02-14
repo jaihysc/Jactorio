@@ -8,7 +8,7 @@
 #include <cereal/archives/json.hpp>
 #include <fstream>
 
-#include "game/game_data.h"
+#include "game/game_controller.h"
 #include "game/input/input_manager.h"
 
 namespace jactorio::game
@@ -17,19 +17,19 @@ namespace jactorio::game
     {
     protected:
         InputManager input_;
-        GameDataGlobal dataGlobal_;
-        KeybindManager keybindManager_{input_, dataGlobal_};
+        GameController gameController_;
+        KeybindManager keybindManager_{input_, gameController_};
 
         ///
         /// Expects the PlayerAction test to be called after executing provided function f
         void ExpectTestActionCalled(const std::function<void()>& f) const {
-            EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionX(), 0.f);
-            EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionY(), 0.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionX(), 0.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionY(), 0.f);
 
             f();
 
-            EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionX(), -100.f);
-            EXPECT_FLOAT_EQ(dataGlobal_.player.world.GetPositionY(), 120.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionX(), -100.f);
+            EXPECT_FLOAT_EQ(gameController_.player.world.GetPositionY(), 120.f);
         }
 
         ///
@@ -41,7 +41,7 @@ namespace jactorio::game
         ///
         /// Deserializes KeybindManager from JSON
         void Deserialize() {
-            KeybindManager keybind_manager(input_, dataGlobal_);
+            KeybindManager keybind_manager(input_, gameController_);
             data::DeserializeKeybinds(keybind_manager);
 
             keybindManager_ = std::move(keybind_manager);

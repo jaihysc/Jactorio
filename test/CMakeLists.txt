@@ -58,7 +58,6 @@ set(JACTORIO_TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 set(JACTORIO_TEST_FILES
 	${JACTORIO_TEST_DIR}/core/convertTests.cpp
 	${JACTORIO_TEST_DIR}/core/file_systemTests.cpp
-	${JACTORIO_TEST_DIR}/core/loop_commonTests.cpp
 	${JACTORIO_TEST_DIR}/core/mathTests.cpp
 	${JACTORIO_TEST_DIR}/core/orientationTests.cpp
 	${JACTORIO_TEST_DIR}/core/pointer_wrapperTests.cpp
@@ -77,7 +76,7 @@ set(JACTORIO_TEST_FILES
 
 
 	${JACTORIO_TEST_DIR}/game/eventTests.cpp
-	${JACTORIO_TEST_DIR}/game/game_dataTests.cpp
+	${JACTORIO_TEST_DIR}/game/game_controllerTests.cpp
 
 	${JACTORIO_TEST_DIR}/game/input/input_managerTests.cpp
 	${JACTORIO_TEST_DIR}/game/input/mouse_selectionTests.cpp

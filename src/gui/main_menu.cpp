@@ -169,7 +169,7 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     title.Begin("New game");
 
 
-    auto seed = common.GetDataGlobal().worlds[0].GetWorldGeneratorSeed(); // Should be same for all worlds
+    auto seed = common.gameController.worlds[0].GetWorldGeneratorSeed(); // Should be same for all worlds
     ImGui::InputInt("Seed", &seed);
 
 
@@ -177,14 +177,14 @@ static void NewGameMenu(ThreadedLoopCommon& common) {
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Start")) {
-        common.ResetGlobalData();
+        common.gameController.ResetGame();
 
         ChangeGameState(common, ThreadedLoopCommon::GameState::in_world);
     }
 
 
     // Sets seed for newly reset global data as well
-    for (auto& world : common.GetDataGlobal().worlds) {
+    for (auto& world : common.gameController.worlds) {
         world.SetWorldGeneratorSeed(seed);
     }
 }
@@ -209,7 +209,7 @@ void LoadSaveGameMenu(ThreadedLoopCommon& common) {
 
         if (MenuButton(filename.c_str())) {
             try {
-                data::DeserializeGameData(common.gameDataLocal, common.GetDataGlobal(), filename);
+                data::DeserializeGameController(common.gameController, filename);
             }
             catch (cereal::Exception& e) {
                 last_load_error = e.what();
@@ -257,7 +257,7 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
     if (data::IsValidSaveName(save_name)) {
         if (MenuButtonMini("Save")) {
             try {
-                data::SerializeGameData(common.GetDataGlobal(), save_name);
+                data::SerializeGameController(common.gameController, save_name);
                 common.mainMenuData.currentMenu = MainMenuData::Window::main;
             }
             catch (cereal::Exception& e) {
@@ -273,7 +273,7 @@ void SaveGameMenu(ThreadedLoopCommon& common) {
 ///
 /// Changes player_action's keybind to next key up
 static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::Type player_action) {
-    common.gameDataLocal.event.SubscribeOnce(game::EventType::input_activity, [&common, player_action](const auto& e) {
+    common.gameController.event.SubscribeOnce(game::EventType::input_activity, [&common, player_action](const auto& e) {
         const auto& input_variant = static_cast<const game::InputActivityEvent&>(e).input;
 
         if (std::holds_alternative<game::KeyboardActivityEvent>(input_variant)) {
@@ -411,7 +411,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
         };
 
         auto localize_key_action = [&common, &key_action_labels](const std::size_t key_action_index) {
-            return common.gameDataLocal.proto.Get<proto::Label>(std::string(key_action_labels[key_action_index]))
+            return common.gameController.proto.Get<proto::Label>(std::string(key_action_labels[key_action_index]))
                 ->GetLocalizedName()
                 .c_str();
         };
@@ -448,7 +448,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
     for (std::size_t i = 0; i < info.size() - 1; ++i) {
         const auto action_label_name = std::string(proto::LabelNames::kPlayerActionPrefix) + std::to_string(i);
-        const auto* label            = common.gameDataLocal.proto.Get<proto::Label>(action_label_name);
+        const auto* label            = common.gameController.proto.Get<proto::Label>(action_label_name);
         assert(label != nullptr);
 
         ImGui::TextUnformatted(label->GetLocalizedName().c_str());

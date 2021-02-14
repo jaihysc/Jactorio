@@ -208,7 +208,7 @@ void HandleWindowEvent(game::EventData& event, const SDL_Event& sdl_event) {
 void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL_Event& sdl_event) const {
     switch (sdl_event.type) {
     case SDL_WINDOWEVENT:
-        HandleWindowEvent(common.gameDataLocal.event, sdl_event);
+        HandleWindowEvent(common.gameController.event, sdl_event);
         break;
 
     case SDL_QUIT:
@@ -232,9 +232,9 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
 
         game::InputManager::SetInput(keycode, input_action, keymod);
 
-        common.gameDataLocal.event.Raise<game::KeyboardActivityEvent>(
+        common.gameController.event.Raise<game::KeyboardActivityEvent>(
             game::EventType::keyboard_activity, keycode, input_action, keymod);
-        common.gameDataLocal.event.Raise<game::InputActivityEvent>(
+        common.gameController.event.Raise<game::InputActivityEvent>(
             game::EventType::input_activity, keycode, input_action, keymod);
     } break;
 
@@ -280,9 +280,9 @@ void render::DisplayWindow::HandleSdlEvent(ThreadedLoopCommon& common, const SDL
 
         game::InputManager::SetInput(mouse_input, action, KMOD_NONE);
 
-        common.gameDataLocal.event.Raise<game::MouseActivityEvent>(
+        common.gameController.event.Raise<game::MouseActivityEvent>(
             game::EventType::mouse_activity, mouse_input, action, KMOD_NONE);
-        common.gameDataLocal.event.Raise<game::InputActivityEvent>(
+        common.gameController.event.Raise<game::InputActivityEvent>(
             game::EventType::input_activity, mouse_input, action, KMOD_NONE);
     } break;
 
