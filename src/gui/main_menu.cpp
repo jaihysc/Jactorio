@@ -284,8 +284,8 @@ static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::T
                 return;
             }
 
-            common.keybindManager.ChangeActionKey(player_action, kb_event.key);
-            common.keybindManager.ChangeActionMods(player_action, kb_event.mods);
+            common.gameController.keybindManager.ChangeActionKey(player_action, kb_event.key);
+            common.gameController.keybindManager.ChangeActionMods(player_action, kb_event.mods);
         }
         else {
             const auto& ms_event = std::get<game::MouseActivityEvent>(input_variant);
@@ -295,8 +295,8 @@ static void ChangeKeyNextKeyUp(ThreadedLoopCommon& common, game::PlayerAction::T
                 return;
             }
 
-            common.keybindManager.ChangeActionKey(player_action, ms_event.key);
-            common.keybindManager.ChangeActionMods(player_action, ms_event.mods);
+            common.gameController.keybindManager.ChangeActionKey(player_action, ms_event.key);
+            common.gameController.keybindManager.ChangeActionMods(player_action, ms_event.mods);
         }
     });
 }
@@ -440,7 +440,7 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
 
     // Key action which was selected
-    const auto& info = common.keybindManager.GetKeybindInfo();
+    const auto& info = common.gameController.keybindManager.GetKeybindInfo();
 
     // Omit displaying the test player action, which should be the last player action
     static_assert(game::PlayerAction::Type::test ==
@@ -486,18 +486,18 @@ void OptionKeybindMenu(ThreadedLoopCommon& common) {
 
         auto [dropdown_clicked, clicked_player_action] = key_action_dropdown(combo_id.c_str(), key_action);
         if (dropdown_clicked) {
-            common.keybindManager.ChangeActionKeyAction(player_action, clicked_player_action);
+            common.gameController.keybindManager.ChangeActionKeyAction(player_action, clicked_player_action);
         }
     }
 
     if (MenuBackButton(common.mainMenuData, MainMenuData::Window::options)) {
-        data::SerializeKeybinds(common.keybindManager);
+        data::SerializeKeybinds(common.gameController.keybindManager);
     }
 
     SameLineMenuButtonMini(2);
 
     if (MenuButtonMini("Reset")) {
-        common.keybindManager.LoadDefaultKeybinds();
+        common.gameController.keybindManager.LoadDefaultKeybinds();
     }
 }
 

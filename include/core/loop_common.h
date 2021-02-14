@@ -7,7 +7,6 @@
 #include <mutex>
 
 #include "game/game_controller.h"
-#include "game/player/keybind_manager.h"
 #include "gui/main_menu_data.h"
 
 namespace jactorio
@@ -37,8 +36,6 @@ namespace jactorio
 
 
         game::GameController gameController;
-
-        game::KeybindManager keybindManager{gameController.input.key, gameController};
     };
 } // namespace jactorio
 

@@ -215,7 +215,7 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     // Since game data will be now accessed, wait until prototype loading is complete
     LOG_MESSAGE(debug, "Waiting for prototype loading to complete");
-    while (!common.prototypeLoadingComplete)
+    while (!common.prototypeLoadingComplete) // BUG if logic exits while render is waiting, it will never exit
         ;
     LOG_MESSAGE(debug, "Continuing render initialization");
 

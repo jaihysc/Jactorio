@@ -10,6 +10,7 @@
 #include "game/input/input_manager.h"
 #include "game/input/mouse_selection.h"
 #include "game/logic/logic.h"
+#include "game/player/keybind_manager.h"
 #include "game/player/player.h"
 #include "game/world/world.h"
 
@@ -30,6 +31,17 @@ namespace jactorio::game
         /// Allows worlds to be cleared
         void ClearRefsToWorld();
 
+
+        ///
+        /// Sets up game for logic updates
+        /// \return false if error
+        J_NODISCARD bool Init();
+
+        ///
+        /// One simulation tick update
+        void LogicUpdate();
+
+
         // Non serialized
 
         struct GameInput
@@ -44,6 +56,7 @@ namespace jactorio::game
         GameInput input;
         EventData event;
 
+        KeybindManager keybindManager{input.key, *this};
 
         // Serialized
 
@@ -59,6 +72,12 @@ namespace jactorio::game
             archive(logic);
             archive(player);
         }
+
+    private:
+        ///
+        /// \return false if error
+        J_NODISCARD bool InitPrototypes();
+        void InitKeybinds();
     };
 } // namespace jactorio::game
 
