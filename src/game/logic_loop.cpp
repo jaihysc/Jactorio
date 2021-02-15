@@ -6,10 +6,9 @@
 #include <filesystem>
 #include <thread>
 
-#include "jactorio.h"
-
 #include "core/execution_timer.h"
 #include "core/loop_common.h"
+#include "render/renderer.h"
 
 using namespace jactorio;
 
@@ -23,8 +22,14 @@ void LogicLoop(ThreadedLoopCommon& common) {
         if (common.gameState == ThreadedLoopCommon::GameState::in_world) {
             EXECUTION_PROFILE_SCOPE(logic_update_timer, "Logic update");
 
+            // TODO only need to lock world if the chunks is visible by the player (thus accessed by the renderer)
             std::lock_guard<std::mutex> guard{common.worldDataMutex};
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
+
+            // Retrieved mvp matrix may be invalid on startup
+            common.gameController.player.world.CalculateMouseSelectedTile(
+                common.renderer->GetMvpManager().GetMvpMatrix());
+
             common.gameController.LogicUpdate();
         }
 

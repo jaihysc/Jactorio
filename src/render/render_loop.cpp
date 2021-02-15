@@ -8,8 +8,6 @@
 #include <SDL.h>
 #include <examples/imgui_impl_sdl.h>
 
-#include "jactorio.h"
-
 #include "core/execution_timer.h"
 #include "core/loop_common.h"
 #include "core/resource_guard.h"
@@ -30,9 +28,8 @@ using namespace jactorio;
 unsigned int window_x = 0;
 unsigned int window_y = 0;
 
-render::Renderer* main_renderer = nullptr;
-
-void render::ChangeWindowSize(game::EventData& event,
+void render::ChangeWindowSize(Renderer& renderer,
+                              game::EventData& event,
                               const unsigned int window_size_x,
                               const unsigned int window_size_y) {
     // Ignore minimize
@@ -47,15 +44,10 @@ void render::ChangeWindowSize(game::EventData& event,
     window_y = window_size_y;
 
     event.SubscribeOnce(game::EventType::renderer_tick,
-                        [](auto& /*e*/) { main_renderer->GlResizeWindow(window_x, window_y); });
+                        [&renderer](auto& /*e*/) { renderer.GlResizeWindow(window_x, window_y); });
 
     LOG_MESSAGE_F(debug, "Resolution changed to %dx%d", window_size_x, window_size_y);
 }
-
-render::Renderer* render::GetBaseRenderer() {
-    return main_renderer;
-}
-
 
 ///
 /// Waits until next frame time, draws frame
@@ -144,10 +136,10 @@ void RenderWorldLoop(ThreadedLoopCommon& common, render::DisplayWindow& display_
             std::lock_guard<std::mutex> guard{common.worldDataMutex};
 
             // MVP Matrices updated in here
-            main_renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(),
-                                                  player_world,
-                                                  player.world.GetPositionX(),
-                                                  player.world.GetPositionY());
+            common.renderer->GlRenderPlayerPosition(common.gameController.logic.GameTick(),
+                                                    player_world,
+                                                    player.world.GetPositionX(),
+                                                    player.world.GetPositionY());
 
 
             std::lock_guard<std::mutex> gui_guard{common.playerDataMutex};
@@ -196,15 +188,16 @@ void render::RenderInit(ThreadedLoopCommon& common) {
     ResourceGuard imgui_manager_guard(&gui::ImguiTerminate);
     gui::Setup(display_window);
 
-    // Shader
     // From my testing, allocating it on the heap is faster than using the stack
-    ResourceGuard<void> renderer_guard([]() { delete main_renderer; });
-    main_renderer = new Renderer();
+    auto renderer   = std::make_unique<Renderer>();
+    common.renderer = renderer.get();
+
+    // Shader
 
     const Shader shader(std::vector<ShaderCreationInput>{{"data/core/shaders/vs.vert", GL_VERTEX_SHADER},
                                                          {"data/core/shaders/fs.frag", GL_FRAGMENT_SHADER}});
     shader.Bind();
-    main_renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
+    renderer->GetMvpManager().SetMvpUniformLocation(shader.GetUniformLocation("u_model_view_projection_matrix"));
 
     // Texture will be bound to slot 0 above, tell this to shader
     Shader::SetUniform1I(shader.GetUniformLocation("u_texture"), 0);
@@ -227,11 +220,10 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
 
     Renderer::GlSetup();
-    main_renderer->GlSetDrawThreads(8);
+    renderer->GlSetDrawThreads(8);
 
     // Terrain
-    main_renderer->SetSpriteUvCoords(
-        renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions);
+    renderer->SetSpriteUvCoords(renderer_sprites.GetSpritemap(proto::Sprite::SpriteGroup::terrain).spritePositions);
     renderer_sprites.GetTexture(proto::Sprite::SpriteGroup::terrain)->Bind(0);
 
     // Gui
@@ -242,13 +234,14 @@ void render::RenderInit(ThreadedLoopCommon& common) {
 
     common.gameController.input.key.Register(
         [&]() {
-            common.gameController.event.SubscribeOnce(game::EventType::renderer_tick, [](const game::EventBase& e) {
-                const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
-                auto& window         = render_e.windows[0].get();
+            common.gameController.event.SubscribeOnce(
+                game::EventType::renderer_tick, [&renderer](const game::EventBase& e) {
+                    const auto& render_e = static_cast<const game::RendererTickEvent&>(e);
+                    auto& window         = render_e.windows[0].get();
 
-                window.SetFullscreen(!window.IsFullscreen());
-                main_renderer->GlResizeWindow(window_x, window_y);
-            });
+                    window.SetFullscreen(!window.IsFullscreen());
+                    renderer->GlResizeWindow(window_x, window_y);
+                });
         },
         SDLK_SPACE,
         game::InputAction::key_down);

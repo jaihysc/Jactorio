@@ -31,6 +31,9 @@ namespace jactorio::render
 
         Renderer();
 
+        Renderer(const Renderer& other)     = delete;
+        Renderer(Renderer&& other) noexcept = delete;
+
         // ======================================================================
         // Properties
 

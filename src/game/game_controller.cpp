@@ -9,8 +9,6 @@
 #include "game/event/game_events.h"
 #include "game/logic/conveyor_controller.h"
 #include "game/logic/inserter_controller.h"
-#include "render/render_loop.h"
-#include "render/renderer.h"
 
 using namespace jactorio;
 
@@ -40,6 +38,8 @@ bool game::GameController::Init() {
 }
 
 void game::GameController::LogicUpdate() {
+    // World
+
     for (auto& world : worlds) {
         logic.GameTickAdvance();
         logic.DeferralUpdate(world, logic.GameTick());
@@ -61,16 +61,14 @@ void game::GameController::LogicUpdate() {
         }
     }
 
-    // ======================================================================
-    // Player logic
+    // Player
 
-    // Retrieved mvp matrix may be invalid on startup
-    player.world.CalculateMouseSelectedTile(render::GetBaseRenderer()->GetMvpManager().GetMvpMatrix());
     input.mouse.DrawCursorOverlay(worlds, player, proto);
-
 
     player.crafting.RecipeCraftTick(proto);
 
+
+    // World + player events
 
     event.Raise<LogicTickEvent>(EventType::logic_tick, logic.GameTick() % kGameHertz);
     input.key.Raise();

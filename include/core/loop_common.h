@@ -9,6 +9,11 @@
 #include "game/game_controller.h"
 #include "gui/main_menu_data.h"
 
+namespace jactorio::render
+{
+    class Renderer;
+}
+
 namespace jactorio
 {
     ///
@@ -36,6 +41,10 @@ namespace jactorio
 
 
         game::GameController gameController;
+
+        /// Renderer currently in use, because OpenGL does not allow calls from different threads,
+        /// the renderer must be created and destroyed in the renderer thread
+        render::Renderer* renderer = nullptr;
     };
 } // namespace jactorio
 
