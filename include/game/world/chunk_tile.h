@@ -18,6 +18,7 @@ namespace jactorio::proto
 {
     class Tile;
     class Entity;
+    class ResourceEntity;
     class Sprite;
 } // namespace jactorio::proto
 
@@ -55,23 +56,32 @@ namespace jactorio::game
         }
 
 
-        // ============================================================================================
-        // Methods below are type checked to avoid getting / setting the wrong data
+        // Shortened forms of GetLayer(TileLayer::...)
 
-        // TODO Remove these method
+        J_NODISCARD auto& Base() {
+            return GetLayer(TileLayer::base);
+        }
+        J_NODISCARD const auto& Base() const {
+            return GetLayer(TileLayer::base);
+        }
 
-        // chunk_layer::base only
-        J_NODISCARD const proto::Tile* GetTilePrototype(TileLayer category = TileLayer::base) const;
-        void SetTilePrototype(Orientation orientation,
-                              const proto::Tile* tile_prototype,
-                              TileLayer category = TileLayer::base);
+        J_NODISCARD auto& Resource() {
+            return GetLayer(TileLayer::resource);
+        }
+        J_NODISCARD const auto& Resource() const {
+            return GetLayer(TileLayer::resource);
+        }
 
+        J_NODISCARD auto& Entity() {
+            return GetLayer(TileLayer::entity);
+        }
+        J_NODISCARD const auto& Entity() const {
+            return GetLayer(TileLayer::entity);
+        }
 
-        // chunk_layer::resource, chunk_layer::entity only
-        J_NODISCARD const proto::Entity* GetEntityPrototype(TileLayer category = TileLayer::entity) const;
-        void SetEntityPrototype(Orientation orientation,
-                                const proto::Entity* tile_prototype,
-                                TileLayer category = TileLayer::entity);
+        J_NODISCARD const proto::Tile* BasePrototype() const;
+        J_NODISCARD const proto::ResourceEntity* ResourcePrototype() const;
+        J_NODISCARD const proto::Entity* EntityPrototype() const;
 
 
         CEREAL_SERIALIZE(archive) {

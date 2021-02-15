@@ -39,7 +39,7 @@ const proto::ConveyorData* game::GetConData(const World& world, const WorldCoord
     if (tile == nullptr)
         return nullptr;
 
-    const auto& layer = tile->GetLayer(TileLayer::entity);
+    const auto& layer = tile->Entity();
     return GetConData(layer);
 }
 

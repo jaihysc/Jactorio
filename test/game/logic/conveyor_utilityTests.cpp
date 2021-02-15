@@ -406,7 +406,7 @@ namespace jactorio::game
 
         ConveyorDestroy(world_, {0, 0}, kLogicGroup_);
 
-        auto* con_data = world_.GetTile({0, 0})->GetLayer(TileLayer::entity).GetUniqueData<proto::ConveyorData>();
+        auto* con_data = world_.GetTile({0, 0})->Entity().GetUniqueData<proto::ConveyorData>();
         ASSERT_NE(con_data, nullptr);
         EXPECT_EQ(con_data->structure, nullptr);
 
@@ -637,7 +637,7 @@ namespace jactorio::game
         proto::TransportBelt lineProto_;
 
         proto::ConveyorData& BuildConveyor(const WorldCoord coord, const Orientation direction) {
-            auto& layer = world_.GetTile(coord.x, coord.y)->GetLayer(TileLayer::entity);
+            auto& layer = world_.GetTile(coord.x, coord.y)->Entity();
 
             layer.SetPrototype(direction, &lineProto_);
 

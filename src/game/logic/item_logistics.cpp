@@ -18,7 +18,7 @@ bool game::ItemDropOff::Initialize(World& world, const WorldCoordAxis world_x, c
     auto* tile = world.GetTile(world_x, world_y);
     assert(tile != nullptr);
 
-    auto& layer = tile->GetLayer(TileLayer::entity);
+    auto& layer = tile->Entity();
 
     if (layer.GetPrototype() == nullptr)
         return false;
@@ -219,7 +219,7 @@ bool game::InserterPickup::Initialize(World& world, const WorldCoordAxis world_x
     auto* tile = world.GetTile(world_x, world_y);
     assert(tile != nullptr);
 
-    auto& layer = tile->GetLayer(TileLayer::entity);
+    auto& layer = tile->Entity();
 
     if (layer.GetPrototype() == nullptr)
         return false;

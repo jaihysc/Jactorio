@@ -45,7 +45,7 @@ namespace jactorio::game
 
             // Emit neighbor update
             {
-                auto& neighbor_layer       = world_.GetTile(neighbor_update_coord)->GetLayer(TileLayer::entity);
+                auto& neighbor_layer       = world_.GetTile(neighbor_update_coord)->Entity();
                 const auto* neighbor_proto = neighbor_layer.GetPrototype<proto::ContainerEntity>();
 
                 if (neighbor_proto != nullptr)

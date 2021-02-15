@@ -225,8 +225,8 @@ bool game::World::PlaceLocationValid(const WorldCoord& coord, const Position2<ui
 
             // If the tile proto does not exist, or base tile prototype is water, NOT VALID placement
 
-            const auto* tile_proto   = tile->GetTilePrototype();
-            const auto* entity_proto = tile->GetEntityPrototype();
+            const auto* tile_proto   = tile->BasePrototype();
+            const auto* entity_proto = tile->EntityPrototype();
 
             if (entity_proto != nullptr || tile_proto == nullptr || tile_proto->isWater) {
                 return false;
@@ -245,7 +245,7 @@ bool game::World::Place(const WorldCoord& coord, const Orientation orien, const 
 
     // entity is nullptr indicates removing an entity
     if (entity == nullptr) {
-        const auto* t_entity = provided_tile->GetEntityPrototype();
+        const auto* t_entity = provided_tile->EntityPrototype();
 
         if (t_entity == nullptr) // Already removed
             return false;
@@ -447,7 +447,7 @@ void Generate(game::World& world, const data::PrototypeManager& proto, const int
             assert(tile != nullptr); // Base tile should never generate nullptr
 
             auto* new_tile = static_cast<proto::Tile*>(tile);
-            target.SetTilePrototype(Orientation::up, new_tile);
+            target.Base().SetPrototype(Orientation::up, new_tile);
         });
 
     // Resources
@@ -461,7 +461,7 @@ void Generate(game::World& world, const data::PrototypeManager& proto, const int
                 return;
 
             // Do not place resources on water since they cannot be mined by entities
-            const auto* base_layer = target.GetTilePrototype();
+            const auto* base_layer = target.BasePrototype();
             if (base_layer != nullptr && base_layer->isWater)
                 return;
 

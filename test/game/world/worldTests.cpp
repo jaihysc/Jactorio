@@ -186,7 +186,7 @@ namespace jactorio::game
         const WorldCoord bottom_coord = {6, 6};
 
         auto* bottom_tile  = world_.GetTile(bottom_coord);
-        auto& bottom_layer = bottom_tile->GetLayer(TileLayer::entity);
+        auto& bottom_layer = bottom_tile->Entity();
 
         proto::ContainerEntity proto;
         proto.SetDimensions(2, 1);
@@ -200,7 +200,7 @@ namespace jactorio::game
         //
         auto* top_tile = world_.GetTile(5, 6);
 
-        bottom_layer.SetupMultiTile(1, top_tile->GetLayer(TileLayer::entity));
+        bottom_layer.SetupMultiTile(1, top_tile->Entity());
         EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
         EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, TileLayer::entity), top_tile);
     }
@@ -209,16 +209,16 @@ namespace jactorio::game
         world_.EmplaceChunk(0, 0);
 
         auto* top_tile    = world_.GetTile(0, 0);
-        auto& unique_data = top_tile->GetLayer(TileLayer::resource).MakeUniqueData<proto::ContainerEntityData>(10);
+        auto& unique_data = top_tile->Resource().MakeUniqueData<proto::ContainerEntityData>(10);
 
         auto* bottom_tile  = world_.GetTile({1, 2});
-        auto& bottom_layer = bottom_tile->GetLayer(TileLayer::resource);
+        auto& bottom_layer = bottom_tile->Resource();
 
         proto::ContainerEntity proto;
         proto.SetDimensions(7, 10);
         bottom_layer.SetPrototype(Orientation::up, proto);
 
-        bottom_layer.SetupMultiTile(15, top_tile->GetLayer(TileLayer::resource));
+        bottom_layer.SetupMultiTile(15, top_tile->Resource());
 
         EXPECT_EQ(world_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
     }
@@ -367,7 +367,7 @@ namespace jactorio::game
         /// Checks that multi-tile tile is linked to top left
         auto expect_tl_resolved = [this, &container](const WorldCoord& coord, const TileLayer tile_layer) {
             auto* top_left = world_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
-            EXPECT_EQ(top_left, &world_.GetTile(1, 0)->GetLayer(TileLayer::base));
+            EXPECT_EQ(top_left, &world_.GetTile(1, 0)->Base());
             EXPECT_EQ(top_left->GetPrototype(), &container);
         };
 
@@ -407,8 +407,7 @@ namespace jactorio::game
         auto result = TestSerializeDeserialize(world_);
         result.DeserializePostProcess();
 
-        auto* result_inserter_data =
-            result.GetTile({1, 1})->GetLayer(TileLayer::entity).GetUniqueData<proto::InserterData>();
+        auto* result_inserter_data = result.GetTile({1, 1})->Entity().GetUniqueData<proto::InserterData>();
 
         EXPECT_TRUE(result_inserter_data->dropoff.IsInitialized());
     }
@@ -432,7 +431,7 @@ namespace jactorio::game
         world_.EmplaceChunk(0, 0);
 
         MockWorldObject mock_obj;
-        auto& tile_layer = world_.GetTile(5, 6)->GetLayer(TileLayer::entity);
+        auto& tile_layer = world_.GetTile(5, 6)->Entity();
         tile_layer.SetPrototype(Orientation::up, &mock_obj);
 
         world_.DeserializePostProcess();

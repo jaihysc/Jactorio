@@ -10,19 +10,18 @@ namespace jactorio::game
 {
     TEST(Chunk, LogicCopy) {
         Chunk chunk_a(0, 0);
-        chunk_a.GetLogicGroup(LogicGroup::conveyor).push_back(&chunk_a.GetCTile(3, 4).GetLayer(TileLayer::base));
+        chunk_a.GetLogicGroup(LogicGroup::conveyor).push_back(&chunk_a.GetCTile(3, 4).Base());
 
         auto chunk_b = chunk_a;
-        EXPECT_EQ(chunk_b.GetLogicGroup(LogicGroup::conveyor)[0], &chunk_b.GetCTile(3, 4).GetLayer(TileLayer::base));
+        EXPECT_EQ(chunk_b.GetLogicGroup(LogicGroup::conveyor)[0], &chunk_b.GetCTile(3, 4).Base());
     }
 
     TEST(Chunk, LogicMove) {
         Chunk chunk_a(0, 0);
-        chunk_a.GetLogicGroup(LogicGroup::inserter).push_back(&chunk_a.GetCTile(4, 3).GetLayer(TileLayer::resource));
+        chunk_a.GetLogicGroup(LogicGroup::inserter).push_back(&chunk_a.GetCTile(4, 3).Resource());
 
         auto chunk_b = std::move(chunk_a);
-        EXPECT_EQ(chunk_b.GetLogicGroup(LogicGroup::inserter)[0],
-                  &chunk_b.GetCTile(4, 3).GetLayer(TileLayer::resource));
+        EXPECT_EQ(chunk_b.GetLogicGroup(LogicGroup::inserter)[0], &chunk_b.GetCTile(4, 3).Resource());
     }
 
     TEST(Chunk, GetCTile) {
@@ -50,12 +49,12 @@ namespace jactorio::game
     TEST(Chunk, SerializeLogicGroups) {
         Chunk chunk{0, 0};
 
-        chunk.GetLogicGroup(LogicGroup::inserter).push_back(&chunk.GetCTile(4, 10).GetLayer(TileLayer::entity));
+        chunk.GetLogicGroup(LogicGroup::inserter).push_back(&chunk.GetCTile(4, 10).Entity());
 
         auto result        = TestSerializeDeserialize(chunk);
         auto& result_logic = result.GetLogicGroup(LogicGroup::inserter);
 
         ASSERT_EQ(result_logic.size(), 1);
-        EXPECT_EQ(result_logic[0], &result.GetCTile(4, 10).GetLayer(TileLayer::entity));
+        EXPECT_EQ(result_logic[0], &result.GetCTile(4, 10).Entity());
     }
 } // namespace jactorio::game

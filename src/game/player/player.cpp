@@ -93,7 +93,7 @@ bool game::Player::World::TargetTileValid(game::World* world, const int x, const
         return false;
 
     // If the player is on water, they are allowed to walk on water
-    if (origin_tile->GetTilePrototype()->isWater)
+    if (origin_tile->BasePrototype()->isWater)
         return true;
 
     const ChunkTile* tile = world->GetTile(x, y);
@@ -101,7 +101,7 @@ bool game::Player::World::TargetTileValid(game::World* world, const int x, const
     if (tile == nullptr)
         return false;
 
-    return !tile->GetTilePrototype()->isWater;
+    return !tile->BasePrototype()->isWater;
 }
 
 void game::Player::World::MovePlayerX(const float amount) {
@@ -312,8 +312,8 @@ void game::Player::Placement::TryPickup(game::World& world,
     const proto::Entity* chosen_ptr;
     bool is_resource_ptr = true;
     {
-        const auto* entity_ptr   = tile->GetEntityPrototype();
-        const auto* resource_ptr = tile->GetEntityPrototype(TileLayer::resource);
+        const auto* entity_ptr   = tile->EntityPrototype();
+        const auto* resource_ptr = tile->ResourcePrototype();
 
         // Picking up entities takes priority since it is higher on the layer
         if (entity_ptr != nullptr) {
@@ -355,7 +355,7 @@ void game::Player::Placement::TryPickup(game::World& world,
         pickupTickCounter_ = 0;
         // Resource entity
         if (is_resource_ptr) {
-            auto& layer         = tile->GetLayer(TileLayer::resource);
+            auto& layer         = tile->Resource();
             auto* resource_data = layer.GetUniqueData<proto::ResourceEntityData>();
 
             assert(resource_data != nullptr); // Resource tiles should have valid data

@@ -64,8 +64,8 @@ namespace jactorio::game
 
         auto tile_proto = proto::Tile();
 
-        ct.SetTilePrototype(Orientation::up, &tile_proto);
+        ct.Base().SetPrototype(Orientation::up, &tile_proto);
 
-        EXPECT_EQ(ct.GetTilePrototype(), &tile_proto);
+        EXPECT_EQ(ct.BasePrototype(), &tile_proto);
     }
 } // namespace jactorio::game
