@@ -52,7 +52,7 @@ namespace jactorio::game
             land_tile->isWater  = false;
 
 
-            auto& chunk = world.EmplaceChunk(0, 0);
+            auto& chunk = world.EmplaceChunk({0, 0});
 
             for (int y = 0; y < kChunkWidth; ++y) {
                 bool y_water = false;

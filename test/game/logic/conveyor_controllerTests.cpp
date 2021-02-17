@@ -32,7 +32,7 @@ namespace jactorio::game
         ///
         /// Creates a world, chunk and logic chunk at 0, 0
         void SetUp() override {
-            chunk_ = &world_.EmplaceChunk(0, 0);
+            chunk_ = &world_.EmplaceChunk({0, 0});
             world_.LogicAddChunk(*chunk_);
         }
 

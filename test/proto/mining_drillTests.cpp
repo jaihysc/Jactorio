@@ -21,7 +21,7 @@ namespace jactorio::proto
         ContainerEntity container_;
 
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
 
             drillProto_.SetWidth(3);
             drillProto_.SetHeight(3);

@@ -68,26 +68,22 @@ namespace jactorio::game
 
 
         ///
+        /// Creates chunk
         /// \param args Additional arguments to be provided alongside chunk_x chunk_y to Chunk constructor
         /// \return Added chunk
         template <typename... TChunkArgs>
-        Chunk& EmplaceChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y, TChunkArgs... args) {
+        Chunk& EmplaceChunk(const ChunkCoord& c_coord, TChunkArgs... args) {
             const auto& [it, success] = worldChunks_.emplace(std::piecewise_construct,
-                                                             std::make_tuple(chunk_x, chunk_y),
-                                                             std::make_tuple(chunk_x, chunk_y, args...));
+                                                             std::make_tuple(c_coord.x, c_coord.y),
+                                                             std::make_tuple(c_coord.x, c_coord.y, args...));
             assert(success); // Attempted to insert at already existent location
 
             return it->second;
         }
 
-        template <typename... TChunkArgs>
-        Chunk& EmplaceChunk(const ChunkCoord& chunk_coord, TChunkArgs... args) {
-            return EmplaceChunk(chunk_coord.x, chunk_coord.y, std::forward<TChunkArgs>()...);
-        }
-
         ///
         /// Attempts to delete chunk at chunk_x, chunk_y
-        void DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
+        void DeleteChunk(const ChunkCoord& c_coord);
 
         ///
         /// Clears chunk data, logic chunks and chunks awaiting generation
@@ -187,7 +183,7 @@ namespace jactorio::game
         ///
         /// Queues a chunk to be generated at specified position
         /// \remark To be called from render thread only
-        void QueueChunkGeneration(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) const;
+        void QueueChunkGeneration(const ChunkCoord& c_coord) const;
 
         ///
         /// Takes first in from chunk generation queue and generates chunk

@@ -25,7 +25,7 @@ namespace jactorio::game
         proto::TransportBelt transBelt_;
 
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
     };
 
@@ -313,13 +313,13 @@ namespace jactorio::game
                 [](auto&, auto&, auto&) {}) const {
 
             World world; // Cannot use test's world since this is building at the same tile multiple times
-            world.EmplaceChunk(0, 0);
+            world.EmplaceChunk({0, 0});
 
             // For testing grouping across chunk boundaries
-            world.EmplaceChunk(0, -1);
-            world.EmplaceChunk(0, 1);
-            world.EmplaceChunk(-1, 0);
-            world.EmplaceChunk(1, 0);
+            world.EmplaceChunk({0, -1});
+            world.EmplaceChunk({0, 1});
+            world.EmplaceChunk({-1, 0});
+            world.EmplaceChunk({1, 0});
 
             auto& other_con_data = TestSetupConveyor(world, other_coord, other_direction, transBelt_);
             ConveyorCreate(world, other_coord, other_con_data, other_direction, kLogicGroup_);
@@ -539,7 +539,7 @@ namespace jactorio::game
     /// When changing structure, other structures which has the old structure as a target must be updated
     /// to use the new structure
     TEST_F(ConveyorUtilityTest, ChangeStructureUpdateTargets) {
-        world_.EmplaceChunk(0, -1);
+        world_.EmplaceChunk({0, -1});
 
         auto& new_con_struct   = TestSetupConveyor(world_, {5, 5}, Orientation::left, transBelt_).structure;
         new_con_struct->length = 3;

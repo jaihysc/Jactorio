@@ -37,7 +37,7 @@ namespace jactorio::game
         // An item is selected
         // Clear last and draw new
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         // Should set item's sprite at overlay layer at world position 0, 0
         const proto::Sprite cursor;
@@ -63,7 +63,7 @@ namespace jactorio::game
         // A non placeable item is selected
         // Clear last and draw nothing new
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
         entity_.placeable = false;
 
 
@@ -81,7 +81,7 @@ namespace jactorio::game
         // A non placeable item is selected over an entity
         // Clear last and draw cursor, draw cursor over entity, no preview ghost
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
         entity_.placeable = false;
 
 
@@ -110,7 +110,7 @@ namespace jactorio::game
         // NO item is selected
         // Clear last and draw nothing new
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         const proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, nullptr, cursor);
@@ -126,7 +126,7 @@ namespace jactorio::game
         // NO item is selected, but cursor is hovered over an entity
         // Draw selection cursor
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         world_.GetTile({0, 0})->Entity().SetPrototype(Orientation::up, &entity_);
         proto::Sprite cursor;
@@ -141,7 +141,7 @@ namespace jactorio::game
         // NO item is selected, but cursor is hovered over a resource entity
         // Draw selection cursor
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         world_.GetTile({0, 0})->Resource().SetPrototype(Orientation::up, &entity_);
         proto::Sprite cursor;
@@ -182,7 +182,7 @@ namespace jactorio::game
             mutable bool getSpriteSetCalled = false;
         };
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         MockEntity entity;
         entity.rotatable = true;
@@ -196,7 +196,7 @@ namespace jactorio::game
     }
 
     TEST_F(MouseSelectionOverlayTest, SkipErasingLastOverlay) {
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         world_.GetTile({0, 0})->Resource().SetPrototype(Orientation::up, &entity_);
         const proto::Sprite cursor;

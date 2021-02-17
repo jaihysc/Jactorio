@@ -80,7 +80,7 @@ namespace jactorio::game
         tile_proto.isWater = false;
 
         // Create world with entity at 0, 0
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         auto& tile  = *world_.GetTile({0, 0});
         auto& tile2 = *world_.GetTile({1, 0});
@@ -140,7 +140,7 @@ namespace jactorio::game
         tile_proto.isWater = false;
 
         // Create world with entity at 0, 0
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
         auto* tile = world_.GetTile({0, 0});
 
         tile->Base().SetPrototype(Orientation::up, &tile_proto);
@@ -191,7 +191,7 @@ namespace jactorio::game
         tile_proto.isWater = false;
 
         // Create world with entity at 0, 0
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
 
         for (WorldCoordAxis y = 0; y < entity->GetHeight(Orientation::up); ++y) {
@@ -230,7 +230,7 @@ namespace jactorio::game
         entity.SetItem(&item);
 
         // Create world with entity at 0, 0
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         auto& tile  = *world_.GetTile({0, 0});
         auto& tile2 = *world_.GetTile({1, 0});
@@ -280,7 +280,7 @@ namespace jactorio::game
         entity.SetItem(&item);
 
         // Create world with the resource entity at 0, 0
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         auto& tile  = *world_.GetTile({0, 0});
         auto& tile2 = *world_.GetTile({1, 0});
@@ -317,7 +317,7 @@ namespace jactorio::game
     TEST_F(PlayerPlacementTest, TryPickupLayered) {
         auto item = proto::Item();
         // Create world with the resource entity at 0, 0
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
         auto& tile = *world_.GetTile({0, 0});
 
 
@@ -358,7 +358,7 @@ namespace jactorio::game
     ///
     /// Picking up an entity which is rotated (treated as 2x1 instead of 1x2)
     TEST_F(PlayerPlacementTest, TryPickupRotated) {
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         proto::Item item;
         proto::ContainerEntity container;
@@ -446,7 +446,7 @@ namespace jactorio::game
         auto tile_proto    = proto::Tile();
         tile_proto.isWater = false;
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
         world_.GetTile({0, 0})->Base().SetPrototype(Orientation::up, &tile_proto);
 
 
@@ -500,7 +500,7 @@ namespace jactorio::game
         auto tile_proto    = proto::Tile();
         tile_proto.isWater = false;
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
         auto* tile = world_.GetTile({0, 0});
         tile->Base().SetPrototype(Orientation::up, &tile_proto);
 
@@ -542,7 +542,7 @@ namespace jactorio::game
         entity_proto.SetHeight(3);
         entity_proto.SetItem(&item);
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         // Set tiles so entity can be placed on it
         for (int y = 1; y < 4; ++y) {

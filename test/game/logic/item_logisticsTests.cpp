@@ -20,7 +20,7 @@ namespace jactorio::game
         Logic logic_;
 
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
     };
 
@@ -76,7 +76,7 @@ namespace jactorio::game
     {
     public:
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
 
         explicit ItemDropOffTest() : ItemDropOff(Orientation::up) {}
@@ -400,7 +400,7 @@ namespace jactorio::game
         explicit InserterPickupTest() : InserterPickup(Orientation::up) {}
 
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
 
     protected:

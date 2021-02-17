@@ -19,7 +19,7 @@ namespace jactorio::proto
         ContainerEntity containerProto_;
 
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
 
         game::ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {

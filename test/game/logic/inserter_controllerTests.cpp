@@ -23,7 +23,7 @@ namespace jactorio::game
         proto::Item containerItemProto_{};
 
         void SetUp() override {
-            auto& chunk = world_.EmplaceChunk(0, 0);
+            auto& chunk = world_.EmplaceChunk({0, 0});
             world_.LogicAddChunk(chunk);
         }
 

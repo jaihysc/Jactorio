@@ -291,7 +291,7 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
         // Queue chunk for generation if it does not exist
         if (chunk == nullptr) {
             std::lock_guard<std::mutex> gen_guard{world_gen_mutex};
-            world.QueueChunkGeneration(chunk_x, row_start.y);
+            world.QueueChunkGeneration({chunk_x, row_start.y});
             continue;
         }
 

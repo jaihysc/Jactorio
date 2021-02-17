@@ -65,8 +65,8 @@ game::World::World(const World& other)
     }
 }
 
-void game::World::DeleteChunk(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) {
-    worldChunks_.erase(std::make_tuple(chunk_x, chunk_y));
+void game::World::DeleteChunk(const ChunkCoord& c_coord) {
+    worldChunks_.erase(std::make_tuple(c_coord.x, c_coord.y));
 }
 
 void game::World::Clear() {
@@ -96,7 +96,7 @@ game::Chunk* game::World::GetChunkW(const WorldCoord& coord) {
 }
 
 const game::Chunk* game::World::GetChunkW(const WorldCoord& coord) const {
-    return GetChunkC({WorldCToChunkC(coord.x), WorldCToChunkC(coord.y)});
+    return GetChunkC(WorldCToChunkC(coord));
 }
 
 // ======================================================================
@@ -426,10 +426,9 @@ void Generate(game::World& world, const data::PrototypeManager& proto, const int
 }
 
 
-void game::World::QueueChunkGeneration(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) const {
+void game::World::QueueChunkGeneration(const ChunkCoord& c_coord) const {
     // .find is not needed to check for duplicates as insert already does that
-
-    worldGenChunks_.insert({chunk_x, chunk_y});
+    worldGenChunks_.insert({c_coord.x, c_coord.y});
 }
 
 void game::World::GenChunk(const data::PrototypeManager& proto, uint8_t amount) {

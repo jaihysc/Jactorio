@@ -102,17 +102,17 @@ namespace jactorio::game
     }
 
     TEST_F(WorldTest, WorldDeleteChunk) {
-        world_.EmplaceChunk(3, 2);
-        world_.DeleteChunk(3, 2);
+        world_.EmplaceChunk({3, 2});
+        world_.DeleteChunk({3, 2});
 
         EXPECT_EQ(world_.GetChunkC({3, 2}), nullptr);
 
         // No effect, no chunk
-        world_.DeleteChunk(2, 2);
+        world_.DeleteChunk({2, 2});
     }
 
     TEST_F(WorldTest, WorldGetChunkChunkCoords) {
-        const auto& added_chunk = world_.EmplaceChunk(5, 1);
+        const auto& added_chunk = world_.EmplaceChunk({5, 1});
 
         EXPECT_EQ(world_.GetChunkC({0, 0}), nullptr);
         EXPECT_EQ(world_.GetChunkC({5, 1}), &added_chunk);
@@ -125,7 +125,7 @@ namespace jactorio::game
 
         // World coords 0, 0 - Chunk 0 0, position 0 0
         {
-            auto& chunk = world_.EmplaceChunk(0, 0);
+            auto& chunk = world_.EmplaceChunk({0, 0});
             auto& tiles = chunk.Tiles();
             tiles[0]    = chunk_tile;
 
@@ -139,7 +139,7 @@ namespace jactorio::game
 
         // World coords -31, -31 - Chunk -1 -1, position 1 1
         {
-            auto& chunk = world_.EmplaceChunk(-1, -1);
+            auto& chunk = world_.EmplaceChunk({-1, -1});
             auto& tiles = chunk.Tiles();
             tiles[33]   = chunk_tile;
 
@@ -153,7 +153,7 @@ namespace jactorio::game
 
         // World coords -32, 0 - Chunk -1 0, position 0 0
         {
-            auto& chunk = world_.EmplaceChunk(-1, 0);
+            auto& chunk = world_.EmplaceChunk({-1, 0});
             auto& tiles = chunk.Tiles();
             tiles[0]    = chunk_tile;
 
@@ -167,14 +167,14 @@ namespace jactorio::game
 
     TEST_F(WorldTest, GetChunkWorldCoords) {
         {
-            const auto& chunk = world_.EmplaceChunk(0, 0);
+            const auto& chunk = world_.EmplaceChunk({0, 0});
             EXPECT_EQ(world_.GetChunkW({31, 31}), &chunk);
 
             EXPECT_EQ(world_.GetChunkW({31, 31}), &chunk);
         }
 
         {
-            const auto& chunk = world_.EmplaceChunk(-1, 0);
+            const auto& chunk = world_.EmplaceChunk({-1, 0});
             EXPECT_EQ(world_.GetChunkW({-1, 0}), &chunk);
 
             EXPECT_EQ(world_.GetChunkW({-1, 0}), &chunk);
@@ -186,7 +186,7 @@ namespace jactorio::game
 
         EXPECT_EQ(world_.GetChunkC({6, 6}), &added_chunk);
         world_.LogicAddChunk(added_chunk);
-        world_.QueueChunkGeneration(0, 0);
+        world_.QueueChunkGeneration({0, 0});
 
 
         world_.Clear();
@@ -205,7 +205,7 @@ namespace jactorio::game
     // Logic chunks
 
     TEST_F(WorldTest, LogicRegister) {
-        world_.EmplaceChunk(1, 0); // 32, 0 is chunk coords 1, 0
+        world_.EmplaceChunk({1, 0}); // 32, 0 is chunk coords 1, 0
         world_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
         auto& logic_chunks = world_.LogicGetChunks();
@@ -227,7 +227,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldTest, LogicRemove) {
-        world_.EmplaceChunk(1, 0);
+        world_.EmplaceChunk({1, 0});
         world_.LogicRegister(LogicGroup::inserter, {32, 0}, TileLayer::entity);
 
         world_.LogicRegister(LogicGroup::conveyor, {33, 0}, TileLayer::entity);
@@ -252,7 +252,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldTest, LogicRemoveNonExistent) {
-        world_.EmplaceChunk(1, 0);
+        world_.EmplaceChunk({1, 0});
 
         // Removed 1, another one remains
         world_.LogicRemove(LogicGroup::inserter, {32, 0}, TileLayer::entity);
@@ -299,7 +299,7 @@ namespace jactorio::game
     };
 
     TEST_F(WorldDeserialize, SameChunk) {
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         data::PrototypeManager proto;
         auto& container = proto.Make<proto::ContainerEntity>();
@@ -333,7 +333,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldDeserialize, ResolveMultiTilesFirst) {
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         /*
          *   I
@@ -381,7 +381,7 @@ namespace jactorio::game
             mutable ChunkTileLayer* chunkTileLayer = nullptr;
         };
 
-        world_.EmplaceChunk(0, 0);
+        world_.EmplaceChunk({0, 0});
 
         MockWorldObject mock_obj;
         auto& tile_layer = world_.GetTile({5, 6})->Entity();
@@ -394,7 +394,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldDeserialize, DeserializeLogicChunks) {
-        world_.LogicAddChunk(world_.EmplaceChunk(0, 0));
+        world_.LogicAddChunk(world_.EmplaceChunk({0, 0}));
 
         auto result               = TestSerializeDeserialize(world_);
         auto& result_logic_chunks = result.LogicGetChunks();

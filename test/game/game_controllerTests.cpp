@@ -39,7 +39,7 @@ namespace jactorio::game
         const proto::ContainerEntity container;
 
 
-        game_controller.worlds[0].EmplaceChunk(0, 0);
+        game_controller.worlds[0].EmplaceChunk({0, 0});
 
 
         // 1 Should not attempt to remove cursor overlays

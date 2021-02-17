@@ -39,7 +39,7 @@ namespace jactorio::proto
         }
 
         void SetUp() override {
-            world_.EmplaceChunk(0, 0);
+            world_.EmplaceChunk({0, 0});
         }
     };
 
