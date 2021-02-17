@@ -84,10 +84,11 @@ bool game::Player::World::MouseSelectedTileInRange() const {
     return tile_dist <= max_reach;
 }
 
-bool game::Player::World::TargetTileValid(game::World* world, const int x, const int y) const {
+bool game::Player::World::TargetTileValid(game::World* world, const WorldCoord& coord) const {
     assert(world != nullptr); // Player is not in a world
 
-    const auto* origin_tile = world->GetTile(LossyCast<int>(positionX_), LossyCast<int>(positionY_));
+    const auto* origin_tile =
+        world->GetTile({LossyCast<WorldCoordAxis>(positionX_), LossyCast<WorldCoordAxis>(positionY_)});
 
     if (origin_tile == nullptr)
         return false;
@@ -96,7 +97,7 @@ bool game::Player::World::TargetTileValid(game::World* world, const int x, const
     if (origin_tile->BasePrototype()->isWater)
         return true;
 
-    const ChunkTile* tile = world->GetTile(x, y);
+    const ChunkTile* tile = world->GetTile(coord);
     // Chunk not generated yet
     if (tile == nullptr)
         return false;

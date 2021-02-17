@@ -286,7 +286,7 @@ void render::Renderer::PrepareChunkRow(RendererLayer& r_layer,
     for (int x = 0; x < chunk_span; ++x) {
         const auto chunk_x = x + row_start.x;
 
-        const auto* chunk = world.GetChunkC(chunk_x, row_start.y);
+        const auto* chunk = world.GetChunkC({chunk_x, row_start.y});
 
         // Queue chunk for generation if it does not exist
         if (chunk == nullptr) {

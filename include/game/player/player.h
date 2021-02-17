@@ -114,7 +114,7 @@ namespace jactorio::game
         private:
             ///
             /// \return true if the tile can be walked on
-            bool TargetTileValid(game::World* world, int x, int y) const;
+            bool TargetTileValid(game::World* world, const WorldCoord& coord) const;
 
             WorldCoord mouseSelectedTile_;
 

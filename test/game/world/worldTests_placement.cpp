@@ -94,7 +94,7 @@ namespace jactorio::game
         // Place an entity at various locations, checking that it does not place on invalid tiles
         const auto entity = std::make_unique<proto::ContainerEntity>();
 
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
         EXPECT_TRUE(world_.Place({0, 0}, Orientation::up, entity.get()));
 
@@ -109,7 +109,7 @@ namespace jactorio::game
         const auto entity = std::make_unique<proto::ContainerEntity>();
 
         // Invalid, placing on a base tile which is water
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
         EXPECT_FALSE(world_.Place({1, 0}, Orientation::up, entity.get()));
         EXPECT_EQ(chunk->Tiles()[0].EntityPrototype(), nullptr);
@@ -122,7 +122,7 @@ namespace jactorio::game
         const auto entity = std::make_unique<proto::ContainerEntity>();
 
 
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
         // Place entity, taken from the test above (place_entity_1x1_valid)
         {
@@ -144,7 +144,7 @@ namespace jactorio::game
     TEST_F(WorldPlacementTest, RemoveEntity1x1Invalid) {
         // Removing a location with nullptr entity and sprite does nothing, returns false to indicate nothing was
         // removed
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
         // Invalid Removal
         EXPECT_FALSE(world_.Place({0, 0}, Orientation::up, nullptr));
@@ -162,7 +162,7 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
 
         EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, entity.get()));
@@ -188,7 +188,7 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
 
         EXPECT_FALSE(world_.Place({4, 5}, Orientation::up, entity.get()));
@@ -210,7 +210,7 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
 
         EXPECT_FALSE(world_.Place({9, 2}, Orientation::up, entity.get()));
@@ -241,7 +241,7 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
 
         EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, entity.get()));
@@ -264,7 +264,7 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(3);
 
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
 
         EXPECT_TRUE(world_.Place({5, 5}, Orientation::up, entity.get()));
@@ -291,7 +291,7 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(4);
 
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
 
         EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, entity.get()));
@@ -320,7 +320,7 @@ namespace jactorio::game
         entity->SetWidth(3);
         entity->SetHeight(4);
 
-        const auto* chunk = world_.GetChunkC(0, 0);
+        const auto* chunk = world_.GetChunkC({0, 0});
 
 
         EXPECT_TRUE(world_.Place({9, 10}, Orientation::up, entity.get()));

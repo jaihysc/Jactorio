@@ -82,8 +82,8 @@ namespace jactorio::game
         EXPECT_EQ(added_chunk.GetPosition().y, 1);
 
         // Should not initialize other chunks
-        EXPECT_EQ(world_.GetChunkC(-1, -1), nullptr);
-        EXPECT_EQ(world_.GetChunkC(1, 1), nullptr);
+        EXPECT_EQ(world_.GetChunkC({-1, -1}), nullptr);
+        EXPECT_EQ(world_.GetChunkC({1, 1}), nullptr);
     }
 
     TEST_F(WorldTest, WorldAddChunkNegative) {
@@ -97,15 +97,15 @@ namespace jactorio::game
 
 
         // Should not initialize other chunks
-        EXPECT_EQ(world_.GetChunkC(-1, -1), nullptr);
-        EXPECT_EQ(world_.GetChunkC(1, 1), nullptr);
+        EXPECT_EQ(world_.GetChunkC({-1, -1}), nullptr);
+        EXPECT_EQ(world_.GetChunkC({1, 1}), nullptr);
     }
 
     TEST_F(WorldTest, WorldDeleteChunk) {
         world_.EmplaceChunk(3, 2);
         world_.DeleteChunk(3, 2);
 
-        EXPECT_EQ(world_.GetChunkC(3, 2), nullptr);
+        EXPECT_EQ(world_.GetChunkC({3, 2}), nullptr);
 
         // No effect, no chunk
         world_.DeleteChunk(2, 2);
@@ -114,9 +114,9 @@ namespace jactorio::game
     TEST_F(WorldTest, WorldGetChunkChunkCoords) {
         const auto& added_chunk = world_.EmplaceChunk(5, 1);
 
-        EXPECT_EQ(world_.GetChunkC(0, 0), nullptr);
-        EXPECT_EQ(world_.GetChunkC(5, 1), &added_chunk);
-        EXPECT_EQ(world_.GetChunkC(5, 1), &added_chunk);
+        EXPECT_EQ(world_.GetChunkC({0, 0}), nullptr);
+        EXPECT_EQ(world_.GetChunkC({5, 1}), &added_chunk);
+        EXPECT_EQ(world_.GetChunkC({5, 1}), &added_chunk);
     }
 
     TEST_F(WorldTest, GetTileWorldCoords) {
@@ -129,8 +129,8 @@ namespace jactorio::game
             auto& tiles = chunk.Tiles();
             tiles[0]    = chunk_tile;
 
-            EXPECT_EQ(world_.GetTile(0, 0), &tiles[0]);
-            EXPECT_NE(world_.GetTile(0, 1), &tiles[0]);
+            EXPECT_EQ(world_.GetTile({0, 0}), &tiles[0]);
+            EXPECT_NE(world_.GetTile({0, 1}), &tiles[0]);
 
             EXPECT_EQ(world_.GetTile({0, 0}), &tiles[0]);
             EXPECT_NE(world_.GetTile({0, 1}), &tiles[0]);
@@ -143,8 +143,8 @@ namespace jactorio::game
             auto& tiles = chunk.Tiles();
             tiles[33]   = chunk_tile;
 
-            EXPECT_EQ(world_.GetTile(-31, -31), &tiles[33]);
-            EXPECT_NE(world_.GetTile(-31, -32), &tiles[33]);
+            EXPECT_EQ(world_.GetTile({-31, -31}), &tiles[33]);
+            EXPECT_NE(world_.GetTile({-31, -32}), &tiles[33]);
 
             EXPECT_EQ(world_.GetTile({-31, -31}), &tiles[33]);
             EXPECT_NE(world_.GetTile({-31, -32}), &tiles[33]);
@@ -157,8 +157,8 @@ namespace jactorio::game
             auto& tiles = chunk.Tiles();
             tiles[0]    = chunk_tile;
 
-            EXPECT_EQ(world_.GetTile(-32, 0), &tiles[0]);
-            EXPECT_NE(world_.GetTile(-31, 0), &tiles[0]);
+            EXPECT_EQ(world_.GetTile({-32, 0}), &tiles[0]);
+            EXPECT_NE(world_.GetTile({-31, 0}), &tiles[0]);
 
             EXPECT_EQ(world_.GetTile({-32, 0}), &tiles[0]);
             EXPECT_NE(world_.GetTile({-31, 0}), &tiles[0]);
@@ -168,14 +168,14 @@ namespace jactorio::game
     TEST_F(WorldTest, GetChunkWorldCoords) {
         {
             const auto& chunk = world_.EmplaceChunk(0, 0);
-            EXPECT_EQ(world_.GetChunkW(31, 31), &chunk);
+            EXPECT_EQ(world_.GetChunkW({31, 31}), &chunk);
 
             EXPECT_EQ(world_.GetChunkW({31, 31}), &chunk);
         }
 
         {
             const auto& chunk = world_.EmplaceChunk(-1, 0);
-            EXPECT_EQ(world_.GetChunkW(-1, 0), &chunk);
+            EXPECT_EQ(world_.GetChunkW({-1, 0}), &chunk);
 
             EXPECT_EQ(world_.GetChunkW({-1, 0}), &chunk);
         }
@@ -198,7 +198,7 @@ namespace jactorio::game
         EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, TileLayer::entity), bottom_tile);
 
         //
-        auto* top_tile = world_.GetTile(5, 6);
+        auto* top_tile = world_.GetTile({5, 6});
 
         bottom_layer.SetupMultiTile(1, top_tile->Entity());
         EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
@@ -208,7 +208,7 @@ namespace jactorio::game
     TEST_F(WorldTest, GetLayerTopLeft) {
         world_.EmplaceChunk(0, 0);
 
-        auto* top_tile    = world_.GetTile(0, 0);
+        auto* top_tile    = world_.GetTile({0, 0});
         auto& unique_data = top_tile->Resource().MakeUniqueData<proto::ContainerEntityData>(10);
 
         auto* bottom_tile  = world_.GetTile({1, 2});
@@ -231,7 +231,7 @@ namespace jactorio::game
     TEST_F(WorldTest, Clear) {
         auto& added_chunk = world_.EmplaceChunk({6, 6});
 
-        EXPECT_EQ(world_.GetChunkC(6, 6), &added_chunk);
+        EXPECT_EQ(world_.GetChunkC({6, 6}), &added_chunk);
         world_.LogicAddChunk(added_chunk);
         world_.QueueChunkGeneration(0, 0);
 
@@ -242,9 +242,9 @@ namespace jactorio::game
         const data::PrototypeManager proto;
         world_.GenChunk(proto);
 
-        EXPECT_EQ(world_.GetChunkC(0, 0), nullptr);
+        EXPECT_EQ(world_.GetChunkC({0, 0}), nullptr);
 
-        EXPECT_EQ(world_.GetChunkC(6, 6), nullptr);
+        EXPECT_EQ(world_.GetChunkC({6, 6}), nullptr);
         EXPECT_TRUE(world_.LogicGetChunks().empty());
     }
 
@@ -367,7 +367,7 @@ namespace jactorio::game
         /// Checks that multi-tile tile is linked to top left
         auto expect_tl_resolved = [this, &container](const WorldCoord& coord, const TileLayer tile_layer) {
             auto* top_left = world_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
-            EXPECT_EQ(top_left, &world_.GetTile(1, 0)->Base());
+            EXPECT_EQ(top_left, &world_.GetTile({1, 0})->Base());
             EXPECT_EQ(top_left->GetPrototype(), &container);
         };
 
@@ -431,7 +431,7 @@ namespace jactorio::game
         world_.EmplaceChunk(0, 0);
 
         MockWorldObject mock_obj;
-        auto& tile_layer = world_.GetTile(5, 6)->Entity();
+        auto& tile_layer = world_.GetTile({5, 6})->Entity();
         tile_layer.SetPrototype(Orientation::up, &mock_obj);
 
         world_.DeserializePostProcess();

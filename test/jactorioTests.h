@@ -101,7 +101,7 @@ namespace jactorio
                 if (x == 0 && y == 0)
                     continue;
 
-                auto& layer = world.GetTile(coord.x + x, coord.y + y)->GetLayer(tile_layer);
+                auto& layer = world.GetTile({coord.x + x, coord.y + y})->GetLayer(tile_layer);
 
                 layer.SetPrototype(orientation, &proto);
 

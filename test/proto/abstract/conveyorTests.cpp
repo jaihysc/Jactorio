@@ -37,7 +37,7 @@ namespace jactorio::proto
         ///
         /// Sets the prototype pointer for a conveyor at tile
         game::ChunkTileLayer& BuildConveyor(const WorldCoord coord, const Orientation orientation) {
-            auto& layer = world_.GetTile(coord.x, coord.y)->GetLayer(game::TileLayer::entity);
+            auto& layer = world_.GetTile(coord)->GetLayer(game::TileLayer::entity);
 
             layer.SetPrototype(orientation, &lineProto_);
             TlBuildEvents(coord, orientation);
@@ -75,7 +75,7 @@ namespace jactorio::proto
         /// \param l_index index for left only segment in logic group
         /// \param r_index index for right only segment in logic group
         void ValidateBendToSideOnly(const size_t l_index = 2, const size_t r_index = 1) {
-            game::Chunk& chunk = *world_.GetChunkC(0, 0);
+            game::Chunk& chunk = *world_.GetChunkC({0, 0});
             auto& logic_group  = chunk.GetLogicGroup(game::LogicGroup::conveyor);
 
             ASSERT_EQ(logic_group.size(), 3);
@@ -95,7 +95,7 @@ namespace jactorio::proto
         // Grouping
 
         std::vector<game::ChunkTileLayer*>& GetConveyors(const ChunkCoord& chunk_coords) {
-            return world_.GetChunkC(chunk_coords.x, chunk_coords.y)->GetLogicGroup(game::LogicGroup::conveyor);
+            return world_.GetChunkC({chunk_coords.x, chunk_coords.y})->GetLogicGroup(game::LogicGroup::conveyor);
         }
 
         J_NODISCARD auto& GetConveyorData(const WorldCoord& coord) {
@@ -132,7 +132,7 @@ namespace jactorio::proto
         // Should create a conveyor segment and add its chunk to logic chunks
         world_.EmplaceChunk({-1, 0});
 
-        auto& layer = world_.GetTile(-5, 0)->GetLayer(game::TileLayer::entity);
+        auto& layer = world_.GetTile({-5, 0})->GetLayer(game::TileLayer::entity);
         layer.SetPrototype(Orientation::right, &lineProto_);
 
         TlBuildEvents({-5, 0}, Orientation::right);
@@ -248,7 +248,7 @@ namespace jactorio::proto
          */
         BuildConveyor({1, 0}, Orientation::right);
 
-        auto& layer = world_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
+        auto& layer = world_.GetTile({1, 1})->GetLayer(game::TileLayer::entity);
 
 
         TransportBelt proto;
@@ -259,7 +259,7 @@ namespace jactorio::proto
         TlBuildEvents({1, 1}, Orientation::up);
 
         {
-            auto& result_layer = world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
+            auto& result_layer = world_.GetTile({1, 0})->GetLayer(game::TileLayer::entity);
 
             EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien, LineOrientation::up_right);
         }
@@ -278,7 +278,7 @@ namespace jactorio::proto
         BuildConveyor({1, 2}, Orientation::up);
         BuildConveyor({1, 1}, Orientation::right); // Between the 2 above and below
 
-        auto& layer = world_.GetTile(1, 2)->GetLayer(game::TileLayer::entity);
+        auto& layer = world_.GetTile({1, 2})->GetLayer(game::TileLayer::entity);
         layer.SetPrototype(Orientation::up, &lineProto_);
 
 
@@ -286,7 +286,7 @@ namespace jactorio::proto
         TlRemoveEvents({1, 2});
 
         {
-            auto& result_layer = world_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
+            auto& result_layer = world_.GetTile({1, 1})->GetLayer(game::TileLayer::entity);
 
             EXPECT_EQ(static_cast<ConveyorData*>(result_layer.GetUniqueData())->lOrien, LineOrientation::down_right);
         }
@@ -301,11 +301,11 @@ namespace jactorio::proto
         // line
 
 
-        auto& down_layer = world_.GetTile(0, 0)->GetLayer(game::TileLayer::entity);
+        auto& down_layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
         down_layer.SetPrototype(Orientation::down, &lineProto_);
         TlBuildEvents({0, 0}, Orientation::down);
 
-        auto& left_layer = world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
+        auto& left_layer = world_.GetTile({1, 0})->GetLayer(game::TileLayer::entity);
         left_layer.SetPrototype(Orientation::left, &lineProto_);
         TlBuildEvents({1, 0}, Orientation::left);
 
@@ -325,11 +325,11 @@ namespace jactorio::proto
         // Change the conveyor_struct termination type in accordance with orientation when placed ahead of
         // existing line
 
-        auto& left_layer = world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
+        auto& left_layer = world_.GetTile({1, 0})->GetLayer(game::TileLayer::entity);
         left_layer.SetPrototype(Orientation::left, &lineProto_);
         TlBuildEvents({1, 0}, Orientation::left);
 
-        auto& down_layer = world_.GetTile(0, 0)->GetLayer(game::TileLayer::entity);
+        auto& down_layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
         down_layer.SetPrototype(Orientation::down, &lineProto_);
         TlBuildEvents({0, 0}, Orientation::down);
 
@@ -624,22 +624,22 @@ namespace jactorio::proto
          */
 
         {
-            auto& layer = world_.GetTile(0, 0)->GetLayer(game::TileLayer::entity);
+            auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
             layer.SetPrototype(Orientation::right, &lineProto_);
             TlBuildEvents({0, 0}, Orientation::right);
         }
         {
-            auto& layer = world_.GetTile(1, 0)->GetLayer(game::TileLayer::entity);
+            auto& layer = world_.GetTile({1, 0})->GetLayer(game::TileLayer::entity);
             layer.SetPrototype(Orientation::down, &lineProto_);
             TlBuildEvents({1, 0}, Orientation::down);
         }
         {
-            auto& layer = world_.GetTile(1, 1)->GetLayer(game::TileLayer::entity);
+            auto& layer = world_.GetTile({1, 1})->GetLayer(game::TileLayer::entity);
             layer.SetPrototype(Orientation::left, &lineProto_);
             TlBuildEvents({1, 1}, Orientation::left);
         }
         {
-            auto& layer = world_.GetTile(0, 1)->GetLayer(game::TileLayer::entity);
+            auto& layer = world_.GetTile({0, 1})->GetLayer(game::TileLayer::entity);
             layer.SetPrototype(Orientation::up, &lineProto_);
             TlBuildEvents({0, 1}, Orientation::up);
         }

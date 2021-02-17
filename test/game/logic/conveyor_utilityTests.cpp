@@ -637,7 +637,7 @@ namespace jactorio::game
         proto::TransportBelt lineProto_;
 
         proto::ConveyorData& BuildConveyor(const WorldCoord coord, const Orientation direction) {
-            auto& layer = world_.GetTile(coord.x, coord.y)->Entity();
+            auto& layer = world_.GetTile(coord)->Entity();
 
             layer.SetPrototype(direction, &lineProto_);
 

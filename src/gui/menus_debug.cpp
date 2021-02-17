@@ -544,7 +544,7 @@ void gui::DebugWorldInfo(GameWorlds& worlds, const game::Player& player) {
 
         for (auto chunk_y = start_chunk_y - chunk_radius; chunk_y < start_chunk_y + chunk_radius; ++chunk_y) {
             for (auto chunk_x = start_chunk_x - chunk_radius; chunk_x < start_chunk_x + chunk_radius; ++chunk_x) {
-                auto* chunk = world.GetChunkC(chunk_x, chunk_y);
+                auto* chunk = world.GetChunkC({chunk_x, chunk_y});
 
                 if (chunk == nullptr)
                     continue;

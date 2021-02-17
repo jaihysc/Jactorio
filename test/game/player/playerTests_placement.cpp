@@ -24,13 +24,11 @@ namespace jactorio::game
 
         ///
         /// Sets the base layer and entity at coord
-        void SetEntityCoords(const int world_x,
-                             const int world_y,
+        void SetEntityCoords(const WorldCoord& coord,
                              const proto::Tile* tile_proto,
                              const proto::Entity* entity_proto) {
-            world_.GetTile(world_x, world_y)->Base().SetPrototype(Orientation::up, tile_proto);
-
-            world_.GetTile(world_x, world_y)->Entity().SetPrototype(Orientation::up, entity_proto);
+            world_.GetTile(coord)->Base().SetPrototype(Orientation::up, tile_proto);
+            world_.GetTile(coord)->Entity().SetPrototype(Orientation::up, entity_proto);
         }
     };
 
@@ -84,8 +82,8 @@ namespace jactorio::game
         // Create world with entity at 0, 0
         world_.EmplaceChunk(0, 0);
 
-        auto& tile  = *world_.GetTile(0, 0);
-        auto& tile2 = *world_.GetTile(1, 0);
+        auto& tile  = *world_.GetTile({0, 0});
+        auto& tile2 = *world_.GetTile({1, 0});
 
         tile.Base().SetPrototype(Orientation::up, &tile_proto);
 
@@ -143,7 +141,7 @@ namespace jactorio::game
 
         // Create world with entity at 0, 0
         world_.EmplaceChunk(0, 0);
-        auto* tile = world_.GetTile(0, 0);
+        auto* tile = world_.GetTile({0, 0});
 
         tile->Base().SetPrototype(Orientation::up, &tile_proto);
 
@@ -196,9 +194,9 @@ namespace jactorio::game
         world_.EmplaceChunk(0, 0);
 
 
-        for (uint32_t y = 0; y < entity->GetHeight(Orientation::up); ++y) {
-            for (uint32_t x = 0; x < entity->GetWidth(Orientation::up); ++x) {
-                auto* tile = world_.GetTile(x, y);
+        for (WorldCoordAxis y = 0; y < entity->GetHeight(Orientation::up); ++y) {
+            for (WorldCoordAxis x = 0; x < entity->GetWidth(Orientation::up); ++x) {
+                auto* tile = world_.GetTile({x, y});
                 tile->Base().SetPrototype(Orientation::up, &tile_proto);
             }
         }
@@ -212,7 +210,7 @@ namespace jactorio::game
 
         // Entity is non-placeable, therefore when clicking on an entity, it will get activated_layer
         playerInv_.DecrementSelectedItem();
-        auto* tile = world_.GetTile(0, 0);
+        auto* tile = world_.GetTile({0, 0});
 
         EXPECT_TRUE(playerPlace_.TryActivateLayer(world_, {2, 3}));
         EXPECT_EQ(playerPlace_.GetActivatedLayer(), &tile->Entity());
@@ -234,8 +232,8 @@ namespace jactorio::game
         // Create world with entity at 0, 0
         world_.EmplaceChunk(0, 0);
 
-        auto& tile  = *world_.GetTile(0, 0);
-        auto& tile2 = *world_.GetTile(1, 0);
+        auto& tile  = *world_.GetTile({0, 0});
+        auto& tile2 = *world_.GetTile({1, 0});
 
         tile.Entity().SetPrototype(Orientation::up, &entity);
         tile2.Entity().SetPrototype(Orientation::up, &entity);
@@ -284,8 +282,8 @@ namespace jactorio::game
         // Create world with the resource entity at 0, 0
         world_.EmplaceChunk(0, 0);
 
-        auto& tile  = *world_.GetTile(0, 0);
-        auto& tile2 = *world_.GetTile(1, 0);
+        auto& tile  = *world_.GetTile({0, 0});
+        auto& tile2 = *world_.GetTile({1, 0});
 
         tile.Resource().SetPrototype(Orientation::up, &entity);
 
@@ -320,7 +318,7 @@ namespace jactorio::game
         auto item = proto::Item();
         // Create world with the resource entity at 0, 0
         world_.EmplaceChunk(0, 0);
-        auto& tile = *world_.GetTile(0, 0);
+        auto& tile = *world_.GetTile({0, 0});
 
 
         // Resource entity
@@ -371,10 +369,10 @@ namespace jactorio::game
 
         playerPlace_.TryPickup(world_, logic_, {2, 1}, 9999);
 
-        auto& left_container = *world_.GetTile(1, 1);
+        auto& left_container = *world_.GetTile({1, 1});
         EXPECT_EQ(left_container.EntityPrototype(), nullptr);
 
-        auto& right_container = *world_.GetTile(2, 1);
+        auto& right_container = *world_.GetTile({2, 1});
         EXPECT_EQ(right_container.EntityPrototype(), nullptr);
     }
 
@@ -449,7 +447,7 @@ namespace jactorio::game
         tile_proto.isWater = false;
 
         world_.EmplaceChunk(0, 0);
-        world_.GetTile(0, 0)->Base().SetPrototype(Orientation::up, &tile_proto);
+        world_.GetTile({0, 0})->Base().SetPrototype(Orientation::up, &tile_proto);
 
 
         // Create entity
@@ -503,7 +501,7 @@ namespace jactorio::game
         tile_proto.isWater = false;
 
         world_.EmplaceChunk(0, 0);
-        auto* tile = world_.GetTile(0, 0);
+        auto* tile = world_.GetTile({0, 0});
         tile->Base().SetPrototype(Orientation::up, &tile_proto);
 
 
@@ -525,8 +523,8 @@ namespace jactorio::game
     }
 
     TEST_F(PlayerPlacementTest, TryPlaceTryRemoveCallOnNeighborUpdate) {
-        // Placing or removing an entity should call on_neighbor_update for 10 adjacent tiles in clockwise order from
-        // top left
+        // Placing or removing an entity should call on_neighbor_update for 10 adjacent tiles in clockwise order
+        // from top left
 
         //     [1] [2]
         // [A] [x] [x] [3]
@@ -549,22 +547,22 @@ namespace jactorio::game
         // Set tiles so entity can be placed on it
         for (int y = 1; y < 4; ++y) {
             for (int x = 1; x < 3; ++x) {
-                world_.GetTile(x, y)->Base().SetPrototype(Orientation::up, &tile_proto);
+                world_.GetTile({x, y})->Base().SetPrototype(Orientation::up, &tile_proto);
             }
         }
 
         // Set entity around border
         for (int x = 1; x <= 2; ++x) {
-            SetEntityCoords(x, 0, &tile_proto, &entity_proto);
+            SetEntityCoords({x, 0}, &tile_proto, &entity_proto);
         }
         for (int y = 1; y <= 3; ++y) {
-            SetEntityCoords(3, y, &tile_proto, &entity_proto);
+            SetEntityCoords({3, y}, &tile_proto, &entity_proto);
         }
         for (int x = 2; x >= 1; --x) {
-            SetEntityCoords(x, 4, &tile_proto, &entity_proto);
+            SetEntityCoords({x, 4}, &tile_proto, &entity_proto);
         }
         for (int y = 3; y >= 1; --y) {
-            SetEntityCoords(0, y, &tile_proto, &entity_proto);
+            SetEntityCoords({0, y}, &tile_proto, &entity_proto);
         }
 
         // ======================================================================

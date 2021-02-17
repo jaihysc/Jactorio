@@ -43,7 +43,7 @@ namespace jactorio::proto
 
         splitter.OnBuild(world_, logic_, {0, 1}, game::TileLayer::entity, Orientation::down);
 
-        auto* splitter_data = world_.GetTile(0, 1)->GetLayer(game::TileLayer::entity).GetUniqueData<SplitterData>();
+        auto* splitter_data = world_.GetTile({0, 1})->GetLayer(game::TileLayer::entity).GetUniqueData<SplitterData>();
         ASSERT_NE(splitter_data, nullptr);
 
         // Top conveyor grouped with splitter

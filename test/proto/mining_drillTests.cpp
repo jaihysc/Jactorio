@@ -53,7 +53,7 @@ namespace jactorio::proto
 
         // Has resource tiles
         ResourceEntity resource{};
-        world_.GetTile(0, 0)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource);
+        world_.GetTile({0, 0})->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource);
 
         EXPECT_TRUE(drill.OnCanBuild(world_, {2, 2}, Orientation::up));
     }
@@ -75,7 +75,7 @@ namespace jactorio::proto
         drill.miningRadius = 2;
 
         ResourceEntity resource{};
-        world_.GetTile(7, 6)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource);
+        world_.GetTile({7, 6})->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource);
 
         EXPECT_TRUE(drill.OnCanBuild(world_, {2, 2}, Orientation::up));
     }
@@ -85,16 +85,16 @@ namespace jactorio::proto
         EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), nullptr); // No resources
 
 
-        world_.GetTile(0, 0)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource_);
+        world_.GetTile({0, 0})->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource_);
         EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), nullptr); // No resources in range
 
 
-        world_.GetTile(6, 5)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource_);
+        world_.GetTile({6, 5})->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource_);
         EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), nullptr); // No resources in range
 
         // ======================================================================
 
-        world_.GetTile(5, 5)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource_);
+        world_.GetTile({5, 5})->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource_);
         EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), &resourceItem_);
 
         // Closer to the top left
@@ -103,7 +103,7 @@ namespace jactorio::proto
             ResourceEntity resource2;
             resource2.SetItem(&item2);
 
-            world_.GetTile(1, 1)->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource2);
+            world_.GetTile({1, 1})->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource2);
             EXPECT_EQ(drillProto_.FindOutputItem(world_, {2, 2}, Orientation::up), &item2);
         }
     }
@@ -137,7 +137,7 @@ namespace jactorio::proto
         Item item{};
         data->output.DropOff(logic_, {&item, 1});
 
-        game::ChunkTileLayer& container_layer = world_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
+        game::ChunkTileLayer& container_layer = world_.GetTile({4, 2})->GetLayer(game::TileLayer::entity);
 
         EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 1);
 
@@ -195,7 +195,7 @@ namespace jactorio::proto
 
         // ======================================================================
 
-        auto& container_layer = world_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
+        auto& container_layer = world_.GetTile({4, 2})->GetLayer(game::TileLayer::entity);
         auto* container_data  = container_layer.GetUniqueData<ContainerEntityData>();
 
         // No output since output inventory is full
@@ -248,7 +248,7 @@ namespace jactorio::proto
         Item item{};
         data->output.DropOff(logic_, {&item, 1});
 
-        game::ChunkTileLayer& container_layer = world_.GetTile(4, 2)->GetLayer(game::TileLayer::entity);
+        game::ChunkTileLayer& container_layer = world_.GetTile({4, 2})->GetLayer(game::TileLayer::entity);
 
         EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 1);
     }
@@ -281,7 +281,7 @@ namespace jactorio::proto
         TestSetupDrill(world_, logic_, {1, 1}, Orientation::right, resource_, drillProto_);
 
         // Remove chest
-        game::ChunkTile* tile = world_.GetTile(4, 2);
+        game::ChunkTile* tile = world_.GetTile({4, 2});
         tile->GetLayer(game::TileLayer::entity).Clear(); // Remove container
 
         // Should only remove the callback once
@@ -312,12 +312,12 @@ namespace jactorio::proto
 
         // If the on_neighbor_update event was ignored, no items will be added
         {
-            game::ChunkTileLayer& container_layer = world_.GetTile(2, 0)->GetLayer(game::TileLayer::entity);
+            game::ChunkTileLayer& container_layer = world_.GetTile({2, 0})->GetLayer(game::TileLayer::entity);
 
             EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 0);
         }
         {
-            game::ChunkTileLayer& container_layer = world_.GetTile(4, 1)->GetLayer(game::TileLayer::entity);
+            game::ChunkTileLayer& container_layer = world_.GetTile({4, 1})->GetLayer(game::TileLayer::entity);
 
             EXPECT_EQ(container_layer.GetUniqueData<ContainerEntityData>()->inventory[0].count, 0);
         }

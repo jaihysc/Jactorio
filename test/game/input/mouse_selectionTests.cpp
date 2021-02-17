@@ -44,7 +44,7 @@ namespace jactorio::game
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, &entity_, cursor);
 
 
-        auto& overlay_layer = world_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::cursor);
+        auto& overlay_layer = world_.GetChunkC({0, 0})->GetOverlay(OverlayLayer::cursor);
         ASSERT_EQ(overlay_layer.size(), 1);
         EXPECT_EQ(overlay_layer[0].sprite, &entitySprite_);
         EXPECT_EQ(overlay_layer[0].position.x, 0);
@@ -73,7 +73,7 @@ namespace jactorio::game
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, &entity_, cursor);
 
 
-        auto& overlay_layer = world_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::cursor);
+        auto& overlay_layer = world_.GetChunkC({0, 0})->GetOverlay(OverlayLayer::cursor);
         EXPECT_TRUE(overlay_layer.empty());
     }
 
@@ -86,12 +86,12 @@ namespace jactorio::game
 
 
         // Should draw cursor since hovering over entity and selected entity is not placeable
-        world_.GetTile(0, 0)->Entity().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({0, 0})->Entity().SetPrototype(Orientation::up, &entity_);
 
         proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, &entity_, cursor);
 
-        auto& overlay_layer = world_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::cursor);
+        auto& overlay_layer = world_.GetChunkC({0, 0})->GetOverlay(OverlayLayer::cursor);
         ASSERT_EQ(overlay_layer.size(), 1);
         EXPECT_EQ(overlay_layer[0].sprite, &cursor);
 
@@ -115,7 +115,7 @@ namespace jactorio::game
         const proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, nullptr, cursor);
 
-        auto& overlay_layer = world_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::cursor);
+        auto& overlay_layer = world_.GetChunkC({0, 0})->GetOverlay(OverlayLayer::cursor);
         EXPECT_TRUE(overlay_layer.empty());
 
         mouseSelection_.DrawOverlay(world_, {1, 0}, Orientation::up, nullptr, cursor);
@@ -128,11 +128,11 @@ namespace jactorio::game
 
         world_.EmplaceChunk(0, 0);
 
-        world_.GetTile(0, 0)->Entity().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({0, 0})->Entity().SetPrototype(Orientation::up, &entity_);
         proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, nullptr, cursor);
 
-        auto& overlay_layer = world_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::cursor);
+        auto& overlay_layer = world_.GetChunkC({0, 0})->GetOverlay(OverlayLayer::cursor);
         ASSERT_EQ(overlay_layer.size(), 1);
         EXPECT_EQ(overlay_layer[0].sprite, &cursor);
     }
@@ -143,11 +143,11 @@ namespace jactorio::game
 
         world_.EmplaceChunk(0, 0);
 
-        world_.GetTile(0, 0)->Resource().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({0, 0})->Resource().SetPrototype(Orientation::up, &entity_);
         proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, nullptr, cursor);
 
-        auto& overlay_layer = world_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::cursor);
+        auto& overlay_layer = world_.GetChunkC({0, 0})->GetOverlay(OverlayLayer::cursor);
         ASSERT_EQ(overlay_layer.size(), 1);
         EXPECT_EQ(overlay_layer[0].sprite, &cursor);
     }
@@ -198,14 +198,14 @@ namespace jactorio::game
     TEST_F(MouseSelectionOverlayTest, SkipErasingLastOverlay) {
         world_.EmplaceChunk(0, 0);
 
-        world_.GetTile(0, 0)->Resource().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({0, 0})->Resource().SetPrototype(Orientation::up, &entity_);
         const proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, nullptr, cursor);
 
-        world_.GetTile(1, 0)->Resource().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({1, 0})->Resource().SetPrototype(Orientation::up, &entity_);
         mouseSelection_.SkipErasingLastOverlay();
         mouseSelection_.DrawOverlay(world_, {1, 0}, Orientation::up, nullptr, cursor);
 
-        EXPECT_EQ(world_.GetChunkC(0, 0)->GetOverlay(OverlayLayer::cursor).size(), 2);
+        EXPECT_EQ(world_.GetChunkC({0, 0})->GetOverlay(OverlayLayer::cursor).size(), 2);
     }
 } // namespace jactorio::game

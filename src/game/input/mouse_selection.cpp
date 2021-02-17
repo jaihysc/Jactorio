@@ -65,13 +65,13 @@ void game::MouseSelection::DrawOverlay(World& world,
     }
 
     // Draw new overlay
-    auto* chunk = world.GetChunkW(coord.x, coord.y);
+    auto* chunk = world.GetChunkW(coord);
     if (chunk == nullptr)
         return;
 
     auto& overlay_layer = chunk->GetOverlay(kCursorOverlayLayer_);
 
-    auto* tile = world.GetTile(coord.x, coord.y);
+    auto* tile = world.GetTile(coord);
     if (tile == nullptr)
         return;
 

@@ -98,34 +98,12 @@ namespace jactorio::game
         ///
         /// Retrieves a chunk in game world using chunk coordinates
         /// \return nullptr if no chunk exists
-        J_NODISCARD Chunk* GetChunkC(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y);
+        J_NODISCARD Chunk* GetChunkC(const ChunkCoord& c_coord);
 
         ///
         /// Retrieves a chunk in game world using chunk coordinates
         /// \return nullptr if no chunk exists
-        J_NODISCARD const Chunk* GetChunkC(ChunkCoordAxis chunk_x, ChunkCoordAxis chunk_y) const;
-
-
-        ///
-        /// Retrieves a chunk in game world using chunk coordinates
-        /// \return nullptr if no chunk exists
-        J_NODISCARD Chunk* GetChunkC(const ChunkCoord& chunk_pair);
-
-        ///
-        /// Retrieves a chunk in game world using chunk coordinates
-        /// \return nullptr if no chunk exists
-        J_NODISCARD const Chunk* GetChunkC(const ChunkCoord& chunk_pair) const;
-
-
-        ///
-        /// Gets the chunk at the specified world coordinate
-        /// \return nullptr if no chunk exists
-        J_NODISCARD Chunk* GetChunkW(WorldCoordAxis world_x, WorldCoordAxis world_y);
-
-        ///
-        /// Gets the chunk at the specified world coordinate
-        /// \return nullptr if no chunk exists
-        J_NODISCARD const Chunk* GetChunkW(WorldCoordAxis world_x, WorldCoordAxis world_y) const;
+        J_NODISCARD const Chunk* GetChunkC(const ChunkCoord& c_coord) const;
 
 
         ///
@@ -138,18 +116,8 @@ namespace jactorio::game
         /// \return nullptr if no chunk exists
         J_NODISCARD const Chunk* GetChunkW(const WorldCoord& coord) const;
 
-        // ======================================================================
 
-        ///
-        /// Gets the tile at the specified world coordinate
-        /// \return nullptr if no tile exists
-        J_NODISCARD ChunkTile* GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y);
-
-        ///
-        /// Gets the tile at the specified world coordinate
-        /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTile* GetTile(WorldCoordAxis world_x, WorldCoordAxis world_y) const;
-
+        // Get Tile
 
         ///
         /// Gets the tile at the specified world coordinate
@@ -159,9 +127,8 @@ namespace jactorio::game
         ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTile* GetTile(const WorldCoord& coord) const;
+        J_NODISCARD const ChunkTile* GetTile(WorldCoord coord) const;
 
-        // ======================================================================
 
         ///
         /// Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
