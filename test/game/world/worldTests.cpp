@@ -181,53 +181,6 @@ namespace jactorio::game
         }
     }
 
-    TEST_F(WorldTest, GetTileTopLeft) {
-        world_.EmplaceChunk(0, 0);
-        const WorldCoord bottom_coord = {6, 6};
-
-        auto* bottom_tile  = world_.GetTile(bottom_coord);
-        auto& bottom_layer = bottom_tile->Entity();
-
-        proto::ContainerEntity proto;
-        proto.SetDimensions(2, 1);
-        bottom_layer.SetPrototype(Orientation::up, proto);
-
-
-        // multiTileIndex is 0
-        EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, bottom_layer), bottom_tile); // Returns self if not multi tile
-        EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, TileLayer::entity), bottom_tile);
-
-        //
-        auto* top_tile = world_.GetTile({5, 6});
-
-        bottom_layer.SetupMultiTile(1, top_tile->Entity());
-        EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, bottom_layer), top_tile);
-        EXPECT_EQ(world_.GetTileTopLeft(bottom_coord, TileLayer::entity), top_tile);
-    }
-
-    TEST_F(WorldTest, GetLayerTopLeft) {
-        world_.EmplaceChunk(0, 0);
-
-        auto* top_tile    = world_.GetTile({0, 0});
-        auto& unique_data = top_tile->Resource().MakeUniqueData<proto::ContainerEntityData>(10);
-
-        auto* bottom_tile  = world_.GetTile({1, 2});
-        auto& bottom_layer = bottom_tile->Resource();
-
-        proto::ContainerEntity proto;
-        proto.SetDimensions(7, 10);
-        bottom_layer.SetPrototype(Orientation::up, proto);
-
-        bottom_layer.SetupMultiTile(15, top_tile->Resource());
-
-        EXPECT_EQ(world_.GetLayerTopLeft({1, 2}, TileLayer::resource)->GetUniqueData(), &unique_data);
-    }
-
-    TEST_F(WorldTest, GetLayerTopLeftUninitialized) {
-        EXPECT_EQ(world_.GetLayerTopLeft({1, 2}, TileLayer::entity), nullptr);
-    }
-
-
     TEST_F(WorldTest, Clear) {
         auto& added_chunk = world_.EmplaceChunk({6, 6});
 

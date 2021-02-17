@@ -269,6 +269,11 @@ namespace jactorio::game
         EXPECT_EQ(ctl.GetTopLeftLayer(), &top_left);
     }
 
+    TEST_F(ChunkTileLayerTest, GetTopLeftAlreadyTopleft) {
+        ChunkTileLayer ctl;
+        EXPECT_EQ(ctl.GetTopLeftLayer(), &ctl);
+    }
+
     TEST_F(ChunkTileLayerTest, AdjustToTopleft) {
         proto_.SetWidth(3);
 

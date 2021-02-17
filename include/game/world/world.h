@@ -130,33 +130,6 @@ namespace jactorio::game
         J_NODISCARD const ChunkTile* GetTile(WorldCoord coord) const;
 
 
-        ///
-        /// Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& coord, TileLayer layer);
-
-        ///
-        /// Gets top left tile for provided layer if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& coord, TileLayer layer) const;
-
-        ///
-        /// Gets top left tile if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD ChunkTile* GetTileTopLeft(const WorldCoord& coord, const ChunkTileLayer& chunk_tile_layer);
-
-        ///
-        /// Gets top left tile if is multi tile, otherwise itself if not a multi tile
-        J_NODISCARD const ChunkTile* GetTileTopLeft(const WorldCoord& coord,
-                                                    const ChunkTileLayer& chunk_tile_layer) const;
-
-
-        ///
-        /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
-        J_NODISCARD ChunkTileLayer* GetLayerTopLeft(const WorldCoord& coord, const TileLayer& tile_layer) noexcept;
-
-        ///
-        /// Gets top left ChunkTileLayer at ChunkLayer is is multi tile, otherwise itself
-        J_NODISCARD const ChunkTileLayer* GetLayerTopLeft(const WorldCoord& coord,
-                                                          const TileLayer& tile_layer) const noexcept;
-
         // ======================================================================
         // Placement
 

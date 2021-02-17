@@ -122,6 +122,9 @@ game::ChunkTileLayer* game::ChunkTileLayer::GetTopLeftLayer() noexcept {
 }
 
 const game::ChunkTileLayer* game::ChunkTileLayer::GetTopLeftLayer() const noexcept {
+    if (IsTopLeft())
+        return this;
+
     assert(IsNonTopLeft());
     return AsNonTopLeft().topLeft;
 }

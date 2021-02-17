@@ -150,45 +150,6 @@ const game::ChunkTile* game::World::GetTile(WorldCoord coord) const {
 
 
 // ======================================================================
-
-
-game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord, const TileLayer layer) {
-    auto* tile = GetTile(coord);
-    if (tile == nullptr)
-        return nullptr;
-
-    return GetTileTopLeft(coord, tile->GetLayer(layer));
-}
-
-const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord, const TileLayer layer) const {
-    return const_cast<World*>(this)->GetTileTopLeft(coord, layer);
-}
-
-game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord, const ChunkTileLayer& chunk_tile_layer) {
-    return GetTile(coord.Incremented(chunk_tile_layer));
-}
-
-const game::ChunkTile* game::World::GetTileTopLeft(const WorldCoord& coord,
-                                                   const ChunkTileLayer& chunk_tile_layer) const {
-    return const_cast<World*>(this)->GetTileTopLeft(coord, chunk_tile_layer);
-}
-
-
-game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord, const TileLayer& tile_layer) noexcept {
-    auto* tile = GetTileTopLeft(coord, tile_layer);
-    if (tile == nullptr)
-        return nullptr;
-
-    return &tile->GetLayer(tile_layer);
-}
-
-const game::ChunkTileLayer* game::World::GetLayerTopLeft(const WorldCoord& coord,
-                                                         const TileLayer& tile_layer) const noexcept {
-    return const_cast<World*>(this)->GetLayerTopLeft(coord, tile_layer);
-}
-
-
-// ======================================================================
 // Placement
 
 bool game::World::PlaceLocationValid(const WorldCoord& coord, const Position2<uint8_t> dimensions) const {
