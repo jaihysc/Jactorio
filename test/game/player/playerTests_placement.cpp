@@ -66,8 +66,8 @@ namespace jactorio::game
 
     TEST_F(PlayerPlacementTest, TryPlaceEntity) {
         // Create entity
-        auto item           = proto::Item();
-        auto item_no_entity = proto::Item(); // Does not hold an entity reference
+        proto::Item item;
+        proto::Item item_no_entity; // Does not hold an entity reference
 
         auto entity = std::make_unique<proto::ContainerEntity>();
         entity->SetItem(&item);
@@ -76,7 +76,7 @@ namespace jactorio::game
         auto entity2 = std::make_unique<proto::ContainerEntity>();
 
 
-        auto tile_proto    = proto::Tile();
+        proto::Tile tile_proto;
         tile_proto.isWater = false;
 
         // Create world with entity at 0, 0
@@ -128,15 +128,15 @@ namespace jactorio::game
 
     TEST_F(PlayerPlacementTest, TryActivateLayer) {
         // Create entity
-        auto item           = proto::Item();
-        auto item_no_entity = proto::Item(); // Does not hold an entity reference
+        proto::Item item;
+        proto::Item item_no_entity; // Does not hold an entity reference
 
         auto entity       = std::make_unique<proto::ContainerEntity>();
         entity->placeable = true;
         entity->SetItem(&item);
 
 
-        auto tile_proto    = proto::Tile();
+        proto::Tile tile_proto;
         tile_proto.isWater = false;
 
         // Create world with entity at 0, 0
@@ -179,7 +179,7 @@ namespace jactorio::game
         // Picking up an entity wil unset activated layer if activated layer was the entity
 
         // Create entity
-        auto item = proto::Item();
+        proto::Item item;
 
         auto entity = std::make_unique<proto::ContainerEntity>();
         entity->SetWidth(3);
@@ -187,7 +187,7 @@ namespace jactorio::game
         entity->SetItem(&item);
 
 
-        auto tile_proto    = proto::Tile();
+        proto::Tile tile_proto;
         tile_proto.isWater = false;
 
         // Create world with entity at 0, 0
@@ -223,7 +223,7 @@ namespace jactorio::game
 
     TEST_F(PlayerPlacementTest, TryPickupEntity) {
         // Create entity
-        auto item = proto::Item();
+        proto::Item item;
 
         auto& entity      = proto_.Make<proto::ContainerEntity>();
         entity.pickupTime = 1.f;
@@ -273,7 +273,7 @@ namespace jactorio::game
 
     TEST_F(PlayerPlacementTest, TryPickupResource) {
         // Create resource entity
-        auto item = proto::Item();
+        proto::Item item;
 
         auto& entity      = proto_.Make<proto::ResourceEntity>();
         entity.pickupTime = 3.f;
@@ -315,7 +315,7 @@ namespace jactorio::game
     }
 
     TEST_F(PlayerPlacementTest, TryPickupLayered) {
-        auto item = proto::Item();
+        proto::Item item;
         // Create world with the resource entity at 0, 0
         world_.EmplaceChunk({0, 0});
         auto& tile = *world_.GetTile({0, 0});
@@ -443,7 +443,7 @@ namespace jactorio::game
         };
 
         // The world tile must have a tile prototype
-        auto tile_proto    = proto::Tile();
+        proto::Tile tile_proto;
         tile_proto.isWater = false;
 
         world_.EmplaceChunk({0, 0});
@@ -451,8 +451,8 @@ namespace jactorio::game
 
 
         // Create entity
-        auto item   = proto::Item{};
-        auto entity = MockEntityPlacement{};
+        proto::Item item;
+        MockEntityPlacement entity;
         entity.SetItem(&item);
 
 
@@ -497,7 +497,7 @@ namespace jactorio::game
 
     TEST_F(PlayerPlacementTest, TryPlaceCallOnCanBuild) {
         // The world tile must have a tile prototype
-        auto tile_proto    = proto::Tile();
+        proto::Tile tile_proto;
         tile_proto.isWater = false;
 
         world_.EmplaceChunk({0, 0});
@@ -506,9 +506,9 @@ namespace jactorio::game
 
 
         // Create entity
-        auto item = proto::Item{};
+        proto::Item item;
 
-        auto entity             = MockEntityPlacement{};
+        MockEntityPlacement entity;
         entity.onCanBuildReturn = false;
         entity.SetItem(&item);
 
@@ -532,12 +532,12 @@ namespace jactorio::game
         // [8] [x] [x] [5]
         //     [7] [6]
 
-        auto tile_proto    = proto::Tile();
+        proto::Tile tile_proto;
         tile_proto.isWater = false;
 
-        auto item = proto::Item{};
+        proto::Item item;
 
-        auto entity_proto = MockEntityPlacement{};
+        MockEntityPlacement entity_proto;
         entity_proto.SetWidth(2);
         entity_proto.SetHeight(3);
         entity_proto.SetItem(&item);

@@ -309,8 +309,8 @@ namespace jactorio::game
         // A inventory click at a stack location with a filter requires that the item attempting to insert into it
         // matches the filter
 
-        proto::Item filtered_item{};
-        proto::Item not_filtered_item{};
+        proto::Item filtered_item;
+        proto::Item not_filtered_item;
 
         // Slot 0 is filtered
         Inventory inv{10};

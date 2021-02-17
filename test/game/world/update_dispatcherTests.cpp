@@ -35,7 +35,7 @@ namespace jactorio::game
         World world_;
         UpdateDispatcher& dispatcher_ = world_.updateDispatcher;
 
-        MockUpdateListener mock_{};
+        MockUpdateListener mock_;
     };
 
     TEST_F(UpdateDispatcherTest, Register) {

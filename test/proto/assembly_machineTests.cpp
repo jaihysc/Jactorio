@@ -14,7 +14,7 @@ namespace jactorio::proto
 
         data::PrototypeManager proto_;
 
-        AssemblyMachineData data_{};
+        AssemblyMachineData data_;
         AssemblyMachine asmMachine_;
 
         Recipe* recipe_    = nullptr;

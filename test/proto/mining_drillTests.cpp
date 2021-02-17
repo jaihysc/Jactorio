@@ -43,7 +43,7 @@ namespace jactorio::proto
          * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
          */
 
-        MiningDrill drill{};
+        MiningDrill drill;
         drill.SetWidth(4);
         drill.SetHeight(3);
         drill.miningRadius = 2;
@@ -52,7 +52,7 @@ namespace jactorio::proto
         EXPECT_FALSE(drill.OnCanBuild(world_, {2, 2}, Orientation::up));
 
         // Has resource tiles
-        ResourceEntity resource{};
+        ResourceEntity resource;
         world_.GetTile({0, 0})->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource);
 
         EXPECT_TRUE(drill.OnCanBuild(world_, {2, 2}, Orientation::up));
@@ -69,12 +69,12 @@ namespace jactorio::proto
          * [ ] [ ] [ ] [ ] [ ] [ ] [ ] [ ]
          */
 
-        MiningDrill drill{};
+        MiningDrill drill;
         drill.SetWidth(4);
         drill.SetHeight(3);
         drill.miningRadius = 2;
 
-        ResourceEntity resource{};
+        ResourceEntity resource;
         world_.GetTile({7, 6})->GetLayer(game::TileLayer::resource).SetPrototype(Orientation::up, &resource);
 
         EXPECT_TRUE(drill.OnCanBuild(world_, {2, 2}, Orientation::up));
@@ -134,7 +134,7 @@ namespace jactorio::proto
         // ======================================================================
         // Ensure it inserts into the correct entity
 
-        Item item{};
+        Item item;
         data->output.DropOff(logic_, {&item, 1});
 
         game::ChunkTileLayer& container_layer = world_.GetTile({4, 2})->GetLayer(game::TileLayer::entity);
@@ -245,7 +245,7 @@ namespace jactorio::proto
         auto* data = tile.GetLayer(game::TileLayer::entity).GetUniqueData<MiningDrillData>();
 
         // Ensure it inserts into the correct entity
-        Item item{};
+        Item item;
         data->output.DropOff(logic_, {&item, 1});
 
         game::ChunkTileLayer& container_layer = world_.GetTile({4, 2})->GetLayer(game::TileLayer::entity);

@@ -340,7 +340,7 @@ namespace jactorio::game
 
         //
 
-        proto::Item item2{};
+        proto::Item item2;
         segment_.AppendItem(true, 0.1, item_);
         segment_.AppendItem(true, 0.8, item2); // 0.9
         segment_.AppendItem(true, 0.9, item_); // 1.8

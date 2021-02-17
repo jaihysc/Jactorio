@@ -15,7 +15,7 @@ namespace jactorio::game
         // Copying a chunk tile needs to also make a unique copy of unique_data_
         const auto entity_proto = std::make_unique<proto::ResourceEntity>(proto::ResourceEntity());
 
-        auto tile_layer = ChunkTileLayer();
+        ChunkTileLayer tile_layer;
         tile_layer.SetPrototype(Orientation::up, entity_proto.get());
 
         tile_layer.MakeUniqueData<proto::ResourceEntityData>(10);
@@ -35,7 +35,7 @@ namespace jactorio::game
         // Moving unique_data will set the original unique_data to nullptr to avoid deletion
         const auto entity_proto = std::make_unique<proto::ResourceEntity>(proto::ResourceEntity());
 
-        auto tile_layer = ChunkTileLayer();
+        ChunkTileLayer tile_layer;
         tile_layer.SetPrototype(Orientation::up, entity_proto.get()); // Prototype data needed to delete unique data
 
         auto& u_data = tile_layer.MakeUniqueData<proto::ResourceEntityData>(10);
@@ -51,7 +51,7 @@ namespace jactorio::game
 
 
     TEST(ChunkTile, TilePrototypesInitialization) {
-        auto ct = ChunkTile();
+        ChunkTile ct;
 
         // Should all be nullptr
         for (auto layer : ct.layers) {
@@ -60,9 +60,9 @@ namespace jactorio::game
     }
 
     TEST(ChunkTile, GetSetChunkLayerProps) {
-        auto ct = ChunkTile();
+        ChunkTile ct;
 
-        auto tile_proto = proto::Tile();
+        proto::Tile tile_proto;
 
         ct.Base().SetPrototype(Orientation::up, &tile_proto);
 

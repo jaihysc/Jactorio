@@ -121,7 +121,7 @@ namespace jactorio::game
 
     TEST_F(WorldTest, GetTileWorldCoords) {
         // Tests both overloads int, int and std::pair<int, int>
-        const auto chunk_tile = ChunkTile();
+        const ChunkTile chunk_tile;
 
         // World coords 0, 0 - Chunk 0 0, position 0 0
         {

@@ -8,14 +8,14 @@
 namespace jactorio::proto
 {
     TEST(Sprite, SpriteCopy) {
-        const Sprite first{};
+        const Sprite first;
         const auto second = first;
 
         EXPECT_NE(first.GetSpritePtr(), second.GetSpritePtr());
     }
 
     TEST(Sprite, SpriteMove) {
-        Sprite first{};
+        Sprite first;
         first.LoadImage("test/graphics/test/test_tile.png");
 
         const auto second = std::move(first);
@@ -27,7 +27,7 @@ namespace jactorio::proto
     TEST(Sprite, TrySetDefaultSpriteGroup) {
         {
             // Item's sprite group should be set to terrain and gui if blank
-            Sprite sprite{};
+            Sprite sprite;
 
             auto& group = sprite.group;
 
@@ -38,7 +38,7 @@ namespace jactorio::proto
         }
         {
             // If not blank, use initialization provided sprite groups
-            Sprite sprite{};
+            Sprite sprite;
 
             auto& group = sprite.group;
             group.push_back(Sprite::SpriteGroup::gui);
@@ -49,7 +49,7 @@ namespace jactorio::proto
 
     TEST(Sprite, LoadSprite) {
         {
-            Sprite sprite{};
+            Sprite sprite;
 
             EXPECT_EQ(sprite.GetWidth(), 0);
             EXPECT_EQ(sprite.GetHeight(), 0);
@@ -69,7 +69,7 @@ namespace jactorio::proto
 
     TEST(Sprite, GetCoords) {
         {
-            Sprite sprite{};
+            Sprite sprite;
             sprite.SetWidth(1);
             sprite.SetHeight(1);
             sprite.sets   = 4;
@@ -84,7 +84,7 @@ namespace jactorio::proto
         }
         {
             // 7 % 4 = 3
-            Sprite sprite{};
+            Sprite sprite;
             sprite.SetWidth(1);
             sprite.SetHeight(1);
             sprite.sets   = 4;
@@ -99,7 +99,7 @@ namespace jactorio::proto
         }
 
         {
-            Sprite sprite{};
+            Sprite sprite;
             sprite.SetWidth(1);
             sprite.SetHeight(1);
             sprite.sets   = 49;
@@ -115,7 +115,7 @@ namespace jactorio::proto
 
         // Frames will wrap around
         {
-            Sprite sprite{};
+            Sprite sprite;
             sprite.SetWidth(1);
             sprite.SetHeight(1);
             sprite.sets   = 2;
@@ -133,7 +133,7 @@ namespace jactorio::proto
     TEST(Sprite, GetCoordsTrimmed) {
         // This requires width_ and height_ to be initialized
         {
-            Sprite sprite{};
+            Sprite sprite;
             sprite.sets   = 2;
             sprite.frames = 3;
 
@@ -151,7 +151,7 @@ namespace jactorio::proto
 
         {
             // 4 % 2 = 0
-            Sprite sprite{};
+            Sprite sprite;
             sprite.sets   = 2;
             sprite.frames = 3;
 
@@ -170,7 +170,7 @@ namespace jactorio::proto
 
     TEST(Sprite, GetCoordsTrimmedInverted) {
         {
-            Sprite sprite{};
+            Sprite sprite;
             sprite.Set_invertSetFrame(true);
             sprite.sets   = 2;
             sprite.frames = 3;
@@ -188,7 +188,7 @@ namespace jactorio::proto
 
         {
             // 3 % 2 = 1
-            Sprite sprite{};
+            Sprite sprite;
             sprite.Set_invertSetFrame(true);
             sprite.sets   = 3;
             sprite.frames = 2;

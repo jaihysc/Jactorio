@@ -10,7 +10,7 @@ namespace jactorio::proto
     class IRenderableTest : public testing::Test, public IRenderable
     {
     protected:
-        Sprite sprite_{};
+        Sprite sprite_;
 
         void SetUp() override {
             sprite_.sets   = 5;

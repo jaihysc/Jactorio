@@ -26,7 +26,7 @@ namespace jactorio::game
 
         Chunk* chunk_ = nullptr;
 
-        proto::Item itemProto_{};
+        proto::Item itemProto_;
         const std::unique_ptr<proto::TransportBelt> transportBeltProto_ = std::make_unique<proto::TransportBelt>();
 
         ///

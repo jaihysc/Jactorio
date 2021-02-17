@@ -66,7 +66,7 @@ namespace jactorio::proto
     }
 
     TEST_F(RecipeTest, GetCraftingTime) {
-        Recipe recipe{};
+        Recipe recipe;
         recipe.craftingTime = 1.5;
 
         EXPECT_EQ(recipe.GetCraftingTime(), 90);
@@ -75,7 +75,7 @@ namespace jactorio::proto
     }
 
     TEST_F(RecipeTest, PostLoadValidate) {
-        const auto recipe = Recipe();
+        const Recipe recipe;
 
         // Not specifying any ingredients or products should throw an data exception
         bool caught = false;

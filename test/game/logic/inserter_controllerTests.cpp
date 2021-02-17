@@ -17,10 +17,10 @@ namespace jactorio::game
         World world_;
         Logic logic_;
 
-        proto::Inserter inserterProto_{};
+        proto::Inserter inserterProto_;
 
-        proto::ContainerEntity containerProto_{};
-        proto::Item containerItemProto_{};
+        proto::ContainerEntity containerProto_;
+        proto::Item containerItemProto_;
 
         void SetUp() override {
             auto& chunk = world_.EmplaceChunk({0, 0});
@@ -116,8 +116,8 @@ namespace jactorio::game
         inserterProto_.tileReach     = 1;
 
         // Setup conveyor segment
-        proto::Item item{};
-        proto::TransportBelt segment_proto{};
+        proto::Item item;
+        proto::TransportBelt segment_proto;
 
         auto dropoff =
             std::make_shared<ConveyorStruct>(Orientation::left, ConveyorStruct::TerminationType::straight, 2);
@@ -168,7 +168,7 @@ namespace jactorio::game
         // Inserter will not pick up items that it can never drop off
 
         // Cannot drop into assembly machine since it has no recipe
-        proto::AssemblyMachine asm_machine{};
+        proto::AssemblyMachine asm_machine;
         TestSetupAssemblyMachine(world_, {0, 1}, Orientation::up, asm_machine);
 
         auto* pickup = BuildChest({3, 2}, Orientation::right, 10);
