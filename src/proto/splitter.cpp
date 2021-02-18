@@ -18,7 +18,7 @@ void proto::Splitter::OnBuild(game::World& world,
                               const game::TileLayer tlayer,
                               const Orientation orientation) const {
 
-    world.GetTile(coord)->GetLayer(tlayer).MakeUniqueData<SplitterData>(orientation);
+    world.GetTile(coord, tlayer)->MakeUniqueData<SplitterData>(orientation);
 
     auto build_conveyor = [&world, orientation](const WorldCoord& side_coord) {
         auto* con_data = GetConData(world, side_coord);
@@ -73,15 +73,14 @@ void proto::Splitter::ValidatedPostLoad() {
 WorldCoord proto::Splitter::GetNonTopLeftCoord(const game::World& world, const WorldCoord& coord) {
     // Get top left coord
 
-    const auto* tile = world.GetTile(coord);
+    const auto* tile = world.GetTile(coord, game::TileLayer::entity);
     assert(tile != nullptr);
-    const auto& layer = tile->GetLayer(game::TileLayer::entity);
 
-    const auto tl_coord = coord.Incremented(layer);
+    const auto tl_coord = coord.Incremented(*tile);
 
     // Increment to the other side depending on splitter 's orientation
 
-    switch (layer.GetUniqueData<SplitterData>()->orientation) {
+    switch (tile->GetUniqueData<SplitterData>()->orientation) {
     case Orientation::up:
     case Orientation::down:
         return {tl_coord.x + 1, tl_coord.y};

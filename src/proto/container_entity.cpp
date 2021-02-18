@@ -13,7 +13,7 @@ void proto::ContainerEntity::OnBuild(game::World& world,
                                      const WorldCoord& coord,
                                      const game::TileLayer tlayer,
                                      Orientation /*orientation*/) const {
-    world.GetTile(coord)->GetLayer(tlayer).MakeUniqueData<ContainerEntityData>(inventorySize);
+    world.GetTile(coord, tlayer)->MakeUniqueData<ContainerEntityData>(inventorySize);
 }
 
 bool proto::ContainerEntity::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const {

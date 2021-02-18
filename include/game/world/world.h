@@ -118,12 +118,23 @@ namespace jactorio::game
         ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD ChunkTile* GetTile(const WorldCoord& coord);
+        J_DEPRECATED J_NODISCARD ChunkTile* GetTile(const WorldCoord& coord);
 
         ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTile* GetTile(WorldCoord coord) const;
+        J_DEPRECATED J_NODISCARD const ChunkTile* GetTile(WorldCoord coord) const;
+
+
+        ///
+        /// Gets the tile at the specified world coordinate
+        /// \return nullptr if no tile exists
+        J_NODISCARD ChunkTileLayer* GetTile(const WorldCoord& coord, TileLayer tlayer);
+
+        ///
+        /// Gets the tile at the specified world coordinate
+        /// \return nullptr if no tile exists
+        J_NODISCARD const ChunkTileLayer* GetTile(const WorldCoord& coord, TileLayer tlayer) const;
 
 
         // ======================================================================

@@ -35,12 +35,11 @@ proto::ConveyorData* game::GetConData(World& world, const WorldCoord& coord) {
 }
 
 const proto::ConveyorData* game::GetConData(const World& world, const WorldCoord& coord) {
-    const auto* tile = world.GetTile(coord);
+    const auto* tile = world.GetTile(coord, TileLayer::entity);
     if (tile == nullptr)
         return nullptr;
 
-    const auto& layer = tile->Entity();
-    return GetConData(layer);
+    return GetConData(*tile);
 }
 
 proto::ConveyorData* game::GetConData(ChunkTileLayer& ctl) {

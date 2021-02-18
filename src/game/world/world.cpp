@@ -148,6 +148,17 @@ const game::ChunkTile* game::World::GetTile(WorldCoord coord) const {
     return nullptr;
 }
 
+game::ChunkTileLayer* game::World::GetTile(const WorldCoord& coord, const TileLayer tlayer) {
+    return const_cast<ChunkTileLayer*>(static_cast<const World*>(this)->GetTile(coord, tlayer));
+}
+const game::ChunkTileLayer* game::World::GetTile(const WorldCoord& coord, const TileLayer tlayer) const {
+    const auto* tile = GetTile(coord);
+    if (tile == nullptr)
+        return nullptr;
+
+    return &tile->GetLayer(tlayer);
+}
+
 
 // ======================================================================
 // Placement

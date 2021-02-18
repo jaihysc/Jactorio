@@ -84,7 +84,7 @@ void proto::Conveyor::OnBuild(game::World& world,
                               const game::TileLayer tlayer,
                               const Orientation orientation) const {
 
-    auto& con_data = world.GetTile(coord)->GetLayer(tlayer).MakeUniqueData<ConveyorData>();
+    auto& con_data = world.GetTile(coord, tlayer)->MakeUniqueData<ConveyorData>();
     BuildConveyor(world, coord, con_data, orientation, kConveyorLogicGroup);
 
     con_data.set = static_cast<uint16_t>(con_data.lOrien);

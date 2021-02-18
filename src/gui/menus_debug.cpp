@@ -187,7 +187,6 @@ void gui::DebugItemSpawner(game::Player& player, const data::PrototypeManager& p
 
 void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     auto& world = worlds[player.world.GetId()];
-    auto* tile  = world.GetTile(player.world.GetMouseTileCoords());
 
     ImGuard guard;
     guard.Begin("Tile info");
@@ -195,27 +194,26 @@ void gui::DebugTileInfo(GameWorlds& worlds, game::Player& player) {
     ImGui::Text(
         "Cursor world position: %d, %d", player.world.GetMouseTileCoords().x, player.world.GetMouseTileCoords().y);
 
-    if (tile == nullptr) {
-        ImGui::TextUnformatted("Not hovering over tile");
-        return;
-    }
-
     for (int layer_index = 0; layer_index < game::kTileLayerCount; ++layer_index) {
-        auto& layer = tile->GetLayer(layer_index);
+        auto* tile = world.GetTile(player.world.GetMouseTileCoords(), static_cast<game::TileLayer>(layer_index));
+        if (tile == nullptr) {
+            ImGui::TextUnformatted("Layer null");
+            continue;
+        }
 
         ImGui::TextUnformatted("------------------------------------");
         ImGui::Text("Layer %d", layer_index);
 
-        ImGui::Text("%s", layer.IsMultiTile() ? "Multi-tile" : "Non multi-tile");
-        ImGui::Text("%s", layer.IsTopLeft() ? "Top left" : "Non top left");
+        ImGui::Text("%s", tile->IsMultiTile() ? "Multi-tile" : "Non multi-tile");
+        ImGui::Text("%s", tile->IsTopLeft() ? "Top left" : "Non top left");
 
-        ImGui::Text("Multi-tile index: %d", layer.GetMultiTileIndex());
+        ImGui::Text("Multi-tile index: %d", tile->GetMultiTileIndex());
 
-        ImGui::Text("Orientation: %s", layer.GetOrientation().ToCstr());
-        ImGui::Text("Dimensions: %d, %d", layer.GetDimensions().span, layer.GetDimensions().height);
+        ImGui::Text("Orientation: %s", tile->GetOrientation().ToCstr());
+        ImGui::Text("Dimensions: %d, %d", tile->GetDimensions().span, tile->GetDimensions().height);
 
-        ImGui::Text("Prototype: %s", MemoryAddressToStr(layer.GetPrototype()).c_str());
-        ImGui::Text("Unique data: %s", MemoryAddressToStr(layer.GetUniqueData()).c_str());
+        ImGui::Text("Prototype: %s", MemoryAddressToStr(tile->GetPrototype()).c_str());
+        ImGui::Text("Unique data: %s", MemoryAddressToStr(tile->GetUniqueData()).c_str());
     }
 }
 
@@ -458,17 +456,16 @@ void gui::DebugInserterInfo(GameWorlds& worlds, game::Player& player) {
 
     const auto selected_tile = player.world.GetMouseTileCoords();
 
-    auto* tile = world.GetTile(selected_tile);
+    auto* tile = world.GetTile(selected_tile, game::TileLayer::entity);
     if (tile == nullptr)
         return;
 
-    auto& layer = tile->GetLayer(game::TileLayer::entity);
-    if (layer.GetPrototype() == nullptr || layer.GetPrototype()->GetCategory() != proto::Category::inserter) {
+    if (tile->GetPrototype() == nullptr || tile->GetPrototype()->GetCategory() != proto::Category::inserter) {
         ImGui::Text("No inserter at selected tile");
         return;
     }
 
-    auto& inserter_data = *layer.GetUniqueData<proto::InserterData>();
+    auto& inserter_data = *tile->GetUniqueData<proto::InserterData>();
 
     ImGui::Text("Orientation %s", inserter_data.orientation.ToCstr());
 

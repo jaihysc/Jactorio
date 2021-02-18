@@ -215,8 +215,7 @@ namespace jactorio::game
                 swap(lhs.activatedLayer_, rhs.activatedLayer_);
                 swap(lhs.pickupTickCounter_, rhs.pickupTickCounter_);
                 swap(lhs.pickupTickTarget_, rhs.pickupTickTarget_);
-                swap(lhs.lastSelectedPtr_, rhs.lastSelectedPtr_);
-                swap(lhs.lastTilePtr_, rhs.lastTilePtr_);
+                swap(lhs.lastSelectedCoord_, rhs.lastSelectedCoord_);
             }
 
 
@@ -269,12 +268,9 @@ namespace jactorio::game
             ChunkTileLayer* activatedLayer_ = nullptr;
 
             uint16_t pickupTickCounter_ = 0;
-            uint16_t pickupTickTarget_  = 0;
+            uint16_t pickupTickTarget_  = 1; // Avoids division by zero initially
 
-            // Do not reference this, this only tracks whether or not a different entity or another tile
-            // is selected by comparing pointers
-            const void* lastSelectedPtr_ = nullptr;
-            const void* lastTilePtr_     = nullptr;
+            WorldCoord lastSelectedCoord_;
 
 
             Inventory* playerInv_;

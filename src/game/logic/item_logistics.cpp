@@ -15,15 +15,12 @@
 using namespace jactorio;
 
 bool game::ItemDropOff::Initialize(World& world, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-    auto* tile = world.GetTile({world_x, world_y});
-    assert(tile != nullptr);
+    auto* tile = world.GetTile({world_x, world_y}, TileLayer::entity);
 
-    auto& layer = tile->Entity();
-
-    if (layer.GetPrototype() == nullptr)
+    if (tile->GetPrototype() == nullptr)
         return false;
 
-    switch (layer.GetPrototype()->GetCategory()) {
+    switch (tile->GetPrototype()->GetCategory()) {
     case proto::Category::container_entity:
         dropFunc_    = &ItemDropOff::InsertContainerEntity;
         canDropFunc_ = &ItemDropOff::CanInsertContainerEntity;
@@ -43,10 +40,10 @@ bool game::ItemDropOff::Initialize(World& world, const WorldCoordAxis world_x, c
         return false;
     }
 
-    assert(layer.GetUniqueData() != nullptr);
+    assert(tile->GetUniqueData() != nullptr);
 
-    targetProtoData_  = layer.GetPrototype();
-    targetUniqueData_ = layer.GetUniqueData();
+    targetProtoData_  = tile->GetPrototype();
+    targetUniqueData_ = tile->GetUniqueData();
 
     return true;
 }
@@ -216,15 +213,13 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const
 // ======================================================================
 
 bool game::InserterPickup::Initialize(World& world, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-    auto* tile = world.GetTile({world_x, world_y});
+    auto* tile = world.GetTile({world_x, world_y}, TileLayer::entity);
     assert(tile != nullptr);
 
-    auto& layer = tile->Entity();
-
-    if (layer.GetPrototype() == nullptr)
+    if (tile->GetPrototype() == nullptr)
         return false;
 
-    switch (layer.GetPrototype()->GetCategory()) {
+    switch (tile->GetPrototype()->GetCategory()) {
     case proto::Category::container_entity:
         pickupFunc_    = &InserterPickup::PickupContainerEntity;
         getPickupFunc_ = &InserterPickup::GetPickupContainerEntity;
@@ -244,10 +239,10 @@ bool game::InserterPickup::Initialize(World& world, const WorldCoordAxis world_x
         return false;
     }
 
-    assert(layer.GetUniqueData() != nullptr);
+    assert(tile->GetUniqueData() != nullptr);
 
-    targetProtoData_  = layer.GetPrototype();
-    targetUniqueData_ = layer.GetUniqueData();
+    targetProtoData_  = tile->GetPrototype();
+    targetUniqueData_ = tile->GetUniqueData();
 
     return true;
 }
