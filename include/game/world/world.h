@@ -118,23 +118,12 @@ namespace jactorio::game
         ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_DEPRECATED J_NODISCARD ChunkTile* GetTile(const WorldCoord& coord);
-
-        ///
-        /// Gets the tile at the specified world coordinate
-        /// \return nullptr if no tile exists
-        J_DEPRECATED J_NODISCARD const ChunkTile* GetTile(WorldCoord coord) const;
-
-
-        ///
-        /// Gets the tile at the specified world coordinate
-        /// \return nullptr if no tile exists
         J_NODISCARD ChunkTileLayer* GetTile(const WorldCoord& coord, TileLayer tlayer);
 
         ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTileLayer* GetTile(const WorldCoord& coord, TileLayer tlayer) const;
+        J_NODISCARD const ChunkTileLayer* GetTile(WorldCoord coord, TileLayer tlayer) const;
 
 
         // ======================================================================
@@ -157,7 +146,7 @@ namespace jactorio::game
 
         ///
         /// Adds a layer at coordinates to be considered for logic updates
-        void LogicRegister(LogicGroup group, const WorldCoord& coord, TileLayer layer);
+        void LogicRegister(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
         ///
         /// Removes a layer at coordinates to be considered for logic updates
@@ -166,7 +155,7 @@ namespace jactorio::game
 
         ///
         /// Removes a layer at coordinates to be considered for logic updates
-        void LogicRemove(LogicGroup group, const WorldCoord& coord, TileLayer layer);
+        void LogicRemove(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
 
         ///

@@ -120,7 +120,6 @@ namespace jactorio::game
     }
 
     TEST_F(WorldTest, GetTileWorldCoords) {
-        // Tests both overloads int, int and std::pair<int, int>
         const ChunkTile chunk_tile;
 
         // World coords 0, 0 - Chunk 0 0, position 0 0
@@ -129,11 +128,8 @@ namespace jactorio::game
             auto& tiles = chunk.Tiles();
             tiles[0]    = chunk_tile;
 
-            EXPECT_EQ(world_.GetTile({0, 0}), &tiles[0]);
-            EXPECT_NE(world_.GetTile({0, 1}), &tiles[0]);
-
-            EXPECT_EQ(world_.GetTile({0, 0}), &tiles[0]);
-            EXPECT_NE(world_.GetTile({0, 1}), &tiles[0]);
+            EXPECT_EQ(world_.GetTile({0, 0}, TileLayer::base), &tiles[0].Base());
+            EXPECT_NE(world_.GetTile({0, 1}, TileLayer::entity), &tiles[0].Entity());
         }
         world_.Clear();
 
@@ -143,11 +139,7 @@ namespace jactorio::game
             auto& tiles = chunk.Tiles();
             tiles[33]   = chunk_tile;
 
-            EXPECT_EQ(world_.GetTile({-31, -31}), &tiles[33]);
-            EXPECT_NE(world_.GetTile({-31, -32}), &tiles[33]);
-
-            EXPECT_EQ(world_.GetTile({-31, -31}), &tiles[33]);
-            EXPECT_NE(world_.GetTile({-31, -32}), &tiles[33]);
+            EXPECT_EQ(world_.GetTile({-31, -31}, TileLayer::base), &tiles[33].Base());
         }
         world_.Clear();
 
@@ -157,11 +149,7 @@ namespace jactorio::game
             auto& tiles = chunk.Tiles();
             tiles[0]    = chunk_tile;
 
-            EXPECT_EQ(world_.GetTile({-32, 0}), &tiles[0]);
-            EXPECT_NE(world_.GetTile({-31, 0}), &tiles[0]);
-
-            EXPECT_EQ(world_.GetTile({-32, 0}), &tiles[0]);
-            EXPECT_NE(world_.GetTile({-31, 0}), &tiles[0]);
+            EXPECT_EQ(world_.GetTile({-32, 0}, TileLayer::base), &tiles[0].Base());
         }
     }
 
