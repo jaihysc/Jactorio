@@ -368,7 +368,7 @@ namespace jactorio::game
         proto::ContainerEntity container;
         container.SetItem(&item);
 
-        container.SetDimensions(1, 2);
+        container.SetDimension({1, 2});
         TestSetupContainer(world_, {1, 1}, Orientation::right, container); // Tiles {1, 1}, {2, 1}
 
         playerPlace_.TryPickup(world_, logic_, {2, 1}, 9999);

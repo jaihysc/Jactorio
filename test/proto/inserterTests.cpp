@@ -90,7 +90,7 @@ namespace jactorio::proto
 
         // Dropoff
         AssemblyMachine asm_machine;
-        asm_machine.SetDimensions(2, 2);
+        asm_machine.SetDimension({2, 2});
         TestSetupAssemblyMachine(world_, {1, 0}, Orientation::up, asm_machine);
         world_.UpdateDispatch({2, 0}, UpdateType::place);
 

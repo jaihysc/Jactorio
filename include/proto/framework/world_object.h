@@ -21,46 +21,46 @@ namespace jactorio::proto
     class FWorldObject : public FrameworkBase, public IRenderable, public ISerializable
     {
     public:
-        using TileSpanT = uint8_t;
+        using DimensionAxis = uint8_t;
+        using Dimension     = Position2<DimensionAxis>;
 
         ///
         /// If true, swaps width and height when orientation is left or right in Getters
         PYTHON_PROP_REF_I(bool, rotateDimensions, true);
 
-        J_NODISCARD TileSpanT GetWidth(const Orientation orientation) const {
+        J_NODISCARD DimensionAxis GetWidth(const Orientation orientation) const {
             if (rotateDimensions && (orientation == Orientation::left || orientation == Orientation::right))
-                return height_;
+                return dimension_.y;
 
-            return width_;
+            return dimension_.x;
         }
-        FWorldObject* SetWidth(const TileSpanT width) {
-            width_ = width;
+        FWorldObject* SetWidth(const DimensionAxis width) {
+            dimension_.x = width;
             return this;
         }
 
-        J_NODISCARD TileSpanT GetHeight(const Orientation orientation) const {
+        J_NODISCARD DimensionAxis GetHeight(const Orientation orientation) const {
             if (rotateDimensions && (orientation == Orientation::left || orientation == Orientation::right))
-                return width_;
+                return dimension_.x;
 
-            return height_;
+            return dimension_.y;
         }
-        FWorldObject* SetHeight(const TileSpanT height) {
-            height_ = height;
+        FWorldObject* SetHeight(const DimensionAxis height) {
+            dimension_.y = height;
             return this;
         }
 
         ///
         /// Calls SetWidth and SetHeight
-        FWorldObject* SetDimensions(const TileSpanT width, const TileSpanT height) {
-            SetWidth(width);
-            SetHeight(height);
+        FWorldObject* SetDimension(const Dimension& dimension) {
+            SetWidth(dimension.x);
+            SetHeight(dimension.y);
             return this;
         }
 
     private:
         /// Number of tiles which object occupies
-        TileSpanT width_  = 1;
-        TileSpanT height_ = 1;
+        Dimension dimension_{1, 1};
     };
 } // namespace jactorio::proto
 

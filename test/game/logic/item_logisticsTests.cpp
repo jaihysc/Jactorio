@@ -143,7 +143,7 @@ namespace jactorio::game
 
         // Ok: Assembly machine
         proto::AssemblyMachine assembly_machine; // Will also make unique data, so it needs to be on another tile
-        assembly_machine.SetDimensions(2, 2);
+        assembly_machine.SetDimension({2, 2});
         TestSetupAssemblyMachine(world_, {3, 4}, Orientation::up, assembly_machine);
 
         EXPECT_TRUE(this->Initialize(world_, {3, 5}));
@@ -479,7 +479,7 @@ namespace jactorio::game
 
         // Ok: Assembly machine
         proto::AssemblyMachine assembly_machine;
-        assembly_machine.SetDimensions(2, 2);
+        assembly_machine.SetDimension({2, 2});
         TestSetupAssemblyMachine(world_, {3, 4}, Orientation::up, assembly_machine);
 
         EXPECT_TRUE(this->Initialize(world_, {4, 5}));

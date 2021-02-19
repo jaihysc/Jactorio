@@ -286,7 +286,7 @@ namespace jactorio::game
         data::PrototypeManager proto;
         auto& container = proto.Make<proto::ContainerEntity>();
 
-        container.SetDimensions(3, 2);
+        container.SetDimension({3, 2});
         TestSetupMultiTile(world_, {1, 0}, TileLayer::base, Orientation::up, container);
 
 
@@ -328,7 +328,7 @@ namespace jactorio::game
 
 
         auto& asm_machine = proto.Make<proto::AssemblyMachine>();
-        asm_machine.SetDimensions(2, 2);
+        asm_machine.SetDimension({2, 2});
         TestSetupAssemblyMachine(world_, {0, 2}, Orientation::up, asm_machine);
 
         auto& inserter = proto.Make<proto::Inserter>();
