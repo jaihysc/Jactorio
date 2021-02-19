@@ -318,9 +318,9 @@ namespace jactorio::game
 
         ///
         /// Checks that multi-tile tile is linked to top left
-        auto expect_tl_resolved = [this, &container](const WorldCoord& coord, const TileLayer tile_layer) {
-            auto* top_left = world_.GetTile(coord)->GetLayer(tile_layer).GetTopLeftLayer();
-            EXPECT_EQ(top_left, &world_.GetTile({1, 0})->Base());
+        auto expect_tl_resolved = [this, &container](const WorldCoord& coord, const TileLayer tlayer) {
+            auto* top_left = world_.GetTile(coord, tlayer)->GetTopLeftLayer();
+            EXPECT_EQ(top_left, world_.GetTile({1, 0}, TileLayer::base));
             EXPECT_EQ(top_left->GetPrototype(), &container);
         };
 
@@ -360,7 +360,7 @@ namespace jactorio::game
         auto result = TestSerializeDeserialize(world_);
         result.DeserializePostProcess();
 
-        auto* result_inserter_data = result.GetTile({1, 1})->Entity().GetUniqueData<proto::InserterData>();
+        auto* result_inserter_data = result.GetTile({1, 1}, TileLayer::entity)->GetUniqueData<proto::InserterData>();
 
         EXPECT_TRUE(result_inserter_data->dropoff.IsInitialized());
     }
@@ -384,13 +384,13 @@ namespace jactorio::game
         world_.EmplaceChunk({0, 0});
 
         MockWorldObject mock_obj;
-        auto& tile_layer = world_.GetTile({5, 6})->Entity();
-        tile_layer.SetPrototype(Orientation::up, &mock_obj);
+        auto* tile = world_.GetTile({5, 6}, TileLayer::entity);
+        tile->SetPrototype(Orientation::up, &mock_obj);
 
         world_.DeserializePostProcess();
 
         EXPECT_TRUE(mock_obj.onDeserializeCalled);
-        EXPECT_EQ(mock_obj.chunkTileLayer, &tile_layer);
+        EXPECT_EQ(mock_obj.chunkTileLayer, tile);
     }
 
     TEST_F(WorldDeserialize, DeserializeLogicChunks) {

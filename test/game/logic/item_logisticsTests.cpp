@@ -27,11 +27,11 @@ namespace jactorio::game
     TEST_F(ItemLogisticsTest, Uninitialize) {
         ItemDropOff drop_off{Orientation::up};
 
-        auto& layer = world_.GetTile({2, 4})->Entity();
+        auto* tile = world_.GetTile({2, 4}, TileLayer::entity);
 
         proto::ContainerEntity container;
-        layer.SetPrototype(Orientation::up, &container);
-        layer.MakeUniqueData<proto::ContainerEntityData>(1);
+        tile->SetPrototype(Orientation::up, &container);
+        tile->MakeUniqueData<proto::ContainerEntityData>(1);
 
         ASSERT_TRUE(drop_off.Initialize(world_, {2, 4}));
         drop_off.Uninitialize();
@@ -105,11 +105,11 @@ namespace jactorio::game
     };
 
     TEST_F(ItemDropOffTest, GetInsertFunc) {
-        world_.GetTile({2, 4})->Entity().MakeUniqueData<proto::ContainerEntityData>(1);
+        world_.GetTile({2, 4}, TileLayer::entity)->MakeUniqueData<proto::ContainerEntityData>(1);
 
         auto set_prototype = [&](proto::Entity& entity_proto) {
-            auto& layer = world_.GetTile({2, 4})->Entity();
-            layer.SetPrototype(Orientation::up, &entity_proto);
+            auto* tile = world_.GetTile({2, 4}, TileLayer::entity);
+            tile->SetPrototype(Orientation::up, &entity_proto);
         };
 
         // No: Empty tile cannot be inserted into
@@ -154,11 +154,11 @@ namespace jactorio::game
     // ======================================================================
 
     TEST_F(ItemDropOffTest, InsertContainerEntity) {
-        auto& layer = world_.GetTile({3, 1})->Entity();
+        auto* tile = world_.GetTile({3, 1}, TileLayer::entity);
 
-        layer.MakeUniqueData<proto::ContainerEntityData>(10);
+        tile->MakeUniqueData<proto::ContainerEntityData>(10);
 
-        auto* container_data = layer.GetUniqueData<proto::ContainerEntityData>();
+        auto* container_data = tile->GetUniqueData<proto::ContainerEntityData>();
 
 
         proto::Item item;
@@ -440,11 +440,11 @@ namespace jactorio::game
     };
 
     TEST_F(InserterPickupTest, GetPickupFunc) {
-        world_.GetTile({2, 4})->Entity().MakeUniqueData<proto::ContainerEntityData>(1);
+        world_.GetTile({2, 4}, TileLayer::entity)->MakeUniqueData<proto::ContainerEntityData>(1);
 
         auto set_prototype = [&](proto::Entity& entity_proto) {
-            auto& layer = world_.GetTile({2, 4})->Entity();
-            layer.SetPrototype(Orientation::up, &entity_proto);
+            auto* tile = world_.GetTile({2, 4}, TileLayer::entity);
+            tile->SetPrototype(Orientation::up, &entity_proto);
         };
 
 

@@ -238,19 +238,19 @@ namespace jactorio::proto
 
     TEST_F(AssemblyMachineTest, Build) {
         // Creates unique data on build
-        auto& layer = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
+        auto* tile = world_.GetTile({0, 0}, game::TileLayer::entity);
 
         asmMachine_.OnBuild(world_, logic_, {0, 0}, game::TileLayer::entity, Orientation::up);
 
-        EXPECT_NE(layer.GetUniqueData(), nullptr);
+        EXPECT_NE(tile->GetUniqueData(), nullptr);
     }
 
     TEST_F(AssemblyMachineTest, OnRemoveRemoveDeferralEntry) {
         asmMachine_.OnBuild(world_, logic_, {0, 0}, game::TileLayer::entity, Orientation::up);
 
-        auto& layer                = world_.GetTile({0, 0})->GetLayer(game::TileLayer::entity);
-        const auto* assembly_proto = layer.GetPrototype<AssemblyMachine>();
-        auto* assembly_data        = layer.GetUniqueData<AssemblyMachineData>();
+        auto* tile                 = world_.GetTile({0, 0}, game::TileLayer::entity);
+        const auto* assembly_proto = tile->GetPrototype<AssemblyMachine>();
+        auto* assembly_data        = tile->GetUniqueData<AssemblyMachineData>();
 
         SetupRecipe();
         assembly_data->ChangeRecipe(logic_, proto_, recipe_);

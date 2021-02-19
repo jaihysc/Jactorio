@@ -86,7 +86,7 @@ namespace jactorio::game
 
 
         // Should draw cursor since hovering over entity and selected entity is not placeable
-        world_.GetTile({0, 0})->Entity().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({0, 0}, TileLayer::entity)->SetPrototype(Orientation::up, &entity_);
 
         proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, &entity_, cursor);
@@ -128,7 +128,7 @@ namespace jactorio::game
 
         world_.EmplaceChunk({0, 0});
 
-        world_.GetTile({0, 0})->Entity().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({0, 0}, TileLayer::entity)->SetPrototype(Orientation::up, &entity_);
         proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, nullptr, cursor);
 
@@ -143,7 +143,7 @@ namespace jactorio::game
 
         world_.EmplaceChunk({0, 0});
 
-        world_.GetTile({0, 0})->Resource().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({0, 0}, TileLayer::resource)->SetPrototype(Orientation::up, &entity_);
         proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, nullptr, cursor);
 
@@ -198,11 +198,11 @@ namespace jactorio::game
     TEST_F(MouseSelectionOverlayTest, SkipErasingLastOverlay) {
         world_.EmplaceChunk({0, 0});
 
-        world_.GetTile({0, 0})->Resource().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({0, 0}, TileLayer::resource)->SetPrototype(Orientation::up, &entity_);
         const proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, nullptr, cursor);
 
-        world_.GetTile({1, 0})->Resource().SetPrototype(Orientation::up, &entity_);
+        world_.GetTile({1, 0}, TileLayer::resource)->SetPrototype(Orientation::up, &entity_);
         mouseSelection_.SkipErasingLastOverlay();
         mouseSelection_.DrawOverlay(world_, {1, 0}, Orientation::up, nullptr, cursor);
 

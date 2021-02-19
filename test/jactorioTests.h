@@ -89,27 +89,29 @@ namespace jactorio
     /// \return Top left tile
     inline game::ChunkTileLayer& TestSetupMultiTile(game::World& world,
                                                     const WorldCoord& coord,
-                                                    const game::TileLayer tile_layer,
+                                                    const game::TileLayer tlayer,
                                                     const Orientation orientation,
                                                     const proto::FWorldObject& proto) {
 
-        auto& origin_layer = world.GetTile(coord)->GetLayer(tile_layer);
-        origin_layer.SetPrototype(orientation, proto);
+        auto* tl_tile = world.GetTile(coord, tlayer);
+        assert(tl_tile != nullptr);
+
+        tl_tile->SetPrototype(orientation, proto);
 
         for (int y = 0; y < proto.GetHeight(orientation); ++y) {
             for (int x = 0; x < proto.GetWidth(orientation); ++x) {
                 if (x == 0 && y == 0)
                     continue;
 
-                auto& layer = world.GetTile({coord.x + x, coord.y + y})->GetLayer(tile_layer);
+                auto* tile = world.GetTile({coord.x + x, coord.y + y}, tlayer);
+                assert(tile != nullptr);
 
-                layer.SetPrototype(orientation, &proto);
-
-                layer.SetupMultiTile(y * proto.GetWidth(orientation) + x, origin_layer);
+                tile->SetPrototype(orientation, &proto);
+                tile->SetupMultiTile(y * proto.GetWidth(orientation) + x, *tl_tile);
             }
         }
 
-        return origin_layer;
+        return *tl_tile;
     }
 
     ///
@@ -135,12 +137,13 @@ namespace jactorio
                                                    const WorldCoord& coord,
                                                    const Orientation orientation,
                                                    const proto::Inserter& inserter_proto) {
-        auto& layer = world.GetTile(coord)->GetLayer(game::TileLayer::entity);
+        auto* tile = world.GetTile(coord, game::TileLayer::entity);
+        assert(tile != nullptr);
 
-        layer.SetPrototype(orientation, &inserter_proto);
+        tile->SetPrototype(orientation, &inserter_proto);
         inserter_proto.OnBuild(world, logic, coord, game::TileLayer::entity, orientation);
 
-        return layer;
+        return *tile;
     }
 
     ///
@@ -149,17 +152,17 @@ namespace jactorio
                                           const WorldCoord& coord,
                                           const std::shared_ptr<game::ConveyorStruct>& con_struct_p,
                                           const proto::Conveyor& con_proto) {
-        auto* tile = world.GetTile(coord);
-        assert(tile != nullptr);
         auto* chunk = world.GetChunkW(coord);
         assert(chunk != nullptr);
 
-        auto& layer = tile->GetLayer(game::TileLayer::entity);
-        layer.SetPrototype(con_struct_p->direction, &con_proto);
+        auto* tile = world.GetTile(coord, game::TileLayer::entity);
+        assert(tile != nullptr);
 
-        layer.MakeUniqueData<proto::ConveyorData>(con_struct_p);
+        tile->SetPrototype(con_struct_p->direction, &con_proto);
 
-        chunk->GetLogicGroup(game::LogicGroup::conveyor).emplace_back(&tile->GetLayer(game::TileLayer::entity));
+        tile->MakeUniqueData<proto::ConveyorData>(con_struct_p);
+
+        chunk->GetLogicGroup(game::LogicGroup::conveyor).emplace_back(tile);
     }
 
     ///
@@ -176,39 +179,36 @@ namespace jactorio
 
     ///
     /// Creates resource with orientation up at coord
-    inline game::ChunkTile& TestSetupResource(game::World& world,
-                                              const WorldCoord& coord,
-                                              proto::ResourceEntity& resource,
-                                              const proto::ResourceEntityData::ResourceCount resource_amount) {
+    inline game::ChunkTileLayer& TestSetupResource(game::World& world,
+                                                   const WorldCoord& coord,
+                                                   proto::ResourceEntity& resource,
+                                                   const proto::ResourceEntityData::ResourceCount resource_amount) {
 
-        game::ChunkTile* tile = world.GetTile(coord);
+        auto* tile = world.GetTile(coord, game::TileLayer::resource);
         assert(tile != nullptr);
 
-        auto& resource_layer = tile->GetLayer(game::TileLayer::resource);
-        resource_layer.SetPrototype(Orientation::up, &resource);
-        resource_layer.MakeUniqueData<proto::ResourceEntityData>(resource_amount);
+        tile->SetPrototype(Orientation::up, &resource);
+        tile->MakeUniqueData<proto::ResourceEntityData>(resource_amount);
 
         return *tile;
     }
 
     ///
     /// Creates a drill in the world with orientation, calling OnBuild
-    inline game::ChunkTile& TestSetupDrill(game::World& world,
-                                           game::Logic& logic,
-                                           const WorldCoord& coord,
-                                           const Orientation orientation,
-                                           proto::ResourceEntity& resource,
-                                           proto::MiningDrill& drill,
-                                           const proto::ResourceEntityData::ResourceCount resource_amount = 100) {
-        auto* tile = world.GetTile(coord);
+    inline game::ChunkTileLayer& TestSetupDrill(game::World& world,
+                                                game::Logic& logic,
+                                                const WorldCoord& coord,
+                                                const Orientation orientation,
+                                                proto::ResourceEntity& resource,
+                                                proto::MiningDrill& drill,
+                                                const proto::ResourceEntityData::ResourceCount resource_amount = 100) {
+        auto* tile = world.GetTile(coord, game::TileLayer::entity);
         assert(tile != nullptr);
-
-        auto& layer = tile->GetLayer(game::TileLayer::entity);
 
         // Resource needed for OnBuild
         TestSetupResource(world, coord, resource, resource_amount);
 
-        layer.SetPrototype(orientation, &drill);
+        tile->SetPrototype(orientation, &drill);
         drill.OnBuild(world, logic, coord, game::TileLayer::entity, orientation);
 
         return *tile;
@@ -221,10 +221,11 @@ namespace jactorio
                                    const proto::Conveyor& con_proto,
                                    const std::shared_ptr<game::ConveyorStruct>& con_struct_p) {
 
-        auto& layer = world.GetTile(coord)->GetLayer(game::TileLayer::entity);
-        layer.SetPrototype(con_struct_p->direction, con_proto);
+        auto* tile = world.GetTile(coord, game::TileLayer::entity);
+        assert(tile != nullptr);
 
-        return layer.MakeUniqueData<proto::ConveyorData>(con_struct_p);
+        tile->SetPrototype(con_struct_p->direction, con_proto);
+        return tile->MakeUniqueData<proto::ConveyorData>(con_struct_p);
     }
 
     ///
@@ -248,9 +249,6 @@ namespace jactorio
                                         const WorldCoord& coord,
                                         const Orientation orien,
                                         const proto::Splitter& splitter) {
-        auto* tile = world.GetTile(coord);
-        assert(tile != nullptr);
-
         auto& top_left = TestSetupMultiTile(world, coord, game::TileLayer::entity, orien, splitter);
         return top_left.MakeUniqueData<proto::SplitterData>(orien);
     }

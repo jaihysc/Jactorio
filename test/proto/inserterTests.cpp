@@ -30,9 +30,9 @@ namespace jactorio::proto
     TEST_F(InserterTest, OnBuildCreateDataInvalid) {
         BuildInserter({1, 1}, Orientation::right);
 
-        auto& layer         = world_.GetTile({1, 1})->GetLayer(game::TileLayer::entity);
-        auto* inserter_data = layer.GetUniqueData<InserterData>();
-        ASSERT_TRUE(inserter_data);
+        auto* tile          = world_.GetTile({1, 1}, game::TileLayer::entity);
+        auto* inserter_data = tile->GetUniqueData<InserterData>();
+        ASSERT_NE(inserter_data, nullptr);
 
         EXPECT_DOUBLE_EQ(inserter_data->rotationDegree.getAsDouble(), 180.);
 
@@ -123,10 +123,10 @@ namespace jactorio::proto
 
         // Removed chest
 
-        world_.GetTile({3, 1})->GetLayer(game::TileLayer::entity).Clear();
+        world_.GetTile({3, 1}, game::TileLayer::entity)->Clear();
         world_.UpdateDispatch({3, 1}, UpdateType::place);
 
-        world_.GetTile({1, 1})->GetLayer(game::TileLayer::entity).Clear();
+        world_.GetTile({1, 1}, game::TileLayer::entity)->Clear();
         world_.UpdateDispatch({1, 1}, UpdateType::place);
 
         EXPECT_FALSE(layer.GetUniqueData<InserterData>()->pickup.IsInitialized());
