@@ -104,9 +104,7 @@ namespace jactorio::proto
                       const WorldCoord& coord,
                       game::TileLayer tlayer) const override;
 
-        void OnDeserialize(game::World& world,
-                           const WorldCoord& coord,
-                           game::ChunkTileLayer& tile_layer) const override;
+        void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override;
 
 
         // ======================================================================

@@ -133,13 +133,11 @@ namespace jactorio::game
                 return 0;
             }
 
-            bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, ChunkTileLayer* /*tile_layer*/) const override {
+            bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, ChunkTile* /*tile*/) const override {
                 return false;
             }
 
-            void OnDeserialize(World& /*world*/,
-                               const WorldCoord& /*coord*/,
-                               ChunkTileLayer& /*tile_layer*/) const override {}
+            void OnDeserialize(World& /*world*/, const WorldCoord& /*coord*/, ChunkTile& /*tile*/) const override {}
 
             void OnDeferTimeElapsed(World& /*world*/,
                                     Logic& /*logic*/,

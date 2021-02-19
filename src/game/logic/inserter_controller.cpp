@@ -119,12 +119,12 @@ void game::InserterLogicUpdate(World& world, Logic& logic) {
     PickupQueue pickup_queue{};
 
     for (auto* chunk : world.LogicGetChunks()) {
-        for (auto* tile_layer : chunk->GetLogicGroup(LogicGroup::inserter)) {
-            auto* inserter_data = tile_layer->GetUniqueData<proto::InserterData>();
-            assert(inserter_data);
+        for (auto* tile : chunk->GetLogicGroup(LogicGroup::inserter)) {
+            auto* inserter_data = tile->GetUniqueData<proto::InserterData>();
+            assert(inserter_data != nullptr);
 
-            const auto* proto_data = tile_layer->GetPrototype<proto::Inserter>();
-            assert(proto_data);
+            const auto* proto_data = tile->GetPrototype<proto::Inserter>();
+            assert(proto_data != nullptr);
 
             RotateInserters(dropoff_queue, pickup_queue, {*proto_data, *inserter_data});
         }

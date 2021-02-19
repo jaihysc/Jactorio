@@ -241,12 +241,11 @@ void ShowConveyorSegments(game::World& world, const data::PrototypeManager& prot
         object_layer.clear();
 
         for (int i = 0; i < game::Chunk::kChunkArea; ++i) {
-            auto& layer = chunk->Tiles()[i].GetLayer(game::TileLayer::entity);
-            if (layer.GetPrototype() == nullptr ||
-                layer.GetPrototype()->GetCategory() != proto::Category::transport_belt)
+            auto& tile = chunk->Tiles(game::TileLayer::entity)[i];
+            if (tile.GetPrototype() == nullptr || tile.GetPrototype()->GetCategory() != proto::Category::transport_belt)
                 continue;
 
-            auto& line_data    = *static_cast<proto::ConveyorData*>(layer.GetUniqueData());
+            auto& line_data    = *tile.GetUniqueData<proto::ConveyorData>();
             auto& line_segment = *line_data.structure;
 
             // Only draw for the head of segments

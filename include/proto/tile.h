@@ -58,16 +58,14 @@ namespace jactorio::proto
             return 0;
         }
 
-        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTileLayer* /*tile_layer*/) const override {
+        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
 
         // ======================================================================
         // Data
 
-        void OnDeserialize(game::World& world,
-                           const WorldCoord& coord,
-                           game::ChunkTileLayer& tile_layer) const override {}
+        void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override {}
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
     };

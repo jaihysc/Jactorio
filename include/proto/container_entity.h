@@ -52,7 +52,7 @@ namespace jactorio::proto
                       const WorldCoord& /*coord*/,
                       game::TileLayer /*tlayer*/) const override {}
 
-        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
+        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const override;
 
         void ValidatedPostLoad() override;
     };

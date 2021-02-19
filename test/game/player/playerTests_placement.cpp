@@ -23,7 +23,7 @@ namespace jactorio::game
         data::PrototypeManager proto_;
 
         ///
-        /// Sets the base layer and entity at coord
+        /// Sets the base tile and entity at coord
         void SetEntityCoords(const WorldCoord& coord,
                              const proto::Tile* tile_proto,
                              const proto::Entity* entity_proto) {
@@ -129,7 +129,7 @@ namespace jactorio::game
         EXPECT_EQ(tile2_entity.GetPrototype(), &entity2);
     }
 
-    TEST_F(PlayerPlacementTest, TryActivateLayer) {
+    TEST_F(PlayerPlacementTest, TryActivateTile) {
         // Create entity
         proto::Item item;
         proto::Item item_no_entity; // Does not hold an entity reference
@@ -151,8 +151,8 @@ namespace jactorio::game
 
         tile_base->SetPrototype(Orientation::up, &tile_proto);
 
-        // No entity, do not activate layer
-        EXPECT_FALSE(playerPlace_.TryActivateLayer(world_, {0, 0}));
+        // No entity, do not activate
+        EXPECT_FALSE(playerPlace_.TryActivateTile(world_, {0, 0}));
 
 
         // If selected item's entity is placeable, do not set activated_layer
@@ -161,28 +161,29 @@ namespace jactorio::game
         playerInv_.SetSelectedItem({&item, 2});
 
         EXPECT_FALSE(playerPlace_.TryPlaceEntity(world_, logic_, {0, 0}));
-        EXPECT_EQ(playerPlace_.GetActivatedLayer(), nullptr);
+        EXPECT_EQ(playerPlace_.GetActivatedTile(), nullptr);
 
 
         // Clicking on an entity with no placeable items selected will set activated_layer
         playerInv_.SetSelectedItem({&item_no_entity, 2});
 
-        EXPECT_TRUE(playerPlace_.TryActivateLayer(world_, {0, 0}));
-        EXPECT_EQ(playerPlace_.GetActivatedLayer(), tile_entity);
+        EXPECT_TRUE(playerPlace_.TryActivateTile(world_, {0, 0}));
+        EXPECT_EQ(playerPlace_.GetActivatedTile(), tile_entity);
 
 
         // Clicking again will NOT unset
-        EXPECT_TRUE(playerPlace_.TryActivateLayer(world_, {0, 0}));
-        EXPECT_EQ(playerPlace_.GetActivatedLayer(), tile_entity);
+        EXPECT_TRUE(playerPlace_.TryActivateTile(world_, {0, 0}));
+        EXPECT_EQ(playerPlace_.GetActivatedTile(), tile_entity);
 
 
-        // Activated layer can be set to nullptr to deactivate layers
-        playerPlace_.SetActivatedLayer(nullptr);
-        EXPECT_EQ(playerPlace_.GetActivatedLayer(), nullptr);
+        // Activated tile can be set to nullptr to deactivate
+        playerPlace_.SetActivatedTile(nullptr);
+        EXPECT_EQ(playerPlace_.GetActivatedTile(), nullptr);
     }
 
-    TEST_F(PlayerPlacementTest, TryPickupEntityDeactivateLayer) {
-        // Picking up an entity wil unset activated layer if activated layer was the entity
+    ///
+    /// Picking up an entity wil unset activated tile if activated tile was the entity
+    TEST_F(PlayerPlacementTest, TryPickupEntityDeactivateTile) {
 
         // Create entity
         proto::Item item;
@@ -217,13 +218,13 @@ namespace jactorio::game
         // Entity is non-placeable, therefore when clicking on an entity, it will get activated_layer
         playerInv_.DecrementSelectedItem();
 
-        EXPECT_TRUE(playerPlace_.TryActivateLayer(world_, {2, 3}));
-        EXPECT_EQ(playerPlace_.GetActivatedLayer(), world_.GetTile({0, 0}, TileLayer::entity));
+        EXPECT_TRUE(playerPlace_.TryActivateTile(world_, {2, 3}));
+        EXPECT_EQ(playerPlace_.GetActivatedTile(), world_.GetTile({0, 0}, TileLayer::entity));
 
 
         // Picking up entity will unset
         playerPlace_.TryPickup(world_, logic_, {0, 1}, 1000);
-        EXPECT_EQ(playerPlace_.GetActivatedLayer(), nullptr);
+        EXPECT_EQ(playerPlace_.GetActivatedTile(), nullptr);
     }
 
     TEST_F(PlayerPlacementTest, TryPickupEntity) {
@@ -244,7 +245,7 @@ namespace jactorio::game
         tile2->SetPrototype(Orientation::up, &entity);
 
 
-        // Create unique data by calling build event for prototype with layer
+        // Create unique data by calling build event for prototype with tile
         entity.OnBuild(world_, logic_, {0, 0}, TileLayer::entity, Orientation::up);
 
 
@@ -269,7 +270,7 @@ namespace jactorio::game
         EXPECT_EQ(playerInv_.inventory[0].item, &item);
         EXPECT_EQ(playerInv_.inventory[0].count, 1);
 
-        // Unique data for layer should have been deleted
+        // Unique data for tile should have been deleted
         EXPECT_EQ(tile->GetUniqueData(), nullptr);
     }
 

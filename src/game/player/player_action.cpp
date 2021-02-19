@@ -50,14 +50,14 @@ void game::PlayerAction::PlaceEntity(GameController& game_controller) {
     player.placement.TryPlaceEntity(world, game_controller.logic, tile_selected_coord);
 }
 
-void game::PlayerAction::ActivateLayer(GameController& game_controller) {
+void game::PlayerAction::ActivateTile(GameController& game_controller) {
     if (gui::input_mouse_captured || !game_controller.player.world.MouseSelectedTileInRange())
         return;
 
     auto& player = game_controller.player;
     auto& world  = game_controller.worlds[player.world.GetId()];
 
-    player.placement.TryActivateLayer(world, player.world.GetMouseTileCoords());
+    player.placement.TryActivateTile(world, player.world.GetMouseTileCoords());
 }
 
 void game::PlayerAction::PickupOrMineEntity(GameController& game_controller) {
@@ -90,9 +90,9 @@ void game::PlayerAction::ToggleDebugMenu(GameController& /*game_controller*/) {
 }
 
 void game::PlayerAction::ToggleCharacterMenu(GameController& game_controller) {
-    // If a layer is already activated, deactivate it, otherwise open the gui menu
-    if (game_controller.player.placement.GetActivatedLayer() != nullptr)
-        game_controller.player.placement.SetActivatedLayer(nullptr);
+    // If a tile is already activated, deactivate it, otherwise open the gui menu
+    if (game_controller.player.placement.GetActivatedTile() != nullptr)
+        game_controller.player.placement.SetActivatedTile(nullptr);
     else
         SetVisible(gui::Menu::CharacterMenu, !IsVisible(gui::Menu::CharacterMenu));
 }

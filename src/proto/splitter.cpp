@@ -4,7 +4,7 @@
 
 #include "core/coordinate_tuple.h"
 #include "game/logic/conveyor_utility.h"
-#include "game/world/chunk_tile_layer.h"
+#include "game/world/chunk_tile.h"
 #include "game/world/world.h"
 #include "proto/sprite.h"
 

@@ -683,8 +683,8 @@ namespace jactorio::game
         data::PrototypeManager proto;
 
         proto::AssemblyMachine asm_machine;
-        auto& layer = TestSetupAssemblyMachine(world_, {0, 0}, Orientation::up, asm_machine);
-        auto* data  = layer.GetUniqueData<proto::AssemblyMachineData>();
+        auto& tile = TestSetupAssemblyMachine(world_, {0, 0}, Orientation::up, asm_machine);
+        auto* data = tile.GetUniqueData<proto::AssemblyMachineData>();
 
         // Does nothing as there is no recipe yet
         PickupAssemblyMachine({logic_, 2, proto::RotationDegreeT(kMaxInserterDegree), 2, *data, Orientation::up});

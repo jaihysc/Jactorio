@@ -24,8 +24,8 @@ void game::GameController::ResetGame() {
 }
 
 void game::GameController::ClearRefsToWorld() {
-    input.mouse.SkipErasingLastOverlay();        // Overlays
-    player.placement.SetActivatedLayer(nullptr); // ChunkTileLayer
+    input.mouse.SkipErasingLastOverlay();       // Overlays
+    player.placement.SetActivatedTile(nullptr); // ChunkTile
 }
 
 bool game::GameController::Init() {

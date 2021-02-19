@@ -22,7 +22,7 @@ namespace jactorio
     {
         class World;
 
-        class ChunkTileLayer;
+        class ChunkTile;
         class Chunk;
     } // namespace game
 
@@ -85,7 +85,7 @@ namespace jactorio::proto
 
         ///
         /// Displays the menu associated with itself with the provided data
-        virtual bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const = 0;
+        virtual bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const = 0;
 
         ///
         /// \param pixel_offset Pixels to top left of current tile

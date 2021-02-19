@@ -16,7 +16,7 @@ namespace jactorio::game
 {
     class World;
     class Logic;
-    class ChunkTileLayer;
+    class ChunkTile;
 
     ///
     /// Stores information & functions regarding a player (Duplicated for multiple players)
@@ -212,7 +212,7 @@ namespace jactorio::game
             friend void swap(Placement& lhs, Placement& rhs) noexcept {
                 using std::swap;
                 swap(lhs.orientation, rhs.orientation);
-                swap(lhs.activatedLayer_, rhs.activatedLayer_);
+                swap(lhs.activatedTile_, rhs.activatedTile_);
                 swap(lhs.pickupTickCounter_, rhs.pickupTickCounter_);
                 swap(lhs.pickupTickTarget_, rhs.pickupTickTarget_);
                 swap(lhs.lastSelectedCoord_, rhs.lastSelectedCoord_);
@@ -228,16 +228,16 @@ namespace jactorio::game
 
 
             ///
-            /// Sets the activated layer, use nullptr to unset
-            void SetActivatedLayer(ChunkTileLayer* layer) {
-                activatedLayer_ = layer;
+            /// Sets the activated tile, use nullptr to unset
+            void SetActivatedTile(ChunkTile* tile) {
+                activatedTile_ = tile;
             }
 
             ///
-            /// Gets the layer of the entity activated on by the player
-            /// \return nullptr If no layer is activated by the player
-            J_NODISCARD ChunkTileLayer* GetActivatedLayer() const {
-                return activatedLayer_;
+            /// Gets the tile of the entity activated on by the player
+            /// \return nullptr If no tile is activated by the player
+            J_NODISCARD ChunkTile* GetActivatedTile() const {
+                return activatedTile_;
             }
 
 
@@ -247,9 +247,9 @@ namespace jactorio::game
             bool TryPlaceEntity(game::World& world, Logic& logic, const WorldCoord& coord) const;
 
             ///
-            /// Attempts to activate the layer at world coordinates
-            /// \return true if layer was activated
-            bool TryActivateLayer(game::World& world, const WorldCoord& coord);
+            /// Attempts to activate the tile at world coordinates
+            /// \return true if tile was activated
+            bool TryActivateTile(game::World& world, const WorldCoord& coord);
 
             ///
             /// This will either pickup an entity, or mine resources from a resource tile
@@ -265,7 +265,7 @@ namespace jactorio::game
             Orientation orientation = Orientation::up;
 
         private:
-            ChunkTileLayer* activatedLayer_ = nullptr;
+            ChunkTile* activatedTile_ = nullptr;
 
             uint16_t pickupTickCounter_ = 0;
             uint16_t pickupTickTarget_  = 1; // Avoids division by zero initially

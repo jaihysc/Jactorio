@@ -53,13 +53,11 @@ namespace jactorio
             return 0;
         }
 
-        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTileLayer* /*tile_layer*/) const override {
+        bool OnRShowGui(const render::GuiRenderer& /*g_rendr*/, game::ChunkTile* /*tile*/) const override {
             return false;
         }
 
-        void OnDeserialize(game::World& world,
-                           const WorldCoord& coord,
-                           game::ChunkTileLayer& tile_layer) const override {}
+        void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override {}
     };
 
     static_assert(!std::is_abstract_v<TestMockWorldObject>);
@@ -85,13 +83,13 @@ namespace jactorio
 
 
     ///
-    /// Sets up a multi tile with proto at coord on the provided specified tile layer
+    /// Sets up a multi tile with proto at coord on the provided specified tile
     /// \return Top left tile
-    inline game::ChunkTileLayer& TestSetupMultiTile(game::World& world,
-                                                    const WorldCoord& coord,
-                                                    const game::TileLayer tlayer,
-                                                    const Orientation orientation,
-                                                    const proto::FWorldObject& proto) {
+    inline game::ChunkTile& TestSetupMultiTile(game::World& world,
+                                               const WorldCoord& coord,
+                                               const game::TileLayer tlayer,
+                                               const Orientation orientation,
+                                               const proto::FWorldObject& proto) {
 
         auto* tl_tile = world.GetTile(coord, tlayer);
         assert(tl_tile != nullptr);
@@ -116,11 +114,11 @@ namespace jactorio
 
     ///
     /// Creates a container of provided size at coord
-    inline game::ChunkTileLayer& TestSetupContainer(game::World& world,
-                                                    const WorldCoord& coord,
-                                                    const Orientation orientation,
-                                                    const proto::ContainerEntity& container_entity,
-                                                    const int container_capacity = 10) {
+    inline game::ChunkTile& TestSetupContainer(game::World& world,
+                                               const WorldCoord& coord,
+                                               const Orientation orientation,
+                                               const proto::ContainerEntity& container_entity,
+                                               const int container_capacity = 10) {
         auto& container_layer =
             TestSetupMultiTile(world, coord, game::TileLayer::entity, orientation, container_entity);
 
@@ -132,11 +130,11 @@ namespace jactorio
 
     ///
     /// Creates an inserter at coord
-    inline game::ChunkTileLayer& TestSetupInserter(game::World& world,
-                                                   game::Logic& logic,
-                                                   const WorldCoord& coord,
-                                                   const Orientation orientation,
-                                                   const proto::Inserter& inserter_proto) {
+    inline game::ChunkTile& TestSetupInserter(game::World& world,
+                                              game::Logic& logic,
+                                              const WorldCoord& coord,
+                                              const Orientation orientation,
+                                              const proto::Inserter& inserter_proto) {
         auto* tile = world.GetTile(coord, game::TileLayer::entity);
         assert(tile != nullptr);
 
@@ -167,11 +165,11 @@ namespace jactorio
 
     ///
     /// Creates a assembly machine at coordinates
-    /// \return top left layer
-    inline game::ChunkTileLayer& TestSetupAssemblyMachine(game::World& world,
-                                                          const WorldCoord& coord,
-                                                          const Orientation orientation,
-                                                          proto::AssemblyMachine& assembly_proto) {
+    /// \return top left tile
+    inline game::ChunkTile& TestSetupAssemblyMachine(game::World& world,
+                                                     const WorldCoord& coord,
+                                                     const Orientation orientation,
+                                                     proto::AssemblyMachine& assembly_proto) {
         auto& origin_layer = TestSetupMultiTile(world, coord, game::TileLayer::entity, orientation, assembly_proto);
         origin_layer.MakeUniqueData<proto::AssemblyMachineData>();
         return origin_layer;
@@ -179,10 +177,10 @@ namespace jactorio
 
     ///
     /// Creates resource with orientation up at coord
-    inline game::ChunkTileLayer& TestSetupResource(game::World& world,
-                                                   const WorldCoord& coord,
-                                                   proto::ResourceEntity& resource,
-                                                   const proto::ResourceEntityData::ResourceCount resource_amount) {
+    inline game::ChunkTile& TestSetupResource(game::World& world,
+                                              const WorldCoord& coord,
+                                              proto::ResourceEntity& resource,
+                                              const proto::ResourceEntityData::ResourceCount resource_amount) {
 
         auto* tile = world.GetTile(coord, game::TileLayer::resource);
         assert(tile != nullptr);
@@ -195,13 +193,13 @@ namespace jactorio
 
     ///
     /// Creates a drill in the world with orientation, calling OnBuild
-    inline game::ChunkTileLayer& TestSetupDrill(game::World& world,
-                                                game::Logic& logic,
-                                                const WorldCoord& coord,
-                                                const Orientation orientation,
-                                                proto::ResourceEntity& resource,
-                                                proto::MiningDrill& drill,
-                                                const proto::ResourceEntityData::ResourceCount resource_amount = 100) {
+    inline game::ChunkTile& TestSetupDrill(game::World& world,
+                                           game::Logic& logic,
+                                           const WorldCoord& coord,
+                                           const Orientation orientation,
+                                           proto::ResourceEntity& resource,
+                                           proto::MiningDrill& drill,
+                                           const proto::ResourceEntityData::ResourceCount resource_amount = 100) {
         auto* tile = world.GetTile(coord, game::TileLayer::entity);
         assert(tile != nullptr);
 

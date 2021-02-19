@@ -25,7 +25,7 @@ namespace jactorio
 namespace jactorio::game
 {
     class World;
-    class ChunkTileLayer;
+    class ChunkTile;
     class ConveyorStruct;
 
     ///
@@ -61,9 +61,9 @@ namespace jactorio::game
     J_NODISCARD const proto::ConveyorData* GetConData(const World& world, const WorldCoord& coord);
 
     ///
-    /// Fetches conveyor data at tile layer, nullptr if non existent
-    J_NODISCARD proto::ConveyorData* GetConData(ChunkTileLayer& ctl);
-    J_NODISCARD const proto::ConveyorData* GetConData(const ChunkTileLayer& ctl);
+    /// Fetches conveyor data at tile, nullptr if non existent
+    J_NODISCARD proto::ConveyorData* GetConData(ChunkTile& tile);
+    J_NODISCARD const proto::ConveyorData* GetConData(const ChunkTile& tile);
 
     ///
     /// Calls ConveyorConnect up, right, down, left

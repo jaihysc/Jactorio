@@ -115,10 +115,8 @@ void proto::Conveyor::OnRemove(game::World& world,
     RemoveConveyor(world, coord, kConveyorLogicGroup);
 }
 
-void proto::Conveyor::OnDeserialize(game::World& world,
-                                    const WorldCoord& coord,
-                                    game::ChunkTileLayer& tile_layer) const {
-    auto* origin_data = tile_layer.GetUniqueData<ConveyorData>();
+void proto::Conveyor::OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const {
+    auto* origin_data = tile.GetUniqueData<ConveyorData>();
     assert(origin_data != nullptr);
 
     ConveyorNeighborConnect(world, coord);

@@ -15,7 +15,6 @@ namespace jactorio::game
 {
     class Chunk;
     class ChunkTile;
-    class ChunkTileLayer;
     class World;
 } // namespace jactorio::game
 
@@ -168,7 +167,8 @@ namespace jactorio::render
                           GameTickT game_tick) const noexcept;
 
         void PrepareTileLayers(RendererLayer& r_layer,
-                               const game::ChunkTile& tile,
+                               const game::Chunk& chunk,
+                               ChunkTileCoord ct_coord,
                                const Position2<float>& pixel_pos,
                                GameTickT game_tick) const noexcept;
 
@@ -179,7 +179,7 @@ namespace jactorio::render
 
         static void ApplySpriteUvAdjustment(UvPositionT& uv, const UvPositionT& uv_offset) noexcept;
 
-        static void ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTileLayer& tile_layer) noexcept;
+        static void ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTile& tile) noexcept;
 
         ///
         /// Draws current data to the screen

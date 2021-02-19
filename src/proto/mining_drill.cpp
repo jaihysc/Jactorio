@@ -13,8 +13,8 @@
 
 using namespace jactorio;
 
-bool proto::MiningDrill::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const {
-    auto* drill_data = static_cast<MiningDrillData*>(tile_layer->GetUniqueData());
+bool proto::MiningDrill::OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const {
+    auto* drill_data = static_cast<MiningDrillData*>(tile->GetUniqueData());
 
     gui::MiningDrill({g_rendr, this, drill_data});
     return true;
@@ -189,10 +189,8 @@ void proto::MiningDrill::OnRemove(game::World& world,
     logic.deferralTimer.RemoveDeferralEntry(drill_data->deferralEntry);
 }
 
-void proto::MiningDrill::OnDeserialize(game::World& world,
-                                       const WorldCoord& coord,
-                                       game::ChunkTileLayer& tile_layer) const {
-    auto* drill_data = tile_layer.GetUniqueData<MiningDrillData>();
+void proto::MiningDrill::OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const {
+    auto* drill_data = tile.GetUniqueData<MiningDrillData>();
     assert(drill_data != nullptr);
 
     InitializeOutput(world, GetOutputCoord(coord, drill_data->output.GetOrientation()), drill_data);

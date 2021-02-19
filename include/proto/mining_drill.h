@@ -85,7 +85,7 @@ namespace jactorio::proto
         // ======================================================================
         // Rendering
 
-        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
+        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const override;
 
 
         J_NODISCARD Sprite* OnRGetSprite(SpriteSetT set) const override;
@@ -130,9 +130,7 @@ namespace jactorio::proto
                       const WorldCoord& coord,
                       game::TileLayer tlayer) const override;
 
-        void OnDeserialize(game::World& world,
-                           const WorldCoord& coord,
-                           game::ChunkTileLayer& tile_layer) const override;
+        void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override;
 
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;

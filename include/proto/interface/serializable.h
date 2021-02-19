@@ -9,7 +9,7 @@
 namespace jactorio::game
 {
     class World;
-    class ChunkTileLayer;
+    class ChunkTile;
 } // namespace jactorio::game
 
 namespace jactorio::proto
@@ -26,9 +26,7 @@ namespace jactorio::proto
         ISerializable& operator=(const ISerializable& other) = default;
         ISerializable& operator=(ISerializable&& other) = default;
 
-        virtual void OnDeserialize(game::World& world,
-                                   const WorldCoord& coord,
-                                   game::ChunkTileLayer& tile_layer) const = 0;
+        virtual void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const = 0;
     };
 } // namespace jactorio::proto
 

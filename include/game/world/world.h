@@ -20,6 +20,7 @@ namespace jactorio::proto
 
     class IDeferred;
     class IUpdateListener;
+    class Entity;
 } // namespace jactorio::proto
 
 namespace jactorio::game
@@ -118,12 +119,12 @@ namespace jactorio::game
         ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD ChunkTileLayer* GetTile(const WorldCoord& coord, TileLayer tlayer);
+        J_NODISCARD ChunkTile* GetTile(const WorldCoord& coord, TileLayer tlayer);
 
         ///
         /// Gets the tile at the specified world coordinate
         /// \return nullptr if no tile exists
-        J_NODISCARD const ChunkTileLayer* GetTile(WorldCoord coord, TileLayer tlayer) const;
+        J_NODISCARD const ChunkTile* GetTile(WorldCoord coord, TileLayer tlayer) const;
 
 
         // ======================================================================
@@ -145,16 +146,16 @@ namespace jactorio::game
         // Logic chunk
 
         ///
-        /// Adds a layer at coordinates to be considered for logic updates
+        /// Adds a tile at coordinates to be considered for logic updates
         void LogicRegister(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
         ///
-        /// Removes a layer at coordinates to be considered for logic updates
+        /// Removes a tile at coordinates to be considered for logic updates
         /// w/ custom comparison func to remove
-        void LogicRemove(LogicGroup group, const WorldCoord& coord, const std::function<bool(ChunkTileLayer*)>& pred);
+        void LogicRemove(LogicGroup group, const WorldCoord& coord, const std::function<bool(ChunkTile*)>& pred);
 
         ///
-        /// Removes a layer at coordinates to be considered for logic updates
+        /// Removes a tile at coordinates to be considered for logic updates
         void LogicRemove(LogicGroup group, const WorldCoord& coord, TileLayer tlayer);
 
 

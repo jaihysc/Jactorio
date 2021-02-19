@@ -267,7 +267,7 @@ bool game::Player::Placement::TryPlaceEntity(game::World& world, Logic& logic, c
     return true;
 }
 
-bool game::Player::Placement::TryActivateLayer(game::World& world, const WorldCoord& coord) {
+bool game::Player::Placement::TryActivateTile(game::World& world, const WorldCoord& coord) {
     auto* tile = world.GetTile(coord, TileLayer::entity);
     if (tile == nullptr)
         return false;
@@ -293,7 +293,7 @@ bool game::Player::Placement::TryActivateLayer(game::World& world, const WorldCo
     // else
 
     // Clicking on an existing entity will activate it
-    activatedLayer_ = tile->GetTopLeftLayer();
+    activatedTile_ = tile->GetTopLeft();
     return true;
 }
 
@@ -371,8 +371,8 @@ void game::Player::Placement::TryPickup(game::World& world,
 
 
             // Picking up an entity which is set in activated_layer will unset activated_layer
-            if (activatedLayer_ == entity_tile->GetTopLeftLayer())
-                activatedLayer_ = nullptr;
+            if (activatedTile_ == entity_tile->GetTopLeft())
+                activatedTile_ = nullptr;
 
             // Call events
             entity_proto->OnRemove(world, logic, tl_coord, TileLayer::entity);

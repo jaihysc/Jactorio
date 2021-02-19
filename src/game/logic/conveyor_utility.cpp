@@ -42,33 +42,33 @@ const proto::ConveyorData* game::GetConData(const World& world, const WorldCoord
     return GetConData(*tile);
 }
 
-proto::ConveyorData* game::GetConData(ChunkTileLayer& ctl) {
-    return const_cast<proto::ConveyorData*>(GetConData(static_cast<const ChunkTileLayer&>(ctl)));
+proto::ConveyorData* game::GetConData(ChunkTile& tile) {
+    return const_cast<proto::ConveyorData*>(GetConData(static_cast<const ChunkTile&>(tile)));
 }
 
-const proto::ConveyorData* game::GetConData(const ChunkTileLayer& ctl) {
-    const auto* proto = ctl.GetPrototype();
+const proto::ConveyorData* game::GetConData(const ChunkTile& tile) {
+    const auto* proto = tile.GetPrototype();
     if (proto == nullptr)
         return nullptr;
 
     switch (proto->GetCategory()) {
     case proto::Category::transport_belt:
-        return ctl.GetUniqueData<proto::ConveyorData>();
+        return tile.GetUniqueData<proto::ConveyorData>();
 
     case proto::Category::splitter:
     {
-        const auto* splitter_data = ctl.GetUniqueData<proto::SplitterData>();
+        const auto* splitter_data = tile.GetUniqueData<proto::SplitterData>();
         assert(splitter_data != nullptr);
 
         if (splitter_data->orientation == Orientation::up || splitter_data->orientation == Orientation::right) {
-            if (ctl.IsTopLeft()) {
+            if (tile.IsTopLeft()) {
                 return &splitter_data->left;
             }
             return &splitter_data->right;
         }
 
         // Down or left
-        if (ctl.IsTopLeft()) {
+        if (tile.IsTopLeft()) {
             return &splitter_data->right;
         }
         return &splitter_data->left;

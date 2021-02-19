@@ -27,7 +27,7 @@ namespace jactorio::game
             world_.LogicAddChunk(chunk);
         }
 
-        ChunkTileLayer& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
+        ChunkTile& BuildInserter(const WorldCoord& coords, const Orientation orientation) {
             return TestSetupInserter(world_, logic_, coords, orientation, inserterProto_);
         }
 
@@ -39,9 +39,9 @@ namespace jactorio::game
                                                const Orientation orientation,
                                                const proto::Item::StackCount stack_count,
                                                const WorldCoord& neighbor_update_coord = {1, 2}) {
-            auto& layer = TestSetupContainer(world_, coords, Orientation::up, containerProto_);
+            auto& tile = TestSetupContainer(world_, coords, Orientation::up, containerProto_);
 
-            auto* unique_data = layer.GetUniqueData<proto::ContainerEntityData>();
+            auto* unique_data = tile.GetUniqueData<proto::ContainerEntityData>();
 
             // Emit neighbor update
             {

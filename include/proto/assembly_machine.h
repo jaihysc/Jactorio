@@ -73,7 +73,7 @@ namespace jactorio::proto
                                                    GameTickT game_tick) const override;
 
 
-        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTileLayer* tile_layer) const override;
+        bool OnRShowGui(const render::GuiRenderer& g_rendr, game::ChunkTile* tile) const override;
 
 
         // ======================================================================

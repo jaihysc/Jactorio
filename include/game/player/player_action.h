@@ -23,7 +23,7 @@ namespace jactorio::game
     J_CREATE_ACTION(deselect_held_item, DeselectHeldItem)                          \
                                                                                    \
     J_CREATE_ACTION(place_entity, PlaceEntity)                                     \
-    J_CREATE_ACTION(activate_layer, ActivateLayer)                                 \
+    J_CREATE_ACTION(activate_layer, ActivateTile)                                  \
     J_CREATE_ACTION(pickup_or_mine_entity, PickupOrMineEntity)                     \
                                                                                    \
     J_CREATE_ACTION(rotate_entity_clockwise, RotateEntityClockwise)                \
@@ -65,7 +65,7 @@ namespace jactorio::game
         static void DeselectHeldItem(GameController& game_controller);
 
         static void PlaceEntity(GameController& game_controller);
-        static void ActivateLayer(GameController& game_controller);
+        static void ActivateTile(GameController& game_controller);
         static void PickupOrMineEntity(GameController& game_controller);
 
         static void RotateEntityClockwise(GameController& game_controller);

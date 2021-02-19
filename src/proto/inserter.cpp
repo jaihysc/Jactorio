@@ -100,10 +100,8 @@ void proto::Inserter::OnRemove(game::World& world,
     world.updateDispatcher.Unregister({coord, GetPickupCoord(coord, inserter_data->orientation)});
 }
 
-void proto::Inserter::OnDeserialize(game::World& world,
-                                    const WorldCoord& coord,
-                                    game::ChunkTileLayer& tile_layer) const {
-    auto* inserter_data = tile_layer.GetUniqueData<InserterData>();
+void proto::Inserter::OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const {
+    auto* inserter_data = tile.GetUniqueData<InserterData>();
     assert(inserter_data != nullptr);
 
     InitPickupDropoff(world, coord, inserter_data->orientation);

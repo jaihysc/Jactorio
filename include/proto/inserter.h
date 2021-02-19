@@ -120,9 +120,7 @@ namespace jactorio::proto
                       game::TileLayer tlayer) const override;
 
 
-        void OnDeserialize(game::World& world,
-                           const WorldCoord& coord,
-                           game::ChunkTileLayer& tile_layer) const override;
+        void OnDeserialize(game::World& world, const WorldCoord& coord, game::ChunkTile& tile) const override;
 
 
         void PostLoadValidate(const data::PrototypeManager& proto) const override;
