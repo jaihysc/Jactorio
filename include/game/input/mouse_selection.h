@@ -58,11 +58,11 @@ namespace jactorio::game
                          const proto::Entity* selected_entity,
                          const proto::Sprite& cursor_sprite);
 
-        void SkipErasingLastOverlay() noexcept;
-
     private:
-        ChunkCoord lastChunkPos_        = {0, 0};
-        size_t lastOverlayElementIndex_ = UINT64_MAX;
+        ChunkCoord lastChunkPos_               = {0, 0};
+        const proto::Sprite* lastCursorSprite_ = nullptr;
+
+        void RemoveLastOverlay(World& world) const;
     };
 
     ///

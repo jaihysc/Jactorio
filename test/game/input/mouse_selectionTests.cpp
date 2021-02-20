@@ -195,17 +195,23 @@ namespace jactorio::game
         EXPECT_TRUE(entity.getSpriteSetCalled);
     }
 
-    TEST_F(MouseSelectionOverlayTest, SkipErasingLastOverlay) {
+    ///
+    /// Gracefully handle being unable to erase the last overlay, assumes it was already erased
+    TEST_F(MouseSelectionOverlayTest, EraseNonExistentLastOverlay) {
+        const proto::Sprite cursor;
+
         world_.EmplaceChunk({0, 0});
 
         world_.GetTile({0, 0}, TileLayer::resource)->SetPrototype(Orientation::up, &entity_);
-        const proto::Sprite cursor;
         mouseSelection_.DrawOverlay(world_, {0, 0}, Orientation::up, nullptr, cursor);
 
+
+        world_.Clear();
+
+        world_.EmplaceChunk({0, 0});
         world_.GetTile({1, 0}, TileLayer::resource)->SetPrototype(Orientation::up, &entity_);
-        mouseSelection_.SkipErasingLastOverlay();
         mouseSelection_.DrawOverlay(world_, {1, 0}, Orientation::up, nullptr, cursor);
 
-        EXPECT_EQ(world_.GetChunkC({0, 0})->GetOverlay(OverlayLayer::cursor).size(), 2);
+        EXPECT_EQ(world_.GetChunkC({0, 0})->GetOverlay(OverlayLayer::cursor).size(), 1);
     }
 } // namespace jactorio::game

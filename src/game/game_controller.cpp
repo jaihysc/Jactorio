@@ -24,7 +24,6 @@ void game::GameController::ResetGame() {
 }
 
 void game::GameController::ClearRefsToWorld() {
-    input.mouse.SkipErasingLastOverlay();       // Overlays
     player.placement.SetActivatedTile(nullptr); // ChunkTile
 }
 
