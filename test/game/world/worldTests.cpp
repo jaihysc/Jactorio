@@ -242,7 +242,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldTest, LogicAddChunk) {
-        Chunk chunk(0, 0);
+        Chunk chunk({0, 0});
 
         world_.LogicAddChunk(chunk);
         // Should return reference to newly created and added chunk
@@ -252,7 +252,7 @@ namespace jactorio::game
 
     TEST_F(WorldTest, LogicAddChunkNoDuplicate) {
         // If the chunk already exists, it should not add it
-        Chunk chunk(0, 0);
+        Chunk chunk({0, 0});
 
         world_.LogicAddChunk(chunk);
         world_.LogicAddChunk(chunk); // Attempting to add the same chunk again
@@ -261,7 +261,7 @@ namespace jactorio::game
     }
 
     TEST_F(WorldTest, LogicClearChunkData) {
-        Chunk chunk(0, 0);
+        Chunk chunk({0, 0});
 
         world_.LogicAddChunk(chunk);
 

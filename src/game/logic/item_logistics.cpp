@@ -14,8 +14,8 @@
 
 using namespace jactorio;
 
-bool game::ItemDropOff::Initialize(World& world, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-    auto* tile = world.GetTile({world_x, world_y}, TileLayer::entity);
+bool game::ItemDropOff::Initialize(World& world, const WorldCoord& coord) {
+    auto* tile = world.GetTile(coord, TileLayer::entity);
 
     if (tile->GetPrototype() == nullptr)
         return false;
@@ -212,8 +212,8 @@ bool game::ItemDropOff::InsertAssemblyMachine(const DropOffParams& params) const
 
 // ======================================================================
 
-bool game::InserterPickup::Initialize(World& world, const WorldCoordAxis world_x, const WorldCoordAxis world_y) {
-    auto* tile = world.GetTile({world_x, world_y}, TileLayer::entity);
+bool game::InserterPickup::Initialize(World& world, const WorldCoord& coord) {
+    auto* tile = world.GetTile(coord, TileLayer::entity);
     assert(tile != nullptr);
 
     if (tile->GetPrototype() == nullptr)

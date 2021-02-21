@@ -462,7 +462,7 @@ namespace jactorio::game
 
         // Update listeners should be dispatched
         MockUpdateListener mock_listener;
-        world_.updateDispatcher.Register(3, 4, 0, 0, mock_listener);
+        world_.updateDispatcher.Register({3, 4}, {0, 0}, mock_listener);
         // Change to some random data
         mock_listener.emit    = {1, 2};
         mock_listener.receive = {3, 4};

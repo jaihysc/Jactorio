@@ -9,7 +9,7 @@
 namespace jactorio::game
 {
     TEST(Chunk, LogicCopy) {
-        Chunk chunk_a(0, 0);
+        Chunk chunk_a({0, 0});
         chunk_a.GetLogicGroup(LogicGroup::conveyor).push_back(&chunk_a.GetCTile({3, 4}, TileLayer::base));
 
         auto chunk_b = chunk_a;
@@ -17,7 +17,7 @@ namespace jactorio::game
     }
 
     TEST(Chunk, LogicMove) {
-        Chunk chunk_a(0, 0);
+        Chunk chunk_a({0, 0});
         chunk_a.GetLogicGroup(LogicGroup::inserter).push_back(&chunk_a.GetCTile({4, 3}, TileLayer::resource));
 
         auto chunk_b = std::move(chunk_a);
@@ -28,26 +28,26 @@ namespace jactorio::game
         // GetCTile means Get Chunk Tile
         // GetTile already taken by World
 
-        Chunk chunk(4, 4);
+        Chunk chunk({4, 4});
         EXPECT_EQ(&chunk.Tiles(TileLayer::entity)[23 * 32 + 12], &chunk.GetCTile({12, 23}, TileLayer::entity));
     }
 
     TEST(Chunk, GetOverlayLayer) {
-        Chunk chunk_a{0, 0};
+        Chunk chunk_a{{0, 0}};
 
         // Should return the layer specified by the index of the enum objectLayer
         EXPECT_EQ(&chunk_a.GetOverlay(OverlayLayer::cursor), &chunk_a.overlays[0]);
     }
 
     TEST(Chunk, GetLogicGroup) {
-        Chunk chunk{0, 0};
+        Chunk chunk{{0, 0}};
 
         // Should return the logic group specified by the index of the enum objectLayer
         EXPECT_EQ(&chunk.GetLogicGroup(LogicGroup::conveyor), &chunk.logicGroups[0]);
     }
 
     TEST(Chunk, SerializeLogicGroups) {
-        Chunk chunk{0, 0};
+        Chunk chunk{{0, 0}};
 
         chunk.GetLogicGroup(LogicGroup::inserter).push_back(&chunk.GetCTile({4, 10}, TileLayer::entity));
 

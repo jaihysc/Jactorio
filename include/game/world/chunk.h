@@ -62,7 +62,7 @@ namespace jactorio::game
 
         ///
         /// Default initialization of chunk tiles
-        Chunk(const ChunkCoordAxis chunk_x, const ChunkCoordAxis chunk_y) : position_({chunk_x, chunk_y}) {}
+        explicit Chunk(const ChunkCoord& c_coord) : position_(c_coord) {}
 
         ~Chunk() = default;
 

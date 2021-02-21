@@ -4,23 +4,14 @@
 
 using namespace jactorio;
 
-game::UpdateDispatcher::ListenerEntry game::UpdateDispatcher::Register(const WorldCoordAxis current_world_x,
-                                                                       const WorldCoordAxis current_world_y,
-                                                                       const WorldCoordAxis target_world_x,
-                                                                       const WorldCoordAxis target_world_y,
+game::UpdateDispatcher::ListenerEntry game::UpdateDispatcher::Register(const WorldCoord& current_coord,
+                                                                       const WorldCoord& target_coord,
                                                                        const proto::FEntity& proto_listener) {
 
-    return Register({current_world_x, current_world_y}, {target_world_x, target_world_y}, proto_listener);
-}
+    auto& collection = container_[std::make_tuple(target_coord.x, target_coord.y)];
+    collection.emplace_back(CollectionElement{current_coord, CallbackT(proto_listener)});
 
-game::UpdateDispatcher::ListenerEntry game::UpdateDispatcher::Register(const WorldCoord& current_coords,
-                                                                       const WorldCoord& target_coords,
-                                                                       const proto::FEntity& proto_listener) {
-
-    auto& collection = container_[std::make_tuple(target_coords.x, target_coords.y)];
-    collection.emplace_back(CollectionElement{current_coords, CallbackT(proto_listener)});
-
-    return {current_coords, target_coords};
+    return {current_coord, target_coord};
 }
 
 bool game::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
@@ -45,16 +36,7 @@ bool game::UpdateDispatcher::Unregister(const ListenerEntry& entry) {
     return false;
 }
 
-void game::UpdateDispatcher::Dispatch(World& world,
-                                      const WorldCoordAxis world_x,
-                                      const WorldCoordAxis world_y,
-                                      const proto::UpdateType type) {
-    Dispatch(world, {world_x, world_y}, type);
-}
-
-void game::UpdateDispatcher::Dispatch(World& world,
-                                      const WorldCoord& coord,
-                                      const proto::UpdateType type) {
+void game::UpdateDispatcher::Dispatch(World& world, const WorldCoord& coord, const proto::UpdateType type) {
     // Must be tuple to index into container_ since it uses a hash function only usable with tuples
     const auto world_tuple = std::make_tuple(coord.x, coord.y);
 

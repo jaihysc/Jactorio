@@ -74,9 +74,8 @@ namespace jactorio::game
         /// \return Added chunk
         template <typename... TChunkArgs>
         Chunk& EmplaceChunk(const ChunkCoord& c_coord, TChunkArgs... args) {
-            const auto& [it, success] = worldChunks_.emplace(std::piecewise_construct,
-                                                             std::make_tuple(c_coord.x, c_coord.y),
-                                                             std::make_tuple(c_coord.x, c_coord.y, args...));
+            const auto& [it, success] = worldChunks_.emplace(
+                std::piecewise_construct, std::make_tuple(c_coord.x, c_coord.y), std::make_tuple(c_coord, args...));
             assert(success); // Attempted to insert at already existent location
 
             return it->second;

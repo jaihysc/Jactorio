@@ -39,9 +39,9 @@ namespace jactorio::game
     };
 
     TEST_F(UpdateDispatcherTest, Register) {
-        dispatcher_.Register(2, 3, 5, 6, mock_);
+        dispatcher_.Register({2, 3}, {5, 6}, mock_);
 
-        dispatcher_.Dispatch(world_, 3, 7, proto::UpdateType::place);
+        dispatcher_.Dispatch(world_, {3, 7}, proto::UpdateType::place);
         EXPECT_EQ(mock_.emit.x, 0);
         EXPECT_EQ(mock_.emit.y, 0);
 
@@ -49,7 +49,7 @@ namespace jactorio::game
         EXPECT_EQ(mock_.receive.y, 0);
 
 
-        dispatcher_.Dispatch(world_, 5, 6, proto::UpdateType::remove);
+        dispatcher_.Dispatch(world_, {5, 6}, proto::UpdateType::remove);
 
         EXPECT_EQ(mock_.emit.x, 5);
         EXPECT_EQ(mock_.emit.y, 6);
@@ -61,14 +61,14 @@ namespace jactorio::game
     }
 
     TEST_F(UpdateDispatcherTest, Unregister) {
-        const auto entry = dispatcher_.Register(2, 3, 5, 6, mock_);
+        const auto entry = dispatcher_.Register({2, 3}, {5, 6}, mock_);
 
-        dispatcher_.Register(4, 7, 5, 6, mock_);
+        dispatcher_.Register({4, 7}, {5, 6}, mock_);
 
         dispatcher_.Unregister(entry);
 
         // 1 registered, 1 unregistered
-        dispatcher_.Dispatch(world_, 5, 6, proto::UpdateType::place);
+        dispatcher_.Dispatch(world_, {5, 6}, proto::UpdateType::place);
         EXPECT_EQ(mock_.emit.x, 5);
         EXPECT_EQ(mock_.emit.y, 6);
 
@@ -78,14 +78,14 @@ namespace jactorio::game
     }
 
     TEST_F(UpdateDispatcherTest, RegisterNonExistent) {
-        dispatcher_.Dispatch(world_, 3, 7, proto::UpdateType::place);
-        dispatcher_.Dispatch(world_, 5, 6, proto::UpdateType::remove);
+        dispatcher_.Dispatch(world_, {3, 7}, proto::UpdateType::place);
+        dispatcher_.Dispatch(world_, {5, 6}, proto::UpdateType::remove);
 
         EXPECT_EQ(dispatcher_.GetDebugInfo().storedEntries.size(), 0);
     }
 
     TEST_F(UpdateDispatcherTest, UnregisterEmptyErase) {
-        const auto entry = dispatcher_.Register(2, 3, 5, 6, mock_);
+        const auto entry = dispatcher_.Register({2, 3}, {5, 6}, mock_);
         dispatcher_.Unregister(entry);
 
         EXPECT_EQ(dispatcher_.GetDebugInfo().storedEntries.size(), 0);
