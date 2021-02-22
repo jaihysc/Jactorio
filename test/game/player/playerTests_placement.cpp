@@ -134,9 +134,9 @@ namespace jactorio::game
         proto::Item item;
         proto::Item item_no_entity; // Does not hold an entity reference
 
-        auto entity       = std::make_unique<proto::ContainerEntity>();
-        entity->placeable = true;
-        entity->SetItem(&item);
+        proto::ContainerEntity entity;
+        entity.placeable = true;
+        entity.SetItem(&item);
 
 
         proto::Tile tile_proto;
@@ -156,7 +156,7 @@ namespace jactorio::game
 
 
         // If selected item's entity is placeable, do not set activated_layer
-        tile_entity->SetPrototype(Orientation::up, entity.get());
+        tile_entity->SetPrototype(Orientation::up, &entity);
 
         playerInv_.SetSelectedItem({&item, 2});
 
@@ -188,10 +188,10 @@ namespace jactorio::game
         // Create entity
         proto::Item item;
 
-        auto entity = std::make_unique<proto::ContainerEntity>();
-        entity->SetWidth(3);
-        entity->SetHeight(4);
-        entity->SetItem(&item);
+        proto::ContainerEntity entity;
+        entity.SetWidth(3);
+        entity.SetHeight(4);
+        entity.SetItem(&item);
 
 
         proto::Tile tile_proto;
@@ -201,8 +201,8 @@ namespace jactorio::game
         world_.EmplaceChunk({0, 0});
 
 
-        for (WorldCoordAxis y = 0; y < entity->GetHeight(Orientation::up); ++y) {
-            for (WorldCoordAxis x = 0; x < entity->GetWidth(Orientation::up); ++x) {
+        for (WorldCoordAxis y = 0; y < entity.GetHeight(Orientation::up); ++y) {
+            for (WorldCoordAxis x = 0; x < entity.GetWidth(Orientation::up); ++x) {
                 auto* tile = world_.GetTile({x, y}, TileLayer::base);
                 tile->SetPrototype(Orientation::up, &tile_proto);
             }

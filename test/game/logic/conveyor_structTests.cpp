@@ -117,175 +117,166 @@ namespace jactorio::game
     }
 
     TEST_F(ConveyorStructTest, AppendItem) {
-        auto line_segment =
-            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+        ConveyorStruct line_segment(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
         // Offset is from the beginning of the conveyor OR the previous item if it exists
-        line_segment->AppendItem(true, 1.3, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 1.3);
+        line_segment.AppendItem(true, 1.3, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 1.3);
 
-        line_segment->AppendItem(true, 1.2, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), 1.2);
+        line_segment.AppendItem(true, 1.2, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[1].dist.getAsDouble(), 1.2);
 
-        line_segment->AppendItem(true, 1.5, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].dist.getAsDouble(), 1.5);
+        line_segment.AppendItem(true, 1.5, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[2].dist.getAsDouble(), 1.5);
 
-        line_segment->AppendItem(true, 0.5, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[3].dist.getAsDouble(), 0.5);
+        line_segment.AppendItem(true, 0.5, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[3].dist.getAsDouble(), 0.5);
     }
 
     TEST_F(ConveyorStructTest, AppendItemFirstItem) {
         // The first item which is appended ignores an additional offset of ConveyorProp::kItemSpacing when calculating
         // whether or not it can be appended
 
-        auto line_segment =
-            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+        ConveyorStruct line_segment(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
-        line_segment->AppendItem(true, 0, item_); // Ok, Offset can be 0, is first item
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 0);
+        line_segment.AppendItem(true, 0, item_); // Ok, Offset can be 0, is first item
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 0);
 
-        line_segment->AppendItem(true, 0, item_); // Not ok, offset changed to ConveyorProp::kItemSpacing
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), ConveyorProp::kItemSpacing);
+        line_segment.AppendItem(true, 0, item_); // Not ok, offset changed to ConveyorProp::kItemSpacing
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[1].dist.getAsDouble(), ConveyorProp::kItemSpacing);
 
-        line_segment->AppendItem(true, 0, item_); // Not ok, offset changed to ConveyorProp::kItemSpacing
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].dist.getAsDouble(), ConveyorProp::kItemSpacing);
+        line_segment.AppendItem(true, 0, item_); // Not ok, offset changed to ConveyorProp::kItemSpacing
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[2].dist.getAsDouble(), ConveyorProp::kItemSpacing);
     }
 
     TEST_F(ConveyorStructTest, InsertItem) {
         // Insert INSERTS an item at an arbitrary position offset from the beginning of the conveyor
 
-        auto line_segment =
-            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+        ConveyorStruct line_segment(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
         // Offset is ALWAYS from the beginning of the conveyor
 
-        line_segment->InsertItem(true, 1.2, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 1.2); // < 1.2
+        line_segment.InsertItem(true, 1.2, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 1.2); // < 1.2
 
         // Should be sorted by items closest to the end of the segment
-        line_segment->InsertItem(true, 2.5, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 1.2); // 1.2
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), 1.3); // < 2.5
+        line_segment.InsertItem(true, 2.5, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 1.2); // 1.2
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[1].dist.getAsDouble(), 1.3); // < 2.5
 
-        line_segment->InsertItem(true, 0.5, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 0.5); // < 0.5
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), 0.7); // 1.2
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].dist.getAsDouble(), 1.3); // 2.5
+        line_segment.InsertItem(true, 0.5, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 0.5); // < 0.5
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[1].dist.getAsDouble(), 0.7); // 1.2
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[2].dist.getAsDouble(), 1.3); // 2.5
 
-        line_segment->InsertItem(true, 0.1, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 0.1); // < 0.1
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), 0.4); // 0.5
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].dist.getAsDouble(), 0.7); // 1.2
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[3].dist.getAsDouble(), 1.3); // 2.5
+        line_segment.InsertItem(true, 0.1, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 0.1); // < 0.1
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[1].dist.getAsDouble(), 0.4); // 0.5
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[2].dist.getAsDouble(), 0.7); // 1.2
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[3].dist.getAsDouble(), 1.3); // 2.5
 
-        line_segment->InsertItem(true, 1.8, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 0.1); // 0.1
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), 0.4); // 0.5
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[2].dist.getAsDouble(), 0.7); // 1.2
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[3].dist.getAsDouble(), 0.6); // < 1.8
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[4].dist.getAsDouble(), 0.7); // 2.5
+        line_segment.InsertItem(true, 1.8, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 0.1); // 0.1
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[1].dist.getAsDouble(), 0.4); // 0.5
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[2].dist.getAsDouble(), 0.7); // 1.2
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[3].dist.getAsDouble(), 0.6); // < 1.8
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[4].dist.getAsDouble(), 0.7); // 2.5
     }
 
     TEST_F(ConveyorStructTest, InsertItemAbs) {
-        auto line_segment =
-            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
-        line_segment->headOffset = 2;
+        ConveyorStruct line_segment(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+
+        line_segment.headOffset = 2;
 
         // Offset is ALWAYS from the beginning of the conveyor + itemOffset
 
-        line_segment->InsertItemAbs(true, 1.2, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 3.2);
+        line_segment.InsertItemAbs(true, 1.2, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 3.2);
 
-        line_segment->InsertItemAbs(true, 1.5, item_);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 3.2);
-        EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), 0.3); // 1.5
+        line_segment.InsertItemAbs(true, 1.5, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 3.2);
+        EXPECT_DOUBLE_EQ(line_segment.left.lane[1].dist.getAsDouble(), 0.3); // 1.5
     }
 
     TEST_F(ConveyorStructTest, TryInsertItem) {
-
-        auto line_segment =
-            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
+        ConveyorStruct line_segment(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
         // Offset is ALWAYS from the beginning of the conveyor
         {
-            const bool result = line_segment->TryInsertItem(true, 1.2, item_);
+            const bool result = line_segment.TryInsertItem(true, 1.2, item_);
             ASSERT_TRUE(result);
-            EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 1.2);
+            EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 1.2);
         }
         {
             // Too close
-            const bool result = line_segment->TryInsertItem(true, 1.3, item_);
+            const bool result = line_segment.TryInsertItem(true, 1.3, item_);
             ASSERT_FALSE(result);
         }
 
 
         // Should also reenable conveyor upon insertion if it is disabled
-        line_segment->left.index = 999;
+        line_segment.left.index = 999;
 
         {
-            const bool result = line_segment->TryInsertItem(true, 0.5, item_);
+            const bool result = line_segment.TryInsertItem(true, 0.5, item_);
             ASSERT_TRUE(result);
-            EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[0].dist.getAsDouble(), 0.5);
-            EXPECT_DOUBLE_EQ(line_segment.get()->left.lane[1].dist.getAsDouble(), 0.7); // 1.2
+            EXPECT_DOUBLE_EQ(line_segment.left.lane[0].dist.getAsDouble(), 0.5);
+            EXPECT_DOUBLE_EQ(line_segment.left.lane[1].dist.getAsDouble(), 0.7); // 1.2
         }
 
-        EXPECT_EQ(line_segment->left.index, 0);
+        EXPECT_EQ(line_segment.left.index, 0);
     }
 
     TEST_F(ConveyorStructTest, BackItemDistanceLeft) {
+        ConveyorStruct line_segment(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
-        auto line_segment =
-            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
-
-        EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 0);
+        EXPECT_DOUBLE_EQ(line_segment.left.backItemDistance.getAsDouble(), 0);
 
 
         // Appending
-        line_segment->AppendItem(true, 1.2, item_);
-        EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 1.2);
+        line_segment.AppendItem(true, 1.2, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.backItemDistance.getAsDouble(), 1.2);
 
-        line_segment->AppendItem(true, 3, item_);
-        EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 4.2);
+        line_segment.AppendItem(true, 3, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.backItemDistance.getAsDouble(), 4.2);
 
-        line_segment->AppendItem(true, 1.8, item_);
-        EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 6);
+        line_segment.AppendItem(true, 1.8, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.backItemDistance.getAsDouble(), 6);
 
         // Inserting (Starting at 6.f)
-        line_segment->InsertItem(true, 7, item_);
-        EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 7);
+        line_segment.InsertItem(true, 7, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.backItemDistance.getAsDouble(), 7);
 
-        line_segment->InsertItem(true, 2, item_);
-        EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 7); // Unchanged
+        line_segment.InsertItem(true, 2, item_);
+        EXPECT_DOUBLE_EQ(line_segment.left.backItemDistance.getAsDouble(), 7); // Unchanged
 
-        EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 0);
+        EXPECT_DOUBLE_EQ(line_segment.right.backItemDistance.getAsDouble(), 0);
     }
 
     TEST_F(ConveyorStructTest, BackItemDistanceRight) {
+        ConveyorStruct line_segment(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
 
-        auto line_segment =
-            std::make_unique<ConveyorStruct>(Orientation::up, ConveyorStruct::TerminationType::bend_right, 5);
-
-        EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 0.);
+        EXPECT_DOUBLE_EQ(line_segment.right.backItemDistance.getAsDouble(), 0.);
 
 
         // Appending
-        line_segment->AppendItem(false, 1.2, item_);
-        EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 1.2);
+        line_segment.AppendItem(false, 1.2, item_);
+        EXPECT_DOUBLE_EQ(line_segment.right.backItemDistance.getAsDouble(), 1.2);
 
-        line_segment->AppendItem(false, 3, item_);
-        EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 4.2);
+        line_segment.AppendItem(false, 3, item_);
+        EXPECT_DOUBLE_EQ(line_segment.right.backItemDistance.getAsDouble(), 4.2);
 
-        line_segment->AppendItem(false, 1.8, item_);
-        EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 6);
+        line_segment.AppendItem(false, 1.8, item_);
+        EXPECT_DOUBLE_EQ(line_segment.right.backItemDistance.getAsDouble(), 6);
 
         // Inserting (Starting at 6.f)
-        line_segment->InsertItem(false, 7, item_);
-        EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 7);
+        line_segment.InsertItem(false, 7, item_);
+        EXPECT_DOUBLE_EQ(line_segment.right.backItemDistance.getAsDouble(), 7);
 
-        line_segment->InsertItem(false, 2, item_);
-        EXPECT_DOUBLE_EQ(line_segment->right.backItemDistance.getAsDouble(), 7); // Unchanged
+        line_segment.InsertItem(false, 2, item_);
+        EXPECT_DOUBLE_EQ(line_segment.right.backItemDistance.getAsDouble(), 7); // Unchanged
 
-        EXPECT_DOUBLE_EQ(line_segment->left.backItemDistance.getAsDouble(), 0);
+        EXPECT_DOUBLE_EQ(line_segment.left.backItemDistance.getAsDouble(), 0);
     }
 
     TEST_F(ConveyorStructTest, GetOffsetAbs) {
@@ -356,6 +347,7 @@ namespace jactorio::game
         data::PrototypeManager proto;
         auto& item = proto.Make<proto::Item>();
 
+        // Unique ptr for cereal load construct
         auto segment =
             std::make_unique<ConveyorStruct>(Orientation::down, ConveyorStruct::TerminationType::bend_left, 4);
 
