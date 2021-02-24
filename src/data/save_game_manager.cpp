@@ -36,7 +36,7 @@ void data::DeserializeGameController(game::GameController& out_game_controller, 
             out_game_controller.proto.GenerateRelocationTable();
             active_prototype_manager = &out_game_controller.proto;
         },
-        [&]() { out_game_controller.ClearRefsToWorld(); },
+        [&]() { out_game_controller.ResetGame(); }, // Remove any dangling pointers (activatedTile)
     };
     const std::vector<std::function<void()>> post_load_hooks{
         [&]() {

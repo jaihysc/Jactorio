@@ -30,33 +30,4 @@ namespace jactorio::game
 
         EXPECT_FALSE(game_controller.proto.GetAll<proto::ContainerEntity>().empty());
     }
-
-
-    TEST(GameController, ClearRefsToWorld) {
-        GameController game_controller;
-
-        const proto::Sprite sprite;
-        const proto::ContainerEntity container;
-
-
-        game_controller.worlds[0].EmplaceChunk({0, 0});
-
-
-        // 1 Should not attempt to remove cursor overlays
-        game_controller.input.mouse.DrawOverlay(game_controller.worlds[0], {0, 0}, Orientation::up, &container, sprite);
-
-        // 2 Should not hold pointer to any tile (as they will be destroyed)
-        ChunkTile tile;
-        game_controller.player.placement.SetActivatedTile(&tile);
-
-
-        game_controller.ClearRefsToWorld();
-
-
-        // 1 Fails if attempted to erase last overlay
-        game_controller.input.mouse.DrawOverlay(game_controller.worlds[0], {0, 1}, Orientation::up, &container, sprite);
-
-        // 2
-        EXPECT_EQ(game_controller.player.placement.GetActivatedTile(), nullptr);
-    }
 } // namespace jactorio::game

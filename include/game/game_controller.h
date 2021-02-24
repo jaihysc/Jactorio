@@ -28,11 +28,6 @@ namespace jactorio::game
         void ResetGame();
 
         ///
-        /// Allows worlds to be cleared
-        void ClearRefsToWorld();
-
-
-        ///
         /// Sets up game for logic updates
         /// \return false if error
         J_NODISCARD bool Init();

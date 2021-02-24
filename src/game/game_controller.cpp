@@ -13,7 +13,6 @@
 using namespace jactorio;
 
 void game::GameController::ResetGame() {
-    ClearRefsToWorld();
     worlds.~GameWorlds();
     logic.~Logic();
     player.~Player();
@@ -21,10 +20,6 @@ void game::GameController::ResetGame() {
     new (&worlds) GameWorlds(kDefaultWorldCount);
     new (&logic) Logic();
     new (&player) Player();
-}
-
-void game::GameController::ClearRefsToWorld() {
-    player.placement.SetActivatedTile(nullptr); // ChunkTile
 }
 
 bool game::GameController::Init() {
