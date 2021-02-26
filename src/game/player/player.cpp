@@ -491,6 +491,9 @@ bool game::Player::Inventory::DeselectSelectedItem() {
     // Add referenced item to slot
     inventory[selectedItemIndex_] = selectedItem_;
     hasItemSelected_              = false;
+
+    inventory.Sort();
+
     return true;
 }
 
