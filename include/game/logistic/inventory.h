@@ -12,8 +12,12 @@
 
 namespace jactorio::game
 {
+    class Inventory;
+
     class ItemStack
     {
+        friend Inventory;
+
     public:
         ///
         /// \remark Comparison between two stacks is reversible
@@ -21,8 +25,21 @@ namespace jactorio::game
         J_NODISCARD bool MatchesFilter(const ItemStack& other) const;
 
         ///
+        /// Clears item and count, NOT filter
+        void Clear() noexcept;
+        ///
+        /// \return true if stack holds no items
+        J_NODISCARD bool Empty() const noexcept;
+
+
+        ///
         /// Attempts to drop one item from provided stack to current item stack
-        bool DropOne(ItemStack& stack);
+        bool DropOne(ItemStack& stack) noexcept;
+
+        ///
+        /// \return true if provided ItemStack holds the selection cursor from the player
+        J_NODISCARD bool IsCursor() const noexcept;
+
 
         data::SerialProtoPtr<const proto::Item> item = nullptr;
         proto::Item::StackCount count                = 0;
@@ -33,6 +50,11 @@ namespace jactorio::game
         CEREAL_SERIALIZE(archive) {
             archive(item, count, filter);
         }
+
+    private:
+        ///
+        /// Validates that the contents of this itemstack is valid
+        void Verify() const noexcept;
     };
 
     class Inventory

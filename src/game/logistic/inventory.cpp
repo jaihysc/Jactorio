@@ -28,7 +28,16 @@ bool game::ItemStack::MatchesFilter(const ItemStack& other) const {
     return item == nullptr || other.filter == nullptr || item == other.filter;
 }
 
-bool game::ItemStack::DropOne(ItemStack& stack) {
+void game::ItemStack::Clear() noexcept {
+    item  = nullptr;
+    count = 0;
+}
+
+bool game::ItemStack::Empty() const noexcept {
+    return item == nullptr;
+}
+
+bool game::ItemStack::DropOne(ItemStack& stack) noexcept {
     item = stack.item;
     count++;
 
@@ -40,6 +49,22 @@ bool game::ItemStack::DropOne(ItemStack& stack) {
     }
 
     return false;
+}
+
+bool game::ItemStack::IsCursor() const noexcept {
+    return item != nullptr && item->GetLocalizedName() == proto::Item::kInventorySelectedCursor;
+}
+
+void game::ItemStack::Verify() const noexcept {
+    if (item == nullptr || count == 0) {
+        // Inventory selection cursor exempt from having 0 for count
+        if (IsCursor()) {
+            return;
+        }
+
+        assert(item == nullptr);
+        assert(count == 0);
+    }
 }
 
 
@@ -66,114 +91,99 @@ void game::Inventory::Sort() {
     // The inventory must be sorted without moving the selected cursor
 
     // Copy non-cursor into a new array, sort it, copy it back minding the selection cursor
-    std::vector<ItemStack> sorted_inv;
-    sorted_inv.reserve(inv_.size());
+    std::vector<ItemStack> temp_inv;
+    temp_inv.reserve(inv_.size());
+
     for (const auto& stack : inv_) {
-        // Skip the cursor
-        if (stack.item == nullptr || stack.item->GetLocalizedName() == proto::Item::kInventorySelectedCursor) {
+        if (stack.IsCursor() || stack.Empty()) {
             continue;
         }
 
-        sorted_inv.push_back(stack);
+        temp_inv.push_back(stack);
     }
 
     // Sort temp inventory (does not contain cursor)
-    std::sort(sorted_inv.begin(), sorted_inv.end(), [](const ItemStack a, const ItemStack b) {
-        const auto& a_name = a.item->GetLocalizedName();
-        const auto& b_name = b.item->GetLocalizedName();
-
-        return a_name < b_name;
+    std::sort(temp_inv.begin(), temp_inv.end(), [](const ItemStack& lhs, const ItemStack& rhs) {
+        return lhs.item->GetLocalizedName() < rhs.item->GetLocalizedName();
     });
 
     // Compress item stacks
-    if (sorted_inv.size() > 1) {
-        // Cannot compress slot 0 with anything before it
-        for (auto sort_inv_index = sorted_inv.size() - 1; sort_inv_index > 0; --sort_inv_index) {
 
-            auto buffer_item_count = sorted_inv[sort_inv_index].count;
-            const auto stack_size  = sorted_inv[sort_inv_index].item->stackSize;
+    // Behaves as follows:
+    //  A A A B  C C
+    //  A A A B 2C
+    // 2A A   B 2C
+    // 3A     B 2C
 
-            // Find index which the same item type begins
-            auto stack_compress_begin = sort_inv_index;
-            while (sorted_inv[stack_compress_begin - 1].item == sorted_inv[sort_inv_index].item) {
-                stack_compress_begin--;
-                if (stack_compress_begin == 0)
-                    break;
+    // Cannot compress index 0 with something before it
+    if (!temp_inv.empty()) {
+        for (std::size_t i_selected = temp_inv.size() - 1; i_selected > 0; --i_selected) {
+
+            auto& stack = temp_inv[i_selected];
+
+            if (stack.Empty()) {
+                continue;
             }
 
+            // Try and compress selected item
+            for (std::size_t i = 0; i < i_selected; ++i) {
 
-            // Compress stacks
-            for (; stack_compress_begin < sort_inv_index; ++stack_compress_begin) {
+                auto& target_stack = temp_inv[i];
 
-                // If item somehow exceeds stack do not attempt to stack into it
-                if (sorted_inv[stack_compress_begin].count > stack_size)
+                if (target_stack.item != stack.item) {
                     continue;
-
-                // Amount which can be dropped is space left until reaching stack size
-                const uint16_t max_drop_amount = stack_size - sorted_inv[stack_compress_begin].count;
-
-                // Has enough to max current stack and move on
-                if (buffer_item_count > max_drop_amount) {
-                    sorted_inv[stack_compress_begin].count = stack_size;
-                    buffer_item_count -= max_drop_amount;
                 }
-                // Not enough to drop and move on
+                // Do not fill into stacks exceeding stack size
+                if (target_stack.count > target_stack.item->stackSize) {
+                    continue;
+                }
+
+                const uint16_t target_free_count = target_stack.item->stackSize - target_stack.count;
+
+                // Fills target stack, has extra remaining
+                if (stack.count > target_free_count) {
+                    target_stack.count += target_free_count;
+                    stack.count -= target_free_count;
+                }
+                // No remaining after dropping in target stack
                 else {
-                    sorted_inv[stack_compress_begin].count += buffer_item_count;
-                    sorted_inv[sort_inv_index].item = nullptr;
-                    buffer_item_count               = 0;
+                    target_stack.count += stack.count;
+
+                    stack.Clear();
                     break;
                 }
-            }
-            // Did not drop all items off
-            if (buffer_item_count > 0) {
-                sorted_inv[sort_inv_index].count = buffer_item_count;
             }
         }
     }
 
 
     // Copy sorted inventory back into origin inventory
-    bool has_empty_slot = false;
 
-    std::size_t start          = 0; // The index of the first blank slot post sorting
-    std::size_t inv_temp_index = 0;
+    assert(temp_inv.size() <= inv_.size());
 
-    for (size_t i = 0; i < inv_.size(); ++i) {
-        // Skip the cursor
-        if (inv_[i].item != nullptr && inv_[i].item->GetLocalizedName() == proto::Item::kInventorySelectedCursor)
+    std::size_t i_inv = 0;
+    for (std::size_t i_temp = 0; i_temp < temp_inv.size(); ++i_temp) {
+        if (temp_inv[i_temp].Empty()) {
             continue;
-
-        // Iterated through every item in the sorted inventory
-        if (inv_temp_index >= sorted_inv.size()) {
-            has_empty_slot = true;
-            start          = i;
-            goto loop_exit;
-        }
-        // Omit empty gaps in sorted inv from the compressing process
-        while (sorted_inv[inv_temp_index].item == nullptr) {
-            inv_temp_index++;
-            if (inv_temp_index >= sorted_inv.size()) {
-                has_empty_slot = true;
-                start          = i;
-                goto loop_exit;
-            }
         }
 
-        inv_[i] = sorted_inv[inv_temp_index++];
+        if (inv_[i_inv].IsCursor()) {
+            i_inv++;
+        }
+
+        assert(i_inv < inv_.size());
+        assert(i_temp < temp_inv.size());
+
+        inv_[i_inv] = temp_inv[i_temp];
+        i_inv++;
     }
-loop_exit:
-
-    if (!has_empty_slot)
-        return;
 
     // Copy empty spaces into the remainder of the slots
-    for (auto i = start; i < inv_.size(); ++i) {
-        // Skip the cursor
-        if (inv_[i].item != nullptr && inv_[i].item->GetLocalizedName() == proto::Item::kInventorySelectedCursor)
+    for (; i_inv < inv_.size(); ++i_inv) {
+        if (inv_[i_inv].IsCursor())
             continue;
 
-        inv_[i] = {nullptr, 0};
+        inv_[i_inv].Clear();
     }
 }
 
@@ -325,15 +335,7 @@ void game::Inventory::Delete(const proto::Item& item, uint32_t amount) {
 
 void game::Inventory::Verify() const {
     for (const auto& stack : inv_) {
-        if (stack.item == nullptr || stack.count == 0) {
-            // Inventory selection cursor exempt from having 0 for count
-            if (stack.item != nullptr && stack.item->name == proto::Item::kInventorySelectedCursor) {
-                continue;
-            }
-
-            assert(stack.item == nullptr);
-            assert(stack.count == 0);
-        }
+        stack.Verify();
     }
 }
 

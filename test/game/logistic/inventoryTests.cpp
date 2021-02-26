@@ -554,25 +554,21 @@ namespace jactorio::game
 
         Inventory inv{30};
 
-        inv[10].item  = &item;
-        inv[10].count = 100;
-
-        inv[11].item  = &item;
-        inv[11].count = 100;
-
-        inv[12].item  = &item;
-        inv[12].count = 10;
+        inv[0]  = {&item, 10};
+        inv[10] = {&item, 100};
+        inv[11] = {&item, 100};
+        inv[12] = {&item, 10};
 
         inv.Sort();
 
         EXPECT_EQ(inv[0].item, &item);
-        EXPECT_EQ(inv[0].count, 100);
+        EXPECT_EQ(inv[0].count, 50);
 
         EXPECT_EQ(inv[1].item, &item);
         EXPECT_EQ(inv[1].count, 100);
 
         EXPECT_EQ(inv[2].item, &item);
-        EXPECT_EQ(inv[2].count, 10);
+        EXPECT_EQ(inv[2].count, 70);
     }
 
     ///
