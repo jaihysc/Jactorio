@@ -43,6 +43,7 @@ namespace jactorio::game
         static WorldCoord ChunkCToWorldC(const ChunkCoord& chunk_coord);
 
         static OverlayOffsetAxis WorldCToOverlayC(WorldCoordAxis coord);
+        static Position2<OverlayOffsetAxis> WorldCToOverlayC(const WorldCoord& coord);
 
 
         // World access

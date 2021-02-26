@@ -51,6 +51,10 @@ OverlayOffsetAxis game::World::WorldCToOverlayC(const WorldCoordAxis coord) {
     return SafeCast<OverlayOffsetAxis>(val);
 }
 
+Position2<OverlayOffsetAxis> game::World::WorldCToOverlayC(const WorldCoord& coord) {
+    return {WorldCToOverlayC(coord.x), WorldCToOverlayC(coord.y)};
+}
+
 // ======================================================================
 
 game::World::World(const World& other)

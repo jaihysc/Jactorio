@@ -72,10 +72,10 @@ void game::MouseSelection::DrawOverlay(World& world,
 
     if (selected_entity != nullptr && selected_entity->placeable) {
         // Has item selected
-        const auto set = selected_entity->OnRGetSpriteSet(orientation, world, {coord.x, coord.y});
+        const auto set = selected_entity->OnRGetSpriteSet(orientation, world, coord);
 
         OverlayElement element{*selected_entity->OnRGetSprite(set),
-                               {World::WorldCToOverlayC(coord.x), World::WorldCToOverlayC(coord.y)},
+                               World::WorldCToOverlayC(coord),
                                {SafeCast<float>(selected_entity->GetWidth(orientation)),
                                 SafeCast<float>(selected_entity->GetHeight(orientation))},
                                kCursorOverlayLayer_};
@@ -90,10 +90,7 @@ void game::MouseSelection::DrawOverlay(World& world,
 
             // Is hovering over entity
 
-            const OverlayElement element{cursor_sprite,
-                                         {World::WorldCToOverlayC(coord.x), World::WorldCToOverlayC(coord.y)},
-                                         {1, 1},
-                                         kCursorOverlayLayer_};
+            const OverlayElement element{cursor_sprite, World::WorldCToOverlayC(coord), {1, 1}, kCursorOverlayLayer_};
 
             overlay_layer.push_back(element);
             save_overlay_info(element);
