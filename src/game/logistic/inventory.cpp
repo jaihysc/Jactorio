@@ -264,12 +264,12 @@ bool game::Inventory::AddSub(ItemStack& stack) {
     return false;
 }
 
-uint32_t game::Inventory::Count(const proto::Item* item) const {
+uint32_t game::Inventory::Count(const proto::Item& item) const {
     J_INVENTORY_VERIFY(guard);
 
     uint32_t count = 0;
     for (const auto& i : inv_) {
-        if (i.item == item)
+        if (i.item == &item)
             count += i.count;
     }
     return count;
@@ -288,7 +288,7 @@ const proto::Item* game::Inventory::First() const {
 }
 
 
-bool game::Inventory::Remove(const proto::Item* item, const uint32_t amount) {
+bool game::Inventory::Remove(const proto::Item& item, const uint32_t amount) {
     J_INVENTORY_VERIFY(guard);
 
     // Not enough to remove
@@ -299,11 +299,11 @@ bool game::Inventory::Remove(const proto::Item* item, const uint32_t amount) {
     return true;
 }
 
-void game::Inventory::Delete(const proto::Item* item, uint32_t amount) {
+void game::Inventory::Delete(const proto::Item& item, uint32_t amount) {
     J_INVENTORY_VERIFY(guard);
 
     for (auto& inv_i : inv_) {
-        if (inv_i.item == item) {
+        if (inv_i.item == &item) {
             // Enough to remove and move on
             if (amount > inv_i.count) {
                 amount -= inv_i.count;

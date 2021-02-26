@@ -614,7 +614,7 @@ void game::Player::Crafting::QueueRecipe(const data::PrototypeManager& proto, co
     for (const auto& ingredient : recipe.ingredients) {
         const auto* item = proto.Get<proto::Item>(ingredient.first);
 
-        playerInv_->inventory.Delete(item, ingredient.second);
+        playerInv_->inventory.Delete(*item, ingredient.second);
     }
 
     // Queue is empty, crafting time for the first item in queue must be set here
@@ -636,7 +636,7 @@ void game::Player::Crafting::RecipeCraftR(const data::PrototypeManager& proto, c
     for (const auto& ingredient : recipe.ingredients) {
         const auto* ingredient_proto = proto.Get<proto::Item>(ingredient.first);
 
-        const uint32_t possess_amount = playerInv_->inventory.Count(ingredient_proto);
+        const uint32_t possess_amount = playerInv_->inventory.Count(*ingredient_proto);
 
         // Insufficient ingredient amount in player inventory
         if (possess_amount < ingredient.second) {
@@ -710,7 +710,7 @@ bool game::Player::Crafting::RecipeCanCraftR(const data::PrototypeManager& proto
             possess_amount = used_items[ing_item];
         }
         else {
-            possess_amount       = playerInv_->inventory.Count(ing_item);
+            possess_amount       = playerInv_->inventory.Count(*ing_item);
             used_items[ing_item] = possess_amount;
         }
 

@@ -239,7 +239,7 @@ void RecipeHoverTooltip(const render::GuiRenderer& g_rendr, const proto::Recipe&
 
             ImGui::SameLine(gui::kInventorySlotWidth * 1.5);
 
-            const auto player_item_count = player.inventory.inventory.Count(item);
+            const auto player_item_count = player.inventory.inventory.Count(*item);
             // Does not have ingredient
             if (IsPlayerCrafting && player_item_count < ingredient_pair.second) {
                 const bool can_be_recurse_crafted = player.crafting.RecipeCanCraft(proto, recipe, 1);

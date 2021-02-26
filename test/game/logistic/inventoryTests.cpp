@@ -2,8 +2,6 @@
 
 #include <gtest/gtest.h>
 
-#include <memory>
-
 #include "game/logistic/inventory.h"
 
 namespace jactorio::game
@@ -723,7 +721,7 @@ namespace jactorio::game
         inv[13] = {&item2, 200};
         inv[28] = {&item2, 200};
 
-        EXPECT_EQ(inv.Count(&item), 101);
+        EXPECT_EQ(inv.Count(item), 101);
     }
 
     TEST(Inventory, GetFirstItem) {
@@ -747,7 +745,7 @@ namespace jactorio::game
         inv[20] = {&item, 5};
         inv[23] = {&item, 5};
 
-        EXPECT_TRUE(inv.Remove(&item, 10));
+        EXPECT_TRUE(inv.Remove(item, 10));
 
         // Inventory should be empty
         for (auto& i : inv) {
@@ -763,7 +761,7 @@ namespace jactorio::game
         inv[20] = {&item, 5};
 
         // Attempting to remove 10 when only 5 exists
-        EXPECT_FALSE(inv.Remove(&item, 10));
+        EXPECT_FALSE(inv.Remove(item, 10));
 
         // Inventory unchanged
         EXPECT_EQ(inv[20].item, &item);

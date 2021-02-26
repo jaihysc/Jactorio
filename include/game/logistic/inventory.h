@@ -84,7 +84,7 @@ namespace jactorio::game
 
         ///
         /// Gets count of item in inventory
-        J_NODISCARD uint32_t Count(const proto::Item* item) const;
+        J_NODISCARD uint32_t Count(const proto::Item& item) const;
 
         ///
         /// Gets the first item within the inventory
@@ -95,12 +95,12 @@ namespace jactorio::game
         ///
         /// Removes amount of specified item from inventory
         /// \return false if there is insufficient items to remove, inventory unchanged
-        bool Remove(const proto::Item* item, uint32_t amount);
+        bool Remove(const proto::Item& item, uint32_t amount);
 
         ///
         /// Removes amount of specified item from inventory
         /// \remark DOES NOT check that there are sufficient items to remove, use Remove() if checking is needed
-        void Delete(const proto::Item* item, uint32_t amount);
+        void Delete(const proto::Item& item, uint32_t amount);
 
 
         CEREAL_SERIALIZE(archive) {
@@ -119,7 +119,7 @@ namespace jactorio::game
     ///
     /// Moves itemstack origin to target
     /// When stacking items, the stack prioritizes the target inventory
-    /// \remarks This should be only used by the player, machines should use AddStack instead
+    /// \remarks This should be only used by the player, machines should use Inventory::Add instead
     /// \return true if origin_stack is empty after the move
     bool MoveItemstackToIndex(ItemStack& origin_stack, ItemStack& target_stack, unsigned short mouse_button);
 

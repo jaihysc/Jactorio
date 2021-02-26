@@ -262,7 +262,7 @@ game::InserterPickup::PickupReturn game::InserterPickup::PickupContainerEntity(c
 
     const auto* target_item = container.inventory.First();
 
-    return {container.inventory.Remove(target_item, params.amount), {target_item, params.amount}};
+    return {container.inventory.Remove(*target_item, params.amount), {target_item, params.amount}};
 }
 
 
