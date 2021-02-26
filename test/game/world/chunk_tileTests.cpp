@@ -27,9 +27,9 @@ namespace jactorio::game
         const ChunkTile copy{top_left};
         EXPECT_EQ(copy.GetMultiTileIndex(), 0);
 
-        EXPECT_EQ(copy.GetDimensions().span, 5);
-        EXPECT_EQ(copy.GetDimensions().height, 2);
-        EXPECT_EQ(copy.GetDimensions(), top_left.GetDimensions());
+        EXPECT_EQ(copy.GetDimension().span, 5);
+        EXPECT_EQ(copy.GetDimension().height, 2);
+        EXPECT_EQ(copy.GetDimension(), top_left.GetDimension());
 
         EXPECT_EQ(copy.GetUniqueData<proto::ContainerEntityData>()->inventory.Size(), 32);
 
@@ -50,8 +50,8 @@ namespace jactorio::game
 
         EXPECT_EQ(copy.GetMultiTileIndex(), 4);
 
-        EXPECT_EQ(copy.GetDimensions().span, 5);
-        EXPECT_EQ(copy.GetDimensions().height, 2);
+        EXPECT_EQ(copy.GetDimension().span, 5);
+        EXPECT_EQ(copy.GetDimension().height, 2);
 
         EXPECT_EQ(copy.GetTopLeft(), nullptr); // top left tile not copied
     }
@@ -239,7 +239,7 @@ namespace jactorio::game
 
     TEST_F(ChunkTileTest, GetDimensions) {
         const ChunkTile first;
-        const auto dimens = first.GetDimensions();
+        const auto dimens = first.GetDimension();
 
         EXPECT_EQ(dimens.span, 1);
         EXPECT_EQ(dimens.height, 1);
@@ -253,7 +253,7 @@ namespace jactorio::game
         ChunkTile first;
         first.SetPrototype(Orientation::right, &container);
 
-        const auto& dimens = first.GetDimensions();
+        const auto& dimens = first.GetDimension();
 
         EXPECT_EQ(dimens.span, container.GetWidth(Orientation::right));
         EXPECT_EQ(dimens.height, container.GetHeight(Orientation::right));
@@ -350,16 +350,16 @@ namespace jactorio::game
         ASSERT_NE(result_tl.GetUniqueData(), nullptr);
         EXPECT_EQ(result_tl.GetUniqueData()->internalId, 1);
 
-        EXPECT_EQ(result_tl.GetDimensions().span, 3);
-        EXPECT_EQ(result_tl.GetDimensions().height, 2);
+        EXPECT_EQ(result_tl.GetDimension().span, 3);
+        EXPECT_EQ(result_tl.GetDimension().height, 2);
 
         EXPECT_EQ(result_tl.GetOrientation(), Orientation::right);
 
         EXPECT_EQ(result_br.GetPrototype(), &container);
         EXPECT_EQ(result_br.GetTopLeft(), nullptr);
 
-        EXPECT_EQ(result_br.GetDimensions().span, 3);
-        EXPECT_EQ(result_br.GetDimensions().height, 2);
+        EXPECT_EQ(result_br.GetDimension().span, 3);
+        EXPECT_EQ(result_br.GetDimension().height, 2);
 
 
         EXPECT_EQ(unique.GetDebugInfo().dataEntries.size(), 1);

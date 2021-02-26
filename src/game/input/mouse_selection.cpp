@@ -84,17 +84,15 @@ void game::MouseSelection::DrawOverlay(World& world,
         overlay_layer.push_back(element);
         save_overlay_info(element);
     }
-    else {
-        if (world.GetTile(coord, TileLayer::entity)->GetPrototype() != nullptr ||
-            world.GetTile(coord, TileLayer::resource)->GetPrototype() != nullptr) {
+    else if (world.GetTile(coord, TileLayer::entity)->GetPrototype() != nullptr ||
+             world.GetTile(coord, TileLayer::resource)->GetPrototype() != nullptr) {
 
-            // Is hovering over entity
+        // Is hovering over entity
 
-            const OverlayElement element{cursor_sprite, World::WorldCToOverlayC(coord), {1, 1}, kCursorOverlayLayer_};
+        const OverlayElement element{cursor_sprite, World::WorldCToOverlayC(coord), {1, 1}, kCursorOverlayLayer_};
 
-            overlay_layer.push_back(element);
-            save_overlay_info(element);
-        }
+        overlay_layer.push_back(element);
+        save_overlay_info(element);
     }
 }
 

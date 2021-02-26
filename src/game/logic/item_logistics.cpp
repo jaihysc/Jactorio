@@ -16,6 +16,7 @@ using namespace jactorio;
 
 bool game::ItemDropOff::Initialize(World& world, const WorldCoord& coord) {
     auto* tile = world.GetTile(coord, TileLayer::entity);
+    assert(tile != nullptr);
 
     if (tile->GetPrototype() == nullptr)
         return false;

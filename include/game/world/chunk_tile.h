@@ -1,7 +1,7 @@
 // This file is subject to the terms and conditions defined in 'LICENSE' in the source code package
 
-#ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
-#define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
+#ifndef JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H
+#define JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H
 #pragma once
 
 #include "data/cereal/serialization_type.h"
@@ -131,7 +131,7 @@ namespace jactorio::game
         ///
         /// Looks at prototype to determine dimensions, 1x1 if no prototype
         /// \return Dimensions of multi-tile, or 1x1 if single tile
-        J_NODISCARD MultiTileData GetDimensions() const noexcept;
+        J_NODISCARD MultiTileData GetDimension() const noexcept;
 
 
         ///
@@ -378,4 +378,4 @@ namespace jactorio::game
     }
 } // namespace jactorio::game
 
-#endif // JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_LAYER_H
+#endif // JACTORIO_INCLUDE_GAME_WORLD_CHUNK_TILE_H

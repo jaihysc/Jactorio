@@ -80,7 +80,7 @@ bool game::ChunkTile::IsMultiTile() const noexcept {
     if (GetMultiTileIndex() > 0)
         return true;
 
-    return GetDimensions().span != 1 || GetDimensions().height != 1;
+    return GetDimension().span != 1 || GetDimension().height != 1;
 }
 
 bool game::ChunkTile::IsMultiTileTopLeft() const noexcept {
@@ -92,7 +92,7 @@ bool game::ChunkTile::IsNonTopLeft() const noexcept {
 }
 
 
-game::MultiTileData game::ChunkTile::GetDimensions() const noexcept {
+game::MultiTileData game::ChunkTile::GetDimension() const noexcept {
     if (GetPrototype() == nullptr) {
         return {1, 1};
     }
@@ -134,12 +134,12 @@ const game::ChunkTile* game::ChunkTile::GetTopLeft() const noexcept {
 
 
 game::ChunkTile::TileDistanceT game::ChunkTile::GetOffsetX() const noexcept {
-    const auto& data = GetDimensions();
+    const auto& data = GetDimension();
     return GetMultiTileIndex() % data.span;
 }
 
 game::ChunkTile::TileDistanceT game::ChunkTile::GetOffsetY() const noexcept {
-    const auto& data = GetDimensions();
+    const auto& data = GetDimension();
     return GetMultiTileIndex() / data.span;
 }
 

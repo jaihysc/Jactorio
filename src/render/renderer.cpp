@@ -408,7 +408,7 @@ void render::Renderer::ApplySpriteUvAdjustment(UvPositionT& uv, const UvPosition
 }
 
 void render::Renderer::ApplyMultiTileUvAdjustment(UvPositionT& uv, const game::ChunkTile& tile) noexcept {
-    const auto& mt_data = tile.GetDimensions();
+    const auto& mt_data = tile.GetDimension();
 
     // Calculate the correct UV coordinates for multi-tile entities
     // Split the sprite into sections and stretch over multiple tiles if this entity is multi tile
