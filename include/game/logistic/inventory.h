@@ -19,6 +19,15 @@ namespace jactorio::game
         friend Inventory;
 
     public:
+        friend bool operator==(const ItemStack& lhs, const ItemStack& rhs) {
+            return std::tie(lhs.item, lhs.count, lhs.filter) == std::tie(rhs.item, rhs.count, rhs.filter);
+        }
+
+        friend bool operator!=(const ItemStack& lhs, const ItemStack& rhs) {
+            return !(lhs == rhs);
+        }
+
+
         ///
         /// \remark Comparison between two stacks is reversible
         /// \return true if provided stack matches filter of current stack and can thus be inserted into it
@@ -27,13 +36,34 @@ namespace jactorio::game
         ///
         /// Clears item and count, NOT filter
         void Clear() noexcept;
+
+
         ///
         /// \return true if stack holds no items
         J_NODISCARD bool Empty() const noexcept;
 
+        ///
+        /// \return true if stack >= stack size
+        J_NODISCARD bool Full() const noexcept;
+
+        ///
+        /// \return true if this stack contains more than its stack size
+        J_NODISCARD bool Overloaded() const noexcept;
+
+
+        ///
+        /// \return Available space left in this stack
+        J_NODISCARD proto::Item::StackCount FreeCount() const noexcept;
+
+
+        ///
+        /// Deletes provided number of items from current stack
+        /// \remark Ensure stack has enough to delete
+        void Delete(proto::Item::StackCount amount) noexcept;
 
         ///
         /// Attempts to drop one item from provided stack to current item stack
+        /// \return true if stack is empty
         bool DropOne(ItemStack& stack) noexcept;
 
         ///

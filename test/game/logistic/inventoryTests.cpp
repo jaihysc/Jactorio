@@ -6,7 +6,7 @@
 
 namespace jactorio::game
 {
-    TEST(ItemSack, MatchesFilter) {
+    TEST(ItemStack, MatchesFilter) {
         proto::Item item_1;
         proto::Item item_2;
 
@@ -14,6 +14,66 @@ namespace jactorio::game
         EXPECT_TRUE(ItemStack({nullptr, 1}).MatchesFilter({nullptr, 0, &item_2}));
         EXPECT_TRUE(ItemStack({&item_1, 1}).MatchesFilter({nullptr, 0, nullptr}));
     }
+
+    TEST(ItemStack, Empty) {
+        proto::Item item;
+        item.stackSize = 10;
+
+        EXPECT_TRUE(ItemStack({nullptr, 0}).Empty());
+        EXPECT_FALSE(ItemStack({&item, 9}).Empty());
+    }
+
+    TEST(ItemStack, Full) {
+        proto::Item item;
+        item.stackSize = 10;
+
+        EXPECT_FALSE(ItemStack({&item, 9}).Full());
+        EXPECT_TRUE(ItemStack({&item, 10}).Full());
+        EXPECT_TRUE(ItemStack({&item, 11}).Full());
+    }
+
+    TEST(ItemStack, Overloaded) {
+        proto::Item item;
+        item.stackSize = 10;
+
+        EXPECT_FALSE(ItemStack({&item, 9}).Overloaded());
+        EXPECT_FALSE(ItemStack({&item, 10}).Overloaded());
+        EXPECT_TRUE(ItemStack({&item, 11}).Overloaded());
+    }
+
+    TEST(ItemStack, FreeCount) {
+        proto::Item item;
+        item.stackSize = 10;
+
+        EXPECT_EQ(ItemStack({&item, 1}).FreeCount(), 9);
+        EXPECT_EQ(ItemStack({&item, 9}).FreeCount(), 1);
+        EXPECT_EQ(ItemStack({&item, 10}).FreeCount(), 0);
+        EXPECT_EQ(ItemStack({&item, 11}).FreeCount(), 0);
+    }
+
+    TEST(ItemStack, DeleteNowEmpty) {
+        proto::Item item;
+        item.stackSize = 10;
+
+        ItemStack stack({&item, 1});
+        stack.Delete(1);
+
+        EXPECT_EQ(stack, ItemStack({nullptr, 0}));
+    }
+
+    TEST(ItemStack, Delete) {
+        proto::Item item;
+        item.stackSize = 10;
+
+        ItemStack stack({&item, 9});
+        stack.Delete(4);
+
+        EXPECT_EQ(stack, ItemStack({&item, 5}));
+    }
+
+
+    // ======================================================================
+
 
     TEST(Inventory, MoveStackToEmptySlot) {
         // Moving from inventory position 0 to position 3
